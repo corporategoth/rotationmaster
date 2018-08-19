@@ -13,7 +13,7 @@ local pairs, color = pairs, color
 local floor = math.floor
 
 addon.pretty_name = "Rotation Master"
-addon.version = "0.2"
+addon.version = "1.0"
 
 --
 -- Initialization
