@@ -1,0 +1,110 @@
+commit 5435d1a9647d67e29c21b5f0a02bba9b9ff85bf9
+Author: Andrew Scott <ascott18@gmail.com>
+Date:   Sat Jul 7 15:16:09 2018 -0700
+
+    Fix issue with passives overwriting non-passives (Issue #2)
+
+commit 23ad554a43d2c20c4ca0ff22d086a1acde84f576
+Author: Andrew Scott <ascott18@gmail.com>
+Date:   Mon Oct 31 00:30:35 2016 +0000
+
+    Toc bump to 70100
+    
+    git-svn-id: https://repos.curseforge.com/wow/libspellrange-1-0/trunk@19 a9e864c0-2150-42f7-a8e1-a7667b14d470
+
+commit fb76becf9f1ff6781f0492961a9c67d86fb5eafa
+Author: Andrew Scott <ascott18@gmail.com>
+Date:   Tue Jul 26 23:04:45 2016 +0000
+
+    toc bump to 70000
+    
+    git-svn-id: https://repos.curseforge.com/wow/libspellrange-1-0/trunk@17 a9e864c0-2150-42f7-a8e1-a7667b14d470
+
+commit 6b6299d313c250546f4df84d689968d644c544db
+Author: Andrew Scott <ascott18@gmail.com>
+Date:   Tue Apr 19 02:47:45 2016 +0000
+
+    Forgot to version bump.
+    
+    git-svn-id: https://repos.curseforge.com/wow/libspellrange-1-0/trunk@15 a9e864c0-2150-42f7-a8e1-a7667b14d470
+
+commit 4bfc6c76d779f7bfa3b7ba98f6bf27531e6e4fdb
+Author: Andrew Scott <ascott18@gmail.com>
+Date:   Tue Apr 19 02:38:18 2016 +0000
+
+    Fixed spellbook scanning - don't look at book tabs that are for inactive specs. Spells there don't reflect current states like they used to. Only the current book tabs can be relied on. See ticket #1.
+    
+    git-svn-id: https://repos.curseforge.com/wow/libspellrange-1-0/trunk@14 a9e864c0-2150-42f7-a8e1-a7667b14d470
+
+commit 2b8b7b274bc5d574f351d79f13171fd158befeae
+Author: Andrew Scott <ascott18@gmail.com>
+Date:   Tue Oct 14 04:18:48 2014 +0000
+
+    Version bumps for Warlords of Draenor
+    
+    git-svn-id: https://repos.curseforge.com/wow/libspellrange-1-0/trunk@12 a9e864c0-2150-42f7-a8e1-a7667b14d470
+
+commit 7398d66a5338f8671ad5665376b4fb380e8549d2
+Author: Andrew Scott <ascott18@gmail.com>
+Date:   Tue Aug 19 02:02:03 2014 +0000
+
+    Updated to include an improved version of SpellHasRange()
+    
+    git-svn-id: https://repos.curseforge.com/wow/libspellrange-1-0/trunk@11 a9e864c0-2150-42f7-a8e1-a7667b14d470
+
+commit 3741d792ab31f58d08363680f4317754735b9a82
+Author: Andrew Scott <ascott18@gmail.com>
+Date:   Mon Sep 10 02:07:08 2012 +0000
+
+    Now supports pet spells, and has proper fallback when a string is passed in as the spell.
+    
+    git-svn-id: https://repos.curseforge.com/wow/libspellrange-1-0/trunk@9 a9e864c0-2150-42f7-a8e1-a7667b14d470
+
+commit ab24e94c5c7f65fae910e04437dbf6eb0aeb5b56
+Author: Andrew Scott <ascott18@gmail.com>
+Date:   Mon Sep 10 01:31:26 2012 +0000
+
+    Checking spells by name should no longer be case-sensitive.
+    
+    git-svn-id: https://repos.curseforge.com/wow/libspellrange-1-0/trunk@7 a9e864c0-2150-42f7-a8e1-a7667b14d470
+
+commit 1385eb83ad702ef5623a80dc0ea3b339660519ae
+Author: Andrew Scott <ascott18@gmail.com>
+Date:   Mon Sep 10 00:37:52 2012 +0000
+
+    Final doc tweak. Bumped minor for good measure before release.
+    
+    git-svn-id: https://repos.curseforge.com/wow/libspellrange-1-0/trunk@5 a9e864c0-2150-42f7-a8e1-a7667b14d470
+
+commit f8507afd265bcc1bffa12c9e56b2088bbb623d96
+Author: Andrew Scott <ascott18@gmail.com>
+Date:   Mon Sep 10 00:25:41 2012 +0000
+
+    Minor doc tweak
+    
+    git-svn-id: https://repos.curseforge.com/wow/libspellrange-1-0/trunk@4 a9e864c0-2150-42f7-a8e1-a7667b14d470
+
+commit eef18ae3f6d0c60fa4a8660bd695a73dec01c609
+Author: Andrew Scott <ascott18@gmail.com>
+Date:   Mon Sep 10 00:24:39 2012 +0000
+
+    Attempt to fix docs
+    
+    git-svn-id: https://repos.curseforge.com/wow/libspellrange-1-0/trunk@3 a9e864c0-2150-42f7-a8e1-a7667b14d470
+
+commit 92e4a99ba22fc88a3e27db99ca842e8ae5a3cb83
+Author: Andrew Scott <ascott18@gmail.com>
+Date:   Mon Sep 10 00:19:24 2012 +0000
+
+    Initial commit
+    
+    git-svn-id: https://repos.curseforge.com/wow/libspellrange-1-0/trunk@2 a9e864c0-2150-42f7-a8e1-a7667b14d470
+
+commit 2ace9798ad865164421661d50f127ea3841e0d50
+Author: svn <svn@a9e864c0-2150-42f7-a8e1-a7667b14d470>
+Date:   Sun Sep 9 23:26:54 2012 +0000
+
+    libspellrange-1-0/mainline: Initial Import
+    
+    git-svn-id: https://repos.curseforge.com/wow/libspellrange-1-0/trunk@1 a9e864c0-2150-42f7-a8e1-a7667b14d470
+

@@ -1,0 +1,13 @@
+## Interface: 30200
+## Title: Lib: AceGUI-3.0-Item-EditBox
+## Notes: Adds predicted lists for items while the user types
+## Author: Shadowed
+## X-Category: Library
+## OptionalDeps: Ace3
+## X-Curse-Packaged-Version: r20090807071246
+## X-Curse-Project-Name: AceGUI-3.0-Item-EditBox
+## X-Curse-Project-ID: ace-gui-3-0-item-editbox
+## X-Curse-Repository-ID: wow/ace-gui-3-0-item-editbox/mainline
+
+AceGUI-3.0-Item-EditBox.xml
+## test.lua

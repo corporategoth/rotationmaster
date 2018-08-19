@@ -1,0 +1,227 @@
+local addon_name, addon = ...
+
+local AceGUI = LibStub("AceGUI-3.0")
+local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
+local tostring, tonumber, pairs = tostring, tonumber, pairs
+
+-- From constants
+local units = addon.units
+
+-- From utils
+local nullable, keys, isin, deepcopy, getCached, playerize =
+    addon.nullable, addon.keys, addon.isin, addon.deepcopy, addon.getCached, addon.playerize
+
+addon:RegisterCondition("COMBAT", {
+    description = L["In Combat"],
+    icon = "Interface\\Icons\\ability_dualwield",
+    valid = function(spec, value)
+        return value.unit ~= nil and isin(units, value.unit);
+    end,
+    evaluate = function(value, cache)
+        return getCached(cache, UnitAffectingCombat, value.unit)
+    end,
+    print = function(spec, value)
+        return string.format(playerize(value.unit, L["%s are in combat"], L["%s is in combat"]),
+            nullable(units[value.unit], L["<unit>"]))
+    end,
+    widget = function(parent, spec, value)
+        local top = parent:GetUserData("top")
+        local root = top:GetUserData("root")
+        local funcs = top:GetUserData("funcs")
+
+        local unit = AceGUI:Create("Dropdown")
+        unit:SetLabel(L["Unit"])
+        unit:SetList(units, keys(units))
+        if (value.unit ~= nil) then
+            unit:SetValue(value.unit)
+        end
+        unit:SetCallback("OnValueChanged", function(widget, event, v)
+            value.unit = v
+            top:SetStatusText(funcs:print(root, spec))
+        end)
+        parent:AddChild(unit)
+    end,
+})
+
+addon:RegisterCondition("PET", {
+    description = L["Have Pet"],
+    icon = "Interface\\Icons\\Inv_box_petcarrier_01",
+    valid = function(spec, value)
+        return true
+    end,
+    evaluate = function(value, cache)
+        return getCached(cache, UnitExists, "pet")
+    end,
+    print = function(spec, value)
+        return L["you have a pet"]
+    end,
+    widget = function(parent, spec, value)
+    end,
+})
+
+addon:RegisterCondition("STEALTHED", {
+    description = L["Stealth"],
+    icon = "Interface\\Icons\\ability_stealth",
+    valid = function(spec, value)
+        return true
+    end,
+    evaluate = function(value, cache)
+        return IsStealthed()
+    end,
+    print = function(spec, value)
+        return L["you are stealthed"]
+    end,
+})
+
+addon:RegisterCondition("INCONTROL", {
+    description = L["In Control"],
+    icon = "Interface\\Icons\\spell_nature_polymorph",
+    valid = function(spec, value)
+        return true
+    end,
+    evaluate = function(value, cache)
+        return HasControl()
+    end,
+    print = function(spec, value)
+        return L["you are in control of your character"]
+    end,
+})
+
+addon:RegisterCondition("THREAT", {
+    description = L["Threat"],
+    icon = "Interface\\Icons\\ability_physical_taunt",
+    valid = function(spec, value)
+        return value.unit ~= nil and isin(units, value.unit);
+    end,
+    evaluate = function(value, cache)
+        local rv = getCached(cache, UnitThreatSituation, "player", value.ulnit)
+        if rv ~= nil and rv > 0 then
+            return true
+        else
+            return false
+        end
+    end,
+    print = function(spec, value)
+        return string.format(L["you have threat on %s"], nullable(units[value.unit], L["<unit>"]))
+    end,
+    widget = function(parent, spec, value)
+        local top = parent:GetUserData("top")
+        local root = top:GetUserData("root")
+        local funcs = top:GetUserData("funcs")
+        local units = deepcopy(units, { "player", "pet" })
+
+        local unit = AceGUI:Create("Dropdown")
+        unit:SetLabel(L["Unit"])
+        unit:SetList(units, keys(units))
+        if (value.unit ~= nil) then
+            unit:SetValue(value.unit)
+        end
+        unit:SetCallback("OnValueChanged", function(widget, event, v)
+            value.unit = v
+            top:SetStatusText(funcs:print(root, spec))
+        end)
+        parent:AddChild(unit)
+    end,
+})
+
+addon:RegisterCondition("FORM", {
+    description = L["Shapeshift Form"],
+    icon = "Interface\\Icons\\ability_hunter_pet_bear",
+    valid = function(spec, value)
+        return value.value ~= nil and value >= 0 and value <= GetNumShapeshiftForms()
+    end,
+    evaluate = function(value, cache)
+        return getCached(cache, GetShapeshiftForm) == value.value
+    end,
+    print = function(spec, value)
+        local form
+        if value.value ~= nil then
+            local _, name, _, _, _ = GetShapeshiftFormInfo(index)
+            form = name
+        end
+        return string.format(L["you are in %s form"], nullable(form, L["<form>"]))
+    end,
+    widget = function(parent, spec, value)
+        local top = parent:GetUserData("top")
+        local root = top:GetUserData("root")
+        local funcs = top:GetUserData("funcs")
+
+        local forms = {}
+        local formsOrder = {}
+
+        forms["0"] = L["humanoid"]
+        table.insert(formsOrder, "0")
+        for i=1,GetNumShapeshiftForms() do
+            local _, name = GetShapeshiftFormInfo(index);
+            forms[tostring(i)] = name;
+            table.insert(formsOrder, tostring(i))
+        end
+
+        local formIcon = AceGUI:Create("Icon")
+        formIcon:SetWidth(44)
+        formIcon:SetHeight(44)
+        formIcon:SetImageSize(36, 36)
+        if value.value ~= nil then
+            if value.value == 0 then
+                formIcon:SetImage("Interface\\Icons\\achievement_character_human_male")
+            else
+                local icon = GetShapeshiftFormInfo(value.value);
+                formIcon:SetImage(icon)
+            end
+        else
+            formIcon:SetImage("Interface\\Icons\\INV_Misc_QuestionMark")
+        end
+        parent:AddChild(formIcon)
+
+        local form = AceGUI:Create("Dropdown")
+        form:SetLabel(L["Form"])
+        form:SetList(forms, formsOrder)
+        if (value.value) then
+            form:SetValue(tostring(value.value))
+        end
+        form:SetCallback("OnValueChanged", function(widget, event, v)
+            if v == "0" then
+                formIcon:SetImage("Interface\\Icons\\achievement_character_human_male")
+            else
+                local icon = GetShapeshiftFormInfo(tonumber(v));
+                formIcon:SetImage(icon)
+            end
+            value.form = tonumber(v)
+            top:SetStatusText(funcs:print(root, spec))
+        end)
+        parent:AddChild(form)
+    end,
+})
+
+addon:RegisterCondition("ENEMY", {
+    description = L["Enemy"],
+    icon = "Interface\\Icons\\inv_misc_head_dragon_01",
+    valid = function(spec, value)
+        return value.unit ~= nil and isin(units, value.unit);
+    end,
+    evaluate = function(value, cache)
+        return getCached(cache, UnitIsEnemy, "player", value.ulnit)
+    end,
+    print = function(spec, value)
+        return string.format(L["%s is an enemy"], nullable(units[value.unit], L["<unit>"]))
+    end,
+    widget = function(parent, spec, value)
+        local top = parent:GetUserData("top")
+        local root = top:GetUserData("root")
+        local funcs = top:GetUserData("funcs")
+        local units = deepcopy(units, { "player", "pet" })
+
+        local unit = AceGUI:Create("Dropdown")
+        unit:SetLabel(L["Unit"])
+        unit:SetList(units, keys(units))
+        if (value.unit ~= nil) then
+            unit:SetValue(value.unit)
+        end
+        unit:SetCallback("OnValueChanged", function(widget, event, v)
+            value.unit = v
+            top:SetStatusText(funcs:print(root, spec))
+        end)
+        parent:AddChild(unit)
+    end,
+})
+

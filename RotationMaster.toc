@@ -1,0 +1,34 @@
+## Interface: 80000
+## Title: Rotation Master
+## Version: 0.01
+## Author: PreZ
+## Notes: I wanted to save the world, but God wouldn't give me the source code.
+## X-Email: prez@goth.net
+## X-Category: Action Bars
+## SavedVariables: RotationMasterDB
+## OptionalDeps: Ace3, LibAboutPanel, LibDBIcon-1.0, LibSpellRange-1.0, AceGUI-3.0-ActionSlotWidgets, AceGUI-3.0-Item-EditBox, AceGUI-3.0-Spell-EditBox
+## X-Embeds: Ace3, LibAboutPanel, LibDBIcon-1.0, LibSpellRange-1.0, AceGUI-3.0-ActionSlotWidgets, AceGUI-3.0-Item-EditBox, AceGUI-3.0-Spell-EditBox
+## X-Credits: None
+
+globals.lua
+embeds.xml
+locales.xml
+main.lua
+constants.lua
+utils.lua
+buttons.lua
+Options/general.lua
+Options/cooldowns.lua
+Options/rotations.lua
+Options/conditional.lua
+Conditions/character.lua
+Conditions/stats.lua
+Conditions/spell.lua
+Conditions/buffs.lua
+Conditions/debuffs.lua
+Conditions/totem.lua
+Conditions/item.lua
+Conditions/combat.lua
+Conditions/casting.lua
+Conditions/channeling.lua
+Conditions/switch.lua
