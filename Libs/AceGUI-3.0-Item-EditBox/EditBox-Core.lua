@@ -51,13 +51,17 @@ do
 		local query = "^" .. string.lower(self.obj.editBox:GetText())
 		
 		local activeButtons = 0
-		for itemID, name in pairs(ItemData.itemList) do
+		for name, itemID in pairs(ItemData.itemListReverse) do
 			if( not alreadyAdded[name] and string.match(name, query) and ( not self.obj.itemFilter or self.obj.itemFilter(self.obj, itemID) ) ) then
 				activeButtons = activeButtons + 1
 
 				local button = self.buttons[activeButtons]
-				local name, link, _, _, _, _, _, _, _, icon = GetItemInfo(itemID)
-                button:SetFormattedText("|T%s:20:20:2:11|t " .. link, icon)
+				local itemInfo = ItemData.itemList[itemID]
+				if itemInfo ~= nil and itemInfo.icon ~= nil and itemInfo.link ~= nil then
+                    button:SetFormattedText("|T%s:20:20:2:11|t %s", itemInfo.icon, itemInfo.link)
+                else
+					button:SetFormattedText("[itemID]")
+				end
 
                 alreadyAdded[name] = true
 

@@ -150,6 +150,7 @@ L["Conditions"] = true
 L["THIS CONDITION DOES NOT VALIDATE"] = true
 L["This conditions is currently satisfied."] = true
 L["This conditions is currently not satisfied."] = true
+L["NOTE: Some spells can not be selected (even if auto-completed) due to WoW internals.  It may reequire you to switch specs or summon the requisite pet first before being able to populate this field."] = true
 
 -- from Options/conditional.lua
 

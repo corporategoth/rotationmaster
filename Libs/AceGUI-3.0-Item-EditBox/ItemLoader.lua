@@ -6,10 +6,11 @@ if( not ItemLoader ) then return end
 
 ItemLoader.predictors = ItemLoader.predictors or {}
 ItemLoader.itemList = ItemLoader.itemList or {}
+ItemLoader.itemListReverse = ItemLoader.itemListReverse or {}
 
 local ITEMS_PER_RUN = 500
 local TIMER_THROTTLE = 0.10
-local items, predictors = ItemLoader.itemList, ItemLoader.predictors
+local items, itemsReverse, predictors = ItemLoader.itemList, ItemLoader.itemListReverse, ItemLoader.predictors
 
 function ItemLoader:RegisterPredictor(frame)
 	self.predictors[frame] = true
@@ -62,9 +63,30 @@ function ItemLoader:StartLoading(limited)
 
 			local itemID = dataset[idx]
         	if items[itemID] == nil then
-                local name = GetItemInfo(itemID)
+                local name, link, _, _, _, _, _, _, _, icon = GetItemInfo(itemID)
                 if( name ) then
-                    items[itemID] = string.lower(name)
+                    items[itemID] = {
+						name = name,
+						link = link,
+						icon = icon
+					}
+
+					local lcname = string.lower(name)
+					if itemsReverse[lcname] == nil then
+						itemsReverse[lcname] = itemID
+						--[[
+                        -- local revid, _, _, _, icon = GetItemInfoInstant(name)
+                        itemsReverse[lcname] = revid
+                    	-- Just in case this is a future load.
+                    	if  items[revid] == nil then
+							items[revid] = {
+								name = name,
+								link = name,
+								icon = icon
+							}
+                        end
+                        --]]
+                    end
                 end
             end
         end

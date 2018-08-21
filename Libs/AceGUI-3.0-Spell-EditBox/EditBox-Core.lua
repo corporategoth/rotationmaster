@@ -56,21 +56,15 @@ do
 				activeButtons = activeButtons + 1
 
 				local button = self.buttons[activeButtons]
-				local spellName, spellRank, spellIcon = GetSpellInfo(spellID)
-            	if spellIcon and spellName then
-                    if( self.obj.useRanks and spellRank and spellRank ~= "" ) then
-                        button:SetFormattedText("|T%s:20:20:2:11|t %s (%s)", spellIcon, spellName, spellRank)
-                    else
-                        button:SetFormattedText("|T%s:20:20:2:11|t %s", spellIcon, spellName)
-                    end
+            	local spellInfo = SpellData.spellList[spellID]
+            	if spellInfo ~= nil and spellInfo.icon ~= nil and spellInfo.name ~= nil then
+                    button:SetFormattedText("|T%s:20:20:2:11|t %s", spellInfo.icon, spellInfo.name)
                 else
 					button:SetFormattedText("[%d]", spellID)
                 end
 				
-				if( not self.obj.useRanks ) then
-					alreadyAdded[name] = true
-				end
-				
+                alreadyAdded[name] = true
+
 				button.spellID = spellID
 				button:Show()
 				
@@ -181,11 +175,10 @@ do
 		local type, _, _, id = GetCursorInfo()
 
 		if( type == "spell" ) then
-			local name, rank = GetSpellInfo(id)
-			if( self.useRanks and rank and rank ~= "" ) then
-				name = string.format("%s (%s)", name, rank)
-			end
-			
+			local name, _, _, _, _, _, spellId = GetSpellInfo(id)
+			-- Just in case ...
+        	SpellData:UpdateSpell(spellId, name)
+
 			self:SetText(name)
 			self:Fire("OnEnterPressed", name)
 			ClearCursor()
@@ -220,11 +213,6 @@ do
 		EditBox_OnEnterPressed(this.obj.editBox)
 	end
 	
-	-- API calls
-	local function SetUseRanks(self, enabled)
-		self.useRanks = enabled
-	end
-		
 	local function SetDisabled(self, disabled)
 		self.disabled = disabled
 		if( disabled ) then
@@ -296,11 +284,9 @@ do
 	end
 				
 	local function Spell_OnClick(self)
-		local name, rank = GetSpellInfo(self.spellID)
-		if( self.useRanks and rank and rank ~= "" ) then
-			name = string.format("%s (%s)", name, rank)
-		end
-		
+		local name = GetSpellInfo(self.spellID)
+		-- Just in case ...
+		SpellData:UpdateSpell(spellId, name)
 		SetText(self.parent.obj, name, string.len(name))
 		
 		self.parent.selectedButton = nil

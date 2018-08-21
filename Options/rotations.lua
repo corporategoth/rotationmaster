@@ -161,6 +161,7 @@ function addon:get_rotation_list(spec, rotation)
                 args["action"] = {
                     order = 15,
                     name = L["Spell"],
+                    desc = L["NOTE: Some spells can not be selected (even if auto-completed) due to WoW internals.  It may reequire you to switch specs or summon the requisite pet first before being able to populate this field."],
                     type = "input",
                     dialogControl = "Spell_EditBox",
                     width = 1.2,

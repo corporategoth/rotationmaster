@@ -8,10 +8,12 @@ SpellLoader.predictors = SpellLoader.predictors or {}
 SpellLoader.spellList = SpellLoader.spellList or {}
 SpellLoader.spellListReverse = SpellLoader.spellListReverse or {}
 SpellLoader.spellsLoaded = SpellLoader.spellsLoaded or 0
+SpellLoader.needsUpdate = SpellLoader.needsUpdate or {}
 
 local SPELLS_PER_RUN = 500
 local TIMER_THROTTLE = 0.10
-local spells, spellsReverse, predictors = SpellLoader.spellList, SpellLoader.spellListReverse, SpellLoader.predictors
+local spells, spellsReverse, predictors, needsUpdate =
+    SpellLoader.spellList, SpellLoader.spellListReverse, SpellLoader.predictors, SpellLoader.needsUpdate
 
 function SpellLoader:RegisterPredictor(frame)
 	self.predictors[frame] = true
@@ -19,6 +21,13 @@ end
 
 function SpellLoader:UnregisterPredictor(frame)
 	self.predictors[frame] = nil
+end
+
+function SpellLoader:UpdateSpell(id, name)
+	if self.needsUpdate[id] then
+		self.spellListReverse[string.lower(name)] = id
+		self.needUpdate[id] = nil
+    end
 end
 
 function SpellLoader:StartLoading()
@@ -63,13 +72,29 @@ function SpellLoader:StartLoading()
 				local lcname = string.lower(name)
 				
 				SpellLoader.spellsLoaded = SpellLoader.spellsLoaded + 1
-				spells[spellID] = lcname
+				spells[spellID] = {
+					name = name,
+					icon = icon
+				}
 
 				-- There are multiple spells with the same name, onle one is definitive for this class (which affects
 				-- icons, tool tips, etc).  So look up the definitive version if there is one and set that.
                 if spellsReverse[lcname] == nil then
-					local revid = select(7, GetSpellInfo(name))
-                    spellsReverse[lcname] = revid or spellID
+					local name, _, icon, _, _, _, revid = GetSpellInfo(name)
+                	if revid then
+                        spellsReverse[lcname] = revid
+                        if revid and revid ~= spellID then
+                            spells[revid] = {
+                                nmame = name,
+                                icon = icon
+                            }
+                        end
+                    else
+                        -- We could not look up the spell right now.  Maybe later we can!
+						-- After we change specs or summon pets or something.  WoW is weird.
+                        needsUpdate[spellID] = true
+						spellsReverse[lcname] = spellID
+                    end
 				end
 
 				totalInvalid = 0

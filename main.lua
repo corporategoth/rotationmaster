@@ -382,7 +382,7 @@ function addon:EvaluateNextAction()
             end
         end
 
-        -- Upodate the live config config .. just to be nice :)
+        -- Update the live config config .. just to be nice :)
         if self.db.profile.live_config_update > 0 and GetTime() - self.lastConfigUpdate > self.db.profile.live_config_update then
             AceConfigRegistry:NotifyChange(addon.name .. "Class")
             self.lastConfigUpdate = GetTime()
@@ -479,11 +479,6 @@ addon.ACTIONBAR_HIDEGRID = addon.ButtonFetch
 addon.ACTIONBAR_PAGE_CHANGED = addon.ButtonFetch
 addon.UPDATE_MACROS = addon.ButtonFetch
 addon.VEHICLE_UPDATE = addon.ButtonFetch
-
-local function temp(action)
-    print("DEBUG: PetActionBar Triggered - " .. action)
-    action.ButtonFetch()
-end
 
 function addon:PLAYER_TARGET_CHANGED()
     addon:verbose("Player targeted something else.")
