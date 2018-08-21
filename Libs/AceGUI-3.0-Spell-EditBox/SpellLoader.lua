@@ -85,7 +85,7 @@ function SpellLoader:StartLoading()
                         spellsReverse[lcname] = revid
                         if revid and revid ~= spellID then
                             spells[revid] = {
-                                nmame = name,
+                                name = name,
                                 icon = icon
                             }
                         end
