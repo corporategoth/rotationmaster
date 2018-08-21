@@ -9,8 +9,8 @@ local floor = math.floor
 local operators, totems = addon.operators, addon.totems
 
 -- From utils
-local compare, compareString, nullable, keys, isin, getCached, isSpellOnSpec =
-    addon.compare, addon.compareString, addon.nullable, addon.keys, addon.isin, addon.getCached, addon.isSpellOnSpec
+local compare, compareString, nullable, keys, isin, getCached, isSpellOnSpec, round =
+    addon.compare, addon.compareString, addon.nullable, addon.keys, addon.isin, addon.getCached, addon.isSpellOnSpec, addon.round
 
 addon:RegisterCondition("TOTEM", {
     description = L["Totem Present"],
@@ -18,7 +18,7 @@ addon:RegisterCondition("TOTEM", {
     valid = function(spec, value)
         return value.spell ~= nil and value.spell >= 1 and value.spell <= 4
     end,
-    evaluate = function(value, cache)
+    evaluate = function(value, cache, evalStart)
         local _, totemName, _, _ = getCached(cache, GetTotemInfo, value.spell)
         return totemName ~= nil
     end,
@@ -50,10 +50,11 @@ addon:RegisterCondition("TOTEM_SPELL", {
     valid = function(spec, value)
         return value.spell ~= nil
     end,
-    evaluate = function(value, cache)
+    evaluate = function(value, cache, evalStart)
+        local targetTotem = getCached(addon.longtermCache, GetSpellInfo, value.spell)
         for i=1,4 do
             local _, totemName, _, _ = getCached(cache, GetTotemInfo, i)
-            if totemName == value.spell then
+            if totemName == targetTotem then
                 return true
             end
         end
@@ -121,10 +122,10 @@ addon:RegisterCondition("TOTEM_REMAIN", {
                 value.operator ~= nil and isin(operators, value.operator) and
                 value.value ~= nil and value.value >= 0)
     end,
-    evaluate = function(value, cache)
+    evaluate = function(value, cache, evalStart)
         local _, totemName, startTime, duration = getCached(cache, GetTotemInfo, value.spell)
         if totemName ~= nil then
-            local remain = (startTime + duration) - GetTime()
+            local remain = round(duration - (GetTime() - start), 3)
             return compare(value.operator, remain, value.value)
         end
         return false
@@ -184,12 +185,13 @@ addon:RegisterCondition("TOTEM_SPELL_REMAIN", {
         return (value.spell ~= nil and value.operator ~= nil and isin(operators, value.operator) and
                 value.value ~= nil and value.value >= 0)
     end,
-    evaluate = function(value, cache)
+    evaluate = function(value, cache, evalStart)
+        local targetTotem = getCached(addon.longtermCache, GetSpellInfo, value.spell)
         for i=1,4 do
-            local _, totemName, startTime, duration = getCached(cache, GetTotemInfo, i)
+            local _, totemName, start, duration = getCached(cache, GetTotemInfo, i)
             if totemName == value.spell then
-                local remain = (startTime + duration) - GetTime()
-                return compare(value.operator, remain, value.value)
+                local remain = round(duration - (GetTime() - start), 3)
+                return compare(value.operator, remain, targetTotem)
             end
         end
         return false

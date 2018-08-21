@@ -23,7 +23,7 @@ addon:RegisterCondition("HEALTH", {
                 value.unit ~= nil and isin(units, value.unit) and
                 value.value ~= nil and value.value >= 0)
     end,
-    evaluate = function(value, cache)
+    evaluate = function(value, cache, evalStart)
         return compare(value.operator, getCached(cache, UnitHealth, value.unit), value.value)
     end,
     print = function(spec, value)
@@ -80,7 +80,7 @@ addon:RegisterCondition("HEALTHPCT", {
                 value.unit ~= nil and isin(units, value.unit) and
                 value.value ~= nil and value.value >= 0.00 and value.value <= 1.00)
     end,
-    evaluate = function(value, cache)
+    evaluate = function(value, cache, evalStart)
         local health = getCached(cache, UnitHealth, value.unit) / getCached(cache, UnitHealthMax, value.unit) * 100;
         return compare(value.operator, health, value.value)
     end,
@@ -143,7 +143,7 @@ addon:RegisterCondition("MANA", {
                 value.unit ~= nil and isin(units, value.unit) and
                 value.value ~= nil and value.value >= 0)
     end,
-    evaluate = function(value, cache)
+    evaluate = function(value, cache, evalStart)
         return compare(value.operator, getCached(cache, UnitPower, value.unit, SPELL_POWER_MANA), value.value)
     end,
     print = function(spec, value)
@@ -200,7 +200,7 @@ addon:RegisterCondition("MANAPCT", {
                 value.unit ~= nil and isin(units, value.unit) and
                 value.value ~= nil and value.value >= 0.00 and value.value <= 1.00)
     end,
-    evaluate = function(value, cache)
+    evaluate = function(value, cache, evalStart)
         local mana = getCached(cache, UnitPower, value.unit, SPELL_POWER_MANA) / getCached(cache, UnitPowerMax, value.unit, SPELL_POWER_MANA) * 100;
         return compare(value.operator, mana, value.value)
     end,
@@ -263,7 +263,7 @@ addon:RegisterCondition("POWER", {
                 value.unit ~= nil and isin(units, value.unit) and
                 value.value ~= nil and value.value >= 0)
     end,
-    evaluate = function(value, cache)
+    evaluate = function(value, cache, evalStart)
         local power
         if value.unit == "player" then
             power = getCached(addon.longtermCache, UnitPowerType, value.unit)
@@ -330,7 +330,7 @@ addon:RegisterCondition("POWERPCT", {
                 value.unit ~= nil and isin(units, value.unit) and
                 value.value ~= nil and value.value >= 0.00 and value.value <= 1.00)
     end,
-    evaluate = function(value, cache)
+    evaluate = function(value, cache, evalStart)
         if value.unit == "player" then
             power = getCached(addon.longtermCache, UnitPowerType, value.unit)
         else

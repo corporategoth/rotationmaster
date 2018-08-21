@@ -18,7 +18,7 @@ addon:RegisterCondition("CASTING", {
     valid = function(spec, value)
         return value.unit ~= nil and isin(units, value.unit)
     end,
-    evaluate = function(value, cache)
+    evaluate = function(value, cache, evalStart)
         local name = getCached(cache, UnitCastingInfo, value.unit)
         return name ~= nil
     end,
@@ -51,7 +51,7 @@ addon:RegisterCondition("CASTING_SPELL", {
     valid = function(spec, value)
         return (value.unit ~= nil and isin(units, value.unit) and value.spell ~= nil)
     end,
-    evaluate = function(value, cache)
+    evaluate = function(value, cache, evalStart)
         local name = getCached(cache, UnitCastingInfo, value.unit)
         return name == value.spell
     end,
@@ -137,7 +137,7 @@ addon:RegisterCondition("CASTING_REMAIN", {
                 value.operator ~= nil and isin(operators, value.operator) and
                 value.value ~= nil and value.value >= 0)
     end,
-    evaluate = function(value, cache)
+    evaluate = function(value, cache, evalStart)
         local name, _, _, _, endTimeMS = getCached(cache, UnitCastingInfo, value.unit)
         if name ~= nil then
             return compare(value.operator, endTimeMS - (GetTime()*1000), value.value)
@@ -197,7 +197,7 @@ addon:RegisterCondition("CAST_INTERRUPTABLE", {
     valid = function(spec, value)
         return value.unit ~= nil and isin(units, value.unit)
     end,
-    evaluate = function(value, cache)
+    evaluate = function(value, cache, evalStart)
         local name, _, _, _, _, _, _, notInterruptible = getCached(cache, UnitCastingInfo, value.unit)
         return name ~= nil and not notInterruptible
     end,

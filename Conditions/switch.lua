@@ -18,7 +18,7 @@ addon:RegisterSwitchCondition("COMBAT", {
     valid = function(spec, value)
         return value.unit ~= nil and isin(units, value.unit);
     end,
-    evaluate = function(value, cache)
+    evaluate = function(value, cache, evalStart)
         return UnitIsPVP(value.unit)
     end,
     print = function(spec, value)
@@ -51,7 +51,7 @@ addon:RegisterSwitchCondition("ZONEPVP", {
     valid = function(spec, value)
         return value.value == nil or isin(zonepvp, value.value);
     end,
-    evaluate = function(value, cache)
+    evaluate = function(value, cache, evalStart)
         local pvpType = GetZonePVPInfo()
         return value.value == pvpType
     end,
@@ -91,7 +91,7 @@ addon:RegisterSwitchCondition("INSTANCE", {
     valid = function(spec, value)
         return value.value == nil or isin(zonepvp, value.value);
     end,
-    evaluate = function(value, cache)
+    evaluate = function(value, cache, evalStart)
         local inInstance, instanceType = IsInInstance()
         return inInstance and value.value == instanceType
     end,
@@ -132,7 +132,7 @@ addon:RegisterSwitchCondition("ZONE", {
     valid = function(spec, value)
         return value.value ~= nil
     end,
-    evaluate = function(value, cache)
+    evaluate = function(value, cache, evalStart)
         local zoneName = GetZoneText()
         return value.value == zoneName
     end,
@@ -163,7 +163,7 @@ addon:RegisterSwitchCondition("SUBZONE", {
     valid = function(spec, value)
         return value.value ~= nil
     end,
-    evaluate = function(value, cache)
+    evaluate = function(value, cache, evalStart)
         local zoneName = GetSubZoneText()
         return value.value == zoneName
     end,
@@ -194,7 +194,7 @@ addon:RegisterSwitchCondition("GROUP", {
     valid = function(spec, value)
         return true
     end,
-    evaluate = function(value, cache)
+    evaluate = function(value, cache, evalStart)
         return IsInGroup()
     end,
     print = function(spec, value)
@@ -208,7 +208,7 @@ addon:RegisterSwitchCondition("RAID", {
     valid = function(spec, value)
         return true
     end,
-    evaluate = function(value, cache)
+    evaluate = function(value, cache, evalStart)
         return IsInRaid()
     end,
     print = function(spec, value)
@@ -222,7 +222,7 @@ addon:RegisterSwitchCondition("OUTDOORS", {
     valid = function(spec, value)
         return true
     end,
-    evaluate = function(value, cache)
+    evaluate = function(value, cache, evalStart)
         return IsOutdoors()
     end,
     print = function(spec, value)

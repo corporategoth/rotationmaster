@@ -31,15 +31,15 @@ local compare, compareString, nullable, keys, tomap, has, is, isin, cleanArray, 
 
 local evaluateArray, evaluateSingle, printArray, printSingle, validateArray, validateSingle, usefulArray, usefulSingle
 
-evaluateArray = function(operation, array, conditions, cache)
+evaluateArray = function(operation, array, conditions, cache, start)
     if array ~= nil then
         for idx, entry in pairs(array) do
             if entry ~= nil and entry.type ~= nil then
                 local rv
                 if entry.type == "AND" or entry.type == "OR" then
-                    rv = evaluateArray(entry.type, entry.value, conditions, cache);
+                    rv = evaluateArray(entry.type, entry.value, conditions, cache, start);
                 else
-                    rv = evaluateSingle(entry, conditions, cache)
+                    rv = evaluateSingle(entry, conditions, cache, start)
                 end
 
                 if operation == "AND" and not rv then
@@ -61,17 +61,17 @@ evaluateArray = function(operation, array, conditions, cache)
     end
 end
 
-evaluateSingle = function(value, conditions, cache)
+evaluateSingle = function(value, conditions, cache, start)
     if value == nil or value.type == nil then
         return true
     end
 
     if value.type == "AND" or value.type == "OR" then
-        return evaluateArray(value.type, value.value, conditions, cache)
+        return evaluateArray(value.type, value.value, conditions, cache, start)
     elseif value.type == "NOT" then
-        return not evaluateSingle(value.value, conditions, cache)
+        return not evaluateSingle(value.value, conditions, cache, start)
     elseif conditions[value.type] ~= nil then
-        local rv = conditions[value.type].evaluate(value, cache)
+        local rv = conditions[value.type].evaluate(value, cache, start)
         -- Extra protection so we don't evaluate the print realtime
         if addon.db.profile.verbose then
             addon:verbose("COND: %s = %d", conditions[value.type].print(addon.currentSpec, value), rv)
@@ -486,7 +486,9 @@ function addon:EditCondition(index, spec, value)
 end
 
 function addon:evaluateCondition(value)
-    return evaluateSingle(value, conditions)
+    local cache = {}
+    local start = GetTime()
+    return evaluateSingle(value, conditions, cache, start)
 end
 
 function addon:printCondition(value, spec)
@@ -559,7 +561,9 @@ function addon:EditSwitchCondition(spec, value)
 end
 
 function addon:evaluateSwitchCondition(value)
-    return evaluateSingle(value, switchConditions)
+    local cache = {}
+    local start = GetTime()
+    return evaluateSingle(value, switchConditions, cache, start)
 end
 
 function addon:printSwitchCondition(value, spec)

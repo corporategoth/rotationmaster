@@ -251,6 +251,11 @@ local function FetchBlizzard()
 			local button = _G[barName .. 'Button' .. i]
 			AddStandardButton(button)
 		end
+    end
+
+	for i = 1, 10 do
+		local button = _G['PetActionButton' .. i]
+		AddStandardButton(button)
 	end
 end
 
@@ -337,6 +342,9 @@ function addon:Fetch()
 end
 
 function addon:FindSpell(spellId)
+    if spellId == nil then
+        return false
+    end
 	return Spells[spellId]
 end
 

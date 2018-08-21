@@ -201,7 +201,7 @@ function addon:get_cooldown_list(spec, rotation)
                 end
             }
 
-            if (rot.type == "spell" or rot.type == "pet") then
+            if (rot.type == "spell") then
                 args["action"] = {
                     order = 16,
                     name = L["Spell"],
@@ -212,6 +212,20 @@ function addon:get_cooldown_list(spec, rotation)
                     set = function(item, value)
                         addon:RemoveCooldownGlowIfCurrent(spec, rotation, rot.action)
                         rot.action = addon:GetSpecSpellID(spec, value)
+                        AceConfigRegistry:NotifyChange(addon.name .. "Class")
+                    end
+                }
+            elseif (rot.type == "pet") then
+                args["action"] = {
+                    order = 15,
+                    name = L["Spell"],
+                    type = "input",
+                    dialogControl = "Spell_EditBox",
+                    width = 1.2,
+                    get = function(item) if (rot.action ~= nil) then return select(1, GetSpellInfo(rot.action)) else return nil end end,
+                    set = function(item, value)
+                        addon:RemoveCooldownGlowIfCurrent(spec, rotation, rot.action)
+                        rot.action = select(7, GetSpellInfo(value))
                         AceConfigRegistry:NotifyChange(addon.name .. "Class")
                     end
                 }
@@ -244,14 +258,14 @@ function addon:get_cooldown_list(spec, rotation)
                         name = addon:printCondition(rot.conditions, spec),
                     },
                     validated = {
-                        order = 11,
+                        order = 15,
                         type = "header",
                         width = "full",
                         name = color.RED .. L["THIS CONDITION DOES NOT VALIDATE"] .. color.RESET,
                         hidden = function(info) return addon:validateCondition(rot.conditions, spec) end
                     },
                     edit_button = {
-                        order = 12,
+                        order = 20,
                         type = "execute",
                         name = EDIT,
                         func = function(info)
@@ -262,6 +276,19 @@ function addon:get_cooldown_list(spec, rotation)
                         end
                     },
                 }
+            }
+
+            args["evaluation" ] = {
+                order = 30,
+                type = "description",
+                name = function (info)
+                    if (addon:evaluateCondition(rot.conditions)) then
+                        return color.GREEN .. L["This conditions is currently satisfied."] .. color.RESET
+                    else
+                        return color.RED .. L["This conditions is currently not satisfied."] .. color.RESET
+                    end
+                end,
+                hidden = function(info) return spec ~= addon.currentSpec or not addon:validateCondition(rot.conditions, spec) end
             }
 
             local name

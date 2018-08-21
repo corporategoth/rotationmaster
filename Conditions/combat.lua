@@ -17,7 +17,7 @@ addon:RegisterCondition("COMBAT", {
     valid = function(spec, value)
         return value.unit ~= nil and isin(units, value.unit);
     end,
-    evaluate = function(value, cache)
+    evaluate = function(value, cache, evalStart)
         return getCached(cache, UnitAffectingCombat, value.unit)
     end,
     print = function(spec, value)
@@ -49,7 +49,7 @@ addon:RegisterCondition("PET", {
     valid = function(spec, value)
         return true
     end,
-    evaluate = function(value, cache)
+    evaluate = function(value, cache, evalStart)
         return getCached(cache, UnitExists, "pet")
     end,
     print = function(spec, value)
@@ -59,13 +59,43 @@ addon:RegisterCondition("PET", {
     end,
 })
 
+addon:RegisterCondition("PET_NAME", {
+    description = L["Have Named Pet"],
+    icon = "Interface\\Icons\\inv_box_birdcage_01",
+    valid = function(spec, value)
+        return value.value ~= nil
+    end,
+    evaluate = function(value, cache, evalStart)
+        return getCached(cache, GetUnitName, "pet") == value.value
+    end,
+    print = function(spec, value)
+        return string.format(L["you have a pet named %s"], nullable(value.value, L["<name>"]))
+    end,
+    widget = function(parent, spec, value)
+        local top = parent:GetUserData("top")
+        local root = top:GetUserData("root")
+        local funcs = top:GetUserData("funcs")
+
+        local health = AceGUI:Create("EditBox")
+        health:SetLabel(NAME)
+        if (value.value ~= nil) then
+            health:SetText(value.value)
+        end
+        health:SetCallback("OnEnterPressed", function(widget, event, v)
+            value.value = v
+            top:SetStatusText(funcs:print(root, spec))
+        end)
+        parent:AddChild(health)
+    end,
+})
+
 addon:RegisterCondition("STEALTHED", {
     description = L["Stealth"],
     icon = "Interface\\Icons\\ability_stealth",
     valid = function(spec, value)
         return true
     end,
-    evaluate = function(value, cache)
+    evaluate = function(value, cache, evalStart)
         return IsStealthed()
     end,
     print = function(spec, value)
@@ -79,7 +109,7 @@ addon:RegisterCondition("INCONTROL", {
     valid = function(spec, value)
         return true
     end,
-    evaluate = function(value, cache)
+    evaluate = function(value, cache, evalStart)
         return HasControl()
     end,
     print = function(spec, value)
@@ -93,7 +123,7 @@ addon:RegisterCondition("THREAT", {
     valid = function(spec, value)
         return value.unit ~= nil and isin(units, value.unit);
     end,
-    evaluate = function(value, cache)
+    evaluate = function(value, cache, evalStart)
         local rv = getCached(cache, UnitThreatSituation, "player", value.ulnit)
         if rv ~= nil and rv > 0 then
             return true
@@ -130,7 +160,7 @@ addon:RegisterCondition("FORM", {
     valid = function(spec, value)
         return value.value ~= nil and value >= 0 and value <= GetNumShapeshiftForms()
     end,
-    evaluate = function(value, cache)
+    evaluate = function(value, cache, evalStart)
         return getCached(cache, GetShapeshiftForm) == value.value
     end,
     print = function(spec, value)
@@ -199,7 +229,7 @@ addon:RegisterCondition("ENEMY", {
     valid = function(spec, value)
         return value.unit ~= nil and isin(units, value.unit);
     end,
-    evaluate = function(value, cache)
+    evaluate = function(value, cache, evalStart)
         return getCached(cache, UnitIsEnemy, "player", value.ulnit)
     end,
     print = function(spec, value)

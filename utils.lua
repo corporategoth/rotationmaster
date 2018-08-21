@@ -99,6 +99,11 @@ addon.isin = function(array, value)
     return 0
 end
 
+addon.round = function (num, numDecimalPlaces)
+    local mult = 10^(numDecimalPlaces or 0)
+    return math.floor(num * mult + 0.5) / mult
+end
+
 addon.cleanArray = function(array, except, invert)
     if array == nil then
         return
@@ -151,9 +156,6 @@ end
 
 addon.getCached = function(cache, func, ...)
     local args = { ... }
-    if cache == nil then
-        cache = { func = {} }
-    end
     if cache[func] == nil then
         cache[func] = {}
     end

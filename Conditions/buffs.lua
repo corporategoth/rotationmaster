@@ -18,7 +18,7 @@ addon:RegisterCondition("BUFF", {
     valid = function(spec, value)
         return (value.unit ~= nil and isin(units, value.unit) and value.spell ~= nil)
     end,
-    evaluate = function(value, cache)
+    evaluate = function(value, cache, evalStart)
         for i=1,40 do
             local name = getCached(cache, UnitBuff, value.unit, i)
             if (name == nil) then
@@ -111,7 +111,7 @@ addon:RegisterCondition("BUFF_REMAIN", {
                 value.operator ~= nil and isin(operators, value.operator) and
                 value.value ~= nil and value.value >= 0)
     end,
-    evaluate = function(value, cache)
+    evaluate = function(value, cache, evalStart)
         for i=1,40 do
             local name, _, _, _, _, expirationTime = getCached(cache, UnitBuff, value.unit, i)
             if (name == nil) then
@@ -230,7 +230,7 @@ addon:RegisterCondition("BUFF_STACKS", {
                 value.operator ~= nil and isin(operators, value.operator) and
                 value.value ~= nil and value.value >= 0)
     end,
-    evaluate = function(value, cache)
+    evaluate = function(value, cache, evalStart)
         for i=1,40 do
             local name, _, count = getCached(cache, UnitBuff, value.unit, i)
             if (name == nil) then
@@ -345,7 +345,7 @@ addon:RegisterCondition("STEALABLE", {
     valid = function(spec, value)
         return (value.unit ~= nil and isin(units, value.unit))
     end,
-    evaluate = function(value, cache)
+    evaluate = function(value, cache, evalStart)
         for i=1,40 do
             local name, _, _, _, _, _, _, isStealable = getCached(cache, UnitBuff, value.unit, i)
             if (name == nil) then

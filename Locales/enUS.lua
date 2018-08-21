@@ -28,6 +28,7 @@ L["[Tier: %d, Column: %d]"] = true
 L["Autoswitch rotation list has been updated."] = true
 
 L["Button Fetch triggered."] = true
+L["Notified configuration to update it's status."] = true
 
 -- from constants.lua
 
@@ -107,7 +108,7 @@ L["<operator>"] = true
 -- from Options/general.lua
 
 L["Enable Rotation Master"] = true
-L["Polling Interval"] = true
+L["Polling Interval (milliseconds)"] = true
 L["Overlay Options"] = true
 L["Overlay Texture"] = true
 L["Magnification"] = true
@@ -116,6 +117,8 @@ L["Debugging Options"] = true
 L["Debug Logging"] = true
 L["Verbose Debug Logging"] = true
 L["Disable Auto-Switching"] = true
+L["Live Status Update Frequency (seconds)"] = true
+L["This is specifically how often the configuration pane will receive updates about live status.  Too frequently could make your configuration pane unusable.  0 = Disabled."] = true
 L["Are you sure you wish to delete this rotation?"] = true
 L["Import/Export Rotation"] = true
 L["Copy and paste this text share your profile with others, or import someone else's."] = true
@@ -145,6 +148,8 @@ L["Spell"] = true
 L["Item"] = true
 L["Conditions"] = true
 L["THIS CONDITION DOES NOT VALIDATE"] = true
+L["This conditions is currently satisfied."] = true
+L["This conditions is currently not satisfied."] = true
 
 -- from Options/conditional.lua
 
@@ -171,6 +176,7 @@ L["<element>"] = true
 L["<totem>"] = true
 L["<form>"] = true
 L["<zone>"] = true
+L["<name>"] = true
 
 L["%s is in a %s role"] = true
 L["%s is a %s"] = true
@@ -214,6 +220,11 @@ L["Spell Charges"] = true
 L["number of charges on %s"] = true
 L["Charges"] = true
 
+L["Pet Spell Available"] = true
+L["Pet Spell Cooldown"] = true
+L["Pet Spell Time Remaining"] = true
+L["Pet Spell Charges"] = true
+
 L["Buff Present"] = true
 L["Buff Time Remaining"] = true
 L["the remaining time"] = true
@@ -254,6 +265,8 @@ L["%s are in combat"] = true
 L["%s is in combat"] = true
 L["Have Pet"] = true
 L["you have a pet"] = true
+L["Have Named Pet"] = true
+L["you have a pet named %s"] = true
 L["Stealth"] = true
 L["you are stealthed"] = true
 L["In Control"] = true

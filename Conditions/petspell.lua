@@ -11,13 +11,13 @@ addon.operators, addon.units, addon.unitsPossessive, addon.classes, addon.roles,
 addon.zonepvp, addon.instances, addon.totems
 
 -- From utils
-local compare, compareString, nullable, keys, tomap, isin, cleanArray, deepcopy, getCached, isSpellOnSpec, round =
+local compare, compareString, nullable, keys, tomap, isin, cleanArray, deepcopy, getCached, round =
 addon.compare, addon.compareString, addon.nullable, addon.keys, addon.tomap,
-addon.isin, addon.cleanArray, addon.deepcopy, addon.getCached, addon.isSpellOnSpec, addon.round
+addon.isin, addon.cleanArray, addon.deepcopy, addon.getCached, addon.round
 
-addon:RegisterCondition("SPELL_AVAIL", {
-    description = L["Spell Available"],
-    icon = "Interface\\Icons\\spell_burningsoul",
+addon:RegisterCondition("PETSPELL_AVAIL", {
+    description = L["Pet Spell Available"],
+    icon = "Interface\\Icons\\inv_misc_pet_04",
     valid = function(spec, value)
         if value.spell ~= nil then
             local name = GetSpellInfo(value.spell)
@@ -27,30 +27,26 @@ addon:RegisterCondition("SPELL_AVAIL", {
         end
     end,
     evaluate = function(value, cache, evalStart)
-        if value.spell then
-            local start, duration, enabled = getCached(cache, GetSpellCooldown, value.spell)
-            if start == 0 and duration == 0 then
-                return true
-            else
-                -- A special spell that shows if the GCD is active ...
-                local gcd_start, gcd_duration, gcd_enabled = getCached(cache, GetSpellCooldown, 61304)
-                if gcd_start ~= 0 and gcd_duration ~= 0 then
-                    local time = GetTime()
-                    local gcd_remain = round(gcd_duration - (time - gcd_start), 3)
-                    local remain = round(duration - (time - start), 3)
-                    if (remain <= gcd_remain) then
-                        return true
+        local start, duration, enabled = getCached(cache, GetSpellCooldown, value.spell)
+        if start == 0 and duration == 0 then
+            return true
+        else
+            -- A special spell that shows if the GCD is active ...
+            local gcd_start, gcd_duration, gcd_enabled = getCached(cache, GetSpellCooldown, 61304)
+            if gcd_start ~= 0 and gcd_duration ~= 0 then
+                local time = GetTime()
+                local gcd_remain = round(gcd_duration - (time - gcd_start), 3)
+                local remain = round(duration - (time - start), 3)
+                if (remain <= gcd_remain) then
+                    return true
                     -- We factor in a fuzziness because we don't know exactly when the spell cooldown calls
                     -- were made, so we say any value between now and the evaluation start is essentially 0
-                    elseif (remain - gcd_remain <= time - evalStart) then
-                        return true
-                    else
-                        return false
-                    end
+                elseif (remain - gcd_remain <= time - evalStart) then
+                    return true
+                else
+                    return false
                 end
-                return false
             end
-        else
             return false
         end
     end,
@@ -66,7 +62,7 @@ addon:RegisterCondition("SPELL_AVAIL", {
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
-        local spell = AceGUI:Create("Spec_EditBox")
+        local spell = AceGUI:Create("Spell_EditBox")
         local spellIcon = AceGUI:Create("ActionSlotSpell")
         if (value.spell) then
             spellIcon:SetText(value.spell)
@@ -76,16 +72,14 @@ addon:RegisterCondition("SPELL_AVAIL", {
         spellIcon.text:Hide()
         spellIcon:SetCallback("OnEnterPressed", function(widget, event, v)
             v = tonumber(v)
-            if not v or isSpellOnSpec(spec, v) then
-                value.spell = v
-                spellIcon:SetText(v)
-                if v then
-                    spell:SetText(GetSpellInfo(v))
-                else
-                    spell:SetText("")
-                end
-                top:SetStatusText(funcs:print(root, spec))
+            value.spell = v
+            spellIcon:SetText(v)
+            if v then
+                spell:SetText(GetSpellInfo(v))
+            else
+                spell:SetText("")
             end
+            top:SetStatusText(funcs:print(root, spec))
         end)
         parent:AddChild(spellIcon)
 
@@ -95,7 +89,7 @@ addon:RegisterCondition("SPELL_AVAIL", {
         end
         spell:SetUserData("spec", spec)
         spell:SetCallback("OnEnterPressed", function(widget, event, v)
-            value.spell = addon:GetSpecSpellID(spec, v)
+            value.spell = select(7, GetSpellInfo(v))
             spellIcon:SetText(value.spell)
             top:SetStatusText(funcs:print(root, spec))
         end)
@@ -104,9 +98,9 @@ addon:RegisterCondition("SPELL_AVAIL", {
     end,
 })
 
-addon:RegisterCondition("SPELL_COOLDOWN", {
-    description = L["Spell Cooldown"],
-    icon = "Interface\\Icons\\spell_nature_timestop",
+addon:RegisterCondition("PETSPELL_COOLDOWN", {
+    description = L["Pet Spell Cooldown"],
+    icon = "Interface\\Icons\\inv_pet_babywinston",
     valid = function(spec, value)
         if value.spell ~= nil then
             local name, icon, castTime, minRange, maxRange = GetSpellInfo(value.spell)
@@ -139,7 +133,7 @@ addon:RegisterCondition("SPELL_COOLDOWN", {
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
-        local spell = AceGUI:Create("Spec_EditBox")
+        local spell = AceGUI:Create("Spell_EditBox")
         local spellIcon = AceGUI:Create("ActionSlotSpell")
         if (value.spell) then
             spellIcon:SetText(value.spell)
@@ -149,16 +143,14 @@ addon:RegisterCondition("SPELL_COOLDOWN", {
         spellIcon:SetHeight(44)
         spellIcon:SetCallback("OnEnterPressed", function(widget, event, v)
             v = tonumber(v)
-            if not v or isSpellOnSpec(spec, v) then
-                value.spell = v
-                spellIcon:SetText(v)
-                if v then
-                    spell:SetText(GetSpellInfo(v))
-                else
-                    spell:SetText("")
-                end
-                top:SetStatusText(funcs:print(root, spec))
+            value.spell = v
+            spellIcon:SetText(v)
+            if v then
+                spell:SetText(GetSpellInfo(v))
+            else
+                spell:SetText("")
             end
+            top:SetStatusText(funcs:print(root, spec))
         end)
         parent:AddChild(spellIcon)
 
@@ -168,7 +160,7 @@ addon:RegisterCondition("SPELL_COOLDOWN", {
         end
         spell:SetUserData("spec", spec)
         spell:SetCallback("OnEnterPressed", function(widget, event, v)
-            value.spell = addon:GetSpecSpellID(spec, v)
+            value.spell = select(7, GetSpellInfo(v))
             spellIcon:SetText(value.spell)
             top:SetStatusText(funcs:print(root, spec))
         end)
@@ -200,9 +192,9 @@ addon:RegisterCondition("SPELL_COOLDOWN", {
     end,
 })
 
-addon:RegisterCondition("SPELL_REMAIN", {
-    description = L["Spell Time Remaining"],
-    icon = "Interface\\Icons\\inv_misc_pocketwatch_01",
+addon:RegisterCondition("PETSPELL_REMAIN", {
+    description = L["Pet Spell Time Remaining"],
+    icon = "Interface\\Icons\\inv_pet_achievement_captureapetatlessthan5health",
     valid = function(spec, value)
         if value.spell ~= nil then
             local name, icon, castTime, minRange, maxRange = GetSpellInfo(value.spell)
@@ -234,7 +226,7 @@ addon:RegisterCondition("SPELL_REMAIN", {
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
-        local spell = AceGUI:Create("Spec_EditBox")
+        local spell = AceGUI:Create("Spell_EditBox")
         local spellIcon = AceGUI:Create("ActionSlotSpell")
         if (value.spell) then
             spellIcon:SetText(value.spell)
@@ -244,16 +236,14 @@ addon:RegisterCondition("SPELL_REMAIN", {
         spellIcon.text:Hide()
         spellIcon:SetCallback("OnEnterPressed", function(widget, event, v)
             v = tonumber(v)
-            if not v or isSpellOnSpec(spec, v) then
-                value.spell = v
-                spellIcon:SetText(v)
-                if v then
-                    spell:SetText(GetSpellInfo(v))
-                else
-                    spell:SetText("")
-                end
-                top:SetStatusText(funcs:print(root, spec))
+            value.spell = v
+            spellIcon:SetText(v)
+            if v then
+                spell:SetText(GetSpellInfo(v))
+            else
+                spell:SetText("")
             end
+            top:SetStatusText(funcs:print(root, spec))
         end)
         parent:AddChild(spellIcon)
 
@@ -263,7 +253,7 @@ addon:RegisterCondition("SPELL_REMAIN", {
         end
         spell:SetUserData("spec", spec)
         spell:SetCallback("OnEnterPressed", function(widget, event, v)
-            value.spell = addon:GetSpecSpellID(spec, v)
+            value.spell = select(7, GetSpellInfo(v))
             spellIcon:SetText(value.spell)
             top:SetStatusText(funcs:print(root, spec))
         end)
@@ -295,9 +285,9 @@ addon:RegisterCondition("SPELL_REMAIN", {
     end,
 })
 
-addon:RegisterCondition("SPELL_CHARGES", {
-    description = L["Spell Charges"],
-    icon = "Interface\\Icons\\spell_fire_felrainoffire",
+addon:RegisterCondition("PETSPELL_CHARGES", {
+    description = L["Pet Spell Charges"],
+    icon = "Interface\\Icons\\inv_pet_babyshark",
     valid = function(spec, value)
         if value.spell ~= nil then
             local name, icon, castTime, minRange, maxRange = GetSpellInfo(value.spell)
@@ -324,7 +314,7 @@ addon:RegisterCondition("SPELL_CHARGES", {
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
-        local spell = AceGUI:Create("Spec_EditBox")
+        local spell = AceGUI:Create("Spell_EditBox")
         local spellIcon = AceGUI:Create("ActionSlotSpell")
         if (value.spell) then
             spellIcon:SetText(value.spell)
@@ -334,16 +324,14 @@ addon:RegisterCondition("SPELL_CHARGES", {
         spellIcon.text:Hide()
         spellIcon:SetCallback("OnEnterPressed", function(widget, event, v)
             v = tonumber(v)
-            if not v or isSpellOnSpec(spec, v) then
-                value.spell = v
-                spellIcon:SetText(v)
-                if v then
-                    spell:SetText(GetSpellInfo(v))
-                else
-                    spell:SetText("")
-                end
-                top:SetStatusText(funcs:print(root, spec))
+            value.spell = v
+            spellIcon:SetText(v)
+            if v then
+                spell:SetText(GetSpellInfo(v))
+            else
+                spell:SetText("")
             end
+            top:SetStatusText(funcs:print(root, spec))
         end)
         parent:AddChild(spellIcon)
 
@@ -353,7 +341,7 @@ addon:RegisterCondition("SPELL_CHARGES", {
         end
         spell:SetUserData("spec", spec)
         spell:SetCallback("OnEnterPressed", function(widget, event, v)
-            value.spell = addon:GetSpecSpellID(spec, v)
+            value.spell = select(7, GetSpellInfo(v))
             spellIcon:SetText(value.spell)
             top:SetStatusText(funcs:print(root, spec))
         end)

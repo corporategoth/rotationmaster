@@ -51,17 +51,21 @@ do
 		local query = "^" .. string.lower(self.obj.editBox:GetText())
 		
 		local activeButtons = 0
-		for spellID, name in pairs(SpellData.spellList) do
+		for name, spellID in pairs(SpellData.spellListReverse) do
 			if( not alreadyAdded[name] and string.match(name, query) and ( not self.obj.spellFilter or self.obj.spellFilter(self.obj, spellID) ) ) then
 				activeButtons = activeButtons + 1
 
 				local button = self.buttons[activeButtons]
 				local spellName, spellRank, spellIcon = GetSpellInfo(spellID)
-				if( self.obj.useRanks and spellRank and spellRank ~= "" ) then
-					button:SetFormattedText("|T%s:20:20:2:11|t %s (%s)", spellIcon, spellName, spellRank)
-				else
-					button:SetFormattedText("|T%s:20:20:2:11|t %s", spellIcon, spellName)
-				end
+            	if spellIcon and spellName then
+                    if( self.obj.useRanks and spellRank and spellRank ~= "" ) then
+                        button:SetFormattedText("|T%s:20:20:2:11|t %s (%s)", spellIcon, spellName, spellRank)
+                    else
+                        button:SetFormattedText("|T%s:20:20:2:11|t %s", spellIcon, spellName)
+                    end
+                else
+					button:SetFormattedText("[%d]", spellID)
+                end
 				
 				if( not self.obj.useRanks ) then
 					alreadyAdded[name] = true

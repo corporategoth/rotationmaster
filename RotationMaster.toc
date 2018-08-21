@@ -24,6 +24,7 @@ Options/conditional.lua
 Conditions/character.lua
 Conditions/stats.lua
 Conditions/spell.lua
+Conditions/petspell.lua
 Conditions/buffs.lua
 Conditions/debuffs.lua
 Conditions/totem.lua

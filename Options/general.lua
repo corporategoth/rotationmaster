@@ -53,7 +53,7 @@ local options = {
                 },
                 poll = {
                     order = 20,
-                    name = L["Polling Interval"],
+                    name = L["Polling Interval (milliseconds)"],
                     type = "range",
                     min = 0.05,
                     max = 1.0,
@@ -177,6 +177,24 @@ local options = {
                     type = "toggle",
                     name = L["Disable Auto-Switching"],
                     order = 110,
+                    width = 1.5,
+                    get  = function(info) return addon.db.profile[info[#info]] end,
+                    set = function(info, val) addon.db.profile[info[#info]] = val end,
+                },
+                spacer5 = {
+                    order = 135,
+                    type = "description",
+                    name = "",
+                    width = 0.3
+                },
+                live_config_update = {
+                    order = 130,
+                    name = L["Live Status Update Frequency (seconds)"],
+                    desc = L["This is specifically how often the configuration pane will receive updates about live status.  Too frequently could make your configuration pane unusable.  0 = Disabled."],
+                    type = "range",
+                    min = 0,
+                    max = 60.0,
+                    step = 1.0,
                     width = 1.5,
                     get  = function(info) return addon.db.profile[info[#info]] end,
                     set = function(info, val) addon.db.profile[info[#info]] = val end,

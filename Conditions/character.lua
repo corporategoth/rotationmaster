@@ -20,7 +20,7 @@ addon:RegisterCondition("ROLE", {
         return (value.unit ~= nil and isin(units, value.unit) and
                 value.value ~= nil and isin(roles, value.value))
     end,
-    evaluate = function(value, cache)
+    evaluate = function(value, cache, evalStart)
         local id, name, description, icon, background, role, class
         = getCached(cache, GetSpecializationInfoByID, getCached(cache, GetInspectSpecialization, value.unit))
         return role == value.value
@@ -69,14 +69,13 @@ addon:RegisterCondition("CLASS", {
         return (value.unit ~= nil and isin(units, value.unit) and
                 value.value ~= nil and isin(classes, value.value))
     end,
-    evaluate = function(value, cache)
+    evaluate = function(value, cache, evalStart)
         local _, englishClass = getCached(cache, UnitClass, "unit");
         return englishClass == value.value
     end,
     print = function(spec, value)
         return string.format(playerize(value.unit, L["%s are a %s"], L["%s is a %s"]),
-            nullable(units[value.unit]) .. is(value.unit),
-            nullable(classes[value.value], L["<class>"]))
+            nullable(units[value.unit]), nullable(classes[value.value], L["<class>"]))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -116,7 +115,7 @@ addon:RegisterCondition("TALENT", {
     valid = function(spec, value)
         return value.value ~= nil and value.value >= 1 and value.value <= 21
     end,
-    evaluate = function(value, cache)
+    evaluate = function(value, cache, evalStart)
 		if (value.value) then
 			local _, _, _, selected = getCached(addon.longtermCache, GetTalentInfo, floor((value.value-1) / 3) + 1, ((value.value-1) % 3) + 1, 1)
 			return selected

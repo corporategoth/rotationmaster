@@ -60,13 +60,18 @@ function SpellLoader:StartLoading()
 			-- Alchemy use two icons, the Trade_* for the actual crafted spell and a different icon for the actual buff
 			-- Passive spells have no use as well, since they are well passive and can't actually be used
 			if( name and not blacklist[icon] and rank ~= SPELL_PASSIVE ) then
-				name = string.lower(name)
+				local lcname = string.lower(name)
 				
 				SpellLoader.spellsLoaded = SpellLoader.spellsLoaded + 1
-				spells[spellID] = name
-				spellsReverse[name] = spellID
+				spells[spellID] = lcname
 
-				
+				-- There are multiple spells with the same name, onle one is definitive for this class (which affects
+				-- icons, tool tips, etc).  So look up the definitive version if there is one and set that.
+                if spellsReverse[lcname] == nil then
+					local revid = select(7, GetSpellInfo(name))
+                    spellsReverse[lcname] = revid or spellID
+				end
+
 				totalInvalid = 0
 			else
 				totalInvalid = totalInvalid + 1

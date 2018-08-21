@@ -4,6 +4,7 @@ local _G = _G
 
 _G.RotationMaster = LibStub("AceAddon-3.0"):NewAddon(addon, addon_name, "AceConsole-3.0", "AceEvent-3.0", "AceTimer-3.0")
 
+local AceConfigRegistry = LibStub("AceConfigRegistry-3.0")
 local AceConsole = LibStub("AceConsole-3.0")
 local SpellRange = LibStub("SpellRange-1.0")
 local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
@@ -30,6 +31,7 @@ local defaults = {
         debug = false,
         verbose = false,
         disable_autoswitch = false,
+        live_config_update = 2,
     },
     global = {
         textures = {
@@ -170,6 +172,9 @@ function addon:OnInitialize()
 
     self.specTalents = {}
 
+    self.lastConfigUpdate = GetTime()
+
+    -- This is here because of order of loading.
     getCached = addon.getCached
 end
 
@@ -323,7 +328,9 @@ function addon:EvaluateNextAction()
             for id,cond in pairs(rot.rotation) do
                 -- If we can't highlight the spell, may as well skip to the next one!
                 local spellid
-                if cond.type == "spell" or cond.type == "pet" then
+                if cond.type == "spell" and getCached(self.longtermCache, IsSpellKnown, cond.action, false) then
+                    spellid = cond.action
+                elseif cond.type == "pet" and getCached(cache, IsSpellKnown, cond.action, true) then
                     spellid = cond.action
                 else
                     spellid = getCached(self.longtermCache, GetItemInfoInstant, cond.action)
@@ -373,6 +380,13 @@ function addon:EvaluateNextAction()
                 end
                 addon:GlowCooldown(spellid, enabled, cond.overlay, cond.color)
             end
+        end
+
+        -- Upodate the live config config .. just to be nice :)
+        if self.db.profile.live_config_update > 0 and GetTime() - self.lastConfigUpdate > self.db.profile.live_config_update then
+            AceConfigRegistry:NotifyChange(addon.name .. "Class")
+            self.lastConfigUpdate = GetTime()
+            addon:debug(L["Notified configuration to update it's status."])
         end
     end
 end
@@ -465,6 +479,11 @@ addon.ACTIONBAR_HIDEGRID = addon.ButtonFetch
 addon.ACTIONBAR_PAGE_CHANGED = addon.ButtonFetch
 addon.UPDATE_MACROS = addon.ButtonFetch
 addon.VEHICLE_UPDATE = addon.ButtonFetch
+
+local function temp(action)
+    print("DEBUG: PetActionBar Triggered - " .. action)
+    action.ButtonFetch()
+end
 
 function addon:PLAYER_TARGET_CHANGED()
     addon:verbose("Player targeted something else.")

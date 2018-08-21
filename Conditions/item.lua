@@ -11,9 +11,9 @@ addon.operators, addon.units, addon.unitsPossessive, addon.classes, addon.roles,
 addon.zonepvp, addon.instances, addon.totems
 
 -- From utils
-local compare, compareString, nullable, keys, tomap, has, is, isin, cleanArray, deepcopy, getCached =
+local compare, compareString, nullable, keys, tomap, has, is, isin, cleanArray, deepcopy, getCached, round =
 addon.compare, addon.compareString, addon.nullable, addon.keys, addon.tomap, addon.has,
-addon.is, addon.isin, addon.cleanArray, addon.deepcopy, addon.getCached
+addon.is, addon.isin, addon.cleanArray, addon.deepcopy, addon.getCached, addon.round
 
 addon:RegisterCondition("EQUIPPED", {
     description = L["Have Item Equipped"],
@@ -26,7 +26,7 @@ addon:RegisterCondition("EQUIPPED", {
             return false
         end
     end,
-    evaluate = function(value, cache)
+    evaluate = function(value, cache, evalStart)
         return getCached(addon.combatCache, IsEquippedItem, value.value)
     end,
     print = function(spec, value)
@@ -92,7 +92,7 @@ addon:RegisterCondition("CARRYING", {
             return false
         end
     end,
-    evaluate = function(value, cache)
+    evaluate = function(value, cache, evalStart)
         for i=0,4 do
             for j=1,getCached(addon.combatCache, GetContainerNumSlots, i) do
                 local itemId = getCached(addon.combatCache, GetContainerItemID, i, j);
@@ -170,7 +170,7 @@ addon:RegisterCondition("ITEM", {
             return false
         end
     end,
-    evaluate = function(value, cache) -- Cooldown until the spell is available
+    evaluate = function(value, cache, evalStart) -- Cooldown until the spell is available
         local itemId
         for i=0,20 do
             local inventoryId = getCached(addon.combatCache, GetInventoryItemID, "player", i)
@@ -197,7 +197,27 @@ addon:RegisterCondition("ITEM", {
         end
         if itemId ~= nil then
             local start, duration, enabled = getCached(cache, GetItemCooldown, itemId)
-            return enabled
+            if start == 0 and duration == 0 then
+                return true
+            else
+                -- A special spell that shows if the GCD is active ...
+                local gcd_start, gcd_duration, gcd_enabled = getCached(cache, GetSpellCooldown, 61304)
+                if gcd_start ~= 0 and gcd_duration ~= 0 then
+                    local time = GetTime()
+                    local gcd_remain = round(gcd_duration - (time - gcd_start), 3)
+                    local remain = round(duration - (time - start), 3)
+                    if (remain <= gcd_remain) then
+                        return true
+                        -- We factor in a fuzziness because we don't know exactly when the spell cooldown calls
+                        -- were made, so we say any value between now and the evaluation start is essentially 0
+                    elseif (remain - gcd_remain <= time - evalStart) then
+                        return true
+                    else
+                        return false
+                    end
+                end
+                return false
+            end
         else
             return false
         end
@@ -266,7 +286,7 @@ addon:RegisterCondition("ITEM_COOLDOWN", {
             return false
         end
     end,
-    evaluate = function(value, cache) -- Cooldown until the spell is available
+    evaluate = function(value, cache, evalStart) -- Cooldown until the spell is available
         local itemId
         for i=0,20 do
             local inventoryId = getCached(addon.combatCache, GetInventoryItemID, "player", i)
@@ -294,7 +314,10 @@ addon:RegisterCondition("ITEM_COOLDOWN", {
         local cooldown = 0
         if itemId ~= nil then
             local start, duration, enabled = getCached(cache, GetItemCooldown, itemId)
-            cooldown = duration
+            if start ~= 0 and duration ~= 0 then
+                cooldown = round(duration - (GetTime() - start), 3)
+                if (cooldown < 0) then cooldown = 0 end
+            end
         end
         return compare(value.operator, cooldown, value.value)
     end,
