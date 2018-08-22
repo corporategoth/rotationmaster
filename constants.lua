@@ -88,3 +88,9 @@ addon.totems = {
     L["Air"],
 }
 
+addon.points = {
+    DEATHKNIGHT = Enum.PowerType.Runes,
+    WARLOCK = Enum.PowerType.SoulShards,
+    MONK = Enum.PowerType.Chi,
+    MAGE = Enum.PowerType.ArcaneCharges,
+}

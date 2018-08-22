@@ -76,10 +76,12 @@ addon:RegisterCondition("DEBUFF", {
             top:SetStatusText(funcs:print(root, spec))
         end)
         function spellIcon:Query()
-            local spellid = SpellData.spellListReverse[string.lower(value.spell)]
-            if spellid then
-                spellIcon:SetText(spellid)
-                SpellData:UnregisterPredictor(self)
+            if value.spell ~= nil then
+                local spellid = SpellData.spellListReverse[string.lower(value.spell)]
+                if spellid then
+                    spellIcon:SetText(spellid)
+                    SpellData:UnregisterPredictor(self)
+                end
             end
         end
         parent:AddChild(spellIcon)
@@ -171,10 +173,12 @@ addon:RegisterCondition("DEBUFF_REMAIN", {
             top:SetStatusText(funcs:print(root, spec))
         end)
         function spellIcon:Query()
-            local spellid = SpellData.spellListReverse[string.lower(value.spell)]
-            if spellid then
-                spellIcon:SetText(spellid)
-                SpellData:UnregisterPredictor(self)
+            if value.spell ~= nil then
+                local spellid = SpellData.spellListReverse[string.lower(value.spell)]
+                if spellid then
+                    spellIcon:SetText(spellid)
+                    SpellData:UnregisterPredictor(self)
+                end
             end
         end
         parent:AddChild(spellIcon)
@@ -288,10 +292,12 @@ addon:RegisterCondition("DEBUFF_STACKS", {
             top:SetStatusText(funcs:print(root, spec))
         end)
         function spellIcon:Query()
-            local spellid = SpellData.spellListReverse[string.lower(value.spell)]
-            if spellid then
-                spellIcon:SetText(spellid)
-                SpellData:UnregisterPredictor(self)
+            if value.spell ~= nil then
+                local spellid = SpellData.spellListReverse[string.lower(value.spell)]
+                if spellid then
+                    spellIcon:SetText(spellid)
+                    SpellData:UnregisterPredictor(self)
+                end
             end
         end
         parent:AddChild(spellIcon)

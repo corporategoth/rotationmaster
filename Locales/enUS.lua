@@ -207,6 +207,9 @@ L["Power"] = true
 L["%s power"] = true
 L["Power Percentage"] = true
 
+L["Points"] = true
+L["%s points"] = true
+
 L["Spell Available"] = true
 L["%s is available"] = true
 L["Spell Cooldown"] = true

@@ -405,7 +405,11 @@ end
 
 function addon:UpdateSkills()
     addon:verbose("Skill update triggered")
-    self.currentSpec = GetSpecializationInfo(GetSpecialization())
+    local spec = GetSpecializationInfo(GetSpecialization())
+    if spec == nil then
+        return
+    end
+    self.currentSpec = spec
     self:UpdateAutoSwitch()
     self:SwitchRotation()
     self:ButtonFetch()
@@ -563,7 +567,7 @@ end
 function addon:UNIT_ENTERED_VEHICLE(event, unit)
     if unit == "player" then
         addon:verbose("Player on a vehicle.")
-        addon:PLAYER_CONTROL_LIST()
+        addon:PLAYER_CONTROL_LOST()
     end
 end
 

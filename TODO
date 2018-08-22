@@ -1,4 +1,3 @@
-- Factor in the GCD for casting.
 - Key Bindings
 - UI for manual switching
 - Make caching more efficient (hash args and look up by arg hash).

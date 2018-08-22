@@ -6,9 +6,9 @@ local tostring, tonumber, pairs = tostring, tonumber, pairs
 local floor = math.floor
 
 -- From constants
-local operators, units, unitsPossessive, classes, roles, debufftypes, zonepvp, instances, totems =
+local operators, units, unitsPossessive, classes, roles, debufftypes, zonepvp, instances, totems, points =
     addon.operators, addon.units, addon.unitsPossessive, addon.classes, addon.roles, addon.debufftypes,
-    addon.zonepvp, addon.instances, addon.totems
+    addon.zonepvp, addon.instances, addon.totems, addon.points
 
 -- From utils
 local compare, compareString, nullable, keys, tomap, isin, cleanArray, deepcopy, getCached =
@@ -387,6 +387,77 @@ addon:RegisterCondition("POWERPCT", {
         end
         health:SetCallback("OnValueChanged", function(widget, event, v)
             value.value = v
+            top:SetStatusText(funcs:print(root, spec))
+        end)
+        parent:AddChild(health)
+    end,
+})
+
+addon:RegisterCondition("POINT", {
+    description = L["Points"],
+    icon = "Interface\\Icons\\70_inscription_vantus_rune_odyn",
+    valid = function(spec, value)
+        return (value.operator ~= nil and isin(operators, value.operator) and
+                value.unit ~= nil and isin(units, value.unit) and
+                value.value ~= nil and value.value >= 0)
+    end,
+    evaluate = function(value, cache, evalStart)
+        local class
+        if value.unit == "player" then
+            class = select(2, getCached(addon.longtermCache, UnitClass, value.unit))
+        else
+            class = select(2, getCached(cache, UnitClass, value.unit))
+        end
+        if class ~= nil then
+            local point = points[class]
+            if (point == nil) then
+                return false
+            end
+            return compare(value.operator, getCached(cache, UnitPower, value.unit, point), value.value)
+        else
+            return false
+        end
+    end,
+    print = function(spec, value)
+        return compareString(value.operator, string.format(L["%s points"], nullable(unitsPossessive[value.unit], L["<unit>"])), nullable(value.value))
+    end,
+    widget = function(parent, spec, value)
+        local top = parent:GetUserData("top")
+        local root = top:GetUserData("root")
+        local funcs = top:GetUserData("funcs")
+
+        local unit = AceGUI:Create("Dropdown")
+        unit:SetLabel(L["Unit"])
+        unit:SetList(units, keys(units))
+        if (value.unit ~= nil) then
+            unit:SetValue(value.unit)
+        end
+        unit:SetCallback("OnValueChanged", function(widget, event, v)
+            value.unit = v
+            top:SetStatusText(funcs:print(root, spec))
+        end)
+        parent:AddChild(unit)
+
+        local operator = AceGUI:Create("Dropdown")
+        operator:SetLabel(L["Operator"])
+        operator:SetList(operators, keys(operators))
+        if (value.operator ~= nil) then
+            operator:SetValue(value.operator)
+        end
+        operator:SetCallback("OnValueChanged", function(widget, event, v)
+            value.operator = v
+            top:SetStatusText(funcs:print(root, spec))
+        end)
+        parent:AddChild(operator)
+
+        local health = AceGUI:Create("EditBox")
+        health:SetLabel(L["Points"])
+        health:SetWidth(100)
+        if (value.value ~= nil) then
+            health:SetText(value.value)
+        end
+        health:SetCallback("OnEnterPressed", function(widget, event, v)
+            value.value = tonumber(v)
             top:SetStatusText(funcs:print(root, spec))
         end)
         parent:AddChild(health)
