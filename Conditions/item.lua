@@ -19,12 +19,7 @@ addon:RegisterCondition("EQUIPPED", {
     description = L["Have Item Equipped"],
     icon = "Interface\\Icons\\inv_jewelry_orgrimmarraid_trinket_19",
     valid = function(spec, value)
-        if value.value ~= nil then
-            local itemID, itemType, itemSubType, itemEquipLoc, icon, itemClassID, itemSubClassID = GetItemInfoInstant(value.value)
-            return itemID ~= nil
-        else
-            return false
-        end
+        return value.value ~= nil
     end,
     evaluate = function(value, cache, evalStart)
         return getCached(addon.combatCache, IsEquippedItem, value.value)
@@ -85,12 +80,7 @@ addon:RegisterCondition("CARRYING", {
     description = L["Have Item In Bags"],
     icon = "Interface\\Icons\\inv_misc_bag_07",
     valid = function(spec, value)
-        if value.value ~= nil then
-            local itemID, itemType, itemSubType, itemEquipLoc, icon, itemClassID, itemSubClassID = GetItemInfoInstant(value.value)
-            return itemID ~= nil
-        else
-            return false
-        end
+        return value.value ~= nil
     end,
     evaluate = function(value, cache, evalStart)
         for i=0,4 do
@@ -163,12 +153,7 @@ addon:RegisterCondition("ITEM", {
     description = L["Item Available"],
     icon = "Interface\\Icons\\inv_neck_firelands_03",
     valid = function(spec, value)
-        if value.item ~= nil then
-            local itemID = GetItemInfoInstant(value.item)
-            return itemID ~= nil
-        else
-            return false
-        end
+        return value.item ~= nil
     end,
     evaluate = function(value, cache, evalStart) -- Cooldown until the spell is available
         local itemId
@@ -188,7 +173,7 @@ addon:RegisterCondition("ITEM", {
                     if inventoryId ~= nil then
                         local itemName, itemLink, itemRarity, itemLevel, itemMinLevel, itemType, itemSubType, itemStackCount, itemEquipLoc, itemTexture, itemSellPrice =
                         getCached(longtermCache, GetItemInfo, inventoryId)
-                        if value.value == itemName then
+                        if value.item == itemName then
                             itemId = inventoryId
                         end
                     end
@@ -229,7 +214,7 @@ addon:RegisterCondition("ITEM", {
                 GetItemInfo(value.item)
             link = itemLink or value.item
         end
-        return format.string(L["%s is available"], nullable(link, L["<item>"]))
+        return string.format(L["%s is available"], nullable(link, L["<item>"]))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -278,13 +263,8 @@ addon:RegisterCondition("ITEM_COOLDOWN", {
     description = L["Item Cooldown"],
     icon = "Interface\\Icons\\inv_misc_trinket_goldenharp",
     valid = function(spec, value)
-        if value.item ~= nil then
-            local itemID, itemType, itemSubType, itemEquipLoc, icon, itemClassID, itemSubClassID = GetItemInfoInstant(value.item)
-            return (value.operator ~= nil and isin(operators, value.operator) and
-                    itemID ~= nil and value.value ~= nil and value.value >= 0)
-        else
-            return false
-        end
+        return (value.operator ~= nil and isin(operators, value.operator) and
+                itemID ~= nil and value.value ~= nil and value.value >= 0)
     end,
     evaluate = function(value, cache, evalStart) -- Cooldown until the spell is available
         local itemId
@@ -304,7 +284,7 @@ addon:RegisterCondition("ITEM_COOLDOWN", {
                     if inventoryId ~= nil then
                         local itemName, itemLink, itemRarity, itemLevel, itemMinLevel, itemType, itemSubType, itemStackCount, itemEquipLoc, itemTexture, itemSellPrice =
                         getCached(addon.longtermCache, GetItemInfo, inventoryId)
-                        if value.value == itemName then
+                        if value.item == itemName then
                             itemId = inventoryId
                         end
                     end

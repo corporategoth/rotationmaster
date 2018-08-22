@@ -465,32 +465,8 @@ local function create_rotation_options(spec, rotation, order)
                 width = "full",
                 name = color.RED .. L["THIS ROTATION WILL NOT BE USED AS IT IS INCOMPLETE"] .. color.RESET,
                 hidden = function(info)
-                    local itemfound = false
-                    if rotation_settings[spec] ~= nil and rotation_settings[spec][rotation] ~= nil then
-                        if rotation_settings[spec][rotation].cooldowns ~= nil then
-                            for k,v in pairs(rotation_settings[spec][rotation].cooldowns) do
-                                if v.type == nil or v.action == nil then
-                                    return false
-                                end
-                                if not addon:validateCondition(v.conditions, spec) then
-                                    return false
-                                end
-                                itemfound = true
-                            end
-                        end
-                        if rotation_settings[spec][rotation].rotation ~= nil then
-                            for k,v in pairs(rotation_settings[spec][rotation].rotation) do
-                                if v.type == nil or v.action == nil then
-                                    return false
-                                end
-                                if not addon:validateCondition(v.rotation, spec) then
-                                    return false
-                                end
-                                itemfound = true
-                            end
-                        end
-                    end
-                    return itemfound
+                    return rotation_settings[spec] ~= nil and rotation_settings[spec][rotation] ~= nil and
+                            addon:rotationValidConditions(rotation_settings[spec][rotation])
                 end
             },
             cooldowns = {

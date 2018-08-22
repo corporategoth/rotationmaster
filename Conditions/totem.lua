@@ -19,8 +19,8 @@ addon:RegisterCondition("TOTEM", {
         return value.spell ~= nil and value.spell >= 1 and value.spell <= 4
     end,
     evaluate = function(value, cache, evalStart)
-        local _, totemName, _, _ = getCached(cache, GetTotemInfo, value.spell)
-        return totemName ~= nil
+        local _, _, start = getCached(cache, GetTotemInfo, value.spell)
+        return start ~= 0
     end,
     print = function(spec, value)
         return string.format(L["%s totem is active"], nullable(totems[value.spell], L["<element>"]))
@@ -123,8 +123,8 @@ addon:RegisterCondition("TOTEM_REMAIN", {
                 value.value ~= nil and value.value >= 0)
     end,
     evaluate = function(value, cache, evalStart)
-        local _, totemName, startTime, duration = getCached(cache, GetTotemInfo, value.spell)
-        if totemName ~= nil then
+        local _, _, start, duration = getCached(cache, GetTotemInfo, value.spell)
+        if start ~= nil then
             local remain = round(duration - (GetTime() - start), 3)
             return compare(value.operator, remain, value.value)
         end

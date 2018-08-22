@@ -124,11 +124,14 @@ function addon:HandleCommand(str)
                         self.currentRotation = id
                         addon:EnableRotationTimer()
                         addon:info(L["Active rotation manually switched to " .. color.WHITE .. "%s" .. color.INFO], name)
+                        if (not self:rotationValidConditions(rot, self.currentSpec)) then
+                            addon:warn(L["Active rotation is incomplete and may not work correctly!"])
+                        end
                         return
                     end
                 end
             end
-            addon:warn(L["Could not find rotation namned " .. color.WHITE .. "%s" .. color.WARN .. " for your current specialization."], name)
+            addon:warn(L["Could not find rotation named " .. color.WHITE .. "%s" .. color.WARN .. " for your current specialization."], name)
         end
     else
         addon:warn(L["Invalid option " .. color.WHITE .. "%s" .. color.WARN], cmd)
@@ -190,13 +193,13 @@ function addon:OnEnable()
     end
 end
 
-local function rotationValidConditions(rot, spec)
+function addon:rotationValidConditions(rot, spec)
     -- We found a cooldown OR a rotation step
     local itemfound = false
     if rot.cooldowns ~= nil then
         -- All cooldowns are valid
         for k,v in pairs(rot.cooldowns) do
-            if v.type == nil or v.action == nil or not addon:validateCondition(v.conditions, spec) then
+            if v.type == nil or v.action == nil or not self:validateCondition(v.conditions, spec) then
                 return false
             end
             itemfound = true
@@ -205,7 +208,7 @@ local function rotationValidConditions(rot, spec)
     if rot.rotation ~= nil then
         -- All rotation steps are valid
         for k,v in pairs(rot.rotation) do
-            if v.type == nil or v.action == nil or not addon:validateCondition(v.rotation, spec) then
+            if v.type == nil or v.action == nil or not self:validateCondition(v.rotation, spec) then
                 return false
             end
             itemfound = true
@@ -223,8 +226,8 @@ function addon:UpdateAutoSwitch()
             if id ~= DEFAULT then
                 -- The switch condition is nontrivial and valid.
                 if rot.switch and addon:usefulSwitchCondition(rot.switch) and
-                        addon:validateSwitchCondition(rot.switch, self.currentSpec) and
-                        rotationValidConditions(rot, self.currentSpec) then
+                        self:validateSwitchCondition(rot.switch, self.currentSpec) and
+                        self:rotationValidConditions(rot, self.currentSpec) then
                     addon:debug(L["Rotaion " .. color.WHITE .. "%s" .. color.DEBUG .. " is now available for auto-switching."], rot.name)
                     table.insert(self.autoswitchRotation, id)
                     break
@@ -238,7 +241,7 @@ function addon:UpdateAutoSwitch()
                                                                    self.db.profile.rotations[self.currentSpec][rhs].name end)
 
     if self.db.profile.rotations[self.currentSpec] ~= nil and self.db.profile.rotations[self.currentSpec][DEFAULT] ~= nil and
-            rotationValidConditions(self.db.profile.rotations[self.currentSpec][DEFAULT]) then
+            self:rotationValidConditions(self.db.profile.rotations[self.currentSpec][DEFAULT]) then
         addon:debug(L["Rotaion " .. color.WHITE .. "%s" .. color.DEBUG .. " is now available for auto-switching."], DEFAULT)
         table.insert(self.autoswitchRotation, DEFAULT)
     end
@@ -326,31 +329,33 @@ function addon:EvaluateNextAction()
         if rot.rotation ~= nil then
             local enabled
             for id,cond in pairs(rot.rotation) do
-                -- If we can't highlight the spell, may as well skip to the next one!
-                local spellid
-                if cond.type == "spell" and getCached(self.longtermCache, IsSpellKnown, cond.action, false) then
-                    spellid = cond.action
-                elseif cond.type == "pet" and getCached(cache, IsSpellKnown, cond.action, true) then
-                    spellid = cond.action
-                else
-                    spellid = getCached(self.longtermCache, GetItemInfoInstant, cond.action)
-                end
-                if (addon:FindSpell(spellid) and addon:evaluateCondition(cond.conditions)) then
-                    enabled = (SpellRange.IsSpellInRange(spellid, "target"))
-                    if enabled == nil then enabled = true end
-                end
-                if enabled then
-                    addon:verbose("Rotation step %d satisfied it's condition.", id)
-                    if not addon:IsGlowing(spellid) then
-                        self.currentAction = spellid
-                        addon:GlowNextSpell(spellid)
-                        if WeakAuras then
-                            WeakAuras.ScanEvents("ROTATIONMASTER_SPELL_UPDATE", self.type, spellid)
-                        end
+                if cond.action ~= nil then
+                    -- If we can't highlight the spell, may as well skip to the next one!
+                    local spellid
+                    if cond.type == "spell" and getCached(self.longtermCache, IsSpellKnown, cond.action, false) then
+                        spellid = cond.action
+                    elseif cond.type == "pet" and getCached(cache, IsSpellKnown, cond.action, true) then
+                        spellid = cond.action
+                    else
+                        spellid = getCached(self.longtermCache, GetItemInfoInstant, cond.action)
                     end
-                    break
-                else
-                    addon:verbose("Rotation step %d dis not satisfy it's condition.", id)
+                    if (addon:FindSpell(spellid) and addon:evaluateCondition(cond.conditions)) then
+                        enabled = (SpellRange.IsSpellInRange(spellid, "target"))
+                        if enabled == nil then enabled = true end
+                    end
+                    if enabled then
+                        addon:verbose("Rotation step %d satisfied it's condition.", id)
+                        if not addon:IsGlowing(spellid) then
+                            self.currentAction = spellid
+                            addon:GlowNextSpell(spellid)
+                            if WeakAuras then
+                                WeakAuras.ScanEvents("ROTATIONMASTER_SPELL_UPDATE", self.type, spellid)
+                            end
+                        end
+                        break
+                    else
+                        addon:verbose("Rotation step %d dis not satisfy it's condition.", id)
+                    end
                 end
             end
             if not enabled then
@@ -363,22 +368,24 @@ function addon:EvaluateNextAction()
         end
         if rot.cooldowns ~= nil then
             for id,cond in pairs(rot.cooldowns) do
-                local spellid, enabled
-                if cond.type == "spell" or cond.type == "pet" then
-                    spellid = cond.action
-                else
-                    spellid = getCached(self.longtermCache, GetItemInfoInstant, cond.action)
+                if cond.action ~= nil then
+                    local spellid, enabled
+                    if cond.type == "spell" or cond.type == "pet" then
+                        spellid = cond.action
+                    else
+                        spellid = getCached(self.longtermCache, GetItemInfoInstant, cond.action)
+                    end
+                    if (addon:FindSpell(spellid) and addon:evaluateCondition(cond.conditions)) then
+                        enabled = (SpellRange.IsSpellInRange(spellid, "target"))
+                        if enabled == nil then enabled = true end
+                    end
+                    if enabled then
+                        addon:verbose("Cooldown %d is enabled", id)
+                    else
+                        addon:verbose("Cooldown %d is disabled", id)
+                    end
+                    addon:GlowCooldown(spellid, enabled, cond.overlay, cond.color)
                 end
-                if (addon:FindSpell(spellid) and addon:evaluateCondition(cond.conditions)) then
-                    enabled = (SpellRange.IsSpellInRange(spellid, "target"))
-                    if enabled == nil then enabled = true end
-                end
-                if enabled then
-                    addon:verbose("Cooldown %d is enabled", id)
-                else
-                    addon:verbose("Cooldown %d is disabled", id)
-                end
-                addon:GlowCooldown(spellid, enabled, cond.overlay, cond.color)
             end
         end
 

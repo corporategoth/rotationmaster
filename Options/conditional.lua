@@ -71,10 +71,14 @@ evaluateSingle = function(value, conditions, cache, start)
     elseif value.type == "NOT" then
         return not evaluateSingle(value.value, conditions, cache, start)
     elseif conditions[value.type] ~= nil then
-        local rv = conditions[value.type].evaluate(value, cache, start)
+        local rv = false
+        -- condition is FALSE if the condition is INVALID.
+        if conditions[value.type].valid(addon.currentSpec, value) then
+            rv = conditions[value.type].evaluate(value, cache, start)
+        end
         -- Extra protection so we don't evaluate the print realtime
         if addon.db.profile.verbose then
-            addon:verbose("COND: %s = %d", conditions[value.type].print(addon.currentSpec, value), rv)
+            addon:verbose("COND: %s = %s", conditions[value.type].print(addon.currentSpec, value), (rv and "true" or "false"))
         end
         return rv
     else

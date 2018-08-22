@@ -27,30 +27,26 @@ addon:RegisterCondition("SPELL_AVAIL", {
         end
     end,
     evaluate = function(value, cache, evalStart)
-        if value.spell then
-            local start, duration, enabled = getCached(cache, GetSpellCooldown, value.spell)
-            if start == 0 and duration == 0 then
-                return true
-            else
-                -- A special spell that shows if the GCD is active ...
-                local gcd_start, gcd_duration, gcd_enabled = getCached(cache, GetSpellCooldown, 61304)
-                if gcd_start ~= 0 and gcd_duration ~= 0 then
-                    local time = GetTime()
-                    local gcd_remain = round(gcd_duration - (time - gcd_start), 3)
-                    local remain = round(duration - (time - start), 3)
-                    if (remain <= gcd_remain) then
-                        return true
-                    -- We factor in a fuzziness because we don't know exactly when the spell cooldown calls
-                    -- were made, so we say any value between now and the evaluation start is essentially 0
-                    elseif (remain - gcd_remain <= time - evalStart) then
-                        return true
-                    else
-                        return false
-                    end
-                end
-                return false
-            end
+        local start, duration, enabled = getCached(cache, GetSpellCooldown, value.spell)
+        if start == 0 and duration == 0 then
+            return true
         else
+            -- A special spell that shows if the GCD is active ...
+            local gcd_start, gcd_duration, gcd_enabled = getCached(cache, GetSpellCooldown, 61304)
+            if gcd_start ~= 0 and gcd_duration ~= 0 then
+                local time = GetTime()
+                local gcd_remain = round(gcd_duration - (time - gcd_start), 3)
+                local remain = round(duration - (time - start), 3)
+                if (remain <= gcd_remain) then
+                    return true
+                -- We factor in a fuzziness because we don't know exactly when the spell cooldown calls
+                -- were made, so we say any value between now and the evaluation start is essentially 0
+                elseif (remain - gcd_remain <= time - evalStart) then
+                    return true
+                else
+                    return false
+                end
+            end
             return false
         end
     end,

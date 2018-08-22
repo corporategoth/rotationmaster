@@ -7,6 +7,9 @@ do
 	
 	local function spellFilter(self, spellID)
 		local spec = self:GetUserData("spec")
+		if playerSpells[spec] == nil then
+			return nil
+        end
 		return playerSpells[spec][spellID]
 	end
 	

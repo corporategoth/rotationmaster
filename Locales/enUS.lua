@@ -14,7 +14,7 @@ L["                          This is reset upon switching specializations."] = t
 L["No roation is currently active."] = true
 L["The current rotation is " .. color.WHITE .. "%s" .. color.INFO] = true
 L["Active rotation manually switched to " .. color.WHITE .. "%s" .. color.INFO] = true
-L["Could not find rotation namned " .. color.WHITE .. "%s" .. color.WARN .. " for your current specialization."] = true
+L["Could not find rotation named " .. color.WHITE .. "%s" .. color.WARN .. " for your current specialization."] = true
 L["Invalid option " .. color.WHITE .. "%s" .. color.WARN] = true
 
 L["Starting up version %s"] = true
@@ -29,6 +29,7 @@ L["Autoswitch rotation list has been updated."] = true
 
 L["Button Fetch triggered."] = true
 L["Notified configuration to update it's status."] = true
+L["Active rotation is incomplete and may not work correctly!"] = true
 
 -- from constants.lua
 

@@ -116,12 +116,8 @@ addon:RegisterCondition("TALENT", {
         return value.value ~= nil and value.value >= 1 and value.value <= 21
     end,
     evaluate = function(value, cache, evalStart)
-		if (value.value) then
-			local _, _, _, selected = getCached(addon.longtermCache, GetTalentInfo, floor((value.value-1) / 3) + 1, ((value.value-1) % 3) + 1, 1)
-			return selected
-		else
-			return false
-		end
+        local _, _, _, selected = getCached(addon.longtermCache, GetTalentInfo, floor((value.value-1) / 3) + 1, ((value.value-1) % 3) + 1, 1)
+        return selected
     end,
     print = function(spec, value)
         return string.format(L["you are talented in %s"], nullable(addon:GetSpecTalentName(spec, value.value), L["<talent>"]))

@@ -227,7 +227,7 @@ function addon:get_rotation_list(spec, rotation)
                 order = 30,
                 type = "description",
                 name = function (info)
-                    if (addon:evaluateCondition(rot.conditions)) then
+                    if addon:validateCondition(rot.conditions, spec) and addon:evaluateCondition(rot.conditions) then
                         return color.GREEN .. L["This conditions is currently satisfied."] .. color.RESET
                     else
                         return color.RED .. L["This conditions is currently not satisfied."] .. color.RESET
