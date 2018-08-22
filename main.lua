@@ -13,8 +13,7 @@ local getCached
 local pairs, color = pairs, color
 local floor = math.floor
 
-addon.pretty_name = "Rotation Master"
-addon.version = "1.0.2"
+addon.pretty_name = GetAddOnMetadata(addon_name, "Title")
 
 --
 -- Initialization
@@ -182,7 +181,7 @@ function addon:OnInitialize()
 end
 
 function addon:OnEnable()
-    addon:info(L["Starting up version %s"], self.version)
+    addon:info(L["Starting up version %s"], GetAddOnMetadata(addon_name, "Version"))
     self.currentSpec = GetSpecializationInfo(GetSpecialization())
 
     if self.db.profile.enable then
