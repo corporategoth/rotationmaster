@@ -126,7 +126,7 @@ addon:RegisterCondition("SPELL_COOLDOWN", {
         if value.spell ~= nil then
             link = GetSpellLink(value.spell)
         end
-        return string.formaat(L["the %s"],
+        return string.format(L["the %s"],
                 compareString(value.operator, string.format(L["cooldown on %s"],  nullable(link, L["<spell>"])),
                 string.format(L["%s seconds"], nullable(value.value))))
     end,
