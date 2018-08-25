@@ -26,6 +26,9 @@ local defaults = {
         overlay = "Ping",
         color = { r = 1.0, g = 1.0, b = 1.0, a = 1.0 },
         magnification = 1.4,
+        setpoint = 'CENTER',
+        xoffs = 0,
+        yoffs = 0,
         rotations = {},
         debug = false,
         verbose = false,
@@ -162,8 +165,6 @@ function addon:OnInitialize()
     self.manualRotation = false
 
     self.inCombat = false
-
-    self.currentAction = nil
 
     self.rotationTimer = nil
 
@@ -345,7 +346,6 @@ function addon:EvaluateNextAction()
                     if enabled then
                         addon:verbose("Rotation step %d satisfied it's condition.", id)
                         if not addon:IsGlowing(spellid) then
-                            self.currentAction = spellid
                             addon:GlowNextSpell(spellid)
                             if WeakAuras then
                                 WeakAuras.ScanEvents("ROTATIONMASTER_SPELL_UPDATE", self.type, spellid)
@@ -358,7 +358,6 @@ function addon:EvaluateNextAction()
                 end
             end
             if not enabled then
-                self.currentAction = nil
                 addon:GlowClear()
                 if WeakAuras then
                     WeakAuras.ScanEvents("ROTATIONMASTER_SPELL_UPDATE", nil, nil)
@@ -383,7 +382,7 @@ function addon:EvaluateNextAction()
                     else
                         addon:verbose("Cooldown %d is disabled", id)
                     end
-                    addon:GlowCooldown(spellid, enabled, cond.overlay, cond.color)
+                    addon:GlowCooldown(spellid, enabled, cond)
                 end
             end
         end
@@ -400,6 +399,16 @@ end
 function addon:RemoveCooldownGlowIfCurrent(spec, rotation, action)
     if spec == self.currentSpec and rotation == self.currentRotation and action ~= nil then
         addon:GlowCooldown(action, false)
+    end
+end
+
+function addon:RemoveAllCurrentGlows()
+    addon:debug(L["Removing all glows."])
+    if self.currentSpec ~= nil and self.currentRotation ~= nil then
+        for id,rot in pairs(self.db.profile.rotations[self.currentSpec][self.currentRotation].cooldowns) do
+            addon:GlowCooldown(rot.action, false)
+        end
+        addon:GlowClear()
     end
 end
 

@@ -96,7 +96,7 @@ addon:RegisterCondition("STEALTHED", {
         return true
     end,
     evaluate = function(value, cache, evalStart)
-        return IsStealthed()
+        return getCached(cache, IsStealthed)
     end,
     print = function(spec, value)
         return L["you are stealthed"]
@@ -110,7 +110,7 @@ addon:RegisterCondition("INCONTROL", {
         return true
     end,
     evaluate = function(value, cache, evalStart)
-        return HasControl()
+        return getCached(cache, HasFullControl)
     end,
     print = function(spec, value)
         return L["you are in control of your character"]

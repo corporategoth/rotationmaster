@@ -11,24 +11,28 @@ local FramePool = {}
 local Frames = {}
 local Textures = {}
 
+local function UpdateOverlay(frame, texture, color, mags, setp, xoffs, yoffs)
+    frame:ClearAllPoints()
+	frame:SetPoint("CENTER", frame:GetParent(), setp, xoffs, yoffs)
+	frame:SetWidth(frame:GetParent():GetWidth() * mags)
+	frame:SetHeight(frame:GetParent():GetHeight() * mags)
+	frame.texture:SetVertexColor(color.r, color.g, color.b, color.a)
+	if Textures[texture] then
+		frame.texture:SetTexture(Textures[texture])
+	end
+end
+
 --- Creates frame overlay over a specific frame, it doesn't need to be a button.
 -- @param parent - frame that is suppose to be attached to
 -- @param id - string id of overlay because frame can have multiple overlays
--- @param texture - optional custom texture
--- @param type - optional type of overlay, standard types are 'normal' and 'cooldown' - used to select overlay color
--- @param color - optional custom color in standard structure {r = 1, g = 1, b = 1, a = 1}
-local function CreateOverlay(parent, id, texture, color)
+local function CreateOverlay(parent, id)
 	local frame = tremove(FramePool)
 	if not frame then
 		frame = CreateFrame('Frame', 'RotationManager_Overlay_' .. id, parent)
 	end
 
-	local sizeMult = addon.db.profile.magnification or 1.4
 	frame:SetParent(parent)
 	frame:SetFrameStrata('HIGH')
-	frame:SetPoint('CENTER', 0, 0)
-	frame:SetWidth(parent:GetWidth() * sizeMult)
-	frame:SetHeight(parent:GetHeight() * sizeMult)
 
 	local t = frame.texture
 	if not t then
@@ -37,9 +41,7 @@ local function CreateOverlay(parent, id, texture, color)
 		frame.texture = t
 	end
 
-	t:SetTexture(Textures[texture])
 	t:SetAllPoints(frame)
-    t:SetVertexColor(color.r, color.g, color.b, color.a)
 
 	tinsert(Frames, frame)
 	return frame
@@ -96,19 +98,17 @@ function addon:UpdateButtonGlow()
 	end
 end
 
-local function Glow(button, id, texture, color)
+local function Glow(button, id, texture, color, mags, setp, xoffs, yoffs)
 	if button.addonOverlays and button.addonOverlays[id] then
-		if Textures[texture] then
-			button.addonOverlays[id].texture:SetTexture(Textures[texture])
-		end
-		button.addonOverlays[id].texture:SetVertexColor(color.r, color.g, color.b, color.a)
+		UpdateOverlay(button.addonOverlays[id], texture, color, mags, setp, xoffs, yoffs)
 		button.addonOverlays[id]:Show()
 	else
 		if not button.addonOverlays then
 			button.addonOverlays = {}
 		end
 
-		button.addonOverlays[id] = CreateOverlay(button, id, texture, color)
+		button.addonOverlays[id] = CreateOverlay(button, id)
+		UpdateOverlay(button.addonOverlays[id], texture, color, mags, setp, xoffs, yoffs)
 		button.addonOverlays[id]:Show()
 	end
 end
@@ -356,10 +356,10 @@ function addon:IsGlowing(spellId)
     end
 end
 
-local function GlowIndependent(spellId, id, texture, color)
+local function GlowIndependent(spellId, id, texture, color, mags, setpoint, xoffs, yoffs)
 	if Spells[spellId] ~= nil then
 		for k, button in pairs(Spells[spellId]) do
-			Glow(button, id, texture, color)
+			Glow(button, id, texture, color, mags, setpoint, xoffs, yoffs)
 			addon:verbose(spellId .. " is now glowing")
 		end
 	end
@@ -374,7 +374,7 @@ local function ClearGlowIndependent(spellId, id)
 	end
 end
 
-function addon:GlowCooldown(spellId, condition, texture, color)
+function addon:GlowCooldown(spellId, condition, cooldown)
     if spellId == nil then
 		return
     end
@@ -382,9 +382,13 @@ function addon:GlowCooldown(spellId, condition, texture, color)
 	if Flags[spellId] == nil then
 		Flags[spellId] = false
     end
-	if condition and not Flags[spellId] then
+	if condition and cooldown and not Flags[spellId] then
 		Flags[spellId] = true
-		GlowIndependent(spellId, spellId, texture or self.db.profile.overlay, color)
+		GlowIndependent(spellId, spellId, cooldown.texture or self.db.profile.overlay, cooldown.color,
+                cooldown.magnification or self.db.profile.magnification,
+                cooldown.setpoint or self.db.profile.setpoint,
+                cooldown.xoffs or self.db.profile.xoffs,
+                cooldown.yoffs or self.db.profile.yoffs)
 	elseif not condition and Flags[spellId] then
 		Flags[spellId] = false
 		ClearGlowIndependent(spellId, spellId)
@@ -398,7 +402,9 @@ function addon:GlowSpell(spellId)
 
 	if Spells[spellId] ~= nil then
 		for k, button in pairs(Spells[spellId]) do
-			Glow(button, 'next', self.db.profile.overlay, self.db.profile.color)
+			Glow(button, 'next', self.db.profile.overlay, self.db.profile.color,
+                 self.db.profile.magnification, self.db.profile.setpoint,
+				 self.db.profile.xoffs, self.db.profile.yoffs)
 		end
 
 		SpellsGlowing[spellId] = 1

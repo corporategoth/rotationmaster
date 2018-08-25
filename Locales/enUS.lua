@@ -29,6 +29,7 @@ L["Autoswitch rotation list has been updated."] = true
 
 L["Button Fetch triggered."] = true
 L["Notified configuration to update it's status."] = true
+L["Removing all glows."] = true
 L["Active rotation is incomplete and may not work correctly!"] = true
 
 -- from constants.lua
@@ -109,11 +110,12 @@ L["<operator>"] = true
 -- from Options/general.lua
 
 L["Enable Rotation Master"] = true
-L["Polling Interval (milliseconds)"] = true
+L["Polling Interval (seconds)"] = true
 L["Overlay Options"] = true
 L["Overlay Texture"] = true
 L["Magnification"] = true
 L["Highlight Color"] = true
+L["Position"] = true
 L["Debugging Options"] = true
 L["Debug Logging"] = true
 L["Verbose Debug Logging"] = true
@@ -323,5 +325,6 @@ L["you are in a group"] = true
 L["In Raid"] = true
 L["you are in a raid"] = true
 L["Outdoors"] = true
+L["Scenario"] = true
 L["you are in a outdoors"] = true
 

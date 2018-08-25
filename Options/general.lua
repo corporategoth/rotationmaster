@@ -53,7 +53,7 @@ local options = {
                 },
                 poll = {
                     order = 20,
-                    name = L["Polling Interval (milliseconds)"],
+                    name = L["Polling Interval (seconds)"],
                     type = "range",
                     min = 0.05,
                     max = 1.0,
@@ -105,6 +105,7 @@ local options = {
                     set = function(info, val)
                         addon.db.profile[info[#info]] = val
                         AceConfigRegistry:NotifyChange(addon.name)
+                        addon:RemoveAllCurrentGlows()
                     end,
                 },
                 spacer2 = {
@@ -117,12 +118,15 @@ local options = {
                     order = 80,
                     name = L["Magnification"],
                     type = "range",
-                    min = 0.5,
+                    min = 0.1,
                     max = 2.0,
                     step = 0.1,
                     width = 1.5,
                     get  = function(info) return addon.db.profile[info[#info]] end,
-                    set = function(info, val) addon.db.profile[info[#info]] = val end,
+                    set = function(info, val)
+                        addon.db.profile[info[#info]] = val
+                        addon:RemoveAllCurrentGlows()
+                    end,
                 },
                 spacer3 = {
                     order = 85,
@@ -146,7 +150,86 @@ local options = {
                         addon.db.profile[info[#info]].r, addon.db.profile[info[#info]].g,
                         addon.db.profile[info[#info]].b, addon.db.profile[info[#info]].a
                     end,
-                    set = function(info, r, g, b, a) addon.db.profile[info[#info]] = { r = r, g = g, b = b, a = a } end
+                    set = function(info, r, g, b, a)
+                        addon.db.profile[info[#info]] = { r = r, g = g, b = b, a = a }
+                        addon:RemoveAllCurrentGlows()
+                    end
+                },
+                setpoint = {
+                    order = 94,
+                    name = L["Position"],
+                    type = "select",
+                    style = "dropdown",
+                    width = 1.0,
+                    values = {
+                        CENTER = "Center",
+                        TOPLEFT = "Top Left",
+                        TOPRIGHT = "Top Right",
+                        BOTTOMLEFT = "Bottom Left",
+                        BOTTOMRIGHT = "Bottom Right",
+                        TOP = "Top Center",
+                        BOTTOM = "Bottom Center",
+                        LEFT = "Left Center",
+                        RIGHT = "Right Center",
+                    },
+                    get  = function(info) return addon.db.profile[info[#info]] end,
+                    set = function(info, val)
+                        addon.db.profile[info[#info]] = val
+                        addon.db.profile.xoffs = 0
+                        addon.db.profile.yoffs = 0
+                        addon:RemoveAllCurrentGlows()
+                    end,
+                },
+                reset_offs = {
+                    order = 95,
+                    name = "o",
+                    type = "execute",
+                    width = 0.1,
+                    func = function(info)
+                        addon.db.profile.xoffs = 0
+                        addon.db.profile.yoffs = 0
+                        addon:RemoveAllCurrentGlows()
+                    end
+                },
+                xoffs_left = {
+                    order = 96,
+                    name = "<",
+                    type = "execute",
+                    width = 0.1,
+                    func = function(info)
+                        addon.db.profile.xoffs = (addon.db.profile.xoffs or 0) - 1
+                        addon:RemoveAllCurrentGlows()
+                    end
+                },
+                xoffs_right = {
+                    order = 97,
+                    name = ">",
+                    type = "execute",
+                    width = 0.1,
+                    func = function(info)
+                        addon.db.profile.xoffs = (addon.db.profile.xoffs or 0) + 1
+                        addon:RemoveAllCurrentGlows()
+                    end
+                },
+                yoffs_up = {
+                    order = 98,
+                    name = "^",
+                    type = "execute",
+                    width = 0.1,
+                    func = function(info)
+                        addon.db.profile.yoffs = (addon.db.profile.yoffs or 0) + 1
+                        addon:RemoveAllCurrentGlows()
+                    end
+                },
+                yoffs_down = {
+                    order = 99,
+                    name = "v",
+                    type = "execute",
+                    width = 0.1,
+                    func = function(info)
+                        addon.db.profile.yoffs = (addon.db.profile.yoffs or 0) - 1
+                        addon:RemoveAllCurrentGlows()
+                    end
                 },
                 debugging_header = {
                     order = 100,

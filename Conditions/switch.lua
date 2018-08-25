@@ -56,7 +56,7 @@ addon:RegisterSwitchCondition("ZONEPVP", {
         return value.value == pvpType
     end,
     print = function(spec, value)
-        return format.string(L["zone is a %s zone"], nullable(zonepvp[value.value], L["no PVP"]))
+        return string.format(L["zone is a %s zone"], nullable(zonepvp[value.value], L["no PVP"]))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -96,15 +96,13 @@ addon:RegisterSwitchCondition("INSTANCE", {
         return inInstance and value.value == instanceType
     end,
     print = function(spec, value)
-        return strings.format(L["you are in a %s instance"],
+        return string.format(L["you are in a %s instance"],
              nullable(zonepvp[value.value], L["Other (scenario)"]))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
-        local instances = deepcopy(instances)
-        instances[""] = "Other (scenario)"
 
         local instance = AceGUI:Create("Dropdown")
         instance:SetLabel(L["Mode"])

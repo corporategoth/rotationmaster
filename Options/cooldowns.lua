@@ -138,6 +138,7 @@ function addon:get_cooldown_list(spec, rotation)
                         rot.overlay = value
                     end
                     AceConfigRegistry:NotifyChange(addon.name .. "Class")
+                    addon:RemoveCooldownGlowIfCurrent(spec, rotation, rot.action)
                 end
             }
 
@@ -148,11 +149,133 @@ function addon:get_cooldown_list(spec, rotation)
                 width = 0.7,
                 hasAlpha = true,
                 get = function(item) return rot.color.r, rot.color.g, rot.color.b, rot.color.a end,
-                set = function(item, r, g, b, a) rot.color = { r = r, g = g, b = b, a = a } end
-        }
+                set = function(item, r, g, b, a)
+                    rot.color = { r = r, g = g, b = b, a = a }
+                    addon:RemoveCooldownGlowIfCurrent(spec, rotation, rot.action)
+                end
+            }
 
-            args["icon"] = {
+            args["magnification"] = {
                 order = 13,
+                name = L["Magnification"],
+                type = "range",
+                min = 0.1,
+                max = 2.0,
+                step = 0.1,
+                width = 0.8,
+                get  = function(info)
+                    if rot.magnification ~= nil then
+                        return rot.magnification
+                    else
+                        return addon.db.profile.magnification
+                    end
+                end,
+                set = function(info, val)
+                    if val == addon.db.profile.magnification then
+                        rot.magnification = nil
+                    else
+                        rot.magnification = val
+                    end
+                    addon:RemoveCooldownGlowIfCurrent(spec, rotation, rot.action)
+                end,
+            }
+
+            args["position"] = {
+                order = 14,
+                name = L["Position"],
+                type = "select",
+                style = "dropdown",
+                width = 0.7,
+                values = {
+                    DEFAULT = DEFAULT,
+                    CENTER = "Center",
+                    TOPLEFT = "Top Left",
+                    TOPRIGHT = "Top Right",
+                    BOTTOMLEFT = "Bottom Left",
+                    BOTTOMRIGHT = "Bottom Right",
+                    TOP = "Top Center",
+                    BOTTOM = "Bottom Center",
+                    LEFT = "Left Center",
+                    RIGHT = "Right Center",
+                },
+                get  = function(info)
+                    if rot.setpoint ~= nil then
+                        return rot.setpoint
+                    else
+                        return "DEFAULT"
+                    end
+                end,
+                set = function(info, val)
+                    if val == "DEFAULT" then
+                        rot.setpoint = nil
+                        rot.xoffs = nil
+                        rot.yoffs = nil
+                    else
+                        rot.setpoint = val
+                        rot.xoffs = 0
+                        rot.yoffs = 0
+                    end
+                    addon:RemoveCooldownGlowIfCurrent(spec, rotation, rot.action)
+                end,
+            }
+            args["reset_offs"] = {
+                order = 15,
+                name = "o",
+                type = "execute",
+                width = 0.1,
+                disabled = function(info) return rot.setpoint == nil end,
+                func = function(info)
+                    rot.xoffs = 0
+                    rot.yoffs = 0
+                    addon:RemoveCooldownGlowIfCurrent(spec, rotation, rot.action)
+                end
+            }
+            args["xoffs_left"] = {
+                order = 16,
+                name = "<",
+                type = "execute",
+                width = 0.1,
+                disabled = function(info) return rot.setpoint == nil end,
+                func = function(info)
+                    rot.xoffs = (rot.xoffs or 0) - 1
+                    addon:RemoveCooldownGlowIfCurrent(spec, rotation, rot.action)
+                end
+            }
+            args["xoffs_right"] = {
+                order = 17,
+                name = ">",
+                type = "execute",
+                width = 0.1,
+                disabled = function(info) return rot.setpoint == nil end,
+                func = function(info)
+                    rot.xoffs = (rot.xoffs or 0) + 1
+                    addon:RemoveCooldownGlowIfCurrent(spec, rotation, rot.action)
+                end
+            }
+            args["yoffs_up"] = {
+                order = 18,
+                name = "^",
+                type = "execute",
+                width = 0.1,
+                disabled = function(info) return rot.setpoint == nil end,
+                func = function(info)
+                    rot.yoffs = (rot.yoffs or 0) + 1
+                    addon:RemoveCooldownGlowIfCurrent(spec, rotation, rot.action)
+                end
+            }
+            args["yoffs_down"] = {
+                order = 19,
+                name = "v",
+                type = "execute",
+                width = 0.1,
+                disabled = function(info) return rot.setpoint == nil end,
+                func = function(info)
+                    rot.yoffs = (rot.yoffs or 0) - 1
+                    addon:RemoveCooldownGlowIfCurrent(spec, rotation, rot.action)
+                end
+            }
+            args["icon"] = {
+                order = 20,
                 type = "execute",
                 width = 0.3,
                 name = "",
@@ -173,7 +296,7 @@ function addon:get_cooldown_list(spec, rotation)
             }
 
             args["name"] = {
-                order = 14,
+                order = 21,
                 name = NAME,
                 type = "input",
                 width = 1.7,
@@ -185,7 +308,7 @@ function addon:get_cooldown_list(spec, rotation)
             }
 
             args["type"] = {
-                order = 15,
+                order = 22,
                 name = L["Action Type"],
                 type = "select",
                 width = 0.8,
@@ -203,7 +326,7 @@ function addon:get_cooldown_list(spec, rotation)
 
             if (rot.type == "spell") then
                 args["action"] = {
-                    order = 16,
+                    order = 23,
                     name = L["Spell"],
                     type = "input",
                     dialogControl = "Spec_EditBox",
@@ -217,7 +340,7 @@ function addon:get_cooldown_list(spec, rotation)
                 }
             elseif (rot.type == "pet") then
                 args["action"] = {
-                    order = 15,
+                    order = 24,
                     name = L["Spell"],
                     desc = L["NOTE: Some spells can not be selected (even if auto-completed) due to WoW internals.  It may reequire you to switch specs or summon the requisite pet first before being able to populate this field."],
                     type = "input",
@@ -232,7 +355,7 @@ function addon:get_cooldown_list(spec, rotation)
                 }
             else
                 args["action"] = {
-                    order = 17,
+                    order = 25,
                     name = L["Item"],
                     type = "input",
                     dialogControl = "Inventory_EditBox",
@@ -247,7 +370,7 @@ function addon:get_cooldown_list(spec, rotation)
             end
 
             args["conditions"] = {
-                order = 20,
+                order = 28,
                 name = L["Conditions"],
                 type = "group",
                 inline = true,

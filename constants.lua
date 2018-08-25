@@ -79,6 +79,7 @@ addon.instances = {
     arena = L["Arena"],
     party = L["Dungeon"],
     raid = L["Raid"],
+    scenario = L["Scenario"],
 }
 
 addon.totems = {

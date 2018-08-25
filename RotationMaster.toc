@@ -1,9 +1,11 @@
 ## Interface: 80000
 ## Title: Rotation Master
-## Version: 1.0.4
+## Version: 1.0.5
 ## Author: PreZ
 ## Notes: I wanted to save the world, but God wouldn't give me the source code.
 ## X-Email: prez@goth.net
+## X-Website: https://wiki.neuromancy.net/display/RM/Rotation+Master
+## X-BugReport: https://wow.curseforge.com/projects/rotation-master/issues
 ## X-Category: Action Bars
 ## SavedVariables: RotationMasterDB
 ## OptionalDeps: Ace3, LibAboutPanel, LibDBIcon-1.0, LibSpellRange-1.0, AceGUI-3.0-ActionSlotWidgets, AceGUI-3.0-Item-EditBox, AceGUI-3.0-Spell-EditBox
