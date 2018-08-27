@@ -159,11 +159,13 @@ addon:RegisterCondition("ITEM", {
         local itemId
         for i=0,20 do
             local inventoryId = getCached(addon.combatCache, GetInventoryItemID, "player", i)
-            local itemName, itemLink, itemRarity, itemLevel, itemMinLevel, itemType, itemSubType, itemStackCount, itemEquipLoc, itemTexture, itemSellPrice =
-            getCached(longtermCache, GetItemInfo, inventoryId)
-            if itemName == value.item then
-                itemId = inventoryId
-                break
+            if inventoryId then
+                local itemName, itemLink, itemRarity, itemLevel, itemMinLevel, itemType, itemSubType, itemStackCount, itemEquipLoc, itemTexture, itemSellPrice =
+                getCached(addon.longtermCache, GetItemInfo, inventoryId)
+                if itemName == value.item then
+                    itemId = inventoryId
+                    break
+                end
             end
         end
         if itemId == nil then
@@ -172,7 +174,7 @@ addon:RegisterCondition("ITEM", {
                     local inventoryId = getCached(addon.combatCache, GetContainerItemID, i, j);
                     if inventoryId ~= nil then
                         local itemName, itemLink, itemRarity, itemLevel, itemMinLevel, itemType, itemSubType, itemStackCount, itemEquipLoc, itemTexture, itemSellPrice =
-                        getCached(longtermCache, GetItemInfo, inventoryId)
+                        getCached(addon.longtermCache, GetItemInfo, inventoryId)
                         if value.item == itemName then
                             itemId = inventoryId
                         end
@@ -270,11 +272,13 @@ addon:RegisterCondition("ITEM_COOLDOWN", {
         local itemId
         for i=0,20 do
             local inventoryId = getCached(addon.combatCache, GetInventoryItemID, "player", i)
-            local itemName, itemLink, itemRarity, itemLevel, itemMinLevel, itemType, itemSubType, itemStackCount, itemEquipLoc, itemTexture, itemSellPrice =
-            getCached(cache, GetItemInfo, inventoryId)
-            if itemName == value.item then
-                itemId = inventoryId
-                break
+            if inventoryId then
+                local itemName, itemLink, itemRarity, itemLevel, itemMinLevel, itemType, itemSubType, itemStackCount, itemEquipLoc, itemTexture, itemSellPrice =
+                getCached(addon.longtermCache, GetItemInfo, inventoryId)
+                if itemName == value.item then
+                    itemId = inventoryId
+                    break
+                end
             end
         end
         if itemId == nil then

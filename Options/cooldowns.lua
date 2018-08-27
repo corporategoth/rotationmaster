@@ -92,6 +92,7 @@ function addon:get_cooldown_list(spec, rotation)
                 name = DELETE,
                 func = function(item)
                     table.remove(rotation_settings[spec][rotation].cooldowns, idx)
+                    addon:RemoveCooldownGlowIfCurrent(spec, rotation, rot.type, rot.action)
                     AceConfigRegistry:NotifyChange(addon.name .. "Class")
                 end
             }
@@ -138,7 +139,7 @@ function addon:get_cooldown_list(spec, rotation)
                         rot.overlay = value
                     end
                     AceConfigRegistry:NotifyChange(addon.name .. "Class")
-                    addon:RemoveCooldownGlowIfCurrent(spec, rotation, rot.action)
+                    addon:RemoveCooldownGlowIfCurrent(spec, rotation, rot.type, rot.action)
                 end
             }
 
@@ -151,7 +152,7 @@ function addon:get_cooldown_list(spec, rotation)
                 get = function(item) return rot.color.r, rot.color.g, rot.color.b, rot.color.a end,
                 set = function(item, r, g, b, a)
                     rot.color = { r = r, g = g, b = b, a = a }
-                    addon:RemoveCooldownGlowIfCurrent(spec, rotation, rot.action)
+                    addon:RemoveCooldownGlowIfCurrent(spec, rotation, rot.type, rot.action)
                 end
             }
 
@@ -176,7 +177,7 @@ function addon:get_cooldown_list(spec, rotation)
                     else
                         rot.magnification = val
                     end
-                    addon:RemoveCooldownGlowIfCurrent(spec, rotation, rot.action)
+                    addon:RemoveCooldownGlowIfCurrent(spec, rotation, rot.type, rot.action)
                 end,
             }
 
@@ -215,7 +216,7 @@ function addon:get_cooldown_list(spec, rotation)
                         rot.xoffs = 0
                         rot.yoffs = 0
                     end
-                    addon:RemoveCooldownGlowIfCurrent(spec, rotation, rot.action)
+                    addon:RemoveCooldownGlowIfCurrent(spec, rotation, rot.type, rot.action)
                 end,
             }
             args["reset_offs"] = {
@@ -227,7 +228,7 @@ function addon:get_cooldown_list(spec, rotation)
                 func = function(info)
                     rot.xoffs = 0
                     rot.yoffs = 0
-                    addon:RemoveCooldownGlowIfCurrent(spec, rotation, rot.action)
+                    addon:RemoveCooldownGlowIfCurrent(spec, rotation, rot.type, rot.action)
                 end
             }
             args["xoffs_left"] = {
@@ -238,7 +239,7 @@ function addon:get_cooldown_list(spec, rotation)
                 disabled = function(info) return rot.setpoint == nil end,
                 func = function(info)
                     rot.xoffs = (rot.xoffs or 0) - 1
-                    addon:RemoveCooldownGlowIfCurrent(spec, rotation, rot.action)
+                    addon:RemoveCooldownGlowIfCurrent(spec, rotation, rot.type, rot.action)
                 end
             }
             args["xoffs_right"] = {
@@ -249,7 +250,7 @@ function addon:get_cooldown_list(spec, rotation)
                 disabled = function(info) return rot.setpoint == nil end,
                 func = function(info)
                     rot.xoffs = (rot.xoffs or 0) + 1
-                    addon:RemoveCooldownGlowIfCurrent(spec, rotation, rot.action)
+                    addon:RemoveCooldownGlowIfCurrent(spec, rotation, rot.type, rot.action)
                 end
             }
             args["yoffs_up"] = {
@@ -260,7 +261,7 @@ function addon:get_cooldown_list(spec, rotation)
                 disabled = function(info) return rot.setpoint == nil end,
                 func = function(info)
                     rot.yoffs = (rot.yoffs or 0) + 1
-                    addon:RemoveCooldownGlowIfCurrent(spec, rotation, rot.action)
+                    addon:RemoveCooldownGlowIfCurrent(spec, rotation, rot.type, rot.action)
                 end
             }
             args["yoffs_down"] = {
@@ -271,7 +272,7 @@ function addon:get_cooldown_list(spec, rotation)
                 disabled = function(info) return rot.setpoint == nil end,
                 func = function(info)
                     rot.yoffs = (rot.yoffs or 0) - 1
-                    addon:RemoveCooldownGlowIfCurrent(spec, rotation, rot.action)
+                    addon:RemoveCooldownGlowIfCurrent(spec, rotation, rot.type, rot.action)
                 end
             }
             args["icon"] = {
@@ -333,7 +334,7 @@ function addon:get_cooldown_list(spec, rotation)
                     width = 1.2,
                     get = function(item) if (rot.action ~= nil) then return select(1, GetSpellInfo(rot.action)) else return nil end end,
                     set = function(item, value)
-                        addon:RemoveCooldownGlowIfCurrent(spec, rotation, rot.action)
+                        addon:RemoveCooldownGlowIfCurrent(spec, rotation, rot.type, rot.action)
                         rot.action = addon:GetSpecSpellID(spec, value)
                         AceConfigRegistry:NotifyChange(addon.name .. "Class")
                     end
@@ -348,7 +349,7 @@ function addon:get_cooldown_list(spec, rotation)
                     width = 1.2,
                     get = function(item) if (rot.action ~= nil) then return select(1, GetSpellInfo(rot.action)) else return nil end end,
                     set = function(item, value)
-                        addon:RemoveCooldownGlowIfCurrent(spec, rotation, rot.action)
+                        addon:RemoveCooldownGlowIfCurrent(spec, rotation, rot.type, rot.action)
                         rot.action = select(7, GetSpellInfo(value))
                         AceConfigRegistry:NotifyChange(addon.name .. "Class")
                     end
@@ -362,7 +363,7 @@ function addon:get_cooldown_list(spec, rotation)
                     width = 1.2,
                     get = function(item) if (rot.action ~= nil) then return rot.action else return nil end end,
                     set = function(item, value)
-                        addon:RemoveCooldownGlowIfCurrent(spec, rotation, rot.action)
+                        addon:RemoveCooldownGlowIfCurrent(spec, rotation, rot.type, rot.action)
                         rot.action = value
                         AceConfigRegistry:NotifyChange(addon.name .. "Class")
                     end

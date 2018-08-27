@@ -113,18 +113,24 @@ function addon:HandleCommand(str)
 
         if name == "auto" then
             self.manualRotation = false
-            addon:SwitchRotation()
+            self:SwitchRotation()
+        elseif name == self.currentRotation then
+            self.manualRotation = true
+            addon:info(L["Active rotation manually switched to " .. color.WHITE .. "%s" .. color.INFO], name)
         elseif name == DEFAULT then
+            self:RemoveAllCurrentGlows()
             self.manualRotation = true
             self.currentRotation = DEFAULT
-            addon:EnableRotationTimer()
+            self:EnableRotationTimer()
+            addon:info(L["Active rotation manually switched to " .. color.WHITE .. "%s" .. color.INFO], name)
         else
             if self.db.profile.rotations[self.currentSpec] ~= nil then
                 for id,rot in pairs(self.db.profile.rotations[self.currentSpec]) do
                     if rot.name == name then
+                        self:RemoveAllCurrentGlows()
                         self.manualRotation = true
                         self.currentRotation = id
-                        addon:EnableRotationTimer()
+                        self:EnableRotationTimer()
                         addon:info(L["Active rotation manually switched to " .. color.WHITE .. "%s" .. color.INFO], name)
                         if (not self:rotationValidConditions(rot, self.currentSpec)) then
                             addon:warn(L["Active rotation is incomplete and may not work correctly!"])
@@ -264,6 +270,7 @@ function addon:SwitchRotation()
                             self.db.profile.rotations[self.currentSpec][v].name)
                 end
 
+                self:RemoveAllCurrentGlows()
                 self.currentRotation = v
                 self:EnableRotationTimer()
             end
@@ -295,6 +302,7 @@ function addon:DisableRotation()
     end
 
     self:DisableRotationTimer()
+    self:RemoveAllCurrentGlows()
     self:DestroyAllOverlays()
     self.currentRotation = nil
     addon:debug(L["Battle rotation disabled"])
@@ -323,7 +331,8 @@ end
 function addon:EvaluateNextAction()
     if self.currentRotation == nil then
         addon:DisableRotationTimer()
-    else
+    elseif self.db.profile.rotations[self.currentSpec] ~= nil and
+           self.db.profile.rotations[self.currentSpec][self.currentRotation] ~= nil then
         local cache = {}
         local rot = self.db.profile.rotations[self.currentSpec][self.currentRotation]
         if rot.rotation ~= nil then
@@ -336,8 +345,9 @@ function addon:EvaluateNextAction()
                         spellid = cond.action
                     elseif cond.type == "pet" and getCached(cache, IsSpellKnown, cond.action, true) then
                         spellid = cond.action
-                    else
-                        spellid = getCached(self.longtermCache, GetItemInfoInstant, cond.action)
+                    elseif cond.type == "item" then
+                        local _
+                        _, spellid = getCached(self.longtermCache, GetItemSpell, cond.action)
                     end
                     if (addon:FindSpell(spellid) and addon:evaluateCondition(cond.conditions)) then
                         enabled = (SpellRange.IsSpellInRange(spellid, "target"))
@@ -368,10 +378,13 @@ function addon:EvaluateNextAction()
             for id,cond in pairs(rot.cooldowns) do
                 if cond.action ~= nil then
                     local spellid, enabled
-                    if cond.type == "spell" or cond.type == "pet" then
+                    if cond.type == "spell" and getCached(self.longtermCache, IsSpellKnown, cond.action, false) then
                         spellid = cond.action
-                    else
-                        spellid = getCached(self.longtermCache, GetItemInfoInstant, cond.action)
+                    elseif cond.type == "pet" and getCached(cache, IsSpellKnown, cond.action, true) then
+                        spellid = cond.action
+                    elseif cond.type == "item" then
+                        local _
+                        _, spellid = getCached(self.longtermCache, GetItemSpell, cond.action)
                     end
                     if (addon:FindSpell(spellid) and addon:evaluateCondition(cond.conditions)) then
                         enabled = (SpellRange.IsSpellInRange(spellid, "target"))
@@ -396,9 +409,14 @@ function addon:EvaluateNextAction()
     end
 end
 
-function addon:RemoveCooldownGlowIfCurrent(spec, rotation, action)
+function addon:RemoveCooldownGlowIfCurrent(spec, rotation, action_type, action)
     if spec == self.currentSpec and rotation == self.currentRotation and action ~= nil then
-        addon:GlowCooldown(action, false)
+        if action_type == "item" then
+            local _, spellid = GetItemSpell(action)
+            addon:GlowCooldown(spellid, false)
+        else
+            addon:GlowCooldown(action, false)
+        end
     end
 end
 
@@ -406,7 +424,12 @@ function addon:RemoveAllCurrentGlows()
     addon:debug(L["Removing all glows."])
     if self.currentSpec ~= nil and self.currentRotation ~= nil then
         for id,rot in pairs(self.db.profile.rotations[self.currentSpec][self.currentRotation].cooldowns) do
-            addon:GlowCooldown(rot.action, false)
+            if rot.type == "item" then
+                local _, spellid = GetItemSpell(rot.action)
+                addon:GlowCooldown(spellid, false)
+            else
+                addon:GlowCooldown(rot.action, false)
+            end
         end
         addon:GlowClear()
     end
@@ -534,7 +557,7 @@ end
 function addon:PLAYER_CONTROL_LOST()
     addon:verbose("Player lost control.")
     self:DisableRotationTimer()
-    self:DestroyAllOverlays()
+    self:RemoveAllCurrentGlows()
 end
 
 addon.PLAYER_TALENT_UPDATE = addon.UpdateSkills

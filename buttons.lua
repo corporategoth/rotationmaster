@@ -28,7 +28,7 @@ end
 local function CreateOverlay(parent, id)
 	local frame = tremove(FramePool)
 	if not frame then
-		frame = CreateFrame('Frame', 'RotationManager_Overlay_' .. id, parent)
+		frame = CreateFrame('Frame', 'RotationMaster_Overlay_' .. id, parent)
 	end
 
 	frame:SetParent(parent)
@@ -156,13 +156,17 @@ local function AddStandardButton(button)
 			if not spellId then
 				return
 			end
+			addon:verbose("Found macro button with spell ID %s", spellId)
 		elseif type == 'item' then
-			spellId = GetItemInfoInstant(actionType)
+			local _
+			_, spellId = GetItemSpell(actionType)
 			if not spellId then
 				return
             end
+			addon:verbose("Found item button with spell ID %s", spellId)
 		elseif type == 'spell' then
 			spellId = select(7, GetSpellInfo(actionType))
+			addon:verbose("Found button with spell ID %s", spellId)
 		end
 
 		AddButton(spellId, button)
@@ -237,8 +241,7 @@ local function FetchLibActionButton()
 	for _, lib in pairs(LAB) do
 		if lib and lib.GetAllButtons then
 			for button in pairs(lib:GetAllButtons()) do
-				local spellId = button:GetSpellId()
-				AddButton(spellId, button)
+                AddStandardButton(button)
 			end
 		end
 	end
@@ -344,7 +347,7 @@ end
 function addon:FindSpell(spellId)
     if spellId == nil then
         return false
-    end
+	end
 	return Spells[spellId]
 end
 

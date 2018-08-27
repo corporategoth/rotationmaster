@@ -296,7 +296,16 @@ local function HandleDelete(spec, rotation)
         button2 = CANCEL,
         OnAccept = function(self)
             if (rotation_settings[spec] ~= nil and rotation_settings[spec][rotation] ~= nil) then
+                if addon.currentSpec == spec and addon.currentRotation == rotation then
+                    addon:RemoveAllCurrentGlows()
+                    addon.manualRotation = false
+                    addon.currentRotation = nil
+                end
                 rotation_settings[spec][rotation] = nil
+                if addon.currentSpec == spec then
+                    addon:UpdateAutoSwitch()
+                    addon:SwitchRotation()
+                end
                 AceConfigRegistry:NotifyChange(addon.name .. "Class")
             end
         end,
