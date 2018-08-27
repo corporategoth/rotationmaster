@@ -12,7 +12,7 @@ local units, zonepvp, instances = addon.units, addon.zonepvp, addon.instances
 local nullable, keys,  isin, deepcopy, playerize =
     addon.nullable, addon.keys, addon.isin, addon.deepcopy, addon.playerize
 
-addon:RegisterSwitchCondition("COMBAT", {
+addon:RegisterSwitchCondition("PVP", {
     description = L["PVP Flagged"],
     icon = "Interface\\Icons\\achievement_guildperk_honorablemention",
     valid = function(spec, value)

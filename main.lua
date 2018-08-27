@@ -61,6 +61,7 @@ local events = {
     'PLAYER_REGEN_DISABLED',
     'PLAYER_REGEN_ENABLED',
     'UNIT_PET',
+    'UNIT_PET',
     'VEHICLE_UPDATE',
     'PLAYER_CONTROL_GAINED',
     'PLAYER_CONTROL_LOST',
@@ -74,6 +75,7 @@ local events = {
     'ACTIVE_TALENT_GROUP_CHANGED',
     'CHARACTER_POINTS_CHANGED',
     'PLAYER_SPECIALIZATION_CHANGED',
+    "PLAYER_FLAGS_CHANGED",
 
     -- Conditions that affect affect the contents of highlighted buttons.
     'ACTIONBAR_SLOT_CHANGED',
@@ -515,6 +517,7 @@ addon.PLAYER_FOCUS_CHANGED = addon.SwitchRotation
 addon.ZONE_CHANGED = addon.SwitchRotation
 addon.ZONE_CHANGED_INDOORS = addon.SwitchRotation
 addon.PARTY_MEMBERS_CHANGED = addon.SwitchRotation
+addon.PLAYER_FLAGS_CHANGED = addon.SwitchRotation
 
 addon.ACTIONBAR_SLOT_CHANGED = addon.ButtonFetch
 addon.ACTIONBAR_HIDEGRID = addon.ButtonFetch
@@ -609,3 +612,5 @@ function addon:UNIT_EXITED_VEHICLE(event, unit)
         addon:PLAYER_CONTROL_GAINED()
     end
 end
+
+
