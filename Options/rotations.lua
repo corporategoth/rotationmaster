@@ -4,7 +4,8 @@ local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
 
 local AceConfigRegistry = LibStub("AceConfigRegistry-3.0")
 
-local pairs, color = pairs, color
+local isint, isSpellOnSpec = addon.isint, addon.isSpellOnSpec
+local pairs, color, tonumber = pairs, color, tonumber
 
 local function AddNewRotation(spec, rotation)
     local rotation_settings = addon.db.profile.rotations
@@ -153,7 +154,15 @@ function addon:get_rotation_list(spec, rotation)
                     get = function(item) if (rot.action ~= nil) then return select(1, GetSpellInfo(rot.action)) else return nil end end,
                     set = function(item, value)
                         addon:RemoveCooldownGlowIfCurrent(spec, rotation, rot.action)
-                        rot.action = addon:GetSpecSpellID(spec, value)
+                        if isint(value) then
+                            if isSpellOnSpec(spec, tonumber(value)) then
+                                rot.action = tonumber(value)
+                            else
+                                rot.action = nil
+                            end
+                        else
+                            rot.action = addon:GetSpecSpellID(spec, value)
+                        end
                         AceConfigRegistry:NotifyChange(addon.name .. "Class")
                     end
                 }

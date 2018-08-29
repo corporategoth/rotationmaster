@@ -1,8 +1,11 @@
 -- This is basically the main portion of the predictor, the other files handle 
 local AceGUI = LibStub("AceGUI-3.0")
+local floor = math.floor
+
 do
 	local Type = "Predictor_Base"
 	local Version = 1
+	local RESULT_ROWS = 100
 	local PREDICTOR_ROWS = 10
 	local SpellData = LibStub("AceGUI-3.0-SpellLoader")
 	local tooltip
@@ -43,55 +46,124 @@ do
 	local function Control_OnLeave(this)
 		this.obj:Fire("OnLeave")
 	end
-		
+
+    local function Update_PredictorScroll(self, value)
+		value = floor(value)
+    	if value > self.activeButtons - PREDICTOR_ROWS then value = self.activeButtons - PREDICTOR_ROWS end
+		if value < 0 then value = 0 end
+		if self.buttonOffset ~= value then
+            while value < self.buttonOffset do
+				self.buttons[self.buttonOffset + PREDICTOR_ROWS]:Hide()
+				self.buttonOffset = self.buttonOffset - 1
+				local topButton = self.buttons[self.buttonOffset + 1]
+				topButton:SetPoint("TOPLEFT", self, 8, -10)
+				topButton:SetPoint("TOPRIGHT", self, -7, 0)
+				local nextButton = self.buttons[self.buttonOffset + 2]
+				nextButton:SetPoint("TOPLEFT", topButton, "BOTTOMLEFT", 0, 0)
+				nextButton:SetPoint("TOPRIGHT", topButton, "BOTTOMRIGHT", 0, 0)
+				topButton:Show()
+            end
+			while value > self.buttonOffset do
+                self.buttons[self.buttonOffset + 1]:Hide()
+                self.buttonOffset = self.buttonOffset + 1
+                local topButton = self.buttons[self.buttonOffset + 1]
+                topButton:SetPoint("TOPLEFT", self, 8, -10)
+                topButton:SetPoint("TOPRIGHT", self, -7, 0)
+                local lastButton = self.buttons[self.buttonOffset + PREDICTOR_ROWS]
+                lastButton:Show()
+            end
+            self.scrollbar:SetValue(value)
+		end
+    end
+
 	local function Predictor_Query(self)
 		for _, button in pairs(self.buttons) do button:Hide() end
-		for k in pairs(alreadyAdded) do alreadyAdded[k] = nil end
-		
+		table.wipe(alreadyAdded)
+
 		local query = "^" .. string.lower(self.obj.editBox:GetText())
 		
 		local activeButtons = 0
-		for name, spellID in pairs(SpellData.spellListReverse) do
-			if( not alreadyAdded[name] and string.match(name, query) and ( not self.obj.spellFilter or self.obj.spellFilter(self.obj, spellID) ) ) then
-				activeButtons = activeButtons + 1
+		for idx, name in pairs(SpellData.spellListOrdered) do
+			if not alreadyAdded[name] and string.match(name, query) then
+				local spellID = SpellData.spellListReverse[name]
+				if not self.obj.spellFilter or self.obj.spellFilter(self.obj, spellID) then
+                    activeButtons = activeButtons + 1
 
-				local button = self.buttons[activeButtons]
-            	local spellInfo = SpellData.spellList[spellID]
-            	if spellInfo ~= nil and spellInfo.icon ~= nil and spellInfo.name ~= nil then
-                    button:SetFormattedText("|T%s:20:20:2:11|t %s", spellInfo.icon, spellInfo.name)
-                else
-					button:SetFormattedText("[%d]", spellID)
+                    local button = self.buttons[activeButtons]
+                    local spellInfo = SpellData.spellList[spellID]
+                    if spellInfo ~= nil and spellInfo.icon ~= nil and spellInfo.name ~= nil then
+                        button:SetFormattedText("|T%s:18:18:2:16|t %s", spellInfo.icon, spellInfo.name)
+                    else
+                        button:SetFormattedText("[%d]", spellID)
+                    end
+
+                    alreadyAdded[name] = true
+
+                    button.spellID = spellID
+
+                    -- Highlight if needed
+                    if( activeButtons ~= self.selectedButton ) then
+                        button:UnlockHighlight()
+
+                        if( GameTooltip:IsOwned(button) ) then
+                            GameTooltip:Hide()
+                        end
+                    end
+
+                    -- Ran out of text to suggest :<
+                    if( activeButtons >= RESULT_ROWS ) then break end
                 end
-				
-                alreadyAdded[name] = true
-
-				button.spellID = spellID
-				button:Show()
-				
-				-- Highlight if needed
-				if( activeButtons ~= self.selectedButton ) then
-					button:UnlockHighlight()
-
-					if( GameTooltip:IsOwned(button) ) then
-						GameTooltip:Hide()
-					end
-				end
-				
-				-- Ran out of text to suggest :<
-				if( activeButtons >= PREDICTOR_ROWS ) then break end
 			end
 		end
-		
+
+		self.activeButtons = activeButtons
 		if( activeButtons > 0 ) then
-			self:SetHeight(15 + activeButtons * 17)
+			if activeButtons > PREDICTOR_ROWS then
+				self:SetHeight(19 + PREDICTOR_ROWS * 17)
+                self.scrollbar:Show()
+				self.scrollbar:SetMinMaxValues(0, activeButtons - PREDICTOR_ROWS)
+				if self.buttonOffset + PREDICTOR_ROWS > activeButtons then
+					self.buttonOffset = activeButtons - PREDICTOR_ROWS
+					self.scrollbar:SetValue(self.buttonOffset)
+                end
+            else
+				self:SetHeight(19 + activeButtons * 17)
+				self.scrollbar:Hide()
+				self.buttonOffset = 0
+				self.scrollbar:SetValue(self.buttonOffset)
+            end
+            for idx,button in pairs(self.buttons) do
+				if idx <= self.buttonOffset or idx > self.buttonOffset + activeButtons or idx > self.buttonOffset + PREDICTOR_ROWS then
+					button:Hide()
+                elseif idx == self.buttonOffset + 1 then
+					button:SetPoint("TOPLEFT", self, 8, -10)
+					button:SetPoint("TOPRIGHT", self, -7, 0)
+					button:Show()
+                else
+					button:SetPoint("TOPLEFT", self.buttons[idx-1], "BOTTOMLEFT", 0, 0)
+					button:SetPoint("TOPRIGHT", self.buttons[idx-1], "BOTTOMRIGHT", 0, 0)
+					button:Show()
+                end
+            end
+
 			self:Show()
 		else
 			self:Hide()
-		end
-		
-		self.activeButtons = activeButtons
+        end
 	end
-				
+
+	local function Predictor_OnMouseWheel(self, value)
+		-- DOWN = -1, UP = 1
+
+		if (self.activeButtons > PREDICTOR_ROWS) then
+            Update_PredictorScroll(self, self.buttonOffset - value)
+		end
+	end
+
+	local function ScrollBar_OnScrollValueChanged(frame, value)
+        Update_PredictorScroll(frame:GetParent(), value)
+    end
+
 	local function ShowButton(self)
 		if( self.lastText ~= "" ) then
 			self.predictFrame.selectedButton = nil
@@ -310,9 +382,9 @@ do
 		local num  = AceGUI:GetNextWidgetNum(Type)
 		local frame = CreateFrame("Frame", nil, UIParent)
 		local editBox = CreateFrame("EditBox", "AceGUI30SpellEditBox" .. num, frame, "InputBoxTemplate")
-	
+
 		-- Don't feel like looking up the specific callbacks for when a widget resizes, so going to be creative with SetPoint instead!
-		local predictFrame = CreateFrame("Frame", "AceGUI30SpellEditBox" .. num .. "Predictor", UIParent)
+		local predictFrame = CreateFrame("ScrollFrame", "AceGUI30SpellEditBox" .. num .. "Predictor", UIParent)
 		predictFrame:SetBackdrop(predictorBackdrop)
 		predictFrame:SetBackdropColor(0, 0, 0, 0.85)
 		predictFrame:SetWidth(1)
@@ -321,11 +393,30 @@ do
 		predictFrame:SetPoint("TOPRIGHT", editBox, "BOTTOMRIGHT", 0, 0)
 		predictFrame:SetFrameStrata("TOOLTIP")
 		predictFrame.buttons = {}
+		predictFrame.activeButtons = 0
+		predictFrame.buttonOffset = 0
 		predictFrame.Query = Predictor_Query
 		predictFrame:Hide()
-			
+
+		local scrollbar = CreateFrame("Slider", ("AceConfigDialogScrollFrame%dScrollBar"):format(num), predictFrame, "UIPanelScrollBarTemplate")
+		scrollbar:SetPoint("TOPRIGHT", predictFrame, "TOPLEFT", 0, -20)
+		scrollbar:SetPoint("BOTTOMRIGHT", predictFrame, "BOTTOMLEFT", 0, 20)
+		scrollbar:SetMinMaxValues(0, 1000)
+		scrollbar:SetValueStep(1)
+		scrollbar:SetValue(0)
+		scrollbar:SetWidth(16)
+		scrollbar:Hide()
+		-- set the script as the last step, so it doesn't fire yet
+		scrollbar:SetScript("OnValueChanged", ScrollBar_OnScrollValueChanged)
+
+		local scrollbg = scrollbar:CreateTexture(nil, "BACKGROUND")
+		scrollbg:SetAllPoints(scrollbar)
+		scrollbg:SetColorTexture(0, 0, 0, 0.4)
+
+    	predictFrame.scrollbar = scrollbar
+
 		-- Create the mass of predictor rows
-		for i=1, PREDICTOR_ROWS do
+		for i=1, RESULT_ROWS do
 			local button = CreateFrame("Button", nil, predictFrame)
 			button:SetHeight(17)
 			button:SetWidth(1)
@@ -341,7 +432,7 @@ do
 				button:SetPoint("TOPLEFT", predictFrame.buttons[i - 1], "BOTTOMLEFT", 0, 0)
 				button:SetPoint("TOPRIGHT", predictFrame.buttons[i - 1], "BOTTOMRIGHT", 0, 0)
 			else
-				button:SetPoint("TOPLEFT", predictFrame, 8, -8)
+				button:SetPoint("TOPLEFT", predictFrame, 8, -10)
 				button:SetPoint("TOPRIGHT", predictFrame, -7, 0)
 			end
 
@@ -411,7 +502,10 @@ do
 		predictFrame:SetScript("OnMouseDown", Predictor_OnMouseDown)
 		predictFrame:SetScript("OnHide", Predictor_OnHide)
 		predictFrame:SetScript("OnShow", Predictor_OnShow)
-		
+		predictFrame:EnableMouseWheel(true)
+		predictFrame:SetScript("OnMouseWheel", Predictor_OnMouseWheel)
+
+
 		editBox:SetScript("OnEnter", Control_OnEnter)
 		editBox:SetScript("OnLeave", Control_OnLeave)
 		

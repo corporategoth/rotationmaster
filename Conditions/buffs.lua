@@ -9,8 +9,8 @@ local tonumber, pairs = tonumber, pairs
 local operators, units, unitsPossessive = addon.operators, addon.units, addon.unitsPossessive
 
 -- From utils
-local compare, compareString, nullable, keys, isin, getCached, deepcopy, playerize =
-    addon.compare, addon.compareString, addon.nullable, addon.keys, addon.isin, addon.getCached, addon.deepcopy, addon.playerize
+local compare, compareString, nullable, keys, isin, isint, getCached, deepcopy, playerize =
+    addon.compare, addon.compareString, addon.nullable, addon.keys, addon.isin, addon.isint, addon.getCached, addon.deepcopy, addon.playerize
 
 addon:RegisterCondition("BUFF", {
     description = L["Buff Present"],
@@ -92,8 +92,15 @@ addon:RegisterCondition("BUFF", {
         end
         spell:SetUserData("spec", spec)
         spell:SetCallback("OnEnterPressed", function(widget, event, v)
-            value.spell = v
-            local spellid = SpellData.spellListReverse[string.lower(value.spell)]
+            local spellid
+            if isint(v) then
+                spellid = tonumber(v)
+                value.spell = GetSpellInfo(spellid)
+                spell:SetText(value.spell)
+            else
+                value.spell = v
+                spellid = SpellData.spellListReverse[string.lower(value.spell)]
+            end
             if spellid then
                 spellIcon:SetText(spellid)
             else
@@ -189,8 +196,15 @@ addon:RegisterCondition("BUFF_REMAIN", {
         end
         spell:SetUserData("spec", spec)
         spell:SetCallback("OnEnterPressed", function(widget, event, v)
-            value.spell = v
-            local spellid = SpellData.spellListReverse[string.lower(value.spell)]
+            local spellid
+            if isint(v) then
+                spellid = tonumber(v)
+                value.spell = GetSpellInfo(spellid)
+                spell:SetText(value.spell)
+            else
+                value.spell = v
+                spellid = SpellData.spellListReverse[string.lower(value.spell)]
+            end
             if spellid then
                 spellIcon:SetText(spellid)
             else
@@ -308,8 +322,15 @@ addon:RegisterCondition("BUFF_STACKS", {
         end
         spell:SetUserData("spec", spec)
         spell:SetCallback("OnEnterPressed", function(widget, event, v)
-            value.spell = v
-            local spellid = SpellData.spellListReverse[string.lower(value.spell)]
+            local spellid
+            if isint(v) then
+                spellid = tonumber(v)
+                value.spell = GetSpellInfo(spellid)
+                spell:SetText(value.spell)
+            else
+                value.spell = v
+                spellid = SpellData.spellListReverse[string.lower(value.spell)]
+            end
             if spellid then
                 spellIcon:SetText(spellid)
             else

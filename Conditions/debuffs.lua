@@ -9,8 +9,8 @@ local tonumber = tonumber
 local operators, units, unitsPossessive, debufftypes = addon.operators, addon.units, addon.unitsPossessive,addon.debufftypes
 
 -- From utils
-local compare, compareString, nullable, keys, isin, deepcopy, getCached, playerize =
-    addon.compare, addon.compareString, addon.nullable, addon.keys, addon.isin, addon.deepcopy, addon.getCached, addon.playerize
+local compare, compareString, nullable, keys, isin, isint, deepcopy, getCached, playerize =
+    addon.compare, addon.compareString, addon.nullable, addon.keys, addon.isin, addon.isint, addon.deepcopy, addon.getCached, addon.playerize
 
 addon:RegisterCondition("DEBUFF", {
     description = L["Debuff Present"],
@@ -92,8 +92,15 @@ addon:RegisterCondition("DEBUFF", {
         end
         spell:SetUserData("spec", spec)
         spell:SetCallback("OnEnterPressed", function(widget, event, v)
-            value.spell = v
-            local spellid = SpellData.spellListReverse[string.lower(value.spell)]
+            local spellid
+            if isint(v) then
+                spellid = tonumber(v)
+                value.spell = GetSpellInfo(spellid)
+                spell:SetText(value.spell)
+            else
+                value.spell = v
+                spellid = SpellData.spellListReverse[string.lower(value.spell)]
+            end
             if spellid then
                 spellIcon:SetText(spellid)
             else
@@ -189,8 +196,15 @@ addon:RegisterCondition("DEBUFF_REMAIN", {
         end
         spell:SetUserData("spec", spec)
         spell:SetCallback("OnEnterPressed", function(widget, event, v)
-            value.spell = v
-            local spellid = SpellData.spellListReverse[string.lower(value.spell)]
+            local spellid
+            if isint(v) then
+                spellid = tonumber(v)
+                value.spell = GetSpellInfo(spellid)
+                spell:SetText(value.spell)
+            else
+                value.spell = v
+                spellid = SpellData.spellListReverse[string.lower(value.spell)]
+            end
             if spellid then
                 spellIcon:SetText(spellid)
             else
@@ -308,8 +322,15 @@ addon:RegisterCondition("DEBUFF_STACKS", {
         end
         spell:SetUserData("spec", spec)
         spell:SetCallback("OnEnterPressed", function(widget, event, v)
-            value.spell = v
-            local spellid = SpellData.spellListReverse[string.lower(value.spell)]
+            local spellid
+            if isint(v) then
+                spellid = tonumber(v)
+                value.spell = GetSpellInfo(spellid)
+                spell:SetText(value.spell)
+            else
+                value.spell = v
+                spellid = SpellData.spellListReverse[string.lower(value.spell)]
+            end
             if spellid then
                 spellIcon:SetText(spellid)
             else
@@ -358,7 +379,9 @@ addon:RegisterCondition("DISPELLABLE", {
             if (name == nil) then
                 break
             end
-            if debuffType == value.debufftype then
+            if value.debufftype == "Enrage" and debuffType == "" then
+                return true
+            elseif debuffType == value.debufftype then
                 return true
             end
         end

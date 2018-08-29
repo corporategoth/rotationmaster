@@ -89,7 +89,9 @@ addon:RegisterCondition("PETSPELL_AVAIL", {
         end
         spell:SetUserData("spec", spec)
         spell:SetCallback("OnEnterPressed", function(widget, event, v)
-            value.spell = select(7, GetSpellInfo(v))
+            local name, _, _, _, _, _, spellid = GetSpellInfo(v)
+            value.spell = spellid
+            spell:SetText(name)
             spellIcon:SetText(value.spell)
             top:SetStatusText(funcs:print(root, spec))
         end)
@@ -160,7 +162,9 @@ addon:RegisterCondition("PETSPELL_COOLDOWN", {
         end
         spell:SetUserData("spec", spec)
         spell:SetCallback("OnEnterPressed", function(widget, event, v)
-            value.spell = select(7, GetSpellInfo(v))
+            local name, _, _, _, _, _, spellid = GetSpellInfo(v)
+            value.spell = spellid
+            spell:SetText(name)
             spellIcon:SetText(value.spell)
             top:SetStatusText(funcs:print(root, spec))
         end)
@@ -253,7 +257,9 @@ addon:RegisterCondition("PETSPELL_REMAIN", {
         end
         spell:SetUserData("spec", spec)
         spell:SetCallback("OnEnterPressed", function(widget, event, v)
-            value.spell = select(7, GetSpellInfo(v))
+            local name, _, _, _, _, _, spellid = GetSpellInfo(v)
+            value.spell = spellid
+            spell:SetText(name)
             spellIcon:SetText(value.spell)
             top:SetStatusText(funcs:print(root, spec))
         end)
@@ -341,7 +347,9 @@ addon:RegisterCondition("PETSPELL_CHARGES", {
         end
         spell:SetUserData("spec", spec)
         spell:SetCallback("OnEnterPressed", function(widget, event, v)
-            value.spell = select(7, GetSpellInfo(v))
+            local name, _, _, _, _, _, spellid = GetSpellInfo(v)
+            value.spell = spellid
+            spell:SetText(name)
             spellIcon:SetText(value.spell)
             top:SetStatusText(funcs:print(root, spec))
         end)

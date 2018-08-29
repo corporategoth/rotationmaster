@@ -11,9 +11,9 @@ addon.operators, addon.units, addon.unitsPossessive, addon.classes, addon.roles,
 addon.zonepvp, addon.instances, addon.totems
 
 -- From utils
-local compare, compareString, nullable, keys, tomap, isin, cleanArray, deepcopy, getCached, isSpellOnSpec, round =
+local compare, compareString, nullable, keys, tomap, isin, isint, cleanArray, deepcopy, getCached, isSpellOnSpec, round =
 addon.compare, addon.compareString, addon.nullable, addon.keys, addon.tomap,
-addon.isin, addon.cleanArray, addon.deepcopy, addon.getCached, addon.isSpellOnSpec, addon.round
+addon.isin, addon.isint, addon.cleanArray, addon.deepcopy, addon.getCached, addon.isSpellOnSpec, addon.round
 
 addon:RegisterCondition("SPELL_AVAIL", {
     description = L["Spell Available"],
@@ -91,7 +91,18 @@ addon:RegisterCondition("SPELL_AVAIL", {
         end
         spell:SetUserData("spec", spec)
         spell:SetCallback("OnEnterPressed", function(widget, event, v)
-            value.spell = addon:GetSpecSpellID(spec, v)
+            if isint(v) then
+                if isSpellOnSpec(spec, tonumber(v)) then
+                    value.spell = tonumber(v)
+                else
+                    value.spell = nil
+                end
+            else
+                value.spell = addon:GetSpecSpellID(spec, v)
+            end
+            if value.spell ~= nil then
+                spell:SetText(GetSpellInfo(value.spell))
+            end
             spellIcon:SetText(value.spell)
             top:SetStatusText(funcs:print(root, spec))
         end)
@@ -164,7 +175,18 @@ addon:RegisterCondition("SPELL_COOLDOWN", {
         end
         spell:SetUserData("spec", spec)
         spell:SetCallback("OnEnterPressed", function(widget, event, v)
-            value.spell = addon:GetSpecSpellID(spec, v)
+            if isint(v) then
+                if isSpellOnSpec(spec, tonumber(v)) then
+                    value.spell = tonumber(v)
+                else
+                    value.spell = nil
+                end
+            else
+                value.spell = addon:GetSpecSpellID(spec, v)
+            end
+            if value.spell ~= nil then
+                spell:SetText(GetSpellInfo(value.spell))
+            end
             spellIcon:SetText(value.spell)
             top:SetStatusText(funcs:print(root, spec))
         end)
@@ -259,7 +281,18 @@ addon:RegisterCondition("SPELL_REMAIN", {
         end
         spell:SetUserData("spec", spec)
         spell:SetCallback("OnEnterPressed", function(widget, event, v)
-            value.spell = addon:GetSpecSpellID(spec, v)
+            if isint(v) then
+                if isSpellOnSpec(spec, tonumber(v)) then
+                    value.spell = tonumber(v)
+                else
+                    value.spell = nil
+                end
+            else
+                value.spell = addon:GetSpecSpellID(spec, v)
+            end
+            if value.spell ~= nil then
+                spell:SetText(GetSpellInfo(value.spell))
+            end
             spellIcon:SetText(value.spell)
             top:SetStatusText(funcs:print(root, spec))
         end)
@@ -349,7 +382,18 @@ addon:RegisterCondition("SPELL_CHARGES", {
         end
         spell:SetUserData("spec", spec)
         spell:SetCallback("OnEnterPressed", function(widget, event, v)
-            value.spell = addon:GetSpecSpellID(spec, v)
+            if isint(v) then
+                if isSpellOnSpec(spec, tonumber(v)) then
+                    value.spell = tonumber(v)
+                else
+                    value.spell = nil
+                end
+            else
+                value.spell = addon:GetSpecSpellID(spec, v)
+            end
+            if value.spell ~= nil then
+                spell:SetText(GetSpellInfo(value.spell))
+            end
             spellIcon:SetText(value.spell)
             top:SetStatusText(funcs:print(root, spec))
         end)

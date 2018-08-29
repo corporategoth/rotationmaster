@@ -3,8 +3,8 @@ local addon_name, addon = ...
 local AceConsole = LibStub("AceConsole-3.0")
 local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
 
-local _G, tostring, pairs, color = _G, tostring, pairs, color
-local random = math.random
+local _G, tostring, tonumber, pairs, color = _G, tostring, tonumber, pairs, color
+local random, floor = math.random, math.floor
 
 local operators = addon.operators
 
@@ -101,7 +101,15 @@ end
 
 addon.round = function (num, numDecimalPlaces)
     local mult = 10^(numDecimalPlaces or 0)
-    return math.floor(num * mult + 0.5) / mult
+    return floor(num * mult + 0.5) / mult
+end
+
+addon.isint = function(num)
+    if type(num) == "number" then
+        return floor(num) == num
+    elseif type(num) == "string" then
+        return tostring(floor(tonumber(num))) == num
+    end
 end
 
 addon.cleanArray = function(array, except, invert)

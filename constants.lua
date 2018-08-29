@@ -58,10 +58,11 @@ addon.roles = {
 }
 
 addon.debufftypes = {
-    MAGIC = L["Magic"],
-    DISEASE = L["Disease"],
-    POISON = L["Poison"],
-    CURSE = L["Curse"],
+    Magic = L["Magic"],
+    Disease = L["Disease"],
+    Poison = L["Poison"],
+    Curse = L["Curse"],
+    Enrage = L["Enrage"], -- Actually an empty string!
 }
 
 addon.zonepvp = {

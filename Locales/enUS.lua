@@ -83,6 +83,7 @@ L["Magic"] = true
 L["Disease"] = true
 L["Poison"] = true
 L["Curse"] = true
+L["Enrage"] = true
 
 L["Arena"] = true
 L["Controlled by your faction"] = true

@@ -9,8 +9,8 @@ local tonumber = tonumber
 local units, unitsPossessive, operators = addon.units, addon.unitsPossessive, addon.operators
 
 -- From utils
-local compare, compareString, nullable, keys, isin, getCached, playerize, deepcopy =
-    addon.compare, addon.compareString, addon.nullable, addon.keys, addon.isin, addon.getCached, addon.playerize, addon.deepcopy
+local compare, compareString, nullable, keys, isin, isint, getCached, playerize, deepcopy =
+    addon.compare, addon.compareString, addon.nullable, addon.keys, addon.isin, addon.isint, addon.getCached, addon.playerize, addon.deepcopy
 
 addon:RegisterCondition("CASTING", {
     description = L["Casting"],
@@ -116,8 +116,15 @@ addon:RegisterCondition("CASTING_SPELL", {
         end
         spell:SetUserData("spec", spec)
         spell:SetCallback("OnEnterPressed", function(widget, event, v)
-            value.spell = v
-            local spellid = SpellData.spellListReverse[string.lower(value.spell)]
+            local spellid
+            if isint(v) then
+                spellid = tonumber(v)
+                value.spell = GetSpellInfo(spellid)
+                spell:SetText(value.spell)
+            else
+                value.spell = v
+                spellid = SpellData.spellListReverse[string.lower(value.spell)]
+            end
             if spellid then
                 spellIcon:SetText(spellid)
             else

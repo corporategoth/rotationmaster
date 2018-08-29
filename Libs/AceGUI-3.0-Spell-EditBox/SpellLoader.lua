@@ -7,13 +7,14 @@ if( not SpellLoader ) then return end
 SpellLoader.predictors = SpellLoader.predictors or {}
 SpellLoader.spellList = SpellLoader.spellList or {}
 SpellLoader.spellListReverse = SpellLoader.spellListReverse or {}
+SpellLoader.spellListOrdered = SpellLoader.spellListOrdered or {}
 SpellLoader.spellsLoaded = SpellLoader.spellsLoaded or 0
 SpellLoader.needsUpdate = SpellLoader.needsUpdate or {}
 
 local SPELLS_PER_RUN = 500
 local TIMER_THROTTLE = 0.10
-local spells, spellsReverse, predictors, needsUpdate =
-    SpellLoader.spellList, SpellLoader.spellListReverse, SpellLoader.predictors, SpellLoader.needsUpdate
+local spells, spellsReverse, spellOrdered, predictors, needsUpdate =
+    SpellLoader.spellList, SpellLoader.spellListReverse, SpellLoader.spellListOrdered, SpellLoader.predictors, SpellLoader.needsUpdate
 
 function SpellLoader:RegisterPredictor(frame)
 	self.predictors[frame] = true
@@ -45,6 +46,7 @@ function SpellLoader:StartLoading()
 		["Interface\\Icons\\Trade_Mining"] = true,
 		["Interface\\Icons\\Trade_Tailoring"] = true,
 		["Interface\\Icons\\Temp"] = true,
+		["136243"] = true, -- The engineer icon
 	}
 		
 	local timeElapsed, totalInvalid, currentIndex = 0, 0, 0
@@ -68,7 +70,7 @@ function SpellLoader:StartLoading()
 			-- we can safely blacklist any of these spells as they are not needed. Can get away with this because things like
 			-- Alchemy use two icons, the Trade_* for the actual crafted spell and a different icon for the actual buff
 			-- Passive spells have no use as well, since they are well passive and can't actually be used
-			if( name and not blacklist[icon] and rank ~= SPELL_PASSIVE ) then
+			if( name and not blacklist[tostring(icon)] and rank ~= SPELL_PASSIVE ) then
 				local lcname = string.lower(name)
 				
 				SpellLoader.spellsLoaded = SpellLoader.spellsLoaded + 1
@@ -102,7 +104,13 @@ function SpellLoader:StartLoading()
 				totalInvalid = totalInvalid + 1
 			end
 		end
-		
+
+    	table.wipe(spellOrdered)
+		for k,v in pairs(spellsReverse) do
+			table.insert(spellOrdered, k)
+		end
+		table.sort(spellOrdered)
+
 		-- Every ~1 second it will update any visible predictors to make up for the fact that the data is delay loaded
 		if( currentIndex % 5000 == 0 ) then
 			for predictor in pairs(predictors) do
@@ -112,7 +120,6 @@ function SpellLoader:StartLoading()
 			end
 		end
 
-		
 		-- Increment and do it all over!
 		currentIndex = currentIndex + SPELLS_PER_RUN
 	end)
