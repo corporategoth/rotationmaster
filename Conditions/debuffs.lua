@@ -410,7 +410,7 @@ addon:RegisterCondition("DISPELLABLE", {
 
         local debufftype = AceGUI:Create("Dropdown")
         debufftype:SetLabel(L["Debuff Type"])
-        debufftype:SetList(debufftypes, debufftypes(debufftypes))
+        debufftype:SetList(debufftypes, keys(debufftypes))
         if (value.debufftype ~= nil) then
             debufftype:SetValue(value.debufftype)
         end
