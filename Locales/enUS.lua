@@ -166,6 +166,8 @@ L["Please Choose ..."] = true
 L["Condition Type"] = true
 L["Edit Condition #%d"] = true
 L["Edit Condition"] = true
+L["Up"] = true
+L["Down"] = true
 
 -- From the Conditions
 

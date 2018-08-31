@@ -208,7 +208,7 @@ usefulSingle = function(value, conditions)
     end
 end
 
-local EditConditionCommon
+local EditConditionCommon, LayoutFrame
 
 local function ChangeConditionType(parent, event, ...)
     local top = parent:GetUserData("top")
@@ -253,8 +253,16 @@ local function ChangeConditionType(parent, event, ...)
     deleteicon:SetImageSize(36, 36)
     deleteicon:SetWidth(44)
     deleteicon:SetCallback("OnClick", function (widget)
-        cleanArray(value, { "type" })
-        value.type = nil
+        if selected == "NOT" and value.value ~= nil then
+            local subvalue = value.value
+            cleanArray(value, { "type" })
+            for k,v in pairs(subvalue) do
+                value[k] = v
+            end
+        else
+            cleanArray(value, { "type" })
+            value.type = nil
+        end
         frame:Hide()
     end)
     deleteicon:SetCallback("OnEnter", function () frame:SetStatusText(DELETE) end)
@@ -266,10 +274,17 @@ local function ChangeConditionType(parent, event, ...)
     andicon:SetImageSize(36, 36)
     andicon:SetWidth(44)
     andicon:SetCallback("OnClick", function (widget)
+        local subvalue
         if selected ~= "AND" and selected ~= "OR" then
+            if value ~= nil and value.type ~= nil then
+                subvalue = { deepcopy(value) }
+            end
             cleanArray(value, { "type" })
         end
         value.type = "AND"
+        if subvalue ~= nil then
+            value.value = subvalue
+        end
         frame:Hide()
     end)
     andicon:SetCallback("OnEnter", function () frame:SetStatusText(L["AND"]) end)
@@ -285,10 +300,17 @@ local function ChangeConditionType(parent, event, ...)
     oricon:SetImageSize(36, 36)
     oricon:SetWidth(44)
     oricon:SetCallback("OnClick", function (widget)
+        local subvalue
         if selected ~= "AND" and selected ~= "OR" then
+            if value ~= nil and value.type ~= nil then
+                subvalue = { deepcopy(value) }
+            end
             cleanArray(value, { "type" })
         end
-        value.type = L["OR"]
+        value.type = "OR"
+        if subvalue ~= nil then
+            value.value = subvalue
+        end
         frame:Hide()
     end)
     oricon:SetCallback("OnEnter", function () frame:SetStatusText(L["OR"]) end)
@@ -304,11 +326,19 @@ local function ChangeConditionType(parent, event, ...)
     noticon:SetImageSize(36, 36)
     noticon:SetWidth(44)
     noticon:SetCallback("OnClick", function (widget)
+        local subvalue
         if selected ~= "NOT" then
+            if value ~= nil and value.type ~= nil then
+                subvalue = deepcopy(value)
+            end
             cleanArray(value, { "type" })
         end
         value.type = "NOT"
-        value.value = { type = nil }
+        if subvalue ~= nil then
+            value.value = subvalue
+        elseif selected ~= "NOT" then
+            value.value = { type = nil }
+        end
         frame:Hide()
     end)
     noticon:SetCallback("OnEnter", function () frame:SetStatusText(L["NOT"]) end)
@@ -347,7 +377,7 @@ local function ChangeConditionType(parent, event, ...)
     end
 end
 
-local function ActionGroup(parent, spec, value)
+local function ActionGroup(parent, spec, value, idx, array)
     local top = parent:GetUserData("top")
     local funcs = top:GetUserData("funcs")
 
@@ -358,6 +388,28 @@ local function ActionGroup(parent, spec, value)
     group:SetUserData("top", top)
     group:SetUserData("table", { columns = { 0, 1 } })
     parent:AddChild(group)
+
+    local icongroup = AceGUI:Create("SimpleGroup")
+    icongroup:SetFullWidth(true)
+    icongroup:SetLayout("List")
+    icongroup:SetUserData("top", top)
+    icongroup:SetWidth(50)
+    group:AddChild(icongroup)
+
+    if idx ~= nil and idx > 1 and value.type ~= nil then
+        local moveup = AceGUI:Create("InteractiveLabel")
+        moveup:SetText(L["Up"])
+        moveup:SetWidth(50)
+        moveup:SetFontObject(GameFontNormalTiny)
+        moveup:SetJustifyH("center")
+        moveup:SetCallback("OnClick", function (widget)
+            local tmp = array[idx-1]
+            array[idx-1] = array[idx]
+            array[idx] = tmp
+            LayoutFrame(top, spec)
+        end)
+        icongroup:AddChild(moveup)
+    end
 
     local actionicon = AceGUI:Create("Icon")
     if (value == nil or value.type == nil) then
@@ -386,7 +438,22 @@ local function ActionGroup(parent, spec, value)
     actionicon:SetUserData("spec", spec)
     actionicon:SetUserData("value", value)
     actionicon:SetCallback("OnClick", ChangeConditionType)
-    group:AddChild(actionicon)
+    icongroup:AddChild(actionicon)
+
+    if idx ~= nil and idx < #array - 1 and value.type ~= nil then
+        local movedown = AceGUI:Create("InteractiveLabel")
+        movedown:SetText(L["Down"])
+        movedown:SetWidth(50)
+        movedown:SetFontObject(GameFontNormalTiny)
+        movedown:SetJustifyH("center")
+        movedown:SetCallback("OnClick", function (widget)
+            local tmp = array[idx+1]
+            array[idx+1] = array[idx]
+            array[idx] = tmp
+            LayoutFrame(top, spec)
+        end)
+        icongroup:AddChild(movedown)
+    end
 
     if (value ~= nil and value.type ~= nil) then
         if (value.type == "AND" or value.type == "OR") then
@@ -414,7 +481,7 @@ local function ActionGroup(parent, spec, value)
                     arraysz = arraysz - 1
                 end
 
-                ActionGroup(arraygroup, spec, value.value[i])
+                ActionGroup(arraygroup, spec, value.value[i], i, value.value)
                 i = i + 1
             end
         elseif (value.type == "NOT") then
@@ -429,6 +496,23 @@ local function ActionGroup(parent, spec, value)
             funcs:widget(arraygroup, spec, value)
         end
     end
+end
+
+LayoutFrame = function(frame, spec, value)
+    local root = frame:GetUserData("root")
+
+    frame:ReleaseChildren()
+    frame:PauseLayout()
+
+    local group = AceGUI:Create("ScrollFrame")
+    group:SetLayout("Flow")
+    group:SetUserData("top", frame)
+    frame:AddChild(group)
+
+    ActionGroup(group, spec, root)
+
+    frame:ResumeLayout()
+    frame:DoLayout()
 end
 
 EditConditionCommon = function(index, spec, value, funcs)
@@ -449,17 +533,7 @@ EditConditionCommon = function(index, spec, value, funcs)
     end)
     frame:SetLayout("Fill")
 
-    frame:PauseLayout()
-
-    local group = AceGUI:Create("ScrollFrame")
-    group:SetLayout("Flow")
-    group:SetUserData("top", frame)
-    frame:AddChild(group)
-
-    ActionGroup(group, spec, value)
-
-    frame:ResumeLayout()
-    frame:DoLayout()
+    LayoutFrame(frame, spec)
 end
 
 --------------------------------
