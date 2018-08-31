@@ -1,4 +1,8 @@
--- This has been lifted directly from MaxDps, and changed accordingly.
+-- This file was originally from the MaxDps addon (https://github.com/kaminaris/MaxDps)
+-- That addon is writtn by Kaminaris, and is released under the MIT license.
+-- Accordingly, this file is also subject to the MIT license (https://opensource.org/licenses/MIT)
+
+-- This file has been heavily modified from the original.  It is no longer compatible with the original.
 
 local addon_name, addon = ...
 
