@@ -21,15 +21,16 @@ local operators, units, unitsPossessive, classes, roles, debufftypes, zonepvp, i
         addon.zonepvp, addon.instances, addon.totems
 
 -- From utils
-local compare, compareString, nullable, keys, tomap, has, is, isin, cleanArray, deepcopy, getCached =
+local compare, compareString, nullable, keys, tomap, has, is, isin, cleanArray, deepcopy, getCached, HideOnEscape =
         addon.compare, addon.compareString, addon.nullable, addon.keys, addon.tomap, addon.has,
-        addon.is, addon.isin, addon.cleanArray, addon.deepcopy, addon.getCached
+        addon.is, addon.isin, addon.cleanArray, addon.deepcopy, addon.getCached, addon.HideOnEscape
 
 --------------------------------
 -- Common code
 -------------------------------
 
 local evaluateArray, evaluateSingle, printArray, printSingle, validateArray, validateSingle, usefulArray, usefulSingle
+local LayoutFrame
 
 evaluateArray = function(operation, array, conditions, cache, start)
     if array ~= nil then
@@ -208,15 +209,16 @@ usefulSingle = function(value, conditions)
     end
 end
 
-local EditConditionCommon, LayoutFrame
-
 local function ChangeConditionType(parent, event, ...)
     local top = parent:GetUserData("top")
-    local spec = parent:GetUserData("spec")
     local value = parent:GetUserData("value")
     local index = top:GetUserData("index")
+    local spec = top:GetUserData("spec")
     local root = top:GetUserData("root")
     local funcs = top:GetUserData("funcs")
+
+    -- Don't let the notifications happen, or the top screen destroy itself on hide.
+    top:SetCallback("OnClose", function(widget) end)
     top:Hide()
 
     local conditions = funcs:list()
@@ -234,13 +236,15 @@ local function ChangeConditionType(parent, event, ...)
             ActionButton_HideOverlayGlow(selectedIcon.frame)
         end
         AceGUI:Release(widget)
-        EditConditionCommon(index, spec, root, funcs)
+        LayoutFrame(top)
+        top:Show()
     end)
 
     frame:SetWidth(8 * 44 + 40)
     local rows = math.floor((#conditions + 4) / 8) + (((#conditions + 4) % 8 ~= 0) and 1 or 0)
     frame:SetHeight(rows * 49 + 72)
     frame:SetLayout("Flow")
+    HideOnEscape(frame)
 
     local framegroup = AceGUI:Create("SimpleGroup")
     framegroup:SetFullWidth(true)
@@ -377,8 +381,9 @@ local function ChangeConditionType(parent, event, ...)
     end
 end
 
-local function ActionGroup(parent, spec, value, idx, array)
+local function ActionGroup(parent, value, idx, array)
     local top = parent:GetUserData("top")
+    local spec = top:GetUserData("spec")
     local funcs = top:GetUserData("funcs")
 
     -- local group = parent;
@@ -406,7 +411,7 @@ local function ActionGroup(parent, spec, value, idx, array)
             local tmp = array[idx-1]
             array[idx-1] = array[idx]
             array[idx] = tmp
-            LayoutFrame(top, spec)
+            LayoutFrame(top)
         end)
         icongroup:AddChild(moveup)
     end
@@ -435,7 +440,6 @@ local function ActionGroup(parent, spec, value, idx, array)
     actionicon:SetImageSize(36, 36)
     actionicon:SetWidth(50)
     actionicon:SetUserData("top", top)
-    actionicon:SetUserData("spec", spec)
     actionicon:SetUserData("value", value)
     actionicon:SetCallback("OnClick", ChangeConditionType)
     icongroup:AddChild(actionicon)
@@ -450,7 +454,7 @@ local function ActionGroup(parent, spec, value, idx, array)
             local tmp = array[idx+1]
             array[idx+1] = array[idx]
             array[idx] = tmp
-            LayoutFrame(top, spec)
+            LayoutFrame(top)
         end)
         icongroup:AddChild(movedown)
     end
@@ -481,11 +485,11 @@ local function ActionGroup(parent, spec, value, idx, array)
                     arraysz = arraysz - 1
                 end
 
-                ActionGroup(arraygroup, spec, value.value[i], i, value.value)
+                ActionGroup(arraygroup, value.value[i], i, value.value)
                 i = i + 1
             end
         elseif (value.type == "NOT") then
-            ActionGroup(group, spec, value.value)
+            ActionGroup(group, value.value)
         else
             local arraygroup = AceGUI:Create("SimpleGroup")
             arraygroup:SetFullWidth(true)
@@ -498,8 +502,14 @@ local function ActionGroup(parent, spec, value, idx, array)
     end
 end
 
-LayoutFrame = function(frame, spec, value)
+LayoutFrame = function(frame)
     local root = frame:GetUserData("root")
+
+    frame:SetCallback("OnClose", function(widget)
+        AceGUI:Release(widget)
+        AceConfigRegistry:NotifyChange(addon.name .. "Class")
+        addon:UpdateAutoSwitch()
+    end)
 
     frame:ReleaseChildren()
     frame:PauseLayout()
@@ -509,13 +519,13 @@ LayoutFrame = function(frame, spec, value)
     group:SetUserData("top", frame)
     frame:AddChild(group)
 
-    ActionGroup(group, spec, root)
+    ActionGroup(group, root)
 
     frame:ResumeLayout()
     frame:DoLayout()
 end
 
-EditConditionCommon = function(index, spec, value, funcs)
+local function EditConditionCommon(index, spec, value, funcs)
     local frame = AceGUI:Create("Frame")
     if index > 0 then
         frame:SetTitle(string.format(L["Edit Condition #%d"], index))
@@ -524,16 +534,13 @@ EditConditionCommon = function(index, spec, value, funcs)
     end
     frame:SetStatusText(funcs:print(value, spec))
     frame:SetUserData("index", index)
+    frame:SetUserData("spec", spec)
     frame:SetUserData("root", value)
     frame:SetUserData("funcs", funcs)
-    frame:SetCallback("OnClose", function(widget)
-        AceGUI:Release(widget)
-        AceConfigRegistry:NotifyChange(addon.name .. "Class")
-        addon:UpdateAutoSwitch()
-    end)
     frame:SetLayout("Fill")
+    HideOnEscape(frame)
 
-    LayoutFrame(frame, spec)
+    LayoutFrame(frame)
 end
 
 --------------------------------

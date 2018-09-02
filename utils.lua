@@ -21,6 +21,17 @@ addon.PopupError = function(string, onaccept)
     StaticPopup_Show("ROTATIONMASTER_ERROR")
 end
 
+addon.HideOnEscape = function(frame)
+    frame.frame:EnableKeyboard(true)
+    frame.frame:SetPropagateKeyboardInput(true)
+    frame.frame:SetScript("OnKeyDown", function (self, key)
+        self:SetPropagateKeyboardInput(key ~= "ESCAPE")
+        if key == "ESCAPE" then
+            frame:Hide()
+        end
+    end)
+end
+
 addon.uuid = function()
     local template ='xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'
     return string.gsub(template, '[xy]', function (c)

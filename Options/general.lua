@@ -16,6 +16,8 @@ local assert, error, hooksecurefunc, pairs, base64enc, base64dec, date, color
 
 local serpent = serpent
 
+local HideOnEscape = addon.HideOnEscape
+
 local options = {
     name = addon.pretty_name,
     handler = addon,
@@ -331,6 +333,7 @@ local function ImportExport(spec, rotation)
         AceConfigRegistry:NotifyChange(addon.name .. "Class")
     end)
     frame:SetLayout("List")
+    HideOnEscape(frame)
 
     frame:PauseLayout()
 
