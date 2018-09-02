@@ -143,7 +143,7 @@ L["Profiles"] = true
 
 -- from Options/cooldowns.lua and Options/rotations.lua
 
-L["Spells that you wish to conditionally highlight independent of your rotation.  And or all of these may be highlighted at the same time."] = true
+L["Spells that you wish to conditionally highlight independent of your rotation.  Any or all of these may be highlighted at the same time."] = true
 L["Your main spell rotation.  Only one spell will be highlighted at once, which spell being based on the first satisfied condition."] = true
 L["Move Up"] = true
 L["Move Down"] = true

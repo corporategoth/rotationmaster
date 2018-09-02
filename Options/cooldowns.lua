@@ -50,7 +50,7 @@ function addon:get_cooldown_list(spec, rotation)
         order = 2,
         type = "description",
         width = "full",
-        name = L["Spells that you wish to conditionally highlight independent of your rotation.  And or all of these may be highlighted at the same time."]
+        name = L["Spells that you wish to conditionally highlight independent of your rotation.  Any or all of these may be highlighted at the same time."]
     }
 
     if (rotation_settings[spec] ~= nil and rotation_settings[spec][rotation] ~= nil and
