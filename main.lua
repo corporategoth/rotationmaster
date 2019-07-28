@@ -5,6 +5,7 @@ local _G = _G
 _G.RotationMaster = LibStub("AceAddon-3.0"):NewAddon(addon, addon_name, "AceConsole-3.0", "AceEvent-3.0", "AceTimer-3.0")
 
 local AceConfigRegistry = LibStub("AceConfigRegistry-3.0")
+local AceConfigDialog = LibStub("AceConfigDialog-3.0")
 local AceConsole = LibStub("AceConsole-3.0")
 local SpellRange = LibStub("SpellRange-1.0")
 local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
@@ -107,6 +108,7 @@ function addon:HandleCommand(str)
     elseif cmd == "config" then
 	InterfaceOptionsFrame_OpenToCategory(addon.pretty_name)
 	InterfaceOptionsFrame_OpenToCategory(addon.pretty_name) -- Hack for Blizzard bug.
+	AceConfigDialog:SelectGroup(addon.name .. "Class", tostring(self.currentSpec))
 
     elseif cmd == "disable" then
 	    addon:DisableRotation()
@@ -284,6 +286,7 @@ function DataBroker.OnClick(self, button)
 	elseif button == "LeftButton" then
 		InterfaceOptionsFrame_OpenToCategory(addon.pretty_name)
 		InterfaceOptionsFrame_OpenToCategory(addon.pretty_name) -- Hack for Blizzard bug.
+		AceConfigDialog:SelectGroup(addon.name .. "Class", tostring(self.currentSpec))
 	end
 end
 
