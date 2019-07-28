@@ -23,6 +23,8 @@ L["Active rotation automatically switched to " .. color.WHITE .. "%s" .. color.I
 L["No rotation is active as there is none suitable to automatically switch to."] = true
 L["Battle rotation enabled"] = true
 L["Battle rotation disabled"] = true
+L["Current Rotation"] = true
+L["Automatic Switching"] = true
 
 L["[Tier: %d, Column: %d]"] = true
 L["Autoswitch rotation list has been updated."] = true
@@ -121,6 +123,7 @@ L["Debugging Options"] = true
 L["Debug Logging"] = true
 L["Verbose Debug Logging"] = true
 L["Disable Auto-Switching"] = true
+L["Minimap Icon"] = true
 L["Live Status Update Frequency (seconds)"] = true
 L["This is specifically how often the configuration pane will receive updates about live status.  Too frequently could make your configuration pane unusable.  0 = Disabled."] = true
 L["Are you sure you wish to delete this rotation?"] = true

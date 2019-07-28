@@ -9,6 +9,9 @@ local AceConsole = LibStub("AceConsole-3.0")
 local SpellRange = LibStub("SpellRange-1.0")
 local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
 local getCached
+local DBIcon = LibStub("LibDBIcon-1.0")
+local DataBroker = LibStub("LibDataBroker-1.1"):NewDataObject("RotationMaster",
+		{type = "launcher", label = "RotationMaster", icon = "Interface\\AddOns\\RotationMaster\\textures\\RotationMaster-Minimap"})
 
 local pairs, color = pairs, color
 local floor = math.floor
@@ -34,6 +37,9 @@ local defaults = {
         verbose = false,
         disable_autoswitch = false,
         live_config_update = 2,
+	minimap = {
+		hide = false,
+	}
     },
     global = {
         textures = {
@@ -97,7 +103,7 @@ function addon:HandleCommand(str)
         addon:info(L["                          This is reset upon switching specializations."])
 
     elseif cmd == "config" then
-        InterfaceOptionsFrame_OpenToCategory(addon.pretty_name)
+	InterfaceOptionsFrame_OpenToCategory(addon.pretty_name)
 
     elseif cmd == "current" then
         if self.currentRotation == nil then
@@ -152,6 +158,7 @@ function addon:OnInitialize()
 
     AceConsole:RegisterChatCommand("rm", function(str) addon:HandleCommand(str) end)
     AceConsole:RegisterChatCommand("rotationmaster", function(str) addon:HandleCommand(str) end)
+    DBIcon:Register("RotationMaster", DataBroker, self.db.profile.minimap)
 
     -- These values are cached for the entire time you are in combat.  Their values
     -- are unlikely to change during combat (and if they do, they will have minimal effect)
@@ -186,6 +193,69 @@ function addon:OnInitialize()
 
     -- This is here because of order of loading.
     getCached = addon.getCached
+end
+
+local function minimapChangeRotation(self, arg1, arg2, checked)
+	if arg1 == nil then
+            addon.manualRotation = false
+            addon:SwitchRotation()
+	elseif (addon.currentSpec == DEFAULT and addon.arg1 == 0 or arg1 == addon.currentSpec) then
+            addon.manualRotation = true
+            addon:info(L["Active rotation manually switched to " .. color.WHITE .. "%s" .. color.INFO],
+		addon.db.profile.rotations[addon.currentSpec][arg1].name)
+	else
+            addon:RemoveAllCurrentGlows()
+            addon.manualRotation = true
+	    if arg1 == 0 then
+		    addon.currentRotation = DEFAULT
+		    addon:info(L["Active rotation manually switched to " .. color.WHITE .. "%s" .. color.INFO], DEFAULT)
+	    else
+		    addon.currentRotation = arg1
+		    addon:info(L["Active rotation manually switched to " .. color.WHITE .. "%s" .. color.INFO], 
+			addon.db.profile.rotations[addon.currentSpec][arg1].name)
+	    end
+ 	    addon:EnableRotationTimer()
+	end
+end
+
+function minimapInitialize(self, level, menuList)
+	local info = UIDropDownMenu_CreateInfo()
+	info.func = minimapChangeRotation
+	info.text, info.arg1, info.checked = L["Automatic Switching"], nil, (addon.manualRotation == false)
+	UIDropDownMenu_AddButton(info)
+	info.text, info.arg1, info.checked = DEFAULT, 0, (addon.manualRotation == true and addon.currentRotation == DEFAULT)
+	UIDropDownMenu_AddButton(info)
+        if addon.db.profile.rotations[addon.currentSpec] ~= nil then
+		for id,rot in pairs(addon.db.profile.rotations[addon.currentSpec]) do
+			if id ~= DEFAULT then
+				info.text, info.arg1, info.checked = rot.name, id, (addon.manualRotation == true and addon.currentRotation == id)
+				UIDropDownMenu_AddButton(info)
+			end
+		end
+	end
+end
+
+function DataBroker.OnClick(self, button)
+	local frame = CreateFrame("Frame", "RotationMasterLDBFrame")
+	local dropdownFrame = CreateFrame("Frame", "RotationMasterLDBDropdownFrame", frame, "UIDropDownMenuTemplate")
+
+	if button == "LeftButton" then
+		UIDropDownMenu_Initialize(dropdownFrame, minimapInitialize)
+		ToggleDropDownMenu(1, nil, dropdownFrame, "cursor", 5, -10)
+	elseif button == "RightButton" then
+		InterfaceOptionsFrame_OpenToCategory(addon.pretty_name)
+	end
+end
+
+function DataBroker.OnTooltipShow(GameTooltip)
+	GameTooltip:SetText(addon.pretty_name .. " " .. GetAddOnMetadata(addon_name, "Version"), 0, 1, 1)
+	GameTooltip:AddLine(" ")
+	GameTooltip:AddLine(L["Current Rotation"], 0.55, 0.78, 0.33, 1)
+	if addon.currentRotation == DEFAULT then
+		GameTooltip:AddLine(DEFAULT, 1, 1, 1)
+	else
+		GameTooltip:AddLine(addon.db.profile.rotations[addon.currentSpec][addon.currentRotation].name, 1, 1, 1)
+	end
 end
 
 function addon:OnEnable()

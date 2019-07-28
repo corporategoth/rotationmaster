@@ -10,6 +10,7 @@ local AceConfigDialog = LibStub("AceConfigDialog-3.0")
 local AceConfig = LibStub("AceConfig-3.0")
 local AceDBOptions = LibStub("AceDBOptions-3.0")
 local LibAboutPanel = LibStub("LibAboutPanel")
+local DBIcon = LibStub("LibDBIcon-1.0")
 
 local assert, error, hooksecurefunc, pairs, base64enc, base64dec, date, color
     = assert, error, hooksecurefunc, pairs, base64enc, base64dec, date, color
@@ -69,6 +70,22 @@ local options = {
                             addon:EnableRotationTimer()
                         end
                     end,
+                },
+                minimap = {
+                    order = 30,
+                    type = "toggle",
+                    name = L["Minimap Icon"],
+                    width = 1.5,
+                    get  = function(info) return not addon.db.profile[info[#info]].hide end,
+                    set = function(info, val)
+			    addon.db.profile[info[#info]].hide = not val
+			    if val then
+				    DBIcon:Show("RotationMaster")
+			    else
+				    DBIcon:Hide("RotationMaster")
+			    end
+
+		    end,
                 },
                 overlay_header = {
                     order = 50,
@@ -759,4 +776,3 @@ function module:SetupOptions()
     self.Profile = AceConfigDialog:AddToBlizOptions(addon.name, L["Profiles"], addon.pretty_name, "profiles")
     self.About = LibAboutPanel.new(addon.pretty_name, addon.name)
 end
-
