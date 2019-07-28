@@ -342,7 +342,7 @@ function addon:EvaluateNextAction()
                 if cond.action ~= nil then
                     -- If we can't highlight the spell, may as well skip to the next one!
                     local spellid
-                    if cond.type == "spell" and getCached(self.longtermCache, IsSpellKnown, cond.action, false) then
+                    if cond.type == "spell" and getCached(self.longtermCache, IsUsableSpell, cond.action) then
                         spellid = cond.action
                     elseif cond.type == "pet" and getCached(cache, IsSpellKnown, cond.action, true) then
                         spellid = cond.action
@@ -379,7 +379,7 @@ function addon:EvaluateNextAction()
             for id,cond in pairs(rot.cooldowns) do
                 if cond.action ~= nil then
                     local spellid, enabled
-                    if cond.type == "spell" and getCached(self.longtermCache, IsSpellKnown, cond.action, false) then
+                    if cond.type == "spell" and getCached(self.longtermCache, IsUsableSpell, cond.action) then
                         spellid = cond.action
                     elseif cond.type == "pet" and getCached(cache, IsSpellKnown, cond.action, true) then
                         spellid = cond.action

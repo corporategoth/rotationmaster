@@ -119,8 +119,12 @@ addon.isint = function(num)
     if type(num) == "number" then
         return floor(num) == num
     elseif type(num) == "string" then
-        return tostring(floor(tonumber(num))) == num
+        local tmp = tonumber(num)
+        if tmp ~= nil then
+            return tostring(floor(tmp)) == num
+        end
     end
+    return false
 end
 
 addon.cleanArray = function(array, except, invert)
