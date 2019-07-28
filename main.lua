@@ -446,7 +446,7 @@ function addon:EvaluateNextAction()
         if rot.rotation ~= nil then
             local enabled
             for id,cond in pairs(rot.rotation) do
-                if cond.action ~= nil then
+                if cond.action ~= nil and (cond.disabled == nil or cond.disabled == false) then
                     -- If we can't highlight the spell, may as well skip to the next one!
                     local spellid
                     if cond.type == "spell" and getCached(self.longtermCache, IsUsableSpell, cond.action) then
@@ -484,7 +484,7 @@ function addon:EvaluateNextAction()
         end
         if rot.cooldowns ~= nil then
             for id,cond in pairs(rot.cooldowns) do
-                if cond.action ~= nil then
+                if cond.action ~= nil and (cond.disabled == nil or cond.disabled == false) then
                     local spellid, enabled
                     if cond.type == "spell" and getCached(self.longtermCache, IsUsableSpell, cond.action) then
                         spellid = cond.action

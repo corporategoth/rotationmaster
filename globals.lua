@@ -9,6 +9,7 @@ color = {
     CYAN = "|cFF00FFFF",
     WHITE = "|cFFFFFFFF",
     BLACK = "|cFF000000",
+    GRAY = "|cFF888888",
     RESET = "|r",
 
     DEBUG = "|cFF6E7B84",

@@ -222,11 +222,39 @@ function addon:get_rotation_list(spec, rotation)
                         order = 20,
                         type = "execute",
                         name = EDIT,
+			width = 0.7,
                         func = function(info)
                             if (rot.conditions == nil) then
                                 rot.conditions = { type = nil }
                             end
                             addon:EditCondition(idx, spec, rot.conditions)
+                        end
+                    },
+                    disable_button = {
+                        order = 25,
+                        type = "execute",
+                        name = DISABLE,
+			width = 0.7,
+			hidden = function(info) return (rot.disabled ~= nil and rot.disabled == true) end,
+                        func = function(info)
+			    if rot.disabled == nil or rot.disabled ~= true then
+				rot.disabled = true
+				addon:RemoveCooldownGlowIfCurrent(spec, rotation, rot.type, rot.action)
+			        AceConfigRegistry:NotifyChange(addon.name .. "Class")
+                            end
+                        end
+                    },
+                    enable_button = {
+                        order = 25,
+                        type = "execute",
+                        name = ENABLE,
+			width = 0.7,
+			hidden = function(info) return (rot.disabled == nil or rot.disabled == false) end,
+                        func = function(info)
+			    if rot.disabled ~= nil and rot.disabled ~= false then
+				rot.disabled = false
+			        AceConfigRegistry:NotifyChange(addon.name .. "Class")
+                            end
                         end
                     },
                 }
@@ -246,14 +274,18 @@ function addon:get_rotation_list(spec, rotation)
             }
 
             local name
-            if rot.type == nil or rot.action == nil or not addon:validateCondition(rot.conditions, spec) then
-                name = color.RED .. tostring(idx) .. color.RESET
+	    if rot.disabled ~= nil and rot.disabled == true then
+                name = color.GRAY
+	    elseif rot.type == nil or rot.action == nil or not addon:validateCondition(rot.conditions, spec) then
+                name = color.RED
             else
-                name = tostring(idx)
+                name = ""
             end
+            name = name .. tostring(idx)
             if (rot.name ~= nil) then
                 name = name .. " - " .. rot.name
             end
+	    name = name .. color.RESET
 
             local entry = {
                 name = name,
