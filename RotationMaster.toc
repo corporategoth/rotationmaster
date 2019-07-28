@@ -1,6 +1,6 @@
 ## Interface: 80000
 ## Title: Rotation Master
-## Version: 1.0.7
+## Version: 1.0.8
 ## Author: PreZ
 ## Notes: I wanted to save the world, but God wouldn't give me the source code.
 ## X-Email: prez@goth.net
@@ -8,8 +8,8 @@
 ## X-BugReport: https://wow.curseforge.com/projects/rotation-master/issues
 ## X-Category: Action Bars
 ## SavedVariables: RotationMasterDB
-## OptionalDeps: Ace3, LibAboutPanel, LibDBIcon-1.0, LibSpellRange-1.0, AceGUI-3.0-ActionSlotWidgets, AceGUI-3.0-Item-EditBox, AceGUI-3.0-Spell-EditBox
-## X-Embeds: Ace3, LibAboutPanel, LibDBIcon-1.0, LibSpellRange-1.0, AceGUI-3.0-ActionSlotWidgets, AceGUI-3.0-Item-EditBox, AceGUI-3.0-Spell-EditBox
+## OptionalDeps: Ace3, LibAboutPanel, LibDBIcon-1.0, LibSpellRange-1.0, AceGUI-3.0-ActionSlotWidgets, AceGUI-3.0-Item-EditBox, AceGUI-3.0-Spell-EditBox, LibDataBroker-1.1
+## X-Embeds: Ace3, LibAboutPanel, LibDBIcon-1.0, LibSpellRange-1.0, AceGUI-3.0-ActionSlotWidgets, AceGUI-3.0-Item-EditBox, AceGUI-3.0-Spell-EditBox, LibDataBroker-1.1
 ## X-Credits: None
 
 globals.lua
