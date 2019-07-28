@@ -239,10 +239,10 @@ function DataBroker.OnClick(self, button)
 	local frame = CreateFrame("Frame", "RotationMasterLDBFrame")
 	local dropdownFrame = CreateFrame("Frame", "RotationMasterLDBDropdownFrame", frame, "UIDropDownMenuTemplate")
 
-	if button == "LeftButton" then
+	if button == "RightButton" then
 		UIDropDownMenu_Initialize(dropdownFrame, minimapInitialize)
 		ToggleDropDownMenu(1, nil, dropdownFrame, "cursor", 5, -10)
-	elseif button == "RightButton" then
+	elseif button == "LeftButton" then
 		InterfaceOptionsFrame_OpenToCategory(addon.pretty_name)
 	end
 end
