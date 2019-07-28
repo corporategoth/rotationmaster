@@ -82,7 +82,7 @@ addon:RegisterCondition("HEALTHPCT", {
     end,
     evaluate = function(value, cache, evalStart)
         local health = getCached(cache, UnitHealth, value.unit) / getCached(cache, UnitHealthMax, value.unit) * 100;
-        return compare(value.operator, health, value.value)
+        return compare(value.operator, health, value.value * 100)
     end,
     print = function(spec, value)
         local v = value.value
@@ -202,7 +202,7 @@ addon:RegisterCondition("MANAPCT", {
     end,
     evaluate = function(value, cache, evalStart)
         local mana = getCached(cache, UnitPower, value.unit, SPELL_POWER_MANA) / getCached(cache, UnitPowerMax, value.unit, SPELL_POWER_MANA) * 100;
-        return compare(value.operator, mana, value.value)
+        return compare(value.operator, mana, value.value * 100)
     end,
     print = function(spec, value)
         local v = value.value
@@ -334,7 +334,7 @@ addon:RegisterCondition("POWERPCT", {
         if value.unit == "player" then
             power = getCached(addon.longtermCache, UnitPowerType, value.unit)
         else
-            power = getCached(cache, UnitPowerType, value.unit)
+            power = getCached(cache, UnitPowerType, value.unit * 100)
         end
         if (power == nil) then
             return false

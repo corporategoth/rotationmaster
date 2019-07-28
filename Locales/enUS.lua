@@ -7,8 +7,10 @@ local color = color
 
 L["/rm help                - This text"] = true
 L["/rm config              - Open the config dialog"] = true
+L["/rm disable             - Disable battle rotation"] = true
+L["/rm enable              - Enable battle rotation"] = true
 L["/rm current             - Print out the name of the current rotation"] = true
-L["/rm set [auto|profile]  - $witch to a specific rotation, or use automatic switching again."] = true
+L["/rm set [auto|profile]  - Switch to a specific rotation, or use automatic switching again."] = true
 L["                          This is reset upon switching specializations."] = true
 
 L["No roation is currently active."] = true

@@ -10,13 +10,13 @@ local SpellRange = LibStub("SpellRange-1.0")
 local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
 local getCached
 local DBIcon = LibStub("LibDBIcon-1.0")
-local DataBroker = LibStub("LibDataBroker-1.1"):NewDataObject("RotationMaster",
-		{type = "launcher", label = "RotationMaster", icon = "Interface\\AddOns\\RotationMaster\\textures\\RotationMaster-Minimap"})
 
 local pairs, color = pairs, color
 local floor = math.floor
 
 addon.pretty_name = GetAddOnMetadata(addon_name, "Title")
+local DataBroker = LibStub("LibDataBroker-1.1"):NewDataObject("RotationMaster",
+		{type = "data source", label = addon.pretty_name, icon = "Interface\\AddOns\\RotationMaster\\textures\\RotationMaster-Minimap"})
 
 --
 -- Initialization
@@ -98,21 +98,27 @@ function addon:HandleCommand(str)
     if not cmd or cmd == "help" then
         addon:info(L["/rm help                - This text"])
         addon:info(L["/rm config              - Open the config dialog"])
+        addon:info(L["/rm disable             - Disable battle rotation"])
+        addon:info(L["/rm enable              - Enable battle rotation"])
         addon:info(L["/rm current             - Print out the name of the current rotation"])
-        addon:info(L["/rm set [auto|profile]  - $witch to a specific rotation, or use automatic switching again."])
+        addon:info(L["/rm set [auto|profile]  - Switch to a specific rotation, or use automatic switching again."])
         addon:info(L["                          This is reset upon switching specializations."])
 
     elseif cmd == "config" then
 	InterfaceOptionsFrame_OpenToCategory(addon.pretty_name)
+	InterfaceOptionsFrame_OpenToCategory(addon.pretty_name) -- Hack for Blizzard bug.
+
+    elseif cmd == "disable" then
+	    addon:DisableRotation()
+
+    elseif cmd == "enable" then
+	    addon:EnableRotation()
 
     elseif cmd == "current" then
         if self.currentRotation == nil then
             addon:info(L["No roation is currently active."])
-        elseif self.currentRotation == DEFAULT then
-            addon:info(L["The current rotation is " .. color.WHITE .. "%s" .. color.INFO], DEFAULT)
         else
-            addon:info(L["The current rotation is " .. color.WHITE .. "%s" .. color.INFO],
-                    self.db.profile.rotations[self.currentSpec][self.currentRotation].name .. "|r")
+            addon:info(L["The current rotation is " .. color.WHITE .. "%s" .. color.INFO], addon:GetRotationName(self.currentRotation))
         end
 
     elseif cmd == "set" then
@@ -129,6 +135,7 @@ function addon:HandleCommand(str)
             self.manualRotation = true
             self.currentRotation = DEFAULT
             self:EnableRotationTimer()
+	    DataBroker.text = self:GetRotationName(DEFAULT)
             addon:info(L["Active rotation manually switched to " .. color.WHITE .. "%s" .. color.INFO], name)
         else
             if self.db.profile.rotations[self.currentSpec] ~= nil then
@@ -138,6 +145,7 @@ function addon:HandleCommand(str)
                         self.manualRotation = true
                         self.currentRotation = id
                         self:EnableRotationTimer()
+			DataBroker.text = self:GetRotationName(id)
                         addon:info(L["Active rotation manually switched to " .. color.WHITE .. "%s" .. color.INFO], name)
                         if (not self:rotationValidConditions(rot, self.currentSpec)) then
                             addon:warn(L["Active rotation is incomplete and may not work correctly!"])
@@ -195,35 +203,66 @@ function addon:OnInitialize()
     getCached = addon.getCached
 end
 
+function addon:GetRotationName(id)
+	if id == DEFAULT then
+		return DEFAULT
+	elseif self.db.profile.rotations[self.currentSpec] ~= nil then
+		return self.db.profile.rotations[self.currentSpec][id].name
+	else
+		return nil
+	end
+end
+
+local function minimapToggleRotation(self, arg1, arg2, checked)
+	if checked then
+		addon:EnableRotation()
+	else
+		addon:DisableRotation()
+	end
+end
+
 local function minimapChangeRotation(self, arg1, arg2, checked)
 	if arg1 == nil then
             addon.manualRotation = false
             addon:SwitchRotation()
-	elseif (addon.currentSpec == DEFAULT and addon.arg1 == 0 or arg1 == addon.currentSpec) then
-            addon.manualRotation = true
-            addon:info(L["Active rotation manually switched to " .. color.WHITE .. "%s" .. color.INFO],
-		addon.db.profile.rotations[addon.currentSpec][arg1].name)
 	else
-            addon:RemoveAllCurrentGlows()
             addon.manualRotation = true
-	    if arg1 == 0 then
-		    addon.currentRotation = DEFAULT
-		    addon:info(L["Active rotation manually switched to " .. color.WHITE .. "%s" .. color.INFO], DEFAULT)
-	    else
+	    if addon.currentSpec ~= arg1 then
+		    addon:RemoveAllCurrentGlows()
 		    addon.currentRotation = arg1
-		    addon:info(L["Active rotation manually switched to " .. color.WHITE .. "%s" .. color.INFO], 
-			addon.db.profile.rotations[addon.currentSpec][arg1].name)
+		    addon:EnableRotationTimer()
+		    DataBroker.text = addon:GetRotationName(arg1)
 	    end
- 	    addon:EnableRotationTimer()
+	    addon:info(L["Active rotation manually switched to " .. color.WHITE .. "%s" .. color.INFO],
+		addon:GetRotationName(arg1))
 	end
 end
 
 function minimapInitialize(self, level, menuList)
 	local info = UIDropDownMenu_CreateInfo()
+	info.text = addon.pretty_name
+	info.isTitle = true
+	info.notCheckable = true
+	UIDropDownMenu_AddButton(info)
+	info = UIDropDownMenu_CreateInfo()
+	info.isNotRadio = true
+	info.keepShownOnClick = true
+	info.text, info.checked = L["Battle rotation enabled"], (addon.currentRotation ~= nil)
+	info.func = minimapToggleRotation
+	UIDropDownMenu_AddButton(info)
+	info = UIDropDownMenu_CreateInfo()
+	info.text = " "
+	info.notClickable = true
+	info.notCheckable = true
+	UIDropDownMenu_AddButton(info)
+	info.isTitle = true
+	info.text = L["Current Rotation"]
+	UIDropDownMenu_AddButton(info)
+	info = UIDropDownMenu_CreateInfo()
 	info.func = minimapChangeRotation
 	info.text, info.arg1, info.checked = L["Automatic Switching"], nil, (addon.manualRotation == false)
 	UIDropDownMenu_AddButton(info)
-	info.text, info.arg1, info.checked = DEFAULT, 0, (addon.manualRotation == true and addon.currentRotation == DEFAULT)
+	info.text, info.arg1, info.checked = DEFAULT, DEFAULT, (addon.manualRotation == true and addon.currentRotation == DEFAULT)
 	UIDropDownMenu_AddButton(info)
         if addon.db.profile.rotations[addon.currentSpec] ~= nil then
 		for id,rot in pairs(addon.db.profile.rotations[addon.currentSpec]) do
@@ -244,17 +283,18 @@ function DataBroker.OnClick(self, button)
 		ToggleDropDownMenu(1, nil, dropdownFrame, "cursor", 5, -10)
 	elseif button == "LeftButton" then
 		InterfaceOptionsFrame_OpenToCategory(addon.pretty_name)
+		InterfaceOptionsFrame_OpenToCategory(addon.pretty_name) -- Hack for Blizzard bug.
 	end
 end
 
 function DataBroker.OnTooltipShow(GameTooltip)
 	GameTooltip:SetText(addon.pretty_name .. " " .. GetAddOnMetadata(addon_name, "Version"), 0, 1, 1)
 	GameTooltip:AddLine(" ")
-	GameTooltip:AddLine(L["Current Rotation"], 0.55, 0.78, 0.33, 1)
-	if addon.currentRotation == DEFAULT then
-		GameTooltip:AddLine(DEFAULT, 1, 1, 1)
+	if addon.currentRotation ~= nil then
+		GameTooltip:AddLine(L["Current Rotation"], 0.55, 0.78, 0.33, 1)
+		GameTooltip:AddLine(addon:GetRotationName(addon.currentRotation), 1, 1, 1)
 	else
-		GameTooltip:AddLine(addon.db.profile.rotations[addon.currentSpec][addon.currentRotation].name, 1, 1, 1)
+		GameTooltip:AddLine(L["Battle rotation disabled"], 1, 0, 0, 1)
 	end
 end
 
@@ -334,16 +374,11 @@ function addon:SwitchRotation()
     for k,v in pairs(self.autoswitchRotation) do
         if addon:evaluateSwitchCondition(self.db.profile.rotations[self.currentSpec][v].switch) then
             if self.currentRotation ~= v then
-                if v == DEFAULT then
-                    addon:info(L["Active rotation automatically switched to " .. color.WHITE .. "%s" .. color.INFO], DEFAULT)
-                else
-                    addon:info(L["Active rotation automatically switched to " .. color.WHITE .. "%s" .. color.INFO],
-                            self.db.profile.rotations[self.currentSpec][v].name)
-                end
-
+	        addon:info(L["Active rotation automatically switched to " .. color.WHITE .. "%s" .. color.INFO], self:GetRotationName(v))
                 self:RemoveAllCurrentGlows()
                 self.currentRotation = v
                 self:EnableRotationTimer()
+	        DataBroker.text = self:GetRotationName(v)
             end
             return
         end
@@ -364,7 +399,8 @@ function addon:EnableRotation()
     self:Fetch()
     self:UpdateAutoSwitch()
     self:SwitchRotation()
-    addon:debug(L["Battle rotation enabled"])
+    DataBroker.text = self:GetRotationName(self.currentRotation)
+    addon:info(L["Battle rotation enabled"])
 end
 
 function addon:DisableRotation()
@@ -376,7 +412,8 @@ function addon:DisableRotation()
     self:RemoveAllCurrentGlows()
     self:DestroyAllOverlays()
     self.currentRotation = nil
-    addon:debug(L["Battle rotation disabled"])
+    DataBroker.text = color.RED .. OFF
+    addon:info(L["Battle rotation disabled"])
 end
 
 function addon:EnableRotationTimer()
