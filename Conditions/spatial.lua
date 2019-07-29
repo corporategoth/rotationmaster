@@ -145,7 +145,7 @@ addon:RegisterCondition("DISTANCE", {
 
         local distance = AceGUI:Create("Dropdown")
         distance:SetLabel(L["Distance"])
-        distance:SetList(distances, keys(distances))
+        distance:SetList(distances)
         if (value.value ~= nil) then
             distance:SetValue(value.value)
         end
@@ -233,7 +233,7 @@ addon:RegisterCondition("DISTANCE_COUNT", {
 
         local distance = AceGUI:Create("Dropdown")
         distance:SetLabel(L["Distance"])
-        distance:SetList(distances, keys(distances))
+        distance:SetList(distances)
         if (value.distance ~= nil) then
             distance:SetValue(value.distance)
         end

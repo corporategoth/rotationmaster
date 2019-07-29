@@ -122,11 +122,11 @@ addon:RegisterCondition("THREAT", {
     icon = "Interface\\Icons\\ability_physical_taunt",
     valid = function(spec, value)
         return value.unit ~= nil and isin(units, value.unit) and
-               value.value ~= nil and value.value >= 0 and value.value <= 4
+               value.value ~= nil and value.value >= 1 and value.value <= 4
     end,
     evaluate = function(value, cache, evalStart)
         local rv = getCached(cache, UnitThreatSituation, "player", value.ulnit)
-        if rv ~= nil and rv >= value.value then
+        if rv ~= nil and rv >= value.value - 1 then
             return true
         else
             return false
@@ -156,7 +156,7 @@ addon:RegisterCondition("THREAT", {
 
         local val = AceGUI:Create("Dropdown")
         val:SetLabel(L["Threat"])
-        val:SetList(threat, keys(threat))
+        val:SetList(threat)
         if (value.value ~= nil) then
             val:SetValue(value.value)
         end
@@ -174,12 +174,12 @@ addon:RegisterCondition("THREAT_COUNT", {
     valid = function(spec, value)
         return value.count ~= nil and value.count >= 0 and
                 value.operator ~= nil and isin(operators, value.operator) and
-                value.value ~= nil and value.value >= 0 and value.value <= 4
+                value.value ~= nil and value.value >= 1 and value.value <= 4
     end,
     evaluate = function(value, cache, evalStart)
         local count = 0
         for unit, entity in pairs(addon.unitsInRange) do
-            if entity.enemy and entity.threat >= value.value then
+            if entity.enemy and entity.threat >= value.value - 1 then
                 count = count + 1
             end
         end
@@ -199,7 +199,7 @@ addon:RegisterCondition("THREAT_COUNT", {
 
         local val = AceGUI:Create("Dropdown")
         val:SetLabel(L["Threat"])
-        val:SetList(threat, keys(threat))
+        val:SetList(threat)
         if (value.value ~= nil) then
             val:SetValue(value.value)
         end
