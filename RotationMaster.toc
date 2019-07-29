@@ -1,4 +1,4 @@
-## Interface: 80000
+## Interface: 80200
 ## Title: Rotation Master
 ## Version: 1.0.8
 ## Author: PreZ
@@ -7,6 +7,8 @@
 ## X-Website: https://wiki.neuromancy.net/display/RM/Rotation+Master
 ## X-BugReport: https://wow.curseforge.com/projects/rotation-master/issues
 ## X-Category: Action Bars
+## X-WoWI-ID: 25079
+## X-Curse-Project-ID: 301085
 ## SavedVariables: RotationMasterDB
 ## OptionalDeps: Ace3, LibAboutPanel, LibDBIcon-1.0, LibSpellRange-1.0, AceGUI-3.0-ActionSlotWidgets, AceGUI-3.0-Item-EditBox, AceGUI-3.0-Spell-EditBox, LibDataBroker-1.1
 ## X-Embeds: Ace3, LibAboutPanel, LibDBIcon-1.0, LibSpellRange-1.0, AceGUI-3.0-ActionSlotWidgets, AceGUI-3.0-Item-EditBox, AceGUI-3.0-Spell-EditBox, LibDataBroker-1.1
@@ -15,8 +17,8 @@
 globals.lua
 embeds.xml
 locales.xml
-main.lua
 constants.lua
+main.lua
 utils.lua
 buttons.lua
 Options/general.lua
@@ -34,4 +36,5 @@ Conditions/item.lua
 Conditions/combat.lua
 Conditions/casting.lua
 Conditions/channeling.lua
+Conditions/spatial.lua
 Conditions/switch.lua

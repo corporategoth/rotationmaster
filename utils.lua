@@ -6,7 +6,7 @@ local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
 local _G, tostring, tonumber, pairs, color = _G, tostring, tonumber, pairs, color
 local random, floor = math.random, math.floor
 
-local operators = addon.operators
+local operators, friendly_distance, harmful_distance = addon.operators, addon.friendly_distance, addon.harmful_distance
 
 addon.PopupError = function(string, onaccept)
     StaticPopupDialogs["ROTATIONMASTER_ERROR"] = {
@@ -285,4 +285,25 @@ function base64dec(data)
         for i=1,8 do c=c+(x:sub(i,i)=='1' and 2^(8-i) or 0) end
         return string.char(c)
     end))
+end
+
+function addon.UnitCloserThan(cache, unit, distance)
+    local harmful = addon.getCached(cache, UnitIsEnemy, unit, "player")
+    if harmful == nil then
+        return nil;
+    end
+
+    if harmful then
+        if harmful_distance[distance] == nil then
+            return nil
+        end
+
+        return addon.getCached(cache, IsItemInRange, harmful_distance[distance], unit)
+    else
+        if friendly_distance[distance] == nil then
+            return nil
+        end
+
+        return addon.getCached(cache, IsItemInRange, friendly_distance[distance], unit)
+    end
 end

@@ -40,11 +40,9 @@ local options = {
                     set = function(info, val)
                         addon.db.profile[info[#info]] = val
                         if val then
-                            addon:OnEnable()
-                            addon:EnableRotation()
+                            addon:enable()
                         else
-                            addon:DisableRotation()
-                            addon:UnregisterAllEvents()
+                            addon:disable()
                         end
                     end,
                 },

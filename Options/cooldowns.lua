@@ -67,8 +67,8 @@ function addon:get_cooldown_list(spec, rotation)
                 name = L["Move Up"],
                 disabled = (idx == 1),
                 func = function(item)
-                    rotation_settings[spec][rotation].cooldowns[idx] = rotation_settings[spec][rotation].cooldowns[idx-1]
-                    rotation_settings[spec][rotation].cooldowns[idx-1] = rot
+                    rotation_settings[spec][rotation].cooldowns[idx] = rotation_settings[spec][rotation].cooldowns[idx - 1]
+                    rotation_settings[spec][rotation].cooldowns[idx - 1] = rot
                     AceConfigRegistry:NotifyChange(addon.name .. "Class")
                 end
             }
@@ -80,8 +80,8 @@ function addon:get_cooldown_list(spec, rotation)
                 name = L["Move Down"],
                 disabled = (idx >= arraysz),
                 func = function(item)
-                    rotation_settings[spec][rotation].cooldowns[idx] = rotation_settings[spec][rotation].cooldowns[idx+1]
-                    rotation_settings[spec][rotation].cooldowns[idx+1] = rot
+                    rotation_settings[spec][rotation].cooldowns[idx] = rotation_settings[spec][rotation].cooldowns[idx + 1]
+                    rotation_settings[spec][rotation].cooldowns[idx + 1] = rot
                     AceConfigRegistry:NotifyChange(addon.name .. "Class")
                 end
             }
@@ -111,7 +111,7 @@ function addon:get_cooldown_list(spec, rotation)
                         overlay = addon.db.profile.overlay
                     end
 
-                    for k,v in pairs(textures) do
+                    for k, v in pairs(textures) do
                         if v.name == overlay then
                             return v.texture
                         end
@@ -126,13 +126,19 @@ function addon:get_cooldown_list(spec, rotation)
                 type = "select",
                 width = 1.0,
                 values = function(item)
-                    local vals = { DEFAULT=DEFAULT }
-                    for k,v in pairs(textures) do
+                    local vals = { DEFAULT = DEFAULT }
+                    for k, v in pairs(textures) do
                         vals[v.name] = v.name
                     end
                     return vals
                 end,
-                get = function(item) if (rot.overlay ~= nil) then return rot.overlay else return "DEFAULT" end end,
+                get = function(item)
+                    if (rot.overlay ~= nil) then
+                        return rot.overlay
+                    else
+                        return "DEFAULT"
+                    end
+                end,
                 set = function(item, value)
                     if value == "DEFAULT" then
                         rot.overlay = nil
@@ -150,7 +156,9 @@ function addon:get_cooldown_list(spec, rotation)
                 type = "color",
                 width = 0.7,
                 hasAlpha = true,
-                get = function(item) return rot.color.r, rot.color.g, rot.color.b, rot.color.a end,
+                get = function(item)
+                    return rot.color.r, rot.color.g, rot.color.b, rot.color.a
+                end,
                 set = function(item, r, g, b, a)
                     rot.color = { r = r, g = g, b = b, a = a }
                     addon:RemoveCooldownGlowIfCurrent(spec, rotation, rot.type, rot.action)
@@ -165,7 +173,7 @@ function addon:get_cooldown_list(spec, rotation)
                 max = 2.0,
                 step = 0.1,
                 width = 0.8,
-                get  = function(info)
+                get = function(info)
                     if rot.magnification ~= nil then
                         return rot.magnification
                     else
@@ -200,7 +208,7 @@ function addon:get_cooldown_list(spec, rotation)
                     LEFT = "Left Center",
                     RIGHT = "Right Center",
                 },
-                get  = function(info)
+                get = function(info)
                     if rot.setpoint ~= nil then
                         return rot.setpoint
                     else
@@ -225,7 +233,9 @@ function addon:get_cooldown_list(spec, rotation)
                 name = "o",
                 type = "execute",
                 width = 0.1,
-                disabled = function(info) return rot.setpoint == nil end,
+                disabled = function(info)
+                    return rot.setpoint == nil
+                end,
                 func = function(info)
                     rot.xoffs = 0
                     rot.yoffs = 0
@@ -237,7 +247,9 @@ function addon:get_cooldown_list(spec, rotation)
                 name = "<",
                 type = "execute",
                 width = 0.1,
-                disabled = function(info) return rot.setpoint == nil end,
+                disabled = function(info)
+                    return rot.setpoint == nil
+                end,
                 func = function(info)
                     rot.xoffs = (rot.xoffs or 0) - 1
                     addon:RemoveCooldownGlowIfCurrent(spec, rotation, rot.type, rot.action)
@@ -248,7 +260,9 @@ function addon:get_cooldown_list(spec, rotation)
                 name = ">",
                 type = "execute",
                 width = 0.1,
-                disabled = function(info) return rot.setpoint == nil end,
+                disabled = function(info)
+                    return rot.setpoint == nil
+                end,
                 func = function(info)
                     rot.xoffs = (rot.xoffs or 0) + 1
                     addon:RemoveCooldownGlowIfCurrent(spec, rotation, rot.type, rot.action)
@@ -259,7 +273,9 @@ function addon:get_cooldown_list(spec, rotation)
                 name = "^",
                 type = "execute",
                 width = 0.1,
-                disabled = function(info) return rot.setpoint == nil end,
+                disabled = function(info)
+                    return rot.setpoint == nil
+                end,
                 func = function(info)
                     rot.yoffs = (rot.yoffs or 0) + 1
                     addon:RemoveCooldownGlowIfCurrent(spec, rotation, rot.type, rot.action)
@@ -270,7 +286,9 @@ function addon:get_cooldown_list(spec, rotation)
                 name = "v",
                 type = "execute",
                 width = 0.1,
-                disabled = function(info) return rot.setpoint == nil end,
+                disabled = function(info)
+                    return rot.setpoint == nil
+                end,
                 func = function(info)
                     rot.yoffs = (rot.yoffs or 0) - 1
                     addon:RemoveCooldownGlowIfCurrent(spec, rotation, rot.type, rot.action)
@@ -302,7 +320,13 @@ function addon:get_cooldown_list(spec, rotation)
                 name = NAME,
                 type = "input",
                 width = 1.7,
-                get = function(item) if (rot.name ~= nil) then return rot.name else return nil end end,
+                get = function(item)
+                    if (rot.name ~= nil) then
+                        return rot.name
+                    else
+                        return nil
+                    end
+                end,
                 set = function(item, value)
                     rot.name = value
                     AceConfigRegistry:NotifyChange(addon.name .. "Class")
@@ -319,7 +343,9 @@ function addon:get_cooldown_list(spec, rotation)
                     pet = "Pet Spell",
                     item = "Inventory Item",
                 },
-                get = function(item) return rot.type end,
+                get = function(item)
+                    return rot.type
+                end,
                 set = function(item, value)
                     rot.type = value
                     AceConfigRegistry:NotifyChange(addon.name .. "Class")
@@ -333,7 +359,13 @@ function addon:get_cooldown_list(spec, rotation)
                     type = "input",
                     dialogControl = "Spec_EditBox",
                     width = 1.2,
-                    get = function(item) if (rot.action ~= nil) then return select(1, GetSpellInfo(rot.action)) else return nil end end,
+                    get = function(item)
+                        if (rot.action ~= nil) then
+                            return select(1, GetSpellInfo(rot.action))
+                        else
+                            return nil
+                        end
+                    end,
                     set = function(item, value)
                         addon:RemoveCooldownGlowIfCurrent(spec, rotation, rot.type, rot.action)
                         if isint(value) then
@@ -356,7 +388,13 @@ function addon:get_cooldown_list(spec, rotation)
                     type = "input",
                     dialogControl = "Spell_EditBox",
                     width = 1.2,
-                    get = function(item) if (rot.action ~= nil) then return select(1, GetSpellInfo(rot.action)) else return nil end end,
+                    get = function(item)
+                        if (rot.action ~= nil) then
+                            return select(1, GetSpellInfo(rot.action))
+                        else
+                            return nil
+                        end
+                    end,
                     set = function(item, value)
                         addon:RemoveCooldownGlowIfCurrent(spec, rotation, rot.type, rot.action)
                         rot.action = select(7, GetSpellInfo(value))
@@ -370,7 +408,13 @@ function addon:get_cooldown_list(spec, rotation)
                     type = "input",
                     dialogControl = "Inventory_EditBox",
                     width = 1.2,
-                    get = function(item) if (rot.action ~= nil) then return rot.action else return nil end end,
+                    get = function(item)
+                        if (rot.action ~= nil) then
+                            return rot.action
+                        else
+                            return nil
+                        end
+                    end,
                     set = function(item, value)
                         addon:RemoveCooldownGlowIfCurrent(spec, rotation, rot.type, rot.action)
                         rot.action = value
@@ -396,7 +440,9 @@ function addon:get_cooldown_list(spec, rotation)
                         type = "header",
                         width = "full",
                         name = color.RED .. L["THIS CONDITION DOES NOT VALIDATE"] .. color.RESET,
-                        hidden = function(info) return addon:validateCondition(rot.conditions, spec) end
+                        hidden = function(info)
+                            return addon:validateCondition(rot.conditions, spec)
+                        end
                     },
                     edit_button = {
                         order = 20,
@@ -415,12 +461,14 @@ function addon:get_cooldown_list(spec, rotation)
                         type = "execute",
                         name = DISABLE,
                         width = 0.7,
-			hidden = function(info) return (rot.disabled ~= nil and rot.disabled == true) end,
+                        hidden = function(info)
+                            return (rot.disabled ~= nil and rot.disabled == true)
+                        end,
                         func = function(info)
-			    if rot.disabled == nil or rot.disabled ~= true then
-				rot.disabled = true
-				addon:RemoveCooldownGlowIfCurrent(spec, rotation, rot.type, rot.action)
-			        AceConfigRegistry:NotifyChange(addon.name .. "Class")
+                            if rot.disabled == nil or rot.disabled ~= true then
+                                rot.disabled = true
+                                addon:RemoveCooldownGlowIfCurrent(spec, rotation, rot.type, rot.action)
+                                AceConfigRegistry:NotifyChange(addon.name .. "Class")
                             end
                         end
                     },
@@ -429,43 +477,47 @@ function addon:get_cooldown_list(spec, rotation)
                         type = "execute",
                         name = ENABLE,
                         width = 0.7,
-			hidden = function(info) return (rot.disabled == nil or rot.disabled == false) end,
+                        hidden = function(info)
+                            return (rot.disabled == nil or rot.disabled == false)
+                        end,
                         func = function(info)
-			    if rot.disabled ~= nil and rot.disabled ~= false then
-				rot.disabled = false
-			        AceConfigRegistry:NotifyChange(addon.name .. "Class")
+                            if rot.disabled ~= nil and rot.disabled ~= false then
+                                rot.disabled = false
+                                AceConfigRegistry:NotifyChange(addon.name .. "Class")
                             end
                         end
                     },
                 }
             }
 
-            args["evaluation" ] = {
+            args["evaluation"] = {
                 order = 30,
                 type = "description",
-                name = function (info)
+                name = function(info)
                     if addon:validateCondition(rot.conditions, spec) and addon:evaluateCondition(rot.conditions) then
                         return color.GREEN .. L["This conditions is currently satisfied."] .. color.RESET
                     else
                         return color.RED .. L["This conditions is currently not satisfied."] .. color.RESET
                     end
                 end,
-                hidden = function(info) return spec ~= addon.currentSpec or not addon:validateCondition(rot.conditions, spec) end
+                hidden = function(info)
+                    return spec ~= addon.currentSpec or not addon:validateCondition(rot.conditions, spec)
+                end
             }
 
             local name
-	    if rot.disabled ~= nil and rot.disabled == true then
+            if rot.disabled ~= nil and rot.disabled == true then
                 name = color.GRAY
-	    elseif rot.type == nil or rot.action == nil or not addon:validateCondition(rot.conditions, spec) then
+            elseif rot.type == nil or rot.action == nil or not addon:validateCondition(rot.conditions, spec) then
                 name = color.RED
             else
-		name = ""
+                name = ""
             end
-	    name = name .. tostring(idx)
+            name = name .. tostring(idx)
             if (rot.name ~= nil) then
                 name = name .. " - " .. rot.name
             end
-	    name = name .. color.RESET
+            name = name .. color.RESET
 
             local entry = {
                 name = name,
@@ -483,7 +535,9 @@ function addon:get_cooldown_list(spec, rotation)
         type = "execute",
         name = ADD,
         disabled = isnew,
-        func = function(info) AddNewCooldown(spec, rotation) end
+        func = function(info)
+            AddNewCooldown(spec, rotation)
+        end
     }
 
     return cooldowns

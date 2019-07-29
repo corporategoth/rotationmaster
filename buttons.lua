@@ -200,6 +200,15 @@ local function FetchDominos()
 	end
 end
 
+local function FetchAzeriteUI()
+	for i = 1, 24 do
+		local button = _G['AzeriteUIActionButton' .. i];
+		if button then
+			self:AddStandardButton(button);
+		end
+	end
+end
+
 local function FetchLUI()
 	local luiBars = {
 		'LUIBarBottom1', 'LUIBarBottom2', 'LUIBarBottom3', 'LUIBarBottom4', 'LUIBarBottom5', 'LUIBarBottom6',
@@ -334,6 +343,10 @@ function addon:Fetch()
 
 	if IsAddOnLoaded('DiabolicUI') then
 		FetchDiabolic();
+	end
+
+	if IsAddOnLoaded('AzeriteUI') then
+		FetchAzeriteUI();
     end
 
 	for k,v in pairs(self.db.global.textures) do
@@ -400,6 +413,8 @@ function addon:GlowCooldown(spellId, condition, cooldown)
 		Flags[spellId] = false
 		ClearGlowIndependent(spellId, spellId)
 	end
+
+	if WeakAuras then WeakAuras.ScanEvents('ROTATIONMASTER_COOLDOWN_UPDATE', self.Flags); end
 end
 
 function addon:GlowSpell(spellId)

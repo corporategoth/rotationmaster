@@ -96,3 +96,40 @@ addon.points = {
     MONK = Enum.PowerType.Chi,
     MAGE = Enum.PowerType.ArcaneCharges,
 }
+
+addon.threat = {
+    L["no threat risk"],
+    L["higher threat than tank"],
+    L["tanking, at risk"],
+    L["tanking, secure"],
+}
+
+addon.friendly_distance = {
+    [5] = 37727,
+    [8] = 34368,
+    [10] = 32321,
+    [15] = 34721,
+    [20] = 21519,
+    [25] = 31463,
+    [30] = 34191,
+    [35] = 18904,
+    [40] = 34471,
+    [45] = 32698,
+    [60] = 32825,
+    [80] = 35278,
+}
+
+addon.harmful_distance = {
+    [5] = 37727,
+    [8] = 34368,
+    [10] = 32321,
+    [15] = 33069,
+    [20] = 10645,
+    [25] = 31463,
+    [30] = 34191,
+    [35] = 18904,
+    [40] = 28767,
+    [45] = 32698,
+    [60] = 32825,
+    [80] = 35278,
+}

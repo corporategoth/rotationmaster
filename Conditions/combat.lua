@@ -5,11 +5,11 @@ local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
 local tostring, tonumber, pairs = tostring, tonumber, pairs
 
 -- From constants
-local units = addon.units
+local units, threat, operators = addon.units, addon.threat, addon.operators
 
 -- From utils
-local nullable, keys, isin, deepcopy, getCached, playerize =
-    addon.nullable, addon.keys, addon.isin, addon.deepcopy, addon.getCached, addon.playerize
+local compare, compareString, nullable, keys, isin, deepcopy, getCached, playerize =
+    addon.compare, addon.compareString, addon.nullable, addon.keys, addon.isin, addon.deepcopy, addon.getCached, addon.playerize
 
 addon:RegisterCondition("COMBAT", {
     description = L["In Combat"],
@@ -121,18 +121,20 @@ addon:RegisterCondition("THREAT", {
     description = L["Threat"],
     icon = "Interface\\Icons\\ability_physical_taunt",
     valid = function(spec, value)
-        return value.unit ~= nil and isin(units, value.unit);
+        return value.unit ~= nil and isin(units, value.unit) and
+               value.value ~= nil and value.value >= 0 and value.value <= 4
     end,
     evaluate = function(value, cache, evalStart)
         local rv = getCached(cache, UnitThreatSituation, "player", value.ulnit)
-        if rv ~= nil and rv > 0 then
+        if rv ~= nil and rv >= value.value then
             return true
         else
             return false
         end
     end,
     print = function(spec, value)
-        return string.format(L["you have threat on %s"], nullable(units[value.unit], L["<unit>"]))
+        return string.format(L["you are at least %s on %s"], nullable(threat[value.value], L["<threat>"]),
+        nullable(units[value.unit], L["<unit>"]))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -151,6 +153,85 @@ addon:RegisterCondition("THREAT", {
             top:SetStatusText(funcs:print(root, spec))
         end)
         parent:AddChild(unit)
+
+        local val = AceGUI:Create("Dropdown")
+        val:SetLabel(L["Threat"])
+        val:SetList(threat, keys(threat))
+        if (value.value ~= nil) then
+            val:SetValue(value.value)
+        end
+        val:SetCallback("OnValueChanged", function(widget, event, v)
+            value.value = v
+            top:SetStatusText(funcs:print(root, spec))
+        end)
+        parent:AddChild(val)
+    end,
+})
+
+addon:RegisterCondition("THREAT_COUNT", {
+    description = L["Threat Count"],
+    icon = "Interface\\Icons\\Ability_racial_bloodrage",
+    valid = function(spec, value)
+        return value.count ~= nil and value.count >= 0 and
+                value.operator ~= nil and isin(operators, value.operator) and
+                value.value ~= nil and value.value >= 0 and value.value <= 4
+    end,
+    evaluate = function(value, cache, evalStart)
+        local count = 0
+        for unit, entity in pairs(addon.unitsInRange) do
+            if entity.enemy and entity.threat >= value.value then
+                count = count + 1
+            end
+        end
+        return compare(value.operator, count, value.count)
+    end,
+    print = function(spec, value)
+        return compareString(value.operator,
+                        string.format(L["number of enemies you are at least %s"],
+                        nullable(threat[value.value], L["<threat>"])),
+                        nullable(value.count))
+    end,
+    widget = function(parent, spec, value)
+        local top = parent:GetUserData("top")
+        local root = top:GetUserData("root")
+        local funcs = top:GetUserData("funcs")
+        local units = deepcopy(units, { "player", "pet" })
+
+        local val = AceGUI:Create("Dropdown")
+        val:SetLabel(L["Threat"])
+        val:SetList(threat, keys(threat))
+        if (value.value ~= nil) then
+            val:SetValue(value.value)
+        end
+        val:SetCallback("OnValueChanged", function(widget, event, v)
+            value.value = v
+            top:SetStatusText(funcs:print(root, spec))
+        end)
+        parent:AddChild(val)
+
+        local operator = AceGUI:Create("Dropdown")
+        operator:SetLabel(L["Operator"])
+        operator:SetList(operators, keys(operators))
+        if (value.operator ~= nil) then
+            operator:SetValue(value.operator)
+        end
+        operator:SetCallback("OnValueChanged", function(widget, event, v)
+            value.operator = v
+            top:SetStatusText(funcs:print(root, spec))
+        end)
+        parent:AddChild(operator)
+
+        local count = AceGUI:Create("EditBox")
+        count:SetLabel(L["Count"])
+        count:SetWidth(100)
+        if (value.count ~= nil) then
+            count:SetText(value.count)
+        end
+        count:SetCallback("OnEnterPressed", function(widget, event, v)
+            value.count = tonumber(v)
+            top:SetStatusText(funcs:print(root, spec))
+        end)
+        parent:AddChild(count)
     end,
 })
 
@@ -254,4 +335,3 @@ addon:RegisterCondition("ENEMY", {
         parent:AddChild(unit)
     end,
 })
-

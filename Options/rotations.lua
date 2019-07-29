@@ -64,8 +64,8 @@ function addon:get_rotation_list(spec, rotation)
                 name = L["Move Up"],
                 disabled = (idx == 1),
                 func = function(item)
-                    rotation_settings[spec][rotation].rotation[idx] = rotation_settings[spec][rotation].rotation[idx-1]
-                    rotation_settings[spec][rotation].rotation[idx-1] = rot
+                    rotation_settings[spec][rotation].rotation[idx] = rotation_settings[spec][rotation].rotation[idx - 1]
+                    rotation_settings[spec][rotation].rotation[idx - 1] = rot
                     AceConfigRegistry:NotifyChange(addon.name .. "Class")
                 end
             }
@@ -77,8 +77,8 @@ function addon:get_rotation_list(spec, rotation)
                 name = L["Move Down"],
                 disabled = (idx >= arraysz),
                 func = function(item)
-                    rotation_settings[spec][rotation].rotation[idx] = rotation_settings[spec][rotation].rotation[idx+1]
-                    rotation_settings[spec][rotation].rotation[idx+1] = rot
+                    rotation_settings[spec][rotation].rotation[idx] = rotation_settings[spec][rotation].rotation[idx + 1]
+                    rotation_settings[spec][rotation].rotation[idx + 1] = rot
                     AceConfigRegistry:NotifyChange(addon.name .. "Class")
                 end
             }
@@ -120,7 +120,13 @@ function addon:get_rotation_list(spec, rotation)
                 name = NAME,
                 type = "input",
                 width = 1.7,
-                get = function(item) if (rot.name ~= nil) then return rot.name else return nil end end,
+                get = function(item)
+                    if (rot.name ~= nil) then
+                        return rot.name
+                    else
+                        return nil
+                    end
+                end,
                 set = function(item, value)
                     rot.name = value
                     AceConfigRegistry:NotifyChange(addon.name .. "Class")
@@ -137,7 +143,9 @@ function addon:get_rotation_list(spec, rotation)
                     pet = "Pet Spell",
                     item = "Item",
                 },
-                get = function(item) return rot.type end,
+                get = function(item)
+                    return rot.type
+                end,
                 set = function(item, value)
                     rot.type = value
                     AceConfigRegistry:NotifyChange(addon.name .. "Class")
@@ -151,7 +159,13 @@ function addon:get_rotation_list(spec, rotation)
                     type = "input",
                     dialogControl = "Player_EditBox",
                     width = 1.2,
-                    get = function(item) if (rot.action ~= nil) then return select(1, GetSpellInfo(rot.action)) else return nil end end,
+                    get = function(item)
+                        if (rot.action ~= nil) then
+                            return select(1, GetSpellInfo(rot.action))
+                        else
+                            return nil
+                        end
+                    end,
                     set = function(item, value)
                         addon:RemoveCooldownGlowIfCurrent(spec, rotation, rot.action)
                         if isint(value) then
@@ -174,7 +188,13 @@ function addon:get_rotation_list(spec, rotation)
                     type = "input",
                     dialogControl = "Spell_EditBox",
                     width = 1.2,
-                    get = function(item) if (rot.action ~= nil) then return select(1, GetSpellInfo(rot.action)) else return nil end end,
+                    get = function(item)
+                        if (rot.action ~= nil) then
+                            return select(1, GetSpellInfo(rot.action))
+                        else
+                            return nil
+                        end
+                    end,
                     set = function(item, value)
                         addon:RemoveCooldownGlowIfCurrent(spec, rotation, rot.action)
                         rot.action = select(7, GetSpellInfo(value))
@@ -188,11 +208,17 @@ function addon:get_rotation_list(spec, rotation)
                     type = "input",
                     dialogControl = "Inventory_EditBox",
                     width = 1.2,
-                    get = function(item) if (rot.action ~= nil) then return rot.action else return nil end end,
+                    get = function(item)
+                        if (rot.action ~= nil) then
+                            return rot.action
+                        else
+                            return nil
+                        end
+                    end,
                     set = function(item, value)
                         -- local itemID, itemType, itemSubType, itemEquipLoc, icon, itemClassID, itemSubClassID = GetItemInfoInstant(value)
                         -- if itemID ~= nil then
-                            rot.action = value
+                        rot.action = value
                         -- end
                         AceConfigRegistry:NotifyChange(addon.name .. "Class")
                     end
@@ -216,13 +242,15 @@ function addon:get_rotation_list(spec, rotation)
                         type = "header",
                         width = "full",
                         name = color.RED .. L["THIS CONDITION DOES NOT VALIDATE"] .. color.RESET,
-                        hidden = function(info) return addon:validateCondition(rot.conditions, spec) end
+                        hidden = function(info)
+                            return addon:validateCondition(rot.conditions, spec)
+                        end
                     },
                     edit_button = {
                         order = 20,
                         type = "execute",
                         name = EDIT,
-			width = 0.7,
+                        width = 0.7,
                         func = function(info)
                             if (rot.conditions == nil) then
                                 rot.conditions = { type = nil }
@@ -234,13 +262,15 @@ function addon:get_rotation_list(spec, rotation)
                         order = 25,
                         type = "execute",
                         name = DISABLE,
-			width = 0.7,
-			hidden = function(info) return (rot.disabled ~= nil and rot.disabled == true) end,
+                        width = 0.7,
+                        hidden = function(info)
+                            return (rot.disabled ~= nil and rot.disabled == true)
+                        end,
                         func = function(info)
-			    if rot.disabled == nil or rot.disabled ~= true then
-				rot.disabled = true
-				addon:RemoveCooldownGlowIfCurrent(spec, rotation, rot.type, rot.action)
-			        AceConfigRegistry:NotifyChange(addon.name .. "Class")
+                            if rot.disabled == nil or rot.disabled ~= true then
+                                rot.disabled = true
+                                addon:RemoveCooldownGlowIfCurrent(spec, rotation, rot.type, rot.action)
+                                AceConfigRegistry:NotifyChange(addon.name .. "Class")
                             end
                         end
                     },
@@ -248,35 +278,39 @@ function addon:get_rotation_list(spec, rotation)
                         order = 25,
                         type = "execute",
                         name = ENABLE,
-			width = 0.7,
-			hidden = function(info) return (rot.disabled == nil or rot.disabled == false) end,
+                        width = 0.7,
+                        hidden = function(info)
+                            return (rot.disabled == nil or rot.disabled == false)
+                        end,
                         func = function(info)
-			    if rot.disabled ~= nil and rot.disabled ~= false then
-				rot.disabled = false
-			        AceConfigRegistry:NotifyChange(addon.name .. "Class")
+                            if rot.disabled ~= nil and rot.disabled ~= false then
+                                rot.disabled = false
+                                AceConfigRegistry:NotifyChange(addon.name .. "Class")
                             end
                         end
                     },
                 }
             }
 
-            args["evaluation" ] = {
+            args["evaluation"] = {
                 order = 30,
                 type = "description",
-                name = function (info)
+                name = function(info)
                     if addon:validateCondition(rot.conditions, spec) and addon:evaluateCondition(rot.conditions) then
                         return color.GREEN .. L["This conditions is currently satisfied."] .. color.RESET
                     else
                         return color.RED .. L["This conditions is currently not satisfied."] .. color.RESET
                     end
                 end,
-                hidden = function(info) return spec ~= addon.currentSpec or not addon:validateCondition(rot.conditions, spec) end
+                hidden = function(info)
+                    return spec ~= addon.currentSpec or not addon:validateCondition(rot.conditions, spec)
+                end
             }
 
             local name
-	    if rot.disabled ~= nil and rot.disabled == true then
+            if rot.disabled ~= nil and rot.disabled == true then
                 name = color.GRAY
-	    elseif rot.type == nil or rot.action == nil or not addon:validateCondition(rot.conditions, spec) then
+            elseif rot.type == nil or rot.action == nil or not addon:validateCondition(rot.conditions, spec) then
                 name = color.RED
             else
                 name = ""
@@ -285,7 +319,7 @@ function addon:get_rotation_list(spec, rotation)
             if (rot.name ~= nil) then
                 name = name .. " - " .. rot.name
             end
-	    name = name .. color.RESET
+            name = name .. color.RESET
 
             local entry = {
                 name = name,
@@ -303,7 +337,9 @@ function addon:get_rotation_list(spec, rotation)
         type = "execute",
         name = ADD,
         disabled = isnew,
-        func = function(info) AddNewRotation(spec, rotation) end
+        func = function(info)
+            AddNewRotation(spec, rotation)
+        end
     }
 
     return rotations

@@ -107,6 +107,11 @@ L["Earth"] = true
 L["Water"] = true
 L["Air"] = true
 
+L["no threat risk"] = true
+L["higher threat than tank"] = true
+L["tanking, at risk"] = true
+L["tanking, secure"] = true
+
 -- from utils.lua
 
 L["<value>"] = true
@@ -186,15 +191,19 @@ L["<buff>"] = true
 L["<debuff>"] = true
 L["<element>"] = true
 L["<totem>"] = true
+L["<threat>"] = true
 L["<form>"] = true
 L["<zone>"] = true
 L["<name>"] = true
+L["<distance>"] = true
 
 L["%s is in a %s role"] = true
 L["%s is a %s"] = true
 L["%s are a %s"] = true
 L["%s have %s"] = true
 L["%s has %s"] = true
+L["%s is %s"] = true
+L["%s are %s"] = true
 L["%s have %s where %s"] = true
 L["%s has %s where %s"] = true
 L["you are talented in %s"] = true
@@ -204,6 +213,10 @@ L["Role"] = true
 L["Class"] = true
 L["Talent"] = true
 L["Operator"] = true
+L["Count"] = true
+L["Distance"] = true
+L["Distance Count"] = true
+L["yards"] = true
 
 L["Health"] = true
 L["%s health"] = true
@@ -287,11 +300,20 @@ L["you are stealthed"] = true
 L["In Control"] = true
 L["you are in control of your character"] = true
 L["Threat"] = true
-L["you have threat on %s"] = true
+L["Threat Count"] = true
+L["you are at least %s on %s"] = true
 L["Shapeshift Form"] = true
 L["humanoid"] = true
 L["Form"] = true
 L["Enemy"] = true
+L["Allies Within Range"] = true
+L["%s is an enemy"] = true
+L["number of party or raid members within %d yards"] = true
+L["number of enemies you are at least %s"] = true
+L["closer than %s yards"] = true
+L["allies"] = true
+L["enemies"] = true
+L["Number of %s within %s yards"] = true
 
 L["Channeling"] = true
 L["Specific Spell Channeling"] = true
