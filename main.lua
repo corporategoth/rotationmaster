@@ -38,6 +38,7 @@ local defaults = {
         verbose = false,
         disable_autoswitch = false,
         live_config_update = 2,
+        spell_history = 60,
         minimap = {
             hide = false,
         }
@@ -210,6 +211,9 @@ function addon:OnInitialize()
 
     self.unitsInRange = {}
 
+    self.spellHistory = {}
+    self.playerUnitFrame = nil
+
     self.lastConfigUpdate = GetTime()
 
     -- This is here because of order of loading.
@@ -326,11 +330,26 @@ function addon:enable()
     for k, v in pairs(events) do
         self:RegisterEvent(v)
     end
+
+    self.playerUnitFrame = CreateFrame('Frame')
+    self.playerUnitFrame:RegisterUnitEvent('UNIT_SPELLCAST_SUCCEEDED', 'player')
+    self.playerUnitFrame:SetScript('OnEvent', function(_, event, unit, lineId, spellId)
+        if IsPlayerSpell(spellId) then
+            table.insert(self.spellHistory, 1, {
+                spell = spellId,
+                time = GetTime()
+            })
+        end
+    end)
+
     self:EnableRotation()
 end
 
 function addon:disable()
     self:DisableRotation()
+    self.playerUnitFrame:UnregisterAllEvents()
+    self.playerUnitFrame = nil
+    self.spellHistory = {}
     self:UnregisterAllEvents()
 end
 
@@ -486,6 +505,19 @@ function addon:EvaluateNextAction()
         for unit, entity in pairs(self.unitsInRange) do
             addon:verbose("Updating Unit " .. unit .. " (" .. entity.name .. ")")
             UpdateUnitInfo(cache, unit, entity)
+        end
+
+        local threshold_time = GetTime() - self.db.profile.spell_history
+        while true do
+            if #self.spellHistory == 0 then
+                break
+            end
+
+            if self.spellHistory[#self.spellHistory].time < threshold_time then
+                table.remove(self.spellHistory, #self.spellHistory)
+            else
+                break
+            end
         end
 
         local rot = self.db.profile.rotations[self.currentSpec][self.currentRotation]

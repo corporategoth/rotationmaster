@@ -12,8 +12,7 @@ local AceDBOptions = LibStub("AceDBOptions-3.0")
 local LibAboutPanel = LibStub("LibAboutPanel")
 local DBIcon = LibStub("LibDBIcon-1.0")
 
-local assert, error, hooksecurefunc, pairs, base64enc, base64dec, date, color
-    = assert, error, hooksecurefunc, pairs, base64enc, base64dec, date, color
+local assert, error, hooksecurefunc, pairs, base64enc, base64dec, date, color = assert, error, hooksecurefunc, pairs, base64enc, base64dec, date, color
 
 local serpent = serpent
 
@@ -36,7 +35,9 @@ local options = {
                     desc = L["Enable Rotation Master"],
                     order = 10,
                     width = 1.5,
-                    get  = function(info) return addon.db.profile[info[#info]] end,
+                    get = function(info)
+                        return addon.db.profile[info[#info]]
+                    end,
                     set = function(info, val)
                         addon.db.profile[info[#info]] = val
                         if val then
@@ -60,7 +61,9 @@ local options = {
                     max = 1.0,
                     step = 0.05,
                     width = 1.5,
-                    get  = function(info) return addon.db.profile[info[#info]] end,
+                    get = function(info)
+                        return addon.db.profile[info[#info]]
+                    end,
                     set = function(info, val)
                         addon.db.profile[info[#info]] = val
                         if addon.rotationTimer then
@@ -74,16 +77,43 @@ local options = {
                     type = "toggle",
                     name = L["Minimap Icon"],
                     width = 1.5,
-                    get  = function(info) return not addon.db.profile[info[#info]].hide end,
+                    get = function(info)
+                        return not addon.db.profile[info[#info]].hide
+                    end,
                     set = function(info, val)
-			    addon.db.profile[info[#info]].hide = not val
-			    if val then
-				    DBIcon:Show("RotationMaster")
-			    else
-				    DBIcon:Hide("RotationMaster")
-			    end
+                        addon.db.profile[info[#info]].hide = not val
+                        if val then
+                            DBIcon:Show("RotationMaster")
+                        else
+                            DBIcon:Hide("RotationMaster")
+                        end
 
-		    end,
+                    end,
+                },
+                spacer7 = {
+                    order = 35,
+                    type = "description",
+                    name = "",
+                    width = 0.3
+                },
+                spell_history = {
+                    order = 40,
+                    name = L["Spell History Memory (seconds)"],
+                    type = "range",
+                    min = 0.0,
+                    max = 300.0,
+                    step = 1.0,
+                    width = 1.5,
+                    get = function(info)
+                        return addon.db.profile[info[#info]]
+                    end,
+                    set = function(info, val)
+                        addon.db.profile[info[#info]] = val
+                        if addon.rotationTimer then
+                            addon:DisableRotationTimer()
+                            addon:EnableRotationTimer()
+                        end
+                    end,
                 },
                 overlay_header = {
                     order = 50,
@@ -98,7 +128,7 @@ local options = {
                     image = function(info)
                         local overlay = addon.db.profile.overlay
 
-                        for k,v in pairs(addon.db.global.textures) do
+                        for k, v in pairs(addon.db.global.textures) do
                             if v.name == overlay then
                                 return v.texture
                             end
@@ -113,12 +143,14 @@ local options = {
                     width = 1.2,
                     values = function(item)
                         local vals = {}
-                        for k,v in pairs(addon.db.global.textures) do
+                        for k, v in pairs(addon.db.global.textures) do
                             vals[v.name] = v.name
                         end
                         return vals
                     end,
-                    get  = function(info) return addon.db.profile[info[#info]] end,
+                    get = function(info)
+                        return addon.db.profile[info[#info]]
+                    end,
                     set = function(info, val)
                         addon.db.profile[info[#info]] = val
                         AceConfigRegistry:NotifyChange(addon.name)
@@ -139,7 +171,9 @@ local options = {
                     max = 2.0,
                     step = 0.1,
                     width = 1.5,
-                    get  = function(info) return addon.db.profile[info[#info]] end,
+                    get = function(info)
+                        return addon.db.profile[info[#info]]
+                    end,
                     set = function(info, val)
                         addon.db.profile[info[#info]] = val
                         addon:RemoveAllCurrentGlows()
@@ -163,7 +197,8 @@ local options = {
                     type = "color",
                     width = 1.5,
                     hasAlpha = true,
-                    get = function(info) return
+                    get = function(info)
+                        return
                         addon.db.profile[info[#info]].r, addon.db.profile[info[#info]].g,
                         addon.db.profile[info[#info]].b, addon.db.profile[info[#info]].a
                     end,
@@ -189,7 +224,9 @@ local options = {
                         LEFT = "Left Center",
                         RIGHT = "Right Center",
                     },
-                    get  = function(info) return addon.db.profile[info[#info]] end,
+                    get = function(info)
+                        return addon.db.profile[info[#info]]
+                    end,
                     set = function(info, val)
                         addon.db.profile[info[#info]] = val
                         addon.db.profile.xoffs = 0
@@ -258,8 +295,12 @@ local options = {
                     type = "toggle",
                     name = L["Debug Logging"],
                     width = 1.5,
-                    get  = function(info) return addon.db.profile[info[#info]] end,
-                    set = function(info, val) addon.db.profile[info[#info]] = val end,
+                    get = function(info)
+                        return addon.db.profile[info[#info]]
+                    end,
+                    set = function(info, val)
+                        addon.db.profile[info[#info]] = val
+                    end,
                 },
                 spacer5 = {
                     order = 115,
@@ -272,17 +313,27 @@ local options = {
                     type = "toggle",
                     name = L["Disable Auto-Switching"],
                     width = 1.5,
-                    get  = function(info) return addon.db.profile[info[#info]] end,
-                    set = function(info, val) addon.db.profile[info[#info]] = val end,
+                    get = function(info)
+                        return addon.db.profile[info[#info]]
+                    end,
+                    set = function(info, val)
+                        addon.db.profile[info[#info]] = val
+                    end,
                 },
                 verbose = {
                     order = 130,
                     type = "toggle",
                     name = L["Verbose Debug Logging"],
                     width = 1.5,
-                    disabled = function(info) return addon.db.profile.debug == false end,
-                    get  = function(info) return addon.db.profile[info[#info]] end,
-                    set = function(info, val) addon.db.profile[info[#info]] = val end,
+                    disabled = function(info)
+                        return addon.db.profile.debug == false
+                    end,
+                    get = function(info)
+                        return addon.db.profile[info[#info]]
+                    end,
+                    set = function(info, val)
+                        addon.db.profile[info[#info]] = val
+                    end,
                 },
                 spacer6 = {
                     order = 135,
@@ -299,8 +350,12 @@ local options = {
                     max = 60.0,
                     step = 1.0,
                     width = 1.5,
-                    get  = function(info) return addon.db.profile[info[#info]] end,
-                    set = function(info, val) addon.db.profile[info[#info]] = val end,
+                    get = function(info)
+                        return addon.db.profile[info[#info]]
+                    end,
+                    set = function(info, val)
+                        addon.db.profile[info[#info]] = val
+                    end,
                 },
             }
         }
@@ -374,7 +429,7 @@ local function ImportExport(spec, rotation)
     if (rotation_settings[spec][rotation] ~= nil) then
         editbox:SetText(base64enc(serpent.dump(rotation_settings[spec][rotation])))
     end
-    editbox:SetCallback("OnTextChanged", function (widget, event, text)
+    editbox:SetCallback("OnTextChanged", function(widget, event, text)
         frame:SetStatusText(string.len(text) .. " " .. L["bytes"])
         import:SetDisabled(false)
     end)
@@ -388,7 +443,7 @@ local function ImportExport(spec, rotation)
         if ok then
             rotation_settings[spec][rotation] = res
             if rotation == DEFAULT then
-                 rotation_settings[spec][rotation].name = nil
+                rotation_settings[spec][rotation].name = nil
             elseif original_name ~= nil then
                 rotation_settings[spec][rotation].name = original_name
             else
@@ -397,7 +452,7 @@ local function ImportExport(spec, rotation)
                     rotation_settings[spec][rotation].name = date(L["Imported on %c"])
                 else
                     -- Keep the imported name, IF it's a duplicate
-                    for k,v in pairs(rotation_settings[spec]) do
+                    for k, v in pairs(rotation_settings[spec]) do
                         if k ~= DEFAULT and k ~= rotation then
                             if v.name == original_name then
                                 rotation_settings[spec][rotation].name = date(L["Imported on %c"])
@@ -484,13 +539,17 @@ local function create_rotation_options(spec, rotation, order)
                 name = DELETE,
                 disabled = (rotation == DEFAULT or isnew),
                 type = "execute",
-                func = function(info) HandleDelete(spec, rotation) end
+                func = function(info)
+                    HandleDelete(spec, rotation)
+                end
             },
             importexport = {
                 order = 11,
                 name = L["Import/Export"],
                 type = "execute",
-                func = function(info) ImportExport(spec, rotation) end
+                func = function(info)
+                    ImportExport(spec, rotation)
+                end
             },
             switch = {
                 order = 12,
@@ -605,7 +664,7 @@ local function create_class_options()
 
     local spec_tabs = {}
     local localized, english, classID = UnitClass("player")
-    for j=1,GetNumSpecializationsForClassID(classID) do
+    for j = 1, GetNumSpecializationsForClassID(classID) do
         local specID, specName = GetSpecializationInfoForClassID(classID, j)
 
         local rotation_args = {}
@@ -618,8 +677,10 @@ local function create_class_options()
                     table.insert(groupsOrder, id)
                 end
             end
-            table.sort(groupsOrder, function (lhs, rhs) return rotation_settings[specID][lhs].name < rotation_settings[specID][rhs].name end)
-            for k,v in pairs(groupsOrder) do
+            table.sort(groupsOrder, function(lhs, rhs)
+                return rotation_settings[specID][lhs].name < rotation_settings[specID][rhs].name
+            end)
+            for k, v in pairs(groupsOrder) do
                 idx = idx + 1
                 rotation_args[v] = create_rotation_options(specID, v, idx)
             end
@@ -676,7 +737,7 @@ local function create_texture_list(frame)
     label4:SetText("")
     group:AddChild(label4)
 
-    for k,v in pairs(textures) do
+    for k, v in pairs(textures) do
         local row = group
 
         local icon = AceGUI:Create("Icon")
@@ -689,7 +750,7 @@ local function create_texture_list(frame)
         local name = AceGUI:Create("EditBox")
         name:SetText(v.name)
         name:SetFullWidth(true)
-        name:SetCallback("OnEnterPressed", function (widget, event, val)
+        name:SetCallback("OnEnterPressed", function(widget, event, val)
             v.name = val
             updateDisabled()
         end)
@@ -698,7 +759,7 @@ local function create_texture_list(frame)
         local texture = AceGUI:Create("EditBox")
         texture:SetText(v.texture)
         texture:SetFullWidth(true)
-        texture:SetCallback("OnEnterPressed", function (widget, event, val)
+        texture:SetCallback("OnEnterPressed", function(widget, event, val)
             icon:SetImage(val)
             v.texture = val
             updateDisabled()
@@ -708,7 +769,7 @@ local function create_texture_list(frame)
         local delete = AceGUI:Create("Button")
         delete:SetText("X")
         delete:SetWidth(40)
-        delete:SetCallback("OnClick", function (widget, ewvent, ...)
+        delete:SetCallback("OnClick", function(widget, ewvent, ...)
             table.remove(textures, k)
             create_texture_list(frame)
         end)
@@ -717,7 +778,7 @@ local function create_texture_list(frame)
 
     local addnew = AceGUI:Create("Button")
     addnew:SetText("Add New")
-    addnew:SetCallback("OnClick", function (widget, ewvent, ...)
+    addnew:SetCallback("OnClick", function(widget, ewvent, ...)
         table.insert(textures, { name = nil, texture = nil })
         create_texture_list(frame)
     end)
@@ -727,7 +788,7 @@ local function create_texture_list(frame)
     updateDisabled = function()
         local tblsz = #textures
         addnew:SetDisabled(textures[tblsz].name == nil or textures[tblsz].name == "" or
-                           textures[tblsz].texture == nil or textures[tblsz].texture == "")
+                textures[tblsz].texture == nil or textures[tblsz].texture == "")
     end
     updateDisabled()
 
@@ -746,11 +807,15 @@ function module:OnInitialize()
     AceConfig:RegisterOptionsTable(addon.name .. "Class", create_class_options)
     -- AceConfig:RegisterOptionsTable(addon.name .. "RotationMaster", options_slashcmd, { "rotationmaster", "rm" })
 
-    hooksecurefunc("InterfaceCategoryList_Update", function() self:SetupOptions() end)
+    hooksecurefunc("InterfaceCategoryList_Update", function()
+        self:SetupOptions()
+    end)
 end
 
 function module:SetupOptions()
-    if self.didSetup then return end
+    if self.didSetup then
+        return
+    end
     self.didSetup = true
 
     self.optionsFrame = AceConfigDialog:AddToBlizOptions(addon.name, addon.pretty_name, nil, "main")
@@ -767,7 +832,9 @@ function module:SetupOptions()
     for name, module in addon:IterateModules() do
         local f = module["SetupOptions"]
         if f then
-            f(module, function(appName, name) AceConfigDialog:AddToBlizOptions(appName, name, addon.name) end)
+            f(module, function(appName, name)
+                AceConfigDialog:AddToBlizOptions(appName, name, addon.name)
+            end)
         end
     end
 

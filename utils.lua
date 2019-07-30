@@ -55,6 +55,8 @@ addon.compare = function(operator, left, right)
         return left ~= right
     elseif operator == "DIVISIBLE" then
         return (left % right) == 0
+    else
+        addon:warn("Invalid Operator %s", operator)
     end
 end
 

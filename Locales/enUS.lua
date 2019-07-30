@@ -131,6 +131,7 @@ L["Debug Logging"] = true
 L["Verbose Debug Logging"] = true
 L["Disable Auto-Switching"] = true
 L["Minimap Icon"] = true
+L["Spell History Memory (seconds)"] = true
 L["Live Status Update Frequency (seconds)"] = true
 L["This is specifically how often the configuration pane will receive updates about live status.  Too frequently could make your configuration pane unusable.  0 = Disabled."] = true
 L["Are you sure you wish to delete this rotation?"] = true
@@ -247,6 +248,12 @@ L["remaining time on %s"] = true
 L["Spell Charges"] = true
 L["number of charges on %s"] = true
 L["Charges"] = true
+
+L["Spell Cast History Time"] = true
+L["Spell Cast History"] = true
+L["%s was cast"] = true
+L["%s casts ago"] = true
+L["%s seconds ago"] = true
 
 L["Pet Spell Available"] = true
 L["Pet Spell Cooldown"] = true

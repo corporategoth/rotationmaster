@@ -424,3 +424,214 @@ addon:RegisterCondition("SPELL_CHARGES", {
         parent:AddChild(health)
     end,
 })
+
+addon:RegisterCondition("SPELL_HISTORY", {
+    description = L["Spell Cast History"],
+    icon = "Interface\\Icons\\Ability_mage_timewarp",
+    valid = function(spec, value)
+        if value.spell ~= nil then
+            local name = GetSpellInfo(value.spell)
+            return (value.operator ~= nil and isin(operators, value.operator) and
+                    name ~= nil and value.value ~= nil and value.value >= 0)
+        else
+            return false
+        end
+    end,
+    evaluate = function(value, cache, evalStart)
+        for idx, entry in pairs(addon.spellHistory) do
+            if entry.spell == value.spell then
+                return compare(value.operator, idx, value.value)
+            end
+        end
+        return false
+    end,
+    print = function(spec, value)
+        local link
+        if value.spell ~= nil then
+            link = GetSpellLink(value.spell)
+        end
+        return compareString(value.operator, string.format(L["%s was cast"], nullable(link, L["<spell>"])),
+                        string.format(L["%s casts ago"], nullable(value.value)))
+    end,
+    widget = function(parent, spec, value)
+        local top = parent:GetUserData("top")
+        local root = top:GetUserData("root")
+        local funcs = top:GetUserData("funcs")
+
+        local spell = AceGUI:Create("Spec_EditBox")
+        local spellIcon = AceGUI:Create("ActionSlotSpell")
+        if (value.spell) then
+            spellIcon:SetText(value.spell)
+        end
+        spellIcon:SetWidth(44)
+        spellIcon:SetHeight(44)
+        spellIcon.text:Hide()
+        spellIcon:SetCallback("OnEnterPressed", function(widget, event, v)
+            v = tonumber(v)
+            if not v or isSpellOnSpec(spec, v) then
+                value.spell = v
+                spellIcon:SetText(v)
+                if v then
+                    spell:SetText(GetSpellInfo(v))
+                else
+                    spell:SetText("")
+                end
+                top:SetStatusText(funcs:print(root, spec))
+            end
+        end)
+        parent:AddChild(spellIcon)
+
+        spell:SetLabel(L["Spell"])
+        if (value.spell) then
+            spell:SetText(GetSpellInfo(value.spell))
+        end
+        spell:SetUserData("spec", spec)
+        spell:SetCallback("OnEnterPressed", function(widget, event, v)
+            if isint(v) then
+                if isSpellOnSpec(spec, tonumber(v)) then
+                    value.spell = tonumber(v)
+                else
+                    value.spell = nil
+                end
+            else
+                value.spell = addon:GetSpecSpellID(spec, v)
+            end
+            if value.spell ~= nil then
+                spell:SetText(GetSpellInfo(value.spell))
+            end
+            spellIcon:SetText(value.spell)
+            top:SetStatusText(funcs:print(root, spec))
+        end)
+        parent:AddChild(spell)
+
+        local operator = AceGUI:Create("Dropdown")
+        operator:SetLabel(L["Operator"])
+        operator:SetList(operators, keys(operators))
+        if (value.operator ~= nil) then
+            operator:SetValue(value.operator)
+        end
+        operator:SetCallback("OnValueChanged", function(widget, event, v)
+            value.operator = v
+            top:SetStatusText(funcs:print(root, spec))
+        end)
+        parent:AddChild(operator)
+
+        local health = AceGUI:Create("EditBox")
+        health:SetLabel(L["Count"])
+        health:SetWidth(100)
+        if (value.value ~= nil) then
+            health:SetText(value.value)
+        end
+        health:SetCallback("OnEnterPressed", function(widget, event, v)
+            value.value = tonumber(v)
+            top:SetStatusText(funcs:print(root, spec))
+        end)
+        parent:AddChild(health)
+    end,
+})
+
+addon:RegisterCondition("SPELL_HISTORY_TIME", {
+    description = L["Spell Cast History Time"],
+    icon = "Interface\\Icons\\Spell_holy_borrowedtime",
+    valid = function(spec, value)
+        if value.spell ~= nil then
+            local name, icon, castTime, minRange, maxRange = GetSpellInfo(value.spell)
+            return (value.operator ~= nil and isin(operators, value.operator) and
+                    name ~= nil and value.value ~= nil and value.value >= 0)
+        else
+            return false
+        end
+    end,
+    evaluate = function(value, cache, evalStart) -- Cooldown until the spell is available
+        for idx, entry in pairs(addon.spellHistory) do
+            if entry.spell == value.spell then
+                return compare(value.operator, (evalStart - entry.time), value.value)
+            end
+        end
+        return false
+    end,
+    print = function(spec, value)
+        local link
+        if value.spell ~= nil then
+            link = GetSpellLink(value.spell)
+        end
+        return compareString(value.operator, string.format(L["%s was cast"], nullable(link, L["<spell>"])),
+                string.format(L["%s seconds ago"], nullable(value.value)))
+    end,
+    widget = function(parent, spec, value)
+        local top = parent:GetUserData("top")
+        local root = top:GetUserData("root")
+        local funcs = top:GetUserData("funcs")
+
+        local spell = AceGUI:Create("Spec_EditBox")
+        local spellIcon = AceGUI:Create("ActionSlotSpell")
+        if (value.spell) then
+            spellIcon:SetText(value.spell)
+        end
+        spellIcon.text:Hide()
+        spellIcon:SetWidth(44)
+        spellIcon:SetHeight(44)
+        spellIcon:SetCallback("OnEnterPressed", function(widget, event, v)
+            v = tonumber(v)
+            if not v or isSpellOnSpec(spec, v) then
+                value.spell = v
+                spellIcon:SetText(v)
+                if v then
+                    spell:SetText(GetSpellInfo(v))
+                else
+                    spell:SetText("")
+                end
+                top:SetStatusText(funcs:print(root, spec))
+            end
+        end)
+        parent:AddChild(spellIcon)
+
+        spell:SetLabel(L["Spell"])
+        if (value.spell) then
+            spell:SetText(GetSpellInfo(value.spell))
+        end
+        spell:SetUserData("spec", spec)
+        spell:SetCallback("OnEnterPressed", function(widget, event, v)
+            if isint(v) then
+                if isSpellOnSpec(spec, tonumber(v)) then
+                    value.spell = tonumber(v)
+                else
+                    value.spell = nil
+                end
+            else
+                value.spell = addon:GetSpecSpellID(spec, v)
+            end
+            if value.spell ~= nil then
+                spell:SetText(GetSpellInfo(value.spell))
+            end
+            spellIcon:SetText(value.spell)
+            top:SetStatusText(funcs:print(root, spec))
+        end)
+        parent:AddChild(spell)
+
+        local operator = AceGUI:Create("Dropdown")
+        operator:SetLabel(L["Operator"])
+        operator:SetList(operators, keys(operators))
+        if (value.operator ~= nil) then
+            operator:SetValue(value.operator)
+        end
+        operator:SetCallback("OnValueChanged", function(widget, event, v)
+            value.operator = v
+            top:SetStatusText(funcs:print(root, spec))
+        end)
+        parent:AddChild(operator)
+
+        local health = AceGUI:Create("EditBox")
+        health:SetLabel(L["Seconds"])
+        health:SetWidth(100)
+        if (value.value ~= nil) then
+            health:SetText(value.value)
+        end
+        health:SetCallback("OnEnterPressed", function(widget, event, v)
+            value.value = tonumber(v)
+            top:SetStatusText(funcs:print(root, spec))
+        end)
+        parent:AddChild(health)
+    end,
+})
+
