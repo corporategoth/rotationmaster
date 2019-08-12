@@ -5,364 +5,369 @@ local module = addon:NewModule("Options", "AceConsole-3.0")
 local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
 
 local AceGUI = LibStub("AceGUI-3.0")
-local AceConfigRegistry = LibStub("AceConfigRegistry-3.0")
 local AceConfigDialog = LibStub("AceConfigDialog-3.0")
 local AceConfig = LibStub("AceConfig-3.0")
+local AceSerializer = LibStub("AceSerializer-3.0")
 local AceDBOptions = LibStub("AceDBOptions-3.0")
 local LibAboutPanel = LibStub("LibAboutPanel")
 local DBIcon = LibStub("LibDBIcon-1.0")
+local libc = LibStub:GetLibrary("LibCompress")
 
-local assert, error, hooksecurefunc, pairs, base64enc, base64dec, date, color = assert, error, hooksecurefunc, pairs, base64enc, base64dec, date, color
-
-local serpent = serpent
+local assert, error, hooksecurefunc, pairs, base64enc, base64dec, date, color, width_split = assert, error, hooksecurefunc, pairs, base64enc, base64dec, date, color, width_split
 
 local HideOnEscape = addon.HideOnEscape
 
-local options = {
-    name = addon.pretty_name,
-    handler = addon,
-    type = "group",
-    args = {
-        main = {
-            type = "group",
-            name = GENERAL,
-            width = "full",
-            args = {
-                enable = {
-                    order = 10,
-                    type = "toggle",
-                    name = ENABLE,
-                    desc = L["Enable Rotation Master"],
-                    order = 10,
-                    width = 1.5,
-                    get = function(info)
-                        return addon.db.profile[info[#info]]
-                    end,
-                    set = function(info, val)
-                        addon.db.profile[info[#info]] = val
-                        if val then
-                            addon:enable()
-                        else
-                            addon:disable()
-                        end
-                    end,
-                },
-                spacer1 = {
-                    order = 15,
-                    type = "description",
-                    name = "",
-                    width = 0.3
-                },
-                poll = {
-                    order = 20,
-                    name = L["Polling Interval (seconds)"],
-                    type = "range",
-                    min = 0.05,
-                    max = 1.0,
-                    step = 0.05,
-                    width = 1.5,
-                    get = function(info)
-                        return addon.db.profile[info[#info]]
-                    end,
-                    set = function(info, val)
-                        addon.db.profile[info[#info]] = val
-                        if addon.rotationTimer then
-                            addon:DisableRotationTimer()
-                            addon:EnableRotationTimer()
-                        end
-                    end,
-                },
-                minimap = {
-                    order = 30,
-                    type = "toggle",
-                    name = L["Minimap Icon"],
-                    width = 1.5,
-                    get = function(info)
-                        return not addon.db.profile[info[#info]].hide
-                    end,
-                    set = function(info, val)
-                        addon.db.profile[info[#info]].hide = not val
-                        if val then
-                            DBIcon:Show("RotationMaster")
-                        else
-                            DBIcon:Hide("RotationMaster")
-                        end
+local function create_primary_options(frame)
+    local profile = addon.db.profile
+    local effects = addon.db.global.effects
 
-                    end,
-                },
-                spacer7 = {
-                    order = 35,
-                    type = "description",
-                    name = "",
-                    width = 0.3
-                },
-                spell_history = {
-                    order = 40,
-                    name = L["Spell History Memory (seconds)"],
-                    type = "range",
-                    min = 0.0,
-                    max = 300.0,
-                    step = 1.0,
-                    width = 1.5,
-                    get = function(info)
-                        return addon.db.profile[info[#info]]
-                    end,
-                    set = function(info, val)
-                        addon.db.profile[info[#info]] = val
-                        if addon.rotationTimer then
-                            addon:DisableRotationTimer()
-                            addon:EnableRotationTimer()
-                        end
-                    end,
-                },
-                overlay_header = {
-                    order = 50,
-                    type = "header",
-                    name = L["Overlay Options"],
-                },
-                overlay_icon = {
-                    order = 60,
-                    name = "",
-                    type = "execute",
-                    width = 0.3,
-                    image = function(info)
-                        local overlay = addon.db.profile.overlay
+    local spacer = function(width)
+        local rv = AceGUI:Create("Label")
+        rv:SetRelativeWidth(width)
+        return rv
+    end
 
-                        for k, v in pairs(addon.db.global.textures) do
-                            if v.name == overlay then
-                                return v.texture
-                            end
-                        end
-                        return nil
-                    end
-                },
-                overlay = {
-                    order = 70,
-                    name = L["Overlay Texture"],
-                    type = "select",
-                    width = 1.2,
-                    values = function(item)
-                        local vals = {}
-                        for k, v in pairs(addon.db.global.textures) do
-                            vals[v.name] = v.name
-                        end
-                        return vals
-                    end,
-                    get = function(info)
-                        return addon.db.profile[info[#info]]
-                    end,
-                    set = function(info, val)
-                        addon.db.profile[info[#info]] = val
-                        AceConfigRegistry:NotifyChange(addon.name)
-                        addon:RemoveAllCurrentGlows()
-                    end,
-                },
-                spacer2 = {
-                    order = 75,
-                    type = "description",
-                    name = "",
-                    width = 0.3
-                },
-                magnification = {
-                    order = 80,
-                    name = L["Magnification"],
-                    type = "range",
-                    min = 0.1,
-                    max = 2.0,
-                    step = 0.1,
-                    width = 1.5,
-                    get = function(info)
-                        return addon.db.profile[info[#info]]
-                    end,
-                    set = function(info, val)
-                        addon.db.profile[info[#info]] = val
-                        addon:RemoveAllCurrentGlows()
-                    end,
-                },
-                spacer3 = {
-                    order = 85,
-                    type = "description",
-                    name = "",
-                    width = "full"
-                },
-                spacer4 = {
-                    order = 86,
-                    type = "description",
-                    name = "",
-                    width = 0.3
-                },
-                color = {
-                    order = 90,
-                    name = L["Highlight Color"],
-                    type = "color",
-                    width = 1.5,
-                    hasAlpha = true,
-                    get = function(info)
-                        return
-                        addon.db.profile[info[#info]].r, addon.db.profile[info[#info]].g,
-                        addon.db.profile[info[#info]].b, addon.db.profile[info[#info]].a
-                    end,
-                    set = function(info, r, g, b, a)
-                        addon.db.profile[info[#info]] = { r = r, g = g, b = b, a = a }
-                        addon:RemoveAllCurrentGlows()
-                    end
-                },
-                setpoint = {
-                    order = 94,
-                    name = L["Position"],
-                    type = "select",
-                    style = "dropdown",
-                    width = 1.0,
-                    values = {
-                        CENTER = "Center",
-                        TOPLEFT = "Top Left",
-                        TOPRIGHT = "Top Right",
-                        BOTTOMLEFT = "Bottom Left",
-                        BOTTOMRIGHT = "Bottom Right",
-                        TOP = "Top Center",
-                        BOTTOM = "Bottom Center",
-                        LEFT = "Left Center",
-                        RIGHT = "Right Center",
-                    },
-                    get = function(info)
-                        return addon.db.profile[info[#info]]
-                    end,
-                    set = function(info, val)
-                        addon.db.profile[info[#info]] = val
-                        addon.db.profile.xoffs = 0
-                        addon.db.profile.yoffs = 0
-                        addon:RemoveAllCurrentGlows()
-                    end,
-                },
-                reset_offs = {
-                    order = 95,
-                    name = "o",
-                    type = "execute",
-                    width = 0.1,
-                    func = function(info)
-                        addon.db.profile.xoffs = 0
-                        addon.db.profile.yoffs = 0
-                        addon:RemoveAllCurrentGlows()
-                    end
-                },
-                xoffs_left = {
-                    order = 96,
-                    name = "<",
-                    type = "execute",
-                    width = 0.1,
-                    func = function(info)
-                        addon.db.profile.xoffs = (addon.db.profile.xoffs or 0) - 1
-                        addon:RemoveAllCurrentGlows()
-                    end
-                },
-                xoffs_right = {
-                    order = 97,
-                    name = ">",
-                    type = "execute",
-                    width = 0.1,
-                    func = function(info)
-                        addon.db.profile.xoffs = (addon.db.profile.xoffs or 0) + 1
-                        addon:RemoveAllCurrentGlows()
-                    end
-                },
-                yoffs_up = {
-                    order = 98,
-                    name = "^",
-                    type = "execute",
-                    width = 0.1,
-                    func = function(info)
-                        addon.db.profile.yoffs = (addon.db.profile.yoffs or 0) + 1
-                        addon:RemoveAllCurrentGlows()
-                    end
-                },
-                yoffs_down = {
-                    order = 99,
-                    name = "v",
-                    type = "execute",
-                    width = 0.1,
-                    func = function(info)
-                        addon.db.profile.yoffs = (addon.db.profile.yoffs or 0) - 1
-                        addon:RemoveAllCurrentGlows()
-                    end
-                },
-                debugging_header = {
-                    order = 100,
-                    type = "header",
-                    name = L["Debugging Options"],
-                },
-                debug = {
-                    order = 110,
-                    type = "toggle",
-                    name = L["Debug Logging"],
-                    width = 1.5,
-                    get = function(info)
-                        return addon.db.profile[info[#info]]
-                    end,
-                    set = function(info, val)
-                        addon.db.profile[info[#info]] = val
-                    end,
-                },
-                spacer5 = {
-                    order = 115,
-                    type = "description",
-                    name = "",
-                    width = 0.3
-                },
-                disable_autoswitch = {
-                    order = 120,
-                    type = "toggle",
-                    name = L["Disable Auto-Switching"],
-                    width = 1.5,
-                    get = function(info)
-                        return addon.db.profile[info[#info]]
-                    end,
-                    set = function(info, val)
-                        addon.db.profile[info[#info]] = val
-                    end,
-                },
-                verbose = {
-                    order = 130,
-                    type = "toggle",
-                    name = L["Verbose Debug Logging"],
-                    width = 1.5,
-                    disabled = function(info)
-                        return addon.db.profile.debug == false
-                    end,
-                    get = function(info)
-                        return addon.db.profile[info[#info]]
-                    end,
-                    set = function(info, val)
-                        addon.db.profile[info[#info]] = val
-                    end,
-                },
-                spacer6 = {
-                    order = 135,
-                    type = "description",
-                    name = "",
-                    width = 0.3
-                },
-                live_config_update = {
-                    order = 140,
-                    name = L["Live Status Update Frequency (seconds)"],
-                    desc = L["This is specifically how often the configuration pane will receive updates about live status.  Too frequently could make your configuration pane unusable.  0 = Disabled."],
-                    type = "range",
-                    min = 0,
-                    max = 60.0,
-                    step = 1.0,
-                    width = 1.5,
-                    get = function(info)
-                        return addon.db.profile[info[#info]]
-                    end,
-                    set = function(info, val)
-                        addon.db.profile[info[#info]] = val
-                    end,
-                },
-            }
-        }
-    }
-}
+    frame:ReleaseChildren()
+    frame:PauseLayout()
 
-local function HandleDelete(spec, rotation)
+    local group = AceGUI:Create("ScrollFrame")
+    group:SetFullWidth(true)
+    group:SetFullHeight(true)
+    group:SetLayout("Flow")
+    frame:AddChild(group)
+
+    local enable = AceGUI:Create("CheckBox")
+    enable:SetLabel(ENABLE)
+    enable:SetValue(profile["enable"])
+    enable:SetRelativeWidth(0.4)
+    enable:SetCallback("OnValueChanged", function(widget, event, val)
+        profile["enable"] = val
+        if val then
+            addon:enable()
+        else
+            addon:disable()
+        end
+    end)
+    group:AddChild(enable)
+
+    group:AddChild(spacer(0.1))
+
+    local poll = AceGUI:Create("Slider")
+    poll:SetLabel(L["Polling Interval (seconds)"])
+    poll:SetValue(profile["poll"])
+    poll:SetRelativeWidth(0.4)
+    poll:SetSliderValues(0.05, 1.0, 0.05)
+    poll:SetCallback("OnValueChanged", function(widget, event, val)
+        profile["poll"] = val
+        if addon.rotationTimer then
+            addon:DisableRotationTimer()
+            addon:EnableRotationTimer()
+        end
+    end)
+    group:AddChild(poll)
+
+    local minimap = AceGUI:Create("CheckBox")
+    minimap:SetLabel(L["Minimap Icon"])
+    minimap:SetValue(not profile["minimap"].hide)
+    minimap:SetRelativeWidth(0.4)
+    minimap:SetCallback("OnValueChanged", function(widget, event, val)
+        profile["minimap"].hide = not val
+        if val then
+            DBIcon:Show(addon.namen)
+        else
+            DBIcon:Hide(addon.name)
+        end
+    end)
+    group:AddChild(minimap)
+
+    group:AddChild(spacer(0.1))
+
+    local spell_history = AceGUI:Create("Slider")
+    spell_history:SetLabel(L["Spell History Memory (seconds)"])
+    spell_history:SetValue(profile["spell_history"])
+    spell_history:SetRelativeWidth(0.4)
+    spell_history:SetSliderValues(0.0, 300, 1)
+    spell_history:SetCallback("OnValueChanged", function(widget, event, val)
+        profile["spell_history"] = val
+    end)
+    group:AddChild(spell_history)
+
+    local effect_header = AceGUI:Create("Heading")
+    effect_header:SetText(L["Effect Options"])
+    effect_header:SetFullWidth(true)
+    group:AddChild(effect_header)
+
+    local effect_group = AceGUI:Create("SimpleGroup")
+    effect_group:SetRelativeWidth(0.4)
+    effect_group:SetLayout("Table")
+    effect_group:SetUserData("table", { columns = { 44, 1 } })
+    group:AddChild(effect_group)
+
+    local effect_map, effect_order, name2idx
+    local function update_effect_map()
+        effect_map = {}
+        effect_order = {}
+        name2idx = {}
+        for k, v in pairs(effects) do
+            if v.name ~= nil then
+                table.insert(effect_order, v.name)
+                effect_map[v.name] = v.name
+                name2idx[v.name] = k
+            end
+        end
+    end
+    update_effect_map()
+
+    local effect_icon = AceGUI:Create("Icon")
+    effect_icon:SetImageSize(36, 36)
+    if name2idx[profile["effect"]] ~= nil then
+        if effects[name2idx[profile["effect"]]].type == "texture" then
+            effect_icon:SetHeight(44)
+            effect_icon:SetWidth(44)
+            effect_icon:SetImage(effects[name2idx[profile["effect"]]].texture)
+        else
+            effect_icon:SetImage(nil)
+            effect_icon:SetHeight(36)
+            effect_icon:SetWidth(36)
+            addon:ApplyCustomGlow(effects[name2idx[profile["effect"]]], effect_icon.frame, nil, profile["color"])
+        end
+    end
+    effect_group:AddChild(effect_icon)
+
+    local magnification = AceGUI:Create("Slider")
+
+    local effect = AceGUI:Create("Dropdown")
+    effect:SetLabel(L["Effect"])
+    effect:SetText(effect_map[profile["effect"]])
+    effect:SetValue(profile["effect"])
+    effect:SetList(effect_map, effect_order)
+    effect:SetHeight(44)
+    effect:SetCallback("OnValueChanged", function(widget, event, val)
+        profile["effect"] = val
+        addon:RemoveAllCurrentGlows()
+        addon:StopCustomGlow(effect_icon.frame)
+        create_primary_options(frame)
+    end)
+    effect.frame:SetScript("OnShow", function(frame)
+        update_effect_map()
+        effect:SetList(effect_map, effect_order)
+    end)
+
+    effect_group:AddChild(effect)
+
+    group:AddChild(spacer(0.1))
+
+    magnification:SetLabel(L["Magnification"])
+    magnification:SetValue(profile["magnification"])
+    magnification:SetRelativeWidth(0.4)
+    magnification:SetSliderValues(0.1, 2.0, 0.1)
+    magnification:SetDisabled(name2idx[profile["effect"]] == nil or effects[name2idx[profile["effect"]]].type ~= "texture")
+    magnification:SetCallback("OnValueChanged", function(widget, event, val)
+        profile["magnification"] = val
+        addon:RemoveAllCurrentGlows()
+    end)
+    group:AddChild(magnification)
+
+    local color_group = AceGUI:Create("SimpleGroup")
+    color_group:SetRelativeWidth(0.4)
+    color_group:SetLayout("Table")
+    color_group:SetUserData("table", { columns = { 44, 1 } })
+    group:AddChild(color_group)
+
+    color_group:AddChild(spacer(0.1))
+
+    local color_pick = AceGUI:Create("ColorPicker")
+    color_pick:SetColor(profile["color"].r, profile["color"].g, profile["color"].b, profile["color"].a)
+    color_pick:SetLabel(L["Highlight Color"])
+    color_pick:SetCallback("OnValueConfirmed", function(widget, event, r, g, b, a)
+        profile["color"] = { r = r, g = g, b = b, a = a }
+        addon:RemoveAllCurrentGlows()
+        if name2idx[profile["effect"]] ~= nil and effects[name2idx[profile["effect"]]].type ~= "texture" then
+            addon:ApplyCustomGlow(effects[name2idx[profile["effect"]]], effect_icon.frame, nil, profile["color"])
+        end
+    end)
+    color_group:AddChild(color_pick)
+
+    group:AddChild(spacer(0.1))
+
+    local position_group = AceGUI:Create("SimpleGroup")
+    position_group:SetLayout("Table")
+    position_group:SetRelativeWidth(0.4)
+    position_group:SetUserData("table", { columns = { 1, 20, 35, 50 } })
+    group:AddChild(position_group)
+
+    local position = AceGUI:Create("Dropdown")
+    position:SetLabel(L["Position"])
+    position:SetText(addon.setpoints[profile["setpoint"]])
+    position:SetValue(profile["setpoint"])
+    position:SetList(addon.setpoints, { "CENTER", "TOPLEFT", "TOPRIGHT", "BOTTOMLEFT", "BOTTOMRIGHT", "TOP", "BOTTOM", "LEFT", "RIGHT" })
+    position:SetDisabled(name2idx[profile["effect"]] == nil or effects[name2idx[profile["effect"]]].type ~= "texture")
+    position:SetCallback("OnValueChanged", function(widget, event, val)
+        profile["setpoint"] = val
+        profile["xoffs"] = 0
+        profile["yoffs"] = 0
+        addon:RemoveAllCurrentGlows()
+    end)
+    position_group:AddChild(position)
+
+    position_group:AddChild(spacer(0.1))
+
+    local directional_group = AceGUI:Create("SimpleGroup")
+    directional_group:SetLayout("Table")
+    directional_group:SetUserData("table", { columns = { 10, 10, 10 } })
+    position_group:AddChild(directional_group)
+
+    local offset_group = AceGUI:Create("SimpleGroup")
+    offset_group:SetLayout("Table")
+    offset_group:SetUserData("table", { columns = { 10, 40 } })
+    position_group:AddChild(offset_group)
+
+    local x_label = AceGUI:Create("Label")
+    x_label:SetText("X")
+    x_label:SetColor(1.0, 0.82, 0)
+    offset_group:AddChild(x_label)
+
+    local x_offs = AceGUI:Create("EditBox")
+    x_offs:SetDisabled(true)
+    x_offs:SetText(profile["xoffs"])
+    offset_group:AddChild(x_offs)
+
+    local y_label = AceGUI:Create("Label")
+    y_label:SetText("Y")
+    y_label:SetColor(1.0, 0.82, 0)
+    offset_group:AddChild(y_label)
+
+    local y_offs = AceGUI:Create("EditBox")
+    y_offs:SetDisabled(true)
+    y_offs:SetText(profile["yoffs"])
+    offset_group:AddChild(y_offs)
+
+    directional_group:AddChild(spacer(1))
+
+    local button_up = AceGUI:Create("InteractiveLabel")
+    button_up:SetText("^")
+    button_up:SetDisabled(name2idx[profile["effect"]] ~= nil and effects[name2idx[profile["effect"]]].type == "blizzard")
+    button_up:SetCallback("OnClick", function(widget, event, val)
+        profile["yoffs"] = (profile["yoffs"] or 0) + 1
+        y_offs:SetText(profile["yoffs"])
+        addon:RemoveAllCurrentGlows()
+    end)
+    directional_group:AddChild(button_up)
+
+    directional_group:AddChild(spacer(1))
+
+    local button_left = AceGUI:Create("InteractiveLabel")
+    button_left:SetText("<")
+    button_left:SetDisabled(name2idx[profile["effect"]] ~= nil and effects[name2idx[profile["effect"]]].type == "blizzard")
+    button_left:SetCallback("OnClick", function(widget, event, val)
+        profile["xoffs"] = (profile["xoffs"] or 0) - 1
+        x_offs:SetText(profile["xoffs"])
+        addon:RemoveAllCurrentGlows()
+    end)
+    directional_group:AddChild(button_left)
+
+    local button_center = AceGUI:Create("InteractiveLabel")
+    button_center:SetText("o")
+    button_center:SetDisabled(name2idx[profile["effect"]] ~= nil and effects[name2idx[profile["effect"]]].type == "blizzard")
+    button_center:SetCallback("OnClick", function(widget, event, val)
+        profile["xoffs"] = 0
+        profile["yoffs"] = 0
+        x_offs:SetText(profile["xoffs"])
+        y_offs:SetText(profile["yoffs"])
+        addon:RemoveAllCurrentGlows()
+    end)
+    directional_group:AddChild(button_center)
+
+    local button_right = AceGUI:Create("InteractiveLabel")
+    button_right:SetText(">")
+    button_right:SetDisabled(name2idx[profile["effect"]] ~= nil and effects[name2idx[profile["effect"]]].type == "blizzard")
+    button_right:SetCallback("OnClick", function(widget, event, val)
+        profile["xoffs"] = (profile["xoffs"] or 0) + 1
+        x_offs:SetText(profile["xoffs"])
+        addon:RemoveAllCurrentGlows()
+    end)
+    directional_group:AddChild(button_right)
+
+    directional_group:AddChild(spacer(1))
+
+    local button_down = AceGUI:Create("InteractiveLabel")
+    button_down:SetText("v")
+    button_down:SetDisabled(name2idx[profile["effect"]] ~= nil and effects[name2idx[profile["effect"]]].type == "blizzard")
+    button_down:SetCallback("OnClick", function(widget, event, val)
+        profile["yoffs"] = (profile["yoffs"] or 0) - 1
+        y_offs:SetText(profile["yoffs"])
+        addon:RemoveAllCurrentGlows()
+    end)
+    directional_group:AddChild(button_down)
+
+    directional_group:AddChild(spacer(1))
+
+    local debug_header = AceGUI:Create("Heading")
+    debug_header:SetText(L["Debugging Options"])
+    debug_header:SetFullWidth(true)
+    group:AddChild(debug_header)
+
+    local verbose = AceGUI:Create("CheckBox")
+
+    local debug = AceGUI:Create("CheckBox")
+    debug:SetLabel(L["Debug Logging"])
+    debug:SetValue(profile["debug"])
+    debug:SetRelativeWidth(0.4)
+    debug:SetCallback("OnValueChanged", function(widget, event, val)
+        profile["debug"] = val
+        addon:StopCustomGlow(effect_icon.frame)
+        create_primary_options(frame)
+    end)
+    group:AddChild(debug)
+
+    group:AddChild(spacer(0.1))
+
+    local disable_autoswitch = AceGUI:Create("CheckBox")
+    disable_autoswitch:SetLabel(L["Disable Auto-Switching"])
+    disable_autoswitch:SetValue(profile["disable_autoswitch"])
+    disable_autoswitch:SetRelativeWidth(0.4)
+    disable_autoswitch:SetCallback("OnValueChanged", function(widget, event, val)
+        profile["disable_autoswitch"] = val
+    end)
+    group:AddChild(disable_autoswitch)
+
+    local verbose = AceGUI:Create("CheckBox")
+    verbose:SetLabel(L["Verbose Debug Logging"])
+    verbose:SetValue(profile["verbose"])
+    verbose:SetRelativeWidth(0.4)
+    verbose:SetDisabled(not profile["debug"])
+    verbose:SetCallback("OnValueChanged", function(widget, event, val)
+        profile["verbose"] = val
+    end)
+    group:AddChild(verbose)
+
+    group:AddChild(spacer(0.1))
+
+    local live_config_update = AceGUI:Create("Slider")
+    live_config_update:SetLabel(L["Live Status Update Frequency (seconds)"])
+    live_config_update:SetValue(profile["live_config_update"])
+    live_config_update:SetRelativeWidth(0.4)
+    live_config_update:SetSliderValues(0, 60, 1)
+    live_config_update:SetCallback("OnValueChanged", function(widget, event, val)
+        if profile["live_config_update"] ~= val then
+            profile["live_config_update"] = val
+            if addon.rotationTimer then
+                addon:CancelTimer(addon.conditionEvalTimer)
+            end
+            if val > 0 then
+                addon.conditionEvalTimer = addon:ScheduleRepeatingTimer('UpdateCurrentCondition', val)
+            end
+        end
+    end)
+    group:AddChild(live_config_update)
+
+    frame:ResumeLayout()
+    frame:DoLayout()
+end
+
+local create_spec_options
+
+local function HandleDelete(spec, rotation, frame)
     local rotation_settings = addon.db.profile.rotations
 
     StaticPopupDialogs["ROTATIONMASTER_DELETE_ROTATION"] = {
@@ -381,7 +386,8 @@ local function HandleDelete(spec, rotation)
                     addon:UpdateAutoSwitch()
                     addon:SwitchRotation()
                 end
-                AceConfigRegistry:NotifyChange(addon.name .. "Class")
+
+                create_spec_options(frame, spec, DEFAULT)
             end
         end,
         showAlert = 1,
@@ -392,7 +398,7 @@ local function HandleDelete(spec, rotation)
     StaticPopup_Show("ROTATIONMASTER_DELETE_ROTATION")
 end
 
-local function ImportExport(spec, rotation)
+local function ImportExport(spec, rotation, parent)
     local rotation_settings = addon.db.profile.rotations
     local original_name
     if rotation ~= DEFAULT and rotation_settings[spec][rotation] ~= nil then
@@ -403,9 +409,9 @@ local function ImportExport(spec, rotation)
     frame:SetTitle(L["Import/Export Rotation"])
     frame:SetCallback("OnClose", function(widget)
         AceGUI:Release(widget)
-        AceConfigRegistry:NotifyChange(addon.name .. "Class")
     end)
     frame:SetLayout("List")
+    frame:SetWidth(500)
     HideOnEscape(frame)
 
     frame:PauseLayout()
@@ -416,7 +422,7 @@ local function ImportExport(spec, rotation)
     frame:AddChild(desc)
 
     local import = AceGUI:Create("Button")
-    import:SetText("Import")
+    import:SetText(L["Import"])
     import:SetDisabled(true)
 
     local editbox = AceGUI:Create("MultiLineEditBox")
@@ -427,19 +433,29 @@ local function ImportExport(spec, rotation)
     editbox:DisableButton(true)
     editbox:SetFocus(true)
     if (rotation_settings[spec][rotation] ~= nil) then
-        editbox:SetText(base64enc(serpent.dump(rotation_settings[spec][rotation])))
+        editbox:SetText(width_split(base64enc(libc:Compress(AceSerializer:Serialize(rotation_settings[spec][rotation]))), 64))
     end
+    editbox.editBox:GetRegions():SetFont("Interface\\AddOns\\RotationMaster\\Fonts\\Inconsolata-Bold.ttf", 13)
     editbox:SetCallback("OnTextChanged", function(widget, event, text)
-        frame:SetStatusText(string.len(text) .. " " .. L["bytes"])
-        import:SetDisabled(false)
+        if text:match('^[0-9A-Za-z+/\r\n]+=*$') then
+            local decomp = libc:Decompress(base64dec(text))
+            if decomp ~= nil and AceSerializer:Deserialize(decomp) then
+                frame:SetStatusText(string.len(text) .. " " .. L["bytes"] .. " (" .. select(2, text:gsub('\n', '\n'))+1 .. " " .. L["lines"] .. ")")
+                import:SetDisabled(false)
+                return
+            end
+        end
+        frame:SetStatusText(string.len(text) .. " " .. L["bytes"] .. " (" .. select(2, text:gsub('\n', '\n'))+1 .. " " .. L["lines"] .. ") - " ..
+                color.RED .. L["Parse Error"])
+        import:SetDisabled(true)
     end)
     frame:AddChild(editbox)
 
-    frame:SetStatusText(string.len(editbox:GetText()) .. " " .. L["bytes"])
+    frame:SetStatusText(string.len(editbox:GetText()) .. " " .. L["bytes"] .. " (" .. select(2, editbox:GetText():gsub('\n', '\n'))+1 .. " " .. L["lines"] .. ")")
     editbox:HighlightText(0, string.len(editbox:GetText()))
 
     import:SetCallback("OnClick", function(wiget, event)
-        ok, res = serpent.load(base64dec(editbox:GetText()))
+        ok, res = AceSerializer:Deserialize(libc:Decompress(base64dec(editbox:GetText())))
         if ok then
             rotation_settings[spec][rotation] = res
             if rotation == DEFAULT then
@@ -464,6 +480,7 @@ local function ImportExport(spec, rotation)
             end
 
             frame:Hide()
+            create_spec_options(parent, spec, rotation)
         end
     end)
     frame:AddChild(import)
@@ -472,325 +489,348 @@ local function ImportExport(spec, rotation)
     frame:DoLayout()
 end
 
-local function create_rotation_options(spec, rotation, order)
-    local rotation_settings = addon.db.profile.rotations
+local function create_rotation_options(frame, specID, rotid, parent, selected)
+    local profile = addon.db.profile
+    local rotation_settings = profile.rotations[specID]
 
-    local isnew = (rotation ~= DEFAULT and (rotation_settings[spec] == nil or rotation_settings[spec][rotation] == nil))
-
-    return {
-        order = order,
-        name = function(info)
-            if (rotation == DEFAULT) then
-                return DEFAULT
-            elseif isnew then
-                return NEW
-            else
-                return rotation_settings[spec][rotation].name;
-            end
-        end,
-
-        type = "group",
-        args = {
-            name = {
-                order = 10,
-                name = NAME,
-                disabled = (rotation == DEFAULT),
-                type = "input",
-                width = 1.25,
-                get = function(info)
-                    if (rotation == DEFAULT) then
-                        return DEFAULT;
-                    elseif isnew then
-                        return "";
-                    else
-                        return rotation_settings[spec][rotation].name;
-                    end
-                end,
-                validate = function(info, text)
-                    if rotation == DEFAULT or text == DEFAULT or text == NEW or text == "" then
-                        return false
-                    end
-
-                    if rotation_settings ~= nil and rotation_settings[spec] ~= nil then
-                        for key, value in pairs(rotation_settings[spec]) do
-                            if value.name == text then
-                                return key == rotation
-                            end
-                        end
-                    end
-
-                    return true
-                end,
-                set = function(info, val)
-                    if rotation_settings[spec] == nil then
-                        rotation_settings[spec] = {}
-                    end
-
-                    if rotation_settings[spec][rotation] == nil then
-                        rotation_settings[spec][rotation] = { name = val }
-                    else
-                        rotation_settings[spec][rotation].name = val
-                    end
-                    AceConfigRegistry:NotifyChange(addon.name .. "Class")
-                end
-            },
-            delete = {
-                order = 11,
-                name = DELETE,
-                disabled = (rotation == DEFAULT or isnew),
-                type = "execute",
-                func = function(info)
-                    HandleDelete(spec, rotation)
-                end
-            },
-            importexport = {
-                order = 11,
-                name = L["Import/Export"],
-                type = "execute",
-                func = function(info)
-                    ImportExport(spec, rotation)
-                end
-            },
-            switch = {
-                order = 12,
-                name = L["Switch Condition"],
-                type = "group",
-                inline = true,
-                args = {
-                    default_desc = {
-                        order = 1,
-                        type = "description",
-                        name = L["No other rotations match."],
-                        hidden = (rotation ~= DEFAULT)
-                    },
-                    useless_desc = {
-                        order = 2,
-                        type = "description",
-                        name = L["Manual switch only."],
-                        hidden = function(info)
-                            if (rotation == DEFAULT) then
-                                return true
-                            end
-                            if rotation_settings[spec] ~= nil and rotation_settings[spec][rotation] ~= nil and rotation_settings[spec][rotation].switch ~= nil then
-                                return addon:usefulSwitchCondition(rotation_settings[spec][rotation].switch)
-                            else
-                                return false
-                            end
-                        end
-                    },
-                    desc = {
-                        order = 10,
-                        type = "description",
-                        width = "full",
-                        hidden = function(info)
-                            if (rotation == DEFAULT) then
-                                return true
-                            end
-                            if rotation_settings[spec] ~= nil and rotation_settings[spec][rotation] ~= nil and rotation_settings[spec][rotation].switch ~= nil then
-                                return not addon:usefulSwitchCondition(rotation_settings[spec][rotation].switch)
-                            else
-                                return true
-                            end
-                        end,
-                        name = function(info)
-                            if rotation_settings[spec] ~= nil and rotation_settings[spec][rotation] ~= nil and rotation_settings[spec][rotation].switch ~= nil then
-                                return addon:printSwitchCondition(rotation_settings[spec][rotation].switch, spec)
-                            else
-                                return ""
-                            end
-                        end
-                    },
-                    validated = {
-                        order = 11,
-                        type = "header",
-                        width = "full",
-                        name = color.RED .. L["THIS CONDITION DOES NOT VALIDATE"] .. color.RESET,
-                        hidden = function(info)
-                            if (rotation == DEFAULT) then
-                                return true
-                            end
-                            if rotation_settings[spec] ~= nil and rotation_settings[spec][rotation] ~= nil and rotation_settings[spec][rotation].switch ~= nil then
-                                return addon:validateSwitchCondition(rotation_settings[spec][rotation].switch, spec)
-                            else
-                                return true
-                            end
-                        end
-                    },
-                    edit_button = {
-                        order = 12,
-                        type = "execute",
-                        name = EDIT,
-                        disabled = isnew,
-                        hidden = (rotation == DEFAULT),
-                        func = function(info)
-                            if (rotation_settings[spec][rotation].switch == nil) then
-                                rotation_settings[spec][rotation].switch = { type = nil }
-                            end
-                            addon:EditSwitchCondition(spec, rotation_settings[spec][rotation].switch)
-                        end
-                    },
-                }
-            },
-            validated = {
-                order = 13,
-                type = "header",
-                width = "full",
-                name = color.RED .. L["THIS ROTATION WILL NOT BE USED AS IT IS INCOMPLETE"] .. color.RESET,
-                hidden = function(info)
-                    return rotation_settings[spec] ~= nil and rotation_settings[spec][rotation] ~= nil and
-                            addon:rotationValidConditions(rotation_settings[spec][rotation])
-                end
-            },
-            cooldowns = {
-                order = 14,
-                name = L["Cooldowns"],
-                type = "group",
-                -- inline = true,
-                args = addon:get_cooldown_list(spec, rotation)
-            },
-            rotation = {
-                order = 15,
-                name = L["Rotation"],
-                type = "group",
-                -- inline = true,
-                args = addon:get_rotation_list(spec, rotation)
-            },
-        }
-    }
-end
-
-local function create_class_options()
-    local rotation_settings = addon.db.profile.rotations
-
-    local spec_tabs = {}
-    local localized, english, classID = UnitClass("player")
-    for j = 1, GetNumSpecializationsForClassID(classID) do
-        local specID, specName = GetSpecializationInfoForClassID(classID, j)
-
-        local rotation_args = {}
-        local idx = 10;
-        rotation_args[DEFAULT] = create_rotation_options(specID, DEFAULT, idx)
-        if (rotation_settings ~= nil and rotation_settings[specID] ~= nil) then
-            local groupsOrder = {}
-            for id, rot in pairs(rotation_settings[specID]) do
-                if id ~= DEFAULT then
-                    table.insert(groupsOrder, id)
-                end
-            end
-            table.sort(groupsOrder, function(lhs, rhs)
-                return rotation_settings[specID][lhs].name < rotation_settings[specID][rhs].name
-            end)
-            for k, v in pairs(groupsOrder) do
-                idx = idx + 1
-                rotation_args[v] = create_rotation_options(specID, v, idx)
-            end
+    local name2id = {}
+    for id,rot in pairs(rotation_settings) do
+        if id ~= DEFAULT then
+            name2id[rot.name] = id
         end
-        local newid = addon:uuid()
-        rotation_args[newid] = create_rotation_options(specID, newid, idx + 1)
-
-        spec_tabs[tostring(specID)] = {
-            name = specName,
-            order = 10 + j,
-            width = "full",
-            type = "group",
-            childGroups = "select",
-            args = rotation_args
-        }
     end
 
-    return {
-        name = L["Rotations"] .. " - " .. localized,
-        type = "group",
-        childGroups = "tab",
-        args = spec_tabs,
-    }
-end
-
-local function create_texture_list(frame)
-    local textures = addon.db.global.textures
     frame:ReleaseChildren()
     frame:PauseLayout()
 
-    local group = AceGUI:Create("ScrollFrame")
-    group:SetFullWidth(true)
-    group:SetFullHeight(true)
-    -- group:SetLayout("Flow")
-    group:SetLayout("Table")
-    group:SetUserData("table", { columns = { 35, 1, 1, 40 } })
-    frame:AddChild(group)
-
-    local updateDisabled
-
-    local label1 = AceGUI:Create("Label")
-    label1:SetText("")
-    group:AddChild(label1)
-
-    local label2 = AceGUI:Create("Label")
-    label2:SetText(NAME)
-    group:AddChild(label2)
-
-    local label3 = AceGUI:Create("Label")
-    label3:SetText(L["Texture"])
-    group:AddChild(label3)
-
-    local label4 = AceGUI:Create("Label")
-    label4:SetText("")
-    group:AddChild(label4)
-
-    for k, v in pairs(textures) do
-        local row = group
-
-        local icon = AceGUI:Create("Icon")
-        icon:SetWidth(44)
-        icon:SetHeight(44)
-        icon:SetImageSize(36, 36)
-        icon:SetImage(v.texture)
-        row:AddChild(icon)
-
-        local name = AceGUI:Create("EditBox")
-        name:SetText(v.name)
-        name:SetFullWidth(true)
-        name:SetCallback("OnEnterPressed", function(widget, event, val)
-            v.name = val
-            updateDisabled()
-        end)
-        row:AddChild(name)
-
-        local texture = AceGUI:Create("EditBox")
-        texture:SetText(v.texture)
-        texture:SetFullWidth(true)
-        texture:SetCallback("OnEnterPressed", function(widget, event, val)
-            icon:SetImage(val)
-            v.texture = val
-            updateDisabled()
-        end)
-        group:AddChild(texture)
-
-        local delete = AceGUI:Create("Button")
-        delete:SetText("X")
-        delete:SetWidth(40)
-        delete:SetCallback("OnClick", function(widget, ewvent, ...)
-            table.remove(textures, k)
-            create_texture_list(frame)
-        end)
-        row:AddChild(delete)
+    local name = AceGUI:Create("EditBox")
+    name:SetLabel(NAME)
+    name:SetRelativeWidth(0.5)
+    if rotid == DEFAULT then
+        name:SetText(DEFAULT)
+    elseif rotation_settings[rotid] ~= nil then
+        name:SetText(rotation_settings[rotid].name)
     end
-
-    local addnew = AceGUI:Create("Button")
-    addnew:SetText("Add New")
-    addnew:SetCallback("OnClick", function(widget, ewvent, ...)
-        table.insert(textures, { name = nil, texture = nil })
-        create_texture_list(frame)
+    name:SetDisabled(rotid == DEFAULT)
+    name:SetCallback("OnTextChanged", function(widget, event, val)
+        if val == DEFAULT or val == NEW or val == "" then
+            name:DisableButton(true)
+        else
+            name:DisableButton(name2id[val] ~= nil)
+        end
     end)
-    addnew:SetUserData("cell", { colspan = 4 })
-    group:AddChild(addnew)
+    name:SetCallback("OnEnterPressed", function(widget, event, val)
+        if val ~= DEFAULT and val ~= NEW and val ~= "" and name2id[val] == nil then
+            if rotation_settings[rotid] == nil then
+                rotation_settings[rotid] = { name = val }
+            else
+                rotation_settings[rotid].name = val
+            end
+            create_spec_options(parent, specID, rotid)
+        end
+    end)
+    frame:AddChild(name)
 
-    updateDisabled = function()
-        local tblsz = #textures
-        addnew:SetDisabled(textures[tblsz].name == nil or textures[tblsz].name == "" or
-                textures[tblsz].texture == nil or textures[tblsz].texture == "")
+    local delete = AceGUI:Create("Button")
+    delete:SetText(DELETE)
+    delete:SetRelativeWidth(0.25)
+    delete:SetDisabled(rotid == DEFAULT or rotation_settings[rotid] == nil)
+    delete:SetCallback("OnClick", function(widget, event)
+        HandleDelete(specID, rotid, parent)
+    end)
+    frame:AddChild(delete)
+
+    local importexport = AceGUI:Create("Button")
+    importexport:SetText(L["Import/Export"])
+    importexport:SetRelativeWidth(0.25)
+    importexport:SetCallback("OnClick", function(widget, event)
+        ImportExport(specID, rotid, parent)
+    end)
+    frame:AddChild(importexport)
+
+    local switch = AceGUI:Create("InlineGroup")
+    switch:SetTitle(L["Switch Condition"])
+    switch:SetLayout("Flow")
+    switch:SetFullWidth(true)
+    frame:AddChild(switch)
+
+    local switch_desc = AceGUI:Create("Label")
+    switch_desc:SetFullWidth(true)
+    switch:AddChild(switch_desc)
+
+    if rotid == DEFAULT then
+        switch_desc:SetText(L["No other rotations match."])
+    else
+        local switch_valid = AceGUI:Create("Label")
+        switch_valid:SetColor(255, 0, 0)
+        switch_valid:SetRelativeWidth(0.75)
+        switch:AddChild(switch_valid)
+
+        local function update_switch()
+            if rotation_settings[rotid] == nil or rotation_settings[rotid].switch == nil or
+                    not addon:usefulSwitchCondition(rotation_settings[rotid].switch) then
+                switch_desc:SetText(L["Manual switch only."])
+                switch_valid:SetText("")
+            else
+                switch_desc:SetText(addon:printSwitchCondition(rotation_settings[rotid].switch, specID))
+                if addon:validateSwitchCondition(rotation_settings[rotid].switch, specId) then
+                    switch_valid:SetText("")
+                else
+                    switch_valid:SetText(L["THIS CONDITION DOES NOT VALIDATE"])
+                end
+            end
+        end
+        update_switch()
+
+        local switch_button = AceGUI:Create("Button")
+        switch_button:SetRelativeWidth(0.25)
+        switch_button:SetText(EDIT)
+        switch_button:SetDisabled(rotation_settings[rotid] == nil)
+        switch_button:SetCallback("OnClick", function(widget, event)
+            if rotation_settings[rotid].switch == nil then
+                rotation_settings[rotid].switch = { type = nil }
+            end
+            addon:EditSwitchCondition(spec, rotation_settings[rotid].switch, update_switch)
+        end)
+        switch:AddChild(switch_button)
     end
-    updateDisabled()
+
+    if rotation_settings[rotid] == nil or not addon:rotationValidConditions(rotation_settings[rotid]) then
+        local rotation_valid = AceGUI:Create("Heading")
+        rotation_valid:SetText(color.RED .. L["THIS ROTATION WILL NOT BE USED AS IT IS INCOMPLETE"] .. color.RESET)
+        rotation_valid:SetFullWidth(true)
+        frame:AddChild(rotation_valid)
+
+        if addon.currentRotation == rotid and not addon.manualRotation then
+            if addon.db.profile.disable_autoswitch then
+                addon:DisableRotation();
+            else
+                addon:UpdateAutoSwitch()
+                addon:SwitchRotation()
+            end
+        end
+    else
+        if addon.currentRotation == nil and not addon.manualRotation and not addon.db.profile.disable_autoswitch then
+            addon:UpdateAutoSwitch()
+            addon:SwitchRotation()
+        end
+    end
+
+    local tree = AceGUI:Create("TreeGroup")
+    tree:SetFullWidth(true)
+    tree:SetFullHeight(true)
+    tree:SetLayout("Fill")
+    frame:AddChild(tree)
+
+    local cooldowns
+    local rotation
+    local function update_rotation_list()
+        cooldowns = {}
+        rotation = {}
+
+        if rotation_settings[rotid] ~= nil then
+            if rotation_settings[rotid].cooldowns ~= nil then
+                for idx, rot in pairs(rotation_settings[rotid].cooldowns) do
+                    local name
+                    if rot.disabled ~= nil and rot.disabled == true then
+                        name = color.GRAY
+                    elseif rot.type == nil or rot.action == nil or not addon:validateCondition(rot.conditions, specID) then
+                        name = color.RED
+                    else
+                        name = ""
+                    end
+                    name = name .. tostring(idx)
+                    if (rot.name ~= nil) then
+                        name = name .. " - " .. rot.name
+                    end
+                    name = name .. color.RESET
+
+                    table.insert(cooldowns, {
+                        value = rot.id,
+                        text = name
+                    })
+                end
+            end
+            table.insert(cooldowns, {
+                value = "*",
+                text = ADD
+            })
+
+            if rotation_settings[rotid].rotation ~= nil then
+                for idx, rot in pairs(rotation_settings[rotid].rotation) do
+                    local name
+                    if rot.disabled ~= nil and rot.disabled == true then
+                        name = color.GRAY
+                    elseif rot.type == nil or rot.action == nil or not addon:validateCondition(rot.conditions, specID) then
+                        name = color.RED
+                    else
+                        name = ""
+                    end
+                    name = name .. tostring(idx)
+                    if (rot.name ~= nil) then
+                        name = name .. " - " .. rot.name
+                    end
+                    name = name .. color.RESET
+
+                    table.insert(rotation, {
+                        value = rot.id,
+                        text = name
+                    })
+                end
+            end
+
+            table.insert(rotation, {
+                value = "*",
+                text = ADD
+            })
+        end
+
+        tree:SetTree( {
+            {
+                value = "C",
+                text = color.BLIZ_YELLOW .. L["Cooldowns"] .. color.RESET,
+                children = cooldowns,
+                disabled = true,
+            },
+            {
+                value = "R",
+                text = color.BLIZ_YELLOW .. L["Rotation"] .. color.RESET,
+                children = rotation,
+                disabled = true,
+            },
+        })
+    end
+    update_rotation_list()
+
+    local scrollwin = AceGUI:Create("ScrollFrame")
+    scrollwin:SetLayout("Flow")
+    scrollwin:SetFullHeight(true)
+    scrollwin:SetFullWidth(true)
+    tree:AddChild(scrollwin)
+
+    if selected ~= nil then
+        tree:SelectByValue(selected)
+        section, key = ("\001"):split(selected)
+        if section == "C" then
+            addon:get_cooldown_list(scrollwin, specID, rotid, key,
+                    function() create_rotation_options(frame, specID, rotid, parent, selected) end)
+        elseif section == "R" then
+            addon:get_rotation_list(scrollwin, specID, rotid, key,
+                    function() create_rotation_options(frame, specID, rotid, parent, selected) end)
+        end
+    end
+
+    tree:SetCallback("OnGroupSelected", function(widget, event, val)
+        section, key = ("\001"):split(val)
+        if section == "C" then
+            if key == "*" then
+                if rotation_settings[rotid].cooldowns == nil then
+                    rotation_settings[rotid].cooldowns = {}
+                end
+                id = addon:uuid()
+                table.insert(rotation_settings[rotid].cooldowns, { id = id })
+                create_rotation_options(frame, specID, rotid, parent, "C\001" .. id)
+            else
+                addon:get_cooldown_list(scrollwin, specID, rotid, key,
+                    function() create_rotation_options(frame, specID, rotid, parent, val) end)
+            end
+        elseif section == "R" then
+            if key == "*" then
+                if rotation_settings[rotid].rotation == nil then
+                    rotation_settings[rotid].rotation = {}
+                end
+                id = addon:uuid()
+                table.insert(rotation_settings[rotid].rotation, { id = id })
+                create_rotation_options(frame, specID, rotid, parent, "R\001" .. id)
+            else
+                addon:get_rotation_list(scrollwin, specID, rotid, key,
+                    function() create_rotation_options(frame, specID, rotid, parent, val) end)
+            end
+        end
+    end)
+
+    frame:ResumeLayout()
+    frame:DoLayout()
+end
+
+create_spec_options = function(frame, specID, selected)
+    local profile = addon.db.profile
+    local rotation_settings = profile.rotations
+
+    frame:ReleaseChildren()
+    frame:PauseLayout()
+
+    if rotation_settings[specID] == nil then
+        rotation_settings[specID] = {}
+    end
+
+    local rotation_args = {}
+    local rotation_order = {}
+    for id, rot in pairs(rotation_settings[specID]) do
+        if id ~= DEFAULT then
+            table.insert(rotation_order, id)
+            rotation_args[id] = rot.name
+        end
+    end
+
+    table.sort(rotation_order, function(lhs, rhs)
+        return rotation_settings[specID][lhs].name < rotation_settings[specID][rhs].name
+    end)
+
+    rotation_args[DEFAULT] = DEFAULT;
+    table.insert(rotation_order, 1, DEFAULT)
+
+    local newid = addon:uuid()
+    rotation_args[newid] = NEW;
+    rotation_order[#rotation_order + 1] = newid
+
+    local rotations = AceGUI:Create("DropdownGroup")
+    rotations:SetGroupList(rotation_args, rotation_order)
+    rotations:SetGroup(selected)
+    rotations:SetTitle(L["Rotation"])
+    rotations:SetLayout("Flow")
+    rotations:SetFullHeight(true)
+    rotations:SetFullWidth(true)
+    frame:AddChild(rotations)
+
+    rotations:SetCallback("OnGroupSelected", function(widget, event, val)
+        create_rotation_options(rotations, specID, val, frame)
+    end)
+    create_rotation_options(rotations, specID, selected, frame)
+
+    frame:ResumeLayout()
+    frame:DoLayout()
+end
+
+local function create_class_options(frame, classID)
+    local profile = addon.db.profile
+    local currentSpec = addon.currentSpec
+
+    frame:ReleaseChildren()
+    frame:PauseLayout()
+
+    local tabs = AceGUI:Create("TabGroup")
+
+    local spec_tabs = {}
+    for j = 1, GetNumSpecializationsForClassID(classID) do
+        local specID, specName = GetSpecializationInfoForClassID(classID, j)
+        if currentSpec == nil then
+            currentSpec = specID
+        end
+        table.insert(spec_tabs, {
+            value = specID,
+            text = specName
+        })
+    end
+    tabs:SetTabs(spec_tabs)
+    tabs:SelectTab(currentSpec)
+    tabs:SetLayout("Fill")
+    frame:AddChild(tabs)
+
+    tabs:SetCallback("OnGroupSelected", function(widget, event, val)
+        create_spec_options(tabs, val, DEFAULT)
+    end)
+    create_spec_options(tabs, currentSpec, addon.currentRotation or DEFAULT)
 
     frame:ResumeLayout()
     frame:DoLayout()
@@ -799,13 +839,8 @@ end
 function module:OnInitialize()
     self.db = addon.db
 
-    self.options = options
-    self.options.args.profiles = AceDBOptions:GetOptionsTable(self.db)
-    -- self.options_slashcmd = options_slashcmd
-
-    AceConfig:RegisterOptionsTable(addon.name, options)
-    AceConfig:RegisterOptionsTable(addon.name .. "Class", create_class_options)
-    -- AceConfig:RegisterOptionsTable(addon.name .. "RotationMaster", options_slashcmd, { "rotationmaster", "rm" })
+    -- AceConfig:RegisterOptionsTable(addon.name, options)
+    AceConfig:RegisterOptionsTable(addon.name .. "Profiles", AceDBOptions:GetOptionsTable(self.db))
 
     hooksecurefunc("InterfaceCategoryList_Update", function()
         self:SetupOptions()
@@ -818,16 +853,27 @@ function module:SetupOptions()
     end
     self.didSetup = true
 
-    self.optionsFrame = AceConfigDialog:AddToBlizOptions(addon.name, addon.pretty_name, nil, "main")
+    self.optionsFrame = AceGUI:Create("BlizOptionsGroup")
+    self.optionsFrame:SetName(addon.pretty_name)
+    self.optionsFrame:SetLayout("Fill")
+    self.optionsFrame:SetTitle(addon.pretty_name)
+    create_primary_options(self.optionsFrame)
+    InterfaceOptions_AddCategory(self.optionsFrame.frame)
 
-    local textures = AceGUI:Create("BlizOptionsGroup")
-    textures:SetName(L["Textures"], addon.pretty_name)
-    textures:SetLayout("Flow")
-    create_texture_list(textures)
+    local effects = AceGUI:Create("BlizOptionsGroup")
+    effects:SetName(L["Effects"], addon.pretty_name)
+    effects:SetLayout("Fill")
+    effects:SetTitle(addon.pretty_name .. " - " .. L["Effects"])
+    addon:create_effect_list(effects)
+    InterfaceOptions_AddCategory(effects.frame)
 
-    InterfaceOptions_AddCategory(textures.frame)
-
-    AceConfigDialog:AddToBlizOptions(addon.name .. "Class", L["Rotations"], addon.pretty_name)
+    local rotation = AceGUI:Create("BlizOptionsGroup")
+    rotation:SetName(L["Rotations"], addon.pretty_name)
+    rotation:SetLayout("Fill")
+    local localized, _, classID = UnitClass("player")
+    rotation:SetTitle(addon.pretty_name .. " - " .. localized)
+    create_class_options(rotation, classID)
+    InterfaceOptions_AddCategory(rotation.frame)
 
     for name, module in addon:IterateModules() do
         local f = module["SetupOptions"]
@@ -838,6 +884,6 @@ function module:SetupOptions()
         end
     end
 
-    self.Profile = AceConfigDialog:AddToBlizOptions(addon.name, L["Profiles"], addon.pretty_name, "profiles")
+    self.Profile = AceConfigDialog:AddToBlizOptions(addon.name .. "Profiles", L["Profiles"], addon.pretty_name)
     self.About = LibAboutPanel.new(addon.pretty_name, addon.name)
 end

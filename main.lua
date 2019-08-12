@@ -4,15 +4,13 @@ local _G = _G
 
 _G.RotationMaster = LibStub("AceAddon-3.0"):NewAddon(addon, addon_name, "AceConsole-3.0", "AceEvent-3.0", "AceTimer-3.0")
 
-local AceConfigRegistry = LibStub("AceConfigRegistry-3.0")
-local AceConfigDialog = LibStub("AceConfigDialog-3.0")
 local AceConsole = LibStub("AceConsole-3.0")
 local SpellRange = LibStub("SpellRange-1.0")
 local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
 local getCached
 local DBIcon = LibStub("LibDBIcon-1.0")
 
-local pairs, color = pairs, color
+local pairs, color, string = pairs, color, string
 local floor = math.floor
 
 addon.pretty_name = GetAddOnMetadata(addon_name, "Title")
@@ -27,7 +25,7 @@ local defaults = {
     profile = {
         enable = true,
         poll = 0.15,
-        overlay = "Ping",
+        effect = "Ping",
         color = { r = 1.0, g = 1.0, b = 1.0, a = 1.0 },
         magnification = 1.4,
         setpoint = 'CENTER',
@@ -44,18 +42,33 @@ local defaults = {
         }
     },
     global = {
-        textures = {
+        effects = {
             {
+                type = "texture",
                 name = "Ping",
                 texture = "Interface\\Cooldown\\ping4",
             },
             {
+                type = "texture",
                 name = "Star",
                 texture = "Interface\\Cooldown\\star4",
             },
             {
+                type = "texture",
                 name = "Starburst",
                 texture = "Interface\\Cooldown\\starburst",
+            },
+            {
+                type = "blizzard",
+                name = "Glow",
+            },
+            {
+                type = "pixel",
+                name = "Pixel",
+            },
+            {
+                type = "autocast",
+                name = "Auto Cast",
             }
         }
     }
@@ -114,7 +127,6 @@ function addon:HandleCommand(str)
     elseif cmd == "config" then
         InterfaceOptionsFrame_OpenToCategory(addon.pretty_name)
         InterfaceOptionsFrame_OpenToCategory(addon.pretty_name) -- Hack for Blizzard bug.
-        AceConfigDialog:SelectGroup(addon.name .. "Class", tostring(self.currentSpec))
 
     elseif cmd == "disable" then
         addon:disable()
@@ -142,6 +154,8 @@ function addon:HandleCommand(str)
             self:RemoveAllCurrentGlows()
             self.manualRotation = true
             self.currentRotation = DEFAULT
+            self.skipAnnounce = true
+            self.announced = {}
             self:EnableRotationTimer()
             DataBroker.text = self:GetRotationName(DEFAULT)
             addon:info(L["Active rotation manually switched to " .. color.WHITE .. "%s" .. color.INFO], name)
@@ -152,6 +166,8 @@ function addon:HandleCommand(str)
                         self:RemoveAllCurrentGlows()
                         self.manualRotation = true
                         self.currentRotation = id
+                        self.skipAnnounce = true
+                        self.announced = {}
                         self:EnableRotationTimer()
                         DataBroker.text = self:GetRotationName(id)
                         addon:info(L["Active rotation manually switched to " .. color.WHITE .. "%s" .. color.INFO], name)
@@ -172,13 +188,29 @@ end
 function addon:OnInitialize()
     self.db = LibStub("AceDB-3.0"):New("RotationMasterDB", defaults, true)
 
+    if self.db.global.textures ~= nil then
+        self.db.global.effects = self.db.global.textures
+        for _, ent in pairs(self.db.global.effects) do
+            ent["type"] = "texture"
+        end
+        self.db.global.textures = nil
+    end
+    if self.db.profile.overlay ~= nil then
+        self.db.profile.effect = self.db.profile.overlay
+        self.db.profile.overlay = nil
+    end
+
     AceConsole:RegisterChatCommand("rm", function(str)
         addon:HandleCommand(str)
     end)
     AceConsole:RegisterChatCommand("rotationmaster", function(str)
         addon:HandleCommand(str)
     end)
-    DBIcon:Register("RotationMaster", DataBroker, self.db.profile.minimap)
+    if type(self.db.profile.minimap) == "boolean" then
+        self.db.profile.minimap = nil
+    end
+    DBIcon:Register(addon.name, DataBroker, self.db.profile.minimap)
+    DataBroker.text = color.RED .. OFF
 
     -- These values are cached for the entire time you are in combat.  Their values
     -- are unlikely to change during combat (and if they do, they will have minimal effect)
@@ -214,7 +246,14 @@ function addon:OnInitialize()
     self.spellHistory = {}
     self.playerUnitFrame = nil
 
-    self.lastConfigUpdate = GetTime()
+    self.announced = {}
+    self.skipAnnounce = true
+
+    self.currentConditionEval = nil
+    self.conditionEvalTimer = nil
+    self.lastCacheReport = GetTime()
+
+    self.evaluationProfile = addon:ProfiledCode()
 
     -- This is here because of order of loading.
     getCached = addon.getCached
@@ -232,7 +271,8 @@ end
 function addon:GetRotationName(id)
     if id == DEFAULT then
         return DEFAULT
-    elseif self.db.profile.rotations[self.currentSpec] ~= nil then
+    elseif self.db.profile.rotations[self.currentSpec] ~= nil  and
+           self.db.profile.rotations[self.currentSpec][id] ~= nil then
         return self.db.profile.rotations[self.currentSpec][id].name
     else
         return nil
@@ -256,6 +296,8 @@ local function minimapChangeRotation(self, arg1, arg2, checked)
         if addon.currentSpec ~= arg1 then
             addon:RemoveAllCurrentGlows()
             addon.currentRotation = arg1
+            addon.skipAnnounce = true
+            addon.announced = {}
             addon:EnableRotationTimer()
             DataBroker.text = addon:GetRotationName(arg1)
         end
@@ -310,7 +352,6 @@ function DataBroker.OnClick(self, button)
     elseif button == "LeftButton" then
         InterfaceOptionsFrame_OpenToCategory(addon.pretty_name)
         InterfaceOptionsFrame_OpenToCategory(addon.pretty_name) -- Hack for Blizzard bug.
-        AceConfigDialog:SelectGroup(addon.name .. "Class", tostring(self.currentSpec))
     end
 end
 
@@ -355,6 +396,10 @@ end
 
 function addon:OnEnable()
     self:info(L["Starting up version %s"], GetAddOnMetadata(addon_name, "Version"))
+
+    if self.db.profile.live_config_update and not self.conditionEvalTimer then
+        self.conditionEvalTimer = self:ScheduleRepeatingTimer('UpdateCurrentCondition', self.db.profile.live_config_update)
+    end
 
     if self.db.profile.enable then
         self:enable()
@@ -430,6 +475,8 @@ function addon:SwitchRotation()
                 addon:info(L["Active rotation automatically switched to " .. color.WHITE .. "%s" .. color.INFO], self:GetRotationName(v))
                 self:RemoveAllCurrentGlows()
                 self.currentRotation = v
+                self.skipAnnounce = true
+                self.announced = {}
                 self:EnableRotationTimer()
                 DataBroker.text = self:GetRotationName(v)
             end
@@ -452,8 +499,10 @@ function addon:EnableRotation()
     self:Fetch()
     self:UpdateAutoSwitch()
     self:SwitchRotation()
-    DataBroker.text = self:GetRotationName(self.currentRotation)
-    addon:info(L["Battle rotation enabled"])
+    if self.currentRotation ~= nil then
+        DataBroker.text = self:GetRotationName(self.currentRotation)
+        addon:info(L["Battle rotation enabled"])
+    end
 end
 
 function addon:DisableRotation()
@@ -495,13 +544,52 @@ local function UpdateUnitInfo(cache, unit, record)
     record.inrange = getCached(cache, UnitInRange, unit)
 end
 
+local function announce_cooldown(cache, cond)
+    local link
+    if cond.type == "spell" or cond.type == "pet" then
+        link = GetSpellLink(cond.action)
+        -- For future use ...
+        -- C_ChatInfo.SendAddonMessage(addon.pretty_name, "CDA:S" .. cond.action, "RAID")
+    elseif cond.type == "item" then
+        link = select(4, GetItemInfo(cond.action))
+        -- For future use ...
+        -- C_ChatInfo.SendAddonMessage(addon.pretty_name, "CDA:I" .. cond.action, "RAID")
+    else
+        addon:warn("Condition has unknown type while trying to announce cooldown")
+        return
+    end
+
+    local dest
+    if cond.announce == "partyraid" then
+        if getCached(cache, IsInRaid) then
+            dest = "RAID"
+        elseif getCached(cache, IsInGroup) then
+            dest = "PARTY"
+        end
+    elseif cond.announce == "party" then
+        dest = "PARTY"
+    elseif cond.announce == "raidwarn" then
+        dest = "RAID_WARNING"
+    elseif cond.announce == "say" then
+        dest = "SAY"
+    elseif cond.announce == "yell" then
+        dest = "YELL"
+    end
+    if dest ~= nil then
+        SendChatMessage(string.format(L["%s is now available!"], link), dest)
+    end
+end
+
 function addon:EvaluateNextAction()
     if self.currentRotation == nil then
         addon:DisableRotationTimer()
     elseif self.db.profile.rotations[self.currentSpec] ~= nil and
             self.db.profile.rotations[self.currentSpec][self.currentRotation] ~= nil then
+        self.evaluationProfile:start()
+
         local cache = {}
 
+        self.evaluationProfile:child("environment"):start()
         for unit, entity in pairs(self.unitsInRange) do
             addon:verbose("Updating Unit " .. unit .. " (" .. entity.name .. ")")
             UpdateUnitInfo(cache, unit, entity)
@@ -519,7 +607,9 @@ function addon:EvaluateNextAction()
                 break
             end
         end
+        self.evaluationProfile:child("environment"):stop()
 
+        self.evaluationProfile:child("rotation"):start()
         local rot = self.db.profile.rotations[self.currentSpec][self.currentRotation]
         if rot.rotation ~= nil then
             local enabled
@@ -562,6 +652,8 @@ function addon:EvaluateNextAction()
                 end
             end
         end
+        self.evaluationProfile:child("rotation"):stop()
+        self.evaluationProfile:child("cooldowns"):start()
         if rot.cooldowns ~= nil then
             for id, cond in pairs(rot.cooldowns) do
                 if cond.action ~= nil and (cond.disabled == nil or cond.disabled == false) then
@@ -582,20 +674,41 @@ function addon:EvaluateNextAction()
                     end
                     if enabled then
                         addon:verbose("Cooldown %d is enabled", id)
+                        if not addon.announced[id] then
+                            if not addon.skipAnnounce then
+                                announce_cooldown(cache, cond)
+                            end
+                            addon.announced[id] = true;
+                        end
                     else
+                        addon.announced[id] = false;
                         addon:verbose("Cooldown %d is disabled", id)
                     end
                     addon:GlowCooldown(spellid, enabled, cond)
                 end
             end
         end
+        self.evaluationProfile:child("cooldowns"):stop()
 
-        -- Update the live config config .. just to be nice :)
-        if self.db.profile.live_config_update > 0 and GetTime() - self.lastConfigUpdate > self.db.profile.live_config_update then
-            AceConfigRegistry:NotifyChange(addon.name .. "Class")
-            self.lastConfigUpdate = GetTime()
-            addon:debug(L["Notified configuration to update it's status."])
-        end
+        -- We only skip the FIRST cycle of enabling/disabling cooldowns.
+        addon.skipAnnounce = false
+
+        self.evaluationProfile:stop()
+    end
+
+    if GetTime() - self.lastCacheReport > 15 then
+        addon:ReportCacheStats()
+        addon:debug("%s", self.evaluationProfile:report())
+        self.evaluationProfile:reset()
+        self.lastCacheReport = GetTime()
+    end
+end
+
+function addon:UpdateCurrentCondition()
+    -- Update the live config config .. just to be nice :)
+    if self.currentConditionEval ~= nil then
+        self.currentConditionEval()
+        addon:debug(L["Notified configuration to update it's status."])
     end
 end
 

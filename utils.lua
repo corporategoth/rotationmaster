@@ -2,8 +2,9 @@ local addon_name, addon = ...
 
 local AceConsole = LibStub("AceConsole-3.0")
 local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
+local libc = LibStub("LibCompress")
 
-local _G, tostring, tonumber, pairs, color = _G, tostring, tonumber, pairs, color
+local _G, tostring, tonumber, pairs, color, unpack, type, string = _G, tostring, tonumber, pairs, color, unpack, type, string
 local random, floor = math.random, math.floor
 
 local operators, friendly_distance, harmful_distance = addon.operators, addon.friendly_distance, addon.harmful_distance
@@ -179,29 +180,24 @@ addon.deepcopy = function(array, except, invert)
     return rv
 end
 
+local cacheHits = 0
+local cacheMisses = 0
+
 addon.getCached = function(cache, func, ...)
     local args = { ... }
     if cache[func] == nil then
         cache[func] = {}
     end
 
-    local argsz = #args
-    for idx,call in pairs(cache[func]) do
-        if #call.args == argsz then
-            local match = true
-            for i=1,argsz do
-                if args[i] ~= call.args[i] then
-                    match = false
-                    break
-                end
-            end
-            if match then
-                return unpack(call.result)
-            end
-        end
+    hash = libc:fcs16init()
+    for i=1,#args do
+        hash = libc:fcs16update(hash, args[i])
     end
-
-    local result
+    hash = libc:fcs16final(hash)
+    if cache[func][hash] ~= nil then
+        cacheHits = cacheHits + 1
+        return unpack(cache[func][hash])
+    end
     if (type(func) == "function") then
         result = { func(...) }
     elseif type(func) == "string" then
@@ -210,12 +206,15 @@ addon.getCached = function(cache, func, ...)
         return nil
     end
 
-    table.insert(cache[func], {
-        args = args,
-        result = result
-    })
-
+    cacheMisses = cacheMisses + 1
+    cache[func][hash] = result
     return unpack(result)
+end
+
+function addon:ReportCacheStats()
+    addon:debug(L["Cache hit rate at %.02f%%"], (cacheHits / (cacheHits + cacheMisses)) * 100)
+    cacheHits = 0
+    cacheMisses = 0
 end
 
 addon.isSpellOnSpec = function(spec, spellid)
@@ -287,6 +286,23 @@ function base64dec(data)
         for i=1,8 do c=c+(x:sub(i,i)=='1' and 2^(8-i) or 0) end
         return string.char(c)
     end))
+end
+
+function width_split(s, sz)
+    if s == nil then
+        return nil
+    end
+
+    local rv = ""
+    local offs = 1;
+    while offs < s:len() do
+        if (offs > 1) then
+            rv = rv .. "\n"
+        end
+        rv = rv .. s:sub(offs, offs+sz)
+        offs = offs + sz + 1
+    end
+    return rv
 end
 
 function addon.UnitCloserThan(cache, unit, distance)

@@ -35,6 +35,7 @@ L["Button Fetch triggered."] = true
 L["Notified configuration to update it's status."] = true
 L["Removing all glows."] = true
 L["Active rotation is incomplete and may not work correctly!"] = true
+L["Cache hit rate at %.02f%%"] = true
 
 -- from constants.lua
 
@@ -65,6 +66,17 @@ L["your pet's target's target"] = true
 L["your target's target's target"] = true
 L["your focus target's target's target"] = true
 L["your mouseover target's target's target"] = true
+
+
+L["Center"] = true
+L["Top Left"] = true
+L["Top Right"] = true
+L["Bottom Left"] = true
+L["Bottom Right"] = true
+L["Top Center"] = true
+L["Bottom Center"] = true
+L["Left Center"] = true
+L["Right Center"] = true
 
 L["Warrior"] = true
 L["Paladin"] = true
@@ -121,8 +133,7 @@ L["<operator>"] = true
 
 L["Enable Rotation Master"] = true
 L["Polling Interval (seconds)"] = true
-L["Overlay Options"] = true
-L["Overlay Texture"] = true
+L["Effect Options"] = true
 L["Magnification"] = true
 L["Highlight Color"] = true
 L["Position"] = true
@@ -138,8 +149,11 @@ L["Are you sure you wish to delete this rotation?"] = true
 L["Import/Export Rotation"] = true
 L["Copy and paste this text share your profile with others, or import someone else's."] = true
 L["bytes"] = true
+L["lines"] = true
+L["Parse Error"] = true
 L["Imported on %c"] = true
 L["Import/Export"] = true
+L["Import"] = true
 L["Switch Condition"] = true
 L["No other rotations match."] = true
 L["Manual switch only."] = true
@@ -148,9 +162,20 @@ L["THIS ROTATION WILL NOT BE USED AS IT IS INCOMPLETE"] = true
 L["Cooldowns"] = true
 L["Rotation"] = true
 L["Rotations"] = true
+L["Type"] = true
 L["Texture"] = true
-L["Textures"] = true
+L["Effect"] = true
+L["Pixel"] = true
+L["Auto Cast"] = true
+L["Glow"] = true
+L["Effects"] = true
 L["Profiles"] = true
+L["Lines"] = true
+L["Frequency"] = true
+L["Length"] = true
+L["Thickness"] = true
+L["Particles"] = true
+L["Scale"] = true
 
 -- from Options/cooldowns.lua and Options/rotations.lua
 
@@ -160,12 +185,21 @@ L["Move Up"] = true
 L["Move Down"] = true
 L["Action Type"] = true
 L["Spell"] = true
+L["Pet Spell"] = true
 L["Item"] = true
 L["Conditions"] = true
 L["THIS CONDITION DOES NOT VALIDATE"] = true
-L["This conditions is currently satisfied."] = true
-L["This conditions is currently not satisfied."] = true
+L["Currently satisfied"] = true
+L["Not currently satisfied"] = true
 L["NOTE: Some spells can not be selected (even if auto-completed) due to WoW internals.  It may reequire you to switch specs or summon the requisite pet first before being able to populate this field."] = true
+L["%s is now available!"] = true
+L["Announce"] = true
+L["None"] = true
+L["Raid or Party"] = true
+L["Party Only"] = true
+L["Raid Warning"] = true
+L["Say"] = true
+L["Yell"] = true
 
 -- from Options/conditional.lua
 

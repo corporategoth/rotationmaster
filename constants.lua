@@ -2,6 +2,18 @@ local addon_name, addon = ...
 
 local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
 
+addon.setpoints = {
+    CENTER = L["Center"],
+    TOPLEFT = L["Top Left"],
+    TOPRIGHT = L["Top Right"],
+    BOTTOMLEFT = L["Bottom Left"],
+    BOTTOMRIGHT = L["Bottom Right"],
+    TOP = L["Top Center"],
+    BOTTOM = L["Bottom Center"],
+    LEFT = L["Left Center"],
+    RIGHT = L["Right Center"],
+}
+
 addon.operators = {
     LESSTHAN = L["is less than"],
     LESSTHANOREQUALS = L["is less than or equal to"],

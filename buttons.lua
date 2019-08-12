@@ -7,22 +7,45 @@
 local addon_name, addon = ...
 
 local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
+local CustomGlow = LibStub("LibCustomGlow-1.0")
 
 local Spells = {}
 local Flags = {}
 local SpellsGlowing = {}
 local FramePool = {}
 local Frames = {}
-local Textures = {}
+local Effects = {}
 
-local function UpdateOverlay(frame, texture, color, mags, setp, xoffs, yoffs)
+local math = math
+
+function addon:ApplyCustomGlow(effect, frame, id, color, xoffs, yoffs)
+    local c
+	if color ~= nil then
+		c = { color.r, color.g, color.b, color.a }
+	end
+	if effect.type == "pixel" then
+		CustomGlow.PixelGlow_Start(frame, c, effect.lines, effect.frequency, effect.length, effect.thickness, xoffs, yoffs, false, id)
+	elseif effect.type == "autocast" then
+		CustomGlow.AutoCastGlow_Start(frame, c, effect.particles, effect.frequency, effect.scale, xoffs, yoffs, id)
+	elseif effect.type == "blizzard" then
+		CustomGlow.ButtonGlow_Start(frame, c, effect.frequency)
+	end
+end
+
+function addon:StopCustomGlow(frame, id)
+	CustomGlow.PixelGlow_Stop(frame, id)
+	CustomGlow.AutoCastGlow_Stop(frame, id)
+	CustomGlow.ButtonGlow_Stop(frame)
+end
+
+local function UpdateOverlay(frame, effect, color, mags, setp, xoffs, yoffs)
     frame:ClearAllPoints()
 	frame:SetPoint("CENTER", frame:GetParent(), setp, xoffs, yoffs)
 	frame:SetWidth(frame:GetParent():GetWidth() * mags)
 	frame:SetHeight(frame:GetParent():GetHeight() * mags)
 	frame.texture:SetVertexColor(color.r, color.g, color.b, color.a)
-	if Textures[texture] then
-		frame.texture:SetTexture(Textures[texture])
+	if Effects[effect].texture then
+		frame.texture:SetTexture(Effects[effect].texture)
 	end
 end
 
@@ -102,18 +125,30 @@ function addon:UpdateButtonGlow()
 	end
 end
 
-local function Glow(button, id, texture, color, mags, setp, xoffs, yoffs)
-	if button.addonOverlays and button.addonOverlays[id] then
-		UpdateOverlay(button.addonOverlays[id], texture, color, mags, setp, xoffs, yoffs)
-		button.addonOverlays[id]:Show()
-	else
-		if not button.addonOverlays then
-			button.addonOverlays = {}
-		end
+local function Glow(button, id, effect, color, mags, setp, xoffs, yoffs)
+	if Effects[effect] == nil then
+		return
+	end
 
-		button.addonOverlays[id] = CreateOverlay(button, id)
-		UpdateOverlay(button.addonOverlays[id], texture, color, mags, setp, xoffs, yoffs)
-		button.addonOverlays[id]:Show()
+    if Effects[effect].type == "texture" then
+		addon:StopCustomGlow(button, id)
+		if button.addonOverlays and button.addonOverlays[id] then
+			UpdateOverlay(button.addonOverlays[id], effect, color, mags, setp, xoffs, yoffs)
+			button.addonOverlays[id]:Show()
+		else
+			if not button.addonOverlays then
+				button.addonOverlays = {}
+			end
+
+			button.addonOverlays[id] = CreateOverlay(button, id)
+			UpdateOverlay(button.addonOverlays[id], effect, color, mags, setp, xoffs, yoffs)
+			button.addonOverlays[id]:Show()
+		end
+	else
+		if button.addonOverlays and button.addonOverlays[id] then
+			button.addonOverlays[id]:Hide()
+		end
+		addon:ApplyCustomGlow(Effects[effect], button, id, color, xoffs, yoffs)
 	end
 end
 
@@ -121,6 +156,7 @@ local function HideGlow(button, id)
 	if button.addonOverlays and button.addonOverlays[id] then
 		button.addonOverlays[id]:Hide()
 	end
+    addon:StopCustomGlow(button, id)
 end
 
 local function AddButton(spellId, button)
@@ -313,7 +349,13 @@ function addon:Fetch()
 	Spells = {}
 	Flags = {}
 	SpellsGlowing = {}
-	Textures = {}
+    Effects = {}
+
+	for _,v in pairs(addon.db.global.effects) do
+        if v.name ~= nil then
+            Effects[v.name] = v
+        end
+	end
 
 	addon:debug(L["Button Fetch triggered."])
 
@@ -349,12 +391,6 @@ function addon:Fetch()
 		FetchAzeriteUI();
     end
 
-	for k,v in pairs(self.db.global.textures) do
-		if v.name and v.texture then
-			Textures[v.name] = v.texture
-		end
-    end
-
 	if self.currentRotation then
 		self:EnableRotationTimer()
 		self:EvaluateNextAction()
@@ -376,10 +412,10 @@ function addon:IsGlowing(spellId)
     end
 end
 
-local function GlowIndependent(spellId, id, texture, color, mags, setpoint, xoffs, yoffs)
+local function GlowIndependent(spellId, id, effect, color, mags, setpoint, xoffs, yoffs)
 	if Spells[spellId] ~= nil then
 		for k, button in pairs(Spells[spellId]) do
-			Glow(button, id, texture, color, mags, setpoint, xoffs, yoffs)
+			Glow(button, id, effect, color, mags, setpoint, xoffs, yoffs)
 			addon:verbose(spellId .. " is now glowing")
 		end
 	end
@@ -404,7 +440,7 @@ function addon:GlowCooldown(spellId, condition, cooldown)
     end
 	if condition and cooldown and not Flags[spellId] then
 		Flags[spellId] = true
-		GlowIndependent(spellId, spellId, cooldown.texture or self.db.profile.overlay, cooldown.color,
+		GlowIndependent(spellId, spellId, cooldown.effect or self.db.profile.effect, cooldown.color,
                 cooldown.magnification or self.db.profile.magnification,
                 cooldown.setpoint or self.db.profile.setpoint,
                 cooldown.xoffs or self.db.profile.xoffs,
@@ -424,7 +460,7 @@ function addon:GlowSpell(spellId)
 
 	if Spells[spellId] ~= nil then
 		for k, button in pairs(Spells[spellId]) do
-			Glow(button, 'next', self.db.profile.overlay, self.db.profile.color,
+			Glow(button, 'next', self.db.profile.effect, self.db.profile.color,
                  self.db.profile.magnification, self.db.profile.setpoint,
 				 self.db.profile.xoffs, self.db.profile.yoffs)
 		end

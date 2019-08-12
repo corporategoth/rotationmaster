@@ -4,11 +4,6 @@ local _G = _G
 local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
 
 local AceGUI = LibStub("AceGUI-3.0")
-local AceConfigRegistry = LibStub("AceConfigRegistry-3.0")
-local AceConfigDialog = LibStub("AceConfigDialog-3.0")
-local AceConfig = LibStub("AceConfig-3.0")
-local AceDBOptions = LibStub("AceDBOptions-3.0")
-local AceGUI = LibStub("AceGUI-3.0")
 
 local assert, error, tostring, tonumber, pairs
     = assert, error, tostring, tonumber, pairs
@@ -504,10 +499,13 @@ end
 
 LayoutFrame = function(frame)
     local root = frame:GetUserData("root")
+    local funcs = frame:GetUserData("funcs")
 
     frame:SetCallback("OnClose", function(widget)
         AceGUI:Release(widget)
-        AceConfigRegistry:NotifyChange(addon.name .. "Class")
+        if funcs.close ~= nil then
+            funcs.close()
+        end
         addon:UpdateAutoSwitch()
     end)
 
@@ -558,13 +556,14 @@ function addon:RegisterCondition(tag, array)
     conditions_idx = conditions_idx + 1
 end
 
-function addon:EditCondition(index, spec, value)
+function addon:EditCondition(index, spec, value, callback)
     local funcs = {
         print = addon.printCondition,
         validate = addon.validateCondition,
         list = addon.listConditions,
         describe = addon.describeCondition,
         widget = addon.widgetCondition,
+        close = callback,
     }
 
     EditConditionCommon(index, spec, value, funcs)
@@ -633,13 +632,14 @@ function addon:RegisterSwitchCondition(tag, array)
     switchConditions_idx = switchConditions_idx + 1
 end
 
-function addon:EditSwitchCondition(spec, value)
+function addon:EditSwitchCondition(spec, value, callback)
     local funcs = {
         print = addon.printSwitchCondition,
         validate = addon.validateSwitchCondition,
         list = addon.listSwitchConditions,
         describe = addon.describeSwitchCondition,
         widget = addon.widgetSwitchCondition,
+        close = callback,
     }
 
     EditConditionCommon(0, spec, value, funcs)

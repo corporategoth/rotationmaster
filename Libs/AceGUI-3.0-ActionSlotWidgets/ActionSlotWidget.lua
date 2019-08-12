@@ -41,9 +41,6 @@ do
 		self:SetText()
 	end
 
-	local spellbooks = { "spell", "pet" }
-	local companionTypes = { "MOUNT", "CRITTER" }
-	
 	local function Pickup(actionType, actionData)
 		if actionType == "item" then
 			return PickupItem(actionData)
@@ -52,26 +49,7 @@ do
 		elseif actionType == "equipmentset" then
 			return PickupEquipmentSetByName(actionData)
 		elseif actionType == "spell" then
-			local pattern = "spell:"..actionData.."|"
-			for i, book in pairs(spellbooks) do
-				local index, link = 1, GetSpellLink(1, book)
-				while link do
-					if link:match(pattern) then
-						return PickupSpell(index, book)
-					else
-						index = index + 1
-						link = GetSpellLink(index, book)
-					end
-				end
-			end
-			for i, companionType in pairs(companionTypes) do
-				for index = 1, GetNumCompanions(companionType) do
-					local _, _, spellId = GetCompanionInfo(companionType, index)
-					if spellId == actionData then
-						return PickupCompanion(companionType, index)
-					end
-				end
-			end
+            return PickupSpell(select(1, GetSpellInfo(actionData)))
 		end
 		ClearCursor()
 	end

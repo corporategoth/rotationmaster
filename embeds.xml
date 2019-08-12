@@ -13,7 +13,9 @@
 <Include file="Libs\AceEvent-3.0\AceEvent-3.0.xml" />
 <Include file="Libs\AceTimer-3.0\AceTimer-3.0.xml" />
 <Include file="Libs\AceLocale-3.0\AceLocale-3.0.xml" />
+<Include file="Libs\AceSerializer-3.0\AceSerializer-3.0.xml" />
 <Include file="Libs\AceGUI-3.0-Spell-EditBox\AceGUI-3.0-Spell-EditBox.xml" />
+<Include file="Libs\LibCompress\lib.xml" />
 <Script file="LibsAugment\Spec-EditBox.lua" />
 <Script file="LibsAugment\Totem-EditBox.lua" />
 <Include file="Libs\AceGUI-3.0-Item-EditBox\AceGUI-3.0-Item-EditBox.xml" />
@@ -22,7 +24,6 @@
 <Script file="Libs\LibDataBroker-1.1\LibDataBroker-1.1.lua" />
 <Include file="Libs\LibDBIcon-1.0\lib.xml" />
 <Include file="Libs\LibSpellRange-1.0\lib.xml" />
-
-<Script file="Libs\serpent\src\serpent.lua"/>
+<Include file="Libs\LibCustomGlow-1.0\LibCustomGlow-1.0.xml" />
 
 </Ui>
