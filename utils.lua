@@ -191,7 +191,7 @@ addon.getCached = function(cache, func, ...)
 
     hash = libc:fcs16init()
     for i=1,#args do
-        hash = libc:fcs16update(hash, args[i])
+        hash = libc:fcs16update(hash, tostring(args[i]))
     end
     hash = libc:fcs16final(hash)
     if cache[func][hash] ~= nil then
