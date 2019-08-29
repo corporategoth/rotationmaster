@@ -98,7 +98,7 @@ local function AddSpell(name, rank, icon, spellID, force)
 		end
 	end
 
-	if rank ~= nil then
+	if rank ~= nil and rank ~= "" then
 		spells[spellID].rank = rank
 		if spellsReverseRank[lcname] == nil then
 			spellsReverseRank[lcname] = {}
