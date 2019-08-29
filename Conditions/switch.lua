@@ -14,7 +14,7 @@ local nullable, keys,  isin, deepcopy, playerize =
 
 addon:RegisterSwitchCondition("PVP", {
     description = L["PVP Flagged"],
-    icon = "Interface\\Icons\\achievement_guildperk_honorablemention",
+    icon = "Interface\\Icons\\Inv_banner_03",
     valid = function(spec, value)
         return value.unit ~= nil and isin(units, value.unit);
     end,
@@ -47,7 +47,7 @@ addon:RegisterSwitchCondition("PVP", {
 
 addon:RegisterSwitchCondition("ZONEPVP", {
     description = L["Zone PVP"],
-    icon = "Interface\\Icons\\achievement_guildperk_honorablemention_rank2",
+    icon = "Interface\\Icons\\Inv_bannerpvp_01",
     valid = function(spec, value)
         return value.value == nil or isin(zonepvp, value.value);
     end,
@@ -87,7 +87,7 @@ addon:RegisterSwitchCondition("ZONEPVP", {
 
 addon:RegisterSwitchCondition("INSTANCE", {
     description = L["Instance"],
-    icon = "Interface\\Icons\\achievement_boss_hellfire_zone",
+    icon = "Interface\\Icons\\Spell_nature_astralrecal",
     valid = function(spec, value)
         return value.value == nil or isin(zonepvp, value.value);
     end,
@@ -126,7 +126,7 @@ addon:RegisterSwitchCondition("INSTANCE", {
 
 addon:RegisterSwitchCondition("ZONE", {
     description = L["Zone"],
-    icon = "Interface\\Icons\\achievement_zone_kalimdor_01",
+    icon = "Interface\\Icons\\spell_nature_farsight",
     valid = function(spec, value)
         return value.value ~= nil
     end,
@@ -157,7 +157,7 @@ addon:RegisterSwitchCondition("ZONE", {
 
 addon:RegisterSwitchCondition("SUBZONE", {
     description = L["SubZone"],
-    icon = "Interface\\Icons\\achievement_zone_easternkingdoms_01",
+    icon = "Interface\\Icons\\Ability_townwatch",
     valid = function(spec, value)
         return value.value ~= nil
     end,
@@ -188,7 +188,7 @@ addon:RegisterSwitchCondition("SUBZONE", {
 
 addon:RegisterSwitchCondition("GROUP", {
     description = L["In Group"],
-    icon = "Interface\\Icons\\inv_helm_misc_starpartyhat",
+    icon = "Interface\\Icons\\ability_warrior_charge",
     valid = function(spec, value)
         return true
     end,
@@ -202,7 +202,7 @@ addon:RegisterSwitchCondition("GROUP", {
 
 addon:RegisterSwitchCondition("RAID", {
     description = L["In Raid"],
-    icon = "Interface\\Icons\\inv_misc_groupneedmore",
+    icon = "Interface\\Icons\\Ability_warrior_challange",
     valid = function(spec, value)
         return true
     end,
@@ -216,7 +216,7 @@ addon:RegisterSwitchCondition("RAID", {
 
 addon:RegisterSwitchCondition("OUTDOORS", {
     description = L["Outdoors"],
-    icon = "Interface\\Icons\\achievement_zone_barrens_01",
+    icon = "Interface\\Icons\\Inv_misc_flower_02",
     valid = function(spec, value)
         return true
     end,

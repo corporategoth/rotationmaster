@@ -14,7 +14,7 @@ local compare, compareString, nullable, keys, isin, getCached, isSpellOnSpec, ro
 
 addon:RegisterCondition("TOTEM", {
     description = L["Totem Present"],
-    icon = "Interface\\Icons\\ability_shaman_totemrelocation",
+    icon = "Interface\\Icons\\spell_nature_manaregentotem",
     valid = function(spec, value)
         return value.spell ~= nil and value.spell >= 1 and value.spell <= 4
     end,
@@ -46,7 +46,7 @@ addon:RegisterCondition("TOTEM", {
 
 addon:RegisterCondition("TOTEM_SPELL", {
     description = L["Specific Totem Present"],
-    icon = "Interface\\Icons\\ability_shaman_tranquilmindtotem",
+    icon = "Interface\\Icons\\spell_nature_stoneskintotem",
     valid = function(spec, value)
         return value.spell ~= nil
     end,
@@ -116,7 +116,7 @@ addon:RegisterCondition("TOTEM_SPELL", {
 
 addon:RegisterCondition("TOTEM_REMAIN", {
     description = L["Totem Time Remaining"],
-    icon = "Interface\\Icons\\spell_shaman_totemrecall",
+    icon = "Interface\\Icons\\spell_nature_agitatingtotem",
     valid = function(spec, value)
         return (value.spell ~= nil and value.spell >= 1 and value.spell <= 4 and
                 value.operator ~= nil and isin(operators, value.operator) and

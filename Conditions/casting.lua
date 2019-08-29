@@ -14,7 +14,7 @@ local compare, compareString, nullable, keys, isin, isint, getCached, playerize,
 
 addon:RegisterCondition("CASTING", {
     description = L["Casting"],
-    icon = "Interface\\Icons\\spell_arcane_arcanepotency_nightborne",
+    icon = "Interface\\Icons\\Spell_holy_holynova",
     valid = function(spec, value)
         return value.unit ~= nil and isin(units, value.unit)
     end,
@@ -47,7 +47,7 @@ addon:RegisterCondition("CASTING", {
 
 addon:RegisterCondition("CASTING_SPELL", {
     description = L["Specific Spell Casting"],
-    icon = "Interface\\Icons\\spell_arcane_manatap",
+    icon = "Interface\\Icons\\Spell_holy_spellwarding",
     valid = function(spec, value)
         return (value.unit ~= nil and isin(units, value.unit) and value.spell ~= nil)
     end,
@@ -138,7 +138,7 @@ addon:RegisterCondition("CASTING_SPELL", {
 
 addon:RegisterCondition("CASTING_REMAIN", {
     description = L["Cast Time Remaining"],
-    icon = "Interface\\Icons\\sha_spell_shadow_shadesofdarkness_nightborne",
+    icon = "Interface\\Icons\\Inv_misc_pocketwatch_02",
     valid = function(spec, value)
         return (value.unit ~= nil and isin(units, value.unit) and
                 value.operator ~= nil and isin(operators, value.operator) and
@@ -200,7 +200,7 @@ addon:RegisterCondition("CASTING_REMAIN", {
 
 addon:RegisterCondition("CAST_INTERRUPTABLE", {
     description = L["Cast Interruptable"],
-    icon = "Interface\\Icons\\spell_deathknight_pathoffrost",
+    icon = "Interface\\Icons\\Spell_shadow_curseofachimonde",
     valid = function(spec, value)
         return value.unit ~= nil and isin(units, value.unit)
     end,

@@ -3,6 +3,7 @@ local addon_name, addon = ...
 local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
 
 local AceGUI = LibStub("AceGUI-3.0")
+local SpellData = LibStub("AceGUI-3.0-SpellLoader")
 
 local isint, isSpellOnSpec = addon.isint, addon.isSpellOnSpec
 local pairs, color, tonumber = pairs, color, tonumber
@@ -103,9 +104,9 @@ function addon:get_rotation_list(frame, specID, rotid, id, callback)
                 rot.action = v
                 action_icon:SetText(v)
                 if v then
-                    action:SetText(GetSpellInfo(v))
+                    action:SetText(SpellData:SpellName(v))
                 else
-                    action:SetText("")
+                    action:SetText(nil)
                 end
 
                 callback()
@@ -114,7 +115,7 @@ function addon:get_rotation_list(frame, specID, rotid, id, callback)
 
         action:SetUserData("spec", specID)
         action:SetLabel(L["Spell"])
-        action:SetText(rot.action and select(1, GetSpellInfo(rot.action)))
+        action:SetText(rot.action and SpellData:SpellName(rot.action))
         action:SetCallback("OnEnterPressed", function(widget, event, val)
             addon:RemoveCooldownGlowIfCurrent(specID, rotid, rot.type, rot.action)
             if isint(val) then
@@ -122,12 +123,13 @@ function addon:get_rotation_list(frame, specID, rotid, id, callback)
                     rot.action = tonumber(val)
                 else
                     rot.action = nil
+                    action:SetText(nil)
                 end
             else
                 rot.action = addon:GetSpecSpellID(specID, val)
-            end
-            if rot.action ~= nil then
-                action:SetText(GetSpellInfo(rot.action))
+                if rot.action == nil then
+                    action:SetText(nil)
+                end
             end
             action_icon:SetText(rot.action)
             callback()
@@ -148,21 +150,20 @@ function addon:get_rotation_list(frame, specID, rotid, id, callback)
             rot.action = v
             action_icon:SetText(v)
             if v then
-                action:SetText(GetSpellInfo(v))
+                action:SetText(SpellData:SpellName(v))
             else
-                action:SetText("")
+                action:SetText(nil)
             end
 
             callback()
         end)
 
         action:SetLabel(L["Spell"])
-        action:SetText(rot.action and select(1, GetSpellInfo(rot.action)))
+        action:SetText(rot.action and SpellData:SpellName(rot.action))
         action:SetCallback("OnEnterPressed", function(widget, event, val)
             addon:RemoveCooldownGlowIfCurrent(specID, rotid, rot.type, rot.action)
-            local name, _, _, _, _, _, spellid = GetSpellInfo(v)
+            local spellid = select(7, GetSpellInfo(v))
             rot.action = spellid
-            action:SetText(name)
             action_icon:SetText(rot.action)
             callback()
         end)

@@ -14,7 +14,7 @@ local compare, compareString, nullable, keys, isin, isint, getCached, playerize,
 
 addon:RegisterCondition("CHANNELING", {
     description = L["Channeling"],
-    icon = "Interface\\Icons\\spell_druid_momentofclarity",
+    icon = "Interface\\Icons\\Spell_holy_searinglight",
     valid = function(spec, value)
         return value.unit ~= nil and isin(units, value.unit)
     end,
@@ -47,7 +47,7 @@ addon:RegisterCondition("CHANNELING", {
 
 addon:RegisterCondition("CHANNELING_SPELL", {
     description = L["Specific Spell Channeling"],
-    icon = "Interface\\Icons\\spell_mage_thermalvoid",
+    icon = "Interface\\Icons\\Spell_holy_greaterheal",
     valid = function(spec, value)
         return (value.unit ~= nil and isin(units, value.unit) and value.spell ~= nil)
     end,
@@ -137,7 +137,7 @@ addon:RegisterCondition("CHANNELING_SPELL", {
 
 addon:RegisterCondition("CHANNELING_REMAIN", {
     description = L["Channel Time Remaining"],
-    icon = "Interface\\Icons\\spell_holy_greaterheal",
+    icon = "Interface\\Icons\\Inv_misc_pocketwatch_01",
     valid = function(spec, value)
         return (value.unit ~= nil and isin(units, value.unit) and
                 value.operator ~= nil and isin(operators, value.operator) and

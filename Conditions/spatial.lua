@@ -13,7 +13,7 @@ addon.compare, addon.compareString, addon.nullable, addon.keys, addon.isin, addo
 
 addon:RegisterCondition("PROXIMITY", {
     description = L["Allies Within Range"],
-    icon = "Interface\\Icons\\Highmaulraid_range_medium",
+    icon = "Interface\\Icons\\Spell_holy_prayerofspirit",
     valid = function(spec, value)
         return (value.unit ~= nil and isin(units, value.unit) and
                 value.operator ~= nil and isin(operators, value.operator) and
@@ -108,7 +108,7 @@ addon:RegisterCondition("PROXIMITY", {
 
 addon:RegisterCondition("DISTANCE", {
     description = L["Distance"],
-    icon = "Interface\\Icons\\Ability_druid_dash_orange",
+    icon = "Interface\\Icons\\Spell_arcane_teleportorgrimmar",
     valid = function(spec, value)
         return (value.unit ~= nil and isin(units, value.unit) and
                 value.value ~= nil and isin(friendly_distance, value.value))
@@ -159,7 +159,7 @@ addon:RegisterCondition("DISTANCE", {
 
 addon:RegisterCondition("DISTANCE_COUNT", {
     description = L["Distance Count"],
-    icon = "Interface\\Icons\\Inv_misc_groupneedmore",
+    icon = "Interface\\Icons\\Spell_arcane_teleportstormwind",
     valid = function(spec, value)
         return (value.value ~= nil and value.value >= 0 and
                 value.operator ~= nil and isin(operators, value.operator) and

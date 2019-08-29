@@ -10,6 +10,16 @@ local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
 local getCached
 local DBIcon = LibStub("LibDBIcon-1.0")
 
+local UnitThreatSituation
+if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
+    local ThreatClassic = LibStub("ThreatClassic-1.0")
+    UnitThreatSituation = function(unit, mob)
+        ThreatClassic:UnitThreatSituation(unit, mob)
+    end
+else
+    UnitThreatSituation = UnitThreatSituation
+end
+
 local pairs, color, string = pairs, color, string
 local floor = math.floor
 
@@ -78,24 +88,18 @@ local events = {
     -- Conditions that indicate a major combat event that should trigger an immediate
     -- evaluation of the rotation conditions (or will disable your rotation entirely).
     'PLAYER_TARGET_CHANGED',
-    'PLAYER_FOCUS_CHANGED',
     'PLAYER_REGEN_DISABLED',
     'PLAYER_REGEN_ENABLED',
     'UNIT_PET',
-    'VEHICLE_UPDATE',
     'PLAYER_CONTROL_GAINED',
     'PLAYER_CONTROL_LOST',
-    'UNIT_ENTERED_VEHICLE',
     "UPDATE_STEALTH",
 
     -- Conditions that affect whether the rotation should be switched.
     'ZONE_CHANGED',
     'ZONE_CHANGED_INDOORS',
     'GROUP_ROSTER_UPDATE',
-    'PLAYER_TALENT_UPDATE',
-    'ACTIVE_TALENT_GROUP_CHANGED',
     'CHARACTER_POINTS_CHANGED',
-    'PLAYER_SPECIALIZATION_CHANGED',
     "PLAYER_FLAGS_CHANGED",
 
     -- Conditions that affect affect the contents of highlighted buttons.
@@ -109,6 +113,19 @@ local events = {
     -- Special Purpose
     'NAME_PLATE_UNIT_ADDED',
     'NAME_PLATE_UNIT_REMOVED',
+}
+
+local mainline_events = {
+    'PLAYER_FOCUS_CHANGED',
+    'VEHICLE_UPDATE',
+    'UNIT_ENTERED_VEHICLE',
+    'PLAYER_TALENT_UPDATE',
+    'ACTIVE_TALENT_GROUP_CHANGED',
+    'PLAYER_SPECIALIZATION_CHANGED',
+}
+
+local classic_events = {
+
 }
 
 function addon:HandleCommand(str)
@@ -367,9 +384,19 @@ function DataBroker.OnTooltipShow(GameTooltip)
 end
 
 function addon:enable()
-    self.currentSpec = GetSpecializationInfo(GetSpecialization())
+    self.currentSpec = 0
     for k, v in pairs(events) do
         self:RegisterEvent(v)
+    end
+    if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
+        self.currentSpec = GetSpecializationInfo(GetSpecialization())
+        for k, v in pairs(mainline_events) do
+            self:RegisterEvent(v)
+        end
+    else
+        for k, v in pairs(classic_events) do
+            self:RegisterEvent(v)
+        end
     end
 
     self.playerUnitFrame = CreateFrame('Frame')
@@ -383,12 +410,15 @@ function addon:enable()
         end
     end)
 
+    self:UpdateSkills()
     self:EnableRotation()
 end
 
 function addon:disable()
     self:DisableRotation()
-    self.playerUnitFrame:UnregisterAllEvents()
+    if self.playerUnitFrame ~= nil then
+        self.playerUnitFrame:UnregisterAllEvents()
+    end
     self.playerUnitFrame = nil
     self.spellHistory = {}
     self:UnregisterAllEvents()
@@ -540,8 +570,8 @@ end
 
 local function UpdateUnitInfo(cache, unit, record)
     record.threat = getCached(cache, UnitThreatSituation, "player", unit)
-    record.health = getCached(cache, UnitHealth, unit)
-    record.inrange = getCached(cache, UnitInRange, unit)
+    --record.health = getCached(cache, UnitHealth, unit)
+    --record.inrange = getCached(cache, UnitInRange, unit)
 end
 
 local function announce_cooldown(cache, cond)
@@ -614,6 +644,7 @@ function addon:EvaluateNextAction()
         if rot.rotation ~= nil then
             local enabled
             for id, cond in pairs(rot.rotation) do
+                enabled = nil
                 if cond.action ~= nil and (cond.disabled == nil or cond.disabled == false) then
                     -- If we can't highlight the spell, may as well skip to the next one!
                     local spellid
@@ -626,9 +657,11 @@ function addon:EvaluateNextAction()
                         _, spellid = getCached(self.longtermCache, GetItemSpell, cond.action)
                     end
                     if (addon:FindSpell(spellid) and addon:evaluateCondition(cond.conditions)) then
-                        enabled = (SpellRange.IsSpellInRange(spellid, "target"))
-                        if enabled == nil then
+                        local inrange = getCached(cache, SpellRange.IsSpellInRange ,spellid, "target")
+                        if inrange == nil then
                             enabled = true
+                        else
+                            enabled = (inrange == 1)
                         end
                     end
                     if enabled then
@@ -740,10 +773,14 @@ end
 
 function addon:UpdateSkills()
     addon:verbose("Skill update triggered")
-    local spec = GetSpecializationInfo(GetSpecialization())
-    if spec == nil then
-        return
+    local spec = 0
+    if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
+        spec = GetSpecializationInfo(GetSpecialization())
+        if spec == nil then
+            return
+        end
     end
+
     self.currentSpec = spec
     self:UpdateAutoSwitch()
     self:SwitchRotation()
@@ -751,34 +788,40 @@ function addon:UpdateSkills()
 
     self.longtermCache = {}
 
-    local maxbook = 2
     if self.specSpells == nil then
-        maxbook = GetNumSpellTabs()
         self.specSpells = {}
     end
-    for i = 2, maxbook do
+
+    if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
+        self.specSpells[0] = {}
+    end
+    for i=2, GetNumSpellTabs() do
         local _, _, offset, numSpells, _, offspecId = GetSpellTabInfo(i)
         if offspecId == 0 then
             offspecId = self.currentSpec
         end
-        self.specSpells[offspecId] = {}
+        if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
+            self.specSpells[offspecId] = {}
+        end
         for i = offset, offset + numSpells - 1 do
             local name, _, spellId = GetSpellBookItemName(i, BOOKTYPE_SPELL)
             if spellId then
-                self.specSpells[offspecId][name] = spellId;
+                self.specSpells[offspecId][name] = spellId
             end
         end
     end
 
-    if self.specTalents[self.currentSpec] == nil then
-        self.specTalents[self.currentSpec] = {}
+    if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
+        if self.specTalents[self.currentSpec] == nil then
+            self.specTalents[self.currentSpec] = {}
 
-        for i = 1, 21 do
-            local _, name, icon = GetTalentInfo(floor((i - 1) / 3) + 1, ((i - 1) % 3) + 1, 1)
-            self.specTalents[self.currentSpec][i] = {
-                name = name,
-                icon = icon
-            }
+            for i = 1, 21 do
+                local _, name, icon = GetTalentInfo(floor((i - 1) / 3) + 1, ((i - 1) % 3) + 1, 1)
+                self.specTalents[self.currentSpec][i] = {
+                    name = name,
+                    icon = icon
+                }
+            end
         end
     end
 end
@@ -924,8 +967,8 @@ local function CreateUnitInfo(unit)
         name = UnitName(unit),
         enemy = UnitIsEnemy(unit, "player"),
         threat = UnitThreatSituation("player", unit),
-        health = UnitHealth(unit),
-        inrange = UnitInRange(unit)
+        --health = UnitHealth(unit),
+        --inrange = UnitInRange(unit)
     }
     return info
 end

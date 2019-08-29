@@ -16,12 +16,15 @@ do
 	local function loadPlayerSpells(self)
         -- Only wipe out the current spec, so you can still see everything for an off spec.
 		-- It's a little nicity since WoW doesn't let you see talented spells when not on spec.
-		local currentSpec = GetSpecializationInfo(GetSpecialization())
+    	local currentSpec = 0
+		if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
+			currentSpec = GetSpecializationInfo(GetSpecialization())
+		end
 		if playerSpells[currentSpec] == nil then
 			playerSpells[currentSpec] = {}
-        else
+		else
 			table.wipe(playerSpells[currentSpec])
-        end
+		end
 
     	for tab=2, GetNumSpellTabs() do
 			local _, _, offset, numEntries, _, offspecId = GetSpellTabInfo(tab)
@@ -30,11 +33,11 @@ do
 			end
 			if playerSpells[offspecId] == nil then
 				playerSpells[offspecId] = {}
-            end
+			end
             for i=1,numEntries do
                 local _, spellID = GetSpellBookItemInfo(i+offset, BOOKTYPE_SPELL)
 				if not IsPassiveSpell(i+offset, BOOKTYPE_SPELL) then
-                    playerSpells[offspecId][spellID] = true
+					playerSpells[offspecId][spellID] = true
                 end
             end
 		end

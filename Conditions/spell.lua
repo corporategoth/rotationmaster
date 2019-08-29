@@ -1,6 +1,7 @@
 local addon_name, addon = ...
 
 local AceGUI = LibStub("AceGUI-3.0")
+local SpellData = LibStub("AceGUI-3.0-SpellLoader")
 local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
 local tostring, tonumber, pairs = tostring, tonumber, pairs
 local floor = math.floor
@@ -17,7 +18,7 @@ addon.isin, addon.isint, addon.cleanArray, addon.deepcopy, addon.getCached, addo
 
 addon:RegisterCondition("SPELL_AVAIL", {
     description = L["Spell Available"],
-    icon = "Interface\\Icons\\spell_burningsoul",
+    icon = "Interface\\Icons\\Spell_holy_renew",
     valid = function(spec, value)
         if value.spell ~= nil then
             local name = GetSpellInfo(value.spell)
@@ -64,9 +65,7 @@ addon:RegisterCondition("SPELL_AVAIL", {
 
         local spell = AceGUI:Create("Spec_EditBox")
         local spellIcon = AceGUI:Create("ActionSlotSpell")
-        if (value.spell) then
-            spellIcon:SetText(value.spell)
-        end
+        spellIcon:SetText(value.spell)
         spellIcon:SetWidth(44)
         spellIcon:SetHeight(44)
         spellIcon.text:Hide()
@@ -76,9 +75,9 @@ addon:RegisterCondition("SPELL_AVAIL", {
                 value.spell = v
                 spellIcon:SetText(v)
                 if v then
-                    spell:SetText(GetSpellInfo(v))
+                    spell:SetText(SpellData:SpellName(v))
                 else
-                    spell:SetText("")
+                    spell:SetText(nil)
                 end
                 top:SetStatusText(funcs:print(root, spec))
             end
@@ -86,9 +85,7 @@ addon:RegisterCondition("SPELL_AVAIL", {
         parent:AddChild(spellIcon)
 
         spell:SetLabel(L["Spell"])
-        if (value.spell) then
-            spell:SetText(GetSpellInfo(value.spell))
-        end
+        spell:SetText(value.spell and SpellData:SpellName(value.spell))
         spell:SetUserData("spec", spec)
         spell:SetCallback("OnEnterPressed", function(widget, event, v)
             if isint(v) then
@@ -96,12 +93,13 @@ addon:RegisterCondition("SPELL_AVAIL", {
                     value.spell = tonumber(v)
                 else
                     value.spell = nil
+                    spell:SetText(nil)
                 end
             else
                 value.spell = addon:GetSpecSpellID(spec, v)
-            end
-            if value.spell ~= nil then
-                spell:SetText(GetSpellInfo(value.spell))
+                if value.spell == nil then
+                    spell:SetText(nil)
+                end
             end
             spellIcon:SetText(value.spell)
             top:SetStatusText(funcs:print(root, spec))
@@ -116,7 +114,7 @@ addon:RegisterCondition("SPELL_COOLDOWN", {
     icon = "Interface\\Icons\\spell_nature_timestop",
     valid = function(spec, value)
         if value.spell ~= nil then
-            local name, icon, castTime, minRange, maxRange = GetSpellInfo(value.spell)
+            local name = GetSpellInfo(value.spell)
             return (value.operator ~= nil and isin(operators, value.operator) and
                     name ~= nil and value.value ~= nil and value.value >= 0)
         else
@@ -160,9 +158,9 @@ addon:RegisterCondition("SPELL_COOLDOWN", {
                 value.spell = v
                 spellIcon:SetText(v)
                 if v then
-                    spell:SetText(GetSpellInfo(v))
+                    spell:SetText(SpellData:SpellName(v))
                 else
-                    spell:SetText("")
+                    spell:SetText(nil)
                 end
                 top:SetStatusText(funcs:print(root, spec))
             end
@@ -170,9 +168,7 @@ addon:RegisterCondition("SPELL_COOLDOWN", {
         parent:AddChild(spellIcon)
 
         spell:SetLabel(L["Spell"])
-        if (value.spell) then
-            spell:SetText(GetSpellInfo(value.spell))
-        end
+        spell:SetText(value.spell and SpellData:SpellName(value.spell))
         spell:SetUserData("spec", spec)
         spell:SetCallback("OnEnterPressed", function(widget, event, v)
             if isint(v) then
@@ -180,12 +176,13 @@ addon:RegisterCondition("SPELL_COOLDOWN", {
                     value.spell = tonumber(v)
                 else
                     value.spell = nil
+                    spell:SetText(nil)
                 end
             else
                 value.spell = addon:GetSpecSpellID(spec, v)
-            end
-            if value.spell ~= nil then
-                spell:SetText(GetSpellInfo(value.spell))
+                if value.spell == nil then
+                    spell:SetText(nil)
+                end
             end
             spellIcon:SetText(value.spell)
             top:SetStatusText(funcs:print(root, spec))
@@ -220,10 +217,10 @@ addon:RegisterCondition("SPELL_COOLDOWN", {
 
 addon:RegisterCondition("SPELL_REMAIN", {
     description = L["Spell Time Remaining"],
-    icon = "Interface\\Icons\\inv_misc_pocketwatch_01",
+    icon = "Interface\\Icons\\inv_misc_pocketwatch_03",
     valid = function(spec, value)
         if value.spell ~= nil then
-            local name, icon, castTime, minRange, maxRange = GetSpellInfo(value.spell)
+            local name = GetSpellInfo(value.spell)
             return (value.operator ~= nil and isin(operators, value.operator) and
                     name ~= nil and value.value ~= nil and value.value >= 0)
         else
@@ -266,9 +263,9 @@ addon:RegisterCondition("SPELL_REMAIN", {
                 value.spell = v
                 spellIcon:SetText(v)
                 if v then
-                    spell:SetText(GetSpellInfo(v))
+                    spell:SetText(SpellData:SpellName(v))
                 else
-                    spell:SetText("")
+                    spell:SetText(nil)
                 end
                 top:SetStatusText(funcs:print(root, spec))
             end
@@ -276,9 +273,7 @@ addon:RegisterCondition("SPELL_REMAIN", {
         parent:AddChild(spellIcon)
 
         spell:SetLabel(L["Spell"])
-        if (value.spell) then
-            spell:SetText(GetSpellInfo(value.spell))
-        end
+        spell:SetText(value.spell and SpellData:SpellName(value.spell))
         spell:SetUserData("spec", spec)
         spell:SetCallback("OnEnterPressed", function(widget, event, v)
             if isint(v) then
@@ -286,12 +281,13 @@ addon:RegisterCondition("SPELL_REMAIN", {
                     value.spell = tonumber(v)
                 else
                     value.spell = nil
+                    spell:SetText(nil)
                 end
             else
                 value.spell = addon:GetSpecSpellID(spec, v)
-            end
-            if value.spell ~= nil then
-                spell:SetText(GetSpellInfo(value.spell))
+                if value.spell == nil then
+                    spell:SetText(nil)
+                end
             end
             spellIcon:SetText(value.spell)
             top:SetStatusText(funcs:print(root, spec))
@@ -326,10 +322,10 @@ addon:RegisterCondition("SPELL_REMAIN", {
 
 addon:RegisterCondition("SPELL_CHARGES", {
     description = L["Spell Charges"],
-    icon = "Interface\\Icons\\spell_fire_felrainoffire",
+    icon = "Interface\\Icons\\Spell_nature_astralrecalgroup",
     valid = function(spec, value)
         if value.spell ~= nil then
-            local name, icon, castTime, minRange, maxRange = GetSpellInfo(value.spell)
+            local name = GetSpellInfo(value.spell)
             return (value.operator ~= nil and isin(operators, value.operator) and
                     name ~= nil and value.value ~= nil and value.value >= 0)
         else
@@ -367,9 +363,9 @@ addon:RegisterCondition("SPELL_CHARGES", {
                 value.spell = v
                 spellIcon:SetText(v)
                 if v then
-                    spell:SetText(GetSpellInfo(v))
+                    spell:SetText(SpellData:SpellName(v))
                 else
-                    spell:SetText("")
+                    spell:SetText(nil)
                 end
                 top:SetStatusText(funcs:print(root, spec))
             end
@@ -377,9 +373,7 @@ addon:RegisterCondition("SPELL_CHARGES", {
         parent:AddChild(spellIcon)
 
         spell:SetLabel(L["Spell"])
-        if (value.spell) then
-            spell:SetText(GetSpellInfo(value.spell))
-        end
+        spell:SetText(value.spell and SpellData:SpellName(value.spell))
         spell:SetUserData("spec", spec)
         spell:SetCallback("OnEnterPressed", function(widget, event, v)
             if isint(v) then
@@ -387,12 +381,13 @@ addon:RegisterCondition("SPELL_CHARGES", {
                     value.spell = tonumber(v)
                 else
                     value.spell = nil
+                    spell:SetText(nil)
                 end
             else
                 value.spell = addon:GetSpecSpellID(spec, v)
-            end
-            if value.spell ~= nil then
-                spell:SetText(GetSpellInfo(value.spell))
+                if value.spell == nil then
+                    spell:SetText(nil)
+                end
             end
             spellIcon:SetText(value.spell)
             top:SetStatusText(funcs:print(root, spec))
@@ -427,7 +422,7 @@ addon:RegisterCondition("SPELL_CHARGES", {
 
 addon:RegisterCondition("SPELL_HISTORY", {
     description = L["Spell Cast History"],
-    icon = "Interface\\Icons\\Ability_mage_timewarp",
+    icon = "Interface\\Icons\\Spell_shadow_nightofthedead",
     valid = function(spec, value)
         if value.spell ~= nil then
             local name = GetSpellInfo(value.spell)
@@ -472,9 +467,9 @@ addon:RegisterCondition("SPELL_HISTORY", {
                 value.spell = v
                 spellIcon:SetText(v)
                 if v then
-                    spell:SetText(GetSpellInfo(v))
+                    spell:SetText(SpellData:SpellName(v))
                 else
-                    spell:SetText("")
+                    spell:SetText(nil)
                 end
                 top:SetStatusText(funcs:print(root, spec))
             end
@@ -482,9 +477,7 @@ addon:RegisterCondition("SPELL_HISTORY", {
         parent:AddChild(spellIcon)
 
         spell:SetLabel(L["Spell"])
-        if (value.spell) then
-            spell:SetText(GetSpellInfo(value.spell))
-        end
+        spell:SetText(value.spell and SpellData:SpellName(value.spell))
         spell:SetUserData("spec", spec)
         spell:SetCallback("OnEnterPressed", function(widget, event, v)
             if isint(v) then
@@ -492,12 +485,13 @@ addon:RegisterCondition("SPELL_HISTORY", {
                     value.spell = tonumber(v)
                 else
                     value.spell = nil
+                    spell:SetText(nil)
                 end
             else
                 value.spell = addon:GetSpecSpellID(spec, v)
-            end
-            if value.spell ~= nil then
-                spell:SetText(GetSpellInfo(value.spell))
+                if value.spell == nil then
+                    spell:SetText(nil)
+                end
             end
             spellIcon:SetText(value.spell)
             top:SetStatusText(funcs:print(root, spec))
@@ -532,10 +526,10 @@ addon:RegisterCondition("SPELL_HISTORY", {
 
 addon:RegisterCondition("SPELL_HISTORY_TIME", {
     description = L["Spell Cast History Time"],
-    icon = "Interface\\Icons\\Spell_holy_borrowedtime",
+    icon = "Interface\\Icons\\Spell_fire_sealoffire",
     valid = function(spec, value)
         if value.spell ~= nil then
-            local name, icon, castTime, minRange, maxRange = GetSpellInfo(value.spell)
+            local name = GetSpellInfo(value.spell)
             return (value.operator ~= nil and isin(operators, value.operator) and
                     name ~= nil and value.value ~= nil and value.value >= 0)
         else
@@ -577,9 +571,9 @@ addon:RegisterCondition("SPELL_HISTORY_TIME", {
                 value.spell = v
                 spellIcon:SetText(v)
                 if v then
-                    spell:SetText(GetSpellInfo(v))
+                    spell:SetText(SpellData:SpellName(v))
                 else
-                    spell:SetText("")
+                    spell:SetText(nil)
                 end
                 top:SetStatusText(funcs:print(root, spec))
             end
@@ -587,9 +581,7 @@ addon:RegisterCondition("SPELL_HISTORY_TIME", {
         parent:AddChild(spellIcon)
 
         spell:SetLabel(L["Spell"])
-        if (value.spell) then
-            spell:SetText(GetSpellInfo(value.spell))
-        end
+        spell:SetText(value.spell and SpellData:SpellName(value.spell))
         spell:SetUserData("spec", spec)
         spell:SetCallback("OnEnterPressed", function(widget, event, v)
             if isint(v) then
@@ -597,12 +589,13 @@ addon:RegisterCondition("SPELL_HISTORY_TIME", {
                     value.spell = tonumber(v)
                 else
                     value.spell = nil
+                    spell:SetText(nil)
                 end
             else
                 value.spell = addon:GetSpecSpellID(spec, v)
-            end
-            if value.spell ~= nil then
-                spell:SetText(GetSpellInfo(value.spell))
+                if value.spell == nil then
+                    spell:SetText(nil)
+                end
             end
             spellIcon:SetText(value.spell)
             top:SetStatusText(funcs:print(root, spec))

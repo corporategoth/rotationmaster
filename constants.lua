@@ -28,40 +28,47 @@ addon.units = {
     player = L["you"],
     pet = L["your pet"],
     target = L["your target"],
-    focus = L["your focus target"],
     mouseover = L["your mouseover target"],
     pettarget = L["your pet's target"],
     targettarget = L["your target's target"],
-    focustarget = L["your focus target's target"],
     mouseovertarget = L["your mouseover target's target"],
 }
+
+if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
+    addon.units["focus"] = L["your focus target"]
+    addon.units["focustarget"] = L["your focus target's target"]
+end
 
 addon.unitsPossessive = {
     player = L["your"],
     pet = L["your pet's"],
     target = L["your target's"],
-    focus = L["your focus target's"],
     mouseover = L["your mouseover target's"],
     pettarget = L["your pet's target's target"],
     targettarget = L["your target's target's target"],
-    focustarget = L["your focus target's target's target"],
     mouseovertarget = L["your mouseover target's target's target"],
 }
+if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
+    addon.unitsPossessive["focus"] = L["your focus target's"]
+    addon.unitsPossessive["focustarget"] = L["your focus target's target's target"]
+end
 
 addon.classes = {
     WARRIOR = L["Warrior"],
     PALADIN = L["Paladin"],
-    HUNDER = L["Hunter"],
+    HUNTER = L["Hunter"],
     ROGUE = L["Rogue"],
     PRIEST = L["Priest"],
-    DEATHKNIGHT = L["Death Knight"],
     SHAMAN = L["Shaman"],
     MAGE = L["Mage"],
     WARLOCK = L["Warlock"],
-    MONK = L["Monk"],
     DRUID = L["Druid"],
-    DEMONHUNTER = L["Demon Hunter"],
 }
+if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
+    addon.classes["DEATHKNIGHT"] = L["Death Knight"]
+    addon.classes["DEMONHUNTER"] = L["Demon Hunter"]
+    addon.classes["MONK"] = L["Monk"]
+end
 
 addon.roles = {
     TANK = L["Tank"],

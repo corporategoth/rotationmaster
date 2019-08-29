@@ -242,7 +242,7 @@ addon:RegisterCondition("DEBUFF_REMAIN", {
 
 addon:RegisterCondition("DEBUFF_STACKS", {
     description = L["Debuff Stacks"],
-    icon = "Interface\\Icons\\inv_misc_ticket_tarot_stack_01",
+    icon = "Interface\\Icons\\Inv_misc_coin_06",
     valid = function(spec, value)
         return (value.unit ~= nil and isin(units, value.unit) and value.spell ~= nil and
                 value.operator ~= nil and isin(operators, value.operator) and

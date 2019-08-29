@@ -184,6 +184,13 @@ local cacheHits = 0
 local cacheMisses = 0
 
 addon.getCached = function(cache, func, ...)
+    if func == nil then
+        return
+    end
+    if cache == nil then
+        return func(...)
+    end
+
     local args = { ... }
     if cache[func] == nil then
         cache[func] = {}

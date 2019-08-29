@@ -80,39 +80,52 @@ do
 		for _, button in pairs(self.buttons) do button:Hide() end
 		table.wipe(alreadyAdded)
 
-		local query = "^" .. string.lower(self.obj.editBox:GetText())
-		
+		local query = "^" .. string.gsub(string.lower(self.obj.editBox:GetText()),
+									"([().%+-*?^$[])", "%%%1")
+
 		local activeButtons = 0
 		for idx, name in pairs(SpellData.spellListOrdered) do
 			if not alreadyAdded[name] and string.match(name, query) then
-				local spellID = SpellData.spellListReverse[name]
-				if not self.obj.spellFilter or self.obj.spellFilter(self.obj, spellID) then
-                    activeButtons = activeButtons + 1
+				local spellIDs
+				if SpellData.spellListReverseRank[name] ~= nil then
+					spellIDs = SpellData.spellListReverseRank[name]
+                else
+					spellIDs = { SpellData.spellListReverse[name] }
+				end
 
-                    local button = self.buttons[activeButtons]
-                    local spellInfo = SpellData.spellList[spellID]
-                    if spellInfo ~= nil and spellInfo.icon ~= nil and spellInfo.name ~= nil then
-                        button:SetFormattedText("|T%s:18:18:2:16|t %s", spellInfo.icon, spellInfo.name)
-                    else
-                        button:SetFormattedText("[%d]", spellID)
-                    end
+				for _,spellID in pairs(spellIDs) do
+					if not self.obj.spellFilter or self.obj.spellFilter(self.obj, spellID) then
+						activeButtons = activeButtons + 1
 
-                    alreadyAdded[name] = true
+						local button = self.buttons[activeButtons]
+						local spellInfo = SpellData.spellList[spellID]
+						if spellInfo ~= nil and spellInfo.icon ~= nil and spellInfo.name ~= nil then
+							if spellInfo.rank ~= nil then
+								button:SetFormattedText("|T%s:18:18:2:16|t %s |cFF888888(%s)", spellInfo.icon, spellInfo.name, spellInfo.rank)
+                            else
+								button:SetFormattedText("|T%s:18:18:2:16|t %s", spellInfo.icon, spellInfo.name)
+							end
+						else
+							button:SetFormattedText("[%d]", spellID)
+						end
 
-                    button.spellID = spellID
+						alreadyAdded[name] = true
 
-                    -- Highlight if needed
-                    if( activeButtons ~= self.selectedButton ) then
-                        button:UnlockHighlight()
+						button.spellID = spellID
 
-                        if( GameTooltip:IsOwned(button) ) then
-                            GameTooltip:Hide()
-                        end
-                    end
+						-- Highlight if needed
+						if( activeButtons ~= self.selectedButton ) then
+							button:UnlockHighlight()
 
-                    -- Ran out of text to suggest :<
-                    if( activeButtons >= RESULT_ROWS ) then break end
-                end
+							if( GameTooltip:IsOwned(button) ) then
+								GameTooltip:Hide()
+							end
+						end
+
+						-- Ran out of text to suggest :<
+						if( activeButtons >= RESULT_ROWS ) then break end
+					end
+				end
 			end
 		end
 
@@ -247,10 +260,9 @@ do
 		local type, _, _, id = GetCursorInfo()
 
 		if( type == "spell" ) then
-			local name, _, _, _, _, _, spellId = GetSpellInfo(id)
+			local name, rank, _, _, _, _, spellId = GetSpellInfo(id)
 			-- Just in case ...
-        	SpellData:UpdateSpell(spellId, name)
-
+        	SpellData:UpdateSpell(spellId, name, rank)
 			self:SetText(name)
 			self:Fire("OnEnterPressed", name)
 			ClearCursor()
@@ -359,10 +371,11 @@ do
 		local name = GetSpellInfo(self.spellID)
 		-- Just in case ...
 		SpellData:UpdateSpell(spellId, name)
+    	name = SpellData:SpellName(self.spellID)
 		SetText(self.parent.obj, name, string.len(name))
-		
+
 		self.parent.selectedButton = nil
-		self.parent.obj:Fire("OnEnterPressed", name)
+		self.parent.obj:Fire("OnEnterPressed", self.spellID)
 	end
 	
 	local function Spell_OnEnter(self)

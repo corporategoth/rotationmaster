@@ -1,6 +1,7 @@
 local addon_name, addon = ...
 
 local AceGUI = LibStub("AceGUI-3.0")
+local SpellData = LibStub("AceGUI-3.0-SpellLoader")
 local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
 local tostring, tonumber, pairs = tostring, tonumber, pairs
 local floor = math.floor
@@ -17,7 +18,7 @@ addon.isin, addon.cleanArray, addon.deepcopy, addon.getCached, addon.round
 
 addon:RegisterCondition("PETSPELL_AVAIL", {
     description = L["Pet Spell Available"],
-    icon = "Interface\\Icons\\inv_misc_pet_04",
+    icon = "Interface\\Icons\\Ability_druid_bash",
     valid = function(spec, value)
         if value.spell ~= nil then
             local name = GetSpellInfo(value.spell)
@@ -75,23 +76,20 @@ addon:RegisterCondition("PETSPELL_AVAIL", {
             value.spell = v
             spellIcon:SetText(v)
             if v then
-                spell:SetText(GetSpellInfo(v))
+                spell:SetText(SpellData:SpellName(v))
             else
-                spell:SetText("")
+                spell:SetText(nil)
             end
             top:SetStatusText(funcs:print(root, spec))
         end)
         parent:AddChild(spellIcon)
 
         spell:SetLabel(L["Spell"])
-        if (value.spell) then
-            spell:SetText(GetSpellInfo(value.spell))
-        end
+        spell:SetText(value.spell and SpellData:SpellName(value.spell))
         spell:SetUserData("spec", spec)
         spell:SetCallback("OnEnterPressed", function(widget, event, v)
-            local name, _, _, _, _, _, spellid = GetSpellInfo(v)
+            local spellid = select(7, GetSpellInfo(v))
             value.spell = spellid
-            spell:SetText(name)
             spellIcon:SetText(value.spell)
             top:SetStatusText(funcs:print(root, spec))
         end)
@@ -102,10 +100,10 @@ addon:RegisterCondition("PETSPELL_AVAIL", {
 
 addon:RegisterCondition("PETSPELL_COOLDOWN", {
     description = L["Pet Spell Cooldown"],
-    icon = "Interface\\Icons\\inv_pet_babywinston",
+    icon = "Interface\\Icons\\Spell_nature_sleep",
     valid = function(spec, value)
         if value.spell ~= nil then
-            local name, icon, castTime, minRange, maxRange = GetSpellInfo(value.spell)
+            local name = GetSpellInfo(value.spell)
             return (value.operator ~= nil and isin(operators, value.operator) and
                     name ~= nil and value.value ~= nil and value.value >= 0)
         else
@@ -148,23 +146,20 @@ addon:RegisterCondition("PETSPELL_COOLDOWN", {
             value.spell = v
             spellIcon:SetText(v)
             if v then
-                spell:SetText(GetSpellInfo(v))
+                spell:SetText(SpellData:SpellName(v))
             else
-                spell:SetText("")
+                spell:SetText(nil)
             end
             top:SetStatusText(funcs:print(root, spec))
         end)
         parent:AddChild(spellIcon)
 
         spell:SetLabel(L["Spell"])
-        if (value.spell) then
-            spell:SetText(GetSpellInfo(value.spell))
-        end
+        spell:SetText(value.spell and SpellData:SpellName(value.spell))
         spell:SetUserData("spec", spec)
         spell:SetCallback("OnEnterPressed", function(widget, event, v)
-            local name, _, _, _, _, _, spellid = GetSpellInfo(v)
+            local spellid = select(7, GetSpellInfo(v))
             value.spell = spellid
-            spell:SetText(name)
             spellIcon:SetText(value.spell)
             top:SetStatusText(funcs:print(root, spec))
         end)
@@ -198,10 +193,10 @@ addon:RegisterCondition("PETSPELL_COOLDOWN", {
 
 addon:RegisterCondition("PETSPELL_REMAIN", {
     description = L["Pet Spell Time Remaining"],
-    icon = "Interface\\Icons\\inv_pet_achievement_captureapetatlessthan5health",
+    icon = "Interface\\Icons\\spell_nature_polymorph",
     valid = function(spec, value)
         if value.spell ~= nil then
-            local name, icon, castTime, minRange, maxRange = GetSpellInfo(value.spell)
+            local name = GetSpellInfo(value.spell)
             return (value.operator ~= nil and isin(operators, value.operator) and
                     name ~= nil and value.value ~= nil and value.value >= 0)
         else
@@ -243,23 +238,20 @@ addon:RegisterCondition("PETSPELL_REMAIN", {
             value.spell = v
             spellIcon:SetText(v)
             if v then
-                spell:SetText(GetSpellInfo(v))
+                spell:SetText(SpellData:SpellName(v))
             else
-                spell:SetText("")
+                spell:SetText(nil)
             end
             top:SetStatusText(funcs:print(root, spec))
         end)
         parent:AddChild(spellIcon)
 
         spell:SetLabel(L["Spell"])
-        if (value.spell) then
-            spell:SetText(GetSpellInfo(value.spell))
-        end
+        spell:SetText(value.spell and SpellData:SpellName(value.spell))
         spell:SetUserData("spec", spec)
         spell:SetCallback("OnEnterPressed", function(widget, event, v)
-            local name, _, _, _, _, _, spellid = GetSpellInfo(v)
+            local spellid = selectr(7, GetSpellInfo(v))
             value.spell = spellid
-            spell:SetText(name)
             spellIcon:SetText(value.spell)
             top:SetStatusText(funcs:print(root, spec))
         end)
@@ -293,10 +285,10 @@ addon:RegisterCondition("PETSPELL_REMAIN", {
 
 addon:RegisterCondition("PETSPELL_CHARGES", {
     description = L["Pet Spell Charges"],
-    icon = "Interface\\Icons\\inv_pet_babyshark",
+    icon = "Interface\\Icons\\Ability_mount_nightmarehorse",
     valid = function(spec, value)
         if value.spell ~= nil then
-            local name, icon, castTime, minRange, maxRange = GetSpellInfo(value.spell)
+            local name = GetSpellInfo(value.spell)
             return (value.operator ~= nil and isin(operators, value.operator) and
                     name ~= nil and value.value ~= nil and value.value >= 0)
         else
@@ -333,23 +325,20 @@ addon:RegisterCondition("PETSPELL_CHARGES", {
             value.spell = v
             spellIcon:SetText(v)
             if v then
-                spell:SetText(GetSpellInfo(v))
+                spell:SetText(SpellData:SpellName(v))
             else
-                spell:SetText("")
+                spell:SetText(nil)
             end
             top:SetStatusText(funcs:print(root, spec))
         end)
         parent:AddChild(spellIcon)
 
         spell:SetLabel(L["Spell"])
-        if (value.spell) then
-            spell:SetText(GetSpellInfo(value.spell))
-        end
+        spell:SetText(value.spell and SpellData:SpellName(value.spell))
         spell:SetUserData("spec", spec)
         spell:SetCallback("OnEnterPressed", function(widget, event, v)
-            local name, _, _, _, _, _, spellid = GetSpellInfo(v)
+            local spellid = select(7, GetSpellInfo(v))
             value.spell = spellid
-            spell:SetText(name)
             spellIcon:SetText(value.spell)
             top:SetStatusText(funcs:print(root, spec))
         end)

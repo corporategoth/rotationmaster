@@ -105,18 +105,22 @@ function addon:UpdateButtonGlow()
 	end
 
 	if self.db.global.disableButtonGlow then
-		ActionBarActionEventsFrame:UnregisterEvent('SPELL_ACTIVATION_OVERLAY_GLOW_SHOW')
-		if LAB then
-			LAB.eventFrame:UnregisterEvent('SPELL_ACTIVATION_OVERLAY_GLOW_SHOW')
+		if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
+			ActionBarActionEventsFrame:UnregisterEvent('SPELL_ACTIVATION_OVERLAY_GLOW_SHOW')
+			if LAB then
+				LAB.eventFrame:UnregisterEvent('SPELL_ACTIVATION_OVERLAY_GLOW_SHOW')
+            end
 		end
 
 		if LBG then
 			LBG.ShowOverlayGlow = noFunction
 		end
 	else
-		ActionBarActionEventsFrame:RegisterEvent('SPELL_ACTIVATION_OVERLAY_GLOW_SHOW')
-		if LAB then
-			LAB.eventFrame:RegisterEvent('SPELL_ACTIVATION_OVERLAY_GLOW_SHOW')
+		if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
+			ActionBarActionEventsFrame:RegisterEvent('SPELL_ACTIVATION_OVERLAY_GLOW_SHOW')
+			if LAB then
+				LAB.eventFrame:RegisterEvent('SPELL_ACTIVATION_OVERLAY_GLOW_SHOW')
+            end
 		end
 
 		if LBG then
@@ -240,7 +244,17 @@ local function FetchAzeriteUI()
 	for i = 1, 24 do
 		local button = _G['AzeriteUIActionButton' .. i];
 		if button then
-			self:AddStandardButton(button);
+			AddStandardButton(button);
+		end
+	end
+end
+
+local function FetchSamyTotemTimers()
+	local totemBars = {'Earth', 'Fire', 'Air', 'Water'};
+	for _, bar in pairs(totemBars) do
+		local button = _G['SamyTotemTimersFrame' .. bar];
+		if button then
+			AddStandardButton(button);
 		end
 	end
 end
@@ -333,7 +347,7 @@ local function FetchButtonForge()
 		end
 		i = i + 1
 
-		addon:AddStandardButton(button)
+		AddStandardButton(button)
 	end
 end
 
@@ -390,6 +404,10 @@ function addon:Fetch()
 	if IsAddOnLoaded('AzeriteUI') then
 		FetchAzeriteUI();
     end
+
+	if IsAddOnLoaded('SamyTotemTimers') then
+		FetchSamyTotemTimers();
+	end
 
 	if self.currentRotation then
 		self:EnableRotationTimer()

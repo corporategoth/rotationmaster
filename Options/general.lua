@@ -503,6 +503,10 @@ local function create_rotation_options(frame, specID, rotid, parent, selected)
     frame:ReleaseChildren()
     frame:PauseLayout()
 
+    if (rotid == DEFAULT and rotation_settings[rotid] == nil) then
+        rotation_settings[rotid] = {}
+    end
+
     local name = AceGUI:Create("EditBox")
     name:SetLabel(NAME)
     name:SetRelativeWidth(0.5)
@@ -809,28 +813,35 @@ local function create_class_options(frame, classID)
     frame:ReleaseChildren()
     frame:PauseLayout()
 
-    local tabs = AceGUI:Create("TabGroup")
+    if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
+        local tabs = AceGUI:Create("TabGroup")
 
-    local spec_tabs = {}
-    for j = 1, GetNumSpecializationsForClassID(classID) do
-        local specID, specName = GetSpecializationInfoForClassID(classID, j)
-        if currentSpec == nil then
-            currentSpec = specID
+        local spec_tabs = {}
+        for j = 1, GetNumSpecializationsForClassID(classID) do
+            local specID, specName = GetSpecializationInfoForClassID(classID, j)
+            if currentSpec == nil then
+                currentSpec = specID
+            end
+            table.insert(spec_tabs, {
+                value = specID,
+                text = specName
+            })
         end
-        table.insert(spec_tabs, {
-            value = specID,
-            text = specName
-        })
-    end
-    tabs:SetTabs(spec_tabs)
-    tabs:SelectTab(currentSpec)
-    tabs:SetLayout("Fill")
-    frame:AddChild(tabs)
+        tabs:SetTabs(spec_tabs)
+        tabs:SelectTab(currentSpec)
+        tabs:SetLayout("Fill")
+        frame:AddChild(tabs)
 
-    tabs:SetCallback("OnGroupSelected", function(widget, event, val)
-        create_spec_options(tabs, val, DEFAULT)
-    end)
-    create_spec_options(tabs, currentSpec, addon.currentRotation or DEFAULT)
+        tabs:SetCallback("OnGroupSelected", function(widget, event, val)
+            create_spec_options(tabs, val, DEFAULT)
+        end)
+        create_spec_options(tabs, currentSpec, addon.currentRotation or DEFAULT)
+    else
+        local group = AceGUI:Create("SimpleGroup")
+        group:SetLayout("Fill")
+        frame:AddChild(group)
+        create_spec_options(group, 0, addon.currentRotation or DEFAULT)
+    end
 
     frame:ResumeLayout()
     frame:DoLayout()

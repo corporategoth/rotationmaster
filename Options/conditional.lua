@@ -321,7 +321,7 @@ local function ChangeConditionType(parent, event, ...)
     end
 
     local noticon = AceGUI:Create("Icon")
-    noticon:SetImage("Interface\\Icons\\inv_pant_mail_raidshaman_q_01")
+    noticon:SetImage("Interface\\Icons\\inv_misc_map_01")
     noticon:SetImageSize(36, 36)
     noticon:SetWidth(44)
     noticon:SetCallback("OnClick", function (widget)
@@ -421,7 +421,7 @@ local function ActionGroup(parent, value, idx, array)
         actionicon:SetImage("Interface\\Icons\\Spell_ChargeNegative")
         group:SetTitle("OR")
     elseif (value.type == "NOT") then
-        actionicon:SetImage("Interface\\Icons\\inv_pant_mail_raidshaman_q_01")
+        actionicon:SetImage("Interface\\Icons\\inv_misc_map_01")
         group:SetTitle("NOT")
     else
         local icon, description = funcs:describe(value.type)

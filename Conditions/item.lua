@@ -17,7 +17,7 @@ addon.is, addon.isin, addon.cleanArray, addon.deepcopy, addon.getCached, addon.r
 
 addon:RegisterCondition("EQUIPPED", {
     description = L["Have Item Equipped"],
-    icon = "Interface\\Icons\\inv_jewelry_orgrimmarraid_trinket_19",
+    icon = "Interface\\Icons\\Ability_warrior_shieldbash",
     valid = function(spec, value)
         return value.value ~= nil
     end,
@@ -151,7 +151,7 @@ addon:RegisterCondition("CARRYING", {
 
 addon:RegisterCondition("ITEM", {
     description = L["Item Available"],
-    icon = "Interface\\Icons\\inv_neck_firelands_03",
+    icon = "Interface\\Icons\\Inv_drink_05",
     valid = function(spec, value)
         return value.item ~= nil
     end,
@@ -263,7 +263,7 @@ addon:RegisterCondition("ITEM", {
 
 addon:RegisterCondition("ITEM_COOLDOWN", {
     description = L["Item Cooldown"],
-    icon = "Interface\\Icons\\inv_misc_trinket_goldenharp",
+    icon = "Interface\\Icons\\Spell_holy_sealofsacrifice",
     valid = function(spec, value)
         return (value.operator ~= nil and isin(operators, value.operator) and
                 itemID ~= nil and value.value ~= nil and value.value >= 0)

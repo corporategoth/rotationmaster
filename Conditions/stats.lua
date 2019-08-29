@@ -395,7 +395,7 @@ addon:RegisterCondition("POWERPCT", {
 
 addon:RegisterCondition("POINT", {
     description = L["Points"],
-    icon = "Interface\\Icons\\70_inscription_vantus_rune_odyn",
+    icon = "Interface\\Icons\\Inv_jewelry_amulet_01",
     valid = function(spec, value)
         return (value.operator ~= nil and isin(operators, value.operator) and
                 value.unit ~= nil and isin(units, value.unit) and

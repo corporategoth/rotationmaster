@@ -13,7 +13,10 @@ do
 	local function loadPlayerSpells(self)
         -- Only wipe out the current spec, so you can still see everything for an off spec.
 		-- It's a little nicity since WoW doesn't let you see talented spells when not on spec.
-		local currentSpec = GetSpecializationInfo(GetSpecialization())
+    	local currentSpec = 0
+		if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
+			currentSpec = GetSpecializationInfo(GetSpecialization())
+		end
 		if playerSpells[currentSpec] == nil then
 			playerSpells[currentSpec] = {}
         else

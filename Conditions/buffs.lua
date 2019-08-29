@@ -114,7 +114,7 @@ addon:RegisterCondition("BUFF", {
 
 addon:RegisterCondition("BUFF_REMAIN", {
     description = L["Buff Time Remaining"],
-    icon = "Interface\\Icons\\inv_misc_pocketwatch_02",
+    icon = "Interface\\Icons\\Spell_frost_stun",
     valid = function(spec, value)
         return (value.unit ~= nil and isin(units, value.unit) and value.spell ~= nil and
                 value.operator ~= nil and isin(operators, value.operator) and
@@ -242,7 +242,7 @@ addon:RegisterCondition("BUFF_REMAIN", {
 
 addon:RegisterCondition("BUFF_STACKS", {
     description = L["Buff Stacks"],
-    icon = "Interface\\Icons\\spell_priest_vowofunity",
+    icon = "Interface\\Icons\\Inv_misc_coin_02",
     valid = function(spec, value)
         return (value.unit ~= nil and isin(units, value.unit) and value.spell ~= nil and
                 value.operator ~= nil and isin(operators, value.operator) and
@@ -368,7 +368,7 @@ addon:RegisterCondition("BUFF_STACKS", {
 
 addon:RegisterCondition("STEALABLE", {
     description = L["Has Stealable Buff"],
-    icon = "Interface\\Icons\\inv_helm_cloth_b_01pirate_classic",
+    icon = "Interface\\Icons\\Inv_weapon_shortblade_22",
     valid = function(spec, value)
         return (value.unit ~= nil and isin(units, value.unit))
     end,
@@ -406,3 +406,172 @@ addon:RegisterCondition("STEALABLE", {
         parent:AddChild(unit)
     end,
 })
+
+if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
+    addon:RegisterCondition("WEAPON", {
+        description = L["Weapon Enchant Present"],
+        icon = "Interface\\Icons\\Inv_staff_18",
+        valid = function(spec, value)
+            return true
+        end,
+        evaluate = function(value, cache, evalStart)
+            local mainEnchant, _, _, _, offEnchant, _, _, _ = getCached(cache, GetWeaponEnchantInfo)
+            return (value.offhand and offEnchant or mainEnchant)
+        end,
+        print = function(spec, value)
+            return string.format(L["Your %s weapon is enchanted"],
+                (value.offhand and L["off hand"] or L["main hand"]))
+        end,
+        widget = function(parent, spec, value)
+            local top = parent:GetUserData("top")
+            local root = top:GetUserData("root")
+            local funcs = top:GetUserData("funcs")
+
+            local offhand = AceGUI:Create("CheckBox")
+            offhand:SetLabel(L["Off Hand"])
+            offhand:SetWidth(100)
+            if (value.offhand ~= nil) then
+                offhand:SetValue(value.offhand)
+            else
+                value.offhand = false
+                offhand:SetValue(false)
+            end
+            offhand:SetCallback("OnValueChanged", function(widget, event, v)
+                value.offhand = v
+                top:SetStatusText(funcs:print(root, spec))
+            end)
+            parent:AddChild(offhand)
+        end,
+    })
+
+    addon:RegisterCondition("WEAPON_REMAIN", {
+        description = L["Weapon Enchant Time Remaining"],
+        icon = "Interface\\Icons\\Inv_mace_13",
+        valid = function(spec, value)
+            return (value.operator ~= nil and isin(operators, value.operator) and
+                    value.value ~= nil and value.value >= 0)
+        end,
+        evaluate = function(value, cache, evalStart)
+            local mainEnchant, mainExpires, _, _, offEnchant, offExpires, _, _ = getCached(cache, GetWeaponEnchantInfo)
+            if (value.offhand and offEnchant or mainEnchant) then
+                local remain = (value.offhands and offExpires or mainExpires) / 1000
+                return compare(value.operator, remain, value.value)
+            end
+            return false
+        end,
+        print = function(spec, value)
+            return string.format(L["Your %s weapon buff has %s"], (value.offhand and L["off hand"] or L["main hand"]),
+                compareString(value.operator, L["the remaining time"], string.format(L["%s seconds"], nullable(value.value))))
+        end,
+        widget = function(parent, spec, value)
+            local top = parent:GetUserData("top")
+            local root = top:GetUserData("root")
+            local funcs = top:GetUserData("funcs")
+
+            local offhand = AceGUI:Create("CheckBox")
+            offhand:SetLabel(L["Off Hand"])
+            offhand:SetWidth(100)
+            if (value.offhand ~= nil) then
+                offhand:SetValue(value.offhand)
+            else
+                value.offhand = false
+                offhand:SetValue(false)
+            end
+            offhand:SetCallback("OnValueChanged", function(widget, event, v)
+                value.offhand = v
+                top:SetStatusText(funcs:print(root, spec))
+            end)
+            parent:AddChild(offhand)
+
+            local operator = AceGUI:Create("Dropdown")
+            operator:SetLabel(L["Operator"])
+            operator:SetList(operators, keys(operators))
+            if (value.operator ~= nil) then
+                operator:SetValue(value.operator)
+            end
+            operator:SetCallback("OnValueChanged", function(widget, event, v)
+                value.operator = v
+                top:SetStatusText(funcs:print(root, spec))
+            end)
+            parent:AddChild(operator)
+
+            local health = AceGUI:Create("EditBox")
+            health:SetLabel(L["Seconds"])
+            health:SetWidth(100)
+            if (value.value ~= nil) then
+                health:SetText(value.value)
+            end
+            health:SetCallback("OnEnterPressed", function(widget, event, v)
+                value.value = tonumber(v)
+                top:SetStatusText(funcs:print(root, spec))
+            end)
+            parent:AddChild(health)
+        end,
+    })
+
+    addon:RegisterCondition("WEAPON_STACKS", {
+        description = L["Weapon Enchant Stacks"],
+        icon = "Interface\\Icons\\Inv_misc_coin_04",
+        valid = function(spec, value)
+            return (value.operator ~= nil and isin(operators, value.operator) and
+                    value.value ~= nil and value.value >= 0)
+        end,
+        evaluate = function(value, cache, evalStart)
+            local mainEnchant, _, mainCharges, _, offEnchant, _, offCharges, _ = getCached(cache, GetWeaponEnchantInfo)
+            if (value.offhand and offEnchant or mainEnchant) then
+                return compare(value.operator, (value.offhand and offCharges or mainCharges), value.value)
+            end
+            return false
+        end,
+        print = function(spec, value)
+            return string.format(L["Your %s weapon buff has %s"], (value.offhand and L["off hand"] or L["main hand"]),
+                    compareString(value.operator, L["stacks"], nullable(value.value)))
+        end,
+        widget = function(parent, spec, value)
+            local top = parent:GetUserData("top")
+            local root = top:GetUserData("root")
+            local funcs = top:GetUserData("funcs")
+
+            local offhand = AceGUI:Create("CheckBox")
+            offhand:SetLabel(L["Off Hand"])
+            offhand:SetWidth(100)
+            if (value.offhand ~= nil) then
+                offhand:SetValue(value.offhand)
+            else
+                value.offhand = false
+                offhand:SetValue(false)
+            end
+            offhand:SetCallback("OnValueChanged", function(widget, event, v)
+                value.offhand = v
+                top:SetStatusText(funcs:print(root, spec))
+            end)
+            parent:AddChild(offhand)
+
+            local operator = AceGUI:Create("Dropdown")
+            operator:SetLabel(L["Operator"])
+            operator:SetList(operators, keys(operators))
+            if (value.operator ~= nil) then
+                operator:SetValue(value.operator)
+            end
+            operator:SetCallback("OnValueChanged", function(widget, event, v)
+                value.operator = v
+                top:SetStatusText(funcs:print(root, spec))
+            end)
+            parent:AddChild(operator)
+
+            local health = AceGUI:Create("EditBox")
+            health:SetLabel(L["Stacks"])
+            health:SetWidth(100)
+            if (value.value ~= nil) then
+                health:SetText(value.value)
+            end
+            health:SetCallback("OnEnterPressed", function(widget, event, v)
+                value.value = tonumber(v)
+                top:SetStatusText(funcs:print(root, spec))
+            end)
+            parent:AddChild(health)
+        end,
+    })
+
+end
+
