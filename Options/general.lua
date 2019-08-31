@@ -644,8 +644,23 @@ local function create_rotation_options(frame, specID, rotid, parent, selected)
                         name = ""
                     end
                     name = name .. tostring(idx)
-                    if (rot.name ~= nil) then
-                        name = name .. " - " .. rot.name
+
+                    if rot.use_name == nil then
+                        rot.use_name = (rot.name ~= nil and string.len(rot.name) > 0)
+                    end
+
+                    if rot.use_name then
+                        if (rot.name ~= nil and string.len(rot.name)) then
+                            name = name .. " - " .. rot.name
+                        end
+                    else
+                        if rot.action then
+                            if rot.type == "spell" or rot.type =="petspell" then
+                                name = name .. " - " .. select(1, GetSpellInfo(rot.action))
+                            else
+                                name = name .. " - " .. rot.action
+                            end
+                        end
                     end
                     name = name .. color.RESET
 
@@ -671,8 +686,23 @@ local function create_rotation_options(frame, specID, rotid, parent, selected)
                         name = ""
                     end
                     name = name .. tostring(idx)
-                    if (rot.name ~= nil) then
-                        name = name .. " - " .. rot.name
+
+                    if rot.use_name == nil then
+                        rot.use_name = (rot.name ~= nil and string.len(rot.name) > 0)
+                    end
+
+                    if rot.use_name then
+                        if (rot.name ~= nil and string.len(rot.name)) then
+                            name = name .. " - " .. rot.name
+                        end
+                    else
+                        if rot.action then
+                            if rot.type == "spell" or rot.type =="petspell" then
+                                name = name .. " - " .. select(1, GetSpellInfo(rot.action))
+                            else
+                                name = name .. " - " .. rot.action
+                            end
+                        end
                     end
                     name = name .. color.RESET
 

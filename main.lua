@@ -442,7 +442,7 @@ function addon:rotationValidConditions(rot, spec)
     if rot.cooldowns ~= nil then
         -- All cooldowns are valid
         for k, v in pairs(rot.cooldowns) do
-            if v.type == nil or v.action == nil or not self:validateCondition(v.conditions, spec) then
+            if not v.disabled and (v.type == nil or v.action == nil or not self:validateCondition(v.conditions, spec)) then
                 return false
             end
             itemfound = true
@@ -451,7 +451,7 @@ function addon:rotationValidConditions(rot, spec)
     if rot.rotation ~= nil then
         -- All rotation steps are valid
         for k, v in pairs(rot.rotation) do
-            if v.type == nil or v.action == nil or not self:validateCondition(v.rotation, spec) then
+            if not v.disabled and (v.type == nil or v.action == nil or not self:validateCondition(v.rotation, spec)) then
                 return false
             end
             itemfound = true

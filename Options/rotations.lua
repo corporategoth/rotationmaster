@@ -83,7 +83,7 @@ function addon:get_rotation_list(frame, specID, rotid, id, callback)
     local icon_group = AceGUI:Create("SimpleGroup")
     icon_group:SetFullWidth(true)
     icon_group:SetLayout("Table")
-    icon_group:SetUserData("table", { columns = { 44, 1 } })
+    icon_group:SetUserData("table", { columns = { 44, 24, 1 } })
     frame:AddChild(icon_group)
 
     local action_icon, action
@@ -195,9 +195,9 @@ function addon:get_rotation_list(frame, specID, rotid, id, callback)
             if itemID ~= nil then
                 action_icon:SetText(itemID)
             else
-                action_icon:SetText("")
+                action_icon:SetText(nil)
             end
-            rot.action = value
+            rot.action = val
             callback()
         end)
     else
@@ -211,8 +211,29 @@ function addon:get_rotation_list(frame, specID, rotid, id, callback)
     icon_group:AddChild(action_icon)
 
     local name = AceGUI:Create("EditBox")
-    name:SetText(rot.name)
+
+    local use_name = AceGUI:Create("CheckBox")
+    use_name:SetValue(rot.use_name)
+    use_name:SetCallback("OnValueChanged", function(widget, event, val)
+        rot.use_name = val
+        if not rot.use_name then
+            rot.name = nil
+        end
+        callback()
+    end)
+    icon_group:AddChild(use_name)
+
     name:SetLabel(NAME)
+    name:SetDisabled(not rot.use_name)
+    if rot.use_name then
+        name:SetText(rot.name)
+    elseif rot.action ~= nil then
+        if rot.type == "spell" or rot.type =="petspell" then
+            name:SetText(GetSpellInfo(rot.action))
+        else
+            name:SetText(rot.action)
+        end
+    end
     name:SetFullWidth(true)
     name:SetCallback("OnEnterPressed", function(widget, event, val)
         rot.name = val
