@@ -12,14 +12,20 @@ function addon:create_effect_list(frame)
     frame:PauseLayout()
 
     local group = AceGUI:Create("ScrollFrame")
+    frame:AddChild(group)
+    local addnew = AceGUI:Create("Button")
+
     group:SetFullWidth(true)
     group:SetFullHeight(true)
     -- group:SetLayout("Flow")
     group:SetLayout("Table")
     group:SetUserData("table", { columns = { 35, 100, 150, 1, 40 } })
-    frame:AddChild(group)
 
-    local updateDisabled
+    local updateDisabled = function()
+        local tblsz = #effects
+        addnew:SetDisabled(effects[tblsz].name == nil or effects[tblsz].name == "" or
+                (effects[tblsz].type == "texture" and (effects[tblsz].texture == nil or effects[tblsz].texture == "")))
+    end
 
     local name2idx = {}
     for k, v in pairs(effects) do
@@ -33,6 +39,42 @@ function addon:create_effect_list(frame)
         local row = group
 
         local icon = AceGUI:Create("Icon")
+        row:AddChild(icon)
+        local type = AceGUI:Create("Dropdown")
+        row:AddChild(type)
+        local name = AceGUI:Create("EditBox")
+        row:AddChild(name)
+        local rowgroup = AceGUI:Create("SimpleGroup")
+        row:AddChild(rowgroup)
+
+        local texture, lines, frequency, length, thickness, particles, scale
+        if v.type == "texture" then
+            texture = AceGUI:Create("EditBox")
+            rowgroup:AddChild(texture)
+        elseif v.type == "pixel" then
+            lines = AceGUI:Create("Slider")
+            rowgroup:AddChild(lines)
+            frequency = AceGUI:Create("Slider")
+            rowgroup:AddChild(frequency)
+            length = AceGUI:Create("Slider")
+            rowgroup:AddChild(length)
+            thickness = AceGUI:Create("Slider")
+            rowgroup:AddChild(thickness)
+        elseif v.type == "autocast" then
+            particles = AceGUI:Create("Slider")
+            rowgroup:AddChild(particles)
+            frequency = AceGUI:Create("Slider")
+            rowgroup:AddChild(frequency)
+            scale = AceGUI:Create("Slider")
+            rowgroup:AddChild(scale)
+        elseif v.type == "blizzard" then
+            frequency = AceGUI:Create("Slider")
+            rowgroup:AddChild(frequency)
+        end
+
+        local delete = AceGUI:Create("Button")
+        row:AddChild(delete)
+
         icon:SetImageSize(36, 36)
         if v.type == "texture" then
             icon:SetWidth(44)
@@ -44,9 +86,7 @@ function addon:create_effect_list(frame)
             addon:ApplyCustomGlow(v, icon.frame)
         end
         table.insert(icons, icon.frame)
-        row:AddChild(icon)
 
-        local type = AceGUI:Create("Dropdown")
         type:SetLabel(L["Type"])
         type:SetList({
             texture = L["Texture"],
@@ -62,9 +102,7 @@ function addon:create_effect_list(frame)
             end
             addon:create_effect_list(frame)
         end)
-        row:AddChild(type)
 
-        local name = AceGUI:Create("EditBox")
         name:SetLabel(NAME)
         name:SetText(v.name)
         name:SetFullWidth(true)
@@ -76,12 +114,9 @@ function addon:create_effect_list(frame)
             v.name = val
             updateDisabled()
         end)
-        row:AddChild(name)
 
-        local rowgroup = AceGUI:Create("SimpleGroup")
 
         if v.type == "texture" then
-            local texture = AceGUI:Create("EditBox")
             texture:SetLabel(L["Texture"])
             texture:SetText(v.texture)
             texture:SetFullWidth(true)
@@ -91,11 +126,10 @@ function addon:create_effect_list(frame)
                 addon:RemoveAllCurrentGlows()
                 updateDisabled()
             end)
-            rowgroup:AddChild(texture)
         elseif v.type == "pixel" then
             rowgroup:SetLayout("Table")
             rowgroup:SetUserData("table", { columns = { 1, 1, 1, 1 } })
-            local lines = AceGUI:Create("Slider")
+
             lines:SetLabel(L["Lines"])
             lines:SetValue(v.lines or 8)
             lines:SetSliderValues(1, 20, 1)
@@ -104,9 +138,7 @@ function addon:create_effect_list(frame)
                 addon:RemoveAllCurrentGlows()
                 addon:ApplyCustomGlow(v, icon.frame)
             end)
-            rowgroup:AddChild(lines)
 
-            local frequency = AceGUI:Create("Slider")
             frequency:SetLabel(L["Frequency"])
             frequency:SetValue(v.frequency or 0.25)
             frequency:SetSliderValues(-1.5, 1.5, 0.05)
@@ -115,9 +147,7 @@ function addon:create_effect_list(frame)
                 addon:RemoveAllCurrentGlows()
                 addon:ApplyCustomGlow(v, icon.frame)
             end)
-            rowgroup:AddChild(frequency)
 
-            local length = AceGUI:Create("Slider")
             length:SetLabel(L["Length"])
             length:SetValue(v.length or 2)
             length:SetSliderValues(1, 20, 1)
@@ -126,9 +156,7 @@ function addon:create_effect_list(frame)
                 addon:RemoveAllCurrentGlows()
                 addon:ApplyCustomGlow(v, icon.frame)
             end)
-            rowgroup:AddChild(length)
 
-            local thickness = AceGUI:Create("Slider")
             thickness:SetLabel(L["Thickness"])
             thickness:SetValue(v.thickness or 2)
             thickness:SetSliderValues(1, 5, 1)
@@ -137,13 +165,11 @@ function addon:create_effect_list(frame)
                 addon:RemoveAllCurrentGlows()
                 addon:ApplyCustomGlow(v, icon.frame)
             end)
-            rowgroup:AddChild(thickness)
 
         elseif v.type == "autocast" then
             rowgroup:SetLayout("Table")
             rowgroup:SetUserData("table", { columns = { 1, 1, 1 } })
 
-            local particles = AceGUI:Create("Slider")
             particles:SetLabel(L["Particles"])
             particles:SetValue(v.particles or 4)
             particles:SetSliderValues(1, 4, 1)
@@ -152,9 +178,7 @@ function addon:create_effect_list(frame)
                 addon:RemoveAllCurrentGlows()
                 addon:ApplyCustomGlow(v, icon.frame)
             end)
-            rowgroup:AddChild(particles)
 
-            local frequency = AceGUI:Create("Slider")
             frequency:SetLabel(L["Frequency"])
             frequency:SetValue(v.frequency or 0.125)
             frequency:SetSliderValues(-1.5, 1.5, 0.05)
@@ -163,9 +187,7 @@ function addon:create_effect_list(frame)
                 addon:RemoveAllCurrentGlows()
                 addon:ApplyCustomGlow(v, icon.frame)
             end)
-            rowgroup:AddChild(frequency)
 
-            local scale = AceGUI:Create("Slider")
             scale:SetLabel(L["Scale"])
             scale:SetValue(v.scale or 1.0)
             scale:SetSliderValues(0.25, 5, 0.25)
@@ -174,10 +196,8 @@ function addon:create_effect_list(frame)
                 addon:RemoveAllCurrentGlows()
                 addon:ApplyCustomGlow(v, icon.frame)
             end)
-            rowgroup:AddChild(scale)
 
         elseif v.type == "blizzard" then
-            local frequency = AceGUI:Create("Slider")
             frequency:SetLabel(L["Frequency"])
             frequency:SetValue(v.frequency or 0.125)
             frequency:SetSliderValues(0.0, 1.5, 0.05)
@@ -187,12 +207,8 @@ function addon:create_effect_list(frame)
                 addon:RemoveAllCurrentGlows()
                 addon:ApplyCustomGlow(v, icon.frame)
             end)
-            rowgroup:AddChild(frequency)
         end
 
-        row:AddChild(rowgroup)
-
-        local delete = AceGUI:Create("Button")
         delete:SetText("X")
         delete:SetWidth(40)
         delete:SetCallback("OnClick", function(widget, ewvent, ...)
@@ -203,11 +219,22 @@ function addon:create_effect_list(frame)
             end
             addon:create_effect_list(frame)
         end)
-        row:AddChild(delete)
     end
 
-    local addnew = AceGUI:Create("Button")
-    addnew:SetText("Add New")
+    local spacer = function(width)
+        local rv = AceGUI:Create("Label")
+        rv:SetRelativeWidth(width)
+        return rv
+    end
+
+    group:AddChild(spacer(1))
+    group:AddChild(addnew)
+    group:AddChild(spacer(1))
+    group:AddChild(spacer(1))
+    group:AddChild(spacer(1))
+
+    addnew:SetText(ADD)
+    addnew:SetWidth(100)
     addnew:SetCallback("OnClick", function(widget, ewvent, ...)
         table.insert(effects, { type = "texture", name = nil, texture = nil })
         for _, frame in pairs(icons) do
@@ -216,13 +243,7 @@ function addon:create_effect_list(frame)
         addon:create_effect_list(frame)
     end)
     addnew:SetUserData("cell", { colspan = 4 })
-    group:AddChild(addnew)
 
-    updateDisabled = function()
-        local tblsz = #effects
-        addnew:SetDisabled(effects[tblsz].name == nil or effects[tblsz].name == "" or
-                (effects[tblsz].type == "texture" and (effects[tblsz].texture == nil or effects[tblsz].texture == "")))
-    end
     updateDisabled()
 
     frame:ResumeLayout()

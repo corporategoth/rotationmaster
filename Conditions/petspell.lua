@@ -63,8 +63,11 @@ addon:RegisterCondition("PETSPELL_AVAIL", {
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
-        local spell = AceGUI:Create("Spell_EditBox")
         local spellIcon = AceGUI:Create("ActionSlotSpell")
+        parent:AddChild(spellIcon)
+        local spell = AceGUI:Create("Spell_EditBox")
+        parent:AddChild(spell)
+
         if (value.spell) then
             spellIcon:SetText(value.spell)
         end
@@ -82,7 +85,6 @@ addon:RegisterCondition("PETSPELL_AVAIL", {
             end
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(spellIcon)
 
         spell:SetLabel(L["Spell"])
         spell:SetText(value.spell and SpellData:SpellName(value.spell))
@@ -93,7 +95,6 @@ addon:RegisterCondition("PETSPELL_AVAIL", {
             spellIcon:SetText(value.spell)
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(spell)
 
     end,
 })
@@ -133,8 +134,15 @@ addon:RegisterCondition("PETSPELL_COOLDOWN", {
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
-        local spell = AceGUI:Create("Spell_EditBox")
         local spellIcon = AceGUI:Create("ActionSlotSpell")
+        parent:AddChild(spellIcon)
+        local spell = AceGUI:Create("Spell_EditBox")
+        parent:AddChild(spell)
+        local operator = AceGUI:Create("Dropdown")
+        parent:AddChild(operator)
+        local health = AceGUI:Create("EditBox")
+        parent:AddChild(health)
+
         if (value.spell) then
             spellIcon:SetText(value.spell)
         end
@@ -152,7 +160,6 @@ addon:RegisterCondition("PETSPELL_COOLDOWN", {
             end
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(spellIcon)
 
         spell:SetLabel(L["Spell"])
         spell:SetText(value.spell and SpellData:SpellName(value.spell))
@@ -163,9 +170,7 @@ addon:RegisterCondition("PETSPELL_COOLDOWN", {
             spellIcon:SetText(value.spell)
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(spell)
 
-        local operator = AceGUI:Create("Dropdown")
         operator:SetLabel(L["Operator"])
         operator:SetList(operators, keys(operators))
         if (value.operator ~= nil) then
@@ -175,9 +180,7 @@ addon:RegisterCondition("PETSPELL_COOLDOWN", {
             value.operator = v
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(operator)
 
-        local health = AceGUI:Create("EditBox")
         health:SetLabel(L["Seconds"])
         health:SetWidth(100)
         if (value.value ~= nil) then
@@ -187,7 +190,6 @@ addon:RegisterCondition("PETSPELL_COOLDOWN", {
             value.value = tonumber(v)
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(health)
     end,
 })
 
@@ -225,8 +227,15 @@ addon:RegisterCondition("PETSPELL_REMAIN", {
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
-        local spell = AceGUI:Create("Spell_EditBox")
         local spellIcon = AceGUI:Create("ActionSlotSpell")
+        parent:AddChild(spellIcon)
+        local spell = AceGUI:Create("Spell_EditBox")
+        parent:AddChild(spell)
+        local operator = AceGUI:Create("Dropdown")
+        parent:AddChild(operator)
+        local health = AceGUI:Create("EditBox")
+        parent:AddChild(health)
+
         if (value.spell) then
             spellIcon:SetText(value.spell)
         end
@@ -244,7 +253,6 @@ addon:RegisterCondition("PETSPELL_REMAIN", {
             end
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(spellIcon)
 
         spell:SetLabel(L["Spell"])
         spell:SetText(value.spell and SpellData:SpellName(value.spell))
@@ -255,9 +263,7 @@ addon:RegisterCondition("PETSPELL_REMAIN", {
             spellIcon:SetText(value.spell)
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(spell)
 
-        local operator = AceGUI:Create("Dropdown")
         operator:SetLabel(L["Operator"])
         operator:SetList(operators, keys(operators))
         if (value.operator ~= nil) then
@@ -267,9 +273,7 @@ addon:RegisterCondition("PETSPELL_REMAIN", {
             value.operator = v
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(operator)
 
-        local health = AceGUI:Create("EditBox")
         health:SetLabel(L["Seconds"])
         health:SetWidth(100)
         if (value.value ~= nil) then
@@ -279,7 +283,6 @@ addon:RegisterCondition("PETSPELL_REMAIN", {
             value.value = tonumber(v)
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(health)
     end,
 })
 
@@ -312,8 +315,15 @@ addon:RegisterCondition("PETSPELL_CHARGES", {
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
-        local spell = AceGUI:Create("Spell_EditBox")
         local spellIcon = AceGUI:Create("ActionSlotSpell")
+        parent:AddChild(spellIcon)
+        local spell = AceGUI:Create("Spell_EditBox")
+        parent:AddChild(spell)
+        local operator = AceGUI:Create("Dropdown")
+        parent:AddChild(operator)
+        local health = AceGUI:Create("EditBox")
+        parent:AddChild(health)
+
         if (value.spell) then
             spellIcon:SetText(value.spell)
         end
@@ -331,7 +341,6 @@ addon:RegisterCondition("PETSPELL_CHARGES", {
             end
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(spellIcon)
 
         spell:SetLabel(L["Spell"])
         spell:SetText(value.spell and SpellData:SpellName(value.spell))
@@ -342,9 +351,7 @@ addon:RegisterCondition("PETSPELL_CHARGES", {
             spellIcon:SetText(value.spell)
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(spell)
 
-        local operator = AceGUI:Create("Dropdown")
         operator:SetLabel(L["Operator"])
         operator:SetList(operators, keys(operators))
         if (value.operator ~= nil) then
@@ -354,9 +361,7 @@ addon:RegisterCondition("PETSPELL_CHARGES", {
             value.operator = v
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(operator)
 
-        local health = AceGUI:Create("EditBox")
         health:SetLabel(L["Charges"])
         health:SetWidth(100)
         if (value.value ~= nil) then
@@ -366,6 +371,5 @@ addon:RegisterCondition("PETSPELL_CHARGES", {
             value.value = tonumber(v)
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(health)
     end,
 })

@@ -35,6 +35,12 @@ addon:RegisterCondition("HEALTH", {
         local funcs = top:GetUserData("funcs")
 
         local unit = AceGUI:Create("Dropdown")
+        parent:AddChild(unit)
+        local operator = AceGUI:Create("Dropdown")
+        parent:AddChild(operator)
+        local health = AceGUI:Create("EditBox")
+        parent:AddChild(health)
+
         unit:SetLabel(L["Unit"])
         unit:SetList(units, keys(units))
         if (value.unit ~= nil) then
@@ -44,9 +50,7 @@ addon:RegisterCondition("HEALTH", {
             value.unit = v
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(unit)
 
-        local operator = AceGUI:Create("Dropdown")
         operator:SetLabel(L["Operator"])
         operator:SetList(operators, keys(operators))
         if (value.operator ~= nil) then
@@ -56,9 +60,7 @@ addon:RegisterCondition("HEALTH", {
             value.operator = v
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(operator)
 
-        local health = AceGUI:Create("EditBox")
         health:SetLabel(L["Health"])
         health:SetWidth(100)
         if (value.value ~= nil) then
@@ -68,7 +70,6 @@ addon:RegisterCondition("HEALTH", {
             value.value = tonumber(v)
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(health)
     end,
 })
 
@@ -97,6 +98,12 @@ addon:RegisterCondition("HEALTHPCT", {
         local funcs = top:GetUserData("funcs")
 
         local unit = AceGUI:Create("Dropdown")
+        parent:AddChild(unit)
+        local operator = AceGUI:Create("Dropdown")
+        parent:AddChild(operator)
+        local health = AceGUI:Create("Slider")
+        parent:AddChild(health)
+
         unit:SetLabel(L["Unit"])
         unit:SetList(units, keys(units))
         if (value.unit ~= nil) then
@@ -106,9 +113,7 @@ addon:RegisterCondition("HEALTHPCT", {
             value.unit = v
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(unit)
 
-        local operator = AceGUI:Create("Dropdown")
         operator:SetLabel(L["Operator"])
         operator:SetList(operators, keys(operators))
         if (value.operator ~= nil) then
@@ -118,9 +123,7 @@ addon:RegisterCondition("HEALTHPCT", {
             value.operator = v
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(operator)
 
-        local health = AceGUI:Create("Slider")
         health:SetLabel(L["Health"])
         health:SetSliderValues(0, 1, 0.01)
         health:SetIsPercent(true)
@@ -131,7 +134,6 @@ addon:RegisterCondition("HEALTHPCT", {
             value.value = v
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(health)
     end,
 })
 
@@ -155,6 +157,12 @@ addon:RegisterCondition("MANA", {
         local funcs = top:GetUserData("funcs")
 
         local unit = AceGUI:Create("Dropdown")
+        parent:AddChild(unit)
+        local operator = AceGUI:Create("Dropdown")
+        parent:AddChild(operator)
+        local health = AceGUI:Create("EditBox")
+        parent:AddChild(health)
+
         unit:SetLabel(L["Unit"])
         unit:SetList(units, keys(units))
         if (value.unit ~= nil) then
@@ -164,9 +172,7 @@ addon:RegisterCondition("MANA", {
             value.unit = v
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(unit)
 
-        local operator = AceGUI:Create("Dropdown")
         operator:SetLabel(L["Operator"])
         operator:SetList(operators, keys(operators))
         if (value.operator ~= nil) then
@@ -176,9 +182,7 @@ addon:RegisterCondition("MANA", {
             value.operator = v
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(operator)
 
-        local health = AceGUI:Create("EditBox")
         health:SetLabel(L["Mana"])
         health:SetWidth(100)
         if (value.value ~= nil) then
@@ -188,7 +192,6 @@ addon:RegisterCondition("MANA", {
             value.value = tonumber(v)
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(health)
     end,
 })
 
@@ -217,6 +220,12 @@ addon:RegisterCondition("MANAPCT", {
         local funcs = top:GetUserData("funcs")
 
         local unit = AceGUI:Create("Dropdown")
+        parent:AddChild(unit)
+        local operator = AceGUI:Create("Dropdown")
+        parent:AddChild(operator)
+        local health = AceGUI:Create("Slider")
+        parent:AddChild(health)
+
         unit:SetLabel(L["Unit"])
         unit:SetList(units, keys(units))
         if (value.unit ~= nil) then
@@ -226,9 +235,7 @@ addon:RegisterCondition("MANAPCT", {
             value.unit = v
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(unit)
 
-        local operator = AceGUI:Create("Dropdown")
         operator:SetLabel(L["Operator"])
         operator:SetList(operators, keys(operators))
         if (value.operator ~= nil) then
@@ -238,9 +245,7 @@ addon:RegisterCondition("MANAPCT", {
             value.operator = v
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(operator)
 
-        local health = AceGUI:Create("Slider")
         health:SetLabel(L["Mana"])
         health:SetSliderValues(0, 1, 0.01)
         health:SetIsPercent(true)
@@ -251,7 +256,6 @@ addon:RegisterCondition("MANAPCT", {
             value.value = v
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(health)
     end,
 })
 
@@ -285,6 +289,12 @@ addon:RegisterCondition("POWER", {
         local funcs = top:GetUserData("funcs")
 
         local unit = AceGUI:Create("Dropdown")
+        parent:AddChild(unit)
+        local operator = AceGUI:Create("Dropdown")
+        parent:AddChild(operator)
+        local health = AceGUI:Create("EditBox")
+        parent:AddChild(health)
+
         unit:SetLabel(L["Unit"])
         unit:SetList(units, keys(units))
         if (value.unit ~= nil) then
@@ -294,9 +304,7 @@ addon:RegisterCondition("POWER", {
             value.unit = v
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(unit)
 
-        local operator = AceGUI:Create("Dropdown")
         operator:SetLabel(L["Operator"])
         operator:SetList(operators, keys(operators))
         if (value.operator ~= nil) then
@@ -306,9 +314,7 @@ addon:RegisterCondition("POWER", {
             value.operator = v
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(operator)
 
-        local health = AceGUI:Create("EditBox")
         health:SetLabel(L["Power"])
         health:SetWidth(100)
         if (value.value ~= nil) then
@@ -318,7 +324,6 @@ addon:RegisterCondition("POWER", {
             value.value = tonumber(v)
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(health)
     end,
 })
 
@@ -355,6 +360,12 @@ addon:RegisterCondition("POWERPCT", {
         local funcs = top:GetUserData("funcs")
 
         local unit = AceGUI:Create("Dropdown")
+        parent:AddChild(unit)
+        local operator = AceGUI:Create("Dropdown")
+        parent:AddChild(operator)
+        local health = AceGUI:Create("Slider")
+        parent:AddChild(health)
+
         unit:SetLabel(L["Unit"])
         unit:SetList(units, keys(units))
         if (value.unit ~= nil) then
@@ -364,9 +375,7 @@ addon:RegisterCondition("POWERPCT", {
             value.unit = v
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(unit)
 
-        local operator = AceGUI:Create("Dropdown")
         operator:SetLabel(L["Operator"])
         operator:SetList(operators, keys(operators))
         if (value.operator ~= nil) then
@@ -376,9 +385,7 @@ addon:RegisterCondition("POWERPCT", {
             value.operator = v
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(operator)
 
-        local health = AceGUI:Create("Slider")
         health:SetLabel(L["Power"])
         health:SetSliderValues(0, 1, 0.01)
         health:SetIsPercent(true)
@@ -389,7 +396,6 @@ addon:RegisterCondition("POWERPCT", {
             value.value = v
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(health)
     end,
 })
 
@@ -427,6 +433,12 @@ addon:RegisterCondition("POINT", {
         local funcs = top:GetUserData("funcs")
 
         local unit = AceGUI:Create("Dropdown")
+        parent:AddChild(unit)
+        local operator = AceGUI:Create("Dropdown")
+        parent:AddChild(operator)
+        local health = AceGUI:Create("EditBox")
+        parent:AddChild(health)
+
         unit:SetLabel(L["Unit"])
         unit:SetList(units, keys(units))
         if (value.unit ~= nil) then
@@ -436,9 +448,7 @@ addon:RegisterCondition("POINT", {
             value.unit = v
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(unit)
 
-        local operator = AceGUI:Create("Dropdown")
         operator:SetLabel(L["Operator"])
         operator:SetList(operators, keys(operators))
         if (value.operator ~= nil) then
@@ -448,9 +458,7 @@ addon:RegisterCondition("POINT", {
             value.operator = v
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(operator)
 
-        local health = AceGUI:Create("EditBox")
         health:SetLabel(L["Points"])
         health:SetWidth(100)
         if (value.value ~= nil) then
@@ -460,7 +468,6 @@ addon:RegisterCondition("POINT", {
             value.value = tonumber(v)
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(health)
     end,
 })
 

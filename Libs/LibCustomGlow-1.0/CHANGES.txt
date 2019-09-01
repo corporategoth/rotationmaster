@@ -1,54 +1,12 @@
-tag 3d95c0c2c9cdb419ff241f78e728a24a1d87ef22 1.0.2
+tag 648b01168be33c5ee2cebb19f893c13ed149f4d3 1.0.3
 Author:	Benjamin Staneck <staneck@gmail.com>
-Date:	Sat Aug 10 20:13:34 2019 +0200
+Date:	Sat Aug 10 23:00:24 2019 +0200
 
-Tag as 1.0.2
+Tag as 1.0.3
 
-commit 6cf6bf5697baf275ed6eff09a4ad3619349b9005
-Author: Benjamin Staneck <Stanzilla@users.noreply.github.com>
-Date:   Sat Aug 10 20:12:20 2019 +0200
-
-    Create README.md
-
-commit cc51ec29381ff9a34880f272a03d4c18a25d8c8c
+commit 6efc82df449dea8a78f7ab647c252afafc45c381
 Author: Benjamin Staneck <staneck@gmail.com>
-Date:   Sat Aug 10 20:07:24 2019 +0200
+Date:   Sat Aug 10 23:00:12 2019 +0200
 
-    add luacheck globals
-
-commit f1f6b9d28ef52b710fa80e622b51774596828a54
-Author: Benjamin Staneck <staneck@gmail.com>
-Date:   Sat Aug 10 20:05:33 2019 +0200
-
-    add editorconfig
-
-commit cbcc9f66f57c1f1b6dc5ff06f9f6c10d8841e868
-Author: Benjamin Staneck <staneck@gmail.com>
-Date:   Sat Aug 10 20:05:24 2019 +0200
-
-    Update TOC for Patch 8.1 and use packager replacement for version
-
-commit aa4da37f0d900ae42e553d8288de0d45447f748b
-Author: deezo <dooezzz@gmail.com>
-Date:   Sat Aug 10 20:31:45 2019 +0300
-
-    Added default frame level argument value
-
-commit e8e522a2dc46d4163a353d4dd10e4bd8d77ee95b
-Author: deezo <dooezzz@gmail.com>
-Date:   Sat Aug 10 20:18:06 2019 +0300
-
-    Added frame level argument for glows
-
-commit 4b606b06ef2d80270c84862ec573d06e02647863
-Author: deezo <dooezzz@gmail.com>
-Date:   Sat Aug 10 20:14:55 2019 +0300
-
-    Added frame level argument for glows
-
-commit 7e78110fe6e0991d678016487c01900511833a52
-Author: deezo <dooezzz@gmail.com>
-Date:   Tue Jun 4 00:55:19 2019 +0300
-
-    Added copyright notice
+    bump minor version
 

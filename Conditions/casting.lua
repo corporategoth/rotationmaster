@@ -32,6 +32,8 @@ addon:RegisterCondition("CASTING", {
         local funcs = top:GetUserData("funcs")
 
         local unit = AceGUI:Create("Dropdown")
+        parent:AddChild(unit)
+
         unit:SetLabel(L["Unit"])
         unit:SetList(units, keys(units))
         if (value.unit ~= nil) then
@@ -41,7 +43,6 @@ addon:RegisterCondition("CASTING", {
             value.unit = v
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(unit)
     end,
 })
 
@@ -65,6 +66,12 @@ addon:RegisterCondition("CASTING_SPELL", {
         local funcs = top:GetUserData("funcs")
 
         local unit = AceGUI:Create("Dropdown")
+        parent:AddChild(unit)
+        local spellIcon = AceGUI:Create("ActionSlotSpell")
+        parent:AddChild(spellIcon)
+        local spell = AceGUI:Create("Spell_EditBox")
+        parent:AddChild(spell)
+
         unit:SetLabel(L["Unit"])
         unit:SetList(units, keys(units))
         if (value.unit ~= nil) then
@@ -74,10 +81,7 @@ addon:RegisterCondition("CASTING_SPELL", {
             value.unit = v
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(unit)
 
-        local spell = AceGUI:Create("Spell_EditBox")
-        local spellIcon = AceGUI:Create("ActionSlotSpell")
         if (value.spell) then
             local spellid = SpellData.spellListReverse[string.lower(value.spell)]
             if spellid then
@@ -108,8 +112,6 @@ addon:RegisterCondition("CASTING_SPELL", {
             end
         end
 
-        parent:AddChild(spellIcon)
-
         spell:SetLabel(L["Spell"])
         if (value.spell) then
             spell:SetText(value.spell)
@@ -132,7 +134,6 @@ addon:RegisterCondition("CASTING_SPELL", {
             end
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(spell)
     end,
 })
 
@@ -161,6 +162,12 @@ addon:RegisterCondition("CASTING_REMAIN", {
         local funcs = top:GetUserData("funcs")
 
         local unit = AceGUI:Create("Dropdown")
+        parent:AddChild(unit)
+        local operator = AceGUI:Create("Dropdown")
+        parent:AddChild(operator)
+        local health = AceGUI:Create("EditBox")
+        parent:AddChild(health)
+
         unit:SetLabel(L["Unit"])
         unit:SetList(units, keys(units))
         if (value.unit ~= nil) then
@@ -170,9 +177,7 @@ addon:RegisterCondition("CASTING_REMAIN", {
             value.unit = v
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(unit)
 
-        local operator = AceGUI:Create("Dropdown")
         operator:SetLabel(L["Operator"])
         operator:SetList(operators, keys(operators))
         if (value.operator ~= nil) then
@@ -182,9 +187,7 @@ addon:RegisterCondition("CASTING_REMAIN", {
             value.operator = v
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(operator)
 
-        local health = AceGUI:Create("EditBox")
         health:SetLabel(L["Seconds"])
         health:SetWidth(100)
         if (value.value ~= nil) then
@@ -194,7 +197,6 @@ addon:RegisterCondition("CASTING_REMAIN", {
             value.value = tonumber(v)
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(health)
     end,
 })
 
@@ -218,6 +220,8 @@ addon:RegisterCondition("CAST_INTERRUPTABLE", {
         local units = deepcopy(units, { "player", "pet" })
 
         local unit = AceGUI:Create("Dropdown")
+        parent:AddChild(unit)
+
         unit:SetLabel(L["Unit"])
         unit:SetList(units, keys(units))
         if (value.unit ~= nil) then
@@ -227,6 +231,5 @@ addon:RegisterCondition("CAST_INTERRUPTABLE", {
             value.unit = v
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(unit)
     end,
 })

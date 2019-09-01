@@ -40,6 +40,12 @@ addon:RegisterCondition("DEBUFF", {
         local funcs = top:GetUserData("funcs")
 
         local unit = AceGUI:Create("Dropdown")
+        parent:AddChild(unit)
+        local spellIcon = AceGUI:Create("ActionSlotSpell")
+        parent:AddChild(spellIcon)
+        local spell = AceGUI:Create("Spell_EditBox")
+        parent:AddChild(spell)
+
         unit:SetLabel(L["Unit"])
         unit:SetList(units, keys(units))
         if (value.unit ~= nil) then
@@ -49,10 +55,7 @@ addon:RegisterCondition("DEBUFF", {
             value.unit = v
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(unit)
 
-        local spell = AceGUI:Create("Spell_EditBox")
-        local spellIcon = AceGUI:Create("ActionSlotSpell")
         if (value.spell) then
             local spellid = SpellData.spellListReverse[string.lower(value.spell)]
             if spellid then
@@ -84,7 +87,6 @@ addon:RegisterCondition("DEBUFF", {
                 end
             end
         end
-        parent:AddChild(spellIcon)
 
         spell:SetLabel(L["Spell"])
         if (value.spell) then
@@ -108,7 +110,6 @@ addon:RegisterCondition("DEBUFF", {
             end
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(spell)
     end,
 })
 
@@ -144,6 +145,17 @@ addon:RegisterCondition("DEBUFF_REMAIN", {
         local funcs = top:GetUserData("funcs")
 
         local unit = AceGUI:Create("Dropdown")
+        parent:AddChild(unit)
+        local spellIcon = AceGUI:Create("ActionSlotSpell")
+        parent:AddChild(spellIcon)
+        local spell = AceGUI:Create("Spell_EditBox")
+        parent:AddChild(spell)
+        local operator = AceGUI:Create("Dropdown")
+        parent:AddChild(operator)
+        local health = AceGUI:Create("EditBox")
+        parent:AddChild(health)
+
+
         unit:SetLabel(L["Unit"])
         unit:SetList(units, keys(units))
         if (value.unit ~= nil) then
@@ -153,10 +165,7 @@ addon:RegisterCondition("DEBUFF_REMAIN", {
             value.unit = v
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(unit)
 
-        local spell = AceGUI:Create("Spell_EditBox")
-        local spellIcon = AceGUI:Create("ActionSlotSpell")
         if (value.spell) then
             local spellid = SpellData.spellListReverse[string.lower(value.spell)]
             if spellid then
@@ -188,7 +197,6 @@ addon:RegisterCondition("DEBUFF_REMAIN", {
                 end
             end
         end
-        parent:AddChild(spellIcon)
 
         spell:SetLabel(L["Spell"])
         if (value.spell) then
@@ -212,9 +220,7 @@ addon:RegisterCondition("DEBUFF_REMAIN", {
             end
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(spell)
 
-        local operator = AceGUI:Create("Dropdown")
         operator:SetLabel(L["Operator"])
         operator:SetList(operators, keys(operators))
         if (value.operator ~= nil) then
@@ -224,9 +230,7 @@ addon:RegisterCondition("DEBUFF_REMAIN", {
             value.operator = v
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(operator)
 
-        local health = AceGUI:Create("EditBox")
         health:SetLabel(L["Seconds"])
         health:SetWidth(100)
         if (value.value ~= nil) then
@@ -236,7 +240,6 @@ addon:RegisterCondition("DEBUFF_REMAIN", {
             value.value = tonumber(v)
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(health)
     end,
 })
 
@@ -270,6 +273,16 @@ addon:RegisterCondition("DEBUFF_STACKS", {
         local funcs = top:GetUserData("funcs")
 
         local unit = AceGUI:Create("Dropdown")
+        parent:AddChild(unit)
+        local spellIcon = AceGUI:Create("ActionSlotSpell")
+        parent:AddChild(spellIcon)
+        local spell = AceGUI:Create("Spell_EditBox")
+        parent:AddChild(spell)
+        local operator = AceGUI:Create("Dropdown")
+        parent:AddChild(operator)
+        local health = AceGUI:Create("EditBox")
+        parent:AddChild(health)
+
         unit:SetLabel(L["Unit"])
         unit:SetList(units, keys(units))
         if (value.unit ~= nil) then
@@ -279,10 +292,7 @@ addon:RegisterCondition("DEBUFF_STACKS", {
             value.unit = v
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(unit)
 
-        local spell = AceGUI:Create("Spell_EditBox")
-        local spellIcon = AceGUI:Create("ActionSlotSpell")
         if (value.spell) then
             local spellid = SpellData.spellListReverse[string.lower(value.spell)]
             if spellid then
@@ -314,7 +324,6 @@ addon:RegisterCondition("DEBUFF_STACKS", {
                 end
             end
         end
-        parent:AddChild(spellIcon)
 
         spell:SetLabel(L["Spell"])
         if (value.spell) then
@@ -338,9 +347,7 @@ addon:RegisterCondition("DEBUFF_STACKS", {
             end
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(spell)
 
-        local operator = AceGUI:Create("Dropdown")
         operator:SetLabel(L["Operator"])
         operator:SetList(operators, keys(operators))
         if (value.operator ~= nil) then
@@ -350,9 +357,7 @@ addon:RegisterCondition("DEBUFF_STACKS", {
             value.operator = v
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(operator)
 
-        local health = AceGUI:Create("EditBox")
         health:SetLabel(L["Stacks"])
         health:SetWidth(100)
         if (value.value ~= nil) then
@@ -362,7 +367,6 @@ addon:RegisterCondition("DEBUFF_STACKS", {
             value.value = tonumber(v)
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(health)
     end,
 })
 
@@ -397,6 +401,10 @@ addon:RegisterCondition("DISPELLABLE", {
         local funcs = top:GetUserData("funcs")
 
         local unit = AceGUI:Create("Dropdown")
+        parent:AddChild(unit)
+        local debufftype = AceGUI:Create("Dropdown")
+        parent:AddChild(debufftype)
+
         unit:SetLabel(L["Unit"])
         unit:SetList(units, keys(units))
         if (value.unit ~= nil) then
@@ -406,9 +414,7 @@ addon:RegisterCondition("DISPELLABLE", {
             value.unit = v
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(unit)
 
-        local debufftype = AceGUI:Create("Dropdown")
         debufftype:SetLabel(L["Debuff Type"])
         debufftype:SetList(debufftypes, keys(debufftypes))
         if (value.debufftype ~= nil) then
@@ -418,7 +424,6 @@ addon:RegisterCondition("DISPELLABLE", {
             value.debufftype = v
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(debufftype)
 
         return nil
     end,

@@ -40,6 +40,8 @@ addon:RegisterCondition("COMBAT", {
         local funcs = top:GetUserData("funcs")
 
         local unit = AceGUI:Create("Dropdown")
+        parent:AddChild(unit)
+
         unit:SetLabel(L["Unit"])
         unit:SetList(units, keys(units))
         if (value.unit ~= nil) then
@@ -49,7 +51,6 @@ addon:RegisterCondition("COMBAT", {
             value.unit = v
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(unit)
     end,
 })
 
@@ -87,6 +88,8 @@ addon:RegisterCondition("PET_NAME", {
         local funcs = top:GetUserData("funcs")
 
         local health = AceGUI:Create("EditBox")
+        parent:AddChild(health)
+
         health:SetLabel(NAME)
         if (value.value ~= nil) then
             health:SetText(value.value)
@@ -95,7 +98,6 @@ addon:RegisterCondition("PET_NAME", {
             value.value = v
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(health)
     end,
 })
 
@@ -153,6 +155,10 @@ addon:RegisterCondition("THREAT", {
         local units = deepcopy(units, { "player", "pet" })
 
         local unit = AceGUI:Create("Dropdown")
+        parent:AddChild(unit)
+        local val = AceGUI:Create("Dropdown")
+        parent:AddChild(val)
+
         unit:SetLabel(L["Unit"])
         unit:SetList(units, keys(units))
         if (value.unit ~= nil) then
@@ -162,9 +168,7 @@ addon:RegisterCondition("THREAT", {
             value.unit = v
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(unit)
 
-        local val = AceGUI:Create("Dropdown")
         val:SetLabel(L["Threat"])
         val:SetList(threat)
         if (value.value ~= nil) then
@@ -174,7 +178,6 @@ addon:RegisterCondition("THREAT", {
             value.value = v
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(val)
     end,
 })
 
@@ -208,6 +211,12 @@ addon:RegisterCondition("THREAT_COUNT", {
         local units = deepcopy(units, { "player", "pet" })
 
         local val = AceGUI:Create("Dropdown")
+        parent:AddChild(val)
+        local operator = AceGUI:Create("Dropdown")
+        parent:AddChild(operator)
+        local count = AceGUI:Create("EditBox")
+        parent:AddChild(count)
+
         val:SetLabel(L["Threat"])
         val:SetList(threat)
         if (value.value ~= nil) then
@@ -217,9 +226,7 @@ addon:RegisterCondition("THREAT_COUNT", {
             value.value = v
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(val)
 
-        local operator = AceGUI:Create("Dropdown")
         operator:SetLabel(L["Operator"])
         operator:SetList(operators, keys(operators))
         if (value.operator ~= nil) then
@@ -229,9 +236,7 @@ addon:RegisterCondition("THREAT_COUNT", {
             value.operator = v
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(operator)
 
-        local count = AceGUI:Create("EditBox")
         count:SetLabel(L["Count"])
         count:SetWidth(100)
         if (value.count ~= nil) then
@@ -241,15 +246,15 @@ addon:RegisterCondition("THREAT_COUNT", {
             value.count = tonumber(v)
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(count)
     end,
 })
 
-addon:RegisterCondition("FORM", {
+local character_class = select(2, UnitClass("player"))
+addon.condition_form = {
     description = L["Shapeshift Form"],
     icon = "Interface\\Icons\\ability_hunter_pet_bear",
     valid = function(spec, value)
-        return value.value ~= nil and value >= 0 and value <= GetNumShapeshiftForms()
+        return value.value ~= nil and value.value >= 0 and value.value <= (character_class == "SHAMAN" and 1 or GetNumShapeshiftForms())
     end,
     evaluate = function(value, cache, evalStart)
         return getCached(cache, GetShapeshiftForm) == value.value
@@ -257,8 +262,13 @@ addon:RegisterCondition("FORM", {
     print = function(spec, value)
         local form
         if value.value ~= nil then
-            local _, name, _, _, _ = GetShapeshiftFormInfo(index)
-            form = name
+            if value.value == 0 then
+                form = L["humanoid"]
+            elseif character_class == "SHAMAN" then
+                form = select(1, GetSpellInfo("Ghost Wolf"))
+            else
+                form = select(2, GetShapeshiftFormInfo(index))
+            end
         end
         return string.format(L["you are in %s form"], nullable(form, L["<form>"]))
     end,
@@ -272,47 +282,60 @@ addon:RegisterCondition("FORM", {
 
         forms["0"] = L["humanoid"]
         table.insert(formsOrder, "0")
-        for i=1,GetNumShapeshiftForms() do
-            local _, name = GetShapeshiftFormInfo(index);
-            forms[tostring(i)] = name;
-            table.insert(formsOrder, tostring(i))
+        if character_class == "SHAMAN" then
+            forms["1"] = select(1, GetSpellInfo("Ghost Wolf"))
+            table.insert(formsOrder, tostring("1"))
+        else
+            for i=1,GetNumShapeshiftForms() do
+                local _, name = GetShapeshiftFormInfo(index);
+                forms[tostring(i)] = name;
+                table.insert(formsOrder, tostring(i))
+            end
         end
 
         local formIcon = AceGUI:Create("Icon")
+        parent:AddChild(formIcon)
+        local form = AceGUI:Create("Dropdown")
+        parent:AddChild(form)
+
+
         formIcon:SetWidth(44)
         formIcon:SetHeight(44)
         formIcon:SetImageSize(36, 36)
-        if value.value ~= nil then
-            if value.value == 0 then
-                formIcon:SetImage("Interface\\Icons\\achievement_character_human_male")
+        function set_form_icon()
+            if value.value ~= nil then
+                if value.value == 0 then
+                    formIcon:SetImage("Interface\\Icons\\inv_misc_head_human_02")
+                else
+                    if character_class == "SHAMAN" then
+                        if value.value == 1 then
+                            formIcon:SetImage(GetSpellTexture("Ghost Wolf"))
+                        end
+                    else
+                        formIcon:SetImage(GetShapeshiftFormInfo(value.value))
+                    end
+                end
             else
-                local icon = GetShapeshiftFormInfo(value.value);
-                formIcon:SetImage(icon)
+                formIcon:SetImage("Interface\\Icons\\INV_Misc_QuestionMark")
             end
-        else
-            formIcon:SetImage("Interface\\Icons\\INV_Misc_QuestionMark")
         end
-        parent:AddChild(formIcon)
+        set_form_icon()
 
-        local form = AceGUI:Create("Dropdown")
         form:SetLabel(L["Form"])
         form:SetList(forms, formsOrder)
         if (value.value) then
             form:SetValue(tostring(value.value))
         end
         form:SetCallback("OnValueChanged", function(widget, event, v)
-            if v == "0" then
-                formIcon:SetImage("Interface\\Icons\\achievement_character_human_male")
-            else
-                local icon = GetShapeshiftFormInfo(tonumber(v));
-                formIcon:SetImage(icon)
-            end
-            value.form = tonumber(v)
+            value.value = tonumber(v)
+            form:SetValue(v)
+            set_form_icon()
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(form)
     end,
-})
+}
+
+addon:RegisterCondition("FORM", addon.condition_form)
 
 addon:RegisterCondition("ENEMY", {
     description = L["Enemy"],
@@ -333,6 +356,8 @@ addon:RegisterCondition("ENEMY", {
         local units = deepcopy(units, { "player", "pet" })
 
         local unit = AceGUI:Create("Dropdown")
+        parent:AddChild(unit)
+
         unit:SetLabel(L["Unit"])
         unit:SetList(units, keys(units))
         if (value.unit ~= nil) then
@@ -342,6 +367,5 @@ addon:RegisterCondition("ENEMY", {
             value.unit = v
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(unit)
     end,
 })

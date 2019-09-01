@@ -40,6 +40,12 @@ addon:RegisterCondition("BUFF", {
         local funcs = top:GetUserData("funcs")
 
         local unit = AceGUI:Create("Dropdown")
+        parent:AddChild(unit)
+        local spellIcon = AceGUI:Create("ActionSlotSpell")
+        parent:AddChild(spellIcon)
+        local spell = AceGUI:Create("Spell_EditBox")
+        parent:AddChild(spell)
+
         unit:SetLabel(L["Unit"])
         unit:SetList(units, keys(units))
         if (value.unit ~= nil) then
@@ -49,10 +55,7 @@ addon:RegisterCondition("BUFF", {
             value.unit = v
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(unit)
 
-        local spell = AceGUI:Create("Spell_EditBox")
-        local spellIcon = AceGUI:Create("ActionSlotSpell")
         if (value.spell) then
             local spellid = SpellData.spellListReverse[string.lower(value.spell)]
             if spellid then
@@ -84,7 +87,6 @@ addon:RegisterCondition("BUFF", {
                 end
             end
         end
-        parent:AddChild(spellIcon)
 
         spell:SetLabel(L["Spell"])
         if (value.spell) then
@@ -108,7 +110,6 @@ addon:RegisterCondition("BUFF", {
             end
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(spell)
     end,
 })
 
@@ -144,6 +145,17 @@ addon:RegisterCondition("BUFF_REMAIN", {
         local funcs = top:GetUserData("funcs")
 
         local unit = AceGUI:Create("Dropdown")
+        parent:AddChild(unit)
+        local spellIcon = AceGUI:Create("ActionSlotSpell")
+        parent:AddChild(spellIcon)
+        local spell = AceGUI:Create("Spell_EditBox")
+        parent:AddChild(spell)
+        local operator = AceGUI:Create("Dropdown")
+        parent:AddChild(operator)
+        local health = AceGUI:Create("EditBox")
+        parent:AddChild(health)
+
+
         unit:SetLabel(L["Unit"])
         unit:SetList(units, keys(units))
         if (value.unit ~= nil) then
@@ -153,10 +165,7 @@ addon:RegisterCondition("BUFF_REMAIN", {
             value.unit = v
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(unit)
 
-        local spell = AceGUI:Create("Spell_EditBox")
-        local spellIcon = AceGUI:Create("ActionSlotSpell")
         if (value.spell) then
             local spellid = SpellData.spellListReverse[string.lower(value.spell)]
             if spellid then
@@ -188,7 +197,6 @@ addon:RegisterCondition("BUFF_REMAIN", {
                 end
             end
         end
-        parent:AddChild(spellIcon)
 
         spell:SetLabel(L["Spell"])
         if (value.spell) then
@@ -212,9 +220,7 @@ addon:RegisterCondition("BUFF_REMAIN", {
             end
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(spell)
 
-        local operator = AceGUI:Create("Dropdown")
         operator:SetLabel(L["Operator"])
         operator:SetList(operators, keys(operators))
         if (value.operator ~= nil) then
@@ -224,9 +230,7 @@ addon:RegisterCondition("BUFF_REMAIN", {
             value.operator = v
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(operator)
 
-        local health = AceGUI:Create("EditBox")
         health:SetLabel(L["Seconds"])
         health:SetWidth(100)
         if (value.value ~= nil) then
@@ -236,7 +240,6 @@ addon:RegisterCondition("BUFF_REMAIN", {
             value.value = tonumber(v)
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(health)
     end,
 })
 
@@ -270,6 +273,16 @@ addon:RegisterCondition("BUFF_STACKS", {
         local funcs = top:GetUserData("funcs")
 
         local unit = AceGUI:Create("Dropdown")
+        parent:AddChild(unit)
+        local spellIcon = AceGUI:Create("ActionSlotSpell")
+        parent:AddChild(spellIcon)
+        local spell = AceGUI:Create("Spell_EditBox")
+        parent:AddChild(spell)
+        local operator = AceGUI:Create("Dropdown")
+        parent:AddChild(operator)
+        local health = AceGUI:Create("EditBox")
+        parent:AddChild(health)
+
         unit:SetLabel(L["Unit"])
         unit:SetList(units, keys(units))
         if (value.unit ~= nil) then
@@ -279,10 +292,7 @@ addon:RegisterCondition("BUFF_STACKS", {
             value.unit = v
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(unit)
 
-        local spell = AceGUI:Create("Spell_EditBox")
-        local spellIcon = AceGUI:Create("ActionSlotSpell")
         if (value.spell) then
             local spellid = SpellData.spellListReverse[string.lower(value.spell)]
             if spellid then
@@ -314,7 +324,6 @@ addon:RegisterCondition("BUFF_STACKS", {
                 end
             end
         end
-        parent:AddChild(spellIcon)
 
         spell:SetLabel(L["Spell"])
         if (value.spell) then
@@ -338,9 +347,7 @@ addon:RegisterCondition("BUFF_STACKS", {
             end
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(spell)
 
-        local operator = AceGUI:Create("Dropdown")
         operator:SetLabel(L["Operator"])
         operator:SetList(operators, keys(operators))
         if (value.operator ~= nil) then
@@ -350,9 +357,7 @@ addon:RegisterCondition("BUFF_STACKS", {
             value.operator = v
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(operator)
 
-        local health = AceGUI:Create("EditBox")
         health:SetLabel(L["Stacks"])
         health:SetWidth(100)
         if (value.value ~= nil) then
@@ -362,7 +367,6 @@ addon:RegisterCondition("BUFF_STACKS", {
             value.value = tonumber(v)
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(health)
     end,
 })
 
@@ -394,6 +398,8 @@ addon:RegisterCondition("STEALABLE", {
         local units = deepcopy(units, { "player", "pet" })
 
         local unit = AceGUI:Create("Dropdown")
+        parent:AddChild(unit)
+
         unit:SetLabel(L["Unit"])
         unit:SetList(units, keys(units))
         if (value.unit ~= nil) then
@@ -403,7 +409,6 @@ addon:RegisterCondition("STEALABLE", {
             value.unit = v
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(unit)
     end,
 })
 
@@ -428,6 +433,8 @@ if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
             local funcs = top:GetUserData("funcs")
 
             local offhand = AceGUI:Create("CheckBox")
+            parent:AddChild(offhand)
+
             offhand:SetLabel(L["Off Hand"])
             offhand:SetWidth(100)
             if (value.offhand ~= nil) then
@@ -440,7 +447,6 @@ if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
                 value.offhand = v
                 top:SetStatusText(funcs:print(root, spec))
             end)
-            parent:AddChild(offhand)
         end,
     })
 
@@ -469,6 +475,12 @@ if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
             local funcs = top:GetUserData("funcs")
 
             local offhand = AceGUI:Create("CheckBox")
+            parent:AddChild(offhand)
+            local operator = AceGUI:Create("Dropdown")
+            parent:AddChild(operator)
+            local health = AceGUI:Create("EditBox")
+            parent:AddChild(health)
+
             offhand:SetLabel(L["Off Hand"])
             offhand:SetWidth(100)
             if (value.offhand ~= nil) then
@@ -481,9 +493,7 @@ if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
                 value.offhand = v
                 top:SetStatusText(funcs:print(root, spec))
             end)
-            parent:AddChild(offhand)
 
-            local operator = AceGUI:Create("Dropdown")
             operator:SetLabel(L["Operator"])
             operator:SetList(operators, keys(operators))
             if (value.operator ~= nil) then
@@ -493,9 +503,7 @@ if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
                 value.operator = v
                 top:SetStatusText(funcs:print(root, spec))
             end)
-            parent:AddChild(operator)
 
-            local health = AceGUI:Create("EditBox")
             health:SetLabel(L["Seconds"])
             health:SetWidth(100)
             if (value.value ~= nil) then
@@ -505,7 +513,6 @@ if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
                 value.value = tonumber(v)
                 top:SetStatusText(funcs:print(root, spec))
             end)
-            parent:AddChild(health)
         end,
     })
 
@@ -533,6 +540,12 @@ if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
             local funcs = top:GetUserData("funcs")
 
             local offhand = AceGUI:Create("CheckBox")
+            parent:AddChild(offhand)
+            local operator = AceGUI:Create("Dropdown")
+            parent:AddChild(operator)
+            local health = AceGUI:Create("EditBox")
+            parent:AddChild(health)
+
             offhand:SetLabel(L["Off Hand"])
             offhand:SetWidth(100)
             if (value.offhand ~= nil) then
@@ -545,9 +558,7 @@ if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
                 value.offhand = v
                 top:SetStatusText(funcs:print(root, spec))
             end)
-            parent:AddChild(offhand)
 
-            local operator = AceGUI:Create("Dropdown")
             operator:SetLabel(L["Operator"])
             operator:SetList(operators, keys(operators))
             if (value.operator ~= nil) then
@@ -557,9 +568,7 @@ if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
                 value.operator = v
                 top:SetStatusText(funcs:print(root, spec))
             end)
-            parent:AddChild(operator)
 
-            local health = AceGUI:Create("EditBox")
             health:SetLabel(L["Stacks"])
             health:SetWidth(100)
             if (value.value ~= nil) then
@@ -569,7 +578,6 @@ if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
                 value.value = tonumber(v)
                 top:SetStatusText(funcs:print(root, spec))
             end)
-            parent:AddChild(health)
         end,
     })
 

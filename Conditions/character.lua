@@ -35,6 +35,10 @@ addon:RegisterCondition("CLASS", {
         local units = deepcopy(units, { "player", "pet" })
 
         local unit = AceGUI:Create("Dropdown")
+        parent:AddChild(unit)
+        local class = AceGUI:Create("Dropdown")
+        parent:AddChild(class)
+
         unit:SetLabel(L["Unit"])
         unit:SetList(units, keys(units))
         if (value.unit ~= nil) then
@@ -44,9 +48,7 @@ addon:RegisterCondition("CLASS", {
             value.unit = v
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(unit)
 
-        local class = AceGUI:Create("Dropdown")
         class:SetLabel(L["Class"])
         class:SetList(classes, keys(classes))
         if (value.value ~= nil) then
@@ -56,7 +58,6 @@ addon:RegisterCondition("CLASS", {
             value.value = v
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(class)
     end,
 })
 
@@ -85,6 +86,10 @@ if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
             local units = deepcopy(units, { "player", "pet" })
 
             local unit = AceGUI:Create("Dropdown")
+            parent:AddChild(unit)
+            local role = AceGUI:Create("Dropdown")
+            parent:AddChild(role)
+
             unit:SetLabel(L["Unit"])
             unit:SetList(units, keys(units))
             if (value.unit ~= nil) then
@@ -94,9 +99,7 @@ if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
                 value.unit = v
                 top:SetStatusText(funcs:print(root, spec))
             end)
-            parent:AddChild(unit)
 
-            local role = AceGUI:Create("Dropdown")
             role:SetLabel(L["Role"])
             role:SetList(roles, keys(roles))
             if (value.value ~= nil) then
@@ -106,7 +109,6 @@ if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
                 value.value = v
                 top:SetStatusText(funcs:print(root, spec))
             end)
-            parent:AddChild(role)
         end,
     })
 
@@ -136,13 +138,15 @@ if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
             end
 
             local talentIcon = AceGUI:Create("Icon")
+            parent:AddChild(talentIcon)
+            local talent = AceGUI:Create("Dropdown")
+            parent:AddChild(talent)
+
             talentIcon:SetWidth(44)
             talentIcon:SetHeight(44)
             talentIcon:SetImageSize(36, 36)
             talentIcon:SetImage(addon:GetSpecTalentIcon(spec, value.value))
-            parent:AddChild(talentIcon)
 
-            local talent = AceGUI:Create("Dropdown")
             talent:SetLabel(L["Talent"])
             talent:SetList(talents, talentsOrder)
             if (value.value) then
@@ -153,7 +157,6 @@ if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
                 talentIcon:SetImage(addon:GetSpecTalentIcon(spec, value.value))
                 top:SetStatusText(funcs:print(root, spec))
             end)
-            parent:AddChild(talent)
         end,
     })
 else
@@ -197,8 +200,16 @@ else
                 end
             end
 
-            local talent = AceGUI:Create("Dropdown")
+            local talentTree = AceGUI:Create("Dropdown")
+            parent:AddChild(talentTree)
             local talentIcon = AceGUI:Create("Icon")
+            parent:AddChild(talentIcon)
+            local talent = AceGUI:Create("Dropdown")
+            parent:AddChild(talent)
+            local operator = AceGUI:Create("Dropdown")
+            parent:AddChild(operator)
+            local health = AceGUI:Create("EditBox")
+            parent:AddChild(health)
 
             local talentTreeName
             if value.tree then
@@ -211,7 +222,6 @@ else
                 talentName, talentImage = GetTalentInfo(value.tree, value.talent)
             end
 
-            local talentTree = AceGUI:Create("Dropdown")
             talentTree:SetLabel(L["Talent Tree"])
             talentTree:SetList(talentTrees, talentTreesOrder)
             if value.tree then
@@ -240,7 +250,6 @@ else
                 talent:SetValue(nil)
                 talent:SetText(nil)
             end)
-            parent:AddChild(talentTree)
 
             talentIcon:SetWidth(44)
             talentIcon:SetHeight(44)
@@ -248,7 +257,6 @@ else
             if value.tree and value.talent then
                 talentIcon:SetImage(talentImage)
             end
-            parent:AddChild(talentIcon)
 
             talent:SetLabel(L["Talent"])
             talent:SetList(talents, talentsOrder)
@@ -266,9 +274,7 @@ else
                 talent:SetValue(v)
                 top:SetStatusText(funcs:print(root, spec))
             end)
-            parent:AddChild(talent)
 
-            local operator = AceGUI:Create("Dropdown")
             operator:SetLabel(L["Operator"])
             operator:SetList(operators, keys(operators))
             if (value.operator ~= nil) then
@@ -278,9 +284,7 @@ else
                 value.operator = v
                 top:SetStatusText(funcs:print(root, spec))
             end)
-            parent:AddChild(operator)
 
-            local health = AceGUI:Create("EditBox")
             health:SetLabel(L["Points"])
             health:SetWidth(100)
             if (value.value ~= nil) then
@@ -290,7 +294,6 @@ else
                 value.value = tonumber(v)
                 top:SetStatusText(funcs:print(root, spec))
             end)
-            parent:AddChild(health)
         end,
     })
 end

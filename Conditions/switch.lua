@@ -2,11 +2,11 @@ local addon_name, addon = ...
 
 local AceGUI = LibStub("AceGUI-3.0")
 local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
-local tostring, tonumber, pairs = tostring, tonumber, pairs
+local tostring, tonumber, pairs, table, select = tostring, tonumber, pairs, table, select
 local floor = math.floor
 
 -- From constants
-local units, zonepvp, instances = addon.units, addon.zonepvp, addon.instances
+local units, zonepvp, instances, forms = addon.units, addon.zonepvp, addon.instances, addon.forms
 
 -- From utils
 local nullable, keys,  isin, deepcopy, playerize =
@@ -32,6 +32,8 @@ addon:RegisterSwitchCondition("PVP", {
         local units = deepcopy(units, { "pet" })
 
         local unit = AceGUI:Create("Dropdown")
+        parent:AddChild(unit)
+
         unit:SetLabel(L["Unit"])
         unit:SetList(units, keys(units))
         if (value.unit ~= nil) then
@@ -41,7 +43,6 @@ addon:RegisterSwitchCondition("PVP", {
             value.unit = v
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(unit)
     end,
 })
 
@@ -66,6 +67,8 @@ addon:RegisterSwitchCondition("ZONEPVP", {
         zonepvp[""] = L["no PVP"]
 
         local mode = AceGUI:Create("Dropdown")
+        parent:AddChild(mode)
+
         mode:SetLabel(L["Mode"])
         mode:SetList(zonepvp, keys(zonepvp))
         if (value.value ~= nil) then
@@ -81,7 +84,6 @@ addon:RegisterSwitchCondition("ZONEPVP", {
             end
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(mode)
     end,
 })
 
@@ -105,6 +107,8 @@ addon:RegisterSwitchCondition("INSTANCE", {
         local funcs = top:GetUserData("funcs")
 
         local instance = AceGUI:Create("Dropdown")
+        parent:AddChild(instance)
+
         instance:SetLabel(L["Mode"])
         instance:SetList(instances, keys(instances))
         if (value.value ~= nil) then
@@ -120,7 +124,6 @@ addon:RegisterSwitchCondition("INSTANCE", {
             end
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(instance)
     end,
 })
 
@@ -143,6 +146,8 @@ addon:RegisterSwitchCondition("ZONE", {
         local funcs = top:GetUserData("funcs")
 
         local mode = AceGUI:Create("EditBox")
+        parent:AddChild(mode)
+
         mode:SetLabel(L["Zone"])
         if (value.value ~= nil) then
             mode:SetText(value.value)
@@ -151,7 +156,6 @@ addon:RegisterSwitchCondition("ZONE", {
             value.value = v
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(mode)
     end,
 })
 
@@ -174,6 +178,8 @@ addon:RegisterSwitchCondition("SUBZONE", {
         local funcs = top:GetUserData("funcs")
 
         local mode = AceGUI:Create("EditBox")
+        parent:AddChild(mode)
+
         mode:SetLabel(L["SubZone"])
         if (value.value ~= nil) then
             mode:SetText(value.value)
@@ -182,7 +188,6 @@ addon:RegisterSwitchCondition("SUBZONE", {
             value.value = v
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(mode)
     end,
 })
 
@@ -227,3 +232,5 @@ addon:RegisterSwitchCondition("OUTDOORS", {
         return L["you are in a outdoors"]
     end,
 })
+
+addon:RegisterSwitchCondition("FORM", addon.condition_form)

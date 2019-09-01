@@ -57,6 +57,14 @@ addon:RegisterCondition("PROXIMITY", {
         local funcs = top:GetUserData("funcs")
 
         local unit = AceGUI:Create("Dropdown")
+        parent:AddChild(unit)
+        local operator = AceGUI:Create("Dropdown")
+        parent:AddChild(operator)
+        local count = AceGUI:Create("EditBox")
+        parent:AddChild(count)
+        local distance = AceGUI:Create("EditBox")
+        parent:AddChild(distance)
+
         unit:SetLabel(L["Unit"])
         unit:SetList(units, keys(units))
         if (value.unit ~= nil) then
@@ -66,9 +74,7 @@ addon:RegisterCondition("PROXIMITY", {
             value.unit = v
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(unit)
 
-        local operator = AceGUI:Create("Dropdown")
         operator:SetLabel(L["Operator"])
         operator:SetList(operators, keys(operators))
         if (value.operator ~= nil) then
@@ -78,9 +84,7 @@ addon:RegisterCondition("PROXIMITY", {
             value.operator = v
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(operator)
 
-        local count = AceGUI:Create("EditBox")
         count:SetLabel(L["Count"])
         count:SetWidth(100)
         if (value.value ~= nil) then
@@ -90,9 +94,7 @@ addon:RegisterCondition("PROXIMITY", {
             value.value = tonumber(v)
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(count)
 
-        local distance = AceGUI:Create("EditBox")
         distance:SetLabel(L["Distance"])
         distance:SetWidth(100)
         if (value.distance ~= nil) then
@@ -102,7 +104,6 @@ addon:RegisterCondition("PROXIMITY", {
             value.distance = tonumber(v)
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(distance)
     end,
 })
 
@@ -127,6 +128,10 @@ addon:RegisterCondition("DISTANCE", {
         local funcs = top:GetUserData("funcs")
 
         local unit = AceGUI:Create("Dropdown")
+        parent:AddChild(unit)
+        local distance = AceGUI:Create("Dropdown")
+        parent:AddChild(distance)
+
         unit:SetLabel(L["Unit"])
         unit:SetList(units, keys(units))
         if (value.unit ~= nil) then
@@ -136,14 +141,12 @@ addon:RegisterCondition("DISTANCE", {
             value.unit = v
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(unit)
 
         local distances = {}
         for key, _ in pairs(friendly_distance) do
             distances[key] = tostring(key) .. " " .. L["yards"]
         end
 
-        local distance = AceGUI:Create("Dropdown")
         distance:SetLabel(L["Distance"])
         distance:SetList(distances)
         if (value.value ~= nil) then
@@ -153,7 +156,6 @@ addon:RegisterCondition("DISTANCE", {
             value.value = v
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(distance)
     end,
 })
 
@@ -188,6 +190,14 @@ addon:RegisterCondition("DISTANCE_COUNT", {
         local funcs = top:GetUserData("funcs")
 
         local enemy = AceGUI:Create("CheckBox")
+        parent:AddChild(enemy)
+        local operator = AceGUI:Create("Dropdown")
+        parent:AddChild(operator)
+        local count = AceGUI:Create("EditBox")
+        parent:AddChild(count)
+        local distance = AceGUI:Create("Dropdown")
+        parent:AddChild(distance)
+
         enemy:SetLabel(L["Enemy"])
         enemy:SetWidth(100)
         if (value.enemy ~= nil) then
@@ -200,9 +210,7 @@ addon:RegisterCondition("DISTANCE_COUNT", {
             value.enemy = v
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(enemy)
 
-        local operator = AceGUI:Create("Dropdown")
         operator:SetLabel(L["Operator"])
         operator:SetList(operators, keys(operators))
         if (value.operator ~= nil) then
@@ -212,9 +220,7 @@ addon:RegisterCondition("DISTANCE_COUNT", {
             value.operator = v
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(operator)
 
-        local count = AceGUI:Create("EditBox")
         count:SetLabel(L["Count"])
         count:SetWidth(100)
         if (value.value ~= nil) then
@@ -224,14 +230,12 @@ addon:RegisterCondition("DISTANCE_COUNT", {
             value.value = tonumber(v)
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(count)
 
         local distances = {}
         for key, _ in pairs(friendly_distance) do
             distances[key] = tostring(key) .. " " .. L["yards"]
         end
 
-        local distance = AceGUI:Create("Dropdown")
         distance:SetLabel(L["Distance"])
         distance:SetList(distances)
         if (value.distance ~= nil) then
@@ -241,7 +245,6 @@ addon:RegisterCondition("DISTANCE_COUNT", {
             value.distance = v
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(distance)
     end,
 })
 

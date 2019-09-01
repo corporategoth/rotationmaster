@@ -41,13 +41,50 @@ function addon:get_rotation_list(frame, specID, rotid, id, callback)
         return
     end
 
+    -- Layout first ...
     local button_group = AceGUI:Create("SimpleGroup")
+    frame:AddChild(button_group)
+    local moveup = AceGUI:Create("Button")
+    button_group:AddChild(moveup)
+    local movedown = AceGUI:Create("Button")
+    button_group:AddChild(movedown)
+    local delete = AceGUI:Create("Button")
+    button_group:AddChild(delete)
+    local icon_group = AceGUI:Create("SimpleGroup")
+    frame:AddChild(icon_group)
+
+    local action_icon, action
+    if rot.type ~= nil and rot.type == "spell" then
+        action_icon = AceGUI:Create("ActionSlotSpell")
+        action = AceGUI:Create("Spec_EditBox")
+    elseif rot.type ~= nil and rot.type == "pet" then
+        action_icon = AceGUI:Create("ActionSlotSpell")
+        action = AceGUI:Create("Spell_EditBox")
+    elseif rot.type ~= nil and rot.type == "item" then
+        action_icon = AceGUI:Create("ActionSlotItem")
+        action = AceGUI:Create("Inventory_EditBox")
+    else
+        action = AceGUI:Create("EditBox")
+        action_icon = AceGUI:Create("Icon")
+    end
+    icon_group:AddChild(action_icon)
+    local use_name = AceGUI:Create("CheckBox")
+    icon_group:AddChild(use_name)
+    local name = AceGUI:Create("EditBox")
+    icon_group:AddChild(name)
+
+    local type = AceGUI:Create("Dropdown")
+    frame:AddChild(type)
+    frame:AddChild(action)
+
+    local conditions = AceGUI:Create("InlineGroup")
+    frame:AddChild(conditions)
+
+
     button_group:SetFullWidth(true)
     button_group:SetLayout("Table")
     button_group:SetUserData("table", { columns = { 1, 1, 1 } })
-    frame:AddChild(button_group)
 
-    local moveup = AceGUI:Create("Button")
     moveup:SetText(L["Move Up"])
     moveup:SetDisabled(idx == 1)
     moveup:SetCallback("OnClick", function(widget, event)
@@ -56,9 +93,7 @@ function addon:get_rotation_list(frame, specID, rotid, id, callback)
         rotation_settings.rotation[idx] = rot
         callback()
     end)
-    button_group:AddChild(moveup)
 
-    local movedown = AceGUI:Create("Button")
     movedown:SetText(L["Move Down"])
     movedown:SetDisabled(idx == #rotation_settings.rotation)
     movedown:SetCallback("OnClick", function(widget, event)
@@ -67,9 +102,7 @@ function addon:get_rotation_list(frame, specID, rotid, id, callback)
         rotation_settings.rotation[idx] = rot
         callback()
     end)
-    button_group:AddChild(movedown)
 
-    local delete = AceGUI:Create("Button")
     delete:SetText(DELETE)
     delete:SetCallback("OnClick", function(widget, event)
         addon:RemoveCooldownGlowIfCurrent(specID, rotid, rot.type, rot.action)
@@ -78,19 +111,12 @@ function addon:get_rotation_list(frame, specID, rotid, id, callback)
         frame:DoLayout()
         callback()
     end)
-    button_group:AddChild(delete)
 
-    local icon_group = AceGUI:Create("SimpleGroup")
     icon_group:SetFullWidth(true)
     icon_group:SetLayout("Table")
     icon_group:SetUserData("table", { columns = { 44, 24, 1 } })
-    frame:AddChild(icon_group)
 
-    local action_icon, action
     if rot.type ~= nil and rot.type == "spell" then
-        action_icon = AceGUI:Create("ActionSlotSpell")
-        action = AceGUI:Create("Spec_EditBox")
-
         if (rot.action) then
             action_icon:SetText(rot.action)
         end
@@ -135,9 +161,6 @@ function addon:get_rotation_list(frame, specID, rotid, id, callback)
             callback()
         end)
     elseif rot.type ~= nil and rot.type == "pet" then
-        action_icon = AceGUI:Create("ActionSlotSpell")
-        action = AceGUI:Create("Spell_EditBox")
-
         if (rot.action) then
             action_icon:SetText(rot.action)
         end
@@ -168,9 +191,6 @@ function addon:get_rotation_list(frame, specID, rotid, id, callback)
             callback()
         end)
     elseif rot.type ~= nil and rot.type == "item" then
-        action_icon = AceGUI:Create("ActionSlotItem")
-        action = AceGUI:Create("Inventory_EditBox")
-
         if (rot.action) then
             action_icon:SetText(GetItemInfoInstant(rot.action))
         end
@@ -201,18 +221,11 @@ function addon:get_rotation_list(frame, specID, rotid, id, callback)
             callback()
         end)
     else
-        action = AceGUI:Create("EditBox")
         action:SetDisabled(true)
-        action_icon = AceGUI:Create("Icon")
         action_icon:SetImageSize(36, 36)
         action_icon:SetImage("Interface\\Icons\\INV_Misc_QuestionMark")
     end
 
-    icon_group:AddChild(action_icon)
-
-    local name = AceGUI:Create("EditBox")
-
-    local use_name = AceGUI:Create("CheckBox")
     use_name:SetValue(rot.use_name)
     use_name:SetCallback("OnValueChanged", function(widget, event, val)
         rot.use_name = val
@@ -221,7 +234,6 @@ function addon:get_rotation_list(frame, specID, rotid, id, callback)
         end
         callback()
     end)
-    icon_group:AddChild(use_name)
 
     name:SetLabel(NAME)
     name:SetDisabled(not rot.use_name)
@@ -239,7 +251,6 @@ function addon:get_rotation_list(frame, specID, rotid, id, callback)
         rot.name = val
         callback()
     end)
-    icon_group:AddChild(name)
 
     local types = {
         spell = L["Spell"],
@@ -247,12 +258,10 @@ function addon:get_rotation_list(frame, specID, rotid, id, callback)
         item = L["Item"],
     }
 
-    local type = AceGUI:Create("Dropdown")
-    type:SetList(types, { "spell", "pet", "item" })
-    type:SetRelativeWidth(0.3)
-    type:SetValue(rot.type)
-    type:SetLabel(rot.type and types[rot.type])
     type:SetLabel(L["Action Type"])
+    type:SetRelativeWidth(0.3)
+    type:SetList(types, { "spell", "pet", "item" })
+    type:SetValue(rot.type)
     type:SetCallback("OnValueChanged", function(widget, event, val)
         if rot.type ~= val then
             rot.type = val
@@ -260,33 +269,33 @@ function addon:get_rotation_list(frame, specID, rotid, id, callback)
             addon:get_rotation_list(frame, specID, rotid, id, callback)
         end
     end)
-    frame:AddChild(type)
 
     action:SetRelativeWidth(0.7)
-    frame:AddChild(action)
 
-    local conditions = AceGUI:Create("InlineGroup")
     conditions:SetFullWidth(true)
     conditions:SetFullHeight(true)
     conditions:SetLayout("Flow")
     conditions:SetTitle(L["Conditions"])
-    frame:AddChild(conditions)
 
     local function layout_conditions()
         conditions:ReleaseChildren()
         conditions:PauseLayout()
 
         local condition_desc = AceGUI:Create("Label")
+        conditions:AddChild(condition_desc)
+        local condition_eval = AceGUI:Create("Label")
+        conditions:AddChild(condition_eval)
+        local edit_button = AceGUI:Create("Button")
+
         condition_desc:SetFullWidth(true)
         condition_desc:SetText(addon:printCondition(rot.conditions, specID))
-        conditions:AddChild(condition_desc)
 
-        local condition_eval = AceGUI:Create("Label")
         if not addon:validateCondition(rot.conditions, specID) then
             local condition_valid = AceGUI:Create("Heading")
+            conditions:AddChild(condition_valid)
+
             condition_valid:SetFullWidth(true)
             condition_valid:SetText(color.RED .. L["THIS CONDITION DOES NOT VALIDATE"] .. color.RESET)
-            conditions:AddChild(condition_valid)
             addon.currentConditionEval = nil
         else
             if specID == addon.currentSpec then
@@ -310,10 +319,12 @@ function addon:get_rotation_list(frame, specID, rotid, id, callback)
             end
         end
 
-        condition_eval:SetRelativeWidth(0.5)
-        conditions:AddChild(condition_eval)
+        conditions:AddChild(edit_button)
+        local enabledisable_button = AceGUI:Create("Button")
+        conditions:AddChild(enabledisable_button)
 
-        local edit_button = AceGUI:Create("Button")
+        condition_eval:SetRelativeWidth(0.5)
+
         edit_button:SetText(EDIT)
         edit_button:SetRelativeWidth(0.25)
         edit_button:SetCallback("OnClick", function(widget, event)
@@ -326,29 +337,24 @@ function addon:get_rotation_list(frame, specID, rotid, id, callback)
             end)
 
         end)
-        conditions:AddChild(edit_button)
 
         if not rot.disabled then
-            local disable_button = AceGUI:Create("Button")
-            disable_button:SetText(DISABLE)
-            disable_button:SetRelativeWidth(0.25)
-            disable_button:SetCallback("OnClick", function(widget, event)
+            enabledisable_button:SetText(DISABLE)
+            enabledisable_button:SetRelativeWidth(0.25)
+            enabledisable_button:SetCallback("OnClick", function(widget, event)
                 rot.disabled = true
                 addon:RemoveCooldownGlowIfCurrent(specID, rotid, rot.type, rot.action)
                 layout_conditions()
                 callback()
             end)
-            conditions:AddChild(disable_button)
         else
-            local enable_button = AceGUI:Create("Button")
-            enable_button:SetText(ENABLE)
-            enable_button:SetRelativeWidth(0.25)
-            enable_button:SetCallback("OnClick", function(widget, event)
+            enabledisable_button:SetText(ENABLE)
+            enabledisable_button:SetRelativeWidth(0.25)
+            enabledisable_button:SetCallback("OnClick", function(widget, event)
                 rot.disabled = false
                 layout_conditions()
                 callback()
             end)
-            conditions:AddChild(enable_button)
         end
 
         conditions:ResumeLayout()

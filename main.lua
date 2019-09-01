@@ -35,6 +35,7 @@ local defaults = {
     profile = {
         enable = true,
         poll = 0.15,
+        ignore_mana = false,
         effect = "Ping",
         color = { r = 1.0, g = 1.0, b = 1.0, a = 1.0 },
         magnification = 1.4,
@@ -101,6 +102,7 @@ local events = {
     'GROUP_ROSTER_UPDATE',
     'CHARACTER_POINTS_CHANGED',
     "PLAYER_FLAGS_CHANGED",
+    "UPDATE_SHAPESHIFT_FORM",
 
     -- Conditions that affect affect the contents of highlighted buttons.
     'ACTIONBAR_SLOT_CHANGED',
@@ -648,20 +650,23 @@ function addon:EvaluateNextAction()
                 if cond.action ~= nil and (cond.disabled == nil or cond.disabled == false) then
                     -- If we can't highlight the spell, may as well skip to the next one!
                     local spellid
-                    if cond.type == "spell" and getCached(self.longtermCache, IsUsableSpell, cond.action) then
+                    if cond.type == "spell" then
                         spellid = cond.action
-                    elseif cond.type == "pet" and getCached(cache, IsSpellKnown, cond.action, true) then
+                    elseif cond.type == "pet" and getCached(self.longtermCache, IsSpellKnown, cond.action, true) then
                         spellid = cond.action
                     elseif cond.type == "item" then
                         local _
-                        _, spellid = getCached(self.longtermCache, GetItemSpell, cond.action)
+                        spellid = select(2, getCached(self.longtermCache, GetItemSpell, cond.action))
                     end
-                    if (addon:FindSpell(spellid) and addon:evaluateCondition(cond.conditions)) then
-                        local inrange = getCached(cache, SpellRange.IsSpellInRange ,spellid, "target")
-                        if inrange == nil then
-                            enabled = true
-                        else
-                            enabled = (inrange == 1)
+                    if (spellid ~= nil and addon:FindSpell(spellid) and addon:evaluateCondition(cond.conditions)) then
+                        local avail, nomana = getCached(cache, IsUsableSpell, spellid)
+                        if avail and (self.db.profile.ignore_mana or not nomana) then
+                            local inrange = getCached(cache, SpellRange.IsSpellInRange ,spellid, "target")
+                            if inrange == nil then
+                                enabled = true
+                            else
+                                enabled = (inrange == 1)
+                            end
                         end
                     end
                     if enabled then
@@ -691,18 +696,23 @@ function addon:EvaluateNextAction()
             for id, cond in pairs(rot.cooldowns) do
                 if cond.action ~= nil and (cond.disabled == nil or cond.disabled == false) then
                     local spellid, enabled
-                    if cond.type == "spell" and getCached(self.longtermCache, IsUsableSpell, cond.action) then
+                    if cond.type == "spell" then
                         spellid = cond.action
-                    elseif cond.type == "pet" and getCached(cache, IsSpellKnown, cond.action, true) then
+                    elseif cond.type == "pet" and getCached(self.longtermCache, IsSpellKnown, cond.action, true) then
                         spellid = cond.action
                     elseif cond.type == "item" then
                         local _
-                        _, spellid = getCached(self.longtermCache, GetItemSpell, cond.action)
+                        spellid = select(2, getCached(self.longtermCache, GetItemSpell, cond.action))
                     end
-                    if (addon:FindSpell(spellid) and addon:evaluateCondition(cond.conditions)) then
-                        enabled = (SpellRange.IsSpellInRange(spellid, "target"))
-                        if enabled == nil then
-                            enabled = true
+                    if (spellid ~= nil and addon:FindSpell(spellid) and addon:evaluateCondition(cond.conditions)) then
+                        local avail, nomana = getCached(cache, IsUsableSpell, spellid)
+                        if avail and (self.db.profile.ignore_mana or not nomana) then
+                            local inrange = getCached(cache, SpellRange.IsSpellInRange ,spellid, "target")
+                            if inrange == nil then
+                                enabled = true
+                            else
+                                enabled = (inrange == 1)
+                            end
                         end
                     end
                     if enabled then
@@ -864,6 +874,7 @@ addon.ZONE_CHANGED = addon.SwitchRotation
 addon.ZONE_CHANGED_INDOORS = addon.SwitchRotation
 addon.PARTY_MEMBERS_CHANGED = addon.SwitchRotation
 addon.PLAYER_FLAGS_CHANGED = addon.SwitchRotation
+addon.UPDATE_SHAPESHIFT_FORM = addon.SwitchRotation
 addon.UPDATE_STEALTH = addon.SwitchRotation
 
 addon.ACTIONBAR_SLOT_CHANGED = addon.ButtonFetch

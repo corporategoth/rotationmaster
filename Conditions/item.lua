@@ -38,8 +38,11 @@ addon:RegisterCondition("EQUIPPED", {
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
-        local item = AceGUI:Create("Inventory_EditBox")
         local itemIcon = AceGUI:Create("ActionSlotItem")
+        parent:AddChild(itemIcon)
+        local item = AceGUI:Create("Inventory_EditBox")
+        parent:AddChild(item)
+
         if (value.value) then
             itemIcon:SetText(GetItemInfoInstant(value.value))
         end
@@ -56,7 +59,6 @@ addon:RegisterCondition("EQUIPPED", {
             item:SetText(value.value)
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(itemIcon)
 
         item:SetLabel(L["Item"])
         if (value.value) then
@@ -72,7 +74,6 @@ addon:RegisterCondition("EQUIPPED", {
             value.value = v
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(item)
     end,
 })
 
@@ -111,8 +112,11 @@ addon:RegisterCondition("CARRYING", {
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
-        local item = AceGUI:Create("Inventory_EditBox")
         local itemIcon = AceGUI:Create("ActionSlotItem")
+        parent:AddChild(itemIcon)
+        local item = AceGUI:Create("Inventory_EditBox")
+        parent:AddChild(item)
+
         if (value.value) then
             itemIcon:SetText(GetItemInfoInstant(value.value))
         end
@@ -129,7 +133,6 @@ addon:RegisterCondition("CARRYING", {
             item:SetText(value.value)
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(itemIcon)
 
         item:SetLabel(L["Item"])
         if (value.value) then
@@ -145,7 +148,6 @@ addon:RegisterCondition("CARRYING", {
             value.value = v
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(item)
     end,
 })
 
@@ -223,8 +225,11 @@ addon:RegisterCondition("ITEM", {
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
-        local item = AceGUI:Create("Inventory_EditBox")
         local itemIcon = AceGUI:Create("ActionSlotItem")
+        parent:AddChild(itemIcon)
+        local item = AceGUI:Create("Inventory_EditBox")
+        parent:AddChild(item)
+
         if (value.item) then
             itemIcon:SetText(GetItemInfoInstant(value.item))
         end
@@ -241,7 +246,6 @@ addon:RegisterCondition("ITEM", {
             item:SetText(value.item)
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(itemIcon)
 
         item:SetLabel(L["Item"])
         if (value.item) then
@@ -257,7 +261,6 @@ addon:RegisterCondition("ITEM", {
             value.item = v
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(item)
     end,
 })
 
@@ -321,8 +324,15 @@ addon:RegisterCondition("ITEM_COOLDOWN", {
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
-        local item = AceGUI:Create("Inventory_EditBox")
         local itemIcon = AceGUI:Create("ActionSlotItem")
+        parent:AddChild(itemIcon)
+        local item = AceGUI:Create("Inventory_EditBox")
+        parent:AddChild(item)
+        local operator = AceGUI:Create("Dropdown")
+        parent:AddChild(operator)
+        local health = AceGUI:Create("EditBox")
+        parent:AddChild(health)
+
         if (value.item) then
             itemIcon:SetText(GetItemInfoInstant(value.item))
         end
@@ -339,7 +349,6 @@ addon:RegisterCondition("ITEM_COOLDOWN", {
             item:SetText(value.item)
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(itemIcon)
 
         item:SetLabel(L["Item"])
         if (value.item) then
@@ -355,9 +364,7 @@ addon:RegisterCondition("ITEM_COOLDOWN", {
             value.item = v
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(item)
 
-        local operator = AceGUI:Create("Dropdown")
         operator:SetLabel(L["Operator"])
         operator:SetList(operators, keys(operators))
         if (value.operator ~= nil) then
@@ -367,9 +374,7 @@ addon:RegisterCondition("ITEM_COOLDOWN", {
             value.operator = v
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(operator)
 
-        local health = AceGUI:Create("EditBox")
         health:SetLabel(L["Seconds"])
         health:SetWidth(100)
         if (value.value ~= nil) then
@@ -379,6 +384,5 @@ addon:RegisterCondition("ITEM_COOLDOWN", {
             value.value = tonumber(v)
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(health)
     end,
 })

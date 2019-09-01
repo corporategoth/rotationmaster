@@ -31,6 +31,8 @@ addon:RegisterCondition("TOTEM", {
         local funcs = top:GetUserData("funcs")
 
         local totem = AceGUI:Create("Dropdown")
+        parent:AddChild(totem)
+
         totem:SetLabel(L["Totem"])
         totem:SetList(totems, keys(totems))
         if (value.spell ~= nil) then
@@ -40,7 +42,6 @@ addon:RegisterCondition("TOTEM", {
             value.spell = v
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(totem)
     end,
 })
 
@@ -72,8 +73,11 @@ addon:RegisterCondition("TOTEM_SPELL", {
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
-        local spell = AceGUI:Create("Totem_EditBox")
         local spellIcon = AceGUI:Create("ActionSlotSpell")
+        parent:AddChild(spellIcon)
+        local spell = AceGUI:Create("Totem_EditBox")
+        parent:AddChild(spell)
+
         if (value.spell) then
             spellIcon:SetText(value.spell)
         end
@@ -93,7 +97,6 @@ addon:RegisterCondition("TOTEM_SPELL", {
                 top:SetStatusText(funcs:print(root, spec))
             end
         end)
-        parent:AddChild(spellIcon)
 
         spell:SetLabel(L["Totem"])
         if (value.spell) then
@@ -110,7 +113,6 @@ addon:RegisterCondition("TOTEM_SPELL", {
                 spell:SetText(oldval)
             end
         end)
-        parent:AddChild(spell)
     end,
 })
 
@@ -141,6 +143,12 @@ addon:RegisterCondition("TOTEM_REMAIN", {
         local funcs = top:GetUserData("funcs")
 
         local totem = AceGUI:Create("Dropdown")
+        parent:AddChild(totem)
+        local operator = AceGUI:Create("Dropdown")
+        parent:AddChild(operator)
+        local health = AceGUI:Create("EditBox")
+        parent:AddChild(health)
+
         totem:SetLabel(L["Totem"])
         totem:SetList(totems, keys(totems))
         if (value.spell ~= nil) then
@@ -150,9 +158,7 @@ addon:RegisterCondition("TOTEM_REMAIN", {
             value.spell = v
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(totem)
 
-        local operator = AceGUI:Create("Dropdown")
         operator:SetLabel(L["Operator"])
         operator:SetList(operators, keys(operators))
         if (value.operator ~= nil) then
@@ -162,9 +168,7 @@ addon:RegisterCondition("TOTEM_REMAIN", {
             value.operator = v
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(operator)
 
-        local health = AceGUI:Create("EditBox")
         health:SetLabel(L["Seconds"])
         health:SetWidth(100)
         if (value.value ~= nil) then
@@ -174,7 +178,6 @@ addon:RegisterCondition("TOTEM_REMAIN", {
             value.value = tonumber(v)
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(health)
     end,
 })
 
@@ -209,8 +212,15 @@ addon:RegisterCondition("TOTEM_SPELL_REMAIN", {
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
-        local spell = AceGUI:Create("Totem_EditBox")
         local spellIcon = AceGUI:Create("ActionSlotSpell")
+        parent:AddChild(spellIcon)
+        local spell = AceGUI:Create("Totem_EditBox")
+        parent:AddChild(spell)
+        local operator = AceGUI:Create("Dropdown")
+        parent:AddChild(operator)
+        local health = AceGUI:Create("EditBox")
+        parent:AddChild(health)
+
         if (value.spell) then
             spellIcon:SetText(value.spell)
         end
@@ -230,7 +240,6 @@ addon:RegisterCondition("TOTEM_SPELL_REMAIN", {
                 top:SetStatusText(funcs:print(root, spec))
             end
         end)
-        parent:AddChild(spellIcon)
 
         spell:SetLabel(L["Totem"])
         if (value.spell) then
@@ -247,9 +256,7 @@ addon:RegisterCondition("TOTEM_SPELL_REMAIN", {
                 spell:SetText(oldval)
             end
         end)
-        parent:AddChild(spell)
 
-        local operator = AceGUI:Create("Dropdown")
         operator:SetLabel(L["Operator"])
         operator:SetList(operators, keys(operators))
         if (value.operator ~= nil) then
@@ -259,9 +266,7 @@ addon:RegisterCondition("TOTEM_SPELL_REMAIN", {
             value.operator = v
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(operator)
 
-        local health = AceGUI:Create("EditBox")
         health:SetLabel(L["Seconds"])
         health:SetWidth(100)
         if (value.value ~= nil) then
@@ -271,6 +276,5 @@ addon:RegisterCondition("TOTEM_SPELL_REMAIN", {
             value.value = tonumber(v)
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(health)
     end,
 })

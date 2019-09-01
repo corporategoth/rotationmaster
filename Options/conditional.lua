@@ -225,6 +225,19 @@ local function ChangeConditionType(parent, event, ...)
     end
 
     local frame = AceGUI:Create("Frame")
+    frame:PauseLayout()
+
+    local framegroup = AceGUI:Create("SimpleGroup")
+    frame:AddChild(framegroup)
+    local deleteicon = AceGUI:Create("Icon")
+    framegroup:AddChild(deleteicon)
+    local andicon = AceGUI:Create("Icon")
+    framegroup:AddChild(andicon)
+    local oricon = AceGUI:Create("Icon")
+    framegroup:AddChild(oricon)
+    local noticon = AceGUI:Create("Icon")
+    framegroup:AddChild(noticon)
+
     frame:SetTitle(L["Condition Type"])
     frame:SetCallback("OnClose", function(widget)
         if selectedIcon then
@@ -241,13 +254,10 @@ local function ChangeConditionType(parent, event, ...)
     frame:SetLayout("Flow")
     HideOnEscape(frame)
 
-    local framegroup = AceGUI:Create("SimpleGroup")
     framegroup:SetFullWidth(true)
     framegroup:SetFullHeight(true)
     framegroup:SetLayout("Flow")
-    frame:AddChild(framegroup)
 
-    local deleteicon = AceGUI:Create("Icon")
     deleteicon:SetImage("Interface\\Icons\\Trade_Engineering")
     deleteicon:SetImageSize(36, 36)
     deleteicon:SetWidth(44)
@@ -266,9 +276,7 @@ local function ChangeConditionType(parent, event, ...)
     end)
     deleteicon:SetCallback("OnEnter", function () frame:SetStatusText(DELETE) end)
     deleteicon:SetCallback("OnLeave", function () frame:SetStatusText(selectedDesc) end)
-    framegroup:AddChild(deleteicon)
 
-    local andicon = AceGUI:Create("Icon")
     andicon:SetImage("Interface\\Icons\\Spell_ChargePositive")
     andicon:SetImageSize(36, 36)
     andicon:SetWidth(44)
@@ -288,13 +296,11 @@ local function ChangeConditionType(parent, event, ...)
     end)
     andicon:SetCallback("OnEnter", function () frame:SetStatusText(L["AND"]) end)
     andicon:SetCallback("OnLeave", function () frame:SetStatusText(selectedDesc) end)
-    framegroup:AddChild(andicon)
     if selected == "AND" then
         selectedDesc = L["AND"]
         selectedIcon = andicon
     end
 
-    local oricon = AceGUI:Create("Icon")
     oricon:SetImage("Interface\\Icons\\Spell_ChargeNegative")
     oricon:SetImageSize(36, 36)
     oricon:SetWidth(44)
@@ -314,13 +320,11 @@ local function ChangeConditionType(parent, event, ...)
     end)
     oricon:SetCallback("OnEnter", function () frame:SetStatusText(L["OR"]) end)
     oricon:SetCallback("OnLeave", function () frame:SetStatusText(selectedDesc) end)
-    framegroup:AddChild(oricon)
     if selected == "OR" then
         selectedDesc = "OR"
         selectedIcon = oricon
     end
 
-    local noticon = AceGUI:Create("Icon")
     noticon:SetImage("Interface\\Icons\\inv_misc_map_01")
     noticon:SetImageSize(36, 36)
     noticon:SetWidth(44)
@@ -342,7 +346,6 @@ local function ChangeConditionType(parent, event, ...)
     end)
     noticon:SetCallback("OnEnter", function () frame:SetStatusText(L["NOT"]) end)
     noticon:SetCallback("OnLeave", function () frame:SetStatusText(selectedDesc) end)
-    framegroup:AddChild(noticon)
     if selected == "NOT" then
         selectedDesc = L["NOT"]
         selectedIcon = noticon
@@ -352,6 +355,8 @@ local function ChangeConditionType(parent, event, ...)
         local icon, desc = funcs:describe(v)
 
         local acticon = AceGUI:Create("Icon")
+        framegroup:AddChild(acticon)
+
         acticon:SetImage(icon)
         acticon:SetImageSize(36, 36)
         acticon:SetWidth(44)
@@ -364,7 +369,6 @@ local function ChangeConditionType(parent, event, ...)
         end)
         acticon:SetCallback("OnEnter", function () frame:SetStatusText(desc) end)
         acticon:SetCallback("OnLeave", function () frame:SetStatusText(selectedDesc) end)
-        framegroup:AddChild(acticon)
         if selected == v then
             selectedDesc = desc
             selectedIcon = acticon
@@ -374,6 +378,9 @@ local function ChangeConditionType(parent, event, ...)
     if selectedIcon then
         ActionButton_ShowOverlayGlow(selectedIcon.frame)
     end
+
+    frame:ResumeLayout()
+    frame:DoLayout()
 end
 
 local function ActionGroup(parent, value, idx, array)
@@ -383,21 +390,38 @@ local function ActionGroup(parent, value, idx, array)
 
     -- local group = parent;
     local group = AceGUI:Create("InlineGroup")
+    parent:AddChild(group)
+    local icongroup = AceGUI:Create("SimpleGroup")
+    group:AddChild(icongroup)
+    local moveup
+    if idx ~= nil and idx > 1 and value.type ~= nil then
+        moveup = AceGUI:Create("InteractiveLabel")
+        icongroup:AddChild(moveup)
+    end
+    local actionicon = AceGUI:Create("Icon")
+    icongroup:AddChild(actionicon)
+    local movedown
+    if idx ~= nil and idx < #array - 1 and value.type ~= nil then
+        movedown = AceGUI:Create("InteractiveLabel")
+        icongroup:AddChild(movedown)
+    end
+    local arraygroup
+    if (value ~= nil and value.type ~= nil and value.type ~= "NOT") then
+        arraygroup = AceGUI:Create("SimpleGroup")
+        group:AddChild(arraygroup)
+    end
+
     group:SetLayout("Table")
     group:SetFullWidth(true)
     group:SetUserData("top", top)
     group:SetUserData("table", { columns = { 0, 1 } })
-    parent:AddChild(group)
 
-    local icongroup = AceGUI:Create("SimpleGroup")
     icongroup:SetFullWidth(true)
     icongroup:SetLayout("List")
     icongroup:SetUserData("top", top)
     icongroup:SetWidth(50)
-    group:AddChild(icongroup)
 
     if idx ~= nil and idx > 1 and value.type ~= nil then
-        local moveup = AceGUI:Create("InteractiveLabel")
         moveup:SetText(L["Up"])
         moveup:SetWidth(50)
         moveup:SetFontObject(GameFontNormalTiny)
@@ -408,10 +432,8 @@ local function ActionGroup(parent, value, idx, array)
             array[idx] = tmp
             LayoutFrame(top)
         end)
-        icongroup:AddChild(moveup)
     end
 
-    local actionicon = AceGUI:Create("Icon")
     if (value == nil or value.type == nil) then
         actionicon:SetImage("Interface\\Icons\\Trade_Engineering")
     elseif (value.type == "AND") then
@@ -437,10 +459,8 @@ local function ActionGroup(parent, value, idx, array)
     actionicon:SetUserData("top", top)
     actionicon:SetUserData("value", value)
     actionicon:SetCallback("OnClick", ChangeConditionType)
-    icongroup:AddChild(actionicon)
 
     if idx ~= nil and idx < #array - 1 and value.type ~= nil then
-        local movedown = AceGUI:Create("InteractiveLabel")
         movedown:SetText(L["Down"])
         movedown:SetWidth(50)
         movedown:SetFontObject(GameFontNormalTiny)
@@ -451,16 +471,13 @@ local function ActionGroup(parent, value, idx, array)
             array[idx] = tmp
             LayoutFrame(top)
         end)
-        icongroup:AddChild(movedown)
     end
 
     if (value ~= nil and value.type ~= nil) then
         if (value.type == "AND" or value.type == "OR") then
-            local arraygroup = AceGUI:Create("SimpleGroup")
             arraygroup:SetFullWidth(true)
             arraygroup:SetLayout("Flow")
             arraygroup:SetUserData("top", top)
-            group:AddChild(arraygroup)
 
             if (value.value == nil) then
                 value.value = { { type = nil } }
@@ -486,11 +503,9 @@ local function ActionGroup(parent, value, idx, array)
         elseif (value.type == "NOT") then
             ActionGroup(group, value.value)
         else
-            local arraygroup = AceGUI:Create("SimpleGroup")
             arraygroup:SetFullWidth(true)
             arraygroup:SetLayout("Flow")
             arraygroup:SetUserData("top", top)
-            group:AddChild(arraygroup)
 
             funcs:widget(arraygroup, spec, value)
         end
@@ -513,10 +528,10 @@ LayoutFrame = function(frame)
     frame:PauseLayout()
 
     local group = AceGUI:Create("ScrollFrame")
-    group:SetLayout("Flow")
-    group:SetUserData("top", frame)
     frame:AddChild(group)
 
+    group:SetLayout("Flow")
+    group:SetUserData("top", frame)
     ActionGroup(group, root)
 
     frame:ResumeLayout()
@@ -525,6 +540,7 @@ end
 
 local function EditConditionCommon(index, spec, value, funcs)
     local frame = AceGUI:Create("Frame")
+
     if index > 0 then
         frame:SetTitle(string.format(L["Edit Condition #%d"], index))
     else

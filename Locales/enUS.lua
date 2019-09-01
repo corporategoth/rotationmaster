@@ -133,6 +133,8 @@ L["<operator>"] = true
 
 L["Enable Rotation Master"] = true
 L["Polling Interval (seconds)"] = true
+L["Ignore Mana"] = true
+L["Skip rotation entries or disable cooldown highlights because you don't have enough to cast them."] = true
 L["Effect Options"] = true
 L["Magnification"] = true
 L["Highlight Color"] = true
@@ -358,6 +360,7 @@ L["closer than %s yards"] = true
 L["allies"] = true
 L["enemies"] = true
 L["Number of %s within %s yards"] = true
+L["you are in %s form"] = true
 
 L["Channeling"] = true
 L["Specific Spell Channeling"] = true
