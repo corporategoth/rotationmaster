@@ -144,7 +144,8 @@ function addon:HandleCommand(str)
         addon:info(L["                          This is reset upon switching specializations."])
 
     elseif cmd == "config" then
-        InterfaceOptionsFrame_OpenToCategory(addon.pretty_name)
+        InterfaceOptionsFrame_OpenToCategory(addon.About)
+        InterfaceOptionsFrame_OpenToCategory(addon.About)
         InterfaceOptionsFrame_OpenToCategory(addon.pretty_name) -- Hack for Blizzard bug.
 
     elseif cmd == "disable" then
@@ -369,7 +370,8 @@ function DataBroker.OnClick(self, button)
         UIDropDownMenu_Initialize(dropdownFrame, minimapInitialize)
         ToggleDropDownMenu(1, nil, dropdownFrame, "cursor", 5, -10)
     elseif button == "LeftButton" then
-        InterfaceOptionsFrame_OpenToCategory(addon.pretty_name)
+        InterfaceOptionsFrame_OpenToCategory(addon.About)
+        InterfaceOptionsFrame_OpenToCategory(addon.About)
         InterfaceOptionsFrame_OpenToCategory(addon.pretty_name) -- Hack for Blizzard bug.
     end
 end

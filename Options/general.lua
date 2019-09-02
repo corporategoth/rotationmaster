@@ -619,10 +619,13 @@ local function create_rotation_options(frame, specID, rotid, parent, selected)
     end
 
     local tree = AceGUI:Create("TreeGroup")
+    frame:AddChild(tree)
+    local scrollwin = AceGUI:Create("ScrollFrame")
+    tree:AddChild(scrollwin)
+
     tree:SetFullWidth(true)
     tree:SetFullHeight(true)
     tree:SetLayout("Fill")
-    frame:AddChild(tree)
 
     local cooldowns
     local rotation
@@ -734,11 +737,17 @@ local function create_rotation_options(frame, specID, rotid, parent, selected)
     end
     update_rotation_list()
 
-    local scrollwin = AceGUI:Create("ScrollFrame")
+    local status = {
+        groups = {
+            C = true,
+            R = true
+        }
+    }
+    tree:SetStatusTable(status)
+
     scrollwin:SetLayout("Flow")
     scrollwin:SetFullHeight(true)
     scrollwin:SetFullWidth(true)
-    tree:AddChild(scrollwin)
 
     if selected ~= nil then
         tree:SelectByValue(selected)
@@ -919,11 +928,12 @@ function module:SetupOptions()
         local f = module["SetupOptions"]
         if f then
             f(module, function(appName, name)
-                AceConfigDialog:AddToBlizOptions(appName, name, addon.name)
+                AceConfigDialog:AddToBlizOptions(appName, name, addon.pretty_name)
             end)
         end
     end
 
     self.Profile = AceConfigDialog:AddToBlizOptions(addon.name .. "Profiles", L["Profiles"], addon.pretty_name)
     self.About = LibAboutPanel.new(addon.pretty_name, addon.name)
+    addon.About = self.About
 end
