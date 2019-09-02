@@ -14,8 +14,7 @@ function addon:get_rotation_list(frame, specID, rotid, id, callback)
         addon.active_effect_icon = nil
     end
 
-    local profile = addon.db.profile
-    local rotation_settings = profile.rotations[specID][rotid]
+    local rotation_settings = self.db.char.rotations[specID][rotid]
 
     local spacer = function(width)
         local rv = AceGUI:Create("Label")

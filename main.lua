@@ -42,7 +42,6 @@ local defaults = {
         setpoint = 'CENTER',
         xoffs = 0,
         yoffs = 0,
-        rotations = {},
         debug = false,
         verbose = false,
         disable_autoswitch = false,
@@ -51,6 +50,9 @@ local defaults = {
         minimap = {
             hide = false,
         }
+    },
+    char = {
+        rotations = {},
     },
     global = {
         effects = {
@@ -180,8 +182,8 @@ function addon:HandleCommand(str)
             DataBroker.text = self:GetRotationName(DEFAULT)
             addon:info(L["Active rotation manually switched to " .. color.WHITE .. "%s" .. color.INFO], name)
         else
-            if self.db.profile.rotations[self.currentSpec] ~= nil then
-                for id, rot in pairs(self.db.profile.rotations[self.currentSpec]) do
+            if self.db.char.rotations[self.currentSpec] ~= nil then
+                for id, rot in pairs(self.db.char.rotations[self.currentSpec]) do
                     if rot.name == name then
                         self:RemoveAllCurrentGlows()
                         self.manualRotation = true
@@ -218,6 +220,23 @@ function addon:OnInitialize()
     if self.db.profile.overlay ~= nil then
         self.db.profile.effect = self.db.profile.overlay
         self.db.profile.overlay = nil
+    end
+
+    if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
+        if self.db.profile.rotations ~= nil then
+            for j = 1, GetNumSpecializationsForClassID(select(3, UnitClass("player"))) do
+                local specID = GetSpecializationInfoForClassID(classID, j)
+                if self.db.profile.rotations[specID] ~= nil then
+                    self.db.char.rotations[specID] = self.db.profile.rotations[specID]
+                    self.db.profile.rotations[specID] = nil
+                end
+            end
+        end
+    else
+        if self.db.profile.rotations ~= nil and self.db.profile.rotations[0] ~= nil then
+            self.db.char.rotations[0] = self.db.profile.rotations[0]
+            self.db.profile.rotations[0] = nil
+        end
     end
 
     AceConsole:RegisterChatCommand("rm", function(str)
@@ -291,9 +310,9 @@ end
 function addon:GetRotationName(id)
     if id == DEFAULT then
         return DEFAULT
-    elseif self.db.profile.rotations[self.currentSpec] ~= nil  and
-           self.db.profile.rotations[self.currentSpec][id] ~= nil then
-        return self.db.profile.rotations[self.currentSpec][id].name
+    elseif self.db.char.rotations[self.currentSpec] ~= nil  and
+           self.db.char.rotations[self.currentSpec][id] ~= nil then
+        return self.db.char.rotations[self.currentSpec][id].name
     else
         return nil
     end
@@ -352,8 +371,8 @@ function minimapInitialize(self, level, menuList)
     UIDropDownMenu_AddButton(info)
     info.text, info.arg1, info.checked = DEFAULT, DEFAULT, (addon.manualRotation == true and addon.currentRotation == DEFAULT)
     UIDropDownMenu_AddButton(info)
-    if addon.db.profile.rotations[addon.currentSpec] ~= nil then
-        for id, rot in pairs(addon.db.profile.rotations[addon.currentSpec]) do
+    if addon.db.char.rotations[addon.currentSpec] ~= nil then
+        for id, rot in pairs(addon.db.char.rotations[addon.currentSpec]) do
             if id ~= DEFAULT then
                 info.text, info.arg1, info.checked = rot.name, id, (addon.manualRotation == true and addon.currentRotation == id)
                 UIDropDownMenu_AddButton(info)
@@ -468,8 +487,8 @@ end
 function addon:UpdateAutoSwitch()
     self.autoswitchRotation = {}
 
-    if self.db.profile.rotations[self.currentSpec] ~= nil then
-        for id, rot in pairs(self.db.profile.rotations[self.currentSpec]) do
+    if self.db.char.rotations[self.currentSpec] ~= nil then
+        for id, rot in pairs(self.db.char.rotations[self.currentSpec]) do
             if id ~= DEFAULT then
                 -- The switch condition is nontrivial and valid.
                 if rot.switch and addon:usefulSwitchCondition(rot.switch) and
@@ -485,12 +504,12 @@ function addon:UpdateAutoSwitch()
 
     -- We autoswitch to the lowest (alphabetically) matching rotation.
     table.sort(self.autoswitchRotation, function(lhs, rhs)
-        return self.db.profile.rotations[self.currentSpec][lhs].name <
-                self.db.profile.rotations[self.currentSpec][rhs].name
+        return self.db.char.rotations[self.currentSpec][lhs].name <
+                self.db.char.rotations[self.currentSpec][rhs].name
     end)
 
-    if self.db.profile.rotations[self.currentSpec] ~= nil and self.db.profile.rotations[self.currentSpec][DEFAULT] ~= nil and
-            self:rotationValidConditions(self.db.profile.rotations[self.currentSpec][DEFAULT]) then
+    if self.db.char.rotations[self.currentSpec] ~= nil and self.db.char.rotations[self.currentSpec][DEFAULT] ~= nil and
+            self:rotationValidConditions(self.db.char.rotations[self.currentSpec][DEFAULT]) then
         addon:debug(L["Rotaion " .. color.WHITE .. "%s" .. color.DEBUG .. " is now available for auto-switching."], DEFAULT)
         table.insert(self.autoswitchRotation, DEFAULT)
     end
@@ -504,7 +523,7 @@ function addon:SwitchRotation()
     end
 
     for k, v in pairs(self.autoswitchRotation) do
-        if addon:evaluateSwitchCondition(self.db.profile.rotations[self.currentSpec][v].switch) then
+        if addon:evaluateSwitchCondition(self.db.char.rotations[self.currentSpec][v].switch) then
             if self.currentRotation ~= v then
                 addon:info(L["Active rotation automatically switched to " .. color.WHITE .. "%s" .. color.INFO], self:GetRotationName(v))
                 self:RemoveAllCurrentGlows()
@@ -617,8 +636,8 @@ end
 function addon:EvaluateNextAction()
     if self.currentRotation == nil then
         addon:DisableRotationTimer()
-    elseif self.db.profile.rotations[self.currentSpec] ~= nil and
-            self.db.profile.rotations[self.currentSpec][self.currentRotation] ~= nil then
+    elseif self.db.char.rotations[self.currentSpec] ~= nil and
+            self.db.char.rotations[self.currentSpec][self.currentRotation] ~= nil then
         self.evaluationProfile:start()
 
         local cache = {}
@@ -644,7 +663,7 @@ function addon:EvaluateNextAction()
         self.evaluationProfile:child("environment"):stop()
 
         self.evaluationProfile:child("rotation"):start()
-        local rot = self.db.profile.rotations[self.currentSpec][self.currentRotation]
+        local rot = self.db.char.rotations[self.currentSpec][self.currentRotation]
         if rot.rotation ~= nil then
             local enabled
             for id, cond in pairs(rot.rotation) do
@@ -771,7 +790,7 @@ end
 function addon:RemoveAllCurrentGlows()
     addon:debug(L["Removing all glows."])
     if self.currentSpec ~= nil and self.currentRotation ~= nil then
-        for id, rot in pairs(self.db.profile.rotations[self.currentSpec][self.currentRotation].cooldowns) do
+        for id, rot in pairs(self.db.char.rotations[self.currentSpec][self.currentRotation].cooldowns) do
             if rot.type == "item" then
                 local _, spellid = GetItemSpell(rot.action)
                 addon:GlowCooldown(spellid, false)

@@ -361,7 +361,7 @@ end
 local create_spec_options
 
 local function HandleDelete(spec, rotation, frame)
-    local rotation_settings = addon.db.profile.rotations
+    local rotation_settings = addon.db.char.rotations
 
     StaticPopupDialogs["ROTATIONMASTER_DELETE_ROTATION"] = {
         text = L["Are you sure you wish to delete this rotation?"],
@@ -392,7 +392,7 @@ local function HandleDelete(spec, rotation, frame)
 end
 
 local function ImportExport(spec, rotation, parent)
-    local rotation_settings = addon.db.profile.rotations
+    local rotation_settings = addon.db.char.rotations
     local original_name
     if rotation ~= DEFAULT and rotation_settings[spec][rotation] ~= nil then
         original_name = rotation_settings[spec][rotation].name
@@ -485,7 +485,7 @@ end
 
 local function create_rotation_options(frame, specID, rotid, parent, selected)
     local profile = addon.db.profile
-    local rotation_settings = profile.rotations[specID]
+    local rotation_settings = addon.db.char.rotations[specID]
 
     local name2id = {}
     for id,rot in pairs(rotation_settings) do
@@ -604,7 +604,7 @@ local function create_rotation_options(frame, specID, rotid, parent, selected)
         rotation_valid:SetFullWidth(true)
 
         if addon.currentRotation == rotid and not addon.manualRotation then
-            if addon.db.profile.disable_autoswitch then
+            if profile.disable_autoswitch then
                 addon:DisableRotation();
             else
                 addon:UpdateAutoSwitch()
@@ -612,7 +612,7 @@ local function create_rotation_options(frame, specID, rotid, parent, selected)
             end
         end
     else
-        if addon.currentRotation == nil and not addon.manualRotation and not addon.db.profile.disable_autoswitch then
+        if addon.currentRotation == nil and not addon.manualRotation and not profile.disable_autoswitch then
             addon:UpdateAutoSwitch()
             addon:SwitchRotation()
         end
@@ -795,8 +795,7 @@ local function create_rotation_options(frame, specID, rotid, parent, selected)
 end
 
 create_spec_options = function(frame, specID, selected)
-    local profile = addon.db.profile
-    local rotation_settings = profile.rotations
+    local rotation_settings = addon.db.char.rotations
 
     frame:ReleaseChildren()
     frame:PauseLayout()
@@ -845,7 +844,6 @@ create_spec_options = function(frame, specID, selected)
 end
 
 local function create_class_options(frame, classID)
-    local profile = addon.db.profile
     local currentSpec = addon.currentSpec
 
     frame:ReleaseChildren()
