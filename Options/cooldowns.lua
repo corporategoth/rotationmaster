@@ -405,9 +405,11 @@ function addon:get_cooldown_list(frame, specID, rotid, id, callback)
             callback()
         end)
 
+        action:SetUserData("norank", not rot.ranked)
         action:SetUserData("spec", specID)
         action:SetLabel(L["Spell"])
         action:SetText(rot.action and (rot.ranked and SpellData:SpellName(rot.action)) or GetSpellInfo(rot.action))
+        action:SetFullWidth(true)
         action:SetCallback("OnEnterPressed", function(widget, event, val)
             addon:RemoveCooldownGlowIfCurrent(specID, rotid, rot.type, rot.action)
             if isint(val) then
@@ -559,8 +561,6 @@ function addon:get_cooldown_list(frame, specID, rotid, id, callback)
             addon:get_cooldown_list(frame, specID, rotid, id, callback)
         end
     end)
-
-    action:SetRelativeWidth(0.7)
 
     local announces = {
         none = L["None"],
