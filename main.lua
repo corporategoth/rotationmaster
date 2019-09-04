@@ -668,8 +668,16 @@ function addon:EvaluateNextAction()
                 -- If we can't highlight the spell, may as well skip to the next one!
                 if cond.type == "spell" then
                     spellid = cond.action
+                    if not cond.ranked then
+                        spellid = select(7, getCached(self.longtermCache, GetSpellInfo,
+                            select(1, getCached(self.longtermCache, GetSpellInfo, cond.action))))
+                    end
                 elseif cond.type == "pet" and getCached(self.longtermCache, IsSpellKnown, cond.action, true) then
                     spellid = cond.action
+                    if not cond.ranked then
+                        spellid = select(7, getCached(self.longtermCache, GetSpellInfo,
+                            select(1, getCached(self.longtermCache, GetSpellInfo, cond.action))))
+                    end
                 elseif cond.type == "item" then
                     spellid = select(2, getCached(self.longtermCache, GetItemSpell, cond.action))
                 end

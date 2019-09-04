@@ -51,13 +51,25 @@ function addon:get_rotation_list(frame, specID, rotid, id, callback)
     button_group:AddChild(delete)
     local icon_group = AceGUI:Create("SimpleGroup")
     frame:AddChild(icon_group)
+    local action_group = AceGUI:Create("SimpleGroup")
+    frame:AddChild(action_group)
 
-    local action_icon, action
+    local action_icon, ranked, nr_button, nr_label, action
     if rot.type ~= nil and rot.type == "spell" then
         action_icon = AceGUI:Create("ActionSlotSpell")
+        ranked = AceGUI:Create("SimpleGroup")
+        nr_label = AceGUI:Create("Label")
+        ranked:AddChild(nr_label)
+        nr_button = AceGUI:Create("CheckBox")
+        ranked:AddChild(nr_button)
         action = AceGUI:Create("Spec_EditBox")
     elseif rot.type ~= nil and rot.type == "pet" then
         action_icon = AceGUI:Create("ActionSlotSpell")
+        ranked = AceGUI:Create("SimpleGroup")
+        nr_label = AceGUI:Create("Label")
+        ranked:AddChild(nr_label)
+        nr_button = AceGUI:Create("CheckBox")
+        ranked:AddChild(nr_button)
         action = AceGUI:Create("Spell_EditBox")
     elseif rot.type ~= nil and rot.type == "item" then
         action_icon = AceGUI:Create("ActionSlotItem")
@@ -73,12 +85,14 @@ function addon:get_rotation_list(frame, specID, rotid, id, callback)
     icon_group:AddChild(name)
 
     local type = AceGUI:Create("Dropdown")
-    frame:AddChild(type)
-    frame:AddChild(action)
+    action_group:AddChild(type)
+    if ranked then
+        action_group:AddChild(ranked)
+    end
+    action_group:AddChild(action)
 
     local conditions = AceGUI:Create("InlineGroup")
     frame:AddChild(conditions)
-
 
     button_group:SetFullWidth(true)
     button_group:SetLayout("Table")
@@ -115,7 +129,13 @@ function addon:get_rotation_list(frame, specID, rotid, id, callback)
     icon_group:SetLayout("Table")
     icon_group:SetUserData("table", { columns = { 44, 24, 1 } })
 
+    action_group:SetFullWidth(true)
+    action_group:SetLayout("Table")
+    action_group:SetUserData("table", { columns = { 100, 1 } })
+
     if rot.type ~= nil and rot.type == "spell" then
+        action_group:SetUserData("table", { columns = { 100, 30, 1 } })
+
         if (rot.action) then
             action_icon:SetText(rot.action)
         end
@@ -129,7 +149,7 @@ function addon:get_rotation_list(frame, specID, rotid, id, callback)
                 rot.action = v
                 action_icon:SetText(v)
                 if v then
-                    action:SetText(SpellData:SpellName(v))
+                    action:SetText(rot.action and (rot.ranked and SpellData:SpellName(rot.action) or GetSpellInfo(rot.action)))
                 else
                     action:SetText(nil)
                 end
@@ -138,9 +158,27 @@ function addon:get_rotation_list(frame, specID, rotid, id, callback)
             end
         end)
 
+        ranked:SetFullWidth(true)
+        ranked:SetLayout("Table")
+        ranked:SetUserData("table", { columns = { 1 } })
+        ranked:SetUserData("cell", { alignV = "bottom", alignH = "center" })
+
+        nr_label:SetText(L["Rank"])
+        nr_label:SetColor(1.0, 0.82, 0.0)
+
+        nr_button:SetValue(rot.ranked or false)
+        nr_button:SetCallback("OnValueChanged", function(widget, event, val)
+            rot.ranked = val
+            action:SetUserData("norank", not val)
+            action:SetText(rot.action and (rot.ranked and SpellData:SpellName(rot.action) or GetSpellInfo(rot.action)))
+            callback()
+        end)
+
+        action:SetUserData("norank", not rot.ranked)
         action:SetUserData("spec", specID)
         action:SetLabel(L["Spell"])
-        action:SetText(rot.action and SpellData:SpellName(rot.action))
+        action:SetText(rot.action and (rot.ranked and SpellData:SpellName(rot.action) or GetSpellInfo(rot.action)))
+        action:SetFullWidth(true)
         action:SetCallback("OnEnterPressed", function(widget, event, val)
             addon:RemoveCooldownGlowIfCurrent(specID, rotid, rot.type, rot.action)
             if isint(val) then
@@ -160,6 +198,8 @@ function addon:get_rotation_list(frame, specID, rotid, id, callback)
             callback()
         end)
     elseif rot.type ~= nil and rot.type == "pet" then
+        action_group:SetUserData("table", { columns = { 100, 30, 1 } })
+
         if (rot.action) then
             action_icon:SetText(rot.action)
         end
@@ -172,7 +212,7 @@ function addon:get_rotation_list(frame, specID, rotid, id, callback)
             rot.action = v
             action_icon:SetText(v)
             if v then
-                action:SetText(SpellData:SpellName(v))
+                action:SetText(rot.action and (rot.ranked and SpellData:SpellName(rot.action) or GetSpellInfo(rot.action)))
             else
                 action:SetText(nil)
             end
@@ -180,8 +220,26 @@ function addon:get_rotation_list(frame, specID, rotid, id, callback)
             callback()
         end)
 
+        ranked:SetFullWidth(true)
+        ranked:SetLayout("Table")
+        ranked:SetUserData("table", { columns = { 1 } })
+        ranked:SetUserData("cell", { alignV = "bottom", alignH = "center" })
+
+        nr_label:SetText(L["Rank"])
+        nr_label:SetColor(1.0, 0.82, 0.0)
+
+        nr_button:SetValue(rot.ranked or false)
+        nr_button:SetCallback("OnValueChanged", function(widget, event, val)
+            rot.ranked = val
+            action:SetUserData("norank", not val)
+            action:SetText(rot.action and (rot.ranked and SpellData:SpellName(rot.action) or GetSpellInfo(rot.action)))
+            callback()
+        end)
+
+        action:SetUserData("norank", not rot.ranked)
         action:SetLabel(L["Spell"])
-        action:SetText(rot.action and SpellData:SpellName(rot.action))
+        action:SetText(rot.action and (rot.ranked and SpellData:SpellName(rot.action) or GetSpellInfo(rot.action)))
+        action:SetFullWidth(true)
         action:SetCallback("OnEnterPressed", function(widget, event, val)
             addon:RemoveCooldownGlowIfCurrent(specID, rotid, rot.type, rot.action)
             local spellid = select(7, GetSpellInfo(v))
@@ -208,6 +266,7 @@ function addon:get_rotation_list(frame, specID, rotid, id, callback)
 
         action:SetLabel(L["Item"])
         action:SetText(rot.action)
+        action:SetFullWidth(true)
         action:SetCallback("OnEnterPressed", function(widget, event, val)
             addon:RemoveCooldownGlowIfCurrent(specID, rotid, rot.type, rot.action)
             local itemID = GetItemInfoInstant(val)
@@ -221,10 +280,12 @@ function addon:get_rotation_list(frame, specID, rotid, id, callback)
         end)
     else
         action:SetDisabled(true)
+        action:SetFullWidth(true)
         action_icon:SetImageSize(36, 36)
         action_icon:SetImage("Interface\\Icons\\INV_Misc_QuestionMark")
     end
 
+    use_name:SetUserData("cell", { alignV = "bottom", alignH = "center" })
     use_name:SetValue(rot.use_name)
     use_name:SetCallback("OnValueChanged", function(widget, event, val)
         rot.use_name = val
@@ -258,9 +319,9 @@ function addon:get_rotation_list(frame, specID, rotid, id, callback)
     }
 
     type:SetLabel(L["Action Type"])
-    type:SetRelativeWidth(0.3)
     type:SetList(types, { "spell", "pet", "item" })
     type:SetValue(rot.type)
+    type:SetWidth(95)
     type:SetCallback("OnValueChanged", function(widget, event, val)
         if rot.type ~= val then
             rot.type = val
@@ -268,8 +329,6 @@ function addon:get_rotation_list(frame, specID, rotid, id, callback)
             addon:get_rotation_list(frame, specID, rotid, id, callback)
         end
     end)
-
-    action:SetRelativeWidth(0.7)
 
     conditions:SetFullWidth(true)
     conditions:SetFullHeight(true)

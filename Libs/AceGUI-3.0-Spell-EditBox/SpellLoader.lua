@@ -105,7 +105,11 @@ local function AddSpell(name, rank, icon, spellID, force)
 		end
 		if spellsReverseRank[lcname][rank] == nil then
 			spellsReverseRank[lcname][rank] = spellID
-        end
+		end
+		-- Always use the top spell for the reverse spell ID
+		if spells[spellsReverse[lcname]].rank ~= nil and spells[spellsReverse[lcname]].rank < rank then
+            spellsReverse[lcname] = spellID
+		end
 	end
 end
 

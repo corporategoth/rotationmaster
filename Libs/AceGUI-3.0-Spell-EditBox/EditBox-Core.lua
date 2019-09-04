@@ -106,11 +106,13 @@ do
 		local query = "^" .. string.gsub(string.lower(self.obj.editBox:GetText()),
 									"([().%+-*?^$[])", "%%%1")
 
+        local norank = self.obj:GetUserData("norank")
+
 		local activeButtons = 0
 		for idx, name in pairs(SpellData.spellListOrdered) do
 			if not alreadyAdded[name] and string.match(name, query) then
 				local spellIDs
-				if SpellData.spellListReverseRank[name] ~= nil then
+				if not norank and SpellData.spellListReverseRank[name] ~= nil then
 					spellIDs = SpellData.spellListReverseRank[name]
 				else
 					spellIDs = { SpellData.spellListReverse[name] }
@@ -123,7 +125,7 @@ do
 						local button = self.buttons[activeButtons]
 						local spellInfo = SpellData.spellList[spellID]
 						if spellInfo ~= nil and spellInfo.icon ~= nil and spellInfo.name ~= nil then
-							if spellInfo.rank ~= nil then
+							if not norank and spellInfo.rank ~= nil then
 								button:SetFormattedText("|T%s:18:18:2:16|t %s |cFF888888(%s)", spellInfo.icon, spellInfo.name, spellInfo.rank)
                             else
 								button:SetFormattedText("|T%s:18:18:2:16|t %s", spellInfo.icon, spellInfo.name)
@@ -391,10 +393,13 @@ do
 	end
 				
 	local function Spell_OnClick(self)
-		local name = GetSpellInfo(self.spellID)
+		local name, rank = GetSpellInfo(self.spellID)
 		-- Just in case ...
-		SpellData:UpdateSpell(spellId, name)
-    	name = SpellData:SpellName(self.spellID)
+		SpellData:UpdateSpell(spellId, name, rank)
+		local norank = self.parent.obj:GetUserData("norank")
+    	if not norank then
+			name = SpellData:SpellName(self.spellID)
+        end
 		SetText(self.parent.obj, name, string.len(name))
 
 		self.parent.selectedButton = nil
@@ -540,7 +545,6 @@ do
 		predictFrame:SetScript("OnShow", Predictor_OnShow)
 		predictFrame:EnableMouseWheel(true)
 		predictFrame:SetScript("OnMouseWheel", Predictor_OnMouseWheel)
-
 
 		editBox:SetScript("OnEnter", Control_OnEnter)
 		editBox:SetScript("OnLeave", Control_OnLeave)

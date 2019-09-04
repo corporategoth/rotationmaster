@@ -28,7 +28,12 @@ addon:RegisterCondition("SPELL_AVAIL", {
         end
     end,
     evaluate = function(value, cache, evalStart)
-        local start, duration, enabled = getCached(cache, GetSpellCooldown, value.spell)
+        local spellid = value.spell
+        if not value.ranked then
+            spellid = select(7, getCached(addon.longtermCache, GetSpellInfo,
+                select(1, getCached(addon.longtermCache, GetSpellInfo, value.spell))))
+        end
+        local start, duration, enabled = getCached(cache, GetSpellCooldown, spellid)
         if start == 0 and duration == 0 then
             return true
         else
@@ -54,7 +59,12 @@ addon:RegisterCondition("SPELL_AVAIL", {
     print = function(spec, value)
         local link
         if value.spell ~= nil then
-            link = GetSpellLink(value.spell)
+            local spellid = value.spell
+            if not value.ranked then
+                spellid = select(7, getCached(addon.longtermCache, GetSpellInfo,
+                    select(1, getCached(addon.longtermCache, GetSpellInfo, value.spell))))
+            end
+            link = GetSpellLink(spellid)
         end
         return string.format(L["%s is available"], nullable(link, L["<spell>"]))
     end,
@@ -63,10 +73,21 @@ addon:RegisterCondition("SPELL_AVAIL", {
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
+        local spell_group = AceGUI:Create("SimpleGroup")
+        parent:AddChild(spell_group)
         local spellIcon = AceGUI:Create("ActionSlotSpell")
-        parent:AddChild(spellIcon)
+        spell_group:AddChild(spellIcon)
+        local ranked = AceGUI:Create("SimpleGroup")
+        spell_group:AddChild(ranked)
+        local nr_label = AceGUI:Create("Label")
+        ranked:AddChild(nr_label)
+        local nr_button = AceGUI:Create("CheckBox")
+        ranked:AddChild(nr_button)
         local spell = AceGUI:Create("Spec_EditBox")
-        parent:AddChild(spell)
+        spell_group:AddChild(spell)
+
+        spell_group:SetLayout("Table")
+        spell_group:SetUserData("table", { columns = { 44, 0.1, 1 } })
 
         spellIcon:SetText(value.spell)
         spellIcon:SetWidth(44)
@@ -78,7 +99,7 @@ addon:RegisterCondition("SPELL_AVAIL", {
                 value.spell = v
                 spellIcon:SetText(v)
                 if v then
-                    spell:SetText(SpellData:SpellName(v))
+                    spell:SetText(value.spell and (value.ranked and SpellData:SpellName(value.spell) or GetSpellInfo(value.spell)))
                 else
                     spell:SetText(nil)
                 end
@@ -86,8 +107,26 @@ addon:RegisterCondition("SPELL_AVAIL", {
             end
         end)
 
+        ranked:SetFullWidth(true)
+        ranked:SetLayout("Table")
+        ranked:SetUserData("table", { columns = { 1 } })
+        ranked:SetUserData("cell", { alignV = "bottom", alignH = "center" })
+
+        nr_label:SetText(L["Rank"])
+        nr_label:SetColor(1.0, 0.82, 0.0)
+
+        nr_button:SetValue(value.ranked or false)
+        nr_button:SetWidth(75)
+        nr_button:SetCallback("OnValueChanged", function(widget, event, val)
+            value.ranked = val
+            spell:SetUserData("norank", not val)
+            spell:SetText(value.spell and (value.ranked and SpellData:SpellName(value.spell) or GetSpellInfo(value.spell)))
+            top:SetStatusText(funcs:print(root, spec))
+        end)
+
         spell:SetLabel(L["Spell"])
-        spell:SetText(value.spell and SpellData:SpellName(value.spell))
+        spell:SetText(value.spell and (value.ranked and SpellData:SpellName(value.spell) or GetSpellInfo(value.spell)))
+        spell:SetUserData("norank", not value.ranked)
         spell:SetUserData("spec", spec)
         spell:SetCallback("OnEnterPressed", function(widget, event, v)
             if isint(v) then
@@ -123,7 +162,12 @@ addon:RegisterCondition("SPELL_COOLDOWN", {
         end
     end,
     evaluate = function(value, cache, evalStart) -- Cooldown until the spell is available
-        local start, duration, enabled = getCached(cache, GetSpellCooldown, value.spell)
+        local spellid = value.spell
+        if not value.ranked then
+            spellid = select(7, getCached(addon.longtermCache, GetSpellInfo,
+                select(1, getCached(addon.longtermCache, GetSpellInfo, value.spell))))
+        end
+        local start, duration, enabled = getCached(cache, GetSpellCooldown, spellid)
         local remain = 0
         if start ~= 0 and duration ~= 0 then
             remain = round(duration - (GetTime() - start), 3)
@@ -134,7 +178,12 @@ addon:RegisterCondition("SPELL_COOLDOWN", {
     print = function(spec, value)
         local link
         if value.spell ~= nil then
-            link = GetSpellLink(value.spell)
+            local spellid = value.spell
+            if not value.ranked then
+                spellid = select(7, getCached(addon.longtermCache, GetSpellInfo,
+                    select(1, getCached(addon.longtermCache, GetSpellInfo, value.spell))))
+            end
+            link = GetSpellLink(spellid)
         end
         return string.format(L["the %s"],
                 compareString(value.operator, string.format(L["cooldown on %s"],  nullable(link, L["<spell>"])),
@@ -145,18 +194,27 @@ addon:RegisterCondition("SPELL_COOLDOWN", {
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
+        local spell_group = AceGUI:Create("SimpleGroup")
+        parent:AddChild(spell_group)
         local spellIcon = AceGUI:Create("ActionSlotSpell")
-        parent:AddChild(spellIcon)
+        spell_group:AddChild(spellIcon)
+        local ranked = AceGUI:Create("SimpleGroup")
+        spell_group:AddChild(ranked)
+        local nr_label = AceGUI:Create("Label")
+        ranked:AddChild(nr_label)
+        local nr_button = AceGUI:Create("CheckBox")
+        ranked:AddChild(nr_button)
         local spell = AceGUI:Create("Spec_EditBox")
-        parent:AddChild(spell)
+        spell_group:AddChild(spell)
         local operator = AceGUI:Create("Dropdown")
         parent:AddChild(operator)
         local health = AceGUI:Create("EditBox")
         parent:AddChild(health)
 
-        if (value.spell) then
-            spellIcon:SetText(value.spell)
-        end
+        spell_group:SetLayout("Table")
+        spell_group:SetUserData("table", { columns = { 44, 0.1, 1 } })
+
+        spellIcon:SetText(value.spell)
         spellIcon.text:Hide()
         spellIcon:SetWidth(44)
         spellIcon:SetHeight(44)
@@ -166,7 +224,7 @@ addon:RegisterCondition("SPELL_COOLDOWN", {
                 value.spell = v
                 spellIcon:SetText(v)
                 if v then
-                    spell:SetText(SpellData:SpellName(v))
+                    spell:SetText(value.spell and (value.ranked and SpellData:SpellName(value.spell) or GetSpellInfo(value.spell)))
                 else
                     spell:SetText(nil)
                 end
@@ -174,8 +232,25 @@ addon:RegisterCondition("SPELL_COOLDOWN", {
             end
         end)
 
+        ranked:SetFullWidth(true)
+        ranked:SetLayout("Table")
+        ranked:SetUserData("table", { columns = { 1 } })
+        ranked:SetUserData("cell", { alignV = "bottom", alignH = "center" })
+
+        nr_label:SetText(L["Rank"])
+        nr_label:SetColor(1.0, 0.82, 0.0)
+
+        nr_button:SetValue(value.ranked or false)
+        nr_button:SetCallback("OnValueChanged", function(widget, event, val)
+            value.ranked = val
+            spell:SetUserData("norank", not val)
+            spell:SetText(value.spell and (value.ranked and SpellData:SpellName(value.spell) or GetSpellInfo(value.spell)))
+            top:SetStatusText(funcs:print(root, spec))
+        end)
+
         spell:SetLabel(L["Spell"])
-        spell:SetText(value.spell and SpellData:SpellName(value.spell))
+        spell:SetText(value.spell and (value.ranked and SpellData:SpellName(value.spell) or GetSpellInfo(value.spell)))
+        spell:SetUserData("norank", not value.ranked)
         spell:SetUserData("spec", spec)
         spell:SetCallback("OnEnterPressed", function(widget, event, v)
             if isint(v) then
@@ -230,7 +305,12 @@ addon:RegisterCondition("SPELL_REMAIN", {
         end
     end,
     evaluate = function(value, cache, evalStart) -- How long the spell remains effective
-        local charges, maxcharges, start, duration = getCached(cache, GetSpellCharges, value.spell)
+        local spellid = value.spell
+        if not value.ranked then
+            spellid = select(7, getCached(addon.longtermCache, GetSpellInfo,
+                select(1, getCached(addon.longtermCache, GetSpellInfo, value.spell))))
+        end
+        local charges, maxcharges, start, duration = getCached(cache, GetSpellCharges, spellid)
         local remain = 0
         if (charges and charges >= 0) then
             remain = duration - (GetTime() - start)
@@ -240,7 +320,12 @@ addon:RegisterCondition("SPELL_REMAIN", {
     print = function(spec, value)
         local link
         if value.spell ~= nil then
-            link = GetSpellLink(value.spell)
+            local spellid = value.spell
+            if not value.ranked then
+                spellid = select(7, getCached(addon.longtermCache, GetSpellInfo,
+                    select(1, getCached(addon.longtermCache, GetSpellInfo, value.spell))))
+            end
+            link = GetSpellLink(spellid)
         end
         return string.format(L["the %s"],
             compareString(value.operator, string.format(L["remaining time on %s"], nullable(link, L["<spell>"])),
@@ -251,18 +336,27 @@ addon:RegisterCondition("SPELL_REMAIN", {
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
+        local spell_group = AceGUI:Create("SimpleGroup")
+        parent:AddChild(spell_group)
         local spellIcon = AceGUI:Create("ActionSlotSpell")
-        parent:AddChild(spellIcon)
+        spell_group:AddChild(spellIcon)
+        local ranked = AceGUI:Create("SimpleGroup")
+        spell_group:AddChild(ranked)
+        local nr_label = AceGUI:Create("Label")
+        ranked:AddChild(nr_label)
+        local nr_button = AceGUI:Create("CheckBox")
+        ranked:AddChild(nr_button)
         local spell = AceGUI:Create("Spec_EditBox")
-        parent:AddChild(spell)
+        spell_group:AddChild(spell)
         local operator = AceGUI:Create("Dropdown")
         parent:AddChild(operator)
         local health = AceGUI:Create("EditBox")
         parent:AddChild(health)
 
-        if (value.spell) then
-            spellIcon:SetText(value.spell)
-        end
+        spell_group:SetLayout("Table")
+        spell_group:SetUserData("table", { columns = { 44, 0.1, 1 } })
+
+        spellIcon:SetText(value.spell)
         spellIcon:SetWidth(44)
         spellIcon:SetHeight(44)
         spellIcon.text:Hide()
@@ -272,7 +366,7 @@ addon:RegisterCondition("SPELL_REMAIN", {
                 value.spell = v
                 spellIcon:SetText(v)
                 if v then
-                    spell:SetText(SpellData:SpellName(v))
+                    spell:SetText(value.spell and (value.ranked and SpellData:SpellName(value.spell) or GetSpellInfo(value.spell)))
                 else
                     spell:SetText(nil)
                 end
@@ -280,8 +374,25 @@ addon:RegisterCondition("SPELL_REMAIN", {
             end
         end)
 
+        ranked:SetFullWidth(true)
+        ranked:SetLayout("Table")
+        ranked:SetUserData("table", { columns = { 1 } })
+        ranked:SetUserData("cell", { alignV = "bottom", alignH = "center" })
+
+        nr_label:SetText(L["Rank"])
+        nr_label:SetColor(1.0, 0.82, 0.0)
+
+        nr_button:SetValue(value.ranked or false)
+        nr_button:SetCallback("OnValueChanged", function(widget, event, val)
+            value.ranked = val
+            spell:SetUserData("norank", not val)
+            spell:SetText(value.spell and (value.ranked and SpellData:SpellName(value.spell) or GetSpellInfo(value.spell)))
+            top:SetStatusText(funcs:print(root, spec))
+        end)
+
         spell:SetLabel(L["Spell"])
-        spell:SetText(value.spell and SpellData:SpellName(value.spell))
+        spell:SetText(value.spell and (value.ranked and SpellData:SpellName(value.spell) or GetSpellInfo(value.spell)))
+        spell:SetUserData("norank", not value.ranked)
         spell:SetUserData("spec", spec)
         spell:SetCallback("OnEnterPressed", function(widget, event, v)
             if isint(v) then
@@ -336,13 +447,23 @@ addon:RegisterCondition("SPELL_CHARGES", {
         end
     end,
     evaluate = function(value, cache, evalStart)
-        local charges, maxcharges, start, duration = getCached(cache, GetSpellCharges, value.spell)
+        local spellid = value.spell
+        if not value.ranked then
+            spellid = select(7, getCached(addon.longtermCache, GetSpellInfo,
+                select(1, getCached(addon.longtermCache, GetSpellInfo, value.spell))))
+        end
+        local charges, maxcharges, start, duration = getCached(cache, GetSpellCharges, spellid)
         return compare(value.operator, charges, value.value)
     end,
     print = function(spec, value)
         local link
         if value.spell ~= nil then
-            link = GetSpellLink(value.spell)
+            local spellid = value.spell
+            if not value.ranked then
+                spellid = select(7, getCached(addon.longtermCache, GetSpellInfo,
+                    select(1, getCached(addon.longtermCache, GetSpellInfo, value.spell))))
+            end
+            link = GetSpellLink(spellid)
         end
         return string.format(L["the %s"],
             compareString(value.operator, string.format(L["number of charges on %s"], nullable(link, L["<spell>"])), nullable(value.value)))
@@ -352,18 +473,27 @@ addon:RegisterCondition("SPELL_CHARGES", {
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
+        local spell_group = AceGUI:Create("SimpleGroup")
+        parent:AddChild(spell_group)
         local spellIcon = AceGUI:Create("ActionSlotSpell")
-        parent:AddChild(spellIcon)
+        spell_group:AddChild(spellIcon)
+        local ranked = AceGUI:Create("SimpleGroup")
+        spell_group:AddChild(ranked)
+        local nr_label = AceGUI:Create("Label")
+        ranked:AddChild(nr_label)
+        local nr_button = AceGUI:Create("CheckBox")
+        ranked:AddChild(nr_button)
         local spell = AceGUI:Create("Spec_EditBox")
-        parent:AddChild(spell)
+        spell_group:AddChild(spell)
         local operator = AceGUI:Create("Dropdown")
         parent:AddChild(operator)
         local health = AceGUI:Create("EditBox")
         parent:AddChild(health)
 
-        if (value.spell) then
-            spellIcon:SetText(value.spell)
-        end
+        spell_group:SetLayout("Table")
+        spell_group:SetUserData("table", { columns = { 44, 0.1, 1 } })
+
+        spellIcon:SetText(value.spell)
         spellIcon:SetWidth(44)
         spellIcon:SetHeight(44)
         spellIcon.text:Hide()
@@ -373,7 +503,7 @@ addon:RegisterCondition("SPELL_CHARGES", {
                 value.spell = v
                 spellIcon:SetText(v)
                 if v then
-                    spell:SetText(SpellData:SpellName(v))
+                    spell:SetText(value.spell and (value.ranked and SpellData:SpellName(value.spell) or GetSpellInfo(value.spell)))
                 else
                     spell:SetText(nil)
                 end
@@ -381,8 +511,25 @@ addon:RegisterCondition("SPELL_CHARGES", {
             end
         end)
 
+        ranked:SetFullWidth(true)
+        ranked:SetLayout("Table")
+        ranked:SetUserData("table", { columns = { 1 } })
+        ranked:SetUserData("cell", { alignV = "bottom", alignH = "center" })
+
+        nr_label:SetText(L["Rank"])
+        nr_label:SetColor(1.0, 0.82, 0.0)
+
+        nr_button:SetValue(value.ranked or false)
+        nr_button:SetCallback("OnValueChanged", function(widget, event, val)
+            value.ranked = val
+            spell:SetUserData("norank", not val)
+            spell:SetText(value.spell and (value.ranked and SpellData:SpellName(value.spell) or GetSpellInfo(value.spell)))
+            top:SetStatusText(funcs:print(root, spec))
+        end)
+
         spell:SetLabel(L["Spell"])
-        spell:SetText(value.spell and SpellData:SpellName(value.spell))
+        spell:SetText(value.spell and (value.ranked and SpellData:SpellName(value.spell) or GetSpellInfo(value.spell)))
+        spell:SetUserData("norank", not value.ranked)
         spell:SetUserData("spec", spec)
         spell:SetCallback("OnEnterPressed", function(widget, event, v)
             if isint(v) then
@@ -439,7 +586,12 @@ addon:RegisterCondition("SPELL_HISTORY", {
     evaluate = function(value, cache, evalStart)
         for idx, entry in pairs(addon.spellHistory) do
             if entry.spell == value.spell then
-                return compare(value.operator, idx, value.value)
+                local spellid = value.spell
+                if not value.ranked then
+                    spellid = select(7, getCached(addon.longtermCache, GetSpellInfo,
+                        select(1, getCached(addon.longtermCache, GetSpellInfo, value.spell))))
+                end
+                return compare(value.operator, idx, spellid)
             end
         end
         return false
@@ -447,7 +599,12 @@ addon:RegisterCondition("SPELL_HISTORY", {
     print = function(spec, value)
         local link
         if value.spell ~= nil then
-            link = GetSpellLink(value.spell)
+            local spellid = value.spell
+            if not value.ranked then
+                spellid = select(7, getCached(addon.longtermCache, GetSpellInfo,
+                    select(1, getCached(addon.longtermCache, GetSpellInfo, value.spell))))
+            end
+            link = GetSpellLink(spellid)
         end
         return compareString(value.operator, string.format(L["%s was cast"], nullable(link, L["<spell>"])),
                         string.format(L["%s casts ago"], nullable(value.value)))
@@ -457,18 +614,27 @@ addon:RegisterCondition("SPELL_HISTORY", {
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
+        local spell_group = AceGUI:Create("SimpleGroup")
+        parent:AddChild(spell_group)
         local spellIcon = AceGUI:Create("ActionSlotSpell")
-        parent:AddChild(spellIcon)
+        spell_group:AddChild(spellIcon)
+        local ranked = AceGUI:Create("SimpleGroup")
+        spell_group:AddChild(ranked)
+        local nr_label = AceGUI:Create("Label")
+        ranked:AddChild(nr_label)
+        local nr_button = AceGUI:Create("CheckBox")
+        ranked:AddChild(nr_button)
         local spell = AceGUI:Create("Spec_EditBox")
-        parent:AddChild(spell)
+        spell_group:AddChild(spell)
         local operator = AceGUI:Create("Dropdown")
         parent:AddChild(operator)
         local health = AceGUI:Create("EditBox")
         parent:AddChild(health)
 
-        if (value.spell) then
-            spellIcon:SetText(value.spell)
-        end
+        spell_group:SetLayout("Table")
+        spell_group:SetUserData("table", { columns = { 44, 0.1, 1 } })
+
+        spellIcon:SetText(value.spell)
         spellIcon:SetWidth(44)
         spellIcon:SetHeight(44)
         spellIcon.text:Hide()
@@ -478,7 +644,7 @@ addon:RegisterCondition("SPELL_HISTORY", {
                 value.spell = v
                 spellIcon:SetText(v)
                 if v then
-                    spell:SetText(SpellData:SpellName(v))
+                    spell:SetText(value.spell and (value.ranked and SpellData:SpellName(value.spell) or GetSpellInfo(value.spell)))
                 else
                     spell:SetText(nil)
                 end
@@ -486,8 +652,25 @@ addon:RegisterCondition("SPELL_HISTORY", {
             end
         end)
 
+        ranked:SetFullWidth(true)
+        ranked:SetLayout("Table")
+        ranked:SetUserData("table", { columns = { 1 } })
+        ranked:SetUserData("cell", { alignV = "bottom", alignH = "center" })
+
+        nr_label:SetText(L["Rank"])
+        nr_label:SetColor(1.0, 0.82, 0.0)
+
+        nr_button:SetValue(value.ranked or false)
+        nr_button:SetCallback("OnValueChanged", function(widget, event, val)
+            value.ranked = val
+            spell:SetUserData("norank", not val)
+            spell:SetText(value.spell and (value.ranked and SpellData:SpellName(value.spell) or GetSpellInfo(value.spell)))
+            top:SetStatusText(funcs:print(root, spec))
+        end)
+
         spell:SetLabel(L["Spell"])
-        spell:SetText(value.spell and SpellData:SpellName(value.spell))
+        spell:SetText(value.spell and (value.ranked and SpellData:SpellName(value.spell) or GetSpellInfo(value.spell)))
+        spell:SetUserData("norank", not value.ranked)
         spell:SetUserData("spec", spec)
         spell:SetCallback("OnEnterPressed", function(widget, event, v)
             if isint(v) then
@@ -543,7 +726,12 @@ addon:RegisterCondition("SPELL_HISTORY_TIME", {
     end,
     evaluate = function(value, cache, evalStart) -- Cooldown until the spell is available
         for idx, entry in pairs(addon.spellHistory) do
-            if entry.spell == value.spell then
+            local spellid = value.spell
+            if not value.ranked then
+                spellid = select(7, getCached(addon.longtermCache, GetSpellInfo,
+                    select(1, getCached(addon.longtermCache, GetSpellInfo, value.spell))))
+            end
+            if entry.spell == spellid then
                 return compare(value.operator, (evalStart - entry.time), value.value)
             end
         end
@@ -552,7 +740,12 @@ addon:RegisterCondition("SPELL_HISTORY_TIME", {
     print = function(spec, value)
         local link
         if value.spell ~= nil then
-            link = GetSpellLink(value.spell)
+            local spellid = value.spell
+            if not value.ranked then
+                spellid = select(7, getCached(addon.longtermCache, GetSpellInfo,
+                    select(1, getCached(addon.longtermCache, GetSpellInfo, value.spell))))
+            end
+            link = GetSpellLink(spellid)
         end
         return compareString(value.operator, string.format(L["%s was cast"], nullable(link, L["<spell>"])),
                 string.format(L["%s seconds ago"], nullable(value.value)))
@@ -562,18 +755,27 @@ addon:RegisterCondition("SPELL_HISTORY_TIME", {
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
+        local spell_group = AceGUI:Create("SimpleGroup")
+        parent:AddChild(spell_group)
         local spellIcon = AceGUI:Create("ActionSlotSpell")
-        parent:AddChild(spellIcon)
+        spell_group:AddChild(spellIcon)
+        local ranked = AceGUI:Create("SimpleGroup")
+        spell_group:AddChild(ranked)
+        local nr_label = AceGUI:Create("Label")
+        ranked:AddChild(nr_label)
+        local nr_button = AceGUI:Create("CheckBox")
+        ranked:AddChild(nr_button)
         local spell = AceGUI:Create("Spec_EditBox")
-        parent:AddChild(spell)
+        spell_group:AddChild(spell)
         local operator = AceGUI:Create("Dropdown")
         parent:AddChild(operator)
         local health = AceGUI:Create("EditBox")
         parent:AddChild(health)
 
-        if (value.spell) then
-            spellIcon:SetText(value.spell)
-        end
+        spell_group:SetLayout("Table")
+        spell_group:SetUserData("table", { columns = { 44, 0.1, 1 } })
+
+        spellIcon:SetText(value.spell)
         spellIcon.text:Hide()
         spellIcon:SetWidth(44)
         spellIcon:SetHeight(44)
@@ -583,7 +785,7 @@ addon:RegisterCondition("SPELL_HISTORY_TIME", {
                 value.spell = v
                 spellIcon:SetText(v)
                 if v then
-                    spell:SetText(SpellData:SpellName(v))
+                    spell:SetText(value.spell and (value.ranked and SpellData:SpellName(value.spell) or GetSpellInfo(value.spell)))
                 else
                     spell:SetText(nil)
                 end
@@ -591,8 +793,25 @@ addon:RegisterCondition("SPELL_HISTORY_TIME", {
             end
         end)
 
+        ranked:SetFullWidth(true)
+        ranked:SetLayout("Table")
+        ranked:SetUserData("table", { columns = { 1 } })
+        ranked:SetUserData("cell", { alignV = "bottom", alignH = "center" })
+
+        nr_label:SetText(L["Rank"])
+        nr_label:SetColor(1.0, 0.82, 0.0)
+
+        nr_button:SetValue(value.ranked or false)
+        nr_button:SetCallback("OnValueChanged", function(widget, event, val)
+            value.ranked = val
+            spell:SetUserData("norank", not val)
+            spell:SetText(value.spell and (value.ranked and SpellData:SpellName(value.spell) or GetSpellInfo(value.spell)))
+            top:SetStatusText(funcs:print(root, spec))
+        end)
+
         spell:SetLabel(L["Spell"])
-        spell:SetText(value.spell and SpellData:SpellName(value.spell))
+        spell:SetText(value.spell and (value.ranked and SpellData:SpellName(value.spell) or GetSpellInfo(value.spell)))
+        spell:SetUserData("norank", not value.ranked)
         spell:SetUserData("spec", spec)
         spell:SetCallback("OnEnterPressed", function(widget, event, v)
             if isint(v) then

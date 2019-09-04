@@ -188,6 +188,7 @@ L["Move Up"] = true
 L["Move Down"] = true
 L["Action Type"] = true
 L["Spell"] = true
+L["Rank"] = true
 L["Pet Spell"] = true
 L["Item"] = true
 L["Conditions"] = true
