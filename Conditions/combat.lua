@@ -129,6 +129,20 @@ addon:RegisterCondition("INCONTROL", {
     end,
 })
 
+addon:RegisterCondition("MOVING", {
+    description = L["Moving"],
+    icon = "Interface\\Icons\\Ability_druid_dash",
+    valid = function(spec, value)
+        return true
+    end,
+    evaluate = function(value, cache, evalStart)
+        return (getCached(cache, GetUnitSpeed, "player") ~= 0)
+    end,
+    print = function(spec, value)
+        return L["you are moving"]
+    end,
+})
+
 addon:RegisterCondition("THREAT", {
     description = L["Threat"],
     icon = "Interface\\Icons\\ability_physical_taunt",

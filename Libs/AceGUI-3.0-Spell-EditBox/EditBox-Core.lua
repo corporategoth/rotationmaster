@@ -2,6 +2,29 @@
 local AceGUI = LibStub("AceGUI-3.0")
 local floor = math.floor
 
+local function spairs(t, order)
+	-- collect the keys
+	local keys = {}
+	for k in pairs(t) do keys[#keys+1] = k end
+
+	-- if order function given, sort by it by passing the table and keys a, b,
+	-- otherwise just sort the keys
+	if order then
+		table.sort(keys, function(a,b) return order(t, a, b) end)
+	else
+		table.sort(keys)
+	end
+
+	-- return the iterator function
+	local i = 0
+	return function()
+		i = i + 1
+		if keys[i] then
+			return keys[i], t[keys[i]]
+		end
+	end
+end
+
 do
 	local Type = "Predictor_Base"
 	local Version = 1
@@ -89,11 +112,11 @@ do
 				local spellIDs
 				if SpellData.spellListReverseRank[name] ~= nil then
 					spellIDs = SpellData.spellListReverseRank[name]
-                else
+				else
 					spellIDs = { SpellData.spellListReverse[name] }
 				end
 
-				for _,spellID in pairs(spellIDs) do
+				for _,spellID in spairs(spellIDs, function (t,a,b) return b < a end) do
 					if not self.obj.spellFilter or self.obj.spellFilter(self.obj, spellID) then
 						activeButtons = activeButtons + 1
 

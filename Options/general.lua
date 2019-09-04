@@ -45,7 +45,8 @@ local function create_primary_options(frame)
     local ignore_mana = AceGUI:Create("CheckBox")
     group:AddChild(ignore_mana)
     group:AddChild(spacer(0.1))
-    group:AddChild(spacer(0.4))
+    local ignore_range = AceGUI:Create("CheckBox")
+    group:AddChild(ignore_range)
     local effect_header = AceGUI:Create("Heading")
     group:AddChild(effect_header)
     local effect_group = AceGUI:Create("SimpleGroup")
@@ -161,6 +162,13 @@ local function create_primary_options(frame)
     ignore_mana:SetRelativeWidth(0.4)
     ignore_mana:SetCallback("OnValueChanged", function(widget, event, val)
         profile["ignore_mana"] = val
+    end)
+
+    ignore_range:SetLabel(L["Ignore Range"])
+    ignore_range:SetValue(profile["ignore_range"])
+    ignore_range:SetRelativeWidth(0.4)
+    ignore_range:SetCallback("OnValueChanged", function(widget, event, val)
+        profile["ignore_range"] = val
     end)
 
     effect_header:SetText(L["Effect Options"])
@@ -511,11 +519,11 @@ local function create_rotation_options(frame, specID, rotid, parent, selected)
     frame:AddChild(switch)
     local switch_desc = AceGUI:Create("Label")
     switch:AddChild(switch_desc)
-    local switch_valid
+    local switch_valid, switch_button
     if rotid ~= DEFAULT then
         switch_valid = AceGUI:Create("Label")
         switch:AddChild(switch_valid)
-        local switch_button = AceGUI:Create("Button")
+        switch_button = AceGUI:Create("Button")
         switch:AddChild(switch_button)
     end
 
@@ -921,6 +929,7 @@ function module:SetupOptions()
     rotation:SetTitle(addon.pretty_name .. " - " .. localized)
     create_class_options(rotation, classID)
     InterfaceOptions_AddCategory(rotation.frame)
+    addon.Rotation = rotation.frame
 
     for name, module in addon:IterateModules() do
         local f = module["SetupOptions"]
@@ -933,5 +942,4 @@ function module:SetupOptions()
 
     self.Profile = AceConfigDialog:AddToBlizOptions(addon.name .. "Profiles", L["Profiles"], addon.pretty_name)
     self.About = LibAboutPanel.new(addon.pretty_name, addon.name)
-    addon.About = self.About
 end

@@ -36,6 +36,7 @@ local defaults = {
         enable = true,
         poll = 0.15,
         ignore_mana = false,
+        ignore_range = false,
         effect = "Ping",
         color = { r = 1.0, g = 1.0, b = 1.0, a = 1.0 },
         magnification = 1.4,
@@ -146,9 +147,8 @@ function addon:HandleCommand(str)
         addon:info(L["                          This is reset upon switching specializations."])
 
     elseif cmd == "config" then
-        InterfaceOptionsFrame_OpenToCategory(addon.About)
-        InterfaceOptionsFrame_OpenToCategory(addon.About)
-        InterfaceOptionsFrame_OpenToCategory(addon.pretty_name) -- Hack for Blizzard bug.
+        InterfaceOptionsFrame_OpenToCategory(addon.Rotation)
+        InterfaceOptionsFrame_OpenToCategory(addon.Rotation)
 
     elseif cmd == "disable" then
         addon:disable()
@@ -389,9 +389,8 @@ function DataBroker.OnClick(self, button)
         UIDropDownMenu_Initialize(dropdownFrame, minimapInitialize)
         ToggleDropDownMenu(1, nil, dropdownFrame, "cursor", 5, -10)
     elseif button == "LeftButton" then
-        InterfaceOptionsFrame_OpenToCategory(addon.About)
-        InterfaceOptionsFrame_OpenToCategory(addon.About)
-        InterfaceOptionsFrame_OpenToCategory(addon.pretty_name) -- Hack for Blizzard bug.
+        InterfaceOptionsFrame_OpenToCategory(addon.Rotation)
+        InterfaceOptionsFrame_OpenToCategory(addon.Rotation)
     end
 end
 
@@ -662,27 +661,26 @@ function addon:EvaluateNextAction()
         end
         self.evaluationProfile:child("environment"):stop()
 
-        self.evaluationProfile:child("rotation"):start()
-        local rot = self.db.char.rotations[self.currentSpec][self.currentRotation]
-        if rot.rotation ~= nil then
-            local enabled
-            for id, cond in pairs(rot.rotation) do
-                enabled = nil
-                if cond.action ~= nil and (cond.disabled == nil or cond.disabled == false) then
-                    -- If we can't highlight the spell, may as well skip to the next one!
-                    local spellid
-                    if cond.type == "spell" then
-                        spellid = cond.action
-                    elseif cond.type == "pet" and getCached(self.longtermCache, IsSpellKnown, cond.action, true) then
-                        spellid = cond.action
-                    elseif cond.type == "item" then
-                        local _
-                        spellid = select(2, getCached(self.longtermCache, GetItemSpell, cond.action))
-                    end
-                    if (spellid ~= nil and addon:FindSpell(spellid) and addon:evaluateCondition(cond.conditions)) then
-                        local avail, nomana = getCached(cache, IsUsableSpell, spellid)
-                        if avail and (self.db.profile.ignore_mana or not nomana) then
-                            local inrange = getCached(cache, SpellRange.IsSpellInRange ,spellid, "target")
+        -- The common way to evaluate any rotation or cooldown condition.
+        local function eval(cond)
+            local spellid, enabled = nil, false
+            if cond.action ~= nil and (cond.disabled == nil or cond.disabled == false) then
+                -- If we can't highlight the spell, may as well skip to the next one!
+                if cond.type == "spell" then
+                    spellid = cond.action
+                elseif cond.type == "pet" and getCached(self.longtermCache, IsSpellKnown, cond.action, true) then
+                    spellid = cond.action
+                elseif cond.type == "item" then
+                    spellid = select(2, getCached(self.longtermCache, GetItemSpell, cond.action))
+                end
+
+                if (spellid ~= nil and addon:FindSpell(spellid) and addon:evaluateCondition(cond.conditions)) then
+                    local avail, nomana = getCached(cache, IsUsableSpell, spellid)
+                    if avail and (self.db.profile.ignore_mana or not nomana) then
+                        if self.db.profile.ignore_range then
+                            enabled = true
+                        else
+                            local inrange = getCached(cache, SpellRange.IsSpellInRange, spellid, "target")
                             if inrange == nil then
                                 enabled = true
                             else
@@ -690,18 +688,29 @@ function addon:EvaluateNextAction()
                             end
                         end
                     end
-                    if enabled then
-                        addon:verbose("Rotation step %d satisfied it's condition.", id)
-                        if not addon:IsGlowing(spellid) then
-                            addon:GlowNextSpell(spellid)
-                            if WeakAuras then
-                                WeakAuras.ScanEvents("ROTATIONMASTER_SPELL_UPDATE", self.type, spellid)
-                            end
+                end
+            end
+            return spellid, enabled
+        end
+
+        self.evaluationProfile:child("rotation"):start()
+        local rot = self.db.char.rotations[self.currentSpec][self.currentRotation]
+        if rot.rotation ~= nil then
+            local enabled
+            for id, cond in pairs(rot.rotation) do
+                local spellid
+                spellid, enabled = eval(cond)
+                if enabled then
+                    addon:verbose("Rotation step %d satisfied it's condition.", id)
+                    if not addon:IsGlowing(spellid) then
+                        addon:GlowNextSpell(spellid)
+                        if WeakAuras then
+                            WeakAuras.ScanEvents("ROTATIONMASTER_SPELL_UPDATE", self.type, spellid)
                         end
-                        break
-                    else
-                        addon:verbose("Rotation step %d dis not satisfy it's condition.", id)
                     end
+                    break
+                else
+                    addon:verbose("Rotation step %d dis not satisfy it's condition.", id)
                 end
             end
             if not enabled then
@@ -715,27 +724,8 @@ function addon:EvaluateNextAction()
         self.evaluationProfile:child("cooldowns"):start()
         if rot.cooldowns ~= nil then
             for id, cond in pairs(rot.cooldowns) do
-                if cond.action ~= nil and (cond.disabled == nil or cond.disabled == false) then
-                    local spellid, enabled
-                    if cond.type == "spell" then
-                        spellid = cond.action
-                    elseif cond.type == "pet" and getCached(self.longtermCache, IsSpellKnown, cond.action, true) then
-                        spellid = cond.action
-                    elseif cond.type == "item" then
-                        local _
-                        spellid = select(2, getCached(self.longtermCache, GetItemSpell, cond.action))
-                    end
-                    if (spellid ~= nil and addon:FindSpell(spellid) and addon:evaluateCondition(cond.conditions)) then
-                        local avail, nomana = getCached(cache, IsUsableSpell, spellid)
-                        if avail and (self.db.profile.ignore_mana or not nomana) then
-                            local inrange = getCached(cache, SpellRange.IsSpellInRange ,spellid, "target")
-                            if inrange == nil then
-                                enabled = true
-                            else
-                                enabled = (inrange == 1)
-                            end
-                        end
-                    end
+                local spellid, enabled = eval(cond)
+                if spellid then
                     if enabled then
                         addon:verbose("Cooldown %d is enabled", id)
                         if not addon.announced[id] then
