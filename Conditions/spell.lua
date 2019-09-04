@@ -94,7 +94,11 @@ addon:RegisterCondition("SPELL_AVAIL", {
         spell_group:AddChild(spell)
 
         spell_group:SetLayout("Table")
-        spell_group:SetUserData("table", { columns = { 44, 0.1, 1 } })
+        if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
+		spell_group:SetUserData("table", { columns = { 44, 0.1, 1 } })
+	else
+		spell_group:SetUserData("table", { columns = { 44, 1 } })
+	end
 
         spellIcon:SetText(value.spell)
         spellIcon:SetWidth(44)
@@ -227,7 +231,11 @@ addon:RegisterCondition("SPELL_COOLDOWN", {
         parent:AddChild(health)
 
         spell_group:SetLayout("Table")
-        spell_group:SetUserData("table", { columns = { 44, 0.1, 1 } })
+        if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
+		spell_group:SetUserData("table", { columns = { 44, 0.1, 1 } })
+	else
+		spell_group:SetUserData("table", { columns = { 44, 1 } })
+	end
 
         spellIcon:SetText(value.spell)
         spellIcon.text:Hide()
@@ -378,7 +386,11 @@ addon:RegisterCondition("SPELL_REMAIN", {
         parent:AddChild(health)
 
         spell_group:SetLayout("Table")
-        spell_group:SetUserData("table", { columns = { 44, 0.1, 1 } })
+        if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
+		spell_group:SetUserData("table", { columns = { 44, 0.1, 1 } })
+	else
+		spell_group:SetUserData("table", { columns = { 44, 1 } })
+	end
 
         spellIcon:SetText(value.spell)
         spellIcon:SetWidth(44)
@@ -524,7 +536,11 @@ addon:RegisterCondition("SPELL_CHARGES", {
         parent:AddChild(health)
 
         spell_group:SetLayout("Table")
-        spell_group:SetUserData("table", { columns = { 44, 0.1, 1 } })
+        if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
+		spell_group:SetUserData("table", { columns = { 44, 0.1, 1 } })
+	else
+		spell_group:SetUserData("table", { columns = { 44, 1 } })
+	end
 
         spellIcon:SetText(value.spell)
         spellIcon:SetWidth(44)
@@ -674,7 +690,11 @@ addon:RegisterCondition("SPELL_HISTORY", {
         parent:AddChild(health)
 
         spell_group:SetLayout("Table")
-        spell_group:SetUserData("table", { columns = { 44, 0.1, 1 } })
+        if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
+		spell_group:SetUserData("table", { columns = { 44, 0.1, 1 } })
+	else
+		spell_group:SetUserData("table", { columns = { 44, 1 } })
+	end
 
         spellIcon:SetText(value.spell)
         spellIcon:SetWidth(44)
@@ -824,7 +844,11 @@ addon:RegisterCondition("SPELL_HISTORY_TIME", {
         parent:AddChild(health)
 
         spell_group:SetLayout("Table")
-        spell_group:SetUserData("table", { columns = { 44, 0.1, 1 } })
+        if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
+		spell_group:SetUserData("table", { columns = { 44, 0.1, 1 } })
+	else
+		spell_group:SetUserData("table", { columns = { 44, 1 } })
+	end
 
         spellIcon:SetText(value.spell)
         spellIcon.text:Hide()

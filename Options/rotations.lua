@@ -138,11 +138,11 @@ function addon:get_rotation_list(frame, specID, rotid, id, callback)
     action_group:SetUserData("table", { columns = { 100, 1 } })
 
     if rot.type ~= nil and rot.type == "spell" then
-        action_group:SetUserData("table", { columns = { 100, 30, 1 } })
+        if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
+	    action_group:SetUserData("table", { columns = { 100, 30, 1 } })
+	end
 
-        if (rot.action) then
-            action_icon:SetText(rot.action)
-        end
+        action_icon:SetText(rot.action)
         action_icon:SetWidth(44)
         action_icon:SetHeight(44)
         action_icon.text:Hide()
@@ -204,11 +204,11 @@ function addon:get_rotation_list(frame, specID, rotid, id, callback)
             callback()
         end)
     elseif rot.type ~= nil and rot.type == "pet" then
-        action_group:SetUserData("table", { columns = { 100, 30, 1 } })
+        if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
+            action_group:SetUserData("table", { columns = { 100, 30, 1 } })
+	end
 
-        if (rot.action) then
-            action_icon:SetText(rot.action)
-        end
+        action_icon:SetText(rot.action)
         action_icon:SetWidth(44)
         action_icon:SetHeight(44)
         action_icon.text:Hide()

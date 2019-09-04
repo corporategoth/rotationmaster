@@ -4,14 +4,11 @@ local AceGUI = LibStub("AceGUI-3.0")
 local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
 local tostring, tonumber, pairs = tostring, tonumber, pairs
 
-local UnitThreatSituation
 if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
     local ThreatClassic = LibStub("ThreatClassic-1.0")
     UnitThreatSituation = function(unit, mob)
         ThreatClassic:UnitThreatSituation(unit, mob)
     end
-else
-    UnitThreatSituation = UnitThreatSituation
 end
 
 -- From constants
