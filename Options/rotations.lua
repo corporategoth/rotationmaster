@@ -57,19 +57,23 @@ function addon:get_rotation_list(frame, specID, rotid, id, callback)
     local action_icon, ranked, nr_button, nr_label, action
     if rot.type ~= nil and rot.type == "spell" then
         action_icon = AceGUI:Create("ActionSlotSpell")
-        ranked = AceGUI:Create("SimpleGroup")
-        nr_label = AceGUI:Create("Label")
-        ranked:AddChild(nr_label)
-        nr_button = AceGUI:Create("CheckBox")
-        ranked:AddChild(nr_button)
+        if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
+            ranked = AceGUI:Create("SimpleGroup")
+            nr_label = AceGUI:Create("Label")
+            ranked:AddChild(nr_label)
+            nr_button = AceGUI:Create("CheckBox")
+            ranked:AddChild(nr_button)
+        end
         action = AceGUI:Create("Spec_EditBox")
     elseif rot.type ~= nil and rot.type == "pet" then
         action_icon = AceGUI:Create("ActionSlotSpell")
-        ranked = AceGUI:Create("SimpleGroup")
-        nr_label = AceGUI:Create("Label")
-        ranked:AddChild(nr_label)
-        nr_button = AceGUI:Create("CheckBox")
-        ranked:AddChild(nr_button)
+        if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
+            ranked = AceGUI:Create("SimpleGroup")
+            nr_label = AceGUI:Create("Label")
+            ranked:AddChild(nr_label)
+            nr_button = AceGUI:Create("CheckBox")
+            ranked:AddChild(nr_button)
+        end
         action = AceGUI:Create("Spell_EditBox")
     elseif rot.type ~= nil and rot.type == "item" then
         action_icon = AceGUI:Create("ActionSlotItem")
@@ -158,21 +162,23 @@ function addon:get_rotation_list(frame, specID, rotid, id, callback)
             end
         end)
 
-        ranked:SetFullWidth(true)
-        ranked:SetLayout("Table")
-        ranked:SetUserData("table", { columns = { 1 } })
-        ranked:SetUserData("cell", { alignV = "bottom", alignH = "center" })
+        if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
+            ranked:SetFullWidth(true)
+            ranked:SetLayout("Table")
+            ranked:SetUserData("table", { columns = { 1 } })
+            ranked:SetUserData("cell", { alignV = "bottom", alignH = "center" })
 
-        nr_label:SetText(L["Rank"])
-        nr_label:SetColor(1.0, 0.82, 0.0)
+            nr_label:SetText(L["Rank"])
+            nr_label:SetColor(1.0, 0.82, 0.0)
 
-        nr_button:SetValue(rot.ranked or false)
-        nr_button:SetCallback("OnValueChanged", function(widget, event, val)
-            rot.ranked = val
-            action:SetUserData("norank", not val)
-            action:SetText(rot.action and (rot.ranked and SpellData:SpellName(rot.action) or GetSpellInfo(rot.action)))
-            callback()
-        end)
+            nr_button:SetValue(rot.ranked or false)
+            nr_button:SetCallback("OnValueChanged", function(widget, event, val)
+                rot.ranked = val
+                action:SetUserData("norank", not val)
+                action:SetText(rot.action and (rot.ranked and SpellData:SpellName(rot.action) or GetSpellInfo(rot.action)))
+                callback()
+            end)
+        end
 
         action:SetUserData("norank", not rot.ranked)
         action:SetUserData("spec", specID)
@@ -220,21 +226,23 @@ function addon:get_rotation_list(frame, specID, rotid, id, callback)
             callback()
         end)
 
-        ranked:SetFullWidth(true)
-        ranked:SetLayout("Table")
-        ranked:SetUserData("table", { columns = { 1 } })
-        ranked:SetUserData("cell", { alignV = "bottom", alignH = "center" })
+        if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
+            ranked:SetFullWidth(true)
+            ranked:SetLayout("Table")
+            ranked:SetUserData("table", { columns = { 1 } })
+            ranked:SetUserData("cell", { alignV = "bottom", alignH = "center" })
 
-        nr_label:SetText(L["Rank"])
-        nr_label:SetColor(1.0, 0.82, 0.0)
+            nr_label:SetText(L["Rank"])
+            nr_label:SetColor(1.0, 0.82, 0.0)
 
-        nr_button:SetValue(rot.ranked or false)
-        nr_button:SetCallback("OnValueChanged", function(widget, event, val)
-            rot.ranked = val
-            action:SetUserData("norank", not val)
-            action:SetText(rot.action and (rot.ranked and SpellData:SpellName(rot.action) or GetSpellInfo(rot.action)))
-            callback()
-        end)
+            nr_button:SetValue(rot.ranked or false)
+            nr_button:SetCallback("OnValueChanged", function(widget, event, val)
+                rot.ranked = val
+                action:SetUserData("norank", not val)
+                action:SetText(rot.action and (rot.ranked and SpellData:SpellName(rot.action) or GetSpellInfo(rot.action)))
+                callback()
+            end)
+        end
 
         action:SetUserData("norank", not rot.ranked)
         action:SetLabel(L["Spell"])

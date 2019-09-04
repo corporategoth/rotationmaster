@@ -29,9 +29,11 @@ addon:RegisterCondition("SPELL_AVAIL", {
     end,
     evaluate = function(value, cache, evalStart)
         local spellid = value.spell
-        if not value.ranked then
-            spellid = select(7, getCached(addon.longtermCache, GetSpellInfo,
-                select(1, getCached(addon.longtermCache, GetSpellInfo, value.spell))))
+        if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
+            if not value.ranked then
+                spellid = select(7, getCached(addon.longtermCache, GetSpellInfo,
+                    select(1, getCached(addon.longtermCache, GetSpellInfo, value.spell))))
+            end
         end
         local start, duration, enabled = getCached(cache, GetSpellCooldown, spellid)
         if start == 0 and duration == 0 then
@@ -60,9 +62,11 @@ addon:RegisterCondition("SPELL_AVAIL", {
         local link
         if value.spell ~= nil then
             local spellid = value.spell
-            if not value.ranked then
-                spellid = select(7, getCached(addon.longtermCache, GetSpellInfo,
-                    select(1, getCached(addon.longtermCache, GetSpellInfo, value.spell))))
+            if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
+                if not value.ranked then
+                    spellid = select(7, getCached(addon.longtermCache, GetSpellInfo,
+                        select(1, getCached(addon.longtermCache, GetSpellInfo, value.spell))))
+                end
             end
             link = GetSpellLink(spellid)
         end
@@ -77,12 +81,15 @@ addon:RegisterCondition("SPELL_AVAIL", {
         parent:AddChild(spell_group)
         local spellIcon = AceGUI:Create("ActionSlotSpell")
         spell_group:AddChild(spellIcon)
-        local ranked = AceGUI:Create("SimpleGroup")
-        spell_group:AddChild(ranked)
-        local nr_label = AceGUI:Create("Label")
-        ranked:AddChild(nr_label)
-        local nr_button = AceGUI:Create("CheckBox")
-        ranked:AddChild(nr_button)
+        local ranked, nr_label, nr_button
+        if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
+            ranked = AceGUI:Create("SimpleGroup")
+            spell_group:AddChild(ranked)
+            nr_label = AceGUI:Create("Label")
+            ranked:AddChild(nr_label)
+            nr_button = AceGUI:Create("CheckBox")
+            ranked:AddChild(nr_button)
+        end
         local spell = AceGUI:Create("Spec_EditBox")
         spell_group:AddChild(spell)
 
@@ -107,22 +114,23 @@ addon:RegisterCondition("SPELL_AVAIL", {
             end
         end)
 
-        ranked:SetFullWidth(true)
-        ranked:SetLayout("Table")
-        ranked:SetUserData("table", { columns = { 1 } })
-        ranked:SetUserData("cell", { alignV = "bottom", alignH = "center" })
+        if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
+            ranked:SetFullWidth(true)
+            ranked:SetLayout("Table")
+            ranked:SetUserData("table", { columns = { 1 } })
+            ranked:SetUserData("cell", { alignV = "bottom", alignH = "center" })
 
-        nr_label:SetText(L["Rank"])
-        nr_label:SetColor(1.0, 0.82, 0.0)
+            nr_label:SetText(L["Rank"])
+            nr_label:SetColor(1.0, 0.82, 0.0)
 
-        nr_button:SetValue(value.ranked or false)
-        nr_button:SetWidth(75)
-        nr_button:SetCallback("OnValueChanged", function(widget, event, val)
-            value.ranked = val
-            spell:SetUserData("norank", not val)
-            spell:SetText(value.spell and (value.ranked and SpellData:SpellName(value.spell) or GetSpellInfo(value.spell)))
-            top:SetStatusText(funcs:print(root, spec))
-        end)
+            nr_button:SetValue(value.ranked or false)
+            nr_button:SetCallback("OnValueChanged", function(widget, event, val)
+                value.ranked = val
+                spell:SetUserData("norank", not val)
+                spell:SetText(value.spell and (value.ranked and SpellData:SpellName(value.spell) or GetSpellInfo(value.spell)))
+                top:SetStatusText(funcs:print(root, spec))
+            end)
+        end
 
         spell:SetLabel(L["Spell"])
         spell:SetText(value.spell and (value.ranked and SpellData:SpellName(value.spell) or GetSpellInfo(value.spell)))
@@ -163,9 +171,11 @@ addon:RegisterCondition("SPELL_COOLDOWN", {
     end,
     evaluate = function(value, cache, evalStart) -- Cooldown until the spell is available
         local spellid = value.spell
-        if not value.ranked then
-            spellid = select(7, getCached(addon.longtermCache, GetSpellInfo,
-                select(1, getCached(addon.longtermCache, GetSpellInfo, value.spell))))
+        if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
+            if not value.ranked then
+                spellid = select(7, getCached(addon.longtermCache, GetSpellInfo,
+                    select(1, getCached(addon.longtermCache, GetSpellInfo, value.spell))))
+            end
         end
         local start, duration, enabled = getCached(cache, GetSpellCooldown, spellid)
         local remain = 0
@@ -179,9 +189,11 @@ addon:RegisterCondition("SPELL_COOLDOWN", {
         local link
         if value.spell ~= nil then
             local spellid = value.spell
-            if not value.ranked then
-                spellid = select(7, getCached(addon.longtermCache, GetSpellInfo,
-                    select(1, getCached(addon.longtermCache, GetSpellInfo, value.spell))))
+            if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
+                if not value.ranked then
+                    spellid = select(7, getCached(addon.longtermCache, GetSpellInfo,
+                        select(1, getCached(addon.longtermCache, GetSpellInfo, value.spell))))
+                end
             end
             link = GetSpellLink(spellid)
         end
@@ -198,12 +210,15 @@ addon:RegisterCondition("SPELL_COOLDOWN", {
         parent:AddChild(spell_group)
         local spellIcon = AceGUI:Create("ActionSlotSpell")
         spell_group:AddChild(spellIcon)
-        local ranked = AceGUI:Create("SimpleGroup")
-        spell_group:AddChild(ranked)
-        local nr_label = AceGUI:Create("Label")
-        ranked:AddChild(nr_label)
-        local nr_button = AceGUI:Create("CheckBox")
-        ranked:AddChild(nr_button)
+        local ranked, nr_label, nr_button
+        if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
+            ranked = AceGUI:Create("SimpleGroup")
+            spell_group:AddChild(ranked)
+            nr_label = AceGUI:Create("Label")
+            ranked:AddChild(nr_label)
+            local nr_button = AceGUI:Create("CheckBox")
+            ranked:AddChild(nr_button)
+        end
         local spell = AceGUI:Create("Spec_EditBox")
         spell_group:AddChild(spell)
         local operator = AceGUI:Create("Dropdown")
@@ -232,21 +247,23 @@ addon:RegisterCondition("SPELL_COOLDOWN", {
             end
         end)
 
-        ranked:SetFullWidth(true)
-        ranked:SetLayout("Table")
-        ranked:SetUserData("table", { columns = { 1 } })
-        ranked:SetUserData("cell", { alignV = "bottom", alignH = "center" })
+        if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
+            ranked:SetFullWidth(true)
+            ranked:SetLayout("Table")
+            ranked:SetUserData("table", { columns = { 1 } })
+            ranked:SetUserData("cell", { alignV = "bottom", alignH = "center" })
 
-        nr_label:SetText(L["Rank"])
-        nr_label:SetColor(1.0, 0.82, 0.0)
+            nr_label:SetText(L["Rank"])
+            nr_label:SetColor(1.0, 0.82, 0.0)
 
-        nr_button:SetValue(value.ranked or false)
-        nr_button:SetCallback("OnValueChanged", function(widget, event, val)
-            value.ranked = val
-            spell:SetUserData("norank", not val)
-            spell:SetText(value.spell and (value.ranked and SpellData:SpellName(value.spell) or GetSpellInfo(value.spell)))
-            top:SetStatusText(funcs:print(root, spec))
-        end)
+            nr_button:SetValue(value.ranked or false)
+            nr_button:SetCallback("OnValueChanged", function(widget, event, val)
+                value.ranked = val
+                spell:SetUserData("norank", not val)
+                spell:SetText(value.spell and (value.ranked and SpellData:SpellName(value.spell) or GetSpellInfo(value.spell)))
+                top:SetStatusText(funcs:print(root, spec))
+            end)
+        end
 
         spell:SetLabel(L["Spell"])
         spell:SetText(value.spell and (value.ranked and SpellData:SpellName(value.spell) or GetSpellInfo(value.spell)))
@@ -306,9 +323,11 @@ addon:RegisterCondition("SPELL_REMAIN", {
     end,
     evaluate = function(value, cache, evalStart) -- How long the spell remains effective
         local spellid = value.spell
-        if not value.ranked then
-            spellid = select(7, getCached(addon.longtermCache, GetSpellInfo,
-                select(1, getCached(addon.longtermCache, GetSpellInfo, value.spell))))
+        if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
+            if not value.ranked then
+                spellid = select(7, getCached(addon.longtermCache, GetSpellInfo,
+                    select(1, getCached(addon.longtermCache, GetSpellInfo, value.spell))))
+            end
         end
         local charges, maxcharges, start, duration = getCached(cache, GetSpellCharges, spellid)
         local remain = 0
@@ -321,9 +340,11 @@ addon:RegisterCondition("SPELL_REMAIN", {
         local link
         if value.spell ~= nil then
             local spellid = value.spell
-            if not value.ranked then
-                spellid = select(7, getCached(addon.longtermCache, GetSpellInfo,
-                    select(1, getCached(addon.longtermCache, GetSpellInfo, value.spell))))
+            if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
+                if not value.ranked then
+                    spellid = select(7, getCached(addon.longtermCache, GetSpellInfo,
+                        select(1, getCached(addon.longtermCache, GetSpellInfo, value.spell))))
+                end
             end
             link = GetSpellLink(spellid)
         end
@@ -340,12 +361,15 @@ addon:RegisterCondition("SPELL_REMAIN", {
         parent:AddChild(spell_group)
         local spellIcon = AceGUI:Create("ActionSlotSpell")
         spell_group:AddChild(spellIcon)
-        local ranked = AceGUI:Create("SimpleGroup")
-        spell_group:AddChild(ranked)
-        local nr_label = AceGUI:Create("Label")
-        ranked:AddChild(nr_label)
-        local nr_button = AceGUI:Create("CheckBox")
-        ranked:AddChild(nr_button)
+        local ranked, nr_label, nr_button
+        if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
+            ranked = AceGUI:Create("SimpleGroup")
+            spell_group:AddChild(ranked)
+            nr_label = AceGUI:Create("Label")
+            ranked:AddChild(nr_label)
+            local nr_button = AceGUI:Create("CheckBox")
+            ranked:AddChild(nr_button)
+        end
         local spell = AceGUI:Create("Spec_EditBox")
         spell_group:AddChild(spell)
         local operator = AceGUI:Create("Dropdown")
@@ -374,21 +398,23 @@ addon:RegisterCondition("SPELL_REMAIN", {
             end
         end)
 
-        ranked:SetFullWidth(true)
-        ranked:SetLayout("Table")
-        ranked:SetUserData("table", { columns = { 1 } })
-        ranked:SetUserData("cell", { alignV = "bottom", alignH = "center" })
+        if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
+            ranked:SetFullWidth(true)
+            ranked:SetLayout("Table")
+            ranked:SetUserData("table", { columns = { 1 } })
+            ranked:SetUserData("cell", { alignV = "bottom", alignH = "center" })
 
-        nr_label:SetText(L["Rank"])
-        nr_label:SetColor(1.0, 0.82, 0.0)
+            nr_label:SetText(L["Rank"])
+            nr_label:SetColor(1.0, 0.82, 0.0)
 
-        nr_button:SetValue(value.ranked or false)
-        nr_button:SetCallback("OnValueChanged", function(widget, event, val)
-            value.ranked = val
-            spell:SetUserData("norank", not val)
-            spell:SetText(value.spell and (value.ranked and SpellData:SpellName(value.spell) or GetSpellInfo(value.spell)))
-            top:SetStatusText(funcs:print(root, spec))
-        end)
+            nr_button:SetValue(value.ranked or false)
+            nr_button:SetCallback("OnValueChanged", function(widget, event, val)
+                value.ranked = val
+                spell:SetUserData("norank", not val)
+                spell:SetText(value.spell and (value.ranked and SpellData:SpellName(value.spell) or GetSpellInfo(value.spell)))
+                top:SetStatusText(funcs:print(root, spec))
+            end)
+        end
 
         spell:SetLabel(L["Spell"])
         spell:SetText(value.spell and (value.ranked and SpellData:SpellName(value.spell) or GetSpellInfo(value.spell)))
@@ -448,9 +474,11 @@ addon:RegisterCondition("SPELL_CHARGES", {
     end,
     evaluate = function(value, cache, evalStart)
         local spellid = value.spell
-        if not value.ranked then
-            spellid = select(7, getCached(addon.longtermCache, GetSpellInfo,
-                select(1, getCached(addon.longtermCache, GetSpellInfo, value.spell))))
+        if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
+            if not value.ranked then
+                spellid = select(7, getCached(addon.longtermCache, GetSpellInfo,
+                    select(1, getCached(addon.longtermCache, GetSpellInfo, value.spell))))
+            end
         end
         local charges, maxcharges, start, duration = getCached(cache, GetSpellCharges, spellid)
         return compare(value.operator, charges, value.value)
@@ -459,9 +487,11 @@ addon:RegisterCondition("SPELL_CHARGES", {
         local link
         if value.spell ~= nil then
             local spellid = value.spell
-            if not value.ranked then
-                spellid = select(7, getCached(addon.longtermCache, GetSpellInfo,
-                    select(1, getCached(addon.longtermCache, GetSpellInfo, value.spell))))
+            if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
+                if not value.ranked then
+                    spellid = select(7, getCached(addon.longtermCache, GetSpellInfo,
+                        select(1, getCached(addon.longtermCache, GetSpellInfo, value.spell))))
+                end
             end
             link = GetSpellLink(spellid)
         end
@@ -477,12 +507,15 @@ addon:RegisterCondition("SPELL_CHARGES", {
         parent:AddChild(spell_group)
         local spellIcon = AceGUI:Create("ActionSlotSpell")
         spell_group:AddChild(spellIcon)
-        local ranked = AceGUI:Create("SimpleGroup")
-        spell_group:AddChild(ranked)
-        local nr_label = AceGUI:Create("Label")
-        ranked:AddChild(nr_label)
-        local nr_button = AceGUI:Create("CheckBox")
-        ranked:AddChild(nr_button)
+        local ranked, nr_label, nr_button
+        if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
+            ranked = AceGUI:Create("SimpleGroup")
+            spell_group:AddChild(ranked)
+            nr_label = AceGUI:Create("Label")
+            ranked:AddChild(nr_label)
+            local nr_button = AceGUI:Create("CheckBox")
+            ranked:AddChild(nr_button)
+        end
         local spell = AceGUI:Create("Spec_EditBox")
         spell_group:AddChild(spell)
         local operator = AceGUI:Create("Dropdown")
@@ -511,21 +544,23 @@ addon:RegisterCondition("SPELL_CHARGES", {
             end
         end)
 
-        ranked:SetFullWidth(true)
-        ranked:SetLayout("Table")
-        ranked:SetUserData("table", { columns = { 1 } })
-        ranked:SetUserData("cell", { alignV = "bottom", alignH = "center" })
+        if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
+            ranked:SetFullWidth(true)
+            ranked:SetLayout("Table")
+            ranked:SetUserData("table", { columns = { 1 } })
+            ranked:SetUserData("cell", { alignV = "bottom", alignH = "center" })
 
-        nr_label:SetText(L["Rank"])
-        nr_label:SetColor(1.0, 0.82, 0.0)
+            nr_label:SetText(L["Rank"])
+            nr_label:SetColor(1.0, 0.82, 0.0)
 
-        nr_button:SetValue(value.ranked or false)
-        nr_button:SetCallback("OnValueChanged", function(widget, event, val)
-            value.ranked = val
-            spell:SetUserData("norank", not val)
-            spell:SetText(value.spell and (value.ranked and SpellData:SpellName(value.spell) or GetSpellInfo(value.spell)))
-            top:SetStatusText(funcs:print(root, spec))
-        end)
+            nr_button:SetValue(value.ranked or false)
+            nr_button:SetCallback("OnValueChanged", function(widget, event, val)
+                value.ranked = val
+                spell:SetUserData("norank", not val)
+                spell:SetText(value.spell and (value.ranked and SpellData:SpellName(value.spell) or GetSpellInfo(value.spell)))
+                top:SetStatusText(funcs:print(root, spec))
+            end)
+        end
 
         spell:SetLabel(L["Spell"])
         spell:SetText(value.spell and (value.ranked and SpellData:SpellName(value.spell) or GetSpellInfo(value.spell)))
@@ -587,9 +622,11 @@ addon:RegisterCondition("SPELL_HISTORY", {
         for idx, entry in pairs(addon.spellHistory) do
             if entry.spell == value.spell then
                 local spellid = value.spell
-                if not value.ranked then
-                    spellid = select(7, getCached(addon.longtermCache, GetSpellInfo,
-                        select(1, getCached(addon.longtermCache, GetSpellInfo, value.spell))))
+                if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
+                    if not value.ranked then
+                        spellid = select(7, getCached(addon.longtermCache, GetSpellInfo,
+                            select(1, getCached(addon.longtermCache, GetSpellInfo, value.spell))))
+                    end
                 end
                 return compare(value.operator, idx, spellid)
             end
@@ -600,9 +637,11 @@ addon:RegisterCondition("SPELL_HISTORY", {
         local link
         if value.spell ~= nil then
             local spellid = value.spell
-            if not value.ranked then
-                spellid = select(7, getCached(addon.longtermCache, GetSpellInfo,
-                    select(1, getCached(addon.longtermCache, GetSpellInfo, value.spell))))
+            if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
+                if not value.ranked then
+                    spellid = select(7, getCached(addon.longtermCache, GetSpellInfo,
+                        select(1, getCached(addon.longtermCache, GetSpellInfo, value.spell))))
+                end
             end
             link = GetSpellLink(spellid)
         end
@@ -618,12 +657,15 @@ addon:RegisterCondition("SPELL_HISTORY", {
         parent:AddChild(spell_group)
         local spellIcon = AceGUI:Create("ActionSlotSpell")
         spell_group:AddChild(spellIcon)
-        local ranked = AceGUI:Create("SimpleGroup")
-        spell_group:AddChild(ranked)
-        local nr_label = AceGUI:Create("Label")
-        ranked:AddChild(nr_label)
-        local nr_button = AceGUI:Create("CheckBox")
-        ranked:AddChild(nr_button)
+        local ranked, nr_label, nr_button
+        if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
+            ranked = AceGUI:Create("SimpleGroup")
+            spell_group:AddChild(ranked)
+            nr_label = AceGUI:Create("Label")
+            ranked:AddChild(nr_label)
+            local nr_button = AceGUI:Create("CheckBox")
+            ranked:AddChild(nr_button)
+        end
         local spell = AceGUI:Create("Spec_EditBox")
         spell_group:AddChild(spell)
         local operator = AceGUI:Create("Dropdown")
@@ -652,21 +694,23 @@ addon:RegisterCondition("SPELL_HISTORY", {
             end
         end)
 
-        ranked:SetFullWidth(true)
-        ranked:SetLayout("Table")
-        ranked:SetUserData("table", { columns = { 1 } })
-        ranked:SetUserData("cell", { alignV = "bottom", alignH = "center" })
+        if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
+            ranked:SetFullWidth(true)
+            ranked:SetLayout("Table")
+            ranked:SetUserData("table", { columns = { 1 } })
+            ranked:SetUserData("cell", { alignV = "bottom", alignH = "center" })
 
-        nr_label:SetText(L["Rank"])
-        nr_label:SetColor(1.0, 0.82, 0.0)
+            nr_label:SetText(L["Rank"])
+            nr_label:SetColor(1.0, 0.82, 0.0)
 
-        nr_button:SetValue(value.ranked or false)
-        nr_button:SetCallback("OnValueChanged", function(widget, event, val)
-            value.ranked = val
-            spell:SetUserData("norank", not val)
-            spell:SetText(value.spell and (value.ranked and SpellData:SpellName(value.spell) or GetSpellInfo(value.spell)))
-            top:SetStatusText(funcs:print(root, spec))
-        end)
+            nr_button:SetValue(value.ranked or false)
+            nr_button:SetCallback("OnValueChanged", function(widget, event, val)
+                value.ranked = val
+                spell:SetUserData("norank", not val)
+                spell:SetText(value.spell and (value.ranked and SpellData:SpellName(value.spell) or GetSpellInfo(value.spell)))
+                top:SetStatusText(funcs:print(root, spec))
+            end)
+        end
 
         spell:SetLabel(L["Spell"])
         spell:SetText(value.spell and (value.ranked and SpellData:SpellName(value.spell) or GetSpellInfo(value.spell)))
@@ -727,9 +771,11 @@ addon:RegisterCondition("SPELL_HISTORY_TIME", {
     evaluate = function(value, cache, evalStart) -- Cooldown until the spell is available
         for idx, entry in pairs(addon.spellHistory) do
             local spellid = value.spell
-            if not value.ranked then
-                spellid = select(7, getCached(addon.longtermCache, GetSpellInfo,
-                    select(1, getCached(addon.longtermCache, GetSpellInfo, value.spell))))
+            if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
+                if not value.ranked then
+                    spellid = select(7, getCached(addon.longtermCache, GetSpellInfo,
+                        select(1, getCached(addon.longtermCache, GetSpellInfo, value.spell))))
+                end
             end
             if entry.spell == spellid then
                 return compare(value.operator, (evalStart - entry.time), value.value)
@@ -741,9 +787,11 @@ addon:RegisterCondition("SPELL_HISTORY_TIME", {
         local link
         if value.spell ~= nil then
             local spellid = value.spell
-            if not value.ranked then
-                spellid = select(7, getCached(addon.longtermCache, GetSpellInfo,
-                    select(1, getCached(addon.longtermCache, GetSpellInfo, value.spell))))
+            if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
+                if not value.ranked then
+                    spellid = select(7, getCached(addon.longtermCache, GetSpellInfo,
+                        select(1, getCached(addon.longtermCache, GetSpellInfo, value.spell))))
+                end
             end
             link = GetSpellLink(spellid)
         end
@@ -759,12 +807,15 @@ addon:RegisterCondition("SPELL_HISTORY_TIME", {
         parent:AddChild(spell_group)
         local spellIcon = AceGUI:Create("ActionSlotSpell")
         spell_group:AddChild(spellIcon)
-        local ranked = AceGUI:Create("SimpleGroup")
-        spell_group:AddChild(ranked)
-        local nr_label = AceGUI:Create("Label")
-        ranked:AddChild(nr_label)
-        local nr_button = AceGUI:Create("CheckBox")
-        ranked:AddChild(nr_button)
+        local ranked, nr_label, nr_button
+        if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
+            ranked = AceGUI:Create("SimpleGroup")
+            spell_group:AddChild(ranked)
+            nr_label = AceGUI:Create("Label")
+            ranked:AddChild(nr_label)
+            local nr_button = AceGUI:Create("CheckBox")
+            ranked:AddChild(nr_button)
+        end
         local spell = AceGUI:Create("Spec_EditBox")
         spell_group:AddChild(spell)
         local operator = AceGUI:Create("Dropdown")
@@ -793,21 +844,23 @@ addon:RegisterCondition("SPELL_HISTORY_TIME", {
             end
         end)
 
-        ranked:SetFullWidth(true)
-        ranked:SetLayout("Table")
-        ranked:SetUserData("table", { columns = { 1 } })
-        ranked:SetUserData("cell", { alignV = "bottom", alignH = "center" })
+        if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
+            ranked:SetFullWidth(true)
+            ranked:SetLayout("Table")
+            ranked:SetUserData("table", { columns = { 1 } })
+            ranked:SetUserData("cell", { alignV = "bottom", alignH = "center" })
 
-        nr_label:SetText(L["Rank"])
-        nr_label:SetColor(1.0, 0.82, 0.0)
+            nr_label:SetText(L["Rank"])
+            nr_label:SetColor(1.0, 0.82, 0.0)
 
-        nr_button:SetValue(value.ranked or false)
-        nr_button:SetCallback("OnValueChanged", function(widget, event, val)
-            value.ranked = val
-            spell:SetUserData("norank", not val)
-            spell:SetText(value.spell and (value.ranked and SpellData:SpellName(value.spell) or GetSpellInfo(value.spell)))
-            top:SetStatusText(funcs:print(root, spec))
-        end)
+            nr_button:SetValue(value.ranked or false)
+            nr_button:SetCallback("OnValueChanged", function(widget, event, val)
+                value.ranked = val
+                spell:SetUserData("norank", not val)
+                spell:SetText(value.spell and (value.ranked and SpellData:SpellName(value.spell) or GetSpellInfo(value.spell)))
+                top:SetStatusText(funcs:print(root, spec))
+            end)
+        end
 
         spell:SetLabel(L["Spell"])
         spell:SetText(value.spell and (value.ranked and SpellData:SpellName(value.spell) or GetSpellInfo(value.spell)))
