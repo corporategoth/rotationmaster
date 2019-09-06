@@ -6,6 +6,7 @@ _G.RotationMaster = LibStub("AceAddon-3.0"):NewAddon(addon, addon_name, "AceCons
 
 local AceConsole = LibStub("AceConsole-3.0")
 local SpellRange = LibStub("SpellRange-1.0")
+local SpellData = LibStub("AceGUI-3.0-SpellLoader")
 local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
 local getCached
 local DBIcon = LibStub("LibDBIcon-1.0")
@@ -115,6 +116,7 @@ local events = {
     -- Special Purpose
     'NAME_PLATE_UNIT_ADDED',
     'NAME_PLATE_UNIT_REMOVED',
+    'SPELLS_CHANGED',
 }
 
 local mainline_events = {
@@ -237,6 +239,25 @@ function addon:OnInitialize()
         end
     end
 
+    for spec,rots in pairs(self.db.char.rotations) do
+        for id, rot in pairs(rots) do
+            if rot.cooldowns then
+                for k, cond in pairs(rot.cooldowns) do
+                    if cond.type == "item" and type(cond.action) == "string" then
+                        cond.action = { cond.action }
+                    end
+                end
+            end
+            if rot.rotation then
+                for k, cond in pairs(rot.rotation) do
+                    if cond.type == "item" and type(cond.action) == "string" then
+                        cond.action = { cond.action }
+                    end
+                end
+            end
+        end
+    end
+
     AceConsole:RegisterChatCommand("rm", function(str)
         addon:HandleCommand(str)
     end)
@@ -302,7 +323,6 @@ function addon:OnInitialize()
     for id, _ in pairs(addon.harmful_distance) do
         IsItemInRange(id, "player")
     end
-
 end
 
 function addon:GetRotationName(id)
@@ -594,21 +614,7 @@ local function UpdateUnitInfo(cache, unit, record)
     --record.inrange = getCached(cache, UnitInRange, unit)
 end
 
-local function announce_cooldown(cache, cond)
-    local link
-    if cond.type == "spell" or cond.type == "pet" then
-        link = GetSpellLink(cond.action)
-        -- For future use ...
-        -- C_ChatInfo.SendAddonMessage(addon.pretty_name, "CDA:S" .. cond.action, "RAID")
-    elseif cond.type == "item" then
-        link = select(4, GetItemInfo(cond.action))
-        -- For future use ...
-        -- C_ChatInfo.SendAddonMessage(addon.pretty_name, "CDA:I" .. cond.action, "RAID")
-    else
-        addon:warn("Condition has unknown type while trying to announce cooldown")
-        return
-    end
-
+local function announce_cooldown(cache, cond, spellid)
     local dest
     if cond.announce == "partyraid" then
         if getCached(cache, IsInRaid) then
@@ -626,6 +632,7 @@ local function announce_cooldown(cache, cond)
         dest = "YELL"
     end
     if dest ~= nil then
+        local link = getCached(addon.longtermCache, GetSpellLink, spellid)
         SendChatMessage(string.format(L["%s is now available!"], link), dest)
     end
 end
@@ -663,38 +670,25 @@ function addon:EvaluateNextAction()
         local function eval(cond)
             local spellid, enabled = nil, false
             if cond.action ~= nil and (cond.disabled == nil or cond.disabled == false) then
-                -- If we can't highlight the spell, may as well skip to the next one!
-                if cond.type == "spell" then
-                    spellid = cond.action
-                    if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
-                        if not cond.ranked then
-                            spellid = select(7, getCached(self.longtermCache, GetSpellInfo,
-                                select(1, getCached(self.longtermCache, GetSpellInfo, cond.action))))
-                        end
-                    end
-                elseif cond.type == "pet" and getCached(self.longtermCache, IsSpellKnown, cond.action, true) then
-                    spellid = cond.action
-                    if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
-                        if not cond.ranked then
-                            spellid = select(7, getCached(self.longtermCache, GetSpellInfo,
-                                select(1, getCached(self.longtermCache, GetSpellInfo, cond.action))))
-                        end
-                    end
-                elseif cond.type == "item" then
-                    spellid = select(2, getCached(self.longtermCache, GetItemSpell, cond.action))
+                local spellids
+                if cond.type ~= "pet" or getCached(self.longtermCache, IsSpellKnown, cond.action, true) then
+                    spellids = addon:GetSpellIds(cond)
                 end
 
-                if (spellid ~= nil and addon:FindSpell(spellid) and addon:evaluateCondition(cond.conditions)) then
-                    local avail, nomana = getCached(cache, IsUsableSpell, spellid)
-                    if avail and (self.db.profile.ignore_mana or not nomana) then
-                        if self.db.profile.ignore_range then
-                            enabled = true
-                        else
-                            local inrange = getCached(cache, SpellRange.IsSpellInRange, spellid, "target")
-                            if inrange == nil then
+                if spellids ~= nil then
+                    spellid = addon:FindSpell(spellids)
+                    if (spellid and addon:evaluateCondition(cond.conditions)) then
+                        local avail, nomana = getCached(cache, IsUsableSpell, spellid)
+                        if avail and (self.db.profile.ignore_mana or not nomana) then
+                            if self.db.profile.ignore_range then
                                 enabled = true
                             else
-                                enabled = (inrange == 1)
+                                local inrange = getCached(cache, SpellRange.IsSpellInRange, spellid, "target")
+                                if inrange == nil then
+                                    enabled = true
+                                else
+                                    enabled = (inrange == 1)
+                                end
                             end
                         end
                     end
@@ -740,7 +734,7 @@ function addon:EvaluateNextAction()
                         addon:verbose("Cooldown %d is enabled", id)
                         if not addon.announced[id] then
                             if not addon.skipAnnounce then
-                                announce_cooldown(cache, cond)
+                                announce_cooldown(cache, cond, spellid)
                             end
                             addon.announced[id] = true;
                         end
@@ -776,13 +770,34 @@ function addon:UpdateCurrentCondition()
     end
 end
 
-function addon:RemoveCooldownGlowIfCurrent(spec, rotation, action_type, action)
-    if spec == self.currentSpec and rotation == self.currentRotation and action ~= nil then
-        if action_type == "item" then
-            local _, spellid = GetItemSpell(action)
-            addon:GlowCooldown(spellid, false)
+function addon:GetSpellIds(rot)
+    if rot.type == "spell" or rot.type == "petspell" then
+        if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
+            if rot.ranked then
+                return { rot.action }
+            else
+                return SpellData:GetAllSpellIds(rot.action) or {}
+            end
         else
-            addon:GlowCooldown(action, false)
+            return { rot.action }
+        end
+    elseif rot.type == "item" then
+        local spellids = {}
+        for _, item in ipairs(rot.action) do
+            local spellid = select(2, getCached(self.longtermCache, GetItemSpell, item));
+            if spellid then
+                table.insert(spellids, spellid)
+            end
+        end
+        return spellids
+    end
+    return {}
+end
+
+function addon:RemoveCooldownGlowIfCurrent(spec, rotation, rot)
+    if spec == self.currentSpec and rotation == self.currentRotation then
+        for _, spellid in pairs(addon:GetSpellIds(rot)) do
+            addon:GlowCooldown(spellid, false)
         end
     end
 end
@@ -791,11 +806,8 @@ function addon:RemoveAllCurrentGlows()
     addon:debug(L["Removing all glows."])
     if self.currentSpec ~= nil and self.currentRotation ~= nil then
         for id, rot in pairs(self.db.char.rotations[self.currentSpec][self.currentRotation].cooldowns) do
-            if rot.type == "item" then
-                local _, spellid = GetItemSpell(rot.action)
+            for _, spellid in pairs(addon:GetSpellIds(rot)) do
                 addon:GlowCooldown(spellid, false)
-            else
-                addon:GlowCooldown(rot.action, false)
             end
         end
         addon:GlowClear()
@@ -1015,4 +1027,8 @@ function addon:NAME_PLATE_UNIT_REMOVED(event, unit)
     if self.unitsInRange[unit] ~= nil then
         self.unitsInRange[unit] = nil
     end
+end
+
+function addon:SPELLS_CHANGED(event, unit)
+    SpellData:UpdateFromSpellBook()
 end

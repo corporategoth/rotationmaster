@@ -150,7 +150,9 @@ do
 						-- Ran out of text to suggest :<
 						if( activeButtons >= RESULT_ROWS ) then break end
 					end
-				end
+                end
+
+				if( activeButtons >= RESULT_ROWS ) then break end
 			end
 		end
 

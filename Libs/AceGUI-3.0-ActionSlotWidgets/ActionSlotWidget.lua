@@ -59,10 +59,7 @@ do
 			local _, _, spellId = GetCompanionInfo(data2, data1)
 			return true, "spell", spellId
 		elseif actionType == "spell" then
-			local link = GetSpellLink(data1, data2)
-			if link then
-				return true, "spell", tonumber(link:match("spell:(%d+)"))
-			end
+			return true, "spell", select(2, GetSpellBookItemInfo(data1, data2))
 		elseif actionType == "item" then
 			return true, "item", data1
 		elseif actionType == "macro" then

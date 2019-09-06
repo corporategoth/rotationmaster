@@ -36,18 +36,9 @@ addon:RegisterCondition("COMBAT", {
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
-        local unit = AceGUI:Create("Dropdown")
+        local unit = addon:Widget_UnitWidget(value, units,
+            function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
-
-        unit:SetLabel(L["Unit"])
-        unit:SetList(units, keys(units))
-        if (value.unit ~= nil) then
-            unit:SetValue(value.unit)
-        end
-        unit:SetCallback("OnValueChanged", function(widget, event, v)
-            value.unit = v
-            top:SetStatusText(funcs:print(root, spec))
-        end)
     end,
 })
 
@@ -84,14 +75,14 @@ addon:RegisterCondition("PET_NAME", {
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
-        local health = AceGUI:Create("EditBox")
-        parent:AddChild(health)
+        local petname = AceGUI:Create("EditBox")
+        parent:AddChild(petname)
 
-        health:SetLabel(NAME)
+        petname:SetLabel(NAME)
         if (value.value ~= nil) then
-            health:SetText(value.value)
+            petname:SetText(value.value)
         end
-        health:SetCallback("OnEnterPressed", function(widget, event, v)
+        petname:SetCallback("OnEnterPressed", function(widget, event, v)
             value.value = v
             top:SetStatusText(funcs:print(root, spec))
         end)
@@ -145,48 +136,36 @@ addon:RegisterCondition("THREAT", {
     icon = "Interface\\Icons\\ability_physical_taunt",
     valid = function(spec, value)
         return value.unit ~= nil and isin(units, value.unit) and
-               value.value ~= nil and value.value >= 1 and value.value <= 4
+               value.threat ~= nil and value.threat >= 1 and value.threat <= 4
     end,
     evaluate = function(value, cache, evalStart)
         local rv = getCached(cache, UnitThreatSituation, "player", value.unit)
-        if rv ~= nil and rv >= value.value - 1 then
+        if rv ~= nil and rv >= value.threat - 1 then
             return true
         else
             return false
         end
     end,
     print = function(spec, value)
-        return string.format(L["you are at least %s on %s"], nullable(threat[value.value], L["<threat>"]),
+        return string.format(L["you are at least %s on %s"], nullable(threat[value.threat], L["<threat>"]),
         nullable(units[value.unit], L["<unit>"]))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
-        local units = deepcopy(units, { "player", "pet" })
 
-        local unit = AceGUI:Create("Dropdown")
+        local unit = addon:Widget_UnitWidget(value, deepcopy(units, { "player", "pet" }),
+            function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
         local val = AceGUI:Create("Dropdown")
         parent:AddChild(val)
 
-        unit:SetLabel(L["Unit"])
-        unit:SetList(units, keys(units))
-        if (value.unit ~= nil) then
-            unit:SetValue(value.unit)
-        end
-        unit:SetCallback("OnValueChanged", function(widget, event, v)
-            value.unit = v
-            top:SetStatusText(funcs:print(root, spec))
-        end)
-
         val:SetLabel(L["Threat"])
         val:SetList(threat)
-        if (value.value ~= nil) then
-            val:SetValue(value.value)
-        end
+        val:SetValue(value.threat)
         val:SetCallback("OnValueChanged", function(widget, event, v)
-            value.value = v
+            value.threat = v
             top:SetStatusText(funcs:print(root, spec))
         end)
     end,
@@ -196,65 +175,41 @@ addon:RegisterCondition("THREAT_COUNT", {
     description = L["Threat Count"],
     icon = "Interface\\Icons\\Ability_racial_bloodrage",
     valid = function(spec, value)
-        return value.count ~= nil and value.count >= 0 and
+        return value.value ~= nil and value.value >= 0 and
                 value.operator ~= nil and isin(operators, value.operator) and
-                value.value ~= nil and value.value >= 1 and value.value <= 4
+                value.threat ~= nil and value.threat >= 1 and value.threat <= 4
     end,
     evaluate = function(value, cache, evalStart)
         local count = 0
         for unit, entity in pairs(addon.unitsInRange) do
-            if entity.enemy and entity.threat >= value.value - 1 then
+            if entity.enemy and entity.threat >= value.threat - 1 then
                 count = count + 1
             end
         end
-        return compare(value.operator, count, value.count)
+        return compare(value.operator, count, value.value)
     end,
     print = function(spec, value)
         return compareString(value.operator,
                         string.format(L["number of enemies you are at least %s"],
-                        nullable(threat[value.value], L["<threat>"])),
-                        nullable(value.count))
+                        nullable(threat[value.threat], L["<threat>"])),
+                        nullable(value.value))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
-        local units = deepcopy(units, { "player", "pet" })
 
         local val = AceGUI:Create("Dropdown")
         parent:AddChild(val)
-        local operator = AceGUI:Create("Dropdown")
-        parent:AddChild(operator)
-        local count = AceGUI:Create("EditBox")
-        parent:AddChild(count)
+        local operator_group = addon:Widget_OperatorWidget(value, L["Count"],
+            function() top:SetStatusText(funcs:print(root, spec)) end)
+        parent:AddChild(operator_group)
 
         val:SetLabel(L["Threat"])
         val:SetList(threat)
-        if (value.value ~= nil) then
-            val:SetValue(value.value)
-        end
+        val:SetValue(value.threat)
         val:SetCallback("OnValueChanged", function(widget, event, v)
-            value.value = v
-            top:SetStatusText(funcs:print(root, spec))
-        end)
-
-        operator:SetLabel(L["Operator"])
-        operator:SetList(operators, keys(operators))
-        if (value.operator ~= nil) then
-            operator:SetValue(value.operator)
-        end
-        operator:SetCallback("OnValueChanged", function(widget, event, v)
-            value.operator = v
-            top:SetStatusText(funcs:print(root, spec))
-        end)
-
-        count:SetLabel(L["Count"])
-        count:SetWidth(100)
-        if (value.count ~= nil) then
-            count:SetText(value.count)
-        end
-        count:SetCallback("OnEnterPressed", function(widget, event, v)
-            value.count = tonumber(v)
+            value.threat = v
             top:SetStatusText(funcs:print(root, spec))
         end)
     end,
@@ -355,7 +310,7 @@ addon:RegisterCondition("ENEMY", {
         return value.unit ~= nil and isin(units, value.unit);
     end,
     evaluate = function(value, cache, evalStart)
-        return getCached(cache, UnitIsEnemy, "player", value.ulnit)
+        return getCached(cache, UnitIsEnemy, "player", value.unit)
     end,
     print = function(spec, value)
         return string.format(L["%s is an enemy"], nullable(units[value.unit], L["<unit>"]))
@@ -364,19 +319,9 @@ addon:RegisterCondition("ENEMY", {
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
-        local units = deepcopy(units, { "player", "pet" })
 
-        local unit = AceGUI:Create("Dropdown")
+        local unit = addon:Widget_UnitWidget(value, deepcopy(units, { "player", "pet" }),
+            function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
-
-        unit:SetLabel(L["Unit"])
-        unit:SetList(units, keys(units))
-        if (value.unit ~= nil) then
-            unit:SetValue(value.unit)
-        end
-        unit:SetCallback("OnValueChanged", function(widget, event, v)
-            value.unit = v
-            top:SetStatusText(funcs:print(root, spec))
-        end)
     end,
 })

@@ -32,22 +32,12 @@ addon:RegisterCondition("CLASS", {
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
-        local units = deepcopy(units, { "player", "pet" })
 
-        local unit = AceGUI:Create("Dropdown")
+        local unit = addon:Widget_UnitWidget(value, deepcopy(units, { "player", "pet" }),
+            function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
         local class = AceGUI:Create("Dropdown")
         parent:AddChild(class)
-
-        unit:SetLabel(L["Unit"])
-        unit:SetList(units, keys(units))
-        if (value.unit ~= nil) then
-            unit:SetValue(value.unit)
-        end
-        unit:SetCallback("OnValueChanged", function(widget, event, v)
-            value.unit = v
-            top:SetStatusText(funcs:print(root, spec))
-        end)
 
         class:SetLabel(L["Class"])
         class:SetList(classes, keys(classes))
@@ -83,22 +73,12 @@ if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
             local top = parent:GetUserData("top")
             local root = top:GetUserData("root")
             local funcs = top:GetUserData("funcs")
-            local units = deepcopy(units, { "player", "pet" })
 
-            local unit = AceGUI:Create("Dropdown")
+            local unit = addon:Widget_UnitWidget(value, deepcopy(units, { "player", "pet" }),
+                function() top:SetStatusText(funcs:print(root, spec)) end)
             parent:AddChild(unit)
             local role = AceGUI:Create("Dropdown")
             parent:AddChild(role)
-
-            unit:SetLabel(L["Unit"])
-            unit:SetList(units, keys(units))
-            if (value.unit ~= nil) then
-                unit:SetValue(value.unit)
-            end
-            unit:SetCallback("OnValueChanged", function(widget, event, v)
-                value.unit = v
-                top:SetStatusText(funcs:print(root, spec))
-            end)
 
             role:SetLabel(L["Role"])
             role:SetList(roles, keys(roles))

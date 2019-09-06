@@ -31,18 +31,9 @@ addon:RegisterCondition("CHANNELING", {
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
-        local unit = AceGUI:Create("Dropdown")
+        local unit = addon:Widget_UnitWidget(value, units,
+            function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
-
-        unit:SetLabel(L["Unit"])
-        unit:SetList(units, keys(units))
-        if (value.unit ~= nil) then
-            unit:SetValue(value.unit)
-        end
-        unit:SetCallback("OnValueChanged", function(widget, event, v)
-            value.unit = v
-            top:SetStatusText(funcs:print(root, spec))
-        end)
     end,
 })
 
@@ -65,75 +56,14 @@ addon:RegisterCondition("CHANNELING_SPELL", {
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
-        local unit = AceGUI:Create("Dropdown")
+        local unit = addon:Widget_UnitWidget(value, units,
+            function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
-        local spellIcon = AceGUI:Create("ActionSlotSpell")
-        parent:AddChild(spellIcon)
-        local spell = AceGUI:Create("Spell_EditBox")
-        parent:AddChild(spell)
 
-        unit:SetLabel(L["Unit"])
-        unit:SetList(units, keys(units))
-        if (value.unit ~= nil) then
-            unit:SetValue(value.unit)
-        end
-        unit:SetCallback("OnValueChanged", function(widget, event, v)
-            value.unit = v
-            top:SetStatusText(funcs:print(root, spec))
-        end)
-
-        if (value.spell) then
-            local spellid = SpellData.spellListReverse[string.lower(value.spell)]
-            if spellid then
-                spellIcon:SetText(spellid)
-            else
-                SpellData:RegisterPredictor(spellIcon)
-            end
-        end
-        spellIcon.text:Hide()
-        spellIcon:SetWidth(44)
-        spellIcon:SetHeight(44)
-        spellIcon:SetCallback("OnEnterPressed", function(widget, event, v)
-            spellIcon:SetText(v)
-            if v then
-                value.spell = GetSpellInfo(v)
-                spell:SetText(value.spell)
-            else
-                value.spell = nil
-                spell:SetText("")
-            end
-            top:SetStatusText(funcs:print(root, spec))
-        end)
-        function spellIcon:Query()
-            local spellid = SpellData.spellListReverse[string.lower(value.spell)]
-            if spellid then
-                spellIcon:SetText(spellid)
-                SpellData:UnregisterPredictor(self)
-            end
-        end
-
-        spell:SetLabel(L["Spell"])
-        if (value.spell) then
-            spell:SetText(value.spell)
-        end
-        spell:SetUserData("spec", spec)
-        spell:SetCallback("OnEnterPressed", function(widget, event, v)
-            local spellid
-            if isint(v) then
-                spellid = tonumber(v)
-                value.spell = GetSpellInfo(spellid)
-                spell:SetText(value.spell)
-            else
-                value.spell = v
-                spellid = SpellData.spellListReverse[string.lower(value.spell)]
-            end
-            if spellid then
-                spellIcon:SetText(spellid)
-            else
-                SpellData:RegisterPredictor(spellIcon)
-            end
-            top:SetStatusText(funcs:print(root, spec))
-        end)
+        local spell_group = addon:Widget_SpellNameWidget(spec, "Spell_EditBox", value,
+            function(v) return true end,
+            function() top:SetStatusText(funcs:print(root, spec)) end)
+        parent:AddChild(spell_group)
     end,
 })
 
@@ -161,42 +91,13 @@ addon:RegisterCondition("CHANNELING_REMAIN", {
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
-        local unit = AceGUI:Create("Dropdown")
+        local unit = addon:Widget_UnitWidget(value, units,
+            function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
-        local operator = AceGUI:Create("Dropdown")
-        parent:AddChild(operator)
-        local health = AceGUI:Create("EditBox")
-        parent:AddChild(health)
 
-        unit:SetLabel(L["Unit"])
-        unit:SetList(units, keys(units))
-        if (value.unit ~= nil) then
-            unit:SetValue(value.unit)
-        end
-        unit:SetCallback("OnValueChanged", function(widget, event, v)
-            value.unit = v
-            top:SetStatusText(funcs:print(root, spec))
-        end)
-
-        operator:SetLabel(L["Operator"])
-        operator:SetList(operators, keys(operators))
-        if (value.operator ~= nil) then
-            operator:SetValue(value.operator)
-        end
-        operator:SetCallback("OnValueChanged", function(widget, event, v)
-            value.operator = v
-            top:SetStatusText(funcs:print(root, spec))
-        end)
-
-        health:SetLabel(L["Seconds"])
-        health:SetWidth(100)
-        if (value.value ~= nil) then
-            health:SetText(value.value)
-        end
-        health:SetCallback("OnEnterPressed", function(widget, event, v)
-            value.value = tonumber(v)
-            top:SetStatusText(funcs:print(root, spec))
-        end)
+        local operator_group = addon:Widget_OperatorWidget(value, L["Seconds"],
+            function() top:SetStatusText(funcs:print(root, spec)) end)
+        parent:AddChild(operator_group)
     end,
 })
 
@@ -217,19 +118,9 @@ addon:RegisterCondition("CHANNEL_INTERRUPTABLE", {
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
-        local units = deepcopy(units, { "player", "pet" })
 
-        local unit = AceGUI:Create("Dropdown")
+        local unit = addon:Widget_UnitWidget(value, deepcopy(units, { "player", "pet" }),
+            function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
-
-        unit:SetLabel(L["Unit"])
-        unit:SetList(units, keys(units))
-        if (value.unit ~= nil) then
-            unit:SetValue(value.unit)
-        end
-        unit:SetCallback("OnValueChanged", function(widget, event, v)
-            value.unit = v
-            top:SetStatusText(funcs:print(root, spec))
-        end)
     end,
 })

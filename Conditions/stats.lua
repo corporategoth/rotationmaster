@@ -34,42 +34,12 @@ addon:RegisterCondition("HEALTH", {
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
-        local unit = AceGUI:Create("Dropdown")
+        local unit = addon:Widget_UnitWidget(value, units,
+            function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
-        local operator = AceGUI:Create("Dropdown")
-        parent:AddChild(operator)
-        local health = AceGUI:Create("EditBox")
-        parent:AddChild(health)
-
-        unit:SetLabel(L["Unit"])
-        unit:SetList(units, keys(units))
-        if (value.unit ~= nil) then
-            unit:SetValue(value.unit)
-        end
-        unit:SetCallback("OnValueChanged", function(widget, event, v)
-            value.unit = v
-            top:SetStatusText(funcs:print(root, spec))
-        end)
-
-        operator:SetLabel(L["Operator"])
-        operator:SetList(operators, keys(operators))
-        if (value.operator ~= nil) then
-            operator:SetValue(value.operator)
-        end
-        operator:SetCallback("OnValueChanged", function(widget, event, v)
-            value.operator = v
-            top:SetStatusText(funcs:print(root, spec))
-        end)
-
-        health:SetLabel(L["Health"])
-        health:SetWidth(100)
-        if (value.value ~= nil) then
-            health:SetText(value.value)
-        end
-        health:SetCallback("OnEnterPressed", function(widget, event, v)
-            value.value = tonumber(v)
-            top:SetStatusText(funcs:print(root, spec))
-        end)
+        local operator_group = addon:Widget_OperatorWidget(value, L["Health"],
+            function() top:SetStatusText(funcs:print(root, spec)) end)
+        parent:AddChild(operator_group)
     end,
 })
 
@@ -97,43 +67,12 @@ addon:RegisterCondition("HEALTHPCT", {
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
-        local unit = AceGUI:Create("Dropdown")
+        local unit = addon:Widget_UnitWidget(value, units,
+            function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
-        local operator = AceGUI:Create("Dropdown")
-        parent:AddChild(operator)
-        local health = AceGUI:Create("Slider")
-        parent:AddChild(health)
-
-        unit:SetLabel(L["Unit"])
-        unit:SetList(units, keys(units))
-        if (value.unit ~= nil) then
-            unit:SetValue(value.unit)
-        end
-        unit:SetCallback("OnValueChanged", function(widget, event, v)
-            value.unit = v
-            top:SetStatusText(funcs:print(root, spec))
-        end)
-
-        operator:SetLabel(L["Operator"])
-        operator:SetList(operators, keys(operators))
-        if (value.operator ~= nil) then
-            operator:SetValue(value.operator)
-        end
-        operator:SetCallback("OnValueChanged", function(widget, event, v)
-            value.operator = v
-            top:SetStatusText(funcs:print(root, spec))
-        end)
-
-        health:SetLabel(L["Health"])
-        health:SetSliderValues(0, 1, 0.01)
-        health:SetIsPercent(true)
-        if (value.value ~= nil) then
-            health:SetValue(value.value)
-        end
-        health:SetCallback("OnValueChanged", function(widget, event, v)
-            value.value = v
-            top:SetStatusText(funcs:print(root, spec))
-        end)
+        local operator_group = addon:Widget_OperatorPercentWidget(value, L["Health"],
+            function() top:SetStatusText(funcs:print(root, spec)) end)
+        parent:AddChild(operator_group)
     end,
 })
 
@@ -156,42 +95,12 @@ addon:RegisterCondition("MANA", {
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
-        local unit = AceGUI:Create("Dropdown")
+        local unit = addon:Widget_UnitWidget(value, units,
+            function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
-        local operator = AceGUI:Create("Dropdown")
-        parent:AddChild(operator)
-        local health = AceGUI:Create("EditBox")
-        parent:AddChild(health)
-
-        unit:SetLabel(L["Unit"])
-        unit:SetList(units, keys(units))
-        if (value.unit ~= nil) then
-            unit:SetValue(value.unit)
-        end
-        unit:SetCallback("OnValueChanged", function(widget, event, v)
-            value.unit = v
-            top:SetStatusText(funcs:print(root, spec))
-        end)
-
-        operator:SetLabel(L["Operator"])
-        operator:SetList(operators, keys(operators))
-        if (value.operator ~= nil) then
-            operator:SetValue(value.operator)
-        end
-        operator:SetCallback("OnValueChanged", function(widget, event, v)
-            value.operator = v
-            top:SetStatusText(funcs:print(root, spec))
-        end)
-
-        health:SetLabel(L["Mana"])
-        health:SetWidth(100)
-        if (value.value ~= nil) then
-            health:SetText(value.value)
-        end
-        health:SetCallback("OnEnterPressed", function(widget, event, v)
-            value.value = tonumber(v)
-            top:SetStatusText(funcs:print(root, spec))
-        end)
+        local operator_group = addon:Widget_OperatorWidget(value, L["Mana"],
+            function() top:SetStatusText(funcs:print(root, spec)) end)
+        parent:AddChild(operator_group)
     end,
 })
 
@@ -219,43 +128,12 @@ addon:RegisterCondition("MANAPCT", {
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
-        local unit = AceGUI:Create("Dropdown")
+        local unit = addon:Widget_UnitWidget(value, units,
+            function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
-        local operator = AceGUI:Create("Dropdown")
-        parent:AddChild(operator)
-        local health = AceGUI:Create("Slider")
-        parent:AddChild(health)
-
-        unit:SetLabel(L["Unit"])
-        unit:SetList(units, keys(units))
-        if (value.unit ~= nil) then
-            unit:SetValue(value.unit)
-        end
-        unit:SetCallback("OnValueChanged", function(widget, event, v)
-            value.unit = v
-            top:SetStatusText(funcs:print(root, spec))
-        end)
-
-        operator:SetLabel(L["Operator"])
-        operator:SetList(operators, keys(operators))
-        if (value.operator ~= nil) then
-            operator:SetValue(value.operator)
-        end
-        operator:SetCallback("OnValueChanged", function(widget, event, v)
-            value.operator = v
-            top:SetStatusText(funcs:print(root, spec))
-        end)
-
-        health:SetLabel(L["Mana"])
-        health:SetSliderValues(0, 1, 0.01)
-        health:SetIsPercent(true)
-        if (value.value ~= nil) then
-            health:SetValue(value.value)
-        end
-        health:SetCallback("OnValueChanged", function(widget, event, v)
-            value.value = v
-            top:SetStatusText(funcs:print(root, spec))
-        end)
+        local operator_group = addon:Widget_OperatorPercentWidget(value, L["Mana"],
+            function() top:SetStatusText(funcs:print(root, spec)) end)
+        parent:AddChild(operator_group)
     end,
 })
 
@@ -288,42 +166,12 @@ addon:RegisterCondition("POWER", {
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
-        local unit = AceGUI:Create("Dropdown")
+        local unit = addon:Widget_UnitWidget(value, units,
+            function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
-        local operator = AceGUI:Create("Dropdown")
-        parent:AddChild(operator)
-        local health = AceGUI:Create("EditBox")
-        parent:AddChild(health)
-
-        unit:SetLabel(L["Unit"])
-        unit:SetList(units, keys(units))
-        if (value.unit ~= nil) then
-            unit:SetValue(value.unit)
-        end
-        unit:SetCallback("OnValueChanged", function(widget, event, v)
-            value.unit = v
-            top:SetStatusText(funcs:print(root, spec))
-        end)
-
-        operator:SetLabel(L["Operator"])
-        operator:SetList(operators, keys(operators))
-        if (value.operator ~= nil) then
-            operator:SetValue(value.operator)
-        end
-        operator:SetCallback("OnValueChanged", function(widget, event, v)
-            value.operator = v
-            top:SetStatusText(funcs:print(root, spec))
-        end)
-
-        health:SetLabel(L["Power"])
-        health:SetWidth(100)
-        if (value.value ~= nil) then
-            health:SetText(value.value)
-        end
-        health:SetCallback("OnEnterPressed", function(widget, event, v)
-            value.value = tonumber(v)
-            top:SetStatusText(funcs:print(root, spec))
-        end)
+        local operator_group = addon:Widget_OperatorWidget(value, L["Power"],
+            function() top:SetStatusText(funcs:print(root, spec)) end)
+        parent:AddChild(operator_group)
     end,
 })
 
@@ -359,43 +207,12 @@ addon:RegisterCondition("POWERPCT", {
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
-        local unit = AceGUI:Create("Dropdown")
+        local unit = addon:Widget_UnitWidget(value, units,
+            function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
-        local operator = AceGUI:Create("Dropdown")
-        parent:AddChild(operator)
-        local health = AceGUI:Create("Slider")
-        parent:AddChild(health)
-
-        unit:SetLabel(L["Unit"])
-        unit:SetList(units, keys(units))
-        if (value.unit ~= nil) then
-            unit:SetValue(value.unit)
-        end
-        unit:SetCallback("OnValueChanged", function(widget, event, v)
-            value.unit = v
-            top:SetStatusText(funcs:print(root, spec))
-        end)
-
-        operator:SetLabel(L["Operator"])
-        operator:SetList(operators, keys(operators))
-        if (value.operator ~= nil) then
-            operator:SetValue(value.operator)
-        end
-        operator:SetCallback("OnValueChanged", function(widget, event, v)
-            value.operator = v
-            top:SetStatusText(funcs:print(root, spec))
-        end)
-
-        health:SetLabel(L["Power"])
-        health:SetSliderValues(0, 1, 0.01)
-        health:SetIsPercent(true)
-        if (value.value ~= nil) then
-            health:SetValue(value.value)
-        end
-        health:SetCallback("OnValueChanged", function(widget, event, v)
-            value.value = v
-            top:SetStatusText(funcs:print(root, spec))
-        end)
+        local operator_group = addon:Widget_OperatorPercentWidget(value, L["Power"],
+            function() top:SetStatusText(funcs:print(root, spec)) end)
+        parent:AddChild(operator_group)
     end,
 })
 
@@ -432,42 +249,12 @@ addon:RegisterCondition("POINT", {
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
-        local unit = AceGUI:Create("Dropdown")
+        local unit = addon:Widget_UnitWidget(value, units,
+            function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
-        local operator = AceGUI:Create("Dropdown")
-        parent:AddChild(operator)
-        local health = AceGUI:Create("EditBox")
-        parent:AddChild(health)
-
-        unit:SetLabel(L["Unit"])
-        unit:SetList(units, keys(units))
-        if (value.unit ~= nil) then
-            unit:SetValue(value.unit)
-        end
-        unit:SetCallback("OnValueChanged", function(widget, event, v)
-            value.unit = v
-            top:SetStatusText(funcs:print(root, spec))
-        end)
-
-        operator:SetLabel(L["Operator"])
-        operator:SetList(operators, keys(operators))
-        if (value.operator ~= nil) then
-            operator:SetValue(value.operator)
-        end
-        operator:SetCallback("OnValueChanged", function(widget, event, v)
-            value.operator = v
-            top:SetStatusText(funcs:print(root, spec))
-        end)
-
-        health:SetLabel(L["Points"])
-        health:SetWidth(100)
-        if (value.value ~= nil) then
-            health:SetText(value.value)
-        end
-        health:SetCallback("OnEnterPressed", function(widget, event, v)
-            value.value = tonumber(v)
-            top:SetStatusText(funcs:print(root, spec))
-        end)
+        local operator_group = addon:Widget_OperatorWidget(value, L["Points"],
+            function() top:SetStatusText(funcs:print(root, spec)) end)
+        parent:AddChild(operator_group)
     end,
 })
 

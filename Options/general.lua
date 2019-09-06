@@ -388,6 +388,7 @@ local function HandleDelete(spec, rotation, frame)
                     addon:SwitchRotation()
                 end
 
+                addon.currentConditionEval = nil
                 create_spec_options(frame, spec, DEFAULT)
             end
         end,

@@ -415,19 +415,20 @@ function addon:Fetch()
 	end
 end
 
-function addon:FindSpell(spellId)
-    if spellId == nil then
-        return false
+function addon:FindSpell(spellIds)
+    if spellIds == nil then
+        return nil
 	end
-	return Spells[spellId]
+	for _, spellId in ipairs(spellIds) do
+        if Spells[spellId] ~= nil then
+			return spellId, Spells[spellId]
+        end
+	end
+	return nil
 end
 
 function addon:IsGlowing(spellId)
-	for k, v in pairs(SpellsGlowing) do
-		if k == spellId then
-			return v == 1
-        end
-    end
+    return SpellsGlowing[spellId] == 1
 end
 
 local function GlowIndependent(spellId, id, effect, color, mags, setpoint, xoffs, yoffs)
@@ -455,14 +456,14 @@ function addon:GlowCooldown(spellId, condition, cooldown)
 
 	if Flags[spellId] == nil then
 		Flags[spellId] = false
-    end
+	end
 	if condition and cooldown and not Flags[spellId] then
 		Flags[spellId] = true
 		GlowIndependent(spellId, spellId, cooldown.effect or self.db.profile.effect, cooldown.color,
-                cooldown.magnification or self.db.profile.magnification,
-                cooldown.setpoint or self.db.profile.setpoint,
-                cooldown.xoffs or self.db.profile.xoffs,
-                cooldown.yoffs or self.db.profile.yoffs)
+				cooldown.magnification or self.db.profile.magnification,
+				cooldown.setpoint or self.db.profile.setpoint,
+				cooldown.xoffs or self.db.profile.xoffs,
+				cooldown.yoffs or self.db.profile.yoffs)
 	elseif not condition and Flags[spellId] then
 		Flags[spellId] = false
 		ClearGlowIndependent(spellId, spellId)
@@ -479,7 +480,7 @@ function addon:GlowSpell(spellId)
 	if Spells[spellId] ~= nil then
 		for k, button in pairs(Spells[spellId]) do
 			Glow(button, 'next', self.db.profile.effect, self.db.profile.color,
-                 self.db.profile.magnification, self.db.profile.setpoint,
+				 self.db.profile.magnification, self.db.profile.setpoint,
 				 self.db.profile.xoffs, self.db.profile.yoffs)
 		end
 

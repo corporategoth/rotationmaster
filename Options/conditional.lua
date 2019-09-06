@@ -272,6 +272,7 @@ local function ChangeConditionType(parent, event, ...)
             cleanArray(value, { "type" })
             value.type = nil
         end
+        top:SetStatusText(funcs:print(root, spec))
         frame:Hide()
     end)
     deleteicon:SetCallback("OnEnter", function () frame:SetStatusText(DELETE) end)
@@ -292,6 +293,7 @@ local function ChangeConditionType(parent, event, ...)
         if subvalue ~= nil then
             value.value = subvalue
         end
+        top:SetStatusText(funcs:print(root, spec))
         frame:Hide()
     end)
     andicon:SetCallback("OnEnter", function () frame:SetStatusText(L["AND"]) end)
@@ -316,6 +318,7 @@ local function ChangeConditionType(parent, event, ...)
         if subvalue ~= nil then
             value.value = subvalue
         end
+        top:SetStatusText(funcs:print(root, spec))
         frame:Hide()
     end)
     oricon:SetCallback("OnEnter", function () frame:SetStatusText(L["OR"]) end)
@@ -342,6 +345,7 @@ local function ChangeConditionType(parent, event, ...)
         elseif selected ~= "NOT" then
             value.value = { type = nil }
         end
+        top:SetStatusText(funcs:print(root, spec))
         frame:Hide()
     end)
     noticon:SetCallback("OnEnter", function () frame:SetStatusText(L["NOT"]) end)
@@ -365,6 +369,7 @@ local function ChangeConditionType(parent, event, ...)
                 cleanArray(value, { "type" })
             end
             value.type = v
+            top:SetStatusText(funcs:print(root, spec))
             frame:Hide()
         end)
         acticon:SetCallback("OnEnter", function () frame:SetStatusText(desc) end)

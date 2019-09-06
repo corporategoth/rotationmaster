@@ -180,7 +180,7 @@ L["Thickness"] = true
 L["Particles"] = true
 L["Scale"] = true
 
--- from Options/cooldowns.lua and Options/rotations.lua
+-- from Options/rotations.lua and Options/rotations.lua
 
 L["Spells that you wish to conditionally highlight independent of your rotation.  Any or all of these may be highlighted at the same time."] = true
 L["Your main spell rotation.  Only one spell will be highlighted at once, which spell being based on the first satisfied condition."] = true
@@ -204,6 +204,8 @@ L["Party Only"] = true
 L["Raid Warning"] = true
 L["Say"] = true
 L["Yell"] = true
+L["Item List"] = true
+L["%s or %d others"] = true
 
 -- from Options/conditional.lua
 
@@ -307,6 +309,7 @@ L["the remaining time"] = true
 L["Buff Stacks"] = true
 L["stacks of %s"] = true
 L["Stacks"] = true
+L["stacks"] = true
 L["Has Stealable Buff"] = true
 L["%s has a stealable buff"] = true
 

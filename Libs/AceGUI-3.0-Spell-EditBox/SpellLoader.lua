@@ -32,6 +32,29 @@ local blacklist = {
 	["136243"] = true, -- The engineer icon
 }
 
+local function spairs(t, order)
+	-- collect the keys
+	local keys = {}
+	for k in pairs(t) do keys[#keys+1] = k end
+
+	-- if order function given, sort by it by passing the table and keys a, b,
+	-- otherwise just sort the keys
+	if order then
+		table.sort(keys, function(a,b) return order(t, a, b) end)
+	else
+		table.sort(keys)
+	end
+
+	-- return the iterator function
+	local i = 0
+	return function()
+		i = i + 1
+		if keys[i] then
+			return keys[i], t[keys[i]]
+		end
+	end
+end
+
 function SpellLoader:RegisterPredictor(frame)
 	self.predictors[frame] = true
 end
@@ -52,6 +75,31 @@ function SpellLoader:UpdateSpell(id, name, rank)
 		end
 		self.needUpdate[id] = nil
     end
+end
+
+function SpellLoader:GetAllSpellIds(spell)
+	local lcname
+	if type(spell) == "number" then
+		if self.spellList[spell] == nil then
+            return nil
+		end
+
+		lcname = string.lower(self.spellList[spell].name)
+	else
+		lcname = string.lower(spell)
+    end
+
+	if self.spellListReverseRank[lcname] ~= nil then
+        local rv = {}
+		for _,spellID in spairs(self.spellListReverseRank[lcname], function (t,a,b) return b < a end) do
+			table.insert(rv, spellID)
+        end
+        return rv
+	elseif spell.spellListRevewrse[lcname] ~= nil then
+		return { spell.spellListRevewrse[lcname] }
+    end
+
+	return nil
 end
 
 function SpellLoader:SpellName(id)
@@ -129,8 +177,6 @@ end
 function SpellLoader:StartLoading()
 	if( self.loader ) then return end
 
-	SpellLoader:UpdateFromSpellBook()
-
 	local timeElapsed, totalInvalid, currentIndex = 0, 0, 0
 	self.loader = CreateFrame("Frame")
 	self.loader:SetScript("OnUpdate", function(self, elapsed)
@@ -178,9 +224,5 @@ function SpellLoader:StartLoading()
 
 		-- Increment and do it all over!
 		currentIndex = currentIndex + SPELLS_PER_RUN
-	end)
-	self.loader:RegisterEvent("SPELLS_CHANGED")
-	self.loader:SetScript("OnEvent", function(self, event, ...)
-		SpellLoader:UpdateFromSpellBook()
 	end)
 end

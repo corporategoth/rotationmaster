@@ -35,9 +35,7 @@ addon:RegisterCondition("TOTEM", {
 
         totem:SetLabel(L["Totem"])
         totem:SetList(totems, keys(totems))
-        if (value.spell ~= nil) then
-            totem:SetValue(value.spell)
-        end
+        totem:SetValue(value.spell)
         totem:SetCallback("OnValueChanged", function(widget, event, v)
             value.spell = v
             top:SetStatusText(funcs:print(root, spec))
@@ -73,46 +71,11 @@ addon:RegisterCondition("TOTEM_SPELL", {
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
-        local spellIcon = AceGUI:Create("ActionSlotSpell")
-        parent:AddChild(spellIcon)
-        local spell = AceGUI:Create("Totem_EditBox")
-        parent:AddChild(spell)
-
-        if (value.spell) then
-            spellIcon:SetText(value.spell)
-        end
-        spellIcon:SetWidth(44)
-        spellIcon:SetHeight(44)
-        spellIcon.text:Hide()
-        spellIcon:SetCallback("OnEnterPressed", function(widget, event, v)
-            v = tonumber(v)
-            if not v or (isSpellOnSpec(spec, v) and string.find(GetSpellInfo(v), L["Totem"])) then
-                value.spell = v
-                spellIcon:SetText(v)
-                if v then
-                    spell:SetText(GetSpellInfo(v))
-                else
-                    spell:SetText("")
-                end
-                top:SetStatusText(funcs:print(root, spec))
-            end
-        end)
-
-        spell:SetLabel(L["Totem"])
-        if (value.spell) then
-            spell:SetText(GetSpellInfo(value.spell))
-        end
-        spell:SetUserData("spec", spec)
-        spell:SetCallback("OnEnterPressed", function(widget, event, v)
-            local oldval = value.spell
-            if string.find(v, L["Totem"]) then
-                value.spell = addon:GetSpecSpellID(spec, v)
-                spellIcon:SetText(value.spell)
-                top:SetStatusText(funcs:print(root, spec))
-            else
-                spell:SetText(oldval)
-            end
-        end)
+        local spell_group = addon:Widget_SpellWidget(spec, "Totem_EditBox", value,
+            function(v) return addon:GetSpecSpellID(spec, v) end,
+            function(v) return (isSpellOnSpec(spec, v) and string.find(GetSpellInfo(v), L["Totem"])) end,
+            function() top:SetStatusText(funcs:print(root, spec)) end)
+        parent:AddChild(spell_group)
     end,
 })
 
@@ -144,38 +107,15 @@ addon:RegisterCondition("TOTEM_REMAIN", {
 
         local totem = AceGUI:Create("Dropdown")
         parent:AddChild(totem)
-        local operator = AceGUI:Create("Dropdown")
-        parent:AddChild(operator)
-        local health = AceGUI:Create("EditBox")
-        parent:AddChild(health)
+        local operator_group = addon:Widget_OperatorWidget(value, L["Seconds"],
+            function() top:SetStatusText(funcs:print(root, spec)) end)
+        parent:AddChild(operator_group)
 
         totem:SetLabel(L["Totem"])
         totem:SetList(totems, keys(totems))
-        if (value.spell ~= nil) then
-            totem:SetValue(value.spell)
-        end
+        totem:SetValue(value.spell)
         totem:SetCallback("OnValueChanged", function(widget, event, v)
             value.spell = v
-            top:SetStatusText(funcs:print(root, spec))
-        end)
-
-        operator:SetLabel(L["Operator"])
-        operator:SetList(operators, keys(operators))
-        if (value.operator ~= nil) then
-            operator:SetValue(value.operator)
-        end
-        operator:SetCallback("OnValueChanged", function(widget, event, v)
-            value.operator = v
-            top:SetStatusText(funcs:print(root, spec))
-        end)
-
-        health:SetLabel(L["Seconds"])
-        health:SetWidth(100)
-        if (value.value ~= nil) then
-            health:SetText(value.value)
-        end
-        health:SetCallback("OnEnterPressed", function(widget, event, v)
-            value.value = tonumber(v)
             top:SetStatusText(funcs:print(root, spec))
         end)
     end,
@@ -212,69 +152,14 @@ addon:RegisterCondition("TOTEM_SPELL_REMAIN", {
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
-        local spellIcon = AceGUI:Create("ActionSlotSpell")
-        parent:AddChild(spellIcon)
-        local spell = AceGUI:Create("Totem_EditBox")
-        parent:AddChild(spell)
-        local operator = AceGUI:Create("Dropdown")
-        parent:AddChild(operator)
-        local health = AceGUI:Create("EditBox")
-        parent:AddChild(health)
+        local spell_group = addon:Widget_SpellWidget(spec, "Totem_EditBox", value,
+            function(v) return addon:GetSpecSpellID(spec, v) end,
+            function(v) return (isSpellOnSpec(spec, v) and string.find(GetSpellInfo(v), L["Totem"])) end,
+            function() top:SetStatusText(funcs:print(root, spec)) end)
+        parent:AddChild(spell_group)
 
-        if (value.spell) then
-            spellIcon:SetText(value.spell)
-        end
-        spellIcon:SetWidth(44)
-        spellIcon:SetHeight(44)
-        spellIcon.text:Hide()
-        spellIcon:SetCallback("OnEnterPressed", function(widget, event, v)
-            v = tonumber(v)
-            if not v or (isSpellOnSpec(spec, v) and string.find(GetSpellInfo(v), L["Totem"])) then
-                value.spell = v
-                spellIcon:SetText(v)
-                if v then
-                    spell:SetText(GetSpellInfo(v))
-                else
-                    spell:SetText("")
-                end
-                top:SetStatusText(funcs:print(root, spec))
-            end
-        end)
-
-        spell:SetLabel(L["Totem"])
-        if (value.spell) then
-            spell:SetText(GetSpellInfo(value.spell))
-        end
-        spell:SetUserData("spec", spec)
-        spell:SetCallback("OnEnterPressed", function(widget, event, v)
-            local oldval = value.spell
-            if string.find(v, L["Totem"]) then
-                value.spell = addon:GetSpecSpellID(spec, v)
-                spellIcon:SetText(value.spell)
-                top:SetStatusText(funcs:print(root, spec))
-            else
-                spell:SetText(oldval)
-            end
-        end)
-
-        operator:SetLabel(L["Operator"])
-        operator:SetList(operators, keys(operators))
-        if (value.operator ~= nil) then
-            operator:SetValue(value.operator)
-        end
-        operator:SetCallback("OnValueChanged", function(widget, event, v)
-            value.operator = v
-            top:SetStatusText(funcs:print(root, spec))
-        end)
-
-        health:SetLabel(L["Seconds"])
-        health:SetWidth(100)
-        if (value.value ~= nil) then
-            health:SetText(value.value)
-        end
-        health:SetCallback("OnEnterPressed", function(widget, event, v)
-            value.value = tonumber(v)
-            top:SetStatusText(funcs:print(root, spec))
-        end)
+        local operator_group = addon:Widget_OperatorWidget(value, L["Seconds"],
+            function() top:SetStatusText(funcs:print(root, spec)) end)
+        parent:AddChild(operator_group)
     end,
 })
