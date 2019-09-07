@@ -59,19 +59,22 @@ addon:RegisterCondition("PROXIMITY", {
         local unit = addon:Widget_UnitWidget(value, units,
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
+
         local operator_group = addon:Widget_OperatorWidget(value, L["Seconds"],
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
+
         local distance = AceGUI:Create("EditBox")
         parent:AddChild(distance)
-
-        distance:SetLabel(L["Distance"])
-        distance:SetWidth(100)
-        distance:SetText(value.distance)
-        distance:SetCallback("OnEnterPressed", function(widget, event, v)
-            value.distance = tonumber(v)
-            top:SetStatusText(funcs:print(root, spec))
-        end)
+        distance.configure = function()
+            distance:SetLabel(L["Distance"])
+            distance:SetWidth(100)
+            distance:SetText(value.distance)
+            distance:SetCallback("OnEnterPressed", function(widget, event, v)
+                value.distance = tonumber(v)
+                top:SetStatusText(funcs:print(root, spec))
+            end)
+        end
     end,
 })
 
@@ -98,21 +101,23 @@ addon:RegisterCondition("DISTANCE", {
         local unit = addon:Widget_UnitWidget(value, units,
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
-        local distance = AceGUI:Create("Dropdown")
-        parent:AddChild(distance)
 
         local distances = {}
         for key, _ in pairs(friendly_distance) do
             distances[key] = tostring(key) .. " " .. L["yards"]
         end
 
-        distance:SetLabel(L["Distance"])
-        distance:SetList(distances)
-        distance:SetValue(value.value)
-        distance:SetCallback("OnValueChanged", function(widget, event, v)
-            value.value = v
-            top:SetStatusText(funcs:print(root, spec))
-        end)
+        local distance = AceGUI:Create("Dropdown")
+        parent:AddChild(distance)
+        distance.configure = function()
+            distance:SetLabel(L["Distance"])
+            distance:SetList(distances)
+            distance:SetValue(value.value)
+            distance:SetCallback("OnValueChanged", function(widget, event, v)
+                value.value = v
+                top:SetStatusText(funcs:print(root, spec))
+            end)
+        end
     end,
 })
 
@@ -148,37 +153,41 @@ addon:RegisterCondition("DISTANCE_COUNT", {
 
         local enemy = AceGUI:Create("CheckBox")
         parent:AddChild(enemy)
+        enemy.configure = function()
+            enemy:SetLabel(L["Enemy"])
+            enemy:SetWidth(100)
+            if (value.enemy ~= nil) then
+                enemy:SetValue(value.enemy)
+            else
+                value.enemy = false
+                enemy:SetValue(false)
+            end
+            enemy:SetCallback("OnValueChanged", function(widget, event, v)
+                value.enemy = v
+                top:SetStatusText(funcs:print(root, spec))
+            end)
+        end
+
         local operator_group = addon:Widget_OperatorWidget(value, L["Seconds"],
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
-        local distance = AceGUI:Create("Dropdown")
-        parent:AddChild(distance)
-
-        enemy:SetLabel(L["Enemy"])
-        enemy:SetWidth(100)
-        if (value.enemy ~= nil) then
-            enemy:SetValue(value.enemy)
-        else
-            value.enemy = false
-            enemy:SetValue(false)
-        end
-        enemy:SetCallback("OnValueChanged", function(widget, event, v)
-            value.enemy = v
-            top:SetStatusText(funcs:print(root, spec))
-        end)
 
         local distances = {}
         for key, _ in pairs(friendly_distance) do
             distances[key] = tostring(key) .. " " .. L["yards"]
         end
 
-        distance:SetLabel(L["Distance"])
-        distance:SetList(distances)
-        distance:SetValue(value.distance)
-        distance:SetCallback("OnValueChanged", function(widget, event, v)
-            value.distance = v
-            top:SetStatusText(funcs:print(root, spec))
-        end)
+        local distance = AceGUI:Create("Dropdown")
+        parent:AddChild(distance)
+        distance.configure = function()
+            distance:SetLabel(L["Distance"])
+            distance:SetList(distances)
+            distance:SetValue(value.distance)
+            distance:SetCallback("OnValueChanged", function(widget, event, v)
+                value.distance = v
+                top:SetStatusText(funcs:print(root, spec))
+            end)
+        end
     end,
 })
 

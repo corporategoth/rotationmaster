@@ -200,14 +200,15 @@ if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
 
             local offhand = AceGUI:Create("CheckBox")
             parent:AddChild(offhand)
-
-            offhand:SetLabel(L["Off Hand"])
-            offhand:SetWidth(100)
-            offhand:SetValue(value.offhand and true or false)
-            offhand:SetCallback("OnValueChanged", function(widget, event, v)
-                value.offhand = v
-                top:SetStatusText(funcs:print(root, spec))
-            end)
+            offhand.configure = function()
+                offhand:SetLabel(L["Off Hand"])
+                offhand:SetWidth(100)
+                offhand:SetValue(value.offhand and true or false)
+                offhand:SetCallback("OnValueChanged", function(widget, event, v)
+                    value.offhand = v
+                    top:SetStatusText(funcs:print(root, spec))
+                end)
+            end
         end,
     })
 
@@ -237,17 +238,19 @@ if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
 
             local offhand = AceGUI:Create("CheckBox")
             parent:AddChild(offhand)
+            offhand.configure = function()
+                offhand:SetLabel(L["Off Hand"])
+                offhand:SetWidth(100)
+                offhand:SetValue(value.offhand and true or false)
+                offhand:SetCallback("OnValueChanged", function(widget, event, v)
+                    value.offhand = v
+                    top:SetStatusText(funcs:print(root, spec))
+                end)
+            end
+
             local operator_group = addon:Widget_OperatorWidget(value, L["Seconds"],
                 function() top:SetStatusText(funcs:print(root, spec)) end)
             parent:AddChild(operator_group)
-
-            offhand:SetLabel(L["Off Hand"])
-            offhand:SetWidth(100)
-            offhand:SetValue(value.offhand and true or false)
-            offhand:SetCallback("OnValueChanged", function(widget, event, v)
-                value.offhand = v
-                top:SetStatusText(funcs:print(root, spec))
-            end)
         end,
     })
 
@@ -276,17 +279,19 @@ if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
 
             local offhand = AceGUI:Create("CheckBox")
             parent:AddChild(offhand)
+            offhand.configure = function()
+                offhand:SetLabel(L["Off Hand"])
+                offhand:SetWidth(100)
+                offhand:SetValue(value.offhand and true or false)
+                offhand:SetCallback("OnValueChanged", function(widget, event, v)
+                    value.offhand = v
+                    top:SetStatusText(funcs:print(root, spec))
+                end)
+            end
+
             local operator_group = addon:Widget_OperatorWidget(value, L["Stacks"],
                 function() top:SetStatusText(funcs:print(root, spec)) end)
             parent:AddChild(operator_group)
-
-            offhand:SetLabel(L["Off Hand"])
-            offhand:SetWidth(100)
-            offhand:SetValue(value.offhand and true or false)
-            offhand:SetCallback("OnValueChanged", function(widget, event, v)
-                value.offhand = v
-                top:SetStatusText(funcs:print(root, spec))
-            end)
         end,
     })
 

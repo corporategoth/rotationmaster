@@ -32,14 +32,15 @@ addon:RegisterCondition("TOTEM", {
 
         local totem = AceGUI:Create("Dropdown")
         parent:AddChild(totem)
-
-        totem:SetLabel(L["Totem"])
-        totem:SetList(totems, keys(totems))
-        totem:SetValue(value.spell)
-        totem:SetCallback("OnValueChanged", function(widget, event, v)
-            value.spell = v
-            top:SetStatusText(funcs:print(root, spec))
-        end)
+        totem.configure = function()
+            totem:SetLabel(L["Totem"])
+            totem:SetList(totems, keys(totems))
+            totem:SetValue(value.spell)
+            totem:SetCallback("OnValueChanged", function(widget, event, v)
+                value.spell = v
+                top:SetStatusText(funcs:print(root, spec))
+            end)
+        end
     end,
 })
 
@@ -107,17 +108,19 @@ addon:RegisterCondition("TOTEM_REMAIN", {
 
         local totem = AceGUI:Create("Dropdown")
         parent:AddChild(totem)
+        totem.configure = function()
+            totem:SetLabel(L["Totem"])
+            totem:SetList(totems, keys(totems))
+            totem:SetValue(value.spell)
+            totem:SetCallback("OnValueChanged", function(widget, event, v)
+                value.spell = v
+                top:SetStatusText(funcs:print(root, spec))
+            end)
+        end
+
         local operator_group = addon:Widget_OperatorWidget(value, L["Seconds"],
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
-
-        totem:SetLabel(L["Totem"])
-        totem:SetList(totems, keys(totems))
-        totem:SetValue(value.spell)
-        totem:SetCallback("OnValueChanged", function(widget, event, v)
-            value.spell = v
-            top:SetStatusText(funcs:print(root, spec))
-        end)
     end,
 })
 

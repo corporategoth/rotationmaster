@@ -184,7 +184,6 @@ addon:RegisterCondition("PETSPELL_CHARGES", {
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
-
         local spell_group = addon:Widget_SpellWidget(spec, "Spell_EditBox", value,
             function(v) return select(7, GetSpellInfo(v)) end,
             function(v) return true end,

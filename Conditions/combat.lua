@@ -77,15 +77,16 @@ addon:RegisterCondition("PET_NAME", {
 
         local petname = AceGUI:Create("EditBox")
         parent:AddChild(petname)
-
-        petname:SetLabel(NAME)
-        if (value.value ~= nil) then
-            petname:SetText(value.value)
+        petname.configure = function()
+            petname:SetLabel(NAME)
+            if (value.value ~= nil) then
+                petname:SetText(value.value)
+            end
+            petname:SetCallback("OnEnterPressed", function(widget, event, v)
+                value.value = v
+                top:SetStatusText(funcs:print(root, spec))
+            end)
         end
-        petname:SetCallback("OnEnterPressed", function(widget, event, v)
-            value.value = v
-            top:SetStatusText(funcs:print(root, spec))
-        end)
     end,
 })
 
@@ -158,16 +159,18 @@ addon:RegisterCondition("THREAT", {
         local unit = addon:Widget_UnitWidget(value, deepcopy(units, { "player", "pet" }),
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
+
         local val = AceGUI:Create("Dropdown")
         parent:AddChild(val)
-
-        val:SetLabel(L["Threat"])
-        val:SetList(threat)
-        val:SetValue(value.threat)
-        val:SetCallback("OnValueChanged", function(widget, event, v)
-            value.threat = v
-            top:SetStatusText(funcs:print(root, spec))
-        end)
+        val.configure = function()
+            val:SetLabel(L["Threat"])
+            val:SetList(threat)
+            val:SetValue(value.threat)
+            val:SetCallback("OnValueChanged", function(widget, event, v)
+                value.threat = v
+                top:SetStatusText(funcs:print(root, spec))
+            end)
+        end
     end,
 })
 
@@ -201,17 +204,19 @@ addon:RegisterCondition("THREAT_COUNT", {
 
         local val = AceGUI:Create("Dropdown")
         parent:AddChild(val)
+        val.configure = function()
+            val:SetLabel(L["Threat"])
+            val:SetList(threat)
+            val:SetValue(value.threat)
+            val:SetCallback("OnValueChanged", function(widget, event, v)
+                value.threat = v
+                top:SetStatusText(funcs:print(root, spec))
+            end)
+        end
+
         local operator_group = addon:Widget_OperatorWidget(value, L["Count"],
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
-
-        val:SetLabel(L["Threat"])
-        val:SetList(threat)
-        val:SetValue(value.threat)
-        val:SetCallback("OnValueChanged", function(widget, event, v)
-            value.threat = v
-            top:SetStatusText(funcs:print(root, spec))
-        end)
     end,
 })
 
@@ -260,15 +265,7 @@ addon.condition_form = {
         end
 
         local formIcon = AceGUI:Create("Icon")
-        parent:AddChild(formIcon)
-        local form = AceGUI:Create("Dropdown")
-        parent:AddChild(form)
-
-
-        formIcon:SetWidth(44)
-        formIcon:SetHeight(44)
-        formIcon:SetImageSize(36, 36)
-        function set_form_icon()
+        local function set_form_icon()
             if value.value ~= nil then
                 if value.value == 0 then
                     formIcon:SetImage("Interface\\Icons\\inv_misc_head_human_02")
@@ -285,19 +282,30 @@ addon.condition_form = {
                 formIcon:SetImage("Interface\\Icons\\INV_Misc_QuestionMark")
             end
         end
-        set_form_icon()
 
-        form:SetLabel(L["Form"])
-        form:SetList(forms, formsOrder)
-        if (value.value) then
-            form:SetValue(tostring(value.value))
-        end
-        form:SetCallback("OnValueChanged", function(widget, event, v)
-            value.value = tonumber(v)
-            form:SetValue(v)
+        parent:AddChild(formIcon)
+        formIcon.configure = function()
+            formIcon:SetWidth(44)
+            formIcon:SetHeight(44)
+            formIcon:SetImageSize(36, 36)
             set_form_icon()
-            top:SetStatusText(funcs:print(root, spec))
-        end)
+        end
+
+        local form = AceGUI:Create("Dropdown")
+        parent:AddChild(form)
+        form.configure = function()
+            form:SetLabel(L["Form"])
+            form:SetList(forms, formsOrder)
+            if (value.value) then
+                form:SetValue(tostring(value.value))
+            end
+            form:SetCallback("OnValueChanged", function(widget, event, v)
+                value.value = tonumber(v)
+                form:SetValue(v)
+                set_form_icon()
+                top:SetStatusText(funcs:print(root, spec))
+            end)
+        end
     end,
 }
 

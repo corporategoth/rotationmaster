@@ -31,18 +31,9 @@ addon:RegisterSwitchCondition("PVP", {
         local funcs = top:GetUserData("funcs")
         local units = deepcopy(units, { "pet" })
 
-        local unit = AceGUI:Create("Dropdown")
+        local unit = addon:Widget_UnitWidget(value, units,
+            function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
-
-        unit:SetLabel(L["Unit"])
-        unit:SetList(units, keys(units))
-        if (value.unit ~= nil) then
-            unit:SetValue(value.unit)
-        end
-        unit:SetCallback("OnValueChanged", function(widget, event, v)
-            value.unit = v
-            top:SetStatusText(funcs:print(root, spec))
-        end)
     end,
 })
 
@@ -66,24 +57,25 @@ addon:RegisterSwitchCondition("ZONEPVP", {
         local zonepvp = deepcopy(zonepvp)
         zonepvp[""] = L["no PVP"]
 
-        local mode = AceGUI:Create("Dropdown")
-        parent:AddChild(mode)
-
-        mode:SetLabel(L["Mode"])
-        mode:SetList(zonepvp, keys(zonepvp))
-        if (value.value ~= nil) then
-            mode:SetValue(value.value)
-        else
-            mode:SetValue("")
-        end
-        mode:SetCallback("OnValueChanged", function(widget, event, v)
-            if v == "" then
-                value.vlaue = nil
+        local zone = AceGUI:Create("Dropdown")
+        parent:AddChild(zone)
+        zone.configure = function()
+            zone:SetLabel(L["Mode"])
+            zone:SetList(zonepvp, keys(zonepvp))
+            if (value.value ~= nil) then
+                zone:SetValue(value.value)
             else
-                value.value = v
+                zone:SetValue("")
             end
-            top:SetStatusText(funcs:print(root, spec))
-        end)
+            zone:SetCallback("OnValueChanged", function(widget, event, v)
+                if v == "" then
+                    value.vlaue = nil
+                else
+                    value.value = v
+                end
+                top:SetStatusText(funcs:print(root, spec))
+            end)
+        end
     end,
 })
 
@@ -108,22 +100,23 @@ addon:RegisterSwitchCondition("INSTANCE", {
 
         local instance = AceGUI:Create("Dropdown")
         parent:AddChild(instance)
-
-        instance:SetLabel(L["Mode"])
-        instance:SetList(instances, keys(instances))
-        if (value.value ~= nil) then
-            instance:SetValue(value.value)
-        else
-            instance:SetValue("")
-        end
-        instance:SetCallback("OnValueChanged", function(widget, event, v)
-            if v == "" then
-                value.vlaue = nil
+        instance.configure = function()
+            instance:SetLabel(L["Mode"])
+            instance:SetList(instances, keys(instances))
+            if (value.value ~= nil) then
+                instance:SetValue(value.value)
             else
-                value.value = v
+                instance:SetValue("")
             end
-            top:SetStatusText(funcs:print(root, spec))
-        end)
+            instance:SetCallback("OnValueChanged", function(widget, event, v)
+                if v == "" then
+                    value.vlaue = nil
+                else
+                    value.value = v
+                end
+                top:SetStatusText(funcs:print(root, spec))
+            end)
+        end
     end,
 })
 
@@ -145,17 +138,18 @@ addon:RegisterSwitchCondition("ZONE", {
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
-        local mode = AceGUI:Create("EditBox")
-        parent:AddChild(mode)
-
-        mode:SetLabel(L["Zone"])
-        if (value.value ~= nil) then
-            mode:SetText(value.value)
+        local zone = AceGUI:Create("EditBox")
+        parent:AddChild(zone)
+        zone.configure = function()
+            zone:SetLabel(L["Zone"])
+            if (value.value ~= nil) then
+                zone:SetText(value.value)
+            end
+            zone:SetCallback("OnEnterPressed", function(widget, event, v)
+                value.value = v
+                top:SetStatusText(funcs:print(root, spec))
+            end)
         end
-        mode:SetCallback("OnEnterPressed", function(widget, event, v)
-            value.value = v
-            top:SetStatusText(funcs:print(root, spec))
-        end)
     end,
 })
 
@@ -177,17 +171,18 @@ addon:RegisterSwitchCondition("SUBZONE", {
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
-        local mode = AceGUI:Create("EditBox")
-        parent:AddChild(mode)
-
-        mode:SetLabel(L["SubZone"])
-        if (value.value ~= nil) then
-            mode:SetText(value.value)
+        local zone = AceGUI:Create("EditBox")
+        parent:AddChild(zone)
+        zone.configure = function()
+            zone:SetLabel(L["SubZone"])
+            if (value.value ~= nil) then
+                zone:SetText(value.value)
+            end
+            zone:SetCallback("OnEnterPressed", function(widget, event, v)
+                value.value = v
+                top:SetStatusText(funcs:print(root, spec))
+            end)
         end
-        mode:SetCallback("OnEnterPressed", function(widget, event, v)
-            value.value = v
-            top:SetStatusText(funcs:print(root, spec))
-        end)
     end,
 })
 

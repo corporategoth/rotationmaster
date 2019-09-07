@@ -355,3 +355,17 @@ function addon.UnitCloserThan(cache, unit, distance)
         return addon.getCached(cache, IsItemInRange, friendly_distance[distance], unit)
     end
 end
+
+function addon:configure_frame(obj)
+    if (obj.configure ~= nil) then
+        obj.configure()
+        obj.configure = nil
+    end
+
+    if obj.children ~= nil then
+        for _, child in pairs(obj.children) do
+            addon:configure_frame(child)
+        end
+    end
+end
+

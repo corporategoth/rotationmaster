@@ -179,16 +179,18 @@ addon:RegisterCondition("DISPELLABLE", {
         local unit = addon:Widget_UnitWidget(value, units,
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
+
         local debufftype = AceGUI:Create("Dropdown")
         parent:AddChild(debufftype)
-
-        debufftype:SetLabel(L["Debuff Type"])
-        debufftype:SetList(debufftypes, keys(debufftypes))
-        debufftype:SetValue(value.debufftype)
-        debufftype:SetCallback("OnValueChanged", function(widget, event, v)
-            value.debufftype = v
-            top:SetStatusText(funcs:print(root, spec))
-        end)
+        debufftype.configure = function()
+            debufftype:SetLabel(L["Debuff Type"])
+            debufftype:SetList(debufftypes, keys(debufftypes))
+            debufftype:SetValue(value.debufftype)
+            debufftype:SetCallback("OnValueChanged", function(widget, event, v)
+                value.debufftype = v
+                top:SetStatusText(funcs:print(root, spec))
+            end)
+        end
 
         return nil
     end,
