@@ -259,6 +259,34 @@ local function FetchSamyTotemTimers()
 	end
 end
 
+local function FetchTotemTimers()
+    local i=1
+    while i<10 do
+		local button = _G['XiTimers_Timer' .. i];
+		if not button then
+            break
+        end
+		local spellid = select(7, GetSpellInfo(button:GetAttribute("*spell1")))
+		if spellid then
+			AddButton(spellid, button)
+        end
+
+		local j=1
+    	while j<10 do
+			local button = _G['TT_ActionButton' .. i .. j];
+			if not button then
+				break
+            end
+			local spellid = select(7, GetSpellInfo(button:GetAttribute("*spell1")))
+			if spellid then
+				AddButton(spellid, button)
+            end
+            j = j + 1
+		end
+		i = i + 1
+    end
+end
+
 local function FetchLUI()
 	local luiBars = {
 		'LUIBarBottom1', 'LUIBarBottom2', 'LUIBarBottom3', 'LUIBarBottom4', 'LUIBarBottom5', 'LUIBarBottom6',
@@ -404,6 +432,10 @@ function addon:Fetch()
 	if IsAddOnLoaded('AzeriteUI') then
 		FetchAzeriteUI();
     end
+
+	if IsAddOnLoaded('TotemTimers') then
+		FetchTotemTimers();
+	end
 
 	if IsAddOnLoaded('SamyTotemTimers') then
 		FetchSamyTotemTimers();
