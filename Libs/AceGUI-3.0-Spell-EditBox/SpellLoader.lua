@@ -32,6 +32,19 @@ local blacklist = {
 	["136243"] = true, -- The engineer icon
 }
 
+local profession_levels = {
+	APPRENTICE,
+	JOURNEYMAN,
+	EXPERT,
+	ARTISAN,
+	MASTER,
+	GRAND_MASTER,
+	ILLUSTRIOUS,
+	ZEN_MASTER,
+	DRAENOR_MASTER,
+	LEGION_MASTER,
+}
+
 local function spairs(t, order)
 	-- collect the keys
 	local keys = {}
@@ -162,13 +175,23 @@ local function AddSpell(name, rank, icon, spellID, force)
 end
 
 function SpellLoader:UpdateFromSpellBook()
-	for i=2, GetNumSpellTabs() do
+	for i=1, GetNumSpellTabs() do
 		local _, _, offset, numSpells = GetSpellTabInfo(i)
 		for j=1,numSpells do
 			local name, rank, spellID = GetSpellBookItemName(j+offset, BOOKTYPE_SPELL)
-			local icon = GetSpellTexture(spellID)
-			if (not blacklist[tostring(icon)] and not IsPassiveSpell(j+offset, BOOKTYPE_SPELL) ) then
-				AddSpell(name, rank, icon, spellID, true)
+        	if (i == 1 and rank ~= nil and rank ~= "") then
+				for _, prof in pairs(profession_levels) do
+                    if rank == prof then
+						spellID = nil
+                        break
+					end
+				end
+			end
+			if spellID then
+				local icon = GetSpellTexture(spellID)
+				if (not blacklist[tostring(icon)] and not IsPassiveSpell(j+offset, BOOKTYPE_SPELL) ) then
+					AddSpell(name, rank, icon, spellID, true)
+                end
 			end
 		end
 	end

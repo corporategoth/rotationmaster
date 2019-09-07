@@ -239,6 +239,8 @@ do
 		
 		-- Reset all bindings set on this predictor
 		ClearOverrideBindings(self)
+
+		self:SetScript("OnKeyDown", nil)
 	end
 
 	local function Predictor_OnShow(self)
@@ -251,6 +253,13 @@ do
 		SetOverrideBindingClick(self, true, "UP", name, -1)
 		SetOverrideBindingClick(self, true, "LEFT", name, "LEFT")
 		SetOverrideBindingClick(self, true, "RIGHT", name, "RIGHT")
+
+		self:SetScript("OnKeyDown", function (self, key)
+			self:SetPropagateKeyboardInput(key ~= "ESCAPE")
+			if key == "ESCAPE" then
+				self:Hide()
+			end
+		end)
 	end
 	
 	local function EditBox_OnEnterPressed(this)
@@ -313,7 +322,11 @@ do
 	local function EditBox_OnEditFocusLost(self)
 		Predictor_OnHide(self.obj.predictFrame)
 	end
-	
+
+	local function EditBox_OnHide(self)
+		self.obj.predictFrame:Hide()
+	end
+
 	local function EditBox_OnEditFocusGained(self)
 		if( self.obj.predictFrame:IsVisible() ) then
 			Predictor_OnShow(self.obj.predictFrame)
@@ -547,6 +560,8 @@ do
 		predictFrame:SetScript("OnShow", Predictor_OnShow)
 		predictFrame:EnableMouseWheel(true)
 		predictFrame:SetScript("OnMouseWheel", Predictor_OnMouseWheel)
+		predictFrame:EnableKeyboard(true)
+		predictFrame:SetPropagateKeyboardInput(true)
 
 		editBox:SetScript("OnEnter", Control_OnEnter)
 		editBox:SetScript("OnLeave", Control_OnLeave)
@@ -560,6 +575,7 @@ do
 		editBox:SetScript("OnMouseDown", EditBox_OnReceiveDrag)
 		editBox:SetScript("OnEditFocusGained", EditBox_OnEditFocusGained)
 		editBox:SetScript("OnEditFocusLost", EditBox_OnEditFocusLost)
+		editBox:SetScript("OnHide", EditBox_OnHide)
 
 		editBox:SetTextInsets(0, 0, 3, 3)
 		editBox:SetMaxLetters(256)

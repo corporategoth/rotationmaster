@@ -1,5 +1,3 @@
 - Key Bindings
-- Make a generic way to separate layout from configuration of widgets
-     CreateChild(parent, type, function() ... end) ?
 - Bug Report on 8.2.0 - UI issue while adding spell
 - Bug Report on 8.2.0 - Feral Druid points?

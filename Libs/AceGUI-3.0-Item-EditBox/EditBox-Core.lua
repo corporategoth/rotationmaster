@@ -1,8 +1,11 @@
 -- This is basically the main portion of the predictor, the other files handle 
 local AceGUI = LibStub("AceGUI-3.0")
+local floor = math.floor
+
 do
 	local Type = "ItemPredictor_Base"
 	local Version = 1
+	local RESULT_ROWS = 100
 	local PREDICTOR_ROWS = 10
 	local ItemData = LibStub("AceGUI-3.0-ItemLoader")
 	local tooltip
@@ -43,13 +46,43 @@ do
 	local function Control_OnLeave(this)
 		this.obj:Fire("OnLeave")
 	end
-		
+
+	local function Update_PredictorScroll(self, value)
+		value = floor(value)
+		if value > self.activeButtons - PREDICTOR_ROWS then value = self.activeButtons - PREDICTOR_ROWS end
+		if value < 0 then value = 0 end
+		if self.buttonOffset ~= value then
+			while value < self.buttonOffset do
+				self.buttons[self.buttonOffset + PREDICTOR_ROWS]:Hide()
+				self.buttonOffset = self.buttonOffset - 1
+				local topButton = self.buttons[self.buttonOffset + 1]
+				topButton:SetPoint("TOPLEFT", self, 8, -10)
+				topButton:SetPoint("TOPRIGHT", self, -7, 0)
+				local nextButton = self.buttons[self.buttonOffset + 2]
+				nextButton:SetPoint("TOPLEFT", topButton, "BOTTOMLEFT", 0, 0)
+				nextButton:SetPoint("TOPRIGHT", topButton, "BOTTOMRIGHT", 0, 0)
+				topButton:Show()
+			end
+			while value > self.buttonOffset do
+				self.buttons[self.buttonOffset + 1]:Hide()
+				self.buttonOffset = self.buttonOffset + 1
+				local topButton = self.buttons[self.buttonOffset + 1]
+				topButton:SetPoint("TOPLEFT", self, 8, -10)
+				topButton:SetPoint("TOPRIGHT", self, -7, 0)
+				local lastButton = self.buttons[self.buttonOffset + PREDICTOR_ROWS]
+				lastButton:Show()
+			end
+			self.scrollbar:SetValue(value)
+		end
+	end
+
 	local function Predictor_Query(self)
 		for _, button in pairs(self.buttons) do button:Hide() end
-		for k in pairs(alreadyAdded) do alreadyAdded[k] = nil end
-		
-		local query = "^" .. string.lower(self.obj.editBox:GetText())
-		
+		table.wipe(alreadyAdded)
+
+		local query = "^" .. string.gsub(string.lower(self.obj.editBox:GetText()),
+			"([().%+-*?^$[])", "%%%1")
+
 		local activeButtons = 0
 		for name, itemID in pairs(ItemData.itemListReverse) do
 			if( not alreadyAdded[name] and string.match(name, query) and ( not self.obj.itemFilter or self.obj.itemFilter(self.obj, itemID) ) ) then
@@ -60,14 +93,13 @@ do
 				if itemInfo ~= nil and itemInfo.icon ~= nil and itemInfo.link ~= nil then
                     button:SetFormattedText("|T%s:20:20:2:11|t %s", itemInfo.icon, itemInfo.link)
                 else
-					button:SetFormattedText("[itemID]")
+					button:SetFormattedText("[%s]", itemID)
 				end
 
                 alreadyAdded[name] = true
 
 				button.itemID = itemID
-				button:Show()
-				
+
 				-- Highlight if needed
 				if( activeButtons ~= self.selectedButton ) then
 					button:UnlockHighlight()
@@ -81,17 +113,55 @@ do
 				if( activeButtons >= PREDICTOR_ROWS ) then break end
 			end
 		end
-		
+
+		self.activeButtons = activeButtons
 		if( activeButtons > 0 ) then
-			self:SetHeight(15 + activeButtons * 17)
+			if activeButtons > PREDICTOR_ROWS then
+				self:SetHeight(19 + PREDICTOR_ROWS * 17)
+				self.scrollbar:Show()
+				self.scrollbar:SetMinMaxValues(0, activeButtons - PREDICTOR_ROWS)
+				if self.buttonOffset + PREDICTOR_ROWS > activeButtons then
+					self.buttonOffset = activeButtons - PREDICTOR_ROWS
+					self.scrollbar:SetValue(self.buttonOffset)
+				end
+			else
+				self:SetHeight(19 + activeButtons * 17)
+				self.scrollbar:Hide()
+				self.buttonOffset = 0
+				self.scrollbar:SetValue(self.buttonOffset)
+			end
+			for idx,button in pairs(self.buttons) do
+				if idx <= self.buttonOffset or idx > self.buttonOffset + activeButtons or idx > self.buttonOffset + PREDICTOR_ROWS then
+					button:Hide()
+				elseif idx == self.buttonOffset + 1 then
+					button:SetPoint("TOPLEFT", self, 8, -10)
+					button:SetPoint("TOPRIGHT", self, -7, 0)
+					button:Show()
+				else
+					button:SetPoint("TOPLEFT", self.buttons[idx-1], "BOTTOMLEFT", 0, 0)
+					button:SetPoint("TOPRIGHT", self.buttons[idx-1], "BOTTOMRIGHT", 0, 0)
+					button:Show()
+				end
+			end
+
 			self:Show()
 		else
 			self:Hide()
 		end
-		
-		self.activeButtons = activeButtons
 	end
-				
+
+	local function Predictor_OnMouseWheel(self, value)
+		-- DOWN = -1, UP = 1
+
+		if (self.activeButtons > PREDICTOR_ROWS) then
+			Update_PredictorScroll(self, self.buttonOffset - value)
+		end
+	end
+
+	local function ScrollBar_OnScrollValueChanged(frame, value)
+		Update_PredictorScroll(frame:GetParent(), value)
+	end
+
 	local function ShowButton(self)
 		if( self.lastText ~= "" ) then
 			self.predictFrame.selectedButton = nil
@@ -127,6 +197,8 @@ do
 		
 		-- Reset all bindings set on this predictor
 		ClearOverrideBindings(self)
+
+		self:SetScript("OnKeyDown", nil)
 	end
 
 	local function Predictor_OnShow(self)
@@ -139,6 +211,13 @@ do
 		SetOverrideBindingClick(self, true, "UP", name, -1)
 		SetOverrideBindingClick(self, true, "LEFT", name, "LEFT")
 		SetOverrideBindingClick(self, true, "RIGHT", name, "RIGHT")
+
+		self:SetScript("OnKeyDown", function (self, key)
+			self:SetPropagateKeyboardInput(key ~= "ESCAPE")
+			if key == "ESCAPE" then
+				self:Hide()
+			end
+		end)
 	end
 	
 	local function EditBox_OnEnterPressed(this)
@@ -173,6 +252,7 @@ do
 	local function EditBox_OnReceiveDrag(this)
 		local self = this.obj
 		local type, id, info = GetCursorInfo()
+
 		if( type == "item" ) then
 			local name = GetItemInfo(id)
 			self:SetText(name)
@@ -197,8 +277,12 @@ do
 
 	local function EditBox_OnEditFocusLost(self)
 		Predictor_OnHide(self.obj.predictFrame)
+    end
+
+	local function EditBox_OnHide(self)
+		self.obj.predictFrame:Hide()
 	end
-	
+
 	local function EditBox_OnEditFocusGained(self)
 		if( self.obj.predictFrame:IsVisible() ) then
 			Predictor_OnShow(self.obj.predictFrame)
@@ -306,7 +390,7 @@ do
 		local editBox = CreateFrame("EditBox", "AceGUI30ItemEditBox" .. num, frame, "InputBoxTemplate")
 	
 		-- Don't feel like looking up the specific callbacks for when a widget resizes, so going to be creative with SetPoint instead!
-		local predictFrame = CreateFrame("Frame", "AceGUI30ItemEditBox" .. num .. "Predictor", UIParent)
+		local predictFrame = CreateFrame("ScrollFrame", "AceGUI30ItemEditBox" .. num .. "Predictor", UIParent)
 		predictFrame:SetBackdrop(predictorBackdrop)
 		predictFrame:SetBackdropColor(0, 0, 0, 0.85)
 		predictFrame:SetWidth(1)
@@ -315,11 +399,30 @@ do
 		predictFrame:SetPoint("TOPRIGHT", editBox, "BOTTOMRIGHT", 0, 0)
 		predictFrame:SetFrameStrata("TOOLTIP")
 		predictFrame.buttons = {}
+		predictFrame.activeButtons = 0
+		predictFrame.buttonOffset = 0
 		predictFrame.Query = Predictor_Query
 		predictFrame:Hide()
-			
+
+		local scrollbar = CreateFrame("Slider", ("AceConfigDialogScrollFrame%dScrollBar"):format(num), predictFrame, "UIPanelScrollBarTemplate")
+		scrollbar:SetPoint("TOPRIGHT", predictFrame, "TOPLEFT", 0, -20)
+		scrollbar:SetPoint("BOTTOMRIGHT", predictFrame, "BOTTOMLEFT", 0, 20)
+		scrollbar:SetMinMaxValues(0, 1000)
+		scrollbar:SetValueStep(1)
+		scrollbar:SetValue(0)
+		scrollbar:SetWidth(16)
+		scrollbar:Hide()
+		-- set the script as the last step, so it doesn't fire yet
+		scrollbar:SetScript("OnValueChanged", ScrollBar_OnScrollValueChanged)
+
+		local scrollbg = scrollbar:CreateTexture(nil, "BACKGROUND")
+		scrollbg:SetAllPoints(scrollbar)
+		scrollbg:SetColorTexture(0, 0, 0, 0.4)
+
+		predictFrame.scrollbar = scrollbar
+
 		-- Create the mass of predictor rows
-		for i=1, PREDICTOR_ROWS do
+		for i=1, RESULT_ROWS do
 			local button = CreateFrame("Button", nil, predictFrame)
 			button:SetHeight(17)
 			button:SetWidth(1)
@@ -335,7 +438,7 @@ do
 				button:SetPoint("TOPLEFT", predictFrame.buttons[i - 1], "BOTTOMLEFT", 0, 0)
 				button:SetPoint("TOPRIGHT", predictFrame.buttons[i - 1], "BOTTOMRIGHT", 0, 0)
 			else
-				button:SetPoint("TOPLEFT", predictFrame, 8, -8)
+				button:SetPoint("TOPLEFT", predictFrame, 8, -10)
 				button:SetPoint("TOPRIGHT", predictFrame, -7, 0)
 			end
 
@@ -405,7 +508,11 @@ do
 		predictFrame:SetScript("OnMouseDown", Predictor_OnMouseDown)
 		predictFrame:SetScript("OnHide", Predictor_OnHide)
 		predictFrame:SetScript("OnShow", Predictor_OnShow)
-		
+		predictFrame:EnableMouseWheel(true)
+		predictFrame:SetScript("OnMouseWheel", Predictor_OnMouseWheel)
+		predictFrame:EnableKeyboard(true)
+		predictFrame:SetPropagateKeyboardInput(true)
+
 		editBox:SetScript("OnEnter", Control_OnEnter)
 		editBox:SetScript("OnLeave", Control_OnLeave)
 		
@@ -418,6 +525,7 @@ do
 		editBox:SetScript("OnMouseDown", EditBox_OnReceiveDrag)
 		editBox:SetScript("OnEditFocusGained", EditBox_OnEditFocusGained)
 		editBox:SetScript("OnEditFocusLost", EditBox_OnEditFocusLost)
+		editBox:SetScript("OnHide", EditBox_OnHide)
 
 		editBox:SetTextInsets(0, 0, 3, 3)
 		editBox:SetMaxLetters(256)
