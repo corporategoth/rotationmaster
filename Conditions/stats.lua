@@ -232,10 +232,7 @@ addon:RegisterCondition("POINT", {
             class = select(2, getCached(cache, UnitClass, value.unit))
         end
         if class ~= nil then
-            local point = points[class]
-            if (point == nil) then
-                return false
-            end
+            local point = points[class] or Enum.PowerType.ComboPoints
             return compare(value.operator, getCached(cache, UnitPower, value.unit, point), value.value)
         else
             return false

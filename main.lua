@@ -424,16 +424,17 @@ function DataBroker.OnTooltipShow(GameTooltip)
 end
 
 function addon:enable()
-    self.currentSpec = 0
     for k, v in pairs(events) do
         self:RegisterEvent(v)
     end
     if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
         self.currentSpec = GetSpecializationInfo(GetSpecialization())
+        self.specTab:SelectTab(self.currentSpec)
         for k, v in pairs(mainline_events) do
             self:RegisterEvent(v)
         end
     else
+        self.currentSpec = 0
         for k, v in pairs(classic_events) do
             self:RegisterEvent(v)
         end
@@ -804,7 +805,9 @@ end
 
 function addon:RemoveAllCurrentGlows()
     addon:debug(L["Removing all glows."])
-    if self.currentSpec ~= nil and self.currentRotation ~= nil then
+    if self.currentSpec ~= nil and self.currentRotation ~= nil and
+        self.db.char.rotations[self.currentSpec][self.currentRotation] ~= nil and
+        self.db.char.rotations[self.currentSpec][self.currentRotation].cooldowns ~= nil then
         for id, rot in pairs(self.db.char.rotations[self.currentSpec][self.currentRotation].cooldowns) do
             for _, spellid in pairs(addon:GetSpellIds(rot)) do
                 addon:GlowCooldown(spellid, false)
@@ -816,15 +819,15 @@ end
 
 function addon:UpdateSkills()
     addon:verbose("Skill update triggered")
-    local spec = 0
     if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
-        spec = GetSpecializationInfo(GetSpecialization())
+        local spec = GetSpecializationInfo(GetSpecialization())
         if spec == nil then
             return
         end
+        self.currentSpec = spec
+        self.specTab:SelectTab(spec)
     end
 
-    self.currentSpec = spec
     self:UpdateAutoSwitch()
     self:SwitchRotation()
     self:ButtonFetch()

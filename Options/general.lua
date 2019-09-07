@@ -926,7 +926,12 @@ local function create_class_options(frame, classID)
     frame:PauseLayout()
 
     if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
+        if currentSpec == nil then
+            currentSpec = GetSpecializationInfo(GetSpecialization())
+        end
+
         local tabs = AceGUI:Create("TabGroup")
+        addon.specTab = tabs
         frame:AddChild(tabs)
 
         local spec_tabs = {}
@@ -945,7 +950,7 @@ local function create_class_options(frame, classID)
         tabs:SetLayout("Fill")
 
         tabs:SetCallback("OnGroupSelected", function(widget, event, val)
-            create_spec_options(tabs, val, DEFAULT)
+            create_spec_options(tabs, val, (val == addon.currentSpec) and addon.currentRotation or DEFAULT)
         end)
         create_spec_options(tabs, currentSpec, addon.currentRotation or DEFAULT)
     else
