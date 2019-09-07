@@ -429,7 +429,9 @@ function addon:enable()
     end
     if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
         self.currentSpec = GetSpecializationInfo(GetSpecialization())
-        self.specTab:SelectTab(self.currentSpec)
+        if self.specTab then
+            self.specTab:SelectTab(self.currentSpec)
+        end
         for k, v in pairs(mainline_events) do
             self:RegisterEvent(v)
         end
@@ -829,7 +831,9 @@ function addon:UpdateSkills()
             return
         end
         self.currentSpec = spec
-        self.specTab:SelectTab(spec)
+        if self.specTab then
+            self.specTab:SelectTab(spec)
+        end
     end
 
     self:UpdateAutoSwitch()

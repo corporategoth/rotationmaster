@@ -731,7 +731,8 @@ local function create_rotation_options(frame, specID, rotid, parent, selected)
             end
             table.insert(cooldowns, {
                 value = "*",
-                text = ADD
+                text = ADD,
+                icon = "Interface\\Icons\\Spell_ChargePositive"
             })
 
             if rotation_settings[rotid].rotation ~= nil then
@@ -745,7 +746,8 @@ local function create_rotation_options(frame, specID, rotid, parent, selected)
 
             table.insert(rotation, {
                 value = "*",
-                text = ADD
+                text = ADD,
+                icon = "Interface\\Icons\\Spell_ChargePositive"
             })
         end
 
@@ -885,10 +887,6 @@ local function create_class_options(frame, classID)
     frame:PauseLayout()
 
     if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
-        if currentSpec == nil then
-            currentSpec = GetSpecializationInfo(GetSpecialization())
-        end
-
         local tabs = AceGUI:Create("TabGroup")
         addon.specTab = tabs
 
