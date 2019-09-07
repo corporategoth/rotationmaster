@@ -781,7 +781,7 @@ local function create_rotation_options(frame, specID, rotid, parent, selected)
 
     if selected ~= nil then
         tree:SelectByValue(selected)
-        section, key = ("\001"):split(selected)
+        local section, key = ("\001"):split(selected)
         if section == "C" then
             addon:get_cooldown_list(scrollwin, specID, rotid, key,
                     function() create_rotation_options(frame, specID, rotid, parent, selected) end)
@@ -792,7 +792,7 @@ local function create_rotation_options(frame, specID, rotid, parent, selected)
     end
 
     tree:SetCallback("OnGroupSelected", function(widget, event, val)
-        section, key = ("\001"):split(val)
+        local section, key = ("\001"):split(val)
         if section == "C" then
             if key == "*" then
                 if rotation_settings[rotid].cooldowns == nil then

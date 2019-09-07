@@ -365,7 +365,7 @@ function addon:configure_frame(obj)
 
     if (obj.configure ~= nil) then
         obj.configure()
-        obj.configure = nil
+        -- obj.configure = nil
     end
 end
 

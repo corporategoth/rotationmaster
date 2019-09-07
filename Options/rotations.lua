@@ -271,8 +271,10 @@ local function add_effect_group(specID, rotid, rot, refresh)
         effect_icon:SetHeight(36)
         effect_icon:SetWidth(36)
         addon:ApplyCustomGlow(effects[name2idx[rot.effect or profile["effect"]]], effect_icon.frame, nil, rot.color)
+        group.frame:SetScript("OnHide", function()
+            addon:StopCustomGlow(effect_icon.frame)
+        end)
     end
-    addon.active_effect_icon = effect_icon.frame
     effect_group:AddChild(effect_icon)
 
     local effect = AceGUI:Create("Dropdown")
@@ -852,11 +854,6 @@ local function add_conditions(specID, idx, rotid, rot, callback)
 end
 
 function addon:get_cooldown_list(frame, specID, rotid, id, callback)
-    if addon.active_effect_icon then
-        addon:StopCustomGlow(addon.active_effect_icon)
-        addon.active_effect_icon = nil
-    end
-
     local profile = self.db.profile
     local rotation_settings = self.db.char.rotations[specID][rotid]
     local effects = self.db.global.effects
@@ -910,14 +907,15 @@ function addon:get_cooldown_list(frame, specID, rotid, id, callback)
     }
 
     local announce = AceGUI:Create("Dropdown")
-    announce:SetList(announces, { "none", "partyraid", "party", "raidwarn", "say", "yell" })
     announce:SetRelativeWidth(0.4)
-    announce:SetValue(rot.announce or "none")
-    announce:SetLabel(announces[rot.announce or "none"])
     announce:SetLabel(L["Announce"])
     announce:SetCallback("OnValueChanged", function(widget, event, val)
         rot.announce = val
     end)
+    announce.configure = function()
+        announce:SetList(announces, { "none", "partyraid", "party", "raidwarn", "say", "yell" })
+        announce:SetValue(rot.announce or "none")
+    end
     frame:AddChild(announce)
 
     local conditions_frame = add_conditions(specID, idx, rotid, rot, callback)
@@ -929,11 +927,6 @@ function addon:get_cooldown_list(frame, specID, rotid, id, callback)
 end
 
 function addon:get_rotation_list(frame, specID, rotid, id, callback)
-    if addon.active_effect_icon then
-        addon:StopCustomGlow(addon.active_effect_icon)
-        addon.active_effect_icon = nil
-    end
-
     local profile = self.db.profile
     local rotation_settings = self.db.char.rotations[specID][rotid]
 
