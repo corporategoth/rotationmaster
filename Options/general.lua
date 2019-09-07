@@ -17,130 +17,114 @@ local assert, error, hooksecurefunc, pairs, base64enc, base64dec, date, color, w
 
 local HideOnEscape = addon.HideOnEscape
 
+local function spacer(width)
+    local rv = AceGUI:Create("Label")
+    rv:SetRelativeWidth(width)
+    return rv
+end
+
 local function create_primary_options(frame)
     local profile = addon.db.profile
     local effects = addon.db.global.effects
-
-    local function spacer(width)
-        local rv = AceGUI:Create("Label")
-        rv:SetRelativeWidth(width)
-        return rv
-    end
 
     frame:ReleaseChildren()
     frame:PauseLayout()
 
     local scroll = AceGUI:Create("ScrollFrame")
-    frame:AddChild(scroll)
     scroll:SetFullWidth(true)
     scroll:SetFullHeight(true)
     scroll:SetLayout("Flow")
 
     local general_group = AceGUI:Create("SimpleGroup")
-    scroll:AddChild(general_group)
     general_group:SetFullWidth(true)
     general_group:SetLayout("Table")
     general_group:SetUserData("table", { columns = { 1, 1 } })
 
     local enable = AceGUI:Create("CheckBox")
+    enable:SetFullWidth(true)
+    enable:SetLabel(ENABLE)
+    enable:SetValue(profile["enable"])
+    enable:SetCallback("OnValueChanged", function(widget, event, val)
+        profile["enable"] = val
+        if val then
+            addon:enable()
+        else
+            addon:disable()
+        end
+    end)
     general_group:AddChild(enable)
-    enable.configure = function()
-        enable:SetLabel(ENABLE)
-        enable:SetValue(profile["enable"])
-        enable:SetFullWidth(true)
-        enable:SetCallback("OnValueChanged", function(widget, event, val)
-            profile["enable"] = val
-            if val then
-                addon:enable()
-            else
-                addon:disable()
-            end
-        end)
-    end
 
     local poll = AceGUI:Create("Slider")
+    poll:SetFullWidth(true)
+    poll:SetLabel(L["Polling Interval (seconds)"])
+    poll:SetValue(profile["poll"])
+    poll:SetSliderValues(0.05, 1.0, 0.05)
+    poll:SetCallback("OnValueChanged", function(widget, event, val)
+        profile["poll"] = val
+        if addon.rotationTimer then
+            addon:DisableRotationTimer()
+            addon:EnableRotationTimer()
+        end
+    end)
     general_group:AddChild(poll)
-    poll.configure = function()
-        poll:SetLabel(L["Polling Interval (seconds)"])
-        poll:SetValue(profile["poll"])
-        poll:SetFullWidth(true)
-        poll:SetSliderValues(0.05, 1.0, 0.05)
-        poll:SetCallback("OnValueChanged", function(widget, event, val)
-            profile["poll"] = val
-            if addon.rotationTimer then
-                addon:DisableRotationTimer()
-                addon:EnableRotationTimer()
-            end
-        end)
-    end
 
     local minimap = AceGUI:Create("CheckBox")
+    minimap:SetFullWidth(true)
+    minimap:SetLabel(L["Minimap Icon"])
+    minimap:SetValue(not profile["minimap"].hide)
+    minimap:SetCallback("OnValueChanged", function(widget, event, val)
+        profile["minimap"].hide = not val
+        if val then
+            DBIcon:Show(addon.namen)
+        else
+            DBIcon:Hide(addon.name)
+        end
+    end)
     general_group:AddChild(minimap)
-    minimap.configure = function()
-        minimap:SetLabel(L["Minimap Icon"])
-        minimap:SetValue(not profile["minimap"].hide)
-        minimap:SetFullWidth(true)
-        minimap:SetCallback("OnValueChanged", function(widget, event, val)
-            profile["minimap"].hide = not val
-            if val then
-                DBIcon:Show(addon.namen)
-            else
-                DBIcon:Hide(addon.name)
-            end
-        end)
-    end
 
     local spell_history = AceGUI:Create("Slider")
+    spell_history:SetFullWidth(true)
+    spell_history:SetLabel(L["Spell History Memory (seconds)"])
+    spell_history:SetValue(profile["spell_history"])
+    spell_history:SetSliderValues(0.0, 300, 1)
+    spell_history:SetCallback("OnValueChanged", function(widget, event, val)
+        profile["spell_history"] = val
+    end)
     general_group:AddChild(spell_history)
-    spell_history.configure = function()
-        spell_history:SetLabel(L["Spell History Memory (seconds)"])
-        spell_history:SetValue(profile["spell_history"])
-        spell_history:SetFullWidth(true)
-        spell_history:SetSliderValues(0.0, 300, 1)
-        spell_history:SetCallback("OnValueChanged", function(widget, event, val)
-            profile["spell_history"] = val
-        end)
-    end
 
     local ignore_mana = AceGUI:Create("CheckBox")
+    ignore_mana:SetFullWidth(true)
+    ignore_mana:SetLabel(L["Ignore Mana"])
+    ignore_mana:SetValue(profile["ignore_mana"])
+    ignore_mana:SetCallback("OnValueChanged", function(widget, event, val)
+        profile["ignore_mana"] = val
+    end)
     general_group:AddChild(ignore_mana)
-    ignore_mana.configure = function()
-        ignore_mana:SetLabel(L["Ignore Mana"])
-        ignore_mana:SetValue(profile["ignore_mana"])
-        ignore_mana:SetFullWidth(true)
-        ignore_mana:SetCallback("OnValueChanged", function(widget, event, val)
-            profile["ignore_mana"] = val
-        end)
-    end
 
     local ignore_range = AceGUI:Create("CheckBox")
+    ignore_range:SetFullWidth(true)
+    ignore_range:SetLabel(L["Ignore Range"])
+    ignore_range:SetValue(profile["ignore_range"])
+    ignore_range:SetCallback("OnValueChanged", function(widget, event, val)
+        profile["ignore_range"] = val
+    end)
     general_group:AddChild(ignore_range)
-    ignore_range.configure = function()
-        ignore_range:SetLabel(L["Ignore Range"])
-        ignore_range:SetValue(profile["ignore_range"])
-        ignore_range:SetFullWidth(true)
-        ignore_range:SetCallback("OnValueChanged", function(widget, event, val)
-            profile["ignore_range"] = val
-        end)
-    end
+
+    scroll:AddChild(general_group)
 
     local effect_header = AceGUI:Create("Heading")
+    effect_header:SetFullWidth(true)
+    effect_header:SetText(L["Effect Options"])
     scroll:AddChild(effect_header)
-    effect_header.configure = function()
-        effect_header:SetText(L["Effect Options"])
-        effect_header:SetFullWidth(true)
-    end
 
     local fx_group = AceGUI:Create("SimpleGroup")
-    scroll:AddChild(fx_group)
     fx_group:SetFullWidth(true)
     fx_group:SetLayout("Table")
     fx_group:SetUserData("table", { columns = { 1, 1 } })
 
     local effect_group = AceGUI:Create("SimpleGroup")
-    fx_group:AddChild(effect_group)
-    effect_group:SetRelativeWidth(0.4)
     effect_group:SetFullWidth(true)
+    effect_group:SetLayout("Table")
     effect_group:SetUserData("table", { columns = { 44, 1 } })
 
     local effect_map, effect_order, name2idx
@@ -159,60 +143,56 @@ local function create_primary_options(frame)
     update_effect_map()
 
     local effect_icon = AceGUI:Create("Icon")
-    effect_group:AddChild(effect_icon)
-    effect_icon.configure = function()
-        effect_icon:SetImageSize(36, 36)
-        if name2idx[profile["effect"]] ~= nil then
-            if effects[name2idx[profile["effect"]]].type == "texture" then
-                effect_icon:SetHeight(44)
-                effect_icon:SetWidth(44)
-                effect_icon:SetImage(effects[name2idx[profile["effect"]]].texture)
-            else
-                effect_icon:SetImage(nil)
-                effect_icon:SetHeight(36)
-                effect_icon:SetWidth(36)
-                addon:ApplyCustomGlow(effects[name2idx[profile["effect"]]], effect_icon.frame, nil, profile["color"])
-            end
+    effect_icon:SetImageSize(36, 36)
+    if name2idx[profile["effect"]] ~= nil then
+        if effects[name2idx[profile["effect"]]].type == "texture" then
+            effect_icon:SetHeight(44)
+            effect_icon:SetWidth(44)
+            effect_icon:SetImage(effects[name2idx[profile["effect"]]].texture)
+        else
+            effect_icon:SetImage(nil)
+            effect_icon:SetHeight(36)
+            effect_icon:SetWidth(36)
+            addon:ApplyCustomGlow(effects[name2idx[profile["effect"]]], effect_icon.frame, nil, profile["color"])
         end
     end
+    effect_group:AddChild(effect_icon)
 
     local effect = AceGUI:Create("Dropdown")
-    effect_group:AddChild(effect)
-    effect.configure = function()
-        effect:SetLabel(L["Effect"])
-        effect:SetText(effect_map[profile["effect"]])
-        effect:SetValue(profile["effect"])
+    effect:SetLabel(L["Effect"])
+    effect:SetRelativeWidth(0.9)
+    effect:SetHeight(44)
+    effect:SetCallback("OnValueChanged", function(widget, event, val)
+        profile["effect"] = val
+        addon:RemoveAllCurrentGlows()
+        addon:StopCustomGlow(effect_icon.frame)
+        create_primary_options(frame)
+    end)
+    effect.frame:SetScript("OnShow", function(frame)
+        update_effect_map()
         effect:SetList(effect_map, effect_order)
-        effect:SetHeight(44)
-        effect:SetFullWidth(true)
-        effect:SetCallback("OnValueChanged", function(widget, event, val)
-            profile["effect"] = val
-            addon:RemoveAllCurrentGlows()
-            addon:StopCustomGlow(effect_icon.frame)
-            create_primary_options(frame)
-        end)
-        effect.frame:SetScript("OnShow", function(frame)
-            update_effect_map()
-            effect:SetList(effect_map, effect_order)
-        end)
+    end)
+    effect.configure = function()
+        effect:SetList(effect_map, effect_order)
+        effect:SetValue(profile["effect"])
     end
+    effect_group:AddChild(effect)
+
+    fx_group:AddChild(effect_group)
 
     local magnification = AceGUI:Create("Slider")
     fx_group:AddChild(magnification)
-    magnification.configure = function()
-        magnification:SetLabel(L["Magnification"])
-        magnification:SetValue(profile["magnification"])
-        magnification:SetFullWidth(true)
-        magnification:SetSliderValues(0.1, 2.0, 0.1)
-        magnification:SetDisabled(name2idx[profile["effect"]] == nil or effects[name2idx[profile["effect"]]].type ~= "texture")
-        magnification:SetCallback("OnValueChanged", function(widget, event, val)
-            profile["magnification"] = val
-            addon:RemoveAllCurrentGlows()
-        end)
-    end
+    magnification:SetLabel(L["Magnification"])
+    magnification:SetValue(profile["magnification"])
+    magnification:SetSliderValues(0.1, 2.0, 0.1)
+    magnification:SetDisabled(name2idx[profile["effect"]] == nil or effects[name2idx[profile["effect"]]].type ~= "texture")
+    magnification:SetCallback("OnValueChanged", function(widget, event, val)
+        profile["magnification"] = val
+        addon:RemoveAllCurrentGlows()
+    end)
+    magnification:SetFullWidth(true)
 
     local color_group = AceGUI:Create("SimpleGroup")
-    fx_group:AddChild(color_group)
     color_group:SetFullWidth(true)
     color_group:SetLayout("Table")
     color_group:SetUserData("table", { columns = { 44, 1 } })
@@ -220,221 +200,197 @@ local function create_primary_options(frame)
     color_group:AddChild(spacer(1))
 
     local color_pick = AceGUI:Create("ColorPicker")
+    color_pick:SetFullWidth(true)
+    color_pick:SetColor(profile["color"].r, profile["color"].g, profile["color"].b, profile["color"].a)
+    color_pick:SetLabel(L["Highlight Color"])
+    color_pick:SetCallback("OnValueConfirmed", function(widget, event, r, g, b, a)
+        profile["color"] = { r = r, g = g, b = b, a = a }
+        addon:RemoveAllCurrentGlows()
+        if name2idx[profile["effect"]] ~= nil and effects[name2idx[profile["effect"]]].type ~= "texture" then
+            addon:ApplyCustomGlow(effects[name2idx[profile["effect"]]], effect_icon.frame, nil, profile["color"])
+        end
+    end)
     color_group:AddChild(color_pick)
-    color_pick.configure = function()
-        color_pick:SetFullWidth(true)
-        color_pick:SetColor(profile["color"].r, profile["color"].g, profile["color"].b, profile["color"].a)
-        color_pick:SetLabel(L["Highlight Color"])
-        color_pick:SetCallback("OnValueConfirmed", function(widget, event, r, g, b, a)
-            profile["color"] = { r = r, g = g, b = b, a = a }
-            addon:RemoveAllCurrentGlows()
-            if name2idx[profile["effect"]] ~= nil and effects[name2idx[profile["effect"]]].type ~= "texture" then
-                addon:ApplyCustomGlow(effects[name2idx[profile["effect"]]], effect_icon.frame, nil, profile["color"])
-            end
-        end)
-    end
+
+    fx_group:AddChild(color_group)
 
     local position_group = AceGUI:Create("SimpleGroup")
-    fx_group:AddChild(position_group)
-    position_group:SetLayout("Table")
     position_group:SetFullWidth(true)
+    position_group:SetLayout("Table")
     position_group:SetUserData("table", { columns = { 1, 20, 35, 50 } })
 
     local position = AceGUI:Create("Dropdown")
-    position_group:AddChild(position)
+    position:SetFullWidth(true)
+    position:SetLabel(L["Position"])
+    position:SetDisabled(name2idx[profile["effect"]] == nil or effects[name2idx[profile["effect"]]].type ~= "texture")
+    position:SetCallback("OnValueChanged", function(widget, event, val)
+        profile["setpoint"] = val
+        profile["xoffs"] = 0
+        profile["yoffs"] = 0
+        addon:RemoveAllCurrentGlows()
+    end)
     position.configure = function()
-        position:SetLabel(L["Position"])
-        position:SetFullWidth(true)
-        position:SetText(addon.setpoints[profile["setpoint"]])
-        position:SetValue(profile["setpoint"])
         position:SetList(addon.setpoints, { "CENTER", "TOPLEFT", "TOPRIGHT", "BOTTOMLEFT", "BOTTOMRIGHT", "TOP", "BOTTOM", "LEFT", "RIGHT" })
-        position:SetDisabled(name2idx[profile["effect"]] == nil or effects[name2idx[profile["effect"]]].type ~= "texture")
-        position:SetCallback("OnValueChanged", function(widget, event, val)
-            profile["setpoint"] = val
-            profile["xoffs"] = 0
-            profile["yoffs"] = 0
-            addon:RemoveAllCurrentGlows()
-        end)
+        position:SetValue(profile["setpoint"])
     end
+    position_group:AddChild(position)
 
     position_group:AddChild(spacer(0.1))
 
     local directional_group = AceGUI:Create("SimpleGroup")
-    position_group:AddChild(directional_group)
     directional_group:SetLayout("Table")
     directional_group:SetUserData("table", { columns = { 10, 10, 10 } })
-
-    local offset_group = AceGUI:Create("SimpleGroup")
-    position_group:AddChild(offset_group)
-    offset_group:SetLayout("Table")
-    offset_group:SetUserData("table", { columns = { 10, 40 } })
-
-    local x_label = AceGUI:Create("Label")
-    offset_group:AddChild(x_label)
-    x_label.configure = function()
-        x_label:SetText("X")
-        x_label:SetColor(1.0, 0.82, 0)
-    end
-
-    local x_offs = AceGUI:Create("EditBox")
-    offset_group:AddChild(x_offs)
-    x_offs.configure = function()
-        x_offs:SetDisabled(true)
-        x_offs:SetText(profile["xoffs"])
-    end
-
-    local y_label = AceGUI:Create("Label")
-    offset_group:AddChild(y_label)
-    y_label.configure = function()
-        y_label:SetText("Y")
-        y_label:SetColor(1.0, 0.82, 0)
-    end
-
-    local y_offs = AceGUI:Create("EditBox")
-    offset_group:AddChild(y_offs)
-    y_offs.configure = function()
-        y_offs:SetDisabled(true)
-        y_offs:SetText(profile["yoffs"])
-    end
 
     directional_group:AddChild(spacer(1))
 
     local button_up = AceGUI:Create("InteractiveLabel")
+    button_up:SetText("^")
+    button_up:SetDisabled(name2idx[profile["effect"]] ~= nil and effects[name2idx[profile["effect"]]].type == "blizzard")
+    button_up:SetCallback("OnClick", function(widget, event, val)
+        profile["yoffs"] = (profile["yoffs"] or 0) + 1
+        y_offs:SetText(profile["yoffs"])
+        addon:RemoveAllCurrentGlows()
+    end)
     directional_group:AddChild(button_up)
-    button_up.configure = function()
-        button_up:SetText("^")
-        button_up:SetDisabled(name2idx[profile["effect"]] ~= nil and effects[name2idx[profile["effect"]]].type == "blizzard")
-        button_up:SetCallback("OnClick", function(widget, event, val)
-            profile["yoffs"] = (profile["yoffs"] or 0) + 1
-            y_offs:SetText(profile["yoffs"])
-            addon:RemoveAllCurrentGlows()
-        end)
-    end
 
     directional_group:AddChild(spacer(1))
 
     local button_left = AceGUI:Create("InteractiveLabel")
+    button_left:SetText("<")
+    button_left:SetDisabled(name2idx[profile["effect"]] ~= nil and effects[name2idx[profile["effect"]]].type == "blizzard")
+    button_left:SetCallback("OnClick", function(widget, event, val)
+        profile["xoffs"] = (profile["xoffs"] or 0) - 1
+        x_offs:SetText(profile["xoffs"])
+        addon:RemoveAllCurrentGlows()
+    end)
     directional_group:AddChild(button_left)
-    button_left.configure = function()
-        button_left:SetText("<")
-        button_left:SetDisabled(name2idx[profile["effect"]] ~= nil and effects[name2idx[profile["effect"]]].type == "blizzard")
-        button_left:SetCallback("OnClick", function(widget, event, val)
-            profile["xoffs"] = (profile["xoffs"] or 0) - 1
-            x_offs:SetText(profile["xoffs"])
-            addon:RemoveAllCurrentGlows()
-        end)
-    end
 
     local button_center = AceGUI:Create("InteractiveLabel")
+    button_center:SetText("o")
+    button_center:SetDisabled(name2idx[profile["effect"]] ~= nil and effects[name2idx[profile["effect"]]].type == "blizzard")
+    button_center:SetCallback("OnClick", function(widget, event, val)
+        profile["xoffs"] = 0
+        profile["yoffs"] = 0
+        x_offs:SetText(profile["xoffs"])
+        y_offs:SetText(profile["yoffs"])
+        addon:RemoveAllCurrentGlows()
+    end)
     directional_group:AddChild(button_center)
-    button_center.configure = function()
-        button_center:SetText("o")
-        button_center:SetDisabled(name2idx[profile["effect"]] ~= nil and effects[name2idx[profile["effect"]]].type == "blizzard")
-        button_center:SetCallback("OnClick", function(widget, event, val)
-            profile["xoffs"] = 0
-            profile["yoffs"] = 0
-            x_offs:SetText(profile["xoffs"])
-            y_offs:SetText(profile["yoffs"])
-            addon:RemoveAllCurrentGlows()
-        end)
-    end
 
     local button_right = AceGUI:Create("InteractiveLabel")
+    button_right:SetText(">")
+    button_right:SetDisabled(name2idx[profile["effect"]] ~= nil and effects[name2idx[profile["effect"]]].type == "blizzard")
+    button_right:SetCallback("OnClick", function(widget, event, val)
+        profile["xoffs"] = (profile["xoffs"] or 0) + 1
+        x_offs:SetText(profile["xoffs"])
+        addon:RemoveAllCurrentGlows()
+    end)
     directional_group:AddChild(button_right)
-    button_right.configure = function()
-        button_right:SetText(">")
-        button_right:SetDisabled(name2idx[profile["effect"]] ~= nil and effects[name2idx[profile["effect"]]].type == "blizzard")
-        button_right:SetCallback("OnClick", function(widget, event, val)
-            profile["xoffs"] = (profile["xoffs"] or 0) + 1
-            x_offs:SetText(profile["xoffs"])
-            addon:RemoveAllCurrentGlows()
-        end)
-    end
 
     directional_group:AddChild(spacer(1))
 
     local button_down = AceGUI:Create("InteractiveLabel")
+    button_down:SetText("v")
+    button_down:SetDisabled(name2idx[profile["effect"]] ~= nil and effects[name2idx[profile["effect"]]].type == "blizzard")
+    button_down:SetCallback("OnClick", function(widget, event, val)
+        profile["yoffs"] = (profile["yoffs"] or 0) - 1
+        y_offs:SetText(profile["yoffs"])
+        addon:RemoveAllCurrentGlows()
+    end)
     directional_group:AddChild(button_down)
-    button_down.configure = function()
-        button_down:SetText("v")
-        button_down:SetDisabled(name2idx[profile["effect"]] ~= nil and effects[name2idx[profile["effect"]]].type == "blizzard")
-        button_down:SetCallback("OnClick", function(widget, event, val)
-            profile["yoffs"] = (profile["yoffs"] or 0) - 1
-            y_offs:SetText(profile["yoffs"])
-            addon:RemoveAllCurrentGlows()
-        end)
-    end
 
     directional_group:AddChild(spacer(1))
 
+    position_group:AddChild(directional_group)
+
+    local offset_group = AceGUI:Create("SimpleGroup")
+    offset_group:SetLayout("Table")
+    offset_group:SetUserData("table", { columns = { 10, 40 } })
+
+    local x_label = AceGUI:Create("Label")
+    x_label:SetText("X")
+    x_label:SetColor(1.0, 0.82, 0)
+    offset_group:AddChild(x_label)
+
+    local x_offs = AceGUI:Create("EditBox")
+    x_offs:SetDisabled(true)
+    x_offs:SetText(profile["xoffs"])
+    offset_group:AddChild(x_offs)
+
+    local y_label = AceGUI:Create("Label")
+    y_label:SetText("Y")
+    y_label:SetColor(1.0, 0.82, 0)
+    offset_group:AddChild(y_label)
+
+    local y_offs = AceGUI:Create("EditBox")
+    y_offs:SetDisabled(true)
+    y_offs:SetText(profile["yoffs"])
+    offset_group:AddChild(y_offs)
+
+    position_group:AddChild(offset_group)
+    fx_group:AddChild(position_group)
+    scroll:AddChild(fx_group)
+
     local debug_header = AceGUI:Create("Heading")
+    debug_header:SetFullWidth(true)
+    debug_header:SetText(L["Debugging Options"])
     scroll:AddChild(debug_header)
-    debug_header.configure = function()
-        debug_header:SetText(L["Debugging Options"])
-        debug_header:SetFullWidth(true)
-    end
 
     local debug_group = AceGUI:Create("SimpleGroup")
-    scroll:AddChild(debug_group)
     debug_group:SetFullWidth(true)
     debug_group:SetLayout("Table")
     debug_group:SetUserData("table", { columns = { 1, 1 } })
 
     local debug = AceGUI:Create("CheckBox")
+    debug:SetFullWidth(true)
+    debug:SetLabel(L["Debug Logging"])
+    debug:SetValue(profile["debug"])
+    debug:SetCallback("OnValueChanged", function(widget, event, val)
+        profile["debug"] = val
+        addon:StopCustomGlow(effect_icon.frame)
+        create_primary_options(frame)
+    end)
     debug_group:AddChild(debug)
-    debug.configure = function()
-        debug:SetLabel(L["Debug Logging"])
-        debug:SetValue(profile["debug"])
-        debug:SetFullWidth(true)
-        debug:SetCallback("OnValueChanged", function(widget, event, val)
-            profile["debug"] = val
-            addon:StopCustomGlow(effect_icon.frame)
-            create_primary_options(frame)
-        end)
-    end
 
     local disable_autoswitch = AceGUI:Create("CheckBox")
+    disable_autoswitch:SetFullWidth(true)
+    disable_autoswitch:SetLabel(L["Disable Auto-Switching"])
+    disable_autoswitch:SetValue(profile["disable_autoswitch"])
+    disable_autoswitch:SetCallback("OnValueChanged", function(widget, event, val)
+        profile["disable_autoswitch"] = val
+    end)
     debug_group:AddChild(disable_autoswitch)
-    disable_autoswitch.configure = function()
-        disable_autoswitch:SetLabel(L["Disable Auto-Switching"])
-        disable_autoswitch:SetValue(profile["disable_autoswitch"])
-        disable_autoswitch:SetFullWidth(true)
-        disable_autoswitch:SetCallback("OnValueChanged", function(widget, event, val)
-            profile["disable_autoswitch"] = val
-        end)
-    end
 
     local verbose = AceGUI:Create("CheckBox")
+    verbose:SetFullWidth(true)
+    verbose:SetLabel(L["Verbose Debug Logging"])
+    verbose:SetValue(profile["verbose"])
+    verbose:SetDisabled(not profile["debug"])
+    verbose:SetCallback("OnValueChanged", function(widget, event, val)
+        profile["verbose"] = val
+    end)
     debug_group:AddChild(verbose)
-    verbose.configure = function()
-        verbose:SetLabel(L["Verbose Debug Logging"])
-        verbose:SetValue(profile["verbose"])
-        verbose:SetFullWidth(true)
-        verbose:SetDisabled(not profile["debug"])
-        verbose:SetCallback("OnValueChanged", function(widget, event, val)
-            profile["verbose"] = val
-        end)
-    end
 
     local live_config_update = AceGUI:Create("Slider")
-    debug_group:AddChild(live_config_update)
-    live_config_update.configure = function()
-        live_config_update:SetLabel(L["Live Status Update Frequency (seconds)"])
-        live_config_update:SetValue(profile["live_config_update"])
-        live_config_update:SetFullWidth(true)
-        live_config_update:SetSliderValues(0, 60, 1)
-        live_config_update:SetCallback("OnValueChanged", function(widget, event, val)
-            if profile["live_config_update"] ~= val then
-                profile["live_config_update"] = val
-                if addon.rotationTimer then
-                    addon:CancelTimer(addon.conditionEvalTimer)
-                end
-                if val > 0 then
-                    addon.conditionEvalTimer = addon:ScheduleRepeatingTimer('UpdateCurrentCondition', val)
-                end
+    live_config_update:SetFullWidth(true)
+    live_config_update:SetLabel(L["Live Status Update Frequency (seconds)"])
+    live_config_update:SetValue(profile["live_config_update"])
+    live_config_update:SetSliderValues(0, 60, 1)
+    live_config_update:SetCallback("OnValueChanged", function(widget, event, val)
+        if profile["live_config_update"] ~= val then
+            profile["live_config_update"] = val
+            if addon.rotationTimer then
+                addon:CancelTimer(addon.conditionEvalTimer)
             end
-        end)
-    end
+            if val > 0 then
+                addon.conditionEvalTimer = addon:ScheduleRepeatingTimer('UpdateCurrentCondition', val)
+            end
+        end
+    end)
+    debug_group:AddChild(live_config_update)
+
+    scroll:AddChild(debug_group)
+    frame:AddChild(scroll)
 
     addon:configure_frame(frame)
     frame:ResumeLayout()
@@ -482,91 +438,103 @@ local function ImportExport(spec, rotation, parent)
         original_name = rotation_settings[spec][rotation].name
     end
 
-    local frame = AceGUI:Create("Frame")
+    local frame = AceGUI:Create("Window")
     frame:SetTitle(L["Import/Export Rotation"])
     frame:SetCallback("OnClose", function(widget)
         AceGUI:Release(widget)
     end)
     frame:SetLayout("List")
-    frame:SetWidth(500)
+    frame:SetWidth(485)
+    frame:SetHeight(475)
+    frame:EnableResize(false)
     HideOnEscape(frame)
 
     frame:PauseLayout()
 
     local desc = AceGUI:Create("Label")
+    desc:SetFullWidth(true)
+    desc:SetText(L["Copy and paste this text share your profile with others, or import someone else's."])
     frame:AddChild(desc)
-    desc.configure = function()
-        desc:SetText(L["Copy and paste this text share your profile with others, or import someone else's."])
-        desc:SetFullWidth(true)
-    end
 
     local import = AceGUI:Create("Button")
     local editbox = AceGUI:Create("MultiLineEditBox")
+
+    editbox:SetFullHeight(true)
+    editbox:SetFullWidth(true)
+    editbox:SetLabel("")
+    editbox:SetNumLines(27)
+    editbox:DisableButton(true)
+    editbox:SetFocus(true)
+    if (rotation_settings[spec][rotation] ~= nil) then
+        editbox:SetText(width_split(base64enc(libc:Compress(AceSerializer:Serialize(rotation_settings[spec][rotation]))), 64))
+    end
+    editbox.editBox:GetRegions():SetFont("Interface\\AddOns\\RotationMaster\\Fonts\\Inconsolata-Bold.ttf", 13)
+    editbox:SetCallback("OnTextChanged", function(widget, event, text)
+        if text:match('^[0-9A-Za-z+/\r\n]+=*$') then
+            local decomp = libc:Decompress(base64dec(text))
+            if decomp ~= nil and AceSerializer:Deserialize(decomp) then
+                --frame:SetStatusText(string.len(text) .. " " .. L["bytes"] .. " (" .. select(2, text:gsub('\n', '\n'))+1 .. " " .. L["lines"] .. ")")
+                import:SetDisabled(false)
+                return
+            end
+        end
+        --frame:SetStatusText(string.len(text) .. " " .. L["bytes"] .. " (" .. select(2, text:gsub('\n', '\n'))+1 .. " " .. L["lines"] .. ") - " ..
+        --        color.RED .. L["Parse Error"])
+        import:SetDisabled(true)
+    end)
+
+    --frame:SetStatusText(string.len(editbox:GetText()) .. " " .. L["bytes"] .. " (" .. select(2, editbox:GetText():gsub('\n', '\n'))+1 .. " " .. L["lines"] .. ")")
+    editbox:HighlightText(0, string.len(editbox:GetText()))
     frame:AddChild(editbox)
 
-    editbox.configure = function()
-        editbox:SetLabel("")
-        editbox:SetFullHeight(true)
-        editbox:SetFullWidth(true)
-        editbox:SetNumLines(27)
-        editbox:DisableButton(true)
-        editbox:SetFocus(true)
-        if (rotation_settings[spec][rotation] ~= nil) then
-            editbox:SetText(width_split(base64enc(libc:Compress(AceSerializer:Serialize(rotation_settings[spec][rotation]))), 64))
-        end
-        editbox.editBox:GetRegions():SetFont("Interface\\AddOns\\RotationMaster\\Fonts\\Inconsolata-Bold.ttf", 13)
-        editbox:SetCallback("OnTextChanged", function(widget, event, text)
-            if text:match('^[0-9A-Za-z+/\r\n]+=*$') then
-                local decomp = libc:Decompress(base64dec(text))
-                if decomp ~= nil and AceSerializer:Deserialize(decomp) then
-                    frame:SetStatusText(string.len(text) .. " " .. L["bytes"] .. " (" .. select(2, text:gsub('\n', '\n'))+1 .. " " .. L["lines"] .. ")")
-                    import:SetDisabled(false)
-                    return
-                end
-            end
-            frame:SetStatusText(string.len(text) .. " " .. L["bytes"] .. " (" .. select(2, text:gsub('\n', '\n'))+1 .. " " .. L["lines"] .. ") - " ..
-                    color.RED .. L["Parse Error"])
-            import:SetDisabled(true)
-        end)
+    local group = AceGUI:Create("SimpleGroup")
+    group:SetFullWidth(true)
+    group:SetLayout("Table")
+    group:SetUserData("table", { columns = { 1, 0.25, 0.25 } })
 
-        frame:SetStatusText(string.len(editbox:GetText()) .. " " .. L["bytes"] .. " (" .. select(2, editbox:GetText():gsub('\n', '\n'))+1 .. " " .. L["lines"] .. ")")
-        editbox:HighlightText(0, string.len(editbox:GetText()))
-    end
+    group:AddChild(spacer(1))
 
-    frame:AddChild(import)
-    import.configure = function()
-        import:SetText(L["Import"])
-        import:SetDisabled(true)
-        import:SetCallback("OnClick", function(wiget, event)
-            ok, res = AceSerializer:Deserialize(libc:Decompress(base64dec(editbox:GetText())))
-            if ok then
-                rotation_settings[spec][rotation] = res
-                if rotation == DEFAULT then
-                    rotation_settings[spec][rotation].name = nil
-                elseif original_name ~= nil then
-                    rotation_settings[spec][rotation].name = original_name
+    import:SetText(L["Import"])
+    import:SetDisabled(true)
+    import:SetCallback("OnClick", function(wiget, event)
+        ok, res = AceSerializer:Deserialize(libc:Decompress(base64dec(editbox:GetText())))
+        if ok then
+            rotation_settings[spec][rotation] = res
+            if rotation == DEFAULT then
+                rotation_settings[spec][rotation].name = nil
+            elseif original_name ~= nil then
+                rotation_settings[spec][rotation].name = original_name
+            else
+                original_name = rotation_settings[spec][rotation].name
+                if original_name == nil then
+                    rotation_settings[spec][rotation].name = date(L["Imported on %c"])
                 else
-                    original_name = rotation_settings[spec][rotation].name
-                    if original_name == nil then
-                        rotation_settings[spec][rotation].name = date(L["Imported on %c"])
-                    else
-                        -- Keep the imported name, IF it's a duplicate
-                        for k, v in pairs(rotation_settings[spec]) do
-                            if k ~= DEFAULT and k ~= rotation then
-                                if v.name == original_name then
-                                    rotation_settings[spec][rotation].name = date(L["Imported on %c"])
-                                    break
-                                end
+                    -- Keep the imported name, IF it's a duplicate
+                    for k, v in pairs(rotation_settings[spec]) do
+                        if k ~= DEFAULT and k ~= rotation then
+                            if v.name == original_name then
+                                rotation_settings[spec][rotation].name = date(L["Imported on %c"])
+                                break
                             end
                         end
                     end
                 end
-
-                frame:Hide()
-                create_spec_options(parent, spec, rotation)
             end
-        end)
-    end
+
+            frame:Hide()
+            create_spec_options(parent, spec, rotation)
+        end
+    end)
+    group:AddChild(import)
+
+    local close = AceGUI:Create("Button")
+    close:SetText(CANCEL)
+    close:SetCallback("OnClick", function(wiget, event)
+        frame:Hide()
+    end)
+    group:AddChild(close)
+
+    frame:AddChild(group)
 
     addon:configure_frame(frame)
     frame:ResumeLayout()
@@ -592,74 +560,65 @@ local function create_rotation_options(frame, specID, rotid, parent, selected)
     end
 
     local name = AceGUI:Create("EditBox")
-    frame:AddChild(name)
-    name.configure = function()
-        name:SetLabel(NAME)
-        name:SetRelativeWidth(0.5)
-        if rotid == DEFAULT then
-            name:SetText(DEFAULT)
-        elseif rotation_settings[rotid] ~= nil then
-            name:SetText(rotation_settings[rotid].name)
-        end
-        name:SetDisabled(rotid == DEFAULT)
-        name:SetCallback("OnTextChanged", function(widget, event, val)
-            if val == DEFAULT or val == NEW or val == "" then
-                name:DisableButton(true)
-            else
-                name:DisableButton(name2id[val] ~= nil)
-            end
-        end)
-        name:SetCallback("OnEnterPressed", function(widget, event, val)
-            if val ~= DEFAULT and val ~= NEW and val ~= "" and name2id[val] == nil then
-                if rotation_settings[rotid] == nil then
-                    rotation_settings[rotid] = { name = val }
-                else
-                    rotation_settings[rotid].name = val
-                end
-                create_spec_options(parent, specID, rotid)
-            end
-        end)
+    name:SetRelativeWidth(0.5)
+    name:SetLabel(NAME)
+    if rotid == DEFAULT then
+        name:SetText(DEFAULT)
+    elseif rotation_settings[rotid] ~= nil then
+        name:SetText(rotation_settings[rotid].name)
     end
+    name:SetDisabled(rotid == DEFAULT)
+    name:SetCallback("OnTextChanged", function(widget, event, val)
+        if val == DEFAULT or val == NEW or val == "" then
+            name:DisableButton(true)
+        else
+            name:DisableButton(name2id[val] ~= nil)
+        end
+    end)
+    name:SetCallback("OnEnterPressed", function(widget, event, val)
+        if val ~= DEFAULT and val ~= NEW and val ~= "" and name2id[val] == nil then
+            if rotation_settings[rotid] == nil then
+                rotation_settings[rotid] = { name = val }
+            else
+                rotation_settings[rotid].name = val
+            end
+            create_spec_options(parent, specID, rotid)
+        end
+    end)
+    frame:AddChild(name)
 
     local delete = AceGUI:Create("Button")
+    delete:SetRelativeWidth(0.25)
+    delete:SetText(DELETE)
+    delete:SetDisabled(rotid == DEFAULT or rotation_settings[rotid] == nil)
+    delete:SetCallback("OnClick", function(widget, event)
+        HandleDelete(specID, rotid, parent)
+    end)
     frame:AddChild(delete)
-    delete.configure = function()
-        delete:SetText(DELETE)
-        delete:SetRelativeWidth(0.25)
-        delete:SetDisabled(rotid == DEFAULT or rotation_settings[rotid] == nil)
-        delete:SetCallback("OnClick", function(widget, event)
-            HandleDelete(specID, rotid, parent)
-        end)
-    end
 
     local importexport = AceGUI:Create("Button")
+    importexport:SetRelativeWidth(0.25)
+    importexport:SetText(L["Import/Export"])
+    importexport:SetCallback("OnClick", function(widget, event)
+        ImportExport(specID, rotid, parent)
+    end)
     frame:AddChild(importexport)
-    importexport.configure = function()
-        importexport:SetText(L["Import/Export"])
-        importexport:SetRelativeWidth(0.25)
-        importexport:SetCallback("OnClick", function(widget, event)
-            ImportExport(specID, rotid, parent)
-        end)
-    end
 
     local switch = AceGUI:Create("InlineGroup")
-    frame:AddChild(switch)
+    switch:SetFullWidth(true)
     switch:SetTitle(L["Switch Condition"])
     switch:SetLayout("Flow")
-    switch:SetFullWidth(true)
 
     local switch_desc = AceGUI:Create("Label")
-    switch:AddChild(switch_desc)
     switch_desc:SetFullWidth(true)
+    switch:AddChild(switch_desc)
     if rotid == DEFAULT then
         switch_desc:SetText(L["No other rotations match."])
     else
         local switch_valid = AceGUI:Create("Label")
+        switch_valid:SetRelativeWidth(0.75)
+        switch_valid:SetColor(255, 0, 0)
         switch:AddChild(switch_valid)
-        switch_valid.configure = function()
-            switch_valid:SetColor(255, 0, 0)
-            switch_valid:SetRelativeWidth(0.75)
-        end
 
         local function update_switch()
             if rotation_settings[rotid] == nil or rotation_settings[rotid].switch == nil or
@@ -678,27 +637,25 @@ local function create_rotation_options(frame, specID, rotid, parent, selected)
         update_switch()
 
         local switch_button = AceGUI:Create("Button")
+        switch_button:SetRelativeWidth(0.25)
+        switch_button:SetText(EDIT)
+        switch_button:SetDisabled(rotation_settings[rotid] == nil)
+        switch_button:SetCallback("OnClick", function(widget, event)
+            if rotation_settings[rotid].switch == nil then
+                rotation_settings[rotid].switch = { type = nil }
+            end
+            addon:EditSwitchCondition(spec, rotation_settings[rotid].switch, update_switch)
+        end)
         switch:AddChild(switch_button)
-        switch_button.configure = function()
-            switch_button:SetRelativeWidth(0.25)
-            switch_button:SetText(EDIT)
-            switch_button:SetDisabled(rotation_settings[rotid] == nil)
-            switch_button:SetCallback("OnClick", function(widget, event)
-                if rotation_settings[rotid].switch == nil then
-                    rotation_settings[rotid].switch = { type = nil }
-                end
-                addon:EditSwitchCondition(spec, rotation_settings[rotid].switch, update_switch)
-            end)
-        end
     end
+
+    frame:AddChild(switch)
 
     if rotation_settings[rotid] == nil or not addon:rotationValidConditions(rotation_settings[rotid]) then
         local rotation_valid = AceGUI:Create("Heading")
+        rotation_valid:SetFullWidth(true)
+        rotation_valid:SetText(color.RED .. L["THIS ROTATION WILL NOT BE USED AS IT IS INCOMPLETE"] .. color.RESET)
         frame:AddChild(rotation_valid)
-        rotation_valid.configure = function()
-            rotation_valid:SetText(color.RED .. L["THIS ROTATION WILL NOT BE USED AS IT IS INCOMPLETE"] .. color.RESET)
-            rotation_valid:SetFullWidth(true)
-        end
 
         if addon.currentRotation == rotid and not addon.manualRotation then
             if profile.disable_autoswitch then
@@ -716,7 +673,6 @@ local function create_rotation_options(frame, specID, rotid, parent, selected)
     end
 
     local tree = AceGUI:Create("TreeGroup")
-    frame:AddChild(tree)
     tree:SetFullWidth(true)
     tree:SetFullHeight(true)
     tree:SetLayout("Fill")
@@ -819,7 +775,6 @@ local function create_rotation_options(frame, specID, rotid, parent, selected)
     tree:SetStatusTable(status)
 
     local scrollwin = AceGUI:Create("ScrollFrame")
-    tree:AddChild(scrollwin)
     scrollwin:SetLayout("Flow")
     scrollwin:SetFullHeight(true)
     scrollwin:SetFullWidth(true)
@@ -865,6 +820,9 @@ local function create_rotation_options(frame, specID, rotid, parent, selected)
         end
     end)
 
+    tree:AddChild(scrollwin)
+    frame:AddChild(tree)
+
     addon:configure_frame(frame)
     frame:ResumeLayout()
     frame:DoLayout()
@@ -901,7 +859,6 @@ create_spec_options = function(frame, specID, selected)
     rotation_order[#rotation_order + 1] = newid
 
     local rotations = AceGUI:Create("DropdownGroup")
-    frame:AddChild(rotations)
     rotations:SetGroupList(rotation_args, rotation_order)
     rotations:SetGroup(selected)
     rotations:SetTitle(L["Rotation"])
@@ -913,6 +870,8 @@ create_spec_options = function(frame, specID, selected)
         create_rotation_options(rotations, specID, val, frame)
     end)
     create_rotation_options(rotations, specID, selected, frame)
+
+    frame:AddChild(rotations)
 
     addon:configure_frame(frame)
     frame:ResumeLayout()
@@ -932,7 +891,6 @@ local function create_class_options(frame, classID)
 
         local tabs = AceGUI:Create("TabGroup")
         addon.specTab = tabs
-        frame:AddChild(tabs)
 
         local spec_tabs = {}
         for j = 1, GetNumSpecializationsForClassID(classID) do
@@ -953,11 +911,13 @@ local function create_class_options(frame, classID)
             create_spec_options(tabs, val, (val == addon.currentSpec) and addon.currentRotation or DEFAULT)
         end)
         create_spec_options(tabs, currentSpec, addon.currentRotation or DEFAULT)
+
+        frame:AddChild(tabs)
     else
         local group = AceGUI:Create("SimpleGroup")
-        frame:AddChild(group)
         group:SetLayout("Fill")
         create_spec_options(group, 0, addon.currentRotation or DEFAULT)
+        frame:AddChild(group)
     end
 
     addon:configure_frame(frame)

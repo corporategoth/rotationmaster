@@ -58,24 +58,24 @@ addon:RegisterSwitchCondition("ZONEPVP", {
         zonepvp[""] = L["no PVP"]
 
         local zone = AceGUI:Create("Dropdown")
-        parent:AddChild(zone)
+        zone:SetLabel(L["Mode"])
+        zone:SetCallback("OnValueChanged", function(widget, event, v)
+            if v == "" then
+                value.vlaue = nil
+            else
+                value.value = v
+            end
+            top:SetStatusText(funcs:print(root, spec))
+        end)
         zone.configure = function()
-            zone:SetLabel(L["Mode"])
             zone:SetList(zonepvp, keys(zonepvp))
             if (value.value ~= nil) then
                 zone:SetValue(value.value)
             else
                 zone:SetValue("")
             end
-            zone:SetCallback("OnValueChanged", function(widget, event, v)
-                if v == "" then
-                    value.vlaue = nil
-                else
-                    value.value = v
-                end
-                top:SetStatusText(funcs:print(root, spec))
-            end)
         end
+        parent:AddChild(zone)
     end,
 })
 
@@ -99,24 +99,24 @@ addon:RegisterSwitchCondition("INSTANCE", {
         local funcs = top:GetUserData("funcs")
 
         local instance = AceGUI:Create("Dropdown")
-        parent:AddChild(instance)
+        instance:SetLabel(L["Mode"])
+        instance:SetCallback("OnValueChanged", function(widget, event, v)
+            if v == "" then
+                value.vlaue = nil
+            else
+                value.value = v
+            end
+            top:SetStatusText(funcs:print(root, spec))
+        end)
         instance.configure = function()
-            instance:SetLabel(L["Mode"])
             instance:SetList(instances, keys(instances))
             if (value.value ~= nil) then
                 instance:SetValue(value.value)
             else
                 instance:SetValue("")
             end
-            instance:SetCallback("OnValueChanged", function(widget, event, v)
-                if v == "" then
-                    value.vlaue = nil
-                else
-                    value.value = v
-                end
-                top:SetStatusText(funcs:print(root, spec))
-            end)
         end
+        parent:AddChild(instance)
     end,
 })
 
@@ -139,17 +139,15 @@ addon:RegisterSwitchCondition("ZONE", {
         local funcs = top:GetUserData("funcs")
 
         local zone = AceGUI:Create("EditBox")
-        parent:AddChild(zone)
-        zone.configure = function()
-            zone:SetLabel(L["Zone"])
-            if (value.value ~= nil) then
-                zone:SetText(value.value)
-            end
-            zone:SetCallback("OnEnterPressed", function(widget, event, v)
-                value.value = v
-                top:SetStatusText(funcs:print(root, spec))
-            end)
+        zone:SetLabel(L["Zone"])
+        zone:SetCallback("OnEnterPressed", function(widget, event, v)
+            value.value = v
+            top:SetStatusText(funcs:print(root, spec))
+        end)
+        if (value.value ~= nil) then
+            zone:SetText(value.value)
         end
+        parent:AddChild(zone)
     end,
 })
 
@@ -172,17 +170,15 @@ addon:RegisterSwitchCondition("SUBZONE", {
         local funcs = top:GetUserData("funcs")
 
         local zone = AceGUI:Create("EditBox")
-        parent:AddChild(zone)
-        zone.configure = function()
-            zone:SetLabel(L["SubZone"])
-            if (value.value ~= nil) then
-                zone:SetText(value.value)
-            end
-            zone:SetCallback("OnEnterPressed", function(widget, event, v)
-                value.value = v
-                top:SetStatusText(funcs:print(root, spec))
-            end)
+        zone:SetLabel(L["SubZone"])
+        if (value.value ~= nil) then
+            zone:SetText(value.value)
         end
+        zone:SetCallback("OnEnterPressed", function(widget, event, v)
+            value.value = v
+            top:SetStatusText(funcs:print(root, spec))
+        end)
+        parent:AddChild(zone)
     end,
 })
 

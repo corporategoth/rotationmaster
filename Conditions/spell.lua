@@ -104,9 +104,6 @@ addon:RegisterCondition("SPELL_COOLDOWN", {
         local operator_group = addon:Widget_OperatorWidget(value, L["Seconds"],
                                     function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
-
-        spell_group:SetRelativeWidth(0.5)
-        operator_group:SetRelativeWidth(0.5)
     end,
 })
 
@@ -151,9 +148,6 @@ addon:RegisterCondition("SPELL_REMAIN", {
         local operator_group = addon:Widget_OperatorWidget(value, L["Seconds"],
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
-
-        spell_group:SetRelativeWidth(0.5)
-        operator_group:SetRelativeWidth(0.5)
     end,
 })
 
@@ -193,9 +187,6 @@ addon:RegisterCondition("SPELL_CHARGES", {
         local operator_group = addon:Widget_OperatorWidget(value, L["Charges"],
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
-
-        spell_group:SetRelativeWidth(0.5)
-        operator_group:SetRelativeWidth(0.5)
     end,
 })
 
@@ -239,9 +230,6 @@ addon:RegisterCondition("SPELL_HISTORY", {
         local operator_group = addon:Widget_OperatorWidget(value, L["Count"],
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
-
-        spell_group:SetRelativeWidth(0.5)
-        operator_group:SetRelativeWidth(0.5)
     end,
 })
 
@@ -285,9 +273,6 @@ addon:RegisterCondition("SPELL_HISTORY_TIME", {
         local operator_group = addon:Widget_OperatorWidget(value, L["Seconds"],
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
-
-        spell_group:SetRelativeWidth(0.5)
-        operator_group:SetRelativeWidth(0.5)
     end,
 })
 

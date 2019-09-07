@@ -38,18 +38,18 @@ addon:RegisterCondition("CLASS", {
         parent:AddChild(unit)
 
         local class = AceGUI:Create("Dropdown")
-        parent:AddChild(class)
+        class:SetLabel(L["Class"])
+        class:SetCallback("OnValueChanged", function(widget, event, v)
+            value.value = v
+            top:SetStatusText(funcs:print(root, spec))
+        end)
         class.configure = function()
-            class:SetLabel(L["Class"])
             class:SetList(classes, keys(classes))
             if (value.value ~= nil) then
                 class:SetValue(value.value)
             end
-            class:SetCallback("OnValueChanged", function(widget, event, v)
-                value.value = v
-                top:SetStatusText(funcs:print(root, spec))
-            end)
         end
+        parent:AddChild(class)
     end,
 })
 
@@ -81,18 +81,18 @@ if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
             parent:AddChild(unit)
 
             local role = AceGUI:Create("Dropdown")
-            parent:AddChild(role)
+            role:SetLabel(L["Role"])
+            role:SetCallback("OnValueChanged", function(widget, event, v)
+                value.value = v
+                top:SetStatusText(funcs:print(root, spec))
+            end)
             role.configure = function()
-                role:SetLabel(L["Role"])
                 role:SetList(roles, keys(roles))
                 if (value.value ~= nil) then
                     role:SetValue(value.value)
                 end
-                role:SetCallback("OnValueChanged", function(widget, event, v)
-                    value.value = v
-                    top:SetStatusText(funcs:print(root, spec))
-                end)
             end
+            parent:AddChild(role)
         end,
     })
 
@@ -122,28 +122,26 @@ if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
             end
 
             local talentIcon = AceGUI:Create("Icon")
+            talentIcon:SetWidth(44)
+            talentIcon:SetHeight(44)
+            talentIcon:SetImageSize(36, 36)
+            talentIcon:SetImage(addon:GetSpecTalentIcon(spec, value.value))
             parent:AddChild(talentIcon)
-            talentIcon.configure = function()
-                talentIcon:SetWidth(44)
-                talentIcon:SetHeight(44)
-                talentIcon:SetImageSize(36, 36)
-                talentIcon:SetImage(addon:GetSpecTalentIcon(spec, value.value))
-            end
 
             local talent = AceGUI:Create("Dropdown")
-            parent:AddChild(talent)
+            talent:SetLabel(L["Talent"])
+            talent:SetCallback("OnValueChanged", function(widget, event, v)
+                value.value = v
+                talentIcon:SetImage(addon:GetSpecTalentIcon(spec, value.value))
+                top:SetStatusText(funcs:print(root, spec))
+            end)
             talent.configure = function()
-                talent:SetLabel(L["Talent"])
                 talent:SetList(talents, talentsOrder)
                 if (value.value) then
                     talent:SetValue(value.value)
                 end
-                talent:SetCallback("OnValueChanged", function(widget, event, v)
-                    value.value = v
-                    talentIcon:SetImage(addon:GetSpecTalentIcon(spec, value.value))
-                    top:SetStatusText(funcs:print(root, spec))
-                end)
             end
+            parent:AddChild(talent)
         end,
     })
 else
@@ -188,11 +186,8 @@ else
             end
 
             local talentTree = AceGUI:Create("Dropdown")
-            parent:AddChild(talentTree)
             local talentIcon = AceGUI:Create("Icon")
-            parent:AddChild(talentIcon)
             local talent = AceGUI:Create("Dropdown")
-            parent:AddChild(talent)
 
             local talentTreeName
             if value.tree then
@@ -205,64 +200,64 @@ else
                 talentName, talentImage = GetTalentInfo(value.tree, value.talent)
             end
 
+            talentTree:SetLabel(L["Talent Tree"])
+            talentTree:SetCallback("OnValueChanged", function(widget, event, v)
+                if v == value.tree then
+                    return
+                end
+
+                value.tree = v
+                talentTreeName = GetTalentTabInfo(v)
+                talentTree:SetValue(v)
+                top:SetStatusText(funcs:print(root, spec))
+
+                talents = {}
+                talentsOrder = {}
+                for i=1,GetNumTalents(value.tree) do
+                    talents[i] = GetTalentInfo(value.tree, i)
+                    table.insert(talentsOrder, i)
+                end
+                talentIcon:SetImage(nil)
+                talent:SetList(talents, talentsOrder)
+                talent:SetDisabled(false)
+                talentName, talentImage = nil, nil
+                talent:SetValue(nil)
+                talent:SetText(nil)
+            end)
             talentTree.configure = function()
-                talentTree:SetLabel(L["Talent Tree"])
                 talentTree:SetList(talentTrees, talentTreesOrder)
                 if value.tree then
                     talentTree:SetValue(value.tree)
                 end
-                talentTree:SetCallback("OnValueChanged", function(widget, event, v)
-                    if v == value.tree then
-                        return
-                    end
-
-                    value.tree = v
-                    talentTreeName = GetTalentTabInfo(v)
-                    talentTree:SetValue(v)
-                    top:SetStatusText(funcs:print(root, spec))
-
-                    talents = {}
-                    talentsOrder = {}
-                    for i=1,GetNumTalents(value.tree) do
-                        talents[i] = GetTalentInfo(value.tree, i)
-                        table.insert(talentsOrder, i)
-                    end
-                    talentIcon:SetImage(nil)
-                    talent:SetList(talents, talentsOrder)
-                    talent:SetDisabled(false)
-                    talentName, talentImage = nil, nil
-                    talent:SetValue(nil)
-                    talent:SetText(nil)
-                end)
             end
+            parent:AddChild(talentTree)
 
-            talentIcon.configure = function()
-                talentIcon:SetWidth(44)
-                talentIcon:SetHeight(44)
-                talentIcon:SetImageSize(36, 36)
-                if value.tree and value.talent then
-                    talentIcon:SetImage(talentImage)
+            talentIcon:SetWidth(44)
+            talentIcon:SetHeight(44)
+            talentIcon:SetImageSize(36, 36)
+            if value.tree and value.talent then
+                talentIcon:SetImage(talentImage)
+            end
+            parent:AddChild(talentIcon)
+            talent:SetLabel(L["Talent"])
+            talent:SetCallback("OnValueChanged", function(widget, event, v)
+                if v == value.talent then
+                    return
                 end
-            end
 
+                value.talent = v
+                talentName, talentImage = GetTalentInfo(value.tree, v)
+                talentIcon:SetImage(talentImage)
+                talent:SetValue(v)
+                top:SetStatusText(funcs:print(root, spec))
+            end)
             talent.configure = function()
-                talent:SetLabel(L["Talent"])
                 talent:SetList(talents, talentsOrder)
                 if value.tree and value.talent then
                     talent:SetValue(value.talent)
                 end
-                talent:SetCallback("OnValueChanged", function(widget, event, v)
-                    if v == value.talent then
-                        return
-                    end
-
-                    value.talent = v
-                    talentName, talentImage = GetTalentInfo(value.tree, v)
-                    talentIcon:SetImage(talentImage)
-                    talent:SetValue(v)
-                    top:SetStatusText(funcs:print(root, spec))
-                end)
             end
+            parent:AddChild(talent)
 
             local operator_group = addon:Widget_OperatorWidget(value, L["Points"],
                 function() top:SetStatusText(funcs:print(root, spec)) end)

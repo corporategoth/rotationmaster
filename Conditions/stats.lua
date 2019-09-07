@@ -37,6 +37,7 @@ addon:RegisterCondition("HEALTH", {
         local unit = addon:Widget_UnitWidget(value, units,
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
+
         local operator_group = addon:Widget_OperatorWidget(value, L["Health"],
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
@@ -70,6 +71,7 @@ addon:RegisterCondition("HEALTHPCT", {
         local unit = addon:Widget_UnitWidget(value, units,
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
+
         local operator_group = addon:Widget_OperatorPercentWidget(value, L["Health"],
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
@@ -98,6 +100,7 @@ addon:RegisterCondition("MANA", {
         local unit = addon:Widget_UnitWidget(value, units,
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
+
         local operator_group = addon:Widget_OperatorWidget(value, L["Mana"],
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
@@ -131,6 +134,7 @@ addon:RegisterCondition("MANAPCT", {
         local unit = addon:Widget_UnitWidget(value, units,
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
+
         local operator_group = addon:Widget_OperatorPercentWidget(value, L["Mana"],
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
@@ -169,6 +173,7 @@ addon:RegisterCondition("POWER", {
         local unit = addon:Widget_UnitWidget(value, units,
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
+
         local operator_group = addon:Widget_OperatorWidget(value, L["Power"],
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
@@ -210,6 +215,7 @@ addon:RegisterCondition("POWERPCT", {
         local unit = addon:Widget_UnitWidget(value, units,
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
+
         local operator_group = addon:Widget_OperatorPercentWidget(value, L["Power"],
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
@@ -249,6 +255,7 @@ addon:RegisterCondition("POINT", {
         local unit = addon:Widget_UnitWidget(value, units,
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
+
         local operator_group = addon:Widget_OperatorWidget(value, L["Points"],
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)

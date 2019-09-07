@@ -93,9 +93,6 @@ addon:RegisterCondition("DEBUFF_REMAIN", {
         local operator_group = addon:Widget_OperatorWidget(value, L["Seconds"],
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
-
-        spell_group:SetRelativeWidth(0.5)
-        operator_group:SetRelativeWidth(0.5)
     end,
 })
 
@@ -140,9 +137,6 @@ addon:RegisterCondition("DEBUFF_STACKS", {
         local operator_group = addon:Widget_OperatorWidget(value, L["Stacks"],
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
-
-        spell_group:SetRelativeWidth(0.5)
-        operator_group:SetRelativeWidth(0.5)
     end,
 })
 
@@ -181,16 +175,16 @@ addon:RegisterCondition("DISPELLABLE", {
         parent:AddChild(unit)
 
         local debufftype = AceGUI:Create("Dropdown")
-        parent:AddChild(debufftype)
+        debufftype:SetLabel(L["Debuff Type"])
+        debufftype:SetCallback("OnValueChanged", function(widget, event, v)
+            value.debufftype = v
+            top:SetStatusText(funcs:print(root, spec))
+        end)
         debufftype.configure = function()
-            debufftype:SetLabel(L["Debuff Type"])
             debufftype:SetList(debufftypes, keys(debufftypes))
             debufftype:SetValue(value.debufftype)
-            debufftype:SetCallback("OnValueChanged", function(widget, event, v)
-                value.debufftype = v
-                top:SetStatusText(funcs:print(root, spec))
-            end)
         end
+        parent:AddChild(debufftype)
 
         return nil
     end,

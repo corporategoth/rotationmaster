@@ -65,16 +65,14 @@ addon:RegisterCondition("PROXIMITY", {
         parent:AddChild(operator_group)
 
         local distance = AceGUI:Create("EditBox")
+        distance:SetWidth(100)
+        distance:SetLabel(L["Distance"])
+        distance:SetText(value.distance)
+        distance:SetCallback("OnEnterPressed", function(widget, event, v)
+            value.distance = tonumber(v)
+            top:SetStatusText(funcs:print(root, spec))
+        end)
         parent:AddChild(distance)
-        distance.configure = function()
-            distance:SetLabel(L["Distance"])
-            distance:SetWidth(100)
-            distance:SetText(value.distance)
-            distance:SetCallback("OnEnterPressed", function(widget, event, v)
-                value.distance = tonumber(v)
-                top:SetStatusText(funcs:print(root, spec))
-            end)
-        end
     end,
 })
 
@@ -108,16 +106,16 @@ addon:RegisterCondition("DISTANCE", {
         end
 
         local distance = AceGUI:Create("Dropdown")
-        parent:AddChild(distance)
+        distance:SetLabel(L["Distance"])
+        distance:SetCallback("OnValueChanged", function(widget, event, v)
+            value.value = v
+            top:SetStatusText(funcs:print(root, spec))
+        end)
         distance.configure = function()
-            distance:SetLabel(L["Distance"])
             distance:SetList(distances)
             distance:SetValue(value.value)
-            distance:SetCallback("OnValueChanged", function(widget, event, v)
-                value.value = v
-                top:SetStatusText(funcs:print(root, spec))
-            end)
         end
+        parent:AddChild(distance)
     end,
 })
 
@@ -152,21 +150,19 @@ addon:RegisterCondition("DISTANCE_COUNT", {
         local funcs = top:GetUserData("funcs")
 
         local enemy = AceGUI:Create("CheckBox")
-        parent:AddChild(enemy)
-        enemy.configure = function()
-            enemy:SetLabel(L["Enemy"])
-            enemy:SetWidth(100)
-            if (value.enemy ~= nil) then
-                enemy:SetValue(value.enemy)
-            else
-                value.enemy = false
-                enemy:SetValue(false)
-            end
-            enemy:SetCallback("OnValueChanged", function(widget, event, v)
-                value.enemy = v
-                top:SetStatusText(funcs:print(root, spec))
-            end)
+        enemy:SetWidth(100)
+        enemy:SetLabel(L["Enemy"])
+        if (value.enemy ~= nil) then
+            enemy:SetValue(value.enemy)
+        else
+            value.enemy = false
+            enemy:SetValue(false)
         end
+        enemy:SetCallback("OnValueChanged", function(widget, event, v)
+            value.enemy = v
+            top:SetStatusText(funcs:print(root, spec))
+        end)
+        parent:AddChild(enemy)
 
         local operator_group = addon:Widget_OperatorWidget(value, L["Seconds"],
             function() top:SetStatusText(funcs:print(root, spec)) end)
@@ -178,16 +174,16 @@ addon:RegisterCondition("DISTANCE_COUNT", {
         end
 
         local distance = AceGUI:Create("Dropdown")
-        parent:AddChild(distance)
+        distance:SetLabel(L["Distance"])
+        distance:SetCallback("OnValueChanged", function(widget, event, v)
+            value.distance = v
+            top:SetStatusText(funcs:print(root, spec))
+        end)
         distance.configure = function()
-            distance:SetLabel(L["Distance"])
             distance:SetList(distances)
             distance:SetValue(value.distance)
-            distance:SetCallback("OnValueChanged", function(widget, event, v)
-                value.distance = v
-                top:SetStatusText(funcs:print(root, spec))
-            end)
         end
+        parent:AddChild(distance)
     end,
 })
 

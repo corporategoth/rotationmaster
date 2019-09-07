@@ -24,156 +24,136 @@ local function create_item_list(frame, items, update)
         local row = frame
 
         local icon = AceGUI:Create("ActionSlotItem")
-        row:AddChild(icon)
         local name = AceGUI:Create("Inventory_EditBox")
-        row:AddChild(name)
 
-        icon.configure = function()
-            if (item) then
-                icon:SetText(GetItemInfoInstant(item))
-            end
-            icon:SetWidth(44)
-            icon:SetHeight(44)
-            icon.text:Hide()
-            icon:SetCallback("OnEnterPressed", function(widget, event, v)
-                if v then
-                    local info = GetItemInfo(v)
-                    if info then
-                        items[idx] = info
-                        icon:SetText(v)
-                        name:SetText(info)
-                        update()
-                    end
-                else
-                    table.remove(items, idx)
-                    update()
-                    create_item_list(frame, items, update)
-                end
-            end)
+        icon:SetWidth(44)
+        icon:SetHeight(44)
+        if (item) then
+            icon:SetText(GetItemInfoInstant(item))
         end
-
-        name.configure = function()
-            name:SetLabel(L["Item"])
-            name:SetText(item)
-            name:SetFullWidth(true)
-            name:SetCallback("OnEnterPressed", function(widget, event, val)
-                if val == "" then
-                    table.remove(items, idx)
-                    update()
-                    create_item_list(frame, items, update)
-                else
-                    local itemID = GetItemInfoInstant(val)
-                    if itemID ~= nil then
-                        icon:SetText(itemID)
-                    else
-                        icon:SetText(nil)
-                    end
-                    items[idx] = val
+        icon.text:Hide()
+        icon:SetCallback("OnEnterPressed", function(widget, event, v)
+            if v then
+                local info = GetItemInfo(v)
+                if info then
+                    items[idx] = info
+                    icon:SetText(v)
+                    name:SetText(info)
                     update()
                 end
-            end)
-        end
-
-        local moveup = AceGUI:Create("Button")
-        row:AddChild(moveup)
-        moveup.configure = function()
-            moveup:SetText("^")
-            moveup:SetWidth(40)
-            moveup:SetDisabled(idx == 1)
-            moveup:SetCallback("OnClick", function(widget, ewvent, ...)
-                local tmp = items[idx-1]
-                items[idx-1] = items[idx]
-                items[idx] = tmp
-                update()
-                create_item_list(frame, items, update)
-            end)
-        end
-
-        local movedown = AceGUI:Create("Button")
-        row:AddChild(movedown)
-        movedown.configure = function()
-            movedown:SetText("v")
-            movedown:SetWidth(40)
-            movedown:SetDisabled(idx == #items or items[idx+1] == "")
-            movedown:SetCallback("OnClick", function(widget, ewvent, ...)
-                local tmp = items[idx+1]
-                items[idx+1] = items[idx]
-                items[idx] = tmp
-                update()
-                create_item_list(frame, items, update)
-            end)
-        end
-
-        local delete = AceGUI:Create("Button")
-        row:AddChild(delete)
-        delete.configure = function()
-            delete:SetText("X")
-            delete:SetWidth(40)
-            delete:SetCallback("OnClick", function(widget, ewvent, ...)
+            else
                 table.remove(items, idx)
                 update()
                 create_item_list(frame, items, update)
-            end)
-        end
+            end
+        end)
+        row:AddChild(icon)
+
+        name:SetFullWidth(true)
+        name:SetLabel(L["Item"])
+        name:SetText(item)
+        name:SetCallback("OnEnterPressed", function(widget, event, val)
+            if val == "" then
+                table.remove(items, idx)
+                update()
+                create_item_list(frame, items, update)
+            else
+                local itemID = GetItemInfoInstant(val)
+                if itemID ~= nil then
+                    icon:SetText(itemID)
+                else
+                    icon:SetText(nil)
+                end
+                items[idx] = val
+                update()
+            end
+        end)
+        row:AddChild(name)
+
+        local moveup = AceGUI:Create("Button")
+        moveup:SetWidth(40)
+        moveup:SetText("^")
+        moveup:SetDisabled(idx == 1)
+        moveup:SetCallback("OnClick", function(widget, ewvent, ...)
+            local tmp = items[idx-1]
+            items[idx-1] = items[idx]
+            items[idx] = tmp
+            update()
+            create_item_list(frame, items, update)
+        end)
+        row:AddChild(moveup)
+
+        local movedown = AceGUI:Create("Button")
+        movedown:SetWidth(40)
+        movedown:SetText("v")
+        movedown:SetDisabled(idx == #items or items[idx+1] == "")
+        movedown:SetCallback("OnClick", function(widget, ewvent, ...)
+            local tmp = items[idx+1]
+            items[idx+1] = items[idx]
+            items[idx] = tmp
+            update()
+            create_item_list(frame, items, update)
+        end)
+        row:AddChild(movedown)
+
+        local delete = AceGUI:Create("Button")
+        delete:SetWidth(40)
+            delete:SetText("X")
+            delete:SetCallback("OnClick", function(widget, ewvent, ...)
+            table.remove(items, idx)
+            update()
+            create_item_list(frame, items, update)
+        end)
+        row:AddChild(delete)
     end
 
     if #items == 0 or (items[#items] ~= nil and items[#items] ~= "") then
         local row = frame
 
         local icon = AceGUI:Create("ActionSlotItem")
+        icon:SetWidth(44)
+        icon:SetHeight(44)
+        icon.text:Hide()
+        icon:SetCallback("OnEnterPressed", function(widget, event, v)
+            v = GetItemInfo(v)
+            if v then
+                items[#items + 1] = v
+                update()
+                create_item_list(frame, items, update)
+            end
+        end)
         row:AddChild(icon)
-        icon.configure = function()
-            icon:SetWidth(44)
-            icon:SetHeight(44)
-            icon.text:Hide()
-            icon:SetCallback("OnEnterPressed", function(widget, event, v)
-                v = GetItemInfo(v)
-                if v then
-                    items[#items + 1] = v
-                    update()
-                    create_item_list(frame, items, update)
-                end
-            end)
-        end
 
         local name = AceGUI:Create("Inventory_EditBox")
+        name:SetFullWidth(true)
+        name:SetLabel(L["Item"])
+        name:SetText(nil)
+        name:SetCallback("OnEnterPressed", function(widget, event, val)
+            if val ~= nil then
+                items[#items + 1] = val
+                update()
+                create_item_list(frame, items, update)
+            end
+        end)
         row:AddChild(name)
-        icon.configure = function()
-            name:SetLabel(L["Item"])
-            name:SetFullWidth(true)
-            name:SetText(nil)
-            name:SetCallback("OnEnterPressed", function(widget, event, val)
-                if val ~= nil then
-                    items[#items + 1] = val
-                    update()
-                    create_item_list(frame, items, update)
-                end
-            end)
-        end
 
         local moveup = AceGUI:Create("Button")
+        moveup:SetWidth(40)
+        moveup:SetText("^")
+        moveup:SetDisabled(true)
         row:AddChild(moveup)
-        moveup.configure = function()
-            moveup:SetText("^")
-            moveup:SetWidth(40)
-            moveup:SetDisabled(true)
-        end
 
         local movedown = AceGUI:Create("Button")
+        movedown:SetWidth(40)
+        movedown:SetText("v")
+        movedown:SetDisabled(true)
         row:AddChild(movedown)
-        movedown.configure = function()
-            movedown:SetText("v")
-            movedown:SetWidth(40)
-            movedown:SetDisabled(true)
-        end
 
         local delete = AceGUI:Create("Button")
+        delete:SetWidth(40)
+        delete:SetText("X")
+        delete:SetDisabled(true)
         row:AddChild(delete)
-        delete.configure = function()
-            delete:SetText("X")
-            delete:SetWidth(40)
-            delete:SetDisabled(true)
-        end
     end
 
     addon:configure_frame(frame)
@@ -216,41 +196,35 @@ local function add_top_buttons(list, idx, callback, delete_cb)
 
     local moveup = AceGUI:Create("Button")
     button_group:AddChild(moveup)
-    moveup.configure = function()
-        moveup:SetText(L["Move Up"])
-        moveup:SetDisabled(idx == 1)
-        moveup:SetCallback("OnClick", function(widget, event)
-            local rot = list[idx]
-            list[idx] = list[idx - 1]
-            idx = idx - 1
-            list[idx] = rot
-            callback()
-        end)
-    end
+    moveup:SetText(L["Move Up"])
+    moveup:SetDisabled(idx == 1)
+    moveup:SetCallback("OnClick", function(widget, event)
+        local rot = list[idx]
+        list[idx] = list[idx - 1]
+        idx = idx - 1
+        list[idx] = rot
+        callback()
+    end)
 
     local movedown = AceGUI:Create("Button")
     button_group:AddChild(movedown)
-    movedown.configure = function()
-        movedown:SetText(L["Move Down"])
-        movedown:SetDisabled(idx == #list)
-        movedown:SetCallback("OnClick", function(widget, event)
-            local rot = list[idx]
-            list[idx] = list[idx + 1]
-            idx = idx + 1
-            list[idx] = rot
-            callback()
-        end)
-    end
+    movedown:SetText(L["Move Down"])
+    movedown:SetDisabled(idx == #list)
+    movedown:SetCallback("OnClick", function(widget, event)
+        local rot = list[idx]
+        list[idx] = list[idx + 1]
+        idx = idx + 1
+        list[idx] = rot
+        callback()
+    end)
 
     local delete = AceGUI:Create("Button")
     button_group:AddChild(delete)
-    delete.configure = function()
-        delete:SetText(DELETE)
-        delete:SetCallback("OnClick", function(widget, event)
-            delete_cb()
-            callback()
-        end)
-    end
+    delete:SetText(DELETE)
+    delete:SetCallback("OnClick", function(widget, event)
+        delete_cb()
+        callback()
+    end)
 
     return button_group
 end
@@ -264,7 +238,6 @@ local function add_effect_group(specID, rotid, rot, refresh)
     group:SetLayout("Flow")
 
     local effect_group = AceGUI:Create("SimpleGroup")
-    group:AddChild(effect_group)
     effect_group:SetRelativeWidth(0.5)
     effect_group:SetLayout("Table")
     effect_group:SetUserData("table", { columns = { 44, 1 } })
@@ -288,85 +261,79 @@ local function add_effect_group(specID, rotid, rot, refresh)
     update_effect_map()
 
     local effect_icon = AceGUI:Create("Icon")
-    effect_group:AddChild(effect_icon)
-    effect_group.configure = function()
-        effect_icon:SetImageSize(36, 36)
-        if effects[name2idx[rot.effect or profile["effect"]]].type == "texture" then
-            effect_icon:SetHeight(44)
-            effect_icon:SetWidth(44)
-            effect_icon:SetImage(effects[name2idx[rot.effect or profile["effect"]]].texture)
-        else
-            effect_icon:SetImage(nil)
-            effect_icon:SetHeight(36)
-            effect_icon:SetWidth(36)
-            addon:ApplyCustomGlow(effects[name2idx[rot.effect or profile["effect"]]], effect_icon.frame, nil, rot.color)
-        end
-        addon.active_effect_icon = effect_icon.frame
+    effect_icon:SetImageSize(36, 36)
+    if effects[name2idx[rot.effect or profile["effect"]]].type == "texture" then
+        effect_icon:SetHeight(44)
+        effect_icon:SetWidth(44)
+        effect_icon:SetImage(effects[name2idx[rot.effect or profile["effect"]]].texture)
+    else
+        effect_icon:SetImage(nil)
+        effect_icon:SetHeight(36)
+        effect_icon:SetWidth(36)
+        addon:ApplyCustomGlow(effects[name2idx[rot.effect or profile["effect"]]], effect_icon.frame, nil, rot.color)
     end
+    addon.active_effect_icon = effect_icon.frame
+    effect_group:AddChild(effect_icon)
 
     local effect = AceGUI:Create("Dropdown")
-    effect_group:AddChild(effect)
-    effect.configure = function()
-        effect:SetLabel(L["Effect"])
-        effect:SetText(effect_map[rot.effect or DEFAULT])
-        effect:SetValue(rot.effect or DEFAULT)
+    effect:SetLabel(L["Effect"])
+    effect:SetHeight(44)
+    effect:SetCallback("OnValueChanged", function(widget, event, val)
+        if val == DEFAULT then
+            rot.effect = nil
+        else
+            rot.effect = val
+        end
+        addon:RemoveCooldownGlowIfCurrent(specID, rotid, rot)
+        refresh()
+    end)
+    effect.frame:SetScript("OnShow", function(frame)
+        update_effect_map()
         effect:SetList(effect_map, effect_order)
-        effect:SetHeight(44)
-        effect:SetCallback("OnValueChanged", function(widget, event, val)
-            if val == DEFAULT then
-                rot.effect = nil
-            else
-                rot.effect = val
-            end
-            addon:RemoveCooldownGlowIfCurrent(specID, rotid, rot)
-            refresh()
-        end)
-        effect.frame:SetScript("OnShow", function(frame)
-            update_effect_map()
-            effect:SetList(effect_map, effect_order)
-        end)
+    end)
+    effect.configure = function()
+        effect:SetList(effect_map, effect_order)
+        effect:SetValue(rot.effect or DEFAULT)
     end
+    effect_group:AddChild(effect)
+
+    group:AddChild(effect_group)
 
     group:AddChild(spacer(0.05))
 
     local magnification = AceGUI:Create("Slider")
+    magnification:SetRelativeWidth(0.45)
+    magnification:SetLabel(L["Magnification"])
+    magnification:SetValue(rot.magnification or profile["magnification"])
+    magnification:SetSliderValues(0.1, 2.0, 0.1)
+    magnification:SetDisabled(effects[name2idx[rot.effect or profile["effect"]]].type ~= "texture")
+    magnification:SetCallback("OnValueChanged", function(widget, event, val)
+        if val == profile["magnification"] then
+            rot.magnification = nil
+        else
+            rot.magnification = val
+        end
+        addon:RemoveCooldownGlowIfCurrent(specID, rotid, rot)
+    end)
     group:AddChild(magnification)
-    magnification.configure = function()
-        magnification:SetLabel(L["Magnification"])
-        magnification:SetValue(rot.magnification or profile["magnification"])
-        magnification:SetRelativeWidth(0.45)
-        magnification:SetSliderValues(0.1, 2.0, 0.1)
-        magnification:SetDisabled(effects[name2idx[rot.effect or profile["effect"]]].type ~= "texture")
-        magnification:SetCallback("OnValueChanged", function(widget, event, val)
-            if val == profile["magnification"] then
-                rot.magnification = nil
-            else
-                rot.magnification = val
-            end
-            addon:RemoveCooldownGlowIfCurrent(specID, rotid, rot)
-        end)
-    end
 
     if rot.color == nil then
         rot.color = { r = 0, g = 1.0, b = 0, a = 1.0 }
     end
     local color_pick = AceGUI:Create("ColorPicker")
+    color_pick:SetRelativeWidth(0.35)
+    color_pick:SetColor(rot.color.r, rot.color.g, rot.color.b, rot.color.a)
+    color_pick:SetLabel(L["Highlight Color"])
+    color_pick:SetCallback("OnValueConfirmed", function(widget, event, r, g, b, a)
+        rot.color = { r = r, g = g, b = b, a = a }
+        if effects[name2idx[rot.effect or profile["effect"]]].type ~= "texture" then
+            addon:ApplyCustomGlow(effects[name2idx[rot.effect or profile["effect"]]], effect_icon.frame, nil, rot.color)
+        end
+        addon:RemoveCooldownGlowIfCurrent(specID, rotid, rot)
+    end)
     group:AddChild(color_pick)
-    color_pick.configure = function()
-        color_pick:SetColor(rot.color.r, rot.color.g, rot.color.b, rot.color.a)
-        color_pick:SetLabel(L["Highlight Color"])
-        color_pick:SetRelativeWidth(0.35)
-        color_pick:SetCallback("OnValueConfirmed", function(widget, event, r, g, b, a)
-            rot.color = { r = r, g = g, b = b, a = a }
-            if effects[name2idx[rot.effect or profile["effect"]]].type ~= "texture" then
-                addon:ApplyCustomGlow(effects[name2idx[rot.effect or profile["effect"]]], effect_icon.frame, nil, rot.color)
-            end
-            addon:RemoveCooldownGlowIfCurrent(specID, rotid, rot)
-        end)
-    end
 
     local position_group = AceGUI:Create("SimpleGroup")
-    group:AddChild(position_group)
     position_group:SetLayout("Table")
     position_group:SetRelativeWidth(0.65)
     position_group:SetUserData("table", { columns = { 1, 20, 35, 50 } })
@@ -377,134 +344,118 @@ local function add_effect_group(specID, rotid, rot, refresh)
     local update_position_buttons
 
     local position = AceGUI:Create("Dropdown")
-    position_group:AddChild(position)
+    position:SetLabel(L["Position"])
+    position:SetCallback("OnValueChanged", function(widget, event, val)
+        if val == DEFAULT then
+            rot.setpoint = nil
+            rot.xoffs = nil
+            rot.yoffs = nil
+        else
+            rot.setpoint = val
+            rot.xoffs = 0
+            rot.yoffs = 0
+        end
+        update_position_buttons()
+        addon:RemoveCooldownGlowIfCurrent(specID, rotid, rot)
+    end)
     position.configure = function()
-        position:SetLabel(L["Position"])
-        position:SetText(setpoint_values[rot.setpoint or DEFAULT])
-        position:SetValue(rot.setpoint or DEFAULT)
         position:SetList(setpoint_values, { DEFAULT, "CENTER", "TOPLEFT", "TOPRIGHT", "BOTTOMLEFT", "BOTTOMRIGHT", "TOP", "BOTTOM", "LEFT", "RIGHT" })
-        position:SetCallback("OnValueChanged", function(widget, event, val)
-            if val == DEFAULT then
-                rot.setpoint = nil
-                rot.xoffs = nil
-                rot.yoffs = nil
-            else
-                rot.setpoint = val
-                rot.xoffs = 0
-                rot.yoffs = 0
-            end
-            update_position_buttons()
-            addon:RemoveCooldownGlowIfCurrent(specID, rotid, rot)
-        end)
+        position:SetValue(rot.setpoint or DEFAULT)
     end
+    position_group:AddChild(position)
 
     position_group:AddChild(spacer(0.1))
 
     local directional_group = AceGUI:Create("SimpleGroup")
-    position_group:AddChild(directional_group)
     directional_group:SetLayout("Table")
     directional_group:SetUserData("table", { columns = { 10, 10, 10 } })
 
-    local offset_group = AceGUI:Create("SimpleGroup")
-    position_group:AddChild(offset_group)
-    offset_group:SetLayout("Table")
-    offset_group:SetUserData("table", { columns = { 10, 40 } })
-
-    local x_label = AceGUI:Create("Label")
-    offset_group:AddChild(x_label)
-    x_label.configure = function()
-        x_label:SetText("X")
-        x_label:SetColor(1.0, 0.82, 0)
-    end
-
-    local x_offs = AceGUI:Create("EditBox")
-    offset_group:AddChild(x_offs)
-    x_offs.configure = function()
-        x_offs:SetDisabled(true)
-    end
-
-    local y_label = AceGUI:Create("Label")
-    offset_group:AddChild(y_label)
-    y_label.configure = function()
-        y_label:SetText("Y")
-        y_label:SetColor(1.0, 0.82, 0)
-    end
-
-    local y_offs = AceGUI:Create("EditBox")
-    offset_group:AddChild(y_offs)
-    y_offs.configure = function()
-        y_offs:SetDisabled(true)
-    end
-
     directional_group:AddChild(spacer(1))
 
+    local x_offs = AceGUI:Create("EditBox")
+    local y_offs = AceGUI:Create("EditBox")
+
     local button_up = AceGUI:Create("InteractiveLabel")
+    button_up:SetText("^")
+    button_up:SetColor(0, 1.0, 1.0)
+    button_up:SetCallback("OnClick", function(widget, event, val)
+        rot.yoffs = (rot.yoffs or 0) + 1
+        y_offs:SetText(rot.yoffs)
+        addon:RemoveAllCurrentGlows()
+    end)
     directional_group:AddChild(button_up)
-    button_up.configure = function()
-        button_up:SetText("^")
-        button_up:SetColor(0, 1.0, 1.0)
-        button_up:SetCallback("OnClick", function(widget, event, val)
-            rot.yoffs = (rot.yoffs or 0) + 1
-            y_offs:SetText(rot.yoffs)
-            addon:RemoveAllCurrentGlows()
-        end)
-    end
 
     directional_group:AddChild(spacer(1))
 
     local button_left = AceGUI:Create("InteractiveLabel")
+    button_left:SetText("<")
+    button_left:SetColor(0, 1.0, 1.0)
+    button_left:SetCallback("OnClick", function(widget, event, val)
+        rot.xoffs = (rot.xoffs or 0) - 1
+        x_offs:SetText(rot.xoffs)
+        addon:RemoveAllCurrentGlows()
+    end)
     directional_group:AddChild(button_left)
-    button_left.configure = function()
-        button_left:SetText("<")
-        button_left:SetColor(0, 1.0, 1.0)
-        button_left:SetCallback("OnClick", function(widget, event, val)
-            rot.xoffs = (rot.xoffs or 0) - 1
-            x_offs:SetText(rot.xoffs)
-            addon:RemoveAllCurrentGlows()
-        end)
-    end
 
     local button_center = AceGUI:Create("InteractiveLabel")
+    button_center:SetText("o")
+    button_center:SetColor(0, 1.0, 1.0)
+    button_center:SetCallback("OnClick", function(widget, event, val)
+        rot.xoffs = 0
+        rot.yoffs = 0
+        x_offs:SetText(rot.xoffs)
+        y_offs:SetText(rot.yoffs)
+        addon:RemoveAllCurrentGlows()
+    end)
     directional_group:AddChild(button_center)
-    button_center.configure = function()
-        button_center:SetText("o")
-        button_center:SetColor(0, 1.0, 1.0)
-        button_center:SetCallback("OnClick", function(widget, event, val)
-            rot.xoffs = 0
-            rot.yoffs = 0
-            x_offs:SetText(rot.xoffs)
-            y_offs:SetText(rot.yoffs)
-            addon:RemoveAllCurrentGlows()
-        end)
-    end
 
     local button_right = AceGUI:Create("InteractiveLabel")
+    button_right:SetText(">")
+    button_right:SetColor(0, 1.0, 1.0)
+    button_right:SetCallback("OnClick", function(widget, event, val)
+        rot.xoffs = (rot.xoffs or 0) + 1
+        x_offs:SetText(rot.xoffs)
+        addon:RemoveAllCurrentGlows()
+    end)
     directional_group:AddChild(button_right)
-    button_right.configure = function()
-        button_right:SetText(">")
-        button_right:SetColor(0, 1.0, 1.0)
-        button_right:SetCallback("OnClick", function(widget, event, val)
-            rot.xoffs = (rot.xoffs or 0) + 1
-            x_offs:SetText(rot.xoffs)
-            addon:RemoveAllCurrentGlows()
-        end)
-    end
 
     directional_group:AddChild(spacer(1))
 
     local button_down = AceGUI:Create("InteractiveLabel")
+    button_down:SetText("v")
+    button_down:SetColor(0, 1.0, 1.0)
+    button_down:SetCallback("OnClick", function(widget, event, val)
+        rot.yoffs = (rot.yoffs or 0) - 1
+        y_offs:SetText(rot.yoffs)
+        addon:RemoveAllCurrentGlows()
+    end)
     directional_group:AddChild(button_down)
-    button_down.configure = function()
-        button_down:SetText("v")
-        button_down:SetColor(0, 1.0, 1.0)
-        button_down:SetCallback("OnClick", function(widget, event, val)
-            rot.yoffs = (rot.yoffs or 0) - 1
-            y_offs:SetText(rot.yoffs)
-            addon:RemoveAllCurrentGlows()
-        end)
-    end
 
     directional_group:AddChild(spacer(1))
+
+    position_group:AddChild(directional_group)
+
+    local offset_group = AceGUI:Create("SimpleGroup")
+    offset_group:SetLayout("Table")
+    offset_group:SetUserData("table", { columns = { 10, 40 } })
+
+    local x_label = AceGUI:Create("Label")
+    x_label:SetText("X")
+    x_label:SetColor(1.0, 0.82, 0)
+    offset_group:AddChild(x_label)
+
+    x_offs:SetDisabled(true)
+    offset_group:AddChild(x_offs)
+
+    local y_label = AceGUI:Create("Label")
+    y_label:SetText("Y")
+    y_label:SetColor(1.0, 0.82, 0)
+    offset_group:AddChild(y_label)
+
+    y_offs:SetDisabled(true)
+    offset_group:AddChild(y_offs)
+
+    position_group:AddChild(offset_group)
 
     update_position_buttons = function()
         local disable = effects[name2idx[rot.effect or profile["effect"]]] ~= nil and
@@ -522,6 +473,8 @@ local function add_effect_group(specID, rotid, rot, refresh)
 
     update_position_buttons()
 
+    group:AddChild(position_group)
+
     return group
 end
 
@@ -531,13 +484,11 @@ local function add_action_group(specID, rotid, rot, callback, refresh)
     group:SetLayout("Flow")
 
     local icon_group = AceGUI:Create("SimpleGroup")
-    group:AddChild(icon_group)
     icon_group:SetFullWidth(true)
     icon_group:SetLayout("Table")
     icon_group:SetUserData("table", { columns = { 44, 24, 1 } })
 
     local action_group = AceGUI:Create("SimpleGroup")
-    group:AddChild(action_group)
     action_group:SetFullWidth(true)
     action_group:SetLayout("Table")
     action_group:SetUserData("table", { columns = { 0, 1 } })
@@ -549,115 +500,31 @@ local function add_action_group(specID, rotid, rot, callback, refresh)
     }
 
     local type = AceGUI:Create("Dropdown")
-    action_group:AddChild(type)
+    type:SetWidth(95)
+    type:SetLabel(L["Action Type"])
+    type:SetCallback("OnValueChanged", function(widget, event, val)
+        if rot.type ~= val then
+            rot.type = val
+            rot.action = nil
+            refresh()
+        end
+    end)
     type.configure = function()
-        type:SetLabel(L["Action Type"])
         type:SetList(types, { "spell", "pet", "item" })
         type:SetValue(rot.type)
-        type:SetWidth(95)
-        type:SetCallback("OnValueChanged", function(widget, event, val)
-            if rot.type ~= val then
-                rot.type = val
-                rot.action = nil
-                refresh()
-            end
-        end)
     end
+    action_group:AddChild(type)
 
     if rot.type ~= nil and rot.type == "spell" then
         local action_icon = AceGUI:Create("ActionSlotSpell")
-        icon_group:AddChild(action_icon)
-        action_icon.configure = function()
-            action_icon:SetText(rot.action)
-            action_icon:SetWidth(44)
-            action_icon:SetHeight(44)
-            action_icon.text:Hide()
-            action_icon:SetCallback("OnEnterPressed", function(widget, event, v)
-                v = tonumber(v)
-                if not v or isSpellOnSpec(specID, v) then
-                    addon:RemoveCooldownGlowIfCurrent(specID, rotid, rot)
-                    rot.action = v
-                    action_icon:SetText(v)
-                    if v then
-                        action:SetText(rot.action and (rot.ranked and SpellData:SpellName(rot.action) or GetSpellInfo(rot.action)))
-                    else
-                        action:SetText(nil)
-                    end
-
-                    callback()
-                end
-            end)
-        end
-
-        local action = AceGUI:Create("Spec_EditBox")
-        if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
-            action_group:SetUserData("table", { columns = { 0, 0.025, 30, 1 } })
-            action_group:AddChild(spacer(1))
-
-            local ranked = AceGUI:Create("SimpleGroup")
-            action_group:AddChild(ranked)
-            ranked:SetFullWidth(true)
-            ranked:SetLayout("Table")
-            ranked:SetUserData("table", { columns = { 1 } })
-            ranked:SetUserData("cell", { alignV = "bottom", alignH = "center" })
-
-            local nr_label = AceGUI:Create("Label")
-            ranked:AddChild(nr_label)
-            nr_label.configure = function()
-                nr_label:SetText(L["Rank"])
-                nr_label:SetColor(1.0, 0.82, 0.0)
-            end
-
-            local nr_button = AceGUI:Create("CheckBox")
-            ranked:AddChild(nr_button)
-            nr_button.configure = function()
-                nr_button:SetValue(rot.ranked or false)
-                nr_button:SetCallback("OnValueChanged", function(widget, event, val)
-                    rot.ranked = val
-                    action:SetUserData("norank", not val)
-                    action:SetText(rot.action and (rot.ranked and SpellData:SpellName(rot.action)) or GetSpellInfo(rot.action))
-                    callback()
-                end)
-            end
-        end
-
-        action_group:AddChild(action)
-        action.configure = function()
-            action:SetUserData("norank", not rot.ranked)
-            action:SetUserData("spec", specID)
-            action:SetLabel(L["Spell"])
-            action:SetText(rot.action and (rot.ranked and SpellData:SpellName(rot.action)) or GetSpellInfo(rot.action))
-            action:SetFullWidth(true)
-            action:SetCallback("OnEnterPressed", function(widget, event, val)
+        action_icon:SetWidth(44)
+        action_icon:SetHeight(44)
+        action_icon:SetText(rot.action)
+        action_icon.text:Hide()
+        action_icon:SetCallback("OnEnterPressed", function(widget, event, v)
+            v = tonumber(v)
+            if not v or isSpellOnSpec(specID, v) then
                 addon:RemoveCooldownGlowIfCurrent(specID, rotid, rot)
-                if isint(val) then
-                    if isSpellOnSpec(specID, tonumber(val)) then
-                        rot.action = tonumber(val)
-                    else
-                        rot.action = nil
-                        action:SetText(nil)
-                    end
-                else
-                    rot.action = addon:GetSpecSpellID(specID, val)
-                    if rot.action == nil then
-                        action:SetText(nil)
-                    end
-                end
-                action_icon:SetText(rot.action)
-                callback()
-            end)
-        end
-    elseif rot.type ~= nil and rot.type == "pet" then
-        local action_icon = AceGUI:Create("ActionSlotSpell")
-        icon_group:AddChild(action_icon)
-        action_icon.configure = function()
-            action_icon:SetText(rot.action)
-            action_icon:SetWidth(44)
-            action_icon:SetHeight(44)
-            action_icon.text:Hide()
-            action_icon:SetCallback("OnEnterPressed", function(widget, event, v)
-                addon:RemoveCooldownGlowIfCurrent(specID, rotid, rot)
-                v = tonumber(v)
                 rot.action = v
                 action_icon:SetText(v)
                 if v then
@@ -667,8 +534,83 @@ local function add_action_group(specID, rotid, rot, callback, refresh)
                 end
 
                 callback()
+            end
+        end)
+        icon_group:AddChild(action_icon)
+
+        local action = AceGUI:Create("Spec_EditBox")
+        if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
+            action_group:SetUserData("table", { columns = { 0, 0.025, 30, 1 } })
+            action_group:AddChild(spacer(1))
+
+            local ranked = AceGUI:Create("SimpleGroup")
+            ranked:SetFullWidth(true)
+            ranked:SetLayout("Table")
+            ranked:SetUserData("table", { columns = { 1 } })
+            ranked:SetUserData("cell", { alignV = "bottom", alignH = "center" })
+
+            local nr_label = AceGUI:Create("Label")
+            nr_label:SetText(L["Rank"])
+            nr_label:SetColor(1.0, 0.82, 0.0)
+            ranked:AddChild(nr_label)
+
+            local nr_button = AceGUI:Create("CheckBox")
+            nr_button:SetValue(rot.ranked or false)
+            nr_button:SetCallback("OnValueChanged", function(widget, event, val)
+                rot.ranked = val
+                action:SetUserData("norank", not val)
+                action:SetText(rot.action and (rot.ranked and SpellData:SpellName(rot.action)) or GetSpellInfo(rot.action))
+                callback()
             end)
+            ranked:AddChild(nr_button)
+
+            action_group:AddChild(ranked)
         end
+
+        action:SetFullWidth(true)
+        action:SetUserData("norank", not rot.ranked)
+        action:SetUserData("spec", specID)
+        action:SetLabel(L["Spell"])
+        action:SetText(rot.action and (rot.ranked and SpellData:SpellName(rot.action)) or GetSpellInfo(rot.action))
+        action:SetCallback("OnEnterPressed", function(widget, event, val)
+            addon:RemoveCooldownGlowIfCurrent(specID, rotid, rot)
+            if isint(val) then
+                if isSpellOnSpec(specID, tonumber(val)) then
+                    rot.action = tonumber(val)
+                else
+                    rot.action = nil
+                    action:SetText(nil)
+                end
+            else
+                rot.action = addon:GetSpecSpellID(specID, val)
+                if rot.action == nil then
+                    action:SetText(nil)
+                end
+            end
+            action_icon:SetText(rot.action)
+            callback()
+        end)
+        action_group:AddChild(action)
+    elseif rot.type ~= nil and rot.type == "pet" then
+        local action_icon = AceGUI:Create("ActionSlotSpell")
+        action_icon:SetWidth(44)
+        action_icon:SetHeight(44)
+        action_icon:SetText(rot.action)
+        action_icon.text:Hide()
+        action_icon:SetCallback("OnEnterPressed", function(widget, event, v)
+            addon:RemoveCooldownGlowIfCurrent(specID, rotid, rot)
+            v = tonumber(v)
+            rot.action = v
+            action_icon:SetText(v)
+            if v then
+                action:SetText(rot.action and (rot.ranked and SpellData:SpellName(rot.action) or GetSpellInfo(rot.action)))
+            else
+                action:SetText(nil)
+            end
+
+            callback()
+        end)
+        icon_group:AddChild(action_icon)
 
         local action = AceGUI:Create("Spell_EditBox")
         if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
@@ -676,154 +618,138 @@ local function add_action_group(specID, rotid, rot, callback, refresh)
             action_group:AddChild(spacer(1))
 
             local ranked = AceGUI:Create("SimpleGroup")
-            action_group:AddChild(ranked)
             ranked:SetFullWidth(true)
             ranked:SetLayout("Table")
             ranked:SetUserData("table", { columns = { 1 } })
             ranked:SetUserData("cell", { alignV = "bottom", alignH = "center" })
 
             local nr_label = AceGUI:Create("Label")
+            nr_label:SetText(L["Rank"])
+            nr_label:SetColor(1.0, 0.82, 0.0)
             ranked:AddChild(nr_label)
-            nr_label.configure = function()
-                nr_label:SetText(L["Rank"])
-                nr_label:SetColor(1.0, 0.82, 0.0)
-            end
 
             local nr_button = AceGUI:Create("CheckBox")
-            ranked:AddChild(nr_button)
-            nr_button.configure = function()
-                nr_button:SetValue(rot.ranked or false)
-                nr_button:SetCallback("OnValueChanged", function(widget, event, val)
-                    rot.ranked = val
-                    action:SetUserData("norank", not val)
-                    action:SetText(rot.action and (rot.ranked and SpellData:SpellName(rot.action) or GetSpellInfo(rot.action)))
-                    callback()
-                end)
-            end
-        end
-
-        action_group:AddChild(action)
-        action.configure = function()
-            action:SetUserData("norank", not rot.ranked)
-            action:SetLabel(L["Spell"])
-            action:SetText(rot.action and (rot.ranked and SpellData:SpellName(rot.action) or GetSpellInfo(rot.action)))
-            action:SetFullWidth(true)
-            action:SetCallback("OnEnterPressed", function(widget, event, val)
-                addon:RemoveCooldownGlowIfCurrent(specID, rotid, rot)
-                local spellid = select(7, GetSpellInfo(v))
-                rot.action = spellid
-                action:SetText(SpellData:SpellName(rot.action))
-                action_icon:SetText(rot.action)
+            nr_button:SetValue(rot.ranked or false)
+            nr_button:SetCallback("OnValueChanged", function(widget, event, val)
+                rot.ranked = val
+                action:SetUserData("norank", not val)
+                action:SetText(rot.action and (rot.ranked and SpellData:SpellName(rot.action) or GetSpellInfo(rot.action)))
                 callback()
             end)
+            ranked:AddChild(nr_button)
+
+            action_group:AddChild(ranked)
         end
+
+        action:SetFullWidth(true)
+        action:SetUserData("norank", not rot.ranked)
+        action:SetLabel(L["Spell"])
+        action:SetText(rot.action and (rot.ranked and SpellData:SpellName(rot.action) or GetSpellInfo(rot.action)))
+        action:SetCallback("OnEnterPressed", function(widget, event, val)
+            addon:RemoveCooldownGlowIfCurrent(specID, rotid, rot)
+            local spellid = select(7, GetSpellInfo(v))
+            rot.action = spellid
+            action:SetText(SpellData:SpellName(rot.action))
+            action_icon:SetText(rot.action)
+            callback()
+        end)
+        action_group:AddChild(action)
     elseif rot.type ~= nil and rot.type == "item" then
         action_group:SetUserData("table", { columns = { 0, 1, 0.25 } })
 
         local action_icon = AceGUI:Create("Icon")
-        icon_group:AddChild(action_icon)
-        action_icon.configure = function()
-            if rot.action ~= nil and #rot.action > 0 then
-                action_icon:SetImage(select(5, GetItemInfoInstant(rot.action[1])))
-            end
-            action_icon:SetImageSize(36, 36)
+        if rot.action ~= nil and #rot.action > 0 then
+            action_icon:SetImage(select(5, GetItemInfoInstant(rot.action[1])))
         end
+        action_icon:SetImageSize(36, 36)
+        icon_group:AddChild(action_icon)
 
         local action = AceGUI:Create("EditBox")
-        action_group:AddChild(action)
-        action.configure = function()
-            action:SetLabel(L["Item"])
-            action:SetFullWidth(true)
-            action:SetDisabled(true)
-            if rot.action ~= nil and #rot.action > 0 then
-                if #rot.action > 1 then
-                    action:SetText(string.format(L["%s or %d others"], rot.action[1], #rot.action-1))
-                else
-                    action:SetText(rot.action[1])
-                end
+        action:SetFullWidth(true)
+        action:SetLabel(L["Item"])
+        action:SetDisabled(true)
+        if rot.action ~= nil and #rot.action > 0 then
+            if #rot.action > 1 then
+                action:SetText(string.format(L["%s or %d others"], rot.action[1], #rot.action-1))
+            else
+                action:SetText(rot.action[1])
             end
         end
+        action_group:AddChild(action)
 
         local edit_button = AceGUI:Create("Button")
-        action_group:AddChild(edit_button)
-        edit_button.configure = function()
-            edit_button:SetText(EDIT)
-            edit_button:SetUserData("cell", { alignV = "bottom" })
-            edit_button:SetCallback("OnClick", function(widget, ewvent, ...)
-                if rot.action == nil then
-                    rot.action = {}
-                end
-                item_list(rot.action, function()
-                    addon:RemoveCooldownGlowIfCurrent(specID, rotid, rot)
-                    if rot.action ~= nil and #rot.action > 0 then
-                        action_icon:SetImage(select(5, GetItemInfoInstant(rot.action[1])))
-                        if #rot.action > 1 then
-                            action:SetText(string.format(L["%s or %d others"], rot.action[1], #rot.action-1))
-                        else
-                            action:SetText(rot.action[1])
-                        end
+        edit_button:SetText(EDIT)
+        edit_button:SetUserData("cell", { alignV = "bottom" })
+        edit_button:SetCallback("OnClick", function(widget, ewvent, ...)
+            if rot.action == nil then
+                rot.action = {}
+            end
+            item_list(rot.action, function()
+                addon:RemoveCooldownGlowIfCurrent(specID, rotid, rot)
+                if rot.action ~= nil and #rot.action > 0 then
+                    action_icon:SetImage(select(5, GetItemInfoInstant(rot.action[1])))
+                    if #rot.action > 1 then
+                        action:SetText(string.format(L["%s or %d others"], rot.action[1], #rot.action-1))
                     else
-                        action_icon:SetImage(nil)
-                        action:SetText(nil)
+                        action:SetText(rot.action[1])
                     end
-                    callback()
-                end)
+                else
+                    action_icon:SetImage(nil)
+                    action:SetText(nil)
+                end
+                callback()
             end)
-        end
+        end)
+        action_group:AddChild(edit_button)
     else
         local action_icon = AceGUI:Create("Icon")
+        action_icon:SetImageSize(36, 36)
+        action_icon:SetImage("Interface\\Icons\\INV_Misc_QuestionMark")
         icon_group:AddChild(action_icon)
-        action_icon.configure = function()
-            action_icon:SetImageSize(36, 36)
-            action_icon:SetImage("Interface\\Icons\\INV_Misc_QuestionMark")
-        end
 
         local action = AceGUI:Create("EditBox")
+        action:SetFullWidth(true)
+        action:SetDisabled(true)
         action_group:AddChild(action)
-        action.configure = function()
-            action:SetDisabled(true)
-            action:SetFullWidth(true)
-        end
     end
 
     local use_name = AceGUI:Create("CheckBox")
+    use_name:SetUserData("cell", { alignV = "bottom", alignH = "center" })
+    use_name:SetValue(rot.use_name)
+    use_name:SetCallback("OnValueChanged", function(widget, event, val)
+        rot.use_name = val
+        if not rot.use_name then
+            rot.name = nil
+        end
+        callback()
+    end)
     icon_group:AddChild(use_name)
-    use_name.configure = function()
-        use_name:SetUserData("cell", { alignV = "bottom", alignH = "center" })
-        use_name:SetValue(rot.use_name)
-        use_name:SetCallback("OnValueChanged", function(widget, event, val)
-            rot.use_name = val
-            if not rot.use_name then
-                rot.name = nil
-            end
-            callback()
-        end)
-    end
 
     local name = AceGUI:Create("EditBox")
-    icon_group:AddChild(name)
-    name.configure = function()
-        name:SetLabel(NAME)
-        name:SetFullWidth(true)
-        name:SetDisabled(not rot.use_name)
-        if rot.use_name then
-            name:SetText(rot.name)
-        elseif rot.action ~= nil then
-            if rot.type == "spell" or rot.type =="petspell" then
-                name:SetText(GetSpellInfo(rot.action))
-            elseif #rot.action > 0 then
-                if #rot.action > 1 then
-                    name:SetText(string.format(L["%s or %d others"], rot.action[1], #rot.action-1))
-                else
-                    name:SetText(rot.action[1])
-                end
+    name:SetFullWidth(true)
+    name:SetLabel(NAME)
+    name:SetDisabled(not rot.use_name)
+    if rot.use_name then
+        name:SetText(rot.name)
+    elseif rot.action ~= nil then
+        if rot.type == "spell" or rot.type =="petspell" then
+            name:SetText(GetSpellInfo(rot.action))
+        elseif #rot.action > 0 then
+            if #rot.action > 1 then
+                name:SetText(string.format(L["%s or %d others"], rot.action[1], #rot.action-1))
+            else
+                name:SetText(rot.action[1])
             end
         end
-        name:SetCallback("OnEnterPressed", function(widget, event, val)
-            rot.name = val
-            callback()
-        end)
     end
+    name:SetCallback("OnEnterPressed", function(widget, event, val)
+        rot.name = val
+        callback()
+    end)
+    icon_group:AddChild(name)
+
+    group:AddChild(icon_group)
+    group:AddChild(action_group)
 
     return group
 end
@@ -841,11 +767,9 @@ local function add_conditions(specID, idx, rotid, rot, callback)
         conditions:PauseLayout()
 
         local condition_desc = AceGUI:Create("Label")
+        condition_desc:SetFullWidth(true)
+        condition_desc:SetText(addon:printCondition(rot.conditions, specID))
         conditions:AddChild(condition_desc)
-        condition_desc.configure = function()
-            condition_desc:SetFullWidth(true)
-            condition_desc:SetText(addon:printCondition(rot.conditions, specID))
-        end
 
         local bottom_group = AceGUI:Create("SimpleGroup")
         bottom_group:SetFullWidth(true)
@@ -855,75 +779,68 @@ local function add_conditions(specID, idx, rotid, rot, callback)
         if not addon:validateCondition(rot.conditions, specID) then
             addon.currentConditionEval = nil
             local condition_valid = AceGUI:Create("Heading")
+            condition_valid:SetFullWidth(true)
+            condition_valid:SetText(color.RED .. L["THIS CONDITION DOES NOT VALIDATE"] .. color.RESET)
             conditions:AddChild(condition_valid)
-            condition_valid.configure = function()
-                condition_valid:SetFullWidth(true)
-                condition_valid:SetText(color.RED .. L["THIS CONDITION DOES NOT VALIDATE"] .. color.RESET)
-            end
 
             bottom_group:AddChild(spacer(1))
         else
             if specID == addon.currentSpec then
                 local condition_eval = AceGUI:Create("Label")
-                bottom_group:AddChild(condition_eval)
-                condition_eval.configure = function()
-                    local function update_eval()
-                        if addon:evaluateCondition(rot.conditions) then
-                            condition_eval:SetText(color.GREEN .. L["Currently satisfied"] .. color.RESET)
-                        else
-                            condition_eval:SetText(color.RED .. L["Not currently satisfied"] .. color.RESET)
-                        end
+                local function update_eval()
+                    if addon:evaluateCondition(rot.conditions) then
+                        condition_eval:SetText(color.GREEN .. L["Currently satisfied"] .. color.RESET)
+                    else
+                        condition_eval:SetText(color.RED .. L["Not currently satisfied"] .. color.RESET)
                     end
-                    update_eval()
-                    addon.currentConditionEval = update_eval
-                    conditions.frame:SetScript("OnHide", function()
-                        addon.currentConditionEval = nil
-                    end)
                 end
+                update_eval()
+                addon.currentConditionEval = update_eval
+                conditions.frame:SetScript("OnHide", function()
+                    addon.currentConditionEval = nil
+                end)
+                bottom_group:AddChild(condition_eval)
             else
                 addon.currentConditionEval = nil
             end
         end
 
-        conditions:AddChild(bottom_group)
 
         local edit_button = AceGUI:Create("Button")
-        bottom_group:AddChild(edit_button)
-        edit_button.configure = function()
-            edit_button:SetText(EDIT)
-            edit_button:SetFullWidth(true)
-            edit_button:SetCallback("OnClick", function(widget, event)
-                if rot.conditions == nil then
-                    rot.conditions = { type = nil }
-                end
-                addon:EditCondition(idx, specID, rot.conditions, function()
-                    layout_conditions()
-                    callback()
-                end)
+        edit_button:SetFullWidth(true)
+        edit_button:SetText(EDIT)
+        edit_button:SetCallback("OnClick", function(widget, event)
+            if rot.conditions == nil then
+                rot.conditions = { type = nil }
+            end
+            addon:EditCondition(idx, specID, rot.conditions, function()
+                layout_conditions()
+                callback()
             end)
-        end
+        end)
+        bottom_group:AddChild(edit_button)
 
         local enabledisable_button = AceGUI:Create("Button")
-        bottom_group:AddChild(enabledisable_button)
-        enabledisable_button.configure = function()
-            enabledisable_button:SetFullWidth(true)
-            if not rot.disabled then
-                enabledisable_button:SetText(DISABLE)
-                enabledisable_button:SetCallback("OnClick", function(widget, event)
-                    rot.disabled = true
-                    addon:RemoveCooldownGlowIfCurrent(specID, rotid, rot)
-                    layout_conditions()
-                    callback()
-                end)
-            else
-                enabledisable_button:SetText(ENABLE)
-                enabledisable_button:SetCallback("OnClick", function(widget, event)
-                    rot.disabled = false
-                    layout_conditions()
-                    callback()
-                end)
-            end
+        enabledisable_button:SetFullWidth(true)
+        if not rot.disabled then
+            enabledisable_button:SetText(DISABLE)
+            enabledisable_button:SetCallback("OnClick", function(widget, event)
+                rot.disabled = true
+                addon:RemoveCooldownGlowIfCurrent(specID, rotid, rot)
+                layout_conditions()
+                callback()
+            end)
+        else
+            enabledisable_button:SetText(ENABLE)
+            enabledisable_button:SetCallback("OnClick", function(widget, event)
+                rot.disabled = false
+                layout_conditions()
+                callback()
+            end)
         end
+        bottom_group:AddChild(enabledisable_button)
+
+        conditions:AddChild(bottom_group)
 
         addon:configure_frame(conditions)
         conditions:ResumeLayout()
@@ -993,7 +910,6 @@ function addon:get_cooldown_list(frame, specID, rotid, id, callback)
     }
 
     local announce = AceGUI:Create("Dropdown")
-    frame:AddChild(announce)
     announce:SetList(announces, { "none", "partyraid", "party", "raidwarn", "say", "yell" })
     announce:SetRelativeWidth(0.4)
     announce:SetValue(rot.announce or "none")
@@ -1002,6 +918,7 @@ function addon:get_cooldown_list(frame, specID, rotid, id, callback)
     announce:SetCallback("OnValueChanged", function(widget, event, val)
         rot.announce = val
     end)
+    frame:AddChild(announce)
 
     local conditions_frame = add_conditions(specID, idx, rotid, rot, callback)
     frame:AddChild(conditions_frame)

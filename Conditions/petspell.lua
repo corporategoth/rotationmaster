@@ -104,9 +104,6 @@ addon:RegisterCondition("PETSPELL_COOLDOWN", {
         local operator_group = addon:Widget_OperatorWidget(value, L["Seconds"],
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
-
-        spell_group:SetRelativeWidth(0.5)
-        operator_group:SetRelativeWidth(0.5)
     end,
 })
 
@@ -151,9 +148,6 @@ addon:RegisterCondition("PETSPELL_REMAIN", {
         local operator_group = addon:Widget_OperatorWidget(value, L["Seconds"],
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
-
-        spell_group:SetRelativeWidth(0.5)
-        operator_group:SetRelativeWidth(0.5)
     end,
 })
 
@@ -193,8 +187,5 @@ addon:RegisterCondition("PETSPELL_CHARGES", {
         local operator_group = addon:Widget_OperatorWidget(value, L["Charges"],
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
-
-        spell_group:SetRelativeWidth(0.5)
-        operator_group:SetRelativeWidth(0.5)
     end,
 })

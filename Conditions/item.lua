@@ -208,6 +208,7 @@ addon:RegisterCondition("ITEM_COOLDOWN", {
         local icon_group = addon:Widget_ItemWidget(spec, value,
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(icon_group)
+
         local operator_group = addon:Widget_OperatorWidget(value, L["Seconds"],
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
