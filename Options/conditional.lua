@@ -456,8 +456,12 @@ local function ChangeConditionType(parent, event, ...)
         scrollwin:SetFullWidth(true)
         scrollwin:SetLayout("Flow")
 
-        LayoutConditionTab(scrollwin, funcs, value, selected, conditions, groups, val)
+        selectedIcon = LayoutConditionTab(frame, scrollwin, funcs, value, selected, conditions, groups, val)
         frame:AddChild(scrollwin)
+
+        if selectedIcon then
+            ActionButton_ShowOverlayGlow(selectedIcon.frame)
+        end
     end
 
     addon:configure_frame(frame)
