@@ -267,6 +267,9 @@ local function FetchTotemTimers()
             break
         end
 		local spellid = select(7, GetSpellInfo(button:GetAttribute("*spell1")))
+    	if not spellid then
+			spellid = select(7, GetSpellInfo(button:GetAttribute("spell1")))
+		end
 		if spellid then
 			AddButton(spellid, button)
         end
