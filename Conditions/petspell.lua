@@ -9,7 +9,7 @@ local operators = addon.operators
 local compare, compareString, nullable, isin, getCached, round =
     addon.compare, addon.compareString, addon.nullable, addon.isin, addon.getCached, addon.round
 
-addon:RegisterCondition("PETSPELL_AVAIL", {
+addon:RegisterCondition(L["Spells / Items"], "PETSPELL_AVAIL", {
     description = L["Pet Spell Available"],
     icon = "Interface\\Icons\\Ability_druid_bash",
     valid = function(spec, value)
@@ -62,7 +62,7 @@ addon:RegisterCondition("PETSPELL_AVAIL", {
     end,
 })
 
-addon:RegisterCondition("PETSPELL_COOLDOWN", {
+addon:RegisterCondition(L["Spells / Items"], "PETSPELL_COOLDOWN", {
     description = L["Pet Spell Cooldown"],
     icon = "Interface\\Icons\\Spell_nature_sleep",
     valid = function(spec, value)
@@ -107,7 +107,7 @@ addon:RegisterCondition("PETSPELL_COOLDOWN", {
     end,
 })
 
-addon:RegisterCondition("PETSPELL_REMAIN", {
+addon:RegisterCondition(L["Spells / Items"], "PETSPELL_REMAIN", {
     description = L["Pet Spell Time Remaining"],
     icon = "Interface\\Icons\\spell_nature_polymorph",
     valid = function(spec, value)
@@ -151,7 +151,7 @@ addon:RegisterCondition("PETSPELL_REMAIN", {
     end,
 })
 
-addon:RegisterCondition("PETSPELL_CHARGES", {
+addon:RegisterCondition(L["Spells / Items"], "PETSPELL_CHARGES", {
     description = L["Pet Spell Charges"],
     icon = "Interface\\Icons\\Ability_mount_nightmarehorse",
     valid = function(spec, value)

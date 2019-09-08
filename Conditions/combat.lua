@@ -18,7 +18,7 @@ local units, threat, operators = addon.units, addon.threat, addon.operators
 local compare, compareString, nullable, keys, isin, deepcopy, getCached, playerize =
     addon.compare, addon.compareString, addon.nullable, addon.keys, addon.isin, addon.deepcopy, addon.getCached, addon.playerize
 
-addon:RegisterCondition("COMBAT", {
+addon:RegisterCondition(L["Combat"], "COMBAT", {
     description = L["In Combat"],
     icon = "Interface\\Icons\\ability_dualwield",
     valid = function(spec, value)
@@ -42,7 +42,7 @@ addon:RegisterCondition("COMBAT", {
     end,
 })
 
-addon:RegisterCondition("PET", {
+addon:RegisterCondition(L["Combat"], "PET", {
     description = L["Have Pet"],
     icon = "Interface\\Icons\\Inv_box_petcarrier_01",
     valid = function(spec, value)
@@ -58,7 +58,7 @@ addon:RegisterCondition("PET", {
     end,
 })
 
-addon:RegisterCondition("PET_NAME", {
+addon:RegisterCondition(L["Combat"], "PET_NAME", {
     description = L["Have Named Pet"],
     icon = "Interface\\Icons\\inv_box_birdcage_01",
     valid = function(spec, value)
@@ -88,7 +88,7 @@ addon:RegisterCondition("PET_NAME", {
     end,
 })
 
-addon:RegisterCondition("STEALTHED", {
+addon:RegisterCondition(L["Combat"], "STEALTHED", {
     description = L["Stealth"],
     icon = "Interface\\Icons\\ability_stealth",
     valid = function(spec, value)
@@ -102,7 +102,7 @@ addon:RegisterCondition("STEALTHED", {
     end,
 })
 
-addon:RegisterCondition("INCONTROL", {
+addon:RegisterCondition(L["Combat"], "INCONTROL", {
     description = L["In Control"],
     icon = "Interface\\Icons\\spell_nature_polymorph",
     valid = function(spec, value)
@@ -116,7 +116,7 @@ addon:RegisterCondition("INCONTROL", {
     end,
 })
 
-addon:RegisterCondition("MOVING", {
+addon:RegisterCondition(L["Combat"], "MOVING", {
     description = L["Moving"],
     icon = "Interface\\Icons\\Ability_druid_dash",
     valid = function(spec, value)
@@ -130,7 +130,7 @@ addon:RegisterCondition("MOVING", {
     end,
 })
 
-addon:RegisterCondition("THREAT", {
+addon:RegisterCondition(L["Combat"], "THREAT", {
     description = L["Threat"],
     icon = "Interface\\Icons\\ability_physical_taunt",
     valid = function(spec, value)
@@ -172,7 +172,7 @@ addon:RegisterCondition("THREAT", {
     end,
 })
 
-addon:RegisterCondition("THREAT_COUNT", {
+addon:RegisterCondition(L["Combat"], "THREAT_COUNT", {
     description = L["Threat Count"],
     icon = "Interface\\Icons\\Ability_racial_bloodrage",
     valid = function(spec, value)
@@ -305,9 +305,9 @@ addon.condition_form = {
     end,
 }
 
-addon:RegisterCondition("FORM", addon.condition_form)
+addon:RegisterCondition(L["Combat"], "FORM", addon.condition_form)
 
-addon:RegisterCondition("ENEMY", {
+addon:RegisterCondition(L["Combat"], "ENEMY", {
     description = L["Enemy"],
     icon = "Interface\\Icons\\inv_misc_head_dragon_01",
     valid = function(spec, value)

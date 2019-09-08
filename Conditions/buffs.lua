@@ -12,7 +12,7 @@ local operators, units, unitsPossessive = addon.operators, addon.units, addon.un
 local compare, compareString, nullable, keys, isin, isint, getCached, deepcopy, playerize =
     addon.compare, addon.compareString, addon.nullable, addon.keys, addon.isin, addon.isint, addon.getCached, addon.deepcopy, addon.playerize
 
-addon:RegisterCondition("BUFF", {
+addon:RegisterCondition(L["Buffs"], "BUFF", {
     description = L["Buff Present"],
     icon = "Interface\\Icons\\spell_holy_divinespirit",
     valid = function(spec, value)
@@ -50,7 +50,7 @@ addon:RegisterCondition("BUFF", {
     end
 })
 
-addon:RegisterCondition("BUFF_REMAIN", {
+addon:RegisterCondition(L["Buffs"], "BUFF_REMAIN", {
     description = L["Buff Time Remaining"],
     icon = "Interface\\Icons\\Spell_frost_stun",
     valid = function(spec, value)
@@ -96,7 +96,7 @@ addon:RegisterCondition("BUFF_REMAIN", {
     end,
 })
 
-addon:RegisterCondition("BUFF_STACKS", {
+addon:RegisterCondition(L["Buffs"], "BUFF_STACKS", {
     description = L["Buff Stacks"],
     icon = "Interface\\Icons\\Inv_misc_coin_02",
     valid = function(spec, value)
@@ -140,7 +140,7 @@ addon:RegisterCondition("BUFF_STACKS", {
     end,
 })
 
-addon:RegisterCondition("STEALABLE", {
+addon:RegisterCondition(L["Buffs"], "STEALABLE", {
     description = L["Has Stealable Buff"],
     icon = "Interface\\Icons\\Inv_weapon_shortblade_22",
     valid = function(spec, value)
@@ -173,7 +173,7 @@ addon:RegisterCondition("STEALABLE", {
 })
 
 if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
-    addon:RegisterCondition("WEAPON", {
+    addon:RegisterCondition(L["Buffs"], "WEAPON", {
         description = L["Weapon Enchant Present"],
         icon = "Interface\\Icons\\Inv_staff_18",
         valid = function(spec, value)
@@ -204,7 +204,7 @@ if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
         end,
     })
 
-    addon:RegisterCondition("WEAPON_REMAIN", {
+    addon:RegisterCondition(L["Buffs"], "WEAPON_REMAIN", {
         description = L["Weapon Enchant Time Remaining"],
         icon = "Interface\\Icons\\Inv_mace_13",
         valid = function(spec, value)
@@ -244,7 +244,7 @@ if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
         end,
     })
 
-    addon:RegisterCondition("WEAPON_STACKS", {
+    addon:RegisterCondition(L["Buffs"], "WEAPON_STACKS", {
         description = L["Weapon Enchant Stacks"],
         icon = "Interface\\Icons\\Inv_misc_coin_04",
         valid = function(spec, value)

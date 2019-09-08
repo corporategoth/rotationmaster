@@ -11,7 +11,7 @@ local units, friendly_distance, operators = addon.units, addon.friendly_distance
 local compare, compareString, nullable, keys, isin, UnitCloserThan, getCached, playerize =
 addon.compare, addon.compareString, addon.nullable, addon.keys, addon.isin, addon.UnitCloserThan, addon.getCached, addon.playerize
 
-addon:RegisterCondition("PROXIMITY", {
+addon:RegisterCondition(nil, "PROXIMITY", {
     description = L["Allies Within Range"],
     icon = "Interface\\Icons\\Spell_holy_prayerofspirit",
     valid = function(spec, value)
@@ -76,7 +76,7 @@ addon:RegisterCondition("PROXIMITY", {
     end,
 })
 
-addon:RegisterCondition("DISTANCE", {
+addon:RegisterCondition(nil, "DISTANCE", {
     description = L["Distance"],
     icon = "Interface\\Icons\\Spell_arcane_teleportorgrimmar",
     valid = function(spec, value)
@@ -119,7 +119,7 @@ addon:RegisterCondition("DISTANCE", {
     end,
 })
 
-addon:RegisterCondition("DISTANCE_COUNT", {
+addon:RegisterCondition(nil, "DISTANCE_COUNT", {
     description = L["Distance Count"],
     icon = "Interface\\Icons\\Spell_arcane_teleportstormwind",
     valid = function(spec, value)

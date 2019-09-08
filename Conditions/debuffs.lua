@@ -12,7 +12,7 @@ local operators, units, unitsPossessive, debufftypes = addon.operators, addon.un
 local compare, compareString, nullable, keys, isin, isint, deepcopy, getCached, playerize =
     addon.compare, addon.compareString, addon.nullable, addon.keys, addon.isin, addon.isint, addon.deepcopy, addon.getCached, addon.playerize
 
-addon:RegisterCondition("DEBUFF", {
+addon:RegisterCondition(L["Buffs"], "DEBUFF", {
     description = L["Debuff Present"],
     icon = "Interface\\Icons\\spell_shadow_curseoftounges",
     valid = function(spec, value)
@@ -50,7 +50,7 @@ addon:RegisterCondition("DEBUFF", {
     end,
 })
 
-addon:RegisterCondition("DEBUFF_REMAIN", {
+addon:RegisterCondition(L["Buffs"], "DEBUFF_REMAIN", {
     description = L["Debuff Time Remaining"],
     icon = "Interface\\Icons\\ability_creature_cursed_04",
     valid = function(spec, value)
@@ -96,7 +96,7 @@ addon:RegisterCondition("DEBUFF_REMAIN", {
     end,
 })
 
-addon:RegisterCondition("DEBUFF_STACKS", {
+addon:RegisterCondition(L["Buffs"], "DEBUFF_STACKS", {
     description = L["Debuff Stacks"],
     icon = "Interface\\Icons\\Inv_misc_coin_06",
     valid = function(spec, value)
@@ -140,7 +140,7 @@ addon:RegisterCondition("DEBUFF_STACKS", {
     end,
 })
 
-addon:RegisterCondition("DISPELLABLE", {
+addon:RegisterCondition(L["Buffs"], "DISPELLABLE", {
     description = L["Has Dispellable Debuff"],
     icon = "Interface\\Icons\\spell_shadow_curseofsargeras",
     valid = function(spec, value)

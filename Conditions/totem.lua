@@ -1,5 +1,8 @@
 local addon_name, addon = ...
 
+-- Skip these if we're not a shaman .. no point having totem conditions for other classes.
+if select(2, UnitClass("player")) ~= "SHAMAN" then return end
+
 local AceGUI = LibStub("AceGUI-3.0")
 local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
 local tostring, tonumber, pairs = tostring, tonumber, pairs
@@ -12,7 +15,7 @@ local operators, totems = addon.operators, addon.totems
 local compare, compareString, nullable, keys, isin, getCached, isSpellOnSpec, round =
     addon.compare, addon.compareString, addon.nullable, addon.keys, addon.isin, addon.getCached, addon.isSpellOnSpec, addon.round
 
-addon:RegisterCondition("TOTEM", {
+addon:RegisterCondition(L["Spells / Items"], "TOTEM", {
     description = L["Totem Present"],
     icon = "Interface\\Icons\\spell_nature_manaregentotem",
     valid = function(spec, value)
@@ -44,7 +47,7 @@ addon:RegisterCondition("TOTEM", {
     end,
 })
 
-addon:RegisterCondition("TOTEM_SPELL", {
+addon:RegisterCondition(L["Spells / Items"], "TOTEM_SPELL", {
     description = L["Specific Totem Present"],
     icon = "Interface\\Icons\\spell_nature_stoneskintotem",
     valid = function(spec, value)
@@ -80,7 +83,7 @@ addon:RegisterCondition("TOTEM_SPELL", {
     end,
 })
 
-addon:RegisterCondition("TOTEM_REMAIN", {
+addon:RegisterCondition(L["Spells / Items"], "TOTEM_REMAIN", {
     description = L["Totem Time Remaining"],
     icon = "Interface\\Icons\\spell_nature_agitatingtotem",
     valid = function(spec, value)
@@ -124,7 +127,7 @@ addon:RegisterCondition("TOTEM_REMAIN", {
     end,
 })
 
-addon:RegisterCondition("TOTEM_SPELL_REMAIN", {
+addon:RegisterCondition(L["Spells / Items"], "TOTEM_SPELL_REMAIN", {
     description = L["Specific Totem Time Remaining"],
     icon = "Interface\\Icons\\spell_fireresistancetotem_01",
     valid = function(spec, value)

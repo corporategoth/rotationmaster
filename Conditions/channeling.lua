@@ -12,7 +12,7 @@ local units, unitsPossessive, operators = addon.units, addon.unitsPossessive, ad
 local compare, compareString, nullable, keys, isin, isint, getCached, playerize, deepcopy =
     addon.compare, addon.compareString, addon.nullable, addon.keys, addon.isin, addon.isint, addon.getCached, addon.playerize, addon.deepcopy
 
-addon:RegisterCondition("CHANNELING", {
+addon:RegisterCondition(L["Combat"], "CHANNELING", {
     description = L["Channeling"],
     icon = "Interface\\Icons\\Spell_holy_searinglight",
     valid = function(spec, value)
@@ -37,7 +37,7 @@ addon:RegisterCondition("CHANNELING", {
     end,
 })
 
-addon:RegisterCondition("CHANNELING_SPELL", {
+addon:RegisterCondition(L["Combat"], "CHANNELING_SPELL", {
     description = L["Specific Spell Channeling"],
     icon = "Interface\\Icons\\Spell_holy_greaterheal",
     valid = function(spec, value)
@@ -67,7 +67,7 @@ addon:RegisterCondition("CHANNELING_SPELL", {
     end,
 })
 
-addon:RegisterCondition("CHANNELING_REMAIN", {
+addon:RegisterCondition(L["Combat"], "CHANNELING_REMAIN", {
     description = L["Channel Time Remaining"],
     icon = "Interface\\Icons\\Inv_misc_pocketwatch_01",
     valid = function(spec, value)
@@ -101,7 +101,7 @@ addon:RegisterCondition("CHANNELING_REMAIN", {
     end,
 })
 
-addon:RegisterCondition("CHANNEL_INTERRUPTABLE", {
+addon:RegisterCondition(L["Combat"], "CHANNEL_INTERRUPTABLE", {
     description = L["Channel Interruptable"],
     icon = "Interface\\Icons\\spell_holy_righteousfury",
     valid = function(spec, value)

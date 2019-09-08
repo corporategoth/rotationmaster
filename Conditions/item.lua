@@ -15,7 +15,7 @@ local compare, compareString, nullable, keys, tomap, has, is, isin, cleanArray, 
 addon.compare, addon.compareString, addon.nullable, addon.keys, addon.tomap, addon.has,
 addon.is, addon.isin, addon.cleanArray, addon.deepcopy, addon.getCached, addon.round
 
-addon:RegisterCondition("EQUIPPED", {
+addon:RegisterCondition(L["Spells / Items"], "EQUIPPED", {
     description = L["Have Item Equipped"],
     icon = "Interface\\Icons\\Ability_warrior_shieldbash",
     valid = function(spec, value)
@@ -39,7 +39,7 @@ addon:RegisterCondition("EQUIPPED", {
     end,
 })
 
-addon:RegisterCondition("CARRYING", {
+addon:RegisterCondition(L["Spells / Items"], "CARRYING", {
     description = L["Have Item In Bags"],
     icon = "Interface\\Icons\\inv_misc_bag_07",
     valid = function(spec, value)
@@ -75,7 +75,7 @@ addon:RegisterCondition("CARRYING", {
     end,
 })
 
-addon:RegisterCondition("ITEM", {
+addon:RegisterCondition(L["Spells / Items"], "ITEM", {
     description = L["Item Available"],
     icon = "Interface\\Icons\\Inv_drink_05",
     valid = function(spec, value)
@@ -150,7 +150,7 @@ addon:RegisterCondition("ITEM", {
     end,
 })
 
-addon:RegisterCondition("ITEM_COOLDOWN", {
+addon:RegisterCondition(L["Spells / Items"], "ITEM_COOLDOWN", {
     description = L["Item Cooldown"],
     icon = "Interface\\Icons\\Spell_holy_sealofsacrifice",
     valid = function(spec, value)

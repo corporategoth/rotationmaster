@@ -9,7 +9,7 @@ local operators = addon.operators
 local compare, compareString, nullable, isin, getCached, round, isSpellOnSpec =
     addon.compare, addon.compareString, addon.nullable, addon.isin, addon.getCached, addon.round, addon.isSpellOnSpec
 
-addon:RegisterCondition("SPELL_AVAIL", {
+addon:RegisterCondition(L["Spells / Items"], "SPELL_AVAIL", {
     description = L["Spell Available"],
     icon = "Interface\\Icons\\Spell_holy_renew",
     valid = function(spec, value)
@@ -62,7 +62,7 @@ addon:RegisterCondition("SPELL_AVAIL", {
     end,
 })
 
-addon:RegisterCondition("SPELL_COOLDOWN", {
+addon:RegisterCondition(L["Spells / Items"], "SPELL_COOLDOWN", {
     description = L["Spell Cooldown"],
     icon = "Interface\\Icons\\spell_nature_timestop",
     valid = function(spec, value)
@@ -107,7 +107,7 @@ addon:RegisterCondition("SPELL_COOLDOWN", {
     end,
 })
 
-addon:RegisterCondition("SPELL_REMAIN", {
+addon:RegisterCondition(L["Spells / Items"], "SPELL_REMAIN", {
     description = L["Spell Time Remaining"],
     icon = "Interface\\Icons\\inv_misc_pocketwatch_03",
     valid = function(spec, value)
@@ -151,7 +151,7 @@ addon:RegisterCondition("SPELL_REMAIN", {
     end,
 })
 
-addon:RegisterCondition("SPELL_CHARGES", {
+addon:RegisterCondition(L["Spells / Items"], "SPELL_CHARGES", {
     description = L["Spell Charges"],
     icon = "Interface\\Icons\\Spell_nature_astralrecalgroup",
     valid = function(spec, value)
@@ -190,7 +190,7 @@ addon:RegisterCondition("SPELL_CHARGES", {
     end,
 })
 
-addon:RegisterCondition("SPELL_HISTORY", {
+addon:RegisterCondition(L["Spells / Items"], "SPELL_HISTORY", {
     description = L["Spell Cast History"],
     icon = "Interface\\Icons\\Spell_shadow_nightofthedead",
     valid = function(spec, value)
@@ -233,7 +233,7 @@ addon:RegisterCondition("SPELL_HISTORY", {
     end,
 })
 
-addon:RegisterCondition("SPELL_HISTORY_TIME", {
+addon:RegisterCondition(L["Spells / Items"], "SPELL_HISTORY_TIME", {
     description = L["Spell Cast History Time"],
     icon = "Interface\\Icons\\Spell_fire_sealoffire",
     valid = function(spec, value)

@@ -15,7 +15,7 @@ local compare, compareString, nullable, keys, tomap, isin, cleanArray, deepcopy,
     addon.compare, addon.compareString, addon.nullable, addon.keys, addon.tomap,
     addon.isin, addon.cleanArray, addon.deepcopy, addon.getCached
 
-addon:RegisterCondition("HEALTH", {
+addon:RegisterCondition(L["Combat"], "HEALTH", {
     description = L["Health"],
     icon = "Interface\\Icons\\inv_potion_36",
     valid = function(spec, value)
@@ -44,7 +44,7 @@ addon:RegisterCondition("HEALTH", {
     end,
 })
 
-addon:RegisterCondition("HEALTHPCT", {
+addon:RegisterCondition(L["Combat"], "HEALTHPCT", {
     description = L["Health Percentage"],
     icon = "Interface\\Icons\\inv_potion_35",
     valid = function(spec, value)
@@ -78,7 +78,7 @@ addon:RegisterCondition("HEALTHPCT", {
     end,
 })
 
-addon:RegisterCondition("MANA", {
+addon:RegisterCondition(L["Combat"], "MANA", {
     description = L["Mana"],
     icon = "Interface\\Icons\\inv_potion_71",
     valid = function(spec, value)
@@ -107,7 +107,7 @@ addon:RegisterCondition("MANA", {
     end,
 })
 
-addon:RegisterCondition("MANAPCT", {
+addon:RegisterCondition(L["Combat"], "MANAPCT", {
     description = L["Mana Percentage"],
     icon = "Interface\\Icons\\inv_potion_70",
     valid = function(spec, value)
@@ -141,7 +141,7 @@ addon:RegisterCondition("MANAPCT", {
     end,
 })
 
-addon:RegisterCondition("POWER", {
+addon:RegisterCondition(L["Combat"], "POWER", {
     description = L["Power"],
     icon = "Interface\\Icons\\inv_potion_92",
     valid = function(spec, value)
@@ -180,7 +180,7 @@ addon:RegisterCondition("POWER", {
     end,
 })
 
-addon:RegisterCondition("POWERPCT", {
+addon:RegisterCondition(L["Combat"], "POWERPCT", {
     description = L["Power Percentage"],
     icon = "Interface\\Icons\\inv_potion_91",
     valid = function(spec, value)
@@ -222,7 +222,7 @@ addon:RegisterCondition("POWERPCT", {
     end,
 })
 
-addon:RegisterCondition("POINT", {
+addon:RegisterCondition(L["Combat"], "POINT", {
     description = L["Points"],
     icon = "Interface\\Icons\\Inv_jewelry_amulet_01",
     valid = function(spec, value)

@@ -12,7 +12,7 @@ local units, unitsPossessive, operators = addon.units, addon.unitsPossessive, ad
 local compare, compareString, nullable, keys, isin, isint, getCached, playerize, deepcopy =
     addon.compare, addon.compareString, addon.nullable, addon.keys, addon.isin, addon.isint, addon.getCached, addon.playerize, addon.deepcopy
 
-addon:RegisterCondition("CASTING", {
+addon:RegisterCondition(L["Combat"], "CASTING", {
     description = L["Casting"],
     icon = "Interface\\Icons\\Spell_holy_holynova",
     valid = function(spec, value)
@@ -37,7 +37,7 @@ addon:RegisterCondition("CASTING", {
     end,
 })
 
-addon:RegisterCondition("CASTING_SPELL", {
+addon:RegisterCondition(L["Combat"], "CASTING_SPELL", {
     description = L["Specific Spell Casting"],
     icon = "Interface\\Icons\\Spell_holy_spellwarding",
     valid = function(spec, value)
@@ -67,7 +67,7 @@ addon:RegisterCondition("CASTING_SPELL", {
     end,
 })
 
-addon:RegisterCondition("CASTING_REMAIN", {
+addon:RegisterCondition(L["Combat"], "CASTING_REMAIN", {
     description = L["Cast Time Remaining"],
     icon = "Interface\\Icons\\Inv_misc_pocketwatch_02",
     valid = function(spec, value)
@@ -101,7 +101,7 @@ addon:RegisterCondition("CASTING_REMAIN", {
     end,
 })
 
-addon:RegisterCondition("CAST_INTERRUPTABLE", {
+addon:RegisterCondition(L["Combat"], "CAST_INTERRUPTABLE", {
     description = L["Cast Interruptable"],
     icon = "Interface\\Icons\\Spell_shadow_curseofachimonde",
     valid = function(spec, value)

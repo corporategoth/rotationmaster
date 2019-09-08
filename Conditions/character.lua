@@ -13,7 +13,7 @@ local units, unitsPossessive, classes, roles, operators =
 local nullable, keys, isin, deepcopy, getCached, playerize, compareString =
     addon.nullable, addon.keys, addon.isin, addon.deepcopy, addon.getCached, addon.playerize, addon.compareString
 
-addon:RegisterCondition("CLASS", {
+addon:RegisterCondition(nil, "CLASS", {
     description = L["Class"],
     icon = "Interface\\Icons\\achievement_general_stayclassy",
     valid = function(spec, value)
@@ -54,7 +54,7 @@ addon:RegisterCondition("CLASS", {
 })
 
 if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
-    addon:RegisterCondition("ROLE", {
+    addon:RegisterCondition(nil, "ROLE", {
         description = L["Role"],
         icon = "Interface\\Icons\\petbattle_health",
         valid = function(spec, value)
@@ -96,7 +96,7 @@ if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
         end,
     })
 
-    addon:RegisterCondition("TALENT", {
+    addon:RegisterCondition(nil, "TALENT", {
         description = L["Talent"],
         icon = "Interface\\Icons\\Inv_misc_book_11",
         valid = function(spec, value)
@@ -145,7 +145,7 @@ if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
         end,
     })
 else
-    addon:RegisterCondition("TALENT", {
+    addon:RegisterCondition(nil, "TALENT", {
         description = L["Talent"],
         icon = "Interface\\Icons\\Inv_misc_book_11",
         valid = function(spec, value)
