@@ -6,11 +6,35 @@ local tostring, tonumber, pairs, table, select = tostring, tonumber, pairs, tabl
 local floor = math.floor
 
 -- From constants
-local units, zonepvp, instances, forms = addon.units, addon.zonepvp, addon.instances, addon.forms
+local units, zonepvp, instances, forms, operators = addon.units, addon.zonepvp, addon.instances, addon.forms, addon.operators
 
 -- From utils
-local nullable, keys,  isin, deepcopy, playerize =
-    addon.nullable, addon.keys, addon.isin, addon.deepcopy, addon.playerize
+local nullable, keys,  isin, deepcopy, playerize, compare, compareString, getCached =
+    addon.nullable, addon.keys, addon.isin, addon.deepcopy, addon.playerize, addon.compare, addon.compareString, addon.getCached
+
+addon:RegisterSwitchCondition("LEVEL", {
+    description = L["Level"],
+    icon = "Interface\\Icons\\spell_holy_blessedrecovery",
+    valid = function(spec, value)
+        return (value.operator ~= nil and isin(operators, value.operator) and
+                value.value ~= nil and value.value >= 0)
+    end,
+    evaluate = function(value, cache, evalStart)
+        return compare(value.operator, getCached(addon.longtermCache, UnitLevel, "player"), value.value)
+    end,
+    print = function(spec, value)
+        return compareString(value.operator, L["your level"], nullable(value.value, L["<level>"]))
+    end,
+    widget = function(parent, spec, value)
+        local top = parent:GetUserData("top")
+        local root = top:GetUserData("root")
+        local funcs = top:GetUserData("funcs")
+
+        local operator_group = addon:Widget_OperatorWidget(value, L["Level"],
+            function() top:SetStatusText(funcs:print(root, spec)) end)
+        parent:AddChild(operator_group)
+    end,
+})
 
 addon:RegisterSwitchCondition("PVP", {
     description = L["PVP Flagged"],

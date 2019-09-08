@@ -514,6 +514,7 @@ LayoutFrame = function(frame)
             funcs.close()
         end
         addon:UpdateAutoSwitch()
+        addon:SwitchRotation()
     end)
 
     frame:ReleaseChildren()

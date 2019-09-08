@@ -179,6 +179,9 @@ L["Length"] = true
 L["Thickness"] = true
 L["Particles"] = true
 L["Scale"] = true
+L["Level"] = true
+L["<level>"] = true
+L["your level"] = true
 
 -- from Options/rotations.lua and Options/rotations.lua
 
