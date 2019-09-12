@@ -6,9 +6,7 @@ local tostring, tonumber, pairs = tostring, tonumber, pairs
 
 if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
     local ThreatClassic = LibStub("ThreatClassic-1.0")
-    UnitThreatSituation = function(unit, mob)
-        ThreatClassic:UnitThreatSituation(unit, mob)
-    end
+    UnitThreatSituation = ThreatClassic.UnitThreatSituation
 end
 
 -- From constants
@@ -138,9 +136,14 @@ addon:RegisterCondition(L["Combat"], "THREAT", {
                value.threat ~= nil and value.threat >= 1 and value.threat <= 4
     end,
     evaluate = function(value, cache, evalStart)
-        local rv = getCached(cache, UnitThreatSituation, "player", value.unit)
-        if rv ~= nil and rv >= value.threat - 1 then
-            return true
+        local enemy = getCached(cache, UnitIsEnemy, "player", value.unit)
+        if enemy then
+            local rv = getCached(cache, UnitThreatSituation, "player", value.unit)
+            if rv ~= nil and rv >= value.threat - 1 then
+                return true
+            else
+                return false
+            end
         else
             return false
         end
@@ -307,8 +310,31 @@ addon.condition_form = {
 
 addon:RegisterCondition(L["Combat"], "FORM", addon.condition_form)
 
+addon:RegisterCondition(L["Combat"], "ATTACKABLE", {
+    description = L["Attackable"],
+    icon = "Interface\\Icons\\inv_misc_head_dragon_bronze",
+    valid = function(spec, value)
+        return value.unit ~= nil and isin(units, value.unit);
+    end,
+    evaluate = function(value, cache, evalStart)
+        return getCached(cache, UnitCanAttack, "player", value.unit)
+    end,
+    print = function(spec, value)
+        return string.format(L["%s is attackable"], nullable(units[value.unit], L["<unit>"]))
+    end,
+    widget = function(parent, spec, value)
+        local top = parent:GetUserData("top")
+        local root = top:GetUserData("root")
+        local funcs = top:GetUserData("funcs")
+
+        local unit = addon:Widget_UnitWidget(value, deepcopy(units, { "player", "pet" }),
+            function() top:SetStatusText(funcs:print(root, spec)) end)
+        parent:AddChild(unit)
+    end,
+})
+
 addon:RegisterCondition(L["Combat"], "ENEMY", {
-    description = L["Enemy"],
+    description = L["Hostile"],
     icon = "Interface\\Icons\\inv_misc_head_dragon_01",
     valid = function(spec, value)
         return value.unit ~= nil and isin(units, value.unit);

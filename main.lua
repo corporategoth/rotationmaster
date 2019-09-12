@@ -5,6 +5,7 @@ local _G = _G
 _G.RotationMaster = LibStub("AceAddon-3.0"):NewAddon(addon, addon_name, "AceConsole-3.0", "AceEvent-3.0", "AceTimer-3.0")
 
 local AceConsole = LibStub("AceConsole-3.0")
+local AceEvent = LibStub("AceEvent-3.0")
 local SpellRange = LibStub("SpellRange-1.0")
 local SpellData = LibStub("AceGUI-3.0-SpellLoader")
 local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
@@ -13,9 +14,7 @@ local DBIcon = LibStub("LibDBIcon-1.0")
 
 if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
     local ThreatClassic = LibStub("ThreatClassic-1.0")
-    UnitThreatSituation = function(unit, mob)
-        ThreatClassic:UnitThreatSituation(unit, mob)
-    end
+    UnitThreatSituation = ThreatClassic.UnitThreatSituation
 end
 
 local pairs, color, string = pairs, color, string
@@ -179,6 +178,7 @@ function addon:HandleCommand(str)
             self.announced = {}
             self:EnableRotationTimer()
             DataBroker.text = self:GetRotationName(DEFAULT)
+            AceEvent:SendMessage("ROTATIONMASTER_ROTATION", self.currentRotation, self:GetRotationName(self.currentRotation))
             addon:info(L["Active rotation manually switched to " .. color.WHITE .. "%s" .. color.INFO], name)
         else
             if self.db.char.rotations[self.currentSpec] ~= nil then
@@ -191,6 +191,7 @@ function addon:HandleCommand(str)
                         self.announced = {}
                         self:EnableRotationTimer()
                         DataBroker.text = self:GetRotationName(id)
+                        AceEvent:SendMessage("ROTATIONMASTER_ROTATION", self.currentRotation, self:GetRotationName(self.currentRotation))
                         addon:info(L["Active rotation manually switched to " .. color.WHITE .. "%s" .. color.INFO], name)
                         if (not self:rotationValidConditions(rot, self.currentSpec)) then
                             addon:warn(L["Active rotation is incomplete and may not work correctly!"])
@@ -357,6 +358,7 @@ local function minimapChangeRotation(self, arg1, arg2, checked)
             addon.announced = {}
             addon:EnableRotationTimer()
             DataBroker.text = addon:GetRotationName(arg1)
+            AceEvent:SendMessage("ROTATIONMASTER_ROTATION", self.currentRotation, self:GetRotationName(self.currentRotation))
         end
         addon:info(L["Active rotation manually switched to " .. color.WHITE .. "%s" .. color.INFO],
                 addon:GetRotationName(arg1))
@@ -556,6 +558,7 @@ function addon:SwitchRotation()
                 self.announced = {}
                 self:EnableRotationTimer()
                 DataBroker.text = self:GetRotationName(v)
+                AceEvent:SendMessage("ROTATIONMASTER_ROTATION", self.currentRotation, self:GetRotationName(self.currentRotation))
             end
             return
         end
@@ -592,6 +595,7 @@ function addon:DisableRotation()
     self:DestroyAllOverlays()
     self.currentRotation = nil
     DataBroker.text = color.RED .. OFF
+    AceEvent:SendMessage("ROTATIONMASTER_ROTATION", nil)
     addon:info(L["Battle rotation disabled"])
 end
 
@@ -616,7 +620,14 @@ function addon:ButtonFetch()
 end
 
 local function UpdateUnitInfo(cache, unit, record)
-    record.threat = getCached(cache, UnitThreatSituation, "player", unit)
+    if record.attackable then
+        record.enemy = getCached(cache, UnitIsEnemy, "plater", unit)
+        if record.enemy then
+            record.threat = getCached(cache, UnitThreatSituation, "player", unit)
+        else
+            record.threat = nil
+        end
+    end
     --record.health = getCached(cache, UnitHealth, unit)
     --record.inrange = getCached(cache, UnitInRange, unit)
 end
@@ -711,13 +722,14 @@ function addon:EvaluateNextAction()
             for id, cond in pairs(rot.rotation) do
                 local spellid
                 spellid, enabled = eval(cond)
-                if enabled then
+                if spellid and enabled then
                     addon:verbose("Rotation step %d satisfied it's condition.", id)
                     if not addon:IsGlowing(spellid) then
                         addon:GlowNextSpell(spellid)
                         if WeakAuras then
-                            WeakAuras.ScanEvents("ROTATIONMASTER_SPELL_UPDATE", self.type, spellid)
+                            WeakAuras.ScanEvents("ROTATIONMASTER_SPELL_UPDATE", cond.type, spellid)
                         end
+                        AceEvent:SendMessage("ROTATIONMASTER_SPELL_UPDATE", self.currentRotation, id, cond.id, cond.type, spellid)
                     end
                     break
                 else
@@ -729,6 +741,7 @@ function addon:EvaluateNextAction()
                 if WeakAuras then
                     WeakAuras.ScanEvents("ROTATIONMASTER_SPELL_UPDATE", nil, nil)
                 end
+                AceEvent:SendMessage("ROTATIONMASTER_SPELL_UPDATE", self.currentRotation, nil)
             end
         end
         self.evaluationProfile:child("rotation"):stop()
@@ -738,18 +751,27 @@ function addon:EvaluateNextAction()
                 local spellid, enabled = eval(cond)
                 if spellid then
                     if enabled then
-                        addon:verbose("Cooldown %d is enabled", id)
-                        if not addon.announced[id] then
+                        addon:verbose("Cooldown %d [%s] is enabled", id, cond.id)
+                        if addon.announced[cond.id] ~= spellid then
                             if not addon.skipAnnounce then
                                 announce_cooldown(cache, cond, spellid)
                             end
-                            addon.announced[id] = true;
+                            addon.announced[cond.id] = spellid;
+                            AceEvent:SendMessage("ROTATIONMASTER_COOLDOWN_UPDATE", self.currentRotation, id, cond.id, cond.type, spellid)
                         end
                     else
-                        addon.announced[id] = false;
-                        addon:verbose("Cooldown %d is disabled", id)
+                        if addon.announced[cond.id] then
+                            addon.announced[cond.id] = nil;
+                            AceEvent:SendMessage("ROTATIONMASTER_COOLDOWN_UPDATE", self.currentRotation, id, cond.id, nil)
+                        end
+                        addon:verbose("Cooldown %d [%s] is disabled", id, cond.id)
                     end
                     addon:GlowCooldown(spellid, enabled, cond)
+                else
+                    if addon.announced[cond.id] then
+                        addon.announced[cond.id] = nil;
+                        AceEvent:SendMessage("ROTATIONMASTER_COOLDOWN_UPDATE", self.currentRotation, id, cond.id, nil)
+                    end
                 end
             end
         end
@@ -1020,24 +1042,23 @@ end
 local function CreateUnitInfo(unit)
     local info = {
         name = UnitName(unit),
-        enemy = UnitIsEnemy(unit, "player"),
-        threat = UnitThreatSituation("player", unit),
+        attackable = UnitCanAttack("player", unit),
+        enemy = UnitIsEnemy("player", unit),
         --health = UnitHealth(unit),
         --inrange = UnitInRange(unit)
     }
+    if info.enemy then
+        info.threat = UnitThreatSituation("player", unit)
+    end
     return info
 end
 
 function addon:NAME_PLATE_UNIT_ADDED(event, unit)
-    if self.unitsInRange[unit] == nil then
-        self.unitsInRange[unit] = CreateUnitInfo(unit)
-    end
+    self.unitsInRange[unit] = CreateUnitInfo(unit)
 end
 
 function addon:NAME_PLATE_UNIT_REMOVED(event, unit)
-    if self.unitsInRange[unit] ~= nil then
-        self.unitsInRange[unit] = nil
-    end
+    self.unitsInRange[unit] = nil
 end
 
 function addon:SPELLS_CHANGED(event, unit)

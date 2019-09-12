@@ -336,12 +336,12 @@ function width_split(s, sz)
 end
 
 function addon.UnitCloserThan(cache, unit, distance)
-    local harmful = addon.getCached(cache, UnitIsEnemy, unit, "player")
-    if harmful == nil then
+    local attackable = addon.getCached(cache, UnitCanAttack, "player", unit)
+    if attackable == nil then
         return nil;
     end
 
-    if harmful then
+    if attackable then
         if harmful_distance[distance] == nil then
             return nil
         end
