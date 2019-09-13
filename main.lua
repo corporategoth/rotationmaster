@@ -12,8 +12,13 @@ local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
 local getCached
 local DBIcon = LibStub("LibDBIcon-1.0")
 
-if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
-    local ThreatClassic = LibStub("ThreatClassic-1.0")
+local ThreatClassic = LibStub("ThreatClassic-1.0")
+if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
+    -- Disable the classic threat module
+    ThreatClassic.running = false
+    ThreatClassic:UnregisterAllEvents()
+    ThreatClassic:CancelAllTimers()
+else
     UnitThreatSituation = ThreatClassic.UnitThreatSituation
 end
 
