@@ -778,7 +778,15 @@ local function add_conditions(specID, idx, rotid, rot, callback)
         bottom_group:SetLayout("Table")
         bottom_group:SetUserData("table", { columns = { 0.5, 0.25, 0.25 } })
 
-        if not addon:validateCondition(rot.conditions, specID) then
+        if rot.disabled then
+            addon.currentConditionEval = nil
+            local disabled = AceGUI:Create("Label")
+            disabled:SetFullWidth(true)
+            disabled:SetColor(255, 0, 0)
+            disabled:SetText(L["Disabled"])
+            bottom_group:AddChild(disabled)
+
+        elseif not addon:validateCondition(rot.conditions, specID) then
             addon.currentConditionEval = nil
             local condition_valid = AceGUI:Create("Heading")
             condition_valid:SetFullWidth(true)
@@ -804,9 +812,10 @@ local function add_conditions(specID, idx, rotid, rot, callback)
                 bottom_group:AddChild(condition_eval)
             else
                 addon.currentConditionEval = nil
+
+                bottom_group:AddChild(spacer(1))
             end
         end
-
 
         local edit_button = AceGUI:Create("Button")
         edit_button:SetFullWidth(true)

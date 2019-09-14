@@ -519,7 +519,7 @@ function addon:UpdateAutoSwitch()
         for id, rot in pairs(self.db.char.rotations[self.currentSpec]) do
             if id ~= DEFAULT then
                 -- The switch condition is nontrivial and valid.
-                if rot.switch and addon:usefulSwitchCondition(rot.switch) and
+                if rot.switch and not rot.disabled and addon:usefulSwitchCondition(rot.switch) and
                         self:validateSwitchCondition(rot.switch, self.currentSpec) and
                         self:rotationValidConditions(rot, self.currentSpec) then
                     addon:debug(L["Rotaion " .. color.WHITE .. "%s" .. color.DEBUG .. " is now available for auto-switching."], rot.name)

@@ -187,6 +187,7 @@ L["Scale"] = true
 L["Level"] = true
 L["<level>"] = true
 L["your level"] = true
+L["Disabled"] = true
 
 -- from Options/rotations.lua and Options/rotations.lua
 

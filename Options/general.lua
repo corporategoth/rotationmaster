@@ -616,37 +616,66 @@ local function create_rotation_options(frame, specID, rotid, parent, selected)
         switch_desc:SetText(L["No other rotations match."])
     else
         local switch_valid = AceGUI:Create("Label")
-        switch_valid:SetRelativeWidth(0.75)
+        switch_valid:SetRelativeWidth(0.5)
         switch_valid:SetColor(255, 0, 0)
         switch:AddChild(switch_valid)
 
+        local enabledisable_button = AceGUI:Create("Button")
         local function update_switch()
-            if rotation_settings[rotid] == nil or rotation_settings[rotid].switch == nil or
-                    not addon:usefulSwitchCondition(rotation_settings[rotid].switch) then
+            if (rotation_settings[rotid] == nil or rotation_settings[rotid].switch == nil or
+                not addon:usefulSwitchCondition(rotation_settings[rotid].switch)) then
                 switch_desc:SetText(L["Manual switch only."])
+                enabledisable_button:SetDisabled(true)
                 switch_valid:SetText("")
             else
                 switch_desc:SetText(addon:printSwitchCondition(rotation_settings[rotid].switch, specID))
-                if addon:validateSwitchCondition(rotation_settings[rotid].switch, specId) then
-                    switch_valid:SetText("")
+                enabledisable_button:SetDisabled(false)
+                if rotation_settings[rotid].disabled then
+                    switch_valid:SetText(L["Disabled"])
                 else
-                    switch_valid:SetText(L["THIS CONDITION DOES NOT VALIDATE"])
+                    if addon:validateSwitchCondition(rotation_settings[rotid].switch, specId) then
+                        switch_valid:SetText("")
+                    else
+                        switch_valid:SetText(L["THIS CONDITION DOES NOT VALIDATE"])
+                    end
                 end
             end
         end
         update_switch()
+        local function update_autoswitch()
+            update_switch()
+            addon:UpdateAutoSwitch()
+            addon:SwitchRotation()
+        end
 
-        local switch_button = AceGUI:Create("Button")
-        switch_button:SetRelativeWidth(0.25)
-        switch_button:SetText(EDIT)
-        switch_button:SetDisabled(rotation_settings[rotid] == nil)
-        switch_button:SetCallback("OnClick", function(widget, event)
+        local edit_button = AceGUI:Create("Button")
+        edit_button:SetRelativeWidth(0.25)
+        edit_button:SetText(EDIT)
+        edit_button:SetDisabled(rotation_settings[rotid] == nil)
+        edit_button:SetCallback("OnClick", function(widget, event)
             if rotation_settings[rotid].switch == nil then
                 rotation_settings[rotid].switch = { type = nil }
             end
-            addon:EditSwitchCondition(spec, rotation_settings[rotid].switch, update_switch)
+            addon:EditSwitchCondition(spec, rotation_settings[rotid].switch, update_autoswitch)
         end)
-        switch:AddChild(switch_button)
+        switch:AddChild(edit_button)
+
+        enabledisable_button:SetRelativeWidth(0.25)
+        if not rotation_settings[rotid].disabled then
+            enabledisable_button:SetText(DISABLE)
+        else
+            enabledisable_button:SetText(ENABLE)
+        end
+        enabledisable_button:SetCallback("OnClick", function(widget, event)
+            rotation_settings[rotid].disabled = not rotation_settings[rotid].disabled
+            if not rotation_settings[rotid].disabled then
+                enabledisable_button:SetText(DISABLE)
+            else
+                enabledisable_button:SetText(ENABLE)
+            end
+            update_autoswitch()
+        end)
+        switch:AddChild(enabledisable_button)
     end
 
     frame:AddChild(switch)
