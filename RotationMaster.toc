@@ -1,6 +1,6 @@
 ## Interface: 80200
 ## Title: Rotation Master
-## Version: 1.1.2 alpha 1
+## Version: 1.1.2 alpha 3
 ## Author: PreZ
 ## Notes: I wanted to save the world, but God wouldn't give me the source code.
 ## X-Email: prez@goth.net
