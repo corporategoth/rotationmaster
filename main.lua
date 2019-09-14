@@ -17,6 +17,9 @@ if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
     ThreatClassic:Disable()
 else
     UnitThreatSituation = ThreatClassic.UnitThreatSituation
+
+    local LibClassicDurations = LibStub("LibClassicDurations")
+    LibClassicDurations:Register(addon_name)
 end
 
 local pairs, color, string = pairs, color, string
@@ -448,6 +451,7 @@ function addon:enable()
 
     self.playerUnitFrame = CreateFrame('Frame')
     self.playerUnitFrame:RegisterUnitEvent('UNIT_SPELLCAST_SUCCEEDED', 'player')
+
     self.playerUnitFrame:SetScript('OnEvent', function(_, event, unit, lineId, spellId)
         if IsPlayerSpell(spellId) then
             table.insert(self.spellHistory, 1, {
@@ -735,7 +739,7 @@ function addon:EvaluateNextAction()
                     end
                     break
                 else
-                    addon:verbose("Rotation step %d dis not satisfy it's condition.", id)
+                    addon:verbose("Rotation step %d did not satisfy it's condition.", id)
                 end
             end
             if not enabled then

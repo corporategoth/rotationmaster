@@ -12,6 +12,14 @@ local operators, units, unitsPossessive = addon.operators, addon.units, addon.un
 local compare, compareString, nullable, keys, isin, isint, getCached, deepcopy, playerize =
     addon.compare, addon.compareString, addon.nullable, addon.keys, addon.isin, addon.isint, addon.getCached, addon.deepcopy, addon.playerize
 
+local UnitBuff
+if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
+    UnitBuff = function(unit, idx) return UnitAura(unit, idx, "HELPFUL") end
+else
+    local LibClassicDurations = LibStub("LibClassicDurations")
+    UnitBuff = function(unit, idx) return LibClassicDurations.UnitAuraDirect(unit, idx, "HELPFUL") end
+end
+
 addon:RegisterCondition(L["Buffs"], "BUFF", {
     description = L["Buff Present"],
     icon = "Interface\\Icons\\spell_holy_divinespirit",

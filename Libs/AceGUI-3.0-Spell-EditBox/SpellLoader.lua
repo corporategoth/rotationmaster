@@ -108,8 +108,8 @@ function SpellLoader:GetAllSpellIds(spell)
 			table.insert(rv, spellID)
         end
         return rv
-	elseif spell.spellListRevewrse[lcname] ~= nil then
-		return { spell.spellListRevewrse[lcname] }
+	elseif self.spellListReverse[lcname] ~= nil then
+		return { self.spellListReverse[lcname] }
     end
 
 	return nil

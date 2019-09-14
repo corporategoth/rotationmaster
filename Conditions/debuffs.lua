@@ -12,6 +12,14 @@ local operators, units, unitsPossessive, debufftypes = addon.operators, addon.un
 local compare, compareString, nullable, keys, isin, isint, deepcopy, getCached, playerize =
     addon.compare, addon.compareString, addon.nullable, addon.keys, addon.isin, addon.isint, addon.deepcopy, addon.getCached, addon.playerize
 
+local UnitDebuff
+if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
+    UnitDebuff = function(unit, idx) return UnitAura(unit, idx, "HARMFUL") end
+else
+    local LibClassicDurations = LibStub("LibClassicDurations")
+    UnitDebuff = function(unit, idx) return LibClassicDurations.UnitAuraDirect(unit, idx, "HARMFUL") end
+end
+
 addon:RegisterCondition(L["Buffs"], "DEBUFF", {
     description = L["Debuff Present"],
     icon = "Interface\\Icons\\spell_shadow_curseoftounges",
