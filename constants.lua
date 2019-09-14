@@ -152,3 +152,25 @@ addon.harmful_distance = {
     [60] = 32825,
     [80] = 35278,
 }
+
+addon.forms = {
+    WARRIOR = {
+        2457, -- Battle Stance
+        71, -- Defensive Stance
+        2458, -- Berserker Stance
+    },
+    ROGUE = {
+        1784 -- Stealth
+    },
+    SHAMAN = {
+        2645 -- Ghost Wolf
+    },
+    DRUID = {
+        5487, -- Bear Form
+        1066, -- Aquatic Form
+        499, -- Cat Form
+        783, -- Travel Form
+        24858, -- Moonkin Form
+        775, -- Tree Form
+    },
+}

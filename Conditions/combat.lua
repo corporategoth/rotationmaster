@@ -239,7 +239,7 @@ addon.condition_form = {
             elseif character_class == "SHAMAN" then
                 form = select(1, GetSpellInfo("Ghost Wolf"))
             else
-                form = select(2, GetShapeshiftFormInfo(index))
+                form = GetSpellInfo(select(4, GetShapeshiftFormInfo(value.value)))
             end
         end
         return string.format(L["you are in %s form"], nullable(form, L["<form>"]))
@@ -258,9 +258,12 @@ addon.condition_form = {
             forms["1"] = select(1, GetSpellInfo("Ghost Wolf"))
             table.insert(formsOrder, tostring("1"))
         else
-            for i=1,GetNumShapeshiftForms() do
-                local _, name = GetShapeshiftFormInfo(index);
-                forms[tostring(i)] = name;
+            for i=1,10 do
+                local spellid = select(4, GetShapeshiftFormInfo(i))
+                if spellid == nil then
+                    break
+                end
+                forms[tostring(i)] = GetSpellInfo(spellid)
                 table.insert(formsOrder, tostring(i))
             end
         end

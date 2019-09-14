@@ -90,6 +90,25 @@ function addon:DestroyAllOverlays()
 	end
 end
 
+function addon:DestroyAllCustomGlows()
+	-- Clear custom glows on fetch.
+	for spellid,v in pairs(Flags) do
+		if v then
+			for _, button in pairs(Spells[spellid]) do
+				self:StopCustomGlow(button, spellid)
+			end
+		end
+	end
+
+	for spellid,v in pairs(SpellsGlowing) do
+		if v then
+			for _, button in pairs(Spells[spellid]) do
+				self:StopCustomGlow(button, "next")
+			end
+		end
+	end
+end
+
 function addon:UpdateButtonGlow()
 	local LAB
 	local LBG
@@ -391,6 +410,8 @@ function addon:Fetch()
 
 	self:GlowClear()
 	self:DestroyAllOverlays()
+	self:DestroyAllCustomGlows()
+
 	Spells = {}
 	Flags = {}
 	SpellsGlowing = {}
