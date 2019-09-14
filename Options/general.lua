@@ -470,7 +470,7 @@ local function ImportExport(spec, rotation, parent)
     end
     editbox.editBox:GetRegions():SetFont("Interface\\AddOns\\RotationMaster\\Fonts\\Inconsolata-Bold.ttf", 13)
     editbox:SetCallback("OnTextChanged", function(widget, event, text)
-        if text:match('^[0-9A-Za-z+/\r\n]+=*$') then
+        if text:match('^[0-9A-Za-z+/\r\n]+=*[\r\n]*$') then
             local decomp = libc:Decompress(base64dec(text))
             if decomp ~= nil and AceSerializer:Deserialize(decomp) then
                 --frame:SetStatusText(string.len(text) .. " " .. L["bytes"] .. " (" .. select(2, text:gsub('\n', '\n'))+1 .. " " .. L["lines"] .. ")")
@@ -661,7 +661,7 @@ local function create_rotation_options(frame, specID, rotid, parent, selected)
         switch:AddChild(edit_button)
 
         enabledisable_button:SetRelativeWidth(0.25)
-        if not rotation_settings[rotid].disabled then
+        if not rotation_settings[rotid] or not rotation_settings[rotid].disabled then
             enabledisable_button:SetText(DISABLE)
         else
             enabledisable_button:SetText(ENABLE)

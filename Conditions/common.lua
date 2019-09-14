@@ -123,13 +123,11 @@ function addon:Widget_SpellNameWidget(spec, editbox, value, isvalid, update)
     spell_group:SetLayout("Table")
     spell_group:SetUserData("table", { columns = { 44, 1 } })
 
-    local spellid = select(7, GetSpellInfo(value.spell))
-
     local spell = AceGUI:Create(editbox)
     local spellIcon = AceGUI:Create("ActionSlotSpell")
     spellIcon:SetWidth(44)
     spellIcon:SetHeight(44)
-    spellIcon:SetText(spellid)
+    spellIcon:SetText(select(7, GetSpellInfo(value.spell)) or SpellData.spellListReverse[string.lower(value.spell)])
     spellIcon.text:Hide()
     spellIcon:SetCallback("OnEnterPressed", function(widget, event, v)
         v = tonumber(v)
@@ -152,6 +150,11 @@ function addon:Widget_SpellNameWidget(spec, editbox, value, isvalid, update)
     spell:SetUserData("spec", spec)
     spell:SetCallback("OnEnterPressed", function(widget, event, v)
         local name, _, _, _, _, _, spellid = GetSpellInfo(v)
+        if spellid == nil then
+            name = v
+            spellid = SpellData.spellListReverse[string.lower(v)]
+        end
+
         if isvalid(spellid) then
             value.spell = name
             spell:SetText(name)

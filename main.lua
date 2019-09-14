@@ -158,7 +158,7 @@ function addon:HandleCommand(str)
 
     elseif cmd == "current" then
         if self.currentRotation == nil then
-            addon:info(L["No roation is currently active."])
+            addon:info(L["No rotation is currently active."])
         else
             addon:info(L["The current rotation is " .. color.WHITE .. "%s" .. color.INFO], addon:GetRotationName(self.currentRotation))
         end
@@ -360,7 +360,7 @@ local function minimapChangeRotation(self, arg1, arg2, checked)
             addon.announced = {}
             addon:EnableRotationTimer()
             DataBroker.text = addon:GetRotationName(arg1)
-            AceEvent:SendMessage("ROTATIONMASTER_ROTATION", self.currentRotation, self:GetRotationName(self.currentRotation))
+            AceEvent:SendMessage("ROTATIONMASTER_ROTATION", addon.currentRotation, addon:GetRotationName(addon.currentRotation))
         end
         addon:info(L["Active rotation manually switched to " .. color.WHITE .. "%s" .. color.INFO],
                 addon:GetRotationName(arg1))

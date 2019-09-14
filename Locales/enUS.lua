@@ -13,7 +13,7 @@ L["/rm current             - Print out the name of the current rotation"] = true
 L["/rm set [auto|profile]  - Switch to a specific rotation, or use automatic switching again."] = true
 L["                          This is reset upon switching specializations."] = true
 
-L["No roation is currently active."] = true
+L["No rotation is currently active."] = true
 L["The current rotation is " .. color.WHITE .. "%s" .. color.INFO] = true
 L["Active rotation manually switched to " .. color.WHITE .. "%s" .. color.INFO] = true
 L["Could not find rotation named " .. color.WHITE .. "%s" .. color.WARN .. " for your current specialization."] = true
