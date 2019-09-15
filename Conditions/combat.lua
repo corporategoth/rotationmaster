@@ -258,7 +258,7 @@ addon.condition_form = {
             forms["1"] = select(1, GetSpellInfo("Ghost Wolf"))
             table.insert(formsOrder, tostring("1"))
         else
-            for i=1,10 do
+            for i=1,GetNumShapeshiftForms() do
                 local spellid = select(4, GetShapeshiftFormInfo(i))
                 if spellid == nil then
                     break

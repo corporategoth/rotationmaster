@@ -127,7 +127,9 @@ function addon:Widget_SpellNameWidget(spec, editbox, value, isvalid, update)
     local spellIcon = AceGUI:Create("ActionSlotSpell")
     spellIcon:SetWidth(44)
     spellIcon:SetHeight(44)
-    spellIcon:SetText(select(7, GetSpellInfo(value.spell)) or SpellData.spellListReverse[string.lower(value.spell)])
+    if value.spell then
+        spellIcon:SetText(select(7, GetSpellInfo(value.spell)) or SpellData.spellListReverse[string.lower(value.spell)])
+    end
     spellIcon.text:Hide()
     spellIcon:SetCallback("OnEnterPressed", function(widget, event, v)
         v = tonumber(v)
