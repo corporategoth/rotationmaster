@@ -120,7 +120,6 @@ local events = {
     -- Special Purpose
     'NAME_PLATE_UNIT_ADDED',
     'NAME_PLATE_UNIT_REMOVED',
-    'SPELLS_CHANGED',
 }
 
 local mainline_events = {
@@ -870,6 +869,7 @@ function addon:UpdateSkills()
 
     self.longtermCache = {}
 
+    SpellData:UpdateFromSpellBook()
     if self.specSpells == nil then
         self.specSpells = {}
     end
@@ -1067,6 +1067,3 @@ function addon:NAME_PLATE_UNIT_REMOVED(event, unit)
     self.unitsInRange[unit] = nil
 end
 
-function addon:SPELLS_CHANGED(event, unit)
-    SpellData:UpdateFromSpellBook()
-end
