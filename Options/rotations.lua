@@ -649,7 +649,7 @@ local function add_action_group(specID, rotid, rot, callback, refresh)
         action:SetText(rot.action and (rot.ranked and SpellData:SpellName(rot.action) or GetSpellInfo(rot.action)))
         action:SetCallback("OnEnterPressed", function(widget, event, val)
             addon:RemoveCooldownGlowIfCurrent(specID, rotid, rot)
-            local spellid = select(7, GetSpellInfo(v))
+            local spellid = select(7, GetSpellInfo(val))
             rot.action = spellid
             action:SetText(SpellData:SpellName(rot.action))
             action_icon:SetText(rot.action)

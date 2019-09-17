@@ -252,13 +252,14 @@ addon.isSpellOnSpec = function(spec, spellid)
         local _, _, offset, numSpells, _, offspecId = GetSpellTabInfo(i)
         if i == 1 or (spec == addon.currentSpec and offspecId == 0) or spec == offspecId then
             for i=1,numSpells do
-                local _, bookSpell = GetSpellBookItemInfo(i+offset, BOOKTYPE_SPELL)
+                local bookSpell = select(3, GetSpellBookItemName(i+offset, BOOKTYPE_SPELL))
                 if spellid == bookSpell and not IsPassiveSpell(i+offset, BOOKTYPE_SPELL) then
                     return true
                 end
             end
         end
     end
+    print("NOT FOUND!")
     return false
 end
 
