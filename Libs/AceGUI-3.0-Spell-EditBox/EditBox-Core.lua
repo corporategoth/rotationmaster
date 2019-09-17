@@ -270,7 +270,7 @@ do
 			self.predictFrame.buttons[self.predictFrame.selectedButton]:Click()
 			return
 		end
-	
+
 		local cancel = self:Fire("OnEnterPressed", this:GetText())
 		if( not cancel ) then
 			HideButton(self)
