@@ -805,7 +805,7 @@ function addon:UpdateCurrentCondition()
 end
 
 function addon:GetSpellIds(rot)
-    if rot.type == "spell" or rot.type == "petspell" then
+    if rot.type == "spell" or rot.type == "pet" then
         if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
             if rot.ranked then
                 return { rot.action }

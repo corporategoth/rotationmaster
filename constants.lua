@@ -70,6 +70,22 @@ if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
     addon.classes["MONK"] = L["Monk"]
 end
 
+addon.creatures = {
+    BEAST = L["Beast"],
+    DRAGONKIN = L["Dragonkin"],
+    DEMON = L["Demon"],
+    ELEMENTAL = L["Elemental"],
+    GIANT = L["Giant"],
+    UNDEAD = L["Undead"],
+    HUMANOID = L["Humanoid"],
+    CRITTER = L["Critter"],
+    MECHANICAL = L["Mechanical"],
+    OTHER = L["Not specified"],
+    TOTEM = L["Totem"],
+    NONCOMBAT_PET = L["Non-combat Pet"],
+    GAS_CLUUD = L["Gas Cloud"],
+}
+
 addon.roles = {
     TANK = L["Tank"],
     DAMAGER = L["DPS"],

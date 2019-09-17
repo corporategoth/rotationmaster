@@ -734,7 +734,7 @@ local function create_rotation_options(frame, specID, rotid, parent, selected)
                     end
                 else
                     if rot.action ~= nil then
-                        if rot.type == "spell" or rot.type =="petspell" then
+                        if rot.type == "spell" or rot.type == "pet" then
                             name = name .. " - " .. select(1, GetSpellInfo(rot.action))
                         elseif rot.type == "item" and #rot.action > 0 then
                             if #rot.action > 1 then

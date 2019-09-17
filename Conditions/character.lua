@@ -6,8 +6,8 @@ local tostring, tonumber, pairs = tostring, tonumber, pairs
 local floor = math.floor
 
 -- From constants
-local units, unitsPossessive, classes, roles, operators =
-    addon.units, addon.unitsPossessive, addon.classes, addon.roles, addon.operators
+local units, unitsPossessive, classes, roles, creatures, operators =
+    addon.units, addon.unitsPossessive, addon.classes, addon.roles, addon.creatures, addon.operators
 
 -- From utils
 local nullable, keys, isin, deepcopy, getCached, playerize, compareString =
@@ -21,7 +21,7 @@ addon:RegisterCondition(nil, "CLASS", {
                 value.value ~= nil and isin(classes, value.value))
     end,
     evaluate = function(value, cache, evalStart)
-        local _, englishClass = getCached(cache, UnitClass, "unit");
+        local _, englishClass = getCached(cache, UnitClass, value.unit);
         return englishClass == value.value
     end,
     print = function(spec, value)
@@ -265,3 +265,43 @@ else
         end,
     })
 end
+
+addon:RegisterCondition(nil, "CREATURE", {
+    description = L["Creature Type"],
+    icon = "Interface\\Icons\\ability_rogue_disguise",
+    valid = function(spec, value)
+        return (value.unit ~= nil and isin(units, value.unit) and
+                value.value ~= nil and isin(creatures, value.value))
+    end,
+    evaluate = function(value, cache, evalStart)
+        return (getCached(cache, UnitCreatureType, value.unit) == creatures[value.value])
+    end,
+    print = function(spec, value)
+        return string.format(playerize(value.unit, L["%s are a %s"], L["%s is a %s"]),
+            nullable(units[value.unit]), nullable(creatures[value.value], L["<creature type>"]))
+    end,
+    widget = function(parent, spec, value)
+        local top = parent:GetUserData("top")
+        local root = top:GetUserData("root")
+        local funcs = top:GetUserData("funcs")
+
+        local unit = addon:Widget_UnitWidget(value, deepcopy(units, { "player", "pet" }),
+            function() top:SetStatusText(funcs:print(root, spec)) end)
+        parent:AddChild(unit)
+
+        local class = AceGUI:Create("Dropdown")
+        class:SetLabel(L["Creature Type"])
+        class:SetCallback("OnValueChanged", function(widget, event, v)
+            value.value = v
+            top:SetStatusText(funcs:print(root, spec))
+        end)
+        class.configure = function()
+            class:SetList(creatures, keys(creatures))
+            if (value.value ~= nil) then
+                class:SetValue(value.value)
+            end
+        end
+        parent:AddChild(class)
+    end,
+})
+

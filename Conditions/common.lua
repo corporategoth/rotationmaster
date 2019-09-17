@@ -178,16 +178,13 @@ function addon:Widget_ItemWidget(spec, value, update)
     item_group:SetLayout("Table")
     item_group:SetUserData("table", { columns = { 44, 1 } })
 
-    local itemid
-    if value.item then
-        itemid = GetItemInfoInstant(value.item)
-    end
-
     local item = AceGUI:Create("Inventory_EditBox")
-    local itemIcon = AceGUI:Create("ActionSlotSpell")
+    local itemIcon = AceGUI:Create("ActionSlotItem")
     itemIcon:SetWidth(44)
     itemIcon:SetHeight(44)
-    itemIcon:SetText(itemid)
+    if value.item then
+        itemIcon:SetText(GetItemInfoInstant(value.item))
+    end
     itemIcon.text:Hide()
     itemIcon:SetCallback("OnEnterPressed", function(widget, event, v)
         value.item = GetItemInfo(v)
@@ -201,12 +198,8 @@ function addon:Widget_ItemWidget(spec, value, update)
     item:SetText(value.item)
     item:SetUserData("spec", spec)
     item:SetCallback("OnEnterPressed", function(widget, event, v)
-        local itemid
-        if v then
-            v = GetItemInfoInstant(v)
-        end
         value.item = v
-        itemIcon:SetText(itemid)
+        itemIcon:SetText(GetItemInfoInstant(v))
         update()
     end)
     item_group:AddChild(item)

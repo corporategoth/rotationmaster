@@ -43,26 +43,30 @@ addon:RegisterCondition(L["Spells / Items"], "CARRYING", {
     description = L["Have Item In Bags"],
     icon = "Interface\\Icons\\inv_misc_bag_07",
     valid = function(spec, value)
-        return value.item ~= nil
+        return (value.item ~= nil and
+                value.operator ~= nil and isin(operators, value.operator) and
+                value.value ~= nil and value.value >= 0)
     end,
     evaluate = function(value, cache, evalStart)
+        local count = 0
         for i=0,4 do
             for j=1,getCached(addon.combatCache, GetContainerNumSlots, i) do
-                local itemId = getCached(addon.combatCache, GetContainerItemID, i, j);
+                local _, qty, _, _, _, _, _, _, _, itemId = getCached(cache, GetContainerItemInfo, i, j);
                 if itemId ~= nil then
-                    local itemName, itemLink, itemRarity, itemLevel, itemMinLevel, itemType, itemSubType, itemStackCount, itemEquipLoc, itemTexture, itemSellPrice =
-                    getCached(addon.longtermCache, GetItemInfo, itemId)
+                    local itemName = getCached(addon.longtermCache, GetItemInfo, itemId)
                     if value.item == itemName then
-                        return true
+                        count = count + qty
                     end
                 end
             end
         end
-        return false
+        return compare(value.operator, count, value.value)
     end,
     print = function(spec, value)
         local link = value.item and (select(2, GetItemInfo(value.item)) or value.item)
-        return string.format(L["you are carrying %s"], nullable(link, L["<item>"]))
+        return compareString(value.operator,
+                string.format(L["the number of %s you are carrying"], nullable(link, L["<item>"])),
+                nullable(value.value, L["<quantity>"]))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -72,6 +76,10 @@ addon:RegisterCondition(L["Spells / Items"], "CARRYING", {
         local icon_group = addon:Widget_ItemWidget(spec, value,
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(icon_group)
+
+        local operator_group = addon:Widget_OperatorWidget(value, L["Quantity"],
+            function() top:SetStatusText(funcs:print(root, spec)) end)
+        parent:AddChild(operator_group)
     end,
 })
 
@@ -99,8 +107,7 @@ addon:RegisterCondition(L["Spells / Items"], "ITEM", {
                 for j=1,getCached(addon.combatCache, GetContainerNumSlots, i) do
                     local inventoryId = getCached(addon.combatCache, GetContainerItemID, i, j);
                     if inventoryId ~= nil then
-                        local itemName, itemLink, itemRarity, itemLevel, itemMinLevel, itemType, itemSubType, itemStackCount, itemEquipLoc, itemTexture, itemSellPrice =
-                        getCached(addon.longtermCache, GetItemInfo, inventoryId)
+                        local itemName = getCached(addon.longtermCache, GetItemInfo, inventoryId)
                         if value.item == itemName then
                             itemId = inventoryId
                         end
@@ -162,8 +169,7 @@ addon:RegisterCondition(L["Spells / Items"], "ITEM_COOLDOWN", {
         for i=0,20 do
             local inventoryId = getCached(addon.combatCache, GetInventoryItemID, "player", i)
             if inventoryId then
-                local itemName, itemLink, itemRarity, itemLevel, itemMinLevel, itemType, itemSubType, itemStackCount, itemEquipLoc, itemTexture, itemSellPrice =
-                getCached(addon.longtermCache, GetItemInfo, inventoryId)
+                local itemName = getCached(addon.longtermCache, GetItemInfo, inventoryId)
                 if itemName == value.item then
                     itemId = inventoryId
                     break
@@ -175,8 +181,7 @@ addon:RegisterCondition(L["Spells / Items"], "ITEM_COOLDOWN", {
                 for j=1,getCached(addon.combatCache, GetContainerNumSlots, i) do
                     local inventoryId = getCached(addon.combatCache, GetContainerItemID, i, j);
                     if inventoryId ~= nil then
-                        local itemName, itemLink, itemRarity, itemLevel, itemMinLevel, itemType, itemSubType, itemStackCount, itemEquipLoc, itemTexture, itemSellPrice =
-                        getCached(addon.longtermCache, GetItemInfo, inventoryId)
+                        local itemName = getCached(addon.longtermCache, GetItemInfo, inventoryId)
                         if value.item == itemName then
                             itemId = inventoryId
                         end

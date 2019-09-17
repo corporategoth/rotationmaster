@@ -518,6 +518,7 @@ local function add_action_group(specID, rotid, rot, callback, refresh)
     action_group:AddChild(type)
 
     if rot.type ~= nil and rot.type == "spell" then
+        local action = AceGUI:Create("Spec_EditBox")
         local action_icon = AceGUI:Create("ActionSlotSpell")
         action_icon:SetWidth(44)
         action_icon:SetHeight(44)
@@ -540,7 +541,6 @@ local function add_action_group(specID, rotid, rot, callback, refresh)
         end)
         icon_group:AddChild(action_icon)
 
-        local action = AceGUI:Create("Spec_EditBox")
         if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
             action_group:SetUserData("table", { columns = { 0, 0.025, 30, 1 } })
             action_group:AddChild(spacer(1))
@@ -594,6 +594,7 @@ local function add_action_group(specID, rotid, rot, callback, refresh)
         end)
         action_group:AddChild(action)
     elseif rot.type ~= nil and rot.type == "pet" then
+        local action = AceGUI:Create("Spell_EditBox")
         local action_icon = AceGUI:Create("ActionSlotSpell")
         action_icon:SetWidth(44)
         action_icon:SetHeight(44)
@@ -614,7 +615,6 @@ local function add_action_group(specID, rotid, rot, callback, refresh)
         end)
         icon_group:AddChild(action_icon)
 
-        local action = AceGUI:Create("Spell_EditBox")
         if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
             action_group:SetUserData("table", { columns = { 0, 0.025, 30, 1 } })
             action_group:AddChild(spacer(1))
@@ -734,7 +734,7 @@ local function add_action_group(specID, rotid, rot, callback, refresh)
     if rot.use_name then
         name:SetText(rot.name)
     elseif rot.action ~= nil then
-        if rot.type == "spell" or rot.type =="petspell" then
+        if rot.type == "spell" or rot.type =="pet" then
             name:SetText(GetSpellInfo(rot.action))
         elseif #rot.action > 0 then
             if #rot.action > 1 then

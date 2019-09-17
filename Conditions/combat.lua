@@ -358,3 +358,4 @@ addon:RegisterCondition(L["Combat"], "ENEMY", {
         parent:AddChild(unit)
     end,
 })
+
