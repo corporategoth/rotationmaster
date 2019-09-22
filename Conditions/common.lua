@@ -173,7 +173,7 @@ function addon:Widget_SpellNameWidget(spec, editbox, value, isvalid, update)
     return spell_group
 end
 
-function addon:Widget_ItemWidget(spec, value, update)
+function addon:Widget_ItemWidget(value, update)
     local item_group = AceGUI:Create("SimpleGroup")
     item_group:SetLayout("Table")
     item_group:SetUserData("table", { columns = { 44, 1 } })
@@ -187,19 +187,23 @@ function addon:Widget_ItemWidget(spec, value, update)
     end
     itemIcon.text:Hide()
     itemIcon:SetCallback("OnEnterPressed", function(widget, event, v)
-        value.item = GetItemInfo(v)
-        item:SetText(value.item)
+        value.item = v
+        itemIcon:SetText(v)
+        item:SetText(v and GetItemInfo(v) or nil)
         update()
     end)
     item_group:AddChild(itemIcon)
 
     item:SetFullWidth(true)
     item:SetLabel(L["Item"])
-    item:SetText(value.item)
-    item:SetUserData("spec", spec)
+    if value.item then
+        item:SetText(GetItemInfo(value.item) or value.item)
+    end
     item:SetCallback("OnEnterPressed", function(widget, event, v)
-        value.item = v
-        itemIcon:SetText(GetItemInfoInstant(v))
+        local itemid = GetItemInfoInstant(v)
+        value.item = itemid or v
+        itemIcon:SetText(itemid)
+        item:SetText(itemid and GetItemInfo(itemid) or v)
         update()
     end)
     item_group:AddChild(item)

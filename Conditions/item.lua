@@ -1,19 +1,14 @@
 local addon_name, addon = ...
 
-local AceGUI = LibStub("AceGUI-3.0")
 local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
-local tostring, tonumber, pairs = tostring, tonumber, pairs
-local floor = math.floor
+local tonumber = tonumber
 
 -- From constants
-local operators, units, unitsPossessive, classes, roles, debufftypes, zonepvp, instances, totems =
-addon.operators, addon.units, addon.unitsPossessive, addon.classes, addon.roles, addon.debufftypes,
-addon.zonepvp, addon.instances, addon.totems
+local operators = addon.operators
 
 -- From utils
-local compare, compareString, nullable, keys, tomap, has, is, isin, cleanArray, deepcopy, getCached, round =
-addon.compare, addon.compareString, addon.nullable, addon.keys, addon.tomap, addon.has,
-addon.is, addon.isin, addon.cleanArray, addon.deepcopy, addon.getCached, addon.round
+local compare, compareString, nullable, isin, getCached, round, isint =
+    addon.compare, addon.compareString, addon.nullable, addon.isin, addon.getCached, addon.round, addon.isint
 
 addon:RegisterCondition(L["Spells / Items"], "EQUIPPED", {
     description = L["Have Item Equipped"],
@@ -33,7 +28,7 @@ addon:RegisterCondition(L["Spells / Items"], "EQUIPPED", {
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
-        local icon_group = addon:Widget_ItemWidget(spec, value,
+        local icon_group = addon:Widget_ItemWidget(value,
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(icon_group)
     end,
@@ -53,9 +48,15 @@ addon:RegisterCondition(L["Spells / Items"], "CARRYING", {
             for j=1,getCached(addon.combatCache, GetContainerNumSlots, i) do
                 local _, qty, _, _, _, _, _, _, _, itemId = getCached(cache, GetContainerItemInfo, i, j);
                 if itemId ~= nil then
-                    local itemName = getCached(addon.longtermCache, GetItemInfo, itemId)
-                    if value.item == itemName then
-                        count = count + qty
+                    if isint(value.item) then
+                        if tonumber(value.item) == itemId then
+                            count = count + qty
+                        end
+                    else
+                        local itemName = getCached(addon.longtermCache, GetItemInfo, itemId)
+                        if value.item == itemName then
+                            count = count + qty
+                        end
                     end
                 end
             end
@@ -73,7 +74,7 @@ addon:RegisterCondition(L["Spells / Items"], "CARRYING", {
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
-        local icon_group = addon:Widget_ItemWidget(spec, value,
+        local icon_group = addon:Widget_ItemWidget(value,
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(icon_group)
 
@@ -93,30 +94,52 @@ addon:RegisterCondition(L["Spells / Items"], "ITEM", {
         local itemId
         for i=0,20 do
             local inventoryId = getCached(addon.combatCache, GetInventoryItemID, "player", i)
-            if inventoryId then
-                local itemName, itemLink, itemRarity, itemLevel, itemMinLevel, itemType, itemSubType, itemStackCount, itemEquipLoc, itemTexture, itemSellPrice =
-                getCached(addon.longtermCache, GetItemInfo, inventoryId)
-                if itemName == value.item then
-                    itemId = inventoryId
-                    break
+            if inventoryId ~= nil then
+                if isint(value.item) then
+                    if tonumber(value.item) == inventoryId then
+                        itemId = inventoryId
+                        break
+                    end
+                else
+                    local itemName = getCached(addon.longtermCache, GetItemInfo, inventoryId)
+                    if itemName == value.item then
+                        itemId = inventoryId
+                        break
+                    end
                 end
             end
         end
         if itemId == nil then
             for i=0,4 do
                 for j=1,getCached(addon.combatCache, GetContainerNumSlots, i) do
-                    local inventoryId = getCached(addon.combatCache, GetContainerItemID, i, j);
+                    local inventoryId = getCached(cache, GetContainerItemID, i, j);
                     if inventoryId ~= nil then
-                        local itemName = getCached(addon.longtermCache, GetItemInfo, inventoryId)
-                        if value.item == itemName then
-                            itemId = inventoryId
+                        if isint(value.item) then
+                            if tonumber(value.item) == inventoryId then
+                                itemId = inventoryId
+                                break
+                            end
+                        else
+                            local itemName = getCached(addon.longtermCache, GetItemInfo, inventoryId)
+                            if value.item == itemName then
+                                itemId = inventoryId
+                                break
+                            end
                         end
                     end
+                end
+                if itemId ~= nil then
+                    break
                 end
             end
         end
         if itemId ~= nil then
-            local start, duration, enabled = getCached(cache, GetItemCooldown, itemId)
+            local minlevel = select(5, getCached(addon.longtermCache, GetItemInfo, itemId))
+            -- Can't use it as we are too low level!
+            if minlevel > getCached(cache, UnitLevel, "player") then
+                return false
+            end
+            local start, duration = getCached(cache, GetItemCooldown, itemId)
             if start == 0 and duration == 0 then
                 return true
             else
@@ -151,7 +174,7 @@ addon:RegisterCondition(L["Spells / Items"], "ITEM", {
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
-        local icon_group = addon:Widget_ItemWidget(spec, value,
+        local icon_group = addon:Widget_ItemWidget(value,
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(icon_group)
     end,
@@ -168,30 +191,48 @@ addon:RegisterCondition(L["Spells / Items"], "ITEM_COOLDOWN", {
         local itemId
         for i=0,20 do
             local inventoryId = getCached(addon.combatCache, GetInventoryItemID, "player", i)
-            if inventoryId then
-                local itemName = getCached(addon.longtermCache, GetItemInfo, inventoryId)
-                if itemName == value.item then
-                    itemId = inventoryId
-                    break
+            if inventoryId ~= nil then
+                if isint(value.item) then
+                    if tonumber(value.item) == inventoryId then
+                        itemId = inventoryId
+                        break
+                    end
+                else
+                    local itemName = getCached(addon.longtermCache, GetItemInfo, inventoryId)
+                    if itemName == value.item then
+                        itemId = inventoryId
+                        break
+                    end
                 end
             end
         end
         if itemId == nil then
             for i=0,4 do
                 for j=1,getCached(addon.combatCache, GetContainerNumSlots, i) do
-                    local inventoryId = getCached(addon.combatCache, GetContainerItemID, i, j);
+                    local inventoryId = getCached(cache, GetContainerItemID, i, j);
                     if inventoryId ~= nil then
-                        local itemName = getCached(addon.longtermCache, GetItemInfo, inventoryId)
-                        if value.item == itemName then
-                            itemId = inventoryId
+                        if isint(value.item) then
+                            if tonumber(value.item) == inventoryId then
+                                itemId = inventoryId
+                                break
+                            end
+                        else
+                            local itemName = getCached(addon.longtermCache, GetItemInfo, inventoryId)
+                            if value.item == itemName then
+                                itemId = inventoryId
+                                break
+                            end
                         end
                     end
+                end
+                if itemId ~= nil then
+                    break
                 end
             end
         end
         local cooldown = 0
         if itemId ~= nil then
-            local start, duration, enabled = getCached(cache, GetItemCooldown, itemId)
+            local start, duration = getCached(cache, GetItemCooldown, itemId)
             if start ~= 0 and duration ~= 0 then
                 cooldown = round(duration - (GetTime() - start), 3)
                 if (cooldown < 0) then cooldown = 0 end
@@ -210,7 +251,7 @@ addon:RegisterCondition(L["Spells / Items"], "ITEM_COOLDOWN", {
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
-        local icon_group = addon:Widget_ItemWidget(spec, value,
+        local icon_group = addon:Widget_ItemWidget(value,
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(icon_group)
 

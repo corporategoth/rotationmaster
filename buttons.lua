@@ -215,14 +215,18 @@ local function AddStandardButton(button)
 		end
 
 		if type == 'macro' then
-			spellId = GetMacroSpell(actionType)
+			local item = select(2, GetMacroItem(actionType))
+        	if item ~= nil then
+				spellId = select(2, GetItemSpell(item))
+			else
+				spellId = GetMacroSpell(actionType)
+            end
 			if not spellId then
 				return
 			end
 			addon:verbose("Found macro button with spell ID %s", spellId)
 		elseif type == 'item' then
-			local _
-			_, spellId = GetItemSpell(actionType)
+			spellId = select(2, GetItemSpell(actionType))
 			if not spellId then
 				return
             end
@@ -269,9 +273,8 @@ local function FetchAzeriteUI()
 end
 
 local function FetchSamyTotemTimers()
-	local totemBars = {'Earth', 'Fire', 'Air', 'Water'};
-	for _, bar in pairs(totemBars) do
-		local button = _G['SamyTotemTimersFrame' .. bar];
+	for i = 1, 6 do
+		local button = _G['SamyTotemTimers' .. i .. "CastTotemButton"];
 		if button then
 			AddStandardButton(button);
 		end

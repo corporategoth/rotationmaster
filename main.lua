@@ -668,6 +668,9 @@ function addon:EvaluateNextAction()
         self.evaluationProfile:start()
 
         local cache = {}
+        if not self.inCombat then
+            self.combatCache = cache
+        end
 
         self.evaluationProfile:child("environment"):start()
         for unit, entity in pairs(self.unitsInRange) do

@@ -28,19 +28,16 @@ local function create_item_list(frame, items, update)
 
         icon:SetWidth(44)
         icon:SetHeight(44)
-        if (item) then
+        if item then
             icon:SetText(GetItemInfoInstant(item))
         end
         icon.text:Hide()
         icon:SetCallback("OnEnterPressed", function(widget, event, v)
             if v then
-                local info = GetItemInfo(v)
-                if info then
-                    items[idx] = info
-                    icon:SetText(v)
-                    name:SetText(info)
-                    update()
-                end
+                items[idx] = v
+                icon:SetText(v)
+                name:SetText(v and GetItemInfo(v) or nil)
+                update()
             else
                 table.remove(items, idx)
                 update()
@@ -51,20 +48,19 @@ local function create_item_list(frame, items, update)
 
         name:SetFullWidth(true)
         name:SetLabel(L["Item"])
-        name:SetText(item)
-        name:SetCallback("OnEnterPressed", function(widget, event, val)
-            if val == "" then
+        if item then
+            name:SetText(GetItemInfo(item) or item)
+        end
+        name:SetCallback("OnEnterPressed", function(widget, event, v)
+            if v == "" then
                 table.remove(items, idx)
                 update()
                 create_item_list(frame, items, update)
             else
-                local itemID = GetItemInfoInstant(val)
-                if itemID ~= nil then
-                    icon:SetText(itemID)
-                else
-                    icon:SetText(nil)
-                end
-                items[idx] = val
+                local itemid = GetItemInfoInstant(v)
+                items[idx] = itemid or v
+                icon:SetText(itemid)
+                name:SetText(itemid and GetItemInfo(itemid) or v)
                 update()
             end
         end)
