@@ -1,7 +1,3 @@
-- Item set support for item-based conditions
-- Reusable item sets
-- Pre-defined item sets (eg. mana potions, health potions, foods, drinks, etc).
-- Item set import/export
 - Add 'macro' to action type (ie. not just spell / item) to look for buttons by macro name
 
 - Default rotations for all classes (classic @ 60, retail @ 120).

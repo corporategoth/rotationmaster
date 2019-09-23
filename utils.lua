@@ -336,6 +336,21 @@ function width_split(s, sz)
     return rv
 end
 
+function addon.split (inputstr, sep)
+    if sep == nil then
+        sep = "%s"
+    end
+    local t={}
+    for str in string.gmatch(inputstr, "([^"..sep.."]+)") do
+        table.insert(t, str)
+    end
+    return t
+end
+
+function addon.trim(s)
+    return (s:gsub("^%s*(.-)%s*$", "%1"))
+end
+
 function addon.UnitCloserThan(cache, unit, distance)
     local attackable = addon.getCached(cache, UnitCanAttack, "player", unit)
     if attackable == nil then

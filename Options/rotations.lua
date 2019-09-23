@@ -7,180 +7,12 @@ local SpellData = LibStub("AceGUI-3.0-SpellLoader")
 
 local isint, isSpellOnSpec = addon.isint, addon.isSpellOnSpec
 local pairs, color, tonumber = pairs, color, tonumber
-local HideOnEscape = addon.HideOnEscape
 
 local function spacer(width)
     local rv = AceGUI:Create("Label")
     rv:SetText(nil)
     rv:SetRelativeWidth(width)
     return rv
-end
-
-local function create_item_list(frame, items, update)
-    frame:ReleaseChildren()
-    frame:PauseLayout()
-
-    for idx,item in pairs(items) do
-        local row = frame
-
-        local icon = AceGUI:Create("ActionSlotItem")
-        local name = AceGUI:Create("Inventory_EditBox")
-
-        icon:SetWidth(44)
-        icon:SetHeight(44)
-        if item then
-            icon:SetText(GetItemInfoInstant(item))
-        end
-        icon.text:Hide()
-        icon:SetCallback("OnEnterPressed", function(widget, event, v)
-            if v then
-                items[idx] = v
-                icon:SetText(v)
-                name:SetText(v and GetItemInfo(v) or nil)
-                update()
-            else
-                table.remove(items, idx)
-                update()
-                create_item_list(frame, items, update)
-            end
-        end)
-        row:AddChild(icon)
-
-        name:SetFullWidth(true)
-        name:SetLabel(L["Item"])
-        if item then
-            name:SetText(GetItemInfo(item) or item)
-        end
-        name:SetCallback("OnEnterPressed", function(widget, event, v)
-            if v == "" then
-                table.remove(items, idx)
-                update()
-                create_item_list(frame, items, update)
-            else
-                local itemid = GetItemInfoInstant(v)
-                items[idx] = itemid or v
-                icon:SetText(itemid)
-                name:SetText(itemid and GetItemInfo(itemid) or v)
-                update()
-            end
-        end)
-        row:AddChild(name)
-
-        local moveup = AceGUI:Create("Button")
-        moveup:SetWidth(40)
-        moveup:SetText("^")
-        moveup:SetDisabled(idx == 1)
-        moveup:SetCallback("OnClick", function(widget, ewvent, ...)
-            local tmp = items[idx-1]
-            items[idx-1] = items[idx]
-            items[idx] = tmp
-            update()
-            create_item_list(frame, items, update)
-        end)
-        row:AddChild(moveup)
-
-        local movedown = AceGUI:Create("Button")
-        movedown:SetWidth(40)
-        movedown:SetText("v")
-        movedown:SetDisabled(idx == #items or items[idx+1] == "")
-        movedown:SetCallback("OnClick", function(widget, ewvent, ...)
-            local tmp = items[idx+1]
-            items[idx+1] = items[idx]
-            items[idx] = tmp
-            update()
-            create_item_list(frame, items, update)
-        end)
-        row:AddChild(movedown)
-
-        local delete = AceGUI:Create("Button")
-        delete:SetWidth(40)
-            delete:SetText("X")
-            delete:SetCallback("OnClick", function(widget, ewvent, ...)
-            table.remove(items, idx)
-            update()
-            create_item_list(frame, items, update)
-        end)
-        row:AddChild(delete)
-    end
-
-    if #items == 0 or (items[#items] ~= nil and items[#items] ~= "") then
-        local row = frame
-
-        local icon = AceGUI:Create("ActionSlotItem")
-        icon:SetWidth(44)
-        icon:SetHeight(44)
-        icon.text:Hide()
-        icon:SetCallback("OnEnterPressed", function(widget, event, v)
-            v = GetItemInfo(v)
-            if v then
-                items[#items + 1] = v
-                update()
-                create_item_list(frame, items, update)
-            end
-        end)
-        row:AddChild(icon)
-
-        local name = AceGUI:Create("Inventory_EditBox")
-        name:SetFullWidth(true)
-        name:SetLabel(L["Item"])
-        name:SetText(nil)
-        name:SetCallback("OnEnterPressed", function(widget, event, val)
-            if val ~= nil then
-                items[#items + 1] = val
-                update()
-                create_item_list(frame, items, update)
-            end
-        end)
-        row:AddChild(name)
-
-        local moveup = AceGUI:Create("Button")
-        moveup:SetWidth(40)
-        moveup:SetText("^")
-        moveup:SetDisabled(true)
-        row:AddChild(moveup)
-
-        local movedown = AceGUI:Create("Button")
-        movedown:SetWidth(40)
-        movedown:SetText("v")
-        movedown:SetDisabled(true)
-        row:AddChild(movedown)
-
-        local delete = AceGUI:Create("Button")
-        delete:SetWidth(40)
-        delete:SetText("X")
-        delete:SetDisabled(true)
-        row:AddChild(delete)
-    end
-
-    addon:configure_frame(frame)
-    frame:ResumeLayout()
-    frame:DoLayout()
-end
-
-local function item_list(items, update)
-    local frame = AceGUI:Create("Frame")
-    frame:PauseLayout()
-
-    frame:SetTitle(L["Item List"])
-    frame:SetUserData("index", index)
-    frame:SetUserData("spec", spec)
-    frame:SetUserData("root", value)
-    frame:SetUserData("funcs", funcs)
-    frame:SetLayout("Fill")
-    HideOnEscape(frame)
-
-    local group = AceGUI:Create("ScrollFrame")
-    frame:AddChild(group)
-    group:SetFullWidth(true)
-    group:SetFullHeight(true)
-    group:SetLayout("Table")
-    group:SetUserData("table", { columns = { 44, 1, 40, 40, 40 } })
-
-    create_item_list(group, items, update)
-
-    addon:configure_frame(frame)
-    frame:ResumeLayout()
-    frame:DoLayout()
 end
 
 local function add_top_buttons(list, idx, callback, delete_cb)
@@ -477,6 +309,9 @@ local function add_effect_group(specID, rotid, rot, refresh)
 end
 
 local function add_action_group(specID, rotid, rot, callback, refresh)
+    local itemsets = addon.db.char.itemsets
+    local global_itemsets = addon.db.global.itemsets
+
     local group = AceGUI:Create("SimpleGroup")
     group:SetFullWidth(true)
     group:SetLayout("Flow")
@@ -497,21 +332,21 @@ local function add_action_group(specID, rotid, rot, callback, refresh)
         item = L["Item"],
     }
 
-    local type = AceGUI:Create("Dropdown")
-    type:SetWidth(95)
-    type:SetLabel(L["Action Type"])
-    type:SetCallback("OnValueChanged", function(widget, event, val)
+    local action_type = AceGUI:Create("Dropdown")
+    action_type:SetWidth(95)
+    action_type:SetLabel(L["Action Type"])
+    action_type:SetCallback("OnValueChanged", function(widget, event, val)
         if rot.type ~= val then
             rot.type = val
             rot.action = nil
             refresh()
         end
     end)
-    type.configure = function()
-        type:SetList(types, { "spell", "pet", "item" })
-        type:SetValue(rot.type)
+    action_type.configure = function()
+        action_type:SetList(types, { "spell", "pet", "item" })
+        action_type:SetValue(rot.type)
     end
-    action_group:AddChild(type)
+    action_group:AddChild(action_type)
 
     if rot.type ~= nil and rot.type == "spell" then
         local action = AceGUI:Create("Spec_EditBox")
@@ -656,47 +491,85 @@ local function add_action_group(specID, rotid, rot, callback, refresh)
         action_group:SetUserData("table", { columns = { 0, 1, 0.25 } })
 
         local action_icon = AceGUI:Create("Icon")
-        if rot.action ~= nil and #rot.action > 0 then
-            action_icon:SetImage(select(5, GetItemInfoInstant(rot.action[1])))
+        local update_action_image = function()
+            if rot.action ~= nil then
+                if type(rot.action) == "string" then
+                    local itemset = nil
+                    if itemsets[rot.action] ~= nil then
+                        itemset = itemsets[rot.action]
+                    elseif global_itemsets[rot.action] ~= nil then
+                        itemset = global_itemsets[rot.action]
+                    end
+                    if itemset ~= nil and #itemset.items > 0 then
+                        action_icon:SetImage(select(5, GetItemInfoInstant(itemset.items[1])))
+                    else
+                        action_icon:SetImage(nil)
+                    end
+                elseif rot.action ~= nil and #rot.action > 0 then
+                    action_icon:SetImage(select(5, GetItemInfoInstant(rot.action[1])))
+                end
+            else
+                action_icon:SetImage(nil)
+            end
         end
+        update_action_image()
         action_icon:SetImageSize(36, 36)
         icon_group:AddChild(action_icon)
 
-        local action = AceGUI:Create("EditBox")
+        local edit_button = AceGUI:Create("Button")
+
+        local action = AceGUI:Create("Dropdown")
         action:SetFullWidth(true)
-        action:SetLabel(L["Item"])
-        action:SetDisabled(true)
-        if rot.action ~= nil and #rot.action > 0 then
-            if #rot.action > 1 then
-                action:SetText(string.format(L["%s or %d others"], rot.action[1], #rot.action-1))
+        action:SetLabel(L["Item List"])
+        action:SetCallback("OnValueChanged", function(widget, event, val)
+            if val ~= nil then
+                if val == "" then
+                    rot.action = {}
+                else
+                    rot.action = val
+                end
             else
-                action:SetText(rot.action[1])
+                rot.action = nil
+            end
+            update_action_image()
+            callback()
+        end)
+        action.configure = function()
+            local selects, sorted = addon:get_item_list(L["Custom"])
+            action:SetList(selects, sorted)
+            if rot.action then
+                if type(rot.action) == "string" then
+                    action:SetValue(rot.action)
+                else
+                    action:SetValue("")
+                end
             end
         end
         action_group:AddChild(action)
 
-        local edit_button = AceGUI:Create("Button")
         edit_button:SetText(EDIT)
+        edit_button:SetDisabled(rot.action == nil)
         edit_button:SetUserData("cell", { alignV = "bottom" })
-        edit_button:SetCallback("OnClick", function(widget, ewvent, ...)
-            if rot.action == nil then
-                rot.action = {}
-            end
-            item_list(rot.action, function()
+        edit_button:SetCallback("OnClick", function(widget, event, ...)
+            local edit_callback = function()
                 addon:RemoveCooldownGlowIfCurrent(specID, rotid, rot)
-                if rot.action ~= nil and #rot.action > 0 then
-                    action_icon:SetImage(select(5, GetItemInfoInstant(rot.action[1])))
-                    if #rot.action > 1 then
-                        action:SetText(string.format(L["%s or %d others"], rot.action[1], #rot.action-1))
-                    else
-                        action:SetText(rot.action[1])
-                    end
-                else
-                    action_icon:SetImage(nil)
-                    action:SetText(nil)
-                end
+                update_action_image()
                 callback()
-            end)
+            end
+            if type(rot.action) == "string" then
+                local itemset = nil
+                if itemsets[rot.action] ~= nil then
+                    itemset = itemsets[rot.action]
+                elseif global_itemsets[rot.action] ~= nil then
+                    itemset = global_itemsets[rot.action]
+                end
+
+                if itemset then
+                    addon:item_list_popup(itemset.name, itemset.items, edit_callback)
+                end
+            else
+                addon:item_list_popup(L["Custom"], rot.action, edit_callback)
+            end
         end)
         action_group:AddChild(edit_button)
     else
@@ -732,11 +605,23 @@ local function add_action_group(specID, rotid, rot, callback, refresh)
     elseif rot.action ~= nil then
         if rot.type == "spell" or rot.type =="pet" then
             name:SetText(GetSpellInfo(rot.action))
-        elseif #rot.action > 0 then
-            if #rot.action > 1 then
-                name:SetText(string.format(L["%s or %d others"], rot.action[1], #rot.action-1))
-            else
-                name:SetText(rot.action[1])
+        elseif rot.type == "item" then
+            if type(rot.action) == "string" then
+                local itemset = nil
+                if addon.db.char.itemsets[rot.action] ~= nil then
+                    itemset = addon.db.char.itemsets[rot.action]
+                elseif addon.db.global.itemsets[rot.action] ~= nil then
+                    itemset = addon.db.global.itemsets[rot.action]
+                end
+                if itemset ~= nil then
+                    name:SetText(itemset.name)
+                end
+            elseif #rot.action > 0 then
+                if #rot.action > 1 then
+                    name:SetText(string.format(L["%s or %d others"], rot.action[1], #rot.action-1))
+                else
+                    name:SetText(rot.action[1])
+                end
             end
         end
     end

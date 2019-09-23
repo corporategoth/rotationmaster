@@ -736,11 +736,23 @@ local function create_rotation_options(frame, specID, rotid, parent, selected)
                     if rot.action ~= nil then
                         if rot.type == "spell" or rot.type == "pet" then
                             name = name .. " - " .. select(1, GetSpellInfo(rot.action))
-                        elseif rot.type == "item" and #rot.action > 0 then
-                            if #rot.action > 1 then
-                                name = name .. " - " .. string.format(L["%s or %d others"], rot.action[1], #rot.action-1)
-                            else
-                                name = name .. " - " .. rot.action[1]
+                        elseif rot.type == "item" then
+                            if type(rot.action) == "string" then
+                                local itemset = nil
+                                if addon.db.char.itemsets[rot.action] ~= nil then
+                                    itemset = addon.db.char.itemsets[rot.action]
+                                elseif addon.db.global.itemsets[rot.action] ~= nil then
+                                    itemset = addon.db.global.itemsets[rot.action]
+                                end
+                                if itemset ~= nil then
+                                    name = name .. " - " .. itemset.name
+                                end
+                            elseif #rot.action > 0 then
+                                if #rot.action > 1 then
+                                    name = name .. " - " .. string.format(L["%s or %d others"], rot.action[1], #rot.action-1)
+                                else
+                                    name = name .. " - " .. rot.action[1]
+                                end
                             end
                         end
                     end
@@ -982,6 +994,13 @@ function module:SetupOptions()
     effects:SetTitle(addon.pretty_name .. " - " .. L["Effects"])
     addon:create_effect_list(effects)
     InterfaceOptions_AddCategory(effects.frame)
+
+    local itemsets = AceGUI:Create("BlizOptionsGroup")
+    itemsets:SetName(L["Item Lists"], addon.pretty_name)
+    itemsets:SetLayout("Fill")
+    -- itemsets:SetTitle(addon.pretty_name .. " - " .. L["Item Lists"])
+    addon:create_itemset_list(itemsets)
+    InterfaceOptions_AddCategory(itemsets.frame)
 
     local rotation = AceGUI:Create("BlizOptionsGroup")
     rotation:SetName(L["Rotations"], addon.pretty_name)

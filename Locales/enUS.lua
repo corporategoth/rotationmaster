@@ -43,6 +43,7 @@ L["Spells / Items"] = true
 L["Buffs"] = true
 L["Combat"] = true
 L["Other"] = true
+L["Custom"] = true
 
 L["is less than"] = true
 L["is less than or equal to"] = true
@@ -169,6 +170,7 @@ L["Live Status Update Frequency (seconds)"] = true
 L["This is specifically how often the configuration pane will receive updates about live status.  Too frequently could make your configuration pane unusable.  0 = Disabled."] = true
 L["Are you sure you wish to delete this rotation?"] = true
 L["Import/Export Rotation"] = true
+L["Import/Export Item List"] = true
 L["Copy and paste this text share your profile with others, or import someone else's."] = true
 L["bytes"] = true
 L["lines"] = true
@@ -191,6 +193,7 @@ L["Pixel"] = true
 L["Auto Cast"] = true
 L["Glow"] = true
 L["Effects"] = true
+L["Item Lists"] = true
 L["Profiles"] = true
 L["Lines"] = true
 L["Frequency"] = true
@@ -229,6 +232,7 @@ L["Say"] = true
 L["Yell"] = true
 L["Item List"] = true
 L["%s or %d others"] = true
+L["a %s item set item"] = true
 
 -- from Options/conditional.lua
 
@@ -449,3 +453,5 @@ L["Your %s weapon is enchanted"] = true
 L["off hand"] = true
 L["main hand"] = true
 L["Off Hand"] = true
+
+L["Global"] = true

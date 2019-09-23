@@ -173,40 +173,109 @@ function addon:Widget_SpellNameWidget(spec, editbox, value, isvalid, update)
     return spell_group
 end
 
-function addon:Widget_ItemWidget(value, update)
+function addon:Widget_ItemWidget(top, value, update)
+    local itemsets = addon.db.char.itemsets
+    local global_itemsets = addon.db.global.itemsets
+
     local item_group = AceGUI:Create("SimpleGroup")
     item_group:SetLayout("Table")
-    item_group:SetUserData("table", { columns = { 44, 1 } })
+    item_group:SetUserData("table", { columns = { 44, 1, 0.25 } })
 
-    local item = AceGUI:Create("Inventory_EditBox")
-    local itemIcon = AceGUI:Create("ActionSlotItem")
-    itemIcon:SetWidth(44)
-    itemIcon:SetHeight(44)
-    if value.item then
-        itemIcon:SetText(GetItemInfoInstant(value.item))
+    local itemIcon = AceGUI:Create("Icon")
+    local update_action_image = function()
+        if value.item ~= nil then
+            if type(value.item) == "string" then
+                local itemset = nil
+                if itemsets[value.item] ~= nil then
+                    itemset = itemsets[value.item]
+                elseif global_itemsets[value.item] ~= nil then
+                    itemset = global_itemsets[value.item]
+                end
+                if itemset ~= nil and #itemset.items > 0 then
+                    itemIcon:SetImage(select(5, GetItemInfoInstant(itemset.items[1])))
+                else
+                    itemIcon:SetImage(nil)
+                end
+            elseif value.item ~= nil and #value.item > 0 then
+                itemIcon:SetImage(select(5, GetItemInfoInstant(value.item[1])))
+            end
+        else
+            itemIcon:SetImage(nil)
+        end
     end
-    itemIcon.text:Hide()
-    itemIcon:SetCallback("OnEnterPressed", function(widget, event, v)
-        value.item = v
-        itemIcon:SetText(v)
-        item:SetText(v and GetItemInfo(v) or nil)
-        update()
-    end)
+    update_action_image()
+    itemIcon:SetImageSize(36, 36)
     item_group:AddChild(itemIcon)
 
+    local edit_button = AceGUI:Create("Button")
+
+    local item = AceGUI:Create("Dropdown")
     item:SetFullWidth(true)
-    item:SetLabel(L["Item"])
-    if value.item then
-        item:SetText(GetItemInfo(value.item) or value.item)
-    end
-    item:SetCallback("OnEnterPressed", function(widget, event, v)
-        local itemid = GetItemInfoInstant(v)
-        value.item = itemid or v
-        itemIcon:SetText(itemid)
-        item:SetText(itemid and GetItemInfo(itemid) or v)
+    item:SetLabel(L["Item List"])
+    item:SetCallback("OnValueChanged", function(widget, event, val)
+        if val ~= nil then
+            if val == "" then
+                value.item = {}
+            else
+                value.item = val
+            end
+            edit_button:SetDisabled(false)
+        else
+            value.item = nil
+            edit_button:SetDisabled(true)
+        end
+        update_action_image()
         update()
     end)
+    item.configure = function()
+        local selects, sorted = addon:get_item_list(L["Custom"])
+        item:SetList(selects, sorted)
+        if value.item then
+            if type(value.item) == "string" then
+                item:SetValue(value.item)
+            else
+                item:SetValue("")
+            end
+        end
+    end
     item_group:AddChild(item)
+
+    edit_button:SetText(EDIT)
+    edit_button:SetDisabled(value.item == nil)
+    edit_button:SetUserData("cell", { alignV = "bottom" })
+    edit_button:SetCallback("OnClick", function(widget, event, ...)
+        local edit_callback = function()
+            update_action_image()
+            update()
+        end
+        if type(value.item) == "string" then
+            local itemset = nil
+            if itemsets[value.item] ~= nil then
+                itemset = itemsets[value.item]
+            elseif global_itemsets[value.item] ~= nil then
+                itemset = global_itemsets[value.item]
+            end
+
+            if itemset then
+                top:SetCallback("OnClose", function(widget) end)
+                top:Hide()
+                addon:item_list_popup(itemset.name, itemset.items, edit_callback, function(widget)
+                    AceGUI:Release(widget)
+                    addon.LayoutConditionFrame(top)
+                    top:Show()
+                end)
+            end
+        else
+            top:SetCallback("OnClose", function(widget) end)
+            top:Hide()
+            addon:item_list_popup(L["Custom"], value.item, edit_callback, function(widget)
+                AceGUI:Release(widget)
+                addon.LayoutConditionFrame(top)
+                top:Show()
+            end)
+        end
+    end)
+    item_group:AddChild(edit_button)
 
     return item_group
 end

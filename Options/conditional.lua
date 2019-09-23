@@ -25,7 +25,6 @@ local compare, compareString, nullable, keys, tomap, has, is, isin, cleanArray, 
 -------------------------------
 
 local evaluateArray, evaluateSingle, printArray, printSingle, validateArray, validateSingle, usefulArray, usefulSingle
-local LayoutFrame
 
 evaluateArray = function(operation, array, conditions, cache, start)
     if array ~= nil then
@@ -392,7 +391,7 @@ local function ChangeConditionType(parent, event, ...)
             ActionButton_HideOverlayGlow(selectedIcon.frame)
         end
         AceGUI:Release(widget)
-        LayoutFrame(top)
+        addon.LayoutConditionFrame(top)
         top:Show()
     end)
     HideOnEscape(frame)
@@ -495,7 +494,7 @@ local function ActionGroup(parent, value, idx, array)
             local tmp = array[idx-1]
             array[idx-1] = array[idx]
             array[idx] = tmp
-            LayoutFrame(top)
+            addon.LayoutConditionFrame(top)
         end)
         icongroup:AddChild(moveup)
     end
@@ -538,7 +537,7 @@ local function ActionGroup(parent, value, idx, array)
             local tmp = array[idx+1]
             array[idx+1] = array[idx]
             array[idx] = tmp
-            LayoutFrame(top)
+            addon.LayoutConditionFrame(top)
         end)
         icongroup:AddChild(movedown)
     end
@@ -584,7 +583,7 @@ local function ActionGroup(parent, value, idx, array)
     parent:AddChild(group)
 end
 
-LayoutFrame = function(frame)
+addon.LayoutConditionFrame = function(frame)
     local root = frame:GetUserData("root")
     local funcs = frame:GetUserData("funcs")
 
@@ -627,7 +626,7 @@ local function EditConditionCommon(index, spec, value, funcs)
     frame:SetUserData("funcs", funcs)
     frame:SetLayout("Fill")
 
-    LayoutFrame(frame)
+    addon.LayoutConditionFrame(frame)
     HideOnEscape(frame)
 end
 
@@ -784,5 +783,23 @@ end
 function addon:widgetSwitchCondition(parent, spec, value)
     if value ~= nil and value.type ~= nil and switchConditions[value.type] ~= nil and switchConditions[value.type].widget ~= nil then
         switchConditions[value.type].widget(parent, spec, value)
+    end
+end
+
+function addon:convertCondition(cond)
+    if cond ~= nil and cond.type ~= nil then
+        if cond.type == "NOT" then
+            addon:convertCondition(cond.value)
+        elseif cond.type == "AND" or cond.type == "OR" then
+            for _, v in pairs(cond.value) do
+                addon:convertCondition(v)
+            end
+        elseif cond.type == "EQUIPPED" or cond.type == "CARRYING" or
+                cond.type == "ITEM" or cond.type == "ITEM_COOLDOWN" then
+            if type(cond.item) == "string" and
+                    not string.match(cond.item, "%x%x%x%x%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%x%x%x%x%x%x%x%x") then
+                cond.item = { cond.item }
+            end
+        end
     end
 end

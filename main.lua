@@ -56,8 +56,10 @@ local defaults = {
     },
     char = {
         rotations = {},
+        itemsets = {},
     },
     global = {
+        itemsets = {},
         effects = {
             {
                 type = "texture",
@@ -86,7 +88,7 @@ local defaults = {
                 type = "autocast",
                 name = "Auto Cast",
             }
-        }
+        },
     }
 }
 
@@ -248,16 +250,20 @@ function addon:OnInitialize()
         for id, rot in pairs(rots) do
             if rot.cooldowns then
                 for k, cond in pairs(rot.cooldowns) do
-                    if cond.type == "item" and type(cond.action) == "string" then
+                    if cond.type == "item" and type(cond.action) == "string" and
+                            not string.match(cond.action, "%x%x%x%x%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%x%x%x%x%x%x%x%x") then
                         cond.action = { cond.action }
                     end
+                    addon:convertCondition(cond.conditions)
                 end
             end
             if rot.rotation then
                 for k, cond in pairs(rot.rotation) do
-                    if cond.type == "item" and type(cond.action) == "string" then
+                    if cond.type == "item" and type(cond.action) == "string" and
+                            not string.match(cond.action, "%x%x%x%x%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%x%x%x%x%x%x%x%x") then
                         cond.action = { cond.action }
                     end
+                    addon:convertCondition(cond.conditions)
                 end
             end
         end
@@ -819,14 +825,34 @@ function addon:GetSpellIds(rot)
             return { rot.action }
         end
     elseif rot.type == "item" then
-        local spellids = {}
-        for _, item in ipairs(rot.action) do
-            local spellid = select(2, getCached(self.longtermCache, GetItemSpell, item));
-            if spellid then
-                table.insert(spellids, spellid)
+        if rot.action then
+            local spellids = {}
+            if type(rot.action) == "string" then
+                local itemset = nil
+                if self.db.char.itemsets[rot.action] ~= nil then
+                    itemset = self.db.char.itemsets[rot.action]
+                elseif self.db.global.itemsets[rot.action] ~= nil then
+                    itemset = self.db.global.itemsets[rot.action]
+                end
+                if itemset ~= nil then
+                    for _, item in ipairs(itemset.items) do
+                        local spellid = select(2, getCached(self.longtermCache, GetItemSpell, item));
+                        if spellid then
+                            table.insert(spellids, spellid)
+                        end
+                    end
+                    return spellids
+                end
+            else
+                for _, item in ipairs(rot.action) do
+                    local spellid = select(2, getCached(self.longtermCache, GetItemSpell, item));
+                    if spellid then
+                        table.insert(spellids, spellid)
+                    end
+                end
+                return spellids
             end
         end
-        return spellids
     end
     return {}
 end
