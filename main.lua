@@ -63,7 +63,16 @@ local defaults = {
         bindings = {},
     },
     global = {
-        itemsets = {}, -- Default item sets below, it's dependent on WoW version
+        itemsets = {
+            ["e626834f-60b1-413f-9c87-8ddeeb4374aa"] = {
+                name = "Conjured Food",
+                items = { 22895, 8076, 8075, 1487, 1114, 1113, 5349, },
+            },
+            ["3b10f7d6-abb2-430c-b153-7189eca75838"] = {
+                name = "Conjured Water",
+                items = { 8079, 8078, 8077, 3772, 2136, 2288, 5350, },
+            },
+        },
         effects = {
             {
                 type = "texture",
@@ -96,28 +105,35 @@ local defaults = {
     }
 }
 if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
+    defaults.global.itemsets["e8d1525c-0412-40c1-95a4-00da22bc169e"] = {
+        name = "Combination Conjured Food",
+        items = { 113509, 80618, 80610, 65499, 43523, 43518, 65517, 65516, 65515, 65500, }
+    }
+    defaults.global.itemsets["6079c534-5f69-430e-b1bd-b487a31dcdd3"] = {
+        name = "Mana Potions",
+        items = { 152495, 127835, 109222, 76098, 57192, 33448, 40067, 31677, 22732, 28101, 13444, 13443, 6149, 3827, 3385, 2455, },
+    }
+    defaults.global.itemsets["9294d112-681b-43bc-ac62-5d6bec5c1f7d"] = {
+        name = "Healing Potions",
+        items = { 169451, 152494, 127834, 152615, 109223, 57191, 39671, 22829, 28100, 13446, 3928, 1710, 929, 858, 118, },
+    }
+    defaults.global.itemsets["e66d5cfe-a0f0-4276-aa00-40464eab30df"] = {
+        name = "Bandages",
+        items = { 158382, 158381, 133942, 133940, 111603, 72986, 72985, 53051, 53050, 53049, 34722, 34721,
+                  21991, 21990, 14530, 14529, 8545, 8544, 6451, 6450, 3531, 3530, 2581, 1251, },
+    }
 else
-    defaults.global.itemsets = {
-        ["e626834f-60b1-413f-9c87-8ddeeb4374aa"] = {
-            name = "Conjured Food",
-            items = { 22895, 8076, 8075, 1487, 1114, 1113, 5349, },
-        },
-        ["3b10f7d6-abb2-430c-b153-7189eca75838"] = {
-            name = "Conjured Water",
-            items = { 8079, 8078, 8077, 3772, 2136, 2288, 5350, },
-        },
-        ["6079c534-5f69-430e-b1bd-b487a31dcdd3"] = {
-            name = "Mana Potions",
-            items = { 13444, 13443, 6149, 3827, 3385, 2455, },
-        },
-        ["9294d112-681b-43bc-ac62-5d6bec5c1f7d"] = {
-            name = "Healing Potions",
-            items = { 13446, 3928, 1710, 929, 858, 118, },
-        },
-        ["e66d5cfe-a0f0-4276-aa00-40464eab30df"] = {
-            name = "Bandages",
-            items = { 14530, 14529, 8545, 8544, 6451, 6450, 3531, 3530, 2581, 1251, },
-        }
+    defaults.global.itemsets["6079c534-5f69-430e-b1bd-b487a31dcdd3"] = {
+        name = "Mana Potions",
+        items = { 13444, 13443, 6149, 3827, 3385, 2455, },
+    }
+    defaults.global.itemsets["9294d112-681b-43bc-ac62-5d6bec5c1f7d"] = {
+        name = "Healing Potions",
+        items = { 13446, 3928, 1710, 929, 858, 118, },
+    }
+    defaults.global.itemsets["e66d5cfe-a0f0-4276-aa00-40464eab30df"] = {
+        name = "Bandages",
+        items = { 14530, 14529, 8545, 8544, 6451, 6450, 3531, 3530, 2581, 1251, },
     }
 end
 

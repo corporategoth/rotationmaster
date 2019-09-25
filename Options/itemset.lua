@@ -178,7 +178,7 @@ local function ImportExport(items, update)
     import:SetDisabled(true)
     import:SetCallback("OnClick", function(wiget, event)
         cleanArray(items)
-        local initems = addon.split(editbox:GetText(), "\n")
+        local initems = addon.split(editbox:GetText():gsub(",", "\n"), "\n")
         for _, v in ipairs(initems) do
             table.insert(items, addon.trim(v))
         end

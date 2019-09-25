@@ -1,5 +1,6 @@
-- Add some default item sets (different from classic vs. retail)
-- Add some kind of in-addon help.
+- Warn if an item set is in use
+- Show tool tips for items in item sets (and other places)?
+- Add some kind of in-addon universal help.
 
 - Add 'macro' to action type (ie. not just spell / item) to look for buttons by macro name - requires major rewrite of highlighting code
 
