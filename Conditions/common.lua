@@ -185,19 +185,19 @@ function addon:Widget_ItemWidget(top, value, update)
     local update_action_image = function()
         if value.item ~= nil then
             if type(value.item) == "string" then
-                local itemset = nil
-                if itemsets[value.item] ~= nil then
-                    itemset = itemsets[value.item]
-                elseif global_itemsets[value.item] ~= nil then
-                    itemset = global_itemsets[value.item]
-                end
-                if itemset ~= nil and #itemset.items > 0 then
-                    itemIcon:SetImage(select(5, GetItemInfoInstant(itemset.items[1])))
+                local itemid = addon:FindFirstItemOfItemSet({}, value.item, true) or addon:FindFirstItemInItemSet(value.item)
+                if itemid then
+                    itemIcon:SetImage(select(5, GetItemInfoInstant(itemid)))
                 else
                     itemIcon:SetImage(nil)
                 end
             elseif value.item ~= nil and #value.item > 0 then
-                itemIcon:SetImage(select(5, GetItemInfoInstant(value.item[1])))
+                local itemid = addon:FindFirstItemOfItems({}, value.item, true) or addon:FindFirstItemInItems(value.item)
+                if itemid then
+                    itemIcon:SetImage(select(5, GetItemInfoInstant(itemid)))
+                else
+                    itemIcon:SetImage(nil)
+                end
             end
         else
             itemIcon:SetImage(nil)
@@ -246,6 +246,9 @@ function addon:Widget_ItemWidget(top, value, update)
     edit_button:SetCallback("OnClick", function(widget, event, ...)
         local edit_callback = function()
             update_action_image()
+            if type(value.item) == "string" then
+                addon:UpdateBoundButton(value.item)
+            end
             update()
         end
         if type(value.item) == "string" then

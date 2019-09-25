@@ -6,12 +6,127 @@ local AceGUI = LibStub("AceGUI-3.0")
 local SpellData = LibStub("AceGUI-3.0-SpellLoader")
 
 local pairs, color, tonumber = pairs, color, tonumber
-local HideOnEscape, cleanArray = addon.HideOnEscape, addon.cleanArray
+local HideOnEscape, cleanArray, getCached, isint = addon.HideOnEscape, addon.cleanArray, addon.getCached, addon.isint
 
 local function spacer(width)
     local rv = AceGUI:Create("Label")
     rv:SetRelativeWidth(width)
     return rv
+end
+
+function addon:FindFirstItemInItems(items)
+    if items == nil then
+        return nil
+    end
+    for k,v in pairs(items) do
+        local itemid = getCached(addon.longtermCache, GetItemInfoInstant, v)
+        if itemid then
+            return itemid
+        end
+    end
+    return nil
+end
+
+function addon:FindFirstItemInItemSet(id)
+    local itemsets = self.db.char.itemsets
+    local global_itemsets = self.db.global.itemsets
+
+    if itemsets[id] ~= nil then
+        return addon:FindFirstItemInItems(itemsets[id].items)
+    elseif global_itemsets[id] ~= nil then
+        return addon:FindFirstItemInItems(global_itemsets[id].items)
+    end
+    return nil
+end
+
+function addon:FindItemInItems(items, item)
+    if items == nil then
+        return nil
+    end
+    if isint(item) then
+        for k,v in pairs(items) do
+            if getCached(addon.longtermCache, GetItemInfoInstant, v) == tonumber(item) then
+                return tonumber(item)
+            end
+        end
+    else
+        for k,v in pairs(items) do
+            local name, link = getCached(addon.longtermCache, GetItemInfo, v)
+            if name == item then
+                return select(1, getCached(addon.longtermCache, GetItemInfoInstant, link))
+            end
+        end
+    end
+    return nil
+end
+
+function addon:FindItemInItemSet(id, item)
+    local itemsets = self.db.char.itemsets
+    local global_itemsets = self.db.global.itemsets
+
+    if itemsets[id] ~= nil then
+        return addon:FindItemInItems(itemsets[id].items, item)
+    elseif global_itemsets[id] ~= nil then
+        return addon:FindItemInItems(global_itemsets[id].items, item)
+    end
+    return nil
+end
+
+function addon:FindFirstItemOfItems(cache, items, equipped)
+    if items == nil then
+        return nil
+    end
+    if equipped then
+        for _, item in pairs(items) do
+            for i=0,20 do
+                local inventoryId = getCached(addon.combatCache, GetInventoryItemID, "player", i)
+                if inventoryId ~= nil then
+                    if isint(item) then
+                        if tonumber(item) == inventoryId then
+                            return inventoryId
+                        end
+                    else
+                        local itemName = getCached(addon.longtermCache, GetItemInfo, inventoryId)
+                        if itemName == item then
+                            return inventoryId
+                        end
+                    end
+                end
+            end
+        end
+    end
+    for _, item in pairs(items) do
+        for i=0,4 do
+            for j=1,getCached(addon.combatCache, GetContainerNumSlots, i) do
+                local inventoryId = getCached(cache, GetContainerItemID, i, j);
+                if inventoryId ~= nil then
+                    if isint(item) then
+                        if tonumber(item) == inventoryId then
+                            return inventoryId
+                        end
+                    else
+                        local itemName = getCached(addon.longtermCache, GetItemInfo, inventoryId)
+                        if item == itemName then
+                            return inventoryId
+                        end
+                    end
+                end
+            end
+        end
+    end
+    return nil
+end
+
+function addon:FindFirstItemOfItemSet(cache, id, equipped)
+    local itemsets = self.db.char.itemsets
+    local global_itemsets = self.db.global.itemsets
+
+    if itemsets[id] ~= nil then
+        return addon:FindFirstItemOfItems(cache, itemsets[id].items, equipped)
+    elseif global_itemsets[id] ~= nil then
+        return addon:FindFirstItemOfItems(cache, global_itemsets[id].items, equipped)
+    end
+    return nil
 end
 
 local function ImportExport(items, update)
@@ -92,7 +207,7 @@ local function create_item_list(frame, items, update)
     frame:PauseLayout()
 
     if items then
-        for idx,item in pairs(items) do
+        for idx,item in ipairs(items) do
             local row = frame
 
             local icon = AceGUI:Create("ActionSlotItem")
@@ -138,11 +253,36 @@ local function create_item_list(frame, items, update)
             end)
             row:AddChild(name)
 
-            local moveup = AceGUI:Create("Button")
-            moveup:SetWidth(40)
-            moveup:SetText("^")
-            moveup:SetDisabled(idx == 1)
-            moveup:SetCallback("OnClick", function(widget, ewvent, ...)
+            local angle = math.rad(180)
+            local cos, sin = math.cos(angle), math.sin(angle)
+
+            local movetop = AceGUI:Create("Icon")
+            movetop:SetImageSize(24, 24)
+            if (idx == 1) then
+                movetop:SetImage("Interface\\ChatFrame\\UI-ChatIcon-ScrollEnd-Disabled", (sin - cos), -(cos + sin), -cos, -sin, sin, -cos, 0, 0)
+                movetop:SetDisabled(true)
+            else
+                movetop:SetImage("Interface\\ChatFrame\\UI-ChatIcon-ScrollEnd-Up", (sin - cos), -(cos + sin), -cos, -sin, sin, -cos, 0, 0)
+                movetop:SetDisabled(false)
+            end
+            movetop:SetCallback("OnClick", function(widget, event, ...)
+                local tmp = table.remove(items, idx)
+                table.insert(items, 1, tmp)
+                update()
+                create_item_list(frame, items, update)
+            end)
+            row:AddChild(movetop)
+
+            local moveup = AceGUI:Create("Icon")
+            moveup:SetImageSize(24, 24)
+            if (idx == 1) then
+                moveup:SetImage("Interface\\ChatFrame\\UI-ChatIcon-ScrollDown-Disabled", (sin - cos), -(cos + sin), -cos, -sin, sin, -cos, 0, 0)
+                moveup:SetDisabled(true)
+            else
+                moveup:SetImage("Interface\\ChatFrame\\UI-ChatIcon-ScrollDown-Up", (sin - cos), -(cos + sin), -cos, -sin, sin, -cos, 0, 0)
+                moveup:SetDisabled(false)
+            end
+            moveup:SetCallback("OnClick", function(widget, event, ...)
                 local tmp = items[idx-1]
                 items[idx-1] = items[idx]
                 items[idx] = tmp
@@ -151,11 +291,16 @@ local function create_item_list(frame, items, update)
             end)
             row:AddChild(moveup)
 
-            local movedown = AceGUI:Create("Button")
-            movedown:SetWidth(40)
-            movedown:SetText("v")
-            movedown:SetDisabled(idx == #items or items[idx+1] == "")
-            movedown:SetCallback("OnClick", function(widget, ewvent, ...)
+            local movedown = AceGUI:Create("Icon")
+            movedown:SetImageSize(24, 24)
+            if (idx == #items or items[idx+1] == "") then
+                movedown:SetImage("Interface\\ChatFrame\\UI-ChatIcon-ScrollDown-Disabled")
+                movedown:SetDisabled(true)
+            else
+                movedown:SetImage("Interface\\ChatFrame\\UI-ChatIcon-ScrollDown-Up")
+                movedown:SetDisabled(false)
+            end
+            movedown:SetCallback("OnClick", function(widget, event, ...)
                 local tmp = items[idx+1]
                 items[idx+1] = items[idx]
                 items[idx] = tmp
@@ -164,10 +309,27 @@ local function create_item_list(frame, items, update)
             end)
             row:AddChild(movedown)
 
-            local delete = AceGUI:Create("Button")
-            delete:SetWidth(40)
-            delete:SetText("X")
-            delete:SetCallback("OnClick", function(widget, ewvent, ...)
+            local movebottom = AceGUI:Create("Icon")
+            movebottom:SetImageSize(24, 24)
+            if (idx == #items or items[idx+1] == "") then
+                movebottom:SetImage("Interface\\ChatFrame\\UI-ChatIcon-ScrollEnd-Disabled")
+                movebottom:SetDisabled(true)
+            else
+                movebottom:SetImage("Interface\\ChatFrame\\UI-ChatIcon-ScrollEnd-Up")
+                movebottom:SetDisabled(false)
+            end
+            movebottom:SetCallback("OnClick", function(widget, event, ...)
+                local tmp = table.remove(items, idx)
+                table.insert(items, tmp)
+                update()
+                create_item_list(frame, items, update)
+            end)
+            row:AddChild(movebottom)
+
+            local delete = AceGUI:Create("Icon")
+            delete:SetImageSize(24, 24)
+            delete:SetImage("Interface\\Buttons\\UI-Panel-MinimizeButton-Up")
+            delete:SetCallback("OnClick", function(widget, event, ...)
                 table.remove(items, idx)
                 update()
                 create_item_list(frame, items, update)
@@ -208,113 +370,39 @@ local function create_item_list(frame, items, update)
         end)
         row:AddChild(name)
 
-        local moveup = AceGUI:Create("Button")
-        moveup:SetWidth(40)
-        moveup:SetText("^")
+        local angle = math.rad(180)
+        local cos, sin = math.cos(angle), math.sin(angle)
+
+        local movetop = AceGUI:Create("Icon")
+        movetop:SetImageSize(24, 24)
+        movetop:SetImage("Interface\\ChatFrame\\UI-ChatIcon-ScrollEnd-Disabled", (sin - cos), -(cos + sin), -cos, -sin, sin, -cos, 0, 0)
+        movetop:SetDisabled(true)
+        row:AddChild(movetop)
+
+        local moveup = AceGUI:Create("Icon")
+        moveup:SetImageSize(24, 24)
+        moveup:SetImage("Interface\\ChatFrame\\UI-ChatIcon-ScrollDown-Disabled", (sin - cos), -(cos + sin), -cos, -sin, sin, -cos, 0, 0)
         moveup:SetDisabled(true)
         row:AddChild(moveup)
 
-        local movedown = AceGUI:Create("Button")
-        movedown:SetWidth(40)
-        movedown:SetText("v")
+        local movedown = AceGUI:Create("Icon")
+        movedown:SetImageSize(24, 24)
+        movedown:SetImage("Interface\\ChatFrame\\UI-ChatIcon-ScrollDown-Disabled")
         movedown:SetDisabled(true)
         row:AddChild(movedown)
 
-        local delete = AceGUI:Create("Button")
-        delete:SetWidth(40)
-        delete:SetText("X")
-        delete:SetDisabled(true)
+        local movebottom = AceGUI:Create("Icon")
+        movebottom:SetImageSize(24, 24)
+        movebottom:SetImage("Interface\\ChatFrame\\UI-ChatIcon-ScrollEnd-Disabled")
+        movebottom:SetDisabled(true)
+        row:AddChild(movebottom)
+
+        local delete = AceGUI:Create("Icon")
+        delete:SetImageSize(24, 24)
+        delete:SetImage("Interface\\Buttons\\UI-Panel-MinimizeButton-Disabled")
+        movebottom:SetDisabled(true)
         row:AddChild(delete)
     end
-
-    addon:configure_frame(frame)
-    frame:ResumeLayout()
-    frame:DoLayout()
-end
-
-local function item_list(frame, selected, itemset, update)
-    local itemsets = addon.db.char.itemsets
-    local global_itemsets = addon.db.global.itemsets
-
-    frame:ReleaseChildren()
-    frame:PauseLayout()
-
-    local group = AceGUI:Create("SimpleGroup")
-    group:SetFullWidth(true)
-    group:SetLayout("Table")
-    group:SetUserData("table", { columns = { 1, 70, 140, 140 } })
-    frame:AddChild(group)
-
-    local name = AceGUI:Create("EditBox")
-    local global = AceGUI:Create("CheckBox")
-    local delete = AceGUI:Create("Button")
-    local importexport = AceGUI:Create("Button")
-    local scrollwin = AceGUI:Create("ScrollFrame")
-
-    name:SetLabel(NAME)
-    name:SetFullWidth(true)
-    if itemset then
-        name:SetText(itemset.name)
-    end
-    name:SetCallback("OnEnterPressed", function(widget, event, v)
-        if not itemset then
-            itemset = { name = v, items = {} }
-            if global:GetValue() then
-                global_itemsets[selected] = itemset
-            else
-                itemsets[selected] = itemset
-            end
-            delete:SetDisabled(false)
-            importexport:SetDisabled(false)
-            create_item_list(scrollwin, itemset.items, update)
-        else
-            itemset.name = v
-        end
-        update()
-    end)
-    group:AddChild(name)
-
-    global:SetLabel(L["Global"])
-    global:SetValue(selected and global_itemsets[selected] ~= nil)
-    global:SetCallback("OnValueChanged", function(widget, event, val)
-        if itemset then
-            if val then
-                global_itemsets[selected] = itemsets[selected]
-                itemsets[selected] = nil
-            else
-                itemsets[selected] = global_itemsets[selected]
-                global_itemsets[selected] = nil
-            end
-            update()
-        end
-    end)
-    group:AddChild(global)
-
-    delete:SetText(DELETE)
-    delete:SetDisabled(itemset == nil)
-    delete:SetCallback("OnClick", function(widget, event)
-        -- TODO: Warn if in use!
-        itemsets[selected] = nil
-        global_itemsets[selected] = nil
-        update()
-    end)
-    group:AddChild(delete)
-
-    importexport:SetText(L["Import/Export"])
-    importexport:SetDisabled(itemset == nil)
-    importexport:SetCallback("OnClick", function(widget, event)
-        ImportExport(itemset.items, function()
-            create_item_list(scrollwin, itemset and itemset.items or nil, update)
-        end)
-    end)
-    group:AddChild(importexport)
-
-    scrollwin:SetFullWidth(true)
-    scrollwin:SetFullHeight(true)
-    scrollwin:SetLayout("Table")
-    scrollwin:SetUserData("table", { columns = { 44, 1, 40, 40, 40 } })
-    frame:AddChild(scrollwin)
-    create_item_list(scrollwin, itemset and itemset.items or nil, update)
 
     addon:configure_frame(frame)
     frame:ResumeLayout()
@@ -346,10 +434,165 @@ function addon:item_list_popup(name, items, update, onclose)
     scrollwin:SetFullWidth(true)
     scrollwin:SetFullHeight(true)
     scrollwin:SetLayout("Table")
-    scrollwin:SetUserData("table", { columns = { 44, 1, 40, 40, 40 } })
+    scrollwin:SetUserData("table", { columns = { 44, 1, 24, 24, 24, 24, 24 } })
     group:AddChild(scrollwin)
 
     create_item_list(scrollwin, items, update)
+
+    addon:configure_frame(frame)
+    frame:ResumeLayout()
+    frame:DoLayout()
+end
+
+local function item_list(frame, selected, itemset, update)
+    local bindings = addon.db.char.bindings
+    local itemsets = addon.db.char.itemsets
+    local global_itemsets = addon.db.global.itemsets
+
+    frame:ReleaseChildren()
+    frame:PauseLayout()
+
+    local group = AceGUI:Create("SimpleGroup")
+    group:SetFullWidth(true)
+    group:SetLayout("Table")
+    group:SetUserData("table", { columns = { 44, 1, 35, 140, 140 } })
+    group.frame:SetScript("OnHide", function()
+        if addon.bindingItemSet then
+            addon.bindingItemSet = nil
+            if GetCursorInfo() == "item" then
+                ClearCursor()
+            end
+        end
+        addon.itemSetCallback = nil
+        addon:EndHighlightSlot()
+    end)
+    frame:AddChild(group)
+
+    local icon = AceGUI:Create("Icon")
+    local name = AceGUI:Create("EditBox")
+    local glob_button = AceGUI:Create("CheckBox")
+    local delete = AceGUI:Create("Button")
+    local importexport = AceGUI:Create("Button")
+    local clicktobind = AceGUI:Create("Heading")
+    local scrollwin = AceGUI:Create("ScrollFrame")
+
+    addon.itemSetCallback = function(id)
+        if id == selected then
+            if bindings[selected] ~= nil then
+                addon:ScheduleTimer("HighlightSlot", 0.5, bindings[selected])
+                clicktobind:SetText(nil)
+            elseif itemset and #itemset.items > 0 then
+                clicktobind:SetText(color.WHITE .. L["Click the icon above to bind to your action bar"])
+            end
+        end
+    end
+
+    local itemid
+    local function update_itemid()
+        if itemset then
+            itemid = addon:FindFirstItemOfItems({}, itemset.items, true)
+            if itemid == nil and #itemset.items > 0 then
+                itemid = addon:FindFirstItemInItems(itemset.items)
+            end
+            if itemid then
+                icon:SetImage(select(5, GetItemInfoInstant(itemid)))
+            end
+            addon:UpdateBoundButton(selected)
+        end
+        addon.itemSetCallback(selected)
+    end
+    update_itemid()
+
+    icon:SetImageSize(36, 36)
+    icon:SetCallback("OnClick", function(widget)
+        if itemid then
+            addon.bindingItemSet = selected
+            PickupItem(itemid)
+        end
+    end)
+    group:AddChild(icon)
+
+    name:SetLabel(NAME)
+    name:SetFullWidth(true)
+    if itemset then
+        name:SetText(itemset.name)
+    end
+    name:SetCallback("OnEnterPressed", function(widget, event, v)
+        if not itemset then
+            itemset = { name = v, items = {} }
+            if glob_button:GetValue() then
+                global_itemsets[selected] = itemset
+            else
+                itemsets[selected] = itemset
+            end
+            delete:SetDisabled(false)
+            importexport:SetDisabled(false)
+            create_item_list(scrollwin, itemset.items, update)
+        else
+            itemset.name = v
+        end
+        update()
+    end)
+    group:AddChild(name)
+
+    local global = AceGUI:Create("SimpleGroup")
+    global:SetFullWidth(true)
+    global:SetLayout("Table")
+    global:SetUserData("table", { columns = { 1 } })
+    global:SetUserData("cell", { alignV = "middle", alignH = "center" })
+
+    local glob_label = AceGUI:Create("Label")
+    glob_label:SetText(L["Global"])
+    glob_label:SetColor(1.0, 0.82, 0.0)
+    global:AddChild(glob_label)
+
+    glob_button:SetLabel("")
+    glob_button:SetValue(selected and global_itemsets[selected] ~= nil)
+    glob_button:SetCallback("OnValueChanged", function(widget, event, val)
+        if itemset then
+            if val then
+                global_itemsets[selected] = itemsets[selected]
+                itemsets[selected] = nil
+            else
+                itemsets[selected] = global_itemsets[selected]
+                global_itemsets[selected] = nil
+            end
+            update()
+        end
+    end)
+    global:AddChild(glob_button)
+
+    group:AddChild(global)
+
+    delete:SetText(DELETE)
+    delete:SetDisabled(itemset == nil)
+    delete:SetCallback("OnClick", function(widget, event)
+        -- TODO: Warn if in use!
+        bindings[selected] = nil
+        itemsets[selected] = nil
+        global_itemsets[selected] = nil
+        update()
+    end)
+    group:AddChild(delete)
+
+    importexport:SetText(L["Import/Export"])
+    importexport:SetDisabled(itemset == nil)
+    importexport:SetCallback("OnClick", function(widget, event)
+        ImportExport(itemset.items, function()
+            create_item_list(scrollwin, itemset and itemset.items or nil, update_itemid)
+        end)
+    end)
+    group:AddChild(importexport)
+
+    clicktobind:SetFullWidth(true)
+    frame:AddChild(clicktobind)
+
+    scrollwin:SetFullWidth(true)
+    scrollwin:SetFullHeight(true)
+    scrollwin:SetLayout("Table")
+    scrollwin:SetUserData("table", { columns = { 44, 1, 24, 24, 24, 24, 24 } })
+    frame:AddChild(scrollwin)
+    create_item_list(scrollwin, itemset and itemset.items or nil, update)
 
     addon:configure_frame(frame)
     frame:ResumeLayout()
@@ -430,14 +673,18 @@ function addon:create_itemset_list(frame)
             item_list(group, selected, itemset, function()
                 local selects, sorted = self:get_item_list(NEW)
                 select:SetGroupList(selects, sorted)
-                select:SetGroup(selected)
+                if selects[selected] then
+                    select:SetGroup(selected)
+                else
+                    select:SetGroup(nil)
+                end
             end)
         end
     end)
     select.configure = function()
         local selects, sorted = self:get_item_list(NEW)
         select:SetGroupList(selects, sorted)
-        select:SetGroup(selected)
+        select:SetGroup("")
     end
 
     addon:configure_frame(frame)

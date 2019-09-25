@@ -16,43 +16,138 @@ local function spacer(width)
 end
 
 local function add_top_buttons(list, idx, callback, delete_cb)
+    local rot = list[idx]
+
     -- Layout first ...
     local button_group = AceGUI:Create("SimpleGroup")
     button_group:SetFullWidth(true)
     button_group:SetLayout("Table")
-    button_group:SetUserData("table", { columns = { 1, 1, 1 } })
+    button_group:SetUserData("table", { columns = { 24, 1, 24, 24, 24, 24, 24 } })
 
-    local moveup = AceGUI:Create("Button")
-    button_group:AddChild(moveup)
-    moveup:SetText(L["Move Up"])
-    moveup:SetDisabled(idx == 1)
+    local use_name = AceGUI:Create("CheckBox")
+    use_name:SetUserData("cell", { alignV = "bottom", alignH = "center" })
+    use_name:SetValue(rot.use_name)
+    use_name:SetCallback("OnValueChanged", function(widget, event, val)
+        rot.use_name = val
+        if not rot.use_name then
+            rot.name = nil
+        end
+        callback()
+    end)
+    button_group:AddChild(use_name)
+
+    local name = AceGUI:Create("EditBox")
+    name:SetFullWidth(true)
+    name:SetLabel(NAME)
+    name:SetDisabled(not rot.use_name)
+    if rot.use_name then
+        name:SetText(rot.name)
+    elseif rot.action ~= nil then
+        if rot.type == "spell" or rot.type =="pet" then
+            name:SetText(GetSpellInfo(rot.action))
+        elseif rot.type == "item" then
+            if type(rot.action) == "string" then
+                local itemset = nil
+                if addon.db.char.itemsets[rot.action] ~= nil then
+                    itemset = addon.db.char.itemsets[rot.action]
+                elseif addon.db.global.itemsets[rot.action] ~= nil then
+                    itemset = addon.db.global.itemsets[rot.action]
+                end
+                if itemset ~= nil then
+                    name:SetText(itemset.name)
+                end
+            elseif #rot.action > 0 then
+                if #rot.action > 1 then
+                    name:SetText(string.format(L["%s or %d others"], rot.action[1], #rot.action-1))
+                else
+                    name:SetText(rot.action[1])
+                end
+            end
+        end
+    end
+    name:SetCallback("OnEnterPressed", function(widget, event, val)
+        rot.name = val
+        callback()
+    end)
+    button_group:AddChild(name)
+
+    local angle = math.rad(180)
+    local cos, sin = math.cos(angle), math.sin(angle)
+
+    local movetop = AceGUI:Create("Icon")
+    movetop:SetImageSize(24, 24)
+    if (idx == 1) then
+        movetop:SetImage("Interface\\ChatFrame\\UI-ChatIcon-ScrollEnd-Disabled", (sin - cos), -(cos + sin), -cos, -sin, sin, -cos, 0, 0)
+        movetop:SetDisabled(true)
+    else
+        movetop:SetImage("Interface\\ChatFrame\\UI-ChatIcon-ScrollEnd-Up", (sin - cos), -(cos + sin), -cos, -sin, sin, -cos, 0, 0)
+        movetop:SetDisabled(false)
+    end
+    movetop:SetCallback("OnClick", function(widget, event, ...)
+        local tmp = table.remove(list, idx)
+        table.insert(list, 1, tmp)
+        callback()
+    end)
+    button_group:AddChild(movetop)
+
+    local moveup = AceGUI:Create("Icon")
+    moveup:SetImageSize(24, 24)
+    if (idx == 1) then
+        moveup:SetImage("Interface\\ChatFrame\\UI-ChatIcon-ScrollDown-Disabled", (sin - cos), -(cos + sin), -cos, -sin, sin, -cos, 0, 0)
+        moveup:SetDisabled(true)
+    else
+        moveup:SetImage("Interface\\ChatFrame\\UI-ChatIcon-ScrollDown-Up", (sin - cos), -(cos + sin), -cos, -sin, sin, -cos, 0, 0)
+        moveup:SetDisabled(false)
+    end
     moveup:SetCallback("OnClick", function(widget, event)
-        local rot = list[idx]
-        list[idx] = list[idx - 1]
-        idx = idx - 1
-        list[idx] = rot
+        local tmp = list[idx-1]
+        list[idx-1] = list[idx]
+        list[idx] = tmp
         callback()
     end)
+    button_group:AddChild(moveup)
 
-    local movedown = AceGUI:Create("Button")
+    local movedown = AceGUI:Create("Icon")
+    movedown:SetImageSize(24, 24)
+    if (idx == #list) then
+        movedown:SetImage("Interface\\ChatFrame\\UI-ChatIcon-ScrollDown-Disabled")
+        movedown:SetDisabled(true)
+    else
+        movedown:SetImage("Interface\\ChatFrame\\UI-ChatIcon-ScrollDown-Up")
+        movedown:SetDisabled(false)
+    end
+    movedown:SetCallback("OnClick", function(widget, event, ...)
+        local tmp = list[idx+1]
+        list[idx+1] = list[idx]
+        list[idx] = tmp
+        callback()
+    end)
     button_group:AddChild(movedown)
-    movedown:SetText(L["Move Down"])
-    movedown:SetDisabled(idx == #list)
-    movedown:SetCallback("OnClick", function(widget, event)
-        local rot = list[idx]
-        list[idx] = list[idx + 1]
-        idx = idx + 1
-        list[idx] = rot
+
+    local movebottom = AceGUI:Create("Icon")
+    movebottom:SetImageSize(24, 24)
+    if (idx == #list) then
+        movebottom:SetImage("Interface\\ChatFrame\\UI-ChatIcon-ScrollEnd-Disabled")
+        movebottom:SetDisabled(true)
+    else
+        movebottom:SetImage("Interface\\ChatFrame\\UI-ChatIcon-ScrollEnd-Up")
+        movebottom:SetDisabled(false)
+    end
+    movebottom:SetCallback("OnClick", function(widget, event, ...)
+        local tmp = table.remove(list, idx)
+        table.insert(list, tmp)
         callback()
     end)
+    button_group:AddChild(movebottom)
 
-    local delete = AceGUI:Create("Button")
-    button_group:AddChild(delete)
-    delete:SetText(DELETE)
-    delete:SetCallback("OnClick", function(widget, event)
+    local delete = AceGUI:Create("Icon")
+    delete:SetImageSize(24, 24)
+    delete:SetImage("Interface\\Buttons\\UI-Panel-MinimizeButton-Up")
+    delete:SetCallback("OnClick", function(widget, event, ...)
         delete_cb()
         callback()
     end)
+    button_group:AddChild(delete)
 
     return button_group
 end
@@ -316,15 +411,10 @@ local function add_action_group(specID, rotid, rot, callback, refresh)
     group:SetFullWidth(true)
     group:SetLayout("Flow")
 
-    local icon_group = AceGUI:Create("SimpleGroup")
-    icon_group:SetFullWidth(true)
-    icon_group:SetLayout("Table")
-    icon_group:SetUserData("table", { columns = { 44, 24, 1 } })
-
     local action_group = AceGUI:Create("SimpleGroup")
     action_group:SetFullWidth(true)
     action_group:SetLayout("Table")
-    action_group:SetUserData("table", { columns = { 0, 1 } })
+    action_group:SetUserData("table", { columns = { 0, 44, 1 } })
 
     local types = {
         spell = L["Spell"],
@@ -370,11 +460,10 @@ local function add_action_group(specID, rotid, rot, callback, refresh)
                 callback()
             end
         end)
-        icon_group:AddChild(action_icon)
+        action_group:AddChild(action_icon)
 
         if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
-            action_group:SetUserData("table", { columns = { 0, 0.025, 30, 1 } })
-            action_group:AddChild(spacer(1))
+            action_group:SetUserData("table", { columns = { 0, 44, 30, 1 } })
 
             local ranked = AceGUI:Create("SimpleGroup")
             ranked:SetFullWidth(true)
@@ -388,6 +477,7 @@ local function add_action_group(specID, rotid, rot, callback, refresh)
             ranked:AddChild(nr_label)
 
             local nr_button = AceGUI:Create("CheckBox")
+            nr_button:SetLabel("")
             nr_button:SetValue(rot.ranked or false)
             nr_button:SetCallback("OnValueChanged", function(widget, event, val)
                 rot.ranked = val
@@ -444,11 +534,10 @@ local function add_action_group(specID, rotid, rot, callback, refresh)
 
             callback()
         end)
-        icon_group:AddChild(action_icon)
+        action_group:AddChild(action_icon)
 
         if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
-            action_group:SetUserData("table", { columns = { 0, 0.025, 30, 1 } })
-            action_group:AddChild(spacer(1))
+            action_group:SetUserData("table", { columns = { 0, 44, 30, 1 } })
 
             local ranked = AceGUI:Create("SimpleGroup")
             ranked:SetFullWidth(true)
@@ -488,33 +577,33 @@ local function add_action_group(specID, rotid, rot, callback, refresh)
         end)
         action_group:AddChild(action)
     elseif rot.type ~= nil and rot.type == "item" then
-        action_group:SetUserData("table", { columns = { 0, 1, 0.25 } })
+        action_group:SetUserData("table", { columns = { 0, 44, 1, 0.25 } })
+
+        if rot.action == nil then
+            rot.action = {}
+        end
 
         local action_icon = AceGUI:Create("Icon")
         local update_action_image = function()
-            if rot.action ~= nil then
-                if type(rot.action) == "string" then
-                    local itemset = nil
-                    if itemsets[rot.action] ~= nil then
-                        itemset = itemsets[rot.action]
-                    elseif global_itemsets[rot.action] ~= nil then
-                        itemset = global_itemsets[rot.action]
-                    end
-                    if itemset ~= nil and #itemset.items > 0 then
-                        action_icon:SetImage(select(5, GetItemInfoInstant(itemset.items[1])))
-                    else
-                        action_icon:SetImage(nil)
-                    end
-                elseif rot.action ~= nil and #rot.action > 0 then
-                    action_icon:SetImage(select(5, GetItemInfoInstant(rot.action[1])))
+            if type(rot.action) == "string" then
+                local itemid = addon:FindFirstItemOfItemSet({}, rot.action, true) or addon:FindFirstItemInItemSet(rot.action)
+                if itemid then
+                    action_icon:SetImage(select(5, GetItemInfoInstant(itemid)))
+                else
+                    action_icon:SetImage(nil)
                 end
             else
-                action_icon:SetImage(nil)
+                local itemid = addon:FindFirstItemOfItems({}, rot.action, true) or addon:FindFirstItemInItems(rot.action)
+                if itemid then
+                    action_icon:SetImage(select(5, GetItemInfoInstant(itemid)))
+                else
+                    action_icon:SetImage(nil)
+                end
             end
         end
         update_action_image()
         action_icon:SetImageSize(36, 36)
-        icon_group:AddChild(action_icon)
+        action_group:AddChild(action_icon)
 
         local edit_button = AceGUI:Create("Button")
 
@@ -529,7 +618,7 @@ local function add_action_group(specID, rotid, rot, callback, refresh)
                     rot.action = val
                 end
             else
-                rot.action = nil
+                rot.action = {}
             end
             update_action_image()
             callback()
@@ -537,12 +626,10 @@ local function add_action_group(specID, rotid, rot, callback, refresh)
         action.configure = function()
             local selects, sorted = addon:get_item_list(L["Custom"])
             action:SetList(selects, sorted)
-            if rot.action then
-                if type(rot.action) == "string" then
-                    action:SetValue(rot.action)
-                else
-                    action:SetValue("")
-                end
+            if type(rot.action) == "string" then
+                action:SetValue(rot.action)
+            else
+                action:SetValue("")
             end
         end
         action_group:AddChild(action)
@@ -554,6 +641,9 @@ local function add_action_group(specID, rotid, rot, callback, refresh)
             local edit_callback = function()
                 addon:RemoveCooldownGlowIfCurrent(specID, rotid, rot)
                 update_action_image()
+                if type(rot.action) == "string" then
+                    addon:UpdateBoundButton(rot.action)
+                end
                 callback()
             end
             if type(rot.action) == "string" then
@@ -576,7 +666,7 @@ local function add_action_group(specID, rotid, rot, callback, refresh)
         local action_icon = AceGUI:Create("Icon")
         action_icon:SetImageSize(36, 36)
         action_icon:SetImage("Interface\\Icons\\INV_Misc_QuestionMark")
-        icon_group:AddChild(action_icon)
+        action_group:AddChild(action_icon)
 
         local action = AceGUI:Create("EditBox")
         action:SetFullWidth(true)
@@ -584,54 +674,6 @@ local function add_action_group(specID, rotid, rot, callback, refresh)
         action_group:AddChild(action)
     end
 
-    local use_name = AceGUI:Create("CheckBox")
-    use_name:SetUserData("cell", { alignV = "bottom", alignH = "center" })
-    use_name:SetValue(rot.use_name)
-    use_name:SetCallback("OnValueChanged", function(widget, event, val)
-        rot.use_name = val
-        if not rot.use_name then
-            rot.name = nil
-        end
-        callback()
-    end)
-    icon_group:AddChild(use_name)
-
-    local name = AceGUI:Create("EditBox")
-    name:SetFullWidth(true)
-    name:SetLabel(NAME)
-    name:SetDisabled(not rot.use_name)
-    if rot.use_name then
-        name:SetText(rot.name)
-    elseif rot.action ~= nil then
-        if rot.type == "spell" or rot.type =="pet" then
-            name:SetText(GetSpellInfo(rot.action))
-        elseif rot.type == "item" then
-            if type(rot.action) == "string" then
-                local itemset = nil
-                if addon.db.char.itemsets[rot.action] ~= nil then
-                    itemset = addon.db.char.itemsets[rot.action]
-                elseif addon.db.global.itemsets[rot.action] ~= nil then
-                    itemset = addon.db.global.itemsets[rot.action]
-                end
-                if itemset ~= nil then
-                    name:SetText(itemset.name)
-                end
-            elseif #rot.action > 0 then
-                if #rot.action > 1 then
-                    name:SetText(string.format(L["%s or %d others"], rot.action[1], #rot.action-1))
-                else
-                    name:SetText(rot.action[1])
-                end
-            end
-        end
-    end
-    name:SetCallback("OnEnterPressed", function(widget, event, val)
-        rot.name = val
-        callback()
-    end)
-    icon_group:AddChild(name)
-
-    group:AddChild(icon_group)
     group:AddChild(action_group)
 
     return group

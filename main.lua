@@ -33,6 +33,9 @@ local DataBroker = LibStub("LibDataBroker-1.1"):NewDataObject("RotationMaster",
 -- Initialization
 --
 
+BINDING_HEADER_ROTATIONMASTER = addon.pretty_name
+BINDING_NAME_ROTATIONMASTER_TOGGLE = string.format(L["Toggle %s"], addon.pretty_name)
+
 local defaults = {
     profile = {
         enable = true,
@@ -57,6 +60,7 @@ local defaults = {
     char = {
         rotations = {},
         itemsets = {},
+        bindings = {},
     },
     global = {
         itemsets = {},
@@ -122,6 +126,9 @@ local events = {
     -- Special Purpose
     'NAME_PLATE_UNIT_ADDED',
     'NAME_PLATE_UNIT_REMOVED',
+
+    'CURSOR_UPDATE',
+    'BAG_UPDATE',
 }
 
 local mainline_events = {
@@ -322,6 +329,9 @@ function addon:OnInitialize()
     self.conditionEvalTimer = nil
     self.lastCacheReport = GetTime()
 
+    self.itemSetCallback = nil
+    self.bindingItemSet = nil
+
     self.evaluationProfile = addon:ProfiledCode()
 
     -- This is here because of order of loading.
@@ -435,6 +445,14 @@ function DataBroker.OnTooltipShow(GameTooltip)
     end
 end
 
+function addon:toggle()
+    if self.currentRotation == nil then
+        self:enable()
+    else
+        self:disable()
+    end
+end
+
 function addon:enable()
     for k, v in pairs(events) do
         self:RegisterEvent(v)
@@ -493,6 +511,9 @@ function addon:OnEnable()
 end
 
 function addon:rotationValidConditions(rot, spec)
+    local itemsets = self.db.char.itemsets
+    local global_itemsets = self.db.global.itemsets
+
     -- We found a cooldown OR a rotation step
     local itemfound = false
     if rot.cooldowns ~= nil then
@@ -501,6 +522,23 @@ function addon:rotationValidConditions(rot, spec)
             if not v.disabled then
                 if (v.type == nil or v.action == nil or not self:validateCondition(v.conditions, spec)) then
                     return false
+                end
+                if v.type == "item" then
+                    if type(v.action) == "string" then
+                        local itemset
+                        if itemsets[v.action] ~= nil then
+                            itemset = itemsets[v.action]
+                        elseif global_itemsets[v.action] ~= nil then
+                            itemset = global_itemsets[v.action]
+                        end
+                        if not itemset or #itemset.items == 0 then
+                            return falsed
+                        end
+                    else
+                        if #v.action == 0 then
+                            return false
+                        end
+                    end
                 end
                 itemfound = true
             end
@@ -512,6 +550,23 @@ function addon:rotationValidConditions(rot, spec)
             if not v.disabled then
                 if (v.type == nil or v.action == nil or not self:validateCondition(v.conditions, spec)) then
                     return false
+                end
+                if v.type == "item" then
+                    if type(v.action) == "string" then
+                        local itemset
+                        if itemsets[v.action] ~= nil then
+                            itemset = itemsets[v.action]
+                        elseif global_itemsets[v.action] ~= nil then
+                            itemset = global_itemsets[v.action]
+                        end
+                        if not itemset or #itemset.items == 0 then
+                            return falsed
+                        end
+                    else
+                        if #v.action == 0 then
+                            return false
+                        end
+                    end
                 end
                 itemfound = true
             end
@@ -969,16 +1024,67 @@ function addon:GetSpecTalentIcon(spec, idx)
     return self.specTalents[spec][idx].icon
 end
 
+function addon:UpdateBoundButton(id)
+    local bindings = self.db.char.bindings
+
+    local slot = bindings[id]
+    if slot then
+        local type, actionType = GetActionInfo(slot);
+        if type == "item" then
+            local itemid = addon:FindFirstItemOfItemSet({}, id, true)
+            if itemid and itemid ~= actionType then
+                addon:debug("Updaeted slot %s to new item %d", slot, itemid)
+                PickupItem(itemid)
+                PlaceAction(slot)
+                ClearCursor()
+            end
+        else
+            bindings[id] = nil
+        end
+    end
+end
+
 -- The only action for ALL of these is to check to see if the rotation should be switched.
 addon.PLAYER_FOCUS_CHANGED = addon.SwitchRotation
-addon.ZONE_CHANGED = addon.SwitchRotation
-addon.ZONE_CHANGED_INDOORS = addon.SwitchRotation
 addon.PARTY_MEMBERS_CHANGED = addon.SwitchRotation
 addon.PLAYER_FLAGS_CHANGED = addon.SwitchRotation
 addon.UPDATE_SHAPESHIFT_FORM = addon.SwitchRotation
 addon.UPDATE_STEALTH = addon.SwitchRotation
 
-addon.ACTIONBAR_SLOT_CHANGED = addon.ButtonFetch
+addon.ACTIONBAR_SLOT_CHANGED = function(self, event, slot)
+    local bindings = self.db.char.bindings
+    local itemsets = self.db.char.itemsets
+    local global_itemsets = self.db.global.itemsets
+
+    addon:ButtonFetch()
+
+    local pickupItemSet
+    for id, bslot in pairs(bindings) do
+        if bslot == slot then
+            pickupItemSet = id
+            bindings[id] = nil
+            if addon.itemSetCallback then
+                addon.itemSetCallback(id)
+            end
+        end
+    end
+
+    if addon.bindingItemSet then
+        bindings[addon.bindingItemSet] = slot
+        if addon.itemSetCallback then
+            addon.itemSetCallback(addon.bindingItemSet)
+        end
+        addon.bindingItemSet = nil
+    end
+
+    if pickupItemSet ~= nil then
+        local type, action = GetCursorInfo()
+        if type == "item" and addon:FindItemInItemSet(pickupItemSet, action) ~= nil then
+            addon.bindingItemSet = pickupItemSet
+        end
+    end
+end
+
 addon.ACTIONBAR_HIDEGRID = addon.ButtonFetch
 addon.ACTIONBAR_PAGE_CHANGED = addon.ButtonFetch
 addon.UPDATE_MACROS = addon.ButtonFetch
@@ -1041,9 +1147,15 @@ addon.ZONE_CHANGED_INDOORS = addon.ZONE_CHANGED
 addon.GROUP_ROSTER_UPDATE = addon.ZONE_CHANGED
 
 function addon:PLAYER_ENTERING_WORLD()
+    local bindings = self.db.char.bindings
+
     addon:verbose("Player entered world.")
     self:UpdateButtonGlow()
     self:UpdateSkills()
+
+    for id, slot in pairs(bindings) do
+        self:UpdateBoundButton(id)
+    end
 end
 
 function addon:PLAYER_REGEN_DISABLED()
@@ -1096,3 +1208,25 @@ function addon:NAME_PLATE_UNIT_REMOVED(event, unit)
     self.unitsInRange[unit] = nil
 end
 
+function addon:CURSOR_UPDATE(event)
+    if addon.bindingItemSet then
+        local type, action = GetCursorInfo()
+        --print("[" .. tostring(addon.bindingItemSet) .. "] Got " .. tostring(type) .. "/" .. tostring(action) ..
+        --    " cursor update: HasItem(" .. tostring(CursorHasItem()) .. "), GetMouseButtonClicked(" ..
+        --    tostring(GetMouseButtonClicked()) .. ")")
+        if type == nil and action == nil then
+            return
+        end
+        if type ~= "item" or not addon:FindItemInItemSet(addon.bindingItemSet, action) then
+            addon.bindingItemSet = nil
+        end
+    end
+end
+
+function addon:BAG_UPDATE(event)
+    local bindings = self.db.char.bindings
+
+    for id, slot in pairs(bindings) do
+        self:UpdateBoundButton(id)
+    end
+end

@@ -141,58 +141,7 @@ addon:RegisterCondition(L["Spells / Items"], "ITEM", {
         return value.item ~= nil
     end,
     evaluate = function(value, cache, evalStart) -- Cooldown until the spell is available
-        local itemId
-        for _, item in pairs(get_item_array(value.item)) do
-            for i=0,20 do
-                local inventoryId = getCached(addon.combatCache, GetInventoryItemID, "player", i)
-                if inventoryId ~= nil then
-                    if isint(item) then
-                        if tonumber(item) == inventoryId then
-                            itemId = inventoryId
-                            break
-                        end
-                    else
-                        local itemName = getCached(addon.longtermCache, GetItemInfo, inventoryId)
-                        if itemName == item then
-                            itemId = inventoryId
-                            break
-                        end
-                    end
-                end
-            end
-            if itemId ~= nil then
-                break
-            end
-        end
-        if itemId == nil then
-            for _, item in pairs(get_item_array(value.item)) do
-                for i=0,4 do
-                    for j=1,getCached(addon.combatCache, GetContainerNumSlots, i) do
-                        local inventoryId = getCached(cache, GetContainerItemID, i, j);
-                        if inventoryId ~= nil then
-                            if isint(item) then
-                                if tonumber(item) == inventoryId then
-                                    itemId = inventoryId
-                                    break
-                                end
-                            else
-                                local itemName = getCached(addon.longtermCache, GetItemInfo, inventoryId)
-                                if item == itemName then
-                                    itemId = inventoryId
-                                    break
-                                end
-                            end
-                        end
-                    end
-                    if itemId ~= nil then
-                        break
-                    end
-                end
-                if itemId ~= nil then
-                    break
-                end
-            end
-        end
+        local itemId = addon:FindFirstItemOfItems(cache, get_item_array(value.item), true)
         if itemId ~= nil then
             local minlevel = select(5, getCached(addon.longtermCache, GetItemInfo, itemId))
             -- Can't use it as we are too low level!
@@ -247,58 +196,7 @@ addon:RegisterCondition(L["Spells / Items"], "ITEM_COOLDOWN", {
                 value.item ~= nil and value.value ~= nil and value.value >= 0)
     end,
     evaluate = function(value, cache, evalStart) -- Cooldown until the spell is available
-        local itemId
-        for _, item in pairs(get_item_array(value.item)) do
-            for i=0,20 do
-                local inventoryId = getCached(addon.combatCache, GetInventoryItemID, "player", i)
-                if inventoryId ~= nil then
-                    if isint(item) then
-                        if tonumber(item) == inventoryId then
-                            itemId = inventoryId
-                            break
-                        end
-                    else
-                        local itemName = getCached(addon.longtermCache, GetItemInfo, inventoryId)
-                        if itemName == item then
-                            itemId = inventoryId
-                            break
-                        end
-                    end
-                end
-            end
-            if itemId ~= nil then
-                break
-            end
-        end
-        if itemId == nil then
-            for _, item in pairs(get_item_array(value.item)) do
-                for i=0,4 do
-                    for j=1,getCached(addon.combatCache, GetContainerNumSlots, i) do
-                        local inventoryId = getCached(cache, GetContainerItemID, i, j);
-                        if inventoryId ~= nil then
-                            if isint(item) then
-                                if tonumber(item) == inventoryId then
-                                    itemId = inventoryId
-                                    break
-                                end
-                            else
-                                local itemName = getCached(addon.longtermCache, GetItemInfo, inventoryId)
-                                if item == itemName then
-                                    itemId = inventoryId
-                                    break
-                                end
-                            end
-                        end
-                    end
-                    if itemId ~= nil then
-                        break
-                    end
-                end
-                if itemId ~= nil then
-                    break
-                end
-            end
-        end
+        local itemId = addon:FindFirstItemOfItems(cache, get_item_array(value.item), true)
         local cooldown = 0
         if itemId ~= nil then
             local start, duration = getCached(cache, GetItemCooldown, itemId)

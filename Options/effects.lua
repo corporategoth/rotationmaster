@@ -17,7 +17,7 @@ function addon:create_effect_list(frame)
     group:SetFullHeight(true)
     -- group:SetLayout("Flow")
     group:SetLayout("Table")
-    group:SetUserData("table", { columns = { 35, 100, 150, 1, 40 } })
+    group:SetUserData("table", { columns = { 35, 100, 150, 1, 24 } })
 
     local updateDisabled
 
@@ -194,9 +194,9 @@ function addon:create_effect_list(frame)
 
         row:AddChild(rowgroup)
 
-        local delete = AceGUI:Create("Button")
-        delete:SetWidth(40)
-        delete:SetText("X")
+        local delete = AceGUI:Create("Icon")
+        delete:SetImageSize(24, 24)
+        delete:SetImage("Interface\\Buttons\\UI-Panel-MinimizeButton-Up")
         delete:SetCallback("OnClick", function(widget, ewvent, ...)
             table.remove(effects, k)
             addon:RemoveAllCurrentGlows()

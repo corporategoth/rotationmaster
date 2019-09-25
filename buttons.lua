@@ -18,6 +18,26 @@ local Effects = {}
 
 local math = math
 
+local Highlight = {}
+local HighlightIdx = 1
+local HighlightTimer = nil
+local HighlightTexture = "Interface\\Cooldown\\star4"
+local HighlightAnimationSpeed = 0.1
+local HighlightColors = {
+	{ r = 1.00, g = 0.00, b = 0.00, a = 1 },
+	{ r = 0.75, g = 0.25, b = 0.00, a = 1 },
+	{ r = 0.50, g = 0.50, b = 0.00, a = 1 },
+	{ r = 0.25, g = 0.75, b = 0.00, a = 1 },
+	{ r = 0.00, g = 1.00, b = 0.00, a = 1 },
+	{ r = 0.00, g = 0.75, b = 0.25, a = 1 },
+	{ r = 0.00, g = 0.50, b = 0.50, a = 1 },
+	{ r = 0.00, g = 0.25, b = 0.75, a = 1 },
+	{ r = 0.00, g = 0.00, b = 1.00, a = 1 },
+	{ r = 0.25, g = 0.00, b = 0.75, a = 1 },
+	{ r = 0.50, g = 0.00, b = 0.50, a = 1 },
+	{ r = 0.75, g = 0.00, b = 0.25, a = 1 },
+}
+
 function addon:ApplyCustomGlow(effect, frame, id, color, xoffs, yoffs)
     local c
 	if color ~= nil then
@@ -38,15 +58,19 @@ function addon:StopCustomGlow(frame, id)
 	CustomGlow.ButtonGlow_Stop(frame)
 end
 
-local function UpdateOverlay(frame, effect, color, mags, setp, xoffs, yoffs)
-    frame:ClearAllPoints()
+local function UpdateOverlayRaw(frame, effect, color, mags, setp, xoffs, yoffs)
+	frame:ClearAllPoints()
 	frame:SetPoint("CENTER", frame:GetParent(), setp, xoffs, yoffs)
 	frame:SetWidth(frame:GetParent():GetWidth() * mags)
 	frame:SetHeight(frame:GetParent():GetHeight() * mags)
 	frame.texture:SetVertexColor(color.r, color.g, color.b, color.a)
-	if Effects[effect].texture then
-		frame.texture:SetTexture(Effects[effect].texture)
+	if effect then
+		frame.texture:SetTexture(effect)
 	end
+end
+
+local function UpdateOverlay(frame, effect, color, mags, setp, xoffs, yoffs)
+	UpdateOverlayRaw(frame, Effects[effect].texture, color, mags, setp, xoffs, yoffs)
 end
 
 --- Creates frame overlay over a specific frame, it doesn't need to be a button.
@@ -282,8 +306,7 @@ local function FetchSamyTotemTimers()
 end
 
 local function FetchTotemTimers()
-    local i=1
-    while i<10 do
+    for i=1,10 do
 		local button = _G['XiTimers_Timer' .. i];
 		if not button then
             break
@@ -296,8 +319,7 @@ local function FetchTotemTimers()
 			AddButton(spellid, button)
         end
 
-		local j=1
-    	while j<10 do
+    	for j=1,10 do
 			local button = _G['TT_ActionButton' .. i .. j];
 			if not button then
 				break
@@ -306,9 +328,7 @@ local function FetchTotemTimers()
 			if spellid then
 				AddButton(spellid, button)
             end
-            j = j + 1
 		end
-		i = i + 1
     end
 end
 
@@ -563,5 +583,57 @@ end
 function addon:GlowNextSpell(spellId)
 	self:GlowClear()
 	self:GlowSpell(spellId)
+end
+
+local UpdateHighlight = function()
+	HighlightIdx = HighlightIdx + 1
+	if HighlightIdx > #HighlightColors then
+		HighlightIdx = 1
+	end
+	for _, overlay in pairs(Highlight) do
+		UpdateOverlayRaw(overlay, HighlightTexture, HighlightColors[HighlightIdx], 1.0, "CENTER", 0, 0)
+	end
+end
+
+function addon:EndHighlightSlot()
+	if (HighlightTimer) then
+		addon:CancelTimer(HighlightTimer)
+        HighlightTimer = nil
+	end
+	for _, overlay in pairs(Highlight) do
+        overlay:Hide()
+    end
+    Highlight = {}
+end
+
+function addon:HighlightSlot(slot)
+	addon:EndHighlightSlot()
+	for spellid, buttons in pairs(Spells) do
+		for _, button in pairs(buttons) do
+			local type = button:GetAttribute('type')
+			if type == 'action' then
+				local bslot = button:GetAttribute('action');
+				if not bslot or bslot == 0 then
+					bslot = ActionButton_GetPagedID(button);
+				end
+				if not bslot or bslot == 0 then
+					bslot = ActionButton_CalculateAction(button);
+				end
+
+				if bslot and slot == bslot then
+                    local overlay = CreateOverlay(button, "Highlight")
+                	table.insert(Highlight, overlay)
+					HighlightIdx = 1
+					UpdateOverlayRaw(overlay, HighlightTexture, HighlightColors[HighlightIdx], 1.0, "CENTER", 0, 0)
+                	overlay:Show()
+
+					if not HighlightTimer then
+						HighlightTimer = addon:ScheduleRepeatingTimer(UpdateHighlight, HighlightAnimationSpeed)
+					end
+					break
+				end
+			end
+		end
+	end
 end
 

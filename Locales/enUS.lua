@@ -27,6 +27,7 @@ L["Battle rotation enabled"] = true
 L["Battle rotation disabled"] = true
 L["Current Rotation"] = true
 L["Automatic Switching"] = true
+L["Toggle %s"] = true
 
 L["[Tier: %d, Column: %d]"] = true
 L["Autoswitch rotation list has been updated."] = true
@@ -233,6 +234,7 @@ L["Yell"] = true
 L["Item List"] = true
 L["%s or %d others"] = true
 L["a %s item set item"] = true
+L["Click the icon above to bind to your action bar"] = true
 
 -- from Options/conditional.lua
 

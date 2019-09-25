@@ -390,6 +390,7 @@ local function create_primary_options(frame)
     debug_group:AddChild(live_config_update)
 
     scroll:AddChild(debug_group)
+
     frame:AddChild(scroll)
 
     addon:configure_frame(frame)
