@@ -19,8 +19,6 @@ function addon:create_effect_list(frame)
     group:SetLayout("Table")
     group:SetUserData("table", { columns = { 35, 100, 150, 1, 24 } })
 
-    local updateDisabled
-
     local name2idx = {}
     for k, v in pairs(effects) do
         if v.name ~= nil then
@@ -28,8 +26,10 @@ function addon:create_effect_list(frame)
         end
     end
 
+    local new_type = AceGUI:Create("Dropdown")
+
     local icons = {}
-    for k, v in pairs(effects) do
+    for idx, v in ipairs(effects) do
         local row = group
 
         local icon = AceGUI:Create("Icon")
@@ -73,10 +73,11 @@ function addon:create_effect_list(frame)
         name:DisableButton(v.name == nil or v.name == "" or name2idx[v.name] ~= nil)
         name:SetCallback("OnTextChanged", function(widget, event, val)
             name:DisableButton(val == "" or name2idx[val] ~= nil)
+
         end)
         name:SetCallback("OnEnterPressed", function(widget, event, val)
             v.name = val
-            updateDisabled()
+            new_type:SetDisabled(val == "" and idx == #effects)
         end)
         row:AddChild(name)
 
@@ -91,7 +92,6 @@ function addon:create_effect_list(frame)
                 icon:SetImage(val)
                 v.texture = val
                 addon:RemoveAllCurrentGlows()
-                updateDisabled()
             end)
             rowgroup:AddChild(texture)
         elseif v.type == "pixel" then
@@ -198,7 +198,7 @@ function addon:create_effect_list(frame)
         delete:SetImageSize(24, 24)
         delete:SetImage("Interface\\Buttons\\UI-Panel-MinimizeButton-Up")
         delete:SetCallback("OnClick", function(widget, ewvent, ...)
-            table.remove(effects, k)
+            table.remove(effects, idx)
             addon:RemoveAllCurrentGlows()
             for _, frame in pairs(icons) do
                 addon:StopCustomGlow(frame)
@@ -214,32 +214,43 @@ function addon:create_effect_list(frame)
         return rv
     end
 
-    group:AddChild(spacer(1))
+    local row = group
 
-    local addnew = AceGUI:Create("Button")
-    addnew:SetWidth(100)
-    addnew:SetText(ADD)
-    addnew:SetCallback("OnClick", function(widget, ewvent, ...)
-        table.insert(effects, { type = "texture", name = nil, texture = nil })
+    row:AddChild(spacer(1))
+
+    local name = AceGUI:Create("EditBox")
+
+    new_type:SetLabel(L["Type"])
+    new_type:SetDisabled(effects[#effects].name == nil or effects[#effects].name == "")
+    new_type:SetCallback("OnValueChanged", function(widget, event, val)
+        table.insert(effects, { type = val, name = nil, texture = nil })
         for _, frame in pairs(icons) do
             addon:StopCustomGlow(frame)
         end
         addon:create_effect_list(frame)
     end)
-    addnew:SetUserData("cell", { colspan = 4 })
-    group:AddChild(addnew)
-
-    updateDisabled = function()
-        local tblsz = #effects
-        addnew:SetDisabled(effects[tblsz].name == nil or effects[tblsz].name == "" or
-                (effects[tblsz].type == "texture" and (effects[tblsz].texture == nil or effects[tblsz].texture == "")))
+    new_type.configure = function()
+        new_type:SetList({
+            texture = L["Texture"],
+            pixel = L["Pixel"],
+            autocast = L["Auto Cast"],
+            blizzard = L["Glow"],
+        })
     end
+    row:AddChild(new_type)
 
-    group:AddChild(spacer(1))
-    group:AddChild(spacer(1))
-    group:AddChild(spacer(1))
+    name:SetFullWidth(true)
+    name:SetLabel(NAME)
+    name:SetDisabled(true)
+    row:AddChild(name)
 
-    updateDisabled()
+    row:AddChild(spacer(1))
+
+    local delete = AceGUI:Create("Icon")
+    delete:SetImageSize(24, 24)
+    delete:SetImage("Interface\\Buttons\\UI-Panel-MinimizeButton-Up")
+    delete:SetDisabled(true)
+    row:AddChild(delete)
 
     frame:AddChild(group)
 

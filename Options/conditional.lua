@@ -299,7 +299,7 @@ local function LayoutConditionTab(top, frame, funcs, value, selected, conditions
         end)
         frame:AddChild(oricon)
 
-        local noticon = layoutIcon("Interface\\Icons\\inv_misc_map_01", L["NOT"], selected == "NOT", function(widget)
+        local noticon = layoutIcon("Interface\\PaperDollInfoFrame\\UI-GearManager-LeaveItem-Transparent", L["NOT"], selected == "NOT", function(widget)
             local subvalue
             if selected ~= "NOT" then
                 if value ~= nil and value.type ~= nil then
@@ -510,7 +510,7 @@ local function ActionGroup(parent, value, idx, array)
         actionicon:SetImage("Interface\\Icons\\Spell_ChargeNegative")
         group:SetTitle("OR")
     elseif (value.type == "NOT") then
-        actionicon:SetImage("Interface\\Icons\\inv_misc_map_01")
+        actionicon:SetImage("Interface\\PaperDollInfoFrame\\UI-GearManager-LeaveItem-Transparent")
         group:SetTitle("NOT")
     else
         local icon, description = funcs:describe(value.type)

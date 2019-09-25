@@ -63,7 +63,7 @@ local defaults = {
         bindings = {},
     },
     global = {
-        itemsets = {},
+        itemsets = {}, -- Default item sets below, it's dependent on WoW version
         effects = {
             {
                 type = "texture",
@@ -95,6 +95,31 @@ local defaults = {
         },
     }
 }
+if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
+else
+    defaults.global.itemsets = {
+        ["e626834f-60b1-413f-9c87-8ddeeb4374aa"] = {
+            name = "Conjured Food",
+            items = { 22895, 8076, 8075, 1487, 1114, 1113, 5349, },
+        },
+        ["3b10f7d6-abb2-430c-b153-7189eca75838"] = {
+            name = "Conjured Water",
+            items = { 8079, 8078, 8077, 3772, 2136, 2288, 5350, },
+        },
+        ["6079c534-5f69-430e-b1bd-b487a31dcdd3"] = {
+            name = "Mana Potions",
+            items = { 13444, 13443, 6149, 3827, 3385, 2455, },
+        },
+        ["9294d112-681b-43bc-ac62-5d6bec5c1f7d"] = {
+            name = "Healing Potions",
+            items = { 13446, 3928, 1710, 929, 858, 118, },
+        },
+        ["e66d5cfe-a0f0-4276-aa00-40464eab30df"] = {
+            name = "Bandages",
+            items = { 14530, 14529, 8545, 8544, 6451, 6450, 3531, 3530, 2581, 1251, },
+        }
+    }
+end
 
 local events = {
     -- Conditions that indicate a major combat event that should trigger an immediate
@@ -532,7 +557,7 @@ function addon:rotationValidConditions(rot, spec)
                             itemset = global_itemsets[v.action]
                         end
                         if not itemset or #itemset.items == 0 then
-                            return falsed
+                            return false
                         end
                     else
                         if #v.action == 0 then
@@ -560,7 +585,7 @@ function addon:rotationValidConditions(rot, spec)
                             itemset = global_itemsets[v.action]
                         end
                         if not itemset or #itemset.items == 0 then
-                            return falsed
+                            return false
                         end
                     else
                         if #v.action == 0 then

@@ -774,7 +774,7 @@ local function create_rotation_options(frame, specID, rotid, parent, selected)
             table.insert(cooldowns, {
                 value = "*",
                 text = ADD,
-                icon = "Interface\\Icons\\Spell_ChargePositive"
+                icon = "Interface\\Minimap\\UI-Minimap-ZoomInButton-Up"
             })
 
             if rotation_settings[rotid].rotation ~= nil then
@@ -789,7 +789,7 @@ local function create_rotation_options(frame, specID, rotid, parent, selected)
             table.insert(rotation, {
                 value = "*",
                 text = ADD,
-                icon = "Interface\\Icons\\Spell_ChargePositive"
+                icon = "Interface\\Minimap\\UI-Minimap-ZoomInButton-Up"
             })
         end
 
