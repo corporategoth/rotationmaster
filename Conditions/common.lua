@@ -65,6 +65,15 @@ function addon:Widget_SpellWidget(spec, editbox, value, nametoid, isvalid, updat
         end
         update()
     end)
+    spellIcon:SetCallback("OnEnter", function(widget)
+        if value.spell then
+            GameTooltip:SetOwner(spellIcon.frame, "ANCHOR_BOTTOMRIGHT", 3)
+            GameTooltip:SetHyperlink("spell:" .. value.spell)
+        end
+    end)
+    spellIcon:SetCallback("OnLeave", function(widget)
+        GameTooltip:Hide()
+    end)
     spell_group:AddChild(spellIcon)
 
     if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
@@ -143,6 +152,15 @@ function addon:Widget_SpellNameWidget(spec, editbox, value, isvalid, update)
         end
         update()
     end)
+    spellIcon:SetCallback("OnEnter", function(widget)
+        if value.spell then
+            GameTooltip:SetOwner(spellIcon.frame, "ANCHOR_BOTTOMRIGHT", 3)
+            GameTooltip:SetHyperlink("spell:" .. value.spell)
+        end
+    end)
+    spellIcon:SetCallback("OnLeave", function(widget)
+        GameTooltip:Hide()
+    end)
     spell_group:AddChild(spellIcon)
 
     spell:SetFullWidth(true)
@@ -205,6 +223,21 @@ function addon:Widget_ItemWidget(top, value, update)
     end
     update_action_image()
     itemIcon:SetImageSize(36, 36)
+    itemIcon:SetCallback("OnEnter", function(widget)
+        local itemid
+        if type(value.item) == "string" then
+            itemid = addon:FindFirstItemOfItemSet({}, value.item, true) or addon:FindFirstItemInItemSet(value.item)
+        else
+            itemid = addon:FindFirstItemOfItems({}, value.item, true) or addon:FindFirstItemInItems(value.item)
+        end
+        if itemid then
+            GameTooltip:SetOwner(itemIcon.frame, "ANCHOR_BOTTOMRIGHT", 3)
+            GameTooltip:SetHyperlink("item:" .. itemid)
+        end
+    end)
+    itemIcon:SetCallback("OnLeave", function(widget)
+        GameTooltip:Hide()
+    end)
     item_group:AddChild(itemIcon)
 
     local edit_button = AceGUI:Create("Button")

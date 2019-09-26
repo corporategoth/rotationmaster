@@ -460,6 +460,15 @@ local function add_action_group(specID, rotid, rot, callback, refresh)
                 callback()
             end
         end)
+        action_icon:SetCallback("OnEnter", function(widget)
+            if rot.action then
+                GameTooltip:SetOwner(action_icon.frame, "ANCHOR_BOTTOMRIGHT", 3)
+                GameTooltip:SetHyperlink("spell:" .. rot.action)
+            end
+        end)
+        action_icon:SetCallback("OnLeave", function(widget)
+            GameTooltip:Hide()
+        end)
         action_group:AddChild(action_icon)
 
         if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
@@ -534,6 +543,15 @@ local function add_action_group(specID, rotid, rot, callback, refresh)
 
             callback()
         end)
+        action_icon:SetCallback("OnEnter", function(widget)
+            if rot.action then
+                GameTooltip:SetOwner(action_icon.frame, "ANCHOR_BOTTOMRIGHT", 3)
+                GameTooltip:SetHyperlink("spell:" .. rot.action)
+            end
+        end)
+        action_icon:SetCallback("OnLeave", function(widget)
+            GameTooltip:Hide()
+        end)
         action_group:AddChild(action_icon)
 
         if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
@@ -603,6 +621,21 @@ local function add_action_group(specID, rotid, rot, callback, refresh)
         end
         update_action_image()
         action_icon:SetImageSize(36, 36)
+        action_icon:SetCallback("OnEnter", function(widget)
+            local itemid
+            if type(rot.action) == "string" then
+                itemid = addon:FindFirstItemOfItemSet({}, rot.action, true) or addon:FindFirstItemInItemSet(rot.action)
+            else
+                itemid = addon:FindFirstItemOfItems({}, rot.action, true) or addon:FindFirstItemInItems(rot.action)
+            end
+            if itemid then
+                GameTooltip:SetOwner(action_icon.frame, "ANCHOR_BOTTOMRIGHT", 3)
+                GameTooltip:SetHyperlink("item:" .. rot.action)
+            end
+        end)
+        action_icon:SetCallback("OnLeave", function(widget)
+            GameTooltip:Hide()
+        end)
         action_group:AddChild(action_icon)
 
         local edit_button = AceGUI:Create("Button")

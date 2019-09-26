@@ -129,6 +129,85 @@ function addon:FindFirstItemOfItemSet(cache, id, equipped)
     return nil
 end
 
+local function CondIsItem(cond, id)
+    if cond then
+        if cond.type == "NOT" then
+            return CondIsItem(cond.value, id)
+        elseif cond.type == "AND" or cond.type == "OR" then
+            for _, v in pairs(cond.value) do
+                if CondIsItem(v, id) then
+                    return true
+                end
+            end
+        elseif cond.type == "EQUIPPED" or cond.type == "CARRYING" or cond.type == "ITEM" or cond.type == "ITEM_COOLDOWN" then
+            if type(cond.item) == "string" and cond.item == id then
+                return true
+            end
+        end
+    end
+    return false
+end
+
+function addon:ItemSetInUse(id)
+    local bindings = self.db.char.bindings
+    local rotations = self.db.char.rotations
+
+    if bindings[id] ~= nil then
+        return true
+    end
+
+    for _, rots in pairs(rotations) do
+        for _, rot in pairs(rots) do
+            if rot.cooldowns then
+                for _, cond in pairs(rot.cooldowns) do
+                    if cond.type == "item" and type(cond.action) == "string" and cond.action == id then
+                        return true
+                    end
+                    if CondIsItem(cond.conditions, id) then
+                        return true
+                    end
+                end
+            end
+            if rot.rotation then
+                for _, cond in pairs(rot.rotation) do
+                    if cond.type == "item" and type(cond.action) == "string" and cond.action == id then
+                        return true
+                    end
+                    if CondIsItem(cond.conditions, id) then
+                        return true
+                    end
+                end
+            end
+        end
+    end
+    return false
+end
+
+local function HandleDelete(id, update)
+    local bindings = addon.db.char.bindings
+    local itemsets = addon.db.char.itemsets
+    local global_itemsets = addon.db.global.itemsets
+
+    StaticPopupDialogs["ROTATIONMASTER_DELETE_ITEMSET"] = {
+        text = L["This item set is in use, are you sure you wish to delete it?"],
+        button1 = ACCEPT,
+        button2 = CANCEL,
+        OnAccept = function(self)
+            bindings[id] = nil
+            itemsets[id] = nil
+            global_itemsets[id] = nil
+            if update then
+                update()
+            end
+        end,
+        showAlert = 1,
+        timeout = 0,
+        whileDead = 1,
+        hideOnEscape = 1
+    }
+    StaticPopup_Show("ROTATIONMASTER_DELETE_ITEMSET")
+end
+
 local function ImportExport(items, update)
     local frame = AceGUI:Create("Window")
     frame:SetTitle(L["Import/Export Item List"])
@@ -230,6 +309,13 @@ local function create_item_list(frame, items, update)
                     update()
                     create_item_list(frame, items, update)
                 end
+            end)
+            icon:SetCallback("OnEnter", function(widget)
+                GameTooltip:SetOwner(icon.frame, "ANCHOR_BOTTOMRIGHT", 3)
+                GameTooltip:SetHyperlink("item:" .. items[idx])
+            end)
+            icon:SetCallback("OnLeave", function(widget)
+                GameTooltip:Hide()
             end)
             row:AddChild(icon)
 
@@ -510,6 +596,15 @@ local function item_list(frame, selected, itemset, update)
             PickupItem(itemid)
         end
     end)
+    icon:SetCallback("OnEnter", function(widget)
+        if itemid then
+            GameTooltip:SetOwner(icon.frame, "ANCHOR_BOTTOMRIGHT", 3)
+            GameTooltip:SetHyperlink("item:" .. itemid)
+        end
+    end)
+    icon:SetCallback("OnLeave", function(widget)
+        GameTooltip:Hide()
+    end)
     group:AddChild(icon)
 
     name:SetLabel(NAME)
@@ -567,11 +662,14 @@ local function item_list(frame, selected, itemset, update)
     delete:SetText(DELETE)
     delete:SetDisabled(itemset == nil)
     delete:SetCallback("OnClick", function(widget, event)
-        -- TODO: Warn if in use!
-        bindings[selected] = nil
-        itemsets[selected] = nil
-        global_itemsets[selected] = nil
-        update()
+        if addon:ItemSetInUse(selected) then
+            HandleDelete(selected, update)
+        else
+            bindings[selected] = nil
+            itemsets[selected] = nil
+            global_itemsets[selected] = nil
+            update()
+        end
     end)
     group:AddChild(delete)
 
@@ -592,7 +690,10 @@ local function item_list(frame, selected, itemset, update)
     scrollwin:SetLayout("Table")
     scrollwin:SetUserData("table", { columns = { 44, 1, 24, 24, 24, 24, 24 } })
     frame:AddChild(scrollwin)
-    create_item_list(scrollwin, itemset and itemset.items or nil, update)
+    create_item_list(scrollwin, itemset and itemset.items or nil, function()
+        update_itemid()
+        update()
+    end)
 
     addon:configure_frame(frame)
     frame:ResumeLayout()
