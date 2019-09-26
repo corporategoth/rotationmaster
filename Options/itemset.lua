@@ -294,15 +294,11 @@ local function create_item_list(frame, items, update)
 
             icon:SetWidth(44)
             icon:SetHeight(44)
-            if item then
-                icon:SetText(GetItemInfoInstant(item))
-            end
             icon.text:Hide()
             icon:SetCallback("OnEnterPressed", function(widget, event, v)
                 if v then
                     items[idx] = v
-                    icon:SetText(v)
-                    name:SetText(v and GetItemInfo(v) or nil)
+                    addon:UpdateItem_Name_ID(v, name, icon)
                     update()
                 else
                     table.remove(items, idx)
@@ -321,9 +317,6 @@ local function create_item_list(frame, items, update)
 
             name:SetFullWidth(true)
             name:SetLabel(L["Item"])
-            if item then
-                name:SetText(GetItemInfo(item) or item)
-            end
             name:SetCallback("OnEnterPressed", function(widget, event, v)
                 if v == "" then
                     table.remove(items, idx)
@@ -332,12 +325,12 @@ local function create_item_list(frame, items, update)
                 else
                     local itemid = GetItemInfoInstant(v)
                     items[idx] = itemid or v
-                    icon:SetText(itemid)
-                    name:SetText(itemid and GetItemInfo(itemid) or v)
+                    addon:UpdateItem_Name_ID(v, name, icon)
                     update()
                 end
             end)
             row:AddChild(name)
+            addon:UpdateItem_Name_ID(item, name, icon)
 
             local angle = math.rad(180)
             local cos, sin = math.cos(angle), math.sin(angle)
@@ -580,9 +573,7 @@ local function item_list(frame, selected, itemset, update)
             if itemid == nil and #itemset.items > 0 then
                 itemid = addon:FindFirstItemInItems(itemset.items)
             end
-            if itemid then
-                icon:SetImage(select(5, GetItemInfoInstant(itemid)))
-            end
+            addon:UpdateItem_ID_Image(itemid, nil, icon)
             addon:UpdateBoundButton(selected)
         end
         addon.itemSetCallback(selected)

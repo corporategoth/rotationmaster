@@ -122,6 +122,20 @@ if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
         items = { 158382, 158381, 133942, 133940, 111603, 72986, 72985, 53051, 53050, 53049, 34722, 34721,
                   21991, 21990, 14530, 14529, 8545, 8544, 6451, 6450, 3531, 3530, 2581, 1251, },
     }
+    defaults.global.itemsets["fed2659d-cb7b-43e1-8f53-6dda0391b8c6"] = {
+        name = "Healthstones",
+        items = {
+            "Legion Healthstone",
+            "Fel Healthstone",
+            "Demonic Healthstone",
+            "Master Healthstone",
+            "Major Healthstone",
+            "Greater Healthstone",
+            "Healthstone",
+            "Lesser Healthstone",
+            "Minor Healthstone",
+        },
+    }
 else
     defaults.global.itemsets["6079c534-5f69-430e-b1bd-b487a31dcdd3"] = {
         name = "Mana Potions",
@@ -134,6 +148,16 @@ else
     defaults.global.itemsets["e66d5cfe-a0f0-4276-aa00-40464eab30df"] = {
         name = "Bandages",
         items = { 14530, 14529, 8545, 8544, 6451, 6450, 3531, 3530, 2581, 1251, },
+    }
+    defaults.global.itemsets["fed2659d-cb7b-43e1-8f53-6dda0391b8c6"] = {
+        name = "Healthstones",
+        items = {
+            "Major Healthstone",
+            "Greater Healthstone",
+            "Healthstone",
+            "Lesser Healthstone",
+            "Minor Healthstone",
+        },
     }
 end
 

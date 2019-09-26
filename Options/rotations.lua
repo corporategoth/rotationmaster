@@ -605,18 +605,10 @@ local function add_action_group(specID, rotid, rot, callback, refresh)
         local update_action_image = function()
             if type(rot.action) == "string" then
                 local itemid = addon:FindFirstItemOfItemSet({}, rot.action, true) or addon:FindFirstItemInItemSet(rot.action)
-                if itemid then
-                    action_icon:SetImage(select(5, GetItemInfoInstant(itemid)))
-                else
-                    action_icon:SetImage(nil)
-                end
+                addon:UpdateItem_ID_Image(itemid, nil, action_icon)
             else
                 local itemid = addon:FindFirstItemOfItems({}, rot.action, true) or addon:FindFirstItemInItems(rot.action)
-                if itemid then
-                    action_icon:SetImage(select(5, GetItemInfoInstant(itemid)))
-                else
-                    action_icon:SetImage(nil)
-                end
+                addon:UpdateItem_ID_Image(itemid, nil, action_icon)
             end
         end
         update_action_image()

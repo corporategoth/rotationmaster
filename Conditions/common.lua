@@ -204,18 +204,10 @@ function addon:Widget_ItemWidget(top, value, update)
         if value.item ~= nil then
             if type(value.item) == "string" then
                 local itemid = addon:FindFirstItemOfItemSet({}, value.item, true) or addon:FindFirstItemInItemSet(value.item)
-                if itemid then
-                    itemIcon:SetImage(select(5, GetItemInfoInstant(itemid)))
-                else
-                    itemIcon:SetImage(nil)
-                end
+                addon:UpdateItem_ID_Image(itemid, nil, itemIcon)
             elseif value.item ~= nil and #value.item > 0 then
                 local itemid = addon:FindFirstItemOfItems({}, value.item, true) or addon:FindFirstItemInItems(value.item)
-                if itemid then
-                    itemIcon:SetImage(select(5, GetItemInfoInstant(itemid)))
-                else
-                    itemIcon:SetImage(nil)
-                end
+                addon:UpdateItem_ID_Image(itemid, nil, itemIcon)
             end
         else
             itemIcon:SetImage(nil)

@@ -385,3 +385,139 @@ function addon:configure_frame(obj)
     end
 end
 
+function addon:UpdateItem_ID_ID(item, text, icon, attempt)
+    if not item then
+        if text then
+            text:SetText(nil)
+        end
+        if icon then
+            icon:SetText(nil)
+        end
+        return
+    end
+
+    if not attempt then
+        attempt = 1
+        if text then
+            text:SetText(item)
+        end
+        if icon then
+            icon:SetText(nil)
+        end
+    end
+
+    local itemid = GetItemInfoInstant(item)
+    if itemid then
+        if text then
+            text:SetText(itemid)
+        end
+        if icon then
+            icon:SetText(itemid)
+        end
+    elseif attempt < 4 then
+        self:ScheduleTimer("UpdateItem_ID_ID", 0.5, item, text, icon, attempt + 1)
+    end
+end
+
+function addon:UpdateItem_ID_Image(item, text, icon, attempt)
+    if not item then
+        if text then
+            text:SetText(nil)
+        end
+        if icon then
+            icon:SetImage(nil)
+        end
+        return
+    end
+
+    if not attempt then
+        attempt = 1
+        if text then
+            text:SetText(item)
+        end
+        if icon then
+            icon:SetImage(nil)
+        end
+    end
+
+    local itemid, _, _, _, texture = GetItemInfoInstant(item)
+    if itemid then
+        if text then
+            text:SetText(itemid)
+        end
+        if icon then
+            icon:SetImage(texture)
+        end
+    elseif attempt < 4 then
+        self:ScheduleTimer("UpdateItem_ID_Image", 0.5, item, text, icon, attempt + 1)
+    end
+end
+
+function addon:UpdateItem_Name_ID(item, text, icon, attempt)
+    if not item then
+        if text then
+            text:SetText(nil)
+        end
+        if icon then
+            icon:SetText(nil)
+        end
+        return
+    end
+
+    if not attempt then
+        attempt = 1
+        if text then
+            text:SetText(item)
+        end
+        if icon then
+            icon:SetText(nil)
+        end
+    end
+
+    local name = GetItemInfo(item)
+    local itemid = GetItemInfoInstant(item)
+    if itemid and name then
+        if text then
+            text:SetText(name)
+        end
+        if icon then
+            icon:SetText(itemid)
+        end
+    elseif attempt < 4 then
+        self:ScheduleTimer("UpdateItem_Name_ID", 0.5, item, text, icon, attempt + 1)
+    end
+end
+
+function addon:UpdateItem_Name_Image(item, text, icon, attempt)
+    if not item then
+        if text then
+            text:SetText(nil)
+        end
+        if icon then
+            icon:SetImage(nil)
+        end
+        return
+    end
+
+    if not attempt then
+        attempt = 1
+        if text then
+            text:SetText(item)
+        end
+        if icon then
+            icon:SetImage(nil)
+        end
+    end
+
+    local name, _, _, _, _, _, _, _, _, texture = GetItemInfo(item)
+    if name then
+        if text then
+            text:SetText(name)
+        end
+        if icon then
+            icon:SetImage(texture)
+        end
+    elseif attempt < 4 then
+        self:ScheduleTimer("UpdateItem_Name_Image", 0.5, item, text, icon, attempt + 1)
+    end
+end
