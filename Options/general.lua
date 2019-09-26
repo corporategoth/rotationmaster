@@ -997,9 +997,9 @@ function module:SetupOptions()
     InterfaceOptions_AddCategory(effects.frame)
 
     local itemsets = AceGUI:Create("BlizOptionsGroup")
-    itemsets:SetName(L["Item Lists"], addon.pretty_name)
+    itemsets:SetName(L["Item Sets"], addon.pretty_name)
     itemsets:SetLayout("Fill")
-    -- itemsets:SetTitle(addon.pretty_name .. " - " .. L["Item Lists"])
+    -- itemsets:SetTitle(addon.pretty_name .. " - " .. L["Item Sets"])
     addon:create_itemset_list(itemsets)
     InterfaceOptions_AddCategory(itemsets.frame)
 

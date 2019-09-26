@@ -244,7 +244,7 @@ function addon:Widget_ItemWidget(top, value, update)
 
     local item = AceGUI:Create("Dropdown")
     item:SetFullWidth(true)
-    item:SetLabel(L["Item List"])
+    item:SetLabel(L["Item Set"])
     item:SetCallback("OnValueChanged", function(widget, event, val)
         if val ~= nil then
             if val == "" then

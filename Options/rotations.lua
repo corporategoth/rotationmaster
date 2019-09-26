@@ -642,7 +642,7 @@ local function add_action_group(specID, rotid, rot, callback, refresh)
 
         local action = AceGUI:Create("Dropdown")
         action:SetFullWidth(true)
-        action:SetLabel(L["Item List"])
+        action:SetLabel(L["Item Set"])
         action:SetCallback("OnValueChanged", function(widget, event, val)
             if val ~= nil then
                 if val == "" then
