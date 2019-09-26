@@ -777,7 +777,7 @@ function addon:create_itemset_list(frame)
                 if selects[selected] then
                     select:SetGroup(selected)
                 else
-                    select:SetGroup(nil)
+                    select:SetGroup("")
                 end
             end)
         end
