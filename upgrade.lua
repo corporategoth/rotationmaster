@@ -52,27 +52,31 @@ local function upgradeConditionItemsToItemSets(cond)
     end
 end
 
+function addon:UpgradeRotationItemsToItemSets(rot)
+    if rot.cooldowns then
+        for k, cond in pairs(rot.cooldowns) do
+            if cond.type == "item" and (type(cond.action) == "number" or (type(cond.action) == "string" and
+                    not string.match(cond.action, "%x%x%x%x%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%x%x%x%x%x%x%x%x"))) then
+                cond.action = { cond.action }
+            end
+            upgradeConditionItemsToItemSets(cond.conditions)
+        end
+    end
+    if rot.rotation then
+        for k, cond in pairs(rot.rotation) do
+            if cond.type == "item" and (type(cond.action) == "number" or (type(cond.action) == "string" and
+                    not string.match(cond.action, "%x%x%x%x%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%x%x%x%x%x%x%x%x"))) then
+                cond.action = { cond.action }
+            end
+            upgradeConditionItemsToItemSets(cond.conditions)
+        end
+    end
+end
+
 local function upgradeItemsToItemSets()
     for _,rots in pairs(addon.db.char.rotations) do
         for _, rot in pairs(rots) do
-            if rot.cooldowns then
-                for k, cond in pairs(rot.cooldowns) do
-                    if cond.type == "item" and (type(cond.action) == "number" or (type(cond.action) == "string" and
-                            not string.match(cond.action, "%x%x%x%x%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%x%x%x%x%x%x%x%x"))) then
-                        cond.action = { cond.action }
-                    end
-                    upgradeConditionItemsToItemSets(cond.conditions)
-                end
-            end
-            if rot.rotation then
-                for k, cond in pairs(rot.rotation) do
-                    if cond.type == "item" and (type(cond.action) == "number" or (type(cond.action) == "string" and
-                            not string.match(cond.action, "%x%x%x%x%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%x%x%x%x%x%x%x%x"))) then
-                        cond.action = { cond.action }
-                    end
-                    upgradeConditionItemsToItemSets(cond.conditions)
-                end
-            end
+            addon:UpgradeRotationItemsToItemSets(rot)
         end
     end
 end

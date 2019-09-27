@@ -498,8 +498,9 @@ local function ImportExport(spec, rotation, parent)
     import:SetText(L["Import"])
     import:SetDisabled(true)
     import:SetCallback("OnClick", function(wiget, event)
-        ok, res = AceSerializer:Deserialize(libc:Decompress(base64dec(editbox:GetText())))
+        local ok, res = AceSerializer:Deserialize(libc:Decompress(base64dec(editbox:GetText())))
         if ok then
+            addon:UpgradeRotationItemsToItemSets(res)
             rotation_settings[spec][rotation] = res
             if rotation == DEFAULT then
                 rotation_settings[spec][rotation].name = nil

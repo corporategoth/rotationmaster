@@ -239,7 +239,7 @@ local function getCachedInternal(cache, recordnil, func, ...)
         return nil
     end
 
-    if #result ~= 1 or result[1] ~= nil or recordnil then
+    if #result > 0 or recordnil then
         cache[func][hash] = result
     end
     return unpack(result)
@@ -483,8 +483,11 @@ function addon:UpdateItem_Name_ID(item, text, icon, attempt)
         end
     end
 
-    local name = self.getRetryCached(addon.longtermCache, GetItemInfo, item)
     local itemid = self.getRetryCached(addon.longtermCache, GetItemInfoInstant, item)
+    local name
+    if itemid then
+        name = self.getRetryCached(addon.longtermCache, GetItemInfo, itemid)
+    end
     if itemid and name then
         if text then
             text:SetText(name)
@@ -518,7 +521,12 @@ function addon:UpdateItem_Name_Image(item, text, icon, attempt)
         end
     end
 
-    local name, _, _, _, _, _, _, _, _, texture = self.getRetryCached(addon.longtermCache, GetItemInfo, item)
+    local itemid = self.getRetryCached(addon.longtermCache, GetItemInfoInstant, item)
+    local name, texture, _
+    if itemid then
+        name = self.getRetryCached(addon.longtermCache, GetItemInfo, itemid)
+        texture = select(10, self.getRetryCached(addon.longtermCache, GetItemInfo, itemid))
+    end
     if name then
         if text then
             text:SetText(name)
