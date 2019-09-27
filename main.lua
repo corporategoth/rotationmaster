@@ -288,58 +288,7 @@ end
 function addon:OnInitialize()
     self.db = LibStub("AceDB-3.0"):New("RotationMasterDB", defaults, true)
 
-    if self.db.global.textures ~= nil then
-        self.db.global.effects = self.db.global.textures
-        for _, ent in pairs(self.db.global.effects) do
-            ent["type"] = "texture"
-        end
-        self.db.global.textures = nil
-    end
-    if self.db.profile.overlay ~= nil then
-        self.db.profile.effect = self.db.profile.overlay
-        self.db.profile.overlay = nil
-    end
-
-    if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
-        if self.db.profile.rotations ~= nil then
-            local classID = select(3, UnitClass("player"))
-            for j = 1, GetNumSpecializationsForClassID(classID) do
-                local specID = GetSpecializationInfoForClassID(classID, j)
-                if self.db.profile.rotations[specID] ~= nil then
-                    self.db.char.rotations[specID] = self.db.profile.rotations[specID]
-                    self.db.profile.rotations[specID] = nil
-                end
-            end
-        end
-    else
-        if self.db.profile.rotations ~= nil and self.db.profile.rotations[0] ~= nil then
-            self.db.char.rotations[0] = self.db.profile.rotations[0]
-            self.db.profile.rotations[0] = nil
-        end
-    end
-
-    for spec,rots in pairs(self.db.char.rotations) do
-        for id, rot in pairs(rots) do
-            if rot.cooldowns then
-                for k, cond in pairs(rot.cooldowns) do
-                    if cond.type == "item" and type(cond.action) == "string" and
-                            not string.match(cond.action, "%x%x%x%x%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%x%x%x%x%x%x%x%x") then
-                        cond.action = { cond.action }
-                    end
-                    addon:convertCondition(cond.conditions)
-                end
-            end
-            if rot.rotation then
-                for k, cond in pairs(rot.rotation) do
-                    if cond.type == "item" and type(cond.action) == "string" and
-                            not string.match(cond.action, "%x%x%x%x%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%x%x%x%x%x%x%x%x") then
-                        cond.action = { cond.action }
-                    end
-                    addon:convertCondition(cond.conditions)
-                end
-            end
-        end
-    end
+    self:upgrade()
 
     AceConsole:RegisterChatCommand("rm", function(str)
         addon:HandleCommand(str)

@@ -622,7 +622,7 @@ local function add_action_group(specID, rotid, rot, callback, refresh)
             end
             if itemid then
                 GameTooltip:SetOwner(action_icon.frame, "ANCHOR_BOTTOMRIGHT", 3)
-                GameTooltip:SetHyperlink("item:" .. rot.action)
+                GameTooltip:SetHyperlink("item:" .. itemid)
             end
         end)
         action_icon:SetCallback("OnLeave", function(widget)

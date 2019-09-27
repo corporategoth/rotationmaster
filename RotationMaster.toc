@@ -1,6 +1,6 @@
 ## Interface: 80200
 ## Title: Rotation Master
-## Version: 1.2.0
+## Version: 1.2.1
 ## Author: PreZ
 ## Notes: I wanted to save the world, but God wouldn't give me the source code.
 ## X-Email: prez@goth.net
@@ -22,6 +22,7 @@ profiler.lua
 main.lua
 utils.lua
 buttons.lua
+upgrade.lua
 Options/general.lua
 Options/effects.lua
 Options/itemset.lua

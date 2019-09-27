@@ -785,21 +785,3 @@ function addon:widgetSwitchCondition(parent, spec, value)
         switchConditions[value.type].widget(parent, spec, value)
     end
 end
-
-function addon:convertCondition(cond)
-    if cond ~= nil and cond.type ~= nil then
-        if cond.type == "NOT" then
-            addon:convertCondition(cond.value)
-        elseif cond.type == "AND" or cond.type == "OR" then
-            for _, v in pairs(cond.value) do
-                addon:convertCondition(v)
-            end
-        elseif cond.type == "EQUIPPED" or cond.type == "CARRYING" or
-                cond.type == "ITEM" or cond.type == "ITEM_COOLDOWN" then
-            if type(cond.item) == "string" and
-                    not string.match(cond.item, "%x%x%x%x%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%x%x%x%x%x%x%x%x") then
-                cond.item = { cond.item }
-            end
-        end
-    end
-end

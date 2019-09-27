@@ -206,7 +206,7 @@ end
 local cacheHits = 0
 local cacheMisses = 0
 
-addon.getCached = function(cache, func, ...)
+local function getCachedInternal(cache, recordnil, func, ...)
     if func == nil then
         return
     end
@@ -219,7 +219,7 @@ addon.getCached = function(cache, func, ...)
         cache[func] = {}
     end
 
-    hash = libc:fcs16init()
+    local hash = libc:fcs16init()
     for i=1,#args do
         hash = libc:fcs16update(hash, tostring(args[i]))
     end
@@ -228,6 +228,9 @@ addon.getCached = function(cache, func, ...)
         cacheHits = cacheHits + 1
         return unpack(cache[func][hash])
     end
+
+    cacheMisses = cacheMisses + 1
+    local result
     if (type(func) == "function") then
         result = { func(...) }
     elseif type(func) == "string" then
@@ -236,9 +239,18 @@ addon.getCached = function(cache, func, ...)
         return nil
     end
 
-    cacheMisses = cacheMisses + 1
-    cache[func][hash] = result
+    if #result ~= 1 or result[1] ~= nil or recordnil then
+        cache[func][hash] = result
+    end
     return unpack(result)
+end
+
+addon.getCached = function(cache, func, ...)
+    return getCachedInternal(cache, true, func, ...)
+end
+
+addon.getRetryCached = function(cache, func, ...)
+    return getCachedInternal(cache, false, func, ...)
 end
 
 function addon:ReportCacheStats()
@@ -261,9 +273,6 @@ addon.isSpellOnSpec = function(spec, spellid)
     end
     print("NOT FOUND!")
     return false
-end
-
-addon.updateIconOnDemands = function(frame, name)
 end
 
 function addon:verbose(message, ...)
@@ -406,7 +415,7 @@ function addon:UpdateItem_ID_ID(item, text, icon, attempt)
         end
     end
 
-    local itemid = GetItemInfoInstant(item)
+    local itemid = self.getRetryCached(addon.longtermCache, GetItemInfoInstant, item)
     if itemid then
         if text then
             text:SetText(itemid)
@@ -440,7 +449,7 @@ function addon:UpdateItem_ID_Image(item, text, icon, attempt)
         end
     end
 
-    local itemid, _, _, _, texture = GetItemInfoInstant(item)
+    local itemid, _, _, _, texture = self.getRetryCached(addon.longtermCache, GetItemInfoInstant, item)
     if itemid then
         if text then
             text:SetText(itemid)
@@ -474,8 +483,8 @@ function addon:UpdateItem_Name_ID(item, text, icon, attempt)
         end
     end
 
-    local name = GetItemInfo(item)
-    local itemid = GetItemInfoInstant(item)
+    local name = self.getRetryCached(addon.longtermCache, GetItemInfo, item)
+    local itemid = self.getRetryCached(addon.longtermCache, GetItemInfoInstant, item)
     if itemid and name then
         if text then
             text:SetText(name)
@@ -509,7 +518,7 @@ function addon:UpdateItem_Name_Image(item, text, icon, attempt)
         end
     end
 
-    local name, _, _, _, _, _, _, _, _, texture = GetItemInfo(item)
+    local name, _, _, _, _, _, _, _, _, texture = self.getRetryCached(addon.longtermCache, GetItemInfo, item)
     if name then
         if text then
             text:SetText(name)

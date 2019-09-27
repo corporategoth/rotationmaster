@@ -7,8 +7,8 @@ local tonumber = tonumber
 local operators = addon.operators
 
 -- From utils
-local compare, compareString, nullable, isin, getCached, round, isint =
-    addon.compare, addon.compareString, addon.nullable, addon.isin, addon.getCached, addon.round, addon.isint
+local compare, compareString, nullable, isin, getCached, getRetryCached, round, isint =
+    addon.compare, addon.compareString, addon.nullable, addon.isin, addon.getCached, addon.getRetryCached, addon.round, addon.isint
 
 local function get_item_array(items)
     local itemsets = addon.db.char.itemsets
@@ -42,7 +42,7 @@ local function get_item_desc(items)
             return string.format(L["a %s item set item"], color.CYAN .. global_itemsets[items].name .. color.RESET)
         end
     elseif items and #items > 0 then
-        local link = select(2, GetItemInfo(items[1])) or items[1]
+        local link = select(2, getRetryCached(addon.longtermCache, GetItemInfo, items[1])) or items[1]
         if #items > 1 then
             return string.format(L["%s or %d others"], link, #items-1)
         else
@@ -100,7 +100,7 @@ addon:RegisterCondition(L["Spells / Items"], "CARRYING", {
                                 count = count + qty
                             end
                         else
-                            local itemName = getCached(addon.longtermCache, GetItemInfo, itemId)
+                            local itemName = getRetryCached(addon.longtermCache, GetItemInfo, itemId)
                             if item == itemName then
                                 count = count + qty
                             end
@@ -143,7 +143,7 @@ addon:RegisterCondition(L["Spells / Items"], "ITEM", {
     evaluate = function(value, cache, evalStart) -- Cooldown until the spell is available
         local itemId = addon:FindFirstItemOfItems(cache, get_item_array(value.item), true)
         if itemId ~= nil then
-            local minlevel = select(5, getCached(addon.longtermCache, GetItemInfo, itemId))
+            local minlevel = select(5, getRetryCached(addon.longtermCache, GetItemInfo, itemId))
             -- Can't use it as we are too low level!
             if minlevel > getCached(cache, UnitLevel, "player") then
                 return false

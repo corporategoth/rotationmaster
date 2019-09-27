@@ -6,7 +6,8 @@ local AceGUI = LibStub("AceGUI-3.0")
 local SpellData = LibStub("AceGUI-3.0-SpellLoader")
 
 local pairs, color, tonumber = pairs, color, tonumber
-local HideOnEscape, cleanArray, getCached, isint = addon.HideOnEscape, addon.cleanArray, addon.getCached, addon.isint
+local HideOnEscape, cleanArray, getCached, getRetryCached, isint =
+    addon.HideOnEscape, addon.cleanArray, addon.getCached, addon.getRetryCached, addon.isint
 
 local function spacer(width)
     local rv = AceGUI:Create("Label")
@@ -19,9 +20,13 @@ function addon:FindFirstItemInItems(items)
         return nil
     end
     for k,v in pairs(items) do
-        local itemid = getCached(addon.longtermCache, GetItemInfoInstant, v)
-        if itemid then
-            return itemid
+        if type(v) == "number" then
+            return v -- Assume it's an item ID
+        else
+            local itemid = getRetryCached(addon.longtermCache, GetItemInfoInstant, v)
+            if itemid then
+                return itemid
+            end
         end
     end
     return nil
@@ -45,15 +50,15 @@ function addon:FindItemInItems(items, item)
     end
     if isint(item) then
         for k,v in pairs(items) do
-            if getCached(addon.longtermCache, GetItemInfoInstant, v) == tonumber(item) then
+            if getRetryCached(addon.longtermCache, GetItemInfoInstant, v) == tonumber(item) then
                 return tonumber(item)
             end
         end
     else
         for k,v in pairs(items) do
-            local name, link = getCached(addon.longtermCache, GetItemInfo, v)
+            local name, link = getRetryCached(addon.longtermCache, GetItemInfo, v)
             if name == item then
-                return select(1, getCached(addon.longtermCache, GetItemInfoInstant, link))
+                return select(1, getRetryCached(addon.longtermCache, GetItemInfoInstant, link))
             end
         end
     end
@@ -86,7 +91,7 @@ function addon:FindFirstItemOfItems(cache, items, equipped)
                             return inventoryId
                         end
                     else
-                        local itemName = getCached(addon.longtermCache, GetItemInfo, inventoryId)
+                        local itemName = getRetryCached(addon.longtermCache, GetItemInfo, inventoryId)
                         if itemName == item then
                             return inventoryId
                         end
@@ -105,7 +110,7 @@ function addon:FindFirstItemOfItems(cache, items, equipped)
                             return inventoryId
                         end
                     else
-                        local itemName = getCached(addon.longtermCache, GetItemInfo, inventoryId)
+                        local itemName = getRetryCached(addon.longtermCache, GetItemInfo, inventoryId)
                         if item == itemName then
                             return inventoryId
                         end
@@ -307,8 +312,11 @@ local function create_item_list(frame, items, update)
                 end
             end)
             icon:SetCallback("OnEnter", function(widget)
-                GameTooltip:SetOwner(icon.frame, "ANCHOR_BOTTOMRIGHT", 3)
-                GameTooltip:SetHyperlink("item:" .. items[idx])
+                local itemid = getRetryCached(addon.longtermCache, GetItemInfoInstant, items[idx])
+                if itemid then
+                    GameTooltip:SetOwner(icon.frame, "ANCHOR_BOTTOMRIGHT", 3)
+                    GameTooltip:SetHyperlink("item:" .. itemid)
+                end
             end)
             icon:SetCallback("OnLeave", function(widget)
                 GameTooltip:Hide()
@@ -323,7 +331,7 @@ local function create_item_list(frame, items, update)
                     update()
                     create_item_list(frame, items, update)
                 else
-                    local itemid = GetItemInfoInstant(v)
+                    local itemid = getRetryCached(addon.longtermCache, GetItemInfoInstant, v)
                     items[idx] = itemid or v
                     addon:UpdateItem_Name_ID(v, name, icon)
                     update()
@@ -426,7 +434,7 @@ local function create_item_list(frame, items, update)
         icon:SetDisabled(items == nil)
         icon.text:Hide()
         icon:SetCallback("OnEnterPressed", function(widget, event, v)
-            v = GetItemInfo(v)
+            local v = getRetryCached(addon.longtermCache, GetItemInfo, v)
             if v then
                 items[#items + 1] = v
                 update()
