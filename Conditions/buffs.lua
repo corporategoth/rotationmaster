@@ -3,7 +3,7 @@ local addon_name, addon = ...
 local AceGUI = LibStub("AceGUI-3.0")
 local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
 local SpellData = LibStub("AceGUI-3.0-SpellLoader")
-local tonumber, pairs = tonumber, pairs
+local color, tonumber, pairs = color, tonumber, pairs
 
 -- From constants
 local operators, units, unitsPossessive = addon.operators, addon.units, addon.unitsPossessive
@@ -11,6 +11,10 @@ local operators, units, unitsPossessive = addon.operators, addon.units, addon.un
 -- From utils
 local compare, compareString, nullable, keys, isin, isint, getCached, deepcopy, playerize =
     addon.compare, addon.compareString, addon.nullable, addon.keys, addon.isin, addon.isint, addon.getCached, addon.deepcopy, addon.playerize
+
+local helpers = addon.help_funcs
+local CreateText, CreatePictureText, CreateButtonText, Indent, Gap =
+    helpers.CreateText, helpers.CreatePictureText, helpers.CreateButtonText, helpers.Indent, helpers.Gap
 
 local UnitBuff
 if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
@@ -55,6 +59,11 @@ addon:RegisterCondition(L["Buffs"], "BUFF", {
             function(v) return true end,
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(spell_group)
+    end,
+    help = function(frame)
+        addon.layout_condition_unitwidget_help(frame)
+        frame:AddChild(Gap())
+        addon.layout_condition_spellnamewidget_help(frame)
     end
 })
 
@@ -102,6 +111,16 @@ addon:RegisterCondition(L["Buffs"], "BUFF_REMAIN", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
     end,
+    help = function(frame)
+        addon.layout_condition_unitwidget_help(frame)
+        frame:AddChild(Gap())
+        addon.layout_condition_spellnamewidget_help(frame)
+        frame:AddChild(Gap())
+        addon.layout_condition_operatorwidget_help(frame, L["Buff Time Remaining"], L["Seconds"],
+            "The number of seconds remaining on a buff applied to the " .. color.BLIZ_YELLOW .. L["Unit"] ..
+            color.RESET .. ".  If the buff is not present, this condition will not be successful (regardless " ..
+            "of the " .. color.BLIZ_YELLOW .. "Operator" .. color.RESET .. " used.)")
+    end
 })
 
 addon:RegisterCondition(L["Buffs"], "BUFF_STACKS", {
@@ -146,6 +165,16 @@ addon:RegisterCondition(L["Buffs"], "BUFF_STACKS", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
     end,
+    help = function(frame)
+        addon.layout_condition_unitwidget_help(frame)
+        frame:AddChild(Gap())
+        addon.layout_condition_spellnamewidget_help(frame)
+        frame:AddChild(Gap())
+        addon.layout_condition_operatorwidget_help(frame, L["Buff Stacks"], L["Stacks"],
+            "The number of stacks of a buff applied to the " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET ..
+            ".  If the buff is not present, this condition will not be successful (regardless " ..
+            "of the " .. color.BLIZ_YELLOW .. "Operator" .. color.RESET .. " used.)")
+    end
 })
 
 addon:RegisterCondition(L["Buffs"], "STEALABLE", {
@@ -178,6 +207,9 @@ addon:RegisterCondition(L["Buffs"], "STEALABLE", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
     end,
+    help = function(frame)
+        addon.layout_condition_unitwidget_help(frame)
+    end
 })
 
 if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
@@ -210,6 +242,11 @@ if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
             end)
             parent:AddChild(offhand)
         end,
+        help = function(frame)
+            frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Off Hand"] .. color.RESET .. " - " ..
+                "Should this condition affect your main or off-hand weapon.  If this is checked, it will affect " ..
+                "your off-hand weapon, otherwise it will affect your main-hand (or two-handed) weapon."))
+        end
     })
 
     addon:RegisterCondition(L["Buffs"], "WEAPON_REMAIN", {
@@ -250,6 +287,17 @@ if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
                 function() top:SetStatusText(funcs:print(root, spec)) end)
             parent:AddChild(operator_group)
         end,
+        help = function(frame)
+            frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Off Hand"] .. color.RESET .. " - " ..
+                    "Should this condition affect your main or off-hand weapon.  If this is checked, it will affect " ..
+                    "your off-hand weapon, otherwise it will affect your main-hand (or two-handed) weapon."))
+
+            frame:AddChild(Gap())
+            addon.layout_condition_operatorwidget_help(frame, L["Weapon Enchant Time Remaining"], L["Seconds"],
+                "The amount of time (in seconds) your weapon buff has left before it expires.  If there is no buff " ..
+                "on your weapon, this condition will not be successful (regardless of the " .. color.BLIZ_YELLOW ..
+                "Operator" .. color.RESET .. " used.)")
+        end
     })
 
     addon:RegisterCondition(L["Buffs"], "WEAPON_STACKS", {
@@ -289,6 +337,17 @@ if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
                 function() top:SetStatusText(funcs:print(root, spec)) end)
             parent:AddChild(operator_group)
         end,
+        help = function(frame)
+            frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Off Hand"] .. color.RESET .. " - " ..
+                    "Should this condition affect your main or off-hand weapon.  If this is checked, it will affect " ..
+                    "your off-hand weapon, otherwise it will affect your main-hand (or two-handed) weapon."))
+
+            frame:AddChild(Gap())
+            addon.layout_condition_operatorwidget_help(frame, L["Weapon Enchant Stacks"], L["Stacks"],
+                "The number of stacks of a buff applied to your weapon.  If there is no buff on your weapon, this " ..
+                "condition will not be successful (regardless of the " .. color.BLIZ_YELLOW .. "Operator" ..
+                color.RESET .. " used.)")
+        end
     })
 
 end

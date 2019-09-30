@@ -2,7 +2,7 @@ local addon_name, addon = ...
 
 local AceGUI = LibStub("AceGUI-3.0")
 local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
-local tostring, tonumber, pairs = tostring, tonumber, pairs
+local color, tostring, tonumber, pairs = color, tostring, tonumber, pairs
 
 if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
     local ThreatClassic = LibStub("ThreatClassic-1.0")
@@ -15,6 +15,10 @@ local units, threat, operators = addon.units, addon.threat, addon.operators
 -- From utils
 local compare, compareString, nullable, keys, isin, deepcopy, getCached, playerize =
     addon.compare, addon.compareString, addon.nullable, addon.keys, addon.isin, addon.deepcopy, addon.getCached, addon.playerize
+
+local helpers = addon.help_funcs
+local CreateText, CreatePictureText, CreateButtonText, Indent, Gap =
+helpers.CreateText, helpers.CreatePictureText, helpers.CreateButtonText, helpers.Indent, helpers.Gap
 
 addon:RegisterCondition(L["Combat"], "COMBAT", {
     description = L["In Combat"],
@@ -38,6 +42,9 @@ addon:RegisterCondition(L["Combat"], "COMBAT", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
     end,
+    help = function(frame)
+        addon.layout_condition_unitwidget_help(frame)
+    end
 })
 
 addon:RegisterCondition(L["Combat"], "PET", {
@@ -84,6 +91,10 @@ addon:RegisterCondition(L["Combat"], "PET_NAME", {
         end
         parent:AddChild(petname)
     end,
+    help = function(frame)
+        frame:AddChild(CreateText(color.BLIZ_YELLOW .. NAME .. color.RESET .. " - " ..
+            "The name of the pet you have summoned."))
+    end
 })
 
 addon:RegisterCondition(L["Combat"], "STEALTHED", {
@@ -173,6 +184,26 @@ addon:RegisterCondition(L["Combat"], "THREAT", {
         end
         parent:AddChild(val)
     end,
+    help = function(frame)
+        addon.layout_condition_unitwidget_help(frame)
+        frame:AddChild(Gap())
+        frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Threat"] .. color.RESET .. " - " ..
+            "The amount of threat you have with " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. ".  This " ..
+            "condition will not be successful if you have no threat whatsoever (ie. are not considered in combat " ..
+            "with that unit.)"))
+        frame:AddChild(Indent(40, CreateText(color.GREEN .. L["no threat risk"] .. color.RESET .. " - " ..
+            "You are not in danger of taking threat away from whoever has threat.")))
+        frame:AddChild(Indent(40, CreateText(color.GREEN .. L["higher threat than tank"] .. color.RESET .. " - " ..
+            "You are in danger of pulling threat away from the current tank, and should reduce the amount of " ..
+            "threat generated (by using threat-reducing abilities or ceasing DPS or Healing) immediately.")))
+        frame:AddChild(Indent(40, CreateText(color.GREEN .. L["tanking, at risk"] .. color.RESET .. " - " ..
+            "You are currently tanking " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. ", however " ..
+            "you are not at the top of the threat table, and thus are at risk of them switching targets " ..
+            "to somebody else.")))
+        frame:AddChild(Indent(40, CreateText(color.GREEN .. L["tanking, secure"] .. color.RESET .. " - " ..
+            "You are currently tanking " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. " and are " ..
+            "not at risk of them switching targets at the moment.")))
+    end
 })
 
 addon:RegisterCondition(L["Combat"], "THREAT_COUNT", {
@@ -219,6 +250,23 @@ addon:RegisterCondition(L["Combat"], "THREAT_COUNT", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
     end,
+    help = function(frame)
+        frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Threat"] .. color.RESET .. " - " ..
+                "The minimum amount of threat you have with other units."))
+        frame:AddChild(Indent(40, CreateText(color.GREEN .. L["no threat risk"] .. color.RESET .. " - " ..
+                "You are not in danger of taking threat away from whoever has threat.")))
+        frame:AddChild(Indent(40, CreateText(color.GREEN .. L["higher threat than tank"] .. color.RESET .. " - " ..
+                "You are in danger of pulling threat away from the current tank, and should reduce the amount of " ..
+                "threat generated (by using threat-reducing abilities or ceasing DPS or Healing) immediately.")))
+        frame:AddChild(Indent(40, CreateText(color.GREEN .. L["tanking, at risk"] .. color.RESET .. " - " ..
+                "You are currently tanking, however you are not at the top of the threat table, and thus are at " ..
+                "risk of them switching targets to somebody else.")))
+        frame:AddChild(Indent(40, CreateText(color.GREEN .. L["tanking, secure"] .. color.RESET .. " - " ..
+                "You are currently tanking  and are not at risk of them switching targets at the moment.")))
+
+        addon.layout_condition_operatorwidget_help(frame, L["Buff Time Remaining"], L["Seconds"],
+            "The number of units you have at least " .. color.BLIZ_YELLOW .. L["Threat"] .. color.RESET .. " on.")
+    end
 })
 
 local character_class = select(2, UnitClass("player"))
@@ -309,6 +357,11 @@ addon.condition_form = {
         end
         parent:AddChild(form)
     end,
+    help = function(frame)
+        frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Form"] .. color.RESET .. " - " ..
+            "You are shapeshifted into a different form.  This includes stances for warriors and stealth.  " ..
+            color.GREEN .. L["humanoid"] .. color.RESET .. " can be used to indicate you are NOT shapeshifted."))
+    end
 }
 
 addon:RegisterCondition(L["Combat"], "FORM", addon.condition_form)
@@ -334,6 +387,9 @@ addon:RegisterCondition(L["Combat"], "ATTACKABLE", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
     end,
+    help = function(frame)
+        addon.layout_condition_unitwidget_help(frame)
+    end
 })
 
 addon:RegisterCondition(L["Combat"], "ENEMY", {
@@ -357,5 +413,8 @@ addon:RegisterCondition(L["Combat"], "ENEMY", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
     end,
+    help = function(frame)
+        addon.layout_condition_unitwidget_help(frame)
+    end
 })
 

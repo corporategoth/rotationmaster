@@ -2,7 +2,7 @@ local addon_name, addon = ...
 
 local AceGUI = LibStub("AceGUI-3.0")
 local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
-local tostring, tonumber, pairs = tostring, tonumber, pairs
+local color, tostring, tonumber, pairs = color, tostring, tonumber, pairs
 local floor = math.floor
 
 -- From constants
@@ -12,6 +12,10 @@ local units, unitsPossessive, classes, roles, creatures, operators =
 -- From utils
 local nullable, keys, isin, deepcopy, getCached, playerize, compareString =
     addon.nullable, addon.keys, addon.isin, addon.deepcopy, addon.getCached, addon.playerize, addon.compareString
+
+local helpers = addon.help_funcs
+local CreateText, CreatePictureText, CreateButtonText, Indent, Gap =
+    helpers.CreateText, helpers.CreatePictureText, helpers.CreateButtonText, helpers.Indent, helpers.Gap
 
 addon:RegisterCondition(nil, "CLASS", {
     description = L["Class"],
@@ -51,6 +55,13 @@ addon:RegisterCondition(nil, "CLASS", {
         end
         parent:AddChild(class)
     end,
+    help = function(frame)
+        addon.layout_condition_unitwidget_help(frame)
+
+        frame:AddChild(Gap())
+        frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Class"] .. color.RESET .. " - " ..
+            "The character class of " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. "."))
+    end
 })
 
 if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
@@ -94,6 +105,19 @@ if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
             end
             parent:AddChild(role)
         end,
+        help = function(frame)
+            addon.layout_condition_unitwidget_help(frame)
+
+            frame:AddChild(Gap())
+            frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Role"] .. color.RESET .. " - " ..
+                "The current role of " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. "."))
+            frame:AddChild(Indent(40, CreateText(color.GREEN .. L["Tank"] .. color.RESET .. " - " ..
+                "Designed to keep the attention and take most of the hits from enemies.  aka. Meat Shields.")))
+            frame:AddChild(Indent(40, CreateText(color.GREEN .. L["DPS"] .. color.RESET .. " - " ..
+                "The primary damage dealers against enemies, and lovers of standing in fire.")))
+            frame:AddChild(Indent(40, CreateText(color.GREEN .. L["Healer"] .. color.RESET .. " - " ..
+                "Those who keep everyone else alive by healing them.  Thank them!")))
+        end
     })
 
     addon:RegisterCondition(nil, "TALENT", {
@@ -143,6 +167,13 @@ if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
             end
             parent:AddChild(talent)
         end,
+        help = function(frame)
+            frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Talent"] .. color.RESET .. " - " ..
+                "A talent you have enabled in your specialization.  If you are currently in the same spec " ..
+                "as the rotation you are configuring (or have switched specializations without reloading " ..
+                "your user interface), this will show the talents.  Otherwise, this will simply show the " ..
+                "level and selection numbers (this is a restriction imposed by the game itself.)"))
+        end
     })
 else
     addon:RegisterCondition(nil, "TALENT", {
@@ -263,6 +294,18 @@ else
                 function() top:SetStatusText(funcs:print(root, spec)) end)
             parent:AddChild(operator_group)
         end,
+        help = function(frame)
+            frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Talent Tree"] .. color.RESET .. " - " ..
+                "The tree that the talent this condition is testing is from."))
+
+            frame:AddChild(Gap())
+            frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Talent"] .. color.RESET .. " - " ..
+                "A talent you have available to you."))
+
+            frame:AddChild(Gap())
+            addon.layout_condition_operatorwidget_help(frame, L["Talent"], L["Points"],
+                "How many points you have put into " .. color.BLIZ_YELLOW .. L["Talent"] .. color.RESET .. ".");
+        end
     })
 end
 
@@ -303,5 +346,13 @@ addon:RegisterCondition(nil, "CREATURE", {
         end
         parent:AddChild(class)
     end,
+    help = function(frame)
+        addon.layout_condition_unitwidget_help(frame)
+
+        frame:AddChild(Gap())
+        frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Creature Type"] .. color.RESET .. " - " ..
+                "The creature classification of " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. ".  This " ..
+                "can be used to create conditions that are restricted by creature type (eg. Banish.)"))
+    end
 })
 

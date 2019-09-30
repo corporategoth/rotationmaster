@@ -1,6 +1,7 @@
 local addon_name, addon = ...
 
 local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
+local color = color
 
 -- From constants
 local operators = addon.operators
@@ -8,6 +9,10 @@ local operators = addon.operators
 -- From utils
 local compare, compareString, nullable, isin, getCached, round, isSpellOnSpec =
     addon.compare, addon.compareString, addon.nullable, addon.isin, addon.getCached, addon.round, addon.isSpellOnSpec
+
+local helpers = addon.help_funcs
+local CreateText, CreatePictureText, CreateButtonText, Indent, Gap =
+    helpers.CreateText, helpers.CreatePictureText, helpers.CreateButtonText, helpers.Indent, helpers.Gap
 
 addon:RegisterCondition(L["Spells / Items"], "SPELL_AVAIL", {
     description = L["Spell Available"],
@@ -60,6 +65,9 @@ addon:RegisterCondition(L["Spells / Items"], "SPELL_AVAIL", {
                                     function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(spell_group)
     end,
+    help = function(frame)
+        addon.layout_condition_spellwidget_help(frame)
+    end
 })
 
 addon:RegisterCondition(L["Spells / Items"], "SPELL_COOLDOWN", {
@@ -105,6 +113,12 @@ addon:RegisterCondition(L["Spells / Items"], "SPELL_COOLDOWN", {
                                     function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
     end,
+    help = function(frame)
+        addon.layout_condition_spellwidget_help(frame)
+        frame:AddChild(Gap())
+        addon.layout_condition_operatorwidget_help(frame, L["Spell Cooldown"], L["Seconds"],
+            "The number of seconds before you can cast " .. color.BLIZ_YELLOW .. L["Spell"] .. color.RESET .. ".")
+    end
 })
 
 addon:RegisterCondition(L["Spells / Items"], "SPELL_REMAIN", {
@@ -149,6 +163,13 @@ addon:RegisterCondition(L["Spells / Items"], "SPELL_REMAIN", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
     end,
+    help = function(frame)
+        addon.layout_condition_spellwidget_help(frame)
+        frame:AddChild(Gap())
+        addon.layout_condition_operatorwidget_help(frame, L["Spell Time Remaining"], L["Seconds"],
+            "The number of seconds the effect of " .. color.BLIZ_YELLOW .. L["Spell"] .. color.RESET ..
+            " has left.")
+    end
 })
 
 addon:RegisterCondition(L["Spells / Items"], "SPELL_CHARGES", {
@@ -188,6 +209,12 @@ addon:RegisterCondition(L["Spells / Items"], "SPELL_CHARGES", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
     end,
+    help = function(frame)
+        addon.layout_condition_spellwidget_help(frame)
+        frame:AddChild(Gap())
+        addon.layout_condition_operatorwidget_help(frame, L["Spell Charges"], L["Charges"],
+            "The number of charges of " .. color.BLIZ_YELLOW .. L["Spell"] .. color.RESET .. " currently active.")
+    end
 })
 
 addon:RegisterCondition(L["Spells / Items"], "SPELL_HISTORY", {
@@ -231,6 +258,16 @@ addon:RegisterCondition(L["Spells / Items"], "SPELL_HISTORY", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
     end,
+    help = function(frame)
+        addon.layout_condition_spellwidget_help(frame)
+        frame:AddChild(Gap())
+        addon.layout_condition_operatorwidget_help(frame, L["Spell Cast History"], L["Count"],
+            "How far back in your spell history to look for a casting of " .. color.BLIZ_YELLOW .. L["Spell"] ..
+            color.RESET .. " (by count).  A value of 1 means your last spell cast, 2 means two spells ago, etc.  " ..
+            "Each instance of a the same spell cast is treated separately.  Any spell cast more than the setting " ..
+            "of " .. color.BLUE .. L["Spell History Memory (seconds)"] .. color.RESET .. " in the primary Rotation " ..
+            "Master configuration screen ago will not be available.")
+    end
 })
 
 addon:RegisterCondition(L["Spells / Items"], "SPELL_HISTORY_TIME", {
@@ -274,5 +311,14 @@ addon:RegisterCondition(L["Spells / Items"], "SPELL_HISTORY_TIME", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
     end,
+    help = function(frame)
+        addon.layout_condition_spellwidget_help(frame)
+        frame:AddChild(Gap())
+        addon.layout_condition_operatorwidget_help(frame, L["Spell Cast History Time"], L["Seconds"],
+            "How far back in your spell history to look for a casting of " .. color.BLIZ_YELLOW .. L["Spell"] ..
+            color.RESET .. " (by time).  Any spell cast more than the setting of " .. color.BLUE ..
+            L["Spell History Memory (seconds)"] .. color.RESET .. " in the primary Rotation Master configuration " ..
+            "screen ago will not be available.")
+    end
 })
 

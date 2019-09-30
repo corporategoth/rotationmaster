@@ -1,6 +1,7 @@
 local addon_name, addon = ...
 
 local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
+local color = color
 
 -- From constants
 local operators = addon.operators
@@ -8,6 +9,10 @@ local operators = addon.operators
 -- From utils
 local compare, compareString, nullable, isin, getCached, round =
     addon.compare, addon.compareString, addon.nullable, addon.isin, addon.getCached, addon.round
+
+local helpers = addon.help_funcs
+local CreateText, CreatePictureText, CreateButtonText, Indent, Gap =
+helpers.CreateText, helpers.CreatePictureText, helpers.CreateButtonText, helpers.Indent, helpers.Gap
 
 addon:RegisterCondition(L["Spells / Items"], "PETSPELL_AVAIL", {
     description = L["Pet Spell Available"],
@@ -60,6 +65,9 @@ addon:RegisterCondition(L["Spells / Items"], "PETSPELL_AVAIL", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(spell_group)
     end,
+    help = function(frame)
+        addon.layout_condition_spellwidget_help(frame)
+    end
 })
 
 addon:RegisterCondition(L["Spells / Items"], "PETSPELL_COOLDOWN", {
@@ -105,6 +113,12 @@ addon:RegisterCondition(L["Spells / Items"], "PETSPELL_COOLDOWN", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
     end,
+    help = function(frame)
+        addon.layout_condition_spellwidget_help(frame)
+        frame:AddChild(Gap())
+        addon.layout_condition_operatorwidget_help(frame, L["Spell Cooldown"], L["Seconds"],
+            "The number of seconds before you can cast " .. color.BLIZ_YELLOW .. L["Spell"] .. color.RESET .. ".")
+    end
 })
 
 addon:RegisterCondition(L["Spells / Items"], "PETSPELL_REMAIN", {
@@ -149,6 +163,13 @@ addon:RegisterCondition(L["Spells / Items"], "PETSPELL_REMAIN", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
     end,
+    help = function(frame)
+        addon.layout_condition_spellwidget_help(frame)
+        frame:AddChild(Gap())
+        addon.layout_condition_operatorwidget_help(frame, L["Spell Time Remaining"], L["Seconds"],
+            "The number of seconds the effect of " .. color.BLIZ_YELLOW .. L["Spell"] .. color.RESET ..
+                    " has left.")
+    end
 })
 
 addon:RegisterCondition(L["Spells / Items"], "PETSPELL_CHARGES", {
@@ -188,4 +209,10 @@ addon:RegisterCondition(L["Spells / Items"], "PETSPELL_CHARGES", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
     end,
+    help = function(frame)
+        addon.layout_condition_spellwidget_help(frame)
+        frame:AddChild(Gap())
+        addon.layout_condition_operatorwidget_help(frame, L["Spell Charges"], L["Charges"],
+            "The number of charges of " .. color.BLIZ_YELLOW .. L["Spell"] .. color.RESET .. " currently active.")
+    end
 })

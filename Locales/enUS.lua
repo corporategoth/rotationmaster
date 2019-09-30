@@ -69,10 +69,10 @@ L["your pet's"] = true
 L["your target's"] = true
 L["your focus target's"] = true
 L["your mouseover target's"] = true
-L["your pet's target's target"] = true
-L["your target's target's target"] = true
-L["your focus target's target's target"] = true
-L["your mouseover target's target's target"] = true
+L["your pet's target's"] = true
+L["your target's target's"] = true
+L["your focus target's target's"] = true
+L["your mouseover target's target's"] = true
 
 
 L["Center"] = true
@@ -207,12 +207,15 @@ L["Level"] = true
 L["<level>"] = true
 L["your level"] = true
 L["Disabled"] = true
+L["Help"] = true
 
 -- from Options/rotations.lua and Options/rotations.lua
 
 L["Spells that you wish to conditionally highlight independent of your rotation.  Any or all of these may be highlighted at the same time."] = true
 L["Your main spell rotation.  Only one spell will be highlighted at once, which spell being based on the first satisfied condition."] = true
 L["Move Up"] = true
+L["Move to Top"] = true
+L["Move to Bottom"] = true
 L["Move Down"] = true
 L["Action Type"] = true
 L["Spell"] = true

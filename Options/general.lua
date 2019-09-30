@@ -19,7 +19,7 @@ local HideOnEscape = addon.HideOnEscape
 
 local function spacer(width)
     local rv = AceGUI:Create("Label")
-    rv:SetRelativeWidth(width)
+    rv:SetWidth(width)
     return rv
 end
 
@@ -217,7 +217,7 @@ local function create_primary_options(frame)
     local position_group = AceGUI:Create("SimpleGroup")
     position_group:SetFullWidth(true)
     position_group:SetLayout("Table")
-    position_group:SetUserData("table", { columns = { 1, 20, 35, 50 } })
+    position_group:SetUserData("table", { columns = { 1, 10, 40, 10, 50 } })
 
     local position = AceGUI:Create("Dropdown")
     position:SetFullWidth(true)
@@ -235,73 +235,36 @@ local function create_primary_options(frame)
     end
     position_group:AddChild(position)
 
-    position_group:AddChild(spacer(0.1))
+    position_group:AddChild(spacer(5))
 
-    local directional_group = AceGUI:Create("SimpleGroup")
-    directional_group:SetLayout("Table")
-    directional_group:SetUserData("table", { columns = { 10, 10, 10 } })
+    local x_offs = AceGUI:Create("EditBox")
+    local y_offs = AceGUI:Create("EditBox")
 
-    directional_group:AddChild(spacer(1))
-
-    local button_up = AceGUI:Create("InteractiveLabel")
-    button_up:SetText("^")
-    button_up:SetDisabled(name2idx[profile["effect"]] ~= nil and effects[name2idx[profile["effect"]]].type == "blizzard")
-    button_up:SetCallback("OnClick", function(widget, event, val)
-        profile["yoffs"] = (profile["yoffs"] or 0) + 1
-        y_offs:SetText(profile["yoffs"])
+    local directional = AceGUI:Create("Directional")
+    directional:SetCallback("OnClick", function(widget, event, button, direction)
+        if direction == "UP" then
+            profile["yoffs"] = (profile["yoffs"] or 0) + 1
+            y_offs:SetText(profile["yoffs"])
+        elseif direction == "LEFT" then
+            profile["xoffs"] = (profile["xoffs"] or 0) - 1
+            x_offs:SetText(profile["xoffs"])
+        elseif direction == "CENTER" then
+            profile["xoffs"] = 0
+            profile["yoffs"] = 0
+            x_offs:SetText(profile["xoffs"])
+            y_offs:SetText(profile["yoffs"])
+        elseif direction == "RIGHT" then
+            profile["xoffs"] = (profile["xoffs"] or 0) + 1
+            x_offs:SetText(profile["xoffs"])
+        elseif direction == "DOWN" then
+            profile["yoffs"] = (profile["yoffs"] or 0) - 1
+            y_offs:SetText(profile["yoffs"])
+        end
         addon:RemoveAllCurrentGlows()
     end)
-    directional_group:AddChild(button_up)
+    position_group:AddChild(directional)
 
-    directional_group:AddChild(spacer(1))
-
-    local button_left = AceGUI:Create("InteractiveLabel")
-    button_left:SetText("<")
-    button_left:SetDisabled(name2idx[profile["effect"]] ~= nil and effects[name2idx[profile["effect"]]].type == "blizzard")
-    button_left:SetCallback("OnClick", function(widget, event, val)
-        profile["xoffs"] = (profile["xoffs"] or 0) - 1
-        x_offs:SetText(profile["xoffs"])
-        addon:RemoveAllCurrentGlows()
-    end)
-    directional_group:AddChild(button_left)
-
-    local button_center = AceGUI:Create("InteractiveLabel")
-    button_center:SetText("o")
-    button_center:SetDisabled(name2idx[profile["effect"]] ~= nil and effects[name2idx[profile["effect"]]].type == "blizzard")
-    button_center:SetCallback("OnClick", function(widget, event, val)
-        profile["xoffs"] = 0
-        profile["yoffs"] = 0
-        x_offs:SetText(profile["xoffs"])
-        y_offs:SetText(profile["yoffs"])
-        addon:RemoveAllCurrentGlows()
-    end)
-    directional_group:AddChild(button_center)
-
-    local button_right = AceGUI:Create("InteractiveLabel")
-    button_right:SetText(">")
-    button_right:SetDisabled(name2idx[profile["effect"]] ~= nil and effects[name2idx[profile["effect"]]].type == "blizzard")
-    button_right:SetCallback("OnClick", function(widget, event, val)
-        profile["xoffs"] = (profile["xoffs"] or 0) + 1
-        x_offs:SetText(profile["xoffs"])
-        addon:RemoveAllCurrentGlows()
-    end)
-    directional_group:AddChild(button_right)
-
-    directional_group:AddChild(spacer(1))
-
-    local button_down = AceGUI:Create("InteractiveLabel")
-    button_down:SetText("v")
-    button_down:SetDisabled(name2idx[profile["effect"]] ~= nil and effects[name2idx[profile["effect"]]].type == "blizzard")
-    button_down:SetCallback("OnClick", function(widget, event, val)
-        profile["yoffs"] = (profile["yoffs"] or 0) - 1
-        y_offs:SetText(profile["yoffs"])
-        addon:RemoveAllCurrentGlows()
-    end)
-    directional_group:AddChild(button_down)
-
-    directional_group:AddChild(spacer(1))
-
-    position_group:AddChild(directional_group)
+    position_group:AddChild(spacer(5))
 
     local offset_group = AceGUI:Create("SimpleGroup")
     offset_group:SetLayout("Table")
@@ -312,7 +275,6 @@ local function create_primary_options(frame)
     x_label:SetColor(1.0, 0.82, 0)
     offset_group:AddChild(x_label)
 
-    local x_offs = AceGUI:Create("EditBox")
     x_offs:SetDisabled(true)
     x_offs:SetText(profile["xoffs"])
     offset_group:AddChild(x_offs)
@@ -322,7 +284,6 @@ local function create_primary_options(frame)
     y_label:SetColor(1.0, 0.82, 0)
     offset_group:AddChild(y_label)
 
-    local y_offs = AceGUI:Create("EditBox")
     y_offs:SetDisabled(true)
     y_offs:SetText(profile["yoffs"])
     offset_group:AddChild(y_offs)
@@ -392,6 +353,12 @@ local function create_primary_options(frame)
     scroll:AddChild(debug_group)
 
     frame:AddChild(scroll)
+
+    local help = AceGUI:Create("Help")
+    help:SetLayout(addon.layout_primary_options_help)
+    help:SetTitle(addon.pretty_name)
+    frame:AddChild(help)
+    help:SetPoint("TOPRIGHT", 8, 38)
 
     addon:configure_frame(frame)
     frame:ResumeLayout()
@@ -868,6 +835,12 @@ local function create_rotation_options(frame, specID, rotid, parent, selected)
     tree:AddChild(scrollwin)
     frame:AddChild(tree)
 
+    local help = AceGUI:Create("Help")
+    help:SetLayout(addon.layout_rotation_options_help)
+    help:SetTitle(L["Rotations"])
+    frame:AddChild(help)
+    help:SetPoint("TOPRIGHT", 8, 8)
+
     addon:configure_frame(frame)
     frame:ResumeLayout()
     frame:DoLayout()
@@ -972,9 +945,7 @@ function module:OnInitialize()
     -- AceConfig:RegisterOptionsTable(addon.name, options)
     AceConfig:RegisterOptionsTable(addon.name .. "Profiles", AceDBOptions:GetOptionsTable(self.db))
 
-    hooksecurefunc("InterfaceCategoryList_Update", function()
-        self:SetupOptions()
-    end)
+    self:SetupOptions()
 end
 
 function module:SetupOptions()

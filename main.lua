@@ -210,7 +210,6 @@ local classic_events = {
 }
 
 function addon:HandleCommand(str)
-
     local cmd, npos = AceConsole:GetArgs(str, 1, 1)
 
     if not cmd or cmd == "help" then

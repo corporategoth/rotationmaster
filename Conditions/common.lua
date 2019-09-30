@@ -342,7 +342,7 @@ end
 function addon:Widget_OperatorPercentWidget(value, name, update)
     local operator_group = AceGUI:Create("SimpleGroup")
     operator_group:SetLayout("Table")
-    operator_group:SetUserData("table", { columns = { 0, 150} })
+    operator_group:SetUserData("table", { columns = { 0, 150 } })
 
     local operator = AceGUI:Create("Dropdown")
     operator:SetFullWidth(true)

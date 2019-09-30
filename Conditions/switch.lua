@@ -2,15 +2,18 @@ local addon_name, addon = ...
 
 local AceGUI = LibStub("AceGUI-3.0")
 local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
-local tostring, tonumber, pairs, table, select = tostring, tonumber, pairs, table, select
-local floor = math.floor
+local color = color
 
 -- From constants
-local units, zonepvp, instances, forms, operators = addon.units, addon.zonepvp, addon.instances, addon.forms, addon.operators
+local units, zonepvp, instances, operators = addon.units, addon.zonepvp, addon.instances, addon.operators
 
 -- From utils
 local nullable, keys,  isin, deepcopy, playerize, compare, compareString, getCached =
     addon.nullable, addon.keys, addon.isin, addon.deepcopy, addon.playerize, addon.compare, addon.compareString, addon.getCached
+
+local helpers = addon.help_funcs
+local CreateText, CreatePictureText, CreateButtonText, Indent, Gap =
+helpers.CreateText, helpers.CreatePictureText, helpers.CreateButtonText, helpers.Indent, helpers.Gap
 
 addon:RegisterSwitchCondition("LEVEL", {
     description = L["Level"],
@@ -34,6 +37,10 @@ addon:RegisterSwitchCondition("LEVEL", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
     end,
+    help = function(frame)
+        addon.layout_condition_operatorwidget_help(frame, L["Level"], L["Level"],
+            "The level you are at.")
+    end
 })
 
 addon:RegisterSwitchCondition("PVP", {
@@ -59,6 +66,9 @@ addon:RegisterSwitchCondition("PVP", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
     end,
+    help = function(frame)
+        addon.layout_condition_unitwidget_help(frame)
+    end
 })
 
 addon:RegisterSwitchCondition("ZONEPVP", {
@@ -101,6 +111,27 @@ addon:RegisterSwitchCondition("ZONEPVP", {
         end
         parent:AddChild(zone)
     end,
+    help = function(frame)
+        frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Mode"] .. color.RESET .. " - " ..
+                "The PVP status of the area you are in."))
+        frame:AddChild(Indent(40, CreateText(color.GREEN .. L["no PVP"] .. color.RESET .. " - " ..
+                "This area does not allow PVP with other players.")))
+        frame:AddChild(Indent(40, CreateText(color.GREEN .. L["Arena"] .. color.RESET .. " - " ..
+                "You are in an arena.  PVP is enabled in this area, but reset on exit.")))
+        frame:AddChild(Indent(40, CreateText(color.GREEN .. L["Controlled by your faction"] .. color.RESET .. " - " ..
+                "This area is controlled by your faction.  You will not enter PVP in this region, however " ..
+                "opposing factions will be automatically flagged for PVP upon entering.")))
+        frame:AddChild(Indent(40, CreateText(color.GREEN .. L["Contested"] .. color.RESET .. " - " ..
+                "This area is contested, You will not automatically be flagged for PVP (on a PvE server), " ..
+                "however you may attack the opposing faction, flagging for PVP.")))
+        frame:AddChild(Indent(40, CreateText(color.GREEN .. L["Controlled by opposing faction"] .. color.RESET .. " - " ..
+                "This area is controlled by the opposing faction.  You will be automatically flagged for " ..
+                "PVP, however opposing faction players may not be (if on a PvE server) unless they choose to.")))
+        frame:AddChild(Indent(40, CreateText(color.GREEN .. L["Sanctuary (no PVP)"] .. color.RESET .. " - " ..
+                "This is a sactuary city.  No PVP is possible.")))
+        frame:AddChild(Indent(40, CreateText(color.GREEN .. L["Combat (auto-flagged)"] .. color.RESET .. " - " ..
+                "This is a combat zone (eg. a battleground), all players will be automatically flagged as PVP.")))
+    end
 })
 
 addon:RegisterSwitchCondition("INSTANCE", {
@@ -142,6 +173,23 @@ addon:RegisterSwitchCondition("INSTANCE", {
         end
         parent:AddChild(instance)
     end,
+    help = function(frame)
+        frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Mode"] .. color.RESET .. " - " ..
+                "The type of instance you are in."))
+        frame:AddChild(Indent(40, CreateText(color.GREEN .. L["Outside"] .. color.RESET .. " - " ..
+                "You are not in an instance (this does not necessarily mean you are outdoors, just not in any " ..
+                "kind of instance.)")))
+        frame:AddChild(Indent(40, CreateText(color.GREEN .. L["Battleground"] .. color.RESET .. " - " ..
+                "You are in a battleground (an ad-hoc instance where the opponant is the opposing faction.)")))
+        frame:AddChild(Indent(40, CreateText(color.GREEN .. L["Arena"] .. color.RESET .. " - " ..
+                "A close quarters fight with the opposing faction, where death is a loss.")))
+        frame:AddChild(Indent(40, CreateText(color.GREEN .. L["Dungeon"] .. color.RESET .. " - " ..
+                "A five-person dungeon, where your opponants are all NPCs.")))
+        frame:AddChild(Indent(40, CreateText(color.GREEN .. L["Raid"] .. color.RESET .. " - " ..
+                "An instance that accommodates more than five people, where your opponants are all NPCs.")))
+        frame:AddChild(Indent(40, CreateText(color.GREEN .. L["Scenario"] .. color.RESET .. " - " ..
+                "A single-person instance, similar to a dungeon but completed solo.")))
+    end
 })
 
 addon:RegisterSwitchCondition("ZONE", {
@@ -173,6 +221,10 @@ addon:RegisterSwitchCondition("ZONE", {
         end
         parent:AddChild(zone)
     end,
+    help = function(frame)
+        frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Zone"] .. color.RESET .. " - " ..
+            "The zone you are in."))
+    end
 })
 
 addon:RegisterSwitchCondition("SUBZONE", {
@@ -203,6 +255,10 @@ addon:RegisterSwitchCondition("SUBZONE", {
             top:SetStatusText(funcs:print(root, spec))
         end)
         parent:AddChild(zone)
+        help = function(frame)
+            frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Zone"] .. color.RESET .. " - " ..
+                "The subzone you are in (ie. not the larger region such as The Barrens, but more Crossroads.)"))
+        end
     end,
 })
 

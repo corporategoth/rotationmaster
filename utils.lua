@@ -381,6 +381,16 @@ function addon.UnitCloserThan(cache, unit, distance)
     end
 end
 
+function addon.AddTooltip(frame, text)
+    frame:SetCallback("OnEnter", function(widget)
+        GameTooltip:SetOwner(frame.frame, "ANCHOR_BOTTOMRIGHT", 3)
+        GameTooltip:SetText(text, 1, 1, 1, 1, true)
+    end)
+    frame:SetCallback("OnLeave", function(widget)
+        GameTooltip:Hide()
+    end)
+end
+
 function addon:configure_frame(obj)
     if obj.children ~= nil then
         for _, child in pairs(obj.children) do

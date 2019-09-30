@@ -44,13 +44,13 @@ addon.unitsPossessive = {
     pet = L["your pet's"],
     target = L["your target's"],
     mouseover = L["your mouseover target's"],
-    pettarget = L["your pet's target's target"],
-    targettarget = L["your target's target's target"],
-    mouseovertarget = L["your mouseover target's target's target"],
+    pettarget = L["your pet's target's"],
+    targettarget = L["your target's target's"],
+    mouseovertarget = L["your mouseover target's target's"],
 }
 if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
     addon.unitsPossessive["focus"] = L["your focus target's"]
-    addon.unitsPossessive["focustarget"] = L["your focus target's target's target"]
+    addon.unitsPossessive["focustarget"] = L["your focus target's target's"]
 end
 
 addon.classes = {

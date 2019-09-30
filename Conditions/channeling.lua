@@ -1,9 +1,7 @@
 local addon_name, addon = ...
 
-local AceGUI = LibStub("AceGUI-3.0")
 local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
-local SpellData = LibStub("AceGUI-3.0-SpellLoader")
-local tonumber = tonumber
+local color = color
 
 -- From constants
 local units, unitsPossessive, operators = addon.units, addon.unitsPossessive, addon.operators
@@ -11,6 +9,9 @@ local units, unitsPossessive, operators = addon.units, addon.unitsPossessive, ad
 -- From utils
 local compare, compareString, nullable, keys, isin, isint, getCached, playerize, deepcopy =
     addon.compare, addon.compareString, addon.nullable, addon.keys, addon.isin, addon.isint, addon.getCached, addon.playerize, addon.deepcopy
+
+local helpers = addon.help_funcs
+local Gap = helpers.Gap
 
 addon:RegisterCondition(L["Combat"], "CHANNELING", {
     description = L["Channeling"],
@@ -35,6 +36,9 @@ addon:RegisterCondition(L["Combat"], "CHANNELING", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
     end,
+    help = function(frame)
+        addon.layout_condition_unitwidget_help(frame)
+    end
 })
 
 addon:RegisterCondition(L["Combat"], "CHANNELING_SPELL", {
@@ -65,6 +69,11 @@ addon:RegisterCondition(L["Combat"], "CHANNELING_SPELL", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(spell_group)
     end,
+    help = function(frame)
+        addon.layout_condition_unitwidget_help(frame)
+        frame:AddChild(Gap())
+        addon.layout_condition_spellnamewidget_help(frame)
+    end
 })
 
 addon:RegisterCondition(L["Combat"], "CHANNELING_REMAIN", {
@@ -99,6 +108,15 @@ addon:RegisterCondition(L["Combat"], "CHANNELING_REMAIN", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
     end,
+    help = function(frame)
+        addon.layout_condition_unitwidget_help(frame)
+        frame:AddChild(Gap())
+        addon.layout_condition_operatorwidget_help(frame, L["Cast Time Remaining"], L["Seconds"],
+            "The number of seconds remaining in the current spell being channeled by " .. color.BLIZ_YELLOW ..
+            L["Unit"] .. color.RESET .. ".  If the " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. " is " ..
+            "not currently channeling, this condition will not be successful (regardless of the " ..
+            color.BLIZ_YELLOW .. "Operator" .. color.RESET .. " used.)")
+    end
 })
 
 addon:RegisterCondition(L["Combat"], "CHANNEL_INTERRUPTABLE", {
@@ -123,4 +141,7 @@ addon:RegisterCondition(L["Combat"], "CHANNEL_INTERRUPTABLE", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
     end,
+    help = function(frame)
+        addon.layout_condition_unitwidget_help(frame)
+    end
 })

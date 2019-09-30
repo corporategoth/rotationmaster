@@ -25,7 +25,7 @@
 -- @class file
 -- @name AceGUI-3.0
 -- @release $Id: AceGUI-3.0.lua 1221 2019-07-20 18:23:00Z nevcairiel $
-local ACEGUI_MAJOR, ACEGUI_MINOR = "AceGUI-3.0", 39
+local ACEGUI_MAJOR, ACEGUI_MINOR = "AceGUI-3.0", 999
 local AceGUI, oldminor = LibStub:NewLibrary(ACEGUI_MAJOR, ACEGUI_MINOR)
 
 if not AceGUI then return end -- No upgrade needed
@@ -958,7 +958,12 @@ AceGUI:RegisterLayout("Table",
 					local alignFn, align = GetCellAlign("H", tableObj, colObj, cellObj, cellH, childH)
 					f:SetPoint("LEFT", content, offsetH + align, 0)
 					if child:IsFullWidth() or alignFn == "fill" or childH > cellH then
-						f:SetPoint("RIGHT", content, "LEFT", offsetH + align + cellH, 0)
+						child:SetWidth(cellH)
+						if col == #cols then
+							f:SetPoint("RIGHT", content)
+                        else
+							f:SetPoint("RIGHT", content, "LEFT", offsetH + align + cellH, 0)
+						end
 					end
 
 					if child.DoLayout then

@@ -2,7 +2,7 @@ local addon_name, addon = ...
 
 local AceGUI = LibStub("AceGUI-3.0")
 local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
-local tostring, tonumber, pairs = tostring, tonumber, pairs
+local color, tostring, tonumber, pairs = color, tostring, tonumber, pairs
 local floor = math.floor
 
 -- From constants
@@ -14,6 +14,10 @@ local operators, units, unitsPossessive, classes, roles, debufftypes, zonepvp, i
 local compare, compareString, nullable, keys, tomap, isin, cleanArray, deepcopy, getCached =
     addon.compare, addon.compareString, addon.nullable, addon.keys, addon.tomap,
     addon.isin, addon.cleanArray, addon.deepcopy, addon.getCached
+
+local helpers = addon.help_funcs
+local CreateText, CreatePictureText, CreateButtonText, Indent, Gap =
+helpers.CreateText, helpers.CreatePictureText, helpers.CreateButtonText, helpers.Indent, helpers.Gap
 
 addon:RegisterCondition(L["Combat"], "HEALTH", {
     description = L["Health"],
@@ -42,6 +46,12 @@ addon:RegisterCondition(L["Combat"], "HEALTH", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
     end,
+    help = function(frame)
+        addon.layout_condition_unitwidget_help(frame)
+        frame:AddChild(Gap())
+        addon.layout_condition_operatorwidget_help(frame, L["Health"], L["Health"],
+            "The raw health value of " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. ".")
+    end
 })
 
 addon:RegisterCondition(L["Combat"], "HEALTHPCT", {
@@ -76,6 +86,13 @@ addon:RegisterCondition(L["Combat"], "HEALTHPCT", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
     end,
+    help = function(frame)
+        addon.layout_condition_unitwidget_help(frame)
+        frame:AddChild(Gap())
+        addon.layout_condition_operatorpercentwidget_help(frame, L["Health Percentage"], L["Health"],
+            "The health value of " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. " as a percentage of their " ..
+            "total health.")
+    end
 })
 
 addon:RegisterCondition(L["Combat"], "MANA", {
@@ -105,6 +122,12 @@ addon:RegisterCondition(L["Combat"], "MANA", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
     end,
+    help = function(frame)
+        addon.layout_condition_unitwidget_help(frame)
+        frame:AddChild(Gap())
+        addon.layout_condition_operatorwidget_help(frame, L["Mana"], L["Mana"],
+            "The raw mana value of " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. ".")
+    end
 })
 
 addon:RegisterCondition(L["Combat"], "MANAPCT", {
@@ -139,6 +162,13 @@ addon:RegisterCondition(L["Combat"], "MANAPCT", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
     end,
+    help = function(frame)
+        addon.layout_condition_unitwidget_help(frame)
+        frame:AddChild(Gap())
+        addon.layout_condition_operatorpercentwidget_help(frame, L["Mana Percentage"], L["Mana"],
+            "The mana value of " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. " as a percentage of their " ..
+            "total mana.")
+    end
 })
 
 addon:RegisterCondition(L["Combat"], "POWER", {
@@ -178,6 +208,13 @@ addon:RegisterCondition(L["Combat"], "POWER", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
     end,
+    help = function(frame)
+        addon.layout_condition_unitwidget_help(frame)
+        frame:AddChild(Gap())
+        addon.layout_condition_operatorwidget_help(frame, L["Power"], L["Power"],
+            "The raw power value of " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. ".  Power is a statistic " ..
+            "that is class (and sometimes spec or form) specific (eg. Warriors have Rage.)")
+    end
 })
 
 addon:RegisterCondition(L["Combat"], "POWERPCT", {
@@ -220,6 +257,14 @@ addon:RegisterCondition(L["Combat"], "POWERPCT", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
     end,
+    help = function(frame)
+        addon.layout_condition_unitwidget_help(frame)
+        frame:AddChild(Gap())
+        addon.layout_condition_operatorwidget_help(frame, L["Power"], L["Power"],
+            "The power value of " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. " as a percentage of their " ..
+            "total power.  Power is a statistic that is class (and sometimes spec or form) specific (eg. Warriors " ..
+            "have Rage.)")
+    end
 })
 
 addon:RegisterCondition(L["Combat"], "POINT", {
@@ -260,5 +305,13 @@ addon:RegisterCondition(L["Combat"], "POINT", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
     end,
+    help = function(frame)
+        addon.layout_condition_unitwidget_help(frame)
+        frame:AddChild(Gap())
+        addon.layout_condition_operatorwidget_help(frame, L["Points"], L["Points"],
+            "The number of combo points " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. " currently has.  " ..
+            "Combo points are a statistic that is class (and sometimes spec or form) specific (eg. Mages have " ..
+            "Arcane Charges.)")
+    end
 })
 

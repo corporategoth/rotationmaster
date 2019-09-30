@@ -221,37 +221,27 @@ local function LayoutConditionTab(top, frame, funcs, value, selected, conditions
     local selectedIcon = nil
 
     local function layoutIcon(icon, desc, selected, onclick)
-        local group = AceGUI:Create("SimpleGroup")
-        group:SetWidth(100)
-        group:SetLayout("Table")
-        group:SetUserData("table", { columns = { 100 } })
-
-        local acticon = AceGUI:Create("Icon")
-        acticon:SetWidth(44)
-        acticon:SetImage(icon)
-        acticon:SetImageSize(36, 36)
-        acticon:SetUserData("cell", { alignH = "center" })
-        acticon:SetCallback("OnClick", function (widget)
-            onclick(widget)
-            top:Hide()
-        end)
-        group:AddChild(acticon)
-        if selected then
-            selectedIcon = acticon
-        end
-
-        local description = AceGUI:Create("Label")
+        local description = AceGUI:Create("InteractiveLabel")
         local text = wrap(desc, 15)
         if not string.match(text, "\n") then
             text = text .. "\n"
         end
+        description:SetImage(icon)
+        description:SetImageSize(36, 36)
         description:SetText(text)
         description:SetJustifyH("center")
         description:SetWidth(100)
         description:SetUserData("cell", { alignV = "top", alignH = "left" })
-        group:AddChild(description)
+        description:SetCallback("OnClick", function (widget)
+            onclick(widget)
+            top:Hide()
+        end)
 
-        return group
+        if selected then
+            selectedIcon = description
+        end
+
+        return description
     end
 
     if (group == nil) then
@@ -388,10 +378,12 @@ local function ChangeConditionType(parent, event, ...)
     frame:SetHeight((groups and 90 or 46) + min(rows * 70, DEFAULT_ROWS * 70))
     frame:SetCallback("OnClose", function(widget)
         if selectedIcon then
-            ActionButton_HideOverlayGlow(selectedIcon.frame)
+            addon:StopCustomGlow(selectedIcon.frame)
+            --ActionButton_HideOverlayGlow(selectedIcon.frame)
         end
         AceGUI:Release(widget)
         addon.LayoutConditionFrame(top)
+        top:SetStatusText(funcs:print(root, spec))
         top:Show()
     end)
     HideOnEscape(frame)
@@ -427,7 +419,8 @@ local function ChangeConditionType(parent, event, ...)
             group:ReleaseChildren()
             group:PauseLayout()
             if selectedIcon then
-                ActionButton_HideOverlayGlow(selectedIcon.frame)
+                addon:StopCustomGlow(selectedIcon.frame)
+                --ActionButton_HideOverlayGlow(selectedIcon.frame)
             end
 
             local scrollwin = AceGUI:Create("ScrollFrame")
@@ -440,7 +433,8 @@ local function ChangeConditionType(parent, event, ...)
             group:AddChild(scrollwin)
 
             if selectedIcon then
-                ActionButton_ShowOverlayGlow(selectedIcon.frame)
+                addon:ApplyCustomGlow({ type = "pixel" }, selectedIcon.frame, nil, { r = 0, g = 1, b = 0, a = 1 }, 0, 3)
+                --ActionButton_ShowOverlayGlow(selectedIcon.frame)
             end
 
             addon:configure_frame(group)
@@ -459,7 +453,8 @@ local function ChangeConditionType(parent, event, ...)
         frame:AddChild(scrollwin)
 
         if selectedIcon then
-            ActionButton_ShowOverlayGlow(selectedIcon.frame)
+            addon:ApplyCustomGlow({ type = "pixel" }, selectedIcon.frame, nil, { r = 0, g = 1, b = 0, a = 1 }, 0, 3)
+            -- ActionButton_ShowOverlayGlow(selectedIcon.frame)
         end
     end
 
@@ -477,77 +472,118 @@ local function ActionGroup(parent, value, idx, array)
     group:SetLayout("Table")
     group:SetFullWidth(true)
     group:SetUserData("top", top)
-    group:SetUserData("table", { columns = { 0, 1 } })
 
-    local icongroup = AceGUI:Create("SimpleGroup")
-    icongroup:SetLayout("List")
-    icongroup:SetUserData("top", top)
-    icongroup:SetWidth(50)
+    if array then
+        group:SetUserData("table", { columns = { 24, 44, 1 } })
 
-    if idx ~= nil and idx > 1 and value.type ~= nil then
+        local movegroup = AceGUI:Create("SimpleGroup")
+        movegroup:SetLayout("Table")
+        movegroup:SetUserData("table", { columns = { 24 } })
+        movegroup:SetHeight(68)
+        movegroup:SetUserData("cell", { alignV = "middle" })
+        group:AddChild(movegroup)
+
         local moveup = AceGUI:Create("InteractiveLabel")
-        moveup:SetWidth(50)
-        moveup:SetText(L["Up"])
-        moveup:SetFontObject(GameFontNormalTiny)
-        moveup:SetJustifyH("center")
-        moveup:SetCallback("OnClick", function (widget)
+        --moveup:SetUserData("cell", { alignV = "bottom" })
+        if idx ~= nil and idx > 1 and value.type ~= nil then
+            moveup:SetImage("Interface\\ChatFrame\\UI-ChatIcon-ScrollUp-Up")
+            moveup:SetDisabled(false)
+        else
+            moveup:SetImage("Interface\\ChatFrame\\UI-ChatIcon-ScrollUp-Disabled")
+            moveup:SetDisabled(true)
+        end
+        moveup:SetImageSize(24, 24)
+        moveup:SetCallback("OnClick", function(widget, event)
             local tmp = array[idx-1]
             array[idx-1] = array[idx]
             array[idx] = tmp
             addon.LayoutConditionFrame(top)
         end)
-        icongroup:AddChild(moveup)
-    end
+        addon.AddTooltip(moveup, L["Move Up"])
+        movegroup:AddChild(moveup)
 
-    local actionicon = AceGUI:Create("Icon")
-    actionicon:SetWidth(50)
-        if (value == nil or value.type == nil) then
-        actionicon:SetImage("Interface\\Icons\\Trade_Engineering")
-    elseif (value.type == "AND") then
-        actionicon:SetImage("Interface\\Icons\\Spell_ChargePositive")
-        group:SetTitle("AND")
-    elseif (value.type == "OR") then
-        actionicon:SetImage("Interface\\Icons\\Spell_ChargeNegative")
-        group:SetTitle("OR")
-    elseif (value.type == "NOT") then
-        actionicon:SetImage("Interface\\PaperDollInfoFrame\\UI-GearManager-LeaveItem-Transparent")
-        group:SetTitle("NOT")
-    else
-        local icon, description = funcs:describe(value.type)
-        if (icon == nil) then
-            actionicon:SetImage("Interface\\Icons\\INV_Misc_QuestionMark")
-        else
-            actionicon:SetImage(icon)
-            group:SetTitle(description)
-        end
-    end
-    actionicon:SetImageSize(36, 36)
-    actionicon:SetUserData("top", top)
-    actionicon:SetUserData("value", value)
-    actionicon:SetCallback("OnClick", ChangeConditionType)
-    icongroup:AddChild(actionicon)
-
-    if idx ~= nil and idx < #array - 1 and value.type ~= nil then
         local movedown = AceGUI:Create("InteractiveLabel")
-        movedown:SetWidth(50)
-        movedown:SetText(L["Down"])
-        movedown:SetFontObject(GameFontNormalTiny)
-        movedown:SetJustifyH("center")
-        movedown:SetCallback("OnClick", function (widget)
+        --movedown:SetUserData("cell", { alignV = "top" })
+        if idx ~= nil and idx < #array - 1 and value.type ~= nil then
+            movedown:SetImage("Interface\\ChatFrame\\UI-ChatIcon-ScrollDown-Up")
+            movedown:SetDisabled(false)
+        else
+            movedown:SetImage("Interface\\ChatFrame\\UI-ChatIcon-ScrollDown-Disabled")
+            movedown:SetDisabled(true)
+        end
+        movedown:SetImageSize(24, 24)
+        movedown:SetCallback("OnClick", function(widget, event, ...)
             local tmp = array[idx+1]
             array[idx+1] = array[idx]
             array[idx] = tmp
             addon.LayoutConditionFrame(top)
         end)
-        icongroup:AddChild(movedown)
+        addon.AddTooltip(movedown, L["Move Down"])
+        movegroup:AddChild(movedown)
+    else
+        group:SetUserData("table", { columns = { 44, 1 } })
     end
-    group:AddChild(icongroup)
+
+    local actionicon = AceGUI:Create("Icon")
+    actionicon:SetWidth(44)
+    actionicon:SetImageSize(36, 36)
+    actionicon:SetUserData("top", top)
+    actionicon:SetUserData("value", value)
+    actionicon:SetCallback("OnClick", ChangeConditionType)
+
+    local description, helpfunc
+    if (value == nil or value.type == nil) then
+        actionicon:SetImage("Interface\\Icons\\Trade_Engineering")
+        addon.AddTooltip(actionicon, L["Please Choose ..."])
+    elseif (value.type == "AND") then
+        actionicon:SetImage("Interface\\Icons\\Spell_ChargePositive")
+        description = L["AND"]
+        helpfunc = addon.layout_condition_and_help
+    elseif (value.type == "OR") then
+        actionicon:SetImage("Interface\\Icons\\Spell_ChargeNegative")
+        description = L["OR"]
+        helpfunc = addon.layout_condition_or_help
+    elseif (value.type == "NOT") then
+        actionicon:SetImage("Interface\\PaperDollInfoFrame\\UI-GearManager-LeaveItem-Transparent")
+        description = L["NOT"]
+        helpfunc = addon.layout_condition_not_help
+    else
+        local icon
+        icon, description, helpfunc = funcs:describe(value.type)
+        if (icon == nil) then
+            actionicon:SetImage("Interface\\Icons\\INV_Misc_QuestionMark")
+        else
+            actionicon:SetImage(icon)
+        end
+    end
+
+    group:AddChild(actionicon)
+
+    if description then
+        group:SetTitle(description)
+        addon.AddTooltip(actionicon, description)
+    end
 
     if (value ~= nil and value.type ~= nil) then
         local arraygroup = AceGUI:Create("SimpleGroup")
         arraygroup:SetFullWidth(true)
         arraygroup:SetLayout("Flow")
         arraygroup:SetUserData("top", top)
+
+        if helpfunc and description then
+            local addgroup = arraygroup
+            local help = AceGUI:Create("Help")
+            help:SetLayout(helpfunc)
+            help:SetTitle(description)
+            help:SetTooltip(description .. " " .. L["Help"])
+            help:SetFrameSize(400, 300)
+            addgroup:AddChild(help)
+            local func = addgroup.LayoutFunc
+            addgroup.LayoutFunc = function (content, children)
+                func(content, children)
+                help:SetPoint("TOPRIGHT", 8, 8)
+            end
+        end
 
         if (value.type == "AND" or value.type == "OR") then
             if (value.value == nil) then
@@ -577,6 +613,7 @@ local function ActionGroup(parent, value, idx, array)
         else
             funcs:widget(arraygroup, spec, value)
         end
+
         group:AddChild(arraygroup)
     end
 
@@ -701,7 +738,7 @@ function addon:describeCondition(type)
     if (conditions[type] == nil) then
         return nil, nil
     end
-    return conditions[type].icon, conditions[type].description
+    return conditions[type].icon, conditions[type].description, conditions[type].help
 end
 
 function addon:widgetCondition(parent, spec, value)
@@ -777,7 +814,7 @@ function addon:describeSwitchCondition(type)
     if (switchConditions[type] == nil) then
         return nil, nil
     end
-    return switchConditions[type].icon, switchConditions[type].description
+    return switchConditions[type].icon, switchConditions[type].description, switchConditions[type].help
 end
 
 function addon:widgetSwitchCondition(parent, spec, value)

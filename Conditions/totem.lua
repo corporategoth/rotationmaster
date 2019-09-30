@@ -5,8 +5,7 @@ if select(2, UnitClass("player")) ~= "SHAMAN" then return end
 
 local AceGUI = LibStub("AceGUI-3.0")
 local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
-local tostring, tonumber, pairs = tostring, tonumber, pairs
-local floor = math.floor
+local color = color
 
 -- From constants
 local operators, totems = addon.operators, addon.totems
@@ -14,6 +13,10 @@ local operators, totems = addon.operators, addon.totems
 -- From utils
 local compare, compareString, nullable, keys, isin, getCached, isSpellOnSpec, round =
     addon.compare, addon.compareString, addon.nullable, addon.keys, addon.isin, addon.getCached, addon.isSpellOnSpec, addon.round
+
+local helpers = addon.help_funcs
+local CreateText, CreatePictureText, CreateButtonText, Indent, Gap =
+helpers.CreateText, helpers.CreatePictureText, helpers.CreateButtonText, helpers.Indent, helpers.Gap
 
 addon:RegisterCondition(L["Spells / Items"], "TOTEM", {
     description = L["Totem Present"],
@@ -45,6 +48,10 @@ addon:RegisterCondition(L["Spells / Items"], "TOTEM", {
         end
         parent:AddChild(totem)
     end,
+    help = function(frame)
+        frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Totem"] .. color.RESET .. " - " ..
+            "The style of totem that must be placed (Fire, Wind, Water or Earth.)"))
+    end
 })
 
 addon:RegisterCondition(L["Spells / Items"], "TOTEM_SPELL", {
@@ -81,6 +88,10 @@ addon:RegisterCondition(L["Spells / Items"], "TOTEM_SPELL", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(spell_group)
     end,
+    help = function(frame)
+        frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Totem"] .. color.RESET .. " - " ..
+            "The specific totem (by name) to check to ensure it is placed."))
+    end
 })
 
 addon:RegisterCondition(L["Spells / Items"], "TOTEM_REMAIN", {
@@ -125,6 +136,14 @@ addon:RegisterCondition(L["Spells / Items"], "TOTEM_REMAIN", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
     end,
+    help = function(frame)
+        frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Totem"] .. color.RESET .. " - " ..
+                "The style of totem that must be placed (Fire, Wind, Water or Earth.)"))
+        frame:AddChild(Gap())
+        addon.layout_condition_operatorwidget_help(frame, L["Totem Time Remaining"], L["Count"],
+            "The amount of time remaining on " .. color.BLIZ_YELLOW .. L["Totem"] .. color.RESET .. " before it" ..
+            "expire.")
+    end
 })
 
 addon:RegisterCondition(L["Spells / Items"], "TOTEM_SPELL_REMAIN", {
@@ -168,4 +187,12 @@ addon:RegisterCondition(L["Spells / Items"], "TOTEM_SPELL_REMAIN", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
     end,
+    help = function(frame)
+        frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Totem"] .. color.RESET .. " - " ..
+                "The specific totem (by name) to check to ensure it is placed."))
+        frame:AddChild(Gap())
+        addon.layout_condition_operatorwidget_help(frame, L["Specific Totem Time Remaining"], L["Count"],
+            "The amount of time remaining on " .. color.BLIZ_YELLOW .. L["Totem"] .. color.RESET .. " before it" ..
+                    "expire.")
+    end
 })

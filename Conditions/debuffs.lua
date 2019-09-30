@@ -2,15 +2,18 @@ local addon_name, addon = ...
 
 local AceGUI = LibStub("AceGUI-3.0")
 local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
-local SpellData = LibStub("AceGUI-3.0-SpellLoader")
-local tonumber = tonumber
+local color = color
 
 -- From constants
 local operators, units, unitsPossessive, debufftypes = addon.operators, addon.units, addon.unitsPossessive,addon.debufftypes
 
 -- From utils
-local compare, compareString, nullable, keys, isin, isint, deepcopy, getCached, playerize =
-    addon.compare, addon.compareString, addon.nullable, addon.keys, addon.isin, addon.isint, addon.deepcopy, addon.getCached, addon.playerize
+local compare, compareString, nullable, keys, isin, getCached, playerize =
+    addon.compare, addon.compareString, addon.nullable, addon.keys, addon.isin, addon.getCached, addon.playerize
+
+local helpers = addon.help_funcs
+local CreateText, CreatePictureText, CreateButtonText, Indent, Gap =
+    helpers.CreateText, helpers.CreatePictureText, helpers.CreateButtonText, helpers.Indent, helpers.Gap
 
 local UnitDebuff
 if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
@@ -56,6 +59,11 @@ addon:RegisterCondition(L["Buffs"], "DEBUFF", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(spell_group)
     end,
+    help = function(frame)
+        addon.layout_condition_unitwidget_help(frame)
+        frame:AddChild(Gap())
+        addon.layout_condition_spellnamewidget_help(frame)
+    end
 })
 
 addon:RegisterCondition(L["Buffs"], "DEBUFF_REMAIN", {
@@ -102,6 +110,16 @@ addon:RegisterCondition(L["Buffs"], "DEBUFF_REMAIN", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
     end,
+    help = function(frame)
+        addon.layout_condition_unitwidget_help(frame)
+        frame:AddChild(Gap())
+        addon.layout_condition_spellnamewidget_help(frame)
+        frame:AddChild(Gap())
+        addon.layout_condition_operatorwidget_help(frame, L["Debuff Time Remaining"], L["Seconds"],
+            "The number of seconds remaining on a debuff applied to the " .. color.BLIZ_YELLOW .. L["Unit"] ..
+            color.RESET .. ".  If the debuff is not present, this condition will not be successful (regardless " ..
+            "of the " .. color.BLIZ_YELLOW .. "Operator" .. color.RESET .. " used.)")
+    end
 })
 
 addon:RegisterCondition(L["Buffs"], "DEBUFF_STACKS", {
@@ -146,6 +164,16 @@ addon:RegisterCondition(L["Buffs"], "DEBUFF_STACKS", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
     end,
+    help = function(frame)
+        addon.layout_condition_unitwidget_help(frame)
+        frame:AddChild(Gap())
+        addon.layout_condition_spellnamewidget_help(frame)
+        frame:AddChild(Gap())
+        addon.layout_condition_operatorwidget_help(frame, L["Debuff Stacks"], L["Stacks"],
+            "The number of stacks of a deuff applied to the " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET ..
+            ".  If the deuff is not present, this condition will not be successful (regardless " ..
+            "of the " .. color.BLIZ_YELLOW .. "Operator" .. color.RESET .. " used.)")
+    end
 })
 
 addon:RegisterCondition(L["Buffs"], "DISPELLABLE", {
@@ -196,4 +224,10 @@ addon:RegisterCondition(L["Buffs"], "DISPELLABLE", {
 
         return nil
     end,
+    help = function(frame)
+        addon.layout_condition_unitwidget_help(frame)
+        frame:AddChild(Gap())
+        frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Debuff Type"] .. color.RESET .. " - " ..
+            "The type of debuff that can be dispelled from " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. "."))
+    end
 })

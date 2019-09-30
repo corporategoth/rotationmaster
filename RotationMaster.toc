@@ -23,11 +23,26 @@ main.lua
 utils.lua
 buttons.lua
 upgrade.lua
+
+Widgets/help.lua
+Widgets/directional.lua
+
+# Configuration UI
 Options/general.lua
 Options/effects.lua
 Options/itemset.lua
 Options/rotations.lua
 Options/conditional.lua
+
+# Help Files
+Help/common.lua
+Help/general.lua
+Help/effects.lua
+Help/itemsets.lua
+Help/rotations.lua
+Help/conditional.lua
+
+# Conditions
 Conditions/common.lua
 Conditions/character.lua
 Conditions/stats.lua
@@ -42,3 +57,4 @@ Conditions/casting.lua
 Conditions/channeling.lua
 Conditions/spatial.lua
 Conditions/switch.lua
+

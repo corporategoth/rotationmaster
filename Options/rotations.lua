@@ -11,7 +11,7 @@ local pairs, color, tonumber = pairs, color, tonumber
 local function spacer(width)
     local rv = AceGUI:Create("Label")
     rv:SetText(nil)
-    rv:SetRelativeWidth(width)
+    rv:SetWidth(width)
     return rv
 end
 
@@ -88,6 +88,7 @@ local function add_top_buttons(list, idx, callback, delete_cb)
         table.insert(list, 1, tmp)
         callback()
     end)
+    addon.AddTooltip(movetop, L["Move to Top"])
     button_group:AddChild(movetop)
 
     local moveup = AceGUI:Create("Icon")
@@ -105,6 +106,7 @@ local function add_top_buttons(list, idx, callback, delete_cb)
         list[idx] = tmp
         callback()
     end)
+    addon.AddTooltip(moveup, L["Move Up"])
     button_group:AddChild(moveup)
 
     local movedown = AceGUI:Create("Icon")
@@ -122,6 +124,7 @@ local function add_top_buttons(list, idx, callback, delete_cb)
         list[idx] = tmp
         callback()
     end)
+    addon.AddTooltip(movedown, L["Move Down"])
     button_group:AddChild(movedown)
 
     local movebottom = AceGUI:Create("Icon")
@@ -138,6 +141,7 @@ local function add_top_buttons(list, idx, callback, delete_cb)
         table.insert(list, tmp)
         callback()
     end)
+    addon.AddTooltip(movebottom, L["Move to Bottom"])
     button_group:AddChild(movebottom)
 
     local delete = AceGUI:Create("Icon")
@@ -147,6 +151,7 @@ local function add_top_buttons(list, idx, callback, delete_cb)
         delete_cb()
         callback()
     end)
+    addon.AddTooltip(delete, DELETE)
     button_group:AddChild(delete)
 
     return button_group
@@ -203,6 +208,7 @@ local function add_effect_group(specID, rotid, rot, refresh)
     local effect = AceGUI:Create("Dropdown")
     effect:SetLabel(L["Effect"])
     effect:SetHeight(44)
+    effect:SetFullWidth(true)
     effect:SetCallback("OnValueChanged", function(widget, event, val)
         if val == DEFAULT then
             rot.effect = nil
@@ -224,7 +230,10 @@ local function add_effect_group(specID, rotid, rot, refresh)
 
     group:AddChild(effect_group)
 
-    group:AddChild(spacer(0.05))
+    local spc1 = AceGUI:Create("Label")
+    spc1:SetText(nil)
+    spc1:SetRelativeWidth(0.05)
+    group:AddChild(spc1)
 
     local magnification = AceGUI:Create("Slider")
     magnification:SetRelativeWidth(0.45)
@@ -261,7 +270,7 @@ local function add_effect_group(specID, rotid, rot, refresh)
     local position_group = AceGUI:Create("SimpleGroup")
     position_group:SetLayout("Table")
     position_group:SetRelativeWidth(0.65)
-    position_group:SetUserData("table", { columns = { 1, 20, 35, 50 } })
+    position_group:SetUserData("table", { columns = { 1, 10, 40, 10, 50 } })
 
     local setpoint_values = addon.deepcopy(addon.setpoints)
     setpoint_values[DEFAULT] = DEFAULT
@@ -269,6 +278,7 @@ local function add_effect_group(specID, rotid, rot, refresh)
     local update_position_buttons
 
     local position = AceGUI:Create("Dropdown")
+    position:SetFullWidth(true)
     position:SetLabel(L["Position"])
     position:SetCallback("OnValueChanged", function(widget, event, val)
         if val == DEFAULT then
@@ -289,76 +299,36 @@ local function add_effect_group(specID, rotid, rot, refresh)
     end
     position_group:AddChild(position)
 
-    position_group:AddChild(spacer(0.1))
-
-    local directional_group = AceGUI:Create("SimpleGroup")
-    directional_group:SetLayout("Table")
-    directional_group:SetUserData("table", { columns = { 10, 10, 10 } })
-
-    directional_group:AddChild(spacer(1))
+    position_group:AddChild(spacer(5))
 
     local x_offs = AceGUI:Create("EditBox")
     local y_offs = AceGUI:Create("EditBox")
 
-    local button_up = AceGUI:Create("InteractiveLabel")
-    button_up:SetText("^")
-    button_up:SetColor(0, 1.0, 1.0)
-    button_up:SetCallback("OnClick", function(widget, event, val)
-        rot.yoffs = (rot.yoffs or 0) + 1
-        y_offs:SetText(rot.yoffs)
-        addon:RemoveAllCurrentGlows()
+    local directional = AceGUI:Create("Directional")
+    directional:SetCallback("OnClick", function(widget, event, button, direction)
+        if direction == "UP" then
+            rot.yoffs = (rot.yoffs or 0) + 1
+            y_offs:SetText(rot.yoffs)
+        elseif direction == "LEFT" then
+            rot.xoffs = (rot.xoffs or 0) - 1
+            x_offs:SetText(rot.xoffs)
+        elseif direction == "CENTER" then
+            rot.xoffs = 0
+            rot.yoffs = 0
+            x_offs:SetText(rot.xoffs)
+            y_offs:SetText(rot.yoffs)
+        elseif direction == "RIGHT" then
+            rot.xoffs = (rot.xoffs or 0) + 1
+            x_offs:SetText(rot.xoffs)
+        elseif direction == "DOWN" then
+            rot.yoffs = (rot.yoffs or 0) - 1
+            y_offs:SetText(rot.yoffs)
+        end
+        addon:RemoveCooldownGlowIfCurrent(specID, rotid, rot)
     end)
-    directional_group:AddChild(button_up)
+    position_group:AddChild(directional)
 
-    directional_group:AddChild(spacer(1))
-
-    local button_left = AceGUI:Create("InteractiveLabel")
-    button_left:SetText("<")
-    button_left:SetColor(0, 1.0, 1.0)
-    button_left:SetCallback("OnClick", function(widget, event, val)
-        rot.xoffs = (rot.xoffs or 0) - 1
-        x_offs:SetText(rot.xoffs)
-        addon:RemoveAllCurrentGlows()
-    end)
-    directional_group:AddChild(button_left)
-
-    local button_center = AceGUI:Create("InteractiveLabel")
-    button_center:SetText("o")
-    button_center:SetColor(0, 1.0, 1.0)
-    button_center:SetCallback("OnClick", function(widget, event, val)
-        rot.xoffs = 0
-        rot.yoffs = 0
-        x_offs:SetText(rot.xoffs)
-        y_offs:SetText(rot.yoffs)
-        addon:RemoveAllCurrentGlows()
-    end)
-    directional_group:AddChild(button_center)
-
-    local button_right = AceGUI:Create("InteractiveLabel")
-    button_right:SetText(">")
-    button_right:SetColor(0, 1.0, 1.0)
-    button_right:SetCallback("OnClick", function(widget, event, val)
-        rot.xoffs = (rot.xoffs or 0) + 1
-        x_offs:SetText(rot.xoffs)
-        addon:RemoveAllCurrentGlows()
-    end)
-    directional_group:AddChild(button_right)
-
-    directional_group:AddChild(spacer(1))
-
-    local button_down = AceGUI:Create("InteractiveLabel")
-    button_down:SetText("v")
-    button_down:SetColor(0, 1.0, 1.0)
-    button_down:SetCallback("OnClick", function(widget, event, val)
-        rot.yoffs = (rot.yoffs or 0) - 1
-        y_offs:SetText(rot.yoffs)
-        addon:RemoveAllCurrentGlows()
-    end)
-    directional_group:AddChild(button_down)
-
-    directional_group:AddChild(spacer(1))
-
-    position_group:AddChild(directional_group)
+    position_group:AddChild(spacer(5))
 
     local offset_group = AceGUI:Create("SimpleGroup")
     offset_group:SetLayout("Table")
@@ -387,11 +357,7 @@ local function add_effect_group(specID, rotid, rot, refresh)
                 (effects[name2idx[rot.effect or profile["effect"]]].type == "blizzard" or
                         (effects[name2idx[rot.effect or profile["effect"]]].type == "texture" and rot.setpoint == nil)) or false
         position:SetDisabled(effects[name2idx[rot.effect or profile["effect"]]].type ~= "texture")
-        button_up:SetDisabled(disable)
-        button_left:SetDisabled(disable)
-        button_center:SetDisabled(disable)
-        button_right:SetDisabled(disable)
-        button_down:SetDisabled(disable)
+        directional:SetDisabled(disable)
         x_offs:SetText(rot.xoffs or profile["xoffs"])
         y_offs:SetText(rot.yoffs or profile["yoffs"])
     end
@@ -660,6 +626,7 @@ local function add_action_group(specID, rotid, rot, callback, refresh)
         action_group:AddChild(action)
 
         edit_button:SetText(EDIT)
+        edit_button:SetFullWidth(true)
         edit_button:SetDisabled(rot.action == nil)
         edit_button:SetUserData("cell", { alignV = "bottom" })
         edit_button:SetCallback("OnClick", function(widget, event, ...)
@@ -741,7 +708,7 @@ local function add_conditions(specID, idx, rotid, rot, callback)
             condition_valid:SetText(color.RED .. L["THIS CONDITION DOES NOT VALIDATE"] .. color.RESET)
             conditions:AddChild(condition_valid)
 
-            bottom_group:AddChild(spacer(1))
+            bottom_group:AddChild(spacer(5))
         else
             if specID == addon.currentSpec then
                 local condition_eval = AceGUI:Create("Label")
@@ -761,7 +728,7 @@ local function add_conditions(specID, idx, rotid, rot, callback)
             else
                 addon.currentConditionEval = nil
 
-                bottom_group:AddChild(spacer(1))
+                bottom_group:AddChild(spacer(5))
             end
         end
 
@@ -878,6 +845,12 @@ function addon:get_cooldown_list(frame, specID, rotid, id, callback)
     local conditions_frame = add_conditions(specID, idx, rotid, rot, callback)
     frame:AddChild(conditions_frame)
 
+    local help = AceGUI:Create("Help")
+    help:SetLayout(addon.layout_cooldown_help)
+    help:SetTitle(L["Cooldowns"])
+    frame:AddChild(help)
+    help:SetPoint("TOPLEFT", -12, 4)
+
     addon:configure_frame(frame)
     frame:ResumeLayout()
     frame:DoLayout()
@@ -922,8 +895,15 @@ function addon:get_rotation_list(frame, specID, rotid, id, callback)
     local conditions_frame = add_conditions(specID, idx, rotid, rot, callback)
     frame:AddChild(conditions_frame)
 
+    local help = AceGUI:Create("Help")
+    help:SetLayout(addon.layout_rotation_help)
+    help:SetTitle(L["Rotations"])
+    frame:AddChild(help)
+    help:SetPoint("TOPLEFT", -12, 4)
+
     addon:configure_frame(frame)
     frame:ResumeLayout()
     frame:DoLayout()
+
 end
 
