@@ -230,10 +230,6 @@ function addon:HandleCommand(str)
     elseif cmd == "enable" then
         addon:enable()
 
-    elseif cmd == "test" then
-        local result, target = SecureCmdOptionParse(string.sub(str, npos))
-        print("Target = " .. tostring(target) .. ", result = " .. tostring(result))
-
     elseif cmd == "current" then
         if self.currentRotation == nil then
             addon:info(L["No rotation is currently active."])
