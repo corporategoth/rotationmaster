@@ -192,7 +192,6 @@ local events = {
     'NAME_PLATE_UNIT_ADDED',
     'NAME_PLATE_UNIT_REMOVED',
 
-    'CURSOR_UPDATE',
     'BAG_UPDATE',
 }
 
@@ -230,6 +229,10 @@ function addon:HandleCommand(str)
 
     elseif cmd == "enable" then
         addon:enable()
+
+    elseif cmd == "test" then
+        local result, target = SecureCmdOptionParse(string.sub(str, npos))
+        print("Target = " .. tostring(target) .. ", result = " .. tostring(result))
 
     elseif cmd == "current" then
         if self.currentRotation == nil then
@@ -342,6 +345,7 @@ function addon:OnInitialize()
     self.conditionEvalTimer = nil
     self.lastCacheReport = GetTime()
 
+    self.itemSetButtons = {}
     self.itemSetCallback = nil
     self.bindingItemSet = nil
 
@@ -1074,10 +1078,14 @@ addon.ACTIONBAR_SLOT_CHANGED = function(self, event, slot)
     local pickupItemSet
     for id, bslot in pairs(bindings) do
         if bslot == slot then
-            pickupItemSet = id
-            bindings[id] = nil
-            if addon.itemSetCallback then
-                addon.itemSetCallback(id)
+            local type, action = GetCursorInfo()
+            -- Sometimes we get this when we didn't actually pick up anything.  Odd.
+            if type == "item" and addon:FindItemInItemSet(id, action) ~= nil then
+                pickupItemSet = id
+                bindings[id] = nil
+                if addon.itemSetCallback then
+                    addon.itemSetCallback(id)
+                end
             end
         end
     end
@@ -1091,10 +1099,7 @@ addon.ACTIONBAR_SLOT_CHANGED = function(self, event, slot)
     end
 
     if pickupItemSet ~= nil then
-        local type, action = GetCursorInfo()
-        if type == "item" and addon:FindItemInItemSet(pickupItemSet, action) ~= nil then
-            addon.bindingItemSet = pickupItemSet
-        end
+        addon.bindingItemSet = pickupItemSet
     end
 end
 
@@ -1160,6 +1165,8 @@ addon.ZONE_CHANGED_INDOORS = addon.ZONE_CHANGED
 addon.GROUP_ROSTER_UPDATE = addon.ZONE_CHANGED
 
 function addon:PLAYER_ENTERING_WORLD()
+    local itemsets = self.db.char.itemsets
+    local global_itemsets = self.db.global.itemsets
     local bindings = self.db.char.bindings
 
     addon:verbose("Player entered world.")
@@ -1168,6 +1175,13 @@ function addon:PLAYER_ENTERING_WORLD()
 
     for id, slot in pairs(bindings) do
         self:UpdateBoundButton(id)
+    end
+
+    for id, _ in pairs(itemsets) do
+        self:UpdateItemSetButtons(id)
+    end
+    for id, _ in pairs(global_itemsets) do
+        self:UpdateItemSetButtons(id)
     end
 end
 
@@ -1219,21 +1233,6 @@ end
 
 function addon:NAME_PLATE_UNIT_REMOVED(event, unit)
     self.unitsInRange[unit] = nil
-end
-
-function addon:CURSOR_UPDATE(event)
-    if addon.bindingItemSet then
-        local type, action = GetCursorInfo()
-        --print("[" .. tostring(addon.bindingItemSet) .. "] Got " .. tostring(type) .. "/" .. tostring(action) ..
-        --    " cursor update: HasItem(" .. tostring(CursorHasItem()) .. "), GetMouseButtonClicked(" ..
-        --    tostring(GetMouseButtonClicked()) .. ")")
-        if type == nil and action == nil then
-            return
-        end
-        if type ~= "item" or not addon:FindItemInItemSet(addon.bindingItemSet, action) then
-            addon.bindingItemSet = nil
-        end
-    end
 end
 
 function addon:BAG_UPDATE(event)

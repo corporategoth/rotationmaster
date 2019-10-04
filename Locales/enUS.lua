@@ -46,6 +46,9 @@ L["Combat"] = true
 L["Other"] = true
 L["Custom"] = true
 
+L["Bind"] = true
+L["Unbind"] = true
+
 L["is less than"] = true
 L["is less than or equal to"] = true
 L["is greater than"] = true

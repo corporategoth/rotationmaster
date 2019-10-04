@@ -5,9 +5,12 @@ local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
 local AceGUI = LibStub("AceGUI-3.0")
 local SpellData = LibStub("AceGUI-3.0-SpellLoader")
 
+local CreateFrame, UIParent = CreateFrame, UIParent
+
 local pairs, color, tonumber = pairs, color, tonumber
-local HideOnEscape, cleanArray, getCached, getRetryCached, isint =
-    addon.HideOnEscape, addon.cleanArray, addon.getCached, addon.getRetryCached, addon.isint
+local units, macroAttribs = addon.units, addon.macroAttribs
+local HideOnEscape, cleanArray, getCached, getRetryCached, isint, keys =
+    addon.HideOnEscape, addon.cleanArray, addon.getCached, addon.getRetryCached, addon.isint, addon.keys
 
 local function spacer(width)
     local rv = AceGUI:Create("Label")
@@ -186,6 +189,57 @@ function addon:ItemSetInUse(id)
         end
     end
     return false
+end
+
+function addon:UpdateItemSetButtons(id)
+    local itemsets = self.db.char.itemsets
+    local global_itemsets = self.db.global.itemsets
+
+    local itemset
+    if itemsets[id] ~= nil then
+        itemset = itemsets[id]
+    elseif global_itemsets[id] ~= nil then
+        itemset = global_itemsets[id]
+    end
+
+    if not itemset then
+        if addon.itemSetButtons[id] then
+            for key, button in pairs(addon.itemSetButtons[id]) do
+                button:SetParent(nil)
+                addon.itemSetButtons[id][key] = nil
+                _G[button:GetName()] = nil
+            end
+            addon.itemSetButtons[id] = nil
+        end
+    else
+        local prefix = "RM_" .. itemset.name:gsub("%W", "") .. "_"
+        if not addon.itemSetButtons[id] then
+            addon.itemSetButtons[id] = {}
+        end
+        for key, value in pairs(units) do
+            local button = addon.itemSetButtons[id][key]
+            if button and button:GetName() ~= prefix .. key then
+                button:SetParent(nil)
+                _G[button:GetName()] = nil
+                button = nil
+            end
+
+            if not button then
+                button = CreateFrame("Button", prefix .. key, UIParent, "SecureActionButtonTemplate")
+                button:Hide()
+                button:SetAttribute("type", "macro")
+                addon.itemSetButtons[id][key] = button
+            end
+
+            local itemid = addon:FindFirstItemOfItems({}, itemset.items, true) or
+                        addon:FindFirstItemInItems(itemset.items)
+            local macrotext = ""
+            for _, item in pairs(itemset.items) do
+                macrotext = macrotext .. "/use [@" .. key .. "] item:" .. item .. "\n"
+            end
+            button:SetAttribute("macrotext", macrotext)
+        end
+    end
 end
 
 local function HandleDelete(id, update)
@@ -547,6 +601,23 @@ function addon:item_list_popup(name, items, update, onclose)
     frame:DoLayout()
 end
 
+function addon:bind_popup(name, items, update, onclose)
+    local frame = AceGUI:Create("Frame")
+    frame:PauseLayout()
+
+    frame:SetTitle(L["Bind"] .. ": " .. name)
+    frame:SetFullWidth(true)
+    frame:SetFullHeight(true)
+    frame:SetLayout("Fill")
+    if onclose then
+        frame:SetCallback("OnClose", function(widget)
+            onclose(widget)
+        end)
+    end
+    HideOnEscape(frame)
+
+end
+
 local function item_list(frame, selected, itemset, update)
     local bindings = addon.db.char.bindings
     local itemsets = addon.db.char.itemsets
@@ -558,7 +629,7 @@ local function item_list(frame, selected, itemset, update)
     local group = AceGUI:Create("SimpleGroup")
     group:SetFullWidth(true)
     group:SetLayout("Table")
-    group:SetUserData("table", { columns = { 44, 1, 35, 140, 140 } })
+    group:SetUserData("table", { columns = { 44, 1, 35, 280 } })
     group.frame:SetScript("OnHide", function()
         if addon.bindingItemSet then
             addon.bindingItemSet = nil
@@ -571,21 +642,25 @@ local function item_list(frame, selected, itemset, update)
     end)
     frame:AddChild(group)
 
-    local icon = AceGUI:Create("Icon")
+    local icon = AceGUI:Create("InteractiveLabel")
     local name = AceGUI:Create("EditBox")
     local glob_button = AceGUI:Create("CheckBox")
     local delete = AceGUI:Create("Button")
     local importexport = AceGUI:Create("Button")
-    local clicktobind = AceGUI:Create("Heading")
+    local macro = AceGUI:Create("Button")
+    local bind = AceGUI:Create("Button")
+    local bound = AceGUI:Create("Label")
     local scrollwin = AceGUI:Create("ScrollFrame")
 
     addon.itemSetCallback = function(id)
         if id == selected then
             if bindings[selected] ~= nil then
                 addon:ScheduleTimer("HighlightSlot", 0.5, bindings[selected])
-                clicktobind:SetText(nil)
-            elseif itemset and #itemset.items > 0 then
-                clicktobind:SetText(color.WHITE .. L["Click the icon above to bind to your action bar"])
+                bind:SetText(L["Unbind"])
+                bound:SetText(bindings[selected])
+            else
+                bind:SetText(L["Bind"])
+                bound:SetText(nil)
             end
         end
     end
@@ -599,18 +674,13 @@ local function item_list(frame, selected, itemset, update)
             end
             addon:UpdateItem_ID_Image(itemid, nil, icon)
             addon:UpdateBoundButton(selected)
+            addon:UpdateItemSetButtons(selected)
         end
         addon.itemSetCallback(selected)
     end
     update_itemid()
 
     icon:SetImageSize(36, 36)
-    icon:SetCallback("OnClick", function(widget)
-        if itemid then
-            addon.bindingItemSet = selected
-            PickupItem(itemid)
-        end
-    end)
     icon:SetCallback("OnEnter", function(widget)
         if itemid then
             GameTooltip:SetOwner(icon.frame, "ANCHOR_BOTTOMRIGHT", 3)
@@ -641,6 +711,7 @@ local function item_list(frame, selected, itemset, update)
         else
             itemset.name = v
         end
+        addon:UpdateItemSetButtons(selected)
         update()
     end)
     group:AddChild(name)
@@ -674,6 +745,28 @@ local function item_list(frame, selected, itemset, update)
 
     group:AddChild(global)
 
+    local buttongroup = AceGUI:Create("SimpleGroup")
+    buttongroup:SetFullWidth(true)
+    buttongroup:SetLayout("Table")
+    buttongroup:SetUserData("table", { columns = { 1, 1 } })
+    group:AddChild(buttongroup)
+
+    bind:SetDisabled(itemset == nil)
+    bind:SetCallback("OnClick", function(widget, event)
+        if bindings[selected] then
+            PickupAction(bindings[selected])
+            ClearCursor()
+            bindings[selected] = nil
+            bind:SetText(L["Bind"])
+        else
+            addon.bindingItemSet = selected
+            PickupItem(itemid)
+        end
+    end)
+    buttongroup:AddChild(bind)
+
+    buttongroup:AddChild(bound)
+
     delete:SetText(DELETE)
     delete:SetDisabled(itemset == nil)
     delete:SetCallback("OnClick", function(widget, event)
@@ -683,10 +776,11 @@ local function item_list(frame, selected, itemset, update)
             bindings[selected] = nil
             itemsets[selected] = nil
             global_itemsets[selected] = nil
+            addon:UpdateItemSetButtons(selected)
             update()
         end
     end)
-    group:AddChild(delete)
+    buttongroup:AddChild(delete)
 
     importexport:SetText(L["Import/Export"])
     importexport:SetDisabled(itemset == nil)
@@ -695,10 +789,11 @@ local function item_list(frame, selected, itemset, update)
             create_item_list(scrollwin, itemset and itemset.items or nil, update_itemid)
         end)
     end)
-    group:AddChild(importexport)
+    buttongroup:AddChild(importexport)
 
-    clicktobind:SetFullWidth(true)
-    frame:AddChild(clicktobind)
+    local separator = AceGUI:Create("Heading")
+    separator:SetFullWidth(true)
+    frame:AddChild(separator)
 
     scrollwin:SetFullWidth(true)
     scrollwin:SetFullHeight(true)
