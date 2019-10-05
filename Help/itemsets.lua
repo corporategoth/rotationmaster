@@ -144,10 +144,12 @@ function addon.layout_itemsets_options_help(frame)
             "is hovering over's target.")))
 
     group:AddChild(Gap())
-    group:AddChild(CreateText("An example usage of this might be something like, in an addon such a Clique, " ..
-            "setting a custom macro such as:"))
+    group:AddChild(CreateText("An example usage of this might be to create a macro like this:"))
     group:AddChild(Indent(40, CreateText(color.MAGENTA .. "/click [@mouseover,nodead,help] RM_Bandages_mouseover" ..
             color.RESET)))
+    group:AddChild(CreateText("In the above example, the macro is 'checking' that your mouseover target " ..
+            "is not dead and is an ally, and if so, invoking the hidden button that calls /use on the first " ..
+            "found item in the item set with a target of your mouseover target."))
 
     group:AddChild(Gap())
     group:AddChild(CreateText("This functionaliy is not related to action bar bindings."))
