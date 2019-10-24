@@ -53,6 +53,7 @@ local defaults = {
         disable_autoswitch = false,
         live_config_update = 2,
         spell_history = 60,
+        combat_history = 10,
         minimap = {
             hide = false,
         }
@@ -193,6 +194,7 @@ local events = {
     'NAME_PLATE_UNIT_REMOVED',
 
     'BAG_UPDATE',
+    'UNIT_COMBAT',
 }
 
 local mainline_events = {
@@ -332,6 +334,7 @@ function addon:OnInitialize()
     self.unitsInRange = {}
 
     self.spellHistory = {}
+    self.combatHistory = {}
     self.playerUnitFrame = nil
 
     self.announced = {}
@@ -508,6 +511,7 @@ function addon:disable()
     end
     self.playerUnitFrame = nil
     self.spellHistory = {}
+    self.combatHistory = {}
     self:UnregisterAllEvents()
 end
 
@@ -762,6 +766,21 @@ function addon:EvaluateNextAction()
                 table.remove(self.spellHistory, #self.spellHistory)
             else
                 break
+            end
+        end
+
+        threshold_time = GetTime() - self.db.profile.combat_history
+        for unit,history in pairs(self.combatHistory) do
+            while true do
+                if #history == 0 then
+                    break
+                end
+
+                if history[#history].time < threshold_time then
+                    table.remove(history, #history)
+                else
+                    break
+                end
             end
         end
         self.evaluationProfile:child("environment"):stop()
@@ -1237,4 +1256,18 @@ function addon:BAG_UPDATE(event)
     for id, slot in pairs(bindings) do
         self:UpdateBoundButton(id)
     end
+end
+
+function addon:UNIT_COMBAT(event, unit, action, severity, value, type)
+    if self.combatHistory[unit] == nil then
+        self.combatHistory[unit] = {}
+    end
+
+    table.insert(self.combatHistory[unit], 1, {
+        time = GetTime(),
+        action = action,
+        severity = severity,
+        value = value,
+        type = type,
+    })
 end

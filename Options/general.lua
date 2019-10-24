@@ -101,6 +101,16 @@ local function create_primary_options(frame)
     end)
     general_group:AddChild(ignore_mana)
 
+    local combat_history = AceGUI:Create("Slider")
+    combat_history:SetFullWidth(true)
+    combat_history:SetLabel(L["Combat History Memory (seconds)"])
+    combat_history:SetValue(profile["combat_history"])
+    combat_history:SetSliderValues(0.0, 300, 1)
+    combat_history:SetCallback("OnValueChanged", function(widget, event, val)
+        profile["combat_history"] = val
+    end)
+    general_group:AddChild(combat_history)
+
     local ignore_range = AceGUI:Create("CheckBox")
     ignore_range:SetFullWidth(true)
     ignore_range:SetLabel(L["Ignore Range"])

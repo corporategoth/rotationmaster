@@ -1,3 +1,5 @@
+- Add 'I was damaged for ...' and 'I was healed for ...' (absolute and relative)?
+
 - Add 'macro' to action type (ie. not just spell / item) to look for buttons by macro name - requires major rewrite of highlighting code
 
 - Default rotations for all classes (classic @ 60, retail @ 120).

@@ -125,6 +125,19 @@ addon.totems = {
     L["Air"],
 }
 
+addon.actions = {
+    HEAL = L["healed"],
+    DODGE = L["dodged"],
+    BLOCK = L["blocked"],
+    WOUND = L["hit"],
+    WOUND_CRITICAL = L["critically hit"],
+    WOUND_CRUSHING = L["hit with a crushing blow"],
+    WOUND_GLANCING = L["hit with a glancing blow"],
+    MISS = L["missed"],
+    PARRY = L["parried"],
+    RESIST = L["resisted"]
+}
+
 addon.points = {
     DEATHKNIGHT = Enum.PowerType.Runes,
     WARLOCK = Enum.PowerType.SoulShards,

@@ -10,7 +10,7 @@ if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
 end
 
 -- From constants
-local units, threat, operators = addon.units, addon.threat, addon.operators
+local units, threat, operators, actions = addon.units, addon.threat, addon.operators, addon.actions
 
 -- From utils
 local compare, compareString, nullable, keys, isin, deepcopy, getCached, playerize =
@@ -415,6 +415,136 @@ addon:RegisterCondition(L["Combat"], "ENEMY", {
     end,
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
+    end
+})
+
+addon:RegisterCondition(L["Combat"], "COMBAT_HISTORY", {
+    description = L["Combat Action History"],
+    icon = "Interface\\Icons\\Spell_shadow_shadowward",
+    valid = function(spec, value)
+        return (value.unit ~= nil and isin(units, value.unit) and
+                value.action ~= nil and isin(actions, value.action) and
+                value.operator ~= nil and isin(operators, value.operator) and
+                value.value ~= nil and value.value >= 0)
+    end,
+    evaluate = function(value, cache, evalStart)
+        if addon.combatHistory[value.unit] ~= nil then
+            for idx, entry in pairs(addon.combatHistory[value.unit]) do
+                if (compare(value.operator, idx, value.value)) and (value.action == entry.action or
+                    (entry.severity ~= nil and value.action == (entry.action .. '_' .. entry.severity))) then
+                    return true
+                end
+            end
+        end
+        return false
+    end,
+    print = function(spec, value)
+        return compareString(value.operator, string.format(playerize(value.unit, L["%s were %s"], L["%s was %s"]),
+                             nullable(units[value.unit], L["<unit>"]), nullable(actions[value.action], L["<action>"])),
+                             string.format(L["%s actions ago"], nullable(value.value)))
+    end,
+    widget = function(parent, spec, value)
+        local top = parent:GetUserData("top")
+        local root = top:GetUserData("root")
+        local funcs = top:GetUserData("funcs")
+
+        local unit = addon:Widget_UnitWidget(value, deepcopy(units, { "player", "pet", "target" }, true),
+            function() top:SetStatusText(funcs:print(root, spec)) end)
+        parent:AddChild(unit)
+
+        local action = AceGUI:Create("Dropdown")
+        action:SetLabel(L["Action Type"])
+        action:SetCallback("OnValueChanged", function(widget, event, v)
+            value.action = v
+            top:SetStatusText(funcs:print(root, spec))
+        end)
+        action.configure = function()
+            action:SetList(actions, keys(actions))
+            action:SetValue(value.action)
+        end
+        parent:AddChild(action)
+
+        local operator_group = addon:Widget_OperatorWidget(value, L["Count"],
+            function() top:SetStatusText(funcs:print(root, spec)) end)
+        parent:AddChild(operator_group)
+    end,
+    help = function(frame)
+        addon.layout_condition_unitwidget_help(frame)
+        frame:AddChild(Gap())
+        frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Action"] .. color.RESET .. " - " ..
+                "The kind of combat action to look for (Hit, Miss, Parried, etc)."))
+        frame:AddChild(Gap())
+        addon.layout_condition_operatorwidget_help(frame, L["Combat Action History"], L["Count"],
+            "How far back in your combat history to look for " .. color.BLIZ_YELLOW .. L["Action"] .. color.RESET ..
+            " (by count).  A value of 1 means the last combat action, 2 means two combat actions ago, etc.  " ..
+            "Each combat action treated separately.  Any combat action more than the setting of " .. color.BLUE ..
+            L["Combat History Memory (seconds)"] .. color.RESET .. " in the primary Rotation Master configuration " ..
+            "screen ago will not be available.")
+    end
+})
+
+addon:RegisterCondition(L["Combat"], "COMBAT_HISTORY_TIME", {
+    description = L["Combat Action History Time"],
+    icon = "Interface\\Icons\\Spell_shadow_shadetruesight",
+    valid = function(spec, value)
+        return (value.unit ~= nil and isin(units, value.unit) and
+                value.action ~= nil and isin(actions, value.action) and
+                value.operator ~= nil and isin(operators, value.operator) and
+                value.value ~= nil and value.value >= 0)
+    end,
+    evaluate = function(value, cache, evalStart)
+        if addon.combatHistory[value.unit] ~= nil then
+            for idx, entry in pairs(addon.combatHistory[value.unit]) do
+                if compare(value.operator, (evalStart - entry.time), value.value) and (value.action == entry.action or
+                        (entry.severity ~= nil and value.action == (entry.action .. '_' .. entry.severity))) then
+                    return true
+                end
+            end
+        end
+        return false
+    end,
+    print = function(spec, value)
+        return compareString(value.operator, string.format(playerize(value.unit, L["%s were %s"], L["%s was %s"]),
+            nullable(units[value.unit], L["<unit>"]), nullable(actions[value.action], L["<action>"])),
+            string.format(L["%s seconds ago"], nullable(value.value)))
+    end,
+    widget = function(parent, spec, value)
+        local top = parent:GetUserData("top")
+        local root = top:GetUserData("root")
+        local funcs = top:GetUserData("funcs")
+
+        local unit = addon:Widget_UnitWidget(value, deepcopy(units, { "player", "pet", "target" }, true),
+            function() top:SetStatusText(funcs:print(root, spec)) end)
+        parent:AddChild(unit)
+
+        local action = AceGUI:Create("Dropdown")
+        action:SetLabel(L["Action Type"])
+        action:SetCallback("OnValueChanged", function(widget, event, v)
+            value.action = v
+            top:SetStatusText(funcs:print(root, spec))
+        end)
+        action.configure = function()
+            action:SetList(actions, keys(actions))
+            action:SetValue(value.action)
+        end
+        parent:AddChild(action)
+
+        local operator_group = addon:Widget_OperatorWidget(value, L["Seconds"],
+            function() top:SetStatusText(funcs:print(root, spec)) end)
+        parent:AddChild(operator_group)
+    end,
+    help = function(frame)
+        addon.layout_condition_unitwidget_help(frame)
+        frame:AddChild(Gap())
+        frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Action"] .. color.RESET .. " - " ..
+                "The kind of combat action to look for (Hit, Miss, Parried, etc)."))
+        frame:AddChild(Gap())
+        addon.layout_condition_operatorwidget_help(frame, L["Combat Action History Time"], L["Seconds"],
+            "How far back in your combat history to look for " .. color.BLIZ_YELLOW .. L["Action"] .. color.RESET ..
+            " (by time).  A value of 1 means the last combat action, 2 means two combat actions ago, etc.  " ..
+            "Each combat action treated separately.  Any combat action more than the setting of " .. color.BLUE ..
+            L["Combat History Memory (seconds)"] .. color.RESET .. " in the primary Rotation Master configuration " ..
+            "screen ago will not be available.")
     end
 })
 

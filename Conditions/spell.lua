@@ -230,11 +230,9 @@ addon:RegisterCondition(L["Spells / Items"], "SPELL_HISTORY", {
         end
     end,
     evaluate = function(value, cache, evalStart)
+        local spellid = addon:Widget_GetSpellId(value.spell, value.ranked)
         for idx, entry in pairs(addon.spellHistory) do
-            if entry.spell == value.spell then
-                local spellid = addon:Widget_GetSpellId(value.spell, value.ranked)
-                return compare(value.operator, idx, spellid)
-            end
+            return entry.spell == spellid and compare(value.operator, idx, value.value)
         end
         return false
     end,
@@ -283,11 +281,9 @@ addon:RegisterCondition(L["Spells / Items"], "SPELL_HISTORY_TIME", {
         end
     end,
     evaluate = function(value, cache, evalStart) -- Cooldown until the spell is available
+        local spellid = addon:Widget_GetSpellId(value.spell, value.ranked)
         for idx, entry in pairs(addon.spellHistory) do
-            local spellid = addon:Widget_GetSpellId(value.spell, value.ranked)
-            if entry.spell == spellid then
-                return compare(value.operator, (evalStart - entry.time), value.value)
-            end
+            return entry.spell == spellid and compare(value.operator, (evalStart - entry.time), value.value)
         end
         return false
     end,

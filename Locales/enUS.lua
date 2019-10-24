@@ -77,6 +77,16 @@ L["your target's target's"] = true
 L["your focus target's target's"] = true
 L["your mouseover target's target's"] = true
 
+L["healed"] = true
+L["dodged"] = true
+L["blocked"] = true
+L["hit"] = true
+L["critically hit"] = true
+L["hit with a crushing blow"] = true
+L["hit with a glancing blow"] = true
+L["missed"] = true
+L["parried"] = true
+L["resisted"] = true
 
 L["Center"] = true
 L["Top Left"] = true
@@ -170,6 +180,7 @@ L["Verbose Debug Logging"] = true
 L["Disable Auto-Switching"] = true
 L["Minimap Icon"] = true
 L["Spell History Memory (seconds)"] = true
+L["Combat History Memory (seconds)"] = true
 L["Live Status Update Frequency (seconds)"] = true
 L["This is specifically how often the configuration pane will receive updates about live status.  Too frequently could make your configuration pane unusable.  0 = Disabled."] = true
 L["Are you sure you wish to delete this rotation?"] = true
@@ -260,6 +271,7 @@ L["Down"] = true
 
 L["<unit>"] = true
 L["<spell>"] = true
+L["<action>"] = true
 L["<item>"] = true
 L["<role>"] = true
 L["<class>"] = true
@@ -284,6 +296,8 @@ L["%s have %s"] = true
 L["%s has %s"] = true
 L["%s is %s"] = true
 L["%s are %s"] = true
+L["%s were %s"] = true
+L["%s was %s"] = true
 L["%s have %s where %s"] = true
 L["%s has %s where %s"] = true
 L["you are talented in %s"] = true
@@ -337,6 +351,9 @@ L["Spell Cast History"] = true
 L["%s was cast"] = true
 L["%s casts ago"] = true
 L["%s seconds ago"] = true
+L["Combat Action History Time"] = true
+L["Combat Action History"] = true
+L["%s actions ago"] = true
 
 L["Pet Spell Available"] = true
 L["Pet Spell Cooldown"] = true

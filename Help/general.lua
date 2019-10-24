@@ -52,6 +52,11 @@ function addon.layout_primary_options_help(frame)
         "be highlighted even if you currently do not have enough mana to cast it."))
 
     group:AddChild(Gap())
+    group:AddChild(CreateText(color.BLIZ_YELLOW .. L["Combat History Memory (seconds)"] .. color.RESET .. " - " ..
+            "Some conditions use combat history as part of their evaluation (eg. if you were parried, hit, etc).  " ..
+            "This adjusts how long to remember your combat history for."))
+
+    group:AddChild(Gap())
     group:AddChild(CreateText(color.BLIZ_YELLOW .. L["Ignore Range"] .. color.RESET .. " - " ..
         "While evaluating rotation steps, Rotation Master will check to ensure your target is in range of the " ..
         "rotation spell.  Enabling this option will skip this check and allow highlighting the spell even if " ..
