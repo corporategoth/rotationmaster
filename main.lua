@@ -605,7 +605,6 @@ function addon:UpdateAutoSwitch()
                         self:rotationValidConditions(rot, self.currentSpec) then
                     addon:debug(L["Rotaion " .. color.WHITE .. "%s" .. color.DEBUG .. " is now available for auto-switching."], rot.name)
                     table.insert(self.autoswitchRotation, id)
-                    break
                 end
             end
         end
@@ -617,11 +616,6 @@ function addon:UpdateAutoSwitch()
                 self.db.char.rotations[self.currentSpec][rhs].name
     end)
 
-    if self.db.char.rotations[self.currentSpec] ~= nil and self.db.char.rotations[self.currentSpec][DEFAULT] ~= nil and
-            self:rotationValidConditions(self.db.char.rotations[self.currentSpec][DEFAULT]) then
-        addon:debug(L["Rotaion " .. color.WHITE .. "%s" .. color.DEBUG .. " is now available for auto-switching."], DEFAULT)
-        table.insert(self.autoswitchRotation, DEFAULT)
-    end
     addon:debug(L["Autoswitch rotation list has been updated."])
 end
 
@@ -631,20 +625,31 @@ function addon:SwitchRotation()
         return
     end
 
+    local newRotation
     for k, v in pairs(self.autoswitchRotation) do
         if addon:evaluateSwitchCondition(self.db.char.rotations[self.currentSpec][v].switch) then
-            if self.currentRotation ~= v then
-                addon:info(L["Active rotation automatically switched to " .. color.WHITE .. "%s" .. color.INFO], self:GetRotationName(v))
-                self:RemoveAllCurrentGlows()
-                self.currentRotation = v
-                self.skipAnnounce = true
-                self.announced = {}
-                self:EnableRotationTimer()
-                DataBroker.text = self:GetRotationName(v)
-                AceEvent:SendMessage("ROTATIONMASTER_ROTATION", self.currentRotation, self:GetRotationName(self.currentRotation))
-            end
-            return
+            newRotation = v
+            break
         end
+    end
+    if not newRotation and self.db.char.rotations[self.currentSpec] ~= nil and
+        self.db.char.rotations[self.currentSpec][DEFAULT] ~= nil and
+        self:rotationValidConditions(self.db.char.rotations[self.currentSpec][DEFAULT], self.currentSpec) then
+        newRotation = DEFAULT
+    end
+
+    if newRotation then
+        if self.currentRotation ~= newRotation then
+            addon:info(L["Active rotation automatically switched to " .. color.WHITE .. "%s" .. color.INFO], self:GetRotationName(newRotation))
+            self:RemoveAllCurrentGlows()
+            self.currentRotation = newRotation
+            self.skipAnnounce = true
+            self.announced = {}
+            self:EnableRotationTimer()
+            DataBroker.text = self:GetRotationName(newRotation)
+            AceEvent:SendMessage("ROTATIONMASTER_ROTATION", self.currentRotation, self:GetRotationName(self.currentRotation))
+        end
+        return
     end
 
     -- Could not find a rotation to switch to, even the default one.
