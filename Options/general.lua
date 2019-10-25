@@ -674,7 +674,7 @@ local function create_rotation_options(frame, specID, rotid, parent, selected)
             end
         end
     else
-        if addon.currentRotation == nil and not addon.manualRotation and not profile.disable_autoswitch then
+        if addon.currentRotation ~= rotid and not addon.manualRotation and not profile.disable_autoswitch then
             addon:UpdateAutoSwitch()
             addon:SwitchRotation()
         end
@@ -934,13 +934,20 @@ local function create_class_options(frame, classID)
         tabs:SetCallback("OnGroupSelected", function(widget, event, val)
             create_spec_options(tabs, val, (val == addon.currentSpec) and addon.currentRotation or DEFAULT)
         end)
-        create_spec_options(tabs, currentSpec, addon.currentRotation or DEFAULT)
+        frame.frame:SetScript("OnShow", function(frame)
+            create_spec_options(tabs, currentSpec, addon.currentRotation or DEFAULT)
+            frame:SetScript("OnShow", nil)
+        end)
 
         frame:AddChild(tabs)
     else
         local group = AceGUI:Create("SimpleGroup")
         group:SetLayout("Fill")
-        create_spec_options(group, 0, addon.currentRotation or DEFAULT)
+        frame.frame:SetScript("OnShow", function(frame)
+            create_spec_options(group, 0, addon.currentRotation or DEFAULT)
+            frame:SetScript("OnShow", nil)
+        end)
+
         frame:AddChild(group)
     end
 
