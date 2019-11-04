@@ -2,10 +2,11 @@ local addon_name, addon = ...
 
 local AceGUI = LibStub("AceGUI-3.0")
 local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
+local RangeCheck = LibStub("LibRangeCheck-2.0")
 local color, tostring, tonumber, pairs = color, tostring, tonumber, pairs
 
 -- From constants
-local units, friendly_distance, operators = addon.units, addon.friendly_distance, addon.operators
+local units, operators = addon.units, addon.operators
 
 -- From utils
 local compare, compareString, nullable, keys, isin, UnitCloserThan, getCached, playerize =
@@ -33,9 +34,9 @@ addon:RegisterCondition(nil, "PROXIMITY", {
             prefix, size = "raid", 40
         end
         if prefix ~= nil and size > 0 then
-            unit_y, unit_x, _, unit_instance = getCached(cache, UnitPosition, value.unit)
+            local unit_y, unit_x, _, unit_instance = getCached(cache, UnitPosition, value.unit)
             for i=1,size do
-                y, x, _, instance = getCached(cache, UnitPosition, prefix .. tostring(i))
+                local y, x, _, instance = getCached(cache, UnitPosition, prefix .. tostring(i))
                 if x ~= nil and y ~= nil then
                     if unit_instance == instance then
                         local distance = ((unit_x - x) ^ 2 + (unit_y - y) ^ 2) ^ 0.5
@@ -95,10 +96,12 @@ addon:RegisterCondition(nil, "DISTANCE", {
     icon = "Interface\\Icons\\Spell_arcane_teleportorgrimmar",
     valid = function(spec, value)
         return (value.unit ~= nil and isin(units, value.unit) and
-                value.value ~= nil and isin(friendly_distance, value.value))
+                value.value ~= nil and value.value >= 0 and value.value <= 40)
     end,
     evaluate = function(value, cache, evalStart)
-        return UnitCloserThan(cache, value.unit, value.value)
+        local rcf = function(unit) return RangeCheck:GetRange(unit) end
+        local maxRange = select(2, getCached(cache, rcf, value.unit))
+        return maxRange and maxRange <= value.value
     end,
     print = function(spec, value)
         return string.format(playerize(value.unit, L["%s are %s"], L["%s is %s"]),
@@ -114,28 +117,23 @@ addon:RegisterCondition(nil, "DISTANCE", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
 
-        local distances = {}
-        for key, _ in pairs(friendly_distance) do
-            distances[key] = tostring(key) .. " " .. L["yards"]
-        end
-
-        local distance = AceGUI:Create("Dropdown")
+        local distance = AceGUI:Create("EditBox")
+        distance:SetWidth(75)
         distance:SetLabel(L["Distance"])
-        distance:SetCallback("OnValueChanged", function(widget, event, v)
-            value.value = v
-            top:SetStatusText(funcs:print(root, spec))
+        distance:SetText(value.value)
+        distance:SetCallback("OnEnterPressed", function(widget, event, v)
+            value.value = tonumber(v)
         end)
-        distance.configure = function()
-            distance:SetList(distances)
-            distance:SetValue(value.value)
-        end
         parent:AddChild(distance)
     end,
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
         frame:AddChild(Gap())
         frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Distance"] .. color.RESET .. " - " ..
-            "This distance " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. " must be within."))
+            "This distance " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. " must be within, in yards.  " ..
+            "There are significant restrictions on how accurately distances can be measured, and all distances " ..
+            "are within a range.  This will assume the unit is at the maximum of the measurable range.  Only " ..
+            "distances less than or equal to 40 yards can be measured."))
     end
 })
 
@@ -144,15 +142,18 @@ addon:RegisterCondition(nil, "DISTANCE_COUNT", {
     icon = "Interface\\Icons\\Spell_arcane_teleportstormwind",
     valid = function(spec, value)
         return (value.value ~= nil and value.value >= 0 and
-                value.operator ~= nil and isin(operators, value.operator) and
-                value.enemy ~= nil and
-                value.distance ~= nil and isin(friendly_distance, value.distance))
+                value.operator ~= nil and isin(operators, value.operator) and value.enemy ~= nil and
+                value.distance ~= nil and value.distance >= 0 and value.distance <= 40)
     end,
     evaluate = function(value, cache, evalStart)
+        local rcf = function(unit) return RangeCheck:GetRange(unit) end
         local count = 0
         for unit, entity in pairs(addon.unitsInRange) do
-            if entity.enemy == value.enemy and UnitCloserThan(cache, unit, value.distance) then
-                count = count + 1
+            if entity.enemy == value.enemy then
+                local maxRange = select(2, getCached(cache, rcf, unit))
+                if maxRange <= value.distance then
+                    count = count + 1
+                end
             end
         end
         return compare(value.operator, count, value.value)
@@ -180,6 +181,7 @@ addon:RegisterCondition(nil, "DISTANCE_COUNT", {
         end
         enemy:SetCallback("OnValueChanged", function(widget, event, v)
             value.enemy = v
+            setDistances(value.enemy)
             top:SetStatusText(funcs:print(root, spec))
         end)
         parent:AddChild(enemy)
@@ -188,21 +190,13 @@ addon:RegisterCondition(nil, "DISTANCE_COUNT", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
 
-        local distances = {}
-        for key, _ in pairs(friendly_distance) do
-            distances[key] = tostring(key) .. " " .. L["yards"]
-        end
-
-        local distance = AceGUI:Create("Dropdown")
+        local distance = AceGUI:Create("EditBox")
+        distance:SetWidth(75)
         distance:SetLabel(L["Distance"])
-        distance:SetCallback("OnValueChanged", function(widget, event, v)
-            value.distance = v
-            top:SetStatusText(funcs:print(root, spec))
+        distance:SetText(value.distance)
+        distance:SetCallback("OnEnterPressed", function(widget, event, v)
+            value.distance = tonumber(v)
         end)
-        distance.configure = function()
-            distance:SetList(distances)
-            distance:SetValue(value.distance)
-        end
         parent:AddChild(distance)
     end,
     help = function(frame)
@@ -214,6 +208,11 @@ addon:RegisterCondition(nil, "DISTANCE_COUNT", {
         frame:AddChild(Gap())
         frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Distance"] .. color.RESET .. " - " ..
                 "This distance the measured enemies or allies must be within."))
+        frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Distance"] .. color.RESET .. " - " ..
+                "This distance enemies or allies must be within, in yards.  There are significant restrictions " ..
+                "on how accurately distances can be measured, and all distances are within a range.  This will " ..
+                "assume all units are at their maximum of the measurable range.  Only distances less than or equal " ..
+                "to 40 yards can be measured."))
     end
 })
 

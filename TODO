@@ -1,4 +1,4 @@
-- Add 'I was damaged for ...' and 'I was healed for ...' (absolute and relative)?
+- Find out what is going on with binding (and more importantly, rebinding to the wrong keys) for item sets.
 
 - Add 'macro' to action type (ie. not just spell / item) to look for buttons by macro name - requires major rewrite of highlighting code
 

@@ -498,9 +498,9 @@ function addon:FindSpell(spellIds)
     if spellIds == nil then
         return nil
 	end
-	for _, spellId in ipairs(spellIds) do
-        if Spells[spellId] ~= nil then
-			return spellId, Spells[spellId]
+	for i=1, #spellIds do
+        if Spells[spellIds[i]] ~= nil then
+			return spellIds[i], i
         end
 	end
 	return nil

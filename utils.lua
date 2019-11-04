@@ -7,7 +7,7 @@ local libc = LibStub("LibCompress")
 local _G, tostring, tonumber, pairs, color, unpack, type, string = _G, tostring, tonumber, pairs, color, unpack, type, string
 local random, floor = math.random, math.floor
 
-local operators, friendly_distance, harmful_distance = addon.operators, addon.friendly_distance, addon.harmful_distance
+local operators = addon.operators
 
 addon.PopupError = function(string, onaccept)
     StaticPopupDialogs["ROTATIONMASTER_ERROR"] = {
@@ -259,19 +259,16 @@ function addon:ReportCacheStats()
     cacheMisses = 0
 end
 
-addon.isSpellOnSpec = function(spec, spellid)
-    for i=1,GetNumSpellTabs() do
-        local _, _, offset, numSpells, _, offspecId = GetSpellTabInfo(i)
-        if i == 1 or (spec == addon.currentSpec and offspecId == 0) or spec == offspecId then
-            for i=1,numSpells do
-                local bookSpell = select(3, GetSpellBookItemName(i+offset, BOOKTYPE_SPELL))
-                if spellid == bookSpell and not IsPassiveSpell(i+offset, BOOKTYPE_SPELL) then
-                    return true
-                end
+addon.isSpellOnSpec = function(spec, spellid, ispet)
+    if ispet or spec == addon.currentSpec then
+        return FindSpellBookSlotBySpellID(spellid, ispet) ~= nil
+    elseif addon.specSpells[spec] ~= nil then
+        for name,id in pairs(addon.specSpells[spec]) do
+            if spellid == id then
+                return true
             end
         end
     end
-    print("NOT FOUND!")
     return false
 end
 
@@ -358,27 +355,6 @@ end
 
 function addon.trim(s)
     return (s:gsub("^%s*(.-)%s*$", "%1"))
-end
-
-function addon.UnitCloserThan(cache, unit, distance)
-    local attackable = addon.getCached(cache, UnitCanAttack, "player", unit)
-    if attackable == nil then
-        return nil;
-    end
-
-    if attackable then
-        if harmful_distance[distance] == nil then
-            return nil
-        end
-
-        return addon.getCached(cache, IsItemInRange, harmful_distance[distance], unit)
-    else
-        if friendly_distance[distance] == nil then
-            return nil
-        end
-
-        return addon.getCached(cache, IsItemInRange, friendly_distance[distance], unit)
-    end
 end
 
 function addon.AddTooltip(frame, text)

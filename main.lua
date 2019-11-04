@@ -6,7 +6,6 @@ _G.RotationMaster = LibStub("AceAddon-3.0"):NewAddon(addon, addon_name, "AceCons
 
 local AceConsole = LibStub("AceConsole-3.0")
 local AceEvent = LibStub("AceEvent-3.0")
-local SpellRange = LibStub("SpellRange-1.0")
 local SpellData = LibStub("AceGUI-3.0-SpellLoader")
 local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
 local getCached
@@ -28,6 +27,19 @@ local floor = math.floor
 addon.pretty_name = GetAddOnMetadata(addon_name, "Title")
 local DataBroker = LibStub("LibDataBroker-1.1"):NewDataObject("RotationMaster",
         { type = "data source", label = addon.pretty_name, icon = "Interface\\AddOns\\RotationMaster\\textures\\RotationMaster-Minimap" })
+
+local profession_levels = {
+    APPRENTICE,
+    JOURNEYMAN,
+    EXPERT,
+    ARTISAN,
+    MASTER,
+    GRAND_MASTER,
+    ILLUSTRIOUS,
+    ZEN_MASTER,
+    DRAENOR_MASTER,
+    LEGION_MASTER,
+}
 
 --
 -- Initialization
@@ -328,6 +340,7 @@ function addon:OnInitialize()
 
     -- This is a cache of spec based spell names -> IDs.  Updated when we switch specs.
     self.specSpells = nil
+    self.bagContents = {}
 
     self.specTalents = {}
 
@@ -352,14 +365,6 @@ function addon:OnInitialize()
 
     -- This is here because of order of loading.
     getCached = addon.getCached
-
-    -- This will cache the items so that we can USE them for harmful_distance calculations.
-    for id, _ in pairs(addon.friendly_distance) do
-        IsItemInRange(id, "player")
-    end
-    for id, _ in pairs(addon.harmful_distance) do
-        IsItemInRange(id, "player")
-    end
 end
 
 function addon:GetRotationName(id)
@@ -794,20 +799,30 @@ function addon:EvaluateNextAction()
         local function eval(cond)
             local spellid, enabled = nil, false
             if cond.action ~= nil and (cond.disabled == nil or cond.disabled == false) then
-                local spellids
+                local spellids, itemids
                 if cond.type ~= "pet" or getCached(self.longtermCache, IsSpellKnown, cond.action, true) then
-                    spellids = addon:GetSpellIds(cond)
+                    spellids, itemids = addon:GetSpellIds(cond)
                 end
 
                 if spellids ~= nil then
-                    spellid = addon:FindSpell(spellids)
+                    local idx
+                    spellid, idx = addon:FindSpell(spellids)
                     if (spellid and addon:evaluateCondition(cond.conditions)) then
                         local avail, nomana = getCached(cache, IsUsableSpell, spellid)
                         if avail and (self.db.profile.ignore_mana or not nomana) then
                             if self.db.profile.ignore_range then
                                 enabled = true
                             else
-                                local inrange = getCached(cache, SpellRange.IsSpellInRange, spellid, "target")
+                                local inrange
+                                if cond.type == "spell" then
+                                    local sbid = getCached(addon.longtermCache, FindSpellBookSlotBySpellID, spellid, false)
+                                    inrange = getCached(cache, IsSpellInRange, sbid, BOOKTYPE_SPELL, "target")
+                                elseif cond.type == "pet" then
+                                    local sbid = getCached(addon.longtermCache, FindSpellBookSlotBySpellID, spellid, true)
+                                    inrange = getCached(cache, IsSpellInRange, sbid, BOOKTYPE_PET, "target")
+                                elseif cond.type == "item" then
+                                    inrange = getCached(cache, IsItemInRange, itemids[idx], "target")
+                                end
                                 if inrange == nil then
                                     enabled = true
                                 else
@@ -906,19 +921,20 @@ function addon:UpdateCurrentCondition()
 end
 
 function addon:GetSpellIds(rot)
-    if rot.type == "spell" or rot.type == "pet" then
-        if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
-            if rot.ranked then
-                return { rot.action }
+    if rot.action then
+        if rot.type == "spell" or rot.type == "pet" then
+            if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
+                if rot.ranked then
+                    return { rot.action }
+                else
+                    return SpellData:GetAllSpellIds(rot.action) or {}
+                end
             else
-                return SpellData:GetAllSpellIds(rot.action) or {}
+                return { rot.action }
             end
-        else
-            return { rot.action }
-        end
-    elseif rot.type == "item" then
-        if rot.action then
+        elseif rot.type == "item" then
             local spellids = {}
+            local itemids = {}
             if type(rot.action) == "string" then
                 local itemset = nil
                 if self.db.char.itemsets[rot.action] ~= nil then
@@ -926,24 +942,34 @@ function addon:GetSpellIds(rot)
                 elseif self.db.global.itemsets[rot.action] ~= nil then
                     itemset = self.db.global.itemsets[rot.action]
                 end
+
                 if itemset ~= nil then
                     for _, item in ipairs(itemset.items) do
                         local spellid = select(2, getCached(self.longtermCache, GetItemSpell, item));
                         if spellid then
                             table.insert(spellids, spellid)
+                            if addon.isint(item) then
+                                table.insert(itemids, item)
+                            else
+                                table.insert(itemids, getCached(self.longtermCache, GetItemInfoInstant, item))
+                            end
                         end
                     end
-                    return spellids
                 end
             else
                 for _, item in ipairs(rot.action) do
                     local spellid = select(2, getCached(self.longtermCache, GetItemSpell, item));
                     if spellid then
                         table.insert(spellids, spellid)
+                        if addon.isint(item) then
+                            table.insert(itemids, item)
+                        else
+                            table.insert(itemids, getCached(self.longtermCache, GetItemInfoInstant, item))
+                        end
                     end
                 end
-                return spellids
             end
+            return spellids, itemids
         end
     end
     return {}
@@ -995,20 +1021,25 @@ function addon:UpdateSkills()
         self.specSpells = {}
     end
 
-    if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
-        self.specSpells[0] = {}
-    end
-    for i=2, GetNumSpellTabs() do
+    self.specSpells[self.currentSpec] = {}
+    for i=1, GetNumSpellTabs() do
         local _, _, offset, numSpells, _, offspecId = GetSpellTabInfo(i)
         if offspecId == 0 then
             offspecId = self.currentSpec
-        end
-        if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
+        elseif (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
             self.specSpells[offspecId] = {}
         end
-        for i = offset, offset + numSpells - 1 do
-            local name, _, spellId = GetSpellBookItemName(i, BOOKTYPE_SPELL)
-            if spellId then
+        for j = offset, offset + numSpells - 1 do
+            local name, rank, spellId = GetSpellBookItemName(j, BOOKTYPE_SPELL)
+            if (i == 1 and rank ~= nil and rank ~= "") then
+                for _, prof in pairs(profession_levels) do
+                    if rank == prof then
+                        spellId = nil
+                        break
+                    end
+                end
+            end
+            if spellId and not IsPassiveSpell(j, BOOKTYPE_SPELL) then
                 self.specSpells[offspecId][name] = spellId
             end
         end
@@ -1162,6 +1193,27 @@ function addon:PLAYER_CONTROL_GAINED()
     self:EvaluateNextAction()
 end
 
+function addon:UpdateBagContents()
+    self.bagContents = {}
+    for i=0,4 do
+        for j=1, GetContainerNumSlots(i) do
+            local _, qty, _, _, _, _, _, _, _, itemId = getCached(cache, GetContainerItemInfo, i, j);
+            if itemId then
+                if self.bagContents[itemId] == nil then
+                    self.bagContents[itemId] = {
+                        count = qty,
+                        spell = getCached(addon.longtermCache, GetItemSpell, itemId),
+                        slots = { j }
+                    }
+                else
+                    self.bagContents[itemId].count = self.bagContents[itemId].count + qty
+                    table.insert(self.bagContents[itemId].slots, j)
+                end
+            end
+        end
+    end
+end
+
 function addon:PLAYER_CONTROL_LOST()
     addon:verbose("Player lost control.")
     self:DisableRotationTimer()
@@ -1192,6 +1244,7 @@ function addon:PLAYER_ENTERING_WORLD()
     addon:verbose("Player entered world.")
     self:UpdateButtonGlow()
     self:UpdateSkills()
+    self:UpdateBagContents()
 
     for id, slot in pairs(bindings) do
         self:UpdateBoundButton(id)
@@ -1261,6 +1314,8 @@ function addon:BAG_UPDATE(event)
     for id, slot in pairs(bindings) do
         self:UpdateBoundButton(id)
     end
+
+    self:UpdateBagContents()
 end
 
 function addon:UNIT_COMBAT(event, unit, action, severity, value, type)

@@ -70,6 +70,47 @@ addon:RegisterCondition(L["Spells / Items"], "SPELL_AVAIL", {
     end
 })
 
+addon:RegisterCondition(L["Spells / Items"], "SPELL_RANGE", {
+    description = L["Spell In Range"],
+    icon = "Interface\\Icons\\inv_misc_bandage_02",
+    valid = function(spec, value)
+        if value.spell ~= nil then
+            local name = GetSpellInfo(value.spell)
+            return name ~= nil
+        else
+            return false
+        end
+    end,
+    evaluate = function(value, cache, evalStart)
+        local spellid = addon:Widget_GetSpellId(value.spell, value.ranked)
+        if spellid then
+            local sbid = getCached(addon.longtermCache, FindSpellBookSlotBySpellID, spellid, false)
+            if sbid then
+                return (getCached(cache, IsSpellInRange, sbid, BOOKTYPE_SPELL, "target") == 1)
+            end
+        end
+        return false
+    end,
+    print = function(spec, value)
+        local link = addon:Widget_GetSpellLink(value.spell, value.ranked)
+        return string.format(L["%s is in range"], nullable(link, L["<spell>"]))
+    end,
+    widget = function(parent, spec, value)
+        local top = parent:GetUserData("top")
+        local root = top:GetUserData("root")
+        local funcs = top:GetUserData("funcs")
+
+        local spell_group = addon:Widget_SpellWidget(spec, "Spec_EditBox", value,
+            function(v) return addon:GetSpecSpellID(spec, v) end,
+            function(v) return isSpellOnSpec(spec, v) end,
+            function() top:SetStatusText(funcs:print(root, spec)) end)
+        parent:AddChild(spell_group)
+    end,
+    help = function(frame)
+        addon.layout_condition_spellwidget_help(frame)
+    end
+})
+
 addon:RegisterCondition(L["Spells / Items"], "SPELL_COOLDOWN", {
     description = L["Spell Cooldown"],
     icon = "Interface\\Icons\\spell_nature_timestop",

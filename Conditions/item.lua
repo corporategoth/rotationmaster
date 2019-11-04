@@ -96,28 +96,10 @@ addon:RegisterCondition(L["Spells / Items"], "CARRYING", {
                 value.value ~= nil and value.value >= 0)
     end,
     evaluate = function(value, cache, evalStart)
+        local itemid = addon:FindFirstItemOfItems(cache, get_item_array(value.item), false)
         local count = 0
-        for _, item in pairs(get_item_array(value.item)) do
-            for i=0,4 do
-                for j=1,getCached(addon.combatCache, GetContainerNumSlots, i) do
-                    local _, qty, _, _, _, _, _, _, _, itemId = getCached(cache, GetContainerItemInfo, i, j);
-                    if itemId ~= nil then
-                        if isint(item) then
-                            if tonumber(item) == itemId then
-                                count = count + qty
-                            end
-                        else
-                            local itemName = getRetryCached(addon.longtermCache, GetItemInfo, itemId)
-                            if item == itemName then
-                                count = count + qty
-                            end
-                        end
-                    end
-                end
-            end
-            if count > 0 then
-                break
-            end
+        if itemid and addon.bagContents[itemid] then
+            count = addon.bagContents[itemid].count
         end
         return compare(value.operator, count, value.value)
     end,
@@ -189,6 +171,36 @@ addon:RegisterCondition(L["Spells / Items"], "ITEM", {
     end,
     print = function(spec, value)
         return string.format(L["%s is available"], nullable(get_item_desc(value.item), L["<item>"]))
+    end,
+    widget = function(parent, spec, value)
+        local top = parent:GetUserData("top")
+        local root = top:GetUserData("root")
+        local funcs = top:GetUserData("funcs")
+
+        local icon_group = addon:Widget_ItemWidget(top, value,
+            function() top:SetStatusText(funcs:print(root, spec)) end)
+        parent:AddChild(icon_group)
+    end,
+    help = function(frame)
+        addon.layout_condition_itemwidget_help(frame)
+    end
+})
+
+addon:RegisterCondition(L["Spells / Items"], "ITEM_RANGE", {
+    description = L["Item In Range"],
+    icon = "Interface\\Icons\\inv_misc_bandage_13",
+    valid = function(spec, value)
+        return value.item ~= nil
+    end,
+    evaluate = function(value, cache, evalStart)
+        local itemId = addon:FindFirstItemOfItems(cache, get_item_array(value.item), true)
+        if itemId ~= nil then
+            return (getCached(cache, IsItemInRange, itemId, "target") == 1)
+        end
+        return false
+    end,
+    print = function(spec, value)
+        return string.format(L["%s is in range"], nullable(get_item_desc(value.item), L["<item>"]))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")

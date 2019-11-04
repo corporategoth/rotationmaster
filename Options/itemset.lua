@@ -84,41 +84,19 @@ function addon:FindFirstItemOfItems(cache, items, equipped)
     if items == nil then
         return nil
     end
-    if equipped then
-        for _, item in pairs(items) do
-            for i=0,20 do
-                local inventoryId = getCached(addon.combatCache, GetInventoryItemID, "player", i)
-                if inventoryId ~= nil then
-                    if isint(item) then
-                        if tonumber(item) == inventoryId then
-                            return inventoryId
-                        end
-                    else
-                        local itemName = getRetryCached(addon.longtermCache, GetItemInfo, inventoryId)
-                        if itemName == item then
-                            return inventoryId
-                        end
-                    end
-                end
-            end
-        end
-    end
     for _, item in pairs(items) do
-        for i=0,4 do
-            for j=1,getCached(addon.combatCache, GetContainerNumSlots, i) do
-                local inventoryId = getCached(cache, GetContainerItemID, i, j);
-                if inventoryId ~= nil then
-                    if isint(item) then
-                        if tonumber(item) == inventoryId then
-                            return inventoryId
-                        end
-                    else
-                        local itemName = getRetryCached(addon.longtermCache, GetItemInfo, inventoryId)
-                        if item == itemName then
-                            return inventoryId
-                        end
-                    end
-                end
+        local itemid
+        if isint(item) then
+            itemid = item
+        else
+            itemid = getCached(addon.longtermCache, GetItemInfoInstant, item)
+        end
+        if itemid then
+            if equipped and getCached(addon.combatCache, IsEquippedItem, itemid) then
+                return itemid
+            end
+            if addon.bagContents[itemid] then
+                return itemid
             end
         end
     end
@@ -147,7 +125,8 @@ local function CondIsItem(cond, id)
                     return true
                 end
             end
-        elseif cond.type == "EQUIPPED" or cond.type == "CARRYING" or cond.type == "ITEM" or cond.type == "ITEM_COOLDOWN" then
+        elseif cond.type == "EQUIPPED" or cond.type == "CARRYING" or cond.type == "ITEM" or
+               cond.type == "ITEM_RANGE" or cond.type == "ITEM_COOLDOWN" then
             if type(cond.item) == "string" and cond.item == id then
                 return true
             end

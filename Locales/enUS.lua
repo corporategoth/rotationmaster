@@ -333,6 +333,8 @@ L["%s points"] = true
 
 L["Spell Available"] = true
 L["%s is available"] = true
+L["Spell In Range"] = true
+L["%s is in range"] = true
 L["Spell Cooldown"] = true
 -- This is used for things like "the cooldown on <spell> is less than 5 seconds"
 L["the %s"] = true
@@ -356,6 +358,7 @@ L["Combat Action History"] = true
 L["%s actions ago"] = true
 
 L["Pet Spell Available"] = true
+L["Pet Spell In Range"] = true
 L["Pet Spell Cooldown"] = true
 L["Pet Spell Time Remaining"] = true
 L["Pet Spell Charges"] = true
@@ -394,6 +397,7 @@ L["you have %s equipped"] = true
 L["Have Item In Bags"] = true
 L["the number of %s you are carrying"] = true
 L["Item Available"] = true
+L["Item In Range"] = true
 L["Item Cooldown"] = true
 
 L["In Combat"] = true
