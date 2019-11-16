@@ -135,6 +135,11 @@ if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
         items = { 158382, 158381, 133942, 133940, 111603, 72986, 72985, 53051, 53050, 53049, 34722, 34721,
                   21991, 21990, 14530, 14529, 8545, 8544, 6451, 6450, 3531, 3530, 2581, 1251, },
     }
+    -- TODO: This needs to be updated with purchased water from BfA
+    defaults.global.itemsets["b1aca4a4-acdd-4885-b63b-b62cca7afdfe"] = {
+        name = "Purchased Water",
+        items = { 8766, 1645, 1708, 1205, 1179, 159, },
+    }
     defaults.global.itemsets["fed2659d-cb7b-43e1-8f53-6dda0391b8c6"] = {
         name = "Healthstones",
         items = {
@@ -161,6 +166,10 @@ else
     defaults.global.itemsets["e66d5cfe-a0f0-4276-aa00-40464eab30df"] = {
         name = "Bandages",
         items = { 14530, 14529, 8545, 8544, 6451, 6450, 3531, 3530, 2581, 1251, },
+    }
+    defaults.global.itemsets["b1aca4a4-acdd-4885-b63b-b62cca7afdfe"] = {
+        name = "Purchased Water",
+        items = { 8766, 1645, 1708, 1205, 1179, 159, },
     }
     defaults.global.itemsets["fed2659d-cb7b-43e1-8f53-6dda0391b8c6"] = {
         name = "Healthstones",
@@ -964,7 +973,8 @@ function addon:GetSpellIds(rot)
                         if addon.isint(item) then
                             table.insert(itemids, item)
                         else
-                            table.insert(itemids, getCached(self.longtermCache, GetItemInfoInstant, item))
+                            local itemid = getCached(self.longtermCache, GetItemInfoInstant, item)
+                            table.insert(itemids, itemid)
                         end
                     end
                 end
