@@ -63,6 +63,12 @@ function addon.layout_primary_options_help(frame)
         "the target is out of range."))
 
     group:AddChild(Gap())
+    group:AddChild(CreateText(color.BLIZ_YELLOW .. L["Damage History Memory (seconds)"] .. color.RESET .. " - " ..
+        "How long to remember the heals and damage for units in your vacinity.  This is used in the burn rate " ..
+        "calculation (ie. dps or hps) on a unit, which is in turn used for Time to Die style calculations.  " ..
+        "Newer DPS or heals are given more weight than older DPS or heals in a burn rate calculation."))
+
+    group:AddChild(Gap())
     group:AddChild(CreateText(color.BLIZ_YELLOW .. L["Effect"] .. color.RESET .. " - " ..
         "How a rotation step should be highlighted (and the default for cooldowns).  This selection can be " ..
         "updated in the " .. color.BLUE .. L["Effects"] .. color.RESET .. " configuration screen."))

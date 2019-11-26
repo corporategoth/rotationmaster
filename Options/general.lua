@@ -120,6 +120,17 @@ local function create_primary_options(frame)
     end)
     general_group:AddChild(ignore_range)
 
+    local damage_history = AceGUI:Create("Slider")
+    damage_history:SetFullWidth(true)
+    damage_history:SetLabel(L["Damage History Memory (seconds)"])
+    damage_history:SetValue(profile["damage_history"])
+    damage_history:SetSliderValues(0.0, 300, 1)
+    damage_history:SetCallback("OnValueChanged", function(widget, event, val)
+        profile["damage_history"] = val
+    end)
+    general_group:AddChild(damage_history)
+
+
     scroll:AddChild(general_group)
 
     local effect_header = AceGUI:Create("Heading")
@@ -1000,6 +1011,13 @@ function module:SetupOptions()
     create_class_options(rotation, classID)
     InterfaceOptions_AddCategory(rotation.frame)
     addon.Rotation = rotation.frame
+
+    local announces = AceGUI:Create("BlizOptionsGroup")
+    announces:SetName(L["Announces"], addon.pretty_name)
+    announces:SetLayout("Fill")
+    announces:SetTitle(addon.pretty_name .. " - " .. L["Announces"])
+    addon:create_announce_list(announces)
+    InterfaceOptions_AddCategory(announces.frame)
 
     for name, module in addon:IterateModules() do
         local f = module["SetupOptions"]

@@ -87,9 +87,9 @@ function addon:FindFirstItemOfItems(cache, items, equipped)
     for _, item in pairs(items) do
         local itemid
         if isint(item) then
-            itemid = item
+            itemid = tonumber(item)
         else
-            itemid = getCached(addon.longtermCache, GetItemInfoInstant, item)
+            itemid = getRetryCached(addon.longtermCache, GetItemInfoInstant, item)
         end
         if itemid then
             if equipped and getCached(addon.combatCache, IsEquippedItem, itemid) then

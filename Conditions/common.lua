@@ -266,6 +266,7 @@ function addon:Widget_ItemWidget(top, value, update)
     item_group:AddChild(item)
 
     edit_button:SetText(EDIT)
+    edit_button:SetFullWidth(true)
     edit_button:SetDisabled(value.item == nil)
     edit_button:SetUserData("cell", { alignV = "bottom" })
     edit_button:SetCallback("OnClick", function(widget, event, ...)
@@ -285,18 +286,22 @@ function addon:Widget_ItemWidget(top, value, update)
             end
 
             if itemset then
-                top:SetCallback("OnClose", function(widget) end)
-                top:Hide()
-                addon:item_list_popup(itemset.name, itemset.items, edit_callback, function(widget)
+                if top then
+                    top:SetCallback("OnClose", function(widget) end)
+                    top:Hide()
+                end
+                addon:item_list_popup(itemset.name, itemset.items, edit_callback, top and function(widget)
                     AceGUI:Release(widget)
                     addon.LayoutConditionFrame(top)
                     top:Show()
                 end)
             end
         else
-            top:SetCallback("OnClose", function(widget) end)
-            top:Hide()
-            addon:item_list_popup(L["Custom"], value.item, edit_callback, function(widget)
+            if top then
+                top:SetCallback("OnClose", function(widget) end)
+                top:Hide()
+            end
+            addon:item_list_popup(L["Custom"], value.item, edit_callback, top and function(widget)
                 AceGUI:Release(widget)
                 addon.LayoutConditionFrame(top)
                 top:Show()

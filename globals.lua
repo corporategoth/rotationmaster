@@ -15,6 +15,7 @@ color = {
     DEBUG = "|cFF6E7B84",
     INFO = "|cFF7BC653",
     WARN = "|cFFB212B7",
+    ANNOUNCE = "|cFFF8FC03",
 
     BLIZ_YELLOW = "|cFFFFD900",
 }

@@ -181,6 +181,7 @@ L["Disable Auto-Switching"] = true
 L["Minimap Icon"] = true
 L["Spell History Memory (seconds)"] = true
 L["Combat History Memory (seconds)"] = true
+L["Damage History Memory (seconds)"] = true
 L["Live Status Update Frequency (seconds)"] = true
 L["This is specifically how often the configuration pane will receive updates about live status.  Too frequently could make your configuration pane unusable.  0 = Disabled."] = true
 L["Are you sure you wish to delete this rotation?"] = true
@@ -208,8 +209,10 @@ L["Effect"] = true
 L["Pixel"] = true
 L["Auto Cast"] = true
 L["Glow"] = true
+L["Event"] = true
 L["Effects"] = true
 L["Item Sets"] = true
+L["Announces"] = true
 L["Profiles"] = true
 L["Lines"] = true
 L["Frequency"] = true
@@ -222,7 +225,13 @@ L["<level>"] = true
 L["your level"] = true
 L["Disabled"] = true
 L["Help"] = true
+L["Time Until Health"] = true
+L["Time Until Health Percentage"] = true
 
+L["Started"] = true
+L["Stopped"] = true
+L["Succeeded"] = true
+L["Interrupted"] = true
 -- from Options/rotations.lua and Options/rotations.lua
 
 L["Spells that you wish to conditionally highlight independent of your rotation.  Any or all of these may be highlighted at the same time."] = true
@@ -249,10 +258,14 @@ L["Party Only"] = true
 L["Raid Warning"] = true
 L["Say"] = true
 L["Yell"] = true
+L["Local Only"] = true
+L["Text"] = true
 L["Item Set"] = true
 L["%s or %d others"] = true
 L["a %s item set item"] = true
 L["Click the icon above to bind to your action bar"] = true
+L["time until %s is at %s%% health"] = true
+L["time until %s is at %s health"] = true
 
 -- from Options/conditional.lua
 
@@ -298,6 +311,7 @@ L["%s is %s"] = true
 L["%s are %s"] = true
 L["%s were %s"] = true
 L["%s was %s"] = true
+L["%s with %s"] = true
 L["%s have %s where %s"] = true
 L["%s has %s where %s"] = true
 L["you are talented in %s"] = true
@@ -485,3 +499,7 @@ L["main hand"] = true
 L["Off Hand"] = true
 
 L["Global"] = true
+
+L["Damage and Heals"] = true
+L["Damage Only"] = true
+L["Heals Only"] = true

@@ -14,6 +14,13 @@ local helpers = addon.help_funcs
 local CreateText, CreatePictureText, CreateButtonText, Indent, Gap =
     helpers.CreateText, helpers.CreatePictureText, helpers.CreateButtonText, helpers.Indent, helpers.Gap
 
+local GCD_SPELL
+if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
+    GCD_SPELL = 61304 -- Dedicated spell for GCD
+else
+    GCD_SPELL = 2580  -- 61304 doesn't exist in classic, use 'Find Materials', which works if you're a miner or not.
+end
+
 addon:RegisterCondition(L["Spells / Items"], "SPELL_AVAIL", {
     description = L["Spell Available"],
     icon = "Interface\\Icons\\Spell_holy_renew",
@@ -32,7 +39,7 @@ addon:RegisterCondition(L["Spells / Items"], "SPELL_AVAIL", {
             return true
         else
             -- A special spell that shows if the GCD is active ...
-            local gcd_start, gcd_duration, gcd_enabled = getCached(cache, GetSpellCooldown, 61304)
+            local gcd_start, gcd_duration, gcd_enabled = getCached(cache, GetSpellCooldown, GCD_SPELL)
             if gcd_start ~= 0 and gcd_duration ~= 0 then
                 local time = GetTime()
                 local gcd_remain = round(gcd_duration - (time - gcd_start), 3)

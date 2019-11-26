@@ -177,6 +177,8 @@ local function add_effect_group(specID, rotid, rot, refresh)
         name2idx = {}
         effect_map[DEFAULT] = DEFAULT
         table.insert(effect_order, DEFAULT)
+        effect_map[NONE] = NONE
+        table.insert(effect_order, NONE)
 
         for k, v in pairs(effects) do
             if v.name ~= nil then
@@ -190,7 +192,7 @@ local function add_effect_group(specID, rotid, rot, refresh)
 
     local effect_icon = AceGUI:Create("Icon")
     effect_icon:SetImageSize(36, 36)
-    if effects[name2idx[rot.effect or profile["effect"]]].type == "texture" then
+    if rot.effect ~= NONE and effects[name2idx[rot.effect or profile["effect"]]].type == "texture" then
         effect_icon:SetHeight(44)
         effect_icon:SetWidth(44)
         effect_icon:SetImage(effects[name2idx[rot.effect or profile["effect"]]].texture)
@@ -198,10 +200,12 @@ local function add_effect_group(specID, rotid, rot, refresh)
         effect_icon:SetImage(nil)
         effect_icon:SetHeight(36)
         effect_icon:SetWidth(36)
-        addon:ApplyCustomGlow(effects[name2idx[rot.effect or profile["effect"]]], effect_icon.frame, nil, rot.color)
-        group.frame:SetScript("OnHide", function()
-            addon:StopCustomGlow(effect_icon.frame)
-        end)
+        if rot.effect ~= NONE then
+            addon:ApplyCustomGlow(effects[name2idx[rot.effect or profile["effect"]]], effect_icon.frame, nil, rot.color)
+            group.frame:SetScript("OnHide", function()
+                addon:StopCustomGlow(effect_icon.frame)
+            end)
+        end
     end
     effect_group:AddChild(effect_icon)
 
@@ -240,7 +244,7 @@ local function add_effect_group(specID, rotid, rot, refresh)
     magnification:SetLabel(L["Magnification"])
     magnification:SetValue(rot.magnification or profile["magnification"])
     magnification:SetSliderValues(0.1, 2.0, 0.1)
-    magnification:SetDisabled(effects[name2idx[rot.effect or profile["effect"]]].type ~= "texture")
+    magnification:SetDisabled(rot.effect == NONE or effects[name2idx[rot.effect or profile["effect"]]].type ~= "texture")
     magnification:SetCallback("OnValueChanged", function(widget, event, val)
         if val == profile["magnification"] then
             rot.magnification = nil
@@ -258,6 +262,7 @@ local function add_effect_group(specID, rotid, rot, refresh)
     color_pick:SetRelativeWidth(0.35)
     color_pick:SetColor(rot.color.r, rot.color.g, rot.color.b, rot.color.a)
     color_pick:SetLabel(L["Highlight Color"])
+    color_pick:SetDisabled(rot.effect == NONE)
     color_pick:SetCallback("OnValueConfirmed", function(widget, event, r, g, b, a)
         rot.color = { r = r, g = g, b = b, a = a }
         if effects[name2idx[rot.effect or profile["effect"]]].type ~= "texture" then
@@ -353,10 +358,10 @@ local function add_effect_group(specID, rotid, rot, refresh)
     position_group:AddChild(offset_group)
 
     update_position_buttons = function()
-        local disable = effects[name2idx[rot.effect or profile["effect"]]] ~= nil and
-                (effects[name2idx[rot.effect or profile["effect"]]].type == "blizzard" or
-                        (effects[name2idx[rot.effect or profile["effect"]]].type == "texture" and rot.setpoint == nil)) or false
-        position:SetDisabled(effects[name2idx[rot.effect or profile["effect"]]].type ~= "texture")
+        local disable = rot.effect == NONE or (effects[name2idx[rot.effect or profile["effect"]]] ~= nil and
+                        (effects[name2idx[rot.effect or profile["effect"]]].type == "blizzard" or
+                        (effects[name2idx[rot.effect or profile["effect"]]].type == "texture" and rot.setpoint == nil)) or false)
+        position:SetDisabled(rot.effect == NONE or effects[name2idx[rot.effect or profile["effect"]]].type ~= "texture")
         directional:SetDisabled(disable)
         x_offs:SetText(rot.xoffs or profile["xoffs"])
         y_offs:SetText(rot.yoffs or profile["yoffs"])
@@ -828,6 +833,7 @@ function addon:get_cooldown_list(frame, specID, rotid, id, callback)
         raidwarn = L["Raid Warning"],
         say = L["Say"],
         yell = L["Yell"],
+        ["local"] = L["Local Only"],
     }
 
     local announce = AceGUI:Create("Dropdown")
@@ -837,7 +843,7 @@ function addon:get_cooldown_list(frame, specID, rotid, id, callback)
         rot.announce = val
     end)
     announce.configure = function()
-        announce:SetList(announces, { "none", "partyraid", "party", "raidwarn", "say", "yell" })
+        announce:SetList(announces, { "none", "partyraid", "party", "raidwarn", "say", "yell", "local" })
         announce:SetValue(rot.announce or "none")
     end
     frame:AddChild(announce)

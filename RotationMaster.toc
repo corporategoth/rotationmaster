@@ -1,6 +1,6 @@
 ## Interface: 80205
 ## Title: Rotation Master
-## Version: 1.2.6
+## Version: 1.2.7
 ## Author: PreZ
 ## Notes: I wanted to save the world, but God wouldn't give me the source code.
 ## X-Email: prez@goth.net
@@ -30,6 +30,7 @@ Widgets/directional.lua
 # Configuration UI
 Options/general.lua
 Options/effects.lua
+Options/announce.lua
 Options/itemset.lua
 Options/rotations.lua
 Options/conditional.lua
@@ -38,6 +39,7 @@ Options/conditional.lua
 Help/common.lua
 Help/general.lua
 Help/effects.lua
+Help/announce.lua
 Help/itemsets.lua
 Help/rotations.lua
 Help/conditional.lua

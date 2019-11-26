@@ -4,7 +4,7 @@ local AceGUI = LibStub("AceGUI-3.0")
 
 local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
 
-local table, pairs = table, pairs
+local table, pairs, ipairs = table, pairs, ipairs
 
 function addon:create_effect_list(frame)
     local effects = self.db.global.effects

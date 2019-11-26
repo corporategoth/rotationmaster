@@ -8,7 +8,7 @@ local AceConsole = LibStub("AceConsole-3.0")
 local AceEvent = LibStub("AceEvent-3.0")
 local SpellData = LibStub("AceGUI-3.0-SpellLoader")
 local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
-local getCached
+local getCached, getRetryCached
 local DBIcon = LibStub("LibDBIcon-1.0")
 
 local ThreatClassic = LibStub("ThreatClassic-1.0")
@@ -27,19 +27,6 @@ local floor = math.floor
 addon.pretty_name = GetAddOnMetadata(addon_name, "Title")
 local DataBroker = LibStub("LibDataBroker-1.1"):NewDataObject("RotationMaster",
         { type = "data source", label = addon.pretty_name, icon = "Interface\\AddOns\\RotationMaster\\textures\\RotationMaster-Minimap" })
-
-local profession_levels = {
-    APPRENTICE,
-    JOURNEYMAN,
-    EXPERT,
-    ARTISAN,
-    MASTER,
-    GRAND_MASTER,
-    ILLUSTRIOUS,
-    ZEN_MASTER,
-    DRAENOR_MASTER,
-    LEGION_MASTER,
-}
 
 --
 -- Initialization
@@ -66,6 +53,7 @@ local defaults = {
         live_config_update = 2,
         spell_history = 60,
         combat_history = 10,
+        damage_history = 30,
         minimap = {
             hide = false,
         }
@@ -74,6 +62,7 @@ local defaults = {
         rotations = {},
         itemsets = {},
         bindings = {},
+        announces = {},
     },
     global = {
         itemsets = {
@@ -216,6 +205,16 @@ local events = {
 
     'BAG_UPDATE',
     'UNIT_COMBAT',
+
+    "UNIT_SPELLCAST_SENT",
+    "UNIT_SPELLCAST_START",
+    "UNIT_SPELLCAST_STOP",
+    "UNIT_SPELLCAST_SUCCEEDED",
+    "UNIT_SPELLCAST_INTERRUPTED",
+    "UNIT_SPELLCAST_CHANNEL_START",
+    "UNIT_SPELLCAST_CHANNEL_STOP",
+
+    "COMBAT_LOG_EVENT_UNFILTERED",
 }
 
 local mainline_events = {
@@ -332,6 +331,7 @@ function addon:OnInitialize()
     self.longtermCache = {}
 
     self.currentSpec = nil
+    self.currentForm = nil
 
     -- This is a list of rotations that are available (ie. they are complete).  So we don't
     -- have to call validate in a time of battle.
@@ -354,6 +354,7 @@ function addon:OnInitialize()
     self.specTalents = {}
 
     self.unitsInRange = {}
+    self.damageHistory = {}
 
     self.spellHistory = {}
     self.combatHistory = {}
@@ -374,6 +375,7 @@ function addon:OnInitialize()
 
     -- This is here because of order of loading.
     getCached = addon.getCached
+    getRetryCached = addon.getRetryCached
 end
 
 function addon:GetRotationName(id)
@@ -721,39 +723,108 @@ function addon:ButtonFetch()
     self.fetchTimer = self:ScheduleTimer('Fetch', 0.5)
 end
 
-local function UpdateUnitInfo(cache, unit, record)
+local function CreateUnitInfo(cache, unit, now)
+--[[
+    local cur, max
+    if RealMobHealth then
+        cur, max = RealMobHealth.GetUnitHealth(unit)
+    end
+    if not cur then
+        cur = getCached(cache, UnitHealth, unit)
+    end
+    if not max then
+        max = getCached(cache, UnitHealthMax, unit)
+    end
+]]
+
+    local info = {
+        unit = unit,
+        name = getCached(cache, UnitName, unit),
+        attackable = getCached(cache, UnitCanAttack, "player", unit),
+        enemy = getCached(cache, UnitIsEnemy, "player", unit),
+--[[
+        health = { {
+            time = now,
+            value = cur,
+            max = max,
+        } },
+]]
+        --inrange = UnitInRange(unit)
+    }
+    if info.enemy then
+        info.threat = getCached(cache, UnitThreatSituation, "player", unit)
+    end
+    return info
+end
+
+local function UpdateUnitInfo(cache, record, now)
+    if not getCached(cache, UnitExists, record.unit) then
+        return
+    end
+
     if record.attackable then
-        record.enemy = getCached(cache, UnitIsEnemy, "plater", unit)
+        record.enemy = getCached(cache, UnitIsEnemy, "player", record.unit)
         if record.enemy then
-            record.threat = getCached(cache, UnitThreatSituation, "player", unit)
+            record.threat = getCached(cache, UnitThreatSituation, "player", record.unit)
         else
             record.threat = nil
         end
     end
-    --record.health = getCached(cache, UnitHealth, unit)
-    --record.inrange = getCached(cache, UnitInRange, unit)
+
+--[[
+    local cur, max
+    if RealMobHealth then
+        cur, max = RealMobHealth.GetUnitHealth(record.unit)
+    end
+    if not cur then
+        cur = getCached(cache, UnitHealth, record.unit)
+    end
+    if not max then
+        max = getCached(cache, UnitHealthMax, record.unit)
+    end
+
+    table.insert(record.health, 1, {
+        time = now,
+        value = cur,
+        max = max,
+    })
+
+    local threshold_time = now - addon.db.profile.damage_history
+    while #record.health ~= 0 do
+        if record.health[#record.health].time < threshold_time then
+            table.remove(record.health, #record.health)
+        else
+            break
+        end
+    end
+]]
 end
 
-local function announce_cooldown(cache, cond, spellid)
+local function announce(cache, cond, text)
     local dest
-    if cond.announce == "partyraid" then
+    if cond.announce == "local" then
+        addon:announce(text)
+    elseif cond.announce == "partyraid" then
         if getCached(cache, IsInRaid) then
             dest = "RAID"
         elseif getCached(cache, IsInGroup) then
             dest = "PARTY"
         end
     elseif cond.announce == "party" then
-        dest = "PARTY"
+        if getCached(cache, IsInGroup) then
+            dest = "PARTY"
+        end
     elseif cond.announce == "raidwarn" then
-        dest = "RAID_WARNING"
+        if getCached(cache, IsRaidLeader) then
+            dest = "RAID_WARNING"
+        end
     elseif cond.announce == "say" then
         dest = "SAY"
     elseif cond.announce == "yell" then
         dest = "YELL"
     end
     if dest ~= nil then
-        local link = getCached(addon.longtermCache, GetSpellLink, spellid)
-        SendChatMessage(string.format(L["%s is now available!"], link), dest)
+        SendChatMessage(text, dest)
     end
 end
 
@@ -764,23 +835,44 @@ function addon:EvaluateNextAction()
             self.db.char.rotations[self.currentSpec][self.currentRotation] ~= nil then
         self.evaluationProfile:start()
 
+        local now = GetTime()
         local cache = {}
         if not self.inCombat then
             self.combatCache = cache
         end
 
-        self.evaluationProfile:child("environment"):start()
-        for unit, entity in pairs(self.unitsInRange) do
-            addon:verbose("Updating Unit " .. unit .. " (" .. entity.name .. ")")
-            UpdateUnitInfo(cache, unit, entity)
+        local newForm = getCached(cache, GetShapeshiftForm)
+        if self.currentForm ~= newForm then
+            self.skipAnnounce = true
+            self.currentForm = newForm
         end
 
-        local threshold_time = GetTime() - self.db.profile.spell_history
-        while true do
-            if #self.spellHistory == 0 then
-                break
+        self.evaluationProfile:child("environment"):start()
+
+        local unitsHandled, unitsGUID = {}, {}
+        for unit, _ in pairs(addon.units) do
+            unitsGUID[unit] = getCached(cache, UnitGUID, unit)
+        end
+        for unit, entity in pairs(self.unitsInRange) do
+            if unitsGUID[entity.unit] then
+                if unitsGUID[entity.unit] == unit then
+                    unitsHandled[entity.unit] = true
+                else
+                    self.unitsInRange[unit] = nil
+                end
             end
 
+            addon:verbose("Updating Unit " .. unit .. " (" .. entity.name .. ")")
+            UpdateUnitInfo(cache, entity, now)
+        end
+        for unit, guid in pairs(unitsGUID) do
+            if not unitsHandled[unit] and not self.unitsInRange[guid] then
+                self.unitsInRange[guid] = CreateUnitInfo(cache, unit, now)
+            end
+        end
+
+        local threshold_time = now - self.db.profile.spell_history
+        while #self.spellHistory ~= 0 do
             if self.spellHistory[#self.spellHistory].time < threshold_time then
                 table.remove(self.spellHistory, #self.spellHistory)
             else
@@ -788,13 +880,9 @@ function addon:EvaluateNextAction()
             end
         end
 
-        threshold_time = GetTime() - self.db.profile.combat_history
+        threshold_time = now - self.db.profile.combat_history
         for unit,history in pairs(self.combatHistory) do
-            while true do
-                if #history == 0 then
-                    break
-                end
-
+            while #history ~= 0 do
                 if history[#history].time < threshold_time then
                     table.remove(history, #history)
                 else
@@ -803,6 +891,27 @@ function addon:EvaluateNextAction()
             end
         end
         self.evaluationProfile:child("environment"):stop()
+
+        local threshold_time = now - self.db.profile.damage_history
+        for guid, entry in pairs(self.damageHistory) do
+            while #entry.heals ~= 0 do
+                if entry.heals[#entry.heals].time < threshold_time then
+                    table.remove(entry.heals, #entry.heals)
+                else
+                    break
+                end
+            end
+            while #entry.damage ~= 0 do
+                if entry.damage[#entry.damage].time < threshold_time then
+                    table.remove(entry.damage, #entry.damage)
+                else
+                    break
+                end
+            end
+            if #entry.heals == 0 and #entry.damage == 0 then
+                self.damageHistory[guid] = nil
+            end
+        end
 
         -- The common way to evaluate any rotation or cooldown condition.
         local function eval(cond)
@@ -884,7 +993,8 @@ function addon:EvaluateNextAction()
                         addon:verbose("Cooldown %d [%s] is enabled", id, cond.id)
                         if addon.announced[cond.id] ~= spellid then
                             if not addon.skipAnnounce then
-                                announce_cooldown(cache, cond, spellid)
+                                local link = getCached(addon.longtermCache, GetSpellLink, spellid)
+                                announce(cache, cond, string.format(L["%s is now available!"], link))
                             end
                             addon.announced[cond.id] = spellid;
                             AceEvent:SendMessage("ROTATIONMASTER_COOLDOWN_UPDATE", self.currentRotation, id, cond.id, cond.type, spellid)
@@ -954,26 +1064,27 @@ function addon:GetSpellIds(rot)
 
                 if itemset ~= nil then
                     for _, item in ipairs(itemset.items) do
-                        local spellid = select(2, getCached(self.longtermCache, GetItemSpell, item));
+                        local spellid = select(2, getRetryCached(self.longtermCache, GetItemSpell, item));
                         if spellid then
                             table.insert(spellids, spellid)
                             if addon.isint(item) then
                                 table.insert(itemids, item)
                             else
-                                table.insert(itemids, getCached(self.longtermCache, GetItemInfoInstant, item))
+                                local itemid = getRetryCached(self.longtermCache, GetItemInfoInstant, item)
+                                table.insert(itemids, itemid)
                             end
                         end
                     end
                 end
             else
                 for _, item in ipairs(rot.action) do
-                    local spellid = select(2, getCached(self.longtermCache, GetItemSpell, item));
+                    local spellid = select(2, getRetryCached(self.longtermCache, GetItemSpell, item));
                     if spellid then
                         table.insert(spellids, spellid)
                         if addon.isint(item) then
                             table.insert(itemids, item)
                         else
-                            local itemid = getCached(self.longtermCache, GetItemInfoInstant, item)
+                            local itemid = getRetryCached(self.longtermCache, GetItemInfoInstant, item)
                             table.insert(itemids, itemid)
                         end
                     end
@@ -1042,7 +1153,7 @@ function addon:UpdateSkills()
         for j = offset, offset + numSpells - 1 do
             local name, rank, spellId = GetSpellBookItemName(j, BOOKTYPE_SPELL)
             if (i == 1 and rank ~= nil and rank ~= "") then
-                for _, prof in pairs(profession_levels) do
+                for _, prof in pairs(self.profession_levels) do
                     if rank == prof then
                         spellId = nil
                         break
@@ -1111,7 +1222,7 @@ function addon:UpdateBoundButton(id)
         if type == "item" then
             local itemid = addon:FindFirstItemOfItemSet({}, id, true)
             if itemid and itemid ~= actionType then
-                addon:debug("Updaeted slot %s to new item %d", slot, itemid)
+                addon:debug("Updated slot %s to new item %d", slot, itemid)
                 PickupItem(itemid)
                 PlaceAction(slot)
                 ClearCursor()
@@ -1203,7 +1314,7 @@ function addon:PLAYER_CONTROL_GAINED()
     self:EvaluateNextAction()
 end
 
-function addon:UpdateBagContents()
+function addon:UpdateBagContents(cache)
     self.bagContents = {}
     for i=0,4 do
         for j=1, GetContainerNumSlots(i) do
@@ -1212,7 +1323,7 @@ function addon:UpdateBagContents()
                 if self.bagContents[itemId] == nil then
                     self.bagContents[itemId] = {
                         count = qty,
-                        spell = getCached(addon.longtermCache, GetItemSpell, itemId),
+                        spell = getRetryCached(addon.longtermCache, GetItemSpell, itemId),
                         slots = { j }
                     }
                 else
@@ -1296,26 +1407,30 @@ function addon:UNIT_EXITED_VEHICLE(event, unit)
     end
 end
 
-local function CreateUnitInfo(unit)
-    local info = {
-        name = UnitName(unit),
-        attackable = UnitCanAttack("player", unit),
-        enemy = UnitIsEnemy("player", unit),
-        --health = UnitHealth(unit),
-        --inrange = UnitInRange(unit)
-    }
-    if info.enemy then
-        info.threat = UnitThreatSituation("player", unit)
-    end
-    return info
-end
-
 function addon:NAME_PLATE_UNIT_ADDED(event, unit)
-    self.unitsInRange[unit] = CreateUnitInfo(unit)
+    local guid = UnitGUID(unit)
+    if self.unitsInRange[guid] then
+        self.unitsInRange[guid].unit = unit
+    else
+        self.unitsInRange[guid] = CreateUnitInfo({}, unit, GetTime())
+    end
 end
 
 function addon:NAME_PLATE_UNIT_REMOVED(event, unit)
-    self.unitsInRange[unit] = nil
+    local guid = UnitGUID(unit)
+    if self.unitsInRange[guid] then
+        local handled = false
+        for u, _ in pairs(addon.units) do
+            if UnitIsUnit(unit, u) then
+                self.unitsInRange[guid].unit = u
+                handled = true
+                break
+            end
+        end
+        if not handled then
+            self.unitsInRange[guid] = nil
+        end
+    end
 end
 
 function addon:BAG_UPDATE(event)
@@ -1341,3 +1456,96 @@ function addon:UNIT_COMBAT(event, unit, action, severity, value, type)
         type = type,
     })
 end
+
+local currentSpells = {}
+
+local function spellcast(_, event, unit, castguid, spellid)
+    for _, value in ipairs(addon.db.char.announces) do
+        if value.value and (event == "UNIT_SPELLCAST_" .. value.event or
+                            event == "UNIT_SPELLCAST_CHANNEL_" .. value.event) then
+            local ent = addon.deepcopy(value)
+
+            if ent.type == "spell" then
+                ent.action = ent.spell
+            elseif ent.type == "item" then
+                ent.action = ent.item
+            end
+
+            local spellids, itemids = addon:GetSpellIds(ent)
+            for idx, sid in ipairs(spellids) do
+                if spellid == sid then
+                    local text = ent.value
+                    if ent.type == "spell" then
+                        local link = getCached(addon.longtermCache, GetSpellLink, sid)
+                        text = text:gsub("{{spell}}", link)
+                    elseif ent.type == "item" then
+                        local link = select(2, getRetryCached(addon.longtermCache, GetItemInfo, itemids[idx]))
+                        text = text:gsub("{{item}}", link)
+                    end
+                    text = text:gsub("{{event}}", addon.events[ent.event])
+                    if currentSpells[castguid] then
+                        text = text:gsub("{{target}}", currentSpells[castguid])
+                    end
+                    announce({}, ent, text)
+                    break
+                end
+            end
+        end
+    end
+end
+
+addon.UNIT_SPELLCAST_START = spellcast
+addon.UNIT_SPELLCAST_STOP = function(_, event, unit, castguid, spellid)
+    spellcast(_, event, unit, castguid, spellid)
+    currentSpells[castguid] = nil
+end
+addon.UNIT_SPELLCAST_SUCCEEDED = spellcast
+addon.UNIT_SPELLCAST_INTERRUPTED = spellcast
+addon.UNIT_SPELLCAST_CHANNEL_START = spellcast
+addon.UNIT_SPELLCAST_CHANNEL_STOP = function(_, event, unit, castguid, spellid)
+    spellcast(_, event, unit, castguid, spellid)
+    currentSpells[castguid] = nil
+end
+
+addon.UNIT_SPELLCAST_SENT = function(_, event, unit, target, castguid, spellid)
+    currentSpells[castguid] = target
+end
+
+local function handle_combat_log(timestamp, event, _, sourceGUID, sourceName, _, _, destGUID, destName, _, _, ...)
+    local spellid, spellname, envType
+    local offs = 1
+    if event:sub(1, 5) == "SPELL" or event:sub(1, 5) == "RANGE" then
+        spellid, spellname = ...
+        offs = 4
+    elseif event:sub(1, 5) == "ENVIRONMENTAL" then
+        envType = ...
+        offs = 2
+    end
+
+    if event:sub(-5) == "_HEAL" then
+        local amount, overheal, absorbed, crit = select(offs, ...)
+        if not addon.damageHistory[destGUID] then
+            addon.damageHistory[destGUID] = {
+                damage = {},
+                heals = {},
+            }
+        end
+        table.insert(addon.damageHistory[destGUID].heals, 1, {
+            time = GetTime(),
+            value = amount,
+        })
+    elseif event:sub(-7) == "_DAMAGE" then
+        local amount, overkill, school, resisted, blocked, absorbed, crit, _, crushing, _ = select(offs, ...)
+        if not addon.damageHistory[destGUID] then
+            addon.damageHistory[destGUID] = {
+                damage = {},
+                heals = {},
+            }
+        end
+        table.insert(addon.damageHistory[destGUID].damage, 1, {
+            time = GetTime(),
+            value = amount,
+        })
+    end
+end
+addon.COMBAT_LOG_EVENT_UNFILTERED = function(_, event) handle_combat_log(CombatLogGetCurrentEventInfo()) end

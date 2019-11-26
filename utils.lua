@@ -260,6 +260,9 @@ function addon:ReportCacheStats()
 end
 
 addon.isSpellOnSpec = function(spec, spellid, ispet)
+    if not spellid then
+        return false
+    end
     if ispet or spec == addon.currentSpec then
         return FindSpellBookSlotBySpellID(spellid, ispet) ~= nil
     elseif addon.specSpells[spec] ~= nil then
@@ -290,6 +293,10 @@ end
 
 function addon:warn(message, ...)
     AceConsole:Printf(color.WHITE .. "[" .. color.CYAN .. addon.pretty_name .. color.WHITE .. "] " .. color.WARN .. message .. color.RESET, ...)
+end
+
+function addon:announce(message, ...)
+    AceConsole:Printf(color.WHITE .. "[" .. color.CYAN .. addon.pretty_name .. color.WHITE .. "] " .. color.ANNOUNCE .. message .. color.RESET, ...)
 end
 
 -- character table string
@@ -342,7 +349,7 @@ function width_split(s, sz)
     return rv
 end
 
-function addon.split (inputstr, sep)
+function addon.split(inputstr, sep)
     if sep == nil then
         sep = "%s"
     end
@@ -355,6 +362,111 @@ end
 
 function addon.trim(s)
     return (s:gsub("^%s*(.-)%s*$", "%1"))
+end
+
+-- This will look at the damage done over damage_history, and gives progressively more weight
+-- to more recent damage (so that theoretically if damage has decreased/increased it will adjust.)
+function addon.calculate_trend_old(health)
+    if not health then
+        return 0
+    end
+
+    local damage_history = addon.db.profile.damage_history
+    local now = GetTime()
+    local total, count, seconds = 0, 0, 0
+
+    local last_health, last_offs, last_max
+    local offs_total = 0
+    for k,v in ipairs(health) do
+        if v.value >= v.max or v.value == 0 then
+            break
+        end
+
+        if last_max ~= v.max then
+            last_health = nil
+            last_max = v.max
+        end
+
+        local offs = addon.round(now - v.time)
+        if last_health ~= nil then
+            offs_total = offs_total + (last_health - v.value)
+
+            if last_offs ~= offs then
+                local scale = damage_history - offs
+                count = count + scale
+                total = total + (offs_total * scale)
+                seconds = seconds + 1
+                offs_total = 0
+            end
+        end
+        last_health = v.value
+        last_offs = offs
+    end
+
+    if seconds then
+        return total / count, seconds
+    end
+    return 0
+end
+
+function addon.calculate_trend(history, window, noheals, nodmg)
+    if not history then
+        return 0
+    end
+
+    if not window then
+        window = addon.db.profile.damage_history
+    end
+
+    local now = GetTime()
+    local damage_total, damage_count, damage_seconds = 0, 0, 0
+    local heal_total, heal_count, heal_seconds = 0, 0, 0
+
+    local maxoffs, data = 0, {}
+    if not nodmg then
+        for k,v in ipairs(history.damage) do
+            local diff = now - v.time
+            local scale = window - diff
+            maxoffs = addon.round(diff)
+            if maxoffs > window then
+                break
+            end
+
+            if v.value then
+                data[maxoffs] = (data[maxoffs] or 0) + (v.value * scale)
+            end
+        end
+        damage_seconds = maxoffs
+        for i=0,maxoffs do
+            damage_total = damage_total + (data[i] or 0)
+            damage_count = damage_count + (window - i)
+        end
+    end
+
+    if not noheals then
+        maxoffs, data = 0, {}
+        for k,v in ipairs(history.heals) do
+            local diff = now - v.time
+            local scale = window - diff
+            maxoffs = addon.round(diff)
+            if maxoffs > window then
+                break
+            end
+
+            if v.value then
+                data[maxoffs] = (data[maxoffs] or 0) + (v.value * scale)
+            end
+        end
+        heal_seconds = maxoffs
+        for i=0,maxoffs do
+            heal_total = heal_total + (data[i] or 0)
+            heal_count = heal_count + (window - i)
+        end
+    end
+
+    return (((damage_count > 0) and (-damage_total / damage_count) or 0) +
+           ((heal_count > 0) and (heal_total / heal_count) or 0)),
+           (damage_seconds > heal_seconds and damage_seconds or heal_seconds)
 end
 
 function addon.AddTooltip(frame, text)

@@ -28,7 +28,14 @@ addon:RegisterCondition(L["Combat"], "HEALTH", {
                 value.value ~= nil and value.value >= 0)
     end,
     evaluate = function(value, cache, evalStart)
-        return compare(value.operator, getCached(cache, UnitHealth, value.unit), value.value)
+        local cur
+        if RealMobHealth then
+            cur = RealMobHealth.GetUnitHealth(value.unit)
+        end
+        if not cur then
+            cur = getCached(cache, UnitHealth, value.unit)
+        end
+        return compare(value.operator, cur, value.value)
     end,
     print = function(spec, value)
         return compareString(value.operator, string.format(L["%s health"], nullable(unitsPossessive[value.unit], L["<unit>"])), nullable(value.value))
@@ -312,6 +319,236 @@ addon:RegisterCondition(L["Combat"], "POINT", {
             "The number of combo points " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. " currently has.  " ..
             "Combo points are a statistic that is class (and sometimes spec or form) specific (eg. Mages have " ..
             "Arcane Charges.)")
+    end
+})
+
+addon:RegisterCondition(L["Combat"], "TT_HEALTH", {
+    description = L["Time Until Health"],
+    icon = "Interface\\Icons\\inv_potion_21",
+    valid = function(spec, value)
+        return (value.operator ~= nil and isin(operators, value.operator) and
+                value.unit ~= nil and isin(units, value.unit) and
+                value.value ~= nil and value.value >= 0.00 and
+                value.health ~= nil and value.health >= 0)
+    end,
+    evaluate = function(value, cache, evalStart)
+        local target = getCached(cache, UnitGUID, value.unit)
+        if target then
+            local health
+            if RealMobHealth then
+                health = RealMobHealth.GetUnitHealth(value.unit)
+            end
+            if not health then
+                health = getCached(cache, UnitHealth, value.unit)
+            end
+
+            local target_health = value.health
+            if health == target_health then
+                return compare(value.operator, 0, value.value)
+            elseif addon.damageHistory[target] then
+                local trend, seconds = addon.calculate_trend(addon.damageHistory[target], nil, value.mode == "noheals", value.mode == "nodmg")
+                if trend and seconds > 2 then
+                    local ttt = 0 -- Time Til Target
+                    if trend < 0 then
+                        if target_health < health then
+                            ttt = (health - target_health) / -trend
+                        end
+                    elseif trend > 0 then
+                        if target_health > health then
+                            ttt = (target_health - health) / trend
+                        end
+                    end
+                    return compare(value.operator, ttt, value.value)
+                end
+            end
+        end
+        return false
+    end,
+    print = function(spec, value)
+        return string.format(L["%s with %s"],
+            compareString(value.operator, string.format(L["time until %s is at %s health"],
+            nullable(value.unit, L["<unit>"]), nullable(value.health)),
+            string.format(L["%s seconds"], nullable(value.value))), addon.trendmode[value.mode or "both"])
+
+    end,
+    widget = function(parent, spec, value)
+        local top = parent:GetUserData("top")
+        local root = top:GetUserData("root")
+        local funcs = top:GetUserData("funcs")
+
+        local unit = addon:Widget_UnitWidget(value, units,
+            function() top:SetStatusText(funcs:print(root, spec)) end)
+        parent:AddChild(unit)
+
+        local health = AceGUI:Create("EditBox")
+        health:SetWidth(100)
+        health:SetLabel(L["Health"])
+        health:SetText(value.health)
+        health:SetCallback("OnEnterPressed", function(widget, event, v)
+            value.health = tonumber(v)
+            top:SetStatusText(funcs:print(root, spec))
+        end)
+        parent:AddChild(health)
+
+        local operator_group = addon:Widget_OperatorWidget(value, L["Seconds"],
+            function() top:SetStatusText(funcs:print(root, spec)) end)
+        parent:AddChild(operator_group)
+
+        local mode = AceGUI:Create("Dropdown")
+        mode:SetLabel(L["Mode"])
+        mode:SetCallback("OnValueChanged", function(widget, event, v)
+            value.mode = (v ~= "both" and v or nil)
+            top:SetStatusText(funcs:print(root, spec))
+        end)
+        mode.configure = function()
+            mode:SetList(addon.trendmode, { "both", "noheals", "nodmg" })
+            mode:SetValue(value.mode or "both")
+        end
+        parent:AddChild(mode)
+    end,
+    help = function(frame)
+        addon.layout_condition_unitwidget_help(frame)
+        frame:AddChild(Gap())
+        frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Health"] .. color.RESET .. " - " ..
+                "The target health the rule is waiting for " .. color.BLIZ_YELLOW .. L["Unit"] ..
+                color.RESET .. " to get to."))
+        frame:AddChild(Gap())
+        addon.layout_condition_operatorpercentwidget_help(frame, L["Time Until Health"], L["Seconds"],
+            "How many seconds (estimated) until the target health is acehived on  " .. color.BLIZ_YELLOW ..
+                L["Unit"] .. color.RESET)
+        frame:AddChild(Gap())
+        frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Mode"] .. color.RESET .. " - " ..
+                "How the burn rate should be calculated, which is used to estimate the time to target health."))
+        frame:AddChild(Indent(40, CreateText(color.GREEN .. L["Damage and Heals"] .. color.RESET .. " - " ..
+                "Both damage and heals on " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. " will be factored " ..
+                "into the 'burn rate' (essentially mitigating damage with heals for a realistic burn rate)")))
+        frame:AddChild(Indent(40, CreateText(color.GREEN .. L["Damage Only"] .. color.RESET .. " - " ..
+                "Only damage on " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. " will be factored into the " ..
+                "'burn rate', which will cause some spikes in time-to-target if they are healed.")))
+        frame:AddChild(Indent(40, CreateText(color.GREEN .. L["Heals Only"] .. color.RESET .. " - " ..
+                "Only heals on " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. " will be factored into the " ..
+                "'burn rate', essentially pretending they are not being hit at all.")))
+    end
+})
+
+addon:RegisterCondition(L["Combat"], "TT_HEALTHPCT", {
+    description = L["Time Until Health Percentage"],
+    icon = "Interface\\Icons\\inv_potion_24",
+    valid = function(spec, value)
+        return (value.operator ~= nil and isin(operators, value.operator) and
+                value.unit ~= nil and isin(units, value.unit) and
+                value.value ~= nil and value.value >= 0.00 and
+                value.health ~= nil and value.health >= 0.00 and value.health <= 1.00)
+    end,
+    evaluate = function(value, cache, evalStart)
+        local target = getCached(cache, UnitGUID, value.unit)
+        if target then
+            local health, maxhealth
+            if RealMobHealth then
+                health, maxhealth = RealMobHealth.GetUnitHealth(value.unit)
+            end
+            if not health then
+                health = getCached(cache, UnitHealth, value.unit)
+            end
+            if not maxhealth then
+                maxhealth = getCached(cache, UnitHealthMax, value.unit)
+            end
+
+            local target_health = (maxhealth * value.health)
+            if health == target_health then
+                return compare(value.operator, 0, value.value)
+            elseif addon.damageHistory[target] then
+                local trend, seconds = addon.calculate_trend(addon.damageHistory[target], nil, value.mode == "noheals", value.mode == "nodmg")
+                if trend and seconds > 2 then
+                    local ttt = 0 -- Time Til Target
+                    if trend < 0 then
+                        if target_health < health then
+                            ttt = (health - target_health) / -trend
+                        end
+                    elseif trend > 0 then
+                        if target_health > health then
+                            ttt = (target_health - health) / trend
+                        end
+                    end
+                    return compare(value.operator, ttt, value.value)
+                end
+            end
+        end
+        return false
+    end,
+    print = function(spec, value)
+        local v = value.health
+        if v ~= nil then
+            v = v * 100
+        end
+        return string.format(L["%s with %s"],
+            compareString(value.operator, string.format(L["time until %s is at %s%% health"],
+                                                           nullable(value.unit, L["<unit>"]), nullable(v)),
+                            string.format(L["%s seconds"], nullable(value.value))),
+                            addon.trendmode[value.mode or "both"])
+
+    end,
+    widget = function(parent, spec, value)
+        local top = parent:GetUserData("top")
+        local root = top:GetUserData("root")
+        local funcs = top:GetUserData("funcs")
+
+        local unit = addon:Widget_UnitWidget(value, units,
+            function() top:SetStatusText(funcs:print(root, spec)) end)
+        parent:AddChild(unit)
+
+        local health = AceGUI:Create("Slider")
+        health:SetLabel(L["Health"])
+        if (value.value ~= nil) then
+            health:SetValue(value.health)
+        end
+        health:SetSliderValues(0, 1, 0.01)
+        health:SetWidth(150)
+        health:SetIsPercent(true)
+        health:SetCallback("OnValueChanged", function(widget, event, v)
+            value.health = tonumber(v)
+            top:SetStatusText(funcs:print(root, spec))
+        end)
+        parent:AddChild(health)
+
+        local operator_group = addon:Widget_OperatorWidget(value, L["Seconds"],
+            function() top:SetStatusText(funcs:print(root, spec)) end)
+        parent:AddChild(operator_group)
+
+        local mode = AceGUI:Create("Dropdown")
+        mode:SetLabel(L["Mode"])
+        mode:SetCallback("OnValueChanged", function(widget, event, v)
+            value.mode = (v ~= "both" and v or nil)
+            top:SetStatusText(funcs:print(root, spec))
+        end)
+        mode.configure = function()
+            mode:SetList(addon.trendmode, { "both", "noheals", "nodmg" })
+            mode:SetValue(value.mode or "both")
+        end
+        parent:AddChild(mode)
+    end,
+    help = function(frame)
+        addon.layout_condition_unitwidget_help(frame)
+        frame:AddChild(Gap())
+        frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Health"] .. color.RESET .. " - " ..
+                "The target health the rule is waiting for " .. color.BLIZ_YELLOW .. L["Unit"] ..
+                color.RESET .. " to get to as a percentage of their total health."))
+        frame:AddChild(Gap())
+        addon.layout_condition_operatorpercentwidget_help(frame, L["Time Until Health Percentage"], L["Seconds"],
+            "The health value of " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. " as a percentage of their " ..
+                    "total health.")
+        frame:AddChild(Gap())
+        frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Mode"] .. color.RESET .. " - " ..
+                "How the burn rate should be calculated, which is used to estimate the time to target health."))
+        frame:AddChild(Indent(40, CreateText(color.GREEN .. L["Damage and Heals"] .. color.RESET .. " - " ..
+                "Both damage and heals on " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. " will be factored " ..
+                "into the 'burn rate' (essentially mitigating damage with heals for a realistic burn rate)")))
+        frame:AddChild(Indent(40, CreateText(color.GREEN .. L["Damage Only"] .. color.RESET .. " - " ..
+                "Only damage on " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. " will be factored into the " ..
+                "'burn rate', which will cause some spikes in time-to-target if they are healed.")))
+        frame:AddChild(Indent(40, CreateText(color.GREEN .. L["Heals Only"] .. color.RESET .. " - " ..
+                "Only heals on " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. " will be factored into the " ..
+                "'burn rate', essentially pretending they are not being hit at all.")))
     end
 })
 

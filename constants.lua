@@ -86,10 +86,36 @@ addon.creatures = {
     GAS_CLUUD = L["Gas Cloud"],
 }
 
+addon.events = {
+    START = L["Started"],
+    STOP = L["Stopped"],
+    SUCCEEDED = L["Succeeded"],
+    INTERRUPTED = L["Interrupted"],
+}
+
+addon.profession_levels = {
+    APPRENTICE,
+    JOURNEYMAN,
+    EXPERT,
+    ARTISAN,
+    MASTER,
+    GRAND_MASTER,
+    ILLUSTRIOUS,
+    ZEN_MASTER,
+    DRAENOR_MASTER,
+    LEGION_MASTER,
+}
+
 addon.roles = {
     TANK = L["Tank"],
     DAMAGER = L["DPS"],
     HEALER = L["Healer"],
+}
+
+addon.trendmode = {
+    both = L["Damage and Heals"],
+    noheals = L["Damage Only"],
+    nodmg = L["Heals Only"],
 }
 
 addon.debufftypes = {

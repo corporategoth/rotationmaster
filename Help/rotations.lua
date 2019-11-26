@@ -186,21 +186,18 @@ function addon.layout_cooldown_help(frame)
     group:AddChild(CreateText(color.BLIZ_YELLOW .. L["Announce"] .. color.RESET .. " - " ..
             "This will announce that your cooldown is available in the manner you specify.  The cooldown is " ..
             "only announced when it becomes available after previously not being available."))
-
     group:AddChild(Indent(40, CreateText(color.GREEN .. L["None"] .. color.RESET .. " - " ..
             "Do not announce cooldowns at all.")))
-
     group:AddChild(Indent(40, CreateText(color.GREEN .. L["Raid or Party"] .. color.RESET .. " - " ..
             "Announce to all memebers of your raid or party (detected automatically).")))
-
     group:AddChild(Indent(40, CreateText(color.GREEN .. L["Party Only"] .. color.RESET .. " - " ..
             "Announce to all party only, even if you are in a raid.")))
-
     group:AddChild(Indent(40, CreateText(color.GREEN .. L["Say"] .. color.RESET .. " - " ..
             "Announce using /say (showing up as a white-text speech bubble)")))
-
     group:AddChild(Indent(40, CreateText(color.GREEN .. L["Yell"] .. color.RESET .. " - " ..
             "Announce using /yell (showing up as a red-text speech bubble)")))
+    group:AddChild(Indent(40, CreateText(color.GREEN .. L["Local Only"] .. color.RESET .. " - " ..
+            "Announce only to your chat frame (nobody else will see it).")))
 
     group:AddChild(Gap())
     help_conditions(group, "cooldown", "cooldowns")
