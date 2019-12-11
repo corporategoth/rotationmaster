@@ -377,7 +377,7 @@ do
 	
 	local function Predictor_OnMouseDown(self, direction)
 		-- Fix the cursor positioning if left or right arrow key was used
-		if( direction == "LEFT" or direction == "RIGHT" ) then
+		if self.editBox and ( direction == "LEFT" or direction == "RIGHT" ) then
 			EditBox_FixCursorPosition(self.editBox, direction)
 			return
 		end

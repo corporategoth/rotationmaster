@@ -369,7 +369,6 @@ addon:RegisterCondition(L["Combat"], "TT_HEALTH", {
             compareString(value.operator, string.format(L["time until %s is at %s health"],
             nullable(value.unit, L["<unit>"]), nullable(value.health)),
             string.format(L["%s seconds"], nullable(value.value))), addon.trendmode[value.mode or "both"])
-
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")

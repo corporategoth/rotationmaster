@@ -1,6 +1,7 @@
 ## Interface: 80205
+## Interface: 11303
 ## Title: Rotation Master
-## Version: 1.2.7
+## Version: 1.2.8
 ## Author: PreZ
 ## Notes: I wanted to save the world, but God wouldn't give me the source code.
 ## X-Email: prez@goth.net
@@ -21,6 +22,7 @@ constants.lua
 profiler.lua
 main.lua
 utils.lua
+fake.lua
 buttons.lua
 upgrade.lua
 

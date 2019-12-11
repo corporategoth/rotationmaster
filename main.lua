@@ -193,8 +193,10 @@ local events = {
 
     -- Conditions that affect affect the contents of highlighted buttons.
     'ACTIONBAR_SLOT_CHANGED',
+    'PET_BAR_UPDATE',
     'PLAYER_ENTERING_WORLD',
     'ACTIONBAR_HIDEGRID',
+    'PET_BAR_HIDEGRID',
     'ACTIONBAR_PAGE_CHANGED',
     'LEARNED_SPELL_IN_TAB',
     'UPDATE_MACROS',
@@ -215,6 +217,8 @@ local events = {
     "UNIT_SPELLCAST_CHANNEL_STOP",
 
     "COMBAT_LOG_EVENT_UNFILTERED",
+
+    "PLAYER_TOTEM_UPDATE",
 }
 
 local mainline_events = {
@@ -1275,7 +1279,9 @@ addon.ACTIONBAR_SLOT_CHANGED = function(self, event, slot)
     end
 end
 
+addon.PET_BAR_HIDEGRID = addon.ButtonFetch
 addon.ACTIONBAR_HIDEGRID = addon.ButtonFetch
+addon.PET_BAR_UPDATE = addon.ButtonFetch
 addon.ACTIONBAR_PAGE_CHANGED = addon.ButtonFetch
 addon.UPDATE_MACROS = addon.ButtonFetch
 addon.VEHICLE_UPDATE = addon.ButtonFetch
@@ -1295,6 +1301,8 @@ end
 
 function addon:UNIT_PET(unit)
     if unit == "player" then
+        SpellData:UpdateFromSpellBook()
+
         addon:verbose("Player changed pet.")
         if not self.inCombat then
             self:SwitchRotation()
@@ -1499,7 +1507,10 @@ addon.UNIT_SPELLCAST_STOP = function(_, event, unit, castguid, spellid)
     spellcast(_, event, unit, castguid, spellid)
     currentSpells[castguid] = nil
 end
-addon.UNIT_SPELLCAST_SUCCEEDED = spellcast
+addon.UNIT_SPELLCAST_SUCCEEDED = function(_, event, unit, castguid, spellid)
+    addon:HandleTotemSpell(spellid)
+    spellcast(_, event, unit, castguid, spellid)
+end
 addon.UNIT_SPELLCAST_INTERRUPTED = spellcast
 addon.UNIT_SPELLCAST_CHANNEL_START = spellcast
 addon.UNIT_SPELLCAST_CHANNEL_STOP = function(_, event, unit, castguid, spellid)
@@ -1549,3 +1560,7 @@ local function handle_combat_log(timestamp, event, _, sourceGUID, sourceName, _,
     end
 end
 addon.COMBAT_LOG_EVENT_UNFILTERED = function(_, event) handle_combat_log(CombatLogGetCurrentEventInfo()) end
+
+addon.PLAYER_TOTEM_UPDATE = function(_, event, elem)
+   addon:HandleTotemEvent(elem)
+end

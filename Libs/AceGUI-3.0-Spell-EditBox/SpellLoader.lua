@@ -194,6 +194,16 @@ function SpellLoader:UpdateFromSpellBook()
                 end
 			end
 		end
+		local j = 1
+        local name, rank, spellID = GetSpellBookItemName(j, BOOKTYPE_PET)
+        while spellID ~= nil do
+            local icon = GetSpellTexture(spellID)
+            if (not blacklist[tostring(icon)] and not IsPassiveSpell(j+offset, BOOKTYPE_SPELL) ) then
+                AddSpell(name, rank, icon, spellID, true)
+            end
+            j = j + 1
+            name, rank, spellID = GetSpellBookItemName(j, BOOKTYPE_PET)
+        end
 	end
 end
 

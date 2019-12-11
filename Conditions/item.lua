@@ -1,5 +1,6 @@
 local addon_name, addon = ...
 
+local AceGUI = LibStub("AceGUI-3.0")
 local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
 local color, tonumber = color, tonumber
 
@@ -137,6 +138,9 @@ addon:RegisterCondition(L["Spells / Items"], "ITEM", {
     end,
     evaluate = function(value, cache, evalStart) -- Cooldown until the spell is available
         local itemId = addon:FindFirstItemOfItems(cache, get_item_array(value.item), true)
+        if itemId == nil and value.notcarrying then
+            itemId = addon:FindFirstItemInItems(get_item_array(value.item))
+        end
         if itemId ~= nil then
             local minlevel = select(5, getRetryCached(addon.longtermCache, GetItemInfo, itemId))
             -- Can't use it as we are too low level!
@@ -170,7 +174,8 @@ addon:RegisterCondition(L["Spells / Items"], "ITEM", {
         end
     end,
     print = function(spec, value)
-        return string.format(L["%s is available"], nullable(get_item_desc(value.item), L["<item>"]))
+        return string.format(L["%s is available"], nullable(get_item_desc(value.item), L["<item>"])) ..
+                (value.carrying and L[", even if you do not currently have one"] or "")
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -180,9 +185,23 @@ addon:RegisterCondition(L["Spells / Items"], "ITEM", {
         local icon_group = addon:Widget_ItemWidget(top, value,
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(icon_group)
+
+        local notcarring = AceGUI:Create("CheckBox")
+        notcarring:SetWidth(200)
+        notcarring:SetLabel(L["Check If Not Carrying"])
+        notcarring:SetValue(value.notcarrying)
+        notcarring:SetCallback("OnValueChanged", function(widget, event, v)
+            value.notcarrying = v
+            top:SetStatusText(funcs:print(root, spec))
+        end)
+        parent:AddChild(notcarring)
     end,
     help = function(frame)
         addon.layout_condition_itemwidget_help(frame)
+        frame:AddChild(Gap())
+        frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Check If Not Carrying"] .. color.RESET .. " - " ..
+                "Check the availability of the first item in the item set as if you were carrying it, even " ..
+                "if you are not."))
     end
 })
 
@@ -194,13 +213,17 @@ addon:RegisterCondition(L["Spells / Items"], "ITEM_RANGE", {
     end,
     evaluate = function(value, cache, evalStart)
         local itemId = addon:FindFirstItemOfItems(cache, get_item_array(value.item), true)
+        if itemId == nil and value.notcarrying then
+            itemId = addon:FindFirstItemInItems(get_item_array(value.item))
+        end
         if itemId ~= nil then
             return (getCached(cache, IsItemInRange, itemId, "target") == 1)
         end
         return false
     end,
     print = function(spec, value)
-        return string.format(L["%s is in range"], nullable(get_item_desc(value.item), L["<item>"]))
+        return string.format(L["%s is in range"], nullable(get_item_desc(value.item), L["<item>"])) ..
+            (value.carrying and L[", even if you do not currently have one"] or "")
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -210,9 +233,23 @@ addon:RegisterCondition(L["Spells / Items"], "ITEM_RANGE", {
         local icon_group = addon:Widget_ItemWidget(top, value,
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(icon_group)
+
+        local notcarring = AceGUI:Create("CheckBox")
+        notcarring:SetWidth(200)
+        notcarring:SetLabel(L["Check If Not Carrying"])
+        notcarring:SetValue(value.notcarrying)
+        notcarring:SetCallback("OnValueChanged", function(widget, event, v)
+            value.notcarrying = v
+            top:SetStatusText(funcs:print(root, spec))
+        end)
+        parent:AddChild(notcarring)
     end,
     help = function(frame)
         addon.layout_condition_itemwidget_help(frame)
+        frame:AddChild(Gap())
+        frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Check If Not Carrying"] .. color.RESET .. " - " ..
+                "Check the availability of the first item in the item set as if you were carrying it, even " ..
+                "if you are not."))
     end
 })
 
@@ -225,6 +262,9 @@ addon:RegisterCondition(L["Spells / Items"], "ITEM_COOLDOWN", {
     end,
     evaluate = function(value, cache, evalStart) -- Cooldown until the spell is available
         local itemId = addon:FindFirstItemOfItems(cache, get_item_array(value.item), true)
+        if itemId == nil and value.notcarrying then
+            itemId = addon:FindFirstItemInItems(get_item_array(value.item))
+        end
         if itemId ~= nil then
             local cooldown = 0
             local start, duration = getCached(cache, GetItemCooldown, itemId)
@@ -239,7 +279,8 @@ addon:RegisterCondition(L["Spells / Items"], "ITEM_COOLDOWN", {
     print = function(spec, value)
         return string.format(L["the %s"],
             compareString(value.operator, string.format(L["cooldown on %s"], nullable(get_item_desc(value.item), L["<item>"])),
-                                string.format(L["%s seconds"], nullable(value.value))))
+                                string.format(L["%s seconds"], nullable(value.value)))) ..
+                (value.carrying and L[", even if you do not currently have one"] or "")
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -253,6 +294,16 @@ addon:RegisterCondition(L["Spells / Items"], "ITEM_COOLDOWN", {
         local operator_group = addon:Widget_OperatorWidget(value, L["Seconds"],
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
+
+        local notcarring = AceGUI:Create("CheckBox")
+        notcarring:SetWidth(200)
+        notcarring:SetLabel(L["Check If Not Carrying"])
+        notcarring:SetValue(value.notcarrying)
+        notcarring:SetCallback("OnValueChanged", function(widget, event, v)
+            value.notcarrying = v
+            top:SetStatusText(funcs:print(root, spec))
+        end)
+        parent:AddChild(notcarring)
     end,
     help = function(frame)
         addon.layout_condition_itemwidget_help(frame)
@@ -261,5 +312,9 @@ addon:RegisterCondition(L["Spells / Items"], "ITEM_COOLDOWN", {
             "The number of seconds before you can use the top item found in " .. color.BLIZ_YELLOW .. L["Item Set"] ..
             color.RESET .. ".  If you are not carrying any item in the item set, this condition will not be " ..
             "successful (regardless of the " .. color.BLIZ_YELLOW .. "Operator" .. color.RESET .. " used.)")
+        frame:AddChild(Gap())
+        frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Check If Not Carrying"] .. color.RESET .. " - " ..
+                "Check the availability of the first item in the item set as if you were carrying it, even " ..
+                "if you are not."))
     end
 })

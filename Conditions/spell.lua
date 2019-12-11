@@ -366,3 +366,38 @@ addon:RegisterCondition(L["Spells / Items"], "SPELL_HISTORY_TIME", {
     end
 })
 
+addon:RegisterCondition(L["Spells / Items"], "SPELL_ACTIVE", {
+    description = L["Spell Active or Pending"],
+    icon = 132212,
+    valid = function(spec, value)
+        if value.spell ~= nil then
+            local name = GetSpellInfo(value.spell)
+            return name ~= nil
+        else
+            return false
+        end
+    end,
+    evaluate = function(value, cache, evalStart)
+        local spellid = addon:Widget_GetSpellId(value.spell, value.ranked)
+        return IsCurrentSpell(spellid)
+    end,
+    print = function(spec, value)
+        local link = addon:Widget_GetSpellLink(value.spell, value.ranked)
+        return string.format(L["%s is active or pending"], nullable(link, L["<spell>"]))
+    end,
+    widget = function(parent, spec, value)
+        local top = parent:GetUserData("top")
+        local root = top:GetUserData("root")
+        local funcs = top:GetUserData("funcs")
+
+        local spell_group = addon:Widget_SpellWidget(spec, "Spec_EditBox", value,
+            function(v) return addon:GetSpecSpellID(spec, v) end,
+            function(v) return isSpellOnSpec(spec, v) end,
+            function() top:SetStatusText(funcs:print(root, spec)) end)
+        parent:AddChild(spell_group)
+    end,
+    help = function(frame)
+        addon.layout_condition_spellwidget_help(frame)
+    end
+})
+

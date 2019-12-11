@@ -276,6 +276,17 @@ local function FetchDiabolic()
 	end
 end
 
+local function FetchBartender4()
+    -- Non-pet buttons are done via. LibActionButton
+	for i = 1, 10 do
+		local button = _G['BT4PetButton' .. i];
+		if button then
+		    local spell = select(7, GetPetActionInfo(button.id))
+			AddButton(spell, button);
+		end
+	end
+end
+
 local function FetchDominos()
 	-- Dominos is using half of the blizzard frames so we just fetch the missing one
 
@@ -452,6 +463,10 @@ function addon:Fetch()
 	FetchBlizzard()
 
 	-- It does not alter original button frames so it needs to be fetched too
+	if IsAddOnLoaded('Bartender4') then
+		FetchBartender4()
+	end
+
 	if IsAddOnLoaded('ButtonForge') then
 		FetchButtonForge()
 	end

@@ -125,6 +125,111 @@ addon:RegisterCondition(L["Combat"], "INCONTROL", {
     end,
 })
 
+addon:RegisterCondition(L["Combat"], "LOC_TYPE", {
+    description = L["Loss Of Control Type"],
+    icon = "Interface\\Icons\\spell_nature_polymorph",
+    valid = function(spec, value)
+        return (value.operator ~= nil and isin(operators, value.operator) and
+                value.value ~= nil and value.value >= 0.0 and
+                value.loc_type ~= nil and isin(addon.loc_types, value.loc_type))
+    end,
+    evaluate = function(value, cache, evalStart)
+        for i=1,getCached(cache, C_LossOfControl.GetNumEvents) do
+            local loc_type, _, _, _, _, remain = getCached(cache, C_LossOfControl.GetEventInfo, i)
+            if addon.loc_equivalent[loc_type] then
+                loc_type = addon.loc_equivalent[loc_type]
+            end
+            if loc_type == value.loc_type then
+                return compare(value.operator, remain, value.value)
+            end
+        end
+        return false
+    end,
+    print = function(spec, value)
+        return compareString(value.operator, string.format(L["time remaining on %s"],
+                nullable(addon.loc_types[value.loc_type], L["<school>"])), string.format(L["%s seconds"], nullable(value.value)))
+    end,
+    widget = function(parent, spec, value)
+        local top = parent:GetUserData("top")
+        local root = top:GetUserData("root")
+        local funcs = top:GetUserData("funcs")
+
+        local loc_type = AceGUI:Create("Dropdown")
+        loc_type:SetLabel(L["Control Type"])
+        loc_type:SetCallback("OnValueChanged", function(widget, event, v)
+            value.loc_type = v
+            top:SetStatusText(funcs:print(root, spec))
+        end)
+        loc_type.configure = function()
+            loc_type:SetList(addon.loc_types)
+            loc_type:SetValue(value.loc_type)
+        end
+        parent:AddChild(loc_type)
+
+        local operator_group = addon:Widget_OperatorWidget(value, L["Seconds"],
+            function() top:SetStatusText(funcs:print(root, spec)) end)
+        parent:AddChild(operator_group)
+    end,
+    help = function(frame)
+        frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Control Type"] .. color.RESET .. " - " ..
+                "The type of loss of control you are subject to."))
+        frame:AddChild(Gap())
+        addon.layout_condition_operatorpercentwidget_help(frame, L["Loss Of Control Type"], L["Seconds"],
+            "How long until the loss of control expires.")
+    end
+})
+
+addon:RegisterCondition(L["Combat"], "LOC_BLOCKED", {
+    description = L["Loss Of Control Blocked"],
+    icon = "Interface\\Icons\\spell_nature_polymorph",
+    valid = function(spec, value)
+        return (value.operator ~= nil and isin(operators, value.operator) and
+                value.value ~= nil and value.value >= 0.0 and
+                value.school ~= nil and isin(addon.spell_schools, value.school))
+    end,
+    evaluate = function(value, cache, evalStart)
+        for i=1,getCached(cache, C_LossOfControl.GetNumEvents) do
+            local _, _, _, _, _, remain, _, school = getCached(cache, C_LossOfControl.GetEventInfo, i)
+            if bit.band(school, value.school) then
+                return compare(value.operator, remain, value.value)
+            end
+        end
+        return false
+    end,
+    print = function(spec, value)
+        return compareString(value.operator, string.format(L["time remaining on block of your %s abilities"],
+            nullable(addon.spell_schools[value.school], L["<school>"])), string.format(L["%s seconds"], nullable(value.value)))
+    end,
+    widget = function(parent, spec, value)
+        local top = parent:GetUserData("top")
+        local root = top:GetUserData("root")
+        local funcs = top:GetUserData("funcs")
+
+        local school = AceGUI:Create("Dropdown")
+        school:SetLabel(L["School Blocked"])
+        school:SetCallback("OnValueChanged", function(widget, event, v)
+            value.school = v
+            top:SetStatusText(funcs:print(root, spec))
+        end)
+        school.configure = function()
+            school:SetList(addon.spell_schools)
+            school:SetValue(value.school)
+        end
+        parent:AddChild(school)
+
+        local operator_group = addon:Widget_OperatorWidget(value, L["Seconds"],
+            function() top:SetStatusText(funcs:print(root, spec)) end)
+        parent:AddChild(operator_group)
+    end,
+    help = function(frame)
+        frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["School Blocked"] .. color.RESET .. " - " ..
+            "The type of ability you are prevented from using."))
+        frame:AddChild(Gap())
+        addon.layout_condition_operatorpercentwidget_help(frame, L["Loss Of Control Blocked"], L["Seconds"],
+            "How long until the loss of control expires.")
+    end
+})
+
 addon:RegisterCondition(L["Combat"], "MOVING", {
     description = L["Moving"],
     icon = "Interface\\Icons\\Ability_druid_dash",
