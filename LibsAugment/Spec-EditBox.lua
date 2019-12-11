@@ -32,6 +32,9 @@ do
     	local currentSpec = 0
 		if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
 			currentSpec = GetSpecializationInfo(GetSpecialization())
+			if currentSpec == nil then
+                return
+			end
 		end
 		if playerSpells[currentSpec] == nil then
 			playerSpells[currentSpec] = {}
