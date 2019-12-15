@@ -217,8 +217,6 @@ local events = {
     "UNIT_SPELLCAST_CHANNEL_STOP",
 
     "COMBAT_LOG_EVENT_UNFILTERED",
-
-    "PLAYER_TOTEM_UPDATE",
 }
 
 local mainline_events = {
@@ -1507,10 +1505,7 @@ addon.UNIT_SPELLCAST_STOP = function(_, event, unit, castguid, spellid)
     spellcast(_, event, unit, castguid, spellid)
     currentSpells[castguid] = nil
 end
-addon.UNIT_SPELLCAST_SUCCEEDED = function(_, event, unit, castguid, spellid)
-    addon:HandleTotemSpell(spellid)
-    spellcast(_, event, unit, castguid, spellid)
-end
+addon.UNIT_SPELLCAST_SUCCEEDED = spellcast
 addon.UNIT_SPELLCAST_INTERRUPTED = spellcast
 addon.UNIT_SPELLCAST_CHANNEL_START = spellcast
 addon.UNIT_SPELLCAST_CHANNEL_STOP = function(_, event, unit, castguid, spellid)
@@ -1560,7 +1555,3 @@ local function handle_combat_log(timestamp, event, _, sourceGUID, sourceName, _,
     end
 end
 addon.COMBAT_LOG_EVENT_UNFILTERED = function(_, event) handle_combat_log(CombatLogGetCurrentEventInfo()) end
-
-addon.PLAYER_TOTEM_UPDATE = function(_, event, elem)
-   addon:HandleTotemEvent(elem)
-end
