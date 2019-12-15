@@ -1,0 +1,8 @@
+## Interface: 11303
+## Title: Totem Mod Fix
+## Version: 0.0.4
+## Author: PreZ
+## Notes: I wanted to save the world, but God wouldn't give me the source code.
+## X-Email: prez@goth.net
+
+TotemModFix.lua
