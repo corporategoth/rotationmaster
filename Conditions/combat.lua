@@ -185,12 +185,12 @@ addon:RegisterCondition(L["Combat"], "LOC_BLOCKED", {
     valid = function(spec, value)
         return (value.operator ~= nil and isin(operators, value.operator) and
                 value.value ~= nil and value.value >= 0.0 and
-                value.school ~= nil and isin(addon.spell_schools, value.school))
+                value.school ~= nil and isin(SCHOOL_STRINGS, value.school))
     end,
     evaluate = function(value, cache, evalStart)
         for i=1,getCached(cache, C_LossOfControl.GetNumEvents) do
             local _, _, _, _, _, remain, _, school = getCached(cache, C_LossOfControl.GetEventInfo, i)
-            if bit.band(school, value.school) then
+            if bit.band(school, bit.lshift(1, value.school-1)) then
                 return compare(value.operator, remain, value.value)
             end
         end
@@ -198,7 +198,7 @@ addon:RegisterCondition(L["Combat"], "LOC_BLOCKED", {
     end,
     print = function(spec, value)
         return compareString(value.operator, string.format(L["time remaining on block of your %s abilities"],
-            nullable(addon.spell_schools[value.school], L["<school>"])), string.format(L["%s seconds"], nullable(value.value)))
+            nullable(SCHOOL_STRINGS[value.school], L["<school>"])), string.format(L["%s seconds"], nullable(value.value)))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -212,7 +212,7 @@ addon:RegisterCondition(L["Combat"], "LOC_BLOCKED", {
             top:SetStatusText(funcs:print(root, spec))
         end)
         school.configure = function()
-            school:SetList(addon.spell_schools)
+            school:SetList(SCHOOL_STRINGS)
             school:SetValue(value.school)
         end
         parent:AddChild(school)

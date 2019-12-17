@@ -7,24 +7,22 @@ _G.TotemModFix_MINOR_VERSION = MINOR_VERSION
 
 -- Everything below this line is a workaround for CLASSIC ONLY.
 if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then return end
-if select(2, UnitClass("player")) ~= "SHAMAN" then return end
-
-local EventFrame = CreateFrame("frame")
+-- if select(2, UnitClass("player")) ~= "SHAMAN" then return end
 
 local TotemItems = {
-    EARTH_TOTEM_SLOT = 5175,
-    FIRE_TOTEM_SLOT = 5176,
-    WATER_TOTEM_SLOT = 5177,
-    AIR_TOTEM_SLOT = 5178,
+    [EARTH_TOTEM_SLOT] = 5175,
+    [FIRE_TOTEM_SLOT] = 5176,
+    [WATER_TOTEM_SLOT] = 5177,
+    [AIR_TOTEM_SLOT] = 5178,
 }
 
 local ranks = {
-    ["Rank 1"] = "I",
-    ["Rank 2"] = "II",
-    ["Rank 3"] = "III",
-    ["Rank 4"] = "IV",
-    ["Rank 5"] = "V",
-    ["Rank 6"] = "VI",
+    [string.format(TRADESKILL_RANK_HEADER, 1)] = "I",
+    [string.format(TRADESKILL_RANK_HEADER, 2)] = "II",
+    [string.format(TRADESKILL_RANK_HEADER, 3)] = "III",
+    [string.format(TRADESKILL_RANK_HEADER, 4)] = "IV",
+    [string.format(TRADESKILL_RANK_HEADER, 5)] = "V",
+    [string.format(TRADESKILL_RANK_HEADER, 6)] = "VI",
 }
 
 local TotemSpells = {
@@ -149,14 +147,14 @@ local TotemSpells = {
 }
 
 local SpellIDToTotem = {}
+local ActiveTotems = {}
+local EventFrame
 
 for name,val in pairs(TotemSpells) do
     for _, x in pairs(val.spellids) do
         SpellIDToTotem[x] = name
     end
 end
-
-local ActiveTotems = {}
 
 local UNIT_SPELLCAST_SUCCEEDED = function(event, unit, castguid, id)
     local totem = SpellIDToTotem[id]
@@ -190,25 +188,40 @@ function FakeGetTotemInfo(elem)
         end
     end
 
-    return (GetItemCount(TotemItems[elem]) and true or false),
+    return (GetItemCount(TotemItems[elem]) > 0),
            (ActiveTotems[elem] and name or ""),
            (ActiveTotems[elem] and ActiveTotems[elem].cast or 0),
            (ActiveTotems[elem] and ActiveTotems[elem].duration or 0),
            (ActiveTotems[elem] and GetSpellTexture(ActiveTotems[elem].spellid) or nil)
 end
 
+if type(GetTotemInfo) ~= "function" then
+    GetTotemInfo = FakeGetTotemInfo
+    if not EventFrame then
+        EventFrame = CreateFrame("frame")
+    end
+end
 
-if not GetTotemInfo then
-        GetTotemInfo = FakeGetTotemInfo
+function FakeGetTotemTimeLeft(elem)
+    return (ActiveTotems[elem] and max((ActiveTotems[elem].duration - (GetTime() - ActiveTotems[elem].cast)), 0) or 0)
+end
 
-        EventFrame:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED")
-        EventFrame:RegisterEvent("PLAYER_TOTEM_UPDATE")
-        EventFrame:SetScript("OnEvent", function(self, event, ...)
-                if event == "UNIT_SPELLCAST_SUCCEEDED" then
-                        UNIT_SPELLCAST_SUCCEEDED(event, ...)
-                elseif event == "PLAYER_TOTEM_UPDATE" then
-                        PLAYER_TOTEM_UPDATE(event, ...)
-                end
-        end)
+if type(GetTotemTimeLeft) ~= "function" then
+    GetTotemTimeLeft = FakeGetTotemTimeLeft
+    if not EventFrame then
+        EventFrame = CreateFrame("frame")
+    end
+end
+
+if EventFrame then
+    EventFrame:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED")
+    EventFrame:RegisterEvent("PLAYER_TOTEM_UPDATE")
+    EventFrame:SetScript("OnEvent", function(self, event, ...)
+            if event == "UNIT_SPELLCAST_SUCCEEDED" then
+                    UNIT_SPELLCAST_SUCCEEDED(event, ...)
+            elseif event == "PLAYER_TOTEM_UPDATE" then
+                    PLAYER_TOTEM_UPDATE(event, ...)
+            end
+    end)
 end
 

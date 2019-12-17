@@ -53,23 +53,6 @@ if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
     addon.unitsPossessive["focustarget"] = L["your focus target's target's"]
 end
 
-addon.classes = {
-    WARRIOR = L["Warrior"],
-    PALADIN = L["Paladin"],
-    HUNTER = L["Hunter"],
-    ROGUE = L["Rogue"],
-    PRIEST = L["Priest"],
-    SHAMAN = L["Shaman"],
-    MAGE = L["Mage"],
-    WARLOCK = L["Warlock"],
-    DRUID = L["Druid"],
-}
-if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
-    addon.classes["DEATHKNIGHT"] = L["Death Knight"]
-    addon.classes["DEMONHUNTER"] = L["Demon Hunter"]
-    addon.classes["MONK"] = L["Monk"]
-end
-
 addon.creatures = {
     BEAST = L["Beast"],
     DRAGONKIN = L["Dragonkin"],
@@ -104,16 +87,6 @@ addon.profession_levels = {
     ZEN_MASTER,
     DRAENOR_MASTER,
     LEGION_MASTER,
-}
-
-addon.spell_schools = {
-    SCHOOL_MASK_PHYSICAL = STRING_SCHOOL_PHYSICAL,
-    SCHOOL_MASK_HOLY = STRING_SCHOOL_HOLY,
-    SCHOOL_MASK_FIRE = STRING_SCHOOL_FIRE,
-    SCHOOL_MASK_NATURE = STRING_SCHOOL_NATURE,
-    SCHOOL_MASK_FROST = STRING_SCHOOL_FROST,
-    SCHOOL_MASK_SHADOW = STRING_SCHOOL_SHADOW,
-    SCHOOL_MASK_ARCANE = STRING_SCHOOL_ARCANE,
 }
 
 addon.loc_types = {

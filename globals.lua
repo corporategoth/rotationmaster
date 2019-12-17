@@ -17,5 +17,5 @@ color = {
     WARN = "|cFFB212B7",
     ANNOUNCE = "|cFFF8FC03",
 
-    BLIZ_YELLOW = "|cFFFFD900",
+    BLIZ_YELLOW = NORMAL_FONT_COLOR_CODE,
 }

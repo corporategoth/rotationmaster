@@ -6,8 +6,8 @@ local color, tostring, tonumber, pairs = color, tostring, tonumber, pairs
 local floor = math.floor
 
 -- From constants
-local operators, units, unitsPossessive, classes, roles, debufftypes, zonepvp, instances, totems, points =
-    addon.operators, addon.units, addon.unitsPossessive, addon.classes, addon.roles, addon.debufftypes,
+local operators, units, unitsPossessive, roles, debufftypes, zonepvp, instances, totems, points =
+    addon.operators, addon.units, addon.unitsPossessive, addon.roles, addon.debufftypes,
     addon.zonepvp, addon.instances, addon.totems, addon.points
 
 -- From utils

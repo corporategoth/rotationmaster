@@ -11,8 +11,8 @@ local assert, error, tostring, tonumber, pairs
 local floor, ceil, min = math.floor, math.ceil, math.min
 
 -- From constants
-local operators, units, unitsPossessive, classes, roles, debufftypes, zonepvp, instances, totems =
-        addon.operators, addon.units, addon.unitsPossessive, addon.classes, addon.roles, addon.debufftypes,
+local operators, units, unitsPossessive, roles, debufftypes, zonepvp, instances, totems =
+        addon.operators, addon.units, addon.unitsPossessive, addon.roles, addon.debufftypes,
         addon.zonepvp, addon.instances, addon.totems
 
 -- From utils

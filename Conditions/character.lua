@@ -6,8 +6,8 @@ local color, tostring, tonumber, pairs = color, tostring, tonumber, pairs
 local floor = math.floor
 
 -- From constants
-local units, unitsPossessive, classes, roles, creatures, operators =
-    addon.units, addon.unitsPossessive, addon.classes, addon.roles, addon.creatures, addon.operators
+local units, unitsPossessive, roles, creatures, operators =
+    addon.units, addon.unitsPossessive, addon.roles, addon.creatures, addon.operators
 
 -- From utils
 local nullable, keys, isin, deepcopy, getCached, playerize, compareString =
@@ -22,7 +22,7 @@ addon:RegisterCondition(nil, "CLASS", {
     icon = "Interface\\Icons\\achievement_general_stayclassy",
     valid = function(spec, value)
         return (value.unit ~= nil and isin(units, value.unit) and
-                value.value ~= nil and isin(classes, value.value))
+                value.value ~= nil and isin(LOCALIZED_CLASS_NAMES_MALE, value.value))
     end,
     evaluate = function(value, cache, evalStart)
         local _, englishClass = getCached(cache, UnitClass, value.unit);
@@ -30,7 +30,7 @@ addon:RegisterCondition(nil, "CLASS", {
     end,
     print = function(spec, value)
         return string.format(playerize(value.unit, L["%s are a %s"], L["%s is a %s"]),
-            nullable(units[value.unit]), nullable(classes[value.value], L["<class>"]))
+            nullable(units[value.unit]), nullable(LOCALIZED_CLASS_NAMES_MALE[value.value], L["<class>"]))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -48,7 +48,7 @@ addon:RegisterCondition(nil, "CLASS", {
             top:SetStatusText(funcs:print(root, spec))
         end)
         class.configure = function()
-            class:SetList(classes, keys(classes))
+            class:SetList(LOCALIZED_CLASS_NAMES_MALE, CLASS_SORT_ORDER)
             if (value.value ~= nil) then
                 class:SetValue(value.value)
             end
