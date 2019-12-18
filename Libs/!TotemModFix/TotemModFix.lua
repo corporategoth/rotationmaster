@@ -1,5 +1,5 @@
 local MAJOR_VERSION = "TotemModFix"
-local MINOR_VERSION = 5
+local MINOR_VERSION = 6
 
 -- Don't load this if it's already been laded.
 if _G.TotemModFix_MINOR_VERSION and MINOR_VERSION <= _G.TotemModFix_MINOR_VERSION then return end
