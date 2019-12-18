@@ -18,14 +18,6 @@ local helpers = addon.help_funcs
 local CreateText, CreatePictureText, CreateButtonText, Indent, Gap =
 helpers.CreateText, helpers.CreatePictureText, helpers.CreateButtonText, helpers.Indent, helpers.Gap
 
-local GetTotemInfo
-if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
-    GetTotemInfo = GetTotemInfo
-else
-    -- 1.13.3 of classic removed GetTotemInfo.
-    GetTotemInfo = FakeGetTotemInfo
-end
-
 addon:RegisterCondition(L["Spells / Items"], "TOTEM", {
     description = L["Totem Present"],
     icon = "Interface\\Icons\\spell_nature_manaregentotem",

@@ -1,5 +1,5 @@
 local MAJOR_VERSION = "TotemModFix"
-local MINOR_VERSION = 4
+local MINOR_VERSION = 5
 
 -- Don't load this if it's already been laded.
 if _G.TotemModFix_MINOR_VERSION and MINOR_VERSION <= _G.TotemModFix_MINOR_VERSION then return end
@@ -55,7 +55,7 @@ local TotemSpells = {
     Searing = {
         element = FIRE_TOTEM_SLOT,
         spellids = { 3599, 6363, 6364, 6365, 10437, 10438, },
-        duration = 55,
+        duration = { 30, 35, 40, 45, 50, 55, },
     },
     FireNova = {
         element = FIRE_TOTEM_SLOT,
@@ -80,7 +80,7 @@ local TotemSpells = {
 
     HealingStream = {
         element = WATER_TOTEM_SLOT,
-        spellids = { 5394, 6365, 6377, 10462, 10463, },
+        spellids = { 5394, 6375, 6377, 10462, 10463, },
         duration = 60,
     },
     ManaTide = {
@@ -161,10 +161,20 @@ local UNIT_SPELLCAST_SUCCEEDED = function(event, unit, castguid, id)
     if totem then
         ActiveTotems[TotemSpells[totem].element] = {
             spellid = id,
-            duration = TotemSpells[totem].duration,
+            duration = 0,
             cast = GetTime(),
             acknowledged = false,
         }
+        if type(TotemSpells[totem].duration) == "table" then
+            for idx,spellid in ipairs(TotemSpells[totem].spellids) do
+                if spellid == id then
+                    ActiveTotems[TotemSpells[totem].element].duration = TotemSpells[totem].duration[idx]
+                    break
+                end
+            end
+        else
+            ActiveTotems[TotemSpells[totem].element].duration = TotemSpells[totem].duration
+        end
     end
 end
 
