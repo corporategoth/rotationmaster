@@ -1,6 +1,6 @@
 ## Interface: 11303
 ## Title: Totem Mod Fix
-## Version: 0.0.6
+## Version: 0.0.7
 ## Author: PreZ
 ## Notes: I wanted to save the world, but God wouldn't give me the source code.
 ## X-Email: prez@goth.net
