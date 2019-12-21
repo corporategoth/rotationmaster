@@ -17,6 +17,37 @@ local helpers = addon.help_funcs
 local CreateText, CreatePictureText, CreateButtonText, Indent, Gap =
     helpers.CreateText, helpers.CreatePictureText, helpers.CreateButtonText, helpers.Indent, helpers.Gap
 
+addon:RegisterCondition(nil, "ISSAME", {
+    description = L["Is Same As"],
+    icon = 134167,
+    valid = function(spec, value)
+        return (value.unit ~= nil and isin(units, value.unit) and
+                value.otherunit ~= nil and isin(units, value.otherunit))
+    end,
+    evaluate = function(value, cache, evalStart)
+        return getCached(cache, UnitIsUnit, value.unit, value.otherunit)
+    end,
+    print = function(spec, value)
+        return string.format(L["%s is %s"], nullable(units[value.unit]), nullable(units[value.otherunit]))
+    end,
+    widget = function(parent, spec, value)
+        local top = parent:GetUserData("top")
+        local root = top:GetUserData("root")
+        local funcs = top:GetUserData("funcs")
+
+        local unit = addon:Widget_UnitWidget(value, deepcopy(units, { "player", "pet" }),
+            function() top:SetStatusText(funcs:print(root, spec)) end)
+        parent:AddChild(unit)
+
+        local otherunit = addon:Widget_UnitWidget(value, units,
+            function() top:SetStatusText(funcs:print(root, spec)) end, "otherunit")
+        parent:AddChild(otherunit)
+    end,
+    help = function(frame)
+        addon.layout_condition_unitwidget_help(frame)
+    end
+})
+
 addon:RegisterCondition(nil, "CLASS", {
     description = L["Class"],
     icon = "Interface\\Icons\\achievement_general_stayclassy",

@@ -321,6 +321,7 @@ L["talent points in %s (%s)"] = true
 L["Unit"] = true
 L["Role"] = true
 L["Class"] = true
+L["Is Same As"] = true
 L["Creature Type"] = true
 L["Talent"] = true
 L["Talent Tree"] = true

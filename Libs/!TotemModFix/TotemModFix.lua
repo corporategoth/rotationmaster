@@ -127,7 +127,7 @@ local TotemSpells = {
     Sentry = {
         element = AIR_TOTEM_SLOT,
         spellids = { 6495, },
-        duration = 600,
+        duration = 300,
     },
     Windwall = {
         element = AIR_TOTEM_SLOT,

@@ -943,11 +943,7 @@ function addon:EvaluateNextAction()
                                 elseif cond.type == "item" then
                                     inrange = getCached(cache, IsItemInRange, itemids[idx], "target")
                                 end
-                                if inrange == nil then
-                                    enabled = true
-                                else
-                                    enabled = (inrange == 1)
-                                end
+                                enabled = (inrange ~= nil and inrange or true)
                             end
                         end
                     end

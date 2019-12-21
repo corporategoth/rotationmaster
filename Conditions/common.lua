@@ -379,16 +379,19 @@ function addon:Widget_OperatorPercentWidget(value, name, update)
     return operator_group
 end
 
-function addon:Widget_UnitWidget(value, units, update)
+function addon:Widget_UnitWidget(value, units, update, field)
+    if field == nil then
+        field = "unit"
+    end
     local unit = AceGUI:Create("Dropdown")
     unit:SetLabel(L["Unit"])
     unit:SetCallback("OnValueChanged", function(widget, event, v)
-        value.unit = v
+        value[field] = v
         update()
     end)
     unit.configure = function()
         unit:SetList(units, keys(units))
-        unit:SetValue(value.unit)
+        unit:SetValue(value[field])
     end
 
     return unit
