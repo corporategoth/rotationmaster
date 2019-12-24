@@ -1,5 +1,5 @@
 local MAJOR_VERSION = "TotemModFix"
-local MINOR_VERSION = 7
+local MINOR_VERSION = 8
 
 -- Don't load this if it's already been laded.
 if _G.TotemModFix_MINOR_VERSION and MINOR_VERSION <= _G.TotemModFix_MINOR_VERSION then return end
@@ -193,7 +193,7 @@ function FakeGetTotemInfo(elem)
     if ActiveTotems[elem] then
         local spell, rank = GetSpellBookItemName(FindSpellBookSlotBySpellID(ActiveTotems[elem].spellid, false), BOOKTYPE_SPELL)
         name = spell
-        if rank and rank ~= "" then
+        if rank and rank ~= "" and ranks[rank] then
             name = name .. " " .. ranks[rank]
         end
     end
