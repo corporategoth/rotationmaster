@@ -1,5 +1,5 @@
 local MAJOR_VERSION = "TotemModFix"
-local MINOR_VERSION = 8
+local MINOR_VERSION = 9
 
 -- Don't load this if it's already been laded.
 if _G.TotemModFix_MINOR_VERSION and MINOR_VERSION <= _G.TotemModFix_MINOR_VERSION then return end
@@ -16,14 +16,7 @@ local TotemItems = {
     [AIR_TOTEM_SLOT] = 5178,
 }
 
-local ranks = {
-    [string.format(TRADESKILL_RANK_HEADER, 1)] = "I",
-    [string.format(TRADESKILL_RANK_HEADER, 2)] = "II",
-    [string.format(TRADESKILL_RANK_HEADER, 3)] = "III",
-    [string.format(TRADESKILL_RANK_HEADER, 4)] = "IV",
-    [string.format(TRADESKILL_RANK_HEADER, 5)] = "V",
-    [string.format(TRADESKILL_RANK_HEADER, 6)] = "VI",
-}
+local ranks = { "", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X" }
 
 local TotemSpells = {
     Tremor = {
@@ -151,26 +144,30 @@ local ActiveTotems = {}
 local EventFrame
 
 for name,val in pairs(TotemSpells) do
-    for _, x in pairs(val.spellids) do
-        SpellIDToTotem[x] = name
+    for idx, x in pairs(val.spellids) do
+        SpellIDToTotem[x] = { name, idx }
     end
 end
 
 local UNIT_SPELLCAST_SUCCEEDED = function(event, unit, castguid, id)
-    local totem = SpellIDToTotem[id]
+    local totem = SpellIDToTotem[id][1]
     if totem then
+        local idx = SpellIDToTotem[id][2]
         ActiveTotems[TotemSpells[totem].element] = {
             spellid = id,
+            name = GetSpellInfo(id),
             duration = 0,
             cast = GetTime(),
             acknowledged = false,
         }
+        if ranks[idx] and ranks[idx] ~= "" then
+            ActiveTotems[TotemSpells[totem].element].name = ActiveTotems[TotemSpells[totem].element].name .. " " .. ranks[idx]
+        end
         if type(TotemSpells[totem].duration) == "table" then
-            for idx,spellid in ipairs(TotemSpells[totem].spellids) do
-                if spellid == id then
-                    ActiveTotems[TotemSpells[totem].element].duration = TotemSpells[totem].duration[idx]
-                    break
-                end
+            if idx > #TotemSpells[totem].duration then
+                ActiveTotems[TotemSpells[totem].element].duration = TotemSpells[totem].duration[#TotemSpells[totem].duration]
+            else
+                ActiveTotems[TotemSpells[totem].element].duration = TotemSpells[totem].duration[idx]
             end
         else
             ActiveTotems[TotemSpells[totem].element].duration = TotemSpells[totem].duration
@@ -189,17 +186,8 @@ local PLAYER_TOTEM_UPDATE = function(event, elem)
 end
 
 function FakeGetTotemInfo(elem)
-    local name
-    if ActiveTotems[elem] then
-        local spell, rank = GetSpellBookItemName(FindSpellBookSlotBySpellID(ActiveTotems[elem].spellid, false), BOOKTYPE_SPELL)
-        name = spell
-        if rank and rank ~= "" and ranks[rank] then
-            name = name .. " " .. ranks[rank]
-        end
-    end
-
     return (GetItemCount(TotemItems[elem]) > 0),
-           (ActiveTotems[elem] and name or ""),
+           (ActiveTotems[elem] and ActiveTotems[elem].name or ""),
            (ActiveTotems[elem] and ActiveTotems[elem].cast or 0),
            (ActiveTotems[elem] and ActiveTotems[elem].duration or 0),
            (ActiveTotems[elem] and GetSpellTexture(ActiveTotems[elem].spellid) or nil)
