@@ -150,8 +150,9 @@ for name,val in pairs(TotemSpells) do
 end
 
 local UNIT_SPELLCAST_SUCCEEDED = function(event, unit, castguid, id)
-    local totem = SpellIDToTotem[id][1]
+    local totem = SpellIDToTotem[id]
     if totem then
+        totem = totem[1]
         local idx = SpellIDToTotem[id][2]
         ActiveTotems[TotemSpells[totem].element] = {
             spellid = id,
