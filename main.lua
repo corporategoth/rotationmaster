@@ -1460,6 +1460,7 @@ function addon:UNIT_COMBAT(event, unit, action, severity, value, type)
 end
 
 local currentSpells = {}
+local currentChannel = nil
 
 local function spellcast(_, event, unit, castguid, spellid)
     for _, value in ipairs(addon.db.char.announces) do
@@ -1501,12 +1502,21 @@ addon.UNIT_SPELLCAST_STOP = function(_, event, unit, castguid, spellid)
     spellcast(_, event, unit, castguid, spellid)
     currentSpells[castguid] = nil
 end
-addon.UNIT_SPELLCAST_SUCCEEDED = spellcast
+addon.UNIT_SPELLCAST_SUCCEEDED = function(_, event, unit, castguid, spellid)
+    spellcast(_, event, unit, castguid, spellid)
+    if currentChannel then
+        currentChannel = castguid
+    end
+end
 addon.UNIT_SPELLCAST_INTERRUPTED = spellcast
-addon.UNIT_SPELLCAST_CHANNEL_START = spellcast
+addon.UNIT_SPELLCAST_CHANNEL_START = function(_, event, unit, castguid, spellid)
+    spellcast(_, event, unit, castguid, spellid)
+    currentChannel = true
+end
 addon.UNIT_SPELLCAST_CHANNEL_STOP = function(_, event, unit, castguid, spellid)
     spellcast(_, event, unit, castguid, spellid)
-    currentSpells[castguid] = nil
+    currentSpells[currentChannel] = nil
+    currentChannel = nil
 end
 
 addon.UNIT_SPELLCAST_SENT = function(_, event, unit, target, castguid, spellid)
