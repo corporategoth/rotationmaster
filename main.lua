@@ -1544,7 +1544,7 @@ local function handle_combat_log(timestamp, event, _, sourceGUID, sourceName, _,
         end
         table.insert(addon.damageHistory[destGUID].heals, 1, {
             time = GetTime(),
-            value = amount,
+            value = tonumber(amount),
         })
     elseif event:sub(-7) == "_DAMAGE" then
         local amount, overkill, school, resisted, blocked, absorbed, crit, _, crushing, _ = select(offs, ...)
@@ -1556,7 +1556,7 @@ local function handle_combat_log(timestamp, event, _, sourceGUID, sourceName, _,
         end
         table.insert(addon.damageHistory[destGUID].damage, 1, {
             time = GetTime(),
-            value = amount,
+            value = tonumber(amount),
         })
     end
 end
