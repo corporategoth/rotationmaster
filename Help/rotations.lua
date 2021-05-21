@@ -192,10 +192,10 @@ function addon.layout_cooldown_help(frame)
             "Announce to all memebers of your raid or party (detected automatically).")))
     group:AddChild(Indent(40, CreateText(color.GREEN .. L["Party Only"] .. color.RESET .. " - " ..
             "Announce to all party only, even if you are in a raid.")))
-    group:AddChild(Indent(40, CreateText(color.GREEN .. L["Say"] .. color.RESET .. " - " ..
-            "Announce using /say (showing up as a white-text speech bubble)")))
-    group:AddChild(Indent(40, CreateText(color.GREEN .. L["Yell"] .. color.RESET .. " - " ..
-            "Announce using /yell (showing up as a red-text speech bubble)")))
+    group:AddChild(Indent(40, CreateText(color.GREEN .. L["Raid Warning"] .. color.RESET .. " - " ..
+            "Announce to the raid as a raid warning (usually shows up in the middle of everyone's screen).")))
+    group:AddChild(Indent(40, CreateText(color.GREEN .. L["Emote"] .. color.RESET .. " - " ..
+            "Announce using /emote (showing up as an action you are performing)")))
     group:AddChild(Indent(40, CreateText(color.GREEN .. L["Local Only"] .. color.RESET .. " - " ..
             "Announce only to your chat frame (nobody else will see it).")))
 

@@ -34,7 +34,7 @@ addon.units = {
     mouseovertarget = L["your mouseover target's target"],
 }
 
-if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
+if (WOW_PROJECT_ID ~= WOW_PROJECT_CLASSIC) then
     addon.units["focus"] = L["your focus target"]
     addon.units["focustarget"] = L["your focus target's target"]
 end

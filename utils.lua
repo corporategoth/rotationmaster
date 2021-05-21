@@ -153,6 +153,12 @@ addon.isint = function(num)
     return false
 end
 
+addon.multiinsert = function(t, values)
+    for i,v in ipairs(values) do
+	    table.insert(t, i, v)
+    end
+end
+
 addon.cleanArray = function(array, except, invert)
     if array == nil then
         return
