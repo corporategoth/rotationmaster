@@ -26,6 +26,7 @@ addon:RegisterCondition(nil, "PROXIMITY", {
                 value.distance ~= nil and value.distance >= 0)
     end,
     evaluate = function(value, cache, evalStart)
+        if not getCached(cache, UnitExists, value.unit) then return false end
         local count = 0
         local prefix, size
         if getCached(cache, IsInGroup) and getCached(cache, UnitInParty, value.unit) then
@@ -99,6 +100,7 @@ addon:RegisterCondition(nil, "DISTANCE", {
                 value.value ~= nil and value.value >= 0 and value.value <= 40)
     end,
     evaluate = function(value, cache, evalStart)
+        if not getCached(cache, UnitExists, value.unit) then return false end
         local rcf = function(unit) return RangeCheck:GetRange(unit) end
         local maxRange = select(2, getCached(cache, rcf, value.unit))
         return maxRange and maxRange <= value.value

@@ -95,4 +95,8 @@ function addon.layout_announce_options_help(frame)
             "The event (as identified above) that has happened.")))
     group:AddChild(Indent(40, CreateText(color.GREEN .. "{{target}}" .. color.RESET .. " - " ..
             "Your current target's name, or your own name if you do not have a target selected.")))
+
+    group:AddChild(Gap())
+    group:AddChild(CreateButtonText(DISABLE, "Skip this announcement without deleting it."))
+    group:AddChild(CreateButtonText(ENABLE, "Re-enable a previously disabled announcement."))
 end

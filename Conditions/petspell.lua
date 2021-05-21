@@ -82,6 +82,7 @@ addon:RegisterCondition(L["Spells / Items"], "PETSPELL_RANGE", {
         end
     end,
     evaluate = function(value, cache, evalStart)
+        if not getCached(cache, UnitExists, "target") then return false end
         local spellid = addon:Widget_GetSpellId(value.spell, value.ranked)
         if spellid then
             local sbid = getCached(addon.longtermCache, FindSpellBookSlotBySpellID, spellid, true)

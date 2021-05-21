@@ -1,6 +1,6 @@
 # LibClassicDurations
 
-## [1.19](https://github.com/rgd87/LibClassicDurations/tree/1.19) (2019-09-13)
-[Full Changelog](https://github.com/rgd87/LibClassicDurations/compare/1.18...1.19)
+## [1.69a](https://github.com/rgd87/LibClassicDurations/tree/1.69a) (2021-04-23)
+[Full Changelog](https://github.com/rgd87/LibClassicDurations/compare/1.69...1.69a) [Previous Releases](https://github.com/rgd87/LibClassicDurations/releases)
 
-- Remember Rupture and Kidney Shot calulcated duration  
+- Added Chronoboon world buffs spell IDs  

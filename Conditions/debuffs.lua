@@ -30,6 +30,7 @@ addon:RegisterCondition(L["Buffs"], "DEBUFF", {
         return (value.unit ~= nil and isin(units, value.unit) and value.spell ~= nil)
     end,
     evaluate = function(value, cache, evalStart)
+        if not getCached(cache, UnitExists, value.unit) then return false end
         for i=1,40 do
             local name = getCached(cache, UnitDebuff, value.unit, i)
             if (name == nil) then
@@ -75,6 +76,7 @@ addon:RegisterCondition(L["Buffs"], "DEBUFF_REMAIN", {
                 value.value ~= nil and value.value >= 0)
     end,
     evaluate = function(value, cache, evalStart)
+        if not getCached(cache, UnitExists, value.unit) then return false end
         for i=1,40 do
             local name, _, _, _, _, expirationTime = getCached(cache, UnitDebuff, value.unit, i)
             if (name == nil) then
@@ -131,6 +133,7 @@ addon:RegisterCondition(L["Buffs"], "DEBUFF_STACKS", {
                 value.value ~= nil and value.value >= 0)
     end,
     evaluate = function(value, cache, evalStart)
+        if not getCached(cache, UnitExists, value.unit) then return false end
         for i=1,40 do
             local name, _, count = getCached(cache, UnitDebuff, value.unit, i)
             if (name == nil) then
@@ -184,6 +187,7 @@ addon:RegisterCondition(L["Buffs"], "DISPELLABLE", {
                 value.debufftype ~= nil and isin(debufftypes, value.debufftype))
     end,
     evaluate = function(value, cache, evalStart)
+        if not getCached(cache, UnitExists, value.unit) then return false end
         for i=1,40 do
             local name, _, _, debuffType = getCached(cache, UnitDebuff, value.unit, i)
             if (name == nil) then

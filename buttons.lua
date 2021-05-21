@@ -548,18 +548,15 @@ function addon:GlowCooldown(spellId, condition, cooldown)
 		return
     end
 
-	if Flags[spellId] == nil then
-		Flags[spellId] = false
-	end
-	if condition and cooldown and not Flags[spellId] then
-		Flags[spellId] = true
+	if condition and cooldown and Flags[spellId] ~= cooldown.id then
+		Flags[spellId] = cooldown.id
 		GlowIndependent(spellId, spellId, cooldown.effect or self.db.profile.effect, cooldown.color,
 				cooldown.magnification or self.db.profile.magnification,
 				cooldown.setpoint or self.db.profile.setpoint,
 				cooldown.xoffs or self.db.profile.xoffs,
 				cooldown.yoffs or self.db.profile.yoffs)
 	elseif not condition and Flags[spellId] then
-		Flags[spellId] = false
+		Flags[spellId] = nil
 		ClearGlowIndependent(spellId, spellId)
 	end
 

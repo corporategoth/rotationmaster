@@ -275,6 +275,7 @@ function addon:HandleCommand(str)
             self.manualRotation = true
             self.currentRotation = DEFAULT
             self.skipAnnounce = true
+            self.avail_announced = {}
             self.announced = {}
             self:EnableRotationTimer()
             DataBroker.text = self:GetRotationName(DEFAULT)
@@ -288,6 +289,7 @@ function addon:HandleCommand(str)
                         self.manualRotation = true
                         self.currentRotation = id
                         self.skipAnnounce = true
+                        self.avail_announced = {}
                         self.announced = {}
                         self:EnableRotationTimer()
                         DataBroker.text = self:GetRotationName(id)
@@ -362,6 +364,7 @@ function addon:OnInitialize()
     self.combatHistory = {}
     self.playerUnitFrame = nil
 
+    self.avail_announced = {}
     self.announced = {}
     self.skipAnnounce = true
 
@@ -409,6 +412,7 @@ local function minimapChangeRotation(self, arg1, arg2, checked)
             addon:RemoveAllCurrentGlows()
             addon.currentRotation = arg1
             addon.skipAnnounce = true
+            addon.avail_announced = {}
             addon.announced = {}
             addon:EnableRotationTimer()
             DataBroker.text = addon:GetRotationName(arg1)
@@ -662,6 +666,7 @@ function addon:SwitchRotation()
             self:RemoveAllCurrentGlows()
             self.currentRotation = newRotation
             self.skipAnnounce = true
+            self.avail_announced = {}
             self.announced = {}
             self:EnableRotationTimer()
             DataBroker.text = self:GetRotationName(newRotation)
@@ -811,19 +816,31 @@ local function announce(cache, cond, text)
             dest = "RAID"
         elseif getCached(cache, IsInGroup) then
             dest = "PARTY"
+        else
+            addon:announce(text)
         end
     elseif cond.announce == "party" then
         if getCached(cache, IsInGroup) then
             dest = "PARTY"
         end
     elseif cond.announce == "raidwarn" then
-        if getCached(cache, IsRaidLeader) then
-            dest = "RAID_WARNING"
+        if getCached(cache, IsInRaid) then
+            if getCached(cache, IsRaidLeader) then
+                dest = "RAID_WARNING"
+            else
+                dest = "RAID"
+            end
+        elseif getCached(cache, IsInGroup) then
+            dest = "PARTY"
+        else
+            addon:announce(text)
         end
     elseif cond.announce == "say" then
         dest = "SAY"
     elseif cond.announce == "yell" then
         dest = "YELL"
+    elseif cond.announce == "emote" then
+        dest = "EMOTE"
     end
     if dest ~= nil then
         SendChatMessage(text, dest)
@@ -984,39 +1001,54 @@ function addon:EvaluateNextAction()
         self.evaluationProfile:child("rotation"):stop()
         self.evaluationProfile:child("cooldowns"):start()
         if rot.cooldowns ~= nil then
+            local enabled_cooldowns = {}
+            local disabled_cooldowns = {}
             for id, cond in pairs(rot.cooldowns) do
                 local spellid, enabled = eval(cond)
                 if spellid then
                     if enabled then
                         addon:verbose("Cooldown %d [%s] is enabled", id, cond.id)
-                        if addon.announced[cond.id] ~= spellid then
+                        if addon.avail_announced[cond.id] ~= spellid then
                             if not addon.skipAnnounce then
                                 local link = getCached(addon.longtermCache, GetSpellLink, spellid)
                                 announce(cache, cond, string.format(L["%s is now available!"], link))
                             end
-                            addon.announced[cond.id] = spellid;
+                            addon.avail_announced[cond.id] = spellid;
                             AceEvent:SendMessage("ROTATIONMASTER_COOLDOWN_UPDATE", self.currentRotation, id, cond.id, cond.type, spellid)
                         end
+                        if not enabled_cooldowns[spellid] then
+                            enabled_cooldowns[spellid] = cond
+                            disabled_cooldowns[spellid] = nil
+                        end
                     else
-                        if addon.announced[cond.id] then
-                            addon.announced[cond.id] = nil;
+                        if addon.avail_announced[cond.id] then
+                            addon.avail_announced[cond.id] = nil;
                             AceEvent:SendMessage("ROTATIONMASTER_COOLDOWN_UPDATE", self.currentRotation, id, cond.id, nil)
                         end
                         addon:verbose("Cooldown %d [%s] is disabled", id, cond.id)
+                        if not enabled_cooldowns[spellid] then
+                            disabled_cooldowns[spellid] = cond
+                        end
                     end
-                    addon:GlowCooldown(spellid, enabled, cond)
                 else
-                    if addon.announced[cond.id] then
-                        addon.announced[cond.id] = nil;
+                    if addon.avail_announced[cond.id] then
+                        addon.avail_announced[cond.id] = nil;
                         AceEvent:SendMessage("ROTATIONMASTER_COOLDOWN_UPDATE", self.currentRotation, id, cond.id, nil)
                     end
                 end
+            end
+            for spellid, cond in pairs(disabled_cooldowns) do
+                addon:GlowCooldown(spellid, false, cond)
+            end
+            for spellid, cond in pairs(enabled_cooldowns) do
+                addon:GlowCooldown(spellid, true, cond)
             end
         end
         self.evaluationProfile:child("cooldowns"):stop()
 
         -- We only skip the FIRST cycle of enabling/disabling cooldowns.
         addon.skipAnnounce = false
+        addon.announced = {}
 
         self.evaluationProfile:stop()
     end
@@ -1464,33 +1496,48 @@ local currentChannel = nil
 
 local function spellcast(_, event, unit, castguid, spellid)
     for _, value in ipairs(addon.db.char.announces) do
-        if value.value and (event == "UNIT_SPELLCAST_" .. value.event or
+        if value.value and (not value.disabled) and (event == "UNIT_SPELLCAST_" .. value.event or
                             event == "UNIT_SPELLCAST_CHANNEL_" .. value.event) then
-            local ent = addon.deepcopy(value)
-
-            if ent.type == "spell" then
-                ent.action = ent.spell
-            elseif ent.type == "item" then
-                ent.action = ent.item
+            local skip = false
+            if addon.announced[value.id] then
+                for _, val in ipairs(addon.announced[value.id]) do
+                    if val == castguid then
+                        skip = true
+                    end
+                end
             end
 
-            local spellids, itemids = addon:GetSpellIds(ent)
-            for idx, sid in ipairs(spellids) do
-                if spellid == sid then
-                    local text = ent.value
-                    if ent.type == "spell" then
-                        local link = getCached(addon.longtermCache, GetSpellLink, sid)
-                        text = text:gsub("{{spell}}", link)
-                    elseif ent.type == "item" then
-                        local link = select(2, getRetryCached(addon.longtermCache, GetItemInfo, itemids[idx]))
-                        text = text:gsub("{{item}}", link)
+            if not skip then
+                local ent = addon.deepcopy(value)
+                if ent.type == "spell" then
+                    ent.action = ent.spell
+                elseif ent.type == "item" then
+                    ent.action = ent.item
+                end
+
+                local spellids, itemids = addon:GetSpellIds(ent)
+                for idx, sid in ipairs(spellids) do
+                    if spellid == sid then
+                        local text = ent.value
+                        if ent.type == "spell" then
+                            local link = getCached(addon.longtermCache, GetSpellLink, sid)
+                            text = text:gsub("{{spell}}", link)
+                        elseif ent.type == "item" then
+                            local link = select(2, getRetryCached(addon.longtermCache, GetItemInfo, itemids[idx]))
+                            text = text:gsub("{{item}}", link)
+                        end
+                        text = text:gsub("{{event}}", addon.events[ent.event])
+                        if currentSpells[castguid] then
+                            text = text:gsub("{{target}}", currentSpells[castguid])
+                        end
+                        announce({}, ent, text)
+                        if addon.announced[value.id] == nil then
+                            addon.announced[value.id] = { castguid }
+                        else
+                            table.insert(addon.announced[value.id], castguid)
+                        end
+                        break
                     end
-                    text = text:gsub("{{event}}", addon.events[ent.event])
-                    if currentSpells[castguid] then
-                        text = text:gsub("{{target}}", currentSpells[castguid])
-                    end
-                    announce({}, ent, text)
-                    break
                 end
             end
         end
@@ -1515,7 +1562,9 @@ addon.UNIT_SPELLCAST_CHANNEL_START = function(_, event, unit, castguid, spellid)
 end
 addon.UNIT_SPELLCAST_CHANNEL_STOP = function(_, event, unit, castguid, spellid)
     spellcast(_, event, unit, castguid, spellid)
-    currentSpells[currentChannel] = nil
+    if currentChannel ~= nil then
+	    currentSpells[currentChannel] = nil
+    end
     currentChannel = nil
 end
 

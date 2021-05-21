@@ -34,6 +34,7 @@ addon:RegisterCondition(L["Spells / Items"], "SPELL_AVAIL", {
     end,
     evaluate = function(value, cache, evalStart)
         local spellid = addon:Widget_GetSpellId(value.spell, value.ranked)
+        if not spellid then return false end
         local start, duration, enabled = getCached(cache, GetSpellCooldown, spellid)
         if start == 0 and duration == 0 then
             return true
@@ -89,6 +90,7 @@ addon:RegisterCondition(L["Spells / Items"], "SPELL_RANGE", {
         end
     end,
     evaluate = function(value, cache, evalStart)
+        if not getCached(cache, UnitExists, "target") then return false end
         local spellid = addon:Widget_GetSpellId(value.spell, value.ranked)
         if spellid then
             local sbid = getCached(addon.longtermCache, FindSpellBookSlotBySpellID, spellid, false)
@@ -132,6 +134,7 @@ addon:RegisterCondition(L["Spells / Items"], "SPELL_COOLDOWN", {
     end,
     evaluate = function(value, cache, evalStart) -- Cooldown until the spell is available
         local spellid = addon:Widget_GetSpellId(value.spell, value.ranked)
+        if not spellid then return false end
         local start, duration, enabled = getCached(cache, GetSpellCooldown, spellid)
         local remain = 0
         if start ~= 0 and duration ~= 0 then
@@ -183,6 +186,7 @@ addon:RegisterCondition(L["Spells / Items"], "SPELL_REMAIN", {
     end,
     evaluate = function(value, cache, evalStart) -- How long the spell remains effective
         local spellid = addon:Widget_GetSpellId(value.spell, value.ranked)
+        if not spellid then return false end
         local charges, maxcharges, start, duration = getCached(cache, GetSpellCharges, spellid)
         local remain = 0
         if (charges and charges >= 0) then
@@ -234,6 +238,7 @@ addon:RegisterCondition(L["Spells / Items"], "SPELL_CHARGES", {
     end,
     evaluate = function(value, cache, evalStart)
         local spellid = addon:Widget_GetSpellId(value.spell, value.ranked)
+        if not spellid then return false end
         local charges, maxcharges, start, duration = getCached(cache, GetSpellCharges, spellid)
         return compare(value.operator, charges, value.value)
     end,
@@ -279,6 +284,7 @@ addon:RegisterCondition(L["Spells / Items"], "SPELL_HISTORY", {
     end,
     evaluate = function(value, cache, evalStart)
         local spellid = addon:Widget_GetSpellId(value.spell, value.ranked)
+        if not spellid then return false end
         for idx, entry in pairs(addon.spellHistory) do
             return entry.spell == spellid and compare(value.operator, idx, value.value)
         end
@@ -330,6 +336,7 @@ addon:RegisterCondition(L["Spells / Items"], "SPELL_HISTORY_TIME", {
     end,
     evaluate = function(value, cache, evalStart) -- Cooldown until the spell is available
         local spellid = addon:Widget_GetSpellId(value.spell, value.ranked)
+        if not spellid then return false end
         for idx, entry in pairs(addon.spellHistory) do
             return entry.spell == spellid and compare(value.operator, (evalStart - entry.time), value.value)
         end
@@ -379,6 +386,7 @@ addon:RegisterCondition(L["Spells / Items"], "SPELL_ACTIVE", {
     end,
     evaluate = function(value, cache, evalStart)
         local spellid = addon:Widget_GetSpellId(value.spell, value.ranked)
+        if not spellid then return false end
         return IsCurrentSpell(spellid)
     end,
     print = function(spec, value)

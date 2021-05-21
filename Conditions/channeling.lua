@@ -20,6 +20,7 @@ addon:RegisterCondition(L["Combat"], "CHANNELING", {
         return value.unit ~= nil and isin(units, value.unit)
     end,
     evaluate = function(value, cache, evalStart)
+        if not getCached(cache, UnitExists, value.unit) then return false end
         local name = getCached(cache, UnitChannelInfo, value.unit)
         return name ~= nil
     end,
@@ -48,6 +49,7 @@ addon:RegisterCondition(L["Combat"], "CHANNELING_SPELL", {
         return (value.unit ~= nil and isin(units, value.unit) and value.spell ~= nil)
     end,
     evaluate = function(value, cache, evalStart)
+        if not getCached(cache, UnitExists, value.unit) then return false end
         local name = getCached(cache, UnitChannelInfo, value.unit)
         return name == value.spell
     end,
@@ -85,6 +87,7 @@ addon:RegisterCondition(L["Combat"], "CHANNELING_REMAIN", {
                 value.value ~= nil and value.value >= 0)
     end,
     evaluate = function(value, cache, evalStart)
+        if not getCached(cache, UnitExists, value.unit) then return false end
         local name, _, _, _, endTimeMS = getCached(cache, UnitChannelInfo, value.unit)
         if name ~= nil then
             return compare(value.operator, endTimeMS - (GetTime()*1000), value.value)
@@ -126,6 +129,7 @@ addon:RegisterCondition(L["Combat"], "CHANNEL_INTERRUPTABLE", {
         return value.unit ~= nil and isin(units, value.unit)
     end,
     evaluate = function(value, cache, evalStart)
+        if not getCached(cache, UnitExists, value.unit) then return false end
         local name, _, _, _, _, _, _, notInterruptible = getCached(cache, UnitChannelInfo, value.unit)
         return name ~= nil and not notInterruptible
     end,

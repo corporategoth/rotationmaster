@@ -1,3 +1,5 @@
+local addon_name, addon = ...
+
 --[[-----------------------------------------------------------------------------
 Help Widget
 -------------------------------------------------------------------------------]]
@@ -34,15 +36,7 @@ local function Button_OnClick(frame, button)
     AceGUI:ClearFocus()
     if frame.obj.layout then
         local window = AceGUI:Create("Window")
-
-        window.frame:EnableKeyboard(true)
-        window.frame:SetPropagateKeyboardInput(true)
-        window.frame:SetScript("OnKeyDown", function (self, key)
-            self:SetPropagateKeyboardInput(key ~= "ESCAPE")
-            if key == "ESCAPE" then
-                window:Hide()
-            end
-        end)
+        addon.HideOnEscape(window)
 
         --window:SetParent(frame.obj)
         window.frame:SetFrameLevel(frame:GetFrameLevel() + 1)

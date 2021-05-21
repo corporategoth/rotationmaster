@@ -28,6 +28,7 @@ addon:RegisterCondition(L["Combat"], "HEALTH", {
                 value.value ~= nil and value.value >= 0)
     end,
     evaluate = function(value, cache, evalStart)
+        if not getCached(cache, UnitExists, value.unit) then return false end
         local cur
         if RealMobHealth then
             cur = RealMobHealth.GetUnitHealth(value.unit)
@@ -70,6 +71,7 @@ addon:RegisterCondition(L["Combat"], "HEALTHPCT", {
                 value.value ~= nil and value.value >= 0.00 and value.value <= 1.00)
     end,
     evaluate = function(value, cache, evalStart)
+        if not getCached(cache, UnitExists, value.unit) then return false end
         local health = getCached(cache, UnitHealth, value.unit) / getCached(cache, UnitHealthMax, value.unit) * 100;
         return compare(value.operator, health, value.value * 100)
     end,
@@ -111,6 +113,7 @@ addon:RegisterCondition(L["Combat"], "MANA", {
                 value.value ~= nil and value.value >= 0)
     end,
     evaluate = function(value, cache, evalStart)
+        if not getCached(cache, UnitExists, value.unit) then return false end
         return compare(value.operator, getCached(cache, UnitPower, value.unit, SPELL_POWER_MANA), value.value)
     end,
     print = function(spec, value)
@@ -146,6 +149,7 @@ addon:RegisterCondition(L["Combat"], "MANAPCT", {
                 value.value ~= nil and value.value >= 0.00 and value.value <= 1.00)
     end,
     evaluate = function(value, cache, evalStart)
+        if not getCached(cache, UnitExists, value.unit) then return false end
         local mana = getCached(cache, UnitPower, value.unit, SPELL_POWER_MANA) / getCached(cache, UnitPowerMax, value.unit, SPELL_POWER_MANA) * 100;
         return compare(value.operator, mana, value.value * 100)
     end,
@@ -187,6 +191,7 @@ addon:RegisterCondition(L["Combat"], "POWER", {
                 value.value ~= nil and value.value >= 0)
     end,
     evaluate = function(value, cache, evalStart)
+        if not getCached(cache, UnitExists, value.unit) then return false end
         local power
         if value.unit == "player" then
             power = getCached(addon.longtermCache, UnitPowerType, value.unit)
@@ -233,6 +238,7 @@ addon:RegisterCondition(L["Combat"], "POWERPCT", {
                 value.value ~= nil and value.value >= 0.00 and value.value <= 1.00)
     end,
     evaluate = function(value, cache, evalStart)
+        if not getCached(cache, UnitExists, value.unit) then return false end
         if value.unit == "player" then
             power = getCached(addon.longtermCache, UnitPowerType, value.unit)
         else
@@ -283,6 +289,7 @@ addon:RegisterCondition(L["Combat"], "POINT", {
                 value.value ~= nil and value.value >= 0)
     end,
     evaluate = function(value, cache, evalStart)
+        if not getCached(cache, UnitExists, value.unit) then return false end
         local class
         if value.unit == "player" then
             class = select(2, getCached(addon.longtermCache, UnitClass, value.unit))
@@ -332,6 +339,7 @@ addon:RegisterCondition(L["Combat"], "TT_HEALTH", {
                 value.health ~= nil and value.health >= 0)
     end,
     evaluate = function(value, cache, evalStart)
+        if not getCached(cache, UnitExists, value.unit) then return false end
         local target = getCached(cache, UnitGUID, value.unit)
         if target then
             local health
@@ -440,6 +448,7 @@ addon:RegisterCondition(L["Combat"], "TT_HEALTHPCT", {
                 value.health ~= nil and value.health >= 0.00 and value.health <= 1.00)
     end,
     evaluate = function(value, cache, evalStart)
+        if not getCached(cache, UnitExists, value.unit) then return false end
         local target = getCached(cache, UnitGUID, value.unit)
         if target then
             local health, maxhealth

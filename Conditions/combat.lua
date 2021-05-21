@@ -27,6 +27,7 @@ addon:RegisterCondition(L["Combat"], "COMBAT", {
         return value.unit ~= nil and isin(units, value.unit);
     end,
     evaluate = function(value, cache, evalStart)
+        if not getCached(cache, UnitExists, value.unit) then return false end
         return getCached(cache, UnitAffectingCombat, value.unit)
     end,
     print = function(spec, value)
@@ -252,6 +253,7 @@ addon:RegisterCondition(L["Combat"], "THREAT", {
                value.threat ~= nil and value.threat >= 1 and value.threat <= 4
     end,
     evaluate = function(value, cache, evalStart)
+        if not getCached(cache, UnitExists, value.unit) then return false end
         local enemy = getCached(cache, UnitIsEnemy, "player", value.unit)
         if enemy then
             local rv = getCached(cache, UnitThreatSituation, "player", value.unit)
@@ -478,6 +480,7 @@ addon:RegisterCondition(L["Combat"], "ATTACKABLE", {
         return value.unit ~= nil and isin(units, value.unit);
     end,
     evaluate = function(value, cache, evalStart)
+        if not getCached(cache, UnitExists, value.unit) then return false end
         return getCached(cache, UnitCanAttack, "player", value.unit)
     end,
     print = function(spec, value)
@@ -504,6 +507,7 @@ addon:RegisterCondition(L["Combat"], "ENEMY", {
         return value.unit ~= nil and isin(units, value.unit);
     end,
     evaluate = function(value, cache, evalStart)
+        if not getCached(cache, UnitExists, value.unit) then return false end
         return getCached(cache, UnitIsEnemy, "player", value.unit)
     end,
     print = function(spec, value)

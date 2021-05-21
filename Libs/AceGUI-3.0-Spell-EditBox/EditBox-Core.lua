@@ -440,7 +440,7 @@ do
 		local editBox = CreateFrame("EditBox", "AceGUI30SpellEditBox" .. num, frame, "InputBoxTemplate")
 
 		-- Don't feel like looking up the specific callbacks for when a widget resizes, so going to be creative with SetPoint instead!
-		local predictFrame = CreateFrame("ScrollFrame", "AceGUI30SpellEditBox" .. num .. "Predictor", UIParent)
+		local predictFrame = CreateFrame("ScrollFrame", "AceGUI30SpellEditBox" .. num .. "Predictor", UIParent, BackdropTemplateMixin and "BackdropTemplate")
 		predictFrame:SetBackdrop(predictorBackdrop)
 		predictFrame:SetBackdropColor(0, 0, 0, 0.85)
 		predictFrame:SetWidth(1)

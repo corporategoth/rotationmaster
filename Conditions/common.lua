@@ -74,6 +74,7 @@ function addon:Widget_SpellWidget(spec, editbox, value, nametoid, isvalid, updat
     spellIcon:SetCallback("OnLeave", function(widget)
         GameTooltip:Hide()
     end)
+    spellIcon:SetDisabled(value.disabled)
     spell_group:AddChild(spellIcon)
 
     if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
@@ -85,7 +86,11 @@ function addon:Widget_SpellWidget(spec, editbox, value, nametoid, isvalid, updat
 
         local nr_label = AceGUI:Create("Label")
         nr_label:SetText(L["Rank"])
-        nr_label:SetColor(1.0, 0.82, 0.0)
+        if value.disabled then
+            nr_label:SetColor(0.5, 0.5, 0.5)
+        else
+            nr_label:SetColor(1.0, 0.82, 0.0)
+        end
         ranked:AddChild(nr_label)
 
         local nr_button = AceGUI:Create("CheckBox")
@@ -97,6 +102,7 @@ function addon:Widget_SpellWidget(spec, editbox, value, nametoid, isvalid, updat
             spell:SetText(value.spell and (value.ranked and SpellData:SpellName(value.spell) or GetSpellInfo(value.spell)))
             update()
         end)
+        nr_button:SetDisabled(value.disabled)
         ranked:AddChild(nr_button)
 
         spell_group:AddChild(ranked)
@@ -122,6 +128,7 @@ function addon:Widget_SpellWidget(spec, editbox, value, nametoid, isvalid, updat
         spellIcon:SetText(value.spell)
         update()
     end)
+    spell:SetDisabled(value.disabled)
     spell_group:AddChild(spell)
 
     return spell_group
@@ -161,6 +168,7 @@ function addon:Widget_SpellNameWidget(spec, editbox, value, isvalid, update)
     spellIcon:SetCallback("OnLeave", function(widget)
         GameTooltip:Hide()
     end)
+    spellIcon:SetDisabled(value.disabled)
     spell_group:AddChild(spellIcon)
 
     spell:SetFullWidth(true)
@@ -186,6 +194,7 @@ function addon:Widget_SpellNameWidget(spec, editbox, value, isvalid, update)
         end
         update()
     end)
+    spell:SetDisabled(value.disabled)
     spell_group:AddChild(spell)
 
     return spell_group
@@ -230,6 +239,7 @@ function addon:Widget_ItemWidget(top, value, update)
     itemIcon:SetCallback("OnLeave", function(widget)
         GameTooltip:Hide()
     end)
+    itemIcon:SetDisabled(value.disabled)
     item_group:AddChild(itemIcon)
 
     local edit_button = AceGUI:Create("Button")
@@ -252,6 +262,7 @@ function addon:Widget_ItemWidget(top, value, update)
         update_action_image()
         update()
     end)
+    item:SetDisabled(value.disabled)
     item.configure = function()
         local selects, sorted = addon:get_item_list(L["Custom"])
         item:SetList(selects, sorted)
@@ -267,7 +278,7 @@ function addon:Widget_ItemWidget(top, value, update)
 
     edit_button:SetText(EDIT)
     edit_button:SetFullWidth(true)
-    edit_button:SetDisabled(value.item == nil)
+    edit_button:SetDisabled(value.item == nil or value.disabled)
     edit_button:SetUserData("cell", { alignV = "bottom" })
     edit_button:SetCallback("OnClick", function(widget, event, ...)
         local edit_callback = function()
@@ -325,6 +336,7 @@ function addon:Widget_OperatorWidget(value, name, update)
         value.operator = v
         update()
     end)
+    operator:SetDisabled(value.disabled)
     operator.configure = function()
         operator:SetList(operators, keys(operators))
         operator:SetValue(value.operator)
@@ -339,6 +351,7 @@ function addon:Widget_OperatorWidget(value, name, update)
         value.value = tonumber(v)
         update()
     end)
+    edit:SetDisabled(value.disabled)
     operator_group:AddChild(edit)
 
     return operator_group
@@ -356,6 +369,7 @@ function addon:Widget_OperatorPercentWidget(value, name, update)
         value.operator = v
         update()
     end)
+    operator:SetDisabled(value.disabled)
     operator.configure = function()
         operator:SetList(operators, keys(operators))
         operator:SetValue(value.operator)
@@ -374,6 +388,7 @@ function addon:Widget_OperatorPercentWidget(value, name, update)
         value.value = tonumber(v)
         update()
     end)
+    edit:SetDisabled(value.disabled)
     operator_group:AddChild(edit)
 
     return operator_group
@@ -389,6 +404,7 @@ function addon:Widget_UnitWidget(value, units, update, field)
         value[field] = v
         update()
     end)
+    unit:SetDisabled(value.disabled)
     unit.configure = function()
         unit:SetList(units, keys(units))
         unit:SetValue(value[field])

@@ -831,8 +831,9 @@ function addon:get_cooldown_list(frame, specID, rotid, id, callback)
         partyraid = L["Raid or Party"],
         party = L["Party Only"],
         raidwarn = L["Raid Warning"],
-        say = L["Say"],
-        yell = L["Yell"],
+        -- say = L["Say"],
+        -- yell = L["Yell"],
+        emote = L["Emote"],
         ["local"] = L["Local Only"],
     }
 
@@ -843,7 +844,7 @@ function addon:get_cooldown_list(frame, specID, rotid, id, callback)
         rot.announce = val
     end)
     announce.configure = function()
-        announce:SetList(announces, { "none", "partyraid", "party", "raidwarn", "say", "yell", "local" })
+        announce:SetList(announces, { "none", "partyraid", "party", "raidwarn", --[["say", "yell",]] "emote", "local" })
         announce:SetValue(rot.announce or "none")
     end
     frame:AddChild(announce)

@@ -50,6 +50,7 @@ addon:RegisterSwitchCondition("PVP", {
         return value.unit ~= nil and isin(units, value.unit);
     end,
     evaluate = function(value, cache, evalStart)
+        if not getCached(cache, UnitExists, value.unit) then return false end
         return UnitIsPVP(value.unit)
     end,
     print = function(spec, value)
@@ -305,3 +306,17 @@ addon:RegisterSwitchCondition("OUTDOORS", {
 })
 
 addon:RegisterSwitchCondition("FORM", addon.condition_form)
+
+addon:RegisterSwitchCondition("STEALTHED", {
+    description = L["Stealth"],
+    icon = "Interface\\Icons\\ability_stealth",
+    valid = function(spec, value)
+        return true
+    end,
+    evaluate = function(value, cache, evalStart)
+        return getCached(cache, IsStealthed)
+    end,
+    print = function(spec, value)
+        return L["you are stealthed"]
+    end,
+})

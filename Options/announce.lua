@@ -31,8 +31,9 @@ function addon:create_announce_list(frame)
         partyraid = L["Raid or Party"],
         party = L["Party Only"],
         raidwarn = L["Raid Warning"],
-        say = L["Say"],
-        yell = L["Yell"],
+        -- say = L["Say"],
+        -- yell = L["Yell"],
+        emote = L["Emote"],
         ["local"] = L["Local Only"],
     }
 
@@ -44,7 +45,7 @@ function addon:create_announce_list(frame)
         local row2 = AceGUI:Create("SimpleGroup")
         row2:SetFullWidth(true)
         row2:SetLayout("Table")
-        row2:SetUserData("table", { columns = { 150, 1 } })
+        row2:SetUserData("table", { columns = { 125, 1, 100 } })
 
         local action_group = AceGUI:Create("SimpleGroup")
         action_group:SetFullWidth(true)
@@ -122,19 +123,39 @@ function addon:create_announce_list(frame)
             value.announce = val
         end)
         type.configure = function()
-            type:SetList(announce_types, { "partyraid", "party", "raidwarn", "say", "yell", "local" })
+            type:SetList(announce_types, { "partyraid", "party", "raidwarn", --[[ "say", "yell", ]] "emote", "local" })
             type:SetValue(value.announce)
         end
         row2:AddChild(type)
 
-        local type = AceGUI:Create("EditBox")
-        type:SetFullWidth(true)
-        type:SetLabel(L["Text"])
-        type:SetText(value.value)
-        type:SetCallback("OnEnterPressed", function(widget, event, val)
+        local text = AceGUI:Create("EditBox")
+        text:SetFullWidth(true)
+        text:SetLabel(L["Text"])
+        text:SetText(value.value)
+        text:SetCallback("OnEnterPressed", function(widget, event, val)
             value.value = val
         end)
-        row2:AddChild(type)
+
+        row2:AddChild(text)
+
+        local enabledisable_button = AceGUI:Create("Button")
+        enabledisable_button:SetFullWidth(true)
+
+        local function handle_enabledisable(enable)
+            action_type:SetDisabled(not enable)
+            event:SetDisabled(not enable)
+            type:SetDisabled(not enable)
+            text:SetDisabled(not enable)
+
+            enabledisable_button:SetText(enable and DISABLE or ENABLE)
+            enabledisable_button:SetCallback("OnClick", function(widget, e)
+                value.disabled = enable
+                handle_enabledisable(not enable)
+                draw_action_group(action_group, value)
+            end)
+        end
+        handle_enabledisable(not value.disabled)
+        row2:AddChild(enabledisable_button)
 
         local separator = AceGUI:Create("Heading")
         separator:SetFullWidth(true)
@@ -145,6 +166,7 @@ function addon:create_announce_list(frame)
     end
 
     local newentry = {
+        id = addon:uuid(),
         type = "spell",
         announce = "partyraid",
         event = "SUCCEEDED",
@@ -157,7 +179,7 @@ function addon:create_announce_list(frame)
     local row2 = AceGUI:Create("SimpleGroup")
     row2:SetFullWidth(true)
     row2:SetLayout("Table")
-    row2:SetUserData("table", { columns = { 150, 1 } })
+    row2:SetUserData("table", { columns = { 125, 1, 100 } })
 
     local action_group = AceGUI:Create("SimpleGroup")
     action_group:SetFullWidth(true)
@@ -235,16 +257,22 @@ function addon:create_announce_list(frame)
     type:SetLabel(L["Announce"])
     type:SetDisabled(true)
     type.configure = function()
-        type:SetList(announce_types, { "partyraid", "party", "raidwarn", "say", "yell", "local" })
+        type:SetList(announce_types, { "partyraid", "party", "raidwarn", --[[ "say", "yell", ]] "emote", "local" })
         type:SetValue("partyraid")
     end
     row2:AddChild(type)
 
-    local type = AceGUI:Create("EditBox")
-    type:SetFullWidth(true)
-    type:SetLabel("Text")
-    type:SetDisabled(true)
-    row2:AddChild(type)
+    local text = AceGUI:Create("EditBox")
+    text:SetFullWidth(true)
+    text:SetLabel("Text")
+    text:SetDisabled(true)
+    row2:AddChild(text)
+
+    local enabledisable_button = AceGUI:Create("Button")
+    enabledisable_button:SetFullWidth(true)
+    enabledisable_button:SetText(DISABLE)
+    enabledisable_button:SetDisabled(true)
+    row2:AddChild(enabledisable_button)
 
     group:AddChild(row1)
     group:AddChild(row2)

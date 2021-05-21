@@ -81,8 +81,17 @@ local function upgradeItemsToItemSets()
     end
 end
 
+local function upgradeAddIDToAnnounce()
+    for _,announce in pairs(addon.db.char.announces) do
+        if announce.id == nil then
+            announce.id = addon:uuid()
+        end
+    end
+end
+
 function addon:upgrade()
     upgradeTexturesToEffects()
     upgradeGlobalRotationstoPlayer()
     upgradeItemsToItemSets()
+    upgradeAddIDToAnnounce()
 end

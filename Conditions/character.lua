@@ -10,8 +10,8 @@ local units, unitsPossessive, roles, creatures, operators =
     addon.units, addon.unitsPossessive, addon.roles, addon.creatures, addon.operators
 
 -- From utils
-local nullable, keys, isin, deepcopy, getCached, playerize, compareString =
-    addon.nullable, addon.keys, addon.isin, addon.deepcopy, addon.getCached, addon.playerize, addon.compareString
+local nullable, keys, isin, deepcopy, getCached, playerize, compare, compareString =
+    addon.nullable, addon.keys, addon.isin, addon.deepcopy, addon.getCached, addon.playerize, addon.compare, addon.compareString
 
 local helpers = addon.help_funcs
 local CreateText, CreatePictureText, CreateButtonText, Indent, Gap =
@@ -25,6 +25,7 @@ addon:RegisterCondition(nil, "ISSAME", {
                 value.otherunit ~= nil and isin(units, value.otherunit))
     end,
     evaluate = function(value, cache, evalStart)
+        if not getCached(cache, UnitExists, value.unit) then return false end
         return getCached(cache, UnitIsUnit, value.unit, value.otherunit)
     end,
     print = function(spec, value)
@@ -56,6 +57,7 @@ addon:RegisterCondition(nil, "CLASS", {
                 value.value ~= nil and isin(LOCALIZED_CLASS_NAMES_MALE, value.value))
     end,
     evaluate = function(value, cache, evalStart)
+        if not getCached(cache, UnitExists, value.unit) then return false end
         local _, englishClass = getCached(cache, UnitClass, value.unit);
         return englishClass == value.value
     end,
@@ -104,6 +106,7 @@ if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
                     value.value ~= nil and isin(roles, value.value))
         end,
         evaluate = function(value, cache, evalStart)
+            if not getCached(cache, UnitExists, value.unit) then return false end
             local id, name, description, icon, background, role, class
             = getCached(cache, GetSpecializationInfoByID, getCached(cache, GetInspectSpecialization, value.unit))
             return role == value.value
@@ -348,6 +351,7 @@ addon:RegisterCondition(nil, "CREATURE", {
                 value.value ~= nil and isin(creatures, value.value))
     end,
     evaluate = function(value, cache, evalStart)
+        if not getCached(cache, UnitExists, value.unit) then return false end
         return (getCached(cache, UnitCreatureType, value.unit) == creatures[value.value])
     end,
     print = function(spec, value)
@@ -387,3 +391,59 @@ addon:RegisterCondition(nil, "CREATURE", {
     end
 })
 
+addon:RegisterCondition(nil, "LEVEL", {
+    description = L["Level"],
+    icon = "Interface\\Icons\\spell_holy_blessedrecovery",
+    valid = function(spec, value)
+        return (value.unit ~= nil and isin(units, value.unit) and
+                value.operator ~= nil and isin(operators, value.operator) and
+                value.value ~= nil and (value.relative or value.value >= 0))
+    end,
+    evaluate = function(value, cache, evalStart)
+        if not getCached(cache, UnitExists, value.unit) then return false end
+        local level = value.value
+        if value.relative then
+            level = getCached(addon.longtermCache, UnitLevel, "player") + value.value
+        end
+        return compare(value.operator, getCached(cache, UnitLevel, value.unit), level)
+    end,
+    print = function(spec, value)
+        local level = value.value
+        if value.relative and value.value ~= nil then
+            level = getCached(addon.longtermCache, UnitLevel, "player") + value.value
+        end
+        return compareString(value.operator, playerize(value.unit, L["your level"], string.format(L["%s's level"],
+                nullable(units[value.unit], L["<unit>"]))), nullable(level, L["<level>"]))
+    end,
+    widget = function(parent, spec, value)
+        local top = parent:GetUserData("top")
+        local root = top:GetUserData("root")
+        local funcs = top:GetUserData("funcs")
+
+        local unit = addon:Widget_UnitWidget(value, units,
+                function() top:SetStatusText(funcs:print(root, spec)) end)
+        parent:AddChild(unit)
+
+        local nr_button = AceGUI:Create("CheckBox")
+        nr_button:SetLabel(L["Relative"])
+        nr_button:SetValue(value.relative or false)
+        nr_button:SetCallback("OnValueChanged", function(widget, event, val)
+            value.relative = val
+            top:SetStatusText(funcs:print(root, spec))
+        end)
+        parent:AddChild(nr_button)
+
+        local operator_group = addon:Widget_OperatorWidget(value, L["Level"],
+                function() top:SetStatusText(funcs:print(root, spec)) end)
+        parent:AddChild(operator_group)
+    end,
+    help = function(frame)
+        addon.layout_condition_unitwidget_help(frame)
+        frame:AddChild(Gap())
+        addon.layout_condition_operatorwidget_help(frame, L["Relative"], L["Relative"],
+                "Should the level be relative to the player's or absolute.")
+        frame:AddChild(Gap())
+        addon.layout_condition_operatorwidget_help(frame, L["Level"], L["Level"],
+                "The character's level")
+    end
+})
