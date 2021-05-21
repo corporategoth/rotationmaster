@@ -48,7 +48,8 @@ addon.unitsPossessive = {
     targettarget = L["your target's target's"],
     mouseovertarget = L["your mouseover target's target's"],
 }
-if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
+-- Everything except classic has FOCUS
+if (WOW_PROJECT_ID ~= WOW_PROJECT_CLASSIC) then
     addon.unitsPossessive["focus"] = L["your focus target's"]
     addon.unitsPossessive["focustarget"] = L["your focus target's target's"]
 end
