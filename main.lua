@@ -69,7 +69,7 @@ elseif (WOW_PROJECT_ID == WOW_PROJECT_BURNING_CRUSADE_CLASSIC) then
     multiinsert(conjured_water, { 22018, 30703, })
     multiinsert(mana_potions, { 31677, 33093, 23823, 22832, 32948, 33935, 28101 })
     multiinsert(healing_potions, { 33092, 23822, 22829, 32947, 28100, 33934 })
-    multiinsert(bandages, { 21881, 21990, 23684 })
+    multiinsert(bandages, { 21991, 21990, 23684 })
     multiinsert(purchased_water, { 33042, 29395, 27860, 32453, 38430, 28399, 29454, 32455, 24007, 24006, 23161 })
     multiinsert(healthstones, { 
             "Master Healthstone",
