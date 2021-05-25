@@ -125,15 +125,19 @@ addon.tomap = function(array)
     return rv
 end
 
-addon.isin = function(array, value)
+addon.index = function(array, value)
     local idx = 1
     for k,v in pairs(array) do
-        if (v == value) then
+        if (k == value) then
             return idx
         end
         idx = idx + 1
     end
     return 0
+end
+
+addon.isin = function(array, value)
+    return array[value] ~= nil
 end
 
 addon.round = function (num, numDecimalPlaces)
@@ -151,6 +155,14 @@ addon.isint = function(num)
         end
     end
     return false
+end
+
+addon.starts_with = function(str, start)
+    return str:sub(1, #start) == start
+end
+
+addon.ends_with = function(str, ending)
+    return ending == "" or str:sub(-#ending) == ending
 end
 
 addon.multiinsert = function(t, values)

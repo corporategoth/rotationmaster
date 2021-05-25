@@ -150,10 +150,10 @@ addon:RegisterCondition(nil, "DISTANCE_COUNT", {
     evaluate = function(value, cache, evalStart)
         local rcf = function(unit) return RangeCheck:GetRange(unit) end
         local count = 0
-        for unit, entity in pairs(addon.unitsInRange) do
+        for guid, entity in pairs(addon.unitsInRange) do
             if entity.enemy == value.enemy then
-                local maxRange = select(2, getCached(cache, rcf, unit))
-                if maxRange <= value.distance then
+                local maxRange = select(2, getCached(cache, rcf, entity.unit))
+                if maxRange and maxRange <= value.distance then
                     count = count + 1
                 end
             end

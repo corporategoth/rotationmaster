@@ -23,7 +23,7 @@ end
 
 local pairs, color, string = pairs, color, string
 local floor = math.floor
-local multiinsert = addon.multiinsert
+local multiinsert, isin, starts_with, isint = addon.multiinsert, addon.isin, addon.starts_with, addon.isint
 
 addon.pretty_name = GetAddOnMetadata(addon_name, "Title")
 local DataBroker = LibStub("LibDataBroker-1.1"):NewDataObject("RotationMaster",
@@ -872,20 +872,21 @@ function addon:EvaluateNextAction()
         for unit, _ in pairs(addon.units) do
             unitsGUID[unit] = getCached(cache, UnitGUID, unit)
         end
-        for unit, entity in pairs(self.unitsInRange) do
-            if unitsGUID[entity.unit] then
-                if unitsGUID[entity.unit] == unit then
+        for guid, entity in pairs(self.unitsInRange) do
+            if isin(addon.units, entity.unit) then
+		        if unitsGUID[entity.unit] and unitsGUID[entity.unit] == guid then
                     unitsHandled[entity.unit] = true
                 else
-                    self.unitsInRange[unit] = nil
+                    self.unitsInRange[guid] = nil
                 end
             end
 
-            addon:verbose("Updating Unit " .. unit .. " (" .. entity.name .. ")")
+            addon:verbose("Updating Unit " .. guid .. " (" .. entity.name .. ")")
             UpdateUnitInfo(cache, entity, now)
         end
         for unit, guid in pairs(unitsGUID) do
-            if not unitsHandled[unit] and not self.unitsInRange[guid] then
+            if not unitsHandled[unit] and not self.unitsInRange[guid] and
+                not starts_with(unit, "mouseover") then
                 self.unitsInRange[guid] = CreateUnitInfo(cache, unit, now)
             end
         end
@@ -1097,7 +1098,7 @@ function addon:GetSpellIds(rot)
                         local spellid = select(2, getRetryCached(self.longtermCache, GetItemSpell, item));
                         if spellid then
                             table.insert(spellids, spellid)
-                            if addon.isint(item) then
+                            if isint(item) then
                                 table.insert(itemids, item)
                             else
                                 local itemid = getRetryCached(self.longtermCache, GetItemInfoInstant, item)
@@ -1111,7 +1112,7 @@ function addon:GetSpellIds(rot)
                     local spellid = select(2, getRetryCached(self.longtermCache, GetItemSpell, item));
                     if spellid then
                         table.insert(spellids, spellid)
-                        if addon.isint(item) then
+                        if isint(item) then
                             table.insert(itemids, item)
                         else
                             local itemid = getRetryCached(self.longtermCache, GetItemInfoInstant, item)
