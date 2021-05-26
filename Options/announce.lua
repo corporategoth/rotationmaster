@@ -58,11 +58,12 @@ function addon:create_announce_list(frame)
                 local spell_group = addon:Widget_SpellWidget(addon.currentSpec, "Spec_EditBox", ent,
                     function(v) return addon:GetSpecSpellID(addon.currentSpec, v) end,
                     function(v) return isSpellOnSpec(addon.currentSpec, v) end,
-                    function() end)
+                    function() draw_action_group(ag, ent) end)
                 spell_group:SetFullWidth(true)
                 ag:AddChild(spell_group)
             elseif ent.type == "item" then
-                local item_group = addon:Widget_ItemWidget(nil, ent, function() end)
+                local item_group = addon:Widget_ItemWidget(nil, ent,
+                    function() draw_action_group(ag, ent) end)
                 item_group:SetFullWidth(true)
                 ag:AddChild(item_group)
             end
@@ -197,6 +198,7 @@ function addon:create_announce_list(frame)
                         table.insert(announces, ent)
                         addon:create_announce_list(frame)
                     end
+                    draw_action_group(ag, ent)
                 end)
             spell_group:SetFullWidth(true)
             ag:AddChild(spell_group)
@@ -206,6 +208,7 @@ function addon:create_announce_list(frame)
                     table.insert(announces, ent)
                     addon:create_announce_list(frame)
                 end
+                draw_action_group(ag, ent)
             end)
             item_group:SetFullWidth(true)
             ag:AddChild(item_group)

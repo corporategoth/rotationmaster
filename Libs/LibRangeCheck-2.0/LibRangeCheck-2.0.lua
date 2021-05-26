@@ -1,6 +1,6 @@
 --[[
 Name: LibRangeCheck-2.0
-Revision: $Revision: 204 $
+Revision: $Revision: 210 $
 Author(s): mitch0
 Website: http://www.wowace.com/projects/librangecheck-2-0/
 Description: A range checking library based on interact distances and spell ranges
@@ -41,14 +41,14 @@ License: Public Domain
 -- @class file
 -- @name LibRangeCheck-2.0
 local MAJOR_VERSION = "LibRangeCheck-2.0"
-local MINOR_VERSION = tonumber(("$Revision: 204 $"):match("%d+")) + 100000 + 1 -- To ensure mine is loaded over standard.
+local MINOR_VERSION = tonumber(("$Revision: 210 $"):match("%d+")) + 100000
 
 local lib, oldminor = LibStub:NewLibrary(MAJOR_VERSION, MINOR_VERSION)
 if not lib then
     return
 end
 
-local IsClassic = (WOW_PROJECT_ID == WOW_PROJECT_CLASSIC)
+local IsClassic = (WOW_PROJECT_ID == WOW_PROJECT_CLASSIC) or (WOW_PROJECT_ID == WOW_PROJECT_BURNING_CRUSADE_CLASSIC)
 
 -- << STATIC CONFIG
 
@@ -110,7 +110,6 @@ HarmSpells["DRUID"] = {
 FriendSpells["HUNTER"] = {}
 HarmSpells["HUNTER"] = {
     75, -- ["Auto Shot"], -- 40
-    1495, -- ["Mongoose Bite"], -- Melee
 }
 
 FriendSpells["MAGE"] = {
@@ -384,7 +383,6 @@ end
 local setmetatable = setmetatable
 local tonumber = tonumber
 local pairs = pairs
-local ipairs = ipairs
 local tostring = tostring
 local print = print
 local next = next
@@ -418,7 +416,8 @@ local UnitIsVisible = UnitIsVisible
 
 -- temporary stuff
 
-local itemRequestTimeoutAt = {}
+local pendingItemRequest
+local itemRequestTimeoutAt
 local foundNewItems
 local cacheAllItems
 local friendItemRequests
@@ -622,27 +621,6 @@ local function rcIterator(checkerList)
     end
 end
 
-local function ranges(array)
-    local vals = {}
-    for k,v in pairs(array) do
-        if v.range == 0 then
-            vals[MeleeRange] = 1
-        else
-            vals[v.range] = 1
-        end
-        if v.minRange then
-            vals[v.minRange] = 1
-        end
-    end
-    local rv = {}
-    for k,v in pairs(vals) do
-        table.insert(rv, k)
-    end
-    -- Sort the keys
-    table.sort(rv, function (lhs, rhs) return lhs > rhs end)
-    return rv
-end
-
 local function getMinChecker(checkerList, range)
     local checker, checkerRange
     for i = 1, #checkerList do
@@ -741,42 +719,6 @@ function lib:getRangeAsString(unit, checkVisible, showOutOfRange)
     return minRange .. " - " .. maxRange
 end
 
-local function mergeCheckers(target, source)
-    local i,j = 1, 1
-
-    while i <= #target and j <= #source do
-        if source[j].range == target[i].range then
-            if target[i].minRange == source[j].minRange then
-                -- Both range and minRanges match, skip
-                j = j + 1
-            elseif target[i].minRange and (not source[j].minRange or
-                    sourece[j].minRange > target[i].minRange) then
-                -- Same range, but lower minRange, insert / advance
-                table.insert(target, i, source[j])
-                i = i + 1
-                j = j + 1
-            else
-                -- Same range, but higher minRange, advance i (target) to insert after this one
-                i = i + 1
-            end
-        elseif source[j].range > target[i].range then
-            -- Lower range, insert here.
-            table.insert(target, i, source[j])
-            i = i + 1
-            j = j + 1
-        else
-            -- Higher range, advance i (target) to insert after this one
-            i = i + 1
-        end
-
-    end
-
-    while j <= #source do
-        table.insert(target, source[j])
-        j = j + 1
-    end
-end
-
 -- initialize RangeCheck if not yet initialized or if "forced"
 function lib:init(forced)
     if self.initialized and (not forced) then
@@ -836,15 +778,13 @@ function lib:init(forced)
     local interactList = InteractLists[playerRace] or DefaultInteractList
     self.handSlotItem = GetInventoryItemLink("player", HandSlotId)
     local changed = false
-    if updateCheckers(self.miscRC, createCheckerList(nil, nil, interactList)) then
-        changed = true
-    end
     if updateCheckers(self.friendRC, createCheckerList(FriendSpells[playerClass], FriendItems, interactList)) then
-        mergeCheckers(self.friendRC, self.miscRC)
         changed = true
     end
     if updateCheckers(self.harmRC, createCheckerList(HarmSpells[playerClass], HarmItems, interactList)) then
-        mergeCheckers(self.harmRC, self.miscRC)
+        changed = true
+    end
+    if updateCheckers(self.miscRC, createCheckerList(nil, nil, interactList)) then
         changed = true
     end
     if changed and self.callbacks then
@@ -865,21 +805,6 @@ end
 --- Return an iterator for checkers usable on miscellaneous units as (**range**, **checker**) pairs.  These units are neither enemy nor friendly, such as people in sanctuaries or corpses.
 function lib:GetMiscCheckers()
     return rcIterator(self.miscRC)
-end
-
---- Return an array of range boundaries available for friendly units.
-function lib:GetFriendRanges()
-    return ranges(self.friendRC)
-end
-
---- Return an array of range boundaries available for enemy units.
-function lib:GetHarmRanges()
-    return ranges(self.harmRC)
-end
-
---- Return an array of range boundaries available for miscellaneous units.  These units are neither enemy nor friendly, such as people in sanctuaries or corpses.
-function lib:GetMiscRanges()
-    return ranges(self.miscRC)
 end
 
 --- Return a checker suitable for out-of-range checking on friendly units, that is, a checker whose range is equal or larger than the requested range.
@@ -1045,7 +970,8 @@ end
 
 function lib:GET_ITEM_INFO_RECEIVED(event, item, success)
     -- print("### GET_ITEM_INFO_RECEIVED: " .. tostring(item) .. ", " .. tostring(success))
-    if itemRequestTimeoutAt[item] then
+    if item == pendingItemRequest then
+        pendingItemRequest = nil
         if not success then
             self.failedItemRequests[item] = true
         end
@@ -1054,90 +980,76 @@ function lib:GET_ITEM_INFO_RECEIVED(event, item, success)
 end
 
 function lib:processItemRequests(itemRequests)
-    local waiting
-    for range, items in pairs(itemRequests) do
+    while true do
+        local range, items = next(itemRequests)
         if not range then return end
-        if not items then
-            itemRequests[range] = nil
-        else
-            local count = 0
-            for i, item in ipairs(items) do
-                if count > 0 and not cacheAllItems then
+        while true do
+            local i, item = next(items)
+            if not i then
+                itemRequests[range] = nil
+                break
+            elseif self.failedItemRequests[item] then
+                -- print("### processItemRequests: failed: " .. tostring(item))
+                tremove(items, i)
+            elseif item == pendingItemRequest and GetTime() < itemRequestTimeoutAt then
+                return true; -- still waiting for server response
+            elseif GetItemInfo(item) then
+                -- print("### processItemRequests: found: " .. tostring(item))
+                if itemRequestTimeoutAt then
+                    -- print("### processItemRequests: new: " .. tostring(item))
+                    foundNewItems = true
+                    itemRequestTimeoutAt = nil
+                    pendingItemRequest = nil
+                end
+                if not cacheAllItems then
+                    itemRequests[range] = nil
                     break
                 end
-                local localWaiting
-                if self.failedItemRequests[item] then
-                    -- print("### processItemRequests: failed: " .. tostring(item))
-                    tremove(items, i)
-                elseif itemRequestTimeoutAt[item] and GetTime() < itemRequestTimeoutAt[item] then
-                    localWaiting = true
-                elseif GetItemInfo(item) then
-                    -- print("### processItemRequests: found: " .. tostring(item))
-                    if itemRequestTimeoutAt[item] then
-                        -- print("### processItemRequests: new: " .. tostring(item))
-                        foundNewItems = true
-                        itemRequestTimeoutAt[item] = nil
-                    end
-                    if not cacheAllItems then
-                        itemRequests[range] = nil
-                        break
-                    end
-                    tremove(items, i)
-                elseif not itemRequestTimeoutAt[item] then
-                    -- print("### processItemRequests: waiting: " .. tostring(item))
-                    itemRequestTimeoutAt[item] = GetTime() + ItemRequestTimeout
-                    localWaiting = true
-                    if not self.frame:IsEventRegistered("GET_ITEM_INFO_RECEIVED") then
-                        self.frame:RegisterEvent("GET_ITEM_INFO_RECEIVED")
-                    end
-                elseif GetTime() >= itemRequestTimeoutAt[item] then
-                    -- print("### processItemRequests: timeout: " .. tostring(item))
-                    if cacheAllItems then
-                        print(MAJOR_VERSION .. ": timeout for item: " .. tostring(item))
-                    end
-                    self.failedItemRequests[item] = true
-                    itemRequestTimeoutAt[item] = nil
-                    tremove(items, i)
-                else
-                    localWaiting = true
+                tremove(items, i)   
+            elseif not itemRequestTimeoutAt then
+                -- print("### processItemRequests: waiting: " .. tostring(item))
+                itemRequestTimeoutAt = GetTime() + ItemRequestTimeout
+                pendingItemRequest = item
+                if not self.frame:IsEventRegistered("GET_ITEM_INFO_RECEIVED") then
+                    self.frame:RegisterEvent("GET_ITEM_INFO_RECEIVED")
                 end
-                if localWaiting then
-                    waiting = true
-                    count = count + 1
+                return true
+            elseif GetTime() >= itemRequestTimeoutAt then
+                -- print("### processItemRequests: timeout: " .. tostring(item))
+                if cacheAllItems then
+                    print(MAJOR_VERSION .. ": timeout for item: " .. tostring(item))
                 end
-            end
-            if count == 0 then
-                itemRequests[range] = nil
+                self.failedItemRequests[item] = true
+                itemRequestTimeoutAt = nil
+                pendingItemRequest = nil
+                tremove(items, i)
+            else
+                return true -- still waiting for server response
             end
         end
     end
-    return waiting
 end
 
 function lib:initialOnUpdate()
     self:init()
     if friendItemRequests then
-        if not self:processItemRequests(friendItemRequests) then
-            friendItemRequests = nil
-        end
+        if self:processItemRequests(friendItemRequests) then return end
+        friendItemRequests = nil
     end
     if harmItemRequests then
-        if not self:processItemRequests(harmItemRequests) then
-            harmItemRequests = nil
-        end
+        if self:processItemRequests(harmItemRequests) then return end
+        harmItemRequests = nil
     end
     if foundNewItems then
         self:init(true)
         foundNewItems = nil
     end
-    if not friendItemRequests and not harmItemRequests then
-        if cacheAllItems then
-            print(MAJOR_VERSION .. ": finished cache")
-            cacheAllItems = nil
-        end
-        self.frame:Hide()
-        self.frame:UnregisterEvent("GET_ITEM_INFO_RECEIVED")
+    if cacheAllItems then
+        print(MAJOR_VERSION .. ": finished cache")
+        cacheAllItems = nil
     end
+    self.frame:Hide()
+    self.frame:UnregisterEvent("GET_ITEM_INFO_RECEIVED")
 end
 
 function lib:scheduleInit()
