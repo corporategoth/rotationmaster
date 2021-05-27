@@ -88,8 +88,7 @@ local defaults = {
         setpoint = 'CENTER',
         xoffs = 0,
         yoffs = 0,
-        debug = false,
-        verbose = false,
+        loglevel = 2,
         disable_autoswitch = false,
         live_config_update = 2,
         spell_history = 60,
@@ -236,13 +235,13 @@ function addon:HandleCommand(str)
     local cmd, npos = AceConsole:GetArgs(str, 1, 1)
 
     if not cmd or cmd == "help" then
-        addon:info(L["/rm help                - This text"])
-        addon:info(L["/rm config              - Open the config dialog"])
-        addon:info(L["/rm disable             - Disable battle rotation"])
-        addon:info(L["/rm enable              - Enable battle rotation"])
-        addon:info(L["/rm current             - Print out the name of the current rotation"])
-        addon:info(L["/rm set [auto|profile]  - Switch to a specific rotation, or use automatic switching again."])
-        addon:info(L["                          This is reset upon switching specializations."])
+        addon:print(L["/rm help                - This text"])
+        addon:print(L["/rm config              - Open the config dialog"])
+        addon:print(L["/rm disable             - Disable battle rotation"])
+        addon:print(L["/rm enable              - Enable battle rotation"])
+        addon:print(L["/rm current             - Print out the name of the current rotation"])
+        addon:print(L["/rm set [auto|profile]  - Switch to a specific rotation, or use automatic switching again."])
+        addon:print(L["                          This is reset upon switching specializations."])
 
     elseif cmd == "config" then
         InterfaceOptionsFrame_OpenToCategory(addon.Rotation)
@@ -256,9 +255,9 @@ function addon:HandleCommand(str)
 
     elseif cmd == "current" then
         if self.currentRotation == nil then
-            addon:info(L["No rotation is currently active."])
+            addon:print(L["No rotation is currently active."])
         else
-            addon:info(L["The current rotation is " .. color.WHITE .. "%s" .. color.INFO], addon:GetRotationName(self.currentRotation))
+            addon:print(L["The current rotation is " .. color.WHITE .. "%s" .. color.INFO], addon:GetRotationName(self.currentRotation))
         end
 
     elseif cmd == "set" then

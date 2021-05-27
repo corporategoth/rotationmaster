@@ -68,6 +68,33 @@ local function create_primary_options(frame)
     end)
     general_group:AddChild(poll)
 
+    local disable_autoswitch = AceGUI:Create("CheckBox")
+    disable_autoswitch:SetFullWidth(true)
+    disable_autoswitch:SetLabel(L["Disable Auto-Switching"])
+    disable_autoswitch:SetValue(profile["disable_autoswitch"])
+    disable_autoswitch:SetCallback("OnValueChanged", function(widget, event, val)
+        profile["disable_autoswitch"] = val
+    end)
+    general_group:AddChild(disable_autoswitch)
+
+    local live_config_update = AceGUI:Create("Slider")
+    live_config_update:SetFullWidth(true)
+    live_config_update:SetLabel(L["Live Status Update Frequency (seconds)"])
+    live_config_update:SetValue(profile["live_config_update"])
+    live_config_update:SetSliderValues(0, 60, 1)
+    live_config_update:SetCallback("OnValueChanged", function(widget, event, val)
+        if profile["live_config_update"] ~= val then
+            profile["live_config_update"] = val
+            if addon.rotationTimer then
+                addon:CancelTimer(addon.conditionEvalTimer)
+            end
+            if val > 0 then
+                addon.conditionEvalTimer = addon:ScheduleRepeatingTimer('UpdateCurrentCondition', val)
+            end
+        end
+    end)
+    general_group:AddChild(live_config_update)
+
     local minimap = AceGUI:Create("CheckBox")
     minimap:SetFullWidth(true)
     minimap:SetLabel(L["Minimap Icon"])
@@ -323,53 +350,16 @@ local function create_primary_options(frame)
     debug_group:SetLayout("Table")
     debug_group:SetUserData("table", { columns = { 1, 1 } })
 
-    local debug = AceGUI:Create("CheckBox")
-    debug:SetFullWidth(true)
-    debug:SetLabel(L["Debug Logging"])
-    debug:SetValue(profile["debug"])
-    debug:SetCallback("OnValueChanged", function(widget, event, val)
-        profile["debug"] = val
-        addon:StopCustomGlow(effect_icon.frame)
-        create_primary_options(frame)
+    local loglevel = AceGUI:Create("Dropdown")
+    -- loglevel:SetFullWidth(true)
+    loglevel:SetLabel(L["Log Level"])
+    loglevel:SetValue(profile["loglevel"] or 2)
+    loglevel:SetText(addon.loglevels[profile["loglevel"] or 2])
+    loglevel:SetList(addon.loglevels)
+    loglevel:SetCallback("OnValueChanged", function(widget, event, val)
+        profile["loglevel"] = val
     end)
-    debug_group:AddChild(debug)
-
-    local disable_autoswitch = AceGUI:Create("CheckBox")
-    disable_autoswitch:SetFullWidth(true)
-    disable_autoswitch:SetLabel(L["Disable Auto-Switching"])
-    disable_autoswitch:SetValue(profile["disable_autoswitch"])
-    disable_autoswitch:SetCallback("OnValueChanged", function(widget, event, val)
-        profile["disable_autoswitch"] = val
-    end)
-    debug_group:AddChild(disable_autoswitch)
-
-    local verbose = AceGUI:Create("CheckBox")
-    verbose:SetFullWidth(true)
-    verbose:SetLabel(L["Verbose Debug Logging"])
-    verbose:SetValue(profile["verbose"])
-    verbose:SetDisabled(not profile["debug"])
-    verbose:SetCallback("OnValueChanged", function(widget, event, val)
-        profile["verbose"] = val
-    end)
-    debug_group:AddChild(verbose)
-
-    local live_config_update = AceGUI:Create("Slider")
-    live_config_update:SetFullWidth(true)
-    live_config_update:SetLabel(L["Live Status Update Frequency (seconds)"])
-    live_config_update:SetValue(profile["live_config_update"])
-    live_config_update:SetSliderValues(0, 60, 1)
-    live_config_update:SetCallback("OnValueChanged", function(widget, event, val)
-        if profile["live_config_update"] ~= val then
-            profile["live_config_update"] = val
-            if addon.rotationTimer then
-                addon:CancelTimer(addon.conditionEvalTimer)
-            end
-            if val > 0 then
-                addon.conditionEvalTimer = addon:ScheduleRepeatingTimer('UpdateCurrentCondition', val)
-            end
-        end
-    end)
-    debug_group:AddChild(live_config_update)
+    debug_group:AddChild(loglevel)
 
     scroll:AddChild(debug_group)
 

@@ -294,23 +294,31 @@ addon.isSpellOnSpec = function(spec, spellid, ispet)
 end
 
 function addon:verbose(message, ...)
-    if self.db.profile.debug and self.db.profile.verbose then
+    if self.db.profile.loglevel >= 4 then
         AceConsole:Printf(color.WHITE .. "[" .. color.CYAN .. addon.pretty_name .. color.WHITE .. "] " .. color.DEBUG .. message .. color.RESET, ...)
     end
 end
 
 function addon:debug(message, ...)
-    if self.db.profile.debug then
+    if self.db.profile.loglevel >= 3 then
         AceConsole:Printf(color.WHITE .. "[" .. color.CYAN .. addon.pretty_name .. color.WHITE .. "] " .. color.DEBUG .. message .. color.RESET, ...)
     end
 end
 
 function addon:info(message, ...)
-    AceConsole:Printf(color.WHITE .. "[" .. color.CYAN .. addon.pretty_name .. color.WHITE .. "] " .. color.INFO .. message .. color.RESET, ...)
+    if self.db.profile.loglevel >= 2 then
+        AceConsole:Printf(color.WHITE .. "[" .. color.CYAN .. addon.pretty_name .. color.WHITE .. "] " .. color.INFO .. message .. color.RESET, ...)
+    end
 end
 
 function addon:warn(message, ...)
-    AceConsole:Printf(color.WHITE .. "[" .. color.CYAN .. addon.pretty_name .. color.WHITE .. "] " .. color.WARN .. message .. color.RESET, ...)
+    if self.db.profile.loglevel >= 1 then
+        AceConsole:Printf(color.WHITE .. "[" .. color.CYAN .. addon.pretty_name .. color.WHITE .. "] " .. color.WARN .. message .. color.RESET, ...)
+    end
+end
+
+function addon:print(message, ...)
+    AceConsole:Printf(color.WHITE .. "[" .. color.CYAN .. addon.pretty_name .. color.WHITE .. "] " .. color.INFO .. message .. color.RESET, ...)
 end
 
 function addon:announce(message, ...)

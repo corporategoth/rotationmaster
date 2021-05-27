@@ -89,9 +89,22 @@ local function upgradeAddIDToAnnounce()
     end
 end
 
+local function upgradeLogLevel()
+    if addon.db.profile.debug then
+        if addon.db.profile.verbose then
+            addon.db.profile.loglevel = 4
+        else
+            addon.db.profile.loglevel = 3
+        end
+    end
+    addon.db.profile.debug = nil
+    addon.db.profile.verbose = nil
+end
+
 function addon:upgrade()
     upgradeTexturesToEffects()
     upgradeGlobalRotationstoPlayer()
     upgradeItemsToItemSets()
     upgradeAddIDToAnnounce()
+    upgradeLogLevel()
 end

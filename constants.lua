@@ -2,6 +2,13 @@ local addon_name, addon = ...
 
 local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
 
+addon.loglevels = {
+    L["Quiet"],
+    DEFAULT,
+    L["Debug"],
+    L["Verbose"],
+}
+
 addon.setpoints = {
     CENTER = L["Center"],
     TOPLEFT = L["Top Left"],
