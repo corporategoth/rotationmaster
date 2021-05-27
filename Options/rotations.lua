@@ -202,8 +202,9 @@ local function add_effect_group(specID, rotid, rot, refresh)
         effect_icon:SetWidth(36)
         if rot.effect ~= NONE then
             addon:ApplyCustomGlow(effects[name2idx[rot.effect or profile["effect"]]], effect_icon.frame, nil, rot.color)
-            group.frame:SetScript("OnHide", function()
+            group.frame:SetScript("OnHide", function(frame)
                 addon:StopCustomGlow(effect_icon.frame)
+                frame:SetScript("OnHide", nil)
             end)
         end
     end
@@ -222,10 +223,17 @@ local function add_effect_group(specID, rotid, rot, refresh)
         addon:RemoveCooldownGlowIfCurrent(specID, rotid, rot)
         refresh()
     end)
-    effect.frame:SetScript("OnShow", function(frame)
+
+    effect_group.frame:SetScript("OnShow", function(frame)
         update_effect_map()
         effect:SetList(effect_map, effect_order)
     end)
+    effect_group["OnRelease"] = function(self)
+        self.frame:SetScript("OnShow", nil)
+    end
+
+    addon.lastEffectCount = addon.effectCount
+    addon.effectCount = effect.count
     effect.configure = function()
         effect:SetList(effect_map, effect_order)
         effect:SetValue(rot.effect or DEFAULT)
@@ -726,8 +734,9 @@ local function add_conditions(specID, idx, rotid, rot, callback)
                 end
                 update_eval()
                 addon.currentConditionEval = update_eval
-                conditions.frame:SetScript("OnHide", function()
+                conditions.frame:SetScript("OnHide", function(frame)
                     addon.currentConditionEval = nil
+                    frame:SetScript("OnHide", nil)
                 end)
                 bottom_group:AddChild(condition_eval)
             else

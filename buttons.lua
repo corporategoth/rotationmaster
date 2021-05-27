@@ -215,6 +215,15 @@ local function AddButton(spellId, button)
 	end
 end
 
+if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
+    function ActionButton_GetPagedID(button)
+        return button:GetPagedID()
+    end
+    function ActionButton_CalculateAction(button)
+        return button:CalculateAction()
+    end
+end
+
 local function AddStandardButton(button)
 	local type = button:GetAttribute('type')
 	if type then
@@ -225,10 +234,10 @@ local function AddStandardButton(button)
 		if type == 'action' then
 			local slot = button:GetAttribute('action');
 			if not slot or slot == 0 then
-				slot = ActionButton_GetPagedID(button);
+				slot = ActionButton_GetPagedID(button)
 			end
 			if not slot or slot == 0 then
-				slot = ActionButton_CalculateAction(button);
+				slot = ActionButton_CalculateAction(button)
 			end
 
 			if HasAction(slot) then
@@ -264,6 +273,17 @@ local function AddStandardButton(button)
 	end
 end
 
+function FetchNeuron()
+	for x = 1, 12 do
+		for i = 1, 12 do
+			local button = _G['NeuronActionBar' .. x .. '_' .. 'ActionButton' .. i];
+			if button then
+				AddStandardButton(button);
+			end
+		end
+	end
+end
+
 local function FetchDiabolic()
 	local diabolicBars = {'EngineBar1', 'EngineBar2', 'EngineBar3', 'EngineBar4', 'EngineBar5'};
 	for _, bar in pairs(diabolicBars) do
@@ -282,6 +302,11 @@ local function FetchBartender4()
 		local button = _G['BT4PetButton' .. i];
 		if button then
 		    local spell = select(7, GetPetActionInfo(button.id))
+			AddButton(spell, button);
+		end
+		local button = _G['BT4StanceButton' .. i];
+		if button then
+			local spell = select(4, GetShapeshiftFormInfo(button:GetID()))
 			AddButton(spell, button);
 		end
 	end
@@ -495,6 +520,10 @@ function addon:Fetch()
 		FetchAzeriteUI();
     end
 
+	if IsAddOnLoaded('Neuron') then
+		FetchNeuron();
+	end
+
 	if IsAddOnLoaded('TotemTimers') then
 		FetchTotemTimers();
 	end
@@ -626,10 +655,10 @@ function addon:HighlightSlot(slot)
 			if type == 'action' then
 				local bslot = button:GetAttribute('action');
 				if not bslot or bslot == 0 then
-					bslot = ActionButton_GetPagedID(button);
+					bslot = ActionButton_GetPagedID(button)
 				end
 				if not bslot or bslot == 0 then
-					bslot = ActionButton_CalculateAction(button);
+					bslot = ActionButton_CalculateAction(button)
 				end
 
 				if bslot and slot == bslot then

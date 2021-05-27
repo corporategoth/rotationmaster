@@ -128,6 +128,7 @@ L["Gas Cloud"] = true
 L["Tank"] = true
 L["DPS"] = true
 L["Healer"] = true
+L["Enemy"] = true
 
 L["Magic"] = true
 L["Disease"] = true

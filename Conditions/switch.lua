@@ -200,7 +200,7 @@ addon:RegisterSwitchCondition("ZONE", {
         return value.value ~= nil
     end,
     evaluate = function(value, cache, evalStart)
-        local zoneName = GetZoneText()
+        local zoneName = value.subzone and GetSubZoneText() or GetZoneText()
         return value.value == zoneName
     end,
     print = function(spec, value)
@@ -210,6 +210,16 @@ addon:RegisterSwitchCondition("ZONE", {
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
+
+        local subzone = AceGUI:Create("CheckBox")
+        subzone:SetWidth(100)
+        subzone:SetLabel(L["SubZone"])
+        subzone:SetValue(value.subzone and true or false)
+        subzone:SetCallback("OnValueChanged", function(widget, event, v)
+            value.subzone = v
+            top:SetStatusText(funcs:print(root, spec))
+        end)
+        parent:AddChild(subzone)
 
         local zone = AceGUI:Create("EditBox")
         zone:SetLabel(L["Zone"])
@@ -223,72 +233,44 @@ addon:RegisterSwitchCondition("ZONE", {
         parent:AddChild(zone)
     end,
     help = function(frame)
-        frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Zone"] .. color.RESET .. " - " ..
-            "The zone you are in."))
+        frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["SubZone"] .. color.RESET ..
+                " - " .. "Use the SubZone text instead of Zone text (eg. Valley of Strength instead of Orgrimmar)"))
+        frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Zone"] .. color.RESET ..
+                " - " .. "The zone you are in."))
     end
 })
 
-addon:RegisterSwitchCondition("SUBZONE", {
-    description = L["SubZone"],
-    icon = "Interface\\Icons\\Ability_townwatch",
+addon:RegisterSwitchCondition("GROUP", {
+    description = L["In Group"],
+    icon = "Interface\\Icons\\Ability_warrior_challange",
     valid = function(spec, value)
-        return value.value ~= nil
+        return true
     end,
     evaluate = function(value, cache, evalStart)
-        local zoneName = GetSubZoneText()
-        return value.value == zoneName
+        return value.raid and IsInRaid() or IsInGroup()
     end,
     print = function(spec, value)
-        return string.format(L["in %s"], nullable(value.value, L["<zone>"]))
+        return value.raid and L["you are in a raid"] or L["you are in a group"]
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
-        local zone = AceGUI:Create("EditBox")
-        zone:SetLabel(L["SubZone"])
-        if (value.value ~= nil) then
-            zone:SetText(value.value)
-        end
-        zone:SetCallback("OnEnterPressed", function(widget, event, v)
-            value.value = v
+        local raid = AceGUI:Create("CheckBox")
+        raid:SetWidth(100)
+        raid:SetLabel(L["Raid"])
+        raid:SetValue(value.raid and true or false)
+        raid:SetCallback("OnValueChanged", function(widget, event, v)
+            value.raid = v
             top:SetStatusText(funcs:print(root, spec))
         end)
-        parent:AddChild(zone)
-        help = function(frame)
-            frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Zone"] .. color.RESET .. " - " ..
-                "The subzone you are in (ie. not the larger region such as The Barrens, but more Crossroads.)"))
-        end
+        parent:AddChild(raid)
     end,
-})
-
-addon:RegisterSwitchCondition("GROUP", {
-    description = L["In Group"],
-    icon = "Interface\\Icons\\ability_warrior_charge",
-    valid = function(spec, value)
-        return true
-    end,
-    evaluate = function(value, cache, evalStart)
-        return IsInGroup()
-    end,
-    print = function(spec, value)
-        return L["you are in a group"]
-    end,
-})
-
-addon:RegisterSwitchCondition("RAID", {
-    description = L["In Raid"],
-    icon = "Interface\\Icons\\Ability_warrior_challange",
-    valid = function(spec, value)
-        return true
-    end,
-    evaluate = function(value, cache, evalStart)
-        return IsInRaid()
-    end,
-    print = function(spec, value)
-        return L["you are in a raid"]
-    end,
+    help = function(frame)
+        frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Raid"] .. color.RESET ..
+                " - " .. "Check to see if we are in a raid, instead of just a party."))
+    end
 })
 
 addon:RegisterSwitchCondition("OUTDOORS", {
