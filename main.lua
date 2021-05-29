@@ -341,14 +341,13 @@ function addon:OnInitialize()
     self.autoswitchRotation = {}
 
     self.currentRotation = nil
-
     self.manualRotation = false
 
     self.inCombat = false
 
     self.rotationTimer = nil
-
     self.fetchTimer = nil
+    self.shapeshiftTimer = nil
 
     -- This is a cache of spec based spell names -> IDs.  Updated when we switch specs.
     self.specSpells = nil
@@ -726,7 +725,7 @@ function addon:ButtonFetch()
     if self.fetchTimer then
         self:CancelTimer(self.fetchTimer)
     end
-    self.fetchTimer = self:ScheduleTimer('Fetch', 0.5)
+    self.fetchTimer = self:ScheduleTimer('Fetch', 0.25)
 end
 
 local function CreateUnitInfo(cache, unit, now)
@@ -1267,7 +1266,17 @@ end
 addon.PLAYER_FOCUS_CHANGED = addon.SwitchRotation
 addon.PARTY_MEMBERS_CHANGED = addon.SwitchRotation
 addon.PLAYER_FLAGS_CHANGED = addon.SwitchRotation
-addon.UPDATE_SHAPESHIFT_FORM = addon.SwitchRotation
+addon.UPDATE_SHAPESHIFT_FORM = function()
+    -- We need the delay because multiple shapeshift events come in at once
+    -- and there is no way to know which will be the final one.
+    if addon.shapeshiftTimer == nil then
+        addon.shapeshiftTimer = addon:ScheduleTimer(function ()
+            addon.shapeshiftTimer = nil
+            addon:SwitchRotation()
+        end, 0.25)
+        addon:ButtonFetch()
+    end
+end
 addon.UPDATE_STEALTH = addon.SwitchRotation
 
 addon.ACTIONBAR_SLOT_CHANGED = function(self, event, slot)

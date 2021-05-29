@@ -114,7 +114,7 @@ addon:RegisterCondition(L["Combat"], "MANA", {
     end,
     evaluate = function(value, cache, evalStart)
         if not getCached(cache, UnitExists, value.unit) then return false end
-        return compare(value.operator, getCached(cache, UnitPower, value.unit, SPELL_POWER_MANA), value.value)
+        return compare(value.operator, getCached(cache, UnitPower, value.unit, Enum.PowerType.Mana), value.value)
     end,
     print = function(spec, value)
         return compareString(value.operator, string.format(L["%s mana"], nullable(unitsPossessive[value.unit], L["<unit>"])), nullable(value.value))
@@ -150,7 +150,7 @@ addon:RegisterCondition(L["Combat"], "MANAPCT", {
     end,
     evaluate = function(value, cache, evalStart)
         if not getCached(cache, UnitExists, value.unit) then return false end
-        local mana = getCached(cache, UnitPower, value.unit, SPELL_POWER_MANA) / getCached(cache, UnitPowerMax, value.unit, SPELL_POWER_MANA) * 100;
+        local mana = getCached(cache, UnitPower, value.unit, Enum.PowerType.Mana) / getCached(cache, UnitPowerMax, value.unit, Enum.PowerType.Mana) * 100;
         return compare(value.operator, mana, value.value * 100)
     end,
     print = function(spec, value)
@@ -192,12 +192,8 @@ addon:RegisterCondition(L["Combat"], "POWER", {
     end,
     evaluate = function(value, cache, evalStart)
         if not getCached(cache, UnitExists, value.unit) then return false end
-        local power
-        if value.unit == "player" then
-            power = getCached(addon.longtermCache, UnitPowerType, value.unit)
-        else
-            power = getCached(cache, UnitPowerType, value.unit)
-        end
+        -- Cannot use longterm cache for player as different forms may have different powers
+        local power = getCached(cache, UnitPowerType, value.unit)
 
         if (power == nil) then
             return false
@@ -239,11 +235,9 @@ addon:RegisterCondition(L["Combat"], "POWERPCT", {
     end,
     evaluate = function(value, cache, evalStart)
         if not getCached(cache, UnitExists, value.unit) then return false end
-        if value.unit == "player" then
-            power = getCached(addon.longtermCache, UnitPowerType, value.unit)
-        else
-            power = getCached(cache, UnitPowerType, value.unit * 100)
-        end
+        -- Cannot use longterm cache for player as different forms may have different powers
+        local power = getCached(cache, UnitPowerType, value.unit)
+
         if (power == nil) then
             return false
         end

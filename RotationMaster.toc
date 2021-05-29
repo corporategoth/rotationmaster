@@ -3,7 +3,7 @@
 ## Version: 1.3.5
 ## Author: PreZ
 ## Notes: I wanted to save the world, but God wouldn't give me the source code.
-## X-Email: prez@goth.net
+## X-Email: prez@neuromancy.net
 ## X-Website: https://wiki.neuromancy.net/display/RM/Rotation+Master
 ## X-BugReport: https://wow.curseforge.com/projects/rotation-master/issues
 ## X-Category: Action Bars
