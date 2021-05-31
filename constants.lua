@@ -82,6 +82,8 @@ addon.events = {
     STOP = L["Stopped"],
     SUCCEEDED = L["Succeeded"],
     INTERRUPTED = L["Interrupted"],
+    FAILED = L["Failed"],
+    DELAYED = L["Delayed"],
 }
 
 addon.profession_levels = {

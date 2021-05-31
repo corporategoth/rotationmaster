@@ -212,6 +212,8 @@ local events = {
     "UNIT_SPELLCAST_STOP",
     "UNIT_SPELLCAST_SUCCEEDED",
     "UNIT_SPELLCAST_INTERRUPTED",
+    "UNIT_SPELLCAST_FAILED",
+    "UNIT_SPELLCAST_DELAYED",
     "UNIT_SPELLCAST_CHANNEL_START",
     "UNIT_SPELLCAST_CHANNEL_STOP",
 
@@ -1502,50 +1504,51 @@ end
 
 local currentSpells = {}
 local currentChannel = nil
+local lastCastTarget = {} -- work around UNIT_SPELLCAST_SENT not always triggering
 
 local function spellcast(_, event, unit, castguid, spellid)
-    for _, value in ipairs(addon.db.char.announces) do
-        if value.value and (not value.disabled) and (event == "UNIT_SPELLCAST_" .. value.event or
-                            event == "UNIT_SPELLCAST_CHANNEL_" .. value.event) then
-            local skip = false
-            if addon.announced[value.id] then
-                for _, val in ipairs(addon.announced[value.id]) do
-                    if val == castguid then
-                        skip = true
+    if unit == 'player' then
+        for _, value in ipairs(addon.db.char.announces) do
+            if value.value and (not value.disabled) and (event == "UNIT_SPELLCAST_" .. value.event or
+                    event == "UNIT_SPELLCAST_CHANNEL_" .. value.event) then
+                local skip = false
+                if addon.announced[value.id] then
+                    for _, val in ipairs(addon.announced[value.id]) do
+                        if val == castguid then
+                            skip = true
+                        end
                     end
                 end
-            end
 
-            if not skip then
-                local ent = addon.deepcopy(value)
-                if ent.type == "spell" then
-                    ent.action = ent.spell
-                elseif ent.type == "item" then
-                    ent.action = ent.item
-                end
+                if not skip then
+                    local ent = addon.deepcopy(value)
+                    if ent.type == "spell" then
+                        ent.action = ent.spell
+                    elseif ent.type == "item" then
+                        ent.action = ent.item
+                    end
 
-                local spellids, itemids = addon:GetSpellIds(ent)
-                for idx, sid in ipairs(spellids) do
-                    if spellid == sid then
-                        local text = ent.value
-                        if ent.type == "spell" then
-                            local link = getCached(addon.longtermCache, GetSpellLink, sid)
-                            text = text:gsub("{{spell}}", link)
-                        elseif ent.type == "item" then
-                            local link = select(2, getRetryCached(addon.longtermCache, GetItemInfo, itemids[idx]))
-                            text = text:gsub("{{item}}", link)
+                    local spellids, itemids = addon:GetSpellIds(ent)
+                    for idx, sid in ipairs(spellids) do
+                        if spellid == sid then
+                            local text = ent.value
+                            if ent.type == "spell" then
+                                local link = getCached(addon.longtermCache, GetSpellLink, sid)
+                                text = text:gsub("{{spell}}", link)
+                            elseif ent.type == "item" then
+                                local link = select(2, getRetryCached(addon.longtermCache, GetItemInfo, itemids[idx]))
+                                text = text:gsub("{{item}}", link)
+                            end
+                            text = text:gsub("{{event}}", addon.events[ent.event])
+                            text = text:gsub("{{target}}", currentSpells[castguid] or lastCastTarget[spellid])
+                            announce({}, ent, text)
+                            if addon.announced[value.id] == nil then
+                                addon.announced[value.id] = { castguid }
+                            else
+                                table.insert(addon.announced[value.id], castguid)
+                            end
+                            break
                         end
-                        text = text:gsub("{{event}}", addon.events[ent.event])
-                        if currentSpells[castguid] then
-                            text = text:gsub("{{target}}", currentSpells[castguid])
-                        end
-                        announce({}, ent, text)
-                        if addon.announced[value.id] == nil then
-                            addon.announced[value.id] = { castguid }
-                        else
-                            table.insert(addon.announced[value.id], castguid)
-                        end
-                        break
                     end
                 end
             end
@@ -1556,29 +1559,42 @@ end
 addon.UNIT_SPELLCAST_START = spellcast
 addon.UNIT_SPELLCAST_STOP = function(_, event, unit, castguid, spellid)
     spellcast(_, event, unit, castguid, spellid)
-    currentSpells[castguid] = nil
+    if unit == 'player' then
+        currentSpells[castguid] = nil
+    end
 end
 addon.UNIT_SPELLCAST_SUCCEEDED = function(_, event, unit, castguid, spellid)
     spellcast(_, event, unit, castguid, spellid)
-    if currentChannel then
-        currentChannel = castguid
+    if unit == 'player' then
+        if currentChannel then
+            currentChannel = castguid
+        end
     end
 end
 addon.UNIT_SPELLCAST_INTERRUPTED = spellcast
+addon.UNIT_SPELLCAST_FAILED = spellcast
+addon.UNIT_SPELLCAST_DELAYED = spellcast
 addon.UNIT_SPELLCAST_CHANNEL_START = function(_, event, unit, castguid, spellid)
     spellcast(_, event, unit, castguid, spellid)
-    currentChannel = true
+    if unit == 'player' then
+        currentChannel = true
+    end
 end
 addon.UNIT_SPELLCAST_CHANNEL_STOP = function(_, event, unit, castguid, spellid)
     spellcast(_, event, unit, castguid, spellid)
-    if currentChannel ~= nil then
-	    currentSpells[currentChannel] = nil
+    if unit == 'player' then
+        if currentChannel ~= nil then
+            currentSpells[currentChannel] = nil
+        end
+        currentChannel = nil
     end
-    currentChannel = nil
 end
 
 addon.UNIT_SPELLCAST_SENT = function(_, event, unit, target, castguid, spellid)
-    currentSpells[castguid] = target
+    if (unit == 'player') then
+        currentSpells[castguid] = target
+        lastCastTarget[spellid] = target
+    end
 end
 
 local function handle_combat_log(timestamp, event, _, sourceGUID, sourceName, _, _, destGUID, destName, _, _, ...)

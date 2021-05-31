@@ -237,6 +237,8 @@ L["Started"] = true
 L["Stopped"] = true
 L["Succeeded"] = true
 L["Interrupted"] = true
+L["Failed"] = true
+L["Delayed"] = true
 -- from Options/rotations.lua and Options/rotations.lua
 
 L["Spells that you wish to conditionally highlight independent of your rotation.  Any or all of these may be highlighted at the same time."] = true
