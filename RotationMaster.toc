@@ -1,6 +1,6 @@
 ## Interface: 20501
 ## Title: Rotation Master
-## Version: 1.3.5
+## Version: 1.3.6
 ## Author: PreZ
 ## Notes: I wanted to save the world, but God wouldn't give me the source code.
 ## X-Email: prez@neuromancy.net
