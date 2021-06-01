@@ -4,11 +4,6 @@ local AceGUI = LibStub("AceGUI-3.0")
 local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
 local color, tostring, tonumber, pairs = color, tostring, tonumber, pairs
 
-if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
-    local ThreatClassic = LibStub("ThreatClassic-1.0")
-    UnitThreatSituation = ThreatClassic.UnitThreatSituation
-end
-
 -- From constants
 local units, threat, operators, actions = addon.units, addon.threat, addon.operators, addon.actions
 

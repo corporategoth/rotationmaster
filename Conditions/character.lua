@@ -6,8 +6,8 @@ local color, tostring, tonumber, pairs = color, tostring, tonumber, pairs
 local floor = math.floor
 
 -- From constants
-local units, unitsPossessive, roles, creatures, operators =
-    addon.units, addon.unitsPossessive, addon.roles, addon.creatures, addon.operators
+local units, unitsPossessive, roles, creatures, operators, spell_schools =
+    addon.units, addon.unitsPossessive, addon.roles, addon.creatures, addon.operators, addon.spell_schools
 
 -- From utils
 local nullable, keys, isin, deepcopy, getCached, playerize, compare, compareString =
@@ -447,3 +447,171 @@ addon:RegisterCondition(nil, "LEVEL", {
                 "The character's level")
     end
 })
+
+if MI2_GetMobData then
+addon:RegisterCondition(nil, "RUNNER", {
+    description = L["Runner"],
+    icon = 135996,
+    valid = function(spec, value)
+        return value.unit ~= nil and isin(units, value.unit)
+    end,
+    evaluate = function(value, cache, evalStart)
+        if not getCached(cache, UnitExists, value.unit) then return false end
+        local data = MI2_GetMobData(UnitName(value.unit), UnitLevel(value.unit), value.unit)
+        return (data.lowHpAction and true or false)
+    end,
+    print = function(spec, value)
+        return string.format(L["%s will run"], nullable(units[value.unit]), nullable(units[value.otherunit]))
+    end,
+    widget = function(parent, spec, value)
+        local top = parent:GetUserData("top")
+        local root = top:GetUserData("root")
+        local funcs = top:GetUserData("funcs")
+
+        local unit = addon:Widget_UnitWidget(value, deepcopy(units, { "player", "pet" }),
+                function() top:SetStatusText(funcs:print(root, spec)) end)
+        parent:AddChild(unit)
+    end,
+    help = function(frame)
+        addon.layout_condition_unitwidget_help(frame)
+        frame:AddChild(Gap())
+        frame:AddChild(CreateText(color.RED .. "This condition uses data from the MobInfo2 addon.  As such " ..
+                "it relies on previous interactions with the type of mob in question, which may be inaccurate. " ..
+                "Additionally, until you encounter the mob at least once, this condition will always be false."))
+    end
+})
+
+addon:RegisterCondition(nil, "RESIST", {
+    description = L["Resistant"],
+    icon = 132295,
+    valid = function(spec, value)
+        return (value.unit ~= nil and isin(units, value.unit)) and
+               (value.school ~= nil and isin(spell_schools, value.school)) and
+               (value.operator ~= nil and isin(operators, value.operator)) and
+               (value.value ~= nil and value.value >= 0.00 and value.value <= 1.00)
+    end,
+    evaluate = function(value, cache, evalStart)
+        if not getCached(cache, UnitExists, value.unit) then return false end
+        local data = MI2_GetMobData(UnitName(value.unit), UnitLevel(value.unit), value.unit)
+        if data.resists[value.school] ~= nil and data.resists[value.school] > 0 then
+            local hits = data.resists[value.school .. 'Hits'] or 1
+            return compare(value.operator, (data.resists[value.school] / hits), value.value)
+        end
+        return false
+    end,
+    print = function(spec, value)
+        return compareString(value.operator, string.format(L["%s's resistance to %s"],
+                nullable(units[value.unit], L["<unit>"]), nullable(spell_schools[value.school], L["<school>"])),
+                nullable(value.value and value.value * 100 or nil) .. '%')
+    end,
+    widget = function(parent, spec, value)
+        local top = parent:GetUserData("top")
+        local root = top:GetUserData("root")
+        local funcs = top:GetUserData("funcs")
+
+        local unit = addon:Widget_UnitWidget(value, deepcopy(units, { "player", "pet" }),
+                function() top:SetStatusText(funcs:print(root, spec)) end)
+        parent:AddChild(unit)
+
+        local school = AceGUI:Create("Dropdown")
+        school:SetLabel(L["Spell School"])
+        school:SetCallback("OnValueChanged", function(widget, event, v)
+            value.school = v
+            top:SetStatusText(funcs:print(root, spec))
+        end)
+        school.configure = function()
+            school:SetList(addon.spell_schools)
+            if (value.school ~= nil) then
+                school:SetValue(value.school)
+            end
+        end
+        parent:AddChild(school)
+
+        local operator_group = addon:Widget_OperatorPercentWidget(value, L["Resistance"],
+                function() top:SetStatusText(funcs:print(root, spec)) end)
+        parent:AddChild(operator_group)
+    end,
+    help = function(frame)
+        addon.layout_condition_unitwidget_help(frame)
+        frame:AddChild(Gap())
+        frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Spell School"] .. color.RESET .. " - " ..
+                "The school of magic resistance to check."))
+        frame:AddChild(Gap())
+        addon.layout_condition_operatorwidget_help(frame, L["Resistance"], L["Resistance"],
+                "The resistance of " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. " to the specified school " ..
+                "of magic as a percentage")
+        frame:AddChild(Gap())
+        frame:AddChild(CreateText(color.RED .. "This condition uses data from the MobInfo2 addon.  As such " ..
+                "it relies on previous interactions with the type of mob in question, which may be inaccurate. " ..
+                "Additionally, until you encounter the mob at least once, this condition will always be false."))
+    end
+})
+
+addon:RegisterCondition(nil, "IMMUNE", {
+    description = L["Immune"],
+    icon = 132137,
+    valid = function(spec, value)
+        return (value.unit ~= nil and isin(units, value.unit)) and
+                (value.school ~= nil and isin(spell_schools, value.school))
+    end,
+    evaluate = function(value, cache, evalStart)
+        if not getCached(cache, UnitExists, value.unit) then return false end
+        local data = MI2_GetMobData(UnitName(value.unit), UnitLevel(value.unit), value.unit)
+        if data.resists[value.school] ~= nil and data.resists[value.school] < 0 then
+            local hits = data.resists[value.school .. 'Hits'] or 1
+            return value.partial or (hits < 1)
+        end
+        return false
+    end,
+    print = function(spec, value)
+        return string.format(value.partial and L["%s is sometimes immune to %s"] or L["%s is immune to %s"],
+                nullable(units[value.unit], L["<unit>"]), nullable(spell_schools[value.school], L["<school>"]))
+    end,
+    widget = function(parent, spec, value)
+        local top = parent:GetUserData("top")
+        local root = top:GetUserData("root")
+        local funcs = top:GetUserData("funcs")
+
+        local unit = addon:Widget_UnitWidget(value, deepcopy(units, { "player", "pet" }),
+                function() top:SetStatusText(funcs:print(root, spec)) end)
+        parent:AddChild(unit)
+
+        local school = AceGUI:Create("Dropdown")
+        school:SetLabel(L["Spell School"])
+        school:SetCallback("OnValueChanged", function(widget, event, v)
+            value.school = v
+            top:SetStatusText(funcs:print(root, spec))
+        end)
+        school.configure = function()
+            school:SetList(addon.spell_schools)
+            if (value.school ~= nil) then
+                school:SetValue(value.school)
+            end
+        end
+        parent:AddChild(school)
+
+        local partial = AceGUI:Create("CheckBox")
+        partial:SetWidth(100)
+        partial:SetLabel(L["Partial"])
+        partial:SetValue(value.partial and true or false)
+        partial:SetCallback("OnValueChanged", function(widget, event, v)
+            value.partial = v
+            top:SetStatusText(funcs:print(root, spec))
+        end)
+        parent:AddChild(partial)
+    end,
+    help = function(frame)
+        addon.layout_condition_unitwidget_help(frame)
+        frame:AddChild(Gap())
+        frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Spell School"] .. color.RESET .. " - " ..
+                "The school of magic resistance to check."))
+        frame:AddChild(Gap())
+        frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Partial"] .. color.RESET .. " - " ..
+                "Allow partial immunity (ie. the mob is only sometimes immune to this type of magic) to count."))
+        frame:AddChild(Gap())
+        frame:AddChild(CreateText(color.RED .. "This condition uses data from the MobInfo2 addon.  As such " ..
+                "it relies on previous interactions with the type of mob in question, which may be inaccurate. " ..
+                "Additionally, until you encounter the mob at least once, this condition will always be false."))
+    end
+})
+end

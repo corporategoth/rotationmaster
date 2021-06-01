@@ -3,12 +3,13 @@ local addon_name, addon = ...
 local AceGUI = LibStub("AceGUI-3.0")
 
 local helpers = {}
+local color = color
 
 function helpers.CreateText(text, font, fontheight)
     local rv = AceGUI:Create("Label")
     -- There is a bug in Table (I think) that doesn't handle SetFullWidth correctly
     rv:SetFullWidth(true)
-    rv:SetText(text)
+    rv:SetText(text .. color.RESET)
     if font then
         if fontheight then
             rv:SetFont(font, fontheight)

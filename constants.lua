@@ -182,6 +182,15 @@ addon.totems = {
     L["Air"],
 }
 
+addon.spell_schools = {
+    ar = L["Arcane"],
+    fi = L["Fire"],
+    fr = L["Frost"],
+    ho = L["Holy"],
+    na = L["Nature"],
+    sh = L["Shadow"],
+}
+
 addon.actions = {
     HEAL = L["healed"],
     DODGE = L["dodged"],

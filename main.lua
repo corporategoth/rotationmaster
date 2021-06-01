@@ -12,13 +12,13 @@ local getCached, getRetryCached
 local DBIcon = LibStub("LibDBIcon-1.0")
 
 local ThreatClassic = LibStub("ThreatClassic-1.0")
-if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
-    ThreatClassic:Disable()
-else
+if (WOW_PROJECT_ID == WOW_PROJECT_CLASSIC) then
     UnitThreatSituation = ThreatClassic.UnitThreatSituation
 
     local LibClassicDurations = LibStub("LibClassicDurations")
     LibClassicDurations:Register(addon_name)
+else
+    ThreatClassic:Disable()
 end
 
 local pairs, color, string = pairs, color, string

@@ -232,6 +232,13 @@ L["Relative"] = true
 L["Help"] = true
 L["Time Until Health"] = true
 L["Time Until Health Percentage"] = true
+L["Runner"] = true
+L["%s will run"] = true
+L["Resistant"] = true
+L["Resistance"] = true
+L["Immune"] = true
+L["Spell School"] = true
+L["Partial"] = true
 
 L["Started"] = true
 L["Stopped"] = true
@@ -240,6 +247,13 @@ L["Interrupted"] = true
 L["Failed"] = true
 L["Delayed"] = true
 -- from Options/rotations.lua and Options/rotations.lua
+
+L["Arcane"] = true
+L["Fire"] = true
+L["Frost"] = true
+L["Holy"] = true
+L["Nature"] = true
+L["Shadow"] = true
 
 L["Spells that you wish to conditionally highlight independent of your rotation.  Any or all of these may be highlighted at the same time."] = true
 L["Your main spell rotation.  Only one spell will be highlighted at once, which spell being based on the first satisfied condition."] = true
@@ -325,6 +339,9 @@ L["%s have %s where %s"] = true
 L["%s has %s where %s"] = true
 L["you are talented in %s"] = true
 L["talent points in %s (%s)"] = true
+L["%s's resistance to %s"] = true
+L["%s is sometimes immune to %s"] = true
+L["%s is immune to %s"] = true
 
 L["Unit"] = true
 L["Role"] = true

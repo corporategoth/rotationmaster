@@ -127,8 +127,6 @@ function addon.layout_itemsets_options_help(frame)
     if (WOW_PROJECT_ID ~= WOW_PROJECT_CLASSIC) then
         group:AddChild(Indent(40, CreateText(color.GREEN .. "RM_Bandages_focus" .. color.RESET ..
                 " This will use the highest level item in the item set on your focus target.")))
-        group:AddChild(Indent(40, CreateText(color.GREEN .. "RM_Bandages_focustarget" .. color.RESET ..
-                " This will use the highest level item in the item set on your focus target's target.")))
     end
     group:AddChild(Indent(40, CreateText(color.GREEN .. "RM_Bandages_mouseover" .. color.RESET ..
             " This will use the highest level item in the item set on the character or unit frame your mouse " ..
@@ -137,7 +135,7 @@ function addon.layout_itemsets_options_help(frame)
             " This will use the highest level item in the item set on your pet's target.")))
     group:AddChild(Indent(40, CreateText(color.GREEN .. "RM_Bandages_targetargett" .. color.RESET ..
             " This will use the highest level item in the item set on your target's target.")))
-    if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
+    if (WOW_PROJECT_ID ~= WOW_PROJECT_CLASSIC) then
         group:AddChild(Indent(40, CreateText(color.GREEN .. "RM_Bandages_focustarget" .. color.RESET ..
                 " This will use the highest level item in the item set on your focus target's target.")))
     end

@@ -16,11 +16,11 @@ local CreateText, CreatePictureText, CreateButtonText, Indent, Gap =
     helpers.CreateText, helpers.CreatePictureText, helpers.CreateButtonText, helpers.Indent, helpers.Gap
 
 local UnitDebuff
-if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
-    UnitDebuff = function(unit, idx) return UnitAura(unit, idx, "HARMFUL") end
-else
+if (WOW_PROJECT_ID == WOW_PROJECT_CLASSIC) then
     local LibClassicDurations = LibStub("LibClassicDurations")
     UnitDebuff = function(unit, idx) return LibClassicDurations.UnitAuraDirect(unit, idx, "HARMFUL") end
+else
+    UnitDebuff = function(unit, idx) return UnitAura(unit, idx, "HARMFUL") end
 end
 
 addon:RegisterCondition(L["Buffs"], "DEBUFF", {

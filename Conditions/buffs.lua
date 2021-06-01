@@ -17,11 +17,11 @@ local CreateText, CreatePictureText, CreateButtonText, Indent, Gap =
     helpers.CreateText, helpers.CreatePictureText, helpers.CreateButtonText, helpers.Indent, helpers.Gap
 
 local UnitBuff
-if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
-    UnitBuff = function(unit, idx) return UnitAura(unit, idx, "HELPFUL") end
-else
+if (WOW_PROJECT_ID == WOW_PROJECT_CLASSIC) then
     local LibClassicDurations = LibStub("LibClassicDurations")
     UnitBuff = function(unit, idx) return LibClassicDurations.UnitAuraDirect(unit, idx, "HELPFUL") end
+else
+    UnitBuff = function(unit, idx) return UnitAura(unit, idx, "HELPFUL") end
 end
 
 addon:RegisterCondition(L["Buffs"], "BUFF", {
