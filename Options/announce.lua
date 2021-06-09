@@ -1,4 +1,4 @@
-local addon_name, addon = ...
+local _, addon = ...
 
 local AceGUI = LibStub("AceGUI-3.0")
 
@@ -76,7 +76,7 @@ function addon:create_announce_list(frame)
         local action_type = AceGUI:Create("Dropdown")
         action_type:SetFullWidth(true)
         action_type:SetLabel(L["Action Type"])
-        action_type:SetCallback("OnValueChanged", function(widget, event, val)
+        action_type:SetCallback("OnValueChanged", function(_, _, val)
             if value.type ~= val then
                 value.type = val
                 value.spell = nil
@@ -98,7 +98,7 @@ function addon:create_announce_list(frame)
         local event = AceGUI:Create("Dropdown")
         event:SetFullWidth(true)
         event:SetLabel(L["Event"])
-        event:SetCallback("OnValueChanged", function(widget, event, val)
+        event:SetCallback("OnValueChanged", function(_, _, val)
             value.event = val
         end)
         event.configure = function()
@@ -110,7 +110,7 @@ function addon:create_announce_list(frame)
         local delete = AceGUI:Create("Icon")
         delete:SetImageSize(24, 24)
         delete:SetImage("Interface\\Buttons\\UI-Panel-MinimizeButton-Up")
-        delete:SetCallback("OnClick", function(widget, ewvent, ...)
+        delete:SetCallback("OnClick", function(_, _, ...)
             table.remove(announces, idx)
             addon:create_announce_list(frame)
         end)
@@ -120,7 +120,7 @@ function addon:create_announce_list(frame)
         local type = AceGUI:Create("Dropdown")
         type:SetFullWidth(true)
         type:SetLabel(L["Announce"])
-        type:SetCallback("OnValueChanged", function(widget, event, val)
+        type:SetCallback("OnValueChanged", function(_, _, val)
             value.announce = val
         end)
         type.configure = function()
@@ -133,7 +133,7 @@ function addon:create_announce_list(frame)
         text:SetFullWidth(true)
         text:SetLabel(L["Text"])
         text:SetText(value.value)
-        text:SetCallback("OnEnterPressed", function(widget, event, val)
+        text:SetCallback("OnEnterPressed", function(_, _, val)
             value.value = val
         end)
 
@@ -149,7 +149,7 @@ function addon:create_announce_list(frame)
             text:SetDisabled(not enable)
 
             enabledisable_button:SetText(enable and DISABLE or ENABLE)
-            enabledisable_button:SetCallback("OnClick", function(widget, e)
+            enabledisable_button:SetCallback("OnClick", function()
                 value.disabled = enable
                 handle_enabledisable(not enable)
                 draw_action_group(action_group, value)
@@ -222,7 +222,7 @@ function addon:create_announce_list(frame)
     local action_type = AceGUI:Create("Dropdown")
     action_type:SetFullWidth(true)
     action_type:SetLabel(L["Action Type"])
-    action_type:SetCallback("OnValueChanged", function(widget, event, val)
+    action_type:SetCallback("OnValueChanged", function(_, _, val)
         if newentry.type ~= val then
             newentry.type = val
             draw_action_group(action_group, newentry)

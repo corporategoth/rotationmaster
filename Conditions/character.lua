@@ -1,8 +1,8 @@
-local addon_name, addon = ...
+local _, addon = ...
 
 local AceGUI = LibStub("AceGUI-3.0")
 local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
-local color, tostring, tonumber, pairs = color, tostring, tonumber, pairs
+local color = color
 local floor = math.floor
 
 -- From constants
@@ -14,21 +14,21 @@ local nullable, keys, isin, deepcopy, getCached, playerize, compare, compareStri
     addon.nullable, addon.keys, addon.isin, addon.deepcopy, addon.getCached, addon.playerize, addon.compare, addon.compareString
 
 local helpers = addon.help_funcs
-local CreateText, CreatePictureText, CreateButtonText, Indent, Gap =
-    helpers.CreateText, helpers.CreatePictureText, helpers.CreateButtonText, helpers.Indent, helpers.Gap
+local CreateText, Indent, Gap =
+    helpers.CreateText, helpers.Indent, helpers.Gap
 
 addon:RegisterCondition(nil, "ISSAME", {
     description = L["Is Same As"],
     icon = 134167,
-    valid = function(spec, value)
+    valid = function(_, value)
         return (value.unit ~= nil and isin(units, value.unit) and
                 value.otherunit ~= nil and isin(units, value.otherunit))
     end,
-    evaluate = function(value, cache, evalStart)
+    evaluate = function(value, cache)
         if not getCached(cache, UnitExists, value.unit) then return false end
         return getCached(cache, UnitIsUnit, value.unit, value.otherunit)
     end,
-    print = function(spec, value)
+    print = function(_, value)
         return string.format(L["%s is %s"], nullable(units[value.unit]), nullable(units[value.otherunit]))
     end,
     widget = function(parent, spec, value)
@@ -52,16 +52,16 @@ addon:RegisterCondition(nil, "ISSAME", {
 addon:RegisterCondition(nil, "CLASS", {
     description = L["Class"],
     icon = "Interface\\Icons\\achievement_general_stayclassy",
-    valid = function(spec, value)
+    valid = function(_, value)
         return (value.unit ~= nil and isin(units, value.unit) and
                 value.value ~= nil and isin(LOCALIZED_CLASS_NAMES_MALE, value.value))
     end,
-    evaluate = function(value, cache, evalStart)
+    evaluate = function(value, cache)
         if not getCached(cache, UnitExists, value.unit) then return false end
         local _, englishClass = getCached(cache, UnitClass, value.unit);
         return englishClass == value.value
     end,
-    print = function(spec, value)
+    print = function(_, value)
         return string.format(playerize(value.unit, L["%s are a %s"], L["%s is a %s"]),
             nullable(units[value.unit]), nullable(LOCALIZED_CLASS_NAMES_MALE[value.value], L["<class>"]))
     end,
@@ -76,7 +76,7 @@ addon:RegisterCondition(nil, "CLASS", {
 
         local class = AceGUI:Create("Dropdown")
         class:SetLabel(L["Class"])
-        class:SetCallback("OnValueChanged", function(widget, event, v)
+        class:SetCallback("OnValueChanged", function(_, _, v)
             value.value = v
             top:SetStatusText(funcs:print(root, spec))
         end)
@@ -101,17 +101,16 @@ if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
     addon:RegisterCondition(nil, "ROLE", {
         description = L["Role"],
         icon = "Interface\\Icons\\petbattle_health",
-        valid = function(spec, value)
+        valid = function(_, value)
             return (value.unit ~= nil and isin(units, value.unit) and
                     value.value ~= nil and isin(roles, value.value))
         end,
-        evaluate = function(value, cache, evalStart)
+        evaluate = function(value, cache)
             if not getCached(cache, UnitExists, value.unit) then return false end
-            local id, name, description, icon, background, role, class
-            = getCached(cache, GetSpecializationInfoByID, getCached(cache, GetInspectSpecialization, value.unit))
+            local role = select(6, getCached(cache, GetSpecializationInfoByID, getCached(cache, GetInspectSpecialization, value.unit)))
             return role == value.value
         end,
-        print = function(spec, value)
+        print = function(_, value)
             return string.format(L["%s is in a %s role"],
                 nullable(unitsPossessive[value.unit], L["<unit>"]),
                 nullable(roles[value.value], L["<role>"]))
@@ -127,7 +126,7 @@ if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
 
             local role = AceGUI:Create("Dropdown")
             role:SetLabel(L["Role"])
-            role:SetCallback("OnValueChanged", function(widget, event, v)
+            role:SetCallback("OnValueChanged", function(_, _, v)
                 value.value = v
                 top:SetStatusText(funcs:print(root, spec))
             end)
@@ -157,11 +156,11 @@ if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
     addon:RegisterCondition(nil, "TALENT", {
         description = L["Talent"],
         icon = "Interface\\Icons\\Inv_misc_book_11",
-        valid = function(spec, value)
+        valid = function(_, value)
             return value.value ~= nil and value.value >= 1 and value.value <= 21
         end,
-        evaluate = function(value, cache, evalStart)
-            local _, _, _, selected = getCached(addon.longtermCache, GetTalentInfo, floor((value.value-1) / 3) + 1, ((value.value-1) % 3) + 1, 1)
+        evaluate = function(value)
+            local selected = select(4, getCached(addon.longtermCache, GetTalentInfo, floor((value.value-1) / 3) + 1, ((value.value-1) % 3) + 1, 1))
             return selected
         end,
         print = function(spec, value)
@@ -188,7 +187,7 @@ if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
 
             local talent = AceGUI:Create("Dropdown")
             talent:SetLabel(L["Talent"])
-            talent:SetCallback("OnValueChanged", function(widget, event, v)
+            talent:SetCallback("OnValueChanged", function(_, _, v)
                 value.value = v
                 talentIcon:SetImage(addon:GetSpecTalentIcon(spec, value.value))
                 top:SetStatusText(funcs:print(root, spec))
@@ -213,17 +212,17 @@ else
     addon:RegisterCondition(nil, "TALENT", {
         description = L["Talent"],
         icon = "Interface\\Icons\\Inv_misc_book_11",
-        valid = function(spec, value)
+        valid = function(_, value)
             return (value.tree ~= nil and value.tree >= 1 and value.tree <= GetNumTalentTabs() and
                     value.talent ~= nil and value.talent >= 1 and value.talent <= GetNumTalents(value.talent) and
                     value.operator ~= nil and isin(operators, value.operator) and
                     value.value ~= nil and value.value >= 0)
         end,
-        evaluate = function(value, cache, evalStart)
+        evaluate = function(value)
             local _, _, _, _, rank = getCached(addon.longtermCache, GetTalentInfo, value.tree, value.talent)
             return compare(value.operator, rank, value.value)
         end,
-        print = function(spec, value)
+        print = function(_, value)
             return compareString(value.operator, string.format(L["talent points in %s (%s)"],
                     nullable((value.tree and value.talent) and GetTalentInfo(value.tree, value.talent) or nil, L["<talent>"]),
                     nullable(value.tree and GetTalentTabInfo(value.tree) or nil, L["<talent tree>"])),
@@ -266,7 +265,7 @@ else
             end
 
             talentTree:SetLabel(L["Talent Tree"])
-            talentTree:SetCallback("OnValueChanged", function(widget, event, v)
+            talentTree:SetCallback("OnValueChanged", function(_, _, v)
                 if v == value.tree then
                     return
                 end
@@ -305,7 +304,7 @@ else
             end
             parent:AddChild(talentIcon)
             talent:SetLabel(L["Talent"])
-            talent:SetCallback("OnValueChanged", function(widget, event, v)
+            talent:SetCallback("OnValueChanged", function(_, _, v)
                 if v == value.talent then
                     return
                 end
@@ -346,15 +345,15 @@ end
 addon:RegisterCondition(nil, "CREATURE", {
     description = L["Creature Type"],
     icon = "Interface\\Icons\\ability_rogue_disguise",
-    valid = function(spec, value)
+    valid = function(_, value)
         return (value.unit ~= nil and isin(units, value.unit) and
                 value.value ~= nil and isin(creatures, value.value))
     end,
-    evaluate = function(value, cache, evalStart)
+    evaluate = function(value, cache)
         if not getCached(cache, UnitExists, value.unit) then return false end
         return (getCached(cache, UnitCreatureType, value.unit) == creatures[value.value])
     end,
-    print = function(spec, value)
+    print = function(_, value)
         return string.format(playerize(value.unit, L["%s are a %s"], L["%s is a %s"]),
             nullable(units[value.unit]), nullable(creatures[value.value], L["<creature type>"]))
     end,
@@ -369,7 +368,7 @@ addon:RegisterCondition(nil, "CREATURE", {
 
         local class = AceGUI:Create("Dropdown")
         class:SetLabel(L["Creature Type"])
-        class:SetCallback("OnValueChanged", function(widget, event, v)
+        class:SetCallback("OnValueChanged", function(_, _, v)
             value.value = v
             top:SetStatusText(funcs:print(root, spec))
         end)
@@ -394,12 +393,12 @@ addon:RegisterCondition(nil, "CREATURE", {
 addon:RegisterCondition(nil, "LEVEL", {
     description = L["Level"],
     icon = "Interface\\Icons\\spell_holy_blessedrecovery",
-    valid = function(spec, value)
+    valid = function(_, value)
         return (value.unit ~= nil and isin(units, value.unit) and
                 value.operator ~= nil and isin(operators, value.operator) and
                 value.value ~= nil and (value.relative or value.value >= 0))
     end,
-    evaluate = function(value, cache, evalStart)
+    evaluate = function(value, cache)
         if not getCached(cache, UnitExists, value.unit) then return false end
         local level = value.value
         if value.relative then
@@ -407,7 +406,7 @@ addon:RegisterCondition(nil, "LEVEL", {
         end
         return compare(value.operator, getCached(cache, UnitLevel, value.unit), level)
     end,
-    print = function(spec, value)
+    print = function(_, value)
         local level = value.value
         if value.relative and value.value ~= nil then
             level = getCached(addon.longtermCache, UnitLevel, "player") + value.value
@@ -427,7 +426,7 @@ addon:RegisterCondition(nil, "LEVEL", {
         local nr_button = AceGUI:Create("CheckBox")
         nr_button:SetLabel(L["Relative"])
         nr_button:SetValue(value.relative or false)
-        nr_button:SetCallback("OnValueChanged", function(widget, event, val)
+        nr_button:SetCallback("OnValueChanged", function(_, _, val)
             value.relative = val
             top:SetStatusText(funcs:print(root, spec))
         end)
@@ -452,15 +451,15 @@ if MI2_GetMobData then
 addon:RegisterCondition(nil, "RUNNER", {
     description = L["Runner"],
     icon = 135996,
-    valid = function(spec, value)
+    valid = function(_, value)
         return value.unit ~= nil and isin(units, value.unit)
     end,
-    evaluate = function(value, cache, evalStart)
+    evaluate = function(value, cache)
         if not getCached(cache, UnitExists, value.unit) then return false end
         local data = MI2_GetMobData(UnitName(value.unit), UnitLevel(value.unit), value.unit)
         return (data.lowHpAction and true or false)
     end,
-    print = function(spec, value)
+    print = function(_, value)
         return string.format(L["%s will run"], nullable(units[value.unit]), nullable(units[value.otherunit]))
     end,
     widget = function(parent, spec, value)
@@ -484,13 +483,13 @@ addon:RegisterCondition(nil, "RUNNER", {
 addon:RegisterCondition(nil, "RESIST", {
     description = L["Resistant"],
     icon = 132295,
-    valid = function(spec, value)
+    valid = function(_, value)
         return (value.unit ~= nil and isin(units, value.unit)) and
                (value.school ~= nil and isin(spell_schools, value.school)) and
                (value.operator ~= nil and isin(operators, value.operator)) and
                (value.value ~= nil and value.value >= 0.00 and value.value <= 1.00)
     end,
-    evaluate = function(value, cache, evalStart)
+    evaluate = function(value, cache)
         if not getCached(cache, UnitExists, value.unit) then return false end
         local data = MI2_GetMobData(UnitName(value.unit), UnitLevel(value.unit), value.unit)
         if data.resists[value.school] ~= nil and data.resists[value.school] > 0 then
@@ -499,7 +498,7 @@ addon:RegisterCondition(nil, "RESIST", {
         end
         return false
     end,
-    print = function(spec, value)
+    print = function(_, value)
         return compareString(value.operator, string.format(L["%s's resistance to %s"],
                 nullable(units[value.unit], L["<unit>"]), nullable(spell_schools[value.school], L["<school>"])),
                 nullable(value.value and value.value * 100 or nil) .. '%')
@@ -515,7 +514,7 @@ addon:RegisterCondition(nil, "RESIST", {
 
         local school = AceGUI:Create("Dropdown")
         school:SetLabel(L["Spell School"])
-        school:SetCallback("OnValueChanged", function(widget, event, v)
+        school:SetCallback("OnValueChanged", function(_, _, v)
             value.school = v
             top:SetStatusText(funcs:print(root, spec))
         end)
@@ -550,11 +549,11 @@ addon:RegisterCondition(nil, "RESIST", {
 addon:RegisterCondition(nil, "IMMUNE", {
     description = L["Immune"],
     icon = 132137,
-    valid = function(spec, value)
+    valid = function(_, value)
         return (value.unit ~= nil and isin(units, value.unit)) and
                 (value.school ~= nil and isin(spell_schools, value.school))
     end,
-    evaluate = function(value, cache, evalStart)
+    evaluate = function(value, cache)
         if not getCached(cache, UnitExists, value.unit) then return false end
         local data = MI2_GetMobData(UnitName(value.unit), UnitLevel(value.unit), value.unit)
         if data.resists[value.school] ~= nil and data.resists[value.school] < 0 then
@@ -563,7 +562,7 @@ addon:RegisterCondition(nil, "IMMUNE", {
         end
         return false
     end,
-    print = function(spec, value)
+    print = function(_, value)
         return string.format(value.partial and L["%s is sometimes immune to %s"] or L["%s is immune to %s"],
                 nullable(units[value.unit], L["<unit>"]), nullable(spell_schools[value.school], L["<school>"]))
     end,
@@ -578,7 +577,7 @@ addon:RegisterCondition(nil, "IMMUNE", {
 
         local school = AceGUI:Create("Dropdown")
         school:SetLabel(L["Spell School"])
-        school:SetCallback("OnValueChanged", function(widget, event, v)
+        school:SetCallback("OnValueChanged", function(_, _, v)
             value.school = v
             top:SetStatusText(funcs:print(root, spec))
         end)
@@ -594,7 +593,7 @@ addon:RegisterCondition(nil, "IMMUNE", {
         partial:SetWidth(100)
         partial:SetLabel(L["Partial"])
         partial:SetValue(value.partial and true or false)
-        partial:SetCallback("OnValueChanged", function(widget, event, v)
+        partial:SetCallback("OnValueChanged", function(_, _, v)
             value.partial = v
             top:SetStatusText(funcs:print(root, spec))
         end)

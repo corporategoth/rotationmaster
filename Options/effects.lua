@@ -1,10 +1,431 @@
-local addon_name, addon = ...
+local _, addon = ...
 
 local AceGUI = LibStub("AceGUI-3.0")
 
 local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
 
 local table, pairs, ipairs = table, pairs, ipairs
+local HideOnEscape = addon.HideOnEscape
+
+local function create_sequence_list(frame, effect, update)
+    frame:ReleaseChildren()
+    frame:PauseLayout()
+
+    if not effect.sequence then
+        effect.sequence = {}
+    end
+    local sequence = effect.sequence
+    if sequence then
+        for idx,entry in ipairs(sequence) do
+            local row = frame
+            if effect.type == "dazzle" then
+                local color_pick = AceGUI:Create("ColorPicker")
+                color_pick:SetFullWidth(true)
+                color_pick:SetColor(entry.r, entry.g, entry.b, entry.a)
+                color_pick:SetLabel(L["Highlight Color"])
+                color_pick:SetCallback("OnValueConfirmed", function(_, _, r, g, b, a)
+                    sequence[idx] = { r = r, g = g, b = b, a = a }
+                    update()
+                end)
+                row:AddChild(color_pick)
+            elseif effect.type == "animate" then
+                local group = AceGUI:Create("SimpleGroup")
+                group:SetFullWidth(true)
+                group:SetLayout("Table")
+                group:SetUserData("table", { columns = { 35, 1 } })
+
+                local icon = AceGUI:Create("Icon")
+                icon:SetImageSize(36, 36)
+                icon:SetWidth(44)
+                icon:SetHeight(44)
+                icon:SetImage(entry)
+                group:AddChild(icon)
+
+                local texture = AceGUI:Create("EditBox")
+                texture:SetFullWidth(true)
+                texture:SetLabel(L["Texture"])
+                texture:SetText(entry)
+                texture:SetCallback("OnEnterPressed", function(_, _, val)
+                    icon:SetImage(val)
+                    sequence[idx] = val
+                    update()
+                end)
+                group:AddChild(texture)
+
+                row:AddChild(group)
+            elseif effect.type == "pulse" then
+                local magnification = AceGUI:Create("Slider")
+                magnification:SetFullWidth(true)
+                magnification:SetLabel(L["Magnification"])
+                magnification:SetValue(entry)
+                magnification:SetSliderValues(0.1, 2.0, 0.1)
+                magnification:SetCallback("OnValueChanged", function(_, _, val)
+                    sequence[idx] = val
+                    update()
+                end)
+                row:AddChild(magnification)
+            elseif effect.type == "custom" then
+                local outergroup = AceGUI:Create("SimpleGroup")
+                outergroup:SetFullWidth(true)
+                outergroup:SetLayout("Table")
+                outergroup:SetUserData("table", { columns = { 35, 1 } })
+
+                local icon = AceGUI:Create("Icon")
+                icon:SetWidth(36)
+                icon:SetHeight(36)
+                icon:SetCallback("OnRelease", function(self)
+                    addon:HideGlow(self.frame, "effect")
+                end)
+                addon:Glow(icon.frame, "effect", { type = "texture", texture = entry.texture }, entry.color, entry.magnification, "CENTER", 0, 0, math.rad(entry.angle or 0))
+                outergroup:AddChild(icon)
+
+                local innergroup = AceGUI:Create("SimpleGroup")
+                innergroup:SetFullWidth(true)
+                innergroup:SetLayout("Table")
+                innergroup:SetUserData("table", { columns = { 0.25, 0.25, 0.25, 0.25 } })
+
+                local texture = AceGUI:Create("EditBox")
+                texture:SetFullWidth(true)
+                texture:SetLabel(L["Texture"])
+                texture:SetText(entry.texture)
+                texture:SetCallback("OnEnterPressed", function(_, _, val)
+                    entry.texture = val
+                    addon:Glow(icon.frame, "effect", { type = "texture", texture = entry.texture }, entry.color, entry.magnification, "CENTER", 0, 0, math.rad(entry.angle or 0))
+                    update()
+                end)
+                texture:SetUserData("cell", { colspan = 3 })
+                innergroup:AddChild(texture)
+
+                local angle = AceGUI:Create("Slider")
+                angle:SetFullWidth(true)
+                angle:SetLabel(L["Angle"])
+                angle:SetValue(entry.angle or 0)
+                angle:SetSliderValues(0, 359, 1)
+                angle:SetCallback("OnValueChanged", function(_, _, val)
+                    entry.angle = val
+                    addon:Glow(icon.frame, "effect", { type = "texture", texture = entry.texture }, entry.color, entry.magnification, "CENTER", 0, 0, math.rad(entry.angle or 0))
+                    update()
+                end)
+                innergroup:AddChild(angle)
+
+                local color_pick = AceGUI:Create("ColorPicker")
+                color_pick:SetFullWidth(true)
+                color_pick:SetColor(entry.color.r, entry.color.g, entry.color.b, entry.color.a)
+                color_pick:SetLabel(L["Highlight Color"])
+                color_pick:SetCallback("OnValueConfirmed", function(_, _, r, g, b, a)
+                    entry.color = { r = r, g = g, b = b, a = a }
+                    addon:Glow(icon.frame, "effect", { type = "texture", texture = entry.texture }, entry.color, entry.magnification, "CENTER", 0, 0, math.rad(entry.angle or 0))
+                    update()
+                end)
+                color_pick:SetUserData("cell", { colspan = 2 })
+                innergroup:AddChild(color_pick)
+
+                local magnification = AceGUI:Create("Slider")
+                magnification:SetFullWidth(true)
+                magnification:SetLabel(L["Magnification"])
+                magnification:SetValue(entry.magnification)
+                magnification:SetSliderValues(0.1, 2.0, 0.1)
+                magnification:SetCallback("OnValueChanged", function(_, _, val)
+                    entry.magnification = val
+                    addon:Glow(icon.frame, "effect", { type = "texture", texture = entry.texture }, entry.color, entry.magnification, "CENTER", 0, 0, math.rad(entry.angle or 0))
+                    update()
+                end)
+                magnification:SetUserData("cell", { colspan = 2 })
+                innergroup:AddChild(magnification)
+
+                outergroup:AddChild(innergroup)
+                row:AddChild(outergroup)
+            end
+
+            local movers = AceGUI:Create("SimpleGroup")
+            movers:SetFullWidth(true)
+            movers:SetLayout("Table")
+            movers:SetUserData("table", { columns = { 24, 24, 24, 24, 24 } })
+
+            local angle = math.rad(180)
+            local cos, sin = math.cos(angle), math.sin(angle)
+
+            local movetop = AceGUI:Create("Icon")
+            movetop:SetImageSize(24, 24)
+            if (idx == 1) then
+                movetop:SetImage("Interface\\ChatFrame\\UI-ChatIcon-ScrollEnd-Disabled", (sin - cos), -(cos + sin), -cos, -sin, sin, -cos, 0, 0)
+                movetop:SetDisabled(true)
+            else
+                movetop:SetImage("Interface\\ChatFrame\\UI-ChatIcon-ScrollEnd-Up", (sin - cos), -(cos + sin), -cos, -sin, sin, -cos, 0, 0)
+                movetop:SetDisabled(false)
+            end
+            movetop:SetCallback("OnClick", function()
+                local tmp = table.remove(sequence, idx)
+                table.insert(sequence, 1, tmp)
+                update()
+                create_sequence_list(frame, effect, update)
+            end)
+            addon.AddTooltip(movetop, L["Move to Top"])
+            movers:AddChild(movetop)
+
+            local moveup = AceGUI:Create("Icon")
+            moveup:SetImageSize(24, 24)
+            if (idx == 1) then
+                moveup:SetImage("Interface\\ChatFrame\\UI-ChatIcon-ScrollDown-Disabled", (sin - cos), -(cos + sin), -cos, -sin, sin, -cos, 0, 0)
+                moveup:SetDisabled(true)
+            else
+                moveup:SetImage("Interface\\ChatFrame\\UI-ChatIcon-ScrollDown-Up", (sin - cos), -(cos + sin), -cos, -sin, sin, -cos, 0, 0)
+                moveup:SetDisabled(false)
+            end
+            moveup:SetCallback("OnClick", function()
+                local tmp = sequence[idx-1]
+                sequence[idx-1] = sequence[idx]
+                sequence[idx] = tmp
+                update()
+                create_sequence_list(frame, effect, update)
+            end)
+            addon.AddTooltip(moveup, L["Move Up"])
+            movers:AddChild(moveup)
+
+            local movedown = AceGUI:Create("Icon")
+            movedown:SetImageSize(24, 24)
+            if (idx == #sequence or sequence[idx+1] == "") then
+                movedown:SetImage("Interface\\ChatFrame\\UI-ChatIcon-ScrollDown-Disabled")
+                movedown:SetDisabled(true)
+            else
+                movedown:SetImage("Interface\\ChatFrame\\UI-ChatIcon-ScrollDown-Up")
+                movedown:SetDisabled(false)
+            end
+            movedown:SetCallback("OnClick", function()
+                local tmp = sequence[idx+1]
+                sequence[idx+1] = sequence[idx]
+                sequence[idx] = tmp
+                update()
+                create_sequence_list(frame, effect, update)
+            end)
+            addon.AddTooltip(movedown, L["Move Down"])
+            movers:AddChild(movedown)
+
+            local movebottom = AceGUI:Create("Icon")
+            movebottom:SetImageSize(24, 24)
+            if (idx == #sequence or sequence[idx+1] == "") then
+                movebottom:SetImage("Interface\\ChatFrame\\UI-ChatIcon-ScrollEnd-Disabled")
+                movebottom:SetDisabled(true)
+            else
+                movebottom:SetImage("Interface\\ChatFrame\\UI-ChatIcon-ScrollEnd-Up")
+                movebottom:SetDisabled(false)
+            end
+            movebottom:SetCallback("OnClick", function()
+                local tmp = table.remove(sequence, idx)
+                table.insert(sequence, tmp)
+                update()
+                create_sequence_list(frame, effect, update)
+            end)
+            addon.AddTooltip(movebottom, L["Move to Bottom"])
+            movers:AddChild(movebottom)
+
+            local delete = AceGUI:Create("Icon")
+            delete:SetImageSize(24, 24)
+            delete:SetImage("Interface\\Buttons\\UI-Panel-MinimizeButton-Up")
+            delete:SetCallback("OnClick", function()
+                table.remove(sequence, idx)
+                update()
+                create_sequence_list(frame, effect, update)
+            end)
+            addon.AddTooltip(delete, DELETE)
+            movers:AddChild(delete)
+
+            row:AddChild(movers)
+        end
+    end
+
+    local profile = addon.db.profile
+    if sequence == nil or #sequence == 0 or (sequence[#sequence] ~= nil and sequence[#sequence] ~= "") then
+        local row = frame
+
+        local addbutton = AceGUI:Create("Button")
+        local entry
+
+        if effect.type == "dazzle" then
+            entry = { r = profile["color"].r, g = profile["color"].g, b = profile["color"].b, a = profile["color"].a }
+            local color_pick = AceGUI:Create("ColorPicker")
+            color_pick:SetFullWidth(true)
+            color_pick:SetColor(entry.r, entry.g, entry.b, entry.a)
+            color_pick:SetLabel(L["Highlight Color"])
+            color_pick:SetCallback("OnValueConfirmed", function(_, _, r, g, b, a)
+                entry = { r = r, g = g, b = b, a = a }
+            end)
+            row:AddChild(color_pick)
+        elseif effect.type == "animate" then
+            local group = AceGUI:Create("SimpleGroup")
+            group:SetFullWidth(true)
+            group:SetLayout("Table")
+            group:SetUserData("table", { columns = { 35, 1 } })
+
+            local icon = AceGUI:Create("Icon")
+            icon:SetImageSize(36, 36)
+            icon:SetWidth(44)
+            icon:SetHeight(44)
+            group:AddChild(icon)
+
+            addbutton:SetDisabled(true)
+            local texture = AceGUI:Create("EditBox")
+            texture:SetFullWidth(true)
+            texture:SetLabel(L["Texture"])
+            texture:SetCallback("OnEnterPressed", function(_, _, val)
+                if val == "" then val = nil end
+                icon:SetImage(val)
+                entry = val
+                addbutton:SetDisabled(entry == nil)
+            end)
+            group:AddChild(texture)
+
+            row:AddChild(group)
+        elseif effect.type == "pulse" then
+            entry = profile["magnification"]
+            local magnification = AceGUI:Create("Slider")
+            magnification:SetFullWidth(true)
+            magnification:SetLabel(L["Magnification"])
+            magnification:SetValue(entry)
+            magnification:SetSliderValues(0.1, 2.0, 0.1)
+            magnification:SetCallback("OnValueChanged", function(_, _, val)
+                entry = val
+            end)
+            row:AddChild(magnification)
+        elseif effect.type == "custom" then
+            entry = {
+                color = { r = profile["color"].r, g = profile["color"].g, b = profile["color"].b, a = profile["color"].a },
+                magnification = profile["magnification"]
+            }
+
+            local outergroup = AceGUI:Create("SimpleGroup")
+            outergroup:SetFullWidth(true)
+            outergroup:SetLayout("Table")
+            outergroup:SetUserData("table", { columns = { 35, 1 } })
+
+            local icon = AceGUI:Create("Icon")
+            icon:SetWidth(36)
+            icon:SetHeight(36)
+            icon:SetCallback("OnRelease", function(self)
+                addon:HideGlow(self.frame, "effect")
+            end)
+            outergroup:AddChild(icon)
+
+            local innergroup = AceGUI:Create("SimpleGroup")
+            innergroup:SetFullWidth(true)
+            innergroup:SetLayout("Table")
+            innergroup:SetUserData("table", { columns = { 0.25, 0.25, 0.25, 0.25 } })
+
+            addbutton:SetDisabled(true)
+            local texture = AceGUI:Create("EditBox")
+            texture:SetFullWidth(true)
+            texture:SetLabel(L["Texture"])
+            texture:SetCallback("OnEnterPressed", function(_, _, val)
+                if val == "" then val = nil end
+                entry.texture = val
+                addon:Glow(icon.frame, "effect", { type = "texture", texture = entry.texture }, entry.color, entry.magnification, "CENTER", 0, 0, math.rad(entry.angle or 0))
+                addbutton:SetDisabled(entry.texture == nil)
+            end)
+            texture:SetUserData("cell", { colspan = 3 })
+            innergroup:AddChild(texture)
+
+            local angle = AceGUI:Create("Slider")
+            angle:SetFullWidth(true)
+            angle:SetLabel(L["Angle"])
+            angle:SetValue(entry.angle or 0)
+            angle:SetSliderValues(0, 359, 1)
+            angle:SetCallback("OnValueChanged", function(_, _, val)
+                entry.angle = val
+                addon:Glow(icon.frame, "effect", { type = "texture", texture = entry.texture }, entry.color, entry.magnification, "CENTER", 0, 0, math.rad(entry.angle or 0))
+            end)
+            innergroup:AddChild(angle)
+
+            local color_pick = AceGUI:Create("ColorPicker")
+            color_pick:SetFullWidth(true)
+            color_pick:SetColor(entry.color.r, entry.color.g, entry.color.b, entry.color.a)
+            color_pick:SetLabel(L["Highlight Color"])
+            color_pick:SetCallback("OnValueConfirmed", function(_, _, r, g, b, a)
+                entry.color = { r = r, g = g, b = b, a = a }
+                addon:Glow(icon.frame, "effect", { type = "texture", texture = entry.texture }, entry.color, entry.magnification, "CENTER", 0, 0, math.rad(entry.angle or 0))
+            end)
+            color_pick:SetUserData("cell", { colspan = 2 })
+            innergroup:AddChild(color_pick)
+
+            local magnification = AceGUI:Create("Slider")
+            magnification:SetFullWidth(true)
+            magnification:SetLabel(L["Magnification"])
+            magnification:SetValue(entry.magnification)
+            magnification:SetSliderValues(0.1, 2.0, 0.1)
+            magnification:SetCallback("OnValueChanged", function(_, _, val)
+                entry.magnification = val
+                addon:Glow(icon.frame, "effect", { type = "texture", texture = entry.texture }, entry.color, entry.magnification, "CENTER", 0, 0, math.rad(entry.angle or 0))
+            end)
+            magnification:SetUserData("cell", { colspan = 2 })
+            innergroup:AddChild(magnification)
+
+            outergroup:AddChild(innergroup)
+            row:AddChild(outergroup)
+        else
+            addbutton:SetDisabled(true)
+        end
+
+        addbutton:SetFullWidth(true)
+        addbutton:SetText(ADD)
+        -- addbutton:SetUserData("cell", { alignV = "middle" })
+        addbutton:SetCallback("OnClick", function()
+            sequence[#sequence + 1] = entry
+            update()
+            create_sequence_list(frame, effect, update)
+        end)
+        row:AddChild(addbutton)
+    end
+
+    addon:configure_frame(frame)
+    frame:ResumeLayout()
+    frame:DoLayout()
+end
+
+local function sequence_popup(name, effect, update, onclose)
+    local frame = AceGUI:Create("Frame")
+    frame:PauseLayout()
+
+    frame:SetTitle(L["Effect"] .. ": " .. name)
+    if effect.type == "custom" then
+        frame:SetWidth(600)
+    elseif effect.type == "animate" then
+        frame:SetWidth(475)
+    else
+        frame:SetWidth(350)
+    end
+    frame:SetHeight(400)
+    frame:SetLayout("Fill")
+    if onclose then
+        frame:SetCallback("OnClose", function(widget)
+            onclose(widget)
+        end)
+    end
+    HideOnEscape(frame)
+
+    local group = AceGUI:Create("SimpleGroup")
+    group:SetFullWidth(true)
+    group:SetFullHeight(true)
+    group:SetLayout("List")
+    frame:AddChild(group)
+
+    local scrollwin = AceGUI:Create("ScrollFrame")
+    scrollwin:SetFullWidth(true)
+    scrollwin:SetFullHeight(true)
+    scrollwin:SetLayout("Table")
+    scrollwin:SetUserData("table", { columns = { 1, 125 } })
+    group:AddChild(scrollwin)
+
+    create_sequence_list(scrollwin, effect, update)
+
+    local help = AceGUI:Create("Help")
+    help:SetLayout(addon.layout_sequence_list_help)
+    help:SetTitle(L["Effect"])
+    frame:AddChild(help)
+    help:SetPoint("TOPRIGHT", 8, 16)
+
+    addon:configure_frame(frame)
+    frame:ResumeLayout()
+    frame:DoLayout()
+end
 
 function addon:create_effect_list(frame)
     local effects = self.db.global.effects
@@ -33,26 +454,23 @@ function addon:create_effect_list(frame)
         local row = group
 
         local icon = AceGUI:Create("Icon")
-        table.insert(icons, icon.frame)
-        icon:SetImageSize(36, 36)
-        if v.type == "texture" then
-            icon:SetWidth(44)
-            icon:SetHeight(44)
-            icon:SetImage(v.texture)
+        icon:SetWidth(36)
+        icon:SetHeight(36)
+        icon:SetCallback("OnRelease", function(self)
+            addon:HideGlow(self.frame, "effect")
+        end)
+        if frame:IsShown() then
+            addon:Glow(icon.frame, "effect", v, { r = 1.0, g = 1.0, b = 1.0, a = 1.0 }, 1.0, "CENTER", 0, 0)
         else
-            icon:SetWidth(36)
-            icon:SetHeight(36)
-            addon:ApplyCustomGlow(v, icon.frame)
+            icons[idx] = icon.frame
         end
         row:AddChild(icon)
 
         local type = AceGUI:Create("Dropdown")
         type:SetLabel(L["Type"])
-        type:SetCallback("OnValueChanged", function(widget, event, val)
+        type:SetCallback("OnValueChanged", function(_, _, val)
             v.type = val
-            for _, frame in pairs(icons) do
-                addon:StopCustomGlow(frame)
-            end
+            addon:RemoveAllCurrentGlows()
             addon:create_effect_list(frame)
         end)
         type.configure = function()
@@ -61,6 +479,11 @@ function addon:create_effect_list(frame)
                 pixel = L["Pixel"],
                 autocast = L["Auto Cast"],
                 blizzard = L["Glow"],
+                dazzle = L["Dazzle"],
+                animate = L["Animate"],
+                pulse = L["Pulse"],
+                rotate = L["Rotate"],
+                custom = L["Custom"],
             })
             type:SetValue(v.type or "texture")
         end
@@ -71,13 +494,14 @@ function addon:create_effect_list(frame)
         name:SetLabel(NAME)
         name:SetText(v.name)
         name:DisableButton(v.name == nil or v.name == "" or name2idx[v.name] ~= nil)
-        name:SetCallback("OnTextChanged", function(widget, event, val)
+        name:SetCallback("OnTextChanged", function(_, _, val)
             name:DisableButton(val == "" or name2idx[val] ~= nil)
-
         end)
-        name:SetCallback("OnEnterPressed", function(widget, event, val)
+        name:SetCallback("OnEnterPressed", function(_, _, val)
             v.name = val
             new_type:SetDisabled(val == "" and idx == #effects)
+            addon:Fetch()
+            addon:create_effect_list(frame)
         end)
         row:AddChild(name)
 
@@ -90,116 +514,367 @@ function addon:create_effect_list(frame)
             texture:SetFullWidth(true)
             texture:SetLabel(L["Texture"])
             texture:SetText(v.texture)
-            texture:SetCallback("OnEnterPressed", function(widget, event, val)
-                icon:SetImage(val)
+            texture:SetDisabled(v.name == nil or v.name == "")
+            texture:SetCallback("OnEnterPressed", function(_, _, val)
                 v.texture = val
+                addon:Glow(icon.frame, "effect", v, { r = 1.0, g = 1.0, b = 1.0, a = 1.0 }, 1.0, "CENTER", 0, 0)
                 addon:RemoveAllCurrentGlows()
             end)
             rowgroup:AddChild(texture)
         elseif v.type == "pixel" then
             rowgroup:SetLayout("Table")
-            rowgroup:SetUserData("table", { columns = { 0.25, 0.25, 0.25, 0.25 } })
+            rowgroup:SetUserData("table", { columns = { 0.5, 0.5 } })
 
+            if v.lines == nil then
+                v.lines = 8
+            end
             local lines = AceGUI:Create("Slider")
             lines:SetFullWidth(true)
             lines:SetLabel(L["Lines"])
-            lines:SetValue(v.lines or 8)
+            lines:SetValue(v.lines)
             lines:SetSliderValues(1, 20, 1)
-            lines:SetCallback("OnValueChanged", function(widget, event, val)
+            lines:SetDisabled(v.name == nil or v.name == "")
+            lines:SetCallback("OnValueChanged", function(_, _, val)
                 v.lines = val
+                addon:Glow(icon.frame, "effect", v, { r = 1.0, g = 1.0, b = 1.0, a = 1.0 }, 1.0, "CENTER", 0, 0)
                 addon:RemoveAllCurrentGlows()
-                addon:ApplyCustomGlow(v, icon.frame)
             end)
             rowgroup:AddChild(lines)
 
+            if v.frequency == nil then
+                v.frequency = 0.25
+            end
             local frequency = AceGUI:Create("Slider")
             frequency:SetFullWidth(true)
             frequency:SetLabel(L["Frequency"])
-            frequency:SetValue(v.frequency or 0.25)
+            frequency:SetValue(v.frequency)
             frequency:SetSliderValues(-1.5, 1.5, 0.05)
-            frequency:SetCallback("OnValueChanged", function(widget, event, val)
+            frequency:SetDisabled(v.name == nil or v.name == "")
+            frequency:SetCallback("OnValueChanged", function(_, _, val)
                 v.frequency = val
+                addon:Glow(icon.frame, "effect", v, { r = 1.0, g = 1.0, b = 1.0, a = 1.0 }, 1.0, "CENTER", 0, 0)
                 addon:RemoveAllCurrentGlows()
-                addon:ApplyCustomGlow(v, icon.frame)
             end)
             rowgroup:AddChild(frequency)
 
+            if v.length == nil then
+                v.length = 2
+            end
             local length = AceGUI:Create("Slider")
             length:SetFullWidth(true)
             length:SetLabel(L["Length"])
-            length:SetValue(v.length or 2)
+            length:SetValue(v.length)
             length:SetSliderValues(1, 20, 1)
-            length:SetCallback("OnValueChanged", function(widget, event, val)
+            length:SetDisabled(v.name == nil or v.name == "")
+            length:SetCallback("OnValueChanged", function(_, _, val)
                 v.length = val
+                addon:Glow(icon.frame, "effect", v, { r = 1.0, g = 1.0, b = 1.0, a = 1.0 }, 1.0, "CENTER", 0, 0)
                 addon:RemoveAllCurrentGlows()
-                addon:ApplyCustomGlow(v, icon.frame)
             end)
             rowgroup:AddChild(length)
 
+            if v.thickness == nil then
+                v.thickness = 2
+            end
             local thickness = AceGUI:Create("Slider")
             thickness:SetFullWidth(true)
             thickness:SetLabel(L["Thickness"])
-            thickness:SetValue(v.thickness or 2)
+            thickness:SetValue(v.thickness)
             thickness:SetSliderValues(1, 5, 1)
-            thickness:SetCallback("OnValueChanged", function(widget, event, val)
+            thickness:SetDisabled(v.name == nil or v.name == "")
+            thickness:SetCallback("OnValueChanged", function(_, _, val)
                 v.thickness = val
+                addon:Glow(icon.frame, "effect", v, { r = 1.0, g = 1.0, b = 1.0, a = 1.0 }, 1.0, "CENTER", 0, 0)
                 addon:RemoveAllCurrentGlows()
-                addon:ApplyCustomGlow(v, icon.frame)
             end)
             rowgroup:AddChild(thickness)
         elseif v.type == "autocast" then
             rowgroup:SetLayout("Table")
             rowgroup:SetUserData("table", { columns = { 0.33, 0.33, 0.33 } })
 
+            if v.particles == nil then
+                v.particles = 4
+            end
             local particles = AceGUI:Create("Slider")
             particles:SetFullWidth(true)
             particles:SetLabel(L["Particles"])
-            particles:SetValue(v.particles or 4)
+            particles:SetValue(v.particles)
             particles:SetSliderValues(1, 4, 1)
-            particles:SetCallback("OnValueChanged", function(widget, event, val)
+            particles:SetDisabled(v.name == nil or v.name == "")
+            particles:SetCallback("OnValueChanged", function(_, _, val)
                 v.particles = val
+                addon:Glow(icon.frame, "effect", v, { r = 1.0, g = 1.0, b = 1.0, a = 1.0 }, 1.0, "CENTER", 0, 0)
                 addon:RemoveAllCurrentGlows()
-                addon:ApplyCustomGlow(v, icon.frame)
             end)
             rowgroup:AddChild(particles)
 
+            if v.frequency == nil then
+                v.frequency = 0.125
+            end
             local frequency = AceGUI:Create("Slider")
             frequency:SetFullWidth(true)
             frequency:SetLabel(L["Frequency"])
-            frequency:SetValue(v.frequency or 0.125)
+            frequency:SetValue(v.frequency)
             frequency:SetSliderValues(-1.5, 1.5, 0.05)
-            frequency:SetCallback("OnValueChanged", function(widget, event, val)
+            frequency:SetDisabled(v.name == nil or v.name == "")
+            frequency:SetCallback("OnValueChanged", function(_, _, val)
                 v.frequency = val
+                addon:Glow(icon.frame, "effect", v, { r = 1.0, g = 1.0, b = 1.0, a = 1.0 }, 1.0, "CENTER", 0, 0)
                 addon:RemoveAllCurrentGlows()
-                addon:ApplyCustomGlow(v, icon.frame)
             end)
             rowgroup:AddChild(frequency)
 
+            if v.scale == nil then
+                v.scale = 1.0
+            end
             local scale = AceGUI:Create("Slider")
             scale:SetFullWidth(true)
             scale:SetLabel(L["Scale"])
-            scale:SetValue(v.scale or 1.0)
+            scale:SetValue(v.scale)
             scale:SetSliderValues(0.25, 5, 0.25)
-            scale:SetCallback("OnValueChanged", function(widget, event, val)
+            scale:SetDisabled(v.name == nil or v.name == "")
+            scale:SetCallback("OnValueChanged", function(_, _, val)
                 v.scale = val
+                addon:Glow(icon.frame, "effect", v, { r = 1.0, g = 1.0, b = 1.0, a = 1.0 }, 1.0, "CENTER", 0, 0)
                 addon:RemoveAllCurrentGlows()
-                addon:ApplyCustomGlow(v, icon.frame)
             end)
             rowgroup:AddChild(scale)
 
         elseif v.type == "blizzard" then
             rowgroup:SetLayout("List")
+            if v.frequency == nil then
+                v.frequency = 0.125
+            end
             local frequency = AceGUI:Create("Slider")
             frequency:SetFullWidth(true)
             frequency:SetLabel(L["Frequency"])
-            frequency:SetValue(v.frequency or 0.125)
+            frequency:SetValue(v.frequency)
             frequency:SetSliderValues(0.0, 1.5, 0.05)
-            frequency:SetCallback("OnValueChanged", function(widget, event, val)
+            frequency:SetDisabled(v.name == nil or v.name == "")
+            frequency:SetCallback("OnValueChanged", function(_, _, val)
                 v.frequency = val
+                addon:Glow(icon.frame, "effect", v, { r = 1.0, g = 1.0, b = 1.0, a = 1.0 }, 1.0, "CENTER", 0, 0)
                 addon:RemoveAllCurrentGlows()
-                addon:ApplyCustomGlow(v, icon.frame)
             end)
             rowgroup:AddChild(frequency)
+
+        elseif v.type == "dazzle" then
+            rowgroup:SetLayout("Table")
+            rowgroup:SetUserData("table", { columns = { 0.67, 0.33 } })
+
+            local texture = AceGUI:Create("EditBox")
+            texture:SetFullWidth(true)
+            texture:SetLabel(L["Texture"])
+            texture:SetText(v.texture)
+            texture:SetDisabled(v.name == nil or v.name == "")
+            texture:SetCallback("OnEnterPressed", function(_, _, val)
+                v.texture = val
+                addon:Glow(icon.frame, "effect", v, { r = 1.0, g = 1.0, b = 1.0, a = 1.0 }, 1.0, "CENTER", 0, 0)
+                addon:RemoveAllCurrentGlows()
+            end)
+            texture:SetUserData("cell", { colspan = 2 })
+            rowgroup:AddChild(texture)
+
+            if v.frequency == nil then
+                v.frequency = 0.25
+            end
+            local frequency = AceGUI:Create("Slider")
+            frequency:SetFullWidth(true)
+            frequency:SetLabel(L["Frequency"])
+            frequency:SetValue(v.frequency or 0.25)
+            frequency:SetSliderValues(0.1, 5, 0.05)
+            frequency:SetDisabled(v.name == nil or v.name == "")
+            frequency:SetCallback("OnValueChanged", function(_, _, val)
+                v.frequency = val
+                addon:Glow(icon.frame, "effect", v, { r = 1.0, g = 1.0, b = 1.0, a = 1.0 }, 1.0, "CENTER", 0, 0)
+                addon:RemoveAllCurrentGlows()
+            end)
+            rowgroup:AddChild(frequency)
+
+            local sequence = AceGUI:Create("Button")
+            sequence:SetFullWidth(true)
+            sequence:SetText(L["Sequence"])
+            sequence:SetUserData("cell", { alignV = "bottom" })
+            sequence:SetDisabled(v.name == nil or v.name == "")
+            sequence:SetCallback("OnClick", function()
+                sequence_popup(v.name, v, function()
+                    addon:RemoveAllCurrentGlows()
+                end, function()
+                    addon:Glow(icon.frame, "effect", v, { r = 1.0, g = 1.0, b = 1.0, a = 1.0 }, 1.0, "CENTER", 0, 0)
+                end)
+            end)
+            rowgroup:AddChild(sequence)
+        elseif v.type == "animate" then
+            rowgroup:SetLayout("Table")
+            rowgroup:SetUserData("table", { columns = { 0.67, 0.33 } })
+
+            if v.frequency == nil then
+                v.frequency = 0.25
+            end
+            local frequency = AceGUI:Create("Slider")
+            frequency:SetFullWidth(true)
+            frequency:SetLabel(L["Frequency"])
+            frequency:SetValue(v.frequency)
+            frequency:SetSliderValues(0.1, 5, 0.05)
+            frequency:SetDisabled(v.name == nil or v.name == "")
+            frequency:SetCallback("OnValueChanged", function(_, _, val)
+                v.frequency = val
+                addon:Glow(icon.frame, "effect", v, { r = 1.0, g = 1.0, b = 1.0, a = 1.0 }, 1.0, "CENTER", 0, 0)
+                addon:RemoveAllCurrentGlows()
+            end)
+            rowgroup:AddChild(frequency)
+
+            local sequence = AceGUI:Create("Button")
+            sequence:SetFullWidth(true)
+            sequence:SetText(L["Sequence"])
+            sequence:SetUserData("cell", { alignV = "bottom" })
+            sequence:SetDisabled(v.name == nil or v.name == "")
+            sequence:SetCallback("OnClick", function()
+                sequence_popup(v.name, v, function()
+                    addon:RemoveAllCurrentGlows()
+                end, function()
+                    addon:Glow(icon.frame, "effect", v, { r = 1.0, g = 1.0, b = 1.0, a = 1.0 }, 1.0, "CENTER", 0, 0)
+                end)
+            end)
+            rowgroup:AddChild(sequence)
+        elseif v.type == "pulse" then
+            rowgroup:SetLayout("Table")
+            rowgroup:SetUserData("table", { columns = { 0.67, 0.33 } })
+
+            local texture = AceGUI:Create("EditBox")
+            texture:SetFullWidth(true)
+            texture:SetLabel(L["Texture"])
+            texture:SetText(v.texture)
+            texture:SetDisabled(v.name == nil or v.name == "")
+            texture:SetCallback("OnEnterPressed", function(_, _, val)
+                v.texture = val
+                addon:Glow(icon.frame, "effect", v, { r = 1.0, g = 1.0, b = 1.0, a = 1.0 }, 1.0, "CENTER", 0, 0)
+                addon:RemoveAllCurrentGlows()
+            end)
+            texture:SetUserData("cell", { colspan = 2 })
+            rowgroup:AddChild(texture)
+
+            if v.frequency == nil then
+                v.frequency = 0.25
+            end
+            local frequency = AceGUI:Create("Slider")
+            frequency:SetFullWidth(true)
+            frequency:SetLabel(L["Frequency"])
+            frequency:SetValue(v.frequency)
+            frequency:SetSliderValues(0.1, 5, 0.05)
+            frequency:SetDisabled(v.name == nil or v.name == "")
+            frequency:SetCallback("OnValueChanged", function(_, _, val)
+                v.frequency = val
+                addon:Glow(icon.frame, "effect", v, { r = 1.0, g = 1.0, b = 1.0, a = 1.0 }, 1.0, "CENTER", 0, 0)
+                addon:RemoveAllCurrentGlows()
+            end)
+            rowgroup:AddChild(frequency)
+
+            local sequence = AceGUI:Create("Button")
+            sequence:SetFullWidth(true)
+            sequence:SetText(L["Sequence"])
+            sequence:SetUserData("cell", { alignV = "bottom" })
+            sequence:SetDisabled(v.name == nil or v.name == "")
+            sequence:SetCallback("OnClick", function()
+                sequence_popup(v.name, v, function()
+                    addon:RemoveAllCurrentGlows()
+                end, function()
+                    addon:Glow(icon.frame, "effect", v, { r = 1.0, g = 1.0, b = 1.0, a = 1.0 }, 1.0, "CENTER", 0, 0)
+                end)
+            end)
+            rowgroup:AddChild(sequence)
+        elseif v.type == "custom" then
+            rowgroup:SetLayout("Table")
+            rowgroup:SetUserData("table", { columns = { 0.67, 0.33 } })
+
+            if v.frequency == nil then
+                v.frequency = 0.25
+            end
+            local frequency = AceGUI:Create("Slider")
+            frequency:SetFullWidth(true)
+            frequency:SetLabel(L["Frequency"])
+            frequency:SetValue(v.frequency)
+            frequency:SetSliderValues(0.1, 5, 0.05)
+            frequency:SetDisabled(v.name == nil or v.name == "")
+            frequency:SetCallback("OnValueChanged", function(_, _, val)
+                v.frequency = val
+                addon:Glow(icon.frame, "effect", v, { r = 1.0, g = 1.0, b = 1.0, a = 1.0 }, 1.0, "CENTER", 0, 0)
+                addon:RemoveAllCurrentGlows()
+            end)
+            rowgroup:AddChild(frequency)
+
+            local sequence = AceGUI:Create("Button")
+            sequence:SetFullWidth(true)
+            sequence:SetText(L["Sequence"])
+            sequence:SetUserData("cell", { alignV = "bottom" })
+            sequence:SetDisabled(v.name == nil or v.name == "")
+            sequence:SetCallback("OnClick", function()
+                sequence_popup(v.name, v, function()
+                    addon:RemoveAllCurrentGlows()
+                end, function()
+                    addon:Glow(icon.frame, "effect", v, { r = 1.0, g = 1.0, b = 1.0, a = 1.0 }, 1.0, "CENTER", 0, 0)
+                end)
+            end)
+            rowgroup:AddChild(sequence)
+        elseif v.type == "rotate" then
+            rowgroup:SetLayout("Table")
+            rowgroup:SetUserData("table", { columns = { 0.33, 0.33, 0.33 } })
+
+            local texture = AceGUI:Create("EditBox")
+            texture:SetFullWidth(true)
+            texture:SetLabel(L["Texture"])
+            texture:SetText(v.texture)
+            texture:SetDisabled(v.name == nil or v.name == "")
+            texture:SetCallback("OnEnterPressed", function(_, _, val)
+                v.texture = val
+                addon:Glow(icon.frame, "effect", v, { r = 1.0, g = 1.0, b = 1.0, a = 1.0 }, 1.0, "CENTER", 0, 0)
+                addon:RemoveAllCurrentGlows()
+            end)
+            texture:SetUserData("cell", { colspan = 3 })
+            rowgroup:AddChild(texture)
+
+            if v.frequency == nil then
+                v.frequency = 0.25
+            end
+            local frequency = AceGUI:Create("Slider")
+            frequency:SetFullWidth(true)
+            frequency:SetLabel(L["Frequency"])
+            frequency:SetValue(v.frequency)
+            frequency:SetSliderValues(0.1, 5, 0.05)
+            frequency:SetDisabled(v.name == nil or v.name == "")
+            frequency:SetCallback("OnValueChanged", function(_, _, val)
+                v.frequency = val
+                addon:Glow(icon.frame, "effect", v, { r = 1.0, g = 1.0, b = 1.0, a = 1.0 }, 1.0, "CENTER", 0, 0)
+                addon:RemoveAllCurrentGlows()
+            end)
+            rowgroup:AddChild(frequency)
+
+            if v.steps == nil then
+                v.steps = 4
+            end
+            local steps = AceGUI:Create("Slider")
+            steps:SetFullWidth(true)
+            steps:SetLabel(L["Steps"])
+            steps:SetValue(v.steps)
+            steps:SetSliderValues(2, 36, 1)
+            steps:SetDisabled(v.name == nil or v.name == "")
+            steps:SetCallback("OnValueChanged", function(_, _, val)
+                v.steps = val
+                addon:Glow(icon.frame, "effect", v, { r = 1.0, g = 1.0, b = 1.0, a = 1.0 }, 1.0, "CENTER", 0, 0)
+                addon:RemoveAllCurrentGlows()
+            end)
+            rowgroup:AddChild(steps)
+
+            local reverse = AceGUI:Create("CheckBox")
+            reverse:SetLabel("Reverse")
+            reverse:SetValue(v.reverse)
+            reverse:SetDisabled(v.name == nil or v.name == "")
+            reverse:SetCallback("OnValueChanged", function(_, _, val)
+                v.reverse = val
+                addon:Glow(icon.frame, "effect", v, { r = 1.0, g = 1.0, b = 1.0, a = 1.0 }, 1.0, "CENTER", 0, 0)
+                addon:RemoveAllCurrentGlows()
+            end)
+            rowgroup:AddChild(reverse)
         end
 
         row:AddChild(rowgroup)
@@ -207,12 +882,9 @@ function addon:create_effect_list(frame)
         local delete = AceGUI:Create("Icon")
         delete:SetImageSize(24, 24)
         delete:SetImage("Interface\\Buttons\\UI-Panel-MinimizeButton-Up")
-        delete:SetCallback("OnClick", function(widget, ewvent, ...)
+        delete:SetCallback("OnClick", function()
             table.remove(effects, idx)
-            addon:RemoveAllCurrentGlows()
-            for _, frame in pairs(icons) do
-                addon:StopCustomGlow(frame)
-            end
+            addon:Fetch()
             addon:create_effect_list(frame)
         end)
         addon.AddTooltip(delete, DELETE)
@@ -233,11 +905,8 @@ function addon:create_effect_list(frame)
 
     new_type:SetLabel(L["Type"])
     new_type:SetDisabled(effects[#effects].name == nil or effects[#effects].name == "")
-    new_type:SetCallback("OnValueChanged", function(widget, event, val)
+    new_type:SetCallback("OnValueChanged", function(_, _, val)
         table.insert(effects, { type = val, name = nil, texture = nil })
-        for _, frame in pairs(icons) do
-            addon:StopCustomGlow(frame)
-        end
         addon:create_effect_list(frame)
     end)
     new_type.configure = function()
@@ -246,6 +915,11 @@ function addon:create_effect_list(frame)
             pixel = L["Pixel"],
             autocast = L["Auto Cast"],
             blizzard = L["Glow"],
+            dazzle = L["Dazzle"],
+            animate = L["Animate"],
+            pulse = L["Pulse"],
+            rotate = L["Rotate"],
+            custom = L["Custom"],
         })
     end
     row:AddChild(new_type)
@@ -271,6 +945,17 @@ function addon:create_effect_list(frame)
     help:SetTitle(L["Effects"])
     frame:AddChild(help)
     help:SetPoint("TOPRIGHT", 8, 38)
+
+    if not frame:IsShown() then
+        frame.frame:SetScript("OnShow", function(f)
+            for idx,icon in pairs(icons) do
+                if effects[idx].name then
+                    addon:Glow(icon, "effect", effects[idx], { r = 1.0, g = 1.0, b = 1.0, a = 1.0 }, 1.0, "CENTER", 0, 0)
+                end
+            end
+            f:SetScript("OnShow", nil)
+        end)
+    end
 
     addon:configure_frame(frame)
     frame:ResumeLayout()

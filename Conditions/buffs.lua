@@ -1,20 +1,18 @@
-local addon_name, addon = ...
+local _, addon = ...
 
 local AceGUI = LibStub("AceGUI-3.0")
 local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
-local SpellData = LibStub("AceGUI-3.0-SpellLoader")
-local color, tonumber, pairs = color, tonumber, pairs
+local color = color
 
 -- From constants
 local operators, units, unitsPossessive = addon.operators, addon.units, addon.unitsPossessive
 
 -- From utils
-local compare, compareString, nullable, keys, isin, isint, getCached, deepcopy, playerize =
-    addon.compare, addon.compareString, addon.nullable, addon.keys, addon.isin, addon.isint, addon.getCached, addon.deepcopy, addon.playerize
+local compare, compareString, nullable, isin, getCached, deepcopy, playerize =
+    addon.compare, addon.compareString, addon.nullable, addon.isin, addon.getCached, addon.deepcopy, addon.playerize
 
 local helpers = addon.help_funcs
-local CreateText, CreatePictureText, CreateButtonText, Indent, Gap =
-    helpers.CreateText, helpers.CreatePictureText, helpers.CreateButtonText, helpers.Indent, helpers.Gap
+local CreateText, Gap = helpers.CreateText, helpers.Gap
 
 local UnitBuff
 if (WOW_PROJECT_ID == WOW_PROJECT_CLASSIC) then
@@ -27,10 +25,10 @@ end
 addon:RegisterCondition(L["Buffs"], "BUFF", {
     description = L["Buff Present"],
     icon = "Interface\\Icons\\spell_holy_divinespirit",
-    valid = function(spec, value)
+    valid = function(_, value)
         return (value.unit ~= nil and isin(units, value.unit) and value.spell ~= nil)
     end,
-    evaluate = function(value, cache, evalStart)
+    evaluate = function(value, cache)
         for i=1,40 do
             local name = getCached(cache, UnitBuff, value.unit, i)
             if (name == nil) then
@@ -42,7 +40,7 @@ addon:RegisterCondition(L["Buffs"], "BUFF", {
         end
         return false
     end,
-    print = function(spec, value)
+    print = function(_, value)
         return string.format(playerize(value.unit, L["%s have %s"], L["%s has %s"]),
             nullable(units[value.unit], L["<unit>"]), nullable(value.spell, L["<spell>"]))
     end,
@@ -56,7 +54,7 @@ addon:RegisterCondition(L["Buffs"], "BUFF", {
         parent:AddChild(unit)
 
         local spell_group = addon:Widget_SpellNameWidget(spec, "Spell_EditBox", value,
-            function(v) return true end,
+            function() return true end,
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(spell_group)
     end,
@@ -70,12 +68,12 @@ addon:RegisterCondition(L["Buffs"], "BUFF", {
 addon:RegisterCondition(L["Buffs"], "BUFF_REMAIN", {
     description = L["Buff Time Remaining"],
     icon = "Interface\\Icons\\Spell_frost_stun",
-    valid = function(spec, value)
+    valid = function(_, value)
         return (value.unit ~= nil and isin(units, value.unit) and value.spell ~= nil and
                 value.operator ~= nil and isin(operators, value.operator) and
                 value.value ~= nil and value.value >= 0)
     end,
-    evaluate = function(value, cache, evalStart)
+    evaluate = function(value, cache)
         for i=1,40 do
             local name, _, _, _, _, expirationTime = getCached(cache, UnitBuff, value.unit, i)
             if (name == nil) then
@@ -88,7 +86,7 @@ addon:RegisterCondition(L["Buffs"], "BUFF_REMAIN", {
         end
         return false
     end,
-    print = function(spec, value)
+    print = function(_, value)
         return string.format(playerize(value.unit, L["%s have %s where %s"], L["%s have %s where %s"]),
             nullable(units[value.unit], L["<unit>"]), nullable(value.spell, L["<buff>"]),
                 compareString(value.operator, L["the remaining time"], string.format(L["%s seconds"], nullable(value.value))))
@@ -103,7 +101,7 @@ addon:RegisterCondition(L["Buffs"], "BUFF_REMAIN", {
         parent:AddChild(unit)
 
         local spell_group = addon:Widget_SpellNameWidget(spec, "Spell_EditBox", value,
-            function(v) return true end,
+            function() return true end,
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(spell_group)
 
@@ -126,12 +124,12 @@ addon:RegisterCondition(L["Buffs"], "BUFF_REMAIN", {
 addon:RegisterCondition(L["Buffs"], "BUFF_STACKS", {
     description = L["Buff Stacks"],
     icon = "Interface\\Icons\\Inv_misc_coin_02",
-    valid = function(spec, value)
+    valid = function(_, value)
         return (value.unit ~= nil and isin(units, value.unit) and value.spell ~= nil and
                 value.operator ~= nil and isin(operators, value.operator) and
                 value.value ~= nil and value.value >= 0)
     end,
-    evaluate = function(value, cache, evalStart)
+    evaluate = function(value, cache)
         for i=1,40 do
             local name, _, count = getCached(cache, UnitBuff, value.unit, i)
             if (name == nil) then
@@ -143,7 +141,7 @@ addon:RegisterCondition(L["Buffs"], "BUFF_STACKS", {
         end
         return false
     end,
-    print = function(spec, value)
+    print = function(_, value)
         return nullable(unitsPossessive[value.unit], L["<unit>"]) .. " " ..
                 compareString(value.operator, string.format(L["stacks of %s"], nullable(value.spell, L["<buff>"])), nullable(value.value))
     end,
@@ -157,7 +155,7 @@ addon:RegisterCondition(L["Buffs"], "BUFF_STACKS", {
         parent:AddChild(unit)
 
         local spell_group = addon:Widget_SpellNameWidget(spec, "Spell_EditBox", value,
-            function(v) return true end,
+            function() return true end,
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(spell_group)
 
@@ -180,10 +178,10 @@ addon:RegisterCondition(L["Buffs"], "BUFF_STACKS", {
 addon:RegisterCondition(L["Buffs"], "STEALABLE", {
     description = L["Has Stealable Buff"],
     icon = "Interface\\Icons\\Inv_weapon_shortblade_22",
-    valid = function(spec, value)
+    valid = function(_, value)
         return (value.unit ~= nil and isin(units, value.unit))
     end,
-    evaluate = function(value, cache, evalStart)
+    evaluate = function(value, cache)
         for i=1,40 do
             local name, _, _, _, _, _, _, isStealable = getCached(cache, UnitBuff, value.unit, i)
             if (name == nil) then
@@ -195,7 +193,7 @@ addon:RegisterCondition(L["Buffs"], "STEALABLE", {
         end
         return false
     end,
-    print = function(spec, value)
+    print = function(_, value)
         return string.format(L["%s has a stealable buff"], nullable(units[value.unit], L["<unit>"]))
     end,
     widget = function(parent, spec, value)
@@ -216,14 +214,14 @@ if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
     addon:RegisterCondition(L["Buffs"], "WEAPON", {
         description = L["Weapon Enchant Present"],
         icon = "Interface\\Icons\\Inv_staff_18",
-        valid = function(spec, value)
+        valid = function()
             return true
         end,
-        evaluate = function(value, cache, evalStart)
+        evaluate = function(value, cache)
             local mainEnchant, _, _, _, offEnchant, _, _, _ = getCached(cache, GetWeaponEnchantInfo)
             return (value.offhand and offEnchant or mainEnchant)
         end,
-        print = function(spec, value)
+        print = function(_, value)
             return string.format(L["Your %s weapon is enchanted"],
                 (value.offhand and L["off hand"] or L["main hand"]))
         end,
@@ -236,7 +234,7 @@ if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
             offhand:SetWidth(100)
             offhand:SetLabel(L["Off Hand"])
             offhand:SetValue(value.offhand and true or false)
-            offhand:SetCallback("OnValueChanged", function(widget, event, v)
+            offhand:SetCallback("OnValueChanged", function(_, _, v)
                 value.offhand = v
                 top:SetStatusText(funcs:print(root, spec))
             end)
@@ -252,11 +250,11 @@ if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
     addon:RegisterCondition(L["Buffs"], "WEAPON_REMAIN", {
         description = L["Weapon Enchant Time Remaining"],
         icon = "Interface\\Icons\\Inv_mace_13",
-        valid = function(spec, value)
+        valid = function(_, value)
             return (value.operator ~= nil and isin(operators, value.operator) and
                     value.value ~= nil and value.value >= 0)
         end,
-        evaluate = function(value, cache, evalStart)
+        evaluate = function(value, cache)
             local mainEnchant, mainExpires, _, _, offEnchant, offExpires, _, _ = getCached(cache, GetWeaponEnchantInfo)
             if (value.offhand and offEnchant or mainEnchant) then
                 local remain = (value.offhands and offExpires or mainExpires) / 1000
@@ -264,7 +262,7 @@ if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
             end
             return false
         end,
-        print = function(spec, value)
+        print = function(_, value)
             return string.format(L["Your %s weapon buff has %s"], (value.offhand and L["off hand"] or L["main hand"]),
                 compareString(value.operator, L["the remaining time"], string.format(L["%s seconds"], nullable(value.value))))
         end,
@@ -277,7 +275,7 @@ if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
             offhand:SetWidth(100)
             offhand:SetLabel(L["Off Hand"])
             offhand:SetValue(value.offhand and true or false)
-            offhand:SetCallback("OnValueChanged", function(widget, event, v)
+            offhand:SetCallback("OnValueChanged", function(_, _, v)
                 value.offhand = v
                 top:SetStatusText(funcs:print(root, spec))
             end)
@@ -303,18 +301,18 @@ if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
     addon:RegisterCondition(L["Buffs"], "WEAPON_STACKS", {
         description = L["Weapon Enchant Stacks"],
         icon = "Interface\\Icons\\Inv_misc_coin_04",
-        valid = function(spec, value)
+        valid = function(_, value)
             return (value.operator ~= nil and isin(operators, value.operator) and
                     value.value ~= nil and value.value >= 0)
         end,
-        evaluate = function(value, cache, evalStart)
+        evaluate = function(value, cache)
             local mainEnchant, _, mainCharges, _, offEnchant, _, offCharges, _ = getCached(cache, GetWeaponEnchantInfo)
             if (value.offhand and offEnchant or mainEnchant) then
                 return compare(value.operator, (value.offhand and offCharges or mainCharges), value.value)
             end
             return false
         end,
-        print = function(spec, value)
+        print = function(_, value)
             return string.format(L["Your %s weapon buff has %s"], (value.offhand and L["off hand"] or L["main hand"]),
                     compareString(value.operator, L["stacks"], nullable(value.value)))
         end,
@@ -327,7 +325,7 @@ if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
             offhand:SetWidth(100)
             offhand:SetLabel(L["Off Hand"])
             offhand:SetValue(value.offhand and true or false)
-            offhand:SetCallback("OnValueChanged", function(widget, event, v)
+            offhand:SetCallback("OnValueChanged", function(_, _, v)
                 value.offhand = v
                 top:SetStatusText(funcs:print(root, spec))
             end)

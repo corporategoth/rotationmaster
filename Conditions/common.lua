@@ -1,4 +1,4 @@
-local addon_name, addon = ...
+local _, addon = ...
 
 local AceGUI = LibStub("AceGUI-3.0")
 local SpellData = LibStub("AceGUI-3.0-SpellLoader")
@@ -13,7 +13,6 @@ local operators, units = addon.operators, addon.units
 local isint, keys, getCached = addon.isint, addon.keys, addon.getCached
 
 function addon:Widget_GetSpellId(spellid, ranked)
-    local spellid = spellid
     if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
         if not ranked then
             spellid = select(7, getCached(addon.longtermCache, GetSpellInfo,
@@ -25,7 +24,6 @@ end
 
 function addon:Widget_GetSpellLink(spellid, ranked)
     if spellid ~= nil then
-        local spellid = spellid
         if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
             if not ranked then
                 spellid = select(7, getCached(addon.longtermCache, GetSpellInfo,

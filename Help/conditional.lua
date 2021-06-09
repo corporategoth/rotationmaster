@@ -1,7 +1,6 @@
-local addon_name, addon = ...
+local _, addon = ...
 
 local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
-local AceGUI = LibStub("AceGUI-3.0")
 local color = color
 
 local helpers = addon.help_funcs

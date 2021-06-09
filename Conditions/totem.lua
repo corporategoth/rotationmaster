@@ -1,4 +1,4 @@
-local addon_name, addon = ...
+local _, addon = ...
 
 -- Skip these if we're not a shaman .. no point having totem conditions for other classes.
 if select(2, UnitClass("player")) ~= "SHAMAN" then return end
@@ -15,20 +15,19 @@ local compare, compareString, nullable, keys, isin, getCached, isSpellOnSpec, ro
     addon.compare, addon.compareString, addon.nullable, addon.keys, addon.isin, addon.getCached, addon.isSpellOnSpec, addon.round
 
 local helpers = addon.help_funcs
-local CreateText, CreatePictureText, CreateButtonText, Indent, Gap =
-helpers.CreateText, helpers.CreatePictureText, helpers.CreateButtonText, helpers.Indent, helpers.Gap
+local CreateText, Gap = helpers.CreateText, helpers.Gap
 
 addon:RegisterCondition(L["Spells / Items"], "TOTEM", {
     description = L["Totem Present"],
     icon = "Interface\\Icons\\spell_nature_manaregentotem",
-    valid = function(spec, value)
+    valid = function(_, value)
         return value.spell ~= nil and value.spell >= 1 and value.spell <= 4
     end,
-    evaluate = function(value, cache, evalStart)
+    evaluate = function(value, cache)
         local _, _, start = getCached(cache, GetTotemInfo, value.spell)
         return start ~= 0
     end,
-    print = function(spec, value)
+    print = function(_, value)
         return string.format(L["%s totem is active"], nullable(totems[value.spell], L["<element>"]))
     end,
     widget = function(parent, spec, value)
@@ -38,7 +37,7 @@ addon:RegisterCondition(L["Spells / Items"], "TOTEM", {
 
         local totem = AceGUI:Create("Dropdown")
         totem:SetLabel(L["Totem"])
-        totem:SetCallback("OnValueChanged", function(widget, event, v)
+        totem:SetCallback("OnValueChanged", function(_, _, v)
             value.spell = v
             top:SetStatusText(funcs:print(root, spec))
         end)
@@ -57,10 +56,10 @@ addon:RegisterCondition(L["Spells / Items"], "TOTEM", {
 addon:RegisterCondition(L["Spells / Items"], "TOTEM_SPELL", {
     description = L["Specific Totem Present"],
     icon = "Interface\\Icons\\spell_nature_stoneskintotem",
-    valid = function(spec, value)
+    valid = function(_, value)
         return value.spell ~= nil
     end,
-    evaluate = function(value, cache, evalStart)
+    evaluate = function(value, cache)
         local targetTotem = getCached(addon.longtermCache, GetSpellInfo, value.spell)
         for i=1,4 do
             local _, totemName, _, _ = getCached(cache, GetTotemInfo, i)
@@ -70,7 +69,7 @@ addon:RegisterCondition(L["Spells / Items"], "TOTEM_SPELL", {
         end
         return false
     end,
-    print = function(spec, value)
+    print = function(_, value)
         local link
         if value.spell ~= nil then
             link = GetSpellLink(value.spell)
@@ -97,12 +96,12 @@ addon:RegisterCondition(L["Spells / Items"], "TOTEM_SPELL", {
 addon:RegisterCondition(L["Spells / Items"], "TOTEM_REMAIN", {
     description = L["Totem Time Remaining"],
     icon = "Interface\\Icons\\spell_nature_agitatingtotem",
-    valid = function(spec, value)
+    valid = function(_, value)
         return (value.spell ~= nil and value.spell >= 1 and value.spell <= 4 and
                 value.operator ~= nil and isin(operators, value.operator) and
                 value.value ~= nil and value.value >= 0)
     end,
-    evaluate = function(value, cache, evalStart)
+    evaluate = function(value, cache)
         local _, _, start, duration = getCached(cache, GetTotemInfo, value.spell)
         if start ~= nil then
             local remain = round(duration - (GetTime() - start), 3)
@@ -110,7 +109,7 @@ addon:RegisterCondition(L["Spells / Items"], "TOTEM_REMAIN", {
         end
         return false
     end,
-    print = function(spec, value)
+    print = function(_, value)
         return string.format(L["you have a %s totem active with %s"],
             nullable(totems[value.spell], L["<element>"]),
                 compareString(value.operator, L["the remaining time"], string.format(L["%s seconds"], nullable(value.value))))
@@ -122,7 +121,7 @@ addon:RegisterCondition(L["Spells / Items"], "TOTEM_REMAIN", {
 
         local totem = AceGUI:Create("Dropdown")
         totem:SetLabel(L["Totem"])
-        totem:SetCallback("OnValueChanged", function(widget, event, v)
+        totem:SetCallback("OnValueChanged", function(_, _, v)
             value.spell = v
             top:SetStatusText(funcs:print(root, spec))
         end)
@@ -149,11 +148,11 @@ addon:RegisterCondition(L["Spells / Items"], "TOTEM_REMAIN", {
 addon:RegisterCondition(L["Spells / Items"], "TOTEM_SPELL_REMAIN", {
     description = L["Specific Totem Time Remaining"],
     icon = "Interface\\Icons\\spell_fireresistancetotem_01",
-    valid = function(spec, value)
+    valid = function(_, value)
         return (value.spell ~= nil and value.operator ~= nil and isin(operators, value.operator) and
                 value.value ~= nil and value.value >= 0)
     end,
-    evaluate = function(value, cache, evalStart)
+    evaluate = function(value, cache)
         local targetTotem = getCached(addon.longtermCache, GetSpellInfo, value.spell)
         for i=1,4 do
             local _, totemName, start, duration = getCached(cache, GetTotemInfo, i)
@@ -164,7 +163,7 @@ addon:RegisterCondition(L["Spells / Items"], "TOTEM_SPELL_REMAIN", {
         end
         return false
     end,
-    print = function(spec, value)
+    print = function(_, value)
         local link
         if value.spell ~= nil then
             link = GetSpellLink(value.spell)

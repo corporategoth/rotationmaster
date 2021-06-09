@@ -1,4 +1,4 @@
-local addon_name, addon = ...
+local _, addon = ...
 
 local AceConsole = LibStub("AceConsole-3.0")
 local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
@@ -9,9 +9,9 @@ local random, floor = math.random, math.floor
 
 local operators = addon.operators
 
-addon.PopupError = function(string, onaccept)
+addon.PopupError = function(s, onaccept)
     StaticPopupDialogs["ROTATIONMASTER_ERROR"] = {
-        text = string,
+        text = s,
         button1 = ACCEPT,
         OnAccept = onaccept,
         showAlert = 1,
@@ -86,7 +86,7 @@ end
 
 addon.keys = function(array)
     local rv = {}
-    for k,v in pairs(array) do
+    for k,_ in pairs(array) do
         table.insert(rv, k)
     end
     -- Sort the keys
@@ -126,14 +126,11 @@ addon.tomap = function(array)
 end
 
 addon.index = function(array, value)
-    local idx = 1
-    for k,v in pairs(array) do
-        if (k == value) then
+    for idx,v in pairs(array) do
+        if (v == value) then
             return idx
         end
-        idx = idx + 1
     end
-    return 0
 end
 
 addon.isin = function(array, value)
@@ -179,10 +176,10 @@ addon.cleanArray = function(array, except, invert)
         invert = false
     end
 
-    for k,v in pairs(array) do
+    for k,_ in pairs(array) do
         local skip = invert
         if except ~= nil then
-            for k2,v2 in pairs(except) do
+            for _,v2 in pairs(except) do
                 if (k == v2) then
                     skip = not invert
                     break
@@ -207,7 +204,7 @@ addon.deepcopy = function(array, except, invert)
     for k,v in pairs(array) do
         local skip = invert
         if except ~= nil then
-            for k2,v2 in pairs(except) do
+            for _,v2 in pairs(except) do
                 if (k == v2) then
                     skip = not invert
                     break
@@ -284,7 +281,7 @@ addon.isSpellOnSpec = function(spec, spellid, ispet)
     if ispet or spec == addon.currentSpec then
         return FindSpellBookSlotBySpellID(spellid, ispet) ~= nil
     elseif addon.specSpells[spec] ~= nil then
-        for name,id in pairs(addon.specSpells[spec]) do
+        for _,id in pairs(addon.specSpells[spec]) do
             if spellid == id then
                 return true
             end
@@ -326,7 +323,7 @@ function addon:announce(message, ...)
 end
 
 -- character table string
-local b='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
+local b64_chars='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
 
 -- encoding
 function base64enc(data)
@@ -338,16 +335,16 @@ function base64enc(data)
         if (#x < 6) then return '' end
         local c=0
         for i=1,6 do c=c+(x:sub(i,i)=='1' and 2^(6-i) or 0) end
-        return b:sub(c+1,c+1)
+        return b64_chars:sub(c+1,c+1)
     end)..({ '', '==', '=' })[#data%3+1])
 end
 
 -- decoding
 function base64dec(data)
-    data = string.gsub(data, '[^'..b..'=]', '')
+    data = string.gsub(data, '[^'..b64_chars..'=]', '')
     return (data:gsub('.', function(x)
         if (x == '=') then return '' end
-        local r,f='',(b:find(x)-1)
+        local r,f='',(b64_chars:find(x)-1)
         for i=6,1,-1 do r=r..(f%2^i-f%2^(i-1)>0 and '1' or '0') end
         return r;
     end):gsub('%d%d%d?%d?%d?%d?%d?%d?', function(x)
@@ -403,7 +400,7 @@ function addon.calculate_trend_old(health)
 
     local last_health, last_offs, last_max
     local offs_total = 0
-    for k,v in ipairs(health) do
+    for _,v in ipairs(health) do
         if v.value >= v.max or v.value == 0 then
             break
         end
@@ -450,7 +447,7 @@ function addon.calculate_trend(history, window, noheals, nodmg)
 
     local maxoffs, data = 0, {}
     if not nodmg then
-        for k,v in ipairs(history.damage) do
+        for _,v in ipairs(history.damage) do
             local diff = now - v.time
             local scale = window - diff
             maxoffs = addon.round(diff)
@@ -471,7 +468,7 @@ function addon.calculate_trend(history, window, noheals, nodmg)
 
     if not noheals then
         maxoffs, data = 0, {}
-        for k,v in ipairs(history.heals) do
+        for _,v in ipairs(history.heals) do
             local diff = now - v.time
             local scale = window - diff
             maxoffs = addon.round(diff)
@@ -496,11 +493,11 @@ function addon.calculate_trend(history, window, noheals, nodmg)
 end
 
 function addon.AddTooltip(frame, text)
-    frame:SetCallback("OnEnter", function(widget)
+    frame:SetCallback("OnEnter", function()
         GameTooltip:SetOwner(frame.frame, "ANCHOR_BOTTOMRIGHT", 3)
         GameTooltip:SetText(text, 1, 1, 1, 1, true)
     end)
-    frame:SetCallback("OnLeave", function(widget)
+    frame:SetCallback("OnLeave", function()
         GameTooltip:Hide()
     end)
 end

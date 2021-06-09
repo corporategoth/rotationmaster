@@ -1,4 +1,4 @@
-local addon_name, addon = ...
+local _, addon = ...
 
 local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
 
@@ -27,7 +27,7 @@ local function add_top_buttons(list, idx, callback, delete_cb)
     local use_name = AceGUI:Create("CheckBox")
     use_name:SetUserData("cell", { alignV = "bottom", alignH = "center" })
     use_name:SetValue(rot.use_name)
-    use_name:SetCallback("OnValueChanged", function(widget, event, val)
+    use_name:SetCallback("OnValueChanged", function(_, _, val)
         rot.use_name = val
         if not rot.use_name then
             rot.name = nil
@@ -47,7 +47,7 @@ local function add_top_buttons(list, idx, callback, delete_cb)
             name:SetText(GetSpellInfo(rot.action))
         elseif rot.type == "item" then
             if type(rot.action) == "string" then
-                local itemset = nil
+                local itemset
                 if addon.db.char.itemsets[rot.action] ~= nil then
                     itemset = addon.db.char.itemsets[rot.action]
                 elseif addon.db.global.itemsets[rot.action] ~= nil then
@@ -65,7 +65,7 @@ local function add_top_buttons(list, idx, callback, delete_cb)
             end
         end
     end
-    name:SetCallback("OnEnterPressed", function(widget, event, val)
+    name:SetCallback("OnEnterPressed", function(_, _, val)
         rot.name = val
         callback()
     end)
@@ -83,7 +83,7 @@ local function add_top_buttons(list, idx, callback, delete_cb)
         movetop:SetImage("Interface\\ChatFrame\\UI-ChatIcon-ScrollEnd-Up", (sin - cos), -(cos + sin), -cos, -sin, sin, -cos, 0, 0)
         movetop:SetDisabled(false)
     end
-    movetop:SetCallback("OnClick", function(widget, event, ...)
+    movetop:SetCallback("OnClick", function()
         local tmp = table.remove(list, idx)
         table.insert(list, 1, tmp)
         callback()
@@ -100,7 +100,7 @@ local function add_top_buttons(list, idx, callback, delete_cb)
         moveup:SetImage("Interface\\ChatFrame\\UI-ChatIcon-ScrollDown-Up", (sin - cos), -(cos + sin), -cos, -sin, sin, -cos, 0, 0)
         moveup:SetDisabled(false)
     end
-    moveup:SetCallback("OnClick", function(widget, event)
+    moveup:SetCallback("OnClick", function()
         local tmp = list[idx-1]
         list[idx-1] = list[idx]
         list[idx] = tmp
@@ -118,7 +118,7 @@ local function add_top_buttons(list, idx, callback, delete_cb)
         movedown:SetImage("Interface\\ChatFrame\\UI-ChatIcon-ScrollDown-Up")
         movedown:SetDisabled(false)
     end
-    movedown:SetCallback("OnClick", function(widget, event, ...)
+    movedown:SetCallback("OnClick", function()
         local tmp = list[idx+1]
         list[idx+1] = list[idx]
         list[idx] = tmp
@@ -136,7 +136,7 @@ local function add_top_buttons(list, idx, callback, delete_cb)
         movebottom:SetImage("Interface\\ChatFrame\\UI-ChatIcon-ScrollEnd-Up")
         movebottom:SetDisabled(false)
     end
-    movebottom:SetCallback("OnClick", function(widget, event, ...)
+    movebottom:SetCallback("OnClick", function()
         local tmp = table.remove(list, idx)
         table.insert(list, tmp)
         callback()
@@ -147,7 +147,7 @@ local function add_top_buttons(list, idx, callback, delete_cb)
     local delete = AceGUI:Create("Icon")
     delete:SetImageSize(24, 24)
     delete:SetImage("Interface\\Buttons\\UI-Panel-MinimizeButton-Up")
-    delete:SetCallback("OnClick", function(widget, event, ...)
+    delete:SetCallback("OnClick", function()
         delete_cb()
         callback()
     end)
@@ -190,31 +190,26 @@ local function add_effect_group(specID, rotid, rot, refresh)
     end
     update_effect_map()
 
-    local effect_icon = AceGUI:Create("Icon")
-    effect_icon:SetImageSize(36, 36)
-    if rot.effect ~= NONE and effects[name2idx[rot.effect or profile["effect"]]].type == "texture" then
-        effect_icon:SetHeight(44)
-        effect_icon:SetWidth(44)
-        effect_icon:SetImage(effects[name2idx[rot.effect or profile["effect"]]].texture)
-    else
-        effect_icon:SetImage(nil)
-        effect_icon:SetHeight(36)
-        effect_icon:SetWidth(36)
-        if rot.effect ~= NONE then
-            addon:ApplyCustomGlow(effects[name2idx[rot.effect or profile["effect"]]], effect_icon.frame, nil, rot.color)
-            group.frame:SetScript("OnHide", function(frame)
-                addon:StopCustomGlow(effect_icon.frame)
-                frame:SetScript("OnHide", nil)
-            end)
-        end
+    if rot.color == nil then
+        rot.color = { r = 0, g = 1.0, b = 0, a = 1.0 }
     end
+
+    local effect_name = rot.effect or profile["effect"]
+    local effect = effect_name and name2idx[effect_name] and effects[name2idx[effect_name]]
+    local effect_icon = AceGUI:Create("Icon")
+    effect_icon:SetWidth(36)
+    effect_icon:SetHeight(36)
+    effect_icon:SetCallback("OnRelease", function(self)
+        addon:HideGlow(self.frame, "effect")
+    end)
+    addon:Glow(effect_icon.frame, "effect", effect, rot.color, 1.0, "CENTER", 0, 0)
     effect_group:AddChild(effect_icon)
 
-    local effect = AceGUI:Create("Dropdown")
-    effect:SetLabel(L["Effect"])
-    effect:SetHeight(44)
-    effect:SetFullWidth(true)
-    effect:SetCallback("OnValueChanged", function(widget, event, val)
+    local effect_sel = AceGUI:Create("Dropdown")
+    effect_sel:SetLabel(L["Effect"])
+    effect_sel:SetHeight(44)
+    effect_sel:SetFullWidth(true)
+    effect_sel:SetCallback("OnValueChanged", function(_, _, val)
         if val == DEFAULT then
             rot.effect = nil
         else
@@ -223,22 +218,21 @@ local function add_effect_group(specID, rotid, rot, refresh)
         addon:RemoveCooldownGlowIfCurrent(specID, rotid, rot)
         refresh()
     end)
-
-    effect_group.frame:SetScript("OnShow", function(frame)
+    effect_sel.configure = function()
         update_effect_map()
-        effect:SetList(effect_map, effect_order)
-    end)
-    effect_group["OnRelease"] = function(self)
-        self.frame:SetScript("OnShow", nil)
+        effect_sel:SetList(effect_map, effect_order)
+        effect_sel:SetValue(rot.effect or DEFAULT)
     end
 
-    addon.lastEffectCount = addon.effectCount
-    addon.effectCount = effect.count
-    effect.configure = function()
-        effect:SetList(effect_map, effect_order)
-        effect:SetValue(rot.effect or DEFAULT)
-    end
-    effect_group:AddChild(effect)
+    effect_sel.frame:SetScript("OnShow", function(f)
+        update_effect_map()
+        f.obj:SetList(effect_map, effect_order)
+        f.obj:SetValue(rot.effect or DEFAULT)
+    end)
+    effect_sel:SetCallback("OnRelease", function(obj)
+        obj.frame:SetScript("OnShow", nil)
+    end)
+    effect_group:AddChild(effect_sel)
 
     group:AddChild(effect_group)
 
@@ -252,8 +246,8 @@ local function add_effect_group(specID, rotid, rot, refresh)
     magnification:SetLabel(L["Magnification"])
     magnification:SetValue(rot.magnification or profile["magnification"])
     magnification:SetSliderValues(0.1, 2.0, 0.1)
-    magnification:SetDisabled(rot.effect == NONE or effects[name2idx[rot.effect or profile["effect"]]].type ~= "texture")
-    magnification:SetCallback("OnValueChanged", function(widget, event, val)
+    magnification:SetDisabled(rot.effect == NONE or effect == nil or effect.type == "pulse" or effect.type == "custom" or addon.index(addon.textured_types, effect.type) == nil)
+    magnification:SetCallback("OnValueChanged", function(_, _, val)
         if val == profile["magnification"] then
             rot.magnification = nil
         else
@@ -263,19 +257,15 @@ local function add_effect_group(specID, rotid, rot, refresh)
     end)
     group:AddChild(magnification)
 
-    if rot.color == nil then
-        rot.color = { r = 0, g = 1.0, b = 0, a = 1.0 }
-    end
     local color_pick = AceGUI:Create("ColorPicker")
     color_pick:SetRelativeWidth(0.35)
     color_pick:SetColor(rot.color.r, rot.color.g, rot.color.b, rot.color.a)
     color_pick:SetLabel(L["Highlight Color"])
-    color_pick:SetDisabled(rot.effect == NONE)
-    color_pick:SetCallback("OnValueConfirmed", function(widget, event, r, g, b, a)
+    color_pick:SetDisabled(rot.effect == NONE or effect == nil or effect.type == "dazzle" or effect.type == "custom")
+    color_pick:SetCallback("OnValueConfirmed", function(_, _, r, g, b, a)
         rot.color = { r = r, g = g, b = b, a = a }
-        if effects[name2idx[rot.effect or profile["effect"]]].type ~= "texture" then
-            addon:ApplyCustomGlow(effects[name2idx[rot.effect or profile["effect"]]], effect_icon.frame, nil, rot.color)
-        end
+        addon:HideGlow(effect_icon.frame, "effect")
+        addon:Glow(effect_icon.frame, "effect", effect, rot.color, 1.0, "CENTER", 0, 0)
         addon:RemoveCooldownGlowIfCurrent(specID, rotid, rot)
     end)
     group:AddChild(color_pick)
@@ -293,7 +283,7 @@ local function add_effect_group(specID, rotid, rot, refresh)
     local position = AceGUI:Create("Dropdown")
     position:SetFullWidth(true)
     position:SetLabel(L["Position"])
-    position:SetCallback("OnValueChanged", function(widget, event, val)
+    position:SetCallback("OnValueChanged", function(_, _, val)
         if val == DEFAULT then
             rot.setpoint = nil
             rot.xoffs = nil
@@ -318,7 +308,7 @@ local function add_effect_group(specID, rotid, rot, refresh)
     local y_offs = AceGUI:Create("EditBox")
 
     local directional = AceGUI:Create("Directional")
-    directional:SetCallback("OnClick", function(widget, event, button, direction)
+    directional:SetCallback("OnClick", function(_, _, _, direction)
         if direction == "UP" then
             rot.yoffs = (rot.yoffs or 0) + 1
             y_offs:SetText(rot.yoffs)
@@ -366,10 +356,9 @@ local function add_effect_group(specID, rotid, rot, refresh)
     position_group:AddChild(offset_group)
 
     update_position_buttons = function()
-        local disable = rot.effect == NONE or (effects[name2idx[rot.effect or profile["effect"]]] ~= nil and
-                        (effects[name2idx[rot.effect or profile["effect"]]].type == "blizzard" or
-                        (effects[name2idx[rot.effect or profile["effect"]]].type == "texture" and rot.setpoint == nil)) or false)
-        position:SetDisabled(rot.effect == NONE or effects[name2idx[rot.effect or profile["effect"]]].type ~= "texture")
+        local disable = rot.effect == NONE or (effect ~= nil and (effect.type == "blizzard" or
+                        (addon.index(addon.textured_types, effect.type) and rot.setpoint == nil)) or false)
+        position:SetDisabled(rot.effect == NONE or effect == nil or addon.index(addon.textured_types, effect.type) == nil)
         directional:SetDisabled(disable)
         x_offs:SetText(rot.xoffs or profile["xoffs"])
         y_offs:SetText(rot.yoffs or profile["yoffs"])
@@ -404,7 +393,7 @@ local function add_action_group(specID, rotid, rot, callback, refresh)
     local action_type = AceGUI:Create("Dropdown")
     action_type:SetWidth(95)
     action_type:SetLabel(L["Action Type"])
-    action_type:SetCallback("OnValueChanged", function(widget, event, val)
+    action_type:SetCallback("OnValueChanged", function(_, _, val)
         if rot.type ~= val then
             rot.type = val
             rot.action = nil
@@ -424,7 +413,7 @@ local function add_action_group(specID, rotid, rot, callback, refresh)
         action_icon:SetHeight(44)
         action_icon:SetText(rot.action)
         action_icon.text:Hide()
-        action_icon:SetCallback("OnEnterPressed", function(widget, event, v)
+        action_icon:SetCallback("OnEnterPressed", function(_, _, v)
             v = tonumber(v)
             if not v or isSpellOnSpec(specID, v) then
                 addon:RemoveCooldownGlowIfCurrent(specID, rotid, rot)
@@ -439,13 +428,13 @@ local function add_action_group(specID, rotid, rot, callback, refresh)
                 callback()
             end
         end)
-        action_icon:SetCallback("OnEnter", function(widget)
+        action_icon:SetCallback("OnEnter", function()
             if rot.action then
                 GameTooltip:SetOwner(action_icon.frame, "ANCHOR_BOTTOMRIGHT", 3)
                 GameTooltip:SetHyperlink("spell:" .. rot.action)
             end
         end)
-        action_icon:SetCallback("OnLeave", function(widget)
+        action_icon:SetCallback("OnLeave", function()
             GameTooltip:Hide()
         end)
         action_group:AddChild(action_icon)
@@ -467,7 +456,7 @@ local function add_action_group(specID, rotid, rot, callback, refresh)
             local nr_button = AceGUI:Create("CheckBox")
             nr_button:SetLabel("")
             nr_button:SetValue(rot.ranked or false)
-            nr_button:SetCallback("OnValueChanged", function(widget, event, val)
+            nr_button:SetCallback("OnValueChanged", function(_, _, val)
                 rot.ranked = val
                 action:SetUserData("norank", not val)
                 action:SetText(rot.action and (rot.ranked and SpellData:SpellName(rot.action)) or GetSpellInfo(rot.action))
@@ -483,7 +472,7 @@ local function add_action_group(specID, rotid, rot, callback, refresh)
         action:SetUserData("spec", specID)
         action:SetLabel(L["Spell"])
         action:SetText(rot.action and (rot.ranked and SpellData:SpellName(rot.action)) or GetSpellInfo(rot.action))
-        action:SetCallback("OnEnterPressed", function(widget, event, val)
+        action:SetCallback("OnEnterPressed", function(_, _, val)
             addon:RemoveCooldownGlowIfCurrent(specID, rotid, rot)
             if isint(val) then
                 if isSpellOnSpec(specID, tonumber(val)) then
@@ -509,7 +498,7 @@ local function add_action_group(specID, rotid, rot, callback, refresh)
         action_icon:SetHeight(44)
         action_icon:SetText(rot.action)
         action_icon.text:Hide()
-        action_icon:SetCallback("OnEnterPressed", function(widget, event, v)
+        action_icon:SetCallback("OnEnterPressed", function(_, _, v)
             addon:RemoveCooldownGlowIfCurrent(specID, rotid, rot)
             v = tonumber(v)
             rot.action = v
@@ -522,13 +511,13 @@ local function add_action_group(specID, rotid, rot, callback, refresh)
 
             callback()
         end)
-        action_icon:SetCallback("OnEnter", function(widget)
+        action_icon:SetCallback("OnEnter", function()
             if rot.action then
                 GameTooltip:SetOwner(action_icon.frame, "ANCHOR_BOTTOMRIGHT", 3)
                 GameTooltip:SetHyperlink("spell:" .. rot.action)
             end
         end)
-        action_icon:SetCallback("OnLeave", function(widget)
+        action_icon:SetCallback("OnLeave", function()
             GameTooltip:Hide()
         end)
         action_group:AddChild(action_icon)
@@ -549,7 +538,7 @@ local function add_action_group(specID, rotid, rot, callback, refresh)
 
             local nr_button = AceGUI:Create("CheckBox")
             nr_button:SetValue(rot.ranked or false)
-            nr_button:SetCallback("OnValueChanged", function(widget, event, val)
+            nr_button:SetCallback("OnValueChanged", function(_, _, val)
                 rot.ranked = val
                 action:SetUserData("norank", not val)
                 action:SetText(rot.action and (rot.ranked and SpellData:SpellName(rot.action) or GetSpellInfo(rot.action)))
@@ -564,7 +553,7 @@ local function add_action_group(specID, rotid, rot, callback, refresh)
         action:SetUserData("norank", not rot.ranked)
         action:SetLabel(L["Spell"])
         action:SetText(rot.action and (rot.ranked and SpellData:SpellName(rot.action) or GetSpellInfo(rot.action)))
-        action:SetCallback("OnEnterPressed", function(widget, event, val)
+        action:SetCallback("OnEnterPressed", function(_, _, val)
             addon:RemoveCooldownGlowIfCurrent(specID, rotid, rot)
             local spellid = select(7, GetSpellInfo(val))
             rot.action = spellid
@@ -592,7 +581,7 @@ local function add_action_group(specID, rotid, rot, callback, refresh)
         end
         update_action_image()
         action_icon:SetImageSize(36, 36)
-        action_icon:SetCallback("OnEnter", function(widget)
+        action_icon:SetCallback("OnEnter", function()
             local itemid
             if type(rot.action) == "string" then
                 itemid = addon:FindFirstItemOfItemSet({}, rot.action, true) or addon:FindFirstItemInItemSet(rot.action)
@@ -604,7 +593,7 @@ local function add_action_group(specID, rotid, rot, callback, refresh)
                 GameTooltip:SetHyperlink("item:" .. itemid)
             end
         end)
-        action_icon:SetCallback("OnLeave", function(widget)
+        action_icon:SetCallback("OnLeave", function()
             GameTooltip:Hide()
         end)
         action_group:AddChild(action_icon)
@@ -614,7 +603,7 @@ local function add_action_group(specID, rotid, rot, callback, refresh)
         local action = AceGUI:Create("Dropdown")
         action:SetFullWidth(true)
         action:SetLabel(L["Item Set"])
-        action:SetCallback("OnValueChanged", function(widget, event, val)
+        action:SetCallback("OnValueChanged", function(_, _, val)
             if val ~= nil then
                 if val == "" then
                     rot.action = {}
@@ -642,7 +631,7 @@ local function add_action_group(specID, rotid, rot, callback, refresh)
         edit_button:SetFullWidth(true)
         edit_button:SetDisabled(rot.action == nil)
         edit_button:SetUserData("cell", { alignV = "bottom" })
-        edit_button:SetCallback("OnClick", function(widget, event, ...)
+        edit_button:SetCallback("OnClick", function()
             local edit_callback = function()
                 addon:RemoveCooldownGlowIfCurrent(specID, rotid, rot)
                 update_action_image()
@@ -652,7 +641,7 @@ local function add_action_group(specID, rotid, rot, callback, refresh)
                 callback()
             end
             if type(rot.action) == "string" then
-                local itemset = nil
+                local itemset
                 if itemsets[rot.action] ~= nil then
                     itemset = itemsets[rot.action]
                 elseif global_itemsets[rot.action] ~= nil then
@@ -749,7 +738,7 @@ local function add_conditions(specID, idx, rotid, rot, callback)
         local edit_button = AceGUI:Create("Button")
         edit_button:SetFullWidth(true)
         edit_button:SetText(EDIT)
-        edit_button:SetCallback("OnClick", function(widget, event)
+        edit_button:SetCallback("OnClick", function()
             if rot.conditions == nil then
                 rot.conditions = { type = nil }
             end
@@ -764,7 +753,7 @@ local function add_conditions(specID, idx, rotid, rot, callback)
         enabledisable_button:SetFullWidth(true)
         if not rot.disabled then
             enabledisable_button:SetText(DISABLE)
-            enabledisable_button:SetCallback("OnClick", function(widget, event)
+            enabledisable_button:SetCallback("OnClick", function()
                 rot.disabled = true
                 addon:RemoveCooldownGlowIfCurrent(specID, rotid, rot)
                 layout_conditions()
@@ -772,7 +761,7 @@ local function add_conditions(specID, idx, rotid, rot, callback)
             end)
         else
             enabledisable_button:SetText(ENABLE)
-            enabledisable_button:SetCallback("OnClick", function(widget, event)
+            enabledisable_button:SetCallback("OnClick", function()
                 rot.disabled = false
                 layout_conditions()
                 callback()
@@ -792,9 +781,7 @@ local function add_conditions(specID, idx, rotid, rot, callback)
 end
 
 function addon:get_cooldown_list(frame, specID, rotid, id, callback)
-    local profile = self.db.profile
     local rotation_settings = self.db.char.rotations[specID][rotid]
-    local effects = self.db.global.effects
 
     frame:ReleaseChildren()
     frame:PauseLayout()
@@ -849,7 +836,7 @@ function addon:get_cooldown_list(frame, specID, rotid, id, callback)
     local announce = AceGUI:Create("Dropdown")
     announce:SetRelativeWidth(0.4)
     announce:SetLabel(L["Announce"])
-    announce:SetCallback("OnValueChanged", function(widget, event, val)
+    announce:SetCallback("OnValueChanged", function(_, _, val)
         rot.announce = val
     end)
     announce.configure = function()
@@ -873,7 +860,6 @@ function addon:get_cooldown_list(frame, specID, rotid, id, callback)
 end
 
 function addon:get_rotation_list(frame, specID, rotid, id, callback)
-    local profile = self.db.profile
     local rotation_settings = self.db.char.rotations[specID][rotid]
 
     frame:ReleaseChildren()

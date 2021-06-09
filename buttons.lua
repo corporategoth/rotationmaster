@@ -4,7 +4,7 @@
 
 -- This file has been heavily modified from the original.  It is no longer compatible with the original.
 
-local addon_name, addon = ...
+local _, addon = ...
 
 local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
 local CustomGlow = LibStub("LibCustomGlow-1.0")
@@ -16,27 +16,28 @@ local FramePool = {}
 local Frames = {}
 local Effects = {}
 
-local math = math
-
-local Highlight = {}
-local HighlightIdx = 1
-local HighlightTimer = nil
-local HighlightTexture = "Interface\\Cooldown\\star4"
-local HighlightAnimationSpeed = 0.1
-local HighlightColors = {
-	{ r = 1.00, g = 0.00, b = 0.00, a = 1 },
-	{ r = 0.75, g = 0.25, b = 0.00, a = 1 },
-	{ r = 0.50, g = 0.50, b = 0.00, a = 1 },
-	{ r = 0.25, g = 0.75, b = 0.00, a = 1 },
-	{ r = 0.00, g = 1.00, b = 0.00, a = 1 },
-	{ r = 0.00, g = 0.75, b = 0.25, a = 1 },
-	{ r = 0.00, g = 0.50, b = 0.50, a = 1 },
-	{ r = 0.00, g = 0.25, b = 0.75, a = 1 },
-	{ r = 0.00, g = 0.00, b = 1.00, a = 1 },
-	{ r = 0.25, g = 0.00, b = 0.75, a = 1 },
-	{ r = 0.50, g = 0.00, b = 0.50, a = 1 },
-	{ r = 0.75, g = 0.00, b = 0.25, a = 1 },
+local HighlightOverlay = {
+	type = "dazzle",
+	texture = "Interface\\Cooldown\\star4",
+	frequency = 0.1,
+	sequence = {
+		{ r = 1.00, g = 0.00, b = 0.00, a = 1 },
+		{ r = 0.75, g = 0.25, b = 0.00, a = 1 },
+		{ r = 0.50, g = 0.50, b = 0.00, a = 1 },
+		{ r = 0.25, g = 0.75, b = 0.00, a = 1 },
+		{ r = 0.00, g = 1.00, b = 0.00, a = 1 },
+		{ r = 0.00, g = 0.75, b = 0.25, a = 1 },
+		{ r = 0.00, g = 0.50, b = 0.50, a = 1 },
+		{ r = 0.00, g = 0.25, b = 0.75, a = 1 },
+		{ r = 0.00, g = 0.00, b = 1.00, a = 1 },
+		{ r = 0.25, g = 0.00, b = 0.75, a = 1 },
+		{ r = 0.50, g = 0.00, b = 0.50, a = 1 },
+		{ r = 0.75, g = 0.00, b = 0.25, a = 1 },
+	}
 }
+local Highlight = {}
+
+addon.textured_types = { "texture", "dazzle", "animate", "pulse", "rotate", "custom" }
 
 function addon:ApplyCustomGlow(effect, frame, id, color, xoffs, yoffs)
     local c
@@ -58,19 +59,68 @@ function addon:StopCustomGlow(frame, id)
 	CustomGlow.ButtonGlow_Stop(frame)
 end
 
-local function UpdateOverlayRaw(frame, effect, color, mags, setp, xoffs, yoffs)
+local function UpdateOverlayRaw(frame, effect, color, mags, setp, xoffs, yoffs, angle)
 	frame:ClearAllPoints()
 	frame:SetPoint("CENTER", frame:GetParent(), setp, xoffs, yoffs)
-	frame:SetWidth(frame:GetParent():GetWidth() * mags)
-	frame:SetHeight(frame:GetParent():GetHeight() * mags)
+	frame:SetWidth(frame:GetParent():GetWidth() * (mags or 1.0))
+	frame:SetHeight(frame:GetParent():GetHeight() * (mags or 1.0))
 	frame.texture:SetVertexColor(color.r, color.g, color.b, color.a)
 	if effect then
 		frame.texture:SetTexture(effect)
 	end
+	if angle then
+		frame.texture:SetRotation(angle)
+	end
 end
 
-local function UpdateOverlay(frame, effect, color, mags, setp, xoffs, yoffs)
-	UpdateOverlayRaw(frame, Effects[effect].texture, color, mags, setp, xoffs, yoffs)
+local function UpdateOverlay(frame, effect, color, mags, setp, xoffs, yoffs, angle)
+	local type =  effect.type
+    if type == "texture" then
+        UpdateOverlayRaw(frame, effect.texture, color, mags, setp, xoffs, yoffs, angle)
+	elseif type == "rotate" and effect.steps and effect.steps > 0 then
+		if frame.sequenceIdx then
+			frame.sequenceIdx = frame.sequenceIdx >= effect.steps and 1 or (frame.sequenceIdx + 1)
+		else
+			frame.sequenceIdx = 1
+		end
+        if effect.reverse then
+            UpdateOverlayRaw(frame, effect.texture, color, mags, setp, xoffs, yoffs, ((2 * math.pi) / effect.steps * (effect.steps - (frame.sequenceIdx - 1))))
+		else
+			UpdateOverlayRaw(frame, effect.texture, color, mags, setp, xoffs, yoffs, ((2 * math.pi) / effect.steps * (frame.sequenceIdx - 1)))
+        end
+		if not frame.sequenceTimer then
+			frame.sequenceTimer = addon:ScheduleRepeatingTimer(UpdateOverlay, effect.frequency or 0.25,
+					frame, effect, color, mags, setp, xoffs, yoffs, angle)
+		end
+	elseif effect.sequence and #effect.sequence > 0 then
+        local sequence = effect.sequence
+        if frame.sequenceIdx then
+            frame.sequenceIdx = frame.sequenceIdx >= #sequence and 1 or (frame.sequenceIdx + 1)
+        else
+            frame.sequenceIdx = 1
+        end
+        if type == "dazzle" then
+			UpdateOverlayRaw(frame, effect.texture, sequence[frame.sequenceIdx], mags, setp, xoffs, yoffs, angle)
+		elseif type == "animate" then
+			UpdateOverlayRaw(frame, sequence[frame.sequenceIdx], color, mags, setp, xoffs, yoffs, angle)
+		elseif type == "pulse" then
+			UpdateOverlayRaw(frame, effect.texture, color, sequence[frame.sequenceIdx], setp, xoffs, yoffs, angle)
+		elseif type == "custom" and sequence[frame.sequenceIdx].texture and sequence[frame.sequenceIdx].color and sequence[frame.sequenceIdx].magnification then
+			UpdateOverlayRaw(frame, sequence[frame.sequenceIdx].texture, sequence[frame.sequenceIdx].color, sequence[frame.sequenceIdx].magnification, setp, xoffs, yoffs, math.rad(sequence[frame.sequenceIdx].angle or 0))
+		end
+        if not frame.sequenceTimer then
+			frame.sequenceTimer = addon:ScheduleRepeatingTimer(UpdateOverlay, effect.frequency or 0.25,
+				frame, effect, color, mags, setp, xoffs, yoffs, angle)
+		end
+	end
+end
+
+local function StopOverlay(frame)
+	if frame.sequenceTimer then
+		addon:CancelTimer(frame.sequenceTimer)
+		frame.sequenceTimer = nil
+	end
+    frame.sequenceIdx = nil
 end
 
 --- Creates frame overlay over a specific frame, it doesn't need to be a button.
@@ -99,8 +149,13 @@ local function CreateOverlay(parent, id)
 end
 
 function addon:DestroyAllOverlays()
-	for key, frame in pairs(Frames) do
-		frame:GetParent().addonOverlays = nil
+	for _, frame in pairs(Frames) do
+        if frame:GetParent().rmOverlays then
+            for _, overlay in pairs(frame:GetParent().rmOverlays) do
+                StopOverlay(overlay)
+            end
+			frame:GetParent().rmOverlays = nil
+		end
 		frame:ClearAllPoints()
 		frame:Hide()
 		frame:SetParent(UIParent)
@@ -108,10 +163,10 @@ function addon:DestroyAllOverlays()
 		frame.height = nil
 	end
 
-	for key, frame in pairs(Frames) do
-		tinsert(FramePool, frame)
-		Frames[key] = nil
-	end
+    for key, frame in pairs(Frames) do
+        tinsert(FramePool, frame)
+        Frames[key] = nil
+   end
 end
 
 function addon:DestroyAllCustomGlows()
@@ -172,36 +227,36 @@ function addon:UpdateButtonGlow()
 	end
 end
 
-local function Glow(button, id, effect, color, mags, setp, xoffs, yoffs)
-	if Effects[effect] == nil then
+function addon:Glow(button, id, effect, color, mags, setp, xoffs, yoffs, angle)
+	if not effect then
 		return
 	end
 
-    if Effects[effect].type == "texture" then
-		addon:StopCustomGlow(button, id)
-		if button.addonOverlays and button.addonOverlays[id] then
-			UpdateOverlay(button.addonOverlays[id], effect, color, mags, setp, xoffs, yoffs)
-			button.addonOverlays[id]:Show()
-		else
-			if not button.addonOverlays then
-				button.addonOverlays = {}
-			end
+	local type = effect.type
+	addon:StopCustomGlow(button, id)
+	if button.rmOverlays and button.rmOverlays[id] then
+		StopOverlay(button.rmOverlays[id])
+		button.rmOverlays[id]:Hide()
+	end
+	if addon.index(addon.textured_types, type) then
+		if not button.rmOverlays then
+			button.rmOverlays = {}
+		end
+		if not button.rmOverlays[id] then
+			button.rmOverlays[id] = CreateOverlay(button, id)
+		end
 
-			button.addonOverlays[id] = CreateOverlay(button, id)
-			UpdateOverlay(button.addonOverlays[id], effect, color, mags, setp, xoffs, yoffs)
-			button.addonOverlays[id]:Show()
-		end
+		UpdateOverlay(button.rmOverlays[id], effect, color, mags, setp, xoffs, yoffs, angle)
+		button.rmOverlays[id]:Show()
 	else
-		if button.addonOverlays and button.addonOverlays[id] then
-			button.addonOverlays[id]:Hide()
-		end
-		addon:ApplyCustomGlow(Effects[effect], button, id, color, xoffs, yoffs)
+		addon:ApplyCustomGlow(effect, button, id, color, xoffs, yoffs)
 	end
 end
 
-local function HideGlow(button, id)
-	if button.addonOverlays and button.addonOverlays[id] then
-		button.addonOverlays[id]:Hide()
+function addon:HideGlow(button, id)
+	if button.rmOverlays and button.rmOverlays[id] then
+		StopOverlay(button.rmOverlays[id])
+		button.rmOverlays[id]:Hide()
 	end
     addon:StopCustomGlow(button, id)
 end
@@ -228,7 +283,6 @@ local function AddStandardButton(button)
 	local type = button:GetAttribute('type')
 	if type then
 		local actionType = button:GetAttribute(type)
-		local id
 		local spellId
 
 		if type == 'action' then
@@ -304,7 +358,7 @@ local function FetchBartender4()
 		    local spell = select(7, GetPetActionInfo(button.id))
 			AddButton(spell, button);
 		end
-		local button = _G['BT4StanceButton' .. i];
+		button = _G['BT4StanceButton' .. i];
 		if button then
 			local spell = select(4, GetShapeshiftFormInfo(button:GetID()))
 			AddButton(spell, button);
@@ -356,11 +410,11 @@ local function FetchTotemTimers()
         end
 
     	for j=1,10 do
-			local button = _G['TT_ActionButton' .. i .. j];
+			button = _G['TT_ActionButton' .. i .. j];
 			if not button then
 				break
             end
-			local spellid = select(7, GetSpellInfo(button:GetAttribute("*spell1")))
+			spellid = select(7, GetSpellInfo(button:GetAttribute("*spell1")))
 			if spellid then
 				AddButton(spellid, button)
             end
@@ -554,10 +608,10 @@ function addon:IsGlowing(spellId)
     return SpellsGlowing[spellId] == 1
 end
 
-local function GlowIndependent(spellId, id, effect, color, mags, setpoint, xoffs, yoffs)
+local function GlowIndependent(spellId, id, effect, color, mags, setpoint, xoffs, yoffs, angle)
 	if Spells[spellId] ~= nil then
-		for k, button in pairs(Spells[spellId]) do
-			Glow(button, id, effect, color, mags, setpoint, xoffs, yoffs)
+		for _, button in pairs(Spells[spellId]) do
+			addon:Glow(button, id, Effects[effect], color, mags, setpoint, xoffs, yoffs, angle)
 			addon:verbose(spellId .. " is now glowing")
 		end
 	end
@@ -565,8 +619,8 @@ end
 
 local function ClearGlowIndependent(spellId, id)
 	if Spells[spellId] ~= nil then
-		for k, button in pairs(Spells[spellId]) do
-			HideGlow(button, id)
+		for _, button in pairs(Spells[spellId]) do
+			addon:HideGlow(button, id)
 			addon:verbose(spellId .. " is no longer glowing")
 		end
 	end
@@ -583,7 +637,8 @@ function addon:GlowCooldown(spellId, condition, cooldown)
 				cooldown.magnification or self.db.profile.magnification,
 				cooldown.setpoint or self.db.profile.setpoint,
 				cooldown.xoffs or self.db.profile.xoffs,
-				cooldown.yoffs or self.db.profile.yoffs)
+				cooldown.yoffs or self.db.profile.yoffs,
+				cooldown.angle or self.db.profile.angle)
 	elseif not condition and Flags[spellId] then
 		Flags[spellId] = nil
 		ClearGlowIndependent(spellId, spellId)
@@ -598,10 +653,10 @@ function addon:GlowSpell(spellId)
 	end
 
 	if Spells[spellId] ~= nil then
-		for k, button in pairs(Spells[spellId]) do
-			Glow(button, 'next', self.db.profile.effect, self.db.profile.color,
+		for _, button in pairs(Spells[spellId]) do
+			addon:Glow(button, 'next', Effects[self.db.profile.effect], self.db.profile.color,
 				 self.db.profile.magnification, self.db.profile.setpoint,
-				 self.db.profile.xoffs, self.db.profile.yoffs)
+				 self.db.profile.xoffs, self.db.profile.yoffs, self.db.profile.angle)
 		end
 
 		SpellsGlowing[spellId] = 1
@@ -612,8 +667,8 @@ end
 function addon:GlowClear()
 	for spellId, v in pairs(SpellsGlowing) do
 		if v == 1 then
-			for k, button in pairs(Spells[spellId]) do
-				HideGlow(button, 'next')
+			for _, button in pairs(Spells[spellId]) do
+				addon:HideGlow(button, 'next')
 			end
 			SpellsGlowing[spellId] = 0
 			addon:verbose(spellId .. " is no longer glowing")
@@ -626,30 +681,16 @@ function addon:GlowNextSpell(spellId)
 	self:GlowSpell(spellId)
 end
 
-local UpdateHighlight = function()
-	HighlightIdx = HighlightIdx + 1
-	if HighlightIdx > #HighlightColors then
-		HighlightIdx = 1
-	end
-	for _, overlay in pairs(Highlight) do
-		UpdateOverlayRaw(overlay, HighlightTexture, HighlightColors[HighlightIdx], 1.0, "CENTER", 0, 0)
-	end
-end
-
 function addon:EndHighlightSlot()
-	if (HighlightTimer) then
-		addon:CancelTimer(HighlightTimer)
-        HighlightTimer = nil
-	end
-	for _, overlay in pairs(Highlight) do
-        overlay:Hide()
+	for _, button in pairs(Highlight) do
+        self:HideGlow(button, "highlight")
     end
     Highlight = {}
 end
 
 function addon:HighlightSlot(slot)
 	addon:EndHighlightSlot()
-	for spellid, buttons in pairs(Spells) do
+	for _, buttons in pairs(Spells) do
 		for _, button in pairs(buttons) do
 			local type = button:GetAttribute('type')
 			if type == 'action' then
@@ -662,15 +703,8 @@ function addon:HighlightSlot(slot)
 				end
 
 				if bslot and slot == bslot then
-                    local overlay = CreateOverlay(button, "Highlight")
-                	table.insert(Highlight, overlay)
-					HighlightIdx = 1
-					UpdateOverlayRaw(overlay, HighlightTexture, HighlightColors[HighlightIdx], 1.0, "CENTER", 0, 0)
-                	overlay:Show()
-
-					if not HighlightTimer then
-						HighlightTimer = addon:ScheduleRepeatingTimer(UpdateHighlight, HighlightAnimationSpeed)
-					end
+                    self:Glow(button, "highlight", HighlightOverlay, {}, 1.0, "CENTER", 0, 0)
+                	table.insert(Highlight, button)
 					break
 				end
 			end

@@ -1,16 +1,15 @@
-local addon_name, addon = ...
+local _, addon = ...
 
 local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
 
 local AceGUI = LibStub("AceGUI-3.0")
-local SpellData = LibStub("AceGUI-3.0-SpellLoader")
 
 local CreateFrame, UIParent = CreateFrame, UIParent
 
 local pairs, color, tonumber = pairs, color, tonumber
-local units, macroAttribs = addon.units, addon.macroAttribs
-local HideOnEscape, cleanArray, getCached, getRetryCached, isint, keys =
-    addon.HideOnEscape, addon.cleanArray, addon.getCached, addon.getRetryCached, addon.isint, addon.keys
+local units = addon.units
+local HideOnEscape, cleanArray, getCached, getRetryCached, isint =
+    addon.HideOnEscape, addon.cleanArray, addon.getCached, addon.getRetryCached, addon.isint
 
 local function spacer(width)
     local rv = AceGUI:Create("Label")
@@ -22,7 +21,7 @@ function addon:FindFirstItemInItems(items)
     if items == nil then
         return nil
     end
-    for k,v in pairs(items) do
+    for _,v in pairs(items) do
         if type(v) == "number" then
             return v -- Assume it's an item ID
         else
@@ -52,13 +51,13 @@ function addon:FindItemInItems(items, item)
         return nil
     end
     if isint(item) then
-        for k,v in pairs(items) do
+        for _,v in pairs(items) do
             if getRetryCached(addon.longtermCache, GetItemInfoInstant, v) == tonumber(item) then
                 return tonumber(item)
             end
         end
     else
-        for k,v in pairs(items) do
+        for _,v in pairs(items) do
             local name, link = getRetryCached(addon.longtermCache, GetItemInfo, v)
             if name == item then
                 return select(1, getRetryCached(addon.longtermCache, GetItemInfoInstant, link))
@@ -80,7 +79,7 @@ function addon:FindItemInItemSet(id, item)
     return nil
 end
 
-function addon:FindFirstItemOfItems(cache, items, equipped)
+function addon:FindFirstItemOfItems(_, items, equipped)
     if items == nil then
         return nil
     end
@@ -195,7 +194,7 @@ function addon:UpdateItemSetButtons(id)
         if not addon.itemSetButtons[id] then
             addon.itemSetButtons[id] = {}
         end
-        for key, value in pairs(units) do
+        for key, _ in pairs(units) do
             local button = addon.itemSetButtons[id][key]
             if button and button:GetName() ~= prefix .. key then
                 button:SetParent(nil)
@@ -210,8 +209,6 @@ function addon:UpdateItemSetButtons(id)
                 addon.itemSetButtons[id][key] = button
             end
 
-            local itemid = addon:FindFirstItemOfItems({}, itemset.items, true) or
-                        addon:FindFirstItemInItems(itemset.items)
             local macrotext = ""
             for _, item in pairs(itemset.items) do
                 macrotext = macrotext .. "/use [@" .. key .. "] item:" .. item .. "\n"
@@ -230,7 +227,7 @@ local function HandleDelete(id, update)
         text = L["This item set is in use, are you sure you wish to delete it?"],
         button1 = ACCEPT,
         button2 = CANCEL,
-        OnAccept = function(self)
+        OnAccept = function()
             bindings[id] = nil
             itemsets[id] = nil
             global_itemsets[id] = nil
@@ -277,7 +274,7 @@ local function ImportExport(items, update)
         editbox:SetText(body)
     end
     -- editbox.editBox:GetRegions():SetFont("Interface\\AddOns\\RotationMaster\\Fonts\\Inconsolata-Bold.ttf", 13)
-    editbox:SetCallback("OnTextChanged", function(widget, event, text)
+    editbox:SetCallback("OnTextChanged", function()
         import:SetDisabled(false)
     end)
 
@@ -293,7 +290,7 @@ local function ImportExport(items, update)
 
     import:SetText(L["Import"])
     import:SetDisabled(true)
-    import:SetCallback("OnClick", function(wiget, event)
+    import:SetCallback("OnClick", function()
         cleanArray(items)
         local initems = addon.split(editbox:GetText():gsub(",", "\n"), "\n")
         for _, v in ipairs(initems) do
@@ -307,7 +304,7 @@ local function ImportExport(items, update)
 
     local close = AceGUI:Create("Button")
     close:SetText(CANCEL)
-    close:SetCallback("OnClick", function(wiget, event)
+    close:SetCallback("OnClick", function()
         frame:Hide()
     end)
     group:AddChild(close)
@@ -333,7 +330,7 @@ local function create_item_list(frame, items, update)
             icon:SetWidth(44)
             icon:SetHeight(44)
             icon.text:Hide()
-            icon:SetCallback("OnEnterPressed", function(widget, event, v)
+            icon:SetCallback("OnEnterPressed", function(_, _, v)
                 if v then
                     items[idx] = v
                     addon:UpdateItem_Name_ID(v, name, icon)
@@ -344,21 +341,21 @@ local function create_item_list(frame, items, update)
                     create_item_list(frame, items, update)
                 end
             end)
-            icon:SetCallback("OnEnter", function(widget)
+            icon:SetCallback("OnEnter", function()
                 local itemid = getRetryCached(addon.longtermCache, GetItemInfoInstant, items[idx])
                 if itemid then
                     GameTooltip:SetOwner(icon.frame, "ANCHOR_BOTTOMRIGHT", 3)
                     GameTooltip:SetHyperlink("item:" .. itemid)
                 end
             end)
-            icon:SetCallback("OnLeave", function(widget)
+            icon:SetCallback("OnLeave", function()
                 GameTooltip:Hide()
             end)
             row:AddChild(icon)
 
             name:SetFullWidth(true)
             name:SetLabel(L["Item"])
-            name:SetCallback("OnEnterPressed", function(widget, event, v)
+            name:SetCallback("OnEnterPressed", function(_, _, v)
                 if v == "" then
                     table.remove(items, idx)
                     update()
@@ -385,7 +382,7 @@ local function create_item_list(frame, items, update)
                 movetop:SetImage("Interface\\ChatFrame\\UI-ChatIcon-ScrollEnd-Up", (sin - cos), -(cos + sin), -cos, -sin, sin, -cos, 0, 0)
                 movetop:SetDisabled(false)
             end
-            movetop:SetCallback("OnClick", function(widget, event, ...)
+            movetop:SetCallback("OnClick", function()
                 local tmp = table.remove(items, idx)
                 table.insert(items, 1, tmp)
                 update()
@@ -403,7 +400,7 @@ local function create_item_list(frame, items, update)
                 moveup:SetImage("Interface\\ChatFrame\\UI-ChatIcon-ScrollDown-Up", (sin - cos), -(cos + sin), -cos, -sin, sin, -cos, 0, 0)
                 moveup:SetDisabled(false)
             end
-            moveup:SetCallback("OnClick", function(widget, event, ...)
+            moveup:SetCallback("OnClick", function()
                 local tmp = items[idx-1]
                 items[idx-1] = items[idx]
                 items[idx] = tmp
@@ -422,7 +419,7 @@ local function create_item_list(frame, items, update)
                 movedown:SetImage("Interface\\ChatFrame\\UI-ChatIcon-ScrollDown-Up")
                 movedown:SetDisabled(false)
             end
-            movedown:SetCallback("OnClick", function(widget, event, ...)
+            movedown:SetCallback("OnClick", function()
                 local tmp = items[idx+1]
                 items[idx+1] = items[idx]
                 items[idx] = tmp
@@ -441,7 +438,7 @@ local function create_item_list(frame, items, update)
                 movebottom:SetImage("Interface\\ChatFrame\\UI-ChatIcon-ScrollEnd-Up")
                 movebottom:SetDisabled(false)
             end
-            movebottom:SetCallback("OnClick", function(widget, event, ...)
+            movebottom:SetCallback("OnClick", function()
                 local tmp = table.remove(items, idx)
                 table.insert(items, tmp)
                 update()
@@ -453,7 +450,7 @@ local function create_item_list(frame, items, update)
             local delete = AceGUI:Create("Icon")
             delete:SetImageSize(24, 24)
             delete:SetImage("Interface\\Buttons\\UI-Panel-MinimizeButton-Up")
-            delete:SetCallback("OnClick", function(widget, event, ...)
+            delete:SetCallback("OnClick", function()
                 table.remove(items, idx)
                 update()
                 create_item_list(frame, items, update)
@@ -471,10 +468,10 @@ local function create_item_list(frame, items, update)
         icon:SetHeight(44)
         icon:SetDisabled(items == nil)
         icon.text:Hide()
-        icon:SetCallback("OnEnterPressed", function(widget, event, v)
-            local v = getRetryCached(addon.longtermCache, GetItemInfo, v)
-            if v then
-                items[#items + 1] = v
+        icon:SetCallback("OnEnterPressed", function(_, _, v)
+            local item = getRetryCached(addon.longtermCache, GetItemInfo, v)
+            if item then
+                items[#items + 1] = item
                 update()
                 create_item_list(frame, items, update)
             end
@@ -486,7 +483,7 @@ local function create_item_list(frame, items, update)
         name:SetLabel(L["Item"])
         name:SetDisabled(items == nil)
         name:SetText(nil)
-        name:SetCallback("OnEnterPressed", function(widget, event, val)
+        name:SetCallback("OnEnterPressed", function(_, _, val)
             if val ~= nil then
                 items[#items + 1] = val
                 update()
@@ -580,7 +577,7 @@ function addon:item_list_popup(name, items, update, onclose)
     frame:DoLayout()
 end
 
-function addon:bind_popup(name, items, update, onclose)
+function addon:bind_popup(name, _, _, onclose)
     local frame = AceGUI:Create("Frame")
     frame:PauseLayout()
 
@@ -609,6 +606,39 @@ local function item_list(frame, selected, itemset, update)
     group:SetFullWidth(true)
     group:SetLayout("Table")
     group:SetUserData("table", { columns = { 44, 1, 35, 280 } })
+    frame:AddChild(group)
+
+    local icon = AceGUI:Create("InteractiveLabel")
+    local name = AceGUI:Create("EditBox")
+    local glob_button = AceGUI:Create("CheckBox")
+    local delete = AceGUI:Create("Button")
+    local importexport = AceGUI:Create("Button")
+    local bind = AceGUI:Create("Button")
+    local bound = AceGUI:Create("Label")
+    local scrollwin = AceGUI:Create("ScrollFrame")
+
+    group:SetUserData("selected", selected)
+    local itemSetCallback = function(id)
+        local sel = group:GetUserData("selected")
+        if id == sel then
+            if bindings[sel] ~= nil then
+                bind:SetText(L["Unbind"])
+                bound:SetText(bindings[sel])
+            else
+                bind:SetText(L["Bind"])
+                bound:SetText(nil)
+            end
+        end
+        if bindings[sel] ~= nil then
+            addon:ScheduleTimer("HighlightSlot", 0.5, bindings[sel])
+        end
+    end
+    addon.itemSetCallback = itemSetCallback
+
+    group.frame:SetScript("OnShow", function(f)
+        addon.itemSetCallback = itemSetCallback
+        itemSetCallback(f.obj:GetUserData("selected"))
+    end)
     group.frame:SetScript("OnHide", function()
         if addon.bindingItemSet then
             addon.bindingItemSet = nil
@@ -619,30 +649,10 @@ local function item_list(frame, selected, itemset, update)
         addon.itemSetCallback = nil
         addon:EndHighlightSlot()
     end)
-    frame:AddChild(group)
-
-    local icon = AceGUI:Create("InteractiveLabel")
-    local name = AceGUI:Create("EditBox")
-    local glob_button = AceGUI:Create("CheckBox")
-    local delete = AceGUI:Create("Button")
-    local importexport = AceGUI:Create("Button")
-    local macro = AceGUI:Create("Button")
-    local bind = AceGUI:Create("Button")
-    local bound = AceGUI:Create("Label")
-    local scrollwin = AceGUI:Create("ScrollFrame")
-
-    addon.itemSetCallback = function(id)
-        if id == selected then
-            if bindings[selected] ~= nil then
-                addon:ScheduleTimer("HighlightSlot", 0.5, bindings[selected])
-                bind:SetText(L["Unbind"])
-                bound:SetText(bindings[selected])
-            else
-                bind:SetText(L["Bind"])
-                bound:SetText(nil)
-            end
-        end
-    end
+    group.SetCallback("OnRelease", function()
+        group.frame:SetScript("OnShow", nil)
+        group.frame:SetScript("OnHide", nil)
+    end)
 
     local itemid
     local function update_itemid()
@@ -655,18 +665,17 @@ local function item_list(frame, selected, itemset, update)
             addon:UpdateBoundButton(selected)
             addon:UpdateItemSetButtons(selected)
         end
-        addon.itemSetCallback(selected)
     end
     update_itemid()
 
     icon:SetImageSize(36, 36)
-    icon:SetCallback("OnEnter", function(widget)
+    icon:SetCallback("OnEnter", function()
         if itemid then
             GameTooltip:SetOwner(icon.frame, "ANCHOR_BOTTOMRIGHT", 3)
             GameTooltip:SetHyperlink("item:" .. itemid)
         end
     end)
-    icon:SetCallback("OnLeave", function(widget)
+    icon:SetCallback("OnLeave", function()
         GameTooltip:Hide()
     end)
     group:AddChild(icon)
@@ -676,7 +685,7 @@ local function item_list(frame, selected, itemset, update)
     if itemset then
         name:SetText(itemset.name)
     end
-    name:SetCallback("OnEnterPressed", function(widget, event, v)
+    name:SetCallback("OnEnterPressed", function(_, _, v)
         if not itemset then
             itemset = { name = v, items = {} }
             if glob_button:GetValue() then
@@ -708,7 +717,7 @@ local function item_list(frame, selected, itemset, update)
 
     glob_button:SetLabel("")
     glob_button:SetValue(selected and global_itemsets[selected] ~= nil)
-    glob_button:SetCallback("OnValueChanged", function(widget, event, val)
+    glob_button:SetCallback("OnValueChanged", function(_, _, val)
         if itemset then
             if val then
                 global_itemsets[selected] = itemsets[selected]
@@ -731,12 +740,13 @@ local function item_list(frame, selected, itemset, update)
     group:AddChild(buttongroup)
 
     bind:SetDisabled(itemset == nil)
-    bind:SetCallback("OnClick", function(widget, event)
+    bind:SetCallback("OnClick", function()
         if bindings[selected] then
             PickupAction(bindings[selected])
             ClearCursor()
             bindings[selected] = nil
             bind:SetText(L["Bind"])
+            bound:SetText(nil)
         else
             addon.bindingItemSet = selected
             PickupItem(itemid)
@@ -748,7 +758,7 @@ local function item_list(frame, selected, itemset, update)
 
     delete:SetText(DELETE)
     delete:SetDisabled(itemset == nil)
-    delete:SetCallback("OnClick", function(widget, event)
+    delete:SetCallback("OnClick", function()
         if addon:ItemSetInUse(selected) then
             HandleDelete(selected, update)
         else
@@ -763,7 +773,7 @@ local function item_list(frame, selected, itemset, update)
 
     importexport:SetText(L["Import/Export"])
     importexport:SetDisabled(itemset == nil)
-    importexport:SetCallback("OnClick", function(widget, event)
+    importexport:SetCallback("OnClick", function()
         ImportExport(itemset.items, function()
             create_item_list(scrollwin, itemset and itemset.items or nil, update_itemid)
         end)
@@ -793,6 +803,8 @@ local function item_list(frame, selected, itemset, update)
     addon:configure_frame(frame)
     frame:ResumeLayout()
     frame:DoLayout()
+
+    itemSetCallback(group:GetUserData("selected"))
 end
 
 function addon:get_item_list(empty)
@@ -848,7 +860,7 @@ function addon:create_itemset_list(frame)
     select:AddChild(group)
 
     local selected
-    select:SetCallback("OnGroupSelected", function(widget, event, val)
+    select:SetCallback("OnGroupSelected", function(_, _, val)
         if val == nil then
             selected = nil
             group:ReleaseChildren()
@@ -860,7 +872,7 @@ function addon:create_itemset_list(frame)
                 selected = val
             end
 
-            local itemset = nil
+            local itemset
             if itemsets[selected] ~= nil then
                 itemset = itemsets[selected]
             elseif global_itemsets[selected] ~= nil then

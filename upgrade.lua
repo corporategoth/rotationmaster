@@ -1,4 +1,4 @@
-local addon_name, addon = ...
+local _, addon = ...
 
 local function upgradeTexturesToEffects()
     if addon.db.global.textures ~= nil then
@@ -54,7 +54,7 @@ end
 
 function addon:UpgradeRotationItemsToItemSets(rot)
     if rot.cooldowns then
-        for k, cond in pairs(rot.cooldowns) do
+        for _, cond in pairs(rot.cooldowns) do
             if cond.type == "item" and (type(cond.action) == "number" or (type(cond.action) == "string" and
                     not string.match(cond.action, "%x%x%x%x%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%x%x%x%x%x%x%x%x"))) then
                 cond.action = { cond.action }
@@ -63,7 +63,7 @@ function addon:UpgradeRotationItemsToItemSets(rot)
         end
     end
     if rot.rotation then
-        for k, cond in pairs(rot.rotation) do
+        for _, cond in pairs(rot.rotation) do
             if cond.type == "item" and (type(cond.action) == "number" or (type(cond.action) == "string" and
                     not string.match(cond.action, "%x%x%x%x%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%x%x%x%x%x%x%x%x"))) then
                 cond.action = { cond.action }

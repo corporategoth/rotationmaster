@@ -1,4 +1,4 @@
-local addon_name, addon = ...
+local _, addon = ...
 
 local AceGUI = LibStub("AceGUI-3.0")
 local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
@@ -12,20 +12,19 @@ local compare, compareString, nullable, keys, isin, deepcopy, getCached, playeri
     addon.compare, addon.compareString, addon.nullable, addon.keys, addon.isin, addon.deepcopy, addon.getCached, addon.playerize
 
 local helpers = addon.help_funcs
-local CreateText, CreatePictureText, CreateButtonText, Indent, Gap =
-helpers.CreateText, helpers.CreatePictureText, helpers.CreateButtonText, helpers.Indent, helpers.Gap
+local CreateText, Indent, Gap = helpers.CreateText, helpers.Indent, helpers.Gap
 
 addon:RegisterCondition(L["Combat"], "COMBAT", {
     description = L["In Combat"],
     icon = "Interface\\Icons\\ability_dualwield",
-    valid = function(spec, value)
+    valid = function(_, value)
         return value.unit ~= nil and isin(units, value.unit);
     end,
-    evaluate = function(value, cache, evalStart)
+    evaluate = function(value, cache)
         if not getCached(cache, UnitExists, value.unit) then return false end
         return getCached(cache, UnitAffectingCombat, value.unit)
     end,
-    print = function(spec, value)
+    print = function(_, value)
         return string.format(playerize(value.unit, L["%s are in combat"], L["%s is in combat"]),
             nullable(units[value.unit], L["<unit>"]))
     end,
@@ -46,29 +45,27 @@ addon:RegisterCondition(L["Combat"], "COMBAT", {
 addon:RegisterCondition(L["Combat"], "PET", {
     description = L["Have Pet"],
     icon = "Interface\\Icons\\Inv_box_petcarrier_01",
-    valid = function(spec, value)
+    valid = function()
         return true
     end,
-    evaluate = function(value, cache, evalStart)
+    evaluate = function(_, cache)
         return getCached(cache, UnitExists, "pet")
     end,
-    print = function(spec, value)
+    print = function()
         return L["you have a pet"]
-    end,
-    widget = function(parent, spec, value)
     end,
 })
 
 addon:RegisterCondition(L["Combat"], "PET_NAME", {
     description = L["Have Named Pet"],
     icon = "Interface\\Icons\\inv_box_birdcage_01",
-    valid = function(spec, value)
+    valid = function(_, value)
         return value.value ~= nil
     end,
-    evaluate = function(value, cache, evalStart)
+    evaluate = function(value, cache)
         return getCached(cache, GetUnitName, "pet") == value.value
     end,
-    print = function(spec, value)
+    print = function(_, value)
         return string.format(L["you have a pet named %s"], nullable(value.value, L["<name>"]))
     end,
     widget = function(parent, spec, value)
@@ -77,7 +74,7 @@ addon:RegisterCondition(L["Combat"], "PET_NAME", {
         local funcs = top:GetUserData("funcs")
 
         local petname = AceGUI:Create("EditBox")
-        petname:SetCallback("OnEnterPressed", function(widget, event, v)
+        petname:SetCallback("OnEnterPressed", function(_, _, v)
             value.value = v
             top:SetStatusText(funcs:print(root, spec))
         end)
@@ -96,13 +93,13 @@ addon:RegisterCondition(L["Combat"], "PET_NAME", {
 addon:RegisterCondition(L["Combat"], "STEALTHED", {
     description = L["Stealth"],
     icon = "Interface\\Icons\\ability_stealth",
-    valid = function(spec, value)
+    valid = function()
         return true
     end,
-    evaluate = function(value, cache, evalStart)
+    evaluate = function(_, cache)
         return getCached(cache, IsStealthed)
     end,
-    print = function(spec, value)
+    print = function()
         return L["you are stealthed"]
     end,
 })
@@ -110,13 +107,13 @@ addon:RegisterCondition(L["Combat"], "STEALTHED", {
 addon:RegisterCondition(L["Combat"], "INCONTROL", {
     description = L["In Control"],
     icon = "Interface\\Icons\\spell_nature_polymorph",
-    valid = function(spec, value)
+    valid = function()
         return true
     end,
-    evaluate = function(value, cache, evalStart)
+    evaluate = function(_, cache)
         return getCached(cache, HasFullControl)
     end,
-    print = function(spec, value)
+    print = function()
         return L["you are in control of your character"]
     end,
 })
@@ -124,12 +121,12 @@ addon:RegisterCondition(L["Combat"], "INCONTROL", {
 addon:RegisterCondition(L["Combat"], "LOC_TYPE", {
     description = L["Loss Of Control Type"],
     icon = "Interface\\Icons\\spell_nature_polymorph",
-    valid = function(spec, value)
+    valid = function(_, value)
         return (value.operator ~= nil and isin(operators, value.operator) and
                 value.value ~= nil and value.value >= 0.0 and
                 value.loc_type ~= nil and isin(addon.loc_types, value.loc_type))
     end,
-    evaluate = function(value, cache, evalStart)
+    evaluate = function(value, cache)
         for i=1,getCached(cache, C_LossOfControl.GetNumEvents) do
             local loc_type, _, _, _, _, remain = getCached(cache, C_LossOfControl.GetEventInfo, i)
             if addon.loc_equivalent[loc_type] then
@@ -141,7 +138,7 @@ addon:RegisterCondition(L["Combat"], "LOC_TYPE", {
         end
         return false
     end,
-    print = function(spec, value)
+    print = function(_, value)
         return compareString(value.operator, string.format(L["time remaining on %s"],
                 nullable(addon.loc_types[value.loc_type], L["<school>"])), string.format(L["%s seconds"], nullable(value.value)))
     end,
@@ -152,7 +149,7 @@ addon:RegisterCondition(L["Combat"], "LOC_TYPE", {
 
         local loc_type = AceGUI:Create("Dropdown")
         loc_type:SetLabel(L["Control Type"])
-        loc_type:SetCallback("OnValueChanged", function(widget, event, v)
+        loc_type:SetCallback("OnValueChanged", function(_, _, v)
             value.loc_type = v
             top:SetStatusText(funcs:print(root, spec))
         end)
@@ -178,12 +175,12 @@ addon:RegisterCondition(L["Combat"], "LOC_TYPE", {
 addon:RegisterCondition(L["Combat"], "LOC_BLOCKED", {
     description = L["Loss Of Control Blocked"],
     icon = "Interface\\Icons\\spell_nature_polymorph",
-    valid = function(spec, value)
+    valid = function(_, value)
         return (value.operator ~= nil and isin(operators, value.operator) and
                 value.value ~= nil and value.value >= 0.0 and
                 value.school ~= nil and isin(SCHOOL_STRINGS, value.school))
     end,
-    evaluate = function(value, cache, evalStart)
+    evaluate = function(value, cache)
         for i=1,getCached(cache, C_LossOfControl.GetNumEvents) do
             local _, _, _, _, _, remain, _, school = getCached(cache, C_LossOfControl.GetEventInfo, i)
             if bit.band(school, bit.lshift(1, value.school-1)) then
@@ -192,7 +189,7 @@ addon:RegisterCondition(L["Combat"], "LOC_BLOCKED", {
         end
         return false
     end,
-    print = function(spec, value)
+    print = function(_, value)
         return compareString(value.operator, string.format(L["time remaining on block of your %s abilities"],
             nullable(SCHOOL_STRINGS[value.school], L["<school>"])), string.format(L["%s seconds"], nullable(value.value)))
     end,
@@ -203,7 +200,7 @@ addon:RegisterCondition(L["Combat"], "LOC_BLOCKED", {
 
         local school = AceGUI:Create("Dropdown")
         school:SetLabel(L["School Blocked"])
-        school:SetCallback("OnValueChanged", function(widget, event, v)
+        school:SetCallback("OnValueChanged", function(_, _, v)
             value.school = v
             top:SetStatusText(funcs:print(root, spec))
         end)
@@ -229,13 +226,13 @@ addon:RegisterCondition(L["Combat"], "LOC_BLOCKED", {
 addon:RegisterCondition(L["Combat"], "MOVING", {
     description = L["Moving"],
     icon = "Interface\\Icons\\Ability_druid_dash",
-    valid = function(spec, value)
+    valid = function()
         return true
     end,
-    evaluate = function(value, cache, evalStart)
+    evaluate = function(_, cache)
         return (getCached(cache, GetUnitSpeed, "player") ~= 0)
     end,
-    print = function(spec, value)
+    print = function()
         return L["you are moving"]
     end,
 })
@@ -243,11 +240,11 @@ addon:RegisterCondition(L["Combat"], "MOVING", {
 addon:RegisterCondition(L["Combat"], "THREAT", {
     description = L["Threat"],
     icon = "Interface\\Icons\\ability_physical_taunt",
-    valid = function(spec, value)
+    valid = function(_, value)
         return value.unit ~= nil and isin(units, value.unit) and
                value.threat ~= nil and value.threat >= 1 and value.threat <= 4
     end,
-    evaluate = function(value, cache, evalStart)
+    evaluate = function(value, cache)
         if not getCached(cache, UnitExists, value.unit) then return false end
         local enemy = getCached(cache, UnitIsEnemy, "player", value.unit)
         if enemy then
@@ -261,7 +258,7 @@ addon:RegisterCondition(L["Combat"], "THREAT", {
             return false
         end
     end,
-    print = function(spec, value)
+    print = function(_, value)
         return string.format(L["you are at least %s on %s"], nullable(threat[value.threat], L["<threat>"]),
         nullable(units[value.unit], L["<unit>"]))
     end,
@@ -276,7 +273,7 @@ addon:RegisterCondition(L["Combat"], "THREAT", {
 
         local val = AceGUI:Create("Dropdown")
         val:SetLabel(L["Threat"])
-        val:SetCallback("OnValueChanged", function(widget, event, v)
+        val:SetCallback("OnValueChanged", function(_, _, v)
             value.threat = v
             top:SetStatusText(funcs:print(root, spec))
         end)
@@ -311,21 +308,21 @@ addon:RegisterCondition(L["Combat"], "THREAT", {
 addon:RegisterCondition(L["Combat"], "THREAT_COUNT", {
     description = L["Threat Count"],
     icon = "Interface\\Icons\\Ability_racial_bloodrage",
-    valid = function(spec, value)
+    valid = function(_, value)
         return value.value ~= nil and value.value >= 0 and
                 value.operator ~= nil and isin(operators, value.operator) and
                 value.threat ~= nil and value.threat >= 1 and value.threat <= 4
     end,
-    evaluate = function(value, cache, evalStart)
+    evaluate = function(value)
         local count = 0
-        for unit, entity in pairs(addon.unitsInRange) do
+        for _, entity in pairs(addon.unitsInRange) do
             if entity.enemy and entity.threat >= value.threat - 1 then
                 count = count + 1
             end
         end
         return compare(value.operator, count, value.value)
     end,
-    print = function(spec, value)
+    print = function(_, value)
         return compareString(value.operator,
                         string.format(L["number of enemies you are at least %s"],
                         nullable(threat[value.threat], L["<threat>"])),
@@ -338,7 +335,7 @@ addon:RegisterCondition(L["Combat"], "THREAT_COUNT", {
 
         local val = AceGUI:Create("Dropdown")
         val:SetLabel(L["Threat"])
-        val:SetCallback("OnValueChanged", function(widget, event, v)
+        val:SetCallback("OnValueChanged", function(_, _, v)
             value.threat = v
             top:SetStatusText(funcs:print(root, spec))
         end)
@@ -375,13 +372,13 @@ local character_class = select(2, UnitClass("player"))
 addon.condition_form = {
     description = L["Shapeshift Form"],
     icon = "Interface\\Icons\\ability_hunter_pet_bear",
-    valid = function(spec, value)
+    valid = function(_, value)
         return value.value ~= nil and value.value >= 0 and value.value <= (character_class == "SHAMAN" and 1 or GetNumShapeshiftForms())
     end,
-    evaluate = function(value, cache, evalStart)
+    evaluate = function(value, cache)
         return getCached(cache, GetShapeshiftForm) == value.value
     end,
-    print = function(spec, value)
+    print = function(_, value)
         local form
         if value.value ~= nil then
             if value.value == 0 then
@@ -445,7 +442,7 @@ addon.condition_form = {
 
         local form = AceGUI:Create("Dropdown")
         form:SetLabel(L["Form"])
-        form:SetCallback("OnValueChanged", function(widget, event, v)
+        form:SetCallback("OnValueChanged", function(_, _, v)
             value.value = tonumber(v)
             form:SetValue(v)
             set_form_icon()
@@ -471,14 +468,14 @@ addon:RegisterCondition(L["Combat"], "FORM", addon.condition_form)
 addon:RegisterCondition(L["Combat"], "ATTACKABLE", {
     description = L["Attackable"],
     icon = "Interface\\Icons\\inv_misc_head_dragon_bronze",
-    valid = function(spec, value)
+    valid = function(_, value)
         return value.unit ~= nil and isin(units, value.unit);
     end,
-    evaluate = function(value, cache, evalStart)
+    evaluate = function(value, cache)
         if not getCached(cache, UnitExists, value.unit) then return false end
         return getCached(cache, UnitCanAttack, "player", value.unit)
     end,
-    print = function(spec, value)
+    print = function(_, value)
         return string.format(L["%s is attackable"], nullable(units[value.unit], L["<unit>"]))
     end,
     widget = function(parent, spec, value)
@@ -498,14 +495,14 @@ addon:RegisterCondition(L["Combat"], "ATTACKABLE", {
 addon:RegisterCondition(L["Combat"], "ENEMY", {
     description = L["Hostile"],
     icon = "Interface\\Icons\\inv_misc_head_dragon_01",
-    valid = function(spec, value)
+    valid = function(_, value)
         return value.unit ~= nil and isin(units, value.unit);
     end,
-    evaluate = function(value, cache, evalStart)
+    evaluate = function(value, cache)
         if not getCached(cache, UnitExists, value.unit) then return false end
         return getCached(cache, UnitIsEnemy, "player", value.unit)
     end,
-    print = function(spec, value)
+    print = function(_, value)
         return string.format(L["%s is an enemy"], nullable(units[value.unit], L["<unit>"]))
     end,
     widget = function(parent, spec, value)
@@ -525,13 +522,13 @@ addon:RegisterCondition(L["Combat"], "ENEMY", {
 addon:RegisterCondition(L["Combat"], "COMBAT_HISTORY", {
     description = L["Combat Action History"],
     icon = "Interface\\Icons\\Spell_shadow_shadowward",
-    valid = function(spec, value)
+    valid = function(_, value)
         return (value.unit ~= nil and isin(units, value.unit) and
                 value.action ~= nil and isin(actions, value.action) and
                 value.operator ~= nil and isin(operators, value.operator) and
                 value.value ~= nil and value.value >= 0)
     end,
-    evaluate = function(value, cache, evalStart)
+    evaluate = function(value)
         if addon.combatHistory[value.unit] ~= nil then
             for idx, entry in pairs(addon.combatHistory[value.unit]) do
                 if (compare(value.operator, idx, value.value)) and (value.action == entry.action or
@@ -542,7 +539,7 @@ addon:RegisterCondition(L["Combat"], "COMBAT_HISTORY", {
         end
         return false
     end,
-    print = function(spec, value)
+    print = function(_, value)
         return compareString(value.operator, string.format(playerize(value.unit, L["%s were %s"], L["%s was %s"]),
                              nullable(units[value.unit], L["<unit>"]), nullable(actions[value.action], L["<action>"])),
                              string.format(L["%s actions ago"], nullable(value.value)))
@@ -558,7 +555,7 @@ addon:RegisterCondition(L["Combat"], "COMBAT_HISTORY", {
 
         local action = AceGUI:Create("Dropdown")
         action:SetLabel(L["Action Type"])
-        action:SetCallback("OnValueChanged", function(widget, event, v)
+        action:SetCallback("OnValueChanged", function(_, _, v)
             value.action = v
             top:SetStatusText(funcs:print(root, spec))
         end)
@@ -590,15 +587,15 @@ addon:RegisterCondition(L["Combat"], "COMBAT_HISTORY", {
 addon:RegisterCondition(L["Combat"], "COMBAT_HISTORY_TIME", {
     description = L["Combat Action History Time"],
     icon = "Interface\\Icons\\Spell_shadow_shadetruesight",
-    valid = function(spec, value)
+    valid = function(_, value)
         return (value.unit ~= nil and isin(units, value.unit) and
                 value.action ~= nil and isin(actions, value.action) and
                 value.operator ~= nil and isin(operators, value.operator) and
                 value.value ~= nil and value.value >= 0)
     end,
-    evaluate = function(value, cache, evalStart)
+    evaluate = function(value, _, evalStart)
         if addon.combatHistory[value.unit] ~= nil then
-            for idx, entry in pairs(addon.combatHistory[value.unit]) do
+            for _, entry in pairs(addon.combatHistory[value.unit]) do
                 if compare(value.operator, (evalStart - entry.time), value.value) and (value.action == entry.action or
                         (entry.severity ~= nil and value.action == (entry.action .. '_' .. entry.severity))) then
                     return true
@@ -607,7 +604,7 @@ addon:RegisterCondition(L["Combat"], "COMBAT_HISTORY_TIME", {
         end
         return false
     end,
-    print = function(spec, value)
+    print = function(_, value)
         return compareString(value.operator, string.format(playerize(value.unit, L["%s were %s"], L["%s was %s"]),
             nullable(units[value.unit], L["<unit>"]), nullable(actions[value.action], L["<action>"])),
             string.format(L["%s seconds ago"], nullable(value.value)))
@@ -623,7 +620,7 @@ addon:RegisterCondition(L["Combat"], "COMBAT_HISTORY_TIME", {
 
         local action = AceGUI:Create("Dropdown")
         action:SetLabel(L["Action Type"])
-        action:SetCallback("OnValueChanged", function(widget, event, v)
+        action:SetCallback("OnValueChanged", function(_, _, v)
             value.action = v
             top:SetStatusText(funcs:print(root, spec))
         end)

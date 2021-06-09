@@ -1,4 +1,4 @@
-local addon_name, addon = ...
+local _, addon = ...
 
 --[[-----------------------------------------------------------------------------
 Help Widget
@@ -8,7 +8,7 @@ local AceGUI = LibStub and LibStub("AceGUI-3.0", true)
 if not AceGUI or (AceGUI:GetWidgetVersion(Type) or 0) >= Version then return end
 
 -- Lua APIs
-local select, pairs, print = select, pairs, print
+local pairs = pairs
 
 -- WoW APIs
 local CreateFrame, UIParent = CreateFrame, UIParent
@@ -79,8 +79,7 @@ local methods = {
         self.width = 0
     end,
 
-    ["SetRelativeWidth"] = function(self, width)
-    end,
+    ["SetRelativeWidth"] = function() end,
 
     ["SetHeight"] = function(self, height)
         self.float_frame:SetHeight(height)
@@ -88,8 +87,7 @@ local methods = {
         self.height = 0
     end,
 
-    ["SetRelativeHeight"] = function(self, width)
-    end,
+    ["SetRelativeHeight"] = function() end,
 
     ["SetTooltip"] = function(self, tooltip)
         self.tooltip = tooltip
@@ -137,10 +135,10 @@ local function Constructor()
 
     local float_frame = CreateFrame("Button", nil, frame)
     float_frame:Hide()
-    frame:SetScript("OnHide", function(widget)
+    frame:SetScript("OnHide", function()
         float_frame:Hide()
     end)
-    frame:SetScript("OnShow", function(widget)
+    frame:SetScript("OnShow", function()
         float_frame:Show()
     end)
 

@@ -6,7 +6,7 @@ local AceGUI = LibStub and LibStub("AceGUI-3.0", true)
 if not AceGUI or (AceGUI:GetWidgetVersion(Type) or 0) >= Version then return end
 
 -- Lua APIs
-local select, pairs, print = select, pairs, print
+local pairs = pairs
 
 -- WoW APIs
 local CreateFrame, UIParent = CreateFrame, UIParent
@@ -118,32 +118,6 @@ local methods = {
     end
 }
 
-local function makebox(frame, r, g, b, a)
-    local top = frame:CreateLine()
-    top:SetStartPoint("TOPLEFT", 0, 0)
-    top:SetEndPoint("TOPRIGHT", 0, 0)
-    top:SetThickness(1)
-    top:SetColorTexture(r, g, b, a)
-
-    local right = frame:CreateLine()
-    right:SetStartPoint("TOPRIGHT", 0, 0)
-    right:SetEndPoint("BOTTOMRIGHT", 0, 0)
-    right:SetThickness(1)
-    right:SetColorTexture(r, g, b, a)
-
-    local bottom = frame:CreateLine()
-    bottom:SetStartPoint("BOTTOMLEFT", 0, 0)
-    bottom:SetEndPoint("BOTTOMRIGHT", 0, 0)
-    bottom:SetThickness(1)
-    bottom:SetColorTexture(r, g, b, a)
-
-    local left = frame:CreateLine()
-    left:SetStartPoint("TOPLEFT", 0, 0)
-    left:SetEndPoint("BOTTOMLEFT", 0, 0)
-    left:SetThickness(1)
-    left:SetColorTexture(r, g, b, a)
-end
-
 --[[-----------------------------------------------------------------------------
 Constructor
 -------------------------------------------------------------------------------]]
@@ -194,12 +168,6 @@ local function Constructor()
     center:EnableMouse(true)
     center:SetScript("OnClick", Button_OnClick)
     center.direction = "CENTER"
-
-    local center_image = center:CreateFontString(nil, "BACKGROUND", "GameFontHighlightSmall")
-    center_image:SetJustifyH("CENTER")
-    center_image:SetJustifyV("CENTER")
-    center_image:SetText("o")
-    center_image:SetVertexColor(1, 1, 1)
 
     local center_image = center:CreateTexture(nil, "BACKGROUND")
     center_image:SetAllPoints(center)

@@ -1,24 +1,14 @@
-local addon_name, addon = ...
+local _, addon = ...
 
-local _G = _G
 local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
 
 local AceGUI = LibStub("AceGUI-3.0")
 
-local assert, error, tostring, tonumber, pairs
-    = assert, error, tostring, tonumber, pairs
-
-local floor, ceil, min = math.floor, math.ceil, math.min
-
--- From constants
-local operators, units, unitsPossessive, roles, debufftypes, zonepvp, instances, totems =
-        addon.operators, addon.units, addon.unitsPossessive, addon.roles, addon.debufftypes,
-        addon.zonepvp, addon.instances, addon.totems
+local error, pairs = error, pairs
+local ceil, min = math.ceil, math.min
 
 -- From utils
-local compare, compareString, nullable, keys, tomap, has, is, isin, cleanArray, deepcopy, getCached, HideOnEscape =
-        addon.compare, addon.compareString, addon.nullable, addon.keys, addon.tomap, addon.has,
-        addon.is, addon.isin, addon.cleanArray, addon.deepcopy, addon.getCached, addon.HideOnEscape
+local cleanArray, deepcopy, HideOnEscape = addon.cleanArray, addon.deepcopy, addon.HideOnEscape
 
 --------------------------------
 -- Common code
@@ -28,7 +18,7 @@ local evaluateArray, evaluateSingle, printArray, printSingle, validateArray, val
 
 evaluateArray = function(operation, array, conditions, cache, start)
     if array ~= nil then
-        for idx, entry in pairs(array) do
+        for _, entry in pairs(array) do
             if entry ~= nil and entry.type ~= nil then
                 local rv
                 if entry.type == "AND" or entry.type == "OR" then
@@ -90,7 +80,7 @@ printArray = function(operation, array, conditions, spec)
     local rv = "("
     local first = true
 
-    for idx, entry in pairs(array) do
+    for _, entry in pairs(array) do
         if entry ~= nil and entry.type ~= nil then
             if first then
                 first = false
@@ -127,12 +117,12 @@ printSingle = function(value, conditions, spec)
     end
 end
 
-validateArray = function(operation, array, conditions, spec)
+validateArray = function(_, array, conditions, spec)
     if array == nil then
         return true
     end
 
-    for idx, entry in pairs(array) do
+    for _, entry in pairs(array) do
         if entry ~= nil and entry.type ~= nil then
             local rv
             if entry.type == "AND" or entry.type == "OR" then
@@ -165,12 +155,12 @@ validateSingle = function(value, conditions, spec)
     end
 end
 
-usefulArray = function(operation, array, conditions)
+usefulArray = function(_, array, conditions)
     if array == nil then
         return false
     end
 
-    for idx, entry in pairs(array) do
+    for _, entry in pairs(array) do
         if entry ~= nil and entry.type ~= nil then
             local rv
             if entry.type == "AND" or entry.type == "OR" then
@@ -209,7 +199,7 @@ local function wrap(str, limit)
 
     -- the "".. is there because :gsub returns multiple values
     return ""..str:gsub("(%s+)()(%S+)()",
-        function(sp, st, word, fi)
+        function(_, st, word, fi)
             if fi-here > limit then
                 here = st
                 return "\n"..word
@@ -218,7 +208,7 @@ local function wrap(str, limit)
 end
 
 local function LayoutConditionTab(top, frame, funcs, value, selected, conditions, groups, group)
-    local selectedIcon = nil
+    local selectedIcon
 
     local function layoutIcon(icon, desc, selected, onclick)
         local description = AceGUI:Create("InteractiveLabel")
@@ -245,7 +235,7 @@ local function LayoutConditionTab(top, frame, funcs, value, selected, conditions
     end
 
     if (group == nil) then
-        local deleteicon = layoutIcon("Interface\\Icons\\Trade_Engineering", DELETE, false, function(widget)
+        local deleteicon = layoutIcon("Interface\\Icons\\Trade_Engineering", DELETE, false, function()
             if selected == "NOT" and value.value ~= nil then
                 local subvalue = value.value
                 cleanArray(value, { "type" })
@@ -259,7 +249,7 @@ local function LayoutConditionTab(top, frame, funcs, value, selected, conditions
         end)
         frame:AddChild(deleteicon)
 
-        local andicon = layoutIcon("Interface\\Icons\\Spell_ChargePositive", L["AND"], selected == "AND", function(widget)
+        local andicon = layoutIcon("Interface\\Icons\\Spell_ChargePositive", L["AND"], selected == "AND", function()
             local subvalue
             if selected ~= "AND" and selected ~= "OR" then
                 if value ~= nil and value.type ~= nil then
@@ -274,7 +264,7 @@ local function LayoutConditionTab(top, frame, funcs, value, selected, conditions
         end)
         frame:AddChild(andicon)
 
-        local oricon = layoutIcon("Interface\\Icons\\Spell_ChargeNegative", L["OR"], selected == "OR", function(widget)
+        local oricon = layoutIcon("Interface\\Icons\\Spell_ChargeNegative", L["OR"], selected == "OR", function()
             local subvalue
             if selected ~= "AND" and selected ~= "OR" then
                 if value ~= nil and value.type ~= nil then
@@ -289,7 +279,7 @@ local function LayoutConditionTab(top, frame, funcs, value, selected, conditions
         end)
         frame:AddChild(oricon)
 
-        local noticon = layoutIcon("Interface\\PaperDollInfoFrame\\UI-GearManager-LeaveItem-Transparent", L["NOT"], selected == "NOT", function(widget)
+        local noticon = layoutIcon("Interface\\PaperDollInfoFrame\\UI-GearManager-LeaveItem-Transparent", L["NOT"], selected == "NOT", function()
             local subvalue
             if selected ~= "NOT" then
                 if value ~= nil and value.type ~= nil then
@@ -307,11 +297,11 @@ local function LayoutConditionTab(top, frame, funcs, value, selected, conditions
         frame:AddChild(noticon)
     end
 
-    for k, v in pairs(conditions) do
+    for _, v in pairs(conditions) do
         if groups == nil or group == groups[v] then
             local icon, desc = funcs:describe(v)
 
-            local action = layoutIcon(icon, desc, selected == v, function(widget)
+            local action = layoutIcon(icon, desc, selected == v, function()
                 if selected ~= v then
                     cleanArray(value, { "type" })
                 end
@@ -324,23 +314,22 @@ local function LayoutConditionTab(top, frame, funcs, value, selected, conditions
     return selectedIcon
 end
 
-local function ChangeConditionType(parent, event, ...)
+local function ChangeConditionType(parent, _, ...)
     local top = parent:GetUserData("top")
     local value = parent:GetUserData("value")
-    local index = top:GetUserData("index")
     local spec = top:GetUserData("spec")
     local root = top:GetUserData("root")
     local funcs = top:GetUserData("funcs")
 
     -- Don't let the notifications happen, or the top screen destroy itself on hide.
-    top:SetCallback("OnClose", function(widget) end)
+    top:SetCallback("OnClose", function() end)
     top:Hide()
 
     local conditions, groups = funcs:list()
     local group_count = {}
     if (groups) then
         local grouped = 0
-        for k, v in pairs(groups) do
+        for _, v in pairs(groups) do
             if group_count[v] == nil then
                 group_count[v] = 1
             else
@@ -350,7 +339,7 @@ local function ChangeConditionType(parent, event, ...)
         end
         group_count[L["Other"]] = #conditions - grouped
         local max_group = 0
-        for k,v in pairs(group_count) do
+        for _,v in pairs(group_count) do
             if v > max_group then
                 max_group = v
             end
@@ -361,7 +350,6 @@ local function ChangeConditionType(parent, event, ...)
     end
 
     local selected, selectedIcon
-    local selectedDesc = L["Please Choose ..."]
     if (value ~= nil and value.type ~= nil) then
         selected = value.type
     end
@@ -415,7 +403,7 @@ local function ChangeConditionType(parent, event, ...)
         group:SetFullHeight(true)
         group:SetFullWidth(true)
         group:SetTabs(tabs)
-        group:SetCallback("OnGroupSelected", function(widget, event, val)
+        group:SetCallback("OnGroupSelected", function(_, _, val)
             group:ReleaseChildren()
             group:PauseLayout()
             if selectedIcon then
@@ -493,7 +481,7 @@ local function ActionGroup(parent, value, idx, array)
             moveup:SetDisabled(true)
         end
         moveup:SetImageSize(24, 24)
-        moveup:SetCallback("OnClick", function(widget, event)
+        moveup:SetCallback("OnClick", function()
             local tmp = array[idx-1]
             array[idx-1] = array[idx]
             array[idx] = tmp
@@ -512,7 +500,7 @@ local function ActionGroup(parent, value, idx, array)
             movedown:SetDisabled(true)
         end
         movedown:SetImageSize(24, 24)
-        movedown:SetCallback("OnClick", function(widget, event, ...)
+        movedown:SetCallback("OnClick", function()
             local tmp = array[idx+1]
             array[idx+1] = array[idx]
             array[idx] = tmp
@@ -676,8 +664,6 @@ local conditions_idx = 1
 local condition_groups = {}
 
 function addon:RegisterCondition(group, tag, array)
-    local index = #conditions
-
     array["order"] = conditions_idx
     conditions[tag] = array
     conditions_idx = conditions_idx + 1
@@ -719,7 +705,7 @@ end
 
 function addon:listConditions()
     local rv = {}
-    for k, v in pairs(conditions) do
+    for k, _ in pairs(conditions) do
         table.insert(rv, k)
     end
     table.sort(rv, function (lhs, rhs)
@@ -755,8 +741,6 @@ local switchConditions = {}
 local switchConditions_idx = 1
 
 function addon:RegisterSwitchCondition(tag, array)
-    local index = #switchConditions
-
     array["order"] = switchConditions_idx
     switchConditions[tag] = array
     switchConditions_idx = switchConditions_idx + 1
@@ -795,7 +779,7 @@ end
 
 function addon:listSwitchConditions()
     local rv = {}
-    for k, v in pairs(switchConditions) do
+    for k, _ in pairs(switchConditions) do
         table.insert(rv, k)
     end
     table.sort(rv, function (lhs, rhs)

@@ -1,33 +1,29 @@
-local addon_name, addon = ...
+local _, addon = ...
 
 local AceGUI = LibStub("AceGUI-3.0")
 local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
-local color, tostring, tonumber, pairs = color, tostring, tonumber, pairs
-local floor = math.floor
+local color, tonumber = color, tonumber
 
 -- From constants
-local operators, units, unitsPossessive, roles, debufftypes, zonepvp, instances, totems, points =
-    addon.operators, addon.units, addon.unitsPossessive, addon.roles, addon.debufftypes,
-    addon.zonepvp, addon.instances, addon.totems, addon.points
+local operators, units, unitsPossessive, points =
+    addon.operators, addon.units, addon.unitsPossessive, addon.points
 
 -- From utils
-local compare, compareString, nullable, keys, tomap, isin, cleanArray, deepcopy, getCached =
-    addon.compare, addon.compareString, addon.nullable, addon.keys, addon.tomap,
-    addon.isin, addon.cleanArray, addon.deepcopy, addon.getCached
+local compare, compareString, nullable, isin, getCached =
+    addon.compare, addon.compareString, addon.nullable, addon.isin, addon.getCached
 
 local helpers = addon.help_funcs
-local CreateText, CreatePictureText, CreateButtonText, Indent, Gap =
-helpers.CreateText, helpers.CreatePictureText, helpers.CreateButtonText, helpers.Indent, helpers.Gap
+local CreateText, Indent, Gap = helpers.CreateText, helpers.Indent, helpers.Gap
 
 addon:RegisterCondition(L["Combat"], "HEALTH", {
     description = L["Health"],
     icon = "Interface\\Icons\\inv_potion_36",
-    valid = function(spec, value)
+    valid = function(_, value)
         return (value.operator ~= nil and isin(operators, value.operator) and
                 value.unit ~= nil and isin(units, value.unit) and
                 value.value ~= nil and value.value >= 0)
     end,
-    evaluate = function(value, cache, evalStart)
+    evaluate = function(value, cache)
         if not getCached(cache, UnitExists, value.unit) then return false end
         local cur
         if RealMobHealth then
@@ -38,7 +34,7 @@ addon:RegisterCondition(L["Combat"], "HEALTH", {
         end
         return compare(value.operator, cur, value.value)
     end,
-    print = function(spec, value)
+    print = function(_, value)
         return compareString(value.operator, string.format(L["%s health"], nullable(unitsPossessive[value.unit], L["<unit>"])), nullable(value.value))
     end,
     widget = function(parent, spec, value)
@@ -65,17 +61,17 @@ addon:RegisterCondition(L["Combat"], "HEALTH", {
 addon:RegisterCondition(L["Combat"], "HEALTHPCT", {
     description = L["Health Percentage"],
     icon = "Interface\\Icons\\inv_potion_35",
-    valid = function(spec, value)
+    valid = function(_, value)
         return (value.operator ~= nil and isin(operators, value.operator) and
                 value.unit ~= nil and isin(units, value.unit) and
                 value.value ~= nil and value.value >= 0.00 and value.value <= 1.00)
     end,
-    evaluate = function(value, cache, evalStart)
+    evaluate = function(value, cache)
         if not getCached(cache, UnitExists, value.unit) then return false end
         local health = getCached(cache, UnitHealth, value.unit) / getCached(cache, UnitHealthMax, value.unit) * 100;
         return compare(value.operator, health, value.value * 100)
     end,
-    print = function(spec, value)
+    print = function(_, value)
         local v = value.value
         if v ~= nil then
             v = v * 100
@@ -107,16 +103,16 @@ addon:RegisterCondition(L["Combat"], "HEALTHPCT", {
 addon:RegisterCondition(L["Combat"], "MANA", {
     description = L["Mana"],
     icon = "Interface\\Icons\\inv_potion_71",
-    valid = function(spec, value)
+    valid = function(_, value)
         return (value.operator ~= nil and isin(operators, value.operator) and
                 value.unit ~= nil and isin(units, value.unit) and
                 value.value ~= nil and value.value >= 0)
     end,
-    evaluate = function(value, cache, evalStart)
+    evaluate = function(value, cache)
         if not getCached(cache, UnitExists, value.unit) then return false end
         return compare(value.operator, getCached(cache, UnitPower, value.unit, Enum.PowerType.Mana), value.value)
     end,
-    print = function(spec, value)
+    print = function(_, value)
         return compareString(value.operator, string.format(L["%s mana"], nullable(unitsPossessive[value.unit], L["<unit>"])), nullable(value.value))
     end,
     widget = function(parent, spec, value)
@@ -143,17 +139,17 @@ addon:RegisterCondition(L["Combat"], "MANA", {
 addon:RegisterCondition(L["Combat"], "MANAPCT", {
     description = L["Mana Percentage"],
     icon = "Interface\\Icons\\inv_potion_70",
-    valid = function(spec, value)
+    valid = function(_, value)
         return (value.operator ~= nil and isin(operators, value.operator) and
                 value.unit ~= nil and isin(units, value.unit) and
                 value.value ~= nil and value.value >= 0.00 and value.value <= 1.00)
     end,
-    evaluate = function(value, cache, evalStart)
+    evaluate = function(value, cache)
         if not getCached(cache, UnitExists, value.unit) then return false end
         local mana = getCached(cache, UnitPower, value.unit, Enum.PowerType.Mana) / getCached(cache, UnitPowerMax, value.unit, Enum.PowerType.Mana) * 100;
         return compare(value.operator, mana, value.value * 100)
     end,
-    print = function(spec, value)
+    print = function(_, value)
         local v = value.value
         if v ~= nil then
             v = v * 100
@@ -185,12 +181,12 @@ addon:RegisterCondition(L["Combat"], "MANAPCT", {
 addon:RegisterCondition(L["Combat"], "POWER", {
     description = L["Power"],
     icon = "Interface\\Icons\\inv_potion_92",
-    valid = function(spec, value)
+    valid = function(_, value)
         return (value.operator ~= nil and isin(operators, value.operator) and
                 value.unit ~= nil and isin(units, value.unit) and
                 value.value ~= nil and value.value >= 0)
     end,
-    evaluate = function(value, cache, evalStart)
+    evaluate = function(value, cache)
         if not getCached(cache, UnitExists, value.unit) then return false end
         -- Cannot use longterm cache for player as different forms may have different powers
         local power = getCached(cache, UnitPowerType, value.unit)
@@ -200,7 +196,7 @@ addon:RegisterCondition(L["Combat"], "POWER", {
         end
         return compare(value.operator, getCached(cache, UnitPower, value.unit, power), value.value)
     end,
-    print = function(spec, value)
+    print = function(_, value)
         return compareString(value.operator, string.format(L["%s power"], nullable(unitsPossessive[value.unit], L["<unit>"])), nullable(value.value))
     end,
     widget = function(parent, spec, value)
@@ -228,12 +224,12 @@ addon:RegisterCondition(L["Combat"], "POWER", {
 addon:RegisterCondition(L["Combat"], "POWERPCT", {
     description = L["Power Percentage"],
     icon = "Interface\\Icons\\inv_potion_91",
-    valid = function(spec, value)
+    valid = function(_, value)
         return (value.operator ~= nil and isin(operators, value.operator) and
                 value.unit ~= nil and isin(units, value.unit) and
                 value.value ~= nil and value.value >= 0.00 and value.value <= 1.00)
     end,
-    evaluate = function(value, cache, evalStart)
+    evaluate = function(value, cache)
         if not getCached(cache, UnitExists, value.unit) then return false end
         -- Cannot use longterm cache for player as different forms may have different powers
         local power = getCached(cache, UnitPowerType, value.unit)
@@ -244,7 +240,7 @@ addon:RegisterCondition(L["Combat"], "POWERPCT", {
         local mana = getCached(cache, UnitPower, value.unit, power) / getCached(cache, UnitPowerMax, value.unit, power) * 100;
         return compare(value.operator, mana, value.value)
     end,
-    print = function(spec, value)
+    print = function(_, value)
         local v = value.value
         if v ~= nil then
             v = v * 100
@@ -277,12 +273,12 @@ addon:RegisterCondition(L["Combat"], "POWERPCT", {
 addon:RegisterCondition(L["Combat"], "POINT", {
     description = L["Points"],
     icon = "Interface\\Icons\\Inv_jewelry_amulet_01",
-    valid = function(spec, value)
+    valid = function(_, value)
         return (value.operator ~= nil and isin(operators, value.operator) and
                 value.unit ~= nil and isin(units, value.unit) and
                 value.value ~= nil and value.value >= 0)
     end,
-    evaluate = function(value, cache, evalStart)
+    evaluate = function(value, cache)
         if not getCached(cache, UnitExists, value.unit) then return false end
         local class
         if value.unit == "player" then
@@ -297,7 +293,7 @@ addon:RegisterCondition(L["Combat"], "POINT", {
             return false
         end
     end,
-    print = function(spec, value)
+    print = function(_, value)
         return compareString(value.operator, string.format(L["%s points"], nullable(unitsPossessive[value.unit], L["<unit>"])), nullable(value.value))
     end,
     widget = function(parent, spec, value)
@@ -326,13 +322,13 @@ addon:RegisterCondition(L["Combat"], "POINT", {
 addon:RegisterCondition(L["Combat"], "TT_HEALTH", {
     description = L["Time Until Health"],
     icon = "Interface\\Icons\\inv_potion_21",
-    valid = function(spec, value)
+    valid = function(_, value)
         return (value.operator ~= nil and isin(operators, value.operator) and
                 value.unit ~= nil and isin(units, value.unit) and
                 value.value ~= nil and value.value >= 0.00 and
                 value.health ~= nil and value.health >= 0)
     end,
-    evaluate = function(value, cache, evalStart)
+    evaluate = function(value, cache)
         if not getCached(cache, UnitExists, value.unit) then return false end
         local target = getCached(cache, UnitGUID, value.unit)
         if target then
@@ -366,7 +362,7 @@ addon:RegisterCondition(L["Combat"], "TT_HEALTH", {
         end
         return false
     end,
-    print = function(spec, value)
+    print = function(_, value)
         return string.format(L["%s with %s"],
             compareString(value.operator, string.format(L["time until %s is at %s health"],
             nullable(value.unit, L["<unit>"]), nullable(value.health)),
@@ -385,7 +381,7 @@ addon:RegisterCondition(L["Combat"], "TT_HEALTH", {
         health:SetWidth(100)
         health:SetLabel(L["Health"])
         health:SetText(value.health)
-        health:SetCallback("OnEnterPressed", function(widget, event, v)
+        health:SetCallback("OnEnterPressed", function(_, _, v)
             value.health = tonumber(v)
             top:SetStatusText(funcs:print(root, spec))
         end)
@@ -397,7 +393,7 @@ addon:RegisterCondition(L["Combat"], "TT_HEALTH", {
 
         local mode = AceGUI:Create("Dropdown")
         mode:SetLabel(L["Mode"])
-        mode:SetCallback("OnValueChanged", function(widget, event, v)
+        mode:SetCallback("OnValueChanged", function(_, _, v)
             value.mode = (v ~= "both" and v or nil)
             top:SetStatusText(funcs:print(root, spec))
         end)
@@ -435,13 +431,13 @@ addon:RegisterCondition(L["Combat"], "TT_HEALTH", {
 addon:RegisterCondition(L["Combat"], "TT_HEALTHPCT", {
     description = L["Time Until Health Percentage"],
     icon = "Interface\\Icons\\inv_potion_24",
-    valid = function(spec, value)
+    valid = function(_, value)
         return (value.operator ~= nil and isin(operators, value.operator) and
                 value.unit ~= nil and isin(units, value.unit) and
                 value.value ~= nil and value.value >= 0.00 and
                 value.health ~= nil and value.health >= 0.00 and value.health <= 1.00)
     end,
-    evaluate = function(value, cache, evalStart)
+    evaluate = function(value, cache)
         if not getCached(cache, UnitExists, value.unit) then return false end
         local target = getCached(cache, UnitGUID, value.unit)
         if target then
@@ -478,7 +474,7 @@ addon:RegisterCondition(L["Combat"], "TT_HEALTHPCT", {
         end
         return false
     end,
-    print = function(spec, value)
+    print = function(_, value)
         local v = value.health
         if v ~= nil then
             v = v * 100
@@ -507,7 +503,7 @@ addon:RegisterCondition(L["Combat"], "TT_HEALTHPCT", {
         health:SetSliderValues(0, 1, 0.01)
         health:SetWidth(150)
         health:SetIsPercent(true)
-        health:SetCallback("OnValueChanged", function(widget, event, v)
+        health:SetCallback("OnValueChanged", function(_, _, v)
             value.health = tonumber(v)
             top:SetStatusText(funcs:print(root, spec))
         end)
@@ -519,7 +515,7 @@ addon:RegisterCondition(L["Combat"], "TT_HEALTHPCT", {
 
         local mode = AceGUI:Create("Dropdown")
         mode:SetLabel(L["Mode"])
-        mode:SetCallback("OnValueChanged", function(widget, event, v)
+        mode:SetCallback("OnValueChanged", function(_, _, v)
             value.mode = (v ~= "both" and v or nil)
             top:SetStatusText(funcs:print(root, spec))
         end)

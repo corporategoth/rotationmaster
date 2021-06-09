@@ -1,4 +1,4 @@
-local addon_name, addon = ...
+local _, addon = ...
 
 local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
 local AceGUI = LibStub("AceGUI-3.0")
@@ -46,7 +46,7 @@ local function help_top_buttons(group, singular, plural)
             "Removes this " .. singular .. " from the " .. singular .. " list entirely.  This action is permanent."))
 end
 
-local function help_effect_group(group, singular, plural)
+local function help_effect_group(group, singular)
     group:AddChild(CreateText(color.BLIZ_YELLOW .. L["Effect"] .. color.RESET .. " - " ..
             "How the " .. singular .. " should be highlighted.  This selection can be updated in the " ..
             color.BLUE .. L["Effects"] .. color.RESET .. " configuration screen.  A value of " .. color.GREEN ..
@@ -94,7 +94,7 @@ local function help_effect_group(group, singular, plural)
             " control."))
 end
 
-local function help_action_group(group, singular, plural)
+local function help_action_group(group, singular)
     group:AddChild(CreateText(color.BLIZ_YELLOW .. L["Action Type"] .. color.RESET .. " - " ..
             "The type of action to highlight on your action bars."))
 
@@ -145,7 +145,7 @@ local function help_action_group(group, singular, plural)
 
 end
 
-local function help_conditions(group, singular, plural)
+local function help_conditions(group, singular)
     group:AddChild(CreateText(color.BLIZ_YELLOW .. L["Conditions"] .. color.RESET .. " - " ..
             "A human readable version of the conditions that control if this " .. singular .. " is active or " ..
             "not.  If this condition fails, it will be skipped.  If you have live updating enabled in the " ..

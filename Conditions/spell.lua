@@ -1,4 +1,4 @@
-local addon_name, addon = ...
+local _, addon = ...
 
 local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
 local color = color
@@ -11,8 +11,7 @@ local compare, compareString, nullable, isin, getCached, round, isSpellOnSpec =
     addon.compare, addon.compareString, addon.nullable, addon.isin, addon.getCached, addon.round, addon.isSpellOnSpec
 
 local helpers = addon.help_funcs
-local CreateText, CreatePictureText, CreateButtonText, Indent, Gap =
-    helpers.CreateText, helpers.CreatePictureText, helpers.CreateButtonText, helpers.Indent, helpers.Gap
+local Gap = helpers.Gap
 
 local GCD_SPELL
 if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
@@ -24,7 +23,7 @@ end
 addon:RegisterCondition(L["Spells / Items"], "SPELL_AVAIL", {
     description = L["Spell Available"],
     icon = "Interface\\Icons\\Spell_holy_renew",
-    valid = function(spec, value)
+    valid = function(_, value)
         if value.spell ~= nil then
             local name = GetSpellInfo(value.spell)
             return name ~= nil
@@ -35,12 +34,12 @@ addon:RegisterCondition(L["Spells / Items"], "SPELL_AVAIL", {
     evaluate = function(value, cache, evalStart)
         local spellid = addon:Widget_GetSpellId(value.spell, value.ranked)
         if not spellid then return false end
-        local start, duration, enabled = getCached(cache, GetSpellCooldown, spellid)
+        local start, duration = getCached(cache, GetSpellCooldown, spellid)
         if start == 0 and duration == 0 then
             return true
         else
             -- A special spell that shows if the GCD is active ...
-            local gcd_start, gcd_duration, gcd_enabled = getCached(cache, GetSpellCooldown, GCD_SPELL)
+            local gcd_start, gcd_duration = getCached(cache, GetSpellCooldown, GCD_SPELL)
             if gcd_start ~= 0 and gcd_duration ~= 0 then
                 local time = GetTime()
                 local gcd_remain = round(gcd_duration - (time - gcd_start), 3)
@@ -58,7 +57,7 @@ addon:RegisterCondition(L["Spells / Items"], "SPELL_AVAIL", {
             return false
         end
     end,
-    print = function(spec, value)
+    print = function(_, value)
         local link = addon:Widget_GetSpellLink(value.spell, value.ranked)
         return string.format(L["%s is available"], nullable(link, L["<spell>"]))
     end,
@@ -81,7 +80,7 @@ addon:RegisterCondition(L["Spells / Items"], "SPELL_AVAIL", {
 addon:RegisterCondition(L["Spells / Items"], "SPELL_RANGE", {
     description = L["Spell In Range"],
     icon = "Interface\\Icons\\inv_misc_bandage_02",
-    valid = function(spec, value)
+    valid = function(_, value)
         if value.spell ~= nil then
             local name = GetSpellInfo(value.spell)
             return name ~= nil
@@ -89,7 +88,7 @@ addon:RegisterCondition(L["Spells / Items"], "SPELL_RANGE", {
             return false
         end
     end,
-    evaluate = function(value, cache, evalStart)
+    evaluate = function(value, cache)
         if not getCached(cache, UnitExists, "target") then return false end
         local spellid = addon:Widget_GetSpellId(value.spell, value.ranked)
         if spellid then
@@ -100,7 +99,7 @@ addon:RegisterCondition(L["Spells / Items"], "SPELL_RANGE", {
         end
         return false
     end,
-    print = function(spec, value)
+    print = function(_, value)
         local link = addon:Widget_GetSpellLink(value.spell, value.ranked)
         return string.format(L["%s is in range"], nullable(link, L["<spell>"]))
     end,
@@ -123,7 +122,7 @@ addon:RegisterCondition(L["Spells / Items"], "SPELL_RANGE", {
 addon:RegisterCondition(L["Spells / Items"], "SPELL_COOLDOWN", {
     description = L["Spell Cooldown"],
     icon = "Interface\\Icons\\spell_nature_timestop",
-    valid = function(spec, value)
+    valid = function(_, value)
         if value.spell ~= nil then
             local name = GetSpellInfo(value.spell)
             return (value.operator ~= nil and isin(operators, value.operator) and
@@ -132,10 +131,10 @@ addon:RegisterCondition(L["Spells / Items"], "SPELL_COOLDOWN", {
             return false
         end
     end,
-    evaluate = function(value, cache, evalStart) -- Cooldown until the spell is available
+    evaluate = function(value, cache) -- Cooldown until the spell is available
         local spellid = addon:Widget_GetSpellId(value.spell, value.ranked)
         if not spellid then return false end
-        local start, duration, enabled = getCached(cache, GetSpellCooldown, spellid)
+        local start, duration = getCached(cache, GetSpellCooldown, spellid)
         local remain = 0
         if start ~= 0 and duration ~= 0 then
             remain = round(duration - (GetTime() - start), 3)
@@ -143,7 +142,7 @@ addon:RegisterCondition(L["Spells / Items"], "SPELL_COOLDOWN", {
         end
         return compare(value.operator, remain, value.value)
     end,
-    print = function(spec, value)
+    print = function(_, value)
         local link = addon:Widget_GetSpellLink(value.spell, value.ranked)
         return string.format(L["the %s"],
                 compareString(value.operator, string.format(L["cooldown on %s"],  nullable(link, L["<spell>"])),
@@ -175,7 +174,7 @@ addon:RegisterCondition(L["Spells / Items"], "SPELL_COOLDOWN", {
 addon:RegisterCondition(L["Spells / Items"], "SPELL_REMAIN", {
     description = L["Spell Time Remaining"],
     icon = "Interface\\Icons\\inv_misc_pocketwatch_03",
-    valid = function(spec, value)
+    valid = function(_, value)
         if value.spell ~= nil then
             local name = GetSpellInfo(value.spell)
             return (value.operator ~= nil and isin(operators, value.operator) and
@@ -184,17 +183,17 @@ addon:RegisterCondition(L["Spells / Items"], "SPELL_REMAIN", {
             return false
         end
     end,
-    evaluate = function(value, cache, evalStart) -- How long the spell remains effective
+    evaluate = function(value, cache) -- How long the spell remains effective
         local spellid = addon:Widget_GetSpellId(value.spell, value.ranked)
         if not spellid then return false end
-        local charges, maxcharges, start, duration = getCached(cache, GetSpellCharges, spellid)
+        local charges, _, start, duration = getCached(cache, GetSpellCharges, spellid)
         local remain = 0
         if (charges and charges >= 0) then
             remain = duration - (GetTime() - start)
         end
         return compare(value.operator, remain, value.value)
     end,
-    print = function(spec, value)
+    print = function(_, value)
         local link = addon:Widget_GetSpellLink(value.spell, value.ranked)
         return string.format(L["the %s"],
             compareString(value.operator, string.format(L["remaining time on %s"], nullable(link, L["<spell>"])),
@@ -227,7 +226,7 @@ addon:RegisterCondition(L["Spells / Items"], "SPELL_REMAIN", {
 addon:RegisterCondition(L["Spells / Items"], "SPELL_CHARGES", {
     description = L["Spell Charges"],
     icon = "Interface\\Icons\\Spell_nature_astralrecalgroup",
-    valid = function(spec, value)
+    valid = function(_, value)
         if value.spell ~= nil then
             local name = GetSpellInfo(value.spell)
             return (value.operator ~= nil and isin(operators, value.operator) and
@@ -236,13 +235,13 @@ addon:RegisterCondition(L["Spells / Items"], "SPELL_CHARGES", {
             return false
         end
     end,
-    evaluate = function(value, cache, evalStart)
+    evaluate = function(value, cache)
         local spellid = addon:Widget_GetSpellId(value.spell, value.ranked)
         if not spellid then return false end
-        local charges, maxcharges, start, duration = getCached(cache, GetSpellCharges, spellid)
+        local charges = getCached(cache, GetSpellCharges, spellid)
         return compare(value.operator, charges, value.value)
     end,
-    print = function(spec, value)
+    print = function(_, value)
         local link = addon:Widget_GetSpellLink(value.spell, value.ranked)
         return string.format(L["the %s"],
             compareString(value.operator, string.format(L["number of charges on %s"], nullable(link, L["<spell>"])), nullable(value.value)))
@@ -273,7 +272,7 @@ addon:RegisterCondition(L["Spells / Items"], "SPELL_CHARGES", {
 addon:RegisterCondition(L["Spells / Items"], "SPELL_HISTORY", {
     description = L["Spell Cast History"],
     icon = "Interface\\Icons\\Spell_shadow_nightofthedead",
-    valid = function(spec, value)
+    valid = function(_, value)
         if value.spell ~= nil then
             local name = GetSpellInfo(value.spell)
             return (value.operator ~= nil and isin(operators, value.operator) and
@@ -282,7 +281,7 @@ addon:RegisterCondition(L["Spells / Items"], "SPELL_HISTORY", {
             return false
         end
     end,
-    evaluate = function(value, cache, evalStart)
+    evaluate = function(value)
         local spellid = addon:Widget_GetSpellId(value.spell, value.ranked)
         if not spellid then return false end
         for idx, entry in pairs(addon.spellHistory) do
@@ -290,7 +289,7 @@ addon:RegisterCondition(L["Spells / Items"], "SPELL_HISTORY", {
         end
         return false
     end,
-    print = function(spec, value)
+    print = function(_, value)
         local link = addon:Widget_GetSpellLink(value.spell, value.ranked)
         return compareString(value.operator, string.format(L["%s was cast"], nullable(link, L["<spell>"])),
                         string.format(L["%s casts ago"], nullable(value.value)))
@@ -325,7 +324,7 @@ addon:RegisterCondition(L["Spells / Items"], "SPELL_HISTORY", {
 addon:RegisterCondition(L["Spells / Items"], "SPELL_HISTORY_TIME", {
     description = L["Spell Cast History Time"],
     icon = "Interface\\Icons\\Spell_fire_sealoffire",
-    valid = function(spec, value)
+    valid = function(_, value)
         if value.spell ~= nil then
             local name = GetSpellInfo(value.spell)
             return (value.operator ~= nil and isin(operators, value.operator) and
@@ -334,15 +333,15 @@ addon:RegisterCondition(L["Spells / Items"], "SPELL_HISTORY_TIME", {
             return false
         end
     end,
-    evaluate = function(value, cache, evalStart) -- Cooldown until the spell is available
+    evaluate = function(value, _, evalStart) -- Cooldown until the spell is available
         local spellid = addon:Widget_GetSpellId(value.spell, value.ranked)
         if not spellid then return false end
-        for idx, entry in pairs(addon.spellHistory) do
+        for _, entry in pairs(addon.spellHistory) do
             return entry.spell == spellid and compare(value.operator, (evalStart - entry.time), value.value)
         end
         return false
     end,
-    print = function(spec, value)
+    print = function(_, value)
         local link = addon:Widget_GetSpellLink(value.spell, value.ranked)
         return compareString(value.operator, string.format(L["%s was cast"], nullable(link, L["<spell>"])),
                 string.format(L["%s seconds ago"], nullable(value.value)))
@@ -376,7 +375,7 @@ addon:RegisterCondition(L["Spells / Items"], "SPELL_HISTORY_TIME", {
 addon:RegisterCondition(L["Spells / Items"], "SPELL_ACTIVE", {
     description = L["Spell Active or Pending"],
     icon = 132212,
-    valid = function(spec, value)
+    valid = function(_, value)
         if value.spell ~= nil then
             local name = GetSpellInfo(value.spell)
             return name ~= nil
@@ -384,12 +383,12 @@ addon:RegisterCondition(L["Spells / Items"], "SPELL_ACTIVE", {
             return false
         end
     end,
-    evaluate = function(value, cache, evalStart)
+    evaluate = function(value)
         local spellid = addon:Widget_GetSpellId(value.spell, value.ranked)
         if not spellid then return false end
         return IsCurrentSpell(spellid)
     end,
-    print = function(spec, value)
+    print = function(_, value)
         local link = addon:Widget_GetSpellLink(value.spell, value.ranked)
         return string.format(L["%s is active or pending"], nullable(link, L["<spell>"]))
     end,

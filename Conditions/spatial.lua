@@ -1,4 +1,4 @@
-local addon_name, addon = ...
+local _, addon = ...
 
 local AceGUI = LibStub("AceGUI-3.0")
 local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
@@ -9,23 +9,22 @@ local color, tostring, tonumber, pairs = color, tostring, tonumber, pairs
 local units, operators = addon.units, addon.operators
 
 -- From utils
-local compare, compareString, nullable, keys, isin, UnitCloserThan, getCached, playerize =
-addon.compare, addon.compareString, addon.nullable, addon.keys, addon.isin, addon.UnitCloserThan, addon.getCached, addon.playerize
+local compare, compareString, nullable, isin, getCached, playerize =
+addon.compare, addon.compareString, addon.nullable, addon.isin, addon.getCached, addon.playerize
 
 local helpers = addon.help_funcs
-local CreateText, CreatePictureText, CreateButtonText, Indent, Gap =
-helpers.CreateText, helpers.CreatePictureText, helpers.CreateButtonText, helpers.Indent, helpers.Gap
+local CreateText, Gap = helpers.CreateText, helpers.Gap
 
 addon:RegisterCondition(nil, "PROXIMITY", {
     description = L["Allies Within Range"],
     icon = "Interface\\Icons\\Spell_holy_prayerofspirit",
-    valid = function(spec, value)
+    valid = function(_, value)
         return (value.unit ~= nil and isin(units, value.unit) and
                 value.operator ~= nil and isin(operators, value.operator) and
                 value.value ~= nil and value.value >= 0 and
                 value.distance ~= nil and value.distance >= 0)
     end,
-    evaluate = function(value, cache, evalStart)
+    evaluate = function(value, cache)
         if not getCached(cache, UnitExists, value.unit) then return false end
         local count = 0
         local prefix, size
@@ -50,7 +49,7 @@ addon:RegisterCondition(nil, "PROXIMITY", {
         end
         return compare(value.operator, count, value.value)
     end,
-    print = function(spec, value)
+    print = function(_, value)
         return string.format(playerize(value.unit, L["%s have %s"], L["%s has %s"]),
                 nullable(units[value.unit], L["<unit>"]),
                 compareString(value.operator,
@@ -74,7 +73,7 @@ addon:RegisterCondition(nil, "PROXIMITY", {
         distance:SetWidth(100)
         distance:SetLabel(L["Distance"])
         distance:SetText(value.distance)
-        distance:SetCallback("OnEnterPressed", function(widget, event, v)
+        distance:SetCallback("OnEnterPressed", function(_, _, v)
             value.distance = tonumber(v)
             top:SetStatusText(funcs:print(root, spec))
         end)
@@ -95,17 +94,17 @@ addon:RegisterCondition(nil, "PROXIMITY", {
 addon:RegisterCondition(nil, "DISTANCE", {
     description = L["Distance"],
     icon = "Interface\\Icons\\Spell_arcane_teleportorgrimmar",
-    valid = function(spec, value)
+    valid = function(_, value)
         return (value.unit ~= nil and isin(units, value.unit) and
                 value.value ~= nil and value.value >= 0 and value.value <= 40)
     end,
-    evaluate = function(value, cache, evalStart)
+    evaluate = function(value, cache)
         if not getCached(cache, UnitExists, value.unit) then return false end
         local rcf = function(unit) return RangeCheck:GetRange(unit) end
         local maxRange = select(2, getCached(cache, rcf, value.unit))
         return maxRange and maxRange <= value.value
     end,
-    print = function(spec, value)
+    print = function(_, value)
         return string.format(playerize(value.unit, L["%s are %s"], L["%s is %s"]),
                 nullable(value.unit, L["<unit>"]),
                 string.format(L["closer than %s yards"], nullable(value.value)))
@@ -123,7 +122,7 @@ addon:RegisterCondition(nil, "DISTANCE", {
         distance:SetWidth(75)
         distance:SetLabel(L["Distance"])
         distance:SetText(value.value)
-        distance:SetCallback("OnEnterPressed", function(widget, event, v)
+        distance:SetCallback("OnEnterPressed", function(_, _, v)
             value.value = tonumber(v)
         end)
         parent:AddChild(distance)
@@ -142,15 +141,15 @@ addon:RegisterCondition(nil, "DISTANCE", {
 addon:RegisterCondition(nil, "DISTANCE_COUNT", {
     description = L["Distance Count"],
     icon = "Interface\\Icons\\Spell_arcane_teleportstormwind",
-    valid = function(spec, value)
+    valid = function(_, value)
         return (value.value ~= nil and value.value >= 0 and
                 value.operator ~= nil and isin(operators, value.operator) and value.enemy ~= nil and
                 value.distance ~= nil and value.distance >= 0 and value.distance <= 40)
     end,
-    evaluate = function(value, cache, evalStart)
+    evaluate = function(value, cache)
         local rcf = function(unit) return RangeCheck:GetRange(unit) end
         local count = 0
-        for guid, entity in pairs(addon.unitsInRange) do
+        for _, entity in pairs(addon.unitsInRange) do
             if entity.enemy == value.enemy then
                 local maxRange = select(2, getCached(cache, rcf, entity.unit))
                 if maxRange and maxRange <= value.distance then
@@ -160,7 +159,7 @@ addon:RegisterCondition(nil, "DISTANCE_COUNT", {
         end
         return compare(value.operator, count, value.value)
     end,
-    print = function(spec, value)
+    print = function(_, value)
         return compareString(value.operator,
                         string.format(L["Number of %s within %s yards"],
                             (value.enemy and L["enemies"] or "allies"),
@@ -181,7 +180,7 @@ addon:RegisterCondition(nil, "DISTANCE_COUNT", {
             value.enemy = false
             enemy:SetValue(false)
         end
-        enemy:SetCallback("OnValueChanged", function(widget, event, v)
+        enemy:SetCallback("OnValueChanged", function(_, _, v)
             value.enemy = v
             setDistances(value.enemy)
             top:SetStatusText(funcs:print(root, spec))
@@ -196,7 +195,7 @@ addon:RegisterCondition(nil, "DISTANCE_COUNT", {
         distance:SetWidth(75)
         distance:SetLabel(L["Distance"])
         distance:SetText(value.distance)
-        distance:SetCallback("OnEnterPressed", function(widget, event, v)
+        distance:SetCallback("OnEnterPressed", function(_, _, v)
             value.distance = tonumber(v)
         end)
         parent:AddChild(distance)

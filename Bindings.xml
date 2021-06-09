@@ -1,5 +1,5 @@
 <Bindings>
-	<Binding name="ROTATIONMASTER_TOGGLE" header="ROTATIONMASTER" category="ADDONS">
+	<Binding name="ROTATIONMASTER_TOGGLE" header="ROTATIONMASTER" category="Rotation Master">
 		RotationMaster:toggle()
 	</Binding>
 </Bindings>

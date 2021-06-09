@@ -1,4 +1,4 @@
-local addon_name, addon = ...
+local _, addon = ...
 
 local AceGUI = LibStub("AceGUI-3.0")
 local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
@@ -12,8 +12,7 @@ local compare, compareString, nullable, keys, isin, getCached, playerize =
     addon.compare, addon.compareString, addon.nullable, addon.keys, addon.isin, addon.getCached, addon.playerize
 
 local helpers = addon.help_funcs
-local CreateText, CreatePictureText, CreateButtonText, Indent, Gap =
-    helpers.CreateText, helpers.CreatePictureText, helpers.CreateButtonText, helpers.Indent, helpers.Gap
+local CreateText, Gap = helpers.CreateText, helpers.Gap
 
 local UnitDebuff
 if (WOW_PROJECT_ID == WOW_PROJECT_CLASSIC) then
@@ -26,10 +25,10 @@ end
 addon:RegisterCondition(L["Buffs"], "DEBUFF", {
     description = L["Debuff Present"],
     icon = "Interface\\Icons\\spell_shadow_curseoftounges",
-    valid = function(spec, value)
+    valid = function(_, value)
         return (value.unit ~= nil and isin(units, value.unit) and value.spell ~= nil)
     end,
-    evaluate = function(value, cache, evalStart)
+    evaluate = function(value, cache)
         if not getCached(cache, UnitExists, value.unit) then return false end
         for i=1,40 do
             local name = getCached(cache, UnitDebuff, value.unit, i)
@@ -42,7 +41,7 @@ addon:RegisterCondition(L["Buffs"], "DEBUFF", {
         end
         return false
     end,
-    print = function(spec, value)
+    print = function(_, value)
         return string.format(playerize(value.unit, L["%s have %s"], L["%s has %s"]),
             nullable(units[value.unit], L["<unit>"]), nullable(value.spell, L["<debuff>"]))
     end,
@@ -56,7 +55,7 @@ addon:RegisterCondition(L["Buffs"], "DEBUFF", {
         parent:AddChild(unit)
 
         local spell_group = addon:Widget_SpellNameWidget(spec, "Spell_EditBox", value,
-            function(v) return true end,
+            function() return true end,
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(spell_group)
     end,
@@ -70,12 +69,12 @@ addon:RegisterCondition(L["Buffs"], "DEBUFF", {
 addon:RegisterCondition(L["Buffs"], "DEBUFF_REMAIN", {
     description = L["Debuff Time Remaining"],
     icon = "Interface\\Icons\\ability_creature_cursed_04",
-    valid = function(spec, value)
+    valid = function(_, value)
         return (value.unit ~= nil and isin(units, value.unit) and value.spell ~= nil and
                 value.operator ~= nil and isin(operators, value.operator) and
                 value.value ~= nil and value.value >= 0)
     end,
-    evaluate = function(value, cache, evalStart)
+    evaluate = function(value, cache)
         if not getCached(cache, UnitExists, value.unit) then return false end
         for i=1,40 do
             local name, _, _, _, _, expirationTime = getCached(cache, UnitDebuff, value.unit, i)
@@ -89,7 +88,7 @@ addon:RegisterCondition(L["Buffs"], "DEBUFF_REMAIN", {
         end
         return false
     end,
-    print = function(spec, value)
+    print = function(_, value)
         return string.format(playerize(value.unit, L["%s have %s where %s"], L["%s have %s where %s"]),
             nullable(units[value.unit], L["<unit>"]), nullable(value.spell, L["<debuff>"]),
             compareString(value.operator, L["the remaining time"], string.format(L["%s seconds"], nullable(value.value))))
@@ -104,7 +103,7 @@ addon:RegisterCondition(L["Buffs"], "DEBUFF_REMAIN", {
         parent:AddChild(unit)
 
         local spell_group = addon:Widget_SpellNameWidget(spec, "Spell_EditBox", value,
-            function(v) return true end,
+            function() return true end,
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(spell_group)
 
@@ -127,12 +126,12 @@ addon:RegisterCondition(L["Buffs"], "DEBUFF_REMAIN", {
 addon:RegisterCondition(L["Buffs"], "DEBUFF_STACKS", {
     description = L["Debuff Stacks"],
     icon = "Interface\\Icons\\Inv_misc_coin_06",
-    valid = function(spec, value)
+    valid = function(_, value)
         return (value.unit ~= nil and isin(units, value.unit) and value.spell ~= nil and
                 value.operator ~= nil and isin(operators, value.operator) and
                 value.value ~= nil and value.value >= 0)
     end,
-    evaluate = function(value, cache, evalStart)
+    evaluate = function(value, cache)
         if not getCached(cache, UnitExists, value.unit) then return false end
         for i=1,40 do
             local name, _, count = getCached(cache, UnitDebuff, value.unit, i)
@@ -145,7 +144,7 @@ addon:RegisterCondition(L["Buffs"], "DEBUFF_STACKS", {
         end
         return false
     end,
-    print = function(spec, value)
+    print = function(_, value)
         return nullable(unitsPossessive[value.unit], L["<unit>"]) .. " " ..
                 compareString(value.operator, string.format(L["stacks of %s"], nullable(value.spell, L["<debuff>"])), nullable(value.value))
     end,
@@ -159,7 +158,7 @@ addon:RegisterCondition(L["Buffs"], "DEBUFF_STACKS", {
         parent:AddChild(unit)
 
         local spell_group = addon:Widget_SpellNameWidget(spec, "Spell_EditBox", value,
-            function(v) return true end,
+            function() return true end,
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(spell_group)
 
@@ -182,11 +181,11 @@ addon:RegisterCondition(L["Buffs"], "DEBUFF_STACKS", {
 addon:RegisterCondition(L["Buffs"], "DISPELLABLE", {
     description = L["Has Dispellable Debuff"],
     icon = "Interface\\Icons\\spell_shadow_curseofsargeras",
-    valid = function(spec, value)
+    valid = function(_, value)
         return (value.unit ~= nil and isin(units, value.unit) and
                 value.debufftype ~= nil and isin(debufftypes, value.debufftype))
     end,
-    evaluate = function(value, cache, evalStart)
+    evaluate = function(value, cache)
         if not getCached(cache, UnitExists, value.unit) then return false end
         for i=1,40 do
             local name, _, _, debuffType = getCached(cache, UnitDebuff, value.unit, i)
@@ -201,7 +200,7 @@ addon:RegisterCondition(L["Buffs"], "DISPELLABLE", {
         end
         return false
     end,
-    print = function(spec, value)
+    print = function(_, value)
         return string.format(playerize(value.unit, L["%s have a %s debuff"], L["%s has a %s debuff"]),
             nullable(units[value.unit], L["<unit>"]), nullable(debufftypes[value.debufftype], L["<debuff type>"]))
     end,
@@ -216,7 +215,7 @@ addon:RegisterCondition(L["Buffs"], "DISPELLABLE", {
 
         local debufftype = AceGUI:Create("Dropdown")
         debufftype:SetLabel(L["Debuff Type"])
-        debufftype:SetCallback("OnValueChanged", function(widget, event, v)
+        debufftype:SetCallback("OnValueChanged", function(_, _, v)
             value.debufftype = v
             top:SetStatusText(funcs:print(root, spec))
         end)

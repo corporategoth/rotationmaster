@@ -10,7 +10,7 @@ do
 		return playerSpells[spec][spellID]
 	end
 	
-	local function loadPlayerSpells(self)
+	local function loadPlayerSpells()
         -- Only wipe out the current spec, so you can still see everything for an off spec.
 		-- It's a little nicity since WoW doesn't let you see talented spells when not on spec.
     	local currentSpec = 0

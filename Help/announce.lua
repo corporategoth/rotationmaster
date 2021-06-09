@@ -1,12 +1,11 @@
-local addon_name, addon = ...
+local _, addon = ...
 
 local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
-local AceGUI = LibStub("AceGUI-3.0")
 local color = color
 
 local helpers = addon.help_funcs
-local CreateText, CreatePictureText, CreateButtonText, Indent, Gap =
-helpers.CreateText, helpers.CreatePictureText, helpers.CreateButtonText, helpers.Indent, helpers.Gap
+local CreateText, CreateButtonText, Indent, Gap =
+helpers.CreateText, helpers.CreateButtonText, helpers.Indent, helpers.Gap
 
 function addon.layout_announce_options_help(frame)
     local group = frame

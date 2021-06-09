@@ -1,26 +1,25 @@
-local addon_name, addon = ...
+local _, addon = ...
 
 local AceGUI = LibStub("AceGUI-3.0")
 local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
-local color, tonumber = color, tonumber
+local color = color
 
 -- From constants
 local operators = addon.operators
 
 -- From utils
-local compare, compareString, nullable, isin, getCached, getRetryCached, round, isint =
-    addon.compare, addon.compareString, addon.nullable, addon.isin, addon.getCached, addon.getRetryCached, addon.round, addon.isint
+local compare, compareString, nullable, isin, getCached, getRetryCached, round =
+    addon.compare, addon.compareString, addon.nullable, addon.isin, addon.getCached, addon.getRetryCached, addon.round
 
 local helpers = addon.help_funcs
-local CreateText, CreatePictureText, CreateButtonText, Indent, Gap =
-helpers.CreateText, helpers.CreatePictureText, helpers.CreateButtonText, helpers.Indent, helpers.Gap
+local CreateText, Gap = helpers.CreateText, helpers.Gap
 
 local function get_item_array(items)
     local itemsets = addon.db.char.itemsets
     local global_itemsets = addon.db.global.itemsets
 
     if type(items) == "string" then
-        local itemset = nil
+        local itemset
         if itemsets[items] ~= nil then
             itemset = itemsets[items]
         elseif global_itemsets[items] ~= nil then
@@ -60,10 +59,10 @@ end
 addon:RegisterCondition(L["Spells / Items"], "EQUIPPED", {
     description = L["Have Item Equipped"],
     icon = "Interface\\Icons\\Ability_warrior_shieldbash",
-    valid = function(spec, value)
+    valid = function(_, value)
         return value.item ~= nil
     end,
-    evaluate = function(value, cache, evalStart)
+    evaluate = function(value)
         for _, item in pairs(get_item_array(value.item)) do
             if getCached(addon.combatCache, IsEquippedItem, item) then
                 return true
@@ -71,7 +70,7 @@ addon:RegisterCondition(L["Spells / Items"], "EQUIPPED", {
         end
         return false
     end,
-    print = function(spec, value)
+    print = function(_, value)
         return string.format(L["you have %s equipped"], nullable(get_item_desc(value.item), L["<item>"]))
     end,
     widget = function(parent, spec, value)
@@ -91,12 +90,12 @@ addon:RegisterCondition(L["Spells / Items"], "EQUIPPED", {
 addon:RegisterCondition(L["Spells / Items"], "CARRYING", {
     description = L["Have Item In Bags"],
     icon = "Interface\\Icons\\inv_misc_bag_07",
-    valid = function(spec, value)
+    valid = function(_, value)
         return (value.item ~= nil and
                 value.operator ~= nil and isin(operators, value.operator) and
                 value.value ~= nil and value.value >= 0)
     end,
-    evaluate = function(value, cache, evalStart)
+    evaluate = function(value, cache)
         local itemid = addon:FindFirstItemOfItems(cache, get_item_array(value.item), false)
         local count = 0
         if itemid and addon.bagContents[itemid] then
@@ -104,7 +103,7 @@ addon:RegisterCondition(L["Spells / Items"], "CARRYING", {
         end
         return compare(value.operator, count, value.value)
     end,
-    print = function(spec, value)
+    print = function(_, value)
         return compareString(value.operator,
                 string.format(L["the number of %s you are carrying"], nullable(get_item_desc(value.item), L["<item>"])),
                 nullable(value.value, L["<quantity>"]))
@@ -133,7 +132,7 @@ addon:RegisterCondition(L["Spells / Items"], "CARRYING", {
 addon:RegisterCondition(L["Spells / Items"], "ITEM", {
     description = L["Item Available"],
     icon = "Interface\\Icons\\Inv_drink_05",
-    valid = function(spec, value)
+    valid = function(_, value)
         return value.item ~= nil
     end,
     evaluate = function(value, cache, evalStart) -- Cooldown until the spell is available
@@ -152,7 +151,7 @@ addon:RegisterCondition(L["Spells / Items"], "ITEM", {
                 return true
             else
                 -- A special spell that shows if the GCD is active ...
-                local gcd_start, gcd_duration, gcd_enabled = getCached(cache, GetSpellCooldown, 61304)
+                local gcd_start, gcd_duration = getCached(cache, GetSpellCooldown, 61304)
                 if gcd_start ~= 0 and gcd_duration ~= 0 then
                     local time = GetTime()
                     local gcd_remain = round(gcd_duration - (time - gcd_start), 3)
@@ -173,7 +172,7 @@ addon:RegisterCondition(L["Spells / Items"], "ITEM", {
             return false
         end
     end,
-    print = function(spec, value)
+    print = function(_, value)
         return string.format(L["%s is available"], nullable(get_item_desc(value.item), L["<item>"])) ..
                 (value.carrying and L[", even if you do not currently have one"] or "")
     end,
@@ -190,7 +189,7 @@ addon:RegisterCondition(L["Spells / Items"], "ITEM", {
         notcarring:SetWidth(200)
         notcarring:SetLabel(L["Check If Not Carrying"])
         notcarring:SetValue(value.notcarrying)
-        notcarring:SetCallback("OnValueChanged", function(widget, event, v)
+        notcarring:SetCallback("OnValueChanged", function(_, _, v)
             value.notcarrying = v
             top:SetStatusText(funcs:print(root, spec))
         end)
@@ -208,10 +207,10 @@ addon:RegisterCondition(L["Spells / Items"], "ITEM", {
 addon:RegisterCondition(L["Spells / Items"], "ITEM_RANGE", {
     description = L["Item In Range"],
     icon = "Interface\\Icons\\inv_misc_bandage_13",
-    valid = function(spec, value)
+    valid = function(_, value)
         return value.item ~= nil
     end,
-    evaluate = function(value, cache, evalStart)
+    evaluate = function(value, cache)
         local itemId = addon:FindFirstItemOfItems(cache, get_item_array(value.item), true)
         if itemId == nil and value.notcarrying then
             itemId = addon:FindFirstItemInItems(get_item_array(value.item))
@@ -221,7 +220,7 @@ addon:RegisterCondition(L["Spells / Items"], "ITEM_RANGE", {
         end
         return false
     end,
-    print = function(spec, value)
+    print = function(_, value)
         return string.format(L["%s is in range"], nullable(get_item_desc(value.item), L["<item>"])) ..
             (value.carrying and L[", even if you do not currently have one"] or "")
     end,
@@ -238,7 +237,7 @@ addon:RegisterCondition(L["Spells / Items"], "ITEM_RANGE", {
         notcarring:SetWidth(200)
         notcarring:SetLabel(L["Check If Not Carrying"])
         notcarring:SetValue(value.notcarrying)
-        notcarring:SetCallback("OnValueChanged", function(widget, event, v)
+        notcarring:SetCallback("OnValueChanged", function(_, _, v)
             value.notcarrying = v
             top:SetStatusText(funcs:print(root, spec))
         end)
@@ -256,11 +255,11 @@ addon:RegisterCondition(L["Spells / Items"], "ITEM_RANGE", {
 addon:RegisterCondition(L["Spells / Items"], "ITEM_COOLDOWN", {
     description = L["Item Cooldown"],
     icon = "Interface\\Icons\\Spell_holy_sealofsacrifice",
-    valid = function(spec, value)
+    valid = function(_, value)
         return (value.operator ~= nil and isin(operators, value.operator) and
                 value.item ~= nil and value.value ~= nil and value.value >= 0)
     end,
-    evaluate = function(value, cache, evalStart) -- Cooldown until the spell is available
+    evaluate = function(value, cache) -- Cooldown until the spell is available
         local itemId = addon:FindFirstItemOfItems(cache, get_item_array(value.item), true)
         if itemId == nil and value.notcarrying then
             itemId = addon:FindFirstItemInItems(get_item_array(value.item))
@@ -276,7 +275,7 @@ addon:RegisterCondition(L["Spells / Items"], "ITEM_COOLDOWN", {
         end
         return false
     end,
-    print = function(spec, value)
+    print = function(_, value)
         return string.format(L["the %s"],
             compareString(value.operator, string.format(L["cooldown on %s"], nullable(get_item_desc(value.item), L["<item>"])),
                                 string.format(L["%s seconds"], nullable(value.value)))) ..
@@ -299,7 +298,7 @@ addon:RegisterCondition(L["Spells / Items"], "ITEM_COOLDOWN", {
         notcarring:SetWidth(200)
         notcarring:SetLabel(L["Check If Not Carrying"])
         notcarring:SetValue(value.notcarrying)
-        notcarring:SetCallback("OnValueChanged", function(widget, event, v)
+        notcarring:SetCallback("OnValueChanged", function(_, _, v)
             value.notcarrying = v
             top:SetStatusText(funcs:print(root, spec))
         end)
