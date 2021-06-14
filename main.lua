@@ -231,6 +231,10 @@ local mainline_events = {
     'PLAYER_SPECIALIZATION_CHANGED',
 }
 
+local tbc_events = {
+    'PLAYER_FOCUS_CHANGED',
+}
+
 local classic_events = {
 
 }
@@ -515,7 +519,12 @@ function addon:enable()
         for _, v in pairs(mainline_events) do
             self:RegisterEvent(v)
         end
-    else
+    elseif (WOW_PROJECT_ID == WOW_PROJECT_BURNING_CRUSADE_CLASSIC) then
+        self.currentSpec = 0
+        for _, v in pairs(tbc_events) do
+            self:RegisterEvent(v)
+        end
+    elseif (WOW_PROJECT_ID == WOW_PROJECT_CLASSIC) then
         self.currentSpec = 0
         for _, v in pairs(classic_events) do
             self:RegisterEvent(v)
