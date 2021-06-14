@@ -18,8 +18,8 @@ globals.lua
 embeds.xml
 locales.xml
 constants.lua
-profiler.lua
 utils.lua
+profiler.lua
 main.lua
 buttons.lua
 init.lua
