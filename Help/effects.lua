@@ -30,7 +30,17 @@ function addon.layout_effects_options_help(frame)
     group:AddChild(Indent(40, CreateText(color.GREEN .. L["Auto Cast"] .. color.RESET .. " - " ..
             "A glow resembling pixels swarming around the action icon.")))
     group:AddChild(Indent(40, CreateText(color.GREEN .. L["Glow"] .. color.RESET .. " - " ..
-            "A standard Blizzard frame glow")))
+            "A standard Blizzard frame glow (like rays shining from the button).")))
+    group:AddChild(Indent(40, CreateText(color.GREEN .. L["Animate"] .. color.RESET .. " - " ..
+            "Create a sequence of textures to be overlayed in a loop.")))
+    group:AddChild(Indent(40, CreateText(color.GREEN .. L["Dazzle"] .. color.RESET .. " - " ..
+            "Create a sequence of colors to change the overlayed texture to in a loop.")))
+    group:AddChild(Indent(40, CreateText(color.GREEN .. L["Pulse"] .. color.RESET .. " - " ..
+            "Create a sequence of magnifications to change the overlayed texture to in a loop.")))
+    group:AddChild(Indent(40, CreateText(color.GREEN .. L["Rotate"] .. color.RESET .. " - " ..
+            "Rotate the overlayed texture in a circle.")))
+    group:AddChild(Indent(40, CreateText(color.GREEN .. L["Custom"] .. color.RESET .. " - " ..
+            "Create a custom sequence specifying texture, color, magnification and rotation for each step.")))
 
     group:AddChild(Gap())
     group:AddChild(CreateText(color.BLIZ_YELLOW .. NAME .. color.RESET .. " - " ..
@@ -66,6 +76,49 @@ function addon.layout_effects_options_help(frame)
     group:AddChild(CreateText("Glow effects:"))
     group:AddChild(Indent(40, CreateText(color.BLIZ_YELLOW .. L["Frequency"] .. color.RESET .. " - " ..
             "How quickly should the glow animation be played.")))
+
+    group:AddChild(Gap())
+    group:AddChild(CreateText("Aimate effects:"))
+    group:AddChild(Indent(40, CreateText(color.BLIZ_YELLOW .. L["Frequency"] .. color.RESET .. " - " ..
+            "How quickly should the we swap between textures.")))
+    group:AddChild(Indent(40, CreateText(color.BLIZ_YELLOW .. L["Sequence"] .. color.RESET .. " - " ..
+            "The list of textures to overlay, in order.")))
+
+    group:AddChild(Gap())
+    group:AddChild(CreateText("Dazzle effects:"))
+    group:AddChild(Indent(40, CreateText(color.BLIZ_YELLOW .. L["Texture"] .. color.RESET .. " - " ..
+            "The name of the texture to overlay on top of action icons.")))
+    group:AddChild(Indent(40, CreateText(color.BLIZ_YELLOW .. L["Frequency"] .. color.RESET .. " - " ..
+            "How quickly should the we change the texture color.")))
+    group:AddChild(Indent(40, CreateText(color.BLIZ_YELLOW .. L["Sequence"] .. color.RESET .. " - " ..
+            "The list of colors to change to, in order.")))
+
+    group:AddChild(Gap())
+    group:AddChild(CreateText("Pulse effects:"))
+    group:AddChild(Indent(40, CreateText(color.BLIZ_YELLOW .. L["Texture"] .. color.RESET .. " - " ..
+            "The name of the texture to overlay on top of action icons.")))
+    group:AddChild(Indent(40, CreateText(color.BLIZ_YELLOW .. L["Frequency"] .. color.RESET .. " - " ..
+            "How quickly should the we change the texture size.")))
+    group:AddChild(Indent(40, CreateText(color.BLIZ_YELLOW .. L["Sequence"] .. color.RESET .. " - " ..
+            "The list of magnifications to change to, in order.")))
+
+    group:AddChild(Gap())
+    group:AddChild(CreateText("Rotate effects:"))
+    group:AddChild(Indent(40, CreateText(color.BLIZ_YELLOW .. L["Texture"] .. color.RESET .. " - " ..
+            "The name of the texture to overlay on top of action icons.")))
+    group:AddChild(Indent(40, CreateText(color.BLIZ_YELLOW .. L["Frequency"] .. color.RESET .. " - " ..
+            "How quickly should the we change the texture angle.")))
+    group:AddChild(Indent(40, CreateText(color.BLIZ_YELLOW .. L["Steps"] .. color.RESET .. " - " ..
+            "How many 'steps' around the circular path should we animate.")))
+    group:AddChild(Indent(40, CreateText(color.BLIZ_YELLOW .. L["Reverse"] .. color.RESET .. " - " ..
+            "Rotate clockwise instead of counterclockwise.")))
+
+    group:AddChild(Gap())
+    group:AddChild(CreateText("Custom effects:"))
+    group:AddChild(Indent(40, CreateText(color.BLIZ_YELLOW .. L["Frequency"] .. color.RESET .. " - " ..
+            "How quickly should the we swap between steps.")))
+    group:AddChild(Indent(40, CreateText(color.BLIZ_YELLOW .. L["Sequence"] .. color.RESET .. " - " ..
+            "The list of steps to perform (which includes overlay texture, color, magnification and angle), in order.")))
 
     group:AddChild(Gap())
     group:AddChild(CreatePictureText(

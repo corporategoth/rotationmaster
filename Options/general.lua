@@ -174,25 +174,24 @@ local function create_primary_options(frame)
     effect_group:SetLayout("Table")
     effect_group:SetUserData("table", { columns = { 44, 1 } })
 
-    local effect_map, effect_order, name2idx
+    local effect_map, effect_order
     local function update_effect_map()
         effect_map = {}
         effect_order = {}
-        name2idx = {}
         for k, v in pairs(effects) do
             if v.name ~= nil then
-                table.insert(effect_order, v.name)
-                effect_map[v.name] = v.name
-                name2idx[v.name] = k
+                table.insert(effect_order, k)
+                effect_map[k] = v.name
             end
         end
     end
     update_effect_map()
 
-    local effect = profile["effect"] and name2idx[profile["effect"]] and effects[name2idx[profile["effect"]]]
+    local effect = profile["effect"] and effects[profile["effect"]]
     local effect_icon = AceGUI:Create("Icon")
     effect_icon:SetWidth(36)
     effect_icon:SetHeight(36)
+    effect_icon:SetDisabled(true)
     effect_icon.frame:SetScript("OnShow", function(f)
         addon:Glow(f, "effect", effect, profile["color"], 1.0, "CENTER", 0, 0)
     end)

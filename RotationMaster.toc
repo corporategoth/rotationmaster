@@ -22,7 +22,7 @@ profiler.lua
 utils.lua
 main.lua
 buttons.lua
-upgrade.lua
+init.lua
 
 Widgets/help.lua
 Widgets/directional.lua

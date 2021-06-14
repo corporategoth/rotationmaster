@@ -137,6 +137,12 @@ addon.isin = function(array, value)
     return array[value] ~= nil
 end
 
+addon.tablelength = function(T)
+    local count = 0
+    for _ in pairs(T) do count = count + 1 end
+    return count
+end
+
 addon.round = function (num, numDecimalPlaces)
     local mult = 10^(numDecimalPlaces or 0)
     return floor(num * mult + 0.5) / mult

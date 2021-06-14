@@ -10,6 +10,7 @@ local SpellData = LibStub("AceGUI-3.0-SpellLoader")
 local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
 local getCached, getRetryCached
 local DBIcon = LibStub("LibDBIcon-1.0")
+local Media = LibStub("LibSharedMedia-3.0")
 
 local ThreatClassic = LibStub("ThreatClassic-1.0")
 if (WOW_PROJECT_ID == WOW_PROJECT_CLASSIC) then
@@ -23,7 +24,7 @@ end
 
 local pairs, color, string = pairs, color, string
 local floor = math.floor
-local multiinsert, isin, starts_with, isint = addon.multiinsert, addon.isin, addon.starts_with, addon.isint
+local isin, starts_with, isint = addon.isin, addon.starts_with, addon.isint
 
 addon.pretty_name = GetAddOnMetadata(addon_name, "Title")
 local DataBroker = LibStub("LibDataBroker-1.1"):NewDataObject("RotationMaster",
@@ -36,46 +37,7 @@ local DataBroker = LibStub("LibDataBroker-1.1"):NewDataObject("RotationMaster",
 BINDING_HEADER_ROTATIONMASTER = addon.pretty_name
 BINDING_NAME_ROTATIONMASTER_TOGGLE = string.format(L["Toggle %s " .. color.CYAN .. "/rm toggle" .. color.RESET], addon.pretty_name)
 
-local combination_food = {}
-local conjured_food = { 22895, 8076, 8075, 1487, 1114, 1113, 5349, }
-local conjured_water = { 8079, 8078, 8077, 3772, 2136, 2288, 5350, }
-local mana_potions = { 13444, 13443, 6149, 3827, 3385, 2455, }
-local healing_potions = { 13446, 3928, 1710, 929, 858, 118, }
-local bandages = { 14530, 14529, 8545, 8544, 6451, 6450, 3531, 3530, 2581, 1251, }
-local purchased_water = { 8766, 1645, 1708, 1205, 1179, 159, }
-local healthstones = {
-    "Major Healthstone",
-    "Greater Healthstone",
-    "Healthstone",
-    "Lesser Healthstone",
-    "Minor Healthstone",
-}
-
 local playerGUID = UnitGUID("player")
-
-if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
-    combination_food = { 113509, 80618, 80610, 65499, 43523, 43518, 65517, 65516, 65515, 65500 }
-    multiinsert(mana_potions, { 152495, 127835, 109222, 76098, 57192, 33448, 40067, 31677, 22732, 28101 })
-    multiinsert(healing_potions, { 169451, 152494, 127834, 152615, 109223, 57191, 39671, 22829, 28100 })
-    multiinsert(bandages, { 158382, 158381, 133942, 133940, 111603, 72986, 72985, 53051, 53050, 53049, 34722, 34721, 21991, 21990 })
-    multiinsert(healthstones, { 
-            "Legion Healthstone",
-            "Fel Healthstone",
-            "Demonic Healthstone",
-            "Master Healthstone",
-    })
-elseif (WOW_PROJECT_ID == WOW_PROJECT_BURNING_CRUSADE_CLASSIC) then
-    combination_food = { 34062 }
-    multiinsert(conjured_food, { 22019 })
-    multiinsert(conjured_water, { 22018, 30703, })
-    multiinsert(mana_potions, { 31677, 33093, 23823, 22832, 32948, 33935, 28101 })
-    multiinsert(healing_potions, { 33092, 23822, 22829, 32947, 28100, 33934 })
-    multiinsert(bandages, { 21991, 21990, 23684 })
-    multiinsert(purchased_water, { 33042, 29395, 27860, 32453, 38430, 28399, 29454, 32455, 24007, 24006, 23161 })
-    multiinsert(healthstones, { 
-            "Master Healthstone",
-    })
-end
 
 local defaults = {
     profile = {
@@ -83,7 +45,7 @@ local defaults = {
         poll = 0.15,
         ignore_mana = false,
         ignore_range = false,
-        effect = "Ping",
+        effect = "61b36ed1-fa31-4656-ad71-f3d50f193a85",
         color = { r = 1.0, g = 1.0, b = 1.0, a = 1.0 },
         magnification = 1.4,
         setpoint = 'CENTER',
@@ -107,69 +69,8 @@ local defaults = {
         announces = {},
     },
     global = {
-        itemsets = {
-            ["e8d1525c-0412-40c1-95a4-00da22bc169e"] = {
-                name = "Combination Food",
-                items = combination_food,
-            },
-            ["e626834f-60b1-413f-9c87-8ddeeb4374aa"] = {
-                name = "Conjured Food",
-                items = conjured_food,
-            },
-            ["3b10f7d6-abb2-430c-b153-7189eca75838"] = {
-                name = "Conjured Water",
-                items = conjured_water,
-            },
-	    ["6079c534-5f69-430e-b1bd-b487a31dcdd3"] = {
-		name = "Mana Potions",
-		items = mana_potions,
-	    },
-	    ["9294d112-681b-43bc-ac62-5d6bec5c1f7d"] = {
-		name = "Healing Potions",
-		items = healing_potions,
-	    },
-	    ["e66d5cfe-a0f0-4276-aa00-40464eab30df"] = {
-		name = "Bandages",
-		items = bandages,
-	    },
-	    ["b1aca4a4-acdd-4885-b63b-b62cca7afdfe"] = {
-		name = "Purchased Water",
-		items = purchased_water,
-	    },
-	    ["fed2659d-cb7b-43e1-8f53-6dda0391b8c6"] = {
-		name = "Healthstones",
-		items = healthstones,
-	    }
-        },
-        effects = {
-            {
-                type = "texture",
-                name = "Ping",
-                texture = "Interface\\Cooldown\\ping4",
-            },
-            {
-                type = "texture",
-                name = "Star",
-                texture = "Interface\\Cooldown\\star4",
-            },
-            {
-                type = "texture",
-                name = "Starburst",
-                texture = "Interface\\Cooldown\\starburst",
-            },
-            {
-                type = "blizzard",
-                name = "Glow",
-            },
-            {
-                type = "pixel",
-                name = "Pixel",
-            },
-            {
-                type = "autocast",
-                name = "Auto Cast",
-            }
-        },
+        itemsets = {},
+        effects = {},
     }
 }
 
@@ -326,17 +227,16 @@ end
 
 function addon:OnInitialize()
     self.db = LibStub("AceDB-3.0"):New("RotationMasterDB", defaults, true)
-
-    self:upgrade()
+    self:init()
 
     AceConsole:RegisterChatCommand("rm", function(str)
-        addon:HandleCommand(str)
+    addon:HandleCommand(str)
     end)
     AceConsole:RegisterChatCommand("rotationmaster", function(str)
-        addon:HandleCommand(str)
+    addon:HandleCommand(str)
     end)
     if type(self.db.profile.minimap) == "boolean" then
-        self.db.profile.minimap = nil
+    self.db.profile.minimap = nil
     end
     DBIcon:Register(addon.name, DataBroker, self.db.profile.minimap)
     DataBroker.text = color.RED .. OFF
@@ -748,7 +648,10 @@ function addon:ButtonFetch()
     if self.fetchTimer then
         self:CancelTimer(self.fetchTimer)
     end
-    self.fetchTimer = self:ScheduleTimer('Fetch', 0.25)
+    self.fetchTimer = self:ScheduleTimer(function()
+        self.skipAnnounce = true
+        self:Fetch()
+    end, 0.25)
 end
 
 local function CreateUnitInfo(cache, unit)
@@ -815,6 +718,9 @@ local function announce(cache, cond, text)
     end
     if dest ~= nil then
         SendChatMessage(text, dest)
+    end
+    if cond.announce_sound then
+        PlaySoundFile(Media:Fetch("sound", cond.announce_sound), "Master")
     end
 end
 

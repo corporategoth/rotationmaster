@@ -22,6 +22,8 @@
 <Script file="LibsAugment\Totem-EditBox.lua" />
 <Include file="Libs\AceGUI-3.0-Item-EditBox\AceGUI-3.0-Item-EditBox.xml" />
 <Include file="Libs\AceGUI-3.0-ActionSlotWidgets\widget.xml" />
+<Include file="Libs\LibSharedMedia-3.0\lib.xml" />
+<Include file="Libs\AceGUI-3.0-SharedMediaWidgets\widget.xml" />
 <Include file="Libs\LibAboutPanel\lib.xml" />
 <Script file="Libs\LibDataBroker-1.1\LibDataBroker-1.1.lua" />
 <Include file="Libs\LibDBIcon-1.0\lib.xml" />
@@ -29,6 +31,5 @@
 <Include file="Libs\ThreatClassic-1.0\lib.xml" />
 <Include file="Libs\LibClassicDurations\LibClassicDurations.xml" />
 <Script file="Libs\LibRangeCheck-2.0\LibRangeCheck-2.0.lua" />
-<Script file="Libs\!TotemModFix\TotemModFix.lua" />
 
 </Ui>

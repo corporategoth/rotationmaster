@@ -14,7 +14,6 @@ local Flags = {}
 local SpellsGlowing = {}
 local FramePool = {}
 local Frames = {}
-local Effects = {}
 
 local HighlightOverlay = {
 	type = "dazzle",
@@ -73,10 +72,19 @@ local function UpdateOverlayRaw(frame, effect, color, mags, setp, xoffs, yoffs, 
 	end
 end
 
+local function StopOverlay(frame)
+	if frame.sequenceTimer then
+		addon:CancelTimer(frame.sequenceTimer)
+		frame.sequenceTimer = nil
+	end
+	frame.sequenceIdx = nil
+end
+
 local function UpdateOverlay(frame, effect, color, mags, setp, xoffs, yoffs, angle)
 	local type =  effect.type
     if type == "texture" then
         UpdateOverlayRaw(frame, effect.texture, color, mags, setp, xoffs, yoffs, angle)
+        return true
 	elseif type == "rotate" and effect.steps and effect.steps > 0 then
 		if frame.sequenceIdx then
 			frame.sequenceIdx = frame.sequenceIdx >= effect.steps and 1 or (frame.sequenceIdx + 1)
@@ -92,6 +100,7 @@ local function UpdateOverlay(frame, effect, color, mags, setp, xoffs, yoffs, ang
 			frame.sequenceTimer = addon:ScheduleRepeatingTimer(UpdateOverlay, effect.frequency or 0.25,
 					frame, effect, color, mags, setp, xoffs, yoffs, angle)
 		end
+		return true
 	elseif effect.sequence and #effect.sequence > 0 then
         local sequence = effect.sequence
         if frame.sequenceIdx then
@@ -99,28 +108,25 @@ local function UpdateOverlay(frame, effect, color, mags, setp, xoffs, yoffs, ang
         else
             frame.sequenceIdx = 1
         end
-        if type == "dazzle" then
+        if type == "dazzle" and effect.texture then
 			UpdateOverlayRaw(frame, effect.texture, sequence[frame.sequenceIdx], mags, setp, xoffs, yoffs, angle)
 		elseif type == "animate" then
 			UpdateOverlayRaw(frame, sequence[frame.sequenceIdx], color, mags, setp, xoffs, yoffs, angle)
-		elseif type == "pulse" then
+		elseif type == "pulse" and effect.texture then
 			UpdateOverlayRaw(frame, effect.texture, color, sequence[frame.sequenceIdx], setp, xoffs, yoffs, angle)
 		elseif type == "custom" and sequence[frame.sequenceIdx].texture and sequence[frame.sequenceIdx].color and sequence[frame.sequenceIdx].magnification then
 			UpdateOverlayRaw(frame, sequence[frame.sequenceIdx].texture, sequence[frame.sequenceIdx].color, sequence[frame.sequenceIdx].magnification, setp, xoffs, yoffs, math.rad(sequence[frame.sequenceIdx].angle or 0))
+		else
+            StopOverlay(frame)
+			return false
 		end
         if not frame.sequenceTimer then
 			frame.sequenceTimer = addon:ScheduleRepeatingTimer(UpdateOverlay, effect.frequency or 0.25,
 				frame, effect, color, mags, setp, xoffs, yoffs, angle)
 		end
+		return true
 	end
-end
-
-local function StopOverlay(frame)
-	if frame.sequenceTimer then
-		addon:CancelTimer(frame.sequenceTimer)
-		frame.sequenceTimer = nil
-	end
-    frame.sequenceIdx = nil
+    return false
 end
 
 --- Creates frame overlay over a specific frame, it doesn't need to be a button.
@@ -246,8 +252,9 @@ function addon:Glow(button, id, effect, color, mags, setp, xoffs, yoffs, angle)
 			button.rmOverlays[id] = CreateOverlay(button, id)
 		end
 
-		UpdateOverlay(button.rmOverlays[id], effect, color, mags, setp, xoffs, yoffs, angle)
-		button.rmOverlays[id]:Show()
+        if UpdateOverlay(button.rmOverlays[id], effect, color, mags, setp, xoffs, yoffs, angle) then
+            button.rmOverlays[id]:Show()
+        end
 	else
 		addon:ApplyCustomGlow(effect, button, id, color, xoffs, yoffs)
 	end
@@ -528,13 +535,6 @@ function addon:Fetch()
 	Spells = {}
 	Flags = {}
 	SpellsGlowing = {}
-    Effects = {}
-
-	for _,v in pairs(addon.db.global.effects) do
-        if v.name ~= nil then
-            Effects[v.name] = v
-        end
-	end
 
 	addon:debug(L["Button Fetch triggered."])
 
@@ -609,9 +609,9 @@ function addon:IsGlowing(spellId)
 end
 
 local function GlowIndependent(spellId, id, effect, color, mags, setpoint, xoffs, yoffs, angle)
-	if Spells[spellId] ~= nil then
+	if Spells[spellId] ~= nil and addon.db.global.effects[effect] then
 		for _, button in pairs(Spells[spellId]) do
-			addon:Glow(button, id, Effects[effect], color, mags, setpoint, xoffs, yoffs, angle)
+			addon:Glow(button, id, addon.db.global.effects[effect], color, mags, setpoint, xoffs, yoffs, angle)
 			addon:verbose(spellId .. " is now glowing")
 		end
 	end
@@ -652,9 +652,9 @@ function addon:GlowSpell(spellId)
 		return
 	end
 
-	if Spells[spellId] ~= nil then
+	if Spells[spellId] ~= nil and addon.db.global.effects[self.db.profile.effect] then
 		for _, button in pairs(Spells[spellId]) do
-			addon:Glow(button, 'next', Effects[self.db.profile.effect], self.db.profile.color,
+			addon:Glow(button, 'next', addon.db.global.effects[self.db.profile.effect], self.db.profile.color,
 				 self.db.profile.magnification, self.db.profile.setpoint,
 				 self.db.profile.xoffs, self.db.profile.yoffs, self.db.profile.angle)
 		end

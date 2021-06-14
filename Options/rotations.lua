@@ -170,11 +170,10 @@ local function add_effect_group(specID, rotid, rot, refresh)
     effect_group:SetLayout("Table")
     effect_group:SetUserData("table", { columns = { 44, 1 } })
 
-    local effect_map, effect_order, name2idx
+    local effect_map, effect_order
     local function update_effect_map()
         effect_map = {}
         effect_order = {}
-        name2idx = {}
         effect_map[DEFAULT] = DEFAULT
         table.insert(effect_order, DEFAULT)
         effect_map[NONE] = NONE
@@ -182,9 +181,8 @@ local function add_effect_group(specID, rotid, rot, refresh)
 
         for k, v in pairs(effects) do
             if v.name ~= nil then
-                table.insert(effect_order, v.name)
-                effect_map[v.name] = v.name
-                name2idx[v.name] = k
+                table.insert(effect_order, k)
+                effect_map[k] = v.name
             end
         end
     end
@@ -194,11 +192,12 @@ local function add_effect_group(specID, rotid, rot, refresh)
         rot.color = { r = 0, g = 1.0, b = 0, a = 1.0 }
     end
 
-    local effect_name = rot.effect or profile["effect"]
-    local effect = effect_name and name2idx[effect_name] and effects[name2idx[effect_name]]
+    local effect_idx = rot.effect or profile["effect"]
+    local effect = effect_idx and effects[effect_idx]
     local effect_icon = AceGUI:Create("Icon")
     effect_icon:SetWidth(36)
     effect_icon:SetHeight(36)
+    effect_icon:SetDisabled(true)
     effect_icon:SetCallback("OnRelease", function(self)
         addon:HideGlow(self.frame, "effect")
     end)
@@ -844,6 +843,24 @@ function addon:get_cooldown_list(frame, specID, rotid, id, callback)
         announce:SetValue(rot.announce or "none")
     end
     frame:AddChild(announce)
+
+    local announce_sound = AceGUI:Create("LSM30_Sound")
+    announce_sound:SetRelativeWidth(0.4)
+    -- announce_sound:SetLabel(L["Audible Announce"])
+    announce_sound:SetCallback("OnValueChanged", function(_, _, val)
+        if val == NONE then
+            rot.announce_sound = nil
+        else
+            rot.announce_sound = val
+        end
+        announce_sound:SetValue(val)
+    end)
+    announce_sound.configure = function()
+        announce_sound:SetList()
+        announce_sound:AddItem(NONE, "")
+        announce_sound:SetValue(rot.announce_sound or NONE)
+    end
+    frame:AddChild(announce_sound)
 
     local conditions_frame = add_conditions(specID, idx, rotid, rot, callback)
     frame:AddChild(conditions_frame)
