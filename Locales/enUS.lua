@@ -541,9 +541,16 @@ L["Weapon Enchant Time Remaining"] = true
 L["Weapon Enchant Stacks"] = true
 L["Your %s weapon buff has %s"] = true
 L["Your %s weapon is enchanted"] = true
+L["Your %s weapon %s"] = true
 L["off hand"] = true
 L["main hand"] = true
 L["Off Hand"] = true
+L["attack speed"] = true
+L["Attack Speed"] = true
+L["Weapon Swing Time"] = true
+L["Weapon Swing Time Remaining"] = true
+L["swing time remaining"] = true
+L["Swing Time Remaining"] = true
 
 L["Global"] = true
 

@@ -51,6 +51,7 @@ local healthstones = {
     "Minor Healthstone",
 }
 
+local playerGUID = UnitGUID("player")
 
 if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
     combination_food = { 113509, 80618, 80610, 65499, 43523, 43518, 65517, 65516, 65515, 65500 }
@@ -368,6 +369,8 @@ function addon:OnInitialize()
 
     self.unitsInRange = {}
     self.damageHistory = {}
+    self.lastMainSwing = nil
+    self.lastOffSwing = nil
 
     self.spellHistory = {}
     self.combatHistory = {}
@@ -757,13 +760,12 @@ local function UpdateUnitInfo(cache, record)
         return
     end
 
-    if record.attackable then
-        record.enemy = getCached(cache, UnitIsEnemy, "player", record.unit)
-        if record.enemy then
-            record.threat = getCached(cache, UnitThreatSituation, "player", record.unit)
-        else
-            record.threat = nil
-        end
+    record.attackable = getCached(cache, UnitCanAttack, "player", record.unit)
+    record.enemy = getCached(cache, UnitIsEnemy, "player", record.unit)
+    if record.enemy then
+        record.threat = getCached(cache, UnitThreatSituation, "player", record.unit)
+    else
+        record.threat = nil
     end
 end
 
@@ -1286,6 +1288,9 @@ function addon:PLAYER_TARGET_CHANGED()
         self:SwitchRotation()
     end
 
+    self.lastMainSwing = nil
+    self.lastOffSwing = nil
+
     self:EvaluateNextAction()
 end
 
@@ -1384,12 +1389,16 @@ end
 function addon:PLAYER_REGEN_DISABLED()
     addon:verbose("Player is in combat.")
     self.inCombat = true
+    self.lastMainSwing = nil
+    self.lastOffSwing = nil
     self.combatCache = {}
 end
 
 function addon:PLAYER_REGEN_ENABLED()
     addon:verbose("Player is out of combat.")
     self.inCombat = false
+    self.lastMainSwing = nil
+    self.lastOffSwing = nil
     self.combatCache = {}
 
     addon:SwitchRotation()
@@ -1520,6 +1529,8 @@ addon.UNIT_SPELLCAST_STOP = function(_, event, unit, castguid, spellid)
     spellcast(_, event, unit, castguid, spellid)
     if unit == 'player' then
         currentSpells[castguid] = nil
+        addon.lastMainSwing = nil
+        addon.lastOffSwing = nil
     end
 end
 addon.UNIT_SPELLCAST_SUCCEEDED = function(_, event, unit, castguid, spellid)
@@ -1546,6 +1557,8 @@ addon.UNIT_SPELLCAST_CHANNEL_STOP = function(_, event, unit, castguid, spellid)
             currentSpells[currentChannel] = nil
         end
         currentChannel = nil
+        addon.lastMainSwing = nil
+        addon.lastOffSwing = nil
     end
 end
 
@@ -1556,7 +1569,7 @@ addon.UNIT_SPELLCAST_SENT = function(_, _, unit, target, castguid, spellid)
     end
 end
 
-local function handle_combat_log(_, event, _, _, _, _, _, destGUID, _, _, _, ...)
+local function handle_combat_log(_, event, _, sourceGUID, _, _, _, destGUID, _, _, _, ...)
     local spellid, spellname, envType
     local offs = 1
     if event:sub(1, 5) == "SPELL" or event:sub(1, 5) == "RANGE" then
@@ -1565,6 +1578,13 @@ local function handle_combat_log(_, event, _, _, _, _, _, destGUID, _, _, _, ...
     elseif event:sub(1, 5) == "ENVIRONMENTAL" then
         envType = ...
         offs = 2
+    elseif event == "SWING_MISSED" and sourceGUID == playerGUID then
+        local offhand = select(2, ...)
+        if offhand then
+            addon.lastOffSwing = GetTime()
+        else
+            addon.lastMainSwing = GetTime()
+        end
     end
 
     if event:sub(-5) == "_HEAL" then
@@ -1580,6 +1600,15 @@ local function handle_combat_log(_, event, _, _, _, _, _, destGUID, _, _, _, ...
             value = tonumber(amount),
         })
     elseif event:sub(-7) == "_DAMAGE" then
+        if event:sub(1, 5) == "SWING" and sourceGUID == playerGUID then
+            local offhand = select(10, ...)
+            if offhand then
+                addon.lastOffSwing = GetTime()
+            else
+                addon.lastMainSwing = GetTime()
+            end
+        end
+
         local amount = select(offs, ...)
         if not addon.damageHistory[destGUID] then
             addon.damageHistory[destGUID] = {

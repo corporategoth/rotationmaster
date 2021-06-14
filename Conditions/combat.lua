@@ -316,7 +316,7 @@ addon:RegisterCondition(L["Combat"], "THREAT_COUNT", {
     evaluate = function(value)
         local count = 0
         for _, entity in pairs(addon.unitsInRange) do
-            if entity.enemy and entity.threat >= value.threat - 1 then
+            if entity.enemy and entity.threat and entity.threat >= value.threat - 1 then
                 count = count + 1
             end
         end

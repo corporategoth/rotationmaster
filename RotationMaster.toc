@@ -58,5 +58,6 @@ Conditions/combat.lua
 Conditions/casting.lua
 Conditions/channeling.lua
 Conditions/spatial.lua
+Conditions/weapon.lua
 Conditions/switch.lua
 
