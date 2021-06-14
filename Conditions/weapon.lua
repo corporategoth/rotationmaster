@@ -154,9 +154,9 @@ if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
 
 end
 
-addon:RegisterCondition(L["Buffs"], "SWING_TIME", {
+addon:RegisterCondition(L["Combat"], "SWING_TIME", {
     description = L["Weapon Swing Time"],
-    icon = "Interface\\Icons\\Inv_mace_13",
+    icon = 135561,
     valid = function(_, value)
         return (value.operator ~= nil and isin(operators, value.operator) and
                 value.value ~= nil and value.value >= 0)
@@ -199,9 +199,9 @@ addon:RegisterCondition(L["Buffs"], "SWING_TIME", {
     end
 })
 
-addon:RegisterCondition(L["Buffs"], "SWING_TIME_REMAIN", {
+addon:RegisterCondition(L["Combat"], "SWING_TIME_REMAIN", {
     description = L["Weapon Swing Time Remaining"],
-    icon = "Interface\\Icons\\Inv_mace_13",
+    icon = 135672,
     valid = function(_, value)
         return (value.operator ~= nil and isin(operators, value.operator) and
                 value.value ~= nil and value.value >= 0)
