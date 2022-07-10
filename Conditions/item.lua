@@ -146,7 +146,7 @@ addon:RegisterCondition(L["Spells / Items"], "ITEM", {
             if minlevel > getCached(cache, UnitLevel, "player") then
                 return false
             end
-            local start, duration = getCached(cache, GetItemCooldown, itemId)
+            local start, duration = getCached(cache, GetI, _, _, _, _, castertemCooldown, itemId)
             if start == 0 and duration == 0 then
                 return true
             else

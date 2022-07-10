@@ -234,9 +234,11 @@ local function upgradeEffectsToGUID()
     if addon.db.char.rotations ~= nil then
         for _, rotations in pairs(addon.db.char.rotations) do
             for _, rot in pairs(rotations) do
-                for _, cd in pairs(rot.cooldowns) do
-                    if cd.effect ~= nil and cd.effect ~= NONE and global.effects[cd.effect] == nil then
-                        cd.effect = name2idx[cd.effect]
+                if rot.cooldowns then
+                    for _, cd in pairs(rot.cooldowns) do
+                        if cd.effect ~= nil and cd.effect ~= NONE and global.effects[cd.effect] == nil then
+                            cd.effect = name2idx[cd.effect]
+                        end
                     end
                 end
             end

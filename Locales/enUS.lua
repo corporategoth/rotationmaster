@@ -49,6 +49,9 @@ L["Custom"] = true
 
 L["Bind"] = true
 L["Unbind"] = true
+L["Own Buff"] = true
+L["Own Debuff"] = true
+L["your own %s"] = true
 
 L["is less than"] = true
 L["is less than or equal to"] = true
@@ -125,6 +128,14 @@ L["Not specified"] = true
 L["Totem"] = true
 L["Non-combat Pet"] = true
 L["Gas Cloud"] = true
+
+L["World Boss"] = true
+L["Rare Elite"] = true
+L["Elite"] = true
+L["Rare"] = true
+L["Normal"] = true
+L["Trivial"] = true
+L["Minus"] = true
 
 L["Tank"] = true
 L["DPS"] = true
@@ -322,6 +333,7 @@ L["<item>"] = true
 L["<role>"] = true
 L["<class>"] = true
 L["<creature type>"] = true
+L["<classification>"] = true
 L["<talent>"] = true
 L["<talent tree>"] = true
 L["<buff>"] = true
@@ -359,6 +371,7 @@ L["Role"] = true
 L["Class"] = true
 L["Is Same As"] = true
 L["Creature Type"] = true
+L["Unit Classification"] = true
 L["Talent"] = true
 L["Talent Tree"] = true
 L["Operator"] = true

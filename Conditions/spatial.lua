@@ -217,3 +217,50 @@ addon:RegisterCondition(nil, "DISTANCE_COUNT", {
     end
 })
 
+addon:RegisterCondition(nil, "ZONE", {
+    description = L["Zone"],
+    icon = "Interface\\Icons\\spell_nature_farsight",
+    valid = function(_, value)
+        return value.value ~= nil
+    end,
+    evaluate = function(value, cache)
+        local zoneName = value.subzone and getCached(cache, GetSubZoneText) or getCached(cache, GetZoneText)
+        return value.value == zoneName
+    end,
+    print = function(_, value)
+        return string.format(L["in %s"], nullable(value.value, L["<zone>"]))
+    end,
+    widget = function(parent, spec, value)
+        local top = parent:GetUserData("top")
+        local root = top:GetUserData("root")
+        local funcs = top:GetUserData("funcs")
+
+        local subzone = AceGUI:Create("CheckBox")
+        subzone:SetWidth(100)
+        subzone:SetLabel(L["SubZone"])
+        subzone:SetValue(value.subzone and true or false)
+        subzone:SetCallback("OnValueChanged", function(_, _, v)
+            value.subzone = v
+            top:SetStatusText(funcs:print(root, spec))
+        end)
+        parent:AddChild(subzone)
+
+        local zone = AceGUI:Create("EditBox")
+        zone:SetLabel(L["Zone"])
+        zone:SetCallback("OnEnterPressed", function(_, _, v)
+            value.value = v
+            top:SetStatusText(funcs:print(root, spec))
+        end)
+        if (value.value ~= nil) then
+            zone:SetText(value.value)
+        end
+        parent:AddChild(zone)
+    end,
+    help = function(frame)
+        frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["SubZone"] .. color.RESET ..
+                " - " .. "Use the SubZone text instead of Zone text (eg. Valley of Strength instead of Orgrimmar)"))
+        frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Zone"] .. color.RESET ..
+                " - " .. "The zone you are in."))
+    end
+})
+

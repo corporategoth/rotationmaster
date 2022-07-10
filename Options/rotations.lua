@@ -845,7 +845,7 @@ function addon:get_cooldown_list(frame, specID, rotid, id, callback)
     frame:AddChild(announce)
 
     local announce_sound = AceGUI:Create("LSM30_Sound")
-    announce_sound:SetRelativeWidth(0.4)
+    announce_sound:SetRelativeWidth(0.6)
     -- announce_sound:SetLabel(L["Audible Announce"])
     announce_sound:SetCallback("OnValueChanged", function(_, _, val)
         if val == NONE then

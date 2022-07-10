@@ -202,7 +202,7 @@ function addon:UpdateButtonGlow()
 
 	if IsAddOnLoaded('ElvUI') then
 		LAB = LibStub:GetLibrary('LibActionButton-1.0-ElvUI')
-		LBG = LibStub:GetLibrary('LibButtonGlow-1.0')
+		LBG = LibStub:GetLibrary('LibCustomGlow-1.0')
 		origShow = LBG.ShowOverlayGlow
 	elseif IsAddOnLoaded('Bartender4') then
 		LAB = LibStub:GetLibrary('LibActionButton-1.0')

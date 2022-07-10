@@ -77,6 +77,16 @@ addon.creatures = {
     GAS_CLUUD = L["Gas Cloud"],
 }
 
+addon.classifications = {
+    worldboss = L["World Boss"],
+    rareelite = L["Rare Elite"],
+    elite = L["Elite"],
+    rare = L["Rare"],
+    normal = L["Normal"],
+    trivial = L["Trivial"],
+    minus = L["Minus"],
+}
+
 addon.events = {
     START = L["Started"],
     STOP = L["Stopped"],

@@ -1,5 +1,6 @@
 local _, addon = ...
 
+local AceGUI = LibStub("AceGUI-3.0")
 local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
 local color = color
 
@@ -29,19 +30,22 @@ addon:RegisterCondition(L["Buffs"], "BUFF", {
     end,
     evaluate = function(value, cache)
         for i=1,40 do
-            local name = getCached(cache, UnitBuff, value.unit, i)
+            local name, _, _, _, _, _, caster = getCached(cache, UnitBuff, value.unit, i)
             if (name == nil) then
                 break
             end
             if name == value.spell then
-                return true
+                if (not value.ownbuff or caster == "player") then
+                    return true
+                end
             end
         end
         return false
     end,
     print = function(_, value)
         return string.format(playerize(value.unit, L["%s have %s"], L["%s has %s"]),
-            nullable(units[value.unit], L["<unit>"]), nullable(value.spell, L["<spell>"]))
+            nullable(units[value.unit], L["<unit>"]),
+            string.format(value.ownbuff and L["your own %s"] or "%s", nullable(value.spell, L["<buff>"])))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -52,6 +56,16 @@ addon:RegisterCondition(L["Buffs"], "BUFF", {
                 function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
 
+        local ownbuff = AceGUI:Create("CheckBox")
+        ownbuff:SetWidth(100)
+        ownbuff:SetLabel(L["Own Buff"])
+        ownbuff:SetValue(value.ownbuff and true or false)
+        ownbuff:SetCallback("OnValueChanged", function(_, _, v)
+            value.ownbuff = v
+            top:SetStatusText(funcs:print(root, spec))
+        end)
+        parent:AddChild(ownbuff)
+
         local spell_group = addon:Widget_SpellNameWidget(spec, "Spell_EditBox", value,
             function() return true end,
             function() top:SetStatusText(funcs:print(root, spec)) end)
@@ -59,6 +73,9 @@ addon:RegisterCondition(L["Buffs"], "BUFF", {
     end,
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
+        frame:AddChild(Gap())
+        frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Own Buff"] .. color.RESET .. " - " ..
+                "Should this condition only consider buffs that you have applied."))
         frame:AddChild(Gap())
         addon.layout_condition_spellnamewidget_help(frame)
     end
@@ -74,20 +91,23 @@ addon:RegisterCondition(L["Buffs"], "BUFF_REMAIN", {
     end,
     evaluate = function(value, cache)
         for i=1,40 do
-            local name, _, _, _, _, expirationTime = getCached(cache, UnitBuff, value.unit, i)
+            local name, _, _, _, _, expirationTime, caster = getCached(cache, UnitBuff, value.unit, i)
             if (name == nil) then
                 break
             end
             if name == value.spell then
-                local remain = expirationTime - GetTime()
-                return compare(value.operator, remain, value.value)
+                if (not value.ownbuff or caster == "player") then
+                    local remain = expirationTime - GetTime()
+                    return compare(value.operator, remain, value.value)
+                end
             end
         end
         return false
     end,
     print = function(_, value)
         return string.format(playerize(value.unit, L["%s have %s where %s"], L["%s have %s where %s"]),
-            nullable(units[value.unit], L["<unit>"]), nullable(value.spell, L["<buff>"]),
+            nullable(units[value.unit], L["<unit>"]),
+                string.format(value.ownbuff and L["your own %s"] or "%s", nullable(value.spell, L["<buff>"])),
                 compareString(value.operator, L["the remaining time"], string.format(L["%s seconds"], nullable(value.value))))
     end,
     widget = function(parent, spec, value)
@@ -98,6 +118,16 @@ addon:RegisterCondition(L["Buffs"], "BUFF_REMAIN", {
         local unit = addon:Widget_UnitWidget(value, units,
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
+
+        local ownbuff = AceGUI:Create("CheckBox")
+        ownbuff:SetWidth(100)
+        ownbuff:SetLabel(L["Own Buff"])
+        ownbuff:SetValue(value.ownbuff and true or false)
+        ownbuff:SetCallback("OnValueChanged", function(_, _, v)
+            value.ownbuff = v
+            top:SetStatusText(funcs:print(root, spec))
+        end)
+        parent:AddChild(ownbuff)
 
         local spell_group = addon:Widget_SpellNameWidget(spec, "Spell_EditBox", value,
             function() return true end,
@@ -110,6 +140,9 @@ addon:RegisterCondition(L["Buffs"], "BUFF_REMAIN", {
     end,
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
+        frame:AddChild(Gap())
+        frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Own Buff"] .. color.RESET .. " - " ..
+                "Should this condition only consider buffs that you have applied."))
         frame:AddChild(Gap())
         addon.layout_condition_spellnamewidget_help(frame)
         frame:AddChild(Gap())
@@ -130,19 +163,23 @@ addon:RegisterCondition(L["Buffs"], "BUFF_STACKS", {
     end,
     evaluate = function(value, cache)
         for i=1,40 do
-            local name, _, count = getCached(cache, UnitBuff, value.unit, i)
+            local name, _, count, _, _, _, caster = getCached(cache, UnitBuff, value.unit, i)
             if (name == nil) then
                 break
             end
             if name == value.spell then
-                return compare(value.operator, count, value.value)
+                if (not value.ownbuff or caster == "player") then
+                    return compare(value.operator, count, value.value)
+                end
             end
         end
         return false
     end,
     print = function(_, value)
         return nullable(unitsPossessive[value.unit], L["<unit>"]) .. " " ..
-                compareString(value.operator, string.format(L["stacks of %s"], nullable(value.spell, L["<buff>"])), nullable(value.value))
+                compareString(value.operator, string.format(L["stacks of %s"],
+                string.format(value.ownbuff and L["your own %s"] or "%s", nullable(value.spell, L["<buff>"]))),
+                nullable(value.value))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -152,6 +189,16 @@ addon:RegisterCondition(L["Buffs"], "BUFF_STACKS", {
         local unit = addon:Widget_UnitWidget(value, units,
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
+
+        local ownbuff = AceGUI:Create("CheckBox")
+        ownbuff:SetWidth(100)
+        ownbuff:SetLabel(L["Own Buff"])
+        ownbuff:SetValue(value.ownbuff and true or false)
+        ownbuff:SetCallback("OnValueChanged", function(_, _, v)
+            value.ownbuff = v
+            top:SetStatusText(funcs:print(root, spec))
+        end)
+        parent:AddChild(ownbuff)
 
         local spell_group = addon:Widget_SpellNameWidget(spec, "Spell_EditBox", value,
             function() return true end,
@@ -164,6 +211,9 @@ addon:RegisterCondition(L["Buffs"], "BUFF_STACKS", {
     end,
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
+        frame:AddChild(Gap())
+        frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Own Buff"] .. color.RESET .. " - " ..
+                "Should this condition only consider buffs that you have applied."))
         frame:AddChild(Gap())
         addon.layout_condition_spellnamewidget_help(frame)
         frame:AddChild(Gap())

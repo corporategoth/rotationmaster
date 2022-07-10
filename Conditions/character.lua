@@ -6,8 +6,8 @@ local color = color
 local floor = math.floor
 
 -- From constants
-local units, unitsPossessive, roles, creatures, operators, spell_schools =
-    addon.units, addon.unitsPossessive, addon.roles, addon.creatures, addon.operators, addon.spell_schools
+local units, unitsPossessive, roles, creatures, classifications, operators, spell_schools =
+    addon.units, addon.unitsPossessive, addon.roles, addon.creatures, addon.classifications, addon.operators, addon.spell_schools
 
 -- From utils
 local nullable, keys, isin, deepcopy, getCached, playerize, compare, compareString =
@@ -385,8 +385,56 @@ addon:RegisterCondition(nil, "CREATURE", {
 
         frame:AddChild(Gap())
         frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Creature Type"] .. color.RESET .. " - " ..
-                "The creature classification of " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. ".  This " ..
-                "can be used to create conditions that are restricted by creature type (eg. Banish.)"))
+                "The creature type of " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. ".  This " ..
+                "can be used to create conditions that are restricted by creature type (eg. Banish)."))
+    end
+})
+
+addon:RegisterCondition(nil, "CLASSIFICATION", {
+    description = L["Unit Classification"],
+    icon = "Interface\\Icons\\inv_mask_01",
+    valid = function(_, value)
+        return (value.unit ~= nil and isin(units, value.unit) and
+                value.value ~= nil and isin(classifications, value.value))
+    end,
+    evaluate = function(value, cache)
+        if not getCached(cache, UnitExists, value.unit) then return false end
+        return (getCached(cache, UnitClassification, value.unit) == value.value)
+    end,
+    print = function(_, value)
+        return string.format(playerize(value.unit, L["%s are a %s"], L["%s is a %s"]),
+                nullable(units[value.unit]), nullable(classifications[value.value], L["<classification>"]))
+    end,
+    widget = function(parent, spec, value)
+        local top = parent:GetUserData("top")
+        local root = top:GetUserData("root")
+        local funcs = top:GetUserData("funcs")
+
+        local unit = addon:Widget_UnitWidget(value, deepcopy(units, { "player", "pet" }),
+                function() top:SetStatusText(funcs:print(root, spec)) end)
+        parent:AddChild(unit)
+
+        local class = AceGUI:Create("Dropdown")
+        class:SetLabel(L["Unit Classification"])
+        class:SetCallback("OnValueChanged", function(_, _, v)
+            value.value = v
+            top:SetStatusText(funcs:print(root, spec))
+        end)
+        class.configure = function()
+            class:SetList(classifications, keys(classifications))
+            if (value.value ~= nil) then
+                class:SetValue(value.value)
+            end
+        end
+        parent:AddChild(class)
+    end,
+    help = function(frame)
+        addon.layout_condition_unitwidget_help(frame)
+
+        frame:AddChild(Gap())
+        frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Unit Classification"] .. color.RESET .. " - " ..
+                "The classification of " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. ".  This " ..
+                "can be used to create conditions only apply to certain unit classifications (eg. bosses)."))
     end
 })
 
