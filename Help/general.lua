@@ -144,9 +144,7 @@ function addon.layout_rotation_options_help(frame)
         "of play (for example single target vs. area of effect DPS) that can be activated either automaatically " ..
         "via. a current circumstances or manually."))
 
-    if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE or
-        (WOW_PROJECT_ID == WOW_PROJECT_BURNING_CRUSADE_CLASSIC and
-         LE_EXPANSION_LEVEL_CURRENT >= LE_EXPANSION_NORTHREND)) then
+    if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE or GetServerExpansionLevel() >= 2) then
         group:AddChild(CreateText(
             "Rotations are separated by specializations.  A rotation will only be available when in the " ..
             "specialization in which it is defined.  You can modify rotations from other specializations " ..

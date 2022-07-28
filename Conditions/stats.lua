@@ -359,9 +359,8 @@ addon.condition_point = {
     end
 }
 
-if WOW_PROJECT_ID == WOW_PROJECT_BURNING_CRUSADE_CLASSIC and
-    LE_EXPANSION_LEVEL_CURRENT >= LE_EXPANSION_NORTHREND and
-    select(2, UnitClass("player")) == "DEATHKNIGHT" then
+if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE and GetServerExpansionLevel() >= 2 and
+    select(2, UnitClass("player")) == "DEATHKNIGHT") then
     addon.condition_rune = {
         description = L["Runes"],
         icon = "Interface\\Icons\\spell_deathknight_empowerruneblade",

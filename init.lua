@@ -28,18 +28,20 @@ if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
         "Demonic Healthstone",
         "Master Healthstone",
     })
-elseif (WOW_PROJECT_ID == WOW_PROJECT_BURNING_CRUSADE_CLASSIC) then
-    combination_food = { 34062 }
-    multiinsert(conjured_food, { 22019 })
-    multiinsert(conjured_water, { 22018, 30703, })
-    multiinsert(mana_potions, { 31677, 33093, 23823, 22832, 32948, 33935, 28101 })
-    multiinsert(healing_potions, { 33092, 23822, 22829, 32947, 28100, 33934 })
-    multiinsert(bandages, { 21991, 21990, 23684 })
-    multiinsert(purchased_water, { 33042, 29395, 27860, 32453, 38430, 28399, 29454, 32455, 24007, 24006, 23161 })
-    multiinsert(healthstones, {
-        "Master Healthstone",
-    })
-    if (LE_EXPANSION_LEVEL_CURRENT >= LE_EXPANSION_NORTHREND) then
+else
+    if (GetServerExpansionLevel() >= 1) then
+        combination_food = { 34062 }
+        multiinsert(conjured_food, { 22019 })
+        multiinsert(conjured_water, { 22018, 30703, })
+        multiinsert(mana_potions, { 31677, 33093, 23823, 22832, 32948, 33935, 28101 })
+        multiinsert(healing_potions, { 33092, 23822, 22829, 32947, 28100, 33934 })
+        multiinsert(bandages, { 21991, 21990, 23684 })
+        multiinsert(purchased_water, { 33042, 29395, 27860, 32453, 38430, 28399, 29454, 32455, 24007, 24006, 23161 })
+        multiinsert(healthstones, {
+            "Master Healthstone",
+        })
+    end
+    if (GetServerExpansionLevel() >= 2) then
 
     end
 end
@@ -135,8 +137,7 @@ local function upgradeGlobalRotationstoPlayer()
                 end
             end
         end
-    elseif (WOW_PROJECT_ID == WOW_PROJECT_BURNING_CRUSADE_CLASSIC and
-            LE_EXPANSION_LEVEL_CURRENT >= LE_EXPANSION_NORTHREND) then
+    elseif (GetServerExpansionLevel() >= 2) then
         -- Upgrade from TBC -> Wrath
         if addon.db.char.rotations ~= nil and addon.db.char.rotations[0] ~= nil then
             addon.db.char.rotations[1] = addon.db.char.rotations[0]

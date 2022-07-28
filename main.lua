@@ -74,8 +74,8 @@ local defaults = {
     }
 }
 
-if WOW_PROJECT_ID == WOW_PROJECT_BURNING_CRUSADE_CLASSIC and
-   LE_EXPANSION_LEVEL_CURRENT >= LE_EXPANSION_NORTHREND then
+if WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE and
+   GetServerExpansionLevel() >= 2 then
     defaults.char.specs = {}
     defaults.char.specs[1] = PRIMARY
     defaults.char.specs[2] = SECONDARY
@@ -430,19 +430,17 @@ function addon:enable()
         for _, v in pairs(mainline_events) do
             self:RegisterEvent(v)
         end
-    elseif (WOW_PROJECT_ID == WOW_PROJECT_BURNING_CRUSADE_CLASSIC) then
-        if LE_EXPANSION_LEVEL_CURRENT == LE_EXPANSION_NORTHREND then
-            self.currentSpec = 0
-            for _, v in pairs(wrath_events) do
-                self:RegisterEvent(v)
-            end
-        elseif LE_EXPANSION_LEVEL_CURRENT == LE_EXPANSION_BURNING_CRUSADE then
-            self.currentSpec = 0
-            for _, v in pairs(tbc_events) do
-                self:RegisterEvent(v)
-            end
+    elseif (GetServerExpansionLevel() == 2) then
+        self.currentSpec = GetSpecialization()
+        for _, v in pairs(wrath_events) do
+            self:RegisterEvent(v)
         end
-    elseif (WOW_PROJECT_ID == WOW_PROJECT_CLASSIC) then
+    elseif (GetServerExpansionLevel() == 1) then
+        self.currentSpec = 0
+        for _, v in pairs(tbc_events) do
+            self:RegisterEvent(v)
+        end
+    elseif (GetServerExpansionLevel() == 0) then
         self.currentSpec = 0
         for _, v in pairs(classic_events) do
             self:RegisterEvent(v)
@@ -1062,8 +1060,7 @@ function addon:UpdateSkills()
         if self.specTab then
             self.specTab:SelectTab(spec)
         end
-    elseif (WOW_PROJECT_ID == WOW_PROJECT_BURNING_CRUSADE_CLASSIC and
-            LE_EXPANSION_LEVEL_CURRENT >= LE_EXPANSION_NORTHREND) then
+    elseif (GetServerExpansionLevel() >= 2) then
         local spec = GetSpecialization()
         if spec == nil then
             return
@@ -1121,8 +1118,7 @@ function addon:UpdateSkills()
                 }
             end
         end
-    elseif (WOW_PROJECT_ID == WOW_PROJECT_BURNING_CRUSADE_CLASSIC and
-            LE_EXPANSION_LEVEL_CURRENT >= LE_EXPANSION_NORTHREND) then
+    elseif (GetServerExpansionLevel() >= 2) then
         if self.specTalents[self.currentSpec] == nil then
             self.specTalents[self.currentSpec] = {}
 
