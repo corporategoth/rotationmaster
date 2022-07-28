@@ -295,7 +295,7 @@ else
         icon = "Interface\\Icons\\Inv_misc_book_11",
         valid = function(_, value)
             if not (value.tree ~= nil and value.tree >= 1 and value.tree <= GetNumTalentTabs() and
-                    value.talent ~= nil and value.talent >= 1 and value.talent <= GetNumTalents(value.talent) and
+                    value.talent ~= nil and value.talent >= 1 and value.talent <= GetNumTalents(value.tree) and
                     value.operator ~= nil and isin(operators, value.operator) and
                     value.value ~= nil and value.value >= 0) then
                 return false
