@@ -294,18 +294,25 @@ else
         description = L["Talent"],
         icon = "Interface\\Icons\\Inv_misc_book_11",
         valid = function(_, value)
-            return (value.tree ~= nil and value.tree >= 1 and value.tree <= GetNumTalentTabs() and
+            if not (value.tree ~= nil and value.tree >= 1 and value.tree <= GetNumTalentTabs() and
                     value.talent ~= nil and value.talent >= 1 and value.talent <= GetNumTalents(value.talent) and
                     value.operator ~= nil and isin(operators, value.operator) and
-                    value.value ~= nil and value.value >= 0)
+                    value.value ~= nil and value.value >= 0) then
+                return false
+            end
+            return (value.value <= select(6, GetTalentInfo(value.tree, value.talent)))
         end,
         evaluate = function(value)
             local _, _, _, _, rank = getCached(addon.longtermCache, GetTalentInfo, value.tree, value.talent)
             return compare(value.operator, rank, value.value)
         end,
         print = function(_, value)
+            local link
+            if value.tree ~= nil and value.talent ~= nil then
+                link = GetTalentLink(value.tree, value.talent)
+            end
             return compareString(value.operator, string.format(L["talent points in %s (%s)"],
-                    nullable((value.tree and value.talent) and GetTalentInfo(value.tree, value.talent) or nil, L["<talent>"]),
+                    nullable(link, L["<talent>"]),
                     nullable(value.tree and GetTalentTabInfo(value.tree) or nil, L["<talent tree>"])),
                     nullable(value.value))
         end,
@@ -383,6 +390,15 @@ else
             if value.tree and value.talent then
                 talentIcon:SetImage(talentImage)
             end
+            talentIcon:SetCallback("OnEnter", function(widget)
+                if value.talent then
+                    GameTooltip:SetOwner(talentIcon.frame, "ANCHOR_BOTTOMRIGHT", 3)
+                    GameTooltip:SetHyperlink(GetTalentLink(value.tree, value.talent))
+                end
+            end)
+            talentIcon:SetCallback("OnLeave", function(widget)
+                GameTooltip:Hide()
+            end)
             parent:AddChild(talentIcon)
             talent:SetLabel(L["Talent"])
             talent:SetCallback("OnValueChanged", function(_, _, v)
