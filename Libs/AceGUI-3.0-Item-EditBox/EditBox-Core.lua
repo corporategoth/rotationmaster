@@ -368,7 +368,7 @@ do
 		SetText(self.parent.obj, name, string.len(name))
 		
 		self.parent.selectedButton = nil
-		self.parent.obj:Fire("OnEnterPressed", name)
+		self.parent.obj:Fire("OnEnterPressed", self.itemID)
 	end
 	
 	local function Item_OnEnter(self)

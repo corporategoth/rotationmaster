@@ -1,4 +1,5 @@
 local AceGUI = LibStub("AceGUI-3.0")
+
 do
 	local Type = "Spell_EditBox"
 	local Version = 3

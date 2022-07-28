@@ -17,7 +17,7 @@ local helpers = addon.help_funcs
 local CreateText, Indent, Gap =
     helpers.CreateText, helpers.Indent, helpers.Gap
 
-addon:RegisterCondition(nil, "ISSAME", {
+addon.condition_issame = {
     description = L["Is Same As"],
     icon = 134167,
     valid = function(_, value)
@@ -47,9 +47,9 @@ addon:RegisterCondition(nil, "ISSAME", {
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
     end
-})
+}
 
-addon:RegisterCondition(nil, "CLASS", {
+addon.condition_class = {
     description = L["Class"],
     icon = "Interface\\Icons\\achievement_general_stayclassy",
     valid = function(_, value)
@@ -58,7 +58,7 @@ addon:RegisterCondition(nil, "CLASS", {
     end,
     evaluate = function(value, cache)
         if not getCached(cache, UnitExists, value.unit) then return false end
-        local _, englishClass = getCached(cache, UnitClass, value.unit);
+        local _, englishClass = getCached(cache, UnitClass, value.unit)
         return englishClass == value.value
     end,
     print = function(_, value)
@@ -95,10 +95,91 @@ addon:RegisterCondition(nil, "CLASS", {
         frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Class"] .. color.RESET .. " - " ..
             "The character class of " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. "."))
     end
-})
+}
+
+local character_class = select(2, UnitClass("player"))
+addon.condition_class_group = {
+    description = L["Class In Group"],
+    icon = "Interface\\Icons\\achievement_general_stayclassy",
+    valid = function(_, value)
+        return (value.class ~= nil and isin(LOCALIZED_CLASS_NAMES_MALE, value.class) and
+                value.operator ~= nil and isin(operators, value.operator) and
+                value.value ~= nil and value.value >= 0)
+    end,
+    evaluate = function(value, cache)
+        if not getCached(cache, IsInGroup) then
+            return compare(value.operator, (character_class == value.class and 1 or 0), value.value)
+        end
+
+        local count = 0
+        local prefix, size = "party", 4
+        if value.raid and getCached(cache, IsInRaid) then
+            prefix, size = "raid", 40
+        end
+        if prefix == "party" and character_class == value.class then
+            count = count + 1
+        end
+        for i=1,size do
+            if select(2, getCached(cache, UnitClass, prefix .. tostring(i))) == value.class then
+                count = count + 1
+            end
+        end
+        return compare(value.operator, count, value.value)
+    end,
+    print = function(_, value)
+        return compareString(value.operator, string.format(L["Number of %ss in the %s"],
+                nullable(LOCALIZED_CLASS_NAMES_MALE[value.class], L["<class>"]),
+                (value.raid and RAID or PARTY)), nullable(value.value))
+    end,
+    widget = function(parent, spec, value)
+        local top = parent:GetUserData("top")
+        local root = top:GetUserData("root")
+        local funcs = top:GetUserData("funcs")
+
+        local class = AceGUI:Create("Dropdown")
+        class:SetLabel(L["Class"])
+        class:SetCallback("OnValueChanged", function(_, _, v)
+            value.class = v
+            top:SetStatusText(funcs:print(root, spec))
+        end)
+        class.configure = function()
+            class:SetList(LOCALIZED_CLASS_NAMES_MALE, CLASS_SORT_ORDER)
+            if (value.class ~= nil) then
+                class:SetValue(value.class)
+            end
+        end
+        parent:AddChild(class)
+
+        local raid = AceGUI:Create("CheckBox")
+        raid:SetWidth(100)
+        raid:SetLabel(L["Raid"])
+        raid:SetValue(value.raid and true or false)
+        raid:SetCallback("OnValueChanged", function(_, _, v)
+            value.raid = v
+            top:SetStatusText(funcs:print(root, spec))
+        end)
+        parent:AddChild(raid)
+
+        local operator_group = addon:Widget_OperatorWidget(value, L["Count"],
+                function() top:SetStatusText(funcs:print(root, spec)) end)
+        parent:AddChild(operator_group)
+    end,
+    help = function(frame)
+        frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Class"] .. color.RESET .. " - " ..
+                "The character class we are interested in."))
+
+        frame:AddChild(Gap())
+        frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Raid"] .. color.RESET ..
+                " - " .. "Check the entire raid, or just our party."))
+
+        frame:AddChild(Gap())
+        addon.layout_condition_operatorwidget_help(frame, L["Count"], L["Count"],
+                "Number of party or raid members of the desired class.")
+    end
+}
 
 if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
-    addon:RegisterCondition(nil, "ROLE", {
+    addon.condition_role = {
         description = L["Role"],
         icon = "Interface\\Icons\\petbattle_health",
         valid = function(_, value)
@@ -151,9 +232,9 @@ if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
             frame:AddChild(Indent(40, CreateText(color.GREEN .. L["Healer"] .. color.RESET .. " - " ..
                 "Those who keep everyone else alive by healing them.  Thank them!")))
         end
-    })
+    }
 
-    addon:RegisterCondition(nil, "TALENT", {
+    addon.condition_talent = {
         description = L["Talent"],
         icon = "Interface\\Icons\\Inv_misc_book_11",
         valid = function(_, value)
@@ -207,9 +288,9 @@ if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
                 "your user interface), this will show the talents.  Otherwise, this will simply show the " ..
                 "level and selection numbers (this is a restriction imposed by the game itself.)"))
         end
-    })
+    }
 else
-    addon:RegisterCondition(nil, "TALENT", {
+    addon.condition_talent = {
         description = L["Talent"],
         icon = "Interface\\Icons\\Inv_misc_book_11",
         valid = function(_, value)
@@ -324,25 +405,74 @@ else
             parent:AddChild(talent)
 
             local operator_group = addon:Widget_OperatorWidget(value, L["Points"],
-                function() top:SetStatusText(funcs:print(root, spec)) end)
+                    function() top:SetStatusText(funcs:print(root, spec)) end)
             parent:AddChild(operator_group)
         end,
         help = function(frame)
             frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Talent Tree"] .. color.RESET .. " - " ..
-                "The tree that the talent this condition is testing is from."))
+                    "The tree that the talent this condition is testing is from."))
 
             frame:AddChild(Gap())
             frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Talent"] .. color.RESET .. " - " ..
-                "A talent you have available to you."))
+                    "A talent you have available to you."))
 
             frame:AddChild(Gap())
             addon.layout_condition_operatorwidget_help(frame, L["Talent"], L["Points"],
-                "How many points you have put into " .. color.BLIZ_YELLOW .. L["Talent"] .. color.RESET .. ".");
+                    "How many points you have put into " .. color.BLIZ_YELLOW .. L["Talent"] .. color.RESET .. ".");
         end
-    })
+    }
+
 end
 
-addon:RegisterCondition(nil, "CREATURE", {
+if ((WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) or
+    (WOW_PROJECT_ID == WOW_PROJECT_BURNING_CRUSADE_CLASSIC and
+     LE_EXPANSION_LEVEL_CURRENT >= LE_EXPANSION_NORTHREND)) then
+    local unit_class, unit_class_num = select(2, UnitClass("player"))
+    addon.condition_glyph = {
+        description = L["Glyph"],
+        icon = "Interface\\Icons\\inv_inscription_minorglyph09",
+        valid = function(_, value)
+            if value.item ~= nil then
+                local _, _, _, _, _, type, class = GetItemInfoInstant(value.item)
+                return (type == 16 and class == unit_class_num)
+            else
+                return false
+            end
+        end,
+        evaluate = function(value, cache)
+            local glyph_spell = select(2, getCached(addon.longtermCache, GetItemSpell, value.item))
+            for i=1, GetNumGlyphSockets() do
+                local spell = select(3, getCached(addon.longtermCache, GetGlyphSocketInfo, i))
+                if spell == glyph_spell then
+                    return true
+                end
+            end
+            return false
+        end,
+        print = function(_, value)
+            local link = value.item and select(2, GetItemInfo(value.item)) or nil
+            return string.format(L["you have %s glyph"], nullable(link, L["<glyph>"]))
+        end,
+        widget = function(parent, spec, value)
+            local top = parent:GetUserData("top")
+            local root = top:GetUserData("root")
+            local funcs = top:GetUserData("funcs")
+
+            local item_group = addon:Widget_SingleItemWidget(spec, "Glyph_EditBox", value,
+                    function(v)
+                        local _, _, _, _, _, type, class = GetItemInfoInstant(v)
+                        return (type == 16 and class == unit_class_num)
+                    end,
+                    function() top:SetStatusText(funcs:print(root, spec)) end)
+            parent:AddChild(item_group)
+        end,
+        help = function(frame)
+            addon.layout_condition_spellwidget_help(frame)
+        end
+    }
+end
+
+addon.condition_creature = {
     description = L["Creature Type"],
     icon = "Interface\\Icons\\ability_rogue_disguise",
     valid = function(_, value)
@@ -388,9 +518,9 @@ addon:RegisterCondition(nil, "CREATURE", {
                 "The creature type of " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. ".  This " ..
                 "can be used to create conditions that are restricted by creature type (eg. Banish)."))
     end
-})
+}
 
-addon:RegisterCondition(nil, "CLASSIFICATION", {
+addon.condition_classification = {
     description = L["Unit Classification"],
     icon = "Interface\\Icons\\inv_mask_01",
     valid = function(_, value)
@@ -436,9 +566,9 @@ addon:RegisterCondition(nil, "CLASSIFICATION", {
                 "The classification of " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. ".  This " ..
                 "can be used to create conditions only apply to certain unit classifications (eg. bosses)."))
     end
-})
+}
 
-addon:RegisterCondition(nil, "LEVEL", {
+addon.condition_level = {
     description = L["Level"],
     icon = "Interface\\Icons\\spell_holy_blessedrecovery",
     valid = function(_, value)
@@ -493,10 +623,44 @@ addon:RegisterCondition(nil, "LEVEL", {
         addon.layout_condition_operatorwidget_help(frame, L["Level"], L["Level"],
                 "The character's level")
     end
-})
+}
+
+addon.condition_group = {
+    description = L["In Group"],
+    icon = "Interface\\Icons\\Ability_warrior_challange",
+    valid = function()
+        return true
+    end,
+    evaluate = function(value, cache)
+        return value.raid and getCached(cache, IsInRaid) or getCached(cache, IsInGroup)
+    end,
+    print = function(_, value)
+        return value.raid and L["you are in a raid"] or L["you are in a group"]
+    end,
+    widget = function(parent, spec, value)
+        local top = parent:GetUserData("top")
+        local root = top:GetUserData("root")
+        local funcs = top:GetUserData("funcs")
+
+        local raid = AceGUI:Create("CheckBox")
+        raid:SetWidth(100)
+        raid:SetLabel(L["Raid"])
+        raid:SetValue(value.raid and true or false)
+        raid:SetCallback("OnValueChanged", function(_, _, v)
+            value.raid = v
+            top:SetStatusText(funcs:print(root, spec))
+        end)
+        parent:AddChild(raid)
+    end,
+    help = function(frame)
+        frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Raid"] .. color.RESET ..
+                " - " .. "Check to see if we are in a raid, instead of just a party (note that with ."
+                      .. "this option off, this condition will be true if you are in a part OR a raid)."))
+    end
+}
 
 if MI2_GetMobData then
-addon:RegisterCondition(nil, "RUNNER", {
+addon.condition_runner = {
     description = L["Runner"],
     icon = 135996,
     valid = function(_, value)
@@ -526,9 +690,9 @@ addon:RegisterCondition(nil, "RUNNER", {
                 "it relies on previous interactions with the type of mob in question, which may be inaccurate. " ..
                 "Additionally, until you encounter the mob at least once, this condition will always be false."))
     end
-})
+}
 
-addon:RegisterCondition(nil, "RESIST", {
+addon.condition_resist = {
     description = L["Resistant"],
     icon = 132295,
     valid = function(_, value)
@@ -592,9 +756,9 @@ addon:RegisterCondition(nil, "RESIST", {
                 "it relies on previous interactions with the type of mob in question, which may be inaccurate. " ..
                 "Additionally, until you encounter the mob at least once, this condition will always be false."))
     end
-})
+}
 
-addon:RegisterCondition(nil, "IMMUNE", {
+addon.condition_immune = {
     description = L["Immune"],
     icon = 132137,
     valid = function(_, value)
@@ -660,5 +824,5 @@ addon:RegisterCondition(nil, "IMMUNE", {
                 "it relies on previous interactions with the type of mob in question, which may be inaccurate. " ..
                 "Additionally, until you encounter the mob at least once, this condition will always be false."))
     end
-})
+}
 end

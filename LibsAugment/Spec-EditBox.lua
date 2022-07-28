@@ -35,6 +35,9 @@ do
 			if currentSpec == nil then
                 return
 			end
+		elseif (WOW_PROJECT_ID == WOW_PROJECT_BURNING_CRUSADE_CLASSIC and
+				LE_EXPANSION_LEVEL_CURRENT >= LE_EXPANSION_NORTHREND) then
+			currentSpec = GetSpecialization()
 		end
 		if playerSpells[currentSpec] == nil then
 			playerSpells[currentSpec] = {}

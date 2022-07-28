@@ -5,37 +5,42 @@ local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
 local color, tonumber = color, tonumber
 
 -- From constants
-local operators, units, unitsPossessive, points =
-    addon.operators, addon.units, addon.unitsPossessive, addon.points
+local operators, units, unitsPossessive, points, runes =
+    addon.operators, addon.units, addon.unitsPossessive, addon.points, addon.runes
 
 -- From utils
 local compare, compareString, nullable, isin, getCached =
     addon.compare, addon.compareString, addon.nullable, addon.isin, addon.getCached
 
+local round, min = math.round, math.min
+
 local helpers = addon.help_funcs
 local CreateText, Indent, Gap = helpers.CreateText, helpers.Indent, helpers.Gap
 
-addon:RegisterCondition(L["Combat"], "HEALTH", {
+addon.condition_health = {
     description = L["Health"],
     icon = "Interface\\Icons\\inv_potion_36",
     valid = function(_, value)
         return (value.operator ~= nil and isin(operators, value.operator) and
                 value.unit ~= nil and isin(units, value.unit) and
-                value.value ~= nil and value.value >= 0)
+                value.value ~= nil and type(value.value) == "number")
     end,
     evaluate = function(value, cache)
         if not getCached(cache, UnitExists, value.unit) then return false end
-        local cur
-        if RealMobHealth then
-            cur = RealMobHealth.GetUnitHealth(value.unit)
+        local cur = getCached(cache, UnitHealth, value.unit)
+        if value.value < 0 then
+            local max = getCached(cache, UnitHealthMax, value.unit)
+            return compare(value.operator, (max-cur), -value.value)
+        else
+            return compare(value.operator, cur, value.value)
         end
-        if not cur then
-            cur = getCached(cache, UnitHealth, value.unit)
-        end
-        return compare(value.operator, cur, value.value)
     end,
     print = function(_, value)
-        return compareString(value.operator, string.format(L["%s health"], nullable(unitsPossessive[value.unit], L["<unit>"])), nullable(value.value))
+        if value.value ~= nil and value.value < 0 then
+            return compareString(value.operator, string.format(L["%s health defecit"], nullable(unitsPossessive[value.unit], L["<unit>"])), -value.value)
+        else
+            return compareString(value.operator, string.format(L["%s health"], nullable(unitsPossessive[value.unit], L["<unit>"])), nullable(value.value))
+        end
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -54,11 +59,12 @@ addon:RegisterCondition(L["Combat"], "HEALTH", {
         addon.layout_condition_unitwidget_help(frame)
         frame:AddChild(Gap())
         addon.layout_condition_operatorwidget_help(frame, L["Health"], L["Health"],
-            "The raw health value of " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. ".")
+            "The raw health value of " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. ". " ..
+            "If this number is negative, it means the health deficit (from max health).")
     end
-})
+}
 
-addon:RegisterCondition(L["Combat"], "HEALTHPCT", {
+addon.condition_healthpct = {
     description = L["Health Percentage"],
     icon = "Interface\\Icons\\inv_potion_35",
     valid = function(_, value)
@@ -98,22 +104,32 @@ addon:RegisterCondition(L["Combat"], "HEALTHPCT", {
             "The health value of " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. " as a percentage of their " ..
             "total health.")
     end
-})
+}
 
-addon:RegisterCondition(L["Combat"], "MANA", {
+addon.condition_mana = {
     description = L["Mana"],
     icon = "Interface\\Icons\\inv_potion_71",
     valid = function(_, value)
         return (value.operator ~= nil and isin(operators, value.operator) and
                 value.unit ~= nil and isin(units, value.unit) and
-                value.value ~= nil and value.value >= 0)
+                value.value ~= nil and type(value.value) == "number")
     end,
     evaluate = function(value, cache)
         if not getCached(cache, UnitExists, value.unit) then return false end
-        return compare(value.operator, getCached(cache, UnitPower, value.unit, Enum.PowerType.Mana), value.value)
+        local cur = getCached(cache, UnitPower, value.unit, Enum.PowerType.Mana)
+        if value.value < 0 then
+            local max = getCached(cache, UnitPowerMax, value.unit, Enum.PowerType.Mana)
+            return compare(value.operator, (max-cur), -value.value)
+        else
+            return compare(value.operator, cur, value.value)
+        end
     end,
     print = function(_, value)
-        return compareString(value.operator, string.format(L["%s mana"], nullable(unitsPossessive[value.unit], L["<unit>"])), nullable(value.value))
+        if value.value ~= nil and value.value < 0 then
+            return compareString(value.operator, string.format(L["%s mana defecit"], nullable(unitsPossessive[value.unit], L["<unit>"])), -value.value)
+        else
+            return compareString(value.operator, string.format(L["%s mana"], nullable(unitsPossessive[value.unit], L["<unit>"])), nullable(value.value))
+        end
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -132,11 +148,12 @@ addon:RegisterCondition(L["Combat"], "MANA", {
         addon.layout_condition_unitwidget_help(frame)
         frame:AddChild(Gap())
         addon.layout_condition_operatorwidget_help(frame, L["Mana"], L["Mana"],
-            "The raw mana value of " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. ".")
+            "The raw mana value of " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. ". " ..
+            "If this number is negative, it means the mana deficit (from max mana).")
     end
-})
+}
 
-addon:RegisterCondition(L["Combat"], "MANAPCT", {
+addon.condition_manapct = {
     description = L["Mana Percentage"],
     icon = "Interface\\Icons\\inv_potion_70",
     valid = function(_, value)
@@ -176,15 +193,15 @@ addon:RegisterCondition(L["Combat"], "MANAPCT", {
             "The mana value of " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. " as a percentage of their " ..
             "total mana.")
     end
-})
+}
 
-addon:RegisterCondition(L["Combat"], "POWER", {
+addon.condition_power = {
     description = L["Power"],
     icon = "Interface\\Icons\\inv_potion_92",
     valid = function(_, value)
         return (value.operator ~= nil and isin(operators, value.operator) and
                 value.unit ~= nil and isin(units, value.unit) and
-                value.value ~= nil and value.value >= 0)
+                value.value ~= nil and type(value.value) == "number")
     end,
     evaluate = function(value, cache)
         if not getCached(cache, UnitExists, value.unit) then return false end
@@ -194,10 +211,21 @@ addon:RegisterCondition(L["Combat"], "POWER", {
         if (power == nil) then
             return false
         end
-        return compare(value.operator, getCached(cache, UnitPower, value.unit, power), value.value)
+
+        local cur = getCached(cache, UnitPower, value.unit, power)
+        if value.value < 0 then
+            local max = getCached(cache, UnitPowerMax, value.unit, power)
+            return compare(value.operator, (max-cur), -value.value)
+        else
+            return compare(value.operator, cur, value.value)
+        end
     end,
     print = function(_, value)
-        return compareString(value.operator, string.format(L["%s power"], nullable(unitsPossessive[value.unit], L["<unit>"])), nullable(value.value))
+        if value.value ~= nil and value.value < 0 then
+            return compareString(value.operator, string.format(L["%s power defecit"], nullable(unitsPossessive[value.unit], L["<unit>"])), value.value)
+        else
+            return compareString(value.operator, string.format(L["%s power"], nullable(unitsPossessive[value.unit], L["<unit>"])), nullable(value.value))
+        end
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -217,11 +245,12 @@ addon:RegisterCondition(L["Combat"], "POWER", {
         frame:AddChild(Gap())
         addon.layout_condition_operatorwidget_help(frame, L["Power"], L["Power"],
             "The raw power value of " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. ".  Power is a statistic " ..
-            "that is class (and sometimes spec or form) specific (eg. Warriors have Rage.)")
+            "that is class (and sometimes spec or form) specific (eg. Warriors have Rage). " ..
+            "If this number is negative, it means the power deficit (from max power).")
     end
-})
+}
 
-addon:RegisterCondition(L["Combat"], "POWERPCT", {
+addon.condition_powerpct = {
     description = L["Power Percentage"],
     icon = "Interface\\Icons\\inv_potion_91",
     valid = function(_, value)
@@ -268,15 +297,15 @@ addon:RegisterCondition(L["Combat"], "POWERPCT", {
             "total power.  Power is a statistic that is class (and sometimes spec or form) specific (eg. Warriors " ..
             "have Rage.)")
     end
-})
+}
 
-addon:RegisterCondition(L["Combat"], "POINT", {
+addon.condition_point = {
     description = L["Points"],
     icon = "Interface\\Icons\\Inv_jewelry_amulet_01",
     valid = function(_, value)
         return (value.operator ~= nil and isin(operators, value.operator) and
                 value.unit ~= nil and isin(units, value.unit) and
-                value.value ~= nil and value.value >= 0)
+                value.value ~= nil and type(value.value) == "number")
     end,
     evaluate = function(value, cache)
         if not getCached(cache, UnitExists, value.unit) then return false end
@@ -288,13 +317,23 @@ addon:RegisterCondition(L["Combat"], "POINT", {
         end
         if class ~= nil then
             local point = points[class] or Enum.PowerType.ComboPoints
-            return compare(value.operator, getCached(cache, UnitPower, value.unit, point), value.value)
+            local cur = getCached(cache, UnitPower, value.unit, point)
+            if value.value < 0 then
+                local max = getCached(cache, UnitPowerMax, value.unit, point)
+                return compare(value.operator, (max-cur), -value.value)
+            else
+                return compare(value.operator, cur, value.value)
+            end
         else
             return false
         end
     end,
     print = function(_, value)
-        return compareString(value.operator, string.format(L["%s points"], nullable(unitsPossessive[value.unit], L["<unit>"])), nullable(value.value))
+        if value.value ~= nil and value.value < 0 then
+            return compareString(value.operator, string.format(L["%s point defecit"], nullable(unitsPossessive[value.unit], L["<unit>"])), value.value)
+        else
+            return compareString(value.operator, string.format(L["%s points"], nullable(unitsPossessive[value.unit], L["<unit>"])), nullable(value.value))
+        end
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -315,32 +354,172 @@ addon:RegisterCondition(L["Combat"], "POINT", {
         addon.layout_condition_operatorwidget_help(frame, L["Points"], L["Points"],
             "The number of combo points " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. " currently has.  " ..
             "Combo points are a statistic that is class (and sometimes spec or form) specific (eg. Mages have " ..
-            "Arcane Charges.)")
+            "Arcane Charges).  " ..
+            "If this number is negative, it means the point deficit (from max points).")
     end
-})
+}
 
-addon:RegisterCondition(L["Combat"], "TT_HEALTH", {
+if WOW_PROJECT_ID == WOW_PROJECT_BURNING_CRUSADE_CLASSIC and
+    LE_EXPANSION_LEVEL_CURRENT >= LE_EXPANSION_NORTHREND and
+    select(2, UnitClass("player")) == "DEATHKNIGHT" then
+    addon.condition_rune = {
+        description = L["Runes"],
+        icon = "Interface\\Icons\\spell_deathknight_empowerruneblade",
+        valid = function(_, value)
+            return (value.operator ~= nil and isin(operators, value.operator) and
+                    value.value ~= nil and value.value >= 0 and value.value <= 2 and
+                    value.rune ~= nil and isin(runes, value.rune))
+        end,
+        evaluate = function(value, cache)
+            local points = 0
+            if value.rune == "BLOOD" then
+                if select(3, getCached(cache, GetRuneCooldown, 1)) then points = points + 1 end
+                if select(3, getCached(cache, GetRuneCooldown, 2)) then points = points + 1 end
+            elseif value.rune == "UNHOLY" then
+                if select(3, getCached(cache, GetRuneCooldown, 3)) then points = points + 1 end
+                if select(3, getCached(cache, GetRuneCooldown, 4)) then points = points + 1 end
+            elseif value.rune == "BLOOD" then
+                if select(3, getCached(cache, GetRuneCooldown, 5)) then points = points + 1 end
+                if select(3, getCached(cache, GetRuneCooldown, 6)) then points = points + 1 end
+            end
+            return compare(value.operator, points, value.value)
+        end,
+        print = function(_, value)
+            local rune_type = value.rune and addon.runes[value.rune] or L["<rune type>"]
+            return compareString(value.operator, string.format(L["%s runes available"], rune_type),
+                        nullable(value.value))
+        end,
+        widget = function(parent, spec, value)
+            local top = parent:GetUserData("top")
+            local root = top:GetUserData("root")
+            local funcs = top:GetUserData("funcs")
+
+            local rune = AceGUI:Create("Dropdown")
+            rune:SetLabel(L["Rune Type"])
+            rune:SetCallback("OnValueChanged", function(_, _, v)
+                value.rune = v
+                top:SetStatusText(funcs:print(root, spec))
+            end)
+            rune.configure = function()
+                rune:SetList(addon.runes)
+                rune:SetValue(value.rune)
+            end
+            parent:AddChild(rune)
+
+            local operator_group = addon:Widget_OperatorWidget(value, L["Runes"],
+                    function() top:SetStatusText(funcs:print(root, spec)) end)
+            parent:AddChild(operator_group)
+        end,
+        help = function(frame)
+            addon.layout_condition_unitwidget_help(frame)
+            frame:AddChild(Gap())
+            frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Rune Type"] .. color.RESET .. " - " ..
+                    "Which type of runes you wish to check."))
+            frame:AddChild(Indent(40, CreateText(color.GREEN .. L["Blood"] .. color.RESET)))
+            frame:AddChild(Indent(40, CreateText(color.GREEN .. L["Unholy"] .. color.RESET)))
+            frame:AddChild(Indent(40, CreateText(color.GREEN .. L["Frost"] .. color.RESET)))
+            frame:AddChild(Gap())
+            addon.layout_condition_operatorwidget_help(frame, L["Runes"], L["Runes"],
+                    "The number of runes currently available.")
+        end
+    }
+
+    addon.condition_rune_cooldown = {
+        description = L["Rune Cooldown"],
+        icon = "Interface\\Icons\\spell_deathknight_empowerruneblade2",
+        valid = function(_, value)
+            return (value.operator ~= nil and isin(operators, value.operator) and
+                    value.value ~= nil and value.value >= 0 and
+                    value.rune ~= nil and isin(runes, value.rune))
+        end,
+        evaluate = function(value, cache)
+            local points = 0
+            local start1, duration1 = 0, 10, true
+            local start2, duration2 = 0, 10, true
+            if value.rune == "BLOOD" then
+                local start1, duration1 = getCached(cache, GetRuneCooldown, 1)
+                local start2, duration2 = getCached(cache, GetRuneCooldown, 2)
+            elseif value.rune == "UNHOLY" then
+                local start1, duration1 = getCached(cache, GetRuneCooldown, 3)
+                local start2, duration2 = getCached(cache, GetRuneCooldown, 4)
+            elseif value.rune == "BLOOD" then
+                local start1, duration1 = getCached(cache, GetRuneCooldown, 5)
+                local start2, duration2 = getCached(cache, GetRuneCooldown, 6)
+            end
+            local remain1, remain2 = 0, 0
+            if start1 ~= 0 and duration1 ~= 0 then
+                remain1 = round(duration1 - (GetTime() - start1), 3)
+                if remain1 < 0 then remain1 = 0 end
+            end
+            if start2 ~= 0 and duration2 ~= 0 then
+                remain2 = round(duration2 - (GetTime() - start2), 3)
+                if remain2 < 0 then remain2 = 0 end
+            end
+            return compare(value.operator, min(remain1, remain2), value.value)
+        end,
+        print = function(_, value)
+            local rune_type = value.rune and addon.runes[value.rune] or L["<rune type>"]
+            return string.format(L["the %s"],
+                    compareString(value.operator, string.format(L["cooldown on %s rune"], rune_type),
+                    string.format(L["%s seconds"], nullable(value.value))))
+        end,
+        widget = function(parent, spec, value)
+            local top = parent:GetUserData("top")
+            local root = top:GetUserData("root")
+            local funcs = top:GetUserData("funcs")
+
+            local rune = AceGUI:Create("Dropdown")
+            rune:SetLabel(L["Rune Type"])
+            rune:SetCallback("OnValueChanged", function(_, _, v)
+                value.rune = v
+                top:SetStatusText(funcs:print(root, spec))
+            end)
+            rune.configure = function()
+                rune:SetList(addon.runes)
+                rune:SetValue(value.rune)
+            end
+            parent:AddChild(rune)
+
+            local operator_group = addon:Widget_OperatorWidget(value, L["Seconds"],
+                    function() top:SetStatusText(funcs:print(root, spec)) end)
+            parent:AddChild(operator_group)
+        end,
+        help = function(frame)
+            addon.layout_condition_unitwidget_help(frame)
+            frame:AddChild(Gap())
+            frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Rune Type"] .. color.RESET .. " - " ..
+                    "Which type of runes you wish to check."))
+            frame:AddChild(Indent(40, CreateText(color.GREEN .. L["Blood"] .. color.RESET)))
+            frame:AddChild(Indent(40, CreateText(color.GREEN .. L["Unholy"] .. color.RESET)))
+            frame:AddChild(Indent(40, CreateText(color.GREEN .. L["Frost"] .. color.RESET)))
+            frame:AddChild(Gap())
+            addon.layout_condition_operatorwidget_help(frame, L["Rune Cooldown"], L["Seconds"],
+                    "The number of seconds until a " .. color.BLIZ_YELLOW .. L["Rune Type"] .. color.RESET ..
+                    " rune becomes available.")
+        end
+    }
+end
+
+addon.condition_tt_health = {
     description = L["Time Until Health"],
     icon = "Interface\\Icons\\inv_potion_21",
     valid = function(_, value)
         return (value.operator ~= nil and isin(operators, value.operator) and
                 value.unit ~= nil and isin(units, value.unit) and
                 value.value ~= nil and value.value >= 0.00 and
-                value.health ~= nil and value.health >= 0)
+                value.health ~= nil and type(value.health) == "number")
     end,
     evaluate = function(value, cache)
         if not getCached(cache, UnitExists, value.unit) then return false end
         local target = getCached(cache, UnitGUID, value.unit)
         if target then
-            local health
-            if RealMobHealth then
-                health = RealMobHealth.GetUnitHealth(value.unit)
-            end
-            if not health then
-                health = getCached(cache, UnitHealth, value.unit)
-            end
+            local health = getCached(cache, UnitHealth, value.unit)
 
             local target_health = value.health
+            if value.value < 0 then
+                local max = getCached(cache, UnitHealthMax, value.unit)
+                target_health = target_health + max
+            end
             if health == target_health then
                 return compare(value.operator, 0, value.value)
             elseif addon.damageHistory[target] then
@@ -363,9 +542,16 @@ addon:RegisterCondition(L["Combat"], "TT_HEALTH", {
         return false
     end,
     print = function(_, value)
+        local conditionstr
+        if value.health ~= nil and value.health < 0 then
+            conditionstr = string.format(L["time until %s is at %s health defecit"],
+                    nullable(value.unit, L["<unit>"]), -value.health)
+        else
+            conditionstr = string.format(L["time until %s is at %s health"],
+                    nullable(value.unit, L["<unit>"]), nullable(value.health))
+        end
         return string.format(L["%s with %s"],
-            compareString(value.operator, string.format(L["time until %s is at %s health"],
-            nullable(value.unit, L["<unit>"]), nullable(value.health)),
+            compareString(value.operator, conditionstr,
             string.format(L["%s seconds"], nullable(value.value))), addon.trendmode[value.mode or "both"])
     end,
     widget = function(parent, spec, value)
@@ -408,7 +594,8 @@ addon:RegisterCondition(L["Combat"], "TT_HEALTH", {
         frame:AddChild(Gap())
         frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Health"] .. color.RESET .. " - " ..
                 "The target health the rule is waiting for " .. color.BLIZ_YELLOW .. L["Unit"] ..
-                color.RESET .. " to get to."))
+                color.RESET .. " to get to. " ..
+                "If this number is negative, it means the health deficit (from max health)."))
         frame:AddChild(Gap())
         addon.layout_condition_operatorpercentwidget_help(frame, L["Time Until Health"], L["Seconds"],
             "How many seconds (estimated) until the target health is acehived on  " .. color.BLIZ_YELLOW ..
@@ -426,9 +613,9 @@ addon:RegisterCondition(L["Combat"], "TT_HEALTH", {
                 "Only heals on " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. " will be factored into the " ..
                 "'burn rate', essentially pretending they are not being hit at all.")))
     end
-})
+}
 
-addon:RegisterCondition(L["Combat"], "TT_HEALTHPCT", {
+addon.condition_tt_healthpct = {
     description = L["Time Until Health Percentage"],
     icon = "Interface\\Icons\\inv_potion_24",
     valid = function(_, value)
@@ -548,5 +735,4 @@ addon:RegisterCondition(L["Combat"], "TT_HEALTHPCT", {
                 "Only heals on " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. " will be factored into the " ..
                 "'burn rate', essentially pretending they are not being hit at all.")))
     end
-})
-
+}

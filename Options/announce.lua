@@ -62,7 +62,8 @@ function addon:create_announce_list(frame)
                 spell_group:SetFullWidth(true)
                 ag:AddChild(spell_group)
             elseif ent.type == "item" then
-                local item_group = addon:Widget_ItemWidget(nil, ent,
+                local item_group = addon:Widget_ItemWidget(nil, "Inventory_EditBox", ent,
+                    function() return true end,
                     function() draw_action_group(ag, ent) end)
                 item_group:SetFullWidth(true)
                 ag:AddChild(item_group)
@@ -203,7 +204,9 @@ function addon:create_announce_list(frame)
             spell_group:SetFullWidth(true)
             ag:AddChild(spell_group)
         elseif ent.type == "item" then
-            local item_group = addon:Widget_ItemWidget(nil, ent, function()
+            local item_group = addon:Widget_ItemWidget(nil, "Inventory_EditBox", ent,
+                function() return true end,
+                function()
                 if ent.item then
                     table.insert(announces, ent)
                     addon:create_announce_list(frame)

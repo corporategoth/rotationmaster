@@ -132,6 +132,10 @@ local mainline_events = {
     'PLAYER_SPECIALIZATION_CHANGED',
 }
 
+local wrath_events = {
+
+}
+
 local tbc_events = {
     'PLAYER_FOCUS_CHANGED',
 }
@@ -420,9 +424,16 @@ function addon:enable()
             self:RegisterEvent(v)
         end
     elseif (WOW_PROJECT_ID == WOW_PROJECT_BURNING_CRUSADE_CLASSIC) then
-        self.currentSpec = 0
-        for _, v in pairs(tbc_events) do
-            self:RegisterEvent(v)
+        if LE_EXPANSION_LEVEL_CURRENT == LE_EXPANSION_NORTHREND then
+            self.currentSpec = 0
+            for _, v in pairs(wrath_events) do
+                self:RegisterEvent(v)
+            end
+        elseif LE_EXPANSION_LEVEL_CURRENT == LE_EXPANSION_BURNING_CRUSADE then
+            self.currentSpec = 0
+            for _, v in pairs(tbc_events) do
+                self:RegisterEvent(v)
+            end
         end
     elseif (WOW_PROJECT_ID == WOW_PROJECT_CLASSIC) then
         self.currentSpec = 0
@@ -508,7 +519,10 @@ function addon:rotationValidConditions(rot, spec)
         -- All rotation steps are valid
         for _, v in pairs(rot.rotation) do
             if not v.disabled then
-                if (v.type == nil or v.action == nil or not self:validateCondition(v.conditions, spec)) then
+                if (v.type == nil or not self:validateCondition(v.conditions, spec)) then
+                    return false
+                end
+                if (v.type ~= "none" and v.action == nil) then
                     return false
                 end
                 if v.type == "item" then
@@ -852,6 +866,10 @@ function addon:EvaluateNextAction()
         if rot.rotation ~= nil then
             local enabled
             for id, cond in pairs(rot.rotation) do
+                if cond.type == "none" and (cond.disabled == nil or cond.disabled == false) and
+                        addon:evaluateCondition(cond.conditions) then
+                    break
+                end
                 local spellid
                 spellid, enabled = eval(cond)
                 if spellid and enabled then
@@ -1037,6 +1055,16 @@ function addon:UpdateSkills()
         if self.specTab then
             self.specTab:SelectTab(spec)
         end
+    elseif (WOW_PROJECT_ID == WOW_PROJECT_BURNING_CRUSADE_CLASSIC and
+            LE_EXPANSION_LEVEL_CURRENT >= LE_EXPANSION_NORTHREND) then
+        local spec = GetSpecialization()
+        if spec == nil then
+            return
+        end
+        self.currentSpec = spec
+        if self.specTab then
+            self.specTab:SelectTab(spec)
+        end
     end
 
     self:UpdateAutoSwitch()
@@ -1084,6 +1112,23 @@ function addon:UpdateSkills()
                     name = name,
                     icon = icon
                 }
+            end
+        end
+    elseif (WOW_PROJECT_ID == WOW_PROJECT_BURNING_CRUSADE_CLASSIC and
+            LE_EXPANSION_LEVEL_CURRENT >= LE_EXPANSION_NORTHREND) then
+        if self.specTalents[self.currentSpec] == nil then
+            self.specTalents[self.currentSpec] = {}
+
+            for i = 1, GetNumTalentTabs() do
+                self.specTalents[self.currentSpec][i] = {}
+                for j = 1, GetNumTalents(i) do
+                    local name, icon, _, _, rank = GetTalentInfo(i, j)
+                    self.specTalents[self.currentSpec][i][j] = {
+                        name = name,
+                        icon = icon,
+                        rank = rank
+                    }
+                end
             end
         end
     end

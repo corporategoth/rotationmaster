@@ -10,6 +10,7 @@ ItemLoader.itemListReverse = ItemLoader.itemListReverse or {}
 
 local ITEMS_PER_RUN = 500
 local TIMER_THROTTLE = 0.10
+local MAX_ATTEMPTS = 5
 local items, itemsReverse, predictors = ItemLoader.itemList, ItemLoader.itemListReverse, ItemLoader.predictors
 
 function ItemLoader:RegisterPredictor(frame)
@@ -27,8 +28,38 @@ local function TableConcat(t1,t2)
 	return t1
 end
 
-local dataset
+local dataset, retry = {}, {}
 local timeElapsed, currentIndex = 0, 0
+
+local function AddItem(name, icon, link, itemID, force)
+	if not force and items[itemID] ~= nil then
+		return
+	end
+
+	items[itemID] = {
+		name = name,
+		icon = icon,
+		link = link
+	}
+
+	local lcname = string.lower(name)
+
+	if itemsReverse[lcname] == nil then
+		local revid, _, _, _, revicon = GetItemInfoInstant(name)
+		if revid then
+			itemsReverse[lcname] = revid
+			if revid ~= itemID and items[revid] == nil then
+				items[revid] = {
+					name = name,
+					icon = revicon,
+					link = select(2, GetItemInfo(revid))
+				}
+			end
+		else
+			itemsReverse[lcname] = itemID
+		end
+	end
+end
 
 function ItemLoader:StartLoading(limited)
 	if dataset == nil then
@@ -47,11 +78,18 @@ function ItemLoader:StartLoading(limited)
 		timeElapsed = timeElapsed + elapsed
 		if( timeElapsed < TIMER_THROTTLE ) then return end
 		timeElapsed = timeElapsed - TIMER_THROTTLE
-		
+
         for idx=currentIndex + 1, currentIndex + ITEMS_PER_RUN do
 			if dataset == nil or idx >= #dataset then
-				dataset = nil
-				self:Hide()
+				if #retry > 0 then
+					dataset = {}
+					for k,_ in pairs(retry) do
+						table.insert(dataset, k)
+					end
+				else
+					dataset = nil
+					self:Hide()
+				end
 
 				for predictor in pairs(predictors) do
 					if( predictor:IsVisible() ) then
@@ -62,33 +100,21 @@ function ItemLoader:StartLoading(limited)
 			end
 
 			local itemID = dataset[idx]
-        	if items[itemID] == nil then
-                local name, link, _, _, _, _, _, _, _, icon = GetItemInfo(itemID)
-                if( name ) then
-                    items[itemID] = {
-						name = name,
-						link = link,
-						icon = icon
-					}
-
-					local lcname = string.lower(name)
-					if itemsReverse[lcname] == nil then
-						itemsReverse[lcname] = itemID
-						--[[
-                        -- local revid, _, _, _, icon = GetItemInfoInstant(name)
-                        itemsReverse[lcname] = revid
-                    	-- Just in case this is a future load.
-                    	if  items[revid] == nil then
-							items[revid] = {
-								name = name,
-								link = name,
-								icon = icon
-							}
-                        end
-                        --]]
-                    end
-                end
-            end
+			if itemID ~= 0 then
+				if items[itemID] == nil then
+					local name, link, _, _, _, _, _, _, _, icon = GetItemInfo(itemID)
+					if( name ) then
+						retry[itemID] = nil
+						AddItem(name, icon, link, itemID)
+					elseif retry[itemID] == nil then
+						retry[itemID] = 1
+					elseif retry[itemID] > MAX_ATTEMPTS then
+						retry[itemID] = nil
+					else
+						retry[itemID] = retry[itemID] + 1
+					end
+				end
+			end
         end
 
 		-- Every ~1 second it will update any visible predictors to make up for the fact that the data is delay loaded

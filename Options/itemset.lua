@@ -316,7 +316,7 @@ local function ImportExport(items, update)
     frame:DoLayout()
 end
 
-local function create_item_list(frame, items, update)
+local function create_item_list(frame, editbox, items, isvalid, update)
     frame:ReleaseChildren()
     frame:PauseLayout()
 
@@ -325,27 +325,36 @@ local function create_item_list(frame, items, update)
             local row = frame
 
             local icon = AceGUI:Create("ActionSlotItem")
-            local name = AceGUI:Create("Inventory_EditBox")
+            local name = AceGUI:Create(editbox)
 
             icon:SetWidth(44)
             icon:SetHeight(44)
             icon.text:Hide()
             icon:SetCallback("OnEnterPressed", function(_, _, v)
-                if v then
+                v = tonumber(v)
+                if isvalid(v) then
                     items[idx] = v
                     addon:UpdateItem_Name_ID(v, name, icon)
+                    if GameTooltip:IsVisible() then
+                        GameTooltip:SetHyperlink("item:" .. v)
+                    end
                     update()
                 else
                     table.remove(items, idx)
+                    if GameTooltip:IsVisible() then
+                        GameTooltip:Hide()
+                    end
                     update()
-                    create_item_list(frame, items, update)
+                    create_item_list(frame, editbox, items, isvalid, update)
                 end
             end)
             icon:SetCallback("OnEnter", function()
-                local itemid = getRetryCached(addon.longtermCache, GetItemInfoInstant, items[idx])
-                if itemid then
-                    GameTooltip:SetOwner(icon.frame, "ANCHOR_BOTTOMRIGHT", 3)
-                    GameTooltip:SetHyperlink("item:" .. itemid)
+                if items[idx] ~= nil then
+                    local itemid = getRetryCached(addon.longtermCache, GetItemInfoInstant, items[idx])
+                    if itemid then
+                        GameTooltip:SetOwner(icon.frame, "ANCHOR_BOTTOMRIGHT", 3)
+                        GameTooltip:SetHyperlink("item:" .. itemid)
+                    end
                 end
             end)
             icon:SetCallback("OnLeave", function()
@@ -356,15 +365,20 @@ local function create_item_list(frame, items, update)
             name:SetFullWidth(true)
             name:SetLabel(L["Item"])
             name:SetCallback("OnEnterPressed", function(_, _, v)
-                if v == "" then
+                local itemid
+                if not isint(v) then
+                    itemid = getRetryCached(addon.longtermCache, GetItemInfoInstant, v)
+                else
+                    itemid = tonumber(v)
+                end
+                if isvalid(itemid or v) then
+                    items[idx] = itemid or v
+                    addon:UpdateItem_Name_ID(itemid or v, name, icon)
+                    update()
+                else
                     table.remove(items, idx)
                     update()
-                    create_item_list(frame, items, update)
-                else
-                    local itemid = getRetryCached(addon.longtermCache, GetItemInfoInstant, v)
-                    items[idx] = itemid or v
-                    addon:UpdateItem_Name_ID(v, name, icon)
-                    update()
+                    create_item_list(frame, editbox, items, isvalid, update)
                 end
             end)
             row:AddChild(name)
@@ -386,7 +400,7 @@ local function create_item_list(frame, items, update)
                 local tmp = table.remove(items, idx)
                 table.insert(items, 1, tmp)
                 update()
-                create_item_list(frame, items, update)
+                create_item_list(frame, editbox, items, isvalid, update)
             end)
             addon.AddTooltip(movetop, L["Move to Top"])
             row:AddChild(movetop)
@@ -405,7 +419,7 @@ local function create_item_list(frame, items, update)
                 items[idx-1] = items[idx]
                 items[idx] = tmp
                 update()
-                create_item_list(frame, items, update)
+                create_item_list(frame, editbox, items, isvalid, update)
             end)
             addon.AddTooltip(moveup, L["Move Up"])
             row:AddChild(moveup)
@@ -424,7 +438,7 @@ local function create_item_list(frame, items, update)
                 items[idx+1] = items[idx]
                 items[idx] = tmp
                 update()
-                create_item_list(frame, items, update)
+                create_item_list(frame, editbox, items, isvalid, update)
             end)
             addon.AddTooltip(movedown, L["Move Down"])
             row:AddChild(movedown)
@@ -442,7 +456,7 @@ local function create_item_list(frame, items, update)
                 local tmp = table.remove(items, idx)
                 table.insert(items, tmp)
                 update()
-                create_item_list(frame, items, update)
+                create_item_list(frame, editbox, items, isvalid, update)
             end)
             addon.AddTooltip(movebottom, L["Move to Bottom"])
             row:AddChild(movebottom)
@@ -453,7 +467,7 @@ local function create_item_list(frame, items, update)
             delete:SetCallback("OnClick", function()
                 table.remove(items, idx)
                 update()
-                create_item_list(frame, items, update)
+                create_item_list(frame, editbox, items, isvalid, update)
             end)
             addon.AddTooltip(delete, DELETE)
             row:AddChild(delete)
@@ -473,12 +487,12 @@ local function create_item_list(frame, items, update)
             if item then
                 items[#items + 1] = item
                 update()
-                create_item_list(frame, items, update)
+                create_item_list(frame, editbox, items, isvalid, update)
             end
         end)
         row:AddChild(icon)
 
-        local name = AceGUI:Create("Inventory_EditBox")
+        local name = AceGUI:Create(editbox)
         name:SetFullWidth(true)
         name:SetLabel(L["Item"])
         name:SetDisabled(items == nil)
@@ -487,7 +501,7 @@ local function create_item_list(frame, items, update)
             if val ~= nil then
                 items[#items + 1] = val
                 update()
-                create_item_list(frame, items, update)
+                create_item_list(frame, editbox, items, isvalid, update)
             end
         end)
         row:AddChild(name)
@@ -536,7 +550,7 @@ local function create_item_list(frame, items, update)
     frame:DoLayout()
 end
 
-function addon:item_list_popup(name, items, update, onclose)
+function addon:item_list_popup(name, editbox, items, isvalid, update, onclose)
     local frame = AceGUI:Create("Frame")
     frame:PauseLayout()
 
@@ -564,7 +578,7 @@ function addon:item_list_popup(name, items, update, onclose)
     scrollwin:SetUserData("table", { columns = { 44, 1, 24, 24, 24, 24, 24 } })
     group:AddChild(scrollwin)
 
-    create_item_list(scrollwin, items, update)
+    create_item_list(scrollwin, editbox, items, isvalid, update)
 
     local help = AceGUI:Create("Help")
     help:SetLayout(addon.layout_item_list_help)
@@ -594,7 +608,7 @@ function addon:bind_popup(name, _, _, onclose)
 
 end
 
-local function item_list(frame, selected, itemset, update)
+local function item_list(frame, selected, editbox, itemset, isvalid, update)
     local bindings = addon.db.char.bindings
     local itemsets = addon.db.char.itemsets
     local global_itemsets = addon.db.global.itemsets
@@ -695,7 +709,7 @@ local function item_list(frame, selected, itemset, update)
             end
             delete:SetDisabled(false)
             importexport:SetDisabled(false)
-            create_item_list(scrollwin, itemset.items, update)
+            create_item_list(scrollwin, editbox, itemset.items, isvalid, update)
         else
             itemset.name = v
         end
@@ -775,7 +789,7 @@ local function item_list(frame, selected, itemset, update)
     importexport:SetDisabled(itemset == nil)
     importexport:SetCallback("OnClick", function()
         ImportExport(itemset.items, function()
-            create_item_list(scrollwin, itemset and itemset.items or nil, update_itemid)
+            create_item_list(scrollwin, editbox, itemset and itemset.items or nil, isvalid, update_itemid)
         end)
     end)
     buttongroup:AddChild(importexport)
@@ -789,7 +803,7 @@ local function item_list(frame, selected, itemset, update)
     scrollwin:SetLayout("Table")
     scrollwin:SetUserData("table", { columns = { 44, 1, 24, 24, 24, 24, 24 } })
     frame:AddChild(scrollwin)
-    create_item_list(scrollwin, itemset and itemset.items or nil, function()
+    create_item_list(scrollwin, editbox, itemset and itemset.items or nil, isvalid, function()
         update_itemid()
         update()
     end)
@@ -878,7 +892,7 @@ function addon:create_itemset_list(frame)
             elseif global_itemsets[selected] ~= nil then
                 itemset = global_itemsets[selected]
             end
-            item_list(group, selected, itemset, function()
+            item_list(group, selected, "Inventory_EditBox", itemset, function() return true end, function()
                 local selects, sorted = self:get_item_list(NEW)
                 select:SetGroupList(selects, sorted)
                 if selects[selected] then

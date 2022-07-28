@@ -1,6 +1,6 @@
 ## Interface: 20504
 ## Title: Rotation Master
-## Version: 1.3.9
+## Version: 1.4.0
 ## Author: PreZ
 ## Notes: I wanted to save the world, but God wouldn't give me the source code.
 ## X-Email: prez@neuromancy.net
@@ -58,6 +58,8 @@ Conditions/combat.lua
 Conditions/casting.lua
 Conditions/channeling.lua
 Conditions/spatial.lua
+Conditions/spatial_stats.lua
 Conditions/weapon.lua
+Conditions/misc.lua
 Conditions/switch.lua
-
+Conditions/rotation.lua

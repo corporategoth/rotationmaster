@@ -702,7 +702,9 @@ local function create_rotation_options(frame, specID, rotid, parent, selected)
                 local name
                 if rot.disabled ~= nil and rot.disabled == true then
                     name = color.GRAY
-                elseif rot.type == nil or rot.action == nil or not addon:validateCondition(rot.conditions, specID) then
+                elseif rot.type == nil or not addon:validateCondition(rot.conditions, specID) then
+                    name = color.RED
+                elseif rot.type ~= "none" and rot.action == nil then
                     name = color.RED
                 else
                     name = ""
@@ -717,6 +719,8 @@ local function create_rotation_options(frame, specID, rotid, parent, selected)
                     if (rot.name ~= nil and string.len(rot.name)) then
                         name = name .. " - " .. rot.name
                     end
+                elseif rot.type == "none" then
+                    name = name .. " - " .. L["No Action"]
                 else
                     if rot.action ~= nil then
                         if rot.type == "spell" or rot.type == "pet" then
@@ -935,6 +939,36 @@ local function create_class_options(frame, classID)
                 value = specID,
                 text = specName
             })
+        end
+        tabs:SetTabs(spec_tabs)
+        tabs:SelectTab(currentSpec)
+        tabs:SetLayout("Fill")
+
+        tabs:SetCallback("OnGroupSelected", function(_, _, val)
+            create_spec_options(tabs, val, (val == addon.currentSpec) and addon.currentRotation or DEFAULT)
+        end)
+        frame.frame:SetScript("OnShow", function(f)
+            create_spec_options(tabs, currentSpec, addon.currentRotation or DEFAULT)
+            f:SetScript("OnShow", nil)
+        end)
+
+        frame:AddChild(tabs)
+    elseif (WOW_PROJECT_ID == WOW_PROJECT_BURNING_CRUSADE_CLASSIC and
+            LE_EXPANSION_LEVEL_CURRENT >= LE_EXPANSION_NORTHREND) then
+        local tabs = AceGUI:Create("TabGroup")
+        addon.specTab = tabs
+
+        local spec_tabs = {}
+        table.insert(spec_tabs, {
+            value = 1,
+            text = PRIMARY
+        })
+        table.insert(spec_tabs, {
+            value = 2,
+            text = SECONDARY
+        })
+        if currentSpec == nil then
+            currentSpec = GetSpecialization()
         end
         tabs:SetTabs(spec_tabs)
         tabs:SelectTab(currentSpec)

@@ -13,7 +13,7 @@ local compare, compareString, nullable, isin, getCached, round =
 local helpers = addon.help_funcs
 local Gap = helpers.Gap
 
-addon:RegisterCondition(L["Spells / Items"], "PETSPELL_AVAIL", {
+addon.condition_petspell_avail = {
     description = L["Pet Spell Available"],
     icon = "Interface\\Icons\\Ability_druid_bash",
     valid = function(_, value)
@@ -67,9 +67,9 @@ addon:RegisterCondition(L["Spells / Items"], "PETSPELL_AVAIL", {
     help = function(frame)
         addon.layout_condition_spellwidget_help(frame)
     end
-})
+}
 
-addon:RegisterCondition(L["Spells / Items"], "PETSPELL_RANGE", {
+addon.condition_petspell_range = {
     description = L["Pet Spell In Range"],
     icon = "Interface\\Icons\\inv_misc_bandage_03",
     valid = function(_, value)
@@ -109,9 +109,9 @@ addon:RegisterCondition(L["Spells / Items"], "PETSPELL_RANGE", {
     help = function(frame)
         addon.layout_condition_spellwidget_help(frame)
     end
-})
+}
 
-addon:RegisterCondition(L["Spells / Items"], "PETSPELL_COOLDOWN", {
+addon.condition_petspell_cooldown = {
     description = L["Pet Spell Cooldown"],
     icon = "Interface\\Icons\\Spell_nature_sleep",
     valid = function(_, value)
@@ -160,11 +160,11 @@ addon:RegisterCondition(L["Spells / Items"], "PETSPELL_COOLDOWN", {
         addon.layout_condition_operatorwidget_help(frame, L["Spell Cooldown"], L["Seconds"],
             "The number of seconds before you can cast " .. color.BLIZ_YELLOW .. L["Spell"] .. color.RESET .. ".")
     end
-})
+}
 
-addon:RegisterCondition(L["Spells / Items"], "PETSPELL_REMAIN", {
+addon.condition_petspell_remain = {
     description = L["Pet Spell Time Remaining"],
-    icon = "Interface\\Icons\\spell_nature_polymorph",
+    icon = "Interface\\Icons\\ability_hunter_pet_raptor",
     valid = function(_, value)
         if value.spell ~= nil then
             local name = GetSpellInfo(value.spell)
@@ -211,9 +211,9 @@ addon:RegisterCondition(L["Spells / Items"], "PETSPELL_REMAIN", {
             "The number of seconds the effect of " .. color.BLIZ_YELLOW .. L["Spell"] .. color.RESET ..
                     " has left.")
     end
-})
+}
 
-addon:RegisterCondition(L["Spells / Items"], "PETSPELL_CHARGES", {
+addon.condition_petspell_charges = {
     description = L["Pet Spell Charges"],
     icon = "Interface\\Icons\\Ability_mount_nightmarehorse",
     valid = function(_, value)
@@ -256,4 +256,4 @@ addon:RegisterCondition(L["Spells / Items"], "PETSPELL_CHARGES", {
         addon.layout_condition_operatorwidget_help(frame, L["Spell Charges"], L["Charges"],
             "The number of charges of " .. color.BLIZ_YELLOW .. L["Spell"] .. color.RESET .. " currently active.")
     end
-})
+}

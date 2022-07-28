@@ -10,7 +10,7 @@ local tonumber = tonumber
 local operators, units = addon.operators, addon.units
 
 -- From Utils
-local isint, keys, getCached = addon.isint, addon.keys, addon.getCached
+local isint, keys, getCached, getRetryCached = addon.isint, addon.keys, addon.getCached, addon.getRetryCached
 
 function addon:Widget_GetSpellId(spellid, ranked)
     if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
@@ -57,9 +57,15 @@ function addon:Widget_SpellWidget(spec, editbox, value, nametoid, isvalid, updat
             value.spell = v
             spellIcon:SetText(v)
             spell:SetText(value.spell and (value.ranked and SpellData:SpellName(value.spell) or GetSpellInfo(value.spell)))
+            if GameTooltip:IsVisible() then
+                GameTooltip:SetHyperlink("spell:" .. v)
+            end
         else
             spellIcon:SetText(nil)
             spell:SetText(nil)
+            if GameTooltip:IsVisible() then
+                GameTooltip:Hide()
+            end
         end
         update()
     end)
@@ -151,9 +157,15 @@ function addon:Widget_SpellNameWidget(spec, editbox, value, isvalid, update)
             value.spell = GetSpellInfo(v)
             spellIcon:SetText(v)
             spell:SetText(value.spell)
+            if GameTooltip:IsVisible() then
+                GameTooltip:SetHyperlink("spell:" .. v)
+            end
         else
             spellIcon:SetText(nil)
             spell:SetText(nil)
+            if GameTooltip:IsVisible() then
+                GameTooltip:Hide()
+            end
         end
         update()
     end)
@@ -198,7 +210,7 @@ function addon:Widget_SpellNameWidget(spec, editbox, value, isvalid, update)
     return spell_group
 end
 
-function addon:Widget_ItemWidget(top, value, update)
+function addon:Widget_ItemWidget(top, editbox, value, isvalid, update)
     local itemsets = addon.db.char.itemsets
     local global_itemsets = addon.db.global.itemsets
 
@@ -299,7 +311,7 @@ function addon:Widget_ItemWidget(top, value, update)
                     top:SetCallback("OnClose", function(widget) end)
                     top:Hide()
                 end
-                addon:item_list_popup(itemset.name, itemset.items, edit_callback, top and function(widget)
+                addon:item_list_popup(itemset.name, editbox, itemset.items, isvalid, edit_callback, top and function(widget)
                     AceGUI:Release(widget)
                     addon.LayoutConditionFrame(top)
                     top:Show()
@@ -310,7 +322,7 @@ function addon:Widget_ItemWidget(top, value, update)
                 top:SetCallback("OnClose", function(widget) end)
                 top:Hide()
             end
-            addon:item_list_popup(L["Custom"], value.item, edit_callback, top and function(widget)
+            addon:item_list_popup(L["Custom"], editbox, value.item, isvalid, edit_callback, top and function(widget)
                 AceGUI:Release(widget)
                 addon.LayoutConditionFrame(top)
                 top:Show()
@@ -322,7 +334,75 @@ function addon:Widget_ItemWidget(top, value, update)
     return item_group
 end
 
-function addon:Widget_OperatorWidget(value, name, update)
+function addon:Widget_SingleItemWidget(spec, editbox, value, isvalid, update)
+    local item_group = AceGUI:Create("SimpleGroup")
+    item_group:SetLayout("Table")
+
+    item_group:SetUserData("table", { columns = { 44, 1 } })
+
+    local item = AceGUI:Create(editbox)
+    local itemIcon = AceGUI:Create("ActionSlotItem")
+    itemIcon:SetWidth(44)
+    itemIcon:SetHeight(44)
+    itemIcon.text:Hide()
+    itemIcon:SetCallback("OnEnterPressed", function(widget, event, v)
+        v = tonumber(v)
+        if isvalid(v) then
+            value.item = v
+            if GameTooltip:IsVisible() then
+                GameTooltip:SetHyperlink("item:" .. v)
+            end
+        else
+            value.item = nil
+            if GameTooltip:IsVisible() then
+                GameTooltip:Hide()
+            end
+        end
+        addon:UpdateItem_Name_ID(v, item, itemIcon)
+        update()
+    end)
+    itemIcon:SetCallback("OnEnter", function(widget)
+        if value.item then
+            local itemid = getRetryCached(addon.longtermCache, GetItemInfoInstant, value.item)
+            if itemid then
+                GameTooltip:SetOwner(itemIcon.frame, "ANCHOR_BOTTOMRIGHT", 3)
+                GameTooltip:SetHyperlink("item:" .. itemid)
+            end
+        end
+    end)
+    itemIcon:SetCallback("OnLeave", function(widget)
+        GameTooltip:Hide()
+    end)
+    itemIcon:SetDisabled(value.disabled)
+    item_group:AddChild(itemIcon)
+
+    item:SetFullWidth(true)
+    item:SetLabel(L["Item"])
+    item:SetUserData("spec", spec)
+    item:SetCallback("OnEnterPressed", function(widget, event, v)
+        local itemid
+        if not isint(v) then
+            itemid = getRetryCached(addon.longtermCache, GetItemInfoInstant, v)
+        else
+            itemid = tonumber(v)
+        end
+        if isvalid(itemid or v) then
+            value.item = itemid or v
+        else
+            value.item = nil
+        end
+        addon:UpdateItem_Name_ID(value.item, item, itemIcon)
+        update()
+    end)
+    item:SetDisabled(value.disabled)
+    item_group:AddChild(item)
+
+    addon:UpdateItem_Name_ID(value.item, item, itemIcon)
+
+    return item_group
+end
+
+function addon:Widget_OperatorWidget(value, name, update, op_field, val_field)
     local operator_group = AceGUI:Create("SimpleGroup")
     operator_group:SetLayout("Table")
     operator_group:SetUserData("table", { columns = { 0, 75 } })
@@ -331,22 +411,22 @@ function addon:Widget_OperatorWidget(value, name, update)
     operator:SetFullWidth(true)
     operator:SetLabel(L["Operator"])
     operator:SetCallback("OnValueChanged", function(widget, event, v)
-        value.operator = v
+        value[op_field or "operator"] = v
         update()
     end)
     operator:SetDisabled(value.disabled)
     operator.configure = function()
         operator:SetList(operators, keys(operators))
-        operator:SetValue(value.operator)
+        operator:SetValue(value[op_field or "operator"])
     end
     operator_group:AddChild(operator)
 
     local edit = AceGUI:Create("EditBox")
     edit:SetFullWidth(true)
     edit:SetLabel(name)
-    edit:SetText(value.value)
+    edit:SetText(value[val_field or "value"])
     edit:SetCallback("OnEnterPressed", function(widget, event, v)
-        value.value = tonumber(v)
+        value[val_field or "value"] = tonumber(v)
         update()
     end)
     edit:SetDisabled(value.disabled)
@@ -355,7 +435,7 @@ function addon:Widget_OperatorWidget(value, name, update)
     return operator_group
 end
 
-function addon:Widget_OperatorPercentWidget(value, name, update)
+function addon:Widget_OperatorPercentWidget(value, name, update, op_field, val_field)
     local operator_group = AceGUI:Create("SimpleGroup")
     operator_group:SetLayout("Table")
     operator_group:SetUserData("table", { columns = { 0, 150 } })
@@ -364,26 +444,26 @@ function addon:Widget_OperatorPercentWidget(value, name, update)
     operator:SetFullWidth(true)
     operator:SetLabel(L["Operator"])
     operator:SetCallback("OnValueChanged", function(widget, event, v)
-        value.operator = v
+        value[op_field or "operator"] = v
         update()
     end)
     operator:SetDisabled(value.disabled)
     operator.configure = function()
         operator:SetList(operators, keys(operators))
-        operator:SetValue(value.operator)
+        operator:SetValue(value[op_field or "operator"])
     end
     operator_group:AddChild(operator)
 
     local edit = AceGUI:Create("Slider")
     edit:SetFullWidth(true)
     edit:SetLabel(name)
-    if (value.value ~= nil) then
-        edit:SetValue(value.value)
+    if (value[val_field or "value"] ~= nil) then
+        edit:SetValue(value[val_field or "value"])
     end
     edit:SetSliderValues(0, 1, 0.01)
     edit:SetIsPercent(true)
     edit:SetCallback("OnValueChanged", function(widget, event, v)
-        value.value = tonumber(v)
+        value[val_field or "value"] = tonumber(v)
         update()
     end)
     edit:SetDisabled(value.disabled)

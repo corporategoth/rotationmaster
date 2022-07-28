@@ -56,7 +56,7 @@ local function get_item_desc(items)
     return nil
 end
 
-addon:RegisterCondition(L["Spells / Items"], "EQUIPPED", {
+addon.condition_equipped = {
     description = L["Have Item Equipped"],
     icon = "Interface\\Icons\\Ability_warrior_shieldbash",
     valid = function(_, value)
@@ -78,16 +78,17 @@ addon:RegisterCondition(L["Spells / Items"], "EQUIPPED", {
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
-        local icon_group = addon:Widget_ItemWidget(top, value,
+        local icon_group = addon:Widget_ItemWidget(top, "Inventory_EditBox", value,
+            function() return true end,
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(icon_group)
     end,
     help = function(frame)
         addon.layout_condition_itemwidget_help(frame)
     end
-})
+}
 
-addon:RegisterCondition(L["Spells / Items"], "CARRYING", {
+addon.condition_carrying = {
     description = L["Have Item In Bags"],
     icon = "Interface\\Icons\\inv_misc_bag_07",
     valid = function(_, value)
@@ -113,7 +114,8 @@ addon:RegisterCondition(L["Spells / Items"], "CARRYING", {
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
-        local icon_group = addon:Widget_ItemWidget(top, value,
+        local icon_group = addon:Widget_ItemWidget(top, "Inventory_EditBox", value,
+            function() return true end,
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(icon_group)
 
@@ -127,9 +129,9 @@ addon:RegisterCondition(L["Spells / Items"], "CARRYING", {
         addon.layout_condition_operatorwidget_help(frame, L["Have Item In Bags"], L["Quantity"],
             "The quantity of " .. color.BLIZ_YELLOW .. L["Item"] .. color.RESET .. " you are carrying in your bags.")
     end
-})
+}
 
-addon:RegisterCondition(L["Spells / Items"], "ITEM", {
+addon.condition_item = {
     description = L["Item Available"],
     icon = "Interface\\Icons\\Inv_drink_05",
     valid = function(_, value)
@@ -181,8 +183,9 @@ addon:RegisterCondition(L["Spells / Items"], "ITEM", {
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
-        local icon_group = addon:Widget_ItemWidget(top, value,
-            function() top:SetStatusText(funcs:print(root, spec)) end)
+        local icon_group = addon:Widget_ItemWidget(top, "Inventory_EditBox", value,
+                function() return true end,
+                function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(icon_group)
 
         local notcarring = AceGUI:Create("CheckBox")
@@ -202,9 +205,9 @@ addon:RegisterCondition(L["Spells / Items"], "ITEM", {
                 "Check the availability of the first item in the item set as if you were carrying it, even " ..
                 "if you are not."))
     end
-})
+}
 
-addon:RegisterCondition(L["Spells / Items"], "ITEM_RANGE", {
+addon.condition_item_range = {
     description = L["Item In Range"],
     icon = "Interface\\Icons\\inv_misc_bandage_13",
     valid = function(_, value)
@@ -229,8 +232,9 @@ addon:RegisterCondition(L["Spells / Items"], "ITEM_RANGE", {
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
-        local icon_group = addon:Widget_ItemWidget(top, value,
-            function() top:SetStatusText(funcs:print(root, spec)) end)
+        local icon_group = addon:Widget_ItemWidget(top, "Inventory_EditBox", value,
+                function() return true end,
+                function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(icon_group)
 
         local notcarring = AceGUI:Create("CheckBox")
@@ -250,9 +254,9 @@ addon:RegisterCondition(L["Spells / Items"], "ITEM_RANGE", {
                 "Check the availability of the first item in the item set as if you were carrying it, even " ..
                 "if you are not."))
     end
-})
+}
 
-addon:RegisterCondition(L["Spells / Items"], "ITEM_COOLDOWN", {
+addon.condition_item_cooldown = {
     description = L["Item Cooldown"],
     icon = "Interface\\Icons\\Spell_holy_sealofsacrifice",
     valid = function(_, value)
@@ -286,8 +290,9 @@ addon:RegisterCondition(L["Spells / Items"], "ITEM_COOLDOWN", {
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
-        local icon_group = addon:Widget_ItemWidget(top, value,
-            function() top:SetStatusText(funcs:print(root, spec)) end)
+        local icon_group = addon:Widget_ItemWidget(top, "Inventory_EditBox", value,
+                function() return true end,
+                function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(icon_group)
 
         local operator_group = addon:Widget_OperatorWidget(value, L["Seconds"],
@@ -316,4 +321,4 @@ addon:RegisterCondition(L["Spells / Items"], "ITEM_COOLDOWN", {
                 "Check the availability of the first item in the item set as if you were carrying it, even " ..
                 "if you are not."))
     end
-})
+}

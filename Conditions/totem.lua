@@ -17,7 +17,7 @@ local compare, compareString, nullable, keys, isin, getCached, isSpellOnSpec, ro
 local helpers = addon.help_funcs
 local CreateText, Gap = helpers.CreateText, helpers.Gap
 
-addon:RegisterCondition(L["Spells / Items"], "TOTEM", {
+addon.condition_totem = {
     description = L["Totem Present"],
     icon = "Interface\\Icons\\spell_nature_manaregentotem",
     valid = function(_, value)
@@ -51,9 +51,9 @@ addon:RegisterCondition(L["Spells / Items"], "TOTEM", {
         frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Totem"] .. color.RESET .. " - " ..
             "The style of totem that must be placed (Fire, Wind, Water or Earth.)"))
     end
-})
+}
 
-addon:RegisterCondition(L["Spells / Items"], "TOTEM_SPELL", {
+addon.condition_totem_spell = {
     description = L["Specific Totem Present"],
     icon = "Interface\\Icons\\spell_nature_stoneskintotem",
     valid = function(_, value)
@@ -91,9 +91,9 @@ addon:RegisterCondition(L["Spells / Items"], "TOTEM_SPELL", {
         frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Totem"] .. color.RESET .. " - " ..
             "The specific totem (by name) to check to ensure it is placed."))
     end
-})
+}
 
-addon:RegisterCondition(L["Spells / Items"], "TOTEM_REMAIN", {
+addon.condition_totem_remain = {
     description = L["Totem Time Remaining"],
     icon = "Interface\\Icons\\spell_nature_agitatingtotem",
     valid = function(_, value)
@@ -143,9 +143,9 @@ addon:RegisterCondition(L["Spells / Items"], "TOTEM_REMAIN", {
             "The amount of time remaining on " .. color.BLIZ_YELLOW .. L["Totem"] .. color.RESET .. " before it" ..
             "expire.")
     end
-})
+}
 
-addon:RegisterCondition(L["Spells / Items"], "TOTEM_SPELL_REMAIN", {
+addon.condition_totem_spell_remain = {
     description = L["Specific Totem Time Remaining"],
     icon = "Interface\\Icons\\spell_fireresistancetotem_01",
     valid = function(_, value)
@@ -194,4 +194,4 @@ addon:RegisterCondition(L["Spells / Items"], "TOTEM_SPELL_REMAIN", {
             "The amount of time remaining on " .. color.BLIZ_YELLOW .. L["Totem"] .. color.RESET .. " before it" ..
                     "expire.")
     end
-})
+}

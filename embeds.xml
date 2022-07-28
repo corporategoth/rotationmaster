@@ -17,10 +17,11 @@
 <Include file="Libs\AceComm-3.0\AceComm-3.0.xml" />
 <Include file="Libs\AceBucket-3.0\AceBucket-3.0.xml" />
 <Include file="Libs\AceGUI-3.0-Spell-EditBox\AceGUI-3.0-Spell-EditBox.xml" />
+<Include file="Libs\AceGUI-3.0-Item-EditBox\AceGUI-3.0-Item-EditBox.xml" />
 <Include file="Libs\LibCompress\lib.xml" />
 <Script file="LibsAugment\Spec-EditBox.lua" />
 <Script file="LibsAugment\Totem-EditBox.lua" />
-<Include file="Libs\AceGUI-3.0-Item-EditBox\AceGUI-3.0-Item-EditBox.xml" />
+<Script file="LibsAugment\Glyph-EditBox.lua" />
 <Include file="Libs\AceGUI-3.0-ActionSlotWidgets\widget.xml" />
 <Include file="Libs\LibSharedMedia-3.0\lib.xml" />
 <Include file="Libs\AceGUI-3.0-SharedMediaWidgets\widget.xml" />

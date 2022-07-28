@@ -14,7 +14,7 @@ local compare, compareString, nullable, keys, isin, deepcopy, getCached, playeri
 local helpers = addon.help_funcs
 local CreateText, Indent, Gap = helpers.CreateText, helpers.Indent, helpers.Gap
 
-addon:RegisterCondition(L["Combat"], "COMBAT", {
+addon.condition_combat = {
     description = L["In Combat"],
     icon = "Interface\\Icons\\ability_dualwield",
     valid = function(_, value)
@@ -40,9 +40,9 @@ addon:RegisterCondition(L["Combat"], "COMBAT", {
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
     end
-})
+}
 
-addon:RegisterCondition(L["Combat"], "PET", {
+addon.condition_pet = {
     description = L["Have Pet"],
     icon = "Interface\\Icons\\Inv_box_petcarrier_01",
     valid = function()
@@ -54,9 +54,9 @@ addon:RegisterCondition(L["Combat"], "PET", {
     print = function()
         return L["you have a pet"]
     end,
-})
+}
 
-addon:RegisterCondition(L["Combat"], "PET_NAME", {
+addon.condition_pet_name = {
     description = L["Have Named Pet"],
     icon = "Interface\\Icons\\inv_box_birdcage_01",
     valid = function(_, value)
@@ -88,9 +88,9 @@ addon:RegisterCondition(L["Combat"], "PET_NAME", {
         frame:AddChild(CreateText(color.BLIZ_YELLOW .. NAME .. color.RESET .. " - " ..
             "The name of the pet you have summoned."))
     end
-})
+}
 
-addon:RegisterCondition(L["Combat"], "STEALTHED", {
+addon.condition_stealthed = {
     description = L["Stealth"],
     icon = "Interface\\Icons\\ability_stealth",
     valid = function()
@@ -102,9 +102,9 @@ addon:RegisterCondition(L["Combat"], "STEALTHED", {
     print = function()
         return L["you are stealthed"]
     end,
-})
+}
 
-addon:RegisterCondition(L["Combat"], "INCONTROL", {
+addon.condition_incontrol = {
     description = L["In Control"],
     icon = "Interface\\Icons\\spell_nature_polymorph",
     valid = function()
@@ -116,11 +116,11 @@ addon:RegisterCondition(L["Combat"], "INCONTROL", {
     print = function()
         return L["you are in control of your character"]
     end,
-})
+}
 
-addon:RegisterCondition(L["Combat"], "LOC_TYPE", {
+addon.condition_loc_type = {
     description = L["Loss Of Control Type"],
-    icon = "Interface\\Icons\\spell_nature_polymorph",
+    icon = "Interface\\Icons\\spell_nature_polymorph_cow",
     valid = function(_, value)
         return (value.operator ~= nil and isin(operators, value.operator) and
                 value.value ~= nil and value.value >= 0.0 and
@@ -170,11 +170,11 @@ addon:RegisterCondition(L["Combat"], "LOC_TYPE", {
         addon.layout_condition_operatorpercentwidget_help(frame, L["Loss Of Control Type"], L["Seconds"],
             "How long until the loss of control expires.")
     end
-})
+}
 
-addon:RegisterCondition(L["Combat"], "LOC_BLOCKED", {
+addon.condition_loc_blocked = {
     description = L["Loss Of Control Blocked"],
-    icon = "Interface\\Icons\\spell_nature_polymorph",
+    icon = "Interface\\Icons\\inv_misc_fish_turtle_03",
     valid = function(_, value)
         return (value.operator ~= nil and isin(operators, value.operator) and
                 value.value ~= nil and value.value >= 0.0 and
@@ -221,9 +221,9 @@ addon:RegisterCondition(L["Combat"], "LOC_BLOCKED", {
         addon.layout_condition_operatorpercentwidget_help(frame, L["Loss Of Control Blocked"], L["Seconds"],
             "How long until the loss of control expires.")
     end
-})
+}
 
-addon:RegisterCondition(L["Combat"], "MOVING", {
+addon.condition_moving = {
     description = L["Moving"],
     icon = "Interface\\Icons\\Ability_druid_dash",
     valid = function()
@@ -235,9 +235,9 @@ addon:RegisterCondition(L["Combat"], "MOVING", {
     print = function()
         return L["you are moving"]
     end,
-})
+}
 
-addon:RegisterCondition(L["Combat"], "THREAT", {
+addon.condition_threat = {
     description = L["Threat"],
     icon = "Interface\\Icons\\ability_physical_taunt",
     valid = function(_, value)
@@ -303,9 +303,9 @@ addon:RegisterCondition(L["Combat"], "THREAT", {
             "You are currently tanking " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. " and are " ..
             "not at risk of them switching targets at the moment.")))
     end
-})
+}
 
-addon:RegisterCondition(L["Combat"], "THREAT_COUNT", {
+addon.condition_threat_count = {
     description = L["Threat Count"],
     icon = "Interface\\Icons\\Ability_racial_bloodrage",
     valid = function(_, value)
@@ -366,7 +366,7 @@ addon:RegisterCondition(L["Combat"], "THREAT_COUNT", {
         addon.layout_condition_operatorwidget_help(frame, L["Buff Time Remaining"], L["Seconds"],
             "The number of units you have at least " .. color.BLIZ_YELLOW .. L["Threat"] .. color.RESET .. " on.")
     end
-})
+}
 
 local character_class = select(2, UnitClass("player"))
 addon.condition_form = {
@@ -463,9 +463,7 @@ addon.condition_form = {
     end
 }
 
-addon:RegisterCondition(L["Combat"], "FORM", addon.condition_form)
-
-addon:RegisterCondition(L["Combat"], "ATTACKABLE", {
+addon.condition_attackable = {
     description = L["Attackable"],
     icon = "Interface\\Icons\\inv_misc_head_dragon_bronze",
     valid = function(_, value)
@@ -490,9 +488,9 @@ addon:RegisterCondition(L["Combat"], "ATTACKABLE", {
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
     end
-})
+}
 
-addon:RegisterCondition(L["Combat"], "ENEMY", {
+addon.condition_enemy = {
     description = L["Hostile"],
     icon = "Interface\\Icons\\inv_misc_head_dragon_01",
     valid = function(_, value)
@@ -517,9 +515,9 @@ addon:RegisterCondition(L["Combat"], "ENEMY", {
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
     end
-})
+}
 
-addon:RegisterCondition(L["Combat"], "COMBAT_HISTORY", {
+addon.condition_combat_history = {
     description = L["Combat Action History"],
     icon = "Interface\\Icons\\Spell_shadow_shadowward",
     valid = function(_, value)
@@ -582,9 +580,9 @@ addon:RegisterCondition(L["Combat"], "COMBAT_HISTORY", {
             L["Combat History Memory (seconds)"] .. color.RESET .. " in the primary Rotation Master configuration " ..
             "screen ago will not be available.")
     end
-})
+}
 
-addon:RegisterCondition(L["Combat"], "COMBAT_HISTORY_TIME", {
+addon.condition_combat_history_time = {
     description = L["Combat Action History Time"],
     icon = "Interface\\Icons\\Spell_shadow_shadetruesight",
     valid = function(_, value)
@@ -647,5 +645,4 @@ addon:RegisterCondition(L["Combat"], "COMBAT_HISTORY_TIME", {
             L["Combat History Memory (seconds)"] .. color.RESET .. " in the primary Rotation Master configuration " ..
             "screen ago will not be available.")
     end
-})
-
+}

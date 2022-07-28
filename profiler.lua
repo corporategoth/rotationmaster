@@ -31,6 +31,7 @@ local function Constructor()
         end,
 
         report = function(self, full)
+            if self.count == 0 then return end
             local rv = string.format("%d runs: %.03f min, %.03f avg, %.03f max", self.count, self.min, (self.total / self.count), self.max)
             if full and tablelength(self.children) > 0 then
                 rv = rv .. " { "

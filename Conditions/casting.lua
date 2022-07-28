@@ -13,7 +13,7 @@ local compare, compareString, nullable, isin, getCached, playerize, deepcopy =
 local helpers = addon.help_funcs
 local Gap = helpers.Gap
 
-addon:RegisterCondition(L["Combat"], "CASTING", {
+addon.condition_casting = {
     description = L["Casting"],
     icon = "Interface\\Icons\\Spell_holy_holynova",
     valid = function(_, value)
@@ -40,9 +40,9 @@ addon:RegisterCondition(L["Combat"], "CASTING", {
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
     end
-})
+}
 
-addon:RegisterCondition(L["Combat"], "CASTING_SPELL", {
+addon.condition_casting_spell = {
     description = L["Specific Spell Casting"],
     icon = "Interface\\Icons\\Spell_holy_spellwarding",
     valid = function(_, value)
@@ -76,9 +76,9 @@ addon:RegisterCondition(L["Combat"], "CASTING_SPELL", {
         frame:AddChild(Gap())
         addon.layout_condition_spellnamewidget_help(frame)
     end
-})
+}
 
-addon:RegisterCondition(L["Combat"], "CASTING_REMAIN", {
+addon.condition_casting_remain = {
     description = L["Cast Time Remaining"],
     icon = "Interface\\Icons\\Inv_misc_pocketwatch_02",
     valid = function(_, value)
@@ -120,9 +120,9 @@ addon:RegisterCondition(L["Combat"], "CASTING_REMAIN", {
             "not currently casting, this condition will not be successful (regardless of the " ..
             color.BLIZ_YELLOW .. "Operator" .. color.RESET .. " used.)")
     end
-})
+}
 
-addon:RegisterCondition(L["Combat"], "CAST_INTERRUPTABLE", {
+addon.condition_cast_interruptable = {
     description = L["Cast Interruptable"],
     icon = "Interface\\Icons\\Spell_shadow_curseofachimonde",
     valid = function(_, value)
@@ -148,4 +148,4 @@ addon:RegisterCondition(L["Combat"], "CAST_INTERRUPTABLE", {
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
     end
-})
+}

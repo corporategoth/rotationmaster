@@ -22,7 +22,7 @@ else
     UnitDebuff = function(unit, idx) return UnitAura(unit, idx, "HARMFUL") end
 end
 
-addon:RegisterCondition(L["Buffs"], "DEBUFF", {
+addon.condition_debuff = {
     description = L["Debuff Present"],
     icon = "Interface\\Icons\\spell_shadow_curseoftounges",
     valid = function(_, value)
@@ -80,9 +80,9 @@ addon:RegisterCondition(L["Buffs"], "DEBUFF", {
         frame:AddChild(Gap())
         addon.layout_condition_spellnamewidget_help(frame)
     end
-})
+}
 
-addon:RegisterCondition(L["Buffs"], "DEBUFF_REMAIN", {
+addon.condition_debuff_remain = {
     description = L["Debuff Time Remaining"],
     icon = "Interface\\Icons\\ability_creature_cursed_04",
     valid = function(_, value)
@@ -153,9 +153,9 @@ addon:RegisterCondition(L["Buffs"], "DEBUFF_REMAIN", {
             color.RESET .. ".  If the debuff is not present, this condition will not be successful (regardless " ..
             "of the " .. color.BLIZ_YELLOW .. "Operator" .. color.RESET .. " used.)")
     end
-})
+}
 
-addon:RegisterCondition(L["Buffs"], "DEBUFF_STACKS", {
+addon.condition_debuff_stacks = {
     description = L["Debuff Stacks"],
     icon = "Interface\\Icons\\Inv_misc_coin_06",
     valid = function(_, value)
@@ -225,10 +225,10 @@ addon:RegisterCondition(L["Buffs"], "DEBUFF_STACKS", {
             ".  If the deuff is not present, this condition will not be successful (regardless " ..
             "of the " .. color.BLIZ_YELLOW .. "Operator" .. color.RESET .. " used.)")
     end
-})
+}
 
-addon:RegisterCondition(L["Buffs"], "DISPELLABLE", {
-    description = L["Has Dispellable Debuff"],
+addon.condition_dispellable = {
+    description = L["Debuff Type Present"],
     icon = "Interface\\Icons\\spell_shadow_curseofsargeras",
     valid = function(_, value)
         return (value.unit ~= nil and isin(units, value.unit) and
@@ -237,21 +237,26 @@ addon:RegisterCondition(L["Buffs"], "DISPELLABLE", {
     evaluate = function(value, cache)
         if not getCached(cache, UnitExists, value.unit) then return false end
         for i=1,40 do
-            local name, _, _, debuffType = getCached(cache, UnitDebuff, value.unit, i)
+            local name, _, _, debuffType, _, _, caster = getCached(cache, UnitDebuff, value.unit, i, value.dispellable)
             if (name == nil) then
                 break
             end
-            if value.debufftype == "Enrage" and debuffType == "" then
-                return true
-            elseif debuffType == value.debufftype then
-                return true
+
+            if (not value.owndebuff or caster == "player") then
+                if value.debufftype == "Enrage" and debuffType == "" then
+                    return true
+                elseif debuffType == value.debufftype then
+                    return true
+                end
             end
         end
         return false
     end,
     print = function(_, value)
         return string.format(playerize(value.unit, L["%s have a %s debuff"], L["%s has a %s debuff"]),
-            nullable(units[value.unit], L["<unit>"]), nullable(debufftypes[value.debufftype], L["<debuff type>"]))
+            nullable(units[value.unit], L["<unit>"]),
+            string.format(value.owndebuff and L["your own %s"] or "%s", nullable(debufftypes[value.debufftype], L["<debuff type>"]))) ..
+            (value.dispellable and " " .. L["that is dispellable"] or "")
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -274,12 +279,36 @@ addon:RegisterCondition(L["Buffs"], "DISPELLABLE", {
         end
         parent:AddChild(debufftype)
 
-        return nil
+        local owndebuff = AceGUI:Create("CheckBox")
+        owndebuff:SetWidth(100)
+        owndebuff:SetLabel(L["Own Debuff"])
+        owndebuff:SetValue(value.owndebuff and true or false)
+        owndebuff:SetCallback("OnValueChanged", function(_, _, v)
+            value.owndebuff = v
+            top:SetStatusText(funcs:print(root, spec))
+        end)
+        parent:AddChild(owndebuff)
+
+        local dispellable = AceGUI:Create("CheckBox")
+        dispellable:SetWidth(100)
+        dispellable:SetLabel(L["Dispellable"])
+        dispellable:SetValue(value.dispellable and true or false)
+        dispellable:SetCallback("OnValueChanged", function(_, _, v)
+            value.dispellable = v
+            top:SetStatusText(funcs:print(root, spec))
+        end)
+        parent:AddChild(dispellable)
     end,
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
         frame:AddChild(Gap())
         frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Debuff Type"] .. color.RESET .. " - " ..
-            "The type of debuff that can be dispelled from " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. "."))
+            "The type of debuff that is on " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. "."))
+        frame:AddChild(Gap())
+        frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Own Debuff"] .. color.RESET .. " - " ..
+                "Should this condition only consider debuffs that you have applied."))
+        frame:AddChild(Gap())
+        frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Dispellable"] .. color.RESET .. " - " ..
+                "Should this condition only consider debuffs that you can dispell."))
     end
-})
+}

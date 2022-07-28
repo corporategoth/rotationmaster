@@ -13,7 +13,7 @@ local compare, compareString, nullable, isin, getCached, playerize, deepcopy =
 local helpers = addon.help_funcs
 local Gap = helpers.Gap
 
-addon:RegisterCondition(L["Combat"], "CHANNELING", {
+addon.condition_channeling = {
     description = L["Channeling"],
     icon = "Interface\\Icons\\Spell_holy_searinglight",
     valid = function(_, value)
@@ -40,9 +40,9 @@ addon:RegisterCondition(L["Combat"], "CHANNELING", {
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
     end
-})
+}
 
-addon:RegisterCondition(L["Combat"], "CHANNELING_SPELL", {
+addon.condition_channeling_spell = {
     description = L["Specific Spell Channeling"],
     icon = "Interface\\Icons\\Spell_holy_greaterheal",
     valid = function(_, value)
@@ -76,9 +76,9 @@ addon:RegisterCondition(L["Combat"], "CHANNELING_SPELL", {
         frame:AddChild(Gap())
         addon.layout_condition_spellnamewidget_help(frame)
     end
-})
+}
 
-addon:RegisterCondition(L["Combat"], "CHANNELING_REMAIN", {
+addon.condition_channeling_remain = {
     description = L["Channel Time Remaining"],
     icon = "Interface\\Icons\\Inv_misc_pocketwatch_01",
     valid = function(_, value)
@@ -120,9 +120,9 @@ addon:RegisterCondition(L["Combat"], "CHANNELING_REMAIN", {
             "not currently channeling, this condition will not be successful (regardless of the " ..
             color.BLIZ_YELLOW .. "Operator" .. color.RESET .. " used.)")
     end
-})
+}
 
-addon:RegisterCondition(L["Combat"], "CHANNEL_INTERRUPTABLE", {
+addon.condition_channel_interruptable = {
     description = L["Channel Interruptable"],
     icon = "Interface\\Icons\\spell_holy_righteousfury",
     valid = function(_, value)
@@ -148,4 +148,4 @@ addon:RegisterCondition(L["Combat"], "CHANNEL_INTERRUPTABLE", {
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
     end
-})
+}

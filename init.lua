@@ -39,6 +39,9 @@ elseif (WOW_PROJECT_ID == WOW_PROJECT_BURNING_CRUSADE_CLASSIC) then
     multiinsert(healthstones, {
         "Master Healthstone",
     })
+    if (LE_EXPANSION_LEVEL_CURRENT >= LE_EXPANSION_NORTHREND) then
+
+    end
 end
 
 local default_itemsets = {
@@ -131,6 +134,13 @@ local function upgradeGlobalRotationstoPlayer()
                     addon.db.profile.rotations[specID] = nil
                 end
             end
+        end
+    elseif (WOW_PROJECT_ID == WOW_PROJECT_BURNING_CRUSADE_CLASSIC and
+            LE_EXPANSION_LEVEL_CURRENT >= LE_EXPANSION_NORTHREND) then
+        -- Upgrade from TBC -> Wrath
+        if addon.db.char.rotations ~= nil and addon.db.char.rotations[0] ~= nil then
+            addon.db.char.rotations[1] = addon.db.char.rotations[0]
+            addon.db.char.rotations[0] = nil
         end
     else
         if addon.db.profile.rotations ~= nil and addon.db.profile.rotations[0] ~= nil then

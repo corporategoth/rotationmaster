@@ -45,13 +45,16 @@ L["Spells / Items"] = true
 L["Buffs"] = true
 L["Combat"] = true
 L["Other"] = true
+L["Spatial"] = true
 L["Custom"] = true
 
 L["Bind"] = true
 L["Unbind"] = true
 L["Own Buff"] = true
 L["Own Debuff"] = true
+L["Dispellable"] = true
 L["your own %s"] = true
+L["that is dispellable"] = true
 
 L["is less than"] = true
 L["is less than or equal to"] = true
@@ -165,6 +168,10 @@ L["Fire"] = true
 L["Earth"] = true
 L["Water"] = true
 L["Air"] = true
+
+L["Minimum"] = true
+L["Maximum"] = true
+L["Average"] = true
 
 L["no threat risk"] = true
 L["higher threat than tank"] = true
@@ -283,6 +290,7 @@ L["Move to Top"] = true
 L["Move to Bottom"] = true
 L["Move Down"] = true
 L["Action Type"] = true
+L["No Action"] = true
 L["Spell"] = true
 L["Rank"] = true
 L["Pet Spell"] = true
@@ -310,6 +318,18 @@ L["a %s item set item"] = true
 L["Click the icon above to bind to your action bar"] = true
 L["time until %s is at %s%% health"] = true
 L["time until %s is at %s health"] = true
+L["time until %s is at %s health defecit"] = true
+L["including pets"] = true
+L["The %s health defecit of %s members%s within %d yards of %s"] = true
+L["The %s health of %s members%s within %d yards of %s"] = true
+L["The number %s members%s within %d yards of %s whose"] = true
+L["The %s health percentage of %s members%s within %d yards of %s"] = true
+L["The number %s members%s within %d yards of %s whose health percentage"] = true
+L["The %s mana defecit of %s members%s within %d yards of %s"] = true
+L["The %s mana of %s members%s within %d yards of %s"] = true
+L["The number %s members%s within %d yards of %s whose"] = true
+L["The %s mana percentage of %s members%s within %d yards of %s"] = true
+L["The number %s members%s within %d yards of %s whose mana percentage"] = true
 
 -- from Options/conditional.lua
 
@@ -336,6 +356,8 @@ L["<creature type>"] = true
 L["<classification>"] = true
 L["<talent>"] = true
 L["<talent tree>"] = true
+L["<glyph>"] = true
+L["<rune type>"] = true
 L["<buff>"] = true
 L["<debuff>"] = true
 L["<element>"] = true
@@ -347,6 +369,7 @@ L["<name>"] = true
 L["<distance>"] = true
 L["<quantity>"] = true
 L["<school>"] = true
+L["<operation>"] = true
 
 L["%s is in a %s role"] = true
 L["%s is a %s"] = true
@@ -365,36 +388,56 @@ L["talent points in %s (%s)"] = true
 L["%s's resistance to %s"] = true
 L["%s is sometimes immune to %s"] = true
 L["%s is immune to %s"] = true
+L["you have %s glyph"] = true
 
 L["Unit"] = true
 L["Role"] = true
 L["Class"] = true
+L["Class In Group"] = true
 L["Is Same As"] = true
 L["Creature Type"] = true
 L["Unit Classification"] = true
 L["Talent"] = true
+L["Glyph"] = true
 L["Talent Tree"] = true
 L["Operator"] = true
+L["Operation"] = true
 L["Count"] = true
 L["Quantity"] = true
 L["Distance"] = true
 L["Distance Count"] = true
 L["yards"] = true
+L["Same Group"] = true
+L["Include Pets"] = true
 
 L["Health"] = true
 L["%s health"] = true
+L["%s health defecit"] = true
 L["Health Percentage"] = true
 
 L["Mana"] = true
 L["%s mana"] = true
+L["%s mana defecit"] = true
 L["Mana Percentage"] = true
 
 L["Power"] = true
 L["%s power"] = true
+L["%s power defecit"] = true
 L["Power Percentage"] = true
 
 L["Points"] = true
 L["%s points"] = true
+L["%s point defecit"] = true
+
+L["Rune Type"] = true
+L["Runes"] = true
+L["Rune Cooldown"] = true
+L["%s runes available"] = true
+L["cooldown on %s rune"] = true
+
+L["Blood"] = true
+L["Unholy"] = true
+L["Frost"] = true
 
 L["Spell Available"] = true
 L["%s is available"] = true
@@ -443,7 +486,7 @@ L["%s has a stealable buff"] = true
 L["Debuff Present"] = true
 L["Debuff Time Remaining"] = true
 L["Debuff Stacks"] = true
-L["Has Dispellable Debuff"] = true
+L["Debuff Type Present"] = true
 L["%s have a %s debuff"] = true
 L["%s has a %s debuff"] = true
 L["<debuff type>"] = true
@@ -498,14 +541,23 @@ L["Form"] = true
 L["Attackable"] = true
 L["Hostile"] = true
 L["Allies Within Range"] = true
+L["Health Within Range"] = true
+L["Health Count Within Range"] = true
+L["Health Percentage Within Range"] = true
+L["Health Percentage Count Within Range"] = true
+L["Mana Within Range"] = true
+L["Mana Count Within Range"] = true
+L["Mana Percentage Within Range"] = true
+L["Mana Percentage Count Within Range"] = true
 L["%s is an enemy"] = true
 L["%s is attackable"] = true
-L["number of party or raid members within %d yards"] = true
+L["number of %s members%s within %d yards"] = true
 L["number of enemies you are at least %s"] = true
 L["closer than %s yards"] = true
 L["allies"] = true
 L["enemies"] = true
 L["Number of %s within %s yards"] = true
+L["Number of %ss in the %s"] = true
 L["you are in %s form"] = true
 
 L["Channeling"] = true

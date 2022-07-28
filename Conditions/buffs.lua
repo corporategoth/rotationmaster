@@ -22,14 +22,14 @@ else
     UnitBuff = function(unit, idx) return UnitAura(unit, idx, "HELPFUL") end
 end
 
-addon:RegisterCondition(L["Buffs"], "BUFF", {
+addon.condition_buff = {
     description = L["Buff Present"],
     icon = "Interface\\Icons\\spell_holy_divinespirit",
     valid = function(_, value)
         return (value.unit ~= nil and isin(units, value.unit) and value.spell ~= nil)
     end,
     evaluate = function(value, cache)
-        for i=1,40 do
+        for i = 1, 40 do
             local name, _, _, _, _, _, caster = getCached(cache, UnitBuff, value.unit, i)
             if (name == nil) then
                 break
@@ -44,8 +44,8 @@ addon:RegisterCondition(L["Buffs"], "BUFF", {
     end,
     print = function(_, value)
         return string.format(playerize(value.unit, L["%s have %s"], L["%s has %s"]),
-            nullable(units[value.unit], L["<unit>"]),
-            string.format(value.ownbuff and L["your own %s"] or "%s", nullable(value.spell, L["<buff>"])))
+                nullable(units[value.unit], L["<unit>"]),
+                string.format(value.ownbuff and L["your own %s"] or "%s", nullable(value.spell, L["<buff>"])))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -53,7 +53,9 @@ addon:RegisterCondition(L["Buffs"], "BUFF", {
         local funcs = top:GetUserData("funcs")
 
         local unit = addon:Widget_UnitWidget(value, units,
-                function() top:SetStatusText(funcs:print(root, spec)) end)
+                function()
+                    top:SetStatusText(funcs:print(root, spec))
+                end)
         parent:AddChild(unit)
 
         local ownbuff = AceGUI:Create("CheckBox")
@@ -67,8 +69,12 @@ addon:RegisterCondition(L["Buffs"], "BUFF", {
         parent:AddChild(ownbuff)
 
         local spell_group = addon:Widget_SpellNameWidget(spec, "Spell_EditBox", value,
-            function() return true end,
-            function() top:SetStatusText(funcs:print(root, spec)) end)
+                function()
+                    return true
+                end,
+                function()
+                    top:SetStatusText(funcs:print(root, spec))
+                end)
         parent:AddChild(spell_group)
     end,
     help = function(frame)
@@ -79,9 +85,9 @@ addon:RegisterCondition(L["Buffs"], "BUFF", {
         frame:AddChild(Gap())
         addon.layout_condition_spellnamewidget_help(frame)
     end
-})
+}
 
-addon:RegisterCondition(L["Buffs"], "BUFF_REMAIN", {
+addon.condition_buff_remain = {
     description = L["Buff Time Remaining"],
     icon = "Interface\\Icons\\Spell_frost_stun",
     valid = function(_, value)
@@ -151,9 +157,9 @@ addon:RegisterCondition(L["Buffs"], "BUFF_REMAIN", {
             color.RESET .. ".  If the buff is not present, this condition will not be successful (regardless " ..
             "of the " .. color.BLIZ_YELLOW .. "Operator" .. color.RESET .. " used.)")
     end
-})
+}
 
-addon:RegisterCondition(L["Buffs"], "BUFF_STACKS", {
+addon.condition_buff_stacks = {
     description = L["Buff Stacks"],
     icon = "Interface\\Icons\\Inv_misc_coin_02",
     valid = function(_, value)
@@ -222,9 +228,9 @@ addon:RegisterCondition(L["Buffs"], "BUFF_STACKS", {
             ".  If the buff is not present, this condition will not be successful (regardless " ..
             "of the " .. color.BLIZ_YELLOW .. "Operator" .. color.RESET .. " used.)")
     end
-})
+}
 
-addon:RegisterCondition(L["Buffs"], "STEALABLE", {
+addon.condition_stealable = {
     description = L["Has Stealable Buff"],
     icon = "Interface\\Icons\\Inv_weapon_shortblade_22",
     valid = function(_, value)
@@ -257,4 +263,4 @@ addon:RegisterCondition(L["Buffs"], "STEALABLE", {
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
     end
-})
+}

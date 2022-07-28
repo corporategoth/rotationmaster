@@ -42,6 +42,8 @@ local function add_top_buttons(list, idx, callback, delete_cb)
     name:SetDisabled(not rot.use_name)
     if rot.use_name then
         name:SetText(rot.name)
+    elseif rot.type == "none" then
+        name:SetText(L["No Action"])
     elseif rot.action ~= nil then
         if rot.type == "spell" or rot.type =="pet" then
             name:SetText(GetSpellInfo(rot.action))
@@ -370,7 +372,7 @@ local function add_effect_group(specID, rotid, rot, refresh)
     return group
 end
 
-local function add_action_group(specID, rotid, rot, callback, refresh)
+local function add_action_group(specID, rotid, rot, callback, refresh, cooldown)
     local itemsets = addon.db.char.itemsets
     local global_itemsets = addon.db.global.itemsets
 
@@ -388,6 +390,11 @@ local function add_action_group(specID, rotid, rot, callback, refresh)
         pet = L["Pet Spell"],
         item = L["Item"],
     }
+    local types_order = { "spell", "pet", "item" }
+    if not cooldown then
+        types["none"] = L["None"]
+        table.insert(types_order, "none")
+    end
 
     local action_type = AceGUI:Create("Dropdown")
     action_type:SetWidth(95)
@@ -397,10 +404,11 @@ local function add_action_group(specID, rotid, rot, callback, refresh)
             rot.type = val
             rot.action = nil
             refresh()
+            callback()
         end
     end)
     action_type.configure = function()
-        action_type:SetList(types, { "spell", "pet", "item" })
+        action_type:SetList(types, types_order)
         action_type:SetValue(rot.type)
     end
     action_group:AddChild(action_type)
@@ -648,13 +656,14 @@ local function add_action_group(specID, rotid, rot, callback, refresh)
                 end
 
                 if itemset then
-                    addon:item_list_popup(itemset.name, itemset.items, edit_callback)
+                    addon:item_list_popup(itemset.name, "Inventory_EditBox", itemset.items, function() return true end, edit_callback)
                 end
             else
-                addon:item_list_popup(L["Custom"], rot.action, edit_callback)
+                addon:item_list_popup(L["Custom"], "Inventory_EditBox", rot.action, function() return true end, edit_callback)
             end
         end)
         action_group:AddChild(edit_button)
+    --[[
     else
         local action_icon = AceGUI:Create("Icon")
         action_icon:SetImageSize(36, 36)
@@ -665,6 +674,7 @@ local function add_action_group(specID, rotid, rot, callback, refresh)
         action:SetFullWidth(true)
         action:SetDisabled(true)
         action_group:AddChild(action)
+    ]]--
     end
 
     group:AddChild(action_group)
@@ -818,7 +828,7 @@ function addon:get_cooldown_list(frame, specID, rotid, id, callback)
 
     local action_frame = add_action_group(specID, rotid, rot, callback, function()
         addon:get_cooldown_list(frame, specID, rotid, id, callback)
-    end)
+    end, true)
     frame:AddChild(action_frame)
 
     local announces = {
@@ -908,7 +918,7 @@ function addon:get_rotation_list(frame, specID, rotid, id, callback)
 
     local action_frame = add_action_group(specID, rotid, rot, callback, function()
         addon:get_rotation_list(frame, specID, rotid, id, callback)
-    end)
+    end, false)
     frame:AddChild(action_frame)
 
     local conditions_frame = add_conditions(specID, idx, rotid, rot, callback)
