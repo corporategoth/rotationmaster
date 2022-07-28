@@ -941,8 +941,10 @@ local function create_class_options(frame, classID)
             })
         end
         tabs:SetTabs(spec_tabs)
-        tabs:SelectTab(currentSpec)
         tabs:SetLayout("Fill")
+        tabs.configure = function()
+            tabs:SelectTab(currentSpec)
+        end
 
         tabs:SetCallback("OnGroupSelected", function(_, _, val)
             create_spec_options(tabs, val, (val == addon.currentSpec) and addon.currentRotation or DEFAULT)
@@ -960,19 +962,20 @@ local function create_class_options(frame, classID)
 
         local spec_tabs = {}
         table.insert(spec_tabs, {
-            value = 1,
+            value = tostring(1),
             text = PRIMARY
         })
         table.insert(spec_tabs, {
-            value = 2,
+            value = tostring(2),
             text = SECONDARY
         })
         if currentSpec == nil then
             currentSpec = GetSpecialization()
         end
+
         tabs:SetTabs(spec_tabs)
-        tabs:SelectTab(currentSpec)
         tabs:SetLayout("Fill")
+        tabs:SelectTab(tostring(currentSpec))
 
         tabs:SetCallback("OnGroupSelected", function(_, _, val)
             create_spec_options(tabs, val, (val == addon.currentSpec) and addon.currentRotation or DEFAULT)
