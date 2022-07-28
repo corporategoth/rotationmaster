@@ -294,13 +294,11 @@ else
         description = L["Talent"],
         icon = "Interface\\Icons\\Inv_misc_book_11",
         valid = function(_, value)
-            if not (value.tree ~= nil and value.tree >= 1 and value.tree <= GetNumTalentTabs() and
+            return (value.tree ~= nil and value.tree >= 1 and value.tree <= GetNumTalentTabs() and
                     value.talent ~= nil and value.talent >= 1 and value.talent <= GetNumTalents(value.tree) and
                     value.operator ~= nil and isin(operators, value.operator) and
-                    value.value ~= nil and value.value >= 0) then
-                return false
-            end
-            return (value.value <= select(6, GetTalentInfo(value.tree, value.talent)))
+                    value.value ~= nil and value.value >= 0 and
+                    value.value <= select(6, GetTalentInfo(value.tree, value.talent)))
         end,
         evaluate = function(value)
             local _, _, _, _, rank = getCached(addon.longtermCache, GetTalentInfo, value.tree, value.talent)
