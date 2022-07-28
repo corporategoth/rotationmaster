@@ -10,7 +10,7 @@
 ## X-WoWI-ID: 25079
 ## X-Curse-Project-ID: 301085
 ## SavedVariables: RotationMasterDB
-## OptionalDeps: Ace3, LibAboutPanel, LibDBIcon-1.0, LibDataBroker-1.1, LibCompress, CallbackHandler-1.0, LibCustomGlow, ThreatClassic-1.0, LibClassicDurations
+## OptionalDeps: Ace3, LibAboutPanel-2.0, LibDBIcon-1.0, LibDataBroker-1.1, LibCompress, CallbackHandler-1.0, LibCustomGlow, ThreatClassic-1.0, LibClassicDurations
 ## X-Embeds: AceGUI-3.0-ActionSlotWidgets, AceGUI-3.0-Item-EditBox, AceGUI-3.0-Spell-EditBox
 ## X-Credits: None
 ## X-License: MIT
