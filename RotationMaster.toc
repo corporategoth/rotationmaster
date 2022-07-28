@@ -1,11 +1,11 @@
 ## Interface: 20504
 ## Title: Rotation Master
 ## Version: 1.4.0
-## Author: PreZ
+## Author: Makiel
 ## Notes: I wanted to save the world, but God wouldn't give me the source code.
 ## X-Email: prez@neuromancy.net
-## X-Website: https://wiki.neuromancy.net/display/RM/Rotation+Master
-## X-BugReport: https://wow.curseforge.com/projects/rotation-master/issues
+## X-Website: https://github.com/corporategoth/rotationmaster/wiki
+## X-BugReport: https://github.com/corporategoth/rotationmaster/issues
 ## X-Category: Action Bars
 ## X-WoWI-ID: 25079
 ## X-Curse-Project-ID: 301085
@@ -13,6 +13,9 @@
 ## OptionalDeps: Ace3, LibAboutPanel, LibDBIcon-1.0, LibDataBroker-1.1, LibCompress, CallbackHandler-1.0, LibCustomGlow, ThreatClassic-1.0, LibClassicDurations
 ## X-Embeds: AceGUI-3.0-ActionSlotWidgets, AceGUI-3.0-Item-EditBox, AceGUI-3.0-Spell-EditBox
 ## X-Credits: None
+## X-License: MIT
+## X-Author-Server: Atiesh
+## X-Author-Faction: Horde
 
 globals.lua
 embeds.xml

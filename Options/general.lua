@@ -9,9 +9,9 @@ local AceConfigDialog = LibStub("AceConfigDialog-3.0")
 local AceConfig = LibStub("AceConfig-3.0")
 local AceSerializer = LibStub("AceSerializer-3.0")
 local AceDBOptions = LibStub("AceDBOptions-3.0")
-local LibAboutPanel = LibStub("LibAboutPanel")
 local DBIcon = LibStub("LibDBIcon-1.0")
 local libc = LibStub:GetLibrary("LibCompress")
+local AboutPanel = LibStub("LibAboutPanel-2.0")
 
 local pairs, base64enc, base64dec, date, color, width_split = pairs, base64enc, base64dec, date, color, width_split
 
@@ -1002,8 +1002,11 @@ end
 function module:OnInitialize()
     self.db = addon.db
 
-    -- AceConfig:RegisterOptionsTable(addon.name, options)
     AceConfig:RegisterOptionsTable(addon.name .. "Profiles", AceDBOptions:GetOptionsTable(self.db))
+
+    local about = AboutPanel:AboutOptionsTable(addon.name)
+    about.order = -1
+    AceConfig:RegisterOptionsTable(addon.name .. "About", about)
 
     self:SetupOptions()
 end
@@ -1061,5 +1064,5 @@ function module:SetupOptions()
     end
 
     self.Profile = AceConfigDialog:AddToBlizOptions(addon.name .. "Profiles", L["Profiles"], addon.pretty_name)
-    self.About = LibAboutPanel.new(addon.pretty_name, addon.name)
+    self.About = AceConfigDialog:AddToBlizOptions(addon.name .. "About", L["About"], addon.pretty_name)
 end

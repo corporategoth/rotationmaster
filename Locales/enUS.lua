@@ -242,6 +242,7 @@ L["Effects"] = true
 L["Item Sets"] = true
 L["Announces"] = true
 L["Profiles"] = true
+L["About"] = true
 L["Lines"] = true
 L["Frequency"] = true
 L["Steps"] = true
