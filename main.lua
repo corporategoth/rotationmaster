@@ -74,6 +74,13 @@ local defaults = {
     }
 }
 
+if WOW_PROJECT_ID == WOW_PROJECT_BURNING_CRUSADE_CLASSIC and
+   LE_EXPANSION_LEVEL_CURRENT >= LE_EXPANSION_NORTHREND then
+    defaults.char.specs = {}
+    defaults.char.specs[1] = PRIMARY
+    defaults.char.specs[2] = SECONDARY
+end
+
 local events = {
     -- Conditions that indicate a major combat event that should trigger an immediate
     -- evaluation of the rotation conditions (or will disable your rotation entirely).
@@ -158,8 +165,8 @@ function addon:HandleCommand(str)
         addon:print(L["                          This is reset upon switching specializations."])
 
     elseif cmd == "config" then
-        InterfaceOptionsFrame_OpenToCategory(addon.Rotation)
-        InterfaceOptionsFrame_OpenToCategory(addon.Rotation)
+        InterfaceOptionsFrame_OpenToCategory(addon.Rotation.frame)
+        InterfaceOptionsFrame_OpenToCategory(addon.Rotation.frame)
 
     elseif cmd == "disable" then
         addon:disable()

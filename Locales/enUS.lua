@@ -194,6 +194,7 @@ L["Effect Options"] = true
 L["Magnification"] = true
 L["Highlight Color"] = true
 L["Position"] = true
+L["Specialization Names"] = true
 L["Debugging Options"] = true
 L["Log Level"] = true
 L["Quiet"] = true

@@ -23,6 +23,7 @@ local function spacer(width)
     return rv
 end
 
+local create_class_options
 local function create_primary_options(frame)
     local profile = addon.db.profile
     local effects = addon.db.global.effects
@@ -332,6 +333,42 @@ local function create_primary_options(frame)
     position_group:AddChild(offset_group)
     fx_group:AddChild(position_group)
     scroll:AddChild(fx_group)
+
+if WOW_PROJECT_ID == WOW_PROJECT_BURNING_CRUSADE_CLASSIC and
+    LE_EXPANSION_LEVEL_CURRENT >= LE_EXPANSION_NORTHREND then
+
+    local spec_header = AceGUI:Create("Heading")
+    spec_header:SetFullWidth(true)
+    spec_header:SetText(L["Specialization Names"])
+    scroll:AddChild(spec_header)
+
+    local spec_group = AceGUI:Create("SimpleGroup")
+    spec_group:SetFullWidth(true)
+    spec_group:SetLayout("Table")
+    spec_group:SetUserData("table", { columns = { 1, 1 } })
+
+    local primary = AceGUI:Create("EditBox")
+    primary:SetFullWidth(true)
+    primary:SetLabel(PRIMARY)
+    primary:SetText(addon.db.char.specs[1])
+    primary:SetCallback("OnEnterPressed", function(_, _, val)
+        addon.db.char.specs[1] = val
+        create_class_options(addon.Rotation, UnitClass("player"))
+    end)
+    spec_group:AddChild(primary)
+
+    local secondary = AceGUI:Create("EditBox")
+    secondary:SetFullWidth(true)
+    secondary:SetLabel(SECONDARY)
+    secondary:SetText(addon.db.char.specs[2])
+    secondary:SetCallback("OnEnterPressed", function(_, _, val)
+        addon.db.char.specs[2] = val
+        create_class_options(addon.Rotation, UnitClass("player"))
+    end)
+    spec_group:AddChild(secondary)
+
+    scroll:AddChild(spec_group)
+end
 
     local debug_header = AceGUI:Create("Heading")
     debug_header:SetFullWidth(true)
@@ -919,7 +956,7 @@ create_spec_options = function(frame, specID, selected)
     frame:DoLayout()
 end
 
-local function create_class_options(frame, classID)
+create_class_options = function (frame, classID)
     local currentSpec = addon.currentSpec
 
     frame:ReleaseChildren()
@@ -963,11 +1000,11 @@ local function create_class_options(frame, classID)
         local spec_tabs = {}
         table.insert(spec_tabs, {
             value = tostring(1),
-            text = PRIMARY
+            text = addon.db.char.specs[1]
         })
         table.insert(spec_tabs, {
             value = tostring(2),
-            text = SECONDARY
+            text = addon.db.char.specs[2]
         })
         if currentSpec == nil then
             currentSpec = GetSpecialization()
@@ -1048,7 +1085,7 @@ function module:SetupOptions()
     rotation:SetTitle(addon.pretty_name .. " - " .. localized)
     create_class_options(rotation, classID)
     InterfaceOptions_AddCategory(rotation.frame)
-    addon.Rotation = rotation.frame
+    addon.Rotation = rotation
 
     local announces = AceGUI:Create("BlizOptionsGroup")
     announces:SetName(L["Announces"], addon.pretty_name)
