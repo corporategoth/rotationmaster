@@ -716,13 +716,20 @@ local function add_conditions(specID, idx, rotid, rot, callback)
         condition_desc:SetFullWidth(true)
         condition_desc:SetText(addon:printCondition(rot.conditions, specID))
         condition_desc.frame:SetHyperlinksEnabled(true)
+
         condition_desc.frame:SetScript("OnHyperlinkClick", function(self, link, text, button)
-            if GameTooltip:IsVisible() and GameTooltip:IsOwned(condition_desc.frame) then
-                GameTooltip:Hide()
-            else
-                GameTooltip:SetOwner(condition_desc.frame, "ANCHOR_CURSOR")
-                GameTooltip:SetHyperlink(link)
+            -- Avoid an error for ctrl-clicking a non-equippable item
+            if IsControlKeyDown() then
+                local s = addon.split(link, ":")
+                if s[1] ~= "item" or s[2] == nil or not IsEquippableItem(s[2]) then
+                    return
+                end
             end
+            SetItemRef(link, text, button)
+        end)
+        condition_desc.frame:SetScript("OnHyperlinkEnter", function(self, link, text, button)
+            GameTooltip:SetOwner(condition_desc.frame, "ANCHOR_CURSOR")
+            GameTooltip:SetHyperlink(link)
         end)
         condition_desc.frame:SetScript("OnHyperlinkLeave", function(self, link, text, button)
             if GameTooltip:IsOwned(condition_desc.frame) then

@@ -254,7 +254,7 @@ function SpellLoader:StartLoading()
                 -- Alchemy use two icons, the Trade_* for the actual crafted spell and a different icon for the actual buff
                 -- Passive spells have no use as well, since they are well passive and can't actually be used
                 local rank = GetSpellSubtext(spellID)
-                if not blacklist[tostring(icon)] and rank ~= SPELL_PASSIVE) then
+                if not blacklist[tostring(icon)] and rank ~= SPELL_PASSIVE then
                     SpellLoader.spellsLoaded = SpellLoader.spellsLoaded + 1
                     AddSpell(name, rank, icon, spellID)
                     totalInvalid = 0
