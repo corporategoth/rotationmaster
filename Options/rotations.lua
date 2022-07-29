@@ -697,6 +697,18 @@ local function add_conditions(specID, idx, rotid, rot, callback)
         local condition_desc = AceGUI:Create("Label")
         condition_desc:SetFullWidth(true)
         condition_desc:SetText(addon:printCondition(rot.conditions, specID))
+        condition_desc.frame:SetHyperlinksEnabled(true)
+        condition_desc.frame:SetScript("OnHyperlinkClick", function(self, link, text, button)
+            if GameTooltip:IsVisible() then
+                GameTooltip:Hide()
+            else
+                GameTooltip:SetOwner(condition_desc.frame, "ANCHOR_CURSOR")
+                GameTooltip:SetHyperlink(link)
+            end
+        end)
+        condition_desc.frame:SetScript("OnHyperlinkLeave", function(self, link, text, button)
+            GameTooltip:Hide()
+        end)
         conditions:AddChild(condition_desc)
 
         local bottom_group = AceGUI:Create("SimpleGroup")
