@@ -19,7 +19,7 @@ do
 			if currentSpec == nil then
 				return
 			end
-		elseif (GetServerExpansionLevel() >= 2) then
+		elseif (LE_EXPANSION_LEVEL_CURRENT >= 2) then
 			currentSpec = GetSpecialization()
 		end
 		if playerSpells[currentSpec] == nil then

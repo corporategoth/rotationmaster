@@ -29,7 +29,7 @@ if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
         "Master Healthstone",
     })
 else
-    if (GetServerExpansionLevel() >= 1) then
+    if (LE_EXPANSION_LEVEL_CURRENT >= 1) then
         combination_food = { 34062 }
         multiinsert(conjured_food, { 22019 })
         multiinsert(conjured_water, { 22018, 30703, })
@@ -41,7 +41,7 @@ else
             "Master Healthstone",
         })
     end
-    if (GetServerExpansionLevel() >= 2) then
+    if (LE_EXPANSION_LEVEL_CURRENT >= 2) then
 
     end
 end
@@ -137,7 +137,7 @@ local function upgradeGlobalRotationstoPlayer()
                 end
             end
         end
-    elseif (GetServerExpansionLevel() >= 2) then
+    elseif (LE_EXPANSION_LEVEL_CURRENT >= 2) then
         -- Upgrade from TBC -> Wrath
         if addon.db.char.rotations ~= nil and addon.db.char.rotations[0] ~= nil then
             addon.db.char.rotations[1] = addon.db.char.rotations[0]

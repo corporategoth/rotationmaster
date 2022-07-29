@@ -335,7 +335,7 @@ local function create_primary_options(frame)
     fx_group:AddChild(position_group)
     scroll:AddChild(fx_group)
 
-if WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE and GetServerExpansionLevel() >= 2 then
+if WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE and LE_EXPANSION_LEVEL_CURRENT >= 2 then
     local spec_header = AceGUI:Create("Heading")
     spec_header:SetFullWidth(true)
     spec_header:SetText(L["Specialization Names"])
@@ -991,7 +991,7 @@ create_class_options = function (frame, classID)
         end)
 
         frame:AddChild(tabs)
-    elseif (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE and GetServerExpansionLevel() >= 2) then
+    elseif (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE and LE_EXPANSION_LEVEL_CURRENT >= 2) then
         local tabs = AceGUI:Create("TabGroup")
         addon.specTab = tabs
 

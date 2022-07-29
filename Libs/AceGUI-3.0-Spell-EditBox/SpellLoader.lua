@@ -248,15 +248,17 @@ function SpellLoader:StartLoading()
 		for spellID=currentIndex + 1, currentIndex + SPELLS_PER_RUN do
 			local name, _, icon = GetSpellInfo(spellID)
 
-			-- Pretty much every profession spell uses Trade_* and 99% of the random spells use the Trade_Engineering icon
-			-- we can safely blacklist any of these spells as they are not needed. Can get away with this because things like
-			-- Alchemy use two icons, the Trade_* for the actual crafted spell and a different icon for the actual buff
-			-- Passive spells have no use as well, since they are well passive and can't actually be used
-			if( name and not blacklist[tostring(icon)] and rank ~= SPELL_PASSIVE ) then
+			if name then
+                -- Pretty much every profession spell uses Trade_* and 99% of the random spells use the Trade_Engineering icon
+                -- we can safely blacklist any of these spells as they are not needed. Can get away with this because things like
+                -- Alchemy use two icons, the Trade_* for the actual crafted spell and a different icon for the actual buff
+                -- Passive spells have no use as well, since they are well passive and can't actually be used
                 local rank = GetSpellSubtext(spellID)
-				SpellLoader.spellsLoaded = SpellLoader.spellsLoaded + 1
-                AddSpell(name, rank, icon, spellID)
-				totalInvalid = 0
+                if not blacklist[tostring(icon)] and rank ~= SPELL_PASSIVE) then
+                    SpellLoader.spellsLoaded = SpellLoader.spellsLoaded + 1
+                    AddSpell(name, rank, icon, spellID)
+                    totalInvalid = 0
+				end
 			else
 				totalInvalid = totalInvalid + 1
 			end

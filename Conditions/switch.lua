@@ -16,6 +16,6 @@ addon:RegisterSwitchCondition("CLASSIFICATION", addon.condition_classification)
 addon:RegisterSwitchCondition("PET_NAME", addon.condition_pet_name)
 addon:RegisterSwitchCondition("EQUIPPED", addon.condition_equipped)
 addon:RegisterSwitchCondition("DISTANCE_COUNT", addon.condition_distance_count)
-if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE or GetServerExpansionLevel() >= 2) then
+if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE or LE_EXPANSION_LEVEL_CURRENT >= 2) then
     addon:RegisterCondition(CATEGORY_SPELLS, "GLYPH", addon.condition_glyph)
 end

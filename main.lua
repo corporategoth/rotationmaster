@@ -75,7 +75,7 @@ local defaults = {
 }
 
 if WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE and
-   GetServerExpansionLevel() >= 2 then
+   LE_EXPANSION_LEVEL_CURRENT >= 2 then
     defaults.char.specs = {}
     defaults.char.specs[1] = PRIMARY
     defaults.char.specs[2] = SECONDARY
@@ -109,6 +109,7 @@ local events = {
     'ACTIONBAR_PAGE_CHANGED',
     'LEARNED_SPELL_IN_TAB',
     'UPDATE_MACROS',
+    'SPELLS_CHANGED',
 
     -- Special Purpose
     'NAME_PLATE_UNIT_ADDED',
@@ -431,17 +432,17 @@ function addon:enable()
         for _, v in pairs(mainline_events) do
             self:RegisterEvent(v)
         end
-    elseif (GetServerExpansionLevel() == 2) then
+    elseif (LE_EXPANSION_LEVEL_CURRENT == 2) then
         self.currentSpec = GetSpecialization()
         for _, v in pairs(wrath_events) do
             self:RegisterEvent(v)
         end
-    elseif (GetServerExpansionLevel() == 1) then
+    elseif (LE_EXPANSION_LEVEL_CURRENT == 1) then
         self.currentSpec = 0
         for _, v in pairs(tbc_events) do
             self:RegisterEvent(v)
         end
-    elseif (GetServerExpansionLevel() == 0) then
+    elseif (LE_EXPANSION_LEVEL_CURRENT == 0) then
         self.currentSpec = 0
         for _, v in pairs(classic_events) do
             self:RegisterEvent(v)
@@ -1061,7 +1062,7 @@ function addon:UpdateSkills()
         if self.specTab then
             self.specTab:SelectTab(spec)
         end
-    elseif (GetServerExpansionLevel() >= 2) then
+    elseif (LE_EXPANSION_LEVEL_CURRENT >= 2) then
         local spec = GetSpecialization()
         if spec == nil then
             return
@@ -1097,7 +1098,7 @@ function addon:UpdateSkills()
                 }
             end
         end
-    elseif (GetServerExpansionLevel() >= 2) then
+    elseif (LE_EXPANSION_LEVEL_CURRENT >= 2) then
         if self.specTalents[self.currentSpec] == nil then
             self.specTalents[self.currentSpec] = {}
 
@@ -1284,6 +1285,7 @@ end
 
 addon.PLAYER_TALENT_UPDATE = addon.UpdateSkills
 addon.ACTIVE_TALENT_GROUP_CHANGED = addon.UpdateSkills
+addon.SPELLS_CHANGED = addon.UpdateSkills
 addon.CHARACTER_POINTS_CHANGED = addon.UpdateSkills
 addon.PLAYER_SPECIALIZATION_CHANGED = addon.UpdateSkills
 addon.LEARNED_SPELL_IN_TAB = addon.UpdateSkills

@@ -440,7 +440,7 @@ else
 
 end
 
-if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE or GetServerExpansionLevel() >= 2) then
+if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE or LE_EXPANSION_LEVEL_CURRENT >= 2) then
     local unit_class, unit_class_num = select(2, UnitClass("player"))
     addon.condition_glyph = {
         description = L["Glyph"],

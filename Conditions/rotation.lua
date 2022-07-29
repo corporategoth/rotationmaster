@@ -35,7 +35,7 @@ if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
     addon:RegisterCondition(CATEGORY_NONE, "ROLE", addon.condition_role)
 end
 addon:RegisterCondition(CATEGORY_NONE, "TALENT", addon.condition_talent)
-if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE or GetServerExpansionLevel() >= 2) then
+if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE or LE_EXPANSION_LEVEL_CURRENT >= 2) then
     addon:RegisterCondition(CATEGORY_SPELLS, "GLYPH", addon.condition_glyph)
 end
 addon:RegisterCondition(CATEGORY_NONE, "CREATURE", addon.condition_creature)
@@ -122,7 +122,7 @@ addon:RegisterCondition(CATEGORY_COMBAT, "POWER", addon.condition_power)
 addon:RegisterCondition(CATEGORY_COMBAT, "POWERPCT", addon.condition_powerpct)
 addon:RegisterCondition(CATEGORY_COMBAT, "POINT", addon.condition_point)
 
-if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE and GetServerExpansionLevel() >= 2 and
+if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE and LE_EXPANSION_LEVEL_CURRENT >= 2 and
         select(2, UnitClass("player")) == "DEATHKNIGHT") then
     addon:RegisterCondition(CATEGORY_COMBAT, "RUNE", addon.condition_rune)
     addon:RegisterCondition(CATEGORY_COMBAT, "RUNE_COOLDOWN", addon.condition_rune_cooldown)

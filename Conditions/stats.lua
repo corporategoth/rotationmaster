@@ -359,7 +359,7 @@ addon.condition_point = {
     end
 }
 
-if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE and GetServerExpansionLevel() >= 2 and
+if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE and LE_EXPANSION_LEVEL_CURRENT >= 2 and
     select(2, UnitClass("player")) == "DEATHKNIGHT") then
     addon.condition_rune = {
         description = L["Runes"],
