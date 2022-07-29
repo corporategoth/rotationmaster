@@ -1,5 +1,4 @@
 local AceGUI = LibStub("AceGUI-3.0")
-local AceConsole = LibStub("AceConsole-3.0")
 
 do
 	local ItemData = LibStub("AceGUI-3.0-ItemLoader")

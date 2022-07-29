@@ -68,6 +68,42 @@ local function spairs(t, order)
 	end
 end
 
+local function AddSpell(name, rank, icon, spellID, force)
+	if not force and spells[spellID] ~= nil then
+		return
+	end
+
+	local lcname = string.lower(name)
+	needsUpdate[spellID] = nil
+
+	spells[spellID] = {
+		name = name,
+		icon = icon
+	}
+	if rank ~= nil and rank ~= "" then
+		spells[spellID].rank = rank
+
+		if spellsReverseRank[lcname] == nil then
+			spellsReverseRank[lcname] = {}
+		end
+		if spellsReverseRank[lcname][rank] == nil then
+			spellsReverseRank[lcname][rank] = spellID
+		end
+	end
+
+	if spellsReverse[lcname] == nil then
+		local name, rank, icon, _, _, _, revid = GetSpellInfo(name)
+		if revid == spellID then
+			spellsReverse[lcname] = spellID
+		elseif revid ~= nil then
+			AddSpell(name, rank, icon, revid)
+		else
+			needsUpdate[spellID] = true
+			spellsReverse[lcname] = spellID
+		end
+	end
+end
+
 function SpellLoader:RegisterPredictor(frame)
 	self.predictors[frame] = true
 end
@@ -76,17 +112,11 @@ function SpellLoader:UnregisterPredictor(frame)
 	self.predictors[frame] = nil
 end
 
-function SpellLoader:UpdateSpell(id, name, rank)
+function SpellLoader:UpdateSpell(id, name, rank, icon)
 	if self.needsUpdate[id] then
-		local lcname = string.lower(name)
+		self.needsUpdate[id] = nil
 		self.spellListReverse[lcname] = id
-        if rank ~= nil then
-            if self.spellListReverseRank[lcname] == nil then
-				self.spellListReverseRank[lcname] = {}
-			end
-			self.spellListReverseRank[lcname][string.lower(rank)] = id
-		end
-		self.needUpdate[id] = nil
+		AddSpell(name, rank, icon, id, true)
     end
 end
 
@@ -124,54 +154,6 @@ function SpellLoader:SpellName(id)
 		end
     end
     return select(1, GetSpellInfo(id))
-end
-
-local function AddSpell(name, rank, icon, spellID, force)
-	if not force and spells[spellID] ~= nil then
-		return
-	end
-
-	spells[spellID] = {
-		name = name,
-		icon = icon
-	}
-
-	local lcname = string.lower(name)
-
-	-- There are multiple spells with the same name, onle one is definitive for this class (which affects
-	-- icons, tool tips, etc).  So look up the definitive version if there is one and set that.
-	if spellsReverse[lcname] == nil then
-		local name, _, icon, _, _, _, revid = GetSpellInfo(name)
-		if revid then
-			spellsReverse[lcname] = revid
-			needsUpdate[spellID] = nil
-			if revid ~= spellID and spells[revid] == nil then
-				spells[revid] = {
-					name = name,
-					icon = icon
-				}
-			end
-		else
-			-- We could not look up the spell right now.  Maybe later we can!
-			-- After we change specs or summon pets or something.  WoW is weird.
-			needsUpdate[spellID] = true
-			spellsReverse[lcname] = spellID
-		end
-	end
-
-	if rank ~= nil and rank ~= "" then
-		spells[spellID].rank = rank
-		if spellsReverseRank[lcname] == nil then
-			spellsReverseRank[lcname] = {}
-		end
-		if spellsReverseRank[lcname][rank] == nil then
-			spellsReverseRank[lcname][rank] = spellID
-		end
-		-- Always use the top spell for the reverse spell ID
-		if spells[spellsReverse[lcname]].rank ~= nil and spells[spellsReverse[lcname]].rank < rank then
-            spellsReverse[lcname] = spellID
-		end
-	end
 end
 
 function SpellLoader:UpdateFromSpellBook()

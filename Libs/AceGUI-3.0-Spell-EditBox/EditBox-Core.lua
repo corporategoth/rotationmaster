@@ -296,9 +296,9 @@ do
 		local type, _, _, id = GetCursorInfo()
 
 		if( type == "spell" ) then
-			local name, rank, _, _, _, _, spellId = GetSpellInfo(id)
+			local name, rank, icon, _, _, _, spellId = GetSpellInfo(id)
 			-- Just in case ...
-        	SpellData:UpdateSpell(spellId, name, rank)
+        	SpellData:UpdateSpell(spellId, name, rank, icon)
 			self:SetText(name)
 			self:Fire("OnEnterPressed", name)
 			ClearCursor()
@@ -408,9 +408,9 @@ do
 	end
 				
 	local function Spell_OnClick(self)
-		local name, rank = GetSpellInfo(self.spellID)
+		local name, rank, icon = GetSpellInfo(self.spellID)
 		-- Just in case ...
-		SpellData:UpdateSpell(spellId, name, rank)
+		SpellData:UpdateSpell(spellId, name, rank, icon)
 		local norank = self.parent.obj:GetUserData("norank")
     	if not norank then
 			name = SpellData:SpellName(self.spellID)
