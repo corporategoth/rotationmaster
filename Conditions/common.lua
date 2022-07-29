@@ -24,12 +24,7 @@ end
 
 function addon:Widget_GetSpellLink(spellid, ranked)
     if spellid ~= nil then
-        if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
-            if not ranked then
-                spellid = select(7, getCached(addon.longtermCache, GetSpellInfo,
-                    select(1, getCached(addon.longtermCache, GetSpellInfo, spellid))))
-            end
-        end
+        spellid = self:Widget_GetSpellId(spellid, ranked)
         if ranked then
             local rank = GetSpellSubtext(spellid)
             if rank then
@@ -38,6 +33,7 @@ function addon:Widget_GetSpellLink(spellid, ranked)
         end
         return GetSpellLink(spellid)
     end
+
     return nil
 end
 
