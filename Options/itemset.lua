@@ -335,13 +335,13 @@ local function create_item_list(frame, editbox, items, isvalid, update)
                 if isvalid(v) then
                     items[idx] = v
                     addon:UpdateItem_Name_ID(v, name, icon)
-                    if GameTooltip:IsVisible() then
+                    if GameTooltip:IsOwned(icon.frame) and GameTooltip:IsVisible() then
                         GameTooltip:SetHyperlink("item:" .. v)
                     end
                     update()
                 else
                     table.remove(items, idx)
-                    if GameTooltip:IsVisible() then
+                    if GameTooltip:IsOwned(icon.frame) and GameTooltip:IsVisible() then
                         GameTooltip:Hide()
                     end
                     update()
@@ -358,7 +358,9 @@ local function create_item_list(frame, editbox, items, isvalid, update)
                 end
             end)
             icon:SetCallback("OnLeave", function()
-                GameTooltip:Hide()
+                if GameTooltip:IsOwned(icon.frame) then
+                    GameTooltip:Hide()
+                end
             end)
             row:AddChild(icon)
 
@@ -690,7 +692,9 @@ local function item_list(frame, selected, editbox, itemset, isvalid, update)
         end
     end)
     icon:SetCallback("OnLeave", function()
-        GameTooltip:Hide()
+        if GameTooltip:IsOwned(icon.frame) then
+            GameTooltip:Hide()
+        end
     end)
     group:AddChild(icon)
 

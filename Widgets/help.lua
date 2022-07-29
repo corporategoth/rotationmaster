@@ -27,7 +27,9 @@ local function Control_OnEnter(frame)
 end
 
 local function Control_OnLeave(frame)
-    GameTooltip:Hide()
+    if GameTooltip:IsOwned(frame) then
+        GameTooltip:Hide()
+    end
     frame.obj:Fire("OnLeave")
 end
 

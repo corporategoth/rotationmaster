@@ -59,13 +59,13 @@ function addon:Widget_SpellWidget(spec, editbox, value, nametoid, isvalid, updat
             value.spell = v
             spellIcon:SetText(v)
             spell:SetText(SpellData:SpellName(value.spell, not value.ranked))
-            if GameTooltip:IsVisible() then
+            if GameTooltip:IsOwned(spellIcon.frame) and GameTooltip:IsVisible() then
                 GameTooltip:SetHyperlink("spell:" .. v)
             end
         else
             spellIcon:SetText(nil)
             spell:SetText(nil)
-            if GameTooltip:IsVisible() then
+            if GameTooltip:IsOwned(spellIcon.frame) and GameTooltip:IsVisible() then
                 GameTooltip:Hide()
             end
         end
@@ -78,7 +78,9 @@ function addon:Widget_SpellWidget(spec, editbox, value, nametoid, isvalid, updat
         end
     end)
     spellIcon:SetCallback("OnLeave", function(widget)
-        GameTooltip:Hide()
+        if GameTooltip:IsOwned(spellIcon.frame) then
+            GameTooltip:Hide()
+        end
     end)
     spellIcon:SetDisabled(value.disabled)
     spell_group:AddChild(spellIcon)
@@ -161,13 +163,13 @@ function addon:Widget_SpellNameWidget(spec, editbox, value, isvalid, update)
             value.spell = name
             spellIcon:SetText(v)
             spell:SetText(name)
-            if GameTooltip:IsVisible() then
+            if GameTooltip:IsOwned(spellIcon.frame) and GameTooltip:IsVisible() then
                 GameTooltip:SetHyperlink("spell:" .. v)
             end
         else
             spellIcon:SetText(nil)
             spell:SetText(nil)
-            if GameTooltip:IsVisible() then
+            if GameTooltip:IsOwned(spellIcon.frame) and GameTooltip:IsVisible() then
                 GameTooltip:Hide()
             end
         end
@@ -180,7 +182,9 @@ function addon:Widget_SpellNameWidget(spec, editbox, value, isvalid, update)
         end
     end)
     spellIcon:SetCallback("OnLeave", function(widget)
-        GameTooltip:Hide()
+        if GameTooltip:IsOwned(spellIcon.frame) then
+            GameTooltip:Hide()
+        end
     end)
     spellIcon:SetDisabled(value.disabled)
     spell_group:AddChild(spellIcon)
@@ -248,7 +252,9 @@ function addon:Widget_ItemWidget(top, editbox, value, isvalid, update)
         end
     end)
     itemIcon:SetCallback("OnLeave", function(widget)
-        GameTooltip:Hide()
+        if GameTooltip:IsOwned(itemIcon.frame) then
+            GameTooltip:Hide()
+        end
     end)
     itemIcon:SetDisabled(value.disabled)
     item_group:AddChild(itemIcon)
@@ -350,12 +356,12 @@ function addon:Widget_SingleItemWidget(spec, editbox, value, isvalid, update)
         v = tonumber(v)
         if isvalid(v) then
             value.item = v
-            if GameTooltip:IsVisible() then
+            if GameTooltip:IsOwned(itemIcon.frame) and GameTooltip:IsVisible() then
                 GameTooltip:SetHyperlink("item:" .. v)
             end
         else
             value.item = nil
-            if GameTooltip:IsVisible() then
+            if GameTooltip:IsOwned(itemIcon.frame) and GameTooltip:IsVisible() then
                 GameTooltip:Hide()
             end
         end
@@ -372,7 +378,9 @@ function addon:Widget_SingleItemWidget(spec, editbox, value, isvalid, update)
         end
     end)
     itemIcon:SetCallback("OnLeave", function(widget)
-        GameTooltip:Hide()
+        if GameTooltip:IsOwned(itemIcon.frame) then
+            GameTooltip:Hide()
+        end
     end)
     itemIcon:SetDisabled(value.disabled)
     item_group:AddChild(itemIcon)

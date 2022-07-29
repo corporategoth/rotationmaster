@@ -508,7 +508,9 @@ function addon.AddTooltip(frame, text)
         GameTooltip:SetText(text, 1, 1, 1, 1, true)
     end)
     frame:SetCallback("OnLeave", function()
-        GameTooltip:Hide()
+        if GameTooltip:IsOwned(frame.frame) then
+            GameTooltip:Hide()
+        end
     end)
 end
 
@@ -532,6 +534,9 @@ function addon:UpdateItem_ID_ID(item, text, icon, attempt)
         end
         if icon then
             icon:SetText(nil)
+            if GameTooltip:IsOwned(icon.frame) and GameTooltip:IsVisible() then
+                GameTooltip:Hide()
+            end
         end
         return
     end
@@ -543,6 +548,9 @@ function addon:UpdateItem_ID_ID(item, text, icon, attempt)
         end
         if icon then
             icon:SetText(nil)
+            if GameTooltip:IsOwned(icon.frame) and GameTooltip:IsVisible() then
+                GameTooltip:Hide()
+            end
         end
     end
 
@@ -553,6 +561,9 @@ function addon:UpdateItem_ID_ID(item, text, icon, attempt)
         end
         if icon then
             icon:SetText(itemid)
+            if GameTooltip:IsOwned(icon.frame) and GameTooltip:IsVisible() then
+                GameTooltip:SetHyperlink("item:" .. itemid)
+            end
         end
     elseif attempt < 4 then
         self:ScheduleTimer("UpdateItem_ID_ID", 0.5, item, text, icon, attempt + 1)
@@ -566,6 +577,9 @@ function addon:UpdateItem_ID_Image(item, text, icon, attempt)
         end
         if icon then
             icon:SetImage(nil)
+            if GameTooltip:IsOwned(icon.frame) and GameTooltip:IsVisible() then
+                GameTooltip:Hide()
+            end
         end
         return
     end
@@ -577,6 +591,9 @@ function addon:UpdateItem_ID_Image(item, text, icon, attempt)
         end
         if icon then
             icon:SetImage(nil)
+            if GameTooltip:IsOwned(icon.frame) and GameTooltip:IsVisible() then
+                GameTooltip:Hide()
+            end
         end
     end
 
@@ -587,6 +604,9 @@ function addon:UpdateItem_ID_Image(item, text, icon, attempt)
         end
         if icon then
             icon:SetImage(texture)
+            if GameTooltip:IsOwned(icon.frame) and GameTooltip:IsVisible() then
+                GameTooltip:SetHyperlink("item:" .. itemid)
+            end
         end
     elseif attempt < 4 then
         self:ScheduleTimer("UpdateItem_ID_Image", 0.5, item, text, icon, attempt + 1)
@@ -600,6 +620,9 @@ function addon:UpdateItem_Name_ID(item, text, icon, attempt)
         end
         if icon then
             icon:SetText(nil)
+            if GameTooltip:IsOwned(icon.frame) and GameTooltip:IsVisible() then
+                GameTooltip:Hide()
+            end
         end
         return
     end
@@ -611,6 +634,9 @@ function addon:UpdateItem_Name_ID(item, text, icon, attempt)
         end
         if icon then
             icon:SetText(nil)
+            if GameTooltip:IsOwned(icon.frame) and GameTooltip:IsVisible() then
+                GameTooltip:Hide()
+            end
         end
     end
 
@@ -625,6 +651,9 @@ function addon:UpdateItem_Name_ID(item, text, icon, attempt)
         end
         if icon then
             icon:SetText(itemid)
+            if GameTooltip:IsOwned(icon.frame) and GameTooltip:IsVisible() then
+                GameTooltip:SetHyperlink("item:" .. itemid)
+            end
         end
     elseif attempt < 4 then
         self:ScheduleTimer("UpdateItem_Name_ID", 0.5, item, text, icon, attempt + 1)
@@ -638,6 +667,9 @@ function addon:UpdateItem_Name_Image(item, text, icon, attempt)
         end
         if icon then
             icon:SetImage(nil)
+            if GameTooltip:IsOwned(icon.frame) and GameTooltip:IsVisible() then
+                GameTooltip:Hide()
+            end
         end
         return
     end
@@ -649,6 +681,9 @@ function addon:UpdateItem_Name_Image(item, text, icon, attempt)
         end
         if icon then
             icon:SetImage(nil)
+            if GameTooltip:IsOwned(icon.frame) and GameTooltip:IsVisible() then
+                GameTooltip:Hide()
+            end
         end
     end
 
@@ -664,6 +699,9 @@ function addon:UpdateItem_Name_Image(item, text, icon, attempt)
         end
         if icon then
             icon:SetImage(texture)
+            if GameTooltip:IsOwned(icon.frame) and GameTooltip:IsVisible() then
+                GameTooltip:SetHyperlink("item:" .. itemid)
+            end
         end
     elseif attempt < 4 then
         self:ScheduleTimer("UpdateItem_Name_Image", 0.5, item, text, icon, attempt + 1)

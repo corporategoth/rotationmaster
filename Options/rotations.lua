@@ -428,8 +428,14 @@ local function add_action_group(specID, rotid, rot, callback, refresh, cooldown)
                 action_icon:SetText(v)
                 if rot.action then
                     action:SetText(SpellData:SpellName(rot.action, not rot.ranked))
+                    if GameTooltip:IsOwned(action_icon.frame) and GameTooltip:IsVisible() then
+                        GameTooltip:SetHyperlink("spell:" .. rot.action)
+                    end
                 else
                     action:SetText(nil)
+                    if GameTooltip:IsOwned(action_icon.frame) and GameTooltip:IsVisible() then
+                        GameTooltip:Hide()
+                    end
                 end
 
                 callback()
@@ -442,7 +448,9 @@ local function add_action_group(specID, rotid, rot, callback, refresh, cooldown)
             end
         end)
         action_icon:SetCallback("OnLeave", function()
-            GameTooltip:Hide()
+            if GameTooltip:IsOwned(action_icon.frame) then
+                GameTooltip:Hide()
+            end
         end)
         action_group:AddChild(action_icon)
 
@@ -512,8 +520,14 @@ local function add_action_group(specID, rotid, rot, callback, refresh, cooldown)
             action_icon:SetText(v)
             if rot.action then
                 action:SetText(SpellData:SpellName(rot.action, not rot.ranked))
+                if GameTooltip:IsOwned(action_icon.frame) and GameTooltip:IsVisible() then
+                    GameTooltip:SetHyperlink("spell:" .. rot.action)
+                end
             else
                 action:SetText(nil)
+                if GameTooltip:IsOwned(action_icon.frame) and GameTooltip:IsVisible() then
+                    GameTooltip:Hide()
+                end
             end
 
             callback()
@@ -525,7 +539,9 @@ local function add_action_group(specID, rotid, rot, callback, refresh, cooldown)
             end
         end)
         action_icon:SetCallback("OnLeave", function()
-            GameTooltip:Hide()
+            if GameTooltip:IsOwned(action_icon.frame) then
+                GameTooltip:Hide()
+            end
         end)
         action_group:AddChild(action_icon)
 
@@ -601,7 +617,9 @@ local function add_action_group(specID, rotid, rot, callback, refresh, cooldown)
             end
         end)
         action_icon:SetCallback("OnLeave", function()
-            GameTooltip:Hide()
+            if GameTooltip:IsOwned(action_icon.frame) then
+                GameTooltip:Hide()
+            end
         end)
         action_group:AddChild(action_icon)
 
@@ -699,7 +717,7 @@ local function add_conditions(specID, idx, rotid, rot, callback)
         condition_desc:SetText(addon:printCondition(rot.conditions, specID))
         condition_desc.frame:SetHyperlinksEnabled(true)
         condition_desc.frame:SetScript("OnHyperlinkClick", function(self, link, text, button)
-            if GameTooltip:IsVisible() then
+            if GameTooltip:IsVisible() and GameTooltip:IsOwned(condition_desc.frame) then
                 GameTooltip:Hide()
             else
                 GameTooltip:SetOwner(condition_desc.frame, "ANCHOR_CURSOR")
@@ -707,7 +725,9 @@ local function add_conditions(specID, idx, rotid, rot, callback)
             end
         end)
         condition_desc.frame:SetScript("OnHyperlinkLeave", function(self, link, text, button)
-            GameTooltip:Hide()
+            if GameTooltip:IsOwned(condition_desc.frame) then
+                GameTooltip:Hide()
+            end
         end)
         conditions:AddChild(condition_desc)
 

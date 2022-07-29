@@ -395,7 +395,9 @@ else
                 end
             end)
             talentIcon:SetCallback("OnLeave", function(widget)
-                GameTooltip:Hide()
+                if GameTooltip:IsOwned(talentIcon.frame) then
+                    GameTooltip:Hide()
+                end
             end)
             parent:AddChild(talentIcon)
             talent:SetLabel(L["Talent"])
