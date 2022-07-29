@@ -56,7 +56,7 @@ function addon:Widget_SpellWidget(spec, editbox, value, nametoid, isvalid, updat
         if isvalid(v) then
             value.spell = v
             spellIcon:SetText(v)
-            spell:SetText(value.spell and SpellData:SpellName(value.spell, not value.ranked))
+            spell:SetText(SpellData:SpellName(value.spell, not value.ranked))
             if GameTooltip:IsVisible() then
                 GameTooltip:SetHyperlink("spell:" .. v)
             end
@@ -125,6 +125,7 @@ function addon:Widget_SpellWidget(spec, editbox, value, nametoid, isvalid, updat
         end
         if isvalid(v) then
             value.spell = v
+            spell:SetText(SpellData:SpellName(value.spell, not value.ranked))
         else
             value.spell = nil
             spell:SetText(nil)
@@ -154,9 +155,10 @@ function addon:Widget_SpellNameWidget(spec, editbox, value, isvalid, update)
     spellIcon:SetCallback("OnEnterPressed", function(widget, event, v)
         v = tonumber(v)
         if isvalid(v) then
-            value.spell = SpellLoader:GetSpellId(v)
+            local name = SpellData:GetSpellName(v, true)
+            value.spell = name
             spellIcon:SetText(v)
-            spell:SetText(SpellLoader:GetSpellName(value.spell, not value.ranked))
+            spell:SetText(name)
             if GameTooltip:IsVisible() then
                 GameTooltip:SetHyperlink("spell:" .. v)
             end
@@ -188,10 +190,11 @@ function addon:Widget_SpellNameWidget(spec, editbox, value, isvalid, update)
     spell:SetUserData("spec", spec)
     spell:SetCallback("OnEnterPressed", function(widget, event, v)
         local spellid = SpellLoader:GetSpellId(v)
+        local name = SpellLoader:SpellName(spellid, true)
 
         if isvalid(spellid) then
-            value.spell = spellid
-            spell:SetText(SpellLoader:GetSpellName(spellid, not value.ranked))
+            value.spell = name
+            spell:SetText(name)
             spellIcon:SetText(spellid)
         else
             value.spell = nil
