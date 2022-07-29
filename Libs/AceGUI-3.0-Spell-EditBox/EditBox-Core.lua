@@ -383,7 +383,7 @@ do
 			return
 		end
 		
-		self.selectedButton = (self.selectedButton or 0) + direction
+		self.selectedButton = (self.selectedButton or 0) + (direction or 0)
 		if( self.selectedButton > self.activeButtons ) then
 			self.selectedButton = 1
 		elseif( self.selectedButton <= 0 ) then
