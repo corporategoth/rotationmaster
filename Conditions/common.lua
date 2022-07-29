@@ -30,6 +30,12 @@ function addon:Widget_GetSpellLink(spellid, ranked)
                     select(1, getCached(addon.longtermCache, GetSpellInfo, spellid))))
             end
         end
+        if ranked then
+            local rank = GetSpellSubtext(spellid)
+            if rank then
+               return GetSpellLink(spellid) .. "|cFF888888 (" .. rank .. ")|r"
+            end
+        end
         return GetSpellLink(spellid)
     end
     return nil
