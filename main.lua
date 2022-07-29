@@ -277,7 +277,8 @@ function addon:OnInitialize()
     self.shapeshiftTimer = nil
 
     -- This is a cache of spec based spell names -> IDs.  Updated when we switch specs.
-    self.specSpells = nil
+    self.specSpells = {}
+    self.specSpellsReverse = {}
     self.bagContents = {}
 
     self.specTalents = {}
@@ -1076,33 +1077,11 @@ function addon:UpdateSkills()
     self:ButtonFetch()
 
     self.longtermCache = {}
-
-    SpellData:UpdateFromSpellBook()
-    if self.specSpells == nil then
-        self.specSpells = {}
-    end
-
-    self.specSpells[self.currentSpec] = {}
-    for i=1, GetNumSpellTabs() do
-        local _, _, offset, numSpells, _, offspecId = GetSpellTabInfo(i)
-        if offspecId == 0 then
-            offspecId = self.currentSpec
-        elseif (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
-            self.specSpells[offspecId] = {}
-        end
-        for j = offset, offset + numSpells - 1 do
-            local name, rank, spellId = GetSpellBookItemName(j, BOOKTYPE_SPELL)
-            if (i == 1 and rank ~= nil and rank ~= "") then
-                for _, prof in pairs(self.profession_levels) do
-                    if rank == prof then
-                        spellId = nil
-                        break
-                    end
-                end
-            end
-            if spellId and not IsPassiveSpell(j, BOOKTYPE_SPELL) then
-                self.specSpells[offspecId][name] = spellId
-            end
+    self.specSpells = SpellData:UpdateFromSpellBook(self.currentSpec)
+    for spec,spells in pairs(self.specSpells) do
+        self.specSpellsReverse[spec] = {}
+        for spell,pet in pairs(spells) do
+            self.specSpellsReverse[spec][SpellData:SpellName(spell, true)] = spell
         end
     end
 
@@ -1135,14 +1114,6 @@ function addon:UpdateSkills()
             end
         end
     end
-end
-
-function addon:GetSpecSpellID(spec, name)
-    if self.specSpells == nil or self.specSpells[spec] == nil then
-        return nil
-    end
-
-    return self.specSpells[spec][name]
 end
 
 function addon:GetSpecTalentName(spec, idx)
@@ -1263,7 +1234,7 @@ end
 
 function addon:UNIT_PET(unit)
     if unit == "player" then
-        SpellData:UpdateFromSpellBook()
+        SpellData:UpdateFromSpellBook(self.currentSpec)
 
         addon:verbose("Player changed pet.")
         if not self.inCombat then

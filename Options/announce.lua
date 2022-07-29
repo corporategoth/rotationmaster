@@ -5,7 +5,7 @@ local AceGUI = LibStub("AceGUI-3.0")
 local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
 
 local table, ipairs = table, ipairs
-local isSpellOnSpec = addon.isSpellOnSpec
+local isSpellOnSpec, getSpecSpellID = addon.isSpellOnSpec, addon.getSpecSpellID
 
 function addon:create_announce_list(frame)
     local announces = self.db.char.announces
@@ -56,7 +56,7 @@ function addon:create_announce_list(frame)
 
             if ent.type == "spell" then
                 local spell_group = addon:Widget_SpellWidget(addon.currentSpec, "Spec_EditBox", ent,
-                    function(v) return addon:GetSpecSpellID(addon.currentSpec, v) end,
+                    function(v) return getSpecSpellID(addon.currentSpec, v) end,
                     function(v) return isSpellOnSpec(addon.currentSpec, v) end,
                     function() draw_action_group(ag, ent) end)
                 spell_group:SetFullWidth(true)
@@ -192,7 +192,7 @@ function addon:create_announce_list(frame)
 
         if ent.type == "spell" then
             local spell_group = addon:Widget_SpellWidget(addon.currentSpec, "Spec_EditBox", ent,
-                function(v) return addon:GetSpecSpellID(addon.currentSpec, v) end,
+                function(v) return getSpecSpellID(addon.currentSpec, v) end,
                 function(v) return isSpellOnSpec(addon.currentSpec, v) end,
                 function()
                     if ent.spell then

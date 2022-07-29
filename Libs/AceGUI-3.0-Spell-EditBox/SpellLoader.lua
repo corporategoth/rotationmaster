@@ -74,7 +74,6 @@ local function AddSpell(name, rank, icon, spellID, force)
 	end
 
 	local lcname = string.lower(name)
-	needsUpdate[spellID] = nil
 
 	spells[spellID] = {
 		name = name,
@@ -86,16 +85,15 @@ local function AddSpell(name, rank, icon, spellID, force)
 		if spellsReverseRank[lcname] == nil then
 			spellsReverseRank[lcname] = {}
 		end
-		if spellsReverseRank[lcname][rank] == nil then
-			spellsReverseRank[lcname][rank] = spellID
-		end
+        spellsReverseRank[lcname][rank] = spellID
 	end
 
 	if spellsReverse[lcname] == nil then
-		local name, rank, icon, _, _, _, revid = GetSpellInfo(name)
+		local name, _, icon, _, _, _, revid = GetSpellInfo(name)
 		if revid == spellID then
 			spellsReverse[lcname] = spellID
 		elseif revid ~= nil then
+            local rank = GetSpellSubtext(revid)
 			AddSpell(name, rank, icon, revid)
 		else
 			needsUpdate[spellID] = true
@@ -112,11 +110,15 @@ function SpellLoader:UnregisterPredictor(frame)
 	self.predictors[frame] = nil
 end
 
-function SpellLoader:UpdateSpell(id, name, rank, icon)
+function SpellLoader:UpdateSpell(id)
 	if self.needsUpdate[id] then
-		self.needsUpdate[id] = nil
-		self.spellListReverse[lcname] = id
-		AddSpell(name, rank, icon, id, true)
+        local name, _, icon = GetSpellInfo(id)
+        if name then
+            self.needsUpdate[id] = nil
+            self.spellListReverse[string.lower(name)] = nil
+            local rank = GetSpellSubtext(id)
+            AddSpell(name, rank, icon, id, true)
+        end
     end
 end
 
@@ -145,9 +147,28 @@ function SpellLoader:GetAllSpellIds(spell)
 	return nil
 end
 
-function SpellLoader:SpellName(id)
+function SpellLoader:GetSpellId(spell, rank)
+    if type(spell) == "number" then
+        return select(7, GetSpellInfo(spell))
+    end
+
+    local lcname = string.lower(spell)
+    if rank ~= nil then
+        if self.spellListReverseRank[lcname] ~= nil then
+            return self.spellListReverseRank[lcname][rank]
+        end
+	elseif self.spellListReverse[lcname] ~= nil then
+		return self.spellListReverse[lcname]
+    else
+        return select(7, GetSpellInfo(spell))
+	end
+
+	return nil
+end
+
+function SpellLoader:SpellName(id, norank)
     if spells[id] ~= nil then
-		if spells[id].rank ~= nil then
+		if not norank and spells[id].rank ~= nil then
 			return spells[id].name .. "|cFF888888 (" .. spells[id].rank .. ")|r"
 		else
 			return spells[id].name
@@ -156,9 +177,17 @@ function SpellLoader:SpellName(id)
     return select(1, GetSpellInfo(id))
 end
 
-function SpellLoader:UpdateFromSpellBook()
+function SpellLoader:UpdateFromSpellBook(spec)
+    local specSpells = {}
+    specSpells[spec] = {}
 	for i=1, GetNumSpellTabs() do
-		local _, _, offset, numSpells = GetSpellTabInfo(i)
+		local _, _, offset, numSpells, _, offspecId = GetSpellTabInfo(i)
+        if offspecId == 0 then
+            offspecId = spec
+        elseif (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
+            specSpells[offspecId] = {}
+        end
+
 		for j=1,numSpells do
 			local name, rank, spellID = GetSpellBookItemName(j+offset, BOOKTYPE_SPELL)
         	if (i == 1 and rank ~= nil and rank ~= "") then
@@ -173,20 +202,30 @@ function SpellLoader:UpdateFromSpellBook()
 				local icon = GetSpellTexture(spellID)
 				if (not blacklist[tostring(icon)] and not IsPassiveSpell(j+offset, BOOKTYPE_SPELL) ) then
 					AddSpell(name, rank, icon, spellID, true)
+					specSpells[offspecId][spellID] = false
                 end
 			end
 		end
-		local j = 1
-        local name, rank, spellID = GetSpellBookItemName(j, BOOKTYPE_PET)
-        while spellID ~= nil do
+    end
+    local petSpells, token = HasPetSpells()
+    if petSpells ~= nil then
+		for i=1, petSpells do
+            local name, rank, spellID = GetSpellBookItemName(i, BOOKTYPE_PET)
             local icon = GetSpellTexture(spellID)
-            if (not blacklist[tostring(icon)] and not IsPassiveSpell(j+offset, BOOKTYPE_SPELL) ) then
+            if (not blacklist[tostring(icon)] and not IsPassiveSpell(i, BOOKTYPE_PET) ) then
                 AddSpell(name, rank, icon, spellID, true)
+                specSpells[token][spellID] = true
             end
-            j = j + 1
-            name, rank, spellID = GetSpellBookItemName(j, BOOKTYPE_PET)
         end
 	end
+
+    table.wipe(spellOrdered)
+    for k,v in pairs(spellsReverse) do
+        table.insert(spellOrdered, k)
+    end
+    table.sort(spellOrdered)
+
+	return specSpells
 end
 
 function SpellLoader:StartLoading()
@@ -207,13 +246,14 @@ function SpellLoader:StartLoading()
 
 		-- Load as many spells in
 		for spellID=currentIndex + 1, currentIndex + SPELLS_PER_RUN do
-			local name, rank, icon = GetSpellInfo(spellID)
-			
+			local name, _, icon = GetSpellInfo(spellID)
+
 			-- Pretty much every profession spell uses Trade_* and 99% of the random spells use the Trade_Engineering icon
 			-- we can safely blacklist any of these spells as they are not needed. Can get away with this because things like
 			-- Alchemy use two icons, the Trade_* for the actual crafted spell and a different icon for the actual buff
 			-- Passive spells have no use as well, since they are well passive and can't actually be used
 			if( name and not blacklist[tostring(icon)] and rank ~= SPELL_PASSIVE ) then
+                local rank = GetSpellSubtext(spellID)
 				SpellLoader.spellsLoaded = SpellLoader.spellsLoaded + 1
                 AddSpell(name, rank, icon, spellID)
 				totalInvalid = 0

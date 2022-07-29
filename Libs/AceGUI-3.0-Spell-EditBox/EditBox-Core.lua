@@ -113,7 +113,8 @@ do
 			if not alreadyAdded[name] and string.match(name, query) then
 				local spellIDs
 				if not norank and SpellData.spellListReverseRank[name] ~= nil then
-					spellIDs = SpellData.spellListReverseRank[name]
+					-- spellIDs = SpellData.spellListReverseRank[name]
+					spellIDs = SpellData:GetAllSpellIds(name)
 				else
 					spellIDs = { SpellData.spellListReverse[name] }
 				end
@@ -126,7 +127,7 @@ do
 						local spellInfo = SpellData.spellList[spellID]
 						if spellInfo ~= nil and spellInfo.icon ~= nil and spellInfo.name ~= nil then
 							if not norank and spellInfo.rank ~= nil then
-								button:SetFormattedText("|T%s:18:18:2:16|t %s |cFF888888(%s)", spellInfo.icon, spellInfo.name, spellInfo.rank)
+								button:SetFormattedText("|T%s:18:18:2:16|t %s|cFF888888 (%s)|r", spellInfo.icon, spellInfo.name, spellInfo.rank)
                             else
 								button:SetFormattedText("|T%s:18:18:2:16|t %s", spellInfo.icon, spellInfo.name)
 							end
@@ -296,9 +297,9 @@ do
 		local type, _, _, id = GetCursorInfo()
 
 		if( type == "spell" ) then
-			local name, rank, icon, _, _, _, spellId = GetSpellInfo(id)
-			-- Just in case ...
-        	SpellData:UpdateSpell(spellId, name, rank, icon)
+        	SpellData:UpdateSpell(spellId)
+            local norank = self.parent.obj:GetUserData("norank")
+            local name = SpellData:SpellName(self.spellID, norank)
 			self:SetText(name)
 			self:Fire("OnEnterPressed", name)
 			ClearCursor()
@@ -408,13 +409,9 @@ do
 	end
 				
 	local function Spell_OnClick(self)
-		local name, rank, icon = GetSpellInfo(self.spellID)
-		-- Just in case ...
-		SpellData:UpdateSpell(spellId, name, rank, icon)
+		SpellData:UpdateSpell(spellId)
 		local norank = self.parent.obj:GetUserData("norank")
-    	if not norank then
-			name = SpellData:SpellName(self.spellID)
-        end
+        local name = SpellData:SpellName(self.spellID, norank)
 		SetText(self.parent.obj, name, string.len(name))
 
 		self.parent.selectedButton = nil

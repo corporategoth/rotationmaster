@@ -1,5 +1,6 @@
 local _, addon = ...
 
+local SpellData = LibStub("AceGUI-3.0-SpellLoader")
 local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
 local color = color
 
@@ -59,7 +60,7 @@ addon.condition_petspell_avail = {
         local funcs = top:GetUserData("funcs")
 
         local spell_group = addon:Widget_SpellWidget(spec, "Spell_EditBox", value,
-            function(v) return select(7, GetSpellInfo(v)) end,
+            function(v) return SpellData:GetSpellId(v) end,
             function() return true end,
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(spell_group)
@@ -101,7 +102,7 @@ addon.condition_petspell_range = {
         local funcs = top:GetUserData("funcs")
 
         local spell_group = addon:Widget_SpellWidget(spec, "Spell_EditBox", value,
-            function(v) return select(7, GetSpellInfo(v)) end,
+            function(v) return SpellData:GetSpellId(v) end,
             function() return true end,
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(spell_group)
@@ -145,7 +146,7 @@ addon.condition_petspell_cooldown = {
         local funcs = top:GetUserData("funcs")
 
         local spell_group = addon:Widget_SpellWidget(spec, "Spell_EditBox", value,
-            function(v) return select(7, GetSpellInfo(v)) end,
+            function(v) return SpellData:GetSpellId(v) end,
             function() return true end,
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(spell_group)
@@ -195,7 +196,7 @@ addon.condition_petspell_remain = {
         local funcs = top:GetUserData("funcs")
 
         local spell_group = addon:Widget_SpellWidget(spec, "Spell_EditBox", value,
-            function(v) return select(7, GetSpellInfo(v)) end,
+            function(v) return SpellData:GetSpellId(v) end,
             function() return true end,
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(spell_group)
@@ -241,7 +242,7 @@ addon.condition_petspell_charges = {
         local funcs = top:GetUserData("funcs")
 
         local spell_group = addon:Widget_SpellWidget(spec, "Spell_EditBox", value,
-            function(v) return select(7, GetSpellInfo(v)) end,
+            function(v) return SpellData:GetSpellId(v) end,
             function() return true end,
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(spell_group)

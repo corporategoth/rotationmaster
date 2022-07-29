@@ -7,8 +7,8 @@ local color = color
 local operators = addon.operators
 
 -- From utils
-local compare, compareString, nullable, isin, getCached, round, isSpellOnSpec =
-    addon.compare, addon.compareString, addon.nullable, addon.isin, addon.getCached, addon.round, addon.isSpellOnSpec
+local compare, compareString, nullable, isin, getCached, round, isSpellOnSpec, getSpecSpellID =
+    addon.compare, addon.compareString, addon.nullable, addon.isin, addon.getCached, addon.round, addon.isSpellOnSpec, addon.getSpecSpellID
 
 local helpers = addon.help_funcs
 local Gap = helpers.Gap
@@ -67,7 +67,7 @@ addon.condition_spell_avail = {
         local funcs = top:GetUserData("funcs")
 
         local spell_group = addon:Widget_SpellWidget(spec, "Spec_EditBox", value,
-                                    function(v) return addon:GetSpecSpellID(spec, v) end,
+                                    function(v) return getSpecSpellID(spec, v) end,
                                     function(v) return isSpellOnSpec(spec, v) end,
                                     function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(spell_group)
@@ -109,7 +109,7 @@ addon.condition_spell_range = {
         local funcs = top:GetUserData("funcs")
 
         local spell_group = addon:Widget_SpellWidget(spec, "Spec_EditBox", value,
-            function(v) return addon:GetSpecSpellID(spec, v) end,
+            function(v) return getSpecSpellID(spec, v) end,
             function(v) return isSpellOnSpec(spec, v) end,
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(spell_group)
@@ -154,7 +154,7 @@ addon.condition_spell_cooldown = {
         local funcs = top:GetUserData("funcs")
 
         local spell_group = addon:Widget_SpellWidget(spec, "Spec_EditBox", value,
-                                    function(v) return addon:GetSpecSpellID(spec, v) end,
+                                    function(v) return getSpecSpellID(spec, v) end,
                                     function(v) return isSpellOnSpec(spec, v) end,
                                     function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(spell_group)
@@ -205,7 +205,7 @@ addon.condition_spell_remain = {
         local funcs = top:GetUserData("funcs")
 
         local spell_group = addon:Widget_SpellWidget(spec, "Spec_EditBox", value,
-            function(v) return addon:GetSpecSpellID(spec, v) end,
+            function(v) return getSpecSpellID(spec, v) end,
             function(v) return isSpellOnSpec(spec, v) end,
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(spell_group)
@@ -252,7 +252,7 @@ addon.condition_spell_charges = {
         local funcs = top:GetUserData("funcs")
 
         local spell_group = addon:Widget_SpellWidget(spec, "Spec_EditBox", value,
-            function(v) return addon:GetSpecSpellID(spec, v) end,
+            function(v) return getSpecSpellID(spec, v) end,
             function(v) return isSpellOnSpec(spec, v) end,
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(spell_group)
@@ -300,7 +300,7 @@ addon.condition_spell_history = {
         local funcs = top:GetUserData("funcs")
 
         local spell_group = addon:Widget_SpellWidget(spec, "Spec_EditBox", value,
-            function(v) return addon:GetSpecSpellID(spec, v) end,
+            function(v) return getSpecSpellID(spec, v) end,
             function(v) return isSpellOnSpec(spec, v) end,
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(spell_group)
@@ -352,7 +352,7 @@ addon.condition_spell_history_time = {
         local funcs = top:GetUserData("funcs")
 
         local spell_group = addon:Widget_SpellWidget(spec, "Spec_EditBox", value,
-            function(v) return addon:GetSpecSpellID(spec, v) end,
+            function(v) return getSpecSpellID(spec, v) end,
             function(v) return isSpellOnSpec(spec, v) end,
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(spell_group)
@@ -398,7 +398,7 @@ addon.condition_spell_active = {
         local funcs = top:GetUserData("funcs")
 
         local spell_group = addon:Widget_SpellWidget(spec, "Spec_EditBox", value,
-            function(v) return addon:GetSpecSpellID(spec, v) end,
+            function(v) return getSpecSpellID(spec, v) end,
             function(v) return isSpellOnSpec(spec, v) end,
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(spell_group)

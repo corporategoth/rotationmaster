@@ -255,6 +255,7 @@ local function getCachedInternal(cache, recordnil, func, ...)
     if (type(func) == "function") then
         result = { func(...) }
     elseif type(func) == "string" then
+
         result = { _G[func](...) }
     else
         return nil
@@ -286,14 +287,17 @@ addon.isSpellOnSpec = function(spec, spellid, ispet)
     end
     if ispet or spec == addon.currentSpec then
         return FindSpellBookSlotBySpellID(spellid, ispet) ~= nil
-    elseif addon.specSpells[spec] ~= nil then
-        for _,id in pairs(addon.specSpells[spec]) do
-            if spellid == id then
-                return true
-            end
-        end
+    elseif addon.specSpells[spec] ~= nil and addon.specSpells[spec][spellid] ~= nil then
+        return addon.specSpells[spec][spellid] == (ispet and true or false)
     end
     return false
+end
+
+addon.getSpecSpellID = function(spec, name)
+    if name ~= nil and spec ~= nil and addon.specSpellsReverse[spec] ~= nil then
+       return addon.specSpellsReverse[spec][name]
+    end
+    return nil
 end
 
 function addon:verbose(message, ...)

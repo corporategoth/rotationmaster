@@ -11,8 +11,8 @@ local color = color
 local operators, totems = addon.operators, addon.totems
 
 -- From utils
-local compare, compareString, nullable, keys, isin, getCached, isSpellOnSpec, round =
-    addon.compare, addon.compareString, addon.nullable, addon.keys, addon.isin, addon.getCached, addon.isSpellOnSpec, addon.round
+local compare, compareString, nullable, keys, isin, getCached, isSpellOnSpec, getSpecSpellID, round =
+    addon.compare, addon.compareString, addon.nullable, addon.keys, addon.isin, addon.getCached, addon.isSpellOnSpec, addon.getSpecSpellID, addon.round
 
 local helpers = addon.help_funcs
 local CreateText, Gap = helpers.CreateText, helpers.Gap
@@ -82,7 +82,7 @@ addon.condition_totem_spell = {
         local funcs = top:GetUserData("funcs")
 
         local spell_group = addon:Widget_SpellWidget(spec, "Totem_EditBox", value,
-            function(v) return addon:GetSpecSpellID(spec, v) end,
+            function(v) return getSpecSpellID(spec, v) end,
             function(v) return (isSpellOnSpec(spec, v) and string.find(GetSpellInfo(v), L["Totem"])) end,
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(spell_group)
@@ -177,7 +177,7 @@ addon.condition_totem_spell_remain = {
         local funcs = top:GetUserData("funcs")
 
         local spell_group = addon:Widget_SpellWidget(spec, "Totem_EditBox", value,
-            function(v) return addon:GetSpecSpellID(spec, v) end,
+            function(v) return getSpecSpellID(spec, v) end,
             function(v) return (isSpellOnSpec(spec, v) and string.find(GetSpellInfo(v), L["Totem"])) end,
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(spell_group)

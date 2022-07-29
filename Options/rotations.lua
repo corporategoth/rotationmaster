@@ -5,7 +5,7 @@ local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
 local AceGUI = LibStub("AceGUI-3.0")
 local SpellData = LibStub("AceGUI-3.0-SpellLoader")
 
-local isint, isSpellOnSpec = addon.isint, addon.isSpellOnSpec
+local isint, isSpellOnSpec, getSpecSpellID = addon.isint, addon.isSpellOnSpec, addon.getSpecSpellID
 local pairs, color, tonumber = pairs, color, tonumber
 
 local function spacer(width)
@@ -46,7 +46,7 @@ local function add_top_buttons(list, idx, callback, delete_cb)
         name:SetText(L["No Action"])
     elseif rot.action ~= nil then
         if rot.type == "spell" or rot.type =="pet" then
-            name:SetText(GetSpellInfo(rot.action))
+            name:SetText(SpellData:SpellName(rot.action, not rot.ranked))
         elseif rot.type == "item" then
             if type(rot.action) == "string" then
                 local itemset
@@ -426,8 +426,8 @@ local function add_action_group(specID, rotid, rot, callback, refresh, cooldown)
                 addon:RemoveCooldownGlowIfCurrent(specID, rotid, rot)
                 rot.action = v
                 action_icon:SetText(v)
-                if v then
-                    action:SetText(rot.action and (rot.ranked and SpellData:SpellName(rot.action) or GetSpellInfo(rot.action)))
+                if rot.action then
+                    action:SetText(SpellData:SpellName(rot.action, not rot.ranked))
                 else
                     action:SetText(nil)
                 end
@@ -466,7 +466,7 @@ local function add_action_group(specID, rotid, rot, callback, refresh, cooldown)
             nr_button:SetCallback("OnValueChanged", function(_, _, val)
                 rot.ranked = val
                 action:SetUserData("norank", not val)
-                action:SetText(rot.action and (rot.ranked and SpellData:SpellName(rot.action)) or GetSpellInfo(rot.action))
+                action:SetText(rot.action and SpellData:SpellName(rot.action, not rot.ranked))
                 callback()
             end)
             ranked:AddChild(nr_button)
@@ -478,7 +478,7 @@ local function add_action_group(specID, rotid, rot, callback, refresh, cooldown)
         action:SetUserData("norank", not rot.ranked)
         action:SetUserData("spec", specID)
         action:SetLabel(L["Spell"])
-        action:SetText(rot.action and (rot.ranked and SpellData:SpellName(rot.action)) or GetSpellInfo(rot.action))
+        action:SetText(rot.action and SpellData:SpellName(rot.action, not rot.ranked))
         action:SetCallback("OnEnterPressed", function(_, _, val)
             addon:RemoveCooldownGlowIfCurrent(specID, rotid, rot)
             if isint(val) then
@@ -489,7 +489,7 @@ local function add_action_group(specID, rotid, rot, callback, refresh, cooldown)
                     action:SetText(nil)
                 end
             else
-                rot.action = addon:GetSpecSpellID(specID, val)
+                rot.action = getSpecSpellID(specID, val)
                 if rot.action == nil then
                     action:SetText(nil)
                 end
@@ -510,8 +510,8 @@ local function add_action_group(specID, rotid, rot, callback, refresh, cooldown)
             v = tonumber(v)
             rot.action = v
             action_icon:SetText(v)
-            if v then
-                action:SetText(rot.action and (rot.ranked and SpellData:SpellName(rot.action) or GetSpellInfo(rot.action)))
+            if rot.action then
+                action:SetText(SpellData:SpellName(rot.action, not rot.ranked))
             else
                 action:SetText(nil)
             end
@@ -548,7 +548,7 @@ local function add_action_group(specID, rotid, rot, callback, refresh, cooldown)
             nr_button:SetCallback("OnValueChanged", function(_, _, val)
                 rot.ranked = val
                 action:SetUserData("norank", not val)
-                action:SetText(rot.action and (rot.ranked and SpellData:SpellName(rot.action) or GetSpellInfo(rot.action)))
+                action:SetText(rot.action and SpellData:SpellName(rot.action, not rot.ranked))
                 callback()
             end)
             ranked:AddChild(nr_button)
@@ -559,12 +559,12 @@ local function add_action_group(specID, rotid, rot, callback, refresh, cooldown)
         action:SetFullWidth(true)
         action:SetUserData("norank", not rot.ranked)
         action:SetLabel(L["Spell"])
-        action:SetText(rot.action and (rot.ranked and SpellData:SpellName(rot.action) or GetSpellInfo(rot.action)))
+        action:SetText(rot.action and SpellData:SpellName(rot.action, not rot.ranked))
         action:SetCallback("OnEnterPressed", function(_, _, val)
             addon:RemoveCooldownGlowIfCurrent(specID, rotid, rot)
-            local spellid = select(7, GetSpellInfo(val))
+            local spellid = SpellData:GetSpellId(val)
             rot.action = spellid
-            action:SetText(SpellData:SpellName(rot.action))
+            action:SetText(SpellData:SpellName(rot.action, not rot.ranked))
             action_icon:SetText(rot.action)
             callback()
         end)

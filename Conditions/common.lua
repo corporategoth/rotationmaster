@@ -56,7 +56,7 @@ function addon:Widget_SpellWidget(spec, editbox, value, nametoid, isvalid, updat
         if isvalid(v) then
             value.spell = v
             spellIcon:SetText(v)
-            spell:SetText(value.spell and (value.ranked and SpellData:SpellName(value.spell) or GetSpellInfo(value.spell)))
+            spell:SetText(value.spell and SpellData:SpellName(value.spell, not value.ranked))
             if GameTooltip:IsVisible() then
                 GameTooltip:SetHyperlink("spell:" .. v)
             end
@@ -103,7 +103,7 @@ function addon:Widget_SpellWidget(spec, editbox, value, nametoid, isvalid, updat
         nr_button:SetCallback("OnValueChanged", function(widget, event, val)
             value.ranked = val
             spell:SetUserData("norank", not val)
-            spell:SetText(value.spell and (value.ranked and SpellData:SpellName(value.spell) or GetSpellInfo(value.spell)))
+            spell:SetText(value.spell and SpellData:SpellName(value.spell, not value.ranked))
             update()
         end)
         nr_button:SetDisabled(value.disabled)
@@ -114,7 +114,7 @@ function addon:Widget_SpellWidget(spec, editbox, value, nametoid, isvalid, updat
 
     spell:SetFullWidth(true)
     spell:SetLabel(L["Spell"])
-    spell:SetText(value.spell and (value.ranked and SpellData:SpellName(value.spell) or GetSpellInfo(value.spell)))
+    spell:SetText(value.spell and SpellData:SpellName(value.spell, not value.ranked))
     spell:SetUserData("norank", not value.ranked)
     spell:SetUserData("spec", spec)
     spell:SetCallback("OnEnterPressed", function(widget, event, v)
@@ -148,15 +148,15 @@ function addon:Widget_SpellNameWidget(spec, editbox, value, isvalid, update)
     spellIcon:SetWidth(44)
     spellIcon:SetHeight(44)
     if value.spell then
-        spellIcon:SetText(select(7, GetSpellInfo(value.spell)) or SpellData.spellListReverse[string.lower(value.spell)])
+        spellIcon:SetText(SpellData:GetSpellId(value.spell))
     end
     spellIcon.text:Hide()
     spellIcon:SetCallback("OnEnterPressed", function(widget, event, v)
         v = tonumber(v)
         if isvalid(v) then
-            value.spell = GetSpellInfo(v)
+            value.spell = SpellLoader:GetSpellId(v)
             spellIcon:SetText(v)
-            spell:SetText(value.spell)
+            spell:SetText(SpellLoader:GetSpellName(value.spell, not value.ranked))
             if GameTooltip:IsVisible() then
                 GameTooltip:SetHyperlink("spell:" .. v)
             end
@@ -187,15 +187,11 @@ function addon:Widget_SpellNameWidget(spec, editbox, value, isvalid, update)
     spell:SetUserData("norank", not value.ranked)
     spell:SetUserData("spec", spec)
     spell:SetCallback("OnEnterPressed", function(widget, event, v)
-        local name, _, _, _, _, _, spellid = GetSpellInfo(v)
-        if spellid == nil then
-            name = v
-            spellid = SpellData.spellListReverse[string.lower(v)]
-        end
+        local spellid = SpellLoader:GetSpellId(v)
 
         if isvalid(spellid) then
-            value.spell = name
-            spell:SetText(name)
+            value.spell = spellid
+            spell:SetText(SpellLoader:GetSpellName(spellid, not value.ranked))
             spellIcon:SetText(spellid)
         else
             value.spell = nil

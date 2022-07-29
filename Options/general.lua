@@ -5,6 +5,7 @@ local module = addon:NewModule("Options", "AceConsole-3.0")
 local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
 
 local AceGUI = LibStub("AceGUI-3.0")
+local SpellData = LibStub("AceGUI-3.0-SpellLoader")
 local AceConfigDialog = LibStub("AceConfigDialog-3.0")
 local AceConfig = LibStub("AceConfig-3.0")
 local AceSerializer = LibStub("AceSerializer-3.0")
@@ -759,9 +760,9 @@ local function create_rotation_options(frame, specID, rotid, parent, selected)
                 else
                     if rot.action ~= nil then
                         if rot.type == "spell" or rot.type == "pet" then
-			    local spell = GetSpellInfo(rot.action)
+			    local spell = SpellData:SpellName(rot.action, not rot.ranked)
 			    if spell then
-				name = name .. " - " .. select(1, GetSpellInfo(rot.action))
+                    name = name .. " - " .. spell
 			    end
                         elseif rot.type == "item" then
                             if type(rot.action) == "string" then
