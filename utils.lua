@@ -224,6 +224,20 @@ addon.deepcopy = function(array, except, invert)
     return rv
 end
 
+addon.compareArray = function(lhs, rhs)
+    for k,v in pairs(lhs) do
+        if rhs[k] ~= v then
+            return false
+        end
+    end
+    for k,v in pairs(rhs) do
+        if lhs[k] ~= v then
+            return false
+        end
+    end
+    return true
+end
+
 local cacheHits = 0
 local cacheMisses = 0
 

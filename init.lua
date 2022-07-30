@@ -1,6 +1,6 @@
 local _, addon = ...
 
-local multiinsert, tablelength = addon.multiinsert, addon.tablelength
+local multiinsert, tablelength, deepcopy = addon.multiinsert, addon.tablelength, addon.deepcopy
 
 local combination_food = {}
 local conjured_food = { 22895, 8076, 8075, 1487, 1114, 1113, 5349, }
@@ -42,7 +42,15 @@ else
         })
     end
     if (LE_EXPANSION_LEVEL_CURRENT >= 2) then
-
+        multiinsert(combination_food, { 43523, 43518 })
+        multiinsert(mana_potions, { 33448, 40067, 31677, 43570 })
+        multiinsert(healing_potions, { 33447, 39671, 43569 })
+        multiinsert(bandages, { 38640, 34722, 38643, 34721 })
+        multiinsert(purchased_water, { 42777 })
+        multiinsert(healthstones, {
+            "Fel Healthstone",
+            "Demonic Healthstone",
+        })
     end
 end
 
@@ -137,16 +145,17 @@ local function upgradeGlobalRotationstoPlayer()
                 end
             end
         end
-    elseif (LE_EXPANSION_LEVEL_CURRENT >= 2) then
-        -- Upgrade from TBC -> Wrath
-        if addon.db.char.rotations ~= nil and addon.db.char.rotations[0] ~= nil then
-            addon.db.char.rotations[1] = addon.db.char.rotations[0]
-            addon.db.char.rotations[0] = nil
-        end
     else
         if addon.db.profile.rotations ~= nil and addon.db.profile.rotations[0] ~= nil then
             addon.db.char.rotations[0] = addon.db.profile.rotations[0]
             addon.db.profile.rotations[0] = nil
+        end
+
+        -- Upgrade from TBC -> Wrath
+        if (LE_EXPANSION_LEVEL_CURRENT >= 2) and
+            addon.db.char.rotations ~= nil and addon.db.char.rotations[0] ~= nil then
+            addon.db.char.rotations[1] = addon.db.char.rotations[0]
+            addon.db.char.rotations[0] = nil
         end
     end
 end
@@ -257,12 +266,24 @@ local function upgradeEffectsToGUID()
     end
 end
 
+function addon:getDefaultItemset(id)
+    if default_itemsets[id] ~= nil then
+        return default_itemsets[id].items
+    end
+end
+
 function addon:init()
     if tablelength(addon.db.global.itemsets) == 0 then
-        addon.db.global.itemsets = default_itemsets
+        addon.db.global.itemsets = deepcopy(default_itemsets)
+    else
+        for k,v in pairs(default_itemsets) do
+            if addon.db.global.itemsets[k] ~= nil and not addon.db.global.itemsets[k].modified then
+                addon.db.global.itemsets[k].items = deepcopy(v.items)
+            end
+        end
     end
     if tablelength(addon.db.global.effects) == 0 then
-        addon.db.global.effects = default_effects
+        addon.db.global.effects = deepcopy(default_effects)
     end
 
     upgradeTexturesToEffects()
@@ -272,3 +293,4 @@ function addon:init()
     upgradeLogLevel()
     upgradeEffectsToGUID()
 end
+

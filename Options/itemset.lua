@@ -8,8 +8,8 @@ local CreateFrame, UIParent = CreateFrame, UIParent
 
 local pairs, color, tonumber = pairs, color, tonumber
 local units = addon.units
-local HideOnEscape, cleanArray, getCached, getRetryCached, isint =
-    addon.HideOnEscape, addon.cleanArray, addon.getCached, addon.getRetryCached, addon.isint
+local HideOnEscape, cleanArray, getCached, getRetryCached, isint, deepcopy, compareArray =
+    addon.HideOnEscape, addon.cleanArray, addon.getCached, addon.getRetryCached, addon.isint, addon.deepcopy, addon.compareArray
 
 local function spacer(width)
     local rv = AceGUI:Create("Label")
@@ -630,7 +630,7 @@ local function item_list(frame, selected, editbox, itemset, isvalid, update)
     local delete = AceGUI:Create("Button")
     local importexport = AceGUI:Create("Button")
     local bind = AceGUI:Create("Button")
-    local bound = AceGUI:Create("Label")
+    local reset = AceGUI:Create("Button")
     local scrollwin = AceGUI:Create("ScrollFrame")
 
     group:SetUserData("selected", selected)
@@ -639,10 +639,8 @@ local function item_list(frame, selected, editbox, itemset, isvalid, update)
         if id == sel then
             if bindings[sel] ~= nil then
                 bind:SetText(L["Unbind"])
-                bound:SetText(bindings[sel])
             else
                 bind:SetText(L["Bind"])
-                bound:SetText(nil)
             end
         end
         if bindings[sel] ~= nil then
@@ -684,6 +682,18 @@ local function item_list(frame, selected, editbox, itemset, isvalid, update)
     end
     update_itemid()
 
+    local function list_update()
+        update_itemid()
+        local defset = addon:getDefaultItemset(selected)
+        if defset ~= nil then
+            itemset.modified = not compareArray(defset, itemset.items)
+            reset:SetDisabled(not itemset.modified)
+        else
+            itemset.modified = true
+        end
+        update()
+    end
+
     icon:SetImageSize(36, 36)
     icon:SetCallback("OnEnter", function()
         if itemid then
@@ -713,7 +723,7 @@ local function item_list(frame, selected, editbox, itemset, isvalid, update)
             end
             delete:SetDisabled(false)
             importexport:SetDisabled(false)
-            create_item_list(scrollwin, editbox, itemset.items, isvalid, update)
+            create_item_list(scrollwin, editbox, itemset.items, isvalid, list_update)
         else
             itemset.name = v
         end
@@ -764,7 +774,6 @@ local function item_list(frame, selected, editbox, itemset, isvalid, update)
             ClearCursor()
             bindings[selected] = nil
             bind:SetText(L["Bind"])
-            bound:SetText(nil)
         else
             addon.bindingItemSet = selected
             PickupItem(itemid)
@@ -772,7 +781,17 @@ local function item_list(frame, selected, editbox, itemset, isvalid, update)
     end)
     buttongroup:AddChild(bind)
 
-    buttongroup:AddChild(bound)
+    reset:SetText(RESET)
+    reset:SetDisabled(addon:getDefaultItemset(selected) == nil or not itemset.modified)
+    reset:SetWidth(125)
+    reset:SetCallback("OnClick", function()
+        itemset.items = deepcopy(addon:getDefaultItemset(selected))
+        itemset.modified = nil
+        reset:SetDisabled(true)
+        create_item_list(scrollwin, editbox, itemset.items, isvalid, list_update)
+        update_itemid()
+    end)
+    buttongroup:AddChild(reset)
 
     delete:SetText(DELETE)
     delete:SetDisabled(itemset == nil)
@@ -792,8 +811,10 @@ local function item_list(frame, selected, editbox, itemset, isvalid, update)
     importexport:SetText(L["Import/Export"])
     importexport:SetDisabled(itemset == nil)
     importexport:SetCallback("OnClick", function()
+        local before = deepcopy(itemset.items)
         ImportExport(itemset.items, function()
-            create_item_list(scrollwin, editbox, itemset and itemset.items or nil, isvalid, update_itemid)
+            create_item_list(scrollwin, editbox, itemset and itemset.items or nil, isvalid, list_update)
+            list_update()
         end)
     end)
     buttongroup:AddChild(importexport)
@@ -807,10 +828,7 @@ local function item_list(frame, selected, editbox, itemset, isvalid, update)
     scrollwin:SetLayout("Table")
     scrollwin:SetUserData("table", { columns = { 44, 1, 24, 24, 24, 24, 24 } })
     frame:AddChild(scrollwin)
-    create_item_list(scrollwin, editbox, itemset and itemset.items or nil, isvalid, function()
-        update_itemid()
-        update()
-    end)
+    create_item_list(scrollwin, editbox, itemset and itemset.items or nil, isvalid, list_update)
 
     local help = AceGUI:Create("Help")
     help:SetLayout(addon.layout_itemsets_options_help)
