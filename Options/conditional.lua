@@ -366,7 +366,7 @@ local function ChangeConditionType(parent, _, ...)
     frame:SetHeight((groups and 90 or 46) + min(rows * 70, DEFAULT_ROWS * 70))
     frame:SetCallback("OnClose", function(widget)
         if selectedIcon then
-            addon:StopCustomGlow(selectedIcon.frame)
+            addon:HideGlow(selectedIcon.frame)
             --ActionButton_HideOverlayGlow(selectedIcon.frame)
         end
         AceGUI:Release(widget)
@@ -407,8 +407,7 @@ local function ChangeConditionType(parent, _, ...)
             group:ReleaseChildren()
             group:PauseLayout()
             if selectedIcon then
-                addon:StopCustomGlow(selectedIcon.frame)
-                --ActionButton_HideOverlayGlow(selectedIcon.frame)
+                addon:HideGlow(selectedIcon.frame)
             end
 
             local scrollwin = AceGUI:Create("ScrollFrame")

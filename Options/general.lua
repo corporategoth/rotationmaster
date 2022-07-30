@@ -1,7 +1,5 @@
 local _, addon = ...
 
-local module = addon:NewModule("Options", "AceConsole-3.0")
-
 local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
 
 local AceGUI = LibStub("AceGUI-3.0")
@@ -1037,70 +1035,65 @@ create_class_options = function (frame, classID)
     frame:DoLayout()
 end
 
-function module:OnInitialize()
-    self.db = addon.db
+function addon:SetupOptions()
+    self.optionsFrames = {}
 
-    AceConfig:RegisterOptionsTable(addon.name .. "Profiles", AceDBOptions:GetOptionsTable(self.db))
+    self.optionsFrames.General = AceGUI:Create("BlizOptionsGroup")
+    self.optionsFrames.General:SetName(addon.pretty_name)
+    self.optionsFrames.General:SetUserData("appName", addon.name)
+    self.optionsFrames.General:SetLayout("Fill")
+    self.optionsFrames.General:SetTitle(addon.pretty_name)
+    create_primary_options(self.optionsFrames.General)
+    InterfaceOptions_AddCategory(self.optionsFrames.General.frame)
 
-    local about = AboutPanel:AboutOptionsTable(addon.name)
-    about.order = -1
-    AceConfig:RegisterOptionsTable(addon.name .. "About", about)
-
-    self:SetupOptions()
-end
-
-function module:SetupOptions()
-    if self.didSetup then
-        return
-    end
-    self.didSetup = true
-
-    self.optionsFrame = AceGUI:Create("BlizOptionsGroup")
-    self.optionsFrame:SetName(addon.pretty_name)
-    self.optionsFrame:SetLayout("Fill")
-    self.optionsFrame:SetTitle(addon.pretty_name)
-    create_primary_options(self.optionsFrame)
-    InterfaceOptions_AddCategory(self.optionsFrame.frame)
-
-    local effects = AceGUI:Create("BlizOptionsGroup")
-    effects:SetName(L["Effects"], addon.pretty_name)
-    effects:SetLayout("Fill")
-    effects:SetTitle(addon.pretty_name .. " - " .. L["Effects"])
-    addon:create_effect_list(effects)
-    InterfaceOptions_AddCategory(effects.frame)
-
-    local itemsets = AceGUI:Create("BlizOptionsGroup")
-    itemsets:SetName(L["Item Sets"], addon.pretty_name)
-    itemsets:SetLayout("Fill")
-    -- itemsets:SetTitle(addon.pretty_name .. " - " .. L["Item Sets"])
-    addon:create_itemset_list(itemsets)
-    InterfaceOptions_AddCategory(itemsets.frame)
-
-    local rotation = AceGUI:Create("BlizOptionsGroup")
-    rotation:SetName(L["Rotations"], addon.pretty_name)
-    rotation:SetLayout("Fill")
+    self.optionsFrames.Rotation = AceGUI:Create("BlizOptionsGroup")
+    self.optionsFrames.Rotation:SetName(L["Rotations"], self.optionsFrames.General.frame.name)
+    self.optionsFrames.Rotation:SetUserData("appName", addon.name .. "Rotations")
+    self.optionsFrames.Rotation:SetLayout("Fill")
     local localized, _, classID = UnitClass("player")
-    rotation:SetTitle(addon.pretty_name .. " - " .. localized)
-    create_class_options(rotation, classID)
-    InterfaceOptions_AddCategory(rotation.frame)
-    addon.Rotation = rotation
+    self.optionsFrames.Rotation:SetTitle(addon.pretty_name .. " - " .. localized)
+    create_class_options(self.optionsFrames.Rotation, classID)
+    InterfaceOptions_AddCategory(self.optionsFrames.Rotation.frame)
 
-    local announces = AceGUI:Create("BlizOptionsGroup")
-    announces:SetName(L["Announces"], addon.pretty_name)
-    announces:SetLayout("Fill")
-    announces:SetTitle(addon.pretty_name .. " - " .. L["Announces"])
-    addon:create_announce_list(announces)
-    InterfaceOptions_AddCategory(announces.frame)
+    self.optionsFrames.Effects = AceGUI:Create("BlizOptionsGroup")
+    self.optionsFrames.Effects:SetName(L["Effects"], self.optionsFrames.General.frame.name)
+    self.optionsFrames.Effects:SetUserData("appName", addon.name .. "Effects")
+    self.optionsFrames.Effects:SetLayout("Fill")
+    self.optionsFrames.Effects:SetTitle(addon.pretty_name .. " - " .. L["Effects"])
+    addon:create_effect_list(self.optionsFrames.Effects)
+    InterfaceOptions_AddCategory(self.optionsFrames.Effects.frame)
 
+    self.optionsFrames.ItemSets = AceGUI:Create("BlizOptionsGroup")
+    self.optionsFrames.ItemSets:SetName(L["Item Sets"], self.optionsFrames.General.frame.name)
+    self.optionsFrames.ItemSets:SetUserData("appName", addon.name .. "ItemSets")
+    self.optionsFrames.ItemSets:SetLayout("Fill")
+    -- self.optionsFrames.ItemSets:SetTitle(addon.pretty_name .. " - " .. L["Item Sets"])
+    addon:create_itemset_list(self.optionsFrames.ItemSets)
+    InterfaceOptions_AddCategory(self.optionsFrames.ItemSets.frame)
+
+    self.optionsFrames.Announces = AceGUI:Create("BlizOptionsGroup")
+    self.optionsFrames.Announces:SetName(L["Announces"], self.optionsFrames.General.frame.name)
+    self.optionsFrames.Announces:SetUserData("appName", addon.name .. "Announces")
+    self.optionsFrames.Announces:SetLayout("Fill")
+    self.optionsFrames.Announces:SetTitle(addon.pretty_name .. " - " .. L["Announces"])
+    addon:create_announce_list(self.optionsFrames.Announces)
+    InterfaceOptions_AddCategory(self.optionsFrames.Announces.frame)
+
+    self.optionsFrames.module = {}
     for _, m in addon:IterateModules() do
         local f = m["SetupOptions"]
         if f then
             f(m, function(appName, name)
-                AceConfigDialog:AddToBlizOptions(appName, name, addon.pretty_name)
+                self.optionsFrames.module[name] = AceConfigDialog:AddToBlizOptions(appName, name, self.optionsFrames.General.frame.name)
             end)
         end
     end
 
-    self.Profile = AceConfigDialog:AddToBlizOptions(addon.name .. "Profiles", L["Profiles"], addon.pretty_name)
-    self.About = AceConfigDialog:AddToBlizOptions(addon.name .. "About", L["About"], addon.pretty_name)
+    AceConfig:RegisterOptionsTable(addon.name .. "Profiles", AceDBOptions:GetOptionsTable(self.db))
+    self.optionsFrames.Profiles = AceConfigDialog:AddToBlizOptions(addon.name .. "Profiles", L["Profiles"], self.optionsFrames.General.frame.name)
+
+    local about = AboutPanel:AboutOptionsTable(addon.name)
+    about.order = -1
+    AceConfig:RegisterOptionsTable(addon.name .. "About", about)
+    self.optionsFrames.About = AceConfigDialog:AddToBlizOptions(addon.name .. "About", L["About"], self.optionsFrames.General.frame.name)
 end

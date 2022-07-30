@@ -77,7 +77,7 @@ function addon:HideGlow(frame, id)
 	CustomGlow.PixelGlow_Stop(frame, id)
 	CustomGlow.AutoCastGlow_Stop(frame, id)
 	CustomGlow.ButtonGlow_Stop(frame)
-	if frame.rmOverlays and frame.rmOverlays[id] then
+	if id ~= nil and frame.rmOverlays and frame.rmOverlays[id] then
 		StopOverlay(frame.rmOverlays[id])
 		frame.rmOverlays[id]:Hide()
 	end

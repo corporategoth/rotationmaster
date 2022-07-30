@@ -166,8 +166,8 @@ function addon:HandleCommand(str)
         addon:print(L["                          This is reset upon switching specializations."])
 
     elseif cmd == "config" then
-        InterfaceOptionsFrame_OpenToCategory(addon.Rotation.frame)
-        InterfaceOptionsFrame_OpenToCategory(addon.Rotation.frame)
+        InterfaceOptionsFrame_OpenToCategory(self.optionsFrames.Rotation.frame)
+        InterfaceOptionsFrame_OpenToCategory(self.optionsFrames.Rotation.frame)
 
     elseif cmd == "disable" then
         addon:disable()
@@ -242,13 +242,14 @@ function addon:OnInitialize()
     self:init()
 
     AceConsole:RegisterChatCommand("rm", function(str)
-    addon:HandleCommand(str)
+        addon:HandleCommand(str)
     end)
     AceConsole:RegisterChatCommand("rotationmaster", function(str)
-    addon:HandleCommand(str)
+        addon:HandleCommand(str)
     end)
+
     if type(self.db.profile.minimap) == "boolean" then
-    self.db.profile.minimap = nil
+        self.db.profile.minimap = nil
     end
     DBIcon:Register(addon.name, DataBroker, self.db.profile.minimap)
     DataBroker.text = color.RED .. OFF
@@ -310,6 +311,8 @@ function addon:OnInitialize()
     -- This is here because of order of loading.
     getCached = addon.getCached
     getRetryCached = addon.getRetryCached
+
+    self:SetupOptions()
 end
 
 function addon:GetRotationName(id)
@@ -396,8 +399,8 @@ function DataBroker.OnClick(_, button)
         UIDropDownMenu_Initialize(dropdownFrame, minimapInitialize)
         ToggleDropDownMenu(1, nil, dropdownFrame, "cursor", 5, -10)
     elseif button == "LeftButton" then
-        InterfaceOptionsFrame_OpenToCategory(addon.Rotation.frame)
-        InterfaceOptionsFrame_OpenToCategory(addon.Rotation.frame)
+        InterfaceOptionsFrame_OpenToCategory(addon.optionsFrames.Rotation.frame)
+        InterfaceOptionsFrame_OpenToCategory(addon.optionsFrames.Rotation.frame)
     end
 end
 
