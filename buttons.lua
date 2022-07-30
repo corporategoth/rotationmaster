@@ -13,7 +13,6 @@ local Spells = {}
 local Flags = {}
 local SpellsGlowing = {}
 local FramePool = {}
-local Frames = {}
 
 local HighlightOverlay = {
 	type = "dazzle",
@@ -52,12 +51,6 @@ function addon:ApplyCustomGlow(effect, frame, id, color, xoffs, yoffs)
 	end
 end
 
-function addon:StopCustomGlow(frame, id)
-	CustomGlow.PixelGlow_Stop(frame, id)
-	CustomGlow.AutoCastGlow_Stop(frame, id)
-	CustomGlow.ButtonGlow_Stop(frame)
-end
-
 local function UpdateOverlayRaw(frame, effect, color, mags, setp, xoffs, yoffs, angle)
 	frame:ClearAllPoints()
 	frame:SetPoint("CENTER", frame:GetParent(), setp, xoffs, yoffs)
@@ -78,6 +71,16 @@ local function StopOverlay(frame)
 		frame.sequenceTimer = nil
 	end
 	frame.sequenceIdx = nil
+end
+
+function addon:HideGlow(frame, id)
+	CustomGlow.PixelGlow_Stop(frame, id)
+	CustomGlow.AutoCastGlow_Stop(frame, id)
+	CustomGlow.ButtonGlow_Stop(frame)
+	if frame.rmOverlays and frame.rmOverlays[id] then
+		StopOverlay(frame.rmOverlays[id])
+		frame.rmOverlays[id]:Hide()
+	end
 end
 
 local function UpdateOverlay(frame, effect, color, mags, setp, xoffs, yoffs, angle)
@@ -120,7 +123,7 @@ local function UpdateOverlay(frame, effect, color, mags, setp, xoffs, yoffs, ang
             StopOverlay(frame)
 			return false
 		end
-        if not frame.sequenceTimer then
+		if not frame.sequenceTimer then
 			frame.sequenceTimer = addon:ScheduleRepeatingTimer(UpdateOverlay, effect.frequency or 0.25,
 				frame, effect, color, mags, setp, xoffs, yoffs, angle)
 		end
@@ -135,10 +138,11 @@ end
 local function CreateOverlay(parent, id)
 	local frame = tremove(FramePool)
 	if not frame then
-		frame = CreateFrame('Frame', 'RotationMaster_Overlay_' .. id, parent)
+		frame = CreateFrame('Frame', 'RotationMaster_Overlay_' .. addon.uuid(), parent)
+	else
+		frame:SetParent(parent)
 	end
 
-	frame:SetParent(parent)
 	frame:SetFrameStrata('HIGH')
 
 	local t = frame.texture
@@ -149,46 +153,48 @@ local function CreateOverlay(parent, id)
 	end
 
 	t:SetAllPoints(frame)
-
-	tinsert(Frames, frame)
 	return frame
 end
 
-function addon:DestroyAllOverlays()
-	for _, frame in pairs(Frames) do
-        if frame:GetParent().rmOverlays then
-            for _, overlay in pairs(frame:GetParent().rmOverlays) do
-                StopOverlay(overlay)
-            end
-			frame:GetParent().rmOverlays = nil
-		end
-		frame:ClearAllPoints()
-		frame:Hide()
-		frame:SetParent(UIParent)
-		frame.width = nil
-		frame.height = nil
+local function DestroyOverlay(frame, id)
+	StopOverlay(frame)
+	if frame:GetParent().rmOverlays ~= nil and frame:GetParent().rmOverlays[id] then
+		frame:GetParent().rmOverlays[id] = nil
 	end
+	frame:ClearAllPoints()
+	frame:Hide()
+	frame:SetParent(UIParent)
+	frame.width = nil
+	frame.height = nil
 
-    for key, frame in pairs(Frames) do
-        tinsert(FramePool, frame)
-        Frames[key] = nil
-   end
+	tinsert(FramePool, frame)
 end
 
-function addon:DestroyAllCustomGlows()
+local function DestroyAllOverlay(parent)
+	if parent.rmOverlays ~= nil then
+		for id,frame in pairs(parent.rmOverlays) do
+			DestroyOverlay(frame, id)
+		end
+		parent.rmOverlays = nil
+	end
+end
+
+function addon:DestroyAllGlows()
 	-- Clear custom glows on fetch.
 	for spellid,v in pairs(Flags) do
 		if v then
-			for _, button in pairs(Spells[spellid]) do
-				self:StopCustomGlow(button, spellid)
+			for id, button in pairs(Spells[spellid]) do
+				self:HideGlow(button, spellid)
+				DestroyAllOverlay(button)
 			end
 		end
 	end
 
 	for spellid,v in pairs(SpellsGlowing) do
 		if v then
-			for _, button in pairs(Spells[spellid]) do
-				self:StopCustomGlow(button, "next")
+			for id, button in pairs(Spells[spellid]) do
+				self:HideGlow(button, "next")
+				DestroyAllOverlay(button)
 			end
 		end
 	end
@@ -239,11 +245,7 @@ function addon:Glow(button, id, effect, color, mags, setp, xoffs, yoffs, angle)
 	end
 
 	local type = effect.type
-	addon:StopCustomGlow(button, id)
-	if button.rmOverlays and button.rmOverlays[id] then
-		StopOverlay(button.rmOverlays[id])
-		button.rmOverlays[id]:Hide()
-	end
+	addon:HideGlow(button, id)
 	if addon.index(addon.textured_types, type) then
 		if not button.rmOverlays then
 			button.rmOverlays = {}
@@ -258,14 +260,6 @@ function addon:Glow(button, id, effect, color, mags, setp, xoffs, yoffs, angle)
 	else
 		addon:ApplyCustomGlow(effect, button, id, color, xoffs, yoffs)
 	end
-end
-
-function addon:HideGlow(button, id)
-	if button.rmOverlays and button.rmOverlays[id] then
-		StopOverlay(button.rmOverlays[id])
-		button.rmOverlays[id]:Hide()
-	end
-    addon:StopCustomGlow(button, id)
 end
 
 local function AddButton(spellId, button)
@@ -529,8 +523,7 @@ function addon:Fetch()
 	self.Spell = nil
 
 	self:GlowClear()
-	self:DestroyAllOverlays()
-	self:DestroyAllCustomGlows()
+	self:DestroyAllGlows()
 
 	Spells = {}
 	Flags = {}

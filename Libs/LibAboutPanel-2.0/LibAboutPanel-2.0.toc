@@ -4,7 +4,7 @@
 ## Notes-zhCN: 添加插件 ToC 表格到选项栏
 ## Notes-zhTW: 將插件 ToC 檔裡頭的欄位資料填到插件的選項表裡
 ## Notes-ruRU: Добавляет поля ToC файла в таблицу опций аддона
-## Version: 1.0.34
+## Version: 1.0.35
 
 ## X-Curse-Project-ID: 102269
 ## X-WoWI-ID: 25392

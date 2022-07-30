@@ -645,7 +645,7 @@ function addon:DisableRotation()
 
     self:DisableRotationTimer()
     self:RemoveAllCurrentGlows()
-    self:DestroyAllOverlays()
+    self:DestroyAllGlows()
     self.currentRotation = nil
     DataBroker.text = color.RED .. OFF
     AceEvent:SendMessage("ROTATIONMASTER_ROTATION", nil)
@@ -756,12 +756,6 @@ function addon:EvaluateNextAction()
         local cache = {}
         if not self.inCombat then
             self.combatCache = cache
-        end
-
-        local newForm = getCached(cache, GetShapeshiftForm)
-        if self.currentForm ~= newForm then
-            self.skipAnnounce = true
-            self.currentForm = newForm
         end
 
         self.evaluationProfile:child("environment"):start()
@@ -1069,7 +1063,7 @@ function addon:UpdateSkills()
         end
         self.currentSpec = spec
         if self.specTab then
-            self.specTab:SelectTab(spec)
+            --self.specTab:SelectTab(spec)
         end
     end
 
@@ -1165,15 +1159,20 @@ end
 addon.PLAYER_FOCUS_CHANGED = addon.SwitchRotation
 addon.PARTY_MEMBERS_CHANGED = addon.SwitchRotation
 addon.PLAYER_FLAGS_CHANGED = addon.SwitchRotation
-addon.UPDATE_SHAPESHIFT_FORM = function()
-    -- We need the delay because multiple shapeshift events come in at once
-    -- and there is no way to know which will be the final one.
-    if addon.shapeshiftTimer == nil then
-        addon.shapeshiftTimer = addon:ScheduleTimer(function ()
-            addon.shapeshiftTimer = nil
-            addon:SwitchRotation()
-        end, 0.25)
-        addon:ButtonFetch()
+addon.UPDATE_SHAPESHIFT_FORM = function(var)
+    local newForm = GetShapeshiftForm()
+    if addon.currentForm ~= newForm then
+        addon.currentForm = newForm
+        -- addon.skipAnnounce = true
+        -- We need the delay because multiple shapeshift events come in at once
+        -- and there is no way to know which will be the final one.
+        if addon.shapeshiftTimer == nil then
+            addon.shapeshiftTimer = addon:ScheduleTimer(function ()
+                addon.shapeshiftTimer = nil
+                addon:SwitchRotation()
+            end, 0.25)
+            addon:ButtonFetch()
+        end
     end
 end
 addon.UPDATE_STEALTH = addon.SwitchRotation

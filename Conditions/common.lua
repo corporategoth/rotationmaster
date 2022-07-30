@@ -195,8 +195,8 @@ function addon:Widget_SpellNameWidget(spec, editbox, value, isvalid, update)
     spell:SetUserData("norank", not value.ranked)
     spell:SetUserData("spec", spec)
     spell:SetCallback("OnEnterPressed", function(widget, event, v)
-        local spellid = SpellLoader:GetSpellId(v)
-        local name = SpellLoader:SpellName(spellid, true)
+        local spellid = SpellData:GetSpellId(v)
+        local name = SpellData:SpellName(spellid, true)
 
         if isvalid(spellid) then
             value.spell = name
