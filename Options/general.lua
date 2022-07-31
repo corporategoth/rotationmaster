@@ -994,16 +994,14 @@ create_class_options = function (frame, classID)
         addon.specTab = tabs
 
         local spec_tabs = {}
-        table.insert(spec_tabs, {
-            value = tostring(1),
-            text = addon.db.char.specs[1]
-        })
-        table.insert(spec_tabs, {
-            value = tostring(2),
-            text = addon.db.char.specs[2]
-        })
+        for i=1,GetNumTalentGroups() do
+            table.insert(spec_tabs, {
+                value = tostring(i),
+                text = addon.db.char.specs[i] or tostring(i)
+            })
+        end
         if currentSpec == nil then
-            currentSpec = GetSpecialization()
+            currentSpec = addon:GetSpecialization()
         end
 
         tabs:SetTabs(spec_tabs)

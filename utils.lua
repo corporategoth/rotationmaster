@@ -541,6 +541,16 @@ function addon:configure_frame(obj)
     end
 end
 
+function addon:GetSpecialization()
+    if WOW_PROJECT_ID == WOW_PROJECT_MAINLINE then
+        return GetSpecialization()
+    elseif LE_EXPANSION_LEVEL_CURRENT >= 2 then
+        return GetActiveTalentGroup()
+    else
+        return 0
+    end
+end
+
 function addon:UpdateItem_ID_ID(item, text, icon, attempt)
     if not item then
         if text then

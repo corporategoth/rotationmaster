@@ -141,7 +141,8 @@ local mainline_events = {
 }
 
 local wrath_events = {
-
+    'PLAYER_TALENT_UPDATE',
+    -- 'ACTIVE_TALENT_GROUP_CHANGED', # Implied by the above
 }
 
 local tbc_events = {
@@ -428,7 +429,7 @@ function addon:enable()
         self:RegisterEvent(v)
     end
     if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
-        self.currentSpec = GetSpecializationInfo(GetSpecialization())
+        self.currentSpec = GetSpecializationInfo(addon:GetSpecialization())
         if self.specTab then
             self.specTab:SelectTab(self.currentSpec)
         end
@@ -436,7 +437,7 @@ function addon:enable()
             self:RegisterEvent(v)
         end
     elseif (LE_EXPANSION_LEVEL_CURRENT == 2) then
-        self.currentSpec = GetSpecialization()
+        self.currentSpec = addon:GetSpecialization()
         for _, v in pairs(wrath_events) do
             self:RegisterEvent(v)
         end
@@ -464,7 +465,7 @@ function addon:enable()
         end
     end)
 
-    self:UpdateSkills()
+    self:UpdateSkill()
     self:EnableRotation()
 end
 
@@ -1048,10 +1049,10 @@ function addon:RemoveAllCurrentGlows()
     end
 end
 
-function addon:UpdateSkills()
+function addon:UpdateSkill()
     addon:verbose("Skill update triggered")
     if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
-        local spec = GetSpecializationInfo(GetSpecialization())
+        local spec = GetSpecializationInfo(addon:GetSpecialization())
         if spec == nil then
             return
         end
@@ -1060,13 +1061,13 @@ function addon:UpdateSkills()
             self.specTab:SelectTab(spec)
         end
     elseif (LE_EXPANSION_LEVEL_CURRENT >= 2) then
-        local spec = GetSpecialization()
+        local spec = addon:GetSpecialization()
         if spec == nil then
             return
         end
         self.currentSpec = spec
         if self.specTab then
-            --self.specTab:SelectTab(spec)
+            self.specTab:SelectTab(tostring(spec))
         end
     end
 
@@ -1285,12 +1286,12 @@ function addon:PLAYER_CONTROL_LOST()
     self:RemoveAllCurrentGlows()
 end
 
-addon.PLAYER_TALENT_UPDATE = addon.UpdateSkills
-addon.ACTIVE_TALENT_GROUP_CHANGED = addon.UpdateSkills
-addon.SPELLS_CHANGED = addon.UpdateSkills
-addon.CHARACTER_POINTS_CHANGED = addon.UpdateSkills
-addon.PLAYER_SPECIALIZATION_CHANGED = addon.UpdateSkills
-addon.LEARNED_SPELL_IN_TAB = addon.UpdateSkills
+addon.PLAYER_TALENT_UPDATE = addon.UpdateSkill
+addon.ACTIVE_TALENT_GROUP_CHANGED = addon.UpdateSkill
+addon.SPELLS_CHANGED = addon.UpdateSkill
+addon.CHARACTER_POINTS_CHANGED = addon.UpdateSkill
+addon.PLAYER_SPECIALIZATION_CHANGED = addon.UpdateSkill
+addon.LEARNED_SPELL_IN_TAB = addon.UpdateSkill
 
 function addon:ZONE_CHANGED()
     addon:verbose("Player switched zones.")
@@ -1309,7 +1310,7 @@ function addon:PLAYER_ENTERING_WORLD()
 
     addon:verbose("Player entered world.")
     self:UpdateButtonGlow()
-    self:UpdateSkills()
+    self:UpdateSkill()
     self:UpdateBagContents()
 
     for id, _ in pairs(bindings) do
