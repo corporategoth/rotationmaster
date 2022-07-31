@@ -1034,6 +1034,11 @@ create_class_options = function (frame, classID)
 end
 
 function addon:SetupOptions()
+    if self.optionsConfigured then
+        return
+    end
+    self.optionsConfigured = true
+
     self.optionsFrames = {}
 
     self.optionsFrames.General = AceGUI:Create("BlizOptionsGroup")

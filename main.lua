@@ -313,7 +313,7 @@ function addon:OnInitialize()
     getCached = addon.getCached
     getRetryCached = addon.getRetryCached
 
-    self:SetupOptions()
+    --self:SetupOptions()
 end
 
 function addon:GetRotationName(id)
@@ -1309,6 +1309,7 @@ function addon:PLAYER_ENTERING_WORLD()
     local bindings = self.db.char.bindings
 
     addon:verbose("Player entered world.")
+    self:SetupOptions()
     self:UpdateButtonGlow()
     self:UpdateSkill()
     self:UpdateBagContents()
