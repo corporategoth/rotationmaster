@@ -1,6 +1,6 @@
 ## Interface: 20504
 ## Title: Rotation Master
-## Version: 1.4.0-beta3
+## Version: 1.4.0-beta4
 ## Author: Makiel
 ## Notes: I wanted to save the world, but God wouldn't give me the source code.
 ## X-Email: prez@neuromancy.net
