@@ -373,6 +373,7 @@ L["<quantity>"] = true
 L["<school>"] = true
 L["<operation>"] = true
 
+L["Your talent is a %s role"] = true
 L["%s is in a %s role"] = true
 L["%s is a %s"] = true
 L["%s are a %s"] = true

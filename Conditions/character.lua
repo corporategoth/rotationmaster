@@ -179,61 +179,6 @@ addon.condition_class_group = {
 }
 
 if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
-    addon.condition_role = {
-        description = L["Role"],
-        icon = "Interface\\Icons\\petbattle_health",
-        valid = function(_, value)
-            return (value.unit ~= nil and isin(units, value.unit) and
-                    value.value ~= nil and isin(roles, value.value))
-        end,
-        evaluate = function(value, cache)
-            if not getCached(cache, UnitExists, value.unit) then return false end
-            local role = select(6, getCached(cache, GetSpecializationInfoByID, getCached(cache, GetInspectSpecialization, value.unit)))
-            return role == value.value
-        end,
-        print = function(_, value)
-            return string.format(L["%s is in a %s role"],
-                nullable(unitsPossessive[value.unit], L["<unit>"]),
-                nullable(roles[value.value], L["<role>"]))
-        end,
-        widget = function(parent, spec, value)
-            local top = parent:GetUserData("top")
-            local root = top:GetUserData("root")
-            local funcs = top:GetUserData("funcs")
-
-            local unit = addon:Widget_UnitWidget(value, deepcopy(units, { "player", "pet" }),
-                function() top:SetStatusText(funcs:print(root, spec)) end)
-            parent:AddChild(unit)
-
-            local role = AceGUI:Create("Dropdown")
-            role:SetLabel(L["Role"])
-            role:SetCallback("OnValueChanged", function(_, _, v)
-                value.value = v
-                top:SetStatusText(funcs:print(root, spec))
-            end)
-            role.configure = function()
-                role:SetList(roles, keys(roles))
-                if (value.value ~= nil) then
-                    role:SetValue(value.value)
-                end
-            end
-            parent:AddChild(role)
-        end,
-        help = function(frame)
-            addon.layout_condition_unitwidget_help(frame)
-
-            frame:AddChild(Gap())
-            frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Role"] .. color.RESET .. " - " ..
-                "The current role of " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. "."))
-            frame:AddChild(Indent(40, CreateText(color.GREEN .. L["Tank"] .. color.RESET .. " - " ..
-                "Designed to keep the attention and take most of the hits from enemies.  aka. Meat Shields.")))
-            frame:AddChild(Indent(40, CreateText(color.GREEN .. L["DPS"] .. color.RESET .. " - " ..
-                "The primary damage dealers against enemies, and lovers of standing in fire.")))
-            frame:AddChild(Indent(40, CreateText(color.GREEN .. L["Healer"] .. color.RESET .. " - " ..
-                "Those who keep everyone else alive by healing them.  Thank them!")))
-        end
-    }
-
     addon.condition_talent = {
         description = L["Talent"],
         icon = "Interface\\Icons\\Inv_misc_book_11",
@@ -283,10 +228,65 @@ if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
         end,
         help = function(frame)
             frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Talent"] .. color.RESET .. " - " ..
-                "A talent you have enabled in your specialization.  If you are currently in the same spec " ..
-                "as the rotation you are configuring (or have switched specializations without reloading " ..
-                "your user interface), this will show the talents.  Otherwise, this will simply show the " ..
-                "level and selection numbers (this is a restriction imposed by the game itself.)"))
+                    "A talent you have enabled in your specialization.  If you are currently in the same spec " ..
+                    "as the rotation you are configuring (or have switched specializations without reloading " ..
+                    "your user interface), this will show the talents.  Otherwise, this will simply show the " ..
+                    "level and selection numbers (this is a restriction imposed by the game itself.)"))
+        end
+    }
+
+    addon.condition_role = {
+        description = L["Role"],
+        icon = "Interface\\Icons\\spell_brokenheart",
+        valid = function(_, value)
+            return (value.unit ~= nil and isin(units, value.unit) and
+                    value.value ~= nil and isin(roles, value.value))
+        end,
+        evaluate = function(value, cache)
+            if not getCached(cache, UnitExists, value.unit) then return false end
+            local role = select(6, getCached(cache, GetSpecializationInfoByID, getCached(cache, GetInspectSpecialization, value.unit)))
+            return role == value.value
+        end,
+        print = function(_, value)
+            return string.format(L["%s is in a %s role"],
+                nullable(unitsPossessive[value.unit], L["<unit>"]),
+                nullable(roles[value.value], L["<role>"]))
+        end,
+        widget = function(parent, spec, value)
+            local top = parent:GetUserData("top")
+            local root = top:GetUserData("root")
+            local funcs = top:GetUserData("funcs")
+
+            local unit = addon:Widget_UnitWidget(value, deepcopy(units, { "player", "pet" }),
+                function() top:SetStatusText(funcs:print(root, spec)) end)
+            parent:AddChild(unit)
+
+            local role = AceGUI:Create("Dropdown")
+            role:SetLabel(L["Role"])
+            role:SetCallback("OnValueChanged", function(_, _, v)
+                value.value = v
+                top:SetStatusText(funcs:print(root, spec))
+            end)
+            role.configure = function()
+                role:SetList(roles, keys(roles))
+                if (value.value ~= nil) then
+                    role:SetValue(value.value)
+                end
+            end
+            parent:AddChild(role)
+        end,
+        help = function(frame)
+            addon.layout_condition_unitwidget_help(frame)
+
+            frame:AddChild(Gap())
+            frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Role"] .. color.RESET .. " - " ..
+                "The current role of " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. "."))
+            frame:AddChild(Indent(40, CreateText(color.GREEN .. L["Tank"] .. color.RESET .. " - " ..
+                "Designed to keep the attention and take most of the hits from enemies.  aka. Meat Shields.")))
+            frame:AddChild(Indent(40, CreateText(color.GREEN .. L["DPS"] .. color.RESET .. " - " ..
+                "The primary damage dealers against enemies, and lovers of standing in fire.")))
+            frame:AddChild(Indent(40, CreateText(color.GREEN .. L["Healer"] .. color.RESET .. " - " ..
+                "Those who keep everyone else alive by healing them.  Thank them!")))
         end
     }
 else
@@ -438,6 +438,51 @@ else
         end
     }
 
+    if LE_EXPANSION_LEVEL_CURRENT >= 2 then
+        addon.condition_role = {
+            description = L["Role"],
+            icon = "Interface\\Icons\\spell_brokenheart",
+            valid = function(_, value)
+                return value.value ~= nil and isin(roles, value.value)
+            end,
+            evaluate = function(value, cache)
+                return getCached(cache, GetTalentGroupRole, addon.currentSpec) == value.value
+            end,
+            print = function(_, value)
+                return string.format(L["Your talent is a %s role"],
+                        nullable(roles[value.value], L["<role>"]))
+            end,
+            widget = function(parent, spec, value)
+                local top = parent:GetUserData("top")
+                local root = top:GetUserData("root")
+                local funcs = top:GetUserData("funcs")
+
+                local role = AceGUI:Create("Dropdown")
+                role:SetLabel(L["Role"])
+                role:SetCallback("OnValueChanged", function(_, _, v)
+                    value.value = v
+                    top:SetStatusText(funcs:print(root, spec))
+                end)
+                role.configure = function()
+                    role:SetList(roles, keys(roles))
+                    if (value.value ~= nil) then
+                        role:SetValue(value.value)
+                    end
+                end
+                parent:AddChild(role)
+            end,
+            help = function(frame)
+                frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Role"] .. color.RESET .. " - " ..
+                        "The current role of " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. "."))
+                frame:AddChild(Indent(40, CreateText(color.GREEN .. L["Tank"] .. color.RESET .. " - " ..
+                        "Designed to keep the attention and take most of the hits from enemies.  aka. Meat Shields.")))
+                frame:AddChild(Indent(40, CreateText(color.GREEN .. L["DPS"] .. color.RESET .. " - " ..
+                        "The primary damage dealers against enemies, and lovers of standing in fire.")))
+                frame:AddChild(Indent(40, CreateText(color.GREEN .. L["Healer"] .. color.RESET .. " - " ..
+                        "Those who keep everyone else alive by healing them.  Thank them!")))
+            end
+        }
+    end
 end
 
 if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE or LE_EXPANSION_LEVEL_CURRENT >= 2) then

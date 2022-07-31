@@ -31,11 +31,9 @@ addon:RegisterCondition(CATEGORY_NONE, "ISSAME", addon.condition_issame)
 addon:RegisterCondition(CATEGORY_NONE, "CLASS", addon.condition_class)
 addon:RegisterCondition(CATEGORY_NONE, "CLASS_GROUP", addon.condition_class_group)
 
-if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
-    addon:RegisterCondition(CATEGORY_NONE, "ROLE", addon.condition_role)
-end
 addon:RegisterCondition(CATEGORY_NONE, "TALENT", addon.condition_talent)
 if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE or LE_EXPANSION_LEVEL_CURRENT >= 2) then
+    addon:RegisterCondition(CATEGORY_NONE, "ROLE", addon.condition_role)
     addon:RegisterCondition(CATEGORY_SPELLS, "GLYPH", addon.condition_glyph)
 end
 addon:RegisterCondition(CATEGORY_NONE, "CREATURE", addon.condition_creature)
