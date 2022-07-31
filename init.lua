@@ -117,6 +117,39 @@ local default_effects = {
         type = "autocast",
         name = "Auto Cast",
     },
+    ["d2ab8d6c-4346-42fd-bb1a-dc967feb32b7"] = {
+        ["type"] = "animate",
+        ["name"] = "Boom!",
+        ["steps"] = 4,
+        ["frequency"] = 0.25,
+        ["sequence"] = {
+            "Interface\\Cooldown\\star4", -- [1]
+            "Interface\\Cooldown\\starburst", -- [2]
+            "Interface\\Cooldown\\ping4", -- [3]
+        },
+        ["texture"] = "Interface\\Cooldown\\star4",
+    },
+    ["cbd72b0b-e0f4-4f6e-bef4-459776a5d7a9"] = {
+        ["type"] = "rotate",
+        ["name"] = "Rotating Starburst",
+        ["steps"] = 16,
+        ["frequency"] = 0.1,
+        ["texture"] = "Interface\\Cooldown\\star4",
+    },
+    ["ec8946a4-c3aa-4397-b129-a0c8d6fed479"] = {
+        ["type"] = "pulse",
+        ["name"] = "Pulse",
+        ["texture"] = "Interface\\Cooldown\\ping4",
+        ["sequence"] = {
+            0.4, -- [1]
+            0.6, -- [2]
+            0.8, -- [3]
+            1, -- [4]
+            1.2, -- [5]
+            1.4, -- [6]
+        },
+        ["frequency"] = 0.1,
+    }
 }
 
 local function upgradeTexturesToEffects()
