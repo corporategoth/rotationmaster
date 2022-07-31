@@ -206,8 +206,9 @@ local function create_primary_options(frame)
     effect_sel:SetHeight(44)
     effect_sel:SetCallback("OnValueChanged", function(_, _, val)
         profile["effect"] = val
+        effect = profile["effect"] and effects[profile["effect"]]
+        addon:Glow(effect_icon.frame, "effect", effect, profile["color"], 1.0, "CENTER", 0, 0)
         addon:RemoveAllCurrentGlows()
-        create_primary_options(frame)
     end)
     effect_sel.frame:SetScript("OnShow", function(f)
         update_effect_map()
