@@ -362,9 +362,12 @@ addon.condition_threat_count = {
                 "risk of them switching targets to somebody else.")))
         frame:AddChild(Indent(40, CreateText(color.GREEN .. L["tanking, secure"] .. color.RESET .. " - " ..
                 "You are currently tanking  and are not at risk of them switching targets at the moment.")))
-
-        addon.layout_condition_operatorwidget_help(frame, L["Buff Time Remaining"], L["Seconds"],
-            "The number of units you have at least " .. color.BLIZ_YELLOW .. L["Threat"] .. color.RESET .. " on.")
+        frame:AddChild(Gap())
+        addon.layout_condition_operatorwidget_help(frame, L["Threat Count"], L["Count"],
+                "The number of units you have at least " .. color.BLIZ_YELLOW .. L["Threat"] .. color.RESET .. " on.")
+        frame:AddChild(Gap())
+        frame:AddChild(CreateText("Threat is measured only on units within a maximum measurable range. The maximum " ..
+                " range is set using Game Options -> Interface -> Game tab -> Names -> Nameplate Distance."))
     end
 }
 
