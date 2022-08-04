@@ -289,7 +289,11 @@ addon.condition_distance_count = {
         local distance = AceGUI:Create("Slider")
         distance:SetWidth(150)
         distance:SetLabel(L["Distance"])
-        distance:SetValue(value.distance or tonumber(C_CVar.GetCVar("nameplateMaxDistance")))
+        if value.distance == nil then
+            value.distance = tonumber(C_CVar.GetCVar("nameplateMaxDistance"))
+        end
+
+        distance:SetValue(value.distance)
         distance:SetSliderValues(1, tonumber(C_CVar.GetCVar("nameplateMaxDistance")), 1)
         distance:SetCallback("OnValueChanged", function(_, _, v)
             value.distance = tonumber(v)
