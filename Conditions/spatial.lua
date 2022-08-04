@@ -277,7 +277,6 @@ addon.condition_distance_count = {
         end
         enemy:SetCallback("OnValueChanged", function(_, _, v)
             value.enemy = v
-            setDistances(value.enemy)
             top:SetStatusText(funcs:print(root, spec))
         end)
         parent:AddChild(enemy)
@@ -292,6 +291,7 @@ addon.condition_distance_count = {
         distance:SetText(value.distance)
         distance:SetCallback("OnEnterPressed", function(_, _, v)
             value.distance = tonumber(v)
+            top:SetStatusText(funcs:print(root, spec))
         end)
         parent:AddChild(distance)
     end,
