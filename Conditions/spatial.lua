@@ -240,7 +240,8 @@ addon.condition_distance_count = {
     valid = function(_, value)
         return (value.value ~= nil and value.value >= 0 and
                 value.operator ~= nil and isin(operators, value.operator) and value.enemy ~= nil and
-                value.distance ~= nil and value.distance >= 0 and value.distance <= 40)
+                value.distance ~= nil and value.distance >= 0 and
+                value.distance <= tonumber(C_CVar.GetCVar("nameplateMaxDistance")))
     end,
     evaluate = function(value, cache)
         local count = 0
@@ -282,17 +283,19 @@ addon.condition_distance_count = {
         parent:AddChild(enemy)
 
         local operator_group = addon:Widget_OperatorWidget(value, L["Count"],
-            function() top:SetStatusText(funcs:print(root, spec)) end)
+                function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
 
-        local distance = AceGUI:Create("EditBox")
-        distance:SetWidth(75)
+        local distance = AceGUI:Create("Slider")
+        distance:SetWidth(150)
         distance:SetLabel(L["Distance"])
-        distance:SetText(value.distance)
-        distance:SetCallback("OnEnterPressed", function(_, _, v)
+        distance:SetValue(value.distance or tonumber(C_CVar.GetCVar("nameplateMaxDistance")))
+        distance:SetSliderValues(1, tonumber(C_CVar.GetCVar("nameplateMaxDistance")), 1)
+        distance:SetCallback("OnValueChanged", function(_, _, v)
             value.distance = tonumber(v)
             top:SetStatusText(funcs:print(root, spec))
         end)
+
         parent:AddChild(distance)
     end,
     help = function(frame)
@@ -303,12 +306,11 @@ addon.condition_distance_count = {
             "The number of enemies or allies whose proximity is measured in relation to you.")
         frame:AddChild(Gap())
         frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Distance"] .. color.RESET .. " - " ..
-                "This distance the measured enemies or allies must be within."))
-        frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Distance"] .. color.RESET .. " - " ..
                 "This distance enemies or allies must be within, in yards.  There are significant restrictions " ..
                 "on how accurately distances can be measured, and all distances are within a range.  This will " ..
-                "assume all units are at their maximum of the measurable range.  Only distances less than or equal " ..
-                "to 40 yards can be measured."))
+                "assume all units are at their maximum of the measurable range.  The maximum range is set using " ..
+                "Game Options -> Interface -> Game tab -> Names -> Nameplate Distance."))
+        frame:AddChild(Gap())
     end
 }
 
