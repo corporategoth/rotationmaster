@@ -214,7 +214,7 @@ function SpellLoader:UpdateFromSpellBook(spec)
             local icon = GetSpellTexture(spellID)
             if (not blacklist[tostring(icon)] and not IsPassiveSpell(i, BOOKTYPE_PET) ) then
                 AddSpell(name, rank, icon, spellID, true)
-                specSpells[token][spellID] = true
+                specSpells[BOOKTYPE_PET][spellID] = true
             end
         end
 	end
