@@ -207,15 +207,18 @@ function SpellLoader:UpdateFromSpellBook(spec)
 			end
 		end
     end
-    local petSpells, token = HasPetSpells()
+    local petSpells = HasPetSpells()
     if petSpells ~= nil then
+		specSpells[BOOKTYPE_PET] = {}
 		for i=1, petSpells do
             local name, rank, spellID = GetSpellBookItemName(i, BOOKTYPE_PET)
-            local icon = GetSpellTexture(spellID)
-            if (not blacklist[tostring(icon)] and not IsPassiveSpell(i, BOOKTYPE_PET) ) then
-                AddSpell(name, rank, icon, spellID, true)
-                specSpells[BOOKTYPE_PET][spellID] = true
-            end
+			if spellID then
+				local icon = GetSpellTexture(spellID)
+				if (not blacklist[tostring(icon)] and not IsPassiveSpell(i, BOOKTYPE_PET) ) then
+					AddSpell(name, rank, icon, spellID, true)
+					specSpells[BOOKTYPE_PET][spellID] = true
+				end
+			end
         end
 	end
 
