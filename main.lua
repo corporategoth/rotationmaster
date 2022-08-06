@@ -835,7 +835,8 @@ function addon:EvaluateNextAction()
             local spellid, enabled = nil, false
             if cond.action ~= nil and (cond.disabled == nil or cond.disabled == false) then
                 local spellids, itemids
-                if cond.type ~= BOOKTYPE_PET or getCached(self.longtermCache, IsSpellKnown, cond.action, true) then
+                if cond.type ~= "any" or getCached(addon.longtermCache, IsSpellKnown, cond.action, false) or
+                                         getCached(cache, IsSpellKnown, cond.action, true) then
                     spellids, itemids = addon:GetSpellIds(cond)
                 end
 
@@ -849,12 +850,20 @@ function addon:EvaluateNextAction()
                                 enabled = true
                             else
                                 local inrange
-                                if cond.type == BOOKTYPE_SPELL or cond.type == "any" then
+                                if cond.type == BOOKTYPE_SPELL or cond.type == BOOKTYPE_PET then
+                                    local sbid = getCached(cond.type == BOOKTYPE_SPELL and addon.longtermCache or cache,
+                                                           FindSpellBookSlotBySpellID, spellid, cond.type == BOOKTYPE_PET)
+                                    inrange = getCached(cache, IsSpellInRange, sbid, cond.type, "target")
+                                elseif cond.type == "any" then
                                     local sbid = getCached(addon.longtermCache, FindSpellBookSlotBySpellID, spellid, false)
-                                    inrange = getCached(cache, IsSpellInRange, sbid, BOOKTYPE_SPELL, "target")
-                                elseif cond.type == BOOKTYPE_PET then
-                                    local sbid = getCached(addon.longtermCache, FindSpellBookSlotBySpellID, spellid, true)
-                                    inrange = getCached(cache, IsSpellInRange, sbid, BOOKTYPE_PET, "target")
+                                    if sbid ~= nil then
+                                        inrange = getCached(cache, IsSpellInRange, sbid, BOOKTYPE_SPELL, "target")
+                                    else
+                                        sbid = getCached(cache, FindSpellBookSlotBySpellID, spellid, true)
+                                        if sbid ~= nil then
+                                            inrange = getCached(cache, IsSpellInRange, sbid, BOOKTYPE_PET, "target")
+                                        end
+                                    end
                                 elseif cond.type == "item" then
                                     inrange = getCached(cache, IsItemInRange, itemids[idx], "target")
                                 end
