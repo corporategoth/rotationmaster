@@ -21,7 +21,7 @@ do
 		local spec = self:GetUserData("spec")
 		local addon = _G.RotationMaster
 
-		return addon.isSpellOnSpec(spec, spellID, false)
+		return addon.isSpellOnSpec(spec, spellID)
 	end
 	
 	-- I know theres a better way of doing this than this, but not sure for the time being, works fine though!

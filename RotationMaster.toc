@@ -1,6 +1,6 @@
 ## Interface: 20504
 ## Title: Rotation Master
-## Version: 1.4.0
+## Version: 1.4.1
 ## Author: Makiel
 ## Notes: I wanted to save the world, but God wouldn't give me the source code.
 ## X-Email: prez@neuromancy.net
@@ -52,6 +52,7 @@ Conditions/common.lua
 Conditions/character.lua
 Conditions/stats.lua
 Conditions/spell.lua
+Conditions/anyspell.lua
 Conditions/petspell.lua
 Conditions/buffs.lua
 Conditions/debuffs.lua

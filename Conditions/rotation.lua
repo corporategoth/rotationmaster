@@ -8,6 +8,13 @@ local CATEGORY_COMBAT = L["Combat"]
 local CATEGORY_SPATIAL = L["Spatial"]
 local CATEGORY_SPELLS = L["Spells / Items"]
 
+-- anyspell.lua
+addon:RegisterCondition(CATEGORY_SPELLS, "ANYSPELL_AVAIL", addon.condition_anyspell_avail)
+addon:RegisterCondition(CATEGORY_SPELLS, "ANYSPELL_RANGE", addon.condition_anyspell_range)
+addon:RegisterCondition(CATEGORY_SPELLS, "ANYSPELL_COOLDOWN", addon.condition_anyspell_cooldown)
+addon:RegisterCondition(CATEGORY_SPELLS, "ANYSPELL_REMAIN", addon.condition_anyspell_remain)
+addon:RegisterCondition(CATEGORY_SPELLS, "ANYSPELL_CHARGES", addon.condition_anyspell_charges)
+
 -- buffs.lua
 addon:RegisterCondition(CATEGORY_BUFFS, "BUFF", addon.condition_buff)
 addon:RegisterCondition(CATEGORY_BUFFS, "BUFF_REMAIN", addon.condition_buff_remain)
@@ -84,6 +91,9 @@ addon:RegisterCondition(CATEGORY_SPELLS, "PETSPELL_RANGE", addon.condition_petsp
 addon:RegisterCondition(CATEGORY_SPELLS, "PETSPELL_COOLDOWN", addon.condition_petspell_cooldown)
 addon:RegisterCondition(CATEGORY_SPELLS, "PETSPELL_REMAIN", addon.condition_petspell_remain)
 addon:RegisterCondition(CATEGORY_SPELLS, "PETSPELL_CHARGES", addon.condition_petspell_charges)
+addon:RegisterCondition(CATEGORY_SPELLS, "PETSPELL_HISTORY", addon.condition_petspell_history)
+addon:RegisterCondition(CATEGORY_SPELLS, "PETSPELL_HISTORY_TIME", addon.condition_petspell_history_time)
+addon:RegisterCondition(CATEGORY_SPELLS, "PETSPELL_ACTIVE", addon.condition_petspell_active)
 
 -- spatial.lua
 addon:RegisterCondition(CATEGORY_SPATIAL, "PROXIMITY", addon.condition_proximity)

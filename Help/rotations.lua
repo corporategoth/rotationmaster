@@ -103,11 +103,17 @@ local function help_action_group(group, singular)
             "for your specialization.  Often spells you crrently can not cast (eg. those for another a different " ..
             "specialization, or that require talnts) are hidden.  This is a restriction imposed by the game.")))
     group:AddChild(Indent(40, CreateText(color.GREEN .. L["Pet Spell"] .. color.RESET .. " - " ..
-            "This is similar to Spell, however it is not limited to spells you can cast.  This is most useful " ..
-            "for adding spells available to your pets (which would otherwise only be availble if that pet was " ..
-            "summoned.)  However ALL spells are available, even ones you can not cast.")))
+            "This will limit the avalable options to only spells your pets cast (ie. what is in your pet spell book). " ..
+            "Often spells you crrently can not cast (eg. those for a different different pet than the one you " ..
+            "have summoned) are hidden.  This is a restriction imposed by the game.")))
+    group:AddChild(Indent(40, CreateText(color.GREEN .. L["Any Spell"] .. color.RESET .. " - " ..
+            "This is similar to Spell, however it is not limited to spells you can cast.  This is rarely needed, " ..
+            "but could be used for spells you have not yet learned.")))
     group:AddChild(Indent(40, CreateText(color.GREEN .. L["Item"] .. color.RESET .. " - " ..
             "An item you are carrying OR wearing.  Only items that have a USE ability will be available.")))
+    group:AddChild(Indent(40, CreateText(color.GREEN .. L["None"] .. color.RESET .. " - " ..
+            "No action.  This can be used to suspend the rotation under certain circumstances (eg. that one " ..
+            "of multiple cooldowns have been applied).")))
 
     if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
         group:AddChild(Gap())

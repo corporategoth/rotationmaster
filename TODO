@@ -1,7 +1,15 @@
+- Reset Effects
+
+- Customize condition categories (allow moving conditions to any category)
+
+- Add option to mark any condition as a switch condition
+
+- Custom Condition Editor (LUA!)
+
 - Find out what is going on with binding (and more importantly, rebinding to the wrong keys) for item sets.
 
 - OnSwitch actions (allowing you to, for example, switch totem profiles, UI profiles, etc).
 
 - Add 'macro' to action type (ie. not just spell / item) to look for buttons by macro name - requires major rewrite of highlighting code
 
-- Default rotations for all classes (classic @ 60, retail @ 120).
+- Default rotations for all classes

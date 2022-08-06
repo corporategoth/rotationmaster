@@ -455,6 +455,7 @@ function addon:enable()
 
     self.playerUnitFrame = CreateFrame('Frame')
     self.playerUnitFrame:RegisterUnitEvent('UNIT_SPELLCAST_SUCCEEDED', 'player')
+    self.playerUnitFrame:RegisterUnitEvent('UNIT_SPELLCAST_SUCCEEDED', 'pet')
 
     self.playerUnitFrame:SetScript('OnEvent', function(_, _, _, _, spellId)
         if IsPlayerSpell(spellId) then
@@ -834,7 +835,7 @@ function addon:EvaluateNextAction()
             local spellid, enabled = nil, false
             if cond.action ~= nil and (cond.disabled == nil or cond.disabled == false) then
                 local spellids, itemids
-                if cond.type ~= "pet" or getCached(self.longtermCache, IsSpellKnown, cond.action, true) then
+                if cond.type ~= BOOKTYPE_PET or getCached(self.longtermCache, IsSpellKnown, cond.action, true) then
                     spellids, itemids = addon:GetSpellIds(cond)
                 end
 
@@ -848,10 +849,10 @@ function addon:EvaluateNextAction()
                                 enabled = true
                             else
                                 local inrange
-                                if cond.type == "spell" then
+                                if cond.type == BOOKTYPE_SPELL or cond.type == "any" then
                                     local sbid = getCached(addon.longtermCache, FindSpellBookSlotBySpellID, spellid, false)
                                     inrange = getCached(cache, IsSpellInRange, sbid, BOOKTYPE_SPELL, "target")
-                                elseif cond.type == "pet" then
+                                elseif cond.type == BOOKTYPE_PET then
                                     local sbid = getCached(addon.longtermCache, FindSpellBookSlotBySpellID, spellid, true)
                                     inrange = getCached(cache, IsSpellInRange, sbid, BOOKTYPE_PET, "target")
                                 elseif cond.type == "item" then
@@ -972,7 +973,7 @@ end
 
 function addon:GetSpellIds(rot)
     if rot.action then
-        if rot.type == "spell" or rot.type == "pet" then
+        if rot.type == BOOKTYPE_SPELL or rot.type == BOOKTYPE_PET or rot.type == "any" then
             if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
                 if rot.ranked then
                     return { rot.action }
@@ -1076,10 +1077,14 @@ function addon:UpdateSkill()
     self:ButtonFetch()
 
     self.longtermCache = {}
-    self.specSpells = SpellData:UpdateFromSpellBook(self.currentSpec)
-    for spec,spells in pairs(self.specSpells) do
-        self.specSpellsReverse[spec] = {}
-        for spell,pet in pairs(spells) do
+    local currentSpecSpells = SpellData:UpdateFromSpellBook(self.currentSpec)
+    for spec,spells in pairs(currentSpecSpells) do
+        if not self.specSpells[spec] or spec ~= BOOKTYPE_PET then
+            self.specSpells[spec] = {}
+            self.specSpellsReverse[spec] = {}
+        end
+        for spell,v in pairs(spells) do
+            self.specSpells[spec][spell] = v
             self.specSpellsReverse[spec][SpellData:SpellName(spell, true)] = spell
         end
     end
@@ -1413,10 +1418,11 @@ local lastCastTarget = {} -- work around UNIT_SPELLCAST_SENT not always triggeri
 local currentChannel
 
 local function spellcast(_, event, unit, castguid, spellid)
-    if unit == 'player' then
+    -- even though we check it later, this skips rows entirely.
+    if unit == 'player' or unit == "pet" then
         for _, value in ipairs(addon.db.char.announces) do
-            if value.value and (not value.disabled) and (event == "UNIT_SPELLCAST_" .. value.event or
-                    event == "UNIT_SPELLCAST_CHANNEL_" .. value.event) then
+            if value.value and (not value.disabled) and (value.type == BOOKTYPE_PET and unit == "pet" or unit == "player") and
+                (event == "UNIT_SPELLCAST_" .. value.event or event == "UNIT_SPELLCAST_CHANNEL_" .. value.event) then
                 local skip = false
                 if addon.announced[value.id] then
                     for _, val in ipairs(addon.announced[value.id]) do
@@ -1428,9 +1434,9 @@ local function spellcast(_, event, unit, castguid, spellid)
 
                 if not skip then
                     local ent = addon.deepcopy(value)
-                    if ent.type == "spell" then
+                    if ent.type == BOOKTYPE_SPELL or ent.type == BOOKTYPE_PET then
                         ent.action = ent.spell
-                    elseif ent.type == "item" then
+                    elseif unit == ent.type == "item" then
                         ent.action = ent.item
                     end
 
@@ -1438,7 +1444,7 @@ local function spellcast(_, event, unit, castguid, spellid)
                     for idx, sid in ipairs(spellids) do
                         if spellid == sid then
                             local text = ent.value
-                            if ent.type == "spell" then
+                            if ent.type == BOOKTYPE_SPELL or ent.type == BOOKTYPE_PET then
                                 local link = getCached(addon.longtermCache, GetSpellLink, sid)
                                 text = text:gsub("{{spell}}", link)
                             elseif ent.type == "item" then

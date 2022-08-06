@@ -296,6 +296,7 @@ L["No Action"] = true
 L["Spell"] = true
 L["Rank"] = true
 L["Pet Spell"] = true
+L["Any Spell"] = true
 L["Item"] = true
 L["Conditions"] = true
 L["THIS CONDITION DOES NOT VALIDATE"] = true
@@ -443,26 +444,34 @@ L["Unholy"] = true
 L["Frost"] = true
 
 L["Spell Available"] = true
+L["Pet Spell Available"] = true
 L["%s is available"] = true
 L["Spell In Range"] = true
+L["Pet Spell In Range"] = true
 L["%s is in range"] = true
 L["Spell Cooldown"] = true
+L["Pet Spell Cooldown"] = true
 -- This is used for things like "the cooldown on <spell> is less than 5 seconds"
 L["the %s"] = true
 L["cooldown on %s"] = true
 L["%s seconds"] = true
 L["Seconds"] = true
 L["Spell Active or Pending"] = true
+L["Pet Spell Active or Pending"] = true
 L["%s is active or pending"] = true
 
 L["Spell Time Remaining"] = true
+L["Pet Spell Time Remaining"] = true
 L["remaining time on %s"] = true
 L["Spell Charges"] = true
+L["Pet Spell Charges"] = true
 L["number of charges on %s"] = true
 L["Charges"] = true
 
 L["Spell Cast History Time"] = true
 L["Spell Cast History"] = true
+L["Pet Spell Cast History Time"] = true
+L["Pet Spell Cast History"] = true
 L["%s was cast"] = true
 L["%s casts ago"] = true
 L["%s seconds ago"] = true
@@ -470,11 +479,11 @@ L["Combat Action History Time"] = true
 L["Combat Action History"] = true
 L["%s actions ago"] = true
 
-L["Pet Spell Available"] = true
-L["Pet Spell In Range"] = true
-L["Pet Spell Cooldown"] = true
-L["Pet Spell Time Remaining"] = true
-L["Pet Spell Charges"] = true
+L["Any Spell Available"] = true
+L["Any Spell In Range"] = true
+L["Any Spell Cooldown"] = true
+L["Any Spell Time Remaining"] = true
+L["Any Spell Charges"] = true
 
 L["Buff Present"] = true
 L["Buff Time Remaining"] = true

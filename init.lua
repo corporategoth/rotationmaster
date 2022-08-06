@@ -2,6 +2,8 @@ local _, addon = ...
 
 local multiinsert, tablelength, deepcopy = addon.multiinsert, addon.tablelength, addon.deepcopy
 
+local CHAR_VERSION = 1
+
 local combination_food = {}
 local conjured_food = { 22895, 8076, 8075, 1487, 1114, 1113, 5349, }
 local conjured_water = { 8079, 8078, 8077, 3772, 2136, 2288, 5350, }
@@ -299,6 +301,43 @@ local function upgradeEffectsToGUID()
     end
 end
 
+local function upgradePetSpellCondToAnySpell(cond)
+    if cond.type == "PETSPELL_AVAIL" then
+        cond.type = "ANYSPELL_AVAIL"
+    elseif cond.type == "PETSPELL_RANGE" then
+        cond.type = "ANYSPELL_RANGE"
+    elseif cond.type == "PETSPELL_COOLDOWN" then
+        cond.type = "ANYSPELL_COOLDOWN"
+    elseif cond.type == "PETSPELL_REMAIN" then
+        cond.type = "ANYSPELL_REMAIN"
+    elseif cond.type == "PETSPELL_CHARGES" then
+        cond.type = "ANYSPELL_CHARGES"
+    elseif cond.type == "NOT" and cond.value ~= nil then
+        upgradePetSpellCondToAnySpell(cond.value)
+    elseif cond.type == "AND" or cond.type == "OR" and cond.value ~= nil then
+        for _, subcond in pairs(cond.value) do
+            upgradePetSpellCondToAnySpell(subcond)
+        end
+    end
+end
+
+local function upgradePetSpellToAnySpell()
+    if addon.db.char.version == nil or addon.db.char.version < 1 then
+        for _, rotations in pairs(addon.db.char.rotations) do
+            for _, rot in pairs(rotations) do
+                if rot.type ~= nil and rot.type == BOOKTYPE_PET then
+                    rot.type = "any"
+                end
+                if rot.conditions ~= nil then
+                    for _, cond in pairs(rot.conditions) do
+                        upgradePetSpellCondToAnySpell(cond)
+                    end
+                end
+            end
+        end
+    end
+end
+
 function addon:getDefaultItemset(id)
     if default_itemsets[id] ~= nil then
         return default_itemsets[id].items
@@ -325,5 +364,7 @@ function addon:init()
     upgradeAddIDToAnnounce()
     upgradeLogLevel()
     upgradeEffectsToGUID()
+    upgradePetSpellToAnySpell()
+    addon.db.char.version = CHAR_VERSION
 end
 

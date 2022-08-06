@@ -25,6 +25,8 @@ function addon.layout_announce_options_help(frame)
             "The type of action that triggers an announcement."))
     group:AddChild(Indent(40, CreateText(color.GREEN .. L["Spell"] .. color.RESET .. " - " ..
             "You have cast a spell.  This must be a spell YOU can cast, NOT a pet's spell.")))
+    group:AddChild(Indent(40, CreateText(color.GREEN .. L["Pet Spell"] .. color.RESET .. " - " ..
+            "Your pet has cast a spell.  This must be a spell your pet can cast.")))
     group:AddChild(Indent(40, CreateText(color.GREEN .. L["Item"] .. color.RESET .. " - " ..
             "You have used an item in an item set (either a pre-defined one or custom item set.)")))
 

@@ -24,6 +24,7 @@ function addon:create_announce_list(frame)
 
     local types = {
         spell = L["Spell"],
+        pet = L["Pet Spell"],
         item = L["Item"],
     }
 
@@ -54,11 +55,18 @@ function addon:create_announce_list(frame)
             ag:ReleaseChildren()
             ag:PauseLayout()
 
-            if ent.type == "spell" then
+            if ent.type == BOOKTYPE_SPELL then
                 local spell_group = addon:Widget_SpellWidget(addon.currentSpec, "Spec_EditBox", ent,
                     function(v) return getSpecSpellID(addon.currentSpec, v) end,
                     function(v) return isSpellOnSpec(addon.currentSpec, v) end,
                     function() draw_action_group(ag, ent) end)
+                spell_group:SetFullWidth(true)
+                ag:AddChild(spell_group)
+            elseif ent.type == BOOKTYPE_PET then
+                local spell_group = addon:Widget_SpellWidget(BOOKTYPE_PET, "Spec_EditBox", ent,
+                        function(v) return getSpecSpellID(BOOKTYPE_PET, v) end,
+                        function(v) return isSpellOnSpec(BOOKTYPE_PET, v) end,
+                        function() draw_action_group(ag, ent) end)
                 spell_group:SetFullWidth(true)
                 ag:AddChild(spell_group)
             elseif ent.type == "item" then
@@ -87,7 +95,7 @@ function addon:create_announce_list(frame)
             end
         end)
         action_type.configure = function()
-            action_type:SetList(types, { "spell", "item" })
+            action_type:SetList(types, { BOOKTYPE_SPELL, BOOKTYPE_PET, "item" })
             action_type:SetValue(value.type)
         end
 
@@ -169,7 +177,7 @@ function addon:create_announce_list(frame)
 
     local newentry = {
         id = addon:uuid(),
-        type = "spell",
+        type = BOOKTYPE_SPELL,
         announce = "partyraid",
         event = "SUCCEEDED",
     }
@@ -190,7 +198,7 @@ function addon:create_announce_list(frame)
         ag:ReleaseChildren()
         ag:PauseLayout()
 
-        if ent.type == "spell" then
+        if ent.type == BOOKTYPE_SPELL then
             local spell_group = addon:Widget_SpellWidget(addon.currentSpec, "Spec_EditBox", ent,
                 function(v) return getSpecSpellID(addon.currentSpec, v) end,
                 function(v) return isSpellOnSpec(addon.currentSpec, v) end,
@@ -201,6 +209,19 @@ function addon:create_announce_list(frame)
                     end
                     draw_action_group(ag, ent)
                 end)
+            spell_group:SetFullWidth(true)
+            ag:AddChild(spell_group)
+        elseif ent.type == BOOKTYPE_PET then
+            local spell_group = addon:Widget_SpellWidget(BOOKTYPE_PET, "Spec_EditBox", ent,
+                    function(v) return getSpecSpellID(BOOKTYPE_PET, v) end,
+                    function(v) return isSpellOnSpec(BOOKTYPE_PET, v) end,
+                    function()
+                        if ent.spell then
+                            table.insert(announces, ent)
+                            addon:create_announce_list(frame)
+                        end
+                        draw_action_group(ag, ent)
+                    end)
             spell_group:SetFullWidth(true)
             ag:AddChild(spell_group)
         elseif ent.type == "item" then
@@ -232,7 +253,7 @@ function addon:create_announce_list(frame)
         end
     end)
     action_type.configure = function()
-        action_type:SetList(types, { "spell", "item" })
+        action_type:SetList(types, { BOOKTYPE_SPELL, BOOKTYPE_PET, "item" })
         action_type:SetValue(newentry.type)
     end
 

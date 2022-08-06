@@ -294,17 +294,24 @@ do
 	
 	local function EditBox_OnReceiveDrag(this)
 		local self = this.obj
-		local type, _, _, id = GetCursorInfo()
+		local type, petid, _, id = GetCursorInfo()
 
 		if( type == "spell" ) then
-        	SpellData:UpdateSpell(spellId)
-            local norank = self.parent.obj:GetUserData("norank")
-            local name = SpellData:SpellName(self.spellID, norank)
+			SpellData:UpdateSpell(id)
+			local norank = self:GetUserData("norank")
+			local name = SpellData:SpellName(id, norank)
 			self:SetText(name)
-			self:Fire("OnEnterPressed", name)
+			self:Fire("OnEnterPressed", id)
+			ClearCursor()
+		elseif( type == "petaction" ) then
+        	SpellData:UpdateSpell(petid)
+            local norank = self:GetUserData("norank")
+            local name = SpellData:SpellName(petid, norank)
+			self:SetText(name)
+			self:Fire("OnEnterPressed", petid)
 			ClearCursor()
 		end
-		
+
 		HideButton(self)
 		AceGUI:ClearFocus()
 	end
@@ -409,12 +416,12 @@ do
 	end
 				
 	local function Spell_OnClick(self)
-		SpellData:UpdateSpell(spellId)
+		SpellData:UpdateSpell(self.spellID)
 		local norank = self.parent.obj:GetUserData("norank")
         local name = SpellData:SpellName(self.spellID, norank)
-		SetText(self.parent.obj, name, string.len(name))
 
 		self.parent.selectedButton = nil
+		self.parent.obj:SetText(name)
 		self.parent.obj:Fire("OnEnterPressed", self.spellID)
 	end
 	

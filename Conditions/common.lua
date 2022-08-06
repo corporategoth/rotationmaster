@@ -48,7 +48,7 @@ function addon:Widget_SpellWidget(spec, editbox, value, nametoid, isvalid, updat
     end
 
     local spell = AceGUI:Create(editbox)
-    local spellIcon = AceGUI:Create("ActionSlotSpell")
+    local spellIcon = AceGUI:Create(spec == BOOKTYPE_PET and "ActionSlotPetAction" or "ActionSlotSpell")
     spellIcon:SetWidth(44)
     spellIcon:SetHeight(44)
     spellIcon:SetText(value.spell)
@@ -149,7 +149,7 @@ function addon:Widget_SpellNameWidget(spec, editbox, value, isvalid, update)
     spell_group:SetUserData("table", { columns = { 44, 1 } })
 
     local spell = AceGUI:Create(editbox)
-    local spellIcon = AceGUI:Create("ActionSlotSpell")
+    local spellIcon = AceGUI:Create(spec == BOOKTYPE_PET and "ActionSlotPetAction" or "ActionSlotSpell")
     spellIcon:SetWidth(44)
     spellIcon:SetHeight(44)
     if value.spell then

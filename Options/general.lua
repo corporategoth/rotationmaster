@@ -758,11 +758,11 @@ local function create_rotation_options(frame, specID, rotid, parent, selected)
                     name = name .. " - " .. L["No Action"]
                 else
                     if rot.action ~= nil then
-                        if rot.type == "spell" or rot.type == "pet" then
-			    local spell = SpellData:SpellName(rot.action, not rot.ranked)
-			    if spell then
-                    name = name .. " - " .. spell
-			    end
+                        if rot.type == BOOKTYPE_SPELL or rot.type == BOOKTYPE_PET or rot.type == "any" then
+                            local spell = SpellData:SpellName(rot.action, not rot.ranked)
+                            if spell then
+                                name = name .. " - " .. spell
+                            end
                         elseif rot.type == "item" then
                             if type(rot.action) == "string" then
                                 local itemset

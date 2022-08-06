@@ -45,7 +45,7 @@ local function add_top_buttons(list, idx, callback, delete_cb)
     elseif rot.type == "none" then
         name:SetText(L["No Action"])
     elseif rot.action ~= nil then
-        if rot.type == "spell" or rot.type =="pet" then
+        if rot.type == BOOKTYPE_SPELL or rot.type == BOOKTYPE_PET or rot.type == "any" then
             name:SetText(SpellData:SpellName(rot.action, not rot.ranked))
         elseif rot.type == "item" then
             if type(rot.action) == "string" then
@@ -388,9 +388,10 @@ local function add_action_group(specID, rotid, rot, callback, refresh, cooldown)
     local types = {
         spell = L["Spell"],
         pet = L["Pet Spell"],
+        any = L["Any Spell"],
         item = L["Item"],
     }
-    local types_order = { "spell", "pet", "item" }
+    local types_order = { BOOKTYPE_SPELL, BOOKTYPE_PET, "any", "item" }
     if not cooldown then
         types["none"] = L["None"]
         table.insert(types_order, "none")
@@ -413,7 +414,7 @@ local function add_action_group(specID, rotid, rot, callback, refresh, cooldown)
     end
     action_group:AddChild(action_type)
 
-    if rot.type ~= nil and rot.type == "spell" then
+    if rot.type ~= nil and rot.type == BOOKTYPE_SPELL then
         local action = AceGUI:Create("Spec_EditBox")
         local action_icon = AceGUI:Create("ActionSlotSpell")
         action_icon:SetWidth(44)
@@ -506,7 +507,100 @@ local function add_action_group(specID, rotid, rot, callback, refresh, cooldown)
             callback()
         end)
         action_group:AddChild(action)
-    elseif rot.type ~= nil and rot.type == "pet" then
+    elseif rot.type ~= nil and rot.type == BOOKTYPE_PET then
+        local action = AceGUI:Create("Spec_EditBox")
+        local action_icon = AceGUI:Create("ActionSlotPetAction")
+        action_icon:SetWidth(44)
+        action_icon:SetHeight(44)
+        action_icon:SetText(rot.action)
+        action_icon.text:Hide()
+        action_icon:SetCallback("OnEnterPressed", function(_, _, v)
+            v = tonumber(v)
+            if not v or isSpellOnSpec(BOOKTYPE_PET, v) then
+                addon:RemoveCooldownGlowIfCurrent(BOOKTYPE_PET, rotid, rot)
+                rot.action = v
+                action_icon:SetText(v)
+                if rot.action then
+                    action:SetText(SpellData:SpellName(rot.action, not rot.ranked))
+                    if GameTooltip:IsOwned(action_icon.frame) and GameTooltip:IsVisible() then
+                        GameTooltip:SetHyperlink("spell:" .. rot.action)
+                    end
+                else
+                    action:SetText(nil)
+                    if GameTooltip:IsOwned(action_icon.frame) and GameTooltip:IsVisible() then
+                        GameTooltip:Hide()
+                    end
+                end
+
+                callback()
+            end
+        end)
+        action_icon:SetCallback("OnEnter", function()
+            if rot.action then
+                GameTooltip:SetOwner(action_icon.frame, "ANCHOR_BOTTOMRIGHT", 3)
+                GameTooltip:SetHyperlink("spell:" .. rot.action)
+            end
+        end)
+        action_icon:SetCallback("OnLeave", function()
+            if GameTooltip:IsOwned(action_icon.frame) then
+                GameTooltip:Hide()
+            end
+        end)
+        action_group:AddChild(action_icon)
+
+        if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
+            action_group:SetUserData("table", { columns = { 0, 44, 30, 1 } })
+
+            local ranked = AceGUI:Create("SimpleGroup")
+            ranked:SetFullWidth(true)
+            ranked:SetLayout("Table")
+            ranked:SetUserData("table", { columns = { 1 } })
+            ranked:SetUserData("cell", { alignV = "bottom", alignH = "center" })
+
+            local nr_label = AceGUI:Create("Label")
+            nr_label:SetText(L["Rank"])
+            nr_label:SetColor(1.0, 0.82, 0.0)
+            ranked:AddChild(nr_label)
+
+            local nr_button = AceGUI:Create("CheckBox")
+            nr_button:SetLabel("")
+            nr_button:SetValue(rot.ranked or false)
+            nr_button:SetCallback("OnValueChanged", function(_, _, val)
+                rot.ranked = val
+                action:SetUserData("norank", not val)
+                action:SetText(rot.action and SpellData:SpellName(rot.action, not rot.ranked))
+                callback()
+            end)
+            ranked:AddChild(nr_button)
+
+            action_group:AddChild(ranked)
+        end
+
+        action:SetFullWidth(true)
+        action:SetUserData("norank", not rot.ranked)
+        action:SetUserData("spec", BOOKTYPE_PET)
+        action:SetLabel(L["Spell"])
+        action:SetText(rot.action and SpellData:SpellName(rot.action, not rot.ranked))
+        action:SetCallback("OnEnterPressed", function(_, _, val)
+            addon:RemoveCooldownGlowIfCurrent(BOOKTYPE_PET, rotid, rot)
+            if isint(val) then
+                if isSpellOnSpec(BOOKTYPE_PET, tonumber(val)) then
+                    rot.action = tonumber(val)
+                else
+                    rot.action = nil
+                    action:SetText(nil)
+                end
+            else
+                rot.action = getSpecSpellID(BOOKTYPE_PET, val)
+                if rot.action == nil then
+                    action:SetText(nil)
+                end
+            end
+            action_icon:SetText(rot.action)
+            callback()
+        end)
+        action_group:AddChild(action)
+    elseif rot.type ~= nil and rot.type == "any" then
         local action = AceGUI:Create("Spell_EditBox")
         local action_icon = AceGUI:Create("ActionSlotSpell")
         action_icon:SetWidth(44)
@@ -515,7 +609,6 @@ local function add_action_group(specID, rotid, rot, callback, refresh, cooldown)
         action_icon.text:Hide()
         action_icon:SetCallback("OnEnterPressed", function(_, _, v)
             addon:RemoveCooldownGlowIfCurrent(specID, rotid, rot)
-            v = tonumber(v)
             rot.action = v
             action_icon:SetText(v)
             if rot.action then

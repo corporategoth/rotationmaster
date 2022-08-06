@@ -295,21 +295,25 @@ function addon:ReportCacheStats()
     cacheMisses = 0
 end
 
-addon.isSpellOnSpec = function(spec, spellid, ispet)
-    if not spellid then
-        return false
-    end
-    if ispet or spec == addon.currentSpec then
-        return FindSpellBookSlotBySpellID(spellid, ispet) ~= nil
-    elseif addon.specSpells[spec] ~= nil and addon.specSpells[spec][spellid] ~= nil then
-        return addon.specSpells[spec][spellid] == (ispet and true or false)
+-- pass in the spec BOOKTYPE_PET ("pet") to get pet spells
+addon.isSpellOnSpec = function(spec, spellid)
+    if spec ~= nil and spellid ~= nil and addon.specSpells[spec] ~= nil then
+        return addon.specSpells[spec][spellid] ~= nil
     end
     return false
 end
 
+addon.isActivePetSpell = function(spellid)
+    return FindSpellBookSlotBySpellID(spellid, true) ~= nil
+end
+
+-- pass in the spec BOOKTYPE_PET ("pet") to get pet spells
 addon.getSpecSpellID = function(spec, name)
-    if name ~= nil and spec ~= nil and addon.specSpellsReverse[spec] ~= nil then
-       return addon.specSpellsReverse[spec][name]
+    if spec ~= nil and name ~= nil and addon.specSpellsReverse[spec] ~= nil then
+        local spellid = addon.specSpellsReverse[spec][name]
+        if addon.isSpellOnSpec(spec, spellid) then
+            return spellid
+        end
     end
     return nil
 end

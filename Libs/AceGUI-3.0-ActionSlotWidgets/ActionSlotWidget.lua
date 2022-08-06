@@ -8,6 +8,7 @@ local L_ACTIONTYPE = {
 	macro = "Macro",
 	item = "Item",
 	equipmentset = "Equipment Set",
+	petaction = "Pet Action",
 }
 
 if GetLocale() == "frFR" then
@@ -50,6 +51,8 @@ do
 			return PickupEquipmentSetByName(actionData)
 		elseif actionType == "spell" then
             return PickupSpell(select(1, GetSpellInfo(actionData)))
+		elseif actionType == "petaction" then
+			return PickupSpell(select(1, GetSpellInfo(actionData)))
 		end
 		ClearCursor()
 	end
@@ -60,6 +63,8 @@ do
 			return true, "spell", spellId
 		elseif actionType == "spell" then
 			return true, "spell", select(2, GetSpellBookItemInfo(data1, data2))
+		elseif actionType == "petaction" then
+			return true, "petaction", data1
 		elseif actionType == "item" then
 			return true, "item", data1
 		elseif actionType == "macro" then
@@ -264,7 +269,7 @@ end
 
 do
 	local function AcceptActionType(self, actionType)
-		return actionType == "item" or actionType == "spell" or actionType == "macro" or actionType == "equipmentset"
+		return actionType == "item" or actionType == "spell" or actionType == "macro" or actionType == "equipmentset" or actionType == "petaction"
 	end	
 	
 	local function BuildValue(self, actionType, actionData)
@@ -286,6 +291,11 @@ do
 		if macroName then
 			local name, texture = GetMacroInfo(macroName:trim())
 			return "macro", name, name, texture
+		end
+		local petactionId = tonumber(value:match("petaction:(%d+)"))
+		if petactionId then
+			local name, _, texture = GetSpellInfo(petactionId)
+			return "petaction", petactionId, name, texture
 		end
 		local setName = value:match("equipmentset:([^:]+)")
 		if setName then
@@ -399,6 +409,46 @@ do
 end
 
 --------------------------------------------------------------------------------
+-- Spell-only action slot
+--------------------------------------------------------------------------------
+
+do
+	local function AcceptActionType(self, actionType)
+		return actionType == "petaction"
+	end
+
+	local function BuildValue(self, actionType, actionData)
+		return tostring(actionData)
+	end
+
+	local function ParseValue(self, value)
+		local spellId = tonumber(value) or tonumber(value:match("petaction:(%d+)"))
+		if spellId then
+			local name, _, texture = GetSpellInfo(spellId)
+			return "petaction", spellId, name, texture
+		end
+	end
+
+	local function SetActionText(self, actionType, name)
+		self.text:SetText(name)
+	end
+
+	local widgetType = "ActionSlotPetAction"
+
+	local function Constructor()
+		return BaseConstructor{
+			type = widgetType,
+			AcceptActionType = AcceptActionType,
+			ParseValue = ParseValue,
+			BuildValue = BuildValue,
+			SetActionText = SetActionText,
+		}
+	end
+
+	AceGUI:RegisterWidgetType(widgetType, Constructor, widgetVersion)
+end
+
+--------------------------------------------------------------------------------
 -- Macro-only action slot
 --------------------------------------------------------------------------------
 
@@ -482,6 +532,3 @@ do
 	
 	AceGUI:RegisterWidgetType(widgetType, Constructor, widgetVersion)
 end
-
-
-

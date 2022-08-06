@@ -251,12 +251,12 @@ do
 	
 	local function EditBox_OnReceiveDrag(this)
 		local self = this.obj
-		local type, id, info = GetCursorInfo()
+		local type, id = GetCursorInfo()
 
 		if( type == "item" ) then
 			local name = GetItemInfo(id)
 			self:SetText(name)
-			self:Fire("OnEnterPressed", name)
+			self:Fire("OnEnterPressed", id)
 			ClearCursor()
 		end
 		
@@ -365,9 +365,9 @@ do
 				
 	local function Item_OnClick(self)
 		local name = GetItemInfo(self.itemID)
-		SetText(self.parent.obj, name, string.len(name))
-		
+
 		self.parent.selectedButton = nil
+		self.parent.obj:SetText(name)
 		self.parent.obj:Fire("OnEnterPressed", self.itemID)
 	end
 	
