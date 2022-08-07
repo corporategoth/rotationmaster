@@ -32,7 +32,7 @@ addon.condition_petspell_avail = {
         end
     end,
     evaluate = function(value, cache, evalStart)
-        local spellid = addon:Widget_GetSpellId(value.spell, value.ranked)
+        local spellid = addon:Widget_GetSpellId(value.spell, false)
         if not spellid or not isActivePetSpell(spellid) then return false end
         local start, duration = getCached(cache, GetSpellCooldown, spellid)
         if start == 0 and duration == 0 then
@@ -58,7 +58,7 @@ addon.condition_petspell_avail = {
         end
     end,
     print = function(_, value)
-        local link = addon:Widget_GetSpellLink(value.spell, value.ranked)
+        local link = addon:Widget_GetSpellLink(value.spell, false)
         return string.format(L["%s is available"], nullable(link, L["<spell>"]))
     end,
     widget = function(parent, spec, value)
@@ -90,7 +90,7 @@ addon.condition_petspell_range = {
     end,
     evaluate = function(value, cache)
         if not getCached(cache, UnitExists, "target") then return false end
-        local spellid = addon:Widget_GetSpellId(value.spell, value.ranked)
+        local spellid = addon:Widget_GetSpellId(value.spell, false)
         if not spellid or not isActivePetSpell(spellid) then return false end
         if spellid then
             local sbid = getCached(addon.longtermCache, FindSpellBookSlotBySpellID, spellid, true)
@@ -101,7 +101,7 @@ addon.condition_petspell_range = {
         return false
     end,
     print = function(_, value)
-        local link = addon:Widget_GetSpellLink(value.spell, value.ranked)
+        local link = addon:Widget_GetSpellLink(value.spell, false)
         return string.format(L["%s is in range"], nullable(link, L["<spell>"]))
     end,
     widget = function(parent, spec, value)
@@ -133,7 +133,7 @@ addon.condition_petspell_cooldown = {
         end
     end,
     evaluate = function(value, cache) -- Cooldown until the spell is available
-        local spellid = addon:Widget_GetSpellId(value.spell, value.ranked)
+        local spellid = addon:Widget_GetSpellId(value.spell, false)
         if not spellid or not isActivePetSpell(spellid) then return false end
         local start, duration = getCached(cache, GetSpellCooldown, spellid)
         local remain = 0
@@ -144,7 +144,7 @@ addon.condition_petspell_cooldown = {
         return compare(value.operator, remain, value.value)
     end,
     print = function(_, value)
-        local link = addon:Widget_GetSpellLink(value.spell, value.ranked)
+        local link = addon:Widget_GetSpellLink(value.spell, false)
         return string.format(L["the %s"],
                 compareString(value.operator, string.format(L["cooldown on %s"],  nullable(link, L["<spell>"])),
                 string.format(L["%s seconds"], nullable(value.value))))
@@ -185,7 +185,7 @@ addon.condition_petspell_remain = {
         end
     end,
     evaluate = function(value, cache) -- How long the spell remains effective
-        local spellid = addon:Widget_GetSpellId(value.spell, value.ranked)
+        local spellid = addon:Widget_GetSpellId(value.spell, false)
         if not spellid or not isActivePetSpell(spellid) then return false end
         local charges, _, start, duration = getCached(cache, GetSpellCharges, spellid)
         local remain = 0
@@ -195,7 +195,7 @@ addon.condition_petspell_remain = {
         return compare(value.operator, remain, value.value)
     end,
     print = function(_, value)
-        local link = addon:Widget_GetSpellLink(value.spell, value.ranked)
+        local link = addon:Widget_GetSpellLink(value.spell, false)
         return string.format(L["the %s"],
             compareString(value.operator, string.format(L["remaining time on %s"], nullable(link, L["<spell>"])),
                             string.format(L["%s seconds"], nullable(value.value))))
@@ -237,13 +237,13 @@ addon.condition_petspell_charges = {
         end
     end,
     evaluate = function(value, cache)
-        local spellid = addon:Widget_GetSpellId(value.spell, value.ranked)
+        local spellid = addon:Widget_GetSpellId(value.spell, false)
         if not spellid or not isActivePetSpell(spellid) then return false end
         local charges = getCached(cache, GetSpellCharges, spellid)
         return compare(value.operator, charges, value.value)
     end,
     print = function(_, value)
-        local link = addon:Widget_GetSpellLink(value.spell, value.ranked)
+        local link = addon:Widget_GetSpellLink(value.spell, false)
         return string.format(L["the %s"],
             compareString(value.operator, string.format(L["number of charges on %s"], nullable(link, L["<spell>"])), nullable(value.value)))
     end,
@@ -283,7 +283,7 @@ addon.condition_petspell_history = {
         end
     end,
     evaluate = function(value)
-        local spellid = addon:Widget_GetSpellId(value.spell, value.ranked)
+        local spellid = addon:Widget_GetSpellId(value.spell, false)
         if not spellid or not isActivePetSpell(spellid) then return false end
         for idx, entry in pairs(addon.spellHistory) do
             return entry.spell == spellid and compare(value.operator, idx, value.value)
@@ -291,7 +291,7 @@ addon.condition_petspell_history = {
         return false
     end,
     print = function(_, value)
-        local link = addon:Widget_GetSpellLink(value.spell, value.ranked)
+        local link = addon:Widget_GetSpellLink(value.spell, false)
         return compareString(value.operator, string.format(L["%s was cast"], nullable(link, L["<spell>"])),
                         string.format(L["%s casts ago"], nullable(value.value)))
     end,
@@ -335,7 +335,7 @@ addon.condition_petspell_history_time = {
         end
     end,
     evaluate = function(value, _, evalStart) -- Cooldown until the spell is available
-        local spellid = addon:Widget_GetSpellId(value.spell, value.ranked)
+        local spellid = addon:Widget_GetSpellId(value.spell, false)
         if not spellid or not isActivePetSpell(spellid) then return false end
         for _, entry in pairs(addon.spellHistory) do
             return entry.spell == spellid and compare(value.operator, (evalStart - entry.time), value.value)
@@ -343,7 +343,7 @@ addon.condition_petspell_history_time = {
         return false
     end,
     print = function(_, value)
-        local link = addon:Widget_GetSpellLink(value.spell, value.ranked)
+        local link = addon:Widget_GetSpellLink(value.spell, false)
         return compareString(value.operator, string.format(L["%s was cast"], nullable(link, L["<spell>"])),
                 string.format(L["%s seconds ago"], nullable(value.value)))
     end,
@@ -385,12 +385,12 @@ addon.condition_petspell_active = {
         end
     end,
     evaluate = function(value)
-        local spellid = addon:Widget_GetSpellId(value.spell, value.ranked)
+        local spellid = addon:Widget_GetSpellId(value.spell, false)
         if not spellid or not isActivePetSpell(spellid) then return false end
         return IsCurrentSpell(spellid)
     end,
     print = function(_, value)
-        local link = addon:Widget_GetSpellLink(value.spell, value.ranked)
+        local link = addon:Widget_GetSpellLink(value.spell, false)
         return string.format(L["%s is active or pending"], nullable(link, L["<spell>"]))
     end,
     widget = function(parent, spec, value)

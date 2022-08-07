@@ -79,6 +79,20 @@ local function AddSpell(name, rank, icon, spellID, force)
 		name = name,
 		icon = icon
 	}
+
+	local _, _, revicon, _, _, _, revid = GetSpellInfo(name)
+	if revid then
+		if revid == spellID then
+			spellsReverse[lcname] = spellID
+		else
+			local revrank = GetSpellSubtext(revid)
+			AddSpell(name, revrank, revicon, revid)
+		end
+	elseif spellsReverse == nil then
+		needsUpdate[spellID] = true
+		spellsReverse[lcname] = spellID
+	end
+
 	if rank ~= nil and rank ~= "" then
 		spells[spellID].rank = rank
 
@@ -86,19 +100,6 @@ local function AddSpell(name, rank, icon, spellID, force)
 			spellsReverseRank[lcname] = {}
 		end
         spellsReverseRank[lcname][rank] = spellID
-	end
-
-	if spellsReverse[lcname] == nil then
-		local name, _, icon, _, _, _, revid = GetSpellInfo(name)
-		if revid == spellID then
-			spellsReverse[lcname] = spellID
-		elseif revid ~= nil then
-            local rank = GetSpellSubtext(revid)
-			AddSpell(name, rank, icon, revid)
-		else
-			needsUpdate[spellID] = true
-			spellsReverse[lcname] = spellID
-		end
 	end
 end
 
@@ -148,11 +149,17 @@ function SpellLoader:GetAllSpellIds(spell)
 end
 
 function SpellLoader:GetSpellId(spell, rank)
+	local lcname
     if type(spell) == "number" then
-        return select(7, GetSpellInfo(spell))
+		if self.spellList[spell] == nil then
+			return nil
+		end
+
+		lcname = string.lower(self.spellList[spell].name)
+	else
+		lcname = string.lower(spell)
     end
 
-    local lcname = string.lower(spell)
     if rank ~= nil then
         if self.spellListReverseRank[lcname] ~= nil then
             return self.spellListReverseRank[lcname][rank]
@@ -167,14 +174,23 @@ function SpellLoader:GetSpellId(spell, rank)
 end
 
 function SpellLoader:SpellName(id, norank)
-    if spells[id] ~= nil then
-		if not norank and spells[id].rank ~= nil then
-			return spells[id].name .. "|cFF888888 (" .. spells[id].rank .. ")|r"
+    if self.spellList[id] ~= nil then
+		if not norank and self.spellList[id].rank ~= nil then
+			return self.spellList[id].name .. "|cFF888888 (" .. self.spellList[id].rank .. ")|r"
 		else
-			return spells[id].name
+			return self.spellList[id].name
 		end
     end
     return select(1, GetSpellInfo(id))
+end
+
+function SpellLoader:SpellRank(id)
+	if self.spellList[id] ~= nil then
+		if self.spellList[id].rank ~= nil then
+			return self.spellList[id].rank
+		end
+	end
+	return GetSpellSubtext(id)
 end
 
 function SpellLoader:UpdateFromSpellBook(spec)
@@ -222,11 +238,11 @@ function SpellLoader:UpdateFromSpellBook(spec)
         end
 	end
 
-    table.wipe(spellOrdered)
-    for k,v in pairs(spellsReverse) do
-        table.insert(spellOrdered, k)
+    table.wipe(self.spellListOrdered)
+    for k,v in pairs(self.spellListReverse) do
+        table.insert(self.spellListOrdered, k)
     end
-    table.sort(spellOrdered)
+    table.sort(self.spellListOrdered)
 
 	return specSpells
 end
@@ -236,6 +252,7 @@ function SpellLoader:StartLoading()
 
 	local timeElapsed, totalInvalid, currentIndex = 0, 0, 0
 	self.loader = CreateFrame("Frame")
+	self.loader.parent = self
 	self.loader:SetScript("OnUpdate", function(self, elapsed)
 		timeElapsed = timeElapsed + elapsed
 		if( timeElapsed < TIMER_THROTTLE ) then return end
@@ -267,11 +284,11 @@ function SpellLoader:StartLoading()
 			end
 		end
 
-    	table.wipe(spellOrdered)
-		for k,v in pairs(spellsReverse) do
-			table.insert(spellOrdered, k)
+    	table.wipe(self.parent.spellListOrdered)
+		for k,v in pairs(self.parent.spellListReverse) do
+			table.insert(self.parent.spellListOrdered, k)
 		end
-		table.sort(spellOrdered)
+		table.sort(self.parent.spellListOrdered)
 
 		-- Every ~1 second it will update any visible predictors to make up for the fact that the data is delay loaded
 		if( currentIndex % 5000 == 0 ) then

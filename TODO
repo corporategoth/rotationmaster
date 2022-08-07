@@ -1,7 +1,3 @@
-- Fix pet spell condition when no/different pet summoned
-
-- Remove rank from pet spell
-
 - Reset Effects to default effect list
 
 - Customize condition categories (allow moving conditions to any category)

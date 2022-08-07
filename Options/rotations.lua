@@ -548,34 +548,6 @@ local function add_action_group(specID, rotid, rot, callback, refresh, cooldown)
         end)
         action_group:AddChild(action_icon)
 
-        if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
-            action_group:SetUserData("table", { columns = { 0, 44, 30, 1 } })
-
-            local ranked = AceGUI:Create("SimpleGroup")
-            ranked:SetFullWidth(true)
-            ranked:SetLayout("Table")
-            ranked:SetUserData("table", { columns = { 1 } })
-            ranked:SetUserData("cell", { alignV = "bottom", alignH = "center" })
-
-            local nr_label = AceGUI:Create("Label")
-            nr_label:SetText(L["Rank"])
-            nr_label:SetColor(1.0, 0.82, 0.0)
-            ranked:AddChild(nr_label)
-
-            local nr_button = AceGUI:Create("CheckBox")
-            nr_button:SetLabel("")
-            nr_button:SetValue(rot.ranked or false)
-            nr_button:SetCallback("OnValueChanged", function(_, _, val)
-                rot.ranked = val
-                action:SetUserData("norank", not val)
-                action:SetText(rot.action and SpellData:SpellName(rot.action, not rot.ranked))
-                callback()
-            end)
-            ranked:AddChild(nr_button)
-
-            action_group:AddChild(ranked)
-        end
-
         action:SetFullWidth(true)
         action:SetUserData("norank", not rot.ranked)
         action:SetUserData("spec", BOOKTYPE_PET)

@@ -15,8 +15,7 @@ local isint, keys, getCached, getRetryCached = addon.isint, addon.keys, addon.ge
 function addon:Widget_GetSpellId(spellid, ranked)
     if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
         if not ranked then
-            spellid = select(7, getCached(addon.longtermCache, GetSpellInfo,
-                select(1, getCached(addon.longtermCache, GetSpellInfo, spellid))))
+            spellid = SpellData:GetSpellId(spellid)
         end
     end
     return spellid
@@ -24,12 +23,13 @@ end
 
 function addon:Widget_GetSpellLink(spellid, ranked)
     if spellid ~= nil then
-        spellid = self:Widget_GetSpellId(spellid, ranked)
         if ranked then
-            local rank = GetSpellSubtext(spellid)
+            local rank = SpellLoader:SpellRank(spellid)
             if rank then
                return GetSpellLink(spellid) .. "|cFF888888 (" .. rank .. ")|r"
             end
+        else
+            spellid = self:Widget_GetSpellId(spellid, ranked)
         end
         return GetSpellLink(spellid)
     end
@@ -41,7 +41,7 @@ function addon:Widget_SpellWidget(spec, editbox, value, nametoid, isvalid, updat
     local spell_group = AceGUI:Create("SimpleGroup")
     spell_group:SetLayout("Table")
 
-    if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
+    if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE and spec ~= BOOKTYPE_PET) then
         spell_group:SetUserData("table", { columns = { 44, 30, 1 } })
     else
         spell_group:SetUserData("table", { columns = { 44, 1 } })
@@ -85,7 +85,7 @@ function addon:Widget_SpellWidget(spec, editbox, value, nametoid, isvalid, updat
     spellIcon:SetDisabled(value.disabled)
     spell_group:AddChild(spellIcon)
 
-    if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
+    if WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE and spec ~= BOOKTYPE_PET then
         local ranked = AceGUI:Create("SimpleGroup")
         ranked:SetFullWidth(true)
         ranked:SetLayout("Table")

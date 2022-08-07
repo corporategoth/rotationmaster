@@ -111,13 +111,7 @@ do
 		local activeButtons = 0
 		for idx, name in pairs(SpellData.spellListOrdered) do
 			if not alreadyAdded[name] and string.match(name, query) then
-				local spellIDs
-				if not norank and SpellData.spellListReverseRank[name] ~= nil then
-					-- spellIDs = SpellData.spellListReverseRank[name]
-					spellIDs = SpellData:GetAllSpellIds(name)
-				else
-					spellIDs = { SpellData.spellListReverse[name] }
-				end
+				local spellIDs = SpellData:GetAllSpellIds(name)
 
 				for _,spellID in spairs(spellIDs, function (t,a,b) return b < a end) do
 					if not self.obj.spellFilter or self.obj.spellFilter(self.obj, spellID) then
@@ -150,6 +144,9 @@ do
 
 						-- Ran out of text to suggest :<
 						if( activeButtons >= RESULT_ROWS ) then break end
+
+						-- Terminate the first one
+						if norank then break end
 					end
                 end
 

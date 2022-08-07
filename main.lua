@@ -1059,6 +1059,20 @@ function addon:RemoveAllCurrentGlows()
     end
 end
 
+function addon:UpdateSpecSpells()
+    local currentSpecSpells = SpellData:UpdateFromSpellBook(self.currentSpec)
+    for spec,spells in pairs(currentSpecSpells) do
+        if not self.specSpells[spec] or spec ~= BOOKTYPE_PET then
+            self.specSpells[spec] = {}
+            self.specSpellsReverse[spec] = {}
+        end
+        for spell,v in pairs(spells) do
+            self.specSpells[spec][spell] = v
+            self.specSpellsReverse[spec][SpellData:SpellName(spell, true)] = spell
+        end
+    end
+end
+
 function addon:UpdateSkill()
     addon:verbose("Skill update triggered")
     if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
@@ -1081,23 +1095,12 @@ function addon:UpdateSkill()
         end
     end
 
+    self:UpdateSpecSpells()
     self:UpdateAutoSwitch()
     self:SwitchRotation()
     self:ButtonFetch()
 
     self.longtermCache = {}
-    local currentSpecSpells = SpellData:UpdateFromSpellBook(self.currentSpec)
-    for spec,spells in pairs(currentSpecSpells) do
-        if not self.specSpells[spec] or spec ~= BOOKTYPE_PET then
-            self.specSpells[spec] = {}
-            self.specSpellsReverse[spec] = {}
-        end
-        for spell,v in pairs(spells) do
-            self.specSpells[spec][spell] = v
-            self.specSpellsReverse[spec][SpellData:SpellName(spell, true)] = spell
-        end
-    end
-
     if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
         if self.specTalents[self.currentSpec] == nil then
             self.specTalents[self.currentSpec] = {}
@@ -1251,10 +1254,10 @@ addon.PLAYER_FOCUS_CHANGED = function()
 end
 
 function addon:UNIT_PET(unit)
-    if unit == "player" then
-        SpellData:UpdateFromSpellBook(self.currentSpec)
+    if unit == "pet" then
+        addon:verbose("Player %s changed pet.", unit)
+        self:UpdateSpecSpells()
 
-        addon:verbose("Player changed pet.")
         if not self.inCombat then
             self:SwitchRotation()
         end

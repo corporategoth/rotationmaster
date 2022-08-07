@@ -4,23 +4,9 @@ do
 	local Version = 1
 	local frame
 
-	local profession_levels = {
-		APPRENTICE,
-		JOURNEYMAN,
-		EXPERT,
-		ARTISAN,
-		MASTER,
-		GRAND_MASTER,
-		ILLUSTRIOUS,
-		ZEN_MASTER,
-		DRAENOR_MASTER,
-		LEGION_MASTER,
-	}
-
 	local function spellFilter(self, spellID)
 		local spec = self:GetUserData("spec")
 		local addon = _G.RotationMaster
-
 		return addon.isSpellOnSpec(spec, spellID)
 	end
 	
