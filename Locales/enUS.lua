@@ -440,8 +440,9 @@ L["%s runes available"] = true
 L["cooldown on %s rune"] = true
 
 L["Blood"] = true
-L["Unholy"] = true
 L["Frost"] = true
+L["Unholy"] = true
+L["Death"] = true
 
 L["Spell Available"] = true
 L["Pet Spell Available"] = true

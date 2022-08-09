@@ -154,6 +154,49 @@ local default_effects = {
     }
 }
 
+local function updateRotationData(rot_func, cond_func)
+    if not addon.db.char.rotations then
+        return
+    end
+
+    local function updateConditionData(cond, cond_func)
+        if cond.type == "NOT" and cond.value ~= nil then
+            updateConditionData(cond.value, cond_func)
+        elseif cond.type == "AND" or cond.type == "OR" and cond.value ~= nil then
+            for _, subcond in pairs(cond.value) do
+                updateConditionData(subcond, cond_func)
+            end
+        else
+            cond_func(cond)
+        end
+    end
+
+    for _, rotations in pairs(addon.db.char.rotations) do -- Spec -> Rotations
+        for _, rotation in pairs(rotations) do -- Rotation ID -> Rotation Struct
+            if rotation.rotation ~= nil then
+                for _, rot in pairs(rotation.rotation) do -- Individual Rotation Steps
+                    if rot_func ~= nil then
+                        rot_func(rot, false)
+                    end
+                    if cond_func ~= nil and rot.conditions ~= nil then
+                        updateConditionData(rot.conditions, cond_func)
+                    end
+                end
+            end
+            if rotation.cooldowns ~= nil then
+                for _, rot in pairs(rotation.cooldowns) do -- Individual Rotation Steps
+                    if rot_func ~= nil then
+                        rot_func(rot, true)
+                    end
+                    if cond_func ~= nil and rot.conditions ~= nil then
+                        updateConditionData(rot.conditions, cond_func)
+                    end
+                end
+            end
+        end
+    end
+end
+
 local function upgradeTexturesToEffects()
     if addon.db.global.textures ~= nil then
         addon.db.global.effects = addon.db.global.textures
@@ -195,51 +238,21 @@ local function upgradeGlobalRotationstoPlayer()
     end
 end
 
-local function upgradeConditionItemsToItemSets(cond)
-    if cond ~= nil and cond.type ~= nil then
-        if cond.type == "NOT" then
-            upgradeConditionItemsToItemSets(cond.value)
-        elseif cond.type == "AND" or cond.type == "OR" then
-            for _, v in pairs(cond.value) do
-                upgradeConditionItemsToItemSets(v)
-            end
-        elseif cond.type == "EQUIPPED" or cond.type == "CARRYING" or
+local function upgradeItemsToItemSets()
+    updateRotationData(function(rot, is_cooldown)
+        if rot.type == "item" and (type(rot.action) == "number" or (type(rot.action) == "string" and
+                not string.match(rot.action, "%x%x%x%x%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%x%x%x%x%x%x%x%x"))) then
+            rot.action = { rot.action }
+        end
+    end, function(cond)
+        if cond.type == "EQUIPPED" or cond.type == "CARRYING" or
                 cond.type == "ITEM" or cond.type == "ITEM_COOLDOWN" then
             if type(cond.item) == "number" or (type(cond.item) == "string" and
                     not string.match(cond.item, "%x%x%x%x%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%x%x%x%x%x%x%x%x")) then
                 cond.item = { cond.item }
             end
         end
-    end
-end
-
-function addon:UpgradeRotationItemsToItemSets(rot)
-    if rot.cooldowns then
-        for _, cond in pairs(rot.cooldowns) do
-            if cond.type == "item" and (type(cond.action) == "number" or (type(cond.action) == "string" and
-                    not string.match(cond.action, "%x%x%x%x%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%x%x%x%x%x%x%x%x"))) then
-                cond.action = { cond.action }
-            end
-            upgradeConditionItemsToItemSets(cond.conditions)
-        end
-    end
-    if rot.rotation then
-        for _, cond in pairs(rot.rotation) do
-            if cond.type == "item" and (type(cond.action) == "number" or (type(cond.action) == "string" and
-                    not string.match(cond.action, "%x%x%x%x%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%x%x%x%x%x%x%x%x"))) then
-                cond.action = { cond.action }
-            end
-            upgradeConditionItemsToItemSets(cond.conditions)
-        end
-    end
-end
-
-local function upgradeItemsToItemSets()
-    for _,rots in pairs(addon.db.char.rotations) do
-        for _, rot in pairs(rots) do
-            addon:UpgradeRotationItemsToItemSets(rot)
-        end
-    end
+    end)
 end
 
 local function upgradeAddIDToAnnounce()
@@ -286,56 +299,50 @@ local function upgradeEffectsToGUID()
     if global.effects[addon.db.profile.effect] == nil then
         addon.db.profile.effect = name2idx[addon.db.profile.effect]
     end
-    if addon.db.char.rotations ~= nil then
-        for _, rotations in pairs(addon.db.char.rotations) do
-            for _, rot in pairs(rotations) do
-                if rot.cooldowns then
-                    for _, cd in pairs(rot.cooldowns) do
-                        if cd.effect ~= nil and cd.effect ~= NONE and global.effects[cd.effect] == nil then
-                            cd.effect = name2idx[cd.effect]
-                        end
-                    end
-                end
-            end
-        end
-    end
-end
 
-local function upgradePetSpellCondToAnySpell(cond)
-    if cond.type == "PETSPELL_AVAIL" then
-        cond.type = "ANYSPELL_AVAIL"
-    elseif cond.type == "PETSPELL_RANGE" then
-        cond.type = "ANYSPELL_RANGE"
-    elseif cond.type == "PETSPELL_COOLDOWN" then
-        cond.type = "ANYSPELL_COOLDOWN"
-    elseif cond.type == "PETSPELL_REMAIN" then
-        cond.type = "ANYSPELL_REMAIN"
-    elseif cond.type == "PETSPELL_CHARGES" then
-        cond.type = "ANYSPELL_CHARGES"
-    elseif cond.type == "NOT" and cond.value ~= nil then
-        upgradePetSpellCondToAnySpell(cond.value)
-    elseif cond.type == "AND" or cond.type == "OR" and cond.value ~= nil then
-        for _, subcond in pairs(cond.value) do
-            upgradePetSpellCondToAnySpell(subcond)
+    updateRotationData(function(rot, is_cooldown)
+        if is_cooldown and rot.effect ~= nil and rot.effect ~= NONE and global.effects[rot.effect] == nil then
+            rot.effect = name2idx[rot.effect]
         end
-    end
+    end)
 end
 
 local function upgradePetSpellToAnySpell()
     if addon.db.char.version == nil or addon.db.char.version < 1 then
-        for _, rotations in pairs(addon.db.char.rotations) do
-            for _, rot in pairs(rotations) do
-                if rot.type ~= nil and rot.type == BOOKTYPE_PET then
-                    rot.type = "any"
-                end
-                if rot.conditions ~= nil then
-                    for _, cond in pairs(rot.conditions) do
-                        upgradePetSpellCondToAnySpell(cond)
-                    end
-                end
+        updateRotationData(function(rot, is_cooldown)
+            if rot.type ~= nil and rot.type == BOOKTYPE_PET then
+                rot.type = "any"
+            end
+        end, function(cond)
+            if cond.type == "PETSPELL_AVAIL" then
+                cond.type = "ANYSPELL_AVAIL"
+            elseif cond.type == "PETSPELL_RANGE" then
+                cond.type = "ANYSPELL_RANGE"
+            elseif cond.type == "PETSPELL_COOLDOWN" then
+                cond.type = "ANYSPELL_COOLDOWN"
+            elseif cond.type == "PETSPELL_REMAIN" then
+                cond.type = "ANYSPELL_REMAIN"
+            elseif cond.type == "PETSPELL_CHARGES" then
+                cond.type = "ANYSPELL_CHARGES"
+            end
+        end)
+    end
+end
+
+local function upgradeRuneTypes()
+    updateRotationData(nil, function(cond)
+        if cond.type == "RUNE" or cond.type == "RUNE_COOLDOWN" then
+            if cond.rune == "BLOOD" then
+                cond.rune = 1
+            elseif cond.rune == "FROST" then
+                cond.rune = 2
+            elseif cond.rune == "UNHOLY" then
+                cond.rune = 3
+            elseif cond.rune == "DEATH" then
+                cond.rune = 4
             end
         end
-    end
+    end)
 end
 
 function addon:getDefaultItemset(id)
@@ -365,6 +372,7 @@ function addon:init()
     upgradeLogLevel()
     upgradeEffectsToGUID()
     upgradePetSpellToAnySpell()
+    upgradeRuneTypes()
     addon.db.char.version = CHAR_VERSION
 end
 

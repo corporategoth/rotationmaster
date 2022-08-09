@@ -222,9 +222,10 @@ addon.points = {
 }
 
 addon.runes = {
-    BLOOD = L["Blood"],
-    UNHOLY = L["Unholy"],
-    FROST = L["Frost"]
+    L["Blood"],  -- 1
+    L["Frost"],  -- 2
+    L["Unholy"], -- 3
+    L["Death"]   -- 4
 }
 
 addon.threat = {

@@ -12,7 +12,7 @@ local operators, units, unitsPossessive, points, runes =
 local compare, compareString, nullable, isin, getCached =
     addon.compare, addon.compareString, addon.nullable, addon.isin, addon.getCached
 
-local round, min = math.round, math.min
+local round = math.round
 
 local helpers = addon.help_funcs
 local CreateText, Indent, Gap = helpers.CreateText, helpers.Indent, helpers.Gap
@@ -371,15 +371,10 @@ if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE and LE_EXPANSION_LEVEL_CURRENT >= 2 a
         end,
         evaluate = function(value, cache)
             local points = 0
-            if value.rune == "BLOOD" then
-                if select(3, getCached(cache, GetRuneCooldown, 1)) then points = points + 1 end
-                if select(3, getCached(cache, GetRuneCooldown, 2)) then points = points + 1 end
-            elseif value.rune == "UNHOLY" then
-                if select(3, getCached(cache, GetRuneCooldown, 3)) then points = points + 1 end
-                if select(3, getCached(cache, GetRuneCooldown, 4)) then points = points + 1 end
-            elseif value.rune == "BLOOD" then
-                if select(3, getCached(cache, GetRuneCooldown, 5)) then points = points + 1 end
-                if select(3, getCached(cache, GetRuneCooldown, 6)) then points = points + 1 end
+            for i=1,6 do
+                if getCached(cache, GetRuneType, i) == value.rune then
+                    if select(3, getCached(cache, GetRuneCooldown, i)) then points = points + 1 end
+                end
             end
             return compare(value.operator, points, value.value)
         end,
@@ -433,28 +428,18 @@ if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE and LE_EXPANSION_LEVEL_CURRENT >= 2 a
         end,
         evaluate = function(value, cache)
             local points = 0
-            local start1, duration1 = 0, 10, true
-            local start2, duration2 = 0, 10, true
-            if value.rune == "BLOOD" then
-                local start1, duration1 = getCached(cache, GetRuneCooldown, 1)
-                local start2, duration2 = getCached(cache, GetRuneCooldown, 2)
-            elseif value.rune == "UNHOLY" then
-                local start1, duration1 = getCached(cache, GetRuneCooldown, 3)
-                local start2, duration2 = getCached(cache, GetRuneCooldown, 4)
-            elseif value.rune == "BLOOD" then
-                local start1, duration1 = getCached(cache, GetRuneCooldown, 5)
-                local start2, duration2 = getCached(cache, GetRuneCooldown, 6)
+            local now = GetTime()
+            local lowest_remain
+            for i=1,6 do
+                if getCached(cache, GetRuneType, i) == value.rune then
+                    local start, duration = getCached(cache, GetRuneCooldown, i)
+                    local remain = math.max(round(duration - (now - start), 3), 0)
+                    if lowest_remain == nil or remain < lowest_remain then
+                        lowest_remain = remain
+                    end
+                end
             end
-            local remain1, remain2 = 0, 0
-            if start1 ~= 0 and duration1 ~= 0 then
-                remain1 = round(duration1 - (GetTime() - start1), 3)
-                if remain1 < 0 then remain1 = 0 end
-            end
-            if start2 ~= 0 and duration2 ~= 0 then
-                remain2 = round(duration2 - (GetTime() - start2), 3)
-                if remain2 < 0 then remain2 = 0 end
-            end
-            return compare(value.operator, min(remain1, remain2), value.value)
+            return compare(value.operator, lowest_remain, value.value)
         end,
         print = function(_, value)
             local rune_type = value.rune and addon.runes[value.rune] or L["<rune type>"]
