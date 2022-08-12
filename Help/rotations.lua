@@ -5,8 +5,8 @@ local AceGUI = LibStub("AceGUI-3.0")
 local color = color
 
 local helpers = addon.help_funcs
-local CreateText, CreatePictureText, CreateButtonText, Indent, Gap =
-    helpers.CreateText, helpers.CreatePictureText, helpers.CreateButtonText, helpers.Indent, helpers.Gap
+local CreateText, CreatePictureText, Indent, Gap =
+    helpers.CreateText, helpers.CreatePictureText, helpers.Indent, helpers.Gap
 
 local function help_top_buttons(group, singular, plural)
     group:AddChild(CreateText(color.BLIZ_YELLOW .. NAME .. color.RESET .. " - " ..
@@ -15,20 +15,15 @@ local function help_top_buttons(group, singular, plural)
             "is not set the " .. singular .. " name will be set to the name of the spell or item set or first item " ..
             "in a custom item set automatically, and will change automatically as they do."))
 
-    local angle = math.rad(180)
-    local cos, sin = math.cos(angle), math.sin(angle)
-
     group:AddChild(CreatePictureText(
-        "Interface\\ChatFrame\\UI-ChatIcon-ScrollEnd-Up", 24, 24,
+        "Interface\\AddOns\\RotationMAster\\textures\\UI-ChatIcon-ScrollHome-Up", 24, 24,
         color.BLIZ_YELLOW .. L["Move to Top"] .. color.RESET .. " - " ..
-            "This will move the current " .. singular .. " to the first slot in the " .. singular .. " list.",
-        nil, nil, (sin - cos), -(cos + sin), -cos, -sin, sin, -cos, 0, 0))
+            "This will move the current " .. singular .. " to the first slot in the " .. singular .. " list."))
 
     group:AddChild(CreatePictureText(
-        "Interface\\ChatFrame\\UI-ChatIcon-ScrollDown-Up", 24, 24,
+        "Interface\\ChatFrame\\UI-ChatIcon-ScrollUp-Up", 24, 24,
         color.BLIZ_YELLOW .. L["Move Up"] .. color.RESET .. " - " ..
-            "This will move the current " .. singular .. " up to the previous slot in the " .. singular .. " list.",
-        nil, nil, (sin - cos), -(cos + sin), -cos, -sin, sin, -cos, 0, 0))
+            "This will move the current " .. singular .. " up to the previous slot in the " .. singular .. " list."))
 
     group:AddChild(CreatePictureText(
         "Interface\\ChatFrame\\UI-ChatIcon-ScrollDown-Up", 24, 24,
@@ -39,6 +34,11 @@ local function help_top_buttons(group, singular, plural)
         "Interface\\ChatFrame\\UI-ChatIcon-ScrollEnd-Up", 24, 24,
         color.BLIZ_YELLOW .. L["Move to Bottom"] .. color.RESET .. " - " ..
             "This will move the current " .. singular .. " to the last slot in the " .. singular .. " list."))
+
+    group:AddChild(CreatePictureText(
+        "Interface\\ChatFrame\\UI-ChatIcon-Maximize-Up", 24, 24,
+        color.BLIZ_YELLOW .. L["Duplicate"] .. color.RESET .. " - " ..
+            "Duplicates this " .. singular .. ", putting the duplicate immediately after the duplicated entry."))
 
     group:AddChild(CreatePictureText(
         "Interface\\Buttons\\UI-Panel-MinimizeButton-Up", 24, 24,
@@ -144,10 +144,13 @@ local function help_action_group(group, singular)
             "If you do not want to setup a reusable item set, you can select " .. color.GREEN .. L["Custom"] ..
             color.RESET .. " to specify an ad-hoc item set."))
 
-    group:AddChild(Indent(40, CreateButtonText(EDIT, "Edit the contents of the item set.  If you have selected a " ..
+    group:AddChild(CreatePictureText(
+            "Interface\\FriendsFrame\\UI-FriendsList-Large-Up", 24, 24,
+            color.BLIZ_YELLOW .. EDIT .. color.RESET .. " - " ..
+            "Edit the contents of the item set.  If you have selected a " ..
             "pre-defind item set, you will be editing that item set, which may effect other usages of that " ..
             "item set (including on your other characters if it is a global item set.  An item set must have " ..
-            "at least one item in it for this " .. singular .. " to be considered valid.")))
+            "at least one item in it for this " .. singular .. " to be considered valid."))
 
 end
 
@@ -160,10 +163,35 @@ local function help_conditions(group, singular)
             "human readable version of this condition for any non-disabed condition.  Any disabled condition " ..
             "will instead show " .. color.RED .. L["Disabled"] .. color.RESET .. "."))
 
-    group:AddChild(Indent(40, CreateButtonText(EDIT, "Open up a window to allow editing of the condition for " ..
-            "this " .. singular .. ".")))
-    group:AddChild(Indent(40, CreateButtonText(DISABLE, "Skip this " .. singular .. ", without deleting it.")))
-    group:AddChild(Indent(40, CreateButtonText(ENABLE, "Re-enable a previously disabled " .. singular .. ".")))
+    group:AddChild(Indent(40, CreatePictureText(
+            "Interface\\FriendsFrame\\UI-FriendsList-Large-Up", 24, 24,
+            color.BLIZ_YELLOW .. EDIT .. color.RESET .. " - " ..
+            "Open up a window to allow editing of the condition for this " .. singular .. ".")))
+    group:AddChild(Indent(40, CreatePictureText(
+            "Interface\\Buttons\\UI-GroupLoot-Pass-Up", 24, 24,
+            color.BLIZ_YELLOW .. L["Disabled"] .. color.RESET .. " - " ..
+            "This " .. singular .. " is disabled, and will be excluded from the rotation.  Click " ..
+            "this icon to re-enable this " .. singular .. " step.")))
+    group:AddChild(Indent(40, CreatePictureText(
+            "Interface\\CharacterFrame\\UI-Player-PlayTimeUnhealthy", 24, 24,
+            color.BLIZ_YELLOW .. L["Invalid"] .. color.RESET .. " - " ..
+            "This " .. singular .. " is disabled, and will be excluded from the rotation.  Click " ..
+            "this icon to disable this " .. singular .. " step.")))
+    group:AddChild(Indent(40, CreatePictureText(
+            "Interface\\RaidFrame\\ReadyCheck-Ready", 24, 24,
+            color.BLIZ_YELLOW .. L["Currently satisfied"] .. color.RESET .. " - " ..
+            "This " .. singular .. " step's conditions are currently satisfied by game conditions. " ..
+            "Click this icon to disable this " .. singular .. " step.")))
+    group:AddChild(Indent(40, CreatePictureText(
+            "Interface\\RaidFrame\\ReadyCheck-NotReady", 24, 24,
+            color.BLIZ_YELLOW .. L["Not currently satisfied"] .. color.RESET .. " - " ..
+            "This " .. singular .. " step's conditions are not currently satisfied by game conditions. " ..
+            "Click this icon to disable this " .. singular .. " step.")))
+    group:AddChild(Indent(40, CreatePictureText(
+            "Interface\\RaidFrame\\ReadyCheck-Waiting", 24, 24,
+            color.BLIZ_YELLOW .. "Off-Spec" .. color.RESET .. " - " ..
+            "This " .. singular .. " step's conditions cannot be evaluated due to it being for a " ..
+            "different spec.  Click this icon to disable this " .. singular .. " step.")))
 end
 
 function addon.layout_cooldown_help(frame)

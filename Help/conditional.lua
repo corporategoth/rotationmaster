@@ -4,8 +4,8 @@ local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
 local color = color
 
 local helpers = addon.help_funcs
-local CreateText, CreatePictureText, CreateButtonText, Indent, Gap =
-    helpers.CreateText, helpers.CreatePictureText, helpers.CreateButtonText, helpers.Indent, helpers.Gap
+local CreateText, CreatePictureText, Indent, Gap =
+    helpers.CreateText, helpers.CreatePictureText, helpers.Indent, helpers.Gap
 
 function addon.layout_condition_and_help(frame)
     local group = frame
@@ -102,7 +102,10 @@ function addon.layout_condition_itemwidget_help(frame)
             "If you do not want to setup a reusable item set, you can select " .. color.GREEN .. L["Custom"] ..
             color.RESET .. " to specify an ad-hoc item set."))
 
-    group:AddChild(Indent(40, CreateButtonText(EDIT, "Edit the contents of the item set.  If you have selected a " ..
+    group:AddChild(Indent(40, CreatePictureText(
+            "Interface\\FriendsFrame\\UI-FriendsList-Large-Up", 24, 24,
+            color.BLIZ_YELLOW .. EDIT .. color.RESET .. " - " ..
+            "Edit the contents of the item set.  If you have selected a " ..
             "pre-defind item set, you will be editing that item set, which may effect other usages of that " ..
             "item set (including on your other characters if it is a global item set.  An item set must have " ..
             "at least one item in it for this condition to be considered valid.")))

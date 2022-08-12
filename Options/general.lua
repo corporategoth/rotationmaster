@@ -14,7 +14,7 @@ local AboutPanel = LibStub("LibAboutPanel-2.0")
 
 local pairs, base64enc, base64dec, date, color, width_split = pairs, base64enc, base64dec, date, color, width_split
 
-local HideOnEscape = addon.HideOnEscape
+local HideOnEscape, deepcopy = addon.HideOnEscape, addon.deepcopy
 
 local function spacer(width)
     local rv = AceGUI:Create("Label")
@@ -503,7 +503,8 @@ local function ImportExport(spec, rotation, parent)
     end)
 
     --frame:SetStatusText(string.len(editbox:GetText()) .. " " .. L["bytes"] .. " (" .. select(2, editbox:GetText():gsub('\n', '\n'))+1 .. " " .. L["lines"] .. ")")
-    editbox:HighlightText(0, string.len(editbox:GetText()))
+    -- editbox:HighlightText(0, string.len(editbox:GetText()))
+    editbox:HighlightText()
     frame:AddChild(editbox)
 
     local group = AceGUI:Create("SimpleGroup")
@@ -575,12 +576,18 @@ local function create_rotation_options(frame, specID, rotid, parent, selected)
     frame:ReleaseChildren()
     frame:PauseLayout()
 
+    -- Layout first ...
+    local rot_opt = AceGUI:Create("SimpleGroup")
+    rot_opt:SetFullWidth(true)
+    rot_opt:SetLayout("Table")
+    rot_opt:SetUserData("table", { columns = { 1, 24, 24, 24 } })
+
     if (rotid == DEFAULT and rotation_settings[rotid] == nil) then
         rotation_settings[rotid] = {}
     end
 
     local name = AceGUI:Create("EditBox")
-    name:SetRelativeWidth(0.5)
+    name:SetFullWidth(true)
     name:SetLabel(NAME)
     if rotid == DEFAULT then
         name:SetText(DEFAULT)
@@ -605,62 +612,151 @@ local function create_rotation_options(frame, specID, rotid, parent, selected)
             create_spec_options(parent, specID, rotid)
         end
     end)
-    frame:AddChild(name)
+    rot_opt:AddChild(name)
 
-    local delete = AceGUI:Create("Button")
-    delete:SetRelativeWidth(0.25)
-    delete:SetText(DELETE)
-    delete:SetDisabled(rotid == DEFAULT or rotation_settings[rotid] == nil)
-    delete:SetCallback("OnClick", function()
-        HandleDelete(specID, rotid, parent)
-    end)
-    frame:AddChild(delete)
-
-    local importexport = AceGUI:Create("Button")
-    importexport:SetRelativeWidth(0.25)
-    importexport:SetText(L["Import/Export"])
+    local importexport = AceGUI:Create("Icon")
+    importexport:SetImageSize(24, 24)
+    importexport:SetImage("Interface\\FriendsFrame\\UI-FriendsList-Small-Up")
+    importexport:SetUserData("cell", { alignV = "bottom" })
     importexport:SetCallback("OnClick", function()
         ImportExport(specID, rotid, parent)
     end)
-    frame:AddChild(importexport)
+    addon.AddTooltip(importexport, L["Import/Export"])
+    rot_opt:AddChild(importexport)
 
-    local switch = AceGUI:Create("InlineGroup")
-    switch:SetFullWidth(true)
-    switch:SetTitle(L["Switch Condition"])
-    switch:SetLayout("Flow")
-
-    local switch_desc = AceGUI:Create("Label")
-    switch_desc:SetFullWidth(true)
-    switch:AddChild(switch_desc)
-    if rotid == DEFAULT then
-        switch_desc:SetText(L["No other rotations match."])
+    local duplicate = AceGUI:Create("Icon")
+    duplicate:SetImageSize(24, 24)
+    duplicate:SetUserData("cell", { alignV = "bottom" })
+    if rotation_settings[rotid] == nil then
+        duplicate:SetImage("Interface\\AddOns\\RotationMaster\\textures\\UI-ChatIcon-Maximize-Disabled")
+        duplicate:SetDisabled(true)
     else
-        local switch_valid = AceGUI:Create("Label")
-        switch_valid:SetRelativeWidth(0.5)
-        switch_valid:SetColor(255, 0, 0)
-        switch:AddChild(switch_valid)
+        duplicate:SetImage("Interface\\ChatFrame\\UI-ChatIcon-Maximize-Up")
+        duplicate:SetDisabled(false)
+    end
+    duplicate:SetCallback("OnClick", function()
+        local tmp = deepcopy(rotation_settings[rotid])
+        tmp.name = string.format(L["Copy of %s"], tmp.name or DEFAULT)
+        local newid = addon:uuid()
+        rotation_settings[newid] = tmp
 
-        local enabledisable_button = AceGUI:Create("Button")
+        create_spec_options(parent, specID, newid)
+    end)
+    addon.AddTooltip(duplicate, L["Duplicate"])
+    rot_opt:AddChild(duplicate)
+
+    local delete = AceGUI:Create("Icon")
+    delete:SetImageSize(24, 24)
+    delete:SetUserData("cell", { alignV = "bottom" })
+    if rotid == DEFAULT or rotation_settings[rotid] == nil then
+        delete:SetDisabled(true)
+        delete:SetImage("Interface\\Buttons\\UI-Panel-MinimizeButton-Disabled")
+    else
+        delete:SetDisabled(false)
+        delete:SetImage("Interface\\Buttons\\UI-Panel-MinimizeButton-Up")
+    end
+    delete:SetCallback("OnClick", function()
+        HandleDelete(specID, rotid, parent)
+    end)
+    addon.AddTooltip(delete, DELETE)
+    rot_opt:AddChild(delete)
+
+    frame:AddChild(rot_opt)
+
+    local switch = AceGUI:Create("SimpleGroup")
+    switch:SetLayout("Table")
+    switch:SetFullWidth(true)
+    switch:SetUserData("table", { columns = { 1, 36 } })
+
+    local switch_sub = AceGUI:Create("InlineGroup")
+    switch_sub:SetUserData("cell", { rowspan = 2, alignV = "top" })
+    switch_sub:SetFullWidth(true)
+    switch_sub:SetFullHeight(true)
+    switch_sub:SetLayout("List")
+    switch_sub:SetTitle(L["Switch Condition"])
+
+    -- Enforce minimum height
+    local OrigLayoutFinished = switch_sub.LayoutFinished
+    switch_sub.LayoutFinished = function(self, width, height)
+        if height < 40 then
+            height = 40
+        end
+        OrigLayoutFinished(self, width, height)
+    end
+    switch:AddChild(switch_sub)
+
+    local disabled = AceGUI:Create("Icon")
+    disabled:SetUserData("cell", { alignV = "top" })
+    switch:AddChild(disabled)
+
+    local edit_button = AceGUI:Create("Icon")
+    edit_button:SetImageSize(36, 36)
+    edit_button:SetUserData("cell", { alignV = "bottom" })
+    addon.AddTooltip(edit_button, EDIT)
+    switch:AddChild(edit_button)
+
+    if rotid == DEFAULT then
+        local switch_desc = AceGUI:Create("Label")
+        switch_desc:SetFullWidth(true)
+        switch_desc:SetText(L["No other rotations match."])
+        switch_sub:AddChild(switch_desc)
+
+        disabled:SetImage("Interface\\Buttons\\UI-CheckBox-Check-Disabled")
+        disabled:SetImageSize(24, 24)
+        disabled:SetDisabled(true)
+        addon.AddTooltip(disabled, L["Disabled"])
+
+        edit_button:SetImage("Interface\\AddOns\\RotationMaster\\textures\\UI-FriendsList-Large-Disabled")
+        edit_button:SetDisabled(true)
+    else
         local function update_switch()
+            switch_sub:ReleaseChildren()
+            switch_sub:PauseLayout()
+
+            local switch_desc = AceGUI:Create("Label")
+            switch_desc:SetFullWidth(true)
+
             if (rotation_settings[rotid] == nil or rotation_settings[rotid].switch == nil or
                 not addon:usefulSwitchCondition(rotation_settings[rotid].switch)) then
                 switch_desc:SetText(L["Manual switch only."])
-                enabledisable_button:SetDisabled(true)
-                switch_valid:SetText("")
+                disabled:SetImage("Interface\\Buttons\\UI-CheckBox-Check-Disabled")
+                disabled:SetImageSize(24, 24)
+                disabled:SetDisabled(true)
+                addon.AddTooltip(disabled, L["Disabled"])
             else
-                switch_desc:SetText(addon:printSwitchCondition(rotation_settings[rotid].switch, specID))
-                enabledisable_button:SetDisabled(false)
-                if rotation_settings[rotid].disabled then
-                    switch_valid:SetText(L["Disabled"])
-                else
-                    if addon:validateSwitchCondition(rotation_settings[rotid].switch, specId) then
-                        switch_valid:SetText("")
+                if not addon:validateSwitchCondition(rotation_settings[rotid].switch, specID) then
+                    local switch_valid = AceGUI:Create("Heading")
+                    switch_valid:SetFullWidth(true)
+                    switch_valid:SetText(color.RED .. L["THIS CONDITION DOES NOT VALIDATE"] .. color.RESET)
+                    switch_sub:AddChild(switch_valid)
+                    if rotation_settings[rotid].disabled then
+                        disabled:SetImage("Interface\\Buttons\\UI-GroupLoot-Pass-Up")
+                        disabled:SetImageSize(24, 24)
+                        addon.AddTooltip(disabled, L["Disabled"])
                     else
-                        switch_valid:SetText(L["THIS CONDITION DOES NOT VALIDATE"])
+                        disabled:SetImage("Interface\\CharacterFrame\\UI-Player-PlayTimeUnhealthy")
+                        disabled:SetImageSize(28, 28)
+                        addon.AddTooltip(disabled, L["Invalid"])
                     end
+                elseif rotation_settings[rotid].disabled then
+                    disabled:SetImage("Interface\\Buttons\\UI-GroupLoot-Pass-Up")
+                    disabled:SetImageSize(24, 24)
+                    addon.AddTooltip(disabled, L["Disabled"])
+                else
+                    disabled:SetImage("Interface\\Buttons\\UI-CheckBox-Check")
+                    disabled:SetImageSize(24, 24)
+                    addon.AddTooltip(disabled, L["Enabled"])
                 end
+                disabled:SetDisabled(false)
+                switch_desc:SetText(addon:printSwitchCondition(rotation_settings[rotid].switch, specID))
             end
+            switch_sub:AddChild(switch_desc)
+
+            addon:configure_frame(switch_sub)
+            switch_sub:ResumeLayout()
+            switch_sub:DoLayout()
         end
+
         update_switch()
         local function update_autoswitch()
             update_switch()
@@ -668,34 +764,24 @@ local function create_rotation_options(frame, specID, rotid, parent, selected)
             addon:SwitchRotation()
         end
 
-        local edit_button = AceGUI:Create("Button")
-        edit_button:SetRelativeWidth(0.25)
-        edit_button:SetText(EDIT)
-        edit_button:SetDisabled(rotation_settings[rotid] == nil)
+        disabled:SetCallback("OnClick", function()
+            rotation_settings[rotid].disabled = not rotation_settings[rotid].disabled
+            update_autoswitch()
+        end)
+
+        if rotation_settings[rotid] == nil then
+            edit_button:SetImage("Interface\\AddOns\\RotationMaster\\textures\\UI-FriendsList-Large-Disabled")
+            edit_button:SetDisabled(true)
+        else
+            edit_button:SetImage("Interface\\FriendsFrame\\UI-FriendsList-Large-Up")
+            edit_button:SetDisabled(false)
+        end
         edit_button:SetCallback("OnClick", function()
             if rotation_settings[rotid].switch == nil then
                 rotation_settings[rotid].switch = { type = nil }
             end
             addon:EditSwitchCondition(spec, rotation_settings[rotid].switch, update_autoswitch)
         end)
-        switch:AddChild(edit_button)
-
-        enabledisable_button:SetRelativeWidth(0.25)
-        if not rotation_settings[rotid] or not rotation_settings[rotid].disabled then
-            enabledisable_button:SetText(DISABLE)
-        else
-            enabledisable_button:SetText(ENABLE)
-        end
-        enabledisable_button:SetCallback("OnClick", function()
-            rotation_settings[rotid].disabled = not rotation_settings[rotid].disabled
-            if not rotation_settings[rotid].disabled then
-                enabledisable_button:SetText(DISABLE)
-            else
-                enabledisable_button:SetText(ENABLE)
-            end
-            update_autoswitch()
-        end)
-        switch:AddChild(enabledisable_button)
     end
 
     frame:AddChild(switch)
@@ -775,10 +861,14 @@ local function create_rotation_options(frame, specID, rotid, parent, selected)
                                     name = name .. " - " .. itemset.name
                                 end
                             elseif #rot.action > 0 then
+                                local item = rot.action[1]
+                                if (type(item) == "number") then
+                                    item = GetItemInfo(item) or item
+                                end
                                 if #rot.action > 1 then
-                                    name = name .. " - " .. string.format(L["%s or %d others"], rot.action[1], #rot.action-1)
+                                    name = name .. " - " .. string.format(L["%s or %d others"], item, #rot.action-1)
                                 else
-                                    name = name .. " - " .. rot.action[1]
+                                    name = name .. " - " .. item
                                 end
                             end
                         end

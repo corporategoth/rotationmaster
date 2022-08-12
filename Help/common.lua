@@ -6,6 +6,10 @@ local helpers = {}
 local color = color
 
 function helpers.CreateText(text, font, fontheight)
+    local t = AceGUI:Create("SimpleGroup")
+    t:SetFullWidth(true)
+    t:SetLayout("List")
+
     local rv = AceGUI:Create("Label")
     -- There is a bug in Table (I think) that doesn't handle SetFullWidth correctly
     rv:SetFullWidth(true)
@@ -17,7 +21,9 @@ function helpers.CreateText(text, font, fontheight)
             rv:SetFontObject(font)
         end
     end
-    return rv
+
+    t:AddChild(rv)
+    return t
 end
 
 function helpers.CreatePictureText(texture, width, height, text, font, fontheight, ...)

@@ -681,7 +681,7 @@ function addon:EndHighlightSlot()
     Highlight = {}
 end
 
-function addon:HighlightSlot(slot)
+function addon:HighlightSlots(slots)
 	addon:EndHighlightSlot()
 	for _, buttons in pairs(Spells) do
 		for _, button in pairs(buttons) do
@@ -695,10 +695,9 @@ function addon:HighlightSlot(slot)
 					bslot = ActionButton_CalculateAction(button)
 				end
 
-				if bslot and slot == bslot then
+				if bslot and addon.index(slots, bslot) ~= nil then
                     self:Glow(button, "highlight", HighlightOverlay, {}, 1.0, "CENTER", 0, 0)
                 	table.insert(Highlight, button)
-					break
 				end
 			end
 		end

@@ -1,11 +1,21 @@
 local _, addon = ...
 
-local AceGUI = LibStub("AceGUI-3.0")
-
 local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
+
+local AceGUI = LibStub("AceGUI-3.0")
+local AceSerializer = LibStub("AceSerializer-3.0")
+local libc = LibStub:GetLibrary("LibCompress")
 
 local table, pairs, ipairs = table, pairs, ipairs
 local HideOnEscape = addon.HideOnEscape
+
+local pairs, base64enc, base64dec, date, width_split = pairs, base64enc, base64dec, date, width_split
+
+local function spacer(width)
+    local rv = AceGUI:Create("Label")
+    rv:SetWidth(width)
+    return rv
+end
 
 local function create_sequence_list(frame, effect, update)
     frame:ReleaseChildren()
@@ -150,10 +160,10 @@ local function create_sequence_list(frame, effect, update)
             local movetop = AceGUI:Create("Icon")
             movetop:SetImageSize(24, 24)
             if (idx == 1) then
-                movetop:SetImage("Interface\\ChatFrame\\UI-ChatIcon-ScrollEnd-Disabled", (sin - cos), -(cos + sin), -cos, -sin, sin, -cos, 0, 0)
+                movetop:SetImage("Interface\\AddOns\\RotationMAster\\textures\\UI-ChatIcon-ScrollHome-Disabled")
                 movetop:SetDisabled(true)
             else
-                movetop:SetImage("Interface\\ChatFrame\\UI-ChatIcon-ScrollEnd-Up", (sin - cos), -(cos + sin), -cos, -sin, sin, -cos, 0, 0)
+                movetop:SetImage("Interface\\AddOns\\RotationMAster\\textures\\UI-ChatIcon-ScrollHome-Up")
                 movetop:SetDisabled(false)
             end
             movetop:SetCallback("OnClick", function()
@@ -168,10 +178,10 @@ local function create_sequence_list(frame, effect, update)
             local moveup = AceGUI:Create("Icon")
             moveup:SetImageSize(24, 24)
             if (idx == 1) then
-                moveup:SetImage("Interface\\ChatFrame\\UI-ChatIcon-ScrollDown-Disabled", (sin - cos), -(cos + sin), -cos, -sin, sin, -cos, 0, 0)
+                moveup:SetImage("Interface\\ChatFrame\\UI-ChatIcon-ScrollUp-Disabled")
                 moveup:SetDisabled(true)
             else
-                moveup:SetImage("Interface\\ChatFrame\\UI-ChatIcon-ScrollDown-Up", (sin - cos), -(cos + sin), -cos, -sin, sin, -cos, 0, 0)
+                moveup:SetImage("Interface\\ChatFrame\\UI-ChatIcon-ScrollUp-Up")
                 moveup:SetDisabled(false)
             end
             moveup:SetCallback("OnClick", function()
@@ -429,6 +439,7 @@ local function sequence_popup(name, effect, update, onclose)
     frame:DoLayout()
 end
 
+local ImportExport
 function addon:create_effect_list(frame)
     local effects = self.db.global.effects
     frame:ReleaseChildren()
@@ -451,10 +462,13 @@ function addon:create_effect_list(frame)
 
     local new_type = AceGUI:Create("Dropdown")
 
+    local first = true
     local icons = {}
     local function namesort(t, a, b) return (t[a].name or "") < (t[b].name or "") end
     for idx, v in addon.spairs(effects, namesort) do
         local row = group
+        local sep = AceGUI:Create("Heading")
+        sep:SetUserData("cell", { colspan = 5 })
 
         local icon = AceGUI:Create("Icon")
         icon:SetWidth(36)
@@ -884,22 +898,37 @@ function addon:create_effect_list(frame)
 
         row:AddChild(rowgroup)
 
+        local button_group = AceGUI:Create("SimpleGroup")
+        button_group:SetFullWidth(true)
+        button_group:SetLayout("Table")
+        button_group:SetUserData("table", { columns = { 24 } })
+
+        local importexport = AceGUI:Create("Icon")
+        importexport:SetImageSize(24, 24)
+        importexport:SetImage("Interface\\FriendsFrame\\UI-FriendsList-Small-Up")
+        importexport:SetUserData("cell", { alignV = "bottom" })
+        importexport:SetCallback("OnClick", function()
+            ImportExport(idx, frame)
+            addon:create_effect_list(frame)
+        end)
+        addon.AddTooltip(importexport, L["Import/Export"])
+        button_group:AddChild(importexport)
+
         local delete = AceGUI:Create("Icon")
         delete:SetImageSize(24, 24)
         delete:SetImage("Interface\\Buttons\\UI-Panel-MinimizeButton-Up")
+        importexport:SetUserData("cell", { alignV = "top" })
         delete:SetCallback("OnClick", function()
             effects[idx] = nil
             addon:RemoveAllCurrentGlows()
             addon:create_effect_list(frame)
         end)
         addon.AddTooltip(delete, DELETE)
-        row:AddChild(delete)
-    end
+        button_group:AddChild(delete)
 
-    local spacer = function(width)
-        local rv = AceGUI:Create("Label")
-        rv:SetRelativeWidth(width)
-        return rv
+        row:AddChild(button_group)
+
+        group:AddChild(sep)
     end
 
     local row = group
@@ -935,12 +964,30 @@ function addon:create_effect_list(frame)
 
     row:AddChild(spacer(1))
 
+    local button_group = AceGUI:Create("SimpleGroup")
+    button_group:SetFullWidth(true)
+    button_group:SetLayout("Table")
+    button_group:SetUserData("table", { columns = { 24 } })
+
+    local importexport = AceGUI:Create("Icon")
+    importexport:SetImageSize(24, 24)
+    importexport:SetImage("Interface\\FriendsFrame\\UI-FriendsList-Small-Up")
+    importexport:SetUserData("cell", { alignV = "bottom" })
+    importexport:SetCallback("OnClick", function()
+        ImportExport(addon:uuid(), frame)
+        addon:create_effect_list(frame)
+    end)
+    addon.AddTooltip(importexport, L["Import/Export"])
+    button_group:AddChild(importexport)
+
     local delete = AceGUI:Create("Icon")
     delete:SetImageSize(24, 24)
     delete:SetImage("Interface\\Buttons\\UI-Panel-MinimizeButton-Up")
     delete:SetDisabled(true)
     addon.AddTooltip(delete, DELETE)
-    row:AddChild(delete)
+    button_group:AddChild(delete)
+
+    row:AddChild(button_group)
 
     frame:AddChild(group)
 
@@ -960,6 +1007,98 @@ function addon:create_effect_list(frame)
             f:SetScript("OnShow", nil)
         end)
     end
+
+    addon:configure_frame(frame)
+    frame:ResumeLayout()
+    frame:DoLayout()
+end
+
+ImportExport = function(effect, parent)
+    local effects = addon.db.global.effects
+
+    local frame = AceGUI:Create("Window")
+    frame:SetTitle(L["Import/Export Effect"])
+    frame:SetCallback("OnClose", function(widget)
+        AceGUI:Release(widget)
+    end)
+    frame:SetLayout("List")
+    frame:SetWidth(525)
+    frame:SetHeight(475)
+    frame:EnableResize(false)
+    HideOnEscape(frame)
+
+    frame:PauseLayout()
+
+    local desc = AceGUI:Create("Label")
+    desc:SetFullWidth(true)
+    desc:SetText(L["Copy and paste this text share your profile with others, or import someone else's."])
+    frame:AddChild(desc)
+
+    local import = AceGUI:Create("Button")
+    local editbox = AceGUI:Create("MultiLineEditBox")
+
+    editbox:SetFullHeight(true)
+    editbox:SetFullWidth(true)
+    editbox:SetLabel("")
+    editbox:SetNumLines(27)
+    editbox:DisableButton(true)
+    editbox:SetFocus(true)
+    if (effects[effect] ~= nil) then
+        editbox:SetText(width_split(base64enc(libc:Compress(AceSerializer:Serialize(effects[effect]))), 64))
+    end
+    editbox.editBox:GetRegions():SetFont("Interface\\AddOns\\RotationMaster\\Fonts\\Inconsolata-Bold.ttf", 13)
+    editbox:SetCallback("OnTextChanged", function(_, _, text)
+        if text:match('^[0-9A-Za-z+/\r\n]+=*[\r\n]*$') then
+            local decomp = libc:Decompress(base64dec(text))
+            if decomp ~= nil and AceSerializer:Deserialize(decomp) then
+                --frame:SetStatusText(string.len(text) .. " " .. L["bytes"] .. " (" .. select(2, text:gsub('\n', '\n'))+1 .. " " .. L["lines"] .. ")")
+                import:SetDisabled(false)
+                return
+            end
+        end
+        --frame:SetStatusText(string.len(text) .. " " .. L["bytes"] .. " (" .. select(2, text:gsub('\n', '\n'))+1 .. " " .. L["lines"] .. ") - " ..
+        --        color.RED .. L["Parse Error"])
+        import:SetDisabled(true)
+    end)
+
+    --frame:SetStatusText(string.len(editbox:GetText()) .. " " .. L["bytes"] .. " (" .. select(2, editbox:GetText():gsub('\n', '\n'))+1 .. " " .. L["lines"] .. ")")
+    editbox:HighlightText(0, string.len(editbox:GetText()))
+    frame:AddChild(editbox)
+
+    local group = AceGUI:Create("SimpleGroup")
+    group:SetFullWidth(true)
+    group:SetLayout("Table")
+    group:SetUserData("table", { columns = { 1, 0.25, 0.25 } })
+
+    group:AddChild(spacer(1))
+
+    import:SetText(L["Import"])
+    import:SetDisabled(true)
+    import:SetCallback("OnClick", function(_, _)
+        local ok, res = AceSerializer:Deserialize(libc:Decompress(base64dec(editbox:GetText())))
+        if ok then
+            for _,e in pairs(effects) do
+                if e.name == res.name then
+                    res.name = res.name .. " (" .. date(L["Imported on %c"]) .. ")"
+                    break
+                end
+            end
+            effects[effect] = res
+
+            frame:Hide()
+            addon:create_effect_list(parent)
+        end
+    end)
+    group:AddChild(import)
+
+    local close = AceGUI:Create("Button")
+    close:SetText(CANCEL)
+    close:SetCallback("OnClick", function(_, _)
+        frame:Hide()
+    end)
+    group:AddChild(close)
+
+    frame:AddChild(group)
 
     addon:configure_frame(frame)
     frame:ResumeLayout()

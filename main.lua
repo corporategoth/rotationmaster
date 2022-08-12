@@ -1159,19 +1159,23 @@ end
 function addon:UpdateBoundButton(id)
     local bindings = self.db.char.bindings
 
-    local slot = bindings[id]
-    if slot then
-        local type, actionType = GetActionInfo(slot);
-        if type == "item" then
-            local itemid = addon:FindFirstItemOfItemSet({}, id, true)
-            if itemid and itemid ~= actionType then
-                addon:debug("Updated slot %s to new item %d", slot, itemid)
-                PickupItem(itemid)
-                PlaceAction(slot)
-                ClearCursor()
+    if bindings[id] then
+        for idx,slot in pairs(bindings[id]) do
+            local type, actionType = GetActionInfo(slot);
+            if type == "item" then
+                local itemid = addon:FindFirstItemOfItemSet({}, id, true)
+                if itemid and itemid ~= actionType then
+                    addon:debug("Updated slot %s to new item %d", slot, itemid)
+                    PickupItem(itemid)
+                    PlaceAction(slot)
+                    ClearCursor()
+                end
+            else
+                table.remove(bindings[id], idx)
+                if addon.tablelength(bindings[id]) < 1 then
+                    bindings[id] = nil
+                end
             end
-        else
-            bindings[id] = nil
         end
     end
 end
@@ -1203,22 +1207,31 @@ addon.ACTIONBAR_SLOT_CHANGED = function(self, _, slot)
     addon:ButtonFetch()
 
     local pickupItemSet
-    for id, bslot in pairs(bindings) do
-        if bslot == slot then
-            local type, action = GetCursorInfo()
-            -- Sometimes we get this when we didn't actually pick up anything.  Odd.
-            if type == "item" and addon:FindItemInItemSet(id, action) ~= nil then
-                pickupItemSet = id
-                bindings[id] = nil
-                if addon.itemSetCallback then
-                    addon.itemSetCallback(id)
+    for id, slots in pairs(bindings) do
+        for idx, bslot in pairs(slots) do
+            if bslot == slot then
+                local type, action = GetCursorInfo()
+                -- Sometimes we get this when we didn't actually pick up anything.  Odd.
+                if type == "item" and addon:FindItemInItemSet(id, action) ~= nil then
+                    pickupItemSet = id
+                    table.remove(bindings[id], idx)
+                    if addon.tablelength(bindings[id]) < 1 then
+                        bindings[id] = nil
+                    end
+                    if addon.itemSetCallback then
+                        addon.itemSetCallback(id)
+                    end
                 end
             end
         end
     end
 
     if addon.bindingItemSet then
-        bindings[addon.bindingItemSet] = slot
+        if not bindings[addon.bindingItemSet] then
+            bindings[addon.bindingItemSet] = { slot }
+        else
+            table.insert(bindings[addon.bindingItemSet], slot)
+        end
         if addon.itemSetCallback then
             addon.itemSetCallback(addon.bindingItemSet)
         end
@@ -1359,6 +1372,18 @@ function addon:PLAYER_REGEN_ENABLED()
     self.combatCache = {}
 
     addon:SwitchRotation()
+
+    -- Item Slots can't be updated while in combat.
+    for id, _ in pairs(addon.db.char.bindings) do
+        self:UpdateBoundButton(id)
+    end
+
+    for id, _ in pairs(addon.db.char.itemsets) do
+        self:UpdateItemSetButtons(id)
+    end
+    for id, _ in pairs(addon.db.global.itemsets) do
+        self:UpdateItemSetButtons(id)
+    end
 end
 
 function addon:UNIT_ENTERED_VEHICLE(_, unit)

@@ -4,8 +4,8 @@ local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
 local color = color
 
 local helpers = addon.help_funcs
-local CreateText, CreateButtonText, Indent, Gap =
-helpers.CreateText, helpers.CreateButtonText, helpers.Indent, helpers.Gap
+local CreateText, CreateButtonText, CreatePictureText, Indent, Gap =
+helpers.CreateText, helpers.CreateButtonText, helpers.CreatePictureText, helpers.Indent, helpers.Gap
 
 function addon.layout_announce_options_help(frame)
     local group = frame
@@ -49,7 +49,10 @@ function addon.layout_announce_options_help(frame)
             "If you do not want to setup a reusable item set, you can select " .. color.GREEN .. L["Custom"] ..
             color.RESET .. " to specify an ad-hoc item set."))
 
-    group:AddChild(Indent(40, CreateButtonText(EDIT, "Edit the contents of the item set.  If you have selected a " ..
+    group:AddChild(Indent(40, CreatePictureText(
+            "Interface\\FriendsFrame\\UI-FriendsList-Large-Up", 24, 24,
+            color.BLIZ_YELLOW .. EDIT .. color.RESET .. " - " ..
+             "Edit the contents of the item set.  If you have selected a " ..
             "pre-defind item set, you will be editing that item set, which may effect other usages of that " ..
             "item set (including on your other characters if it is a global item set.")))
 
@@ -69,6 +72,12 @@ function addon.layout_announce_options_help(frame)
     group:AddChild(Indent(40, CreateText(color.GREEN .. L["Interrupted"] .. color.RESET .. " - " ..
             "The cast of the spell or use of the item was interruped.  This could be interrupted by you (ie. " ..
             "aborting your cast) or by having your cast being interrupted by being attacked.")))
+
+    group:AddChild(Gap())
+    group:AddChild(CreatePictureText(
+            "Interface\\Buttons\\UI-Panel-MinimizeButton-Up", 24, 24,
+            color.BLIZ_YELLOW .. DELETE .. color.RESET .. " - " ..
+                    "Permanently delete this announcement."))
 
     group:AddChild(Gap())
     group:AddChild(CreateText(color.BLIZ_YELLOW .. L["Announce"] .. color.RESET .. " - " ..
@@ -98,6 +107,12 @@ function addon.layout_announce_options_help(frame)
             "Your current target's name, or your own name if you do not have a target selected.")))
 
     group:AddChild(Gap())
-    group:AddChild(CreateButtonText(DISABLE, "Skip this announcement without deleting it."))
-    group:AddChild(CreateButtonText(ENABLE, "Re-enable a previously disabled announcement."))
+    group:AddChild(CreatePictureText(
+            "Interface\\Buttons\\UI-CheckBox-Check", 24, 24,
+            color.BLIZ_YELLOW .. L["Enabled"] .. color.RESET .. " - " ..
+                    "This announcement is active."))
+    group:AddChild(CreatePictureText(
+            "Interface\\Buttons\\UI-GroupLoot-Pass-Up", 24, 24,
+            color.BLIZ_YELLOW .. L["Disabled"] .. color.RESET .. " - " ..
+                    "This announcement is not active."))
 end

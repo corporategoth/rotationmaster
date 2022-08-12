@@ -392,10 +392,10 @@ local function create_item_list(frame, editbox, items, isvalid, update)
             local movetop = AceGUI:Create("Icon")
             movetop:SetImageSize(24, 24)
             if (idx == 1) then
-                movetop:SetImage("Interface\\ChatFrame\\UI-ChatIcon-ScrollEnd-Disabled", (sin - cos), -(cos + sin), -cos, -sin, sin, -cos, 0, 0)
+                movetop:SetImage("Interface\\AddOns\\RotationMAster\\textures\\UI-ChatIcon-ScrollHome-Disabled")
                 movetop:SetDisabled(true)
             else
-                movetop:SetImage("Interface\\ChatFrame\\UI-ChatIcon-ScrollEnd-Up", (sin - cos), -(cos + sin), -cos, -sin, sin, -cos, 0, 0)
+                movetop:SetImage("Interface\\AddOns\\RotationMAster\\textures\\UI-ChatIcon-ScrollHome-Up")
                 movetop:SetDisabled(false)
             end
             movetop:SetCallback("OnClick", function()
@@ -410,10 +410,10 @@ local function create_item_list(frame, editbox, items, isvalid, update)
             local moveup = AceGUI:Create("Icon")
             moveup:SetImageSize(24, 24)
             if (idx == 1) then
-                moveup:SetImage("Interface\\ChatFrame\\UI-ChatIcon-ScrollDown-Disabled", (sin - cos), -(cos + sin), -cos, -sin, sin, -cos, 0, 0)
+                moveup:SetImage("Interface\\ChatFrame\\UI-ChatIcon-ScrollUp-Disabled")
                 moveup:SetDisabled(true)
             else
-                moveup:SetImage("Interface\\ChatFrame\\UI-ChatIcon-ScrollDown-Up", (sin - cos), -(cos + sin), -cos, -sin, sin, -cos, 0, 0)
+                moveup:SetImage("Interface\\ChatFrame\\UI-ChatIcon-ScrollUp-Up")
                 moveup:SetDisabled(false)
             end
             moveup:SetCallback("OnClick", function()
@@ -621,39 +621,33 @@ local function item_list(frame, selected, editbox, itemset, isvalid, update)
     local group = AceGUI:Create("SimpleGroup")
     group:SetFullWidth(true)
     group:SetLayout("Table")
-    group:SetUserData("table", { columns = { 44, 1, 35, 280 } })
+    group:SetUserData("table", { columns = { 44, 1, 35, 24, 24, 24, 24 } })
     frame:AddChild(group)
 
     local icon = AceGUI:Create("InteractiveLabel")
     local name = AceGUI:Create("EditBox")
     local glob_button = AceGUI:Create("CheckBox")
-    local delete = AceGUI:Create("Button")
-    local importexport = AceGUI:Create("Button")
-    local bind = AceGUI:Create("Button")
-    local reset = AceGUI:Create("Button")
+    local reset = AceGUI:Create("Icon")
+    local importexport = AceGUI:Create("Icon")
+    local duplicate = AceGUI:Create("Icon")
+    local delete = AceGUI:Create("Icon")
     local scrollwin = AceGUI:Create("ScrollFrame")
 
-    group:SetUserData("selected", selected)
-    local itemSetCallback = function(id)
-        local sel = group:GetUserData("selected")
-        if id == sel then
-            if bindings[sel] ~= nil then
-                bind:SetText(L["Unbind"])
-            else
-                bind:SetText(L["Bind"])
-            end
-        end
+    local itemSetCallback = function(id, slot)
+        local sel = frame:GetUserData("selected")
         if bindings[sel] ~= nil then
-            addon:ScheduleTimer("HighlightSlot", 0.5, bindings[sel])
+            addon:ScheduleTimer("HighlightSlots", 0.5, bindings[sel])
+        else
+            addon:EndHighlightSlot()
         end
     end
     addon.itemSetCallback = itemSetCallback
 
-    group.frame:SetScript("OnShow", function(f)
+    frame.frame:SetScript("OnShow", function(f)
         addon.itemSetCallback = itemSetCallback
-        itemSetCallback(f.obj:GetUserData("selected"))
+        itemSetCallback(frame:GetUserData("selected"))
     end)
-    group.frame:SetScript("OnHide", function()
+    frame.frame:SetScript("OnHide", function()
         if addon.bindingItemSet then
             addon.bindingItemSet = nil
             if GetCursorInfo() == "item" then
@@ -662,10 +656,6 @@ local function item_list(frame, selected, editbox, itemset, isvalid, update)
         end
         addon.itemSetCallback = nil
         addon:EndHighlightSlot()
-    end)
-    group.SetCallback("OnRelease", function()
-        group.frame:SetScript("OnShow", nil)
-        group.frame:SetScript("OnHide", nil)
     end)
 
     local itemid
@@ -687,9 +677,16 @@ local function item_list(frame, selected, editbox, itemset, isvalid, update)
         local defset = addon:getDefaultItemset(selected)
         if defset ~= nil then
             itemset.modified = not compareArray(defset, itemset.items)
-            reset:SetDisabled(not itemset.modified)
         else
             itemset.modified = true
+        end
+
+        if itemset.modified then
+            reset:SetDisabled(false)
+            reset:SetImage("Interface\\Buttons\\UI-RotationLeft-Button-Up")
+        else
+            reset:SetDisabled(true)
+            reset:SetImage("Interface\\AddOns\\RotationMaster\\textures\\UI-RotationLeft-Button-Disabled")
         end
         update()
     end
@@ -705,6 +702,10 @@ local function item_list(frame, selected, editbox, itemset, isvalid, update)
         if GameTooltip:IsOwned(icon.frame) then
             GameTooltip:Hide()
         end
+    end)
+    icon:SetCallback("OnClick", function()
+        addon.bindingItemSet = selected
+        PickupItem(itemid)
     end)
     group:AddChild(icon)
 
@@ -722,6 +723,7 @@ local function item_list(frame, selected, editbox, itemset, isvalid, update)
                 itemsets[selected] = itemset
             end
             delete:SetDisabled(false)
+            duplicate:SetDisabled(false)
             importexport:SetDisabled(false)
             create_item_list(scrollwin, editbox, itemset.items, isvalid, list_update)
         else
@@ -761,29 +763,15 @@ local function item_list(frame, selected, editbox, itemset, isvalid, update)
 
     group:AddChild(global)
 
-    local buttongroup = AceGUI:Create("SimpleGroup")
-    buttongroup:SetFullWidth(true)
-    buttongroup:SetLayout("Table")
-    buttongroup:SetUserData("table", { columns = { 1, 1 } })
-    group:AddChild(buttongroup)
-
-    bind:SetDisabled(itemset == nil)
-    bind:SetCallback("OnClick", function()
-        if bindings[selected] then
-            PickupAction(bindings[selected])
-            ClearCursor()
-            bindings[selected] = nil
-            bind:SetText(L["Bind"])
-        else
-            addon.bindingItemSet = selected
-            PickupItem(itemid)
-        end
-    end)
-    buttongroup:AddChild(bind)
-
-    reset:SetText(RESET)
-    reset:SetDisabled(addon:getDefaultItemset(selected) == nil or not itemset.modified)
-    reset:SetWidth(125)
+    reset:SetImageSize(24, 24)
+    if itemset == nil or not itemset.modified then
+        reset:SetDisabled(true)
+        reset:SetImage("Interface\\AddOns\\RotationMaster\\textures\\UI-RotationLeft-Button-Disabled")
+    else
+        reset:SetDisabled(false)
+        reset:SetImage("Interface\\Buttons\\UI-RotationLeft-Button-Up")
+    end
+    reset:SetUserData("cell", { alignV = "bottom" })
     reset:SetCallback("OnClick", function()
         itemset.items = deepcopy(addon:getDefaultItemset(selected))
         itemset.modified = nil
@@ -791,10 +779,63 @@ local function item_list(frame, selected, editbox, itemset, isvalid, update)
         create_item_list(scrollwin, editbox, itemset.items, isvalid, list_update)
         update_itemid()
     end)
-    buttongroup:AddChild(reset)
+    addon.AddTooltip(reset, RESET)
+    group:AddChild(reset)
 
-    delete:SetText(DELETE)
-    delete:SetDisabled(itemset == nil)
+    importexport:SetImageSize(24, 24)
+    if itemset == nil then
+        importexport:SetDisabled(true)
+        importexport:SetImage("Interface\\AddOns\\RotationMaster\\textures\\UI-FriendsList-Small-Disabled")
+    else
+        importexport:SetDisabled(false)
+        importexport:SetImage("Interface\\FriendsFrame\\UI-FriendsList-Small-Up")
+    end
+    importexport:SetUserData("cell", { alignV = "bottom" })
+    importexport:SetCallback("OnClick", function()
+        local before = deepcopy(itemset.items)
+        ImportExport(itemset.items, function()
+            create_item_list(scrollwin, editbox, itemset and itemset.items or nil, isvalid, list_update)
+            list_update()
+        end)
+    end)
+    addon.AddTooltip(importexport, L["Import/Export"])
+    group:AddChild(importexport)
+
+    duplicate:SetImageSize(24, 24)
+    duplicate:SetUserData("cell", { alignV = "bottom" })
+    if itemset == nil then
+        duplicate:SetImage("Interface\\AddOns\\RotationMaster\\textures\\UI-ChatIcon-Maximize-Disabled")
+        duplicate:SetDisabled(true)
+    else
+        duplicate:SetImage("Interface\\ChatFrame\\UI-ChatIcon-Maximize-Up")
+        duplicate:SetDisabled(false)
+    end
+    duplicate:SetCallback("OnClick", function()
+        local tmp = deepcopy(itemset)
+        tmp.name = string.format(L["Copy of %s"], tmp.name)
+        tmp.modified = nil
+        local newid = addon:uuid()
+        if glob_button:GetValue() then
+            global_itemsets[newid] = tmp
+        else
+            itemsets[newid] = tmp
+        end
+
+        addon:UpdateItemSetButtons(newid)
+        update(newid)
+    end)
+    addon.AddTooltip(duplicate, L["Duplicate"])
+    group:AddChild(duplicate)
+
+    delete:SetImageSize(24, 24)
+    delete:SetUserData("cell", { alignV = "bottom" })
+    if itemset == nil then
+        delete:SetDisabled(true)
+        delete:SetImage("Interface\\Buttons\\UI-Panel-MinimizeButton-Disabled")
+    else
+        delete:SetDisabled(false)
+        delete:SetImage("Interface\\Buttons\\UI-Panel-MinimizeButton-Up")
+    end
     delete:SetCallback("OnClick", function()
         if addon:ItemSetInUse(selected) then
             HandleDelete(selected, update)
@@ -806,18 +847,8 @@ local function item_list(frame, selected, editbox, itemset, isvalid, update)
             update()
         end
     end)
-    buttongroup:AddChild(delete)
-
-    importexport:SetText(L["Import/Export"])
-    importexport:SetDisabled(itemset == nil)
-    importexport:SetCallback("OnClick", function()
-        local before = deepcopy(itemset.items)
-        ImportExport(itemset.items, function()
-            create_item_list(scrollwin, editbox, itemset and itemset.items or nil, isvalid, list_update)
-            list_update()
-        end)
-    end)
-    buttongroup:AddChild(importexport)
+    addon.AddTooltip(delete, DELETE)
+    group:AddChild(delete)
 
     local separator = AceGUI:Create("Heading")
     separator:SetFullWidth(true)
@@ -914,11 +945,12 @@ function addon:create_itemset_list(frame)
             elseif global_itemsets[selected] ~= nil then
                 itemset = global_itemsets[selected]
             end
-            item_list(group, selected, "Inventory_EditBox", itemset, function() return true end, function()
+            group:SetUserData("selected", selected)
+            item_list(group, selected, "Inventory_EditBox", itemset, function() return true end, function(newsel)
                 local selects, sorted = self:get_item_list(NEW)
                 select:SetGroupList(selects, sorted)
-                if selects[selected] then
-                    select:SetGroup(selected)
+                if selects[newsel or selected] then
+                    select:SetGroup(newsel or selected)
                 else
                     select:SetGroup("")
                 end

@@ -4,8 +4,8 @@ local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
 local color = color
 
 local helpers = addon.help_funcs
-local CreateText, CreatePictureText, CreateButtonText, Indent, Gap =
-helpers.CreateText, helpers.CreatePictureText, helpers.CreateButtonText, helpers.Indent, helpers.Gap
+local CreateText, CreatePictureText, Indent, Gap =
+helpers.CreateText, helpers.CreatePictureText, helpers.Indent, helpers.Gap
 
 function addon.layout_item_list_help(frame)
     local group = frame
@@ -18,20 +18,15 @@ function addon.layout_item_list_help(frame)
         "if the item is entered by name and you are noit currently carrying it, however the item is still " ..
         "a valid part of the item set and will work if picked up at a later time."))
 
-    local angle = math.rad(180)
-    local cos, sin = math.cos(angle), math.sin(angle)
-
     group:AddChild(CreatePictureText(
-        "Interface\\ChatFrame\\UI-ChatIcon-ScrollEnd-Up", 24, 24,
+        "Interface\\AddOns\\RotationMaster\\textures\\UI-ChatIcon-ScrollHome-Up", 24, 24,
         color.BLIZ_YELLOW .. L["Move to Top"] .. color.RESET .. " - " ..
-                "This will move the current item to the first slot in the item list.",
-        nil, nil, (sin - cos), -(cos + sin), -cos, -sin, sin, -cos, 0, 0))
+                "This will move the current item to the first slot in the item list."))
 
     group:AddChild(CreatePictureText(
-        "Interface\\ChatFrame\\UI-ChatIcon-ScrollDown-Up", 24, 24,
+        "Interface\\ChatFrame\\UI-ChatIcon-ScrollUp-Up", 24, 24,
         color.BLIZ_YELLOW .. L["Move Up"] .. color.RESET .. " - " ..
-                "This will move the current item up to the previous slot in the item list.",
-        nil, nil, (sin - cos), -(cos + sin), -cos, -sin, sin, -cos, 0, 0))
+                "This will move the current item up to the previous slot in the item list."))
 
     group:AddChild(CreatePictureText(
         "Interface\\ChatFrame\\UI-ChatIcon-ScrollDown-Up", 24, 24,
@@ -74,7 +69,9 @@ function addon.layout_itemsets_options_help(frame)
     group:AddChild(Gap())
     group:AddChild(CreatePictureText("Interface\\Icons\\INV_Misc_QuestionMark", 36, 36,
         "The icon next to the item set name will automatically update to display the item that is currently " ..
-        "selected by this item set."))
+        "selected by this item set.  Click this icon to pick it up so it can be dragged onto your action bars. " ..
+        "When you bind an item set to your action bars, it will be updated automatically based on the " ..
+        "availability of items in the item set."))
 
     group:AddChild(Gap())
     group:AddChild(CreateText(color.BLIZ_YELLOW .. NAME .. color.RESET .. " - " ..
@@ -87,20 +84,30 @@ function addon.layout_itemsets_options_help(frame)
         "specific.  Global item sets show up in " .. color.CYAN .. "cyan" .. " when referenced."))
 
     group:AddChild(Gap())
-    group:AddChild(CreateButtonText(L["Bind"], "Bind this item set to your action bars.  Clicking this will 'pick " ..
-            "up' the action set, and then it can simply be dragged to your action bars."))
+    group:AddChild(CreatePictureText(
+            "Interface\\Buttons\\UI-RotationLeft-Button-Up", 24, 24,
+            color.BLIZ_YELLOW .. RESET .. color.RESET .. " - " ..
+            "Reset this item set to the default one that comes with Rotation Master."))
 
     group:AddChild(Gap())
-    group:AddChild(CreateButtonText(L["Unbind"], "Unbind a bound item set (this will remove it from your action " ..
-            "bars).  This is equivalent to simply dragging it off your action bars and releasing it."))
-
-    group:AddChild(Gap())
-    group:AddChild(CreateButtonText(DELETE, "Delete this item set permanently.  If this item set is in use by " ..
-        "any rotation on this character, you will be prompted to ensure this was nor performed in error."))
-
-    group:AddChild(Gap())
-    group:AddChild(CreateButtonText(L["Import/Export"], "This will open up a window that can be used to both export " ..
+    group:AddChild(CreatePictureText(
+            "Interface\\FriendsFrame\\UI-FriendsList-Small-Up", 24, 24,
+            color.BLIZ_YELLOW .. L["Import/Export"] .. color.RESET .. " - " ..
+            "This will open up a window that can be used to both export " ..
             "your current item set and import one created by someone else."))
+
+    group:AddChild(Gap())
+    group:AddChild(CreatePictureText(
+            "Interface\\ChatFrame\\UI-ChatIcon-Maximize-Up", 24, 24,
+            color.BLIZ_YELLOW .. L["Duplicate"] .. color.RESET .. " - " ..
+                    "Duplicates this item set putting the duplicate immediately after the duplicated entry."))
+
+    group:AddChild(Gap())
+    group:AddChild(CreatePictureText(
+            "Interface\\Buttons\\UI-Panel-MinimizeButton-Up", 24, 24,
+            color.BLIZ_YELLOW .. DELETE .. color.RESET .. " - " ..
+            "Delete this item set permanently.  If this item set is in use by " ..
+            "any rotation on this character, you will be prompted to ensure this was nor performed in error."))
 
     group:AddChild(Gap())
     addon.layout_item_list_help(frame)

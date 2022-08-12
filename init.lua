@@ -1,8 +1,11 @@
 local _, addon = ...
 
+local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
+
 local multiinsert, tablelength, deepcopy = addon.multiinsert, addon.tablelength, addon.deepcopy
 
 local CHAR_VERSION = 1
+local GLOBAL_VERSION = 1
 
 local combination_food = {}
 local conjured_food = { 22895, 8076, 8075, 1487, 1114, 1113, 5349, }
@@ -246,13 +249,53 @@ local function upgradeItemsToItemSets()
         end
     end, function(cond)
         if cond.type == "EQUIPPED" or cond.type == "CARRYING" or
-                cond.type == "ITEM" or cond.type == "ITEM_COOLDOWN" then
+                cond.type == "ITEM" or cond.type == "ITEM_COOLDOWN" or
+                cond.type == "ITEM_RANGE" then
             if type(cond.item) == "number" or (type(cond.item) == "string" and
                     not string.match(cond.item, "%x%x%x%x%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%x%x%x%x%x%x%x%x")) then
                 cond.item = { cond.item }
             end
         end
     end)
+end
+
+local function cacheItems()
+    updateRotationData(function(rot, is_cooldown)
+        if rot.type == "item" and rot.action ~= nil and type(rot.action) == "table" then
+            for _,item in pairs(rot.action) do
+                GetItemInfo(item)
+            end
+        end
+    end, function(cond)
+        if cond.type == "EQUIPPED" or cond.type == "CARRYING" or
+                cond.type == "ITEM" or cond.type == "ITEM_COOLDOWN" or
+                cond.type == "ITEM_RANGE" then
+            if cond.item ~= nil and type(cond.item) == "table" then
+                for _,item in pairs(cond.item) do
+                    GetItemInfo(item)
+                end
+            end
+        end
+    end)
+
+    if addon.db.global.itemsets then
+        for _,itemset in pairs(addon.db.global.itemsets) do
+            if itemset.items ~= nil then
+                for _,item in pairs(itemset.items) do
+                    GetItemInfo(item)
+                end
+            end
+        end
+    end
+    if addon.db.char.itemsets then
+        for _,itemset in pairs(addon.db.char.itemsets) do
+            if itemset.items ~= nil then
+                for _,item in pairs(itemset.items) do
+                    GetItemInfo(item)
+                end
+            end
+        end
+    end
 end
 
 local function upgradeAddIDToAnnounce()
@@ -305,6 +348,23 @@ local function upgradeEffectsToGUID()
             rot.effect = name2idx[rot.effect]
         end
     end)
+
+    if addon.db.global.version == nil or addon.db.global.version < 1 then
+        StaticPopupDialogs["ROTATIONMASTER_RESET_EFFECTS"] = {
+            text = addon.pretty_name,
+            subText = L["Default effects have changed since the previous release, do you want to reset the effect list?"],
+            button1 = YES,
+            button2 = NO,
+            OnAccept = function()
+                addon.db.global.effects = deepcopy(default_effects)
+            end,
+            showAlert = 1,
+            timeout = 0,
+            whileDead = 1,
+            hideOnEscape = 1
+        }
+        StaticPopup_Show("ROTATIONMASTER_RESET_EFFECTS")
+    end
 end
 
 local function upgradePetSpellToAnySpell()
@@ -345,6 +405,16 @@ local function upgradeRuneTypes()
     end)
 end
 
+local function upgradeBindingSlots()
+    if addon.db.char.bindings then
+        for id,val in pairs(addon.db.char.bindings) do
+            if type(val) == "number" then
+                addon.db.char.bindings[id] = { val }
+            end
+        end
+    end
+end
+
 function addon:getDefaultItemset(id)
     if default_itemsets[id] ~= nil then
         return default_itemsets[id].items
@@ -368,11 +438,14 @@ function addon:init()
     upgradeTexturesToEffects()
     upgradeGlobalRotationstoPlayer()
     upgradeItemsToItemSets()
+    cacheItems()
     upgradeAddIDToAnnounce()
     upgradeLogLevel()
     upgradeEffectsToGUID()
     upgradePetSpellToAnySpell()
     upgradeRuneTypes()
+    upgradeBindingSlots()
     addon.db.char.version = CHAR_VERSION
+    addon.db.global.version = GLOBAL_VERSION
 end
 

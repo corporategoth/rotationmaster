@@ -12,18 +12,18 @@ function addon.layout_primary_options_help(frame)
     local group = frame
 
     group:AddChild(CreateText(
-        "Rotation Master is a mod that will try and help you know what the optimal action bar button to " ..
-        "press is in combat situations.  It allows for you to create situationally distinct rotations, " ..
-        "rotations that are different for different rotations, and supports item sets (lists of items " ..
-        "in priority order, for things such as mana potions, etc)."))
+            "Rotation Master is a mod that will try and help you know what the optimal action bar button to " ..
+                    "press is in combat situations.  It allows for you to create situationally distinct rotations, " ..
+                    "rotations that are different for different rotations, and supports item sets (lists of items " ..
+                    "in priority order, for things such as mana potions, etc)."))
 
     group:AddChild(Gap())
     group:AddChild(CreateText("Fields", "Interface\\AddOns\\RotationMaster\\Fonts\\Inconsolata-Bold.ttf", 16))
 
     group:AddChild(Gap())
     group:AddChild(CreateText(color.BLIZ_YELLOW .. ENABLE .. color.RESET .. " - " ..
-        "Allow Rotation Master to perform it's function.  Unckecking this will remove all highlighting, " ..
-        "prevent rotation switching and no longer update bound item sets."))
+            "Allow Rotation Master to perform it's function.  Unckecking this will remove all highlighting, " ..
+            "prevent rotation switching and no longer update bound item sets."))
 
     group:AddChild(Gap())
     group:AddChild(CreateText(color.BLIZ_YELLOW .. L["Polling Interval (seconds)"] .. color.RESET .. " - " ..
@@ -32,6 +32,19 @@ function addon.layout_primary_options_help(frame)
         "The lower this value, the more frequent updates will be made, but also the higher the performance " ..
         "impact will be.  As human response time is generally not much better than 0.25 seconds, setting this " ..
         "too low has no practical impact."))
+
+    group:AddChild(Gap())
+    group:AddChild(CreateText(color.BLIZ_YELLOW .. L["Disable Auto-Switching"] .. color.RESET .. " - " ..
+            "Prevent Rotation Master from automatically switching to a different rotation based on it's switch " ..
+            "conditions.  This can also be achieved by manually switching to a rotation with the " .. color.MAGENTA ..
+            "/rm set <rotation>" .. color.RESET .. " command, however this option is persistent through UI reloads."))
+
+    group:AddChild(Gap())
+    group:AddChild(CreateText(color.BLIZ_YELLOW .. L["Live Status Update Frequency (seconds)"] .. color.RESET .. " - " ..
+            "How often should we check cooldown or rotation step conditions (while the configuration menu is " ..
+            "open) to update the " .. color.GREEN .. L["Currently satisfied"] .. color.RESET .. " or " .. color.RED ..
+            L["Not currently satisfied"] .. color.RESET .. " message to allow for easier condition editing.  If " ..
+            "this is set to 0, updaing this condition status will be disabled."))
 
     group:AddChild(Gap())
     group:AddChild(CreateText(color.BLIZ_YELLOW .. L["Minimap Icon"] .. color.RESET .. " - " ..
@@ -112,28 +125,32 @@ function addon.layout_primary_options_help(frame)
         "A display for the X and Y axis offsets controlled by the " .. color.BLUE .. "Offset" .. color.RESET ..
         " control."))
 
-    group:AddChild(Gap())
-    group:AddChild(CreateText(color.BLIZ_YELLOW .. L["Debug Logging"] .. color.RESET .. " - " ..
-        "Non-critical information (such as information on the Rotation Master cache hit rate) is logged to " ..
-        "the general chat tab.  This is not necessary unless you are debugging Rotation Master itself."))
+    if WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE and LE_EXPANSION_LEVEL_CURRENT >= 2 then
+        group:AddChild(Gap())
+        group:AddChild(CreateText(color.BLIZ_YELLOW .. PRIMARY .. color.RESET .. " - " ..
+            "The name we use for your primary specialization (as shown in the tabs for in the " ..
+            "rotation editing screen)."))
+        group:AddChild(CreateText(color.BLIZ_YELLOW .. SECONDARY .. color.RESET .. " - " ..
+                "The name we use for your secondary specialization (as shown in the tabs for in the " ..
+                "rotation editing screen)."))
+    end
 
     group:AddChild(Gap())
-    group:AddChild(CreateText(color.BLIZ_YELLOW .. L["Disable Auto-Switching"] .. color.RESET .. " - " ..
-        "Prevent Rotation Master from automatically switching to a different rotation based on it's switch " ..
-        "conditions.  This can also be achieved by manually switching to a rotation with the " .. color.MAGENTA ..
-        "/rm set <rotation>" .. color.RESET .. " command, however this option is persistent through UI reloads."))
+    group:AddChild(CreateText(color.BLIZ_YELLOW .. L["Log Level"] .. color.RESET .. " - " ..
+        "The of information that Rotation Master will put into your chat text box."))
+    group:AddChild(Indent(40, CreateText(color.GREEN .. L["Quiet"] .. color.RESET .. " - " ..
+        "No output from Rotation Master at all.")))
+    group:AddChild(Indent(40, CreateText(color.GREEN .. DEFAULT .. color.RESET .. " - " ..
+            "Normal output about when Rotation Master switches rotation profiles.")))
+    group:AddChild(Indent(40, CreateText(color.GREEN .. L["Debug"] .. color.RESET .. " - " ..
+            "Some information about runtime statistics and when certain trigger events happen.")))
+    group:AddChild(Indent(40, CreateText(color.GREEN .. L["Verbose"] .. color.RESET .. " - " ..
+            "Detailed information about evaluation of conditions for highlighting buttons.")))
 
     group:AddChild(Gap())
-    group:AddChild(CreateText(color.BLIZ_YELLOW .. L["Verbose Debug Logging"] .. color.RESET .. " - " ..
-        "More detailed log messages will be output to the general chat tab.  This option should only be " ..
-        "enabled by those debugging an active problem with Rotation Master, or masochists."))
-
-    group:AddChild(Gap())
-    group:AddChild(CreateText(color.BLIZ_YELLOW .. L["Live Status Update Frequency (seconds)"] .. color.RESET .. " - " ..
-        "How often should we check cooldown or rotation step conditions (while the configuration menu is " ..
-        "open) to update the " .. color.GREEN .. L["Currently satisfied"] .. color.RESET .. " or " .. color.RED ..
-        L["Not currently satisfied"] .. color.RESET .. " message to allow for easier condition editing.  If " ..
-        "this is set to 0, updaing this condition status will be disabled."))
+    group:AddChild(CreateText(color.BLIZ_YELLOW .. L["Detailed Profiling"] .. color.RESET .. " - " ..
+            "Should the profiling statistics (visible in debug mode) contain extra information about " ..
+            "components of evaluating rotation settings (as opposed to just the overall statistics)."))
 end
 
 function addon.layout_rotation_options_help(frame)
@@ -169,11 +186,17 @@ function addon.layout_rotation_options_help(frame)
         "complete this name before you can configure it."))
 
     group:AddChild(Gap())
-    group:AddChild(CreateButtonText(DELETE, "Delete this rotation permanently.  You will be prompted to ensure " ..
+    group:AddChild(CreatePictureText(
+        "Interface\\Buttons\\UI-Panel-MinimizeButton-Up", 24, 24,
+        color.BLIZ_YELLOW .. DELETE .. color.RESET .. " - " ..
+        "Delete this rotation permanently.  You will be prompted to ensure " ..
         "this was not performed by accident.  However if confirmed, this action can not be undone."))
 
     group:AddChild(Gap())
-    group:AddChild(CreateButtonText(L["Import/Export"], "This will open up a window that can be used to both export " ..
+    group:AddChild(CreatePictureText(
+            "Interface\\FriendsFrame\\UI-FriendsList-Small-Up", 24, 24,
+            color.BLIZ_YELLOW .. L["Import/Export"] .. color.RESET .. " - " ..
+        "This will open up a window that can be used to both export " ..
         "your current roation and import one created by someone else.  Imported rotations are not checked for " ..
         "their suitability, but will fail to import if they are not valid.  If there is a name conflict with the " ..
         "imported rotation, it will be named by the date and time of import."))
@@ -186,10 +209,25 @@ function addon.layout_rotation_options_help(frame)
         "Any disabled rotation that has a valid switch condition will show " .. color.RED .. L["Disabled"] ..
         color.RESET .. " will be displayed after the human readable version of the condition."))
 
-    group:AddChild(Indent(40, CreateButtonText(EDIT, "Open up a window to allow editing of the switch condition " ..
-        "for this rotation.")))
-    group:AddChild(Indent(40, CreateButtonText(DISABLE, "Disable auto-switching for this rotation without deleting it.")))
-    group:AddChild(Indent(40, CreateButtonText(ENABLE, "Re-enable a previously disabled rotation.")))
+    group:AddChild(Indent(40, CreatePictureText(
+            "Interface\\FriendsFrame\\UI-FriendsList-Large-Up", 24, 24,
+            color.BLIZ_YELLOW .. EDIT .. color.RESET .. " - " ..
+            "Open up a window to allow editing of the switch condition for this rotation.")))
+    group:AddChild(Indent(40, CreatePictureText(
+            "Interface\\Buttons\\UI-GroupLoot-Pass-Up", 24, 24,
+            color.BLIZ_YELLOW .. L["Disabled"] .. color.RESET .. " - " ..
+                    "Rotation Master will not automatically switch to this rotation.  Click this to enable " ..
+                    "auto-switching to this rotation.")))
+    group:AddChild(Indent(40, CreatePictureText(
+            "Interface\\CharacterFrame\\UI-Player-PlayTimeUnhealthy", 24, 24,
+            color.BLIZ_YELLOW .. L["Invalid"] .. color.RESET .. " - " ..
+                    "Rotation Master cannot automatically switch to this rotation as the switch condition " ..
+                    "is not valid. Click this to disable auto-switching for this rotation explicitly.")))
+    group:AddChild(Indent(40, CreatePictureText(
+            "Interface\\Buttons\\UI-CheckBox-Check", 24, 24,
+            color.BLIZ_YELLOW .. L["Enabled"] .. color.RESET .. " - " ..
+                    "Rotation Master will automatically switch to this rotation.  Click this to disable " ..
+                    "auto-switching to this rotation.")))
 
     group:AddChild(Gap())
     group:AddChild(CreateText(color.BLIZ_YELLOW .. L["Cooldowns"] .. color.RESET .. " - " ..

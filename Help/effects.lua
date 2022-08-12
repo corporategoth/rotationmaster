@@ -122,6 +122,13 @@ function addon.layout_effects_options_help(frame)
 
     group:AddChild(Gap())
     group:AddChild(CreatePictureText(
+            "Interface\\FriendsFrame\\UI-FriendsList-Small-Up", 24, 24,
+            color.BLIZ_YELLOW .. L["Import/Export"] .. color.RESET .. " - " ..
+                    "This will open up a window that can be used to both export " ..
+                    "your the effect set and import one created by someone else."))
+
+    group:AddChild(Gap())
+    group:AddChild(CreatePictureText(
         "Interface\\Buttons\\UI-Panel-MinimizeButton-Up", 24, 24,
         color.BLIZ_YELLOW .. DELETE .. color.RESET .. " - " ..
             "Permanently delete this effect.  No checks will be made to check if this effect is in use (either in " ..

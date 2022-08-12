@@ -221,7 +221,7 @@ function addon:Widget_ItemWidget(top, editbox, value, isvalid, update)
 
     local item_group = AceGUI:Create("SimpleGroup")
     item_group:SetLayout("Table")
-    item_group:SetUserData("table", { columns = { 44, 1, 0.25 } })
+    item_group:SetUserData("table", { columns = { 44, 1, 24 } })
 
     local itemIcon = AceGUI:Create("Icon")
     local update_action_image = function()
@@ -259,7 +259,7 @@ function addon:Widget_ItemWidget(top, editbox, value, isvalid, update)
     itemIcon:SetDisabled(value.disabled)
     item_group:AddChild(itemIcon)
 
-    local edit_button = AceGUI:Create("Button")
+    local edit_button = AceGUI:Create("Icon")
 
     local item = AceGUI:Create("Dropdown")
     item:SetFullWidth(true)
@@ -272,9 +272,11 @@ function addon:Widget_ItemWidget(top, editbox, value, isvalid, update)
                 value.item = val
             end
             edit_button:SetDisabled(false)
+            edit_button:SetImage("Interface\\FriendsFrame\\UI-FriendsList-Large-Up")
         else
             value.item = nil
             edit_button:SetDisabled(true)
+            edit_button:SetImage("Interface\\AddOns\\RotationMAster\\textures\\UI-FriendsList-Large-Disabled")
         end
         update_action_image()
         update()
@@ -293,9 +295,17 @@ function addon:Widget_ItemWidget(top, editbox, value, isvalid, update)
     end
     item_group:AddChild(item)
 
-    edit_button:SetText(EDIT)
-    edit_button:SetFullWidth(true)
-    edit_button:SetDisabled(value.item == nil or value.disabled)
+    edit_button:SetImageSize(24, 24)
+    edit_button:SetImage("Interface\\FriendsFrame\\UI-FriendsList-Large-Up")
+    edit_button:SetUserData("cell", { alignV = "bottom" })
+    addon.AddTooltip(edit_button, EDIT)
+    if value.item == nil or value.disabled then
+        edit_button:SetDisabled(true)
+        edit_button:SetImage("Interface\\AddOns\\RotationMAster\\textures\\UI-FriendsList-Large-Disabled")
+    else
+        edit_button:SetDisabled(false)
+        edit_button:SetImage("Interface\\FriendsFrame\\UI-FriendsList-Large-Up")
+    end
     edit_button:SetUserData("cell", { alignV = "bottom" })
     edit_button:SetCallback("OnClick", function(widget, event, ...)
         local edit_callback = function()

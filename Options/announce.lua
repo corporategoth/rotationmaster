@@ -46,7 +46,7 @@ function addon:create_announce_list(frame)
         local row2 = AceGUI:Create("SimpleGroup")
         row2:SetFullWidth(true)
         row2:SetLayout("Table")
-        row2:SetUserData("table", { columns = { 125, 1, 100 } })
+        row2:SetUserData("table", { columns = { 125, 1, 24 } })
 
         local action_group = AceGUI:Create("SimpleGroup")
         action_group:SetFullWidth(true)
@@ -148,7 +148,8 @@ function addon:create_announce_list(frame)
 
         row2:AddChild(text)
 
-        local enabledisable_button = AceGUI:Create("Button")
+        local enabledisable_button = AceGUI:Create("Icon")
+        enabledisable_button:SetImageSize(24, 24)
         enabledisable_button:SetFullWidth(true)
 
         local function handle_enabledisable(enable)
@@ -157,7 +158,13 @@ function addon:create_announce_list(frame)
             type:SetDisabled(not enable)
             text:SetDisabled(not enable)
 
-            enabledisable_button:SetText(enable and DISABLE or ENABLE)
+            if enable then
+                enabledisable_button:SetImage("Interface\\Buttons\\UI-CheckBox-Check")
+                addon.AddTooltip(enabledisable_button, L["Enabled"])
+            else
+                enabledisable_button:SetImage("Interface\\Buttons\\UI-GroupLoot-Pass-Up")
+                addon.AddTooltip(enabledisable_button, L["Disabled"])
+            end
             enabledisable_button:SetCallback("OnClick", function()
                 value.disabled = enable
                 handle_enabledisable(not enable)
@@ -189,7 +196,7 @@ function addon:create_announce_list(frame)
     local row2 = AceGUI:Create("SimpleGroup")
     row2:SetFullWidth(true)
     row2:SetLayout("Table")
-    row2:SetUserData("table", { columns = { 125, 1, 100 } })
+    row2:SetUserData("table", { columns = { 125, 1, 24 } })
 
     local action_group = AceGUI:Create("SimpleGroup")
     action_group:SetFullWidth(true)
@@ -295,9 +302,9 @@ function addon:create_announce_list(frame)
     text:SetDisabled(true)
     row2:AddChild(text)
 
-    local enabledisable_button = AceGUI:Create("Button")
-    enabledisable_button:SetFullWidth(true)
-    enabledisable_button:SetText(DISABLE)
+    local enabledisable_button = AceGUI:Create("Icon")
+    enabledisable_button:SetImageSize(24, 24)
+    enabledisable_button:SetImage("Interface\\Buttons\\UI-CheckBox-Check-Disabled")
     enabledisable_button:SetDisabled(true)
     row2:AddChild(enabledisable_button)
 

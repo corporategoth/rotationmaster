@@ -5,7 +5,7 @@ local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
 local AceGUI = LibStub("AceGUI-3.0")
 local SpellData = LibStub("AceGUI-3.0-SpellLoader")
 
-local isint, isSpellOnSpec, getSpecSpellID = addon.isint, addon.isSpellOnSpec, addon.getSpecSpellID
+local isint, isSpellOnSpec, getSpecSpellID, deepcopy = addon.isint, addon.isSpellOnSpec, addon.getSpecSpellID, addon.deepcopy
 local pairs, color, tonumber = pairs, color, tonumber
 
 local function spacer(width)
@@ -22,7 +22,7 @@ local function add_top_buttons(list, idx, callback, delete_cb)
     local button_group = AceGUI:Create("SimpleGroup")
     button_group:SetFullWidth(true)
     button_group:SetLayout("Table")
-    button_group:SetUserData("table", { columns = { 24, 1, 24, 24, 24, 24, 24 } })
+    button_group:SetUserData("table", { columns = { 24, 1, 24, 24, 24, 24, 24, 24 } })
 
     local use_name = AceGUI:Create("CheckBox")
     use_name:SetUserData("cell", { alignV = "bottom", alignH = "center" })
@@ -59,10 +59,14 @@ local function add_top_buttons(list, idx, callback, delete_cb)
                     name:SetText(itemset.name)
                 end
             elseif #rot.action > 0 then
+                local item = rot.action[1]
+                if (type(item) == "number") then
+                    item = GetItemInfo(item) or item
+                end
                 if #rot.action > 1 then
-                    name:SetText(string.format(L["%s or %d others"], rot.action[1], #rot.action-1))
+                    name:SetText(string.format(L["%s or %d others"], item, #rot.action-1))
                 else
-                    name:SetText(rot.action[1])
+                    name:SetText(item)
                 end
             end
         end
@@ -79,10 +83,10 @@ local function add_top_buttons(list, idx, callback, delete_cb)
     local movetop = AceGUI:Create("Icon")
     movetop:SetImageSize(24, 24)
     if (idx == 1) then
-        movetop:SetImage("Interface\\ChatFrame\\UI-ChatIcon-ScrollEnd-Disabled", (sin - cos), -(cos + sin), -cos, -sin, sin, -cos, 0, 0)
+        movetop:SetImage("Interface\\AddOns\\RotationMAster\\textures\\UI-ChatIcon-ScrollHome-Disabled")
         movetop:SetDisabled(true)
     else
-        movetop:SetImage("Interface\\ChatFrame\\UI-ChatIcon-ScrollEnd-Up", (sin - cos), -(cos + sin), -cos, -sin, sin, -cos, 0, 0)
+        movetop:SetImage("Interface\\AddOns\\RotationMAster\\textures\\UI-ChatIcon-ScrollHome-Up")
         movetop:SetDisabled(false)
     end
     movetop:SetCallback("OnClick", function()
@@ -96,10 +100,10 @@ local function add_top_buttons(list, idx, callback, delete_cb)
     local moveup = AceGUI:Create("Icon")
     moveup:SetImageSize(24, 24)
     if (idx == 1) then
-        moveup:SetImage("Interface\\ChatFrame\\UI-ChatIcon-ScrollDown-Disabled", (sin - cos), -(cos + sin), -cos, -sin, sin, -cos, 0, 0)
+        moveup:SetImage("Interface\\ChatFrame\\UI-ChatIcon-ScrollUp-Disabled")
         moveup:SetDisabled(true)
     else
-        moveup:SetImage("Interface\\ChatFrame\\UI-ChatIcon-ScrollDown-Up", (sin - cos), -(cos + sin), -cos, -sin, sin, -cos, 0, 0)
+        moveup:SetImage("Interface\\ChatFrame\\UI-ChatIcon-ScrollUp-Up")
         moveup:SetDisabled(false)
     end
     moveup:SetCallback("OnClick", function()
@@ -145,6 +149,18 @@ local function add_top_buttons(list, idx, callback, delete_cb)
     end)
     addon.AddTooltip(movebottom, L["Move to Bottom"])
     button_group:AddChild(movebottom)
+
+    local duplicate = AceGUI:Create("Icon")
+    duplicate:SetImageSize(24, 24)
+    duplicate:SetImage("Interface\\ChatFrame\\UI-ChatIcon-Maximize-Up")
+    duplicate:SetCallback("OnClick", function()
+        local tmp = deepcopy(rot)
+        tmp.id = addon:uuid()
+        table.insert(list, idx, tmp)
+        callback()
+    end)
+    addon.AddTooltip(duplicate, L["Duplicate"])
+    button_group:AddChild(duplicate)
 
     local delete = AceGUI:Create("Icon")
     delete:SetImageSize(24, 24)
@@ -651,7 +667,7 @@ local function add_action_group(specID, rotid, rot, callback, refresh, cooldown)
         end)
         action_group:AddChild(action)
     elseif rot.type ~= nil and rot.type == "item" then
-        action_group:SetUserData("table", { columns = { 0, 44, 1, 0.25 } })
+        action_group:SetUserData("table", { columns = { 0, 44, 1, 28 } })
 
         if rot.action == nil then
             rot.action = {}
@@ -688,8 +704,6 @@ local function add_action_group(specID, rotid, rot, callback, refresh, cooldown)
         end)
         action_group:AddChild(action_icon)
 
-        local edit_button = AceGUI:Create("Button")
-
         local action = AceGUI:Create("Dropdown")
         action:SetFullWidth(true)
         action:SetLabel(L["Item Set"])
@@ -717,10 +731,17 @@ local function add_action_group(specID, rotid, rot, callback, refresh, cooldown)
         end
         action_group:AddChild(action)
 
-        edit_button:SetText(EDIT)
-        edit_button:SetFullWidth(true)
-        edit_button:SetDisabled(rot.action == nil)
+        local edit_button = AceGUI:Create("Icon")
+        edit_button:SetImageSize(28, 28)
         edit_button:SetUserData("cell", { alignV = "bottom" })
+        if rot.action == nil then
+            edit_button:SetImage("Interface\\FriendsFrame\\UI-FriendsList-Large-Disabled")
+            edit_button:SetDisabled(true)
+        else
+            edit_button:SetImage("Interface\\FriendsFrame\\UI-FriendsList-Large-Up")
+            edit_button:SetDisabled(false)
+        end
+        addon.AddTooltip(edit_button, EDIT)
         edit_button:SetCallback("OnClick", function()
             local edit_callback = function()
                 addon:RemoveCooldownGlowIfCurrent(specID, rotid, rot)
@@ -766,16 +787,39 @@ local function add_action_group(specID, rotid, rot, callback, refresh, cooldown)
 end
 
 local function add_conditions(specID, idx, rotid, rot, callback)
-    local conditions = AceGUI:Create("InlineGroup")
 
+    local conditions = AceGUI:Create("SimpleGroup")
+    conditions:SetLayout("Table")
     conditions:SetFullWidth(true)
-    conditions:SetFullHeight(true)
-    conditions:SetLayout("Flow")
-    conditions:SetTitle(L["Conditions"])
+    conditions:SetUserData("table", { columns = { 1, 36 } })
 
     local function layout_conditions()
         conditions:ReleaseChildren()
         conditions:PauseLayout()
+
+        local conditions_sub = AceGUI:Create("InlineGroup")
+        conditions_sub:SetUserData("cell", { rowspan = 2, alignV = "top" })
+        conditions_sub:SetFullWidth(true)
+        conditions_sub:SetFullHeight(true)
+        conditions_sub:SetLayout("List")
+        conditions_sub:SetTitle(L["Conditions"])
+
+        -- Enforce minimum height
+        local OrigLayoutFinished = conditions_sub.LayoutFinished
+        conditions_sub.LayoutFinished = function(self, width, height)
+            if height < 40 then
+                height = 40
+            end
+            OrigLayoutFinished(self, width, height)
+        end
+
+        local isvalid = addon:validateCondition(rot.conditions, specID)
+        if not isvalid then
+            local condition_valid = AceGUI:Create("Heading")
+            condition_valid:SetFullWidth(true)
+            condition_valid:SetText(color.RED .. L["THIS CONDITION DOES NOT VALIDATE"] .. color.RESET)
+            conditions_sub:AddChild(condition_valid)
+        end
 
         local condition_desc = AceGUI:Create("Label")
         condition_desc:SetFullWidth(true)
@@ -801,37 +845,54 @@ local function add_conditions(specID, idx, rotid, rot, callback)
                 GameTooltip:Hide()
             end
         end)
-        conditions:AddChild(condition_desc)
+        conditions_sub:AddChild(condition_desc)
 
-        local bottom_group = AceGUI:Create("SimpleGroup")
-        bottom_group:SetFullWidth(true)
-        bottom_group:SetLayout("Table")
-        bottom_group:SetUserData("table", { columns = { 0.5, 0.25, 0.25 } })
+        conditions:AddChild(conditions_sub)
 
+        local function disable_onclick()
+            if rot.disabled then
+                rot.disabled = false
+            else
+                rot.disabled = true
+                addon:RemoveCooldownGlowIfCurrent(specID, rotid, rot)
+            end
+            layout_conditions()
+            callback()
+        end
+
+        addon.currentConditionEval = nil
         if rot.disabled then
-            addon.currentConditionEval = nil
-            local disabled = AceGUI:Create("Label")
-            disabled:SetFullWidth(true)
-            disabled:SetColor(255, 0, 0)
-            disabled:SetText(L["Disabled"])
-            bottom_group:AddChild(disabled)
+            local disabled = AceGUI:Create("Icon")
+            disabled:SetImageSize(24, 24)
+            disabled:SetUserData("cell", { alignV = "top" })
+            disabled:SetImage("Interface\\Buttons\\UI-GroupLoot-Pass-Up")
+            disabled:SetCallback("OnClick", disable_onclick)
+            addon.AddTooltip(disabled, L["Disabled"])
 
-        elseif not addon:validateCondition(rot.conditions, specID) then
-            addon.currentConditionEval = nil
-            local condition_valid = AceGUI:Create("Heading")
-            condition_valid:SetFullWidth(true)
-            condition_valid:SetText(color.RED .. L["THIS CONDITION DOES NOT VALIDATE"] .. color.RESET)
-            conditions:AddChild(condition_valid)
+            conditions:AddChild(disabled)
 
-            bottom_group:AddChild(spacer(5))
+        elseif not isvalid then
+            local not_valid = AceGUI:Create("Icon")
+            not_valid:SetImageSize(28, 28)
+            not_valid:SetUserData("cell", { alignV = "top" })
+            not_valid:SetImage("Interface\\CharacterFrame\\UI-Player-PlayTimeUnhealthy")
+            not_valid:SetCallback("OnClick", disable_onclick)
+            addon.AddTooltip(not_valid, L["Invalid"])
+
+            conditions:AddChild(not_valid)
         else
             if specID == addon.currentSpec then
-                local condition_eval = AceGUI:Create("Label")
+                local condition_eval = AceGUI:Create("Icon")
+                condition_eval:SetImageSize(24, 24)
+                condition_eval:SetUserData("cell", { alignV = "top" })
+                condition_eval:SetCallback("OnClick", disable_onclick)
                 local function update_eval()
                     if addon:evaluateCondition(rot.conditions) then
-                        condition_eval:SetText(color.GREEN .. L["Currently satisfied"] .. color.RESET)
+                        condition_eval:SetImage("Interface\\RaidFrame\\ReadyCheck-Ready")
+                        addon.AddTooltip(condition_eval, color.GREEN .. L["Currently satisfied"] .. color.RESET)
                     else
-                        condition_eval:SetText(color.RED .. L["Not currently satisfied"] .. color.RESET)
+                        condition_eval:SetImage("Interface\\RaidFrame\\ReadyCheck-NotReady")
+                        addon.AddTooltip(condition_eval, color.RED .. L["Not currently satisfied"] .. color.RESET)
                     end
                 end
                 update_eval()
@@ -840,17 +901,23 @@ local function add_conditions(specID, idx, rotid, rot, callback)
                     addon.currentConditionEval = nil
                     frame:SetScript("OnHide", nil)
                 end)
-                bottom_group:AddChild(condition_eval)
+                conditions:AddChild(condition_eval)
             else
-                addon.currentConditionEval = nil
+                local condition_eval = AceGUI:Create("Icon")
+                condition_eval:SetImageSize(24, 24)
+                condition_eval:SetUserData("cell", { alignV = "top" })
+                condition_eval:SetImage("Interface\\RaidFrame\\ReadyCheck-Waiting")
+                condition_eval:SetCallback("OnClick", disable_onclick)
 
-                bottom_group:AddChild(spacer(5))
+                conditions:AddChild(condition_eval)
             end
         end
 
-        local edit_button = AceGUI:Create("Button")
-        edit_button:SetFullWidth(true)
-        edit_button:SetText(EDIT)
+        local edit_button = AceGUI:Create("Icon")
+        edit_button:SetImageSize(36, 36)
+        edit_button:SetImage("Interface\\FriendsFrame\\UI-FriendsList-Large-Up")
+        edit_button:SetUserData("cell", { alignV = "bottom" })
+        addon.AddTooltip(edit_button, EDIT)
         edit_button:SetCallback("OnClick", function()
             if rot.conditions == nil then
                 rot.conditions = { type = nil }
@@ -860,29 +927,7 @@ local function add_conditions(specID, idx, rotid, rot, callback)
                 callback()
             end)
         end)
-        bottom_group:AddChild(edit_button)
-
-        local enabledisable_button = AceGUI:Create("Button")
-        enabledisable_button:SetFullWidth(true)
-        if not rot.disabled then
-            enabledisable_button:SetText(DISABLE)
-            enabledisable_button:SetCallback("OnClick", function()
-                rot.disabled = true
-                addon:RemoveCooldownGlowIfCurrent(specID, rotid, rot)
-                layout_conditions()
-                callback()
-            end)
-        else
-            enabledisable_button:SetText(ENABLE)
-            enabledisable_button:SetCallback("OnClick", function()
-                rot.disabled = false
-                layout_conditions()
-                callback()
-            end)
-        end
-        bottom_group:AddChild(enabledisable_button)
-
-        conditions:AddChild(bottom_group)
+        conditions:AddChild(edit_button)
 
         addon:configure_frame(conditions)
         conditions:ResumeLayout()
