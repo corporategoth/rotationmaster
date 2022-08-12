@@ -16,7 +16,7 @@ local function help_top_buttons(group, singular, plural)
             "in a custom item set automatically, and will change automatically as they do."))
 
     group:AddChild(CreatePictureText(
-        "Interface\\AddOns\\RotationMAster\\textures\\UI-ChatIcon-ScrollHome-Up", 24, 24,
+        "Interface\\AddOns\\RotationMaster\\textures\\UI-ChatIcon-ScrollHome-Up", 24, 24,
         color.BLIZ_YELLOW .. L["Move to Top"] .. color.RESET .. " - " ..
             "This will move the current " .. singular .. " to the first slot in the " .. singular .. " list."))
 

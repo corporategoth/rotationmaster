@@ -392,10 +392,10 @@ local function create_item_list(frame, editbox, items, isvalid, update)
             local movetop = AceGUI:Create("Icon")
             movetop:SetImageSize(24, 24)
             if (idx == 1) then
-                movetop:SetImage("Interface\\AddOns\\RotationMAster\\textures\\UI-ChatIcon-ScrollHome-Disabled")
+                movetop:SetImage("Interface\\AddOns\\RotationMaster\\textures\\UI-ChatIcon-ScrollHome-Disabled")
                 movetop:SetDisabled(true)
             else
-                movetop:SetImage("Interface\\AddOns\\RotationMAster\\textures\\UI-ChatIcon-ScrollHome-Up")
+                movetop:SetImage("Interface\\AddOns\\RotationMaster\\textures\\UI-ChatIcon-ScrollHome-Up")
                 movetop:SetDisabled(false)
             end
             movetop:SetCallback("OnClick", function()
