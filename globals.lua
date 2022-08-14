@@ -19,4 +19,3 @@ color = {
 
     BLIZ_YELLOW = NORMAL_FONT_COLOR_CODE,
 }
-

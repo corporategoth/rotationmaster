@@ -4,7 +4,7 @@ local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
 
 local AceGUI = LibStub("AceGUI-3.0")
 
-local table, pairs, ipairs = table, pairs, ipairs
+local color, table, pairs, ipairs = color, table, pairs, ipairs
 local wrap, HideOnEscape = addon.wrap, addon.HideOnEscape
 
 local special = {}
