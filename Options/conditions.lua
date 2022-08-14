@@ -510,7 +510,7 @@ local function layout_bottom_window(frame, group, selected, update)
     local moveto = AceGUI:Create("Dropdown")
     moveto:SetLabel(L["Move To"])
     moveto:SetDisabled(not selected or group == "SWITCH")
-    moveto:SetUserData("cell", { rowspan = 2, alignH = "right" })
+    moveto:SetUserData("cell", { alignH = "right" })
     moveto.configure = function()
         moveto:SetList(group_sel, group_sel_order)
         if selected then
@@ -575,6 +575,12 @@ local function layout_bottom_window(frame, group, selected, update)
         end
     end)
     grid:AddChild(hidden)
+
+    local tag = AceGUI:Create("Label")
+    tag:SetFullWidth(true)
+    tag:SetText(selected)
+    tag:SetUserData("cell", { alignH = "right" })
+    grid:AddChild(tag)
 
     addon:configure_frame(frame)
     frame:ResumeLayout()
