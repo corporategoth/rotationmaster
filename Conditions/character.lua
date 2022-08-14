@@ -100,7 +100,7 @@ addon:RegisterCondition("CLASS", {
 local character_class = select(2, UnitClass("player"))
 addon:RegisterCondition("CLASS_GROUP", {
     description = L["Class In Group"],
-    icon = "Interface\\Icons\\achievement_general_stayclassy",
+    icon = "Interface\\Icons\\spell_holy_prayerofshadowprotection",
     valid = function(_, value)
         return (value.class ~= nil and isin(LOCALIZED_CLASS_NAMES_MALE, value.class) and
                 value.operator ~= nil and isin(operators, value.operator) and

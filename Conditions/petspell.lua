@@ -272,7 +272,7 @@ addon:RegisterCondition("PETSPELL_CHARGES", {
 
 addon:RegisterCondition("PETSPELL_HISTORY", {
     description = L["Pet Spell Cast History"],
-    icon = "Interface\\Icons\\Spell_shadow_nightofthedead",
+    icon = "Interface\\Icons\\ability_racial_ultravision",
     valid = function(_, value)
         if value.spell ~= nil then
             local name = GetSpellInfo(value.spell)
@@ -324,7 +324,7 @@ addon:RegisterCondition("PETSPELL_HISTORY", {
 
 addon:RegisterCondition("PETSPELL_HISTORY_TIME", {
     description = L["Pet Spell Cast History Time"],
-    icon = "Interface\\Icons\\Spell_fire_sealoffire",
+    icon = "Interface\\Icons\\ability_druid_mangle",
     valid = function(_, value)
         if value.spell ~= nil then
             local name = GetSpellInfo(value.spell)
@@ -375,7 +375,7 @@ addon:RegisterCondition("PETSPELL_HISTORY_TIME", {
 
 addon:RegisterCondition("PETSPELL_ACTIVE", {
     description = L["Pet Spell Active or Pending"],
-    icon = 132212,
+    icon = "Interface\\Icons\\ability_druid_supriseattack",
     valid = function(_, value)
         if value.spell ~= nil then
             local name = GetSpellInfo(value.spell)

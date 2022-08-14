@@ -16,7 +16,7 @@ local Gap = helpers.Gap
 
 addon:RegisterCondition("ANYSPELL_AVAIL", {
     description = L["Any Spell Available"],
-    icon = "Interface\\Icons\\Ability_druid_bash",
+    icon = "Interface\\Icons\\spell_frost_manarecharge",
     valid = function(_, value)
         if value.spell ~= nil then
             local name = GetSpellInfo(value.spell)
@@ -72,7 +72,7 @@ addon:RegisterCondition("ANYSPELL_AVAIL", {
 
 addon:RegisterCondition("ANYSPELL_RANGE", {
     description = L["Any Spell In Range"],
-    icon = "Interface\\Icons\\inv_misc_bandage_03",
+    icon = "Interface\\Icons\\inv_misc_bandage_01",
     valid = function(_, value)
         if value.spell ~= nil then
             local name = GetSpellInfo(value.spell)
@@ -114,7 +114,7 @@ addon:RegisterCondition("ANYSPELL_RANGE", {
 
 addon:RegisterCondition("ANYSPELL_COOLDOWN", {
     description = L["Any Spell Cooldown"],
-    icon = "Interface\\Icons\\Spell_nature_sleep",
+    icon = "Interface\\Icons\\spell_nature_invisibilty",
     valid = function(_, value)
         if value.spell ~= nil then
             local name = GetSpellInfo(value.spell)
@@ -165,7 +165,7 @@ addon:RegisterCondition("ANYSPELL_COOLDOWN", {
 
 addon:RegisterCondition("ANYSPELL_REMAIN", {
     description = L["Any Spell Time Remaining"],
-    icon = "Interface\\Icons\\ability_hunter_pet_raptor",
+    icon = "Interface\\Icons\\spell_holy_dizzy",
     valid = function(_, value)
         if value.spell ~= nil then
             local name = GetSpellInfo(value.spell)
@@ -216,7 +216,7 @@ addon:RegisterCondition("ANYSPELL_REMAIN", {
 
 addon:RegisterCondition("ANYSPELL_CHARGES", {
     description = L["Any Spell Charges"],
-    icon = "Interface\\Icons\\Ability_mount_nightmarehorse",
+    icon = "Interface\\Icons\\spell_fire_meteorstorm",
     valid = function(_, value)
         if value.spell ~= nil then
             local name = GetSpellInfo(value.spell)
