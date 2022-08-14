@@ -41,9 +41,11 @@ L["Cache hit rate at %.02f%%"] = true
 
 -- from constants.lua
 
-L["Spells / Items"] = true
+L["Spells"] = true
+L["Items"] = true
 L["Buffs"] = true
 L["Combat"] = true
+L["Character"] = true
 L["Other"] = true
 L["Spatial"] = true
 L["Custom"] = true

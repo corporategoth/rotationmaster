@@ -165,58 +165,76 @@ local default_condition_groups = {
         conditions = {
             "CASTING", "CASTING_SPELL", "CASTING_REMAIN", "CAST_INTERRUPTABLE",
             "CHANNELING", "CHANNELING_SPELL", "CHANNELING_REMAIN", "CHANNEL_INTERRUPTABLE",
-            "COMBAT", "PET", "PET_NAME", "STEALTHED", "INCONTROL", "LOC_TYPE", "LOC_BLOCKED",
-            "MOVING", "THREAT", "THREAT_COUNT", "FORM", "ATTACKABLE", "ENEMY", "COMBAT_HISTORY",
-            "COMBAT_HISTORY_TIME", "HEALTH", "HEALTHPCT", "MANA", "MANAPCT", "POWER", "POWERPCT",
-            "POINT", "RUNE", "RUNE_COOLDOWN", "TT_HEALTH", "TT_HEALTHPCT"
+            "COMBAT", "STEALTHED", "INCONTROL", "LOC_TYPE", "LOC_BLOCKED",
+            "RUNNER", "RESIST", "IMMUNE", "MOVING", "THREAT", "THREAT_COUNT",
+            "ATTACKABLE", "ENEMY", "COMBAT_HISTORY", "COMBAT_HISTORY_TIME",
+        }
+    },
+    {
+        id = "b8136123-2bda-4230-a77a-89ea2aed3a1a",
+        name = L["Character"],
+        conditions = {
+            "CLASS", "CLASS_GROUP", "CREATURE", "CLASSIFICATION", "LEVEL", "TALENT",
+            "ROLE", "GROUP", "FORM", "PET", "PET_NAME",
+            "HEALTH", "HEALTHPCT", "TT_HEALTH", "TT_HEALTHPCT",
+            "MANA", "MANAPCT", "POWER", "POWERPCT", "POINT", "RUNE", "RUNE_COOLDOWN",
+            "TOTEM", "TOTEM_SPELL", "TOTEM_REMAIN", "TOTEM_SPELL_REMAIN",
         }
     },
     {
         id = "8034819e-26f5-4f4e-9153-d8cab5e65f31",
-        name = L["Spells / Items"],
+        name = L["Spells"],
         conditions = {
+            "SPELL_AVAIL", "SPELL_RANGE", "SPELL_COOLDOWN", "SPELL_REMAIN",
+            "SPELL_CHARGES", "SPELL_ACTIVE", "SPELL_HISTORY", "SPELL_HISTORY_TIME",
+            "PETSPELL_AVAIL", "PETSPELL_RANGE", "PETSPELL_COOLDOWN", "PETSPELL_REMAIN",
+            "PETSPELL_CHARGES", "PETSPELL_ACTIVE", "PETSPELL_HISTORY", "PETSPELL_HISTORY_TIME",
             "ANYSPELL_AVAIL", "ANYSPELL_RANGE", "ANYSPELL_COOLDOWN", "ANYSPELL_REMAIN",
-            "ANYSPELL_CHARGES", "GLYPH", "EQUIPPED", "CARRYING", "ITEM", "ITEM_RANGE",
-            "ITEM_COOLDOWN", "PETSPELL_AVAIL", "PETSPELL_RANGE", "PETSPELL_COOLDOWN",
-            "PETSPELL_REMAIN", "PETSPELL_CHARGES", "PETSPELL_HISTORY", "PETSPELL_HISTORY_TIME",
-            "PETSPELL_ACTIVE", "SPELL_AVAIL", "SPELL_RANGE", "SPELL_COOLDOWN",
-            "SPELL_REMAIN", "SPELL_CHARGES", "SPELL_HISTORY", "SPELL_HISTORY_TIME",
-            "SPELL_ACTIVE", "TOTEM", "TOTEM_SPELL", "TOTEM_REMAIN", "TOTEM_SPELL_REMAIN"
+            "ANYSPELL_CHARGES",
+        }
+    },
+    {
+        id = "fca4ff75-4085-458a-b5bf-27a6b52f2092",
+        name = L["Items"],
+        conditions = {
+            "EQUIPPED", "CARRYING", "ITEM", "ITEM_RANGE", "ITEM_COOLDOWN", "GLYPH",
         }
     },
     {
         id = "e618608c-92ec-4ae9-9dde-40a397d7beb9",
         name = L["Buffs"],
         conditions = {
-            "BUFF", "BUFF_REMAIN", "BUFF_STACKS", "STEALABLE", "DEBUFF", "DEBUFF_REMAIN",
-            "DEBUFF_STACKS", "DISPELLABLE", "WEAPON", "WEAPON_REMAIN", "WEAPON_STACKS",
-            "SWING_TIME", "SWING_TIME_REMAIN"
+            "BUFF", "BUFF_REMAIN", "BUFF_STACKS", "STEALABLE",
+            "DEBUFF", "DEBUFF_REMAIN", "DEBUFF_STACKS", "DISPELLABLE",
+            "WEAPON", "WEAPON_REMAIN", "WEAPON_STACKS", "SWING_TIME", "SWING_TIME_REMAIN",
         }
     },
     {
         id = "fa10aaf8-bc71-480f-9062-c949fd7c74e9",
         name = L["Spatial"],
         conditions = {
-            "PROXIMITY", "DISTANCE", "DISTANCE_COUNT", "PROXIMITY_HEALTH", "PROXIMITY_HEALTH_COUNT",
-            "PROXIMITY_HEALTHPCT", "PROXIMITY_HEALTHPCT_COUNT", "PROXIMITY_MANA", "PROXIMITY_MANA_COUNT",
-            "PROXIMITY_MANAPCT", "PROXIMITY_MANAPCT_COUNT"
+            "ZONE", "OUTDOORS", "DISTANCE", "DISTANCE_COUNT", "PROXIMITY",
+            "PROXIMITY_HEALTH", "PROXIMITY_HEALTH_COUNT", "PROXIMITY_HEALTHPCT", "PROXIMITY_HEALTHPCT_COUNT",
+            "PROXIMITY_MANA", "PROXIMITY_MANA_COUNT", "PROXIMITY_MANAPCT", "PROXIMITY_MANAPCT_COUNT",
         }
     },
 }
 
+-- Order of other conditions
 local default_other_conditions_order = {
-    "DELETE", "AND", "OR", "NOT", "ISSAME", "CLASS", "CLASS_GROUP", "CREATURE", "CLASSIFICATION",
-    "LEVEL", "GROUP", "RUNNER", "RESIST", "IMMUNE", "ZONE"
+    "DELETE", "AND", "OR", "NOT", "ISSAME",
 }
 
+-- Default switch conditions
 local default_switch_conditions = {
     "DELETE", "AND", "OR", "NOT", "SELF_LEVEL", "PVP", "ZONEPVP", "ZONE", "INSTANCE", "OUTDOORS",
     "STEALTHED", "GROUP", "FORM", "CLASS", "CLASS_GROUP", "CREATURE", "CLASSIFICATION",
-    "PET_NAME", "EQUIPPED", "DISTANCE_COUNT", "THREAD_COUNT", "ROLE", "GLYPH"
+    "PET", "PET_NAME", "EQUIPPED", "DISTANCE_COUNT", "THREAT_COUNT", "ROLE", "GLYPH"
 }
 
+-- Default 'switch only' conditions
 local default_disabled_conditions = {
-    "SELF_LEVEL"
+    "SELF_LEVEL", "PVP", "ZONEPVP", "INSTANCE",
 }
 
 local function updateRotationData(rot_func, cond_func)
