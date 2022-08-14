@@ -14,7 +14,7 @@ local compare, compareString, nullable, isin, getCached, round =
 local helpers = addon.help_funcs
 local Gap = helpers.Gap
 
-addon.condition_anyspell_avail = {
+addon:RegisterCondition("ANYSPELL_AVAIL", {
     description = L["Any Spell Available"],
     icon = "Interface\\Icons\\Ability_druid_bash",
     valid = function(_, value)
@@ -68,9 +68,9 @@ addon.condition_anyspell_avail = {
     help = function(frame)
         addon.layout_condition_spellwidget_help(frame)
     end
-}
+})
 
-addon.condition_anyspell_range = {
+addon:RegisterCondition("ANYSPELL_RANGE", {
     description = L["Any Spell In Range"],
     icon = "Interface\\Icons\\inv_misc_bandage_03",
     valid = function(_, value)
@@ -110,9 +110,9 @@ addon.condition_anyspell_range = {
     help = function(frame)
         addon.layout_condition_spellwidget_help(frame)
     end
-}
+})
 
-addon.condition_anyspell_cooldown = {
+addon:RegisterCondition("ANYSPELL_COOLDOWN", {
     description = L["Any Spell Cooldown"],
     icon = "Interface\\Icons\\Spell_nature_sleep",
     valid = function(_, value)
@@ -161,9 +161,9 @@ addon.condition_anyspell_cooldown = {
         addon.layout_condition_operatorwidget_help(frame, L["Spell Cooldown"], L["Seconds"],
             "The number of seconds before you can cast " .. color.BLIZ_YELLOW .. L["Spell"] .. color.RESET .. ".")
     end
-}
+})
 
-addon.condition_anyspell_remain = {
+addon:RegisterCondition("ANYSPELL_REMAIN", {
     description = L["Any Spell Time Remaining"],
     icon = "Interface\\Icons\\ability_hunter_pet_raptor",
     valid = function(_, value)
@@ -212,9 +212,9 @@ addon.condition_anyspell_remain = {
             "The number of seconds the effect of " .. color.BLIZ_YELLOW .. L["Spell"] .. color.RESET ..
                     " has left.")
     end
-}
+})
 
-addon.condition_anyspell_charges = {
+addon:RegisterCondition("ANYSPELL_CHARGES", {
     description = L["Any Spell Charges"],
     icon = "Interface\\Icons\\Ability_mount_nightmarehorse",
     valid = function(_, value)
@@ -257,4 +257,4 @@ addon.condition_anyspell_charges = {
         addon.layout_condition_operatorwidget_help(frame, L["Spell Charges"], L["Charges"],
             "The number of charges of " .. color.BLIZ_YELLOW .. L["Spell"] .. color.RESET .. " currently active.")
     end
-}
+})

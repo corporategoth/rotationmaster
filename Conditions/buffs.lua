@@ -12,7 +12,7 @@ local compare, compareString, nullable, isin, getCached, deepcopy, playerize =
     addon.compare, addon.compareString, addon.nullable, addon.isin, addon.getCached, addon.deepcopy, addon.playerize
 
 local helpers = addon.help_funcs
-local Gap = helpers.Gap
+local CreateText, Gap = helpers.CreateText, helpers.Gap
 
 local UnitBuff
 if (WOW_PROJECT_ID == WOW_PROJECT_CLASSIC) then
@@ -22,7 +22,7 @@ else
     UnitBuff = function(unit, idx) return UnitAura(unit, idx, "HELPFUL") end
 end
 
-addon.condition_buff = {
+addon:RegisterCondition("BUFF", {
     description = L["Buff Present"],
     icon = "Interface\\Icons\\spell_holy_divinespirit",
     valid = function(_, value)
@@ -85,9 +85,9 @@ addon.condition_buff = {
         frame:AddChild(Gap())
         addon.layout_condition_spellnamewidget_help(frame)
     end
-}
+})
 
-addon.condition_buff_remain = {
+addon:RegisterCondition("BUFF_REMAIN", {
     description = L["Buff Time Remaining"],
     icon = "Interface\\Icons\\Spell_frost_stun",
     valid = function(_, value)
@@ -157,9 +157,9 @@ addon.condition_buff_remain = {
             color.RESET .. ".  If the buff is not present, this condition will not be successful (regardless " ..
             "of the " .. color.BLIZ_YELLOW .. "Operator" .. color.RESET .. " used.)")
     end
-}
+})
 
-addon.condition_buff_stacks = {
+addon:RegisterCondition("BUFF_STACKS", {
     description = L["Buff Stacks"],
     icon = "Interface\\Icons\\Inv_misc_coin_02",
     valid = function(_, value)
@@ -228,9 +228,9 @@ addon.condition_buff_stacks = {
             ".  If the buff is not present, this condition will not be successful (regardless " ..
             "of the " .. color.BLIZ_YELLOW .. "Operator" .. color.RESET .. " used.)")
     end
-}
+})
 
-addon.condition_stealable = {
+addon:RegisterCondition("STEALABLE", {
     description = L["Has Stealable Buff"],
     icon = "Interface\\Icons\\Inv_weapon_shortblade_22",
     valid = function(_, value)
@@ -263,4 +263,4 @@ addon.condition_stealable = {
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
     end
-}
+})

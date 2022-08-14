@@ -22,7 +22,7 @@ else
     UnitDebuff = function(unit, idx) return UnitAura(unit, idx, "HARMFUL") end
 end
 
-addon.condition_debuff = {
+addon:RegisterCondition("DEBUFF", {
     description = L["Debuff Present"],
     icon = "Interface\\Icons\\spell_shadow_curseoftounges",
     valid = function(_, value)
@@ -80,9 +80,9 @@ addon.condition_debuff = {
         frame:AddChild(Gap())
         addon.layout_condition_spellnamewidget_help(frame)
     end
-}
+})
 
-addon.condition_debuff_remain = {
+addon:RegisterCondition("DEBUFF_STACKS", {
     description = L["Debuff Time Remaining"],
     icon = "Interface\\Icons\\ability_creature_cursed_04",
     valid = function(_, value)
@@ -153,9 +153,9 @@ addon.condition_debuff_remain = {
             color.RESET .. ".  If the debuff is not present, this condition will not be successful (regardless " ..
             "of the " .. color.BLIZ_YELLOW .. "Operator" .. color.RESET .. " used.)")
     end
-}
+})
 
-addon.condition_debuff_stacks = {
+addon:RegisterCondition("DEBUFF_STACKS", {
     description = L["Debuff Stacks"],
     icon = "Interface\\Icons\\Inv_misc_coin_06",
     valid = function(_, value)
@@ -225,9 +225,9 @@ addon.condition_debuff_stacks = {
             ".  If the deuff is not present, this condition will not be successful (regardless " ..
             "of the " .. color.BLIZ_YELLOW .. "Operator" .. color.RESET .. " used.)")
     end
-}
+})
 
-addon.condition_dispellable = {
+addon:RegisterCondition("DISPELLABLE", {
     description = L["Debuff Type Present"],
     icon = "Interface\\Icons\\spell_shadow_curseofsargeras",
     valid = function(_, value)
@@ -311,4 +311,4 @@ addon.condition_dispellable = {
         frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Dispellable"] .. color.RESET .. " - " ..
                 "Should this condition only consider debuffs that you can dispell."))
     end
-}
+})

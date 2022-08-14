@@ -36,6 +36,7 @@ Options/effects.lua
 Options/announce.lua
 Options/itemset.lua
 Options/rotations.lua
+Options/conditions.lua
 Options/conditional.lua
 
 # Help Files
@@ -45,6 +46,7 @@ Help/effects.lua
 Help/announce.lua
 Help/itemsets.lua
 Help/rotations.lua
+Help/conditions.lua
 Help/conditional.lua
 
 # Conditions
@@ -65,5 +67,3 @@ Conditions/spatial.lua
 Conditions/spatial_stats.lua
 Conditions/weapon.lua
 Conditions/misc.lua
-Conditions/switch.lua
-Conditions/rotation.lua

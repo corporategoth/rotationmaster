@@ -17,7 +17,7 @@ local round = math.round
 local helpers = addon.help_funcs
 local CreateText, Indent, Gap = helpers.CreateText, helpers.Indent, helpers.Gap
 
-addon.condition_health = {
+addon:RegisterCondition("HEALTH", {
     description = L["Health"],
     icon = "Interface\\Icons\\inv_potion_36",
     valid = function(_, value)
@@ -62,9 +62,9 @@ addon.condition_health = {
             "The raw health value of " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. ". " ..
             "If this number is negative, it means the health deficit (from max health).")
     end
-}
+})
 
-addon.condition_healthpct = {
+addon:RegisterCondition("HEALTHPCT", {
     description = L["Health Percentage"],
     icon = "Interface\\Icons\\inv_potion_35",
     valid = function(_, value)
@@ -104,9 +104,9 @@ addon.condition_healthpct = {
             "The health value of " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. " as a percentage of their " ..
             "total health.")
     end
-}
+})
 
-addon.condition_mana = {
+addon:RegisterCondition("MANA", {
     description = L["Mana"],
     icon = "Interface\\Icons\\inv_potion_71",
     valid = function(_, value)
@@ -151,9 +151,9 @@ addon.condition_mana = {
             "The raw mana value of " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. ". " ..
             "If this number is negative, it means the mana deficit (from max mana).")
     end
-}
+})
 
-addon.condition_manapct = {
+addon:RegisterCondition("MANAPCT", {
     description = L["Mana Percentage"],
     icon = "Interface\\Icons\\inv_potion_70",
     valid = function(_, value)
@@ -193,9 +193,9 @@ addon.condition_manapct = {
             "The mana value of " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. " as a percentage of their " ..
             "total mana.")
     end
-}
+})
 
-addon.condition_power = {
+addon:RegisterCondition("POWER", {
     description = L["Power"],
     icon = "Interface\\Icons\\inv_potion_92",
     valid = function(_, value)
@@ -248,9 +248,9 @@ addon.condition_power = {
             "that is class (and sometimes spec or form) specific (eg. Warriors have Rage). " ..
             "If this number is negative, it means the power deficit (from max power).")
     end
-}
+})
 
-addon.condition_powerpct = {
+addon:RegisterCondition("POWERPCT", {
     description = L["Power Percentage"],
     icon = "Interface\\Icons\\inv_potion_91",
     valid = function(_, value)
@@ -297,9 +297,9 @@ addon.condition_powerpct = {
             "total power.  Power is a statistic that is class (and sometimes spec or form) specific (eg. Warriors " ..
             "have Rage.)")
     end
-}
+})
 
-addon.condition_point = {
+addon:RegisterCondition("POINT", {
     description = L["Points"],
     icon = "Interface\\Icons\\Inv_jewelry_amulet_01",
     valid = function(_, value)
@@ -357,11 +357,11 @@ addon.condition_point = {
             "Arcane Charges).  " ..
             "If this number is negative, it means the point deficit (from max points).")
     end
-}
+})
 
 if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE and LE_EXPANSION_LEVEL_CURRENT >= 2 and
     select(2, UnitClass("player")) == "DEATHKNIGHT") then
-    addon.condition_rune = {
+    addon:RegisterCondition("RUNE", {
         description = L["Runes"],
         icon = "Interface\\Icons\\spell_deathknight_empowerruneblade",
         valid = function(_, value)
@@ -416,9 +416,9 @@ if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE and LE_EXPANSION_LEVEL_CURRENT >= 2 a
             addon.layout_condition_operatorwidget_help(frame, L["Runes"], L["Runes"],
                     "The number of runes currently available.")
         end
-    }
+    })
 
-    addon.condition_rune_cooldown = {
+    addon:RegisterCondition("RUNE_COOLDOWN", {
         description = L["Rune Cooldown"],
         icon = "Interface\\Icons\\spell_deathknight_empowerruneblade2",
         valid = function(_, value)
@@ -481,10 +481,10 @@ if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE and LE_EXPANSION_LEVEL_CURRENT >= 2 a
                     "The number of seconds until a " .. color.BLIZ_YELLOW .. L["Rune Type"] .. color.RESET ..
                     " rune becomes available.")
         end
-    }
+    })
 end
 
-addon.condition_tt_health = {
+addon:RegisterCondition("TT_HEALTH", {
     description = L["Time Until Health"],
     icon = "Interface\\Icons\\inv_potion_21",
     valid = function(_, value)
@@ -597,9 +597,9 @@ addon.condition_tt_health = {
                 "Only heals on " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. " will be factored into the " ..
                 "'burn rate', essentially pretending they are not being hit at all.")))
     end
-}
+})
 
-addon.condition_tt_healthpct = {
+addon:RegisterCondition("TT_HEALTHPCT", {
     description = L["Time Until Health Percentage"],
     icon = "Interface\\Icons\\inv_potion_24",
     valid = function(_, value)
@@ -719,4 +719,4 @@ addon.condition_tt_healthpct = {
                 "Only heals on " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. " will be factored into the " ..
                 "'burn rate', essentially pretending they are not being hit at all.")))
     end
-}
+})

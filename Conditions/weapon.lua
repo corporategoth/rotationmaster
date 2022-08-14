@@ -15,7 +15,7 @@ local helpers = addon.help_funcs
 local CreateText, Gap = helpers.CreateText, helpers.Gap
 
 if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
-    addon.condition_weapon = {
+    addon:RegisterCondition("WEAPON", {
         description = L["Weapon Enchant Present"],
         icon = "Interface\\Icons\\Inv_staff_18",
         valid = function()
@@ -49,9 +49,9 @@ if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
                     "Should this condition affect your main or off-hand weapon.  If this is checked, it will affect " ..
                     "your off-hand weapon, otherwise it will affect your main-hand (or two-handed) weapon."))
         end
-    }
+    })
 
-    addon.condition_weapon_remain = {
+    addon:RegisterCondition("WEAPON_REMAIN", {
         description = L["Weapon Enchant Time Remaining"],
         icon = "Interface\\Icons\\Inv_mace_13",
         valid = function(_, value)
@@ -100,9 +100,9 @@ if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
                             "on your weapon, this condition will not be successful (regardless of the " .. color.BLIZ_YELLOW ..
                             "Operator" .. color.RESET .. " used.)")
         end
-    }
+    })
 
-    addon.condition_weapon_stacks = {
+    addon:RegisterCondition("WEAPON_STACKS", {
         description = L["Weapon Enchant Stacks"],
         icon = "Interface\\Icons\\Inv_misc_coin_04",
         valid = function(_, value)
@@ -150,10 +150,10 @@ if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
                             "condition will not be successful (regardless of the " .. color.BLIZ_YELLOW .. "Operator" ..
                             color.RESET .. " used.)")
         end
-    }
+    })
 end
 
-addon.condition_swing_time = {
+addon:RegisterCondition("SWING_TIME", {
     description = L["Weapon Swing Time"],
     icon = 135561,
     valid = function(_, value)
@@ -196,9 +196,9 @@ addon.condition_swing_time = {
         addon.layout_condition_operatorwidget_help(frame, L["Attack Speed"], L["Seconds"],
                 "The amount of time (in seconds) between swing times for your weapon.")
     end
-}
+})
 
-addon.condition_swing_time_remain = {
+addon:RegisterCondition("SWING_TIME_REMAIN", {
     description = L["Weapon Swing Time Remaining"],
     icon = 135672,
     valid = function(_, value)
@@ -246,4 +246,4 @@ addon.condition_swing_time_remain = {
         addon.layout_condition_operatorwidget_help(frame, L["Swing Time Remaining"], L["Seconds"],
                 "The amount of time (in seconds) until your next weapon swing.")
     end
-}
+})

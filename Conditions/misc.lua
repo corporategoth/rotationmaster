@@ -14,7 +14,7 @@ addon.nullable, addon.keys, addon.isin, addon.deepcopy, addon.playerize, addon.c
 local helpers = addon.help_funcs
 local CreateText, Indent = helpers.CreateText, helpers.Indent
 
-addon.condition_self_level = {
+addon:RegisterCondition("SELF_LEVEL", {
     description = L["Level"],
     icon = "Interface\\Icons\\spell_holy_blessedrecovery",
     valid = function(_, value)
@@ -40,9 +40,9 @@ addon.condition_self_level = {
         addon.layout_condition_operatorwidget_help(frame, L["Level"], L["Level"],
                 "The level you are at.")
     end
-}
+})
 
-addon.condition_pvp = {
+addon:RegisterCondition("PVP", {
     description = L["PVP Flagged"],
     icon = "Interface\\Icons\\Inv_banner_03",
     valid = function(_, value)
@@ -69,9 +69,9 @@ addon.condition_pvp = {
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
     end
-}
+})
 
-addon.condition_zonepvp = {
+addon:RegisterCondition("ZONEPVP", {
     description = L["Zone PVP"],
     icon = "Interface\\Icons\\Inv_bannerpvp_01",
     valid = function(_, value)
@@ -132,9 +132,9 @@ addon.condition_zonepvp = {
         frame:AddChild(Indent(40, CreateText(color.GREEN .. L["Combat (auto-flagged)"] .. color.RESET .. " - " ..
                 "This is a combat zone (eg. a battleground), all players will be automatically flagged as PVP.")))
     end
-}
+})
 
-addon.condition_instance = {
+addon:RegisterCondition("INSTANCE", {
     description = L["Instance"],
     icon = "Interface\\Icons\\Spell_nature_astralrecal",
     valid = function(_, value)
@@ -190,9 +190,9 @@ addon.condition_instance = {
         frame:AddChild(Indent(40, CreateText(color.GREEN .. L["Scenario"] .. color.RESET .. " - " ..
                 "A single-person instance, similar to a dungeon but completed solo.")))
     end
-}
+})
 
-addon.condition_outdoors = {
+addon:RegisterCondition("OUTDOORS", {
     description = L["Outdoors"],
     icon = "Interface\\Icons\\Inv_misc_flower_02",
     valid = function()
@@ -204,4 +204,4 @@ addon.condition_outdoors = {
     print = function()
         return L["you are in a outdoors"]
     end,
-}
+})

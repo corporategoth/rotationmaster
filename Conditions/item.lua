@@ -56,7 +56,7 @@ local function get_item_desc(items)
     return nil
 end
 
-addon.condition_equipped = {
+addon:RegisterCondition("EQUIPPED", {
     description = L["Have Item Equipped"],
     icon = "Interface\\Icons\\Ability_warrior_shieldbash",
     valid = function(_, value)
@@ -86,9 +86,9 @@ addon.condition_equipped = {
     help = function(frame)
         addon.layout_condition_itemwidget_help(frame)
     end
-}
+})
 
-addon.condition_carrying = {
+addon:RegisterCondition("CARRYING", {
     description = L["Have Item In Bags"],
     icon = "Interface\\Icons\\inv_misc_bag_07",
     valid = function(_, value)
@@ -129,9 +129,9 @@ addon.condition_carrying = {
         addon.layout_condition_operatorwidget_help(frame, L["Have Item In Bags"], L["Quantity"],
             "The quantity of " .. color.BLIZ_YELLOW .. L["Item"] .. color.RESET .. " you are carrying in your bags.")
     end
-}
+})
 
-addon.condition_item = {
+addon:RegisterCondition("ITEM", {
     description = L["Item Available"],
     icon = "Interface\\Icons\\Inv_drink_05",
     valid = function(_, value)
@@ -205,9 +205,9 @@ addon.condition_item = {
                 "Check the availability of the first item in the item set as if you were carrying it, even " ..
                 "if you are not."))
     end
-}
+})
 
-addon.condition_item_range = {
+addon:RegisterCondition("ITEM_RANGE", {
     description = L["Item In Range"],
     icon = "Interface\\Icons\\inv_misc_bandage_13",
     valid = function(_, value)
@@ -254,9 +254,9 @@ addon.condition_item_range = {
                 "Check the availability of the first item in the item set as if you were carrying it, even " ..
                 "if you are not."))
     end
-}
+})
 
-addon.condition_item_cooldown = {
+addon:RegisterCondition("ITEM_COOLDOWN", {
     description = L["Item Cooldown"],
     icon = "Interface\\Icons\\Spell_holy_sealofsacrifice",
     valid = function(_, value)
@@ -321,4 +321,4 @@ addon.condition_item_cooldown = {
                 "Check the availability of the first item in the item set as if you were carrying it, even " ..
                 "if you are not."))
     end
-}
+})

@@ -74,7 +74,7 @@ local function help_effect_group(group, singular)
     local directional_group = AceGUI:Create("SimpleGroup")
     directional_group:SetFullWidth(true)
     directional_group:SetLayout("Table")
-    directional_group:SetUserData("table", { columns = { 40, 1 } })
+    directional_group:SetUserData("table", { columns = { 50, 1 } })
     group:AddChild(directional_group)
 
     local directional = AceGUI:Create("Directional")

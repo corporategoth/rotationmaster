@@ -717,14 +717,14 @@ local function create_rotation_options(frame, specID, rotid, parent, selected)
             switch_desc:SetFullWidth(true)
 
             if (rotation_settings[rotid] == nil or rotation_settings[rotid].switch == nil or
-                not addon:usefulSwitchCondition(rotation_settings[rotid].switch)) then
+                not addon:usefulCondition(rotation_settings[rotid].switch)) then
                 switch_desc:SetText(L["Manual switch only."])
                 disabled:SetImage("Interface\\Buttons\\UI-CheckBox-Check-Disabled")
                 disabled:SetImageSize(24, 24)
                 disabled:SetDisabled(true)
                 addon.AddTooltip(disabled, L["Disabled"])
             else
-                if not addon:validateSwitchCondition(rotation_settings[rotid].switch, specID) then
+                if not addon:validateCondition(rotation_settings[rotid].switch, specID) then
                     local switch_valid = AceGUI:Create("Heading")
                     switch_valid:SetFullWidth(true)
                     switch_valid:SetText(color.RED .. L["THIS CONDITION DOES NOT VALIDATE"] .. color.RESET)
@@ -748,7 +748,7 @@ local function create_rotation_options(frame, specID, rotid, parent, selected)
                     addon.AddTooltip(disabled, L["Enabled"])
                 end
                 disabled:SetDisabled(false)
-                switch_desc:SetText(addon:printSwitchCondition(rotation_settings[rotid].switch, specID))
+                switch_desc:SetText(addon:printCondition(rotation_settings[rotid].switch, specID))
             end
             switch_sub:AddChild(switch_desc)
 
@@ -780,7 +780,7 @@ local function create_rotation_options(frame, specID, rotid, parent, selected)
             if rotation_settings[rotid].switch == nil then
                 rotation_settings[rotid].switch = { type = nil }
             end
-            addon:EditSwitchCondition(spec, rotation_settings[rotid].switch, update_autoswitch)
+            addon:EditCondition(0, spec, rotation_settings[rotid].switch, update_autoswitch)
         end)
     end
 
@@ -1067,16 +1067,12 @@ create_class_options = function (frame, classID)
         end
         tabs:SetTabs(spec_tabs)
         tabs:SetLayout("Fill")
-        tabs.configure = function()
-            tabs:SelectTab(currentSpec)
-        end
 
         tabs:SetCallback("OnGroupSelected", function(_, _, val)
             create_spec_options(tabs, val, (val == addon.currentSpec) and addon.currentRotation or DEFAULT)
         end)
         frame.frame:SetScript("OnShow", function(f)
-            create_spec_options(tabs, currentSpec, addon.currentRotation or DEFAULT)
-            f:SetScript("OnShow", nil)
+            tabs:SelectTab(addon.currentSpec)
         end)
 
         frame:AddChild(tabs)
@@ -1087,7 +1083,7 @@ create_class_options = function (frame, classID)
         local spec_tabs = {}
         for i=1,GetNumTalentGroups() do
             table.insert(spec_tabs, {
-                value = tostring(i),
+                value = i,
                 text = addon.db.char.specs[i] or tostring(i)
             })
         end
@@ -1097,14 +1093,12 @@ create_class_options = function (frame, classID)
 
         tabs:SetTabs(spec_tabs)
         tabs:SetLayout("Fill")
-        tabs:SelectTab(tostring(currentSpec))
 
         tabs:SetCallback("OnGroupSelected", function(_, _, val)
             create_spec_options(tabs, val, (val == addon.currentSpec) and addon.currentRotation or DEFAULT)
         end)
         frame.frame:SetScript("OnShow", function(f)
-            create_spec_options(tabs, currentSpec, addon.currentRotation or DEFAULT)
-            f:SetScript("OnShow", nil)
+            tabs:SelectTab(addon.currentSpec)
         end)
 
         frame:AddChild(tabs)
@@ -1148,6 +1142,14 @@ function addon:SetupOptions()
     self.optionsFrames.Rotation:SetTitle(addon.pretty_name .. " - " .. localized)
     create_class_options(self.optionsFrames.Rotation, classID)
     InterfaceOptions_AddCategory(self.optionsFrames.Rotation.frame)
+
+    self.optionsFrames.Conditions = AceGUI:Create("BlizOptionsGroup")
+    self.optionsFrames.Conditions:SetName(L["Conditions"], self.optionsFrames.General.frame.name)
+    self.optionsFrames.Conditions:SetUserData("appName", addon.name .. "Conditions")
+    self.optionsFrames.Conditions:SetLayout("Fill")
+    -- self.optionsFrames.Conditions:SetTitle(addon.pretty_name .. " - " .. L["Conditions"])
+    addon:create_condition_list(self.optionsFrames.Conditions)
+    InterfaceOptions_AddCategory(self.optionsFrames.Conditions.frame)
 
     self.optionsFrames.Effects = AceGUI:Create("BlizOptionsGroup")
     self.optionsFrames.Effects:SetName(L["Effects"], self.optionsFrames.General.frame.name)

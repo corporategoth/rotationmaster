@@ -126,6 +126,8 @@ addon.tomap = function(array)
 end
 
 addon.index = function(array, value)
+    if not array then return nil end
+
     for idx,v in pairs(array) do
         if (v == value) then
             return idx
@@ -138,6 +140,7 @@ addon.isin = function(array, value)
 end
 
 addon.tablelength = function(T)
+    if T == nil then return 0 end
     local count = 0
     for _ in pairs(T) do count = count + 1 end
     return count
@@ -409,6 +412,20 @@ function addon.split(inputstr, sep)
         table.insert(t, str)
     end
     return t
+end
+
+function addon.wrap(str, limit)
+    limit = limit or 72
+    local here = 1
+
+    -- the "".. is there because :gsub returns multiple values
+    return ""..str:gsub("(%s+)()(%S+)()",
+            function(_, st, word, fi)
+                if fi-here > limit then
+                    here = st
+                    return "\n"..word
+                end
+            end)
 end
 
 function addon.trim(s)

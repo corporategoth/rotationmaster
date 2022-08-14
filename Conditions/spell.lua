@@ -20,7 +20,7 @@ else
     GCD_SPELL = 2580  -- 61304 doesn't exist in classic, use 'Find Materials', which works if you're a miner or not.
 end
 
-addon.condition_spell_avail = {
+addon:RegisterCondition("SPELL_AVAIL", {
     description = L["Spell Available"],
     icon = "Interface\\Icons\\Spell_holy_renew",
     valid = function(_, value)
@@ -75,9 +75,9 @@ addon.condition_spell_avail = {
     help = function(frame)
         addon.layout_condition_spellwidget_help(frame)
     end
-}
+})
 
-addon.condition_spell_range = {
+addon:RegisterCondition("SPELL_RANGE", {
     description = L["Spell In Range"],
     icon = "Interface\\Icons\\inv_misc_bandage_02",
     valid = function(_, value)
@@ -117,9 +117,9 @@ addon.condition_spell_range = {
     help = function(frame)
         addon.layout_condition_spellwidget_help(frame)
     end
-}
+})
 
-addon.condition_spell_cooldown = {
+addon:RegisterCondition("SPELL_COOLDOWN", {
     description = L["Spell Cooldown"],
     icon = "Interface\\Icons\\spell_nature_timestop",
     valid = function(_, value)
@@ -169,9 +169,9 @@ addon.condition_spell_cooldown = {
         addon.layout_condition_operatorwidget_help(frame, L["Spell Cooldown"], L["Seconds"],
             "The number of seconds before you can cast " .. color.BLIZ_YELLOW .. L["Spell"] .. color.RESET .. ".")
     end
-}
+})
 
-addon.condition_spell_remain = {
+addon:RegisterCondition("SPELL_REMAIN", {
     description = L["Spell Time Remaining"],
     icon = "Interface\\Icons\\inv_misc_pocketwatch_03",
     valid = function(_, value)
@@ -221,9 +221,9 @@ addon.condition_spell_remain = {
             "The number of seconds the effect of " .. color.BLIZ_YELLOW .. L["Spell"] .. color.RESET ..
             " has left.")
     end
-}
+})
 
-addon.condition_spell_charges = {
+addon:RegisterCondition("SPELL_CHARGES", {
     description = L["Spell Charges"],
     icon = "Interface\\Icons\\Spell_nature_astralrecalgroup",
     valid = function(_, value)
@@ -267,9 +267,9 @@ addon.condition_spell_charges = {
         addon.layout_condition_operatorwidget_help(frame, L["Spell Charges"], L["Charges"],
             "The number of charges of " .. color.BLIZ_YELLOW .. L["Spell"] .. color.RESET .. " currently active.")
     end
-}
+})
 
-addon.condition_spell_history = {
+addon:RegisterCondition("SPELL_HISTORY", {
     description = L["Spell Cast History"],
     icon = "Interface\\Icons\\Spell_shadow_nightofthedead",
     valid = function(_, value)
@@ -319,9 +319,9 @@ addon.condition_spell_history = {
             "of " .. color.BLUE .. L["Spell History Memory (seconds)"] .. color.RESET .. " in the primary Rotation " ..
             "Master configuration screen ago will not be available.")
     end
-}
+})
 
-addon.condition_spell_history_time = {
+addon:RegisterCondition("SPELL_HISTORY_TIME", {
     description = L["Spell Cast History Time"],
     icon = "Interface\\Icons\\Spell_fire_sealoffire",
     valid = function(_, value)
@@ -370,9 +370,9 @@ addon.condition_spell_history_time = {
             L["Spell History Memory (seconds)"] .. color.RESET .. " in the primary Rotation Master configuration " ..
             "screen ago will not be available.")
     end
-}
+})
 
-addon.condition_spell_active = {
+addon:RegisterCondition("SPELL_ACTIVE", {
     description = L["Spell Active or Pending"],
     icon = 132212,
     valid = function(_, value)
@@ -406,4 +406,4 @@ addon.condition_spell_active = {
     help = function(frame)
         addon.layout_condition_spellwidget_help(frame)
     end
-}
+})

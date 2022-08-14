@@ -20,7 +20,7 @@ else
     GCD_SPELL = 2580  -- 61304 doesn't exist in classic, use 'Find Materials', which works if you're a miner or not.
 end
 
-addon.condition_petspell_avail = {
+addon:RegisterCondition("PETSPELL_AVAIL", {
     description = L["Pet Spell Available"],
     icon = "Interface\\Icons\\Ability_druid_bash",
     valid = function(_, value)
@@ -75,9 +75,9 @@ addon.condition_petspell_avail = {
     help = function(frame)
         addon.layout_condition_spellwidget_help(frame)
     end
-}
+})
 
-addon.condition_petspell_range = {
+addon:RegisterCondition("PETSPELL_RANGE", {
     description = L["Pet Spell In Range"],
     icon = "Interface\\Icons\\inv_misc_bandage_03",
     valid = function(_, value)
@@ -118,9 +118,9 @@ addon.condition_petspell_range = {
     help = function(frame)
         addon.layout_condition_spellwidget_help(frame)
     end
-}
+})
 
-addon.condition_petspell_cooldown = {
+addon:RegisterCondition("PETSPELL_COOLDOWN", {
     description = L["Pet Spell Cooldown"],
     icon = "Interface\\Icons\\Spell_nature_sleep",
     valid = function(_, value)
@@ -170,9 +170,9 @@ addon.condition_petspell_cooldown = {
         addon.layout_condition_operatorwidget_help(frame, L["Pet Spell Cooldown"], L["Seconds"],
             "The number of seconds before you can cast " .. color.BLIZ_YELLOW .. L["Pet Spell"] .. color.RESET .. ".")
     end
-}
+})
 
-addon.condition_petspell_remain = {
+addon:RegisterCondition("PETSPELL_REMAIN", {
     description = L["Pet Spell Time Remaining"],
     icon = "Interface\\Icons\\ability_hunter_pet_raptor",
     valid = function(_, value)
@@ -222,9 +222,9 @@ addon.condition_petspell_remain = {
             "The number of seconds the effect of " .. color.BLIZ_YELLOW .. L["Pet Spell"] .. color.RESET ..
             " has left.")
     end
-}
+})
 
-addon.condition_petspell_charges = {
+addon:RegisterCondition("PETSPELL_CHARGES", {
     description = L["Pet Spell Charges"],
     icon = "Interface\\Icons\\Ability_mount_nightmarehorse",
     valid = function(_, value)
@@ -268,9 +268,9 @@ addon.condition_petspell_charges = {
         addon.layout_condition_operatorwidget_help(frame, L["Pet Spell Charges"], L["Charges"],
             "The number of charges of " .. color.BLIZ_YELLOW .. L["Pet Spell"] .. color.RESET .. " currently active.")
     end
-}
+})
 
-addon.condition_petspell_history = {
+addon:RegisterCondition("PETSPELL_HISTORY", {
     description = L["Pet Spell Cast History"],
     icon = "Interface\\Icons\\Spell_shadow_nightofthedead",
     valid = function(_, value)
@@ -320,9 +320,9 @@ addon.condition_petspell_history = {
             "of " .. color.BLUE .. L["Pet Spell History Memory (seconds)"] .. color.RESET .. " in the primary Rotation " ..
             "Master configuration screen ago will not be available.")
     end
-}
+})
 
-addon.condition_petspell_history_time = {
+addon:RegisterCondition("PETSPELL_HISTORY_TIME", {
     description = L["Pet Spell Cast History Time"],
     icon = "Interface\\Icons\\Spell_fire_sealoffire",
     valid = function(_, value)
@@ -371,9 +371,9 @@ addon.condition_petspell_history_time = {
             L["Pet Spell History Memory (seconds)"] .. color.RESET .. " in the primary Rotation Master configuration " ..
             "screen ago will not be available.")
     end
-}
+})
 
-addon.condition_petspell_active = {
+addon:RegisterCondition("PETSPELL_ACTIVE", {
     description = L["Pet Spell Active or Pending"],
     icon = 132212,
     valid = function(_, value)
@@ -407,4 +407,4 @@ addon.condition_petspell_active = {
     help = function(frame)
         addon.layout_condition_spellwidget_help(frame)
     end
-}
+})

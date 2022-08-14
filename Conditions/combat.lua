@@ -14,7 +14,7 @@ local compare, compareString, nullable, keys, isin, deepcopy, getCached, playeri
 local helpers = addon.help_funcs
 local CreateText, Indent, Gap = helpers.CreateText, helpers.Indent, helpers.Gap
 
-addon.condition_combat = {
+addon:RegisterCondition("COMBAT", {
     description = L["In Combat"],
     icon = "Interface\\Icons\\ability_dualwield",
     valid = function(_, value)
@@ -40,9 +40,9 @@ addon.condition_combat = {
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
     end
-}
+})
 
-addon.condition_pet = {
+addon:RegisterCondition("PET", {
     description = L["Have Pet"],
     icon = "Interface\\Icons\\Inv_box_petcarrier_01",
     valid = function()
@@ -54,9 +54,9 @@ addon.condition_pet = {
     print = function()
         return L["you have a pet"]
     end,
-}
+})
 
-addon.condition_pet_name = {
+addon:RegisterCondition("PET_NAME", {
     description = L["Have Named Pet"],
     icon = "Interface\\Icons\\inv_box_birdcage_01",
     valid = function(_, value)
@@ -88,9 +88,9 @@ addon.condition_pet_name = {
         frame:AddChild(CreateText(color.BLIZ_YELLOW .. NAME .. color.RESET .. " - " ..
             "The name of the pet you have summoned."))
     end
-}
+})
 
-addon.condition_stealthed = {
+addon:RegisterCondition("STEALTHED", {
     description = L["Stealth"],
     icon = "Interface\\Icons\\ability_stealth",
     valid = function()
@@ -102,9 +102,9 @@ addon.condition_stealthed = {
     print = function()
         return L["you are stealthed"]
     end,
-}
+})
 
-addon.condition_incontrol = {
+addon:RegisterCondition("INCONTROL", {
     description = L["In Control"],
     icon = "Interface\\Icons\\spell_nature_polymorph",
     valid = function()
@@ -116,9 +116,9 @@ addon.condition_incontrol = {
     print = function()
         return L["you are in control of your character"]
     end,
-}
+})
 
-addon.condition_loc_type = {
+addon:RegisterCondition("LOC_TYPE", {
     description = L["Loss Of Control Type"],
     icon = "Interface\\Icons\\spell_nature_polymorph_cow",
     valid = function(_, value)
@@ -170,9 +170,9 @@ addon.condition_loc_type = {
         addon.layout_condition_operatorpercentwidget_help(frame, L["Loss Of Control Type"], L["Seconds"],
             "How long until the loss of control expires.")
     end
-}
+})
 
-addon.condition_loc_blocked = {
+addon:RegisterCondition("LOC_BLOCKED", {
     description = L["Loss Of Control Blocked"],
     icon = "Interface\\Icons\\inv_misc_fish_turtle_03",
     valid = function(_, value)
@@ -221,9 +221,9 @@ addon.condition_loc_blocked = {
         addon.layout_condition_operatorpercentwidget_help(frame, L["Loss Of Control Blocked"], L["Seconds"],
             "How long until the loss of control expires.")
     end
-}
+})
 
-addon.condition_moving = {
+addon:RegisterCondition("MOVING", {
     description = L["Moving"],
     icon = "Interface\\Icons\\Ability_druid_dash",
     valid = function()
@@ -235,9 +235,9 @@ addon.condition_moving = {
     print = function()
         return L["you are moving"]
     end,
-}
+})
 
-addon.condition_threat = {
+addon:RegisterCondition("THREAT", {
     description = L["Threat"],
     icon = "Interface\\Icons\\ability_physical_taunt",
     valid = function(_, value)
@@ -303,9 +303,9 @@ addon.condition_threat = {
             "You are currently tanking " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. " and are " ..
             "not at risk of them switching targets at the moment.")))
     end
-}
+})
 
-addon.condition_threat_count = {
+addon:RegisterCondition("THREAT_COUNT", {
     description = L["Threat Count"],
     icon = "Interface\\Icons\\Ability_racial_bloodrage",
     valid = function(_, value)
@@ -369,10 +369,10 @@ addon.condition_threat_count = {
         frame:AddChild(CreateText("Threat is measured only on units within a maximum measurable range. The maximum " ..
                 " range is set using Game Options -> Interface -> Game tab -> Names -> Nameplate Distance."))
     end
-}
+})
 
 local character_class = select(2, UnitClass("player"))
-addon.condition_form = {
+addon:RegisterCondition("FORM", {
     description = L["Shapeshift Form"],
     icon = "Interface\\Icons\\ability_hunter_pet_bear",
     valid = function(_, value)
@@ -464,9 +464,9 @@ addon.condition_form = {
             "You are shapeshifted into a different form.  This includes stances for warriors and stealth.  " ..
             color.GREEN .. L["humanoid"] .. color.RESET .. " can be used to indicate you are NOT shapeshifted."))
     end
-}
+})
 
-addon.condition_attackable = {
+addon:RegisterCondition("ATTACKABLE", {
     description = L["Attackable"],
     icon = "Interface\\Icons\\inv_misc_head_dragon_bronze",
     valid = function(_, value)
@@ -491,9 +491,9 @@ addon.condition_attackable = {
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
     end
-}
+})
 
-addon.condition_enemy = {
+addon:RegisterCondition("ENEMY", {
     description = L["Hostile"],
     icon = "Interface\\Icons\\inv_misc_head_dragon_01",
     valid = function(_, value)
@@ -518,9 +518,9 @@ addon.condition_enemy = {
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
     end
-}
+})
 
-addon.condition_combat_history = {
+addon:RegisterCondition("COMBAT_HISTORY", {
     description = L["Combat Action History"],
     icon = "Interface\\Icons\\Spell_shadow_shadowward",
     valid = function(_, value)
@@ -583,9 +583,9 @@ addon.condition_combat_history = {
             L["Combat History Memory (seconds)"] .. color.RESET .. " in the primary Rotation Master configuration " ..
             "screen ago will not be available.")
     end
-}
+})
 
-addon.condition_combat_history_time = {
+addon:RegisterCondition("COMBAT_HISTORY_TIME", {
     description = L["Combat Action History Time"],
     icon = "Interface\\Icons\\Spell_shadow_shadetruesight",
     valid = function(_, value)
@@ -648,4 +648,4 @@ addon.condition_combat_history_time = {
             L["Combat History Memory (seconds)"] .. color.RESET .. " in the primary Rotation Master configuration " ..
             "screen ago will not be available.")
     end
-}
+})

@@ -17,7 +17,7 @@ local compare, compareString, nullable, keys, isin, getCached, isSpellOnSpec, ge
 local helpers = addon.help_funcs
 local CreateText, Gap = helpers.CreateText, helpers.Gap
 
-addon.condition_totem = {
+addon:RegisterCondition("TOTEM", {
     description = L["Totem Present"],
     icon = "Interface\\Icons\\spell_nature_manaregentotem",
     valid = function(_, value)
@@ -51,9 +51,9 @@ addon.condition_totem = {
         frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Totem"] .. color.RESET .. " - " ..
             "The style of totem that must be placed (Fire, Wind, Water or Earth.)"))
     end
-}
+})
 
-addon.condition_totem_spell = {
+addon:RegisterCondition("TOTEM_SPELL", {
     description = L["Specific Totem Present"],
     icon = "Interface\\Icons\\spell_nature_stoneskintotem",
     valid = function(_, value)
@@ -91,9 +91,9 @@ addon.condition_totem_spell = {
         frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Totem"] .. color.RESET .. " - " ..
             "The specific totem (by name) to check to ensure it is placed."))
     end
-}
+})
 
-addon.condition_totem_remain = {
+addon:RegisterCondition("TOTEM_REMAIN", {
     description = L["Totem Time Remaining"],
     icon = "Interface\\Icons\\spell_nature_agitatingtotem",
     valid = function(_, value)
@@ -143,9 +143,9 @@ addon.condition_totem_remain = {
             "The amount of time remaining on " .. color.BLIZ_YELLOW .. L["Totem"] .. color.RESET .. " before it" ..
             "expire.")
     end
-}
+})
 
-addon.condition_totem_spell_remain = {
+addon:RegisterCondition("TOTEM_SPELL_REMAIN", {
     description = L["Specific Totem Time Remaining"],
     icon = "Interface\\Icons\\spell_fireresistancetotem_01",
     valid = function(_, value)
@@ -194,4 +194,4 @@ addon.condition_totem_spell_remain = {
             "The amount of time remaining on " .. color.BLIZ_YELLOW .. L["Totem"] .. color.RESET .. " before it" ..
                     "expire.")
     end
-}
+})

@@ -126,7 +126,7 @@ addon.proximity_widgets = function(top, root, funcs, parent, spec, value)
     parent:AddChild(includepets)
 end
 
-addon.condition_proximity = {
+addon:RegisterCondition("PROXIMITY", {
     description = L["Allies Within Range"],
     icon = "Interface\\Icons\\Spell_holy_prayerofspirit",
     valid = function(_, value)
@@ -186,9 +186,9 @@ addon.condition_proximity = {
         frame:AddChild(CreateText(color.RED .. "This will only work for yourself if you are inside " ..
                 "of an instance, and it will be less accurate than outside of an instance." .. color.RESET))
     end
-}
+})
 
-addon.condition_distance = {
+addon:RegisterCondition("DISTANCE", {
     description = L["Distance"],
     icon = "Interface\\Icons\\Spell_arcane_teleportorgrimmar",
     valid = function(_, value)
@@ -232,9 +232,9 @@ addon.condition_distance = {
             "are within a range.  This will assume the unit is at the maximum of the measurable range.  Only " ..
             "distances less than or equal to 40 yards can be measured."))
     end
-}
+})
 
-addon.condition_distance_count = {
+addon:RegisterCondition("DISTANCE_COUNT", {
     description = L["Distance Count"],
     icon = "Interface\\Icons\\Spell_arcane_teleportstormwind",
     valid = function(_, value)
@@ -316,9 +316,9 @@ addon.condition_distance_count = {
                 "Game Options -> Interface -> Game tab -> Names -> Nameplate Distance."))
         frame:AddChild(Gap())
     end
-}
+})
 
-addon.condition_zone = {
+addon:RegisterCondition("ZONE", {
     description = L["Zone"],
     icon = "Interface\\Icons\\spell_nature_farsight",
     valid = function(_, value)
@@ -363,4 +363,4 @@ addon.condition_zone = {
         frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Zone"] .. color.RESET ..
                 " - " .. "The zone you are in."))
     end
-}
+})

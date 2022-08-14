@@ -17,7 +17,7 @@ local helpers = addon.help_funcs
 local CreateText, Indent, Gap =
     helpers.CreateText, helpers.Indent, helpers.Gap
 
-addon.condition_issame = {
+addon:RegisterCondition("ISSAME", {
     description = L["Is Same As"],
     icon = 134167,
     valid = function(_, value)
@@ -47,9 +47,9 @@ addon.condition_issame = {
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
     end
-}
+})
 
-addon.condition_class = {
+addon:RegisterCondition("CLASS", {
     description = L["Class"],
     icon = "Interface\\Icons\\achievement_general_stayclassy",
     valid = function(_, value)
@@ -95,10 +95,10 @@ addon.condition_class = {
         frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Class"] .. color.RESET .. " - " ..
             "The character class of " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. "."))
     end
-}
+})
 
 local character_class = select(2, UnitClass("player"))
-addon.condition_class_group = {
+addon:RegisterCondition("CLASS_GROUP", {
     description = L["Class In Group"],
     icon = "Interface\\Icons\\achievement_general_stayclassy",
     valid = function(_, value)
@@ -176,10 +176,10 @@ addon.condition_class_group = {
         addon.layout_condition_operatorwidget_help(frame, L["Count"], L["Count"],
                 "Number of party or raid members of the desired class.")
     end
-}
+})
 
 if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
-    addon.condition_talent = {
+    addon:RegisterCondition("TALENT", {
         description = L["Talent"],
         icon = "Interface\\Icons\\Inv_misc_book_11",
         valid = function(_, value)
@@ -233,9 +233,9 @@ if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
                     "your user interface), this will show the talents.  Otherwise, this will simply show the " ..
                     "level and selection numbers (this is a restriction imposed by the game itself.)"))
         end
-    }
+    })
 
-    addon.condition_role = {
+    addon:RegisterCondition("ROLE", {
         description = L["Role"],
         icon = "Interface\\Icons\\spell_brokenheart",
         valid = function(_, value)
@@ -288,9 +288,9 @@ if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
             frame:AddChild(Indent(40, CreateText(color.GREEN .. L["Healer"] .. color.RESET .. " - " ..
                 "Those who keep everyone else alive by healing them.  Thank them!")))
         end
-    }
+    })
 else
-    addon.condition_talent = {
+    addon:RegisterCondition("TALENT", {
         description = L["Talent"],
         icon = "Interface\\Icons\\Inv_misc_book_11",
         valid = function(_, value)
@@ -436,10 +436,10 @@ else
             addon.layout_condition_operatorwidget_help(frame, L["Talent"], L["Points"],
                     "How many points you have put into " .. color.BLIZ_YELLOW .. L["Talent"] .. color.RESET .. ".");
         end
-    }
+    })
 
     if LE_EXPANSION_LEVEL_CURRENT >= 2 then
-        addon.condition_role = {
+        addon:RegisterCondition("ROLE", {
             description = L["Role"],
             icon = "Interface\\Icons\\spell_brokenheart",
             valid = function(_, value)
@@ -481,13 +481,13 @@ else
                 frame:AddChild(Indent(40, CreateText(color.GREEN .. L["Healer"] .. color.RESET .. " - " ..
                         "Those who keep everyone else alive by healing them.  Thank them!")))
             end
-        }
+        })
     end
 end
 
 if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE or LE_EXPANSION_LEVEL_CURRENT >= 2) then
     local unit_class, unit_class_num = select(2, UnitClass("player"))
-    addon.condition_glyph = {
+    addon:RegisterCondition("GLYPH", {
         description = L["Glyph"],
         icon = "Interface\\Icons\\inv_inscription_minorglyph09",
         valid = function(_, value)
@@ -528,10 +528,10 @@ if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE or LE_EXPANSION_LEVEL_CURRENT >= 2) t
         help = function(frame)
             addon.layout_condition_spellwidget_help(frame)
         end
-    }
+    })
 end
 
-addon.condition_creature = {
+addon:RegisterCondition("CREATURE", {
     description = L["Creature Type"],
     icon = "Interface\\Icons\\ability_rogue_disguise",
     valid = function(_, value)
@@ -577,9 +577,9 @@ addon.condition_creature = {
                 "The creature type of " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. ".  This " ..
                 "can be used to create conditions that are restricted by creature type (eg. Banish)."))
     end
-}
+})
 
-addon.condition_classification = {
+addon:RegisterCondition("CLASSIFICATION", {
     description = L["Unit Classification"],
     icon = "Interface\\Icons\\inv_mask_01",
     valid = function(_, value)
@@ -625,9 +625,9 @@ addon.condition_classification = {
                 "The classification of " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. ".  This " ..
                 "can be used to create conditions only apply to certain unit classifications (eg. bosses)."))
     end
-}
+})
 
-addon.condition_level = {
+addon:RegisterCondition("LEVEL", {
     description = L["Level"],
     icon = "Interface\\Icons\\spell_holy_blessedrecovery",
     valid = function(_, value)
@@ -682,9 +682,9 @@ addon.condition_level = {
         addon.layout_condition_operatorwidget_help(frame, L["Level"], L["Level"],
                 "The character's level")
     end
-}
+})
 
-addon.condition_group = {
+addon:RegisterCondition("GROUP", {
     description = L["In Group"],
     icon = "Interface\\Icons\\Ability_warrior_challange",
     valid = function()
@@ -716,10 +716,10 @@ addon.condition_group = {
                 " - " .. "Check to see if we are in a raid, instead of just a party (note that with ."
                       .. "this option off, this condition will be true if you are in a part OR a raid)."))
     end
-}
+})
 
 if MI2_GetMobData then
-addon.condition_runner = {
+addon:RegisterCondition("RUNNER", {
     description = L["Runner"],
     icon = 135996,
     valid = function(_, value)
@@ -749,9 +749,9 @@ addon.condition_runner = {
                 "it relies on previous interactions with the type of mob in question, which may be inaccurate. " ..
                 "Additionally, until you encounter the mob at least once, this condition will always be false."))
     end
-}
+})
 
-addon.condition_resist = {
+addon:RegisterCondition("RESIST", {
     description = L["Resistant"],
     icon = 132295,
     valid = function(_, value)
@@ -815,9 +815,9 @@ addon.condition_resist = {
                 "it relies on previous interactions with the type of mob in question, which may be inaccurate. " ..
                 "Additionally, until you encounter the mob at least once, this condition will always be false."))
     end
-}
+})
 
-addon.condition_immune = {
+addon:RegisterCondition("IMMUNE", {
     description = L["Immune"],
     icon = 132137,
     valid = function(_, value)
@@ -883,5 +883,5 @@ addon.condition_immune = {
                 "it relies on previous interactions with the type of mob in question, which may be inaccurate. " ..
                 "Additionally, until you encounter the mob at least once, this condition will always be false."))
     end
-}
+})
 end

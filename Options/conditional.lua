@@ -8,7 +8,7 @@ local error, pairs = error, pairs
 local ceil, min = math.ceil, math.min
 
 -- From utils
-local cleanArray, deepcopy, HideOnEscape = addon.cleanArray, addon.deepcopy, addon.HideOnEscape
+local cleanArray, deepcopy, wrap, HideOnEscape = addon.cleanArray, addon.deepcopy, addon.wrap, addon.HideOnEscape
 
 --------------------------------
 -- Common code
@@ -16,15 +16,23 @@ local cleanArray, deepcopy, HideOnEscape = addon.cleanArray, addon.deepcopy, add
 
 local evaluateArray, evaluateSingle, printArray, printSingle, validateArray, validateSingle, usefulArray, usefulSingle
 
-evaluateArray = function(operation, array, conditions, cache, start)
+local conditions = {}
+
+local special = {}
+special["DELETE"] = { desc = DELETE, icon = "Interface\\Icons\\Trade_Engineering" }
+special["AND"] = { desc = L["AND"], icon = "Interface\\Icons\\Spell_ChargePositive" }
+special["OR"] = { desc = L["OR"], icon = "Interface\\Icons\\Spell_ChargeNegative" }
+special["NOT"] = { desc = L["NOT"], icon = "Interface\\PaperDollInfoFrame\\UI-GearManager-LeaveItem-Transparent" }
+
+evaluateArray = function(operation, array, cache, start)
     if array ~= nil then
         for _, entry in pairs(array) do
             if entry ~= nil and entry.type ~= nil then
                 local rv
                 if entry.type == "AND" or entry.type == "OR" then
-                    rv = evaluateArray(entry.type, entry.value, conditions, cache, start);
+                    rv = evaluateArray(entry.type, entry.value, cache, start);
                 else
-                    rv = evaluateSingle(entry, conditions, cache, start)
+                    rv = evaluateSingle(entry, cache, start)
                 end
 
                 if operation == "AND" and not rv then
@@ -46,15 +54,15 @@ evaluateArray = function(operation, array, conditions, cache, start)
     end
 end
 
-evaluateSingle = function(value, conditions, cache, start)
+evaluateSingle = function(value, cache, start)
     if value == nil or value.type == nil then
         return true
     end
 
     if value.type == "AND" or value.type == "OR" then
-        return evaluateArray(value.type, value.value, conditions, cache, start)
+        return evaluateArray(value.type, value.value, cache, start)
     elseif value.type == "NOT" then
-        return not evaluateSingle(value.value, conditions, cache, start)
+        return not evaluateSingle(value.value, cache, start)
     elseif conditions[value.type] ~= nil then
         local rv = false
         -- condition is FALSE if the condition is INVALID.
@@ -72,7 +80,7 @@ evaluateSingle = function(value, conditions, cache, start)
     end
 end
 
-printArray = function(operation, array, conditions, spec)
+printArray = function(operation, array, spec)
     if array == nil then
         return ""
     end
@@ -89,9 +97,9 @@ printArray = function(operation, array, conditions, spec)
             end
 
             if entry.type == "AND" or entry.type == "OR" then
-                rv = rv .. printArray(entry.type, entry.value, conditions, spec)
+                rv = rv .. printArray(entry.type, entry.value, spec)
             else
-                rv = rv .. printSingle(entry, conditions, spec)
+                rv = rv .. printSingle(entry, spec)
             end
         end
     end
@@ -101,15 +109,15 @@ printArray = function(operation, array, conditions, spec)
     return rv
 end
 
-printSingle = function(value, conditions, spec)
+printSingle = function(value, spec)
     if value == nil or value.type == nil then
         return ""
     end
 
     if value.type == "AND" or value.type == "OR" then
-        return  printArray(value.type, value.value, conditions, spec)
+        return  printArray(value.type, value.value, spec)
     elseif value.type == "NOT" then
-        return "NOT " .. printSingle(value.value, conditions, spec)
+        return "NOT " .. printSingle(value.value, spec)
     elseif conditions[value.type] ~= nil then
         return conditions[value.type].print(spec, value)
     else
@@ -117,7 +125,7 @@ printSingle = function(value, conditions, spec)
     end
 end
 
-validateArray = function(_, array, conditions, spec)
+validateArray = function(_, array, spec)
     if array == nil then
         return true
     end
@@ -126,9 +134,9 @@ validateArray = function(_, array, conditions, spec)
         if entry ~= nil and entry.type ~= nil then
             local rv
             if entry.type == "AND" or entry.type == "OR" then
-                rv = validateArray(entry.type, entry.value, conditions, spec)
+                rv = validateArray(entry.type, entry.value, spec)
             else
-                rv = validateSingle(entry, conditions, spec)
+                rv = validateSingle(entry, spec)
             end
             if not rv then
                 return false
@@ -139,15 +147,15 @@ validateArray = function(_, array, conditions, spec)
     return true
 end
 
-validateSingle = function(value, conditions, spec)
+validateSingle = function(value, spec)
     if value == nil or value.type == nil then
         return true
     end
 
     if value.type == "AND" or value.type == "OR" then
-        return validateArray(value.type, value.value, conditions, spec)
+        return validateArray(value.type, value.value, spec)
     elseif value.type == "NOT" then
-        return validateSingle(value.value, conditions, spec)
+        return validateSingle(value.value, spec)
     elseif conditions[value.type] ~= nil then
         return conditions[value.type].valid(spec, value)
     else
@@ -155,7 +163,7 @@ validateSingle = function(value, conditions, spec)
     end
 end
 
-usefulArray = function(_, array, conditions)
+usefulArray = function(_, array)
     if array == nil then
         return false
     end
@@ -164,9 +172,9 @@ usefulArray = function(_, array, conditions)
         if entry ~= nil and entry.type ~= nil then
             local rv
             if entry.type == "AND" or entry.type == "OR" then
-                rv = usefulArray(entry.type, entry.value, conditions)
+                rv = usefulArray(entry.type, entry.value)
             else
-                rv = usefulSingle(entry, conditions)
+                rv = usefulSingle(entry)
             end
             if rv then
                 return true
@@ -177,15 +185,15 @@ usefulArray = function(_, array, conditions)
     return false
 end
 
-usefulSingle = function(value, conditions)
+usefulSingle = function(value)
     if value == nil or value.type == nil then
         return false
     end
 
     if value.type == "AND" or value.type == "OR" then
-        return usefulArray(value.type, value.value, conditions)
+        return usefulArray(value.type, value.value)
     elseif value.type == "NOT" then
-        return usefulSingle(value.value, conditions)
+        return usefulSingle(value.value)
     elseif conditions[value.type] ~= nil then
         return true
     else
@@ -193,26 +201,17 @@ usefulSingle = function(value, conditions)
     end
 end
 
-local function wrap(str, limit)
-    limit = limit or 72
-    local here = 1
+local function LayoutConditionTab(top, frame, funcs, value, selected, index, group, filter)
+    local profile = addon.db.profile
 
-    -- the "".. is there because :gsub returns multiple values
-    return ""..str:gsub("(%s+)()(%S+)()",
-        function(_, st, word, fi)
-            if fi-here > limit then
-                here = st
-                return "\n"..word
-            end
-        end)
-end
+    frame:ReleaseChildren()
+    frame:PauseLayout()
 
-local function LayoutConditionTab(top, frame, funcs, value, selected, conditions, groups, group)
     local selectedIcon
 
-    local function layoutIcon(icon, desc, selected, onclick)
+    local function layoutIcon(cond, icon, desc, selected, onclick)
         local description = AceGUI:Create("InteractiveLabel")
-        local text = wrap(desc, 15)
+        local text = wrap(desc, 18)
         if not string.match(text, "\n") then
             text = text .. "\n"
         end
@@ -223,133 +222,122 @@ local function LayoutConditionTab(top, frame, funcs, value, selected, conditions
         description:SetWidth(100)
         description:SetUserData("cell", { alignV = "top", alignH = "left" })
         description:SetCallback("OnClick", function (widget)
-            onclick(widget)
+            onclick(widget, cond)
             top:Hide()
         end)
 
         if selected then
             selectedIcon = description
+            addon:ApplyCustomGlow({ type = "pixel" }, selectedIcon.frame, nil, { r = 0, g = 1, b = 0, a = 1 }, 0, 3)
+            description:SetCallback("OnRelease", function()
+                if selectedIcon then
+                    addon:HideGlow(selectedIcon.frame)
+                end
+            end)
         end
 
         return description
     end
 
-    if (group == nil) then
-        local deleteicon = layoutIcon("Interface\\Icons\\Trade_Engineering", DELETE, false, function()
-            if selected == "NOT" and value.value ~= nil then
-                local subvalue = value.value
-                cleanArray(value, { "type" })
-                for k,v in pairs(subvalue) do
-                    value[k] = v
-                end
-            else
-                cleanArray(value, { "type" })
-                value.type = nil
+    local special_act = {}
+    special_act["DELETE"] = layoutIcon("DELETE", special["DELETE"].icon, special["DELETE"].desc, false, function()
+        if selected == "NOT" and value.value ~= nil then
+            local subvalue = value.value
+            cleanArray(value, { "type" })
+            for k,v in pairs(subvalue) do
+                value[k] = v
             end
-        end)
-        frame:AddChild(deleteicon)
+        else
+            cleanArray(value, { "type" })
+            value.type = nil
+        end
+    end)
 
-        local andicon = layoutIcon("Interface\\Icons\\Spell_ChargePositive", L["AND"], selected == "AND", function()
-            local subvalue
-            if selected ~= "AND" and selected ~= "OR" then
-                if value ~= nil and value.type ~= nil then
-                    subvalue = { deepcopy(value) }
-                end
-                cleanArray(value, { "type" })
+    special_act["AND"] = layoutIcon("AND", special["AND"].icon, special["AND"].desc, selected == "AND", function()
+        local subvalue
+        if selected ~= "AND" and selected ~= "OR" then
+            if value ~= nil and value.type ~= nil then
+                subvalue = { deepcopy(value) }
             end
-            value.type = "AND"
-            if subvalue ~= nil then
-                value.value = subvalue
-            end
-        end)
-        frame:AddChild(andicon)
+            cleanArray(value, { "type" })
+        end
+        value.type = "AND"
+        if subvalue ~= nil then
+            value.value = subvalue
+        end
+    end)
 
-        local oricon = layoutIcon("Interface\\Icons\\Spell_ChargeNegative", L["OR"], selected == "OR", function()
-            local subvalue
-            if selected ~= "AND" and selected ~= "OR" then
-                if value ~= nil and value.type ~= nil then
-                    subvalue = { deepcopy(value) }
-                end
-                cleanArray(value, { "type" })
+    special_act["OR"] = layoutIcon("OR", special["OR"].icon, special["OR"].desc, selected == "OR", function()
+        local subvalue
+        if selected ~= "AND" and selected ~= "OR" then
+            if value ~= nil and value.type ~= nil then
+                subvalue = { deepcopy(value) }
             end
-            value.type = "OR"
-            if subvalue ~= nil then
-                value.value = subvalue
-            end
-        end)
-        frame:AddChild(oricon)
+            cleanArray(value, { "type" })
+        end
+        value.type = "OR"
+        if subvalue ~= nil then
+            value.value = subvalue
+        end
+    end)
 
-        local noticon = layoutIcon("Interface\\PaperDollInfoFrame\\UI-GearManager-LeaveItem-Transparent", L["NOT"], selected == "NOT", function()
-            local subvalue
-            if selected ~= "NOT" then
-                if value ~= nil and value.type ~= nil then
-                    subvalue = deepcopy(value)
-                end
-                cleanArray(value, { "type" })
+    special_act["NOT"] = layoutIcon("NOT", special["NOT"].icon, special["NOT"].desc, selected == "NOT", function()
+        local subvalue
+        if selected ~= "NOT" then
+            if value ~= nil and value.type ~= nil then
+                subvalue = deepcopy(value)
             end
-            value.type = "NOT"
-            if subvalue ~= nil then
-                value.value = subvalue
-            elseif selected ~= "NOT" then
-                value.value = { type = nil }
-            end
-        end)
-        frame:AddChild(noticon)
+            cleanArray(value, { "type" })
+        end
+        value.type = "NOT"
+        if subvalue ~= nil then
+            value.value = subvalue
+        elseif selected ~= "NOT" then
+            value.value = { type = nil }
+        end
+    end)
+
+    local cond_selected = function(_, cond)
+        if selected ~= cond then
+            cleanArray(value, { "type" })
+        end
+        value.type = cond
     end
 
-    for _, v in pairs(conditions) do
-        if groups == nil or group == groups[v] then
-            local icon, desc = funcs:describe(v)
-
-            local action = layoutIcon(icon, desc, selected == v, function()
-                if selected ~= v then
-                    cleanArray(value, { "type" })
-                end
-                value.type = v
-            end)
-            frame:AddChild(action)
+    for _, cond in pairs(funcs:list(index and index > 0 and group or "SWITCH")) do
+        if special_act[cond] then
+            local desc = special[cond].desc
+            if not filter or string.find(string.lower(desc), string.lower(filter)) then
+                frame:AddChild(special_act[cond])
+            end
+        elseif conditions[cond] then
+            local icon, desc = funcs:describe(cond)
+            if not filter or string.find(string.lower(desc), string.lower(filter)) then
+                local action = layoutIcon(cond, icon, desc, selected == cond, cond_selected)
+                frame:AddChild(action)
+            end
         end
     end
 
-    return selectedIcon
+    addon:configure_frame(frame)
+    frame:ResumeLayout()
+    frame:DoLayout()
 end
 
 local function ChangeConditionType(parent, _, ...)
+    local profile = addon.db.profile
     local top = parent:GetUserData("top")
     local value = parent:GetUserData("value")
     local spec = top:GetUserData("spec")
     local root = top:GetUserData("root")
     local funcs = top:GetUserData("funcs")
+    local index = top:GetUserData("index")
 
     -- Don't let the notifications happen, or the top screen destroy itself on hide.
     top:SetCallback("OnClose", function() end)
     top:Hide()
 
-    local conditions, groups = funcs:list()
-    local group_count = {}
-    if (groups) then
-        local grouped = 0
-        for _, v in pairs(groups) do
-            if group_count[v] == nil then
-                group_count[v] = 1
-            else
-                group_count[v] = group_count[v] + 1
-            end
-            grouped = grouped + 1
-        end
-        group_count[L["Other"]] = #conditions - grouped
-        local max_group = 0
-        for _,v in pairs(group_count) do
-            if v > max_group then
-                max_group = v
-            end
-        end
-        group_count = max_group
-    else
-        group_count = #conditions
-    end
-
-    local selected, selectedIcon
+    local selected
     if (value ~= nil and value.type ~= nil) then
         selected = value.type
     end
@@ -357,18 +345,33 @@ local function ChangeConditionType(parent, _, ...)
     local frame = AceGUI:Create("Window")
     --local frame = AceGUI:Create("Frame")
     frame:PauseLayout()
-    frame:SetLayout("Fill")
+    frame:SetLayout("Flow")
     frame:SetTitle(L["Condition Type"])
     local DEFAULT_COLUMNS = 5
     local DEFAULT_ROWS = 5
-    frame:SetWidth((groups and 70 or 50) + (DEFAULT_COLUMNS * 100))
-    local rows = ceil((4 + group_count) / DEFAULT_COLUMNS)
-    frame:SetHeight((groups and 90 or 46) + min(rows * 70, DEFAULT_ROWS * 70))
-    frame:SetCallback("OnClose", function(widget)
-        if selectedIcon then
-            addon:HideGlow(selectedIcon.frame)
-            --ActionButton_HideOverlayGlow(selectedIcon.frame)
+
+    local group_count
+    if not index or index == 0 then
+        group_count = addon.tablelength(funcs:list("SWITCH"))
+    else
+        for _,v in pairs(profile.condition_groups) do
+            if v.conditions then
+                local count = addon.tablelength(v.conditions)
+                if not group_count or group_count < count then
+                    group_count = count
+                end
+            end
         end
+        local count = addon.tablelength(funcs:list("DEFAULT"))
+        if not group_count or group_count < count then
+            group_count = count
+        end
+    end
+
+    frame:SetWidth((index and index > 0 and 70 or 50) + (DEFAULT_COLUMNS * 100))
+    local rows = ceil(group_count / DEFAULT_COLUMNS)
+    frame:SetHeight((index and index > 0 and 90 or 46) + min(rows * 70, DEFAULT_ROWS * 70))
+    frame:SetCallback("OnClose", function(widget)
         AceGUI:Release(widget)
         addon.LayoutConditionFrame(top)
         top:SetStatusText(funcs:print(root, spec))
@@ -376,74 +379,62 @@ local function ChangeConditionType(parent, _, ...)
     end)
     HideOnEscape(frame)
 
-    if groups then
-        local tab_select
-        local tabs = {}
-        local seen = {}
-        for k, v in pairs(groups) do
-            if seen[v] == nil then
-                table.insert(tabs, {
-                    value = v,
-                    text = v
-                })
-                seen[v] = true
-            end
-            if selected == k then
-                tab_select = v
-            end
+    local header = AceGUI:Create("SimpleGroup")
+    header:SetFullWidth(true)
+    header:SetLayout("Table")
+    header:SetUserData("table", { columns = { 1, 250 } })
+    frame:AddChild(header)
+
+    local scrollwin = AceGUI:Create("ScrollFrame")
+    scrollwin:SetFullHeight(true)
+    scrollwin:SetFullWidth(true)
+    scrollwin:SetLayout("Flow")
+    frame:AddChild(scrollwin)
+
+    local cond_group
+    if index and index > 0 then
+        local group_sel = {}
+        local group_sel_order = {}
+        for _, v in pairs(profile.condition_groups) do
+            group_sel[v.id] = v.name
+            table.insert(group_sel_order, v.id)
         end
-        table.insert(tabs,
-            {
-                value = nil,
-                text = L["Other"]
-            })
+        group_sel["DEFAULT"] = L["Other"]
+        table.insert(group_sel_order, "DEFAULT")
 
-        local group = AceGUI:Create("TabGroup")
-        group:SetLayout("Fill")
-        group:SetFullHeight(true)
-        group:SetFullWidth(true)
-        group:SetTabs(tabs)
-        group:SetCallback("OnGroupSelected", function(_, _, val)
-            group:ReleaseChildren()
-            group:PauseLayout()
-            if selectedIcon then
-                addon:HideGlow(selectedIcon.frame)
-            end
-
-            local scrollwin = AceGUI:Create("ScrollFrame")
-            scrollwin:SetFullHeight(true)
-            scrollwin:SetFullWidth(true)
-            scrollwin:SetLayout("Flow")
-
-            selectedIcon = LayoutConditionTab(frame, scrollwin, funcs, value, selected, conditions, groups, val)
-
-            group:AddChild(scrollwin)
-
-            if selectedIcon then
-                addon:ApplyCustomGlow({ type = "pixel" }, selectedIcon.frame, nil, { r = 0, g = 1, b = 0, a = 1 }, 0, 3)
-                --ActionButton_ShowOverlayGlow(selectedIcon.frame)
-            end
-
-            addon:configure_frame(group)
-            group:ResumeLayout()
-            group:DoLayout()
+        cond_group = addon:findConditionGroup(selected)
+        local group = AceGUI:Create("Dropdown")
+        --group:SetLabel("Move To")
+        group.configure = function()
+            group:SetList(group_sel, group_sel_order)
+            group:SetValue(cond_group or "DEFAULT")
+        end
+        group:SetCallback("OnValueChanged", function(_, _, val)
+            cond_group = val
+            LayoutConditionTab(frame, scrollwin, funcs, value, selected, index, val, nil)
         end)
-        group:SelectTab(tab_select)
-        frame:AddChild(group)
+        header:AddChild(group)
+
     else
-        local scrollwin = AceGUI:Create("ScrollFrame")
-        scrollwin:SetFullHeight(true)
-        scrollwin:SetFullWidth(true)
-        scrollwin:SetLayout("Flow")
-
-        selectedIcon = LayoutConditionTab(frame, scrollwin, funcs, value, selected, conditions, groups, val)
-        frame:AddChild(scrollwin)
-
-        if selectedIcon then
-            addon:ApplyCustomGlow({ type = "pixel" }, selectedIcon.frame, nil, { r = 0, g = 1, b = 0, a = 1 }, 0, 3)
-            -- ActionButton_ShowOverlayGlow(selectedIcon.frame)
+        local function spacer()
+            local rv = AceGUI:Create("Label")
+            rv:SetFullWidth(true)
+            return rv
         end
+
+        header:AddChild(spacer())
     end
+
+    local search = AceGUI:Create("EditBox")
+    -- search:SetLabel("Search")
+    search:SetFullWidth(true)
+    search:DisableButton(true)
+    search:SetCallback("OnTextChanged", function(_, _, v)
+        LayoutConditionTab(frame, scrollwin, funcs, value, selected, index, cond_group, v)
+    end)
+    header:AddChild(search)
+
+    LayoutConditionTab(frame, scrollwin, funcs, value, selected, index, cond_group, nil)
 
     addon:configure_frame(frame)
     frame:ResumeLayout()
@@ -635,10 +626,27 @@ addon.LayoutConditionFrame = function(frame)
     frame:DoLayout()
 end
 
-local function EditConditionCommon(index, spec, value, funcs)
+--------------------------------
+--  Dealing with Conditionals
+-------------------------------
+
+function addon:RegisterCondition(tag, array)
+    conditions[tag] = array
+end
+
+function addon:EditCondition(index, spec, value, callback)
+    local funcs = {
+        print = addon.printCondition,
+        validate = addon.validateCondition,
+        list = addon.listConditions,
+        describe = addon.describeCondition,
+        widget = addon.widgetCondition,
+        close = callback,
+    }
+
     local frame = AceGUI:Create("Frame")
 
-    if index > 0 then
+    if index and index > 0 then
         frame:SetTitle(string.format(L["Edit Condition #%d"], index))
     else
         frame:SetTitle(L["Edit Condition"])
@@ -654,69 +662,111 @@ local function EditConditionCommon(index, spec, value, funcs)
     HideOnEscape(frame)
 end
 
---------------------------------
---  Dealing with Conditionals
--------------------------------
-
-local conditions = {}
-local conditions_idx = 1
-local condition_groups = {}
-
-function addon:RegisterCondition(group, tag, array)
-    array["order"] = conditions_idx
-    conditions[tag] = array
-    conditions_idx = conditions_idx + 1
-    if group then
-        condition_groups[tag] = group
-    end
-end
-
-function addon:EditCondition(index, spec, value, callback)
-    local funcs = {
-        print = addon.printCondition,
-        validate = addon.validateCondition,
-        list = addon.listConditions,
-        describe = addon.describeCondition,
-        widget = addon.widgetCondition,
-        close = callback,
-    }
-
-    EditConditionCommon(index, spec, value, funcs)
-end
-
 function addon:evaluateCondition(value)
     local cache = {}
     local start = GetTime()
-    return evaluateSingle(value, conditions, cache, start)
+    return evaluateSingle(value, cache, start)
 end
 
 function addon:printCondition(value, spec)
-    return printSingle(value, conditions, spec)
+    return printSingle(value, spec)
 end
 
 function addon:validateCondition(value, spec)
-    return validateSingle(value, conditions, spec)
+    return validateSingle(value, spec)
 end
 
 function addon:usefulCondition(value)
-    return usefulSingle(value, conditions)
+    return usefulSingle(value)
 end
 
-function addon:listConditions()
-    local rv = {}
-    for k, _ in pairs(conditions) do
-        table.insert(rv, k)
+function addon:findConditionGroup(value)
+    if not value then
+        return nil
     end
-    table.sort(rv, function (lhs, rhs)
-        if (conditions[rhs] == nil or conditions[rhs].order == nil) then
-            return lhs
+
+    local profile = addon.db.profile
+    for _, v in pairs(profile.condition_groups) do
+        if v.conditions then
+            for _, cond in pairs(v.conditions) do
+                if value == cond then
+                    return v.id
+                end
+            end
         end
-        if (conditions[lhs] == nil or conditions[lhs].order == nil) then
-            return rhs
+    end
+
+    return "DEFAULT"
+end
+
+function addon:listConditions(group, nohide)
+    local profile = addon.db.profile
+
+    local special = {}
+    special["DELETE"] = true
+    special["AND"] = true
+    special["OR"] = true
+    special["NOT"] = true
+
+    local rv = {}
+    if group == "SWITCH" then
+        for _, cond in pairs(profile.switch_conditions) do
+            if special[cond] then
+                table.insert(rv, cond)
+            elseif conditions[cond] then
+                table.insert(rv, cond)
+            end
         end
-        return conditions[lhs].order < conditions[rhs].order
-    end)
-    return rv, condition_groups
+        for cond,_ in pairs(special) do
+            if not addon.index(rv, cond) then
+                table.insert(rv, cond)
+            end
+        end
+    else
+        local skipped = {}
+        for _, v in pairs(profile.condition_groups) do
+            if v.conditions then
+                if group == "DEFAULT" then
+                    for _, cond in pairs(v.conditions) do
+                        skipped[cond] = true
+                    end
+                elseif group == v.id or group == "ALL" then
+                    for _, cond in pairs(v.conditions) do
+                        if special[cond] then
+                            table.insert(rv, cond)
+                        elseif conditions[cond] then
+                            table.insert(rv, cond)
+                        end
+                        skipped[cond] = true
+                    end
+                end
+            end
+        end
+        if group == "DEFAULT" or group == "ALL" then
+            for _, cond in pairs(profile.other_conditions_order) do
+                if not (group == "ALL" and skipped[cond]) then
+                    if special[cond] then
+                        table.insert(rv, cond)
+                    elseif conditions[cond] then
+                        table.insert(rv, cond)
+                    end
+                    skipped[cond] = true
+                end
+            end
+            for cond,_ in pairs(special) do
+                if not skipped[cond] then
+                    table.insert(rv, cond)
+                end
+            end
+            for cond,_ in pairs(conditions) do
+                if not skipped[cond] and (nohide or not addon.index(profile.disabled_conditions, cond)) then
+                    table.insert(rv, cond)
+                end
+            end
+        end
+    end
+
+    return rv
 end
 
 function addon:describeCondition(type)
@@ -729,79 +779,5 @@ end
 function addon:widgetCondition(parent, spec, value)
     if value ~= nil and value.type ~= nil and conditions[value.type] ~= nil and conditions[value.type].widget ~= nil then
         conditions[value.type].widget(parent, spec, value)
-    end
-end
-
---------------------------------
---  Dealing with Switch Conditionals
--------------------------------
-
-local switchConditions = {}
-local switchConditions_idx = 1
-
-function addon:RegisterSwitchCondition(tag, array)
-    array["order"] = switchConditions_idx
-    switchConditions[tag] = array
-    switchConditions_idx = switchConditions_idx + 1
-end
-
-function addon:EditSwitchCondition(spec, value, callback)
-    local funcs = {
-        print = addon.printSwitchCondition,
-        validate = addon.validateSwitchCondition,
-        list = addon.listSwitchConditions,
-        describe = addon.describeSwitchCondition,
-        widget = addon.widgetSwitchCondition,
-        close = callback,
-    }
-
-    EditConditionCommon(0, spec, value, funcs)
-end
-
-function addon:evaluateSwitchCondition(value)
-    local cache = {}
-    local start = GetTime()
-    return evaluateSingle(value, switchConditions, cache, start)
-end
-
-function addon:printSwitchCondition(value, spec)
-    return printSingle(value, switchConditions, spec)
-end
-
-function addon:validateSwitchCondition(value, spec)
-    return validateSingle(value, switchConditions, spec)
-end
-
-function addon:usefulSwitchCondition(value)
-    return usefulSingle(value, switchConditions)
-end
-
-function addon:listSwitchConditions()
-    local rv = {}
-    for k, _ in pairs(switchConditions) do
-        table.insert(rv, k)
-    end
-    table.sort(rv, function (lhs, rhs)
-        if (switchConditions[rhs] == nil or switchConditions[rhs].order == nil) then
-            return lhs
-        end
-        if (switchConditions[lhs] == nil or switchConditions[lhs].order == nil) then
-            return rhs
-        end
-        return switchConditions[lhs].order < switchConditions[rhs].order
-    end)
-    return rv, nil
-end
-
-function addon:describeSwitchCondition(type)
-    if (switchConditions[type] == nil) then
-        return nil, nil
-    end
-    return switchConditions[type].icon, switchConditions[type].description, switchConditions[type].help
-end
-
-function addon:widgetSwitchCondition(parent, spec, value)
-    if value ~= nil and value.type ~= nil and switchConditions[value.type] ~= nil and switchConditions[value.type].widget ~= nil then
-        switchConditions[value.type].widget(parent, spec, value)
     end
 end

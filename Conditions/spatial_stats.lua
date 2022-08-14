@@ -25,7 +25,7 @@ local helpers = addon.help_funcs
 local CreateText, Indent, Gap = helpers.CreateText, helpers.Indent, helpers.Gap
 local proximity_eval, proximity_widgets = addon.proximity_eval, addon.proximity_widgets
 
-addon.condition_proximity_health = {
+addon:RegisterCondition("PROXIMITY_HEALTH", {
     description = L["Health Within Range"],
     icon = "Interface\\Icons\\inv_potion_52",
     valid = function(_, value)
@@ -129,9 +129,9 @@ addon.condition_proximity_health = {
         frame:AddChild(CreateText(color.RED .. "This will only work for yourself if you are inside " ..
                 "of an instance, and it will be less accurate than outside of an instance." .. color.RESET))
     end
-}
+})
 
-addon.condition_proximity_health_count = {
+addon:RegisterCondition("PROXIMITY_HEALTH_COUNT", {
     description = L["Health Count Within Range"],
     icon = "Interface\\Icons\\inv_potion_54",
     valid = function(_, value)
@@ -214,9 +214,9 @@ addon.condition_proximity_health_count = {
         frame:AddChild(CreateText(color.RED .. "This will only work for yourself if you are inside " ..
                 "of an instance, and it will be less accurate than outside of an instance." .. color.RESET))
     end
-}
+})
 
-addon.condition_proximity_healthpct = {
+addon:RegisterCondition("PROXIMITY_HEALTHPCT", {
     description = L["Health Percentage Within Range"],
     icon = "Interface\\Icons\\inv_potion_51",
     valid = function(_, value)
@@ -316,9 +316,9 @@ addon.condition_proximity_healthpct = {
         frame:AddChild(CreateText(color.RED .. "This will only work for yourself if you are inside " ..
                 "of an instance, and it will be less accurate than outside of an instance." .. color.RESET))
     end
-}
+})
 
-addon.condition_proximity_healthpct_count = {
+addon:RegisterCondition("PROXIMITY_HEALTHPCT_COUNT", {
     description = L["Health Percentage Count Within Range"],
     icon = "Interface\\Icons\\inv_potion_53",
     valid = function(_, value)
@@ -395,8 +395,8 @@ addon.condition_proximity_healthpct_count = {
         frame:AddChild(CreateText(color.RED .. "This will only work for yourself if you are inside " ..
                 "of an instance, and it will be less accurate than outside of an instance." .. color.RESET))
     end
-}
-addon.condition_proximity_mana = {
+})
+addon:RegisterCondition("PROXIMITY_MANA", {
     description = L["Mana Within Range"],
     icon = "Interface\\Icons\\inv_potion_73",
     valid = function(_, value)
@@ -500,9 +500,9 @@ addon.condition_proximity_mana = {
         frame:AddChild(CreateText(color.RED .. "This will only work for yourself if you are inside " ..
                 "of an instance, and it will be less accurate than outside of an instance." .. color.RESET))
     end
-}
+})
 
-addon.condition_proximity_mana_count = {
+addon:RegisterCondition("PROXIMITY_MANA_COUNT", {
     description = L["Mana Count Within Range"],
     icon = "Interface\\Icons\\inv_potion_72",
     valid = function(_, value)
@@ -585,9 +585,9 @@ addon.condition_proximity_mana_count = {
         frame:AddChild(CreateText(color.RED .. "This will only work for yourself if you are inside " ..
                 "of an instance, and it will be less accurate than outside of an instance." .. color.RESET))
     end
-}
+})
 
-addon.condition_proximity_manapct = {
+addon:RegisterCondition("PROXIMITY_MANAPCT", {
     description = L["Mana Percentage Within Range"],
     icon = "Interface\\Icons\\inv_potion_75",
     valid = function(_, value)
@@ -687,9 +687,9 @@ addon.condition_proximity_manapct = {
         frame:AddChild(CreateText(color.RED .. "This will only work for yourself if you are inside " ..
                 "of an instance, and it will be less accurate than outside of an instance." .. color.RESET))
     end
-}
+})
 
-addon.condition_proximity_manapct_count = {
+addon:RegisterCondition("PROXIMITY_MANAPCT_COUNT", {
     description = L["Mana Percentage Count Within Range"],
     icon = "Interface\\Icons\\inv_potion_74",
     valid = function(_, value)
@@ -767,4 +767,4 @@ addon.condition_proximity_manapct_count = {
         frame:AddChild(CreateText(color.RED .. "This will only work for yourself if you are inside " ..
                 "of an instance, and it will be less accurate than outside of an instance." .. color.RESET))
     end
-}
+})

@@ -5,6 +5,7 @@ local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
 local multiinsert, tablelength, deepcopy = addon.multiinsert, addon.tablelength, addon.deepcopy
 
 local CHAR_VERSION = 1
+local PROFILE_VERSION = 1
 local GLOBAL_VERSION = 1
 
 local combination_food = {}
@@ -157,6 +158,67 @@ local default_effects = {
     }
 }
 
+local default_condition_groups = {
+    {
+        id = "b3d7df2c-f257-4a2d-961e-66e49336d109",
+        name = L["Combat"],
+        conditions = {
+            "CASTING", "CASTING_SPELL", "CASTING_REMAIN", "CAST_INTERRUPTABLE",
+            "CHANNELING", "CHANNELING_SPELL", "CHANNELING_REMAIN", "CHANNEL_INTERRUPTABLE",
+            "COMBAT", "PET", "PET_NAME", "STEALTHED", "INCONTROL", "LOC_TYPE", "LOC_BLOCKED",
+            "MOVING", "THREAT", "THREAT_COUNT", "FORM", "ATTACKABLE", "ENEMY", "COMBAT_HISTORY",
+            "COMBAT_HISTORY_TIME", "HEALTH", "HEALTHPCT", "MANA", "MANAPCT", "POWER", "POWERPCT",
+            "POINT", "RUNE", "RUNE_COOLDOWN", "TT_HEALTH", "TT_HEALTHPCT"
+        }
+    },
+    {
+        id = "8034819e-26f5-4f4e-9153-d8cab5e65f31",
+        name = L["Spells / Items"],
+        conditions = {
+            "ANYSPELL_AVAIL", "ANYSPELL_RANGE", "ANYSPELL_COOLDOWN", "ANYSPELL_REMAIN",
+            "ANYSPELL_CHARGES", "GLYPH", "EQUIPPED", "CARRYING", "ITEM", "ITEM_RANGE",
+            "ITEM_COOLDOWN", "PETSPELL_AVAIL", "PETSPELL_RANGE", "PETSPELL_COOLDOWN",
+            "PETSPELL_REMAIN", "PETSPELL_CHARGES", "PETSPELL_HISTORY", "PETSPELL_HISTORY_TIME",
+            "PETSPELL_ACTIVE", "SPELL_AVAIL", "SPELL_RANGE", "SPELL_COOLDOWN",
+            "SPELL_REMAIN", "SPELL_CHARGES", "SPELL_HISTORY", "SPELL_HISTORY_TIME",
+            "SPELL_ACTIVE", "TOTEM", "TOTEM_SPELL", "TOTEM_REMAIN", "TOTEM_SPELL_REMAIN"
+        }
+    },
+    {
+        id = "e618608c-92ec-4ae9-9dde-40a397d7beb9",
+        name = L["Buffs"],
+        conditions = {
+            "BUFF", "BUFF_REMAIN", "BUFF_STACKS", "STEALABLE", "DEBUFF", "DEBUFF_REMAIN",
+            "DEBUFF_STACKS", "DISPELLABLE", "WEAPON", "WEAPON_REMAIN", "WEAPON_STACKS",
+            "SWING_TIME", "SWING_TIME_REMAIN"
+        }
+    },
+    {
+        id = "fa10aaf8-bc71-480f-9062-c949fd7c74e9",
+        name = L["Spatial"],
+        conditions = {
+            "PROXIMITY", "DISTANCE", "DISTANCE_COUNT", "PROXIMITY_HEALTH", "PROXIMITY_HEALTH_COUNT",
+            "PROXIMITY_HEALTHPCT", "PROXIMITY_HEALTHPCT_COUNT", "PROXIMITY_MANA", "PROXIMITY_MANA_COUNT",
+            "PROXIMITY_MANAPCT", "PROXIMITY_MANAPCT_COUNT"
+        }
+    },
+}
+
+local default_other_conditions_order = {
+    "DELETE", "AND", "OR", "NOT", "ISSAME", "CLASS", "CLASS_GROUP", "CREATURE", "CLASSIFICATION",
+    "LEVEL", "GROUP", "RUNNER", "RESIST", "IMMUNE", "ZONE"
+}
+
+local default_switch_conditions = {
+    "DELETE", "AND", "OR", "NOT", "SELF_LEVEL", "PVP", "ZONEPVP", "ZONE", "INSTANCE", "OUTDOORS",
+    "STEALTHED", "GROUP", "FORM", "CLASS", "CLASS_GROUP", "CREATURE", "CLASSIFICATION",
+    "PET_NAME", "EQUIPPED", "DISTANCE_COUNT", "THREAD_COUNT", "ROLE", "GLYPH"
+}
+
+local default_disabled_conditions = {
+    "SELF_LEVEL"
+}
+
 local function updateRotationData(rot_func, cond_func)
     if not addon.db.char.rotations then
         return
@@ -235,8 +297,9 @@ local function upgradeGlobalRotationstoPlayer()
         -- Upgrade from TBC -> Wrath
         if (LE_EXPANSION_LEVEL_CURRENT >= 2) and
             addon.db.char.rotations ~= nil and addon.db.char.rotations[0] ~= nil then
-            addon.db.char.rotations[1] = addon.db.char.rotations[0]
-            addon.db.char.rotations[0] = nil
+            local rot = addon.db.char.rotations[0]
+            addon.db.char.rotations = {}
+            addon.db.char.rotations[1] = rot
         end
     end
 end
@@ -433,6 +496,19 @@ function addon:init()
     end
     if tablelength(addon.db.global.effects) == 0 then
         addon.db.global.effects = deepcopy(default_effects)
+        addon.db.global.version = GLOBAL_VERSION
+    end
+    if tablelength(addon.db.profile.condition_groups) == 0 then
+        addon.db.profile.condition_groups = deepcopy(default_condition_groups)
+    end
+    if tablelength(addon.db.profile.switch_conditions) == 0 then
+        addon.db.profile.switch_conditions = deepcopy(default_switch_conditions)
+    end
+    if tablelength(addon.db.profile.other_conditions_order) == 0 then
+        addon.db.profile.other_conditions_order = deepcopy(default_other_conditions_order)
+    end
+    if tablelength(addon.db.profile.disabled_conditions) == 0 then
+        addon.db.profile.disabled_conditions = deepcopy(default_disabled_conditions)
     end
 
     upgradeTexturesToEffects()
@@ -446,6 +522,7 @@ function addon:init()
     upgradeRuneTypes()
     upgradeBindingSlots()
     addon.db.char.version = CHAR_VERSION
+    addon.db.profile.version = PROFILE_VERSION
     addon.db.global.version = GLOBAL_VERSION
 end
 
