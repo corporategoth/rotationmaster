@@ -82,7 +82,7 @@ addon:RegisterCondition("DEBUFF", {
     end
 })
 
-addon:RegisterCondition("DEBUFF_STACKS", {
+addon:RegisterCondition("DEBUFF_REMAIN", {
     description = L["Debuff Time Remaining"],
     icon = "Interface\\Icons\\ability_creature_cursed_04",
     valid = function(_, value)
