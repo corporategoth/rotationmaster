@@ -114,9 +114,7 @@ do
 				local spellIDs = SpellData:GetAllSpellIds(name)
 
 				local sortbyrank = function(t, a, b)
-					local ranka = tonumber(string.match(SpellData:SpellRank(t[a], true) or "", "%d+")) or 0
-					local rankb = tonumber(string.match(SpellData:SpellRank(t[b], true) or "", "%d+")) or 0
-					return rankb < ranka
+					return SpellData:SpellRankNum(t[b], true) < SpellData:SpellRankNum(t[a], true)
 				end
 				for _,spellID in spairs(spellIDs, sortbyrank) do
 					if not self.obj.spellFilter or self.obj.spellFilter(self.obj, spellID) then

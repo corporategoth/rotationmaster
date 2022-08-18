@@ -393,8 +393,8 @@ local function ChangeConditionType(parent, _, ...)
 
     local cond_group
     if index and index > 0 then
-        local group_sel = {}
-        local group_sel_order = {}
+        local group_sel = { ALL = ALL }
+        local group_sel_order = { "ALL" }
         for _, v in pairs(profile.condition_groups) do
             group_sel[v.id] = v.name
             table.insert(group_sel_order, v.id)
@@ -402,12 +402,11 @@ local function ChangeConditionType(parent, _, ...)
         group_sel["DEFAULT"] = L["Other"]
         table.insert(group_sel_order, "DEFAULT")
 
-        cond_group = addon:findConditionGroup(selected)
+        cond_group = addon:findConditionGroup(selected) or "ALL"
         local group = AceGUI:Create("Dropdown")
-        --group:SetLabel("Move To")
         group.configure = function()
             group:SetList(group_sel, group_sel_order)
-            group:SetValue(cond_group or "DEFAULT")
+            group:SetValue(cond_group)
         end
         group:SetCallback("OnValueChanged", function(_, _, val)
             cond_group = val
@@ -702,12 +701,6 @@ end
 function addon:listConditions(group, nohide)
     local profile = addon.db.profile
 
-    local special = {}
-    special["DELETE"] = true
-    special["AND"] = true
-    special["OR"] = true
-    special["NOT"] = true
-
     local rv = {}
     if group == "SWITCH" then
         for _, cond in pairs(profile.switch_conditions) do
@@ -763,6 +756,22 @@ function addon:listConditions(group, nohide)
                     table.insert(rv, cond)
                 end
             end
+        end
+        if group == "ALL" then
+            table.sort(rv, function(lhs, rhs)
+                local ldesc, rdesc
+                if special[lhs] then
+                    ldesc = special[lhs].desc
+                else
+                    ldesc = conditions[lhs].description
+                end
+                if special[rhs] then
+                    rdesc = special[rhs].desc
+                else
+                    rdesc = conditions[rhs].description
+                end
+                return ldesc < rdesc
+            end)
         end
     end
 

@@ -121,25 +121,7 @@ local function layout_conditions(frame, group, selected, filter, update)
 
     grid:AddChild(spacer())
 
-    local conds = addon:listConditions(group, group == "ALL")
-    if group == "ALL" then
-        table.sort(conds, function(lhs, rhs)
-            local ldesc, rdesc
-            if special[lhs] then
-                ldesc = special[lhs].desc
-            else
-                ldesc = select(2, addon:describeCondition(lhs))
-            end
-            if special[rhs] then
-                rdesc = special[rhs].desc
-            else
-                rdesc = select(2, addon:describeCondition(rhs))
-            end
-            return ldesc < rdesc
-        end)
-    end
-
-    for _,cond in pairs(conds) do
+    for _,cond in pairs(addon:listConditions(group, group == "ALL")) do
         local desc, icon
         if special[cond] then
             icon, desc = special[cond].icon, special[cond].desc

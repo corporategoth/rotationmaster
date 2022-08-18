@@ -208,6 +208,15 @@ function SpellLoader:SpellRank(id, cached)
 	end
 end
 
+function SpellLoader:SpellRankNum(id, cached)
+	local rank = self:SpellRank(id, cached)
+	if not rank then
+		return 0
+	end
+
+	return tonumber(string.match(rank, "%d+")) or 0
+end
+
 function SpellLoader:UpdateFromSpellBook(spec)
     local specSpells = {}
     specSpells[spec] = {}
