@@ -519,7 +519,6 @@ local function ImportExport(spec, rotation, parent)
     import:SetCallback("OnClick", function(_, _)
         local ok, res = AceSerializer:Deserialize(libc:Decompress(base64dec(editbox:GetText())))
         if ok then
-            addon:UpgradeRotationItemsToItemSets(res)
             rotation_settings[spec][rotation] = res
             if rotation == DEFAULT then
                 rotation_settings[spec][rotation].name = nil
