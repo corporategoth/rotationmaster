@@ -254,6 +254,7 @@ do
 		local type, id = GetCursorInfo()
 
 		if( type == "item" ) then
+			ItemData:UpdateItem(id)
 			local name = GetItemInfo(id)
 			self:SetText(name)
 			self:Fire("OnEnterPressed", id)
@@ -364,6 +365,7 @@ do
 	end
 				
 	local function Item_OnClick(self)
+		ItemData:UpdateItem(self.itemID)
 		local name = GetItemInfo(self.itemID)
 
 		self.parent.selectedButton = nil

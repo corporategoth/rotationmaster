@@ -7,6 +7,7 @@ _G.RotationMaster = LibStub("AceAddon-3.0"):NewAddon(addon, addon_name, "AceCons
 local AceConsole = LibStub("AceConsole-3.0")
 local AceEvent = LibStub("AceEvent-3.0")
 local SpellData = LibStub("AceGUI-3.0-SpellLoader")
+local ItemData = LibStub("AceGUI-3.0-ItemLoader")
 local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
 local getCached, getRetryCached
 local DBIcon = LibStub("LibDBIcon-1.0")
@@ -129,6 +130,9 @@ local events = {
     "UNIT_SPELLCAST_CHANNEL_STOP",
 
     "COMBAT_LOG_EVENT_UNFILTERED",
+
+    "SPELL_DATA_LOAD_RESULT",
+    "ITEM_DATA_LOAD_RESULT"
 }
 
 local mainline_events = {
@@ -921,7 +925,7 @@ function addon:EvaluateNextAction()
                         addon:verbose("Cooldown %d [%s] is enabled", id, cond.id)
                         if addon.avail_announced[cond.id] ~= spellid then
                             if not addon.skipAnnounce then
-                                local link = getCached(addon.longtermCache, GetSpellLink, spellid)
+                                local link = SpellData:SpellLink(spellid)
                                 announce(cache, cond, string.format(L["%s is now available!"], link))
                             end
                             addon.avail_announced[cond.id] = spellid;
@@ -1482,7 +1486,7 @@ local function spellcast(_, event, unit, castguid, spellid)
                         if spellid == sid then
                             local text = ent.value
                             if ent.type == BOOKTYPE_SPELL or ent.type == BOOKTYPE_PET then
-                                local link = getCached(addon.longtermCache, GetSpellLink, sid)
+                                local link = SpellData:SpellLink(sid)
                                 text = text:gsub("{{spell}}", link)
                             elseif ent.type == "item" then
                                 local link = select(2, getRetryCached(addon.longtermCache, GetItemInfo, itemids[idx]))
@@ -1606,3 +1610,15 @@ local function handle_combat_log(_, event, _, sourceGUID, _, _, _, destGUID, _, 
     end
 end
 addon.COMBAT_LOG_EVENT_UNFILTERED = function() handle_combat_log(CombatLogGetCurrentEventInfo()) end
+
+addon.SPELL_DATA_LOAD_RESULT = function(self, _, spellId, success)
+    if success then
+        SpellData:UpdateSpell(spellId)
+    end
+end
+
+addon.ITEM_DATA_LOAD_RESULT = function(self, _, itemId, success)
+    if success then
+        ItemData:UpdateSpell(itemId)
+    end
+end

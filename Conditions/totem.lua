@@ -70,10 +70,7 @@ addon:RegisterCondition("TOTEM_SPELL", {
         return false
     end,
     print = function(_, value)
-        local link
-        if value.spell ~= nil then
-            link = GetSpellLink(value.spell)
-        end
+        local link = addon:Widget_GetSpellLink(value.spell, value.ranked)
         return string.format(L["%s is active"], nullable(link, L["<totem>"]))
     end,
     widget = function(parent, spec, value)
@@ -164,10 +161,7 @@ addon:RegisterCondition("TOTEM_SPELL_REMAIN", {
         return false
     end,
     print = function(_, value)
-        local link
-        if value.spell ~= nil then
-            link = GetSpellLink(value.spell)
-        end
+        local link = addon:Widget_GetSpellLink(value.spell, value.ranked)
         return string.format(L["%s is active with %s"], nullable(link, L["<totem>"]),
             compareString(value.operator, L["the remaining time"], string.format(L["%s seconds"], nullable(value.value))))
     end,

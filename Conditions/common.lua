@@ -24,14 +24,14 @@ end
 function addon:Widget_GetSpellLink(spellid, ranked)
     if spellid ~= nil then
         if ranked then
-            local rank = SpellLoader:SpellRank(spellid)
+            local rank = SpellData:SpellRank(spellid)
             if rank then
-               return GetSpellLink(spellid) .. "|cFF888888 (" .. rank .. ")|r"
+               return SpellData:SpellLink(spellid) .. "|cFF888888 (" .. rank .. ")|r"
             end
         else
             spellid = self:Widget_GetSpellId(spellid, ranked)
         end
-        return GetSpellLink(spellid)
+        return SpellData:SpellLink(spellid)
     end
 
     return nil

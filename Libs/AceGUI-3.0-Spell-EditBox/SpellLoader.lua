@@ -10,12 +10,11 @@ SpellLoader.spellListReverse = SpellLoader.spellListReverse or {}
 SpellLoader.spellListReverseRank = SpellLoader.spellListReverseRank or {}
 SpellLoader.spellListOrdered = SpellLoader.spellListOrdered or {}
 SpellLoader.spellsLoaded = SpellLoader.spellsLoaded or 0
-SpellLoader.needsUpdate = SpellLoader.needsUpdate or {}
 
 local SPELLS_PER_RUN = 500
 local TIMER_THROTTLE = 0.10
-local spells, spellsReverse, spellsReverseRank, spellOrdered, predictors, needsUpdate =
-    SpellLoader.spellList, SpellLoader.spellListReverse, SpellLoader.spellListReverseRank, SpellLoader.spellListOrdered, SpellLoader.predictors, SpellLoader.needsUpdate
+local spells, spellsReverse, spellsReverseRank, spellOrdered, predictors =
+    SpellLoader.spellList, SpellLoader.spellListReverse, SpellLoader.spellListReverseRank, SpellLoader.spellListOrdered, SpellLoader.predictors
 
 local blacklist = {
 	["Interface\\Icons\\Trade_Alchemy"] = true,
@@ -68,28 +67,30 @@ local function spairs(t, order)
 	end
 end
 
-local function AddSpell(name, rank, icon, spellID, force)
-	if not force and spells[spellID] ~= nil then
-		return
+local function AddSpell(name, rank, icon, link, spellID, force)
+	if not force and spells[spellID] then
+		if spells[spellID].link or not link then
+			return
+		end
 	end
 
 	local lcname = string.lower(name)
-
 	spells[spellID] = {
 		name = name,
-		icon = icon
+		icon = icon,
+		link = link,
 	}
 
 	local _, _, revicon, _, _, _, revid = GetSpellInfo(name)
 	if revid then
 		if revid == spellID then
 			spellsReverse[lcname] = spellID
-		else
+		elseif not spells[revid] then
+			local revlink = GetSpellLink(revid)
 			local revrank = GetSpellSubtext(revid)
-			AddSpell(name, revrank, revicon, revid)
+			AddSpell(name, revrank, revicon, revlink, revid, force)
 		end
-	elseif spellsReverse == nil then
-		needsUpdate[spellID] = true
+	elseif not spellsReverse[lcname] then
 		spellsReverse[lcname] = spellID
 	end
 
@@ -112,14 +113,15 @@ function SpellLoader:UnregisterPredictor(frame)
 end
 
 function SpellLoader:UpdateSpell(id)
-	if self.needsUpdate[id] then
+	if not self.spellList[id] or not self.spellList[id].link then
         local name, _, icon = GetSpellInfo(id)
         if name then
-            self.needsUpdate[id] = nil
-            self.spellListReverse[string.lower(name)] = nil
-            local rank = GetSpellSubtext(id)
-            AddSpell(name, rank, icon, id, true)
-        end
+            local link = GetSpellLink(id)
+			if link then
+				local rank = GetSpellSubtext(id)
+				AddSpell(name, rank, icon, link, id, true)
+			end
+		end
     end
 end
 
@@ -148,7 +150,7 @@ function SpellLoader:GetAllSpellIds(spell)
 	return nil
 end
 
-function SpellLoader:GetSpellId(spell, rank)
+function SpellLoader:GetSpellId(spell, rank, cached)
 	local lcname
     if type(spell) == "number" then
 		if self.spellList[spell] == nil then
@@ -166,14 +168,12 @@ function SpellLoader:GetSpellId(spell, rank)
         end
 	elseif self.spellListReverse[lcname] ~= nil then
 		return self.spellListReverse[lcname]
-    else
+    elseif not cached then
         return select(7, GetSpellInfo(spell))
 	end
-
-	return nil
 end
 
-function SpellLoader:SpellName(id, norank)
+function SpellLoader:SpellName(id, norank, cached)
     if self.spellList[id] ~= nil then
 		if not norank and self.spellList[id].rank ~= nil then
 			return self.spellList[id].name .. "|cFF888888 (" .. self.spellList[id].rank .. ")|r"
@@ -181,16 +181,31 @@ function SpellLoader:SpellName(id, norank)
 			return self.spellList[id].name
 		end
     end
-    return select(1, GetSpellInfo(id))
+	if not cached then
+		return select(1, GetSpellInfo(id))
+	end
 end
 
-function SpellLoader:SpellRank(id)
+function SpellLoader:SpellLink(id, cached)
+	if self.spellList[id] ~= nil then
+		if self.spellList[id].link ~= nil then
+			return self.spellList[id].link
+		end
+	end
+	if not cached then
+		return GetSpellLink(id)
+	end
+end
+
+function SpellLoader:SpellRank(id, cached)
 	if self.spellList[id] ~= nil then
 		if self.spellList[id].rank ~= nil then
 			return self.spellList[id].rank
 		end
 	end
-	return GetSpellSubtext(id)
+	if not cached then
+		return GetSpellSubtext(id)
+	end
 end
 
 function SpellLoader:UpdateFromSpellBook(spec)
@@ -215,9 +230,10 @@ function SpellLoader:UpdateFromSpellBook(spec)
 				end
 			end
 			if spellID then
+				local link = GetSpellLink(spellID)
 				local icon = GetSpellTexture(spellID)
 				if (not blacklist[tostring(icon)] and not IsPassiveSpell(j+offset, BOOKTYPE_SPELL) ) then
-					AddSpell(name, rank, icon, spellID, true)
+					AddSpell(name, rank, icon, link, spellID, true)
 					specSpells[offspecId][spellID] = true
                 end
 			end
@@ -229,9 +245,10 @@ function SpellLoader:UpdateFromSpellBook(spec)
 		for i=1, petSpells do
             local name, rank, spellID = GetSpellBookItemName(i, BOOKTYPE_PET)
 			if spellID then
+				local link = GetSpellLink(spellID)
 				local icon = GetSpellTexture(spellID)
 				if (not blacklist[tostring(icon)] and not IsPassiveSpell(i, BOOKTYPE_PET) ) then
-					AddSpell(name, rank, icon, spellID, true)
+					AddSpell(name, rank, icon, link, spellID, true)
 					specSpells[BOOKTYPE_PET][spellID] = true
 				end
 			end
@@ -257,7 +274,7 @@ function SpellLoader:StartLoading()
 		timeElapsed = timeElapsed + elapsed
 		if( timeElapsed < TIMER_THROTTLE ) then return end
 		timeElapsed = timeElapsed - TIMER_THROTTLE
-		
+
 		-- 5,000 invalid spells in a row means it's a safe assumption that there are no more spells to query
 		if( totalInvalid >= 5000 ) then
 			self:Hide()
@@ -273,10 +290,11 @@ function SpellLoader:StartLoading()
                 -- we can safely blacklist any of these spells as they are not needed. Can get away with this because things like
                 -- Alchemy use two icons, the Trade_* for the actual crafted spell and a different icon for the actual buff
                 -- Passive spells have no use as well, since they are well passive and can't actually be used
+				local link = GetSpellLink(spellID)
                 local rank = GetSpellSubtext(spellID)
                 if not blacklist[tostring(icon)] and rank ~= SPELL_PASSIVE then
                     SpellLoader.spellsLoaded = SpellLoader.spellsLoaded + 1
-                    AddSpell(name, rank, icon, spellID)
+                    AddSpell(name, rank, icon, link, spellID)
                     totalInvalid = 0
 				end
 			else

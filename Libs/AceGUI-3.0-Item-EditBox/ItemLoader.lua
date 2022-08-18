@@ -32,8 +32,10 @@ local dataset, retry = {}, {}
 local timeElapsed, currentIndex = 0, 0
 
 local function AddItem(name, icon, link, itemID, force)
-	if not force and items[itemID] ~= nil then
-		return
+	if not force and items[itemID] then
+		if items[itemID].link or not link then
+			return
+		end
 	end
 
 	items[itemID] = {
@@ -44,19 +46,27 @@ local function AddItem(name, icon, link, itemID, force)
 
 	local lcname = string.lower(name)
 
-	if itemsReverse[lcname] == nil then
-		local revid, _, _, _, revicon = GetItemInfoInstant(name)
-		if revid then
+	local revid, _, _, _, revicon = GetItemInfoInstant(name)
+	if revid then
+		if revid == itemID then
 			itemsReverse[lcname] = revid
-			if revid ~= itemID and items[revid] == nil then
-				items[revid] = {
-					name = name,
-					icon = revicon,
-					link = select(2, GetItemInfo(revid))
-				}
+		elseif not items[revid] then
+			local revlink = select(2, GetItemInfo(revid))
+			AddItem(name, revicon, revlink, revid, force)
+		end
+	elseif not itemsReverse[lcname] then
+		itemsReverse[lcname] = itemID
+	end
+end
+
+function ItemLoader:UpdateItem(id)
+	if not self.itemList[id] or not self.itemList[id].link then
+		local itemid, _, _, _, icon  = GetItemInfoInstant(id)
+		if itemid then
+			local name, link = GetItemInfo(itemid)
+			if link then
+				AddItem(name, icon, link, itemid, true)
 			end
-		else
-			itemsReverse[lcname] = itemID
 		end
 	end
 end

@@ -113,7 +113,12 @@ do
 			if not alreadyAdded[name] and string.match(name, query) then
 				local spellIDs = SpellData:GetAllSpellIds(name)
 
-				for _,spellID in spairs(spellIDs, function (t,a,b) return b < a end) do
+				local sortbyrank = function(t, a, b)
+					local ranka = tonumber(string.match(SpellData:SpellRank(t[a], true) or "", "%d+")) or 0
+					local rankb = tonumber(string.match(SpellData:SpellRank(t[b], true) or "", "%d+")) or 0
+					return rankb < ranka
+				end
+				for _,spellID in spairs(spellIDs, sortbyrank) do
 					if not self.obj.spellFilter or self.obj.spellFilter(self.obj, spellID) then
 						activeButtons = activeButtons + 1
 
@@ -145,7 +150,6 @@ do
 						-- Ran out of text to suggest :<
 						if( activeButtons >= RESULT_ROWS ) then break end
 
-						-- Terminate the first one
 						if norank then break end
 					end
                 end
