@@ -1619,6 +1619,6 @@ end
 
 addon.ITEM_DATA_LOAD_RESULT = function(self, _, itemId, success)
     if success then
-        ItemData:UpdateSpell(itemId)
+        ItemData:UpdateItem(itemId)
     end
 end
