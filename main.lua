@@ -4,6 +4,7 @@ local _G = _G
 
 _G.RotationMaster = LibStub("AceAddon-3.0"):NewAddon(addon, addon_name, "AceConsole-3.0", "AceEvent-3.0", "AceTimer-3.0")
 
+local AceGUI = LibStub("AceGUI-3.0")
 local AceConsole = LibStub("AceConsole-3.0")
 local AceEvent = LibStub("AceEvent-3.0")
 local SpellData = LibStub("AceGUI-3.0-SpellLoader")
@@ -59,15 +60,16 @@ local defaults = {
         spell_history = 60,
         combat_history = 10,
         damage_history = 30,
+        preview_spells = 0,
+        rotations = {},
+        itemsets = {},
+        announces = {},
         minimap = {
             hide = false,
         }
     },
     char = {
-        rotations = {},
-        itemsets = {},
         bindings = {},
-        announces = {},
     },
     global = {
         itemsets = {},
@@ -215,8 +217,8 @@ function addon:HandleCommand(str)
             AceEvent:SendMessage("ROTATIONMASTER_ROTATION", self.currentRotation, self:GetRotationName(self.currentRotation))
             addon:info(L["Active rotation manually switched to " .. color.WHITE .. "%s" .. color.INFO], name)
         else
-            if self.db.char.rotations[self.currentSpec] ~= nil then
-                for id, rot in pairs(self.db.char.rotations[self.currentSpec]) do
+            if self.db.profile.rotations[self.currentSpec] ~= nil then
+                for id, rot in pairs(self.db.profile.rotations[self.currentSpec]) do
                     if rot.name == name then
                         self:RemoveAllCurrentGlows()
                         self.manualRotation = true
@@ -243,6 +245,7 @@ function addon:HandleCommand(str)
 end
 
 function addon:OnInitialize()
+    self:augmentDefaults(defaults)
     self.db = LibStub("AceDB-3.0"):New("RotationMasterDB", defaults, true)
     self:init()
 
@@ -313,6 +316,9 @@ function addon:OnInitialize()
 
     self.evaluationProfile = addon:ProfiledCode()
 
+    self.currentSpell = nil
+    self.nextWindow = nil
+
     -- This is here because of order of loading.
     getCached = addon.getCached
     getRetryCached = addon.getRetryCached
@@ -323,9 +329,9 @@ end
 function addon:GetRotationName(id)
     if id == DEFAULT then
         return DEFAULT
-    elseif self.db.char.rotations[self.currentSpec] ~= nil  and
-           self.db.char.rotations[self.currentSpec][id] ~= nil then
-        return self.db.char.rotations[self.currentSpec][id].name
+    elseif self.db.profile.rotations[self.currentSpec] ~= nil  and
+           self.db.profile.rotations[self.currentSpec][id] ~= nil then
+        return self.db.profile.rotations[self.currentSpec][id].name
     else
         return nil
     end
@@ -386,8 +392,8 @@ function minimapInitialize()
     UIDropDownMenu_AddButton(info)
     info.text, info.arg1, info.checked = DEFAULT, DEFAULT, (addon.manualRotation == true and addon.currentRotation == DEFAULT)
     UIDropDownMenu_AddButton(info)
-    if addon.db.char.rotations[addon.currentSpec] ~= nil then
-        for id, rot in pairs(addon.db.char.rotations[addon.currentSpec]) do
+    if addon.db.profile.rotations[addon.currentSpec] ~= nil then
+        for id, rot in pairs(addon.db.profile.rotations[addon.currentSpec]) do
             if id ~= DEFAULT then
                 info.text, info.arg1, info.checked = rot.name, id, (addon.manualRotation == true and addon.currentRotation == id)
                 UIDropDownMenu_AddButton(info)
@@ -470,6 +476,10 @@ function addon:enable()
         end
     end)
 
+    if self.db.profile.preview_spells > 0 then
+        self:CreatePreviewWindow()
+    end
+
     self:UpdateSkill()
     self:EnableRotation()
 end
@@ -480,9 +490,16 @@ function addon:disable()
         self.playerUnitFrame:UnregisterAllEvents()
     end
     self.playerUnitFrame = nil
+    if self.nextWindow then
+        local spells = self.db.profile.preview_spells
+        self.nextWindow:Release()
+        self.nextWindow = nil
+        self.db.profile.preview_spells = spells
+    end
     self.spellHistory = {}
     self.combatHistory = {}
     self:UnregisterAllEvents()
+
 end
 
 function addon:OnEnable()
@@ -498,7 +515,7 @@ function addon:OnEnable()
 end
 
 function addon:rotationValidConditions(rot, spec)
-    local itemsets = self.db.char.itemsets
+    local itemsets = self.db.profile.itemsets
     local global_itemsets = self.db.global.itemsets
 
     -- We found a cooldown OR a rotation step
@@ -569,8 +586,8 @@ end
 function addon:UpdateAutoSwitch()
     self.autoswitchRotation = {}
 
-    if self.db.char.rotations[self.currentSpec] ~= nil then
-        for id, rot in pairs(self.db.char.rotations[self.currentSpec]) do
+    if self.db.profile.rotations[self.currentSpec] ~= nil then
+        for id, rot in pairs(self.db.profile.rotations[self.currentSpec]) do
             if id ~= DEFAULT then
                 -- The switch condition is nontrivial and valid.
                 if rot.switch and not rot.disabled and addon:usefulCondition(rot.switch) and
@@ -585,8 +602,8 @@ function addon:UpdateAutoSwitch()
 
     -- We autoswitch to the lowest (alphabetically) matching rotation.
     table.sort(self.autoswitchRotation, function(lhs, rhs)
-        return self.db.char.rotations[self.currentSpec][lhs].name <
-                self.db.char.rotations[self.currentSpec][rhs].name
+        return self.db.profile.rotations[self.currentSpec][lhs].name <
+                self.db.profile.rotations[self.currentSpec][rhs].name
     end)
 
     addon:debug(L["Autoswitch rotation list has been updated."])
@@ -600,14 +617,14 @@ function addon:SwitchRotation()
 
     local newRotation
     for _, v in pairs(self.autoswitchRotation) do
-        if addon:evaluateCondition(self.db.char.rotations[self.currentSpec][v].switch) then
+        if addon:evaluateCondition(self.db.profile.rotations[self.currentSpec][v].switch) then
             newRotation = v
             break
         end
     end
-    if not newRotation and self.db.char.rotations[self.currentSpec] ~= nil and
-        self.db.char.rotations[self.currentSpec][DEFAULT] ~= nil and
-        self:rotationValidConditions(self.db.char.rotations[self.currentSpec][DEFAULT], self.currentSpec) then
+    if not newRotation and self.db.profile.rotations[self.currentSpec] ~= nil and
+        self.db.profile.rotations[self.currentSpec][DEFAULT] ~= nil and
+        self:rotationValidConditions(self.db.profile.rotations[self.currentSpec][DEFAULT], self.currentSpec) then
         newRotation = DEFAULT
     end
 
@@ -757,8 +774,9 @@ end
 function addon:EvaluateNextAction()
     if self.currentRotation == nil then
         addon:DisableRotationTimer()
-    elseif self.db.char.rotations[self.currentSpec] ~= nil and
-            self.db.char.rotations[self.currentSpec][self.currentRotation] ~= nil then
+    elseif self.db.profile.rotations ~= nil and
+            self.db.profile.rotations[self.currentSpec] ~= nil and
+            self.db.profile.rotations[self.currentSpec][self.currentRotation] ~= nil then
         self.evaluationProfile:start()
 
         local now = GetTime()
@@ -881,9 +899,15 @@ function addon:EvaluateNextAction()
         end
 
         self.evaluationProfile:child("rotation"):start()
-        local rot = self.db.char.rotations[self.currentSpec][self.currentRotation]
+        local rot = self.db.profile.rotations[self.currentSpec][self.currentRotation]
         if rot.rotation ~= nil then
             local enabled
+            local preview = 0
+            if self.nextWindow then
+                self.nextWindow:ReleaseChildren()
+                self.nextWindow:PauseLayout()
+            end
+
             for id, cond in pairs(rot.rotation) do
                 if cond.type == "none" and (cond.disabled == nil or cond.disabled == false) and
                         addon:evaluateCondition(cond.conditions) then
@@ -892,15 +916,45 @@ function addon:EvaluateNextAction()
                 local spellid
                 spellid, enabled = eval(cond)
                 if spellid and enabled then
-                    addon:verbose("Rotation step %d satisfied it's condition.", id)
-                    if not addon:IsGlowing(spellid) then
-                        addon:GlowNextSpell(spellid)
-                        if WeakAuras then
-                            WeakAuras.ScanEvents("ROTATIONMASTER_SPELL_UPDATE", cond.type, spellid)
+                    preview = preview + 1
+                    if preview == 1 then
+                        self.currentSpell = spellid
+                        addon:verbose("Rotation step %d satisfied it's condition.", id)
+                        if not addon:IsGlowing(spellid) then
+                            addon:GlowNextSpell(spellid)
+                            if WeakAuras then
+                                WeakAuras.ScanEvents("ROTATIONMASTER_SPELL_UPDATE", cond.type, spellid)
+                            end
+                            AceEvent:SendMessage("ROTATIONMASTER_SPELL_UPDATE", self.currentRotation, id, cond.id, cond.type, spellid)
                         end
-                        AceEvent:SendMessage("ROTATIONMASTER_SPELL_UPDATE", self.currentRotation, id, cond.id, cond.type, spellid)
                     end
-                    break
+
+                    if self.nextWindow then
+                        local icon = AceGUI:Create("Icon")
+                        local name, _, img = GetSpellInfo(spellid)
+                        icon:SetImage(img)
+                        if preview == 1 then
+                            icon:SetImageSize(54, 54)
+                        else
+                            icon:SetImageSize(36, 36)
+                        end
+                        icon:SetLabel(name)
+                        icon:SetCallback("OnEnter", function()
+                            GameTooltip:SetOwner(icon.frame, "ANCHOR_BOTTOMRIGHT", 3)
+                            GameTooltip:SetHyperlink("spell:" .. spellid)
+                        end)
+                        icon:SetCallback("OnLeave", function()
+                            if GameTooltip:IsOwned(icon.frame) then
+                                GameTooltip:Hide()
+                            end
+                        end)
+                        addon.nextWindow:AddChild(icon)
+                        if preview >= self.db.profile.preview_spells then
+                            break
+                        end
+                    else
+                        break
+                    end
                 else
                     addon:verbose("Rotation step %d did not satisfy it's condition.", id)
                 end
@@ -911,6 +965,10 @@ function addon:EvaluateNextAction()
                     WeakAuras.ScanEvents("ROTATIONMASTER_SPELL_UPDATE", nil, nil)
                 end
                 AceEvent:SendMessage("ROTATIONMASTER_SPELL_UPDATE", self.currentRotation, nil)
+            end
+            if self.nextWindow then
+                self.nextWindow:ResumeLayout()
+                self.nextWindow:DoLayout()
             end
         end
         self.evaluationProfile:child("rotation"):stop()
@@ -1001,8 +1059,8 @@ function addon:GetSpellIds(rot)
             local itemids = {}
             if type(rot.action) == "string" then
                 local itemset
-                if self.db.char.itemsets[rot.action] ~= nil then
-                    itemset = self.db.char.itemsets[rot.action]
+                if self.db.profile.itemsets[rot.action] ~= nil then
+                    itemset = self.db.profile.itemsets[rot.action]
                 elseif self.db.global.itemsets[rot.action] ~= nil then
                     itemset = self.db.global.itemsets[rot.action]
                 end
@@ -1052,9 +1110,9 @@ end
 function addon:RemoveAllCurrentGlows()
     addon:debug(L["Removing all glows."])
     if self.currentSpec ~= nil and self.currentRotation ~= nil and
-        self.db.char.rotations[self.currentSpec][self.currentRotation] ~= nil and
-        self.db.char.rotations[self.currentSpec][self.currentRotation].cooldowns ~= nil then
-        for _, rot in pairs(self.db.char.rotations[self.currentSpec][self.currentRotation].cooldowns) do
+        self.db.profile.rotations[self.currentSpec][self.currentRotation] ~= nil and
+        self.db.profile.rotations[self.currentSpec][self.currentRotation].cooldowns ~= nil then
+        for _, rot in pairs(self.db.profile.rotations[self.currentSpec][self.currentRotation].cooldowns) do
             for _, spellid in pairs(addon:GetSpellIds(rot)) do
                 addon:GlowCooldown(spellid, false)
             end
@@ -1338,7 +1396,7 @@ addon.ZONE_CHANGED_INDOORS = addon.ZONE_CHANGED
 addon.GROUP_ROSTER_UPDATE = addon.ZONE_CHANGED
 
 function addon:PLAYER_ENTERING_WORLD()
-    local itemsets = self.db.char.itemsets
+    local itemsets = self.db.profile.itemsets
     local global_itemsets = self.db.global.itemsets
     local bindings = self.db.char.bindings
 
@@ -1382,7 +1440,7 @@ function addon:PLAYER_REGEN_ENABLED()
         self:UpdateBoundButton(id)
     end
 
-    for id, _ in pairs(addon.db.char.itemsets) do
+    for id, _ in pairs(addon.db.profile.itemsets) do
         self:UpdateItemSetButtons(id)
     end
     for id, _ in pairs(addon.db.global.itemsets) do
@@ -1461,7 +1519,7 @@ local currentChannel
 local function spellcast(_, event, unit, castguid, spellid)
     -- even though we check it later, this skips rows entirely.
     if unit == 'player' or unit == "pet" then
-        for _, value in ipairs(addon.db.char.announces) do
+        for _, value in ipairs(addon.db.profile.announces) do
             if value.value and (not value.disabled) and (value.type == BOOKTYPE_PET and unit == "pet" or unit == "player") and
                 (event == "UNIT_SPELLCAST_" .. value.event or event == "UNIT_SPELLCAST_CHANNEL_" .. value.event) then
                 local skip = false

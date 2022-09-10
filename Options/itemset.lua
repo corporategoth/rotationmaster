@@ -35,7 +35,7 @@ function addon:FindFirstItemInItems(items)
 end
 
 function addon:FindFirstItemInItemSet(id)
-    local itemsets = self.db.char.itemsets
+    local itemsets = self.db.profile.itemsets
     local global_itemsets = self.db.global.itemsets
 
     if itemsets[id] ~= nil then
@@ -68,7 +68,7 @@ function addon:FindItemInItems(items, item)
 end
 
 function addon:FindItemInItemSet(id, item)
-    local itemsets = self.db.char.itemsets
+    local itemsets = self.db.profile.itemsets
     local global_itemsets = self.db.global.itemsets
 
     if itemsets[id] ~= nil then
@@ -103,7 +103,7 @@ function addon:FindFirstItemOfItems(_, items, equipped)
 end
 
 function addon:FindFirstItemOfItemSet(cache, id, equipped)
-    local itemsets = self.db.char.itemsets
+    local itemsets = self.db.profile.itemsets
     local global_itemsets = self.db.global.itemsets
 
     if itemsets[id] ~= nil then
@@ -136,7 +136,7 @@ end
 
 function addon:ItemSetInUse(id)
     local bindings = self.db.char.bindings
-    local rotations = self.db.char.rotations
+    local rotations = self.db.profile.rotations
 
     if bindings[id] ~= nil then
         return true
@@ -170,7 +170,7 @@ function addon:ItemSetInUse(id)
 end
 
 function addon:UpdateItemSetButtons(id)
-    local itemsets = self.db.char.itemsets
+    local itemsets = self.db.profile.itemsets
     local global_itemsets = self.db.global.itemsets
 
     local itemset
@@ -190,20 +190,21 @@ function addon:UpdateItemSetButtons(id)
             addon.itemSetButtons[id] = nil
         end
     else
-        local prefix = "RM_" .. itemset.name:gsub("%W", "") .. "_"
+        local prefix = "RM_" .. itemset.name:gsub("%W", "")
         if not addon.itemSetButtons[id] then
             addon.itemSetButtons[id] = {}
         end
+
         for key, _ in pairs(units) do
             local button = addon.itemSetButtons[id][key]
-            if button and button:GetName() ~= prefix .. key then
+            if button and button:GetName() ~= prefix .. "_" .. key then
                 button:SetParent(nil)
                 _G[button:GetName()] = nil
                 button = nil
             end
 
             if not button then
-                button = CreateFrame("Button", prefix .. key, UIParent, "SecureActionButtonTemplate")
+                button = CreateFrame("Button", prefix .. "_" .. key, UIParent, "SecureActionButtonTemplate")
                 button:Hide()
                 button:SetAttribute("type", "macro")
                 addon.itemSetButtons[id][key] = button
@@ -220,7 +221,7 @@ end
 
 local function HandleDelete(id, update)
     local bindings = addon.db.char.bindings
-    local itemsets = addon.db.char.itemsets
+    local itemsets = addon.db.profile.itemsets
     local global_itemsets = addon.db.global.itemsets
 
     StaticPopupDialogs["ROTATIONMASTER_DELETE_ITEMSET"] = {
@@ -608,7 +609,7 @@ end
 
 local function item_list(frame, selected, editbox, itemset, isvalid, update)
     local bindings = addon.db.char.bindings
-    local itemsets = addon.db.char.itemsets
+    local itemsets = addon.db.profile.itemsets
     local global_itemsets = addon.db.global.itemsets
 
     frame:ReleaseChildren()
@@ -871,7 +872,7 @@ local function item_list(frame, selected, editbox, itemset, isvalid, update)
 end
 
 function addon:get_item_list(empty)
-    local itemsets = self.db.char.itemsets
+    local itemsets = self.db.profile.itemsets
     local global_itemsets = self.db.global.itemsets
 
     local selects = {}
@@ -903,7 +904,7 @@ function addon:get_item_list(empty)
 end
 
 function addon:create_itemset_list(frame)
-    local itemsets = self.db.char.itemsets
+    local itemsets = self.db.profile.itemsets
     local global_itemsets = self.db.global.itemsets
 
     frame:ReleaseChildren()

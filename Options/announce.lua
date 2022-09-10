@@ -8,7 +8,7 @@ local table, ipairs = table, ipairs
 local isSpellOnSpec, getSpecSpellID = addon.isSpellOnSpec, addon.getSpecSpellID
 
 function addon:create_announce_list(frame)
-    local announces = self.db.char.announces
+    local announces = self.db.profile.announces
 
     frame:ReleaseChildren()
     frame:PauseLayout()

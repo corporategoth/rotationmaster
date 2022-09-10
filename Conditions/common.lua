@@ -216,7 +216,7 @@ function addon:Widget_SpellNameWidget(spec, editbox, value, isvalid, update)
 end
 
 function addon:Widget_ItemWidget(top, editbox, value, isvalid, update)
-    local itemsets = addon.db.char.itemsets
+    local itemsets = addon.db.profile.itemsets
     local global_itemsets = addon.db.global.itemsets
 
     local item_group = AceGUI:Create("SimpleGroup")

@@ -22,6 +22,46 @@ local function spacer(width)
     return rv
 end
 
+function addon:CreatePreviewWindow()
+    local profile = self.db.profile
+
+    local window = AceGUI:Create("Window")
+    window:SetTitle(self.pretty_name)
+    window:SetCallback("OnClose", function()
+        self.preview_spells_widget:SetValue(0)
+        profile["preview_spells"] = 0
+        self.nextWindow = nil
+    end)
+
+    window:ReleaseChildren()
+    window:PauseLayout()
+    window:EnableResize(false)
+    window:SetHeight(128)
+    window:SetWidth(profile.preview_spells * 128)
+    if profile.preview_window then
+        window:SetPoint(profile.preview_window.point, UIParent,
+                profile.preview_window.relpoint,
+                profile.preview_window.xoffs,
+                profile.preview_window.yoffs)
+    end
+    window:SetLayout("Flow")
+    local movefunc = window.title:GetScript("OnMouseUp")
+    window.title:SetScript("OnMouseUp", function(widget)
+        movefunc(widget)
+        local point, _, relpoint, xoffs, yoffs = window:GetPoint(1)
+        profile.preview_window = {
+            point = point,
+            relpoint = relpoint,
+            xoffs = xoffs,
+            yoffs = yoffs
+        }
+    end)
+    window:ResumeLayout()
+    window:DoLayout()
+
+    self.nextWindow = window
+end
+
 local create_class_options
 local function create_primary_options(frame)
     local profile = addon.db.profile
@@ -156,6 +196,48 @@ local function create_primary_options(frame)
         profile["damage_history"] = val
     end)
     general_group:AddChild(damage_history)
+
+    general_group:AddChild(spacer(1))
+
+
+    local preview_group = AceGUI:Create("SimpleGroup")
+    preview_group:SetFullWidth(true)
+    preview_group:SetLayout("Table")
+    preview_group:SetUserData("table", { columns = { 1, 100 } })
+
+    local preview_reset = AceGUI:Create("Button")
+    addon.preview_spells_widget = AceGUI:Create("Slider")
+    addon.preview_spells_widget:SetFullWidth(true)
+    addon.preview_spells_widget:SetLabel(L["Preview Spells"])
+    addon.preview_spells_widget:SetValue(profile["preview_spells"])
+    addon.preview_spells_widget:SetSliderValues(0, 5, 1)
+    addon.preview_spells_widget:SetCallback("OnValueChanged", function(_, _, val)
+        profile["preview_spells"] = val
+        if val >= 1 then
+            if addon.nextWindow then
+                addon.nextWindow:SetWidth(val * 128)
+            else
+                addon:CreatePreviewWindow()
+            end
+        elseif addon.nextWindow then
+            addon.nextWindow:Release()
+            addon.nextWindow = nil
+        end
+    end)
+    preview_group:AddChild(addon.preview_spells_widget)
+
+    preview_reset:SetText(RESET)
+    preview_reset:SetDisabled(not profile["preview_spells"])
+    preview_reset:SetCallback("OnClick", function()
+        profile.preview_window = nil
+        if addon.nextWindow then
+            addon.nextWindow:ClearAllPoints()
+            addon.nextWindow:SetPoint("CENTER", 0, 0)
+        end
+    end)
+    preview_group:AddChild(preview_reset)
+
+    general_group:AddChild(preview_group)
 
     scroll:AddChild(general_group)
 
@@ -351,7 +433,7 @@ if WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE and LE_EXPANSION_LEVEL_CURRENT >= 2 th
     primary:SetText(addon.db.char.specs[1])
     primary:SetCallback("OnEnterPressed", function(_, _, val)
         addon.db.char.specs[1] = val
-        create_class_options(addon.Rotation, UnitClass("player"))
+        create_class_options(addon.optionsFrames.Rotation, UnitClass("player"))
     end)
     spec_group:AddChild(primary)
 
@@ -361,7 +443,7 @@ if WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE and LE_EXPANSION_LEVEL_CURRENT >= 2 th
     secondary:SetText(addon.db.char.specs[2])
     secondary:SetCallback("OnEnterPressed", function(_, _, val)
         addon.db.char.specs[2] = val
-        create_class_options(addon.Rotation, UnitClass("player"))
+        create_class_options(addon.optionsFrames.Rotation, UnitClass("player"))
     end)
     spec_group:AddChild(secondary)
 
@@ -400,7 +482,6 @@ end
     end)
     debug_group:AddChild(detailed_profiling)
 
-
     scroll:AddChild(debug_group)
 
     frame:AddChild(scroll)
@@ -419,7 +500,7 @@ end
 local create_spec_options
 
 local function HandleDelete(spec, rotation, frame)
-    local rotation_settings = addon.db.char.rotations
+    local rotation_settings = addon.db.profile.rotations
 
     StaticPopupDialogs["ROTATIONMASTER_DELETE_ROTATION"] = {
         text = L["Are you sure you wish to delete this rotation?"],
@@ -451,7 +532,7 @@ local function HandleDelete(spec, rotation, frame)
 end
 
 local function ImportExport(spec, rotation, parent)
-    local rotation_settings = addon.db.char.rotations
+    local rotation_settings = addon.db.profile.rotations
     local original_name
     if rotation ~= DEFAULT and rotation_settings[spec][rotation] ~= nil then
         original_name = rotation_settings[spec][rotation].name
@@ -563,7 +644,7 @@ end
 
 local function create_rotation_options(frame, specID, rotid, parent, selected)
     local profile = addon.db.profile
-    local rotation_settings = addon.db.char.rotations[specID]
+    local rotation_settings = addon.db.profile.rotations[specID]
 
     local name2id = {}
     for id,rot in pairs(rotation_settings) do
@@ -851,8 +932,8 @@ local function create_rotation_options(frame, specID, rotid, parent, selected)
                         elseif rot.type == "item" then
                             if type(rot.action) == "string" then
                                 local itemset
-                                if addon.db.char.itemsets[rot.action] ~= nil then
-                                    itemset = addon.db.char.itemsets[rot.action]
+                                if addon.db.profile.itemsets[rot.action] ~= nil then
+                                    itemset = addon.db.profile.itemsets[rot.action]
                                 elseif addon.db.global.itemsets[rot.action] ~= nil then
                                     itemset = addon.db.global.itemsets[rot.action]
                                 end
@@ -994,7 +1075,7 @@ local function create_rotation_options(frame, specID, rotid, parent, selected)
 end
 
 create_spec_options = function(frame, specID, selected)
-    local rotation_settings = addon.db.char.rotations
+    local rotation_settings = addon.db.profile.rotations
 
     frame:ReleaseChildren()
     frame:PauseLayout()
@@ -1184,7 +1265,17 @@ function addon:SetupOptions()
         end
     end
 
-    AceConfig:RegisterOptionsTable(addon.name .. "Profiles", AceDBOptions:GetOptionsTable(self.db))
+    local options = AceDBOptions:GetOptionsTable(self.db)
+    local prev_setprofile = options.handler.SetProfile
+    options.handler["SetProfile"] = function(obj, info, value)
+        addon:DisableRotation()
+        prev_setprofile(obj, info, value)
+        -- create_class_options(self.optionsFrames.Rotation, classID)
+        addon:create_itemset_list(self.optionsFrames.ItemSets)
+        addon:create_announce_list(self.optionsFrames.Announces)
+        addon:EnableRotation()
+    end
+    AceConfig:RegisterOptionsTable(addon.name .. "Profiles", options)
     self.optionsFrames.Profiles = AceConfigDialog:AddToBlizOptions(addon.name .. "Profiles", L["Profiles"], self.optionsFrames.General.frame.name)
 
     local about = AboutPanel:AboutOptionsTable(addon.name)

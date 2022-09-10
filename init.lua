@@ -5,8 +5,10 @@ local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
 local multiinsert, tablelength, deepcopy = addon.multiinsert, addon.tablelength, addon.deepcopy
 
 local CHAR_VERSION = 1
-local PROFILE_VERSION = 1
+local PROFILE_VERSION = 2
 local GLOBAL_VERSION = 1
+
+local className, classKey, classID = UnitClass("player")
 
 local combination_food = {}
 local conjured_food = { 22895, 8076, 8075, 1487, 1114, 1113, 5349, }
@@ -238,7 +240,7 @@ local default_disabled_conditions = {
 }
 
 local function updateRotationData(rot_func, cond_func)
-    if not addon.db.char.rotations then
+    if not addon.db.profile.rotations then
         return
     end
 
@@ -254,7 +256,7 @@ local function updateRotationData(rot_func, cond_func)
         end
     end
 
-    for _, rotations in pairs(addon.db.char.rotations) do -- Spec -> Rotations
+    for _, rotations in pairs(addon.db.profile.rotations) do -- Spec -> Rotations
         for _, rotation in pairs(rotations) do -- Rotation ID -> Rotation Struct
             if rotation.rotation ~= nil then
                 for _, rot in pairs(rotation.rotation) do -- Individual Rotation Steps
@@ -295,29 +297,13 @@ local function upgradeTexturesToEffects()
 end
 
 local function upgradeGlobalRotationstoPlayer()
-    if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
-        if addon.db.profile.rotations ~= nil then
-            local classID = select(3, UnitClass("player"))
-            for j = 1, GetNumSpecializationsForClassID(classID) do
-                local specID = GetSpecializationInfoForClassID(classID, j)
-                if addon.db.profile.rotations[specID] ~= nil then
-                    addon.db.char.rotations[specID] = addon.db.profile.rotations[specID]
-                    addon.db.profile.rotations[specID] = nil
-                end
-            end
-        end
-    else
-        if addon.db.profile.rotations ~= nil and addon.db.profile.rotations[0] ~= nil then
-            addon.db.char.rotations[0] = addon.db.profile.rotations[0]
-            addon.db.profile.rotations[0] = nil
-        end
-
+    if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
         -- Upgrade from TBC -> Wrath
         if (LE_EXPANSION_LEVEL_CURRENT >= 2) and
-            addon.db.char.rotations ~= nil and addon.db.char.rotations[0] ~= nil then
-            local rot = addon.db.char.rotations[0]
-            addon.db.char.rotations = {}
-            addon.db.char.rotations[1] = rot
+            addon.db.profile.rotations ~= nil and addon.db.profile.rotations[0] ~= nil then
+            local rot = addon.db.profile.rotations[0]
+            addon.db.profile.rotations = {}
+            addon.db.profile.rotations[1] = rot
         end
     end
 end
@@ -368,8 +354,8 @@ local function cacheItems()
             end
         end
     end
-    if addon.db.char.itemsets then
-        for _,itemset in pairs(addon.db.char.itemsets) do
+    if addon.db.profile.itemsets then
+        for _,itemset in pairs(addon.db.profile.itemsets) do
             if itemset.items ~= nil then
                 for _,item in pairs(itemset.items) do
                     GetItemInfo(item)
@@ -380,7 +366,7 @@ local function cacheItems()
 end
 
 local function upgradeAddIDToAnnounce()
-    for _,announce in pairs(addon.db.char.announces) do
+    for _,announce in pairs(addon.db.profile.announces) do
         if announce.id == nil then
             announce.id = addon:uuid()
         end
@@ -449,7 +435,7 @@ local function upgradeEffectsToGUID()
 end
 
 local function upgradePetSpellToAnySpell()
-    if addon.db.char.version == nil or addon.db.char.version < 1 then
+    if addon.db.profile.version == nil or addon.db.profile.version < 1 then
         updateRotationData(function(rot, is_cooldown)
             if rot.type ~= nil and rot.type == BOOKTYPE_PET then
                 rot.type = "any"
@@ -502,31 +488,70 @@ function addon:getDefaultItemset(id)
     end
 end
 
-function addon:init()
-    if tablelength(addon.db.global.itemsets) == 0 then
-        addon.db.global.itemsets = deepcopy(default_itemsets)
-    else
-        for k,v in pairs(default_itemsets) do
-            if addon.db.global.itemsets[k] ~= nil and not addon.db.global.itemsets[k].modified then
-                addon.db.global.itemsets[k].items = deepcopy(v.items)
+local function moveProfileItems()
+    if not addon.db.profile.version or addon.db.profile.version < 2 then
+        local rotations = addon.db.char.rotations
+        addon.db.char.rotations = nil
+        local itemsets = addon.db.char.itemsets
+        addon.db.char.itemsets = nil
+        local announces = addon.db.char.announces
+        addon.db.char.announces = nil
+
+        local notempty = ((rotations and next(rotations) ~= nil) or
+                          (itemsets and next(itemsets) ~= nil) or
+                          (announces and next(announces) ~= nil))
+
+        if addon.db:GetCurrentProfile() == DEFAULT then
+            addon.db:SetProfile(classKey)
+            local modified = ((addon.db.profile.rotations and next(addon.db.profile.rotations) ~= nil) or
+                              (addon.db.profile.itemsets and next(addon.db.profile.itemsets) ~= nil) or
+                              (addon.db.profile.announces and next(addon.db.profile.announces) ~= nil))
+
+            if modified then
+                if notempty then
+                    addon.db:SetProfile(UnitName("player") .. " - " .. GetRealmName())
+                    addon.db:CopyProfile(DEFAULT, true)
+                end
+            else
+                addon.db:CopyProfile(DEFAULT, true)
             end
         end
+
+        if rotations and next(rotations) ~= nil then
+            addon.db.profile.rotations = rotations
+        end
+
+        if itemsets and next(itemsets) ~= nil then
+            addon.db.profile.itemsets = itemsets
+        end
+
+        if announces and next(announces) ~= nil then
+            addon.db.profile.announces = announces
+        end
     end
-    if tablelength(addon.db.global.effects) == 0 then
-        addon.db.global.effects = deepcopy(default_effects)
-        addon.db.global.version = GLOBAL_VERSION
-    end
-    if tablelength(addon.db.profile.condition_groups) == 0 then
-        addon.db.profile.condition_groups = deepcopy(default_condition_groups)
-    end
-    if tablelength(addon.db.profile.switch_conditions) == 0 then
-        addon.db.profile.switch_conditions = deepcopy(default_switch_conditions)
-    end
-    if tablelength(addon.db.profile.other_conditions_order) == 0 then
-        addon.db.profile.other_conditions_order = deepcopy(default_other_conditions_order)
-    end
-    if tablelength(addon.db.profile.disabled_conditions) == 0 then
-        addon.db.profile.disabled_conditions = deepcopy(default_disabled_conditions)
+end
+
+function addon:augmentDefaults(defaults)
+    defaults.char.version = CHAR_VERSION
+
+    defaults.global.itemsets = deepcopy(default_itemsets)
+    defaults.global.effects = deepcopy(default_effects)
+    defaults.global.version = GLOBAL_VERSION
+
+    defaults.profile.condition_groups = deepcopy(default_condition_groups)
+    defaults.profile.switch_conditions = deepcopy(default_switch_conditions)
+    defaults.profile.other_conditions_order = deepcopy(default_other_conditions_order)
+    defaults.profile.disabled_conditions = deepcopy(default_disabled_conditions)
+    -- defaults.profile.version = PROFILE_VERSION
+end
+
+function addon:init()
+    moveProfileItems()
+
+    for k,v in pairs(default_itemsets) do
+        if addon.db.global.itemsets[k] ~= nil and not addon.db.global.itemsets[k].modified then
+            addon.db.global.itemsets[k].items = deepcopy(v.items)
+        end
     end
 
     upgradeTexturesToEffects()
@@ -539,6 +564,7 @@ function addon:init()
     upgradePetSpellToAnySpell()
     upgradeRuneTypes()
     upgradeBindingSlots()
+
     addon.db.char.version = CHAR_VERSION
     addon.db.profile.version = PROFILE_VERSION
     addon.db.global.version = GLOBAL_VERSION

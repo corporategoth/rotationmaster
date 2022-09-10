@@ -50,8 +50,8 @@ local function add_top_buttons(list, idx, callback, delete_cb)
         elseif rot.type == "item" then
             if type(rot.action) == "string" then
                 local itemset
-                if addon.db.char.itemsets[rot.action] ~= nil then
-                    itemset = addon.db.char.itemsets[rot.action]
+                if addon.db.profile.itemsets[rot.action] ~= nil then
+                    itemset = addon.db.profile.itemsets[rot.action]
                 elseif addon.db.global.itemsets[rot.action] ~= nil then
                     itemset = addon.db.global.itemsets[rot.action]
                 end
@@ -389,7 +389,7 @@ local function add_effect_group(specID, rotid, rot, refresh)
 end
 
 local function add_action_group(specID, rotid, rot, callback, refresh, cooldown)
-    local itemsets = addon.db.char.itemsets
+    local itemsets = addon.db.profile.itemsets
     local global_itemsets = addon.db.global.itemsets
 
     local group = AceGUI:Create("SimpleGroup")
@@ -939,7 +939,7 @@ local function add_conditions(specID, idx, rotid, rot, callback)
 end
 
 function addon:get_cooldown_list(frame, specID, rotid, id, callback)
-    local rotation_settings = self.db.char.rotations[specID][rotid]
+    local rotation_settings = self.db.profile.rotations[specID][rotid]
 
     frame:ReleaseChildren()
     frame:PauseLayout()
@@ -1036,7 +1036,7 @@ function addon:get_cooldown_list(frame, specID, rotid, id, callback)
 end
 
 function addon:get_rotation_list(frame, specID, rotid, id, callback)
-    local rotation_settings = self.db.char.rotations[specID][rotid]
+    local rotation_settings = self.db.profile.rotations[specID][rotid]
 
     frame:ReleaseChildren()
     frame:PauseLayout()

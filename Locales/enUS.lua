@@ -209,6 +209,7 @@ L["Spell History Memory (seconds)"] = true
 L["Combat History Memory (seconds)"] = true
 L["Damage History Memory (seconds)"] = true
 L["Live Status Update Frequency (seconds)"] = true
+L["Preview Spells"] = true
 L["This is specifically how often the configuration pane will receive updates about live status.  Too frequently could make your configuration pane unusable.  0 = Disabled."] = true
 L["Are you sure you wish to delete this rotation?"] = true
 L["This item set is in use, are you sure you wish to delete it?"] = true

@@ -15,7 +15,7 @@ local helpers = addon.help_funcs
 local CreateText, Gap = helpers.CreateText, helpers.Gap
 
 local function get_item_array(items)
-    local itemsets = addon.db.char.itemsets
+    local itemsets = addon.db.profile.itemsets
     local global_itemsets = addon.db.global.itemsets
 
     if type(items) == "string" then
@@ -36,7 +36,7 @@ local function get_item_array(items)
 end
 
 local function get_item_desc(items)
-    local itemsets = addon.db.char.itemsets
+    local itemsets = addon.db.profile.itemsets
     local global_itemsets = addon.db.global.itemsets
 
     if type(items) == "string" then
@@ -148,7 +148,7 @@ addon:RegisterCondition("ITEM", {
             if minlevel > getCached(cache, UnitLevel, "player") then
                 return false
             end
-            local start, duration = getCached(cache, GetI, _, _, _, _, castertemCooldown, itemId)
+            local start, duration = getCached(cache, GetItemCooldown, itemId)
             if start == 0 and duration == 0 then
                 return true
             else
