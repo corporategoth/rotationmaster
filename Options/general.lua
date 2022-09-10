@@ -28,7 +28,7 @@ function addon:CreatePreviewWindow()
     local window = AceGUI:Create("Window")
     window:SetTitle(self.pretty_name)
     window:SetCallback("OnClose", function()
-        self.preview_spells_widget:SetValue(0)
+        self.preview_closed_func()
         profile["preview_spells"] = 0
         self.nextWindow = nil
     end)
@@ -206,25 +206,29 @@ local function create_primary_options(frame)
     preview_group:SetUserData("table", { columns = { 1, 100 } })
 
     local preview_reset = AceGUI:Create("Button")
-    addon.preview_spells_widget = AceGUI:Create("Slider")
-    addon.preview_spells_widget:SetFullWidth(true)
-    addon.preview_spells_widget:SetLabel(L["Preview Spells"])
-    addon.preview_spells_widget:SetValue(profile["preview_spells"])
-    addon.preview_spells_widget:SetSliderValues(0, 5, 1)
-    addon.preview_spells_widget:SetCallback("OnValueChanged", function(_, _, val)
+    local preview_spells = AceGUI:Create("Slider")
+    preview_spells:SetFullWidth(true)
+    preview_spells:SetLabel(L["Preview Spells"])
+    preview_spells:SetValue(profile["preview_spells"])
+    preview_spells:SetSliderValues(0, 5, 1)
+    preview_spells:SetCallback("OnValueChanged", function(_, _, val)
         profile["preview_spells"] = val
         if val >= 1 then
+            preview_reset:SetDisabled(false)
             if addon.nextWindow then
                 addon.nextWindow:SetWidth(val * 128)
             else
                 addon:CreatePreviewWindow()
             end
-        elseif addon.nextWindow then
-            addon.nextWindow:Release()
-            addon.nextWindow = nil
+        else
+            preview_reset:SetDisabled(true)
+            if addon.nextWindow then
+                addon.nextWindow:Release()
+                addon.nextWindow = nil
+            end
         end
     end)
-    preview_group:AddChild(addon.preview_spells_widget)
+    preview_group:AddChild(preview_spells)
 
     preview_reset:SetText(RESET)
     preview_reset:SetDisabled(not profile["preview_spells"])
@@ -236,6 +240,11 @@ local function create_primary_options(frame)
         end
     end)
     preview_group:AddChild(preview_reset)
+
+    addon.preview_closed_func = function()
+        preview_spells:SetValue(0)
+        preview_reset:SetDisabled(true)
+    end
 
     general_group:AddChild(preview_group)
 
