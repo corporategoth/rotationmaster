@@ -1,8 +1,12 @@
+local _, addon = ...
+
+local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
+
 -- Register this condition as existing.
 -- Params:
 --    category - The group this condition belongs to.  May be nil.
 --    name - The unique name of this condition (used by the addon, not seen by the user).
-addon:RegisterCondition(L["Some Category"], "MYCONDITON", {
+addon:RegisterCondition("MYCONDITON", {
     -- The description should be brief, it is used both in the on-hover display when
     -- selecting a condition, and as the 'title' of the bounding box for the condition.
     description = L["My Condition"],
@@ -23,7 +27,7 @@ addon:RegisterCondition(L["Some Category"], "MYCONDITON", {
     --    value - The storage for this condition (ie. where it's parameters are stored).
     --    cache - A cache for this evaluation run (it is reset every evaluation cycle).
     --            You can also use addon.combatCache (only reset when going out of combat)
-    --            or addoin.longtermCache (only reset when your skills are updated).
+    --            or addon.longtermCache (only reset when your skills are updated).
     --    evalStart - The timestamp (GetTime()) of when this evaluation cycle started.
     -- Return: true if the condition passes
     evaluate = function(value, cache, evalStart)

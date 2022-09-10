@@ -388,13 +388,13 @@ else
             if value.tree and value.talent then
                 talentIcon:SetImage(talentImage)
             end
-            talentIcon:SetCallback("OnEnter", function(widget)
+            talentIcon:SetCallback("OnEnter", function()
                 if value.talent then
                     GameTooltip:SetOwner(talentIcon.frame, "ANCHOR_BOTTOMRIGHT", 3)
                     GameTooltip:SetHyperlink(GetTalentLink(value.tree, value.talent))
                 end
             end)
-            talentIcon:SetCallback("OnLeave", function(widget)
+            talentIcon:SetCallback("OnLeave", function()
                 if GameTooltip:IsOwned(talentIcon.frame) then
                     GameTooltip:Hide()
                 end
@@ -486,7 +486,7 @@ else
 end
 
 if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE or LE_EXPANSION_LEVEL_CURRENT >= 2) then
-    local unit_class, unit_class_num = select(2, UnitClass("player"))
+    local unit_class_num = select(3, UnitClass("player"))
     addon:RegisterCondition("GLYPH", {
         description = L["Glyph"],
         icon = "Interface\\Icons\\inv_inscription_minorglyph09",
@@ -498,7 +498,7 @@ if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE or LE_EXPANSION_LEVEL_CURRENT >= 2) t
                 return false
             end
         end,
-        evaluate = function(value, cache)
+        evaluate = function(value)
             local glyph_spell = select(2, getCached(addon.longtermCache, GetItemSpell, value.item))
             for i=1, GetNumGlyphSockets() do
                 local spell = select(3, getCached(addon.longtermCache, GetGlyphSocketInfo, i))

@@ -77,9 +77,6 @@ local function add_top_buttons(list, idx, callback, delete_cb)
     end)
     button_group:AddChild(name)
 
-    local angle = math.rad(180)
-    local cos, sin = math.cos(angle), math.sin(angle)
-
     local movetop = AceGUI:Create("Icon")
     movetop:SetImageSize(24, 24)
     if (idx == 1) then
@@ -826,7 +823,7 @@ local function add_conditions(specID, idx, rotid, rot, callback)
         condition_desc:SetText(addon:printCondition(rot.conditions, specID))
         condition_desc.frame:SetHyperlinksEnabled(true)
 
-        condition_desc.frame:SetScript("OnHyperlinkClick", function(self, link, text, button)
+        condition_desc.frame:SetScript("OnHyperlinkClick", function(_, link, text, button)
             -- Avoid an error for ctrl-clicking a non-equippable item
             if IsControlKeyDown() then
                 local s = addon.split(link, ":")
@@ -836,11 +833,11 @@ local function add_conditions(specID, idx, rotid, rot, callback)
             end
             SetItemRef(link, text, button)
         end)
-        condition_desc.frame:SetScript("OnHyperlinkEnter", function(self, link, text, button)
+        condition_desc.frame:SetScript("OnHyperlinkEnter", function(_, link)
             GameTooltip:SetOwner(condition_desc.frame, "ANCHOR_CURSOR")
             GameTooltip:SetHyperlink(link)
         end)
-        condition_desc.frame:SetScript("OnHyperlinkLeave", function(self, link, text, button)
+        condition_desc.frame:SetScript("OnHyperlinkLeave", function()
             if GameTooltip:IsOwned(condition_desc.frame) then
                 GameTooltip:Hide()
             end

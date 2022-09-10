@@ -5,7 +5,7 @@ local color = color
 
 local helpers = addon.help_funcs
 local CreateText, CreatePictureText, Indent, Gap =
-helpers.CreateText, helpers.CreatePictureText, helpers.Indent, helpers.Gap
+    helpers.CreateText, helpers.CreatePictureText, helpers.Indent, helpers.Gap
 
 function addon.layout_item_list_help(frame)
     local group = frame

@@ -900,17 +900,17 @@ local function create_rotation_options(frame, specID, rotid, parent, selected)
 
         if rotation_settings[rotid] ~= nil then
             local function make_name(idx, rot)
-                local name
+                local rv
                 if rot.disabled ~= nil and rot.disabled == true then
-                    name = color.GRAY
+                    rv = color.GRAY
                 elseif rot.type == nil or not addon:validateCondition(rot.conditions, specID) then
-                    name = color.RED
+                    rv = color.RED
                 elseif rot.type ~= "none" and rot.action == nil then
-                    name = color.RED
+                    rv = color.RED
                 else
-                    name = ""
+                    rv = ""
                 end
-                name = name .. tostring(idx)
+                rv = rv .. tostring(idx)
 
                 if rot.use_name == nil then
                     rot.use_name = (rot.name ~= nil and string.len(rot.name) > 0)
@@ -918,16 +918,16 @@ local function create_rotation_options(frame, specID, rotid, parent, selected)
 
                 if rot.use_name then
                     if (rot.name ~= nil and string.len(rot.name)) then
-                        name = name .. " - " .. rot.name
+                        rv = rv .. " - " .. rot.name
                     end
                 elseif rot.type == "none" then
-                    name = name .. " - " .. L["No Action"]
+                    rv = rv .. " - " .. L["No Action"]
                 else
                     if rot.action ~= nil then
                         if rot.type == BOOKTYPE_SPELL or rot.type == BOOKTYPE_PET or rot.type == "any" then
                             local spell = SpellData:SpellName(rot.action, not rot.ranked)
                             if spell then
-                                name = name .. " - " .. spell
+                                rv = rv .. " - " .. spell
                             end
                         elseif rot.type == "item" then
                             if type(rot.action) == "string" then
@@ -938,7 +938,7 @@ local function create_rotation_options(frame, specID, rotid, parent, selected)
                                     itemset = addon.db.global.itemsets[rot.action]
                                 end
                                 if itemset ~= nil then
-                                    name = name .. " - " .. itemset.name
+                                    rv = rv .. " - " .. itemset.name
                                 end
                             elseif #rot.action > 0 then
                                 local item = rot.action[1]
@@ -946,17 +946,17 @@ local function create_rotation_options(frame, specID, rotid, parent, selected)
                                     item = GetItemInfo(item) or item
                                 end
                                 if #rot.action > 1 then
-                                    name = name .. " - " .. string.format(L["%s or %d others"], item, #rot.action-1)
+                                    rv = rv .. " - " .. string.format(L["%s or %d others"], item, #rot.action-1)
                                 else
-                                    name = name .. " - " .. item
+                                    rv = rv .. " - " .. item
                                 end
                             end
                         end
                     end
                 end
-                name = name .. color.RESET
+                rv = rv .. color.RESET
 
-                return name
+                return rv
             end
 
             if rotation_settings[rotid].cooldowns ~= nil then
@@ -1151,7 +1151,7 @@ create_class_options = function (frame, classID)
         tabs:SetCallback("OnGroupSelected", function(_, _, val)
             create_spec_options(tabs, val, (val == addon.currentSpec) and addon.currentRotation or DEFAULT)
         end)
-        frame.frame:SetScript("OnShow", function(f)
+        frame.frame:SetScript("OnShow", function()
             tabs:SelectTab(addon.currentSpec)
         end)
 
@@ -1177,7 +1177,7 @@ create_class_options = function (frame, classID)
         tabs:SetCallback("OnGroupSelected", function(_, _, val)
             create_spec_options(tabs, val, (val == addon.currentSpec) and addon.currentRotation or DEFAULT)
         end)
-        frame.frame:SetScript("OnShow", function(f)
+        frame.frame:SetScript("OnShow", function()
             tabs:SelectTab(addon.currentSpec)
         end)
 

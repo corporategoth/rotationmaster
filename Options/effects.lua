@@ -9,7 +9,7 @@ local libc = LibStub:GetLibrary("LibCompress")
 local table, pairs, ipairs = table, pairs, ipairs
 local HideOnEscape = addon.HideOnEscape
 
-local pairs, base64enc, base64dec, date, width_split = pairs, base64enc, base64dec, date, width_split
+local base64enc, base64dec, date, width_split = base64enc, base64dec, date, width_split
 
 local function spacer(width)
     local rv = AceGUI:Create("Label")
@@ -153,9 +153,6 @@ local function create_sequence_list(frame, effect, update)
             movers:SetFullWidth(true)
             movers:SetLayout("Table")
             movers:SetUserData("table", { columns = { 24, 24, 24, 24, 24 } })
-
-            local angle = math.rad(180)
-            local cos, sin = math.cos(angle), math.sin(angle)
 
             local movetop = AceGUI:Create("Icon")
             movetop:SetImageSize(24, 24)
@@ -462,7 +459,6 @@ function addon:create_effect_list(frame)
 
     local new_type = AceGUI:Create("Dropdown")
 
-    local first = true
     local icons = {}
     local function namesort(t, a, b) return (t[a].name or "") < (t[b].name or "") end
     for idx, v in addon.spairs(effects, namesort) do

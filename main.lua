@@ -1246,7 +1246,7 @@ end
 addon.PLAYER_FOCUS_CHANGED = addon.SwitchRotation
 addon.PARTY_MEMBERS_CHANGED = addon.SwitchRotation
 addon.PLAYER_FLAGS_CHANGED = addon.SwitchRotation
-addon.UPDATE_SHAPESHIFT_FORM = function(var)
+addon.UPDATE_SHAPESHIFT_FORM = function()
     local newForm = GetShapeshiftForm()
     if addon.currentForm ~= newForm then
         addon.currentForm = newForm
@@ -1669,13 +1669,13 @@ local function handle_combat_log(_, event, _, sourceGUID, _, _, _, destGUID, _, 
 end
 addon.COMBAT_LOG_EVENT_UNFILTERED = function() handle_combat_log(CombatLogGetCurrentEventInfo()) end
 
-addon.SPELL_DATA_LOAD_RESULT = function(self, _, spellId, success)
+addon.SPELL_DATA_LOAD_RESULT = function(_, _, spellId, success)
     if success then
         SpellData:UpdateSpell(spellId)
     end
 end
 
-addon.ITEM_DATA_LOAD_RESULT = function(self, _, itemId, success)
+addon.ITEM_DATA_LOAD_RESULT = function(_, _, itemId, success)
     if success then
         ItemData:UpdateItem(itemId)
     end

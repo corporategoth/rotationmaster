@@ -2,12 +2,10 @@ local _, addon = ...
 
 local AceGUI = LibStub("AceGUI-3.0")
 local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
-local RangeCheck = LibStub("LibRangeCheck-2.0")
-local color, tostring, tonumber, pairs = color, tostring, tonumber, pairs
+local color, pairs = color, pairs
 
 -- From constants
 local units, operators, math_operations = addon.units, addon.operators, addon.math_operations
-local abs, min, max = math.abs, math.min, math.max
 
 local function avg(t)
     local sum = 0
@@ -37,10 +35,10 @@ addon:RegisterCondition("PROXIMITY_HEALTH", {
     end,
     evaluate = function(value, cache)
         local values = {}
-        proximity_eval(value, cache, function(cache, unit)
-                    local cur = getCached(cache, UnitHealth, unit)
+        proximity_eval(value, cache, function(c, unit)
+                    local cur = getCached(c, UnitHealth, unit)
                     if value.value < 0 then
-                        local max = getCached(cache, UnitHealthMax, unit)
+                        local max = getCached(c, UnitHealthMax, unit)
                         cur = (max-cur)
                     end
                     table.insert(values, cur)
@@ -48,13 +46,13 @@ addon:RegisterCondition("PROXIMITY_HEALTH", {
 
         local v
         if value.operation == "minimum" then
-            v = min(values)
+            v = math.min(values)
         elseif value.operation == "average" then
             v = avg(values)
         elseif value.operation == "maximum" then
-            v = max(values)
+            v = math.max(values)
         end
-        return compare(value.operator, v, abs(value.value))
+        return compare(value.operator, v, math.abs(value.value))
     end,
     print = function(_, value)
         local conditionstr = string.format(
@@ -144,13 +142,13 @@ addon:RegisterCondition("PROXIMITY_HEALTH_COUNT", {
     end,
     evaluate = function(value, cache)
         local count = 0
-        proximity_eval(value, cache, function(cache, unit)
-            local cur = getCached(cache, UnitHealth, unit)
+        proximity_eval(value, cache, function(c, unit)
+            local cur = getCached(c, UnitHealth, unit)
             if value.value < 0 then
-                local max = getCached(cache, UnitHealthMax, unit)
+                local max = getCached(c, UnitHealthMax, unit)
                 cur = (max-cur)
             end
-            if compare(value.healthoperator, cur, abs(value.health)) then
+            if compare(value.healthoperator, cur, math.abs(value.health)) then
                 count = count + 1
             end
         end)
@@ -228,19 +226,19 @@ addon:RegisterCondition("PROXIMITY_HEALTHPCT", {
     end,
     evaluate = function(value, cache)
         local values = {}
-        proximity_eval(value, cache, function(cache, unit)
-            local cur = getCached(cache, UnitHealth, unit)
-            local max = getCached(cache, UnitHealthMax, unit)
+        proximity_eval(value, cache, function(c, unit)
+            local cur = getCached(c, UnitHealth, unit)
+            local max = getCached(c, UnitHealthMax, unit)
             table.insert(values, cur / max * 100)
         end)
 
         local v
         if value.operation == "minimum" then
-            v = min(values)
+            v = math.min(values)
         elseif value.operation == "average" then
             v = avg(values)
         elseif value.operation == "maximum" then
-            v = max(values)
+            v = math.max(values)
         end
         return compare(value.operator, v, value.value * 100)
     end,
@@ -331,9 +329,9 @@ addon:RegisterCondition("PROXIMITY_HEALTHPCT_COUNT", {
     end,
     evaluate = function(value, cache)
         local count = 0
-        proximity_eval(value, cache, function(cache, unit)
-            local cur = getCached(cache, UnitHealth, unit)
-            local max = getCached(cache, UnitHealthMax, unit)
+        proximity_eval(value, cache, function(c, unit)
+            local cur = getCached(c, UnitHealth, unit)
+            local max = getCached(c, UnitHealthMax, unit)
             if compare(value.healthoperator, cur / max * 100, value.value * 100) then
                 count = count + 1
             end
@@ -408,10 +406,10 @@ addon:RegisterCondition("PROXIMITY_MANA", {
     end,
     evaluate = function(value, cache)
         local values = {}
-        proximity_eval(value, cache, function(cache, unit)
-            local cur = getCached(cache, UnitPower, unit, Enum.PowerType.Mana)
+        proximity_eval(value, cache, function(c, unit)
+            local cur = getCached(c, UnitPower, unit, Enum.PowerType.Mana)
             if value.value < 0 then
-                local max = getCached(cache, UnitPowerMax, unit, Enum.PowerType.Mana)
+                local max = getCached(c, UnitPowerMax, unit, Enum.PowerType.Mana)
                 cur = (max-cur)
             end
             table.insert(values, cur)
@@ -419,13 +417,13 @@ addon:RegisterCondition("PROXIMITY_MANA", {
 
         local v
         if value.operation == "minimum" then
-            v = min(values)
+            v = math.min(values)
         elseif value.operation == "average" then
             v = avg(values)
         elseif value.operation == "maximum" then
-            v = max(values)
+            v = math.max(values)
         end
-        return compare(value.operator, v, abs(value.value))
+        return compare(value.operator, v, math.abs(value.value))
     end,
     print = function(_, value)
         local conditionstr = string.format(
@@ -515,13 +513,13 @@ addon:RegisterCondition("PROXIMITY_MANA_COUNT", {
     end,
     evaluate = function(value, cache)
         local count = 0
-        proximity_eval(value, cache, function(cache, unit)
-            local cur = getCached(cache, UnitPower, unit, Enum.PowerType.Mana)
+        proximity_eval(value, cache, function(c, unit)
+            local cur = getCached(c, UnitPower, unit, Enum.PowerType.Mana)
             if value.mana < 0 then
-                local max = getCached(cache, UnitPowerMax, unit, Enum.PowerType.Mana)
+                local max = getCached(c, UnitPowerMax, unit, Enum.PowerType.Mana)
                 cur = (max-cur)
             end
-            if compare(value.manaoperator, cur, abs(value.mana)) then
+            if compare(value.manaoperator, cur, math.abs(value.mana)) then
                 count = count + 1
             end
         end)
@@ -599,19 +597,19 @@ addon:RegisterCondition("PROXIMITY_MANAPCT", {
     end,
     evaluate = function(value, cache)
         local values = {}
-        proximity_eval(value, cache, function(cache, unit)
-            local cur = getCached(cache, UnitPower, unit, Enum.PowerType.Mana)
-            local max = getCached(cache, UnitPowerMax, unit, Enum.PowerType.Mana)
+        proximity_eval(value, cache, function(c, unit)
+            local cur = getCached(c, UnitPower, unit, Enum.PowerType.Mana)
+            local max = getCached(c, UnitPowerMax, unit, Enum.PowerType.Mana)
             table.insert(values, cur / max * 100)
         end)
 
         local v
         if value.operation == "minimum" then
-            v = min(values)
+            v = math.min(values)
         elseif value.operation == "average" then
             v = avg(values)
         elseif value.operation == "maximum" then
-            v = max(values)
+            v = math.max(values)
         end
         return compare(value.operator, v, value.value * 100)
     end,
@@ -702,9 +700,9 @@ addon:RegisterCondition("PROXIMITY_MANAPCT_COUNT", {
     end,
     evaluate = function(value, cache)
         local count = 0
-        proximity_eval(value, cache, function(cache, unit)
-            local cur = getCached(cache, UnitPower, unit, Enum.PowerType.Mana)
-            local max = getCached(cache, UnitPowerMax, unit, Enum.PowerType.Mana)
+        proximity_eval(value, cache, function(c, unit)
+            local cur = getCached(c, UnitPower, unit, Enum.PowerType.Mana)
+            local max = getCached(c, UnitPowerMax, unit, Enum.PowerType.Mana)
             if compare(value.manaoperator, cur / max * 100, value.value * 100) then
                 count = count + 1
             end

@@ -8,8 +8,8 @@ local CreateFrame, UIParent = CreateFrame, UIParent
 
 local pairs, color, tonumber = pairs, color, tonumber
 local units = addon.units
-local HideOnEscape, cleanArray, getCached, getRetryCached, isint, deepcopy, compareArray =
-    addon.HideOnEscape, addon.cleanArray, addon.getCached, addon.getRetryCached, addon.isint, addon.deepcopy, addon.compareArray
+local HideOnEscape, getCached, getRetryCached, isint, deepcopy, compareArray =
+    addon.HideOnEscape, addon.getCached, addon.getRetryCached, addon.isint, addon.deepcopy, addon.compareArray
 
 local function spacer(width)
     local rv = AceGUI:Create("Label")
@@ -292,13 +292,13 @@ local function ImportExport(items, update)
     import:SetText(L["Import"])
     import:SetDisabled(true)
     import:SetCallback("OnClick", function()
-        local items = addon.split(editbox:GetText():gsub(",", "\n"), "\n")
-        for _, v in ipairs(items) do
+        local body = addon.split(editbox:GetText():gsub(",", "\n"), "\n")
+        for _, v in ipairs(body) do
             v = addon.trim(v)
         end
 
         frame:Hide()
-        update(items)
+        update(body)
     end)
     group:AddChild(import)
 
@@ -630,7 +630,7 @@ local function item_list(frame, selected, editbox, itemset, isvalid, update)
     local delete = AceGUI:Create("Icon")
     local scrollwin = AceGUI:Create("ScrollFrame")
 
-    local itemSetCallback = function(id, slot)
+    local itemSetCallback = function()
         local sel = frame:GetUserData("selected")
         if bindings[sel] ~= nil then
             addon:ScheduleTimer("HighlightSlots", 0.5, bindings[sel])
@@ -640,7 +640,7 @@ local function item_list(frame, selected, editbox, itemset, isvalid, update)
     end
     addon.itemSetCallback = itemSetCallback
 
-    frame.frame:SetScript("OnShow", function(f)
+    frame.frame:SetScript("OnShow", function()
         addon.itemSetCallback = itemSetCallback
         itemSetCallback(frame:GetUserData("selected"))
     end)
@@ -789,7 +789,6 @@ local function item_list(frame, selected, editbox, itemset, isvalid, update)
     end
     importexport:SetUserData("cell", { alignV = "bottom" })
     importexport:SetCallback("OnClick", function()
-        local before = deepcopy(itemset.items)
         ImportExport(itemset.items, function(items)
             create_item_list(scrollwin, editbox, items, isvalid, list_update)
             list_update()

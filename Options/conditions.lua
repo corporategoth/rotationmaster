@@ -69,13 +69,13 @@ local function ImportExport(conditions, update)
     import:SetText(L["Import"])
     import:SetDisabled(true)
     import:SetCallback("OnClick", function()
-        local conditions = addon.split(editbox:GetText():gsub(",", "\n"), "\n")
-        for _, v in ipairs(conditions) do
+        local body = addon.split(editbox:GetText():gsub(",", "\n"), "\n")
+        for _, v in ipairs(body) do
             v = addon.trim(v)
         end
 
         frame:Hide()
-        update(conditions)
+        update(body)
     end)
     group:AddChild(import)
 
@@ -94,8 +94,6 @@ local function ImportExport(conditions, update)
 end
 
 local function layout_conditions(frame, group, selected, filter, update)
-    local profile = addon.db.profile
-
     local function spacer()
         local rv = AceGUI:Create("Label")
         rv:SetUserData("cell", { colspan = ENTRIES_PER_ROW })
@@ -109,7 +107,7 @@ local function layout_conditions(frame, group, selected, filter, update)
     local selectedIcon
 
     local cols = {}
-    for i=1,ENTRIES_PER_ROW do
+    for _=1,ENTRIES_PER_ROW do
         table.insert(cols, 1 / ENTRIES_PER_ROW)
     end
     local grid = AceGUI:Create("SimpleGroup")
@@ -141,7 +139,7 @@ local function layout_conditions(frame, group, selected, filter, update)
             description:SetJustifyH("center")
             description:SetWidth(100)
             description:SetUserData("cell", { alignV = "top", alignH = "left" })
-            description:SetCallback("OnClick", function (widget)
+            description:SetCallback("OnClick", function ()
                 if selectedIcon then
                     addon:HideGlow(selectedIcon.frame)
                 end
@@ -628,7 +626,7 @@ function addon:get_condition_group_list(empty)
     table.insert(sorted, "ALL")
     selects["SWITCH"] = color.CYAN .. L["Switch"] .. color.RESET
     table.insert(sorted, "SWITCH")
-    for k,v in pairs(profile.condition_groups) do
+    for _,v in pairs(profile.condition_groups) do
         selects[v.id] = v.name
         table.insert(sorted, v.id)
     end

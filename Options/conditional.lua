@@ -202,14 +202,12 @@ usefulSingle = function(value)
 end
 
 local function LayoutConditionTab(top, frame, funcs, value, selected, index, group, filter)
-    local profile = addon.db.profile
-
     frame:ReleaseChildren()
     frame:PauseLayout()
 
     local selectedIcon
 
-    local function layoutIcon(cond, icon, desc, selected, onclick)
+    local function layoutIcon(cond, icon, desc, sel, onclick)
         local description = AceGUI:Create("InteractiveLabel")
         local text = wrap(desc, 18)
         if not string.match(text, "\n") then
@@ -226,7 +224,7 @@ local function LayoutConditionTab(top, frame, funcs, value, selected, index, gro
             top:Hide()
         end)
 
-        if selected then
+        if sel then
             selectedIcon = description
             addon:ApplyCustomGlow({ type = "pixel" }, selectedIcon.frame, nil, { r = 0, g = 1, b = 0, a = 1 }, 0, 3)
             description:SetCallback("OnRelease", function()

@@ -135,7 +135,7 @@ end
 --- Creates frame overlay over a specific frame, it doesn't need to be a button.
 -- @param parent - frame that is suppose to be attached to
 -- @param id - string id of overlay because frame can have multiple overlays
-local function CreateOverlay(parent, id)
+local function CreateOverlay(parent)
 	local frame = tremove(FramePool)
 	if not frame then
 		frame = CreateFrame('Frame', 'RotationMaster_Overlay_' .. addon.uuid(), parent)
@@ -183,7 +183,7 @@ function addon:DestroyAllGlows()
 	-- Clear custom glows on fetch.
 	for spellid,v in pairs(Flags) do
 		if v then
-			for id, button in pairs(Spells[spellid]) do
+			for _, button in pairs(Spells[spellid]) do
 				self:HideGlow(button, spellid)
 				DestroyAllOverlay(button)
 			end
@@ -192,7 +192,7 @@ function addon:DestroyAllGlows()
 
 	for spellid,v in pairs(SpellsGlowing) do
 		if v then
-			for id, button in pairs(Spells[spellid]) do
+			for _, button in pairs(Spells[spellid]) do
 				self:HideGlow(button, "next")
 				DestroyAllOverlay(button)
 			end

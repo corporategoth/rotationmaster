@@ -9,11 +9,11 @@ do
 	local classGlyphs = {}
 	local frame
 	
-	local function itemFilter(self, itemID)
+	local function itemFilter(_, itemID)
 		return classGlyphs[itemID]
 	end
 
-	local function loadGlyphs(self)
+	local function loadGlyphs()
 		local addon = _G.RotationMaster
 		for _,itemid in pairs(addon.glyphs[unit_class]) do
 			classGlyphs[itemid] = true

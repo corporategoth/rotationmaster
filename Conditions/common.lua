@@ -7,10 +7,10 @@ local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
 local tonumber = tonumber
 
 -- From Constants
-local operators, units = addon.operators, addon.units
+local operators = addon.operators
 
 -- From Utils
-local isint, keys, getCached, getRetryCached = addon.isint, addon.keys, addon.getCached, addon.getRetryCached
+local isint, keys, getRetryCached = addon.isint, addon.keys, addon.getRetryCached
 
 function addon:Widget_GetSpellId(spellid, ranked)
     if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
@@ -53,7 +53,7 @@ function addon:Widget_SpellWidget(spec, editbox, value, nametoid, isvalid, updat
     spellIcon:SetHeight(44)
     spellIcon:SetText(value.spell)
     spellIcon.text:Hide()
-    spellIcon:SetCallback("OnEnterPressed", function(widget, event, v)
+    spellIcon:SetCallback("OnEnterPressed", function(_, _, v)
         v = tonumber(v)
         if isvalid(v) then
             value.spell = v
@@ -71,13 +71,13 @@ function addon:Widget_SpellWidget(spec, editbox, value, nametoid, isvalid, updat
         end
         update()
     end)
-    spellIcon:SetCallback("OnEnter", function(widget)
+    spellIcon:SetCallback("OnEnter", function()
         if value.spell then
             GameTooltip:SetOwner(spellIcon.frame, "ANCHOR_BOTTOMRIGHT", 3)
             GameTooltip:SetHyperlink("spell:" .. value.spell)
         end
     end)
-    spellIcon:SetCallback("OnLeave", function(widget)
+    spellIcon:SetCallback("OnLeave", function()
         if GameTooltip:IsOwned(spellIcon.frame) then
             GameTooltip:Hide()
         end
@@ -104,7 +104,7 @@ function addon:Widget_SpellWidget(spec, editbox, value, nametoid, isvalid, updat
         local nr_button = AceGUI:Create("CheckBox")
         nr_button:SetLabel(nil)
         nr_button:SetValue(value.ranked or false)
-        nr_button:SetCallback("OnValueChanged", function(widget, event, val)
+        nr_button:SetCallback("OnValueChanged", function(_, _, val)
             value.ranked = val
             spell:SetUserData("norank", not val)
             spell:SetText(value.spell and SpellData:SpellName(value.spell, not value.ranked))
@@ -121,7 +121,7 @@ function addon:Widget_SpellWidget(spec, editbox, value, nametoid, isvalid, updat
     spell:SetText(value.spell and SpellData:SpellName(value.spell, not value.ranked))
     spell:SetUserData("norank", not value.ranked)
     spell:SetUserData("spec", spec)
-    spell:SetCallback("OnEnterPressed", function(widget, event, v)
+    spell:SetCallback("OnEnterPressed", function(_, _, v)
         if not isint(v) then
             v = nametoid(v)
         else
@@ -156,7 +156,7 @@ function addon:Widget_SpellNameWidget(spec, editbox, value, isvalid, update)
         spellIcon:SetText(SpellData:GetSpellId(value.spell))
     end
     spellIcon.text:Hide()
-    spellIcon:SetCallback("OnEnterPressed", function(widget, event, v)
+    spellIcon:SetCallback("OnEnterPressed", function(_, _, v)
         v = tonumber(v)
         if isvalid(v) then
             local name = SpellData:GetSpellName(v, true)
@@ -175,13 +175,13 @@ function addon:Widget_SpellNameWidget(spec, editbox, value, isvalid, update)
         end
         update()
     end)
-    spellIcon:SetCallback("OnEnter", function(widget)
+    spellIcon:SetCallback("OnEnter", function()
         if value.spell then
             GameTooltip:SetOwner(spellIcon.frame, "ANCHOR_BOTTOMRIGHT", 3)
             GameTooltip:SetHyperlink("spell:" .. value.spell)
         end
     end)
-    spellIcon:SetCallback("OnLeave", function(widget)
+    spellIcon:SetCallback("OnLeave", function()
         if GameTooltip:IsOwned(spellIcon.frame) then
             GameTooltip:Hide()
         end
@@ -194,7 +194,7 @@ function addon:Widget_SpellNameWidget(spec, editbox, value, isvalid, update)
     spell:SetText(value.spell)
     spell:SetUserData("norank", not value.ranked)
     spell:SetUserData("spec", spec)
-    spell:SetCallback("OnEnterPressed", function(widget, event, v)
+    spell:SetCallback("OnEnterPressed", function(_, _, v)
         local spellid = SpellData:GetSpellId(v)
         local name = SpellData:SpellName(spellid, true)
 
@@ -239,7 +239,7 @@ function addon:Widget_ItemWidget(top, editbox, value, isvalid, update)
     end
     update_action_image()
     itemIcon:SetImageSize(36, 36)
-    itemIcon:SetCallback("OnEnter", function(widget)
+    itemIcon:SetCallback("OnEnter", function()
         local itemid
         if type(value.item) == "string" then
             itemid = addon:FindFirstItemOfItemSet({}, value.item, true) or addon:FindFirstItemInItemSet(value.item)
@@ -251,7 +251,7 @@ function addon:Widget_ItemWidget(top, editbox, value, isvalid, update)
             GameTooltip:SetHyperlink("item:" .. itemid)
         end
     end)
-    itemIcon:SetCallback("OnLeave", function(widget)
+    itemIcon:SetCallback("OnLeave", function()
         if GameTooltip:IsOwned(itemIcon.frame) then
             GameTooltip:Hide()
         end
@@ -264,7 +264,7 @@ function addon:Widget_ItemWidget(top, editbox, value, isvalid, update)
     local item = AceGUI:Create("Dropdown")
     item:SetFullWidth(true)
     item:SetLabel(L["Item Set"])
-    item:SetCallback("OnValueChanged", function(widget, event, val)
+    item:SetCallback("OnValueChanged", function(_, _, val)
         if val ~= nil then
             if val == "" then
                 value.item = {}
@@ -307,7 +307,7 @@ function addon:Widget_ItemWidget(top, editbox, value, isvalid, update)
         edit_button:SetImage("Interface\\FriendsFrame\\UI-FriendsList-Large-Up")
     end
     edit_button:SetUserData("cell", { alignV = "bottom" })
-    edit_button:SetCallback("OnClick", function(widget, event, ...)
+    edit_button:SetCallback("OnClick", function()
         local edit_callback = function()
             update_action_image()
             if type(value.item) == "string" then
@@ -316,7 +316,7 @@ function addon:Widget_ItemWidget(top, editbox, value, isvalid, update)
             update()
         end
         if type(value.item) == "string" then
-            local itemset = nil
+            local itemset
             if itemsets[value.item] ~= nil then
                 itemset = itemsets[value.item]
             elseif global_itemsets[value.item] ~= nil then
@@ -325,7 +325,7 @@ function addon:Widget_ItemWidget(top, editbox, value, isvalid, update)
 
             if itemset then
                 if top then
-                    top:SetCallback("OnClose", function(widget) end)
+                    top:SetCallback("OnClose", function() end)
                     top:Hide()
                 end
                 addon:item_list_popup(itemset.name, editbox, itemset.items, isvalid, edit_callback, top and function(widget)
@@ -336,7 +336,7 @@ function addon:Widget_ItemWidget(top, editbox, value, isvalid, update)
             end
         else
             if top then
-                top:SetCallback("OnClose", function(widget) end)
+                top:SetCallback("OnClose", function() end)
                 top:Hide()
             end
             addon:item_list_popup(L["Custom"], editbox, value.item, isvalid, edit_callback, top and function(widget)
@@ -362,7 +362,7 @@ function addon:Widget_SingleItemWidget(spec, editbox, value, isvalid, update)
     itemIcon:SetWidth(44)
     itemIcon:SetHeight(44)
     itemIcon.text:Hide()
-    itemIcon:SetCallback("OnEnterPressed", function(widget, event, v)
+    itemIcon:SetCallback("OnEnterPressed", function(_, _, v)
         v = tonumber(v)
         if isvalid(v) then
             value.item = v
@@ -378,7 +378,7 @@ function addon:Widget_SingleItemWidget(spec, editbox, value, isvalid, update)
         addon:UpdateItem_Name_ID(v, item, itemIcon)
         update()
     end)
-    itemIcon:SetCallback("OnEnter", function(widget)
+    itemIcon:SetCallback("OnEnter", function()
         if value.item then
             local itemid = getRetryCached(addon.longtermCache, GetItemInfoInstant, value.item)
             if itemid then
@@ -387,7 +387,7 @@ function addon:Widget_SingleItemWidget(spec, editbox, value, isvalid, update)
             end
         end
     end)
-    itemIcon:SetCallback("OnLeave", function(widget)
+    itemIcon:SetCallback("OnLeave", function()
         if GameTooltip:IsOwned(itemIcon.frame) then
             GameTooltip:Hide()
         end
@@ -398,7 +398,7 @@ function addon:Widget_SingleItemWidget(spec, editbox, value, isvalid, update)
     item:SetFullWidth(true)
     item:SetLabel(L["Item"])
     item:SetUserData("spec", spec)
-    item:SetCallback("OnEnterPressed", function(widget, event, v)
+    item:SetCallback("OnEnterPressed", function(_, _, v)
         local itemid
         if not isint(v) then
             itemid = getRetryCached(addon.longtermCache, GetItemInfoInstant, v)
@@ -429,7 +429,7 @@ function addon:Widget_OperatorWidget(value, name, update, op_field, val_field)
     local operator = AceGUI:Create("Dropdown")
     operator:SetFullWidth(true)
     operator:SetLabel(L["Operator"])
-    operator:SetCallback("OnValueChanged", function(widget, event, v)
+    operator:SetCallback("OnValueChanged", function(_, _, v)
         value[op_field or "operator"] = v
         update()
     end)
@@ -444,7 +444,7 @@ function addon:Widget_OperatorWidget(value, name, update, op_field, val_field)
     edit:SetFullWidth(true)
     edit:SetLabel(name)
     edit:SetText(value[val_field or "value"])
-    edit:SetCallback("OnEnterPressed", function(widget, event, v)
+    edit:SetCallback("OnEnterPressed", function(_, _, v)
         value[val_field or "value"] = tonumber(v)
         update()
     end)
@@ -462,7 +462,7 @@ function addon:Widget_OperatorPercentWidget(value, name, update, op_field, val_f
     local operator = AceGUI:Create("Dropdown")
     operator:SetFullWidth(true)
     operator:SetLabel(L["Operator"])
-    operator:SetCallback("OnValueChanged", function(widget, event, v)
+    operator:SetCallback("OnValueChanged", function(_, _, v)
         value[op_field or "operator"] = v
         update()
     end)
@@ -481,7 +481,7 @@ function addon:Widget_OperatorPercentWidget(value, name, update, op_field, val_f
     end
     edit:SetSliderValues(0, 1, 0.01)
     edit:SetIsPercent(true)
-    edit:SetCallback("OnValueChanged", function(widget, event, v)
+    edit:SetCallback("OnValueChanged", function(_, _, v)
         value[val_field or "value"] = tonumber(v)
         update()
     end)
@@ -497,7 +497,7 @@ function addon:Widget_UnitWidget(value, units, update, field)
     end
     local unit = AceGUI:Create("Dropdown")
     unit:SetLabel(L["Unit"])
-    unit:SetCallback("OnValueChanged", function(widget, event, v)
+    unit:SetCallback("OnValueChanged", function(_, _, v)
         value[field] = v
         update()
     end)

@@ -2,13 +2,13 @@ local _, addon = ...
 
 local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
 
-local multiinsert, tablelength, deepcopy = addon.multiinsert, addon.tablelength, addon.deepcopy
+local multiinsert, deepcopy = addon.multiinsert, addon.deepcopy
 
 local CHAR_VERSION = 1
 local PROFILE_VERSION = 2
 local GLOBAL_VERSION = 1
 
-local className, classKey, classID = UnitClass("player")
+local classKey = select(2, UnitClass("player"))
 
 local combination_food = {}
 local conjured_food = { 22895, 8076, 8075, 1487, 1114, 1113, 5349, }
@@ -244,15 +244,15 @@ local function updateRotationData(rot_func, cond_func)
         return
     end
 
-    local function updateConditionData(cond, cond_func)
+    local function updateConditionData(cond, func)
         if cond.type == "NOT" and cond.value ~= nil then
-            updateConditionData(cond.value, cond_func)
+            updateConditionData(cond.value, func)
         elseif cond.type == "AND" or cond.type == "OR" and cond.value ~= nil then
             for _, subcond in pairs(cond.value) do
-                updateConditionData(subcond, cond_func)
+                updateConditionData(subcond, func)
             end
         else
-            cond_func(cond)
+            func(cond)
         end
     end
 
@@ -309,7 +309,7 @@ local function upgradeGlobalRotationstoPlayer()
 end
 
 local function upgradeItemsToItemSets()
-    updateRotationData(function(rot, is_cooldown)
+    updateRotationData(function(rot)
         if rot.type == "item" and (type(rot.action) == "number" or (type(rot.action) == "string" and
                 not string.match(rot.action, "%x%x%x%x%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%x%x%x%x%x%x%x%x"))) then
             rot.action = { rot.action }
@@ -327,7 +327,7 @@ local function upgradeItemsToItemSets()
 end
 
 local function cacheItems()
-    updateRotationData(function(rot, is_cooldown)
+    updateRotationData(function(rot)
         if rot.type == "item" and rot.action ~= nil and type(rot.action) == "table" then
             for _,item in pairs(rot.action) do
                 GetItemInfo(item)
@@ -436,7 +436,7 @@ end
 
 local function upgradePetSpellToAnySpell()
     if addon.db.profile.version == nil or addon.db.profile.version < 1 then
-        updateRotationData(function(rot, is_cooldown)
+        updateRotationData(function(rot)
             if rot.type ~= nil and rot.type == BOOKTYPE_PET then
                 rot.type = "any"
             end

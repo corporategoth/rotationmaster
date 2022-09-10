@@ -5,8 +5,8 @@ local AceGUI = LibStub("AceGUI-3.0")
 local color = color
 
 local helpers = addon.help_funcs
-local CreateText, CreatePictureText, Indent, Gap =
-helpers.CreateText, helpers.CreatePictureText, helpers.Indent, helpers.Gap
+local CreateText, CreatePictureText, Gap =
+    helpers.CreateText, helpers.CreatePictureText, helpers.Gap
 
 function addon.layout_conditions_options_help(frame)
     local group = frame

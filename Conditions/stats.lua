@@ -370,13 +370,13 @@ if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE and LE_EXPANSION_LEVEL_CURRENT >= 2 a
                     value.rune ~= nil and isin(runes, value.rune))
         end,
         evaluate = function(value, cache)
-            local points = 0
+            local count = 0
             for i=1,6 do
                 if getCached(cache, GetRuneType, i) == value.rune then
-                    if select(3, getCached(cache, GetRuneCooldown, i)) then points = points + 1 end
+                    if select(3, getCached(cache, GetRuneCooldown, i)) then count = count + 1 end
                 end
             end
-            return compare(value.operator, points, value.value)
+            return compare(value.operator, count, value.value)
         end,
         print = function(_, value)
             local rune_type = value.rune and addon.runes[value.rune] or L["<rune type>"]
@@ -427,7 +427,6 @@ if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE and LE_EXPANSION_LEVEL_CURRENT >= 2 a
                     value.rune ~= nil and isin(runes, value.rune))
         end,
         evaluate = function(value, cache)
-            local points = 0
             local now = GetTime()
             local lowest_remain
             for i=1,6 do

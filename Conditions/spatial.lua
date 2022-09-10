@@ -9,8 +9,8 @@ local color, tostring, tonumber, pairs = color, tostring, tonumber, pairs
 local units, operators = addon.units, addon.operators
 
 -- From utils
-local compare, compareString, nullable, keys, isin, getCached, playerize =
-addon.compare, addon.compareString, addon.nullable, addon.keys, addon.isin, addon.getCached, addon.playerize
+local compare, compareString, nullable, isin, getCached, playerize =
+    addon.compare, addon.compareString, addon.nullable, addon.isin, addon.getCached, addon.playerize
 
 local helpers = addon.help_funcs
 local CreateText, Gap = helpers.CreateText, helpers.Gap
@@ -137,7 +137,7 @@ addon:RegisterCondition("PROXIMITY", {
     end,
     evaluate = function(value, cache)
         local count = 0
-        addon.proximity_eval(value, cache, function(cache, unit)
+        addon.proximity_eval(value, cache, function()
             count = count + 1
         end)
         return compare(value.operator, count, value.value)

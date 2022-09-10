@@ -88,8 +88,8 @@ addon:RegisterCondition("ZONEPVP", {
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
-        local zonepvp = deepcopy(zonepvp)
-        zonepvp[""] = L["no PVP"]
+        local zonepvp_local = deepcopy(zonepvp)
+        zonepvp_local[""] = L["no PVP"]
 
         local zone = AceGUI:Create("Dropdown")
         zone:SetLabel(L["Mode"])
@@ -102,7 +102,7 @@ addon:RegisterCondition("ZONEPVP", {
             top:SetStatusText(funcs:print(root, spec))
         end)
         zone.configure = function()
-            zone:SetList(zonepvp, keys(zonepvp))
+            zone:SetList(zonepvp_local, keys(zonepvp_local))
             if (value.value ~= nil) then
                 zone:SetValue(value.value)
             else
