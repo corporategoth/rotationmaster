@@ -701,6 +701,7 @@ end
 
 function addon:listConditions(group, nohide)
     local profile = addon.db.profile
+    local global = addon.db.global
 
     local rv = {}
     if group == "SWITCH" then
@@ -715,6 +716,10 @@ function addon:listConditions(group, nohide)
             if not addon.index(rv, cond) then
                 table.insert(rv, cond)
             end
+        end
+    elseif group == "CUSTOM" then
+        for key, _ in pairs(global.custom_conditions) do
+            table.insert(rv, key)
         end
     else
         local skipped = {}
@@ -758,22 +763,22 @@ function addon:listConditions(group, nohide)
                 end
             end
         end
-        if group == "ALL" then
-            table.sort(rv, function(lhs, rhs)
-                local ldesc, rdesc
-                if special[lhs] then
-                    ldesc = special[lhs].desc
-                else
-                    ldesc = conditions[lhs].description
-                end
-                if special[rhs] then
-                    rdesc = special[rhs].desc
-                else
-                    rdesc = conditions[rhs].description
-                end
-                return ldesc < rdesc
-            end)
-        end
+    end
+    if group == "ALL" or group == "CUSTOM" then
+        table.sort(rv, function(lhs, rhs)
+            local ldesc, rdesc
+            if special[lhs] then
+                ldesc = special[lhs].desc
+            else
+                ldesc = conditions[lhs].description
+            end
+            if special[rhs] then
+                rdesc = special[rhs].desc
+            else
+                rdesc = conditions[rhs].description
+            end
+            return ldesc < rdesc
+        end)
     end
 
     return rv

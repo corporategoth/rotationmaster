@@ -244,6 +244,9 @@ local function layout_top_window(frame, group, update, filter)
     elseif group == "SWITCH" then
         name:SetText(L["Switch"])
         name:SetDisabled(true)
+    elseif group == "CUSTOM" then
+        name:SetText(L["Custom"])
+        name:SetDisabled(true)
     elseif cond_group_idx then
         name:SetText(profile.condition_groups[cond_group_idx].name)
     end
@@ -313,7 +316,7 @@ local function layout_top_window(frame, group, update, filter)
     cond_header:AddChild(movebottom)
 
     importexport:SetImageSize(24, 24)
-    if group == "ALL" then
+    if group == "ALL" or group == "CUSTOM" then
         importexport:SetDisabled(true)
         importexport:SetImage("Interface\\AddOns\\RotationMaster\\textures\\UI-FriendsList-Small-Disabled")
     else
@@ -404,7 +407,7 @@ local function layout_bottom_window(frame, group, selected, update)
     grid:AddChild(switch)
 
     local directional = AceGUI:Create("Directional")
-    directional:SetDisabled(group == "ALL" or not selected)
+    directional:SetDisabled(group == "ALL" or group == "CUSTOM" or not selected)
     directional:DisableCenter(true)
     directional:SetUserData("cell", { rowspan = 2 })
     directional:SetCallback("OnClick", function(_, _, _, direction)
@@ -536,7 +539,7 @@ local function layout_bottom_window(frame, group, selected, update)
     moveto.configure = function()
         moveto:SetList(group_sel, group_sel_order)
         if selected then
-            if group == "ALL" or group == "SWITCH" then
+            if group == "ALL" or group == "SWITCH" or group == "CUSTOM" then
                 local cond_group = addon:findConditionGroup(selected)
                 moveto:SetValue(cond_group)
                 moveto:SetItemDisabled(cond_group, true)
@@ -548,7 +551,7 @@ local function layout_bottom_window(frame, group, selected, update)
     end
     moveto:SetCallback("OnValueChanged", function(_, _, val)
         local selected_group
-        if group == "ALL" or group == "SWITCH" then
+        if group == "ALL" or group == "SWITCH" or group == "CUSTOM" then
             selected_group = addon:findConditionGroup(selected)
         else
             selected_group = group
@@ -582,7 +585,7 @@ local function layout_bottom_window(frame, group, selected, update)
 
     local hidden = AceGUI:Create("CheckBox")
     hidden:SetLabel(L["Hidden"])
-    if (group == "ALL" or group == "SWITCH") and selected and not special[selected] then
+    if (group == "ALL" or group == "SWITCH" or group == "CUSTOM") and selected and not special[selected] then
         hidden:SetValue(addon.index(profile.disabled_conditions, selected) ~= nil)
         hidden:SetDisabled(false)
     else
@@ -705,6 +708,8 @@ function addon:get_condition_group_list(empty)
     table.insert(sorted, "ALL")
     selects["SWITCH"] = color.CYAN .. L["Switch"] .. color.RESET
     table.insert(sorted, "SWITCH")
+    selects["CUSTOM"] = color.GREEN .. L["Custom"] .. color.RESET
+    table.insert(sorted, "CUSTOM")
     for _,v in pairs(profile.condition_groups) do
         selects[v.id] = v.name
         table.insert(sorted, v.id)
