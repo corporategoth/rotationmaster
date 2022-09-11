@@ -5,7 +5,7 @@ local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
 local AceGUI = LibStub("AceGUI-3.0")
 
 local color, table, pairs, ipairs = color, table, pairs, ipairs
-local wrap, HideOnEscape = addon.wrap, addon.HideOnEscape
+local wrap, HideOnEscape, deepcopy= addon.wrap, addon.HideOnEscape, addon.deepcopy
 
 local special = {}
 special["DELETE"] = { desc = DELETE, icon = "Interface\\Icons\\Trade_Engineering" }
@@ -364,6 +364,13 @@ end
 local function layout_bottom_window(frame, group, selected, update)
     local profile = addon.db.profile
 
+    local function spacer(rs)
+        local rv = AceGUI:Create("Label")
+        rv:SetUserData("cell", { rowspan = rs })
+        rv:SetFullWidth(true)
+        return rv
+    end
+
     frame:ReleaseChildren()
     frame:PauseLayout()
 
@@ -375,7 +382,7 @@ local function layout_bottom_window(frame, group, selected, update)
     local grid = AceGUI:Create("SimpleGroup")
     grid:SetFullWidth(true)
     grid:SetLayout("Table")
-    grid:SetUserData("table", { columns = { 200, 50, 320 } })
+    grid:SetUserData("table", { columns = { 180, 50, 40, 30, 30, 20, 230 } })
     frame:AddChild(grid)
 
     local switch = AceGUI:Create("CheckBox")
@@ -398,6 +405,7 @@ local function layout_bottom_window(frame, group, selected, update)
 
     local directional = AceGUI:Create("Directional")
     directional:SetDisabled(group == "ALL" or not selected)
+    directional:DisableCenter(true)
     directional:SetUserData("cell", { rowspan = 2 })
     directional:SetCallback("OnClick", function(_, _, _, direction)
         local current_conds = addon:listConditions(group)
@@ -478,6 +486,40 @@ local function layout_bottom_window(frame, group, selected, update)
     end)
     grid:AddChild(directional)
 
+    grid:AddChild(spacer(2))
+
+    local add = AceGUI:Create("Icon")
+    add:SetImageSize(28, 28)
+    add:SetUserData("cell", { alignV = "bottom" })
+    add:SetImage("Interface\\Minimap\\UI-Minimap-ZoomInButton-Up")
+    add:SetCallback("OnClick", function()
+        addon:condition_edit_box(function()
+            update()
+        end)
+    end)
+    addon.AddTooltip(add, ADD)
+    grid:AddChild(add)
+
+    local edit = AceGUI:Create("Icon")
+    edit:SetImageSize(28, 28)
+    edit:SetUserData("cell", { alignV = "bottom" })
+    if not selected or addon.db.global.custom_conditions[selected] == nil then
+        edit:SetImage("Interface\\AddOns\\RotationMaster\\textures\\UI-FriendsList-Large-Disabled")
+        edit:SetDisabled(true)
+    else
+        edit:SetImage("Interface\\FriendsFrame\\UI-FriendsList-Large-Up")
+        edit:SetDisabled(false)
+    end
+    edit:SetCallback("OnClick", function()
+        addon:condition_edit_box(function()
+            update()
+        end, selected, addon.db.global.custom_conditions[selected])
+    end)
+    addon.AddTooltip(edit, EDIT)
+    grid:AddChild(edit)
+
+    grid:AddChild(spacer(2))
+
     local group_sel = {}
     local group_sel_order = {}
     for _, v in pairs(profile.condition_groups) do
@@ -556,6 +598,43 @@ local function layout_bottom_window(frame, group, selected, update)
     end)
     grid:AddChild(hidden)
 
+    local delete = AceGUI:Create("Icon")
+    delete:SetImageSize(28, 28)
+    delete:SetUserData("cell", { alignV = "top" })
+    if not selected or addon.db.global.custom_conditions[selected] == nil then
+        delete:SetImage("Interface\\Buttons\\UI-Panel-MinimizeButton-Disabled")
+        delete:SetDisabled(true)
+    else
+        delete:SetImage("Interface\\Buttons\\UI-Panel-MinimizeButton-Up")
+        delete:SetDisabled(false)
+    end
+    delete:SetCallback("OnClick", function()
+        addon:UnregisterCondition(selected)
+        addon.db.global.custom_conditions[selected] = nil
+        update()
+    end)
+    addon.AddTooltip(delete, DELETE)
+    grid:AddChild(delete)
+
+    local duplicate = AceGUI:Create("Icon")
+    duplicate:SetImageSize(28, 28)
+    duplicate:SetUserData("cell", { alignV = "bottom" })
+    if not selected or addon.db.global.custom_conditions[selected] == nil then
+        duplicate:SetImage("Interface\\AddOns\\RotationMaster\\textures\\UI-ChatIcon-Maximize-Disabled")
+        duplicate:SetDisabled(true)
+    else
+        duplicate:SetImage("Interface\\ChatFrame\\UI-ChatIcon-Maximize-Up")
+        duplicate:SetDisabled(false)
+    end
+    duplicate:SetCallback("OnClick", function()
+        local newkey = selected .. "_" .. date("%Y%m%d%H%M%S")
+        addon.db.global.custom_conditions[newkey] = deepcopy(addon.db.global.custom_conditions[selected])
+        addon:register_custom_condition(newkey, addon.db.global.custom_conditions[newkey])
+        update()
+    end)
+    addon.AddTooltip(duplicate, L["Duplicate"])
+    grid:AddChild(duplicate)
+
     local tag = AceGUI:Create("Label")
     tag:SetFullWidth(true)
     tag:SetText(selected)
@@ -579,7 +658,7 @@ local function display_condition_group(frame, group, update)
     local scrollwin = AceGUI:Create("ScrollFrame")
     scrollwin:SetLayout("List")
     scrollwin:SetFullWidth(true)
-    scrollwin:SetHeight(375)
+    scrollwin:SetHeight(365)
     frame:AddChild(scrollwin)
 
     local bottomwin = AceGUI:Create("SimpleGroup")

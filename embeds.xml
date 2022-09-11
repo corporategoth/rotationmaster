@@ -32,5 +32,6 @@
 <Include file="Libs\ThreatClassic-1.0\lib.xml" />
 <Include file="Libs\LibClassicDurations\LibClassicDurations.xml" />
 <Script file="Libs\LibRangeCheck-2.0\LibRangeCheck-2.0.lua" />
+<Script file="LibsAugment\FAIAP.lua" />
 
 </Ui>

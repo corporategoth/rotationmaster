@@ -115,6 +115,14 @@ local methods = {
             self.down:Enable()
             self.down_image:SetTexture("Interface\\Buttons\\UI-ScrollBar-ScrollDownButton-Up")
         end
+    end,
+
+    ["DisableCenter"] = function(self, disable)
+        if disable then
+            self.center:Hide()
+        else
+            self.center:Show()
+        end
     end
 }
 

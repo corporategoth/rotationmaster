@@ -74,6 +74,7 @@ local defaults = {
     global = {
         itemsets = {},
         effects = {},
+        custom_conditions = {},
     }
 }
 
@@ -261,6 +262,11 @@ function addon:OnInitialize()
     end
     DBIcon:Register(addon.name, DataBroker, self.db.profile.minimap)
     DataBroker.text = color.RED .. OFF
+
+    self.funcDeserialize = {}
+    for key, condition in pairs(self.db.global.custom_conditions) do
+        addon:register_custom_condition(key, condition)
+    end
 
     -- These values are cached for the entire time you are in combat.  Their values
     -- are unlikely to change during combat (and if they do, they will have minimal effect)

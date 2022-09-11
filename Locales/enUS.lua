@@ -107,6 +107,16 @@ L["Bottom Center"] = true
 L["Left Center"] = true
 L["Right Center"] = true
 
+L["Select Icon"] = true
+L["Key"] = true
+L["Edit Condition"] = true
+L["Description"] = true
+L["Validity Function"] = true
+L["Evaluation Function"] = true
+L["Print Function"] = true
+L["Widget Function"] = true
+L["Help Function"] = true
+
 L["Warrior"] = true
 L["Paladin"] = true
 L["Hunter"] = true

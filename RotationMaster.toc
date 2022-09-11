@@ -36,6 +36,7 @@ Options/effects.lua
 Options/announce.lua
 Options/itemset.lua
 Options/rotations.lua
+Options/custom_condition.lua
 Options/conditions.lua
 Options/conditional.lua
 

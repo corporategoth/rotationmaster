@@ -17,7 +17,6 @@ local cleanArray, deepcopy, wrap, HideOnEscape = addon.cleanArray, addon.deepcop
 local evaluateArray, evaluateSingle, printArray, printSingle, validateArray, validateSingle, usefulArray, usefulSingle
 
 local conditions = {}
-
 local special = {}
 special["DELETE"] = { desc = DELETE, icon = "Interface\\Icons\\Trade_Engineering" }
 special["AND"] = { desc = L["AND"], icon = "Interface\\Icons\\Spell_ChargePositive" }
@@ -629,6 +628,10 @@ end
 
 function addon:RegisterCondition(tag, array)
     conditions[tag] = array
+end
+
+function addon:UnregisterCondition(tag)
+    conditions[tag] = nil
 end
 
 function addon:EditCondition(index, spec, value, callback)
