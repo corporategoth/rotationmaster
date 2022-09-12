@@ -197,14 +197,6 @@ local function create_primary_options(frame)
     end)
     general_group:AddChild(damage_history)
 
-    -- general_group:AddChild(spacer(1))
-    local test_button = AceGUI:Create("Button")
-    test_button:SetText("TEST")
-    test_button:SetCallback("OnClick", function()
-        addon:condition_edit_box(function() end)
-    end)
-    general_group:AddChild(test_button)
-
     local preview_group = AceGUI:Create("SimpleGroup")
     preview_group:SetFullWidth(true)
     preview_group:SetLayout("Table")
@@ -567,7 +559,7 @@ local function ImportExport(spec, rotation, parent)
 
     local desc = AceGUI:Create("Label")
     desc:SetFullWidth(true)
-    desc:SetText(L["Copy and paste this text share your profile with others, or import someone else's."])
+    desc:SetText(L["Copy and paste this text share your rotation with others, or import someone else's."])
     frame:AddChild(desc)
 
     local import = AceGUI:Create("Button")

@@ -109,6 +109,7 @@ L["Right Center"] = true
 
 L["Select Icon"] = true
 L["Key"] = true
+L["Custom Condition"] = true
 L["Edit Condition"] = true
 L["Description"] = true
 L["Validity Function"] = true
@@ -227,8 +228,10 @@ L["Default effects have changed since the previous release, do you want to reset
 L["Import/Export Rotation"] = true
 L["Import/Export Item Set"] = true
 L["Import/Export Effect"] = true
+L["Import/Export Condition"] = true
 L["Import/Export Condition Group"] = true
-L["Copy and paste this text share your profile with others, or import someone else's."] = true
+L["Copy and paste this text share your rotation with others, or import someone else's."] = true
+L["Copy and paste this text share your custom condition with others, or import someone else's."] = true
 L["bytes"] = true
 L["lines"] = true
 L["Parse Error"] = true

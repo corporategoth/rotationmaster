@@ -233,6 +233,10 @@ function addon.layout_cooldown_help(frame)
     group:AddChild(Indent(40, CreateText(color.GREEN .. L["Local Only"] .. color.RESET .. " - " ..
             "Announce only to your chat frame (nobody else will see it).")))
 
+    group:AddChild(CreateText(color.BLIZ_YELLOW .. L["Sound Alert"] .. color.RESET .. " - " ..
+            "This will make an audible alert when your cooldown becomes available.  The cooldown is " ..
+            "only alerted when it becomes available after previously not being available."))
+
     group:AddChild(Gap())
     help_conditions(group, "cooldown", "cooldowns")
 end

@@ -47,6 +47,7 @@ Help/effects.lua
 Help/announce.lua
 Help/itemsets.lua
 Help/rotations.lua
+Help/custom_condition.lua
 Help/conditions.lua
 Help/conditional.lua
 

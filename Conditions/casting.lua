@@ -95,7 +95,7 @@ addon:RegisterCondition("CASTING_REMAIN", {
         return false
     end,
     print = function(_, value)
-        return nullable(unitsPossessive[value.unit], L["<unit>"]) ..
+        return nullable(unitsPossessive[value.unit], L["<unit>"]) .. " " ..
             compareString(value.operator, L["time remaining on spell cast"], string.format(L["%s seconds"], nullable(value.value)))
     end,
     widget = function(parent, spec, value)
