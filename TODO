@@ -1,5 +1,3 @@
-- Custom Condition Editor (LUA!)
-
 - Undo for condition editing?
 
 - OnSwitch actions (allowing you to, for example, switch totem profiles, UI profiles, etc).
