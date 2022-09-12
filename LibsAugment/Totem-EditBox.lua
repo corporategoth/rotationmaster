@@ -14,13 +14,14 @@ do
         -- Only wipe out the current spec, so you can still see everything for an off spec.
 		-- It's a little nicity since WoW doesn't let you see talented spells when not on spec.
     	local currentSpec = 0
+		local addon = _G.RotationMaster
 		if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
-			currentSpec = GetSpecializationInfo(GetSpecialization())
+			currentSpec = GetSpecializationInfo(addon:GetSpecialization())
 			if currentSpec == nil then
 				return
 			end
 		elseif (LE_EXPANSION_LEVEL_CURRENT >= 2) then
-			currentSpec = GetSpecialization()
+			currentSpec = addon:GetSpecialization()
 		end
 		if playerSpells[currentSpec] == nil then
 			playerSpells[currentSpec] = {}
