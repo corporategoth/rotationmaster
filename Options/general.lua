@@ -197,6 +197,8 @@ local function create_primary_options(frame)
     end)
     general_group:AddChild(damage_history)
 
+    general_group:AddChild(spacer(1))
+
     local preview_group = AceGUI:Create("SimpleGroup")
     preview_group:SetFullWidth(true)
     preview_group:SetLayout("Table")
