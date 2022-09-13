@@ -82,6 +82,18 @@ function addon.layout_primary_options_help(frame)
         "Newer DPS or heals are given more weight than older DPS or heals in a burn rate calculation."))
 
     group:AddChild(Gap())
+    group:AddChild(CreateText(color.BLIZ_YELLOW .. L["Disable Bar Highlighting"] .. color.RESET .. " - " ..
+            "Do not highlight the active rotation on your action bars.  If you wish to use the preview window " ..
+            "exclusively check this, however if this is checked and the preview spells is 0, you will not be " ..
+            "able to see rotation steps at all!  This does not effect cooldown highlighting (at the moment)."))
+
+    group:AddChild(Gap())
+    group:AddChild(CreateText(color.BLIZ_YELLOW .. L["Preview Spells"] .. color.RESET .. " - " ..
+            "The number of spells to preview in a separate window.  If this is 0 (the default) the preview " ..
+            "window is not displayed.  The preview window attempts to predict a number of spells in advance, " ..
+            "however this is not accurate and will change as current combat circumstances change."))
+
+    group:AddChild(Gap())
     group:AddChild(CreateText(color.BLIZ_YELLOW .. L["Effect"] .. color.RESET .. " - " ..
         "How a rotation step should be highlighted (and the default for cooldowns).  This selection can be " ..
         "updated in the " .. color.BLUE .. L["Effects"] .. color.RESET .. " configuration screen."))

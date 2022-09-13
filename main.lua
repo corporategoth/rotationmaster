@@ -60,6 +60,7 @@ local defaults = {
         spell_history = 60,
         combat_history = 10,
         damage_history = 30,
+        disable_buttons = false,
         preview_spells = 0,
         rotations = {},
         itemsets = {},
@@ -927,7 +928,9 @@ function addon:EvaluateNextAction()
                         self.currentSpell = spellid
                         addon:verbose("Rotation step %d satisfied it's condition.", id)
                         if not addon:IsGlowing(spellid) then
-                            addon:GlowNextSpell(spellid)
+                            if not self.db.profile.disable_buttons then
+                                addon:GlowNextSpell(spellid)
+                            end
                             if WeakAuras then
                                 WeakAuras.ScanEvents("ROTATIONMASTER_SPELL_UPDATE", cond.type, spellid)
                             end
@@ -966,7 +969,9 @@ function addon:EvaluateNextAction()
                 end
             end
             if not enabled then
-                addon:GlowClear()
+                if not self.db.profile.disable_buttons then
+                    addon:GlowClear()
+                end
                 if WeakAuras then
                     WeakAuras.ScanEvents("ROTATIONMASTER_SPELL_UPDATE", nil, nil)
                 end

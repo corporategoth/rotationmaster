@@ -197,7 +197,17 @@ local function create_primary_options(frame)
     end)
     general_group:AddChild(damage_history)
 
-    general_group:AddChild(spacer(1))
+    local disable_buttons = AceGUI:Create("CheckBox")
+    disable_buttons:SetFullWidth(true)
+    disable_buttons:SetLabel(L["Disable Bar Highlighting"])
+    disable_buttons:SetValue(profile["disable_buttons"])
+    disable_buttons:SetCallback("OnValueChanged", function(_, _, val)
+        if val == true then
+            addon:GlowClear()
+        end
+        profile["disable_buttons"] = val
+    end)
+    general_group:AddChild(disable_buttons)
 
     local preview_group = AceGUI:Create("SimpleGroup")
     preview_group:SetFullWidth(true)
