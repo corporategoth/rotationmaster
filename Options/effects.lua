@@ -1027,7 +1027,7 @@ ImportExport = function(effect, parent)
 
     local desc = AceGUI:Create("Label")
     desc:SetFullWidth(true)
-    desc:SetText(L["Copy and paste this text share your profile with others, or import someone else's."])
+    desc:SetText(L["Copy and paste this text share your effect with others, or import someone else's."])
     frame:AddChild(desc)
 
     local import = AceGUI:Create("Button")

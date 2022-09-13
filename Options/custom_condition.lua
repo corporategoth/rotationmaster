@@ -247,11 +247,26 @@ local function ImportExport(parent, update, key, condition)
     import:SetCallback("OnClick", function(_, _)
         local ok, res = AceSerializer:Deserialize(libc:Decompress(base64dec(editbox:GetText())))
         if ok then
-            for k,v in pairs(res) do
-                condition[k] = v
-            end
-            layout_condition_edit_box(parent, update, key, condition)
-            frame:Hide()
+            StaticPopupDialogs["ROTATIONMASTER_IMPORT_CUSTOM_FUNCTION"] = {
+                text = addon.pretty_name,
+                subText = "Importing custom functions contains raw LUA code that can be DANGEROUS.\n" ..
+                        "Do not import if you do not trust the provider of this code.\n" ..
+                        "Are you sure you wish to continue import?",
+                button1 = YES,
+                button2 = NO,
+                OnAccept = function()
+                    for k,v in pairs(res) do
+                        condition[k] = v
+                    end
+                    layout_condition_edit_box(parent, update, key, condition)
+                    frame:Hide()
+                end,
+                showAlert = 1,
+                timeout = 0,
+                whileDead = 1,
+                hideOnEscape = 1
+            }
+            StaticPopup_Show("ROTATIONMASTER_IMPORT_CUSTOM_FUNCTIO")
         end
     end)
     group:AddChild(import)

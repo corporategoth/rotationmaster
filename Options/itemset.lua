@@ -258,13 +258,18 @@ local function ImportExport(items, update)
 
     frame:PauseLayout()
 
+    local desc = AceGUI:Create("Label")
+    desc:SetFullWidth(true)
+    desc:SetText(L["Copy and paste this text share your item set with others, or import someone else's."])
+    frame:AddChild(desc)
+
     local import = AceGUI:Create("Button")
     local editbox = AceGUI:Create("MultiLineEditBox")
 
     editbox:SetFullHeight(true)
     editbox:SetFullWidth(true)
     editbox:SetLabel("")
-    editbox:SetNumLines(28)
+    editbox:SetNumLines(27)
     editbox:DisableButton(true)
     editbox:SetFocus(true)
     if items and #items > 0 then
