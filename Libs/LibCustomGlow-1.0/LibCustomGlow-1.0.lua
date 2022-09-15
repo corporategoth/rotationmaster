@@ -6,7 +6,7 @@ https://www.wowace.com/projects/libbuttonglow-1-0
 -- luacheck: globals CreateFromMixins ObjectPoolMixin CreateTexturePool CreateFramePool
 
 local MAJOR_VERSION = "LibCustomGlow-1.0"
-local MINOR_VERSION = 16
+local MINOR_VERSION = 15
 if not LibStub then error(MAJOR_VERSION .. " requires LibStub.") end
 local lib, oldversion = LibStub:NewLibrary(MAJOR_VERSION, MINOR_VERSION)
 if not lib then return end
@@ -295,7 +295,6 @@ function lib.PixelGlow_Start(r,color,N,frequency,length,th,xOffset,yOffset,borde
         f.info.width = nil
         f.info.length = length
     end
-    pUpdate(f, 0)
     f:SetScript("OnUpdate",pUpdate)
 end
 
@@ -378,13 +377,7 @@ function lib.AutoCastGlow_Start(r,color,N,frequency,scale,xOffset,yOffset,key,fr
     yOffset = yOffset or 0
     key = key or ""
 
-    if WOW_PROJECT_ID == WOW_PROJECT_CLASSIC then
-        addFrameAndTex(r,color,"_AutoCastGlow",key,N*4,xOffset,yOffset,textureList.shine,{0.0146484375,0.1201171875,0.2070312500,0.3125000000},true, frameLevel)
-    elseif WOW_PROJECT_ID == WOW_PROJECT_BURNING_CRUSADE_CLASSIC then
-        addFrameAndTex(r,color,"_AutoCastGlow",key,N*4,xOffset,yOffset,textureList.shine, {0.0146484375, 0.1201171875, 0.216796875, 0.322265625}, true, frameLevel)
-    else
-        addFrameAndTex(r,color,"_AutoCastGlow",key,N*4,xOffset,yOffset,textureList.shine,{0.8115234375,0.9169921875,0.8798828125,0.9853515625},true, frameLevel)
-    end
+    addFrameAndTex(r,color,"_AutoCastGlow",key,N*4,xOffset,yOffset,textureList.shine,{0.8115234375,0.9169921875,0.8798828125,0.9853515625},true, frameLevel)
     local f = r["_AutoCastGlow"..key]
     local sizes = {7,6,5,4}
     for k,size in pairs(sizes) do
