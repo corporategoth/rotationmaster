@@ -1147,9 +1147,9 @@ function addon:UpdateSpecSpells()
 end
 
 function addon:UpdateSkill()
-    addon:verbose("Skill update triggered")
+    self:verbose("Skill update triggered")
     if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
-        local spec = GetSpecializationInfo(addon:GetSpecialization())
+        local spec = GetSpecializationInfo(self:GetSpecialization())
         if spec == nil then
             return
         end
@@ -1158,7 +1158,7 @@ function addon:UpdateSkill()
             self.specTab:SelectTab(spec)
         end
     elseif (LE_EXPANSION_LEVEL_CURRENT >= 2) then
-        local spec = addon:GetSpecialization()
+        local spec = self:GetSpecialization()
         if spec == nil then
             return
         end
@@ -1253,31 +1253,38 @@ function addon:UpdateBoundButton(id)
     end
 end
 
--- The only action for ALL of these is to check to see if the rotation should be switched.
-addon.PLAYER_FOCUS_CHANGED = addon.SwitchRotation
-addon.PARTY_MEMBERS_CHANGED = addon.SwitchRotation
-addon.PLAYER_FLAGS_CHANGED = addon.SwitchRotation
-addon.UPDATE_SHAPESHIFT_FORM = function()
-    local newForm = GetShapeshiftForm()
-    if addon.currentForm ~= newForm then
-        addon.currentForm = newForm
-        -- addon.skipAnnounce = true
-        -- We need the delay because multiple shapeshift events come in at once
-        -- and there is no way to know which will be the final one.
-        if addon.shapeshiftTimer == nil then
-            addon.shapeshiftTimer = addon:ScheduleTimer(function ()
-                addon.shapeshiftTimer = nil
-                addon:SwitchRotation()
-            end, 0.25)
-            addon:ButtonFetch()
-        end
+local function wrapEvent(func)
+    return function(self, event, ...)
+        self:debug("Event %s fired.", event)
+        func(self, event, ...)
     end
 end
-addon.UPDATE_STEALTH = addon.SwitchRotation
 
-addon.ACTIONBAR_SLOT_CHANGED = function(self, _, slot)
+-- The only action for ALL of these is to check to see if the rotation should be switched.
+addon.PLAYER_FOCUS_CHANGED = wrapEvent(addon.SwitchRotation)
+addon.PARTY_MEMBERS_CHANGED = wrapEvent(addon.SwitchRotation)
+addon.PLAYER_FLAGS_CHANGED = wrapEvent(addon.SwitchRotation)
+addon.UPDATE_SHAPESHIFT_FORM = wrapEvent(function(self)
+    local newForm = GetShapeshiftForm()
+    if self.currentForm ~= newForm then
+        self.currentForm = newForm
+        -- self.skipAnnounce = true
+        -- We need the delay because multiple shapeshift events come in at once
+        -- and there is no way to know which will be the final one.
+        if self.shapeshiftTimer == nil then
+            self.shapeshiftTimer = self:ScheduleTimer(function ()
+                self.shapeshiftTimer = nil
+                self:SwitchRotation()
+            end, 0.25)
+            self:ButtonFetch()
+        end
+    end
+end)
+addon.UPDATE_STEALTH = wrapEvent(addon.SwitchRotation)
+
+addon.ACTIONBAR_SLOT_CHANGED = wrapEvent(function(self, _, slot)
     local bindings = self.db.char.bindings
-    addon:ButtonFetch()
+    self:ButtonFetch()
 
     local pickupItemSet
     for id, slots in pairs(bindings) do
@@ -1285,46 +1292,46 @@ addon.ACTIONBAR_SLOT_CHANGED = function(self, _, slot)
             if bslot == slot then
                 local type, action = GetCursorInfo()
                 -- Sometimes we get this when we didn't actually pick up anything.  Odd.
-                if type == "item" and addon:FindItemInItemSet(id, action) ~= nil then
+                if type == "item" and self:FindItemInItemSet(id, action) ~= nil then
                     pickupItemSet = id
                     table.remove(bindings[id], idx)
-                    if addon.tablelength(bindings[id]) < 1 then
+                    if self.tablelength(bindings[id]) < 1 then
                         bindings[id] = nil
                     end
-                    if addon.itemSetCallback then
-                        addon.itemSetCallback(id)
+                    if self.itemSetCallback then
+                        self.itemSetCallback(id)
                     end
                 end
             end
         end
     end
 
-    if addon.bindingItemSet then
-        if not bindings[addon.bindingItemSet] then
-            bindings[addon.bindingItemSet] = { slot }
+    if self.bindingItemSet then
+        if not bindings[self.bindingItemSet] then
+            bindings[self.bindingItemSet] = { slot }
         else
-            table.insert(bindings[addon.bindingItemSet], slot)
+            table.insert(bindings[self.bindingItemSet], slot)
         end
-        if addon.itemSetCallback then
-            addon.itemSetCallback(addon.bindingItemSet)
+        if self.itemSetCallback then
+            self.itemSetCallback(self.bindingItemSet)
         end
-        addon.bindingItemSet = nil
+        self.bindingItemSet = nil
     end
 
     if pickupItemSet ~= nil then
-        addon.bindingItemSet = pickupItemSet
+        self.bindingItemSet = pickupItemSet
     end
-end
+end)
 
-addon.PET_BAR_HIDEGRID = addon.ButtonFetch
-addon.ACTIONBAR_HIDEGRID = addon.ButtonFetch
-addon.PET_BAR_UPDATE = addon.ButtonFetch
-addon.ACTIONBAR_PAGE_CHANGED = addon.ButtonFetch
-addon.UPDATE_MACROS = addon.ButtonFetch
-addon.VEHICLE_UPDATE = addon.ButtonFetch
+addon.PET_BAR_HIDEGRID = wrapEvent(addon.ButtonFetch)
+addon.ACTIONBAR_HIDEGRID = wrapEvent(addon.ButtonFetch)
+addon.PET_BAR_UPDATE = wrapEvent(addon.ButtonFetch)
+addon.ACTIONBAR_PAGE_CHANGED = wrapEvent(addon.ButtonFetch)
+addon.UPDATE_MACROS = wrapEvent(addon.ButtonFetch)
+addon.VEHICLE_UPDATE = wrapEvent(addon.ButtonFetch)
 
-function addon:PLAYER_TARGET_CHANGED()
-    addon:verbose("Player targeted something else.")
+addon.PLAYER_TARGET_CHANGED = wrapEvent(function(self)
+    self:verbose("Player targeted something else.")
     if not self.inCombat then
         self:SwitchRotation()
     end
@@ -1333,15 +1340,13 @@ function addon:PLAYER_TARGET_CHANGED()
     self.lastOffSwing = nil
 
     self:EvaluateNextAction()
-end
+end)
 
-addon.PLAYER_FOCUS_CHANGED = function()
-    addon:PLAYER_TARGET_CHANGED()
-end
+addon.PLAYER_FOCUS_CHANGED = addon.PLAYER_TARGET_CHANGED
 
-function addon:UNIT_PET(unit)
+addon.UNIT_PET = wrapEvent(function(self, _, unit)
     if unit == "pet" then
-        addon:verbose("Player %s changed pet.", unit)
+        self:verbose("Player %s changed pet.", unit)
         self:UpdateSpecSpells()
 
         if not self.inCombat then
@@ -1350,17 +1355,17 @@ function addon:UNIT_PET(unit)
 
         self:EvaluateNextAction()
     end
-end
+end)
 
-function addon:PLAYER_CONTROL_GAINED()
-    addon:verbose("Player regained control.")
+addon.PLAYER_CONTROL_GAINED = wrapEvent(function(self)
+    self:verbose("Player regained control.")
     if not self.inCombat then
         self:SwitchRotation()
     end
 
     self:EnableRotationTimer()
     self:EvaluateNextAction()
-end
+end)
 
 function addon:UpdateBagContents(cache)
     self.bagContents = {}
@@ -1383,35 +1388,35 @@ function addon:UpdateBagContents(cache)
     end
 end
 
-function addon:PLAYER_CONTROL_LOST()
-    addon:verbose("Player lost control.")
+addon.PLAYER_CONTROL_LOST = wrapEvent(function(self)
+    self:verbose("Player lost control.")
     self:DisableRotationTimer()
     self:RemoveAllCurrentGlows()
-end
+end)
 
-addon.PLAYER_TALENT_UPDATE = addon.UpdateSkill
-addon.ACTIVE_TALENT_GROUP_CHANGED = addon.UpdateSkill
-addon.SPELLS_CHANGED = addon.UpdateSkill
-addon.CHARACTER_POINTS_CHANGED = addon.UpdateSkill
-addon.PLAYER_SPECIALIZATION_CHANGED = addon.UpdateSkill
-addon.LEARNED_SPELL_IN_TAB = addon.UpdateSkill
+addon.PLAYER_TALENT_UPDATE = wrapEvent(addon.UpdateSkill)
+addon.ACTIVE_TALENT_GROUP_CHANGED = wrapEvent(addon.UpdateSkill)
+addon.SPELLS_CHANGED = wrapEvent(addon.UpdateSkill)
+addon.CHARACTER_POINTS_CHANGED = wrapEvent(addon.UpdateSkill)
+addon.PLAYER_SPECIALIZATION_CHANGED = wrapEvent(addon.UpdateSkill)
+addon.LEARNED_SPELL_IN_TAB = wrapEvent(addon.UpdateSkill)
 
-function addon:ZONE_CHANGED()
+addon.ZONE_CHANGED = wrapEvent(function(self)
     addon:verbose("Player switched zones.")
     if not self.inCombat then
         self:SwitchRotation()
     end
-end
+end)
 
 addon.ZONE_CHANGED_INDOORS = addon.ZONE_CHANGED
 addon.GROUP_ROSTER_UPDATE = addon.ZONE_CHANGED
 
-function addon:PLAYER_ENTERING_WORLD()
+addon.PLAYER_ENTERING_WORLD = wrapEvent(function(self)
     local itemsets = self.db.profile.itemsets
     local global_itemsets = self.db.global.itemsets
     local bindings = self.db.char.bindings
 
-    addon:verbose("Player entered world.")
+    self:verbose("Player entered world.")
     self:SetupOptions()
     self:UpdateButtonGlow()
     self:UpdateSkill()
@@ -1427,62 +1432,62 @@ function addon:PLAYER_ENTERING_WORLD()
     for id, _ in pairs(global_itemsets) do
         self:UpdateItemSetButtons(id)
     end
-end
+end)
 
-function addon:PLAYER_REGEN_DISABLED()
-    addon:verbose("Player is in combat.")
+addon.PLAYER_REGEN_DISABLED = wrapEvent(function(self)
+    self:verbose("Player is in combat.")
     self.inCombat = true
     self.lastMainSwing = nil
     self.lastOffSwing = nil
     self.combatCache = {}
-end
+end)
 
-function addon:PLAYER_REGEN_ENABLED()
-    addon:verbose("Player is out of combat.")
+addon.PLAYER_REGEN_ENABLED = wrapEvent(function(self)
+    self:verbose("Player is out of combat.")
     self.inCombat = false
     self.lastMainSwing = nil
     self.lastOffSwing = nil
     self.combatCache = {}
 
-    addon:SwitchRotation()
+    self:SwitchRotation()
 
     -- Item Slots can't be updated while in combat.
-    for id, _ in pairs(addon.db.char.bindings) do
+    for id, _ in pairs(self.db.char.bindings) do
         self:UpdateBoundButton(id)
     end
 
-    for id, _ in pairs(addon.db.profile.itemsets) do
+    for id, _ in pairs(self.db.profile.itemsets) do
         self:UpdateItemSetButtons(id)
     end
-    for id, _ in pairs(addon.db.global.itemsets) do
+    for id, _ in pairs(self.db.global.itemsets) do
         self:UpdateItemSetButtons(id)
     end
-end
+end)
 
-function addon:UNIT_ENTERED_VEHICLE(_, unit)
+addon.UNIT_ENTERED_VEHICLE = wrapEvent(function(self, event, unit)
     if unit == "player" then
-        addon:verbose("Player on a vehicle.")
-        addon:PLAYER_CONTROL_LOST()
+        self:verbose("Player on a vehicle.")
+        self.PLAYER_CONTROL_LOST(self, event)
     end
-end
+end)
 
-function addon:UNIT_EXITED_VEHICLE(_, unit)
+addon.UNIT_EXITED_VEHICLE = wrapEvent(function(self, event, unit)
     if unit == "player" then
-        addon:verbose("Player off a vehicle.")
-        addon:PLAYER_CONTROL_GAINED()
+        self:verbose("Player off a vehicle.")
+        self.PLAYER_CONTROL_GAINED(self, event)
     end
-end
+end)
 
-function addon:NAME_PLATE_UNIT_ADDED(_, unit)
+addon.NAME_PLATE_UNIT_ADDED = wrapEvent(function(self, _, unit)
     local guid = UnitGUID(unit)
     if self.unitsInRange[guid] then
         self.unitsInRange[guid].unit = unit
     else
         self.unitsInRange[guid] = CreateUnitInfo({}, unit)
     end
-end
+end)
 
-function addon:NAME_PLATE_UNIT_REMOVED(_, unit)
+addon.NAME_PLATE_UNIT_REMOVED = wrapEvent(function(self, _, unit)
     local guid = UnitGUID(unit)
     if self.unitsInRange[guid] then
         local handled = false
@@ -1497,9 +1502,9 @@ function addon:NAME_PLATE_UNIT_REMOVED(_, unit)
             self.unitsInRange[guid] = nil
         end
     end
-end
+end)
 
-function addon:BAG_UPDATE()
+addon.BAG_UPDATE = wrapEvent(function(self)
     local bindings = self.db.char.bindings
 
     for id, _ in pairs(bindings) do
@@ -1507,9 +1512,9 @@ function addon:BAG_UPDATE()
     end
 
     self:UpdateBagContents()
-end
+end)
 
-function addon:UNIT_COMBAT(_, unit, action, severity, value, type)
+addon.UNIT_COMBAT = wrapEvent(function(self, _, unit, action, severity, value, type)
     if self.combatHistory[unit] == nil then
         self.combatHistory[unit] = {}
     end
@@ -1521,21 +1526,21 @@ function addon:UNIT_COMBAT(_, unit, action, severity, value, type)
         value = value,
         type = type,
     })
-end
+end)
 
 local currentSpells = {}
 local lastCastTarget = {} -- work around UNIT_SPELLCAST_SENT not always triggering
 local currentChannel
 
-local function spellcast(_, event, unit, castguid, spellid)
+local function spellcast(self, event, unit, castguid, spellid)
     -- even though we check it later, this skips rows entirely.
     if unit == 'player' or unit == "pet" then
-        for _, value in ipairs(addon.db.profile.announces) do
+        for _, value in ipairs(self.db.profile.announces) do
             if value.value and (not value.disabled) and (value.type == BOOKTYPE_PET and unit == "pet" or unit == "player") and
                 (event == "UNIT_SPELLCAST_" .. value.event or event == "UNIT_SPELLCAST_CHANNEL_" .. value.event) then
                 local skip = false
-                if addon.announced[value.id] then
-                    for _, val in ipairs(addon.announced[value.id]) do
+                if self.announced[value.id] then
+                    for _, val in ipairs(self.announced[value.id]) do
                         if val == castguid then
                             skip = true
                         end
@@ -1543,14 +1548,14 @@ local function spellcast(_, event, unit, castguid, spellid)
                 end
 
                 if not skip then
-                    local ent = addon.deepcopy(value)
+                    local ent = self.deepcopy(value)
                     if ent.type == BOOKTYPE_SPELL or ent.type == BOOKTYPE_PET then
                         ent.action = ent.spell
                     elseif unit == ent.type == "item" then
                         ent.action = ent.item
                     end
 
-                    local spellids, itemids = addon:GetSpellIds(ent)
+                    local spellids, itemids = self:GetSpellIds(ent)
                     for idx, sid in ipairs(spellids) do
                         if spellid == sid then
                             local text = ent.value
@@ -1558,18 +1563,18 @@ local function spellcast(_, event, unit, castguid, spellid)
                                 local link = SpellData:SpellLink(sid)
                                 text = text:gsub("{{spell}}", link)
                             elseif ent.type == "item" then
-                                local link = select(2, getRetryCached(addon.longtermCache, GetItemInfo, itemids[idx]))
+                                local link = select(2, getRetryCached(self.longtermCache, GetItemInfo, itemids[idx]))
                                 text = text:gsub("{{item}}", link)
                             end
-                            text = text:gsub("{{event}}", addon.events[ent.event])
+                            text = text:gsub("{{event}}", self.events[ent.event])
                             if currentSpells[castguid] or lastCastTarget[spellid] then
                                 text = text:gsub("{{target}}", currentSpells[castguid] or lastCastTarget[spellid])
                             end
                             announce({}, ent, text)
-                            if addon.announced[value.id] == nil then
-                                addon.announced[value.id] = { castguid }
+                            if self.announced[value.id] == nil then
+                                self.announced[value.id] = { castguid }
                             else
-                                table.insert(addon.announced[value.id], castguid)
+                                table.insert(self.announced[value.id], castguid)
                             end
                             break
                         end
@@ -1580,50 +1585,50 @@ local function spellcast(_, event, unit, castguid, spellid)
     end
 end
 
-addon.UNIT_SPELLCAST_START = spellcast
-addon.UNIT_SPELLCAST_STOP = function(_, event, unit, castguid, spellid)
-    spellcast(_, event, unit, castguid, spellid)
+addon.UNIT_SPELLCAST_START = wrapEvent(spellcast)
+addon.UNIT_SPELLCAST_STOP = wrapEvent(function(self, event, unit, castguid, spellid)
+    spellcast(self, event, unit, castguid, spellid)
     if unit == 'player' then
         currentSpells[castguid] = nil
-        addon.lastMainSwing = nil
-        addon.lastOffSwing = nil
+        self.lastMainSwing = nil
+        self.lastOffSwing = nil
     end
-end
-addon.UNIT_SPELLCAST_SUCCEEDED = function(_, event, unit, castguid, spellid)
-    spellcast(_, event, unit, castguid, spellid)
+end)
+addon.UNIT_SPELLCAST_SUCCEEDED = wrapEvent(function(self, event, unit, castguid, spellid)
+    spellcast(self, event, unit, castguid, spellid)
     if unit == 'player' then
         if currentChannel then
             currentChannel = castguid
         end
     end
-end
-addon.UNIT_SPELLCAST_INTERRUPTED = spellcast
-addon.UNIT_SPELLCAST_FAILED = spellcast
-addon.UNIT_SPELLCAST_DELAYED = spellcast
-addon.UNIT_SPELLCAST_CHANNEL_START = function(_, event, unit, castguid, spellid)
-    spellcast(_, event, unit, castguid, spellid)
+end)
+addon.UNIT_SPELLCAST_INTERRUPTED = wrapEvent(spellcast)
+addon.UNIT_SPELLCAST_FAILED = wrapEvent(spellcast)
+addon.UNIT_SPELLCAST_DELAYED = wrapEvent(spellcast)
+addon.UNIT_SPELLCAST_CHANNEL_START = wrapEvent(function(self, event, unit, castguid, spellid)
+    spellcast(self, event, unit, castguid, spellid)
     if unit == 'player' then
         currentChannel = true
     end
-end
-addon.UNIT_SPELLCAST_CHANNEL_STOP = function(_, event, unit, castguid, spellid)
-    spellcast(_, event, unit, castguid, spellid)
+end)
+addon.UNIT_SPELLCAST_CHANNEL_STOP = wrapEvent(function(self, event, unit, castguid, spellid)
+    spellcast(self, event, unit, castguid, spellid)
     if unit == 'player' then
         if currentChannel ~= nil then
             currentSpells[currentChannel] = nil
         end
         currentChannel = nil
-        addon.lastMainSwing = nil
-        addon.lastOffSwing = nil
+        self.lastMainSwing = nil
+        self.lastOffSwing = nil
     end
-end
+end)
 
-addon.UNIT_SPELLCAST_SENT = function(_, _, unit, target, castguid, spellid)
+addon.UNIT_SPELLCAST_SENT = wrapEvent(function(_, _, unit, target, castguid, spellid)
     if (unit == 'player') then
         currentSpells[castguid] = target
         lastCastTarget[spellid] = target
     end
-end
+end)
 
 local function handle_combat_log(_, event, _, sourceGUID, _, _, _, destGUID, _, _, _, ...)
     local spellid, spellname, envType
@@ -1678,16 +1683,16 @@ local function handle_combat_log(_, event, _, sourceGUID, _, _, _, destGUID, _, 
         })
     end
 end
-addon.COMBAT_LOG_EVENT_UNFILTERED = function() handle_combat_log(CombatLogGetCurrentEventInfo()) end
+addon.COMBAT_LOG_EVENT_UNFILTERED = wrapEvent(function() handle_combat_log(CombatLogGetCurrentEventInfo()) end)
 
-addon.SPELL_DATA_LOAD_RESULT = function(_, _, spellId, success)
+addon.SPELL_DATA_LOAD_RESULT = wrapEvent(function(_, _, spellId, success)
     if success then
         SpellData:UpdateSpell(spellId)
     end
-end
+end)
 
-addon.ITEM_DATA_LOAD_RESULT = function(_, _, itemId, success)
+addon.ITEM_DATA_LOAD_RESULT = wrapEvent(function(_, _, itemId, success)
     if success then
         ItemData:UpdateItem(itemId)
     end
-end
+end)
