@@ -14,7 +14,7 @@ local helpers = addon.help_funcs
 local Gap = helpers.Gap
 
 local GCD_SPELL
-if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
+if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) or (LE_EXPANSION_LEVEL_CURRENT >= 2) then
     GCD_SPELL = 61304 -- Dedicated spell for GCD
 else
     GCD_SPELL = 2580  -- 61304 doesn't exist in classic, use 'Find Materials', which works if you're a miner or not.
