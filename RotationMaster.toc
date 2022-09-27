@@ -62,6 +62,7 @@ Help/conditional.lua
 Conditions/common.lua
 Conditions/character.lua
 Conditions/stats.lua
+Conditions/ext_stats.lua
 Conditions/spell.lua
 Conditions/anyspell.lua
 Conditions/petspell.lua

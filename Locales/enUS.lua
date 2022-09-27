@@ -403,6 +403,7 @@ L["<distance>"] = true
 L["<quantity>"] = true
 L["<school>"] = true
 L["<operation>"] = true
+L["<stat>"] = true
 
 L["Your talent is a %s role"] = true
 L["%s is in a %s role"] = true
@@ -473,6 +474,10 @@ L["Blood"] = true
 L["Frost"] = true
 L["Unholy"] = true
 L["Death"] = true
+
+L["Character Stat"] = true
+L["Extended Character Stat"] = true
+L["Extended Character Stat Percentage"] = true
 
 L["Spell Available"] = true
 L["Pet Spell Available"] = true

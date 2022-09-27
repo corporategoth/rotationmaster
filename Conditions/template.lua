@@ -12,6 +12,16 @@ addon:RegisterCondition("MYCONDITON", {
     description = L["My Condition"],
     -- The icon can be an ID number or asset name (eg. "Interface\\Icons\\foo-bar")
     icon = 12345,
+    -- Call this when the condition is registered (could initialize some data or something).
+    -- Params:
+    --    tag - The tag (aka. type) this condition is registered as
+    on_register = function(tag)
+    end,
+    -- Call this when the condition is unregistered (could destroy some data or something).
+    -- Params:
+    --    tag - The tag (aka. type) this condition was registered as
+    on_unregister = function(tag)
+    end,
     -- Validate that the condition has all required values set and they are in
     -- acceptable bounds.  This does not indicate if the condition is true or not.
     -- Params:

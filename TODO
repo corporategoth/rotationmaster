@@ -1,6 +1,3 @@
-- Either alias all helper functions for custom functions, or don't use any aliases in built-in conditions
-  so that someone could copy/paste a default condition.
-
 - Stringify and 'export' all default built-in conditions, to serve as examples / starting points.
 
 - Undo for condition editing?

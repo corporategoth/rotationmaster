@@ -72,6 +72,17 @@ addon.nullable = function(value, default)
     return value
 end
 
+addon.nullable_value = function(value, array, default)
+    if value == nil or array == nil or type(array) ~= "table" then
+        if default ~= nil then
+            return color.RED .. default .. color.RESET
+        else
+            return color.RED .. L["<value>"] .. color.RESET
+        end
+    end
+    return addon.nullable(array[value], default)
+end
+
 addon.playerize = function(unit, player, nonplayer)
     if (unit == "player") then
         return player

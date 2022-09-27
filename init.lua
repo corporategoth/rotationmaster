@@ -181,6 +181,7 @@ local default_condition_groups = {
             "HEALTH", "HEALTHPCT", "TT_HEALTH", "TT_HEALTHPCT",
             "MANA", "MANAPCT", "POWER", "POWERPCT", "POINT", "RUNE", "RUNE_COOLDOWN",
             "TOTEM", "TOTEM_SPELL", "TOTEM_REMAIN", "TOTEM_SPELL_REMAIN",
+            "STAT", "ECS_STAT", "ECS_STAT_PCT"
         }
     },
     {

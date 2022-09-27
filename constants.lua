@@ -235,6 +235,15 @@ addon.threat = {
     L["tanking, secure"],
 }
 
+addon.stats = {
+    SPELL_STAT1_NAME, -- 1
+    SPELL_STAT2_NAME, -- 2
+    SPELL_STAT3_NAME, -- 3
+    SPELL_STAT4_NAME, -- 4
+    SPELL_STAT5_NAME, -- 5
+    ARMOR             -- 6
+}
+
 addon.forms = {
     WARRIOR = {
         2457, -- Battle Stance

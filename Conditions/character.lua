@@ -873,3 +873,4 @@ addon:RegisterCondition("IMMUNE", {
     end
 })
 end
+

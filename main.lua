@@ -29,6 +29,7 @@ local floor = math.floor
 local isin, starts_with, isint = addon.isin, addon.starts_with, addon.isint
 
 addon.pretty_name = GetAddOnMetadata(addon_name, "Title")
+addon.delayed_condition = {}
 local DataBroker = LibStub("LibDataBroker-1.1"):NewDataObject("RotationMaster",
         { type = "data source", label = addon.pretty_name, icon = "Interface\\AddOns\\RotationMaster\\textures\\RotationMaster-Minimap" })
 
@@ -249,6 +250,15 @@ end
 function addon:OnInitialize()
     self:augmentDefaults(defaults)
     self.db = LibStub("AceDB-3.0"):New("RotationMasterDB", defaults, true)
+
+    for ext_addon,conditions in pairs(self.delayed_condition) do
+        if IsAddOnLoaded(ext_addon) then
+            for name, condition in pairs(conditions) do
+                self:RegisterCondition(name, condition)
+            end
+        end
+    end
+
     self:init()
 
     AceConsole:RegisterChatCommand("rm", function(str)

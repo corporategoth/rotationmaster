@@ -641,10 +641,19 @@ end
 -------------------------------
 
 function addon:RegisterCondition(tag, array)
+    if conditions[tag] and conditions[tag].on_unregister then
+        conditions[tag]:on_unregister(tag)
+    end
     conditions[tag] = array
+    if array.on_register then
+        array:on_register(tag)
+    end
 end
 
 function addon:UnregisterCondition(tag)
+    if conditions[tag] and conditions[tag].on_unregister then
+        conditions[tag]:on_unregister(tag)
+    end
     conditions[tag] = nil
 end
 
