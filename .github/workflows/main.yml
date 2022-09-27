@@ -50,7 +50,7 @@ jobs:
         with:
           args: -g bcc -w 0
           
-      - name: Package and release for Burning Crusade Classic
+      - name: Package and release for Wrath of the Lich King Classic
         uses: BigWigsMods/packager@v2
         with:
           args: -g wrath -w 0
