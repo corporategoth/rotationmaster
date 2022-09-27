@@ -919,6 +919,7 @@ local function add_conditions(specID, idx, rotid, rot, callback)
             if rot.conditions == nil then
                 rot.conditions = { type = nil }
             end
+            addon.currentConditionEval = nil
             addon:EditCondition(idx, specID, rot.conditions, function()
                 layout_conditions()
                 callback()

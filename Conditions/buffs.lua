@@ -4,15 +4,7 @@ local AceGUI = LibStub("AceGUI-3.0")
 local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
 local color = color
 
--- From constants
-local operators, units, unitsPossessive = addon.operators, addon.units, addon.unitsPossessive
-
--- From utils
-local compare, compareString, nullable, isin, getCached, deepcopy, playerize =
-    addon.compare, addon.compareString, addon.nullable, addon.isin, addon.getCached, addon.deepcopy, addon.playerize
-
 local helpers = addon.help_funcs
-local CreateText, Gap = helpers.CreateText, helpers.Gap
 
 local UnitBuff
 if (WOW_PROJECT_ID == WOW_PROJECT_CLASSIC) then
@@ -26,11 +18,11 @@ addon:RegisterCondition("BUFF", {
     description = L["Buff Present"],
     icon = "Interface\\Icons\\spell_holy_divinespirit",
     valid = function(_, value)
-        return (value.unit ~= nil and isin(units, value.unit) and value.spell ~= nil)
+        return (value.unit ~= nil and addon.isin(addon.units, value.unit) and value.spell ~= nil)
     end,
     evaluate = function(value, cache)
         for i = 1, 40 do
-            local name, _, _, _, _, _, caster = getCached(cache, UnitBuff, value.unit, i)
+            local name, _, _, _, _, _, caster = addon.getCached(cache, UnitBuff, value.unit, i)
             if (name == nil) then
                 break
             end
@@ -43,16 +35,16 @@ addon:RegisterCondition("BUFF", {
         return false
     end,
     print = function(_, value)
-        return string.format(playerize(value.unit, L["%s have %s"], L["%s has %s"]),
-                nullable(units[value.unit], L["<unit>"]),
-                string.format(value.ownbuff and L["your own %s"] or "%s", nullable(value.spell, L["<buff>"])))
+        return string.format(addon.playerize(value.unit, L["%s have %s"], L["%s has %s"]),
+                addon.nullable(addon.units[value.unit], L["<unit>"]),
+                string.format(value.ownbuff and L["your own %s"] or "%s", addon.nullable(value.spell, L["<buff>"])))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
-        local unit = addon:Widget_UnitWidget(value, units,
+        local unit = addon:Widget_UnitWidget(value, addon.units,
                 function()
                     top:SetStatusText(funcs:print(root, spec))
                 end)
@@ -79,10 +71,10 @@ addon:RegisterCondition("BUFF", {
     end,
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
-        frame:AddChild(Gap())
-        frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Own Buff"] .. color.RESET .. " - " ..
+        frame:AddChild(helpers.helpers.Gap())
+        frame:AddChild(helpers.helpers.CreateText(color.BLIZ_YELLOW .. L["Own Buff"] .. color.RESET .. " - " ..
                 "Should this condition only consider buffs that you have applied."))
-        frame:AddChild(Gap())
+        frame:AddChild(helpers.helpers.Gap())
         addon.layout_condition_spellnamewidget_help(frame)
     end
 })
@@ -91,37 +83,37 @@ addon:RegisterCondition("BUFF_REMAIN", {
     description = L["Buff Time Remaining"],
     icon = "Interface\\Icons\\Spell_frost_stun",
     valid = function(_, value)
-        return (value.unit ~= nil and isin(units, value.unit) and value.spell ~= nil and
-                value.operator ~= nil and isin(operators, value.operator) and
+        return (value.unit ~= nil and addon.isin(addon.units, value.unit) and value.spell ~= nil and
+                value.operator ~= nil and addon.isin(addon.operators, value.operator) and
                 value.value ~= nil and value.value >= 0)
     end,
     evaluate = function(value, cache)
         for i=1,40 do
-            local name, _, _, _, _, expirationTime, caster = getCached(cache, UnitBuff, value.unit, i)
+            local name, _, _, _, _, expirationTime, caster = addon.getCached(cache, UnitBuff, value.unit, i)
             if (name == nil) then
                 break
             end
             if name == value.spell then
                 if (not value.ownbuff or caster == "player") then
                     local remain = expirationTime - GetTime()
-                    return compare(value.operator, remain, value.value)
+                    return addon.compare(value.operator, remain, value.value)
                 end
             end
         end
         return false
     end,
     print = function(_, value)
-        return string.format(playerize(value.unit, L["%s have %s where %s"], L["%s have %s where %s"]),
-            nullable(units[value.unit], L["<unit>"]),
-                string.format(value.ownbuff and L["your own %s"] or "%s", nullable(value.spell, L["<buff>"])),
-                compareString(value.operator, L["the remaining time"], string.format(L["%s seconds"], nullable(value.value))))
+        return string.format(addon.playerize(value.unit, L["%s have %s where %s"], L["%s have %s where %s"]),
+            addon.nullable(addon.units[value.unit], L["<unit>"]),
+                string.format(value.ownbuff and L["your own %s"] or "%s", addon.nullable(value.spell, L["<buff>"])),
+                addon.compareString(value.operator, L["the remaining time"], string.format(L["%s seconds"], addon.nullable(value.value))))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
-        local unit = addon:Widget_UnitWidget(value, units,
+        local unit = addon:Widget_UnitWidget(value, addon.units,
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
 
@@ -146,12 +138,12 @@ addon:RegisterCondition("BUFF_REMAIN", {
     end,
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
-        frame:AddChild(Gap())
-        frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Own Buff"] .. color.RESET .. " - " ..
+        frame:AddChild(helpers.helpers.Gap())
+        frame:AddChild(helpers.helpers.CreateText(color.BLIZ_YELLOW .. L["Own Buff"] .. color.RESET .. " - " ..
                 "Should this condition only consider buffs that you have applied."))
-        frame:AddChild(Gap())
+        frame:AddChild(helpers.helpers.Gap())
         addon.layout_condition_spellnamewidget_help(frame)
-        frame:AddChild(Gap())
+        frame:AddChild(helpers.helpers.Gap())
         addon.layout_condition_operatorwidget_help(frame, L["Buff Time Remaining"], L["Seconds"],
             "The number of seconds remaining on a buff applied to the " .. color.BLIZ_YELLOW .. L["Unit"] ..
             color.RESET .. ".  If the buff is not present, this condition will not be successful (regardless " ..
@@ -163,36 +155,36 @@ addon:RegisterCondition("BUFF_STACKS", {
     description = L["Buff Stacks"],
     icon = "Interface\\Icons\\Inv_misc_coin_02",
     valid = function(_, value)
-        return (value.unit ~= nil and isin(units, value.unit) and value.spell ~= nil and
-                value.operator ~= nil and isin(operators, value.operator) and
+        return (value.unit ~= nil and addon.isin(addon.units, value.unit) and value.spell ~= nil and
+                value.operator ~= nil and addon.isin(addon.operators, value.operator) and
                 value.value ~= nil and value.value >= 0)
     end,
     evaluate = function(value, cache)
         for i=1,40 do
-            local name, _, count, _, _, _, caster = getCached(cache, UnitBuff, value.unit, i)
+            local name, _, count, _, _, _, caster = addon.getCached(cache, UnitBuff, value.unit, i)
             if (name == nil) then
                 break
             end
             if name == value.spell then
                 if (not value.ownbuff or caster == "player") then
-                    return compare(value.operator, count, value.value)
+                    return addon.compare(value.operator, count, value.value)
                 end
             end
         end
         return false
     end,
     print = function(_, value)
-        return nullable(unitsPossessive[value.unit], L["<unit>"]) .. " " ..
-                compareString(value.operator, string.format(L["stacks of %s"],
-                string.format(value.ownbuff and L["your own %s"] or "%s", nullable(value.spell, L["<buff>"]))),
-                nullable(value.value))
+        return addon.nullable(addon.unitsPossessive[value.unit], L["<unit>"]) .. " " ..
+                addon.compareString(value.operator, string.format(L["stacks of %s"],
+                string.format(value.ownbuff and L["your own %s"] or "%s", addon.nullable(value.spell, L["<buff>"]))),
+                addon.nullable(value.value))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
-        local unit = addon:Widget_UnitWidget(value, units,
+        local unit = addon:Widget_UnitWidget(value, addon.units,
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
 
@@ -217,12 +209,12 @@ addon:RegisterCondition("BUFF_STACKS", {
     end,
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
-        frame:AddChild(Gap())
-        frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Own Buff"] .. color.RESET .. " - " ..
+        frame:AddChild(helpers.helpers.Gap())
+        frame:AddChild(helpers.helpers.CreateText(color.BLIZ_YELLOW .. L["Own Buff"] .. color.RESET .. " - " ..
                 "Should this condition only consider buffs that you have applied."))
-        frame:AddChild(Gap())
+        frame:AddChild(helpers.helpers.Gap())
         addon.layout_condition_spellnamewidget_help(frame)
-        frame:AddChild(Gap())
+        frame:AddChild(helpers.helpers.Gap())
         addon.layout_condition_operatorwidget_help(frame, L["Buff Stacks"], L["Stacks"],
             "The number of stacks of a buff applied to the " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET ..
             ".  If the buff is not present, this condition will not be successful (regardless " ..
@@ -234,11 +226,11 @@ addon:RegisterCondition("STEALABLE", {
     description = L["Has Stealable Buff"],
     icon = "Interface\\Icons\\Inv_weapon_shortblade_22",
     valid = function(_, value)
-        return (value.unit ~= nil and isin(units, value.unit))
+        return (value.unit ~= nil and addon.isin(addon.units, value.unit))
     end,
     evaluate = function(value, cache)
         for i=1,40 do
-            local name, _, _, _, _, _, _, isStealable = getCached(cache, UnitBuff, value.unit, i)
+            local name, _, _, _, _, _, _, isStealable = addon.getCached(cache, UnitBuff, value.unit, i)
             if (name == nil) then
                 break
             end
@@ -249,14 +241,14 @@ addon:RegisterCondition("STEALABLE", {
         return false
     end,
     print = function(_, value)
-        return string.format(L["%s has a stealable buff"], nullable(units[value.unit], L["<unit>"]))
+        return string.format(L["%s has a stealable buff"], addon.nullable(addon.units[value.unit], L["<unit>"]))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
-        local unit = addon:Widget_UnitWidget(value, deepcopy(units, { "player", "pet" }),
+        local unit = addon:Widget_UnitWidget(value, addon.deepcopy(addon.units, { "player", "pet" }),
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
     end,

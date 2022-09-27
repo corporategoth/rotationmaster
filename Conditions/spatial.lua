@@ -3,42 +3,33 @@ local _, addon = ...
 local AceGUI = LibStub("AceGUI-3.0")
 local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
 local RangeCheck = LibStub("LibRangeCheck-2.0")
-local color, tostring, tonumber, pairs = color, tostring, tonumber, pairs
-
--- From constants
-local units, operators = addon.units, addon.operators
-
--- From utils
-local compare, compareString, nullable, isin, getCached, playerize =
-    addon.compare, addon.compareString, addon.nullable, addon.isin, addon.getCached, addon.playerize
-
+local color, pairs = color, pairs
 local helpers = addon.help_funcs
-local CreateText, Gap = helpers.CreateText, helpers.Gap
 
 local rcf = function(unit) return RangeCheck:GetRange(unit) end
 local function calc_distance(cache, unit, unit_y, unit_x, unit_instance, otherunit)
     if unit == otherunit then
         return 0
     elseif unit_x ~= nil and unit_y ~= nil and unit_instance ~= nil then
-        local y, x, _, instance = getCached(cache, UnitPosition, otherunit)
+        local y, x, _, instance = addon.getCached(cache, UnitPosition, otherunit)
         if x ~= nil and y ~= nil and unit_instance == instance then
             return ((unit_x - x) ^ 2 + (unit_y - y) ^ 2) ^ 0.5
         end
     elseif unit == "player" then
-        return getCached(cache, rcf, otherunit)
+        return addon.getCached(cache, rcf, otherunit)
     end
 end
 
 addon.proximity_eval = function(value, cache, func)
-    if not getCached(cache, UnitExists, value.unit) then return false end
+    if not addon.getCached(cache, UnitExists, value.unit) then return false end
     local prefix, size, group
-    if getCached(cache, IsInRaid) and getCached(cache, UnitPlayerOrPetInRaid, value.unit) then
+    if addon.getCached(cache, IsInRaid) and addon.getCached(cache, UnitPlayerOrPetInRaid, value.unit) then
         prefix, size = "raid", 40
         if value.samegroup then
-            local idx = getCached(cache, UnitInRaid, value.unit)
+            local idx = addon.getCached(cache, UnitInRaid, value.unit)
             if not idx then
                 for i=1,size do
-                    if getCached(cache, UnitIsUnit, value.unit, "raidpet" .. tostring(i)) then
+                    if addon.getCached(cache, UnitIsUnit, value.unit, "raidpet" .. tostring(i)) then
                         idx = i
                         break
                     end
@@ -46,13 +37,13 @@ addon.proximity_eval = function(value, cache, func)
             end
             group = select(3, GetRaidRosterInfo(idx))
         end
-    elseif getCached(cache, IsInGroup) and getCached(cache, UnitPlayerOrPetInParty, value.unit) then
+    elseif addon.getCached(cache, IsInGroup) and addon.getCached(cache, UnitPlayerOrPetInParty, value.unit) then
         prefix, size = "party", 4
-    elseif not getCached(cache, IsInGroup) and (value.unit == "player" or value.unit == "pet") then
+    elseif not addon.getCached(cache, IsInGroup) and (value.unit == "player" or value.unit == "pet") then
         prefix, size = "party", 0
     end
     if prefix ~= nil then
-        local unit_y, unit_x, _, unit_instance = getCached(cache, UnitPosition, value.unit)
+        local unit_y, unit_x, _, unit_instance = addon.getCached(cache, UnitPosition, value.unit)
         if prefix == "party" then
             local distance = calc_distance(cache, value.unit, unit_y, unit_x, unit_instance, "player")
             if distance ~= nil and distance <= value.distance then
@@ -130,8 +121,8 @@ addon:RegisterCondition("PROXIMITY", {
     description = L["Allies Within Range"],
     icon = "Interface\\Icons\\Spell_holy_prayerofspirit",
     valid = function(_, value)
-        return (value.unit ~= nil and isin(units, value.unit) and
-                value.operator ~= nil and isin(operators, value.operator) and
+        return (value.unit ~= nil and addon.isin(addon.units, value.unit) and
+                value.operator ~= nil and addon.isin(addon.operators, value.operator) and
                 value.value ~= nil and value.value >= 0 and
                 value.distance ~= nil and value.distance >= 0)
     end,
@@ -140,24 +131,24 @@ addon:RegisterCondition("PROXIMITY", {
         addon.proximity_eval(value, cache, function()
             count = count + 1
         end)
-        return compare(value.operator, count, value.value)
+        return addon.compare(value.operator, count, value.value)
     end,
     print = function(_, value)
-        return string.format(playerize(value.unit, L["%s have %s"], L["%s has %s"]),
-                nullable(units[value.unit], L["<unit>"]),
-                compareString(value.operator,
+        return string.format(addon.playerize(value.unit, L["%s have %s"], L["%s has %s"]),
+                addon.nullable(addon.units[value.unit], L["<unit>"]),
+                addon.compareString(value.operator,
                         string.format(L["number of %s members%s within %d yards"],
                                 (value.samegroup and PARTY or L["Raid or Party"]),
                                 (value.includepets and " (" .. L["including pets"] .. ")" or ""),
-                                nullable(value.distance, L["<distance>"])),
-                        nullable(value.value)))
+                                addon.nullable(value.distance, L["<distance>"])),
+                        addon.nullable(value.value)))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
-        local unit = addon:Widget_UnitWidget(value, units,
+        local unit = addon:Widget_UnitWidget(value, addon.units,
                 function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
 
@@ -169,21 +160,21 @@ addon:RegisterCondition("PROXIMITY", {
     end,
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
-        frame:AddChild(Gap())
+        frame:AddChild(helpers.Gap())
         addon.layout_condition_operatorwidget_help(frame, L["Allies Within Range"], L["Count"],
                 "The number of allies whose proximity is measured in relation to " .. color.BLIZ_YELLOW .. L["Unit"] ..
                         ".  This will only measure the proximity of allies you are in a party or raid with.")
-        frame:AddChild(Gap())
-        frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Distance"] .. color.RESET .. " - " ..
+        frame:AddChild(helpers.Gap())
+        frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Distance"] .. color.RESET .. " - " ..
                 "The distance (in yards) allies are measured against."))
-        frame:AddChild(Gap())
-        frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Same Group"] .. color.RESET .. " - " ..
-                "Only count units in the same raid group."))
-        frame:AddChild(Gap())
-        frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Include Pets"] .. color.RESET .. " - " ..
+        frame:AddChild(helpers.Gap())
+        frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Same Group"] .. color.RESET .. " - " ..
+                "Only count addon.units in the same raid group."))
+        frame:AddChild(helpers.Gap())
+        frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Include Pets"] .. color.RESET .. " - " ..
                 "Include pets in the count."))
-        frame:AddChild(Gap())
-        frame:AddChild(CreateText(color.RED .. "This will only work for yourself if you are inside " ..
+        frame:AddChild(helpers.Gap())
+        frame:AddChild(helpers.CreateText(color.RED .. "This will only work for yourself if you are inside " ..
                 "of an instance, and it will be less accurate than outside of an instance." .. color.RESET))
     end
 })
@@ -192,25 +183,25 @@ addon:RegisterCondition("DISTANCE", {
     description = L["Distance"],
     icon = "Interface\\Icons\\Spell_arcane_teleportorgrimmar",
     valid = function(_, value)
-        return (value.unit ~= nil and isin(units, value.unit) and
+        return (value.unit ~= nil and addon.isin(addon.units, value.unit) and
                 value.value ~= nil and value.value >= 0 and value.value <= 40)
     end,
     evaluate = function(value, cache)
-        if not getCached(cache, UnitExists, value.unit) then return false end
-        local maxRange = select(2, getCached(cache, rcf, value.unit))
+        if not addon.getCached(cache, UnitExists, value.unit) then return false end
+        local maxRange = select(2, addon.getCached(cache, rcf, value.unit))
         return maxRange and maxRange <= value.value
     end,
     print = function(_, value)
-        return string.format(playerize(value.unit, L["%s are %s"], L["%s is %s"]),
-                nullable(value.unit, L["<unit>"]),
-                string.format(L["closer than %s yards"], nullable(value.value)))
+        return string.format(addon.playerize(value.unit, L["%s are %s"], L["%s is %s"]),
+                addon.nullable(value.unit, L["<unit>"]),
+                string.format(L["closer than %s yards"], addon.nullable(value.value)))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
-        local unit = addon:Widget_UnitWidget(value, units,
+        local unit = addon:Widget_UnitWidget(value, addon.units,
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
 
@@ -225,8 +216,8 @@ addon:RegisterCondition("DISTANCE", {
     end,
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
-        frame:AddChild(Gap())
-        frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Distance"] .. color.RESET .. " - " ..
+        frame:AddChild(helpers.Gap())
+        frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Distance"] .. color.RESET .. " - " ..
             "This distance " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. " must be within, in yards.  " ..
             "There are significant restrictions on how accurately distances can be measured, and all distances " ..
             "are within a range.  This will assume the unit is at the maximum of the measurable range.  Only " ..
@@ -239,7 +230,7 @@ addon:RegisterCondition("DISTANCE_COUNT", {
     icon = "Interface\\Icons\\Spell_arcane_teleportstormwind",
     valid = function(_, value)
         return (value.value ~= nil and value.value >= 0 and
-                value.operator ~= nil and isin(operators, value.operator) and value.enemy ~= nil and
+                value.operator ~= nil and addon.isin(addon.operators, value.operator) and value.enemy ~= nil and
                 value.distance ~= nil and value.distance >= 0 and
                 value.distance <= tonumber(C_CVar.GetCVar("nameplateMaxDistance")))
     end,
@@ -247,20 +238,20 @@ addon:RegisterCondition("DISTANCE_COUNT", {
         local count = 0
         for _, entity in pairs(addon.unitsInRange) do
             if entity.enemy == value.enemy then
-                local maxRange = select(2, getCached(cache, rcf, entity.unit))
+                local maxRange = select(2, addon.getCached(cache, rcf, entity.unit))
                 if maxRange and maxRange <= value.distance then
                     count = count + 1
                 end
             end
         end
-        return compare(value.operator, count, value.value)
+        return addon.compare(value.operator, count, value.value)
     end,
     print = function(_, value)
-        return compareString(value.operator,
+        return addon.compareString(value.operator,
                         string.format(L["Number of %s within %s yards"],
                             (value.enemy and L["enemies"] or "allies"),
-                            nullable(value.distance, L["<distance>"])),
-                        nullable(value.value))
+                            addon.nullable(value.distance, L["<distance>"])),
+                        addon.nullable(value.value))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -303,18 +294,18 @@ addon:RegisterCondition("DISTANCE_COUNT", {
         parent:AddChild(distance)
     end,
     help = function(frame)
-        frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Enemy"] .. color.RESET .. " - " ..
-            "The units you are checking the distance of are enemies."))
-        frame:AddChild(Gap())
+        frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Enemy"] .. color.RESET .. " - " ..
+            "The addon.units you are checking the distance of are enemies."))
+        frame:AddChild(helpers.Gap())
         addon.layout_condition_operatorwidget_help(frame, L["Distance Count"], L["Count"],
             "The number of enemies or allies whose proximity is measured in relation to you.")
-        frame:AddChild(Gap())
-        frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Distance"] .. color.RESET .. " - " ..
+        frame:AddChild(helpers.Gap())
+        frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Distance"] .. color.RESET .. " - " ..
                 "This distance enemies or allies must be within, in yards.  There are significant restrictions " ..
                 "on how accurately distances can be measured, and all distances are within a range.  This will " ..
-                "assume all units are at their maximum of the measurable range.  The maximum range is set using " ..
+                "assume all addon.units are at their maximum of the measurable range.  The maximum range is set using " ..
                 "Game Options -> Interface -> Game tab -> Names -> Nameplate Distance."))
-        frame:AddChild(Gap())
+        frame:AddChild(helpers.Gap())
     end
 })
 
@@ -325,11 +316,11 @@ addon:RegisterCondition("ZONE", {
         return value.value ~= nil
     end,
     evaluate = function(value, cache)
-        local zoneName = value.subzone and getCached(cache, GetSubZoneText) or getCached(cache, GetZoneText)
+        local zoneName = value.subzone and addon.getCached(cache, GetSubZoneText) or addon.getCached(cache, GetZoneText)
         return value.value == zoneName
     end,
     print = function(_, value)
-        return string.format(L["in %s"], nullable(value.value, L["<zone>"]))
+        return string.format(L["in %s"], addon.nullable(value.value, L["<zone>"]))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -358,9 +349,9 @@ addon:RegisterCondition("ZONE", {
         parent:AddChild(zone)
     end,
     help = function(frame)
-        frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["SubZone"] .. color.RESET ..
+        frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["SubZone"] .. color.RESET ..
                 " - " .. "Use the SubZone text instead of Zone text (eg. Valley of Strength instead of Orgrimmar)"))
-        frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Zone"] .. color.RESET ..
+        frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Zone"] .. color.RESET ..
                 " - " .. "The zone you are in."))
     end
 })

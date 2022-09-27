@@ -185,10 +185,10 @@ function addon:HandleCommand(str)
         addon:enable()
 
     elseif cmd == "toggle" then
-        if addon.playerUnitFrame then
-            addon:disable()
-        else
+        if self.currentRotation == nil then
             addon:enable()
+        else
+            addon:disable()
         end
 
     elseif cmd == "current" then
@@ -307,7 +307,6 @@ function addon:OnInitialize()
 
     self.spellHistory = {}
     self.combatHistory = {}
-    self.playerUnitFrame = nil
 
     self.avail_announced = {}
     self.announced = {}
@@ -470,19 +469,6 @@ function addon:enable()
         end
     end
 
-    self.playerUnitFrame = CreateFrame('Frame')
-    self.playerUnitFrame:RegisterUnitEvent('UNIT_SPELLCAST_SUCCEEDED', 'player')
-    self.playerUnitFrame:RegisterUnitEvent('UNIT_SPELLCAST_SUCCEEDED', 'pet')
-
-    self.playerUnitFrame:SetScript('OnEvent', function(_, _, _, _, spellId)
-        if IsPlayerSpell(spellId) then
-            table.insert(self.spellHistory, 1, {
-                spell = spellId,
-                time = GetTime()
-            })
-        end
-    end)
-
     if self.db.profile.preview_spells > 0 then
         self:CreatePreviewWindow()
     end
@@ -493,10 +479,6 @@ end
 
 function addon:disable()
     self:DisableRotation()
-    if self.playerUnitFrame ~= nil then
-        self.playerUnitFrame:UnregisterAllEvents()
-    end
-    self.playerUnitFrame = nil
     if self.nextWindow then
         local spells = self.db.profile.preview_spells
         self.nextWindow:Release()
@@ -1600,6 +1582,12 @@ addon.UNIT_SPELLCAST_SUCCEEDED = wrapEvent(function(self, event, unit, castguid,
         if currentChannel then
             currentChannel = castguid
         end
+    end
+    if unit == 'player' or unit == 'pet' then
+        table.insert(self.spellHistory, 1, {
+            spell = spellId,
+            time = GetTime()
+        })
     end
 end)
 addon.UNIT_SPELLCAST_INTERRUPTED = wrapEvent(spellcast)

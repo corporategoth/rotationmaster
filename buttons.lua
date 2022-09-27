@@ -378,6 +378,27 @@ local function FetchDominos()
 	end
 end
 
+local function FetchFarmingBar()
+	local i = 1
+	while true do
+		local button = _G['FarmingBar_Button' .. i]
+		if not button then
+			break
+		end
+		local hyperlink = button.obj:GetHyperlink()
+		if hyperlink then
+			local itemid = tonumber(hyperlink:match("item:(%d+)"))
+			if itemid then
+				local spellid = select(2, GetItemSpell(itemid))
+				if spellid then
+					AddButton(spellid, button)
+				end
+			end
+		end
+		i = i + 1
+	end
+end
+
 local function FetchAzeriteUI()
 	for i = 1, 24 do
 		local button = _G['AzeriteUIActionButton' .. i];
@@ -569,6 +590,10 @@ function addon:Fetch()
 
 	if IsAddOnLoaded('Neuron') then
 		FetchNeuron();
+	end
+
+	if IsAddOnLoaded('FarmingBar') then
+		FetchFarmingBar();
 	end
 
 	if IsAddOnLoaded('TotemTimers') then

@@ -3,16 +3,7 @@ local _, addon = ...
 local AceGUI = LibStub("AceGUI-3.0")
 local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
 local color = color
-
--- From constants
-local operators = addon.operators
-
--- From utils
-local compare, compareString, nullable, isin, getCached, getRetryCached, round =
-    addon.compare, addon.compareString, addon.nullable, addon.isin, addon.getCached, addon.getRetryCached, addon.round
-
 local helpers = addon.help_funcs
-local CreateText, Gap = helpers.CreateText, helpers.Gap
 
 local function get_item_array(items)
     local itemsets = addon.db.profile.itemsets
@@ -46,7 +37,7 @@ local function get_item_desc(items)
             return string.format(L["a %s item set item"], color.CYAN .. global_itemsets[items].name .. color.RESET)
         end
     elseif items and #items > 0 then
-        local link = select(2, getRetryCached(addon.longtermCache, GetItemInfo, items[1])) or items[1]
+        local link = select(2, addon.getRetryCached(addon.longtermCache, GetItemInfo, items[1])) or items[1]
         if #items > 1 then
             return string.format(L["%s or %d others"], link, #items-1)
         else
@@ -64,14 +55,14 @@ addon:RegisterCondition("EQUIPPED", {
     end,
     evaluate = function(value)
         for _, item in pairs(get_item_array(value.item)) do
-            if getCached(addon.combatCache, IsEquippedItem, item) then
+            if addon.getCached(addon.combatCache, IsEquippedItem, item) then
                 return true
             end
         end
         return false
     end,
     print = function(_, value)
-        return string.format(L["you have %s equipped"], nullable(get_item_desc(value.item), L["<item>"]))
+        return string.format(L["you have %s equipped"], addon.nullable(get_item_desc(value.item), L["<item>"]))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -93,7 +84,7 @@ addon:RegisterCondition("CARRYING", {
     icon = "Interface\\Icons\\inv_misc_bag_07",
     valid = function(_, value)
         return (value.item ~= nil and
-                value.operator ~= nil and isin(operators, value.operator) and
+                value.operator ~= nil and addon.isin(addon.operators, value.operator) and
                 value.value ~= nil and value.value >= 0)
     end,
     evaluate = function(value, cache)
@@ -102,12 +93,12 @@ addon:RegisterCondition("CARRYING", {
         if itemid and addon.bagContents[itemid] then
             count = addon.bagContents[itemid].count
         end
-        return compare(value.operator, count, value.value)
+        return addon.compare(value.operator, count, value.value)
     end,
     print = function(_, value)
-        return compareString(value.operator,
-                string.format(L["the number of %s you are carrying"], nullable(get_item_desc(value.item), L["<item>"])),
-                nullable(value.value, L["<quantity>"]))
+        return addon.compareString(value.operator,
+                string.format(L["the number of %s you are carrying"], addon.nullable(get_item_desc(value.item), L["<item>"])),
+                addon.nullable(value.value, L["<quantity>"]))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -125,7 +116,7 @@ addon:RegisterCondition("CARRYING", {
     end,
     help = function(frame)
         addon.layout_condition_itemwidget_help(frame)
-        frame:AddChild(Gap())
+        frame:AddChild(helpers.Gap())
         addon.layout_condition_operatorwidget_help(frame, L["Have Item In Bags"], L["Quantity"],
             "The quantity of " .. color.BLIZ_YELLOW .. L["Item"] .. color.RESET .. " you are carrying in your bags.")
     end
@@ -143,21 +134,21 @@ addon:RegisterCondition("ITEM", {
             itemId = addon:FindFirstItemInItems(get_item_array(value.item))
         end
         if itemId ~= nil then
-            local minlevel = select(5, getRetryCached(addon.longtermCache, GetItemInfo, itemId))
+            local minlevel = select(5, addon.getRetryCached(addon.longtermCache, GetItemInfo, itemId))
             -- Can't use it as we are too low level!
-            if minlevel > getCached(cache, UnitLevel, "player") then
+            if minlevel > addon.getCached(cache, UnitLevel, "player") then
                 return false
             end
-            local start, duration = getCached(cache, GetItemCooldown, itemId)
+            local start, duration = addon.getCached(cache, GetItemCooldown, itemId)
             if start == 0 and duration == 0 then
                 return true
             else
                 -- A special spell that shows if the GCD is active ...
-                local gcd_start, gcd_duration = getCached(cache, GetSpellCooldown, 61304)
+                local gcd_start, gcd_duration = addon.getCached(cache, GetSpellCooldown, 61304)
                 if gcd_start ~= 0 and gcd_duration ~= 0 then
                     local time = GetTime()
-                    local gcd_remain = round(gcd_duration - (time - gcd_start), 3)
-                    local remain = round(duration - (time - start), 3)
+                    local gcd_remain = addon.round(gcd_duration - (time - gcd_start), 3)
+                    local remain = addon.round(duration - (time - start), 3)
                     if (remain <= gcd_remain) then
                         return true
                         -- We factor in a fuzziness because we don't know exactly when the spell cooldown calls
@@ -175,7 +166,7 @@ addon:RegisterCondition("ITEM", {
         end
     end,
     print = function(_, value)
-        return string.format(L["%s is available"], nullable(get_item_desc(value.item), L["<item>"])) ..
+        return string.format(L["%s is available"], addon.nullable(get_item_desc(value.item), L["<item>"])) ..
                 (value.carrying and L[", even if you do not currently have one"] or "")
     end,
     widget = function(parent, spec, value)
@@ -200,8 +191,8 @@ addon:RegisterCondition("ITEM", {
     end,
     help = function(frame)
         addon.layout_condition_itemwidget_help(frame)
-        frame:AddChild(Gap())
-        frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Check If Not Carrying"] .. color.RESET .. " - " ..
+        frame:AddChild(helpers.Gap())
+        frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Check If Not Carrying"] .. color.RESET .. " - " ..
                 "Check the availability of the first item in the item set as if you were carrying it, even " ..
                 "if you are not."))
     end
@@ -219,12 +210,12 @@ addon:RegisterCondition("ITEM_RANGE", {
             itemId = addon:FindFirstItemInItems(get_item_array(value.item))
         end
         if itemId ~= nil then
-            return (getCached(cache, IsItemInRange, itemId, "target") == 1)
+            return (addon.getCached(cache, IsItemInRange, itemId, "target") == 1)
         end
         return false
     end,
     print = function(_, value)
-        return string.format(L["%s is in range"], nullable(get_item_desc(value.item), L["<item>"])) ..
+        return string.format(L["%s is in range"], addon.nullable(get_item_desc(value.item), L["<item>"])) ..
             (value.carrying and L[", even if you do not currently have one"] or "")
     end,
     widget = function(parent, spec, value)
@@ -249,8 +240,8 @@ addon:RegisterCondition("ITEM_RANGE", {
     end,
     help = function(frame)
         addon.layout_condition_itemwidget_help(frame)
-        frame:AddChild(Gap())
-        frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Check If Not Carrying"] .. color.RESET .. " - " ..
+        frame:AddChild(helpers.Gap())
+        frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Check If Not Carrying"] .. color.RESET .. " - " ..
                 "Check the availability of the first item in the item set as if you were carrying it, even " ..
                 "if you are not."))
     end
@@ -260,7 +251,7 @@ addon:RegisterCondition("ITEM_COOLDOWN", {
     description = L["Item Cooldown"],
     icon = "Interface\\Icons\\Spell_holy_sealofsacrifice",
     valid = function(_, value)
-        return (value.operator ~= nil and isin(operators, value.operator) and
+        return (value.operator ~= nil and addon.isin(addon.operators, value.operator) and
                 value.item ~= nil and value.value ~= nil and value.value >= 0)
     end,
     evaluate = function(value, cache) -- Cooldown until the spell is available
@@ -270,19 +261,19 @@ addon:RegisterCondition("ITEM_COOLDOWN", {
         end
         if itemId ~= nil then
             local cooldown = 0
-            local start, duration = getCached(cache, GetItemCooldown, itemId)
+            local start, duration = addon.getCached(cache, GetItemCooldown, itemId)
             if start ~= 0 and duration ~= 0 then
-                cooldown = round(duration - (GetTime() - start), 3)
+                cooldown = addon.round(duration - (GetTime() - start), 3)
                 if (cooldown < 0) then cooldown = 0 end
             end
-            return compare(value.operator, cooldown, value.value)
+            return addon.compare(value.operator, cooldown, value.value)
         end
         return false
     end,
     print = function(_, value)
         return string.format(L["the %s"],
-            compareString(value.operator, string.format(L["cooldown on %s"], nullable(get_item_desc(value.item), L["<item>"])),
-                                string.format(L["%s seconds"], nullable(value.value)))) ..
+            addon.compareString(value.operator, string.format(L["cooldown on %s"], addon.nullable(get_item_desc(value.item), L["<item>"])),
+                                string.format(L["%s seconds"], addon.nullable(value.value)))) ..
                 (value.carrying and L[", even if you do not currently have one"] or "")
     end,
     widget = function(parent, spec, value)
@@ -311,13 +302,13 @@ addon:RegisterCondition("ITEM_COOLDOWN", {
     end,
     help = function(frame)
         addon.layout_condition_itemwidget_help(frame)
-        frame:AddChild(Gap())
+        frame:AddChild(helpers.Gap())
         addon.layout_condition_operatorwidget_help(frame, L["Item Cooldown"], L["Seconds"],
             "The number of seconds before you can use the top item found in " .. color.BLIZ_YELLOW .. L["Item Set"] ..
             color.RESET .. ".  If you are not carrying any item in the item set, this condition will not be " ..
             "successful (regardless of the " .. color.BLIZ_YELLOW .. "Operator" .. color.RESET .. " used.)")
-        frame:AddChild(Gap())
-        frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Check If Not Carrying"] .. color.RESET .. " - " ..
+        frame:AddChild(helpers.Gap())
+        frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Check If Not Carrying"] .. color.RESET .. " - " ..
                 "Check the availability of the first item in the item set as if you were carrying it, even " ..
                 "if you are not."))
     end

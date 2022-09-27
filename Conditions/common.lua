@@ -4,14 +4,6 @@ local AceGUI = LibStub("AceGUI-3.0")
 local SpellData = LibStub("AceGUI-3.0-SpellLoader")
 local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
 
-local tonumber = tonumber
-
--- From Constants
-local operators = addon.operators
-
--- From Utils
-local isint, keys, getRetryCached = addon.isint, addon.keys, addon.getRetryCached
-
 function addon:Widget_GetSpellId(spellid, ranked)
     if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
         if not ranked then
@@ -122,7 +114,7 @@ function addon:Widget_SpellWidget(spec, editbox, value, nametoid, isvalid, updat
     spell:SetUserData("norank", not value.ranked)
     spell:SetUserData("spec", spec)
     spell:SetCallback("OnEnterPressed", function(_, _, v)
-        if not isint(v) then
+        if not addon.isint(v) then
             v = nametoid(v)
         else
             v = tonumber(v)
@@ -380,7 +372,7 @@ function addon:Widget_SingleItemWidget(spec, editbox, value, isvalid, update)
     end)
     itemIcon:SetCallback("OnEnter", function()
         if value.item then
-            local itemid = getRetryCached(addon.longtermCache, GetItemInfoInstant, value.item)
+            local itemid = addon.getRetryCached(addon.longtermCache, GetItemInfoInstant, value.item)
             if itemid then
                 GameTooltip:SetOwner(itemIcon.frame, "ANCHOR_BOTTOMRIGHT", 3)
                 GameTooltip:SetHyperlink("item:" .. itemid)
@@ -400,8 +392,8 @@ function addon:Widget_SingleItemWidget(spec, editbox, value, isvalid, update)
     item:SetUserData("spec", spec)
     item:SetCallback("OnEnterPressed", function(_, _, v)
         local itemid
-        if not isint(v) then
-            itemid = getRetryCached(addon.longtermCache, GetItemInfoInstant, v)
+        if not addon.isint(v) then
+            itemid = addon.getRetryCached(addon.longtermCache, GetItemInfoInstant, v)
         else
             itemid = tonumber(v)
         end
@@ -435,7 +427,7 @@ function addon:Widget_OperatorWidget(value, name, update, op_field, val_field)
     end)
     operator:SetDisabled(value.disabled)
     operator.configure = function()
-        operator:SetList(operators, keys(operators))
+        operator:SetList(addon.operators, addon.keys(addon.operators))
         operator:SetValue(value[op_field or "operator"])
     end
     operator_group:AddChild(operator)
@@ -468,7 +460,7 @@ function addon:Widget_OperatorPercentWidget(value, name, update, op_field, val_f
     end)
     operator:SetDisabled(value.disabled)
     operator.configure = function()
-        operator:SetList(operators, keys(operators))
+        operator:SetList(addon.operators, addon.keys(addon.operators))
         operator:SetValue(value[op_field or "operator"])
     end
     operator_group:AddChild(operator)
@@ -503,7 +495,7 @@ function addon:Widget_UnitWidget(value, units, update, field)
     end)
     unit:SetDisabled(value.disabled)
     unit.configure = function()
-        unit:SetList(units, keys(units))
+        unit:SetList(units, addon.keys(units))
         unit:SetValue(value[field])
     end
 

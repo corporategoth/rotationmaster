@@ -3,44 +3,32 @@ local _, addon = ...
 local AceGUI = LibStub("AceGUI-3.0")
 local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
 local color = color
-local floor = math.floor
-
--- From constants
-local units, unitsPossessive, roles, creatures, classifications, operators, spell_schools =
-    addon.units, addon.unitsPossessive, addon.roles, addon.creatures, addon.classifications, addon.operators, addon.spell_schools
-
--- From utils
-local nullable, keys, isin, deepcopy, getCached, playerize, compare, compareString =
-    addon.nullable, addon.keys, addon.isin, addon.deepcopy, addon.getCached, addon.playerize, addon.compare, addon.compareString
-
 local helpers = addon.help_funcs
-local CreateText, Indent, Gap =
-    helpers.CreateText, helpers.Indent, helpers.Gap
 
 addon:RegisterCondition("ISSAME", {
     description = L["Is Same As"],
     icon = 134167,
     valid = function(_, value)
-        return (value.unit ~= nil and isin(units, value.unit) and
-                value.otherunit ~= nil and isin(units, value.otherunit))
+        return (value.unit ~= nil and addon.isin(addon.units, value.unit) and
+                value.otherunit ~= nil and addon.isin(addon.units, value.otherunit))
     end,
     evaluate = function(value, cache)
-        if not getCached(cache, UnitExists, value.unit) then return false end
-        return getCached(cache, UnitIsUnit, value.unit, value.otherunit)
+        if not addon.getCached(cache, UnitExists, value.unit) then return false end
+        return addon.getCached(cache, UnitIsUnit, value.unit, value.otherunit)
     end,
     print = function(_, value)
-        return string.format(L["%s is %s"], nullable(units[value.unit]), nullable(units[value.otherunit]))
+        return string.format(L["%s is %s"], addon.nullable(addon.units[value.unit]), addon.nullable(addon.units[value.otherunit]))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
-        local unit = addon:Widget_UnitWidget(value, deepcopy(units, { "player", "pet" }),
+        local unit = addon:Widget_UnitWidget(value, addon.deepcopy(addon.units, { "player", "pet" }),
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
 
-        local otherunit = addon:Widget_UnitWidget(value, units,
+        local otherunit = addon:Widget_UnitWidget(value, addon.units,
             function() top:SetStatusText(funcs:print(root, spec)) end, "otherunit")
         parent:AddChild(otherunit)
     end,
@@ -53,24 +41,24 @@ addon:RegisterCondition("CLASS", {
     description = L["Class"],
     icon = "Interface\\Icons\\achievement_general_stayclassy",
     valid = function(_, value)
-        return (value.unit ~= nil and isin(units, value.unit) and
-                value.value ~= nil and isin(LOCALIZED_CLASS_NAMES_MALE, value.value))
+        return (value.unit ~= nil and addon.isin(addon.units, value.unit) and
+                value.value ~= nil and addon.isin(LOCALIZED_CLASS_NAMES_MALE, value.value))
     end,
     evaluate = function(value, cache)
-        if not getCached(cache, UnitExists, value.unit) then return false end
-        local _, englishClass = getCached(cache, UnitClass, value.unit)
+        if not addon.getCached(cache, UnitExists, value.unit) then return false end
+        local _, englishClass = addon.getCached(cache, UnitClass, value.unit)
         return englishClass == value.value
     end,
     print = function(_, value)
-        return string.format(playerize(value.unit, L["%s are a %s"], L["%s is a %s"]),
-            nullable(units[value.unit]), nullable(LOCALIZED_CLASS_NAMES_MALE[value.value], L["<class>"]))
+        return string.format(addon.playerize(value.unit, L["%s are a %s"], L["%s is a %s"]),
+            addon.nullable(addon.units[value.unit]), addon.nullable(LOCALIZED_CLASS_NAMES_MALE[value.value], L["<class>"]))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
-        local unit = addon:Widget_UnitWidget(value, deepcopy(units, { "player", "pet" }),
+        local unit = addon:Widget_UnitWidget(value, addon.deepcopy(addon.units, { "player", "pet" }),
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
 
@@ -91,8 +79,8 @@ addon:RegisterCondition("CLASS", {
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
 
-        frame:AddChild(Gap())
-        frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Class"] .. color.RESET .. " - " ..
+        frame:AddChild(helpers.Gap())
+        frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Class"] .. color.RESET .. " - " ..
             "The character class of " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. "."))
     end
 })
@@ -102,34 +90,34 @@ addon:RegisterCondition("CLASS_GROUP", {
     description = L["Class In Group"],
     icon = "Interface\\Icons\\spell_holy_prayerofshadowprotection",
     valid = function(_, value)
-        return (value.class ~= nil and isin(LOCALIZED_CLASS_NAMES_MALE, value.class) and
-                value.operator ~= nil and isin(operators, value.operator) and
+        return (value.class ~= nil and addon.isin(LOCALIZED_CLASS_NAMES_MALE, value.class) and
+                value.operator ~= nil and addon.isin(addon.operators, value.operator) and
                 value.value ~= nil and value.value >= 0)
     end,
     evaluate = function(value, cache)
-        if not getCached(cache, IsInGroup) then
-            return compare(value.operator, (character_class == value.class and 1 or 0), value.value)
+        if not addon.getCached(cache, IsInGroup) then
+            return addon.compare(value.operator, (character_class == value.class and 1 or 0), value.value)
         end
 
         local count = 0
         local prefix, size = "party", 4
-        if value.raid and getCached(cache, IsInRaid) then
+        if value.raid and addon.getCached(cache, IsInRaid) then
             prefix, size = "raid", 40
         end
         if prefix == "party" and character_class == value.class then
             count = count + 1
         end
         for i=1,size do
-            if select(2, getCached(cache, UnitClass, prefix .. tostring(i))) == value.class then
+            if select(2, addon.getCached(cache, UnitClass, prefix .. tostring(i))) == value.class then
                 count = count + 1
             end
         end
-        return compare(value.operator, count, value.value)
+        return addon.compare(value.operator, count, value.value)
     end,
     print = function(_, value)
-        return compareString(value.operator, string.format(L["Number of %ss in the %s"],
-                nullable(LOCALIZED_CLASS_NAMES_MALE[value.class], L["<class>"]),
-                (value.raid and RAID or PARTY)), nullable(value.value))
+        return addon.compareString(value.operator, string.format(L["Number of %ss in the %s"],
+                addon.nullable(LOCALIZED_CLASS_NAMES_MALE[value.class], L["<class>"]),
+                (value.raid and RAID or PARTY)), addon.nullable(value.value))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -165,14 +153,14 @@ addon:RegisterCondition("CLASS_GROUP", {
         parent:AddChild(operator_group)
     end,
     help = function(frame)
-        frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Class"] .. color.RESET .. " - " ..
+        frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Class"] .. color.RESET .. " - " ..
                 "The character class we are interested in."))
 
-        frame:AddChild(Gap())
-        frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Raid"] .. color.RESET ..
+        frame:AddChild(helpers.Gap())
+        frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Raid"] .. color.RESET ..
                 " - " .. "Check the entire raid, or just our party."))
 
-        frame:AddChild(Gap())
+        frame:AddChild(helpers.Gap())
         addon.layout_condition_operatorwidget_help(frame, L["Count"], L["Count"],
                 "Number of party or raid members of the desired class.")
     end
@@ -186,11 +174,11 @@ if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
             return value.value ~= nil and value.value >= 1 and value.value <= 21
         end,
         evaluate = function(value)
-            local selected = select(4, getCached(addon.longtermCache, GetTalentInfo, floor((value.value-1) / 3) + 1, ((value.value-1) % 3) + 1, 1))
+            local selected = select(4, addon.getCached(addon.longtermCache, GetTalentInfo, math.floor((value.value-1) / 3) + 1, ((value.value-1) % 3) + 1, 1))
             return selected
         end,
         print = function(spec, value)
-            return string.format(L["you are talented in %s"], nullable(addon:GetSpecTalentName(spec, value.value), L["<talent>"]))
+            return string.format(L["you are talented in %s"], addon.nullable(addon:GetSpecTalentName(spec, value.value), L["<talent>"]))
         end,
         widget = function(parent, spec, value)
             local top = parent:GetUserData("top")
@@ -227,7 +215,7 @@ if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
             parent:AddChild(talent)
         end,
         help = function(frame)
-            frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Talent"] .. color.RESET .. " - " ..
+            frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Talent"] .. color.RESET .. " - " ..
                     "A talent you have enabled in your specialization.  If you are currently in the same spec " ..
                     "as the rotation you are configuring (or have switched specializations without reloading " ..
                     "your user interface), this will show the talents.  Otherwise, this will simply show the " ..
@@ -239,25 +227,25 @@ if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
         description = L["Role"],
         icon = "Interface\\Icons\\spell_brokenheart",
         valid = function(_, value)
-            return (value.unit ~= nil and isin(units, value.unit) and
-                    value.value ~= nil and isin(roles, value.value))
+            return (value.unit ~= nil and addon.isin(addon.units, value.unit) and
+                    value.value ~= nil and addon.isin(addon.roles, value.value))
         end,
         evaluate = function(value, cache)
-            if not getCached(cache, UnitExists, value.unit) then return false end
-            local role = select(6, getCached(cache, GetSpecializationInfoByID, getCached(cache, GetInspectSpecialization, value.unit)))
+            if not addon.getCached(cache, UnitExists, value.unit) then return false end
+            local role = select(6, addon.getCached(cache, GetSpecializationInfoByID, addon.getCached(cache, GetInspectSpecialization, value.unit)))
             return role == value.value
         end,
         print = function(_, value)
             return string.format(L["%s is in a %s role"],
-                nullable(unitsPossessive[value.unit], L["<unit>"]),
-                nullable(roles[value.value], L["<role>"]))
+                addon.nullable(addon.unitsPossessive[value.unit], L["<unit>"]),
+                addon.nullable(addon.roles[value.value], L["<role>"]))
         end,
         widget = function(parent, spec, value)
             local top = parent:GetUserData("top")
             local root = top:GetUserData("root")
             local funcs = top:GetUserData("funcs")
 
-            local unit = addon:Widget_UnitWidget(value, deepcopy(units, { "player", "pet" }),
+            local unit = addon:Widget_UnitWidget(value, addon.deepcopy(addon.units, { "player", "pet" }),
                 function() top:SetStatusText(funcs:print(root, spec)) end)
             parent:AddChild(unit)
 
@@ -268,7 +256,7 @@ if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
                 top:SetStatusText(funcs:print(root, spec))
             end)
             role.configure = function()
-                role:SetList(roles, keys(roles))
+                role:SetList(addon.roles, addon.keys(addon.roles))
                 if (value.value ~= nil) then
                     role:SetValue(value.value)
                 end
@@ -278,14 +266,14 @@ if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
         help = function(frame)
             addon.layout_condition_unitwidget_help(frame)
 
-            frame:AddChild(Gap())
-            frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Role"] .. color.RESET .. " - " ..
+            frame:AddChild(helpers.Gap())
+            frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Role"] .. color.RESET .. " - " ..
                 "The current role of " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. "."))
-            frame:AddChild(Indent(40, CreateText(color.GREEN .. L["Tank"] .. color.RESET .. " - " ..
+            frame:AddChild(helpers.Indent(40, helpers.CreateText(color.GREEN .. L["Tank"] .. color.RESET .. " - " ..
                 "Designed to keep the attention and take most of the hits from enemies.  aka. Meat Shields.")))
-            frame:AddChild(Indent(40, CreateText(color.GREEN .. L["DPS"] .. color.RESET .. " - " ..
+            frame:AddChild(helpers.Indent(40, helpers.CreateText(color.GREEN .. L["DPS"] .. color.RESET .. " - " ..
                 "The primary damage dealers against enemies, and lovers of standing in fire.")))
-            frame:AddChild(Indent(40, CreateText(color.GREEN .. L["Healer"] .. color.RESET .. " - " ..
+            frame:AddChild(helpers.Indent(40, helpers.CreateText(color.GREEN .. L["Healer"] .. color.RESET .. " - " ..
                 "Those who keep everyone else alive by healing them.  Thank them!")))
         end
     })
@@ -296,23 +284,23 @@ else
         valid = function(_, value)
             return (value.tree ~= nil and value.tree >= 1 and value.tree <= GetNumTalentTabs() and
                     value.talent ~= nil and value.talent >= 1 and value.talent <= GetNumTalents(value.tree) and
-                    value.operator ~= nil and isin(operators, value.operator) and
+                    value.operator ~= nil and addon.isin(addon.operators, value.operator) and
                     value.value ~= nil and value.value >= 0 and
                     value.value <= select(6, GetTalentInfo(value.tree, value.talent)))
         end,
         evaluate = function(value)
-            local _, _, _, _, rank = getCached(addon.longtermCache, GetTalentInfo, value.tree, value.talent)
-            return compare(value.operator, rank, value.value)
+            local _, _, _, _, rank = addon.getCached(addon.longtermCache, GetTalentInfo, value.tree, value.talent)
+            return addon.compare(value.operator, rank, value.value)
         end,
         print = function(_, value)
             local link
             if value.tree ~= nil and value.talent ~= nil then
                 link = GetTalentLink(value.tree, value.talent)
             end
-            return compareString(value.operator, string.format(L["talent points in %s (%s)"],
-                    nullable(link, L["<talent>"]),
-                    nullable(value.tree and GetTalentTabInfo(value.tree) or nil, L["<talent tree>"])),
-                    nullable(value.value))
+            return addon.compareString(value.operator, string.format(L["talent addon.points in %s (%s)"],
+                    addon.nullable(link, L["<talent>"]),
+                    addon.nullable(value.tree and GetTalentTabInfo(value.tree) or nil, L["<talent tree>"])),
+                    addon.nullable(value.value))
         end,
         widget = function(parent, spec, value)
             local top = parent:GetUserData("top")
@@ -425,16 +413,16 @@ else
             parent:AddChild(operator_group)
         end,
         help = function(frame)
-            frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Talent Tree"] .. color.RESET .. " - " ..
+            frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Talent Tree"] .. color.RESET .. " - " ..
                     "The tree that the talent this condition is testing is from."))
 
-            frame:AddChild(Gap())
-            frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Talent"] .. color.RESET .. " - " ..
+            frame:AddChild(helpers.Gap())
+            frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Talent"] .. color.RESET .. " - " ..
                     "A talent you have available to you."))
 
-            frame:AddChild(Gap())
+            frame:AddChild(helpers.Gap())
             addon.layout_condition_operatorwidget_help(frame, L["Talent"], L["Points"],
-                    "How many points you have put into " .. color.BLIZ_YELLOW .. L["Talent"] .. color.RESET .. ".");
+                    "How many addon.points you have put into " .. color.BLIZ_YELLOW .. L["Talent"] .. color.RESET .. ".");
         end
     })
 
@@ -443,14 +431,14 @@ else
             description = L["Role"],
             icon = "Interface\\Icons\\spell_brokenheart",
             valid = function(_, value)
-                return value.value ~= nil and isin(roles, value.value)
+                return value.value ~= nil and addon.isin(addon.roles, value.value)
             end,
             evaluate = function(value, cache)
-                return getCached(cache, GetTalentGroupRole, addon.currentSpec) == value.value
+                return addon.getCached(cache, GetTalentGroupRole, addon.currentSpec) == value.value
             end,
             print = function(_, value)
                 return string.format(L["Your talent is a %s role"],
-                        nullable(roles[value.value], L["<role>"]))
+                        addon.nullable(addon.roles[value.value], L["<role>"]))
             end,
             widget = function(parent, spec, value)
                 local top = parent:GetUserData("top")
@@ -464,7 +452,7 @@ else
                     top:SetStatusText(funcs:print(root, spec))
                 end)
                 role.configure = function()
-                    role:SetList(roles, keys(roles))
+                    role:SetList(addon.roles, addon.keys(addon.roles))
                     if (value.value ~= nil) then
                         role:SetValue(value.value)
                     end
@@ -472,13 +460,13 @@ else
                 parent:AddChild(role)
             end,
             help = function(frame)
-                frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Role"] .. color.RESET .. " - " ..
+                frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Role"] .. color.RESET .. " - " ..
                         "The current role of " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. "."))
-                frame:AddChild(Indent(40, CreateText(color.GREEN .. L["Tank"] .. color.RESET .. " - " ..
+                frame:AddChild(helpers.Indent(40, helpers.CreateText(color.GREEN .. L["Tank"] .. color.RESET .. " - " ..
                         "Designed to keep the attention and take most of the hits from enemies.  aka. Meat Shields.")))
-                frame:AddChild(Indent(40, CreateText(color.GREEN .. L["DPS"] .. color.RESET .. " - " ..
+                frame:AddChild(helpers.Indent(40, helpers.CreateText(color.GREEN .. L["DPS"] .. color.RESET .. " - " ..
                         "The primary damage dealers against enemies, and lovers of standing in fire.")))
-                frame:AddChild(Indent(40, CreateText(color.GREEN .. L["Healer"] .. color.RESET .. " - " ..
+                frame:AddChild(helpers.Indent(40, helpers.CreateText(color.GREEN .. L["Healer"] .. color.RESET .. " - " ..
                         "Those who keep everyone else alive by healing them.  Thank them!")))
             end
         })
@@ -499,10 +487,10 @@ if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE or LE_EXPANSION_LEVEL_CURRENT >= 2) t
             end
         end,
         evaluate = function(value)
-            local glyph_spell = select(2, getCached(addon.longtermCache, GetItemSpell, value.item))
+            local glyph_name = addon.getCached(addon.longtermCache, GetItemInfo, value.item)
             for i=1, GetNumGlyphSockets() do
-                local spell = select(3, getCached(addon.longtermCache, GetGlyphSocketInfo, i))
-                if spell == glyph_spell then
+                local spell = select(3, addon.getCached(addon.combatCache, GetGlyphSocketInfo, i))
+                if addon.getCached(addon.longtermCache, GetSpellInfo, spell) == glyph_name then
                     return true
                 end
             end
@@ -510,7 +498,7 @@ if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE or LE_EXPANSION_LEVEL_CURRENT >= 2) t
         end,
         print = function(_, value)
             local link = value.item and select(2, GetItemInfo(value.item)) or nil
-            return string.format(L["you have %s glyph"], nullable(link, L["<glyph>"]))
+            return string.format(L["you have %s glyph"], addon.nullable(link, L["<glyph>"]))
         end,
         widget = function(parent, spec, value)
             local top = parent:GetUserData("top")
@@ -535,23 +523,23 @@ addon:RegisterCondition("CREATURE", {
     description = L["Creature Type"],
     icon = "Interface\\Icons\\ability_rogue_disguise",
     valid = function(_, value)
-        return (value.unit ~= nil and isin(units, value.unit) and
-                value.value ~= nil and isin(creatures, value.value))
+        return (value.unit ~= nil and addon.isin(addon.units, value.unit) and
+                value.value ~= nil and addon.isin(addon.creatures, value.value))
     end,
     evaluate = function(value, cache)
-        if not getCached(cache, UnitExists, value.unit) then return false end
-        return (getCached(cache, UnitCreatureType, value.unit) == creatures[value.value])
+        if not addon.getCached(cache, UnitExists, value.unit) then return false end
+        return (addon.getCached(cache, UnitCreatureType, value.unit) == addon.creatures[value.value])
     end,
     print = function(_, value)
-        return string.format(playerize(value.unit, L["%s are a %s"], L["%s is a %s"]),
-            nullable(units[value.unit]), nullable(creatures[value.value], L["<creature type>"]))
+        return string.format(addon.playerize(value.unit, L["%s are a %s"], L["%s is a %s"]),
+            addon.nullable(addon.units[value.unit]), addon.nullable(addon.creatures[value.value], L["<creature type>"]))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
-        local unit = addon:Widget_UnitWidget(value, deepcopy(units, { "player", "pet" }),
+        local unit = addon:Widget_UnitWidget(value, addon.deepcopy(addon.units, { "player", "pet" }),
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
 
@@ -562,7 +550,7 @@ addon:RegisterCondition("CREATURE", {
             top:SetStatusText(funcs:print(root, spec))
         end)
         class.configure = function()
-            class:SetList(creatures, keys(creatures))
+            class:SetList(addon.creatures, addon.keys(addon.creatures))
             if (value.value ~= nil) then
                 class:SetValue(value.value)
             end
@@ -572,8 +560,8 @@ addon:RegisterCondition("CREATURE", {
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
 
-        frame:AddChild(Gap())
-        frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Creature Type"] .. color.RESET .. " - " ..
+        frame:AddChild(helpers.Gap())
+        frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Creature Type"] .. color.RESET .. " - " ..
                 "The creature type of " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. ".  This " ..
                 "can be used to create conditions that are restricted by creature type (eg. Banish)."))
     end
@@ -583,23 +571,23 @@ addon:RegisterCondition("CLASSIFICATION", {
     description = L["Unit Classification"],
     icon = "Interface\\Icons\\inv_mask_01",
     valid = function(_, value)
-        return (value.unit ~= nil and isin(units, value.unit) and
-                value.value ~= nil and isin(classifications, value.value))
+        return (value.unit ~= nil and addon.isin(addon.units, value.unit) and
+                value.value ~= nil and addon.isin(addon.classifications, value.value))
     end,
     evaluate = function(value, cache)
-        if not getCached(cache, UnitExists, value.unit) then return false end
-        return (getCached(cache, UnitClassification, value.unit) == value.value)
+        if not addon.getCached(cache, UnitExists, value.unit) then return false end
+        return (addon.getCached(cache, UnitClassification, value.unit) == value.value)
     end,
     print = function(_, value)
-        return string.format(playerize(value.unit, L["%s are a %s"], L["%s is a %s"]),
-                nullable(units[value.unit]), nullable(classifications[value.value], L["<classification>"]))
+        return string.format(addon.playerize(value.unit, L["%s are a %s"], L["%s is a %s"]),
+                addon.nullable(addon.units[value.unit]), addon.nullable(addon.classifications[value.value], L["<classification>"]))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
-        local unit = addon:Widget_UnitWidget(value, deepcopy(units, { "player", "pet" }),
+        local unit = addon:Widget_UnitWidget(value, addon.deepcopy(addon.units, { "player", "pet" }),
                 function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
 
@@ -610,7 +598,7 @@ addon:RegisterCondition("CLASSIFICATION", {
             top:SetStatusText(funcs:print(root, spec))
         end)
         class.configure = function()
-            class:SetList(classifications, keys(classifications))
+            class:SetList(addon.classifications, addon.keys(addon.classifications))
             if (value.value ~= nil) then
                 class:SetValue(value.value)
             end
@@ -620,10 +608,10 @@ addon:RegisterCondition("CLASSIFICATION", {
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
 
-        frame:AddChild(Gap())
-        frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Unit Classification"] .. color.RESET .. " - " ..
+        frame:AddChild(helpers.Gap())
+        frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Unit Classification"] .. color.RESET .. " - " ..
                 "The classification of " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. ".  This " ..
-                "can be used to create conditions only apply to certain unit classifications (eg. bosses)."))
+                "can be used to create conditions only apply to certain unit addon.classifications (eg. bosses)."))
     end
 })
 
@@ -631,32 +619,32 @@ addon:RegisterCondition("LEVEL", {
     description = L["Level"],
     icon = "Interface\\Icons\\spell_holy_blessedrecovery",
     valid = function(_, value)
-        return (value.unit ~= nil and isin(units, value.unit) and
-                value.operator ~= nil and isin(operators, value.operator) and
+        return (value.unit ~= nil and addon.isin(addon.units, value.unit) and
+                value.operator ~= nil and addon.isin(addon.operators, value.operator) and
                 value.value ~= nil and (value.relative or value.value >= 0))
     end,
     evaluate = function(value, cache)
-        if not getCached(cache, UnitExists, value.unit) then return false end
+        if not addon.getCached(cache, UnitExists, value.unit) then return false end
         local level = value.value
         if value.relative then
-            level = getCached(addon.longtermCache, UnitLevel, "player") + value.value
+            level = addon.getCached(addon.longtermCache, UnitLevel, "player") + value.value
         end
-        return compare(value.operator, getCached(cache, UnitLevel, value.unit), level)
+        return addon.compare(value.operator, addon.getCached(cache, UnitLevel, value.unit), level)
     end,
     print = function(_, value)
         local level = value.value
         if value.relative and value.value ~= nil then
-            level = getCached(addon.longtermCache, UnitLevel, "player") + value.value
+            level = addon.getCached(addon.longtermCache, UnitLevel, "player") + value.value
         end
-        return compareString(value.operator, playerize(value.unit, L["your level"], string.format(L["%s's level"],
-                nullable(units[value.unit], L["<unit>"]))), nullable(level, L["<level>"]))
+        return addon.compareString(value.operator, addon.playerize(value.unit, L["your level"], string.format(L["%s's level"],
+                addon.nullable(addon.units[value.unit], L["<unit>"]))), addon.nullable(level, L["<level>"]))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
-        local unit = addon:Widget_UnitWidget(value, units,
+        local unit = addon:Widget_UnitWidget(value, addon.units,
                 function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
 
@@ -675,10 +663,10 @@ addon:RegisterCondition("LEVEL", {
     end,
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
-        frame:AddChild(Gap())
+        frame:AddChild(helpers.Gap())
         addon.layout_condition_operatorwidget_help(frame, L["Relative"], L["Relative"],
                 "Should the level be relative to the player's or absolute.")
-        frame:AddChild(Gap())
+        frame:AddChild(helpers.Gap())
         addon.layout_condition_operatorwidget_help(frame, L["Level"], L["Level"],
                 "The character's level")
     end
@@ -691,7 +679,7 @@ addon:RegisterCondition("GROUP", {
         return true
     end,
     evaluate = function(value, cache)
-        return value.raid and getCached(cache, IsInRaid) or getCached(cache, IsInGroup)
+        return value.raid and addon.getCached(cache, IsInRaid) or addon.getCached(cache, IsInGroup)
     end,
     print = function(_, value)
         return value.raid and L["you are in a raid"] or L["you are in a group"]
@@ -712,7 +700,7 @@ addon:RegisterCondition("GROUP", {
         parent:AddChild(raid)
     end,
     help = function(frame)
-        frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Raid"] .. color.RESET ..
+        frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Raid"] .. color.RESET ..
                 " - " .. "Check to see if we are in a raid, instead of just a party (note that with ."
                       .. "this option off, this condition will be true if you are in a part OR a raid)."))
     end
@@ -723,29 +711,29 @@ addon:RegisterCondition("RUNNER", {
     description = L["Runner"],
     icon = 135996,
     valid = function(_, value)
-        return value.unit ~= nil and isin(units, value.unit)
+        return value.unit ~= nil and addon.isin(addon.units, value.unit)
     end,
     evaluate = function(value, cache)
-        if not getCached(cache, UnitExists, value.unit) then return false end
+        if not addon.getCached(cache, UnitExists, value.unit) then return false end
         local data = MI2_GetMobData(UnitName(value.unit), UnitLevel(value.unit), value.unit)
         return (data.lowHpAction and true or false)
     end,
     print = function(_, value)
-        return string.format(L["%s will run"], nullable(units[value.unit]), nullable(units[value.otherunit]))
+        return string.format(L["%s will run"], addon.nullable(addon.units[value.unit]), addon.nullable(addon.units[value.otherunit]))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
-        local unit = addon:Widget_UnitWidget(value, deepcopy(units, { "player", "pet" }),
+        local unit = addon:Widget_UnitWidget(value, addon.deepcopy(addon.units, { "player", "pet" }),
                 function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
     end,
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
-        frame:AddChild(Gap())
-        frame:AddChild(CreateText(color.RED .. "This condition uses data from the MobInfo2 addon.  As such " ..
+        frame:AddChild(helpers.Gap())
+        frame:AddChild(helpers.CreateText(color.RED .. "This condition uses data from the MobInfo2 addon.  As such " ..
                 "it relies on previous interactions with the type of mob in question, which may be inaccurate. " ..
                 "Additionally, until you encounter the mob at least once, this condition will always be false."))
     end
@@ -755,31 +743,31 @@ addon:RegisterCondition("RESIST", {
     description = L["Resistant"],
     icon = 132295,
     valid = function(_, value)
-        return (value.unit ~= nil and isin(units, value.unit)) and
-               (value.school ~= nil and isin(spell_schools, value.school)) and
-               (value.operator ~= nil and isin(operators, value.operator)) and
+        return (value.unit ~= nil and addon.isin(addon.units, value.unit)) and
+               (value.school ~= nil and addon.isin(addon.spell_schools, value.school)) and
+               (value.operator ~= nil and addon.isin(addon.operators, value.operator)) and
                (value.value ~= nil and value.value >= 0.00 and value.value <= 1.00)
     end,
     evaluate = function(value, cache)
-        if not getCached(cache, UnitExists, value.unit) then return false end
+        if not addon.getCached(cache, UnitExists, value.unit) then return false end
         local data = MI2_GetMobData(UnitName(value.unit), UnitLevel(value.unit), value.unit)
         if data.resists[value.school] ~= nil and data.resists[value.school] > 0 then
             local hits = data.resists[value.school .. 'Hits'] or 1
-            return compare(value.operator, (data.resists[value.school] / hits), value.value)
+            return addon.compare(value.operator, (data.resists[value.school] / hits), value.value)
         end
         return false
     end,
     print = function(_, value)
-        return compareString(value.operator, string.format(L["%s's resistance to %s"],
-                nullable(units[value.unit], L["<unit>"]), nullable(spell_schools[value.school], L["<school>"])),
-                nullable(value.value and value.value * 100 or nil) .. '%')
+        return addon.compareString(value.operator, string.format(L["%s's resistance to %s"],
+                addon.nullable(addon.units[value.unit], L["<unit>"]), addon.nullable(addon.spell_schools[value.school], L["<school>"])),
+                addon.nullable(value.value and value.value * 100 or nil) .. '%')
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
-        local unit = addon:Widget_UnitWidget(value, deepcopy(units, { "player", "pet" }),
+        local unit = addon:Widget_UnitWidget(value, addon.deepcopy(addon.units, { "player", "pet" }),
                 function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
 
@@ -803,15 +791,15 @@ addon:RegisterCondition("RESIST", {
     end,
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
-        frame:AddChild(Gap())
-        frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Spell School"] .. color.RESET .. " - " ..
+        frame:AddChild(helpers.Gap())
+        frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Spell School"] .. color.RESET .. " - " ..
                 "The school of magic resistance to check."))
-        frame:AddChild(Gap())
+        frame:AddChild(helpers.Gap())
         addon.layout_condition_operatorwidget_help(frame, L["Resistance"], L["Resistance"],
                 "The resistance of " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. " to the specified school " ..
                 "of magic as a percentage")
-        frame:AddChild(Gap())
-        frame:AddChild(CreateText(color.RED .. "This condition uses data from the MobInfo2 addon.  As such " ..
+        frame:AddChild(helpers.Gap())
+        frame:AddChild(helpers.CreateText(color.RED .. "This condition uses data from the MobInfo2 addon.  As such " ..
                 "it relies on previous interactions with the type of mob in question, which may be inaccurate. " ..
                 "Additionally, until you encounter the mob at least once, this condition will always be false."))
     end
@@ -821,11 +809,11 @@ addon:RegisterCondition("IMMUNE", {
     description = L["Immune"],
     icon = 132137,
     valid = function(_, value)
-        return (value.unit ~= nil and isin(units, value.unit)) and
-                (value.school ~= nil and isin(spell_schools, value.school))
+        return (value.unit ~= nil and addon.isin(addon.units, value.unit)) and
+                (value.school ~= nil and addon.isin(addon.spell_schools, value.school))
     end,
     evaluate = function(value, cache)
-        if not getCached(cache, UnitExists, value.unit) then return false end
+        if not addon.getCached(cache, UnitExists, value.unit) then return false end
         local data = MI2_GetMobData(UnitName(value.unit), UnitLevel(value.unit), value.unit)
         if data.resists[value.school] ~= nil and data.resists[value.school] < 0 then
             local hits = data.resists[value.school .. 'Hits'] or 1
@@ -835,14 +823,14 @@ addon:RegisterCondition("IMMUNE", {
     end,
     print = function(_, value)
         return string.format(value.partial and L["%s is sometimes immune to %s"] or L["%s is immune to %s"],
-                nullable(units[value.unit], L["<unit>"]), nullable(spell_schools[value.school], L["<school>"]))
+                addon.nullable(addon.units[value.unit], L["<unit>"]), addon.nullable(addon.spell_schools[value.school], L["<school>"]))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
-        local unit = addon:Widget_UnitWidget(value, deepcopy(units, { "player", "pet" }),
+        local unit = addon:Widget_UnitWidget(value, addon.deepcopy(addon.units, { "player", "pet" }),
                 function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
 
@@ -872,14 +860,14 @@ addon:RegisterCondition("IMMUNE", {
     end,
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
-        frame:AddChild(Gap())
-        frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Spell School"] .. color.RESET .. " - " ..
+        frame:AddChild(helpers.Gap())
+        frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Spell School"] .. color.RESET .. " - " ..
                 "The school of magic resistance to check."))
-        frame:AddChild(Gap())
-        frame:AddChild(CreateText(color.BLIZ_YELLOW .. L["Partial"] .. color.RESET .. " - " ..
+        frame:AddChild(helpers.Gap())
+        frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Partial"] .. color.RESET .. " - " ..
                 "Allow partial immunity (ie. the mob is only sometimes immune to this type of magic) to count."))
-        frame:AddChild(Gap())
-        frame:AddChild(CreateText(color.RED .. "This condition uses data from the MobInfo2 addon.  As such " ..
+        frame:AddChild(helpers.Gap())
+        frame:AddChild(helpers.CreateText(color.RED .. "This condition uses data from the MobInfo2 addon.  As such " ..
                 "it relies on previous interactions with the type of mob in question, which may be inaccurate. " ..
                 "Additionally, until you encounter the mob at least once, this condition will always be false."))
     end

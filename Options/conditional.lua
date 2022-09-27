@@ -54,7 +54,7 @@ evaluateArray = function(operation, array, cache, start)
 end
 
 evaluateSingle = function(value, cache, start)
-    if value == nil or value.type == nil then
+    if value == nil or value.type == nil or value.disabled then
         return true
     end
 
@@ -109,7 +109,7 @@ printArray = function(operation, array, spec)
 end
 
 printSingle = function(value, spec)
-    if value == nil or value.type == nil then
+    if value == nil or value.type == nil or value.disabled then
         return ""
     end
 
@@ -147,7 +147,7 @@ validateArray = function(_, array, spec)
 end
 
 validateSingle = function(value, spec)
-    if value == nil or value.type == nil then
+    if value == nil or value.type == nil or value.disabled then
         return true
     end
 
@@ -439,13 +439,27 @@ end
 
 local function ActionGroup(parent, value, idx, array)
     local top = parent:GetUserData("top")
+    local root = top:GetUserData("root")
     local spec = top:GetUserData("spec")
     local funcs = top:GetUserData("funcs")
 
-    local group = AceGUI:Create("InlineGroup")
+    local group = AceGUI:Create("DisablableInlineGroup")
     group:SetLayout("Table")
     group:SetFullWidth(true)
     group:SetUserData("top", top)
+    group.configure = function()
+        group:SetDisabled(value.disabled)
+    end
+    group:SetCallback("OnSetDisabled", function(_, _, disabled, recurse)
+        if not recurse then
+            value.disabled = disabled
+            top:SetStatusText(funcs:print(root, spec))
+        end
+    end)
+    group.CheckRecurseDisabled = function(_, disabled)
+        local rv = not value.disabled
+        return rv
+    end
 
     if array then
         group:SetUserData("table", { columns = { 24, 44, 1 } })
@@ -651,7 +665,6 @@ function addon:EditCondition(index, spec, value, callback)
     else
         frame:SetTitle(L["Edit Condition"])
     end
-    frame:SetStatusText(funcs:print(value, spec))
     frame:SetUserData("index", index)
     frame:SetUserData("spec", spec)
     frame:SetUserData("root", value)
