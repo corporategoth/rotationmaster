@@ -1,7 +1,7 @@
-local _, addon = ...
+local addon_name, addon = ...
 
 local AceConsole = LibStub("AceConsole-3.0")
-local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
+local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 local libc = LibStub("LibCompress")
 
 local _G, tostring, tonumber, pairs, color, unpack, type, string = _G, tostring, tonumber, pairs, color, unpack, type, string

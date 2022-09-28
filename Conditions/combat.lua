@@ -1,13 +1,14 @@
-local _, addon = ...
+local addon_name, addon = ...
 
 local AceGUI = LibStub("AceGUI-3.0")
-local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
+local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 local color, tostring, tonumber, pairs = color, tostring, tonumber, pairs
 local helpers = addon.help_funcs
 
 addon:RegisterCondition("COMBAT", {
     description = L["In Combat"],
     icon = "Interface\\Icons\\ability_dualwield",
+    fields = { unit = "string" },
     valid = function(_, value)
         return value.unit ~= nil and addon.isin(addon.units, value.unit);
     end,
@@ -36,6 +37,7 @@ addon:RegisterCondition("COMBAT", {
 addon:RegisterCondition("PET", {
     description = L["Have Pet"],
     icon = "Interface\\Icons\\Inv_box_petcarrier_01",
+    fields = { },
     valid = function()
         return true
     end,
@@ -50,6 +52,7 @@ addon:RegisterCondition("PET", {
 addon:RegisterCondition("PET_NAME", {
     description = L["Have Named Pet"],
     icon = "Interface\\Icons\\inv_box_birdcage_01",
+    fields = { value = "string" },
     valid = function(_, value)
         return value.value ~= nil
     end,
@@ -84,6 +87,7 @@ addon:RegisterCondition("PET_NAME", {
 addon:RegisterCondition("STEALTHED", {
     description = L["Stealth"],
     icon = "Interface\\Icons\\ability_stealth",
+    fields = { },
     valid = function()
         return true
     end,
@@ -98,6 +102,7 @@ addon:RegisterCondition("STEALTHED", {
 addon:RegisterCondition("INCONTROL", {
     description = L["In Control"],
     icon = "Interface\\Icons\\spell_nature_polymorph",
+    fields = { },
     valid = function()
         return true
     end,
@@ -112,6 +117,7 @@ addon:RegisterCondition("INCONTROL", {
 addon:RegisterCondition("LOC_TYPE", {
     description = L["Loss Of Control Type"],
     icon = "Interface\\Icons\\spell_nature_polymorph_cow",
+    fields = { operator = "string", value = "number", loc_type = "string" },
     valid = function(_, value)
         return (value.operator ~= nil and addon.isin(addon.operators, value.operator) and
                 value.value ~= nil and value.value >= 0.0 and
@@ -166,6 +172,7 @@ addon:RegisterCondition("LOC_TYPE", {
 addon:RegisterCondition("LOC_BLOCKED", {
     description = L["Loss Of Control Blocked"],
     icon = "Interface\\Icons\\inv_misc_fish_turtle_03",
+    fields = { operator = "string", value = "number", school = "string" },
     valid = function(_, value)
         return (value.operator ~= nil and addon.isin(addon.operators, value.operator) and
                 value.value ~= nil and value.value >= 0.0 and
@@ -217,6 +224,7 @@ addon:RegisterCondition("LOC_BLOCKED", {
 addon:RegisterCondition("MOVING", {
     description = L["Moving"],
     icon = "Interface\\Icons\\Ability_druid_dash",
+    fields = { },
     valid = function()
         return true
     end,
@@ -231,16 +239,17 @@ addon:RegisterCondition("MOVING", {
 addon:RegisterCondition("THREAT", {
     description = L["Threat"],
     icon = "Interface\\Icons\\ability_physical_taunt",
+    fields = { unit = "string", threat = "number" },
     valid = function(_, value)
         return value.unit ~= nil and addon.isin(addon.units, value.unit) and
-               value.addon.threat ~= nil and value.addon.threat >= 1 and value.addon.threat <= 4
+               value.threat ~= nil and value.threat >= 1 and value.threat <= 4
     end,
     evaluate = function(value, cache)
         if not addon.getCached(cache, UnitExists, value.unit) then return false end
         local enemy = addon.getCached(cache, UnitIsEnemy, "player", value.unit)
         if enemy then
             local rv = addon.getCached(cache, UnitThreatSituation, "player", value.unit)
-            if rv ~= nil and rv >= value.addon.threat - 1 then
+            if rv ~= nil and rv >= value.threat - 1 then
                 return true
             else
                 return false
@@ -250,7 +259,7 @@ addon:RegisterCondition("THREAT", {
         end
     end,
     print = function(_, value)
-        return string.format(L["you are at least %s on %s"], addon.nullable(addon.threat[value.addon.threat], L["<addon.threat>"]),
+        return string.format(L["you are at least %s on %s"], addon.nullable(addon.threat[value.threat], L["<addon.threat>"]),
         addon.nullable(addon.units[value.unit], L["<unit>"]))
     end,
     widget = function(parent, spec, value)
@@ -265,12 +274,12 @@ addon:RegisterCondition("THREAT", {
         local val = AceGUI:Create("Dropdown")
         val:SetLabel(L["Threat"])
         val:SetCallback("OnValueChanged", function(_, _, v)
-            value.addon.threat = v
+            value.threat = v
             top:SetStatusText(funcs:print(root, spec))
         end)
         val.configure = function()
             val:SetList(addon.threat)
-            val:SetValue(value.addon.threat)
+            val:SetValue(value.threat)
         end
         parent:AddChild(val)
     end,
@@ -299,15 +308,16 @@ addon:RegisterCondition("THREAT", {
 addon:RegisterCondition("THREAT_COUNT", {
     description = L["Threat Count"],
     icon = "Interface\\Icons\\Ability_racial_bloodrage",
+    fields = { threat = "number", operator = "string", value = "number" },
     valid = function(_, value)
         return value.value ~= nil and value.value >= 0 and
                 value.operator ~= nil and addon.isin(addon.operators, value.operator) and
-                value.addon.threat ~= nil and value.addon.threat >= 1 and value.addon.threat <= 4
+                value.threat ~= nil and value.threat >= 1 and value.threat <= 4
     end,
     evaluate = function(value)
         local count = 0
         for _, entity in pairs(addon.unitsInRange) do
-            if entity.enemy and entity.addon.threat and entity.addon.threat >= value.addon.threat - 1 then
+            if entity.enemy and entity.addon.threat and entity.addon.threat >= value.threat - 1 then
                 count = count + 1
             end
         end
@@ -316,7 +326,7 @@ addon:RegisterCondition("THREAT_COUNT", {
     print = function(_, value)
         return addon.compareString(value.operator,
                         string.format(L["number of enemies you are at least %s"],
-                        addon.nullable(addon.threat[value.addon.threat], L["<addon.threat>"])),
+                        addon.nullable(addon.threat[value.threat], L["<addon.threat>"])),
                         addon.nullable(value.value))
     end,
     widget = function(parent, spec, value)
@@ -327,12 +337,12 @@ addon:RegisterCondition("THREAT_COUNT", {
         local val = AceGUI:Create("Dropdown")
         val:SetLabel(L["Threat"])
         val:SetCallback("OnValueChanged", function(_, _, v)
-            value.addon.threat = v
+            value.threat = v
             top:SetStatusText(funcs:print(root, spec))
         end)
         val.configure = function()
             val:SetList(addon.threat)
-            val:SetValue(value.addon.threat)
+            val:SetValue(value.threat)
         end
         parent:AddChild(val)
 
@@ -366,6 +376,7 @@ local character_class = select(2, UnitClass("player"))
 addon:RegisterCondition("FORM", {
     description = L["Shapeshift Form"],
     icon = "Interface\\Icons\\ability_hunter_pet_bear",
+    fields = { value = "number" },
     valid = function(_, value)
         return value.value ~= nil and value.value >= 0 and value.value <= (character_class == "SHAMAN" and 1 or GetNumShapeshiftForms())
     end,
@@ -460,6 +471,7 @@ addon:RegisterCondition("FORM", {
 addon:RegisterCondition("ATTACKABLE", {
     description = L["Attackable"],
     icon = "Interface\\Icons\\inv_misc_head_dragon_bronze",
+    fields = { unit = "string" },
     valid = function(_, value)
         return value.unit ~= nil and addon.isin(addon.units, value.unit);
     end,
@@ -488,6 +500,7 @@ addon:RegisterCondition("ATTACKABLE", {
 addon:RegisterCondition("ENEMY", {
     description = L["Hostile"],
     icon = "Interface\\Icons\\inv_misc_head_dragon_01",
+    fields = { unit = "string" },
     valid = function(_, value)
         return value.unit ~= nil and addon.isin(addon.units, value.unit);
     end,
@@ -515,6 +528,7 @@ addon:RegisterCondition("ENEMY", {
 addon:RegisterCondition("COMBAT_HISTORY", {
     description = L["Combat Action History"],
     icon = "Interface\\Icons\\Spell_shadow_shadowward",
+    fields = { unit = "string", action = "string", operator = "string", value = "number" },
     valid = function(_, value)
         return (value.unit ~= nil and addon.isin(addon.units, value.unit) and
                 value.action ~= nil and addon.isin(addon.actions, value.action) and
@@ -580,6 +594,7 @@ addon:RegisterCondition("COMBAT_HISTORY", {
 addon:RegisterCondition("COMBAT_HISTORY_TIME", {
     description = L["Combat Action History Time"],
     icon = "Interface\\Icons\\Spell_shadow_shadetruesight",
+    fields = { unit = "string", action = "string", operator = "string", value = "number" },
     valid = function(_, value)
         return (value.unit ~= nil and addon.isin(addon.units, value.unit) and
                 value.action ~= nil and addon.isin(addon.actions, value.action) and

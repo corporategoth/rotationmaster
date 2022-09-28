@@ -1,6 +1,6 @@
-local _, addon = ...
+local addon_name, addon = ...
 
-local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
+local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 
 local AceGUI = LibStub("AceGUI-3.0")
 
@@ -279,7 +279,7 @@ local function ImportExport(items, update)
         end
         editbox:SetText(body)
     end
-    -- editbox.editBox:GetRegions():SetFont("Interface\\AddOns\\RotationMaster\\Fonts\\Inconsolata-Bold.ttf", 13)
+    -- editbox.editBox:GetRegions():SetFont("Interface\\AddOns\\" .. addon_name .. "\\Fonts\\Inconsolata-Bold.ttf", 13)
     editbox:SetCallback("OnTextChanged", function()
         import:SetDisabled(false)
     end)
@@ -394,10 +394,10 @@ local function create_item_list(frame, editbox, items, isvalid, update)
             local movetop = AceGUI:Create("Icon")
             movetop:SetImageSize(24, 24)
             if (idx == 1) then
-                movetop:SetImage("Interface\\AddOns\\RotationMaster\\textures\\UI-ChatIcon-ScrollHome-Disabled")
+                movetop:SetImage("Interface\\AddOns\\" .. addon_name .. "\\textures\\UI-ChatIcon-ScrollHome-Disabled")
                 movetop:SetDisabled(true)
             else
-                movetop:SetImage("Interface\\AddOns\\RotationMaster\\textures\\UI-ChatIcon-ScrollHome-Up")
+                movetop:SetImage("Interface\\AddOns\\" .. addon_name .. "\\textures\\UI-ChatIcon-ScrollHome-Up")
                 movetop:SetDisabled(false)
             end
             movetop:SetCallback("OnClick", function()
@@ -512,7 +512,7 @@ local function create_item_list(frame, editbox, items, isvalid, update)
 
         local movetop = AceGUI:Create("Icon")
         movetop:SetImageSize(24, 24)
-        movetop:SetImage("Interface\\AddOns\\RotationMaster\\textures\\UI-ChatIcon-ScrollHome-Disabled")
+        movetop:SetImage("Interface\\AddOns\\" .. addon_name .. "\\textures\\UI-ChatIcon-ScrollHome-Disabled")
         movetop:SetDisabled(true)
         addon.AddTooltip(movetop, L["Move to Top"])
         row:AddChild(movetop)
@@ -685,7 +685,7 @@ local function item_list(frame, selected, editbox, itemset, isvalid, update)
             reset:SetImage("Interface\\Buttons\\UI-RotationLeft-Button-Up")
         else
             reset:SetDisabled(true)
-            reset:SetImage("Interface\\AddOns\\RotationMaster\\textures\\UI-RotationLeft-Button-Disabled")
+            reset:SetImage("Interface\\AddOns\\" .. addon_name .. "\\textures\\UI-RotationLeft-Button-Disabled")
         end
         update()
     end
@@ -765,7 +765,7 @@ local function item_list(frame, selected, editbox, itemset, isvalid, update)
     reset:SetImageSize(24, 24)
     if itemset == nil or not itemset.modified then
         reset:SetDisabled(true)
-        reset:SetImage("Interface\\AddOns\\RotationMaster\\textures\\UI-RotationLeft-Button-Disabled")
+        reset:SetImage("Interface\\AddOns\\" .. addon_name .. "\\textures\\UI-RotationLeft-Button-Disabled")
     else
         reset:SetDisabled(false)
         reset:SetImage("Interface\\Buttons\\UI-RotationLeft-Button-Up")
@@ -784,7 +784,7 @@ local function item_list(frame, selected, editbox, itemset, isvalid, update)
     importexport:SetImageSize(24, 24)
     if itemset == nil then
         importexport:SetDisabled(true)
-        importexport:SetImage("Interface\\AddOns\\RotationMaster\\textures\\UI-FriendsList-Small-Disabled")
+        importexport:SetImage("Interface\\AddOns\\" .. addon_name .. "\\textures\\UI-FriendsList-Small-Disabled")
     else
         importexport:SetDisabled(false)
         importexport:SetImage("Interface\\FriendsFrame\\UI-FriendsList-Small-Up")
@@ -802,7 +802,7 @@ local function item_list(frame, selected, editbox, itemset, isvalid, update)
     duplicate:SetImageSize(24, 24)
     duplicate:SetUserData("cell", { alignV = "bottom" })
     if itemset == nil then
-        duplicate:SetImage("Interface\\AddOns\\RotationMaster\\textures\\UI-ChatIcon-Maximize-Disabled")
+        duplicate:SetImage("Interface\\AddOns\\" .. addon_name .. "\\textures\\UI-ChatIcon-Maximize-Disabled")
         duplicate:SetDisabled(true)
     else
         duplicate:SetImage("Interface\\ChatFrame\\UI-ChatIcon-Maximize-Up")

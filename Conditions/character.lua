@@ -1,13 +1,14 @@
-local _, addon = ...
+local addon_name, addon = ...
 
 local AceGUI = LibStub("AceGUI-3.0")
-local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
+local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 local color = color
 local helpers = addon.help_funcs
 
 addon:RegisterCondition("ISSAME", {
     description = L["Is Same As"],
     icon = 134167,
+    fields = { unit = "string", otherunit = "string" },
     valid = function(_, value)
         return (value.unit ~= nil and addon.isin(addon.units, value.unit) and
                 value.otherunit ~= nil and addon.isin(addon.units, value.otherunit))
@@ -40,6 +41,7 @@ addon:RegisterCondition("ISSAME", {
 addon:RegisterCondition("CLASS", {
     description = L["Class"],
     icon = "Interface\\Icons\\achievement_general_stayclassy",
+    fields = { unit = "string", value = "string" },
     valid = function(_, value)
         return (value.unit ~= nil and addon.isin(addon.units, value.unit) and
                 value.value ~= nil and addon.isin(LOCALIZED_CLASS_NAMES_MALE, value.value))
@@ -89,6 +91,7 @@ local character_class = select(2, UnitClass("player"))
 addon:RegisterCondition("CLASS_GROUP", {
     description = L["Class In Group"],
     icon = "Interface\\Icons\\spell_holy_prayerofshadowprotection",
+    fields = { class = "string", operator = "string", value = "number", raid = "boolean" },
     valid = function(_, value)
         return (value.class ~= nil and addon.isin(LOCALIZED_CLASS_NAMES_MALE, value.class) and
                 value.operator ~= nil and addon.isin(addon.operators, value.operator) and
@@ -170,6 +173,7 @@ if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
     addon:RegisterCondition("TALENT", {
         description = L["Talent"],
         icon = "Interface\\Icons\\Inv_misc_book_11",
+        fields = { value = "number" },
         valid = function(_, value)
             return value.value ~= nil and value.value >= 1 and value.value <= 21
         end,
@@ -226,6 +230,7 @@ if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
     addon:RegisterCondition("ROLE", {
         description = L["Role"],
         icon = "Interface\\Icons\\spell_brokenheart",
+        fields = { unit = "string", value = "string" },
         valid = function(_, value)
             return (value.unit ~= nil and addon.isin(addon.units, value.unit) and
                     value.value ~= nil and addon.isin(addon.roles, value.value))
@@ -281,6 +286,7 @@ else
     addon:RegisterCondition("TALENT", {
         description = L["Talent"],
         icon = "Interface\\Icons\\Inv_misc_book_11",
+        fields = { tree = "number", talent = "number", operator = "string", value = "number" },
         valid = function(_, value)
             return (value.tree ~= nil and value.tree >= 1 and value.tree <= GetNumTalentTabs() and
                     value.talent ~= nil and value.talent >= 1 and value.talent <= GetNumTalents(value.tree) and
@@ -430,6 +436,7 @@ else
         addon:RegisterCondition("ROLE", {
             description = L["Role"],
             icon = "Interface\\Icons\\spell_brokenheart",
+            fields = { value = "string" },
             valid = function(_, value)
                 return value.value ~= nil and addon.isin(addon.roles, value.value)
             end,
@@ -478,6 +485,7 @@ if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE or LE_EXPANSION_LEVEL_CURRENT >= 2) t
     addon:RegisterCondition("GLYPH", {
         description = L["Glyph"],
         icon = "Interface\\Icons\\inv_inscription_minorglyph09",
+        fields = { item = "number" },
         valid = function(_, value)
             if value.item ~= nil then
                 local _, _, _, _, _, type, class = GetItemInfoInstant(value.item)
@@ -522,6 +530,7 @@ end
 addon:RegisterCondition("CREATURE", {
     description = L["Creature Type"],
     icon = "Interface\\Icons\\ability_rogue_disguise",
+    fields = { unit = "string", value = "string" },
     valid = function(_, value)
         return (value.unit ~= nil and addon.isin(addon.units, value.unit) and
                 value.value ~= nil and addon.isin(addon.creatures, value.value))
@@ -570,6 +579,7 @@ addon:RegisterCondition("CREATURE", {
 addon:RegisterCondition("CLASSIFICATION", {
     description = L["Unit Classification"],
     icon = "Interface\\Icons\\inv_mask_01",
+    fields = { unit = "string", value = "string" },
     valid = function(_, value)
         return (value.unit ~= nil and addon.isin(addon.units, value.unit) and
                 value.value ~= nil and addon.isin(addon.classifications, value.value))
@@ -618,6 +628,7 @@ addon:RegisterCondition("CLASSIFICATION", {
 addon:RegisterCondition("LEVEL", {
     description = L["Level"],
     icon = "Interface\\Icons\\spell_holy_blessedrecovery",
+    fields = { unit = "string", operator = "string", value = "number", relative = "boolean" },
     valid = function(_, value)
         return (value.unit ~= nil and addon.isin(addon.units, value.unit) and
                 value.operator ~= nil and addon.isin(addon.operators, value.operator) and
@@ -675,6 +686,7 @@ addon:RegisterCondition("LEVEL", {
 addon:RegisterCondition("GROUP", {
     description = L["In Group"],
     icon = "Interface\\Icons\\Ability_warrior_challange",
+    fields = { raid = "boolean" },
     valid = function()
         return true
     end,
@@ -710,6 +722,7 @@ if MI2_GetMobData then
 addon:RegisterCondition("RUNNER", {
     description = L["Runner"],
     icon = 135996,
+    fields = { unit = "string" },
     valid = function(_, value)
         return value.unit ~= nil and addon.isin(addon.units, value.unit)
     end,
@@ -742,6 +755,7 @@ addon:RegisterCondition("RUNNER", {
 addon:RegisterCondition("RESIST", {
     description = L["Resistant"],
     icon = 132295,
+    fields = { unit = "string", school = "string", operator = "string", value = "number" },
     valid = function(_, value)
         return (value.unit ~= nil and addon.isin(addon.units, value.unit)) and
                (value.school ~= nil and addon.isin(addon.spell_schools, value.school)) and
@@ -808,6 +822,7 @@ addon:RegisterCondition("RESIST", {
 addon:RegisterCondition("IMMUNE", {
     description = L["Immune"],
     icon = 132137,
+    fields = { unit = "string", school = "string", partial = "boolean" },
     valid = function(_, value)
         return (value.unit ~= nil and addon.isin(addon.units, value.unit)) and
                 (value.school ~= nil and addon.isin(addon.spell_schools, value.school))

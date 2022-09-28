@@ -1,6 +1,6 @@
-local _, addon = ...
+local addon_name, addon = ...
 
-local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
+local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 
 local AceGUI = LibStub("AceGUI-3.0")
 local AceSerializer = LibStub("AceSerializer-3.0")
@@ -157,10 +157,10 @@ local function create_sequence_list(frame, effect, update)
             local movetop = AceGUI:Create("Icon")
             movetop:SetImageSize(24, 24)
             if (idx == 1) then
-                movetop:SetImage("Interface\\AddOns\\RotationMaster\\textures\\UI-ChatIcon-ScrollHome-Disabled")
+                movetop:SetImage("Interface\\AddOns\\" .. addon_name .. "\\textures\\UI-ChatIcon-ScrollHome-Disabled")
                 movetop:SetDisabled(true)
             else
-                movetop:SetImage("Interface\\AddOns\\RotationMaster\\textures\\UI-ChatIcon-ScrollHome-Up")
+                movetop:SetImage("Interface\\AddOns\\" .. addon_name .. "\\textures\\UI-ChatIcon-ScrollHome-Up")
                 movetop:SetDisabled(false)
             end
             movetop:SetCallback("OnClick", function()
@@ -1042,7 +1042,7 @@ ImportExport = function(effect, parent)
     if (effects[effect] ~= nil) then
         editbox:SetText(width_split(base64enc(libc:Compress(AceSerializer:Serialize(effects[effect]))), 64))
     end
-    editbox.editBox:GetRegions():SetFont("Interface\\AddOns\\RotationMaster\\Fonts\\Inconsolata-Bold.ttf", 13)
+    editbox.editBox:GetRegions():SetFont("Interface\\AddOns\\" .. addon_name .. "\\Fonts\\Inconsolata-Bold.ttf", 13)
     editbox:SetCallback("OnTextChanged", function(_, _, text)
         if text:match('^[0-9A-Za-z+/\r\n]+=*[\r\n]*$') then
             local decomp = libc:Decompress(base64dec(text))

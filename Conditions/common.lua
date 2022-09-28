@@ -1,8 +1,8 @@
-local _, addon = ...
+local addon_name, addon = ...
 
 local AceGUI = LibStub("AceGUI-3.0")
 local SpellData = LibStub("AceGUI-3.0-SpellLoader")
-local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
+local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 
 function addon:Widget_GetSpellId(spellid, ranked)
     if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
@@ -268,7 +268,7 @@ function addon:Widget_ItemWidget(top, editbox, value, isvalid, update)
         else
             value.item = nil
             edit_button:SetDisabled(true)
-            edit_button:SetImage("Interface\\AddOns\\RotationMAster\\textures\\UI-FriendsList-Large-Disabled")
+            edit_button:SetImage("Interface\\AddOns\\" .. addon_name .. "\\textures\\UI-FriendsList-Large-Disabled")
         end
         update_action_image()
         update()
@@ -293,7 +293,7 @@ function addon:Widget_ItemWidget(top, editbox, value, isvalid, update)
     addon.AddTooltip(edit_button, EDIT)
     if value.item == nil or value.disabled then
         edit_button:SetDisabled(true)
-        edit_button:SetImage("Interface\\AddOns\\RotationMAster\\textures\\UI-FriendsList-Large-Disabled")
+        edit_button:SetImage("Interface\\AddOns\\" .. addon_name .. "\\textures\\UI-FriendsList-Large-Disabled")
     else
         edit_button:SetDisabled(false)
         edit_button:SetImage("Interface\\FriendsFrame\\UI-FriendsList-Large-Up")

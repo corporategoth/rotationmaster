@@ -1,18 +1,19 @@
-local _, addon = ...
+local addon_name, addon = ...
 
 local AceGUI = LibStub("AceGUI-3.0")
-local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
+local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 local color, tonumber = color, tonumber
 local helpers = addon.help_funcs
 
 addon:RegisterCondition("STAT", {
     description = L["Character Stat"],
     icon = "Interface\\Icons\\inv_potion_36",
+    fields = { stat = "number", operator = "string", unit = "string", value = "number" },
     valid = function(_, value)
         return (value.stat ~= nil and addon.isin(addon.stats, value.stat) and
                 value.operator ~= nil and addon.isin(addon.operators, value.operator) and
                 value.unit ~= nil and addon.isin(addon.units, value.unit) and
-                value.value ~= nil and type(value.value) == "number" and value.value >= 0)
+                value.value ~= nil and value.value >= 0)
     end,
     evaluate = function(value, cache)
         if not addon.getCached(cache, UnitExists, value.unit) then return false end
@@ -84,7 +85,7 @@ local function init_ecs()
                 text = root["text"]
             end
         end
-        if name and text then
+        if name and text and not name:match("Header$") then
             local s = ecs_data:GetStatInfo(name)
             if s ~= nil then
                 if type(s) == "number" then
@@ -111,6 +112,7 @@ addon.delayed_condition["ExtendedCharacterStats"]["ECS_STAT"] = {
     on_register = init_ecs,
     description = L["Extended Character Stat"],
     icon = "Interface\\Icons\\inv_potion_36",
+    fields = { stat = "string", operator = "string", value = "number" },
     valid = function(_, value)
         return (value.stat ~= nil and addon.isin(ecs_stats, value.stat) and
                 value.operator ~= nil and addon.isin(addon.operators, value.operator) and
@@ -158,6 +160,7 @@ addon.delayed_condition["ExtendedCharacterStats"]["ECS_STAT_PCT"] = {
     on_register = init_ecs,
     description = L["Extended Character Stat Percentage"],
     icon = "Interface\\Icons\\inv_potion_36",
+    fields = { stat = "string", operator = "string", value = "number" },
     valid = function(_, value)
         return (value.stat ~= nil and addon.isin(ecs_stats_pct, value.stat) and
                 value.operator ~= nil and addon.isin(addon.operators, value.operator) and

@@ -1,6 +1,6 @@
-local _, addon = ...
+local addon_name, addon = ...
 
-local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
+local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 
 addon.loglevels = {
     L["Quiet"],
@@ -154,6 +154,7 @@ addon.roles = {
 }
 
 addon.trendmode = {
+    fields = { unit = "string", operator = "string", value = "number" },
     both = L["Damage and Heals"],
     noheals = L["Damage Only"],
     nodmg = L["Heals Only"],

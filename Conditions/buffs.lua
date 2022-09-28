@@ -1,7 +1,7 @@
-local _, addon = ...
+local addon_name, addon = ...
 
 local AceGUI = LibStub("AceGUI-3.0")
-local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
+local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 local color = color
 
 local helpers = addon.help_funcs
@@ -17,6 +17,7 @@ end
 addon:RegisterCondition("BUFF", {
     description = L["Buff Present"],
     icon = "Interface\\Icons\\spell_holy_divinespirit",
+    fields = { unit = "string", spell = "string", ownbuff = "boolean" },
     valid = function(_, value)
         return (value.unit ~= nil and addon.isin(addon.units, value.unit) and value.spell ~= nil)
     end,
@@ -82,6 +83,7 @@ addon:RegisterCondition("BUFF", {
 addon:RegisterCondition("BUFF_REMAIN", {
     description = L["Buff Time Remaining"],
     icon = "Interface\\Icons\\Spell_frost_stun",
+    fields = { unit = "string", spell = "string", ownbuff = "boolean", operator = "string", value = "number" },
     valid = function(_, value)
         return (value.unit ~= nil and addon.isin(addon.units, value.unit) and value.spell ~= nil and
                 value.operator ~= nil and addon.isin(addon.operators, value.operator) and
@@ -154,6 +156,7 @@ addon:RegisterCondition("BUFF_REMAIN", {
 addon:RegisterCondition("BUFF_STACKS", {
     description = L["Buff Stacks"],
     icon = "Interface\\Icons\\Inv_misc_coin_02",
+    fields = { unit = "string", spell = "string", ownbuff = "boolean", operator = "string", value = "number" },
     valid = function(_, value)
         return (value.unit ~= nil and addon.isin(addon.units, value.unit) and value.spell ~= nil and
                 value.operator ~= nil and addon.isin(addon.operators, value.operator) and
@@ -225,6 +228,7 @@ addon:RegisterCondition("BUFF_STACKS", {
 addon:RegisterCondition("STEALABLE", {
     description = L["Has Stealable Buff"],
     icon = "Interface\\Icons\\Inv_weapon_shortblade_22",
+    fields = { unit = "string" },
     valid = function(_, value)
         return (value.unit ~= nil and addon.isin(addon.units, value.unit))
     end,

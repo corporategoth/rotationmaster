@@ -1,7 +1,7 @@
-local _, addon = ...
+local addon_name, addon = ...
 
 local AceGUI = LibStub("AceGUI-3.0")
-local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
+local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 local color = color
 local helpers = addon.help_funcs
 
@@ -50,6 +50,7 @@ end
 addon:RegisterCondition("EQUIPPED", {
     description = L["Have Item Equipped"],
     icon = "Interface\\Icons\\Ability_warrior_shieldbash",
+    fields = { item = { "string", { "string", "number" } } },
     valid = function(_, value)
         return value.item ~= nil
     end,
@@ -82,6 +83,7 @@ addon:RegisterCondition("EQUIPPED", {
 addon:RegisterCondition("CARRYING", {
     description = L["Have Item In Bags"],
     icon = "Interface\\Icons\\inv_misc_bag_07",
+    fields = { item = { "string", { "string", "number" } }, operator = "string", value = "number" },
     valid = function(_, value)
         return (value.item ~= nil and
                 value.operator ~= nil and addon.isin(addon.operators, value.operator) and
@@ -125,6 +127,7 @@ addon:RegisterCondition("CARRYING", {
 addon:RegisterCondition("ITEM", {
     description = L["Item Available"],
     icon = "Interface\\Icons\\Inv_drink_05",
+    fields = { item = { "string", { "string", "number" } }, notcarrying = "boolean" },
     valid = function(_, value)
         return value.item ~= nil
     end,
@@ -167,7 +170,7 @@ addon:RegisterCondition("ITEM", {
     end,
     print = function(_, value)
         return string.format(L["%s is available"], addon.nullable(get_item_desc(value.item), L["<item>"])) ..
-                (value.carrying and L[", even if you do not currently have one"] or "")
+                (value.notcarrying and L[", even if you do not currently have one"] or "")
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -201,6 +204,7 @@ addon:RegisterCondition("ITEM", {
 addon:RegisterCondition("ITEM_RANGE", {
     description = L["Item In Range"],
     icon = "Interface\\Icons\\inv_misc_bandage_13",
+    fields = { item = { "string", { "string", "number" } }, notcarrying = "boolean" },
     valid = function(_, value)
         return value.item ~= nil
     end,
@@ -216,7 +220,7 @@ addon:RegisterCondition("ITEM_RANGE", {
     end,
     print = function(_, value)
         return string.format(L["%s is in range"], addon.nullable(get_item_desc(value.item), L["<item>"])) ..
-            (value.carrying and L[", even if you do not currently have one"] or "")
+            (value.notcarrying and L[", even if you do not currently have one"] or "")
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -250,6 +254,7 @@ addon:RegisterCondition("ITEM_RANGE", {
 addon:RegisterCondition("ITEM_COOLDOWN", {
     description = L["Item Cooldown"],
     icon = "Interface\\Icons\\Spell_holy_sealofsacrifice",
+    fields = { item = { "string", { "string", "number" } }, notcarrying = "boolean", operator = "string", value = "number" },
     valid = function(_, value)
         return (value.operator ~= nil and addon.isin(addon.operators, value.operator) and
                 value.item ~= nil and value.value ~= nil and value.value >= 0)
@@ -274,7 +279,7 @@ addon:RegisterCondition("ITEM_COOLDOWN", {
         return string.format(L["the %s"],
             addon.compareString(value.operator, string.format(L["cooldown on %s"], addon.nullable(get_item_desc(value.item), L["<item>"])),
                                 string.format(L["%s seconds"], addon.nullable(value.value)))) ..
-                (value.carrying and L[", even if you do not currently have one"] or "")
+                (value.notcarrying and L[", even if you do not currently have one"] or "")
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")

@@ -1,6 +1,6 @@
-local _, addon = ...
+local addon_name, addon = ...
 
-local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
+local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 
 local AceGUI = LibStub("AceGUI-3.0")
 local AceSerializer = LibStub("AceSerializer-3.0")
@@ -10,6 +10,8 @@ local HideOnEscape, deepcopy, uuid = addon.HideOnEscape, addon.deepcopy, addon.u
 local pairs, base64enc, base64dec, width_split = pairs, base64enc, base64dec, width_split
 
 local function_signatures = {
+    on_register = "function(tag)",
+    on_unregister = "function(tag)",
     valid = "function(spec, value)",
     evaluate = "function(value, cache, evalStart)",
     print = "function(spec, value)",
@@ -17,9 +19,20 @@ local function_signatures = {
     help = "function(frame)",
 }
 
-local empty_condition = {
+addon.empty_condition = {
     description = "",
     icon = "Interface\\Icons\\Inv_misc_questionmark",
+    fields = {},
+    on_register = [[
+-- Call this when the condition is registered (could initialize some data or something).
+-- Params:
+--    tag - The tag (aka. type) this condition is registered as
+]],
+    on_unregister = [[
+-- Call this when the condition is unregistered (could destroy some data or something).
+-- Params:
+--    tag - The tag (aka. type) this condition was registered as
+]],
     valid = [[
 -- Validate that the condition has all required values set and they are in
 -- acceptable bounds.  This does not indicate if the condition is true or not.
@@ -215,7 +228,7 @@ local function ImportExport(parent, update, key, condition)
     editbox:DisableButton(true)
     editbox:SetFocus(true)
     editbox:SetText(width_split(base64enc(libc:Compress(AceSerializer:Serialize(condition))), 64))
-    editbox.editBox:GetRegions():SetFont("Interface\\AddOns\\RotationMaster\\Fonts\\Inconsolata-Bold.ttf", 13)
+    editbox.editBox:GetRegions():SetFont("Interface\\AddOns\\" .. addon_name .. "\\Fonts\\Inconsolata-Bold.ttf", 13)
     editbox:SetCallback("OnTextChanged", function(_, _, text)
         if text:match('^[0-9A-Za-z+/\r\n]+=*[\r\n]*$') then
             local decomp = libc:Decompress(base64dec(text))
@@ -255,10 +268,13 @@ local function ImportExport(parent, update, key, condition)
                 button1 = YES,
                 button2 = NO,
                 OnAccept = function()
-                    for k,v in pairs(res) do
-                        condition[k] = v
+                    local new_condition = {}
+                    for key, def in pairs(addon.empty_condition) do
+                        if res[key] ~= nil and type(def) == type(res[key]) then
+                            new_condition[key] = res[key]
+                        end
                     end
-                    layout_condition_edit_box(parent, update, key, condition)
+                    layout_condition_edit_box(parent, update, key, new_condition)
                     frame:Hide()
                 end,
                 showAlert = 1,
@@ -266,7 +282,7 @@ local function ImportExport(parent, update, key, condition)
                 whileDead = 1,
                 hideOnEscape = 1
             }
-            StaticPopup_Show("ROTATIONMASTER_IMPORT_CUSTOM_FUNCTIO")
+            StaticPopup_Show("ROTATIONMASTER_IMPORT_CUSTOM_FUNCTION")
         end
     end)
     group:AddChild(import)
@@ -380,12 +396,93 @@ layout_condition_edit_box = function(frame, update, orig_key, condition)
 
     frame:AddChild(top_group)
 
+    local field_group = AceGUI:Create("InlineGroup")
+    field_group:SetTitle("Fields")
+    field_group:SetFullWidth(true)
+    field_group:SetLayout("Table")
+    field_group:SetUserData("table", { columns = { 1, 1, 1 } })
+    local layout_fields
+    layout_fields = function()
+        local newheight = 502
+        local numfields = addon.tablelength(condition.fields)
+        if (numfields / 3) ~= math.floor(numfields / 3) then
+            newheight = newheight + 8
+        end
+        if numfields > 0 then
+            newheight = newheight + (math.floor(numfields / 3) * 34)
+        end
+        frame:SetHeight(newheight)
+
+        field_group:ReleaseChildren()
+        field_group:PauseLayout()
+
+        for key, type in addon.spairs(condition.fields) do
+            local field = AceGUI:Create("SimpleGroup")
+            field:SetLayout("Table")
+            field:SetUserData("table", { columns = { 75, 100, 24 } })
+
+            local field_label = AceGUI:Create("Label")
+            field_label:SetText(key)
+            field:AddChild(field_label)
+
+            local field_types = {
+                ["string"] = "String",
+                ["number"] = "Number",
+                ["boolean"] = "Boolean",
+                ["{ string, { string, number } }"] = "Item Set",
+            }
+
+            local field_type = AceGUI:Create("Dropdown")
+            field_type:SetCallback("OnValueChanged", function(_, _, val)
+                condition.fields[key] = val
+            end)
+            field_type.configure = function()
+                field_type:SetList(field_types, { "string", "number", "boolean", "{ string, { string, number } }" })
+                field_type:SetValue(type)
+            end
+            field:AddChild(field_type)
+
+            local delete = AceGUI:Create("Icon")
+            delete:SetImageSize(24, 24)
+            delete:SetImage("Interface\\Buttons\\UI-Panel-MinimizeButton-Up")
+            delete:SetCallback("OnClick", function()
+                condition.fields[key] = nil
+                layout_fields()
+            end)
+            addon.AddTooltip(delete, DELETE)
+            field:AddChild(delete)
+
+            field_group:AddChild(field)
+        end
+
+        local new_field = AceGUI:Create("EditBox")
+        new_field:SetWidth(100)
+        new_field:SetCallback("OnEnterPressed", function(_, _, v)
+            if v:match("^%a[%w_]*") and not condition.fields[v] and v ~= "type" and v ~= "disabled" then
+                condition.fields[v] = "string"
+                layout_fields()
+            else
+                new_field:SetText(nil)
+            end
+        end)
+        field_group:AddChild(new_field)
+
+        addon:configure_frame(field_group)
+        field_group:ResumeLayout()
+        field_group:DoLayout()
+    end
+    frame:AddChild(field_group)
+
+    layout_fields()
+
     local code_tabs = {
         { value = "valid", text = L["Validity Function"] },
         { value = "evaluate", text = L["Evaluation Function"] },
         { value = "print", text = L["Print Function"] },
         { value = "widget", text = L["Widget Function"] },
         { value = "help", text = L["Help Function"] },
+        { value = "on_register", text = L["Post-Registration Function"] },
+        { value = "on_unregister", text = L["Pre-Unregistration Function"] },
     }
 
     local last_selected
@@ -399,7 +496,7 @@ layout_condition_edit_box = function(frame, update, orig_key, condition)
     editbox:SetFullWidth(true)
     editbox:SetFullHeight(true)
     editbox:SetLabel("")
-    editbox:SetNumLines(20)
+    editbox:SetNumLines(15)
 
     local code_group = AceGUI:Create("TabGroup")
     code_group:SetFullWidth(true)
@@ -503,7 +600,7 @@ function addon:condition_edit_box(update, key, condition)
     HideOnEscape(frame)
 
     if not condition then
-        condition = deepcopy(empty_condition)
+        condition = deepcopy(addon.empty_condition)
     end
 
     layout_condition_edit_box(frame, update, key, condition)

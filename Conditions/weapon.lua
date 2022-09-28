@@ -1,7 +1,7 @@
-local _, addon = ...
+local addon_name, addon = ...
 
 local AceGUI = LibStub("AceGUI-3.0")
-local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
+local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 local color = color
 local helpers = addon.help_funcs
 
@@ -9,6 +9,7 @@ if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
     addon:RegisterCondition("WEAPON", {
         description = L["Weapon Enchant Present"],
         icon = "Interface\\Icons\\Inv_staff_18",
+        fields = { offhand = "boolean" },
         valid = function()
             return true
         end,
@@ -45,6 +46,7 @@ if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
     addon:RegisterCondition("WEAPON_REMAIN", {
         description = L["Weapon Enchant Time Remaining"],
         icon = "Interface\\Icons\\Inv_mace_13",
+        fields = { offhand = "boolean", operator = "string", value = "number" },
         valid = function(_, value)
             return (value.operator ~= nil and addon.isin(addon.operators, value.operator) and
                     value.value ~= nil and value.value >= 0)
@@ -96,6 +98,7 @@ if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
     addon:RegisterCondition("WEAPON_STACKS", {
         description = L["Weapon Enchant Stacks"],
         icon = "Interface\\Icons\\Inv_misc_coin_04",
+        fields = { offhand = "boolean", operator = "string", value = "number" },
         valid = function(_, value)
             return (value.operator ~= nil and addon.isin(addon.operators, value.operator) and
                     value.value ~= nil and value.value >= 0)
@@ -147,6 +150,7 @@ end
 addon:RegisterCondition("SWING_TIME", {
     description = L["Weapon Swing Time"],
     icon = 135561,
+    fields = { offhand = "boolean", operator = "string", value = "number" },
     valid = function(_, value)
         return (value.operator ~= nil and addon.isin(addon.operators, value.operator) and
                 value.value ~= nil and value.value >= 0)
@@ -192,6 +196,7 @@ addon:RegisterCondition("SWING_TIME", {
 addon:RegisterCondition("SWING_TIME_REMAIN", {
     description = L["Weapon Swing Time Remaining"],
     icon = 135672,
+    fields = { offhand = "boolean", operator = "string", value = "number" },
     valid = function(_, value)
         return (value.operator ~= nil and addon.isin(addon.operators, value.operator) and
                 value.value ~= nil and value.value >= 0)

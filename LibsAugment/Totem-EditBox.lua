@@ -1,3 +1,5 @@
+local addon = _G.RotationMaster
+
 local AceGUI = LibStub("AceGUI-3.0")
 do
 	local Type = "Totem_EditBox"
@@ -14,7 +16,6 @@ do
         -- Only wipe out the current spec, so you can still see everything for an off spec.
 		-- It's a little nicity since WoW doesn't let you see talented spells when not on spec.
     	local currentSpec = 0
-		local addon = _G.RotationMaster
 		if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
 			currentSpec = GetSpecializationInfo(addon:GetSpecialization())
 			if currentSpec == nil then

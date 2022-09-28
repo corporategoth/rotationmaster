@@ -4,9 +4,9 @@
 
 -- This file has been heavily modified from the original.  It is no longer compatible with the original.
 
-local _, addon = ...
+local addon_name, addon = ...
 
-local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
+local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 local CustomGlow = LibStub("LibCustomGlow-1.0")
 
 local Spells = {}
@@ -138,7 +138,7 @@ end
 local function CreateOverlay(parent)
 	local frame = tremove(FramePool)
 	if not frame then
-		frame = CreateFrame('Frame', 'RotationMaster_Overlay_' .. addon.uuid(), parent)
+		frame = CreateFrame('Frame', addon_name .. '_Overlay_' .. addon.uuid(), parent)
 	else
 		frame:SetParent(parent)
 	end

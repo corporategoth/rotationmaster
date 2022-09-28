@@ -1,6 +1,6 @@
-local _, addon = ...
+local addon_name, addon = ...
 
-local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
+local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 
 local AceGUI = LibStub("AceGUI-3.0")
 local SpellData = LibStub("AceGUI-3.0-SpellLoader")
@@ -586,7 +586,7 @@ local function ImportExport(spec, rotation, parent)
     if (rotation_settings[spec][rotation] ~= nil) then
         editbox:SetText(width_split(base64enc(libc:Compress(AceSerializer:Serialize(rotation_settings[spec][rotation]))), 64))
     end
-    editbox.editBox:GetRegions():SetFont("Interface\\AddOns\\RotationMaster\\Fonts\\Inconsolata-Bold.ttf", 13)
+    editbox.editBox:GetRegions():SetFont("Interface\\AddOns\\" .. addon_name .. "\\Fonts\\Inconsolata-Bold.ttf", 13)
     editbox:SetCallback("OnTextChanged", function(_, _, text)
         if text:match('^[0-9A-Za-z+/\r\n]+=*[\r\n]*$') then
             local decomp = libc:Decompress(base64dec(text))
@@ -726,7 +726,7 @@ local function create_rotation_options(frame, specID, rotid, parent, selected)
     duplicate:SetImageSize(24, 24)
     duplicate:SetUserData("cell", { alignV = "bottom" })
     if rotation_settings[rotid] == nil then
-        duplicate:SetImage("Interface\\AddOns\\RotationMaster\\textures\\UI-ChatIcon-Maximize-Disabled")
+        duplicate:SetImage("Interface\\AddOns\\" .. addon_name .. "\\textures\\UI-ChatIcon-Maximize-Disabled")
         duplicate:SetDisabled(true)
     else
         duplicate:SetImage("Interface\\ChatFrame\\UI-ChatIcon-Maximize-Up")
@@ -804,7 +804,7 @@ local function create_rotation_options(frame, specID, rotid, parent, selected)
         disabled:SetDisabled(true)
         addon.AddTooltip(disabled, L["Disabled"])
 
-        edit_button:SetImage("Interface\\AddOns\\RotationMaster\\textures\\UI-FriendsList-Large-Disabled")
+        edit_button:SetImage("Interface\\AddOns\\" .. addon_name .. "\\textures\\UI-FriendsList-Large-Disabled")
         edit_button:SetDisabled(true)
     else
         local function update_switch()
@@ -868,7 +868,7 @@ local function create_rotation_options(frame, specID, rotid, parent, selected)
         end)
 
         if rotation_settings[rotid] == nil then
-            edit_button:SetImage("Interface\\AddOns\\RotationMaster\\textures\\UI-FriendsList-Large-Disabled")
+            edit_button:SetImage("Interface\\AddOns\\" .. addon_name .. "\\textures\\UI-FriendsList-Large-Disabled")
             edit_button:SetDisabled(true)
         else
             edit_button:SetImage("Interface\\FriendsFrame\\UI-FriendsList-Large-Up")

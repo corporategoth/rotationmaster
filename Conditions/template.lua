@@ -1,6 +1,6 @@
-local _, addon = ...
+local addon_name, addon = ...
 
-local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
+local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 
 -- Register this condition as existing.
 -- Params:
@@ -12,6 +12,17 @@ addon:RegisterCondition("MYCONDITON", {
     description = L["My Condition"],
     -- The icon can be an ID number or asset name (eg. "Interface\\Icons\\foo-bar")
     icon = 12345,
+    -- The fields this condition defines.  Should be declared as name = type, for example
+    --    value = "number"
+    -- You may specify multiple types for a field (eg. value = { "string", "number" }) if
+    -- the field could be multiple types.  If one of the types in the mutiple types is an
+    -- array, you can specify the types IT supports (or subfields).
+    --    -- Takes either a string, or an array of strings or numbers (ie. item set):
+    --    value = { "string", { "string", "number" } }
+    --    -- Takes either a string, an table with subfields:
+    --    value = { "string", { name = "string", value = "number" } }
+    -- Any field can NOT exist in the source data.  This is perfectly valid!
+    fields = { },
     -- Call this when the condition is registered (could initialize some data or something).
     -- Params:
     --    tag - The tag (aka. type) this condition is registered as

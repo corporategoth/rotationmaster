@@ -32,6 +32,7 @@ profiler.lua
 main.lua
 buttons.lua
 init.lua
+validate.lua
 
 Widgets/help.lua
 Widgets/directional.lua

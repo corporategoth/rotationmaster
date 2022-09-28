@@ -1,6 +1,6 @@
-local _, addon = ...
+local addon_name, addon = ...
 
-local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
+local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 local color = color
 
 local helpers = addon.help_funcs
@@ -19,7 +19,7 @@ function addon.layout_item_list_help(frame)
         "a valid part of the item set and will work if picked up at a later time."))
 
     group:AddChild(CreatePictureText(
-        "Interface\\AddOns\\RotationMaster\\textures\\UI-ChatIcon-ScrollHome-Up", 24, 24,
+        "Interface\\AddOns\\" .. addon_name .. "\\textures\\UI-ChatIcon-ScrollHome-Up", 24, 24,
         color.BLIZ_YELLOW .. L["Move to Top"] .. color.RESET .. " - " ..
                 "This will move the current item to the first slot in the item list."))
 
@@ -58,7 +58,7 @@ function addon.layout_itemsets_options_help(frame)
         "in the item list."))
 
     group:AddChild(Gap())
-    group:AddChild(CreateText("Fields", "Interface\\AddOns\\RotationMaster\\Fonts\\Inconsolata-Bold.ttf", 16))
+    group:AddChild(CreateText("Fields", "Interface\\AddOns\\" .. addon_name .. "\\Fonts\\Inconsolata-Bold.ttf", 16))
 
     group:AddChild(Gap())
     group:AddChild(CreateText(color.BLIZ_YELLOW .. L["Item Set"] .. color.RESET .. " - " ..
@@ -113,7 +113,7 @@ function addon.layout_itemsets_options_help(frame)
     addon.layout_item_list_help(frame)
 
     group:AddChild(Gap())
-    group:AddChild(CreateText("Use with Macros", "Interface\\AddOns\\RotationMaster\\Fonts\\Inconsolata-Bold.ttf", 16))
+    group:AddChild(CreateText("Use with Macros", "Interface\\AddOns\\" .. addon_name .. "\\Fonts\\Inconsolata-Bold.ttf", 16))
     group:AddChild(Gap())
 
     group:AddChild(CreateText("Item sets can be used in other contexts.  A number of hidden buttons are created " ..

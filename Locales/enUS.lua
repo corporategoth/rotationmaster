@@ -1,4 +1,6 @@
-local L = LibStub("AceLocale-3.0"):NewLocale("RotationMaster", "enUS", true)
+local addon_name = ...
+
+local L = LibStub("AceLocale-3.0"):NewLocale(addon_name, "enUS", true)
 if not L then return end
 
 local color = color
@@ -117,6 +119,8 @@ L["Evaluation Function"] = true
 L["Print Function"] = true
 L["Widget Function"] = true
 L["Help Function"] = true
+L["Post-Registration Function"] = true
+L["Pre-Unregistration Function"] = true
 
 L["Warrior"] = true
 L["Paladin"] = true

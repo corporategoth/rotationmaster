@@ -1,12 +1,13 @@
-local _, addon = ...
+local addon_name, addon = ...
 
-local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
+local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 local color = color
 local helpers = addon.help_funcs
 
 addon:RegisterCondition("CHANNELING", {
     description = L["Channeling"],
     icon = "Interface\\Icons\\Spell_holy_searinglight",
+    fields = { unit = "string" },
     valid = function(_, value)
         return value.unit ~= nil and addon.isin(addon.units, value.unit)
     end,
@@ -36,6 +37,7 @@ addon:RegisterCondition("CHANNELING", {
 addon:RegisterCondition("CHANNELING_SPELL", {
     description = L["Specific Spell Channeling"],
     icon = "Interface\\Icons\\Spell_holy_greaterheal",
+    fields = { unit = "string", spell = "string" },
     valid = function(_, value)
         return (value.unit ~= nil and addon.isin(addon.units, value.unit) and value.spell ~= nil)
     end,
@@ -72,6 +74,7 @@ addon:RegisterCondition("CHANNELING_SPELL", {
 addon:RegisterCondition("CHANNELING_REMAIN", {
     description = L["Channel Time Remaining"],
     icon = "Interface\\Icons\\Inv_misc_pocketwatch_01",
+    fields = { unit = "string", operator = "string", value = "number" },
     valid = function(_, value)
         return (value.unit ~= nil and addon.isin(addon.units, value.unit) and
                 value.operator ~= nil and addon.isin(addon.operators, value.operator) and
@@ -116,6 +119,7 @@ addon:RegisterCondition("CHANNELING_REMAIN", {
 addon:RegisterCondition("CHANNEL_INTERRUPTABLE", {
     description = L["Channel Interruptable"],
     icon = "Interface\\Icons\\spell_holy_righteousfury",
+    fields = { unit = "string" },
     valid = function(_, value)
         return value.unit ~= nil and addon.isin(addon.units, value.unit)
     end,

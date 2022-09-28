@@ -1,15 +1,13 @@
 local addon_name, addon = ...
 
-local _G = _G
-
-_G.RotationMaster = LibStub("AceAddon-3.0"):NewAddon(addon, addon_name, "AceConsole-3.0", "AceEvent-3.0", "AceTimer-3.0")
+_G[addon_name] = LibStub("AceAddon-3.0"):NewAddon(addon, addon_name, "AceConsole-3.0", "AceEvent-3.0", "AceTimer-3.0")
 
 local AceGUI = LibStub("AceGUI-3.0")
 local AceConsole = LibStub("AceConsole-3.0")
 local AceEvent = LibStub("AceEvent-3.0")
 local SpellData = LibStub("AceGUI-3.0-SpellLoader")
 local ItemData = LibStub("AceGUI-3.0-ItemLoader")
-local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
+local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 local getCached, getRetryCached
 local DBIcon = LibStub("LibDBIcon-1.0")
 local Media = LibStub("LibSharedMedia-3.0")
@@ -30,8 +28,8 @@ local isin, starts_with, isint = addon.isin, addon.starts_with, addon.isint
 
 addon.pretty_name = GetAddOnMetadata(addon_name, "Title")
 addon.delayed_condition = {}
-local DataBroker = LibStub("LibDataBroker-1.1"):NewDataObject("RotationMaster",
-        { type = "data source", label = addon.pretty_name, icon = "Interface\\AddOns\\RotationMaster\\textures\\RotationMaster-Minimap" })
+local DataBroker = LibStub("LibDataBroker-1.1"):NewDataObject(addon_name,
+        { type = "data source", label = addon.pretty_name, icon = "Interface\\AddOns\\" .. addon_name .. "\\textures\\RotationMaster-Minimap" })
 
 --
 -- Initialization
@@ -63,6 +61,12 @@ local defaults = {
         damage_history = 30,
         disable_buttons = false,
         preview_spells = 0,
+        preview_window = {
+            point = "CENTER",
+            relpoint = "CENTER",
+            xoffs = 0,
+            yoffs = 0
+        },
         rotations = {},
         itemsets = {},
         announces = {},
@@ -249,7 +253,7 @@ end
 
 function addon:OnInitialize()
     self:augmentDefaults(defaults)
-    self.db = LibStub("AceDB-3.0"):New("RotationMasterDB", defaults, true)
+    self.db = LibStub("AceDB-3.0"):New(addon_name .. "DB", defaults, true)
 
     for ext_addon,conditions in pairs(self.delayed_condition) do
         if IsAddOnLoaded(ext_addon) then
@@ -260,6 +264,7 @@ function addon:OnInitialize()
     end
 
     self:init()
+    self:validate(defaults)
 
     AceConsole:RegisterChatCommand("rm", function(str)
         addon:HandleCommand(str)
@@ -419,8 +424,8 @@ function minimapInitialize()
 end
 
 function DataBroker.OnClick(_, button)
-    local frame = CreateFrame("Frame", "RotationMasterLDBFrame")
-    local dropdownFrame = CreateFrame("Frame", "RotationMasterLDBDropdownFrame", frame, "UIDropDownMenuTemplate")
+    local frame = CreateFrame("Frame", addon_name .. "LDBFrame")
+    local dropdownFrame = CreateFrame("Frame", addon_name .. "LDBDropdownFrame", frame, "UIDropDownMenuTemplate")
 
     if button == "RightButton" then
         UIDropDownMenu_Initialize(dropdownFrame, minimapInitialize)

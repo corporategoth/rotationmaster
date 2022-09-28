@@ -1,7 +1,7 @@
-local _, addon = ...
+local addon_name, addon = ...
 
 local SpellData = LibStub("AceGUI-3.0-SpellLoader")
-local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
+local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 local color = color
 
 local helpers = addon.help_funcs
@@ -16,6 +16,7 @@ end
 addon:RegisterCondition("ANYSPELL_AVAIL", {
     description = L["Any Spell Available"],
     icon = "Interface\\Icons\\spell_frost_manarecharge",
+    fields = { spell = "number", ranked = "boolean" },
     valid = function(_, value)
         if value.spell ~= nil then
             local name = GetSpellInfo(value.spell)
@@ -72,6 +73,7 @@ addon:RegisterCondition("ANYSPELL_AVAIL", {
 addon:RegisterCondition("ANYSPELL_RANGE", {
     description = L["Any Spell In Range"],
     icon = "Interface\\Icons\\inv_misc_bandage_01",
+    fields = { spell = "number", ranked = "boolean" },
     valid = function(_, value)
         if value.spell ~= nil then
             local name = GetSpellInfo(value.spell)
@@ -114,6 +116,7 @@ addon:RegisterCondition("ANYSPELL_RANGE", {
 addon:RegisterCondition("ANYSPELL_COOLDOWN", {
     description = L["Any Spell Cooldown"],
     icon = "Interface\\Icons\\spell_nature_invisibilty",
+    fields = { spell = "number", ranked = "boolean", operator = "string", value = "number" },
     valid = function(_, value)
         if value.spell ~= nil then
             local name = GetSpellInfo(value.spell)
@@ -165,6 +168,7 @@ addon:RegisterCondition("ANYSPELL_COOLDOWN", {
 addon:RegisterCondition("ANYSPELL_REMAIN", {
     description = L["Any Spell Time Remaining"],
     icon = "Interface\\Icons\\spell_holy_dizzy",
+    fields = { spell = "number", ranked = "boolean", operator = "string", value = "number" },
     valid = function(_, value)
         if value.spell ~= nil then
             local name = GetSpellInfo(value.spell)
@@ -216,6 +220,7 @@ addon:RegisterCondition("ANYSPELL_REMAIN", {
 addon:RegisterCondition("ANYSPELL_CHARGES", {
     description = L["Any Spell Charges"],
     icon = "Interface\\Icons\\spell_fire_meteorstorm",
+    fields = { spell = "number", ranked = "boolean", operator = "string", value = "number" },
     valid = function(_, value)
         if value.spell ~= nil then
             local name = GetSpellInfo(value.spell)

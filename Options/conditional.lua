@@ -1,6 +1,6 @@
-local _, addon = ...
+local addon_name, addon = ...
 
-local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
+local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 
 local AceGUI = LibStub("AceGUI-3.0")
 
@@ -18,10 +18,10 @@ local evaluateArray, evaluateSingle, printArray, printSingle, validateArray, val
 
 local conditions = {}
 local special = {}
-special["DELETE"] = { desc = DELETE, icon = "Interface\\Icons\\Trade_Engineering" }
-special["AND"] = { desc = L["AND"], icon = "Interface\\Icons\\Spell_ChargePositive" }
-special["OR"] = { desc = L["OR"], icon = "Interface\\Icons\\Spell_ChargeNegative" }
-special["NOT"] = { desc = L["NOT"], icon = "Interface\\PaperDollInfoFrame\\UI-GearManager-LeaveItem-Transparent" }
+special["DELETE"] = { desc = DELETE, icon = "Interface\\Icons\\Trade_Engineering", fields = { } }
+special["AND"] = { desc = L["AND"], icon = "Interface\\Icons\\Spell_ChargePositive", fields = { value = "condition[]" } }
+special["OR"] = { desc = L["OR"], icon = "Interface\\Icons\\Spell_ChargeNegative", fields = { value = "condition[]" } }
+special["NOT"] = { desc = L["NOT"], icon = "Interface\\PaperDollInfoFrame\\UI-GearManager-LeaveItem-Transparent", fields = { value = "condition" } }
 
 evaluateArray = function(operation, array, cache, start)
     if array ~= nil then
@@ -807,10 +807,14 @@ function addon:listConditions(group, nohide)
 end
 
 function addon:describeCondition(type)
-    if (conditions[type] == nil) then
-        return nil, nil
+    if type ~= nil then
+        if special[type] then
+            return special[type].icon, special[type].desc, "", special[type].fields
+        end
+        if conditions[type] then
+            return conditions[type].icon, conditions[type].description, conditions[type].help, conditions[type].fields
+        end
     end
-    return conditions[type].icon, conditions[type].description, conditions[type].help
 end
 
 function addon:widgetCondition(parent, spec, value)

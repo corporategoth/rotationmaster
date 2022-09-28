@@ -1,6 +1,6 @@
-local _, addon = ...
+local addon_name, addon = ...
 
-local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
+local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 
 local multiinsert, deepcopy = addon.multiinsert, addon.deepcopy
 
@@ -128,14 +128,12 @@ local default_effects = {
     ["d2ab8d6c-4346-42fd-bb1a-dc967feb32b7"] = {
         ["type"] = "animate",
         ["name"] = "Boom!",
-        ["steps"] = 4,
         ["frequency"] = 0.25,
         ["sequence"] = {
             "Interface\\Cooldown\\star4", -- [1]
             "Interface\\Cooldown\\starburst", -- [2]
             "Interface\\Cooldown\\ping4", -- [3]
         },
-        ["texture"] = "Interface\\Cooldown\\star4",
     },
     ["cbd72b0b-e0f4-4f6e-bef4-459776a5d7a9"] = {
         ["type"] = "rotate",
@@ -543,7 +541,7 @@ function addon:augmentDefaults(defaults)
     defaults.profile.switch_conditions = deepcopy(default_switch_conditions)
     defaults.profile.other_conditions_order = deepcopy(default_other_conditions_order)
     defaults.profile.disabled_conditions = deepcopy(default_disabled_conditions)
-    -- defaults.profile.version = PROFILE_VERSION
+    defaults.profile.version = PROFILE_VERSION
 end
 
 function addon:init()

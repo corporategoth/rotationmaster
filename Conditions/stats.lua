@@ -1,17 +1,18 @@
-local _, addon = ...
+local addon_name, addon = ...
 
 local AceGUI = LibStub("AceGUI-3.0")
-local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
+local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 local color, tonumber = color, tonumber
 local helpers = addon.help_funcs
 
 addon:RegisterCondition("HEALTH", {
     description = L["Health"],
     icon = "Interface\\Icons\\inv_potion_36",
+    fields = { unit = "string", operator = "string", value = "number" },
     valid = function(_, value)
         return (value.operator ~= nil and addon.isin(addon.operators, value.operator) and
                 value.unit ~= nil and addon.isin(addon.units, value.unit) and
-                value.value ~= nil and type(value.value) == "number")
+                value.value ~= nil)
     end,
     evaluate = function(value, cache)
         if not addon.getCached(cache, UnitExists, value.unit) then return false end
@@ -55,6 +56,7 @@ addon:RegisterCondition("HEALTH", {
 addon:RegisterCondition("HEALTHPCT", {
     description = L["Health Percentage"],
     icon = "Interface\\Icons\\inv_potion_35",
+    fields = { unit = "string", operator = "string", value = "number" },
     valid = function(_, value)
         return (value.operator ~= nil and addon.isin(addon.operators, value.operator) and
                 value.unit ~= nil and addon.isin(addon.units, value.unit) and
@@ -97,10 +99,11 @@ addon:RegisterCondition("HEALTHPCT", {
 addon:RegisterCondition("MANA", {
     description = L["Mana"],
     icon = "Interface\\Icons\\inv_potion_71",
+    fields = { unit = "string", operator = "string", value = "number" },
     valid = function(_, value)
         return (value.operator ~= nil and addon.isin(addon.operators, value.operator) and
                 value.unit ~= nil and addon.isin(addon.units, value.unit) and
-                value.value ~= nil and type(value.value) == "number")
+                value.value ~= nil)
     end,
     evaluate = function(value, cache)
         if not addon.getCached(cache, UnitExists, value.unit) then return false end
@@ -144,6 +147,7 @@ addon:RegisterCondition("MANA", {
 addon:RegisterCondition("MANAPCT", {
     description = L["Mana Percentage"],
     icon = "Interface\\Icons\\inv_potion_70",
+    fields = { unit = "string", operator = "string", value = "number" },
     valid = function(_, value)
         return (value.operator ~= nil and addon.isin(addon.operators, value.operator) and
                 value.unit ~= nil and addon.isin(addon.units, value.unit) and
@@ -186,10 +190,11 @@ addon:RegisterCondition("MANAPCT", {
 addon:RegisterCondition("POWER", {
     description = L["Power"],
     icon = "Interface\\Icons\\inv_potion_92",
+    fields = { unit = "string", operator = "string", value = "number" },
     valid = function(_, value)
         return (value.operator ~= nil and addon.isin(addon.operators, value.operator) and
                 value.unit ~= nil and addon.isin(addon.units, value.unit) and
-                value.value ~= nil and type(value.value) == "number")
+                value.value ~= nil)
     end,
     evaluate = function(value, cache)
         if not addon.getCached(cache, UnitExists, value.unit) then return false end
@@ -241,6 +246,7 @@ addon:RegisterCondition("POWER", {
 addon:RegisterCondition("POWERPCT", {
     description = L["Power Percentage"],
     icon = "Interface\\Icons\\inv_potion_91",
+    fields = { unit = "string", operator = "string", value = "number" },
     valid = function(_, value)
         return (value.operator ~= nil and addon.isin(addon.operators, value.operator) and
                 value.unit ~= nil and addon.isin(addon.units, value.unit) and
@@ -290,10 +296,11 @@ addon:RegisterCondition("POWERPCT", {
 addon:RegisterCondition("POINT", {
     description = L["Points"],
     icon = "Interface\\Icons\\Inv_jewelry_amulet_01",
+    fields = { unit = "string", operator = "string", value = "number" },
     valid = function(_, value)
         return (value.operator ~= nil and addon.isin(addon.operators, value.operator) and
                 value.unit ~= nil and addon.isin(addon.units, value.unit) and
-                value.value ~= nil and type(value.value) == "number")
+                value.value ~= nil)
     end,
     evaluate = function(value, cache)
         if not addon.getCached(cache, UnitExists, value.unit) then return false end
@@ -352,6 +359,7 @@ if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE and LE_EXPANSION_LEVEL_CURRENT >= 2 a
     addon:RegisterCondition("RUNE", {
         description = L["Runes"],
         icon = "Interface\\Icons\\spell_deathknight_empowerruneblade",
+        fields = { rune = "number", operator = "string", value = "number" },
         valid = function(_, value)
             return (value.operator ~= nil and addon.isin(addon.operators, value.operator) and
                     value.value ~= nil and value.value >= 0 and value.value <= 2 and
@@ -368,7 +376,7 @@ if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE and LE_EXPANSION_LEVEL_CURRENT >= 2 a
         end,
         print = function(_, value)
             local rune_type = value.rune and addon.runes[value.rune] or L["<rune type>"]
-            return addon.compareString(value.operator, string.format(L["%s addon.runes available"], rune_type),
+            return addon.compareString(value.operator, string.format(L["%s runes available"], rune_type),
                         addon.nullable(value.value))
         end,
         widget = function(parent, spec, value)
@@ -396,19 +404,20 @@ if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE and LE_EXPANSION_LEVEL_CURRENT >= 2 a
             addon.layout_condition_unitwidget_help(frame)
             frame:AddChild(helpers.Gap())
             frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Rune Type"] .. color.RESET .. " - " ..
-                    "Which type of addon.runes you wish to check."))
+                    "Which type of runes you wish to check."))
             frame:AddChild(helpers.Indent(40, helpers.CreateText(color.GREEN .. L["Blood"] .. color.RESET)))
             frame:AddChild(helpers.Indent(40, helpers.CreateText(color.GREEN .. L["Unholy"] .. color.RESET)))
             frame:AddChild(helpers.Indent(40, helpers.CreateText(color.GREEN .. L["Frost"] .. color.RESET)))
             frame:AddChild(helpers.Gap())
             addon.layout_condition_operatorwidget_help(frame, L["Runes"], L["Runes"],
-                    "The number of addon.runes currently available.")
+                    "The number of runes currently available.")
         end
     })
 
     addon:RegisterCondition("RUNE_COOLDOWN", {
         description = L["Rune Cooldown"],
         icon = "Interface\\Icons\\spell_deathknight_empowerruneblade2",
+        fields = { rune = "number", operator = "string", value = "number" },
         valid = function(_, value)
             return (value.operator ~= nil and addon.isin(addon.operators, value.operator) and
                     value.value ~= nil and value.value >= 0 and
@@ -459,7 +468,7 @@ if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE and LE_EXPANSION_LEVEL_CURRENT >= 2 a
             addon.layout_condition_unitwidget_help(frame)
             frame:AddChild(helpers.Gap())
             frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Rune Type"] .. color.RESET .. " - " ..
-                    "Which type of addon.runes you wish to check."))
+                    "Which type of runes you wish to check."))
             frame:AddChild(helpers.Indent(40, helpers.CreateText(color.GREEN .. L["Blood"] .. color.RESET)))
             frame:AddChild(helpers.Indent(40, helpers.CreateText(color.GREEN .. L["Unholy"] .. color.RESET)))
             frame:AddChild(helpers.Indent(40, helpers.CreateText(color.GREEN .. L["Frost"] .. color.RESET)))
@@ -474,11 +483,12 @@ end
 addon:RegisterCondition("TT_HEALTH", {
     description = L["Time Until Health"],
     icon = "Interface\\Icons\\inv_potion_21",
+    fields = { unit = "string", operator = "string", value = "number", health = "number", mode = "string" },
     valid = function(_, value)
         return (value.operator ~= nil and addon.isin(addon.operators, value.operator) and
                 value.unit ~= nil and addon.isin(addon.units, value.unit) and
                 value.value ~= nil and value.value >= 0.00 and
-                value.health ~= nil and type(value.health) == "number")
+                value.health ~= nil)
     end,
     evaluate = function(value, cache)
         if not addon.getCached(cache, UnitExists, value.unit) then return false end
@@ -589,6 +599,7 @@ addon:RegisterCondition("TT_HEALTH", {
 addon:RegisterCondition("TT_HEALTHPCT", {
     description = L["Time Until Health Percentage"],
     icon = "Interface\\Icons\\inv_potion_24",
+    fields = { unit = "string", operator = "string", value = "number", health = "number", mode = "string" },
     valid = function(_, value)
         return (value.operator ~= nil and addon.isin(addon.operators, value.operator) and
                 value.unit ~= nil and addon.isin(addon.units, value.unit) and

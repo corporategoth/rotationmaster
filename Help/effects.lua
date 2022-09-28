@@ -1,6 +1,6 @@
-local _, addon = ...
+local addon_name, addon = ...
 
-local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
+local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 local color = color
 
 local helpers = addon.help_funcs
@@ -17,7 +17,7 @@ function addon.layout_effects_options_help(frame)
         "as you wish.  Effects are shared across all characters."))
 
     group:AddChild(Gap())
-    group:AddChild(CreateText("Fields", "Interface\\AddOns\\RotationMaster\\Fonts\\Inconsolata-Bold.ttf", 16))
+    group:AddChild(CreateText("Fields", "Interface\\AddOns\\" .. addon_name .. "\\Fonts\\Inconsolata-Bold.ttf", 16))
 
     group:AddChild(Gap())
     group:AddChild(CreateText(color.BLIZ_YELLOW .. L["Type"] .. color.RESET .. " - " ..

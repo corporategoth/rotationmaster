@@ -1,3 +1,5 @@
+local _, addon = ...
+
 local AceGUI = LibStub("AceGUI-3.0")
 do
 	local Type = "Spec_EditBox"
@@ -6,7 +8,6 @@ do
 
 	local function spellFilter(self, spellID)
 		local spec = self:GetUserData("spec")
-		local addon = _G.RotationMaster
 		return addon.isSpellOnSpec(spec, spellID)
 	end
 	

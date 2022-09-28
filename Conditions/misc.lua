@@ -1,13 +1,14 @@
-local _, addon = ...
+local addon_name, addon = ...
 
 local AceGUI = LibStub("AceGUI-3.0")
-local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
+local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 local color = color
 local helpers = addon.help_funcs
 
 addon:RegisterCondition("SELF_LEVEL", {
     description = L["Level"],
     icon = "Interface\\Icons\\spell_holy_blessedrecovery",
+    fields = { operator = "string", value = "number" },
     valid = function(_, value)
         return (value.operator ~= nil and addon.isin(addon.operators, value.operator) and
                 value.value ~= nil and value.value >= 0)
@@ -36,8 +37,9 @@ addon:RegisterCondition("SELF_LEVEL", {
 addon:RegisterCondition("PVP", {
     description = L["PVP Flagged"],
     icon = "Interface\\Icons\\Inv_banner_03",
+    fields = { unit = "string" },
     valid = function(_, value)
-        return value.unit ~= nil and addon.isin(addon.units, value.unit);
+        return value.unit ~= nil and addon.isin(addon.units, value.unit)
     end,
     evaluate = function(value, cache)
         if not addon.getCached(cache, UnitExists, value.unit) then return false end
@@ -65,8 +67,9 @@ addon:RegisterCondition("PVP", {
 addon:RegisterCondition("ZONEPVP", {
     description = L["Zone PVP"],
     icon = "Interface\\Icons\\Inv_bannerpvp_01",
+    fields = { value = "string" },
     valid = function(_, value)
-        return value.value == nil or addon.isin(addon.zonepvp, value.value);
+        return value.value == nil or addon.isin(addon.zonepvp, value.value)
     end,
     evaluate = function(value, cache)
         local pvpType = addon.getCached(cache, GetZonePVPInfo)
@@ -128,8 +131,9 @@ addon:RegisterCondition("ZONEPVP", {
 addon:RegisterCondition("INSTANCE", {
     description = L["Instance"],
     icon = "Interface\\Icons\\Spell_nature_astralrecal",
+    fields = { value = "string" },
     valid = function(_, value)
-        return value.value == nil or addon.isin(addon.zonepvp, value.value);
+        return value.value == nil or addon.isin(addon.instances, value.value);
     end,
     evaluate = function(value, cache)
         local inInstance, instanceType = addon.getCached(cache, IsInInstance)
@@ -137,7 +141,7 @@ addon:RegisterCondition("INSTANCE", {
     end,
     print = function(_, value)
         return string.format(L["you are in a %s instance"],
-                addon.nullable(addon.zonepvp[value.value], L["Other (scenario)"]))
+                addon.nullable(addon.instances[value.value], L["Other (scenario)"]))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -186,6 +190,7 @@ addon:RegisterCondition("INSTANCE", {
 addon:RegisterCondition("OUTDOORS", {
     description = L["Outdoors"],
     icon = "Interface\\Icons\\Inv_misc_flower_02",
+    fields = { },
     valid = function()
         return true
     end,

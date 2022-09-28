@@ -1,6 +1,6 @@
-local _, addon = ...
+local addon_name, addon = ...
 
-local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
+local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 local color = color
 local helpers = addon.help_funcs
 
@@ -14,6 +14,7 @@ end
 addon:RegisterCondition("SPELL_AVAIL", {
     description = L["Spell Available"],
     icon = "Interface\\Icons\\Spell_holy_renew",
+    fields = { spell = "number", ranked = "boolean" },
     valid = function(_, value)
         if value.spell ~= nil then
             local name = GetSpellInfo(value.spell)
@@ -71,6 +72,7 @@ addon:RegisterCondition("SPELL_AVAIL", {
 addon:RegisterCondition("SPELL_RANGE", {
     description = L["Spell In Range"],
     icon = "Interface\\Icons\\inv_misc_bandage_02",
+    fields = { spell = "number", ranked = "boolean" },
     valid = function(_, value)
         if value.spell ~= nil then
             local name = GetSpellInfo(value.spell)
@@ -113,6 +115,7 @@ addon:RegisterCondition("SPELL_RANGE", {
 addon:RegisterCondition("SPELL_COOLDOWN", {
     description = L["Spell Cooldown"],
     icon = "Interface\\Icons\\spell_nature_timestop",
+    fields = { spell = "number", ranked = "boolean", operator = "string", value = "number" },
     valid = function(_, value)
         if value.spell ~= nil then
             local name = GetSpellInfo(value.spell)
@@ -165,6 +168,7 @@ addon:RegisterCondition("SPELL_COOLDOWN", {
 addon:RegisterCondition("SPELL_REMAIN", {
     description = L["Spell Time Remaining"],
     icon = "Interface\\Icons\\inv_misc_pocketwatch_03",
+    fields = { spell = "number", ranked = "boolean", operator = "string", value = "number" },
     valid = function(_, value)
         if value.spell ~= nil then
             local name = GetSpellInfo(value.spell)
@@ -217,6 +221,7 @@ addon:RegisterCondition("SPELL_REMAIN", {
 addon:RegisterCondition("SPELL_CHARGES", {
     description = L["Spell Charges"],
     icon = "Interface\\Icons\\Spell_nature_astralrecalgroup",
+    fields = { spell = "number", ranked = "boolean", operator = "string", value = "number" },
     valid = function(_, value)
         if value.spell ~= nil then
             local name = GetSpellInfo(value.spell)
@@ -263,6 +268,7 @@ addon:RegisterCondition("SPELL_CHARGES", {
 addon:RegisterCondition("SPELL_HISTORY", {
     description = L["Spell Cast History"],
     icon = "Interface\\Icons\\Spell_shadow_nightofthedead",
+    fields = { spell = "number", ranked = "boolean", operator = "string", value = "number" },
     valid = function(_, value)
         if value.spell ~= nil then
             local name = GetSpellInfo(value.spell)
@@ -315,6 +321,7 @@ addon:RegisterCondition("SPELL_HISTORY", {
 addon:RegisterCondition("SPELL_HISTORY_TIME", {
     description = L["Spell Cast History Time"],
     icon = "Interface\\Icons\\Spell_fire_sealoffire",
+    fields = { spell = "number", ranked = "boolean", operator = "string", value = "number" },
     valid = function(_, value)
         if value.spell ~= nil then
             local name = GetSpellInfo(value.spell)
@@ -366,6 +373,7 @@ addon:RegisterCondition("SPELL_HISTORY_TIME", {
 addon:RegisterCondition("SPELL_ACTIVE", {
     description = L["Spell Active or Pending"],
     icon = 132212,
+    fields = { spell = "number", ranked = "boolean" },
     valid = function(_, value)
         if value.spell ~= nil then
             local name = GetSpellInfo(value.spell)

@@ -1,6 +1,6 @@
-local _, addon = ...
+local addon_name, addon = ...
 
-local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
+local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 local AceGUI = LibStub("AceGUI-3.0")
 local color = color
 
@@ -18,7 +18,7 @@ function addon.layout_primary_options_help(frame)
                     "in priority order, for things such as mana potions, etc)."))
 
     group:AddChild(Gap())
-    group:AddChild(CreateText("Fields", "Interface\\AddOns\\RotationMaster\\Fonts\\Inconsolata-Bold.ttf", 16))
+    group:AddChild(CreateText("Fields", "Interface\\AddOns\\" .. addon_name .. "\\Fonts\\Inconsolata-Bold.ttf", 16))
 
     group:AddChild(Gap())
     group:AddChild(CreateText(color.BLIZ_YELLOW .. ENABLE .. color.RESET .. " - " ..
@@ -181,7 +181,7 @@ function addon.layout_rotation_options_help(frame)
     end
 
     group:AddChild(Gap())
-    group:AddChild(CreateText("Fields", "Interface\\AddOns\\RotationMaster\\Fonts\\Inconsolata-Bold.ttf", 16))
+    group:AddChild(CreateText("Fields", "Interface\\AddOns\\" .. addon_name .. "\\Fonts\\Inconsolata-Bold.ttf", 16))
 
     group:AddChild(Gap())
     group:AddChild(CreateText(color.BLIZ_YELLOW .. L["Rotation"] .. color.RESET .. " - " ..

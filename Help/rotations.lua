@@ -1,6 +1,6 @@
-local _, addon = ...
+local addon_name, addon = ...
 
-local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
+local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 local AceGUI = LibStub("AceGUI-3.0")
 local color = color
 
@@ -16,7 +16,7 @@ local function help_top_buttons(group, singular, plural)
             "in a custom item set automatically, and will change automatically as they do."))
 
     group:AddChild(CreatePictureText(
-        "Interface\\AddOns\\RotationMaster\\textures\\UI-ChatIcon-ScrollHome-Up", 24, 24,
+        "Interface\\AddOns\\" .. addon_name .. "\\textures\\UI-ChatIcon-ScrollHome-Up", 24, 24,
         color.BLIZ_YELLOW .. L["Move to Top"] .. color.RESET .. " - " ..
             "This will move the current " .. singular .. " to the first slot in the " .. singular .. " list."))
 
@@ -205,7 +205,7 @@ function addon.layout_cooldown_help(frame)
         "once."))
 
     group:AddChild(Gap())
-    group:AddChild(CreateText("Fields", "Interface\\AddOns\\RotationMaster\\Fonts\\Inconsolata-Bold.ttf", 16))
+    group:AddChild(CreateText("Fields", "Interface\\AddOns\\" .. addon_name .. "\\Fonts\\Inconsolata-Bold.ttf", 16))
 
     group:AddChild(Gap())
     help_top_buttons(group, "cooldown", "cooldowns")
@@ -252,7 +252,7 @@ function addon.layout_rotation_help(frame)
         "Master settings.)  A maximum of one rotation highlight may be active at any time."))
 
     group:AddChild(Gap())
-    group:AddChild(CreateText("Fields", "Interface\\AddOns\\RotationMaster\\Fonts\\Inconsolata-Bold.ttf", 16))
+    group:AddChild(CreateText("Fields", "Interface\\AddOns\\" .. addon_name .. "\\Fonts\\Inconsolata-Bold.ttf", 16))
 
     group:AddChild(Gap())
     help_top_buttons(group, "rotation", "rotations")

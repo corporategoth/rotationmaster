@@ -1,7 +1,7 @@
-local _, addon = ...
+local addon_name, addon = ...
 
 local AceGUI = LibStub("AceGUI-3.0")
-local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
+local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 local color = color
 local helpers = addon.help_funcs
 
@@ -16,6 +16,7 @@ end
 addon:RegisterCondition("DEBUFF", {
     description = L["Debuff Present"],
     icon = "Interface\\Icons\\spell_shadow_curseoftounges",
+    fields = { unit = "string", spell = "string", owndebuff = "boolean" },
     valid = function(_, value)
         return (value.unit ~= nil and addon.isin(addon.units, value.unit) and value.spell ~= nil)
     end,
@@ -76,6 +77,7 @@ addon:RegisterCondition("DEBUFF", {
 addon:RegisterCondition("DEBUFF_REMAIN", {
     description = L["Debuff Time Remaining"],
     icon = "Interface\\Icons\\ability_creature_cursed_04",
+    fields = { unit = "string", spell = "string", owndebuff = "boolean", operator = "string", value = "number" },
     valid = function(_, value)
         return (value.unit ~= nil and addon.isin(addon.units, value.unit) and value.spell ~= nil and
                 value.operator ~= nil and addon.isin(addon.operators, value.operator) and
@@ -149,6 +151,7 @@ addon:RegisterCondition("DEBUFF_REMAIN", {
 addon:RegisterCondition("DEBUFF_STACKS", {
     description = L["Debuff Stacks"],
     icon = "Interface\\Icons\\Inv_misc_coin_06",
+    fields = { unit = "string", spell = "string", owndebuff = "boolean", operator = "string", value = "number" },
     valid = function(_, value)
         return (value.unit ~= nil and addon.isin(addon.units, value.unit) and value.spell ~= nil and
                 value.operator ~= nil and addon.isin(addon.operators, value.operator) and
@@ -221,6 +224,7 @@ addon:RegisterCondition("DEBUFF_STACKS", {
 addon:RegisterCondition("DISPELLABLE", {
     description = L["Debuff Type Present"],
     icon = "Interface\\Icons\\spell_shadow_curseofsargeras",
+    fields = { unit = "string", debufftype = "string", owndebuff = "boolean", dispellable = "boolean" },
     valid = function(_, value)
         return (value.unit ~= nil and addon.isin(addon.units, value.unit) and
                 value.debufftype ~= nil and addon.isin(addon.debufftypes, value.debufftype))

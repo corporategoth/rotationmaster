@@ -1,7 +1,7 @@
-local _, addon = ...
+local addon_name, addon = ...
 
 local AceGUI = LibStub("AceGUI-3.0")
-local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
+local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 local RangeCheck = LibStub("LibRangeCheck-2.0")
 local color, pairs = color, pairs
 local helpers = addon.help_funcs
@@ -120,6 +120,7 @@ end
 addon:RegisterCondition("PROXIMITY", {
     description = L["Allies Within Range"],
     icon = "Interface\\Icons\\Spell_holy_prayerofspirit",
+    fields = { unit = "string", operator = "string", value = "number", distance = "number", samegroup = "boolean", includepets = "boolean" },
     valid = function(_, value)
         return (value.unit ~= nil and addon.isin(addon.units, value.unit) and
                 value.operator ~= nil and addon.isin(addon.operators, value.operator) and
@@ -182,6 +183,7 @@ addon:RegisterCondition("PROXIMITY", {
 addon:RegisterCondition("DISTANCE", {
     description = L["Distance"],
     icon = "Interface\\Icons\\Spell_arcane_teleportorgrimmar",
+    fields = { unit = "string", value = "number" },
     valid = function(_, value)
         return (value.unit ~= nil and addon.isin(addon.units, value.unit) and
                 value.value ~= nil and value.value >= 0 and value.value <= 40)
@@ -228,6 +230,7 @@ addon:RegisterCondition("DISTANCE", {
 addon:RegisterCondition("DISTANCE_COUNT", {
     description = L["Distance Count"],
     icon = "Interface\\Icons\\Spell_arcane_teleportstormwind",
+    fields = { value = "number", operator = "string", distance = "number", enemy = "boolean" },
     valid = function(_, value)
         return (value.value ~= nil and value.value >= 0 and
                 value.operator ~= nil and addon.isin(addon.operators, value.operator) and value.enemy ~= nil and
@@ -312,6 +315,7 @@ addon:RegisterCondition("DISTANCE_COUNT", {
 addon:RegisterCondition("ZONE", {
     description = L["Zone"],
     icon = "Interface\\Icons\\spell_nature_farsight",
+    fields = { value = "string", subzone = "boolean" },
     valid = function(_, value)
         return value.value ~= nil
     end,

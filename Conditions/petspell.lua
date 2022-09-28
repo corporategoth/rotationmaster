@@ -1,6 +1,6 @@
-local _, addon = ...
+local addon_name, addon = ...
 
-local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
+local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 local color = color
 local helpers = addon.help_funcs
 
@@ -14,6 +14,7 @@ end
 addon:RegisterCondition("PETSPELL_AVAIL", {
     description = L["Pet Spell Available"],
     icon = "Interface\\Icons\\Ability_druid_bash",
+    fields = { spell = "number", ranked = "boolean" },
     valid = function(_, value)
         if value.spell ~= nil then
             local name = GetSpellInfo(value.spell)
@@ -71,6 +72,7 @@ addon:RegisterCondition("PETSPELL_AVAIL", {
 addon:RegisterCondition("PETSPELL_RANGE", {
     description = L["Pet Spell In Range"],
     icon = "Interface\\Icons\\inv_misc_bandage_03",
+    fields = { spell = "number", ranked = "boolean" },
     valid = function(_, value)
         if value.spell ~= nil then
             local name = GetSpellInfo(value.spell)
@@ -114,6 +116,7 @@ addon:RegisterCondition("PETSPELL_RANGE", {
 addon:RegisterCondition("PETSPELL_COOLDOWN", {
     description = L["Pet Spell Cooldown"],
     icon = "Interface\\Icons\\Spell_nature_sleep",
+    fields = { spell = "number", ranked = "boolean", operator = "string", value = "number" },
     valid = function(_, value)
         if value.spell ~= nil then
             local name = GetSpellInfo(value.spell)
@@ -166,6 +169,7 @@ addon:RegisterCondition("PETSPELL_COOLDOWN", {
 addon:RegisterCondition("PETSPELL_REMAIN", {
     description = L["Pet Spell Time Remaining"],
     icon = "Interface\\Icons\\ability_hunter_pet_raptor",
+    fields = { spell = "number", ranked = "boolean", operator = "string", value = "number" },
     valid = function(_, value)
         if value.spell ~= nil then
             local name = GetSpellInfo(value.spell)
@@ -218,6 +222,7 @@ addon:RegisterCondition("PETSPELL_REMAIN", {
 addon:RegisterCondition("PETSPELL_CHARGES", {
     description = L["Pet Spell Charges"],
     icon = "Interface\\Icons\\Ability_mount_nightmarehorse",
+    fields = { spell = "number", ranked = "boolean", operator = "string", value = "number" },
     valid = function(_, value)
         if value.spell ~= nil then
             local name = GetSpellInfo(value.spell)
@@ -264,6 +269,7 @@ addon:RegisterCondition("PETSPELL_CHARGES", {
 addon:RegisterCondition("PETSPELL_HISTORY", {
     description = L["Pet Spell Cast History"],
     icon = "Interface\\Icons\\ability_racial_ultravision",
+    fields = { spell = "number", ranked = "boolean", operator = "string", value = "number" },
     valid = function(_, value)
         if value.spell ~= nil then
             local name = GetSpellInfo(value.spell)
@@ -316,6 +322,7 @@ addon:RegisterCondition("PETSPELL_HISTORY", {
 addon:RegisterCondition("PETSPELL_HISTORY_TIME", {
     description = L["Pet Spell Cast History Time"],
     icon = "Interface\\Icons\\ability_druid_mangle",
+    fields = { spell = "number", ranked = "boolean", operator = "string", value = "number" },
     valid = function(_, value)
         if value.spell ~= nil then
             local name = GetSpellInfo(value.spell)
@@ -367,6 +374,7 @@ addon:RegisterCondition("PETSPELL_HISTORY_TIME", {
 addon:RegisterCondition("PETSPELL_ACTIVE", {
     description = L["Pet Spell Active or Pending"],
     icon = "Interface\\Icons\\ability_druid_supriseattack",
+    fields = { spell = "number", ranked = "boolean" },
     valid = function(_, value)
         if value.spell ~= nil then
             local name = GetSpellInfo(value.spell)

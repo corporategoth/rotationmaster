@@ -1,8 +1,8 @@
-local _, addon = ...
+local addon_name, addon = ...
 
 local AceGUI = LibStub("AceGUI-3.0")
 
-local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
+local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 
 local table, ipairs = table, ipairs
 local isSpellOnSpec, getSpecSpellID = addon.isSpellOnSpec, addon.getSpecSpellID
@@ -89,6 +89,7 @@ function addon:create_announce_list(frame)
             if value.type ~= val then
                 value.type = val
                 value.spell = nil
+                value.ranked = nil
                 value.item = nil
                 addon:create_announce_list(frame)
                 draw_action_group(action_group, value)

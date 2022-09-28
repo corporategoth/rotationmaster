@@ -1,3 +1,5 @@
+local _, addon = ...
+
 local AceGUI = LibStub("AceGUI-3.0")
 
 do
@@ -14,7 +16,6 @@ do
 	end
 
 	local function loadGlyphs()
-		local addon = _G.RotationMaster
 		for _,itemid in pairs(addon.glyphs[unit_class]) do
 			classGlyphs[itemid] = true
 		end

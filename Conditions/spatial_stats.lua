@@ -1,7 +1,7 @@
-local _, addon = ...
+local addon_name, addon = ...
 
 local AceGUI = LibStub("AceGUI-3.0")
-local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
+local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 local color, pairs = color, pairs
 local helpers = addon.help_funcs
 
@@ -16,6 +16,7 @@ end
 addon:RegisterCondition("PROXIMITY_HEALTH", {
     description = L["Health Within Range"],
     icon = "Interface\\Icons\\inv_potion_52",
+    fields = { unit = "string", operation = "string", operator = "string", value = "number", distance = "number", samegroup = "boolean", includepets = "boolean" },
     valid = function(_, value)
         return (value.unit ~= nil and addon.isin(addon.units, value.unit) and
                 value.operation ~= nil and addon.isin(addon.math_operations, value.operation) and
@@ -122,6 +123,7 @@ addon:RegisterCondition("PROXIMITY_HEALTH", {
 addon:RegisterCondition("PROXIMITY_HEALTH_COUNT", {
     description = L["Health Count Within Range"],
     icon = "Interface\\Icons\\inv_potion_54",
+    fields = { unit = "string", healthoperator = "string", health = "number", operator = "string", value = "number", distance = "number", samegroup = "boolean", includepets = "boolean" },
     valid = function(_, value)
         return (value.unit ~= nil and addon.isin(addon.units, value.unit) and
                 value.healthoperator ~= nil and addon.isin(addon.operators, value.healthoperator) and
@@ -207,6 +209,7 @@ addon:RegisterCondition("PROXIMITY_HEALTH_COUNT", {
 addon:RegisterCondition("PROXIMITY_HEALTHPCT", {
     description = L["Health Percentage Within Range"],
     icon = "Interface\\Icons\\inv_potion_51",
+    fields = { unit = "string", operation = "string", operator = "string", value = "number", distance = "number", samegroup = "boolean", includepets = "boolean" },
     valid = function(_, value)
         return (value.unit ~= nil and addon.isin(addon.units, value.unit) and
                 value.operation ~= nil and addon.isin(addon.math_operations, value.operation) and
@@ -309,6 +312,7 @@ addon:RegisterCondition("PROXIMITY_HEALTHPCT", {
 addon:RegisterCondition("PROXIMITY_HEALTHPCT_COUNT", {
     description = L["Health Percentage Count Within Range"],
     icon = "Interface\\Icons\\inv_potion_53",
+    fields = { unit = "string", healthoperator = "string", health = "number", operator = "string", value = "number", distance = "number", samegroup = "boolean", includepets = "boolean" },
     valid = function(_, value)
         return (value.unit ~= nil and addon.isin(addon.units, value.unit) and
                 value.healthoperator ~= nil and addon.isin(addon.operators, value.healthoperator) and
@@ -387,6 +391,7 @@ addon:RegisterCondition("PROXIMITY_HEALTHPCT_COUNT", {
 addon:RegisterCondition("PROXIMITY_MANA", {
     description = L["Mana Within Range"],
     icon = "Interface\\Icons\\inv_potion_73",
+    fields = { unit = "string", operation = "string", operator = "string", value = "number", distance = "number", samegroup = "boolean", includepets = "boolean" },
     valid = function(_, value)
         return (value.unit ~= nil and addon.isin(addon.units, value.unit) and
                 value.operation ~= nil and addon.isin(addon.math_operations, value.operation) and
@@ -493,6 +498,7 @@ addon:RegisterCondition("PROXIMITY_MANA", {
 addon:RegisterCondition("PROXIMITY_MANA_COUNT", {
     description = L["Mana Count Within Range"],
     icon = "Interface\\Icons\\inv_potion_72",
+    fields = { unit = "string", manaoperator = "string", mana = "number", operator = "string", value = "number", distance = "number", samegroup = "boolean", includepets = "boolean" },
     valid = function(_, value)
         return (value.unit ~= nil and addon.isin(addon.units, value.unit) and
                 value.manaoperator ~= nil and addon.isin(addon.operators, value.manaoperator) and
@@ -578,6 +584,7 @@ addon:RegisterCondition("PROXIMITY_MANA_COUNT", {
 addon:RegisterCondition("PROXIMITY_MANAPCT", {
     description = L["Mana Percentage Within Range"],
     icon = "Interface\\Icons\\inv_potion_75",
+    fields = { unit = "string", operation = "string", operator = "string", value = "number", distance = "number", samegroup = "boolean", includepets = "boolean" },
     valid = function(_, value)
         return (value.unit ~= nil and addon.isin(addon.units, value.unit) and
                 value.operation ~= nil and addon.isin(addon.math_operations, value.operation) and
@@ -680,6 +687,7 @@ addon:RegisterCondition("PROXIMITY_MANAPCT", {
 addon:RegisterCondition("PROXIMITY_MANAPCT_COUNT", {
     description = L["Mana Percentage Count Within Range"],
     icon = "Interface\\Icons\\inv_potion_74",
+    fields = { unit = "string", manaoperator = "string", mana = "number", operator = "string", value = "number", distance = "number", samegroup = "boolean", includepets = "boolean" },
     valid = function(_, value)
         return (value.unit ~= nil and addon.isin(addon.units, value.unit) and
                 value.manaoperator ~= nil and addon.isin(addon.operators, value.manaoperator) and

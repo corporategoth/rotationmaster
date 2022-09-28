@@ -1,6 +1,6 @@
-local _, addon = ...
+local addon_name, addon = ...
 
-local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
+local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 local AceGUI = LibStub("AceGUI-3.0")
 local color = color
 
@@ -18,7 +18,7 @@ function addon.layout_conditions_options_help(frame)
             "switching rotations)."))
 
     group:AddChild(Gap())
-    group:AddChild(CreateText("Fields", "Interface\\AddOns\\RotationMaster\\Fonts\\Inconsolata-Bold.ttf", 16))
+    group:AddChild(CreateText("Fields", "Interface\\AddOns\\" .. addon_name .. "\\Fonts\\Inconsolata-Bold.ttf", 16))
 
     group:AddChild(Gap())
     group:AddChild(CreateText(color.BLIZ_YELLOW .. NAME .. color.RESET .. " - " ..
@@ -30,7 +30,7 @@ function addon.layout_conditions_options_help(frame)
             " group shows all conditions that are not associated with other condition groups."))
 
     group:AddChild(CreatePictureText(
-            "Interface\\AddOns\\RotationMaster\\textures\\UI-ChatIcon-ScrollHome-Up", 24, 24,
+            "Interface\\AddOns\\" .. addon_name .. "\\textures\\UI-ChatIcon-ScrollHome-Up", 24, 24,
             color.BLIZ_YELLOW .. L["Move to Top"] .. color.RESET .. " - " ..
                     "This will move the current condition group to the first slot in the list."))
 

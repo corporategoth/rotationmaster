@@ -1,6 +1,6 @@
-local _, addon = ...
+local addon_name, addon = ...
 
-local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
+local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 
 local AceGUI = LibStub("AceGUI-3.0")
 
@@ -51,7 +51,7 @@ local function ImportExport(conditions, update)
         end
         editbox:SetText(body)
     end
-    -- editbox.editBox:GetRegions():SetFont("Interface\\AddOns\\RotationMaster\\Fonts\\Inconsolata-Bold.ttf", 13)
+    -- editbox.editBox:GetRegions():SetFont("Interface\\AddOns\\" .. addon_name .. "\\Fonts\\Inconsolata-Bold.ttf", 13)
     editbox:SetCallback("OnTextChanged", function()
         import:SetDisabled(false)
     end)
@@ -202,10 +202,10 @@ local function layout_top_window(frame, group, update, filter)
 
     local function UpdateMoveButtons()
         if not cond_group_idx or cond_group_idx == 1 then
-            movetop:SetImage("Interface\\AddOns\\RotationMaster\\textures\\UI-ChatIcon-ScrollHome-Disabled")
+            movetop:SetImage("Interface\\AddOns\\" .. addon_name .. "\\textures\\UI-ChatIcon-ScrollHome-Disabled")
             movetop:SetDisabled(true)
         else
-            movetop:SetImage("Interface\\AddOns\\RotationMaster\\textures\\UI-ChatIcon-ScrollHome-Up")
+            movetop:SetImage("Interface\\AddOns\\" .. addon_name .. "\\textures\\UI-ChatIcon-ScrollHome-Up")
             movetop:SetDisabled(false)
         end
         if not cond_group_idx or cond_group_idx == 1 then
@@ -318,7 +318,7 @@ local function layout_top_window(frame, group, update, filter)
     importexport:SetImageSize(24, 24)
     if group == "ALL" or group == "CUSTOM" then
         importexport:SetDisabled(true)
-        importexport:SetImage("Interface\\AddOns\\RotationMaster\\textures\\UI-FriendsList-Small-Disabled")
+        importexport:SetImage("Interface\\AddOns\\" .. addon_name .. "\\textures\\UI-FriendsList-Small-Disabled")
     else
         importexport:SetDisabled(false)
         importexport:SetImage("Interface\\FriendsFrame\\UI-FriendsList-Small-Up")
@@ -498,7 +498,9 @@ local function layout_bottom_window(frame, group, selected, update)
     add:SetCallback("OnClick", function()
         addon:condition_edit_box(function(key)
             layout_bottom_window(frame, group, key, update)
-            update(key)
+            if update then
+                update(key)
+            end
         end)
     end)
     addon.AddTooltip(add, ADD)
@@ -508,7 +510,7 @@ local function layout_bottom_window(frame, group, selected, update)
     edit:SetImageSize(28, 28)
     edit:SetUserData("cell", { alignV = "bottom" })
     if not selected or addon.db.global.custom_conditions[selected] == nil then
-        edit:SetImage("Interface\\AddOns\\RotationMaster\\textures\\UI-FriendsList-Large-Disabled")
+        edit:SetImage("Interface\\AddOns\\" .. addon_name .. "\\textures\\UI-FriendsList-Large-Disabled")
         edit:SetDisabled(true)
     else
         edit:SetImage("Interface\\FriendsFrame\\UI-FriendsList-Large-Up")
@@ -624,7 +626,7 @@ local function layout_bottom_window(frame, group, selected, update)
     duplicate:SetImageSize(28, 28)
     duplicate:SetUserData("cell", { alignV = "bottom" })
     if not selected or addon.db.global.custom_conditions[selected] == nil then
-        duplicate:SetImage("Interface\\AddOns\\RotationMaster\\textures\\UI-ChatIcon-Maximize-Disabled")
+        duplicate:SetImage("Interface\\AddOns\\" .. addon_name .. "\\textures\\UI-ChatIcon-Maximize-Disabled")
         duplicate:SetDisabled(true)
     else
         duplicate:SetImage("Interface\\ChatFrame\\UI-ChatIcon-Maximize-Up")

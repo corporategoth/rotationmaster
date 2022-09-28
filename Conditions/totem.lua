@@ -1,16 +1,17 @@
-local _, addon = ...
+local addon_name, addon = ...
 
 -- Skip these if we're not a shaman .. no point having totem conditions for other classes.
 if select(2, UnitClass("player")) ~= "SHAMAN" then return end
 
 local AceGUI = LibStub("AceGUI-3.0")
-local L = LibStub("AceLocale-3.0"):GetLocale("RotationMaster")
+local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 local color = color
 local helpers = addon.help_funcs
 
 addon:RegisterCondition("TOTEM", {
     description = L["Totem Present"],
     icon = "Interface\\Icons\\spell_nature_manaregentotem",
+    fields = { spell = "number" },
     valid = function(_, value)
         return value.spell ~= nil and value.spell >= 1 and value.spell <= 4
     end,
@@ -47,6 +48,7 @@ addon:RegisterCondition("TOTEM", {
 addon:RegisterCondition("TOTEM_SPELL", {
     description = L["Specific Totem Present"],
     icon = "Interface\\Icons\\spell_nature_stoneskintotem",
+    fields = { spell = "number", ranked = "boolean" },
     valid = function(_, value)
         return value.spell ~= nil
     end,
@@ -84,6 +86,7 @@ addon:RegisterCondition("TOTEM_SPELL", {
 addon:RegisterCondition("TOTEM_REMAIN", {
     description = L["Totem Time Remaining"],
     icon = "Interface\\Icons\\spell_nature_agitatingtotem",
+    fields = { spell = "number", operator = "string", value = "string" },
     valid = function(_, value)
         return (value.spell ~= nil and value.spell >= 1 and value.spell <= 4 and
                 value.operator ~= nil and addon.isin(addon.operators, value.operator) and
@@ -136,6 +139,7 @@ addon:RegisterCondition("TOTEM_REMAIN", {
 addon:RegisterCondition("TOTEM_SPELL_REMAIN", {
     description = L["Specific Totem Time Remaining"],
     icon = "Interface\\Icons\\spell_fireresistancetotem_01",
+    fields = { spell = "number", ranked = "boolean", operator = "string", value = "string" },
     valid = function(_, value)
         return (value.spell ~= nil and value.operator ~= nil and addon.isin(addon.operators, value.operator) and
                 value.value ~= nil and value.value >= 0)
