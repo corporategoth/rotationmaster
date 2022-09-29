@@ -72,7 +72,11 @@ local defaults = {
         announces = {},
         minimap = {
             hide = false,
-        }
+        },
+        condition_groups = {},
+        switch_conditions = {},
+        other_conditions_order = {},
+        disabled_conditions = {},
     },
     char = {
         bindings = {},

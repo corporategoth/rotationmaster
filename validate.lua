@@ -40,7 +40,7 @@ local function validate_basic(prefix, data, template, fix)
             addon:warn("Incorrect type for %s:%s (was %s, expected %s)", prefix, tostring(k), type(v), type(template[k]))
             mark_for_remove(toremove, k)
         elseif type(v) == "table" then
-            if addon.tablelength(template[k]) > 0 then
+            if addon.tablelength(template[k]) > 0 and #template[k] == 0 then
                 validate_basic(prefix .. ":" .. k, v, template[k], fix)
             end
         end
@@ -67,7 +67,7 @@ function addon:validate_itemset(prefix, name, itemset, fix)
     if not is_uuid(name) then
         addon:warn("Invalid ID for itemset %s:%s", prefix, name)
         if fix then
-            addon.cleanArray(effect)
+            addon.cleanArray(itemset)
             return
         end
     end
@@ -76,7 +76,7 @@ function addon:validate_itemset(prefix, name, itemset, fix)
         name = "test",
         items = {}
     }
-    validate_basic(prefix, itemset, template, fix)
+    validate_basic(prefix .. ":" .. name, itemset, template, fix)
     validate_itemset_items(prefix, name, itemset.items, fix)
 end
 
@@ -244,6 +244,16 @@ function addon:validate_announce(prefix, idx, announce, fix)
             end
         end
     end
+end
+
+function addon:validate_condition_group(prefix, idx, group, fix)
+    local template = {
+        id = "61b36ed1-fa31-4656-ad71-f3d50f193a85",
+        name = "Some Group",
+        conditions = {}
+    }
+
+    validate_basic(prefix .. ":" .. idx, group, template, fix)
 end
 
 function addon:validate_custom_condition(prefix, name, custom_condition, fix)
@@ -542,7 +552,10 @@ end
 function addon:validate(template, fix)
     local DB = _G[addon_name .. "DB"]
 
-    validate_basic("global", DB.global, template.global, fix)
+    local glob_template = addon.deepcopy(template.global)
+    glob_template.itemsets = {}
+    glob_template.effects = {}
+    validate_basic("global", DB.global, glob_template, fix)
 
     if DB.global.itemsets then
         local toremove = {}
@@ -579,6 +592,35 @@ function addon:validate(template, fix)
 
     for char, data in pairs(DB.char) do
         validate_basic("char:" .. char, data, template.char, fix)
+        if data.bindings then
+            local toremove = {}
+            for id,buttons in pairs(data.bindings) do
+                if not is_uuid(id) then
+                    addon:warn("Binding for invalid itemset %s", id)
+                    if fix then
+                        mark_for_remove(toremove, id)
+                    end
+                end
+
+                local i = 1
+                while i <= #buttons do
+                    if type(buttons[i]) ~= "number" then
+                        addon:warn("Invalid button ID in button bindings %s:%s", char, id)
+                        if fix then
+                            table.remove(buttons, i)
+                        else
+                            i = i + 1
+                        end
+                    else
+                        i = i + 1
+                    end
+                end
+                if #buttons == 0 then
+                    mark_for_remove(toremove, id)
+                end
+            end
+            apply_remove(toremove, data.bindings, fix)
+        end
     end
 
     for profile, data in pairs(DB.profiles) do
@@ -626,6 +668,48 @@ function addon:validate(template, fix)
                     data.rotations[key] = nil
                 end
             end
+        end
+
+        if data.condition_groups then
+            local toremove = {}
+            for idx,group in pairs(data.condition_groups) do
+                if type(idx) ~= "number" then
+                    mark_for_remove(toremove, idx)
+                end
+                addon:validate_condition_group("profile:" .. profile, idx, group, fix)
+                if addon.tablelength(group) == 0 then
+                    mark_for_remove(toremove, idx)
+                end
+            end
+            apply_remove(toremove, data.condition_groups, fix)
+        end
+
+        local toremove = {}
+        if data.switch_conditions then
+            for idx,cond in pairs(data.switch_conditions) do
+                if type(idx) ~= "number" or type(cond) ~= "string" then
+                    mark_for_remove(toremove, idx)
+                end
+            end
+            apply_remove(toremove, data.switch_conditions, fix)
+        end
+
+        if data.other_conditions_order then
+            for idx,cond in pairs(data.other_conditions_order) do
+                if type(idx) ~= "number" or type(cond) ~= "string" then
+                    mark_for_remove(toremove, idx)
+                end
+            end
+            apply_remove(toremove, data.other_conditions_order, fix)
+        end
+
+        if data.disabled_conditions then
+            for idx,cond in pairs(data.disabled_conditions) do
+                if type(idx) ~= "number" or type(cond) ~= "string" then
+                    mark_for_remove(toremove, idx)
+                end
+            end
+            apply_remove(toremove, data.disabled_conditions, fix)
         end
     end
 end
