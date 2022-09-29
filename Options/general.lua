@@ -618,27 +618,24 @@ local function ImportExport(spec, rotation, parent)
     import:SetCallback("OnClick", function(_, _)
         local ok, res = AceSerializer:Deserialize(libc:Decompress(base64dec(editbox:GetText())))
         if ok then
-            rotation_settings[spec][rotation] = res
             if rotation == DEFAULT then
-                rotation_settings[spec][rotation].name = nil
+                res.name = nil
             elseif original_name ~= nil then
-                rotation_settings[spec][rotation].name = original_name
+                res.name = original_name
+            elseif res.name == nil then
+                res.name = date(L["Imported on %c"])
             else
-                original_name = rotation_settings[spec][rotation].name
-                if original_name == nil then
-                    rotation_settings[spec][rotation].name = date(L["Imported on %c"])
-                else
-                    -- Keep the imported name, IF it's a duplicate
-                    for k, v in pairs(rotation_settings[spec]) do
-                        if k ~= DEFAULT and k ~= rotation then
-                            if v.name == original_name then
-                                rotation_settings[spec][rotation].name = date(L["Imported on %c"])
-                                break
-                            end
+                for k, v in pairs(rotation_settings[spec]) do
+                    if k ~= DEFAULT and k ~= rotation then
+                        if v.name == res.name then
+                            res.name = date(L["Imported on %c"])
+                            break
                         end
                     end
                 end
             end
+            addon:validate_rotation(L["Import"], rotation, res, true)
+            rotation_settings[spec][rotation] = res
 
             frame:Hide()
             create_spec_options(parent, spec, rotation)

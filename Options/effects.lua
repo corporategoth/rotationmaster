@@ -1073,6 +1073,7 @@ ImportExport = function(effect, parent)
     import:SetCallback("OnClick", function(_, _)
         local ok, res = AceSerializer:Deserialize(libc:Decompress(base64dec(editbox:GetText())))
         if ok then
+            addon:validate_effect(L["Import"], res.name, effect, true)
             for _,e in pairs(effects) do
                 if e.name == res.name then
                     res.name = res.name .. " (" .. date(L["Imported on %c"]) .. ")"

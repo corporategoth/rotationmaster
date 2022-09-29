@@ -40,7 +40,7 @@ local function validate_basic(prefix, data, template, fix)
             addon:warn("Incorrect type for %s:%s (was %s, expected %s)", prefix, tostring(k), type(v), type(template[k]))
             mark_for_remove(toremove, k)
         elseif type(v) == "table" then
-            if #template[k] > 0 then
+            if addon.tablelength(template[k]) > 0 then
                 validate_basic(prefix .. ":" .. k, v, template[k], fix)
             end
         end
@@ -63,7 +63,7 @@ local function is_uuid(uuid)
     return uuid:match("(%x%x%x%x%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%x%x%x%x%x%x%x%x)") ~= nil
 end
 
-local function validate_itemset(prefix, name, itemset, fix)
+function addon:validate_itemset(prefix, name, itemset, fix)
     if not is_uuid(name) then
         addon:warn("Invalid ID for itemset %s:%s", prefix, name)
         if fix then
@@ -80,7 +80,7 @@ local function validate_itemset(prefix, name, itemset, fix)
     validate_itemset_items(prefix, name, itemset.items, fix)
 end
 
-local function validate_effect(prefix, name, effect, fix)
+function addon:validate_effect(prefix, name, effect, fix)
     if not is_uuid(name) then
         addon:warn("Invalid ID for effect %s:%s", prefix, name)
         if fix then
@@ -195,7 +195,7 @@ local function validate_effect(prefix, name, effect, fix)
     end
 end
 
-local function validate_announce(prefix, idx, announce, fix)
+function addon:validate_announce(prefix, idx, announce, fix)
     if not announce["type"] then
         addon:warn("No announce type for %s:%s", prefix, idx)
         if fix then
@@ -246,7 +246,7 @@ local function validate_announce(prefix, idx, announce, fix)
     end
 end
 
-local function validate_custom_condition(prefix, name, custom_condition, fix)
+function addon:validate_custom_condition(prefix, name, custom_condition, fix)
     validate_basic(prefix .. ":" .. name, custom_condition, addon.empty_condition, fix)
 
     local function validate_custom_field_spec(parent, spec)
@@ -330,6 +330,7 @@ local function validate_rotation_condition(prefix, condition, fix)
                 addon:warn("Extra Field %s.%s", full_id, newsubtree)
                 mark_for_remove(keyremove, key)
             elseif type(field) == "table" then
+                -- The #field specifies this is an array, specifically.
                 if #field > 0 then
                     local found = handle_array_field(data, field)
                     if not found then
@@ -387,7 +388,7 @@ local function validate_rotation_condition(prefix, condition, fix)
     handle_fields(condition, fields)
 end
 
-local function validate_rotation(prefix, id, rotation, fix)
+function addon:validate_rotation(prefix, id, rotation, fix)
     if id ~= DEFAULT and not is_uuid(id) then
         addon:warn("Invalid ID for rotation %s:%s", prefix, id)
         if fix then
@@ -489,7 +490,7 @@ local function validate_rotation(prefix, id, rotation, fix)
                 validate_rotation_condition( string.format("%s:%s:cooldowns:%d", prefix, id, idx),
                         rot["conditions"], fix)
             end
-            if #rot == 0 then
+            if addon.tablelength(rot) == 0 then
                 mark_for_remove(toremove, idx)
             end
         end
@@ -525,7 +526,7 @@ local function validate_rotation(prefix, id, rotation, fix)
                 validate_rotation_condition( string.format("%s:%s:rotation:%d", prefix, id, idx),
                         rot["conditions"], fix)
             end
-            if #rot == 0 then
+            if addon.tablelength(rot) == 0 then
                 mark_for_remove(toremove, idx)
             end
         end
@@ -546,8 +547,8 @@ function addon:validate(template, fix)
     if DB.global.itemsets then
         local toremove = {}
         for name, itemset in pairs(DB.global.itemsets) do
-            validate_itemset("global", name, itemset, fix)
-            if #itemset == 0 then
+            addon:validate_itemset("global", name, itemset, fix)
+            if addon.tablelength(itemset) == 0 then
                 mark_for_remove(toremove, name)
             end
         end
@@ -557,8 +558,8 @@ function addon:validate(template, fix)
     if DB.global.effects then
         local toremove = {}
         for name, effect in pairs(DB.global.effects) do
-            validate_effect("global", name, effect, fix)
-            if #effect == 0 then
+            addon:validate_effect("global", name, effect, fix)
+            if addon.tablelength(effect) == 0 then
                 mark_for_remove(toremove, name)
             end
         end
@@ -568,8 +569,8 @@ function addon:validate(template, fix)
     if DB.global.custom_conditions then
         local toremove = {}
         for name, custom_condition in pairs(DB.global.custom_conditions) do
-            validate_custom_condition("global", name, custom_condition, fix)
-            if #custom_condition == 0 then
+            addon:validate_custom_condition("global", name, custom_condition, fix)
+            if addon.tablelength(custom_condition) == 0 then
                 mark_for_remove(toremove, name)
             end
         end
@@ -586,8 +587,8 @@ function addon:validate(template, fix)
         if data.itemsets then
             local toremove = {}
             for name, itemset in pairs(data.itemsets) do
-                validate_itemset("profile:" .. profile, name, itemset, fix)
-                if #itemset == 0 then
+                addon:validate_itemset("profile:" .. profile, name, itemset, fix)
+                if addon.tablelength(itemset) == 0 then
                     mark_for_remove(toremove, name)
                 end
             end
@@ -597,8 +598,8 @@ function addon:validate(template, fix)
         if data.announces then
             local toremove = {}
             for idx, announce in pairs(data.announces) do
-                validate_announce("profile:" .. profile, idx, announce, fix)
-                if announce == 0 then
+                addon:validate_announce("profile:" .. profile, idx, announce, fix)
+                if addon.tablelength(announce) == 0 then
                     mark_for_remove(toremove, idx)
                 end
             end
@@ -613,8 +614,8 @@ function addon:validate(template, fix)
                 end
                 local toremove = {}
                 for id, rotation in pairs(rotations) do
-                    validate_rotation("profile:" .. profile .. ":" .. spec, id, rotation, fix)
-                    if #rotation == 0 then
+                    addon:validate_rotation("profile:" .. profile .. ":" .. spec, id, rotation, fix)
+                    if addon.tablelength(rotation) == 0 then
                         mark_for_remove(toremove, id)
                     end
                 end

@@ -268,13 +268,8 @@ local function ImportExport(parent, update, key, condition)
                 button1 = YES,
                 button2 = NO,
                 OnAccept = function()
-                    local new_condition = {}
-                    for key, def in pairs(addon.empty_condition) do
-                        if res[key] ~= nil and type(def) == type(res[key]) then
-                            new_condition[key] = res[key]
-                        end
-                    end
-                    layout_condition_edit_box(parent, update, key, new_condition)
+                    addon:validate_custom_condition(L["Import"], key, res, true)
+                    layout_condition_edit_box(parent, update, key, res)
                     frame:Hide()
                 end,
                 showAlert = 1,
