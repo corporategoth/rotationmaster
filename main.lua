@@ -174,14 +174,16 @@ function addon:HandleCommand(str)
     local cmd, npos = AceConsole:GetArgs(str, 1, 1)
 
     if not cmd or cmd == "help" then
-        addon:print(L["/rm help                - This text"])
-        addon:print(L["/rm config              - Open the config dialog"])
-        addon:print(L["/rm disable             - Disable battle rotation"])
-        addon:print(L["/rm enable              - Enable battle rotation"])
-        addon:print(L["/rm toggle              - Toggle between enabled and disabled"])
-        addon:print(L["/rm current             - Print out the name of the current rotation"])
+        addon:print(L["/rm help                - This text."])
+        addon:print(L["/rm config              - Open the config dialog."])
+        addon:print(L["/rm disable             - Disable battle rotation."])
+        addon:print(L["/rm enable              - Enable battle rotation."])
+        addon:print(L["/rm toggle              - Toggle between enabled and disabled."])
+        addon:print(L["/rm current             - Print out the name of the current rotation."])
         addon:print(L["/rm set [auto|profile]  - Switch to a specific rotation, or use automatic switching again."])
         addon:print(L["                          This is reset upon switching specializations."])
+        addon:print(L["/rm check               - Check the database integrity."])
+        addon:print(L["/rm repair              - Fix any DB errors found in the data with internal validation."])
 
     elseif cmd == "config" then
         InterfaceOptionsFrame_OpenToCategory(self.optionsFrames.Rotation.frame)
@@ -250,6 +252,12 @@ function addon:HandleCommand(str)
             end
             addon:warn(L["Could not find rotation named " .. color.WHITE .. "%s" .. color.WARN .. " for your current specialization."], name)
         end
+    elseif cmd == "check" then
+        addon:print(L["Validating database integrity"])
+        self:validate(defaults, false)
+    elseif cmd == "repair" then
+        addon:print(L["Validating database integrity"])
+        self:validate(defaults, true)
     else
         addon:warn(L["Invalid option " .. color.WHITE .. "%s" .. color.WARN], cmd)
     end

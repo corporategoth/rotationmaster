@@ -7,14 +7,16 @@ local color = color
 
 -- from main.lua
 
-L["/rm help                - This text"] = true
-L["/rm config              - Open the config dialog"] = true
-L["/rm disable             - Disable battle rotation"] = true
-L["/rm enable              - Enable battle rotation"] = true
-L["/rm toggle              - Toggle between enabled and disabled"] = true
-L["/rm current             - Print out the name of the current rotation"] = true
+L["/rm help                - This text."] = true
+L["/rm config              - Open the config dialog."] = true
+L["/rm disable             - Disable battle rotation."] = true
+L["/rm enable              - Enable battle rotation."] = true
+L["/rm toggle              - Toggle between enabled and disabled."] = true
+L["/rm current             - Print out the name of the current rotation."] = true
 L["/rm set [auto|profile]  - Switch to a specific rotation, or use automatic switching again."] = true
 L["                          This is reset upon switching specializations."] = true
+L["/rm check               - Check the database integrity."] = true
+L["/rm repair              - Fix any DB errors found in the data with internal validation."] = true
 
 L["No rotation is currently active."] = true
 L["The current rotation is " .. color.WHITE .. "%s" .. color.INFO] = true
@@ -31,6 +33,7 @@ L["Battle rotation disabled"] = true
 L["Current Rotation"] = true
 L["Automatic Switching"] = true
 L["Toggle %s " .. color.CYAN .. "/rm toggle" .. color.RESET] = true
+L["Validating database integrity"] = true
 
 L["[Tier: %d, Column: %d]"] = true
 L["Autoswitch rotation list has been updated."] = true
