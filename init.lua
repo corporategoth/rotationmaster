@@ -471,12 +471,16 @@ local function upgradeRuneTypes()
     end)
 end
 
-local function upgradeBindingSlots()
+local function upgradeBindingSlots()A
     local DB = _G[addon_name .. "DB"]
-    for _,char in pairs(DB.char) do
-        for id,val in pairs(char.bindings) do
-            if type(val) == "number" then
-                char.bindings[id] = { val }
+    if DB.char then
+        for _,char in pairs(DB.char) do
+            if char.bindings then
+                for id,val in pairs(char.bindings) do
+                    if type(val) == "number" then
+                        char.bindings[id] = { val }
+                    end
+                end
             end
         end
     end
