@@ -142,7 +142,7 @@ local function create_primary_options(frame)
     minimap:SetCallback("OnValueChanged", function(_, _, val)
         profile["minimap"].hide = not val
         if val then
-            DBIcon:Show(addon.namen)
+            DBIcon:Show(addon.name)
         else
             DBIcon:Hide(addon.name)
         end
