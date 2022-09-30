@@ -60,7 +60,7 @@ local function validate_itemset_items(prefix, name, items, fix)
 end
 
 local function is_uuid(uuid)
-    return uuid:match("(%x%x%x%x%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%x%x%x%x%x%x%x%x)") ~= nil
+    return type(uuid) == "string" and uuid:match("(%x%x%x%x%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%x%x%x%x%x%x%x%x)") ~= nil
 end
 
 function addon:validate_itemset(prefix, name, itemset, fix)
