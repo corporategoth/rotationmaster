@@ -471,7 +471,7 @@ local function upgradeRuneTypes()
     end)
 end
 
-local function upgradeBindingSlots()A
+local function upgradeBindingSlots()
     local DB = _G[addon_name .. "DB"]
     if DB.char then
         for _,char in pairs(DB.char) do
