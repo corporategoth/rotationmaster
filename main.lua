@@ -1449,6 +1449,7 @@ addon.PLAYER_REGEN_DISABLED = wrapEvent(function(self)
     self.lastMainSwing = nil
     self.lastOffSwing = nil
     self.combatCache = {}
+    self.combatStart = GetTime()
 end)
 
 addon.PLAYER_REGEN_ENABLED = wrapEvent(function(self)
@@ -1457,6 +1458,7 @@ addon.PLAYER_REGEN_ENABLED = wrapEvent(function(self)
     self.lastMainSwing = nil
     self.lastOffSwing = nil
     self.combatCache = {}
+    self.combatStart = nil
 
     self:SwitchRotation()
 

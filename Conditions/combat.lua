@@ -656,3 +656,41 @@ addon:RegisterCondition("COMBAT_HISTORY_TIME", {
             "screen ago will not be available.")
     end
 })
+
+addon:RegisterCondition("TIME_IN_COMBAT", {
+    description = "Time Since Combat Start",
+    icon = "Interface\\Icons\\Spell_holy_borrowedtime",
+    fields = { operator = "string", value = "number" },
+    valid = function(_, value)
+        return ( value.operator ~= nil and addon.isin(addon.operators, value.operator) and value.value ~= nil and value.value >= 0)
+    end,
+    evaluate = function(value, _, evalStart)
+        if addon.combatStart ~= nil then
+            return addon.compare(value.operator, (evalStart - addon.combatStart), value.value)
+        end
+        return false
+    end,
+    print = function(_, value)
+        return string.format("Time in combat is %s %s seconds",
+        addon.nullable(addon.operators[value.operator], L["<operator>"]),
+        addon.nullable(value.value))    
+    end,
+    widget = function(parent, spec, value)
+        local top = parent:GetUserData("top")
+        local root = top:GetUserData("root")
+        local funcs = top:GetUserData("funcs")
+
+        local operator_group = addon:Widget_OperatorWidget(value, L["Seconds"],
+            function() top:SetStatusText(funcs:print(root, spec)) end)
+        parent:AddChild(operator_group)
+    end,
+    help = function(frame)
+        addon.layout_condition_unitwidget_help(frame)
+        frame:AddChild(helpers.Gap())
+        addon.layout_condition_operatorpercentwidget_help(frame, L["Time Since Combat Start"], L["Seconds"],
+        "This condition checks how long you've been in combat. For example, if the operator is set to 'is less than' and the " ..
+        "value is set to 5, this condition will only be true if you have been in combat for less than 5 seconds, or if the " ..
+        "operator is set to 'is greater than' and the value is set to 10, the condition will only be true if you have been in " ..
+        "combat for more than 10 seconds. This is very useful for adjusting rotation priorities for openers vs. normal rotation")
+    end
+})
