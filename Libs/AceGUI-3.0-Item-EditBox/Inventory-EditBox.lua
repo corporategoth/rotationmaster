@@ -21,8 +21,8 @@ do
             end
 		end
 		for i=0,4 do
-			for j=1,GetContainerNumSlots(i) do
-				local itemId = GetContainerItemID(i, j)
+			for j=1,C_Container.GetContainerNumSlots(i) do
+				local itemId = C_Container.GetContainerItemID(i, j)
 				if itemId ~= nil then
 					playerItems[itemId] = true
 				end

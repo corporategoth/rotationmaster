@@ -1379,8 +1379,8 @@ end)
 function addon:UpdateBagContents(cache)
     self.bagContents = {}
     for i=0,4 do
-        for j=1, GetContainerNumSlots(i) do
-            local _, qty, _, _, _, _, _, _, _, itemId = getCached(cache, GetContainerItemInfo, i, j);
+        for j=1, C_Container.GetContainerNumSlots(i) do
+            local _, qty, _, _, _, _, _, _, _, itemId = getCached(cache, C_Containter.GetContainerItemInfo, i, j);
             if itemId then
                 if self.bagContents[itemId] == nil then
                     self.bagContents[itemId] = {
