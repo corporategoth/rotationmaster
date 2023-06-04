@@ -1612,7 +1612,7 @@ addon.UNIT_SPELLCAST_SUCCEEDED = wrapEvent(function(self, event, unit, castguid,
     end
     if unit == 'player' or unit == 'pet' then
         table.insert(self.spellHistory, 1, {
-            spell = spellId,
+            spell = spellid, --[[ this was causing spellid to be nil in spellHistory, breaking the spell history conditions. ]]
             time = GetTime()
         })
     end
