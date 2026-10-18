@@ -16,7 +16,8 @@ local function fixture(attributes, methods, legacy)
     env.LibStub = setmetatable({GetLibrary = function() return nil end}, {
         __call = function(_, name)
             if name == 'AceLocale-3.0' then return {GetLocale = function() return L end} end
-            if name == 'LibCustomGlow-1.0' or name == 'AceGUI-3.0' then return {} end
+            if name == 'LibCustomGlow-1.0' then return {PixelGlow_Stop=function() end,AutoCastGlow_Stop=function() end,ButtonGlow_Stop=function() end} end
+            if name == 'AceGUI-3.0' then return {} end
             error('Unexpected library ' .. name)
         end,
     })
@@ -34,7 +35,7 @@ local function fixture(attributes, methods, legacy)
     function addon:debug() end
     function addon:verbose() end
     local presentation=assert(loadfile('Core/presentation.lua'));setfenv(presentation,env);presentation('rotationmaster',addon)
-    for _,path in ipairs({'Platform/client.lua','Platform/spells.lua','Platform/items.lua'}) do
+    for _,path in ipairs({'Platform/client.lua','Platform/spells.lua','Platform/items.lua','Platform/macros.lua'}) do
         local load=assert(loadfile(path));setfenv(load,env);load('rotationmaster',addon)
     end
     local chunk = assert(loadfile('buttons.lua')); setfenv(chunk, env); chunk('rotationmaster', addon)
@@ -165,6 +166,27 @@ test('items sharing a use spell require the exact mapped item for lookup and bot
     assert(not lit[first][234] and lit[second][234],'optional item change retained the outgoing item glow')
     a:GlowClear();a:GlowCooldown(234,false,step)
     assert(not lit[second].next and not lit[second][234])
+end)
+test('spell macro buttons normalize current and historical spell identities',function()
+    for _,legacyTuple in ipairs({false,true}) do
+        local env,a=fixture({type='macro',macro=1},{})
+        env.GetMacroItem=function() return nil,nil end
+        env.GetMacroSpell=function(id) assert(id==1);if legacyTuple then return 'Fireball','Rank 1',133 end;return 133 end
+        a:Fetch();assert(a:FindSpell({133})==133,'macro spell return shape was not mapped')
+    end
+end)
+test('unavailable macro observations skip one button without stopping ordinary discovery or reviving old mappings',function()
+    local env,a,bad=fixture({type='macro',macro=1},{})
+    env.GetMacroItem=function() return nil,nil end;env.GetMacroSpell=function() return 133 end
+    a:Fetch();assert(a:FindSpell({133})==133)
+    local second={GetAttribute=function(_,key) if key=='type' then return 'spell' elseif key=='spell' then return 133 end end}
+    env.ActionButton2=second
+    env.GetMacroItem=nil
+    a:Fetch();assert(a:FindSpell({133})==133)
+    local lit={};a.Glow=function(_,button) lit[button]=true end;a.db.profile.effect='test';a.db.global.effects.test={type='pixel'}
+    a:GlowNextSpell(133);assert(lit[second] and not lit[bad],'uncertain macro was retained as a spell action')
+    env.GetMacroItem=function() error('temporary failure') end;a:Fetch();assert(a:FindSpell({133})==133)
+    env.GetMacroItem=function() return nil,nil end;env.ActionButton2=nil;a:Fetch();assert(a:FindSpell({133})==133)
 end)
 print(string.format('%d passed, %d failed', passed, failed))
 os.exit(failed == 0 and 0 or 1)

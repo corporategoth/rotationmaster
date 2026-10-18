@@ -330,17 +330,9 @@ local function AddStandardButton(button)
 		end
 
 		if type == 'macro' then
-			local item = select(2, GetMacroItem(actionType))
-        	if item ~= nil then
-				itemId=addon.Platform:GetItemID(item)
-                if not itemId then return end
-                spellId = itemUseSpellID(itemId)
-			else
-				spellId = GetMacroSpell(actionType)
-            end
-			if not spellId then
-				return
-			end
+            local action=addon.Platform:GetMacroAction(actionType)
+            if not action then return end
+            spellId,itemId=action.spellID,action.itemID
 			addon:verbose("Found macro button with spell ID %s", spellId)
 		elseif type == 'item' then
 			itemId=addon.Platform:GetItemID(actionType)
