@@ -59,7 +59,7 @@ local function fixture(modern, absentThreat)
         chunk('rotationmaster', addon)
     end
     env.WOW_PROJECT_BURNING_CRUSADE_CLASSIC=5
-    load('Platform/client.lua');load('Platform/items.lua');load('Platform/inventory.lua');load('Platform/specializations.lua');load('Core/action_policy.lua');load('Core/inventory.lua')
+    load('Platform/client.lua');load('Platform/items.lua');load('Platform/inventory.lua');load('Platform/specializations.lua');load('Core/action_policy.lua');load('Core/inventory.lua');load('Core/rotation_references.lua')
     load('Data/plain.lua');load('Data/tags.lua');load('Data/rotation_tree.lua');load('Data/validation.lua');load('Core/rotation_sequence.lua');load('Core/rotation_selection.lua')
     return env, addon, load
 end
@@ -990,6 +990,18 @@ test('runtime bag snapshots discard incomplete observations without publishing p
         assert(next(a.bagContents)==nil,'failed scan published partial or stale inventory')
     end
     bad=nil;assert(a:UpdateBagContents(nil)==true and a.bagContents[5512].count==2 and a.bagContentsUnavailable==nil)
+end)
+test('real AceDB global item references refresh packaged validation without copying into profile data',function()
+    local _,a=persistentFixture();local id='fixture.global-items'
+    local pack={format='RotationMaster',schemaVersion=1,id=id,revision=1,nameKey='Global reference fixture',descriptionKey='Fixture',
+        applicability={families={'tbc'},actionContext='player',class='SHAMAN'},body={rotation={{id='global-item',type='item',action='shared'}},cooldowns={}}}
+    a.db.global.itemsets.shared={name='Shared',items={5512}}
+    assert(a:RegisterDefaultRotation(pack));assert(a:InitializeRotationLibrary())
+    local function row() for _,value in ipairs(a:ListDefaultRotations(0)) do if value.id==id then return value end end end
+    assert(row().eligible and a.db.profile.itemsets.shared==nil)
+    a.db.global.itemsets.shared=nil;assert(not row().eligible)
+    a.db.global.itemsets.shared={name='Restored',items={5512}};assert(row().eligible)
+    assert(a.db.profile.itemsets.shared==nil,'reference normalization wrote global sets into the profile')
 end)
 print(string.format('%d passed, %d failed', passed, failures))
 os.exit(failures == 0 and 0 or 1)

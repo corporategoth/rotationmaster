@@ -249,6 +249,7 @@ function addon:RegisterCondition(tag, array)
         conditions[tag].on_unregister(tag)
     end
     conditions[tag] = array
+    self.conditionRegistryVersion=(self.conditionRegistryVersion or 0)+1
     quarantined[array] = nil
     if array.on_register then
         array.on_register(tag)
@@ -259,6 +260,7 @@ function addon:UnregisterCondition(tag)
     if conditions[tag] and conditions[tag].on_unregister then
         conditions[tag].on_unregister(tag)
     end
+    if conditions[tag]~=nil then self.conditionRegistryVersion=(self.conditionRegistryVersion or 0)+1 end
     conditions[tag] = nil
 end
 

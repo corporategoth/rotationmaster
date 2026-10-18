@@ -12,6 +12,12 @@ local function definition(result)
     return {valid=function() return true end,evaluate=function() return result end,
             print=function() return result and 'yes' or 'no' end,fields={},description='Fixture'}
 end
+test('registry revision tracks replacements including same-object schemas and removal',function()
+    local before=addon.conditionRegistryVersion or 0;local schema=definition(true)
+    addon:RegisterCondition('VERSION',schema);assert(addon.conditionRegistryVersion==before+1)
+    addon:RegisterCondition('VERSION',schema);assert(addon.conditionRegistryVersion==before+2)
+    addon:UnregisterCondition('VERSION');assert(addon.conditionRegistryVersion==before+3)
+end)
 addon:RegisterCondition('YES',definition(true));addon:RegisterCondition('NO',definition(false))
 test('nested Boolean evaluation preserves priority-condition truth tables',function()
     assert(addon:evaluateCondition({type='AND',value={{type='YES'},{type='NOT',value={type='NO'}}}}))

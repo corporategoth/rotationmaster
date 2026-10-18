@@ -107,8 +107,8 @@ function data.NewCatalog(options)
         end
         return view
     end
-    local function storable(envelope)
-        local validation = data.ValidateEnvelope(envelope, options.validation)
+    local function storable(envelope, structuralOnly)
+        local validation = data.ValidateEnvelope(envelope, not structuralOnly and options.validation or nil)
         if not validation.valid or not id(envelope.id) or type(envelope.revision) ~= "number"
             or envelope.revision < 1 or envelope.revision % 1 ~= 0 then return nil, "invalid-envelope", validation end
         local copy, why = data.CopyData(envelope)
@@ -117,7 +117,10 @@ function data.NewCatalog(options)
     end
 
     function catalog:RegisterBuiltin(envelope)
-        local copy, why, validation = storable(envelope)
+        -- A changed extension schema can invalidate an otherwise intact shipped
+        -- definition. Retain its source; snapshots expose current diagnostics and
+        -- runtime eligibility keeps it inert. Custom saves remain strictly checked.
+        local copy, why, validation = storable(envelope, true)
         if not copy then return false, why, validation end
         local previous = builtins[copy.id]
         if previous and copy.revision <= previous.revision then return false, "revision-not-newer" end

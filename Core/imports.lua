@@ -2,10 +2,7 @@ local _,addon=...
 local data=addon.RotationData
 local function plain(value) return type(value)=="table" and getmetatable(value)==nil end
 local function settings(self)
-    local itemsets={}
-    for key,value in pairs(self.db.global.itemsets or {}) do itemsets[key]=value end
-    for key,value in pairs(self.db.profile.itemsets or {}) do itemsets[key]=value end
-    return {conditions=self.conditionDefinitions,itemsets=itemsets,effects=self.db.global.effects}
+    local options=self:GetRotationValidationOptions();return options
 end
 function addon:GetImportValidationOptions() return settings(self) end
 function addon:GetImportedRotationView(spec,id)

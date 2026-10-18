@@ -45,6 +45,7 @@ end
 
 function addon:InitializeRotationLibrary()
     local profile=self.db.profile
+    local validation,referenceStamp=self:GetRotationValidationOptions()
     local state=profile.rotationLibrary
     if state==nil then state={};profile.rotationLibrary=state end
     if not plainTable(state) then active=nil;return false,"invalid-library-state" end
@@ -55,7 +56,7 @@ function addon:InitializeRotationLibrary()
     -- Only preferences are shared with the persisted namespace. Clone construction
     -- uses a temporary catalog; the legacy editor retains the sole saved body.
     local catalog,why=data.NewCatalog({state={preferences=state.preferences},
-        validation={conditions=self.conditionDefinitions,itemsets=profile.itemsets,effects=self.db.global.effects},newId=self.uuid})
+        validation=validation,newId=self.uuid})
     if not catalog then active=nil;return false,why end
     local views,bodies={},{}
     for id,envelope in pairs(definitions) do
@@ -65,15 +66,14 @@ function addon:InitializeRotationLibrary()
         bodies[id]=data.CopyData(views[id].envelope.body)
         bodies[id].name=L[views[id].nameKey]
     end
-    active={profile=profile,state=state,catalog=catalog,views=views,bodies=bodies,cloneScopes={},version=definitionVersion}
+    active={profile=profile,state=state,catalog=catalog,views=views,bodies=bodies,cloneScopes={},version=definitionVersion,referenceStamp=referenceStamp}
     for spec,origins in pairs(state.origins) do
         if type(spec)=="number" and plainTable(origins) then
             active.cloneScopes[spec]={}
             for id in pairs(origins) do
                 local view=self:GetSourcedRotationView(spec,id)
                 if view then
-                    view.validation=data.ValidateEnvelope(view.envelope,{conditions=self.conditionDefinitions,
-                        itemsets=profile.itemsets,effects=self.db.global.effects})
+                    view.validation=data.ValidateEnvelope(view.envelope,validation)
                     view.enabled=true
                 end
                 active.cloneScopes[spec][id]=view or false
@@ -83,8 +83,9 @@ function addon:InitializeRotationLibrary()
     return true
 end
 local function ensure(self)
+    local _,referenceStamp=self:GetRotationValidationOptions()
     if not active or active.profile~=self.db.profile or active.state~=self.db.profile.rotationLibrary
-        or active.version~=definitionVersion then return self:InitializeRotationLibrary() end
+        or active.version~=definitionVersion or active.referenceStamp~=referenceStamp then return self:InitializeRotationLibrary() end
     return true
 end
 
@@ -170,8 +171,7 @@ function addon:GetRuntimeRotations(spec, internal, candidates)
             -- The legacy editor mutates the saved body directly. Inspect its
             -- current structure without copying/traversing the historical baseline.
             scoped.envelope.body=body
-            scoped.validation=data.ValidateEnvelope(scoped.envelope,{conditions=self.conditionDefinitions,
-                itemsets=self.db.profile.itemsets,effects=self.db.global.effects})
+            scoped.validation=data.ValidateEnvelope(scoped.envelope,self:GetRotationValidationOptions())
             scoped.applicability=scoped.envelope.applicability
         end
         if not origins or plainTable(origins) and origins[id]==nil
@@ -213,8 +213,7 @@ function addon:CloneDefaultRotation(spec,id,name)
     self.db.profile.rotations[spec]=rotations;rotations[generated]=body
     active.state.origins[spec]=origins;origins[generated]={manifest=manifest,lineage=view.lineage}
     local scoped=self:GetSourcedRotationView(spec,generated)
-    scoped.validation=data.ValidateEnvelope(scoped.envelope,{conditions=self.conditionDefinitions,
-        itemsets=self.db.profile.itemsets,effects=self.db.global.effects})
+    scoped.validation=data.ValidateEnvelope(scoped.envelope,self:GetRotationValidationOptions())
     scoped.enabled=true
     active.cloneScopes[spec]=active.cloneScopes[spec] or {};active.cloneScopes[spec][generated]=scoped
     return generated

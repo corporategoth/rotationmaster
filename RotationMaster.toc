@@ -45,6 +45,7 @@ profiler.lua
 Diagnostics/errors.lua
 Core/conditions.lua
 Core/item_conditions.lua
+Core/rotation_references.lua
 Core/item_sets.lua
 Core/inventory.lua
 Core/presentation.lua

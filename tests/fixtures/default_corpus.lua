@@ -61,7 +61,8 @@ local function sourceURL(value)
 end
 function C.check(f,pack,strict)
     local a=f.addon
-    local report=a.RotationData.ValidateEnvelope(pack,{conditions=strict and a.conditionDefinitions or nil,itemsets=a.db.profile.itemsets,effects=a.db.global.effects})
+    local options=a:GetRotationValidationOptions();if not strict then options.conditions=nil end
+    local report=a.RotationData.ValidateEnvelope(pack,options)
     local diagnostics={};for _,issue in ipairs(report.diagnostics) do diagnostics[#diagnostics+1]=issue.path..':'..issue.code end
     local label=tostring(pack.id)..' '..table.concat(diagnostics,', ')
     assert(report.valid,label)

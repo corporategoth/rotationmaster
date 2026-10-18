@@ -100,6 +100,15 @@ test('unsupported built-ins and invalid saved customs remain inspectable without
     assert(#c:List()==2 and c:Get('broken').validation.valid==false)
     assert(state.custom.broken.unexpected==true)
 end)
+test('packaged source stays inspectable when a registered condition schema becomes incompatible',function()
+    local data,envelope,validation=make();local a={RotationData=data};assert(loadfile('Data/catalog.lua'))('rotationmaster',a)
+    validation.conditions.SPELL_KNOWN.fields.spell='string'
+    local c=assert(data.NewCatalog({validation=validation,state={}}));local source=envelope()
+    assert(c:RegisterBuiltin(source),'current condition schema prevented retaining a structurally valid packaged source')
+    local view=c:Get(source.id);assert(view.readOnly and not view.validation.valid and not view.enabled)
+    assert(view.envelope.body.rotation[1].conditions.spell==403 and #c:List()==1)
+    source.id='custom';assert(not c:AddCustom(source),'strict custom validation was weakened')
+end)
 test('custom rename, disable and delete affect only the user-owned saved record',function()
     local state={}
     local c,envelope=fixture(state);local source=envelope();assert(c:RegisterBuiltin(source))

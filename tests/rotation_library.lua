@@ -9,6 +9,7 @@ local function fixture()
     local n=0;addon.uuid=function() n=n+1;return '00000000-0000-0000-0000-'..string.format('%012d',n) end
     local env=setmetatable({LibStub=function() return {GetLocale=function() return setmetatable({}, {__index=function(_,k) return k end}) end} end},{__index=_G})
     local function load(p) local f=assert(loadfile(p));setfenv(f,env);f('rotationmaster',addon) end
+    load('Core/rotation_references.lua')
     load('Data/catalog.lua');load('Data/diff.lua');load('Core/rotation_library.lua');load('Core/rotation_tags.lua')
     addon.GetRotationContext=function() return context end
     return addon,envelope,context,load
@@ -270,5 +271,73 @@ test('custom deletion removes only its provenance and refuses defaults fallback 
     assert(a:DeleteCustomRotation(0,'user'));assert(cleared and not a.currentRotation and not a.manualRotation)
     assert(not a:GetEditableRotation(0,'user'))
     for _,field in ipairs({'origins','comparisons','imports'}) do assert(state[field][0].user==nil and state[field][0].other) end
+end)
+test('packaged and cloned item actions resolve global sets while explicit personal entries keep precedence',function()
+    local a,envelope=fixture();local pack=envelope();pack.body.rotation[1]={id='item-step',type='item',action='shared',conditions={}}
+    a.db.global.itemsets={shared={name='Shared',items={5512}}}
+    assert(a:RegisterDefaultRotation(pack));assert(a:InitializeRotationLibrary())
+    local row=a:ListDefaultRotations(0)[1];assert(row.eligible,'global set was omitted from default validation')
+    local clone=assert(a:CloneDefaultRotation(0,pack.id,'Items'));assert(a:GetRuntimeRotations(0)[clone])
+    a.db.profile.itemsets.shared=false
+    assert(not a:ListDefaultRotations(0)[1].eligible and not a:GetRuntimeRotations(0)[clone],'personal false fell through to global data')
+    a.db.profile.itemsets.shared=nil;assert(a:ListDefaultRotations(0)[1].eligible and a:GetRuntimeRotations(0)[clone])
+end)
+test('reference additions removal and effect recovery refresh default eligibility without reloading',function()
+    local a,envelope=fixture();local pack=envelope();pack.body.rotation[1]={id='item-step',type='item',action='shared',conditions={},effect='outline'}
+    assert(a:RegisterDefaultRotation(pack));assert(a:InitializeRotationLibrary());assert(not a:ListDefaultRotations(0)[1].eligible)
+    a.db.global.itemsets={shared={items={5512}}};a.db.global.effects.outline={}
+    assert(a:ListDefaultRotations(0)[1].eligible,'added references did not refresh the cached default')
+    a.db.global.effects.outline=nil;assert(not a:ListDefaultRotations(0)[1].eligible)
+    a.db.global.effects.outline={};assert(a:ListDefaultRotations(0)[1].eligible)
+    a.db.global.itemsets.shared=nil;assert(not a:ListDefaultRotations(0)[1].eligible)
+end)
+test('schema changes refresh defaults while unchanged lookups avoid revalidating packaged graphs',function()
+    local a,envelope=fixture();assert(a:RegisterDefaultRotation(envelope()));assert(a:InitializeRotationLibrary())
+    local validate=a.RotationData.ValidateEnvelope;local calls=0
+    a.RotationData.ValidateEnvelope=function(...) calls=calls+1;return validate(...) end
+    for _=1,3 do assert(a:ListDefaultRotations(0)[1].eligible);a:GetRuntimeRotations(0) end
+    assert(calls==0,'unchanged lookups revalidated packaged graphs')
+    local schema=a.conditionDefinitions.SPELL_KNOWN;a.conditionDefinitions.SPELL_KNOWN=nil
+    assert(not a:ListDefaultRotations(0)[1].eligible,'removed schema stayed resolved')
+    a.conditionDefinitions.SPELL_KNOWN=schema;assert(a:ListDefaultRotations(0)[1].eligible)
+    schema.fields.spell='string';a.conditionRegistryVersion=(a.conditionRegistryVersion or 0)+1
+    assert(not a:ListDefaultRotations(0)[1].eligible,'same-object registered schema change was ignored')
+    schema.fields.spell='number';a.conditionRegistryVersion=a.conditionRegistryVersion+1;assert(a:ListDefaultRotations(0)[1].eligible)
+end)
+test('public merged reference options cannot poison private snapshots and malformed namespace maps stay inert',function()
+    local a,envelope=fixture();assert(a.GetRotationValidationOptions,'shared reference context missing')
+    a.db.global.itemsets={shared={items={5512}}}
+    local options,stamp=a:GetRotationValidationOptions();options.itemsets.shared=nil
+    local fresh,nextStamp=a:GetRotationValidationOptions();assert(fresh.itemsets.shared and stamp==nextStamp)
+    assert(a.db.global.itemsets.shared.items[1]==5512)
+    for _,value in ipairs({false,17,'invalid'}) do
+        a.db.profile.itemsets=value
+        assert(next(a:GetRotationValidationOptions().itemsets)==nil,'malformed personal map exposed global references')
+    end
+    a.db.profile.itemsets={personal={items={5512}}}
+    for _,value in ipairs({false,17,'invalid'}) do
+        a.db.global.itemsets=value
+        assert(next(a:GetRotationValidationOptions().itemsets)==nil,'malformed global map exposed references runtime cannot use')
+    end
+end)
+test('missing reference maps return isolated fallbacks without cross-aliasing or stamp churn',function()
+    local a=fixture();a.conditionDefinitions=nil;a.db.global.effects=nil
+    assert(a.GetRotationValidationOptions)
+    local options,stamp=a:GetRotationValidationOptions();options.effects.injected={};options.conditions.phantom={fields={}}
+    local fresh,nextStamp=a:GetRotationValidationOptions()
+    assert(next(fresh.effects)==nil and next(fresh.conditions)==nil,'fallback mutation escaped into later contexts')
+    assert(stamp==nextStamp,'unchanged empty namespaces caused stamp churn')
+end)
+test('malformed non-table reference entries remain unresolved without recursive clone initialization',function()
+    local a,envelope=fixture();local pack=envelope();assert(a:RegisterDefaultRotation(pack));assert(a:InitializeRotationLibrary())
+    assert(a:CloneDefaultRotation(0,pack.id,'Clone'))
+    a.db.global.effects.poison=0/0
+    local initialize=a.InitializeRotationLibrary;local calls=0
+    a.InitializeRotationLibrary=function(self) calls=calls+1;assert(calls<=6,'recursive dependency initialization');return initialize(self) end
+    local ok,rows=pcall(a.ListDefaultRotations,a,0);assert(ok,'malformed reference caused recursive initialization')
+    assert(#rows==1 and rows[1].eligible and calls==1)
+    a:ListDefaultRotations(0);assert(calls==1,'unchanged malformed entry caused repeated rebuilds')
+    local bad=envelope();bad.id='rm.tbc.bad-effect';bad.body.rotation[1].effect='poison';assert(a:RegisterDefaultRotation(bad))
+    for _,row in ipairs(a:ListDefaultRotations(0)) do if row.id==bad.id then assert(not row.eligible and not row.validation.resolved) end end
 end)
 finish()
