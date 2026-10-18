@@ -59,7 +59,7 @@ local function fixture(modern, absentThreat)
     end
     env.WOW_PROJECT_BURNING_CRUSADE_CLASSIC=5
     load('Platform/client.lua');load('Platform/items.lua');load('Platform/specializations.lua');load('Core/action_policy.lua')
-    load('Data/plain.lua');load('Data/tags.lua');load('Data/rotation_tree.lua');load('Core/rotation_sequence.lua')
+    load('Data/plain.lua');load('Data/tags.lua');load('Data/rotation_tree.lua');load('Data/validation.lua');load('Core/rotation_sequence.lua');load('Core/rotation_selection.lua')
     return env, addon, load
 end
 
@@ -335,6 +335,29 @@ test('switching revisits previously inapplicable packs and clears outgoing coold
     assert(glowing==false and cleared,'outgoing ineligible pack retained highlights')
 end)
 
+test('live autoswitch uses explicit priority and keeps fallback precedence without extra evaluation',function()
+    local env,a,load=fixture(true,true);load('main.lua');initialize(a)
+    a.currentSpec=0
+    local function body(name,priority) return {name=name,priority=priority,switch={type='COMBAT'},rotation={{type='spell',action=403}}} end
+    local rows={low=body('A low',0),high=body('Z high',20),pack=body('Pack',10000),bad=body('Invalid',.5)}
+    a.db.profile.rotations[0]=rows
+    a.IsDefaultRuntimeRotation=function(_,_,id) return id=='pack' end
+    a.usefulCondition=function() return true end;a.validateCondition=function() return true end;a.rotationValidConditions=function() return true end
+    a.debug=function() end;a.info=function() end;a.RemoveAllCurrentGlows=function() end;a.EnableRotationTimer=function() end
+    local calls=0;a.evaluateCondition=function() calls=calls+1;return true end
+    a:UpdateAutoSwitch();a:SwitchRotation();assert(a.currentRotation=='high' and calls==1,'priority selection executed extra candidates or chose alphabetically')
+    rows.high.priority=-5;a:UpdateAutoSwitch();a:SwitchRotation();assert(a.currentRotation=='low')
+    rows.low.disabled=true;rows.high.disabled=true;rows[env.DEFAULT]=body('My fallback',-100000)
+    a:UpdateAutoSwitch();calls=0;a:SwitchRotation();assert(a.currentRotation==env.DEFAULT and calls==0,'packaged priority displaced the user fallback')
+end)
+
+test('invalid switch priority makes even a fallback body unavailable to auto-selection',function()
+    local _,a,load=fixture(true,true);load('main.lua');initialize(a);a.validateCondition=function() return true end
+    local body={priority='2',rotation={{type='spell',action=403,conditions={}}}}
+    assert(not a:rotationValidConditions(body,0),'malformed priority passed the live validity gate')
+    body.priority=0;assert(a:rotationValidConditions(body,0))
+end)
+
 test('numeric zero range results cannot highlight an out-of-range spell',function()
     local env,addon,load=fixture(true,true)
     env.GetSpellCooldown=function() return 0,0,1 end
@@ -586,6 +609,7 @@ test('real AceDB clones edits and lineage survive saving only TOC-declared globa
     local id=assert(a:CloneDefaultRotation(0,source,'Persisted clone'))
     a:GetEditableRotation(0,id).rotation[1].action=974
     a:GetEditableRotation(0,id).tags={'AOE','MyLittlePony'}
+    a:GetEditableRotation(0,id).priority=42
     a:GetEditableRotation(0,id).description='Keep these tags across reload'
     a.db.profile.ignore_range=true
     assert(a:SetDefaultRotationEnabled(source,false))
@@ -600,6 +624,7 @@ test('real AceDB clones edits and lineage survive saving only TOC-declared globa
     local body=b:GetEditableRotation(0,id)
     assert(body and body.name=='Persisted clone' and body.rotation[1].action==974,'clone was not persisted in a declared SavedVariables global')
     assert(body.tags[2]=='MyLittlePony' and body.description=='Keep these tags across reload','tags and description were lost on reload')
+    assert(body.priority==42,'switch priority was lost on reload')
     assert(b.db.profile.ignore_range and not b:GetDefaultRotation(source).enabled,'profile preferences were lost')
     local view=assert(b:GetSourcedRotationView(0,id))
     assert(view.lineage.baseline.body.rotation[1].action==403 and view.envelope.body.rotation[1].action==974,'source baseline was lost')

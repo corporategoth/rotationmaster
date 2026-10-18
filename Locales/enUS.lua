@@ -1518,3 +1518,12 @@ L['Edit the description, tags, author, realm, email, website and version. Source
 L['Invalid tags. Use up to 64 tags of 64 characters, separated by commas.'] = true
 L['Separate tags with commas. Use quotes for tags containing commas. Any personal label is allowed.'] = true
 L['Tags'] = true
+
+-- Explicit auto-switch precedence.
+L["Switch priority"] = true
+L["Priority %d"] = true
+L["Invalid priority"] = true
+L["Switch priority must be a whole number between -100000 and 100000."] = true
+L["Edit the description, tags, switch priority, author, realm, email, website and version. Source citations remain separate from your attribution. Use changes updates the rotation draft; Apply the rotation to save it. Cancel or Escape restores this dialog’s opening values."] = true
+L["Higher priority wins within custom or packaged rotations. Custom rotations and a valid saved fallback take precedence over packaged defaults. Equal priorities use name, then identity. Blank means zero."] = true
+L["Invalid switch priority for %s:%s; explicit repair resets it to zero."] = true

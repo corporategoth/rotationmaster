@@ -124,7 +124,7 @@ function addon:ListPendingRotationDrafts(spec)
     local result={}
     for _,workspace in ipairs(profiles[self.db.profile] or {}) do
         if workspace.spec==spec and workspace.pending and workspace.id~=DEFAULT and workspace:ValidTarget() then
-            local snapshot=workspace:Snapshot();result[#result+1]={id=workspace.id,name=snapshot.name or NEW,presentation={name=snapshot.name,description=snapshot.description,tags=snapshot.tags,metadata=snapshot.metadata}}
+            local snapshot=workspace:Snapshot();result[#result+1]={id=workspace.id,name=snapshot.name or NEW,presentation={name=snapshot.name,description=snapshot.description,priority=snapshot.priority,tags=snapshot.tags,metadata=snapshot.metadata}}
         end
     end
     return result

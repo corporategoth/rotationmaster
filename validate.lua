@@ -406,6 +406,10 @@ local function validate_rotation_condition(prefix, condition, fix)
 end
 
 function addon:validate_rotation(prefix, id, rotation, fix)
+    if type(rotation)=='table' and rotation.priority~=nil and not self.RotationData.GetRotationPriority(rotation.priority) then
+        self:warn(L['Invalid switch priority for %s:%s; explicit repair resets it to zero.'],prefix,id)
+        if fix then rotation.priority=nil end
+    end
     -- The old template fixer knows only flat actions. Use the non-destructive
     -- schema for branch bodies; never strip their arms or future metadata.
     if type(rotation)=="table" and type(rotation.rotation)=="table" then
@@ -431,6 +435,7 @@ function addon:validate_rotation(prefix, id, rotation, fix)
         description = "Rotation description",
         metadata = {},
         tags = {},
+        priority = 0,
         disabled = false,
         switch = {},
         cooldowns = {},

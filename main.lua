@@ -543,6 +543,7 @@ function addon:OnEnable()
 end
 
 function addon:rotationValidConditions(rot,spec)
+    if type(rot)~='table' or not self.RotationData.GetRotationPriority(rot.priority) then return false end
     local tree=self.RotationData.IndexRotationSteps(rot,{allowMissingIds=true})
     if not tree then return false end
     local itemsets,global_itemsets=self.db.profile.itemsets,self.db.global.itemsets
@@ -569,30 +570,8 @@ function addon:rotationValidConditions(rot,spec)
 end
 
 function addon:UpdateAutoSwitch()
-    self.autoswitchRotation = {}
-
     local rotations=self:GetRotationCandidates(self.currentSpec)
-    do
-        for id, rot in pairs(rotations) do
-            if id ~= DEFAULT then
-                -- The switch condition is nontrivial and valid.
-                if rot.switch and not rot.disabled and addon:usefulCondition(rot.switch) and
-                        self:validateCondition(rot.switch, self.currentSpec) and
-                        self:rotationValidConditions(rot, self.currentSpec) then
-                    addon:debug(L["Rotaion " .. color.WHITE .. "%s" .. color.DEBUG .. " is now available for auto-switching."], rot.name)
-                    table.insert(self.autoswitchRotation, id)
-                end
-            end
-        end
-    end
-
-    -- We autoswitch to the lowest (alphabetically) matching rotation.
-    table.sort(self.autoswitchRotation, function(lhs, rhs)
-        local leftDefault=self:IsDefaultRuntimeRotation(self.currentSpec,lhs)
-        local rightDefault=self:IsDefaultRuntimeRotation(self.currentSpec,rhs)
-        if leftDefault~=rightDefault then return not leftDefault end
-        return rotations[lhs].name < rotations[rhs].name
-    end)
+    self.autoswitchRotation=self:GetOrderedAutoSwitchRotations(self.currentSpec,rotations)
 
     addon:debug(L["Autoswitch rotation list has been updated."])
 end

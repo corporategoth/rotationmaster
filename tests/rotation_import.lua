@@ -130,4 +130,8 @@ test('comparison preserves inherited tags across custom default and import-previ
     assert(model.tagsChanged and model.leftTags[1]=='Raid' and model.rightTags[1]=='PVP','import preview lost inherited tags')
     assert(a:GetEditableRotation(0,first).tags==nil,'comparison materialized inherited tags')
 end)
+test('switch priority survives importing duplication and export',function()
+    local a,session,objects=fixture();objects.modern.body.priority=80;local candidate=assert(session:Stage('modern'));local id=assert(a:ApplyRotationImport(session,candidate.token,0,'Priority'))
+    local duplicate=assert(a:DuplicateCustomRotation(0,id,'Copy'));assert(a:GetRotationExportData(0,duplicate).body.priority==80)
+end)
 finish()

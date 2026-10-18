@@ -101,10 +101,23 @@ end)
 test('explicit repair preserves tags description and attribution on flat rotations',function()
     local f=F.new();f.load('Core/conditions.lua');f.load('Options/conditional.lua');f.load('validate.lua')
     local warnings={};f.addon.warn=function(_,message,...) warnings[#warnings+1]=string.format(message,...) end
-    local body={name='Fixture',description='A leveling rotation',tags={'AOE','MyLittlePony'},metadata={author='PreZ'},switch={},cooldowns={},rotation={}}
+    f.addon.RotationData=dofile('tests/fixtures/rotation_data.lua')()
+    local body={name='Fixture',description='A leveling rotation',tags={'AOE','MyLittlePony'},metadata={author='PreZ'},priority=42,switch={},cooldowns={},rotation={}}
     f.addon:validate_rotation('Fixture',f.env.DEFAULT,body,true)
     assert(body.tags and body.tags[2]=='MyLittlePony' and body.description=='A leveling rotation' and body.metadata.author=='PreZ','repair removed supported rotation metadata')
+    assert(body.priority==42,'repair removed supported priority')
     assert(#warnings==0,'supported metadata was diagnosed as an extra field')
+end)
+test('legacy validation diagnoses malformed priorities and explicit repair restores the implicit zero',function()
+    local f=F.new();local data=dofile('tests/fixtures/rotation_data.lua')();f.addon.RotationData=data;f.load('validate.lua')
+    local warnings={};f.addon.warn=function(_,message,...) warnings[#warnings+1]=string.format(message,...) end
+    for _,priority in ipairs({.5,100001,-100001,'bad',false}) do
+        local body={name='Fixture',priority=priority,rotation={},cooldowns={},switch={}}
+        warnings={};f.addon:validate_rotation('Fixture',f.env.DEFAULT,body,false)
+        assert(#warnings>0 and body.priority==priority,'check silently accepted an invalid priority or changed data')
+        warnings={};f.addon:validate_rotation('Fixture',f.env.DEFAULT,body,true)
+        assert(#warnings>0 and body.priority==nil,'repair did not report and reset malformed priority')
+    end
 end)
 test('legacy repair preserves nested branch data and refuses destructive repair of future branch fields',function()
     local f=F.new();f.load('Data/plain.lua');f.load('Data/tags.lua');f.load('Data/rotation_tree.lua');f.load('Data/validation.lua');f.load('Core/conditions.lua');f.load('Options/conditional.lua');f.load('validate.lua')

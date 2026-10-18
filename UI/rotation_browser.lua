@@ -130,6 +130,7 @@ local function create(parent)
         for _,entry in ipairs(all) do
             local view=entry.pending and entry.presentation or addon:GetRotationTagView(self.spec,entry.key)
             entry.tags=addon.RotationData.GetRotationTags(view) or {};entry.search=addon.RotationData.RotationSearchText(view,entry.name,entry.description)
+            local body=type(view.body)=='table' and view.body or view;entry.priority=addon.RotationData.GetRotationPriority(body.priority)
             for _,tag in ipairs(entry.tags) do local canonical=tag:lower();if not seen[canonical] then tags[#tags+1]=tag;seen[canonical]=true end end
         end
         table.sort(tags,function(a,b) return a:lower()<b:lower() end);self.availableTags=tags
@@ -159,6 +160,7 @@ local function create(parent)
             local status=entry.readOnly and L["Default · read-only"] or entry.fallback and L["Fallback rotation"] or L["Custom rotation"]
             if entry.readOnly and not entry.enabled then status=status.." — "..L["Disabled"]
             elseif entry.readOnly and not entry.eligible then status=status.." — "..L["Not available"] end
+            if not entry.fallback then status=status..' · '..(entry.priority and string.format(L['Priority %d'],entry.priority) or L['Invalid priority']) end
             control.statusLabel:SetText(status);control.statusLabel:SetTextColor(.67,.72,.77)
             if entry.key==self.selected then control.selection:Show() else control.selection:Hide() end
             local key=entry.key;addon:SetUIScript(control,"OnClick",function() self:SelectRotation(self.spec,key) end)

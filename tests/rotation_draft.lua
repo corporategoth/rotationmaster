@@ -99,4 +99,8 @@ test('moving a sequence tail carries later branch subtrees and refuses all carri
     assert(v.rotation[1].onFalse[1].id=='first' and v.rotation[1].onFalse[2].onTrue[1].id=='yes')
     assert(not d:Command('MoveTail','optional',{path={'rotation',1,'onTrue'},parentId='target',index=1}))
 end)
+test('metadata commands detach malformed priority data instead of leaking caller ownership',function()
+    local d=draft();local input={unexpected=1};assert(d:Command('SetDetails',{priority=input}))
+    input.unexpected=2;assert(d:Snapshot().priority.unexpected==1,'caller changed the draft without a command')
+end)
 finish()

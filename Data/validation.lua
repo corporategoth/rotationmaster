@@ -8,6 +8,10 @@ local classes = {WARRIOR=true, PALADIN=true, HUNTER=true, ROGUE=true, PRIEST=tru
 local function integer(value, minimum)
     return type(value) == "number" and value >= minimum and value % 1 == 0
 end
+function data.GetRotationPriority(value)
+    if value==nil then return 0 end
+    if integer(value,-100000) and value<=100000 then return value end
+end
 local function nonempty(value) return type(value) == "string" and #value > 0 end
 local function identifier(value)
     return nonempty(value) and #value <= 128 and value:match("^[%w][%w._:%-]*$") ~= nil
@@ -239,7 +243,8 @@ local function validate(envelope, options, bodyOnly)
     end
     if not object(envelope.body, "$.body") then return finish() end
     local body = envelope.body
-    unknown(body, {name=true,description=true,metadata=true,tags=true,disabled=true,switch=true,rotation=true,cooldowns=true}, "$.body")
+    unknown(body, {name=true,description=true,metadata=true,tags=true,priority=true,disabled=true,switch=true,rotation=true,cooldowns=true}, "$.body")
+    if not data.GetRotationPriority(body.priority) then issue('invalid-priority','$.body.priority','error') end
     optionalType(body.name, "string", "$.body.name")
     optionalType(body.description,"string","$.body.description")
     if body.tags~=nil and not data.NormalizeRotationTags(body.tags) then issue("invalid-tags","$.body.tags","error") end

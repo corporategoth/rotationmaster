@@ -15,7 +15,7 @@ function addon:GetRotationTagView(spec,id)
         local all=state[kind];local scope=type(all)=='table' and all[spec];local record=type(scope)=='table' and scope[id]
         if type(record)=='table' and type(record.manifest)=='table' then manifest=record.manifest;break end
     end end
-    return {body={name=body.name,description=body.description,tags=data.CopyData(body.tags),metadata=data.CopyData(body.metadata)},tags=manifest and data.CopyData(manifest.tags),sources=manifest and data.CopyData(manifest.sources)}
+    return {body={name=body.name,description=body.description,priority=body.priority,tags=data.CopyData(body.tags),metadata=data.CopyData(body.metadata)},tags=manifest and data.CopyData(manifest.tags),sources=manifest and data.CopyData(manifest.sources)}
 end
 function addon:GetRotationTags(spec,id)
     return data.GetRotationTags(self:GetRotationTagView(spec,id)) or {}

@@ -122,6 +122,10 @@ function addon:RenderRotationComparison(parent,view,spec,showUnchanged)
         label(parent,L['Tags'],"Heading")
         pair({tags=model.leftTags},{tags=model.rightTags},function(column,entry) label(column,addon.RotationData.FormatRotationTags(entry.tags) or '') end)
     end
+    if model.priorityChanged then
+        label(parent,L['Switch priority'],'Heading')
+        pair({priority=model.leftPriority},{priority=model.rightPriority},function(column,entry) label(column,entry.priority and tostring(entry.priority) or L['Invalid priority']) end)
+    end
     if model.switchChanged then
         label(parent,L["Switch conditions"],"Heading")
         pair({condition=model.leftSwitch},{condition=model.rightSwitch},function(column,entry)
