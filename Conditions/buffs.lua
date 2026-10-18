@@ -18,7 +18,7 @@ addon:RegisterCondition("BUFF", {
         return addon:EvaluateAuraCondition(value, cache, start, "HELPFUL", "present")
     end,
     print = function(_, value)
-        return string.format(addon.playerize(value.unit, L["%s have %s"], L["%s has %s"]),
+        return string.format(addon.playerize(value.unit, L["%s {{!have|do not have}} %s"], L["%s {{!has|does not have}} %s"]),
                 addon.nullable(addon.units[value.unit], L["<unit>"]),
                 string.format(value.ownbuff and L["your own %s"] or "%s", (value.spell and addon:AuraSpellLabel(value) or L["<buff>"])))
     end,
@@ -77,7 +77,7 @@ addon:RegisterCondition("BUFF_REMAIN", {
         return addon:EvaluateAuraCondition(value, cache, start, "HELPFUL", "remaining")
     end,
     print = function(_, value)
-        return string.format(addon.playerize(value.unit, L["%s have %s where %s"], L["%s have %s where %s"]),
+        return string.format(addon.playerize(value.unit, L["%s {{!have|do not have}} %s where %s"], L["%s {{!have|do not have}} %s where %s"]),
             addon.nullable(addon.units[value.unit], L["<unit>"]),
                 string.format(value.ownbuff and L["your own %s"] or "%s", (value.spell and addon:AuraSpellLabel(value) or L["<buff>"])),
                 addon.compareString(value.operator, L["the remaining time"], string.format(L["%s seconds"], addon.nullable(value.value))))
@@ -197,7 +197,7 @@ addon:RegisterCondition("STEALABLE", {
         return addon:EvaluateAuraCondition(value, cache, start, "HELPFUL", "stealable")
     end,
     print = function(_, value)
-        return string.format(L["%s has a stealable buff"], addon.nullable(addon.units[value.unit], L["<unit>"]))
+        return string.format(L["%s {{!has|does not have}} a stealable buff"], addon.nullable(addon.units[value.unit], L["<unit>"]))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")

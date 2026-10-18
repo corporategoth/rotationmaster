@@ -18,7 +18,7 @@ addon:RegisterCondition("COMBAT", {
         return addon.getCached(cache, UnitAffectingCombat, value.unit)
     end,
     print = function(_, value)
-        return string.format(addon.playerize(value.unit, L["%s are in combat"], L["%s is in combat"]),
+        return string.format(addon.playerize(value.unit, L["%s {{!are|are not}} in combat"], L["%s {{!is|is not}} in combat"]),
             addon.nullable(addon.units[value.unit], L["<unit>"]))
     end,
     widget = function(parent, spec, value)
@@ -46,7 +46,7 @@ addon:RegisterCondition("PET", {
         return addon.getCached(cache, UnitExists, "pet")
     end,
     print = function()
-        return L["you have a pet"]
+        return L["you {{!have|do not have}} a pet"]
     end,
     help = function(frame)
         frame:AddChild(helpers.CreateText(L["Matches when your pet unit exists. This does not check whether the pet is alive, in range or able to use an ability."] ))
@@ -64,7 +64,7 @@ addon:RegisterCondition("PET_NAME", {
         return addon.getCached(cache, GetUnitName, "pet") == value.value
     end,
     print = function(_, value)
-        return string.format(L["you have a pet named %s"], addon.nullable(value.value, L["<name>"]))
+        return string.format(L["you {{!have|do not have}} a pet named %s"], addon.nullable(value.value, L["<name>"]))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -99,7 +99,7 @@ addon:RegisterCondition("STEALTHED", {
         return addon.getCached(cache, IsStealthed)
     end,
     print = function()
-        return L["you are stealthed"]
+        return L["you {{!are|are not}} stealthed"]
     end,
     help = function(frame)
         frame:AddChild(helpers.CreateText(L["Matches while the game reports your character as stealthed. It does not test whether an enemy can detect you."] ))
@@ -117,7 +117,7 @@ addon:RegisterCondition("INCONTROL", {
         return addon.getCached(cache, HasFullControl)
     end,
     print = function()
-        return L["you are in control of your character"]
+        return L["you {{!are|are not}} in control of your character"]
     end,
     help = function(frame)
         frame:AddChild(helpers.CreateText(L["Matches when the game reports that you have full control of your character. This does not guarantee that a particular spell is usable."] ))
@@ -242,7 +242,7 @@ addon:RegisterCondition("MOVING", {
         return (addon.getCached(cache, GetUnitSpeed, "player") ~= 0)
     end,
     print = function()
-        return L["you are moving"]
+        return L["you {{!are|are not}} moving"]
     end,
     help = function(frame)
         frame:AddChild(helpers.CreateText(L["Matches while your character is moving, based on current movement speed. It does not test the movement of your target."] ))
@@ -272,7 +272,7 @@ addon:RegisterCondition("THREAT", {
         end
     end,
     print = function(_, value)
-        return string.format(L["you are at least %s on %s"], addon.nullable(addon.threat[value.threat], L["<threat>"]),
+        return string.format(L["you {{!are|are not}} at least %s on %s"], addon.nullable(addon.threat[value.threat], L["<threat>"]),
         addon.nullable(addon.units[value.unit], L["<unit>"]))
     end,
     widget = function(parent, spec, value)
@@ -407,7 +407,7 @@ addon:RegisterCondition("FORM", {
                 form = GetSpellInfo(select(4, GetShapeshiftFormInfo(value.value)))
             end
         end
-        return string.format(L["you are in %s form"], addon.nullable(form, L["<form>"]))
+        return string.format(L["you {{!are|are not}} in %s form"], addon.nullable(form, L["<form>"]))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -495,7 +495,7 @@ addon:RegisterCondition("ATTACKABLE", {
                not addon.getCached(cache, UnitIsDead, value.unit)
     end,
     print = function(_, value)
-        return string.format(L["%s is attackable"], addon.nullable(addon.units[value.unit], L["<unit>"]))
+        return string.format(L["%s {{!is|is not}} attackable"], addon.nullable(addon.units[value.unit], L["<unit>"]))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -523,7 +523,7 @@ addon:RegisterCondition("ENEMY", {
         return addon.getCached(cache, UnitIsEnemy, "player", value.unit)
     end,
     print = function(_, value)
-        return string.format(L["%s is an enemy"], addon.nullable(addon.units[value.unit], L["<unit>"]))
+        return string.format(L["%s {{!is|is not}} an enemy"], addon.nullable(addon.units[value.unit], L["<unit>"]))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -685,9 +685,7 @@ addon:RegisterCondition("TIME_IN_COMBAT", {
         return false
     end,
     print = function(_, value)
-        return string.format(L["Time in combat is %s %s seconds"],
-        addon.nullable(addon.operators[value.operator], L["<operator>"]),
-        addon.nullable(value.value))    
+        return addon.compareString(value.operator,L["Time in combat"],string.format(L["%s seconds"],addon.nullable(value.value)))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")

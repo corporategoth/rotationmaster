@@ -18,7 +18,7 @@ addon:RegisterCondition("ISSAME", {
         return addon.getCached(cache, UnitIsUnit, value.unit, value.otherunit)
     end,
     print = function(_, value)
-        return string.format(L["%s is %s"], addon.nullable(addon.units[value.unit]), addon.nullable(addon.units[value.otherunit]))
+        return string.format(L["%s {{!is|is not}} %s"], addon.nullable(addon.units[value.unit]), addon.nullable(addon.units[value.otherunit]))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -52,7 +52,7 @@ addon:RegisterCondition("CLASS", {
         return englishClass == value.value
     end,
     print = function(_, value)
-        return string.format(addon.playerize(value.unit, L["%s are a %s"], L["%s is a %s"]),
+        return string.format(addon.playerize(value.unit, L["%s {{!are|are not}} a %s"], L["%s {{!is|is not}} a %s"]),
             addon.nullable(addon.units[value.unit]), addon.nullable(LOCALIZED_CLASS_NAMES_MALE[value.value], L["<class>"]))
     end,
     widget = function(parent, spec, value)
@@ -186,7 +186,7 @@ if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
             return role == value.value
         end,
         print = function(_, value)
-            return string.format(L["%s is in a %s role"],
+            return string.format(L["%s {{!is|is not}} in a %s role"],
                 addon.nullable(addon.unitsPossessive[value.unit], L["<unit>"]),
                 addon.nullable(addon.roles[value.value], L["<role>"]))
         end,
@@ -242,7 +242,7 @@ else
                 return addon.getCached(cache, GetTalentGroupRole, addon.currentSpec) == value.value
             end,
             print = function(_, value)
-                return string.format(L["Your talent is a %s role"],
+                return string.format(L["Your talent {{!is|is not}} a %s role"],
                         addon.nullable(addon.roles[value.value], L["<role>"]))
             end,
             widget = function(parent, spec, value)
@@ -304,7 +304,7 @@ if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE or LE_EXPANSION_LEVEL_CURRENT >= 2) t
         end,
         print = function(_, value)
             local link = value.item and select(2, GetItemInfo(value.item)) or nil
-            return string.format(L["you have %s glyph"], addon.nullable(link, L["<glyph>"]))
+            return string.format(L["you {{!have|do not have}} %s glyph"], addon.nullable(link, L["<glyph>"]))
         end,
         widget = function(parent, spec, value)
             local top = parent:GetUserData("top")
@@ -338,7 +338,7 @@ addon:RegisterCondition("CREATURE", {
         return (addon.getCached(cache, UnitCreatureType, value.unit) == addon.creatures[value.value])
     end,
     print = function(_, value)
-        return string.format(addon.playerize(value.unit, L["%s are a %s"], L["%s is a %s"]),
+        return string.format(addon.playerize(value.unit, L["%s {{!are|are not}} a %s"], L["%s {{!is|is not}} a %s"]),
             addon.nullable(addon.units[value.unit]), addon.nullable(addon.creatures[value.value], L["<creature type>"]))
     end,
     widget = function(parent, spec, value)
@@ -387,7 +387,7 @@ addon:RegisterCondition("CLASSIFICATION", {
         return (addon.getCached(cache, UnitClassification, value.unit) == value.value)
     end,
     print = function(_, value)
-        return string.format(addon.playerize(value.unit, L["%s are a %s"], L["%s is a %s"]),
+        return string.format(addon.playerize(value.unit, L["%s {{!are|are not}} a %s"], L["%s {{!is|is not}} a %s"]),
                 addon.nullable(addon.units[value.unit]), addon.nullable(addon.classifications[value.value], L["<classification>"]))
     end,
     widget = function(parent, spec, value)
@@ -493,7 +493,7 @@ addon:RegisterCondition("GROUP", {
         return value.raid and addon.getCached(cache, IsInRaid) or addon.getCached(cache, IsInGroup)
     end,
     print = function(_, value)
-        return value.raid and L["you are in a raid"] or L["you are in a group"]
+        return value.raid and L["you {{!are|are not}} in a raid"] or L["you {{!are|are not}} in a group"]
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -531,7 +531,7 @@ addon:RegisterCondition("RUNNER", {
         return (data.lowHpAction and true or false)
     end,
     print = function(_, value)
-        return string.format(L["%s will run"], addon.nullable(addon.units[value.unit]), addon.nullable(addon.units[value.otherunit]))
+        return string.format(L["%s {{!will|will not}} run"], addon.nullable(addon.units[value.unit]), addon.nullable(addon.units[value.otherunit]))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -636,7 +636,7 @@ addon:RegisterCondition("IMMUNE", {
         return false
     end,
     print = function(_, value)
-        return string.format(value.partial and L["%s is sometimes immune to %s"] or L["%s is immune to %s"],
+        return string.format(value.partial and L["%s {{!is|is not}} sometimes immune to %s"] or L["%s {{!is|is not}} immune to %s"],
                 addon.nullable(addon.units[value.unit], L["<unit>"]), addon.nullable(addon.spell_schools[value.school], L["<school>"]))
     end,
     widget = function(parent, spec, value)

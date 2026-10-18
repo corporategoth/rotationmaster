@@ -43,7 +43,7 @@ function addon:InstallSettingsRosterOrder(p)
             if tail==nil then tail=IsControlKeyDown and IsControlKeyDown() or false end
             self:Cancel();if not valid() or not p:FlushEdits() or not p:Valid(token) or r.options.order~=items then return end
             if r.orderView~=self then return r.orderView:Begin(id,title,tail) end
-            self.drag=id;self.tail=tail;self.ghost:Present((tail and L['Move this and following entries']..': ' or '')..title,L['Drop in a highlighted gap.'],p.frame);for _,zone in ipairs(self.zones) do if zone.gap then zone:Show() end end
+            self.drag=id;self.tail=tail;self.ghost:Present((tail and L['Move this and following entries']..': ' or '')..title,L['Drop in a highlighted gap.'],p.frame,tail and #items-self:Index()+1 or 1);for _,zone in ipairs(self.zones) do if zone.gap then zone:Show() end end
             addon:SetUIScript(self.ghost,'OnUpdate',function() if not valid() then self:Cancel();return end;self.ghost:FollowPointer();self:Hover();if IsMouseButtonDown and not IsMouseButtonDown('LeftButton') then self:EndDrag() end end)
         end
         self.cleanups[#self.cleanups+1]=function() view:Cancel() end

@@ -2,6 +2,7 @@
 from pathlib import Path
 import hashlib
 import json
+import re
 import subprocess
 import sys
 import xml.etree.ElementTree as ET
@@ -64,6 +65,14 @@ for relative, expected in manifest.get('notices', {}).items():
 actual = {str(path.relative_to(root / 'Libs')) for path in (root / 'Libs').rglob('*') if path.is_file()}
 for extra in sorted(actual - vendor_files):
     errors.append(f'Unpinned vendor file: Libs/{extra}')
+
+# Native icon controls resolve these literal names into owned TGA assets.
+# Checking references catches missing artwork before the client silently omits it.
+for path in sorted((root / 'UI').glob('*.lua')):
+    for match in re.finditer(r"CreateWorkbench(?:Labeled)?IconButton\([^,\n]+,\s*(['\"])([^'\"]+)\1", path.read_text()):
+        icon = root / 'Assets' / 'Controls' / (match.group(2) + '.tga')
+        if not icon.is_file():
+            errors.append(f'Missing control texture: {icon.relative_to(root)} ({path.relative_to(root)})')
 
 for error in errors:
     print(error)

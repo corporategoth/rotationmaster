@@ -22,6 +22,11 @@ function addon:BuildRotationCanvas(body,view)
     local function state(step)
         return (view.cardStates or {})[step.id] or (collapsed[step.id] and 'compact') or (height(details[step.id])>0 and 'expanded') or (listView and rows[step].section=='rotation' and 'compact') or 'normal'
     end
+    local function armList(step,arm)
+        local folded=(view.hiddenArms or {})[step.id] and view.hiddenArms[step.id][arm]
+        local source=step[arm=='true' and 'onTrue' or 'onFalse']
+        return source,folded==true
+    end
     local count=0
     local measureList
     local function measureNode(step)
@@ -32,30 +37,44 @@ function addon:BuildRotationCanvas(body,view)
         local ownHeader=mode=='compact' and 28 or mode=='expanded' and 28 or (step.type=='branch' and 68 or 78)+math.max(0,height((view.summaryHeights or {})[step.id])-28)
         local conditionHeight=mode=='expanded' and step.type~='branch' and math.max(24,height((view.summaryHeights or {})[step.id])) or 0
         local node={step=step,row=row,ownHeader=ownHeader,conditionHeight=conditionHeight,header=mode=='expanded' and math.max(72,ownHeader+height(details[step.id])+(conditionHeight>0 and conditionHeight+4 or 0)) or ownHeader,width=cardWidth}
-        node.height=node.header
+        node.height=node.header;node.left=cardWidth/2;node.right=cardWidth/2
         if step.type=="branch" and not ((view.hiddenChildren or {})[step.id] or collapsed[step.id]) then
+            local yes,hideYes=armList(step,'true');local no,hideNo=armList(step,'false')
+            node.yes=measureList(hideYes and {} or yes,extend(row.path,"onTrue"),step.id)
+            node.no=measureList(hideNo and {} or no,extend(row.path,"onFalse"),step.id)
+            node.yes.folded=hideYes;node.no.folded=hideNo
+            node.yes.count=#yes;node.no.count=#no
             if listView then
-                node.no=measureList(step.onFalse,extend(row.path,"onFalse"),step.id)
-                node.yes=measureList(step.onTrue,extend(row.path,"onTrue"),step.id)
                 node.width=math.max(node.no.width,node.yes.width)+32
                 node.height=node.header+22+node.no.height+22+node.yes.height+4
             else
-                node.yes=measureList(step.onTrue,extend(row.path,"onTrue"),step.id)
-                node.no=measureList(step.onFalse,extend(row.path,"onFalse"),step.id)
-                node.width=node.yes.width+armGap+node.no.width
+                local hasYes,hasNo=#node.yes.nodes>0,#node.no.nodes>0
+                node.single=hasYes~=hasNo
+                if node.single then
+                    local active=hasYes and node.yes or node.no
+                    node.left=math.max(cardWidth/2,active.left+(hasNo and 0 or 100))
+                    node.right=math.max(cardWidth/2,active.right+(hasYes and 0 or 100))
+                else
+                    node.armDistance=node.no.right+armGap+node.yes.left
+                    node.left=math.max(cardWidth/2,node.armDistance/2+node.no.left)
+                    node.right=math.max(cardWidth/2,node.armDistance/2+node.yes.right)
+                end
+                node.width=node.left+node.right
                 node.height=node.header+armLead+math.max(node.yes.height,node.no.height)+armJoin
             end
         end
         return node
     end
     measureList=function(list,path,parentId)
-        local result={nodes={},path=path,parentId=parentId,width=cardWidth,height=0,gap=listView and path[1]=='rotation' and 0 or gap}
+        local result={nodes={},path=path,parentId=parentId,width=cardWidth,left=cardWidth/2,right=cardWidth/2,height=0,gap=listView and path[1]=='rotation' and 0 or gap}
         for position,step in ipairs(list) do
             local node=measureNode(step)
             if not node then result.truncated=true;break end
             node.canMoveUp=position>1;node.canMoveDown=position<#list
             if #result.nodes>0 then result.height=result.height+result.gap end
-            result.nodes[#result.nodes+1]=node;result.width=math.max(result.width,node.width);result.height=result.height+node.height
+            result.nodes[#result.nodes+1]=node;result.width=math.max(result.width,node.width)
+            if not listView then result.left=math.max(result.left,node.left);result.right=math.max(result.right,node.right);result.width=result.left+result.right end
+            result.height=result.height+node.height
         end
         if #result.nodes==0 then result.height=36 end
         return result
@@ -84,7 +103,7 @@ function addon:BuildRotationCanvas(body,view)
         local card={id=step.id,path=copy(row.path),section=row.section,depth=row.depth,ordinal=row.ordinal,
             parentId=row.parentId,arm=row.arm,canMoveUp=node.canMoveUp,canMoveDown=node.canMoveDown,step=data.CopyData(shallow),mode=mode,inactive=inactive,
             border=inactive and "gray" or tone,collapsed=branch and ((view.hiddenChildren or {})[step.id] or collapsed[step.id])==true,compact=state(step)=="compact",
-            expanded=state(step)=="expanded",x=x,y=y,width=cardWidth,height=node.header,headerHeight=node.ownHeader,conditionHeight=node.conditionHeight}
+            expanded=state(step)=="expanded",x=x+(listView and 0 or node.left-cardWidth/2),y=y,width=cardWidth,height=node.header,headerHeight=node.ownHeader,conditionHeight=node.conditionHeight}
         scene.cards[#scene.cards+1]=card
         local center=card.x+cardWidth/2
         local entry={x=center,y=y,id=step.id}
@@ -95,26 +114,37 @@ function addon:BuildRotationCanvas(body,view)
             for _,choice in ipairs({{arm='false',list=node.no,blocked=inactive or mode=='true'},
                 {arm='true',list=node.yes,blocked=inactive or mode=='false'}}) do
                 scene.groups[#scene.groups+1]={id=step.id,kind='arm',arm=choice.arm,x=x+20,y=armsY,width=node.width-24,height=choice.list.height+22,tone=choice.arm=='false' and 'red' or 'green',inactive=choice.blocked}
-                scene.armLabels[#scene.armLabels+1]={x=x+26,y=armsY+2,arm=choice.arm,inactive=choice.blocked}
+                scene.armLabels[#scene.armLabels+1]={x=x+26,y=armsY+2,arm=choice.arm,inactive=choice.blocked,parentId=step.id,folded=choice.list.folded,count=choice.list.count}
                 placeList(choice.list,x+24,armsY+18,'list')
                 armsY=armsY+choice.list.height+22
             end
             exit={x=center,y=y+node.height,id=step.id}
         elseif node.yes then
             local armsY=y+node.header+armLead
-            local tEntry,tExit=placeList(node.yes,x+node.no.width+armGap,armsY,"rotation")
-            local fEntry,fExit=placeList(node.no,x,armsY,"rotation")
-            -- An empty False arm continues directly below its left-hand stem.
-            if not fEntry.id then fEntry.x=center-2;fExit.x=center-2 end
+            local hasYes,hasNo=#node.yes.nodes>0,#node.no.nodes>0
+            local centers={}
+            if node.single then
+                centers['true']=hasYes and center or x+node.width-40
+                centers['false']=hasNo and center or x+40
+            else
+                centers['false']=center-node.armDistance/2;centers['true']=center+node.armDistance/2
+            end
             local joinY=y+node.height
-            for _,choice in ipairs({{arm="true",enter=tEntry,exit=tExit,blocked=inactive or mode=="false"},
-                {arm="false",enter=fEntry,exit=fExit,blocked=inactive or mode=="true"}}) do
-                local stemX=center+(choice.arm=="false" and -2 or 0)
-                line(step.id,choice.enter.id,{{x=stemX,y=y+node.header},{x=stemX,y=armsY-20},
-                    {x=choice.enter.x,y=armsY-20},{x=choice.enter.x,y=armsY}},choice.arm,choice.blocked,choice.arm)
-                if not choice.enter.id then line(step.id,nil,{{x=choice.enter.x,y=choice.enter.y},{x=choice.exit.x,y=choice.exit.y}},choice.arm,choice.blocked) end
-                line(choice.exit.id,nil,{{x=choice.exit.x,y=choice.exit.y},{x=choice.exit.x,y=joinY-8},
-                    {x=choice.arm=="false" and center-2 or center,y=joinY-8}},choice.arm,choice.blocked)
+            for _,choice in ipairs({{arm="false",list=node.no,blocked=inactive or mode=="true"},
+                {arm="true",list=node.yes,blocked=inactive or mode=="false"}}) do
+                local laneCenter=centers[choice.arm];local enter,leave
+                if #choice.list.nodes>0 then enter,leave=placeList(choice.list,laneCenter-choice.list.left,armsY,"rotation")
+                else
+                    enter={x=laneCenter,y=armsY};leave={x=laneCenter,y=armsY+choice.list.height}
+                    scene.dropTargets[#scene.dropTargets+1]={x=laneCenter-36,y=armsY,width=72,height=24,destination={path=copy(choice.list.path),index=1,parentId=step.id}}
+                end
+                local populated=#choice.list.nodes>0
+                local stemX=node.single and populated and center or center+(choice.arm=='false' and -2 or 2)
+                local points={{x=stemX,y=y+node.header},{x=stemX,y=armsY-20},{x=enter.x,y=armsY-20},{x=enter.x,y=armsY}}
+                line(step.id,enter.id,points,choice.arm,choice.blocked,choice.arm)
+                if not enter.id then line(step.id,nil,{{x=enter.x,y=enter.y},{x=leave.x,y=leave.y}},choice.arm,choice.blocked) end
+                line(leave.id,nil,{{x=leave.x,y=leave.y},{x=leave.x,y=joinY-8},{x=center,y=joinY-8}},choice.arm,choice.blocked)
+                scene.armLabels[#scene.armLabels+1]={x=math.max(x,math.min(x+node.width-100,laneCenter-50)),y=armsY-18,arm=choice.arm,parentId=step.id,folded=choice.list.folded,count=choice.list.count,inactive=choice.blocked}
             end
             line(nil,nil,{{x=center,y=joinY-8},{x=center,y=joinY}},nil,inactive)
             exit={x=center,y=joinY,id=step.id}
@@ -125,7 +155,7 @@ function addon:BuildRotationCanvas(body,view)
         local cursor=y
         local first,last
         for i,node in ipairs(list.nodes) do
-            local nx=x
+            local nx=x+(section=='rotation' and list.left-node.left or 0)
             if section=='list' then
                 scene.dropTargets[#scene.dropTargets+1]={x=nx,y=cursor-6,width=node.width,height=12,destination={path=copy(list.path),index=i,parentId=list.parentId},truncated=list.truncated==true}
             else target(list,i,nx,cursor-(i==1 and 24 or list.gap/2+12),node.width) end

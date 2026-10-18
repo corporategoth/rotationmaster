@@ -46,7 +46,7 @@ addon:RegisterCondition("PVP", {
         return addon.getCached(cache, UnitIsPVP, value.unit)
     end,
     print = function(_, value)
-        return string.format(addon.playerize(value.uinit, L["%s are PVP flagged"], L["%s is PVP flagged"]),
+        return string.format(addon.playerize(value.uinit, L["%s {{!are|are not}} PVP flagged"], L["%s {{!is|is not}} PVP flagged"]),
                 addon.nullable(addon.units[value.unit], L["<unit>"]))
     end,
     widget = function(parent, spec, value)
@@ -76,7 +76,7 @@ addon:RegisterCondition("ZONEPVP", {
         return value.value == pvpType
     end,
     print = function(_, value)
-        return string.format(L["zone is a %s zone"], addon.nullable(addon.zonepvp[value.value], L["no PVP"]))
+        return string.format(L["zone {{!is|is not}} a %s zone"], addon.nullable(addon.zonepvp[value.value], L["no PVP"]))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -141,7 +141,7 @@ addon:RegisterCondition("INSTANCE", {
         return inInstance and value.value == instanceType
     end,
     print = function(_, value)
-        return string.format(L["you are in a %s instance"],
+        return string.format(L["you {{!are|are not}} in a %s instance"],
                 addon.nullable(addon.instances[value.value], L["Other (scenario)"]))
     end,
     widget = function(parent, spec, value)
@@ -199,7 +199,7 @@ addon:RegisterCondition("OUTDOORS", {
         return addon.getCached(cache, IsOutdoors)
     end,
     print = function()
-        return L["you are in a outdoors"]
+        return L["you {{!are|are not}} in a outdoors"]
     end,
     help = function(frame)
         frame:AddChild(helpers.CreateText(L["Matches when the game reports that you are outdoors. Being outdoors is different from being outside an instance."] ))

@@ -1251,7 +1251,7 @@ L["Click a condition type to search or browse categories. Dismissing the picker 
 L["Click a name to rename it. Clear a custom step name to restore its action name. Click a collapsed title to show its summary. Click action or condition text to open its details; the double chevron returns from fields to the summary."] = true
 L["Click condition text to edit when this card can run. Enabled / Disabled preserves the card while switching its participation. Actions also require known or carried actions, usable resources, cooldown readiness and valid range."] = true
 L["Click the action to edit its type, spell or item. The leading icon previews the effect. Effect selects a style; Magnification changes its size. Click the swatch or edit RGBA on the 0–1 scale. Arrows adjust position; V / H show offsets. Default restores profile values. Sound selection and Play preview an audible reminder."] = true
-L["Click the guard text to edit the branch condition. Evaluate uses that condition; Always true / Always false skips it. False is left and red; True is right and green. The branch icon hides its arms without changing them. Gray cards in a forced arm are unreachable."] = true
+L["Click the guard text to edit the branch condition. Evaluate uses that condition; Always true / Always false skips it. False is left and red; True is right and green. The branch icon hides both arms without changing them. Click True or False to fold only that arm; its hidden count remains visible. Gray cards in a forced arm are unreachable."] = true
 L["Condition editor"] = true
 L["Conditions and state"] = true
 L["Configure recommendation timing, automatic switching, history, preview and profile highlight defaults. Labels are on the left. Checkboxes toggle options, sliders show numeric values, and fields validate before saving."] = true
@@ -1636,3 +1636,138 @@ L["Reset diagram zoom to 100%. Scroll to zoom; middle-click to reset. Drag empty
 
 L["Move this and following entries"] = true
 L["Drag one entry; Ctrl-drag moves it and all following siblings."] = true
+
+L["%d cards"] = true
+L[" (%d hidden)"] = true
+L["Click to fold or unfold this branch arm. Other cards and conditions are unchanged."] = true
+
+L["%s totem {{!is|is not}} active"] = true
+
+L["%s {{!are|are not}} %s"] = true
+
+L["%s {{!are|are not}} PVP flagged"] = true
+
+L["%s {{!are|are not}} a %s"] = true
+
+L["%s {{!are|are not}} currently casting"] = true
+
+L["%s {{!are|are not}} currently casting %s"] = true
+
+L["%s {{!are|are not}} currently channeling"] = true
+
+L["%s {{!are|are not}} currently channeling %s"] = true
+
+L["%s {{!are|are not}} in combat"] = true
+
+L["%s {{!has|does not have}} %s"] = true
+
+L["%s {{!has|does not have}} a %s debuff"] = true
+
+L["%s {{!has|does not have}} a stealable buff"] = true
+
+L["%s {{!have|do not have}} %s"] = true
+
+L["%s {{!have|do not have}} %s where %s"] = true
+
+L["%s {{!have|do not have}} a %s debuff"] = true
+
+L["%s {{!is|is not}} %s"] = true
+
+L["%s {{!is|is not}} PVP flagged"] = true
+
+L["%s {{!is|is not}} a %s"] = true
+
+L["%s {{!is|is not}} active"] = true
+
+L["%s {{!is|is not}} active or pending"] = true
+
+L["%s {{!is|is not}} active with %s"] = true
+
+L["%s {{!is|is not}} an enemy"] = true
+
+L["%s {{!is|is not}} attackable"] = true
+
+L["%s {{!is|is not}} available"] = true
+
+L["%s {{!is|is not}} beyond melee range"] = true
+
+L["%s {{!is|is not}} currently casting"] = true
+
+L["%s {{!is|is not}} currently casting %s"] = true
+
+L["%s {{!is|is not}} immune to %s"] = true
+
+L["%s {{!is|is not}} in a %s role"] = true
+
+L["%s {{!is|is not}} in combat"] = true
+
+L["%s {{!is|is not}} in range"] = true
+
+L["%s {{!is|is not}} sometimes immune to %s"] = true
+
+L["%s {{!will|will not}} run"] = true
+
+L["%s's channeled spell {{!is|is not}} interruptable"] = true
+
+L["%s's spell {{!is|is not}} interruptable"] = true
+
+
+
+L["You {{!know|do not know}} %s"] = true
+
+L["Your %s weapon {{!is|is not}} enchanted"] = true
+
+L["Your pet {{!knows|does not know}} %s"] = true
+
+L["Your talent {{!is|is not}} a %s role"] = true
+
+L["is not evenly divisible by"] = true
+
+L["is not greater than"] = true
+
+L["is not greater than or equal to"] = true
+
+L["is not less than"] = true
+
+L["is not less than or equal to"] = true
+
+L["not (%s)"] = true
+
+
+L["you {{!are|are not}} at least %s on %s"] = true
+
+L["you {{!are|are not}} in %s form"] = true
+
+L["you {{!are|are not}} in a %s instance"] = true
+
+L["you {{!are|are not}} in a group"] = true
+
+L["you {{!are|are not}} in a outdoors"] = true
+
+L["you {{!are|are not}} in a raid"] = true
+
+L["you {{!are|are not}} in control of your character"] = true
+
+L["you {{!are|are not}} moving"] = true
+
+L["you {{!are|are not}} stealthed"] = true
+
+L["you {{!are|are not}} talented in %s"] = true
+
+L["you {{!have|do not have}} %s equipped"] = true
+
+L["you {{!have|do not have}} %s glyph"] = true
+
+L["you {{!have|do not have}} a %s totem active with %s"] = true
+
+L["you {{!have|do not have}} a pet"] = true
+
+L["you {{!have|do not have}} a pet named %s"] = true
+
+L["your primary talent tree {{!is|is not}} %s"] = true
+
+L["zone {{!is|is not}} a %s zone"] = true
+
+L["{{!in|not in}} %s"] = true
+
+L["Time in combat"] = true

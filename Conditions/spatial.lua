@@ -135,7 +135,7 @@ addon:RegisterCondition("PROXIMITY", {
         return addon.compare(value.operator, count, value.value)
     end,
     print = function(_, value)
-        return string.format(addon.playerize(value.unit, L["%s have %s"], L["%s has %s"]),
+        return string.format(addon.playerize(value.unit, L["%s {{!have|do not have}} %s"], L["%s {{!has|does not have}} %s"]),
                 addon.nullable(addon.units[value.unit], L["<unit>"]),
                 addon.compareString(value.operator,
                         string.format(L["number of %s members%s within %d yards"],
@@ -194,7 +194,7 @@ addon:RegisterCondition("DISTANCE", {
         return maxRange and maxRange <= value.value
     end,
     print = function(_, value)
-        return string.format(addon.playerize(value.unit, L["%s are %s"], L["%s is %s"]),
+        return string.format(addon.playerize(value.unit, L["%s {{!are|are not}} %s"], L["%s {{!is|is not}} %s"]),
                 addon.nullable(value.unit, L["<unit>"]),
                 string.format(L["closer than %s yards"], addon.nullable(value.value)))
     end,
@@ -320,7 +320,7 @@ addon:RegisterCondition("ZONE", {
         return value.value == zoneName
     end,
     print = function(_, value)
-        return string.format(L["in %s"], addon.nullable(value.value, L["<zone>"]))
+        return string.format(L["{{!in|not in}} %s"], addon.nullable(value.value, L["<zone>"]))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")

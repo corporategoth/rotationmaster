@@ -277,12 +277,19 @@ function addon:CreateWorkbenchDragCard()
     local frame=CreateFrame('Frame',nil,UIParent);frame:SetSize(340,76);frame:SetFrameStrata('TOOLTIP');frame:EnableMouse(false)
     local art=self:CreateRoundedCardDecoration(frame);art:SetColors(.7,.7,.7,1,.9)
     frame.label=frame:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall');frame.label:SetPoint('TOPLEFT',10,-8);frame.label:SetWidth(320);frame.label:SetJustifyH('LEFT')
+    frame.label:SetMaxLines(1)
+    frame.count=frame:CreateFontString(nil,'OVERLAY','GameFontNormalSmall');frame.count:SetPoint('TOPRIGHT',-10,-8);frame.count:SetWidth(84);frame.count:SetJustifyH('RIGHT')
+    frame.stack={}
+    for i=1,2 do local layer=frame:CreateTexture(nil,'BACKGROUND',nil,-2);layer:SetTexture(addon:ControlTexture('card-border'));layer:SetPoint('TOPLEFT',frame,'TOPLEFT',i*4,-i*4);layer:SetPoint('BOTTOMRIGHT',frame,'BOTTOMRIGHT',i*4,-i*4);layer:SetVertexColor(.7,.7,.7,.8);layer:Hide();frame.stack[i]=layer end
     frame.summary=frame:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall');frame.summary:SetPoint('TOPLEFT',10,-28);frame.summary:SetWidth(320);frame.summary:SetWordWrap(true);frame.summary:SetJustifyH('LEFT');frame.summary:SetMaxLines(3)
     function frame:FollowPointer()
         if GetCursorPosition then local x,y=GetCursorPosition();local scale=self:GetEffectiveScale();self:ClearAllPoints();self:SetPoint('TOPLEFT',UIParent,'BOTTOMLEFT',x/scale+16,y/scale-16) end
     end
-    function frame:Present(title,summary,source)
+    function frame:Present(title,summary,source,count)
         self:SetFrameStrata('TOOLTIP');self:SetFrameLevel((source and source:GetFrameLevel() or 0)+500);self:SetClampedToScreen(true);self:SetToplevel(true)
+        count=type(count)=='number' and count or 1
+        if count>1 then self.count:SetText(string.format(LibStub('AceLocale-3.0'):GetLocale(addon_name)['%d cards'],count));self.count:Show();self.label:SetWidth(230) else self.count:Hide();self.label:SetWidth(320) end
+        for _,layer in ipairs(self.stack) do if count>1 then layer:Show() else layer:Hide() end end
         self.label:SetText(title);self.summary:SetText(summary)
         if source and UIParent.GetEffectiveScale then self:SetScale(source:GetEffectiveScale()/UIParent:GetEffectiveScale()) end
         self:SetAlpha(.9);self:FollowPointer();self:Show()

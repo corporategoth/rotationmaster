@@ -25,7 +25,7 @@ addon:RegisterCondition("ANYSPELL_AVAIL", {
     end,
     print = function(_, value)
         local link = addon:Widget_GetSpellLink(value.spell, value.ranked)
-        return string.format(L["%s is available"], addon.nullable(link, L["<spell>"]))
+        return string.format(L["%s {{!is|is not}} available"], addon.nullable(link, L["<spell>"]))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -65,7 +65,7 @@ addon:RegisterCondition("ANYSPELL_RANGE", {
     end,
     print = function(_, value)
         local link = addon:Widget_GetSpellLink(value.spell, value.ranked)
-        return string.format(L["%s is in range"], addon.nullable(link, L["<spell>"]))
+        return string.format(L["%s {{!is|is not}} in range"], addon.nullable(link, L["<spell>"]))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")

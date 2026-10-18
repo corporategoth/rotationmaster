@@ -818,4 +818,24 @@ test('ordinary drag moves a leading card into a following branch without carryin
     pane.undo:Click();assert(pane.workspace:Snapshot().rotation[1].id=='first')
     f.env.IsControlKeyDown=function() return true end;c:BeginDrag('first');assert(not c:CanDrop(target),'Ctrl tail permits a cycle');c:CancelDrag()
 end)
+test('Ctrl rotation drag preview has a separate multiple-card count and stack',function()
+    local f,parent=fixture();local value=f.addon:GetEditableRotation(0,'mine');value.rotation[2]={id='last',type='none',conditions={}}
+    local pane=assert(f.addon:CreateRotationEditor(parent,0,'mine'));f.env.IsControlKeyDown=function() return true end
+    pane.canvas:BeginDrag('branch');local ghost=pane.canvas.ghost
+    assert(ghost.count and ghost.count:IsShown() and ghost.count:GetText():find('4',1,true),'multiple card count missing')
+    assert(ghost.stack and ghost.stack[1]:IsShown(),'multiple drag has no stacked preview')
+    pane.canvas:CancelDrag();f.env.IsControlKeyDown=function() return false end;pane.canvas:BeginDrag('last')
+    assert(not ghost.count:IsShown() and not ghost.stack[1]:IsShown(),'single drag retained multiple presentation')
+end)
+test('arm label buttons fold one side on readonly and editable rotations with stale guards',function()
+    local f,parent=fixture();local pane=assert(f.addon:CreateRotationEditor(parent,0,'builtin'));local c=pane.canvas
+    local button
+    for _,control in ipairs(c.armButtons or {}) do if control.model.parentId=='branch' and control.model.arm=='false' then button=control end end
+    assert(button,'arm fold control missing');local stale=button.scripts.OnClick;button:Click()
+    assert(not visibleCard(pane,'no') and visibleCard(pane,'yes') and not pane:HasUnsavedChanges())
+    stale();assert(not visibleCard(pane,'no'),'retired arm callback changed current fold')
+    for _,control in ipairs(c.armButtons) do if control.model.parentId=='branch' and control.model.arm=='false' then assert(control:GetText():find('1',1,true));control:Click();break end end
+    assert(visibleCard(pane,'no'));pane.viewMode:Click();assert(#c.armButtons>=2)
+    pane:Release();stale();assert(not pane.active)
+end)
 finish()

@@ -92,8 +92,11 @@ addon.playerize = function(unit, player, nonplayer)
     end
 end
 
-addon.compareString = function(operator, left, right)
-    return left .. " " .. addon.nullable(operators[operator], L["<operator>"]) .. " " .. right
+addon.compareString = function(operator, left, right, primary)
+    local positive=addon.nullable(operators[operator], L["<operator>"])
+    local negative=(addon.negatedOperators or {})[operator]
+    local predicate=negative and ('{{'..(primary and '!' or '')..positive..'|'..negative..'}}') or positive
+    return left .. " " .. predicate .. " " .. right
 end
 
 addon.keys = function(array)

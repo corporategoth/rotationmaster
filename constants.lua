@@ -30,6 +30,13 @@ addon.operators = {
     NOTEQUALS = L["is not equal to"],
     DIVISIBLE = L["is evenly divisible by"],
 }
+-- Full translated negative predicates keep comparison grammar out of the UI.
+addon.negatedOperators = {
+    LESSTHAN=L["is not less than"], LESSTHANOREQUALS=L["is not less than or equal to"],
+    GREATERTHAN=L["is not greater than"], GREATERTHANOREQUALS=L["is not greater than or equal to"],
+    EQUALS=L["is not equal to"], NOTEQUALS=L["is equal to"], DIVISIBLE=L["is not evenly divisible by"],
+}
+
 
 addon.units = {
     player = L["you"],

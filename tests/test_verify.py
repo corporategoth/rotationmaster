@@ -38,6 +38,23 @@ class VendorTests(unittest.TestCase):
             file.unlink()
             self.assertNotEqual(check().returncode, 0, 'missing vendor file was accepted')
 
+    def test_missing_native_icon_fails_without_a_lua_or_toc_error(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            for child in ['tests', 'Libs', 'UI', 'Assets/Controls']:
+                (root / child).mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(ROOT / 'tests/verify.py', root / 'tests/verify.py')
+            (root / 'Libs/UPSTREAM.json').write_text('{"libraries": {}}')
+            (root / 'RotationMaster.toc').write_text('UI/control.lua\n')
+            (root / 'UI/control.lua').write_text("addon:CreateWorkbenchIconButton(parent, 'minus', 'Zoom out')")
+            def check():
+                return subprocess.run([sys.executable, 'tests/verify.py'], cwd=root, capture_output=True, text=True)
+            result = check()
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn('Missing control texture', result.stdout)
+            (root / 'Assets/Controls/minus.tga').write_bytes(b'fixture')
+            self.assertEqual(check().returncode, 0)
+
     def test_packaged_defaults_must_be_in_the_load_graph(self):
         with tempfile.TemporaryDirectory() as folder:
             root = Path(folder)

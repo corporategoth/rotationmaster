@@ -13,7 +13,7 @@ addon:RegisterCondition("BEYOND_MELEE",{
         if exists~=true and exists~=1 then return nil,"invalid-api-result" end
         return addon.Platform:IsBeyondMeleeRange(value.unit)
     end,
-    print=function(_,value) return string.format(L["%s is beyond melee range"],addon.units[value.unit] or L["<unit>"]) end,
+    print=function(_,value) return string.format(L["%s {{!is|is not}} beyond melee range"],addon.units[value.unit] or L["<unit>"]) end,
     widget=function(parent,spec,value)
         local top=parent:GetUserData("top")
         parent:AddChild(addon:Widget_UnitWidget(value,addon.units,function()

@@ -123,6 +123,34 @@ local function evaluate(value, cache, start, state, depth, path)
     return result
 end
 
+-- Alternatives belong to translated predicate templates, never inferred from
+-- rendered names. Only the first marker is the leaf's predicate; subsequent
+-- markers are qualifiers and retain their positive wording under negation.
+local printerSources=setmetatable({}, {__mode='k'})
+function addon:RenderConditionPhrase(text,negated)
+    if type(text)~='string' then return text end
+    local first=true;local hasPrimary=text:find('{{!',1,true)~=nil
+    local rendered,count=text:gsub('{{(.-)|(.-)}}',function(positive,negative)
+        local primary=positive:sub(1,1)=='!';if primary then positive=positive:sub(2) end
+        local predicate=not hasPrimary or primary
+        local result=negated and first and predicate and negative or positive;if predicate then first=false end;return result
+    end)
+    if negated and count==0 then return string.format(L['not (%s)'],text) end
+    return rendered
+end
+---@param text string
+---@return string
+local function trimOuter(text)
+    if text:sub(1,1)~='(' or text:sub(-1)~=')' then return text end
+    local depth=0
+    for i=1,#text do
+        local c=text:sub(i,i)
+        if c=='(' then depth=depth+1 elseif c==')' then depth=depth-1 end
+        if depth==0 and i<#text or depth<0 then return text end
+    end
+    return depth==0 and text:sub(2,-2) or text
+end
+
 printArray = function(operation, array, spec)
     if array == nil then
         return ""
@@ -139,11 +167,7 @@ printArray = function(operation, array, spec)
                 rv = rv .. " " .. operation .. " "
             end
 
-            if entry.type == "AND" or entry.type == "OR" then
-                rv = rv .. printArray(entry.type, entry.value, spec)
-            else
-                rv = rv .. printSingle(entry, spec)
-            end
+            rv = rv .. printSingle(entry, spec)
         end
     end
 
@@ -152,17 +176,18 @@ printArray = function(operation, array, spec)
     return rv
 end
 
-printSingle = function(value, spec)
+printSingle = function(value, spec, negated)
     if value == nil or value.type == nil or value.disabled then
         return ""
     end
 
     if value.type == "AND" or value.type == "OR" then
-        return  printArray(value.type, value.value, spec)
+        local text=printArray(value.type, value.value, spec)
+        return negated and L['NOT']..' '..text or text
     elseif value.type == "NOT" then
-        return "NOT " .. printSingle(value.value, spec)
+        return printSingle(value.value, spec, not negated)
     elseif conditions[value.type] ~= nil then
-        return conditions[value.type].print(spec, value)
+        return conditions[value.type].print(spec, value, negated)
     else
         return L["<INVALID CONDITION>"]
     end
@@ -248,6 +273,11 @@ function addon:RegisterCondition(tag, array)
     if conditions[tag] and conditions[tag].on_unregister then
         conditions[tag].on_unregister(tag)
     end
+    if type(array.print)=='function' and not printerSources[array.print] then
+        local raw=array.print
+        local wrapped=function(spec,value,negated) return addon:RenderConditionPhrase(raw(spec,value),negated) end
+        printerSources[wrapped]=raw;array.print=wrapped
+    end
     conditions[tag] = array
     self.conditionRegistryVersion=(self.conditionRegistryVersion or 0)+1
     quarantined[array] = nil
@@ -273,7 +303,7 @@ function addon:evaluateCondition(value, context)
 end
 
 function addon:printCondition(value, spec)
-    return printSingle(value, spec)
+    return trimOuter(printSingle(value, spec))
 end
 
 function addon:validateCondition(value, spec)

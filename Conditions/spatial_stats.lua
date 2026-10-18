@@ -163,7 +163,7 @@ addon:RegisterCondition("PROXIMITY_HEALTH_COUNT", {
                                 (value.includepets and " (" .. L["including pets"] .. ")" or ""),
                                 addon.nullable(value.distance, L["<distance>"]),
                                 addon.nullable(addon.units[value.unit], L["<unit>"]))),
-                addon.nullable(value.value))
+                addon.nullable(value.value),true)
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -341,7 +341,7 @@ addon:RegisterCondition("PROXIMITY_HEALTHPCT_COUNT", {
                                 addon.nullable(value.distance, L["<distance>"]),
                                 addon.nullable(addon.units[value.unit], L["<unit>"])),
                         addon.nullable(v) .. "%"),
-                addon.nullable(value.value))
+                addon.nullable(value.value),true)
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -527,7 +527,7 @@ addon:RegisterCondition("PROXIMITY_MANA_COUNT", {
                                 (value.includepets and " (" .. L["including pets"] .. ")" or ""),
                                 addon.nullable(value.distance, L["<distance>"]),
                                 addon.nullable(addon.units[value.unit], L["<unit>"]))),
-                addon.nullable(value.value))
+                addon.nullable(value.value),true)
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -705,7 +705,7 @@ addon:RegisterCondition("PROXIMITY_MANAPCT_COUNT", {
                                 addon.nullable(value.distance, L["<distance>"]),
                                 addon.nullable(addon.units[value.unit], L["<unit>"])),
                         addon.nullable(v) .. "%"),
-                addon.nullable(value.value))
+                addon.nullable(value.value),true)
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")

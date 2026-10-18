@@ -17,7 +17,7 @@ addon:RegisterCondition("CHANNELING", {
         return name ~= nil
     end,
     print = function(_, value)
-        return string.format(addon.playerize(value.unit, L["%s are currently channeling"], L["%s is currently casting"]),
+        return string.format(addon.playerize(value.unit, L["%s {{!are|are not}} currently channeling"], L["%s {{!is|is not}} currently casting"]),
             addon.nullable(addon.units[value.unit], L["<unit>"]))
     end,
     widget = function(parent, spec, value)
@@ -47,7 +47,7 @@ addon:RegisterCondition("CHANNELING_SPELL", {
         return name == value.spell
     end,
     print = function(_, value)
-        return string.format(addon.playerize(value.unit, L["%s are currently channeling %s"], L["%s is currently casting %s"]),
+        return string.format(addon.playerize(value.unit, L["%s {{!are|are not}} currently channeling %s"], L["%s {{!is|is not}} currently casting %s"]),
             addon.nullable(addon.units[value.unit], L["<unit>"]), addon.nullable(value.spell, L["<spell>"]))
     end,
     widget = function(parent, spec, value)
@@ -129,7 +129,7 @@ addon:RegisterCondition("CHANNEL_INTERRUPTABLE", {
         return name ~= nil and not notInterruptible
     end,
     print = function(_, value)
-        return string.format(L["%s's channeled spell is interruptable"], addon.nullable(addon.units[value.unit], L["<unit>"]))
+        return string.format(L["%s's channeled spell {{!is|is not}} interruptable"], addon.nullable(addon.units[value.unit], L["<unit>"]))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")

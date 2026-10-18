@@ -5,7 +5,7 @@ local function finite(value) return type(value)=='number' and value==value and v
 local function zoom(value) return finite(value) and math.max(.25,math.min(2,value)) or 1 end
 local function location(path) return table.concat(path,'/') end
 function addon:CreateRotationCanvas(parent,owner)
-    local canvas={frame=addon:CreateWorkbenchScrollFrame(parent),cards={},lines={},labels={},zones={},groups={},generation=0}
+    local canvas={frame=addon:CreateWorkbenchScrollFrame(parent),cards={},lines={},labels={},zones={},groups={},armButtons={},generation=0}
     canvas.surface=CreateFrame('Frame',nil,canvas.frame);canvas.frame:SetScrollChild(canvas.surface)
     canvas.cameraHost=CreateFrame('Frame',nil,canvas.surface)
     canvas.child=CreateFrame('Frame',nil,canvas.cameraHost);canvas.child:SetPoint('TOPLEFT')
@@ -122,7 +122,17 @@ function addon:CreateRotationCanvas(parent,owner)
         local step=insert or addon.RotationData.IndexRotationSteps(owner.workspace:Snapshot()).byId[id].step
         local title=step.name or (step.type=='branch' and L['Add branch'] or step.type=='none' and L['Stop'] or addon:SpellLabel(step.action))
         if self.drag.tail then title=L['Move this and following entries']..': '..title end
-        self.ghost:Present(title,addon:DescribeCondition(step.conditions or {},owner.workspace.spec)..'\n'..L['Drop in a highlighted gap.'],self.frame)
+        local count=1
+        if id then
+            count=0;local index=addon.RotationData.IndexRotationSteps(owner.workspace:Snapshot());local source=index.byId[id];local base={}
+            for i=1,#source.path-1 do base[i]=source.path[i] end
+            for _,row in ipairs(index.rows) do
+                local same=true;local length=self.drag.tail and #base or #source.path
+                for i=1,length do if row.path[i]~=(self.drag.tail and base[i] or source.path[i]) then same=false;break end end
+                if same and (not self.drag.tail or type(row.path[#base+1])=='number' and row.path[#base+1]>=source.index) then count=count+1 end
+            end
+        end
+        self.ghost:Present(title,addon:DescribeCondition(step.conditions or {},owner.workspace.spec)..'\n'..L['Drop in a highlighted gap.'],self.frame,count)
         for _,zone in ipairs(self.zones) do zone:Show() end
         addon:SetUIScript(self.frame,'OnUpdate',function()
             if not owner.active or not self.drag or self.drag.generation~=self.generation then self:CancelDrag();return end
@@ -176,20 +186,28 @@ function addon:CreateRotationCanvas(parent,owner)
         end
         for i=n+1,#self.lines do self.lines[i]:Hide() end
         local labels=0
-        for _,edge in ipairs(scene.connectors) do if edge.label then
+        for _,edge in ipairs(scene.connectors) do if edge.label and #(scene.armLabels or {})==0 then
             labels=labels+1;local label=self.labels[labels]
             if not label then label=self.child:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall');self.labels[labels]=label end
             local point=edge.points[2];local tone=colors[edge.tone] or colors.neutral
             label:ClearAllPoints();label:SetPoint('TOPLEFT',self.child,'TOPLEFT',point.x+(edge.arm=='false' and -40 or 8),-point.y+14)
             label:SetText(edge.arm=='true' and L['True'] or L['False']);label:SetTextColor(tone[1],tone[2],tone[3]);label:Show()
         end end
-        for _,arm in ipairs(scene.armLabels or {}) do
-            labels=labels+1;local label=self.labels[labels]
-            if not label then label=self.child:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall');self.labels[labels]=label end
-            local tone=arm.arm=='false' and colors.red or colors.green
-            label:ClearAllPoints();label:SetPoint('TOPLEFT',self.child,'TOPLEFT',arm.x,-arm.y)
-            label:SetText(arm.arm=='true' and L['True'] or L['False']);label:SetTextColor(tone[1],tone[2],tone[3],arm.inactive and .3 or 1);label:Show()
+        for i,arm in ipairs(scene.armLabels or {}) do
+            local button=self.armButtons[i]
+            if not button then button=addon:CreateWorkbenchButton(self.child,'',100);button.art:SetAlpha(.2);self.armButtons[i]=button end
+            button.model=arm;local token=self.generation;local tone=arm.arm=='false' and colors.red or colors.green
+            button:ClearAllPoints();button:SetPoint('TOPLEFT',self.child,'TOPLEFT',arm.x,-arm.y);button:SetSize(100,18)
+            local text=arm.arm=='true' and L['True'] or L['False']
+            button:SetText(text..(arm.folded and string.format(L[' (%d hidden)'],arm.count or 0) or ''));button:GetFontString():SetTextColor(tone[1],tone[2],tone[3],arm.inactive and .4 or 1)
+            button.tooltip=L['Click to fold or unfold this branch arm. Other cards and conditions are unchanged.']
+            addon:SetUIScript(button,'OnClick',function()
+                if not owner.active or self.generation~=token then return end
+                owner.view.hiddenArms=owner.view.hiddenArms or {};local state=owner.view.hiddenArms[arm.parentId] or {};owner.view.hiddenArms[arm.parentId]=state
+                state[arm.arm]=not state[arm.arm];self:Render()
+            end);button:Show()
         end
+        for i=#(scene.armLabels or {})+1,#self.armButtons do self.armButtons[i]:Hide() end
         for i=labels+1,#self.labels do self.labels[i]:Hide() end
         for i,target in ipairs(scene.dropTargets) do
             local zone=self.zones[i]

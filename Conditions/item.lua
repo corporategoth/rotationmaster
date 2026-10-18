@@ -45,7 +45,7 @@ addon:RegisterCondition("EQUIPPED", {
         return addon:EvaluateItemCondition("EQUIPPED",value,cache,now)
     end,
     print = function(_, value)
-        return string.format(L["you have %s equipped"], addon.nullable(get_item_desc(value.item), L["<item>"]))
+        return string.format(L["you {{!have|do not have}} %s equipped"], addon.nullable(get_item_desc(value.item), L["<item>"]))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -114,7 +114,7 @@ addon:RegisterCondition("ITEM", {
         return addon:EvaluateItemCondition("ITEM",value,cache,now)
     end,
     print = function(_, value)
-        return string.format(L["%s is available"], addon.nullable(get_item_desc(value.item), L["<item>"])) ..
+        return string.format(L["%s {{!is|is not}} available"], addon.nullable(get_item_desc(value.item), L["<item>"])) ..
                 (value.notcarrying and L[", even if you do not currently have one"] or "")
     end,
     widget = function(parent, spec, value)
@@ -160,7 +160,7 @@ addon:RegisterCondition("ITEM_RANGE", {
         return addon:EvaluateItemCondition("ITEM_RANGE",value,cache,now)
     end,
     print = function(_, value)
-        return string.format(L["%s is in range"], addon.nullable(get_item_desc(value.item), L["<item>"])) ..
+        return string.format(L["%s {{!is|is not}} in range"], addon.nullable(get_item_desc(value.item), L["<item>"])) ..
             (value.notcarrying and L[", even if you do not currently have one"] or "")
     end,
     widget = function(parent, spec, value)

@@ -51,4 +51,31 @@ test('an unrestricted empty condition is Always without a diagnostic prefix',fun
     local a=fixture();a.printCondition=function() return '' end
     assert(a:DescribeCondition({},0)=='Always')
 end)
+test('real combat weapon known spell aura and comparison leaves use readable negation',function()
+    local f=F.new();f.load('Data/plain.lua');f.load('Data/tags.lua');f.load('Core/conditions.lua')
+    for _,file in ipairs({'Platform/spells.lua','Conditions/combat.lua','Conditions/weapon.lua','Conditions/known_spell.lua','Conditions/buffs.lua','Conditions/misc.lua'}) do f.load(file) end
+    local a=f.addon
+    for _,sample in ipairs({{{type='COMBAT',unit='target'},'your target is not in combat'},{{type='COMBAT',unit='player'},'you are not in combat'},{{type='WEAPON'},'Your main hand weapon is not enchanted'},{{type='SPELL_KNOWN',spell=403},'You do not know'},{{type='SELF_LEVEL',operator='LESSTHAN',value=20},'your level is not less than 20'},{{type='BUFF',unit='target',spell=324},'your target does not have'}}) do
+        local text=a:DescribeCardCondition({type='NOT',value=sample[1]},0)
+        assert(text:find(sample[2],1,true),text)
+        assert(not text:find('{{',1,true),'unresolved phrase marker')
+    end
+end)
+test('translated predicate alternatives and compound aura comparisons retain their scope',function()
+    local f=F.new();f.translations['%s {{!is|is not}} in combat']='%s {{!est|ne reste pas}} en combat'
+    for _,file in ipairs({'Data/plain.lua','Data/tags.lua','Platform/spells.lua','Core/conditions.lua','Conditions/combat.lua','Conditions/buffs.lua'}) do f.load(file) end
+    assert(f.addon:printCondition({type='NOT',value={type='COMBAT',unit='target'}},0)=='your target ne reste pas en combat')
+    local node={type='BUFF_REMAIN',unit='target',spell=324,operator='LESSTHAN',value=5}
+    local positive=f.addon:printCondition(node,0);local negative=f.addon:printCondition({type='NOT',value=node},0)
+    assert(positive:find('is less than 5',1,true),positive)
+    assert(negative:find('do not have',1,true) and negative:find('is less than 5',1,true) and not negative:find('is not less',1,true),negative)
+end)
+test('negated proximity counts reverse the outer count and preserve the member qualifier',function()
+    local f=F.new();for _,file in ipairs({'Data/plain.lua','Data/tags.lua','Core/conditions.lua','Conditions/spatial_stats.lua'}) do f.load(file) end
+    for _,kind in ipairs({'HEALTH','HEALTHPCT','MANA','MANAPCT'}) do
+        local node={type='PROXIMITY_'..kind..'_COUNT',unit='player',distance=10,operator='GREATERTHAN',value=2,healthoperator='LESSTHAN',manaoperator='LESSTHAN',health=.5,mana=.5}
+        local text=f.addon:printCondition({type='NOT',value=node},0)
+        assert(text:find('is not greater than 2',1,true) and text:find('is less than',1,true) and not text:find('is not less',1,true),text)
+    end
+end)
 finish()

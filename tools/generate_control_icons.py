@@ -9,6 +9,7 @@ SHAPES = {
     'grip': '<g fill="white" stroke="none"><circle cx="11" cy="7" r="2"/><circle cx="21" cy="7" r="2"/><circle cx="11" cy="16" r="2"/><circle cx="21" cy="16" r="2"/><circle cx="11" cy="25" r="2"/><circle cx="21" cy="25" r="2"/></g>',
     'play': '<path d="M9 5 27 16 9 27Z" fill="white" stroke="none"/>',
     'center': '<circle cx="16" cy="16" r="8"/><path d="M16 3v6m0 14v6M3 16h6m14 0h6"/>',
+    'minus': '<path d="M6 16h20"/>',
     'plus': '<path d="M16 6v20M6 16h20"/>',
     'branch': '<path d="M16 5v12M16 17 7 26m9-9 9 9M7 19v7h7m4 0h7v-7"/>',
     'group-add': '<rect x="19" y="3" width="9" height="7" rx="1"/><rect x="19" y="22" width="9" height="7" rx="1"/><path d="M19 6H13v19h6M3 16h8m-4-4v8"/>',

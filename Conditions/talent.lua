@@ -122,7 +122,7 @@ addon:RegisterCondition("TALENT",{
     print=function(spec,value)
         local talent=info(value,spec)
         if legacySlot(value) then return string.format(L["Historical talent slot %s (unavailable)"],value.value) end
-        if value.layout=="grid" then return string.format(L["you are talented in %s"],talent and talent.name or L["<talent>"]) end
+        if value.layout=="grid" then return string.format(L["you {{!are|are not}} talented in %s"],talent and talent.name or L["<talent>"]) end
         local tree=value.tree and platform:GetTalentTreeInfo(value.tree,group(spec))
         return addon.compareString(value.operator,string.format(L["talent points in %s (%s)"],
             talent and talent.name or L["<talent>"],tree and tree.name or L["<talent tree>"]),addon.nullable(value.value))
@@ -189,7 +189,7 @@ addon:RegisterCondition('PRIMARY_TALENT_TREE',{
         if not primary then return nil,reason end
         return primary.index==value.tree
     end,
-    print=function(spec,value) return string.format(L['your primary talent tree is %s'],treeName(value,spec)) end,
+    print=function(spec,value) return string.format(L['your primary talent tree {{!is|is not}} %s'],treeName(value,spec)) end,
     widget=function(parent,spec,value)
         local top=parent:GetUserData('top');treePicker(parent,spec,value,function() top:SetStatusText(top:GetUserData('funcs'):print(top:GetUserData('root'),spec)) end)
     end,

@@ -18,7 +18,7 @@ if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
             return (value.offhand and offEnchant or mainEnchant)
         end,
         print = function(_, value)
-            return string.format(L["Your %s weapon is enchanted"],
+            return string.format(L["Your %s weapon {{!is|is not}} enchanted"],
                     (value.offhand and L["off hand"] or L["main hand"]))
         end,
         widget = function(parent, spec, value)

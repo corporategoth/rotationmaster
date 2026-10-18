@@ -89,7 +89,7 @@ function addon:CreateConditionCanvas(parent,owner)
         self:CancelDrag();self.drag=state
         local preview=state.insert or owner.active.session:Snapshot()
         if not state.insert and state.paths[1] then for _,part in ipairs(state.paths[1]) do preview=preview[part] end end
-        ghost:Present((state.tail and L["Move this and following entries"]..": " or "")..(state.insert and L["Insert condition"] or string.format(L["Move %d conditions"],#state.paths)),addon:DescribeCondition(preview,owner.active.spec).."\n"..L["Drop in a highlighted gap."],self.frame)
+        ghost:Present((state.tail and L["Move this and following entries"]..": " or "")..(state.insert and L["Insert condition"] or string.format(L["Move %d conditions"],#state.paths)),addon:DescribeCondition(preview,owner.active.spec).."\n"..L["Drop in a highlighted gap."],self.frame,state.insert and 1 or #state.paths)
         for _,zone in ipairs(self.zones) do zone:Show();zone.marker:Hide() end
         addon:SetUIScript(self.frame,"OnUpdate",function()
             if not self.drag then return end

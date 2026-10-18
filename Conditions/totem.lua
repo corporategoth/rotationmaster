@@ -67,7 +67,7 @@ addon:RegisterCondition("TOTEM", {
         return record.active and remaining(record,start)>0
     end,
     print = function(_, value)
-        return string.format(L["%s totem is active"], addon.nullable(addon.totems[value.spell], L["<element>"]))
+        return string.format(L["%s totem {{!is|is not}} active"], addon.nullable(addon.totems[value.spell], L["<element>"]))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -100,7 +100,7 @@ addon:RegisterCondition("TOTEM_SPELL", {
     evaluate = function(value, cache, start) return findSpecific(value,cache,start,false) end,
     print = function(_, value)
         local link = addon:Widget_GetSpellLink(value.spell, value.ranked)
-        return string.format(L["%s is active"], addon.nullable(link, L["<totem>"]))
+        return string.format(L["%s {{!is|is not}} active"], addon.nullable(link, L["<totem>"]))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -134,7 +134,7 @@ addon:RegisterCondition("TOTEM_REMAIN", {
         return record.active and seconds>0 and addon.compare(value.operator,addon.round(seconds,3),value.value)
     end,
     print = function(_, value)
-        return string.format(L["you have a %s totem active with %s"],
+        return string.format(L["you {{!have|do not have}} a %s totem active with %s"],
             addon.nullable(addon.totems[value.spell], L["<element>"]),
                 addon.compareString(value.operator, L["the remaining time"], string.format(L["%s seconds"], addon.nullable(value.value))))
     end,
@@ -176,7 +176,7 @@ addon:RegisterCondition("TOTEM_SPELL_REMAIN", {
     evaluate = function(value, cache, start) return findSpecific(value,cache,start,true) end,
     print = function(_, value)
         local link = addon:Widget_GetSpellLink(value.spell, value.ranked)
-        return string.format(L["%s is active with %s"], addon.nullable(link, L["<totem>"]),
+        return string.format(L["%s {{!is|is not}} active with %s"], addon.nullable(link, L["<totem>"]),
             addon.compareString(value.operator, L["the remaining time"], string.format(L["%s seconds"], addon.nullable(value.value))))
     end,
     widget = function(parent, spec, value)

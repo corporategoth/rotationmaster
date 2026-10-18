@@ -87,7 +87,7 @@ function addon:InstallRotationView(pane)
                 addon:SetUIScript(entry[1],'OnClick',function()
                     if not alive() or self:ContentSection()~=section then return end
                     for _,row in ipairs(data.IndexRotationSteps(self.workspace:Snapshot()).rows) do if row.section==section then
-                        self.view.cardStates[row.step.id]=mode;if mode=='normal' then self.view.hiddenChildren[row.step.id]=nil end
+                        self.view.cardStates[row.step.id]=mode;if mode=='normal' then self.view.hiddenChildren[row.step.id]=nil;if self.view.hiddenArms then self.view.hiddenArms[row.step.id]=nil end end
                     end end
                     self:Render()
                 end)

@@ -16,7 +16,7 @@ addon:RegisterCondition("DEBUFF", {
         return addon:EvaluateAuraCondition(value, cache, start, "HARMFUL", "present")
     end,
     print = function(_, value)
-        return string.format(addon.playerize(value.unit, L["%s have %s"], L["%s has %s"]),
+        return string.format(addon.playerize(value.unit, L["%s {{!have|do not have}} %s"], L["%s {{!has|does not have}} %s"]),
             addon.nullable(addon.units[value.unit], L["<unit>"]),
             string.format(value.owndebuff and L["your own %s"] or "%s", (value.spell and addon:AuraSpellLabel(value) or L["<debuff>"])))
     end,
@@ -69,7 +69,7 @@ addon:RegisterCondition("DEBUFF_REMAIN", {
         return addon:EvaluateAuraCondition(value, cache, start, "HARMFUL", "remaining")
     end,
     print = function(_, value)
-        return string.format(addon.playerize(value.unit, L["%s have %s where %s"], L["%s have %s where %s"]),
+        return string.format(addon.playerize(value.unit, L["%s {{!have|do not have}} %s where %s"], L["%s {{!have|do not have}} %s where %s"]),
             addon.nullable(addon.units[value.unit], L["<unit>"]),
             string.format(value.owndebuff and L["your own %s"] or "%s", (value.spell and addon:AuraSpellLabel(value) or L["<debuff>"])),
             addon.compareString(value.operator, L["the remaining time"], string.format(L["%s seconds"], addon.nullable(value.value))))
@@ -190,7 +190,7 @@ addon:RegisterCondition("DISPELLABLE", {
         return addon:EvaluateAuraCondition(value, cache, start, "HARMFUL", "dispel")
     end,
     print = function(_, value)
-        return string.format(addon.playerize(value.unit, L["%s have a %s debuff"], L["%s has a %s debuff"]),
+        return string.format(addon.playerize(value.unit, L["%s {{!have|do not have}} a %s debuff"], L["%s {{!has|does not have}} a %s debuff"]),
             addon.nullable(addon.units[value.unit], L["<unit>"]),
             string.format(value.owndebuff and L["your own %s"] or "%s", addon.nullable(addon.debufftypes[value.debufftype], L["<debuff type>"]))) ..
             (value.dispellable and " " .. L["that is dispellable"] or "")

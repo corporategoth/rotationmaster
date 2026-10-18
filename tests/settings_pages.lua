@@ -640,6 +640,7 @@ test('ordered rows capture Ctrl suffix moves while manual arrows always move one
     p:Open(function(form) form:OrderedCollection('rows',values,function(i) return values[i] end,function() end,function() end) end)
     f.env.IsControlKeyDown=function() return true end;local view=p.ordered.rows;view:BeginDrag(3)
     assert(not view:CanDrop(4) and not view:CanDrop(5) and view:CanDrop(1))
+    assert(view.ghost.label:GetWidth()<=230,'multiple count overlaps preview title')
     f.env.IsControlKeyDown=function() return false end;assert(view:Drop(1));assert(table.concat(values,',')=='three,four,one,two')
     f.env.IsControlKeyDown=function() return true end;p.ordered.rows.rows[3].up:Click();assert(table.concat(values,',')=='three,one,four,two')
     p:Release()

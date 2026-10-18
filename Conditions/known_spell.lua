@@ -22,7 +22,7 @@ addon:RegisterCondition("SPELL_KNOWN", {
         if validID(value.spell) then
             label = addon:SpellLabel(value.spell)
         end
-        return string.format(value.pet and L["Your pet knows %s"] or L["You know %s"], label)
+        return string.format(value.pet and L["Your pet {{!knows|does not know}} %s"] or L["You {{!know|do not know}} %s"], label)
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")

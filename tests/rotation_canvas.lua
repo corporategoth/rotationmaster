@@ -102,11 +102,14 @@ test('True and False stems remain side by side until their split instead of over
     assert(paths['false'].points[1].x+2<=paths['true'].points[1].x,'red path overdraws green before split')
     assert(paths['false'].points[1].y==paths['true'].points[1].y)
 end)
-test('empty False arm remains straight beside True until the rejoin',function()
-    local s=scene({branch('b',nil,{leaf('yes')},{})});local paths=exits(s,'b');local stem=paths['false'].points[1].x
+test('empty False arm bypasses the populated True arm on its left and rejoins the spine',function()
+    local s=scene({branch('b',nil,{leaf('yes')},{})});local b,yes=byId(s,'b'),byId(s,'yes');local center=b.x+b.width/2
+    assert(yes.x+yes.width/2==center)
+    local bypass
     for _,edge in ipairs(s.connectors) do if edge.arm=='false' then
-        for _,point in ipairs(edge.points) do assert(point.x==stem,'empty False arm shifts sideways') end
+        for _,point in ipairs(edge.points) do if point.x<yes.x then bypass=true end end
     end end
+    assert(bypass,'empty False path does not go around the populated arm')
 end)
 test('list view uses a compact false-then-true hierarchy with linear width and exact typed arm destinations',function()
     local source={branch('b',nil,{branch('nested',nil,{leaf('deep')},{})},{leaf('no')}),leaf('tail')}
@@ -156,6 +159,43 @@ test('hidden content never consumes the active workspace card budget',function()
         local s=scene(rotation,optional,{section=section,layout='list'})
         assert(s.complete and #s.cards==200 and byId(s,(section=='rotation' and 'r' or 'c')..200))
         for _,target in ipairs(s.dropTargets) do assert(target.destination.path[1]==section) end
+    end
+end)
+test('diagram branch centers above two populated arms and aligns one populated arm straight below',function()
+    for _,arms in ipairs({{{leaf('yes')},{leaf('no')}},{{leaf('yes')},{}},{{},{leaf('no')}}}) do
+        local s=scene({leaf('before'),branch('b',nil,arms[1],arms[2]),leaf('after')},nil,{section='rotation'})
+        local b,yes,no=byId(s,'b'),byId(s,'yes'),byId(s,'no');local center=b.x+b.width/2
+        if yes and no then assert(center==(no.x+no.width/2+yes.x+yes.width/2)/2,'branch is not centered between arms')
+        else local active=yes or no;assert(active.x+active.width/2==center,'populated arm does not continue straight') end
+        assert(byId(s,'before').x==b.x and byId(s,'after').x==b.x,'root sequence shifts its spine')
+        for _,edge in ipairs(s.connectors) do if edge.to=='yes' or edge.to=='no' then
+            if not (yes and no) then for _,point in ipairs(edge.points) do assert(point.x==center,'active arm is bent') end end
+        end end
+    end
+end)
+test('independent arm folds keep the other arm and a typed insertion target without changing data',function()
+    local value={branch('b',nil,{leaf('yes')},{leaf('no')}),leaf('tail')}
+    for _,layout in ipairs({'diagram','list'}) do
+        local s=scene(value,nil,{section='rotation',layout=layout,hiddenArms={b={['false']=true}}})
+        assert(byId(s,'yes') and not byId(s,'no') and byId(s,'tail'))
+        local label,target
+        for _,arm in ipairs(s.armLabels or {}) do if arm.parentId=='b' and arm.arm=='false' then label=arm end end
+        for _,gap in ipairs(s.dropTargets) do if gap.destination.parentId=='b' and gap.destination.path[3]=='onFalse' then target=gap end end
+        assert(label and label.folded and label.count==1 and target)
+        assert(value[1].onFalse[1].id=='no')
+    end
+end)
+test('an asymmetric nested branch chain retains compact width and centered root lanes',function()
+    local root=leaf('deep')
+    for i=1,10 do root=branch('nested'..i,nil,{root},{leaf('side'..i)}) end
+    local s=scene({root},nil,{section='rotation'})
+    assert(#s.cards==21 and s.width<10000,'small nested tree produced an exponentially wide canvas')
+    for _,card in ipairs(s.cards) do assert(card.x>=0 and card.x+card.width<=s.width) end
+end)
+test('arm fold controls stay inside the measured diagram bounds',function()
+    for _,arms in ipairs({{{leaf('yes')},{}},{{},{leaf('no')}},{{},{}},{{},{branch('nested',nil,{}, {branch('inner',nil,{}, {leaf('deep')})})}}}) do
+        local s=scene({branch('b',nil,arms[1],arms[2])},nil,{section='rotation'})
+        for _,arm in ipairs(s.armLabels) do assert(arm.x>=0 and arm.x+100<=s.width,'arm control overflows scroll surface') end
     end
 end)
 finish()
