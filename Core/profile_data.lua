@@ -1,5 +1,5 @@
 local _,addon=...
-local scalar={version='number',enable='boolean',poll='number',ignore_mana='boolean',ignore_range='boolean',effect='string',magnification='number',setpoint='string',xoffs='number',yoffs='number',loglevel='number',detailed_profiling='boolean',disable_autoswitch='boolean',live_config_update='number',spell_history='number',combat_history='number',damage_history='number',disable_buttons='boolean',rotation_view='string',preview_spells='number'}
+local scalar={version='number',enable='boolean',poll='number',ignore_mana='boolean',ignore_range='boolean',effect='string',magnification='number',setpoint='string',xoffs='number',yoffs='number',loglevel='number',detailed_profiling='boolean',disable_autoswitch='boolean',live_config_update='number',spell_history='number',combat_history='number',damage_history='number',disable_buttons='boolean',rotation_view='string',preview_spells='number',preview_vertical='boolean',preview_locked='boolean',preview_opacity='number',preview_icon_size='number'}
 local function dense(value,validate)
     if type(value)~='table' then return false end;local n=0;for key,item in pairs(value) do if type(key)~='number' or key<1 or key%1~=0 or key>#value or not validate(item) then return false end;n=n+1 end;return n==#value
 end
@@ -49,6 +49,9 @@ function addon:ValidateProfileTransfer(value)
     end
     if value.version~=nil and (value.version<1 or value.version>2 or value.version%1~=0) then return false end
     if value.rotation_view~=nil and value.rotation_view~='diagram' and value.rotation_view~='list' then return false end
+    if value.preview_spells~=nil and (value.preview_spells<0 or value.preview_spells>5 or value.preview_spells%1~=0) then return false end
+    if value.preview_opacity~=nil and (value.preview_opacity<0 or value.preview_opacity>1) then return false end
+    if value.preview_icon_size~=nil and (value.preview_icon_size<24 or value.preview_icon_size>160) then return false end
     if value.poll~=nil and (value.poll<.01 or value.poll>5) then return false end
     if value.magnification~=nil and (value.magnification<.1 or value.magnification>10) then return false end
     for _,key in ipairs({'live_config_update','spell_history','combat_history','damage_history'}) do if value[key]~=nil and value[key]<0 then return false end end

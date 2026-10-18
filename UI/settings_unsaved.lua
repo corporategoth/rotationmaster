@@ -38,7 +38,7 @@ function addon:InstallSettingsUnsaved(p)
             if collection and before==nil and current~=nil or field(current,key)~=nil and not defaults[key] then missing=true
             else if not defaults[key] then defaults[key]={value=addon:CopySettingsData(value)} end;baseline=defaults[key].value end
         end
-        if kind=='Check' then baseline=baseline==true end
+        if kind=='Check' or kind=='Toggle' then baseline=baseline==true end
         self.unsavedBindings[key]={control=control,value=addon:CopySettingsData(value),baseline=addon:CopySettingsData(baseline),kind=kind,missing=missing}
         return self.unsavedBindings[key]
     end
@@ -87,12 +87,12 @@ function addon:InstallSettingsUnsaved(p)
         end end
         if self.fields.apply and self.fields.apply.IsEnabled then addon:SetWorkbenchUnsaved(self.fields.apply,self.fields.apply:IsEnabled() and (pending or self:IsSettingsDraftDirty() or self:IsCreationDirty())) end
     end
-    for _,definition in ipairs({{'Edit',5},{'Check',4},{'Slider',7},{'Choice',5},{'Color',4},{'Reference',6}}) do
+    for _,definition in ipairs({{'Edit',5},{'Check',4},{'Slider',7},{'Choice',5},{'Color',4},{'Reference',6},{'Toggle',6}}) do
         local method,index=definition[1],definition[2];local original=p[method]
         p[method]=function(self,...)
             local args={...};local count=select("#",...);local callback=args[index];local binding
             if type(callback)=='function' then args[index]=function(value,...) if binding then binding.value=addon:CopySettingsData(value) end;return callback(value,...) end end
-            local control=original(self,unpack(args,1,count));local value=args[3];if method=='Color' and value==nil then value={r=1,g=1,b=1,a=1} end;binding=self:BindUnsaved(args[1],control,value,method);return control
+            local control=original(self,unpack(args,1,count));local value=args[3];if method=='Color' and value==nil then value={r=1,g=1,b=1,a=1} end;binding=self:BindUnsaved(args[1],control,value,method);binding.caption=args[2];return control
         end
     end
     local draw=p.Draw

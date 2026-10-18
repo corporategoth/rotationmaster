@@ -9,3 +9,14 @@ Metadata and roster filters share `UI/tag_picker.lua`: type to find existing lab
 Switch priority is an integer from -100000 to 100000, with minus/input/plus controls and blank meaning zero. Incomplete minus input remains unsaved and cannot be applied. Metadata sources display rotation guides; per-spell/item research remains in development evidence. Existing imported provenance is preserved, even when an entity URL is hidden from this summary.
 
 All collection sidebars reserve their own footer space independently of the details pane's Apply/Cancel row. Search is first, followed by category or tag filters. Shared selectors fit the filtered result count, use the anchor width and compact contiguous rows, and scroll when there are more than ten matches. Typed integer sliders reject fractions; dragging integer settings rounds to their declared step.
+
+
+## Draft comparisons and preview
+
+View Changes sits beside Apply on rotation, condition, metadata, custom-code and native settings editors. It uses the same two-column comparison window with Saved and Unsaved headings; unchanged rows are hidden by default. Comparisons read detached snapshots and raw pending input without flushing widgets, executing custom Lua, saving data or creating undo history. Invalid pending input is shown separately. The button is disabled for clean and read-only drafts. Windows close when their owner becomes invalid. Condition comparisons are bounded to 512 nodes per side and explicitly report truncation.
+
+The native recommendation preview pools square icon buttons instead of allocating AceGUI widgets on the runtime path. It has a compact header and close control with no footer. Profile settings persist count (integer 0–5), horizontal/vertical direction, lock, background opacity, icon size and position. Opacity zero hides chrome without fading icons or intercepting blank-space clicks. Resize maintains a count/direction-based ratio; General Reset restores centered 64-pixel icons. General places opacity above equal-width Lock, Direction and Reset controls. Real WoW resize, hit-testing and tooltip appearance require client acceptance.
+
+Condition sidebars show search first, dedicated All / Built In / Custom source buttons, then category selection. Add and Import/Export share the footer above Manage categories; transfer is disabled for built-in definitions and custom imports enter the existing trusted-code review flow. Search boxes use an in-field hint that disappears while focused or populated. Selected dropdown entries retain their icons.
+
+Logo choice: the user selected option 1, Tri-school Rotation. The transparent original is retained at `/home/prez/Documents/Codex/2026-10-17/i-x20/outputs/rotation-master-logo-options/01-tri-school-rotation.png`. Game-ready asset packaging and replacement of the old minimap/window image are still pending; the selected source is not yet active in the addon.

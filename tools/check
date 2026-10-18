@@ -98,6 +98,8 @@ def main():
             ['lua5.1', 'tests/drag_presentation.lua'],
             ['lua5.1', 'tests/unsaved_changes.lua'],
             ['lua5.1', 'tests/tag_picker.lua'],
+            ['lua5.1', 'tests/preview.lua'],
+            ['lua5.1', 'tests/draft_changes.lua'],
             ['lua5.1', 'tests/condition_edit_session.lua'],
             ['lua5.1', 'tests/condition_editor_ui.lua'],
             ['luajit', 'tests/settings_pages.lua'],

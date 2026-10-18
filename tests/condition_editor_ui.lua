@@ -690,4 +690,9 @@ test('condition unsaved rails track changed leaves and ancestors through Undo wi
     shell.undo:Click();assert(not shell.canvas.cards[1].frame.rmUnsaved and not shell.canvas.cards[2].frame.rmUnsaved)
     shell.cancel:Click()
 end)
+test('condition View Changes shows saved versus unsaved expressions without committing',function()
+    local f=fixture();local root={type='NUMBER',number=1};local shell=f.addon:EditCondition(1,0,root,function() end);assert(shell.viewChanges and not shell.viewChanges:IsEnabled())
+    shell:Command('Replace',{}, {type='NUMBER',number=2});shell.viewChanges:Click();local d=shell.draftComparisonOwner.comparison
+    assert(d.frame:IsShown() and #d.rows>0 and root.number==1);shell.cancel:Click();d.frame.scripts.OnUpdate();assert(not d.frame:IsShown())
+end)
 finish()

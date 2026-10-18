@@ -69,4 +69,17 @@ test('native Duplicate Apply and simulated reload preserve real UUID-generated c
     a.listConditions=function(_,_,_,store) local keys={};for key in pairs((store or a.db).global.custom_conditions) do keys[#keys+1]=key end;return keys end
     local p=a:OpenNativeSettings(f.env.UIParent,'Conditions');p.fields.duplicate_custom:Click();p.fields.apply:Click();local duplicate;for key in pairs(a.db.global.custom_conditions) do if key~='CUSTOM' then duplicate=key end end;assert(duplicate and duplicate:match('CUSTOM_') and a.conditionDefinitions[duplicate] and type(a.conditionDefinitions[duplicate].evaluate)=='function','duplicate registration missing: '..tostring(duplicate));a.conditionDefinitions={};for key,value in pairs(a.db.global.custom_conditions) do assert(a:register_custom_condition(key,value)) end;assert(a.conditionDefinitions[duplicate] and a:SettingsDataEqual(a.db.global.custom_conditions.CUSTOM,source),'reloaded duplicate or original source mismatch')
 end)
+test('custom Lua View Changes shows unflushed source without compiling saving or flushing it',function()
+    local f,a=fixture();local d=a:condition_edit_box(function() error('saved') end);local original=d.model.value.evaluate;d.code.edit:SetText('invalid lua !!!');d.code.edit.scripts.OnTextChanged(d.code.edit,true);d:UpdateActions()
+    assert(d.viewChanges and d.viewChanges:IsEnabled());d.viewChanges:Click();local view=d.draftComparisonOwner.comparison
+    assert(view.frame:IsShown() and d.model.value.evaluate==original and not next(a.db.global.custom_conditions));local found=false;for _,row in ipairs(view.rows) do if row.right=='invalid lua !!!' then found=true end end;assert(found)
+end)
+test('condition sidebar transfer opens the shared review dialog and cancel resumes the code editor',function()
+    local f,a=fixture();f.load('UI/settings_collections.lua');f.load('UI/settings_conditions.lua')
+    local source=a:CopySettingsData(a.empty_condition);source.description='Custom';a.db.global.custom_conditions.CUSTOM=source;a.conditionDefinitions.CUSTOM={description='Custom'};a.listConditions=function() return {'CUSTOM'} end
+    local host=f.env.CreateFrame('Frame');host:SetSize(1000,600);local p=a:CreateSettingsForm(host);p:Open(function(form) a:BuildConditionSettings(form) end)
+    assert(p.fields.transfer:IsEnabled());p.fields.transfer:Click();local d=a.nativeCustomConditionDialog;local transfer=d.rmCustomTransferForm.textDialog
+    assert(transfer.frame:IsShown() and not d.frame:IsShown() and transfer.input:GetText()~='');transfer.cancel:Click();assert(d.frame:IsShown() and a.db.global.custom_conditions.CUSTOM==source)
+    d.cancel:Click();p:Release()
+end)
 finish()

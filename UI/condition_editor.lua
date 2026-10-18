@@ -344,7 +344,7 @@ local function createShell()
         if not self.active then return end
         self.fullDescription=addon:DescribeCondition(self.active.working,self.active.spec)
         if self.description.SetMaxLines then self.description:SetMaxLines(0) end
-        self.description:SetText(self.fullDescription);self.description:SetWidth(math.max(1,window:GetWidth()-254))
+        self.description:SetText(self.fullDescription);self.description:SetWidth(math.max(1,window:GetWidth()-376))
         local natural=self.description.GetStringHeight and self.description:GetStringHeight() or 28
         local maximum=math.max(28,math.floor(window:GetHeight()*.35));local height=math.min(maximum,math.max(14,natural))
         self.description:SetHeight(height);local extra=0
@@ -390,7 +390,7 @@ local function createShell()
             self.groupAny:ClearAllPoints();self.groupAny:SetPoint("TOPLEFT",244,-top+34);self.groupAny:Show()
         else self.selectionLabel:Hide();self.groupAll:Hide();self.groupAny:Hide() end
         self.canvas.frame:ClearAllPoints();self.canvas.frame:SetPoint("TOPLEFT",16,-top)
-        self.bodyTop=top;self:LayoutBody();self.status:SetWidth(math.max(1,width-270))
+        self.bodyTop=top;self:LayoutBody();self.status:SetWidth(math.max(1,width-392))
         if self.active then self.canvas:Render();self:UpdateDescription() end
     end
     shell.rmCompactRefresh=function()
@@ -399,7 +399,7 @@ local function createShell()
     end
     addon:SetUIScript(window,"OnSizeChanged",function() shell:Layout() end)
     addon:SetUIScript(window,"OnHide",function() shell.canvas:CancelDrag();if shell.closeOverride then shell.closeOverride(shell) else shell:Finish(false) end end)
-    addon.HideOnEscape(shell);shell:Layout();return shell
+    addon:InstallConditionChangeReview(shell);addon.HideOnEscape(shell);shell:Layout();return shell
 end
 
 function addon:ShowConditionEditor(index,spec,value,callback,targetValid,options)
@@ -413,7 +413,7 @@ function addon:ShowConditionEditor(index,spec,value,callback,targetValid,options
     if not shell then shell=createShell();self.compactConditionEditor=shell end
     shell.active={session=session,working=session:Snapshot(),selected={},spec=spec,index=index,
         callback=callback,generation=self.configPaneGeneration,targetValid=targetValid,
-        readOnly=options.readOnly==true,persistentOwner=options.persistentOwner==true}
+        comparisonBaseline=options.savedValue and addon.RotationData.CopyData(options.savedValue),readOnly=options.readOnly==true,persistentOwner=options.persistentOwner==true}
     shell.view={selection={[""]=true},collapsed={},cardStates={},hiddenChildren={},expanded={},detailsHeights={},help={}}
     shell.userdata={funcs={print=function() return "" end}}
     local heading=type(options.title)=="string" and addon:PlainWorkbenchName(options.title)

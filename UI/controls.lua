@@ -50,6 +50,12 @@ end
 function addon:CreateWorkbenchLabeledIconButton(parent,icon,label,width)
     local button=self:CreateWorkbenchHistoryButton(parent,icon,label);button:SetWidth(width or 100);return button
 end
+function addon:PaintSelectorSelection(button,entry,caption)
+    button:SetText(caption or entry and entry.text or '')
+    if entry and entry.icon then
+        button.valueIcon=button.valueIcon or button:CreateTexture(nil,'ARTWORK');button.valueIcon:ClearAllPoints();button.valueIcon:SetPoint('LEFT',25,0);button.valueIcon:SetSize(18,18);button.valueIcon:SetTexture(entry.icon);button.valueIcon:Show();self:AlignWorkbenchTextLeft(button,48)
+    else if button.valueIcon then button.valueIcon:Hide() end;self:AlignWorkbenchTextLeft(button,26) end
+end
 function addon:AlignWorkbenchTextLeft(button,inset)
     local label=button:GetFontString();label:ClearAllPoints();label:SetPoint('LEFT',inset or 4,0);label:SetJustifyH('LEFT');label:SetWidth(math.max(1,button:GetWidth()-(inset or 4)-4))
 end
@@ -155,6 +161,20 @@ function addon:CreateWorkbenchEditBox(parent)
     local background=input:CreateTexture(nil,"BACKGROUND");background:SetAllPoints(input);background:SetColorTexture(.08,.09,.10,.95)
     local line=input:CreateTexture(nil,"BORDER");line:SetPoint("BOTTOMLEFT");line:SetPoint("BOTTOMRIGHT");line:SetHeight(1);line:SetColorTexture(.38,.43,.48,.8)
     input.art=background;return input
+end
+function addon:AttachWorkbenchSearchHint(input,text)
+    if input.searchHint then return input.searchHint end
+    local hint=input:CreateFontString(nil,'OVERLAY','GameFontDisableSmall');input.searchHint=hint
+    hint:SetPoint('LEFT',6,0);hint:SetJustifyH('LEFT');hint:SetText(text or LibStub('AceLocale-3.0'):GetLocale(addon_name)['Search...'])
+    local focused=false
+    local function refresh()
+        hint:SetWidth(math.max(1,input:GetWidth()-12))
+        if not focused and (input:GetText() or '')=='' then hint:Show() else hint:Hide() end
+    end
+    input:HookScript('OnEditFocusGained',function() focused=true;refresh() end)
+    input:HookScript('OnEditFocusLost',function() focused=false;refresh() end)
+    input:HookScript('OnTextChanged',refresh);input:HookScript('OnSizeChanged',refresh)
+    input:HookScript('OnHide',function() focused=false;refresh() end);input.RefreshWorkbenchSearchHint=refresh;refresh();return hint
 end
 function addon:CreateWorkbenchSlider(parent,minimum,maximum,step,width)
     local slider=CreateFrame("Slider",nil,parent);slider:SetOrientation("HORIZONTAL");slider:SetSize(width or 112,12)

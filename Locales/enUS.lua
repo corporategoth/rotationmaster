@@ -1777,3 +1777,65 @@ L['Search existing tags and select any number of them. Click a selected tag to r
 
 L['Decrease priority'] = true
 L['Increase priority'] = true
+
+L["Horizontal"] = true
+
+L["Vertical"] = true
+
+L["Lock preview position and size"] = true
+
+L["Preview window opacity"] = true
+
+L["Choose a whole number of upcoming recommendations, from zero (hidden) to five. The preview shows the current priority results, not a full simulation of future cooldowns or combat. Icons start at 64 pixels; resizing scales all icons while preserving their square shape and the window ratio."] = true
+
+L["Arrange preview icons horizontally (default) or vertically. Below the opacity slider, Lock, Direction and Reset share one row."] = true
+
+L["Prevent moving the preview by its title bar or resizing it by its lower-right corner. Unlock this option in General to adjust it again."] = true
+
+L["Adjust the preview background and title bar opacity without fading its icons. At zero only the icons remain, and the hidden frame does not intercept blank-space clicks. Restore opacity in General to access the title bar and resize handle."] = true
+
+L["Return the preview window to the screen center and restore 64-pixel icons. Orientation, opacity and locking are preserved."] = true
+
+L["Lock position and size"] = true
+
+L["View Changes"] = true
+
+L["Saved"] = true
+
+L["Unsaved"] = true
+
+L["Pending input"] = true
+
+L["Not inspected"] = true
+
+L["Custom widget has pending input."] = true
+
+L["Selected entry"] = true
+
+L["Compared entry"] = true
+
+L["Use step name"] = true
+
+L["Preview icon size"] = true
+
+L["Add or search tags"] = true
+
+L["Search tags"] = true
+
+L["Click to remove this tag. Right-click to choose its color."] = true
+
+L["Apply updates the draft. Apply the rotation to save it."] = true
+
+L["Edit the description, tags, switch priority, author, realm, email, website and version. Source citations remain separate from your attribution. Apply updates the rotation draft; Apply the rotation to save it. Cancel or Escape restores this dialog’s opening values."] = true
+
+L["Fields"] = true
+L['Search...'] = true
+L['Add'] = true
+
+
+L['Use All, Built In or Custom to choose the condition source, then filter by Switch, Other or a named category. Search above these controls narrows the visible list without changing assignments.'] = true
+L['Open Manage categories below the list for category maintenance. Manage conditions returns to individual condition settings.'] = true
+L['Below the condition list, Import/Export opens the selected custom definition for transfer and code review; it is disabled for built-in conditions. In Manage categories, transfer a category’s ordered condition identifiers. Named categories and Other are exclusive destinations. Switch membership is independent.'] = true
+
+L['Comparison limit'] = true
+L['Showing the first 512 conditions per side.'] = true

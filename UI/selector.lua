@@ -6,11 +6,13 @@ local AceGUI=LibStub('AceGUI-3.0')
 function addon:CreateWorkbenchSelector()
     local menu={frame=CreateFrame('Frame',nil,UIParent),rows={},serial=0}
     local frame=menu.frame;frame:SetFrameStrata('FULLSCREEN_DIALOG');frame:SetToplevel(true);frame:SetClampedToScreen(true);frame:EnableMouse(true);self:MakeWindowOpaque(frame)
-    menu.search=self:CreateWorkbenchEditBox(frame);menu.search:SetPoint('TOPLEFT',8,-8);menu.search:SetSize(284,24)
+    menu.search=self:CreateWorkbenchEditBox(frame);self:AttachWorkbenchSearchHint(menu.search);menu.search:SetPoint('TOPLEFT',8,-8);menu.search:SetSize(284,24)
     menu.scroll=self:CreateWorkbenchScrollFrame(frame);menu.scroll:SetPoint('TOPLEFT',8,-40);menu.scroll:SetSize(272,210)
     menu.child=CreateFrame('Frame',nil,menu.scroll);menu.child:SetWidth(272);menu.scroll:SetScrollChild(menu.child)
     function menu:Hide() frame:Hide() end
     function menu:Open(anchor,entries,selected,changed,valid,inline)
+        if not inline and frame:IsShown() and self.anchor==anchor then self:Hide();return end
+        self.anchor=anchor
         self.serial=self.serial+1;local serial=self.serial;self.valid=valid
         frame:ClearAllPoints();frame:SetPoint('TOPLEFT',anchor,'BOTTOMLEFT',0,-2);local width=math.max(180,math.min(720,anchor:GetWidth()));frame:SetWidth(width);self.search:SetWidth(width-16)
         local front=_G.RotationMasterFrontmostDialog;frame:SetFrameLevel(math.max(anchor:GetFrameLevel(),front and front:GetFrameLevel() or 0)+100)
@@ -27,7 +29,7 @@ function addon:CreateWorkbenchSelector()
                 row:ClearAllPoints();row:SetPoint('TOPLEFT',0,-(n-1)*21);row:SetSize(contentWidth,20);row:SetText(entry.text);row:SetSelected(entry.value==selected);addon:AlignWorkbenchTextLeft(row,entry.icon and 26 or 4);row:Show()
                 if entry.icon then row.icon:SetTexture(entry.icon);row.icon:Show() else row.icon:Hide() end
                 if entry.disabled then row:Disable() else row:Enable() end
-                addon:SetUIScript(row,'OnClick',function() if valid() and frame:IsShown() and serial==menu.serial then menu:Hide();changed(entry.value,entry.text) end end)
+                addon:SetUIScript(row,'OnClick',function() if valid() and frame:IsShown() and serial==menu.serial then menu:Hide();if not inline and anchor.SetText and anchor.GetFontString then addon:PaintSelectorSelection(anchor,entry,entry.text) end;changed(entry.value,entry.text,entry.icon) end end)
             end
             for i=#matches+1,#menu.rows do menu.rows[i]:Hide() end;menu.child:SetHeight(math.max(1,#matches*21));menu.scroll.workbenchBar:SetValue(0);menu.scroll:UpdateWorkbenchScroll()
         end
@@ -65,10 +67,10 @@ local function selectorWidget()
     function w:OnRelease() self.alive=false;popup:Release();self.list={};self.order={};self.value=nil end
     function w:SetLabel(text) caption:SetText(text or '');local has=text and text~='';if has then caption:Show() else caption:Hide() end;button:ClearAllPoints();button:SetPoint('TOPLEFT',0,has and -20 or 0);button:SetPoint('TOPRIGHT',0,has and -20 or 0);self:SetHeight(has and 44 or 24) end
     function w:SetText(text) button:SetText(text or L['Select']);addon:AlignWorkbenchTextLeft(button,26) end
-    function w:SetValue(value) self.value=value;self:SetText(self.list[value]) end
+    function w:SetValue(value) self.value=value;local entry=self.list[value];if type(entry)=='table' then addon:PaintSelectorSelection(button,entry,entry.text) else self:SetText(entry);if button.valueIcon then button.valueIcon:Hide() end end end
     function w:GetValue() return self.value end
     function w:SetList(values,order)
-        self.list=values or {};self.order={};if order then for _,id in ipairs(order) do self.order[#self.order+1]=id end else for id in pairs(self.list) do self.order[#self.order+1]=id end;table.sort(self.order,function(a,b) return tostring(self.list[a])<tostring(self.list[b]) end) end;self:SetValue(self.value)
+        self.list=values or {};self.order={};if order then for _,id in ipairs(order) do self.order[#self.order+1]=id end else for id in pairs(self.list) do self.order[#self.order+1]=id end;table.sort(self.order,function(a,b) return tostring(type(self.list[a])=='table' and self.list[a].text or self.list[a])<tostring(type(self.list[b])=='table' and self.list[b].text or self.list[b]) end) end;self:SetValue(self.value)
     end
     function w:SetDisabled(value) self.disabled=value==true;if self.disabled then button:Disable();popup:Hide() else button:Enable() end end
     function w:ClearFocus() popup:Hide() end
@@ -76,7 +78,7 @@ local function selectorWidget()
     addon:SetUIScript(button,'OnClick',function()
         if not w.alive or w.disabled then return end
         if popup.frame:IsShown() then popup:Hide();return end
-        local entries={};for _,id in ipairs(w.order) do entries[#entries+1]={value=id,text=w.list[id]} end
+        local entries={};for _,id in ipairs(w.order) do local item=w.list[id];entries[#entries+1]={value=id,text=type(item)=='table' and item.text or item,icon=type(item)=='table' and item.icon or nil} end
         local lifetime=w.userdata
         popup:Open(button,entries,w.value,function(value) if value~=w.value then w:SetValue(value);w:Fire('OnValueChanged',value) end end,function() return w.alive and w.userdata==lifetime and not w.disabled end)
     end)

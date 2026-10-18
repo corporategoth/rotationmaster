@@ -116,6 +116,8 @@ UI/custom_condition_transfer.lua
 UI/settings_general.lua
 UI/settings_profiles.lua
 UI/collection_compare.lua
+UI/draft_changes.lua
+UI/draft_change_controls.lua
 UI/settings_collections.lua
 UI/settings_announces.lua
 UI/settings_effects.lua
@@ -138,6 +140,7 @@ UI/rotation_navigation.lua
 UI/rotation_metadata.lua
 UI/rotation_view.lua
 UI/rotation_editor.lua
+UI/preview.lua
 UI/rotation_reference.lua
 UI/defaults.lua
 UI/rotation_comparison.lua

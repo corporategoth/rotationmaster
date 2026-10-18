@@ -37,4 +37,10 @@ test('selector fits filtered rows spans its anchor and uses contiguous compact e
     assert(menu.rows[1]:GetWidth()==menu.scroll:GetWidth() and menu.rows[1]:GetHeight()==20 and menu.rows[2].point[3]==-21)
     menu.search:SetText('One');menu.search.scripts.OnTextChanged();assert(menu.scroll:GetHeight()==21)
 end)
+test('clicking an already open dropdown anchor closes it while inline suggestions can refresh',function()
+    local f=fixture();local a=f.addon;local anchor=f.env.CreateFrame('Button',nil,f.env.UIParent);local menu=a:CreateWorkbenchSelector();local values={{value=1,text='One'}}
+    menu:Open(anchor,values,nil,function() end,function() return true end);assert(menu.frame:IsShown())
+    menu:Open(anchor,values,nil,function() end,function() return true end);assert(not menu.frame:IsShown())
+    menu:Open(anchor,values,nil,function() end,function() return true end,true);menu:Open(anchor,values,nil,function() end,function() return true end,true);assert(menu.frame:IsShown())
+end)
 finish()

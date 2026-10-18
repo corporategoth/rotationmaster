@@ -44,6 +44,14 @@ function addon:InstallRotationFieldDrafts(pane)
         for id in pairs(self.view.pendingFields or {}) do if tree.byId[id] and self:PendingFieldProblem(id) then return true end end
         return false
     end
+    function pane:ReviewPendingFields(snapshot,pending)
+        local tree=addon.RotationData.IndexRotationSteps(snapshot)
+        for id,fields in pairs(self.view.pendingFields or {}) do local row=tree and tree.byId[id];if row then for key,record in pairs(fields) do
+            local patch=parsedText(key,record.text)
+            if patch then for name,value in pairs(patch.set) do row.step[name]=value end;for _,name in ipairs(patch.unset) do row.step[name]=nil end
+            else pending[#pending+1]={label=(row.step.name or L['Action'])..' · '..record.label,before=row.step[key],after=record.text} end
+        end end end
+    end
     function pane:HasPendingFields()
         local tree=addon.RotationData.IndexRotationSteps(self.workspace:Snapshot())
         for id,fields in pairs(self.view.pendingFields or {}) do if tree.byId[id] and next(fields) then return true end end

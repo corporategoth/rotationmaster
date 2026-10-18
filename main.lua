@@ -70,6 +70,10 @@ local defaults = {
         rotation_view = "diagram",
         rotationTagColors = {},
         preview_spells = 0,
+        preview_vertical = false,
+        preview_locked = false,
+        preview_opacity = 1,
+        preview_icon_size = 64,
         preview_window = {
             point = "CENTER",
             relpoint = "CENTER",
@@ -515,6 +519,7 @@ function addon:enable()
         or family=="tbc" and tbc_events or family=="era" and classic_events or {}
     for _,event in ipairs(extraEvents) do self:RegisterEvent(event) end
 
+    if self.RefreshPreviewWindow then self:RefreshPreviewWindow() end
     self:UpdateSkill()
     self:EnableRotation()
 end
@@ -865,7 +870,10 @@ function addon:EvaluateNextActionInternal()
                     AceEvent:SendMessage("ROTATIONMASTER_SPELL_UPDATE",self.currentRotation,index,cond.id,cond.type,spellid)
                 end
             end
-            if self.nextWindow then
+            if self.nextWindow and self.nextWindow.AddRecommendation then
+                ---@cast previewWindow RMRecommendationPreview
+                previewWindow:AddRecommendation(spellid,itemId)
+            elseif self.nextWindow then
                 local icon=AceGUI:Create("Icon")
                 local info=self.Platform:GetSpellInfo(spellid)
                 icon:SetImage(info and info.iconID or "Interface\\Icons\\INV_Misc_QuestionMark")

@@ -103,14 +103,19 @@ color.BLIZ_YELLOW .. L["Detailed Profiling"] .. color.RESET .. " - " ..
     local byTitle={};for _,entry in ipairs(result) do byTitle[entry.title]=entry end
     local function extra(title,text) byTitle[title]={title=title,text=text} end
     extra(L['Default rotation view'],L['Choose Diagram or List as the starting rotation view. This profile preference applies when opening a rotation; changing the view inside the editor does not change this setting. Cooldowns always use a scrolling grid.'])
-    extra(L['Reset preview position'],L['Return the preview window to the center of the screen.'])
+    extra(L['Preview Spells'],L['Choose a whole number of upcoming recommendations, from zero (hidden) to five. The preview shows the current priority results, not a full simulation of future cooldowns or combat. Icons start at 64 pixels; resizing scales all icons while preserving their square shape and the window ratio.'])
+    extra(L['Horizontal'],L['Arrange preview icons horizontally (default) or vertically. Below the opacity slider, Lock, Direction and Reset share one row.'])
+    extra(L['Vertical'],byTitle[L['Horizontal']].text)
+    extra(L['Lock position and size'],L['Prevent moving the preview by its title bar or resizing it by its lower-right corner. Unlock this option in General to adjust it again.'])
+    extra(L['Preview window opacity'],L['Adjust the preview background and title bar opacity without fading its icons. At zero only the icons remain, and the hidden frame does not intercept blank-space clicks. Restore opacity in General to access the title bar and resize handle.'])
+    extra(L['Reset preview position'],L['Return the preview window to the screen center and restore 64-pixel icons. Orientation, opacity and locking are preserved.'])
     extra(L['Highlight preview'],L['The icon shows your selected profile effect, color, size, anchor and offsets.'])
     extra(L['Anchor'],byTitle[L['Position']].text)
     extra(L['V'],L['Vertical offset in pixels. Up and Down change it; hold Shift for ten pixels. Center resets both offsets.'])
     extra(L['H'],L['Horizontal offset in pixels. Left and Right change it; hold Shift for ten pixels. Center resets both offsets.'])
     local log=byTitle[L['Log Level']];for _,title in ipairs({L['Quiet'],L['Default'],L['Debug'],L['Verbose']}) do local row=byTitle[title];if row then log.text=log.text..'\n'..row.title..': '..row.text end end
     local ordered={}
-    for _,title in ipairs({L['Enable'],L['Polling Interval (seconds)'],L['Disable Auto-Switching'],L['Disable Bar Highlighting'],L['Live Status Update Frequency (seconds)'],L['Minimap Icon'],L['Default rotation view'],L['Spell History Memory (seconds)'],L['Combat History Memory (seconds)'],L['Damage History Memory (seconds)'],L['Preview Spells'],L['Reset preview position'],L['Highlight preview'],L['Effect'],L['Magnification'],L['Highlight Color'],L['Anchor'],L['V'],L['H']}) do ordered[#ordered+1]=byTitle[title] end
+    for _,title in ipairs({L['Enable'],L['Polling Interval (seconds)'],L['Disable Auto-Switching'],L['Disable Bar Highlighting'],L['Live Status Update Frequency (seconds)'],L['Minimap Icon'],L['Default rotation view'],L['Spell History Memory (seconds)'],L['Combat History Memory (seconds)'],L['Damage History Memory (seconds)'],L['Preview Spells'],L['Preview window opacity'],L['Lock position and size'],L['Horizontal'],L['Reset preview position'],L['Highlight preview'],L['Effect'],L['Magnification'],L['Highlight Color'],L['Anchor'],L['V'],L['H']}) do ordered[#ordered+1]=byTitle[title] end
     if WOW_PROJECT_ID~=WOW_PROJECT_MAINLINE and LE_EXPANSION_LEVEL_CURRENT>=2 then ordered[#ordered+1]=byTitle[PRIMARY or L['Primary']];ordered[#ordered+1]=byTitle[SECONDARY or L['Secondary']] end
     ordered[#ordered+1]=log;ordered[#ordered+1]=byTitle[L['Detailed Profiling']]
     return ordered

@@ -101,11 +101,13 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
                 title=addon:PlainWorkbenchName(title)
             end
         end
+        local saved=self.workspace.session:Baseline();local savedCondition
+        if type(target)=='table' and target.kind=='switch' then savedCondition=saved.switch or {} else local tree=data.IndexRotationSteps(saved,{allowMissingIds=true});savedCondition=tree and tree.byId[target] and tree.byId[target].step.conditions or {} end
         addon:ShowConditionEditor(1,spec,editorTarget.condition,function(applied)
             if not applied then return end
             local ok,problem=editorTarget.commit(editorTarget.condition)
             if self.active then if ok then self:Render() else self:Message(problem) end end
-        end,editorTarget.valid,{readOnly=editorTarget.readOnly,persistentOwner=true,title=title,contextLabel=contextLabel,rotationName=self:RotationDisplayName()})
+        end,editorTarget.valid,{readOnly=editorTarget.readOnly,persistentOwner=true,savedValue=savedCondition,title=title,contextLabel=contextLabel,rotationName=self:RotationDisplayName()})
     end
     function pane:ShowCardHelp(model)
         local kind=model.step.type=='branch' and 'branch' or model.section=='cooldowns' and 'cooldown' or 'rotation'
@@ -233,7 +235,7 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
         self.switch:Show()
         local top=self:LayoutViewControls(switchTop+22+math.min(72,switchHeight)+18,width)
         self.canvas.frame:ClearAllPoints();self.canvas.frame:SetPoint('TOPLEFT',8,-top)
-        self.canvas.frame:SetSize(math.max(1,width-40),math.max(1,height-top-48));self.canvas:LayoutScrollBar();self.status:SetWidth(math.max(1,width-208));self.hint:SetWidth(math.max(1,width-208));if (self.status:GetText() or '')=='' then self.hint:Show() else self.hint:Hide() end
+        self.canvas.frame:SetSize(math.max(1,width-40),math.max(1,height-top-48));self.canvas:LayoutScrollBar();self.status:SetWidth(math.max(1,width-330));self.hint:SetWidth(math.max(1,width-330));if (self.status:GetText() or '')=='' then self.hint:Show() else self.hint:Hide() end
     end
     function pane:Layout() self:LayoutGeometry();self:Render() end
     function pane:SetWidth(value) self.frame:SetWidth(value) end
@@ -292,7 +294,7 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
     end
     addon:SetUIScript(pane.frame,'OnSizeChanged',function() pane:Layout() end)
     addon:InstallRotationMetadata(pane)
-    addon:InstallRotationUnsaved(pane)
+    addon:InstallRotationUnsaved(pane);addon:InstallRotationChangeReview(pane)
     pane.ready=true;parent.rmRotationEditor=pane
     if addon.InstallRotationNavigation then addon:InstallRotationNavigation(pane) end
     return pane:Open(spec,id,onSelect)

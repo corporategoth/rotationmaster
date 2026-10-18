@@ -116,7 +116,7 @@ function addon:condition_edit_box(update,key,source,saveAllowed)
         form.cleanups[#form.cleanups+1]=function() if d.code then if d.code.edit then d.code.edit:ClearFocus() end;d.code.frame:Hide() end end
     end)
     addon:SetUIScript(frame,'OnUpdate',function() if not valid() then d:Close() else d:UpdateActions() end end)
-    frame:Show();addon:RegisterWindowForEscape(d);d:UpdateActions();return d,d.owner
+    addon:InstallCustomChangeReview(d);frame:Show();addon:RegisterWindowForEscape(d);d:UpdateActions();return d,d.owner
 end
 function addon:LayoutCustomConditionEditor(parent,update,key,source)
     if not parent.nativeCustomEditor then return end

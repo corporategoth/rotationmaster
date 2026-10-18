@@ -22,45 +22,7 @@ local function spacer(width)
     return rv
 end
 
-function addon:CreatePreviewWindow()
-    local profile = self.db.profile
-
-    local window = AceGUI:Create("Window")
-    window:SetTitle(self.pretty_name)
-    window:SetCallback("OnClose", function()
-        self.preview_closed_func()
-        profile["preview_spells"] = 0
-        self.nextWindow = nil
-    end)
-
-    window:ReleaseChildren()
-    window:PauseLayout()
-    window:EnableResize(false)
-    window:SetHeight(128)
-    window:SetWidth(profile.preview_spells * 128)
-    if profile.preview_window then
-        window:SetPoint(profile.preview_window.point, UIParent,
-                profile.preview_window.relpoint,
-                profile.preview_window.xoffs,
-                profile.preview_window.yoffs)
-    end
-    window:SetLayout("Flow")
-    local movefunc = window.title:GetScript("OnMouseUp")
-    window.title:SetScript("OnMouseUp", function(widget)
-        movefunc(widget)
-        local point, _, relpoint, xoffs, yoffs = window:GetPoint(1)
-        profile.preview_window = {
-            point = point,
-            relpoint = relpoint,
-            xoffs = xoffs,
-            yoffs = yoffs
-        }
-    end)
-    window:ResumeLayout()
-    window:DoLayout()
-
-    self.nextWindow = window
-end
+function addon:CreatePreviewWindow() return self:CreateNativePreviewWindow() end
 
 local create_class_options
 local function create_primary_options(frame)
@@ -211,7 +173,7 @@ local function create_primary_options(frame)
         if val >= 1 then
             preview_reset:SetDisabled(false)
             if addon.nextWindow then
-                addon.nextWindow:SetWidth(val * 128)
+                addon.nextWindow:Configure()
             else
                 addon:CreatePreviewWindow()
             end

@@ -30,16 +30,20 @@ function addon:BuildGeneralSettings(p)
     for _,entry in ipairs({{'spell_history','Spell History Memory (seconds)'},{'combat_history','Combat History Memory (seconds)'},{'damage_history','Damage History Memory (seconds)'}}) do
         local key=entry[1];p:Slider(key,L[entry[2]],profile[key],0,300,1,function(v) profile[key]=v end)
     end
-    p:Slider('preview_spells',L['Preview Spells'],profile.preview_spells,0,5,1,function(v)
-        profile.preview_spells=v
-        p:RunSettingsEffect('preview',function()
-        if v>0 then if self.nextWindow then self.nextWindow:SetWidth(v*128) else self:CreatePreviewWindow() end
-        elseif self.nextWindow then self.nextWindow:Release();self.nextWindow=nil end
-        end)
-    end)
+    local function previewChanged()
+        p:RunSettingsEffect('preview',function() if self.RefreshPreviewWindow then self:RefreshPreviewWindow() elseif (profile.preview_spells or 0)>0 then if self.nextWindow then self.nextWindow:SetWidth(profile.preview_spells*128) else self:CreatePreviewWindow() end elseif self.nextWindow then self.nextWindow:Release();self.nextWindow=nil end end)
+    end
+    p:Slider('preview_spells',L['Preview Spells'],profile.preview_spells,0,5,1,function(v) profile.preview_spells=v;previewChanged() end)
+    p:Slider('preview_opacity',L['Preview window opacity'],profile.preview_opacity or 1,0,1,.05,function(v) profile.preview_opacity=v;previewChanged() end)
+    local previewY=p.y;local third=p.width/3
+    local locked=p:Check('preview_locked',L['Lock position and size'],profile.preview_locked==true,function(v) profile.preview_locked=v;previewChanged() end)
+    local orientation=p:Toggle('preview_vertical',nil,profile.preview_vertical==true,L['Horizontal'],L['Vertical'],function(v) profile.preview_vertical=v;previewChanged();p:Draw() end)
+    local reset=p:Button('preview_reset',L['Reset'],function() profile.preview_window=nil;profile.preview_icon_size=64;p:RunSettingsEffect('previewPosition',function() if self.nextWindow then if self.nextWindow.Configure then self.nextWindow:Configure() end;self.nextWindow:ClearAllPoints();self.nextWindow:SetPoint('CENTER',UIParent,'CENTER',0,0) end end) end)
+    reset.tooltip=L['Reset preview position']
+    for i,control in ipairs({locked,orientation,reset}) do control:ClearAllPoints();control:SetPoint('TOPLEFT',(i-1)*third,-previewY);control:SetWidth(third-8) end
+    locked:GetFontString():SetWidth(third-30);p.y=previewY+30
     -- This callback belongs to the long-lived preview, never to a released tab.
     local previewOwner=self.db.profile;self.preview_closed_func=function() if addon.db.profile==previewOwner then previewOwner.preview_spells=0 end end
-    p:Button('preview_reset',L['Reset preview position'],function() profile.preview_window=nil;p:RunSettingsEffect('previewPosition',function() if self.nextWindow then self.nextWindow:ClearAllPoints();self.nextWindow:SetPoint('CENTER',0,0) end end) end)
     p:Column(2)
     p:Heading(L['Effect Options'])
     local y=p:Row(L['Highlight preview'],48)

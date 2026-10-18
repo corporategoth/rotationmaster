@@ -1088,5 +1088,15 @@ test('real AceDB global item references refresh packaged validation without copy
     a.db.global.itemsets.shared={name='Restored',items={5512}};assert(row().eligible)
     assert(a.db.profile.itemsets.shared==nil,'reference normalization wrote global sets into the profile')
 end)
+test('real recommendation engine fills the native preview with spell and item icons without AceGUI icons',function()
+    local env,a,state,body,load=recommendationFixture();dofile('tests/fixtures/native_ui.lua')(env);load('UI/controls.lua');load('UI/preview.lua')
+    env.C_Item.GetItemInfo=function(id) return 'Item '..id,nil,nil,nil,nil,nil,nil,nil,nil,id+10 end
+    env.LibStub('AceGUI-3.0').Create=function() error('native preview allocated AceGUI') end
+    a.db.profile.preview_spells=2;state.stock[5512]=1;state.combat=false
+    body.rotation={{id='bolt',type='spell',action=403,ranked=true,conditions={}},{id='stone',type='item',action={5512},conditions={}}}
+    local w=a:CreateNativePreviewWindow();a:EvaluateNextActionInternal()
+    assert(w.count==2 and w.icons[1].spellId==403 and w.icons[2].itemId==5512 and w.icons[2].texture:GetTexture()==5522)
+    local first,second=w.icons[1],w.icons[2];state.stock[5512]=0;a:EvaluateNextActionInternal();assert(w.icons[1]==first and not second:IsShown())
+end)
 print(string.format('%d passed, %d failed', passed, failures))
 os.exit(failures == 0 and 0 or 1)

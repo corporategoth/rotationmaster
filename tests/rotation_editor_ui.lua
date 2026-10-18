@@ -877,4 +877,13 @@ test('pending child fields mark branch ancestors and priority buttons preserve i
     pane:StageField('yes','name','Unsaved child','', 'Name');assert(visibleCard(pane,'yes').frame.rmUnsaved and visibleCard(pane,'branch').frame.rmUnsaved)
     pane.info:Click();local d=pane.metadataWindow;pane.priority:SetText('-');pane.priority.scripts.OnTextChanged(pane.priority,true);d.priorityUp:Click();assert(pane.priority:GetText()=='-','unfinished minus became a valid priority')
 end)
+test('View Changes compares saved and raw draft values without applying or creating history',function()
+    local f,parent=fixture();local a=f.addon;local pane=assert(a:CreateRotationEditor(parent,0,'mine'));assert(pane.viewChanges and not pane.viewChanges:IsEnabled())
+    pane.name:SetText('Pending name');pane.name.scripts.OnTextChanged(pane.name,true);pane:StageField('optional','magnification','bad','','Magnification')
+    assert(pane.viewChanges:IsEnabled());pane.viewChanges:Click();local d=pane.draftComparisonOwner.comparison
+    assert(d.frame:IsShown() and d.leftHeading:GetText()=='Saved' and d.rightHeading:GetText()=='Unsaved')
+    local foundName,foundBad=false,false;for _,row in ipairs(d.rows) do if row.label=='Name' and row.right=='Pending name' then foundName=true end;if row.right=='bad' then foundBad=true end end
+    assert(foundName and foundBad and a:GetEditableRotation(0,'mine').name=='Mine' and not pane.workspace.session:HistoryState().canUndo)
+    pane:Release();d.frame.scripts.OnUpdate();assert(not d.frame:IsShown())
+end)
 finish()

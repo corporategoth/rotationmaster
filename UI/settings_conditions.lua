@@ -5,19 +5,26 @@ function addon:BuildConditionSettings(p)
     if p.mode=='categories' then return self:BuildConditionCategorySettings(p) end
     local profile=store.profile;local groups=profile.condition_groups or {};local definitions=self:CopySettingsData(self.conditionDefinitions or {});local custom=store.global.custom_conditions or {}
     for tag,definition in pairs(custom) do if not definitions[tag] then definitions[tag]={description=definition.description,icon=definition.icon} end end
-    local categories={{value='ALL',text=L['All'],icon='Interface\\Icons\\INV_Misc_Book_09'},{value='BUILTIN',text=L['Built-in'],icon='Interface\\Icons\\Trade_Engineering'},{value='SWITCH',text=L['Switch']},{value='CUSTOM',text=L['Custom']}}
+    local categories={{value='ALL',text=L['All'],icon='Interface\\Icons\\INV_Misc_Book_09'},{value='SWITCH',text=L['Switch']}}
+    if p.category=='CUSTOM' or p.category=='BUILTIN' then p.conditionSource=p.category=='CUSTOM' and 'custom' or 'builtin';p.category='ALL' end
+    p.conditionSource=p.conditionSource or 'all'
     local groupIndex
     for i,group in ipairs(groups) do categories[#categories+1]={value=group.id,text=group.name or group.id,icon=self:GetConditionCategoryIcon(group)};if group.id==p.category then groupIndex=i end end
-    categories[#categories+1]={value='DEFAULT',text=L['Other']};if p.category~='ALL' and p.category~='BUILTIN' and p.category~='SWITCH' and p.category~='CUSTOM' and p.category~='DEFAULT' and not groupIndex then p.category='ALL' end
-    local tags=self:listConditions(p.category=='BUILTIN' and 'ALL' or p.category,true,store);local entries={};local seen={}
-    if p.category=='ALL' or p.category=='CUSTOM' then for tag in pairs(custom) do local exists=false;for _,value in ipairs(tags) do if value==tag then exists=true end end;if not exists then tags[#tags+1]=tag end end end
-    for _,tag in ipairs(tags) do if not (self.db.global.custom_conditions and self.db.global.custom_conditions[tag] and not custom[tag]) and (p.category~='BUILTIN' or not custom[tag]) and not seen[tag] and (definitions[tag] or (self.conditionSpecials or {})[tag]) then local d=definitions[tag] or self.conditionSpecials[tag];entries[#entries+1]={value=tag,text=d.description or d.desc or tag};seen[tag]=true end end
+    categories[#categories+1]={value='DEFAULT',text=L['Other']};if p.category~='ALL'  and p.category~='SWITCH' and p.category~='DEFAULT' and not groupIndex then p.category='ALL' end
+    local tags=self:listConditions(p.category,true,store);local entries={};local seen={}
+    if p.category=='ALL' then for tag in pairs(custom) do local exists=false;for _,value in ipairs(tags) do if value==tag then exists=true end end;if not exists then tags[#tags+1]=tag end end end
+    for _,tag in ipairs(tags) do if not (self.db.global.custom_conditions and self.db.global.custom_conditions[tag] and not custom[tag]) and (p.conditionSource=='all' or (p.conditionSource=='custom')==(custom[tag]~=nil)) and not seen[tag] and (definitions[tag] or (self.conditionSpecials or {})[tag]) then local d=definitions[tag] or self.conditionSpecials[tag];entries[#entries+1]={value=tag,text=d.description or d.desc or tag};seen[tag]=true end end
     if not seen[p.condition] then p.condition=entries[1] and entries[1].value end
     for _,entry in ipairs(entries) do entry.icon=custom[entry.value] and custom[entry.value].icon or self:GetConditionIcon(entry.value);entry.search=entry.value;entry.custom=custom[entry.value]~=nil end
     local ordered
     if p.category=='SWITCH' or p.category=='DEFAULT' or groupIndex then ordered=tags end
     local function orderChanged(list) if p.category=='SWITCH' then profile.switch_conditions=list elseif p.category=='DEFAULT' then profile.other_conditions_order=list elseif groupIndex then groups[groupIndex].conditions=list end end
-    p:UseRoster(entries,p.condition,function(value) p.condition=value;p:Draw() end,{order=ordered,orderChanged=orderChanged,categories=categories,category=p.category,chooseCategory=function(value) p.category=value;p.condition=nil;p:Draw() end,newText=L['Add custom condition'],new=function() self:OpenSettingsCustomCondition(p,nil) end,manage=function() p.mode='categories';p.categorySelection=nil;p:Draw() end})
+    p:UseRoster(entries,p.condition,function(value) p.condition=value;p:Draw() end,{order=ordered,orderChanged=orderChanged,categories=categories,category=p.category,chooseCategory=function(value) p.category=value;p.condition=nil;p:Draw() end,sources={{value='all',text=L['All']},{value='builtin',text=L['Built In']},{value='custom',text=L['Custom']}},source=p.conditionSource,chooseSource=function(value) p.conditionSource=value;p.condition=nil;p:Draw() end,newText=L['Add'],new=function() self:OpenSettingsCustomCondition(p,nil) end,manage=function() p.mode='categories';p.categorySelection=nil;p:Draw() end})
+    p:SetRosterActions({{key='add_custom',text=L['Add'],icon='plus',action=p.roster.options.new},{key='transfer',text=L['Import/Export'],icon='transfer',enabled=custom[p.condition]~=nil,action=function()
+        local dialog=self:OpenSettingsCustomCondition(p,p.condition,custom[p.condition])
+        ---@cast dialog any
+        if dialog then dialog.transfer:Click() end
+    end}},true)
     p:Heading(L['Conditions'])
     local tag=p.condition;local definition=definitions[tag] or (self.conditionSpecials or {})[tag]
     if tag and definition then
@@ -42,7 +49,7 @@ function addon:BuildConditionSettings(p)
         if custom[tag] then
             p:Actions({{key='edit_custom',text=L['Edit'],icon='info',action=function() self:OpenSettingsCustomCondition(p,tag,custom[tag]) end},
                 {key='duplicate_custom',text=L['Duplicate'],icon='copy',action=function()
-                    local copy=self:CopySettingsData(custom[tag]);local key=tag..'_'..self:uuid():gsub('-','_');custom[key]=copy;p:RunSettingsEffect('custom_'..key,function() self:register_custom_condition(key,copy) end);p.condition=key;p.category='CUSTOM';p:Draw()
+                    local copy=self:CopySettingsData(custom[tag]);local key=tag..'_'..self:uuid():gsub('-','_');custom[key]=copy;p:RunSettingsEffect('custom_'..key,function() self:register_custom_condition(key,copy) end);p.condition=key;p.category='ALL';p.conditionSource='custom';p:Draw()
                 end},
                 })
             p.fields.delete_custom=self:SettingsTopDelete(p,function() p:Confirm(L['Delete this custom condition? Existing rotations using it will become unavailable.'],function() custom[tag]=nil;p:RunSettingsEffect('custom_'..tag,function() self:UnregisterCondition(tag) end);p:Draw() end) end)
@@ -81,7 +88,7 @@ function addon:BuildConditionCategorySettings(p)
         local definition=definitions[tag] or (self.conditionSpecials or {})[tag];local custom=(store.global.custom_conditions or {})[tag]~=nil
         local cell=p:Acquire('categoryMembers',function() local button=self:CreateWorkbenchButton(p.child,'',cellWidth);button.image=button:CreateTexture(nil,'ARTWORK');button.image:SetSize(24,24);button.image:SetPoint('LEFT',3,0);return button end)
         cell:ClearAllPoints();cell:SetPoint('TOPLEFT',((i-1)%cols)*(cellWidth+8),-top-math.floor((i-1)/cols)*32);cell:SetSize(cellWidth,28);cell:SetText(definition and (definition.description or definition.desc) or tag);self:AlignWorkbenchTextLeft(cell,34);cell.image:SetTexture(self:GetConditionIcon(tag));cell:GetFontString():SetTextColor(custom and .92 or .4,custom and .94 or .7,custom and .96 or 1);p.fields['member_'..tag]=cell
-        self:SetUIScript(cell,'OnClick',p:Guard(function() if p:FlushEdits() then p.mode=nil;p.category=category;p.condition=tag;p:Draw() end end))
+        self:SetUIScript(cell,'OnClick',p:Guard(function() if p:FlushEdits() then p.mode=nil;p.category=category;p.conditionSource='all';p.condition=tag;p:Draw() end end))
     end
     p.y=top+math.ceil(#tags/cols)*32+8
     p.categoryTransfer=function()
@@ -104,6 +111,7 @@ end
 function addon:OpenSettingsCustomCondition(p,key,condition)
     if p.transactionKeys and p:IsSettingsDraftDirty() then p:Message(L['Apply or discard current settings before opening the custom code editor.']);return end
     local token=p.generation
-    local dialog,owner=self:condition_edit_box(p:Guard(function(newKey) if p.draft then p.draft.global.custom_conditions=self:CopySettingsData(self.db.global.custom_conditions);p.draftBaseline.global.custom_conditions=self:CopySettingsData(self.db.global.custom_conditions) end;p.condition=newKey;p.category='CUSTOM';p:Draw() end),key,condition and self.deepcopy(condition) or nil,function() return p:Valid(token) end)
+    local dialog,owner=self:condition_edit_box(p:Guard(function(newKey) if p.draft then p.draft.global.custom_conditions=self:CopySettingsData(self.db.global.custom_conditions);p.draftBaseline.global.custom_conditions=self:CopySettingsData(self.db.global.custom_conditions) end;p.condition=newKey;p.category='ALL';p.conditionSource='custom';p:Draw() end),key,condition and self.deepcopy(condition) or nil,function() return p:Valid(token) end)
     if dialog then p.cleanups[#p.cleanups+1]=function() addon:CloseCustomConditionEditor(dialog,owner) end end
+    return dialog,owner
 end

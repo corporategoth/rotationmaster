@@ -60,7 +60,7 @@ function addon:InstallSettingsLayout(p)
         if not r then
             r={frame=CreateFrame('Frame',nil,self.frame),rows={}};self.roster=r;r.frame:SetPoint('TOPLEFT',8,-8)
             r.category=addon:CreateWorkbenchLabeledIconButton(r.frame,'chevron-down','',238);r.category:SetPoint('TOPLEFT',0,0)
-            r.search=addon:CreateWorkbenchEditBox(r.frame);r.search:SetMaxLetters(128)
+            r.search=addon:CreateWorkbenchEditBox(r.frame);r.search:SetMaxLetters(128);addon:AttachWorkbenchSearchHint(r.search)
             r.scroll=addon:CreateWorkbenchScrollFrame(r.frame);r.child=CreateFrame('Frame',nil,r.scroll);r.scroll:SetScrollChild(r.child)
             r.empty=r.child:CreateFontString(nil,'OVERLAY','GameFontDisableSmall');r.empty:SetPoint('TOPLEFT',6,-6);r.empty:SetText(L['No matches.'])
             r.new=addon:CreateWorkbenchLabeledIconButton(r.frame,'plus',L['New'],238);r.new:SetPoint('BOTTOMLEFT',0,0)
@@ -69,8 +69,15 @@ function addon:InstallSettingsLayout(p)
         r.footerActions=nil;r.footerManage=false;for _,button in ipairs(r.actionButtons or {}) do button:Hide() end
         r.entries=entries;r.current=current;r.choose=choose;r.options=options;r.frame:Show();r.search:SetText(self.rosterQuery or '')
         addon:SetUIScript(r.search,'OnTextChanged',self:Guard(function(_,user) if user then self.rosterQuery=r.search:GetText();self:RefreshRoster() end end));addon:SetUIScript(r.search,'OnEscapePressed',self:Guard(function() r.search:ClearFocus() end))
+        r.sourceButtons=r.sourceButtons or {}
+        for i,entry in ipairs(options.sources or {}) do
+            local control=r.sourceButtons[i];if not control then control=addon:CreateWorkbenchButton(r.frame,'',74);r.sourceButtons[i]=control end
+            control:SetText(entry.text);control:SetSelected(entry.value==options.source);control:Show()
+            addon:SetUIScript(control,'OnClick',self:Guard(function() if self:FlushEdits() then options.chooseSource(entry.value) end end))
+        end
+        for i=#(options.sources or {})+1,#r.sourceButtons do r.sourceButtons[i]:Hide() end
         if options.categories then
-            local caption=L['All'];for _,entry in ipairs(options.categories) do if entry.value==options.category then caption=entry.text end end;r.category:SetText(caption);r.category:Show()
+            local caption=L['All'];local selected;for _,entry in ipairs(options.categories) do if entry.value==options.category then caption=entry.text;selected=entry end end;addon:PaintSelectorSelection(r.category,selected,caption);r.category:Show()
             addon:SetUIScript(r.category,'OnClick',self:Guard(function() if self:FlushEdits() then self:ShowChoices(r.category,options.categories,options.chooseCategory) end end))
         else r.category:Hide() end
         r.new:ClearAllPoints();r.new:SetPoint('BOTTOMLEFT',0,options.manage and 30 or 0);r.manage:ClearAllPoints();r.manage:SetPoint('BOTTOMLEFT',0,0)
@@ -82,10 +89,17 @@ function addon:InstallSettingsLayout(p)
         if not self.rosterUsed or not self.roster then simpleLayout(self);return end
         local r=self.roster;local side=addon:GetWorkbenchSidebarWidth(self.frame:GetWidth());local height=math.max(1,self.frame:GetHeight()-(self.creationUsed and 66 or 38))
         local sidebarHeight=addon:GetWorkbenchSidebarHeight(self.frame:GetHeight(),8)
-        r.frame:SetSize(side,sidebarHeight);r.category:SetWidth(side);r.new:SetWidth(side);r.manage:SetWidth(side);r.search:ClearAllPoints();r.search:SetPoint('TOPLEFT',0,0);r.category:ClearAllPoints();r.category:SetPoint('TOPLEFT',0,-28);r.search:SetSize(side,24)
+        r.frame:SetSize(side,sidebarHeight);r.category:SetWidth(side);r.new:SetWidth(side);r.manage:SetWidth(side);r.search:ClearAllPoints();r.search:SetPoint('TOPLEFT',0,0);r.search:SetSize(side,24)
+        local filterTop=28
+        if r.options.sources then
+            local width=(side-8)/#r.options.sources
+            for i,control in ipairs(r.sourceButtons) do control:ClearAllPoints();control:SetPoint('TOPLEFT',(i-1)*(width+4),-filterTop);control:SetWidth(width) end
+            filterTop=filterTop+28
+        end
+        r.category:ClearAllPoints();r.category:SetPoint('TOPLEFT',0,-filterTop)
         local footerHeight=r.footerActions and math.ceil(#r.footerActions/2)*28+(r.footerManage and 30 or 0) or (r.options.new and 30 or 0)+(r.options.manage and 30 or 0)
         if r.footerActions then local width=(side-6)/2;for i,button in ipairs(r.actionButtons) do button:ClearAllPoints();button:SetPoint('BOTTOMLEFT',((i-1)%2)*(width+6),(r.footerManage and 30 or 0)+(math.ceil(#r.footerActions/2)-1-math.floor((i-1)/2))*28);button:SetWidth(width);addon:AlignWorkbenchTextLeft(button,24) end end
-        local top=r.options.categories and 60 or 32;r.scroll:ClearAllPoints();r.scroll:SetPoint('TOPLEFT',0,-top);r.scroll:SetSize(side-18,math.max(1,sidebarHeight-top-footerHeight));r.child:SetWidth(side-26)
-        self.scroll:ClearAllPoints();self.scroll:SetPoint('TOPLEFT',side+24,-8);self.scroll:SetSize(math.max(1,self.frame:GetWidth()-side-50),height);self.message:SetWidth(math.max(1,self.frame:GetWidth()-20))
+        local top=filterTop+(r.options.categories and 32 or 4);r.scroll:ClearAllPoints();r.scroll:SetPoint('TOPLEFT',0,-top);r.scroll:SetSize(side-18,math.max(1,sidebarHeight-top-footerHeight));r.child:SetWidth(side-26)
+        self.scroll:ClearAllPoints();self.scroll:SetPoint('TOPLEFT',side+24,-8);self.scroll:SetSize(math.max(1,self.frame:GetWidth()-side-50),height);self.message:SetWidth(math.max(1,self.frame:GetWidth()-(self.creationUsed and 340 or 20)))
     end
 end

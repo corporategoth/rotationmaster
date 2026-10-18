@@ -187,10 +187,15 @@ function addon:CreateSettingsForm(parent)
         end
         self.y=after
     end
+    function p:Toggle(key,caption,value,falseLabel,trueLabel,changed)
+        local y=self:Row(caption);local c=self:Acquire('togglePills',function() return addon:CreateWorkbenchPill(self.child,'',94) end)
+        c:ClearAllPoints();c:SetPoint('TOPLEFT',220,-y);c:SetWidth(94);c:SetText(value and trueLabel or falseLabel);c:Enable();self.fields[key]=c
+        addon:SetUIScript(c,'OnClick',self:Guard(function() if self:FlushEdits() then value=not value;c:SetText(value and trueLabel or falseLabel);changed(value) end end));return c
+    end
     function p:Choice(key,caption,value,entries,changed)
         local y=self:Row(caption);local c=self:Acquire('choices',function() return addon:CreateWorkbenchLabeledIconButton(self.child,'chevron-down','',220) end)
         c:ClearAllPoints();c:SetPoint('TOPLEFT',220,-y);c:SetWidth(self.width-220);c:Enable();self.fields[key]=c
-        local selected=L['Select'];for _,entry in ipairs(entries) do if entry.value==value then selected=entry.text;break end end;c:SetText(selected)
+        local selected=L['Select'];local chosen;for _,entry in ipairs(entries) do if entry.value==value then selected=entry.text;chosen=entry;break end end;addon:PaintSelectorSelection(c,chosen,selected)
         addon:SetUIScript(c,'OnClick',self:Guard(function() if self:FlushEdits() then self:ShowChoices(c,entries,function(nextValue) if nextValue~=value then value=nextValue;changed(nextValue) end end) end end));return c
     end
     function p:ShowChoices(anchor,entries,changed,inline)
@@ -262,12 +267,12 @@ function addon:CreateSettingsForm(parent)
         self.builder(self);if self.DraftActions then self:DraftActions() end;if not self.creationUsedForNew then self.creationBaseline=nil;self.creationApply=nil end;self.child:SetHeight(self.y+12);self.scroll:UpdateWorkbenchScroll()
     end
     function p:Open(builder)
-        if self.profile~=addon.db.profile or self.global~=addon.db.global or self.char~=addon.db.char then self.selection=nil;self.creating=false;self.rosterQuery=nil;self.condition=nil;self.category=nil;self.newAnnounce=nil;self.newEffectName=nil;self.newItem=nil;self.newItemSetName=nil;self.newGroupName=nil end
+        if self.profile~=addon.db.profile or self.global~=addon.db.global or self.char~=addon.db.char then self.selection=nil;self.creating=false;self.rosterQuery=nil;self.condition=nil;self.category=nil;self.conditionSource=nil;self.newAnnounce=nil;self.newEffectName=nil;self.newItem=nil;self.newItemSetName=nil;self.newGroupName=nil end
         if self.profile~=addon.db.profile or self.global~=addon.db.global then self.draft=nil end
         self.active=true;self.profile=addon.db.profile;self.global=addon.db.global;self.char=addon.db.char;self.builder=builder;self.frame:Show();self:Layout();self:Draw()
     end
     function p:Layout()
-        self.scroll:SetSize(math.max(1,self.frame:GetWidth()-34),math.max(1,self.frame:GetHeight()-(self.creationUsed and 66 or 38)));self.message:SetWidth(math.max(1,self.frame:GetWidth()-20))
+        self.scroll:SetSize(math.max(1,self.frame:GetWidth()-34),math.max(1,self.frame:GetHeight()-(self.creationUsed and 66 or 38)));self.message:SetWidth(math.max(1,self.frame:GetWidth()-(self.creationUsed and 340 or 20)))
     end
     function p:SetWidth(n) local changed=n~=self.frame:GetWidth();self.frame:SetWidth(n);self:Layout();if changed and self.active and self:FlushEdits() then self:Draw() end end
     function p:SetHeight(n) self.frame:SetHeight(n);self:Layout() end
@@ -286,5 +291,6 @@ function addon:CreateSettingsForm(parent)
     if addon.InstallSettingsRosterOrder then addon:InstallSettingsRosterOrder(p) end
     if addon.InstallSettingsLayout then addon:InstallSettingsLayout(p) end
     if addon.InstallSettingsUnsaved then addon:InstallSettingsUnsaved(p) end
+    if addon.InstallSettingsChangeReview then addon:InstallSettingsChangeReview(p) end
     p.frame:SetSize(parent:GetWidth(),parent:GetHeight());p:Layout();return p
 end

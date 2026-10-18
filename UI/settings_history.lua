@@ -39,7 +39,7 @@ function addon:InstallSettingsHistory(p)
     function p:HistoryActions()
         local y=self:Row(nil,28)
         for i,entry in ipairs({{'undo','undo',L['Undo']},{'redo','redo',L['Redo']}}) do
-            local button=self:Acquire('historyActions',function() return addon:CreateWorkbenchLabeledIconButton(self.child,entry[2],entry[3],104) end);button:ClearAllPoints();button:SetPoint('TOPLEFT',(i-1)*110,-y);button:SetWidth(104);button:SetText(entry[3]);button.icon:SetTexture(addon:ControlTexture(entry[2]));self.fields[entry[1]]=button
+            local button=self:Acquire('historyActions',function() return addon:CreateWorkbenchHistoryButton(self.child,entry[2],entry[3]) end);button:ClearAllPoints();button:SetPoint('TOPLEFT',(i-1)*74,-y);button:SetWidth(68);button:SetText(entry[3]);button.icon:SetTexture(addon:ControlTexture(entry[2]));self.fields[entry[1]]=button
             addon:SetUIScript(button,'OnClick',self:Guard(function() self:TravelSettingsHistory(entry[1]=='redo') end))
         end
         self:UpdateHistoryActions()

@@ -24,7 +24,7 @@ function addon:CollectionComparisonRows(kind,left,right,showSame)
     end
     add(L['Name'],left.name,right.name)
     if kind=='profile' then
-        local labels={enable=L['Enable'],poll=L['Polling Interval (seconds)'],ignore_mana=L['Ignore mana'],ignore_range=L['Ignore range'],effect=L['Effect'],color=L['Highlight Color'],magnification=L['Magnification'],setpoint=L['Anchor'],xoffs=L['H'],yoffs=L['V'],loglevel=L['Log Level'],detailed_profiling=L['Detailed Profiling'],disable_autoswitch=L['Disable Auto-Switching'],live_config_update=L['Live Status Update Frequency (seconds)'],spell_history=L['Spell History Memory (seconds)'],combat_history=L['Combat History Memory (seconds)'],damage_history=L['Damage History Memory (seconds)'],disable_buttons=L['Disable Bar Highlighting'],rotation_view=L['Default rotation view'],preview_spells=L['Preview Spells'],preview_window=L['Preview position'],minimap=L['Minimap Icon'],rotations=L['Rotations'],rotationLibrary=L['Rotation library'],itemsets=L['Item Sets'],announces=L['Announces'],condition_groups=L['Categories'],switch_conditions=L['Switch conditions'],other_conditions_order=L['Other'],disabled_conditions=L['Hidden'],name=L['Name'],description=L['Description'],conditions=L['Conditions'],rotation=L['Rotation'],cooldowns=L['Cooldowns'],type=L['Type'],action=L['Action'],unit=L['Unit'],value=L['Value'],spell=L['Spell'],item=L['Item'],items=L['Items'],disabled=L['Disabled'],announce=L['Announce'],event=L['Event'],announce_sound=L['Sound'],preferences=L['Built In preferences'],origins=L['Clone sources'],comparisons=L['Comparison history'],imports=L['Imports']}
+        local labels={identifier=L['Identifier'],definition=L['Definition'],enable=L['Enable'],poll=L['Polling Interval (seconds)'],ignore_mana=L['Ignore mana'],ignore_range=L['Ignore range'],effect=L['Effect'],color=L['Highlight Color'],magnification=L['Magnification'],setpoint=L['Anchor'],xoffs=L['H'],yoffs=L['V'],loglevel=L['Log Level'],detailed_profiling=L['Detailed Profiling'],disable_autoswitch=L['Disable Auto-Switching'],live_config_update=L['Live Status Update Frequency (seconds)'],spell_history=L['Spell History Memory (seconds)'],combat_history=L['Combat History Memory (seconds)'],damage_history=L['Damage History Memory (seconds)'],disable_buttons=L['Disable Bar Highlighting'],rotation_view=L['Default rotation view'],preview_spells=L['Preview Spells'],preview_window=L['Preview position'],minimap=L['Minimap Icon'],rotations=L['Rotations'],rotationLibrary=L['Rotation library'],itemsets=L['Item Sets'],announces=L['Announces'],condition_groups=L['Categories'],switch_conditions=L['Switch conditions'],other_conditions_order=L['Other'],disabled_conditions=L['Hidden'],name=L['Name'],description=L['Description'],conditions=L['Conditions'],rotation=L['Rotation'],cooldowns=L['Cooldowns'],type=L['Type'],action=L['Action'],unit=L['Unit'],value=L['Value'],spell=L['Spell'],item=L['Item'],items=L['Items'],disabled=L['Disabled'],announce=L['Announce'],event=L['Event'],announce_sound=L['Sound'],ranked=L['Use this exact spell rank'],use_name=L['Use step name'],suppress_attack=L['Also suppress implicit Attack'],preview_vertical=L['Vertical'],preview_locked=L['Lock position and size'],preview_opacity=L['Preview window opacity'],preview_icon_size=L['Preview icon size'],evaluate=L['Evaluate'],valid=L['Validate'],print=L['Summary'],widget=L['Fields UI'],help=L['Help'],on_register=L['On register'],on_unregister=L['On unregister'],preferences=L['Built In preferences'],origins=L['Clone sources'],comparisons=L['Comparison history'],imports=L['Imports']}
         local function plain(key,a,b)
             if labels[key] then return labels[key] end
             local record=type(a)=='table' and a or type(b)=='table' and b
@@ -73,14 +73,16 @@ function addon:CollectionComparisonRows(kind,left,right,showSame)
     end
     return rows,total
 end
-function addon:ShowCollectionComparison(p,kind,left,right)
+function addon:ShowCollectionComparison(p,kind,left,right,options)
+    options=options or {}
     local d=p.comparison
     if not d then
         d={frame=CreateFrame('Frame',nil,UIParent),cells={}};p.comparison=d;local frame=d.frame;frame:SetSize(760,520);frame:SetPoint('CENTER');frame:SetFrameStrata('FULLSCREEN_DIALOG');frame:SetToplevel(true);frame:SetClampedToScreen(true);frame:EnableMouse(true);self:MakeWindowOpaque(frame)
         d.title=frame:CreateFontString(nil,'OVERLAY','GameFontNormal');d.chrome=self:CreateWorkbenchDialogChrome(frame,d.title)
+        d.leftHeading=frame:CreateFontString(nil,'OVERLAY','GameFontNormal');d.leftHeading:SetPoint('TOPLEFT',12,-64);d.rightHeading=frame:CreateFontString(nil,'OVERLAY','GameFontNormal');d.rightHeading:SetPoint('TOPLEFT',366,-64)
         d.close=self:CreateWorkbenchIconButton(frame,'close',L['Close']);d.close:SetPoint('TOPRIGHT',-5,-5);self:SetUIScript(d.close,'OnClick',function() frame:Hide() end)
         d.toggle=self:CreateWorkbenchCheckBox(frame,L['Show unchanged'],220);d.toggle:SetPoint('TOPLEFT',12,-34)
-        d.scroll=self:CreateWorkbenchScrollFrame(frame);d.scroll:SetPoint('TOPLEFT',12,-64);d.scroll:SetSize(718,420);d.child=CreateFrame('Frame',nil,d.scroll);d.child:SetWidth(700);d.scroll:SetScrollChild(d.child)
+        d.scroll=self:CreateWorkbenchScrollFrame(frame);d.scroll:SetPoint('TOPLEFT',12,-86);d.scroll:SetSize(718,398);d.child=CreateFrame('Frame',nil,d.scroll);d.child:SetWidth(700);d.scroll:SetScrollChild(d.child)
         self:SetUIScript(frame,'OnMouseUp',function(_,button) if button=='RightButton' then frame:Hide() end end);self:SetUIScript(d.scroll,'OnMouseUp',function(_,button) if button=='RightButton' then frame:Hide() end end)
         frame:Hide()
     end
@@ -88,7 +90,7 @@ function addon:ShowCollectionComparison(p,kind,left,right)
     local token=p.generation;local function valid() return p:Valid(token) and d.serial==serial end;local first,second=self:CopySettingsData(left),self:CopySettingsData(right);local showSame=false
     local function draw()
         if not valid() then return end
-        local rows,changes=self:CollectionComparisonRows(kind,first,second,showSame);d.rows=rows;d.toggle:SetChecked(showSame)
+        local rows,changes;if options.rows then rows,changes=options.rows(first,second,showSame) else rows,changes=self:CollectionComparisonRows(kind,first,second,showSame) end;d.rows=rows;d.toggle:SetChecked(showSame)
         local y=0;local n=0
         local function cell(value,x,width,height,tone,icon)
             n=n+1;local c=d.cells[n];if not c then c=CreateFrame('Frame',nil,d.child);c.art=c:CreateTexture(nil,'BACKGROUND');c.art:SetAllPoints(c);c.text=c:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall');c.text:SetJustifyH('LEFT');c.text:SetJustifyV('TOP');c.text:SetWordWrap(true);c.icon=c:CreateTexture(nil,'ARTWORK');c.icon:SetPoint('TOPLEFT',5,-4);c.icon:SetSize(24,24);d.cells[n]=c end
@@ -102,7 +104,8 @@ function addon:ShowCollectionComparison(p,kind,left,right)
         if #rows==0 then cell(L['No differences.'],0,700,30,{.18,.18,.18});y=38 end
         for i=n+1,#d.cells do d.cells[i]:Hide() end;d.child:SetHeight(math.max(1,y));d.scroll:UpdateWorkbenchScroll();d.chrome.author:SetText(string.format(L['Changed fields: %d'],changes))
     end
-    d.chrome:SetContext(L['Compare']..': '..(left.name or '')..' / '..(right.name or ''),L['Read-only'],addon.pretty_name)
+    d.chrome:SetContext(options.title or L['Compare']..': '..(left.name or '')..' / '..(right.name or ''),L['Read-only'],addon.pretty_name);d.leftHeading:SetText(options.leftHeading or left.name or L['Selected entry']);d.rightHeading:SetText(options.rightHeading or right.name or L['Compared entry'])
+    self:SetUIScript(d.frame,'OnUpdate',function() if not valid() then d.frame:Hide() end end)
     self:SetUIScript(d.toggle,'OnClick',function() if valid() then showSame=not showSame;draw() end end)
     p.cleanups[#p.cleanups+1]=function() d.frame:Hide() end;d.frame:Show();self:RegisterWindowForEscape(d);draw();return d
 end

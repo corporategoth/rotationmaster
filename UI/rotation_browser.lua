@@ -18,8 +18,8 @@ local function create(parent)
     local search=addon:CreateWorkbenchEditBox(left);browser.search=search
     search:SetAutoFocus(false);search:SetMaxLetters(128);search:SetFontObject("GameFontHighlightSmall")
     search:SetSize(240,24);search:SetTextInsets(5,5,0,0)
-    local searchLabel=label(left);searchLabel:SetText(L["Search rotations"]);searchLabel:SetPoint("TOPLEFT",0,0)
-    search:SetPoint("TOPLEFT",left,"TOPLEFT",5,-20)
+    addon:AttachWorkbenchSearchHint(search)
+    search:SetPoint("TOPLEFT",left,"TOPLEFT",0,0)
     addon:SetUIScript(search,"OnTextChanged",function(control)
         if not browser.active then return end
         browser.query=string.lower(string.sub(control:GetText() or "",1,128));browser:RefreshRows()
@@ -29,12 +29,12 @@ local function create(parent)
     local filterEntries={{"all",L["All"]},{"builtin",L["Built In"]},{"custom",L["Custom"]}}
     for index,entry in ipairs(filterEntries) do
         local control=button(left,entry[2],76);browser.filters[entry[1]]=control
-        control:SetPoint("TOPLEFT",left,"TOPLEFT",(index-1)*80,-52)
+        control:SetPoint("TOPLEFT",left,"TOPLEFT",(index-1)*80,-28)
         local key=entry[1];addon:SetUIScript(control,"OnClick",function() browser:SetFilter(key) end)
     end
     browser.selectedTags={};browser.tagMode='any'
-    browser.tagLabel=label(left);browser.tagLabel:SetText(L['Tags']);browser.tagLabel:SetPoint('TOPLEFT',0,-80)
-    browser.tagModeButton=addon:CreateWorkbenchPill(left,L['Any'],44);browser.tagModeButton:SetPoint('TOPLEFT',40,-80);browser.tagModeButton:SetAccent(.75,.6,.18)
+    browser.tagLabel=label(left);browser.tagLabel:SetText(L['Tags']);browser.tagLabel:SetHeight(18);browser.tagLabel:SetJustifyV('MIDDLE');browser.tagLabel:SetPoint('TOPLEFT',0,-56)
+    browser.tagModeButton=addon:CreateWorkbenchPill(left,L['Any'],44);browser.tagModeButton:SetPoint('TOPLEFT',40,-56);browser.tagModeButton:SetAccent(.75,.6,.18)
     browser.tagPicker=addon:CreateRotationTagPicker(left,{allowCustom=false,
         available=function() return browser.availableTags or {} end,
         valid=function() return browser.active and browser.profile==addon.db.profile end,
@@ -42,7 +42,7 @@ local function create(parent)
         color=function(tag) return addon:GetRotationTagColor(tag) end,
         setColor=function(tag,color) addon:SetRotationTagColor(tag,color);browser:RefreshRows() end,
         layout=function() if browser.active then browser:Layout() end end})
-    browser.tagPicker.frame:SetPoint('TOPLEFT',0,-104);browser.tagButton=browser.tagPicker.input;browser.tagMenu=browser.tagPicker.menu
+    browser.tagPicker.frame:SetPoint('TOPLEFT',0,-80);browser.tagButton=browser.tagPicker.input;browser.tagMenu=browser.tagPicker.menu
     addon:SetUIScript(browser.tagModeButton,'OnClick',function() if browser.active then browser.tagMode=browser.tagMode=='any' and 'all' or 'any';browser.tagModeButton:SetText(browser.tagMode=='any' and L['Any'] or L['All']);browser:RefreshRows() end end)
     local list=addon:CreateWorkbenchScrollFrame(left);browser.list=list
     local child=CreateFrame("Frame",nil,list);child:SetPoint("TOPLEFT",list,"TOPLEFT",0,0);list:SetScrollChild(child);browser.listChild=child
@@ -248,11 +248,11 @@ local function create(parent)
         specs:SetPoint("TOPLEFT",frame,"TOPLEFT",0,0);specs:SetSize(width,top)
         left:SetPoint("TOPLEFT",frame,"TOPLEFT",0,-top);left:SetSize(leftWidth,addon:GetWorkbenchSidebarHeight(height,top))
         detail:SetPoint("TOPLEFT",frame,"TOPLEFT",leftWidth+18,-top);detail:SetSize(math.max(200,width-leftWidth-18),left:GetHeight())
-        for index,key in ipairs({'all','builtin','custom'}) do local filter=self.filters[key];filter:ClearAllPoints();filter:SetPoint('TOPLEFT',left,'TOPLEFT',(index-1)*(leftWidth+4)/3,-52);filter:SetWidth((leftWidth-8)/3) end
-        search:SetWidth(leftWidth-10)
+        for index,key in ipairs({'all','builtin','custom'}) do local filter=self.filters[key];filter:ClearAllPoints();filter:SetPoint('TOPLEFT',left,'TOPLEFT',(index-1)*(leftWidth+4)/3,-28);filter:SetWidth((leftWidth-8)/3) end
+        search:SetWidth(leftWidth)
         local footerHeight=50
         self.tagPicker:SetWidth(leftWidth)
-        local listTop=104+self.tagPicker.height+8
+        local listTop=80+self.tagPicker.height+8
         list:SetPoint("TOPLEFT",left,"TOPLEFT",0,-listTop);list:SetSize(leftWidth-24,math.max(64,left:GetHeight()-listTop-36-footerHeight))
         child:SetWidth(list:GetWidth())
         count:ClearAllPoints();count:SetPoint("BOTTOMLEFT",left,"BOTTOMLEFT",0,footerHeight+8)

@@ -706,7 +706,7 @@ test('preview spell count rounds drag values and rejects fractional raw input',f
 end)
 test('category filtering keeps search above its category selector',function()
     local f,parent=fixture();local a=f.addon;a.conditionDefinitions={A={description='Alpha'}};a.listConditions=function() return {'A'} end;local p=a:OpenNativeSettings(parent,'Conditions')
-    assert(p.roster.search.point[3]==0 and p.roster.category.point[3]==-28)
+    assert(p.roster.search.point[3]==0 and p.roster.category.point[3]==-56)
 end)
 test('tag color palette is portable bounded data',function()
     local f=fixture();local a=f.addon
@@ -725,5 +725,44 @@ test('category reordering marks the rows whose saved positions changed',function
     a.db.profile.condition_groups={{id='g1',name='First',conditions={'A'}},{id='g2',name='Second',conditions={}}}
     local p=a:OpenNativeSettings(parent,'Conditions');p.roster.manage:Click();p.roster.orderView:Begin('g2','Second',false);assert(p.roster.orderView:Drop(1))
     local marked=0;for i,entry in ipairs(p.roster.matches) do if entry.value=='g1' or entry.value=='g2' then assert(p.roster.rows[i].rmUnsaved);marked=marked+1 end end;assert(marked==2)
+end)
+test('preview orientation lock opacity and count stage together and profile transfers preserve them',function()
+    local f,parent=fixture();local a=f.addon;a.db.profile.preview_spells=2;local calls=0;a.RefreshPreviewWindow=function() calls=calls+1 end
+    local p=a:OpenNativeSettings(parent,'General');p.fields.preview_vertical:Click();p.fields.preview_locked:Click();p.fields.preview_opacity:SetValue(.5)
+    assert(not a.db.profile.preview_vertical and calls==0);p.fields.apply:Click();assert(a.db.profile.preview_vertical and a.db.profile.preview_locked and a.db.profile.preview_opacity==.5 and calls==1)
+    local portable=a:ProfileToPortable(a.db.profile);local restored=a:ProfileFromPortable(portable);assert(a:ValidateProfileTransfer(restored) and restored.preview_vertical)
+    for _,patch in ipairs({{preview_spells=2.5},{preview_opacity=1.1},{preview_icon_size=12}}) do assert(not a:ValidateProfileTransfer(patch)) end
+end)
+test('settings View Changes inspects invalid pending input without flushing it or saving settings',function()
+    local f,parent=fixture();local a=f.addon;a.db.profile.poll=.1;local p=a:OpenNativeSettings(parent,'General');assert(p.fields.viewChanges and not p.fields.viewChanges:IsEnabled())
+    local field=p.fields.poll_value;field:SetText('bad');field.scripts.OnTextChanged(field,true);assert(p.fields.viewChanges:IsEnabled());p.fields.viewChanges:Click()
+    local d=p.draftComparisonOwner.comparison;assert(d.frame:IsShown() and d.rows[#d.rows].right=='bad' and a.db.profile.poll==.1 and p:SettingsData().profile.poll==.1)
+    assert(field:GetText()=='bad' and p.edits[1].dirty);p:Release();d.frame.scripts.OnUpdate();assert(not d.frame:IsShown())
+end)
+test('selected dropdown icons persist and preview row divides into lock direction reset thirds',function()
+    local f,parent=fixture();local a=f.addon;local p=a:CreateSettingsForm(parent)
+    p:Open(function(form) form:Choice('choice','Choice',1,{{value=1,text='First',icon=11},{value=2,text='Second',icon=22}},function() end) end)
+    local field=p.fields.choice;assert(field.valueIcon:GetTexture()==11);field:Click();p.menu.rows[2]:Click();assert(field.valueIcon:GetTexture()==22)
+    p=a:OpenNativeSettings(parent,'General');local left,middle,right=p.fields.preview_locked,p.fields.preview_vertical,p.fields.preview_reset
+    assert(left:GetWidth()==middle:GetWidth() and middle:GetWidth()==right:GetWidth() and left.point[3]==middle.point[3] and middle.point[3]==right.point[3])
+    assert(left.point[2]==0 and middle.point[2]==p.columnWidth/3 and right.point[2]==p.columnWidth*2/3)
+    assert(p.fields.preview_opacity.point[3]>left.point[3],'opacity must sit above the control row')
+end)
+test('condition source filters precede categories and transfer only editable custom definitions',function()
+    local f,parent=fixture();local a=f.addon;a.conditionDefinitions={A={description='Alpha'},B={description='Beta'}};a.conditionSpecials={};a.db.global.custom_conditions={B={description='Beta',fields={}}};a.db.profile.condition_groups={{id='one',name='One',conditions={'A','B'}}};a.listConditions=function() return {'A','B'} end
+    local opened;a.OpenSettingsCustomCondition=function(_,_,key) opened=key;return {transfer={Click=function() opened=opened..':transfer' end}} end
+    local p=a:CreateSettingsForm(parent);p:Open(function(form) a:BuildConditionSettings(form) end)
+    assert(p.fields.add_custom:GetText()=='Add' and not p.fields.transfer:IsEnabled())
+    assert(p.roster.search.point[3]>p.roster.sourceButtons[1].point[3] and p.roster.sourceButtons[1].point[3]>p.roster.category.point[3])
+    p.roster.sourceButtons[3]:Click();assert(#p.roster.entries==1 and p.condition=='B' and p.fields.transfer:IsEnabled());p.fields.transfer:Click();assert(opened=='B:transfer')
+    p.roster.sourceButtons[2]:Click();assert(#p.roster.entries==1 and p.condition=='A' and not p.fields.transfer:IsEnabled())
+    assert(p.roster.sourceButtons[2].selected and not p.roster.sourceButtons[3].selected)
+    for _,entry in ipairs(p.roster.options.categories) do assert(entry.value~='BUILTIN' and entry.value~='CUSTOM') end
+end)
+test('shared search hints hide while focused or populated and return on empty blur',function()
+    local f,parent=fixture();local a=f.addon;local input=a:CreateWorkbenchEditBox(parent);a:AttachWorkbenchSearchHint(input)
+    assert(input.searchHint:GetText()=='Search...' and input.searchHint:IsShown())
+    input.hooks.OnEditFocusGained[1]();assert(not input.searchHint:IsShown());input.hooks.OnEditFocusLost[1]();assert(input.searchHint:IsShown())
+    input:SetText('word');input.hooks.OnTextChanged[1]();assert(not input.searchHint:IsShown());input:SetText('');input.hooks.OnTextChanged[1]();assert(input.searchHint:IsShown())
 end)
 finish()
