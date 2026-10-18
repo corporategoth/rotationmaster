@@ -130,6 +130,13 @@ end
 
 -- Recommendation readiness permits a next action during the global cooldown,
 -- but not an ability whose own cooldown will still be active afterward.
+function platform:GetGlobalCooldown()
+    local client=self:GetClientInfo()
+    -- Classic public probe; later clients expose the dedicated GCD spell.
+    local spell=(client.family=='era' or client.family=='tbc' or
+        (client.family=='progression' and client.expansion==2)) and 29515 or 61304
+    return self:GetSpellCooldown(spell)
+end
 function platform:IsSpellReady(spell, now)
     if not self:CanReadValue(now) then return nil, "restricted-value" end
     if type(now)~="number" or now~=now or now==math.huge or now==-math.huge then
@@ -141,12 +148,7 @@ function platform:IsSpellReady(spell, now)
     local expires=cooldown.startTime+cooldown.duration
     if cooldown.duration==0 or expires<=now then return true end
 
-    local client=self:GetClientInfo()
-    -- Classic/TBC's public GCD probe, also used by current WeakAuras. Later
-    -- clients expose the dedicated GCD spell. An unreadable probe is unknown.
-    local gcdSpell=(client.family=="era" or client.family=="tbc" or
-        (client.family=="progression" and client.expansion==2)) and 29515 or 61304
-    local gcd,why=self:GetSpellCooldown(gcdSpell)
+    local gcd,why=self:GetGlobalCooldown()
     if not gcd then return nil,why end
     if not gcd.isEnabled or gcd.duration==0 then return false end
     -- modRate controls cooldown animation; API timestamps/duration already

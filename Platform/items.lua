@@ -66,13 +66,48 @@ local function query(fn,...)
     return value
 end
 
+function platform:GetItemMetadata(item)
+    local id,reason=self:GetItemID(item);if not id then return nil,reason end
+    local fn=C_Item and C_Item.GetItemInfo or GetItemInfo
+    if type(fn)~='function' then return nil,'missing-api' end
+    local ok,name,link,_,_,level,_,_,_,_,icon=pcall(fn,id)
+    if not ok then return nil,'api-error' end
+    for _,value in pairs({name=name,link=link,level=level,icon=icon}) do
+        if not self:CanReadValue(value) then return nil,'restricted-value' end
+    end
+    if name==nil then return nil,'item-data-unavailable' end
+    if type(name)~='string' or name=='' or not finite(level) or level%1~=0
+        or link~=nil and (type(link)~='string' or link=='')
+        or icon~=nil and not (type(icon)=='string' or finite(icon) and icon%1==0) then return nil,'invalid-api-result' end
+    return {name=name,link=link,minimumLevel=level,iconID=icon}
+end
+function platform:GetItemCount(item)
+    local id,reason=self:GetItemID(item);if not id then return nil,reason end
+    local value,why=query(C_Item and C_Item.GetItemCount or GetItemCount,id,false,false)
+    if why then return nil,why end
+    if not finite(value) or value%1~=0 then return nil,'invalid-api-result' end
+    return value
+end
+function platform:IsItemEquipped(item)
+    local id,reason=self:GetItemID(item);if not id then return nil,reason end
+    local value,why=query(C_Item and C_Item.IsEquippedItem or IsEquippedItem,id)
+    if why then return nil,why end
+    if type(value)~='boolean' then return nil,'invalid-api-result' end
+    return value
+end
+function platform:IsItemLevelAllowed(item)
+    local metadata,reason=self:GetItemMetadata(item);if not metadata then return nil,reason end
+    local level,why=query(UnitLevel,'player');if why then return nil,why end
+    if not finite(level) or level%1~=0 then return nil,'invalid-api-result' end
+    return level>=metadata.minimumLevel
+end
+
 function platform:IsItemReady(item,now)
     local id,reason=self:GetItemID(item)
     if not id then return nil,reason end
     if not self:CanReadValue(now) or not finite(now) then return nil,"invalid-time" end
-    local count,why=query(C_Item and C_Item.GetItemCount or GetItemCount,id,false,false)
+    local count,why=self:GetItemCount(id)
     if why then return nil,why end
-    if not finite(count) or count%1~=0 then return nil,"invalid-api-result" end
     if count==0 then return false end
     local fn=C_Item and C_Item.IsUsableItem or IsUsableItem
     if type(fn)~="function" then return nil,"missing-api" end

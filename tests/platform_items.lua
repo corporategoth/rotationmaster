@@ -149,4 +149,19 @@ test('item cooldown invalid observations and identities remain unavailable rathe
         assert(fallbackCalls==0,'invalid or restricted native data triggered a fallback query')
     end
 end)
+test('item metadata ownership and level adapters copy only readable validated public fields',function()
+    local f=fixture();local p=f.addon.Platform;local secret={};f.env.canaccessvalue=function(value) return value~=secret end
+    f.env.C_Item={GetItemInfo=function() return 'Potion','|Hitem:10|h[Potion]|h',1,1,5,'Consumable','Potion',20,'',123 end,
+        GetItemCount=function(_,bank,uses) assert(bank==false and uses==false);return 0 end,IsEquippedItem=function() return false end}
+    f.env.UnitLevel=function() return 11 end
+    local info=assert(p:GetItemMetadata(10));assert(info.name=='Potion' and info.minimumLevel==5 and info.iconID==123)
+    info.name='Modified';assert(p:GetItemMetadata(10).name=='Potion' and p:IsItemLevelAllowed(10))
+    assert(p:GetItemCount(10)==0 and p:IsItemEquipped(10)==false)
+    for _,tuple in ipairs({{},{secret,'link',1,1,5},{'Potion',secret,1,1,5},{'Potion','link',1,1,secret},{'Potion','link',1,1,-1},{'Potion','link',1,1,1.5},{'Potion','link',1,1,0,'a','b',1,'',math.huge}}) do
+        f.env.C_Item.GetItemInfo=function() return unpack(tuple) end
+        assert(p:GetItemMetadata(10)==nil,'invalid metadata tuple was accepted')
+    end
+    f.env.C_Item.GetItemCount=function() return secret end;assert(p:GetItemCount(10)==nil)
+    f.env.C_Item.IsEquippedItem=function() return secret end;assert(p:IsItemEquipped(10)==nil)
+end)
 finish()
