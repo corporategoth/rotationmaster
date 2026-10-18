@@ -365,10 +365,9 @@ function addon:Widget_SingleItemWidget(spec, editbox, value, isvalid, update)
     item_group:SetUserData("table", { columns = { 44, 1 } })
 
     local item = addon:CreateItemEditBox(editbox,value.item)
-    local itemIcon = AceGUI:Create("ActionSlotItem")
+    local itemIcon = addon:CreateItemActionIcon(value.item)
     itemIcon:SetWidth(44)
     itemIcon:SetHeight(44)
-    itemIcon.text:Hide()
     itemIcon:SetCallback("OnEnterPressed", function(_, _, v)
         v = tonumber(v)
         if v and isvalid(v) then
@@ -387,7 +386,7 @@ function addon:Widget_SingleItemWidget(spec, editbox, value, isvalid, update)
     end)
     itemIcon:SetCallback("OnEnter", function()
         if value.item then
-            local itemid = addon.getRetryCached(addon.longtermCache, GetItemInfoInstant, value.item)
+            local itemid = addon.Platform:GetItemID(value.item)
             if itemid then
                 GameTooltip:SetOwner(itemIcon.frame, "ANCHOR_BOTTOMRIGHT", 3)
                 GameTooltip:SetHyperlink("item:" .. itemid)
@@ -408,7 +407,7 @@ function addon:Widget_SingleItemWidget(spec, editbox, value, isvalid, update)
     item:SetCallback("OnEnterPressed", function(_, _, v)
         local itemid
         if not addon.isint(v) then
-            itemid = addon.getRetryCached(addon.longtermCache, GetItemInfoInstant, v)
+            itemid = addon.Platform:GetItemID(v)
         else
             itemid = tonumber(v)
         end

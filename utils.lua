@@ -606,183 +606,68 @@ function addon:GetSpecialization()
     return selection.index
 end
 
-function addon:UpdateItem_ID_ID(item, text, icon, attempt)
-    if not item then
-        if text then
-            text:SetText(nil)
-        end
-        if icon then
-            icon:SetText(nil)
-            if GameTooltip:IsOwned(icon.frame) and GameTooltip:IsVisible() then
-                GameTooltip:Hide()
-            end
-        end
-        return
+-- A delayed metadata retry belongs to a particular widget selection. Reusing
+-- either widget or clearing it invalidates all older scheduled retries.
+local itemUpdates=setmetatable({},{__mode='k'})
+local itemReleases=setmetatable({},{__mode='k'})
+local function watchItemRelease(widget)
+    if not widget or itemReleases[widget]==widget.OnRelease and widget.OnRelease~=nil then return end
+    local original=widget.OnRelease
+    local release
+    release=function(self,...)
+        itemUpdates[self]=nil;itemReleases[self]=nil
+        if self.OnRelease==release then self.OnRelease=original end
+        if original then return original(self,...) end
     end
-
-    if not attempt then
-        attempt = 1
-        if text then
-            text:SetText(item)
-        end
-        if icon then
-            icon:SetText(nil)
-            if GameTooltip:IsOwned(icon.frame) and GameTooltip:IsVisible() then
-                GameTooltip:Hide()
-            end
-        end
-    end
-
-    local itemid = self.getRetryCached(addon.longtermCache, GetItemInfoInstant, item)
-    if itemid then
-        if text then
-            text:SetText(itemid)
-        end
-        if icon then
-            icon:SetText(itemid)
-            if GameTooltip:IsOwned(icon.frame) and GameTooltip:IsVisible() then
-                GameTooltip:SetHyperlink("item:" .. itemid)
-            end
-        end
-    elseif attempt < 4 then
-        self:ScheduleTimer("UpdateItem_ID_ID", 0.5, item, text, icon, attempt + 1)
+    itemReleases[widget]=release;widget.OnRelease=release
+end
+local function itemText(widget)
+    if widget and type(widget.GetText)=='function' then return widget:GetText() end
+end
+local function itemTooltip(icon,id)
+    if icon and GameTooltip and GameTooltip:IsOwned(icon.frame) and GameTooltip:IsVisible() then
+        if id then GameTooltip:SetHyperlink('item:'..id) else GameTooltip:Hide() end
     end
 end
-
-function addon:UpdateItem_ID_Image(item, text, icon, attempt)
-    if not item then
-        if text then
-            text:SetText(nil)
-        end
-        if icon then
-            icon:SetImage(nil)
-            if GameTooltip:IsOwned(icon.frame) and GameTooltip:IsVisible() then
-                GameTooltip:Hide()
-            end
-        end
-        return
+local function sameItemText(widget,ticket)
+    if widget.GetReferenceID then
+        local current=widget:GetReferenceID()
+        if current~=nil or ticket.referenceID~=nil then return current==ticket.referenceID end
     end
-
-    if not attempt then
-        attempt = 1
-        if text then
-            text:SetText(item)
-        end
-        if icon then
-            icon:SetImage(nil)
-            if GameTooltip:IsOwned(icon.frame) and GameTooltip:IsVisible() then
-                GameTooltip:Hide()
-            end
-        end
-    end
-
-    local itemid, _, _, _, texture = self.getRetryCached(addon.longtermCache, GetItemInfoInstant, item)
-    if itemid then
-        if text then
-            text:SetText(itemid)
-        end
-        if icon then
-            icon:SetImage(texture)
-            if GameTooltip:IsOwned(icon.frame) and GameTooltip:IsVisible() then
-                GameTooltip:SetHyperlink("item:" .. itemid)
-            end
-        end
-    elseif attempt < 4 then
-        self:ScheduleTimer("UpdateItem_ID_Image", 0.5, item, text, icon, attempt + 1)
-    end
+    return itemText(widget)==ticket.text
 end
-
-function addon:UpdateItem_Name_ID(item, text, icon, attempt)
-    if not item then
-        if text then
-            text:SetText(nil)
-        end
-        if icon then
-            icon:SetText(nil)
-            if GameTooltip:IsOwned(icon.frame) and GameTooltip:IsVisible() then
-                GameTooltip:Hide()
-            end
-        end
-        return
-    end
-
+local function updateItem(self,method,named,image,item,text,icon,attempt,ticket)
     if not attempt then
-        attempt = 1
-        if text then
-            text:SetText(item)
-        end
-        if icon then
-            icon:SetText(nil)
-            if GameTooltip:IsOwned(icon.frame) and GameTooltip:IsVisible() then
-                GameTooltip:Hide()
-            end
-        end
+        attempt=1;ticket={}
+        if text then watchItemRelease(text);itemUpdates[text]=ticket end
+        if icon then watchItemRelease(icon);itemUpdates[icon]=ticket end
+    elseif not ticket or text and (itemUpdates[text]~=ticket or not sameItemText(text,ticket))
+        or icon and (itemUpdates[icon]~=ticket or icon.rmActionIconRevision~=ticket.iconRevision) then return end
+    if not self.Platform:CanReadValue(item) then item=nil end
+    local id=item and self.Platform:GetItemID(item)
+    local info=id and (named or image) and self.Platform:GetItemDisplayInfo(id)
+    local complete=id and (not named or info) and (not image or info and info.iconID~=nil)
+    if text then
+        if text.rmSpellSearchActive and id then text:SetText(id)
+        else text:SetText(item and (named and (info and info.name or L['Item data loading']) or id) or nil) end
     end
-
-    local itemid = self.getRetryCached(addon.longtermCache, GetItemInfoInstant, item)
-    local name
-    if itemid then
-        name = self.getRetryCached(addon.longtermCache, GetItemInfo, itemid)
+    if icon then
+        if image then icon:SetImage(complete and info.iconID or nil)
+        else icon:SetText(complete and id or nil) end
     end
-    if itemid and name then
-        if text then
-            text:SetText(name)
-        end
-        if icon then
-            icon:SetText(itemid)
-            if GameTooltip:IsOwned(icon.frame) and GameTooltip:IsVisible() then
-                GameTooltip:SetHyperlink("item:" .. itemid)
-            end
-        end
-    elseif attempt < 4 then
-        self:ScheduleTimer("UpdateItem_Name_ID", 0.5, item, text, icon, attempt + 1)
-    end
+    itemTooltip(icon,complete and id)
+    ticket.text=itemText(text);ticket.referenceID=text and text.GetReferenceID and text:GetReferenceID();ticket.iconRevision=icon and icon.rmActionIconRevision
+    if item and not complete and attempt<4 then self:ScheduleTimer(method,0.5,item,text,icon,attempt+1,ticket) end
 end
-
-function addon:UpdateItem_Name_Image(item, text, icon, attempt)
-    if not item then
-        if text then
-            text:SetText(nil)
-        end
-        if icon then
-            icon:SetImage(nil)
-            if GameTooltip:IsOwned(icon.frame) and GameTooltip:IsVisible() then
-                GameTooltip:Hide()
-            end
-        end
-        return
-    end
-
-    if not attempt then
-        attempt = 1
-        if text then
-            text:SetText(item)
-        end
-        if icon then
-            icon:SetImage(nil)
-            if GameTooltip:IsOwned(icon.frame) and GameTooltip:IsVisible() then
-                GameTooltip:Hide()
-            end
-        end
-    end
-
-    local itemid = self.getRetryCached(addon.longtermCache, GetItemInfoInstant, item)
-    local name, texture, _
-    if itemid then
-        name = self.getRetryCached(addon.longtermCache, GetItemInfo, itemid)
-        texture = select(10, self.getRetryCached(addon.longtermCache, GetItemInfo, itemid))
-    end
-    if name then
-        if text then
-            text:SetText(name)
-        end
-        if icon then
-            icon:SetImage(texture)
-            if GameTooltip:IsOwned(icon.frame) and GameTooltip:IsVisible() then
-                GameTooltip:SetHyperlink("item:" .. itemid)
-            end
-        end
-    elseif attempt < 4 then
-        self:ScheduleTimer("UpdateItem_Name_Image", 0.5, item, text, icon, attempt + 1)
-    end
+function addon:UpdateItem_ID_ID(item,text,icon,attempt,ticket)
+    updateItem(self,'UpdateItem_ID_ID',false,false,item,text,icon,attempt,ticket)
+end
+function addon:UpdateItem_ID_Image(item,text,icon,attempt,ticket)
+    updateItem(self,'UpdateItem_ID_Image',false,true,item,text,icon,attempt,ticket)
+end
+function addon:UpdateItem_Name_ID(item,text,icon,attempt,ticket)
+    updateItem(self,'UpdateItem_Name_ID',true,false,item,text,icon,attempt,ticket)
+end
+function addon:UpdateItem_Name_Image(item,text,icon,attempt,ticket)
+    updateItem(self,'UpdateItem_Name_Image',true,true,item,text,icon,attempt,ticket)
 end

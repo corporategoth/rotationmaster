@@ -132,4 +132,28 @@ test('reopening an exact lower aura rank keeps icon and tooltip aligned with the
     assert(input:GetText():find('Rank 1',1,true));assert(icon:GetUserData('spell')==403,'icon canonicalized the saved rank')
     icon.callbacks.OnEnter(icon);assert(f.tooltip=='spell:403' and value.spell==403)
 end)
+test('actual common item condition uses protected item icon metadata and exact item drop controls',function()
+    local f=fixture(true);local a=f.addon;dofile('tests/fixtures/spell_editbox.lua')(f)
+    f.env.GetItemInfo=nil;f.env.GetItemInfoInstant=nil
+    f.env.C_Item={GetItemInfo=function(id) return 'Water','item:'..id,nil,nil,nil,nil,nil,nil,nil,10+id end}
+    f.load('Conditions/common.lua');local ace=f.libraries['AceGUI-3.0'];local create=ace.Create
+    ace.Create=function(self,kind) assert(kind~='ActionSlotItem','real vendor item icon still needs old GetItemInfo');return create(self,kind) end
+    local value={item=1};local updates=0
+    local group=a:Widget_SingleItemWidget(0,'Item_EditBox',value,function(id) return type(id)=='number' end,function() updates=updates+1 end)
+    local icon=group.children[1];assert(icon.rmItemIconActive and icon.image==11)
+    icon.callbacks.OnEnter(icon);assert(f.tooltip=='item:1')
+    f.env.GetCursorInfo=function() return 'item',2,'item:2' end
+    icon.frame.scripts.OnReceiveDrag(icon.frame);assert(value.item==2 and icon.image==12 and updates==1)
+    icon.frame.scripts.OnClick(icon.frame,'RightButton');assert(value.item==nil and updates==2)
+end)
+test('delayed item icon display cannot overwrite a pooled ordinary Icon after release',function()
+    local f=fixture();local a=f.addon;local ready=false;local queued
+    f.env.C_Item={GetItemInfo=function() if ready then return 'Water','item:1',nil,nil,nil,nil,nil,nil,nil,11 end end}
+    a.ScheduleTimer=function(_,method,_,...) queued={method=method,args={...}} end
+    assert(a.CreateItemActionIcon,'owned item icon missing')
+    local icon=a:CreateItemActionIcon(1);a:UpdateItem_Name_ID(1,nil,icon);assert(queued)
+    f.libraries['AceGUI-3.0']:Release(icon)
+    local reused=f.libraries['AceGUI-3.0']:Create('Icon');assert(reused==icon);reused:SetImage(99)
+    ready=true;a[queued.method](a,unpack(queued.args));assert(reused.image==99 and not reused.rmItemIconActive)
+end)
 finish()

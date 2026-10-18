@@ -47,7 +47,7 @@ function addon:CreateReferenceEditBox(kind,initialSpell)
     local matches={}
     widget.rmSpellSearchActive=true
     widget:SetMaxLetters(256)
-    local originalText,originalRelease=widget.SetText,widget.OnRelease
+    local originalText,originalRelease,originalReferenceID=widget.SetText,widget.OnRelease,widget.GetReferenceID
     local scripts={}
     local function install(frame,event,handler)
         local binding={frame=frame,event=event,original=frame:GetScript(event)}
@@ -68,6 +68,7 @@ function addon:CreateReferenceEditBox(kind,initialSpell)
         setting=true;originalText(self,clean(text));setting=false
         acceptedText=field:GetText();if acceptedText=='' then dropHint:Show() else dropHint:Hide() end;hide()
     end
+    widget.GetReferenceID=function() if alive and field:GetText()==acceptedText then return acceptedID end end
     local function highlight()
         for index,row in ipairs(popup.rows) do
             if index==selected and matches[index] then row.selection:Show() else row.selection:Hide() end
@@ -183,7 +184,7 @@ function addon:CreateReferenceEditBox(kind,initialSpell)
             if binding.frame:GetScript(binding.event)==binding.handler then binding.frame:SetScript(binding.event,binding.original) end
         end
         for _,row in ipairs(popup.rows) do row.spellID=nil;row.itemID=nil;row.referenceID=nil;addon:SetUIScript(row,"OnMouseDown",nil);addon:SetUIScript(row,"OnEnter",nil);addon:SetUIScript(row,"OnLeave",nil) end
-        self.SetText,self.OnRelease=originalText,originalRelease
+        self.SetText,self.OnRelease,self.GetReferenceID=originalText,originalRelease,originalReferenceID
         if originalRelease then return originalRelease(self,...) end
     end
     return widget

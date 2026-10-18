@@ -6,8 +6,8 @@ local function fixture()
     local info={[403]={name='Lightning Bolt',subtext='Rank 1',spellID=403,iconID=1},
         [529]={name='Lightning Bolt',subtext='Rank 2',spellID=529,iconID=1},
         [974]={name='Earth Shield',spellID=974,iconID=2}}
-    a.Platform={GetSpellInfo=function(_,id) if id=='Lightning Bolt' then id=529 end;return info[id] end,
-        GetSpellLink=function(_,id) return 'spell:'..id end,CanReadValue=function() return true end}
+    a.Platform.GetSpellInfo=function(_,id) if id=='Lightning Bolt' then id=529 end;return info[id] end
+    a.Platform.GetSpellLink=function(_,id) return 'spell:'..id end
     for id in pairs(info) do a.SpellCatalog:UpdateSpell(id) end
     a.specSpells={[0]={[403]=true},pet={[529]=true}}
     a.spellBookStatus={player={complete=true},pet={complete=true}}
@@ -148,5 +148,45 @@ test('uncached item selection refreshes its label without committing a placehold
     local f=fixture();local ready=false;f.env.GetItemInfo=function(id) if ready then return 'Water' end end
     local w=f.addon:CreateItemEditBox('Item_EditBox',1);w:SetText(1);local calls=0;w:SetCallback('OnEnterPressed',function() calls=calls+1 end)
     assert(w:GetText()=='Item data loading');w:SetFocus();w:ClearFocus();ready=true;w:SetFocus();assert(w:GetText()=='Water' and calls==0)
+end)
+test('legacy display updates retain exact picker identity even for duplicate item names',function()
+    local f=fixture();local a=f.addon
+    f.env.C_Item={GetItemInfo=function(id) return 'Same name','item:'..id end,GetItemInfoInstant=function() return 2 end}
+    local w=a:CreateItemEditBox('Item_EditBox',1);local chosen
+    w:SetCallback('OnEnterPressed',function(_,_,value) chosen=value end)
+    a:UpdateItem_Name_ID(1,w,nil);assert(w:GetText()=='Same name')
+    w:SetFocus();w.editbox.scripts.OnEnterPressed(w.editbox)
+    assert(chosen=='1','name presentation changed the selected identity to '..tostring(chosen))
+end)
+test('delayed legacy display cannot write into released or directly edited reference fields',function()
+    for _,released in ipairs({true,false}) do
+        local f=fixture();local a=f.addon;local ready=false;local queued
+        f.env.C_Item={GetItemInfo=function() if ready then return 'Water' end end}
+        a.ScheduleTimer=function(_,method,_,...) queued={method=method,args={...}} end
+        local w=a:CreateItemEditBox('Item_EditBox',1)
+        a:UpdateItem_Name_ID(1,w,nil);assert(queued)
+        if released then w:OnRelease() end
+        w:SetText('New owner');ready=true;a[queued.method](a,unpack(queued.args))
+        assert(w:GetText()=='New owner','late metadata overwrote a released or edited field')
+    end
+end)
+test('automatic picker metadata refresh does not cancel the matching icon retry',function()
+    local f=fixture();local a=f.addon;local ready=false;local queued
+    f.env.C_Item={GetItemInfo=function() if ready then return 'Water' end end}
+    a.ScheduleTimer=function(_,method,_,...) queued={method=method,args={...}} end
+    local w=a:CreateItemEditBox('Item_EditBox',1);local icon={SetText=function(self,value) self.value=value end}
+    a:UpdateItem_Name_ID(1,w,icon);assert(queued and not icon.value)
+    ready=true;w:SetFocus();assert(w:GetText()=='Water')
+    a[queued.method](a,unpack(queued.args));assert(icon.value==1,'same-identity label refresh stranded the icon')
+end)
+test('choosing another duplicate-name item cancels the former identity retry',function()
+    local f=fixture();local a=f.addon;local ready=false;local queued
+    f.env.C_Item={GetItemInfo=function(id) return 'Same name',nil,nil,nil,nil,nil,nil,nil,nil,(ready or id==2) and 10+id or nil end}
+    a.ScheduleTimer=function(_,method,_,...) queued={method=method,args={...}} end
+    local w=a:CreateItemEditBox('Item_EditBox',1)
+    local icon={SetImage=function(self,value) self.image=value end}
+    a:UpdateItem_Name_Image(1,w,icon);assert(queued);ready=true;w:SetText(2)
+    -- Both names are now loaded; the old request must not steal item2's ID.
+    a[queued.method](a,unpack(queued.args));assert(w:GetReferenceID()==2,'retry restored a former same-name identity')
 end)
 finish()

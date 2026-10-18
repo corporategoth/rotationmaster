@@ -11,7 +11,7 @@ local AceConsole = LibStub("AceConsole-3.0")
 local AceEvent = LibStub("AceEvent-3.0")
 local ItemData = LibStub("AceGUI-3.0-ItemLoader")
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
-local getCached, getRetryCached
+local getCached
 local DBIcon = LibStub("LibDBIcon-1.0")
 local Media = LibStub("LibSharedMedia-3.0")
 local function spellLink(spellid)
@@ -373,7 +373,6 @@ function addon:OnInitializeInternal()
 
     -- This is here because of order of loading.
     getCached = addon.getCached
-    getRetryCached = addon.getRetryCached
 
     --self:SetupOptions()
 end
@@ -1461,8 +1460,9 @@ local function spellcast(self, event, unit, castguid, spellid)
                                 local link = spellLink(sid)
                                 text = text:gsub("{{spell}}", link)
                             elseif ent.type == "item" then
-                                local link = select(2, getRetryCached(self.longtermCache, GetItemInfo, itemids[idx]))
-                                if type(link)=="string" then text = text:gsub("{{item}}", link) end
+                                local info = self.Platform:GetItemDisplayInfo(itemids[idx])
+                                local link = info and info.link
+                                if type(link)=="string" then text = text:gsub("{{item}}", function() return link end) end
                             end
                             text = text:gsub("{{event}}", self.events[ent.event])
                             if currentSpells[castguid] or lastCastTarget[spellid] then

@@ -164,4 +164,16 @@ test('item metadata ownership and level adapters copy only readable validated pu
     f.env.C_Item.GetItemCount=function() return secret end;assert(p:GetItemCount(10)==nil)
     f.env.C_Item.IsEquippedItem=function() return secret end;assert(p:IsItemEquipped(10)==nil)
 end)
+test('display metadata needs no gameplay level and selects a callable backend without failure fallback',function()
+    local f=fixture();local p=f.addon.Platform
+    f.env.GetItemInfo=function(id) return 'Water','item:'..id,nil,nil,nil,nil,nil,nil,nil,11 end
+    f.env.GetItemInfoInstant=function() return 1 end
+    f.env.C_Item={GetItemInfo=true,GetItemInfoInstant=true}
+    local info=assert(p:GetItemDisplayInfo('Water'));assert(info.itemID==1 and info.name=='Water' and info.iconID==11)
+    assert(not p:GetItemMetadata(1),'display-only metadata was accepted for gameplay level decisions')
+    f.env.C_Item.GetItemInfo=function() error('native failure') end
+    local record,reason=p:GetItemDisplayInfo(1);assert(not record and reason=='api-error')
+    f.env.C_Item.GetItemInfoInstant=function() error('native ID failure') end
+    record,reason=p:GetItemDisplayInfo('Water');assert(not record and reason=='api-error')
+end)
 finish()

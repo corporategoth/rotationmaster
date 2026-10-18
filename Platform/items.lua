@@ -26,7 +26,8 @@ function platform:GetItemID(item)
     local valid,reason=identifier(item)
     if not valid then return nil,reason end
     if type(item)=="number" then return item end
-    local fn=C_Item and C_Item.GetItemInfoInstant or GetItemInfoInstant
+    local fn=C_Item and C_Item.GetItemInfoInstant
+    if type(fn)~='function' then fn=GetItemInfoInstant end
     if type(fn)~="function" then return nil,"missing-api" end
     local ok,id=pcall(fn,item)
     if not ok then return nil,"api-error" end
@@ -38,6 +39,23 @@ end
 
 local function finite(value)
     return type(value)=="number" and value==value and value>=0 and value<math.huge
+end
+-- Display metadata does not need a minimum-level observation. Keep the
+-- gameplay metadata contract separate so a readable name/icon is still usable
+-- in editors, while readiness never guesses a missing required level.
+function platform:GetItemDisplayInfo(item)
+    local id,reason=self:GetItemID(item);if not id then return nil,reason end
+    local fn=C_Item and C_Item.GetItemInfo
+    if type(fn)~='function' then fn=GetItemInfo end
+    if type(fn)~='function' then return nil,'missing-api' end
+    local ok,name,link,_,_,_,_,_,_,_,icon=pcall(fn,id)
+    if not ok then return nil,'api-error' end
+    if not self:CanReadValue(name) or not self:CanReadValue(link) or not self:CanReadValue(icon) then return nil,'restricted-value' end
+    if link~=nil and (type(link)~='string' or link=='')
+        or icon~=nil and not (type(icon)=='string' and icon~='' or finite(icon) and icon%1==0) then return nil,'invalid-api-result' end
+    if name==nil then return nil,'item-data-unavailable' end
+    if type(name)~='string' or name=='' then return nil,'invalid-api-result' end
+    return {itemID=id,name=name,link=link,iconID=icon}
 end
 function platform:GetItemCooldown(item)
     local id,reason=self:GetItemID(item)

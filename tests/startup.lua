@@ -919,6 +919,21 @@ test('item announcements resolve their item action and deduplicate successful ca
     assert(calls==1,'item announcement was not dispatched exactly once')
 end)
 
+test('item announcement links use protected native metadata and preserve literal percent characters',function()
+    local env,a,load=fixture();load('main.lua');initialize(a)
+    a.debug=function() end;a.deepcopy=function(value) local result={};for k,v in pairs(value) do result[k]=v end;return result end
+    env.GetItemInfo=nil;env.C_Item={GetItemInfo=function() return 'Water 100%','|Hitem:1|h[Water 100%]|h' end}
+    a.db.profile.announces={{id='item',type='item',item={1},event='SUCCEEDED',announce='local',value='Used {{item}}'}}
+    a.announced={};a.spellHistory={};a.events={SUCCEEDED='Succeeded'};local text
+    a.announce=function(_,value) text=value end
+    a.GetSpellIds=function() return {123},{1} end
+    a:UNIT_SPELLCAST_SUCCEEDED('UNIT_SPELLCAST_SUCCEEDED','player','native-item',123)
+    assert(text=='Used |Hitem:1|h[Water 100%]|h',tostring(text))
+    env.C_Item.GetItemInfo=function() error('unavailable') end
+    a:UNIT_SPELLCAST_SUCCEEDED('UNIT_SPELLCAST_SUCCEEDED','player','unavailable-item',123)
+    assert(text=='Used {{item}}','failed data revived a previous item link')
+end)
+
 test('audible announcements play once without chat even without announcement text',function()
     local env,a,load=fixture();local lib=env.LibStub;env.LibStub=function(name,...) if name=='LibSharedMedia-3.0' then return {Fetch=function(_,kind,key) assert(kind=='sound' and key=='Chime');return 'chime.ogg' end} end;return lib(name,...) end
     local played,chat=0,0;env.PlaySoundFile=function(path,channel) assert(path=='chime.ogg' and channel=='Master');played=played+1 end;env.SendChatMessage=function() chat=chat+1 end

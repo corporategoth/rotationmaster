@@ -39,6 +39,7 @@ def main():
             ['lua5.1', 'tests/platform_inventory.lua'],
             ['lua5.1', 'tests/item_conditions.lua'],
             ['lua5.1', 'tests/item_sets.lua'],
+            ['lua5.1', 'tests/item_presentation.lua'],
             ['lua5.1', 'tests/platform_spellbook.lua'],
             ['lua5.1', 'tests/platform_auras.lua'],
             ['lua5.1', 'tests/aura_conditions.lua'],

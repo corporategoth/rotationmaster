@@ -8,8 +8,8 @@ local CreateFrame, UIParent = CreateFrame, UIParent
 
 local pairs, color, tonumber = pairs, color, tonumber
 local units = addon.units
-local HideOnEscape, getRetryCached, isint, deepcopy, compareArray =
-    addon.HideOnEscape, addon.getRetryCached, addon.isint, addon.deepcopy, addon.compareArray
+local HideOnEscape, isint, deepcopy, compareArray =
+    addon.HideOnEscape, addon.isint, addon.deepcopy, addon.compareArray
 
 local function spacer(width)
     local rv = AceGUI:Create("Label")
@@ -232,15 +232,14 @@ local function create_item_list(frame, editbox, items, isvalid, update)
         for idx,item in ipairs(items) do
             local row = frame
 
-            local icon = AceGUI:Create("ActionSlotItem")
+            local icon = addon:CreateItemActionIcon()
             local name = addon:CreateItemEditBox(editbox,item)
 
             icon:SetWidth(44)
             icon:SetHeight(44)
-            icon.text:Hide()
             icon:SetCallback("OnEnterPressed", function(_, _, v)
                 v = tonumber(v)
-                if isvalid(v) then
+                if v and isvalid(v) then
                     items[idx] = v
                     addon:UpdateItem_Name_ID(v, name, icon)
                     if GameTooltip:IsOwned(icon.frame) and GameTooltip:IsVisible() then
@@ -258,7 +257,7 @@ local function create_item_list(frame, editbox, items, isvalid, update)
             end)
             icon:SetCallback("OnEnter", function()
                 if items[idx] ~= nil then
-                    local itemid = getRetryCached(addon.longtermCache, GetItemInfoInstant, items[idx])
+                    local itemid = addon.Platform:GetItemID(items[idx])
                     if itemid then
                         GameTooltip:SetOwner(icon.frame, "ANCHOR_BOTTOMRIGHT", 3)
                         GameTooltip:SetHyperlink("item:" .. itemid)
@@ -277,7 +276,7 @@ local function create_item_list(frame, editbox, items, isvalid, update)
             name:SetCallback("OnEnterPressed", function(_, _, v)
                 local itemid
                 if not isint(v) then
-                    itemid = getRetryCached(addon.longtermCache, GetItemInfoInstant, v)
+                    itemid = addon.Platform:GetItemID(v)
                 else
                     itemid = tonumber(v)
                 end
@@ -384,13 +383,12 @@ local function create_item_list(frame, editbox, items, isvalid, update)
     if items == nil or #items == 0 or (items[#items] ~= nil and items[#items] ~= "") then
         local row = frame
 
-        local icon = AceGUI:Create("ActionSlotItem")
+        local icon = addon:CreateItemActionIcon()
         icon:SetWidth(44)
         icon:SetHeight(44)
         icon:SetDisabled(items == nil)
-        icon.text:Hide()
         icon:SetCallback("OnEnterPressed", function(_, _, v)
-            local item = getRetryCached(addon.longtermCache, GetItemInfo, v)
+            local item = addon.Platform:GetItemID(v)
             if item then
                 items[#items + 1] = item
                 update()

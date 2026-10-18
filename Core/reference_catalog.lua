@@ -46,16 +46,9 @@ local function inventory()
 end
 local function itemInfo(value)
     local key=id(value);if not key then return end
-    local getter=C_Item and C_Item.GetItemInfo
-    if type(getter)~='function' then getter=GetItemInfo end
-    local record,invalid
-    if type(getter)=='function' then
-        local ok,name,link,_,_,_,_,_,_,_,icon=pcall(getter,key)
-        if ok then
-            record=presentation(key,name,icon,link)
-            invalid=not readable(name) or not optionalFields(icon,link) or name~=nil and not record
-        else invalid=true end
-    end
+    local info,reason=addon.Platform:GetItemDisplayInfo(key)
+    local record=info and presentation(key,info.name,info.iconID,info.link)
+    local invalid=not info and reason~='item-data-unavailable' and reason~='missing-api'
     -- A failed/restricted observation cannot revive the old cached record or a
     -- same-ID loader row. Unloaded metadata may still use a valid loader index.
     items[key]=record;blocked[key]=invalid or nil
@@ -88,13 +81,9 @@ local function itemResolve(input,settings)
     settings=options(settings);local text=queryText(input);if not settings or not text then return end
     local key=id(text) or id(text:match('|Hitem:(%d+)')) or id(text:match('^item:(%d+)'))
     if not key then
-        local getter=C_Item and C_Item.GetItemInfoInstant
-        if type(getter)~='function' then getter=GetItemInfoInstant end
-        if type(getter)=='function' then
-            local ok,value=pcall(getter,input)
-            if not ok or not readable(value) then return end
-            key=id(value)
-        end
+        local value,reason=addon.Platform:GetItemID(input)
+        if reason and reason~='missing-api' and reason~='item-data-unavailable' then return end
+        key=id(value)
     end
     if not key then for item,record in pairs(indexedItems()) do if record.name:lower()==text:lower() then key=item;break end end end
     if key and settings.inventory and not inventory()[key] then return nil,'item-not-in-inventory' end
