@@ -94,6 +94,13 @@ function addon:CreateRotationCanvas(parent,owner)
             label:ClearAllPoints();label:SetPoint('TOPLEFT',self.child,'TOPLEFT',point.x+(edge.arm=='false' and -40 or 8),-point.y+14)
             label:SetText(edge.arm=='true' and L['True'] or L['False']);label:SetTextColor(tone[1],tone[2],tone[3]);label:Show()
         end end
+        for _,arm in ipairs(scene.armLabels or {}) do
+            labels=labels+1;local label=self.labels[labels]
+            if not label then label=self.child:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall');self.labels[labels]=label end
+            local tone=arm.arm=='false' and colors.red or colors.green
+            label:ClearAllPoints();label:SetPoint('TOPLEFT',self.child,'TOPLEFT',arm.x,-arm.y)
+            label:SetText(arm.arm=='true' and L['True'] or L['False']);label:SetTextColor(tone[1],tone[2],tone[3],arm.inactive and .3 or 1);label:Show()
+        end
         for i=labels+1,#self.labels do self.labels[i]:Hide() end
         for i,target in ipairs(scene.dropTargets) do
             local zone=self.zones[i]

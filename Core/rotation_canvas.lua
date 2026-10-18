@@ -13,12 +13,13 @@ function addon:BuildRotationCanvas(body,view)
     local index,why=data.IndexRotationSteps(body)
     if not index then return nil,why end
     view=view or {}
+    local listView=view.layout=="list"
     local collapsed=type(view.collapsed)=="table" and view.collapsed or {}
     local details=type(view.detailsHeights)=="table" and view.detailsHeights or {}
-    local scene={cards={},connectors={},dropTargets={},complete=true,width=cardWidth,height=0}
+    local scene={cards={},connectors={},dropTargets={},complete=true,width=cardWidth,height=0,layout=listView and "list" or "diagram",armLabels={}}
     local rows={};for _,row in ipairs(index.rows) do rows[row.step]=row end
     local function state(step)
-        return (view.cardStates or {})[step.id] or (collapsed[step.id] and 'compact') or (height(details[step.id])>0 and 'expanded') or 'normal'
+        return (view.cardStates or {})[step.id] or (collapsed[step.id] and 'compact') or (height(details[step.id])>0 and 'expanded') or (listView and 'compact') or 'normal'
     end
     local count=0
     local measureList
@@ -32,10 +33,17 @@ function addon:BuildRotationCanvas(body,view)
         local node={step=step,row=row,ownHeader=ownHeader,conditionHeight=conditionHeight,header=mode=='expanded' and math.max(72,ownHeader+height(details[step.id])+(conditionHeight>0 and conditionHeight+4 or 0)) or ownHeader,width=cardWidth}
         node.height=node.header
         if step.type=="branch" and not ((view.hiddenChildren or {})[step.id] or collapsed[step.id]) then
-            node.yes=measureList(step.onTrue,extend(row.path,"onTrue"),step.id)
-            node.no=measureList(step.onFalse,extend(row.path,"onFalse"),step.id)
-            node.width=node.yes.width+armGap+node.no.width
-            node.height=node.header+armLead+math.max(node.yes.height,node.no.height)+armJoin
+            if listView then
+                node.no=measureList(step.onFalse,extend(row.path,"onFalse"),step.id)
+                node.yes=measureList(step.onTrue,extend(row.path,"onTrue"),step.id)
+                node.width=math.max(node.no.width,node.yes.width)+24
+                node.height=node.header+armLead+node.no.height+armLead+node.yes.height+armJoin
+            else
+                node.yes=measureList(step.onTrue,extend(row.path,"onTrue"),step.id)
+                node.no=measureList(step.onFalse,extend(row.path,"onFalse"),step.id)
+                node.width=node.yes.width+armGap+node.no.width
+                node.height=node.header+armLead+math.max(node.yes.height,node.no.height)+armJoin
+            end
         end
         return node
     end
@@ -80,7 +88,16 @@ function addon:BuildRotationCanvas(body,view)
         local center=card.x+cardWidth/2
         local entry={x=center,y=y,id=step.id}
         local exit={x=center,y=y+node.header,id=step.id}
-        if node.yes then
+        if node.yes and listView then
+            local armsY=y+node.header+armLead
+            for _,choice in ipairs({{arm='false',list=node.no,blocked=inactive or mode=='true'},
+                {arm='true',list=node.yes,blocked=inactive or mode=='false'}}) do
+                scene.armLabels[#scene.armLabels+1]={x=x+24,y=armsY-24,arm=choice.arm,inactive=choice.blocked}
+                placeList(choice.list,x+24,armsY,'list')
+                armsY=armsY+choice.list.height+armLead
+            end
+            exit={x=center,y=y+node.height,id=step.id}
+        elseif node.yes then
             local armsY=y+node.header+armLead
             local tEntry,tExit=placeList(node.yes,x+node.no.width+armGap,armsY,"rotation")
             local fEntry,fExit=placeList(node.no,x,armsY,"rotation")
@@ -137,7 +154,7 @@ function addon:BuildRotationCanvas(body,view)
     if #optional.nodes>0 then target(optional,#optional.nodes+1,0,cursor-12,gridWidth) end
     scene.separatorY=cursor+8
     scene.sections.rotation.y=sectionStates.cooldowns and scene.sections.cooldowns.y+32 or cursor+16
-    if not sectionStates.rotation then placeList(ordered,0,scene.sections.rotation.y+36,"rotation") end
+    if not sectionStates.rotation then placeList(ordered,0,scene.sections.rotation.y+36,listView and "list" or "rotation") end
     scene.width=math.max(560,ordered.width,gridWidth,math.min(1600,view.viewportWidth or 0))
     scene.height=scene.sections.rotation.y+(sectionStates.rotation and 32 or 36+ordered.height+24)
     return scene

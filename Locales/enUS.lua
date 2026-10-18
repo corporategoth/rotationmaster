@@ -1553,3 +1553,8 @@ L["Item Available checks the required level and enabled item cooldown. An active
 -- TBC early Frost Mage preview.
 L["Default.TBC.Mage.Starter.Name"] = "Mage: early Frost leveling (1–19)"
 L["Default.TBC.Mage.Starter.Description"] = "TBC single-target Frost starter preview. Optional Intellect and armor upkeep, stationary pulls and combat fillers adapt to trained early ranks. Missing training or unavailable spells can select another filler. Combat priorities stop out of combat. Uses ranked action lookup with availability fallback; no automatic kiting, crowd control, shields, finishers or consumable use. Fire/Arcane specialization and later levels need other rotations."
+
+-- Alternate rotation presentation.
+L["Diagram view"] = true
+L["List view"] = true
+L["Switch between the diagram and compact tree list. This changes only the view."] = true

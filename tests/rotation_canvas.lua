@@ -108,4 +108,22 @@ test('empty False arm remains straight beside True until the rejoin',function()
         for _,point in ipairs(edge.points) do assert(point.x==stem,'empty False arm shifts sideways') end
     end end
 end)
+test('list view uses a compact false-then-true hierarchy with linear width and exact typed arm destinations',function()
+    local source={branch('b',nil,{branch('nested',nil,{leaf('deep')},{})},{leaf('no')}),leaf('tail')}
+    local s=scene(source,nil,{layout='list'});local b,no,yes,deep,tail=byId(s,'b'),byId(s,'no'),byId(s,'nested'),byId(s,'deep'),byId(s,'tail')
+    assert(s.layout=='list' and b.compact and b.height==28)
+    assert(no.y<yes.y and no.x==yes.x and no.x>b.x and deep.x>yes.x)
+    assert(tail.y>deep.y+deep.height and tail.x==b.x)
+    assert(deep.x+deep.width<=s.width and s.width<800 and #s.armLabels==4)
+    local arms={};for _,target in ipairs(s.dropTargets) do if target.destination.parentId=='nested' then arms[target.destination.path[#target.destination.path]]=true end end
+    assert(arms.onFalse and arms.onTrue and no.arm=='false' and yes.arm=='true')
+    assert(source[1].onFalse[1].id=='no' and source[1].onTrue[1].id=='nested')
+end)
+test('list view preserves forced reachability explicit details and independently folded subtrees',function()
+    local s=scene({branch('b','true',{leaf('yes')},{leaf('no')})},nil,{layout='list',cardStates={yes='expanded'},detailsHeights={yes=100}})
+    assert(byId(s,'no').inactive and not byId(s,'yes').inactive and byId(s,'yes').expanded)
+    assert(s.armLabels[1].arm=='false' and s.armLabels[1].inactive and not s.armLabels[2].inactive)
+    s=scene({branch('b',nil,{leaf('yes')},{leaf('no')}),leaf('tail')},nil,{layout='list',hiddenChildren={b=true}})
+    assert(not byId(s,'yes') and #s.armLabels==0 and byId(s,'tail'))
+end)
 finish()

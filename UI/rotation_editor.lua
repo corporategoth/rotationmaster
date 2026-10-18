@@ -68,6 +68,7 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
     end
     function pane:Render()
         if not self.active then return end
+        self.viewMode:SetText(self.view.layout=='list' and L['List view'] or L['Diagram view'])
         local snapshot=self.workspace:Snapshot()
         if self.metadataWindow and self.metadataWindow.frame:IsShown() and not self.metadataDirty then self.metadataWindow:Sync() end
         if not self.descriptionDirty then self.description:SetText(type(snapshot.description)=='string' and snapshot.description or (self.workspace.readOnly and type(self.workspace.description)=='string' and self.workspace.description or '')) end
@@ -121,6 +122,15 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
     end
     pane.undo=tool(L['Undo'],24,function() if not pane:FlushName() then return end;local flushed,reason=pane:FlushFieldEdits();if not flushed then pane:Message(reason);return end;local ok,problem=workspace.session:Undo();if ok then pane:Render() else pane:Message(problem) end end,'undo')
     pane.redo=tool(L['Redo'],24,function() local ok,problem=workspace.session:Redo();if ok then pane:Render() else pane:Message(problem) end end,'redo')
+    pane.viewMode=addon:CreateWorkbenchPill(pane.frame,L['Diagram view'],108)
+    pane.viewMode.tooltip=L['Switch between the diagram and compact tree list. This changes only the view.']
+    pane.viewMode.action=function()
+        if not pane:FlushName() then return end
+        local ok,why=pane:FlushFieldEdits();if not ok then pane:Message(why);return end
+        pane.view.layout=pane.view.layout=='list' and 'diagram' or 'list'
+        pane:Render()
+    end
+    pane.tools[#pane.tools+1]=pane.viewMode
     pane.switchButton=addon:CreateWorkbenchButton(pane.frame,'',300);pane.switch=pane.switchButton
     pane.switchText=pane.switchButton:GetFontString();pane.switchText:ClearAllPoints();pane.switchText:SetPoint('TOPLEFT',6,-4);pane.switchText:SetWordWrap(true);pane.switchText:SetJustifyH('LEFT')
     pane.switchLabel=addon:CreateWorkbenchButton(pane.frame,L['Switch condition'],180);pane.switchLabel:GetFontString():SetFontObject('GameFontNormal');pane.switchLabel.art:SetAlpha(.1);addon:AlignWorkbenchTextLeft(pane.switchLabel,0)
