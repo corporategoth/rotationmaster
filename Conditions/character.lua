@@ -141,7 +141,7 @@ addon:RegisterCondition("CLASS_GROUP", {
         end
         parent:AddChild(class)
 
-        local raid = AceGUI:Create("CheckBox")
+        local raid = addon:CreateConditionCheckBox()
         raid:SetWidth(100)
         raid:SetLabel(L["Raid"])
         raid:SetValue(value.raid and true or false)
@@ -458,7 +458,7 @@ addon:RegisterCondition("LEVEL", {
                 function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
 
-        local nr_button = AceGUI:Create("CheckBox")
+        local nr_button = addon:CreateConditionCheckBox()
         nr_button:SetLabel(L["Relative"])
         nr_button:SetValue(value.relative or false)
         nr_button:SetCallback("OnValueChanged", function(_, _, val)
@@ -500,7 +500,7 @@ addon:RegisterCondition("GROUP", {
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
-        local raid = AceGUI:Create("CheckBox")
+        local raid = addon:CreateConditionCheckBox()
         raid:SetWidth(100)
         raid:SetLabel(L["Raid"])
         raid:SetValue(value.raid and true or false)
@@ -662,7 +662,7 @@ addon:RegisterCondition("IMMUNE", {
         end
         parent:AddChild(school)
 
-        local partial = AceGUI:Create("CheckBox")
+        local partial = addon:CreateConditionCheckBox()
         partial:SetWidth(100)
         partial:SetLabel(L["Partial"])
         partial:SetValue(value.partial and true or false)

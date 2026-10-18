@@ -182,7 +182,7 @@ addon:RegisterCondition("ITEM", {
                 function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(icon_group)
 
-        local notcarring = AceGUI:Create("CheckBox")
+        local notcarring = addon:CreateConditionCheckBox()
         notcarring:SetWidth(200)
         notcarring:SetLabel(L["Check If Not Carrying"])
         notcarring:SetValue(value.notcarrying)
@@ -232,7 +232,7 @@ addon:RegisterCondition("ITEM_RANGE", {
                 function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(icon_group)
 
-        local notcarring = AceGUI:Create("CheckBox")
+        local notcarring = addon:CreateConditionCheckBox()
         notcarring:SetWidth(200)
         notcarring:SetLabel(L["Check If Not Carrying"])
         notcarring:SetValue(value.notcarrying)
@@ -295,7 +295,7 @@ addon:RegisterCondition("ITEM_COOLDOWN", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
 
-        local notcarring = AceGUI:Create("CheckBox")
+        local notcarring = addon:CreateConditionCheckBox()
         notcarring:SetWidth(200)
         notcarring:SetLabel(L["Check If Not Carrying"])
         notcarring:SetValue(value.notcarrying)

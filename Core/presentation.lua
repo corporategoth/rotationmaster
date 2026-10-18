@@ -13,6 +13,11 @@ function addon:SpellLabel(spell)
     if type(spell)=="number" then return string.format(L["Unknown spell (%s)"],spell) end
     return L["<spell>"]
 end
+function addon:AuraSpellLabel(value)
+    local label=self:SpellLabel(value.spell)
+    if type(value.spell)=='number' and value.anyrank==true then return string.format(L['%s (any rank)'],label) end
+    return label
+end
 local function supportedLink(link)
     return type(link)=="string" and link:match("^spell:%d+")~=nil
 end

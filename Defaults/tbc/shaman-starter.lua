@@ -8,7 +8,7 @@ local function peaceful() return notCondition({type="COMBAT",unit="player"}) end
 local function attackable() return {type="ATTACKABLE",unit="target"} end
 
 assert(addon:RegisterDefaultRotation({
-    format="RotationMaster",schemaVersion=1,id="rm.tbc.shaman.starter",revision=6,
+    format="RotationMaster",schemaVersion=1,id="rm.tbc.shaman.starter",revision=7,
     nameKey="Default.TBC.Shaman.Starter.Name",descriptionKey="Default.TBC.Shaman.Starter.Description",
     applicability={families={"tbc"},actionContext="player",class="SHAMAN",minLevel=1,maxLevel=19},
     tags={"leveling","solo","starter","preview"},
@@ -36,10 +36,7 @@ assert(addon:RegisterDefaultRotation({
             {id="shaman-starter-imbue",type="spell",action=8017,ranked=false,
                 conditions=notCondition({type="WEAPON",offhand=false})},
             {id="shaman-starter-shield",type="spell",action=324,ranked=false,
-                conditions=notCondition({type="OR",value={
-                    {type="BUFF",unit="player",spell=324,ownbuff=true},
-                    {type="BUFF",unit="player",spell=325,ownbuff=true},
-                }})},
+                conditions=notCondition({type="BUFF",unit="player",spell=324,ownbuff=true,anyrank=true})},
 
         },
     },

@@ -13,7 +13,7 @@ local function fixture()
     e.UnitIsDead=function() return state.dead end
     e.UnitHasVehicleUI=function() return false end
     e.IsSpellKnown=function(id) return state.known[id]==true end
-    e.C_Spell={IsSpellInRange=function(id) if id==6603 then return state.near end;return true end,
+    e.C_Spell={GetSpellInfo=function(id) return {name=(id==324 or id==325) and 'Localized shield' or 'Spell '..id,spellID=id} end,IsSpellInRange=function(id) if id==6603 then return state.near end;return true end,
         SpellHasRange=function(id) return id~=324 and id~=8017 end,
         IsSpellUsable=function() return true,false end,
         GetSpellCooldown=function() return {startTime=0,duration=0,isEnabled=true,modRate=1} end,
@@ -46,6 +46,10 @@ test('shipped starter pack is sourced, localized, valid and scoped to early TBC 
     for _,step in ipairs(row.envelope.body.rotation) do assert(a:validateCondition(step.conditions,0)) end
     state.level=20
     assert(not a:ListDefaultRotations(0)[1].eligible)
+end)
+test('starter upkeep uses an explicit portable rank family rather than enumerating shield ranks',function()
+    local f=fixture();local row=f.addon:ListDefaultRotations(0)[1];local predicate=row.envelope.body.cooldowns[2].conditions.value
+    assert(predicate.type=='BUFF' and predicate.spell==324 and predicate.anyrank==true and row.envelope.revision==7)
 end)
 test('upkeep stays optional and cannot block the sequential damage recommendation',function()
     local f,state=fixture();local a=f.addon

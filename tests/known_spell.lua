@@ -66,10 +66,10 @@ test('the spell-search editor keeps canonical IDs while presenting names and nat
     top:SetUserData('funcs',{print=function(_,root,spec) return f.addon:printCondition(root,spec) end})
     f.addon.conditionDefinitions.SPELL_KNOWN.widget(parent,0,v)
     local edit,preview,pet=parent.children[1],parent.children[2],parent.children[3]
-    assert(edit.kind=='EditBox' and edit.text=='Lightning Bolt' and pet.value==false)
+    assert(edit.kind=='EditBox' and edit.text=='Lightning Bolt' and pet:GetValue()==false)
     assert(preview.text:find('|Hspell:403',1,true))
     edit.callbacks.OnEnterPressed(edit,nil,'Earth Shield')
-    pet.callbacks.OnValueChanged(pet,nil,true)
+    pet.button:Click()
     assert(v.spell==974 and v.pet==true and top.statusText:find('974',1,true))
     edit.callbacks.OnEnterPressed(edit,nil,'invalid')
     assert(v.spell==nil and not f.addon:validateCondition(v,0))

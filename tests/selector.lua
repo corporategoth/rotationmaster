@@ -20,4 +20,14 @@ test('non-inline selectors take search focus while inline suggestions leave it a
     menu:Open(anchor,{{value=1,text='One'}},nil,function() end,function() return true end);assert(menu.search.focused,'menu did not focus its search');menu:Hide()
     menu:Open(anchor,{{value=1,text='One'}},nil,function() end,function() return true end,true);assert(not menu.search.focused and anchor.focused,'inline suggestions stole reference focus')
 end)
+test('condition checkboxes use flat native controls with value callbacks and readonly lifecycle guards',function()
+    local f=fixture();local a=f.addon;assert(a.CreateConditionCheckBox,'native checkbox helper missing');local w=a:CreateConditionCheckBox();local calls=0
+    w:SetLabel('Any spell rank');w:SetValue(false);w:SetCallback('OnValueChanged',function(_,_,value) calls=calls+1;assert(value==true) end)
+    assert(w.type=='RM-CheckBox');w.button:Click();assert(w:GetValue()==true and calls==1)
+    w:SetDisabled(true);w.button:Click();assert(calls==1);w:SetDisabled(false)
+    local old=w.button.scripts.OnClick;w:OnRelease();old();assert(calls==1,'released checkbox fired its callback')
+end)
+test('aura checkbox options use the shared native checkbox factory',function()
+    for _,name in ipairs({'buffs','debuffs','character','common','item','known_spell','spatial','weapon'}) do local h=assert(io.open('Conditions/'..name..'.lua'));local source=h:read('*a');h:close();assert(not source:find('AceGUI:Create("CheckBox")',1,true),name..' retains old checkbox controls') end
+end)
 finish()

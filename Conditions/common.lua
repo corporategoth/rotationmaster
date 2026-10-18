@@ -100,7 +100,7 @@ function addon:Widget_SpellWidget(spec, editbox, value, nametoid, isvalid, updat
         end
         ranked:AddChild(nr_label)
 
-        local nr_button = AceGUI:Create("CheckBox")
+        local nr_button = addon:CreateConditionCheckBox()
         nr_button:SetLabel(nil)
         nr_button:SetValue(value.ranked or false)
         nr_button:SetCallback("OnValueChanged", function(_, _, val)
@@ -142,7 +142,7 @@ function addon:Widget_SpellWidget(spec, editbox, value, nametoid, isvalid, updat
     return spell_group
 end
 
-function addon:Widget_SpellNameWidget(spec, editbox, value, isvalid, update)
+function addon:Widget_SpellNameWidget(spec, editbox, value, isvalid, update, storeId)
     local spell_group = AceGUI:Create("SimpleGroup")
     spell_group:SetLayout("Table")
     spell_group:SetUserData("table", { columns = { 44, 1 } })
@@ -153,15 +153,15 @@ function addon:Widget_SpellNameWidget(spec, editbox, value, isvalid, update)
     spellIcon:SetWidth(44)
     spellIcon:SetHeight(44)
     if value.spell then
-        spellIcon:SetText(SpellData:GetSpellId(value.spell))
+        spellIcon:SetText(initialSpell)
     end
     spellIcon:SetCallback("OnEnterPressed", function(_, _, v)
         v = tonumber(v)
         if v and isvalid(v) then
-            local name = SpellData:SpellName(v, true)
-            value.spell = name
+            local name = SpellData:SpellName(v, not storeId)
+            value.spell = storeId and v or name
             spellIcon:SetText(v)
-            spell:SetText(name)
+            spell:SetText(storeId and v or name)
             if GameTooltip:IsOwned(spellIcon.frame) and GameTooltip:IsVisible() then
                 GameTooltip:SetHyperlink("spell:" .. v)
             end
@@ -193,15 +193,15 @@ function addon:Widget_SpellNameWidget(spec, editbox, value, isvalid, update)
     spell:SetFullWidth(true)
     spell:SetLabel(L["Spell"])
     spell:SetText(value.spell)
-    spell:SetUserData("norank", not value.ranked)
+    spell:SetUserData("norank", not (storeId or value.ranked))
     spell:SetUserData("spec", spec)
     spell:SetCallback("OnEnterPressed", function(_, _, v)
         local spellid = SpellData:ResolveSelection(v)
-        local name = SpellData:SpellName(spellid, true)
+        local name = SpellData:SpellName(spellid, not storeId)
 
         if isvalid(spellid) then
-            value.spell = name
-            spell:SetText(name)
+            value.spell = storeId and spellid or name
+            spell:SetText(storeId and spellid or name)
             spellIcon:SetText(spellid)
         else
             value.spell = nil
@@ -214,6 +214,12 @@ function addon:Widget_SpellNameWidget(spec, editbox, value, isvalid, update)
     spell_group:AddChild(spell)
 
     return spell_group
+end
+
+function addon:Widget_AuraRankWidget(value,update)
+    local check=self:CreateConditionCheckBox();check:SetLabel(L['Match all ranks']);check:SetWidth(170);check:SetValue(value.anyrank==true);check:SetDisabled(value.disabled)
+    check:SetCallback('OnValueChanged',function(_,_,enabled) value.anyrank=enabled and true or nil;update() end)
+    return check
 end
 
 function addon:Widget_ItemWidget(top, editbox, value, isvalid, update)

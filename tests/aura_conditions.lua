@@ -141,4 +141,47 @@ test('the final allowed aura can provide a readable presence match',function()
     end
     assert(f.addon:evaluateCondition(value('BUFF')) and calls==256)
 end)
+test('numeric aura families opt into readable localized names while exact IDs stay exact',function()
+    local f=fixture(true);f.load('Platform/spells.lua');local reads=0
+    f.env.C_Spell={GetSpellInfo=function(id) reads=reads+1;assert(id==324);return {name='Bouclier de foudre',spellID=id} end}
+    buff(f,{{name='Other',spellId=777},{name='Bouclier de foudre',spellId=325,sourceUnit='player',applications=2,duration=60,expirationTime=103}})
+    assert(not f.addon:evaluateCondition(value('BUFF',{spell=324})))
+    for _,tag in ipairs({'BUFF','BUFF_REMAIN','BUFF_STACKS'}) do
+        reads=0;assert(f.addon:evaluateCondition(value(tag,{spell=324,anyrank=true,ownbuff=true})),tag)
+        assert(reads==1,'family metadata resolved repeatedly during one aura scan')
+    end
+    assert(not f.addon:evaluateCondition(value('BUFF',{spell=324,anyrank=true,ownbuff=true,unit='target'})))
+    buff(f,{{name='Bouclier de foudre',spellId=325,sourceUnit='party1'}})
+    assert(not f.addon:evaluateCondition(value('BUFF',{spell=324,anyrank=true,ownbuff=true})))
+end)
+test('aura-family uncertainty cannot become absence under negation',function()
+    local f=fixture(true);f.load('Platform/spells.lua');local opaque={}
+    f.env.canaccessvalue=function(v) return not rawequal(v,opaque) end
+    f.env.C_Spell={GetSpellInfo=function() return nil end}
+    buff(f,{{name='Shield',spellId=325}})
+    local condition={type='NOT',value=value('BUFF',{spell=324,anyrank=true})}
+    assert(f.addon:evaluateConditionResult(condition).status=='unavailable','missing family metadata became absence')
+    f.env.C_Spell.GetSpellInfo=function() return {name='Shield',spellID=324} end
+    buff(f,{{name=opaque,spellId=325}});assert(f.addon:evaluateConditionResult(condition).status=='unavailable')
+    buff(f,{{spellId=324}});assert(f.addon:evaluateCondition(condition.value),'exact identity unnecessarily required a readable name')
+    buff(f,{});assert(f.addon:evaluateCondition(condition),'an observed empty aura list is actual absence')
+end)
+test('debuff rank families share the same presence time and stack rules',function()
+    local f=fixture(true);f.load('Platform/spells.lua');f.env.UnitExists=function() return true end
+    f.env.C_Spell={GetSpellInfo=function() return {name='Corruption',spellID=172} end}
+    f.env.C_UnitAuras.GetAuraDataByIndex=function(_,index,filter) assert(filter=='HARMFUL');if index==1 then return {name='Corruption',spellId=6222,sourceUnit='player',applications=2,duration=60,expirationTime=103} end end
+    for _,tag in ipairs({'DEBUFF','DEBUFF_REMAIN','DEBUFF_STACKS'}) do assert(f.addon:evaluateCondition(value(tag,{unit='target',spell=172,anyrank=true,owndebuff=true})),tag) end
+end)
+test('all six spell aura schemas accept the rank option and summaries expose it',function()
+    local f=fixture(true);f.load('Platform/spells.lua');local data=dofile('tests/fixtures/rotation_data.lua')()
+    f.env.C_Spell={GetSpellInfo=function(id) return {name='Shield',spellID=id} end}
+    for _,tag in ipairs({'BUFF','BUFF_REMAIN','BUFF_STACKS','DEBUFF','DEBUFF_REMAIN','DEBUFF_STACKS'}) do
+        local condition=value(tag,{spell=324,anyrank=true})
+        if tag=='BUFF' or tag=='DEBUFF' then condition.operator=nil;condition.value=nil end
+        local validation=data.ValidateBody({switch=condition,rotation={},cooldowns={}},{conditions=f.addon.conditionDefinitions})
+        assert(validation.valid and validation.supported,'rank option missing from '..tag)
+        assert(f.addon.conditionDefinitions[tag].print(0,condition):find('any rank',1,true),'rank semantics absent from summary')
+        condition.anyrank='yes';assert(not data.ValidateBody({switch=condition,rotation={},cooldowns={}},{conditions=f.addon.conditionDefinitions}).valid)
+    end
+end)
 finish()

@@ -108,4 +108,28 @@ test('releasing icons restores exact nonnil original scripts without stacking di
     base.frame:SetScript('OnClick',original);ace:Release(base)
     for _=1,5 do local w=f.addon:CreateSpellActionIcon('spell',403);ace:Release(w);assert(w.frame:GetScript('OnClick')==original) end
 end)
+test('aura spell picker preserves numeric identities so rank matching stays an explicit choice',function()
+    local f=fixture(true);local a=f.addon;dofile('tests/fixtures/spell_editbox.lua')(f);f.load('Conditions/common.lua')
+    local value={spell=403,anyrank=false};local group=a:Widget_SpellNameWidget(0,'Spell_EditBox',value,function(id) return type(id)=='number' end,function() end,true)
+    local icon=group.children[1];icon.callbacks.OnEnterPressed(nil,nil,'529')
+    assert(value.spell==529,'picker silently changed an exact numeric aura to a name-family query')
+    local input=group.children[2];input.callbacks.OnEnterPressed(nil,nil,'403');assert(value.spell==403)
+end)
+test('reconfirming aura selection through native Enter retains identity after text and icon choices',function()
+    local f=fixture(true);local a=f.addon;dofile('tests/fixtures/spell_editbox.lua')(f);f.load('Conditions/common.lua')
+    f.env.C_Spell.GetSpellInfo=function(id) if id=='Lightning Bolt' then id=529 end;if id==403 or id==529 then return {name='Lightning Bolt',spellID=id,iconID=id} end end
+    local value={spell=403};local group=a:Widget_SpellNameWidget(0,'Spell_EditBox',value,function(id) return type(id)=='number' end,function() end,true)
+    local icon,input=group.children[1],group.children[2]
+    input.editbox:SetFocus();input.editbox:SetText('403');input.editbox.scripts.OnEnterPressed(input.editbox);assert(value.spell==403)
+    input.editbox:SetFocus();input.editbox.scripts.OnEnterPressed(input.editbox);assert(value.spell==403,'unchanged display resolved to another rank')
+    icon.callbacks.OnEnterPressed(nil,nil,'403');input.editbox:SetFocus();input.editbox.scripts.OnEnterPressed(input.editbox);assert(value.spell==403,'icon choice lost retained numeric identity')
+end)
+test('reopening an exact lower aura rank keeps icon and tooltip aligned with the saved identity',function()
+    local f=fixture(true);local a=f.addon;dofile('tests/fixtures/spell_editbox.lua')(f);f.load('Conditions/common.lua')
+    f.env.C_Spell.GetSpellInfo=function(id) if id=='Lightning Bolt' then id=529 end;if id==403 or id==529 then return {name='Lightning Bolt',spellID=id,subtext=id==403 and 'Rank 1' or 'Rank 2',iconID=id} end end
+    local value={spell=403};local group=a:Widget_SpellNameWidget(0,'Spell_EditBox',value,function(id) return type(id)=='number' end,function() end,true)
+    local icon,input=group.children[1],group.children[2]
+    assert(input:GetText():find('Rank 1',1,true));assert(icon:GetUserData('spell')==403,'icon canonicalized the saved rank')
+    icon.callbacks.OnEnter(icon);assert(f.tooltip=='spell:403' and value.spell==403)
+end)
 finish()

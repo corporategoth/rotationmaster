@@ -121,3 +121,7 @@ function addon.layout_condition_unitwidget_help(frame)
     group:AddChild(CreateText(color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. " - " ..
         "The unit this condition uses as the target of comparison."))
 end
+function addon.layout_condition_aurarank_help(frame)
+    frame:AddChild(Gap())
+    frame:AddChild(CreateText(color.BLIZ_YELLOW..L['Match all ranks']..color.RESET..' - '..L['For a numeric spell selection, also recognize auras with the same readable localized spell name. Exact IDs remain the default. Spell names already match by name. Unavailable metadata or restricted aura identity stays unavailable, including under NOT. Different spells sharing a name can match; use exact IDs when that distinction matters.']))
+end

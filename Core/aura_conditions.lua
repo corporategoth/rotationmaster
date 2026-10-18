@@ -19,7 +19,7 @@ local function query(cache, unit, index, filter)
     return records[index].aura, records[index].reason
 end
 
-local function matchesAura(aura, value, mode)
+local function matchesAura(aura, value, mode, identity)
     local matches
     if mode == "stealable" then
         local stealable, why = platform:ReadAuraField(aura, "isStealable")
@@ -36,6 +36,21 @@ local function matchesAura(aura, value, mode)
         if why then return nil, why end
         if spell == nil then return nil, "aura-identity-unavailable" end
         matches = spell == value.spell
+        if not matches and field=='spellID' and value.anyrank==true then
+            if not identity.resolved then
+                identity.resolved=true
+                if type(platform.GetSpellInfo)~='function' then identity.reason='missing-api'
+                else
+                    local info,reason=platform:GetSpellInfo(value.spell)
+                    identity.name=info and info.name;identity.reason=reason
+                end
+            end
+            if not identity.name then return nil,identity.reason or 'spell-data-unavailable' end
+            local name,reason=platform:ReadAuraField(aura,'name')
+            if reason then return nil,reason end
+            if name==nil then return nil,'aura-identity-unavailable' end
+            matches=name==identity.name
+        end
     end
     if matches and (value.ownbuff or value.owndebuff) then
         local source, why = platform:ReadAuraField(aura, "sourceUnit")
@@ -55,7 +70,7 @@ function addon:EvaluateAuraCondition(value, cache, start, filter, mode)
 
     if mode == "dispel" and value.dispellable then filter = "HARMFUL|RAID" end
     local existential = mode == "present" or mode == "dispel" or mode == "stealable"
-    local pendingReason
+    local pendingReason;local identity={}
     for index = 1, 256 do
         local aura, reason = query(cache, value.unit, index, filter)
         if reason then return nil, reason end
@@ -63,7 +78,7 @@ function addon:EvaluateAuraCondition(value, cache, start, filter, mode)
             if pendingReason then return nil, pendingReason end
             return false
         end
-        local matches, why = matchesAura(aura, value, mode)
+        local matches, why = matchesAura(aura, value, mode, identity)
         if why then
             if not existential then return nil, why end
             pendingReason = pendingReason or why

@@ -96,7 +96,7 @@ addon.proximity_widgets = function(top, root, funcs, parent, spec, value)
     end)
     parent:AddChild(distance)
 
-    local samegroup = AceGUI:Create("CheckBox")
+    local samegroup = addon:CreateConditionCheckBox()
     samegroup:SetWidth(100)
     samegroup:SetLabel(L["Same Group"])
     samegroup:SetValue(value.samegroup and true or false)
@@ -106,7 +106,7 @@ addon.proximity_widgets = function(top, root, funcs, parent, spec, value)
     end)
     parent:AddChild(samegroup)
 
-    local includepets = AceGUI:Create("CheckBox")
+    local includepets = addon:CreateConditionCheckBox()
     includepets:SetWidth(100)
     includepets:SetLabel(L["Include Pets"])
     includepets:SetValue(value.includepets and true or false)
@@ -261,7 +261,7 @@ addon:RegisterCondition("DISTANCE_COUNT", {
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
-        local enemy = AceGUI:Create("CheckBox")
+        local enemy = addon:CreateConditionCheckBox()
         enemy:SetWidth(100)
         enemy:SetLabel(L["Enemy"])
         if (value.enemy ~= nil) then
@@ -331,7 +331,7 @@ addon:RegisterCondition("ZONE", {
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
-        local subzone = AceGUI:Create("CheckBox")
+        local subzone = addon:CreateConditionCheckBox()
         subzone:SetWidth(100)
         subzone:SetLabel(L["SubZone"])
         subzone:SetValue(value.subzone and true or false)

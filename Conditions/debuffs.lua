@@ -8,7 +8,7 @@ local helpers = addon.help_funcs
 addon:RegisterCondition("DEBUFF", {
     description = L["Debuff Present"],
     icon = "Interface\\Icons\\spell_shadow_curseoftounges",
-    fields = { unit = "string", spell = {"string", "number"}, owndebuff = "boolean" },
+    fields = { unit = "string", spell = {"string", "number"}, anyrank = "boolean", owndebuff = "boolean" },
     valid = function(_, value)
         return (value.unit ~= nil and addon.isin(addon.units, value.unit) and value.spell ~= nil)
     end,
@@ -18,7 +18,7 @@ addon:RegisterCondition("DEBUFF", {
     print = function(_, value)
         return string.format(addon.playerize(value.unit, L["%s have %s"], L["%s has %s"]),
             addon.nullable(addon.units[value.unit], L["<unit>"]),
-            string.format(value.owndebuff and L["your own %s"] or "%s", (value.spell and addon:SpellLabel(value.spell) or L["<debuff>"])))
+            string.format(value.owndebuff and L["your own %s"] or "%s", (value.spell and addon:AuraSpellLabel(value) or L["<debuff>"])))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -29,7 +29,7 @@ addon:RegisterCondition("DEBUFF", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
 
-        local owndebuff = AceGUI:Create("CheckBox")
+        local owndebuff = addon:CreateConditionCheckBox()
         owndebuff:SetWidth(100)
         owndebuff:SetLabel(L["Own Debuff"])
         owndebuff:SetValue(value.owndebuff and true or false)
@@ -41,8 +41,9 @@ addon:RegisterCondition("DEBUFF", {
 
         local spell_group = addon:Widget_SpellNameWidget(spec, "Spell_EditBox", value,
             function() return true end,
-            function() top:SetStatusText(funcs:print(root, spec)) end)
+            function() top:SetStatusText(funcs:print(root, spec)) end,true)
         parent:AddChild(spell_group)
+        parent:AddChild(addon:Widget_AuraRankWidget(value,function() top:SetStatusText(funcs:print(root,spec)) end))
     end,
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
@@ -51,13 +52,14 @@ addon:RegisterCondition("DEBUFF", {
                 L["Only consider auras that you applied yourself."]))
         frame:AddChild(helpers.Gap())
         addon.layout_condition_spellnamewidget_help(frame)
+        addon.layout_condition_aurarank_help(frame)
     end
 })
 
 addon:RegisterCondition("DEBUFF_REMAIN", {
     description = L["Debuff Time Remaining"],
     icon = "Interface\\Icons\\ability_creature_cursed_04",
-    fields = { unit = "string", spell = {"string", "number"}, owndebuff = "boolean", operator = "string", value = "number" },
+    fields = { unit = "string", spell = {"string", "number"}, anyrank = "boolean", owndebuff = "boolean", operator = "string", value = "number" },
     valid = function(_, value)
         return (value.unit ~= nil and addon.isin(addon.units, value.unit) and value.spell ~= nil and
                 value.operator ~= nil and addon.isin(addon.operators, value.operator) and
@@ -69,7 +71,7 @@ addon:RegisterCondition("DEBUFF_REMAIN", {
     print = function(_, value)
         return string.format(addon.playerize(value.unit, L["%s have %s where %s"], L["%s have %s where %s"]),
             addon.nullable(addon.units[value.unit], L["<unit>"]),
-            string.format(value.owndebuff and L["your own %s"] or "%s", (value.spell and addon:SpellLabel(value.spell) or L["<debuff>"])),
+            string.format(value.owndebuff and L["your own %s"] or "%s", (value.spell and addon:AuraSpellLabel(value) or L["<debuff>"])),
             addon.compareString(value.operator, L["the remaining time"], string.format(L["%s seconds"], addon.nullable(value.value))))
     end,
     widget = function(parent, spec, value)
@@ -81,7 +83,7 @@ addon:RegisterCondition("DEBUFF_REMAIN", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
 
-        local owndebuff = AceGUI:Create("CheckBox")
+        local owndebuff = addon:CreateConditionCheckBox()
         owndebuff:SetWidth(100)
         owndebuff:SetLabel(L["Own Debuff"])
         owndebuff:SetValue(value.owndebuff and true or false)
@@ -93,8 +95,9 @@ addon:RegisterCondition("DEBUFF_REMAIN", {
 
         local spell_group = addon:Widget_SpellNameWidget(spec, "Spell_EditBox", value,
             function() return true end,
-            function() top:SetStatusText(funcs:print(root, spec)) end)
+            function() top:SetStatusText(funcs:print(root, spec)) end,true)
         parent:AddChild(spell_group)
+        parent:AddChild(addon:Widget_AuraRankWidget(value,function() top:SetStatusText(funcs:print(root,spec)) end))
 
         local operator_group = addon:Widget_OperatorWidget(value, L["Seconds"],
             function() top:SetStatusText(funcs:print(root, spec)) end)
@@ -107,6 +110,7 @@ addon:RegisterCondition("DEBUFF_REMAIN", {
                 L["Only consider auras that you applied yourself."]))
         frame:AddChild(helpers.Gap())
         addon.layout_condition_spellnamewidget_help(frame)
+        addon.layout_condition_aurarank_help(frame)
         frame:AddChild(helpers.Gap())
         addon.layout_condition_operatorwidget_help(frame, L["Debuff Time Remaining"], L["Seconds"],
             L["Remaining aura time is measured in seconds. Permanent auras have no expiration and do not satisfy a finite refresh threshold. An absent aura does not satisfy this condition. Restricted or unknown timing is unavailable, including under NOT."])
@@ -116,7 +120,7 @@ addon:RegisterCondition("DEBUFF_REMAIN", {
 addon:RegisterCondition("DEBUFF_STACKS", {
     description = L["Debuff Stacks"],
     icon = "Interface\\Icons\\Inv_misc_coin_06",
-    fields = { unit = "string", spell = {"string", "number"}, owndebuff = "boolean", operator = "string", value = "number" },
+    fields = { unit = "string", spell = {"string", "number"}, anyrank = "boolean", owndebuff = "boolean", operator = "string", value = "number" },
     valid = function(_, value)
         return (value.unit ~= nil and addon.isin(addon.units, value.unit) and value.spell ~= nil and
                 value.operator ~= nil and addon.isin(addon.operators, value.operator) and
@@ -128,7 +132,7 @@ addon:RegisterCondition("DEBUFF_STACKS", {
     print = function(_, value)
         return addon.nullable(addon.unitsPossessive[value.unit], L["<unit>"]) .. " " ..
                 addon.compareString(value.operator, string.format(L["stacks of %s"],
-                string.format(value.owndebuff and L["your own %s"] or "%s", (value.spell and addon:SpellLabel(value.spell) or L["<debuff>"]))),
+                string.format(value.owndebuff and L["your own %s"] or "%s", (value.spell and addon:AuraSpellLabel(value) or L["<debuff>"]))),
                 addon.nullable(value.value))
     end,
     widget = function(parent, spec, value)
@@ -140,7 +144,7 @@ addon:RegisterCondition("DEBUFF_STACKS", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
 
-        local owndebuff = AceGUI:Create("CheckBox")
+        local owndebuff = addon:CreateConditionCheckBox()
         owndebuff:SetWidth(100)
         owndebuff:SetLabel(L["Own Debuff"])
         owndebuff:SetValue(value.owndebuff and true or false)
@@ -152,8 +156,9 @@ addon:RegisterCondition("DEBUFF_STACKS", {
 
         local spell_group = addon:Widget_SpellNameWidget(spec, "Spell_EditBox", value,
             function() return true end,
-            function() top:SetStatusText(funcs:print(root, spec)) end)
+            function() top:SetStatusText(funcs:print(root, spec)) end,true)
         parent:AddChild(spell_group)
+        parent:AddChild(addon:Widget_AuraRankWidget(value,function() top:SetStatusText(funcs:print(root,spec)) end))
 
         local operator_group = addon:Widget_OperatorWidget(value, L["Stacks"],
             function() top:SetStatusText(funcs:print(root, spec)) end)
@@ -166,6 +171,7 @@ addon:RegisterCondition("DEBUFF_STACKS", {
                 L["Only consider auras that you applied yourself."]))
         frame:AddChild(helpers.Gap())
         addon.layout_condition_spellnamewidget_help(frame)
+        addon.layout_condition_aurarank_help(frame)
         frame:AddChild(helpers.Gap())
         addon.layout_condition_operatorwidget_help(frame, L["Debuff Stacks"], L["Stacks"],
             L["Compare the application count of a matching aura, including charges such as Earth Shield. An absent aura does not satisfy this condition; an unreadable count is unavailable."])
@@ -210,7 +216,7 @@ addon:RegisterCondition("DISPELLABLE", {
         end
         parent:AddChild(debufftype)
 
-        local owndebuff = AceGUI:Create("CheckBox")
+        local owndebuff = addon:CreateConditionCheckBox()
         owndebuff:SetWidth(100)
         owndebuff:SetLabel(L["Own Debuff"])
         owndebuff:SetValue(value.owndebuff and true or false)
@@ -220,7 +226,7 @@ addon:RegisterCondition("DISPELLABLE", {
         end)
         parent:AddChild(owndebuff)
 
-        local dispellable = AceGUI:Create("CheckBox")
+        local dispellable = addon:CreateConditionCheckBox()
         dispellable:SetWidth(100)
         dispellable:SetLabel(L["Dispellable"])
         dispellable:SetValue(value.dispellable and true or false)

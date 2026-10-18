@@ -1527,3 +1527,8 @@ L["Switch priority must be a whole number between -100000 and 100000."] = true
 L["Edit the description, tags, switch priority, author, realm, email, website and version. Source citations remain separate from your attribution. Use changes updates the rotation draft; Apply the rotation to save it. Cancel or Escape restores this dialog’s opening values."] = true
 L["Higher priority wins within custom or packaged rotations. Custom rotations and a valid saved fallback take precedence over packaged defaults. Equal priorities use name, then identity. Blank means zero."] = true
 L["Invalid switch priority for %s:%s; explicit repair resets it to zero."] = true
+
+-- Rank-aware aura families.
+L["Match all ranks"] = true
+L["%s (any rank)"] = true
+L["For a numeric spell selection, also recognize auras with the same readable localized spell name. Exact IDs remain the default. Spell names already match by name. Unavailable metadata or restricted aura identity stays unavailable, including under NOT. Different spells sharing a name can match; use exact IDs when that distinction matters."] = true

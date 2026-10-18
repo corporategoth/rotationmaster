@@ -55,7 +55,7 @@ addon:RegisterCondition("SPELL_KNOWN", {
         end)
         parent:AddChild(spell)
         preview=addon:CreateSpellLabel(parent,value.spell)
-        local pet = AceGUI:Create("CheckBox")
+        local pet = addon:CreateConditionCheckBox()
         pet:SetLabel(L["Pet spell"])
         pet:SetValue(value.pet == true)
         pet:SetDisabled(value.disabled)

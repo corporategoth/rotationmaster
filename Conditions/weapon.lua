@@ -26,7 +26,7 @@ if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
             local root = top:GetUserData("root")
             local funcs = top:GetUserData("funcs")
 
-            local offhand = AceGUI:Create("CheckBox")
+            local offhand = addon:CreateConditionCheckBox()
             offhand:SetWidth(100)
             offhand:SetLabel(L["Off Hand"])
             offhand:SetValue(value.offhand and true or false)
@@ -68,7 +68,7 @@ if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
             local root = top:GetUserData("root")
             local funcs = top:GetUserData("funcs")
 
-            local offhand = AceGUI:Create("CheckBox")
+            local offhand = addon:CreateConditionCheckBox()
             offhand:SetWidth(100)
             offhand:SetLabel(L["Off Hand"])
             offhand:SetValue(value.offhand and true or false)
@@ -119,7 +119,7 @@ if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
             local root = top:GetUserData("root")
             local funcs = top:GetUserData("funcs")
 
-            local offhand = AceGUI:Create("CheckBox")
+            local offhand = addon:CreateConditionCheckBox()
             offhand:SetWidth(100)
             offhand:SetLabel(L["Off Hand"])
             offhand:SetValue(value.offhand and true or false)
@@ -168,7 +168,7 @@ addon:RegisterCondition("SWING_TIME", {
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
-        local offhand = AceGUI:Create("CheckBox")
+        local offhand = addon:CreateConditionCheckBox()
         offhand:SetWidth(100)
         offhand:SetLabel(L["Off Hand"])
         offhand:SetValue(value.offhand and true or false)
@@ -219,7 +219,7 @@ addon:RegisterCondition("SWING_TIME_REMAIN", {
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
-        local offhand = AceGUI:Create("CheckBox")
+        local offhand = addon:CreateConditionCheckBox()
         offhand:SetWidth(100)
         offhand:SetLabel(L["Off Hand"])
         offhand:SetValue(value.offhand and true or false)
