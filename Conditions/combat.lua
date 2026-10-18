@@ -71,7 +71,7 @@ addon:RegisterCondition("PET_NAME", {
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
-        local petname = AceGUI:Create("EditBox")
+        local petname = addon:CreateConditionEditBox()
         petname:SetCallback("OnEnterPressed", function(_, _, v)
             value.value = v
             top:SetStatusText(funcs:print(root, spec))

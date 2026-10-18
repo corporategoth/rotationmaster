@@ -15,6 +15,17 @@ local function parentPath(path)
     if type(result[#result])=="number" then table.remove(result) end
     table.remove(result);return result
 end
+local function pendingFields(widget,commit)
+    if commit then
+        if widget.CommitPending and not widget:CommitPending() then return nil end
+    elseif widget.IsPending and widget:IsPending() then return true end
+    for _,child in ipairs(widget.children or {}) do
+        local result=pendingFields(child,commit)
+        if commit and not result then return nil end
+        if not commit and result then return true end
+    end
+    return commit==true
+end
 local function caption(node)
     if node.type=="AND" then return L["All (AND)"] end
     if node.type=="OR" then return L["Any (OR)"] end
@@ -74,6 +85,7 @@ local function createShell()
     function shell:SyncWorking()
         if not self.active then return nil end
         if self.active.readOnly then return true end
+        for _,card in ipairs(self.canvas.cards) do if card.pane and not pendingFields(card.pane,true) then self:Message('invalid-condition-fields');return nil end end
         local ok,why=self.active.session:Command("Replace",{},self.active.working)
         if not ok then self:Message(why) end;return ok
     end
@@ -84,9 +96,11 @@ local function createShell()
     function shell:UpdateHistoryButtons()
         if not self.active or not self.undo then return end
         local state=self.active.session:HistoryState()
-        if state.canUndo then self.undo:Enable() else self.undo:Disable() end
-        if state.canRedo then self.redo:Enable() else self.redo:Disable() end
-        if not self.active.readOnly and self.active.session:IsDirty() then self.apply:Enable() else self.apply:Disable() end
+        local pending=false
+        for _,card in ipairs(self.canvas.cards) do if card.pane and pendingFields(card.pane,false) then pending=true;break end end
+        if state.canUndo or not self.active.readOnly and pending then self.undo:Enable() else self.undo:Disable() end
+        if state.canRedo and not pending then self.redo:Enable() else self.redo:Disable() end
+        if not self.active.readOnly and (self.active.session:IsDirty() or pending) then self.apply:Enable() else self.apply:Disable() end
     end
     function shell:Scene()
         self.view.width=self.canvas.frame:GetWidth()-8;self.view.definitions=addon.conditionDefinitions
@@ -219,6 +233,11 @@ local function createShell()
                 addon:widgetCondition(pane,active.spec,node)
                 if self.view.help[model.key] and type(definition.help)=="function" then definition.help(pane) end
                 addon:configure_frame(pane)
+                local function bindPending(widget)
+                    if widget.CommitPending then widget:SetCallback('OnPendingChanged',function() if alive() then shell:UpdateHistoryButtons() end end) end
+                    for _,child in ipairs(widget.children or {}) do bindPending(child) end
+                end
+                bindPending(pane)
                 if active.readOnly then
                     local function disable(widget)
                         if widget.SetDisabled then widget:SetDisabled(true) end

@@ -86,7 +86,7 @@ addon.proximity_eval = function(value, cache, func)
 end
 
 addon.proximity_widgets = function(top, root, funcs, parent, spec, value)
-    local distance = AceGUI:Create("EditBox")
+    local distance = addon:CreateConditionEditBox()
     distance:SetWidth(100)
     distance:SetLabel(L["Distance"])
     distance:SetText(value.distance)
@@ -207,7 +207,7 @@ addon:RegisterCondition("DISTANCE", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
 
-        local distance = AceGUI:Create("EditBox")
+        local distance = addon:CreateConditionEditBox()
         distance:SetWidth(75)
         distance:SetLabel(L["Distance"])
         distance:SetText(value.value)
@@ -280,13 +280,9 @@ addon:RegisterCondition("DISTANCE_COUNT", {
                 function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
 
-        local distance = AceGUI:Create("Slider")
+        local distance = addon:CreateConditionSlider()
         distance:SetWidth(150)
         distance:SetLabel(L["Distance"])
-        if value.distance == nil then
-            value.distance = tonumber(C_CVar.GetCVar("nameplateMaxDistance"))
-        end
-
         distance:SetValue(value.distance)
         distance:SetSliderValues(1, tonumber(C_CVar.GetCVar("nameplateMaxDistance")), 1)
         distance:SetCallback("OnValueChanged", function(_, _, v)
@@ -341,7 +337,7 @@ addon:RegisterCondition("ZONE", {
         end)
         parent:AddChild(subzone)
 
-        local zone = AceGUI:Create("EditBox")
+        local zone = addon:CreateConditionEditBox()
         zone:SetLabel(L["Zone"])
         zone:SetCallback("OnEnterPressed", function(_, _, v)
             value.value = v

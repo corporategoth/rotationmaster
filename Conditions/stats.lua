@@ -544,7 +544,7 @@ addon:RegisterCondition("TT_HEALTH", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
 
-        local health = AceGUI:Create("EditBox")
+        local health = addon:CreateConditionEditBox()
         health:SetWidth(100)
         health:SetLabel(L["Health"])
         health:SetText(value.health)
@@ -664,7 +664,7 @@ addon:RegisterCondition("TT_HEALTHPCT", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
 
-        local health = AceGUI:Create("Slider")
+        local health = addon:CreateConditionSlider()
         health:SetLabel(L["Health"])
         if (value.value ~= nil) then
             health:SetValue(value.health)

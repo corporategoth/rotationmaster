@@ -447,7 +447,7 @@ function addon:Widget_OperatorWidget(value, name, update, op_field, val_field)
     end
     operator_group:AddChild(operator)
 
-    local edit = AceGUI:Create("EditBox")
+    local edit = addon:CreateConditionEditBox()
     edit:SetFullWidth(true)
     edit:SetLabel(name)
     edit:SetText(value[val_field or "value"])
@@ -480,7 +480,7 @@ function addon:Widget_OperatorPercentWidget(value, name, update, op_field, val_f
     end
     operator_group:AddChild(operator)
 
-    local edit = AceGUI:Create("Slider")
+    local edit = addon:CreateConditionSlider()
     edit:SetFullWidth(true)
     edit:SetLabel(name)
     if (value[val_field or "value"] ~= nil) then

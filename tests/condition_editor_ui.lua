@@ -6,7 +6,7 @@ local function fixture()
     local ace=f.libraries['AceGUI-3.0'];local original=ace.Create;local widgets={}
     ace.Create=function(self,kind)
         assert(kind~='Window' and kind~='Frame' and kind~='DisablableInlineGroup','old recursive editor was used')
-        local w=original(self,kind);w.frame=create('Frame');widgets[#widgets+1]=w
+        local w=original(self,kind);w.frame=w.frame or create('Frame');widgets[#widgets+1]=w
         function w:ReleaseChildren() self.children={} end
         function w:PauseLayout() end
         function w:ResumeLayout() end
@@ -37,6 +37,41 @@ local function fixture()
     a.UpdateAutoSwitch=function() end;a.SwitchRotation=function() end;a.configPaneGeneration=1
     return f,widgets
 end
+test('native pending numeric fields apply without Enter and invalid text cannot be applied',function()
+    local f=fixture();local a=f.addon
+    a:RegisterCondition('NATIVE_NUMBER',{description='Native number',fields={number='number'},valid=function(_,v) return type(v.number)=='number' end,
+        print=function() return 'Native number' end,widget=function(parent,_,value)
+            local w=a:CreateConditionSlider();w:SetValue(value.number);w:SetSliderValues(0,1,.01);w:SetIsPercent(true)
+            w:SetCallback('OnValueChanged',function(_,_,amount) value.number=amount;parent:GetUserData('top'):SetStatusText() end);parent:AddChild(w)
+        end})
+    local root={type='NATIVE_NUMBER',number=.5};local shell=a:EditCondition(1,0,root);shell.canvas.cards[1].header:Click()
+    local w=shell.canvas.cards[1].pane.children[1];assert(w.type=='RM-ConditionSlider')
+    w.editbox:SetText('25');w.editbox.scripts.OnTextChanged(w.editbox,true);assert(shell.apply:IsEnabled(),'typing did not enable Apply')
+    shell.apply:Click();assert(root.number==.25 and not shell.active,'Apply lost unfinished numeric input')
+    shell=a:EditCondition(1,0,root);shell.canvas.cards[1].header:Click();w=shell.canvas.cards[1].pane.children[1]
+    w.editbox:SetText('bad');w.editbox.scripts.OnTextChanged(w.editbox,true);shell.apply:Click()
+    assert(shell.active and root.number==.25,'invalid raw input silently applied the old value')
+    w.editbox.scripts.OnEscapePressed(w.editbox);shell.cancel:Click()
+end)
+test('opening a sibling field pane does not discard pending native numeric input',function()
+    local f=fixture();local a=f.addon
+    a:RegisterCondition('TEXT',{description='Text field',fields={text='string'},valid=function() return true end,print=function() return 'Text' end,
+        widget=function(parent,_,value) local w=a:CreateConditionEditBox();w:SetText(value.text);w:SetCallback('OnEnterPressed',function(_,_,text) value.text=text;parent:GetUserData('top'):SetStatusText() end);parent:AddChild(w) end})
+    local root={type='AND',value={{type='TEXT',text='First'},{type='TEXT',text='Second'}}}
+    local shell=a:EditCondition(1,0,root);shell.canvas.cards[2].header:Click()
+    local w=shell.canvas.cards[2].pane.children[1];w.editbox:SetText('Pending edit');w.editbox.scripts.OnTextChanged(w.editbox,true)
+    shell.canvas.cards[3].header:Click();shell.apply:Click()
+    assert(root.value[1].text=='Pending edit','a sibling render lost pending input')
+end)
+test('Undo consumes the first pending native edit and Redo restores its confirmed value',function()
+    local f=fixture();local a=f.addon
+    a:RegisterCondition('TEXT',{description='Text field',fields={text='string'},valid=function() return true end,print=function() return 'Text' end,
+        widget=function(parent,_,value) local w=a:CreateConditionEditBox();w:SetText(value.text);w:SetCallback('OnEnterPressed',function(_,_,text) value.text=text;parent:GetUserData('top'):SetStatusText() end);parent:AddChild(w) end})
+    local root={type='TEXT',text='Before'};local shell=a:EditCondition(1,0,root);shell.canvas.cards[1].header:Click()
+    local w=shell.canvas.cards[1].pane.children[1];w.editbox:SetText('After');w.editbox.scripts.OnTextChanged(w.editbox,true)
+    assert(shell.undo:IsEnabled(),'Undo ignored the first pending edit');shell.undo:Click();assert(shell.active.working.text=='Before' and root.text=='Before')
+    shell.redo:Click();assert(shell.active.working.text=='After' and root.text=='Before');shell.apply:Click();assert(root.text=='After')
+end)
 test('compact native tree edits one selected leaf in a detached draft and applies explicitly',function()
     local f,widgets=fixture();local a=f.addon;local closed=0
     local root={type='AND',value={{type='NUMBER',number=1},{type='NUMBER',number=2}}}

@@ -55,7 +55,7 @@ test('every proximity statistics editor renders and updates the shared distance 
         parent:SetUserData('top',top);top:SetUserData('root',value);top:SetUserData('funcs',{print=function() return 'Updated condition' end})
         f.addon.conditionDefinitions[tag].widget(parent,0,value)
         local distance
-        for _,child in ipairs(parent.children) do if child.kind=='EditBox' and child.label=='Distance' then distance=child end end
+        for _,child in ipairs(parent.children) do if child.type=='RM-ConditionEditBox' and child.label=='Distance' then distance=child end end
         assert(distance,'missing distance editor for '..tag)
         distance.callbacks.OnEnterPressed(nil,nil,'35');assert(value.distance==35 and top.statusText=='Updated condition')
     end

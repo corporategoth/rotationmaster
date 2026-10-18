@@ -64,6 +64,8 @@ Buff/debuff presence, time and stack predicates offer Match all ranks. Exact num
 
 Missing metadata and restricted identity are unavailable, including under NOT. An observed empty aura list remains ordinary absence. Different spells with the same localized name can match in family mode; use exact IDs when the distinction matters. Own-aura filtering and time/stack behavior are unchanged. Built-in condition checkboxes now use RM’s flat control through a shared layout adapter; AceGUI still supplies legacy field layout and custom-widget compatibility.
 
+Built-in condition text and numeric inputs also use RM's flat controls. Sliders have an editable number beside the track. Percent fields display 0–100% while storing the original 0–1 fraction; opening a field never rounds its saved value. Dragging or wheeling uses the configured step, while typed values can retain finer precision. Enter or leaving the field confirms an edit; Escape restores its last confirmed value. Apply, Undo and changes to the card layout collect pending input first. Invalid slider text stays red and blocks application until corrected or cancelled. AceGUI still bridges field containers and custom widgets.
+
 ## Classic talent trees
 
 Primary Talent Tree selects the unique Classic talent tree with the most positive points. Talent Tree Points compares the points in a selected tree and can explicitly test zero. Both use readable player metadata from the existing tree adapter. They do not interpret the saved rotation slot as a major spec.

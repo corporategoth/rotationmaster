@@ -169,6 +169,7 @@ function addon:CreateConditionCanvas(parent,owner)
         self.frame:UpdateScrollChildRect();self.frame:UpdateWorkbenchScroll();owner:UpdateHistoryButtons();owner:UpdateDescription()
     end
     function canvas:Render()
+        if owner.active and not owner:SyncWorking() then return end
         self:CancelDrag();self.generation=self.generation+1
         for _,card in ipairs(self.cards) do card:Release() end
         if not owner.active then return end
