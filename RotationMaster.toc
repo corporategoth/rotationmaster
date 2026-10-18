@@ -31,6 +31,7 @@ Platform/talents.lua
 Platform/spells.lua
 Platform/items.lua
 Platform/macros.lua
+Platform/communication.lua
 Platform/inventory.lua
 Platform/totems.lua
 Platform/actions.lua
@@ -57,6 +58,7 @@ Core/spell_search.lua
 Core/reference_catalog.lua
 Core/category_data.lua
 Core/announcement_data.lua
+Core/announcements.lua
 Core/profile_data.lua
 Core/collection_data.lua
 Core/custom_condition_data.lua

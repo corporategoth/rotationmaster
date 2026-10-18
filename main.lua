@@ -13,7 +13,6 @@ local ItemData = LibStub("AceGUI-3.0-ItemLoader")
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 local getCached
 local DBIcon = LibStub("LibDBIcon-1.0")
-local Media = LibStub("LibSharedMedia-3.0")
 local function spellLink(spellid)
     return addon.Platform:GetSpellLink(spellid) or string.format(L["Unknown spell (%s)"],spellid)
 end
@@ -708,50 +707,6 @@ local function UpdateUnitInfo(cache, record)
     end
 end
 
-local function announce(cache, cond, text)
-    local dest
-    if cond.announce == "local" then
-        addon:announce(text)
-    elseif cond.announce == "partyraid" then
-        if getCached(cache, IsInRaid) then
-            dest = "RAID"
-        elseif getCached(cache, IsInGroup) then
-            dest = "PARTY"
-        else
-            addon:announce(text)
-        end
-    elseif cond.announce == "party" then
-        if getCached(cache, IsInGroup) then
-            dest = "PARTY"
-        end
-    elseif cond.announce == "raidwarn" then
-        if getCached(cache, IsInRaid) then
-            if getCached(cache, IsRaidLeader) then
-                dest = "RAID_WARNING"
-            else
-                dest = "RAID"
-            end
-        elseif getCached(cache, IsInGroup) then
-            dest = "PARTY"
-        else
-            addon:announce(text)
-        end
-    elseif cond.announce == "say" then
-        dest = "SAY"
-    elseif cond.announce == "yell" then
-        dest = "YELL"
-    elseif cond.announce == "emote" then
-        dest = "EMOTE"
-    end
-    if dest ~= nil then
-        SendChatMessage(text, dest)
-    end
-    if cond.announce_sound and type(PlaySoundFile)=='function' and Media and type(Media.Fetch)=='function' then
-        local ok,path=pcall(Media.Fetch,Media,'sound',cond.announce_sound,true)
-        if ok and (type(path)=='string' or type(path)=='number') then PlaySoundFile(path,'Master') end
-    end
-end
-
 function addon:StopAdviceForError(reportId)
     self.adviceErrorReport = reportId
     self.currentRotation = nil
@@ -961,7 +916,7 @@ function addon:EvaluateNextActionInternal()
                         if addon.avail_announced[cond.id] ~= spellid then
                             if not addon.skipAnnounce then
                                 local link = spellLink(spellid)
-                                announce(cache, cond, string.format(L["%s is now available!"], link))
+                                addon:DispatchAnnouncement(cond, string.format(L["%s is now available!"], link))
                             end
                             addon.avail_announced[cond.id] = spellid;
                             AceEvent:SendMessage("ROTATIONMASTER_COOLDOWN_UPDATE", self.currentRotation, id, cond.id, cond.type, spellid)
@@ -1469,7 +1424,7 @@ local function spellcast(self, event, unit, castguid, spellid)
                                 text = text:gsub("{{target}}", currentSpells[castguid] or lastCastTarget[spellid])
                             end
                             end
-                            announce({}, ent, text)
+                            self:DispatchAnnouncement(ent, text)
                             if self.announced[value.id] == nil then
                                 self.announced[value.id] = { castguid }
                             else

@@ -38,6 +38,8 @@ def main():
             ['lua5.1', 'tests/platform_spells.lua'],
             ['lua5.1', 'tests/platform_items.lua'],
             ['lua5.1', 'tests/platform_macros.lua'],
+            ['lua5.1', 'tests/platform_communication.lua'],
+            ['lua5.1', 'tests/announcements.lua'],
             ['lua5.1', 'tests/platform_inventory.lua'],
             ['lua5.1', 'tests/item_conditions.lua'],
             ['lua5.1', 'tests/item_sets.lua'],

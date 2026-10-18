@@ -59,7 +59,7 @@ local function fixture(modern, absentThreat)
         chunk('rotationmaster', addon)
     end
     env.WOW_PROJECT_BURNING_CRUSADE_CLASSIC=5
-    load('Platform/client.lua');load('Platform/items.lua');load('Platform/inventory.lua');load('Platform/specializations.lua');load('Core/action_policy.lua');load('Core/inventory.lua');load('Core/rotation_references.lua')
+    load('Platform/client.lua');load('Platform/items.lua');load('Platform/inventory.lua');load('Platform/specializations.lua');load('Platform/communication.lua');load('Core/announcements.lua');load('Core/action_policy.lua');load('Core/inventory.lua');load('Core/rotation_references.lua')
     load('Data/plain.lua');load('Data/tags.lua');load('Data/rotation_tree.lua');load('Data/validation.lua');load('Core/rotation_sequence.lua');load('Core/rotation_selection.lua')
     return env, addon, load
 end
@@ -958,6 +958,32 @@ end)
 test('audible announcement safely tolerates a missing sound playback API',function()
     local env,a,load=fixture();env.PlaySoundFile=nil;load('main.lua');initialize(a);a.debug=function() end;a.deepcopy=function(value) local copy={};for key,v in pairs(value) do copy[key]=v end;return copy end;a.announced={};a.spellHistory={};a.events={SUCCEEDED='Success'};a.GetSpellIds=function() return {403},{} end;a.db.profile.announces={{id='sound',type='spell',spell=403,event='SUCCEEDED',announce='audible',announce_sound='Sound'}}
     local ok,why=pcall(a.UNIT_SPELLCAST_SUCCEEDED,a,'UNIT_SPELLCAST_SUCCEEDED','player','missing-sound-api',403);assert(ok,why)
+end)
+test('real cast announcement supports a native-only chat sender and modern raid roles',function()
+    local env,a,load=fixture();load('main.lua');initialize(a);a.debug=function() end
+    a.deepcopy=function(value) local result={};for k,v in pairs(value) do result[k]=v end;return result end
+    a.Platform.GetSpellLink=function() return 'Lightning Bolt' end;a.GetSpellIds=function() return {403},{} end
+    a.announced={};a.spellHistory={};a.events={SUCCEEDED='Succeeded'}
+    a.db.profile.announces={{id='native',type='spell',spell=403,event='SUCCEEDED',announce='raidwarn',value='Cast {{spell}}'}}
+    env.IsInRaid=function() return true end;env.IsInGroup=function() return true end
+    env.UnitIsGroupLeader=function() return false end;env.UnitIsGroupAssistant=function() return true end
+    env.IsRaidLeader=nil;env.SendChatMessage=nil;local sent=0
+    env.C_ChatInfo={SendChatMessage=function(text,destination) assert(text=='Cast Lightning Bolt' and destination=='RAID_WARNING');sent=sent+1 end}
+    a:UNIT_SPELLCAST_SUCCEEDED('UNIT_SPELLCAST_SUCCEEDED','player','native',403)
+    a:UNIT_SPELLCAST_SUCCEEDED('UNIT_SPELLCAST_SUCCEEDED','player','native',403)
+    assert(sent==1 and a.announced.native[1]=='native')
+end)
+test('failed chat or sound output does not abort real cast bookkeeping',function()
+    local env,a,load=fixture();local lib=env.LibStub
+    env.LibStub=function(name,...) if name=='LibSharedMedia-3.0' then return {Fetch=function() return 'chime.ogg' end} end;return lib(name,...) end
+    load('main.lua');initialize(a);a.debug=function() end
+    a.deepcopy=function(value) local result={};for k,v in pairs(value) do result[k]=v end;return result end
+    a.Platform.GetSpellLink=function() return 'Lightning Bolt' end;a.GetSpellIds=function() return {403},{} end
+    a.announced={};a.spellHistory={};a.events={SUCCEEDED='Succeeded'}
+    a.db.profile.announces={{id='failed-output',type='spell',spell=403,event='SUCCEEDED',announce='emote',announce_sound='Chime',value='Cast'}}
+    env.SendChatMessage=function() error('chat blocked') end;env.PlaySoundFile=function() error('sound blocked') end
+    a:UNIT_SPELLCAST_SUCCEEDED('UNIT_SPELLCAST_SUCCEEDED','player','blocked-output',403)
+    assert(a.announced['failed-output'][1]=='blocked-output' and #a.spellHistory==1)
 end)
 test('new item-set binding normalizes every slot immediately to the first available item',function()
     local env,a,load=fixture();load('main.lua');initialize(a);a.debug=function() end;a.ButtonFetch=function() end;a.db.char.bindings={s={2}};a.bindingItemSet='s';local actions={[1]=11,[2]=11};local held
