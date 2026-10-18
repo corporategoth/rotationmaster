@@ -76,7 +76,7 @@ function addon:InstallCustomChangeReview(dialog)
         if not dialog.OwnerValid or not dialog.OwnerValid() then return end
         local before=addon:CopySettingsData(dialog.model.baseline);local after=dialog.model:Snapshot();after.value=dialog:PendingSource()
         local pending={};for _,record in ipairs(p.edits) do if record.dirty then pending[#pending+1]={label=L['Fields'],before=record.baseline,after=record.control:GetText()} end end
-        local function definition(value) return {identifier=value.key,definition=value.value} end
+        local function definition(value) return {identifier=value.key,definition=value.value,preferences=value.context} end
         local session=dialog.session;addon:ShowWorkbenchDraftChanges(dialog,'profile',definition(before),definition(after),function() return dialog.session==session and dialog.OwnerValid and dialog.OwnerValid() end,nil,pending)
     end)
     local update=dialog.UpdateActions

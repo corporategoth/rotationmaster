@@ -14,7 +14,7 @@ function addon:BuildConditionSettings(p)
     local tags=self:listConditions(p.category,true,store);local entries={};local seen={}
     if p.category=='ALL' then for tag in pairs(custom) do local exists=false;for _,value in ipairs(tags) do if value==tag then exists=true end end;if not exists then tags[#tags+1]=tag end end end
     for _,tag in ipairs(tags) do if not (self.db.global.custom_conditions and self.db.global.custom_conditions[tag] and not custom[tag]) and (p.conditionSource=='all' or (p.conditionSource=='custom')==(custom[tag]~=nil)) and not seen[tag] and (definitions[tag] or (self.conditionSpecials or {})[tag]) then local d=definitions[tag] or self.conditionSpecials[tag];entries[#entries+1]={value=tag,text=d.description or d.desc or tag};seen[tag]=true end end
-    if not seen[p.condition] then p.condition=entries[1] and entries[1].value end
+    if not seen[p.condition] and not p.creatingCondition then p.condition=entries[1] and entries[1].value end
     for _,entry in ipairs(entries) do entry.icon=custom[entry.value] and custom[entry.value].icon or self:GetConditionIcon(entry.value);entry.search=entry.value;entry.custom=custom[entry.value]~=nil end
     if self.ValidateCustomConditionSource then for _,entry in ipairs(entries) do if entry.custom then
         local checked,why=self:ValidateCustomConditionSource(entry.value,custom[entry.value],true)
@@ -25,16 +25,18 @@ function addon:BuildConditionSettings(p)
     local ordered
     if p.category=='SWITCH' or p.category=='DEFAULT' or groupIndex then ordered=tags end
     local function orderChanged(list) if p.category=='SWITCH' then profile.switch_conditions=list elseif p.category=='DEFAULT' then profile.other_conditions_order=list elseif groupIndex then groups[groupIndex].conditions=list end end
-    p:UseRoster(entries,p.condition,function(value) p.condition=value;p:Draw() end,{order=ordered,orderChanged=orderChanged,categories=categories,category=p.category,chooseCategory=function(value) p.category=value;p.condition=nil;p:Draw() end,sources={{value='all',text=L['All']},{value='builtin',text=L['Built In']},{value='custom',text=L['Custom']}},source=p.conditionSource,chooseSource=function(value) p.conditionSource=value;p.condition=nil;p:Draw() end,newText=L['Add'],new=function() self:OpenSettingsCustomCondition(p,nil) end,manage=function() p.mode='categories';p.categorySelection=nil;p:Draw() end})
+    local function navigate(fn) if self.BuildInlineCustomCondition then p:RequestLeave(fn) else fn() end end
+    p:UseRoster(entries,p.condition,function(value) navigate(function() p.condition=value;p.creatingCondition=nil;p:Draw() end) end,{order=ordered,orderChanged=orderChanged,categories=categories,category=p.category,chooseCategory=function(value) navigate(function() p.category=value;p.condition=nil;p.creatingCondition=nil;p:Draw() end) end,sources={{value='all',text=L['All']},{value='builtin',text=L['Built In']},{value='custom',text=L['Custom']}},source=p.conditionSource,chooseSource=function(value) navigate(function() p.conditionSource=value;p.condition=nil;p.creatingCondition=nil;p:Draw() end) end,newText=L['Add'],new=function() if self.OpenInlineCustomCondition then self:OpenInlineCustomCondition(p,nil) else self:OpenSettingsCustomCondition(p,nil) end end,manage=function() navigate(function() p.mode='categories';p.categorySelection=nil;p:Draw() end) end})
     local compareCandidates={}
     for key,value in pairs(custom) do if key~=p.condition then compareCandidates[#compareCandidates+1]={value=key,text=value.description or key} end end
     table.sort(compareCandidates,function(a,b) return a.text<b.text end)
     p:SetRosterActions({{key='add_custom',text=L['Add'],icon='plus',action=p.roster.options.new},
         {key='duplicate_custom',text=L['Duplicate'],icon='copy',enabled=custom[p.condition]~=nil,action=function()
+            if self.DuplicateInlineCustomCondition then self:DuplicateInlineCustomCondition(p);return end
             local tag=p.condition;local copy=self:CopySettingsData(custom[tag]);local key=tag:sub(1,216)..'_'..self:uuid():gsub('-','_');custom[key]=copy;p:RunSettingsEffect('custom_'..key,function() self:register_custom_condition(key,copy) end);p.condition=key;p.category='ALL';p.conditionSource='custom';p:Draw()
         end},
         {key='transfer',text=L['Import/Export'],icon='transfer',enabled=custom[p.condition]~=nil,action=function()
-            local dialog=self:OpenSettingsCustomCondition(p,p.condition,custom[p.condition])
+            local dialog=p.inlineCondition or self:OpenSettingsCustomCondition(p,p.condition,custom[p.condition])
             ---@cast dialog any
             if dialog then dialog.transfer:Click() end
         end},
@@ -44,6 +46,7 @@ function addon:BuildConditionSettings(p)
                 if key~=first and custom[first] and custom[key] then self:ShowCollectionComparison(p,'profile',{name=custom[first].description,profile=custom[first]},{name=custom[key].description,profile=custom[key]}) end
             end)
         end}})
+    if self.BuildInlineCustomCondition and (p.creatingCondition or custom[p.condition]) then return self:BuildInlineCustomCondition(p,p.condition,custom[p.condition]) end
     p:Heading(L['Conditions'])
     local tag=p.condition;local definition=definitions[tag] or (self.conditionSpecials or {})[tag]
     if tag and definition then

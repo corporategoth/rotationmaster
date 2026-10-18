@@ -1896,5 +1896,29 @@ L['Type a tag and press Enter, or choose an existing tag. Click a tag to remove 
 L['Search existing tags and select any number of them. Click a selected tag to remove it; use the search results to change tag colors.'] = true
 L['Click to remove this tag. Use the search results to change tag colors.'] = true
 
-L['Each callback keeps its own pending text while switching tabs. Its Apply stages the code; its Cancel restores the staged code. The callback Undo and Redo buttons edit its buffer. The main Apply saves and registers the whole condition; the main Cancel discards the whole draft. Check syntax runs no callbacks.'] = true
+L['Each callback keeps its own pending text while switching tabs. Undo and Redo edit that callback buffer. Reset restores its last saved code, or the template for a new condition, and can be undone. The main Apply saves and registers all callback buffers and metadata; Discard drops the whole draft. Leaving with changes offers Apply, Discard or Cancel. Check syntax runs no callbacks.'] = true
 L['Edit fields opens a graphical schema draft. Add, name, reorder or remove fields, choose primitive or nested types, and edit nested fields. Apply stages the schema and its field order. Advanced exposes the equivalent raw schema, parsed as data without executing Lua.'] = true
+
+-- Callback documentation
+L['Decide whether this condition currently matches.'] = true
+L['The stored values for this condition.'] = true
+L['Shared data for this evaluation cycle.'] = true
+L['Evaluation start time, in seconds from GetTime().'] = true
+L['True matches; false or nil does not match.'] = true
+L['Check whether the stored condition values are complete and valid.'] = true
+L['Rotation specialization scope.'] = true
+L['True when the condition can be evaluated.'] = true
+L['Describe the condition in readable words.'] = true
+L['The human-readable condition summary.'] = true
+L['Build the controls used to edit this condition.'] = true
+L['The condition field container supplied by the UI adapter.'] = true
+L['Add controls to the supplied container.'] = true
+L['Build the help content for this condition.'] = true
+L['The help container supplied by the UI adapter.'] = true
+L['Add help content to the supplied container.'] = true
+L['Initialize resources when the condition is registered.'] = true
+L['The condition identifier.'] = true
+L['No return value is used.'] = true
+L['Release resources when the condition is removed or replaced.'] = true
+L['Arguments'] = true
+L['Returns'] = true

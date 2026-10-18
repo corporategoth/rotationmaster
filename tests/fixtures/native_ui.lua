@@ -33,6 +33,7 @@ return function(env)
         function frame:EnableMouse(value) self.mouseEnabled=value end
         function frame:EnableKeyboard(value) self.keyboardEnabled=value end
         function frame:SetAltArrowKeyMode(value) self.altArrowKeyMode=value end
+        function frame:SetCountInvisibleLetters(value) self.countInvisibleLetters=value end
         function frame:SetBlinkSpeed(value) self.blinkSpeed=value end
         function frame:HasFocus() return self.focused==true end
         function frame:SetPropagateKeyboardInput() end

@@ -1,7 +1,24 @@
 local addon_name,addon=...
 local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
-local callbacks={on_register='tag',on_unregister='tag',valid='spec, value',evaluate='value, cache, evalStart',print='spec, value',widget='parent, spec, value',help='frame'}
-addon.CustomConditionCallbacks=callbacks
+local docs={
+    evaluate={description=L['Decide whether this condition currently matches.'],args={{'value','table',L['The stored values for this condition.']},{'cache','table',L['Shared data for this evaluation cycle.']},{'evalStart','number',L['Evaluation start time, in seconds from GetTime().']}},returns={'boolean | nil',L['True matches; false or nil does not match.']}},
+    valid={description=L['Check whether the stored condition values are complete and valid.'],args={{'spec','number',L['Rotation specialization scope.']},{'value','table',L['The stored values for this condition.']}},returns={'boolean',L['True when the condition can be evaluated.']}},
+    print={description=L['Describe the condition in readable words.'],args={{'spec','number',L['Rotation specialization scope.']},{'value','table',L['The stored values for this condition.']}},returns={'string',L['The human-readable condition summary.']}},
+    widget={description=L['Build the controls used to edit this condition.'],args={{'parent','AceGUI container',L['The condition field container supplied by the UI adapter.']},{'spec','number',L['Rotation specialization scope.']},{'value','table',L['The stored values for this condition.']}},returns={'nil',L['Add controls to the supplied container.']}},
+    help={description=L['Build the help content for this condition.'],args={{'frame','AceGUI container',L['The help container supplied by the UI adapter.']}},returns={'nil',L['Add help content to the supplied container.']}},
+    on_register={description=L['Initialize resources when the condition is registered.'],args={{'tag','string',L['The condition identifier.']}},returns={'nil',L['No return value is used.']}},
+    on_unregister={description=L['Release resources when the condition is removed or replaced.'],args={{'tag','string',L['The condition identifier.']}},returns={'nil',L['No return value is used.']}},
+}
+local callbacks={}
+for name,entry in pairs(docs) do local args={};for _,arg in ipairs(entry.args) do args[#args+1]=arg[1] end;callbacks[name]=table.concat(args,', ') end
+addon.CustomConditionCallbacks=callbacks;addon.CustomConditionCallbackDocs=docs
+function addon:CustomConditionDocumentation(name)
+    local doc=docs[name];if not doc then return '' end
+    local lines={doc.description,'|cffffcc55'..L['Arguments']..'|r'}
+    for _,arg in ipairs(doc.args) do lines[#lines+1]='|cffffcc55'..arg[1]..'|r (|cff66ccff'..arg[2]..'|r): '..arg[3] end
+    lines[#lines+1]='|cffffcc55'..L['Returns']..'|r |cff66ccff'..doc.returns[1]..'|r: '..doc.returns[2]
+    return table.concat(lines,'\n')
+end
 local kinds={string=true,number=true,boolean=true,condition=true,['condition[]']=true}
 function addon:FormatCustomFieldSchema(fields)
     local normalized,why=self:NormalizeCustomFieldSchema(fields,true);if not normalized then return nil,why end
@@ -107,7 +124,7 @@ function addon:NewCustomConditionDraft(key,source)
     local d={key=key or '',value=self:CopySettingsData(source),undo={},redo={},bytes=0}
     d.baseline={key=d.key,value=self:CopySettingsData(d.value)}
     local function weight(v) if type(v)=='string' then return #v+24 elseif type(v)~='table' then return 16 end;local n=64;for k,c in pairs(v) do n=n+weight(k)+weight(c) end;return n end
-    function d:Snapshot() return addon:CopySettingsData({key=self.key,value=self.value}) end
+    function d:Snapshot() return addon:CopySettingsData({key=self.key,value=self.value,context=self.context}) end
     function d:IsDirty() return not addon:SettingsDataEqual(self:Snapshot(),self.baseline) end
     function d:Change(change)
         local before=self:Snapshot();change(self)
@@ -118,7 +135,7 @@ function addon:NewCustomConditionDraft(key,source)
     function d:SetFunction(name,code) if not callbacks[name] then return false end;return self:Change(function(state) state.value[name]=code end) end
     function d:Travel(redo)
         local from=redo and self.redo or self.undo;local to=redo and self.undo or self.redo;if #from==0 then return false end
-        to[#to+1]=self:Snapshot();local state=table.remove(from);self.key=state.key;self.value=state.value;return true
+        to[#to+1]=self:Snapshot();local state=table.remove(from);self.key=state.key;self.value=state.value;self.context=state.context;return true
     end
     function d:Undo() return self:Travel(false) end
     function d:Redo() return self:Travel(true) end

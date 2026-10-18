@@ -84,6 +84,25 @@ local helpers = addon.help_funcs
 ]],
 }
 
+-- Retain exact old template headers only to recognize generated boilerplate in
+-- saved conditions. Arbitrary user comments are preserved.
+local templateHeaders={}
+for name in pairs(function_signatures) do
+    local code=addon.empty_condition[name];local offset=1
+    while offset<=#code do
+        local ending=code:find('\n',offset,true) or #code+1;local line=code:sub(offset,ending-1)
+        if line:match('^%s*%-%-') or line:match('^%s*$') then offset=ending+1 else break end
+    end
+    templateHeaders[name]=code:sub(1,offset-1);addon.empty_condition[name]=code:sub(offset)
+end
+function addon:PrepareCustomConditionEditorSource(source)
+    local result=self:CopySettingsData(source)
+    for name,prefix in pairs(templateHeaders) do
+        if prefix~='' and type(result[name])=='string' and result[name]:sub(1,#prefix)==prefix then result[name]=result[name]:sub(#prefix+1) end
+    end
+    return result
+end
+
 local function open_icon_window(parent, update)
     parent:SetCallback("OnClose", function() end)
     parent:Hide()
