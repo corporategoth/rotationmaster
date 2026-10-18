@@ -18,8 +18,8 @@ function addon:ShowCustomConditionTransfer(parent,update,key,condition)
         end}
     dialog=self:ShowSettingsTextTransfer(p,L['Import/Export Condition'],text,function(input,settings)
         local parsed,errorText=self:ParseCustomConditionImport(input,codec);if not parsed then return false,errorText end
-        local destination=settings.mode=='replace' and key or settings.name:upper()
-        if not destination or not destination:match('^[A-Z0-9_]+$') then return false,L['Use letters, numbers and underscores for the condition identifier.'] end
+        local destination=settings.mode=='replace' and key or settings.name
+        if not self:IsCustomConditionIdentifier(destination,settings.mode=='replace') then return false,L['Use letters, numbers and underscores for the condition identifier.'] end
         if settings.mode=='new' and self:describeCondition(destination)~=nil then return false,L['That condition identifier already exists.'] end
         local serial=dialog.serial
         p:Confirm(L['This import contains Lua code. Only continue if you trust its author. Import opens the code for review; saving the condition can execute it.'],function()

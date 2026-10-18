@@ -263,14 +263,14 @@ function addon:validate_condition_group(prefix, idx, group, fix)
 end
 
 function addon:validate_custom_condition(prefix, name, custom_condition, fix)
-    local template={disabled=false};for key,value in pairs(addon.empty_condition) do template[key]=value end
+    local template={disabled=false,fieldOrder={}};for key,value in pairs(addon.empty_condition) do template[key]=value end
     validate_basic(prefix .. ":" .. name, custom_condition, template, fix)
 
     local function validate_custom_field_spec(parent, spec)
         local toremove = {}
         for k,v in pairs(spec) do
             if type(v) == "string" then
-                if not (v == "string" or v == "number" or v == "boolean") then
+                if not (v == "string" or v == "number" or v == "boolean" or v == "condition" or v == "condition[]") then
                     addon:warn("Invalid type in custom funcion type spec %s:%s", parent, k)
                     mark_for_remove(toremove, k)
                 end

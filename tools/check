@@ -50,6 +50,7 @@ def main():
             ['lua5.1', 'tests/aura_conditions.lua'],
             ['lua5.1', 'tests/custom_conditions.lua'],
             ['lua5.1', 'tests/custom_authoring.lua'],
+            ['lua5.1', 'tests/schema_authoring.lua'],
             ['luajit', 'tests/custom_authoring_ui.lua'],
             ['lua5.1', 'tests/known_spell.lua'],
             ['lua5.1', 'tests/plain_data.lua'],

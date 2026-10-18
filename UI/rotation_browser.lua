@@ -33,16 +33,16 @@ local function create(parent)
         local key=entry[1];addon:SetUIScript(control,"OnClick",function() browser:SetFilter(key) end)
     end
     browser.selectedTags={};browser.tagMode='any'
-    browser.tagLabel=label(left);browser.tagLabel:SetText(L['Tags']);browser.tagLabel:SetHeight(18);browser.tagLabel:SetJustifyV('MIDDLE');browser.tagLabel:SetPoint('TOPLEFT',0,-56)
+    browser.tagLabel=label(left);browser.tagLabel:SetText(L['Tags']);browser.tagLabel:SetHeight(18);browser.tagLabel:SetWidth(36);browser.tagLabel:SetJustifyV('MIDDLE');browser.tagLabel:SetPoint('TOPLEFT',0,-56)
     browser.tagModeButton=addon:CreateWorkbenchPill(left,L['Any'],44);browser.tagModeButton:SetPoint('TOPLEFT',40,-56);browser.tagModeButton:SetAccent(.75,.6,.18)
-    browser.tagPicker=addon:CreateRotationTagPicker(left,{allowCustom=false,
+    browser.tagPicker=addon:CreateRotationTagPicker(left,{allowCustom=false,inputInset=92,
         available=function() return browser.availableTags or {} end,
         valid=function() return browser.active and browser.profile==addon.db.profile end,
         changed=function(tags) browser:SetTags(tags) end,
         color=function(tag) return addon:GetRotationTagColor(tag) end,
         setColor=function(tag,color) addon:SetRotationTagColor(tag,color);browser:RefreshRows() end,
         layout=function() if browser.active then browser:Layout() end end})
-    browser.tagPicker.frame:SetPoint('TOPLEFT',0,-80);browser.tagButton=browser.tagPicker.input;browser.tagMenu=browser.tagPicker.menu
+    browser.tagPicker.frame:SetPoint('TOPLEFT',0,-56);browser.tagButton=browser.tagPicker.input;browser.tagMenu=browser.tagPicker.menu
     addon:SetUIScript(browser.tagModeButton,'OnClick',function() if browser.active then browser.tagMode=browser.tagMode=='any' and 'all' or 'any';browser.tagModeButton:SetText(browser.tagMode=='any' and L['Any'] or L['All']);browser:RefreshRows() end end)
     local list=addon:CreateWorkbenchScrollFrame(left);browser.list=list
     local child=CreateFrame("Frame",nil,list);child:SetPoint("TOPLEFT",list,"TOPLEFT",0,0);list:SetScrollChild(child);browser.listChild=child
@@ -147,12 +147,11 @@ local function create(parent)
         for index,entry in ipairs(rows) do
             local control=self.rowButtons[index]
             if not control then
-                control=CreateFrame("Button",nil,child)
+                control=addon:CreateWorkbenchListRow(child,child:GetWidth(),46)
                 control.nameLabel=label(control,"GameFontHighlight")
                 control.nameLabel:SetPoint("TOPLEFT",6,-5)
                 control.statusLabel=label(control);control.statusLabel:SetPoint("TOPLEFT",6,-24)
-                control.selection=control:CreateTexture(nil,"BACKGROUND");control.selection:SetAllPoints(control)
-                control.selection:SetColorTexture(.1,.25,.3,.8);self.rowButtons[index]=control
+                self.rowButtons[index]=control
             end
             control:SetPoint("TOPLEFT",child,"TOPLEFT",0,-(index-1)*48)
             control:SetSize(child:GetWidth(),46)
@@ -165,7 +164,7 @@ local function create(parent)
             elseif entry.readOnly and not entry.eligible then status=status.." — "..L["Not available"] end
             if not entry.fallback then status=status..' · '..(entry.priority and string.format(L['Priority %d'],entry.priority) or L['Invalid priority']) end
             control.statusLabel:SetText(status);control.statusLabel:SetTextColor(.67,.72,.77)
-            if entry.key==self.selected then control.selection:Show() else control.selection:Hide() end
+            addon:SetWorkbenchListSelection(control,entry.key==self.selected)
             local key=entry.key;addon:SetUIScript(control,"OnClick",function() self:SelectRotation(self.spec,key) end)
             control:Show()
         end
@@ -252,7 +251,7 @@ local function create(parent)
         search:SetWidth(leftWidth)
         local footerHeight=50
         self.tagPicker:SetWidth(leftWidth)
-        local listTop=80+self.tagPicker.height+8
+        local listTop=56+self.tagPicker.height+8
         list:SetPoint("TOPLEFT",left,"TOPLEFT",0,-listTop);list:SetSize(leftWidth-24,math.max(64,left:GetHeight()-listTop-36-footerHeight))
         child:SetWidth(list:GetWidth())
         count:ClearAllPoints();count:SetPoint("BOTTOMLEFT",left,"BOTTOMLEFT",0,footerHeight+8)
@@ -286,7 +285,7 @@ local function create(parent)
         local spec=selection and selection.spec or addon.currentSpec
         local found=false;for _,entry in ipairs(self.specEntries) do if entry.id==spec then found=true;break end end
         if not found then spec=self.specEntries[1].id end
-        self.active=true;self.profile=addon.db.profile;self.selectedTags={}
+        self.active=true;self.profile=addon.db.profile;self.selectedTags={};self.tagPicker.frame:Show();self.tagPicker.input:Show()
         self:SelectRotation(spec,selection and selection.id or spec==addon.currentSpec and addon.currentRotation or DEFAULT)
         return self
     end

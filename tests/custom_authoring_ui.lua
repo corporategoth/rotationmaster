@@ -1,7 +1,7 @@
 local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite()
 local function fixture()
     local f=F.new();local a=f.addon;dofile('tests/fixtures/native_ui.lua')(f.env);local make=f.env.CreateFrame;f.env.CreateFrame=function(kind,...) local frame=make(kind,...);if kind=='EditBox' then local set=frame.SetText;frame.SetText=function(self,text) if self.maxLetters and self.maxLetters>0 then text=text:sub(1,self.maxLetters) end;set(self,text) end end;return frame end;local data,deps=dofile('tests/fixtures/codec.lua')();a.RotationData=data;a.NewRotationCodec=function() return data.NewCodec(deps) end;a.pretty_name='Rotation Master';a.name='rotationmaster';a.db.char={};a.db.global.custom_conditions={}
-    for _,path in ipairs({'Core/custom_condition_owner.lua','UI/settings_draft.lua','Core/custom_authoring.lua','UI/settings_history.lua','UI/settings_unsaved.lua','UI/settings_layout.lua','UI/settings_ordered.lua','UI/settings_roster_order.lua','UI/settings_form.lua','UI/settings_transfer.lua','UI/custom_condition_transfer.lua','UI/icon_picker.lua','UI/help.lua','Options/custom_condition.lua','UI/lua_editor.lua','UI/custom_condition_editor.lua'}) do local h=io.open(path);if h then h:close();f.load(path) end end
+    for _,path in ipairs({'Core/custom_condition_owner.lua','UI/settings_draft.lua','Core/custom_authoring.lua','Core/schema_authoring.lua','UI/schema_editor.lua','UI/settings_history.lua','UI/settings_unsaved.lua','UI/settings_layout.lua','UI/settings_ordered.lua','UI/settings_roster_order.lua','UI/settings_form.lua','UI/settings_transfer.lua','UI/custom_condition_transfer.lua','UI/icon_picker.lua','UI/help.lua','Options/custom_condition.lua','UI/lua_editor.lua','UI/custom_condition_editor.lua'}) do local h=io.open(path);if h then h:close();f.load(path) end end
     a.conditionDefinitions=a.definitions;a.RegisterCondition=function(self,key,value) self.conditionDefinitions[key]=value;if value.on_register then value.on_register(key) end end
     f.env.loadstring=function(text,name) local fn,why=loadstring(text,name);if fn then setfenv(fn,f.env) end;return fn,why end
     return f,a
@@ -10,12 +10,12 @@ test('native editor stages schema and callbacks until Apply and has cross-functi
     local f,a=fixture();assert(a.CreateWorkbenchLuaEditor,'native code editor missing');local saved;local d=a:condition_edit_box(function(key) saved=key end)
     assert(d.nativeCustomEditor and d.form and d.code);local p=d.form;local function edit(key,text) local c=p.fields[key];c:SetText(text);c.scripts.OnTextChanged(c,true);c.scripts.OnEnterPressed(c) end
     edit('identifier','NATIVE');edit('description','Native condition');edit('schema','{ count = number }');d.code.edit:SetText('return true');d.code.edit.scripts.OnTextChanged(d.code.edit,true);d:UpdateActions();assert(d.code.frame.rmUnsaved and d.functionTabs.evaluate.rmUnsaved);assert(not a.db.global.custom_conditions.NATIVE)
-    d:SelectFunction('print');d.code.edit:SetText('return "Name"');d.code.edit.scripts.OnTextChanged(d.code.edit,true);d:SelectFunction('evaluate');d.undo:Click();assert(d.model.value.print~= 'return "Name"');d.redo:Click();assert(d.model.value.print=='return "Name"');d.apply:Click();assert(saved=='NATIVE' and a.db.global.custom_conditions.NATIVE.fields.count=='number' and not d.frame:IsShown())
+    d:SelectFunction('print');d.code.edit:SetText('return "Name"');d.code.edit.scripts.OnTextChanged(d.code.edit,true);d.codeApply:Click();d:SelectFunction('evaluate');d.undo:Click();assert(d.model.value.print~= 'return "Name"');d.redo:Click();assert(d.model.value.print=='return "Name"');d.apply:Click();assert(saved=='NATIVE' and a.db.global.custom_conditions.NATIVE.fields.count=='number' and not d.frame:IsShown())
 end)
 test('syntax checks never run callbacks and errors preserve code and saved source',function()
     local f,a=fixture();local source=a:CopySettingsData(a.empty_condition);source.description='Original';a.db.global.custom_conditions.CUSTOM=source;a.conditionDefinitions.CUSTOM={description='Original'};local d=a:condition_edit_box(function() end,'CUSTOM',source)
     d.code.edit:SetText('return )');d.code.edit.scripts.OnTextChanged(d.code.edit,true);d.syntax:Click();assert(d.frame:IsShown() and d.code:GetText()=='return )' and a.db.global.custom_conditions.CUSTOM==source)
-    d.code.edit:SetText('error("MUST NOT RUN")');d.code.edit.scripts.OnTextChanged(d.code.edit,true);d.syntax:Click();assert(d.model.value.evaluate=='error("MUST NOT RUN")' and a.db.global.custom_conditions.CUSTOM==source);d.cancel:Click();assert(not d.frame:IsShown() and a:SettingsDataEqual(a.db.global.custom_conditions.CUSTOM,source),'reloaded duplicate or original source mismatch')
+    d.code.edit:SetText('error("MUST NOT RUN")');d.code.edit.scripts.OnTextChanged(d.code.edit,true);d.syntax:Click();assert(d:PendingSource().evaluate=='error("MUST NOT RUN")' and a.db.global.custom_conditions.CUSTOM==source);d.cancel:Click();assert(not d.frame:IsShown() and a:SettingsDataEqual(a.db.global.custom_conditions.CUSTOM,source),'reloaded duplicate or original source mismatch')
 end)
 test('closing dirty code asks Apply Discard Cancel and stale owner callbacks cannot save',function()
     local f,a=fixture();local valid=true;local d=a:condition_edit_box(function() error('stale save') end,nil,nil,function() return valid end);d.code.edit:SetText('return 4');d.code.edit.scripts.OnTextChanged(d.code.edit,true);d:Hide();assert(d.form.prompt and d.form.prompt.discard);d.form.prompt.cancel:Click();assert(d.frame:IsShown());d:Hide();d.form.prompt.discard:Click();assert(not d.frame:IsShown())
@@ -50,7 +50,7 @@ test('profile replacement closes native authoring and leaves its captured callba
     local f,a=fixture();local d=a:condition_edit_box(function() error('stale callback') end);local apply=d.apply.scripts.OnClick;a.db.profile={};d.frame.scripts.OnUpdate();assert(d.closed and not d.frame:IsShown());apply();assert(not next(a.db.global.custom_conditions))
 end)
 test('choosing icons preserves live code text and undo can restore it',function()
-    local f,a=fixture();local d=a:condition_edit_box(function() end);d.code.edit:SetText('return 12345');d.code.edit.scripts.OnTextChanged(d.code.edit,true);local choose;a.ShowWorkbenchIconPicker=function(_,_,callback) choose=callback;return {serial=1,frame=f.env.CreateFrame('Frame')} end;d.form.fields.icon:Click();choose(123);assert(d.code:GetText()=='return 12345' and d.model.value.evaluate=='return 12345');d.undo:Click();assert(d.model.value.evaluate=='return 12345' and d.model.value.icon~=123)
+    local f,a=fixture();local d=a:condition_edit_box(function() end);d.code.edit:SetText('return 12345');d.code.edit.scripts.OnTextChanged(d.code.edit,true);local choose;a.ShowWorkbenchIconPicker=function(_,_,callback) choose=callback;return {serial=1,frame=f.env.CreateFrame('Frame')} end;d.form.fields.icon:Click();choose(123);assert(d.code:GetText()=='return 12345' and d:PendingSource().evaluate=='return 12345');d.undo:Click();assert(d:PendingSource().evaluate=='return 12345' and d.model.value.icon~=123)
 end)
 test('malformed provider frames and throwing frame cleanup reach native fallback',function()
     local f,a=fixture();for _,bad in ipairs({true,{SetParent=function() error('attach failed') end,SetAllPoints=function() end,Hide=function() error('hide failed') end}}) do a:RegisterLuaEditorProvider('bad-frame',function() return {frame=bad,GetText=function() return '' end,SetText=function() end,Release=function() end} end);local code=a:CreateWorkbenchLuaEditor(f.env.UIParent,function() end,function() return true end,'bad-frame');assert(code.provider=='native' and code.edit);code:Release() end
@@ -86,9 +86,9 @@ test('native code accepts focus and invalid form fields do not trap function tab
     local f,a=fixture();local d=a:condition_edit_box(function() end)
     assert(d.code.edit.mouseEnabled and d.code.edit.scripts.OnMouseDown,'code editor lacks explicit focus target')
     d.code.edit.scripts.OnMouseDown(d.code.edit,'LeftButton');assert(d.code.edit.focused)
-    local field=d.form.fields.identifier;field:SetText('bad identifier!');field.scripts.OnTextChanged(field,true);d.apply:Click();assert(d.form.message:GetText()~='')
+    local field=d.form.fields.identifier;field:SetText('AND');field.scripts.OnTextChanged(field,true);d.apply:Click();assert(d.form.message:GetText()~='')
     d.code.edit:SetText('return true');d.code.edit.scripts.OnTextChanged(d.code.edit,true);d.functionTabs.print:Click()
-    assert(d.selected=='print' and field:GetText()=='bad identifier!' and d.model.value.evaluate=='return true')
+    assert(d.selected=='print' and field:GetText()=='AND' and d:PendingSource().evaluate=='return true')
 end)
 test('custom condition list and draft mark invalid source without running registration code',function()
     local f,a=fixture();f.load('UI/settings_collections.lua');f.load('UI/settings_conditions.lua')
@@ -117,5 +117,61 @@ test('disabling incomplete source preserves its text and re-enable rejects inval
     p.fields.definition_enabled:Click();assert(a.db.global.custom_conditions.BROKEN.disabled and p:SettingsData().global.custom_conditions.BROKEN.disabled and p.message:GetText()~='')
     a.db.global.custom_conditions.BROKEN.evaluate='return true';a.db.global.custom_conditions.BROKEN.on_register='error("registration failure")';p:DiscardSettingsDraft();p:Draw();p.fields.definition_enabled:Click();p.fields.apply:Click();assert(a.db.global.custom_conditions.BROKEN.disabled and a.conditionDefinitions.BROKEN.disabled)
     p.fields.edit_custom:Click();local d=a.nativeCustomConditionDialog;d.code.edit:SetText('return 987');d.code.edit.scripts.OnTextChanged(d.code.edit,true);d.form.fields.definition_enabled:Click();assert(d.code:GetText()=='return 987')
+end)
+test('new identifier stays neutral until Apply and filters input with the runtime character policy',function()
+    local f,a=fixture();local d=a:condition_edit_box(function() end);local field=d.form.fields.identifier
+    assert(not field.rmInvalid,'new identifier is marked invalid before Apply')
+    field:SetText('my condition!?_42');field.scripts.OnTextChanged(field,true)
+    assert(field:GetText()=='mycondition_42','unsupported identifier characters can be entered')
+    field.scripts.OnEnterPressed(field);assert(d.model.key=='mycondition_42','editor rejects valid runtime identifier')
+    d:UpdateActions();d.apply:Click();assert(d.form.fields.description.rmInvalid and d.frame:IsShown(),'Apply did not mark missing description')
+end)
+test('code editing has native keyboard arrows without repeated focus resets',function()
+    local f,a=fixture();local d=a:condition_edit_box(function() end);local edit=d.code.edit
+    assert(edit.keyboardEnabled and edit.altArrowKeyMode==false,'native arrow key handling not configured')
+    edit:SetFocus();edit:SetCursorPosition(3);local focused=edit.SetFocus;edit.SetFocus=function() error('already focused edit refocused') end
+    if edit.scripts.OnMouseDown then edit.scripts.OnMouseDown(edit,'LeftButton') end
+    d:UpdateActions();assert(edit.cursor==3);edit.SetFocus=focused
+end)
+test('callback controls stage or cancel code independently with bounded Undo and Redo',function()
+    local f,a=fixture();local d=a:condition_edit_box(function() end);local original=d.model.value.evaluate
+    assert(d.codeApply and d.codeCancel and d.codeUndo and d.codeRedo,'callback draft controls absent')
+    d.code.edit:SetText('return 1');d.code.edit.scripts.OnTextChanged(d.code.edit,true)
+    d.code.edit:SetText('return 2');d.code.edit.scripts.OnTextChanged(d.code.edit,true)
+    d.codeUndo:Click();assert(d.code:GetText()=='return 1');d.codeRedo:Click();assert(d.code:GetText()=='return 2')
+    d.codeCancel:Click();assert(d.code:GetText()==original and d.model.value.evaluate==original)
+    d.code.edit:SetText('return 3');d.code.edit.scripts.OnTextChanged(d.code.edit,true);d.codeApply:Click()
+    assert(d.model.value.evaluate=='return 3' and not next(a.db.global.custom_conditions))
+    d.code.edit:SetText('return )');d.code.edit.scripts.OnTextChanged(d.code.edit,true);d.codeApply:Click();assert(d.model.value.evaluate=='return 3' and d.code.frame.rmInvalid)
+    d.codeCancel:Click();assert(d.code:GetText()=='return 3')
+end)
+test('graphical fields edit a staged schema and preserve order through transfer and reload',function()
+    local f,a=fixture();local d=a:condition_edit_box(function() end)
+    assert(d.form.fields.schemaGraph:IsShown() and not d.form.fields.schema:IsShown(),'raw schema is still the default editor')
+    d.form.fields.schemaGraph:Click();local graph=d.schemaEditor;assert(graph.frame:IsShown() and not d.frame:IsShown())
+    graph.form.fields.add:Click();local name=graph.form.fields.field_1;name:SetText('spell');name.scripts.OnTextChanged(name,true);name.scripts.OnEnterPressed(name)
+    graph.apply:Click();assert(d.frame:IsShown() and d.model.value.fields.spell=='string' and d.model.value.fieldOrder[1][1]=='spell' and not next(a.db.global.custom_conditions))
+    d.model.value.description='Fields';d.model.key='FIELDS';d.form:Draw();d:UpdateActions();d.apply:Click();local saved=a.db.global.custom_conditions.FIELDS;assert(saved and saved.fieldOrder[1][1]=='spell')
+    local codec=a:NewRotationCodec();local value=a:ParseCustomConditionImport(assert(codec:Encode({format='RM-CustomCondition',version=1,name='FIELDS',condition=saved})),codec);assert(value.condition.fieldOrder[1][1]=='spell')
+    f.load('validate.lua');a.warn=function() end;saved.fields.tests='condition[]';a:validate_custom_condition('global','FIELDS',saved,true);assert(saved.fieldOrder[1][1]=='spell' and saved.fields.tests=='condition[]')
+end)
+test('pending callback text survives tab switches and redraws until its own Apply or Cancel',function()
+    local f,a=fixture();local d=a:condition_edit_box(function() end);local original=d.model.value.evaluate
+    d.code.edit:SetText('return 876');d.code.edit.scripts.OnTextChanged(d.code.edit,true);d:SelectFunction('print');d:SelectFunction('evaluate')
+    assert(d.code:GetText()=='return 876' and d.model.value.evaluate==original and d.codeCancel:IsEnabled(),'switching callback applied its buffer')
+    d.form:Draw();d:UpdateActions();assert(d.code:GetText()=='return 876');d.codeCancel:Click();assert(d.code:GetText()==original)
+end)
+test('schema Undo returns to a container and Record conversion saves named keys',function()
+    local f,a=fixture();local d=a:condition_edit_box(function() end);d.form.fields.schemaGraph:Click();local g=d.schemaEditor
+    g.form.fields.add:Click();g.form.fields.type_1:Click();for _,row in ipairs(g.form.menu.rows) do if row:GetText()=='Record / map' then row:Click();break end end
+    g.form.fields.children_1:Click();g.undo:Click();g.form.fields.add:Click();assert(#g.model.root.children==2,'schema Undo retained primitive navigation')
+    g.cancel:Click();d.model.value.fields={value={'string','number'}};d.form:Draw();d.form.fields.schemaGraph:Click();g=d.schemaEditor
+    g.form.fields.type_1:Click();for _,row in ipairs(g.form.menu.rows) do if row:GetText()=='Record / map' then row:Click();break end end;g.apply:Click()
+    assert(d.model.value.fields.value[1]==nil and d.model.value.fields.value.field1=='string','record conversion saved numeric keys')
+end)
+test('mixed case custom identifiers survive replacing their own export',function()
+    local f,a=fixture();local source=a:CopySettingsData(a.empty_condition);source.description='Case';a.db.global.custom_conditions.myCondition=source;a.conditionDefinitions.myCondition={description='Case'}
+    local d=a:condition_edit_box(function() end,'myCondition',source);d.transfer:Click();local transfer=d.rmCustomTransferForm.textDialog;transfer.apply:Click()
+    assert(d.rmCustomTransferForm.prompt and d.rmCustomTransferForm.prompt.frame:IsShown(),'mixed case replacement was rejected');d.rmCustomTransferForm.prompt.accept:Click();assert(d.model.key=='myCondition')
 end)
 finish()

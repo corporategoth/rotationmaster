@@ -3,27 +3,24 @@ local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
 function addon:CreateRotationTagPicker(parent,options)
     local picker={frame=CreateFrame('Frame',nil,parent),tags={},chips={},width=300,options=options,serial=0}
     local frame=picker.frame
-    picker.input=addon:CreateWorkbenchEditBox(frame);picker.input:SetPoint('TOPLEFT',0,0);picker.input:SetHeight(24);picker.input:SetMaxLetters(256);picker.input:SetText('')
+    picker.input=addon:CreateWorkbenchEditBox(frame);picker.input:SetPoint('TOPLEFT',options.inputInset or 0,0);picker.input:SetHeight(24);picker.input:SetMaxLetters(256);picker.input:SetText('')
     picker.placeholder=addon:AttachWorkbenchSearchHint(picker.input,options.allowCustom and L['Add or search tags'] or L['Search tags']);picker.input.art:SetColorTexture(.12,.13,.15,1)
     function picker:UpdatePlaceholder() self.input:RefreshWorkbenchSearchHint() end
-    picker.input.tooltip=options.allowCustom and L['Type a tag and press Enter, or choose an existing tag. Click a tag to remove it; right-click to choose its color.'] or L['Search existing tags and select any number of them. Click a selected tag to remove it; right-click to choose its color.']
+    picker.input.tooltip=options.allowCustom and L['Type a tag and press Enter, or choose an existing tag. Click a tag to remove it; use the search results to change tag colors.'] or L['Search existing tags and select any number of them. Click a selected tag to remove it; use the search results to change tag colors.']
     picker.menu=addon:CreateWorkbenchSelector()
     local function valid() return not picker.released and (not options.valid or options.valid()) end
     local function color(tag) return options.color and options.color(tag) or {r=1,g=1,b=1,a=1} end
     function picker:Layout()
-        self.input:SetWidth(self.width);self.placeholder:SetWidth(self.width-12);local x,y=0,28
+        local inputWidth=math.max(40,self.width-(options.inputInset or 0));self.input:SetWidth(inputWidth);self.placeholder:SetWidth(inputWidth-12);local x,y=0,28
         for i,tag in ipairs(self.tags) do
             local chip=self.chips[i]
-            if not chip then chip=addon:CreateWorkbenchPill(frame,'',72);chip:RegisterForClicks('LeftButtonUp','RightButtonUp');self.chips[i]=chip end
+            if not chip then chip=addon:CreateWorkbenchPill(frame,'',72);chip:RegisterForClicks('LeftButtonUp');self.chips[i]=chip end
             local width=math.min(self.width,math.max(40,#tag*7+20));if x>0 and x+width>self.width then x=0;y=y+22 end
-            chip:ClearAllPoints();chip:SetPoint('TOPLEFT',x,-y);chip:SetWidth(width);chip:SetText(tag..' ×');chip.tooltip=L['Click to remove this tag. Right-click to choose its color.'];addon:SetUIScript(chip,'OnEnter',function() if valid() and GameTooltip then GameTooltip:SetOwner(chip,'ANCHOR_RIGHT');GameTooltip:SetText(chip.tooltip,1,1,1,1,true) end end);addon:SetUIScript(chip,'OnLeave',function() if GameTooltip and GameTooltip:IsOwned(chip) then GameTooltip:Hide() end end);local rgba=color(tag);chip:GetFontString():SetTextColor(rgba.r,rgba.g,rgba.b,rgba.a or 1);chip:SetAccent(.55,.55,.55);chip:Show()
+            chip:ClearAllPoints();chip:SetPoint('TOPLEFT',x,-y);chip:SetWidth(width);chip:SetText(tag..' ×');chip.tooltip=L['Click to remove this tag. Use the search results to change tag colors.'];addon:SetUIScript(chip,'OnEnter',function() if valid() and GameTooltip then GameTooltip:SetOwner(chip,'ANCHOR_RIGHT');GameTooltip:SetText(chip.tooltip,1,1,1,1,true) end end);addon:SetUIScript(chip,'OnLeave',function() if GameTooltip and GameTooltip:IsOwned(chip) then GameTooltip:Hide() end end);local rgba=color(tag);chip:GetFontString():SetTextColor(rgba.r,rgba.g,rgba.b,rgba.a or 1);chip:SetAccent(rgba.r,rgba.g,rgba.b);chip:SetSelected(true);chip:Show()
             if options.readOnly then chip:Disable() else chip:Enable() end
-            addon:SetUIScript(chip,'OnClick',function(_,button)
+            addon:SetUIScript(chip,'OnClick',function()
                 if not valid() or options.readOnly then return end
-                if button=='RightButton' and options.setColor and addon.CreateWorkbenchColorPicker then
-                    self.colorPicker=self.colorPicker or addon:CreateWorkbenchColorPicker(frame)
-                    self.colorPicker:Open(color(tag),function(r,g,b,a) if valid() then options.setColor(tag,{r=r,g=g,b=b,a=a});self:Layout() end end,valid,chip)
-                else local tags=addon.RotationData.CopyData(self.tags);table.remove(tags,i);self:Change(tags) end
+                local tags=addon.RotationData.CopyData(self.tags);table.remove(tags,i);self:Change(tags)
             end)
             x=x+width+4
         end
@@ -35,7 +32,7 @@ function addon:CreateRotationTagPicker(parent,options)
     function picker:SetTags(tags) self.tags=addon.RotationData.NormalizeRotationTags(tags or {}) or {};self:Layout() end
     function picker:Change(tags)
         local normalized=addon.RotationData.NormalizeRotationTags(tags);if not normalized then return false end
-        self:SetTags(normalized);self.input:SetText('');self:UpdatePlaceholder();self.menu:Hide();if options.changed then options.changed(addon.RotationData.CopyData(normalized)) end;return true
+        self:SetTags(normalized);self.input:SetText('');self:UpdatePlaceholder();self.menu:Hide();self.input:ClearFocus();if options.changed then options.changed(addon.RotationData.CopyData(normalized)) end;return true
     end
     function picker:Add(tag)
         if not valid() or options.readOnly then return false end
@@ -46,7 +43,17 @@ function addon:CreateRotationTagPicker(parent,options)
     function picker:Suggest()
         if not valid() or options.readOnly then return end
         local query=(self.input:GetText() or ''):lower();local entries={};local selected={};for _,tag in ipairs(self.tags) do selected[tag:lower()]=true end
-        for _,tag in ipairs(options.available() or {}) do if not selected[tag:lower()] and tag:lower():find(query,1,true) then entries[#entries+1]={value=tag,text=tag} end end
+        for _,tag in ipairs(options.available() or {}) do if tag:lower():find(query,1,true) then
+            local entry={value=tag,text=tag,selected=selected[tag:lower()],color=color(tag)}
+            if options.setColor and addon.CreateWorkbenchColorPicker then entry.chooseColor=function(swatch,repaint)
+                if not valid() then return end
+                self.colorPicker=self.colorPicker or addon:CreateWorkbenchColorPicker(frame)
+                self.colorPicker:Open(color(tag),function(r,g,b,a) if valid() then
+                    local rgba={r=r,g=g,b=b,a=a};options.setColor(tag,rgba);self:Layout();repaint(rgba)
+                end end,valid,swatch)
+            end end
+            entries[#entries+1]=entry
+        end end
         if #entries==0 then self.menu:Hide();return end
         self.menu:Open(self.input,entries,nil,function(tag) if valid() then self:Add(tag) end end,valid,true)
     end

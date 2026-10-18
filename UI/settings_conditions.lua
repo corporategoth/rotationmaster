@@ -26,11 +26,24 @@ function addon:BuildConditionSettings(p)
     if p.category=='SWITCH' or p.category=='DEFAULT' or groupIndex then ordered=tags end
     local function orderChanged(list) if p.category=='SWITCH' then profile.switch_conditions=list elseif p.category=='DEFAULT' then profile.other_conditions_order=list elseif groupIndex then groups[groupIndex].conditions=list end end
     p:UseRoster(entries,p.condition,function(value) p.condition=value;p:Draw() end,{order=ordered,orderChanged=orderChanged,categories=categories,category=p.category,chooseCategory=function(value) p.category=value;p.condition=nil;p:Draw() end,sources={{value='all',text=L['All']},{value='builtin',text=L['Built In']},{value='custom',text=L['Custom']}},source=p.conditionSource,chooseSource=function(value) p.conditionSource=value;p.condition=nil;p:Draw() end,newText=L['Add'],new=function() self:OpenSettingsCustomCondition(p,nil) end,manage=function() p.mode='categories';p.categorySelection=nil;p:Draw() end})
-    p:SetRosterActions({{key='add_custom',text=L['Add'],icon='plus',action=p.roster.options.new},{key='transfer',text=L['Import/Export'],icon='transfer',enabled=custom[p.condition]~=nil,action=function()
-        local dialog=self:OpenSettingsCustomCondition(p,p.condition,custom[p.condition])
-        ---@cast dialog any
-        if dialog then dialog.transfer:Click() end
-    end}},true)
+    local compareCandidates={}
+    for key,value in pairs(custom) do if key~=p.condition then compareCandidates[#compareCandidates+1]={value=key,text=value.description or key} end end
+    table.sort(compareCandidates,function(a,b) return a.text<b.text end)
+    p:SetRosterActions({{key='add_custom',text=L['Add'],icon='plus',action=p.roster.options.new},
+        {key='duplicate_custom',text=L['Duplicate'],icon='copy',enabled=custom[p.condition]~=nil,action=function()
+            local tag=p.condition;local copy=self:CopySettingsData(custom[tag]);local key=tag:sub(1,216)..'_'..self:uuid():gsub('-','_');custom[key]=copy;p:RunSettingsEffect('custom_'..key,function() self:register_custom_condition(key,copy) end);p.condition=key;p.category='ALL';p.conditionSource='custom';p:Draw()
+        end},
+        {key='transfer',text=L['Import/Export'],icon='transfer',enabled=custom[p.condition]~=nil,action=function()
+            local dialog=self:OpenSettingsCustomCondition(p,p.condition,custom[p.condition])
+            ---@cast dialog any
+            if dialog then dialog.transfer:Click() end
+        end},
+        {key='compare',text=L['Compare'],icon='compare',enabled=custom[p.condition]~=nil and #compareCandidates>0,action=function()
+            local first=p.condition
+            p:ShowChoices(p.fields.compare,compareCandidates,function(key)
+                if key~=first and custom[first] and custom[key] then self:ShowCollectionComparison(p,'profile',{name=custom[first].description,profile=custom[first]},{name=custom[key].description,profile=custom[key]}) end
+            end)
+        end}})
     p:Heading(L['Conditions'])
     local tag=p.condition;local definition=definitions[tag] or (self.conditionSpecials or {})[tag]
     if tag and definition then
@@ -69,9 +82,6 @@ function addon:BuildConditionSettings(p)
             end)
             toggle:ClearAllPoints();toggle:SetPoint('TOPRIGHT',-28,-4);toggle:SetWidth(84);p.y=enabledY
             p:Actions({{key='edit_custom',text=L['Edit'],icon='info',action=function() self:OpenSettingsCustomCondition(p,tag,custom[tag]) end},
-                {key='duplicate_custom',text=L['Duplicate'],icon='copy',action=function()
-                    local copy=self:CopySettingsData(custom[tag]);local key=tag..'_'..self:uuid():gsub('-','_');custom[key]=copy;p:RunSettingsEffect('custom_'..key,function() self:register_custom_condition(key,copy) end);p.condition=key;p.category='ALL';p.conditionSource='custom';p:Draw()
-                end},
                 })
             p.fields.delete_custom=self:SettingsTopDelete(p,function() p:Confirm(L['Delete this custom condition? Existing rotations using it will become unavailable.'],function() custom[tag]=nil;p:RunSettingsEffect('custom_'..tag,function() self:UnregisterCondition(tag) end);p:Draw() end) end)
         end

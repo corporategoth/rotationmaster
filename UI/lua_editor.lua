@@ -52,14 +52,14 @@ function addon:CreateWorkbenchLuaEditor(parent,changed,valid,preferred)
         host:Hide()
     end
     local c={frame=CreateFrame('Frame',nil,parent),provider='native',valid=valid,changed=changed}
-    c.scroll=self:CreateWorkbenchScrollFrame(c.frame);c.scroll:SetPoint('TOPLEFT');c.edit=CreateFrame('EditBox',nil,c.scroll);c.edit:SetMultiLine(true);c.edit:SetAutoFocus(false);c.edit:EnableMouse(true);c.edit:SetFontObject('GameFontHighlightSmall');c.edit:SetTextInsets(6,6,4,4);c.edit:SetMaxLetters(0);c.edit:SetPoint('TOPLEFT');c.scroll:SetScrollChild(c.edit)
-    addon:SetUIScript(c.edit,'OnMouseDown',function(_,button) if button=='LeftButton' and not c.released and c.valid() then c.edit:SetFocus() end end)
-    c.scroll:EnableMouse(true);addon:SetUIScript(c.scroll,'OnMouseDown',function(_,button) if button=='LeftButton' and not c.released and c.valid() then c.edit:SetFocus() end end)
+    c.scroll=self:CreateWorkbenchScrollFrame(c.frame);c.scroll:SetPoint('TOPLEFT');c.edit=CreateFrame('EditBox',nil,c.scroll);c.edit:SetMultiLine(true);c.edit:SetAutoFocus(false);c.edit:EnableMouse(true);c.edit:EnableKeyboard(true);c.edit:SetAltArrowKeyMode(false);c.edit:SetBlinkSpeed(.5);c.edit:SetTextColor(1,1,1);c.edit:SetJustifyH('LEFT');c.edit:SetJustifyV('TOP');c.edit:SetFontObject('GameFontHighlightSmall');c.edit:SetTextInsets(6,6,4,4);c.edit:SetMaxLetters(0);c.edit:SetPoint('TOPLEFT');c.scroll:SetScrollChild(c.edit)
+    addon:SetUIScript(c.edit,'OnMouseDown',function(_,button) if button=='LeftButton' and not c.released and c.valid() and not c.edit:HasFocus() then c.edit:SetFocus() end end)
+    c.scroll:EnableMouse(true);addon:SetUIScript(c.scroll,'OnMouseDown',function(_,button) if button=='LeftButton' and not c.released and c.valid() and not c.edit:HasFocus() then c.edit:SetFocus() end end)
     c.measure=c.frame:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall');c.measure:SetWordWrap(true);c.measure:Hide()
     if c.edit.SetFont then c.edit:SetFont('Interface\\AddOns\\'..addon_name..'\\Fonts\\Inconsolata-Regular.ttf',12,'') end
     if c.measure.SetFont then c.measure:SetFont('Interface\\AddOns\\'..addon_name..'\\Fonts\\Inconsolata-Regular.ttf',12,'') end
     function c:Layout()
-        local width=math.max(1,self.frame:GetWidth()-24);local height=math.max(1,self.frame:GetHeight());self.scroll:SetSize(self.frame:GetWidth(),height);self.edit:SetWidth(width);self.measure:SetWidth(math.max(1,width-12));self.measure:SetText(self:GetText());self.edit:SetHeight(math.max(height,self.measure:GetStringHeight()+16));self.scroll:UpdateWorkbenchScroll()
+        local width=math.max(1,self.frame:GetWidth()-24);local height=math.max(1,self.frame:GetHeight());if self.scroll:GetWidth()~=self.frame:GetWidth() or self.scroll:GetHeight()~=height then self.scroll:SetSize(self.frame:GetWidth(),height) end;if self.edit:GetWidth()~=width then self.edit:SetWidth(width) end;self.measure:SetWidth(math.max(1,width-12));self.measure:SetText(self:GetText());local editHeight=math.max(height,self.measure:GetStringHeight()+16);if self.edit:GetHeight()~=editHeight then self.edit:SetHeight(editHeight) end;self.scroll:UpdateWorkbenchScroll()
     end
     ---@return string
     function c:GetText()

@@ -155,6 +155,17 @@ function addon:BindWorkbenchInlineName(input,finish)
         input.rmNameMouseDown=pressed
     end)
 end
+function addon:CreateWorkbenchListRow(parent,width,height)
+    local row=self:CreateWorkbenchButton(parent,'',width)
+    row:SetHeight(height or 32)
+    return row
+end
+function addon:SetWorkbenchListSelection(control,selected)
+    if control.SetSelected then control:SetSelected(selected) end
+    if not control.selection then control.selection=control:CreateTexture(nil,'BACKGROUND');control.selection:SetAllPoints(control) end
+    control.selection:SetColorTexture(.1,.25,.3,.8)
+    if selected then control.selection:Show() else control.selection:Hide() end
+end
 function addon:CreateWorkbenchEditBox(parent)
     local input=CreateFrame("EditBox",nil,parent);input:SetFontObject("GameFontHighlightSmall");input:SetAutoFocus(false)
     input:SetTextInsets(6,6,0,0);input:SetHeight(24)

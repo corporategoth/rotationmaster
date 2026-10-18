@@ -3,6 +3,9 @@ local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
 local functions={valid=true,evaluate=true,print=true,widget=true,help=true,on_register=true,on_unregister=true}
 local kinds={string=true,number=true,boolean=true,condition=true,['condition[]']=true}
 local legacy='{ string, { string, number } }'
+function addon:IsCustomConditionIdentifier(key,compatibility)
+    return type(key)=='string' and (compatibility or #key<=256) and key:match('^[A-Za-z0-9_]+$')~=nil and not ({AND=true,OR=true,NOT=true,DELETE=true})[key]
+end
 function addon:NormalizeCustomFieldSchema(fields,compatibility)
     local active,nodes={},0
     local visit
@@ -34,6 +37,7 @@ function addon:ParseCustomConditionImport(text,codec)
     if type(value)~='table' or type(value.description)~='string' or not value.description:find('%S') or not self:IsCategoryIcon(value.icon) or not self:NormalizeCustomFieldSchema(value.fields,true) then return nil,L['Invalid custom condition.'] end
     for key,child in pairs(value) do
         if functions[key] then if type(child)~='string' then return nil,L['Invalid custom condition.'] end
+        elseif key=='fieldOrder' then if not self:NormalizeCustomFieldOrder(child,value.fields) then return nil,L['Invalid custom condition.'] end
         elseif key=='disabled' then if type(child)~='boolean' then return nil,L['Invalid custom condition.'] end
         elseif key~='description' and key~='icon' and key~='fields' then return nil,L['Invalid custom condition.'] end
     end

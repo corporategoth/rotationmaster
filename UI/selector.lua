@@ -26,8 +26,17 @@ function addon:CreateWorkbenchSelector()
             menu.scroll:SetSize(contentWidth,height);menu.child:SetWidth(contentWidth);frame:SetHeight((inline and 8 or 40)+height+8)
             for n,entry in ipairs(matches) do
                 local row=menu.rows[n];if not row then row=addon:CreateWorkbenchButton(menu.child,'',contentWidth);row.icon=row:CreateTexture(nil,'ARTWORK');row.icon:SetSize(18,18);row.icon:SetPoint('LEFT',2,0);menu.rows[n]=row end
-                row:ClearAllPoints();row:SetPoint('TOPLEFT',0,-(n-1)*21);row:SetSize(contentWidth,20);row:SetText(entry.text);row:SetSelected(entry.value==selected);addon:AlignWorkbenchTextLeft(row,entry.icon and 26 or 4);row:Show()
+                row:ClearAllPoints();row:SetPoint('TOPLEFT',0,-(n-1)*21);row:SetSize(contentWidth,20);row:SetText(entry.text);row:SetSelected(entry.selected or entry.value==selected);addon:AlignWorkbenchTextLeft(row,entry.icon and 26 or 4);row:Show()
                 if entry.icon then row.icon:SetTexture(entry.icon);row.icon:Show() else row.icon:Hide() end
+                if entry.color and entry.chooseColor then
+                    if not row.colorButton then
+                        local swatch=addon:CreateWorkbenchButton(row,'',14);swatch:SetSize(14,14);swatch:SetPoint('RIGHT',-3,0);swatch.fill=swatch:CreateTexture(nil,'ARTWORK');swatch.fill:SetAllPoints(swatch);row.colorButton=swatch
+                    end
+                    local swatch=row.colorButton;local rgba=entry.color;swatch.fill:SetColorTexture(rgba.r,rgba.g,rgba.b,rgba.a or 1);swatch.tooltip=L['Tag color'];swatch:Show();row:GetFontString():SetWidth(contentWidth-(entry.icon and 48 or 26))
+                    addon:SetUIScript(swatch,'OnClick',function() if valid() and frame:IsShown() and serial==menu.serial then entry.chooseColor(swatch,function(color)
+                        if valid() and serial==menu.serial then swatch.fill:SetColorTexture(color.r,color.g,color.b,color.a or 1) end
+                    end) end end)
+                elseif row.colorButton then row.colorButton:Hide();addon:SetUIScript(row.colorButton,'OnClick',nil) end
                 if entry.disabled then row:Disable() else row:Enable() end
                 addon:SetUIScript(row,'OnClick',function() if valid() and frame:IsShown() and serial==menu.serial then menu:Hide();if not inline and anchor.SetText and anchor.GetFontString then addon:PaintSelectorSelection(anchor,entry,entry.text) end;changed(entry.value,entry.text,entry.icon) end end)
             end

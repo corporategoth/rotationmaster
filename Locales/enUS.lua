@@ -1876,3 +1876,25 @@ L["Invalid condition: %s"] = true
 L["Unavailable condition: %s"] = true
 L["This condition definition is disabled. Rotations using it are unavailable."] = true
 L["Availability"] = true
+
+-- Native authoring and tag controls
+L['Edit fields'] = true
+L['Advanced'] = true
+L['Number'] = true
+L['Boolean'] = true
+L['Condition list'] = true
+L['Record / map'] = true
+L['Allowed types / list alternatives'] = true
+L['Invalid field schema: %s'] = true
+L['Back'] = true
+L['Named fields. Choose a type, then edit its children for nested data.'] = true
+L['Allowed types. A nested record or type list describes each item in a list.'] = true
+L['Showing the first 200 fields. Use Advanced schema for larger definitions.'] = true
+L['Add field'] = true
+L['Tag color'] = true
+L['Type a tag and press Enter, or choose an existing tag. Click a tag to remove it; use the search results to change tag colors.'] = true
+L['Search existing tags and select any number of them. Click a selected tag to remove it; use the search results to change tag colors.'] = true
+L['Click to remove this tag. Use the search results to change tag colors.'] = true
+
+L['Each callback keeps its own pending text while switching tabs. Its Apply stages the code; its Cancel restores the staged code. The callback Undo and Redo buttons edit its buffer. The main Apply saves and registers the whole condition; the main Cancel discards the whole draft. Check syntax runs no callbacks.'] = true
+L['Edit fields opens a graphical schema draft. Add, name, reorder or remove fields, choose primitive or nested types, and edit nested fields. Apply stages the schema and its field order. Advanced exposes the equivalent raw schema, parsed as data without executing Lua.'] = true

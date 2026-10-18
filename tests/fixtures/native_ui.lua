@@ -31,7 +31,10 @@ return function(env)
         function frame:SetClampedToScreen() end
         function frame:SetToplevel() end
         function frame:EnableMouse(value) self.mouseEnabled=value end
-        function frame:EnableKeyboard() end
+        function frame:EnableKeyboard(value) self.keyboardEnabled=value end
+        function frame:SetAltArrowKeyMode(value) self.altArrowKeyMode=value end
+        function frame:SetBlinkSpeed(value) self.blinkSpeed=value end
+        function frame:HasFocus() return self.focused==true end
         function frame:SetPropagateKeyboardInput() end
         function frame:RegisterForDrag(...) self.drags={...} end
         function frame:RegisterForClicks(...) self.clicks={...} end
@@ -61,6 +64,7 @@ return function(env)
         function frame:SetTextInsets(...) self.textInsets={...} end
         function frame:SetFocus() self.focused=true end
         function frame:SetCursorPosition(value) self.cursor=value end
+        function frame:GetCursorPosition() return self.cursor or #(self.text or "") end
         function frame:HighlightText(first,last) self.selection={first,last} end
         function frame:GetEffectiveScale() return self.scale or 1 end
         function frame:SetRotation(value) self.rotation=value end

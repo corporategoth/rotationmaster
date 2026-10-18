@@ -63,6 +63,7 @@ Core/profile_data.lua
 Core/collection_data.lua
 Core/custom_condition_data.lua
 Core/custom_authoring.lua
+Core/schema_authoring.lua
 Core/aura_conditions.lua
 Data/plain.lua
 Data/tags.lua
@@ -159,6 +160,7 @@ Options/itemset.lua
 Options/rotations.lua
 Options/custom_condition.lua
 UI/lua_editor.lua
+UI/schema_editor.lua
 UI/custom_condition_editor.lua
 Options/conditions.lua
 Options/conditional.lua

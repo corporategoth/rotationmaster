@@ -1,0 +1,15 @@
+local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite()
+local function fixture() local f=F.new();f.load('Core/custom_authoring.lua');f.load('Core/schema_authoring.lua');return f.addon end
+test('graph schema roundtrips records unions and list alternatives without executing source',function()
+    local a=fixture();local fields={spell={'string','number'},tests='condition[]',position={x='number',y='number'},items={'string',{'string','number'}}}
+    local d=assert(a:NewFieldSchemaDraft(fields));local value,order=d:Snapshot();assert(a:SettingsDataEqual(fields,value) and #order>4)
+    d:Change(function(root) local first=table.remove(root.children,1);root.children[#root.children+1]=first end)
+    local changed,layout=d:Snapshot();assert(a:SettingsDataEqual(changed,fields));local reopened=assert(a:NewFieldSchemaDraft(changed,layout));assert(reopened.root.children[1].name==d.root.children[1].name)
+    assert(d:Travel(false) and d:Travel(true))
+end)
+test('invalid graph schemas and forged orders remain unsaved with explicit errors',function()
+    local a=fixture();local d=assert(a:NewFieldSchemaDraft({one='string'}));d:Change(function(root) root.children[2]={name='one',kind='number'} end)
+    local value,why=d:Snapshot();assert(not value and why=='duplicate-field')
+    assert(not a:NormalizeCustomFieldOrder({{'missing'}},{one='string'}));assert(not a:NormalizeCustomFieldOrder({[2]={'one'}},{one='string'}))
+end)
+finish()

@@ -36,8 +36,8 @@ function addon:InstallSettingsLayout(p)
             if ((entry.text or '')..' '..(entry.search or '')):lower():find(query,1,true) then r.matches[#r.matches+1]=entry end
         end
         for i,entry in ipairs(r.matches) do
-            local row=r.rows[i];if not row then row=addon:CreateWorkbenchButton(r.child,'',230);row.icon=row:CreateTexture(nil,'ARTWORK');row.icon:SetSize(24,24);row.icon:SetPoint('LEFT',4,0);r.rows[i]=row end
-            row:ClearAllPoints();row:SetPoint('TOPLEFT',0,-(i-1)*34);row:SetSize(r.child:GetWidth(),32);row:SetText(entry.text);row:GetFontString():SetTextColor(entry.custom==false and .4 or .92,entry.custom==false and .7 or .94,entry.custom==false and 1 or .96);row:SetSelected(entry.value==r.current);addon:AlignWorkbenchTextLeft(row,entry.icon and 34 or 6)
+            local row=r.rows[i];if not row then row=addon:CreateWorkbenchListRow(r.child,230,32);row.icon=row:CreateTexture(nil,'ARTWORK');row.icon:SetSize(24,24);row.icon:SetPoint('LEFT',4,0);r.rows[i]=row end
+            row:ClearAllPoints();row:SetPoint('TOPLEFT',0,-(i-1)*34);row:SetSize(r.child:GetWidth(),32);row:SetText(entry.text);row:GetFontString():SetTextColor(entry.custom==false and .4 or .92,entry.custom==false and .7 or .94,entry.custom==false and 1 or .96);addon:SetWorkbenchListSelection(row,entry.value==r.current);addon:AlignWorkbenchTextLeft(row,entry.icon and 34 or 6)
             if entry.icon then row.icon:SetTexture(entry.icon);row.icon:Show() else row.icon:Hide() end;row:Show()
             addon:SetWorkbenchInvalid(row,entry.invalid,entry.validationMessage);row.tooltip=entry.validationMessage
             if entry.disabled then row:GetFontString():SetTextColor(.5,.5,.5) end
