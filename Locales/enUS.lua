@@ -732,15 +732,15 @@ L["Game build is unavailable"] = true
 L["Different game build"] = true
 L["Required context is not supported yet"] = true
 L["Reference only on this client"] = true
-L["The default rotation is unavailable."] = true
-L["Default · read-only"] = true
+L["The Built In rotation is unavailable."] = true
+L["Built In · read-only"] = true
 L["Level range: %s–%s; revision %s"] = true
 L["Available for this character"] = true
 L["Not available for this character: %s"] = true
-L["Enable default"] = true
-L["Could not update this default: %s"] = true
+L["Enable Built In"] = true
+L["Could not update this Built In rotation: %s"] = true
 L["Clone to edit"] = true
-L["Could not clone this default: %s"] = true
+L["Could not duplicate this Built In rotation: %s"] = true
 L["%d. %s"] = true
 L["Condition preview unavailable"] = true
 L["Sources"] = true
@@ -762,9 +762,9 @@ L["Removed %s: %s"] = true
 L["Moved %s: priority %s → %s"] = true
 L["Changed %s: %s → %s"] = true
 L["Read-only comparison. Priority moves are listed; rotations are not merged."] = true
-L["Changes in the default since cloning"] = true
+L["Changes in the Built In rotation since cloning"] = true
 L["Your changes since cloning"] = true
-L["Differences from the current default"] = true
+L["Differences from the current Built In rotation"] = true
 L["Overlapping field edits"] = true
 L["No overlapping field edits detected. Priority order still needs review."] = true
 L["Selected rotation → your rotation"] = true
@@ -794,7 +794,7 @@ L["These reminders highlight independently whenever their conditions are met."] 
 L["Sequential priority"] = true
 L["The first eligible step is recommended. Later steps provide alternatives."] = true
 L["View full rotation"] = true
-L["Default rotation reference"] = true
+L["Built In rotation reference"] = true
 
 L["Read-only comparison. Rotations are not merged."] = true
 L["Additional settings changed. Copy diagnostic details to inspect all fields."] = true
@@ -811,9 +811,9 @@ L["Comparison diagnostic details"] = true
 L["Press Ctrl+C to copy the selected diagnostic details."] = true
 L["Comparison view"] = true
 L["Copy diagnostic details"] = true
-L["Default updates since cloning"] = true
+L["Built In updates since cloning"] = true
 L["Your edits since cloning"] = true
-L["Current default"] = true
+L["Current Built In rotation"] = true
 
 L["Unknown item"] = true
 L["Item %s"] = true
@@ -845,7 +845,7 @@ L["Always"] = true
 L["Condition reference (code is not run)."] = true
 L["Inspect import"] = true
 
-L["Export default"] = true
+L["Export Built In"] = true
 
 L["Comparison"] = true
 
@@ -910,7 +910,7 @@ L["Known and referenced spells. Enter a spell ID or link to find another spell."
 -- Native rotation roster
 L["Search rotations"] = true
 L["All"] = true
-L["Defaults"] = true
+L["Built In"] = true
 L["No rotations match this search."] = true
 L["New rotation"] = true
 L["Fallback rotation"] = true
@@ -1077,7 +1077,7 @@ L["Delete this custom rotation and its unsaved draft? This cannot be undone."] =
 
 L['Rotation details'] = true
 
-L["Default and custom rotations use the same cards. Defaults are read-only; enable or disable them, inspect their conditions, or Clone to edit."] = true
+L["Built In and custom rotations use the same cards. Built In rotations are read-only; enable or disable them, inspect their conditions, or Duplicate to edit."] = true
 
 L["Custom edits stay in a private draft. Apply saves; Discard restores the saved rotation. Undo and Redo include card deletion, movement, fields and conditions. Apply before reloading or logging out."] = true
 
@@ -1148,7 +1148,7 @@ L["Use changes"] = "Use changes"
 
 L["Use changes updates the draft. Apply the rotation to save it."] = "Use changes updates the draft. Apply the rotation to save it."
 
-L["Packaged default: clone it to edit its metadata."] = "Packaged default: clone it to edit its metadata."
+L["Built In rotation: duplicate it to edit its metadata."] = "Built In rotation: duplicate it to edit its metadata."
 
 L["Source"] = "Source"
 
@@ -1268,7 +1268,7 @@ L["Highlight effects"] = true
 L["If / Unless toggles negation. Enabled / Disabled keeps the saved fields while skipping evaluation. All / Any changes AND / OR. Click a group name to rename it; the branch icon hides or shows its children. Gray descendants cannot be reached."] = true
 L["Move, copy and remove"] = true
 L["Names and details"] = true
-L["Search or filter the rotation roster, then select a rotation. Blue defaults use the same editor but remain read-only; Duplicate makes an editable copy. The name and Metadata describe the rotation. Switch condition selects when it applies. Use the Rotation and Cooldowns tabs to select the content below the switch condition. Cooldowns highlight independently of the ordered rotation."] = true
+L["Search or filter the rotation roster, then select a rotation. Blue Built In rotations use the same editor but remain read-only; Duplicate makes an editable copy. The name and Metadata describe the rotation. Switch condition selects when it applies. Use the Rotation and Cooldowns tabs to select the content below the switch condition. Cooldowns highlight independently of the ordered rotation."] = true
 L["Select an effect to edit its name, type and type-specific settings. The icon previews it live. Sequence sections edit animation, color, pulse or custom frames in order. Duplicate creates an independent effect. Import replaces the selected effect after validation."] = true
 L["The question mark explains the visible controls. With condition fields open, it adds that condition’s help below the fields. Undo / Redo affect the draft. Apply saves; Discard or Cancel abandons draft changes. Red borders mark invalid or incomplete data."] = true
 L["These settings apply immediately. Press Enter or leave a text field to commit it. Invalid text stays red and blocks navigation until corrected. Searchable selectors open on click and filter as you type. Section headings collapse or expand their contents."] = true
@@ -1411,7 +1411,7 @@ L['Complete the effect settings before applying.'] = true
 
 L['Credits'] = true
 
-L['Default preferences'] = true
+L['Built In preferences'] = true
 
 L['Edits stay in a draft until Apply. Cancel restores saved settings. Changing tabs or closing asks to apply pending changes; Cancel on the page discards them. Effect previews do not save changes. Action-bar binding operations are explicit and immediate.'] = true
 
@@ -1525,7 +1525,7 @@ L["Priority %d"] = true
 L["Invalid priority"] = true
 L["Switch priority must be a whole number between -100000 and 100000."] = true
 L["Edit the description, tags, switch priority, author, realm, email, website and version. Source citations remain separate from your attribution. Use changes updates the rotation draft; Apply the rotation to save it. Cancel or Escape restores this dialog’s opening values."] = true
-L["Higher priority wins within custom or packaged rotations. Custom rotations and a valid saved fallback take precedence over packaged defaults. Equal priorities use name, then identity. Blank means zero."] = true
+L["Higher priority wins within custom or Built In rotations. Custom rotations and a valid saved fallback take precedence over Built In rotations. Equal priorities use name, then identity. Blank means zero."] = true
 L["Invalid switch priority for %s:%s; explicit repair resets it to zero."] = true
 
 -- Rank-aware aura families.
@@ -1552,7 +1552,7 @@ L["Item Available checks the required level and enabled item cooldown. An active
 
 -- TBC early Frost Mage preview.
 L["Default.TBC.Mage.Starter.Name"] = "Mage: early Frost leveling (1–19)"
-L["Default.TBC.Mage.Starter.Description"] = "TBC single-target Frost starter preview. Optional Intellect and armor upkeep, stationary pulls and combat fillers adapt to trained early ranks. Missing training or unavailable spells can select another filler. Combat priorities stop out of combat. Uses ranked action lookup with availability fallback; no automatic kiting, crowd control, shields, finishers or consumable use. Fire/Arcane specialization and later levels need other rotations."
+L["Default.TBC.Mage.Starter.Description"] = "TBC single-target Frost starter preview. Optional Intellect and armor upkeep, stationary pulls and combat fillers adapt to trained early ranks. Each training-dependent arm selects one filler; unavailable spells do not select the opposite arm. The same decision handles safe pulls and combat, without duplicated actions. Uses ranked action lookup with availability fallback; no automatic kiting, crowd control, shields, finishers or consumable use. Fire/Arcane specialization and later levels need other rotations."
 
 -- Alternate rotation presentation.
 L["Diagram view"] = true
@@ -1771,3 +1771,9 @@ L["zone {{!is|is not}} a %s zone"] = true
 L["{{!in|not in}} %s"] = true
 
 L["Time in combat"] = true
+
+L['Type a tag and press Enter, or choose an existing tag. Click a tag to remove it; right-click to choose its color.'] = true
+L['Search existing tags and select any number of them. Click a selected tag to remove it; right-click to choose its color.'] = true
+
+L['Decrease priority'] = true
+L['Increase priority'] = true

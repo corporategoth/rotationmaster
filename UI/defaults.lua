@@ -20,19 +20,19 @@ function addon:CreateDefaultRotationOptions(frame,spec,id,onClone,onRefresh)
     local rows,why=self:ListDefaultRotations(spec)
     local row
     for _,candidate in ipairs(rows) do if candidate.id==id then row=candidate;break end end
-    if not row then label(frame,L["The default rotation is unavailable."]);return end
+    if not row then label(frame,L["The Built In rotation is unavailable."]);return end
     label(frame,row.name,"Heading")
-    label(frame,L["Default · read-only"])
+    label(frame,L["Built In · read-only"])
     label(frame,row.description)
     local scope=row.applicability or {}
     label(frame,string.format(L["Level range: %s–%s; revision %s"],scope.minLevel or "1",scope.maxLevel or "?",row.revision or "?"))
     local status=label(frame,row.eligible and L["Available for this character"]
         or string.format(L["Not available for this character: %s"],reasons[row.eligibilityReason] or L["Unavailable"]))
     local enable=AceGUI:Create("CheckBox")
-    enable:SetLabel(L["Enable default"]);enable:SetValue(row.enabled)
+    enable:SetLabel(L["Enable Built In"]);enable:SetValue(row.enabled)
     enable:SetCallback("OnValueChanged",function(_,_,value)
         local ok,reason=addon:SetDefaultRotationEnabled(id,value)
-        if not ok then status:SetText(string.format(L["Could not update this default: %s"],reason));return end
+        if not ok then status:SetText(string.format(L["Could not update this Built In rotation: %s"],reason));return end
         if addon.currentSpec~=nil and addon.db.profile.enable then
             addon:UpdateAutoSwitch();addon:SwitchRotation();addon:EvaluateNextAction()
         end
@@ -44,10 +44,10 @@ function addon:CreateDefaultRotationOptions(frame,spec,id,onClone,onRefresh)
     clone:SetCallback("OnClick",function()
         local generated,reason=addon:CloneDefaultRotation(spec,id,string.format(L["Copy of %s"],row.name))
         if generated then onClone(generated)
-        else status:SetText(string.format(L["Could not clone this default: %s"],reason)) end
+        else status:SetText(string.format(L["Could not duplicate this Built In rotation: %s"],reason)) end
     end)
     frame:AddChild(clone)
-    local export=AceGUI:Create("Button");export:SetText(L["Export default"])
+    local export=AceGUI:Create("Button");export:SetText(L["Export Built In"])
     export:SetCallback("OnClick",function() return addon:ShowRotationTransfer(spec,row.runtimeKey) end)
     frame:AddChild(export)
     local scroll=AceGUI:Create("ScrollFrame")
@@ -64,7 +64,7 @@ end
 
 function addon:ShowDefaultRotation(spec,id)
     local window=AceGUI:Create("Window")
-    window:SetTitle(L["Default rotation reference"]);window:SetWidth(880);window:SetHeight(680);window:SetLayout("Flow")
+    window:SetTitle(L["Built In rotation reference"]);window:SetWidth(880);window:SetHeight(680);window:SetLayout("Flow")
     window:SetCallback("OnClose",function(widget) AceGUI:Release(widget) end)
     self.HideOnEscape(window)
     local function cloned(generated)

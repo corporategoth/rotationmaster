@@ -8,17 +8,13 @@ local function peaceful() return notCondition({type="COMBAT",unit="player"}) end
 local function attackable() return {type="ATTACKABLE",unit="target"} end
 
 assert(addon:RegisterDefaultRotation({
-    format="RotationMaster",schemaVersion=1,id="rm.tbc.shaman.starter",revision=7,
+    format="RotationMaster",schemaVersion=1,id="rm.tbc.shaman.starter",revision=8,
     nameKey="Default.TBC.Shaman.Starter.Name",descriptionKey="Default.TBC.Shaman.Starter.Description",
     applicability={families={"tbc"},actionContext="player",class="SHAMAN",minLevel=1,maxLevel=19},
     tags={"leveling","solo","starter","preview"},
     sources={
         {url="https://www.icy-veins.com/tbc-classic/enhancement-shaman-leveling-guide",
             title="Icy Veins: Enhancement Shaman leveling",reviewedAt="2026-10-18",revision="2026-01-12"},
-        {url="https://wowclassicdb.com/tbc/spell/8017",title="Rockbiter Weapon spell record",reviewedAt="2026-10-17"},
-        {url="https://wowclassicdb.com/tbc/spell/324",title="Lightning Shield rank 1 spell record",reviewedAt="2026-10-17"},
-        {url="https://www.wowhead.com/tbc/spell=325/lightning-shield",title="Lightning Shield rank 2 spell record",reviewedAt="2026-10-17"},
-        {url="https://www.wowhead.com/tbc/spell=403/lightning-bolt",title="Lightning Bolt spell record",reviewedAt="2026-10-17"},
     },
     body={
         switch=all(known(403),{type="LEVEL",unit="player",operator="LESSTHAN",value=20}),

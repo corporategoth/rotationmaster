@@ -79,6 +79,7 @@ Core/rotation_library.lua
 Core/rotation_tags.lua
 Core/imports.lua
 Core/condition_editor.lua
+Core/unsaved_changes.lua
 Core/rotation_editor.lua
 Core/rotation_workspace.lua
 Core/condition_canvas.lua
@@ -91,6 +92,8 @@ buttons.lua
 init.lua
 validate.lua
 UI/controls.lua
+UI/drag_presentation.lua
+UI/unsaved.lua
 UI/selector.lua
 UI/checkbox.lua
 UI/condition_inputs.lua
@@ -106,6 +109,7 @@ UI/settings_layout.lua
 UI/settings_ordered.lua
 UI/settings_draft.lua
 UI/settings_history.lua
+UI/settings_unsaved.lua
 UI/settings_form.lua
 UI/settings_transfer.lua
 UI/custom_condition_transfer.lua
@@ -127,6 +131,7 @@ UI/condition_text.lua
 UI/rotation_cards.lua
 UI/rotation_canvas.lua
 UI/color_picker.lua
+UI/tag_picker.lua
 UI/rotation_effect_fields.lua
 UI/rotation_fields.lua
 UI/rotation_navigation.lua

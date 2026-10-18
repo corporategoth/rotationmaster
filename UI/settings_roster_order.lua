@@ -44,6 +44,12 @@ function addon:InstallSettingsRosterOrder(p)
             self:Cancel();if not valid() or not p:FlushEdits() or not p:Valid(token) or r.options.order~=items then return end
             if r.orderView~=self then return r.orderView:Begin(id,title,tail) end
             self.drag=id;self.tail=tail;self.ghost:Present((tail and L['Move this and following entries']..': ' or '')..title,L['Drop in a highlighted gap.'],p.frame,tail and #items-self:Index()+1 or 1);for _,zone in ipairs(self.zones) do if zone.gap then zone:Show() end end
+            local entries={};local from=self:Index()
+            for visible,entry in ipairs(r.matches) do
+                local index;for i,value in ipairs(items) do if identity(value)==entry.value then index=i;break end end
+                if index and (tail and index>=from or not tail and entry.value==id) then local row=r.rows[visible];entries[#entries+1]={frame=row,x=0,y=(visible-1)*34,width=row:GetWidth(),height=row:GetHeight()} end
+            end
+            self.ghost:PresentCards(entries,r.child);self.ghost:CaptureCancel(function() self:Cancel() end)
             addon:SetUIScript(self.ghost,'OnUpdate',function() if not valid() then self:Cancel();return end;self.ghost:FollowPointer();self:Hover();if IsMouseButtonDown and not IsMouseButtonDown('LeftButton') then self:EndDrag() end end)
         end
         self.cleanups[#self.cleanups+1]=function() view:Cancel() end

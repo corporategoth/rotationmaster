@@ -86,10 +86,10 @@ function addon:BuildRotationCanvas(body,view)
         scene.dropTargets[#scene.dropTargets+1]={x=x,y=y,width=width,height=24,
             destination={path=copy(list.path),index=indexValue,parentId=list.parentId},truncated=list.truncated==true}
     end
-    local function line(from,to,points,arm,inactive,label)
+    local function line(from,to,points,arm,inactive,label,owner)
         scene.connectors[#scene.connectors+1]={from=from,to=to,points=points,arm=arm,
             tone=arm=="true" and "green" or arm=="false" and "red" or inactive and "gray" or "neutral",
-            label=label,inactive=inactive==true}
+            label=label,owner=owner,inactive=inactive==true}
     end
     local placeList
     local function placeNode(node,x,y)
@@ -141,12 +141,14 @@ function addon:BuildRotationCanvas(body,view)
                 local populated=#choice.list.nodes>0
                 local stemX=node.single and populated and center or center+(choice.arm=='false' and -2 or 2)
                 local points={{x=stemX,y=y+node.header},{x=stemX,y=armsY-20},{x=enter.x,y=armsY-20},{x=enter.x,y=armsY}}
-                line(step.id,enter.id,points,choice.arm,choice.blocked,choice.arm)
-                if not enter.id then line(step.id,nil,{{x=enter.x,y=enter.y},{x=leave.x,y=leave.y}},choice.arm,choice.blocked) end
-                line(leave.id,nil,{{x=leave.x,y=leave.y},{x=leave.x,y=joinY-8},{x=center,y=joinY-8}},choice.arm,choice.blocked)
-                scene.armLabels[#scene.armLabels+1]={x=math.max(x,math.min(x+node.width-100,laneCenter-50)),y=armsY-18,arm=choice.arm,parentId=step.id,folded=choice.list.folded,count=choice.list.count,inactive=choice.blocked}
+                line(step.id,enter.id,points,choice.arm,choice.blocked,choice.arm,step.id)
+                if not enter.id then line(step.id,nil,{{x=enter.x,y=enter.y},{x=leave.x,y=leave.y}},choice.arm,choice.blocked,nil,step.id) end
+                line(leave.id,nil,{{x=leave.x,y=leave.y},{x=leave.x,y=joinY-8},{x=center,y=joinY-8}},choice.arm,choice.blocked,nil,step.id)
+                local labelX=math.max(x,math.min(x+node.width-100,laneCenter-50));local labelY=armsY-40;local placement='above'
+                if node.single and populated then labelX=center+(choice.arm=='true' and 8 or -108);labelY=y+node.header+(armLead-20)/2-9;placement=choice.arm=='true' and 'right' or 'left' end
+                scene.armLabels[#scene.armLabels+1]={x=labelX,y=labelY,placement=placement,arm=choice.arm,parentId=step.id,folded=choice.list.folded,count=choice.list.count,inactive=choice.blocked}
             end
-            line(nil,nil,{{x=center,y=joinY-8},{x=center,y=joinY}},nil,inactive)
+            line(nil,nil,{{x=center,y=joinY-8},{x=center,y=joinY}},nil,inactive,nil,step.id)
             exit={x=center,y=joinY,id=step.id}
         end
         return entry,exit

@@ -9,7 +9,7 @@ end
 test('native editor stages schema and callbacks until Apply and has cross-function Undo',function()
     local f,a=fixture();assert(a.CreateWorkbenchLuaEditor,'native code editor missing');local saved;local d=a:condition_edit_box(function(key) saved=key end)
     assert(d.nativeCustomEditor and d.form and d.code);local p=d.form;local function edit(key,text) local c=p.fields[key];c:SetText(text);c.scripts.OnTextChanged(c,true);c.scripts.OnEnterPressed(c) end
-    edit('identifier','NATIVE');edit('description','Native condition');edit('schema','{ count = number }');d.code.edit:SetText('return true');d.code.edit.scripts.OnTextChanged(d.code.edit,true);assert(not a.db.global.custom_conditions.NATIVE)
+    edit('identifier','NATIVE');edit('description','Native condition');edit('schema','{ count = number }');d.code.edit:SetText('return true');d.code.edit.scripts.OnTextChanged(d.code.edit,true);d:UpdateActions();assert(d.code.frame.rmUnsaved and d.functionTabs.evaluate.rmUnsaved);assert(not a.db.global.custom_conditions.NATIVE)
     d:SelectFunction('print');d.code.edit:SetText('return "Name"');d.code.edit.scripts.OnTextChanged(d.code.edit,true);d:SelectFunction('evaluate');d.undo:Click();assert(d.model.value.print~= 'return "Name"');d.redo:Click();assert(d.model.value.print=='return "Name"');d.apply:Click();assert(saved=='NATIVE' and a.db.global.custom_conditions.NATIVE.fields.count=='number' and not d.frame:IsShown())
 end)
 test('syntax checks never run callbacks and errors preserve code and saved source',function()

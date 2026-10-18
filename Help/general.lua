@@ -121,7 +121,7 @@ function addon.layout_primary_options_help(frame)
 end
 
 function addon.layout_rotation_options_help(frame)
-    frame:AddChild(CreateText(L["Default and custom rotations use the same cards. Defaults are read-only; enable or disable them, inspect their conditions, or Clone to edit."]))
+    frame:AddChild(CreateText(L["Built In and custom rotations use the same cards. Built In rotations are read-only; enable or disable them, inspect their conditions, or Duplicate to edit."]))
     frame:AddChild(Gap())
     frame:AddChild(CreateText(L["Custom edits stay in a private draft. Apply saves; Discard restores the saved rotation. Undo and Redo include card deletion, movement, fields and conditions. Apply before reloading or logging out."]))
     frame:AddChild(Gap())

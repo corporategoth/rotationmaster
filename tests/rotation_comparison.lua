@@ -25,7 +25,7 @@ test('comparison report shows three directions and overlapping edits without mer
     local result={valid=true,complete=true,sourceChanges=part,customChanges=part,currentDifferences=part,
         conflicts={{path=change.path}},diagnostics={}}
     local text=f.addon:FormatRotationComparison(result)
-    assert(text:find('Changes in the default',1,true) and text:find('Your changes',1,true))
+    assert(text:find('Changes in the Built In rotation',1,true) and text:find('Your changes',1,true))
     assert(text:find('Differences from',1,true) and text:find('Overlapping field edits',1,true))
     assert(change.after==974 and #part.changes==1)
 end)

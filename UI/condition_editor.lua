@@ -96,6 +96,8 @@ local function createShell()
     function shell:UpdateHistoryButtons()
         if not self.active or not self.undo then return end
         local state=self.active.session:HistoryState()
+        local baseline=self.active.session:Baseline()
+        for _,card in ipairs(self.canvas.cards) do if card.model then addon:SetWorkbenchUnsaved(card.frame,not self.active.readOnly and (not addon:UnsavedDataEqual(at(self.active.working,card.model.path),at(baseline,card.model.path)) or card.pane and pendingFields(card.pane,false))) end end
         local pending=false
         for _,card in ipairs(self.canvas.cards) do if card.pane and pendingFields(card.pane,false) then pending=true;break end end
         if state.canUndo or not self.active.readOnly and pending then self.undo:Enable() else self.undo:Disable() end
@@ -106,8 +108,10 @@ local function createShell()
         self.view.width=self.canvas.frame:GetWidth()-8;self.view.definitions=addon.conditionDefinitions
         local rows=self.active.session:Rows(4096);self.rows=rows
         local scene=addon:BuildConditionCanvas(self.active.working,rows,self.view)
+        local baseline=self.active.session:Baseline()
         local result=addon.RotationData.ValidateBody({switch=self.active.working,rotation={},cooldowns={}},addon:GetImportValidationOptions())
         for _,card in ipairs(scene.cards) do
+            card.changed=not self.active.readOnly and not addon:UnsavedDataEqual(at(self.active.working,card.path),at(baseline,card.path))
             local path="$.body.switch"
             for _,part in ipairs(card.path) do path=path..(type(part)=="number" and "["..part.."]" or "."..part) end
             for _,diagnostic in ipairs(result.diagnostics) do
@@ -313,7 +317,7 @@ local function createShell()
         local control=addon:CreateWorkbenchLabeledIconButton(window,key=='group' and 'group-add' or 'plus',label,key=='group' and 110 or 134);shell.palette[key]=control
         control:RegisterForDrag("LeftButton");control.tooltip=L["Click to append; drag into a gap to insert."]
         addon:SetUIScript(control,"OnClick",function() if shell.active then local root=shell.active.working;local destination={path={}};if next(root)~=nil and root.type~="AND" and root.type~="OR" then destination.relation="after" end;shell:Command("Insert",destination,node) end end)
-        addon:BindWorkbenchDragSource(control,function() shell.canvas:StartInsert(node) end,function() shell.canvas:EndDrag() end)
+        addon:BindWorkbenchDragSource(control,function() shell.canvas:StartInsert(node,control) end,function() shell.canvas:EndDrag() end)
     end
     local function expandAll(expanded)
         if not shell.active or not shell:SyncWorking() then return end

@@ -198,4 +198,15 @@ test('arm fold controls stay inside the measured diagram bounds',function()
         for _,arm in ipairs(s.armLabels) do assert(arm.x>=0 and arm.x+100<=s.width,'arm control overflows scroll surface') end
     end
 end)
+test('diagram arm labels sit above split paths or beside the one straight populated path',function()
+    for _,arms in ipairs({{{leaf('yes')},{leaf('no')}},{{leaf('yes')},{}},{{},{leaf('no')}}}) do
+        local s=scene({branch('b',nil,arms[1],arms[2])},nil,{section='rotation'});local b=byId(s,'b');local center=b.x+b.width/2
+        for _,label in ipairs(s.armLabels) do
+            if #arms[1]>0 and #arms[2]>0 then assert(label.y+18<=b.y+b.height+20 and label.placement=='above')
+            elseif label.arm=='true' and #arms[1]>0 then assert(label.x>center and label.placement=='right');assert(label.y+9==b.y+b.height+10,'side label is not centered before the split')
+            elseif label.arm=='false' and #arms[2]>0 then assert(label.x+100<center and label.placement=='left');assert(label.y+9==b.y+b.height+10,'side label is not centered before the split')
+            else assert(label.placement=='above' and label.y+18<=b.y+b.height+20) end
+        end
+    end
+end)
 finish()

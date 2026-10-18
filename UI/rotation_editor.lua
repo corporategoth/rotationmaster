@@ -141,7 +141,7 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
         if pane.RequestLeave then pane:RequestLeave(duplicate) else duplicate() end
     end,'copy')
     table.remove(pane.tools);pane.clone:Hide()
-    pane.enable=tool(workspace.readOnly and L['Enable default'] or L['Enabled'],116,function()
+    pane.enable=tool(workspace.readOnly and L['Enable Built In'] or L['Enabled'],116,function()
         if workspace.readOnly then
             local current=workspace.source.enabled;local ok,problem=addon:SetDefaultRotationEnabled(workspace.builtin,not current)
             if ok then workspace.source.enabled=not current;pane:RefreshAdvice();pane:Render() else pane:Message(problem) end
@@ -201,7 +201,8 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
                 local parsed=data.ParseRotationTags(self.tags:GetText());if not parsed then self.tags:SetTextColor(1,.35,.35);self:Message(L['Invalid tags. Use up to 64 tags of 64 characters, separated by commas.']);return nil,'invalid-tags' end
                 if snapshot.tags~=nil and not data.NormalizeRotationTags(snapshot.tags) or data.FormatRotationTags(parsed)~=data.FormatRotationTags(self:EffectiveTags(snapshot)) then tags=parsed end
             end
-            local details={description=self.descriptionDirty and self.description:GetText() or snapshot.description,metadata=self.metadataDirty and self.metadataDraft or snapshot.metadata,tags=tags,priority=priority}
+            local metadata=self.metadataDirty and self.metadataDraft or snapshot.metadata;if snapshot.metadata==nil and type(metadata)=='table' and next(metadata)==nil then metadata=nil end
+            local details={description=self.descriptionDirty and self.description:GetText() or snapshot.description,metadata=metadata,tags=tags,priority=priority}
             local ok,problem=workspace:Command('SetDetails',details);if not ok then self:Message(problem);return nil,problem end
             self.descriptionDirty=false;self.metadataDirty=false;self.tagsDirty=false;self.priorityDirty=false;self:Message('')
         end
@@ -291,6 +292,7 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
     end
     addon:SetUIScript(pane.frame,'OnSizeChanged',function() pane:Layout() end)
     addon:InstallRotationMetadata(pane)
+    addon:InstallRotationUnsaved(pane)
     pane.ready=true;parent.rmRotationEditor=pane
     if addon.InstallRotationNavigation then addon:InstallRotationNavigation(pane) end
     return pane:Open(spec,id,onSelect)

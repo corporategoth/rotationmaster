@@ -5,7 +5,7 @@ function addon:InstallSettingsOrdered(p)
         options=options or {};self.ordered=self.ordered or {}
         local token=self.generation;local parent=self.surface or self.child;local width=self.width
         local ghost=self:Acquire('orderedGhosts',function() return addon:CreateWorkbenchDragCard() end);ghost:SetParent(UIParent);ghost:Hide()
-        local view={rows={},zones={},compact=options.compact==true,ghost=ghost};self.ordered[key]=view
+        local view={rows={},zones={},compact=options.compact==true,ghost=ghost,unsavedKey=key:match("^items_") and "items" or "sequence"};self.ordered[key]=view
         local function valid() return p:Valid(token) end
         function view:CancelDrag()
             self.drag=nil;self.tail=nil
@@ -32,7 +32,9 @@ function addon:InstallSettingsOrdered(p)
             self:CancelDrag();if not valid() or not p:FlushEdits() or not valid() then return end
             self.drag=index;self.tail=IsControlKeyDown and IsControlKeyDown() or false;self.ghost.rmCollectionDragOwner=self;self.ghost:Present((self.tail and L['Move this and following entries']..': ' or '')..title(index),(options.dragSummary and options.dragSummary(index)..'\n' or '')..L['Drop in a highlighted gap.'],p.frame,self.tail and #items-index+1 or 1)
             self.ghost.texture=self.ghost.texture or self.ghost:CreateTexture(nil,'ARTWORK');self.ghost.texture:SetSize(28,28);self.ghost.texture:SetPoint('TOPLEFT',8,-8);local icon=options.dragIcon and options.dragIcon(index);self.ghost.label:ClearAllPoints();self.ghost.label:SetPoint('TOPLEFT',icon and 44 or 10,-8);self.ghost.label:SetWidth((self.tail and #items-index+1>1 and 230 or 320)-(icon and 34 or 0));if icon then self.ghost.texture:SetTexture(icon);self.ghost.texture:Show() else self.ghost.texture:Hide() end
-            if options.dragPreview then options.dragPreview(self.ghost,index) end
+            local entries={}
+            for i=index,self.tail and #items or index do local row=self.rows[i];if row then entries[#entries+1]={frame=row,x=0,y=row.dragY,width=row:GetWidth(),height=row:GetHeight()} end end
+            self.ghost:PresentCards(entries,parent);self.ghost:CaptureCancel(function() self:CancelDrag() end)
             for _,zone in ipairs(self.zones) do zone:Show() end
             addon:SetUIScript(self.ghost,'OnUpdate',function()
                 if not valid() then self:CancelDrag();return end
@@ -47,7 +49,7 @@ function addon:InstallSettingsOrdered(p)
                 frame.up=addon:CreateWorkbenchIconButton(frame,'up',L['Move Up']);frame.down=addon:CreateWorkbenchIconButton(frame,'down',L['Move Down']);frame.remove=addon:CreateWorkbenchIconButton(frame,'trash',L['Delete']);frame.remove.icon:SetVertexColor(1,.25,.25,1)
                 if not options.compact then frame.decoration=addon:CreateRoundedCardDecoration(frame);frame.decoration:SetColors(.35,.4,.44,.65,.08) end
                 return frame
-            end);view.rows[i]=row
+            end);view.rows[i]=row;row.dragY=y
             row:ClearAllPoints();row:SetPoint('TOPLEFT',0,-y);row:SetWidth(width)
             row.header:ClearAllPoints();row.header:SetPoint('TOPLEFT',26,-3);row.header:SetWidth(width-54);row.header:SetText((options.compact or options.header==false) and '' or title(i));addon:AlignWorkbenchTextLeft(row.header,3)
             row.header.grip=row.header.grip or row.header:CreateTexture(nil,'ARTWORK');row.header.grip:SetTexture(addon:ControlTexture('grip'));row.header.grip:SetSize(12,18);row.header.grip:SetPoint('LEFT',2,0)

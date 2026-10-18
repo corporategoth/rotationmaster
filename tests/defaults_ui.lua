@@ -109,7 +109,7 @@ test('default exports route through the immutable runtime reference',function()
     local exported=false
     f.addon.ShowRotationTransfer=function(_,spec,key) assert(spec==0 and key=='pack-key');exported=true end
     f.addon:CreateDefaultRotationOptions(parent,0,'pack',function() error('export cloned a default') end)
-    for _,child in ipairs(parent.children) do if child.kind=='Button' and child.text=='Export default' then child.callbacks.OnClick() end end
+    for _,child in ipairs(parent.children) do if child.kind=='Button' and child.text=='Export Built In' then child.callbacks.OnClick() end end
     assert(exported)
 end)
 finish()

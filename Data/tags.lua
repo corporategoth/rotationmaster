@@ -54,10 +54,16 @@ function data.GetRotationTags(value)
     if tags==nil then return {} end
     return data.NormalizeRotationTags(tags)
 end
-function data.RotationTagMatches(tags,tag)
-    if not tag then return true end
-    for _,value in ipairs(tags or {}) do if value:lower()==tag:lower() then return true end end;return false
+function data.RotationTagMatches(tags,filter,mode)
+    if filter==nil then return true end
+    if type(filter)=='string' then filter={filter} end
+    if type(filter)~='table' then return false end
+    if #filter==0 then return true end
+    local present={};for _,value in ipairs(tags or {}) do present[value:lower()]=true end
+    for _,tag in ipairs(filter) do local match=present[tag:lower()]==true;if mode=='all' and not match then return false elseif mode~='all' and match then return true end end
+    return mode=='all'
 end
+
 -- Compare effective labels once, regardless of whether they are inherited or
 -- explicitly stored. This detached view never materializes tags in saved data.
 function data.RotationComparisonValue(body,inheritedTags)

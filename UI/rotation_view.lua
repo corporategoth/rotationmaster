@@ -100,7 +100,7 @@ function addon:InstallRotationView(pane)
                 local list=self.workspace:Snapshot()[control.section];self:Command('Insert',{path={control.section},index=#list+1},control.node)
             end)
             addon:BindWorkbenchDragSource(control,function()
-                if alive() and control.section==self:ContentSection() then self.canvas:BeginDrag(nil,control.node) end
+                if alive() and control.section==self:ContentSection() then self.canvas:BeginDrag(nil,control.node,control) end
             end,function() if alive() then self.canvas:EndDrag() end end)
         end
     end

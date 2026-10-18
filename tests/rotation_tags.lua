@@ -30,4 +30,10 @@ test('Unicode control codepoints are refused by normalization and import validat
         local value=envelope();value.body.tags={control};assert(not d.ValidateEnvelope(value,options).valid)
     end
 end)
+test('tag filters accept multiple labels with explicit Any or All semantics',function()
+    local d=fixture();local tags={'PVP','Frost','Solo'}
+    assert(d.RotationTagMatches(tags,{'pvp','Raid'},'any'))
+    assert(not d.RotationTagMatches(tags,{'pvp','Raid'},'all'))
+    assert(d.RotationTagMatches(tags,{'pvp','FROST'},'all') and d.RotationTagMatches(tags,{},'all'))
+end)
 finish()

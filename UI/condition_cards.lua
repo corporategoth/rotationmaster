@@ -30,7 +30,7 @@ function addon:CreateConditionCard(parent)
     card.controls.operator=addon:CreateWorkbenchPill(frame,'',34);card.controls.operator:SetPoint('TOPLEFT',90,-3);card.controls.operator.tooltip=L['Switch All / Any']
     card.fields=CreateFrame('Frame',nil,frame)
     function card:Place(model,title,summary)
-        frame:ClearAllPoints();frame:SetPoint('TOPLEFT',parent,'TOPLEFT',model.x,-model.y);frame:SetSize(model.width,model.height);self.model=model
+        frame:ClearAllPoints();frame:SetPoint('TOPLEFT',parent,'TOPLEFT',model.x,-model.y);frame:SetSize(model.width,model.height);self.model=model;addon:SetWorkbenchUnsaved(frame,model.changed)
         local gray=model.disabled or model.unreachable;local r,g,b=.25,.55,.32
         if model.invalid then r,g,b=.8,.24,.20 elseif gray then r,g,b=.4,.4,.4 elseif model.negated then r,g,b=.8,.24,.20 end
         self.decoration:SetColors(r,g,b,model.selected and 1 or .65,model.group and .025 or .05)

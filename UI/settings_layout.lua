@@ -81,10 +81,11 @@ function addon:InstallSettingsLayout(p)
     function p:Layout()
         if not self.rosterUsed or not self.roster then simpleLayout(self);return end
         local r=self.roster;local side=addon:GetWorkbenchSidebarWidth(self.frame:GetWidth());local height=math.max(1,self.frame:GetHeight()-(self.creationUsed and 66 or 38))
-        r.frame:SetSize(side,height);r.category:SetWidth(side);r.new:SetWidth(side);r.manage:SetWidth(side);r.search:ClearAllPoints();r.search:SetPoint('TOPLEFT',0,r.options.categories and -28 or 0);r.search:SetSize(side,24)
+        local sidebarHeight=addon:GetWorkbenchSidebarHeight(self.frame:GetHeight(),8)
+        r.frame:SetSize(side,sidebarHeight);r.category:SetWidth(side);r.new:SetWidth(side);r.manage:SetWidth(side);r.search:ClearAllPoints();r.search:SetPoint('TOPLEFT',0,0);r.category:ClearAllPoints();r.category:SetPoint('TOPLEFT',0,-28);r.search:SetSize(side,24)
         local footerHeight=r.footerActions and math.ceil(#r.footerActions/2)*28+(r.footerManage and 30 or 0) or (r.options.new and 30 or 0)+(r.options.manage and 30 or 0)
         if r.footerActions then local width=(side-6)/2;for i,button in ipairs(r.actionButtons) do button:ClearAllPoints();button:SetPoint('BOTTOMLEFT',((i-1)%2)*(width+6),(r.footerManage and 30 or 0)+(math.ceil(#r.footerActions/2)-1-math.floor((i-1)/2))*28);button:SetWidth(width);addon:AlignWorkbenchTextLeft(button,24) end end
-        local top=r.options.categories and 60 or 32;r.scroll:ClearAllPoints();r.scroll:SetPoint('TOPLEFT',0,-top);r.scroll:SetSize(side-18,math.max(1,height-top-footerHeight));r.child:SetWidth(side-26)
+        local top=r.options.categories and 60 or 32;r.scroll:ClearAllPoints();r.scroll:SetPoint('TOPLEFT',0,-top);r.scroll:SetSize(side-18,math.max(1,sidebarHeight-top-footerHeight));r.child:SetWidth(side-26)
         self.scroll:ClearAllPoints();self.scroll:SetPoint('TOPLEFT',side+24,-8);self.scroll:SetSize(math.max(1,self.frame:GetWidth()-side-50),height);self.message:SetWidth(math.max(1,self.frame:GetWidth()-20))
     end
 end

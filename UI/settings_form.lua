@@ -100,7 +100,7 @@ function addon:CreateSettingsForm(parent)
         addon:SetUIScript(number,'OnTextChanged',self:Guard(function(_,user) if user then record.dirty=true;if self.transactionKeys and self.fields.apply then self.fields.apply:Enable() end;local ok=record.parse(number:GetText())~=nil;number:SetTextColor(1,ok and 1 or .35,ok and 1 or .35) end end))
         addon:SetUIScript(number,'OnEnterPressed',self:Guard(function() if self:FlushEdits() then number:ClearFocus() end end));addon:SetUIScript(number,'OnEditFocusLost',self:Guard(function() self:FlushEdits() end))
         addon:SetUIScript(number,'OnEscapePressed',self:Guard(function() record.dirty=false;number:SetText(record.baseline);number:SetTextColor(1,1,1);number:ClearFocus();self:Message('') end))
-        addon:SetUIScript(c,'OnValueChanged',self:Guard(function(_,n) if c.setting then return end;if self:FlushEdits() then number:SetText(string.format('%.4g',n));record.baseline=number:GetText();changed(n) end end));return c
+        addon:SetUIScript(c,'OnValueChanged',self:Guard(function(_,n) if c.setting then return end;if step>=1 then local rounded=math.max(lo,math.min(hi,lo+math.floor((n-lo)/step+.5)*step));if rounded~=n then c.setting=true;c:SetValue(rounded);c.setting=false;n=rounded end end;if self:FlushEdits() then number:SetText(string.format('%.4g',n));record.baseline=number:GetText();changed(n) end end));return c
     end
     function p:Reference(key,caption,value,kind,settings,changed,allowEmpty)
         local provider=addon:GetReferenceProvider(kind);settings=settings or {};settings.limit=12;settings.inventory=provider.inventory
@@ -285,5 +285,6 @@ function addon:CreateSettingsForm(parent)
     if addon.InstallSettingsOrdered then addon:InstallSettingsOrdered(p) end
     if addon.InstallSettingsRosterOrder then addon:InstallSettingsRosterOrder(p) end
     if addon.InstallSettingsLayout then addon:InstallSettingsLayout(p) end
+    if addon.InstallSettingsUnsaved then addon:InstallSettingsUnsaved(p) end
     p.frame:SetSize(parent:GetWidth(),parent:GetHeight());p:Layout();return p
 end

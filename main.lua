@@ -68,6 +68,7 @@ local defaults = {
         damage_history = 30,
         disable_buttons = false,
         rotation_view = "diagram",
+        rotationTagColors = {},
         preview_spells = 0,
         preview_window = {
             point = "CENTER",
@@ -460,7 +461,7 @@ function minimapInitialize()
         for id, rot in pairs(addon:GetRuntimeRotations(addon.currentSpec,true)) do
             if id ~= DEFAULT then
                 info.text, info.arg1, info.checked = rot.name, id, (addon.manualRotation == true and addon.currentRotation == id)
-                if addon:IsDefaultRuntimeRotation(addon.currentSpec,id) then info.text="|cff5bc0eb"..rot.name.."|r ("..L["Default · read-only"]..")" end
+                if addon:IsDefaultRuntimeRotation(addon.currentSpec,id) then info.text="|cff5bc0eb"..rot.name.."|r ("..L["Built In · read-only"]..")" end
                 UIDropDownMenu_AddButton(info)
             end
         end

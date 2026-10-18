@@ -39,6 +39,12 @@ function addon:condition_edit_box(update,key,source,saveAllowed)
         if #self.model.undo>0 or self.code and self.code:GetText()~=self.model.value[self.selected] then self.undo:Enable() else self.undo:Disable() end
         if #self.model.redo>0 then self.redo:Enable() else self.redo:Disable() end
         if self:IsDirty() then self.apply:Enable() else self.apply:Disable() end
+        local before=self.model.baseline;local current=self.model.value
+        for _,entry in ipairs({{'identifier',self.model.key,before.key},{'description',current.description,before.value.description},{'schema',addon:FormatCustomFieldSchema(current.fields),addon:FormatCustomFieldSchema(before.value.fields)},{'icon',current.icon,before.value.icon}}) do
+            local input=p.fields[entry[1]];local dirty=not addon:UnsavedDataEqual(entry[2],entry[3]);for _,record in ipairs(p.edits) do if record.control==input and record.dirty then dirty=input:GetText()~=tostring(entry[3] or '') end end;addon:SetWorkbenchUnsaved(input,dirty)
+        end
+        if self.code then addon:SetWorkbenchUnsaved(self.code.frame,self.code:GetText()~=(before.value[self.selected] or '')) end
+        for name,button in pairs(self.functionTabs or {}) do addon:SetWorkbenchUnsaved(button,current[name]~=before.value[name] or name==self.selected and self.code and self.code:GetText()~=(before.value[name] or '')) end
     end
     function d:Close()
         if self.closed then return end;self.closed=true;self.owner.active=false
@@ -100,8 +106,9 @@ function addon:condition_edit_box(update,key,source,saveAllowed)
         form:Edit('schema',L['Field schema'],addon:FormatCustomFieldSchema(d.model.value.fields) or '',function(text) return addon:ParseCustomFieldSchema(text) end,function(fields) d.model:Change(function(model) model.value.fields=fields end) end)
         form.fields.schema:SetMaxLetters(32768);form.fields.schema:SetText(addon:FormatCustomFieldSchema(d.model.value.fields) or '')
         local y=form:Row(nil,28)
+        d.functionTabs={}
         for i,name in ipairs(order) do
-            local button=form:Acquire('functionTabs',function() return addon:CreateWorkbenchButton(form.child,'',102) end);button:ClearAllPoints();button:SetPoint('TOPLEFT',(i-1)*106,-y);button:SetSize(102,24);button:SetText(labels[name]);button:SetSelected(name==d.selected);addon:SetUIScript(button,'OnClick',form:Guard(function() d:SelectFunction(name) end))
+            local button=form:Acquire('functionTabs',function() return addon:CreateWorkbenchButton(form.child,'',102) end);button:ClearAllPoints();button:SetPoint('TOPLEFT',(i-1)*106,-y);button:SetSize(102,24);button:SetText(labels[name]);d.functionTabs[name]=button;button:SetSelected(name==d.selected);addon:SetUIScript(button,'OnClick',form:Guard(function() d:SelectFunction(name) end))
         end
         form:Text('function('..addon.CustomConditionCallbacks[d.selected]..')')
         if not d.code then d.code=addon:CreateWorkbenchLuaEditor(form.child,function() if valid() then d:UpdateActions() end end,valid) elseif d.code.released then d.code:Acquire(function() if valid() then d:UpdateActions() end end,valid) end

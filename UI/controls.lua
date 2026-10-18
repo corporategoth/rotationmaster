@@ -158,7 +158,7 @@ function addon:CreateWorkbenchEditBox(parent)
 end
 function addon:CreateWorkbenchSlider(parent,minimum,maximum,step,width)
     local slider=CreateFrame("Slider",nil,parent);slider:SetOrientation("HORIZONTAL");slider:SetSize(width or 112,12)
-    slider:SetMinMaxValues(minimum,maximum);slider:SetValueStep(step)
+    slider:SetMinMaxValues(minimum,maximum);slider:SetValueStep(step);if slider.SetObeyStepOnDrag then slider:SetObeyStepOnDrag(true) end
     local track=slider:CreateTexture(nil,"BACKGROUND");track:SetPoint("LEFT",0,0);track:SetPoint("RIGHT",0,0);track:SetHeight(3);track:SetColorTexture(.3,.32,.34,1)
     local thumb=slider:CreateTexture(nil,"ARTWORK");thumb:SetSize(7,12);thumb:SetColorTexture(.78,.8,.82,1);slider:SetThumbTexture(thumb)
     return slider
@@ -294,7 +294,7 @@ function addon:CreateWorkbenchDragCard()
         if source and UIParent.GetEffectiveScale then self:SetScale(source:GetEffectiveScale()/UIParent:GetEffectiveScale()) end
         self:SetAlpha(.9);self:FollowPointer();self:Show()
     end
-    frame:Hide();return frame
+    self:InstallDragPresentation(frame,art);frame:Hide();return frame
 end
 
 -- Gap indices refer to the original list. A suffix cannot be dropped into
@@ -357,4 +357,8 @@ end
 
 function addon:GetWorkbenchSidebarWidth(width)
     return math.max(210,math.min(270,width*.26))
+end
+
+function addon:GetWorkbenchSidebarHeight(height,top)
+    return math.max(1,height-(top or 0))
 end

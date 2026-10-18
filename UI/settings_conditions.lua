@@ -56,8 +56,8 @@ function addon:BuildConditionCategorySettings(p)
     for i,group in ipairs(groups) do entries[#entries+1]={value=group.id,text=group.name or group.id,icon=self:GetConditionCategoryIcon(group)};if group.id==p.categorySelection then index=i end end
     if not index and not p.creatingCategory and p.categorySelection~='SWITCH' and p.categorySelection~='DEFAULT' then p.categorySelection=groups[1] and groups[1].id or 'DEFAULT';index=groups[1] and 1 end
     entries[#entries+1]={value='SWITCH',text=L['Switch']};entries[#entries+1]={value='DEFAULT',text=L['Other']}
-    p:UseRoster(entries,p.creatingCategory and nil or p.categorySelection,function(id) p.categorySelection=id;p.creatingCategory=false;p:Draw() end,{order=groups,newText=L['Add category'],new=function() p.creatingCategory=true;p:Draw() end,manageText=L['Manage conditions'],manage=function() p.mode=nil;p:Draw() end})
-    p:SetRosterActions({{key='new_category',text=L['Add category'],icon='group-add',action=p.roster.options.new},{key='transfer',text=L['Import/Export'],icon='transfer',enabled=not p.creatingCategory and p.categorySelection~=nil,action=function() if p.categoryTransfer then p.categoryTransfer() end end}},true)
+    p:UseRoster(entries,p.creatingCategory and nil or p.categorySelection,function(id) p.categorySelection=id;p.creatingCategory=false;p:Draw() end,{order=groups,newText=L['New'],new=function() p.creatingCategory=true;p:Draw() end,manageText=L['Manage conditions'],manage=function() p.mode=nil;p:Draw() end})
+    p:SetRosterActions({{key='new_category',text=L['New'],icon='plus',action=p.roster.options.new},{key='transfer',text=L['Import/Export'],icon='transfer',enabled=not p.creatingCategory and p.categorySelection~=nil,action=function() if p.categoryTransfer then p.categoryTransfer() end end}},true)
     p:Heading(L['Manage categories'])
     if p.creatingCategory or not p.categorySelection then
         p.newGroupName=p.newGroupName or '';p:Edit('new_group_name',L['Name'],p.newGroupName,nil,function(text) p.newGroupName=text end)

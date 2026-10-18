@@ -63,10 +63,10 @@ test('mage starter adapts to trained rank preferences rather than assuming train
 end)
 test('preferred fillers cannot override native range usability or cooldown availability',function()
     local f,s=fixture();local a=f.addon;s.level=11;s.combat=true;s.known[116]=true;s.known[143]=true;s.known[205]=true
-    s.range[116]=false;assert(first(a)==133)
+    s.range[116]=false;assert(first(a)==nil,'unavailable Frostbolt switched to the opposite branch')
     s.range[133]=false;assert(first(a)==nil)
-    s.range={};s.usable[116]=false;assert(first(a)==133)
-    s.usable={};s.cooldown[116]={startTime=90,duration=30,isEnabled=true,modRate=1};assert(first(a)==133)
+    s.range={};s.usable[116]=false;assert(first(a)==nil)
+    s.usable={};s.cooldown[116]={startTime=90,duration=30,isEnabled=true,modRate=1};assert(first(a)==nil)
     s.cooldown[133]={startTime=90,duration=30,isEnabled=true,modRate=1};assert(first(a)==nil)
 end)
 test('mage openers and combat priorities require stationary living hostile targets and respect the combat boundary',function()
@@ -78,7 +78,8 @@ test('mage openers and combat priorities require stationary living hostile targe
     s.dead=false;s.exists=false;assert(first(a)==nil)
     s.exists=true;s.combat=true;s.targetCombat=true;assert(first(a)==133)
     s.combat=false;assert(first(a)==nil,'combat filler escaped past the out-of-combat Stop')
-    local found=false;for _,step in ipairs(body(a).rotation) do if step.type=='none' then found=true;assert(a:evaluateCondition(step.conditions) and not step.suppress_attack) end end;assert(found)
+    local counts={};local function walk(list) for _,step in ipairs(list) do assert(step.type~='none','redundant combat Stop remains');if step.type=='branch' then walk(step.onTrue);walk(step.onFalse) else counts[step.action]=(counts[step.action] or 0)+1 end end end
+    walk(body(a).rotation);assert(counts[133]==1 and counts[116]==1,'pull and combat actions are duplicated')
 end)
 test('optional upkeep recognizes higher ranks and other casters without blocking damage',function()
     local f,s=fixture();local a=f.addon
@@ -98,7 +99,7 @@ end)
 test('mage preview is sourced localized read-only and expires at level20',function()
     local f,s=fixture();local a=f.addon;local row=a:ListDefaultRotations(0)[1]
     assert(row.id=='rm.tbc.mage.starter' and row.readOnly and row.validation.valid and row.validation.supported and row.validation.resolved)
-    assert(f.translations[row.nameKey] and f.translations[row.descriptionKey] and #row.envelope.sources>=2)
+    assert(f.translations[row.nameKey] and f.translations[row.descriptionKey] and #row.envelope.sources>=1)
     s.level=20;assert(not a:ListDefaultRotations(0)[1].eligible)
 end)
 test('rank-expanded multi-step preview visits each filler family once per selected priority arm',function()
@@ -115,13 +116,26 @@ test('rank-expanded multi-step preview visits each filler family once per select
         return table.concat(ids,',')
     end
     s.known[116]=true;s.known[143]=true;s.known[205]=true
-    assert(preview()=='205,143',preview())
-    s.combat=true;assert(preview()=='205,143',preview())
-    s.known[205]=nil;assert(preview()=='143,116',preview())
-    s.known[143]=nil;assert(preview()=='116,133',preview())
+    assert(preview()=='205',preview())
+    s.combat=true;assert(preview()=='205',preview())
+    s.known[205]=nil;assert(preview()=='143',preview())
+    s.known[143]=nil;assert(preview()=='116',preview())
     s.known[143]=true;s.known[205]=true;s.usable[205]=false
-    assert(preview()=='116,143','existing rank fallback changed: '..preview())
-    s.usable[116]=false;assert(preview()=='143',preview())
+    assert(preview()=='116','existing rank fallback changed: '..preview())
+    s.usable[116]=false;assert(preview()=='',preview())
     s.usable[143]=false;s.usable[133]=false;assert(preview()=='',preview())
+end)
+test('mage decision chooses exactly one spell in each arm for every training state',function()
+    local f,s=fixture();local a=f.addon
+    local guard=body(a).rotation[1];assert(#body(a).rotation==1 and guard.type=='branch' and #guard.onFalse==0)
+    local decision=guard.onTrue[1];assert(decision.type=='branch' and #decision.onTrue==1 and #decision.onFalse==1)
+    for mask=0,15 do
+        local ids={133,116,143,205};for bit,id in ipairs(ids) do s.known[id]=math.floor(mask/2^(bit-1))%2==1 end
+        local match=a:evaluateCondition(decision.conditions)
+        local chosen=match and decision.onTrue[1] or decision.onFalse[1]
+        assert(chosen.action==(match and 133 or 116),'branch polarity reversed')
+        local preferredFire=s.known[133] and (not s.known[116] or s.known[143] and not s.known[205])
+        assert(match==(preferredFire==true),'training decision mismatch at mask '..mask)
+    end
 end)
 finish()

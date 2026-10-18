@@ -20,3 +20,19 @@ end
 function addon:GetRotationTags(spec,id)
     return data.GetRotationTags(self:GetRotationTagView(spec,id)) or {}
 end
+function addon:GetAllRotationTags(spec)
+    local result,seen={},{}
+    local function add(tags) for _,tag in ipairs(tags or {}) do if not seen[tag:lower()] then seen[tag:lower()]=true;result[#result+1]=tag end end end
+    for _,entry in ipairs(self.ListDefaultRotations and self:ListDefaultRotations(spec) or {}) do add(data.GetRotationTags(entry.envelope)) end
+    for id in pairs((self.db.profile.rotations or {})[spec] or {}) do add(self:GetRotationTags(spec,id)) end
+    table.sort(result,function(a,b) return a:lower()<b:lower() end);return result
+end
+function addon:GetRotationTagColor(tag)
+    local palette=self.db.profile.rotationTagColors;local color=type(palette)=='table' and palette[tag:lower()]
+    return type(color)=='table' and data.CopyData(color) or {r=1,g=1,b=1,a=1}
+end
+function addon:SetRotationTagColor(tag,color)
+    local tags=data.NormalizeRotationTags({tag});if not tags or type(color)~='table' then return false end
+    local copy={};for _,key in ipairs({'r','g','b','a'}) do local n=color[key];if type(n)~='number' or n~=n or n<0 or n>1 then return false end;copy[key]=n end
+    self.db.profile.rotationTagColors=self.db.profile.rotationTagColors or {};self.db.profile.rotationTagColors[tags[1]:lower()]=copy;return true
+end

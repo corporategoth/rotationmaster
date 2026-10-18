@@ -33,9 +33,12 @@ function addon:InstallRotationMetadata(pane)
     end
     descriptionScroll:EnableMouse(true);addon:SetUIScript(descriptionScroll,'OnMouseUp',bodyMouseUp);addon:SetUIScript(pane.description,'OnMouseUp',function(control,button) if button=='RightButton' then bodyMouseUp(control,button) end end)
     dialog.labels.tags=label(child,L['Tags'],140);dialog.labels.tags:SetWidth(96);dialog.labels.tags:SetHeight(24);dialog.labels.tags:SetJustifyV('MIDDLE')
-    pane.tags=addon:CreateWorkbenchEditBox(child);dialog.fields.tags=pane.tags;pane.tags:SetSize(352,24);pane.tags:SetPoint('TOPLEFT',116,-140);pane.tags:SetMaxLetters(32768)
+    pane.tags=addon:CreateWorkbenchEditBox(child);dialog.fields.tags=pane.tags;pane.tags:SetSize(352,24);pane.tags:SetPoint('TOPLEFT',116,-140);pane.tags:SetMaxLetters(32768);pane.tags:Hide()
+    dialog.tagPicker=addon:CreateRotationTagPicker(child,{allowCustom=true,available=function() return addon:GetAllRotationTags(pane.workspace.spec) end,valid=function() return dialog:Valid() end,changed=function(tags) if not pane.workspace.readOnly then pane.tags:SetText(data.FormatRotationTags(tags));pane.tagsDirty=true;pane:UpdateHistory() end end,color=function(tag) return addon:GetRotationTagColor(tag) end,setColor=function(tag,color) addon:SetRotationTagColor(tag,color) end,layout=function() if dialog.source then dialog:Layout(dialog.sourceText or '') end end})
+    dialog.tagPicker.frame:SetPoint('TOPLEFT',116,-140);dialog.tagPicker:SetWidth(352)
     dialog.labels.priority=label(child,L['Switch priority'],170);dialog.labels.priority:SetWidth(96);dialog.labels.priority:SetHeight(24);dialog.labels.priority:SetJustifyV('MIDDLE')
-    pane.priority=addon:CreateWorkbenchEditBox(child);dialog.fields.priority=pane.priority;pane.priority:SetSize(352,24);pane.priority:SetPoint('TOPLEFT',116,-170);pane.priority:SetMaxLetters(32)
+    pane.priority=addon:CreateWorkbenchEditBox(child);dialog.fields.priority=pane.priority;pane.priority:SetSize(352,24);pane.priority:SetPoint('TOPLEFT',116,-170);pane.priority:SetMaxLetters(7);pane.priority:SetWidth(80)
+    dialog.priorityDown=addon:CreateWorkbenchIconButton(child,'minus',L['Decrease priority']);dialog.priorityUp=addon:CreateWorkbenchIconButton(child,'plus',L['Increase priority'])
     for index,entry in ipairs(definitions) do
         local key=entry[1];local y=200+(index-1)*30;dialog.labels[key]=label(child,L[entry[2]],y);dialog.labels[key]:SetWidth(96);dialog.labels[key]:SetHeight(24);dialog.labels[key]:SetJustifyV('MIDDLE')
         local input=addon:CreateWorkbenchEditBox(child);dialog.fields[key]=input;input:SetSize(352,24);input:SetPoint('TOPLEFT',116,-y);input:SetMaxLetters(512)
@@ -52,9 +55,15 @@ function addon:InstallRotationMetadata(pane)
     addon:SetUIScript(frame,'OnMouseUp',function(control,button) if button=='RightButton' then bodyMouseUp(control,button) end end)
     addon:SetUIScript(scroll,'OnMouseUp',function(control,button) if button=='RightButton' then bodyMouseUp(control,button) end end);scroll:EnableMouse(true)
     function dialog:Layout(sourceText)
-        local contentHeight=356
+        self.sourceText=sourceText
+        local priorityY=140+(self.tagPicker.height or 24)+6;local metadataY=priorityY+30;local sourceY=metadataY+#definitions*30+6
+        local function place(control,x,y) control:ClearAllPoints();control:SetPoint('TOPLEFT',x,-y) end
+        place(self.labels.priority,8,priorityY);place(self.priorityDown,116,priorityY+2);place(pane.priority,140,priorityY);place(self.priorityUp,224,priorityY+2)
+        for i,entry in ipairs(definitions) do place(self.labels[entry[1]],8,metadataY+(i-1)*30);place(self.fields[entry[1]],116,metadataY+(i-1)*30) end
+        place(self.sourceHeading,8,sourceY);place(self.source,8,sourceY+20)
+        local contentHeight=sourceY
         if sourceText~='' then
-            self.source:SetText(sourceText);self.source:SetHeight(0);self.source:SetHeight(self.source:GetStringHeight());self.source:Show();self.sourceHeading:Show();contentHeight=376+self.source:GetHeight()+12
+            self.source:SetText(sourceText);self.source:SetHeight(0);self.source:SetHeight(self.source:GetStringHeight());self.source:Show();self.sourceHeading:Show();contentHeight=sourceY+20+self.source:GetHeight()+12
         else self.source:SetText('');self.source:Hide();self.sourceHeading:Hide() end
         child:SetHeight(contentHeight);local visible=math.min(contentHeight,380);scroll:SetHeight(visible)
         self.note:SetHeight(0);local noteHeight=math.max(14,self.note:GetStringHeight());self.note:SetHeight(noteHeight);self.note:ClearAllPoints();self.note:SetPoint('TOPLEFT',12,-40-visible-8)
@@ -66,6 +75,7 @@ function addon:InstallRotationMetadata(pane)
         pane.metadataDraft=data.CopyData(metadata)
         if not pane.descriptionDirty then pane.description:SetText(snapshot.description or (pane.workspace.readOnly and pane.workspace.description or '')) end
         if not pane.tagsDirty then pane.tags:SetText(data.FormatRotationTags(pane:EffectiveTags(snapshot)) or '');pane.tags:SetTextColor(1,1,1) end
+        self.tagPicker:SetTags(data.ParseRotationTags(pane.tags:GetText()) or {})
         if not pane.priorityDirty then pane.priority:SetText(tostring(snapshot.priority~=nil and snapshot.priority or 0));pane.priority:SetTextColor(1,1,1) end
         if self.opened and not pane.descriptionDirty and not pane.metadataDirty and not pane.tagsDirty and not pane.priorityDirty then
             self.startMetadata=data.CopyData(metadata);self.startMetadataDirty=false;self.startDescription=pane.description:GetText();self.startDescriptionDirty=false;self.startTags=pane.tags:GetText();self.startTagsDirty=false
@@ -77,7 +87,7 @@ function addon:InstallRotationMetadata(pane)
         if not pane.active or self.workspace~=pane.workspace or self.generation~=pane.generation then return end
         pane.metadataDraft=data.CopyData(self.startMetadata);pane.metadataDirty=self.startMetadataDirty
         pane.description:SetText(self.startDescription);pane.descriptionDirty=self.startDescriptionDirty;pane.tags:SetText(self.startTags or '');pane.tagsDirty=self.startTagsDirty;pane:UpdateHistory()
-        pane.priority:SetText(self.startPriority or '0');pane.priorityDirty=self.startPriorityDirty;pane.priority:SetTextColor(1,1,1);pane:Message('');pane:UpdateHistory()
+        pane.priority:SetText(self.startPriority or '0');pane.priorityDirty=self.startPriorityDirty;pane.priority:SetTextColor(1,1,1);self.tagPicker:SetTags(data.ParseRotationTags(pane.tags:GetText()) or {});pane:Message('');pane:UpdateHistory()
     end
     function dialog:Close(keep)
         if not keep then self:Restore() end
@@ -90,23 +100,31 @@ function addon:InstallRotationMetadata(pane)
         if not pane.metadataDirty and not pane.tagsDirty and not pane.priorityDirty then self:Sync() end
         self.startMetadata=data.CopyData(pane.metadataDraft);self.startMetadataDirty=pane.metadataDirty
         self.startDescription=pane.description:GetText();self.startDescriptionDirty=pane.descriptionDirty;self.startTags=pane.tags:GetText();self.startTagsDirty=pane.tagsDirty
-        self.startPriority=pane.priority:GetText();self.startPriorityDirty=pane.priorityDirty
+        self.startPriority=pane.priority:GetText();self.startPriorityDirty=pane.priorityDirty;pane.lastPriorityText=self.startPriority
         local readOnly=pane.workspace.readOnly
         local lines={}
         local source=pane.workspace.source;local seen={}
         local function sources(manifest)
             if type(manifest)~='table' then return end
-            if type(manifest.sources)=='table' then for _,entry in ipairs(manifest.sources) do if type(entry)=='table' and type(entry.url)=='string' and not seen[entry.url] then
+            if type(manifest.sources)=='table' then for _,entry in ipairs(manifest.sources) do if type(entry)=='table' and type(entry.url)=='string' and not seen[entry.url] and not entry.url:lower():find('/spell/',1,true) and not entry.url:lower():find('spell=',1,true) and not entry.url:lower():find('spell%3d',1,true) and not entry.url:lower():find('/item/',1,true) and not entry.url:lower():find('item=',1,true) then
                 seen[entry.url]=true;lines[#lines+1]=(type(entry.title)=='string' and entry.title or L['Source'])..'\n'..entry.url
             end end end
         end
         if source then sources(source.envelope) end
         local reserved=pane.workspace.reserved or {}
         for _,kind in ipairs({'origins','imports','comparisons'}) do local entry=reserved[kind];if type(entry)=='table' then sources(entry.manifest) end end
-        self.note:SetText(readOnly and L['Packaged default: clone it to edit its metadata.'] or L['Use changes updates the draft. Apply the rotation to save it.'])
+        self.note:SetText(readOnly and L['Built In rotation: duplicate it to edit its metadata.'] or L['Use changes updates the draft. Apply the rotation to save it.'])
         if type(pane.workspace:Snapshot().metadata)~='table' and pane.workspace:Snapshot().metadata~=nil then self.note:SetText(string.format(L['Saved metadata is invalid (%s). Editing these fields replaces it.'],tostring(pane.workspace:Snapshot().metadata))) end
         self.chrome:SetContext(pane:RotationDisplayName(),L['Metadata'],pane:RotationDisplayName());self:Layout(table.concat(lines,'\n\n'));scroll.workbenchBar:SetValue(0);descriptionScroll.workbenchBar:SetValue(0)
         for _,input in pairs(self.fields) do input:EnableMouse(not readOnly) end
+        self.tagPicker.options.readOnly=readOnly;self.tagPicker.input:EnableMouse(not readOnly);self.tagPicker:SetTags(data.ParseRotationTags(pane.tags:GetText()) or {})
+        local function stepPriority(delta)
+            if not self:Valid() or readOnly then return end
+            local text=pane.priority:GetText();local number=tonumber(text);if text~='' and number==nil then return end;local value=data.GetRotationPriority(text=='' and nil or number);if value==nil then return end
+            pane.priority:SetText(tostring(math.max(-100000,math.min(100000,value+delta))));pane.priorityDirty=true;pane:UpdateHistory()
+        end
+        addon:SetUIScript(self.priorityDown,'OnClick',function() stepPriority(-1) end);addon:SetUIScript(self.priorityUp,'OnClick',function() stepPriority(1) end)
+        if readOnly then self.priorityDown:Disable();self.priorityUp:Disable() else self.priorityDown:Enable();self.priorityUp:Enable() end
         if readOnly then self.apply:Disable() else self.apply:Enable() end
         local token=self.openToken;local owner=self.workspace
         local function valid() return self:Valid() and token==self.openToken and owner==self.workspace end
@@ -125,11 +143,11 @@ function addon:InstallRotationMetadata(pane)
         addon:SetUIScript(pane.tags,'OnEditFocusGained',readOnly and function(control) control:ClearFocus() end or nil)
         addon:SetUIScript(pane.tags,'OnMouseUp',function(_,button) if button=='RightButton' then bodyMouseUp(nil,button) end end)
         addon:SetUIScript(pane.priority,'OnTextChanged',function(_,user)
-            if valid() and not readOnly and user then pane.priorityDirty=true;pane.priority:SetTextColor(1,1,1);pane:UpdateHistory() end
+            if valid() and not readOnly and user then local text=pane.priority:GetText();if text~='' and text~='-' and not text:match('^%-?%d+$') then pane.priority:SetText(pane.lastPriorityText or self.startPriority or '0');return end;pane.lastPriorityText=text;pane.priorityDirty=true;pane.priority:SetTextColor(1,1,1);pane:UpdateHistory() end
         end)
         addon:SetUIScript(pane.priority,'OnEditFocusGained',readOnly and function(control) control:ClearFocus() end or nil)
         addon:SetUIScript(pane.priority,'OnMouseUp',function(_,button) if button=='RightButton' then bodyMouseUp(nil,button) end end)
-        addon:SetUIScript(pane.priority,'OnEnter',function() if valid() and GameTooltip then GameTooltip:SetOwner(pane.priority,'ANCHOR_RIGHT');GameTooltip:SetText(L['Higher priority wins within custom or packaged rotations. Custom rotations and a valid saved fallback take precedence over packaged defaults. Equal priorities use name, then identity. Blank means zero.'],1,1,1,1,true) end end)
+        addon:SetUIScript(pane.priority,'OnEnter',function() if valid() and GameTooltip then GameTooltip:SetOwner(pane.priority,'ANCHOR_RIGHT');GameTooltip:SetText(L['Higher priority wins within custom or Built In rotations. Custom rotations and a valid saved fallback take precedence over Built In rotations. Equal priorities use name, then identity. Blank means zero.'],1,1,1,1,true) end end)
         addon:SetUIScript(pane.priority,'OnLeave',function() if GameTooltip and GameTooltip:IsOwned(pane.priority) then GameTooltip:Hide() end end)
         addon:SetUIScript(self.apply,'OnClick',function()
             if not valid() or readOnly then return end
@@ -141,9 +159,9 @@ function addon:InstallRotationMetadata(pane)
         end
         addon:SetUIScript(self.cancel,'OnClick',cancel);addon:SetUIScript(self.close,'OnClick',cancel)
         self.opened=true;frame:SetFrameLevel(pane.frame:GetFrameLevel()+100);frame:Show();addon:RegisterWindowForEscape(self)
-        scroll:UpdateWorkbenchScroll()
+        scroll:UpdateWorkbenchScroll();pane:UpdateHistory()
     end
-    addon:SetUIScript(frame,'OnHide',function() if dialog.opened and not dialog.closing then dialog:Restore() end;dialog.opened=false;for _,input in pairs(dialog.fields) do input:ClearFocus() end end)
+    addon:SetUIScript(frame,'OnHide',function() if dialog.opened and not dialog.closing then dialog:Restore() end;dialog.opened=false;dialog.tagPicker.menu:Hide();for _,input in pairs(dialog.fields) do input:ClearFocus() end end)
     function dialog:Hide() self:Close(false) end
     frame:Hide();addon.HideOnEscape(dialog);pane.metadataWindow=dialog
 end

@@ -60,6 +60,7 @@ function addon:NewRotationEditSession(spec,original,options)
     local function close() closed=true;undo={};redo={};bytes=0 end
     local session={}
     function session:Snapshot() return draft:Snapshot() end
+    function session:Baseline() return data.CopyData(dirtyBaseline) end
     function session:IsDirty() return not equal(dirtyBaseline,draft:Snapshot()) end
     function session:HistoryState()
         return {canUndo=not closed and not busy and not readOnly and #undo>0,

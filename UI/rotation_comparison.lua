@@ -59,9 +59,9 @@ function addon:FormatRotationComparison(result)
     end
     append(L["Read-only comparison. Priority moves are listed; rotations are not merged."])
     if result.sourceChanges then
-        section(L["Changes in the default since cloning"],result.sourceChanges)
+        section(L["Changes in the Built In rotation since cloning"],result.sourceChanges)
         section(L["Your changes since cloning"],result.customChanges)
-        section(L["Differences from the current default"],result.currentDifferences)
+        section(L["Differences from the current Built In rotation"],result.currentDifferences)
         append(L["Overlapping field edits"])
         if #result.conflicts==0 then append(L["No overlapping field edits detected. Priority order still needs review."]) end
         for _,conflict in ipairs(result.conflicts) do if not append(safe(conflict.path,512)) then break end end
@@ -76,7 +76,7 @@ local function label(parent,text,kind)
     local widget=AceGUI:Create(kind or "Label");widget:SetFullWidth(true);widget:SetText(text);parent:AddChild(widget)
     return widget
 end
-local directionNames={current=L["Selected rotation → your rotation"],source=L["Default updates since cloning"],custom=L["Your edits since cloning"]}
+local directionNames={current=L["Selected rotation → your rotation"],source=L["Built In updates since cloning"],custom=L["Your edits since cloning"]}
 function addon:RenderRotationComparison(parent,view,spec,showUnchanged)
     parent:ReleaseChildren()
     local model=self.RotationData.BuildVisualComparison(view)
@@ -97,7 +97,7 @@ function addon:RenderRotationComparison(parent,view,spec,showUnchanged)
         if not showUnchanged then label(parent,string.format(L["%s unchanged steps hidden."],unchanged)) end
     end
     local leftTitle=view.key=="source" and L["At cloning"] or view.key=="custom" and L["At cloning"] or L["Selected rotation"]
-    local rightTitle=view.key=="source" and L["Current default"] or view.key=="import" and L["Incoming rotation"] or L["Your rotation"]
+    local rightTitle=view.key=="source" and L["Current Built In rotation"] or view.key=="import" and L["Incoming rotation"] or L["Your rotation"]
     if view.key=="import" then leftTitle=L["Your rotation"] end
     local function pair(left,right,render)
         local row=AceGUI:Create("SimpleGroup");row:SetFullWidth(true);row:SetLayout("Flow")
@@ -174,7 +174,7 @@ function addon:ShowRotationComparison(spec,id)
     local sourced=self:GetSourcedRotationView(spec,id)
     for _,row in ipairs(self:ListDefaultRotations(spec)) do
         targets[#targets+1]={kind="builtin",id=row.id}
-        labels[#targets]="|cff5bc0eb"..row.name.."|r ("..L["Default · read-only"]..")"
+        labels[#targets]="|cff5bc0eb"..row.name.."|r ("..L["Built In · read-only"]..")"
         if sourced and sourced.lineage.sourceId==row.id and sourced.lineage.sourceKind=="builtin" then selected=#targets end
     end
     local custom={}

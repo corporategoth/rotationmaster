@@ -3,7 +3,7 @@ local function fixture()
     local f=F.new();local a=f.addon;local _,create=dofile('tests/fixtures/native_ui.lua')(f.env)
     local codecData,codecDeps=dofile('tests/fixtures/codec.lua')();a.RotationData=codecData;a.NewRotationCodec=function() return codecData.NewCodec(codecDeps) end
     a.pretty_name='Rotation Master';a.name='rotationmaster';a.configPaneGeneration=1
-    for _,path in ipairs({'Platform/spells.lua','Help/general.lua','Help/conditions.lua','Help/effects.lua','Help/itemsets.lua','Help/announce.lua','UI/window.lua','UI/help.lua','UI/icon_picker.lua','UI/color_picker.lua','UI/settings_roster_order.lua','UI/settings_layout.lua','UI/settings_ordered.lua','UI/settings_draft.lua','UI/settings_history.lua','UI/settings_form.lua','UI/settings_transfer.lua','UI/settings_general.lua','UI/settings_profiles.lua','UI/collection_compare.lua','UI/settings_collections.lua','UI/settings_announces.lua','UI/settings_effects.lua','UI/settings_items.lua','UI/settings_conditions.lua'}) do local h=io.open(path);if h then h:close();f.load(path) end end
+    for _,path in ipairs({'Platform/spells.lua','Help/general.lua','Help/conditions.lua','Help/effects.lua','Help/itemsets.lua','Help/announce.lua','UI/window.lua','UI/help.lua','UI/icon_picker.lua','UI/color_picker.lua','UI/settings_roster_order.lua','UI/settings_layout.lua','UI/settings_ordered.lua','UI/settings_draft.lua','UI/settings_history.lua','UI/settings_unsaved.lua','UI/settings_form.lua','UI/settings_transfer.lua','UI/settings_general.lua','UI/settings_profiles.lua','UI/collection_compare.lua','UI/settings_collections.lua','UI/settings_announces.lua','UI/settings_effects.lua','UI/settings_items.lua','UI/settings_conditions.lua'}) do local h=io.open(path);if h then h:close();f.load(path) end end
     local parent=create('Frame');parent:SetSize(1000,600)
     return f,parent
 end
@@ -330,7 +330,7 @@ test('category maintenance has footer actions member cells icon selection and si
     local f,parent=fixture();local a=f.addon;a.conditionDefinitions={A={description='Alpha',icon='a'},B={description='Beta',icon='b'}};a.conditionSpecials={};a.db.global.custom_conditions={B={}};a.db.profile.condition_groups={{id='a',name='First',conditions={'A'}},{id='b',name='Second',conditions={'B'}}};a.listConditions=function(_,id) return id=='a' and {'A'} or id=='b' and {'B'} or {'A','B'} end
     local p=a:CreateSettingsForm(parent);p:Open(function(form) a:BuildConditionSettings(form) end)
     assert(p.roster.entries[1].custom==false and p.roster.entries[2].custom==true)
-    p.roster.manage:Click();assert(p.roster.manage:GetText()=='Manage conditions' and p.roster.actionButtons[1]:GetText()=='Add category' and p.roster.actionButtons[2]:GetText()=='Import/Export')
+    p.roster.manage:Click();assert(p.roster.manage:GetText()=='Manage conditions' and p.roster.actionButtons[1]:GetText()=='New' and p.roster.actionButtons[1].icon:GetTexture()==f.addon:ControlTexture('plus') and p.roster.actionButtons[2]:GetText()=='Import/Export')
     assert(p.fields.member_A and p.fields.category_icon and p.fields.delete_category);assert(not p.roster.rows[1].up:IsEnabled());p.roster.rows[2].up:Click();assert(a.db.profile.condition_groups[1].id=='b')
     p.categorySelection='a';p:Draw();p.fields.member_A:Click();assert(p.mode==nil and p.condition=='A' and p.fields.hidden)
 end)
@@ -665,5 +665,65 @@ test('item-set Ctrl range reorder is one undoable draft change and released drag
     p.fields.undo:Click();assert(p:SettingsData().profile.itemsets.s.items[1]==1)
     p.fields.redo:Click();assert(p:SettingsData().profile.itemsets.s.items[1]==3)
     p:Release();assert(not old:Drop(1) and not old.ghost:IsShown())
+end)
+test('ordered row drag lifts the actual controls and canceled previews restore every row',function()
+    local f,parent=fixture();local a=f.addon;local values={'a','b','c'};local p=a:CreateSettingsForm(parent)
+    p:Open(function(form) form:OrderedCollection('rows',values,function(i) return values[i] end,function(form,i) form:Edit('field'..i,'Value',values[i],nil,function(v) values[i]=v end) end,function() end) end)
+    local view=p.ordered.rows;local owner=view.rows[2]:GetParent();f.env.IsControlKeyDown=function() return true end
+    view:BeginDrag(2);assert(view.rows[2]:GetParent()==view.ghost and view.rows[3]:GetParent()==view.ghost)
+    view:CancelDrag();assert(view.rows[2]:GetParent()==owner and view.rows[3]:GetParent()==owner and table.concat(values)=='abc')
+    p:Release()
+end)
+test('collection sidebar footer uses the full body while detail Apply has its own reserved space',function()
+    local f,parent=fixture();local a=f.addon;a.db.profile.itemsets={s={name='Items',items={1}}};a.db.global.itemsets={}
+    local p=a:OpenNativeSettings(parent,'ItemSets');assert(p.roster.frame:GetHeight()==p.frame:GetHeight()-8,'sidebar incorrectly reserves detail Apply footer')
+    assert(p.scroll:GetHeight()<p.roster.frame:GetHeight() and p.fields.apply)
+    p:Release()
+end)
+test('shared unsaved rails follow General controls pending text Apply and discarded changes',function()
+    local f,parent=fixture();local a=f.addon;a.db.profile.enable=true;a.db.profile.poll=.1;a.db.global.effects={}
+    a.enable=function() end;a.disable=function() end
+    local p=a:OpenNativeSettings(parent,'General');assert(not p.fields.enable.rmUnsaved and not p.fields.poll.rmUnsaved)
+    p.fields.enable:Click();assert(p.fields.enable.rmUnsaved and a.db.profile.enable)
+    local raw=p.fields.poll_value;raw:SetText('bad');raw.scripts.OnTextChanged(raw,true);assert(raw.rmUnsaved and p.fields.poll.rmUnsaved)
+    raw.scripts.OnEscapePressed(raw);assert(not raw.rmUnsaved and not p.fields.poll.rmUnsaved)
+    p.fields.apply:Click();assert(not p.fields.enable.rmUnsaved and not a.db.profile.enable)
+    p.fields.enable:Click();p.fields.cancel:Click();assert(not p.fields.enable.rmUnsaved and not a.db.profile.enable)
+end)
+test('effect and item rows show edits and reordering relative to the saved entries',function()
+    local f,parent=fixture();local a=f.addon;a.db.global.effects={e={name='Pulse',type='pulse',sequence={1,.5}}};a.Glow=function() end;a.HideGlow=function() end
+    local p=a:OpenNativeSettings(parent,'Effects');assert(not p.fields.seq1.rmUnsaved)
+    p.fields.seq1:SetValue(.7);assert(p.fields.seq1.rmUnsaved and p.ordered.sequence_e.rows[1].rmUnsaved and p.roster.rows[1].rmUnsaved)
+    p.fields.cancel:Click();assert(not p.fields.seq1.rmUnsaved)
+    a.db.profile.itemsets={i={name='Items',items={1,2}}};p=a:OpenNativeSettings(parent,'ItemSets');p.fields.item1down:Click()
+    assert(p.fields.item1.rmUnsaved and p.ordered.items_i.rows[1].rmUnsaved)
+    p.fields.undo:Click();assert(not p.fields.item1.rmUnsaved)
+end)
+test('preview spell count rounds drag values and rejects fractional raw input',function()
+    local f,parent=fixture();local a=f.addon;a.db.profile.preview_spells=1;local p=a:OpenNativeSettings(parent,'General')
+    p.fields.preview_spells:SetValue(2.4);assert(p:SettingsData().profile.preview_spells==2 and p.fields.preview_spells_value:GetText()=='2')
+    local field=p.fields.preview_spells_value;field:SetText('2.5');field.scripts.OnTextChanged(field,true);assert(not p:FlushEdits())
+end)
+test('category filtering keeps search above its category selector',function()
+    local f,parent=fixture();local a=f.addon;a.conditionDefinitions={A={description='Alpha'}};a.listConditions=function() return {'A'} end;local p=a:OpenNativeSettings(parent,'Conditions')
+    assert(p.roster.search.point[3]==0 and p.roster.category.point[3]==-28)
+end)
+test('tag color palette is portable bounded data',function()
+    local f=fixture();local a=f.addon
+    assert(a:ValidateProfileTransfer({rotationTagColors={pvp={r=.2,g=.3,b=.4,a=1}}}))
+    assert(not a:ValidateProfileTransfer({rotationTagColors={pvp={r=2,g=0,b=0,a=1}}}))
+    assert(not a:ValidateProfileTransfer({rotationTagColors={pvp={r=.2,g=.3,b=.4}}}))
+end)
+test('duplicate effect fields and invalid pending sequence mark their full unsaved ownership',function()
+    local f,parent=fixture();local a=f.addon;a.db.global.effects={e={name='Pulse',type='pulse',sequence={1,.5}}};a.Glow=function() end;a.HideGlow=function() end
+    local p=a:OpenNativeSettings(parent,'Effects');local field=p.fields.seq1_value;field:SetText('bad');field.scripts.OnTextChanged(field,true)
+    assert(field.rmUnsaved and p.ordered.sequence_e.rows[1].rmUnsaved and p.roster.rows[1].rmUnsaved,'pending input did not reach row/roster')
+    field.scripts.OnEscapePressed(field);p.fields.duplicate:Click();assert(p.fields.name.rmUnsaved and p.fields.seq1.rmUnsaved,'new duplicated fields were treated as saved')
+end)
+test('category reordering marks the rows whose saved positions changed',function()
+    local f,parent=fixture();local a=f.addon;a.conditionDefinitions={A={description='Alpha'}};a.listConditions=function() return {'A'} end
+    a.db.profile.condition_groups={{id='g1',name='First',conditions={'A'}},{id='g2',name='Second',conditions={}}}
+    local p=a:OpenNativeSettings(parent,'Conditions');p.roster.manage:Click();p.roster.orderView:Begin('g2','Second',false);assert(p.roster.orderView:Drop(1))
+    local marked=0;for i,entry in ipairs(p.roster.matches) do if entry.value=='g1' or entry.value=='g2' then assert(p.roster.rows[i].rmUnsaved);marked=marked+1 end end;assert(marked==2)
 end)
 finish()

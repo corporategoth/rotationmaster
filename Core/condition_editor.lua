@@ -58,6 +58,7 @@ function addon:NewConditionEditSession(spec,original,targetValid,options)
     local function close() closed=true;undo={};redo={};historyBytes=0 end
     local session={}
     function session:Snapshot() return draft:Snapshot() end
+    function session:Baseline() return data.CopyData(baseline) end
     function session:IsDirty() return not unchanged(baseline,draft:Snapshot()) end
     function session:Rows(limit) return draft:Rows(limit) end
     function session:Command(name,path,value)

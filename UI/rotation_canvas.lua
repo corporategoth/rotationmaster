@@ -116,23 +116,36 @@ function addon:CreateRotationCanvas(parent,owner)
         if not self.drag then return end
         local zone=self:HoverTarget();if zone then return self:Drop(zone.target) end;self:CancelDrag()
     end
-    function canvas:BeginDrag(id,insert)
+    function canvas:BeginDrag(id,insert,insertSource)
         self:CancelDrag();if not owner.active or owner.workspace.readOnly then return end
         self.drag={id=id,insert=insert,tail=id~=nil and IsControlKeyDown and IsControlKeyDown() or false,generation=self.generation,valid={}}
         local step=insert or addon.RotationData.IndexRotationSteps(owner.workspace:Snapshot()).byId[id].step
         local title=step.name or (step.type=='branch' and L['Add branch'] or step.type=='none' and L['Stop'] or addon:SpellLabel(step.action))
         if self.drag.tail then title=L['Move this and following entries']..': '..title end
-        local count=1
+        local count=1;local selected={}
         if id then
             count=0;local index=addon.RotationData.IndexRotationSteps(owner.workspace:Snapshot());local source=index.byId[id];local base={}
             for i=1,#source.path-1 do base[i]=source.path[i] end
             for _,row in ipairs(index.rows) do
                 local same=true;local length=self.drag.tail and #base or #source.path
                 for i=1,length do if row.path[i]~=(self.drag.tail and base[i] or source.path[i]) then same=false;break end end
-                if same and (not self.drag.tail or type(row.path[#base+1])=='number' and row.path[#base+1]>=source.index) then count=count+1 end
+                if same and (not self.drag.tail or type(row.path[#base+1])=='number' and row.path[#base+1]>=source.index) then count=count+1;selected[row.step.id]=true end
             end
         end
         self.ghost:Present(title,addon:DescribeCondition(step.conditions or {},owner.workspace.spec)..'\n'..L['Drop in a highlighted gap.'],self.frame,count)
+        if id then
+            local entries,edges,lines={},{},{}
+            for _,card in ipairs(self.cards) do local model=card.model;if card.frame:IsShown() and selected[model.id] then entries[#entries+1]={frame=card.frame,x=model.x,y=model.y,width=model.width,height=model.height} end end
+            for i,model in ipairs(self.scene.groups or {}) do if selected[model.id] and self.groups[i] then entries[#entries+1]={frame=self.groups[i],x=model.x,y=model.y,width=model.width,height=model.height} end end
+            for _,button in ipairs(self.armButtons) do local model=button.model;if button:IsShown() and model and selected[model.parentId] then entries[#entries+1]={frame=button,x=model.x,y=model.y,width=100,height=18} end end
+            local function owns(edge) return edge and (edge.owner and selected[edge.owner] or edge.from and edge.to and selected[edge.from] and selected[edge.to]) end
+            for _,edge in ipairs(self.scene.connectors) do if owns(edge) then edges[#edges+1]=edge end end
+            for _,line in ipairs(self.lines) do if line:IsShown() and owns(line.edge) then lines[#lines+1]=line end end
+            self.ghost:PresentCards(entries,self.child,edges,lines)
+        elseif insertSource then
+            self.ghost:PresentSource(insertSource)
+        end
+        self.ghost:CaptureCancel(function() self:CancelDrag() end)
         for _,zone in ipairs(self.zones) do zone:Show() end
         addon:SetUIScript(self.frame,'OnUpdate',function()
             if not owner.active or not self.drag or self.drag.generation~=self.generation then self:CancelDrag();return end
@@ -179,7 +192,7 @@ function addon:CreateRotationCanvas(parent,owner)
             for i=2,#edge.points do
                 n=n+1;local line=self.lines[n]
                 if not line then line=self.child:CreateTexture(nil,'BACKGROUND');self.lines[n]=line end
-                local a,b=edge.points[i-1],edge.points[i]
+                local a,b=edge.points[i-1],edge.points[i];line.edge=edge
                 line:ClearAllPoints();line:SetPoint('TOPLEFT',self.child,'TOPLEFT',math.min(a.x,b.x),-math.min(a.y,b.y))
                 line:SetSize(math.max(2,math.abs(a.x-b.x)+2),math.max(2,math.abs(a.y-b.y)+2));line:SetColorTexture(tone[1],tone[2],tone[3],edge.inactive and .25 or .8);line:Show()
             end

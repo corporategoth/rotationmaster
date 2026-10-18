@@ -1044,7 +1044,7 @@ create_spec_options = function(frame, specID, selected)
 
     for _,row in ipairs(addon:ListDefaultRotations(specID)) do
         rotation_order[#rotation_order+1]=row.runtimeKey
-        rotation_args[row.runtimeKey]="|cff5bc0eb"..row.name.."|r ("..L["Default · read-only"]..")"
+        rotation_args[row.runtimeKey]="|cff5bc0eb"..row.name.."|r ("..L["Built In · read-only"]..")"
     end
 
     rotation_args[DEFAULT] = DEFAULT;

@@ -12,21 +12,24 @@ function addon:CreateWorkbenchSelector()
     function menu:Hide() frame:Hide() end
     function menu:Open(anchor,entries,selected,changed,valid,inline)
         self.serial=self.serial+1;local serial=self.serial;self.valid=valid
-        frame:ClearAllPoints();frame:SetPoint('TOPLEFT',anchor,'BOTTOMLEFT',0,-2);frame:SetSize(304,260)
+        frame:ClearAllPoints();frame:SetPoint('TOPLEFT',anchor,'BOTTOMLEFT',0,-2);local width=math.max(180,math.min(720,anchor:GetWidth()));frame:SetWidth(width);self.search:SetWidth(width-16)
         local front=_G.RotationMasterFrontmostDialog;frame:SetFrameLevel(math.max(anchor:GetFrameLevel(),front and front:GetFrameLevel() or 0)+100)
         self.search:SetText('');self.scroll:ClearAllPoints();self.scroll:SetPoint('TOPLEFT',8,inline and -8 or -40)
         if inline then self.search:ClearFocus();self.search:Hide();self.scroll:SetHeight(math.max(24,math.min(8,#entries)*24));frame:SetHeight(self.scroll:GetHeight()+16) else self.search:Show();self.scroll:SetHeight(210) end
         local function draw()
             if not valid() or serial~=menu.serial then return end
-            local query=(menu.search:GetText() or ''):lower();local n=0
-            for _,entry in ipairs(entries) do if tostring(entry.text):lower():find(query,1,true) then
-                n=n+1;local row=menu.rows[n];if not row then row=addon:CreateWorkbenchButton(menu.child,'',264);row.icon=row:CreateTexture(nil,'ARTWORK');row.icon:SetSize(20,20);row.icon:SetPoint('LEFT',2,0);menu.rows[n]=row end
-                row:ClearAllPoints();row:SetPoint('TOPLEFT',0,-(n-1)*24);row:SetText(entry.text);row:SetSelected(entry.value==selected);addon:AlignWorkbenchTextLeft(row,entry.icon and 26 or 4);row:Show()
+            local query=(menu.search:GetText() or ''):lower();local matches={}
+            for _,entry in ipairs(entries) do if tostring(entry.text):lower():find(query,1,true) then matches[#matches+1]=entry end end
+            local height=math.max(21,math.min(10,#matches)*21);local contentWidth=width-(#matches>10 and 30 or 16)
+            menu.scroll:SetSize(contentWidth,height);menu.child:SetWidth(contentWidth);frame:SetHeight((inline and 8 or 40)+height+8)
+            for n,entry in ipairs(matches) do
+                local row=menu.rows[n];if not row then row=addon:CreateWorkbenchButton(menu.child,'',contentWidth);row.icon=row:CreateTexture(nil,'ARTWORK');row.icon:SetSize(18,18);row.icon:SetPoint('LEFT',2,0);menu.rows[n]=row end
+                row:ClearAllPoints();row:SetPoint('TOPLEFT',0,-(n-1)*21);row:SetSize(contentWidth,20);row:SetText(entry.text);row:SetSelected(entry.value==selected);addon:AlignWorkbenchTextLeft(row,entry.icon and 26 or 4);row:Show()
                 if entry.icon then row.icon:SetTexture(entry.icon);row.icon:Show() else row.icon:Hide() end
                 if entry.disabled then row:Disable() else row:Enable() end
                 addon:SetUIScript(row,'OnClick',function() if valid() and frame:IsShown() and serial==menu.serial then menu:Hide();changed(entry.value,entry.text) end end)
-            end end
-            for i=n+1,#menu.rows do menu.rows[i]:Hide() end;menu.child:SetHeight(math.max(1,n*24));menu.scroll.workbenchBar:SetValue(0);menu.scroll:UpdateWorkbenchScroll()
+            end
+            for i=#matches+1,#menu.rows do menu.rows[i]:Hide() end;menu.child:SetHeight(math.max(1,#matches*21));menu.scroll.workbenchBar:SetValue(0);menu.scroll:UpdateWorkbenchScroll()
         end
         addon:SetUIScript(self.search,'OnTextChanged',draw);draw()
         self.mouseDown=IsMouseButtonDown and IsMouseButtonDown('LeftButton')

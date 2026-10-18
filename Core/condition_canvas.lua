@@ -96,8 +96,8 @@ function addon:BuildConditionCanvas(root,rows,view)
             if parent then
                 parent.contentRight=math.max(parent.contentRight or 0,x+card.width)
                 local stemTop=parent.y+(parent.compact and 26 or 66)
-                scene.connectors[#scene.connectors+1]={x=parent.x+10,y=stemTop,width=2,height=math.max(2,y+22-stemTop)}
-                scene.connectors[#scene.connectors+1]={x=parent.x+10,y=y+22,width=math.max(2,x-parent.x-10),height=2}
+                scene.connectors[#scene.connectors+1]={x=parent.x+10,y=stemTop,width=2,height=math.max(2,y+22-stemTop),from=parent.key,to=card.key}
+                scene.connectors[#scene.connectors+1]={x=parent.x+10,y=y+22,width=math.max(2,x-parent.x-10),height=2,from=parent.key,to=card.key}
             end
             scene.cards[#scene.cards+1]=card;y=y+ownHeight+8
             if type(row.path[#row.path])=="number" then

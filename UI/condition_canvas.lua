@@ -90,6 +90,21 @@ function addon:CreateConditionCanvas(parent,owner)
         local preview=state.insert or owner.active.session:Snapshot()
         if not state.insert and state.paths[1] then for _,part in ipairs(state.paths[1]) do preview=preview[part] end end
         ghost:Present((state.tail and L["Move this and following entries"]..": " or "")..(state.insert and L["Insert condition"] or string.format(L["Move %d conditions"],#state.paths)),addon:DescribeCondition(preview,owner.active.spec).."\n"..L["Drop in a highlighted gap."],self.frame,state.insert and 1 or #state.paths)
+        if not state.insert then
+            local selected,entries,edges,lines={},{},{},{}
+            for _,card in ipairs(self.cards) do
+                local model=card.model;local carried=false
+                if model and card.frame:IsShown() then for _,path in ipairs(state.paths) do if prefix(path,model.path) then carried=true;break end end end
+                if carried then selected[model.key]=true;entries[#entries+1]={frame=card.frame,x=model.x,y=model.y,width=model.width,height=model.height} end
+            end
+            for i,edge in ipairs(self.scene.connectors) do if selected[edge.from] and selected[edge.to] then
+                edges[#edges+1]={points={{x=edge.x,y=edge.y},{x=edge.x+edge.width-2,y=edge.y+edge.height-2}},tone='neutral'}
+                if self.lines[i] then lines[#lines+1]=self.lines[i] end
+            end end
+            ghost:PresentCards(entries,self.child,edges,lines)
+        elseif state.source then ghost:PresentSource(state.source)
+        end
+        ghost:CaptureCancel(function() self:CancelDrag() end)
         for _,zone in ipairs(self.zones) do zone:Show();zone.marker:Hide() end
         addon:SetUIScript(self.frame,"OnUpdate",function()
             if not self.drag then return end
@@ -116,9 +131,9 @@ function addon:CreateConditionCanvas(parent,owner)
         end
         self:BeginDrag({generation=self.generation,session=owner.active.session,paths=paths,tail=tail})
     end
-    function canvas:StartInsert(node)
+    function canvas:StartInsert(node,source)
         if not owner.active or not owner:SyncWorking() then return end
-        self:BeginDrag({generation=self.generation,session=owner.active.session,insert=addon.RotationData.CopyData(node)})
+        self:BeginDrag({generation=self.generation,session=owner.active.session,insert=addon.RotationData.CopyData(node),source=source})
     end
     function canvas:Drop(target)
         local drag=self.drag;local valid=self:CanDrop(target);self:CancelDrag()
