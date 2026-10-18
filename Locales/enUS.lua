@@ -1491,3 +1491,23 @@ L['That condition identifier already exists.'] = true
 L['The selected profile changed. Reopen the import window.'] = true
 L['This import contains Lua code. Only continue if you trust its author. Import opens the code for review; saving the condition can execute it.'] = true
 L['Use letters, numbers and underscores for the condition identifier.'] = true
+
+-- Native custom condition authoring.
+L['Check %s: %s'] = true
+L['Check syntax'] = true
+L['Choose icon'] = true
+L['Custom Lua has the same access as the addon. Only import code you trust. Syntax validation cannot establish that a callback is safe or correct. Existing custom widget callbacks still use their original UI contract.'] = true
+L['Declare named fields, primitive types, nested records and unions. Example: { spell = { string, number }, unit = string, tests = condition[] }. Schema text is parsed as data and never evaluated as Lua.'] = true
+L['Definition'] = true
+L['Editing code'] = true
+L['Evaluate'] = true
+L['Field schema'] = true
+L['Fields UI'] = true
+L['Function tabs edit separate callbacks. Changes stay in a draft. Check syntax compiles every callback without running it. Apply registers the callbacks and can run registration code. Cancel discards the draft. Undo and Redo work across function tabs.'] = true
+L['On register'] = true
+L['On unregister'] = true
+L['Summary'] = true
+L['Syntax checked. No custom code was executed.'] = true
+L['The custom condition changed elsewhere. Reopen it before saving.'] = true
+L['Trusted code'] = true
+L['Validate'] = true

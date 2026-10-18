@@ -225,6 +225,12 @@ local function copy_fields(value, seen)
 end
 
 function addon:register_custom_condition(key, condition)
+    if self.CompileCustomCondition then
+        local compiled=self:CompileCustomCondition(key,condition,true)
+        if not compiled then return false end
+        self:RegisterCondition(key,compiled)
+        return true
+    end
     local newcond = { description = condition.description, icon = condition.icon,
                      fields = copy_fields(condition.fields or {}), customCode = true }
 

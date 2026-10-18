@@ -54,6 +54,7 @@ Core/announcement_data.lua
 Core/profile_data.lua
 Core/collection_data.lua
 Core/custom_condition_data.lua
+Core/custom_authoring.lua
 Core/aura_conditions.lua
 Data/plain.lua
 Data/rotation_tree.lua
@@ -134,6 +135,8 @@ Options/announce.lua
 Options/itemset.lua
 Options/rotations.lua
 Options/custom_condition.lua
+UI/lua_editor.lua
+UI/custom_condition_editor.lua
 Options/conditions.lua
 Options/conditional.lua
 

@@ -6,7 +6,7 @@ function addon:ShowCustomConditionTransfer(parent,update,key,condition)
     if not text then return nil,why end
     local p=parent.rmCustomTransferForm
     if p then p:Release() else local host=CreateFrame('Frame',nil,UIParent);host:SetSize(1,1);host:Hide();p=self:CreateSettingsForm(host);parent.rmCustomTransferForm=p end
-    p:Open(function() end);parent:SetCallback('OnClose',function() end);parent:Hide()
+    p:Open(function() end);parent:SetCallback('OnClose',function() end);if parent.HideForChild then parent:HideForChild() else parent:Hide() end
     local function valid() return addon:CanResumeCustomConditionDialog(parent,owner) end
     local dialog
     local options={canReplace=key~=nil and self.db.global.custom_conditions[key]~=nil,selectedName=key,fallbackName=L['IMPORTED_CONDITION'],valid=valid,
@@ -14,7 +14,7 @@ function addon:ShowCustomConditionTransfer(parent,update,key,condition)
         onClose=function()
             if dialog then owner.widgets[dialog]=nil;dialog.rmConditionOwner=nil end
             if p.active then p:Release() end
-            if valid() then parent:SetCallback('OnClose',function(widget) LibStub('AceGUI-3.0'):Release(widget) end);parent:Show() end
+            if valid() then if not parent.nativeCustomEditor then parent:SetCallback('OnClose',function(widget) LibStub('AceGUI-3.0'):Release(widget) end) end;parent:Show() end
         end}
     dialog=self:ShowSettingsTextTransfer(p,L['Import/Export Condition'],text,function(input,settings)
         local parsed,errorText=self:ParseCustomConditionImport(input,codec);if not parsed then return false,errorText end

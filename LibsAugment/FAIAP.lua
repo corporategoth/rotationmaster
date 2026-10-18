@@ -1261,3 +1261,7 @@ do
 
 	AceGUI:RegisterWidgetType(Type, Constructor, Version)
 end
+
+-- Native controls share the same indentation engine without AceGUI layout.
+local _,rmAddon=...
+if type(rmAddon)=="table" then rmAddon.LuaSyntax=lib end
