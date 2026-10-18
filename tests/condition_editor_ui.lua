@@ -669,4 +669,15 @@ test('expanded condition help appends below live fields instead of replacing the
     assert(pane.children[1].kind=='Slider' and pane.children[2].text=='Number help','help replaced the editable field')
     pane.children[1].callbacks.OnValueChanged(pane.children[1],nil,8);shell.apply:Click()
 end)
+test('Ctrl drag selects only the source sibling suffix including each group subtree',function()
+    local f=fixture();local a=f.addon;local root={type='AND',value={{type='OR',value={}},{type='NUMBER',number=2},{type='AND',value={{type='NUMBER',number=3}}}}}
+    local shell=a:EditCondition(1,0,root,function() end);local c=shell.canvas
+    f.env.IsControlKeyDown=function() return true end;c:StartDrag({'value',2},c.generation)
+    assert(c.drag and #c.drag.paths==2 and c.drag.paths[1][2]==2 and c.drag.paths[2][2]==3)
+    assert(c.ghost.label:GetText():find('Move this and following entries',1,true),'tail ghost is indistinguishable from explicit selection')
+    f.env.IsControlKeyDown=function() return false end
+    assert(c:Drop({destination={path={'value',1},field='value',index=1}}))
+    local v=shell.active.session:Snapshot();assert(#v.value==1 and v.value[1].value[1].number==2 and v.value[1].value[2].value[1].number==3)
+    shell.undo:Click();assert(#shell.active.session:Snapshot().value==3);shell.cancel:Click()
+end)
 finish()

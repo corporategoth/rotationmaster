@@ -12,8 +12,8 @@ function addon:InstallSettingsRosterOrder(p)
         if not row.up then row.up=addon:CreateWorkbenchIconButton(row,'up',L['Move Up']);row.down=addon:CreateWorkbenchIconButton(row,'down',L['Move Down']);row.up:SetPoint('TOPLEFT',1,-2);row.down:SetPoint('TOPLEFT',1,-16);row.up:SetSize(18,14);row.down:SetSize(18,14) end
         row.up:Show();row.down:Show();if index==1 then row.up:Disable() else row.up:Enable() end;if index==#items then row.down:Disable() else row.down:Enable() end
         local function valid() return r.revision==revision end
-        addon:SetUIScript(row.up,'OnClick',self:Guard(function() if valid() then r.orderView.drag=entry.value;r.orderView:Drop(index-1) end end))
-        addon:SetUIScript(row.down,'OnClick',self:Guard(function() if valid() then r.orderView.drag=entry.value;r.orderView:Drop(index+2) end end))
+        addon:SetUIScript(row.up,'OnClick',self:Guard(function() if valid() then r.orderView.drag=entry.value;r.orderView.tail=false;r.orderView:Drop(index-1) end end))
+        addon:SetUIScript(row.down,'OnClick',self:Guard(function() if valid() then r.orderView.drag=entry.value;r.orderView.tail=false;r.orderView:Drop(index+2) end end))
         addon:BindWorkbenchDragSource(row,function() if valid() then r.orderView:Begin(entry.value,entry.text) end end,function() if valid() then r.orderView:EndDrag() end end)
     end
     function p:PrepareRosterOrder(revision)
@@ -24,14 +24,14 @@ function addon:InstallSettingsRosterOrder(p)
         local view={zones=r.orderZones,ghost=r.orderGhost};r.orderView=view
         local function valid() return p:Valid(token) and r.revision==revision end
         function view:Index() for i,value in ipairs(items) do if identity(value)==self.drag then return i end end end
-        function view:Cancel() self.drag=nil;if r.orderView==self then self.ghost:Hide();addon:SetUIScript(self.ghost,'OnUpdate',nil);for _,zone in ipairs(self.zones) do zone:Hide();zone.marker:Hide() end end end
-        function view:CanDrop(gap) local from=self:Index();return valid() and from and type(gap)=='number' and gap>=1 and gap<=#items+1 and gap~=from and gap~=from+1 end
+        function view:Cancel() self.drag=nil;self.tail=nil;if r.orderView==self then self.ghost:Hide();addon:SetUIScript(self.ghost,'OnUpdate',nil);for _,zone in ipairs(self.zones) do zone:Hide();zone.marker:Hide() end end end
+        function view:CanDrop(gap) local from=self:Index();return valid() and addon:CanReorderWorkbenchRange(items,from,gap,self.tail) end
         function view:Drop(gap)
-            local id=self.drag;local before=items[gap] and identity(items[gap]);local allowed=self:CanDrop(gap);self:Cancel()
+            local id,tail=self.drag,self.tail;local before=items[gap] and identity(items[gap]);local allowed=self:CanDrop(gap);self:Cancel()
             if not allowed or not p:FlushEdits() or not p:Valid(token) or r.options.order~=items then return false end
             local from;gap=#items+1;for i,value in ipairs(items) do if identity(value)==id then from=i end;if identity(value)==before then gap=i end end
-            if not from or gap==from or gap==from+1 then return false end
-            table.insert(items,gap>from and gap-1 or gap,table.remove(items,from));if r.options.orderChanged then r.options.orderChanged(items) end;p:Draw();return true
+            if not addon:ReorderWorkbenchRange(items,from,gap,tail) then return false end
+            if r.options.orderChanged then r.options.orderChanged(items) end;p:Draw();return true
         end
         function view:Hover()
             local selected
@@ -39,10 +39,11 @@ function addon:InstallSettingsRosterOrder(p)
             for _,zone in ipairs(self.zones) do if zone==selected then zone.marker:Show() else zone.marker:Hide() end end;return selected
         end
         function view:EndDrag() local zone=self:Hover();if zone then self:Drop(zone.gap) else self:Cancel() end end
-        function view:Begin(id,title)
+        function view:Begin(id,title,tail)
+            if tail==nil then tail=IsControlKeyDown and IsControlKeyDown() or false end
             self:Cancel();if not valid() or not p:FlushEdits() or not p:Valid(token) or r.options.order~=items then return end
-            if r.orderView~=self then return r.orderView:Begin(id,title) end
-            self.drag=id;self.ghost:Present(title,L['Drop in a highlighted gap.'],p.frame);for _,zone in ipairs(self.zones) do if zone.gap then zone:Show() end end
+            if r.orderView~=self then return r.orderView:Begin(id,title,tail) end
+            self.drag=id;self.tail=tail;self.ghost:Present((tail and L['Move this and following entries']..': ' or '')..title,L['Drop in a highlighted gap.'],p.frame);for _,zone in ipairs(self.zones) do if zone.gap then zone:Show() end end
             addon:SetUIScript(self.ghost,'OnUpdate',function() if not valid() then self:Cancel();return end;self.ghost:FollowPointer();self:Hover();if IsMouseButtonDown and not IsMouseButtonDown('LeftButton') then self:EndDrag() end end)
         end
         self.cleanups[#self.cleanups+1]=function() view:Cancel() end

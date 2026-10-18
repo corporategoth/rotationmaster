@@ -290,6 +290,22 @@ function addon:CreateWorkbenchDragCard()
     frame:Hide();return frame
 end
 
+-- Gap indices refer to the original list. A suffix cannot be dropped into
+-- itself; manual arrow controls always request a single entry.
+function addon:CanReorderWorkbenchRange(items,from,gap,tail)
+    return type(items)=='table' and type(from)=='number' and from%1==0 and from>=1 and from<=#items
+        and type(gap)=='number' and gap%1==0 and gap>=1 and gap<=#items+1
+        and (tail and gap<from or not tail and gap~=from and gap~=from+1)
+end
+function addon:ReorderWorkbenchRange(items,from,gap,tail)
+    if not self:CanReorderWorkbenchRange(items,from,gap,tail) then return false end
+    local count=tail and #items-from+1 or 1;local moved={}
+    for _=1,count do moved[#moved+1]=table.remove(items,from) end
+    local at=gap>from and gap-count or gap
+    for i,value in ipairs(moved) do table.insert(items,at+i-1,value) end
+    return true
+end
+
 -- Drag release may be followed by the source button's click callback. Keep
 -- that release from also appending a card or opening the condition picker.
 function addon:BindWorkbenchDragSource(control,start,stop)

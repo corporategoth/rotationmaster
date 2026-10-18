@@ -1091,7 +1091,7 @@ L["Add action appends a priority action. Drag an Add control into a gap to inser
 
 L["Adding a branch moves following steps into its True arm. False is on the left in red; True is on the right in green. The mode pill cycles Evaluate condition, Always true and Always false. Unreachable cards are gray."] = true
 
-L["Dragging an action into a different branch arm carries its following sequence, including nested branches. Moving within the same sequence or using the arrows moves the selected card and its own subtree."] = true
+L["Ordinary dragging moves one card and its own subtree. Hold Ctrl when starting a drag to carry that card and every following sibling, including their branch subtrees. Drop into a branch arm gap to move there. Up / Down always moves one card. A group cannot be dropped into itself or a carried descendant."] = true
 
 L["An evaluated branch follows one arm, then rejoins later siblings. Stop ends the sequence. Independent cooldowns still apply; implicit Attack remains available unless the Stop suppresses it."] = true
 
@@ -1256,8 +1256,8 @@ L["Condition editor"] = true
 L["Conditions and state"] = true
 L["Configure recommendation timing, automatic switching, history, preview and profile highlight defaults. Labels are on the left. Checkboxes toggle options, sliders show numeric values, and fields validate before saving."] = true
 L["Description and attribution"] = true
-L["Drag a card into a highlighted gap or use Up / Down on the left. Moving a branch carries its children; moving an action into another arm also carries the following sequence. Duplicate copies the card and the red trash can deletes it. Cooldowns are independent, so they have no move arrows."] = true
-L["Drag a card into one highlighted gap, or use the left-side Up / Down arrows. Unavailable moves are gray. Ctrl-click or Shift-click selects several cards for grouping. Duplicate copies a card; Split group removes its wrapper; the red trash can deletes it. Add condition and Add group append when clicked or insert where dropped."] = true
+L["Drag one card into a highlighted gap; hold Ctrl when starting the drag to carry that card and all following siblings. A branch always carries its children. Use Up / Down on the left to move one card. Duplicate copies the card and the red trash can deletes it. Cooldowns are independent, so they have no move arrows."] = true
+L["Drag a card into one highlighted gap, or use the left-side Up / Down arrows. Hold Ctrl when starting a drag to carry the card and all following siblings. Groups always carry their children. Unavailable moves are gray. Ctrl-click or Shift-click selects several cards for grouping; dragging an existing selection moves that selection. Duplicate copies a card; Split group removes its wrapper; the red trash can deletes it. Add condition and Add group append when clicked or insert where dropped."] = true
 L["Drag the title bar to move. Set Scale with the top-left slider; child windows follow it. The question mark toggles Help. Close with X, Escape, or right-click in the content area."] = true
 L["Edit the description, author, realm, email, website and version. Source citations remain separate from your attribution. Use changes updates the rotation draft; Apply the rotation to save it. Cancel or Escape restores this dialog’s opening values."] = true
 L["Editing settings"] = true
@@ -1633,3 +1633,6 @@ L["Default rotation view"] = true
 L["Choose Diagram or List as the starting rotation view. This profile preference applies when opening a rotation; changing the view inside the editor does not change this setting. Cooldowns always use a scrolling grid."] = true
 
 L["Reset diagram zoom to 100%. Scroll to zoom; middle-click to reset. Drag empty space to pan."] = true
+
+L["Move this and following entries"] = true
+L["Drag one entry; Ctrl-drag moves it and all following siblings."] = true

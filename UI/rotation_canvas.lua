@@ -4,11 +4,6 @@ local colors={green={.25,.7,.35},red={.85,.3,.25},gray={.4,.4,.4},neutral={.55,.
 local function finite(value) return type(value)=='number' and value==value and value>-math.huge and value<math.huge end
 local function zoom(value) return finite(value) and math.max(.25,math.min(2,value)) or 1 end
 local function location(path) return table.concat(path,'/') end
-local function moveCommand(snapshot,id,destination)
-    local row=addon.RotationData.IndexRotationSteps(snapshot).byId[id]
-    local path={};if row then for i=1,#row.path-1 do path[i]=row.path[i] end end
-    return row and row.section=='rotation' and destination.parentId and location(path)~=location(destination.path) and 'MoveTail' or 'Move'
-end
 function addon:CreateRotationCanvas(parent,owner)
     local canvas={frame=addon:CreateWorkbenchScrollFrame(parent),cards={},lines={},labels={},zones={},groups={},generation=0}
     canvas.surface=CreateFrame('Frame',nil,canvas.frame);canvas.frame:SetScrollChild(canvas.surface)
@@ -96,7 +91,7 @@ function addon:CreateRotationCanvas(parent,owner)
         local d=target.destination;local key=location(d.path)..':'..d.index..':'..(d.parentId or '')
         if drag.valid[key]~=nil then return drag.valid[key] end
         local draft=addon.RotationData.NewRotationDraft(owner.workspace:Snapshot(),addon.uuid)
-        local command=drag.insert and 'Insert' or moveCommand(owner.workspace:Snapshot(),drag.id,d)
+        local command=drag.insert and 'Insert' or (drag.tail and 'MoveTail' or 'Move')
         local ok=draft and draft:Command(command,drag.insert and d or drag.id,drag.insert or d)
         if ok and not drag.insert then
             local before=addon.RotationData.IndexRotationSteps(owner.workspace:Snapshot()).byId[drag.id]
@@ -114,7 +109,7 @@ function addon:CreateRotationCanvas(parent,owner)
     function canvas:Drop(target)
         local drag=self.drag;local valid=self:CanDrop(target);self:CancelDrag()
         if not valid or not drag or drag.generation~=self.generation then return end
-        local command=drag.insert and 'Insert' or moveCommand(owner.workspace:Snapshot(),drag.id,target.destination)
+        local command=drag.insert and 'Insert' or (drag.tail and 'MoveTail' or 'Move')
         return owner:Command(command,drag.insert and target.destination or drag.id,drag.insert or target.destination)
     end
     function canvas:EndDrag()
@@ -123,9 +118,10 @@ function addon:CreateRotationCanvas(parent,owner)
     end
     function canvas:BeginDrag(id,insert)
         self:CancelDrag();if not owner.active or owner.workspace.readOnly then return end
-        self.drag={id=id,insert=insert,generation=self.generation,valid={}}
+        self.drag={id=id,insert=insert,tail=id~=nil and IsControlKeyDown and IsControlKeyDown() or false,generation=self.generation,valid={}}
         local step=insert or addon.RotationData.IndexRotationSteps(owner.workspace:Snapshot()).byId[id].step
         local title=step.name or (step.type=='branch' and L['Add branch'] or step.type=='none' and L['Stop'] or addon:SpellLabel(step.action))
+        if self.drag.tail then title=L['Move this and following entries']..': '..title end
         self.ghost:Present(title,addon:DescribeCondition(step.conditions or {},owner.workspace.spec)..'\n'..L['Drop in a highlighted gap.'],self.frame)
         for _,zone in ipairs(self.zones) do zone:Show() end
         addon:SetUIScript(self.frame,'OnUpdate',function()

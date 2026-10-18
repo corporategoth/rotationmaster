@@ -635,4 +635,34 @@ test('General default rotation view is staged and portable with an enum guard',f
     assert(not a:ValidateProfileTransfer({rotation_view='table'}) and not a:ValidateProfileTransfer({rotation_view=true}))
     assert(a:ProfileFromPortable(a:ProfileToPortable(a.db.profile)).rotation_view=='list')
 end)
+test('ordered rows capture Ctrl suffix moves while manual arrows always move one',function()
+    local f,parent=fixture();local a=f.addon;local values={'one','two','three','four'};local p=a:CreateSettingsForm(parent)
+    p:Open(function(form) form:OrderedCollection('rows',values,function(i) return values[i] end,function() end,function() end) end)
+    f.env.IsControlKeyDown=function() return true end;local view=p.ordered.rows;view:BeginDrag(3)
+    assert(not view:CanDrop(4) and not view:CanDrop(5) and view:CanDrop(1))
+    f.env.IsControlKeyDown=function() return false end;assert(view:Drop(1));assert(table.concat(values,',')=='three,four,one,two')
+    f.env.IsControlKeyDown=function() return true end;p.ordered.rows.rows[3].up:Click();assert(table.concat(values,',')=='three,one,four,two')
+    p:Release()
+end)
+test('category sidebar Ctrl drag carries hidden following siblings and arrows stay single',function()
+    local f,parent=fixture();local a=f.addon;a.conditionDefinitions={};a.listConditions=function() return {} end
+    a.db.profile.condition_groups={{id='a',name='Alpha',conditions={}},{id='b',name='Beta',conditions={}},{id='c',name='Gamma',conditions={}},{id='d',name='Delta',conditions={}}}
+    local p=a:CreateSettingsForm(parent);p.mode='categories';p:Open(function(form) a:BuildConditionSettings(form) end)
+    p.roster.search:SetText('Gamma');p.roster.search.scripts.OnTextChanged(p.roster.search,true)
+    f.env.IsControlKeyDown=function() return true end;local view=p.roster.orderView;view:Begin('c','Gamma')
+    assert(not view:CanDrop(4) and not view:CanDrop(5) and view:CanDrop(1));f.env.IsControlKeyDown=function() return false end
+    assert(view:Drop(1));assert(a.db.profile.condition_groups[1].id=='c' and a.db.profile.condition_groups[2].id=='d')
+    p.roster.search:SetText('');p.roster.search.scripts.OnTextChanged(p.roster.search,true)
+    f.env.IsControlKeyDown=function() return true end;p.roster.rows[3].up:Click()
+    assert(a.db.profile.condition_groups[2].id=='a' and a.db.profile.condition_groups[3].id=='d');p:Release()
+end)
+test('item-set Ctrl range reorder is one undoable draft change and released drag stays inert',function()
+    local f,parent=fixture();local a=f.addon;a.db.profile.itemsets={s={name='Items',items={1,2,3,4}}};a.db.global.itemsets={}
+    local p=a:OpenNativeSettings(parent,'ItemSets');f.env.IsControlKeyDown=function() return true end
+    local old=p.ordered.items_s;old:BeginDrag(3);assert(old:Drop(1));local items=p:SettingsData().profile.itemsets.s.items
+    assert(items[1]==3 and items[2]==4 and a.db.profile.itemsets.s.items[1]==1)
+    p.fields.undo:Click();assert(p:SettingsData().profile.itemsets.s.items[1]==1)
+    p.fields.redo:Click();assert(p:SettingsData().profile.itemsets.s.items[1]==3)
+    p:Release();assert(not old:Drop(1) and not old.ghost:IsShown())
+end)
 finish()

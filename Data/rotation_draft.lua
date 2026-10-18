@@ -113,13 +113,15 @@ function data.NewRotationDraft(original,newId,reserved)
                 local target,targetError=destination(second);if not target then return nil,targetError end
                 if prefix(entry.path,target.path) then return nil,'rotation-cycle' end
                 if name=='MoveTail' then
-                    if entry.section~='rotation' or not target.parentId or target.list==list then return nil,'invalid-tail-destination' end
+                    if entry.section~=target.section or target.list==list and second.index>=entry.index then return nil,'invalid-tail-destination' end
                     for i=entry.index,#list do
                         local carriedPath={};for j=1,#entry.path-1 do carriedPath[j]=entry.path[j] end;carriedPath[#entry.path]=i
                         if prefix(carriedPath,target.path) then return nil,'rotation-cycle' end
                     end
                     local at=second.index
-                    while #list>=entry.index do table.insert(target.list,at,table.remove(list,entry.index));at=at+1 end
+                    local carried={}
+                    while #list>=entry.index do carried[#carried+1]=table.remove(list,entry.index) end
+                    for _,step in ipairs(carried) do table.insert(target.list,at,step);at=at+1 end
                     result=first
                 else
                 local at=second.index

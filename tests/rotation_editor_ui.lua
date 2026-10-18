@@ -156,11 +156,11 @@ test('section controls sit with cooldown and rotation headings and switch text s
     local b=card(pane,'branch');assert(not b.preview:IsShown() and b.title:GetText()~='Conditional branch')
     assert(b.controls.enable.pillDecoration and pane.delete)
 end)
-test('drag into an arm moves the following sequence as one undoable edit',function()
+test('Ctrl drag into an arm moves the following sequence as one undoable edit',function()
     local f,parent=fixture();local value=f.addon:GetEditableRotation(0,'mine')
     value.rotation[2]={id='second',type='none',conditions={}}
     value.rotation[3]={id='third',type='none',conditions={}}
-    local pane=assert(f.addon:CreateRotationEditor(parent,0,'mine'));pane.canvas:BeginDrag('second')
+    local pane=assert(f.addon:CreateRotationEditor(parent,0,'mine'));f.env.IsControlKeyDown=function() return true end;pane.canvas:BeginDrag('second');f.env.IsControlKeyDown=function() return false end
     local destination
     for _,target in ipairs(pane.canvas.scene.dropTargets) do if target.destination.parentId=='branch' and target.destination.path[3]=='onTrue' and target.destination.index==2 then destination=target end end
     assert(pane.canvas:Drop(destination))
@@ -806,5 +806,16 @@ test('retired card wheel and middle callbacks cannot navigate a reopened workspa
     local c=visibleCard(pane,'yes');local wheel,middle=c.title.scripts.OnMouseWheel,c.title.scripts.OnMouseUp
     pane:Open(0,'builtin');wheel(c.title,1);assert(pane.canvas:GetZoom()==1,'retired card zoomed another workspace')
     pane.canvas:SetZoom(1.5);middle(c.title,'MiddleButton');assert(pane.canvas:GetZoom()==1.5,'retired card reset another workspace')
+end)
+test('ordinary drag moves a leading card into a following branch without carrying its destination',function()
+    local f,parent=fixture();local value=f.addon:GetEditableRotation(0,'mine')
+    table.insert(value.rotation,1,{id='first',type='none',conditions={}})
+    value.rotation[3]={id='last',type='none',conditions={}}
+    local pane=assert(f.addon:CreateRotationEditor(parent,0,'mine'));local c=pane.canvas;local target
+    for _,gap in ipairs(c.scene.dropTargets) do if gap.destination.parentId=='branch' and gap.destination.path[3]=='onTrue' and gap.destination.index==1 then target=gap end end
+    c:BeginDrag('first');assert(c:CanDrop(target),'single drag accidentally carries destination branch');assert(c:Drop(target))
+    local v=pane.workspace:Snapshot();assert(v.rotation[1].id=='branch' and v.rotation[2].id=='last' and v.rotation[1].onTrue[1].id=='first')
+    pane.undo:Click();assert(pane.workspace:Snapshot().rotation[1].id=='first')
+    f.env.IsControlKeyDown=function() return true end;c:BeginDrag('first');assert(not c:CanDrop(target),'Ctrl tail permits a cycle');c:CancelDrag()
 end)
 finish()
