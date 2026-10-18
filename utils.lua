@@ -2,7 +2,6 @@ local addon_name, addon = ...
 
 local AceConsole = LibStub("AceConsole-3.0")
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
-local libc = LibStub("LibCompress")
 
 local _G, tostring, tonumber, pairs, color, unpack, type, string = _G, tostring, tonumber, pairs, color, unpack, type, string
 local random, floor = math.random, math.floor
@@ -256,45 +255,60 @@ end
 
 local cacheHits = 0
 local cacheMisses = 0
+local nilArgument, cachedResult = {}, {}
+
+local function packResults(...)
+    return { n = select('#', ...), ... }
+end
 
 local function getCachedInternal(cache, recordnil, func, ...)
-    if func == nil then
-        return
-    end
-    if cache == nil then
-        return func(...)
-    end
+    if type(func) == 'string' then func = _G[func] end
+    if type(func) ~= 'function' then return end
+    if cache == nil then return func(...) end
 
-    local args = { ... }
-    if cache[func] == nil then
-        cache[func] = {}
+    -- Exact keys preserve argument types, identity and arity. Hashing concatenated
+    -- strings allowed unrelated observations to collide, even for numeric IDs.
+    local args, count = { ... }, select('#', ...)
+    for i = 1, count do
+        local value = args[i]
+        if addon.Platform and addon.Platform.CanReadValue and not addon.Platform:CanReadValue(value) then
+            return func(...)
+        end
+        if type(value) == 'number' and value ~= value then return func(...) end
+        if value == nil then args[i] = nilArgument end
     end
-
-    local hash = libc:fcs16init()
-    for i=1,#args do
-        hash = libc:fcs16update(hash, tostring(args[i]))
+    local node = cache[func]
+    for i = 1, count do
+        if not node then break end
+        node = node[args[i]]
     end
-    hash = libc:fcs16final(hash)
-    if cache[func][hash] ~= nil then
+    local result = node and node[cachedResult]
+    if result then
         cacheHits = cacheHits + 1
-        return unpack(cache[func][hash])
+        return unpack(result, 1, result.n)
     end
 
     cacheMisses = cacheMisses + 1
-    local result
-    if (type(func) == "function") then
-        result = { func(...) }
-    elseif type(func) == "string" then
-
-        result = { _G[func](...) }
-    else
-        return nil
+    result = packResults(func(...))
+    local store = recordnil
+    if not store then
+        -- Inspect the packed keys, not potentially restricted return values.
+        for key in pairs(result) do
+            if type(key) == 'number' then store = true; break end
+        end
     end
-
-    if #result > 0 or recordnil then
-        cache[func][hash] = result
+    if store then
+        -- Retry misses and thrown calls must not accumulate empty paths.
+        if not cache[func] then cache[func] = {} end
+        node = cache[func]
+        for i = 1, count do
+            local key = args[i]
+            if not node[key] then node[key] = {} end
+            node = node[key]
+        end
+        node[cachedResult] = result
     end
-    return unpack(result)
+    return unpack(result, 1, result.n)
 end
 
 addon.getCached = function(cache, func, ...)
