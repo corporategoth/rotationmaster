@@ -2,6 +2,7 @@ local _,addon=...
 local AceGUI=LibStub('AceGUI-3.0')
 
 ---@class RMConditionCheckBox: AceGUIWidget
+---@field button Button
 ---@field SetLabel fun(self: RMConditionCheckBox, text: string)
 ---@field SetValue fun(self: RMConditionCheckBox, value: boolean?)
 ---@field GetValue fun(self: RMConditionCheckBox): boolean

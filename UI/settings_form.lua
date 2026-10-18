@@ -76,6 +76,11 @@ function addon:CreateSettingsForm(parent)
         c:ClearAllPoints();c:SetPoint('TOPLEFT',0,-y);c:SetWidth(self.width);c:SetText(caption);c:GetFontString():SetWidth(self.width-22);c:SetChecked(value==true);c.rmCheck=true;c:Enable();self.fields[key]=c
         addon:SetUIScript(c,'OnClick',self:Guard(function() if self:FlushEdits() then c:SetChecked(not c:GetChecked());changed(c:GetChecked()) end end));return c
     end
+    function p:InlineCheck(fieldKey,key,caption,value,changed,minimum)
+        local rowY=self.y-30;local option=self:Check(key,caption,value,changed)
+        local height=addon:LayoutWorkbenchFieldOption(self.fields[fieldKey],option,self.surface or self.child,220,rowY,self.width-220,minimum)
+        self.y=rowY+height+6;return option
+    end
     function p:Edit(key,caption,value,parse,changed)
         local y=self:Row(caption);local c=self:Acquire('edits',function() return addon:CreateWorkbenchEditBox(self.child) end)
         c:ClearAllPoints();c:SetPoint('TOPLEFT',220,-y);c:SetSize(self.width-220,24);c:SetMaxLetters(4096);c:EnableMouse(true);c:SetText(tostring(value or ''));c:SetTextColor(1,1,1);c:SetTextInsets(4,4,0,0);if c.referenceIcon then c.referenceIcon:Hide() end;if c.texturePreview then c.texturePreview:Hide() end;c:ClearFocus()

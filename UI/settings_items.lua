@@ -19,10 +19,10 @@ function addon:BuildItemSettings(p)
             set.modified=true;p:RunSettingsEffect('items_'..id,function() if self.UpdateBoundButton then self:UpdateBoundButton(id) end;if self.UpdateItemSetButtons then self:UpdateItemSetButtons(id) end end)
         end
         p:Edit('name',L['Name'],set.name or '',function(text) return self:SettingsNonempty(text) end,function(text) set.name=text;update() end)
-        p:Check('global',L['Global'],globalSets[id]~=nil,function(value)
+        p:InlineCheck('name','global',L['Global'],globalSets[id]~=nil,function(value)
             store.global.itemsets=store.global.itemsets or {};store.profile.itemsets=store.profile.itemsets or {}
             if value then store.global.itemsets[id]=set;store.profile.itemsets[id]=nil else store.profile.itemsets[id]=set;store.global.itemsets[id]=nil end;p:Draw()
-        end)
+        end,140)
         p:Section('items_'..id,L['Items in priority order'],function()
             p:OrderedCollection('items_'..id,items,function(i) return self:GetReferenceProvider('item').name(tonumber(items[i]) or self:GetReferenceProvider('item').resolve(items[i])) or L['Item data loading'] end,function(form,i,item,row)
                 local field=form:Item('item'..i,nil,item,function(value) items[i]=value;update() end);field:ClearAllPoints();field:SetPoint('TOPLEFT',18,-2);field:SetSize(form.width-20,24);form.y=22

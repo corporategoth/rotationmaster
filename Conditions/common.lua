@@ -4,6 +4,8 @@ local AceGUI = LibStub("AceGUI-3.0")
 local SpellData = addon.SpellCatalog
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 
+if AceGUI.RegisterLayout then AceGUI:RegisterLayout('RM-SpellField',function(content,children) addon:LayoutWorkbenchSpellGroup(content,children) end) end
+
 -- Portable condition fields contain ordinary saved data, never live secrets.
 function addon.IsConditionSpellID(value)
     return type(value)=="number" and value>0 and value<math.huge and value%1==0
@@ -37,13 +39,10 @@ end
 
 function addon:Widget_SpellWidget(spec, editbox, value, nametoid, isvalid, update)
     local spell_group = AceGUI:Create("SimpleGroup")
-    spell_group:SetLayout("Table")
-
-    if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE and spec ~= BOOKTYPE_PET) then
-        spell_group:SetUserData("table", { columns = { 44, 30, 1 } })
-    else
-        spell_group:SetUserData("table", { columns = { 44, 1 } })
-    end
+    -- AceGUI registers this native layout above; the upstream type lists only its bundled layouts.
+    ---@diagnostic disable-next-line: type-mismatch
+    spell_group:SetLayout('RM-SpellField')
+    local rankChoice
 
     local spell = addon:CreateSpellEditBox(editbox,value.spell)
     local initialSpell=type(value.spell)=="string" and SpellData:GetSpellId(value.spell) or value.spell
@@ -85,23 +84,8 @@ function addon:Widget_SpellWidget(spec, editbox, value, nametoid, isvalid, updat
     spell_group:AddChild(spellIcon)
 
     if WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE and spec ~= BOOKTYPE_PET then
-        local ranked = AceGUI:Create("SimpleGroup")
-        ranked:SetFullWidth(true)
-        ranked:SetLayout("Table")
-        ranked:SetUserData("table", { columns = { 1 } })
-        ranked:SetUserData("cell", { alignV = "bottom", alignH = "center" })
-
-        local nr_label = AceGUI:Create("Label")
-        nr_label:SetText(L["Rank"])
-        if value.disabled then
-            nr_label:SetColor(0.5, 0.5, 0.5)
-        else
-            nr_label:SetColor(1.0, 0.82, 0.0)
-        end
-        ranked:AddChild(nr_label)
-
         local nr_button = addon:CreateConditionCheckBox()
-        nr_button:SetLabel(nil)
+        nr_button:SetLabel(L["Use this exact spell rank"])
         nr_button:SetValue(value.ranked or false)
         nr_button:SetCallback("OnValueChanged", function(_, _, val)
             value.ranked = val
@@ -110,13 +94,11 @@ function addon:Widget_SpellWidget(spec, editbox, value, nametoid, isvalid, updat
             update()
         end)
         nr_button:SetDisabled(value.disabled)
-        ranked:AddChild(nr_button)
-
-        spell_group:AddChild(ranked)
+        rankChoice=nr_button
     end
 
     spell:SetFullWidth(true)
-    spell:SetLabel(L["Spell"])
+    spell:SetLabel('')
     spell:SetText(value.spell and SpellData:SpellName(value.spell, not value.ranked))
     spell:SetUserData("norank", not value.ranked)
     spell:SetUserData("spec", spec)
@@ -138,6 +120,10 @@ function addon:Widget_SpellWidget(spec, editbox, value, nametoid, isvalid, updat
     end)
     spell:SetDisabled(value.disabled)
     spell_group:AddChild(spell)
+    if rankChoice then
+        rankChoice.frame.GetFontString=function() return rankChoice.button:GetFontString() end
+        spell_group:AddChild(rankChoice)
+    end
 
     return spell_group
 end

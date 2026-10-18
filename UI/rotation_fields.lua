@@ -171,8 +171,10 @@ function addon:BuildRotationCardFields(owner,card,model,alive)
             local id=tonumber(value)
             if id and id>0 and id%1==0 then patch({action=id}) else patch(nil,{'action'}) end
         end)
-        field:SetDisabled(readOnly);field.frame:Show();y=y+28
-        local exact=flag('ranked',L['Use this exact spell rank'],step.ranked,function(value) patch({ranked=value}) end);exact:ClearAllPoints();exact:SetPoint('TOPLEFT',44,-y+24);exact:SetWidth(fieldWidth-44)
+        field:SetDisabled(readOnly);field.frame:Show();local spellY=y
+        local exact=flag('ranked',L['Use this exact spell rank'],step.ranked,function(value) patch({ranked=value}) end)
+        local height,inputWidth=addon:LayoutWorkbenchFieldOption(field.frame,exact,frame,44,spellY,fieldWidth-44)
+        field:SetWidth(inputWidth);y=spellY+height+4
     elseif step.type=='none' then
         flag('suppress',L['Also suppress implicit Attack'],step.suppress_attack,function(value) patch({suppress_attack=value}) end)
     elseif step.type=='item' then

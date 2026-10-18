@@ -11,7 +11,7 @@ function addon:BuildAnnounceSettings(p)
         p:Choice(prefix..'type',L['Action Type'],entry.type,types,function(v) entry.type=v;entry.spell=nil;entry.item=nil;entry.ranked=nil;p:Draw() end)
         local field=entry.type=='item' and 'item' or 'spell'
         if entry.type=='item' then p:ItemSequence(prefix..'action',entry.item,function(v) update(entry,'item',v) end)
-        else p:Spell(prefix..'action',L['Spell'],entry.spell,entry.type=='pet' and BOOKTYPE_PET or addon.currentSpec,function(v) update(entry,'spell',v) end);p:Check(prefix..'ranked',L['Use this exact spell rank'],entry.ranked,function(v) update(entry,'ranked',v) end) end
+        else p:Spell(prefix..'action',L['Spell'],entry.spell,entry.type=='pet' and BOOKTYPE_PET or addon.currentSpec,function(v) update(entry,'spell',v) end);p:InlineCheck(prefix..'action',prefix..'ranked',L['Use this exact spell rank'],entry.ranked,function(v) update(entry,'ranked',v) end) end
         p:Choice(prefix..'event',L['Event'],entry.event,events,function(v) update(entry,'event',v) end)
         p:Choice(prefix..'channel',L['Announce'],entry.announce,channels,function(v) update(entry,'announce',v);p:Draw() end)
         if entry.announce=='audible' then p:Sound(prefix,L['Sound'],entry.announce_sound,function(v) update(entry,'announce_sound',v) end) else p:Edit(prefix..'text',L['Text'],entry.value or '',nil,function(v) update(entry,'value',v) end) end

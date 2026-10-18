@@ -400,3 +400,30 @@ function addon:GetWorkbenchRosterGeometry(width,height,top)
     local side=self:GetWorkbenchSidebarWidth(width)
     return {sidebarWidth=side,sidebarHeight=self:GetWorkbenchSidebarHeight(height,top),detailX=side+18,detailWidth=math.max(200,width-side-18)}
 end
+
+-- Shared value-field/checkbox geometry for cards and settings. Labels remain
+-- outside this region; a wrapped option starts exactly under the value field.
+function addon:LayoutWorkbenchFieldOption(field,option,parent,x,y,width,minimum)
+    local label=option:GetFontString();local desired=math.ceil(label:GetStringWidth())+26
+    local optionWidth=math.min(width,desired);local inline=width>=desired+(minimum or 200)+8
+    local inputWidth=inline and width-desired-8 or width
+    field:SetParent(parent);field:ClearAllPoints();field:SetPoint('TOPLEFT',x,-y);field:SetWidth(inputWidth)
+    option:SetParent(parent);option:ClearAllPoints();option:SetPoint('TOPLEFT',inline and x+inputWidth+8 or x,inline and -y or -y-28)
+    option:SetWidth(optionWidth);label:SetWidth(math.max(1,optionWidth-22));label:SetWordWrap(true)
+    local optionHeight=math.max(24,label:GetStringHeight());option:SetHeight(optionHeight)
+    return inline and math.max(24,optionHeight) or 28+optionHeight,inputWidth,inline
+end
+
+-- The old condition declaration adapter retains widget ownership, while all
+-- sizing uses the same native rule as action cards and settings fields.
+function addon:LayoutWorkbenchSpellGroup(content,children)
+    local icon,spell,rank=children[1],children[2],children[3]
+    if not icon or not spell then return 0 end
+    local width=math.max(1,content:GetWidth()-44);local height,inputWidth
+    icon.frame:SetParent(content);icon.frame:ClearAllPoints();icon.frame:SetPoint('TOPLEFT',0,0);icon.frame:SetSize(40,40)
+    if rank then height,inputWidth=self:LayoutWorkbenchFieldOption(spell.frame,rank.frame,content,44,6,width)
+    else spell.frame:SetParent(content);spell.frame:ClearAllPoints();spell.frame:SetPoint('TOPLEFT',44,-6);spell.frame:SetWidth(width);height,inputWidth=24,width end
+    spell:SetWidth(inputWidth);height=math.max(44,height+6)
+    if content.obj and content.obj.LayoutFinished then content.obj:LayoutFinished(nil,height) end
+    return height
+end

@@ -785,4 +785,23 @@ test('icon picker preset labels all exist in the actual base locale',function()
     f.libraries['AceLocale-3.0'].GetLocale=function() return locale end;f.load('UI/icon_picker.lua');local d=f.addon:ShowWorkbenchIconPicker(nil,function() end,function() return true end)
     assert(#d.categories>=4 and d.categories[3].icons[2].name==locale.Weapon)
 end)
+test('spell rank options share wide inputs and align underneath narrow inputs',function()
+    local f,parent=fixture();local a=f.addon;local p=a:CreateSettingsForm(parent)
+    local spell,rank
+    local function build(form)
+        form:Spell('spell','Spell',403,0,function(value) spell=value end)
+        form:InlineCheck('spell','ranked','Use this exact spell rank',false,function(value) rank=value end)
+    end
+    p:Open(build);local input,check=p.fields.spell,p.fields.ranked
+    assert(input.point[3]==check.point[3] and check.point[2]>input.point[2]+input:GetWidth(),'wide rank option is not to the right')
+    assert(input:GetWidth()>=200);check:Click();assert(rank==true and not spell,'rank toggled the selected spell')
+    p:SetWidth(500);input,check=p.fields.spell,p.fields.ranked
+    assert(check.point[2]==input.point[2] and check.point[3]<input.point[3],'narrow rank option does not align with the input')
+end)
+test('item set Global shares the wide Name row without mutating scope on open',function()
+    local f,parent=fixture();local a=f.addon;a.db.profile.itemsets={set={name='Consumables',items={1}}};a.db.global.itemsets={};a.db.char={bindings={}}
+    local p=a:CreateSettingsForm(parent);p:Open(function(form) a:BuildItemSettings(form) end)
+    assert(p.fields.global.point[3]==p.fields.name.point[3] and p.fields.global.point[2]>p.fields.name.point[2]+p.fields.name:GetWidth(),'Global is not beside Name')
+    assert(a.db.profile.itemsets.set and not a.db.global.itemsets.set)
+end)
 finish()
