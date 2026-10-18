@@ -777,7 +777,7 @@ test('Integrations lists actual editor providers and stages the preference with 
     local f,parent=fixture();local a=f.addon;f.load('UI/lua_editor.lua');local h=io.open('UI/settings_integrations.lua');if h then h:close();f.load('UI/settings_integrations.lua') end
     assert(a.BuildIntegrationSettings,'Integrations page missing');a:RegisterLuaEditorProvider('Example',function() error('not created while browsing settings') end)
     local p=a:OpenNativeSettings(parent,'Integrations');p.fields.lua_editor:Click();p.menu.rows[3]:Click();assert(p:SettingsData().profile.lua_editor=='plain' and not a.db.profile.lua_editor)
-    p.fields.apply:Click();assert(a.db.profile.lua_editor=='plain' and a:ValidateProfileTransfer(a:ProfileToPortable(a.db.profile)))
+    p.fields.apply:Click();assert(a.db.profile.lua_editor=='plain' and a:ValidateProfileTransfer(a:ProfileToPortable(a.db.profile)) and not p.fields.lua_editor.rmUnsaved)
     local entries=a:ListLuaEditorProviders();assert(entries[#entries].value=='Example');local code=a:CreateWorkbenchLuaEditor(parent,function() end,function() return true end);assert(not code.syntax and code.provider=='native')
 end)
 test('icon picker preset labels all exist in the actual base locale',function()

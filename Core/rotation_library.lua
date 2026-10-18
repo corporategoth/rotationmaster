@@ -176,7 +176,8 @@ function addon:GetRuntimeRotations(spec, internal, candidates)
         end
         if not origins or plainTable(origins) and origins[id]==nil
             or scoped and eligible(scoped,context,candidates) then
-            if not self.GetImportedRotationView or importError=="not-imported" or imported and eligible(imported,context,candidates) then rotations[id]=body end
+            if (not self.GetImportedRotationView or importError=="not-imported" or imported and eligible(imported,context,candidates))
+                and not self:HasDisabledRotationDependency(body) then rotations[id]=body end
         end
     end
     if not ready then return rotations end

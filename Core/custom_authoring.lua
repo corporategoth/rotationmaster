@@ -54,7 +54,8 @@ function addon:ValidateCustomConditionSource(key,source,compatibility)
     if type(loadstring)~='function' then return nil,{field='compiler',reason='compiler-unavailable'} end
     if type(key)~='string' or (not compatibility and #key>256) or not key:match('^[%w_]+$') or ({AND=true,OR=true,NOT=true,DELETE=true})[key] then return nil,{field='identifier',reason='invalid-identifier'} end
     if type(source)~='table' or type(source.description)~='string' or not source.description:find('%S') or not compatibility and #source.description>4096 or not self:IsCategoryIcon(source.icon) then return nil,{field='description',reason='incomplete-definition'} end
-    if not compatibility then for field in pairs(source) do if field~='description' and field~='icon' and field~='fields' and not callbacks[field] then return nil,{field=field,reason='unknown-field'} end end end
+    if source.disabled~=nil and type(source.disabled)~='boolean' then return nil,{field='disabled',reason='invalid-disabled-flag'} end
+    if not compatibility then for field in pairs(source) do if field~='description' and field~='icon' and field~='fields' and field~='disabled' and not callbacks[field] then return nil,{field=field,reason='unknown-field'} end end end
     local fields,why=self:NormalizeCustomFieldSchema(source.fields,true);if not fields then return nil,{field='fields',reason=why} end
     local compiled,total={},0
     for name,params in pairs(callbacks) do
@@ -66,6 +67,10 @@ function addon:ValidateCustomConditionSource(key,source,compatibility)
     return {valid=true,compiled=compiled,fields=fields}
 end
 function addon:CompileCustomCondition(key,source,compatibility)
+    if type(source)=='table' and source.disabled==true then
+        if type(key)~='string' or not key:match('^[%w_]+$') or ({AND=true,OR=true,NOT=true,DELETE=true})[key] then return nil,{field='identifier',reason='invalid-identifier'} end
+        return {description=source.description or key,icon=source.icon,fields=self:NormalizeCustomFieldSchema(source.fields,true) or {},customCode=true,disabled=true}
+    end
     local checked,why=self:ValidateCustomConditionSource(key,source,compatibility);if not checked then return nil,why end
     local definition={description=source.description,icon=source.icon,fields=checked.fields,customCode=true}
     for name,chunk in pairs(checked.compiled) do
@@ -87,7 +92,7 @@ function addon:InstallCustomCondition(key,source,expected,expectedSource)
         if registry then registry[key]=previous end
         -- Trusted hooks can have arbitrary external effects. Restore registry
         -- and saved source; restoring the prior hook's setup is best effort.
-        if previous and previous.on_register then pcall(previous.on_register,key) end
+        if previous and not previous.disabled and previous.on_register then pcall(previous.on_register,key) end
         return false,{field='registration',reason='registration-failed'}
     end
     self.db.global.custom_conditions=self.db.global.custom_conditions or {};self.db.global.custom_conditions[key]=self:CopySettingsData(source);return true

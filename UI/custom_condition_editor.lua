@@ -36,7 +36,7 @@ function addon:condition_edit_box(update,key,source,saveAllowed)
     end
     function d:UpdateValidation()
         if not self.code then return end
-        local input={selected=self.selected,key=p.fields.identifier:GetText(),description=p.fields.description:GetText(),schema=p.fields.schema:GetText(),icon=self.model.value.icon}
+        local input={disabled=self.model.value.disabled,selected=self.selected,key=p.fields.identifier:GetText(),description=p.fields.description:GetText(),schema=p.fields.schema:GetText(),icon=self.model.value.icon}
         for name in pairs(addon.CustomConditionCallbacks) do input[name]=name==self.selected and self.code:GetText() or self.model.value[name] end
         if addon:SettingsDataEqual(input,self.validationInput) then return end
         self.validationInput=addon:CopySettingsData(input)
@@ -56,7 +56,7 @@ function addon:condition_edit_box(update,key,source,saveAllowed)
         if #self.model.redo>0 then self.redo:Enable() else self.redo:Disable() end
         if self:IsDirty() then self.apply:Enable() else self.apply:Disable() end
         local before=self.model.baseline;local current=self.model.value
-        for _,entry in ipairs({{'identifier',self.model.key,before.key},{'description',current.description,before.value.description},{'schema',addon:FormatCustomFieldSchema(current.fields),addon:FormatCustomFieldSchema(before.value.fields)},{'icon',current.icon,before.value.icon}}) do
+        for _,entry in ipairs({{'definition_enabled',not current.disabled,not before.value.disabled},{'identifier',self.model.key,before.key},{'description',current.description,before.value.description},{'schema',addon:FormatCustomFieldSchema(current.fields),addon:FormatCustomFieldSchema(before.value.fields)},{'icon',current.icon,before.value.icon}}) do
             local input=p.fields[entry[1]];local dirty=not addon:UnsavedDataEqual(entry[2],entry[3]);for _,record in ipairs(p.edits) do if record.control==input and record.dirty then dirty=input:GetText()~=tostring(entry[3] or '') end end;addon:SetWorkbenchUnsaved(input,dirty)
         end
         if self.code then addon:SetWorkbenchUnsaved(self.code.frame,self.code:GetText()~=(before.value[self.selected] or '')) end
@@ -115,6 +115,7 @@ function addon:condition_edit_box(update,key,source,saveAllowed)
         {title=L['Trusted code'],text=L['Custom Lua has the same access as the addon. Only import code you trust. Syntax validation cannot establish that a callback is safe or correct. Existing custom widget callbacks still use their original UI contract.']}},frame);d.ownedHelpSections=d.ownedHelp.sections end end)
     p:Open(function(form)
         d.chrome:SetContext(L['Rotation Master']..': '..(d.model.value.description~='' and d.model.value.description or L['Custom condition']),L['Custom condition'],d.model.key)
+        form:Toggle('definition_enabled',L['Availability'],not d.model.value.disabled,L['Disabled'],L['Enabled'],function(value) d:FlushCode();d.model:Change(function(model) model.value.disabled=not value end);p:Draw();d:UpdateActions() end)
         form:Edit('identifier',L['Identifier'],d.model.key,function(text) return text:match('^[A-Z0-9_]+$') and text end,function(text) d.model:Change(function(model) model.key=text end) end)
         if d.originalKey then form.fields.identifier:EnableMouse(false) end
         form:Edit('description',L['Description'],d.model.value.description,nil,function(text) d.model:Change(function(model) model.value.description=text end) end)

@@ -153,4 +153,21 @@ test('explicit primary markers preserve predicate scope after translated qualifi
     local definition=addon.conditionDefinitions.REORDERED;addon:RegisterCondition('REORDERED',definition)
     assert(addon:printCondition({type='NOT',value={type='REORDERED'}},0)=='time is short: shield is not active','registration wrapped a printer twice')
 end)
+test('disabled definition is unavailable through NOT and Boolean groups without running hooks or callbacks',function()
+    local d=definition(true);d.disabled=true;d.valid=function() error('disabled valid called') end;d.evaluate=function() error('disabled evaluate called') end;d.on_register=function() error('disabled register called') end;d.on_unregister=function() error('disabled unregister called') end
+    addon:RegisterCondition('OFF',d)
+    for _,value in ipairs({{type='OFF'},{type='NOT',value={type='OFF'}},{type='OR',value={{type='YES'},{type='OFF'}}}}) do local result=addon:evaluateConditionResult(value);assert(result.status=='unavailable' and result.reason=='disabled-condition');assert(not addon:validateCondition(value,0)) end
+    addon:UnregisterCondition('OFF')
+end)
+test('definition changes refresh initialized switching and immediately stop unavailable manual rotations',function()
+    local calls={};addon.autoswitchRotation={};addon.currentRotation='manual';addon.manualRotation=true
+    addon.UpdateAutoSwitch=function() calls[#calls+1]='update' end
+    addon.GetRuntimeRotation=function() return nil end
+    addon.DisableRotation=function(self) calls[#calls+1]='disable';self.currentRotation=nil end
+    addon.SwitchRotation=function() calls[#calls+1]='switch' end
+    local disabled=definition(true);disabled.disabled=true;addon:RegisterCondition('REFRESH',disabled)
+    assert(table.concat(calls,',')=='update,disable,switch')
+    calls={};addon:UnregisterCondition('REFRESH');assert(table.concat(calls,',')=='update,switch')
+    addon.autoswitchRotation=nil;calls={};addon:RegisterCondition('REFRESH',definition(true));assert(#calls==0,'startup refresh ran too early')
+end)
 finish()

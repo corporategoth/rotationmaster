@@ -194,4 +194,11 @@ test('rotation descriptions and supplied metadata validate without executing cod
     v.body.metadata.author={};r=data.ValidateEnvelope(v,options);assert(not r.valid and has(r,'invalid-field-type','$.body.metadata.author'))
     v.body.metadata={future='retained'};r=data.ValidateEnvelope(v,options);assert(r.valid and not r.supported and v.body.metadata.future=='retained')
 end)
+test('disabled condition definitions keep saved bodies valid but make direct and negated consumers unavailable',function()
+    for _,guard in ipairs({{type='OFF'},{type='NOT',value={type='OFF'}}}) do
+        local v=envelope();v.body.switch=guard
+        local result=data.ValidateEnvelope(v,{conditions={OFF={fields={},disabled=true},SPELL_KNOWN=options.conditions.SPELL_KNOWN}})
+        assert(result.valid and not result.resolved and result.executionStatus=='unavailable' and has(result,'disabled-condition'))
+    end
+end)
 finish()

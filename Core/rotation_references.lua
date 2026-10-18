@@ -32,3 +32,49 @@ function addon:GetRotationValidationOptions()
     -- Maps (including empty fallbacks) are fresh and cannot poison observations.
     return {conditions=conditions,itemsets=itemsets,effects=effects},stamp
 end
+
+-- Legacy bodies have no envelope. Inspect their semantic condition edges too,
+-- so a disabled definition cannot be bypassed by a later priority action.
+function addon:HasDisabledRotationDependency(body)
+    local definitions=self.conditionDefinitions or {}
+    local hasDisabled=false
+    for _,definition in pairs(definitions) do if type(definition)=='table' and definition.disabled then hasDisabled=true;break end end
+    if not hasDisabled then return false end
+    local tree=self.RotationData.IndexRotationSteps(body,{allowMissingIds=true})
+    if not tree then return true end
+    local count=0
+    local condition,declared
+    declared=function(value,schema,depth)
+        if value==nil then return false end
+        if depth>64 then return true end
+        if schema=='condition' then return condition(value,depth+1) end
+        if schema=='condition[]' then
+            if type(value)~='table' then return true end
+            for _,child in ipairs(value) do if condition(child,depth+1) then return true end end
+        elseif type(schema)=='table' and type(value)=='table' then
+            if schema[1]~=nil then
+                -- Union schemas may contain object/list alternatives. Inspect
+                -- only alternatives that declare nested conditions.
+                for _,alternative in ipairs(schema) do if declared(value,alternative,depth+1) then return true end end
+            else
+                for key,kind in pairs(schema) do if declared(value[key],kind,depth+1) then return true end end
+            end
+        end
+        return false
+    end
+    condition=function(value,depth)
+        if value==nil then return false end
+        count=count+1;if count>4096 or depth>64 or type(value)~='table' then return true end
+        if value.type=='AND' or value.type=='OR' then return declared(value.value,'condition[]',depth+1) end
+        if value.type=='NOT' then return condition(value.value,depth+1) end
+        local definition=definitions[value.type]
+        if type(definition)=='table' then
+            if definition.disabled then return true end
+            for key,kind in pairs(definition.fields or {}) do if declared(value[key],kind,depth+1) then return true end end
+        end
+        return false
+    end
+    if condition(body.switch,0) then return true end
+    for _,row in ipairs(tree.rows) do if condition(row.step.conditions,0) then return true end end
+    return false
+end

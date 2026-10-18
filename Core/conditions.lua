@@ -97,6 +97,8 @@ local function evaluate(value, cache, start, state, depth, path)
         local definition = conditions[value.type]
         if not definition then
             result = outcome("unavailable", "unknown-condition", path)
+        elseif definition.disabled then
+            result = outcome("unavailable", "disabled-condition", path)
         elseif type(definition.valid) ~= "function" or type(definition.evaluate) ~= "function" then
             result = outcome("unavailable", "incomplete-condition-definition", path)
         else
@@ -187,6 +189,7 @@ printSingle = function(value, spec, negated)
     elseif value.type == "NOT" then
         return printSingle(value.value, spec, not negated)
     elseif conditions[value.type] ~= nil then
+        if conditions[value.type].disabled then return string.format(L['Unavailable condition: %s'],conditions[value.type].description or value.type) end
         return conditions[value.type].print(spec, value, negated)
     else
         return L["<INVALID CONDITION>"]
@@ -225,6 +228,7 @@ validateSingle = function(value, spec)
     elseif value.type == "NOT" then
         return validateSingle(value.value, spec)
     elseif conditions[value.type] ~= nil then
+        if conditions[value.type].disabled then return false end
         return conditions[value.type].valid(spec, value)
     else
         return false
@@ -269,8 +273,17 @@ usefulSingle = function(value)
     end
 end
 
+function addon:RefreshConditionConsumers()
+    -- Built-in and saved definitions register before runtime initialization.
+    if self.currentSpec==nil or type(self.autoswitchRotation)~='table' or not self.UpdateAutoSwitch then return end
+    self:UpdateAutoSwitch()
+    if self.currentRotation and self.GetRuntimeRotation and not self:GetRuntimeRotation(self.currentSpec,self.currentRotation) then self:DisableRotation() end
+    self:SwitchRotation()
+end
+
 function addon:RegisterCondition(tag, array)
-    if conditions[tag] and conditions[tag].on_unregister then
+    local availabilityChanged=(conditions[tag] and conditions[tag].disabled==true or false)~=(array.disabled==true)
+    if conditions[tag] and not conditions[tag].disabled and conditions[tag].on_unregister then
         conditions[tag].on_unregister(tag)
     end
     if type(array.print)=='function' and not printerSources[array.print] then
@@ -281,17 +294,20 @@ function addon:RegisterCondition(tag, array)
     conditions[tag] = array
     self.conditionRegistryVersion=(self.conditionRegistryVersion or 0)+1
     quarantined[array] = nil
-    if array.on_register then
+    if not array.disabled and array.on_register then
         array.on_register(tag)
     end
+    if availabilityChanged then self:RefreshConditionConsumers() end
 end
 
 function addon:UnregisterCondition(tag)
-    if conditions[tag] and conditions[tag].on_unregister then
+    local wasDisabled=conditions[tag] and conditions[tag].disabled==true
+    if conditions[tag] and not conditions[tag].disabled and conditions[tag].on_unregister then
         conditions[tag].on_unregister(tag)
     end
     if conditions[tag]~=nil then self.conditionRegistryVersion=(self.conditionRegistryVersion or 0)+1 end
     conditions[tag] = nil
+    if wasDisabled then self:RefreshConditionConsumers() end
 end
 
 function addon:evaluateConditionResult(value, context)

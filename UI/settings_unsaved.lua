@@ -4,6 +4,7 @@ local function contains(list,value) for _,entry in ipairs(list or {}) do if entr
 local function context(p,store,id)
     store=store or {};local profile,global=store.profile or {},store.global or {};id=id or (p.mode=='categories' and p.categorySelection or p.settingsKey=='Conditions' and p.condition or p.selection)
     if p.settingsKey=='General' then local result=addon:CopySettingsData(profile);result.minimap=not (profile.minimap or {}).hide;for i,v in ipairs((store.char or {}).specs or {}) do result['spec'..i]=v end;return result end
+    if p.settingsKey=='Integrations' then return profile end
     if p.settingsKey=='Effects' then return (global.effects or {})[id] end
     if p.settingsKey=='ItemSets' then local entry=(profile.itemsets or {})[id] or (global.itemsets or {})[id];if entry then local copy=addon:CopySettingsData(entry);copy.global=(global.itemsets or {})[id]~=nil;return copy end end
     if p.settingsKey=='Announces' then local current=(p.draft and p.draft.profile.announces or addon.db.profile.announces or {})[id];return current and current.id and find(profile.announces,current.id) or (profile.announces or {})[id] end
@@ -20,6 +21,7 @@ local function field(object,key)
     if n then local entry=(object.sequence or {})[tonumber(n)];if property=='' then return entry end;property=property=='mag' and 'magnification' or property;return type(entry)=='table' and entry[property] end
     n=key:match('^item(%d+)$');if n then return (object.items or {})[tonumber(n)] end
     if key:match('^enabled%d+$') then return not object.disabled end
+    if key=='definition_enabled' then return not (object.custom or {}).disabled end
     if key=='action' then return object.spell or object.item end
     return object[key]
 end

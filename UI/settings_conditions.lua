@@ -19,6 +19,8 @@ function addon:BuildConditionSettings(p)
     if self.ValidateCustomConditionSource then for _,entry in ipairs(entries) do if entry.custom then
         local checked,why=self:ValidateCustomConditionSource(entry.value,custom[entry.value],true)
         entry.invalid=not checked;entry.validationMessage=not checked and string.format(L['Invalid condition: %s'],why and (why.detail or why.reason) or L['Invalid custom condition.']) or nil
+        entry.disabled=custom[entry.value].disabled==true
+        if entry.disabled then entry.invalid=true;entry.validationMessage=L['This condition definition is disabled. Rotations using it are unavailable.']..(entry.validationMessage and '\n'..entry.validationMessage or '') end
     end end end
     local ordered
     if p.category=='SWITCH' or p.category=='DEFAULT' or groupIndex then ordered=tags end
@@ -52,6 +54,20 @@ function addon:BuildConditionSettings(p)
             profile.other_conditions_order=profile.other_conditions_order or {};self:SettingsFlag(profile.other_conditions_order,tag,destination=='DEFAULT');p.pendingMove=nil;p.category='ALL';p.condition=tag;p:Draw()
         end);apply:ClearAllPoints();apply:SetPoint('TOPRIGHT',0,-y);apply:SetWidth(100);p.y=p.y-28;if special or pending==current then apply:Disable() end
         if custom[tag] then
+            local source=custom[tag];local enabledY=p.y
+            local toggle=p:Toggle('definition_enabled',nil,not source.disabled,L['Disabled'],L['Enabled'],function(value)
+                if value then
+                    local checked,why=self:ValidateCustomConditionSource(tag,source,true)
+                    if not checked then p:Draw();p:Message(string.format(L['Invalid condition: %s'],why and (why.detail or why.reason) or L['Invalid custom condition.']));return end
+                end
+                local original=self:CopySettingsData(p.draftBaseline and p.draftBaseline.global.custom_conditions[tag] or self.db.global.custom_conditions[tag]);local expected=self.conditionDefinitions[tag]
+                source.disabled=not value
+                p:RunSettingsEffect('custom_'..tag,function()
+                    local ok,why=self:InstallCustomCondition(tag,source,expected,source)
+                    if not ok then self.db.global.custom_conditions[tag]=original;p:Message(string.format(L['Invalid condition: %s'],why and (why.detail or why.reason) or L['Invalid custom condition.'])) end
+                end);p:Draw()
+            end)
+            toggle:ClearAllPoints();toggle:SetPoint('TOPRIGHT',-28,-4);toggle:SetWidth(84);p.y=enabledY
             p:Actions({{key='edit_custom',text=L['Edit'],icon='info',action=function() self:OpenSettingsCustomCondition(p,tag,custom[tag]) end},
                 {key='duplicate_custom',text=L['Duplicate'],icon='copy',action=function()
                     local copy=self:CopySettingsData(custom[tag]);local key=tag..'_'..self:uuid():gsub('-','_');custom[key]=copy;p:RunSettingsEffect('custom_'..key,function() self:register_custom_condition(key,copy) end);p.condition=key;p.category='ALL';p.conditionSource='custom';p:Draw()

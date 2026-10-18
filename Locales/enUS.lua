@@ -1872,3 +1872,7 @@ L['These addons are optional. Only connected editor providers appear in the Edit
 L['Choose the editor for custom Lua conditions. Built In syntax highlighting and Plain text work without another addon. Automatic uses a registered optional provider when available and falls back safely. Apply saves the choice; an open editor keeps its current provider until reopened. LuaWorkbench and WowLua loading status is shown separately from integration availability.'] = true
 
 L["Invalid condition: %s"] = true
+
+L["Unavailable condition: %s"] = true
+L["This condition definition is disabled. Rotations using it are unavailable."] = true
+L["Availability"] = true

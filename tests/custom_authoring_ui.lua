@@ -1,7 +1,7 @@
 local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite()
 local function fixture()
     local f=F.new();local a=f.addon;dofile('tests/fixtures/native_ui.lua')(f.env);local make=f.env.CreateFrame;f.env.CreateFrame=function(kind,...) local frame=make(kind,...);if kind=='EditBox' then local set=frame.SetText;frame.SetText=function(self,text) if self.maxLetters and self.maxLetters>0 then text=text:sub(1,self.maxLetters) end;set(self,text) end end;return frame end;local data,deps=dofile('tests/fixtures/codec.lua')();a.RotationData=data;a.NewRotationCodec=function() return data.NewCodec(deps) end;a.pretty_name='Rotation Master';a.name='rotationmaster';a.db.char={};a.db.global.custom_conditions={}
-    for _,path in ipairs({'Core/custom_condition_owner.lua','UI/settings_draft.lua','Core/custom_authoring.lua','UI/settings_history.lua','UI/settings_layout.lua','UI/settings_ordered.lua','UI/settings_roster_order.lua','UI/settings_form.lua','UI/settings_transfer.lua','UI/custom_condition_transfer.lua','UI/icon_picker.lua','UI/help.lua','Options/custom_condition.lua','UI/lua_editor.lua','UI/custom_condition_editor.lua'}) do local h=io.open(path);if h then h:close();f.load(path) end end
+    for _,path in ipairs({'Core/custom_condition_owner.lua','UI/settings_draft.lua','Core/custom_authoring.lua','UI/settings_history.lua','UI/settings_unsaved.lua','UI/settings_layout.lua','UI/settings_ordered.lua','UI/settings_roster_order.lua','UI/settings_form.lua','UI/settings_transfer.lua','UI/custom_condition_transfer.lua','UI/icon_picker.lua','UI/help.lua','Options/custom_condition.lua','UI/lua_editor.lua','UI/custom_condition_editor.lua'}) do local h=io.open(path);if h then h:close();f.load(path) end end
     a.conditionDefinitions=a.definitions;a.RegisterCondition=function(self,key,value) self.conditionDefinitions[key]=value;if value.on_register then value.on_register(key) end end
     f.env.loadstring=function(text,name) local fn,why=loadstring(text,name);if fn then setfenv(fn,f.env) end;return fn,why end
     return f,a
@@ -96,5 +96,26 @@ test('custom condition list and draft mark invalid source without running regist
     local host=f.env.CreateFrame('Frame');host:SetSize(1000,600);local p=a:OpenNativeSettings(host,'Conditions');assert(p.roster.rows[1].rmInvalid and p.roster.rows[1].tooltip:find('Invalid condition:',1,true))
     p.fields.edit_custom:Click();local d=a.nativeCustomConditionDialog;assert(d.functionTabs.evaluate.rmInvalid and d.code.frame.rmInvalid)
     d.code.edit:SetText('return true');d.code.edit.scripts.OnTextChanged(d.code.edit,true);assert(not d.code.frame.rmInvalid and not d.functionTabs.evaluate.rmInvalid and a.db.global.custom_conditions.BAD==source)
+end)
+test('definition enable pill stages inert registration and preserves disabled source across transfer and reload',function()
+    local f,a=fixture();f.load('Core/conditions.lua');f.load('UI/settings_collections.lua');f.load('UI/settings_conditions.lua')
+    local source=a:CopySettingsData(a.empty_condition);source.description='Toggle';source.valid='return true';source.evaluate='return true';source.on_register='addon.enableCount=(addon.enableCount or 0)+1';source.on_unregister='addon.disableCount=(addon.disableCount or 0)+1'
+    a.db.global.custom_conditions.TOGGLE=source;assert(a:register_custom_condition('TOGGLE',source));a.listConditions=function() return {'TOGGLE'} end
+    local host=f.env.CreateFrame('Frame');host:SetSize(1000,600);local p=a:OpenNativeSettings(host,'Conditions');assert(p.fields.definition_enabled)
+    p.fields.definition_enabled:Click();assert(not source.disabled and not a.conditionDefinitions.TOGGLE.disabled and p.fields.definition_enabled.rmUnsaved)
+    p.fields.apply:Click();assert(a.db.global.custom_conditions.TOGGLE.disabled and a.conditionDefinitions.TOGGLE.disabled and a.disableCount==1 and a.enableCount==1)
+    assert(a:evaluateConditionResult({type='NOT',value={type='TOGGLE'}}).status=='unavailable')
+    local codec=a:NewRotationCodec();local text=assert(codec:Encode({format='RM-CustomCondition',version=1,name='TOGGLE',condition=a.db.global.custom_conditions.TOGGLE}));assert(a:ParseCustomConditionImport(text,codec).condition.disabled)
+    f.load('validate.lua');a.warn=function() end;a:validate_custom_condition('global','TOGGLE',a.db.global.custom_conditions.TOGGLE,true);assert(a.db.global.custom_conditions.TOGGLE.disabled)
+    a:UnregisterCondition('TOGGLE');assert(a:register_custom_condition('TOGGLE',a.db.global.custom_conditions.TOGGLE));assert(a.enableCount==1)
+    p.fields.definition_enabled:Click();p.fields.apply:Click();assert(not a.db.global.custom_conditions.TOGGLE.disabled and a.enableCount==2 and a:evaluateConditionResult({type='TOGGLE'}).status=='match')
+end)
+test('disabling incomplete source preserves its text and re-enable rejects invalid code or failed hooks',function()
+    local f,a=fixture();f.load('Core/conditions.lua');f.load('UI/settings_collections.lua');f.load('UI/settings_conditions.lua')
+    local source=a:CopySettingsData(a.empty_condition);source.description='Incomplete';source.evaluate='return )';a.db.global.custom_conditions.BROKEN=source;a.listConditions=function() return {'BROKEN'} end
+    local host=f.env.CreateFrame('Frame');host:SetSize(1000,600);local p=a:OpenNativeSettings(host,'Conditions');p.fields.definition_enabled:Click();p.fields.apply:Click();assert(a.conditionDefinitions.BROKEN.disabled and a.db.global.custom_conditions.BROKEN.evaluate=='return )')
+    p.fields.definition_enabled:Click();assert(a.db.global.custom_conditions.BROKEN.disabled and p:SettingsData().global.custom_conditions.BROKEN.disabled and p.message:GetText()~='')
+    a.db.global.custom_conditions.BROKEN.evaluate='return true';a.db.global.custom_conditions.BROKEN.on_register='error("registration failure")';p:DiscardSettingsDraft();p:Draw();p.fields.definition_enabled:Click();p.fields.apply:Click();assert(a.db.global.custom_conditions.BROKEN.disabled and a.conditionDefinitions.BROKEN.disabled)
+    p.fields.edit_custom:Click();local d=a.nativeCustomConditionDialog;d.code.edit:SetText('return 987');d.code.edit.scripts.OnTextChanged(d.code.edit,true);d.form.fields.definition_enabled:Click();assert(d.code:GetText()=='return 987')
 end)
 finish()

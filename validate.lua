@@ -263,7 +263,8 @@ function addon:validate_condition_group(prefix, idx, group, fix)
 end
 
 function addon:validate_custom_condition(prefix, name, custom_condition, fix)
-    validate_basic(prefix .. ":" .. name, custom_condition, addon.empty_condition, fix)
+    local template={disabled=false};for key,value in pairs(addon.empty_condition) do template[key]=value end
+    validate_basic(prefix .. ":" .. name, custom_condition, template, fix)
 
     local function validate_custom_field_spec(parent, spec)
         local toremove = {}

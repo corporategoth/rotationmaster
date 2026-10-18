@@ -340,4 +340,19 @@ test('malformed non-table reference entries remain unresolved without recursive 
     local bad=envelope();bad.id='rm.tbc.bad-effect';bad.body.rotation[1].effect='poison';assert(a:RegisterDefaultRotation(bad))
     for _,row in ipairs(a:ListDefaultRotations(0)) do if row.id==bad.id then assert(not row.eligible and not row.validation.resolved) end end
 end)
+test('disabled dependencies block entire legacy bodies including switch optional and nested fields',function()
+    local a=fixture();a.conditionDefinitions.OFF={fields={},disabled=true}
+    a.conditionDefinitions.WRAP={fields={child='condition',children='condition[]'}}
+    local body=a:GetEditableRotation(0,'user');body.rotation={{type='spell',action=403,conditions={type='OFF'}},{type='spell',action=529,conditions={}}}
+    assert(not a:GetRuntimeRotation(0,'user'),'later action can run after disabled dependency')
+    body.rotation[1].conditions={};body.switch={type='NOT',value={type='OFF'}}
+    assert(not a:GetRuntimeRotation(0,'user'),'manual rotation escaped disabled switch dependency')
+    body.switch={};body.cooldowns={{type='spell',action=403,conditions={type='WRAP',children={{type='OFF'}}}}}
+    assert(not a:GetRuntimeRotation(0,'user'),'optional dependency escaped guard')
+    body.cooldowns={};body.rotation={{type='branch',mode='false',conditions={},onTrue={{type='spell',action=403,conditions={type='WRAP',child={type='OFF'}}}},onFalse={}}}
+    assert(not a:GetRuntimeRotation(0,'user'),'nested arm dependency escaped guard')
+    assert(a:GetEditableRotation(0,'user')==body,'repair access lost')
+    a.conditionDefinitions.OFF={fields={}};a.conditionRegistryVersion=1
+    assert(a:GetRuntimeRotation(0,'user')==body,'reenabled dependency did not restore body')
+end)
 finish()
