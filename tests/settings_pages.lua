@@ -210,7 +210,7 @@ test('General page help retains authored explanations without scattering questio
     local f,parent=fixture();local a=f.addon;local p=a:CreateSettingsForm(parent);p:Open(function(form) a:BuildGeneralSettings(form) end)
     assert(not p.fields.poll_help)
     local all=a:WorkbenchPageHelp('General');local fields={};for _,entry in ipairs(all) do fields[entry.title]=entry.text end
-    for _,caption in ipairs({'Enable','Polling Interval (seconds)','Disable Auto-Switching','Live Status Update Frequency (seconds)','Minimap Icon','Disable Bar Highlighting','Spell History Memory (seconds)','Combat History Memory (seconds)','Damage History Memory (seconds)','Preview Spells','Effect','Magnification','Highlight Color','Anchor','V','H','Log Level','Detailed Profiling'}) do assert(fields[caption],caption..' missing help') end
+    for _,caption in ipairs({'Enable','Polling Interval (seconds)','Disable Auto-Switching','Live Status Update Frequency (seconds)','Minimap Icon','Default rotation view','Disable Bar Highlighting','Spell History Memory (seconds)','Combat History Memory (seconds)','Damage History Memory (seconds)','Preview Spells','Effect','Magnification','Highlight Color','Anchor','V','H','Log Level','Detailed Profiling'}) do assert(fields[caption],caption..' missing help') end
     assert(fields['Polling Interval (seconds)']:find('response time',1,true))
     local order={};for i,entry in ipairs(all) do order[entry.title]=i end;assert(order['Disable Bar Highlighting']==order['Disable Auto-Switching']+1 and order['Magnification']==order['Effect']+1)
 end)
@@ -621,5 +621,18 @@ test('item-set help covers every real native field and collection action',functi
     local nameHelp;for _,entry in ipairs(a:GetDocument_layout_itemsets_options_help()) do if entry.id=='name' then nameHelp=entry.text end end
     assert(nameHelp and nameHelp:find('first Apply saves',1,true),'help does not explain the creation save')
     p:Release()
+end)
+test('General default rotation view is staged and portable with an enum guard',function()
+    local f,parent=fixture();local a=f.addon
+    a.db.profile={poll=.1,rotation_view='diagram'};a.db.global.effects={}
+    local p=a:OpenNativeSettings(parent,'General')
+    assert(p.fields.rotation_view,'missing default rotation view')
+    p.fields.rotation_view:Click();p.menu.rows[2]:Click()
+    assert(a.db.profile.rotation_view=='diagram' and p:SettingsData().profile.rotation_view=='list')
+    p.fields.cancel:Click();assert(a.db.profile.rotation_view=='diagram' and p:SettingsData().profile.rotation_view=='diagram')
+    p.fields.rotation_view:Click();p.menu.rows[2]:Click();p.fields.apply:Click();assert(a.db.profile.rotation_view=='list')
+    assert(a:ValidateProfileTransfer({rotation_view='list'}) and a:ValidateProfileTransfer({}))
+    assert(not a:ValidateProfileTransfer({rotation_view='table'}) and not a:ValidateProfileTransfer({rotation_view=true}))
+    assert(a:ProfileFromPortable(a:ProfileToPortable(a.db.profile)).rotation_view=='list')
 end)
 finish()

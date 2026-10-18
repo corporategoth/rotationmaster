@@ -25,6 +25,7 @@ function addon:BuildGeneralSettings(p)
     p:Check('minimap',L['Minimap Icon'],not (profile.minimap or {}).hide,function(v)
         profile.minimap=profile.minimap or {};profile.minimap.hide=not v;p:RunSettingsEffect('minimap',function() local lib=LibStub('LibDBIcon-1.0');if v then lib:Show(self.name) else lib:Hide(self.name) end end)
     end)
+    p:Choice('rotation_view',L['Default rotation view'],profile.rotation_view or 'diagram',{{value='diagram',text=L['Diagram view']},{value='list',text=L['List view']}},function(v) profile.rotation_view=v end)
     p:Heading(L['History and preview'])
     for _,entry in ipairs({{'spell_history','Spell History Memory (seconds)'},{'combat_history','Combat History Memory (seconds)'},{'damage_history','Damage History Memory (seconds)'}}) do
         local key=entry[1];p:Slider(key,L[entry[2]],profile[key],0,300,1,function(v) profile[key]=v end)

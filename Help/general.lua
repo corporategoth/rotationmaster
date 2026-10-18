@@ -102,6 +102,7 @@ color.BLIZ_YELLOW .. L["Detailed Profiling"] .. color.RESET .. " - " ..
     end
     local byTitle={};for _,entry in ipairs(result) do byTitle[entry.title]=entry end
     local function extra(title,text) byTitle[title]={title=title,text=text} end
+    extra(L['Default rotation view'],L['Choose Diagram or List as the starting rotation view. This profile preference applies when opening a rotation; changing the view inside the editor does not change this setting. Cooldowns always use a scrolling grid.'])
     extra(L['Reset preview position'],L['Return the preview window to the center of the screen.'])
     extra(L['Highlight preview'],L['The icon shows your selected profile effect, color, size, anchor and offsets.'])
     extra(L['Anchor'],byTitle[L['Position']].text)
@@ -109,7 +110,7 @@ color.BLIZ_YELLOW .. L["Detailed Profiling"] .. color.RESET .. " - " ..
     extra(L['H'],L['Horizontal offset in pixels. Left and Right change it; hold Shift for ten pixels. Center resets both offsets.'])
     local log=byTitle[L['Log Level']];for _,title in ipairs({L['Quiet'],L['Default'],L['Debug'],L['Verbose']}) do local row=byTitle[title];if row then log.text=log.text..'\n'..row.title..': '..row.text end end
     local ordered={}
-    for _,title in ipairs({L['Enable'],L['Polling Interval (seconds)'],L['Disable Auto-Switching'],L['Disable Bar Highlighting'],L['Live Status Update Frequency (seconds)'],L['Minimap Icon'],L['Spell History Memory (seconds)'],L['Combat History Memory (seconds)'],L['Damage History Memory (seconds)'],L['Preview Spells'],L['Reset preview position'],L['Highlight preview'],L['Effect'],L['Magnification'],L['Highlight Color'],L['Anchor'],L['V'],L['H']}) do ordered[#ordered+1]=byTitle[title] end
+    for _,title in ipairs({L['Enable'],L['Polling Interval (seconds)'],L['Disable Auto-Switching'],L['Disable Bar Highlighting'],L['Live Status Update Frequency (seconds)'],L['Minimap Icon'],L['Default rotation view'],L['Spell History Memory (seconds)'],L['Combat History Memory (seconds)'],L['Damage History Memory (seconds)'],L['Preview Spells'],L['Reset preview position'],L['Highlight preview'],L['Effect'],L['Magnification'],L['Highlight Color'],L['Anchor'],L['V'],L['H']}) do ordered[#ordered+1]=byTitle[title] end
     if WOW_PROJECT_ID~=WOW_PROJECT_MAINLINE and LE_EXPANSION_LEVEL_CURRENT>=2 then ordered[#ordered+1]=byTitle[PRIMARY or L['Primary']];ordered[#ordered+1]=byTitle[SECONDARY or L['Secondary']] end
     ordered[#ordered+1]=log;ordered[#ordered+1]=byTitle[L['Detailed Profiling']]
     return ordered
@@ -128,7 +129,7 @@ function addon.layout_rotation_options_help(frame)
     frame:AddChild(Gap())
     frame:AddChild(CreateText(L["The switch condition selects the rotation automatically. Edit changes its condition tree. The fallback rotation is selected when no other rotation matches."]))
     frame:AddChild(Gap())
-    frame:AddChild(CreateText(L["Cooldown cards appear above the sequence and highlight independently. Add cooldown creates a reminder; its effect label expands local highlight settings."]))
+    frame:AddChild(CreateText(L["Cooldown cards have their own scrolling workspace and highlight independently of the sequence. Add cooldown creates a reminder; clicking its action shows local highlight settings."]))
     frame:AddChild(Gap())
     frame:AddChild(CreateText(L["Add action appends a priority action. Drag an Add control into a gap to insert there. Click a card name to rename it, expand for action fields, or click its condition text to edit the guard."]))
     frame:AddChild(Gap())
@@ -140,6 +141,6 @@ function addon.layout_rotation_options_help(frame)
     frame:AddChild(Gap())
     frame:AddChild(CreateText(L["Invalid or incomplete cards remain editable. Apply validates both branch arms without running custom condition code. Deleting a whole custom rotation requires confirmation and cannot be undone."]))
     frame:AddChild(Gap())
-    frame:AddChild(CreateText(L["Use the flat scrollbars or mouse wheel to navigate. Scaling applies when the slider is released and also affects RM child windows."]))
+    frame:AddChild(CreateText(L["List and Cooldowns use flat scrollbars or the mouse wheel. Diagram uses wheel zoom and dragging empty space to pan. Window scaling applies when the slider is released and also affects RM child windows."]))
     frame:AddChild(Gap())
 end

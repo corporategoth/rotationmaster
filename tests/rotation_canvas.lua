@@ -126,4 +126,36 @@ test('list view preserves forced reachability explicit details and independently
     s=scene({branch('b',nil,{leaf('yes')},{leaf('no')}),leaf('tail')},nil,{layout='list',hiddenChildren={b=true}})
     assert(not byId(s,'yes') and #s.armLabels==0 and byId(s,'tail'))
 end)
+test('selected workspace projects only its section and list defaults do not compact cooldowns',function()
+    local optional={leaf('c1'),leaf('c2')}
+    local s=scene({leaf('r')},optional,{section='rotation',layout='diagram'})
+    assert(byId(s,'r') and not byId(s,'c1') and s.section=='rotation')
+    s=scene({leaf('r')},optional,{section='cooldowns',layout='list',viewportWidth=720})
+    assert(not byId(s,'r') and not byId(s,'c1').compact and byId(s,'c1').height>28)
+    local other=scene({leaf('r')},optional,{section='cooldowns',layout='diagram',viewportWidth=720})
+    assert(byId(s,'c1').y==byId(other,'c1').y and byId(s,'c2').x==byId(other,'c2').x and s.height==other.height)
+    for _,target in ipairs(s.dropTargets) do assert(target.destination.path[1]=='cooldowns') end
+end)
+test('list siblings touch and branch arms have nested passive bounds with exact destinations',function()
+    local s=scene({leaf('before'),branch('b',nil,{leaf('t1'),leaf('t2')},{leaf('f1')}),leaf('after')},nil,{section='rotation',layout='list'})
+    local before,b,t1,t2,f1,after=byId(s,'before'),byId(s,'b'),byId(s,'t1'),byId(s,'t2'),byId(s,'f1'),byId(s,'after')
+    assert(before.y+before.height==b.y and t1.y+t1.height==t2.y,'list retained diagram gaps')
+    local parent,yes,no
+    for _,group in ipairs(s.groups or {}) do
+        if group.id=='b' then if group.kind=='branch' then parent=group elseif group.arm=='true' then yes=group else no=group end end
+    end
+    assert(parent and yes and no and no.y+no.height==yes.y and parent.y+parent.height==after.y)
+    assert(no.y<f1.y and f1.y+f1.height<=no.y+no.height and yes.y<t1.y and t2.y+t2.height<=yes.y+yes.height)
+    assert(parent.x<=no.x and parent.x+parent.width>=yes.x+yes.width)
+    local arms={};for _,target in ipairs(s.dropTargets) do if target.destination.parentId=='b' then arms[target.destination.path[3]]=true end end
+    assert(arms.onTrue and arms.onFalse and #s.connectors==0)
+end)
+test('hidden content never consumes the active workspace card budget',function()
+    local rotation,optional={},{};for i=1,200 do rotation[i]=leaf('r'..i);optional[i]=leaf('c'..i) end
+    for _,section in ipairs({'rotation','cooldowns'}) do
+        local s=scene(rotation,optional,{section=section,layout='list'})
+        assert(s.complete and #s.cards==200 and byId(s,(section=='rotation' and 'r' or 'c')..200))
+        for _,target in ipairs(s.dropTargets) do assert(target.destination.path[1]==section) end
+    end
+end)
 finish()

@@ -15,11 +15,20 @@ local function fixture()
     function a:validateCondition() return true end
     a.UpdateAutoSwitch=function() end;a.SwitchRotation=function() end;a.EvaluateNextAction=function() end
     for _,file in ipairs({'Platform/spells.lua','Data/plain.lua','Data/tags.lua','Data/rotation_tree.lua','Data/rotation_draft.lua','Data/validation.lua','Core/rotation_editor.lua','Core/rotation_workspace.lua','Core/rotation_tags.lua','Core/rotation_canvas.lua','UI/window.lua'}) do f.load(file) end
-    for _,file in ipairs({'UI/rotation_cards.lua','UI/rotation_canvas.lua','UI/color_picker.lua','UI/rotation_effect_fields.lua','UI/rotation_fields.lua','UI/rotation_navigation.lua','UI/rotation_metadata.lua','UI/rotation_editor.lua'}) do local h=io.open(file);if h then h:close();f.load(file) end end
+    for _,file in ipairs({'UI/rotation_cards.lua','UI/rotation_canvas.lua','UI/color_picker.lua','UI/rotation_effect_fields.lua','UI/rotation_fields.lua','UI/rotation_navigation.lua','UI/rotation_metadata.lua','UI/rotation_view.lua','UI/rotation_editor.lua'}) do local h=io.open(file);if h then h:close();f.load(file) end end
     local parent=create('Frame');parent:SetSize(740,600)
     return f,parent
 end
-local function card(pane,id) for _,c in ipairs(pane.canvas.cards) do if c.model and c.model.id==id and c.frame:IsShown() then return c end end end
+local function visibleCard(pane,id) for _,c in ipairs(pane.canvas.cards) do if c.model and c.model.id==id and c.frame:IsShown() then return c end end end
+-- Existing field tests select the card's workspace through the public control.
+-- Visibility tests use visibleCard so hidden content cannot pass accidentally.
+local function card(pane,id)
+    local snapshot=pane.workspace:Snapshot();local section='rotation'
+    for _,step in ipairs(snapshot.cooldowns or {}) do if step.id==id then section='cooldowns';break end end
+    if pane.view.section~=section then pane:SelectContent(section) end
+    return visibleCard(pane,id)
+end
+
 test('defaults and custom rotations share native branch/action cards with readonly enforced',function()
     local f,parent=fixture();local a=f.addon
     local editable=assert(a:CreateRotationEditor(parent,0,'mine'))
@@ -142,7 +151,7 @@ test('section controls sit with cooldown and rotation headings and switch text s
     local f,parent=fixture();local pane=assert(f.addon:CreateRotationEditor(parent,0,'mine'))
     assert(pane.switchText and pane.switchText:GetText()~='')
     assert(pane.sectionLabels.cooldowns:GetText()=='Cooldowns' and pane.sectionLabels.rotation:GetText()=='Rotation')
-    assert(pane.palette.optional:GetParent()==pane.canvas.child)
+    assert(pane.palette.optional:GetParent()==pane.frame)
     assert(pane.palette.optional:GetText()=='Add cooldown' and pane.palette.branch:GetText()=='Add branch')
     local b=card(pane,'branch');assert(not b.preview:IsShown() and b.title:GetText()~='Conditional branch')
     assert(b.controls.enable.pillDecoration and pane.delete)
@@ -252,7 +261,8 @@ test('section and card controls distinguish collapsed summaries from action deta
     cooldown.action:Click();cooldown=card(pane,'optional');assert(cooldown.model.expanded and not cooldown.action:IsShown() and cooldown.condition:IsShown())
     cooldown.expand:Click();cooldown=card(pane,'optional');assert(not cooldown.model.expanded and not cooldown.model.compact)
     cooldown.expand:Click();assert(card(pane,'optional').model.compact and not card(pane,'optional').controls.enable:IsShown())
-    pane.sectionTools.cooldowns.toggle:Click();assert(not card(pane,'optional'))
+    pane.contentTabs.rotation:Click();assert(not visibleCard(pane,'optional'))
+    pane.contentTabs.cooldowns:Click()
     pane.sectionTools.cooldowns.expand:Click();assert(not card(pane,'optional').model.expanded and not card(pane,'optional').model.compact)
     pane.sectionTools.cooldowns.collapse:Click();assert(card(pane,'optional').model.compact)
     assert(pane.hint:GetText():find('condition',1,true))
@@ -261,7 +271,7 @@ test('readonly expanded branch condition inspection remains enabled after disabl
     local f,parent=fixture();local pane=assert(f.addon:CreateRotationEditor(parent,0,'builtin'));local inspected=false
     f.addon.ShowConditionEditor=function(_,_,_,_,_,_,options) inspected=options.readOnly end
     card(pane,'optional').action:Click();assert(not card(pane,'optional').fieldPool.choices[1]:IsEnabled())
-    pane.sectionTools.cooldowns.toggle:Click();pane.view.cardStates.branch='expanded';pane:Render()
+    pane.contentTabs.rotation:Click();pane.view.cardStates.branch='expanded';pane:Render()
     local guard=card(pane,'branch').fieldPool.choices[1];assert(guard:IsEnabled());guard:Click();assert(inspected)
 end)
 test('manual move callback failures are captured and forwarded once like other native controls',function()
@@ -304,11 +314,11 @@ test('collapse all keeps branch paths visible and folding a branch is a separate
     card(pane,'branch').armToggle:Click();assert(not card(pane,'yes') and not card(pane,'no'))
     card(pane,'branch').armToggle:Click();assert(card(pane,'yes') and card(pane,'yes').model.compact)
 end)
-test('section headings collapse their contents without separate arrow controls',function()
+test('content tabs select one workspace without whole section folding',function()
     local f,parent=fixture();local pane=assert(f.addon:CreateRotationEditor(parent,0,'mine'))
-    assert(pane.sectionTools.cooldowns.toggle==pane.sectionLabels.cooldowns and not pane.sectionLabels.cooldowns.icon)
-    pane.sectionLabels.cooldowns:Click();assert(not card(pane,'optional'))
-    pane.sectionLabels.cooldowns:Click();assert(card(pane,'optional'))
+    assert(not pane.sectionTools.cooldowns.toggle and not pane.sectionLabels.cooldowns.icon)
+    pane.sectionLabels.cooldowns:Click();assert(visibleCard(pane,'optional') and not visibleCard(pane,'yes'))
+    pane.sectionLabels.rotation:Click();assert(visibleCard(pane,'yes') and not visibleCard(pane,'optional'))
 end)
 test('typed description participates in Undo and Redo before leaving the input',function()
     local f,parent=fixture();local pane=assert(f.addon:CreateRotationEditor(parent,0,'mine'))
@@ -323,11 +333,11 @@ test('malformed metadata is inspectable without throwing and remains invalid',fu
     pane.info:Click();assert(pane.metadataWindow.note:GetText():find('42',1,true) and pane.validationButton:IsShown())
     assert(value.metadata==42)
 end)
-test('switch heading folds the condition summary while condition text opens its editor',function()
-    local f,parent=fixture();local pane=assert(f.addon:CreateRotationEditor(parent,0,'mine'));local inspected=false
-    f.addon.ShowConditionEditor=function() inspected=true end
-    pane.switchLabel:Click();assert(not pane.switch:IsShown());pane.switchLabel:Click();assert(pane.switch:IsShown())
-    pane.switch:Click();assert(inspected)
+test('switch heading and text both open the editor without folding',function()
+    local f,parent=fixture();local pane=assert(f.addon:CreateRotationEditor(parent,0,'mine'));local count=0
+    f.addon.ShowConditionEditor=function() count=count+1 end
+    pane.switchLabel:Click();assert(pane.switch:IsShown() and count==1)
+    pane.switch:Click();assert(count==2)
 end)
 test('changing action type replaces a named item picker selection without stale fields',function()
     local f,parent=fixture();local pane=assert(f.addon:CreateRotationEditor(parent,0,'mine'))
@@ -346,12 +356,12 @@ test('invalid typing immediately updates card and root markers without replacing
     assert(not pane:Apply() and pane.validationButton:IsShown())
     field:SetText('1.5');field.scripts.OnTextChanged(field,true);assert(not card(pane,'optional').model.invalid and not pane.validationButton:IsShown())
 end)
-test('collapsed section replaces tools with a hint and has no separator line or empty card space',function()
+test('only active workspace tools occupy the fixed toolbar',function()
     local f,parent=fixture();local pane=assert(f.addon:CreateRotationEditor(parent,0,'mine'))
+    assert(pane.separator==nil and not pane.sectionTools.cooldowns.expand:IsShown() and not pane.palette.optional:IsShown())
     pane.sectionLabels.cooldowns:Click();local tools=pane.sectionTools.cooldowns
-    assert(pane.separator==nil and not tools.expand:IsShown() and not tools.collapse:IsShown() and not pane.palette.optional:IsShown())
-    assert(tools.hint:IsShown() and pane.canvas.scene.sections.rotation.y-pane.canvas.scene.sections.cooldowns.y<=36)
-    pane.sectionLabels.cooldowns:Click();assert(tools.expand:IsShown() and pane.palette.optional:IsShown() and not tools.hint:IsShown())
+    assert(tools.expand:IsShown() and tools.collapse:IsShown() and pane.palette.optional:IsShown())
+    assert(not pane.palette.action:IsShown() and not pane.sectionTools.rotation.expand:IsShown() and not tools.hint)
 end)
 test('viewing pristine fallback and packaged defaults never opens an unsaved prompt',function()
     local f,parent=fixture();f.addon.db.profile.rotations[0][f.env.DEFAULT]={}
@@ -457,14 +467,10 @@ test('color picker Cancel retains an unfinished channel input and readonly previ
     pane:Release();pane=assert(f.addon:CreateRotationEditor(parent,0,'builtin'));card(pane,'optional').action:Click();c=card(pane,'optional')
     assert(not c.fieldControls.colorSwatch:IsEnabled() and not c.fieldControls.positionRight:IsEnabled() and not c.fieldControls.ranked:IsEnabled())
 end)
-test('collapsed section hints open all three sections and condition summaries explain editing',function()
+test('workspace tabs expose their content and summaries explain editing',function()
     local f,parent=fixture();local pane=assert(f.addon:CreateRotationEditor(parent,0,'mine'))
-    for _,key in ipairs({'cooldowns','rotation'}) do
-        pane.sectionLabels[key]:Click();local hint=pane.sectionTools[key].hint
-        assert(hint.kind=='Button' or hint.Click,'expand hint is not interactive');hint:Click();assert(not pane.view.sectionsCollapsed[key])
-    end
-    pane.switchLabel:Click();assert(pane.switchCollapsedHint:IsShown());pane.switchCollapsedHint:Click();assert(not pane.view.switchCollapsed)
-    assert(pane.switch.tooltip and card(pane,'optional').condition.tooltip)
+    for _,key in ipairs({'cooldowns','rotation'}) do pane.sectionLabels[key]:Click();assert(pane.view.section==key and not pane.sectionTools[key].hint) end
+    assert(not pane.switchCollapsedHint and pane.switch.tooltip and card(pane,'optional').condition.tooltip)
 end)
 test('compact card titles expand and named steps title the condition dialog',function()
     local f,parent=fixture();local pane=assert(f.addon:CreateRotationEditor(parent,0,'mine'));local captured
@@ -670,27 +676,27 @@ test('diagram and compact list share one guarded draft and switching views prese
     local other=f.env.CreateFrame('Frame');other:SetSize(740,600);local readOnly=assert(a:CreateRotationEditor(other,0,'builtin'))
     readOnly.viewMode:Click();assert(readOnly.canvas.scene.layout=='list' and not card(readOnly,'yes').controls.remove:IsEnabled())
 end)
-test('view switching flushes valid staged fields and leaves invalid fields visible without changing views',function()
+test('content switching flushes valid fields and blocks invalid hidden edits',function()
     local f,parent=fixture();local pane=assert(f.addon:CreateRotationEditor(parent,0,'mine'))
-    card(pane,'optional').action:Click();local c=card(pane,'optional');local input=c.fieldControls.xoffs
-    input:SetText('12');input.scripts.OnTextChanged(input,true);pane.viewMode:Click()
-    assert(pane.view.layout=='list' and pane.workspace:Snapshot().cooldowns[1].xoffs==12)
+    card(pane,'optional').action:Click();local input=card(pane,'optional').fieldControls.xoffs
+    input:SetText('12');input.scripts.OnTextChanged(input,true);pane.contentTabs.rotation:Click()
+    assert(pane.view.section=='rotation' and pane.workspace:Snapshot().cooldowns[1].xoffs==12)
     local red=card(pane,'optional').fieldControls.color_r;red:SetText('unfinished');red.scripts.OnTextChanged(red,true)
-    pane.viewMode:Click();assert(pane.view.layout=='list' and pane:HasInvalidPendingFields())
+    pane.contentTabs.rotation:Click();assert(pane.view.section=='cooldowns' and pane:HasInvalidPendingFields())
     assert(card(pane,'optional').fieldControls.color_r:GetText()=='unfinished')
-    local stale=pane.viewMode.scripts.OnClick;pane:Release();stale();assert(pane.view.layout=='list')
+    local stale=pane.contentTabs.rotation.scripts.OnClick;pane:Release();stale();assert(pane.view.section=='cooldowns')
 end)
 test('canvas zoom uses separate scaled content extents and preserves center without resizing the window',function()
     local f,parent=fixture();local pane=assert(f.addon:CreateRotationEditor(parent,0,'mine'));local c=pane.canvas
     assert(c.SetZoom and pane.zoomIn and pane.zoomOut and pane.zoomReset,'zoom controls missing')
     local width,height=pane.frame:GetWidth(),pane.frame:GetHeight();local sceneWidth,sceneHeight=c.scene.width,c.scene.height
     assert(c:SetZoom(2));assert(c.child:GetScale()==2 and c.surface==c.frame:GetScrollChild())
-    assert(c.surface:GetWidth()==math.max(c.frame:GetWidth(),sceneWidth*2) and c.surface:GetHeight()==math.max(c.frame:GetHeight(),sceneHeight*2))
-    assert(c.horizontal.scrollRange==math.max(0,sceneWidth*2-c.frame:GetWidth()))
-    assert(c.frame.workbenchBar.scrollRange==math.max(0,sceneHeight*2-c.frame:GetHeight()))
+    assert(c.surface:GetWidth()==sceneWidth*2+c.frame:GetWidth() and c.surface:GetHeight()==sceneHeight*2+c.frame:GetHeight())
+    assert(c.horizontal.scrollRange==sceneWidth*2)
+    assert(c.frame.workbenchBar.scrollRange==sceneHeight*2)
     c.horizontal:SetValue(150);c.frame.workbenchBar:SetValue(100)
-    local center=(150+c.frame:GetWidth()/2)/2;assert(c:SetZoom(1.8))
-    assert(math.abs(c.scrollX-(center*1.8-c.frame:GetWidth()/2))<.0001)
+    local center=150/2;assert(c:SetZoom(1.8))
+    assert(math.abs(c.scrollX-(center*1.8))<.0001)
     assert(pane.frame:GetWidth()==width and pane.frame:GetHeight()==height and pane.frame:GetScale()==1 and not pane:HasUnsavedChanges())
     pane.zoomReset:Click();assert(c:GetZoom()==1 and pane.zoomReset:GetText()=='100%')
     assert(not c:SetZoom(0/0) and not c:SetZoom('2'));c:SetZoom(20);assert(c:GetZoom()==2 and not pane.zoomIn:IsEnabled())
@@ -708,16 +714,19 @@ test('blank canvas panning follows pointer deltas at window scale and clamps thr
     down=false;c.frame.scripts.OnUpdate(c.frame);assert(not c.pan and not c.frame.scripts.OnUpdate)
     c:BeginDrag('yes');assert(not c:BeginPan() and c.drag,'blank pan stole a card drag');c:CancelDrag()
 end)
-test('zoom pan and view controls preserve staged fields read-only access and released interaction guards',function()
+test('zoom controls respect workspace mode read-only access and released guards',function()
     local f,parent=fixture();local a=f.addon;local pane=assert(a:CreateRotationEditor(parent,0,'mine'));local c=pane.canvas
-    assert(c.SetZoom,'zoom missing');card(pane,'optional').action:Click();local raw=card(pane,'optional').fieldControls.xoffs
+    card(pane,'optional').action:Click();local raw=card(pane,'optional').fieldControls.xoffs
     raw:SetText('unfinished');raw.scripts.OnTextChanged(raw,true);pane.zoomIn:Click()
-    assert(c:GetZoom()==1.1 and raw:GetText()=='unfinished' and pane:HasInvalidPendingFields())
+    assert(c:GetZoom()==1 and raw:GetText()=='unfinished' and pane:HasInvalidPendingFields())
+    raw:SetText('12');raw.scripts.OnTextChanged(raw,true);pane.contentTabs.rotation:Click()
+    pane.zoomIn:Click();assert(c:GetZoom()==1.1)
     f.env.GetCursorPosition=function() return 10,10 end;f.env.IsMouseButtonDown=function() return true end;c:BeginPan();local stale=c.frame.scripts.OnUpdate
     pane:Release();stale();assert(not c.pan and not c.drag)
     local other=f.env.CreateFrame('Frame');other:SetSize(740,600);local ro=assert(a:CreateRotationEditor(other,0,'builtin'))
-    ro.viewMode:Click();ro.zoomIn:Click();assert(ro.canvas:GetZoom()==1.1 and ro.view.layout=='list' and not ro:HasUnsavedChanges())
+    ro.zoomIn:Click();assert(ro.canvas:GetZoom()==1.1 and not ro:HasUnsavedChanges())
     ro.canvas:BeginPan();assert(ro.canvas.pan);ro.canvas:Render();assert(not ro.canvas.pan)
+    ro.viewMode:Click();ro.zoomIn:Click();assert(ro.canvas:GetZoom()==1 and not ro.canvas:BeginPan())
 end)
 test('blank pan does not capture a card under the pointer and zoom keeps typed drop identities intact',function()
     local f,parent=fixture();local pane=assert(f.addon:CreateRotationEditor(parent,0,'mine'));local c=pane.canvas
@@ -728,6 +737,74 @@ test('blank pan does not capture a card under the pointer and zoom keeps typed d
     local destination
     for _,target in ipairs(c.scene.dropTargets) do if target.destination.parentId=='branch' and target.destination.path[3]=='onFalse' and target.destination.index==2 then destination=target end end
     assert(destination);c:BeginDrag('yes');assert(c:Drop(destination))
-    assert(pane.workspace:Snapshot().rotation[1].onFalse[2].id=='yes' and c:GetZoom()==.5)
+    assert(pane.workspace:Snapshot().rotation[1].onFalse[2].id=='yes' and c:GetZoom()==1 and pane.view.zoom==.5)
+end)
+test('rotation and cooldown workspaces isolate cards layout and zoom without saving view choices',function()
+    local f,parent=fixture();local pane=assert(f.addon:CreateRotationEditor(parent,0,'mine'))
+    assert(pane.view.section=='rotation' and pane.contentTabs,'workspace selector missing')
+    assert(visibleCard(pane,'yes') and not visibleCard(pane,'optional'))
+    pane.canvas:SetZoom(1.5);pane.viewMode:Click();assert(pane.canvas:GetZoom()==1 and not pane.zoomBar:IsShown() and not pane.canvas:BeginPan())
+    pane.contentTabs.cooldowns:Click();assert(pane.view.section=='cooldowns' and visibleCard(pane,'optional') and not visibleCard(pane,'yes'))
+    assert(not visibleCard(pane,'optional').model.compact and not pane.viewMode:IsShown() and not pane.canvas:SetZoom(2))
+    pane.contentTabs.rotation:Click();pane.viewMode:Click();assert(pane.canvas:GetZoom()==1.5 and pane.zoomBar:IsShown() and not pane:HasUnsavedChanges())
+end)
+test('diagram viewport wheel zoom middle reset and blank click pan cannot become scrollbar gestures',function()
+    local f,parent=fixture();local pane=assert(f.addon:CreateRotationEditor(parent,0,'mine'));local c=pane.canvas
+    assert(pane.zoomBar and pane.zoomBar:GetParent()==c.frame and pane.zoomBar.point[1]=='BOTTOMRIGHT')
+    assert(not c.frame.workbenchBar:IsShown() and not c.horizontal:IsShown())
+    c.frame.scripts.OnMouseWheel(c.frame,1);assert(c:GetZoom()==1.1)
+    local x,y,down=300,300,true;f.env.GetCursorPosition=function() return x,y end;f.env.IsMouseButtonDown=function() return down end
+    local sx,sy=c.scrollX,c.frame.workbenchBar:GetValue()
+    c.frame.scripts.OnMouseDown(c.frame,'LeftButton');assert(c.pan,'viewport did not accept blank press')
+    x=260;y=340;c.frame.scripts.OnUpdate(c.frame);assert(c.scrollX==sx+40 and c.frame.workbenchBar:GetValue()==sy+40)
+    c.frame.scripts.OnMouseUp(c.frame,'LeftButton');assert(not c.pan)
+    c.frame.scripts.OnMouseUp(c.frame,'MiddleButton');assert(c:GetZoom()==1)
+    pane.viewMode:Click();local stored=pane.view.zoom;c.frame.scripts.OnMouseWheel(c.frame,-1);c.frame.scripts.OnMouseUp(c.frame,'MiddleButton')
+    assert(c:GetZoom()==1 and pane.view.zoom==stored and not c:BeginPan())
+end)
+test('content switching preserves staged fields and rejects hiding an invalid field',function()
+    local f,parent=fixture();local pane=assert(f.addon:CreateRotationEditor(parent,0,'mine'))
+    assert(pane.contentTabs,'workspace selector missing');pane.contentTabs.cooldowns:Click();visibleCard(pane,'optional').action:Click()
+    local input=visibleCard(pane,'optional').fieldControls.xoffs;input:SetText('unfinished');input.scripts.OnTextChanged(input,true)
+    pane.contentTabs.rotation:Click();assert(pane.view.section=='cooldowns' and input:GetText()=='unfinished' and pane:HasInvalidPendingFields())
+    input:SetText('12');input.scripts.OnTextChanged(input,true);pane.contentTabs.rotation:Click()
+    assert(pane.view.section=='rotation' and pane.workspace:Snapshot().cooldowns[1].xoffs==12 and f.addon:GetEditableRotation(0,'mine').cooldowns[1].xoffs==nil)
+    pane.undo:Click();assert(pane.workspace:Snapshot().cooldowns[1].xoffs==nil)
+    assert(not pane.switchCollapsedHint and not pane.sectionTools.cooldowns.hint,'whole section collapse remained')
+end)
+test('General preferred rotation view initializes new editors and changed preferences on reopen',function()
+    local f,parent=fixture();local a=f.addon
+    local pane=assert(a:CreateRotationEditor(parent,0,'mine'));assert(pane.view.layout=='diagram')
+    pane.viewMode:Click();assert(pane.view.layout=='list' and a.db.profile.rotation_view==nil)
+    pane:Open(0,'mine');assert(pane.view.layout=='list','temporary choice was lost within this workspace')
+    a.db.profile.rotation_view='list';pane:Open(0,'mine');assert(pane.view.layout=='list')
+    a.db.profile.rotation_view='diagram';pane:Open(0,'mine');assert(pane.view.layout=='diagram')
+    a.db.profile.rotation_view='list';local other=f.env.CreateFrame('Frame');other:SetSize(740,600)
+    local ro=assert(a:CreateRotationEditor(other,0,'builtin'));assert(ro.view.layout=='list' and ro.canvas:GetZoom()==1 and not ro:HasUnsavedChanges())
+end)
+test('normal lists scroll independently while diagram restores its camera across views and resize',function()
+    local f,parent=fixture();local value=f.addon:GetEditableRotation(0,'mine')
+    for i=1,40 do value.rotation[#value.rotation+1]={id='long'..i,type='none',conditions={}};value.cooldowns[#value.cooldowns+1]={id='cd'..i,type='spell',action=324,conditions={}} end
+    local pane=assert(f.addon:CreateRotationEditor(parent,0,'mine'));local c=pane.canvas
+    c.horizontal:SetValue(c.paddingX+80);c.frame.workbenchBar:SetValue(c.paddingY+120)
+    pane.viewMode:Click();assert(c.frame.workbenchBar:IsShown() and not pane.zoomBar:IsShown())
+    c.frame.scripts.OnMouseWheel(c.frame,-1);assert(c.frame.workbenchBar:GetValue()==40)
+    pane.contentTabs.cooldowns:Click();assert(c.frame.workbenchBar:GetValue()==0 and c.frame.workbenchBar:IsShown() and c.child:GetScale()==1)
+    c.frame.scripts.OnMouseWheel(c.frame,-1);c.frame.scripts.OnMouseWheel(c.frame,-1);assert(c.frame.workbenchBar:GetValue()==80)
+    pane.contentTabs.rotation:Click();assert(c.frame.workbenchBar:GetValue()==40)
+    assert(#c.groups>0 and c.groups[1]:IsShown())
+    pane.viewMode:Click();assert(c.scrollX==c.paddingX+80 and c.frame.workbenchBar:GetValue()==c.paddingY+120)
+    assert(not c.frame.workbenchBar:IsShown() and not c.groups[1]:IsShown())
+    parent:SetSize(820,650);pane:SetWidth(820);pane:SetHeight(650);pane:Layout()
+    assert(c.scrollX==c.paddingX+80 and c.frame.workbenchBar:GetValue()==c.paddingY+120)
+    c.frame:UpdateWorkbenchScroll();assert(not c.frame.workbenchBar:IsShown(),'native extent callback exposed diagram scrollbar')
+    pane:Open(0,'mine');assert(c.scrollX==c.paddingX+80 and c.frame.workbenchBar:GetValue()==c.paddingY+120)
+    assert(not pane:HasUnsavedChanges())
+end)
+test('retired card wheel and middle callbacks cannot navigate a reopened workspace',function()
+    local f,parent=fixture();local pane=assert(f.addon:CreateRotationEditor(parent,0,'mine'))
+    local c=visibleCard(pane,'yes');local wheel,middle=c.title.scripts.OnMouseWheel,c.title.scripts.OnMouseUp
+    pane:Open(0,'builtin');wheel(c.title,1);assert(pane.canvas:GetZoom()==1,'retired card zoomed another workspace')
+    pane.canvas:SetZoom(1.5);middle(c.title,'MiddleButton');assert(pane.canvas:GetZoom()==1.5,'retired card reset another workspace')
 end)
 finish()

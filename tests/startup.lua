@@ -605,6 +605,13 @@ local function savedVariablesCopy(value)
     return result
 end
 
+test('real AceDB defaults to diagram and preserves the chosen rotation view on reload',function()
+    local env,a,scripts=persistentFixture();assert(a.db.profile.rotation_view=='diagram')
+    a.db.profile.rotation_view='list';scripts.OnEvent(nil,'PLAYER_LOGOUT')
+    local _,b=persistentFixture({RotationMasterDB=savedVariablesCopy(env.RotationMasterDB)})
+    assert(b.db.profile.rotation_view=='list')
+end)
+
 test('real AceDB preserves customized condition lists across reload and seeds only new or reset profiles',function()
     local env,a,scripts=persistentFixture()
     local function contains(list,tag) for _,value in ipairs(list) do if value==tag then return true end end end

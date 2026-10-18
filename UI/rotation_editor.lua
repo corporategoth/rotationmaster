@@ -122,28 +122,9 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
     end
     pane.undo=tool(L['Undo'],24,function() if not pane:FlushName() then return end;local flushed,reason=pane:FlushFieldEdits();if not flushed then pane:Message(reason);return end;local ok,problem=workspace.session:Undo();if ok then pane:Render() else pane:Message(problem) end end,'undo')
     pane.redo=tool(L['Redo'],24,function() local ok,problem=workspace.session:Redo();if ok then pane:Render() else pane:Message(problem) end end,'redo')
-    pane.viewMode=addon:CreateWorkbenchPill(pane.frame,L['Diagram view'],108)
-    pane.viewMode.tooltip=L['Switch between the diagram and compact tree list. This changes only the view.']
-    pane.viewMode.action=function()
-        if not pane:FlushName() then return end
-        local ok,why=pane:FlushFieldEdits();if not ok then pane:Message(why);return end
-        pane.view.layout=pane.view.layout=='list' and 'diagram' or 'list'
-        pane:Render()
-    end
-    pane.tools[#pane.tools+1]=pane.viewMode
-    pane.zoomOut=tool(L['Zoom out'],24,function() pane.canvas:SetZoom(math.floor(pane.canvas:GetZoom()*100+.5)/100-.1) end,'minus')
-    pane.zoomIn=tool(L['Zoom in'],24,function() pane.canvas:SetZoom(math.floor(pane.canvas:GetZoom()*100+.5)/100+.1) end,'plus')
-    pane.zoomReset=tool('100%',54,function() pane.canvas:SetZoom(1) end)
-    pane.zoomReset.tooltip=L['Reset canvas zoom to 100%. Drag empty canvas space to pan. Window scale is unchanged.']
-    function pane:UpdateCanvasNavigation()
-        local value=self.canvas:GetZoom();self.zoomReset:SetText(string.format('%d%%',math.floor(value*100+.5)))
-        if value<=.25 then self.zoomOut:Disable() else self.zoomOut:Enable() end
-        if value>=2 then self.zoomIn:Disable() else self.zoomIn:Enable() end
-    end
     pane.switchButton=addon:CreateWorkbenchButton(pane.frame,'',300);pane.switch=pane.switchButton
     pane.switchText=pane.switchButton:GetFontString();pane.switchText:ClearAllPoints();pane.switchText:SetPoint('TOPLEFT',6,-4);pane.switchText:SetWordWrap(true);pane.switchText:SetJustifyH('LEFT')
     pane.switchLabel=addon:CreateWorkbenchButton(pane.frame,L['Switch condition'],180);pane.switchLabel:GetFontString():SetFontObject('GameFontNormal');pane.switchLabel.art:SetAlpha(.1);addon:AlignWorkbenchTextLeft(pane.switchLabel,0)
-    pane.switchCollapsedHint=addon:CreateWorkbenchButton(pane.frame,L['Click to expand'],110);pane.switchCollapsedHint.art:Hide();pane.switchCollapsedHint:Hide()
     pane.switch.tooltip=L['Click condition text on any card to view or edit its conditions.']
     pane.compare=tool(L['Compare rotations'],126,function()
         pane:RequestLeave(function() if addon.ShowRotationComparison then addon:ShowRotationComparison(spec,id) end end)
@@ -172,37 +153,7 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
     pane.delete:SetText('');pane.delete.art:Hide();pane.delete.icon=pane.delete:CreateTexture(nil,'ARTWORK');pane.delete.icon:SetAllPoints(pane.delete);pane.delete.icon:SetTexture(addon:ControlTexture('trash'));pane.delete.icon:SetVertexColor(1,.3,.3,1);pane.delete.tooltip=L['Delete rotation']
     table.remove(pane.tools)
     pane.canvas=self:CreateRotationCanvas(pane.frame,pane)
-    pane.palette={}
-    for index,entry in ipairs({{key='action',text=L['Add action'],section='rotation',node={type='spell',conditions={}}},
-        {key='branch',text=L['Add branch'],section='rotation',node={type='branch',conditions={},onTrue={},onFalse={}}},
-        {key='optional',text=L['Add cooldown'],section='cooldowns',node={type='spell',conditions={}}}}) do
-        local control=addon:CreateWorkbenchLabeledIconButton(pane.canvas.child,entry.key=='branch' and 'branch' or 'plus',entry.text,116)
-        control.section=entry.section;control.node=entry.node;control:RegisterForDrag('LeftButton');control.tooltip=L['Drag into a gap, or click to append.'];pane.palette[entry.key]=control
-    end
-    pane.sectionLabels={};pane.sectionTools={}
-    for _,section in ipairs({'cooldowns','rotation'}) do
-        local label=addon:CreateWorkbenchButton(pane.canvas.child,section=='cooldowns' and L['Cooldowns'] or L['Rotation'],100)
-        label:GetFontString():SetFontObject('GameFontNormal');label.art:SetAlpha(.1);pane.sectionLabels[section]=label
-        local toggle=label
-        local expand=addon:CreateWorkbenchLabeledIconButton(pane.canvas.child,'expand-all',L['Expand all'],100)
-        local collapse=addon:CreateWorkbenchLabeledIconButton(pane.canvas.child,'collapse-all',L['Collapse all'],100)
-        local hint=addon:CreateWorkbenchButton(pane.canvas.child,L['Click to expand'],110);hint.art:Hide();hint:Hide()
-        pane.sectionTools[section]={toggle=toggle,expand=expand,collapse=collapse,hint=hint}
-    end
-    pane.collapse=pane.sectionTools.rotation.collapse;pane.expand=pane.sectionTools.rotation.expand
-    function pane:LayoutSections(scene,child)
-        for section,label in pairs(self.sectionLabels) do
-            local y=scene.sections[section].y;local controls=self.sectionTools[section]
-            label:ClearAllPoints();label:SetPoint('TOPLEFT',child,'TOPLEFT',0,-y+3)
-            controls.expand:ClearAllPoints();controls.expand:SetPoint('TOPLEFT',child,'TOPLEFT',104,-y+3)
-            controls.collapse:ClearAllPoints();controls.collapse:SetPoint('TOPLEFT',child,'TOPLEFT',208,-y+3)
-            controls.hint:ClearAllPoints();controls.hint:SetPoint('TOPLEFT',child,'TOPLEFT',110,-y)
-            if scene.sections[section].collapsed then controls.expand:Hide();controls.collapse:Hide();controls.hint:Show() else controls.expand:Show();controls.collapse:Show();controls.hint:Hide() end
-        end
-        self.palette.optional:ClearAllPoints();self.palette.optional:SetPoint('TOPLEFT',child,'TOPLEFT',scene.width-116,-scene.sections.cooldowns.y+3)
-        for i,key in ipairs({'action','branch'}) do self.palette[key]:ClearAllPoints();self.palette[key]:SetPoint('TOPLEFT',child,'TOPLEFT',scene.width-236+(i-1)*120,-scene.sections.rotation.y+3) end
-        for _,control in pairs(self.palette) do if scene.sections[control.section].collapsed then control:Hide() else control:Show() end end
-    end
+    addon:InstallRotationView(pane)
     pane.hint=text(pane.frame);pane.hint:SetPoint('BOTTOMLEFT',8,12);pane.hint:SetText(L['Click condition text on any card to view or edit its conditions.'])
     pane.apply=self:CreateWorkbenchButton(pane.frame,L['Apply'],86);pane.apply:SetPoint('BOTTOMRIGHT',-100,8)
     pane.discard=self:CreateWorkbenchButton(pane.frame,L['Discard'],86);pane.discard:SetPoint('BOTTOMRIGHT',-8,8)
@@ -278,9 +229,9 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
         self.switchText:SetText(addon:PlainWorkbenchName(id==DEFAULT and L['No other rotations match.'] or addon:DescribeCardCondition(self.workspace:Snapshot().switch or {},spec)))
         local switchHeight=math.max(20,self.switchText:GetStringHeight());self.switchText:SetHeight(math.min(72,switchHeight))
         self.switch:SetSize(math.max(100,width-16),math.min(72,switchHeight)+8)
-        self.switchCollapsedHint:ClearAllPoints();self.switchCollapsedHint:SetPoint('TOPLEFT',192,-switchTop)
-        if self.view.switchCollapsed then self.switch:Hide();self.switchCollapsedHint:Show() else self.switch:Show();self.switchCollapsedHint:Hide() end
-        local top=switchTop+22+(self.view.switchCollapsed and 0 or math.min(72,switchHeight)+18);self.canvas.frame:ClearAllPoints();self.canvas.frame:SetPoint('TOPLEFT',8,-top)
+        self.switch:Show()
+        local top=self:LayoutViewControls(switchTop+22+math.min(72,switchHeight)+18,width)
+        self.canvas.frame:ClearAllPoints();self.canvas.frame:SetPoint('TOPLEFT',8,-top)
         self.canvas.frame:SetSize(math.max(1,width-40),math.max(1,height-top-48));self.canvas:LayoutScrollBar();self.status:SetWidth(math.max(1,width-208));self.hint:SetWidth(math.max(1,width-208));if (self.status:GetText() or '')=='' then self.hint:Show() else self.hint:Hide() end
     end
     function pane:Layout() self:LayoutGeometry();self:Render() end
@@ -298,6 +249,8 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
         if self.active then self:Release() end
         workspace=selected;spec=nextSpec;id=nextId;onSelect=nextSelect;self.workspace=workspace
         workspace.uiView=workspace.uiView or {collapsed={},expanded={},detailsHeights={}};self.view=workspace.uiView
+        local preferred=addon.db.profile.rotation_view=='list' and 'list' or 'diagram'
+        if self.view.defaultLayout~=preferred then self.view.layout=preferred;self.view.defaultLayout=preferred end
         self.nameDirty=false;self.descriptionDirty=false;self.metadataDirty=false;self.tagsDirty=false;self.priorityDirty=false;self.metadataDraft=nil;self.deleted=false;self.active=true;self.generation=(self.generation or 0)+1
         local token=self.generation
         local function alive() return self.active and self.generation==token end
@@ -318,34 +271,11 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
         end)
         addon:SetUIScript(self.description,'OnTextChanged',function(_,userInput) if alive() and userInput and not workspace.readOnly then self.descriptionDirty=true;self:UpdateHistory() end end)
         addon:SetUIScript(self.description,'OnEditFocusGained',workspace.readOnly and function(control) control:ClearFocus() end or nil)
-        local function toggleSwitch() if alive() then self.view.switchCollapsed=not self.view.switchCollapsed;self:LayoutGeometry() end end
-        addon:SetUIScript(self.switchLabel,'OnClick',toggleSwitch);addon:SetUIScript(self.switchCollapsedHint,'OnClick',toggleSwitch)
+        addon:SetUIScript(self.switchLabel,'OnClick',function() if alive() then self:EditCondition({kind='switch'}) end end)
         addon:SetUIScript(self.switch,'OnClick',function() if alive() then self:EditCondition({kind='switch'}) end end)
-        self.view.cardStates=self.view.cardStates or {};self.view.sectionsCollapsed=self.view.sectionsCollapsed or {};self.view.hiddenChildren=self.view.hiddenChildren or {}
-        for section,controls in pairs(self.sectionTools) do
-            local key=section
-            local function toggle() if alive() then self.view.sectionsCollapsed[key]=not self.view.sectionsCollapsed[key];self:Render() end end
-            addon:SetUIScript(controls.hint,'OnClick',toggle);addon:SetUIScript(controls.toggle,'OnClick',toggle);addon:SetUIScript(self.sectionLabels[key],'OnClick',toggle)
-            for _,entry in ipairs({{controls.expand,'normal'},{controls.collapse,'compact'}}) do
-                local mode=entry[2];addon:SetUIScript(entry[1],'OnClick',function()
-                    if not alive() then return end
-                    self.view.sectionsCollapsed[key]=false
-                    for _,row in ipairs(data.IndexRotationSteps(workspace:Snapshot()).rows) do if row.section==key then self.view.cardStates[row.step.id]=mode;if mode=='normal' then self.view.hiddenChildren[row.step.id]=nil end end end
-                    self:Render()
-                end)
-            end
-        end
-        for _,control in pairs(self.palette) do
-            if workspace.readOnly then control:Disable() else control:Enable() end
-            addon:SetUIScript(control,'OnClick',function()
-                if not alive() or workspace.readOnly then return end
-                self.view.sectionsCollapsed[control.section]=false
-                local list=workspace:Snapshot()[control.section]
-                self:Command('Insert',{path={control.section},index=#list+1},control.node)
-            end)
-            addon:BindWorkbenchDragSource(control,function() if alive() then self.canvas:BeginDrag(nil,control.node) end end,
-                function() if alive() then self.canvas:EndDrag() end end)
-        end
+        self.view.section=self.view.section=='cooldowns' and 'cooldowns' or 'rotation'
+        self.view.cardStates=self.view.cardStates or {};self.view.sectionsCollapsed={};self.view.hiddenChildren=self.view.hiddenChildren or {};self.view.switchCollapsed=nil
+        self:BindViewControls(alive)
         addon:SetUIScript(self.name,'OnTextChanged',function(_,userInput) if alive() and userInput and not workspace.readOnly and id~=DEFAULT then self.nameDirty=true;self:UpdateHistory() end end)
         addon:SetUIScript(self.name,'OnEnterPressed',function(control) if alive() then control:ClearFocus();if self:FlushName() then self:Render() end end end)
         addon:SetUIScript(self.name,'OnEditFocusGained',(workspace.readOnly or id==DEFAULT) and function(control) control:ClearFocus() end or nil)

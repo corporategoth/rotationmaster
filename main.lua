@@ -67,6 +67,7 @@ local defaults = {
         combat_history = 10,
         damage_history = 30,
         disable_buttons = false,
+        rotation_view = "diagram",
         preview_spells = 0,
         preview_window = {
             point = "CENTER",

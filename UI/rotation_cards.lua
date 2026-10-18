@@ -86,7 +86,7 @@ function addon:CreateRotationCard(parent)
         if self.releaseFields then self.releaseFields();self.releaseFields=nil end
         for _,control in pairs(self.controls) do addon:SetUIScript(control,'OnClick',nil) end
         for _,control in ipairs({self.title,self.action,self.condition,self.expand,self.armToggle,self.frame}) do
-            for _,event in ipairs({'OnClick','OnMouseDown','OnDragStart','OnDragStop','OnEnter','OnLeave'}) do if control:HasScript(event) then addon:SetUIScript(control,event,nil) end end
+            for _,event in ipairs({'OnClick','OnMouseDown','OnMouseUp','OnMouseWheel','OnDragStart','OnDragStop','OnEnter','OnLeave'}) do if control:HasScript(event) then addon:SetUIScript(control,event,nil) end end
         end
         for _,event in ipairs({'OnEditFocusGained','OnEditFocusLost','OnUpdate'}) do addon:SetUIScript(self.name,event,nil) end
         addon:SetUIScript(self.name,'OnTextChanged',nil);addon:SetUIScript(self.name,'OnEnterPressed',nil);addon:SetUIScript(self.name,'OnEscapePressed',nil)

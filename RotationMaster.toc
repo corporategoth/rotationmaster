@@ -131,6 +131,7 @@ UI/rotation_effect_fields.lua
 UI/rotation_fields.lua
 UI/rotation_navigation.lua
 UI/rotation_metadata.lua
+UI/rotation_view.lua
 UI/rotation_editor.lua
 UI/rotation_reference.lua
 UI/defaults.lua

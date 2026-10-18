@@ -1085,7 +1085,7 @@ L["Closing the window retains drafts for this session. Switching rotations or op
 
 L["The switch condition selects the rotation automatically. Edit changes its condition tree. The fallback rotation is selected when no other rotation matches."] = true
 
-L["Cooldown cards appear above the sequence and highlight independently. Add cooldown creates a reminder; its effect label expands local highlight settings."] = true
+L["Cooldown cards have their own scrolling workspace and highlight independently of the sequence. Add cooldown creates a reminder; clicking its action shows local highlight settings."] = true
 
 L["Add action appends a priority action. Drag an Add control into a gap to insert there. Click a card name to rename it, expand for action fields, or click its condition text to edit the guard."] = true
 
@@ -1097,7 +1097,7 @@ L["An evaluated branch follows one arm, then rejoins later siblings. Stop ends t
 
 L["Invalid or incomplete cards remain editable. Apply validates both branch arms without running custom condition code. Deleting a whole custom rotation requires confirmation and cannot be undone."] = true
 
-L["Use the flat scrollbars or mouse wheel to navigate. Scaling applies when the slider is released and also affects RM child windows."] = true
+L["List and Cooldowns use flat scrollbars or the mouse wheel. Diagram uses wheel zoom and dragging empty space to pan. Window scaling applies when the slider is released and also affects RM child windows."] = true
 
 L['Complete the highlighted input fields before applying.'] = true
 
@@ -1268,7 +1268,7 @@ L["Highlight effects"] = true
 L["If / Unless toggles negation. Enabled / Disabled keeps the saved fields while skipping evaluation. All / Any changes AND / OR. Click a group name to rename it; the branch icon hides or shows its children. Gray descendants cannot be reached."] = true
 L["Move, copy and remove"] = true
 L["Names and details"] = true
-L["Search or filter the rotation roster, then select a rotation. Blue defaults use the same editor but remain read-only; Duplicate makes an editable copy. The name and Metadata describe the rotation. Switch condition selects when it applies. Cooldowns run independently above the ordered rotation."] = true
+L["Search or filter the rotation roster, then select a rotation. Blue defaults use the same editor but remain read-only; Duplicate makes an editable copy. The name and Metadata describe the rotation. Switch condition selects when it applies. Use the Rotation and Cooldowns tabs to select the content below the switch condition. Cooldowns highlight independently of the ordered rotation."] = true
 L["Select an effect to edit its name, type and type-specific settings. The icon previews it live. Sequence sections edit animation, color, pulse or custom frames in order. Duplicate creates an independent effect. Import replaces the selected effect after validation."] = true
 L["The question mark explains the visible controls. With condition fields open, it adds that condition’s help below the fields. Undo / Redo affect the draft. Apply saves; Discard or Cancel abandons draft changes. Red borders mark invalid or incomplete data."] = true
 L["These settings apply immediately. Press Enter or leave a text field to commit it. Invalid text stays red and blocks navigation until corrected. Searchable selectors open on click and filter as you type. Section headings collapse or expand their contents."] = true
@@ -1564,7 +1564,7 @@ L["Zoom out"] = true
 L["Zoom in"] = true
 L["Reset canvas zoom to 100%. Drag empty canvas space to pan. Window scale is unchanged."] = true
 L["Navigating rotations"] = true
-L["Diagram / List changes only the view. Minus and plus zoom the canvas from 25% to 200%, independently of window Scale; click the percentage to reset to 100%. Drag empty canvas space with the left mouse button to pan. Dragging cards still reorders them. The list shows False before True. Both views currently show at most 200 cards; the remaining saved cards are preserved."] = true
+L["Diagram / List changes only the rotation view; General settings choose the default. Diagram has floating minus, percentage and plus controls at the bottom right. Scroll to zoom from 25% to 200%; click the percentage or middle-click to reset to 100%. Drag empty diagram space to pan. List uses normal scrollbars with touching cards and boxed branch arms, False before True. Cooldowns use a separate scrolling grid. Dragging cards reorders them in every view. Each workspace currently shows at most 200 cards; the remaining saved cards are preserved."] = true
 
 -- Current native announcement help: whole paragraphs, not English fragments.
 L["Enabled / Disabled"] = true
@@ -1627,3 +1627,9 @@ L["Help.ItemSets.list.up"] = "Move this entry one position earlier. A move befor
 L["Help.ItemSets.list.down"] = "Move this entry one position later. A move past the final entry is unavailable."
 L["Help.ItemSets.list.bottom"] = "Move this entry to the final position in the item priority list, when that control is offered."
 L["Help.ItemSets.list.delete"] = "Remove this entry from the list. In a draft editor this remains pending until Apply, and Cancel discards it. Undo is available where the containing editor provides draft history."
+
+L["Default rotation view"] = true
+
+L["Choose Diagram or List as the starting rotation view. This profile preference applies when opening a rotation; changing the view inside the editor does not change this setting. Cooldowns always use a scrolling grid."] = true
+
+L["Reset diagram zoom to 100%. Scroll to zoom; middle-click to reset. Drag empty space to pan."] = true

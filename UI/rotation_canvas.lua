@@ -1,6 +1,6 @@
 local addon_name,addon=...
 local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
-local colors={green={.25,.7,.35},red={.85,.3,.25},gray={.4,.4,.4},neutral={.55,.58,.6}}
+local colors={green={.25,.7,.35},red={.85,.3,.25},gray={.4,.4,.4},neutral={.55,.58,.6},white={.85,.85,.85}}
 local function finite(value) return type(value)=='number' and value==value and value>-math.huge and value<math.huge end
 local function zoom(value) return finite(value) and math.max(.25,math.min(2,value)) or 1 end
 local function location(path) return table.concat(path,'/') end
@@ -10,9 +10,10 @@ local function moveCommand(snapshot,id,destination)
     return row and row.section=='rotation' and destination.parentId and location(path)~=location(destination.path) and 'MoveTail' or 'Move'
 end
 function addon:CreateRotationCanvas(parent,owner)
-    local canvas={frame=addon:CreateWorkbenchScrollFrame(parent),cards={},lines={},labels={},zones={},generation=0}
+    local canvas={frame=addon:CreateWorkbenchScrollFrame(parent),cards={},lines={},labels={},zones={},groups={},generation=0}
     canvas.surface=CreateFrame('Frame',nil,canvas.frame);canvas.frame:SetScrollChild(canvas.surface)
-    canvas.child=CreateFrame('Frame',nil,canvas.surface);canvas.child:SetPoint('TOPLEFT')
+    canvas.cameraHost=CreateFrame('Frame',nil,canvas.surface)
+    canvas.child=CreateFrame('Frame',nil,canvas.cameraHost);canvas.child:SetPoint('TOPLEFT')
     canvas.horizontal=addon:CreateWorkbenchScrollBar(parent,'HORIZONTAL')
     addon:SetUIScript(canvas.horizontal,'OnValueChanged',function(_,value) canvas.scrollX=value;canvas.frame:SetHorizontalScroll(value) end)
     canvas.ghost=addon:CreateWorkbenchDragCard()
@@ -20,18 +21,34 @@ function addon:CreateRotationCanvas(parent,owner)
         self.drag=nil;self.pan=nil;self.ghost:Hide();addon:SetUIScript(self.frame,'OnUpdate',nil)
         for _,zone in ipairs(self.zones) do zone.marker:Hide();zone:Hide() end
     end
-    function canvas:GetZoom() return zoom(owner.view.zoom) end
+    function canvas:IsDiagram() return owner.view.section~='cooldowns' and owner.view.layout~='list' end
+    function canvas:ModeKey() return owner.view.section=='cooldowns' and 'cooldowns' or self:IsDiagram() and 'rotation:diagram' or 'rotation:list' end
+    function canvas:GetZoom() return self:IsDiagram() and zoom(owner.view.zoom) or 1 end
+    function canvas:RememberViewport()
+        local view=self.viewportView
+        if not view or not self.modeKey then return end
+        view.viewports=view.viewports or {}
+        view.viewports[self.modeKey]={x=(self.scrollX or 0)-(self.paddingX or 0),y=self.frame.workbenchBar:GetValue()-(self.paddingY or 0)}
+    end
     function canvas:SetZoom(value)
-        if not owner.active or not finite(value) then return nil end
+        if not owner.active or not self:IsDiagram() or not finite(value) then return nil end
         local previous=self:GetZoom();local nextZoom=zoom(value)
-        local x=((self.scrollX or 0)+self.frame:GetWidth()/2)*nextZoom/previous-self.frame:GetWidth()/2
-        local y=(self.frame.workbenchBar:GetValue()+self.frame:GetHeight()/2)*nextZoom/previous-self.frame:GetHeight()/2
-        self:CancelDrag();owner.view.zoom=nextZoom;self.scrollX=x;self:Reflow()
-        self.horizontal:SetValue(x);self.frame.workbenchBar:SetValue(y)
+        self.pendingViewport={
+            x=((self.scrollX or 0)-(self.paddingX or 0)+self.frame:GetWidth()/2)*nextZoom/previous-self.frame:GetWidth()/2,
+            y=(self.frame.workbenchBar:GetValue()-(self.paddingY or 0)+self.frame:GetHeight()/2)*nextZoom/previous-self.frame:GetHeight()/2}
+        self:CancelDrag();owner.view.zoom=nextZoom;self:Reflow()
         return true
     end
+    -- ScrollFrame still clips content, but its scrollbars are private camera
+    -- coordinates in diagram mode. They never participate in pointer gestures.
+    local updateScroll=canvas.frame.UpdateWorkbenchScroll
+    function canvas.frame:UpdateWorkbenchScroll()
+        updateScroll(self)
+        if canvas:IsDiagram() then self.workbenchBar:Hide() end
+    end
     function canvas:BeginPan()
-        if not owner.active or self.drag or type(GetCursorPosition)~='function' then return false end
+        if not owner.active or not self:IsDiagram() or self.drag or type(GetCursorPosition)~='function' then return false end
+        if owner.zoomBar and owner.zoomBar:IsShown() and addon:IsWorkbenchDropZoneUnderPointer(owner.zoomBar,self.frame) then return false end
         for _,card in ipairs(self.cards) do
             if card.frame:IsShown() and addon:IsWorkbenchDropZoneUnderPointer(card.frame,self.frame) then return false end
         end
@@ -50,10 +67,27 @@ function addon:CreateRotationCanvas(parent,owner)
         end)
         return true
     end
-    for _,surface in ipairs({canvas.child,canvas.surface}) do
-        surface:EnableMouse(true);surface:RegisterForDrag('LeftButton')
-        addon:SetUIScript(surface,'OnDragStart',function() canvas:BeginPan() end)
-        addon:SetUIScript(surface,'OnDragStop',function() if canvas.pan then canvas:CancelDrag() end end)
+    function canvas:BindViewportInput(control,pan,alive)
+        control:EnableMouse(true);control:EnableMouseWheel(true)
+        addon:SetUIScript(control,'OnMouseWheel',function(_,delta)
+            if not owner.active or alive and not alive() then return end
+            if self:IsDiagram() then self:SetZoom(math.floor(self:GetZoom()*100+.5)/100+delta*.1)
+            else self.frame.workbenchBar:SetValue(self.frame.workbenchBar:GetValue()-delta*40) end
+        end)
+        addon:SetUIScript(control,'OnMouseUp',function(_,button)
+            if not owner.active or alive and not alive() then return end
+            if button=='MiddleButton' then self:SetZoom(1)
+            elseif button=='LeftButton' and self.pan then self:CancelDrag() end
+        end)
+        if pan then
+            control:RegisterForDrag('LeftButton')
+            addon:SetUIScript(control,'OnMouseDown',function(_,button) if button=='LeftButton' then self:BeginPan() end end)
+            addon:SetUIScript(control,'OnDragStart',function() self:BeginPan() end)
+            addon:SetUIScript(control,'OnDragStop',function() if self.pan then self:CancelDrag() end end)
+        end
+    end
+    for _,surface in ipairs({canvas.frame,canvas.child,canvas.cameraHost,canvas.surface}) do
+        canvas:BindViewportInput(surface,true)
         addon:SetUIScript(surface,'OnHide',function() canvas:CancelDrag() end)
     end
     function canvas:CanDrop(target)
@@ -107,13 +141,31 @@ function addon:CreateRotationCanvas(parent,owner)
         if not owner.active then return end
         local scene=owner:BuildScene();self.scene=scene
         if not scene then return end
-        local factor=self:GetZoom()
+        local key=self:ModeKey();self:RememberViewport()
+        local position=self.pendingViewport or (owner.view.viewports or {})[key] or {x=0,y=0};self.pendingViewport=nil
+        self.viewportView=owner.view;self.modeKey=key
+        local factor=self:GetZoom();local diagram=self:IsDiagram()
+        self.paddingX=diagram and self.frame:GetWidth()/2 or 0;self.paddingY=diagram and self.frame:GetHeight()/2 or 0
+        self.cameraHost:ClearAllPoints();self.cameraHost:SetPoint('TOPLEFT',self.surface,'TOPLEFT',self.paddingX,-self.paddingY)
+        self.cameraHost:SetSize(scene.width*factor,scene.height*factor)
         self.child:SetSize(scene.width,scene.height);self.child:SetScale(factor)
-        self.surface:SetSize(math.max(self.frame:GetWidth(),scene.width*factor),math.max(self.frame:GetHeight(),scene.height*factor))
-        if owner.LayoutSections then owner:LayoutSections(scene,self.child) end
-        local range=math.max(0,scene.width*factor-self.frame:GetWidth())
-        self.horizontal:UpdateExtent(scene.width*factor,self.frame:GetWidth());self.horizontal:SetValue(math.min(self.scrollX or 0,range))
-        if range>0 then self.horizontal:Show() else self.horizontal:Hide();self.frame:SetHorizontalScroll(0) end
+        local width=math.max(self.frame:GetWidth(),scene.width*factor+2*self.paddingX)
+        local height=math.max(self.frame:GetHeight(),scene.height*factor+2*self.paddingY)
+        self.surface:SetSize(width,height)
+        self.horizontal:UpdateExtent(width,self.frame:GetWidth());self.horizontal:SetValue(position.x+self.paddingX)
+        self.frame:UpdateScrollChildRect();self.frame:UpdateWorkbenchScroll();self.frame.workbenchBar:SetValue(position.y+self.paddingY)
+        if diagram then self.horizontal:Hide();self.frame.workbenchBar:Hide() end
+        for i,model in ipairs(scene.groups or {}) do
+            local group=self.groups[i]
+            if not group then
+                group=CreateFrame('Frame',nil,self.child);group:EnableMouse(false)
+                group.decoration=addon:CreateRoundedCardDecoration(group);self.groups[i]=group
+            end
+            group:SetFrameLevel(self.child:GetFrameLevel());group:ClearAllPoints();group:SetPoint('TOPLEFT',self.child,'TOPLEFT',model.x,-model.y);group:SetSize(model.width,model.height)
+            local tone=colors[model.inactive and 'gray' or model.tone] or colors.neutral
+            group.decoration:SetColors(tone[1],tone[2],tone[3],.65,.025);group:Show()
+        end
+        for i=#(scene.groups or {})+1,#self.groups do self.groups[i]:Hide() end
         for i,model in ipairs(scene.cards) do if self.cards[i] then self.cards[i]:Place(model,owner.workspace.readOnly) end end
         local n=0
         for _,edge in ipairs(scene.connectors) do
@@ -225,6 +277,7 @@ function addon:CreateRotationCanvas(parent,owner)
             addon:SetUIScript(card.controls.help,'OnClick',function() if alive() then owner:ShowCardHelp(model) end end)
             addon:SetUIScript(card.armToggle,'OnClick',function() if alive() then owner.view.hiddenChildren[model.id]=not owner.view.hiddenChildren[model.id];self:Render() end end)
             for _,source in ipairs({card.title,card.action,card.condition,card.frame}) do
+                self:BindViewportInput(source,false,alive)
                 addon:BindWorkbenchDragSource(source,function() if writable() then self:BeginDrag(model.id) end end,function() if alive() then self:EndDrag() end end)
             end
             if model.expanded and owner.BuildFields then owner:BuildFields(card,model,alive) end
@@ -232,7 +285,7 @@ function addon:CreateRotationCanvas(parent,owner)
         self:Reflow()
     end
     function canvas:Release()
-        self:CancelDrag();self.generation=self.generation+1
+        self:RememberViewport();self:CancelDrag();self.generation=self.generation+1
         for _,card in ipairs(self.cards) do card:Release() end
         self.horizontal:Hide();self.frame:Hide()
     end
