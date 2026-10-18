@@ -1,7 +1,7 @@
 local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite()
 local function fixture(inline)
     local f=F.new();local a=f.addon;dofile('tests/fixtures/native_ui.lua')(f.env);local make=f.env.CreateFrame;f.env.CreateFrame=function(kind,...) local frame=make(kind,...);if kind=='EditBox' then local set=frame.SetText;frame.SetText=function(self,text) if self.maxLetters and self.maxLetters>0 then text=text:sub(1,self.maxLetters) end;set(self,text) end end;return frame end;local data,deps=dofile('tests/fixtures/codec.lua')();a.RotationData=data;a.NewRotationCodec=function() return data.NewCodec(deps) end;a.pretty_name='Rotation Master';a.name='rotationmaster';a.db.char={};a.db.global.custom_conditions={}
-    for _,path in ipairs({'Core/custom_condition_owner.lua','UI/settings_draft.lua','Core/custom_authoring.lua','Core/schema_authoring.lua','UI/schema_editor.lua','UI/custom_source_fields.lua','UI/settings_history.lua','UI/settings_unsaved.lua','UI/settings_layout.lua','UI/settings_ordered.lua','UI/settings_roster_order.lua','UI/settings_form.lua','UI/settings_transfer.lua','UI/custom_condition_transfer.lua','UI/icon_picker.lua','UI/help.lua','Options/custom_condition.lua','UI/lua_input_diagnostics.lua','UI/lua_editor.lua','UI/custom_condition_editor.lua'}) do local h=io.open(path);if h then h:close();f.load(path) end end
+    for _,path in ipairs({'Core/custom_condition_owner.lua','UI/settings_draft.lua','Core/custom_authoring.lua','Core/schema_authoring.lua','UI/schema_cards.lua','UI/schema_editor.lua','UI/custom_source_fields.lua','UI/settings_history.lua','UI/settings_unsaved.lua','UI/settings_layout.lua','UI/settings_ordered.lua','UI/settings_roster_order.lua','UI/settings_form.lua','UI/settings_transfer.lua','UI/custom_condition_transfer.lua','UI/icon_picker.lua','UI/help.lua','Options/custom_condition.lua','UI/lua_input_diagnostics.lua','UI/lua_editor.lua','UI/custom_condition_editor.lua'}) do local h=io.open(path);if h then h:close();f.load(path) end end
     a.conditionDefinitions=a.definitions;a.RegisterCondition=function(self,key,value) self.conditionDefinitions[key]=value;if value.on_register then value.on_register(key) end end
     f.env.loadstring=function(text,name) local fn,why=loadstring(text,name);if fn then setfenv(fn,f.env) end;return fn,why end
     if inline then f.load('UI/settings_collections.lua');f.load('UI/settings_conditions.lua');f.load('UI/condition_source_pane.lua');a.listConditions=function(_,_,_,store) local tags={};for key in pairs((store or a.db).global.custom_conditions) do tags[#tags+1]=key end;table.sort(tags);return tags end end
@@ -162,7 +162,7 @@ end)
 test('schema Undo returns to a container and Record conversion saves named keys',function()
     local f,a=fixture();local d=a:condition_edit_box(function() end);d.form.fields.schemaGraph:Click();local g=d.schemaEditor
     g.form.fields.add:Click();g.form.fields.type_1:Click();for _,row in ipairs(g.form.menu.rows) do if row:GetText()=='Record / map' then row:Click();break end end
-    g.form.fields.children_1:Click();g.undo:Click();g.form.fields.add:Click();assert(#g.model.root.children==2,'schema Undo retained primitive navigation')
+    assert(g.cards['1/1'],'nested field is not shown in its parent card');g.undo:Click();g.form.fields.add:Click();assert(#g.model.root.children==2,'schema Undo retained primitive navigation')
     g.cancel:Click();d.model.value.fields={value={'string','number'}};d.form:Draw();d.form.fields.schemaGraph:Click();g=d.schemaEditor
     g.form.fields.type_1:Click();for _,row in ipairs(g.form.menu.rows) do if row:GetText()=='Record / map' then row:Click();break end end;g.apply:Click()
     assert(d.model.value.fields.value[1]==nil and d.model.value.fields.value.field1=='string','record conversion saved numeric keys')
@@ -341,5 +341,35 @@ test('disabled invalid schemas and stale field order remain open for repair with
     d.form.fields.schemaGraph:Click();assert(d.form.fields.schema:IsShown() and d.form.fields.schema:GetText():find('old_unknown_type',1,true))
     local raw=d.form.fields.schema;raw:SetText('{count=number}');raw.scripts.OnTextChanged(raw,true);assert(d:Apply());assert(a.db.global.custom_conditions.LEGACY.fields.count=='number')
     source=a:CopySettingsData(source);source.fields={count='number'};source.fieldOrder={{'missing'}};a.db.global.custom_conditions.LEGACY=source;d=a:condition_edit_box(function() end,'LEGACY',source);d.form.fields.schemaGraph:Click();assert(d.schemaEditor.active);d.schemaEditor.apply:Click();assert(d.model.value.fieldOrder[1][1]=='count')
+end)
+test('schema cards show nested field types controls and detached editing',function()
+    local f,a=fixture();local d=a:condition_edit_box(function() end);d.model.value.fields={group={inner='number'},last='boolean'};d.form:Draw();d.form.fields.schemaGraph:Click();local g=d.schemaEditor
+    assert(g.cards and g.cards['1'] and g.cards['1/1'] and g.cards['2'],'schema is still a flat drill-down list')
+    local parent,child=g.cards['1'],g.cards['1/1'];assert(parent.decoration and child.frame:GetParent()==parent.frame and child.frame.point[2]>0)
+    assert(not parent.up:IsEnabled() and not g.cards['2'].down:IsEnabled());assert(parent.help and parent.duplicate and parent.remove.icon and parent.type and parent.name)
+    child.duplicate:Click();assert(#g.model.root.children[1].children==2 and not d.model.value.fields.group.inner_copy)
+    g.cards['1'].fold:Click();assert(not g.cards['1/1'] and g.cards['1']);g.cards['1'].fold:Click();assert(g.cards['1/1'])
+    g.cards['1/1'].help:Click();assert(a.helpWindow.frame:IsShown() and #a.helpWindow.sections>=3)
+    g.apply:Click();assert(d.model.value.fields.group.inner_copy=='number')
+end)
+test('schema dragging carries live cards into nested gaps and cancel restores originals',function()
+    local f,a=fixture();local d=a:condition_edit_box(function() end);d.model.value.fields={a='string',group={inner='number'},z='boolean'};d.form:Draw();d.form.fields.schemaGraph:Click();local g=d.schemaEditor
+    local view=g.cardView;assert(view and #view.zones>4)
+    local first=g.cards['1'];view:BeginDrag({1});assert(view.ghost:IsShown() and view.ghost.liveEntries[1].frame==first.frame and view.ghost.placeholders[1]:IsShown(),'schema drag has no native card preview')
+    view:CancelDrag();assert(first.frame:GetParent()==g.form.child and not view.ghost:IsShown())
+    view:BeginDrag({1});assert(view:Drop({2},2));assert(g.model.root.children[1].name=='group' and g.model.root.children[1].children[2].name=='a');g.undo:Click();assert(g.model.root.children[1].name=='a')
+    view=g.cardView;view:BeginDrag({2});assert(not view:Drop({2},1),'container dropped inside itself');assert(g.active)
+    view:BeginDrag({2});g.cancel:Click();assert(not view.ghost:IsShown() and not g.active and d.model.value.fields.a=='string')
+end)
+test('schema field dirty markers and validation update before redraw',function()
+    local f,a=fixture();local d=a:condition_edit_box(function() end);d.model.value.fields={one='number',two='string'};d.form:Draw();d.form.fields.schemaGraph:Click();local g=d.schemaEditor
+    local name=g.form.fields.field_1;name:SetText('two');name.scripts.OnTextChanged(name,true);name.scripts.OnEnterPressed(name);g:UpdateActions()
+    assert(g.cards['1'].frame.rmInvalid and g.cards['2'].frame.rmInvalid,'duplicate names are not marked on both fields');assert(g.cards['1'].frame.rmUnsaved)
+    g.apply:Click();assert(g.active and d.model.value.fields.one=='number');g.undo:Click();assert(not g.cards['1'].frame.rmInvalid and not g.cards['1'].frame.rmUnsaved)
+end)
+test('deep legacy schemas stay repairable with positive controls and overlong names are marked',function()
+    local f,a=fixture();local d=a:condition_edit_box(function() end);local nested='number';for i=1,36 do nested={field=nested} end;d.model.value.fields=nested;d.form:Draw();d.form.fields.schemaGraph:Click();local g=d.schemaEditor
+    local count=0;for _,card in pairs(g.cards) do count=count+1;assert(card.type:GetWidth()>=80 and card.name:GetWidth()>=80 and card.frame:GetWidth()>=300,'legacy nesting made controls unusable') end;assert(count==36)
+    g.cancel:Click();d.model.value.fields={[string.rep('x',65)]='number'};d.form:Draw();d.form.fields.schemaGraph:Click();assert(d.schemaEditor.cards['1'].frame.rmInvalid,'overlong legacy field is unmarked')
 end)
 finish()
