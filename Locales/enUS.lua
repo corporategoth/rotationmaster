@@ -1570,7 +1570,7 @@ L["Diagram / List changes only the view. Minus and plus zoom the canvas from 25%
 L["Enabled / Disabled"] = true
 L["Announcement substitutions"] = true
 L["New, Duplicate, Import/Export and Compare"] = true
-L["Help.Announces.overview"] = "Announce selected spell casts or item uses independently of your active rotation. Select an entry in the sidebar, or use New to prepare one. The fields below choose what to watch and how to notify you; they do not cast spells or use items."
+L["Help.Announces.overview"] = "Announce selected spell casts or item uses independently of your active rotation. Select an entry in the sidebar, or use New to prepare one. The fields below choose what to watch and how to notify you; they do not cast spells or use items. Cast-triggered announcements follow RM's combat-data policy and do not run on reference-only clients."
 L["Help.Announces.name"] = "An optional name identifies this announcement in the sidebar. Without one, the action name is used. Changing the name does not change the spell or items being watched."
 L["Help.Announces.type"] = "Choose Spell, Pet Spell, or Item. Changing to a different action type clears the previous action and exact-rank choice; choosing the current type keeps them."
 L["Help.Announces.type.spell"] = "Watch one of your spells. Choose the spell in the searchable field below Action Type."

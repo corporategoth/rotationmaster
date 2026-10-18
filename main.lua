@@ -134,13 +134,18 @@ local events = {
     'SPELLS_CHANGED',
     'PLAYER_LEVEL_UP',
 
-    -- Special Purpose
-    'NAME_PLATE_UNIT_ADDED',
-    'NAME_PLATE_UNIT_REMOVED',
-
+    -- Reference metadata and inventory stay available without combat advice.
     'BAG_UPDATE',
-    'UNIT_COMBAT',
+    'SPELL_DATA_LOAD_RESULT',
+    'ITEM_DATA_LOAD_RESULT'
+}
 
+-- These handlers maintain legacy combat observations. Reference-only clients
+-- must neither subscribe to them nor process a queued/direct invocation.
+local combat_events = {
+    "NAME_PLATE_UNIT_ADDED",
+    "NAME_PLATE_UNIT_REMOVED",
+    "UNIT_COMBAT",
     "UNIT_SPELLCAST_SENT",
     "UNIT_SPELLCAST_START",
     "UNIT_SPELLCAST_STOP",
@@ -150,11 +155,7 @@ local events = {
     "UNIT_SPELLCAST_DELAYED",
     "UNIT_SPELLCAST_CHANNEL_START",
     "UNIT_SPELLCAST_CHANNEL_STOP",
-
     "COMBAT_LOG_EVENT_UNFILTERED",
-
-    "SPELL_DATA_LOAD_RESULT",
-    "ITEM_DATA_LOAD_RESULT"
 }
 
 local mainline_events = {
@@ -502,7 +503,11 @@ function addon:enable()
     for _, v in pairs(events) do
         self:RegisterEvent(v)
     end
-    local family=self.Platform:GetClientInfo().family
+    local client=self.Platform:GetClientInfo()
+    if client.combatDataPolicy=='probe' then
+        for _,event in ipairs(combat_events) do self:RegisterEvent(event) end
+    end
+    local family=client.family
     local extraEvents=family=="retail" or family=="forever"
     extraEvents=extraEvents and mainline_events or family=="progression" and wrath_events
         or family=="tbc" and tbc_events or family=="era" and classic_events or {}
@@ -1121,6 +1126,14 @@ local function wrapEvent(func)
     end
 end
 
+local function wrapCombatEvent(func)
+    local dispatch=wrapEvent(func)
+    return function(self,...)
+        if self.initializationErrorReport or self.Platform:GetClientInfo().combatDataPolicy~='probe' then return end
+        return dispatch(self,...)
+    end
+end
+
 -- The only action for ALL of these is to check to see if the rotation should be switched.
 addon.PLAYER_FOCUS_CHANGED = wrapEvent(addon.SwitchRotation)
 addon.PARTY_MEMBERS_CHANGED = wrapEvent(addon.SwitchRotation)
@@ -1329,7 +1342,7 @@ addon.UNIT_EXITED_VEHICLE = wrapEvent(function(self, event, unit)
     end
 end)
 
-addon.NAME_PLATE_UNIT_ADDED = wrapEvent(function(self, _, unit)
+addon.NAME_PLATE_UNIT_ADDED = wrapCombatEvent(function(self, _, unit)
     local guid = UnitGUID(unit)
     if self.unitsInRange[guid] then
         self.unitsInRange[guid].unit = unit
@@ -1338,7 +1351,7 @@ addon.NAME_PLATE_UNIT_ADDED = wrapEvent(function(self, _, unit)
     end
 end)
 
-addon.NAME_PLATE_UNIT_REMOVED = wrapEvent(function(self, _, unit)
+addon.NAME_PLATE_UNIT_REMOVED = wrapCombatEvent(function(self, _, unit)
     local guid = UnitGUID(unit)
     if self.unitsInRange[guid] then
         local handled = false
@@ -1365,7 +1378,7 @@ addon.BAG_UPDATE = wrapEvent(function(self)
     self:UpdateBagContents()
 end)
 
-addon.UNIT_COMBAT = wrapEvent(function(self, _, unit, action, severity, value, type)
+addon.UNIT_COMBAT = wrapCombatEvent(function(self, _, unit, action, severity, value, type)
     if self.combatHistory[unit] == nil then
         self.combatHistory[unit] = {}
     end
@@ -1439,8 +1452,8 @@ local function spellcast(self, event, unit, castguid, spellid)
     end
 end
 
-addon.UNIT_SPELLCAST_START = wrapEvent(spellcast)
-addon.UNIT_SPELLCAST_STOP = wrapEvent(function(self, event, unit, castguid, spellid)
+addon.UNIT_SPELLCAST_START = wrapCombatEvent(spellcast)
+addon.UNIT_SPELLCAST_STOP = wrapCombatEvent(function(self, event, unit, castguid, spellid)
     spellcast(self, event, unit, castguid, spellid)
     if unit == 'player' then
         currentSpells[castguid] = nil
@@ -1448,7 +1461,7 @@ addon.UNIT_SPELLCAST_STOP = wrapEvent(function(self, event, unit, castguid, spel
         self.lastOffSwing = nil
     end
 end)
-addon.UNIT_SPELLCAST_SUCCEEDED = wrapEvent(function(self, event, unit, castguid, spellid)
+addon.UNIT_SPELLCAST_SUCCEEDED = wrapCombatEvent(function(self, event, unit, castguid, spellid)
     spellcast(self, event, unit, castguid, spellid)
     if unit == 'player' then
         if currentChannel then
@@ -1462,16 +1475,16 @@ addon.UNIT_SPELLCAST_SUCCEEDED = wrapEvent(function(self, event, unit, castguid,
         })
     end
 end)
-addon.UNIT_SPELLCAST_INTERRUPTED = wrapEvent(spellcast)
-addon.UNIT_SPELLCAST_FAILED = wrapEvent(spellcast)
-addon.UNIT_SPELLCAST_DELAYED = wrapEvent(spellcast)
-addon.UNIT_SPELLCAST_CHANNEL_START = wrapEvent(function(self, event, unit, castguid, spellid)
+addon.UNIT_SPELLCAST_INTERRUPTED = wrapCombatEvent(spellcast)
+addon.UNIT_SPELLCAST_FAILED = wrapCombatEvent(spellcast)
+addon.UNIT_SPELLCAST_DELAYED = wrapCombatEvent(spellcast)
+addon.UNIT_SPELLCAST_CHANNEL_START = wrapCombatEvent(function(self, event, unit, castguid, spellid)
     spellcast(self, event, unit, castguid, spellid)
     if unit == 'player' then
         currentChannel = true
     end
 end)
-addon.UNIT_SPELLCAST_CHANNEL_STOP = wrapEvent(function(self, event, unit, castguid, spellid)
+addon.UNIT_SPELLCAST_CHANNEL_STOP = wrapCombatEvent(function(self, event, unit, castguid, spellid)
     spellcast(self, event, unit, castguid, spellid)
     if unit == 'player' then
         if currentChannel ~= nil then
@@ -1483,7 +1496,7 @@ addon.UNIT_SPELLCAST_CHANNEL_STOP = wrapEvent(function(self, event, unit, castgu
     end
 end)
 
-addon.UNIT_SPELLCAST_SENT = wrapEvent(function(_, _, unit, target, castguid, spellid)
+addon.UNIT_SPELLCAST_SENT = wrapCombatEvent(function(_, _, unit, target, castguid, spellid)
     if (unit == 'player') then
         currentSpells[castguid] = target
         lastCastTarget[spellid] = target
@@ -1543,7 +1556,7 @@ local function handle_combat_log(_, event, _, sourceGUID, _, _, _, destGUID, _, 
         })
     end
 end
-addon.COMBAT_LOG_EVENT_UNFILTERED = wrapEvent(function() handle_combat_log(CombatLogGetCurrentEventInfo()) end)
+addon.COMBAT_LOG_EVENT_UNFILTERED = wrapCombatEvent(function() handle_combat_log(CombatLogGetCurrentEventInfo()) end)
 
 addon.SPELL_DATA_LOAD_RESULT = wrapEvent(function(_, _, spellId, success)
     if success then

@@ -985,6 +985,43 @@ test('failed chat or sound output does not abort real cast bookkeeping',function
     a:UNIT_SPELLCAST_SUCCEEDED('UNIT_SPELLCAST_SUCCEEDED','player','blocked-output',403)
     assert(a.announced['failed-output'][1]=='blocked-output' and #a.spellHistory==1)
 end)
+test('reference-only clients retain metadata registration without combat observations',function()
+    local observation={'NAME_PLATE_UNIT_ADDED','NAME_PLATE_UNIT_REMOVED','UNIT_COMBAT','UNIT_SPELLCAST_SENT','UNIT_SPELLCAST_START','UNIT_SPELLCAST_STOP','UNIT_SPELLCAST_SUCCEEDED','UNIT_SPELLCAST_INTERRUPTED','UNIT_SPELLCAST_FAILED','UNIT_SPELLCAST_DELAYED','UNIT_SPELLCAST_CHANNEL_START','UNIT_SPELLCAST_CHANNEL_STOP','COMBAT_LOG_EVENT_UNFILTERED'}
+    for _,project in ipairs({1,18,98765}) do
+        local env,a,load=fixture();env.WOW_PROJECT_ID=project;env.WOW_PROJECT_CAMELOT=18;load('main.lua');initialize(a)
+        local registered={};a.RegisterEvent=function(_,event) registered[event]=true end;a.UpdateSkill=function() end;a.EnableRotation=function() end
+        a:enable()
+        for _,event in ipairs(observation) do assert(not registered[event],'reference-only mode registered '..event) end
+        for _,event in ipairs({'SPELLS_CHANGED','SPELL_DATA_LOAD_RESULT','ITEM_DATA_LOAD_RESULT','PLAYER_ENTERING_WORLD','BAG_UPDATE'}) do assert(registered[event],'reference event missing: '..event) end
+    end
+    for _,project in ipairs({2,5,19}) do
+        local env,a,load=fixture();env.WOW_PROJECT_ID=project;env.WOW_PROJECT_MISTS_CLASSIC=19
+        local lib=env.LibStub;env.LibStub=function(name,...) if name=='LibClassicDurations' then return {Register=function() end} end;return lib(name,...) end
+        load('main.lua');initialize(a)
+        local registered={};a.RegisterEvent=function(_,event) registered[event]=true end;a.UpdateSkill=function() end;a.EnableRotation=function() end
+        a:enable();for _,event in ipairs(observation) do assert(registered[event],'probe client lost '..event) end
+    end
+end)
+test('reference-only combat callbacks ignore payloads before logging querying or mutation',function()
+    local events={'NAME_PLATE_UNIT_ADDED','NAME_PLATE_UNIT_REMOVED','UNIT_COMBAT','UNIT_SPELLCAST_SENT','UNIT_SPELLCAST_START','UNIT_SPELLCAST_STOP','UNIT_SPELLCAST_SUCCEEDED','UNIT_SPELLCAST_INTERRUPTED','UNIT_SPELLCAST_FAILED','UNIT_SPELLCAST_DELAYED','UNIT_SPELLCAST_CHANNEL_START','UNIT_SPELLCAST_CHANNEL_STOP','COMBAT_LOG_EVENT_UNFILTERED'}
+    for _,project in ipairs({1,18,98765}) do
+        local env,a,load=fixture();env.WOW_PROJECT_ID=project;env.WOW_PROJECT_CAMELOT=18;load('main.lua');initialize(a)
+        local secret={};env.issecretvalue=function(value) return value==secret end
+        local function forbidden() error('reference-only payload consumed') end
+        a.debug=forbidden;env.UnitGUID=forbidden;env.CombatLogGetCurrentEventInfo=forbidden;env.GetTime=forbidden;a.GetSpellIds=forbidden;a.DispatchAnnouncement=forbidden
+        local combat,spells,damage,units=a.combatHistory,a.spellHistory,a.damageHistory,a.unitsInRange
+        for _,event in ipairs(events) do
+            local ok,why=pcall(a[event],a,event,'player',secret,secret,secret,secret)
+            assert(ok,event..': '..tostring(why))
+        end
+        assert(a.combatHistory==combat and next(combat)==nil and a.spellHistory==spells and #spells==0 and a.damageHistory==damage and next(damage)==nil and a.unitsInRange==units and next(units)==nil)
+        local learned,items
+        a.debug=function() end;a.SpellCatalog={UpdateSpell=function(_,id) learned=id end}
+        env.LibStub('AceGUI-3.0-ItemLoader').UpdateItem=function(_,id) items=id end
+        a:SPELL_DATA_LOAD_RESULT('SPELL_DATA_LOAD_RESULT',403,true);a:ITEM_DATA_LOAD_RESULT('ITEM_DATA_LOAD_RESULT',1,true)
+        assert(learned==403 and items==1,'reference metadata callbacks were suppressed')
+    end
+end)
 test('new item-set binding normalizes every slot immediately to the first available item',function()
     local env,a,load=fixture();load('main.lua');initialize(a);a.debug=function() end;a.ButtonFetch=function() end;a.db.char.bindings={s={2}};a.bindingItemSet='s';local actions={[1]=11,[2]=11};local held
     env.GetActionInfo=function(slot) return 'item',actions[slot] end;env.GetCursorInfo=function() end;a.FindItemInItemSet=function(_,_,item) return item==11 or item==22 end;a.FindFirstItemOfItemSet=function() return 22 end
