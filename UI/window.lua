@@ -175,7 +175,7 @@ function addon:CreateWorkbenchDialogChrome(frame,title)
     local function text(parent,point,x,y,value)
         local label=parent:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall');label:SetPoint(point,x,y);label:SetText(value);return label
     end
-    chrome.icon=frame:CreateTexture(nil,'ARTWORK');chrome.icon:SetSize(18,18);chrome.icon:SetPoint('TOPLEFT',12,-5);chrome.icon:SetTexture('Interface\\AddOns\\'..addon_name..'\\textures\\RotationMaster-Minimap')
+    chrome.icon=frame:CreateTexture(nil,'ARTWORK');chrome.icon:SetSize(18,18);chrome.icon:SetPoint('TOPLEFT',12,-5);chrome.icon:SetTexture(addon.logoTexture)
     title:ClearAllPoints();title:SetPoint('TOPLEFT',36,-5);title:SetHeight(18);title:SetJustifyV('MIDDLE');title:SetJustifyH('LEFT');title:SetWordWrap(false);title:SetMaxLines(1);title:SetTextColor(.94,.95,.96)
 
     local getter=C_AddOns and C_AddOns.GetAddOnMetadata or GetAddOnMetadata

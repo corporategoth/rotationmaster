@@ -393,3 +393,7 @@ end
 function addon:GetWorkbenchSidebarHeight(height,top)
     return math.max(1,height-(top or 0))
 end
+function addon:GetWorkbenchRosterGeometry(width,height,top)
+    local side=self:GetWorkbenchSidebarWidth(width)
+    return {sidebarWidth=side,sidebarHeight=self:GetWorkbenchSidebarHeight(height,top),detailX=side+18,detailWidth=math.max(200,width-side-18)}
+end

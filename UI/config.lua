@@ -80,7 +80,7 @@ local function newShell()
     title:SetPoint("TOPLEFT",184,-6);title:SetText(addon.pretty_name);title:SetTextColor(.94,.95,.96)
     shell.activeTitle=text(window);shell.activeTitle:SetPoint("TOPLEFT",184,-23);shell.activeTitle:SetTextColor(.65,.69,.72)
     shell.icon=window:CreateTexture(nil,"ARTWORK");shell.icon:SetSize(26,26);shell.icon:SetPoint("TOPLEFT",150,-6)
-    shell.icon:SetTexture("Interface\\AddOns\\"..addon_name.."\\textures\\RotationMaster-Minimap")
+    shell.icon:SetTexture(addon.logoTexture)
     local drag=CreateFrame("Frame",nil,window);shell.header=drag
     drag:SetPoint("TOPLEFT",window,"TOPLEFT",140,0);drag:SetPoint("TOPRIGHT",window,"TOPRIGHT",-300,0);drag:SetHeight(38)
     drag:EnableMouse(true);drag:RegisterForDrag("LeftButton")

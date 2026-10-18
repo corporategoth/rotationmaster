@@ -36,7 +36,7 @@ local isin, starts_with, isint = addon.isin, addon.starts_with, addon.isint
 addon.pretty_name = GetAddOnMetadata(addon_name, "Title")
 addon.delayed_condition = {}
 local DataBroker = LibStub("LibDataBroker-1.1"):NewDataObject(addon_name,
-        { type = "data source", label = addon.pretty_name, icon = "Interface\\AddOns\\" .. addon_name .. "\\textures\\RotationMaster-Minimap" })
+        { type = "data source", label = addon.pretty_name, icon = addon.logoTexture })
 
 --
 -- Initialization

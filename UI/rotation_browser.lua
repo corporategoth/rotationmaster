@@ -243,10 +243,10 @@ local function create(parent)
                 control:SetPoint("TOPLEFT",specs,"TOPLEFT",x,-y);x=x+control:GetWidth()+4
             end
         end
-        local top=hasSelectors and y+32 or 0;local leftWidth=addon:GetWorkbenchSidebarWidth(width)
+        local top=hasSelectors and y+32 or 0;local geometry=addon:GetWorkbenchRosterGeometry(width,height,top);local leftWidth=geometry.sidebarWidth
         specs:SetPoint("TOPLEFT",frame,"TOPLEFT",0,0);specs:SetSize(width,top)
-        left:SetPoint("TOPLEFT",frame,"TOPLEFT",0,-top);left:SetSize(leftWidth,addon:GetWorkbenchSidebarHeight(height,top))
-        detail:SetPoint("TOPLEFT",frame,"TOPLEFT",leftWidth+18,-top);detail:SetSize(math.max(200,width-leftWidth-18),left:GetHeight())
+        left:SetPoint("TOPLEFT",frame,"TOPLEFT",0,-top);left:SetSize(leftWidth,geometry.sidebarHeight)
+        detail:SetPoint("TOPLEFT",frame,"TOPLEFT",geometry.detailX,-top);detail:SetSize(geometry.detailWidth,geometry.sidebarHeight)
         for index,key in ipairs({'all','builtin','custom'}) do local filter=self.filters[key];filter:ClearAllPoints();filter:SetPoint('TOPLEFT',left,'TOPLEFT',(index-1)*(leftWidth+4)/3,-28);filter:SetWidth((leftWidth-8)/3) end
         search:SetWidth(leftWidth)
         local footerHeight=50

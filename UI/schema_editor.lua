@@ -12,10 +12,10 @@ function addon:ShowFieldSchemaEditor(owner,fields,fieldOrder,changed,ownerValid,
     d.form=d.form or addon:CreateSettingsForm(d.host);local p=d.form
     local model,why=addon:NewFieldSchemaDraft(fields,fieldOrder)
     if not model then d.active=false;frame:Hide();owner.form:Message(string.format(L['Invalid field schema: %s'],why));return nil end
-    d.model=resume and resume.model or model;d.path=resume and resume.path or {};local baseline=resume and resume.baseline or addon:CopySettingsData(d.model.root)
+    d.model=resume and resume.model or model;d.path=resume and resume.path or {};d.requiresApply=resume and resume.requiresApply or false;local baseline=resume and resume.baseline or addon:CopySettingsData(d.model.root)
     function d:CaptureDraft()
         local raw={};for _,record in ipairs(p.edits) do if record.dirty then for key,control in pairs(p.fields) do if control==record.control then raw[key]=control:GetText();break end end end end
-        return {model=self.model,path=addon:CopySettingsData(self.path),baseline=addon:CopySettingsData(baseline),raw=raw}
+        return {model=self.model,path=addon:CopySettingsData(self.path),baseline=addon:CopySettingsData(baseline),raw=raw,requiresApply=self.requiresApply}
     end
     local function valid() return d.active and d.serial==serial and ownerValid() end
     function d:Close()
@@ -23,7 +23,7 @@ function addon:ShowFieldSchemaEditor(owner,fields,fieldOrder,changed,ownerValid,
         if ownerValid() then owner:Show() end
     end
     function d:IsDirty()
-        local dirty=not addon:SettingsDataEqual(d.model.root,baseline);for _,record in ipairs(p.edits) do dirty=dirty or record.dirty end
+        local dirty=self.requiresApply or not addon:SettingsDataEqual(d.model.root,baseline);for _,record in ipairs(p.edits) do dirty=dirty or record.dirty end
         return dirty
     end
     function d:Hide()

@@ -272,6 +272,9 @@ function addon:CreateSettingsForm(parent)
         self.active=true;self.profile=addon.db.profile;self.global=addon.db.global;self.char=addon.db.char;self.builder=builder;self.frame:Show();self:Layout();self:Draw()
     end
     function p:Layout()
+        if self.fixedViewport then
+            self.scroll:Hide();self.child:SetParent(self.frame);self.child:ClearAllPoints();self.child:SetPoint('TOPLEFT',0,0);self.child:SetWidth(self.frame:GetWidth());return
+        end
         self.scroll:SetSize(math.max(1,self.frame:GetWidth()-34),math.max(1,self.frame:GetHeight()-(self.creationUsed and 66 or 38)));self.message:SetWidth(math.max(1,self.frame:GetWidth()-(self.creationUsed and 340 or 20)))
     end
     function p:SetWidth(n) local changed=n~=self.frame:GetWidth();self.frame:SetWidth(n);self:Layout();if changed and self.active and self:FlushEdits() then self:Draw() end end

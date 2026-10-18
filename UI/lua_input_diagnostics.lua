@@ -6,6 +6,18 @@ local function read(object,method)
     if not ok or type(value)~='string' and type(value)~='number' and type(value)~='boolean' then return 'unavailable' end
     return tostring(value)
 end
+local function focusRole(frame,control)
+    if frame==control.edit then return 'code EditBox' end
+    if frame==control.scroll then return 'code ScrollFrame' end
+    if frame==control.frame then return 'code container' end
+    if not frame then return 'none' end
+    local path={};for _=1,12 do
+        path[#path+1]=read(frame,'GetObjectType')..'['..read(frame,'GetName')..']'
+        if frame==control.frame then path[#path+1]='code container';break end
+        if type(frame.GetParent)~='function' then break end;frame=frame:GetParent();if not frame then break end
+    end
+    return table.concat(path,' > ')
+end
 
 -- Observe the native input path without replacing SetText, SetCursorPosition,
 -- focus or keyboard handling. Reports contain state and counts, never source.
@@ -44,6 +56,15 @@ function addon:LuaEditorInputReport()
         'arrowsRequireAlt='..read(edit,'GetAltArrowKeyMode')..' blink='..read(edit,'GetBlinkSpeed'),
         'width='..read(edit,'GetWidth')..' height='..read(edit,'GetHeight')..' alpha='..read(edit,'GetAlpha'),
         'font='..read(edit,'GetFont')..' scroll='..read(control.scroll,'GetVerticalScroll')}
+    local mouse,keyboard
+    if type(GetMouseFoci)=='function' then local ok,list=pcall(GetMouseFoci);if ok and type(list)=='table' then mouse=list[1] end
+    elseif type(GetMouseFocus)=='function' then local ok,value=pcall(GetMouseFocus);if ok then mouse=value end end
+    if type(GetCurrentKeyBoardFocus)=='function' then local ok,value=pcall(GetCurrentKeyBoardFocus);if ok then keyboard=value end end
+    lines[#lines+1]='mouseFocus='..focusRole(mouse,control)
+    lines[#lines+1]='keyboardFocus='..focusRole(keyboard,control)
+    lines[#lines+1]='code visible='..read(control.frame,'IsVisible')..' shown='..read(control.frame,'IsShown')..' edit visible='..read(edit,'IsVisible')
+    local owner=self.nativeCustomConditionDialog
+    lines[#lines+1]='matches source editor='..tostring(owner and not owner.closed and owner.code==control)..' session='..tostring(owner and owner.session or 'none')
     local counts={};for event,count in pairs(control.inputCounts) do counts[#counts+1]=event..'='..count end;table.sort(counts)
     lines[#lines+1]=table.concat(counts,' ')
     for _,entry in ipairs(control.inputTrace) do lines[#lines+1]=entry end

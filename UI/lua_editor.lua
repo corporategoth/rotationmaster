@@ -64,7 +64,16 @@ function addon:CreateWorkbenchLuaEditor(parent,changed,valid,preferred)
     if c.edit.SetFont then c.edit:SetFont('Interface\\AddOns\\'..addon_name..'\\Fonts\\Inconsolata-Regular.ttf',12,'') end
     if c.measure.SetFont then c.measure:SetFont('Interface\\AddOns\\'..addon_name..'\\Fonts\\Inconsolata-Regular.ttf',12,'') end
     function c:Layout()
-        local scrollWidth=math.max(1,self.frame:GetWidth()-8);local width=math.max(1,scrollWidth-24);local height=math.max(1,self.frame:GetHeight()-8);if self.scroll:GetWidth()~=scrollWidth or self.scroll:GetHeight()~=height then self.scroll:SetSize(scrollWidth,height) end;if self.edit:GetWidth()~=width then self.edit:SetWidth(width) end;self.measure:SetWidth(math.max(1,width-12));self.measure:SetText(self:GetText());local editHeight=math.max(height,self.measure:GetStringHeight()+16);if self.edit:GetHeight()~=editHeight then self.edit:SetHeight(editHeight) end;self.scroll:UpdateWorkbenchScroll()
+        if self.layingOut then return end;self.layingOut=true
+        -- Native coordinates round through effective UI scale. Rewriting an
+        -- almost-identical size reflows EditBox text and can reset its caret.
+        local function differs(current,wanted) return math.abs(current-wanted)>.1 end
+        local scrollWidth=math.max(1,self.frame:GetWidth()-8);local width=math.max(1,scrollWidth-24);local height=math.max(1,self.frame:GetHeight()-8)
+        if differs(self.scroll:GetWidth(),scrollWidth) or differs(self.scroll:GetHeight(),height) then self.scroll:SetSize(scrollWidth,height) end
+        if differs(self.edit:GetWidth(),width) then self.edit:SetWidth(width) end
+        self.measure:SetWidth(math.max(1,width-12));self.measure:SetText(self:GetText());local editHeight=math.max(height,self.measure:GetStringHeight()+16)
+        if differs(self.edit:GetHeight(),editHeight) then self.edit:SetHeight(editHeight) end
+        self.scroll:UpdateWorkbenchScroll();self.layingOut=nil
     end
     ---@return string
     function c:GetText()

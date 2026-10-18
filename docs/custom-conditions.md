@@ -1,8 +1,10 @@
 # Custom condition authoring
 
-Conditions → Add or selecting a custom condition opens its editor in the right pane. The identifier is stable for an existing definition. Click the square icon to change it. The green Enabled pill beside Delete controls definition availability. The category appears once with its icon; click it to manage the category, or use Move to stage another category until Apply. Function tabs select Evaluate, Validate, Summary, Fields UI, Help, On register and On unregister in one row. Callback description, typed arguments and return documentation precede Undo / Redo / Reset / Check syntax, then the signature and code. `addon` and `L` are available in each callback. Existing widget/help callbacks retain their original layout contract; condition-specific field rendering still has an AceGUI bridge.
+Conditions → Add or selecting a custom condition opens its editor in the right pane. The identifier is stable for an existing definition. Click the square icon to change it. The green Enabled pill beside Delete controls definition availability. The saved category appears with its icon after Description; click it to manage that category. The adjacent Move dropdown shows the pending destination, while the saved category remains unchanged until Apply. Function tabs select Evaluate, Validate, Summary, Fields UI, Help, On register and On unregister in one row. Callback description, typed arguments and return documentation precede Undo / Redo / Reset / Check syntax, then the signature and code. `addon` and `L` are available in each callback. Existing widget/help callbacks retain their original layout contract; condition-specific field rendering still has an AceGUI bridge.
 
 The scrolling code field uses the bundled FAIAP indentation and syntax-color engine directly, with the bundled Inconsolata font. It returns uncolored source. A plain native editor remains available if syntax setup fails. Syntax colors, caret movement and native hit testing require client verification.
+
+The source pane shares the rotation roster geometry and keeps metadata and footer actions fixed. Only code and schema viewports scroll. At compact heights, Help retains the full typed callback documentation. Field schema shows clickable field names/types, or an Edit fields link when empty. The Advanced checkbox switches to raw schema data. Invalid legacy schemas stay visible for repair.
 
 Fields use a bounded data grammar, for example:
 
@@ -20,7 +22,7 @@ The shared import/export dialog displays the source identifier, a replacement ch
 
 ## Native input troubleshooting
 
-If the code field cannot place or move its cursor, reproduce the problem and run `/rm editorinfo`. Copy that report to accompany the bug report. It contains native focus, cursor position, dimensions, font and bounded input-event counts/coordinates; it excludes the source text. Opening the report focuses its copyable text area, but collecting input state does not rewrite code, move the code cursor or take its focus. Plain text uses the same native input path and can help separate syntax-coloring problems from input problems.
+If the code field cannot place or move its cursor, reproduce the problem and run `/rm editorinfo`. Copy that report to accompany the bug report. It contains native mouse/keyboard hit targets, source-editor identity, visibility, focus, cursor position, dimensions, font and bounded input-event counts/coordinates; it excludes the source text. Opening the report focuses its copyable text area, but collecting input state does not rewrite code, move the code cursor or take its focus. Plain text uses the same native input path and can help separate syntax-coloring problems from input problems. Fractional-size reflow is guarded and stabilized, but native cursor placement remains unresolved in the current client reports.
 
 ## Optional editor provider contract
 

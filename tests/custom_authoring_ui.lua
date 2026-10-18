@@ -1,7 +1,7 @@
 local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite()
 local function fixture(inline)
     local f=F.new();local a=f.addon;dofile('tests/fixtures/native_ui.lua')(f.env);local make=f.env.CreateFrame;f.env.CreateFrame=function(kind,...) local frame=make(kind,...);if kind=='EditBox' then local set=frame.SetText;frame.SetText=function(self,text) if self.maxLetters and self.maxLetters>0 then text=text:sub(1,self.maxLetters) end;set(self,text) end end;return frame end;local data,deps=dofile('tests/fixtures/codec.lua')();a.RotationData=data;a.NewRotationCodec=function() return data.NewCodec(deps) end;a.pretty_name='Rotation Master';a.name='rotationmaster';a.db.char={};a.db.global.custom_conditions={}
-    for _,path in ipairs({'Core/custom_condition_owner.lua','UI/settings_draft.lua','Core/custom_authoring.lua','Core/schema_authoring.lua','UI/schema_editor.lua','UI/settings_history.lua','UI/settings_unsaved.lua','UI/settings_layout.lua','UI/settings_ordered.lua','UI/settings_roster_order.lua','UI/settings_form.lua','UI/settings_transfer.lua','UI/custom_condition_transfer.lua','UI/icon_picker.lua','UI/help.lua','Options/custom_condition.lua','UI/lua_input_diagnostics.lua','UI/lua_editor.lua','UI/custom_condition_editor.lua'}) do local h=io.open(path);if h then h:close();f.load(path) end end
+    for _,path in ipairs({'Core/custom_condition_owner.lua','UI/settings_draft.lua','Core/custom_authoring.lua','Core/schema_authoring.lua','UI/schema_editor.lua','UI/custom_source_fields.lua','UI/settings_history.lua','UI/settings_unsaved.lua','UI/settings_layout.lua','UI/settings_ordered.lua','UI/settings_roster_order.lua','UI/settings_form.lua','UI/settings_transfer.lua','UI/custom_condition_transfer.lua','UI/icon_picker.lua','UI/help.lua','Options/custom_condition.lua','UI/lua_input_diagnostics.lua','UI/lua_editor.lua','UI/custom_condition_editor.lua'}) do local h=io.open(path);if h then h:close();f.load(path) end end
     a.conditionDefinitions=a.definitions;a.RegisterCondition=function(self,key,value) self.conditionDefinitions[key]=value;if value.on_register then value.on_register(key) end end
     f.env.loadstring=function(text,name) local fn,why=loadstring(text,name);if fn then setfenv(fn,f.env) end;return fn,why end
     if inline then f.load('UI/settings_collections.lua');f.load('UI/settings_conditions.lua');f.load('UI/condition_source_pane.lua');a.listConditions=function(_,_,_,store) local tags={};for key in pairs((store or a.db).global.custom_conditions) do tags[#tags+1]=key end;table.sort(tags);return tags end end
@@ -189,7 +189,7 @@ end)
 test('custom source edits in the right pane without an Edit launcher or separate Escape window',function()
     local f,a=fixture(true);local source=a:CopySettingsData(a.empty_condition);source.description='Inline';a.db.global.custom_conditions.INLINE=source;a.conditionDefinitions.INLINE={description='Inline',fields={}}
     local host=f.env.CreateFrame('Frame');host:SetSize(1100,700);local p=a:OpenNativeSettings(host,'Conditions');local d=p.inlineCondition
-    assert(d and d.isEmbedded and d.frame:GetParent()==p.child and not p.fields.edit_custom and not d.rmEscapeEntry,'custom editor still launches a dialog')
+    assert(d and d.isEmbedded and d.frame:GetParent()==p.frame and not p.fields.edit_custom and not d.rmEscapeEntry,'custom editor still launches a dialog')
     d.code.edit:SetText('return false');d.code.edit.scripts.OnTextChanged(d.code.edit,true);local left=false;p:RequestLeave(function() left=true end);assert(not left and p.prompt.frame:IsShown());p.prompt.cancel:Click();assert(d.code:GetText()=='return false')
     d.apply:Click();assert(a.db.global.custom_conditions.INLINE.evaluate=='return false' and p.inlineCondition~=nil and not p.inlineCondition:IsDirty(),'inline Apply did not persist or reset draft')
     p.fields.add_custom:Click();d=p.inlineCondition;assert(d.model.key=='' and not d.form.fields.identifier.rmInvalid and not p.fields.edit_custom)
@@ -253,13 +253,14 @@ test('inline authoring has one callback row compact identity header and owner fo
     assert(d.form.fields.definition_enabled.point[1]=='RIGHT' and d.form.fields.definition_enabled.point[2]==d.form.fields.delete,'availability is not beside delete')
     assert(d.form.fields.icon:GetHeight()>=48 and d.form.fields.icon:GetText()=='','source icon is still a Choose icon button')
     assert(d.form.fields.identifier.point[2]>d.form.fields.icon.point[2] and d.form.fields.description.point[2]==d.form.fields.identifier.point[2],'identity controls do not share space with source icon')
-    assert(d.form.fields.move_to:GetText()=='Move' and d.form.fields.move_to.point[3]==d.form.fields.current_category.point[3],'category destination duplicates the displayed category')
+    assert(d.form.fields.moveLabel:GetText()=='Move' and d.form.fields.move_to:GetText()=='Other' and d.form.fields.move_to.point[3]==d.form.fields.current_category.point[3],'category destination lacks its inline label')
 end)
 test('inline category Move stages its chosen destination until Apply',function()
     local f,a=fixture(true);local source=a:CopySettingsData(a.empty_condition);source.description='Inline';a.db.global.custom_conditions.INLINE=source;a.conditionDefinitions.INLINE={description='Inline',fields={}}
     a.db.profile.condition_groups={{id='group',name='Group',conditions={}}};local host=f.env.CreateFrame('Frame');host:SetSize(1100,700);local p=a:OpenNativeSettings(host,'Conditions');local d=p.inlineCondition
     d.form.fields.move_to:Click();for _,button in ipairs(d.form.menu.rows) do if button:GetText()=='Group' then button:Click();break end end
     assert(d.model.context.category=='group' and #a.db.profile.condition_groups[1].conditions==0)
+    assert(d.form.fields.current_category:GetText()=='Other' and d.form.fields.move_to:GetText()=='Group','pending destination replaced the original category display')
     d:UpdateActions();assert(d.form.fields.move_to.rmUnsaved);assert(d:Apply());assert(a.db.profile.condition_groups[1].conditions[1]=='INLINE')
 end)
 test('input diagnostics observe native events without exposing source or rewriting the cursor',function()
@@ -300,5 +301,45 @@ test('resizing the owner preserves a schema child draft including invalid raw fi
     p:SetWidth(1060);d=p.inlineCondition;local graph=d.schemaEditor
     assert(graph.active and graph.form.fields.field_1:GetText()=='bad name' and graph.model.root.children[1].name=='field','resize discarded schema editor state')
     assert(not d.apply:IsShown());graph.cancel:Click();assert(d.apply:IsShown() and next(d.model.value.fields)==nil)
+end)
+test('fractional native geometry settles without repeated text reflow or moving the caret',function()
+    local f,a=fixture();local code=a:CreateWorkbenchLuaEditor(f.env.UIParent,function() end,function() return true end,'plain')
+    code.frame:SetSize(720,310);code:SetText('return true');local edit=code.edit;local nativeHeight=edit.GetHeight;local nativeWidth=edit.GetWidth;local setHeight=edit.SetHeight;local setWidth=edit.SetWidth
+    edit.GetHeight=function(self) return nativeHeight(self)+.00003051758 end;edit.GetWidth=function(self) return nativeWidth(self)+.00003051758 end
+    local writes=0
+    edit.SetHeight=function(self,n) writes=writes+1;if writes>8 then error('native text reflow loop') end;setHeight(self,n);self:SetCursorPosition(#self:GetText());self.scripts.OnTextChanged(self,false) end
+    edit.SetWidth=function(self,n) writes=writes+1;if writes>8 then error('native text reflow loop') end;setWidth(self,n);self:SetCursorPosition(#self:GetText());self.scripts.OnTextChanged(self,false) end
+    edit:SetCursorPosition(3);for i=1,100 do code:Layout() end
+    assert(writes==0 and edit:GetCursorPosition()==3,'idle layout repeatedly invalidates native editing')
+    code.frame:SetSize(740,330);assert(writes>0 and writes<=2,'resize recursively invalidates native editing');local settled=writes
+    edit:SetCursorPosition(4);for i=1,100 do code:Layout() end;assert(writes==settled and edit:GetCursorPosition()==4)
+end)
+test('source pane shares roster geometry and reserves scrolling for its editing areas',function()
+    local f,a=fixture(true);local source=a:CopySettingsData(a.empty_condition);source.description='Inline';source.fields={spell='number',unit='string'};a.db.global.custom_conditions.INLINE=source;a.conditionDefinitions.INLINE={description='Inline',fields=source.fields}
+    local host=f.env.CreateFrame('Frame');host:SetSize(1600,1000);local p=a:OpenNativeSettings(host,'Conditions');local d=p.inlineCondition
+    assert(a.GetWorkbenchRosterGeometry,'shared roster geometry missing');local geometry=a:GetWorkbenchRosterGeometry(1600,1000)
+    assert(p.roster.frame.point[2]==0 and d.frame.point[2]==geometry.detailX and d.frame:GetWidth()==geometry.detailWidth,'source pane differs from shared roster edges')
+    assert(not p.scroll:IsShown() and not d.form.scroll:IsShown(),'source metadata still uses an outer scrolling form')
+    assert(d.form.fields.current_category.point[3]<d.form.fields.description.point[3],'category did not move below description')
+    assert(d.form.fields.current_category:GetWidth()==d.form.fields.move_to:GetWidth()+42,'category and Move do not split their shared field width')
+    assert(d.form.fields.advancedSchema.rmCheck and not d.form.fields.advancedSchema:GetChecked(),'Advanced is not an unchecked checkbox')
+    assert(d.schemaRows and #d.schemaRows>=2 and d.schemaRows[1]:GetText()=='spell','schema fields are not shown directly')
+    assert(d.code.frame:GetHeight()>310 and -d.code.frame.point[3]+d.code.frame:GetHeight()<=d.body:GetHeight(),'code does not fill the remaining height or is clipped')
+    local before=d.code.frame:GetHeight();p:SetHeight(1050);assert(d.code.frame:GetHeight()>before,'height-only resize did not grow the input')
+    d.form.fields.advancedSchema:Click();assert(d.form.fields.schema:IsShown() and d.form.fields.advancedSchema:GetChecked())
+end)
+test('source editing fits the supported minimum pane for every callback and schema mode',function()
+    local f,a=fixture(true);local source=a:CopySettingsData(a.empty_condition);source.description='Inline';source.fields={one='number',two='string',three='boolean'};a.db.global.custom_conditions.INLINE=source;a.conditionDefinitions.INLINE={description='Inline',fields=source.fields}
+    local host=f.env.CreateFrame('Frame');host:SetSize(776,402);local p=a:OpenNativeSettings(host,'Conditions');local d=p.inlineCondition
+    for _,advanced in ipairs({false,true}) do d.advancedSchema=advanced;d.form:Draw()
+        for name in pairs(a.CustomConditionCallbacks) do d:SelectFunction(name);assert(-d.code.frame.point[3]+d.code.frame:GetHeight()<=d.body:GetHeight()-20,'minimum pane clips '..name);assert(d.code.frame:GetHeight()>=60) end
+    end
+end)
+test('disabled invalid schemas and stale field order remain open for repair without source loss',function()
+    local f,a=fixture();local source=a:CopySettingsData(a.empty_condition);source.description='Legacy';source.disabled=true;source.fields={count='old_unknown_type'};a.db.global.custom_conditions.LEGACY=source;a.conditionDefinitions.LEGACY=assert(a:CompileCustomCondition('LEGACY',source,true))
+    local d=a:condition_edit_box(function() end,'LEGACY',source);assert(d.schemaViewport.rmInvalid and d.model.value.fields.count=='old_unknown_type')
+    d.form.fields.schemaGraph:Click();assert(d.form.fields.schema:IsShown() and d.form.fields.schema:GetText():find('old_unknown_type',1,true))
+    local raw=d.form.fields.schema;raw:SetText('{count=number}');raw.scripts.OnTextChanged(raw,true);assert(d:Apply());assert(a.db.global.custom_conditions.LEGACY.fields.count=='number')
+    source=a:CopySettingsData(source);source.fields={count='number'};source.fieldOrder={{'missing'}};a.db.global.custom_conditions.LEGACY=source;d=a:condition_edit_box(function() end,'LEGACY',source);d.form.fields.schemaGraph:Click();assert(d.schemaEditor.active);d.schemaEditor.apply:Click();assert(d.model.value.fieldOrder[1][1]=='count')
 end)
 finish()

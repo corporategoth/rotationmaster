@@ -1,6 +1,7 @@
 local addon_name, addon = ...
 
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
+addon.logoTexture = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Branding\\rotation-master.tga"
 
 addon.loglevels = {
     L["Quiet"],

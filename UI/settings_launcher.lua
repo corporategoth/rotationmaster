@@ -16,7 +16,7 @@ function addon:CreateSettingsLauncher()
         result:SetJustifyH("LEFT");result:SetWordWrap(true);return result
     end
     page.icon=frame:CreateTexture(nil,"ARTWORK");page.icon:SetSize(54,54);page.icon:SetPoint("TOPLEFT",24,-24)
-    page.icon:SetTexture("Interface\\AddOns\\"..addon_name.."\\textures\\RotationMaster-Minimap")
+    page.icon:SetTexture(addon.logoTexture)
     page.title=label("GameFontNormalLarge");page.title:SetPoint("TOPLEFT",92,-26);page.title:SetText(self.pretty_name)
     page.metadata=label("GameFontHighlightSmall");page.metadata:SetPoint("TOPLEFT",92,-54)
     page.metadata:SetText(string.format(L["Version: %s  ·  Author: %s"],metadata("Version"),metadata("Author")))

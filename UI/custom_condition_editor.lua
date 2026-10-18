@@ -14,7 +14,7 @@ function addon:condition_edit_box(update,key,source,saveAllowed,embedded)
     self.nativeCustomConditionDialog=d;d.closed=false;d.suspended=nil;d.validationRequested=false;d.codeHistory={};d.update=update;d.selected='evaluate';d.session=(d.session or 0)+1;local session=d.session;local frame=d.frame
     frame:ClearAllPoints();frame:EnableMouse(true)
     if embedded then
-        frame:SetParent(embedded.parent);frame:SetSize(embedded.width,embedded.height);frame:SetPoint('TOPLEFT',0,0)
+        frame:SetParent(embedded.parent);frame:SetSize(embedded.width,embedded.height);frame:SetPoint('TOPLEFT',embedded.x or 0,0)
     else
         frame:SetSize(960,740);frame:SetPoint('CENTER');frame:SetToplevel(true);frame:SetClampedToScreen(true);self:MakeWindowOpaque(frame)
         d.title=d.title or frame:CreateFontString(nil,'OVERLAY','GameFontNormal');d.chrome=d.chrome or self:CreateWorkbenchDialogChrome(frame,d.title)
@@ -22,8 +22,8 @@ function addon:condition_edit_box(update,key,source,saveAllowed,embedded)
     d.close=d.close or self:CreateWorkbenchIconButton(frame,'close',L['Close']);d.close:SetPoint('TOPRIGHT',-5,-5)
     d.help=d.help or self:CreateWorkbenchHelpButton(frame,L['Help']);d.help:SetPoint('TOPRIGHT',-28,-4)
     if embedded then d.close:Hide();d.help:SetPoint('TOPRIGHT',-4,-30) else d.close:Show() end
-    d.body=d.body or CreateFrame('Frame',nil,frame);d.body:ClearAllPoints();d.body:SetPoint('TOPLEFT',embedded and 0 or 12,embedded and 0 or -34);d.body:SetSize(frame:GetWidth()-(embedded and 0 or 24),frame:GetHeight()-(embedded and 32 or 70))
-    d.form=d.form or self:CreateSettingsForm(d.body);local p=d.form;p:SetWidth(d.body:GetWidth());p:SetHeight(d.body:GetHeight())
+    d.body=d.body or CreateFrame('Frame',nil,frame);d.body:ClearAllPoints();d.body:SetPoint('TOPLEFT',embedded and 0 or 12,embedded and 0 or -34);d.body:SetSize(frame:GetWidth()-(embedded and 0 or 24),frame:GetHeight()-(embedded and 0 or 70))
+    d.form=d.form or self:CreateSettingsForm(d.body);local p=d.form;p.fixedViewport=true;p:SetWidth(d.body:GetWidth());p:SetHeight(d.body:GetHeight())
     local profile,global=self.db.profile,self.db.global
     local function valid() return d.session==session and not d.closed and d.owner and d.owner.active and addon.db.profile==profile and addon.db.global==global and (not saveAllowed or saveAllowed()) end
     d.OwnerValid=valid
@@ -199,9 +199,11 @@ function addon:condition_edit_box(update,key,source,saveAllowed,embedded)
     addon:SetUIScript(d.transfer,'OnClick',function() if valid() and d:Flush() then addon:ShowCustomConditionTransfer(d,update,d.model.key,d:PendingSource()) end end)
     addon:SetUIScript(d.help,'OnClick',function() if valid() then d.ownedHelp=addon:ShowWorkbenchHelp(L['Custom condition'],{
         {title=L['Editing code'],text=L['Each callback keeps its own pending text while switching tabs. Undo and Redo edit that callback buffer. Reset restores its last saved code, or the template for a new condition, and can be undone. The main Apply saves and registers all callback buffers and metadata; Discard drops the whole draft. Leaving with changes offers Apply, Discard or Cancel. Check syntax runs no callbacks.']},
+        {title=labels[d.selected],text=addon:CustomConditionDocumentation(d.selected)},
         {title=L['Field schema'],text=L['Edit fields opens a graphical schema draft. Add, name, reorder or remove fields, choose primitive or nested types, and edit nested fields. Apply stages the schema and its field order. Advanced exposes the equivalent raw schema, parsed as data without executing Lua.']},
         {title=L['Trusted code'],text=L['Custom Lua has the same access as the addon. Only import code you trust. Syntax validation cannot establish that a callback is safe or correct. Existing custom widget callbacks still use their original UI contract.']}},frame);d.ownedHelpSections=d.ownedHelp.sections end end)
     p:Open(function(form)
+        form.width=d.body:GetWidth();form.child:SetWidth(form.width);form:Layout()
         if d.chrome and not embedded then d.chrome:SetContext(L['Rotation Master']..': '..(d.model.value.description~='' and d.model.value.description or L['Custom condition']),L['Custom condition'],d.model.key) end
         if embedded and embedded.fields then embedded.fields(form,d) end
         local availability=form:Acquire('sourceAvailability',function() return addon:CreateWorkbenchPill(form.child,'',96) end)
@@ -241,19 +243,8 @@ function addon:condition_edit_box(update,key,source,saveAllowed,embedded)
             d.ownedPickerSerial=d.ownedPicker.serial
         end)
         icon.texture=icon.texture or icon:CreateTexture(nil,'ARTWORK');icon.texture:SetTexture(d.model.value.icon);icon.texture:SetAllPoints(icon)
-        form:Edit('schema',L['Field schema'],addon:FormatCustomFieldSchema(d.model.value.fields) or '',function(text) return addon:ParseCustomFieldSchema(text) end,function(fields) d.model:Change(function(model) model.value.fields=fields;model.value.fieldOrder=nil end) end)
-        form.fields.schema:SetMaxLetters(32768);form.fields.schema:SetText(addon:FormatCustomFieldSchema(d.model.value.fields) or '')
-        local schema=form.fields.schema;local schemaY=form.y-28
-        local graph=form:Button('schemaGraph',L['Edit fields'],function()
-            d:FlushCode()
-            local parsed=addon:ParseCustomFieldSchema(schema:GetText());if not parsed then form:Message(L['Invalid custom condition.']);return end
-            local fieldOrder=addon:SettingsDataEqual(parsed,d.model.value.fields) and d.model.value.fieldOrder or nil
-            d:OpenSchema(parsed,fieldOrder)
-        end)
-        graph:ClearAllPoints();graph:SetPoint('TOPLEFT',220,-schemaY);graph:SetWidth(math.max(80,form.width-312));form.y=form.y-28
-        local advanced=form:Button('advancedSchema',L['Advanced'],function() d.advancedSchema=not d.advancedSchema;if d.advancedSchema then schema:Show();graph:Hide() else schema:Hide();graph:Show() end end)
-        advanced:ClearAllPoints();advanced:SetPoint('TOPRIGHT',0,-schemaY);advanced:SetWidth(84);form.y=form.y-28;schema:SetWidth(math.max(80,form.width-312))
-        if d.advancedSchema then graph:Hide() else schema:Hide() end
+        if embedded and embedded.category then embedded.category(form,d) end
+        addon:BuildCustomSourceFields(form,d)
         local tabWidth=(form.width-3*(#order-1))/#order;local y=form:Row(nil,26)
         d.functionTabs={}
         for i,name in ipairs(order) do
@@ -278,6 +269,8 @@ function addon:condition_edit_box(update,key,source,saveAllowed,embedded)
         d.documentationTop=form.y
         function d:LayoutDocumentation()
             self.documentation:ClearAllPoints();self.documentation:SetPoint('TOPLEFT',0,-self.documentationTop);self.documentation:SetWidth(form.width-30);self.documentation:SetText(addon:CustomConditionDocumentation(self.selected));self.documentation:SetHeight(0)
+            self.compactDocumentation=form.frame:GetHeight()-(self.documentationTop+self.documentation:GetStringHeight()+56+24)<100
+            if self.compactDocumentation then self.documentation:SetText(addon.CustomConditionCallbackDocs[self.selected].description) end
             if embedded then self.help:SetParent(form.child);self.help:ClearAllPoints();self.help:SetPoint('TOPRIGHT',0,-self.documentationTop) end
             local actionTop=self.documentationTop+self.documentation:GetStringHeight()+8
             for index,control in ipairs({self.codeUndo,self.codeRedo,self.codeReset}) do control:ClearAllPoints();control:SetPoint('TOPLEFT',(index-1)*74,-actionTop) end
@@ -285,8 +278,9 @@ function addon:condition_edit_box(update,key,source,saveAllowed,embedded)
             local signatureTop=actionTop+26
             self.signature:ClearAllPoints();self.signature:SetPoint('TOPLEFT',0,-signatureTop);self.signature:SetWidth(form.width);self.signature:SetHeight(18)
             local codeTop=signatureTop+22
-            if self.code then self.code.frame:ClearAllPoints();self.code.frame:SetPoint('TOPLEFT',0,-codeTop) end
-            form.y=codeTop+318;form.child:SetHeight(form.y+12);form.scroll:UpdateWorkbenchScroll()
+            local codeHeight=math.max(60,form.frame:GetHeight()-codeTop-24)
+            if self.code then self.code.frame:ClearAllPoints();self.code.frame:SetPoint('TOPLEFT',0,-codeTop);self.code.frame:SetSize(form.width,codeHeight) end
+            form.y=codeTop+codeHeight;form.child:SetHeight(form.y+12);form.scroll:Hide()
         end
         local preference=addon.db.profile.lua_editor or 'auto'
         if d.code and (d.code.preference~=preference or d.code.released and not d.code.Acquire) then d.code:Release();d.code=nil end
@@ -302,6 +296,10 @@ function addon:condition_edit_box(update,key,source,saveAllowed,embedded)
         end
         form.cleanups[#form.cleanups+1]=function() if d.code then if d.code.edit then d.code.edit:ClearFocus() end;d.code.frame:Hide() end end
     end)
+    function d:ResizeHeight(height)
+        if math.abs(self.frame:GetHeight()-height)<.1 then return end
+        self.frame:SetHeight(height);self.body:SetHeight(height-(self.embedded and 0 or 70));self.form:SetHeight(self.body:GetHeight());self:LayoutDocumentation()
+    end
     addon:SetUIScript(frame,'OnUpdate',function() if not valid() then d:Close() else d:UpdateActions() end end)
     addon:InstallCustomChangeReview(d)
     d.undo:Hide();d.redo:Hide();d.apply:Show();d.cancel:Show();d.viewChanges:Show()

@@ -676,7 +676,7 @@ test('ordered row drag lifts the actual controls and canceled previews restore e
 end)
 test('collection sidebar footer uses the full body while detail Apply has its own reserved space',function()
     local f,parent=fixture();local a=f.addon;a.db.profile.itemsets={s={name='Items',items={1}}};a.db.global.itemsets={}
-    local p=a:OpenNativeSettings(parent,'ItemSets');assert(p.roster.frame:GetHeight()==p.frame:GetHeight()-8,'sidebar incorrectly reserves detail Apply footer')
+    local p=a:OpenNativeSettings(parent,'ItemSets');assert(p.roster.frame:GetHeight()==a:GetWorkbenchRosterGeometry(p.frame:GetWidth(),p.frame:GetHeight()).sidebarHeight,'sidebar differs from shared roster geometry')
     assert(p.scroll:GetHeight()<p.roster.frame:GetHeight() and p.fields.apply)
     p:Release()
 end)

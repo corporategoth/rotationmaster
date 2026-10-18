@@ -3,7 +3,11 @@ local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
 local function clearNew(p) p.creatingCondition=nil;p.newConditionKey=nil;p.newConditionSource=nil end
 function addon:InstallInlineConditionNavigation(p)
     if p.inlineNavigation then return end;p.inlineNavigation=true
-    local leave,release,draw=p.RequestLeave,p.Release,p.Draw
+    local leave,release,draw,layout=p.RequestLeave,p.Release,p.Draw,p.Layout
+    function p:Layout()
+        layout(self);local editor=self.inlineCondition
+        if editor and not editor.closed and editor.OwnerValid() then editor:ResizeHeight(math.max(160,self.frame:GetHeight()-34)) end
+    end
     function p:Draw()
         local editor=self.inlineCondition
         self.inlineResume=nil
@@ -51,7 +55,8 @@ function addon:BuildInlineCustomCondition(p,key,source)
     local preferences={hidden=self:SettingsContains(profile.disabled_conditions,key),switch=self:SettingsContains(profile.switch_conditions,key),category='DEFAULT'}
     for _,group in ipairs(profile.condition_groups or {}) do if self:SettingsContains(group.conditions,key) then preferences.category=group.id;break end end
     local function valid() return p:Valid(token) end
-    local options={parent=p.child,footer=p.frame,width=p.width,height=math.max(160,p.scroll:GetHeight()-16),editor=p.inlineEditorCache,resume=p.inlineResume};p.inlineResume=nil
+    local geometry=self:GetWorkbenchRosterGeometry(p.frame:GetWidth(),p.frame:GetHeight())
+    local options={parent=p.frame,x=geometry.detailX,footer=p.frame,width=geometry.detailWidth,height=math.max(160,p.frame:GetHeight()-34),editor=p.inlineEditorCache,resume=p.inlineResume};p.inlineResume=nil
     options.initialize=function(model)
         if isNew and p.newConditionKey then model.key=p.newConditionKey end
         model.context=self:CopySettingsData(preferences);model.baseline.context=self:CopySettingsData(preferences)
@@ -67,20 +72,6 @@ function addon:BuildInlineCustomCondition(p,key,source)
         local checkWidth=(form.width-148)/2
         local hidden=form:Check('hidden',L['Hidden'],context.hidden,function(value) d.model:Change(function(model) model.context.hidden=value end);d:UpdateActions() end);hidden:SetWidth(checkWidth);hidden:GetFontString():SetWidth(checkWidth-22)
         local switch=form:Check('switch',L['Switch Condition'],context.switch,function(value) d.model:Change(function(model) model.context.switch=value end);d:UpdateActions() end);switch:ClearAllPoints();switch:SetPoint('TOPLEFT',checkWidth+8,-y);switch:SetWidth(checkWidth);switch:GetFontString():SetWidth(checkWidth-22);form.y=form.y-28
-        local groups=store.profile.condition_groups or {};local destinations={{value='DEFAULT',text=L['Other']}};local current=L['Other'];local icon=self:GetConditionCategoryIcon(nil)
-        for _,group in ipairs(groups) do destinations[#destinations+1]={value=group.id,text=group.name or group.id,icon=self:GetConditionCategoryIcon(group)};if group.id==context.category then current=group.name or group.id;icon=self:GetConditionCategoryIcon(group) end end
-        local function visitCategory()
-            p:RequestLeave(function() if p.active then p.mode='categories';p.categorySelection=context.category;p:Draw() end end)
-        end
-        local category=form:Button('current_category',L['Category']..': '..current,visitCategory)
-        -- Navigation must offer Discard even while a raw source field is invalid.
-        self:SetUIScript(category,'OnClick',function() if valid() then visitCategory() end end)
-        category.categoryIcon=category.categoryIcon or category:CreateTexture(nil,'ARTWORK');category.categoryIcon:SetPoint('LEFT',3,0);category.categoryIcon:SetSize(20,20);category.categoryIcon:SetTexture(icon);category:SetWidth(form.width-86);self:AlignWorkbenchTextLeft(category,28)
-        local categoryY=form.y-28;local move
-        move=form:Button('move_to',L['Move'],function()
-            form:ShowChoices(move,destinations,function(value) if valid() then d.model:Change(function(model) model.context.category=value end);form:Draw();d:UpdateActions() end end)
-        end)
-        move:ClearAllPoints();move:SetPoint('TOPLEFT',form.width-78,-categoryY);move:SetWidth(78);form.y=form.y-28
         if key then self:SettingsTopDelete(form,function()
             p:RequestLeave(function()
                 p:Confirm(L['Delete this custom condition? Existing rotations using it will become unavailable.'],function()
@@ -88,6 +79,26 @@ function addon:BuildInlineCustomCondition(p,key,source)
                 end)
             end)
         end) end
+    end
+    options.category=function(form,d)
+        local context=d.model.context;local savedCategory=d.model.baseline.context.category
+        local groups=store.profile.condition_groups or {};local destinations={{value='DEFAULT',text=L['Other']}};local current=L['Other'];local icon=self:GetConditionCategoryIcon(nil)
+        for _,group in ipairs(groups) do destinations[#destinations+1]={value=group.id,text=group.name or group.id,icon=self:GetConditionCategoryIcon(group)};if group.id==savedCategory then current=group.name or group.id;icon=self:GetConditionCategoryIcon(group) end end
+        local function visitCategory()
+            p:RequestLeave(function() if p.active then p.mode='categories';p.categorySelection=savedCategory;p:Draw() end end)
+        end
+        local categoryY=form:Row(L['Category'],28);form.pool.labels[form.counts.labels]:SetWidth(168)
+        local fieldWidth=(form.width-182)/2
+        local category=form:Acquire('sourceCategory',function() return self:CreateWorkbenchButton(form.child,'',fieldWidth) end);form.fields.current_category=category;category:ClearAllPoints();category:SetPoint('TOPLEFT',174,-categoryY);category:SetText(current)
+        -- Navigation must offer Discard even while a raw source field is invalid.
+        self:SetUIScript(category,'OnClick',function() if valid() then visitCategory() end end)
+        category.categoryIcon=category.categoryIcon or category:CreateTexture(nil,'ARTWORK');category.categoryIcon:SetPoint('LEFT',3,0);category.categoryIcon:SetSize(20,20);category.categoryIcon:SetTexture(icon);category:SetWidth(fieldWidth);self:AlignWorkbenchTextLeft(category,28)
+        local moveLabel=form:Acquire('labels',function() return form.child:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall') end)
+        form.fields.moveLabel=moveLabel;moveLabel:ClearAllPoints();moveLabel:SetPoint('TOPLEFT',174+fieldWidth+8,-categoryY);moveLabel:SetSize(38,24);moveLabel:SetText(L['Move']);moveLabel:SetJustifyH('LEFT');moveLabel:SetJustifyV('MIDDLE')
+        local move=form:Choice('move_to',nil,context.category,destinations,function(value)
+            if valid() then d.model:Change(function(model) model.context.category=value end);form:Draw();d:UpdateActions() end
+        end)
+        move:ClearAllPoints();move:SetPoint('TOPLEFT',174+fieldWidth+50,-categoryY);move:SetWidth(fieldWidth-42);form.y=form.y-30
     end
     options.updateActions=function(d)
         for _,field in ipairs({'hidden','switch'}) do self:SetWorkbenchUnsaved(d.form.fields[field],d.model.context[field]~=d.model.baseline.context[field]) end
@@ -135,7 +146,7 @@ function addon:BuildInlineCustomCondition(p,key,source)
     p.inlineCondition=d;p.inlineEditorCache=d
     d.inlineSelection=p.condition;d.inlineNewSource=p.newConditionSource
     p.cleanups[#p.cleanups+1]=function() self:CloseCustomConditionEditor(d,owner);if p.inlineCondition==d then p.inlineCondition=nil end end
-    p.creationUsed=true;p.creationUsedForNew=false;p.y=options.height-12
+    p.creationUsed=true;p.creationUsedForNew=false;p.y=1;p.scroll:Hide()
     -- The right pane owns its source actions; no duplicate page Apply row.
     return d
 end

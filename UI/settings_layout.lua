@@ -6,7 +6,7 @@ function addon:InstallSettingsLayout(p)
         self.surface=nil;self.rosterUsed=false;self.columnMode=false;self.columnSingle=false
         if self.roster then self.roster.frame:Hide() end
         for _,frame in ipairs(self.columns or {}) do frame:Hide() end
-        self.scroll:ClearAllPoints();self.scroll:SetPoint('TOPLEFT',8,-8);simpleLayout(self)
+        self.scroll:Show();self.scroll:ClearAllPoints();self.scroll:SetPoint('TOPLEFT',8,-8);simpleLayout(self)
     end
     function p:Column(index)
         if index==1 then
@@ -60,7 +60,7 @@ function addon:InstallSettingsLayout(p)
         options=options or {};self.rosterUsed=true
         local r=self.roster
         if not r then
-            r={frame=CreateFrame('Frame',nil,self.frame),rows={}};self.roster=r;r.frame:SetPoint('TOPLEFT',8,-8)
+            r={frame=CreateFrame('Frame',nil,self.frame),rows={}};self.roster=r;r.frame:SetPoint('TOPLEFT',0,0)
             r.category=addon:CreateWorkbenchLabeledIconButton(r.frame,'chevron-down','',238);r.category:SetPoint('TOPLEFT',0,0)
             r.search=addon:CreateWorkbenchEditBox(r.frame);r.search:SetMaxLetters(128);addon:AttachWorkbenchSearchHint(r.search)
             r.scroll=addon:CreateWorkbenchScrollFrame(r.frame);r.child=CreateFrame('Frame',nil,r.scroll);r.scroll:SetScrollChild(r.child)
@@ -85,12 +85,12 @@ function addon:InstallSettingsLayout(p)
         r.new:ClearAllPoints();r.new:SetPoint('BOTTOMLEFT',0,options.manage and 30 or 0);r.manage:ClearAllPoints();r.manage:SetPoint('BOTTOMLEFT',0,0)
         if options.new then r.new:SetText(options.newText or L['New']);r.new:Show();addon:SetUIScript(r.new,'OnClick',self:Guard(function() if self:FlushEdits() then options.new() end end)) else r.new:Hide() end
         if options.manage then r.manage:SetText(options.manageText or L['Manage categories']);r.manage:Show();addon:SetUIScript(r.manage,'OnClick',self:Guard(function() if self:FlushEdits() then options.manage() end end)) else r.manage:Hide() end
-        self:Layout();self.width=math.max(340,math.min(760,self.scroll:GetWidth()-8));self.child:SetWidth(self.width);self:RefreshRoster()
+        self:Layout();self.width=math.max(340,self.scroll:GetWidth());self.child:SetWidth(self.width);self:RefreshRoster()
     end
     function p:Layout()
         if not self.rosterUsed or not self.roster then simpleLayout(self);return end
-        local r=self.roster;local side=addon:GetWorkbenchSidebarWidth(self.frame:GetWidth());local height=math.max(1,self.frame:GetHeight()-(self.creationUsed and 66 or 38))
-        local sidebarHeight=addon:GetWorkbenchSidebarHeight(self.frame:GetHeight(),8)
+        local r=self.roster;local geometry=addon:GetWorkbenchRosterGeometry(self.frame:GetWidth(),self.frame:GetHeight());self.rosterGeometry=geometry
+        local side=geometry.sidebarWidth;local height=math.max(1,self.frame:GetHeight()-38);local sidebarHeight=geometry.sidebarHeight
         r.frame:SetSize(side,sidebarHeight);r.category:SetWidth(side);r.new:SetWidth(side);r.manage:SetWidth(side);r.search:ClearAllPoints();r.search:SetPoint('TOPLEFT',0,0);r.search:SetSize(side,24)
         local filterTop=28
         if r.options.sources then
@@ -101,7 +101,7 @@ function addon:InstallSettingsLayout(p)
         r.category:ClearAllPoints();r.category:SetPoint('TOPLEFT',0,-filterTop)
         local footerHeight=r.footerActions and math.ceil(#r.footerActions/2)*28+(r.footerManage and 30 or 0) or (r.options.new and 30 or 0)+(r.options.manage and 30 or 0)
         if r.footerActions then local width=(side-6)/2;for i,button in ipairs(r.actionButtons) do button:ClearAllPoints();button:SetPoint('BOTTOMLEFT',((i-1)%2)*(width+6),(r.footerManage and 30 or 0)+(math.ceil(#r.footerActions/2)-1-math.floor((i-1)/2))*28);button:SetWidth(width);addon:AlignWorkbenchTextLeft(button,24) end end
-        local top=filterTop+(r.options.categories and 32 or 4);r.scroll:ClearAllPoints();r.scroll:SetPoint('TOPLEFT',0,-top);r.scroll:SetSize(side-18,math.max(1,sidebarHeight-top-footerHeight));r.child:SetWidth(side-26)
-        self.scroll:ClearAllPoints();self.scroll:SetPoint('TOPLEFT',side+24,-8);self.scroll:SetSize(math.max(1,self.frame:GetWidth()-side-50),height);self.message:SetWidth(math.max(1,self.frame:GetWidth()-(self.creationUsed and 340 or 20)))
+        local top=filterTop+(r.options.categories and 32 or 4);r.scroll:ClearAllPoints();r.scroll:SetPoint('TOPLEFT',0,-top);r.scroll:SetSize(side-24,math.max(1,sidebarHeight-top-footerHeight));r.child:SetWidth(side-24)
+        self.scroll:ClearAllPoints();self.scroll:SetPoint('TOPLEFT',geometry.detailX,0);self.scroll:SetSize(geometry.detailWidth-18,height);self.message:SetWidth(math.max(1,self.frame:GetWidth()-(self.creationUsed and 340 or 20)))
     end
 end

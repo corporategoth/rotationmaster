@@ -162,6 +162,7 @@ Options/custom_condition.lua
 UI/lua_input_diagnostics.lua
 UI/lua_editor.lua
 UI/schema_editor.lua
+UI/custom_source_fields.lua
 UI/custom_condition_editor.lua
 UI/condition_source_pane.lua
 Options/conditions.lua
