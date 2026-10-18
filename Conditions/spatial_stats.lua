@@ -5,12 +5,20 @@ local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 local color, pairs = color, pairs
 local helpers = addon.help_funcs
 
-local function avg(t)
-    local sum = 0
-    for _,v in pairs(t) do -- Get the sum of all numbers in t
-        sum = sum + v
+local function aggregate(values,operation)
+    if #values==0 then return nil,"no-units-in-range" end
+    local value=values[1]
+    if operation=="average" then
+        local sum=0;for _,current in ipairs(values) do sum=sum+current end
+        return sum/#values
+    elseif operation=="minimum" or operation=="maximum" then
+        for index=2,#values do
+            if operation=="minimum" then value=math.min(value,values[index])
+            else value=math.max(value,values[index]) end
+        end
+        return value
     end
-    return sum / #t
+    return nil,"invalid-operation"
 end
 
 addon:RegisterCondition("PROXIMITY_HEALTH", {
@@ -35,14 +43,8 @@ addon:RegisterCondition("PROXIMITY_HEALTH", {
                     table.insert(values, cur)
         end)
 
-        local v
-        if value.operation == "minimum" then
-            v = math.min(values)
-        elseif value.operation == "average" then
-            v = avg(values)
-        elseif value.operation == "maximum" then
-            v = math.max(values)
-        end
+        local v,reason=aggregate(values,value.operation)
+        if v==nil then return nil,reason end
         return addon.compare(value.operator, v, math.abs(value.value))
     end,
     print = function(_, value)
@@ -70,7 +72,7 @@ addon:RegisterCondition("PROXIMITY_HEALTH", {
                 function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
 
-        local operation = AceGUI:Create("Dropdown")
+        local operation = addon:CreateConditionDropdown()
         operation:SetLabel(L["Operation"])
         operation:SetCallback("OnValueChanged", function(_, _, v)
             value.operation = v
@@ -88,7 +90,7 @@ addon:RegisterCondition("PROXIMITY_HEALTH", {
                 function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
 
-        proximity_widgets(top, root, funcs, parent, spec, value)
+        addon.proximity_widgets(top, root, funcs, parent, spec, value)
     end,
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
@@ -136,7 +138,7 @@ addon:RegisterCondition("PROXIMITY_HEALTH_COUNT", {
         local count = 0
         addon.proximity_eval(value, cache, function(c, unit)
             local cur = addon.getCached(c, UnitHealth, unit)
-            if value.value < 0 then
+            if value.health < 0 then
                 local max = addon.getCached(c, UnitHealthMax, unit)
                 cur = (max-cur)
             end
@@ -180,7 +182,7 @@ addon:RegisterCondition("PROXIMITY_HEALTH_COUNT", {
                 function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
 
-        proximity_widgets(top, root, funcs, parent, spec, value)
+        addon.proximity_widgets(top, root, funcs, parent, spec, value)
     end,
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
@@ -225,14 +227,8 @@ addon:RegisterCondition("PROXIMITY_HEALTHPCT", {
             table.insert(values, cur / max * 100)
         end)
 
-        local v
-        if value.operation == "minimum" then
-            v = math.min(values)
-        elseif value.operation == "average" then
-            v = avg(values)
-        elseif value.operation == "maximum" then
-            v = math.max(values)
-        end
+        local v,reason=aggregate(values,value.operation)
+        if v==nil then return nil,reason end
         return addon.compare(value.operator, v, value.value * 100)
     end,
     print = function(_, value)
@@ -259,7 +255,7 @@ addon:RegisterCondition("PROXIMITY_HEALTHPCT", {
                 function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
 
-        local operation = AceGUI:Create("Dropdown")
+        local operation = addon:CreateConditionDropdown()
         operation:SetLabel(L["Operation"])
         operation:SetCallback("OnValueChanged", function(_, _, v)
             value.operation = v
@@ -277,7 +273,7 @@ addon:RegisterCondition("PROXIMITY_HEALTHPCT", {
                 function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
 
-        proximity_widgets(top, root, funcs, parent, spec, value)
+        addon.proximity_widgets(top, root, funcs, parent, spec, value)
     end,
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
@@ -326,7 +322,7 @@ addon:RegisterCondition("PROXIMITY_HEALTHPCT_COUNT", {
         addon.proximity_eval(value, cache, function(c, unit)
             local cur = addon.getCached(c, UnitHealth, unit)
             local max = addon.getCached(c, UnitHealthMax, unit)
-            if addon.compare(value.healthoperator, cur / max * 100, value.value * 100) then
+            if addon.compare(value.healthoperator, cur / max * 100, value.health * 100) then
                 count = count + 1
             end
         end)
@@ -364,6 +360,7 @@ addon:RegisterCondition("PROXIMITY_HEALTHPCT_COUNT", {
                 function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
 
+        addon.proximity_widgets(top, root, funcs, parent, spec, value)
     end,
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
@@ -410,14 +407,8 @@ addon:RegisterCondition("PROXIMITY_MANA", {
             table.insert(values, cur)
         end)
 
-        local v
-        if value.operation == "minimum" then
-            v = math.min(values)
-        elseif value.operation == "average" then
-            v = avg(values)
-        elseif value.operation == "maximum" then
-            v = math.max(values)
-        end
+        local v,reason=aggregate(values,value.operation)
+        if v==nil then return nil,reason end
         return addon.compare(value.operator, v, math.abs(value.value))
     end,
     print = function(_, value)
@@ -445,7 +436,7 @@ addon:RegisterCondition("PROXIMITY_MANA", {
                 function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
 
-        local operation = AceGUI:Create("Dropdown")
+        local operation = addon:CreateConditionDropdown()
         operation:SetLabel(L["Operation"])
         operation:SetCallback("OnValueChanged", function(_, _, v)
             value.operation = v
@@ -463,7 +454,7 @@ addon:RegisterCondition("PROXIMITY_MANA", {
                 function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
 
-        proximity_widgets(top, root, funcs, parent, spec, value)
+        addon.proximity_widgets(top, root, funcs, parent, spec, value)
     end,
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
@@ -555,7 +546,7 @@ addon:RegisterCondition("PROXIMITY_MANA_COUNT", {
                 function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
 
-        proximity_widgets(top, root, funcs, parent, spec, value)
+        addon.proximity_widgets(top, root, funcs, parent, spec, value)
     end,
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
@@ -600,14 +591,8 @@ addon:RegisterCondition("PROXIMITY_MANAPCT", {
             table.insert(values, cur / max * 100)
         end)
 
-        local v
-        if value.operation == "minimum" then
-            v = math.min(values)
-        elseif value.operation == "average" then
-            v = avg(values)
-        elseif value.operation == "maximum" then
-            v = math.max(values)
-        end
+        local v,reason=aggregate(values,value.operation)
+        if v==nil then return nil,reason end
         return addon.compare(value.operator, v, value.value * 100)
     end,
     print = function(_, value)
@@ -634,7 +619,7 @@ addon:RegisterCondition("PROXIMITY_MANAPCT", {
                 function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
 
-        local operation = AceGUI:Create("Dropdown")
+        local operation = addon:CreateConditionDropdown()
         operation:SetLabel(L["Operation"])
         operation:SetCallback("OnValueChanged", function(_, _, v)
             value.operation = v
@@ -652,7 +637,7 @@ addon:RegisterCondition("PROXIMITY_MANAPCT", {
                 function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
 
-        proximity_widgets(top, root, funcs, parent, spec, value)
+        addon.proximity_widgets(top, root, funcs, parent, spec, value)
     end,
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
@@ -701,7 +686,7 @@ addon:RegisterCondition("PROXIMITY_MANAPCT_COUNT", {
         addon.proximity_eval(value, cache, function(c, unit)
             local cur = addon.getCached(c, UnitPower, unit, Enum.PowerType.Mana)
             local max = addon.getCached(c, UnitPowerMax, unit, Enum.PowerType.Mana)
-            if addon.compare(value.manaoperator, cur / max * 100, value.value * 100) then
+            if addon.compare(value.manaoperator, cur / max * 100, value.mana * 100) then
                 count = count + 1
             end
         end)
@@ -739,7 +724,7 @@ addon:RegisterCondition("PROXIMITY_MANAPCT_COUNT", {
                 function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
 
-        proximity_widgets(top, root, funcs, parent, spec, value)
+        addon.proximity_widgets(top, root, funcs, parent, spec, value)
     end,
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)

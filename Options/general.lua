@@ -3,7 +3,7 @@ local addon_name, addon = ...
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 
 local AceGUI = LibStub("AceGUI-3.0")
-local SpellData = LibStub("AceGUI-3.0-SpellLoader")
+local SpellData = addon.SpellCatalog
 local AceConfigDialog = LibStub("AceConfigDialog-3.0")
 local AceConfig = LibStub("AceConfig-3.0")
 local AceSerializer = LibStub("AceSerializer-3.0")
@@ -159,14 +159,7 @@ local function create_primary_options(frame)
     end)
     general_group:AddChild(spell_history)
 
-    local ignore_mana = AceGUI:Create("CheckBox")
-    ignore_mana:SetFullWidth(true)
-    ignore_mana:SetLabel(L["Ignore Mana"])
-    ignore_mana:SetValue(profile["ignore_mana"])
-    ignore_mana:SetCallback("OnValueChanged", function(_, _, val)
-        profile["ignore_mana"] = val
-    end)
-    general_group:AddChild(ignore_mana)
+
 
     local combat_history = AceGUI:Create("Slider")
     combat_history:SetFullWidth(true)
@@ -178,14 +171,7 @@ local function create_primary_options(frame)
     end)
     general_group:AddChild(combat_history)
 
-    local ignore_range = AceGUI:Create("CheckBox")
-    ignore_range:SetFullWidth(true)
-    ignore_range:SetLabel(L["Ignore Range"])
-    ignore_range:SetValue(profile["ignore_range"])
-    ignore_range:SetCallback("OnValueChanged", function(_, _, val)
-        profile["ignore_range"] = val
-    end)
-    general_group:AddChild(ignore_range)
+
 
     local damage_history = AceGUI:Create("Slider")
     damage_history:SetFullWidth(true)
@@ -296,9 +282,11 @@ local function create_primary_options(frame)
         addon:Glow(f, "effect", effect, profile["color"], 1.0, "CENTER", 0, 0)
     end)
     effect_icon:SetCallback("OnRelease", function(self)
+        self.frame:SetScript("OnShow", nil)
         addon:HideGlow(self.frame, "effect")
     end)
     effect_group:AddChild(effect_icon)
+    addon:Glow(effect_icon.frame, "effect", effect, profile["color"], 1.0, "CENTER", 0, 0)
 
     local effect_sel = AceGUI:Create("Dropdown")
     effect_sel:SetLabel(L["Effect"])
@@ -451,7 +439,7 @@ if WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE and LE_EXPANSION_LEVEL_CURRENT >= 2 th
     primary:SetText(addon.db.char.specs[1])
     primary:SetCallback("OnEnterPressed", function(_, _, val)
         addon.db.char.specs[1] = val
-        create_class_options(addon.optionsFrames.Rotation, UnitClass("player"))
+        addon:RefreshConfiguration()
     end)
     spec_group:AddChild(primary)
 
@@ -461,7 +449,7 @@ if WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE and LE_EXPANSION_LEVEL_CURRENT >= 2 th
     secondary:SetText(addon.db.char.specs[2])
     secondary:SetCallback("OnEnterPressed", function(_, _, val)
         addon.db.char.specs[2] = val
-        create_class_options(addon.optionsFrames.Rotation, UnitClass("player"))
+        addon:RefreshConfiguration()
     end)
     spec_group:AddChild(secondary)
 
@@ -549,115 +537,18 @@ local function HandleDelete(spec, rotation, frame)
     StaticPopup_Show("ROTATIONMASTER_DELETE_ROTATION")
 end
 
-local function ImportExport(spec, rotation, parent)
-    local rotation_settings = addon.db.profile.rotations
-    local original_name
-    if rotation ~= DEFAULT and rotation_settings[spec][rotation] ~= nil then
-        original_name = rotation_settings[spec][rotation].name
-    end
-
-    local frame = AceGUI:Create("Window")
-    frame:SetTitle(L["Import/Export Rotation"])
-    frame:SetCallback("OnClose", function(widget)
-        AceGUI:Release(widget)
-    end)
-    frame:SetLayout("List")
-    frame:SetWidth(525)
-    frame:SetHeight(475)
-    frame:EnableResize(false)
-    HideOnEscape(frame)
-
-    frame:PauseLayout()
-
-    local desc = AceGUI:Create("Label")
-    desc:SetFullWidth(true)
-    desc:SetText(L["Copy and paste this text share your rotation with others, or import someone else's."])
-    frame:AddChild(desc)
-
-    local import = AceGUI:Create("Button")
-    local editbox = AceGUI:Create("MultiLineEditBox")
-
-    editbox:SetFullHeight(true)
-    editbox:SetFullWidth(true)
-    editbox:SetLabel("")
-    editbox:SetNumLines(27)
-    editbox:DisableButton(true)
-    editbox:SetFocus(true)
-    if (rotation_settings[spec][rotation] ~= nil) then
-        editbox:SetText(width_split(base64enc(libc:Compress(AceSerializer:Serialize(rotation_settings[spec][rotation]))), 64))
-    end
-    editbox.editBox:GetRegions():SetFont("Interface\\AddOns\\" .. addon_name .. "\\Fonts\\Inconsolata-Bold.ttf", 13)
-    editbox:SetCallback("OnTextChanged", function(_, _, text)
-        if text:match('^[0-9A-Za-z+/\r\n]+=*[\r\n]*$') then
-            local decomp = libc:Decompress(base64dec(text))
-            if decomp ~= nil and AceSerializer:Deserialize(decomp) then
-                --frame:SetStatusText(string.len(text) .. " " .. L["bytes"] .. " (" .. select(2, text:gsub('\n', '\n'))+1 .. " " .. L["lines"] .. ")")
-                import:SetDisabled(false)
-                return
-            end
-        end
-        --frame:SetStatusText(string.len(text) .. " " .. L["bytes"] .. " (" .. select(2, text:gsub('\n', '\n'))+1 .. " " .. L["lines"] .. ") - " ..
-        --        color.RED .. L["Parse Error"])
-        import:SetDisabled(true)
-    end)
-
-    --frame:SetStatusText(string.len(editbox:GetText()) .. " " .. L["bytes"] .. " (" .. select(2, editbox:GetText():gsub('\n', '\n'))+1 .. " " .. L["lines"] .. ")")
-    -- editbox:HighlightText(0, string.len(editbox:GetText()))
-    editbox:HighlightText()
-    frame:AddChild(editbox)
-
-    local group = AceGUI:Create("SimpleGroup")
-    group:SetFullWidth(true)
-    group:SetLayout("Table")
-    group:SetUserData("table", { columns = { 1, 0.25, 0.25 } })
-
-    group:AddChild(spacer(1))
-
-    import:SetText(L["Import"])
-    import:SetDisabled(true)
-    import:SetCallback("OnClick", function(_, _)
-        local ok, res = AceSerializer:Deserialize(libc:Decompress(base64dec(editbox:GetText())))
-        if ok then
-            if rotation == DEFAULT then
-                res.name = nil
-            elseif original_name ~= nil then
-                res.name = original_name
-            elseif res.name == nil then
-                res.name = date(L["Imported on %c"])
-            else
-                for k, v in pairs(rotation_settings[spec]) do
-                    if k ~= DEFAULT and k ~= rotation then
-                        if v.name == res.name then
-                            res.name = date(L["Imported on %c"])
-                            break
-                        end
-                    end
-                end
-            end
-            addon:validate_rotation(L["Import"], rotation, res, true)
-            rotation_settings[spec][rotation] = res
-
-            frame:Hide()
-            create_spec_options(parent, spec, rotation)
-        end
-    end)
-    group:AddChild(import)
-
-    local close = AceGUI:Create("Button")
-    close:SetText(CANCEL)
-    close:SetCallback("OnClick", function(_, _)
-        frame:Hide()
-    end)
-    group:AddChild(close)
-
-    frame:AddChild(group)
-
-    addon:configure_frame(frame)
-    frame:ResumeLayout()
-    frame:DoLayout()
+local function ImportExport(spec, rotation)
+    return addon:ShowRotationTransfer(spec,rotation)
 end
 
 local function create_rotation_options(frame, specID, rotid, parent, selected)
+    local defaultId=addon:GetDefaultIdForRuntime(specID,rotid)
+    if defaultId then
+        addon:CreateDefaultRotationOptions(frame,specID,defaultId,
+            function(id) create_spec_options(parent,specID,id) end,
+            function() create_spec_options(parent,specID,rotid) end)
+        return
+    end
     local profile = addon.db.profile
     local rotation_settings = addon.db.profile.rotations[specID]
 
@@ -730,11 +621,9 @@ local function create_rotation_options(frame, specID, rotid, parent, selected)
         duplicate:SetDisabled(false)
     end
     duplicate:SetCallback("OnClick", function()
-        local tmp = deepcopy(rotation_settings[rotid])
-        tmp.name = string.format(L["Copy of %s"], tmp.name or DEFAULT)
-        local newid = addon:uuid()
-        rotation_settings[newid] = tmp
-
+        local newid,reason=addon:DuplicateCustomRotation(specID,rotid,
+            string.format(L["Copy of %s"],rotation_settings[rotid].name or DEFAULT))
+        if not newid then addon:warn(L["Could not duplicate this rotation: %s"],reason);return end
         create_spec_options(parent, specID, newid)
     end)
     addon.AddTooltip(duplicate, L["Duplicate"])
@@ -757,8 +646,16 @@ local function create_rotation_options(frame, specID, rotid, parent, selected)
     rot_opt:AddChild(delete)
 
     frame:AddChild(rot_opt)
+    if rotation_settings[rotid] then
+        local compare=AceGUI:Create("Button")
+        compare:SetText(L["Compare rotations"])
+        compare:SetCallback("OnClick",function() addon:ShowRotationComparison(specID,rotid) end)
+        frame:AddChild(compare)
+    end
 
     local switch = AceGUI:Create("SimpleGroup")
+    local switchOwner={}
+    switch:SetUserData("conditionEditorOwner",switchOwner)
     switch:SetLayout("Table")
     switch:SetFullWidth(true)
     switch:SetUserData("table", { columns = { 1, 36 } })
@@ -875,11 +772,20 @@ local function create_rotation_options(frame, specID, rotid, parent, selected)
             if rotation_settings[rotid].switch == nil then
                 rotation_settings[rotid].switch = { type = nil }
             end
-            addon:EditCondition(0, spec, rotation_settings[rotid].switch, update_autoswitch)
+            local body=rotation_settings[rotid]
+            local root=body.switch
+            addon:EditCondition(0, specID, root, function()
+                if switch:GetUserData("conditionEditorOwner")==switchOwner then update_autoswitch() end
+            end,function() return addon:GetEditableRotation(specID,rotid)==body and body.switch==root end)
         end)
     end
 
     frame:AddChild(switch)
+
+    local availability=AceGUI:Create("Label")
+    availability:SetFullWidth(true)
+    availability:SetText(L["Actions automatically require a learned spell or carried item, usable resources, cooldown readiness and valid range. Conditions can additionally test other actions."].."\n"..L["When no priority action is ready, Attack is the implicit final fallback for a living hostile target in melee combat, if autoattack is inactive. It uses the normal rotation highlight and never presses a button."])
+    frame:AddChild(availability)
 
     if rotation_settings[rotid] == nil or not addon:rotationValidConditions(rotation_settings[rotid]) then
         local rotation_valid = AceGUI:Create("Heading")
@@ -927,16 +833,15 @@ local function create_rotation_options(frame, specID, rotid, parent, selected)
                 end
                 rv = rv .. tostring(idx)
 
-                if rot.use_name == nil then
-                    rot.use_name = (rot.name ~= nil and string.len(rot.name) > 0)
-                end
+                local useName = rot.use_name
+                if useName == nil then useName = type(rot.name)=="string" and #rot.name>0 end
 
-                if rot.use_name then
+                if useName then
                     if (rot.name ~= nil and string.len(rot.name)) then
                         rv = rv .. " - " .. rot.name
                     end
                 elseif rot.type == "none" then
-                    rv = rv .. " - " .. L["No Action"]
+                    rv = rv .. " - " .. L["Stop"]
                 else
                     if rot.action ~= nil then
                         if rot.type == BOOKTYPE_SPELL or rot.type == BOOKTYPE_PET or rot.type == "any" then
@@ -1089,7 +994,32 @@ local function create_rotation_options(frame, specID, rotid, parent, selected)
     frame:DoLayout()
 end
 
+-- Native roster refreshes use identity callbacks; the legacy Settings host
+-- retains its original spec-group renderer.
+function addon:BuildRotationEditor(frame,specID,rotid,onSelect)
+    if not self:GetDefaultIdForRuntime(specID,rotid) and self.db.profile.rotations[specID]==nil then
+        self.db.profile.rotations[specID]={}
+    end
+    return create_rotation_options(frame,specID,rotid,{selectRotation=onSelect})
+end
+function addon:GetRotationEditorSpecs(classID)
+    if classID==nil and type(UnitClass)=="function" then
+        local ok,_,_,id=pcall(UnitClass,"player")
+        if ok then classID=id end
+    end
+    local entries=self.Platform:GetRotationSpecializations(classID)
+    if not entries then return {{id=0,name=L["Rotations"]}} end
+    for _,entry in ipairs(entries) do
+        if entry.id==0 then entry.name=L["Rotations"]
+        elseif not entry.name then
+            local label=self.db.char.specs[entry.id]
+            entry.name=type(label)=="string" and label or tostring(entry.id)
+        end
+    end
+    return entries
+end
 create_spec_options = function(frame, specID, selected)
+    if frame.selectRotation then return frame.selectRotation(specID,selected) end
     local rotation_settings = addon.db.profile.rotations
 
     frame:ReleaseChildren()
@@ -1111,6 +1041,11 @@ create_spec_options = function(frame, specID, selected)
     table.sort(rotation_order, function(lhs, rhs)
         return rotation_settings[specID][lhs].name < rotation_settings[specID][rhs].name
     end)
+
+    for _,row in ipairs(addon:ListDefaultRotations(specID)) do
+        rotation_order[#rotation_order+1]=row.runtimeKey
+        rotation_args[row.runtimeKey]="|cff5bc0eb"..row.name.."|r ("..L["Default · read-only"]..")"
+    end
 
     rotation_args[DEFAULT] = DEFAULT;
     table.insert(rotation_order, 1, DEFAULT)
@@ -1140,77 +1075,55 @@ create_spec_options = function(frame, specID, selected)
 end
 
 create_class_options = function (frame, classID)
-    local currentSpec = addon.currentSpec
+    local currentSpec = addon.configRotationSelection and addon.configRotationSelection.spec or addon.currentSpec
+    local selection=addon.configRotationSelection
+    local function selectedRotation(spec)
+        if selection and selection.spec==spec then return selection.id end
+        return (spec==addon.currentSpec) and addon.currentRotation or DEFAULT
+    end
 
     frame:ReleaseChildren()
     frame:PauseLayout()
 
-    if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
-        local tabs = AceGUI:Create("TabGroup")
-        addon.specTab = tabs
-
-        local spec_tabs = {}
-        for j = 1, GetNumSpecializationsForClassID(classID) do
-            local specID, specName = GetSpecializationInfoForClassID(classID, j)
-            if currentSpec == nil then
-                currentSpec = specID
-            end
-            table.insert(spec_tabs, {
-                value = specID,
-                text = specName
-            })
-        end
+    local entries=addon:GetRotationEditorSpecs(classID)
+    local found=false
+    for _,entry in ipairs(entries) do if entry.id==currentSpec then found=true end end
+    if not found then currentSpec=entries[1].id end
+    if #entries>1 or entries[1].id~=0 then
+        local tabs=AceGUI:Create("TabGroup")
+        addon.specTab=tabs
+        local spec_tabs={}
+        for _,entry in ipairs(entries) do spec_tabs[#spec_tabs+1]={value=entry.id,text=entry.name} end
         tabs:SetTabs(spec_tabs)
         tabs:SetLayout("Fill")
-
-        tabs:SetCallback("OnGroupSelected", function(_, _, val)
-            create_spec_options(tabs, val, (val == addon.currentSpec) and addon.currentRotation or DEFAULT)
+        tabs:SetCallback("OnGroupSelected",function(_,_,value)
+            create_spec_options(tabs,value,selectedRotation(value))
         end)
-        frame.frame:SetScript("OnShow", function()
-            tabs:SelectTab(addon.currentSpec)
-        end)
-
         frame:AddChild(tabs)
-    elseif (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE and LE_EXPANSION_LEVEL_CURRENT >= 2) then
-        local tabs = AceGUI:Create("TabGroup")
-        addon.specTab = tabs
-
-        local spec_tabs = {}
-        for i=1,GetNumTalentGroups() do
-            table.insert(spec_tabs, {
-                value = i,
-                text = addon.db.char.specs[i] or tostring(i)
-            })
-        end
-        if currentSpec == nil then
-            currentSpec = addon:GetSpecialization()
-        end
-
-        tabs:SetTabs(spec_tabs)
-        tabs:SetLayout("Fill")
-
-        tabs:SetCallback("OnGroupSelected", function(_, _, val)
-            create_spec_options(tabs, val, (val == addon.currentSpec) and addon.currentRotation or DEFAULT)
-        end)
-        frame.frame:SetScript("OnShow", function()
-            tabs:SelectTab(addon.currentSpec)
-        end)
-
-        frame:AddChild(tabs)
+        tabs:SelectTab(currentSpec)
     else
-        local group = AceGUI:Create("SimpleGroup")
+        local group=AceGUI:Create("SimpleGroup")
         group:SetLayout("Fill")
-        frame.frame:SetScript("OnShow", function(f)
-            create_spec_options(group, 0, addon.currentRotation or DEFAULT)
-            f:SetScript("OnShow", nil)
-        end)
-
         frame:AddChild(group)
+        create_spec_options(group,0,selectedRotation(0))
     end
 
     addon:configure_frame(frame)
     frame:ResumeLayout()
     frame:DoLayout()
+end
+
+function addon:BuildConfigurationPane(frame,section)
+    if section=="General" then create_primary_options(frame)
+    elseif section=="Rotations" then local _,_,class=UnitClass("player");create_class_options(frame,class)
+    elseif section=="Conditions" then self:create_condition_list(frame)
+    elseif section=="Effects" then self:create_effect_list(frame)
+    elseif section=="ItemSets" then self:create_itemset_list(frame)
+    elseif section=="Announces" then self:create_announce_list(frame)
+    elseif section=="Profiles" or section=="About" then AceConfigDialog:Open(self.name..section,frame)
+    elseif self.configModuleApps and self.configModuleApps[section:match("^module:(.*)$")] then
+        AceConfigDialog:Open(self.configModuleApps[section:match("^module:(.*)$")],frame)
+    end
 end
 
 function addon:SetupOptions()
@@ -1219,64 +1132,12 @@ function addon:SetupOptions()
     end
     self.optionsConfigured = true
 
-    self.optionsFrames = {}
-
-    self.optionsFrames.General = AceGUI:Create("BlizOptionsGroup")
-    self.optionsFrames.General:SetName(addon.pretty_name)
-    self.optionsFrames.General:SetUserData("appName", addon.name)
-    self.optionsFrames.General:SetLayout("Fill")
-    self.optionsFrames.General:SetTitle(addon.pretty_name)
-    create_primary_options(self.optionsFrames.General)
-    InterfaceOptions_AddCategory(self.optionsFrames.General.frame)
-
-    self.optionsFrames.Rotation = AceGUI:Create("BlizOptionsGroup")
-    self.optionsFrames.Rotation:SetName(L["Rotations"], self.optionsFrames.General.frame.name)
-    self.optionsFrames.Rotation:SetUserData("appName", addon.name .. "Rotations")
-    self.optionsFrames.Rotation:SetLayout("Fill")
-    local localized, _, classID = UnitClass("player")
-    self.optionsFrames.Rotation:SetTitle(addon.pretty_name .. " - " .. localized)
-    create_class_options(self.optionsFrames.Rotation, classID)
-    InterfaceOptions_AddCategory(self.optionsFrames.Rotation.frame)
-
-    self.optionsFrames.Conditions = AceGUI:Create("BlizOptionsGroup")
-    self.optionsFrames.Conditions:SetName(L["Conditions"], self.optionsFrames.General.frame.name)
-    self.optionsFrames.Conditions:SetUserData("appName", addon.name .. "Conditions")
-    self.optionsFrames.Conditions:SetLayout("Fill")
-    -- self.optionsFrames.Conditions:SetTitle(addon.pretty_name .. " - " .. L["Conditions"])
-    addon:create_condition_list(self.optionsFrames.Conditions)
-    InterfaceOptions_AddCategory(self.optionsFrames.Conditions.frame)
-
-    self.optionsFrames.Effects = AceGUI:Create("BlizOptionsGroup")
-    self.optionsFrames.Effects:SetName(L["Effects"], self.optionsFrames.General.frame.name)
-    self.optionsFrames.Effects:SetUserData("appName", addon.name .. "Effects")
-    self.optionsFrames.Effects:SetLayout("Fill")
-    self.optionsFrames.Effects:SetTitle(addon.pretty_name .. " - " .. L["Effects"])
-    addon:create_effect_list(self.optionsFrames.Effects)
-    InterfaceOptions_AddCategory(self.optionsFrames.Effects.frame)
-
-    self.optionsFrames.ItemSets = AceGUI:Create("BlizOptionsGroup")
-    self.optionsFrames.ItemSets:SetName(L["Item Sets"], self.optionsFrames.General.frame.name)
-    self.optionsFrames.ItemSets:SetUserData("appName", addon.name .. "ItemSets")
-    self.optionsFrames.ItemSets:SetLayout("Fill")
-    -- self.optionsFrames.ItemSets:SetTitle(addon.pretty_name .. " - " .. L["Item Sets"])
-    addon:create_itemset_list(self.optionsFrames.ItemSets)
-    InterfaceOptions_AddCategory(self.optionsFrames.ItemSets.frame)
-
-    self.optionsFrames.Announces = AceGUI:Create("BlizOptionsGroup")
-    self.optionsFrames.Announces:SetName(L["Announces"], self.optionsFrames.General.frame.name)
-    self.optionsFrames.Announces:SetUserData("appName", addon.name .. "Announces")
-    self.optionsFrames.Announces:SetLayout("Fill")
-    self.optionsFrames.Announces:SetTitle(addon.pretty_name .. " - " .. L["Announces"])
-    addon:create_announce_list(self.optionsFrames.Announces)
-    InterfaceOptions_AddCategory(self.optionsFrames.Announces.frame)
-
-    self.optionsFrames.module = {}
-    for _, m in addon:IterateModules() do
-        local f = m["SetupOptions"]
-        if f then
-            f(m, function(appName, name)
-                self.optionsFrames.module[name] = AceConfigDialog:AddToBlizOptions(appName, name, self.optionsFrames.General.frame.name)
-            end)
+    self.settingsLauncher=self:CreateSettingsLauncher()
+    self:RegisterOptionsCategory(self.settingsLauncher.frame)
+    self.configModuleApps = {}
+    for _,module in addon:IterateModules() do
+        if module.SetupOptions then
+            module:SetupOptions(function(appName,name) self.configModuleApps[name]=appName end)
         end
     end
 
@@ -1285,16 +1146,12 @@ function addon:SetupOptions()
     options.handler["SetProfile"] = function(obj, info, value)
         addon:DisableRotation()
         prev_setprofile(obj, info, value)
-        -- create_class_options(self.optionsFrames.Rotation, classID)
-        addon:create_itemset_list(self.optionsFrames.ItemSets)
-        addon:create_announce_list(self.optionsFrames.Announces)
+        addon:RefreshConfiguration()
         addon:EnableRotation()
     end
     AceConfig:RegisterOptionsTable(addon.name .. "Profiles", options)
-    self.optionsFrames.Profiles = AceConfigDialog:AddToBlizOptions(addon.name .. "Profiles", L["Profiles"], self.optionsFrames.General.frame.name)
 
     local about = AboutPanel:AboutOptionsTable(addon.name)
     about.order = -1
     AceConfig:RegisterOptionsTable(addon.name .. "About", about)
-    self.optionsFrames.About = AceConfigDialog:AddToBlizOptions(addon.name .. "About", L["About"], self.optionsFrames.General.frame.name)
 end

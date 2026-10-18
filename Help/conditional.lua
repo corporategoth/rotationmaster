@@ -10,35 +10,17 @@ local CreateText, CreatePictureText, Indent, Gap =
 function addon.layout_condition_and_help(frame)
     local group = frame
 
-    group:AddChild(CreateText("This condition is only evaluated successfully if ALL of the sub-conditions " ..
-       "are themselves successfully evaluated.  If this condition has no sub-conditions, it will evaluate " ..
-        "to successfully."))
-
+    group:AddChild(CreateText(L["All (AND) requires every child to match. An empty group always matches. Unavailable data remains unavailable."]))
     group:AddChild(Gap())
-    group:AddChild(CreateText("Sub-conditions will each have these to the left on their condition icons:"))
-    group:AddChild(Indent(40, CreatePictureText("Interface\\ChatFrame\\UI-ChatIcon-ScrollUp-Up", 24, 24,
-        color.BLIZ_YELLOW .. L["Move Up"] .. color.RESET .. " - " ..
-                "This will move the sub-condition up to the previous slot in the sub-condition list.")))
-    group:AddChild(Indent(40, CreatePictureText("Interface\\ChatFrame\\UI-ChatIcon-ScrollDown-Up", 24, 24,
-        color.BLIZ_YELLOW .. L["Move Down"] .. color.RESET .. " - " ..
-                "This will move the sub-condition down to the next slot in the sub-condition list.")))
+    group:AddChild(CreateText(L["Select cards with Ctrl-click or Shift-click. Group with All or Any, negate each, move or drag, and remove. Undo and Redo affect only the draft until Apply. Groups can be named and collapsed."]))
 end
 
 function addon.layout_condition_or_help(frame)
     local group = frame
 
-    group:AddChild(CreateText("This condition evaluated successfully if ANY of the sub-conditions are " ..
-            "themselves successfully evaluated.  If this condition has no sub-conditions, it will evaluate " ..
-            "to successfully."))
-
+    group:AddChild(CreateText(L["This condition matches if any sub-condition matches. With no sub-conditions, it does not match."]))
     group:AddChild(Gap())
-    group:AddChild(CreateText("Sub-conditions will each have these to the left on their condition icons:"))
-    group:AddChild(Indent(40, CreatePictureText("Interface\\ChatFrame\\UI-ChatIcon-ScrollUp-Up", 24, 24,
-        color.BLIZ_YELLOW .. L["Move Up"] .. color.RESET .. " - " ..
-                "This will move the sub-condition up to the previous slot in the sub-condition list.")))
-    group:AddChild(Indent(40, CreatePictureText("Interface\\ChatFrame\\UI-ChatIcon-ScrollDown-Up", 24, 24,
-        color.BLIZ_YELLOW .. L["Move Down"] .. color.RESET .. " - " ..
-                "This will move the sub-condition down to the next slot in the sub-condition list.")))
+    group:AddChild(CreateText(L["Select cards with Ctrl-click or Shift-click. Group with All or Any, negate each, move or drag, and remove. Undo and Redo affect only the draft until Apply. Groups can be named and collapsed."]))
 end
 
 function addon.layout_condition_not_help(frame)

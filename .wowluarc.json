@@ -1,0 +1,14 @@
+{
+  "library": [
+    "Libs/"
+  ],
+  "ignore": [
+    "tests/"
+  ],
+  "flavors": [
+    "retail",
+    "classic",
+    "classic_era",
+    "forever"
+  ]
+}

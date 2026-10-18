@@ -21,7 +21,7 @@ function addon:FindFirstItemInItems(items)
     if items == nil then
         return nil
     end
-    for _,v in pairs(items) do
+    for _,v in ipairs(items) do
         if type(v) == "number" then
             return v -- Assume it's an item ID
         else
@@ -51,13 +51,13 @@ function addon:FindItemInItems(items, item)
         return nil
     end
     if isint(item) then
-        for _,v in pairs(items) do
+        for _,v in ipairs(items) do
             if getRetryCached(addon.longtermCache, GetItemInfoInstant, v) == tonumber(item) then
                 return tonumber(item)
             end
         end
     else
-        for _,v in pairs(items) do
+        for _,v in ipairs(items) do
             local name, link = getRetryCached(addon.longtermCache, GetItemInfo, v)
             if name == item then
                 return select(1, getRetryCached(addon.longtermCache, GetItemInfoInstant, link))
@@ -83,7 +83,7 @@ function addon:FindFirstItemOfItems(_, items, equipped)
     if items == nil then
         return nil
     end
-    for _, item in pairs(items) do
+    for _, item in ipairs(items) do
         local itemid
         if isint(item) then
             itemid = tonumber(item)
@@ -330,7 +330,7 @@ local function create_item_list(frame, editbox, items, isvalid, update)
             local row = frame
 
             local icon = AceGUI:Create("ActionSlotItem")
-            local name = AceGUI:Create(editbox)
+            local name = addon:CreateItemEditBox(editbox,item)
 
             icon:SetWidth(44)
             icon:SetHeight(44)
@@ -496,7 +496,7 @@ local function create_item_list(frame, editbox, items, isvalid, update)
         end)
         row:AddChild(icon)
 
-        local name = AceGUI:Create(editbox)
+        local name = addon:CreateItemEditBox(editbox)
         name:SetFullWidth(true)
         name:SetLabel(L["Item"])
         name:SetDisabled(items == nil)
@@ -879,8 +879,10 @@ function addon:get_item_list(empty)
     local selects = {}
     local sorted = {}
     for k,v in pairs(itemsets) do
-        selects[k] = v.name
-        table.insert(sorted, k)
+        if type(v)=="table" and type(v.name)=="string" then
+            selects[k] = v.name
+            table.insert(sorted, k)
+        end
     end
     table.sort(sorted, function(lhs, rhs)
         return selects[lhs] < selects[rhs]

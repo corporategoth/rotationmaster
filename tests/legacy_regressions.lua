@@ -1,0 +1,111 @@
+local F=dofile('tests/fixtures/addon.lua')
+local test,finish=F.suite()
+local function spatial()
+    local f=F.new();local a=f.addon
+    for _,path in ipairs({'Core/conditions.lua','Conditions/common.lua','Conditions/spatial.lua','Conditions/spatial_stats.lua'}) do f.load(path) end
+    a.getCached=function(_,fn,...) if fn then return fn(...) end end
+    f.env.Enum.PowerType.Mana=0
+    f.env.UnitExists=function(unit) return unit=='player' end
+    f.env.IsInRaid=function() return false end
+    f.env.IsInGroup=function() return true end
+    f.env.UnitPlayerOrPetInParty=function() return true end
+    f.env.UnitPosition=function(unit)
+        if unit=='player' then return 0,0,0,1 end
+        if unit=='party1' then return 3,4,0,1 end
+        if unit=='party2' then return 6,8,0,1 end
+    end
+    f.env.UnitHealth=function(unit) return ({player=50,party1=20,party2=80})[unit] end
+    f.env.UnitHealthMax=function() return 100 end
+    f.env.UnitPower=function(unit) return ({player=30,party1=10,party2=60})[unit] end
+    f.env.UnitPowerMax=function() return 100 end
+    return f
+end
+test('proximity health and mana aggregates consume actual party values for min average and max',function()
+    local f=spatial()
+    for _,entry in ipairs({{'PROXIMITY_HEALTH',20,50,80},{'PROXIMITY_HEALTHPCT',.2,.5,.8},
+        {'PROXIMITY_MANA',10,100/3,60},{'PROXIMITY_MANAPCT',.1,1/3,.6}}) do
+        for i,operation in ipairs({'minimum','average','maximum'}) do
+            local v={type=entry[1],unit='player',distance=20,operation=operation,operator='GREATERTHAN',value=entry[i+1]-.001}
+            assert(f.addon:evaluateCondition(v),'aggregate failed for '..entry[1]..' '..operation)
+            v.value=entry[i+1]+.001;assert(not f.addon:evaluateCondition(v),'aggregate compared the wrong values')
+        end
+    end
+end)
+test('empty proximity aggregates remain unavailable under NOT',function()
+    local f=spatial();f.env.UnitExists=function() return false end
+    local condition={type='NOT',value={type='PROXIMITY_HEALTH',unit='player',distance=20,operation='minimum',operator='LESSTHAN',value=50}}
+    assert(f.addon:evaluateConditionResult(condition).status=='unavailable')
+end)
+test('proximity counters use the health and mana threshold rather than the requested count',function()
+    local f=spatial()
+    for _,entry in ipairs({{'PROXIMITY_HEALTHPCT_COUNT','health','healthoperator',.6},
+        {'PROXIMITY_MANAPCT_COUNT','mana','manaoperator',.5},{'PROXIMITY_HEALTH_COUNT','health','healthoperator',-60}}) do
+        local value={type=entry[1],unit='player',distance=20,operator='EQUALS',value=2}
+        value[entry[2]]=entry[4];value[entry[3]]='LESSTHAN'
+        assert(f.addon:evaluateCondition(value),'wrong threshold field in '..entry[1])
+    end
+end)
+test('every proximity statistics editor renders and updates the shared distance controls',function()
+    local f=spatial()
+    for _,tag in ipairs({'PROXIMITY_HEALTH','PROXIMITY_HEALTH_COUNT','PROXIMITY_HEALTHPCT','PROXIMITY_HEALTHPCT_COUNT',
+        'PROXIMITY_MANA','PROXIMITY_MANA_COUNT','PROXIMITY_MANAPCT','PROXIMITY_MANAPCT_COUNT'}) do
+        local value={type=tag,unit='player',distance=20,operation='minimum',operator='EQUALS',value=2,
+            health=50,healthoperator='LESSTHAN',mana=50,manaoperator='LESSTHAN'}
+        local parent,top=f.widget('Group'),f.widget('Frame')
+        parent:SetUserData('top',top);top:SetUserData('root',value);top:SetUserData('funcs',{print=function() return 'Updated condition' end})
+        f.addon.conditionDefinitions[tag].widget(parent,0,value)
+        local distance
+        for _,child in ipairs(parent.children) do if child.kind=='EditBox' and child.label=='Distance' then distance=child end end
+        assert(distance,'missing distance editor for '..tag)
+        distance.callbacks.OnEnterPressed(nil,nil,'35');assert(value.distance==35 and top.statusText=='Updated condition')
+    end
+end)
+test('swing time uses the real channel API and resets the estimate while channeling',function()
+    local f=F.new();f.load('Conditions/weapon.lua')
+    f.addon.getCached=function(_,fn,...) if fn then return fn(...) end end
+    f.env.UnitAttackSpeed=function() return 2.6,2.6 end
+    f.env.UnitCastingInfo=function() return nil end
+    f.env.UnitChannelInfo=function() return 'Channel' end
+    f.addon.lastMainSwing=99
+    local value={operator='GREATERTHAN',value=2}
+    assert(f.addon.definitions.SWING_TIME_REMAIN.evaluate(value,{},100))
+    f.env.UnitChannelInfo=function() return nil end
+    assert(not f.addon.definitions.SWING_TIME_REMAIN.evaluate(value,{},100))
+end)
+test('Lua editor default indentation uses the declared two-space setting',function()
+    local f=F.new();local constructor
+    f.libraries['AceGUI-3.0'].RegisterWidgetType=function(_,_,fn) constructor=fn end
+    f.load('LibsAugment/FAIAP.lua')
+    local library
+    for i=1,20 do local name,value=debug.getupvalue(constructor,i);if not name then break end;if name=='lib' then library=value end end
+    assert(library)
+    local text=library.indentCode('if true then\nprint(1)\nend',nil,nil)
+    assert(text:find('\n  print(1)',1,true),'default indentation looked up an accidental global')
+end)
+test('explicit legacy repair removes a malformed union field without losing valid siblings',function()
+    local f=F.new();f.load('Core/conditions.lua');f.load('Options/conditional.lua');f.load('validate.lua')
+    f.addon:RegisterCondition('UNION_FIXTURE',{description='Fixture',fields={choice={'string','number'},kept='number'}})
+    f.addon.warn=function() end
+    local body={name='Fixture',switch={type='UNION_FIXTURE',choice={invalid=true},kept=7},rotation={},cooldowns={}}
+    f.addon:validate_rotation('Fixture',f.env.DEFAULT,body,true)
+    assert(body.switch.choice==nil and body.switch.type=='UNION_FIXTURE' and body.switch.kept==7)
+end)
+test('explicit repair preserves supported Boolean labels and Stop suppression',function()
+    local f=F.new();f.load('Core/conditions.lua');f.load('Options/conditional.lua');f.load('validate.lua')
+    f.addon.warn=function() end
+    local body={name='Fixture',switch={type='AND',name='Opening checks',value={}},cooldowns={},rotation={
+        {id='00000000-0000-0000-0000-000000000001',type='none',suppress_attack=true,conditions={type='NOT',name='Combat boundary',value={}}}}}
+    f.addon:validate_rotation('Fixture',f.env.DEFAULT,body,true)
+    assert(body.switch.name=='Opening checks' and body.rotation[1].suppress_attack==true and body.rotation[1].conditions.name=='Combat boundary')
+end)
+test('legacy repair preserves nested branch data and refuses destructive repair of future branch fields',function()
+    local f=F.new();f.load('Data/plain.lua');f.load('Data/rotation_tree.lua');f.load('Data/validation.lua');f.load('Core/conditions.lua');f.load('Options/conditional.lua');f.load('validate.lua')
+    f.addon.warn=function() end
+    local body={name='Branch fixture',switch={},cooldowns={},rotation={{id='branch',type='branch',mode='true',name='Combat',conditions={},
+        onTrue={{id='yes',type='spell',action=403,conditions={}}},onFalse={{id='no',type='none',conditions={},suppress_attack=true}}}}}
+    f.addon:validate_rotation('Fixture',f.env.DEFAULT,body,true)
+    assert(body.rotation[1] and body.rotation[1].mode=='true' and body.rotation[1].onTrue[1].action==403 and body.rotation[1].onFalse[1].suppress_attack)
+    body.rotation[1].future={coefficient=42};f.addon:validate_rotation('Fixture',f.env.DEFAULT,body,true)
+    assert(body.rotation[1].future.coefficient==42,'legacy repair deleted unknown branch data')
+end)
+finish()

@@ -85,7 +85,7 @@ addon:RegisterCondition("ZONEPVP", {
         local zonepvp_local = addon.deepcopy(addon.zonepvp)
         zonepvp_local[""] = L["no PVP"]
 
-        local zone = AceGUI:Create("Dropdown")
+        local zone = addon:CreateConditionDropdown()
         zone:SetLabel(L["Mode"])
         zone:SetCallback("OnValueChanged", function(_, _, v)
             if v == "" then
@@ -137,6 +137,7 @@ addon:RegisterCondition("INSTANCE", {
     end,
     evaluate = function(value, cache)
         local inInstance, instanceType = addon.getCached(cache, IsInInstance)
+        if value.value == "none" then return not inInstance end
         return inInstance and value.value == instanceType
     end,
     print = function(_, value)
@@ -148,7 +149,7 @@ addon:RegisterCondition("INSTANCE", {
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
-        local instance = AceGUI:Create("Dropdown")
+        local instance = addon:CreateConditionDropdown()
         instance:SetLabel(L["Mode"])
         instance:SetCallback("OnValueChanged", function(_, _, v)
             if v == "" then
@@ -199,5 +200,8 @@ addon:RegisterCondition("OUTDOORS", {
     end,
     print = function()
         return L["you are in a outdoors"]
+    end,
+    help = function(frame)
+        frame:AddChild(helpers.CreateText(L["Matches when the game reports that you are outdoors. Being outdoors is different from being outside an instance."] ))
     end,
 })

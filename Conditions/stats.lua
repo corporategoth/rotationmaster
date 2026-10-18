@@ -327,7 +327,7 @@ addon:RegisterCondition("POINT", {
         if value.value ~= nil and value.value < 0 then
             return addon.compareString(value.operator, string.format(L["%s point defecit"], addon.nullable(addon.unitsPossessive[value.unit], L["<unit>"])), value.value)
         else
-            return addon.compareString(value.operator, string.format(L["%s addon.points"], addon.nullable(addon.unitsPossessive[value.unit], L["<unit>"])), addon.nullable(value.value))
+            return addon.compareString(value.operator, string.format(L["%s points"], addon.nullable(addon.unitsPossessive[value.unit], L["<unit>"])), addon.nullable(value.value))
         end
     end,
     widget = function(parent, spec, value)
@@ -347,10 +347,10 @@ addon:RegisterCondition("POINT", {
         addon.layout_condition_unitwidget_help(frame)
         frame:AddChild(helpers.Gap())
         addon.layout_condition_operatorwidget_help(frame, L["Points"], L["Points"],
-            "The number of combo addon.points " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. " currently has.  " ..
-            "Combo addon.points are a statistic that is class (and sometimes spec or form) specific (eg. Mages have " ..
+            "The number of combo points " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. " currently has.  " ..
+            "Combo points are a statistic that is class (and sometimes spec or form) specific (eg. Mages have " ..
             "Arcane Charges).  " ..
-            "If this number is negative, it means the point deficit (from max addon.points).")
+            "If this number is negative, it means the point deficit (from max points).")
     end
 })
 
@@ -384,7 +384,7 @@ if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE and LE_EXPANSION_LEVEL_CURRENT >= 2 a
             local root = top:GetUserData("root")
             local funcs = top:GetUserData("funcs")
 
-            local rune = AceGUI:Create("Dropdown")
+            local rune = addon:CreateConditionDropdown()
             rune:SetLabel(L["Rune Type"])
             rune:SetCallback("OnValueChanged", function(_, _, v)
                 value.rune = v
@@ -448,7 +448,7 @@ if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE and LE_EXPANSION_LEVEL_CURRENT >= 2 a
             local root = top:GetUserData("root")
             local funcs = top:GetUserData("funcs")
 
-            local rune = AceGUI:Create("Dropdown")
+            local rune = addon:CreateConditionDropdown()
             rune:SetLabel(L["Rune Type"])
             rune:SetCallback("OnValueChanged", function(_, _, v)
                 value.rune = v
@@ -558,7 +558,7 @@ addon:RegisterCondition("TT_HEALTH", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
 
-        local mode = AceGUI:Create("Dropdown")
+        local mode = addon:CreateConditionDropdown()
         mode:SetLabel(L["Mode"])
         mode:SetCallback("OnValueChanged", function(_, _, v)
             value.mode = (v ~= "both" and v or nil)
@@ -682,7 +682,7 @@ addon:RegisterCondition("TT_HEALTHPCT", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(operator_group)
 
-        local mode = AceGUI:Create("Dropdown")
+        local mode = addon:CreateConditionDropdown()
         mode:SetLabel(L["Mode"])
         mode:SetCallback("OnValueChanged", function(_, _, v)
             value.mode = (v ~= "both" and v or nil)

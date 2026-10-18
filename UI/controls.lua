@@ -1,0 +1,337 @@
+local addon_name,addon=...
+-- Native controls with the compact flat-button conventions used by modern
+-- addon workbenches. No dependency on another installed addon's frames.
+---@class RMWorkbenchButton: Button
+---@field art Texture
+---@field SetSelected fun(self: RMWorkbenchButton, value: boolean)
+---@return RMWorkbenchButton
+function addon:CreateWorkbenchButton(parent,label,width)
+    local button=CreateFrame("Button",nil,parent);button:SetSize(width or 28,20);button:EnableMouse(true)
+    local caption=button:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall");caption:SetPoint("CENTER")
+    button:SetFontString(caption);button:SetText(label or "")
+    local background=button:CreateTexture(nil,"BACKGROUND");background:SetAllPoints(button);button.art=background
+    local function rest()
+        if button.selected then background:SetColorTexture(.24,.24,.24,.8) else background:SetColorTexture(.16,.16,.16,.5) end
+    end
+    function button:SetSelected(value) self.selected=value==true;rest() end
+    addon:SetUIScript(button,"OnEnter",function()
+        background:SetColorTexture(.27,.27,.27,.8)
+        if button.tooltip and GameTooltip then GameTooltip:SetOwner(button,"ANCHOR_RIGHT");GameTooltip:SetText(button.tooltip,1,1,1,1,true) end
+    end)
+    addon:SetUIScript(button,"OnLeave",function() rest();if GameTooltip and GameTooltip:IsOwned(button) then GameTooltip:Hide() end end)
+    addon:SetUIScript(button,"OnEnable",function() button:SetAlpha(1) end)
+    addon:SetUIScript(button,"OnDisable",function() button:SetAlpha(.35) end)
+    rest();
+    ---@cast button RMWorkbenchButton
+    return button
+end
+function addon:ControlTexture(name)
+    return "Interface\\AddOns\\"..addon_name.."\\Assets\\Controls\\"..name..".tga"
+end
+---@class RMIconButton: RMWorkbenchButton
+---@field icon Texture
+---@return RMIconButton
+function addon:CreateWorkbenchIconButton(parent,name,tooltip)
+    local button=self:CreateWorkbenchButton(parent,"",20);button:SetSize(20,20);button.tooltip=tooltip
+    button.icon=button:CreateTexture(nil,"ARTWORK");button.icon:SetPoint("CENTER");button.icon:SetSize(16,16)
+    button.icon:SetTexture(self:ControlTexture(name));if name=='trash' then button.icon:SetVertexColor(1,.25,.25,1) end;button.art:Hide()
+    ---@cast button RMIconButton
+    return button
+end
+---@return RMIconButton
+function addon:CreateWorkbenchHelpButton(parent,tooltip)
+    local button=self:CreateWorkbenchIconButton(parent,'help',tooltip);button:SetSize(24,24);button.icon:SetSize(22,22);button.icon:SetVertexColor(1,.82,.25,1);return button
+end
+function addon:CreateWorkbenchHistoryButton(parent,direction,label)
+    local button=self:CreateWorkbenchIconButton(parent,direction,label);button:SetSize(68,20);button:SetText(label);button.art:Show()
+    button.icon:ClearAllPoints();button.icon:SetPoint('LEFT',3,0)
+    local caption=button:GetFontString();caption:ClearAllPoints();caption:SetPoint('LEFT',24,0);return button
+end
+function addon:CreateWorkbenchLabeledIconButton(parent,icon,label,width)
+    local button=self:CreateWorkbenchHistoryButton(parent,icon,label);button:SetWidth(width or 100);return button
+end
+function addon:AlignWorkbenchTextLeft(button,inset)
+    local label=button:GetFontString();label:ClearAllPoints();label:SetPoint('LEFT',inset or 4,0);label:SetJustifyH('LEFT');label:SetWidth(math.max(1,button:GetWidth()-(inset or 4)-4))
+end
+---@class RMWorkbenchPill: RMWorkbenchButton
+---@field SetAccent fun(self: RMWorkbenchPill, r: number, g: number, b: number)
+---@return RMWorkbenchPill
+function addon:CreateWorkbenchPill(parent,label,width)
+    local button=self:CreateWorkbenchButton(parent,label,width);button:SetSize(width or 56,18);button.art:Hide()
+    button.pillDecoration=self:CreateRoundedCardDecoration(button)
+    local accent={.35,.65,.4}
+    local function paint(hover)
+        local color=button.selected and accent or {.48,.48,.48}
+        button.pillDecoration:SetColors(color[1],color[2],color[3],hover and 1 or .7,button.selected and .6 or .25)
+    end
+    function button:SetSelected(value) self.selected=value==true;paint(false) end
+    function button:SetAccent(r,g,b) accent={r,g,b};paint(false) end
+    addon:SetUIScript(button,'OnEnter',function() paint(true);if button.tooltip and GameTooltip then GameTooltip:SetOwner(button,'ANCHOR_RIGHT');GameTooltip:SetText(button.tooltip,1,1,1,1,true) end end)
+    addon:SetUIScript(button,'OnLeave',function() paint(false);if GameTooltip and GameTooltip:IsOwned(button) then GameTooltip:Hide() end end)
+    paint(false);
+    ---@cast button RMWorkbenchPill
+    return button
+end
+---@class RMWorkbenchCheckBox: RMWorkbenchButton
+---@field SetChecked fun(self: RMWorkbenchCheckBox, value: boolean)
+---@field GetChecked fun(self: RMWorkbenchCheckBox): boolean
+---@return RMWorkbenchCheckBox
+function addon:CreateWorkbenchCheckBox(parent,label,width)
+    local button=self:CreateWorkbenchButton(parent,label,width);button.art:Hide()
+    local box=button:CreateTexture(nil,'BACKGROUND');box:SetPoint('LEFT',0,0);box:SetSize(16,16);box:SetColorTexture(.1,.1,.1,1)
+    local check=button:CreateTexture(nil,'ARTWORK');check:SetPoint('LEFT',0,0);check:SetSize(16,16);check:SetTexture(self:ControlTexture('check'));check:SetVertexColor(1,.82,.2,1);button.check=check
+    local text=button:GetFontString();text:ClearAllPoints();text:SetPoint('LEFT',22,0);text:SetWidth(math.max(1,(width or 150)-22));text:SetJustifyH('LEFT')
+    function button:SetChecked(value) self.checked=value==true;if self.checked then check:Show() else check:Hide() end end
+    function button:GetChecked() return self.checked end
+    button:SetChecked(false)
+    ---@cast button RMWorkbenchCheckBox
+    return button
+end
+function addon:GetConditionIcon(tag)
+    local replacement=self.conditionIcons and self.conditionIcons[tag]
+    local definition=(self.conditionDefinitions or {})[tag] or (self.conditionSpecials or {})[tag]
+    local icon=replacement or definition and definition.icon
+    return (type(icon)=="string" or type(icon)=="number") and icon or "Interface\\Icons\\INV_Misc_QuestionMark"
+end
+function addon:CreateRoundedCardDecoration(frame)
+    local decoration={fill={},border={}}
+    for _,layer in ipairs({{key="fill",texture="card-fill",draw="BACKGROUND"},{key="border",texture="card-border",draw="BORDER"}}) do
+        for row=1,3 do for column=1,3 do
+            local texture=frame:CreateTexture(nil,layer.draw);texture:SetTexture(self:ControlTexture(layer.texture))
+            local coords={0,.125,.875,1};texture:SetTexCoord(coords[column],coords[column+1],coords[row],coords[row+1])
+            local top=row==1 and "TOP" or row==3 and "BOTTOM" or ""
+            local side=column==1 and "LEFT" or column==3 and "RIGHT" or ""
+            if row==2 and column==2 then
+                texture:SetPoint("TOPLEFT",frame,"TOPLEFT",8,-8);texture:SetPoint("BOTTOMRIGHT",frame,"BOTTOMRIGHT",-8,8)
+            elseif row==2 then
+                texture:SetPoint("TOP"..side,frame,"TOP"..side,0,-8);texture:SetPoint("BOTTOM"..side,frame,"BOTTOM"..side,0,8);texture:SetWidth(8)
+            elseif column==2 then
+                texture:SetPoint(top.."LEFT",frame,top.."LEFT",8,0);texture:SetPoint(top.."RIGHT",frame,top.."RIGHT",-8,0);texture:SetHeight(8)
+            else texture:SetPoint(top..side,frame,top..side,0,0);texture:SetSize(8,8) end
+            decoration[layer.key][#decoration[layer.key]+1]=texture
+        end end
+    end
+    function decoration:SetColors(r,g,b,alpha,fillAlpha)
+        for _,part in ipairs(self.border) do part:SetVertexColor(r,g,b,alpha) end
+        for _,part in ipairs(self.fill) do part:SetVertexColor(.15,.15,.15,fillAlpha) end
+    end
+    return decoration
+end
+---@class RMConditionChevron: RMIconButton
+---@field PointDown fun(self: RMConditionChevron, down: boolean)
+---@field PointState fun(self: RMConditionChevron, state: string)
+---@return RMConditionChevron
+function addon:CreateConditionChevron(parent)
+    local button=self:CreateWorkbenchIconButton(parent,"chevron-right");button:SetSize(18,18)
+    function button:PointDown(down) self.icon:SetTexture(addon:ControlTexture(down and "chevron-down" or "chevron-right")) end
+    function button:PointState(state)
+        self.icon:SetRotation(state=='compact' and math.pi or 0)
+        self.icon:SetTexture(addon:ControlTexture(state=='compact' and 'chevron-down' or state=='expanded' and 'chevron-double-down' or 'chevron-down'))
+    end
+    button:PointDown(false)
+    ---@cast button RMConditionChevron
+    return button
+end
+
+-- Names are editable labels; spell hyperlinks belong in action summaries.
+function addon:PlainWorkbenchName(value)
+    if type(value)~='string' then return '' end
+    return (value:gsub('|H.-|h%[(.-)%]|h','%1'):gsub('|H.-|h(.-)|h','%1'):gsub('|c%x%x%x%x%x%x%x%x',''):gsub('|r',''):gsub('|T.-|t',''))
+end
+function addon:BindWorkbenchInlineName(input,finish)
+    local function down() return IsMouseButtonDown and (IsMouseButtonDown('LeftButton') or IsMouseButtonDown('RightButton')) or false end
+    input.rmNameMouseDown=down()
+    addon:SetUIScript(input,'OnEditFocusGained',function() input.rmNameMouseDown=down() end)
+    addon:SetUIScript(input,'OnEditFocusLost',finish)
+    addon:SetUIScript(input,'OnUpdate',function()
+        local pressed=down()
+        if pressed and not input.rmNameMouseDown and not addon:IsWorkbenchDropZoneUnderPointer(input,input) then input:ClearFocus();finish() end
+        input.rmNameMouseDown=pressed
+    end)
+end
+function addon:CreateWorkbenchEditBox(parent)
+    local input=CreateFrame("EditBox",nil,parent);input:SetFontObject("GameFontHighlightSmall");input:SetAutoFocus(false)
+    input:SetTextInsets(6,6,0,0);input:SetHeight(24)
+    local background=input:CreateTexture(nil,"BACKGROUND");background:SetAllPoints(input);background:SetColorTexture(.08,.09,.10,.95)
+    local line=input:CreateTexture(nil,"BORDER");line:SetPoint("BOTTOMLEFT");line:SetPoint("BOTTOMRIGHT");line:SetHeight(1);line:SetColorTexture(.38,.43,.48,.8)
+    input.art=background;return input
+end
+function addon:CreateWorkbenchSlider(parent,minimum,maximum,step,width)
+    local slider=CreateFrame("Slider",nil,parent);slider:SetOrientation("HORIZONTAL");slider:SetSize(width or 112,12)
+    slider:SetMinMaxValues(minimum,maximum);slider:SetValueStep(step)
+    local track=slider:CreateTexture(nil,"BACKGROUND");track:SetPoint("LEFT",0,0);track:SetPoint("RIGHT",0,0);track:SetHeight(3);track:SetColorTexture(.3,.32,.34,1)
+    local thumb=slider:CreateTexture(nil,"ARTWORK");thumb:SetSize(7,12);thumb:SetColorTexture(.78,.8,.82,1);slider:SetThumbTexture(thumb)
+    return slider
+end
+
+-- Flat, narrow tracks and proportional rectangular thumbs follow the modern
+-- Details/Plater convention. These frames belong to RM, without a provider.
+function addon:CreateWorkbenchScrollBar(parent,orientation)
+    local horizontal=orientation=='HORIZONTAL'
+    local bar=CreateFrame('Slider',nil,parent);bar:SetOrientation(orientation or 'VERTICAL');bar:SetSize(horizontal and 160 or 10,horizontal and 10 or 160)
+    bar:SetMinMaxValues(0,0);bar:SetValueStep(1);bar:EnableMouseWheel(true)
+    local track=bar:CreateTexture(nil,'BACKGROUND');track:SetAllPoints(bar);track:SetColorTexture(.08,.08,.08,.85)
+    local thumb=bar:CreateTexture(nil,'ARTWORK');thumb:SetSize(horizontal and 30 or 8,horizontal and 8 or 30);thumb:SetColorTexture(.48,.48,.48,.9);bar.thumbTexture=thumb
+    for _,entry in ipairs({{'back','up',-1},{'forward','down',1}}) do
+        local direction=entry[3];local control=self:CreateWorkbenchIconButton(bar,entry[2]);control:SetSize(10,10);control.icon:SetSize(9,9);bar[entry[1]]=control;if horizontal then control.icon:SetRotation(math.pi/2) end
+        control:SetPoint(horizontal and (direction<0 and 'RIGHT' or 'LEFT') or (direction<0 and 'BOTTOM' or 'TOP'),bar,
+            horizontal and (direction<0 and 'LEFT' or 'RIGHT') or (direction<0 and 'TOP' or 'BOTTOM'),0,0)
+        addon:SetUIScript(control,'OnClick',function() bar:SetValue((bar:GetValue() or 0)+direction*40) end)
+    end
+    local function placeThumb()
+        local length=horizontal and bar:GetWidth() or bar:GetHeight()
+        local travel=math.max(0,length-(bar.thumbLength or 18))
+        local fraction=(bar.scrollRange or 0)>0 and bar:GetValue()/bar.scrollRange or 0
+        thumb:ClearAllPoints();thumb:SetPoint(horizontal and 'LEFT' or 'TOP',horizontal and travel*fraction or 0,horizontal and 0 or -travel*fraction)
+    end
+    -- Keep repaint owned by this control, independently of consumer callbacks.
+    -- Reflow can clamp the native value before its value-change hook runs.
+    local nativeSetValue=bar.SetValue
+    function bar:SetValue(value)
+        nativeSetValue(self,value)
+        placeThumb()
+    end
+    local drag=CreateFrame('Button',nil,bar);bar.thumbButton=drag;drag:SetAllPoints(thumb)
+    addon:SetUIScript(drag,'OnMouseDown',function(_,button)
+        if button~='LeftButton' or not GetCursorPosition then return end
+        local x,y=GetCursorPosition();bar.dragStart={position=horizontal and x or y,value=bar:GetValue()}
+    end)
+    local function stop() bar.dragStart=nil end
+    addon:SetUIScript(drag,'OnMouseUp',stop);addon:SetUIScript(drag,'OnHide',stop)
+    addon:SetUIScript(drag,'OnUpdate',function()
+        local start=bar.dragStart;if not start then return end
+        if IsMouseButtonDown and not IsMouseButtonDown('LeftButton') then stop();return end
+        local x,y=GetCursorPosition();local delta=((horizontal and x or y)-start.position)/bar:GetEffectiveScale()
+        local length=horizontal and bar:GetWidth() or bar:GetHeight();local travel=math.max(1,length-(bar.thumbLength or 18))
+        bar:SetValue(start.value+(horizontal and delta or -delta)*(bar.scrollRange or 0)/travel)
+    end)
+    drag:EnableMouseWheel(true);addon:SetUIScript(drag,'OnMouseWheel',function(_,delta) bar:SetValue(bar:GetValue()-delta*40) end)
+    -- These regions cover only the empty track around the owned thumb.
+
+    for _,entry in ipairs({{'pageBack',-1},{'pageForward',1}}) do
+        local control=CreateFrame('Button',nil,bar);bar[entry[1]]=control
+        if horizontal then
+            control:SetPoint('TOP',bar,'TOP');control:SetPoint('BOTTOM',bar,'BOTTOM')
+            control:SetPoint('LEFT',entry[2]<0 and bar or thumb,entry[2]<0 and 'LEFT' or 'RIGHT')
+            control:SetPoint('RIGHT',entry[2]<0 and thumb or bar,entry[2]<0 and 'LEFT' or 'RIGHT')
+        else
+            control:SetPoint('LEFT',bar,'LEFT');control:SetPoint('RIGHT',bar,'RIGHT')
+            control:SetPoint('TOP',entry[2]<0 and bar or thumb,entry[2]<0 and 'TOP' or 'BOTTOM')
+            control:SetPoint('BOTTOM',entry[2]<0 and thumb or bar,entry[2]<0 and 'TOP' or 'BOTTOM')
+        end
+        local direction=entry[2]
+        addon:SetUIScript(control,'OnMouseDown',function(_,button)
+            if button=='LeftButton' then bar:SetValue((bar:GetValue() or 0)+direction*(bar.pageSize or 1)) end
+        end)
+        control:EnableMouseWheel(true);addon:SetUIScript(control,'OnMouseWheel',function(_,delta) bar:SetValue((bar:GetValue() or 0)-delta*40) end)
+    end
+    addon:SetUIScript(bar,'OnMouseWheel',function(_,delta) bar:SetValue((bar:GetValue() or 0)-delta*40) end)
+    addon:SetUIScript(bar,'OnEnter',function() thumb:SetColorTexture(.7,.7,.7,1) end)
+    addon:SetUIScript(bar,'OnLeave',function() thumb:SetColorTexture(.48,.48,.48,.9) end)
+    function bar:UpdateExtent(content,visible)
+        self.extentRevision=(self.extentRevision or 0)+1;local revision=self.extentRevision
+        self.pageSize=math.max(1,visible)
+        local range=math.max(0,content-visible);self.scrollRange=range;self:SetMinMaxValues(0,range)
+        if self.extentRevision~=revision then return end
+        self:SetValue(math.min(self:GetValue() or 0,range))
+        if self.extentRevision~=revision then return end
+        local length=horizontal and self:GetWidth() or self:GetHeight()
+        local size=math.min(length,math.max(18,length*math.min(1,visible/math.max(1,content))))
+        if size~=self.thumbLength then
+            self.thumbLength=size;if horizontal then thumb:SetWidth(size) else thumb:SetHeight(size) end
+        end
+        placeThumb();if range>0 then self:Show() else self.dragStart=nil;self:Hide() end
+    end
+    return bar
+end
+function addon:CreateWorkbenchScrollFrame(parent)
+    local scroll=CreateFrame('ScrollFrame',nil,parent)
+    local bar=self:CreateWorkbenchScrollBar(scroll,'VERTICAL');scroll.workbenchBar=bar
+    bar:SetPoint('TOPLEFT',scroll,'TOPRIGHT',4,-10);bar:SetPoint('BOTTOMLEFT',scroll,'BOTTOMRIGHT',4,10)
+    addon:SetUIScript(bar,'OnValueChanged',function(_,value) scroll:SetVerticalScroll(value) end)
+    function scroll:UpdateWorkbenchScroll()
+        local child=self:GetScrollChild();if not child then return end
+        bar:UpdateExtent(child:GetHeight(),self:GetHeight())
+    end
+    addon:SetUIScript(scroll,'OnScrollRangeChanged',function() scroll:UpdateWorkbenchScroll() end)
+    addon:SetUIScript(scroll,'OnSizeChanged',function() scroll:UpdateWorkbenchScroll() end)
+    scroll:EnableMouseWheel(true);addon:SetUIScript(scroll,'OnMouseWheel',function(_,delta) bar:SetValue((bar:GetValue() or 0)-delta*40) end)
+    return scroll
+end
+
+function addon:IsWorkbenchDropZoneUnderPointer(zone,viewport)
+    if GetCursorPosition and zone.GetLeft and zone.GetRight and zone.GetTop and zone.GetBottom then
+        local x,y=GetCursorPosition()
+        local function inside(frame)
+            local left,right,top,bottom=frame:GetLeft(),frame:GetRight(),frame:GetTop(),frame:GetBottom()
+            if not left or not right or not top or not bottom then return false end
+            local scale=frame:GetEffectiveScale();local cx,cy=x/scale,y/scale
+            return cx>=left and cx<=right and cy>=bottom and cy<=top
+        end
+        return inside(viewport) and inside(zone)
+    end
+    local over=InputUtil and InputUtil.IsMouseOver or MouseIsOver
+    return over and over(zone) and (not viewport or over(viewport)) or false
+end
+function addon:CreateWorkbenchDragCard()
+    local frame=CreateFrame('Frame',nil,UIParent);frame:SetSize(340,76);frame:SetFrameStrata('TOOLTIP');frame:EnableMouse(false)
+    local art=self:CreateRoundedCardDecoration(frame);art:SetColors(.7,.7,.7,1,.9)
+    frame.label=frame:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall');frame.label:SetPoint('TOPLEFT',10,-8);frame.label:SetWidth(320);frame.label:SetJustifyH('LEFT')
+    frame.summary=frame:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall');frame.summary:SetPoint('TOPLEFT',10,-28);frame.summary:SetWidth(320);frame.summary:SetWordWrap(true);frame.summary:SetJustifyH('LEFT');frame.summary:SetMaxLines(3)
+    function frame:FollowPointer()
+        if GetCursorPosition then local x,y=GetCursorPosition();local scale=self:GetEffectiveScale();self:ClearAllPoints();self:SetPoint('TOPLEFT',UIParent,'BOTTOMLEFT',x/scale+16,y/scale-16) end
+    end
+    function frame:Present(title,summary,source)
+        self:SetFrameStrata('TOOLTIP');self:SetFrameLevel((source and source:GetFrameLevel() or 0)+500);self:SetClampedToScreen(true);self:SetToplevel(true)
+        self.label:SetText(title);self.summary:SetText(summary)
+        if source and UIParent.GetEffectiveScale then self:SetScale(source:GetEffectiveScale()/UIParent:GetEffectiveScale()) end
+        self:SetAlpha(.9);self:FollowPointer();self:Show()
+    end
+    frame:Hide();return frame
+end
+
+-- Drag release may be followed by the source button's click callback. Keep
+-- that release from also appending a card or opening the condition picker.
+function addon:BindWorkbenchDragSource(control,start,stop)
+    control:RegisterForDrag('LeftButton')
+    local clickable=control:HasScript('OnClick')
+    local click=clickable and control:GetScript('OnClick');local current=control:GetScript('OnMouseDown')
+    if current~=control.rmDragDownWrapper then control.rmDragOriginalDown=current end
+    local down=control.rmDragOriginalDown
+    local wrapper=function(frame,button,...) frame.rmDragged=false;if down then down(frame,button,...) end end
+    addon:SetUIScript(control,'OnMouseDown',wrapper);control.rmDragDownWrapper=control:GetScript('OnMouseDown')
+    addon:SetUIScript(control,'OnDragStart',function(...) control.rmDragged=true;start(...) end)
+    addon:SetUIScript(control,'OnDragStop',stop)
+    if clickable then addon:SetUIScript(control,'OnClick',function(...)
+        if control.rmDragged then control.rmDragged=false;return end
+        if click then return click(...) end
+    end) end
+end
+
+-- Explicit boundary for native RM scripts; no global handler or frame API is
+-- replaced. Clear callbacks using the native API as usual.
+function addon:SetUIScript(frame,event,callback)
+    local handler=callback
+    if handler and self.Diagnostics then handler=self.Diagnostics:Wrap({module='ui',operation=event},handler) end
+    frame:SetScript(event,handler)
+    return handler
+end
+
+-- One tightly packed position pad for profile and per-card highlight settings.
+function addon:CreateWorkbenchPositionPad(parent)
+    local pad=CreateFrame('Frame',nil,parent);pad:SetSize(48,48);pad.buttons={}
+    for _,entry in ipairs({{'Up','up',1,0,0,1},{'Down','down',1,2,0,-1},{'Left','up',0,1,-1,0},{'Right','down',2,1,1,0},{'Center','center',1,1,0,0}}) do
+        local button=self:CreateWorkbenchIconButton(pad,entry[2]);button:SetPoint('TOPLEFT',entry[3]*16,-entry[4]*16);button:SetSize(16,16);button.icon:SetSize(18,18);button.icon:SetTexCoord(.125,.875,.125,.875)
+        button.icon:SetRotation((entry[1]=='Left' or entry[1]=='Right') and math.pi/2 or 0);pad.buttons[entry[1]]=button
+        self:SetUIScript(button,'OnClick',function() if pad.valid and pad.valid() then pad.change(entry[5],entry[6],entry[1]=='Center',IsShiftKeyDown and IsShiftKeyDown() and 10 or 1) end end)
+    end
+    function pad:Bind(change,valid,readOnly)
+        self.change=change;self.valid=valid
+        for _,button in pairs(self.buttons) do if readOnly then button:Disable() else button:Enable() end end
+    end
+    return pad
+end
+
+function addon:GetWorkbenchSidebarWidth(width)
+    return math.max(210,math.min(270,width*.26))
+end

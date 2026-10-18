@@ -1,0 +1,577 @@
+local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite()
+local function fixture()
+    local f=F.new();local a=f.addon;local _,create=dofile('tests/fixtures/native_ui.lua')(f.env)
+    local codecData,codecDeps=dofile('tests/fixtures/codec.lua')();a.RotationData=codecData;a.NewRotationCodec=function() return codecData.NewCodec(codecDeps) end
+    a.pretty_name='Rotation Master';a.name='rotationmaster';a.configPaneGeneration=1
+    for _,path in ipairs({'Platform/spells.lua','Help/general.lua','Help/conditions.lua','Help/effects.lua','Help/itemsets.lua','Help/announce.lua','UI/window.lua','UI/help.lua','UI/icon_picker.lua','UI/color_picker.lua','UI/settings_roster_order.lua','UI/settings_layout.lua','UI/settings_ordered.lua','UI/settings_draft.lua','UI/settings_history.lua','UI/settings_form.lua','UI/settings_transfer.lua','UI/settings_general.lua','UI/settings_profiles.lua','UI/collection_compare.lua','UI/settings_collections.lua','UI/settings_announces.lua','UI/settings_effects.lua','UI/settings_items.lua','UI/settings_conditions.lua'}) do local h=io.open(path);if h then h:close();f.load(path) end end
+    local parent=create('Frame');parent:SetSize(1000,600)
+    return f,parent
+end
+test('native settings reject invalid text and block navigation without losing the field',function()
+    local f,parent=fixture();local a=f.addon;assert(a.CreateSettingsForm,'native form missing')
+    local form=a:CreateSettingsForm(parent);local saved=2
+    form:Open(function(p) p:Edit('number','Amount',saved,function(text) local n=tonumber(text);if not n then return nil end;return n end,function(v) saved=v end) end)
+    local field=form.fields.number;field:SetText('bad');field.scripts.OnTextChanged(field,true)
+    local left=false;assert(not form:RequestLeave(function() left=true end));assert(not left and saved==2 and field:GetText()=='bad')
+    field:SetText('3');field.scripts.OnTextChanged(field,true);assert(form:RequestLeave(function() left=true end));assert(left and saved==3)
+end)
+test('pooled native callbacks cannot mutate a new page or replaced profile',function()
+    local f,parent=fixture();local a=f.addon;assert(a.CreateSettingsForm,'native form missing')
+    local form=a:CreateSettingsForm(parent);local n=0
+    form:Open(function(p) p:Check('flag','Flag',false,function() n=n+1 end) end)
+    local stale=form.fields.flag.scripts.OnClick;form:Open(function(p) p:Check('other','Other',false,function() n=n+10 end) end)
+    stale();assert(n==0);form.fields.other:Click();assert(n==10)
+    a.db.profile={};form.fields.other:Click();assert(n==10);form:Release();stale();assert(n==10)
+end)
+test('General controls preserve live callbacks and close their effect preview',function()
+    local f,parent=fixture();local a=f.addon;assert(a.BuildGeneralSettings,'native General missing')
+    a.db.profile={enable=true,poll=.1,minimap={hide=false},live_config_update=1,color={r=1,g=1,b=1,a=1},effect='e'};a.db.global.effects={e={name='Pixel',type='pixel'}}
+    local enabled,cleared,scheduled=0,0,0;a.enable=function() enabled=enabled+1 end;a.disable=function() enabled=enabled-1 end
+    a.Glow=function() end;a.HideGlow=function() cleared=cleared+1 end;a.RemoveAllCurrentGlows=function() end
+    a.ScheduleRepeatingTimer=function() scheduled=scheduled+1;return 9 end;a.CancelTimer=function() end
+    local p=a:CreateSettingsForm(parent);p:Open(function(form) a:BuildGeneralSettings(form) end)
+    p.fields.enable:Click();assert(not a.db.profile.enable and enabled==-1)
+    p.fields.live_config_update:SetValue(3);assert(a.db.profile.live_config_update==3 and scheduled==1)
+    local stale=p.fields.enable.scripts.OnClick;p:Release();assert(cleared>0);stale();assert(enabled==-1)
+end)
+test('profile replacement brackets runtime lifecycle and stale confirmations do not execute',function()
+    local f,parent=fixture();local a=f.addon;assert(a.BuildProfileSettings,'native Profiles missing')
+    local current='One';local calls={};a.db.GetCurrentProfile=function() return current end;a.db.GetProfiles=function() return {'One','Two'} end
+    a.db.SetProfile=function(_,name) calls[#calls+1]='set:'..name;current=name;a.db.profile={} end
+    a.DisableRotation=function() calls[#calls+1]='disable' end;a.EnableRotation=function() calls[#calls+1]='enable' end;a.RefreshConfiguration=function() calls[#calls+1]='refresh' end
+    a.db.ResetProfile=function() calls[#calls+1]='reset' end
+    local p=a:CreateSettingsForm(parent);p:Open(function(form) a:BuildProfileSettings(form) end)
+    p.fields.reset:Click();local stale=p.prompt.accept.scripts.OnClick;p:Release();stale();assert(#calls==0)
+    p:Open(function(form) a:BuildProfileSettings(form) end);p.roster.rows[2]:Click();p.fields.activate:Click()
+    assert(table.concat(calls,',')=='disable,set:Two,enable,refresh')
+end)
+test('Announces opens without writes and validates a new action before adding it',function()
+    local f,parent=fixture();local a=f.addon;assert(a.BuildAnnounceSettings,'native Announces missing')
+    a.db.profile.announces={};local p=a:CreateSettingsForm(parent);p:Open(function(form) a:BuildAnnounceSettings(form) end)
+    assert(#a.db.profile.announces==0);p.fields.add:Click();assert(#a.db.profile.announces==0)
+    a.Platform.GetSpellInfo=function(_,id) return tonumber(id)==403 and {name='Lightning Bolt',spellID=403,iconID=10} end;a.SpellCatalog:UpdateSpell(403);a.specSpells={[0]={[403]=true}};a.spellBookStatus={player={complete=true}}
+    local input=p.fields.new_action;input:SetText('403');input.scripts.OnTextChanged(input,true);p.fields.add:Click()
+    assert(#a.db.profile.announces==1 and a.db.profile.announces[1].spell==403)
+    local toggle=p.fields.enabled1;toggle:Click();assert(a.db.profile.announces[1].disabled)
+    local stale=p.fields.delete1.scripts.OnClick;p:Release();stale();assert(#a.db.profile.announces==1)
+end)
+test('Effects opens without filling defaults and supports native edit and sequence actions',function()
+    local f,parent=fixture();local a=f.addon;assert(a.BuildEffectSettings,'native Effects missing')
+    a.db.global.effects={pixel={name='Outline',type='pixel'},pulse={name='Pulse',type='pulse',sequence={1,.5}}};a.RemoveAllCurrentGlows=function() end;a.HideGlow=function() end;a.Glow=function() end
+    local p=a:CreateSettingsForm(parent);p:Open(function(form) a:BuildEffectSettings(form) end)
+    assert(a.db.global.effects.pixel.lines==nil,'opening Effects wrote defaults')
+    p.fields.lines:SetValue(10);assert(a.db.global.effects.pixel.lines==10)
+    p.roster.rows[2]:Click();assert(p.selection=='pulse')
+    p.fields.seq1up:Click();assert(a.db.global.effects.pulse.sequence[1]==1)
+    p.fields.seq2up:Click();assert(a.db.global.effects.pulse.sequence[1]==.5)
+end)
+test('Item Sets preserves global moves ordering and clears binding only after confirmation',function()
+    local f,parent=fixture();local a=f.addon;assert(a.BuildItemSettings,'native Item Sets missing')
+    a.db.char={bindings={set={1}}};a.db.profile.itemsets={set={name='Consumables',items={1,2}}};a.db.global.itemsets={};a.UpdateItemSetButtons=function() end;a.UpdateBoundButton=function() end;a.EndHighlightSlot=function() end
+    local p=a:CreateSettingsForm(parent);p:Open(function(form) a:BuildItemSettings(form) end)
+    p.fields.global:Click();assert(a.db.global.itemsets.set and not a.db.profile.itemsets.set)
+    p.fields.item2up:Click();assert(a.db.global.itemsets.set.items[1]==2)
+    p.fields.delete:Click();assert(a.db.global.itemsets.set);p.prompt.accept:Click();assert(not a.db.global.itemsets.set and not a.db.char.bindings.set)
+end)
+test('Conditions manages membership hidden flags and category order without writing on open',function()
+    local f,parent=fixture();local a=f.addon;assert(a.BuildConditionSettings,'native Conditions missing')
+    a.conditionDefinitions={A={description='Alpha'},B={description='Beta'}};a.conditionSpecials={}
+    a.db.global.custom_conditions={};a.db.profile.condition_groups={{id='g',name='Group',conditions={'A'}}};a.db.profile.switch_conditions={'A'};a.db.profile.disabled_conditions={}
+    a.listConditions=function(_,group) if group=='g' then return {'A'} elseif group=='SWITCH' then return {'A'} else return {'A','B'} end end
+    local p=a:CreateSettingsForm(parent);p:Open(function(form) a:BuildConditionSettings(form) end)
+    assert(#a.db.profile.disabled_conditions==0);p.fields.hidden:Click();assert(a.db.profile.disabled_conditions[1]=='A')
+    p.fields.switch:Click();assert(#a.db.profile.switch_conditions==0)
+    p.fields.move_to:Click();p.menu.rows[2]:Click();assert(#a.db.profile.condition_groups[1].conditions==1);p.fields.apply_move:Click();assert(#a.db.profile.condition_groups[1].conditions==0)
+end)
+test('the shell routes every built-in settings tab to reusable native forms',function()
+    local f,parent=fixture();local a=f.addon;a.SetupOptions=function() end
+    a.db.profile={rotations={},announces={},itemsets={},condition_groups={},switch_conditions={},disabled_conditions={},other_conditions_order={}};a.db.global={effects={},itemsets={},custom_conditions={}};a.db.char={bindings={}}
+    a.conditionDefinitions={};a.conditionSpecials={};a.listConditions=function() return {} end
+    a.db.GetCurrentProfile=function() return 'One' end;a.db.GetProfiles=function() return {'One'} end
+    a.CreateRotationBrowser=nil;a.BuildConfigurationPane=function() error('legacy built-in page opened') end
+    f.load('UI/config.lua')
+    local shell=a:ShowConfig('General');assert(shell.nativePane and shell.pane.fields.poll)
+    local initial=shell.pane;local stale=initial.fields.enable.scripts.OnClick
+    for _,key in ipairs({'Conditions','Effects','ItemSets','Announces','Profiles','General'}) do shell:SelectSection(key);assert(shell.nativePane and shell.pane.active and shell.settingsPanes[key]==shell.pane) end
+    assert(shell.pane==initial);stale();assert(a.db.profile.enable==nil)
+    shell:Hide();assert(not initial.active and not initial.frame:IsShown())
+end)
+test('reopening a different selector invalidates prior menu rows',function()
+    local f,parent=fixture();local a=f.addon;local p=a:CreateSettingsForm(parent);local calls=0
+    p:Open(function(form) form:Choice('first','First',nil,{{value=1,text='One'}},function() calls=calls+1 end);form:Choice('second','Second',nil,{{value=2,text='Two'}},function() calls=calls+10 end) end)
+    p.fields.first:Click();local stale=p.menu.rows[1].scripts.OnClick;p.fields.second:Click();stale();assert(calls==0)
+    p.menu.rows[1]:Click();assert(calls==10 and p.fields.second:GetText()=='Two')
+end)
+test('invalid settings text can be cancelled without changing saved values',function()
+    local f,parent=fixture();local p=f.addon:CreateSettingsForm(parent);local value=1
+    p:Open(function(form) form:Edit('n','Number',value,tonumber,function(v) value=v end) end)
+    local c=p.fields.n;c:SetText('bad');c.scripts.OnTextChanged(c,true);c.scripts.OnEscapePressed(c)
+    assert(c:GetText()=='1' and value==1 and p:FlushEdits())
+end)
+test('native transfer validates without writes and its released import callback is inert',function()
+    local f,parent=fixture();local a=f.addon;local p=a:CreateSettingsForm(parent);p:Open(function() end);local saved='old'
+    a:ShowSettingsTextTransfer(p,'Items','old',function(text) if text=='bad' then return false,'Invalid' end;saved=text;return true end)
+    local d=p.textDialog;d.input:SetText('bad');d.apply:Click();assert(saved=='old' and d.status:GetText()=='Invalid' and d.frame:IsShown())
+    local stale=d.apply.scripts.OnClick;p:Release();d.input:SetText('new');stale();assert(saved=='old' and not d.frame:IsShown())
+end)
+test('help is a formatted native article without report or duplicate close controls',function()
+    local f=fixture();local a=f.addon;local d=a:ShowWorkbenchHelp('Cooldown',a:WorkbenchInteractionHelp('cooldown'),'Mine')
+    assert(d.chrome.version:GetText()=='Help' and d.chrome.author:GetText()=='Mine' and #d.rows>=6)
+    assert(d.copy==nil and d.edit==nil and d.closeButton==nil and d.close)
+    d.close:Click();assert(not d.frame:IsShown())
+end)
+test('closing native settings commits valid text and keeps invalid edits visible',function()
+    local f,parent=fixture();local a=f.addon;a.SetupOptions=function() end
+    a.db.profile={announces={},itemsets={},rotations={},condition_groups={}};a.db.global={effects={},itemsets={},custom_conditions={}};a.db.char={};a.listConditions=function() return {} end
+    f.load('UI/config.lua');local shell=a:ShowConfig('General');local p=shell.pane
+    local c=p.fields.xoffs;c:SetText('bad');c.scripts.OnTextChanged(c,true);shell:Hide();assert(shell.frame:IsShown() and p.active)
+    c:SetText('12');c.scripts.OnTextChanged(c,true);shell:Hide();assert(p.prompt.frame:IsShown() and a.db.profile.xoffs==nil);p.prompt.accept:Click();assert(not shell.frame:IsShown() and a.db.profile.xoffs==12)
+end)
+test('the real special-frame Escape path obeys invalid settings validation',function()
+    local f,parent=fixture();local a=f.addon;f.env.UISpecialFrames={};a.SetupOptions=function() end
+    f.load('UI/config.lua');local shell=a:ShowConfig('General');local p=shell.pane;local c=p.fields.xoffs
+    c:SetText('bad');c.scripts.OnTextChanged(c,true)
+    local function escape() local frame=f.env[f.env.UISpecialFrames[1]];assert(frame and frame:IsShown());frame:Hide() end
+    escape();assert(shell.frame:IsShown() and p.active,'native Escape discarded invalid text')
+    p.prompt.cancel:Click();c:SetText('9');c.scripts.OnTextChanged(c,true);escape();assert(p.prompt.frame:IsShown() and a.db.profile.xoffs==nil);p.prompt.accept:Click();assert(not shell.frame:IsShown() and a.db.profile.xoffs==9)
+end)
+test('reselecting the same announcement type preserves its action and exact rank',function()
+    local f,parent=fixture();local a=f.addon;a.db.profile.announces={{type='spell',spell=403,ranked=true,event='SUCCEEDED',announce='local',value='Cast'}}
+    local p=a:CreateSettingsForm(parent);p:Open(function(form) a:BuildAnnounceSettings(form) end);p.fields.entry1type:Click();p.menu.rows[1]:Click()
+    assert(a.db.profile.announces[1].spell==403 and a.db.profile.announces[1].ranked)
+end)
+test('incompatible effect type changes prepare a valid sequence before saving or previewing',function()
+    local f,parent=fixture();local a=f.addon;local effect={name='Pulse',type='pulse',frequency=.25,sequence={1,.5}};a.db.global.effects={pulse=effect}
+    a.Glow=function(_,_,_,v) if v.type=='custom' then for _,entry in ipairs(v.sequence) do assert(type(entry)=='table') end end end;a.HideGlow=function() end;a.RemoveAllCurrentGlows=function() end
+    local p=a:CreateSettingsForm(parent);p:Open(function(form) a:BuildEffectSettings(form) end);p.fields.type:Click()
+    for _,row in ipairs(p.menu.rows) do if row:GetText()=='Custom' then row:Click();break end end
+    local saved=a.db.global.effects.pulse;assert(saved.type=='custom' and #saved.sequence==0 and p.fields.sequence_add)
+end)
+test('Other category can order implicit conditions without materializing on open',function()
+    local f,parent=fixture();local a=f.addon;a.conditionDefinitions={A={description='Alpha'},B={description='Beta'}};a.conditionSpecials={};a.db.global.custom_conditions={}
+    a.db.profile.condition_groups={};a.db.profile.other_conditions_order={};a.listConditions=function() return {'A','B'} end
+    local p=a:CreateSettingsForm(parent);p.category='DEFAULT';p:Open(function(form) p.category='DEFAULT';a:BuildConditionSettings(form) end)
+    assert(#a.db.profile.other_conditions_order==0 and p.roster.rows[1].down and p.roster.rows[1].down:IsEnabled())
+    p.roster.rows[1].down:Click();assert(a.db.profile.other_conditions_order[1]=='B' and a.db.profile.other_conditions_order[2]=='A')
+end)
+test('RGBA Escape restores committed display without rounding the saved color',function()
+    local f,parent=fixture();local a=f.addon;local saved={r=.12345678,g=.87654321,b=.25,a=1};local p=a:CreateSettingsForm(parent)
+    p:Open(function(form) form:Color('c','Color',saved,function(v) saved=v end) end)
+    local c=p.fields.c_r;c:SetText('bad');c.scripts.OnTextChanged(c,true);assert(c.scripts.OnEscapePressed,'color has no Escape cancellation');c.scripts.OnEscapePressed(c)
+    assert(c:GetText()=='0.123' and saved.r==.12345678 and p:FlushEdits())
+end)
+test('RGBA cancellation follows the last picker color rather than an obsolete baseline',function()
+    local f,parent=fixture();local a=f.addon;local saved={r=.1,g=.2,b=.3,a=1};local p=a:CreateSettingsForm(parent)
+    p:Open(function(form) form:Color('c','Color',saved,function(v) saved=v end) end)
+    p.fields.c:Click();p.fields.c.picker:Choose(0,1,.5,1);p.fields.c.picker:Close(true)
+    local c=p.fields.c_r;c:SetText('bad');c.scripts.OnTextChanged(c,true);c.scripts.OnEscapePressed(c)
+    assert(c:GetText()=='0.500' and saved.r==.5)
+end)
+test('native selectors are owned above the form outside its scrolling content',function()
+    local f,parent=fixture();local p=f.addon:CreateSettingsForm(parent)
+    p:Open(function(form) form:Choice('pick','Pick',nil,{{value='A',text='Alpha'}},function() end) end)
+    p.fields.pick:Click();assert(p.menu.frame:GetParent()==f.env.UIParent and p.menu.frame:IsShown(),'selector must be outside scroll clipping')
+    p.menu.rows[1]:Click();assert(not p.menu.frame:IsShown())
+end)
+test('collection rosters search select and refuse navigation with invalid pending edits',function()
+    local f,parent=fixture();local a=f.addon;local p=a:CreateSettingsForm(parent);assert(p.UseRoster,'missing collection roster');local selected='A'
+    p:Open(function(form)
+        form:UseRoster({{value='A',text='Alpha'},{value='B',text='Beta'}},selected,function(id) selected=id;form:Draw() end)
+        form:Edit('n','Number',1,tonumber,function() end)
+    end)
+    assert(#p.roster.matches==2);local n=p.fields.n;n:SetText('bad');n.scripts.OnTextChanged(n,true);p.roster.rows[2]:Click();assert(selected=='A')
+    n.scripts.OnEscapePressed(n);p.roster.search:SetText('Beta');p.roster.search.scripts.OnTextChanged(p.roster.search,true);assert(#p.roster.matches==1)
+    p.roster.rows[1]:Click();assert(selected=='B')
+end)
+test('General keeps whole categories in responsive columns and sliders accept numeric values',function()
+    local f,parent=fixture();local a=f.addon;local p=a:CreateSettingsForm(parent);p:Open(function(form) a:BuildGeneralSettings(form) end)
+    assert(p.columns and p.fields.enable:GetParent()==p.columns[1] and p.fields.effect:GetParent()==p.columns[2])
+    local raw=assert(p.fields.poll_value,'slider has no numeric field');raw:SetText('0.25');raw.scripts.OnTextChanged(raw,true);raw.scripts.OnEnterPressed(raw);assert(a.db.profile.poll==.25)
+    p:SetWidth(700);assert(p.fields.enable:GetParent()==p.child and p.fields.effect:GetParent()==p.child)
+end)
+test('native spell and item references display names icons and commit exact IDs',function()
+    local f,parent=fixture();local a=f.addon
+    a.Platform.GetSpellInfo=function(_,id) return tonumber(id)==403 and {name='Lightning Bolt',spellID=403,iconID=10} end;a.SpellCatalog:UpdateSpell(403)
+    f.env.GetItemInfo=function(id) local name=tonumber(id)==1 and 'Water';return name,nil,nil,nil,nil,nil,nil,nil,nil,11 end
+    local p=a:CreateSettingsForm(parent);local chosen
+    p:Open(function(form) form:Spell('s','Spell',403,nil,function() end);form:Item('i','Item',1,function(v) chosen=v end) end)
+    assert(p.fields.s:GetText()=='Lightning Bolt' and p.fields.s.referenceIcon.texture==10)
+    local c=p.fields.i;assert(c:GetText()=='Water' and c.referenceIcon.texture==11)
+    c:SetText('1');c.scripts.OnTextChanged(c,true);c.scripts.OnEnterPressed(c);assert(chosen==1)
+end)
+test('selectors dismiss on outside click without changing the selected value',function()
+    local f,parent=fixture();local a=f.addon;local p=a:CreateSettingsForm(parent);local selected='A';local down=false
+    f.env.IsMouseButtonDown=function() return down end;f.env.MouseIsOver=function() return false end
+    p:Open(function(form) form:Choice('e','Effect',selected,{{value='A',text='A'},{value='B',text='B'}},function(v) selected=v end) end)
+    p.fields.e:Click();local menu=p.menu;assert(menu.frame:IsShown());assert(menu.frame.scripts.OnUpdate,'no outside-click observer')
+    down=true;menu.frame.scripts.OnUpdate();assert(not menu.frame:IsShown() and selected=='A')
+end)
+test('General page help retains authored explanations without scattering question marks',function()
+    local f,parent=fixture();local a=f.addon;local p=a:CreateSettingsForm(parent);p:Open(function(form) a:BuildGeneralSettings(form) end)
+    assert(not p.fields.poll_help)
+    local all=a:WorkbenchPageHelp('General');local fields={};for _,entry in ipairs(all) do fields[entry.title]=entry.text end
+    for _,caption in ipairs({'Enable','Polling Interval (seconds)','Disable Auto-Switching','Live Status Update Frequency (seconds)','Minimap Icon','Disable Bar Highlighting','Spell History Memory (seconds)','Combat History Memory (seconds)','Damage History Memory (seconds)','Preview Spells','Effect','Magnification','Highlight Color','Anchor','V','H','Log Level','Detailed Profiling'}) do assert(fields[caption],caption..' missing help') end
+    assert(fields['Polling Interval (seconds)']:find('response time',1,true))
+    local order={};for i,entry in ipairs(all) do order[entry.title]=i end;assert(order['Disable Bar Highlighting']==order['Disable Auto-Switching']+1 and order['Magnification']==order['Effect']+1)
+end)
+
+test('item announcements preserve item-set and custom-list storage and new announcements get an identity',function()
+    local f,parent=fixture();local a=f.addon;a.db.profile.itemsets={potions={name='Potions',items={1}}};a.db.global.itemsets={}
+    a.db.profile.announces={{id='old',type='item',item='potions',event='SUCCEEDED',announce='local',value='Used'}}
+    local p=a:CreateSettingsForm(parent);p:Open(function(form) a:BuildAnnounceSettings(form) end)
+    assert(p.fields.entry1action_set and p.fields.entry1action_set:GetText()=='Potions' and a.db.profile.announces[1].item=='potions')
+    p.fields.entry1action_set:Click();p.menu.rows[1]:Click();local c=p.fields.entry1action_new
+    c:SetText('1');c.scripts.OnTextChanged(c,true);c.scripts.OnEnterPressed(c)
+    assert(type(a.db.profile.announces[1].item)=='table' and a.db.profile.announces[1].item[1]==1)
+    p.roster.new:Click();p.fields.new_type:Click();p.menu.rows[3]:Click();p.fields.new_action_new:SetText('1');p.fields.new_action_new.scripts.OnTextChanged(p.fields.new_action_new,true);p.fields.add:Click()
+    assert(type(a.db.profile.announces[2].id)=='string' and type(a.db.profile.announces[2].item)=='table')
+end)
+test('other settings Help pages retain their authored field descriptions',function()
+    local f=fixture();local a=f.addon
+    for topic,title in pairs({Conditions='Hidden',Effects='Thickness',ItemSets='Global',Announces='Event'}) do
+        local found=false;for _,entry in ipairs(a:WorkbenchPageHelp(topic)) do if entry.title==title and #entry.text>15 then found=true end end;assert(found,topic..' lost '..title..' help')
+    end
+end)
+test('category maintenance is separate from condition details and deletion keeps definitions',function()
+    local f,parent=fixture();local a=f.addon;a.conditionDefinitions={A={description='Alpha'}};a.conditionSpecials={};a.db.global.custom_conditions={};a.db.profile.condition_groups={{id='g',name='Group',conditions={'A'}}};a.listConditions=function() return {'A'} end
+    local p=a:CreateSettingsForm(parent);p:Open(function(form) a:BuildConditionSettings(form) end)
+    assert(not p.fields.new_group_name and not p.fields.group_name and p.roster.manage,'category maintenance is mixed into condition details')
+    p.roster.manage:Click();assert(p.fields.group_name and not p.fields.hidden)
+    local c=p.fields.group_name;c:SetText('Renamed');c.scripts.OnTextChanged(c,true);c.scripts.OnEnterPressed(c);assert(a.db.profile.condition_groups[1].name=='Renamed')
+    p.fields.delete_category:Click();assert(#a.db.profile.condition_groups==1);p.prompt.accept:Click();assert(#a.db.profile.condition_groups==0 and a.conditionDefinitions.A)
+    p.roster.manage:Click();assert(p.fields.hidden and not p.fields.new_group_name)
+end)
+test('successive announcement item edits and add/delete keep the current sequence',function()
+    local f,parent=fixture();local a=f.addon;a.db.profile.announces={{id='old',type='item',item={1,2},event='SUCCEEDED',announce='local',value='Used'}}
+    local p=a:CreateSettingsForm(parent);p:Open(function(form) a:BuildAnnounceSettings(form) end)
+    local function edit(key,value) local c=p.fields[key];c:SetText(value);c.scripts.OnTextChanged(c,true);c.scripts.OnEnterPressed(c) end
+    edit('entry1action1','3');edit('entry1action2','4');assert(table.concat(a.db.profile.announces[1].item,',')=='3,4')
+    edit('entry1action_new','5');assert(table.concat(a.db.profile.announces[1].item,',')=='3,4,5')
+    edit('entry1action1','6');p.fields.entry1action_delete2:Click();assert(table.concat(a.db.profile.announces[1].item,',')=='6,5')
+end)
+test('category imports move membership between named groups and Other using the real list implementation',function()
+    local f,parent=fixture();local a=f.addon;f.load('Core/conditions.lua');f.load('Options/conditional.lua');a:RegisterCondition('A',{description='Alpha'});a.conditionSpecials={}
+    a.db.profile.condition_groups={{id='g',name='Group',conditions={}}};a.db.profile.other_conditions_order={'A'};a.db.profile.switch_conditions={};a.db.profile.disabled_conditions={};a.db.global.custom_conditions={}
+    local p=a:CreateSettingsForm(parent);p.mode='categories';p:Open(function(form) a:BuildConditionSettings(form) end)
+    p.fields.transfer:Click();p.textDialog.input:SetText('A');p.textDialog.apply:Click();assert(a:listConditions('g',true)[1]=='A' and not a:SettingsContains(a:listConditions('DEFAULT',true),'A'))
+    p.categorySelection='DEFAULT';p:Draw();p.fields.transfer:Click();p.textDialog.input:SetText('A');p.textDialog.apply:Click();assert(#a:listConditions('g',true)==0 and a:listConditions('DEFAULT',true)[1]=='A')
+end)
+test('collection rename refreshes searchable rows without rebuilding pending details',function()
+    local f,parent=fixture();local a=f.addon;a.db.global.effects={e={name='Before',type='pixel'}};local p=a:CreateSettingsForm(parent);p:Open(function(form) a:BuildEffectSettings(form) end)
+    local c=p.fields.name;c:SetText('After');c.scripts.OnTextChanged(c,true);c.scripts.OnEnterPressed(c)
+    local lines=p.fields.lines_value;lines:SetText('bad');lines.scripts.OnTextChanged(lines,true)
+    p.roster.search:SetText('After');p.roster.search.scripts.OnTextChanged(p.roster.search,true);assert(#p.roster.matches==1 and p.roster.matches[1].text=='After');assert(p.fields.lines_value==lines and lines:GetText()=='bad')
+    p:Release();a.db.profile.itemsets={s={name='Set before',items={1}}};p:Open(function(form) a:BuildItemSettings(form) end);c=p.fields.name;c:SetText('Set after');c.scripts.OnTextChanged(c,true);c.scripts.OnEnterPressed(c)
+    p.roster.search:SetText('Set after');p.roster.search.scripts.OnTextChanged(p.roster.search,true);assert(#p.roster.matches==1)
+end)
+test('typed reference commit refreshes the displayed icon',function()
+    local f,parent=fixture();local a=f.addon;f.env.GetItemInfo=function(id) id=tonumber(id);return 'Item '..id,nil,nil,nil,nil,nil,nil,nil,nil,id*10 end
+    local p=a:CreateSettingsForm(parent);p:Open(function(form) form:Item('i','Item',1,function() end) end);local c=p.fields.i;c:SetText('2');c.scripts.OnTextChanged(c,true);c.scripts.OnEnterPressed(c)
+    assert(c:GetText()=='Item 2' and c.referenceIcon.texture==20)
+end)
+test('Conditions Help describes category management separately from condition ordering',function()
+    local f=fixture();local entries=f.addon:WorkbenchPageHelp('Conditions');local text={};for _,entry in ipairs(entries) do text[#text+1]=entry.title..' '..entry.text end;text=table.concat(text,'\n')
+    assert(text:find('Manage categories',1,true) and text:find('condition ordering',1,true) and not text:find('Select which condition group you wish to modify',1,true))
+end)
+test('ordered native rows drag through one gap and reject no-op stale or invalid moves',function()
+    local f,parent=fixture();local a=f.addon;local values={'one','two','three'};local p=a:CreateSettingsForm(parent)
+    p:Open(function(form) form:OrderedCollection('rows',values,function(i) return values[i] end,function(form,i) form:Edit('n'..i,'Value',i,tonumber,function() end) end,function() end) end)
+    local view=p.ordered.rows;assert(not view.rows[1].up:IsEnabled() and not view.rows[3].down:IsEnabled())
+    view.rows[1].header.scripts.OnDragStart();assert(view.ghost:IsShown() and view.drag==1)
+    assert(not view:CanDrop(1) and not view:CanDrop(2) and view:CanDrop(4));view:Drop(4);assert(table.concat(values,',')=='two,three,one' and not view.ghost:IsShown())
+    local stale=view;p:Draw();stale:Drop(1);assert(table.concat(values,',')=='two,three,one')
+    local c=p.fields.n1;c:SetText('bad');c.scripts.OnTextChanged(c,true);p.ordered.rows.rows[1].down:Click();assert(values[1]=='two')
+    p:Release();assert(not p.ordered.rows.ghost:IsShown())
+end)
+test('all effect sequence variants and item entries use the shared ordered controls',function()
+    local f,parent=fixture();local a=f.addon;local p=a:CreateSettingsForm(parent)
+    for kind,sequence in pairs({animate={'a','b'},pulse={1,.5},dazzle={{r=1,g=1,b=1,a=1},{r=0,g=0,b=0,a=1}},custom={{texture='a',color={r=1,g=1,b=1,a=1},magnification=1},{texture='b',color={r=0,g=0,b=0,a=1},magnification=.5}}}) do
+        a.db.global.effects={e={name='Effect',type=kind,sequence=sequence}};p:Open(function(form) a:BuildEffectSettings(form) end);assert(p.ordered['sequence_e']);local second=sequence[2];p.fields.seq2up:Click();assert(a.db.global.effects.e.sequence[1]==second)
+    end
+    p:Release();a.db.profile.itemsets={s={name='Items',items={1,2}}};p:Open(function(form) a:BuildItemSettings(form) end);assert(p.ordered.items_s.compact);p.fields.item2up:Click();assert(a.db.profile.itemsets.s.items[1]==2)
+end)
+test('effects and item sets expose one roster action grid with self-excluding comparisons',function()
+    local f,parent=fixture();local a=f.addon;a.db.global.effects={a={name='Alpha',type='pixel'},b={name='Beta',type='pixel'}};local p=a:CreateSettingsForm(parent);p:Open(function(form) a:BuildEffectSettings(form) end)
+    assert(p.roster.actionButtons and #p.roster.actionButtons==4 and p.fields.compare)
+    p.fields.compare:Click();assert(p.menu.rows[1]:GetText()=='Beta' and (not p.menu.rows[2] or not p.menu.rows[2]:IsShown()));p.menu.rows[1]:Click();assert(p.comparison and p.comparison.frame:IsShown())
+    local comparison=p.comparison;p:Release();assert(not comparison.frame:IsShown())
+    a.db.profile.itemsets={a={name='One',items={1}},b={name='Two',items={2}}};p:Open(function(form) a:BuildItemSettings(form) end);assert(p.fields.compare and p.fields.duplicate and p.fields.transfer)
+end)
+test('announcement creation has explicit Apply Cancel and no collapsible creation wrapper',function()
+    local f,parent=fixture();local a=f.addon;a.db.profile.announces={};local p=a:CreateSettingsForm(parent);p:Open(function(form) a:BuildAnnounceSettings(form) end)
+    assert(p.fields.apply and p.fields.cancel and p.fields.add==p.fields.apply and not p.fields.section_new_announce,'missing creation actions')
+end)
+test('collection comparison is readonly hides equal rows and ignores obsolete dialog callbacks',function()
+    local f,parent=fixture();local a=f.addon;local p=a:CreateSettingsForm(parent);p:Open(function() end)
+    local left={name='Same',type='pixel',lines=8};local right={name='Same',type='pixel',lines=9}
+    local d=a:ShowCollectionComparison(p,'effect',left,right);assert(#d.rows==1 and d.rows[1].label=='Lines')
+    local old=d.toggle.scripts.OnClick;a:ShowCollectionComparison(p,'effect',left,{name='Same',type='pixel',lines=8});old();assert(#d.rows==0,'obsolete comparison callback replaced the new comparison')
+    d.toggle:Click();assert(#d.rows>=3 and left.lines==8 and right.lines==9)
+end)
+test('an obsolete ordered-row release cannot hide a new pooled drag preview',function()
+    local f,parent=fixture();local p=f.addon:CreateSettingsForm(parent);local values={1,2}
+    p:Open(function(form) form:OrderedCollection('r',values,function(i) return tostring(i) end,function() end,function() end) end)
+    local old=p.ordered.r;old:BeginDrag(1);p:Draw();local current=p.ordered.r;current:BeginDrag(2);assert(current.ghost:IsShown());old:Drop(1);assert(current.ghost:IsShown() and current.drag==2,'old view cancelled the new drag')
+end)
+test('comparison retains exact same-name and loading item identities',function()
+    local f=fixture();local a=f.addon;f.env.GetItemInfo=function(id) return 'Shared name',nil,nil,nil,nil,nil,nil,nil,nil,55 end
+    local rows=a:CollectionComparisonRows('itemset',{name='Same',items={1}},{name='Same',items={2}},false)
+    assert(#rows==1 and rows[1].left~=rows[1].right and rows[1].left:find('1',1,true) and rows[1].right:find('2',1,true))
+    f.env.GetItemInfo=function() end;rows=a:CollectionComparisonRows('itemset',{name='Same',items={1001}},{name='Same',items={1002}},false)
+    assert(rows[1].left~=rows[1].right and rows[1].left:find('1001',1,true))
+end)
+test('Compare keeps its action caption and collapsed announcements retain root Delete',function()
+    local f,parent=fixture();local a=f.addon;a.db.global.effects={a={name='Alpha',type='pixel'},b={name='Beta',type='pixel'}};local p=a:CreateSettingsForm(parent);p:Open(function(form) a:BuildEffectSettings(form) end)
+    p.fields.compare:Click();p.menu.rows[1]:Click();assert(p.fields.compare:GetText()=='Compare','comparison selection renamed the action')
+    p:Release();a.db.profile.announces={{id='a',type='spell',spell=403,event='SUCCEEDED',announce='local',value='Cast'}};p:Open(function(form) a:BuildAnnounceSettings(form) end)
+    p.fields.section_announce1:Click();assert(p.fields.delete and p.fields.delete1 and p.fields.delete:IsShown(),'collapsed announcement lost Delete')
+end)
+test('category maintenance has footer actions member cells icon selection and sidebar ordering',function()
+    local f,parent=fixture();local a=f.addon;a.conditionDefinitions={A={description='Alpha',icon='a'},B={description='Beta',icon='b'}};a.conditionSpecials={};a.db.global.custom_conditions={B={}};a.db.profile.condition_groups={{id='a',name='First',conditions={'A'}},{id='b',name='Second',conditions={'B'}}};a.listConditions=function(_,id) return id=='a' and {'A'} or id=='b' and {'B'} or {'A','B'} end
+    local p=a:CreateSettingsForm(parent);p:Open(function(form) a:BuildConditionSettings(form) end)
+    assert(p.roster.entries[1].custom==false and p.roster.entries[2].custom==true)
+    p.roster.manage:Click();assert(p.roster.manage:GetText()=='Manage conditions' and p.roster.actionButtons[1]:GetText()=='Add category' and p.roster.actionButtons[2]:GetText()=='Import/Export')
+    assert(p.fields.member_A and p.fields.category_icon and p.fields.delete_category);assert(not p.roster.rows[1].up:IsEnabled());p.roster.rows[2].up:Click();assert(a.db.profile.condition_groups[1].id=='b')
+    p.categorySelection='a';p:Draw();p.fields.member_A:Click();assert(p.mode==nil and p.condition=='A' and p.fields.hidden)
+end)
+test('native categorized icon picker cancels safely and commits only for its current owner',function()
+    local f=fixture();local a=f.addon;local selected;local alive=true
+    local d=a:ShowWorkbenchIconPicker(nil,function(value) selected=value end,function() return alive end)
+    assert(d.categories and #d.categories>1 and #d.matches>0);local old=d.buttons[1].scripts.OnClick;d.close:Click();assert(not selected)
+    d=a:ShowWorkbenchIconPicker(nil,function(value) selected=value end,function() return alive end);old();assert(not selected,'previous picker callback committed into new owner');d.buttons[1]:Click();assert(selected)
+    selected=nil;d=a:ShowWorkbenchIconPicker(nil,function(value) selected=value end,function() return alive end);alive=false;d.buttons[1]:Click();assert(not selected)
+end)
+test('category icons survive actual startup repair while invalid icons are rejected',function()
+    local f=fixture();local a=f.addon;a.warn=function() end;f.load('validate.lua')
+    for _,icon in ipairs({'Interface\\Icons\\INV_Misc_Book_09',12345}) do local group={id='g',name='Group',conditions={'A'},icon=icon};a:validate_condition_group('p',1,group,true);assert(group.icon==icon) end
+    local group={id='g',name='Group',conditions={},icon={}};a:validate_condition_group('p',1,group,true);assert(group.icon==nil)
+end)
+test('category metadata transfers roundtrip with the real codec and reject malformed data',function()
+    local f,parent=fixture();local a=f.addon;a.conditionDefinitions={A={description='Alpha'}};a.conditionSpecials={};a.db.profile.condition_groups={{id='g',name='Before',conditions={'A'},icon=12}};a.listConditions=function() return {'A'} end
+    local data,deps=dofile('tests/fixtures/codec.lua')();local codec=data.NewCodec(deps);a.NewRotationCodec=function() return codec end
+    local p=a:CreateSettingsForm(parent);p.mode='categories';p:Open(function(form) a:BuildConditionSettings(form) end);p.fields.transfer:Click()
+    local decoded=codec:Decode(p.textDialog.input:GetText());assert(decoded and decoded.value.icon==12 and decoded.value.name=='Before','export lost category metadata')
+    p.textDialog.input:SetText(assert(codec:Encode({format='RM-ConditionCategory',version=1,name='After',icon='path',conditions={'A'}})));p.textDialog.apply:Click();assert(a.db.profile.condition_groups[1].name=='Before' and a.db.profile.condition_groups[1].icon=='path')
+    p.fields.transfer:Click();p.textDialog.input:SetText(assert(codec:Encode({format='RM-ConditionCategory',version=1,name='Bad',icon={},conditions={'A'}})));p.textDialog.apply:Click();assert(a.db.profile.condition_groups[1].name=='Before' and p.textDialog.frame:IsShown())
+end)
+test('category sidebar filtered drag preserves identities and rejects stale and invalid moves',function()
+    local f,parent=fixture();local a=f.addon;a.conditionDefinitions={};a.listConditions=function() return {} end;a.db.profile.condition_groups={{id='a',name='Alpha',conditions={}},{id='b',name='Beta',conditions={}},{id='c',name='Gamma',conditions={}}}
+    local p=a:CreateSettingsForm(parent);p.mode='categories';p:Open(function(form) a:BuildConditionSettings(form) end)
+    local old=p.roster.orderView;old:Begin('a','Alpha');assert(old.ghost:IsShown() and not old:CanDrop(1) and not old:CanDrop(2));old:Drop(4);assert(a.db.profile.condition_groups[3].id=='a')
+    local current=p.roster.orderView;current:Begin('b','Beta');old:Cancel();assert(current.ghost:IsShown());p.roster.search:SetText('Alpha');p.roster.search.scripts.OnTextChanged(p.roster.search,true);assert(not current.ghost:IsShown() and not current:Drop(1));assert(p.roster.orderZones[1].gap==3)
+    p.roster.orderView:Begin('a','Alpha');p.roster.orderView:Drop(1);assert(a.db.profile.condition_groups[1].id=='a');p:Release();assert(not p.roster.orderGhost:IsShown())
+end)
+test('icon search invalidates recycled callbacks and optional public icon APIs may fail',function()
+    local f=fixture();local a=f.addon;f.env.GetMacroIcons=function() error('unavailable') end;f.env.GetMacroItemIcons=function(out) out[1]='path/';out[2]=123 end
+    local selected;local d=a:ShowWorkbenchIconPicker(nil,function(value) selected=value end,function() return true end);local old=d.buttons[1].scripts.OnClick
+    d.search:SetText('not found');d.search.scripts.OnTextChanged(d.search,true);old();assert(not selected and #d.matches==0)
+    assert(d.categories[#d.categories].name=='Item icons' and #d.categories[#d.categories].icons==2)
+end)
+test('creation Cancel discards an invalid draft without writing effects or item sets',function()
+    for _,kind in ipairs({'Effects','ItemSets'}) do local f,parent=fixture();local a=f.addon;a.db.global.effects={};a.db.profile.itemsets={};local p=a:OpenNativeSettings(parent,kind)
+        assert(p.fields.apply and p.fields.cancel);local input=p.fields.new_name;input:SetText('Draft');input.scripts.OnTextChanged(input,true);p.fields.cancel:Click();assert(not next(a.db.global.effects) and not next(a.db.profile.itemsets) and not p.creating)
+        p.fields.new_collection:Click();p.fields.new_name:SetText('Saved');p.fields.new_name.scripts.OnTextChanged(p.fields.new_name,true);p.fields.apply:Click();assert(next(kind=='Effects' and a.db.global.effects or a.db.profile.itemsets))
+    end
+end)
+test('effect sequence cards preview selected textures without ordinal headers',function()
+    local f,parent=fixture();local a=f.addon;a.db.global.effects={e={name='Animate',type='animate',sequence={'a'}}};local p=a:CreateSettingsForm(parent);p:Open(function(form) a:BuildEffectSettings(form) end)
+    assert(p.ordered.sequence_e.rows[1].header:GetText()=='');assert(p.fields.seq1.texturePreview.texture=='a');local c=p.fields.seq1;c:SetText('b');c.scripts.OnTextChanged(c,true);c.scripts.OnEnterPressed(c);assert(c.texturePreview.texture=='b')
+end)
+test('announcements share collection actions and audible channel preserves text while showing sound controls',function()
+    local f,parent=fixture();local a=f.addon;a.events={SUCCEEDED='Success'};a.db.profile.announces={{id='a',type='spell',spell=403,event='SUCCEEDED',announce='local',value='Keep text'}};local p=a:CreateSettingsForm(parent);p:Open(function(form) a:BuildAnnounceSettings(form) end)
+    assert(p.fields.duplicate and p.fields.transfer and p.fields.compare and p.fields.new_collection);p.fields.duplicate:Click();assert(#a.db.profile.announces==2 and a.db.profile.announces[1].id~=a.db.profile.announces[2].id)
+    p.fields.entry2channel:Click();for _,row in ipairs(p.menu.rows) do if row:GetText()=='Audible' then row:Click();break end end
+    assert(p.fields.entry2sound and p.fields.entry2play and not p.fields.entry2text and a.db.profile.announces[2].value=='Keep text')
+    p.fields.transfer:Click();local codec=a:NewRotationCodec();local decoded=codec:Decode(p.textDialog.input:GetText());assert(decoded and decoded.value.format=='RM-Announcement')
+    local before=a.db.profile.announces[2];p.textDialog.input:SetText(assert(codec:Encode({format='RM-Announcement',version=1,announcement={type='bad'}})));p.textDialog.apply:Click();assert(a.db.profile.announces[2]==before and p.textDialog.frame:IsShown())
+end)
+test('pending category rename preserves the requested arrow move or drag',function()
+    local f,parent=fixture();local a=f.addon;a.conditionDefinitions={};a.listConditions=function() return {} end;a.db.profile.condition_groups={{id='a',name='Alpha',conditions={}},{id='b',name='Beta',conditions={}}}
+    local p=a:CreateSettingsForm(parent);p.mode='categories';p:Open(function(form) a:BuildConditionSettings(form) end)
+    local c=p.fields.group_name;c:SetText('Renamed');c.scripts.OnTextChanged(c,true);p.roster.rows[1].down:Click();assert(a.db.profile.condition_groups[2].id=='a' and a.db.profile.condition_groups[2].name=='Renamed')
+    c=p.fields.group_name;c:SetText('Again');c.scripts.OnTextChanged(c,true);p.roster.orderView:Begin('a','Again');assert(p.roster.orderView.ghost:IsShown() and p.roster.orderView.drag=='a');p.roster.orderView:Drop(1);assert(a.db.profile.condition_groups[1].id=='a')
+end)
+test('metadata category import clears absent optional icon while legacy list preserves it',function()
+    local f,parent=fixture();local a=f.addon;a.conditionDefinitions={A={description='A'}};a.listConditions=function() return {'A'} end;local g={id='g',name='Before',icon=12,conditions={'A'}};a.db.profile.condition_groups={g}
+    local p=a:CreateSettingsForm(parent);p.mode='categories';p:Open(function(form) a:BuildConditionSettings(form) end);p.fields.transfer:Click();p.textDialog.input:SetText('A');p.textDialog.apply:Click();assert(g.icon==12)
+    p.fields.transfer:Click();p.textDialog.input:SetText(assert(a:NewRotationCodec():Encode({format='RM-ConditionCategory',version=1,name='Iconless',conditions={'A'}})));p.textDialog.apply:Click();assert(g.name=='Before' and g.icon==nil)
+end)
+test('native references accept matching cursor drops without changing on mismatched cursor',function()
+    local f,parent=fixture();local a=f.addon;f.env.GetItemInfo=function(id) return 'Item '..id,nil,nil,nil,nil,nil,nil,nil,nil,10 end;local cursor='item';f.env.GetCursorInfo=function() if cursor=='item' then return 'item',42 elseif cursor=='spell' then return 'spell',1,'book',403 end end
+    local cleared=0;f.env.ClearCursor=function() cleared=cleared+1 end;local saved;local p=a:CreateSettingsForm(parent);p:Open(function(form) form:Item('i','Item',nil,function(v) saved=v end,true) end)
+    assert(p.fields.i.scripts.OnReceiveDrag);p.fields.i.scripts.OnReceiveDrag();assert(saved==42 and cleared==1 and p.fields.i:GetText()=='Item 42');cursor='spell';p.fields.i.scripts.OnReceiveDrag();assert(saved==42 and cleared==1)
+end)
+test('item bindings show top pills and refresh when runtime binding callback changes',function()
+    local f,parent=fixture();local a=f.addon;a.db.profile.itemsets={s={name='Set',items={1}}};a.db.char={bindings={s={1,2}}};a.getDefaultItemset=function() return {1} end
+    local p=a:CreateSettingsForm(parent);p:Open(function(form) a:BuildItemSettings(form) end);assert(p.fields.binding and p.fields.binding.pillDecoration and p.fields.reset.pillDecoration)
+    a.db.char.bindings.s={3};a.itemSetCallback('s');assert(p.fields.binding:GetText():find('3',1,true) and not p.fields.binding:GetText():find('2',1,true));p.fields.binding:Click();assert(a.db.char.bindings.s==nil and p.fields.binding:GetText()=='Bind')
+end)
+test('profile roster inspects without activating and provides create duplicate transfer compare',function()
+    local f,parent=fixture();local a=f.addon;local current='One';local profiles={One={enable=true,poll=.1},Two={enable=false,poll=.2}};a.db.profile=profiles.One;a.db.profiles=profiles
+    a.db.GetCurrentProfile=function() return current end;a.db.GetProfiles=function() local list={};for name in pairs(profiles) do list[#list+1]=name end;return list end;a.db.SetProfile=function(_,name) current=name;profiles[name]=profiles[name] or {};a.db.profile=profiles[name] end
+    a.db.CopyProfile=function(_,name) profiles[current]=a.deepcopy(profiles[name]);a.db.profile=profiles[current] end;a.DisableRotation=function() end;a.EnableRotation=function() end
+    local p=a:CreateSettingsForm(parent);p:Open(function(form) a:BuildProfileSettings(form) end)
+    assert(p.roster and p.fields.duplicate and p.fields.transfer and p.fields.compare);p.roster.rows[2]:Click();assert(current=='One' and p.selection=='Two');p.fields.activate:Click();assert(current=='Two')
+    p.fields.duplicate:Click();assert(p.fields.apply and p.fields.cancel);p.fields.new_name:SetText('Three');p.fields.new_name.scripts.OnTextChanged(p.fields.new_name,true);p.fields.apply:Click();assert(current=='Two' and profiles.Three.poll==.2 and p.selection=='Three')
+end)
+test('native collection pages stage edits until Apply and Cancel discards them',function()
+    local f,parent=fixture();local a=f.addon;a.db.global.effects={e={name='Original',type='pixel'}};local p=a:OpenNativeSettings(parent,'Effects')
+    assert(p.fields.apply and p.fields.cancel and not p.fields.apply:IsEnabled(),'initial apply state');local c=p.fields.name;c:SetText('Draft');c.scripts.OnTextChanged(c,true);c.scripts.OnEnterPressed(c);assert(a.db.global.effects.e.name=='Original','saved before apply: '..a.db.global.effects.e.name)
+    p.fields.cancel:Click();assert(p.fields.name:GetText()=='Original');c=p.fields.name;c:SetText('Saved');c.scripts.OnTextChanged(c,true);p.fields.apply:Click();assert(a.db.global.effects.e.name=='Saved')
+    c=p.fields.name;c:SetText('Conflict');c.scripts.OnTextChanged(c,true);a.db.global.effects.e.name='External';p.fields.apply:Click();assert(a.db.global.effects.e.name=='External' and p.message:GetText()~='')
+end)
+test('condition assignment is staged and current category opens management while ordering lives in sidebar',function()
+    local f,parent=fixture();local a=f.addon;f.load('Core/conditions.lua');f.load('Options/conditional.lua');a:RegisterCondition('A',{description='Alpha'});a:RegisterCondition('B',{description='Beta'});a.conditionSpecials={};a.db.global.custom_conditions={};a.db.profile={condition_groups={{id='g',name='Group',conditions={'A','B'}}},other_conditions_order={},switch_conditions={},disabled_conditions={}}
+    local p=a:CreateSettingsForm(parent);p:Open(function(form) a:BuildConditionSettings(form) end);p.category='g';p:Draw();assert(p.roster.rows[1].up and not p.roster.rows[1].up:IsEnabled());p.roster.rows[2].up:Click();assert(a.db.profile.condition_groups[1].conditions[1]=='B')
+    p.fields.move_to:Click();for _,row in ipairs(p.menu.rows) do if row:GetText()=='Other' then row:Click();break end end;assert(#a.db.profile.condition_groups[1].conditions==2);p.fields.apply_move:Click();assert(#a.db.profile.condition_groups[1].conditions==1)
+    p.fields.current_category:Click();assert(p.mode=='categories' and p.categorySelection=='DEFAULT')
+end)
+test('new effects expose type-specific fields before naming and sequence cards drag by their surface',function()
+    local f,parent=fixture();local a=f.addon;a.db.global.effects={};local p=a:OpenNativeSettings(parent,'Effects');assert(p.fields.type and p.fields.lines and p.fields.name:GetText()=='')
+    p.fields.type:Click();for _,row in ipairs(p.menu.rows) do if row:GetText()=='Animate' then row:Click();break end end;assert(p.fields.sequence_add and not p.fields.section_sequence_draft)
+    p.fields.sequence_add:Click();p.fields.seq1:SetText('a');p.fields.seq1.scripts.OnTextChanged(p.fields.seq1,true);p.fields.seq1.scripts.OnEnterPressed(p.fields.seq1);p.fields.sequence_add:Click();local view=p.ordered.sequence_draft;assert(view.rows[1].scripts.OnDragStart);view.rows[1].scripts.OnDragStart();assert(view.ghost:IsShown() and view.ghost.texture.texture=='a');view:Drop(3);assert(p.newEffect.sequence[2]=='a')
+    p.fields.apply:Click();assert(not next(a.db.global.effects));local name=p.fields.name;name:SetText('Saved');name.scripts.OnTextChanged(name,true);p.fields.apply:Click();assert(next(a.db.global.effects))
+end)
+test('profile comparison includes settings and nested changes and import validation rejects malformed shapes',function()
+    local f=fixture();local a=f.addon;assert(a:ValidateProfileTransfer({enable=true,poll=.15,rotations={},rotationLibrary={preferences={},origins={},comparisons={},imports={}}}))
+    for _,profile in ipairs({{poll=-1},{announces={{type='bad'}}},{condition_groups={{id='x',name='X',conditions={'A'},icon={}}}},{rotationLibrary={preferences='bad'}},{rotations={bad={}}},{unknown=true}}) do assert(not a:ValidateProfileTransfer(profile)) end
+    local rows=a:CollectionComparisonRows('profile',{name='One',profile={enable=true,poll=.1}},{name='Two',profile={enable=true,poll=.2}},false);assert(#rows>=1);local found=false;for _,row in ipairs(rows) do if row.label:find('Polling',1,true) then found=row.left~=row.right end end;assert(found)
+end)
+test('General side effects wait for Apply and nested Cancel restores the saved settings',function()
+    local f,parent=fixture();local a=f.addon;a.db.profile={enable=true,poll=.1,minimap={hide=false},color={r=1,g=1,b=1,a=1}};a.db.char={};local enabled=0;a.enable=function() enabled=enabled+1 end;a.disable=function() enabled=enabled-1 end
+    local p=a:OpenNativeSettings(parent,'General');p.fields.enable:Click();assert(enabled==0 and a.db.profile.enable);p.fields.cancel:Click();assert(p.fields.enable:GetChecked());p.fields.enable:Click();p.fields.apply:Click();assert(enabled==-1 and not a.db.profile.enable)
+end)
+test('profile transfer preserves specialization zero and duplicate creation keeps the original active',function()
+    local f,parent=fixture();local a=f.addon;local current='Default';local profiles={Default={rotations={[0]={DEFAULT={name='Default rotation',rotation={},cooldowns={},switch={}}}},rotationLibrary={preferences={},origins={[0]={}},comparisons={[0]={}},imports={[0]={}}}}};a.db.profiles=profiles;a.db.profile=profiles.Default
+    a.db.GetCurrentProfile=function() return current end;a.db.GetProfiles=function() local names={};for name in pairs(profiles) do names[#names+1]=name end;return names end
+    a.db.SetProfile=function(_,name) current=name;profiles[name]=profiles[name] or {};a.db.profile=profiles[name] end;a.db.CopyProfile=function(_,name) profiles[current]=a:CopySettingsData(profiles[name]);a.db.profile=profiles[current] end;a.db.DeleteProfile=function(_,name) assert(name~=current);profiles[name]=nil end
+    local p=a:CreateSettingsForm(parent);p:Open(function(form) a:BuildProfileSettings(form) end);p.fields.transfer:Click();assert(p.textDialog and p.textDialog.frame:IsShown());local decoded=a:NewRotationCodec():Decode(p.textDialog.input:GetText());assert(decoded and decoded.value.profile.rotations['0'])
+    p.textDialog.cancel:Click();p.fields.duplicate:Click();p.fields.apply:Click();assert(current=='Default' and profiles['Copy of Default'] and p.selection=='Copy of Default' and p.fields.delete:IsEnabled());p.fields.delete:Click();p.prompt.accept:Click();assert(not profiles['Copy of Default'] and profiles.Default)
+end)
+test('applying an item-set draft does not validate unrelated existing effects',function()
+    local f,parent=fixture();local a=f.addon;a.db.profile.itemsets={s={name='Items',items={1}}};a.db.global.effects={old={name='',type='pixel'}};local p=a:OpenNativeSettings(parent,'ItemSets');local c=p.fields.name;c:SetText('Updated');c.scripts.OnTextChanged(c,true);p.fields.apply:Click();assert(a.db.profile.itemsets.s.name=='Updated')
+end)
+test('effect card surface mouse grab starts the floating preview without waiting for native drag start',function()
+    local f,parent=fixture();local a=f.addon;a.db.global.effects={e={name='Pulse',type='pulse',texture='pulse',sequence={1,.5}}};local p=a:CreateSettingsForm(parent);p:Open(function(form) a:BuildEffectSettings(form) end)
+    local view=p.ordered.sequence_e;view.rows[1].body.scripts.OnMouseDown(view.rows[1].body,'LeftButton');assert(view.drag==1 and view.ghost:IsShown());view:Drop(3);assert(a.db.global.effects.e.sequence[2]==1 and not view.ghost:IsShown())
+end)
+test('profile duplication persists through real AceDB logout and reinitialization',function()
+    local _,_,_,_,_,env=dofile('tests/fixtures/codec.lua')();local logout
+    env.CreateFrame=function() return {RegisterEvent=function() end,SetScript=function(_,_,fn) logout=fn end} end
+    env.UnitFactionGroup=function() return 'Horde' end;env.GetLocale=function() return 'enUS' end;env.UnitClass=function() return 'Shaman','SHAMAN' end;env.UnitRace=function() return 'Orc','Orc' end;env.GetRealmName=function() return 'Realm' end;env.UnitNameUnmodified=function() return 'Player' end;env.GetCurrentRegionName=function() return 'US' end;env.GetCurrentRegion=function() return 1 end;env.strlenutf8=string.len
+    local chunk=assert(loadfile('Libs/AceDB-3.0/AceDB-3.0.lua'));setfenv(chunk,env);chunk()
+    local f,parent=fixture();local a=f.addon;local defaults={profile={enable=true,poll=.15,rotations={}},global={effects={},itemsets={}},char={bindings={}}};local db=env.LibStub('AceDB-3.0'):New('RMTestDB',defaults,true);a.db=db;db.profile.poll=.2;db.profile.rotations[0]={DEFAULT={name='Rotation',rotation={},cooldowns={}}}
+    local p=a:CreateSettingsForm(parent);p:Open(function(form) a:BuildProfileSettings(form) end);p.fields.duplicate:Click();p.fields.apply:Click();assert(db:GetCurrentProfile()=='Default' and p.selection=='Copy of Default');logout(nil,'PLAYER_LOGOUT')
+    local restarted=env.LibStub('AceDB-3.0'):New(a:CopySettingsData(env.RMTestDB),defaults,true);assert(restarted:GetCurrentProfile()=='Default' and restarted.profiles['Copy of Default'].poll==.2 and restarted.profiles['Copy of Default'].rotations[0].DEFAULT.name=='Rotation')
+end)
+test('custom condition duplicate and delete commit registry and saved definition together',function()
+    local f,parent=fixture();local a=f.addon;a.db.global.custom_conditions={C={description='Custom',icon=1,fields={}}};a.conditionDefinitions={C={description='Custom',icon=1,fields={}}};a.conditionSpecials={};a.db.profile={condition_groups={},disabled_conditions={},switch_conditions={},other_conditions_order={}};a.listConditions=function(_,_,_,store) local keys={};for key in pairs((store or a.db).global.custom_conditions) do keys[#keys+1]=key end;return keys end
+    local registered,removed=0,0;a.register_custom_condition=function(_,key,value) registered=registered+1;a.conditionDefinitions[key]=value;return true end;a.UnregisterCondition=function(_,key) removed=removed+1;a.conditionDefinitions[key]=nil end
+    local p=a:OpenNativeSettings(parent,'Conditions');p.fields.duplicate_custom:Click();assert(registered==0 and a.db.global.custom_conditions.C and p:IsSettingsDraftDirty());p.fields.apply:Click();assert(registered==1)
+    p.fields.delete_custom:Click();p.prompt.accept:Click();assert(removed==0);p.fields.cancel:Click();assert(removed==0);p.fields.delete_custom:Click();p.prompt.accept:Click();p.fields.apply:Click();assert(removed==1)
+end)
+test('item set deletion keeps bindings until Apply and uses guarded unbind at commit',function()
+    local f,parent=fixture();local a=f.addon;a.db.profile.itemsets={s={name='Set',items={1}}};a.db.char={bindings={s={1,2}}};local unbound=0;a.UnbindItemSet=function(_,id,items) assert(id=='s' and items[1]==1);unbound=unbound+1;a.db.char.bindings[id]=nil;return true end
+    local p=a:OpenNativeSettings(parent,'ItemSets');p.fields.delete:Click();p.prompt.accept:Click();assert(a.db.char.bindings.s);p.fields.cancel:Click();assert(a.db.char.bindings.s and a.db.profile.itemsets.s)
+    p.fields.delete:Click();p.prompt.accept:Click();p.fields.apply:Click();assert(unbound==1 and not a.db.char.bindings.s and not a.db.profile.itemsets.s)
+end)
+test('Bind does not touch cursor or pending binding during combat',function()
+    local f,parent=fixture();local a=f.addon;a.db.profile.itemsets={s={name='Set',items={1}}};a.db.char={bindings={}};a.FindFirstItemInItems=function() return 1 end;local picked=0;f.env.PickupItem=function() picked=picked+1 end;f.env.InCombatLockdown=function() return true end
+    local p=a:OpenNativeSettings(parent,'ItemSets');p.fields.binding:Click();assert(picked==0 and not a.bindingItemSet)
+end)
+test('profile import requires unique announcement identities and rejects malformed categories without throwing',function()
+    local f=fixture();local a=f.addon;a.events={SUCCEEDED='Success'};local ann={type='spell',spell=403,event='SUCCEEDED',announce='local',value='Cast'}
+    assert(not a:ValidateProfileTransfer({announces={ann}}));ann.id=a:uuid();assert(a:ValidateProfileTransfer({announces={ann}}));assert(not a:ValidateProfileTransfer({announces={ann,a:CopySettingsData(ann)}}));assert(not a:ValidateProfileTransfer({condition_groups={false}}))
+end)
+test('starting a fresh profile clears an abandoned import source',function()
+    local f,parent=fixture();local a=f.addon;local profiles={Default={poll=.15}};local current='Default';a.db.profiles=profiles;a.db.profile=profiles.Default;a.db.GetCurrentProfile=function() return current end;a.db.GetProfiles=function() local names={};for name in pairs(profiles) do names[#names+1]=name end;return names end;a.db.SetProfile=function(_,name) profiles[name]=profiles[name] or {poll=.15};current=name;a.db.profile=profiles[name] end
+    local p=a:OpenNativeSettings(parent,'Profiles');p.importProfile={poll=.5};p.creating=true;p:Draw();p.fields.new_collection:Click();p.fields.new_name:SetText('Fresh');p.fields.new_name.scripts.OnTextChanged(p.fields.new_name,true);p.fields.apply:Click();assert(profiles.Fresh.poll==.15)
+end)
+test('creation leave offers Apply Discard Cancel and honors invalid Apply without leaving',function()
+    local f,parent=fixture();local a=f.addon;a.db.global.effects={};local p=a:OpenNativeSettings(parent,'Effects');local c=p.fields.name;c:SetText('Draft');c.scripts.OnTextChanged(c,true);local left=0;p:RequestLeave(function() left=left+1 end);assert(left==0 and p.prompt and p.prompt.discard and p.prompt.cancel)
+    p.prompt.cancel:Click();assert(left==0 and p.fields.name:GetText()=='Draft');p:RequestLeave(function() left=left+1 end);p.prompt.discard:Click();assert(left==1 and not next(a.db.global.effects))
+end)
+test('pooled drag preview restores overlay layering when presented after reparenting',function()
+    local f,parent=fixture();local ghost=f.addon:CreateWorkbenchDragCard();ghost:SetParent(parent);ghost:SetFrameStrata('MEDIUM');ghost:SetFrameLevel(1);ghost:Present('Item','Drag',parent);assert(ghost:GetFrameStrata()=='TOOLTIP' and ghost:GetFrameLevel()>parent:GetFrameLevel())
+end)
+test('item-set history restores nested edits and ordering without touching saved data until Apply',function()
+    local f,parent=fixture();local a=f.addon;a.db.profile.itemsets={s={name='Set',items={1,2}}};f.env.GetItemInfo=function(id) return 'Item '..id,nil,nil,nil,nil,nil,nil,nil,nil,10 end;local p=a:OpenNativeSettings(parent,'ItemSets');assert(p.fields.undo and p.fields.redo and not p.fields.undo:IsEnabled())
+    p.fields.item2up:Click();assert(a.db.profile.itemsets.s.items[1]==1 and p.fields.undo:IsEnabled());p.fields.undo:Click();assert(p:SettingsData().profile.itemsets.s.items[1]==1 and p.fields.redo:IsEnabled());p.fields.redo:Click();assert(p:SettingsData().profile.itemsets.s.items[1]==2)
+    p.fields.undo:Click();local c=p.fields.name;c:SetText('Renamed');c.scripts.OnTextChanged(c,true);c.scripts.OnEnterPressed(c);assert(not p.fields.redo:IsEnabled());p.fields.undo:Click();assert(p.fields.name:GetText()=='Set');p.fields.redo:Click();p.fields.apply:Click();assert(a.db.profile.itemsets.s.name=='Renamed' and not p.fields.undo:IsEnabled())
+end)
+test('themed transfer right-click closes over its text field but ignores unrelated focus and an opening held click',function()
+    local f,parent=fixture();local a=f.addon;local down=false;local focus;f.env.IsMouseButtonDown=function() return down end;f.env.GetMouseFoci=function() return {focus} end
+    local p=a:CreateSettingsForm(parent);p:Open(function() end);a:ShowSettingsTextTransfer(p,'Transfer','Data',function() return true end);local d=p.textDialog;assert(d.frame.rmRightClickWatcher)
+    focus=d.input;down=true;d.frame.rmRightClickWatcher.scripts.OnUpdate();assert(not d.frame:IsShown());a:ShowSettingsTextTransfer(p,'Transfer','Data',function() return true end);d.frame.rmRightClickWatcher.scripts.OnUpdate();assert(d.frame:IsShown());down=false;d.frame.rmRightClickWatcher.scripts.OnUpdate();focus=parent;down=true;d.frame.rmRightClickWatcher.scripts.OnUpdate();assert(d.frame:IsShown())
+end)
+test('shared effect import exposes original name and copy or overwrite destination with explicit rename',function()
+    local f,parent=fixture();local a=f.addon;a.db.global.effects={e={name='Selected',type='pixel'}};local p=a:OpenNativeSettings(parent,'Effects');p.fields.transfer:Click();local d=p.textDialog;assert(d.destination and d.name and d.original)
+    local codec=a:NewRotationCodec();d.input:SetText(assert(codec:Encode({name='Source',type='pixel',lines=5})));d.input.scripts.OnTextChanged(d.input,true);assert(d.original:GetText():find('Source',1,true));d.destination:Click();assert(not d.destination:GetChecked())
+    d.name:SetText('Renamed import');d.name.scripts.OnTextChanged(d.name,true);d.apply:Click();assert(a.db.global.effects.e.name=='Selected');p.fields.apply:Click();local found=false;for id,effect in pairs(a.db.global.effects) do if id~='e' and effect.name=='Renamed import' then found=effect.lines==5 end end;assert(found)
+end)
+test('shared Clear empties pasted data and invalidates preview without changing saved settings',function()
+    local f,parent=fixture();local a=f.addon;local p=a:CreateSettingsForm(parent);p:Open(function() end);local invalidated=0
+    local d=a:ShowSettingsTextTransfer(p,'Transfer','Exported',function() error('unexpected import') end,{canReplace=false,fallbackName='Copy',originalName=function() return 'Source' end,requirePreview=true,preview=function() end,inspect=function() end,invalidate=function() invalidated=invalidated+1 end})
+    assert(d.clear,'Clear button missing');d.clear:Click();assert(d.input:GetText()=='' and invalidated==1 and not d.apply:IsEnabled() and d.frame:IsShown())
+end)
+test('profile imports accept the real initialization schema and preserve selected identity or create a named copy',function()
+    local f,parent=fixture();local a=f.addon;f.load('init.lua');local defaults={profile={poll=.15,rotations={}},global={},char={}};a:augmentDefaults(defaults)
+    local current='Default';local profiles={Default=defaults.profile,Other={poll=.2}};a.db.profiles=profiles;a.db.profile=profiles.Default;a.db.global=defaults.global
+    a.db.GetCurrentProfile=function() return current end;a.db.GetProfiles=function() local n={};for name in pairs(profiles) do n[#n+1]=name end;return n end
+    a.db.SetProfile=function(_,name) profiles[name]=profiles[name] or {poll=.15};current=name;a.db.profile=profiles[name] end
+    a.db.ResetProfile=function() profiles[current]={poll=.15};a.db.profile=profiles[current] end
+    local p=a:OpenNativeSettings(parent,'Profiles');p.fields.transfer:Click();local d=p.textDialog;local exported=d.input:GetText();d.destination:Click();d.name:SetText('Imported');d.name.scripts.OnTextChanged(d.name,true);d.apply:Click()
+    assert(not d.frame:IsShown(),'profile import rejected: '..tostring(d.status:GetText()));assert(p.creating and not profiles.Imported);p.fields.apply:Click();assert(current=='Default' and profiles.Imported and profiles.Imported.version==defaults.profile.version)
+    p.fields.transfer:Click();d.input:SetText(exported);d.apply:Click();assert(not d.frame:IsShown() and profiles.Imported.version==defaults.profile.version and current=='Default')
+end)
+test('named item-set imports and legacy lists share destination controls and undo history',function()
+    local f,parent=fixture();local a=f.addon;a.db.profile.itemsets={s={name='Selected',items={1}}};a.db.global.itemsets={};local p=a:OpenNativeSettings(parent,'ItemSets');p.fields.transfer:Click();local d=p.textDialog
+    d.input:SetText('2,3');d.apply:Click();assert(p:SettingsData().profile.itemsets.s.items[1]==2 and a.db.profile.itemsets.s.items[1]==1);p.fields.undo:Click();assert(p:SettingsData().profile.itemsets.s.items[1]==1);p.fields.redo:Click()
+    p.fields.transfer:Click();d.input:SetText(assert(a:NewRotationCodec():Encode({format='RM-ItemSet',version=1,name='Source',items={4,5}})));d.input.scripts.OnTextChanged(d.input,true);assert(d.original:GetText():find('Source',1,true));d.destination:Click();d.name:SetText('Imported items');d.name.scripts.OnTextChanged(d.name,true);d.apply:Click();p.fields.apply:Click();local found;for id,set in pairs(a.db.profile.itemsets) do if id~='s' then found=set.name=='Imported items' and set.items[2]==5 end end;assert(found and a.db.profile.itemsets.s.name=='Selected')
+end)
+test('announcement imports create fresh identities and keep the selected name when replacing',function()
+    local f,parent=fixture();local a=f.addon;a.events={SUCCEEDED='Success'};local entry={id=a:uuid(),name='Selected',type='spell',spell=403,event='SUCCEEDED',announce='local',value='Cast'};a.db.profile.announces={entry}
+    local p=a:OpenNativeSettings(parent,'Announces');p.fields.transfer:Click();local d=p.textDialog;local source=a:CopySettingsData(entry);source.name='Source';source.spell=8042;local text=assert(a:NewRotationCodec():Encode({format='RM-Announcement',version=1,announcement=source}));d.input:SetText(text);d.apply:Click();p.fields.apply:Click();assert(a.db.profile.announces[1].name=='Selected' and a.db.profile.announces[1].spell==8042 and a.db.profile.announces[1].id==entry.id)
+    p.fields.transfer:Click();d.input:SetText(text);d.destination:Click();d.name:SetText('Copy');d.name.scripts.OnTextChanged(d.name,true);d.apply:Click();p.fields.apply:Click();assert(#a.db.profile.announces==2 and a.db.profile.announces[2].name=='Copy' and a.db.profile.announces[2].id~=entry.id)
+end)
+test('custom condition imports validate code as data without evaluating it and retain legacy definitions',function()
+    local f=fixture();local a=f.addon;local codec=a:NewRotationCodec();local value={description='Condition',icon=1,fields={unit='string'}};for _,key in ipairs({'valid','evaluate','print','widget','help','on_register','on_unregister'}) do value[key]='error("MUST NOT EXECUTE")' end
+    local parsed=assert(a:ParseCustomConditionImport(assert(codec:Encode({format='RM-CustomCondition',version=1,name='SOURCE',condition=value})),codec));assert(parsed.name=='SOURCE' and parsed.condition.evaluate==value.evaluate);assert(a:ParseCustomConditionImport(assert(codec:Encode(value)),codec));value.fields.unit='function';assert(not a:ParseCustomConditionImport(assert(codec:Encode(value)),codec))
+end)
+test('profile replacement rejects changes made while the import dialog is open',function()
+    local f,parent=fixture();local a=f.addon;local profile={version=2,poll=.15};a.db.profile=profile;a.db.profiles={Default=profile};a.db.GetCurrentProfile=function() return 'Default' end;a.db.GetProfiles=function() return {'Default'} end;local reset=0;a.db.ResetProfile=function() reset=reset+1 end
+    local p=a:OpenNativeSettings(parent,'Profiles');p.fields.transfer:Click();local d=p.textDialog;profile.poll=.3;d.apply:Click();assert(d.frame:IsShown() and reset==0 and profile.poll==.3)
+end)
+test('custom Lua transfer requires trust and rejects a stale pasted candidate before opening code',function()
+    local f,parent=fixture();local a=f.addon;f.load('Core/custom_condition_owner.lua');f.load('UI/custom_condition_transfer.lua');local root={frame=parent};function root:SetCallback(event,fn) self[event]=fn end;function root:Show() self.frame:Show() end;function root:Hide() self.frame:Hide() end
+    local alive=true;local owner=a:OwnCustomConditionDialog(root,nil,function() return alive end);local value={description='Custom',icon=1,fields={}};for _,key in ipairs({'valid','evaluate','print','widget','help','on_register','on_unregister'}) do value[key]='return true' end
+    a.db.global.custom_conditions={CUSTOM=value};a.describeCondition=function(_,key) return key=='CUSTOM' and value.description end;local opened=0;a.LayoutCustomConditionEditor=function(_,_,_,key,definition) assert(key=='CUSTOM' and definition.evaluate=='return true');opened=opened+1 end
+    local d=assert(a:ShowCustomConditionTransfer(root,function() end,'CUSTOM',value));d.apply:Click();local p=root.rmCustomTransferForm;assert(p.prompt.frame:IsShown() and opened==0);p.prompt.cancel:Click();assert(opened==0 and d.frame:IsShown());d.apply:Click();d.input:SetText('changed');p.prompt.accept:Click();assert(opened==0)
+    d.input:SetText(assert(a:NewRotationCodec():Encode(value)));d.apply:Click();p.prompt.accept:Click();assert(opened==1 and root.frame:IsShown())
+    d=a:ShowCustomConditionTransfer(root,function() end,'CUSTOM',value);d.apply:Click();alive=false;a:CloseCustomConditionEditor(root,owner);assert(not d.frame:IsShown());p.prompt.accept:Click();assert(opened==1 and not root.frame:IsShown())
+end)
+test('new category imports keep original category and move membership into the named copy',function()
+    local f,parent=fixture();local a=f.addon;a.conditionDefinitions={A={description='Alpha'}};a.conditionSpecials={};a.db.profile.condition_groups={{id='g',name='Original',conditions={'A'},icon=12}};a.listConditions=function() return {'A'} end
+    local p=a:OpenNativeSettings(parent,'Conditions');p.mode='categories';p.categorySelection='g';p:Draw();p.fields.transfer:Click();local d=p.textDialog;d.destination:Click();d.name:SetText('Copied category');d.name.scripts.OnTextChanged(d.name,true);d.apply:Click();p.fields.apply:Click();assert(#a.db.profile.condition_groups==2 and a.db.profile.condition_groups[1].name=='Original' and #a.db.profile.condition_groups[1].conditions==0 and a.db.profile.condition_groups[2].name=='Copied category' and a.db.profile.condition_groups[2].icon==12)
+end)
+test('releasing an item form clears history for the next page owner',function()
+    local f,parent=fixture();local a=f.addon;a.db.profile.itemsets={s={name='Set',items={1,2}}};local p=a:OpenNativeSettings(parent,'ItemSets');p.fields.item2up:Click();assert(#p.historyUndo==1);p:Release();assert(#p.historyUndo==0 and #p.historyRedo==0)
+end)
+test('active profile replacement uses runtime lifecycle and retains defaulted fields',function()
+    local f,parent=fixture();local a=f.addon;local current='Default';local profiles={Default={version=2,poll=.15,color={r=1,g=1,b=1,a=1}}};a.db.profiles=profiles;a.db.profile=profiles.Default;a.db.GetCurrentProfile=function() return current end;a.db.GetProfiles=function() return {'Default'} end
+    local events={};a.DisableRotation=function() events[#events+1]='disable' end;a.EnableRotation=function() events[#events+1]='enable' end;a.db.ResetProfile=function() events[#events+1]='reset';profiles.Default={version=2,poll=.15,color={r=1,g=1,b=1,a=1}};a.db.profile=profiles.Default end
+    local p=a:OpenNativeSettings(parent,'Profiles');p.fields.transfer:Click();local d=p.textDialog;d.input:SetText(assert(a:NewRotationCodec():Encode({format='RM-Profile',version=1,name='Source',profile={version=2,poll=.4,color={r=.2}}})));d.apply:Click();assert(not d.frame:IsShown() and a.db.profile.poll==.4 and a.db.profile.color.r==.2 and a.db.profile.color.g==1 and table.concat(events,',')=='disable,reset,enable')
+end)
+test('unchanged legacy profile exports with an empty Default placeholder remain importable',function()
+    local f,parent=fixture();local a=f.addon;local source={version=2,rotations={[0]={Default={},custom={name='Custom',rotation={},cooldowns={}}}}};local encoded=assert(a:NewRotationCodec():Encode({format='RM-Profile',version=1,name='Default',profile=a:ProfileToPortable(source)}));local decoded=assert(a:NewRotationCodec():Decode(encoded));local candidate=a:ProfileFromPortable(decoded.value.profile)
+    assert(a:ValidateProfileTransfer(candidate),'legacy empty placeholder rejected');assert(candidate.rotations[0].Default.rotation and candidate.rotations[0].Default.cooldowns and next(source.rotations[0].Default)==nil);assert(candidate.rotations[0].custom.name=='Custom')
+    assert(not a:ValidateProfileTransfer(a:ProfileFromPortable({version=2,rotations={['0']={Broken={rotation='invalid'}}}})))
+end)
+test('custom definition imports accept the actual legacy editor Item Set schema',function()
+    local f=fixture();local a=f.addon;f.load('Options/custom_condition.lua');local value=a:CopySettingsData(a.empty_condition);value.description='Item condition';value.fields={items='{ string, { string, number } }'};local codec=a:NewRotationCodec();assert(a:ParseCustomConditionImport(assert(codec:Encode(value)),codec),'editor schema rejected');assert(type(a.LayoutCustomConditionEditor)=='function','production editor entry point missing')
+end)
+test('item autocomplete selection participates in draft undo and redo',function()
+    local f,parent=fixture();local a=f.addon;a.db.profile.itemsets={s={name='Set',items={1}}};a.db.global.itemsets={};f.env.GetItemInfo=function(id) return 'Item '..id,nil,nil,nil,nil,nil,nil,nil,nil,1 end;a:GetReferenceProvider('item').index(2)
+    local p=a:OpenNativeSettings(parent,'ItemSets');local c=p.fields.item1;c:SetText('Item 2');c.scripts.OnTextChanged(c,true);assert(p.menu and p.menu.frame:IsShown(),'picker missing');p.menu.rows[1]:Click();assert(p:SettingsData().profile.itemsets.s.items[1]==2 and p.fields.undo:IsEnabled(),'autocomplete bypassed history');p.fields.undo:Click();assert(p:SettingsData().profile.itemsets.s.items[1]==1);p.fields.redo:Click();assert(p:SettingsData().profile.itemsets.s.items[1]==2 and a.db.profile.itemsets.s.items[1]==1);p.fields.undo:Click();a:GetReferenceProvider('item').index(3);c=p.fields.item1;c:SetText('Item 3');c.scripts.OnTextChanged(c,true);p.menu.rows[1]:Click();assert(p:SettingsData().profile.itemsets.s.items[1]==3 and not p.fields.redo:IsEnabled(),'new autocomplete selection retained redo')
+end)
+finish()

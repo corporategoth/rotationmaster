@@ -1,0 +1,125 @@
+local _,addon=...
+local data=addon.RotationData
+local function equivalentStepDefault(path,row,stepIndex)
+    if #path~=stepIndex+1 or not path[stepIndex+1] or path[stepIndex+1].kind~="field" or not row or not row.left or not row.right then return false end
+    local key=path[stepIndex+1].key
+    if key~="use_name" and key~="ranked" and key~="disabled" then return false end
+    local function flag(step)
+        if step[key]~=nil then return step[key] end
+        if key=="use_name" then return type(step.name)=="string" and #step.name>0 end
+        return false
+    end
+    return flag(row.left.step)==flag(row.right.step)
+end
+local shownFields={type=true,action=true,conditions=true,disabled=true,ranked=true,name=true,use_name=true,mode=true,onTrue=true,onFalse=true}
+-- Only structural field/step segments form identity locations. Numeric source
+-- positions are replaced with canonical IDs, so same-arm reordering still pairs
+-- but moving across parents or arms stays an explicit removal plus addition.
+local function locationKey(path,last)
+    local parts={}
+    for i=2,last do
+        local segment=path[i];local text=tostring(segment.key)
+        parts[#parts+1]=segment.kind..":"..#text..":"..text
+    end
+    return table.concat(parts,"/")
+end
+local function rowLocation(body,path,origins)
+    local cursor=body;local segments={{kind="field",key="body"}}
+    for _,key in ipairs(path) do
+        cursor=cursor[key]
+        segments[#segments+1]=type(key)=="number" and {kind="step",key=origins[cursor.id] or cursor.id} or {kind="field",key=key}
+    end
+    return locationKey(segments,#segments)
+end
+-- Consumes the trusted structural diff and detached snapshots supplied by the
+-- library facade. Canonical identities never depend on rendered path strings.
+function data.BuildVisualComparison(view)
+    if type(view)~="table" or type(view.diff)~="table" or not view.diff.valid
+        or type(view.left)~="table" or type(view.right)~="table" then return nil,"invalid-comparison" end
+    -- Each snapshot already has its own portable-data budget. Re-counting the
+    -- duplicated before/after values in a diff rejects valid large rotations.
+    for _,key in ipairs({"left","right","leftOrigins","rightOrigins"}) do
+        if not data.CheckPortable(view[key]) then return nil,"invalid-comparison" end
+    end
+    if type(view.diff.changes)~="table" or #view.diff.changes>500 then return nil,"invalid-comparison" end
+    for _,change in ipairs(view.diff.changes) do
+        if type(change)~="table" or not data.CheckPortable(change) then return nil,"invalid-comparison" end
+    end
+    local model={groups={},complete=view.diff.complete==true,additionalChanges=0,displayChangeCount=0}
+    local a,b=view.left.body or {},view.right.body or {}
+    model.leftName=a.name;model.rightName=b.name
+    model.leftNameKey=view.left.nameKey;model.rightNameKey=view.right.nameKey
+    model.leftSwitch=data.CopyData(a.switch);model.rightSwitch=data.CopyData(b.switch)
+    local indexes={}
+    local total=0
+    for _,kind in ipairs({"cooldowns","rotation"}) do
+        local rows,byId={},{}
+        model.groups[kind]=rows;indexes[kind]=byId
+        for _,side in ipairs({"left","right"}) do
+            local body=side=="left" and a or b
+            local origins=view[side.."Origins"] or {}
+            local tree=data.IndexRotationSteps(body)
+            if not tree then return nil,"invalid-comparison" end
+            for _,entry in ipairs(tree.rows) do if entry.section==kind then
+                local step,index=entry.step,entry.index
+                local id=origins[step.id] or step.id
+                local location=rowLocation(body,entry.path,origins)
+                local row=byId[location]
+                if not row then
+                    if total>=200 then model.complete=false
+                    else row={id=id};byId[location]=row;rows[#rows+1]=row;total=total+1 end
+                end
+                if row then
+                    local branchPath={};local ancestor=entry
+                    while ancestor.parentId do
+                        local parent=tree.byId[ancestor.parentId]
+                        table.insert(branchPath,1,{id=origins[parent.step.id] or parent.step.id,name=parent.step.name,arm=ancestor.arm})
+                        ancestor=parent
+                    end
+                    local value={};for key,field in pairs(step) do
+                        if not (step.type=="branch" and (key=="onTrue" or key=="onFalse")) then value[key]=field end
+                    end
+                    row[side]={index=index,step=data.CopyData(value),depth=entry.depth,arm=entry.arm,branchPath=branchPath}
+                end
+            end end
+        end
+        for _,row in ipairs(rows) do
+            row.added=row.left==nil;row.removed=row.right==nil
+        end
+    end
+    for _,change in ipairs(view.diff.changes or {}) do
+        local path=change.segments or {}
+        local kind=path[2] and path[2].key
+        if path[1] and path[1].kind=="field" and path[1].key=="body" and path[2] and path[2].kind=="field"
+            and indexes[kind] and path[3] and path[3].kind=="step" then
+            local stepIndex=3
+            for i=4,#path do if path[i].kind=="step" then stepIndex=i end end
+            local row=indexes[kind][locationKey(path,stepIndex)]
+            if not equivalentStepDefault(path,row,stepIndex) then
+                model.displayChangeCount=model.displayChangeCount+1
+                if row then
+                    if change.kind=="moved" then row.moved=true
+                    elseif row.left and row.right then row.changed=true end
+                end
+                if path[stepIndex+1] and not shownFields[path[stepIndex+1].key] then model.additionalChanges=model.additionalChanges+1 end
+                if #path==stepIndex then
+                    local whole=change.after or change.before
+                    if type(whole)=="table" then
+                        for key in pairs(whole) do
+                            if key~="id" and not shownFields[key] then model.additionalChanges=model.additionalChanges+1 end
+                        end
+                    end
+                end
+            end
+        else
+            model.displayChangeCount=model.displayChangeCount+1
+            model.settingsChanged=true
+            local rootName=#path==1 and path[1].kind=="field" and path[1].key=="nameKey"
+            local bodyName=#path==2 and path[1].kind=="field" and path[1].key=="body" and path[2].kind=="field" and kind=="name"
+            if kind=="switch" then model.switchChanged=true
+            elseif rootName or bodyName then model.namesChanged=true
+            else model.additionalChanges=model.additionalChanges+1 end
+        end
+    end
+    return model
+end

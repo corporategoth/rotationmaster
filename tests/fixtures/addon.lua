@@ -1,0 +1,81 @@
+-- Explicit external boundaries; production constants/utilities/help stay real.
+local F = {}
+function F.new(product, expansion, class)
+    local env = setmetatable({}, {__index = _G})
+    env._G = env
+    env.WOW_PROJECT_MAINLINE, env.WOW_PROJECT_CLASSIC = 1, 2
+    env.WOW_PROJECT_BURNING_CRUSADE_CLASSIC,env.WOW_PROJECT_MISTS_CLASSIC=5,19
+    env.WOW_PROJECT_WRATH_CLASSIC,env.WOW_PROJECT_CATACLYSM_CLASSIC,env.WOW_PROJECT_CAMELOT=11,14,18
+    env.WOW_PROJECT_ID, env.LE_EXPANSION_LEVEL_CURRENT = product or 5, expansion or 1
+    env.NORMAL_FONT_COLOR_CODE, env.DEFAULT, env.DELETE, env.NAME = '', 'Default', 'Delete', 'Name'
+    env.PRIMARY, env.SECONDARY = 'Primary', 'Secondary'
+    env.EDIT, env.COMBAT, env.HEALTH, env.MANA = 'Edit', 'Combat', 'Health', 'Mana'
+    env.Enum = {PowerType = {Runes=5, SoulShards=7, Chi=12, ArcaneCharges=16, ComboPoints=4}}
+    env.UnitClass = function() return class or 'Shaman', class or 'SHAMAN' end
+    env.GetTime = function() return 100 end
+    local addon = {help_funcs = {}, longtermCache = {}, unitsInRange = {}, currentSpec = 0,
+                   db = {profile = {}, global = {}}, definitions = {}}
+    local translations = {}
+    local L = setmetatable({}, {
+        __index = function(_, key) return translations[key] or key end,
+        __newindex = function(_, key, value) translations[key] = value == true and key or value end,
+    })
+    local function widget(kind)
+        local w = {kind=kind, children={}}
+        function w:AddChild(child) assert(child); self.children[#self.children+1]=child end
+        function w:SetText(text) self.text=text end
+        function w:SetLayout(layout) self.layout=layout end
+        function w:SetFullWidth(value) self.fullWidth=value end
+        function w:SetFullHeight(value) self.fullHeight=value end
+        function w:SetUserData(key,value) self[key]=value end
+        function w:GetUserData(key) return self[key] end
+        function w:SetLabel(value) self.label=value end
+        function w:SetTitle(value) self.title=value end
+        function w:SetValue(value) self.value=value end
+        function w:SetIsPercent(value) self.isPercent=value end
+        function w:SetSliderValues(minimum,maximum,step) self.sliderValues={minimum,maximum,step} end
+        function w:SetDisabled(value) self.disabled=value end
+        function w:SetStatusText(value) self.statusText=value end
+        function w:SetCallback(event,callback) self.callbacks=self.callbacks or {};self.callbacks[event]=callback end
+        function w:SetImage(value) self.image=value end
+        function w:SetImageSize(width,height) self.imageWidth,self.imageHeight=width,height end
+        function w:SetHeight(value) self.height=value end
+        function w:SetWidth(value) self.width=value end
+        function w:SetFont(...) self.font={...} end
+        function w:SetFontObject(value) self.font=value end
+        return w
+    end
+    local libraries = {
+        ['AceLocale-3.0'] = {GetLocale=function() return L end, NewLocale=function() return L end},
+        ['AceGUI-3.0'] = {constructors={},RegisterWidgetType=function(self,kind,create) self.constructors[kind]=create end,
+            RegisterAsWidget=function(_,w) local base=widget(w.type);for k,v in pairs(base) do if w[k]==nil then w[k]=v end end;function w:Fire(event,...) local cb=self.callbacks and self.callbacks[event];if cb then return cb(self,event,...) end end;return w end,
+            Create=function(self,kind) if self.constructors[kind] then if not env.CreateFrame then dofile('tests/fixtures/native_ui.lua')(env) end;local w=self.constructors[kind]();w.userdata={};w:OnAcquire();return w end;return widget(kind) end},
+        ['AceConsole-3.0'] = {}, ['LibCompress'] = {},
+        ['AceGUI-3.0-SpellLoader'] = {}, ['AceGUI-3.0-ItemLoader'] = {},
+        ['LibClassicDurations'] = {},
+        ['LibRangeCheck-3.0'] = {},
+    }
+    env.LibStub = function(name) return assert(libraries[name], 'Unexpected library '..name) end
+    function addon:RegisterCondition(tag, definition) self.definitions[tag]=definition end
+    local function load(path)
+        local chunk=assert(loadfile(path)); setfenv(chunk, env); return chunk('rotationmaster',addon)
+    end
+    load('globals.lua');load('Platform/client.lua');load('Platform/specializations.lua')
+    load('Locales/enUS.lua'); load('constants.lua'); load('utils.lua')
+    load('UI/controls.lua');load('UI/window.lua');load('UI/selector.lua');load('Help/common.lua'); load('Help/conditional.lua'); load('Core/presentation.lua');load('Core/condition_description.lua'); load('Core/spell_catalog.lua');load('Core/spell_search.lua');load('Core/reference_catalog.lua');load('Core/category_data.lua');load('Core/announcement_data.lua');load('Core/profile_data.lua');load('Core/collection_data.lua');load('Core/custom_condition_data.lua');load('UI/spell_search.lua');load('UI/spell_icon.lua')
+    return {env=env, addon=addon, load=load, widget=widget, translations=translations, libraries=libraries}
+end
+function F.text(widget)
+    local parts={widget.text or ''}
+    for _, child in ipairs(widget.children or {}) do parts[#parts+1]=F.text(child) end
+    return table.concat(parts, '\n')
+end
+function F.suite()
+    local failed,passed=0,0
+    return function(name, body)
+        local ok,err=pcall(body)
+        if ok then passed=passed+1; print('PASS '..name)
+        else failed=failed+1; print('FAIL '..name..': '..tostring(err)) end
+    end, function() print(passed..' passed, '..failed..' failed'); os.exit(failed>0 and 1 or 0) end
+end
+return F

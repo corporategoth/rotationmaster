@@ -3,11 +3,9 @@ local addon_name, addon = ...
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 
 local AceGUI = LibStub("AceGUI-3.0")
-local AceSerializer = LibStub("AceSerializer-3.0")
-local libc = LibStub:GetLibrary("LibCompress")
 
 local HideOnEscape, deepcopy, uuid = addon.HideOnEscape, addon.deepcopy, addon.uuid
-local pairs, base64enc, base64dec, width_split = pairs, base64enc, base64dec, width_split
+local pairs = pairs
 
 local function_signatures = {
     on_register = "function(tag)",
@@ -91,6 +89,7 @@ local function open_icon_window(parent, update)
     parent:Hide()
 
     local frame = AceGUI:Create("Window")
+    local owner=addon:OwnCustomConditionDialog(frame,parent)
     frame:SetTitle(L["Select Icon"])
     frame:SetLayout("table")
     frame:SetUserData("table", { columns = { 44, 1, 44 } })
@@ -98,7 +97,9 @@ local function open_icon_window(parent, update)
     frame:SetHeight(440)
     frame:EnableResize(false)
     frame:SetCallback("OnClose", function(widget)
+        local resume=addon:CanResumeCustomConditionDialog(parent,owner)
         AceGUI:Release(widget)
+        if not resume then addon:CloseCustomConditionEditor(parent,owner);return end
         parent:SetCallback("OnClose", function(w)
             AceGUI:Release(w)
         end)
@@ -142,6 +143,7 @@ local function open_icon_window(parent, update)
                 icon:SetImageSize(36, 36)
                 icon:SetWidth(44)
                 icon:SetCallback("OnClick", function()
+                    if not addon:CanResumeCustomConditionDialog(parent,owner) then return end
                     update(icons[i])
                     frame:Release()
                 end)
@@ -188,112 +190,8 @@ local function spacer(width)
     return rv
 end
 
-local function ImportExport(parent, update, key, condition)
-    parent:SetCallback("OnClose", function() end)
-    parent:Hide()
-
-    local frame = AceGUI:Create("Window")
-    local title = L["Import/Export Condition"]
-    if key ~= nil and key ~= '' then
-        title = title .. " - " .. key
-    end
-    frame:SetTitle(title)
-    frame:SetCallback("OnClose", function(widget)
-        AceGUI:Release(widget)
-        parent:SetCallback("OnClose", function(w)
-            AceGUI:Release(w)
-        end)
-        parent:Show()
-    end)
-    frame:SetLayout("List")
-    frame:SetWidth(525)
-    frame:SetHeight(475)
-    frame:EnableResize(false)
-    HideOnEscape(frame)
-
-    frame:PauseLayout()
-
-    local desc = AceGUI:Create("Label")
-    desc:SetFullWidth(true)
-    desc:SetText(L["Copy and paste this text share your custom condition with others, or import someone else's."])
-    frame:AddChild(desc)
-
-    local import = AceGUI:Create("Button")
-    local editbox = AceGUI:Create("MultiLineEditBox")
-
-    editbox:SetFullHeight(true)
-    editbox:SetFullWidth(true)
-    editbox:SetLabel("")
-    editbox:SetNumLines(27)
-    editbox:DisableButton(true)
-    editbox:SetFocus(true)
-    editbox:SetText(width_split(base64enc(libc:Compress(AceSerializer:Serialize(condition))), 64))
-    editbox.editBox:GetRegions():SetFont("Interface\\AddOns\\" .. addon_name .. "\\Fonts\\Inconsolata-Bold.ttf", 13)
-    editbox:SetCallback("OnTextChanged", function(_, _, text)
-        if text:match('^[0-9A-Za-z+/\r\n]+=*[\r\n]*$') then
-            local decomp = libc:Decompress(base64dec(text))
-            if decomp ~= nil and AceSerializer:Deserialize(decomp) then
-                --frame:SetStatusText(string.len(text) .. " " .. L["bytes"] .. " (" .. select(2, text:gsub('\n', '\n'))+1 .. " " .. L["lines"] .. ")")
-                import:SetDisabled(false)
-                return
-            end
-        end
-        --frame:SetStatusText(string.len(text) .. " " .. L["bytes"] .. " (" .. select(2, text:gsub('\n', '\n'))+1 .. " " .. L["lines"] .. ") - " ..
-        --        color.RED .. L["Parse Error"])
-        import:SetDisabled(true)
-    end)
-
-    --frame:SetStatusText(string.len(editbox:GetText()) .. " " .. L["bytes"] .. " (" .. select(2, editbox:GetText():gsub('\n', '\n'))+1 .. " " .. L["lines"] .. ")")
-    -- editbox:HighlightText(0, string.len(editbox:GetText()))
-    editbox:HighlightText()
-    frame:AddChild(editbox)
-
-    local group = AceGUI:Create("SimpleGroup")
-    group:SetFullWidth(true)
-    group:SetLayout("Table")
-    group:SetUserData("table", { columns = { 1, 0.25, 0.25 } })
-
-    group:AddChild(spacer(1))
-
-    import:SetText(L["Import"])
-    import:SetDisabled(true)
-    import:SetCallback("OnClick", function(_, _)
-        local ok, res = AceSerializer:Deserialize(libc:Decompress(base64dec(editbox:GetText())))
-        if ok then
-            StaticPopupDialogs["ROTATIONMASTER_IMPORT_CUSTOM_FUNCTION"] = {
-                text = addon.pretty_name,
-                subText = "Importing custom functions contains raw LUA code that can be DANGEROUS.\n" ..
-                        "Do not import if you do not trust the provider of this code.\n" ..
-                        "Are you sure you wish to continue import?",
-                button1 = YES,
-                button2 = NO,
-                OnAccept = function()
-                    addon:validate_custom_condition(L["Import"], key, res, true)
-                    layout_condition_edit_box(parent, update, key, res)
-                    frame:Hide()
-                end,
-                showAlert = 1,
-                timeout = 0,
-                whileDead = 1,
-                hideOnEscape = 1
-            }
-            StaticPopup_Show("ROTATIONMASTER_IMPORT_CUSTOM_FUNCTION")
-        end
-    end)
-    group:AddChild(import)
-
-    local close = AceGUI:Create("Button")
-    close:SetText(CANCEL)
-    close:SetCallback("OnClick", function(_, _)
-        frame:Hide()
-    end)
-    group:AddChild(close)
-
-    frame:AddChild(group)
-
-    addon:configure_frame(frame)
-    frame:ResumeLayout()
-    frame:DoLayout()
+local function ImportExport(parent,update,key,condition)
+    return addon:ShowCustomConditionTransfer(parent,update,key,condition)
 end
 
 local function compile_function(sel, val)
@@ -316,8 +214,19 @@ end
     return rv
 end
 
+local function copy_fields(value, seen)
+    if type(value) ~= "table" then return value end
+    seen = seen or {}
+    if seen[value] then return seen[value] end
+    local copy = {}
+    seen[value] = copy
+    for key, field in pairs(value) do copy[key] = copy_fields(field, seen) end
+    return copy
+end
+
 function addon:register_custom_condition(key, condition)
-    local newcond = { description = condition.description, icon = condition.icon }
+    local newcond = { description = condition.description, icon = condition.icon,
+                     fields = copy_fields(condition.fields or {}), customCode = true }
 
     for field, _ in pairs(function_signatures) do
         local func = compile_function(field, condition[field])
@@ -547,6 +456,7 @@ layout_condition_edit_box = function(frame, update, orig_key, condition)
     save:SetDisabled(key == nil or key == '' or condition.description == nil or condition.description == '')
     save:SetText((orig_key ~= nil and orig_key ~= '') and SAVE or ADD)
     save:SetCallback("OnClick", function()
+        local allowed=frame:GetUserData("saveAllowed");if allowed and not allowed() then return end
         if addon:register_custom_condition(key, condition) then
             addon.db.global.custom_conditions[key] = condition
         end
@@ -584,8 +494,14 @@ layout_condition_edit_box = function(frame, update, orig_key, condition)
     frame:DoLayout()
 end
 
-function addon:condition_edit_box(update, key, condition)
+-- Explicit bridge for trusted imports; the legacy layout remains private.
+function addon:LayoutCustomConditionEditor(parent,update,key,condition)
+    return layout_condition_edit_box(parent,update,key,condition)
+end
+
+function addon:condition_edit_box(update, key, condition, saveAllowed)
     local frame = AceGUI:Create("Window")
+    local owner=addon:OwnCustomConditionDialog(frame,nil,saveAllowed)
     frame:SetCallback("OnClose", function(widget)
         AceGUI:Release(widget)
     end)
@@ -598,5 +514,7 @@ function addon:condition_edit_box(update, key, condition)
         condition = deepcopy(addon.empty_condition)
     end
 
+    frame:SetUserData("saveAllowed",saveAllowed)
     layout_condition_edit_box(frame, update, key, condition)
+    return frame,owner
 end

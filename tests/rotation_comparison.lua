@@ -1,0 +1,173 @@
+local F=dofile('tests/fixtures/addon.lua')
+local make=dofile('tests/fixtures/rotation_data.lua')
+local test,finish=F.suite()
+local function fixture()
+    local f=F.new();local a=f.addon
+    local data,envelope=make();a.RotationData=data
+    f.load('Data/diff.lua');f.load('Data/visual_comparison.lua');f.load('UI/rotation_reference.lua');f.load('UI/rotation_comparison.lua')
+    return f,envelope
+end
+test('comparison text preserves direction, false values, moves and incomplete status',function()
+    local f,envelope=fixture();local left,right=envelope(),envelope()
+    left.body.disabled=false;right.body.disabled=true
+    local result=f.addon.RotationData.DiffRotations(left,right)
+    local text=f.addon:FormatRotationComparison(result)
+    assert(text:find('false',1,true) and text:find('true',1,true) and text:find('$.body.disabled',1,true))
+    result.complete=false
+    assert(f.addon:FormatRotationComparison(result):find('incomplete',1,true))
+    result.valid=false
+    assert(f.addon:FormatRotationComparison(result):find('could not',1,true))
+end)
+test('comparison report shows three directions and overlapping edits without merging',function()
+    local f=fixture()
+    local change={kind='changed',path='$.body.rotation[one].action',before=403,after=974}
+    local part={valid=true,complete=true,changes={change},diagnostics={}}
+    local result={valid=true,complete=true,sourceChanges=part,customChanges=part,currentDifferences=part,
+        conflicts={{path=change.path}},diagnostics={}}
+    local text=f.addon:FormatRotationComparison(result)
+    assert(text:find('Changes in the default',1,true) and text:find('Your changes',1,true))
+    assert(text:find('Differences from',1,true) and text:find('Overlapping field edits',1,true))
+    assert(change.after==974 and #part.changes==1)
+end)
+test('long values and native markup are bounded and cannot impersonate report text',function()
+    local f=fixture()
+    local result={valid=true,complete=true,changes={},diagnostics={}}
+    for i=1,500 do result.changes[i]={kind='changed',path='$.'..string.rep('x',4000),before=false,
+        after='|cffff0000'..string.rep('s',10000)} end
+    local text=f.addon:FormatRotationComparison(result)
+    assert(#text<=65536 and text:find('truncated',1,true))
+    assert(text:find('||cffff0000',1,true),'WoW color markup was not escaped')
+end)
+test('comparison chooser refreshes a read-only report and Copy keeps the full selection',function()
+    local f=fixture();local a=f.addon
+    local create=f.libraries['AceGUI-3.0'].Create
+    f.libraries['AceGUI-3.0'].Create=function(self,kind)
+        local w=create(self,kind)
+        function w:SetTitle(value) self.title=value end
+        function w:ReleaseChildren() self.children={} end
+        function w:SetRelativeWidth(value) self.relativeWidth=value end
+        function w:SetList(value) self.list=value end
+        function w:SetNumLines() end
+        function w:DisableButton() end
+        function w:SetFocus() self.focused=true end
+        function w:SetCursorPosition(value) self.cursor=value end
+        function w:HighlightText(first,last) self.selection={first,last} end
+        return w
+    end
+    a.HideOnEscape=function() end
+    a.db.profile.rotations={[0]={mine={name='Mine',rotation={}},other={name='Other',rotation={}}}}
+    a.GetEditableRotation=function(self,spec,id) return self.db.profile.rotations[spec][id] end
+    a.GetSourcedRotationView=function() return nil end
+    a.ListDefaultRotations=function() return {} end
+    local compared={}
+    a.BuildRotationComparison=function(_,spec,id,target)
+        compared[#compared+1]=target.id
+        local left={body={rotation={{id='step',type='spell',action=403,conditions={}}}}}
+        local right={body={rotation={{id='step',type='spell',action=8042,conditions={}}}}}
+        local result=a.RotationData.DiffRotations(left,right)
+        result.views={{key='current',left=left,right=right,diff=a.RotationData.DiffRotations(left,right)}}
+        return result
+    end
+    a.Platform={GetSpellInfo=function(_,id) return {name=id==403 and 'Lightning Bolt' or 'Earth Shock',spellID=id,iconID=id} end,
+        GetSpellLink=function(_,id) return '|Hspell:'..id..'|h[Named spell]|h' end}
+    a.printCondition=function() return 'Readable conditions' end
+    local frame=a:ShowRotationComparison(0,'mine')
+    local chooser,copy,report
+    for _,widget in ipairs(frame.children) do
+        if widget.kind=='Dropdown' and widget.label=='Compare against' then chooser=widget end
+        if widget.kind=='Button' then copy=widget end
+        if widget.kind=='MultiLineEditBox' then report=widget end
+    end
+    assert(chooser and copy and not report and #compared==1,'the primary comparison must be graphical')
+    assert(F.text(frame):find('Always',1,true),'step cards were not rendered')
+    local function count(w)
+        local n=w.kind=='InteractiveLabel' and 1 or 0
+        for _,child in ipairs(w.children) do n=n+count(child) end
+        return n
+    end
+    assert(count(frame)==2,'before/after native spell identities were not paired')
+    assert(#chooser.list==1 and chooser.list[1]=='Other','self is offered as a comparison target')
+    chooser.callbacks.OnValueChanged(nil,nil,1);assert(#compared==2 and compared[2]=='other')
+    local details=copy.callbacks.OnClick()
+    for _,widget in ipairs(details.children) do if widget.kind=='MultiLineEditBox' then report=widget end end
+    assert(report,'diagnostic details were not available separately')
+    local original=report.text
+    report.callbacks.OnTextChanged(nil,nil,'edited');assert(report.text==original)
+    assert(report.focused and report.cursor==0 and report.selection[1]==0 and report.selection[2]==-1)
+    report.callbacks.OnTextChanged(nil,nil,original)
+    assert(report.selection[2]==-1,'unchanged text reset copy selection')
+    assert(a.db.profile.rotations[0].mine.name=='Mine')
+end)
+test('whole added steps and unknown table fields show their contents in the report',function()
+    local f,envelope=fixture();local left,right=envelope(),envelope()
+    right.body.rotation[2]={id='new-step',type='spell',action=974,
+        conditions={type='BUFF',unit='focus',spell=324},unknownField={threshold=42}}
+    local result=f.addon.RotationData.DiffRotations(left,right)
+    local text=f.addon:FormatRotationComparison(result)
+    assert(result.complete and text:find('974',1,true) and text:find('324',1,true))
+    assert(text:find('BUFF',1,true) and text:find('threshold',1,true) and text:find('42',1,true))
+end)
+test('graph hides unchanged rows by default and expands them without inventing switch edits',function()
+    local f=fixture();local a=f.addon;local ace=f.libraries['AceGUI-3.0'];local original=ace.Create
+    ace.Create=function(self,kind)
+        local w=original(self,kind)
+        function w:SetRelativeWidth(v) self.relativeWidth=v end
+        function w:ReleaseChildren() self.children={} end
+        return w
+    end
+    local left={body={name='Source',switch={},rotation={{id='a',type='spell',action=403},{id='b',type='spell',action=8042}}}}
+    local right={body={name='Clone',switch={},rotation={{id='a',type='spell',action=403},{id='b',type='spell',action=974}}}}
+    local view={left=left,right=right,diff=a.RotationData.DiffRotations(left,right)}
+    local seen,conditions={},0
+    a.CreateRotationStepCard=function(_,_,_,_,position) seen[#seen+1]=position end
+    a.CreateConditionReference=function() conditions=conditions+1 end
+    local parent=ace:Create('SimpleGroup')
+    a:RenderRotationComparison(parent,view,0)
+    assert(#seen==2 and seen[1]==2 and seen[2]==2,'unchanged steps were displayed by default')
+    assert(conditions==0,'a name change was presented as a switch condition change')
+    assert(F.text(parent):find('Rotation names',1,true) and F.text(parent):find('Source',1,true) and F.text(parent):find('Clone',1,true))
+    local toggle
+    for _,w in ipairs(parent.children) do if w.kind=='CheckBox' then toggle=w end end
+    assert(toggle and F.text(parent):find('1 unchanged',1,true),'hidden-step count/toggle missing')
+    toggle.callbacks.OnValueChanged(toggle,nil,true)
+    assert(#seen==6,'show unchanged did not include both sides of both steps')
+    seen={};a:RenderRotationComparison(parent,{left=left,right=left,diff=a.RotationData.DiffRotations(left,left)},0)
+    assert(#seen==0 and F.text(parent):find('No differences.',1,true),'unchanged comparison is not clear')
+end)
+test('comparison with no other rotations explains the empty roster without comparing to itself',function()
+    local f=fixture();local a=f.addon;local ace=f.libraries['AceGUI-3.0'];local original=ace.Create
+    ace.Create=function(self,kind)
+        local w=original(self,kind)
+        function w:SetList(value) self.list=value end
+        function w:SetRelativeWidth() end
+        function w:ReleaseChildren() self.children={} end
+        return w
+    end
+    a.HideOnEscape=function() end
+    a.db.profile.rotations={[0]={mine={name='Mine',rotation={}}}}
+    a.GetEditableRotation=function() return a.db.profile.rotations[0].mine end
+    a.GetSourcedRotationView=function() end;a.ListDefaultRotations=function() return {} end
+    a.BuildRotationComparison=function() error('there is no other target') end
+    local frame=a:ShowRotationComparison(0,'mine')
+    assert(F.text(frame):find('No other rotations',1,true))
+    for _,w in ipairs(frame.children) do if w.kind=='Dropdown' or w.kind=='Button' then assert(w.disabled) end end
+end)
+test('nested reference and comparison expose branch mode and arm context without evaluating code',function()
+    local f=fixture();local a=f.addon;local ace=f.libraries['AceGUI-3.0'];local create=ace.Create
+    ace.Create=function(self,kind)
+        local w=create(self,kind);function w:ReleaseChildren() self.children={} end
+        function w:SetRelativeWidth(value) self.relativeWidth=value end
+        return w
+    end
+    a.Platform={GetSpellInfo=function(_,id) return {name='Named spell',spellID=id} end,GetSpellLink=function(_,id) return '|Hspell:'..id..'|h[Named spell]|h' end}
+    a.printCondition=function() return 'Readable guard' end
+    local body={rotation={{id='b',type='branch',name='Combat phase',mode='false',conditions={},
+        onTrue={{id='yes',type='spell',action=403}},onFalse={{id='no',type='spell',action=324}}}},cooldowns={}}
+    local parent=ace:Create('SimpleGroup');a:CreateRotationReference(parent,body,0)
+    local text=F.text(parent)
+    assert(text:find('Always false',1,true) and text:find('Combat phase',1,true) and text:find('True',1,true) and text:find('False',1,true))
+    local right=a.RotationData.CopyData(body);right.rotation[1].onTrue[1].action=8042
+    parent=ace:Create('SimpleGroup');a:RenderRotationComparison(parent,{left={body=body},right={body=right},diff=a.RotationData.DiffRotations({body=body},{body=right})},0,false)
+    text=F.text(parent);assert(text:find('Combat phase',1,true) and text:find('True',1,true),'changed descendant lost its branch context')
+end)
+finish()

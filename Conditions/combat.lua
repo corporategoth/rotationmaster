@@ -6,6 +6,7 @@ local color, tostring, tonumber, pairs = color, tostring, tonumber, pairs
 local helpers = addon.help_funcs
 
 addon:RegisterCondition("COMBAT", {
+    requiredFields = {"unit"},
     description = L["In Combat"],
     icon = "Interface\\Icons\\ability_dualwield",
     fields = { unit = "string" },
@@ -46,6 +47,9 @@ addon:RegisterCondition("PET", {
     end,
     print = function()
         return L["you have a pet"]
+    end,
+    help = function(frame)
+        frame:AddChild(helpers.CreateText(L["Matches when your pet unit exists. This does not check whether the pet is alive, in range or able to use an ability."] ))
     end,
 })
 
@@ -97,6 +101,9 @@ addon:RegisterCondition("STEALTHED", {
     print = function()
         return L["you are stealthed"]
     end,
+    help = function(frame)
+        frame:AddChild(helpers.CreateText(L["Matches while the game reports your character as stealthed. It does not test whether an enemy can detect you."] ))
+    end,
 })
 
 addon:RegisterCondition("INCONTROL", {
@@ -111,6 +118,9 @@ addon:RegisterCondition("INCONTROL", {
     end,
     print = function()
         return L["you are in control of your character"]
+    end,
+    help = function(frame)
+        frame:AddChild(helpers.CreateText(L["Matches when the game reports that you have full control of your character. This does not guarantee that a particular spell is usable."] ))
     end,
 })
 
@@ -144,7 +154,7 @@ addon:RegisterCondition("LOC_TYPE", {
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
-        local loc_type = AceGUI:Create("Dropdown")
+        local loc_type = addon:CreateConditionDropdown()
         loc_type:SetLabel(L["Control Type"])
         loc_type:SetCallback("OnValueChanged", function(_, _, v)
             value.loc_type = v
@@ -196,7 +206,7 @@ addon:RegisterCondition("LOC_BLOCKED", {
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
-        local school = AceGUI:Create("Dropdown")
+        local school = addon:CreateConditionDropdown()
         school:SetLabel(L["School Blocked"])
         school:SetCallback("OnValueChanged", function(_, _, v)
             value.school = v
@@ -234,6 +244,9 @@ addon:RegisterCondition("MOVING", {
     print = function()
         return L["you are moving"]
     end,
+    help = function(frame)
+        frame:AddChild(helpers.CreateText(L["Matches while your character is moving, based on current movement speed. It does not test the movement of your target."] ))
+    end,
 })
 
 addon:RegisterCondition("THREAT", {
@@ -259,7 +272,7 @@ addon:RegisterCondition("THREAT", {
         end
     end,
     print = function(_, value)
-        return string.format(L["you are at least %s on %s"], addon.nullable(addon.threat[value.threat], L["<addon.threat>"]),
+        return string.format(L["you are at least %s on %s"], addon.nullable(addon.threat[value.threat], L["<threat>"]),
         addon.nullable(addon.units[value.unit], L["<unit>"]))
     end,
     widget = function(parent, spec, value)
@@ -271,7 +284,7 @@ addon:RegisterCondition("THREAT", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
 
-        local val = AceGUI:Create("Dropdown")
+        local val = addon:CreateConditionDropdown()
         val:SetLabel(L["Threat"])
         val:SetCallback("OnValueChanged", function(_, _, v)
             value.threat = v
@@ -287,17 +300,17 @@ addon:RegisterCondition("THREAT", {
         addon.layout_condition_unitwidget_help(frame)
         frame:AddChild(helpers.Gap())
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Threat"] .. color.RESET .. " - " ..
-            "The amount of addon.threat you have with " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. ".  This " ..
-            "condition will not be successful if you have no addon.threat whatsoever (ie. are not considered in combat " ..
+            "The amount of threat you have with " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. ".  This " ..
+            "condition will not be successful if you have no threat whatsoever (ie. are not considered in combat " ..
             "with that unit.)"))
-        frame:AddChild(helpers.Indent(40, helpers.CreateText(color.GREEN .. L["no addon.threat risk"] .. color.RESET .. " - " ..
-            "You are not in danger of taking addon.threat away from whoever has addon.threat.")))
-        frame:AddChild(helpers.Indent(40, helpers.CreateText(color.GREEN .. L["higher addon.threat than tank"] .. color.RESET .. " - " ..
-            "You are in danger of pulling addon.threat away from the current tank, and should reduce the amount of " ..
-            "addon.threat generated (by using addon.threat-reducing abilities or ceasing DPS or Healing) immediately.")))
+        frame:AddChild(helpers.Indent(40, helpers.CreateText(color.GREEN .. L["no threat risk"] .. color.RESET .. " - " ..
+            "You are not in danger of taking threat away from whoever has threat.")))
+        frame:AddChild(helpers.Indent(40, helpers.CreateText(color.GREEN .. L["higher threat than tank"] .. color.RESET .. " - " ..
+            "You are in danger of pulling threat away from the current tank, and should reduce the amount of " ..
+            "threat generated (by using threat-reducing abilities or ceasing DPS or Healing) immediately.")))
         frame:AddChild(helpers.Indent(40, helpers.CreateText(color.GREEN .. L["tanking, at risk"] .. color.RESET .. " - " ..
             "You are currently tanking " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. ", however " ..
-            "you are not at the top of the addon.threat table, and thus are at risk of them switching targets " ..
+            "you are not at the top of the threat table, and thus are at risk of them switching targets " ..
             "to somebody else.")))
         frame:AddChild(helpers.Indent(40, helpers.CreateText(color.GREEN .. L["tanking, secure"] .. color.RESET .. " - " ..
             "You are currently tanking " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. " and are " ..
@@ -317,7 +330,7 @@ addon:RegisterCondition("THREAT_COUNT", {
     evaluate = function(value)
         local count = 0
         for _, entity in pairs(addon.unitsInRange) do
-            if entity.enemy and entity.addon.threat and entity.addon.threat >= value.threat - 1 then
+            if entity.enemy and entity.threat and entity.threat >= value.threat - 1 then
                 count = count + 1
             end
         end
@@ -326,7 +339,7 @@ addon:RegisterCondition("THREAT_COUNT", {
     print = function(_, value)
         return addon.compareString(value.operator,
                         string.format(L["number of enemies you are at least %s"],
-                        addon.nullable(addon.threat[value.threat], L["<addon.threat>"])),
+                        addon.nullable(addon.threat[value.threat], L["<threat>"])),
                         addon.nullable(value.value))
     end,
     widget = function(parent, spec, value)
@@ -334,7 +347,7 @@ addon:RegisterCondition("THREAT_COUNT", {
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
-        local val = AceGUI:Create("Dropdown")
+        local val = addon:CreateConditionDropdown()
         val:SetLabel(L["Threat"])
         val:SetCallback("OnValueChanged", function(_, _, v)
             value.threat = v
@@ -352,22 +365,22 @@ addon:RegisterCondition("THREAT_COUNT", {
     end,
     help = function(frame)
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Threat"] .. color.RESET .. " - " ..
-                "The minimum amount of addon.threat you have with other addon.units."))
-        frame:AddChild(helpers.Indent(40, helpers.CreateText(color.GREEN .. L["no addon.threat risk"] .. color.RESET .. " - " ..
-                "You are not in danger of taking addon.threat away from whoever has addon.threat.")))
-        frame:AddChild(helpers.Indent(40, helpers.CreateText(color.GREEN .. L["higher addon.threat than tank"] .. color.RESET .. " - " ..
-                "You are in danger of pulling addon.threat away from the current tank, and should reduce the amount of " ..
-                "addon.threat generated (by using addon.threat-reducing abilities or ceasing DPS or Healing) immediately.")))
+                "The minimum amount of threat you have with other units."))
+        frame:AddChild(helpers.Indent(40, helpers.CreateText(color.GREEN .. L["no threat risk"] .. color.RESET .. " - " ..
+                "You are not in danger of taking threat away from whoever has threat.")))
+        frame:AddChild(helpers.Indent(40, helpers.CreateText(color.GREEN .. L["higher threat than tank"] .. color.RESET .. " - " ..
+                "You are in danger of pulling threat away from the current tank, and should reduce the amount of " ..
+                "threat generated (by using threat-reducing abilities or ceasing DPS or Healing) immediately.")))
         frame:AddChild(helpers.Indent(40, helpers.CreateText(color.GREEN .. L["tanking, at risk"] .. color.RESET .. " - " ..
-                "You are currently tanking, however you are not at the top of the addon.threat table, and thus are at " ..
+                "You are currently tanking, however you are not at the top of the threat table, and thus are at " ..
                 "risk of them switching targets to somebody else.")))
         frame:AddChild(helpers.Indent(40, helpers.CreateText(color.GREEN .. L["tanking, secure"] .. color.RESET .. " - " ..
                 "You are currently tanking  and are not at risk of them switching targets at the moment.")))
         frame:AddChild(helpers.Gap())
         addon.layout_condition_operatorwidget_help(frame, L["Threat Count"], L["Count"],
-                "The number of addon.units you have at least " .. color.BLIZ_YELLOW .. L["Threat"] .. color.RESET .. " on.")
+                "The number of units you have at least " .. color.BLIZ_YELLOW .. L["Threat"] .. color.RESET .. " on.")
         frame:AddChild(helpers.Gap())
-        frame:AddChild(helpers.CreateText("Threat is measured only on addon.units within a maximum measurable range. The maximum " ..
+        frame:AddChild(helpers.CreateText("Threat is measured only on units within a maximum measurable range. The maximum " ..
                 " range is set using Game Options -> Interface -> Game tab -> Names -> Nameplate Distance."))
     end
 })
@@ -445,7 +458,7 @@ addon:RegisterCondition("FORM", {
         set_form_icon()
         parent:AddChild(formIcon)
 
-        local form = AceGUI:Create("Dropdown")
+        local form = addon:CreateConditionDropdown()
         form:SetLabel(L["Form"])
         form:SetCallback("OnValueChanged", function(_, _, v)
             value.value = tonumber(v)
@@ -469,6 +482,7 @@ addon:RegisterCondition("FORM", {
 })
 
 addon:RegisterCondition("ATTACKABLE", {
+    requiredFields = {"unit"},
     description = L["Attackable"],
     icon = "Interface\\Icons\\inv_misc_head_dragon_bronze",
     fields = { unit = "string" },
@@ -549,7 +563,7 @@ addon:RegisterCondition("COMBAT_HISTORY", {
     print = function(_, value)
         return addon.compareString(value.operator, string.format(addon.playerize(value.unit, L["%s were %s"], L["%s was %s"]),
                              addon.nullable(addon.units[value.unit], L["<unit>"]), addon.nullable(addon.actions[value.action], L["<action>"])),
-                             string.format(L["%s addon.actions ago"], addon.nullable(value.value)))
+                             string.format(L["%s actions ago"], addon.nullable(value.value)))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -560,7 +574,7 @@ addon:RegisterCondition("COMBAT_HISTORY", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
 
-        local action = AceGUI:Create("Dropdown")
+        local action = addon:CreateConditionDropdown()
         action:SetLabel(L["Action Type"])
         action:SetCallback("OnValueChanged", function(_, _, v)
             value.action = v
@@ -584,7 +598,7 @@ addon:RegisterCondition("COMBAT_HISTORY", {
         frame:AddChild(helpers.Gap())
         addon.layout_condition_operatorwidget_help(frame, L["Combat Action History"], L["Count"],
             "How far back in your combat history to look for " .. color.BLIZ_YELLOW .. L["Action"] .. color.RESET ..
-            " (by count).  A value of 1 means the last combat action, 2 means two combat addon.actions ago, etc.  " ..
+            " (by count).  A value of 1 means the last combat action, 2 means two combat actions ago, etc.  " ..
             "Each combat action treated separately.  Any combat action more than the setting of " .. color.BLUE ..
             L["Combat History Memory (seconds)"] .. color.RESET .. " in the primary Rotation Master configuration " ..
             "screen ago will not be available.")
@@ -626,7 +640,7 @@ addon:RegisterCondition("COMBAT_HISTORY_TIME", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
 
-        local action = AceGUI:Create("Dropdown")
+        local action = addon:CreateConditionDropdown()
         action:SetLabel(L["Action Type"])
         action:SetCallback("OnValueChanged", function(_, _, v)
             value.action = v
@@ -650,7 +664,7 @@ addon:RegisterCondition("COMBAT_HISTORY_TIME", {
         frame:AddChild(helpers.Gap())
         addon.layout_condition_operatorwidget_help(frame, L["Combat Action History Time"], L["Seconds"],
             "How far back in your combat history to look for " .. color.BLIZ_YELLOW .. L["Action"] .. color.RESET ..
-            " (by time).  A value of 1 means the last combat action, 2 means two combat addon.actions ago, etc.  " ..
+            " (by time).  A value of 1 means the last combat action, 2 means two combat actions ago, etc.  " ..
             "Each combat action treated separately.  Any combat action more than the setting of " .. color.BLUE ..
             L["Combat History Memory (seconds)"] .. color.RESET .. " in the primary Rotation Master configuration " ..
             "screen ago will not be available.")
@@ -658,7 +672,7 @@ addon:RegisterCondition("COMBAT_HISTORY_TIME", {
 })
 
 addon:RegisterCondition("TIME_IN_COMBAT", {
-    description = "Time Since Combat Start",
+    description = L["Time Since Combat Start"],
     icon = "Interface\\Icons\\Spell_holy_borrowedtime",
     fields = { operator = "string", value = "number" },
     valid = function(_, value)
@@ -671,7 +685,7 @@ addon:RegisterCondition("TIME_IN_COMBAT", {
         return false
     end,
     print = function(_, value)
-        return string.format("Time in combat is %s %s seconds",
+        return string.format(L["Time in combat is %s %s seconds"],
         addon.nullable(addon.operators[value.operator], L["<operator>"]),
         addon.nullable(value.value))    
     end,
@@ -685,9 +699,7 @@ addon:RegisterCondition("TIME_IN_COMBAT", {
         parent:AddChild(operator_group)
     end,
     help = function(frame)
-        addon.layout_condition_unitwidget_help(frame)
-        frame:AddChild(helpers.Gap())
-        addon.layout_condition_operatorpercentwidget_help(frame, L["Time Since Combat Start"], L["Seconds"],
+        addon.layout_condition_operatorwidget_help(frame, L["Time Since Combat Start"], L["Seconds"],
         "This condition checks how long you've been in combat. For example, if the operator is set to 'is less than' and the " ..
         "value is set to 5, this condition will only be true if you have been in combat for less than 5 seconds, or if the " ..
         "operator is set to 'is greater than' and the value is set to 10, the condition will only be true if you have been in " ..

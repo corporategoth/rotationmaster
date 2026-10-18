@@ -1,0 +1,116 @@
+local F=dofile('tests/fixtures/addon.lua')
+local test,finish=F.suite()
+local function fixture()
+    local f=F.new();f.load('Platform/client.lua');f.load('Platform/items.lua');return f
+end
+test('modern and legacy item-use metadata returns detached canonical spell records for IDs names and links',function()
+    local f=fixture();local p=f.addon.Platform
+    for _,native in ipairs({true,false}) do
+        local fn=function(item) assert(item==5512 or item=='Healthstone' or item=='item:5512');return 'Healthstone',234 end
+        f.env.C_Item=native and {GetItemSpell=fn} or nil;f.env.GetItemSpell=not native and fn or nil
+        for _,item in ipairs({5512,'Healthstone','item:5512'}) do
+            local info=p:GetItemUseSpell(item);assert(info.name=='Healthstone' and info.spellID==234)
+            info.name='edited';assert(p:GetItemUseSpell(item).name=='Healthstone')
+        end
+    end
+end)
+test('missing nil malformed secret and throwing metadata remain unavailable without legacy fallback',function()
+    local f=fixture();local p=f.addon.Platform;local calls=0
+    f.env.C_Item={GetItemSpell=function() calls=calls+1;return 'Healthstone',234 end}
+    for _,item in ipairs({0,-1,1.5,math.huge,{},false,'',string.rep('x',1025)}) do assert(p:GetItemUseSpell(item)==nil) end
+    assert(calls==0)
+    local opaque={};f.env.canaccessvalue=function(v) return v~=opaque end
+    assert(p:GetItemUseSpell(opaque)==nil and calls==0)
+    f.env.GetItemSpell=function() error('must not fall back from native failure') end
+    for _,record in ipairs({{}, {'Healthstone'}, {'',234}, {'Healthstone',0}, {'Healthstone',1.5}, {opaque,234}, {'Healthstone',opaque}}) do
+        f.env.C_Item.GetItemSpell=function() return unpack(record) end
+        local info,reason=p:GetItemUseSpell(5512);assert(info==nil and reason)
+    end
+    f.env.C_Item.GetItemSpell=function() error('native failure') end
+    local info,reason=p:GetItemUseSpell(5512);assert(not info and reason=='api-error')
+    f.env.C_Item=nil;f.env.GetItemSpell=nil
+    info,reason=p:GetItemUseSpell(5512);assert(not info and reason=='missing-api')
+end)
+test('item identity resolves modern and legacy names and links and refuses unreadable or unavailable results',function()
+    local f=fixture();local p=f.addon.Platform
+    assert(p:GetItemID(5512)==5512)
+    for _,native in ipairs({true,false}) do
+        local fn=function(item) assert(item=='Healthstone' or item=='item:5512');return 5512,'Consumable','Other','',1,0,0 end
+        f.env.C_Item=native and {GetItemInfoInstant=fn} or nil;f.env.GetItemInfoInstant=not native and fn or nil
+        assert(p:GetItemID('Healthstone')==5512 and p:GetItemID('item:5512')==5512)
+    end
+    local opaque={};f.env.canaccessvalue=function(v) return v~=opaque end
+    f.env.C_Item={GetItemInfoInstant=function() return opaque end}
+    assert(p:GetItemID('Healthstone')==nil)
+    f.env.C_Item.GetItemInfoInstant=function() return nil end
+    assert(p:GetItemID('Healthstone')==nil)
+    f.env.C_Item.GetItemInfoInstant=function() error('metadata missing') end
+    local id,reason=p:GetItemID('Healthstone');assert(not id and reason=='api-error')
+end)
+test('item readiness uses carried ownership usability and the item cooldown in modern and legacy clients',function()
+    for _,native in ipairs({true,false}) do
+        local f=fixture();local p=f.addon.Platform;local count,usable,power,start,duration,enabled=1,true,false,0,0,1
+        local calls={}
+        local countFn=function(id,bank,uses) assert(id==5512 and bank==false and uses==false);return count end
+        local usableFn=function(id) assert(id==5512);return usable,power end
+        local cooldownFn=function(id) assert(id==5512);calls[#calls+1]=id;return start,duration,enabled end
+        f.env.C_Item=native and {GetItemCount=countFn,IsUsableItem=usableFn} or nil
+        f.env.C_Container=native and {GetItemCooldown=cooldownFn} or nil
+        f.env.GetItemCount=not native and countFn or nil;f.env.IsUsableItem=not native and usableFn or nil
+        f.env.GetItemCooldown=not native and cooldownFn or nil
+        assert(p:IsItemReady(5512,100)==true)
+        count=0;assert(p:IsItemReady(5512,100)==false and #calls==1,'missing carried item still queried cooldown')
+        count=1;usable=false;assert(p:IsItemReady(5512,100)==false)
+        usable=true;power=true;assert(p:IsItemReady(5512,100)==false)
+        power=false;start=90;duration=30;assert(p:IsItemReady(5512,100)==false)
+        start=70;assert(p:IsItemReady(5512,100)==true)
+        enabled=0;assert(p:IsItemReady(5512,100)==false)
+    end
+end)
+test('item readiness never turns nil restricted malformed or throwing values into availability',function()
+    local f=fixture();local p=f.addon.Platform;local opaque={}
+    f.env.canaccessvalue=function(value) return value~=opaque end
+    f.env.C_Item={GetItemCount=function() return 1 end,IsUsableItem=function() return true,false end}
+    f.env.C_Container={GetItemCooldown=function() return 0,0,1 end}
+    f.env.GetItemCooldown=function() error('must not fall back') end
+    for _,now in ipairs({-1,math.huge,0/0,'100',opaque}) do assert(p:IsItemReady(5512,now)==nil) end
+    for _,count in ipairs({-1,1.5,math.huge,opaque,false}) do
+        f.env.C_Item.GetItemCount=function() return count end;assert(p:IsItemReady(5512,100)==nil)
+    end
+    f.env.C_Item.GetItemCount=function() return 1 end
+    for _,tuple in ipairs({{}, {true}, {opaque,false}, {true,opaque}}) do
+        f.env.C_Item.IsUsableItem=function() return unpack(tuple) end;assert(p:IsItemReady(5512,100)==nil)
+    end
+    f.env.C_Item.IsUsableItem=function() return true,false end
+    for _,tuple in ipairs({{}, {0,0}, {-1,5,1},{0,-1,1},{0,0,2},{opaque,0,1},{0,math.huge,1},{0,0,opaque}}) do
+        f.env.C_Container.GetItemCooldown=function() return unpack(tuple) end;assert(p:IsItemReady(5512,100)==nil)
+    end
+    f.env.C_Container.GetItemCooldown=function() error('native failure') end
+    local ready,reason=p:IsItemReady(5512,100);assert(ready==nil and reason=='api-error')
+    f.env.C_Item.GetItemCount=function() return nil end;assert(p:IsItemReady(5512,100)==nil)
+end)
+test('item range requires a positive observation or an explicit rangeless shape and uses native APIs first',function()
+    for _,native in ipairs({true,false}) do
+        local f=fixture();local p=f.addon.Platform;local range=true;local shape=true
+        local hasRange=function(id) assert(id==5512);return shape end
+        local inRange=function(id,unit) assert(id==5512 and unit=='target');return range end
+        f.env.C_Item=native and {ItemHasRange=hasRange,IsItemInRange=inRange} or nil
+        f.env.ItemHasRange=not native and hasRange or nil;f.env.IsItemInRange=not native and inRange or nil
+        assert(p:GetItemRangeState(5512,'target').inRange)
+        range=false;assert(p:GetItemRangeState(5512,'target').inRange==false)
+        range=nil;assert(p:GetItemRangeState(5512,'target')==nil)
+        shape=false;assert(p:GetItemRangeState(5512,'target').applicable==false)
+        shape=nil;assert(p:GetItemRangeState(5512,'target')==nil)
+        if not native then shape=true;range=1;assert(p:GetItemRangeState(5512,'target').inRange);range=0;assert(not p:GetItemRangeState(5512,'target').inRange) end
+    end
+    local f=fixture();local p=f.addon.Platform;local opaque={}
+    f.env.canaccessvalue=function(value) return value~=opaque end
+    f.env.C_Item={ItemHasRange=function() return true end,IsItemInRange=function() return opaque end}
+    f.env.IsItemInRange=function() error('legacy fallback') end
+    assert(p:GetItemRangeState(5512,'target')==nil)
+    f.env.C_Item.IsItemInRange=function() error('native failure') end
+    local state,reason=p:GetItemRangeState(5512,'target');assert(not state and reason=='api-error')
+    f.env.C_Item=nil;f.env.IsItemInRange=nil
+    assert(p:GetItemRangeState(5512,'target')==nil)
+end)
+finish()

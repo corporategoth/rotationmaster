@@ -23,6 +23,8 @@ addon.PopupError = function(s, onaccept)
 end
 
 addon.HideOnEscape = function(frame)
+    if addon.MakeWindowOpaque then addon:MakeWindowOpaque(frame) end
+    if addon.RegisterWindowForEscape and addon:RegisterWindowForEscape(frame) then return end
     frame.frame:EnableKeyboard(true)
     frame.frame:SetPropagateKeyboardInput(true)
     frame.frame:SetScript("OnKeyDown", function (self, key)
@@ -332,26 +334,33 @@ addon.getSpecSpellID = function(spec, name)
     return nil
 end
 
+local function getLogLevel(self)
+    -- AceDB removes default-valued fields during shutdown; events may still
+    -- arrive afterwards. Use the normal default without writing it back.
+    local profile = self.db and self.db.profile
+    return (profile and tonumber(profile.loglevel)) or 2
+end
+
 function addon:verbose(message, ...)
-    if self.db.profile.loglevel >= 4 then
+    if getLogLevel(self) >= 4 then
         AceConsole:Printf(color.WHITE .. "[" .. color.CYAN .. addon.pretty_name .. color.WHITE .. "] " .. color.DEBUG .. message .. color.RESET, ...)
     end
 end
 
 function addon:debug(message, ...)
-    if self.db.profile.loglevel >= 3 then
+    if getLogLevel(self) >= 3 then
         AceConsole:Printf(color.WHITE .. "[" .. color.CYAN .. addon.pretty_name .. color.WHITE .. "] " .. color.DEBUG .. message .. color.RESET, ...)
     end
 end
 
 function addon:info(message, ...)
-    if self.db.profile.loglevel >= 2 then
+    if getLogLevel(self) >= 2 then
         AceConsole:Printf(color.WHITE .. "[" .. color.CYAN .. addon.pretty_name .. color.WHITE .. "] " .. color.INFO .. message .. color.RESET, ...)
     end
 end
 
 function addon:warn(message, ...)
-    if self.db.profile.loglevel >= 1 then
+    if getLogLevel(self) >= 1 then
         AceConsole:Printf(color.WHITE .. "[" .. color.CYAN .. addon.pretty_name .. color.WHITE .. "] " .. color.WARN .. message .. color.RESET, ...)
     end
 end
@@ -561,6 +570,10 @@ function addon.AddTooltip(frame, text)
 end
 
 function addon:configure_frame(obj)
+    if self.InstallSpellHyperlinks then
+        if obj.label then self:InstallSpellHyperlinks(obj.frame) end
+        if obj.statustext and obj.statustext.GetParent then self:InstallSpellHyperlinks(obj.statustext:GetParent()) end
+    end
     if obj.children ~= nil then
         for _, child in pairs(obj.children) do
             addon:configure_frame(child)
@@ -574,13 +587,9 @@ function addon:configure_frame(obj)
 end
 
 function addon:GetSpecialization()
-    if WOW_PROJECT_ID == WOW_PROJECT_MAINLINE then
-        return GetSpecialization()
-    elseif LE_EXPANSION_LEVEL_CURRENT >= 2 then
-        return GetActiveTalentGroup()
-    else
-        return 0
-    end
+    local selection,reason=self.Platform:GetRotationSpecialization()
+    if not selection then return nil,reason end
+    return selection.index
 end
 
 function addon:UpdateItem_ID_ID(item, text, icon, attempt)

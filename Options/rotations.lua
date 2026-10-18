@@ -3,7 +3,7 @@ local addon_name, addon = ...
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 
 local AceGUI = LibStub("AceGUI-3.0")
-local SpellData = LibStub("AceGUI-3.0-SpellLoader")
+local SpellData = addon.SpellCatalog
 
 local isint, isSpellOnSpec, getSpecSpellID, deepcopy = addon.isint, addon.isSpellOnSpec, addon.getSpecSpellID, addon.deepcopy
 local pairs, color, tonumber = pairs, color, tonumber
@@ -24,9 +24,11 @@ local function add_top_buttons(list, idx, callback, delete_cb)
     button_group:SetLayout("Table")
     button_group:SetUserData("table", { columns = { 24, 1, 24, 24, 24, 24, 24, 24 } })
 
+    local useName=rot.use_name
+    if useName==nil then useName=type(rot.name)=="string" and #rot.name>0 end
     local use_name = AceGUI:Create("CheckBox")
     use_name:SetUserData("cell", { alignV = "bottom", alignH = "center" })
-    use_name:SetValue(rot.use_name)
+    use_name:SetValue(useName)
     use_name:SetCallback("OnValueChanged", function(_, _, val)
         rot.use_name = val
         if not rot.use_name then
@@ -39,11 +41,11 @@ local function add_top_buttons(list, idx, callback, delete_cb)
     local name = AceGUI:Create("EditBox")
     name:SetFullWidth(true)
     name:SetLabel(NAME)
-    name:SetDisabled(not rot.use_name)
-    if rot.use_name then
+    name:SetDisabled(not useName)
+    if useName then
         name:SetText(rot.name)
     elseif rot.type == "none" then
-        name:SetText(L["No Action"])
+        name:SetText(L["Stop"])
     elseif rot.action ~= nil then
         if rot.type == BOOKTYPE_SPELL or rot.type == BOOKTYPE_PET or rot.type == "any" then
             name:SetText(SpellData:SpellName(rot.action, not rot.ranked))
@@ -151,7 +153,8 @@ local function add_top_buttons(list, idx, callback, delete_cb)
     duplicate:SetImageSize(24, 24)
     duplicate:SetImage("Interface\\ChatFrame\\UI-ChatIcon-Maximize-Up")
     duplicate:SetCallback("OnClick", function()
-        local tmp = deepcopy(rot)
+        local tmp,problem = addon.RotationData.CopyData(rot)
+        if not tmp then addon:warn(L["Could not duplicate this step: %s"],problem.code);return end
         tmp.id = addon:uuid()
         table.insert(list, idx, tmp)
         callback()
@@ -203,9 +206,7 @@ local function add_effect_group(specID, rotid, rot, refresh)
     end
     update_effect_map()
 
-    if rot.color == nil then
-        rot.color = { r = 0, g = 1.0, b = 0, a = 1.0 }
-    end
+    local displayColor=addon:ResolveHighlightColor(rot.color)
 
     local effect_idx = rot.effect or profile["effect"]
     local effect = effect_idx and effects[effect_idx]
@@ -216,7 +217,7 @@ local function add_effect_group(specID, rotid, rot, refresh)
     effect_icon:SetCallback("OnRelease", function(self)
         addon:HideGlow(self.frame, "effect")
     end)
-    addon:Glow(effect_icon.frame, "effect", effect, rot.color, 1.0, "CENTER", 0, 0)
+    addon:Glow(effect_icon.frame, "effect", effect, displayColor, 1.0, "CENTER", 0, 0)
     effect_group:AddChild(effect_icon)
 
     local effect_sel = AceGUI:Create("Dropdown")
@@ -273,7 +274,7 @@ local function add_effect_group(specID, rotid, rot, refresh)
 
     local color_pick = AceGUI:Create("ColorPicker")
     color_pick:SetRelativeWidth(0.35)
-    color_pick:SetColor(rot.color.r, rot.color.g, rot.color.b, rot.color.a)
+    color_pick:SetColor(displayColor.r, displayColor.g, displayColor.b, displayColor.a)
     color_pick:SetLabel(L["Highlight Color"])
     color_pick:SetDisabled(rot.effect == NONE or effect == nil or effect.type == "dazzle" or effect.type == "custom")
     color_pick:SetCallback("OnValueConfirmed", function(_, _, r, g, b, a)
@@ -406,7 +407,7 @@ local function add_action_group(specID, rotid, rot, callback, refresh, cooldown)
     }
     local types_order = { BOOKTYPE_SPELL, BOOKTYPE_PET, "any", "item" }
     if not cooldown then
-        types["none"] = L["None"]
+        types["none"] = L["Stop"]
         table.insert(types_order, "none")
     end
 
@@ -417,6 +418,7 @@ local function add_action_group(specID, rotid, rot, callback, refresh, cooldown)
         if rot.type ~= val then
             rot.type = val
             rot.action = nil
+            if val~="none" then rot.suppress_attack=nil end
             refresh()
             callback()
         end
@@ -427,13 +429,21 @@ local function add_action_group(specID, rotid, rot, callback, refresh, cooldown)
     end
     action_group:AddChild(action_type)
 
+    if rot.type=="none" and not cooldown then
+        action_group:SetUserData("table", {columns={0,1}})
+        local suppress=AceGUI:Create("CheckBox")
+        suppress:SetFullWidth(true);suppress:SetLabel(L["Also suppress implicit Attack"])
+        suppress:SetValue(rot.suppress_attack==true)
+        suppress:SetCallback("OnValueChanged",function(_,_,enabled) rot.suppress_attack=enabled or nil;callback() end)
+        action_group:AddChild(suppress)
+    end
+
     if rot.type ~= nil and rot.type == BOOKTYPE_SPELL then
-        local action = AceGUI:Create("Spec_EditBox")
-        local action_icon = AceGUI:Create("ActionSlotSpell")
+        local action = addon:CreateSpellEditBox("Spec_EditBox",rot.action)
+        local action_icon = addon:CreateSpellActionIcon("spell",rot.action,function(id) return isSpellOnSpec(specID,id) end)
         action_icon:SetWidth(44)
         action_icon:SetHeight(44)
         action_icon:SetText(rot.action)
-        action_icon.text:Hide()
         action_icon:SetCallback("OnEnterPressed", function(_, _, v)
             v = tonumber(v)
             if not v or isSpellOnSpec(specID, v) then
@@ -521,12 +531,11 @@ local function add_action_group(specID, rotid, rot, callback, refresh, cooldown)
         end)
         action_group:AddChild(action)
     elseif rot.type ~= nil and rot.type == BOOKTYPE_PET then
-        local action = AceGUI:Create("Spec_EditBox")
-        local action_icon = AceGUI:Create("ActionSlotPetAction")
+        local action = addon:CreateSpellEditBox("Spec_EditBox",rot.action)
+        local action_icon = addon:CreateSpellActionIcon("pet",rot.action,function(id) return isSpellOnSpec(BOOKTYPE_PET,id) end)
         action_icon:SetWidth(44)
         action_icon:SetHeight(44)
         action_icon:SetText(rot.action)
-        action_icon.text:Hide()
         action_icon:SetCallback("OnEnterPressed", function(_, _, v)
             v = tonumber(v)
             if not v or isSpellOnSpec(BOOKTYPE_PET, v) then
@@ -586,12 +595,11 @@ local function add_action_group(specID, rotid, rot, callback, refresh, cooldown)
         end)
         action_group:AddChild(action)
     elseif rot.type ~= nil and rot.type == "any" then
-        local action = AceGUI:Create("Spell_EditBox")
-        local action_icon = AceGUI:Create("ActionSlotSpell")
+        local action = addon:CreateSpellEditBox("Spell_EditBox",rot.action)
+        local action_icon = addon:CreateSpellActionIcon("spell",rot.action)
         action_icon:SetWidth(44)
         action_icon:SetHeight(44)
         action_icon:SetText(rot.action)
-        action_icon.text:Hide()
         action_icon:SetCallback("OnEnterPressed", function(_, _, v)
             addon:RemoveCooldownGlowIfCurrent(specID, rotid, rot)
             rot.action = v
@@ -656,7 +664,7 @@ local function add_action_group(specID, rotid, rot, callback, refresh, cooldown)
         action:SetText(rot.action and SpellData:SpellName(rot.action, not rot.ranked))
         action:SetCallback("OnEnterPressed", function(_, _, val)
             addon:RemoveCooldownGlowIfCurrent(specID, rotid, rot)
-            local spellid = SpellData:GetSpellId(val)
+            local spellid = SpellData:ResolveSelection(val)
             rot.action = spellid
             action:SetText(SpellData:SpellName(rot.action, not rot.ranked))
             action_icon:SetText(rot.action)
@@ -791,6 +799,8 @@ local function add_conditions(specID, idx, rotid, rot, callback)
     conditions:SetUserData("table", { columns = { 1, 36 } })
 
     local function layout_conditions()
+        local owner={}
+        conditions:SetUserData("conditionEditorOwner",owner)
         conditions:ReleaseChildren()
         conditions:PauseLayout()
 
@@ -920,9 +930,11 @@ local function add_conditions(specID, idx, rotid, rot, callback)
                 rot.conditions = { type = nil }
             end
             addon.currentConditionEval = nil
-            addon:EditCondition(idx, specID, rot.conditions, function()
-                layout_conditions()
-                callback()
+            local root=rot.conditions
+            addon:EditCondition(idx, specID, root, function()
+                if conditions:GetUserData("conditionEditorOwner")==owner then layout_conditions();callback() end
+            end,function()
+                return addon:OwnsRotationCondition(specID,rotid,rot,root)
             end)
         end)
         conditions:AddChild(edit_button)

@@ -33,6 +33,7 @@
 -- (The documentation IS the code)
 
 local lib = {}
+local defaultTabWidth = 2
 
 local stringlen = string.len
 local stringformat = string.format
@@ -954,7 +955,6 @@ function lib.padWithLinebreaks(code)
 
 end
 
-local defaultTabWidth = 2
 local defaultColorTable
 
 -- Data tables

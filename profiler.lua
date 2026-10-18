@@ -1,7 +1,6 @@
 local _, addon = ...
 
 local string, pairs = string, pairs
-local tablelength = addon.tablelength
 
 local function Constructor()
     local rv = {
@@ -18,7 +17,7 @@ local function Constructor()
 
         stop = function(self)
             local runtime = GetTime() - self.startTime
-            if self.min == 0.0 or runtime < min then
+            if self.count == 0 or runtime < self.min then
                 self.min = runtime
             end
             if runtime > self.max then
@@ -33,18 +32,13 @@ local function Constructor()
         report = function(self, full)
             if self.count == 0 then return end
             local rv = string.format("%d runs: %.03f min, %.03f avg, %.03f max", self.count, self.min, (self.total / self.count), self.max)
-            if full and tablelength(self.children) > 0 then
-                rv = rv .. " { "
-                local first = true
-                for name, child in pairs(self.children) do
-                    if first then
-                        first = false
-                    else
-                        rv = rv .. ", "
-                    end
-                    rv = rv .. name .. "[" .. child:report(full) .. "]"
+            if full then
+                local parts={}
+                for name,child in pairs(self.children) do
+                    local summary=child:report(full)
+                    if summary then parts[#parts+1]=name.."["..summary.."]" end
                 end
-                rv = rv .. " }"
+                if #parts>0 then rv=rv.." { "..table.concat(parts,", ").." }" end
             end
             return rv
         end,

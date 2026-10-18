@@ -1,0 +1,18 @@
+name: Offline checks
+on:
+  pull_request:
+  push:
+    branches: ['**']
+permissions:
+  contents: read
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install test runtimes
+        run: sudo apt-get update && sudo apt-get install -y lua5.1 luajit python3
+      - name: Install pinned WoW static checker
+        run: python3 tools/setup_lint.py
+      - name: Check addon
+        run: python3 tools/check

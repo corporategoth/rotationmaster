@@ -1,13 +1,19 @@
 local addon_name, addon = ...
 
 local AceGUI = LibStub("AceGUI-3.0")
-local SpellData = LibStub("AceGUI-3.0-SpellLoader")
+local SpellData = addon.SpellCatalog
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
+
+-- Portable condition fields contain ordinary saved data, never live secrets.
+function addon.IsConditionSpellID(value)
+    return type(value)=="number" and value>0 and value<math.huge and value%1==0
+end
 
 function addon:Widget_GetSpellId(spellid, ranked)
     if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
         if not ranked then
-            spellid = SpellData:GetSpellId(spellid)
+            local resolved, reason = SpellData:GetSpellId(spellid)
+            return resolved, reason or (not resolved and "spell-data-unavailable" or nil)
         end
     end
     return spellid
@@ -18,12 +24,12 @@ function addon:Widget_GetSpellLink(spellid, ranked)
         if ranked then
             local rank = SpellData:SpellRank(spellid)
             if rank then
-               return SpellData:SpellLink(spellid) .. "|cFF888888 (" .. rank .. ")|r"
+               return (SpellData:SpellLink(spellid) or self:SpellLabel(spellid)) .. "|cFF888888 (" .. rank .. ")|r"
             end
         else
             spellid = self:Widget_GetSpellId(spellid, ranked)
         end
-        return SpellData:SpellLink(spellid)
+        return SpellData:SpellLink(spellid) or self:SpellLabel(spellid)
     end
 
     return nil
@@ -39,15 +45,15 @@ function addon:Widget_SpellWidget(spec, editbox, value, nametoid, isvalid, updat
         spell_group:SetUserData("table", { columns = { 44, 1 } })
     end
 
-    local spell = AceGUI:Create(editbox)
-    local spellIcon = AceGUI:Create(spec == BOOKTYPE_PET and "ActionSlotPetAction" or "ActionSlotSpell")
+    local spell = addon:CreateSpellEditBox(editbox,value.spell)
+    local initialSpell=type(value.spell)=="string" and SpellData:GetSpellId(value.spell) or value.spell
+    local spellIcon = addon:CreateSpellActionIcon(spec == BOOKTYPE_PET and "pet" or "spell",initialSpell,isvalid)
     spellIcon:SetWidth(44)
     spellIcon:SetHeight(44)
     spellIcon:SetText(value.spell)
-    spellIcon.text:Hide()
     spellIcon:SetCallback("OnEnterPressed", function(_, _, v)
         v = tonumber(v)
-        if isvalid(v) then
+        if v and isvalid(v) then
             value.spell = v
             spellIcon:SetText(v)
             spell:SetText(SpellData:SpellName(value.spell, not value.ranked))
@@ -55,6 +61,7 @@ function addon:Widget_SpellWidget(spec, editbox, value, nametoid, isvalid, updat
                 GameTooltip:SetHyperlink("spell:" .. v)
             end
         else
+            value.spell = nil
             spellIcon:SetText(nil)
             spell:SetText(nil)
             if GameTooltip:IsOwned(spellIcon.frame) and GameTooltip:IsVisible() then
@@ -140,18 +147,18 @@ function addon:Widget_SpellNameWidget(spec, editbox, value, isvalid, update)
     spell_group:SetLayout("Table")
     spell_group:SetUserData("table", { columns = { 44, 1 } })
 
-    local spell = AceGUI:Create(editbox)
-    local spellIcon = AceGUI:Create(spec == BOOKTYPE_PET and "ActionSlotPetAction" or "ActionSlotSpell")
+    local spell = addon:CreateSpellEditBox(editbox,value.spell)
+    local initialSpell=type(value.spell)=="string" and SpellData:GetSpellId(value.spell) or value.spell
+    local spellIcon = addon:CreateSpellActionIcon(spec == BOOKTYPE_PET and "pet" or "spell",initialSpell,isvalid)
     spellIcon:SetWidth(44)
     spellIcon:SetHeight(44)
     if value.spell then
         spellIcon:SetText(SpellData:GetSpellId(value.spell))
     end
-    spellIcon.text:Hide()
     spellIcon:SetCallback("OnEnterPressed", function(_, _, v)
         v = tonumber(v)
-        if isvalid(v) then
-            local name = SpellData:GetSpellName(v, true)
+        if v and isvalid(v) then
+            local name = SpellData:SpellName(v, true)
             value.spell = name
             spellIcon:SetText(v)
             spell:SetText(name)
@@ -159,6 +166,7 @@ function addon:Widget_SpellNameWidget(spec, editbox, value, isvalid, update)
                 GameTooltip:SetHyperlink("spell:" .. v)
             end
         else
+            value.spell = nil
             spellIcon:SetText(nil)
             spell:SetText(nil)
             if GameTooltip:IsOwned(spellIcon.frame) and GameTooltip:IsVisible() then
@@ -168,9 +176,10 @@ function addon:Widget_SpellNameWidget(spec, editbox, value, isvalid, update)
         update()
     end)
     spellIcon:SetCallback("OnEnter", function()
-        if value.spell then
+        local id=spellIcon:GetUserData("spell")
+        if id then
             GameTooltip:SetOwner(spellIcon.frame, "ANCHOR_BOTTOMRIGHT", 3)
-            GameTooltip:SetHyperlink("spell:" .. value.spell)
+            GameTooltip:SetHyperlink("spell:" .. id)
         end
     end)
     spellIcon:SetCallback("OnLeave", function()
@@ -187,7 +196,7 @@ function addon:Widget_SpellNameWidget(spec, editbox, value, isvalid, update)
     spell:SetUserData("norank", not value.ranked)
     spell:SetUserData("spec", spec)
     spell:SetCallback("OnEnterPressed", function(_, _, v)
-        local spellid = SpellData:GetSpellId(v)
+        local spellid = SpellData:ResolveSelection(v)
         local name = SpellData:SpellName(spellid, true)
 
         if isvalid(spellid) then
@@ -253,7 +262,7 @@ function addon:Widget_ItemWidget(top, editbox, value, isvalid, update)
 
     local edit_button = AceGUI:Create("Icon")
 
-    local item = AceGUI:Create("Dropdown")
+    local item = addon:CreateConditionDropdown()
     item:SetFullWidth(true)
     item:SetLabel(L["Item Set"])
     item:SetCallback("OnValueChanged", function(_, _, val)
@@ -349,14 +358,14 @@ function addon:Widget_SingleItemWidget(spec, editbox, value, isvalid, update)
 
     item_group:SetUserData("table", { columns = { 44, 1 } })
 
-    local item = AceGUI:Create(editbox)
+    local item = addon:CreateItemEditBox(editbox,value.item)
     local itemIcon = AceGUI:Create("ActionSlotItem")
     itemIcon:SetWidth(44)
     itemIcon:SetHeight(44)
     itemIcon.text:Hide()
     itemIcon:SetCallback("OnEnterPressed", function(_, _, v)
         v = tonumber(v)
-        if isvalid(v) then
+        if v and isvalid(v) then
             value.item = v
             if GameTooltip:IsOwned(itemIcon.frame) and GameTooltip:IsVisible() then
                 GameTooltip:SetHyperlink("item:" .. v)
@@ -418,7 +427,7 @@ function addon:Widget_OperatorWidget(value, name, update, op_field, val_field)
     operator_group:SetLayout("Table")
     operator_group:SetUserData("table", { columns = { 0, 75 } })
 
-    local operator = AceGUI:Create("Dropdown")
+    local operator = addon:CreateConditionDropdown()
     operator:SetFullWidth(true)
     operator:SetLabel(L["Operator"])
     operator:SetCallback("OnValueChanged", function(_, _, v)
@@ -451,7 +460,7 @@ function addon:Widget_OperatorPercentWidget(value, name, update, op_field, val_f
     operator_group:SetLayout("Table")
     operator_group:SetUserData("table", { columns = { 0, 150 } })
 
-    local operator = AceGUI:Create("Dropdown")
+    local operator = addon:CreateConditionDropdown()
     operator:SetFullWidth(true)
     operator:SetLabel(L["Operator"])
     operator:SetCallback("OnValueChanged", function(_, _, v)
@@ -487,7 +496,7 @@ function addon:Widget_UnitWidget(value, units, update, field)
     if field == nil then
         field = "unit"
     end
-    local unit = AceGUI:Create("Dropdown")
+    local unit = addon:CreateConditionDropdown()
     unit:SetLabel(L["Unit"])
     unit:SetCallback("OnValueChanged", function(_, _, v)
         value[field] = v

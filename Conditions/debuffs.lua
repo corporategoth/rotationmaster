@@ -5,40 +5,20 @@ local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 local color = color
 local helpers = addon.help_funcs
 
-local UnitDebuff
-if (WOW_PROJECT_ID == WOW_PROJECT_CLASSIC) then
-    local LibClassicDurations = LibStub("LibClassicDurations")
-    UnitDebuff = function(unit, idx) return LibClassicDurations.UnitAuraDirect(unit, idx, "HARMFUL") end
-else
-    UnitDebuff = function(unit, idx) return UnitAura(unit, idx, "HARMFUL") end
-end
-
 addon:RegisterCondition("DEBUFF", {
     description = L["Debuff Present"],
     icon = "Interface\\Icons\\spell_shadow_curseoftounges",
-    fields = { unit = "string", spell = "string", owndebuff = "boolean" },
+    fields = { unit = "string", spell = {"string", "number"}, owndebuff = "boolean" },
     valid = function(_, value)
         return (value.unit ~= nil and addon.isin(addon.units, value.unit) and value.spell ~= nil)
     end,
-    evaluate = function(value, cache)
-        if not addon.getCached(cache, UnitExists, value.unit) then return false end
-        for i=1,40 do
-            local name, _, _, _, _, _, caster = addon.getCached(cache, UnitDebuff, value.unit, i)
-            if (name == nil) then
-                break
-            end
-            if name == value.spell then
-                if (not value.owndebuff or caster == "player") then
-                    return true
-                end
-            end
-        end
-        return false
+    evaluate = function(value, cache, start)
+        return addon:EvaluateAuraCondition(value, cache, start, "HARMFUL", "present")
     end,
     print = function(_, value)
         return string.format(addon.playerize(value.unit, L["%s have %s"], L["%s has %s"]),
             addon.nullable(addon.units[value.unit], L["<unit>"]),
-            string.format(value.owndebuff and L["your own %s"] or "%s", addon.nullable(value.spell, L["<debuff>"])))
+            string.format(value.owndebuff and L["your own %s"] or "%s", (value.spell and addon:SpellLabel(value.spell) or L["<debuff>"])))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -68,7 +48,7 @@ addon:RegisterCondition("DEBUFF", {
         addon.layout_condition_unitwidget_help(frame)
         frame:AddChild(helpers.Gap())
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Own Debuff"] .. color.RESET .. " - " ..
-                "Should this condition only consider debuffs that you have applied."))
+                L["Only consider auras that you applied yourself."]))
         frame:AddChild(helpers.Gap())
         addon.layout_condition_spellnamewidget_help(frame)
     end
@@ -77,32 +57,19 @@ addon:RegisterCondition("DEBUFF", {
 addon:RegisterCondition("DEBUFF_REMAIN", {
     description = L["Debuff Time Remaining"],
     icon = "Interface\\Icons\\ability_creature_cursed_04",
-    fields = { unit = "string", spell = "string", owndebuff = "boolean", operator = "string", value = "number" },
+    fields = { unit = "string", spell = {"string", "number"}, owndebuff = "boolean", operator = "string", value = "number" },
     valid = function(_, value)
         return (value.unit ~= nil and addon.isin(addon.units, value.unit) and value.spell ~= nil and
                 value.operator ~= nil and addon.isin(addon.operators, value.operator) and
                 value.value ~= nil and value.value >= 0)
     end,
-    evaluate = function(value, cache)
-        if not addon.getCached(cache, UnitExists, value.unit) then return false end
-        for i=1,40 do
-            local name, _, _, _, _, expirationTime, caster = addon.getCached(cache, UnitDebuff, value.unit, i)
-            if (name == nil) then
-                break
-            end
-            if name == value.spell then
-                if (not value.owndebuff or caster == "player") then
-                    local remain = expirationTime - GetTime()
-                    return addon.compare(value.operator, remain, value.value)
-                end
-            end
-        end
-        return false
+    evaluate = function(value, cache, start)
+        return addon:EvaluateAuraCondition(value, cache, start, "HARMFUL", "remaining")
     end,
     print = function(_, value)
         return string.format(addon.playerize(value.unit, L["%s have %s where %s"], L["%s have %s where %s"]),
             addon.nullable(addon.units[value.unit], L["<unit>"]),
-            string.format(value.owndebuff and L["your own %s"] or "%s", addon.nullable(value.spell, L["<debuff>"])),
+            string.format(value.owndebuff and L["your own %s"] or "%s", (value.spell and addon:SpellLabel(value.spell) or L["<debuff>"])),
             addon.compareString(value.operator, L["the remaining time"], string.format(L["%s seconds"], addon.nullable(value.value))))
     end,
     widget = function(parent, spec, value)
@@ -137,45 +104,31 @@ addon:RegisterCondition("DEBUFF_REMAIN", {
         addon.layout_condition_unitwidget_help(frame)
         frame:AddChild(helpers.Gap())
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Own Debuff"] .. color.RESET .. " - " ..
-                "Should this condition only consider debuffs that you have applied."))
+                L["Only consider auras that you applied yourself."]))
         frame:AddChild(helpers.Gap())
         addon.layout_condition_spellnamewidget_help(frame)
         frame:AddChild(helpers.Gap())
         addon.layout_condition_operatorwidget_help(frame, L["Debuff Time Remaining"], L["Seconds"],
-            "The number of seconds remaining on a debuff applied to the " .. color.BLIZ_YELLOW .. L["Unit"] ..
-            color.RESET .. ".  If the debuff is not present, this condition will not be successful (regardless " ..
-            "of the " .. color.BLIZ_YELLOW .. "Operator" .. color.RESET .. " used.)")
+            L["Remaining aura time is measured in seconds. Permanent auras have no expiration and do not satisfy a finite refresh threshold. An absent aura does not satisfy this condition. Restricted or unknown timing is unavailable, including under NOT."])
     end
 })
 
 addon:RegisterCondition("DEBUFF_STACKS", {
     description = L["Debuff Stacks"],
     icon = "Interface\\Icons\\Inv_misc_coin_06",
-    fields = { unit = "string", spell = "string", owndebuff = "boolean", operator = "string", value = "number" },
+    fields = { unit = "string", spell = {"string", "number"}, owndebuff = "boolean", operator = "string", value = "number" },
     valid = function(_, value)
         return (value.unit ~= nil and addon.isin(addon.units, value.unit) and value.spell ~= nil and
                 value.operator ~= nil and addon.isin(addon.operators, value.operator) and
                 value.value ~= nil and value.value >= 0)
     end,
-    evaluate = function(value, cache)
-        if not addon.getCached(cache, UnitExists, value.unit) then return false end
-        for i=1,40 do
-            local name, _, count, _, _, _, caster = addon.getCached(cache, UnitDebuff, value.unit, i)
-            if (name == nil) then
-                break
-            end
-            if name == value.spell then
-                if (not value.owndebuff or caster == "player") then
-                    return addon.compare(value.operator, count, value.value)
-                end
-            end
-        end
-        return false
+    evaluate = function(value, cache, start)
+        return addon:EvaluateAuraCondition(value, cache, start, "HARMFUL", "stacks")
     end,
     print = function(_, value)
         return addon.nullable(addon.unitsPossessive[value.unit], L["<unit>"]) .. " " ..
                 addon.compareString(value.operator, string.format(L["stacks of %s"],
-                string.format(value.owndebuff and L["your own %s"] or "%s", addon.nullable(value.spell, L["<debuff>"]))),
+                string.format(value.owndebuff and L["your own %s"] or "%s", (value.spell and addon:SpellLabel(value.spell) or L["<debuff>"]))),
                 addon.nullable(value.value))
     end,
     widget = function(parent, spec, value)
@@ -210,14 +163,12 @@ addon:RegisterCondition("DEBUFF_STACKS", {
         addon.layout_condition_unitwidget_help(frame)
         frame:AddChild(helpers.Gap())
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Own Debuff"] .. color.RESET .. " - " ..
-                "Should this condition only consider debuffs that you have applied."))
+                L["Only consider auras that you applied yourself."]))
         frame:AddChild(helpers.Gap())
         addon.layout_condition_spellnamewidget_help(frame)
         frame:AddChild(helpers.Gap())
         addon.layout_condition_operatorwidget_help(frame, L["Debuff Stacks"], L["Stacks"],
-            "The number of stacks of a deuff applied to the " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET ..
-            ".  If the deuff is not present, this condition will not be successful (regardless " ..
-            "of the " .. color.BLIZ_YELLOW .. "Operator" .. color.RESET .. " used.)")
+            L["Compare the application count of a matching aura, including charges such as Earth Shield. An absent aura does not satisfy this condition; an unreadable count is unavailable."])
     end
 })
 
@@ -229,23 +180,8 @@ addon:RegisterCondition("DISPELLABLE", {
         return (value.unit ~= nil and addon.isin(addon.units, value.unit) and
                 value.debufftype ~= nil and addon.isin(addon.debufftypes, value.debufftype))
     end,
-    evaluate = function(value, cache)
-        if not addon.getCached(cache, UnitExists, value.unit) then return false end
-        for i=1,40 do
-            local name, _, _, debuffType, _, _, caster = addon.getCached(cache, UnitDebuff, value.unit, i, value.dispellable)
-            if (name == nil) then
-                break
-            end
-
-            if (not value.owndebuff or caster == "player") then
-                if value.debufftype == "Enrage" and debuffType == "" then
-                    return true
-                elseif debuffType == value.debufftype then
-                    return true
-                end
-            end
-        end
-        return false
+    evaluate = function(value, cache, start)
+        return addon:EvaluateAuraCondition(value, cache, start, "HARMFUL", "dispel")
     end,
     print = function(_, value)
         return string.format(addon.playerize(value.unit, L["%s have a %s debuff"], L["%s has a %s debuff"]),
@@ -262,7 +198,7 @@ addon:RegisterCondition("DISPELLABLE", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
 
-        local debufftype = AceGUI:Create("Dropdown")
+        local debufftype = addon:CreateConditionDropdown()
         debufftype:SetLabel(L["Debuff Type"])
         debufftype:SetCallback("OnValueChanged", function(_, _, v)
             value.debufftype = v
@@ -301,9 +237,9 @@ addon:RegisterCondition("DISPELLABLE", {
             "The type of debuff that is on " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. "."))
         frame:AddChild(helpers.Gap())
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Own Debuff"] .. color.RESET .. " - " ..
-                "Should this condition only consider debuffs that you have applied."))
+                L["Only consider auras that you applied yourself."]))
         frame:AddChild(helpers.Gap())
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Dispellable"] .. color.RESET .. " - " ..
-                "Should this condition only consider debuffs that you can dispell."))
+                L["Only consider debuffs returned by the game's dispellable aura filter. This does not guarantee your dispel is ready or in range."]))
     end
 })

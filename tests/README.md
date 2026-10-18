@@ -1,0 +1,56 @@
+# Offline compatibility checks
+
+Run from the Rotation Master repository root:
+
+`python3 tools/check` runs every suite below plus runner/vendor-integrity tests. It works from any directory when given an absolute path. `--static` runs Lua syntax, TOC/XML, pinned vendor integrity and literal localization checks. Prerequisites: Python 3, `lua5.1`, `luac5.1`, and `luajit` on PATH. CI runs the same command on pushes and pull requests.
+
+The repository includes an optional `.pre-commit-config.yaml`. If you already use pre-commit, add this local configuration through your existing hook setup; installation is deliberately not automatic. No global hooks or `core.hooksPath` are changed. CI remains authoritative.
+
+```sh
+lua5.1 tests/startup.lua
+lua5.1 tests/settings.lua
+lua5.1 tests/rangecheck.lua
+lua5.1 tests/aboutpanel.lua
+lua5.1 tests/buttons.lua
+lua5.1 tests/logging.lua
+luajit tests/compression.lua
+python3 tests/verify.py
+```
+
+`startup.lua` loads the real main module and extended-stat registration with a small WoW API fixture. It covers namespaced and legacy metadata, optional Classic threat tracking, extension initialization, spell-change events and the entering-world bag scan. `settings.lua` checks category IDs, parent registration and opening the configuration panel. `rangecheck.lua` loads the actual bundled range library and rejects the removed spell event. `aboutpanel.lua` builds the actual About panel for all 12 locale selections using Rotation Master metadata. `compression.lua` imports fixtures produced by the previous bundled LibCompress (90083) and checks default export round trips. `verify.py` parses every Lua file with Lua 5.1 and traverses the real TOC/XML dependency graph with exact filename case.
+
+These checks do not run a WoW client. In TBC Anniversary 2.5.6, validate login/reload, `/rm config`, minimap clicks, rotation selection/highlighting, spell learning and item/bag changes. Full Forever compatibility is not established by these fixes; its spell, aura, talent and combat-data restrictions need separate client testing.
+
+`buttons.lua` checks discovery and highlighting with modern button methods, legacy global helpers, explicit action attributes and absent optional frames. `logging.lua` uses the real bundled AceDB shutdown to check late logging after defaults are removed, without writing defaults back into the saved profile.
+
+Library source revisions, retained local widget forks and local vendor patches are recorded in `Libs/UPSTREAM.json`. The customized Spell/Item/ActionSlot Lua files are preserved. SharedMediaWidgets already matches current upstream; the Item EditBox upstream is unavailable.
+
+`conditions.lua` runs real help callbacks and reproduces threat/outside-instance regressions. `condition_engine.lua` loads Core without AceGUI and checks Boolean compatibility, shared evaluation context, unavailable propagation and malformed/cyclic trees. `catalog.lua` loads the real TOC condition files and default categories for eight synthetic project/expansion/class/provider branches and invokes every registered help callback. These branch fixtures test declarations/help, not live compatibility with game products; These catalog branches still characterize inherited registration guards; product identity is tested separately by Platform fixtures.
+
+`tools/catalog_check.py` lexes Lua strings/comments and checks literal `L["key"]` references against enUS. Dynamic/concatenated keys and untranslated raw prose need separate review. `docs/quality/localization-inventory.json` tracks heuristic long raw-string candidates, including code snippets that need human classification; it is not a claim of complete extraction or finished translation. Regenerate intentionally with `python3 tools/catalog_check.py --inventory docs/quality/localization-inventory.json` after localization edits.
+
+The condition evaluator now exposes `evaluateConditionResult` with `match`, `no-match` and `unavailable`; the existing `evaluateCondition` API returns true only for a match. Unknown/invalid conditions and unavailable descendants remain unavailable under AND/OR/NOT. A predicate can return `nil, reason` for unavailable observation data. Legacy nil without a reason remains false, preserving WoW Boolean API behavior. Inputs must be normalized readable values; this engine does not itself grant access to secret combat data. Full structured schema validation and callback diagnostics remain separate roadmap work.
+
+`diagnostics.lua` tests bounded report capture, current-collector forwarding, preserved arguments/results, recursion protection and redacted versus explicitly requested original text. `errors_ui.lua` exercises the native report window without AceGUI. `/rm errors` opens the latest session report; select Copy and press Ctrl+C. Default redaction removes known roster/realm/guild names, player GUIDs and user-home paths and omits generated/custom Lua text. Review text before sharing: this is best-effort diagnostic redaction, not the future anonymized analytics export. Original details require an explicit button choice and reset to redacted on reopening. Reports are session-memory only and Clear affects only RM records, not BugJar.
+
+Captured condition callbacks are quarantined until definition replacement or UI reload. Event/tick errors stop advice, clear previews/highlights and notify local consumers; after fixing the problem, reload to resume. Parse/bootstrap failures and callbacks outside RM's wrapped boundaries still use the normal client/collector path. The native copy window needs an in-game smoke check for scrolling, resize, copy, gameplay and collector coexistence.
+
+`platform.lua` tests explicit five-family identity (plus historical progression IDs), independent build/expansion/ruleset facts, unknown projects, guarded values and API-declaration versus assisted-availability separation. Current evidence and missing in-game checks are in `docs/quality/client-support.md`; this metadata boundary is not a complete API port.
+
+`platform_spells.lua` covers modern/legacy spell metadata and cooldown normalization, independent learned-state probes, player/pet banks and unreadable values. `platform_auras.lua` covers modern/legacy aura records, optional Era duration augmentation, per-field readability, permanent/expired timing and query failures. `aura_conditions.lua` runs the real buff/debuff predicates and headless engine, including own-caster upkeep, charges, numeric IDs and existing names, dispellable filtering, bounded scans, per-evaluation caching and unavailable propagation through NOT. These adapters do not yet migrate every spell consumer or establish live Retail/Forever recommendation support.
+
+`custom_conditions.lua` checks that registration retains an independent nested field schema and carries the custom-code marker into diagnostic redaction. The inherited `addon.deepcopy` utility is a shallow filtered copy despite its name; this registration uses a separate recursive schema copy. Custom Lua remains user-authored executable code; this is not an import sandbox or completion of the custom editor overhaul.
+
+Catalog checks now compare exact reviewed tag inventories for each branch, validate the documented primitive/union/nested field declaration grammar, and include MobInfo plus deferred ExtendedCharacterStats help/schema. `declaration_schema.lua` tests invalid, cyclic, deep and oversized declarations. This is an offline declaration guard; it is not the forthcoming nonmutating saved-rotation validator. `known_spell.lua` checks the adaptive SPELL_KNOWN predicate, including unlearned spells, player/pet banks, missing/restricted data, and editor callbacks independent of the spell dropdown loader.
+
+`plain_data.lua` verifies bounded data-only traversal and independent copying without WoW/UI dependencies. `rotation_validation.lua` verifies the new envelope validator, dense ordered priorities, duplicate IDs, explicit applicability, structural condition checks and declared field types. Diagnostics are bounded and deterministic. Unknown fields/conditions/versions remain unchanged and unavailable for execution. `valid` means structural validity; semantic gameplay, current-client execution and recommendation quality remain explicitly unevaluated. The legacy repair/import path has not yet been replaced by these modules.
+
+`rotation_catalog.lua` checks private copied built-ins, snapshot getters, always-listed disabled/withdrawn entries, owner-checked mutation APIs, fresh clone IDs, preserved baseline/origin mapping, clone-of-clone lineage, update independence and atomic collision failure. Built-in/custom references carry an explicit ownership kind to preserve both records if IDs collide. Malformed saved data is preserved and reported; getters do not expose its invalid metadata. The catalog now supplies packaged definitions to the live rotation library bridge and read-only browser; legacy custom bodies remain in their original per-spec store. Validation options and ID generators are trusted application dependencies, not imported rotation content.
+
+`rotation_diff.lua` checks nonmutating field/nested edits and ID-based ordered add/remove/move comparisons. Clone origin maps suppress regenerated-ID noise; a longest increasing subsequence distinguishes moves from insertion shifts without a quadratic matrix. Outputs have explicit completeness limits. `CompareClone` consumes catalog views and returns baseline-to-source, baseline-to-custom and current-source-to-custom diffs; `conflictCoverage=field-edits` limits overlap highlighting to fields, while order changes stay visible in the three diffs. It performs no automatic merge. The temporary Compare rotations window exposes this service for saved custom/default targets and cloned-default three-way comparisons.
+
+`rotation_library.lua` tests the live bridge: always-visible read-only pack views, explicit edition/class/spec/level/action-context eligibility, restricted-client reference policy, separate preferences, runtime key collision handling, profile rebinding, single saved clone body and retained lineage. Main startup tests additionally exercise default selection behind existing custom choices/fallbacks and clearing advice when a manual choice becomes unavailable. `defaults_ui.lua` checks the temporary browser's reference/enable/clone controls; it does not prove client layout/scrolling. `defaults.lua` checks the first shipped TBC Shaman 1–19 starter and real condition scenarios. See Defaults/README.md for source provenance, deliberate corpus gaps and live acceptance still required.
+
+`rotation_comparison.lua` checks comparison direction, false values, whole added steps/unknown nested fields, bounded display, explicit clipping, markup escaping and read-only chooser/copy behavior. Library regression tests cover fresh-ID collisions against retained baselines and preservation of invalid-provenance errors. Ordinary duplicates keep minimal correspondence rather than fabricating a valid historical envelope.
+
+`rotation_codec.lua` runs under LuaJIT with real AceSerializer/LibCompress. It checks old three-codec golden rotations and bounded new/legacy transport. See docs/quality/rotation-transport.md for exact limits and accepted formats. This module is not yet wired into the editor's import/apply flow.

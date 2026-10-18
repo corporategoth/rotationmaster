@@ -39,7 +39,7 @@ addon:RegisterCondition("STAT", {
                 function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
 
-        local stat = AceGUI:Create("Dropdown")
+        local stat = addon:CreateConditionDropdown()
         stat:SetLabel(L["Character Stat"])
         stat:SetCallback("OnValueChanged", function(_, _, v)
             value.stat = v
@@ -131,7 +131,7 @@ addon.delayed_condition["ExtendedCharacterStats"]["ECS_STAT"] = {
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
-        local stat = AceGUI:Create("Dropdown")
+        local stat = addon:CreateConditionDropdown()
         stat:SetLabel(L["Character Stat"])
         stat:SetCallback("OnValueChanged", function(_, _, v)
             value.stat = v
@@ -184,7 +184,7 @@ addon.delayed_condition["ExtendedCharacterStats"]["ECS_STAT_PCT"] = {
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
-        local stat = AceGUI:Create("Dropdown")
+        local stat = addon:CreateConditionDropdown()
         stat:SetLabel(L["Character Stat"])
         stat:SetCallback("OnValueChanged", function(_, _, v)
             value.stat = v

@@ -167,7 +167,7 @@ local default_condition_groups = {
             "CHANNELING", "CHANNELING_SPELL", "CHANNELING_REMAIN", "CHANNEL_INTERRUPTABLE",
             "COMBAT", "STEALTHED", "INCONTROL", "LOC_TYPE", "LOC_BLOCKED",
             "RUNNER", "RESIST", "IMMUNE", "MOVING", "THREAT", "THREAT_COUNT",
-            "ATTACKABLE", "ENEMY", "COMBAT_HISTORY", "COMBAT_HISTORY_TIME",
+            "ATTACKABLE", "ENEMY", "COMBAT_HISTORY", "COMBAT_HISTORY_TIME", "TIME_IN_COMBAT",
         }
     },
     {
@@ -186,7 +186,7 @@ local default_condition_groups = {
         id = "8034819e-26f5-4f4e-9153-d8cab5e65f31",
         name = L["Spells"],
         conditions = {
-            "SPELL_AVAIL", "SPELL_RANGE", "SPELL_COOLDOWN", "SPELL_REMAIN",
+            "SPELL_KNOWN", "SPELL_AVAIL", "SPELL_RANGE", "SPELL_COOLDOWN", "SPELL_REMAIN",
             "SPELL_CHARGES", "SPELL_ACTIVE", "SPELL_HISTORY", "SPELL_HISTORY_TIME",
             "PETSPELL_AVAIL", "PETSPELL_RANGE", "PETSPELL_COOLDOWN", "PETSPELL_REMAIN",
             "PETSPELL_CHARGES", "PETSPELL_ACTIVE", "PETSPELL_HISTORY", "PETSPELL_HISTORY_TIME",
@@ -214,7 +214,7 @@ local default_condition_groups = {
         id = "fa10aaf8-bc71-480f-9062-c949fd7c74e9",
         name = L["Spatial"],
         conditions = {
-            "ZONE", "OUTDOORS", "DISTANCE", "DISTANCE_COUNT", "PROXIMITY",
+            "ZONE", "OUTDOORS", "DISTANCE", "BEYOND_MELEE", "DISTANCE_COUNT", "PROXIMITY",
             "PROXIMITY_HEALTH", "PROXIMITY_HEALTH_COUNT", "PROXIMITY_HEALTHPCT", "PROXIMITY_HEALTHPCT_COUNT",
             "PROXIMITY_MANA", "PROXIMITY_MANA_COUNT", "PROXIMITY_MANAPCT", "PROXIMITY_MANAPCT_COUNT",
         }
@@ -243,40 +243,25 @@ local function updateRotationData(rot_func, cond_func)
         return
     end
 
-    local function updateConditionData(cond, func)
-        if cond.type == "NOT" and cond.value ~= nil then
-            updateConditionData(cond.value, func)
-        elseif cond.type == "AND" or cond.type == "OR" and cond.value ~= nil then
-            for _, subcond in pairs(cond.value) do
-                updateConditionData(subcond, func)
-            end
-        else
-            func(cond)
-        end
+    local function updateConditionData(cond,func,depth)
+        depth=depth or 0
+        if type(cond)~="table" or depth>64 then return end
+        if cond.type=="NOT" and type(cond.value)=="table" then
+            updateConditionData(cond.value,func,depth+1)
+        elseif (cond.type=="AND" or cond.type=="OR") and type(cond.value)=="table" then
+            for _,subcond in pairs(cond.value) do updateConditionData(subcond,func,depth+1) end
+        else func(cond) end
     end
-
-    for _, rotations in pairs(addon.db.profile.rotations) do -- Spec -> Rotations
-        for _, rotation in pairs(rotations) do -- Rotation ID -> Rotation Struct
-            if rotation.rotation ~= nil then
-                for _, rot in pairs(rotation.rotation) do -- Individual Rotation Steps
-                    if rot_func ~= nil then
-                        rot_func(rot, false)
-                    end
-                    if cond_func ~= nil and rot.conditions ~= nil then
-                        updateConditionData(rot.conditions, cond_func)
-                    end
-                end
-            end
-            if rotation.cooldowns ~= nil then
-                for _, rot in pairs(rotation.cooldowns) do -- Individual Rotation Steps
-                    if rot_func ~= nil then
-                        rot_func(rot, true)
-                    end
-                    if cond_func ~= nil and rot.conditions ~= nil then
-                        updateConditionData(rot.conditions, cond_func)
-                    end
-                end
-            end
+    for _,rotations in pairs(addon.db.profile.rotations) do
+        for _,rotation in pairs(rotations) do
+            local tree=addon.RotationData.IndexRotationSteps(rotation,{allowMissingIds=true})
+            -- Malformed data is retained for inspection, never flattened or
+            -- partially upgraded by a best-effort walk over unknown structure.
+            if tree then for _,row in ipairs(tree.rows) do
+                local step=row.step
+                if rot_func and step.type~="branch" then rot_func(step,row.section=="cooldowns") end
+                if cond_func and step.conditions then updateConditionData(step.conditions,cond_func) end
+            end end
         end
     end
 end
@@ -472,7 +457,8 @@ local function upgradeRuneTypes()
 end
 
 local function upgradeBindingSlots()
-    local DB = _G[addon_name .. "DB"]
+    -- Upgrade the exact store AceDB opened; folder casing is not persistence identity.
+    local DB = addon.db.sv
     if DB.char then
         for _,char in pairs(DB.char) do
             if char.bindings then

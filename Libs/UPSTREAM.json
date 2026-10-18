@@ -1,0 +1,341 @@
+{
+  "updated": "2026-10-17",
+  "libraries": {
+    "AceAddon-3.0": {
+      "source": "https://repos.wowace.com/wow/ace3/trunk/AceAddon-3.0",
+      "revision": "r1421",
+      "files": {
+        "AceAddon-3.0.lua": "2a05d7c7ce0a0923e049a50f6f127a3c5cfb63c0cdaee62dda7250fbaf9056d7",
+        "AceAddon-3.0.xml": "b9820071648e42f9167882ef2a08602644a301cefd5d7e57c82aa36ca1439259"
+      }
+    },
+    "AceBucket-3.0": {
+      "source": "https://repos.wowace.com/wow/ace3/trunk/AceBucket-3.0",
+      "revision": "r1421",
+      "files": {
+        "AceBucket-3.0.lua": "8cc21cc2598471051ccc567568621021d23d182696ab411644f9a351f26c6902",
+        "AceBucket-3.0.xml": "e4e964436c8b56ef3a20e6c3c9bbb2d0f6b33246545755258c1190687a1e5a3d"
+      }
+    },
+    "AceComm-3.0": {
+      "source": "https://repos.wowace.com/wow/ace3/trunk/AceComm-3.0",
+      "revision": "r1421",
+      "files": {
+        "AceComm-3.0.lua": "5d8cb6fd2a5661ed85f9f67c82b09fe81d05ebb5c9a4a0e8ca02c3a90a1a118e",
+        "AceComm-3.0.xml": "a250107c2aa6c1474c881146f774c3797aee38e5ee4c0762b09461d316ba75ee",
+        "ChatThrottleLib.lua": "3491b6c98cae1634a9f0494b436e86df1632309fb68181c25240b53c4d86dde8"
+      }
+    },
+    "AceConfig-3.0": {
+      "source": "https://repos.wowace.com/wow/ace3/trunk/AceConfig-3.0",
+      "revision": "r1421",
+      "files": {
+        "AceConfig-3.0.lua": "d91b044415355377a9a9b4b9ed331afc1ce837298e7dc0d4cac4a87c2982014b",
+        "AceConfig-3.0.xml": "72e34a78a8f8d0377d4e62cc33d8bacff42f4871d4f04f58ebc169b92c0ae347",
+        "AceConfigCmd-3.0/AceConfigCmd-3.0.lua": "2113762166c39bb2b3e0d6ad8cabf74b9af9b9347d1e708e61dfa1efe0aa752e",
+        "AceConfigCmd-3.0/AceConfigCmd-3.0.xml": "db2f8281fbed72fe1ac5f65a4e063011f45aff4d4841b8dd2aad0d50a0813164",
+        "AceConfigDialog-3.0/AceConfigDialog-3.0.lua": "cd2d55ad034759e7ee8ae7d1d8777c2df5c9174d4b916d1d551494e47bc2d122",
+        "AceConfigDialog-3.0/AceConfigDialog-3.0.xml": "c10388710651ef39d7c8e5920e9ef232b8bb9abcc3eb8fbf179ba9ac1c77e413",
+        "AceConfigRegistry-3.0/AceConfigRegistry-3.0.lua": "283d4d4e82fed2eff7a440daf0b70cabf77ce2307f642b3e28493eff33dd1578",
+        "AceConfigRegistry-3.0/AceConfigRegistry-3.0.xml": "9ef73f2e0598eb51564f53b71d66179768a950cce0d6602746070556e3a25fed"
+      }
+    },
+    "AceConsole-3.0": {
+      "source": "https://repos.wowace.com/wow/ace3/trunk/AceConsole-3.0",
+      "revision": "r1421",
+      "files": {
+        "AceConsole-3.0.lua": "6ed8ee534b822a5b567e517ab5edd94028079f4d17047ea20fe4c362e4754217",
+        "AceConsole-3.0.xml": "19b0494a1f16f9d7147cf0e0f601aa4e0fbaa61490037af0e8969fabcc2f185b"
+      }
+    },
+    "AceDB-3.0": {
+      "source": "https://repos.wowace.com/wow/ace3/trunk/AceDB-3.0",
+      "revision": "r1421",
+      "files": {
+        "AceDB-3.0.lua": "411ac67ab0eb73d29e89b15d7bf5dc0509617b203709ad47afc375ab4de746d7",
+        "AceDB-3.0.xml": "5b3873c68d76a76fb52bbb9232d4d63b13f99cda5b3f95c86205d8022786d184"
+      }
+    },
+    "AceDBOptions-3.0": {
+      "source": "https://repos.wowace.com/wow/ace3/trunk/AceDBOptions-3.0",
+      "revision": "r1421",
+      "files": {
+        "AceDBOptions-3.0.lua": "77c3eb9956348bd5d6b44ab090f590d6e6f0a4854dba742c2046cfc9ffaefce6",
+        "AceDBOptions-3.0.xml": "37caa69558e131e0f13fad3a8cc05c10c3927446e35cf251ff255349b1bcf060"
+      }
+    },
+    "AceEvent-3.0": {
+      "source": "https://repos.wowace.com/wow/ace3/trunk/AceEvent-3.0",
+      "revision": "r1421",
+      "files": {
+        "AceEvent-3.0.lua": "3b67a95becba4a4e2ff9763aed2751a25ee03c5293d19f4e8394fbf111339806",
+        "AceEvent-3.0.xml": "9a9c0b14a8eda4509d45422cb1ac065ba9165879ef291816f1689bf6be3bcbc4"
+      }
+    },
+    "AceGUI-3.0": {
+      "source": "https://repos.wowace.com/wow/ace3/trunk/AceGUI-3.0",
+      "revision": "r1421",
+      "files": {
+        "AceGUI-3.0.lua": "3e67dead580af45abbdfdef8dd7afa3f7dddb77a6d0beaef192410101785fd01",
+        "AceGUI-3.0.xml": "e54bd15393700719dbec2b1b433e570a3f364fa5e927f9227f63037eb16ad522",
+        "widgets/AceGUIContainer-BlizOptionsGroup.lua": "566551ddd7c8c434d6bb6f4a4c9a67479e6e8a719fcc3a504b18eec4f11e6586",
+        "widgets/AceGUIContainer-DropDownGroup.lua": "ecf7743bd5fb9059d4226e35cd2374aa13282eca720938498f85d7f328f8c070",
+        "widgets/AceGUIContainer-Frame.lua": "fb3f9f3b3414bd3b27e1281c2b8836749e38906458df6b69e9f385fbe041df91",
+        "widgets/AceGUIContainer-InlineGroup.lua": "e9458bd6378d017994408618cbc6921ef7e6bbe152e9bbded199255c399468a5",
+        "widgets/AceGUIContainer-ScrollFrame.lua": "fef3da3ce311b861d669bc503906cdd0780a372fbea039c1e2d3f75ac6e68709",
+        "widgets/AceGUIContainer-SimpleGroup.lua": "d65968489c0fa5749d2e35be69c60d0dd7969189aa14a9031f0654715625d214",
+        "widgets/AceGUIContainer-TabGroup.lua": "ad73ed3b619cba61778ec39b73206daac423bd1f539241f4a58ff623b0b0b687",
+        "widgets/AceGUIContainer-TreeGroup.lua": "faf9f1eb9bec0af6d3493c8e264fbf6aef244c364ed72c85069578d69115682d",
+        "widgets/AceGUIContainer-Window.lua": "d57f41b781d8c021fb69a94e084efadbb891d3a353738e6ca68853da21f94645",
+        "widgets/AceGUIWidget-Button.lua": "1bcc3592c6315d1369f448316f4bc990c812a37d2a7b5c31fd2324daf6ad7e87",
+        "widgets/AceGUIWidget-CheckBox.lua": "81cef4bb6ddef3b8bc31360f292fe7b7a7916d675b9336a697545c9ba9adfd77",
+        "widgets/AceGUIWidget-ColorPicker.lua": "beae8057a0e8939b1dbb335332071e1e3bd5f338f92060565d9ada9e69f710b6",
+        "widgets/AceGUIWidget-DropDown-Items.lua": "5687b70a88e42854fa2422b4664625a7517331d288733f33d059527311fb30ae",
+        "widgets/AceGUIWidget-DropDown.lua": "730764806702ffce5556af0ea5a095a74856429217443f2b3135eb3a037631a2",
+        "widgets/AceGUIWidget-EditBox.lua": "24a7570e949647c67a0364a8b21d8904c7df812ce0a3d58a74413e473cd023e2",
+        "widgets/AceGUIWidget-Heading.lua": "43db0151f5ff7daaeb5bba3cb99d2aa6d8f0a0b8f5bf47477d274ee7b5d43773",
+        "widgets/AceGUIWidget-Icon.lua": "ebfe6a6d699dfdb32c1eab93f974d21ffc5eedc634dae297afc9bad3fd2117de",
+        "widgets/AceGUIWidget-InteractiveLabel.lua": "e47543663cc5c4272ef6fb6d356fb63a49f6b101d3cc0501e769ac6615442cce",
+        "widgets/AceGUIWidget-Keybinding.lua": "5d372eb175c2768e0e13f46f77b5d5ec4a1ca74636b2ad940725040496a6ba7e",
+        "widgets/AceGUIWidget-Label.lua": "5a62305ac4eaf31d173d84cc40bede59b0fe32c8b5fbbc9f015a1c5b7894c7d0",
+        "widgets/AceGUIWidget-MultiLineEditBox.lua": "ac67fd32a7a5642c0bebc5104ee4ac57088fb04e44b15cee64513b78e532e7cd",
+        "widgets/AceGUIWidget-Slider.lua": "d4aab13b831961cbef9c0639ba2f08c0d7ac1baae7e2d4de7621cea61850de37"
+      }
+    },
+    "AceLocale-3.0": {
+      "source": "https://repos.wowace.com/wow/ace3/trunk/AceLocale-3.0",
+      "revision": "r1421",
+      "files": {
+        "AceLocale-3.0.lua": "1d6a1a236f3be0383560ad46d5d645e1c7a17971893f1e58ee17a74058a1cef2",
+        "AceLocale-3.0.xml": "ad70df709b297effd04410ddf242188fd3811793ae55814a482ac41f5895eaef"
+      }
+    },
+    "AceSerializer-3.0": {
+      "source": "https://repos.wowace.com/wow/ace3/trunk/AceSerializer-3.0",
+      "revision": "r1421",
+      "files": {
+        "AceSerializer-3.0.lua": "af2d55fd5ded8cca07608d20c40cc8aa776afbd417f936f5078c8b0054e713ff",
+        "AceSerializer-3.0.xml": "7d578832f12c3f4eb1311e1dbebb2156950202d61aa6c299f3fd05a6ab69d496"
+      }
+    },
+    "AceTimer-3.0": {
+      "source": "https://repos.wowace.com/wow/ace3/trunk/AceTimer-3.0",
+      "revision": "r1421",
+      "files": {
+        "AceTimer-3.0.lua": "c3d8e59e4efd954a201d8bda22c1518654610eeeee0377b48ac51f41d22807b3",
+        "AceTimer-3.0.xml": "c6f5ceece38bd9705e0371443ee16568c547b49a71ac2008ad648c079d4f3446"
+      }
+    },
+    "CallbackHandler-1.0": {
+      "source": "https://repos.wowace.com/wow/ace3/trunk/CallbackHandler-1.0",
+      "revision": "r1421",
+      "files": {
+        "CallbackHandler-1.0.lua": "24f7342068e0d1b8d38ee1b8c7ceeea625bea079a01f0222e341660c7b104432",
+        "CallbackHandler-1.0.xml": "9310765c5310a395652e60a04f378e836785deb6f0b7181a448c74751d6f0185"
+      }
+    },
+    "LibStub": {
+      "source": "https://repos.wowace.com/wow/ace3/trunk/LibStub",
+      "revision": "r1421",
+      "files": {
+        "LibStub.lua": "26401bc42c26d1d1b6f7ad9410aa464edcbe4d32d74ebadeeecd8c0110236f7d"
+      }
+    },
+    "LibDBIcon-1.0": {
+      "source": "https://repos.wowace.com/wow/libdbicon-1-0/trunk/",
+      "revision": "r166",
+      "files": {
+        "LibDBIcon-1.0.lua": "cafa823dfb9f216eb476af4bcd2fad4c25c718f39b7565fa1c924dbebac41f91",
+        "lib.xml": "f9f8ad1829bee7f9aabb610e3a2e6e930119e4b7ea5e4acdff9524567a440356"
+      }
+    },
+    "LibSharedMedia-3.0": {
+      "source": "https://repos.wowace.com/wow/libsharedmedia-3-0/trunk/",
+      "revision": "r182",
+      "files": {
+        "LibSharedMedia-3.0.lua": "35230ddd390aebe0a7f607508e05a15d14341f44c9f151da7032393ea08b07ef",
+        "lib.xml": "bd4f30d101a13ffb915114f6cd2d510fee506bca333f35387b3e08f238d85f8c"
+      }
+    },
+    "AceGUI-3.0-SharedMediaWidgets": {
+      "source": "https://repos.wowace.com/wow/ace-gui-3-0-shared-media-widgets/trunk/",
+      "revision": "r66",
+      "files": {
+        "BackgroundWidget.lua": "a98f491caaec6406204616d12b53e666703100bf93a83e03e4e222635c15b634",
+        "BorderWidget.lua": "a00d00269cb139ae0465994d7076a5533c8d4795f27d6dd5c3c0f90ea0a77f6b",
+        "FontWidget.lua": "2855a05d6a0aa2d3c939c7f41c079ccf3f4adea506c3190707ac2d1bb6221403",
+        "SoundWidget.lua": "87e278a6f518bb25818c610f8858f65cd6a674ed25a3f7600d8b64b1603e9f1f",
+        "StatusbarWidget.lua": "0d9fe21f7c66d4de9b556125d2d6781b140ae1a0babdda3382f8e012160f8f68",
+        "prototypes.lua": "f25f3c53110a7a51668e041edf54e178ea31f6afdc0a0030daed065945045522",
+        "widget.xml": "e3ff6572bc7d29da4f6591511c923bb9e22673e81883ba9df6683a6896212895"
+      }
+    },
+    "LibCustomGlow-1.0": {
+      "source": "https://github.com/Stanzilla/LibCustomGlow",
+      "revision": "4f8f5c2607d7384b26df9175bb99fa3df891b015",
+      "files": {
+        "LICENSE": "fe1c25533575333ef9934022382659bc0b470cef1fbb69ef0d45a9a52d2e9455",
+        "LibCustomGlow-1.0.lua": "0bf263c8a9bd95dc85b677a15b310e40144c91806199e7d167bda77f2c79a43c",
+        "LibCustomGlow-1.0.xml": "ee092faf9e32669fc6bf645432150a74f5de131e6d846ee1e778b8834fcbbd98"
+      }
+    },
+    "LibDataBroker-1.1": {
+      "source": "https://github.com/tekkub/libdatabroker-1-1",
+      "revision": "1a63ede0248c11aa1ee415187c1f9c9489ce3e02",
+      "files": {
+        "LibDataBroker-1.1.lua": "f3d4758f2060215492c9764b1d7dc2a336826d4cd253cd54ff9ff7c6d78f04e2",
+        "README.textile": "1824b7091f7535e822d3fc0138013e0370eb894efcf7cc2ef1babb81f7997fcf"
+      }
+    },
+    "LibCompress": {
+      "source": "https://github.com/galmok/LibCompress",
+      "revision": "ed9ce58376567a57f99877f897a4e0f51c65e522",
+      "files": {
+        "LICENSE": "8177f97513213526df2cf6184d8ff986c675afb514d4e68a404010521b880643",
+        "LibCompress.lua": "9eee2a4a19034638ea7e227d68d790f4ae3c489676cdfb7f6e19d89d6baec1ed",
+        "lib.xml": "e09662c97cb1f95a61b8d47c1efc4405232801afb0f05ac2853f7601c8fc946c"
+      }
+    },
+    "LibClassicDurations": {
+      "source": "https://github.com/rgd87/LibClassicDurations",
+      "revision": "4775838d442532e866c8ef045eea0f1b0cf879df",
+      "files": {
+        "LibClassicDurations.xml": "d007048fc733f55d0d3af69768eafff3b43732679ddc250c8a078eceaad37664",
+        "classAbilities.lua": "e8302538a3c5bb386476cf62261d32e31d3af35914e773056f0cb65fde4fb121",
+        "core.lua": "f3b47bd068d86998b47a37cd8e6e13a843fc1697670f062e821494e32f6644fa",
+        "diminishingReturns.lua": "b0e922b9cdba49de14bc534575e46136dc2174f9104d76f7d3ac3b8d22cf81ce",
+        "npcAbilities.lua": "e7169882a56897ef0ff1c7ca3f3e39c3375caf1d3bc6cefe2bbb36005c8d340f"
+      }
+    },
+    "ThreatClassic-1.0": {
+      "source": "https://github.com/EsreverWoW/LibThreatClassic",
+      "revision": "1543feaef6f8e83deafaa20105aa1cc37355b50f",
+      "local_patches": [
+        "Remove UTF-8 BOM for Lua 5.1 parsing: NPCModules/Karazhan/Nightbane.lua, NPCModules/BlackwingLair/Nefarian.lua, NPCModules/Naxxramas/Noth.lua, NPCModules/ZulAman/Zuljin.lua, NPCModules/Azeroth/Azuregos.lua, NPCModules/Outland/Doomwalker.lua, NPCModules/TempestKeep/TheEye/Solarian.lua, NPCModules/CoilfangReservoir/SerpentshrineCavern/Leotheras.lua, NPCModules/Auchindoun/ShadowLabyrinth/Blackheart.lua",
+        "NPCModules/BlackTemple/Supremus.lua: repair upstream return en typo to return end"
+      ],
+      "files": {
+        "ClassModules/Classic/Druid.lua": "27f8862ae813bbf46996c2c3033d66565fc57e98ab7b59b35011aeb60f8edd74",
+        "ClassModules/Classic/Hunter.lua": "48385c16c9b6567c795a31bde060107247dd88566101298da875d2096bd3c973",
+        "ClassModules/Classic/Mage.lua": "28e40a4d2ca4a6d1f2c7cd93d8a9dd4f54c3231ba14d81e643cedb9ad8487793",
+        "ClassModules/Classic/Paladin.lua": "07407191b2436fa11cbe53750840bbe35862c56c52308977abb4ea7e0f006dee",
+        "ClassModules/Classic/Pet.lua": "5efccfb6bac43e037d253021283e908256363e08fc9dd37bf25e15cf908c4fd8",
+        "ClassModules/Classic/Priest.lua": "2cb233e67dc3eee5e33ad5954a4c3cb8fa672baf5db80363dde2589f8b862c52",
+        "ClassModules/Classic/Rogue.lua": "31e932ce56cc911d1222bfd5c172db788477d85ad4add54ce61807a2ca9987ad",
+        "ClassModules/Classic/Shaman.lua": "bacd0cf3d408501655d5409d654373a7da5b3a3064e33123d50342c4423b50b8",
+        "ClassModules/Classic/Warlock.lua": "99a361eda63b7b231c284945addc491bf37ccb56f7cd5359a65930a1431e7706",
+        "ClassModules/Classic/Warrior.lua": "e5024072b343976ba609cff8dacb20ae68f4272f803f82d2a67d75c55db596f6",
+        "ClassModules/TBC/Druid.lua": "256b832c1b8de5f04f631d084d41587ea49e82e0801822e08da3c14f099d30c6",
+        "ClassModules/TBC/Hunter.lua": "55b24f4427ad6ea1cd9c6737f3ab45da5261df1a3545ee5f16b337e2660ecd06",
+        "ClassModules/TBC/Mage.lua": "666f29af053381f36e850b59557ca27f8b0b7ee09490529f78024b08883071ca",
+        "ClassModules/TBC/Paladin.lua": "431d624e38f4bf10fc03c89428383ae82ced2472cfab07e1564ee09131a49440",
+        "ClassModules/TBC/Pet.lua": "0d57b688a8c262e45deab6ad0575d5fedbb4fd7bfdd09c43181336f91ef2a093",
+        "ClassModules/TBC/Priest.lua": "a4528421f2de3bc03505bf318d42a499e2cdc6281d5e266dbdb92f3221e1f9df",
+        "ClassModules/TBC/Rogue.lua": "43290491096021871abcb6e481fdf4422f15032a27d7df019c6d3e22521d70d1",
+        "ClassModules/TBC/Shaman.lua": "165243c88bb135f8bb96fe15c06fd36a434fe33164c25e947e3327b2825755ed",
+        "ClassModules/TBC/Warlock.lua": "27e0a6be59cd2a1469a5ccdd43ee5f46c9da1676ec7dca55ce2dea675ed0290d",
+        "ClassModules/TBC/Warrior.lua": "8ababd47b9b44eae734f0ee2c9682ac7454b0686e5fba27322e925ec3cec8013",
+        "LICENSE": "b3aa400aca6d2ba1f0bd03bd98d03d1fe7489a3bbb26969d72016360af8a5c9d",
+        "NPCModules/Auchindoun/ShadowLabyrinth/Blackheart.lua": "383eac779b487f9ff1c1cff7d21c4a2ebf5cee73330e2f95010bba7541f23747",
+        "NPCModules/Azeroth/Azuregos.lua": "1329ad58c20eb09798999f910174b2d9696f6e600eb80d5f6aa3e89582b4ff6f",
+        "NPCModules/BlackTemple/Council.lua": "bbb2683bd4ba7cd1b84ce1d4102dd663042d33c61cd5d446059478927d175ffd",
+        "NPCModules/BlackTemple/Illidan.lua": "540d45097f41ae09497dc143332aeb700a90e32e3b968e6464bae12b25c591e2",
+        "NPCModules/BlackTemple/Supremus.lua": "8ccef8e8eebefe041f2bfa0e8b1f7229d3f38089731369b70a95c8a7edf694f2",
+        "NPCModules/BlackwingLair/Nefarian.lua": "ea00ed7f2ea59c5da087f3d8055c6a011c4ca66a78b7093104b4d5e64b01714a",
+        "NPCModules/CoilfangReservoir/SerpentshrineCavern/Hydross.lua": "f9bada6e236fbcd351c7f51553fb32734b3bbb9baf320afc435b2e32d623e755",
+        "NPCModules/CoilfangReservoir/SerpentshrineCavern/Leotheras.lua": "7c27f67c1990b2e81f972084457f1557979346b24e36d60a8f563a4fca181655",
+        "NPCModules/CoilfangReservoir/SerpentshrineCavern/Vashj.lua": "83601d2a8c689abb19393da05cf82041bbbdb213112b7a5a13c2f009de0dbec4",
+        "NPCModules/Karazhan/Nightbane.lua": "96caf3f90e35966944327d7b74dd33b9dc85a2847f659c4219a51633868cfbe2",
+        "NPCModules/MoltenCore/Shazzrah.lua": "3e5b396b0fc32393b87c395f939a5d6ebcadad48fc7a21c2d9d84a595f12db8e",
+        "NPCModules/Naxxramas/Kelthuzad.lua": "ccf75431677c155fd50ebade667895b0bab894695af8674d684f95a5e6da48c4",
+        "NPCModules/Naxxramas/Noth.lua": "ac9870b00b7f274451dc967bc949620302674f600c83943d700b29a204d7e208",
+        "NPCModules/Outland/Doomwalker.lua": "b3bef4aa3e8d57e2a31c7dcd994a2974aab0fcdc3b6142af86097d3473096b8e",
+        "NPCModules/TempestKeep/TheEye/Solarian.lua": "a8900831610bc7ac924313eeddd74a616eb3dbdf9dc82477d04f4e6c336081a1",
+        "NPCModules/ZulAman/Zuljin.lua": "f874a5e0bf4174d5a903d431b6488b01ae967591650f73c0747634912f424b22",
+        "ThreatClassModuleCore.lua": "929d351f0f391325c32e308c5c4a34ba202c9c4f50f5c3c6389dd337d08460c6",
+        "ThreatClassic-1.0.lua": "c3617c08a640472e9f2bfc7ae9ff22d40d89b7691f714669a2c3e89d6bbd5453",
+        "ThreatNPCModuleCore.lua": "3e6433f74deecc5f0867b0428afa5248658aa700a50ba3324d5e92dd17111fae",
+        "lib.xml": "289f9d0dcb85f4be88363598f5adbafefc78ca34733d475fc423be04393b927f"
+      }
+    },
+    "LibAboutPanel-2.0": {
+      "source": "https://github.com/Myrroddin/libaboutpanel-2.0",
+      "revision": "3776b0ae122a0b2dcf8f268d859b32a5b043a47e",
+      "tag": "1.0.90",
+      "files": {
+        "LICENSE": "c1d841d434f692ddde866b84c1e4934a065a4b66ef35e3c00eafccab0a2fb15b",
+        "LibAboutPanel-2.0.lua": "8a20f6773cd383788983a8e2fbdeef9fad6146ddb81fc34b5e89c2ab0542925b",
+        "lib.xml": "afbc45053876be6a9ef3f865416208078ea41b7297f45f307633cd68440b7a13"
+      },
+      "local_patches": [
+        "lib.xml Script entry for Lua",
+        "Normalize boolean locale entries to their string keys; local LibStub revision 120.1 supersedes upstream 120 while allowing upstream 121 to replace it"
+      ]
+    },
+    "LibRangeCheck-3.0": {
+      "source": "https://github.com/WeakAuras/LibRangeCheck-3.0",
+      "revision": "95a6313a44f615738d216bd79cf132dc6f243284",
+      "files": {
+        "LICENSE": "e3fdaf76f03ccf2bf5ec951f5e14eaf1178a6f6af8f7c9d321e3256fa31e25f9",
+        "LibRangeCheck-3.0.lua": "ff3be5a5e6f48747a7217be1230174c8cc11cdd05dea72dc519b0024ca7aae09"
+      }
+    },
+    "AceGUI-3.0-Spell-EditBox": {
+      "source": "https://repos.wowace.com/wow/ace-gui-3-0-spell-editbox",
+      "revision": "b6a355a786c657594aabb22c58a20fe0403f0ada",
+      "status": "retained local fork; upstream has no newer version",
+      "local_patch": "XML references match the existing filename case",
+      "files": {
+        "AceGUI-3.0-Spell-EditBox.toc": "dcfd7461590a57e84966b8d7d3c306c319fcce25a625525568df8f162923358c",
+        "AceGUI-3.0-Spell-EditBox.xml": "35d71f5404844a2eb1de0747376dcb6c2732396591eb834ac21cd1246f7b72ca",
+        "Auras-EditBox.lua": "d09bee6dbbe8f06d4cc8f79a74768e71886f77fee8b8f558b7f833fbd9fc3a34",
+        "Casts-EditBox.lua": "26691c9fdbb4e92e18708c2225c44aca950117e722a92bc2dca3da285ef47a79",
+        "Changelog-AceGUI-3.0-Spell-EditBox-r20090807071246.txt": "be7ee8cd7487d71ba39d16e786840bd5fd9da3e621426d47f3f141e43af2fb1e",
+        "EditBox-Core.lua": "47e5bad963f477f09c9f87f9254c2fefff1a01bfd833cbbf5608e2d1993de644",
+        "Player-EditBox.lua": "add2c94bc4d4fd733e8eb42f20ff72fa0dede36e6c13914ebe759e5827c73245",
+        "SpellLoader.lua": "849497ddc3b67117e75f84fd3eb94794fea4954173f08b42f2c5ed9f3d5a2f7b",
+        "Spells-Editbox.lua": "f9d28766398512d81f4b9d5484b630319a7b322607cecb79d307d000b6a7230d"
+      }
+    },
+    "AceGUI-3.0-ActionSlotWidgets": {
+      "source": "https://repos.wowace.com/wow/ace-gui-3-0-action-slot-widgets",
+      "revision": "ed931438442bba2ee61222dfec75018683575770",
+      "status": "retained local fork; upstream has no newer version",
+      "files": {
+        "AceGUI-3.0-ActionSlotWidgets.toc": "a423b63cf6380f3889d16a31e7cc417abb536ba633451b6032d59a5142612872",
+        "ActionSlotWidget.lua": "74739e418c6b13670e521835c6ac9980ea221690b6a20b5904d46fa68025c365",
+        "Changelog-AceGUI-3.0-ActionSlotWidgets-v1.1.txt": "842ff7448a49bfdc0d592e21ba4e805191f16cb8778ff13bd1ba8a45114fe22a",
+        "LICENSE.txt": "c394bbe95d5330b292dc2f55d6c80b83cae123f07add4ad3126f99694c288bfe",
+        "widget.xml": "a78ec8957ff680c77fb6731c8999d732a66f58dc12d16993f0fc7ec1918dea39"
+      }
+    },
+    "AceGUI-3.0-Item-EditBox": {
+      "source": "https://repos.wowace.com/wow/ace-gui-3-0-item-editbox",
+      "revision": "local fork of r20090807071246",
+      "status": "retained local fork; upstream unavailable",
+      "local_patch": "XML references match the existing filename case",
+      "files": {
+        "AceGUI-3.0-Item-EditBox.toc": "c39e1ac076319e4ca3cbf6000d1107bd491a82ad3150e1113b04d93e079d68b8",
+        "AceGUI-3.0-Item-EditBox.xml": "66e779c4d589a926f534f2f652cb10c9b8136a7c86d107a1477d5f7f2adc65c0",
+        "EditBox-Core.lua": "4326effe353fbbbde736bbdcabda0c2d5a539fa2c53fc91f1ff651a05ef231ed",
+        "Inventory-EditBox.lua": "71a8f15eadd99bc45bdc336d4bff4438be3fb545a96d1bb2b8d83d2a4adbf472",
+        "ItemLoader.lua": "a251cdeb48fceca55bd91c3dc75a9e29789d5c795f3d0f802da874e613d3db8b",
+        "Items-Editbox.lua": "e6fbf0aeb412e5eab2eabd0558e068b4593310e7d609fb4815d271432af237e2"
+      }
+    }
+  },
+  "notes": [
+    "Vendored runtime files only; nested copies of LibStub are replaced by the shared Ace3 LibStub.",
+    "Git sources pinned to current upstream default-branch commits; SVN sources pinned by revision and content hashes.",
+    "AceGUI Spell/Item/ActionSlot widgets are local forks. Preserve Rotation Master extensions; no newer upstream replacement exists.",
+    "AceGUI Item EditBox upstream is unavailable (404); retained local fork, not claimed as updated.",
+    "SharedMediaWidgets runtime files already match upstream r66.",
+    "ThreatClassic 1.0 upstream is archived, Classic-only and superseded by native threat APIs on TBC.",
+    "LibAboutPanel lib.xml uses Script for the Lua entry, correcting upstream Include markup.",
+    "Vendored text is normalized to LF line endings; original widget Lua forks are preserved.",
+    "Trailing whitespace removed from changed XML and archived threat library text."
+  ],
+  "notices": {
+    "Ace3-LICENSE.txt": "afe050a430bafdbca7da69d95897751239f4fab415784a419a3cdc2519eee9b2"
+  }
+}

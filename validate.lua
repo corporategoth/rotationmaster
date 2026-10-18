@@ -210,10 +210,12 @@ function addon:validate_announce(prefix, idx, announce, fix)
         announce = "party",
         event = "SUCCEEDED",
         id = "61b36ed1-fa31-4656-ad71-f3d50f193a85",
-        value = "Some Announce"
+        name = "Announcement",
+        value = "Some Announce",
+        announce_sound = "Sound"
     }
 
-    if announce["type"] == "spell" or announce["type"] == "petspell" then
+    if announce["type"] == "spell" or announce["type"] == "petspell" or announce["type"] == "pet" then
         template["spell"] = 12345
         template["ranked"] = false
     elseif announce["type"] ~= "item" then
@@ -250,10 +252,14 @@ function addon:validate_condition_group(prefix, idx, group, fix)
     local template = {
         id = "61b36ed1-fa31-4656-ad71-f3d50f193a85",
         name = "Some Group",
-        conditions = {}
+        conditions = {},
+        icon = type(group.icon)=="number" and 1 or "Interface\\Icons\\INV_Misc_Book_09"
     }
 
     validate_basic(prefix .. ":" .. idx, group, template, fix)
+    if group.icon~=nil and not (type(group.icon)=="string" and #group.icon>0 and #group.icon<=1024 or type(group.icon)=="number" and group.icon>0 and group.icon<math.huge and group.icon%1==0) then
+        addon:warn("Invalid category icon %s:%s",prefix,tostring(idx));if fix then group.icon=nil end
+    end
 end
 
 function addon:validate_custom_condition(prefix, name, custom_condition, fix)
@@ -303,6 +309,7 @@ local function validate_rotation_condition(prefix, condition, fix)
     end
     fields["type"] = "string"
     fields["disabled"] = "boolean"
+    if condition.type=="AND" or condition.type=="OR" or condition.type=="NOT" then fields.name="string" end
 
     local function handle_array_field(cond, field)
         if type(cond) == "table" then
@@ -346,7 +353,7 @@ local function validate_rotation_condition(prefix, condition, fix)
                     if not found then
                         addon:warn("Condition %s.%s has data of the wrong type (got %s)", full_id, newsubtree, type(data))
                         if fix then
-                            table.insert(toremove, key)
+                            mark_for_remove(keyremove, key)
                         end
                     end
                 elseif type(data) == "table" then
@@ -399,6 +406,18 @@ local function validate_rotation_condition(prefix, condition, fix)
 end
 
 function addon:validate_rotation(prefix, id, rotation, fix)
+    -- The old template fixer knows only flat actions. Use the non-destructive
+    -- schema for branch bodies; never strip their arms or future metadata.
+    if type(rotation)=="table" and type(rotation.rotation)=="table" then
+        for _,step in pairs(rotation.rotation) do
+            if type(step)=="table" and step.type=="branch" then
+                local settings=self.GetImportValidationOptions and self:GetImportValidationOptions() or {conditions=self.conditionDefinitions}
+                local result=self.RotationData.ValidateBody(rotation,settings)
+                for _,diagnostic in ipairs(result.diagnostics) do self:warn("%s:%s %s",prefix,id,diagnostic.code.." "..diagnostic.path) end
+                return
+            end
+        end
+    end
     if id ~= DEFAULT and not is_uuid(id) then
         addon:warn("Invalid ID for rotation %s:%s", prefix, id)
         if fix then
@@ -451,6 +470,7 @@ function addon:validate_rotation(prefix, id, rotation, fix)
     }
 
     local function augment_template_type(template, rot)
+        if rot.type=="none" then template.suppress_attack=false end
         if rot["type"] == "spell" then
             template["action"] = 1234
             template["ranked"] = false
@@ -550,7 +570,7 @@ function addon:validate_rotation(prefix, id, rotation, fix)
 end
 
 function addon:validate(template, fix)
-    local DB = _G[addon_name .. "DB"]
+    local DB = _G[self.savedVariableName or "RotationMasterDB"]
 
     local glob_template = addon.deepcopy(template.global)
     glob_template.itemsets = {}

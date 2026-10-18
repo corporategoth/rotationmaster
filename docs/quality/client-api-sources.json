@@ -1,0 +1,101 @@
+{
+  "live": {
+    "revision": "b9be9379719047977fca4dba1bb1d9988e8840b3",
+    "repository": "https://github.com/Gethe/wow-ui-source",
+    "projectConstants": {
+      "Interface/AddOns/Blizzard_ProjectConstants/ProjectConstants.lua": "WOW_PROJECT_MAINLINE = 1;\nWOW_PROJECT_CLASSIC = 2;",
+      "Interface/AddOns/Blizzard_ProjectConstants/WoWLabs/ProjectConstants.lua": "WOW_PROJECT_WOWLABS = 3;"
+    },
+    "apiDocuments": {
+      "AssistedCombatDocumentation.lua": "present",
+      "CombatLogDocumentation.lua": "present",
+      "UnitDocumentation.lua": "present",
+      "UnitAuraDocumentation.lua": "present",
+      "SpellDocumentation.lua": "present",
+      "GameRulesDocumentation.lua": "present",
+      "SpellBookDocumentation.lua": "present",
+      "SpellSharedDocumentation.lua": "present",
+      "UnitAuraSharedDocumentation.lua": "present",
+      "ChatInfoDocumentation.lua": "present",
+      "SecretPredicatesDocumentation.lua": "present",
+      "SecretPredicateAPIDocumentation.lua": "present"
+    }
+  },
+  "classic_era": {
+    "revision": "8165d4cd6e48d606369336cc3a7977902310e81e",
+    "repository": "https://github.com/Gethe/wow-ui-source",
+    "projectConstants": {
+      "Interface/AddOns/Blizzard_SharedXML/ProjectConstants.lua": "WOW_PROJECT_MAINLINE = 1;\nWOW_PROJECT_CLASSIC = 2;"
+    },
+    "apiDocuments": {
+      "AssistedCombatDocumentation.lua": "present",
+      "CombatLogDocumentation.lua": "present",
+      "UnitDocumentation.lua": "present",
+      "UnitAuraDocumentation.lua": "present",
+      "SpellDocumentation.lua": "present",
+      "GameRulesDocumentation.lua": "present",
+      "SpellBookDocumentation.lua": "present",
+      "SpellSharedDocumentation.lua": "present",
+      "UnitAuraSharedDocumentation.lua": "present"
+    }
+  },
+  "classic": {
+    "revision": "72cd28b019e536e9d2e82f036394ec10856d28a1",
+    "repository": "https://github.com/Gethe/wow-ui-source",
+    "projectConstants": {
+      "Interface/AddOns/Blizzard_SharedXML/ProjectConstants.lua": "WOW_PROJECT_MAINLINE = 1;\nWOW_PROJECT_CLASSIC = 2;"
+    },
+    "apiDocuments": {
+      "AssistedCombatDocumentation.lua": "present",
+      "CombatLogDocumentation.lua": "present",
+      "UnitDocumentation.lua": "present",
+      "UnitAuraDocumentation.lua": "present",
+      "SpellDocumentation.lua": "present",
+      "GameRulesDocumentation.lua": "present",
+      "SpellBookDocumentation.lua": "present",
+      "SpellSharedDocumentation.lua": "present",
+      "UnitAuraSharedDocumentation.lua": "present"
+    }
+  },
+  "classic_anniversary": {
+    "revision": "2cfec7c00f0f24762d5ca35a4beb1e93c0cde328",
+    "repository": "https://github.com/Gethe/wow-ui-source",
+    "projectConstants": {
+      "Interface/AddOns/Blizzard_SharedXML/ProjectConstants.lua": "WOW_PROJECT_MAINLINE = 1;\r\nWOW_PROJECT_CLASSIC = 2;"
+    },
+    "apiDocuments": {
+      "AssistedCombatDocumentation.lua": "present",
+      "CombatLogDocumentation.lua": "present",
+      "UnitDocumentation.lua": "present",
+      "UnitAuraDocumentation.lua": "present",
+      "SpellDocumentation.lua": "present",
+      "GameRulesDocumentation.lua": "present",
+      "SpellBookDocumentation.lua": "present",
+      "SpellSharedDocumentation.lua": "present",
+      "UnitAuraSharedDocumentation.lua": "present"
+    }
+  },
+  "forever": {
+    "revision": "172a387e3ab85b26e6640d3058d5ec1e6ccd4c63",
+    "repository": "https://github.com/Gethe/wow-ui-source",
+    "projectConstants": {
+      "Interface/AddOns/Blizzard_ProjectConstants/Camelot/ProjectConstants.lua": "WOW_PROJECT_CAMELOT = 18;\nWOW_PROJECT_ID = WOW_PROJECT_CAMELOT;\n",
+      "Interface/AddOns/Blizzard_ProjectConstants/ProjectConstants.lua": "WOW_PROJECT_MAINLINE = 1;\nWOW_PROJECT_CLASSIC = 2;",
+      "Interface/AddOns/Blizzard_ProjectConstants/WoWLabs/ProjectConstants.lua": "WOW_PROJECT_WOWLABS = 3;"
+    },
+    "apiDocuments": {
+      "AssistedCombatDocumentation.lua": "present",
+      "CombatLogDocumentation.lua": "present",
+      "UnitDocumentation.lua": "present",
+      "UnitAuraDocumentation.lua": "present",
+      "SpellDocumentation.lua": "present",
+      "GameRulesDocumentation.lua": "present",
+      "SpellBookDocumentation.lua": "present",
+      "SpellSharedDocumentation.lua": "present",
+      "UnitAuraSharedDocumentation.lua": "present",
+      "ChatInfoDocumentation.lua": "present",
+      "SecretPredicatesDocumentation.lua": "present",
+      "SecretPredicateAPIDocumentation.lua": "present"
+    }
+  }
+}

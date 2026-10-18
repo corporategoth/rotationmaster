@@ -95,6 +95,8 @@ local function help_effect_group(group, singular)
 end
 
 local function help_action_group(group, singular)
+    group:AddChild(CreateText(L["Actions automatically require a learned spell or carried item, usable resources, cooldown readiness and valid range. Conditions can additionally test other actions."]))
+    group:AddChild(Gap())
     group:AddChild(CreateText(color.BLIZ_YELLOW .. L["Action Type"] .. color.RESET .. " - " ..
             "The type of action to highlight on your action bars."))
 
@@ -107,13 +109,11 @@ local function help_action_group(group, singular)
             "Often spells you crrently can not cast (eg. those for a different different pet than the one you " ..
             "have summoned) are hidden.  This is a restriction imposed by the game.")))
     group:AddChild(Indent(40, CreateText(color.GREEN .. L["Any Spell"] .. color.RESET .. " - " ..
-            "This is similar to Spell, however it is not limited to spells you can cast.  This is rarely needed, " ..
-            "but could be used for spells you have not yet learned.")))
+            L["Actions automatically require a learned spell or carried item, usable resources, cooldown readiness and valid range. Conditions can additionally test other actions."])))
     group:AddChild(Indent(40, CreateText(color.GREEN .. L["Item"] .. color.RESET .. " - " ..
             "An item you are carrying OR wearing.  Only items that have a USE ability will be available.")))
-    group:AddChild(Indent(40, CreateText(color.GREEN .. L["None"] .. color.RESET .. " - " ..
-            "No action.  This can be used to suspend the rotation under certain circumstances (eg. that one " ..
-            "of multiple cooldowns have been applied).")))
+    group:AddChild(Indent(40, CreateText(color.GREEN .. L["Stop"] .. color.RESET .. " - " ..
+            L["Stop ends lower priority actions. Implicit Attack remains eligible unless you suppress it. An unavailable Stop condition also suppresses Attack. Optional reminders remain independent."])))
 
     if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
         group:AddChild(Gap())
@@ -248,12 +248,13 @@ function addon.layout_rotation_help(frame)
         "Rotations are used to highlight spells or items in order of priority (ie. the higher up the rotation " ..
         "it is, the more preferential it is to highlight it).  This highlighting is subject to both the " ..
         "conditions present with each rotation, and the usability of the spell or item (including taking " ..
-        "into account available mana and range to target unless these are disabled in the primary Rotation " ..
-        "Master settings.)  A maximum of one rotation highlight may be active at any time."))
+        "into account available resources, cooldown and range). A maximum of one rotation highlight may be active at any time."))
 
     group:AddChild(Gap())
     group:AddChild(CreateText("Fields", "Interface\\AddOns\\" .. addon_name .. "\\Fonts\\Inconsolata-Bold.ttf", 16))
 
+    group:AddChild(Gap())
+    group:AddChild(CreateText(L["When no priority action is ready, Attack is the implicit final fallback for a living hostile target in melee combat, if autoattack is inactive. It uses the normal rotation highlight and never presses a button."]))
     group:AddChild(Gap())
     help_top_buttons(group, "rotation", "rotations")
 

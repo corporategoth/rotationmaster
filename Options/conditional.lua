@@ -14,191 +14,8 @@ local cleanArray, deepcopy, wrap, HideOnEscape = addon.cleanArray, addon.deepcop
 -- Common code
 -------------------------------
 
-local evaluateArray, evaluateSingle, printArray, printSingle, validateArray, validateSingle, usefulArray, usefulSingle
-
-local conditions = {}
-local special = {}
-special["DELETE"] = { desc = DELETE, icon = "Interface\\Icons\\Trade_Engineering", fields = { } }
-special["AND"] = { desc = L["AND"], icon = "Interface\\Icons\\Spell_ChargePositive", fields = { value = "condition[]" } }
-special["OR"] = { desc = L["OR"], icon = "Interface\\Icons\\Spell_ChargeNegative", fields = { value = "condition[]" } }
-special["NOT"] = { desc = L["NOT"], icon = "Interface\\PaperDollInfoFrame\\UI-GearManager-LeaveItem-Transparent", fields = { value = "condition" } }
-
-evaluateArray = function(operation, array, cache, start)
-    if array ~= nil then
-        for _, entry in pairs(array) do
-            if entry ~= nil and entry.type ~= nil then
-                local rv
-                if entry.type == "AND" or entry.type == "OR" then
-                    rv = evaluateArray(entry.type, entry.value, cache, start);
-                else
-                    rv = evaluateSingle(entry, cache, start)
-                end
-
-                if operation == "AND" and not rv then
-                    return false
-                elseif operation == "OR" and rv then
-                    return true
-                end
-            end
-        end
-    end
-
-    if operation == "AND" then
-        return true
-    elseif operation == "OR" then
-        return false
-    else
-        error("Array evaluation with an operation other than AND or OR")
-        return false
-    end
-end
-
-evaluateSingle = function(value, cache, start)
-    if value == nil or value.type == nil or value.disabled then
-        return true
-    end
-
-    if value.type == "AND" or value.type == "OR" then
-        return evaluateArray(value.type, value.value, cache, start)
-    elseif value.type == "NOT" then
-        return not evaluateSingle(value.value, cache, start)
-    elseif conditions[value.type] ~= nil then
-        local rv = false
-        -- condition is FALSE if the condition is INVALID.
-        if conditions[value.type].valid(addon.currentSpec, value) then
-            rv = conditions[value.type].evaluate(value, cache, start)
-        end
-        -- Extra protection so we don't evaluate the print realtime
-        if addon.db.profile.verbose then
-            addon:verbose("COND: %s = %s", conditions[value.type].print(addon.currentSpec, value), (rv and "true" or "false"))
-        end
-        return rv
-    else
-        error("Unrecognized condition for evaluation")
-        return false
-    end
-end
-
-printArray = function(operation, array, spec)
-    if array == nil then
-        return ""
-    end
-
-    local rv = "("
-    local first = true
-
-    for _, entry in pairs(array) do
-        if entry ~= nil and entry.type ~= nil then
-            if first then
-                first = false
-            else
-                rv = rv .. " " .. operation .. " "
-            end
-
-            if entry.type == "AND" or entry.type == "OR" then
-                rv = rv .. printArray(entry.type, entry.value, spec)
-            else
-                rv = rv .. printSingle(entry, spec)
-            end
-        end
-    end
-
-    rv = rv .. ")"
-
-    return rv
-end
-
-printSingle = function(value, spec)
-    if value == nil or value.type == nil or value.disabled then
-        return ""
-    end
-
-    if value.type == "AND" or value.type == "OR" then
-        return  printArray(value.type, value.value, spec)
-    elseif value.type == "NOT" then
-        return "NOT " .. printSingle(value.value, spec)
-    elseif conditions[value.type] ~= nil then
-        return conditions[value.type].print(spec, value)
-    else
-        return L["<INVALID CONDITION>"]
-    end
-end
-
-validateArray = function(_, array, spec)
-    if array == nil then
-        return true
-    end
-
-    for _, entry in pairs(array) do
-        if entry ~= nil and entry.type ~= nil then
-            local rv
-            if entry.type == "AND" or entry.type == "OR" then
-                rv = validateArray(entry.type, entry.value, spec)
-            else
-                rv = validateSingle(entry, spec)
-            end
-            if not rv then
-                return false
-            end
-        end
-    end
-
-    return true
-end
-
-validateSingle = function(value, spec)
-    if value == nil or value.type == nil or value.disabled then
-        return true
-    end
-
-    if value.type == "AND" or value.type == "OR" then
-        return validateArray(value.type, value.value, spec)
-    elseif value.type == "NOT" then
-        return validateSingle(value.value, spec)
-    elseif conditions[value.type] ~= nil then
-        return conditions[value.type].valid(spec, value)
-    else
-        return false
-    end
-end
-
-usefulArray = function(_, array)
-    if array == nil then
-        return false
-    end
-
-    for _, entry in pairs(array) do
-        if entry ~= nil and entry.type ~= nil then
-            local rv
-            if entry.type == "AND" or entry.type == "OR" then
-                rv = usefulArray(entry.type, entry.value)
-            else
-                rv = usefulSingle(entry)
-            end
-            if rv then
-                return true
-            end
-        end
-    end
-
-    return false
-end
-
-usefulSingle = function(value)
-    if value == nil or value.type == nil then
-        return false
-    end
-
-    if value.type == "AND" or value.type == "OR" then
-        return usefulArray(value.type, value.value)
-    elseif value.type == "NOT" then
-        return usefulSingle(value.value)
-    elseif conditions[value.type] ~= nil then
-        return true
-    else
-        return false
-    end
-end
+local conditions = addon.conditionDefinitions
+local special = addon.conditionSpecials
 
 local function LayoutConditionTab(top, frame, funcs, value, selected, index, group, filter)
     frame:ReleaseChildren()
@@ -609,6 +426,7 @@ local function ActionGroup(parent, value, idx, array)
 end
 
 addon.LayoutConditionFrame = function(frame)
+    if frame.rmCompactRefresh then return frame.rmCompactRefresh() end
     local root = frame:GetUserData("root")
     local funcs = frame:GetUserData("funcs")
 
@@ -640,24 +458,8 @@ end
 --  Dealing with Conditionals
 -------------------------------
 
-function addon:RegisterCondition(tag, array)
-    if conditions[tag] and conditions[tag].on_unregister then
-        conditions[tag]:on_unregister(tag)
-    end
-    conditions[tag] = array
-    if array.on_register then
-        array:on_register(tag)
-    end
-end
-
-function addon:UnregisterCondition(tag)
-    if conditions[tag] and conditions[tag].on_unregister then
-        conditions[tag]:on_unregister(tag)
-    end
-    conditions[tag] = nil
-end
-
-function addon:EditCondition(index, spec, value, callback)
+function addon:EditCondition(index, spec, value, callback, targetValid)
+    if self.ShowConditionEditor then return self:ShowConditionEditor(index,spec,value,callback,targetValid) end
     local funcs = {
         print = addon.printCondition,
         validate = addon.validateCondition,
@@ -684,24 +486,6 @@ function addon:EditCondition(index, spec, value, callback)
     HideOnEscape(frame)
 end
 
-function addon:evaluateCondition(value)
-    local cache = {}
-    local start = GetTime()
-    return evaluateSingle(value, cache, start)
-end
-
-function addon:printCondition(value, spec)
-    return printSingle(value, spec)
-end
-
-function addon:validateCondition(value, spec)
-    return validateSingle(value, spec)
-end
-
-function addon:usefulCondition(value)
-    return usefulSingle(value)
-end
-
 function addon:findConditionGroup(value)
     if not value then
         return nil
@@ -721,9 +505,10 @@ function addon:findConditionGroup(value)
     return "DEFAULT"
 end
 
-function addon:listConditions(group, nohide)
-    local profile = addon.db.profile
-    local global = addon.db.global
+function addon:listConditions(group, nohide, store)
+    store=store or addon.db
+    local profile = store.profile
+    local global = store.global
 
     local rv = {}
     if group == "SWITCH" then

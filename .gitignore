@@ -2,3 +2,5 @@
 *.iml
 *.swp
 *~
+.tools/
+__pycache__/

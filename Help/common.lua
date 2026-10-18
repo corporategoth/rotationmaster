@@ -82,3 +82,14 @@ function helpers.Gap()
 end
 
 addon.help_funcs = helpers
+
+-- Authored field documentation is data, independent of any renderer.
+function addon:SettingsHelpSections(values)
+    local rows={}
+    for _,value in ipairs(values) do
+        local plain=value:gsub('|c%x%x%x%x%x%x%x%x',''):gsub('|r','')
+        local title,text=plain:match('^(.-) %- (.*)$')
+        rows[#rows+1]={title=title or '',text=text or plain}
+    end
+    return rows
+end

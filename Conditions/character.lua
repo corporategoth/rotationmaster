@@ -64,7 +64,7 @@ addon:RegisterCondition("CLASS", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
 
-        local class = AceGUI:Create("Dropdown")
+        local class = addon:CreateConditionDropdown()
         class:SetLabel(L["Class"])
         class:SetCallback("OnValueChanged", function(_, _, v)
             value.value = v
@@ -127,7 +127,7 @@ addon:RegisterCondition("CLASS_GROUP", {
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
-        local class = AceGUI:Create("Dropdown")
+        local class = addon:CreateConditionDropdown()
         class:SetLabel(L["Class"])
         class:SetCallback("OnValueChanged", function(_, _, v)
             value.class = v
@@ -170,62 +170,7 @@ addon:RegisterCondition("CLASS_GROUP", {
 })
 
 if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
-    addon:RegisterCondition("TALENT", {
-        description = L["Talent"],
-        icon = "Interface\\Icons\\Inv_misc_book_11",
-        fields = { value = "number" },
-        valid = function(_, value)
-            return value.value ~= nil and value.value >= 1 and value.value <= 21
-        end,
-        evaluate = function(value)
-            local selected = select(4, addon.getCached(addon.longtermCache, GetTalentInfo, math.floor((value.value-1) / 3) + 1, ((value.value-1) % 3) + 1, 1))
-            return selected
-        end,
-        print = function(spec, value)
-            return string.format(L["you are talented in %s"], addon.nullable(addon:GetSpecTalentName(spec, value.value), L["<talent>"]))
-        end,
-        widget = function(parent, spec, value)
-            local top = parent:GetUserData("top")
-            local root = top:GetUserData("root")
-            local funcs = top:GetUserData("funcs")
 
-            local talents = {}
-            local talentsOrder = {}
-            for i=1,21 do
-                talents[i] = addon:GetSpecTalentName(spec, i)
-                table.insert(talentsOrder, i)
-            end
-
-            local talentIcon = AceGUI:Create("Icon")
-            talentIcon:SetWidth(44)
-            talentIcon:SetHeight(44)
-            talentIcon:SetImageSize(36, 36)
-            talentIcon:SetImage(addon:GetSpecTalentIcon(spec, value.value))
-            parent:AddChild(talentIcon)
-
-            local talent = AceGUI:Create("Dropdown")
-            talent:SetLabel(L["Talent"])
-            talent:SetCallback("OnValueChanged", function(_, _, v)
-                value.value = v
-                talentIcon:SetImage(addon:GetSpecTalentIcon(spec, value.value))
-                top:SetStatusText(funcs:print(root, spec))
-            end)
-            talent.configure = function()
-                talent:SetList(talents, talentsOrder)
-                if (value.value) then
-                    talent:SetValue(value.value)
-                end
-            end
-            parent:AddChild(talent)
-        end,
-        help = function(frame)
-            frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Talent"] .. color.RESET .. " - " ..
-                    "A talent you have enabled in your specialization.  If you are currently in the same spec " ..
-                    "as the rotation you are configuring (or have switched specializations without reloading " ..
-                    "your user interface), this will show the talents.  Otherwise, this will simply show the " ..
-                    "level and selection numbers (this is a restriction imposed by the game itself.)"))
-        end
-    })
 
     addon:RegisterCondition("ROLE", {
         description = L["Role"],
@@ -254,7 +199,7 @@ if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
                 function() top:SetStatusText(funcs:print(root, spec)) end)
             parent:AddChild(unit)
 
-            local role = AceGUI:Create("Dropdown")
+            local role = addon:CreateConditionDropdown()
             role:SetLabel(L["Role"])
             role:SetCallback("OnValueChanged", function(_, _, v)
                 value.value = v
@@ -283,154 +228,7 @@ if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
         end
     })
 else
-    addon:RegisterCondition("TALENT", {
-        description = L["Talent"],
-        icon = "Interface\\Icons\\Inv_misc_book_11",
-        fields = { tree = "number", talent = "number", operator = "string", value = "number" },
-        valid = function(_, value)
-            return (value.tree ~= nil and value.tree >= 1 and value.tree <= GetNumTalentTabs() and
-                    value.talent ~= nil and value.talent >= 1 and value.talent <= GetNumTalents(value.tree) and
-                    value.operator ~= nil and addon.isin(addon.operators, value.operator) and
-                    value.value ~= nil and value.value >= 0 and
-                    value.value <= select(6, GetTalentInfo(value.tree, value.talent)))
-        end,
-        evaluate = function(value)
-            local _, _, _, _, rank = addon.getCached(addon.longtermCache, GetTalentInfo, value.tree, value.talent)
-            return addon.compare(value.operator, rank, value.value)
-        end,
-        print = function(_, value)
-            local link
-            if value.tree ~= nil and value.talent ~= nil then
-                link = GetTalentLink(value.tree, value.talent)
-            end
-            return addon.compareString(value.operator, string.format(L["talent addon.points in %s (%s)"],
-                    addon.nullable(link, L["<talent>"]),
-                    addon.nullable(value.tree and GetTalentTabInfo(value.tree) or nil, L["<talent tree>"])),
-                    addon.nullable(value.value))
-        end,
-        widget = function(parent, spec, value)
-            local top = parent:GetUserData("top")
-            local root = top:GetUserData("root")
-            local funcs = top:GetUserData("funcs")
 
-            local talentTrees = {}
-            local talentTreesOrder = {}
-            for i=1,GetNumTalentTabs() do
-                talentTrees[i] = GetTalentTabInfo(i)
-                table.insert(talentTreesOrder, i)
-            end
-
-            local talents = {}
-            local talentsOrder = {}
-            if value.tree then
-                for i=1,GetNumTalents(value.tree) do
-                    talents[i] = GetTalentInfo(value.tree, i)
-                    table.insert(talentsOrder, i)
-                end
-            end
-
-            local talentTree = AceGUI:Create("Dropdown")
-            local talentIcon = AceGUI:Create("Icon")
-            local talent = AceGUI:Create("Dropdown")
-
-            local talentTreeName
-            if value.tree then
-                talentTreeName = GetTalentTabInfo(value.tree)
-            else
-                talent:SetDisabled(true)
-            end
-            local talentName, talentImage
-            if value.tree and value.talent then
-                talentName, talentImage = GetTalentInfo(value.tree, value.talent)
-            end
-
-            talentTree:SetLabel(L["Talent Tree"])
-            talentTree:SetCallback("OnValueChanged", function(_, _, v)
-                if v == value.tree then
-                    return
-                end
-
-                value.tree = v
-                talentTreeName = GetTalentTabInfo(v)
-                talentTree:SetValue(v)
-                top:SetStatusText(funcs:print(root, spec))
-
-                talents = {}
-                talentsOrder = {}
-                for i=1,GetNumTalents(value.tree) do
-                    talents[i] = GetTalentInfo(value.tree, i)
-                    table.insert(talentsOrder, i)
-                end
-                talentIcon:SetImage(nil)
-                talent:SetList(talents, talentsOrder)
-                talent:SetDisabled(false)
-                talentName, talentImage = nil, nil
-                talent:SetValue(nil)
-                talent:SetText(nil)
-            end)
-            talentTree.configure = function()
-                talentTree:SetList(talentTrees, talentTreesOrder)
-                if value.tree then
-                    talentTree:SetValue(value.tree)
-                end
-            end
-            parent:AddChild(talentTree)
-
-            talentIcon:SetWidth(44)
-            talentIcon:SetHeight(44)
-            talentIcon:SetImageSize(36, 36)
-            if value.tree and value.talent then
-                talentIcon:SetImage(talentImage)
-            end
-            talentIcon:SetCallback("OnEnter", function()
-                if value.talent then
-                    GameTooltip:SetOwner(talentIcon.frame, "ANCHOR_BOTTOMRIGHT", 3)
-                    GameTooltip:SetHyperlink(GetTalentLink(value.tree, value.talent))
-                end
-            end)
-            talentIcon:SetCallback("OnLeave", function()
-                if GameTooltip:IsOwned(talentIcon.frame) then
-                    GameTooltip:Hide()
-                end
-            end)
-            parent:AddChild(talentIcon)
-            talent:SetLabel(L["Talent"])
-            talent:SetCallback("OnValueChanged", function(_, _, v)
-                if v == value.talent then
-                    return
-                end
-
-                value.talent = v
-                talentName, talentImage = GetTalentInfo(value.tree, v)
-                talentIcon:SetImage(talentImage)
-                talent:SetValue(v)
-                top:SetStatusText(funcs:print(root, spec))
-            end)
-            talent.configure = function()
-                talent:SetList(talents, talentsOrder)
-                if value.tree and value.talent then
-                    talent:SetValue(value.talent)
-                end
-            end
-            parent:AddChild(talent)
-
-            local operator_group = addon:Widget_OperatorWidget(value, L["Points"],
-                    function() top:SetStatusText(funcs:print(root, spec)) end)
-            parent:AddChild(operator_group)
-        end,
-        help = function(frame)
-            frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Talent Tree"] .. color.RESET .. " - " ..
-                    "The tree that the talent this condition is testing is from."))
-
-            frame:AddChild(helpers.Gap())
-            frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Talent"] .. color.RESET .. " - " ..
-                    "A talent you have available to you."))
-
-            frame:AddChild(helpers.Gap())
-            addon.layout_condition_operatorwidget_help(frame, L["Talent"], L["Points"],
-                    "How many addon.points you have put into " .. color.BLIZ_YELLOW .. L["Talent"] .. color.RESET .. ".");
-        end
-    })
 
     if LE_EXPANSION_LEVEL_CURRENT >= 2 then
         addon:RegisterCondition("ROLE", {
@@ -452,7 +250,7 @@ else
                 local root = top:GetUserData("root")
                 local funcs = top:GetUserData("funcs")
 
-                local role = AceGUI:Create("Dropdown")
+                local role = addon:CreateConditionDropdown()
                 role:SetLabel(L["Role"])
                 role:SetCallback("OnValueChanged", function(_, _, v)
                     value.value = v
@@ -552,7 +350,7 @@ addon:RegisterCondition("CREATURE", {
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
 
-        local class = AceGUI:Create("Dropdown")
+        local class = addon:CreateConditionDropdown()
         class:SetLabel(L["Creature Type"])
         class:SetCallback("OnValueChanged", function(_, _, v)
             value.value = v
@@ -601,7 +399,7 @@ addon:RegisterCondition("CLASSIFICATION", {
                 function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
 
-        local class = AceGUI:Create("Dropdown")
+        local class = addon:CreateConditionDropdown()
         class:SetLabel(L["Unit Classification"])
         class:SetCallback("OnValueChanged", function(_, _, v)
             value.value = v
@@ -626,6 +424,7 @@ addon:RegisterCondition("CLASSIFICATION", {
 })
 
 addon:RegisterCondition("LEVEL", {
+    requiredFields = {"unit","operator","value"},
     description = L["Level"],
     icon = "Interface\\Icons\\spell_holy_blessedrecovery",
     fields = { unit = "string", operator = "string", value = "number", relative = "boolean" },
@@ -785,7 +584,7 @@ addon:RegisterCondition("RESIST", {
                 function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
 
-        local school = AceGUI:Create("Dropdown")
+        local school = addon:CreateConditionDropdown()
         school:SetLabel(L["Spell School"])
         school:SetCallback("OnValueChanged", function(_, _, v)
             value.school = v
@@ -849,7 +648,7 @@ addon:RegisterCondition("IMMUNE", {
                 function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
 
-        local school = AceGUI:Create("Dropdown")
+        local school = addon:CreateConditionDropdown()
         school:SetLabel(L["Spell School"])
         school:SetCallback("OnValueChanged", function(_, _, v)
             value.school = v

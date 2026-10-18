@@ -1,0 +1,1272 @@
+{
+  "tool": {
+    "name": "wowlua-ls",
+    "version": "0.35.0"
+  },
+  "diagnostics": [
+    {
+      "code": "access-protected",
+      "message": "'editBox' is protected and cannot be accessed here",
+      "path": "LibsAugment/FAIAP.lua",
+      "severity": "warning",
+      "source": "lib.enable(self.editBox, nil, 4)",
+      "count": 1
+    },
+    {
+      "code": "access-protected",
+      "message": "'editBox' is protected and cannot be accessed here",
+      "path": "LibsAugment/FAIAP.lua",
+      "severity": "warning",
+      "source": "self.editBox:SetScript(\"OnTextSet\", nil)",
+      "count": 1
+    },
+    {
+      "code": "access-protected",
+      "message": "'editBox' is protected and cannot be accessed here",
+      "path": "Options/custom_condition.lua",
+      "severity": "warning",
+      "source": "editbox.editBox:GetRegions():SetFont(\"Interface\\\\AddOns\\\\\" .. addon_name .. \"\\\\Fonts\\\\Inconsolata-Bold.ttf\", 13)",
+      "count": 1
+    },
+    {
+      "code": "access-protected",
+      "message": "'editBox' is protected and cannot be accessed here",
+      "path": "Options/effects.lua",
+      "severity": "warning",
+      "source": "editbox.editBox:GetRegions():SetFont(\"Interface\\\\AddOns\\\\\" .. addon_name .. \"\\\\Fonts\\\\Inconsolata-Bold.ttf\", 13)",
+      "count": 1
+    },
+    {
+      "code": "access-protected",
+      "message": "'title' is protected and cannot be accessed here",
+      "path": "Options/general.lua",
+      "severity": "warning",
+      "source": "local movefunc = window.title:GetScript(\"OnMouseUp\")",
+      "count": 1
+    },
+    {
+      "code": "access-protected",
+      "message": "'title' is protected and cannot be accessed here",
+      "path": "Options/general.lua",
+      "severity": "warning",
+      "source": "window.title:SetScript(\"OnMouseUp\", function(widget)",
+      "count": 1
+    },
+    {
+      "code": "create-global",
+      "message": "implicit global creation 'FetchNeuron'",
+      "path": "buttons.lua",
+      "severity": "warning",
+      "source": "function FetchNeuron()",
+      "count": 1
+    },
+    {
+      "code": "create-global",
+      "message": "implicit global creation 'base64dec'",
+      "path": "utils.lua",
+      "severity": "warning",
+      "source": "function base64dec(data)",
+      "count": 1
+    },
+    {
+      "code": "create-global",
+      "message": "implicit global creation 'base64enc'",
+      "path": "utils.lua",
+      "severity": "warning",
+      "source": "function base64enc(data)",
+      "count": 1
+    },
+    {
+      "code": "create-global",
+      "message": "implicit global creation 'color'",
+      "path": "globals.lua",
+      "severity": "warning",
+      "source": "color = {",
+      "count": 1
+    },
+    {
+      "code": "create-global",
+      "message": "implicit global creation 'minimapInitialize'",
+      "path": "main.lua",
+      "severity": "warning",
+      "source": "function minimapInitialize()",
+      "count": 1
+    },
+    {
+      "code": "create-global",
+      "message": "implicit global creation 'width_split'",
+      "path": "utils.lua",
+      "severity": "warning",
+      "source": "function width_split(s, sz)",
+      "count": 1
+    },
+    {
+      "code": "missing-parameter",
+      "message": "missing argument for parameter 'isInspect'",
+      "path": "utils.lua",
+      "severity": "warning",
+      "source": "return GetActiveTalentGroup()",
+      "count": 1
+    },
+    {
+      "code": "missing-parameter",
+      "message": "missing argument for parameter 'parent'",
+      "path": "Options/general.lua",
+      "severity": "warning",
+      "source": "self.optionsFrames.General:SetName(addon.pretty_name)",
+      "count": 1
+    },
+    {
+      "code": "missing-parameter",
+      "message": "missing argument for parameter 'specGroupIndex'",
+      "path": "Conditions/character.lua",
+      "severity": "warning",
+      "source": "talentName, talentImage = GetTalentInfo(value.tree, v)",
+      "count": 1
+    },
+    {
+      "code": "missing-parameter",
+      "message": "missing argument for parameter 'specGroupIndex'",
+      "path": "Conditions/character.lua",
+      "severity": "warning",
+      "source": "talentName, talentImage = GetTalentInfo(value.tree, value.talent)",
+      "count": 1
+    },
+    {
+      "code": "missing-parameter",
+      "message": "missing argument for parameter 'specGroupIndex'",
+      "path": "Conditions/character.lua",
+      "severity": "warning",
+      "source": "talents[i] = GetTalentInfo(value.tree, i)",
+      "count": 2
+    },
+    {
+      "code": "missing-parameter",
+      "message": "missing argument for parameter 'specGroupIndex'",
+      "path": "Conditions/character.lua",
+      "severity": "warning",
+      "source": "value.value <= select(6, GetTalentInfo(value.tree, value.talent)))",
+      "count": 1
+    },
+    {
+      "code": "missing-parameter",
+      "message": "missing argument for parameter 'specGroupIndex'",
+      "path": "main.lua",
+      "severity": "warning",
+      "source": "local name, icon, _, _, rank = GetTalentInfo(i, j)",
+      "count": 1
+    },
+    {
+      "code": "redundant-parameter",
+      "message": "expected at most 0 argument(s) but got 1",
+      "path": "LibsAugment/Glyph-EditBox.lua",
+      "severity": "warning",
+      "source": "loadGlyphs(frame)",
+      "count": 1
+    },
+    {
+      "code": "redundant-parameter",
+      "message": "expected at most 0 argument(s) but got 1",
+      "path": "LibsAugment/Totem-EditBox.lua",
+      "severity": "warning",
+      "source": "loadPlayerSpells(frame)",
+      "count": 1
+    },
+    {
+      "code": "redundant-parameter",
+      "message": "expected at most 0 argument(s) but got 1",
+      "path": "Options/conditions.lua",
+      "severity": "warning",
+      "source": "editbox:SetFocus(true)",
+      "count": 1
+    },
+    {
+      "code": "redundant-parameter",
+      "message": "expected at most 0 argument(s) but got 1",
+      "path": "Options/custom_condition.lua",
+      "severity": "warning",
+      "source": "editbox:SetFocus(true)",
+      "count": 1
+    },
+    {
+      "code": "redundant-parameter",
+      "message": "expected at most 0 argument(s) but got 1",
+      "path": "Options/effects.lua",
+      "severity": "warning",
+      "source": "editbox:SetFocus(true)",
+      "count": 1
+    },
+    {
+      "code": "redundant-parameter",
+      "message": "expected at most 0 argument(s) but got 1",
+      "path": "Options/itemset.lua",
+      "severity": "warning",
+      "source": "editbox:SetFocus(true)",
+      "count": 1
+    },
+    {
+      "code": "redundant-parameter",
+      "message": "expected at most 1 argument(s) but got 2",
+      "path": "buttons.lua",
+      "severity": "warning",
+      "source": "button.rmOverlays[id] = CreateOverlay(button, id)",
+      "count": 1
+    },
+    {
+      "code": "redundant-parameter",
+      "message": "expected at most 2 argument(s) but got 3",
+      "path": "Help/rotations.lua",
+      "severity": "warning",
+      "source": "help_action_group(group, \"cooldown\", \"cooldowns\")",
+      "count": 1
+    },
+    {
+      "code": "redundant-parameter",
+      "message": "expected at most 2 argument(s) but got 3",
+      "path": "Help/rotations.lua",
+      "severity": "warning",
+      "source": "help_action_group(group, \"rotation\", \"rotations\")",
+      "count": 1
+    },
+    {
+      "code": "redundant-parameter",
+      "message": "expected at most 2 argument(s) but got 3",
+      "path": "Help/rotations.lua",
+      "severity": "warning",
+      "source": "help_conditions(group, \"cooldown\", \"cooldowns\")",
+      "count": 1
+    },
+    {
+      "code": "redundant-parameter",
+      "message": "expected at most 2 argument(s) but got 3",
+      "path": "Help/rotations.lua",
+      "severity": "warning",
+      "source": "help_conditions(group, \"rotation\", \"rotations\")",
+      "count": 1
+    },
+    {
+      "code": "redundant-parameter",
+      "message": "expected at most 2 argument(s) but got 3",
+      "path": "Help/rotations.lua",
+      "severity": "warning",
+      "source": "help_effect_group(group, \"cooldown\", \"cooldowns\")",
+      "count": 1
+    },
+    {
+      "code": "redundant-parameter",
+      "message": "expected at most 2 argument(s) but got 3",
+      "path": "Options/general.lua",
+      "severity": "warning",
+      "source": "ImportExport(specID, rotid, parent)",
+      "count": 1
+    },
+    {
+      "code": "secret-condition",
+      "message": "boolean from `UnitIsUnit` may be secret; testing it errors in addon code; guard with `canaccessvalue` or use a `...FromBoolean` API",
+      "path": "main.lua",
+      "severity": "warning",
+      "source": "if UnitIsUnit(unit, u) then",
+      "count": 1
+    },
+    {
+      "code": "secret-table-key",
+      "message": "value from `UnitGUID` may be secret; using it as a table key errors in addon code; guard with `canaccessvalue`",
+      "path": "main.lua",
+      "severity": "warning",
+      "source": "if self.unitsInRange[guid] then",
+      "count": 2
+    },
+    {
+      "code": "secret-table-key",
+      "message": "value from `UnitGUID` may be secret; using it as a table key errors in addon code; guard with `canaccessvalue`",
+      "path": "main.lua",
+      "severity": "warning",
+      "source": "self.unitsInRange[guid] = CreateUnitInfo({}, unit)",
+      "count": 1
+    },
+    {
+      "code": "secret-table-key",
+      "message": "value from `UnitGUID` may be secret; using it as a table key errors in addon code; guard with `canaccessvalue`",
+      "path": "main.lua",
+      "severity": "warning",
+      "source": "self.unitsInRange[guid] = nil",
+      "count": 1
+    },
+    {
+      "code": "secret-table-key",
+      "message": "value from `UnitGUID` may be secret; using it as a table key errors in addon code; guard with `canaccessvalue`",
+      "path": "main.lua",
+      "severity": "warning",
+      "source": "self.unitsInRange[guid].unit = u",
+      "count": 1
+    },
+    {
+      "code": "secret-table-key",
+      "message": "value from `UnitGUID` may be secret; using it as a table key errors in addon code; guard with `canaccessvalue`",
+      "path": "main.lua",
+      "severity": "warning",
+      "source": "self.unitsInRange[guid].unit = unit",
+      "count": 1
+    },
+    {
+      "code": "type-mismatch",
+      "message": "expected `AceGUIWidget` for parameter 'widget', got `table<string, fun(self, disable) | fun(self, height: number) | fun(self) | fun(self, width: number) | fun(self, square) | fun(self, disabled)>`; missing fields: 'ClearAllPoints', 'Fire', 'GetNumPoints', 'GetPoint', 'GetUserData', 'GetUserDataTable', 'IsFullHeight', 'IsFullWidth', 'IsReleasing', 'IsShown', 'IsVisible', 'Release', 'SetCallback', 'SetFullHeight', 'SetFullWidth', 'SetHeight', 'SetParent', 'SetPoint', 'SetRelativeWidth', 'SetUserData', 'SetWidth', 'events', 'userdata'",
+      "path": "Widgets/directional.lua",
+      "severity": "warning",
+      "source": "return AceGUI:RegisterAsWidget(widget)",
+      "count": 1
+    },
+    {
+      "code": "type-mismatch",
+      "message": "expected `AceGUIWidget` for parameter 'widget', got `table<string, fun(self, width, height) | fun(self, layoutfunc) | fun(self) | fun(self, title) | fun(self, anchor, xoffs, yoffs): ? | fun(self, disabled) | fun(self, tooltip) | fun() | fun(self, width) | fun(self, height)>`; missing fields: 'ClearAllPoints', 'Fire', 'GetNumPoints', 'GetPoint', 'GetUserData', 'GetUserDataTable', 'IsFullHeight', 'IsFullWidth', 'IsReleasing', 'IsShown', 'IsVisible', 'Release', 'SetCallback', 'SetFullHeight', 'SetFullWidth', 'SetHeight', 'SetParent', 'SetPoint', 'SetRelativeWidth', 'SetUserData', 'SetWidth', 'events', 'userdata'",
+      "path": "Widgets/help.lua",
+      "severity": "warning",
+      "source": "return AceGUI:RegisterAsWidget(widget)",
+      "count": 1
+    },
+    {
+      "code": "type-mismatch",
+      "message": "expected `\"Flow\" | \"List\" | \"Fill\" | (1 more)` for parameter 'layout', got `\"table\"`",
+      "path": "Options/custom_condition.lua",
+      "severity": "warning",
+      "source": "frame:SetLayout(\"table\")",
+      "count": 1
+    },
+    {
+      "code": "type-mismatch",
+      "message": "expected `\"Flow\" | \"List\" | \"Fill\" | (1 more)` for parameter 'layout', got `fun(frame)`",
+      "path": "Options/announce.lua",
+      "severity": "warning",
+      "source": "help:SetLayout(addon.layout_announce_options_help)",
+      "count": 1
+    },
+    {
+      "code": "type-mismatch",
+      "message": "expected `\"Flow\" | \"List\" | \"Fill\" | (1 more)` for parameter 'layout', got `fun(frame)`",
+      "path": "Options/conditional.lua",
+      "severity": "warning",
+      "source": "help:SetLayout(helpfunc)",
+      "count": 1
+    },
+    {
+      "code": "type-mismatch",
+      "message": "expected `\"Flow\" | \"List\" | \"Fill\" | (1 more)` for parameter 'layout', got `fun(frame)`",
+      "path": "Options/conditions.lua",
+      "severity": "warning",
+      "source": "help:SetLayout(addon.layout_conditions_options_help)",
+      "count": 1
+    },
+    {
+      "code": "type-mismatch",
+      "message": "expected `\"Flow\" | \"List\" | \"Fill\" | (1 more)` for parameter 'layout', got `fun(frame)`",
+      "path": "Options/custom_condition.lua",
+      "severity": "warning",
+      "source": "help:SetLayout(addon.layout_custom_condition_options_help)",
+      "count": 1
+    },
+    {
+      "code": "type-mismatch",
+      "message": "expected `\"Flow\" | \"List\" | \"Fill\" | (1 more)` for parameter 'layout', got `fun(frame)`",
+      "path": "Options/effects.lua",
+      "severity": "warning",
+      "source": "help:SetLayout(addon.layout_effects_options_help)",
+      "count": 1
+    },
+    {
+      "code": "type-mismatch",
+      "message": "expected `\"Flow\" | \"List\" | \"Fill\" | (1 more)` for parameter 'layout', got `fun(frame)`",
+      "path": "Options/general.lua",
+      "severity": "warning",
+      "source": "help:SetLayout(addon.layout_primary_options_help)",
+      "count": 1
+    },
+    {
+      "code": "type-mismatch",
+      "message": "expected `\"Flow\" | \"List\" | \"Fill\" | (1 more)` for parameter 'layout', got `fun(frame)`",
+      "path": "Options/general.lua",
+      "severity": "warning",
+      "source": "help:SetLayout(addon.layout_rotation_options_help)",
+      "count": 1
+    },
+    {
+      "code": "type-mismatch",
+      "message": "expected `\"Flow\" | \"List\" | \"Fill\" | (1 more)` for parameter 'layout', got `fun(frame)`",
+      "path": "Options/itemset.lua",
+      "severity": "warning",
+      "source": "help:SetLayout(addon.layout_item_list_help)",
+      "count": 1
+    },
+    {
+      "code": "type-mismatch",
+      "message": "expected `\"Flow\" | \"List\" | \"Fill\" | (1 more)` for parameter 'layout', got `fun(frame)`",
+      "path": "Options/itemset.lua",
+      "severity": "warning",
+      "source": "help:SetLayout(addon.layout_itemsets_options_help)",
+      "count": 1
+    },
+    {
+      "code": "type-mismatch",
+      "message": "expected `\"Flow\" | \"List\" | \"Fill\" | (1 more)` for parameter 'layout', got `fun(frame)`",
+      "path": "Options/rotations.lua",
+      "severity": "warning",
+      "source": "help:SetLayout(addon.layout_cooldown_help)",
+      "count": 1
+    },
+    {
+      "code": "type-mismatch",
+      "message": "expected `\"Flow\" | \"List\" | \"Fill\" | (1 more)` for parameter 'layout', got `fun(frame)`",
+      "path": "Options/rotations.lua",
+      "severity": "warning",
+      "source": "help:SetLayout(addon.layout_rotation_help)",
+      "count": 1
+    },
+    {
+      "code": "type-mismatch",
+      "message": "expected `\"LEFT\" | \"RIGHT\" | \"CENTER\"` for parameter 'justifyH', got `\"center\"`",
+      "path": "Options/conditional.lua",
+      "severity": "warning",
+      "source": "description:SetJustifyH(\"center\")",
+      "count": 1
+    },
+    {
+      "code": "type-mismatch",
+      "message": "expected `\"LEFT\" | \"RIGHT\" | \"CENTER\"` for parameter 'justifyH', got `\"center\"`",
+      "path": "Options/conditions.lua",
+      "severity": "warning",
+      "source": "description:SetJustifyH(\"center\")",
+      "count": 1
+    },
+    {
+      "code": "type-mismatch",
+      "message": "expected `boolean?` for parameter 'flag', got `string`",
+      "path": "Options/rotations.lua",
+      "severity": "warning",
+      "source": "announce_sound:SetValue(rot.announce_sound or NONE)",
+      "count": 1
+    },
+    {
+      "code": "type-mismatch",
+      "message": "expected `boolean?` for parameter 'plain', got `number`",
+      "path": "LibsAugment/FAIAP.lua",
+      "severity": "warning",
+      "source": "pos = stringfind(code, \"\\2\", 1, 1)",
+      "count": 1
+    },
+    {
+      "code": "type-mismatch",
+      "message": "expected `number` for parameter 'a1', got `nil`",
+      "path": "Conditions/combat.lua",
+      "severity": "warning",
+      "source": "if bit.band(school, bit.lshift(1, value.school-1)) then",
+      "count": 1
+    },
+    {
+      "code": "type-mismatch",
+      "message": "expected `string | number` for parameter 'image', got `nil`",
+      "path": "Conditions/character.lua",
+      "severity": "warning",
+      "source": "talentIcon:SetImage(nil)",
+      "count": 1
+    },
+    {
+      "code": "type-mismatch",
+      "message": "expected `string | number` for parameter 'image', got `nil`",
+      "path": "Conditions/common.lua",
+      "severity": "warning",
+      "source": "itemIcon:SetImage(nil)",
+      "count": 1
+    },
+    {
+      "code": "type-mismatch",
+      "message": "expected `string` for parameter 'key', got `number?`",
+      "path": "main.lua",
+      "severity": "warning",
+      "source": "self.specTab:SelectTab(self.currentSpec)",
+      "count": 1
+    },
+    {
+      "code": "type-mismatch",
+      "message": "expected `string` for parameter 'key', got `number`",
+      "path": "Options/general.lua",
+      "severity": "warning",
+      "source": "tabs:SelectTab(currentSpec)",
+      "count": 2
+    },
+    {
+      "code": "type-mismatch",
+      "message": "expected `string` for parameter 'key', got `number`",
+      "path": "main.lua",
+      "severity": "warning",
+      "source": "self.specTab:SelectTab(spec)",
+      "count": 1
+    },
+    {
+      "code": "type-mismatch",
+      "message": "expected `string` for parameter 'text', got `nil`",
+      "path": "Conditions/character.lua",
+      "severity": "warning",
+      "source": "talent:SetText(nil)",
+      "count": 1
+    },
+    {
+      "code": "type-mismatch",
+      "message": "expected `string` for parameter 'text', got `nil`",
+      "path": "Conditions/common.lua",
+      "severity": "warning",
+      "source": "nr_button:SetLabel(nil)",
+      "count": 1
+    },
+    {
+      "code": "type-mismatch",
+      "message": "expected `string` for parameter 'text', got `nil`",
+      "path": "Conditions/common.lua",
+      "severity": "warning",
+      "source": "spell:SetText(nil)",
+      "count": 4
+    },
+    {
+      "code": "type-mismatch",
+      "message": "expected `string` for parameter 'text', got `nil`",
+      "path": "Conditions/common.lua",
+      "severity": "warning",
+      "source": "spellIcon:SetText(nil)",
+      "count": 3
+    },
+    {
+      "code": "type-mismatch",
+      "message": "expected `string` for parameter 'text', got `nil`",
+      "path": "Help/common.lua",
+      "severity": "warning",
+      "source": "spacer:SetText(nil)",
+      "count": 1
+    },
+    {
+      "code": "type-mismatch",
+      "message": "expected `string` for parameter 'text', got `nil`",
+      "path": "Options/custom_condition.lua",
+      "severity": "warning",
+      "source": "new_field:SetText(nil)",
+      "count": 1
+    },
+    {
+      "code": "type-mismatch",
+      "message": "expected `string` for parameter 'text', got `nil`",
+      "path": "Options/itemset.lua",
+      "severity": "warning",
+      "source": "name:SetText(nil)",
+      "count": 1
+    },
+    {
+      "code": "type-mismatch",
+      "message": "expected `string` for parameter 'text', got `nil`",
+      "path": "Options/rotations.lua",
+      "severity": "warning",
+      "source": "action:SetText(nil)",
+      "count": 7
+    },
+    {
+      "code": "type-mismatch",
+      "message": "expected `string` for parameter 'text', got `nil`",
+      "path": "Options/rotations.lua",
+      "severity": "warning",
+      "source": "rv:SetText(nil)",
+      "count": 1
+    },
+    {
+      "code": "type-mismatch",
+      "message": "expected `string` for parameter 'text', got `nil`",
+      "path": "Options/rotations.lua",
+      "severity": "warning",
+      "source": "spc1:SetText(nil)",
+      "count": 1
+    },
+    {
+      "code": "type-mismatch",
+      "message": "expected `string` for parameter 'text', got `number?`",
+      "path": "Conditions/common.lua",
+      "severity": "warning",
+      "source": "spellIcon:SetText(v)",
+      "count": 2
+    },
+    {
+      "code": "type-mismatch",
+      "message": "expected `string` for parameter 'text', got `number?`",
+      "path": "Options/rotations.lua",
+      "severity": "warning",
+      "source": "action_icon:SetText(v)",
+      "count": 2
+    },
+    {
+      "code": "type-mismatch",
+      "message": "expected `table<any, string>` for parameter 'list', got `number[]`",
+      "path": "Conditions/character.lua",
+      "severity": "warning",
+      "source": "talent:SetList(talents, talentsOrder)",
+      "count": 2
+    },
+    {
+      "code": "type-mismatch",
+      "message": "expected `table<any, string>` for parameter 'list', got `number[]`",
+      "path": "Conditions/character.lua",
+      "severity": "warning",
+      "source": "talentTree:SetList(talentTrees, talentTreesOrder)",
+      "count": 1
+    },
+    {
+      "code": "type-mismatch",
+      "message": "expected `table` for parameter 'stream', got `string`",
+      "path": "Data/codec.lua",
+      "severity": "warning",
+      "source": "local expected,errorCode=decompressedSize(stream)",
+      "count": 1
+    },
+    {
+      "code": "type-mismatch",
+      "message": "expected `table` for parameter 'stream', got `string`",
+      "path": "Data/codec.lua",
+      "severity": "warning",
+      "source": "local expected,why=decompressedSize(stream)",
+      "count": 1
+    },
+    {
+      "code": "type-mismatch",
+      "message": "expected `thread` for parameter '...', got `number`",
+      "path": "Diagnostics/errors.lua",
+      "severity": "warning",
+      "source": "local ok, value = pcall(debugstack, 2, 30, 20)",
+      "count": 1
+    },
+    {
+      "code": "undefined-field",
+      "message": "undefined field 'AddChild' on class 'AceGUIWidget'",
+      "path": "main.lua",
+      "severity": "warning",
+      "source": "addon.nextWindow:AddChild(icon)",
+      "count": 1
+    },
+    {
+      "code": "undefined-field",
+      "message": "undefined field 'DisableCenter' on class 'AceGUIBlizOptionsGroup'",
+      "path": "Options/conditions.lua",
+      "severity": "warning",
+      "source": "directional:DisableCenter(true)",
+      "count": 1
+    },
+    {
+      "code": "undefined-field",
+      "message": "undefined field 'DoLayout' on class 'AceGUIWidget'",
+      "path": "main.lua",
+      "severity": "warning",
+      "source": "self.nextWindow:DoLayout()",
+      "count": 1
+    },
+    {
+      "code": "undefined-field",
+      "message": "undefined field 'Hide' on class 'AceGUIWidget'",
+      "path": "main.lua",
+      "severity": "warning",
+      "source": "if self.nextWindow then cleanup(\"hide-preview\", self.nextWindow.Hide, self.nextWindow) end",
+      "count": 1
+    },
+    {
+      "code": "undefined-field",
+      "message": "undefined field 'PauseLayout' on class 'AceGUIWidget'",
+      "path": "main.lua",
+      "severity": "warning",
+      "source": "self.nextWindow:PauseLayout()",
+      "count": 1
+    },
+    {
+      "code": "undefined-field",
+      "message": "undefined field 'Register' on class 'LibClassicDurations'",
+      "path": "main.lua",
+      "severity": "warning",
+      "source": "LibClassicDurations:Register(addon_name)",
+      "count": 1
+    },
+    {
+      "code": "undefined-field",
+      "message": "undefined field 'ReleaseChildren' on class 'AceGUIWidget'",
+      "path": "main.lua",
+      "severity": "warning",
+      "source": "if self.nextWindow then self.nextWindow:ReleaseChildren() end",
+      "count": 1
+    },
+    {
+      "code": "undefined-field",
+      "message": "undefined field 'ReleaseChildren' on class 'AceGUIWidget'",
+      "path": "main.lua",
+      "severity": "warning",
+      "source": "self.nextWindow:ReleaseChildren()",
+      "count": 1
+    },
+    {
+      "code": "undefined-field",
+      "message": "undefined field 'ResumeLayout' on class 'AceGUIWidget'",
+      "path": "main.lua",
+      "severity": "warning",
+      "source": "self.nextWindow:ResumeLayout()",
+      "count": 1
+    },
+    {
+      "code": "undefined-field",
+      "message": "undefined field 'SetDisabled' on class 'AceGUIInlineGroup'",
+      "path": "Widgets/disable_inline.lua",
+      "severity": "warning",
+      "source": "widget.obj:SetDisabled(not widget.obj.disabled)",
+      "count": 1
+    },
+    {
+      "code": "undefined-field",
+      "message": "undefined field 'SetFont' on class 'Region'",
+      "path": "Options/custom_condition.lua",
+      "severity": "warning",
+      "source": "editbox.editBox:GetRegions():SetFont(\"Interface\\\\AddOns\\\\\" .. addon_name .. \"\\\\Fonts\\\\Inconsolata-Bold.ttf\", 13)",
+      "count": 1
+    },
+    {
+      "code": "undefined-field",
+      "message": "undefined field 'SetFont' on class 'Region'",
+      "path": "Options/effects.lua",
+      "severity": "warning",
+      "source": "editbox.editBox:GetRegions():SetFont(\"Interface\\\\AddOns\\\\\" .. addon_name .. \"\\\\Fonts\\\\Inconsolata-Bold.ttf\", 13)",
+      "count": 1
+    },
+    {
+      "code": "undefined-field",
+      "message": "undefined field 'SetFrameSize' on class 'AceGUIBlizOptionsGroup'",
+      "path": "Options/conditional.lua",
+      "severity": "warning",
+      "source": "help:SetFrameSize(400, 300)",
+      "count": 1
+    },
+    {
+      "code": "undefined-field",
+      "message": "undefined field 'SetTooltip' on class 'AceGUIBlizOptionsGroup'",
+      "path": "Options/conditional.lua",
+      "severity": "warning",
+      "source": "help:SetTooltip(description .. \" \" .. L[\"Help\"])",
+      "count": 1
+    },
+    {
+      "code": "undefined-field",
+      "message": "undefined field 'name' on class 'Frame'",
+      "path": "Options/general.lua",
+      "severity": "warning",
+      "source": "self.optionsFrames.About = AceConfigDialog:AddToBlizOptions(addon.name .. \"About\", L[\"About\"], self.optionsFrames.General.frame.name)",
+      "count": 1
+    },
+    {
+      "code": "undefined-field",
+      "message": "undefined field 'name' on class 'Frame'",
+      "path": "Options/general.lua",
+      "severity": "warning",
+      "source": "self.optionsFrames.Announces:SetName(L[\"Announces\"], self.optionsFrames.General.frame.name)",
+      "count": 1
+    },
+    {
+      "code": "undefined-field",
+      "message": "undefined field 'name' on class 'Frame'",
+      "path": "Options/general.lua",
+      "severity": "warning",
+      "source": "self.optionsFrames.Conditions:SetName(L[\"Conditions\"], self.optionsFrames.General.frame.name)",
+      "count": 1
+    },
+    {
+      "code": "undefined-field",
+      "message": "undefined field 'name' on class 'Frame'",
+      "path": "Options/general.lua",
+      "severity": "warning",
+      "source": "self.optionsFrames.Effects:SetName(L[\"Effects\"], self.optionsFrames.General.frame.name)",
+      "count": 1
+    },
+    {
+      "code": "undefined-field",
+      "message": "undefined field 'name' on class 'Frame'",
+      "path": "Options/general.lua",
+      "severity": "warning",
+      "source": "self.optionsFrames.ItemSets:SetName(L[\"Item Sets\"], self.optionsFrames.General.frame.name)",
+      "count": 1
+    },
+    {
+      "code": "undefined-field",
+      "message": "undefined field 'name' on class 'Frame'",
+      "path": "Options/general.lua",
+      "severity": "warning",
+      "source": "self.optionsFrames.Profiles = AceConfigDialog:AddToBlizOptions(addon.name .. \"Profiles\", L[\"Profiles\"], self.optionsFrames.General.frame.name)",
+      "count": 1
+    },
+    {
+      "code": "undefined-field",
+      "message": "undefined field 'name' on class 'Frame'",
+      "path": "Options/general.lua",
+      "severity": "warning",
+      "source": "self.optionsFrames.Rotation:SetName(L[\"Rotations\"], self.optionsFrames.General.frame.name)",
+      "count": 1
+    },
+    {
+      "code": "undefined-field",
+      "message": "undefined field 'name' on class 'Frame'",
+      "path": "Options/general.lua",
+      "severity": "warning",
+      "source": "self.optionsFrames.module[name] = AceConfigDialog:AddToBlizOptions(appName, name, self.optionsFrames.General.frame.name)",
+      "count": 1
+    },
+    {
+      "code": "undefined-field",
+      "message": "undefined field 'obj' on class 'Frame'",
+      "path": "Options/general.lua",
+      "severity": "warning",
+      "source": "f.obj:SetList(effect_map, effect_order)",
+      "count": 1
+    },
+    {
+      "code": "undefined-field",
+      "message": "undefined field 'obj' on class 'Frame'",
+      "path": "Options/general.lua",
+      "severity": "warning",
+      "source": "f.obj:SetValue(profile[\"effect\"])",
+      "count": 1
+    },
+    {
+      "code": "undefined-field",
+      "message": "undefined field 'obj' on class 'Frame'",
+      "path": "Options/rotations.lua",
+      "severity": "warning",
+      "source": "f.obj:SetList(effect_map, effect_order)",
+      "count": 1
+    },
+    {
+      "code": "undefined-field",
+      "message": "undefined field 'obj' on class 'Frame'",
+      "path": "Options/rotations.lua",
+      "severity": "warning",
+      "source": "f.obj:SetValue(rot.effect or DEFAULT)",
+      "count": 1
+    },
+    {
+      "code": "undefined-field",
+      "message": "undefined field 'tooltip' on class 'AceGUIBlizOptionsGroup'",
+      "path": "LibsAugment/Glyph-EditBox.lua",
+      "severity": "warning",
+      "source": "frame.tooltip = self.tooltip",
+      "count": 1
+    },
+    {
+      "code": "undefined-field",
+      "message": "undefined field 'tooltip' on class 'AceGUIBlizOptionsGroup'",
+      "path": "LibsAugment/Spec-EditBox.lua",
+      "severity": "warning",
+      "source": "frame.tooltip = self.tooltip",
+      "count": 1
+    },
+    {
+      "code": "undefined-field",
+      "message": "undefined field 'tooltip' on class 'AceGUIBlizOptionsGroup'",
+      "path": "LibsAugment/Totem-EditBox.lua",
+      "severity": "warning",
+      "source": "frame.tooltip = self.tooltip",
+      "count": 1
+    },
+    {
+      "code": "undefined-global",
+      "message": "undefined global 'ActionButton_CalculateAction'",
+      "path": "buttons.lua",
+      "severity": "warning",
+      "source": "elseif ActionButton_CalculateAction then",
+      "count": 1
+    },
+    {
+      "code": "undefined-global",
+      "message": "undefined global 'ActionButton_CalculateAction'",
+      "path": "buttons.lua",
+      "severity": "warning",
+      "source": "slot = ActionButton_CalculateAction(button)",
+      "count": 1
+    },
+    {
+      "code": "undefined-global",
+      "message": "undefined global 'ActionButton_GetPagedID'",
+      "path": "buttons.lua",
+      "severity": "warning",
+      "source": "elseif ActionButton_GetPagedID then",
+      "count": 1
+    },
+    {
+      "code": "undefined-global",
+      "message": "undefined global 'ActionButton_GetPagedID'",
+      "path": "buttons.lua",
+      "severity": "warning",
+      "source": "slot = ActionButton_GetPagedID(button)",
+      "count": 1
+    },
+    {
+      "code": "undefined-global",
+      "message": "undefined global 'InterfaceOptionsFrame_OpenToCategory'",
+      "path": "compat.lua",
+      "severity": "warning",
+      "source": "InterfaceOptionsFrame_OpenToCategory(frame)",
+      "count": 2
+    },
+    {
+      "code": "undefined-global",
+      "message": "undefined global 'InterfaceOptions_AddCategory'",
+      "path": "compat.lua",
+      "severity": "warning",
+      "source": "InterfaceOptions_AddCategory(frame)",
+      "count": 1
+    },
+    {
+      "code": "undefined-global",
+      "message": "undefined global 'MI2_GetMobData'",
+      "path": "Conditions/character.lua",
+      "severity": "warning",
+      "source": "if MI2_GetMobData then",
+      "count": 1
+    },
+    {
+      "code": "undefined-global",
+      "message": "undefined global 'MI2_GetMobData'",
+      "path": "Conditions/character.lua",
+      "severity": "warning",
+      "source": "local data = MI2_GetMobData(UnitName(value.unit), UnitLevel(value.unit), value.unit)",
+      "count": 3
+    },
+    {
+      "code": "undefined-global",
+      "message": "undefined global 'RealMobHealth'",
+      "path": "Conditions/stats.lua",
+      "severity": "warning",
+      "source": "health, maxhealth = RealMobHealth.GetUnitHealth(value.unit)",
+      "count": 1
+    },
+    {
+      "code": "undefined-global",
+      "message": "undefined global 'RealMobHealth'",
+      "path": "Conditions/stats.lua",
+      "severity": "warning",
+      "source": "if RealMobHealth then",
+      "count": 1
+    },
+    {
+      "code": "undefined-global",
+      "message": "undefined global 'SyncUI_ActionBar'",
+      "path": "buttons.lua",
+      "severity": "warning",
+      "source": "syncbars[1] = SyncUI_ActionBar",
+      "count": 1
+    },
+    {
+      "code": "undefined-global",
+      "message": "undefined global 'SyncUI_MultiBar'",
+      "path": "buttons.lua",
+      "severity": "warning",
+      "source": "syncbars[2] = SyncUI_MultiBar",
+      "count": 1
+    },
+    {
+      "code": "undefined-global",
+      "message": "undefined global 'SyncUI_PetBar'",
+      "path": "buttons.lua",
+      "severity": "warning",
+      "source": "syncbars[6] = SyncUI_PetBar",
+      "count": 1
+    },
+    {
+      "code": "undefined-global",
+      "message": "undefined global 'SyncUI_SideBar'",
+      "path": "buttons.lua",
+      "severity": "warning",
+      "source": "syncbars[3] = SyncUI_SideBar.Bar1",
+      "count": 1
+    },
+    {
+      "code": "undefined-global",
+      "message": "undefined global 'SyncUI_SideBar'",
+      "path": "buttons.lua",
+      "severity": "warning",
+      "source": "syncbars[4] = SyncUI_SideBar.Bar2",
+      "count": 1
+    },
+    {
+      "code": "undefined-global",
+      "message": "undefined global 'SyncUI_SideBar'",
+      "path": "buttons.lua",
+      "severity": "warning",
+      "source": "syncbars[5] = SyncUI_SideBar.Bar3",
+      "count": 1
+    },
+    {
+      "code": "undefined-global",
+      "message": "undefined global 'WeakAuras'",
+      "path": "buttons.lua",
+      "severity": "warning",
+      "source": "if WeakAuras then WeakAuras.ScanEvents('ROTATIONMASTER_COOLDOWN_UPDATE', self.Flags); end",
+      "count": 2
+    },
+    {
+      "code": "undefined-global",
+      "message": "undefined global 'WeakAuras'",
+      "path": "main.lua",
+      "severity": "warning",
+      "source": "WeakAuras.ScanEvents(\"ROTATIONMASTER_SPELL_UPDATE\", cond.type, spellid)",
+      "count": 1
+    },
+    {
+      "code": "undefined-global",
+      "message": "undefined global 'WeakAuras'",
+      "path": "main.lua",
+      "severity": "warning",
+      "source": "WeakAuras.ScanEvents(\"ROTATIONMASTER_SPELL_UPDATE\", nil, nil)",
+      "count": 1
+    },
+    {
+      "code": "undefined-global",
+      "message": "undefined global 'WeakAuras'",
+      "path": "main.lua",
+      "severity": "warning",
+      "source": "cleanup(\"weak-aura-cleared\", WeakAuras.ScanEvents, \"ROTATIONMASTER_SPELL_UPDATE\", nil, nil)",
+      "count": 1
+    },
+    {
+      "code": "undefined-global",
+      "message": "undefined global 'WeakAuras'",
+      "path": "main.lua",
+      "severity": "warning",
+      "source": "if WeakAuras and WeakAuras.ScanEvents then WeakAuras.ScanEvents(\"ROTATIONMASTER_SPELL_UPDATE\", nil, nil) end",
+      "count": 3
+    },
+    {
+      "code": "undefined-global",
+      "message": "undefined global 'WeakAuras'",
+      "path": "main.lua",
+      "severity": "warning",
+      "source": "if WeakAuras and WeakAuras.ScanEvents then",
+      "count": 2
+    },
+    {
+      "code": "undefined-global",
+      "message": "undefined global 'WeakAuras'",
+      "path": "main.lua",
+      "severity": "warning",
+      "source": "if WeakAuras then",
+      "count": 2
+    },
+    {
+      "code": "wrong-flavor-api",
+      "message": "API 'GetNumGlyphSockets' not available in flavor 'Retail, Classic Era, Forever' (available in: Classic)",
+      "path": "Conditions/character.lua",
+      "severity": "warning",
+      "source": "for i=1, GetNumGlyphSockets() do",
+      "count": 1
+    },
+    {
+      "code": "wrong-flavor-api",
+      "message": "API 'GetNumSpellTabs' not available in flavor 'Retail, Forever' (available in: Classic, Classic Era)",
+      "path": "LibsAugment/Totem-EditBox.lua",
+      "severity": "warning",
+      "source": "for tab=2, GetNumSpellTabs() do",
+      "count": 1
+    },
+    {
+      "code": "wrong-flavor-api",
+      "message": "API 'GetNumTalentGroups' not available in flavor 'Forever' (available in: Classic, Classic Era)",
+      "path": "Options/general.lua",
+      "severity": "warning",
+      "source": "for i=1,GetNumTalentGroups() do",
+      "count": 1
+    },
+    {
+      "code": "wrong-flavor-api",
+      "message": "API 'GetNumTalentTabs' not available in flavor 'Forever' (available in: Classic, Classic Era)",
+      "path": "Conditions/character.lua",
+      "severity": "warning",
+      "source": "for i=1,GetNumTalentTabs() do",
+      "count": 1
+    },
+    {
+      "code": "wrong-flavor-api",
+      "message": "API 'GetNumTalentTabs' not available in flavor 'Forever' (available in: Classic, Classic Era)",
+      "path": "Conditions/character.lua",
+      "severity": "warning",
+      "source": "return (value.tree ~= nil and value.tree >= 1 and value.tree <= GetNumTalentTabs() and",
+      "count": 1
+    },
+    {
+      "code": "wrong-flavor-api",
+      "message": "API 'GetNumTalentTabs' not available in flavor 'Forever' (available in: Classic, Classic Era)",
+      "path": "main.lua",
+      "severity": "warning",
+      "source": "for i = 1, GetNumTalentTabs() do",
+      "count": 1
+    },
+    {
+      "code": "wrong-flavor-api",
+      "message": "API 'GetNumTalents' not available in flavor 'Forever' (available in: Classic, Classic Era)",
+      "path": "Conditions/character.lua",
+      "severity": "warning",
+      "source": "for i=1,GetNumTalents(value.tree) do",
+      "count": 2
+    },
+    {
+      "code": "wrong-flavor-api",
+      "message": "API 'GetNumTalents' not available in flavor 'Forever' (available in: Classic, Classic Era)",
+      "path": "Conditions/character.lua",
+      "severity": "warning",
+      "source": "value.talent ~= nil and value.talent >= 1 and value.talent <= GetNumTalents(value.tree) and",
+      "count": 1
+    },
+    {
+      "code": "wrong-flavor-api",
+      "message": "API 'GetNumTalents' not available in flavor 'Forever' (available in: Classic, Classic Era)",
+      "path": "main.lua",
+      "severity": "warning",
+      "source": "for j = 1, GetNumTalents(i) do",
+      "count": 1
+    },
+    {
+      "code": "wrong-flavor-api",
+      "message": "API 'GetSpellBookItemName' not available in flavor 'Retail, Forever' (available in: Classic, Classic Era)",
+      "path": "LibsAugment/Totem-EditBox.lua",
+      "severity": "warning",
+      "source": "local name, _, spellID = GetSpellBookItemName(i+offset, BOOKTYPE_SPELL)",
+      "count": 1
+    },
+    {
+      "code": "wrong-flavor-api",
+      "message": "API 'GetSpellInfo' not available in flavor 'Retail, Forever' (available in: Classic, Classic Era)",
+      "path": "Conditions/anyspell.lua",
+      "severity": "warning",
+      "source": "local name = GetSpellInfo(value.spell)",
+      "count": 5
+    },
+    {
+      "code": "wrong-flavor-api",
+      "message": "API 'GetSpellInfo' not available in flavor 'Retail, Forever' (available in: Classic, Classic Era)",
+      "path": "Conditions/combat.lua",
+      "severity": "warning",
+      "source": "form = GetSpellInfo(select(4, GetShapeshiftFormInfo(value.value)))",
+      "count": 1
+    },
+    {
+      "code": "wrong-flavor-api",
+      "message": "API 'GetSpellInfo' not available in flavor 'Retail, Forever' (available in: Classic, Classic Era)",
+      "path": "Conditions/combat.lua",
+      "severity": "warning",
+      "source": "form = select(1, GetSpellInfo(\"Ghost Wolf\"))",
+      "count": 1
+    },
+    {
+      "code": "wrong-flavor-api",
+      "message": "API 'GetSpellInfo' not available in flavor 'Retail, Forever' (available in: Classic, Classic Era)",
+      "path": "Conditions/combat.lua",
+      "severity": "warning",
+      "source": "forms[\"1\"] = select(1, GetSpellInfo(\"Ghost Wolf\"))",
+      "count": 1
+    },
+    {
+      "code": "wrong-flavor-api",
+      "message": "API 'GetSpellInfo' not available in flavor 'Retail, Forever' (available in: Classic, Classic Era)",
+      "path": "Conditions/combat.lua",
+      "severity": "warning",
+      "source": "forms[tostring(i)] = GetSpellInfo(spellid)",
+      "count": 1
+    },
+    {
+      "code": "wrong-flavor-api",
+      "message": "API 'GetSpellInfo' not available in flavor 'Retail, Forever' (available in: Classic, Classic Era)",
+      "path": "Conditions/petspell.lua",
+      "severity": "warning",
+      "source": "local name = GetSpellInfo(value.spell)",
+      "count": 8
+    },
+    {
+      "code": "wrong-flavor-api",
+      "message": "API 'GetSpellInfo' not available in flavor 'Retail, Forever' (available in: Classic, Classic Era)",
+      "path": "Conditions/spell.lua",
+      "severity": "warning",
+      "source": "local name = GetSpellInfo(value.spell)",
+      "count": 8
+    },
+    {
+      "code": "wrong-flavor-api",
+      "message": "API 'GetSpellInfo' not available in flavor 'Retail, Forever' (available in: Classic, Classic Era)",
+      "path": "Conditions/totem.lua",
+      "severity": "warning",
+      "source": "function(v) return (addon.isSpellOnSpec(spec, v) and string.find(GetSpellInfo(v), L[\"Totem\"])) end,",
+      "count": 2
+    },
+    {
+      "code": "wrong-flavor-api",
+      "message": "API 'GetSpellInfo' not available in flavor 'Retail, Forever' (available in: Classic, Classic Era)",
+      "path": "buttons.lua",
+      "severity": "warning",
+      "source": "local spellid = select(7, GetSpellInfo(button:GetAttribute(\"*spell1\")))",
+      "count": 1
+    },
+    {
+      "code": "wrong-flavor-api",
+      "message": "API 'GetSpellInfo' not available in flavor 'Retail, Forever' (available in: Classic, Classic Era)",
+      "path": "buttons.lua",
+      "severity": "warning",
+      "source": "spellId = select(7, GetSpellInfo(actionType))",
+      "count": 1
+    },
+    {
+      "code": "wrong-flavor-api",
+      "message": "API 'GetSpellInfo' not available in flavor 'Retail, Forever' (available in: Classic, Classic Era)",
+      "path": "buttons.lua",
+      "severity": "warning",
+      "source": "spellid = select(7, GetSpellInfo(button:GetAttribute(\"*spell1\")))",
+      "count": 1
+    },
+    {
+      "code": "wrong-flavor-api",
+      "message": "API 'GetSpellInfo' not available in flavor 'Retail, Forever' (available in: Classic, Classic Era)",
+      "path": "buttons.lua",
+      "severity": "warning",
+      "source": "spellid = select(7, GetSpellInfo(button:GetAttribute(\"spell1\")))",
+      "count": 1
+    },
+    {
+      "code": "wrong-flavor-api",
+      "message": "API 'GetSpellInfo' not available in flavor 'Retail, Forever' (available in: Classic, Classic Era)",
+      "path": "main.lua",
+      "severity": "warning",
+      "source": "local name, _, img = GetSpellInfo(spellid)",
+      "count": 1
+    },
+    {
+      "code": "wrong-flavor-api",
+      "message": "API 'GetSpellTabInfo' not available in flavor 'Retail, Forever' (available in: Classic, Classic Era)",
+      "path": "LibsAugment/Totem-EditBox.lua",
+      "severity": "warning",
+      "source": "local _, _, offset, numEntries, _, offspecId = GetSpellTabInfo(tab)",
+      "count": 1
+    },
+    {
+      "code": "wrong-flavor-api",
+      "message": "API 'GetSpellTexture' not available in flavor 'Retail, Forever' (available in: Classic, Classic Era)",
+      "path": "Conditions/combat.lua",
+      "severity": "warning",
+      "source": "formIcon:SetImage(GetSpellTexture(\"Ghost Wolf\"))",
+      "count": 1
+    },
+    {
+      "code": "wrong-flavor-api",
+      "message": "API 'IsCurrentSpell' not available in flavor 'Retail, Forever' (available in: Classic, Classic Era)",
+      "path": "Conditions/petspell.lua",
+      "severity": "warning",
+      "source": "return IsCurrentSpell(spellid)",
+      "count": 1
+    },
+    {
+      "code": "wrong-flavor-api",
+      "message": "API 'IsCurrentSpell' not available in flavor 'Retail, Forever' (available in: Classic, Classic Era)",
+      "path": "Conditions/spell.lua",
+      "severity": "warning",
+      "source": "return IsCurrentSpell(spellid)",
+      "count": 1
+    }
+  ]
+}

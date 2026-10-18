@@ -5,11 +5,22 @@
 -- This file has been heavily modified from the original.  It is no longer compatible with the original.
 
 local addon_name, addon = ...
+local IsAddOnLoaded = C_AddOns and C_AddOns.IsAddOnLoaded or IsAddOnLoaded
 
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 local CustomGlow = LibStub("LibCustomGlow-1.0")
 
+local function spellMetadataID(spell)
+    local info=addon.Platform:GetSpellInfo(spell)
+    return info and info.spellID
+end
+local function itemUseSpellID(item)
+    local info=addon.Platform:GetItemUseSpell(item)
+    return info and info.spellID
+end
+
 local Spells = {}
+local ButtonItems = {}
 local Flags = {}
 local SpellsGlowing = {}
 local FramePool = {}
@@ -143,7 +154,8 @@ local function CreateOverlay(parent)
 		frame:SetParent(parent)
 	end
 
-	frame:SetFrameStrata('HIGH')
+	frame:SetFrameStrata(parent.GetFrameStrata and parent:GetFrameStrata() or 'HIGH')
+    if frame.SetFrameLevel and parent.GetFrameLevel then frame:SetFrameLevel(parent:GetFrameLevel()+1) end
 
 	local t = frame.texture
 	if not t then
@@ -244,6 +256,8 @@ function addon:Glow(button, id, effect, color, mags, setp, xoffs, yoffs, angle)
 		return
 	end
 
+    color=self:ResolveHighlightColor(color)
+
 	local type = effect.type
 	addon:HideGlow(button, id)
 	if addon.index(addon.textured_types, type) then
@@ -262,40 +276,53 @@ function addon:Glow(button, id, effect, color, mags, setp, xoffs, yoffs, angle)
 	end
 end
 
-local function AddButton(spellId, button)
-	if spellId then
+local function AddButton(spellId, button, itemId)
+    if not addon.Platform:CanReadValue(spellId) then return end
+	if type(spellId)=="number" and spellId>0 and spellId<math.huge and spellId%1==0 then
 		if Spells[spellId] == nil then
 			Spells[spellId] = {}
 		end
 		tinsert(Spells[spellId], button)
+        ButtonItems[button]=itemId
 	end
 end
 
-if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
-    function ActionButton_GetPagedID(button)
-        return button:GetPagedID()
+local function ValidActionSlot(slot)
+    return type(slot) == 'number' and slot > 0
+end
+
+local function GetActionSlot(button)
+    local slot = button:GetAttribute('action')
+    if ValidActionSlot(slot) then return slot end
+
+    -- Anniversary uses the same button methods as Retail. Older clients and
+    -- third-party bars may still expose the global helpers or only action.
+    if button.GetPagedID then
+        slot = button:GetPagedID()
+    elseif ActionButton_GetPagedID then
+        slot = ActionButton_GetPagedID(button)
     end
-    function ActionButton_CalculateAction(button)
-        return button:CalculateAction()
+    if ValidActionSlot(slot) then return slot end
+
+    if button.CalculateAction then
+        slot = button:CalculateAction()
+    elseif ActionButton_CalculateAction then
+        slot = ActionButton_CalculateAction(button)
     end
+    if ValidActionSlot(slot) then return slot end
+    if ValidActionSlot(button.action) then return button.action end
 end
 
 local function AddStandardButton(button)
+	if not button then return end
 	local type = button:GetAttribute('type')
 	if type then
 		local actionType = button:GetAttribute(type)
-		local spellId
+		local spellId,itemId
 
 		if type == 'action' then
-			local slot = button:GetAttribute('action');
-			if not slot or slot == 0 then
-				slot = ActionButton_GetPagedID(button)
-			end
-			if not slot or slot == 0 then
-				slot = ActionButton_CalculateAction(button)
-			end
-
-			if HasAction(slot) then
+			local slot = GetActionSlot(button)
+			if slot and HasAction(slot) then
 				type, actionType = GetActionInfo(slot);
 			else
 				return;
@@ -305,7 +332,9 @@ local function AddStandardButton(button)
 		if type == 'macro' then
 			local item = select(2, GetMacroItem(actionType))
         	if item ~= nil then
-				spellId = select(2, GetItemSpell(item))
+				itemId=addon.Platform:GetItemID(item)
+                if not itemId then return end
+                spellId = itemUseSpellID(itemId)
 			else
 				spellId = GetMacroSpell(actionType)
             end
@@ -314,17 +343,19 @@ local function AddStandardButton(button)
 			end
 			addon:verbose("Found macro button with spell ID %s", spellId)
 		elseif type == 'item' then
-			spellId = select(2, GetItemSpell(actionType))
+			itemId=addon.Platform:GetItemID(actionType)
+            if not itemId then return end
+            spellId = itemUseSpellID(itemId)
 			if not spellId then
 				return
             end
 			addon:verbose("Found item button with spell ID %s", spellId)
 		elseif type == 'spell' then
-			spellId = select(7, GetSpellInfo(actionType))
+			spellId = spellMetadataID(actionType)
 			addon:verbose("Found button with spell ID %s", spellId)
 		end
 
-		AddButton(spellId, button)
+		AddButton(spellId, button, itemId)
 	end
 end
 
@@ -389,9 +420,9 @@ local function FetchFarmingBar()
 		if hyperlink then
 			local itemid = tonumber(hyperlink:match("item:(%d+)"))
 			if itemid then
-				local spellid = select(2, GetItemSpell(itemid))
+				local spellid = itemUseSpellID(itemid)
 				if spellid then
-					AddButton(spellid, button)
+					AddButton(spellid, button, itemid)
 				end
 			end
 		end
@@ -423,9 +454,9 @@ local function FetchTotemTimers()
 		if not button then
             break
         end
-		local spellid = select(7, GetSpellInfo(button:GetAttribute("*spell1")))
+		local spellid = spellMetadataID(button:GetAttribute("*spell1"))
     	if not spellid then
-			spellid = select(7, GetSpellInfo(button:GetAttribute("spell1")))
+			spellid = spellMetadataID(button:GetAttribute("spell1"))
 		end
 		if spellid then
 			AddButton(spellid, button)
@@ -436,7 +467,7 @@ local function FetchTotemTimers()
 			if not button then
 				break
             end
-			spellid = select(7, GetSpellInfo(button:GetAttribute("*spell1")))
+			spellid = spellMetadataID(button:GetAttribute("*spell1"))
 			if spellid then
 				AddButton(spellid, button)
             end
@@ -547,9 +578,13 @@ function addon:Fetch()
 	self:DestroyAllGlows()
 
 	Spells = {}
+    ButtonItems = {}
 	Flags = {}
 	SpellsGlowing = {}
 
+    -- The reference/editor modes on restricted clients do not inspect combat
+    -- actions. Clear outgoing mappings above before leaving the scanner.
+    if addon.Platform:GetClientInfo().combatDataPolicy~="probe" then return end
 	addon:debug(L["Button Fetch triggered."])
 
 	FetchLibActionButton()
@@ -610,26 +645,31 @@ function addon:Fetch()
 	end
 end
 
-function addon:FindSpell(spellIds)
-    if spellIds == nil then
-        return nil
-	end
-	for i=1, #spellIds do
-        if Spells[spellIds[i]] ~= nil then
-			return spellIds[i], i
+function addon:FindSpell(spellIds,itemIds)
+    for index,id in ipairs(spellIds or {}) do
+        if Spells[id] then
+            if not itemIds then return id,index end
+            local wanted=itemIds[index]
+            if self.Platform:CanReadValue(wanted) and type(wanted)=="number" then
+                for _,button in ipairs(Spells[id]) do
+                    if ButtonItems[button]==wanted then return id,index end
+                end
+            end
         end
-	end
-	return nil
+    end
 end
 
-function addon:IsGlowing(spellId)
-    return SpellsGlowing[spellId] == 1
+function addon:IsGlowing(spellId,itemId)
+    local current=SpellsGlowing[spellId]
+    return current~=nil and current.itemId==itemId
 end
 
-local function GlowIndependent(spellId, id, effect, color, mags, setpoint, xoffs, yoffs, angle)
+local function GlowIndependent(spellId, id, effect, color, mags, setpoint, xoffs, yoffs, angle, itemId)
 	if Spells[spellId] ~= nil and addon.db.global.effects[effect] then
 		for _, button in pairs(Spells[spellId]) do
-			addon:Glow(button, id, addon.db.global.effects[effect], color, mags, setpoint, xoffs, yoffs, angle)
+			if not itemId or ButtonItems[button]==itemId then
+                addon:Glow(button, id, addon.db.global.effects[effect], color, mags, setpoint, xoffs, yoffs, angle)
+            end
 			addon:verbose(spellId .. " is now glowing")
 		end
 	end
@@ -644,19 +684,21 @@ local function ClearGlowIndependent(spellId, id)
 	end
 end
 
-function addon:GlowCooldown(spellId, condition, cooldown)
+function addon:GlowCooldown(spellId, condition, cooldown, itemId)
     if spellId == nil then
 		return
     end
 
-	if condition and cooldown and Flags[spellId] ~= cooldown.id then
-		Flags[spellId] = cooldown.id
+	local previous=Flags[spellId]
+    if condition and cooldown and (not previous or previous.id~=cooldown.id or previous.itemId~=itemId) then
+        if previous then ClearGlowIndependent(spellId,spellId) end
+		Flags[spellId] = {id=cooldown.id,itemId=itemId}
 		GlowIndependent(spellId, spellId, cooldown.effect or self.db.profile.effect, cooldown.color,
 				cooldown.magnification or self.db.profile.magnification,
 				cooldown.setpoint or self.db.profile.setpoint,
 				cooldown.xoffs or self.db.profile.xoffs,
 				cooldown.yoffs or self.db.profile.yoffs,
-				cooldown.angle or self.db.profile.angle)
+				cooldown.angle or self.db.profile.angle, itemId)
 	elseif not condition and Flags[spellId] then
 		Flags[spellId] = nil
 		ClearGlowIndependent(spellId, spellId)
@@ -665,38 +707,40 @@ function addon:GlowCooldown(spellId, condition, cooldown)
 	if WeakAuras then WeakAuras.ScanEvents('ROTATIONMASTER_COOLDOWN_UPDATE', self.Flags); end
 end
 
-function addon:GlowSpell(spellId)
+function addon:GlowSpell(spellId,itemId)
 	if spellId == nil then
 		return
 	end
 
 	if Spells[spellId] ~= nil and addon.db.global.effects[self.db.profile.effect] then
 		for _, button in pairs(Spells[spellId]) do
+            if not itemId or ButtonItems[button]==itemId then
 			addon:Glow(button, 'next', addon.db.global.effects[self.db.profile.effect], self.db.profile.color,
 				 self.db.profile.magnification, self.db.profile.setpoint,
 				 self.db.profile.xoffs, self.db.profile.yoffs, self.db.profile.angle)
+            end
 		end
 
-		SpellsGlowing[spellId] = 1
+		SpellsGlowing[spellId] = {itemId=itemId}
 		addon:verbose(spellId .. " is now glowing")
 	end
 end
 
 function addon:GlowClear()
 	for spellId, v in pairs(SpellsGlowing) do
-		if v == 1 then
+		if v then
 			for _, button in pairs(Spells[spellId]) do
 				addon:HideGlow(button, 'next')
 			end
-			SpellsGlowing[spellId] = 0
+			SpellsGlowing[spellId] = nil
 			addon:verbose(spellId .. " is no longer glowing")
 		end
 	end
 end
 
-function addon:GlowNextSpell(spellId)
+function addon:GlowNextSpell(spellId,itemId)
 	self:GlowClear()
-	self:GlowSpell(spellId)
+	self:GlowSpell(spellId,itemId)
 end
 
 function addon:EndHighlightSlot()
@@ -712,13 +756,7 @@ function addon:HighlightSlots(slots)
 		for _, button in pairs(buttons) do
 			local type = button:GetAttribute('type')
 			if type == 'action' then
-				local bslot = button:GetAttribute('action');
-				if not bslot or bslot == 0 then
-					bslot = ActionButton_GetPagedID(button)
-				end
-				if not bslot or bslot == 0 then
-					bslot = ActionButton_CalculateAction(button)
-				end
+				local bslot = GetActionSlot(button)
 
 				if bslot and addon.index(slots, bslot) ~= nil then
                     self:Glow(button, "highlight", HighlightOverlay, {}, 1.0, "CENTER", 0, 0)

@@ -204,7 +204,7 @@ addon:RegisterCondition("SWING_TIME_REMAIN", {
     evaluate = function(value, cache, evalStart)
         local mainSpeed, offSpeed = addon.getCached(cache, UnitAttackSpeed, "player")
         if (value.offhand and (addon.lastOffSwing == nil) or (addon.lastMainSwing == nil)) or
-            addon.getCached(cache, UnitCastingInfo, "player") or addon.getCached(cache, UnitChannelingInfo, "player") then
+            addon.getCached(cache, UnitCastingInfo, "player") or addon.getCached(cache, UnitChannelInfo, "player") then
             return addon.compare(value.operator, value.offhand and offSpeed or mainSpeed, value.value)
         end
         return addon.compare(value.operator, value.offhand and (offSpeed - math.max(evalStart - addon.lastOffSwing, 0)) or

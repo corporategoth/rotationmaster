@@ -1,0 +1,70 @@
+local addon_name,addon=...
+local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
+local function entries(values)
+    local result={};for key,text in pairs(values or {}) do result[#result+1]={value=key,text=text} end
+    table.sort(result,function(a,b) return tostring(a.text)<tostring(b.text) end);return result
+end
+function addon:BuildGeneralSettings(p)
+    local store=p:SettingsData()
+    local profile=store.profile
+    p:Column(1)
+    p:Heading(L['Recommendations'])
+    p:Check('enable',L['Enable'],profile.enable,function(v) profile.enable=v;p:RunSettingsEffect('enable',function() if v then self:enable() else self:disable() end end) end)
+    p:Slider('poll',L['Polling Interval (seconds)'],profile.poll,.05,1,.05,function(v) profile.poll=v;p:RunSettingsEffect('poll',function() if self.rotationTimer then self:DisableRotationTimer();self:EnableRotationTimer() end end) end)
+    p:Check('disable_autoswitch',L['Disable Auto-Switching'],profile.disable_autoswitch,function(v) profile.disable_autoswitch=v end)
+    local checkY=p.y-30
+    local bar=p:Check('disable_buttons',L['Disable Bar Highlighting'],profile.disable_buttons,function(v) profile.disable_buttons=v;p:RunSettingsEffect('buttons',function() if v then self:GlowClear() end end) end)
+    local half=(p.width-8)/2;p.fields.disable_autoswitch:SetWidth(half);p.fields.disable_autoswitch:GetFontString():SetWidth(half-22);bar:ClearAllPoints();bar:SetPoint('TOPLEFT',half+8,-checkY);bar:SetWidth(half);bar:GetFontString():SetWidth(half-22);p.y=p.y-30
+    p:Slider('live_config_update',L['Live Status Update Frequency (seconds)'],profile.live_config_update,0,60,1,function(v)
+        if profile.live_config_update==v then return end;profile.live_config_update=v
+        p:RunSettingsEffect('conditionTimer',function()
+        if self.conditionEvalTimer then self:CancelTimer(self.conditionEvalTimer);self.conditionEvalTimer=nil end
+        if v>0 then self.conditionEvalTimer=self:ScheduleRepeatingTimer('UpdateCurrentCondition',v) end
+        end)
+    end)
+    p:Check('minimap',L['Minimap Icon'],not (profile.minimap or {}).hide,function(v)
+        profile.minimap=profile.minimap or {};profile.minimap.hide=not v;p:RunSettingsEffect('minimap',function() local lib=LibStub('LibDBIcon-1.0');if v then lib:Show(self.name) else lib:Hide(self.name) end end)
+    end)
+    p:Heading(L['History and preview'])
+    for _,entry in ipairs({{'spell_history','Spell History Memory (seconds)'},{'combat_history','Combat History Memory (seconds)'},{'damage_history','Damage History Memory (seconds)'}}) do
+        local key=entry[1];p:Slider(key,L[entry[2]],profile[key],0,300,1,function(v) profile[key]=v end)
+    end
+    p:Slider('preview_spells',L['Preview Spells'],profile.preview_spells,0,5,1,function(v)
+        profile.preview_spells=v
+        p:RunSettingsEffect('preview',function()
+        if v>0 then if self.nextWindow then self.nextWindow:SetWidth(v*128) else self:CreatePreviewWindow() end
+        elseif self.nextWindow then self.nextWindow:Release();self.nextWindow=nil end
+        end)
+    end)
+    -- This callback belongs to the long-lived preview, never to a released tab.
+    local previewOwner=self.db.profile;self.preview_closed_func=function() if addon.db.profile==previewOwner then previewOwner.preview_spells=0 end end
+    p:Button('preview_reset',L['Reset preview position'],function() profile.preview_window=nil;p:RunSettingsEffect('previewPosition',function() if self.nextWindow then self.nextWindow:ClearAllPoints();self.nextWindow:SetPoint('CENTER',0,0) end end) end)
+    p:Column(2)
+    p:Heading(L['Effect Options'])
+    local y=p:Row(L['Highlight preview'],48)
+    local preview=p:Acquire('preview',function() local frame=CreateFrame('Frame',nil,p.child);frame.icon=frame:CreateTexture(nil,'ARTWORK');frame.icon:SetAllPoints(frame);return frame end)
+    preview:ClearAllPoints();preview:SetPoint('TOPLEFT',224,-y);preview:SetSize(36,36);preview.icon:SetTexture('Interface\\Icons\\Spell_Nature_Lightning')
+    local function refresh()
+        if self.RemoveAllCurrentGlows then self:RemoveAllCurrentGlows() end
+        if self.HideGlow then self:HideGlow(preview,'settings-preview') end
+        local effect=(store.global.effects or {})[profile.effect]
+        if effect and self.Glow then self:Glow(preview,'settings-preview',effect,profile.color or {r=1,g=1,b=1,a=1},profile.magnification or 1,profile.setpoint or 'CENTER',profile.xoffs or 0,profile.yoffs or 0) end
+    end
+    local effectEntries={};for id,effect in pairs(store.global.effects or {}) do if type(effect)=='table' and effect.name then effectEntries[#effectEntries+1]={value=id,text=effect.name} end end;table.sort(effectEntries,function(a,b) return a.text<b.text end)
+    p:Choice('effect',L['Effect'],profile.effect,effectEntries,function(v) profile.effect=v;refresh() end)
+    p:Slider('magnification',L['Magnification'],profile.magnification or 1,.1,2,.1,function(v) profile.magnification=v;refresh() end)
+    p:Color('color',L['Highlight Color'],profile.color,function(v) profile.color=v;refresh() end)
+    local positionY=p.y
+    local anchor=p:Choice('setpoint',nil,profile.setpoint or 'CENTER',entries(self.setpoints),function(v) profile.setpoint=v;profile.xoffs=0;profile.yoffs=0;refresh();p:Draw() end)
+    anchor:ClearAllPoints();anchor:SetPoint('TOPLEFT',0,-positionY-22);anchor:SetWidth(154);p.y=positionY
+    p:Position(profile.xoffs,profile.yoffs,function(x,y,center) profile.xoffs=x;profile.yoffs=y;if center then profile.setpoint='CENTER' end;refresh() end,true)
+    if WOW_PROJECT_ID~=WOW_PROJECT_MAINLINE and LE_EXPANSION_LEVEL_CURRENT>=2 and store.char and store.char.specs then
+        p:Heading(L['Specialization Names']);for i,caption in ipairs({PRIMARY,SECONDARY}) do p:Edit('spec'..i,caption,store.char.specs[i],nil,function(v) store.char.specs[i]=v end) end
+    end
+    p:Heading(L['Debugging Options'])
+    p:Choice('loglevel',L['Log Level'],profile.loglevel or 2,entries(self.loglevels),function(v) profile.loglevel=v;p:Draw() end)
+    local detail=p:Check('detailed_profiling',L['Detailed Profiling'],profile.detailed_profiling,function(v) profile.detailed_profiling=v end);if (profile.loglevel or 2)<3 then detail:Disable() end
+    if self.Glow and store.global.effects and store.global.effects[profile.effect] then self:Glow(preview,'settings-preview',store.global.effects[profile.effect],profile.color or {r=1,g=1,b=1,a=1},profile.magnification or 1,profile.setpoint or 'CENTER',profile.xoffs or 0,profile.yoffs or 0) end
+    p:EndColumns()
+    p.cleanups[#p.cleanups+1]=function() if self.HideGlow then self:HideGlow(preview,'settings-preview') end end
+end

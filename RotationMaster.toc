@@ -1,10 +1,11 @@
-## Interface: 90207
+## Interface: 20506, 90207, 11403, 30400
 ## Interface-Classic: 11403
-## Interface-BCC: 20504
+## Interface-BCC: 20506
 ## Interface-Wrath: 30400
 ## Title: Rotation Master
 ## Version: @project-version@
-## Author: Makiel
+## Author: PreZ
+## X-Discord: https://discord.gg/4aKZSpUMet
 ## Notes: I wanted to save the world, but God wouldn't give me the source code.
 ## X-Email: prez@neuromancy.net
 ## X-Website: https://github.com/corporategoth/rotationmaster/wiki
@@ -16,7 +17,7 @@
 ## X-Project-Revision: @project-revision@
 ## X-ReleaseDate: @project-date-iso@
 ## SavedVariables: RotationMasterDB
-## OptionalDeps: Ace3, LibAboutPanel-2.0, LibDBIcon-1.0, LibDataBroker-1.1, LibCompress, CallbackHandler-1.0, LibCustomGlow, ThreatClassic-1.0, LibClassicDurations
+## OptionalDeps: Ace3, LibAboutPanel-2.0, LibDBIcon-1.0, LibDataBroker-1.1, LibCompress, CallbackHandler-1.0, LibCustomGlow, ThreatClassic-1.0, LibClassicDurations, LibRangeCheck-3.0
 ## X-Embeds: AceGUI-3.0-ActionSlotWidgets, AceGUI-3.0-Item-EditBox, AceGUI-3.0-Spell-EditBox
 ## X-Credits: None
 ## X-License: MIT
@@ -24,15 +25,103 @@
 ## X-Author-Faction: Horde
 
 globals.lua
+Platform/client.lua
+Platform/specializations.lua
+Platform/talents.lua
+Platform/spells.lua
+Platform/items.lua
+Platform/totems.lua
+Platform/actions.lua
+Platform/spellbook.lua
+Platform/auras.lua
+Platform/range.lua
+compat.lua
 embeds.xml
 locales.xml
 constants.lua
 utils.lua
 profiler.lua
+Diagnostics/errors.lua
+Core/conditions.lua
+Core/presentation.lua
+Core/custom_condition_owner.lua
+Core/action_policy.lua
+Core/spell_catalog.lua
+Core/spell_search.lua
+Core/reference_catalog.lua
+Core/category_data.lua
+Core/announcement_data.lua
+Core/profile_data.lua
+Core/collection_data.lua
+Core/custom_condition_data.lua
+Core/aura_conditions.lua
+Data/plain.lua
+Data/rotation_tree.lua
+Data/condition_draft.lua
+Data/rotation_draft.lua
+Data/codec.lua
+Data/validation.lua
+Data/catalog.lua
+Data/diff.lua
+Data/visual_comparison.lua
+Data/import_session.lua
+Core/rotation_library.lua
+Core/imports.lua
+Core/condition_editor.lua
+Core/rotation_editor.lua
+Core/rotation_workspace.lua
+Core/condition_canvas.lua
+Core/condition_description.lua
+Core/rotation_canvas.lua
+Core/rotation_sequence.lua
 main.lua
 buttons.lua
 init.lua
 validate.lua
+UI/controls.lua
+UI/selector.lua
+UI/icon_picker.lua
+UI/window.lua
+UI/help.lua
+UI/spell_search.lua
+UI/spell_icon.lua
+UI/errors.lua
+UI/settings_launcher.lua
+UI/settings_roster_order.lua
+UI/settings_layout.lua
+UI/settings_ordered.lua
+UI/settings_draft.lua
+UI/settings_history.lua
+UI/settings_form.lua
+UI/settings_transfer.lua
+UI/custom_condition_transfer.lua
+UI/settings_general.lua
+UI/settings_profiles.lua
+UI/collection_compare.lua
+UI/settings_collections.lua
+UI/settings_announces.lua
+UI/settings_effects.lua
+UI/settings_items.lua
+UI/settings_conditions.lua
+UI/config.lua
+UI/rotation_browser.lua
+UI/condition_picker.lua
+UI/condition_cards.lua
+UI/condition_canvas.lua
+UI/condition_editor.lua
+UI/condition_text.lua
+UI/rotation_cards.lua
+UI/rotation_canvas.lua
+UI/color_picker.lua
+UI/rotation_effect_fields.lua
+UI/rotation_fields.lua
+UI/rotation_navigation.lua
+UI/rotation_metadata.lua
+UI/rotation_editor.lua
+UI/rotation_reference.lua
+UI/defaults.lua
+UI/rotation_comparison.lua
+UI/transfer.lua
 
 Widgets/help.lua
 Widgets/directional.lua
@@ -62,10 +151,12 @@ Help/conditional.lua
 # Conditions
 Conditions/common.lua
 Conditions/character.lua
+Conditions/talent.lua
 Conditions/stats.lua
 Conditions/ext_stats.lua
 Conditions/spell.lua
 Conditions/anyspell.lua
+Conditions/known_spell.lua
 Conditions/petspell.lua
 Conditions/buffs.lua
 Conditions/debuffs.lua
@@ -75,6 +166,10 @@ Conditions/combat.lua
 Conditions/casting.lua
 Conditions/channeling.lua
 Conditions/spatial.lua
+Conditions/range.lua
 Conditions/spatial_stats.lua
 Conditions/weapon.lua
 Conditions/misc.lua
+
+# Packaged read-only rotations
+Defaults/tbc/shaman-starter.lua
