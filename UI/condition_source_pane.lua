@@ -43,11 +43,11 @@ function addon:DuplicateInlineCustomCondition(p)
     self:InstallInlineConditionNavigation(p)
     p:RequestLeave(function()
         if not p.active then return end
-        local key=p.condition;local source=self.db.global.custom_conditions[key];if not source then return end
+        local key=p.condition;local source=self.db.global.custom_conditions[key] or self.GetBuiltinConditionSource and self:GetBuiltinConditionSource(key);if not source then return end
         p.creatingCondition=true;p.newConditionKey=key:sub(1,216)..'_'..self:uuid():gsub('-','_');p.newConditionSource=self:CopySettingsData(source);p.newConditionSource.description=string.format(L['Copy of %s'],source.description);p.condition=nil;p.conditionSource='custom';p.category='ALL';p:Draw()
     end)
 end
-function addon:BuildInlineCustomCondition(p,key,source)
+function addon:BuildInlineCustomCondition(p,key,source,readOnly)
     self:InstallInlineConditionNavigation(p)
     local token=p.generation;local store=p:SettingsData();local profile=store.profile
     local isNew=p.creatingCondition==true
@@ -56,7 +56,7 @@ function addon:BuildInlineCustomCondition(p,key,source)
     for _,group in ipairs(profile.condition_groups or {}) do if self:SettingsContains(group.conditions,key) then preferences.category=group.id;break end end
     local function valid() return p:Valid(token) end
     local geometry=self:GetWorkbenchRosterGeometry(p.frame:GetWidth(),p.frame:GetHeight())
-    local options={parent=p.frame,x=geometry.detailX,footer=p.frame,width=geometry.detailWidth,height=math.max(160,p.frame:GetHeight()-34),editor=p.inlineEditorCache,resume=p.inlineResume};p.inlineResume=nil
+    local options={readOnly=readOnly,parent=p.frame,x=geometry.detailX,footer=p.frame,width=geometry.detailWidth,height=math.max(160,p.frame:GetHeight()-34),editor=p.inlineEditorCache,resume=p.inlineResume};p.inlineResume=nil
     options.initialize=function(model)
         if isNew and p.newConditionKey then model.key=p.newConditionKey end
         model.context=self:CopySettingsData(preferences);model.baseline.context=self:CopySettingsData(preferences)
@@ -72,7 +72,7 @@ function addon:BuildInlineCustomCondition(p,key,source)
         local checkWidth=(form.width-148)/2
         local hidden=form:Check('hidden',L['Hidden'],context.hidden,function(value) d.model:Change(function(model) model.context.hidden=value end);d:UpdateActions() end);hidden:SetWidth(checkWidth);hidden:GetFontString():SetWidth(checkWidth-22)
         local switch=form:Check('switch',L['Switch Condition'],context.switch,function(value) d.model:Change(function(model) model.context.switch=value end);d:UpdateActions() end);switch:ClearAllPoints();switch:SetPoint('TOPLEFT',checkWidth+8,-y);switch:SetWidth(checkWidth);switch:GetFontString():SetWidth(checkWidth-22);form.y=form.y-28
-        if key then self:SettingsTopDelete(form,function()
+        if key and not readOnly then self:SettingsTopDelete(form,function()
             p:RequestLeave(function()
                 p:Confirm(L['Delete this custom condition? Existing rotations using it will become unavailable.'],function()
                     local data=p:SettingsData();data.global.custom_conditions[key]=nil;p:RunSettingsEffect('custom_'..key,function() self:UnregisterCondition(key) end);p.condition=nil;clearNew(p);p:Draw()
@@ -114,7 +114,8 @@ function addon:BuildInlineCustomCondition(p,key,source)
         end end
         local previous=self:CopySettingsData(self.db.global.custom_conditions[identifier]);local oldDefinition=self.conditionDefinitions[identifier]
         if oldDefinition~=expected or expectedSource and not self:SettingsDataEqual(previous,expectedSource) then return false,{reason='definition-changed'} end
-        local changed=not self:SettingsDataEqual(previous,value)
+        if readOnly and not self:SettingsDataEqual(source,value) then return false,{reason='readonly-builtin'} end
+        local changed=not readOnly and not self:SettingsDataEqual(previous,value)
         if changed then local ok,why=self:InstallCustomCondition(identifier,value,expected,expectedSource);if not ok then return false,why end end
         local saved=self:CopySettingsData(self.db.global.custom_conditions[identifier])
         p.draft.global.custom_conditions[identifier]=saved;p.draftBaseline.global.custom_conditions=p.draftBaseline.global.custom_conditions or {};p.draftBaseline.global.custom_conditions[identifier]=self:CopySettingsData(saved)
@@ -141,7 +142,7 @@ function addon:BuildInlineCustomCondition(p,key,source)
     end
     local d,owner=self:condition_edit_box(function(identifier)
         if not valid() then return end
-        clearNew(p);p.condition=identifier;p.conditionSource='custom';p.category='ALL';p:Draw()
+        clearNew(p);p.condition=identifier;p.conditionSource=readOnly and 'builtin' or 'custom';p.category='ALL';p:Draw()
     end,key,source,valid,options)
     p.inlineCondition=d;p.inlineEditorCache=d
     d.inlineSelection=p.condition;d.inlineNewSource=p.newConditionSource

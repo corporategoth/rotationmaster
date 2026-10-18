@@ -31,7 +31,7 @@ function addon:BuildConditionSettings(p)
     for key,value in pairs(custom) do if key~=p.condition then compareCandidates[#compareCandidates+1]={value=key,text=value.description or key} end end
     table.sort(compareCandidates,function(a,b) return a.text<b.text end)
     p:SetRosterActions({{key='add_custom',text=L['Add'],icon='plus',action=p.roster.options.new},
-        {key='duplicate_custom',text=L['Duplicate'],icon='copy',enabled=custom[p.condition]~=nil,action=function()
+        {key='duplicate_custom',text=L['Duplicate'],icon='copy',enabled=custom[p.condition]~=nil or self.GetBuiltinConditionSource and self:GetBuiltinConditionSource(p.condition)~=nil,action=function()
             if self.DuplicateInlineCustomCondition then self:DuplicateInlineCustomCondition(p);return end
             local tag=p.condition;local copy=self:CopySettingsData(custom[tag]);local key=tag:sub(1,216)..'_'..self:uuid():gsub('-','_');custom[key]=copy;p:RunSettingsEffect('custom_'..key,function() self:register_custom_condition(key,copy) end);p.condition=key;p.category='ALL';p.conditionSource='custom';p:Draw()
         end},
@@ -46,7 +46,8 @@ function addon:BuildConditionSettings(p)
                 if key~=first and custom[first] and custom[key] then self:ShowCollectionComparison(p,'profile',{name=custom[first].description,profile=custom[first]},{name=custom[key].description,profile=custom[key]}) end
             end)
         end}})
-    if self.BuildInlineCustomCondition and (p.creatingCondition or custom[p.condition]) then return self:BuildInlineCustomCondition(p,p.condition,custom[p.condition]) end
+    local builtinSource=not custom[p.condition] and self.GetBuiltinConditionSource and self:GetBuiltinConditionSource(p.condition)
+    if self.BuildInlineCustomCondition and (p.creatingCondition or custom[p.condition] or builtinSource) then return self:BuildInlineCustomCondition(p,p.condition,custom[p.condition] or builtinSource,type(builtinSource)=='table') end
     p:Heading(L['Conditions'])
     local tag=p.condition;local definition=definitions[tag] or (self.conditionSpecials or {})[tag]
     if tag and definition then

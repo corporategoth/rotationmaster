@@ -205,3 +205,19 @@ addon:RegisterCondition("TOTEM_SPELL_REMAIN", {
             L["Compare the active totem's remaining seconds with this amount. An absent or expired totem does not match; unavailable observations stay unavailable."])
     end
 })
+
+-- BEGIN GENERATED RM SOURCE BINDINGS
+if addon.RegisterBuiltinSourceModule then
+    addon:RegisterBuiltinSourceModule("Conditions/totem.lua", function(name)
+        if name=="amount" then return amount end
+        if name=="color" then return color end
+        if name=="element" then return element end
+        if name=="findSpecific" then return findSpecific end
+        if name=="helpers" then return helpers end
+        if name=="observe" then return observe end
+        if name=="platform" then return platform end
+        if name=="remaining" then return remaining end
+        if name=="specific" then return specific end
+    end)
+end
+-- END GENERATED RM SOURCE BINDINGS

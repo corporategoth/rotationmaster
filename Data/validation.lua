@@ -230,6 +230,7 @@ local function validate(envelope, options, bodyOnly)
                 issue("unknown-condition", path..".type", "warning", "unresolved");return
             end
             if definition.disabled then issue('disabled-condition',path..'.type','warning','unresolved') end
+            if definition.functionUnavailable then issue('unavailable-function',path..'.type','warning','unresolved') end
             for _, key in ipairs(sortedKeys(value)) do
                 if key ~= "type" and key ~= "disabled" then
                     if definition.fields[key] == nil then issue("unknown-field", path.."."..key, "warning", "unsupported")

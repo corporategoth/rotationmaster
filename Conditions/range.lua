@@ -25,3 +25,10 @@ addon:RegisterCondition("BEYOND_MELEE",{
         frame:AddChild(addon.help_funcs.CreateText(L["Uses the native Attack range check when available. Otherwise it uses LibRangeCheck's public interval to distinguish close range from beyond five yards; that estimate does not prove exact melee geometry for every target. An interval spanning the boundary, missing data or restricted data stays unavailable, including under NOT."]))
     end,
 })
+
+-- BEGIN GENERATED RM SOURCE BINDINGS
+if addon.RegisterBuiltinSourceModule then
+    addon:RegisterBuiltinSourceModule("Conditions/range.lua", function(name)
+    end)
+end
+-- END GENERATED RM SOURCE BINDINGS

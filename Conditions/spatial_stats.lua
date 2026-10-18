@@ -749,3 +749,13 @@ addon:RegisterCondition("PROXIMITY_MANAPCT_COUNT", {
                 "of an instance, and it will be less accurate than outside of an instance." .. color.RESET))
     end
 })
+
+-- BEGIN GENERATED RM SOURCE BINDINGS
+if addon.RegisterBuiltinSourceModule then
+    addon:RegisterBuiltinSourceModule("Conditions/spatial_stats.lua", function(name)
+        if name=="aggregate" then return aggregate end
+        if name=="color" then return color end
+        if name=="helpers" then return helpers end
+    end)
+end
+-- END GENERATED RM SOURCE BINDINGS

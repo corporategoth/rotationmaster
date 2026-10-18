@@ -144,3 +144,12 @@ addon:RegisterCondition("CHANNEL_INTERRUPTABLE", {
         addon.layout_condition_unitwidget_help(frame)
     end
 })
+
+-- BEGIN GENERATED RM SOURCE BINDINGS
+if addon.RegisterBuiltinSourceModule then
+    addon:RegisterBuiltinSourceModule("Conditions/channeling.lua", function(name)
+        if name=="color" then return color end
+        if name=="helpers" then return helpers end
+    end)
+end
+-- END GENERATED RM SOURCE BINDINGS

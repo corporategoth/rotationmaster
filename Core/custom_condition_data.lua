@@ -37,6 +37,9 @@ function addon:ParseCustomConditionImport(text,codec)
     if type(value)~='table' or type(value.description)~='string' or not value.description:find('%S') or not self:IsCategoryIcon(value.icon) or not self:NormalizeCustomFieldSchema(value.fields,true) then return nil,L['Invalid custom condition.'] end
     for key,child in pairs(value) do
         if functions[key] then if type(child)~='string' then return nil,L['Invalid custom condition.'] end
+        elseif key=='parameters' then if not self:NormalizeCustomConditionParameters(child) then return nil,L['Invalid custom condition.'] end
+        elseif key=='requiredFields' then if not self:NormalizeCustomConditionRequiredFields(child,value.fields) then return nil,L['Invalid custom condition.'] end
+        elseif key=='bindings' then if not self:NormalizeFunctionBindings(child,{{name='value'},{name='cache'},{name='evalStart'},{name='spec'},{name='parent'},{name='frame'},{name='tag'}}) then return nil,L['Invalid custom condition.'] end
         elseif key=='fieldOrder' then if not self:NormalizeCustomFieldOrder(child,value.fields) then return nil,L['Invalid custom condition.'] end
         elseif key=='disabled' then if type(child)~='boolean' then return nil,L['Invalid custom condition.'] end
         elseif key~='description' and key~='icon' and key~='fields' then return nil,L['Invalid custom condition.'] end

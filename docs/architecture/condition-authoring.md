@@ -1,6 +1,6 @@
 # Shared condition and utility authoring
 
-This is the agreed next authoring design, not a claim that the source browser or utility registry already exists.
+Built In source browsing and the compiled utility registry are implemented. The utility roster, dependency bundle review, and advanced editor integration below remain active work.
 
 Built In and custom conditions share one definition contract: identifier, display name, description/help, icon, field schema and the existing callback arguments. Both run compiled Lua functions. Custom source is compiled on registration/save, rather than interpreted for every recommendation. Runtime source kind must not alter condition semantics or platform restrictions.
 
@@ -34,8 +34,19 @@ Current definition availability implementation: custom-condition source accepts 
 
 ## Current custom-condition editor
 
-Selecting or adding a custom condition opens its source editor in the Conditions page's right pane. The whole definition, all callback buffers, and its picker/category preferences form one staged edit. Apply validates and installs the source before saving preferences; leaving with changes offers Apply, Discard or Cancel. Built In source browsing and utility editing still require the source catalog and registry described above.
+Selecting or adding a custom condition opens its source editor in the Conditions page's right pane. The whole definition, all callback buffers, and its picker/category preferences form one staged edit. Apply validates and installs the source before saving preferences; leaving with changes offers Apply, Discard or Cancel. Built In conditions now use this same pane with immutable source, metadata and schema. Hidden/Switch/category preferences remain editable. Duplicate creates a custom source draft, preserving the original callback argument names and explicit packaged helper bindings. Graph-only AND/OR/NOT remain structural controls rather than invented source callbacks. Utility editing is the next source view.
 
 Each callback shows its description, typed argument and return documentation, then Undo / Redo / Reset, then the function signature immediately above the code area. Callback edits survive switching callback tabs or changing metadata. Reset is undoable and restores the last saved callback, or the template for a new condition. The whole-definition Apply saves all callback buffers. Known generated template header comments move into the documentation; authored comments are preserved.
 
 The native editor supplies a visible input border and delegates left-click caret placement and keyboard navigation to the EditBox. Escape and right-click while editing route through the owner's pending-change prompt. The offline fixture verifies those handlers and draft transitions; native caret placement and cursor rendering still require in-game verification, including the plain-text provider.
+
+
+## Generated packaged source and utility lifecycle
+
+`tools/generate_builtin_sources.py --write` collects callback source positions and captured helpers offline across the reviewed client inventory, then extracts source bodies from authored condition modules. The generated catalog and managed local-getter suffixes are checked by `tools/check`. The game never reads source files, inspects bytecode or uses debug upvalues. Packaged conditions still execute their original closures. Clones compile once and resolve declared stable binding IDs, preserving class-specific values and shared optional-integration state.
+
+`Core/functions.lua` stores typed argument/return metadata and explicit alias-to-ID dependencies. Registration compiles source; calls reuse compiled functions. Invalid, disabled, cyclic or missing dependencies make transitive consumers unavailable, including beneath NOT. Saved consumers remain registered as unavailable metadata so enabling a dependency can restore them. Before changing a graph to unavailable, cleanup hooks run against the old usable graph; suspended consumers resume registration after recovery. Trusted hooks can have external effects; syntax checking is not sandboxing.
+
+## Optional advanced editing
+
+The target is LuaWorkbench's advanced editing, completion, knowledge, navigation and debugging inside RM's themed panes, with independent draft ownership. It must work with released LuaWorkbench without requiring upstream modifications. The installed release exports its Workspace but not the private Query.Editor table; autocomplete and debug ownership checks assume their namespace's Console.input. The adapter must supply an isolated compatible namespace and reuse upstream MIT components where private references prevent direct attachment. It must not replace the user's Workspace, snippets or saved state. An upstream clean embedding API is optional follow-up, never a prerequisite. Native RM editing remains supported with RM argument/function documentation and completion; no separately maintained WoW API knowledge base.

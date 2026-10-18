@@ -4,6 +4,7 @@ local AceGUI = LibStub("AceGUI-3.0")
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 local color = color
 local helpers = addon.help_funcs
+local unit_class_num
 
 addon:RegisterCondition("ISSAME", {
     description = L["Is Same As"],
@@ -279,7 +280,7 @@ else
 end
 
 if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE or LE_EXPANSION_LEVEL_CURRENT >= 2) then
-    local unit_class_num = select(3, UnitClass("player"))
+    unit_class_num = select(3, UnitClass("player"))
     addon:RegisterCondition("GLYPH", {
         description = L["Glyph"],
         icon = "Interface\\Icons\\inv_inscription_minorglyph09",
@@ -688,3 +689,13 @@ addon:RegisterCondition("IMMUNE", {
 })
 end
 
+-- BEGIN GENERATED RM SOURCE BINDINGS
+if addon.RegisterBuiltinSourceModule then
+    addon:RegisterBuiltinSourceModule("Conditions/character.lua", function(name)
+        if name=="character_class" then return character_class end
+        if name=="color" then return color end
+        if name=="helpers" then return helpers end
+        if name=="unit_class_num" then return unit_class_num end
+    end)
+end
+-- END GENERATED RM SOURCE BINDINGS

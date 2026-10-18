@@ -67,35 +67,68 @@ function addon:ParseCustomFieldSchema(text)
     local ok,value=pcall(parse,0);if not ok then return nil,value end;skip();if cursor<=#text then return nil,'unexpected-schema-text' end
     return self:NormalizeCustomFieldSchema(value,true)
 end
-function addon:CompileCustomConditionCallback(key,name,code)
-    local params=callbacks[name]
-    if not params or type(code)~='string' then return nil,'invalid-callback' end
-    return loadstring('return function(addon, L)\nreturn function('..params..')\n'..code..'\nend\nend','@RotationMaster:custom:'..tostring(key):sub(1,128)..':'..name)
+function addon:NormalizeCustomConditionParameters(parameters)
+    if parameters==nil then return {} end
+    if type(parameters)~='table' or getmetatable(parameters) then return nil,'invalid-callback-parameters' end
+    local result={}
+    for name,args in pairs(parameters) do
+        if not callbacks[name] or type(args)~='table' or getmetatable(args) or #args>32 then return nil,'invalid-callback-parameters' end
+        local count=0;for index in pairs(args) do count=count+1;if type(index)~='number' or index%1~=0 or index<1 or index>#args then return nil,'invalid-callback-parameters' end end
+        if count~=#args then return nil,'invalid-callback-parameters' end
+        for index,arg in ipairs(args) do if type(arg)~='string' or not arg:match('^[A-Za-z_][A-Za-z_0-9]*$') and not (arg=='...' and index==#args) then return nil,'invalid-callback-parameters' end end
+        result[name]=self:CopySettingsData(args)
+    end
+    return result
 end
-function addon:ValidateCustomConditionSource(key,source,compatibility)
+function addon:NormalizeCustomConditionRequiredFields(required,fields)
+    if type(required)~='table' or getmetatable(required) or #required>128 then return nil end
+    local result,seen={},{};local count=0
+    for index in pairs(required) do count=count+1;if type(index)~='number' or index%1~=0 or index<1 or index>#required then return nil end end
+    if count~=#required then return nil end
+    for _,name in ipairs(required) do if type(name)~='string' or fields[name]==nil or seen[name] then return nil end;seen[name]=true;result[#result+1]=name end
+    return result
+end
+function addon:CustomConditionSignature(source,name)
+    local params=source.parameters and source.parameters[name]
+    return 'function('..(params and table.concat(params,', ') or callbacks[name])..')'
+end
+function addon:CompileCustomConditionCallback(key,name,code,bindings,parameters)
+    local params=parameters and parameters[name] and table.concat(parameters[name],',') or callbacks[name]
+    if not params or type(code)~='string' then return nil,'invalid-callback' end
+    return loadstring('return function(addon, L)\nreturn function('..params..')\n'..(bindings and self:FunctionBindingPrelude(bindings) or '')..'\n'..code..'\nend\nend','@RotationMaster:custom:'..tostring(key):sub(1,128)..':'..name)
+end
+function addon:ValidateCustomConditionSource(key,source,compatibility,allowUnavailable)
     if type(loadstring)~='function' then return nil,{field='compiler',reason='compiler-unavailable'} end
     if not self:IsCustomConditionIdentifier(key,compatibility) then return nil,{field='identifier',reason='invalid-identifier'} end
     if type(source)~='table' or type(source.description)~='string' or not source.description:find('%S') or not compatibility and #source.description>4096 or not self:IsCategoryIcon(source.icon) then return nil,{field='description',reason='incomplete-definition'} end
     if source.disabled~=nil and type(source.disabled)~='boolean' then return nil,{field='disabled',reason='invalid-disabled-flag'} end
-    if not compatibility then for field in pairs(source) do if field~='description' and field~='icon' and field~='fields' and field~='disabled' and field~='fieldOrder' and not callbacks[field] then return nil,{field=field,reason='unknown-field'} end end end
+    if not compatibility then for field in pairs(source) do if field~='description' and field~='icon' and field~='fields' and field~='disabled' and field~='fieldOrder' and field~='bindings' and field~='parameters' and field~='requiredFields' and not callbacks[field] then return nil,{field=field,reason='unknown-field'} end end end
     local fields,why=self:NormalizeCustomFieldSchema(source.fields,true);if not fields then return nil,{field='fields',reason=why} end
     if source.fieldOrder~=nil and not self:NormalizeCustomFieldOrder(source.fieldOrder,fields) then return nil,{field='fields',reason='invalid-field-order'} end
+    local bindings,unavailable
+    if source.bindings~=nil then
+        local why;bindings,why=self:NormalizeFunctionBindings(source.bindings,{{name='value'},{name='cache'},{name='evalStart'},{name='spec'},{name='parent'},{name='frame'},{name='tag'}})
+        if not bindings then return nil,{field='bindings',reason=why} end
+        local available,problem=self:AreFunctionBindingsAvailable(bindings);if not available then if not allowUnavailable then return nil,{field='bindings',reason=problem} end;unavailable=problem end
+    end
+    local parameters,parameterError=self:NormalizeCustomConditionParameters(source.parameters);if not parameters then return nil,{field='parameters',reason=parameterError} end
+    local required;if source.requiredFields then required=self:NormalizeCustomConditionRequiredFields(source.requiredFields,fields);if not required then return nil,{field='requiredFields',reason='invalid-required-fields'} end end
     local compiled,total={},0
     for name in pairs(callbacks) do
         local code=source[name];if type(code)~='string' or not compatibility and #code>65536 then return nil,{callback=name,reason='code-limit'} end;total=total+#code;if not compatibility and total>262144 then return nil,{callback=name,reason='code-limit'} end
-        local fn,errorText=self:CompileCustomConditionCallback(key,name,code)
+        local fn,errorText=self:CompileCustomConditionCallback(key,name,code,bindings,parameters)
         if not fn then return nil,{callback=name,reason='syntax-error',detail=errorText} end
         compiled[name]=fn
     end
-    return {valid=true,compiled=compiled,fields=fields}
+    return {valid=true,compiled=compiled,fields=fields,bindings=bindings,parameters=parameters,requiredFields=required,unavailable=unavailable}
 end
 function addon:CompileCustomCondition(key,source,compatibility)
     if type(source)=='table' and source.disabled==true then
         if not self:IsCustomConditionIdentifier(key,true) then return nil,{field='identifier',reason='invalid-identifier'} end
         return {description=source.description or key,icon=source.icon,fields=self:NormalizeCustomFieldSchema(source.fields,true) or {},customCode=true,disabled=true}
     end
-    local checked,why=self:ValidateCustomConditionSource(key,source,compatibility);if not checked then return nil,why end
-    local definition={description=source.description,icon=source.icon,fields=checked.fields,customCode=true}
+    local checked,why=self:ValidateCustomConditionSource(key,source,compatibility,true);if not checked then return nil,why end
+    local definition={description=source.description,icon=source.icon,fields=checked.fields,customCode=true,functionBindings=checked.bindings,requiredFields=checked.requiredFields,functionUnavailable=checked.unavailable,functionSuspended=checked.unavailable~=nil}
     for name,chunk in pairs(checked.compiled) do
         local ok,binder=pcall(chunk);if not ok or type(binder)~='function' then return nil,{callback=name,reason='compile-failed'} end
         local bound,fn=pcall(binder,self,L);if not bound or type(fn)~='function' then return nil,{callback=name,reason='compile-failed'} end;definition[name]=fn

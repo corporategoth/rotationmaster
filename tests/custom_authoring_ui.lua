@@ -397,4 +397,16 @@ test('standalone syntax status reserves transfer action width',function()
     local f,a=fixture();local d=a:condition_edit_box(function() end)
     assert(d.transfer.point[2]==12 and d.form.message.point[2]==d.transfer and d.form.message.point[3]=='RIGHT','syntax status spans the transfer button')
 end)
+test('builtin conditions share the inline source pane without allowing source edits',function()
+    local f,a=fixture(true);f.load('Data/builtin_sources.lua');f.load('Core/builtin_sources.lua');f.load('Conditions/combat.lua')
+    a.db.profile.condition_groups={};a.db.profile.disabled_conditions={};a.db.profile.switch_conditions={};a.db.profile.other_conditions_order={}
+    a.listConditions=function() return {'COMBAT'} end
+    local host=f.env.CreateFrame('Frame');host:SetSize(1000,700);local p=a:OpenNativeSettings(host,'Conditions')
+    local d=assert(p.inlineCondition,'builtin source pane missing');assert(d.readOnly and d.code:GetText():find('UnitAffectingCombat',1,true))
+    assert(not d.form.fields.description:IsEnabled() and not d.form.fields.icon:IsEnabled() and not d.form.fields.definition_enabled:IsShown())
+    local original=d.code:GetText();d.code.edit:SetText('return false');d.code.edit.scripts.OnTextChanged(d.code.edit,true);assert(d.code:GetText()==original,'readonly source accepted input')
+    assert(not d.form.fields.schemaGraph:IsEnabled() and not d:IsDirty())
+    d.form.fields.hidden:Click();d.apply:Click();assert(a:SettingsContains(a.db.profile.disabled_conditions,'COMBAT') and not a.db.global.custom_conditions.COMBAT)
+    p.fields.duplicate_custom:Click();assert(p.inlineCondition and not p.inlineCondition.readOnly and p.inlineCondition.model.value.parameters.evaluate);local clone=p.inlineCondition;for _,field in ipairs({'identifier','description','icon','schema','schemaGraph','advancedSchema'}) do assert(clone.form.fields[field]:IsEnabled(),field..' remained disabled after builtin view') end
+end)
 finish()

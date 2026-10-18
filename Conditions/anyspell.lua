@@ -234,3 +234,13 @@ addon:RegisterCondition("ANYSPELL_CHARGES", {
             "The number of charges of " .. color.BLIZ_YELLOW .. L["Spell"] .. color.RESET .. " currently active.")
     end
 })
+
+-- BEGIN GENERATED RM SOURCE BINDINGS
+if addon.RegisterBuiltinSourceModule then
+    addon:RegisterBuiltinSourceModule("Conditions/anyspell.lua", function(name)
+        if name=="SpellData" then return SpellData end
+        if name=="color" then return color end
+        if name=="helpers" then return helpers end
+    end)
+end
+-- END GENERATED RM SOURCE BINDINGS

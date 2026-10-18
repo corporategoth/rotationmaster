@@ -718,3 +718,12 @@ addon:RegisterCondition("TT_HEALTHPCT", {
                 "'burn rate', essentially pretending they are not being hit at all.")))
     end
 })
+
+-- BEGIN GENERATED RM SOURCE BINDINGS
+if addon.RegisterBuiltinSourceModule then
+    addon:RegisterBuiltinSourceModule("Conditions/stats.lua", function(name)
+        if name=="color" then return color end
+        if name=="helpers" then return helpers end
+    end)
+end
+-- END GENERATED RM SOURCE BINDINGS

@@ -69,3 +69,11 @@ addon:RegisterCondition("SPELL_KNOWN", {
         frame:AddChild(addon.help_funcs.CreateText(L["Check whether you or your pet know this exact spell ID. An unlearned spell is a valid condition that returns false, so the same rotation can adapt as you learn abilities. This does not check cooldown, resources, range, or whether the spell can currently be cast. Missing or restricted learned-state data stays unavailable under NOT."]))
     end,
 })
+
+-- BEGIN GENERATED RM SOURCE BINDINGS
+if addon.RegisterBuiltinSourceModule then
+    addon:RegisterBuiltinSourceModule("Conditions/known_spell.lua", function(name)
+        if name=="validID" then return validID end
+    end)
+end
+-- END GENERATED RM SOURCE BINDINGS

@@ -101,6 +101,7 @@ local defaults = {
         itemsets = {},
         effects = {},
         custom_conditions = {},
+        custom_functions = {},
     }
 }
 
@@ -320,6 +321,7 @@ function addon:OnInitializeInternal()
     DataBroker.text = color.RED .. OFF
 
     self.funcDeserialize = {}
+    if self.InitializeFunctionRegistry then self:InitializeFunctionRegistry() end
     for key, condition in pairs(self.db.global.custom_conditions) do
         addon:register_custom_condition(key, condition)
     end

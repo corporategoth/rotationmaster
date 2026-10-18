@@ -355,3 +355,14 @@ addon:RegisterCondition("ZONE", {
                 " - " .. "The zone you are in."))
     end
 })
+
+-- BEGIN GENERATED RM SOURCE BINDINGS
+if addon.RegisterBuiltinSourceModule then
+    addon:RegisterBuiltinSourceModule("Conditions/spatial.lua", function(name)
+        if name=="RangeCheck" then return RangeCheck end
+        if name=="color" then return color end
+        if name=="helpers" then return helpers end
+        if name=="rcf" then return rcf end
+    end)
+end
+-- END GENERATED RM SOURCE BINDINGS

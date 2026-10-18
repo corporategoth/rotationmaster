@@ -85,11 +85,12 @@ function addon:CreateWorkbenchLuaEditor(parent,changed,valid,preferred)
         if self.syntax then local text=self.syntax.decode(self.nativeGetText(self.edit));return type(text)=='string' and text or '' end
         return self.edit:GetText() or ''
     end
-    function c:SetText(text) self.setting=true;self.edit:SetText(text or '');self.setting=false;self:Layout() end
+    function c:SetText(text) self.setting=true;self.edit:SetText(text or '');self.readOnlyText=text or '';self.setting=false;self:Layout() end
+    function c:SetReadOnly(value) self.readOnly=value==true;self.readOnlyText=self:GetText() end
     function c:SetChanged(callback) self.changed=callback end
     function c:SetCloseHandler(callback) self.closeRequested=callback end
     function c:Acquire(callback,ownerValid)
-        self.released=false;self.changed=callback;self.valid=ownerValid;self.layoutCounts=nil
+        self.released=false;self.readOnly=false;self.readOnlyText=nil;self.changed=callback;self.valid=ownerValid;self.layoutCounts=nil
         if self.ResetInputTrace then addon.luaInputEditor=self;self:ResetInputTrace() end
         if self.syntax then pcall(self.syntax.enable,self.edit,self.syntaxColors,4) end
     end
@@ -101,7 +102,7 @@ function addon:CreateWorkbenchLuaEditor(parent,changed,valid,preferred)
         for _,event in ipairs({'OnTextChanged','OnTabPressed','OnUpdate'}) do self.edit:SetScript(event,self.nativeScripts[event]) end
         self.edit:SetText('');self.frame:Hide()
     end
-    addon:SetUIScript(c.edit,'OnTextChanged',function() c:Layout();if not c.setting and not c.released and c.valid() and c.changed then c.changed(c:GetText()) end end)
+    addon:SetUIScript(c.edit,'OnTextChanged',function() if c.readOnly and not c.setting and c:GetText()~=c.readOnlyText then c:SetText(c.readOnlyText);return end;c:Layout();if not c.setting and not c.released and c.valid() and c.changed then c.changed(c:GetText()) end end)
     addon:SetUIScript(c.frame,'OnSizeChanged',function() c:Layout() end)
     addon:SetUIScript(c.edit,'OnMouseWheel',function(_,delta) c.scroll.workbenchBar:SetValue(c.scroll.workbenchBar:GetValue()-delta*36) end);c.edit:EnableMouseWheel(true)
     addon:SetUIScript(c.edit,'OnCursorChanged',function(_,_,y,_,height) local bar=c.scroll.workbenchBar;local top=-y;if top<bar:GetValue() then bar:SetValue(top) elseif top+height>bar:GetValue()+c.scroll:GetHeight() then bar:SetValue(top+height-c.scroll:GetHeight()) end end)

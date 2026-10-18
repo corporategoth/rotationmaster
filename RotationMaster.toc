@@ -62,6 +62,9 @@ Core/announcements.lua
 Core/profile_data.lua
 Core/collection_data.lua
 Core/custom_condition_data.lua
+Core/functions.lua
+Data/builtin_sources.lua
+Core/builtin_sources.lua
 Core/custom_authoring.lua
 Core/schema_authoring.lua
 Core/aura_conditions.lua

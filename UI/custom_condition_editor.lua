@@ -10,7 +10,7 @@ function addon:condition_edit_box(update,key,source,saveAllowed,embedded)
     if embedded then d=embedded.editor else d=self.nativeCustomConditionDialog;if d and d.isEmbedded then d=nil end end
     if d and not d.closed then if d.OwnerValid and not d.OwnerValid() then d:Close() else d:Show();return d,d.owner end end
     d=d or {frame=CreateFrame('Frame',nil,embedded and embedded.parent or UIParent),nativeCustomEditor=true}
-    d.embedded=embedded;d.isEmbedded=embedded~=nil;if embedded then embedded.editor=d end
+    d.readOnly=embedded and embedded.readOnly==true;if d.readOnly then d.advancedSchema=false end;d.embedded=embedded;d.isEmbedded=embedded~=nil;if embedded then embedded.editor=d end
     self.nativeCustomConditionDialog=d;d.closed=false;d.suspended=nil;d.validationRequested=false;d.codeHistory={};d.update=update;d.selected='evaluate';d.session=(d.session or 0)+1;local session=d.session;local frame=d.frame
     frame:ClearAllPoints();frame:EnableMouse(true)
     if embedded then
@@ -97,8 +97,8 @@ function addon:condition_edit_box(update,key,source,saveAllowed,embedded)
         for _,edit in ipairs(p.edits) do if edit.dirty then return true end end;return false
     end
     function d:UpdateValidation()
-        if not self.code then return end
-        local input={disabled=self.model.value.disabled,selected=self.selected,requested=self.validationRequested,key=p.fields.identifier:GetText(),description=p.fields.description:GetText(),schema=p.fields.schema:GetText(),icon=self.model.value.icon}
+        if not self.code or self.readOnly then return end
+        local input={functionRevision=addon.functionRegistryVersion or 0,disabled=self.model.value.disabled,selected=self.selected,requested=self.validationRequested,key=p.fields.identifier:GetText(),description=p.fields.description:GetText(),schema=p.fields.schema:GetText(),icon=self.model.value.icon}
         for name in pairs(addon.CustomConditionCallbacks) do input[name]=name==self.selected and self.code:GetText() or self.codeHistory[name] and self.codeHistory[name].text or self.model.value[name] end
         if addon:SettingsDataEqual(input,self.validationInput) then return end
         self.validationInput=addon:CopySettingsData(input)
@@ -110,7 +110,7 @@ function addon:condition_edit_box(update,key,source,saveAllowed,embedded)
         local message=not checked and reason(why) or nil
         local callbackErrors={}
         for name,button in pairs(self.functionTabs or {}) do
-            local compiled,syntax=addon:CompileCustomConditionCallback(input.key,name,input[name]);callbackErrors[name]=not compiled and syntax or nil
+            local compiled,syntax=addon:CompileCustomConditionCallback(input.key,name,input[name],source.bindings,source.parameters);callbackErrors[name]=not compiled and syntax or nil
             addon:SetWorkbenchInvalid(button,not compiled,syntax);button.tooltip=not compiled and syntax or nil
         end
         addon:SetWorkbenchInvalid(self.code.frame,callbackErrors[self.selected]~=nil,callbackErrors[self.selected])
@@ -177,11 +177,12 @@ function addon:condition_edit_box(update,key,source,saveAllowed,embedded)
     function d:SelectFunction(name)
         if not valid() or not addon.CustomConditionCallbacks[name] then return end
         self:FlushCode();self.selected=name;self:SetCode(self:CodeState().text)
-        self.signature:SetText('function('..addon.CustomConditionCallbacks[name]..')');self:LayoutDocumentation()
+        self.signature:SetText(addon:CustomConditionSignature(self.model.value,name));self:LayoutDocumentation()
         for key,button in pairs(self.functionTabs) do button:SetSelected(key==name) end
         self:UpdateActions()
     end
     function d:OpenSchema(fields,fieldOrder,childResume)
+        if self.readOnly then return end
         return addon:ShowFieldSchemaEditor(self,fields,fieldOrder,function(value,ordered)
             if valid() then self.model:Change(function(model) model.value.fields=value;model.value.fieldOrder=ordered end);p:Draw();self:UpdateActions() end
         end,valid,childResume)
@@ -230,6 +231,7 @@ function addon:condition_edit_box(update,key,source,saveAllowed,embedded)
             if changed then changed(control,user) end
         end)
         if d.originalKey and d.model.key==d.originalKey then identifier:EnableMouse(false) end
+        if d.readOnly then identifier:Disable() else identifier:Enable() end
         local descriptionY=form.y
         form:Edit('description',L['Description'],d.model.value.description,nil,function(text) d.model:Change(function(model) model.value.description=text end) end)
         local descriptionLabel=form.pool.labels[form.counts.labels]
@@ -243,8 +245,10 @@ function addon:condition_edit_box(update,key,source,saveAllowed,embedded)
             d.ownedPickerSerial=d.ownedPicker.serial
         end)
         icon.texture=icon.texture or icon:CreateTexture(nil,'ARTWORK');icon.texture:SetTexture(d.model.value.icon);icon.texture:SetAllPoints(icon)
+        if d.readOnly then form.fields.description:Disable();icon:Disable();availability:Hide() else form.fields.description:Enable();icon:Enable();availability:Show() end
         if embedded and embedded.category then embedded.category(form,d) end
         addon:BuildCustomSourceFields(form,d)
+        for _,field in ipairs({'schemaGraph','schema','advancedSchema'}) do if d.readOnly then form.fields[field]:Disable() else form.fields[field]:Enable() end end
         local tabWidth=(form.width-3*(#order-1))/#order;local y=form:Row(nil,26)
         d.functionTabs={}
         for i,name in ipairs(order) do
@@ -264,7 +268,7 @@ function addon:condition_edit_box(update,key,source,saveAllowed,embedded)
                 end
             end)
         end
-        d.signature=form:Acquire('callbackSignature',function() local text=form.child:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall');text:SetJustifyH('LEFT');return text end);d.signature:SetText('function('..addon.CustomConditionCallbacks[d.selected]..')')
+        d.signature=form:Acquire('callbackSignature',function() local text=form.child:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall');text:SetJustifyH('LEFT');return text end);d.signature:SetText(addon:CustomConditionSignature(d.model.value,d.selected))
         d.documentation=form:Acquire('callbackDocs',function() local text=form.child:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall');text:SetJustifyH('LEFT');text:SetWordWrap(true);return text end)
         d.documentationTop=form.y
         function d:LayoutDocumentation()
@@ -282,9 +286,10 @@ function addon:condition_edit_box(update,key,source,saveAllowed,embedded)
             if self.code then self.code.frame:ClearAllPoints();self.code.frame:SetPoint('TOPLEFT',0,-codeTop);self.code.frame:SetSize(form.width,codeHeight) end
             form.y=codeTop+codeHeight;form.child:SetHeight(form.y+12);form.scroll:Hide()
         end
-        local preference=addon.db.profile.lua_editor or 'auto'
+        local preference=d.readOnly and 'native' or addon.db.profile.lua_editor or 'auto'
         if d.code and (d.code.preference~=preference or d.code.released and not d.code.Acquire) then d.code:Release();d.code=nil end
-        if not d.code then d.code=addon:CreateWorkbenchLuaEditor(form.child,function() if valid() then d:CodeChanged() end end,valid);d.code.preference=preference elseif d.code.released then d.code:Acquire(function() if valid() then d:CodeChanged() end end,valid) end
+        if not d.code then d.code=addon:CreateWorkbenchLuaEditor(form.child,function() if valid() then d:CodeChanged() end end,valid,preference);d.code.preference=preference elseif d.code.released then d.code:Acquire(function() if valid() then d:CodeChanged() end end,valid) end
+        if d.code.SetReadOnly then d.code:SetReadOnly(d.readOnly) end
         if d.code.SetCloseHandler then d.code:SetCloseHandler(function(mouse)
             if not valid() then return end
             if embedded and embedded.closeOwner then embedded.closeOwner(mouse) else d:Hide() end

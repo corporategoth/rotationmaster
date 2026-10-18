@@ -13,7 +13,8 @@ def main():
     root = Path(__file__).resolve().parents[1]
     commands = [[sys.executable, 'tests/verify.py'],
                 [sys.executable, 'tools/catalog_check.py'],
-                [sys.executable, 'tools/lint.py']]
+                [sys.executable, 'tools/lint.py'],
+                [sys.executable, 'tools/generate_builtin_sources.py']]
     if not args.static:
         commands.extend([
             ['lua5.1', 'tests/startup.lua'],
@@ -50,6 +51,8 @@ def main():
             ['lua5.1', 'tests/aura_conditions.lua'],
             ['lua5.1', 'tests/custom_conditions.lua'],
             ['lua5.1', 'tests/custom_authoring.lua'],
+            ['lua5.1', 'tests/functions.lua'],
+            ['lua5.1', 'tests/builtin_sources.lua'],
             ['lua5.1', 'tests/schema_authoring.lua'],
             ['luajit', 'tests/custom_authoring_ui.lua'],
             ['lua5.1', 'tests/known_spell.lua'],
@@ -110,6 +113,7 @@ def main():
             ['luajit', 'tests/compression.lua'],
             ['luajit', 'tests/rotation_codec.lua'],
             [sys.executable, 'tests/test_check.py'],
+            [sys.executable, 'tests/test_builtin_sources.py'],
             [sys.executable, 'tests/test_verify.py'],
             [sys.executable, 'tests/test_catalog_check.py'],
             [sys.executable, 'tests/test_lint.py'],

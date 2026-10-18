@@ -3,7 +3,8 @@
     "Libs/"
   ],
   "ignore": [
-    "tests/"
+    "tests/",
+    "tools/"
   ],
   "flavors": [
     "retail",

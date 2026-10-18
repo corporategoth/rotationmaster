@@ -249,3 +249,12 @@ addon:RegisterCondition("DISPELLABLE", {
                 L["Only consider debuffs returned by the game's dispellable aura filter. This does not guarantee your dispel is ready or in range."]))
     end
 })
+
+-- BEGIN GENERATED RM SOURCE BINDINGS
+if addon.RegisterBuiltinSourceModule then
+    addon:RegisterBuiltinSourceModule("Conditions/debuffs.lua", function(name)
+        if name=="color" then return color end
+        if name=="helpers" then return helpers end
+    end)
+end
+-- END GENERATED RM SOURCE BINDINGS

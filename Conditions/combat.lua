@@ -704,3 +704,14 @@ addon:RegisterCondition("TIME_IN_COMBAT", {
         "combat for more than 10 seconds. This is very useful for adjusting rotation priorities for openers vs. normal rotation")
     end
 })
+
+-- BEGIN GENERATED RM SOURCE BINDINGS
+if addon.RegisterBuiltinSourceModule then
+    addon:RegisterBuiltinSourceModule("Conditions/combat.lua", function(name)
+        if name=="AceGUI" then return AceGUI end
+        if name=="character_class" then return character_class end
+        if name=="color" then return color end
+        if name=="helpers" then return helpers end
+    end)
+end
+-- END GENERATED RM SOURCE BINDINGS

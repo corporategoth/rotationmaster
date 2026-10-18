@@ -198,3 +198,25 @@ addon:RegisterCondition('PRIMARY_TALENT_TREE',{
         frame:AddChild(addon.help_funcs.Gap());frame:AddChild(addon.help_funcs.CreateText(L['The primary tree is derived from readable points, not the saved rotation slot. Hybrid builds may need tree-point or individual-talent conditions instead; the primary tree does not assign a tank or healer role. Grids and trait trees are unsupported.']))
     end,
 })
+
+-- BEGIN GENERATED RM SOURCE BINDINGS
+if addon.RegisterBuiltinSourceModule then
+    addon:RegisterBuiltinSourceModule("Conditions/talent.lua", function(name)
+        if name=="AceGUI" then return AceGUI end
+        if name=="dropdown" then return dropdown end
+        if name=="gridWidget" then return gridWidget end
+        if name=="group" then return group end
+        if name=="icon" then return icon end
+        if name=="info" then return info end
+        if name=="integer" then return integer end
+        if name=="legacySlot" then return legacySlot end
+        if name=="platform" then return platform end
+        if name=="text" then return text end
+        if name=="treeExists" then return treeExists end
+        if name=="treeName" then return treeName end
+        if name=="treePicker" then return treePicker end
+        if name=="treeShape" then return treeShape end
+        if name=="treeWidget" then return treeWidget end
+    end)
+end
+-- END GENERATED RM SOURCE BINDINGS

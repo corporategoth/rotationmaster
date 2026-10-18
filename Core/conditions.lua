@@ -97,6 +97,8 @@ local function evaluate(value, cache, start, state, depth, path)
         local definition = conditions[value.type]
         if not definition then
             result = outcome("unavailable", "unknown-condition", path)
+        elseif definition.functionUnavailable then
+            result = outcome("unavailable", "unavailable-function", path)
         elseif definition.disabled then
             result = outcome("unavailable", "disabled-condition", path)
         elseif type(definition.valid) ~= "function" or type(definition.evaluate) ~= "function" then
@@ -189,7 +191,7 @@ printSingle = function(value, spec, negated)
     elseif value.type == "NOT" then
         return printSingle(value.value, spec, not negated)
     elseif conditions[value.type] ~= nil then
-        if conditions[value.type].disabled then return string.format(L['Unavailable condition: %s'],conditions[value.type].description or value.type) end
+        if conditions[value.type].disabled or conditions[value.type].functionUnavailable then return string.format(L['Unavailable condition: %s'],conditions[value.type].description or value.type) end
         return conditions[value.type].print(spec, value, negated)
     else
         return L["<INVALID CONDITION>"]
@@ -228,7 +230,7 @@ validateSingle = function(value, spec)
     elseif value.type == "NOT" then
         return validateSingle(value.value, spec)
     elseif conditions[value.type] ~= nil then
-        if conditions[value.type].disabled then return false end
+        if conditions[value.type].disabled or conditions[value.type].functionUnavailable then return false end
         return conditions[value.type].valid(spec, value)
     else
         return false
@@ -281,9 +283,11 @@ function addon:RefreshConditionConsumers()
     self:SwitchRotation()
 end
 
+function addon:ResetConditionQuarantine(definition) quarantined[definition]=nil end
+
 function addon:RegisterCondition(tag, array)
     local availabilityChanged=(conditions[tag] and conditions[tag].disabled==true or false)~=(array.disabled==true)
-    if conditions[tag] and not conditions[tag].disabled and conditions[tag].on_unregister then
+    if conditions[tag] and not conditions[tag].disabled and not conditions[tag].functionUnavailable and not conditions[tag].functionSuspended and conditions[tag].on_unregister then
         conditions[tag].on_unregister(tag)
     end
     if type(array.print)=='function' and not printerSources[array.print] then
@@ -294,7 +298,7 @@ function addon:RegisterCondition(tag, array)
     conditions[tag] = array
     self.conditionRegistryVersion=(self.conditionRegistryVersion or 0)+1
     quarantined[array] = nil
-    if not array.disabled and array.on_register then
+    if not array.disabled and not array.functionUnavailable and array.on_register then
         array.on_register(tag)
     end
     if availabilityChanged then self:RefreshConditionConsumers() end
@@ -302,7 +306,7 @@ end
 
 function addon:UnregisterCondition(tag)
     local wasDisabled=conditions[tag] and conditions[tag].disabled==true
-    if conditions[tag] and not conditions[tag].disabled and conditions[tag].on_unregister then
+    if conditions[tag] and not conditions[tag].disabled and not conditions[tag].functionUnavailable and not conditions[tag].functionSuspended and conditions[tag].on_unregister then
         conditions[tag].on_unregister(tag)
     end
     if conditions[tag]~=nil then self.conditionRegistryVersion=(self.conditionRegistryVersion or 0)+1 end
