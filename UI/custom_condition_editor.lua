@@ -35,7 +35,7 @@ function addon:condition_edit_box(update,key,source,saveAllowed,embedded)
     elseif embedded and embedded.initialize then embedded.initialize(d.model) end
     function d:SetCallback(event,callback) self[event]=callback end
     function d:ShowFooter(shown)
-        for _,button in ipairs({self.apply,self.cancel,self.viewChanges}) do if shown then button:Show() else button:Hide() end end
+        for _,button in ipairs({self.apply,self.cancel,self.viewChanges,self.form.message}) do if shown then button:Show() else button:Hide() end end
     end
     function d:Show() if valid() then self.suspended=nil;self.frame:Show();self:ShowFooter(true);if not self.embedded then addon:RegisterWindowForEscape(self) end end end
     function d:HideForChild() self.suspended=true;self:ShowFooter(false);self.frame:Hide() end
@@ -146,7 +146,7 @@ function addon:condition_edit_box(update,key,source,saveAllowed,embedded)
         if self.ownedHelp and self.ownedHelp.sections==self.ownedHelpSections then self.ownedHelp:Hide() end
         self.ownedPicker=nil;self.ownedHelp=nil;self.ownedHelpSections=nil
         if self.code then pcall(self.code.Release,self.code) end;p:Release();self.frame:Hide()
-        for _,button in ipairs({self.apply,self.cancel,self.viewChanges}) do button:Hide() end
+        for _,button in ipairs({self.apply,self.cancel,self.viewChanges,self.form.message}) do button:Hide() end
         if self.OnRelease then self:OnRelease() end
         addon:SetUIScript(self.frame,'OnUpdate',nil)
         self.OwnerValid=nil;self.codeHistory=nil;self.model=nil;self.expected=nil;self.expectedSource=nil;self.validationInput=nil;self.update=nil;self.embedded=nil;p.builder=nil;p.edits={};p.fields={};p.profile=nil;p.global=nil;p.char=nil
@@ -195,7 +195,7 @@ function addon:condition_edit_box(update,key,source,saveAllowed,embedded)
     addon:SetUIScript(d.undo,'OnClick',function() if valid() and d:Flush() then if #d.model.undo>0 then if d:TravelModel(false) then p:Draw();d:UpdateActions() end else d:TravelCode(false) end end end)
     addon:SetUIScript(d.redo,'OnClick',function() if valid() and d:Flush() then if #d.model.redo>0 then if d:TravelModel(true) then p:Draw();d:UpdateActions() end else d:TravelCode(true) end end end)
     addon:SetUIScript(d.apply,'OnClick',function() if valid() then d:Apply() end end);addon:SetUIScript(d.cancel,'OnClick',function() if valid() then d:Close();if embedded and embedded.discard then embedded.discard() end end end);addon:SetUIScript(d.close,'OnClick',function() if valid() then d:Hide() end end)
-    addon:SetUIScript(d.syntax,'OnClick',function() if not valid() then return end;d.validationRequested=true;if d:Flush() then local ok,why=addon:ValidateCustomConditionSource(d.model.key,d:PendingSource(),d.model.key==d.originalKey and d.expectedSource~=nil);p:Message(ok and L['Syntax checked. No custom code was executed.'] or reason(why)) end end)
+    addon:SetUIScript(d.syntax,'OnClick',function() if not valid() then return end;d.validationRequested=true;if d:Flush() then local ok,why=addon:ValidateCustomConditionSource(d.model.key,d:PendingSource(),d.model.key==d.originalKey and d.expectedSource~=nil);p:Message(ok and L['Syntax checked. No custom code was executed.'] or reason(why),not not ok) end end)
     addon:SetUIScript(d.transfer,'OnClick',function() if valid() and d:Flush() then addon:ShowCustomConditionTransfer(d,update,d.model.key,d:PendingSource()) end end)
     addon:SetUIScript(d.help,'OnClick',function() if valid() then d.ownedHelp=addon:ShowWorkbenchHelp(L['Custom condition'],{
         {title=L['Editing code'],text=L['Each callback keeps its own pending text while switching tabs. Undo and Redo edit that callback buffer. Reset restores its last saved code, or the template for a new condition, and can be undone. The main Apply saves and registers all callback buffers and metadata; Discard drops the whole draft. Leaving with changes offers Apply, Discard or Cancel. Check syntax runs no callbacks.']},
@@ -269,7 +269,7 @@ function addon:condition_edit_box(update,key,source,saveAllowed,embedded)
         d.documentationTop=form.y
         function d:LayoutDocumentation()
             self.documentation:ClearAllPoints();self.documentation:SetPoint('TOPLEFT',0,-self.documentationTop);self.documentation:SetWidth(form.width-30);self.documentation:SetText(addon:CustomConditionDocumentation(self.selected));self.documentation:SetHeight(0)
-            self.compactDocumentation=form.frame:GetHeight()-(self.documentationTop+self.documentation:GetStringHeight()+56+24)<100
+            self.compactDocumentation=form.frame:GetHeight()-(self.documentationTop+self.documentation:GetStringHeight()+56+8)<100
             if self.compactDocumentation then self.documentation:SetText(addon.CustomConditionCallbackDocs[self.selected].description) end
             if embedded then self.help:SetParent(form.child);self.help:ClearAllPoints();self.help:SetPoint('TOPRIGHT',0,-self.documentationTop) end
             local actionTop=self.documentationTop+self.documentation:GetStringHeight()+8
@@ -278,7 +278,7 @@ function addon:condition_edit_box(update,key,source,saveAllowed,embedded)
             local signatureTop=actionTop+26
             self.signature:ClearAllPoints();self.signature:SetPoint('TOPLEFT',0,-signatureTop);self.signature:SetWidth(form.width);self.signature:SetHeight(18)
             local codeTop=signatureTop+22
-            local codeHeight=math.max(60,form.frame:GetHeight()-codeTop-24)
+            local codeHeight=math.max(60,form.frame:GetHeight()-codeTop-8)
             if self.code then self.code.frame:ClearAllPoints();self.code.frame:SetPoint('TOPLEFT',0,-codeTop);self.code.frame:SetSize(form.width,codeHeight) end
             form.y=codeTop+codeHeight;form.child:SetHeight(form.y+12);form.scroll:Hide()
         end
@@ -307,7 +307,12 @@ function addon:condition_edit_box(update,key,source,saveAllowed,embedded)
         local footer=embedded.footer or frame;d.apply:SetParent(footer);d.cancel:SetParent(footer);d.viewChanges:SetParent(footer);d.transfer:Hide()
         d.apply:ClearAllPoints();d.apply:SetPoint('BOTTOMRIGHT',-108,4);d.cancel:ClearAllPoints();d.cancel:SetPoint('BOTTOMRIGHT',-8,4);d.cancel:SetWidth(92);d.cancel:SetText(L['Discard'])
         d.viewChanges:ClearAllPoints();d.viewChanges:SetPoint('RIGHT',d.apply,'LEFT',-6,0)
-    else d.transfer:Show();d.cancel:SetText(L['Cancel']);addon:RegisterWindowForEscape(d) end
+    else
+        d.apply:ClearAllPoints();d.apply:SetPoint('BOTTOMRIGHT',-120,4);d.cancel:ClearAllPoints();d.cancel:SetPoint('BOTTOMRIGHT',-12,4)
+        d.transfer:ClearAllPoints();d.transfer:SetPoint('BOTTOMLEFT',12,4);d.transfer:Show();d.cancel:SetText(L['Cancel']);addon:RegisterWindowForEscape(d)
+    end
+    local footer=embedded and embedded.footer or frame
+    p.message:SetParent(footer);p.message:ClearAllPoints();p.message:SetPoint('RIGHT',d.viewChanges,'LEFT',-8,0);if embedded then p.message:SetPoint('LEFT',footer,'BOTTOMLEFT',embedded.x or 0,16) else p.message:SetPoint('LEFT',d.transfer,'RIGHT',8,0) end;p.message:SetHeight(20);p.message:SetWordWrap(false);p.message:SetJustifyH('LEFT');p.message.actionAnchor=d.viewChanges;p.message:Show()
     frame:Show();d:UpdateActions()
     if resume and resume.schema then d:OpenSchema(d.model.value.fields,d.model.value.fieldOrder,resume.schema) end
     return d,d.owner

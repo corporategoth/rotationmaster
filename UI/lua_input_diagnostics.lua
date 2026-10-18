@@ -34,6 +34,7 @@ function addon:InstallLuaInputDiagnostics(control)
         local detail=''
         if event=='OnCursorChanged' then
             local values={...};local coords={};for i=1,4 do coords[i]=type(values[i])=='number' and string.format('%.2f',values[i]) or '?' end;detail=' rect='..table.concat(coords,',')
+        elseif event=='OnTextChanged' then detail=' user='..tostring((...))
         elseif event=='OnMouseDown' or event=='OnMouseUp' or event=='OnArrowPressed' then
             local value=(...);if type(value)=='string' and value:match('^[A-Za-z]+$') then detail=' key='..value end
         end
@@ -65,6 +66,7 @@ function addon:LuaEditorInputReport()
     lines[#lines+1]='code visible='..read(control.frame,'IsVisible')..' shown='..read(control.frame,'IsShown')..' edit visible='..read(edit,'IsVisible')
     local owner=self.nativeCustomConditionDialog
     lines[#lines+1]='matches source editor='..tostring(owner and not owner.closed and owner.code==control)..' session='..tostring(owner and owner.session or 'none')
+    local layout=control.layoutCounts or {};lines[#lines+1]='layout calls='..tostring(layout.calls or 0)..' editWidthWrites='..tostring(layout.width or 0)..' contentSizeWrites='..tostring(layout.content or 0)
     local counts={};for event,count in pairs(control.inputCounts) do counts[#counts+1]=event..'='..count end;table.sort(counts)
     lines[#lines+1]=table.concat(counts,' ')
     for _,entry in ipairs(control.inputTrace) do lines[#lines+1]=entry end

@@ -60,4 +60,13 @@ test('reentrant scroll range changes keep the latest thumb extent',function()
     bar:UpdateExtent(500,200)
     assert(bar.scrollRange==1800 and bar.pageSize==200 and bar.thumbLength==20,'outer reflow overwrote the latest thumb geometry')
 end)
+test('unchanged scroll extents do not rewrite the native text scroll offset',function()
+    local _,scroll=fixture();local native=scroll.SetVerticalScroll;local writes=0
+    scroll.GetVerticalScroll=function(self) return self.scrollOffset or 0 end
+    scroll.SetVerticalScroll=function(self,value) writes=writes+1;native(self,value) end
+    for i=1,120 do scroll:UpdateWorkbenchScroll() end
+    assert(writes==0,'idle extent checks repeatedly invalidate native scrolling')
+    scroll.workbenchBar:SetValue(100);assert(writes==1 and scroll.scrollOffset==100)
+    for i=1,120 do scroll:UpdateWorkbenchScroll() end;assert(writes==1)
+end)
 finish()

@@ -53,7 +53,7 @@ function addon:CreateWorkbenchLuaEditor(parent,changed,valid,preferred)
         host:Hide()
     end
     local c={frame=CreateFrame('Frame',nil,parent),provider='native',valid=valid,changed=changed}
-    c.scroll=self:CreateWorkbenchScrollFrame(c.frame);c.scroll:SetPoint('TOPLEFT',4,-4);c.edit=CreateFrame('EditBox',nil,c.scroll);c.edit:SetMultiLine(true);c.edit:SetAutoFocus(false);c.edit:EnableMouse(true);c.edit:SetAltArrowKeyMode(false);c.edit:SetBlinkSpeed(.5);c.edit:SetCountInvisibleLetters(false);c.edit:SetTextColor(1,1,1);c.edit:SetJustifyH('LEFT');c.edit:SetJustifyV('TOP');c.edit:SetFontObject('GameFontHighlightSmall');c.edit:SetTextInsets(6,6,4,4);c.edit:SetMaxLetters(0);c.edit:SetPoint('TOPLEFT');c.scroll:SetScrollChild(c.edit)
+    c.scroll=self:CreateWorkbenchScrollFrame(c.frame);c.scroll:SetPoint('TOPLEFT',4,-4);c.content=CreateFrame('Frame',nil,c.scroll);c.content:EnableMouse(false);c.scroll:SetScrollChild(c.content);c.edit=CreateFrame('EditBox',nil,c.content);c.edit:SetMultiLine(true);c.edit:SetAutoFocus(false);c.edit:EnableMouse(true);c.edit:SetAltArrowKeyMode(false);c.edit:SetBlinkSpeed(.5);c.edit:SetCountInvisibleLetters(false);c.edit:SetTextColor(1,1,1);c.edit:SetJustifyH('LEFT');c.edit:SetJustifyV('TOP');c.edit:SetFontObject('GameFontHighlightSmall');c.edit:SetTextInsets(6,6,4,4);c.edit:SetMaxLetters(0);c.edit:SetAllPoints(c.content)
     -- Let the native EditBox own mouse placement and keyboard navigation.
     -- Focusing it from the covering scroll frame resets placement to the end.
     c.scroll:EnableMouse(false)
@@ -65,14 +65,17 @@ function addon:CreateWorkbenchLuaEditor(parent,changed,valid,preferred)
     if c.measure.SetFont then c.measure:SetFont('Interface\\AddOns\\'..addon_name..'\\Fonts\\Inconsolata-Regular.ttf',12,'') end
     function c:Layout()
         if self.layingOut then return end;self.layingOut=true
+        self.layoutCounts=self.layoutCounts or {calls=0,width=0,content=0};self.layoutCounts.calls=self.layoutCounts.calls+1
         -- Native coordinates round through effective UI scale. Rewriting an
         -- almost-identical size reflows EditBox text and can reset its caret.
         local function differs(current,wanted) return math.abs(current-wanted)>.1 end
         local scrollWidth=math.max(1,self.frame:GetWidth()-8);local width=math.max(1,scrollWidth-24);local height=math.max(1,self.frame:GetHeight()-8)
         if differs(self.scroll:GetWidth(),scrollWidth) or differs(self.scroll:GetHeight(),height) then self.scroll:SetSize(scrollWidth,height) end
-        if differs(self.edit:GetWidth(),width) then self.edit:SetWidth(width) end
+        if differs(self.edit:GetWidth(),width) then self.layoutCounts.width=self.layoutCounts.width+1;self.edit:SetWidth(width) end
         self.measure:SetWidth(math.max(1,width-12));self.measure:SetText(self:GetText());local editHeight=math.max(height,self.measure:GetStringHeight()+16)
-        if differs(self.edit:GetHeight(),editHeight) then self.edit:SetHeight(editHeight) end
+        -- Multiline EditBoxes own their text height. Size a backing frame
+        -- and anchor the edit to it instead of fighting native text layout.
+        if differs(self.content:GetWidth(),width) or differs(self.content:GetHeight(),editHeight) then self.layoutCounts.content=self.layoutCounts.content+1;self.content:SetSize(width,editHeight) end
         self.scroll:UpdateWorkbenchScroll();self.layingOut=nil
     end
     ---@return string
@@ -86,7 +89,7 @@ function addon:CreateWorkbenchLuaEditor(parent,changed,valid,preferred)
     function c:SetChanged(callback) self.changed=callback end
     function c:SetCloseHandler(callback) self.closeRequested=callback end
     function c:Acquire(callback,ownerValid)
-        self.released=false;self.changed=callback;self.valid=ownerValid
+        self.released=false;self.changed=callback;self.valid=ownerValid;self.layoutCounts=nil
         if self.ResetInputTrace then addon.luaInputEditor=self;self:ResetInputTrace() end
         if self.syntax then pcall(self.syntax.enable,self.edit,self.syntaxColors,4) end
     end

@@ -279,7 +279,10 @@ function addon:CreateWorkbenchScrollFrame(parent)
     local scroll=CreateFrame('ScrollFrame',nil,parent)
     local bar=self:CreateWorkbenchScrollBar(scroll,'VERTICAL');scroll.workbenchBar=bar
     bar:SetPoint('TOPLEFT',scroll,'TOPRIGHT',4,-10);bar:SetPoint('BOTTOMLEFT',scroll,'BOTTOMRIGHT',4,10)
-    addon:SetUIScript(bar,'OnValueChanged',function(_,value) scroll:SetVerticalScroll(value) end)
+    addon:SetUIScript(bar,'OnValueChanged',function(_,value)
+        local current=scroll.GetVerticalScroll and scroll:GetVerticalScroll() or scroll.lastAppliedOffset
+        if current==nil or math.abs(current-value)>.001 then scroll.lastAppliedOffset=value;scroll:SetVerticalScroll(value) end
+    end)
     function scroll:UpdateWorkbenchScroll()
         local child=self:GetScrollChild();if not child then return end
         bar:UpdateExtent(child:GetHeight(),self:GetHeight())

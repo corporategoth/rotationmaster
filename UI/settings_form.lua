@@ -24,7 +24,7 @@ function addon:CreateSettingsForm(parent)
         self.counts[kind]=(self.counts[kind] or 0)+1;local i=self.counts[kind];self.pool[kind]=self.pool[kind] or {}
         local c=self.pool[kind][i];if not c then c=build();self.pool[kind][i]=c end;if c.SetParent then c:SetParent(self.surface or self.child) end;c:Show();return c
     end
-    function p:Message(text) self.message:SetText(text or '') end
+    function p:Message(text,success) self.message:SetText(text or '');self.message:SetTextColor(success and .35 or 1,success and .85 or .5,success and .45 or .3) end
     function p:Row(caption,height)
         local y=self.y;self.y=y+(height or 30)
         if caption and caption~='' then

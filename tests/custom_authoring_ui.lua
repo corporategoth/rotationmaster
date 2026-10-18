@@ -332,7 +332,7 @@ test('source editing fits the supported minimum pane for every callback and sche
     local f,a=fixture(true);local source=a:CopySettingsData(a.empty_condition);source.description='Inline';source.fields={one='number',two='string',three='boolean'};a.db.global.custom_conditions.INLINE=source;a.conditionDefinitions.INLINE={description='Inline',fields=source.fields}
     local host=f.env.CreateFrame('Frame');host:SetSize(776,402);local p=a:OpenNativeSettings(host,'Conditions');local d=p.inlineCondition
     for _,advanced in ipairs({false,true}) do d.advancedSchema=advanced;d.form:Draw()
-        for name in pairs(a.CustomConditionCallbacks) do d:SelectFunction(name);assert(-d.code.frame.point[3]+d.code.frame:GetHeight()<=d.body:GetHeight()-20,'minimum pane clips '..name);assert(d.code.frame:GetHeight()>=60) end
+        for name in pairs(a.CustomConditionCallbacks) do d:SelectFunction(name);assert(-d.code.frame.point[3]+d.code.frame:GetHeight()<=d.body:GetHeight()-4,'minimum pane clips '..name);assert(d.code.frame:GetHeight()>=60) end
     end
 end)
 test('disabled invalid schemas and stale field order remain open for repair without source loss',function()
@@ -371,5 +371,30 @@ test('deep legacy schemas stay repairable with positive controls and overlong na
     local f,a=fixture();local d=a:condition_edit_box(function() end);local nested='number';for i=1,36 do nested={field=nested} end;d.model.value.fields=nested;d.form:Draw();d.form.fields.schemaGraph:Click();local g=d.schemaEditor
     local count=0;for _,card in pairs(g.cards) do count=count+1;assert(card.type:GetWidth()>=80 and card.name:GetWidth()>=80 and card.frame:GetWidth()>=300,'legacy nesting made controls unusable') end;assert(count==36)
     g.cancel:Click();d.model.value.fields={[string.rep('x',65)]='number'};d.form:Draw();d.form.fields.schemaGraph:Click();assert(d.schemaEditor.cards['1'].frame.rmInvalid,'overlong legacy field is unmarked')
+end)
+test('native multiline input owns text height without a forced-height feedback loop',function()
+    local f,a=fixture();local code=a:CreateWorkbenchLuaEditor(f.env.UIParent,function() end,function() return true end,'plain');code.frame:SetSize(600,300);code:SetText('return true')
+    local edit=code.edit;local writes=0;edit.SetHeight=function() writes=writes+1 end
+    edit.GetHeight=function() return 24 end -- Native multiline text owns its natural text height.
+    edit:SetCursorPosition(3);edit:SetFocus();for i=1,120 do code:Layout() end
+    assert(writes==0 and edit:GetCursorPosition()==3 and edit:HasFocus(),'viewport sizing repeatedly overrides native multiline geometry')
+    assert(code.content and code.scroll:GetScrollChild()==code.content and edit:GetParent()==code.content,'text is not anchored within a stable scroll child')
+end)
+test('syntax success is green and shares the footer action row',function()
+    local f,a=fixture(true);local source=a:CopySettingsData(a.empty_condition);source.description='Inline';a.db.global.custom_conditions.INLINE=source;a.conditionDefinitions.INLINE={description='Inline',fields={}}
+    local host=f.env.CreateFrame('Frame');host:SetSize(1100,700);local p=a:OpenNativeSettings(host,'Conditions');local d=p.inlineCondition
+    d.syntax:Click();local message=d.form.message;assert(message.textColor[2]>message.textColor[1],'successful syntax check has an error color')
+    assert(message:GetParent()==d.apply:GetParent() and message.actionAnchor==d.viewChanges,'syntax message occupies a separate editor row')
+    d.code:SetText('return )');d.syntax:Click();assert(message.textColor[1]>message.textColor[2],'syntax failures no longer use the error color')
+    d.form.fields.schemaGraph:Click();assert(not message:IsShown(),'source notification remains visible under schema child');d.schemaEditor.cancel:Click();assert(message:IsShown())
+end)
+test('standalone source footer reserves space for transfer and stays below code',function()
+    local f,a=fixture();local d=a:condition_edit_box(function() end)
+    local bottom=d.frame:GetHeight()-34+d.code.frame.point[3]-d.code.frame:GetHeight()
+    assert(bottom>=d.apply.point[3]+d.apply:GetHeight(),'standalone footer overlaps code')
+end)
+test('standalone syntax status reserves transfer action width',function()
+    local f,a=fixture();local d=a:condition_edit_box(function() end)
+    assert(d.transfer.point[2]==12 and d.form.message.point[2]==d.transfer and d.form.message.point[3]=='RIGHT','syntax status spans the transfer button')
 end)
 finish()
