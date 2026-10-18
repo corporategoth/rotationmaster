@@ -601,4 +601,25 @@ test('announcement help follows real visible fields and documents all offered ch
         p:Release()
     end end
 end)
+test('item-set help covers every real native field and collection action',function()
+    local f,parent=fixture();local a=f.addon;a.db.profile.itemsets={s={name='Supplies',items={1,2}}};a.db.global.itemsets={}
+    local p=a:CreateSettingsForm(parent);local documented={};for _,entry in ipairs(a:GetDocument_layout_itemsets_options_help()) do documented[entry.id]=true end
+    for _,method in ipairs({'Edit','Check','Item','Slider','Choice','Sound','Button'}) do
+        local original=p[method]
+        p[method]=function(self,key,...)
+            local id=key=='new_item' or key:match('^item%d+$')
+            id=id and 'item' or key=='add_item' and 'add' or key=='new_name' and 'name' or key
+            assert(documented[id],'item-set control lacks help: '..key)
+            return original(self,key,...)
+        end
+    end
+    a:OpenNativeSettings(parent,'ItemSets',p)
+    for key,id in pairs({binding='binding',reset='reset',delete='delete',new_collection='collections',duplicate='collections',transfer='collections',compare='collections'}) do assert(p.fields[key] and documented[id],'action lacks help: '..key) end
+    p.fields.new_collection:Click();local input=assert(p.fields.new_name);input:SetText('Named empty set');input.scripts.OnTextChanged(input,true);p.fields.apply:Click()
+    local created=a.db.profile.itemsets[p.selection];assert(created and created.name=='Named empty set' and #created.items==0 and not p:IsSettingsDraftDirty(),'first Apply did not save creation')
+    p.fields.cancel:Click();assert(a.db.profile.itemsets[p.selection]==created,'later Cancel removed saved creation')
+    local nameHelp;for _,entry in ipairs(a:GetDocument_layout_itemsets_options_help()) do if entry.id=='name' then nameHelp=entry.text end end
+    assert(nameHelp and nameHelp:find('first Apply saves',1,true),'help does not explain the creation save')
+    p:Release()
+end)
 finish()
