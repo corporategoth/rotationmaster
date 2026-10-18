@@ -11,6 +11,7 @@ local function fixture(modern, absentThreat)
     env._G = env
     env.WOW_PROJECT_ID, env.WOW_PROJECT_MAINLINE, env.WOW_PROJECT_CLASSIC = 5, 1, 2
     env.LE_EXPANSION_LEVEL_CURRENT = 1
+    env.NUM_BAG_SLOTS=4
     env.color = setmetatable({CYAN = '', RESET = '', RED = ''},{__index=function() return '' end})
     env.OFF = 'Off'
     env.GetTime = function() return 0 end
@@ -58,7 +59,7 @@ local function fixture(modern, absentThreat)
         chunk('rotationmaster', addon)
     end
     env.WOW_PROJECT_BURNING_CRUSADE_CLASSIC=5
-    load('Platform/client.lua');load('Platform/items.lua');load('Platform/specializations.lua');load('Core/action_policy.lua')
+    load('Platform/client.lua');load('Platform/items.lua');load('Platform/inventory.lua');load('Platform/specializations.lua');load('Core/action_policy.lua');load('Core/inventory.lua')
     load('Data/plain.lua');load('Data/tags.lua');load('Data/rotation_tree.lua');load('Data/validation.lua');load('Core/rotation_sequence.lua');load('Core/rotation_selection.lua')
     return env, addon, load
 end
@@ -964,6 +965,31 @@ test('real item-set helpers update and unbind bars through native-only item APIs
     assert(a:UpdateBoundButton('s') and actions[1]==22 and actions[2]==22,'real native resolver did not normalize bound slots')
     actions[2]=99;a:UnbindItemSet('s')
     assert(actions[1]==nil and actions[2]==99 and actions[3]==99 and a.db.char.bindings.s==nil)
+end)
+test('runtime bag snapshots include declared equipped bags and retain legacy slots plus accurate locations',function()
+    local env,a,load=fixture();env.NUM_TOTAL_EQUIPPED_BAG_SLOTS=5;env.NUM_BAG_SLOTS=4
+    env.C_Container={GetContainerNumSlots=function(bag) return (bag==0 or bag==5) and 1 or 0 end,
+        GetContainerItemInfo=function(bag) return {itemID=5512,stackCount=bag==0 and 2 or 4} end}
+    env.C_Item={GetItemSpell=function() return 'Healthstone',234 end}
+    load('main.lua');initialize(a);a:UpdateBagContents(nil)
+    local item=a.bagContents[5512];assert(item.count==6,'declared fifth carried bag was omitted')
+    assert(item.spell=='Healthstone' and #item.slots==2 and item.slots[1]==1 and item.slots[2]==1)
+    assert(#item.locations==2 and item.locations[1].bag==0 and item.locations[2].bag==5 and item.locations[2].slot==1)
+    assert(a.bagContentsUnavailable==nil)
+end)
+test('runtime bag snapshots discard incomplete observations without publishing partial or stale counts and recover',function()
+    local env,a,load=fixture();env.NUM_BAG_SLOTS=4;local secret={}
+    env.canaccessvalue=function(value) return not rawequal(value,secret) end
+    local bad;env.C_Container={GetContainerNumSlots=function(bag) return bag==0 and 2 or 0 end,
+        GetContainerItemInfo=function(_,slot) if slot==1 then return {itemID=5512,stackCount=2} end;if bad=='error' then error('slot not readable') end;return bad end}
+    load('main.lua');initialize(a)
+    for _,record in ipairs({secret,{}, {itemID=5512,stackCount=secret},'error'}) do
+        a.bagContents={[99]={count=8}};bad=record
+        local ok,ready,reason=pcall(a.UpdateBagContents,a,nil)
+        assert(ok and ready==false and reason and a.bagContentsUnavailable==reason,'failed snapshot escaped or lost its unavailable reason')
+        assert(next(a.bagContents)==nil,'failed scan published partial or stale inventory')
+    end
+    bad=nil;assert(a:UpdateBagContents(nil)==true and a.bagContents[5512].count==2 and a.bagContentsUnavailable==nil)
 end)
 print(string.format('%d passed, %d failed', passed, failures))
 os.exit(failures == 0 and 0 or 1)

@@ -1276,29 +1276,6 @@ addon.PLAYER_CONTROL_GAINED = wrapEvent(function(self)
     self:EvaluateNextAction()
 end)
 
-function addon:UpdateBagContents(cache)
-    self.bagContents = {}
-    for i=0,4 do
-        for j=1, C_Container.GetContainerNumSlots(i) do
-            local item = getCached(cache, C_Container.GetContainerItemInfo, i, j)
-            if item and item.itemID then
-                local itemId, qty = item.itemID, item.stackCount
-                if self.bagContents[itemId] == nil then
-                    local use=self.Platform:GetItemUseSpell(itemId)
-                    self.bagContents[itemId] = {
-                        count = qty,
-                        spell = use and use.name,
-                        slots = { j }
-                    }
-                else
-                    self.bagContents[itemId].count = self.bagContents[itemId].count + qty
-                    table.insert(self.bagContents[itemId].slots, j)
-                end
-            end
-        end
-    end
-end
-
 addon.PLAYER_CONTROL_LOST = wrapEvent(function(self)
     self:verbose("Player lost control.")
     self:DisableRotationTimer()

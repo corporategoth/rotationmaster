@@ -9,7 +9,7 @@ local function query(fn,...)
 end
 -- A detached bag-only snapshot. GetItemCount can also include worn items;
 -- bank slots are deliberately excluded from the Have Item In Bags predicate.
-function platform:GetBagItemCounts()
+local function scan(self,withSlots)
     local last=NUM_TOTAL_EQUIPPED_BAG_SLOTS
     if not self:CanReadValue(last) then return nil,'restricted-value' end
     local totalProvided=last~=nil
@@ -56,10 +56,20 @@ function platform:GetBagItemCounts()
             if not self:CanReadValue(id) or not self:CanReadValue(count) then return nil,'restricted-value' end
             if present then
                 if not finite(id) or id<=0 or id%1~=0 or not finite(count) or count<1 or count%1~=0 then return nil,'invalid-api-result' end
-                result[id]=(result[id] or 0)+count
-                if not finite(result[id]) then return nil,'invalid-api-result' end
+                local total
+                if withSlots then
+                    local entry=result[id] or {count=0,slots={}};result[id]=entry
+                    entry.count=entry.count+count;total=entry.count
+                    entry.slots[#entry.slots+1]={bag=bag,slot=slot}
+                else
+                    result[id]=(result[id] or 0)+count;total=result[id]
+                end
+                if not finite(total) then return nil,'invalid-api-result' end
             end
         end
     end
     return result
 end
+
+function platform:GetBagItemCounts() return scan(self,false) end
+function platform:GetBagSnapshot() return scan(self,true) end
