@@ -551,6 +551,7 @@ end)
 
 local function persistentFixture(saved,folder)
     local env,addon=fixture(true,true)
+    env.securecallfunction=function(fn,...) return fn(...) end
     env.UnitFactionGroup=function() return 'Horde' end
     env.GetLocale=function() return 'enUS' end
     env.UnitClass=function() return 'Shaman','SHAMAN' end
@@ -602,6 +603,33 @@ local function savedVariablesCopy(value)
     for key,entry in pairs(value) do result[savedVariablesCopy(key)]=savedVariablesCopy(entry) end
     return result
 end
+
+test('real AceDB preserves customized condition lists across reload and seeds only new or reset profiles',function()
+    local env,a,scripts=persistentFixture()
+    local function contains(list,tag) for _,value in ipairs(list) do if value==tag then return true end end end
+    local function character(profile) for _,group in ipairs(profile.condition_groups) do if group.id=='b8136123-2bda-4230-a77a-89ea2aed3a1a' then return group end end end
+    assert(contains(a.db.profile.switch_conditions,'PRIMARY_TALENT_TREE') and contains(character(a.db.profile).conditions,'TALENT_TREE_POINTS'),'new profile lacks tree conditions')
+    -- Model a pre-feature profile with complete, deliberately reordered lists.
+    local profile=a.db.profile
+    for _,list in ipairs({profile.switch_conditions,character(profile).conditions}) do
+        for i=#list,1,-1 do if list[i]=='PRIMARY_TALENT_TREE' or list[i]=='TALENT_TREE_POINTS' then table.remove(list,i) end end
+        list[1],list[2]=list[2],list[1]
+    end
+    profile.condition_groups[1],profile.condition_groups[2]=profile.condition_groups[2],profile.condition_groups[1]
+    local expectedSwitch=table.concat(profile.switch_conditions,',');local expectedCharacter=table.concat(character(profile).conditions,',')
+    scripts.OnEvent(nil,'PLAYER_LOGOUT')
+    local saved={RotationMasterDB=savedVariablesCopy(env.RotationMasterDB)}
+    local nextEnv,b,nextScripts=persistentFixture(saved)
+    assert(table.concat(b.db.profile.switch_conditions,',')==expectedSwitch,'reload appended tree conditions to customized switch list')
+    assert(table.concat(character(b.db.profile).conditions,',')==expectedCharacter,'reload modified reordered Character list')
+    assert(not contains(b.db.profile.condition_groups[2].conditions,'PRIMARY_TALENT_TREE'),'tree tags were merged into the category at the old numeric position')
+    b.db:SetProfile('New tree profile');assert(contains(b.db.profile.switch_conditions,'PRIMARY_TALENT_TREE'))
+    b.db:CopyProfile('Default');assert(not contains(b.db.profile.switch_conditions,'PRIMARY_TALENT_TREE'),'copying an existing profile added new conditions')
+    b.db:ResetProfile();assert(contains(b.db.profile.switch_conditions,'PRIMARY_TALENT_TREE') and contains(character(b.db.profile).conditions,'TALENT_TREE_POINTS'))
+    nextScripts.OnEvent(nil,'PLAYER_LOGOUT')
+    local _,c=persistentFixture({RotationMasterDB=savedVariablesCopy(nextEnv.RotationMasterDB)})
+    assert(contains(c.db.profile.switch_conditions,'PRIMARY_TALENT_TREE'),'new-profile conditions were pruned or lost on reload')
+end)
 
 test('real AceDB clones edits and lineage survive saving only TOC-declared globals across folder casing',function()
     local env,a,scripts=persistentFixture()

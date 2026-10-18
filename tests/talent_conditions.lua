@@ -85,4 +85,50 @@ test('Mists picker does not silently convert historical references and writes gr
     assert(f.addon.conditionDefinitions.TALENT.valid(2,value))
     f=fixture(1,12);value={type='TALENT',value=1};assert(fields(f,value) and value.value==1 and value.layout==nil)
 end)
+test('Classic tree point and primary-tree predicates use actual public points without spec-slot guesses',function()
+    local f=fixture();local a=f.addon;assert(a.conditionDefinitions.PRIMARY_TALENT_TREE,'primary-tree condition missing')
+    local points={5,20,0};f.env.C_SpecializationInfo.GetSpecializationInfo=function(tree) return tree,'Tree '..tree,'',tree,nil,nil,points[tree] end
+    local primary={type='PRIMARY_TALENT_TREE',tree=2};local spent={type='TALENT_TREE_POINTS',tree=2,operator='GREATERTHAN',value=10}
+    assert(a:evaluateCondition(primary) and a:evaluateCondition(spent));primary.tree=1;assert(not a:evaluateCondition(primary))
+    points[1]=20;assert(a:evaluateConditionResult({type='NOT',value=primary}).status=='unavailable')
+    points={0,0,0};assert(a:evaluateConditionResult({type='NOT',value=primary}).status=='unavailable')
+    spent.operator='EQUALS';spent.value=0;assert(a:evaluateCondition(spent),'explicit zero points comparison is unavailable')
+    local secret={};f.env.canaccessvalue=function(value) return not rawequal(value,secret) end;points[2]=secret
+    assert(a:evaluateConditionResult({type='NOT',value=spent}).status=='unavailable')
+    for _,client in ipairs({{19,4},{1,12},{18,12}}) do local other=fixture(client[1],client[2]);assert(other.addon:evaluateConditionResult({type='NOT',value=primary}).status=='unavailable') end
+end)
+test('primary tree cache is per evaluation and its native chooser preserves references while viewing',function()
+    local f=fixture();local a=f.addon;local points={5,20,0};local calls=0
+    f.env.C_SpecializationInfo.GetSpecializationInfo=function(index) calls=calls+1;return index,'Tree '..index,'',index,nil,nil,points[index] end
+    local condition={type='PRIMARY_TALENT_TREE',tree=2}
+    assert(a:evaluateCondition({type='AND',value={condition,{type='PRIMARY_TALENT_TREE',tree=2}}}) and calls==3,'primary tree sampled more than once within one evaluation')
+    points[1]=30;assert(not a:evaluateCondition(condition),'primary-tree cache concealed changed points')
+    local top,parent=f.widget('Frame'),f.widget('Group');parent:SetUserData('top',top);top:SetUserData('root',condition);top:SetUserData('funcs',{print=function() return 'Updated' end})
+    a.conditionDefinitions.PRIMARY_TALENT_TREE.widget(parent,0,condition)
+    local picker=parent.children[1];picker.configure();assert(picker.type=='RM-Selector' and picker:GetValue()==2 and condition.tree==2)
+    picker:SetValue(1);assert(condition.tree==2,'view state mutated the authored tree')
+    picker.callbacks.OnValueChanged(picker,nil,1);assert(condition.tree==1 and top.statusText=='Updated')
+    local other=fixture(1,12);local root={type='PRIMARY_TALENT_TREE',tree=2};top,parent=other.widget('Frame'),other.widget('Group');parent:SetUserData('top',top);top:SetUserData('root',root);top:SetUserData('funcs',{print=function() return '' end})
+    other.addon.conditionDefinitions.PRIMARY_TALENT_TREE.widget(parent,0,root);assert(root.tree==2 and parent.children[2].disabled,'unsupported view converted or enabled the reference')
+end)
+test('missing authored talent trees stay unavailable under NOT rather than matching another tree',function()
+    local f=fixture();local a=f.addon
+    f.env.C_SpecializationInfo.GetSpecializationInfo=function(index)
+        if index>3 then return end
+        return index,'Tree '..index,'',index,nil,nil,index==2 and 20 or 0
+    end
+    assert(a:evaluateCondition({type='NOT',value={type='PRIMARY_TALENT_TREE',tree=1}}),'existing non-primary tree should be an ordinary mismatch')
+    for _,condition in ipairs({{type='PRIMARY_TALENT_TREE',tree=16},{type='TALENT_TREE_POINTS',tree=16,operator='EQUALS',value=0}}) do
+        assert(a:evaluateConditionResult({type='NOT',value=condition}).status=='unavailable','absent authored tree became true under NOT: '..condition.type)
+    end
+    f.env.GetNumTalentTabs=function() return 0 end
+    assert(a:evaluateConditionResult({type='NOT',value={type='PRIMARY_TALENT_TREE',tree=1}}).status=='unavailable')
+end)
+test('tree-switch schemas report required fields and carry portable references without class or spec assumptions',function()
+    local f=fixture();local data=dofile('tests/fixtures/rotation_data.lua')();local options={conditions=f.addon.conditionDefinitions}
+    for _,condition in ipairs({{type='PRIMARY_TALENT_TREE',tree=2},{type='TALENT_TREE_POINTS',tree=2,operator='EQUALS',value=0}}) do
+        local body={switch=condition,rotation={},cooldowns={}};local result=data.ValidateBody(body,options);assert(result.valid and result.supported)
+        condition.tree=nil;assert(not data.ValidateBody(body,options).valid,'missing talent tree accepted')
+    end
+end)
 finish()

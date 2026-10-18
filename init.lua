@@ -535,7 +535,25 @@ function addon:augmentDefaults(defaults)
     defaults.profile.version = PROFILE_VERSION
 end
 
+-- Keep indexed AceDB defaults stable: extending them recursively fills numeric
+-- holes in existing customized/reordered lists. Seed new predicates only when
+-- a profile is created or explicitly reset; copying a profile keeps its lists.
+function addon:InitializeTalentTreeConditions(_,db)
+    local profile=db.profile
+    local function append(list)
+        for _,tag in ipairs({'TALENT_TREE_POINTS','PRIMARY_TALENT_TREE'}) do
+            if not addon.isin(list,tag) then list[#list+1]=tag end
+        end
+    end
+    append(profile.switch_conditions)
+    for _,category in ipairs(profile.condition_groups) do
+        if category.id=='b8136123-2bda-4230-a77a-89ea2aed3a1a' then append(category.conditions);break end
+    end
+end
+
 function addon:init()
+    self.db.RegisterCallback(self,'OnNewProfile','InitializeTalentTreeConditions')
+    self.db.RegisterCallback(self,'OnProfileReset','InitializeTalentTreeConditions')
     moveProfileItems()
 
     for k,v in pairs(default_itemsets) do

@@ -71,4 +71,18 @@ test('Mists grid uses native selected state and correct final columns while tree
         f=fixture(client[1],client[2]);assert(f.addon.Platform:GetTreeTalentInfo(1,1)==nil and f.addon.Platform:GetGridTalentInfo(1)==nil)
     end
 end)
+test('primary Classic tree requires one positive unique maximum and complete readable metadata',function()
+    local f=fixture();local p=f.addon.Platform;assert(p.GetPrimaryTalentTree,'primary-tree adapter missing')
+    local points={5,20,0};f.env.GetNumTalentTabs=function() return 3 end
+    f.env.GetTalentTabInfo=function(tree,_,_,group) assert(group==nil or group==2);return 'Tree '..tree,tree,points[tree] end
+    local result=assert(p:GetPrimaryTalentTree());assert(result.index==2 and result.pointsSpent==20 and result.name=='Tree 2')
+    assert(p:GetPrimaryTalentTree(2).index==2)
+    points[1]=20;assert(not p:GetPrimaryTalentTree(),'equal maxima invent a primary tree')
+    points={0,0,0};assert(not p:GetPrimaryTalentTree(),'unspent points invent a primary tree')
+    points={5,20,nil};assert(not p:GetPrimaryTalentTree(),'missing another tree can hide the true primary')
+    local secret={};f.env.canaccessvalue=function(value) return not rawequal(value,secret) end;points={5,20,secret};assert(not p:GetPrimaryTalentTree())
+    points={5,20,0};f.env.GetTalentTabInfo=function() error('unavailable') end;assert(not p:GetPrimaryTalentTree())
+    assert(not p:GetPrimaryTalentTree(0) and not p:GetPrimaryTalentTree(5))
+    for _,client in ipairs({{19,4},{1,12},{18,12}}) do f=fixture(client[1],client[2]);assert(not f.addon.Platform:GetPrimaryTalentTree()) end
+end)
 finish()

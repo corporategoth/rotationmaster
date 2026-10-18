@@ -139,3 +139,62 @@ addon:RegisterCondition("TALENT",{
         frame:AddChild(addon.help_funcs.CreateText(L["Classic conditions compare points spent in a tree talent. Mists selections use six tiers with three choices. Historical references from another talent system remain unavailable and are never automatically converted."]))
     end,
 })
+
+local function treeName(value,spec)
+    local tree=integer(value.tree,1,16) and platform:GetTalentTreeInfo(value.tree,group(spec))
+    return tree and tree.name or value.tree and string.format(L['Talent tree %s'],tostring(value.tree)) or L['<talent tree>']
+end
+local function treePicker(parent,spec,value,update)
+    local choices,order={},{}
+    local count=platform:GetTalentTreeCount()
+    for index=1,count or 0 do local tree=platform:GetTalentTreeInfo(index,group(spec));if tree then choices[index]=tree.name;order[#order+1]=index end end
+    if not count then text(parent,L['This client does not expose a Classic talent-tree layout. The saved tree reference is preserved.']) end
+    local picker=dropdown(parent,L['Talent tree'],function(selected) value.tree=selected;update() end)
+    picker:SetDisabled(#order==0 or value.disabled==true)
+    picker.configure=function() picker:SetList(choices,order);picker:SetValue(value.tree) end
+end
+local function treeExists(value,cache)
+    local count,reason=addon.getCached(cache,platform.GetTalentTreeCount,platform)
+    if count==nil then return nil,reason end
+    if value.tree>count then return nil,'talent-tree-unavailable' end
+    return true
+end
+addon:RegisterCondition('TALENT_TREE_POINTS',{
+    description=L['Talent Tree Points'],icon='Interface\\Icons\\Inv_misc_book_11',requiredFields={'tree','operator','value'},
+    fields={tree='number',operator='string',value='number'},
+    valid=function(_,value) return integer(value.tree,1,16) and addon.isin(addon.operators,value.operator) and integer(value.value,0,512) end,
+    evaluate=function(value,cache)
+        local exists,why=treeExists(value,cache);if not exists then return nil,why end
+        local tree,reason=addon.getCached(cache,platform.GetTalentTreeInfo,platform,value.tree)
+        if not tree then return nil,reason end
+        if not integer(tree.pointsSpent,0,512) then return nil,'talent-points-unavailable' end
+        return addon.compare(value.operator,tree.pointsSpent,value.value)
+    end,
+    print=function(spec,value) return addon.compareString(value.operator,string.format(L['points spent in %s'],treeName(value,spec)),addon.nullable(value.value)) end,
+    widget=function(parent,spec,value)
+        local top=parent:GetUserData('top');local function update() top:SetStatusText(top:GetUserData('funcs'):print(top:GetUserData('root'),spec)) end
+        treePicker(parent,spec,value,update);parent:AddChild(addon:Widget_OperatorWidget(value,L['Points'],update))
+    end,
+    help=function(frame)
+        frame:AddChild(addon.help_funcs.CreateText(L['Talent tree selects the Classic tree whose spent points are compared. Public points are read again on the next evaluation; missing or restricted points are unavailable, including under NOT. Grids and trait trees are unsupported.']))
+        frame:AddChild(addon.help_funcs.Gap());addon.layout_condition_operatorwidget_help(frame,L['Talent Tree Points'],L['Points'],L['Compare whole points spent from zero to 512. An explicit comparison with zero can describe an unspent tree.'])
+    end,
+})
+addon:RegisterCondition('PRIMARY_TALENT_TREE',{
+    description=L['Primary Talent Tree'],icon='Interface\\Icons\\Inv_misc_book_11',requiredFields={'tree'},fields={tree='number'},
+    valid=function(_,value) return integer(value.tree,1,16) end,
+    evaluate=function(value,cache)
+        local exists,why=treeExists(value,cache);if not exists then return nil,why end
+        local primary,reason=addon.getCached(cache,platform.GetPrimaryTalentTree,platform)
+        if not primary then return nil,reason end
+        return primary.index==value.tree
+    end,
+    print=function(spec,value) return string.format(L['your primary talent tree is %s'],treeName(value,spec)) end,
+    widget=function(parent,spec,value)
+        local top=parent:GetUserData('top');treePicker(parent,spec,value,function() top:SetStatusText(top:GetUserData('funcs'):print(top:GetUserData('root'),spec)) end)
+    end,
+    help=function(frame)
+        frame:AddChild(addon.help_funcs.CreateText(L['Talent tree selects the unique Classic tree with the most positive spent points. Equal maxima, no spent points, missing records and restricted points are unavailable, including under NOT.']))
+        frame:AddChild(addon.help_funcs.Gap());frame:AddChild(addon.help_funcs.CreateText(L['The primary tree is derived from readable points, not the saved rotation slot. Hybrid builds may need tree-point or individual-talent conditions instead; the primary tree does not assign a tank or healer role. Grids and trait trees are unsupported.']))
+    end,
+})

@@ -63,6 +63,22 @@ function platform:GetTalentTreeInfo(tree,group)
     if type(first)=="number" then return treeMetadata(second,fourth,fifth) end
     return nil,"talent-data-unavailable"
 end
+function platform:GetPrimaryTalentTree(group)
+    if not groupValid(group) then return nil,'invalid-talent-query' end
+    local count,reason=self:GetTalentTreeCount();if count==nil then return nil,reason end
+    local best,maximum,tied=nil,0,false
+    for index=1,count do
+        local info,why=self:GetTalentTreeInfo(index,group)
+        if not info then return nil,why end
+        if not integer(info.pointsSpent,0,512) then return nil,'talent-points-unavailable' end
+        if info.pointsSpent>maximum then best=info;best.index=index;maximum=info.pointsSpent;tied=false
+        elseif info.pointsSpent==maximum and maximum>0 then tied=true end
+    end
+    if maximum==0 then return nil,'no-talents-spent' end
+    if tied then return nil,'ambiguous-primary-talent-tree' end
+    return best
+end
+
 local function identity(data)
     if not platform:CanReadValue(data) then return nil,"restricted-value" end
     if type(data)~="table" then return nil,"talent-data-unavailable" end

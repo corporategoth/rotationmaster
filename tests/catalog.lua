@@ -11,6 +11,8 @@ for _,case in ipairs(inventory.branches) do
         f.load('init.lua')
         local defaults={char={},global={},profile={}}
         f.addon:augmentDefaults(defaults)
+        -- Creation additions are deliberately outside recursive AceDB defaults.
+        f.addon:InitializeTalentTreeConditions(nil,{profile=defaults.profile})
         local categories={}
         for _,group in ipairs(defaults.profile.condition_groups) do
             for _,tag in ipairs(group.conditions) do categories[tag]=true end

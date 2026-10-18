@@ -1532,3 +1532,16 @@ L["Invalid switch priority for %s:%s; explicit repair resets it to zero."] = tru
 L["Match all ranks"] = true
 L["%s (any rank)"] = true
 L["For a numeric spell selection, also recognize auras with the same readable localized spell name. Exact IDs remain the default. Spell names already match by name. Unavailable metadata or restricted aura identity stays unavailable, including under NOT. Different spells sharing a name can match; use exact IDs when that distinction matters."] = true
+
+-- Classic tree selection for adaptive rotations.
+L["Talent tree %s"] = true
+L["This client does not expose a Classic talent-tree layout. The saved tree reference is preserved."] = true
+L["Talent tree"] = true
+L["Talent Tree Points"] = true
+L["points spent in %s"] = true
+L["Talent tree selects the Classic tree whose spent points are compared. Public points are read again on the next evaluation; missing or restricted points are unavailable, including under NOT. Grids and trait trees are unsupported."] = true
+L["Compare whole points spent from zero to 512. An explicit comparison with zero can describe an unspent tree."] = true
+L["Primary Talent Tree"] = true
+L["your primary talent tree is %s"] = true
+L["Talent tree selects the unique Classic tree with the most positive spent points. Equal maxima, no spent points, missing records and restricted points are unavailable, including under NOT."] = true
+L["The primary tree is derived from readable points, not the saved rotation slot. Hybrid builds may need tree-point or individual-talent conditions instead; the primary tree does not assign a tank or healer role. Grids and trait trees are unsupported."] = true
