@@ -680,4 +680,54 @@ test('view switching flushes valid staged fields and leaves invalid fields visib
     assert(card(pane,'optional').fieldControls.color_r:GetText()=='unfinished')
     local stale=pane.viewMode.scripts.OnClick;pane:Release();stale();assert(pane.view.layout=='list')
 end)
+test('canvas zoom uses separate scaled content extents and preserves center without resizing the window',function()
+    local f,parent=fixture();local pane=assert(f.addon:CreateRotationEditor(parent,0,'mine'));local c=pane.canvas
+    assert(c.SetZoom and pane.zoomIn and pane.zoomOut and pane.zoomReset,'zoom controls missing')
+    local width,height=pane.frame:GetWidth(),pane.frame:GetHeight();local sceneWidth,sceneHeight=c.scene.width,c.scene.height
+    assert(c:SetZoom(2));assert(c.child:GetScale()==2 and c.surface==c.frame:GetScrollChild())
+    assert(c.surface:GetWidth()==math.max(c.frame:GetWidth(),sceneWidth*2) and c.surface:GetHeight()==math.max(c.frame:GetHeight(),sceneHeight*2))
+    assert(c.horizontal.scrollRange==math.max(0,sceneWidth*2-c.frame:GetWidth()))
+    assert(c.frame.workbenchBar.scrollRange==math.max(0,sceneHeight*2-c.frame:GetHeight()))
+    c.horizontal:SetValue(150);c.frame.workbenchBar:SetValue(100)
+    local center=(150+c.frame:GetWidth()/2)/2;assert(c:SetZoom(1.8))
+    assert(math.abs(c.scrollX-(center*1.8-c.frame:GetWidth()/2))<.0001)
+    assert(pane.frame:GetWidth()==width and pane.frame:GetHeight()==height and pane.frame:GetScale()==1 and not pane:HasUnsavedChanges())
+    pane.zoomReset:Click();assert(c:GetZoom()==1 and pane.zoomReset:GetText()=='100%')
+    assert(not c:SetZoom(0/0) and not c:SetZoom('2'));c:SetZoom(20);assert(c:GetZoom()==2 and not pane.zoomIn:IsEnabled())
+    c:SetZoom(.1);assert(c:GetZoom()==.25 and not pane.zoomOut:IsEnabled())
+end)
+test('blank canvas panning follows pointer deltas at window scale and clamps through both scrollbars',function()
+    local f,parent=fixture();local pane=assert(f.addon:CreateRotationEditor(parent,0,'mine'));local c=pane.canvas
+    assert(c.BeginPan,'panning missing');assert(c:SetZoom(2))
+    c.frame.GetEffectiveScale=function() return 2 end
+    local x,y,down=300,300,true;f.env.GetCursorPosition=function() return x,y end;f.env.IsMouseButtonDown=function() return down end
+    c.horizontal:SetValue(100);c.frame.workbenchBar:SetValue(100);c.child.scripts.OnDragStart(c.child)
+    assert(c.pan and not c.drag);x=260;y=340;c.frame.scripts.OnUpdate(c.frame)
+    assert(c.scrollX==120 and c.frame.workbenchBar:GetValue()==120)
+    x=10000;y=-10000;c.frame.scripts.OnUpdate(c.frame);assert(c.scrollX==0 and c.frame.workbenchBar:GetValue()==0)
+    down=false;c.frame.scripts.OnUpdate(c.frame);assert(not c.pan and not c.frame.scripts.OnUpdate)
+    c:BeginDrag('yes');assert(not c:BeginPan() and c.drag,'blank pan stole a card drag');c:CancelDrag()
+end)
+test('zoom pan and view controls preserve staged fields read-only access and released interaction guards',function()
+    local f,parent=fixture();local a=f.addon;local pane=assert(a:CreateRotationEditor(parent,0,'mine'));local c=pane.canvas
+    assert(c.SetZoom,'zoom missing');card(pane,'optional').action:Click();local raw=card(pane,'optional').fieldControls.xoffs
+    raw:SetText('unfinished');raw.scripts.OnTextChanged(raw,true);pane.zoomIn:Click()
+    assert(c:GetZoom()==1.1 and raw:GetText()=='unfinished' and pane:HasInvalidPendingFields())
+    f.env.GetCursorPosition=function() return 10,10 end;f.env.IsMouseButtonDown=function() return true end;c:BeginPan();local stale=c.frame.scripts.OnUpdate
+    pane:Release();stale();assert(not c.pan and not c.drag)
+    local other=f.env.CreateFrame('Frame');other:SetSize(740,600);local ro=assert(a:CreateRotationEditor(other,0,'builtin'))
+    ro.viewMode:Click();ro.zoomIn:Click();assert(ro.canvas:GetZoom()==1.1 and ro.view.layout=='list' and not ro:HasUnsavedChanges())
+    ro.canvas:BeginPan();assert(ro.canvas.pan);ro.canvas:Render();assert(not ro.canvas.pan)
+end)
+test('blank pan does not capture a card under the pointer and zoom keeps typed drop identities intact',function()
+    local f,parent=fixture();local pane=assert(f.addon:CreateRotationEditor(parent,0,'mine'));local c=pane.canvas
+    f.env.GetCursorPosition=function() return 10,10 end
+    local targetCard=card(pane,'yes').frame;f.env.MouseIsOver=function(frame) return frame==targetCard or frame==c.frame end
+    assert(not c:BeginPan(),'panning started over an editing card')
+    f.env.MouseIsOver=nil;c:SetZoom(.5);pane.viewMode:Click()
+    local destination
+    for _,target in ipairs(c.scene.dropTargets) do if target.destination.parentId=='branch' and target.destination.path[3]=='onFalse' and target.destination.index==2 then destination=target end end
+    assert(destination);c:BeginDrag('yes');assert(c:Drop(destination))
+    assert(pane.workspace:Snapshot().rotation[1].onFalse[2].id=='yes' and c:GetZoom()==.5)
+end)
 finish()

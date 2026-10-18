@@ -131,6 +131,15 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
         pane:Render()
     end
     pane.tools[#pane.tools+1]=pane.viewMode
+    pane.zoomOut=tool(L['Zoom out'],24,function() pane.canvas:SetZoom(math.floor(pane.canvas:GetZoom()*100+.5)/100-.1) end,'minus')
+    pane.zoomIn=tool(L['Zoom in'],24,function() pane.canvas:SetZoom(math.floor(pane.canvas:GetZoom()*100+.5)/100+.1) end,'plus')
+    pane.zoomReset=tool('100%',54,function() pane.canvas:SetZoom(1) end)
+    pane.zoomReset.tooltip=L['Reset canvas zoom to 100%. Drag empty canvas space to pan. Window scale is unchanged.']
+    function pane:UpdateCanvasNavigation()
+        local value=self.canvas:GetZoom();self.zoomReset:SetText(string.format('%d%%',math.floor(value*100+.5)))
+        if value<=.25 then self.zoomOut:Disable() else self.zoomOut:Enable() end
+        if value>=2 then self.zoomIn:Disable() else self.zoomIn:Enable() end
+    end
     pane.switchButton=addon:CreateWorkbenchButton(pane.frame,'',300);pane.switch=pane.switchButton
     pane.switchText=pane.switchButton:GetFontString();pane.switchText:ClearAllPoints();pane.switchText:SetPoint('TOPLEFT',6,-4);pane.switchText:SetWordWrap(true);pane.switchText:SetJustifyH('LEFT')
     pane.switchLabel=addon:CreateWorkbenchButton(pane.frame,L['Switch condition'],180);pane.switchLabel:GetFontString():SetFontObject('GameFontNormal');pane.switchLabel.art:SetAlpha(.1);addon:AlignWorkbenchTextLeft(pane.switchLabel,0)

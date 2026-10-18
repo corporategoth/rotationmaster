@@ -1558,3 +1558,10 @@ L["Default.TBC.Mage.Starter.Description"] = "TBC single-target Frost starter pre
 L["Diagram view"] = true
 L["List view"] = true
 L["Switch between the diagram and compact tree list. This changes only the view."] = true
+
+-- Independent rotation viewport navigation.
+L["Zoom out"] = true
+L["Zoom in"] = true
+L["Reset canvas zoom to 100%. Drag empty canvas space to pan. Window scale is unchanged."] = true
+L["Navigating rotations"] = true
+L["Diagram / List changes only the view. Minus and plus zoom the canvas from 25% to 200%, independently of window Scale; click the percentage to reset to 100%. Drag empty canvas space with the left mouse button to pan. Dragging cards still reorders them. The list shows False before True. Both views currently show at most 200 cards; the remaining saved cards are preserved."] = true
