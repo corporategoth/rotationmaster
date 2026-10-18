@@ -32,6 +32,14 @@ local function create(parent)
         control:SetPoint("TOPLEFT",left,"TOPLEFT",(index-1)*80,-52)
         local key=entry[1];addon:SetUIScript(control,"OnClick",function() browser:SetFilter(key) end)
     end
+    local tagButton=addon:CreateWorkbenchLabeledIconButton(left,'chevron-down',L['All tags'],240);browser.tagButton=tagButton
+    addon:SetUIScript(tagButton,'OnClick',function()
+        if not browser.active then return end
+        browser.tagMenu=browser.tagMenu or addon:CreateWorkbenchSelector()
+        local entries={{value=false,text=L['All tags']}};for _,tag in ipairs(browser.availableTags or {}) do entries[#entries+1]={value=tag,text=tag} end
+        local revision,spec,profile=browser.tagRevision,browser.spec,addon.db.profile
+        browser.tagMenu:Open(tagButton,entries,browser.tag or false,function(value) browser:SetTag(value or nil) end,function() return browser.active and browser.tagRevision==revision and browser.spec==spec and addon.db.profile==profile end)
+    end)
     local list=addon:CreateWorkbenchScrollFrame(left);browser.list=list
     local child=CreateFrame("Frame",nil,list);child:SetPoint("TOPLEFT",list,"TOPLEFT",0,0);list:SetScrollChild(child);browser.listChild=child
     local empty=label(child);empty:SetPoint("TOPLEFT",4,-6);empty:SetText(L["No rotations match this search."]);browser.empty=empty
@@ -48,7 +56,7 @@ local function create(parent)
             if type(candidate)=="string" and custom[candidate]==nil and not addon:GetDefaultIdForRuntime(browser.spec,candidate) and candidate~=DEFAULT then id=candidate;break end
         end
         if not id then return end
-        browser.pendingId=id;browser.filter="all";browser.query="";search:SetText("")
+        browser.pendingId=id;browser.filter="all";browser.tag=nil;browser.query="";search:SetText("")
         browser:SelectRotation(browser.spec,id,true)
         end)
     end)
@@ -108,7 +116,7 @@ local function create(parent)
         end
         local pending={}
         for _,entry in ipairs(addon.ListPendingRotationDrafts and addon:ListPendingRotationDrafts(self.spec) or {}) do
-            pending[entry.id]=true;all[#all+1]={key=entry.id,name=entry.name,kind="custom",pending=true}
+            pending[entry.id]=true;all[#all+1]={key=entry.id,name=entry.name,kind="custom",pending=true,presentation=entry.presentation}
         end
         if self.pendingId and not addon:GetEditableRotation(self.spec,self.pendingId) then
             if not pending[self.pendingId] then all[#all+1]={key=self.pendingId,name=NEW,kind="custom",pending=true} end
@@ -118,10 +126,18 @@ local function create(parent)
             if a.name~=b.name then return a.name<b.name end
             return tostring(a.key)<tostring(b.key)
         end)
+        local tags,seen={},{};self.tagRevision=(self.tagRevision or 0)+1
+        for _,entry in ipairs(all) do
+            local view=entry.pending and entry.presentation or addon:GetRotationTagView(self.spec,entry.key)
+            entry.tags=addon.RotationData.GetRotationTags(view) or {};entry.search=addon.RotationData.RotationSearchText(view,entry.name,entry.description)
+            for _,tag in ipairs(entry.tags) do local canonical=tag:lower();if not seen[canonical] then tags[#tags+1]=tag;seen[canonical]=true end end
+        end
+        table.sort(tags,function(a,b) return a:lower()<b:lower() end);self.availableTags=tags
+        if self.tag and not seen[self.tag:lower()] then self.tag=nil end
+        tagButton:SetText(self.tag or L['All tags']);addon:AlignWorkbenchTextLeft(tagButton,26)
         local rows={}
         for _,entry in ipairs(all) do
-            local haystack=string.lower(entry.name.." "..(entry.description or ""))
-            if (self.filter=="all" or self.filter==entry.kind) and haystack:find(self.query,1,true) then rows[#rows+1]=entry end
+            if (self.filter=='all' or self.filter==entry.kind) and addon.RotationData.RotationTagMatches(entry.tags,self.tag) and entry.search:find(self.query,1,true) then rows[#rows+1]=entry end
         end
         self.rows=rows
         for index,entry in ipairs(rows) do
@@ -154,6 +170,11 @@ local function create(parent)
         count:SetText(string.format(L["%d of %d rotations"],#rows,#all))
         if self.pendingId==self.selected or self.nativeDetails and self.pane and self.pane.workspace.pending then duplicate:Disable();compare:Disable() else duplicate:Enable();compare:Enable() end
         for key,control in pairs(self.filters) do if key==self.filter then control:Disable() else control:Enable() end end
+    end
+    function browser:SetTag(value)
+        if not self.active or value~=nil and type(value)~='string' then return end
+        if value then local normalized=addon.RotationData.NormalizeRotationTags({value});if not normalized then return end;value=normalized[1] end
+        self.tag=value;self:RefreshRows();list:SetVerticalScroll(0)
     end
     function browser:SetFilter(value)
         if value~="all" and value~="builtin" and value~="custom" then return end
@@ -224,7 +245,8 @@ local function create(parent)
         for index,key in ipairs({'all','builtin','custom'}) do local filter=self.filters[key];filter:ClearAllPoints();filter:SetPoint('TOPLEFT',left,'TOPLEFT',(index-1)*(leftWidth+4)/3,-52);filter:SetWidth((leftWidth-8)/3) end
         search:SetWidth(leftWidth-10)
         local footerHeight=50
-        list:SetPoint("TOPLEFT",left,"TOPLEFT",0,-84);list:SetSize(leftWidth-24,math.max(64,left:GetHeight()-120-footerHeight))
+        tagButton:ClearAllPoints();tagButton:SetPoint('TOPLEFT',left,'TOPLEFT',0,-80);tagButton:SetWidth(leftWidth)
+        list:SetPoint("TOPLEFT",left,"TOPLEFT",0,-112);list:SetSize(leftWidth-24,math.max(64,left:GetHeight()-148-footerHeight))
         child:SetWidth(list:GetWidth())
         count:ClearAllPoints();count:SetPoint("BOTTOMLEFT",left,"BOTTOMLEFT",0,footerHeight+8)
         local buttonWidth=(leftWidth-4)/2
@@ -238,12 +260,12 @@ local function create(parent)
     function browser:SetWidth(value) frame:SetWidth(value) end
     function browser:SetHeight(value) frame:SetHeight(value) end
     function browser:Release()
-        self.active=false;self:ReleaseDetails();self.pendingId=nil;search:ClearFocus()
+        self.active=false;self:ReleaseDetails();self.pendingId=nil;search:ClearFocus();if self.tagMenu then self.tagMenu:Release() end
         for _,control in ipairs(self.rowButtons) do control:Hide();addon:SetUIScript(control,"OnClick",nil) end
         frame:Hide()
     end
     function browser:Open(selection)
-        self.active=false;self.filter="all";self.query="";search:SetText("")
+        self.active=false;self.filter="all";self.tag=nil;self.query="";search:SetText("")
         self.specEntries=addon:GetRotationEditorSpecs()
         for index,entry in ipairs(self.specEntries) do
             local control=self.specButtons[index]

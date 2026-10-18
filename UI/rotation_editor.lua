@@ -21,7 +21,7 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
     function pane:Message(message) self.status:SetText(message or '') end
     function pane:UpdateHistory()
         local state=self.workspace.session:HistoryState()
-        local pending=not self.workspace.readOnly and (self.nameDirty or self.descriptionDirty or self.metadataDirty or self:HasPendingFields())
+        local pending=not self.workspace.readOnly and (self.nameDirty or self.descriptionDirty or self.metadataDirty or self.tagsDirty or self:HasPendingFields())
         if state.canUndo or pending then self.undo:Enable() else self.undo:Disable() end
         if state.canRedo and not pending then self.redo:Enable() else self.redo:Disable() end
         if not self.workspace.readOnly and (self.workspace.pending or self:HasUnsavedChanges()) then self.apply:Enable() else self.apply:Disable() end
@@ -212,17 +212,27 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
         else self:Message(problem) end
         return ok,problem
     end
+    function pane:EffectiveTags(snapshot)
+        snapshot=snapshot or self.workspace:Snapshot();local manifest=self.workspace.source and self.workspace.source.envelope
+        if not manifest then for _,kind in ipairs({'origins','imports'}) do local record=self.workspace.reserved and self.workspace.reserved[kind];if type(record)=='table' and type(record.manifest)=='table' then manifest=record.manifest;break end end end
+        return data.GetRotationTags({body=snapshot,tags=manifest and manifest.tags}) or {}
+    end
     function pane:FlushName()
         if self.deleted or workspace.readOnly then return true end
         if self.nameDirty and id~=DEFAULT then local ok,problem=workspace:Command('SetBodyField','name',self.name:GetText());if not ok then self:Message(problem);return nil,problem end;self.nameDirty=false end
-        if self.descriptionDirty or self.metadataDirty then
-            local snapshot=workspace:Snapshot();local details={description=self.descriptionDirty and self.description:GetText() or snapshot.description,metadata=self.metadataDirty and self.metadataDraft or snapshot.metadata}
+        if self.descriptionDirty or self.metadataDirty or self.tagsDirty then
+            local snapshot=workspace:Snapshot();local tags=snapshot.tags
+            if self.tagsDirty then
+                local parsed=data.ParseRotationTags(self.tags:GetText());if not parsed then self.tags:SetTextColor(1,.35,.35);self:Message(L['Invalid tags. Use up to 64 tags of 64 characters, separated by commas.']);return nil,'invalid-tags' end
+                if snapshot.tags~=nil and not data.NormalizeRotationTags(snapshot.tags) or data.FormatRotationTags(parsed)~=data.FormatRotationTags(self:EffectiveTags(snapshot)) then tags=parsed end
+            end
+            local details={description=self.descriptionDirty and self.description:GetText() or snapshot.description,metadata=self.metadataDirty and self.metadataDraft or snapshot.metadata,tags=tags}
             local ok,problem=workspace:Command('SetDetails',details);if not ok then self:Message(problem);return nil,problem end
-            self.descriptionDirty=false;self.metadataDirty=false
+            self.descriptionDirty=false;self.metadataDirty=false;self.tagsDirty=false
         end
         return true
     end
-    function pane:HasUnsavedChanges() return not self.deleted and not self.workspace.readOnly and (self.workspace:IsDirty() or self.nameDirty==true or self.descriptionDirty==true or self.metadataDirty==true or self:HasPendingFields()) end
+    function pane:HasUnsavedChanges() return not self.deleted and not self.workspace.readOnly and (self.workspace:IsDirty() or self.nameDirty==true or self.descriptionDirty==true or self.metadataDirty==true or self.tagsDirty==true or self:HasPendingFields()) end
     function pane:LayoutGeometry()
         if not self.ready then return end
         local width,height=self.frame:GetWidth(),self.frame:GetHeight();local x,y=8,34
@@ -264,7 +274,7 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
         if self.active then self:Release() end
         workspace=selected;spec=nextSpec;id=nextId;onSelect=nextSelect;self.workspace=workspace
         workspace.uiView=workspace.uiView or {collapsed={},expanded={},detailsHeights={}};self.view=workspace.uiView
-        self.nameDirty=false;self.descriptionDirty=false;self.metadataDirty=false;self.metadataDraft=nil;self.deleted=false;self.active=true;self.generation=(self.generation or 0)+1
+        self.nameDirty=false;self.descriptionDirty=false;self.metadataDirty=false;self.tagsDirty=false;self.metadataDraft=nil;self.deleted=false;self.active=true;self.generation=(self.generation or 0)+1
         local token=self.generation
         local function alive() return self.active and self.generation==token end
         for _,control in ipairs(self.tools) do
@@ -318,7 +328,7 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
         addon:SetUIScript(self.apply,'OnClick',function() if alive() then self:Apply() end end)
         addon:SetUIScript(self.discard,'OnClick',function()
             if not alive() then return end
-            local ok,reason=workspace:Discard();if ok then self.metadataWindow:Close(true); self.nameDirty=false;self.descriptionDirty=false;self.metadataDirty=false;self:ClearPendingFields();self:Render() else self:Message(reason) end
+            local ok,reason=workspace:Discard();if ok then self.metadataWindow:Close(true); self.nameDirty=false;self.descriptionDirty=false;self.metadataDirty=false;self.tagsDirty=false;self:ClearPendingFields();self:Render() else self:Message(reason) end
         end)
         if workspace.readOnly then self.apply:Disable();self.discard:Disable() else self.apply:Enable();self.discard:Enable() end
         for _,control in ipairs({self.compare,self.clone}) do if workspace.pending then control:Disable() else control:Enable() end end

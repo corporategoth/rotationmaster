@@ -40,7 +40,7 @@ function addon:ShowRotationTransfer(spec,id)
         if not candidate then d.status:SetText(string.format(L['Import preview unavailable: %s'],why));return end
         d.inspect:Enable();local ready,reason=session:GetReady(candidate.token)
         d.status:SetText(ready and L['Ready to import. Choose replacement or a named copy.'] or string.format(L['This import cannot be applied: %s'],reason));if ready then d.apply:Enable() end
-        local own=original or source and (source.body or source) or {rotation={},cooldowns={}};local view=session:Compare(candidate.token,own);if view then self:ShowNativeImportPreview(p,view,spec) end
+        local own=original or source and (source.body or source) or {rotation={},cooldowns={}};local view=session:Compare(candidate.token,own,self.RotationData.GetRotationTags(source));if view then self:ShowNativeImportPreview(p,view,spec) end
     end
     options.inspect=function()
         if not candidate then return end;local object=candidate.kind=='envelope' and candidate.value or {body=candidate.value};local report=self.RotationData.DiffRotations({},object)

@@ -59,7 +59,7 @@ local function fixture(modern, absentThreat)
     end
     env.WOW_PROJECT_BURNING_CRUSADE_CLASSIC=5
     load('Platform/client.lua');load('Platform/items.lua');load('Platform/specializations.lua');load('Core/action_policy.lua')
-    load('Data/plain.lua');load('Data/rotation_tree.lua');load('Core/rotation_sequence.lua')
+    load('Data/plain.lua');load('Data/tags.lua');load('Data/rotation_tree.lua');load('Core/rotation_sequence.lua')
     return env, addon, load
 end
 
@@ -259,7 +259,7 @@ end)
 
 test('live autoswitch reads packaged rotations through the facade and prefers existing custom choices',function()
     local env,addon,load=fixture(true,true)
-    load('Data/plain.lua');load('Data/rotation_tree.lua');load('Data/validation.lua');load('Data/catalog.lua');load('Data/diff.lua')
+    load('Data/plain.lua');load('Data/tags.lua');load('Data/rotation_tree.lua');load('Data/validation.lua');load('Data/catalog.lua');load('Data/diff.lua')
     load('Core/rotation_library.lua');load('main.lua')
     local _,envelope=dofile('tests/fixtures/rotation_data.lua')()
     local pack=envelope();pack.body.switch={type='READY'}
@@ -300,7 +300,7 @@ end)
 
 test('switching revisits previously inapplicable packs and clears outgoing cooldowns',function()
     local env,addon,load=fixture(true,true)
-    load('Data/plain.lua');load('Data/rotation_tree.lua');load('Data/validation.lua');load('Data/catalog.lua');load('Data/diff.lua')
+    load('Data/plain.lua');load('Data/tags.lua');load('Data/rotation_tree.lua');load('Data/validation.lua');load('Data/catalog.lua');load('Data/diff.lua')
     load('Core/rotation_library.lua');load('main.lua')
     local _,envelope=dofile('tests/fixtures/rotation_data.lua')()
     local first,second=envelope(),envelope()
@@ -585,6 +585,8 @@ test('real AceDB clones edits and lineage survive saving only TOC-declared globa
     local source='rm.tbc.shaman.leveling'
     local id=assert(a:CloneDefaultRotation(0,source,'Persisted clone'))
     a:GetEditableRotation(0,id).rotation[1].action=974
+    a:GetEditableRotation(0,id).tags={'AOE','MyLittlePony'}
+    a:GetEditableRotation(0,id).description='Keep these tags across reload'
     a.db.profile.ignore_range=true
     assert(a:SetDefaultRotationEnabled(source,false))
     scripts.OnEvent(nil,'PLAYER_LOGOUT')
@@ -597,6 +599,7 @@ test('real AceDB clones edits and lineage survive saving only TOC-declared globa
     local _,b=persistentFixture(saved,'RotationMaster')
     local body=b:GetEditableRotation(0,id)
     assert(body and body.name=='Persisted clone' and body.rotation[1].action==974,'clone was not persisted in a declared SavedVariables global')
+    assert(body.tags[2]=='MyLittlePony' and body.description=='Keep these tags across reload','tags and description were lost on reload')
     assert(b.db.profile.ignore_range and not b:GetDefaultRotation(source).enabled,'profile preferences were lost')
     local view=assert(b:GetSourcedRotationView(0,id))
     assert(view.lineage.baseline.body.rotation[1].action==403 and view.envelope.body.rotation[1].action==974,'source baseline was lost')

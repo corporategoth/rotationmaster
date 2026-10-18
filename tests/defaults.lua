@@ -22,7 +22,7 @@ local function fixture()
     e.GetWeaponEnchantInfo=function() return state.enchanted end
     e.C_UnitAuras={GetAuraDataByIndex=function(_,index) return state.auras[index] end}
     for _,path in ipairs({'Platform/client.lua','Platform/spells.lua','Platform/auras.lua','Platform/range.lua','Platform/actions.lua','Core/action_policy.lua','Core/conditions.lua',
-        'Core/aura_conditions.lua','Data/plain.lua','Data/rotation_tree.lua','Data/validation.lua','Data/catalog.lua','Data/diff.lua',
+        'Core/aura_conditions.lua','Data/plain.lua','Data/tags.lua','Data/rotation_tree.lua','Data/validation.lua','Data/catalog.lua','Data/diff.lua',
         'Core/rotation_library.lua','Conditions/common.lua','Conditions/spell.lua','Conditions/known_spell.lua','Conditions/character.lua','Conditions/buffs.lua',
         'Conditions/combat.lua','Conditions/weapon.lua','Conditions/range.lua','Defaults/tbc/shaman-starter.lua'}) do f.load(path) end
     assert(a:InitializeRotationLibrary())

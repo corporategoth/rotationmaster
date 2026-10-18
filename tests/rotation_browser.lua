@@ -14,7 +14,7 @@ local function fixture(product,expansion,realCustom)
     ace.Release=function(_,w) w.released=true;w.frame:Hide();w.children={} end
     f.env.LibStub=setmetatable({GetLibrary=function() return {} end},{__call=function(_,name) return f.libraries[name] or {} end})
     local data,envelope,validation=make();a.RotationData=data;a.conditionDefinitions=validation.conditions
-    f.load('Data/catalog.lua');f.load('Data/diff.lua');f.load('Core/rotation_library.lua')
+    f.load('Data/catalog.lua');f.load('Data/diff.lua');f.load('Core/rotation_library.lua');local tags=io.open('Core/rotation_tags.lua');if tags then tags:close();f.load('Core/rotation_tags.lua') end
     a.GetRotationContext=function(_,spec) return {family='tbc',class='SHAMAN',level=11,spec=spec,actionContext='player',combatDataPolicy='probe'} end
     local counter=0;a.uuid=function() counter=counter+1;return 'new-'..counter end
     local pack=envelope();pack.nameKey='Twin';pack.descriptionKey='Contains % [ brackets';pack.applicability.maxLevel=19
@@ -176,5 +176,14 @@ test('roster Compare uses the selected rotation and is inert after release',func
 end)
 test('rotation sidebar uses the shared page width and compact footer captions',function()
     local f,_,_,create=fixture();local a=f.addon;local host=create('Frame');host:SetSize(1000,600);local browser=a:CreateRotationBrowser(host,{spec=0,id='one'});browser:Layout();assert(browser.left:GetWidth()==a:GetWorkbenchSidebarWidth(browser.frame:GetWidth()));assert(browser.newButton:GetText()=='New' and browser.compareButton:GetText()=='Compare')
+end)
+test('tag filtering and unified metadata search preserve the selected editor and saved data',function()
+    local f,_,editors,create=fixture();local a=f.addon;local source=a.db.profile.rotations[0].one;source.description='Healing upkeep';source.metadata={author='PreZ',realm='Realm'};source.tags={'PVP','MyLittlePony'};local browser=a:CreateRotationBrowser(create('Frame'),{spec=0,id='one'});assert(browser.tagButton,'tag filter missing');local pane=browser.pane;local count=#editors;browser:SetTag('PVP');assert(#browser.rows==1 and browser.rows[1].key=='one');browser.search:SetText('prez');browser.search.scripts.OnTextChanged(browser.search,true);assert(#browser.rows==1 and browser.pane==pane and #editors==count);browser.search:SetText('healing');browser.search.scripts.OnTextChanged(browser.search,true);assert(#browser.rows==1);browser:SetFilter('builtin');assert(#browser.rows==0);browser:SetTag(nil);browser:SetFilter('all');browser.search:SetText('MyLittlePony');browser.search.scripts.OnTextChanged(browser.search,true);assert(#browser.rows==1 and source.tags[2]=='MyLittlePony')
+end)
+test('tag selector dismisses on release and stale profile callbacks cannot change filtering',function()
+    local f,_,_,create=fixture();local a=f.addon;a.db.profile.rotations[0].one.tags={'PVP'};local browser=a:CreateRotationBrowser(create('Frame'),{spec=0,id='one'});browser.tagButton:Click();assert(browser.tagMenu.frame:IsShown());local stale=browser.tagMenu.rows[2].scripts.OnClick;a.db.profile={rotations={[0]={}}};stale();assert(browser.tag==nil);browser:Release();assert(not browser.tagMenu.frame:IsShown())
+end)
+test('New clears the tag filter so its pending rotation is visible',function()
+    local f,_,_,create=fixture();local a=f.addon;a.db.profile.rotations[0].one.tags={'PVP'};local browser=a:CreateRotationBrowser(create('Frame'),{spec=0,id='one'});browser:SetTag('PVP');browser.newButton:Click();assert(browser.tag==nil and row(browser,browser.selected),'new pending rotation hidden by old tag filter')
 end)
 finish()

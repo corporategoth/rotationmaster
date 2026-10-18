@@ -1,7 +1,7 @@
 local F=dofile('tests/fixtures/addon.lua')
 local test,finish=F.suite()
 local function fixture()
-    local f=F.new();f.load('Data/plain.lua');f.load('Core/conditions.lua')
+    local f=F.new();f.load('Data/plain.lua');f.load('Data/tags.lua');f.load('Core/conditions.lua')
     local file=io.open('Core/condition_description.lua','r');if file then file:close();f.load('Core/condition_description.lua') end
     f.addon:RegisterCondition('NUMBER',{description='Number check',fields={number='number'},
         print=function(_,value) assert(type(value.number)=='number');return 'number equals '..value.number end,

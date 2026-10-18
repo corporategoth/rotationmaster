@@ -1,6 +1,6 @@
 local F=dofile('tests/fixtures/addon.lua')
 local test,finish=F.suite()
-local a={};for _,path in ipairs({'Data/plain.lua','Data/rotation_tree.lua'}) do assert(loadfile(path))('rotationmaster',a) end
+local a={};for _,path in ipairs({'Data/plain.lua','Data/tags.lua','Data/rotation_tree.lua'}) do assert(loadfile(path))('rotationmaster',a) end
 local file=io.open('Core/rotation_sequence.lua','r');if file then file:close();assert(loadfile('Core/rotation_sequence.lua'))('rotationmaster',a) end
 local function action(id) return {id=id,type='spell',action=403} end
 local function branch(id,mode,yes,no) return {id=id,type='branch',mode=mode,conditions={type=id},onTrue=yes or {},onFalse=no or {}} end

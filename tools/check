@@ -44,6 +44,7 @@ def main():
             ['lua5.1', 'tests/known_spell.lua'],
             ['lua5.1', 'tests/plain_data.lua'],
             ['lua5.1', 'tests/rotation_validation.lua'],
+            ['lua5.1', 'tests/rotation_tags.lua'],
             ['lua5.1', 'tests/rotation_catalog.lua'],
             ['lua5.1', 'tests/rotation_diff.lua'],
             ['lua5.1', 'tests/rotation_library.lua'],

@@ -118,6 +118,10 @@ function addon:RenderRotationComparison(parent,view,spec,showUnchanged)
             label(column,entry.name or entry.nameKey and L[entry.nameKey] or DEFAULT)
         end)
     end
+    if model.tagsChanged then
+        label(parent,L['Tags'],"Heading")
+        pair({tags=model.leftTags},{tags=model.rightTags},function(column,entry) label(column,addon.RotationData.FormatRotationTags(entry.tags) or '') end)
+    end
     if model.switchChanged then
         label(parent,L["Switch conditions"],"Heading")
         pair({condition=model.leftSwitch},{condition=model.rightSwitch},function(column,entry)

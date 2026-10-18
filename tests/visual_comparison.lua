@@ -114,4 +114,7 @@ test('cross-arm transfers remain separate removed and added cards with their ori
     end end
     assert(added==1 and removed==1 and model.displayChangeCount==2)
 end)
+test('tags have a graphical comparison row instead of only a raw-field warning',function()
+    local d=fixture();local left={tags={'leveling'},body={rotation={},cooldowns={}}};local right=d.CopyData(left);right.body.tags={'PVP','MyLittlePony'};local model=assert(d.BuildVisualComparison({left=left,right=right,diff=d.DiffRotations(left,right)}));assert(model.tagsChanged and model.leftTags[1]=='leveling' and model.rightTags[2]=='MyLittlePony' and model.additionalChanges==0)
+end)
 finish()

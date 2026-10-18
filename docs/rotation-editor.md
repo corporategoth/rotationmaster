@@ -41,3 +41,11 @@ The condition editor uses a single-row header. Its heading is “Rotation Master
 Metadata sits to the right of the rotation name, above Enabled/Delete. Its description is a multiline scrolling field; the dialog grows for actual source information and omits that section when absent. Use changes stages details in the rotation draft; Cancel/Escape restores the dialog’s opening values. Apply the rotation to save.
 
 Up/Down controls are disabled at each sibling list boundary, including inside branches and condition groups. Group arrows remain on the left; the child connector starts below them and keeps its horizontal arms. Split group sits between Duplicate and Delete on the right. Compact unnamed condition groups show All of/Any of; named groups keep their name.
+
+## Tags and search
+
+Metadata includes a comma-separated Tags field. Any personal labels are supported, including tags such as AOE, PVP, Raid or MyLittlePony; quote a tag containing a comma and double any quote inside it. Empty text removes all tags. Up to 64 tags of 64 UTF-8 characters each are supported. Duplicate tags use the first spelling and compare without ASCII case differences. Tags are metadata and do not change switch conditions or recommendations.
+
+Defaults show their tags read-only. Clones and imports inherit manifest tags unless their editable body explicitly supplies tags; an empty body list suppresses inheritance. Editing tags participates in the rotation draft, Apply/Discard and Undo/Redo. Cancel in Metadata restores its opening values. Leaving an inherited value unchanged keeps it absent from the body, so merely viewing or confirming a clone does not create a difference. Exporting an edited sourced rotation reflects its current tags without changing historical source records.
+
+The roster has a searchable tag filter alongside All/Defaults/Custom ownership filtering. The existing search box matches name, description, tags, provided author/realm/contact/version metadata and source citation titles/URLs. No player or contact information is filled automatically. Filters combine without changing or discarding the selected editor. New clears active filters so its pending entry is visible. Tag changes have a readable side-by-side row in rotation comparisons.

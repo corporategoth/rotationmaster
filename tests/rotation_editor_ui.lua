@@ -14,7 +14,7 @@ local function fixture()
     function a:GetImportValidationOptions() return {} end
     function a:validateCondition() return true end
     a.UpdateAutoSwitch=function() end;a.SwitchRotation=function() end;a.EvaluateNextAction=function() end
-    for _,file in ipairs({'Platform/spells.lua','Data/plain.lua','Data/rotation_tree.lua','Data/rotation_draft.lua','Data/validation.lua','Core/rotation_editor.lua','Core/rotation_workspace.lua','Core/rotation_canvas.lua','UI/window.lua'}) do f.load(file) end
+    for _,file in ipairs({'Platform/spells.lua','Data/plain.lua','Data/tags.lua','Data/rotation_tree.lua','Data/rotation_draft.lua','Data/validation.lua','Core/rotation_editor.lua','Core/rotation_workspace.lua','Core/rotation_tags.lua','Core/rotation_canvas.lua','UI/window.lua'}) do f.load(file) end
     for _,file in ipairs({'UI/rotation_cards.lua','UI/rotation_canvas.lua','UI/color_picker.lua','UI/rotation_effect_fields.lua','UI/rotation_fields.lua','UI/rotation_navigation.lua','UI/rotation_metadata.lua','UI/rotation_editor.lua'}) do local h=io.open(file);if h then h:close();f.load(file) end end
     local parent=create('Frame');parent:SetSize(740,600)
     return f,parent
@@ -640,5 +640,13 @@ test('Use color validates pending raw channels and keeps invalid values open',fu
     local alpha=d.alphaValue;alpha:SetText('0.25');if alpha.scripts.OnTextChanged then alpha.scripts.OnTextChanged(alpha,true) end;accept:Click()
     assert(color and color.a==.25 and math.abs(color.r-.123456789)<1e-12,'pending numeric alpha was discarded or untouched color rounded')
     d:Open({r=.1,g=.2,b=.3,a=1},function(r,g,b,a) color={r=r,g=g,b=b,a=a} end,function() return true end);alpha:SetText('bad');if alpha.scripts.OnTextChanged then alpha.scripts.OnTextChanged(alpha,true) end;accept:Click();assert(d.frame:IsShown(),'invalid numeric input closed the picker')
+end)
+test('metadata tags stage atomically with details and support undo cancel and readonly defaults',function()
+    local f,parent=fixture();local a=f.addon;local pane=assert(a:CreateRotationEditor(parent,0,'mine'));local d=pane.metadataWindow;d:Open();assert(d.fields.tags,'tag field missing');d.fields.tags:SetText('AOE, MyLittlePony');d.fields.tags.scripts.OnTextChanged(d.fields.tags,true);d.apply:Click();assert(pane.workspace:Snapshot().tags[2]=='MyLittlePony' and a:GetEditableRotation(0,'mine').tags==nil);pane.undo:Click();assert(pane.workspace:Snapshot().tags==nil);pane.redo:Click();pane.apply:Click();assert(a:GetEditableRotation(0,'mine').tags[1]=='AOE');d:Open();d.fields.tags:SetText('PVP');d.fields.tags.scripts.OnTextChanged(d.fields.tags,true);d.cancel:Click();assert(not pane:HasUnsavedChanges() and pane.workspace:Snapshot().tags[1]=='AOE')
+    pane:Release();pane=assert(a:CreateRotationEditor(parent,0,'builtin'));d=pane.metadataWindow;d:Open();assert(not d.apply:IsEnabled());local before=pane.workspace:Snapshot();d.fields.tags:SetText('Changed');d.fields.tags.scripts.OnTextChanged(d.fields.tags,true);assert(not pane.tagsDirty and a.RotationData.CopyData(before).tags==nil)
+end)
+test('unchanged inherited tags do not dirty a clone and malformed saved tags can be repaired',function()
+    local f,parent=fixture();local a=f.addon;a.db.profile.rotationLibrary={origins={[0]={mine={manifest={tags={'leveling'}}}}}};local pane=assert(a:CreateRotationEditor(parent,0,'mine'));local d=pane.metadataWindow;d:Open();assert(d.fields.tags:GetText()=='leveling');d.fields.tags.scripts.OnTextChanged(d.fields.tags,true);d.apply:Click();assert(not pane:HasUnsavedChanges() and pane.workspace:Snapshot().tags==nil)
+    pane:Release();a.db.profile.rotations[0].mine.tags=false;pane=assert(a:CreateRotationEditor(parent,0,'mine'));d=pane.metadataWindow;d:Open();d.fields.tags:SetText('');d.fields.tags.scripts.OnTextChanged(d.fields.tags,true);d.apply:Click();assert(type(pane.workspace:Snapshot().tags)=='table' and #pane.workspace:Snapshot().tags==0)
 end)
 finish()

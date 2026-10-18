@@ -38,13 +38,13 @@ function data.NewImportSession(codec,options)
         if envelope then envelope.body=nil end
         return {kind=current.kind,body=body,manifest=envelope}
     end
-    function session:Compare(token,body)
+    function session:Compare(token,body,inheritedTags)
         if not current or token~=current.token then return nil,"stale-import" end
         local incoming
         if current.kind=="envelope" then incoming=current.value.body else incoming=current.value end
         if type(incoming)~="table" then return nil,"no-previewable-body" end
-        local left,why=data.CopyData({body=body});if not left then return nil,why.code end
-        local right=data.CopyData({body=incoming})
+        local left,why=data.RotationComparisonValue(body,inheritedTags);if not left then return nil,why.code end
+        local right=data.RotationComparisonValue(incoming,current.kind=='envelope' and current.value.tags or nil)
         local diff=data.DiffRotations(left,right)
         return {key="import",left=left,right=right,diff=diff}
     end

@@ -57,6 +57,7 @@ Core/custom_condition_data.lua
 Core/custom_authoring.lua
 Core/aura_conditions.lua
 Data/plain.lua
+Data/tags.lua
 Data/rotation_tree.lua
 Data/condition_draft.lua
 Data/rotation_draft.lua
@@ -67,6 +68,7 @@ Data/diff.lua
 Data/visual_comparison.lua
 Data/import_session.lua
 Core/rotation_library.lua
+Core/rotation_tags.lua
 Core/imports.lua
 Core/condition_editor.lua
 Core/rotation_editor.lua

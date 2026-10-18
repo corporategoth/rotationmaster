@@ -130,13 +130,20 @@ function addon:ApplyRotationImport(session,token,spec,name,target,expected)
 end
 
 function addon:GetRotationExportData(spec,id)
+    local function currentTags(envelope)
+        if type(envelope)=='table' and type(envelope.body)=='table' and envelope.body.tags~=nil then
+            local copy,why=data.CopyData(envelope);if not copy then return nil,why end
+            copy.tags=data.CopyData(copy.body.tags);return copy
+        end
+        return envelope
+    end
     local defaultId=self:GetDefaultIdForRuntime(spec,id)
-    if defaultId then return self:GetDefaultRotation(defaultId).envelope end
+    if defaultId then return currentTags(self:GetDefaultRotation(defaultId).envelope) end
     local source,why=self:GetSourcedRotationView(spec,id)
-    if source then return source.envelope end
+    if source then return currentTags(source.envelope) end
     if why~="no-source-baseline" then return nil,why end
     local imported,reason=self:GetImportedRotationView(spec,id)
-    if imported then return imported.envelope end
+    if imported then return currentTags(imported.envelope) end
     if reason~="not-imported" then return nil,reason end
     return data.CopyData(self:GetEditableRotation(spec,id))
 end

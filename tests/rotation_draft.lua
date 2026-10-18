@@ -1,6 +1,6 @@
 local F=dofile('tests/fixtures/addon.lua')
 local test,finish=F.suite()
-local a={};for _,file in ipairs({'Data/plain.lua','Data/rotation_tree.lua'}) do assert(loadfile(file))('rotationmaster',a) end
+local a={};for _,file in ipairs({'Data/plain.lua','Data/tags.lua','Data/rotation_tree.lua'}) do assert(loadfile(file))('rotationmaster',a) end
 local file=io.open('Data/rotation_draft.lua');if file then file:close();assert(loadfile('Data/rotation_draft.lua'))('rotationmaster',a) end
 local data=a.RotationData
 local function leaf(id) return {id=id,type='spell',action=403,conditions={}} end

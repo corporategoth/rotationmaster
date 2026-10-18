@@ -98,8 +98,16 @@ test('explicit repair preserves supported Boolean labels and Stop suppression',f
     f.addon:validate_rotation('Fixture',f.env.DEFAULT,body,true)
     assert(body.switch.name=='Opening checks' and body.rotation[1].suppress_attack==true and body.rotation[1].conditions.name=='Combat boundary')
 end)
+test('explicit repair preserves tags description and attribution on flat rotations',function()
+    local f=F.new();f.load('Core/conditions.lua');f.load('Options/conditional.lua');f.load('validate.lua')
+    local warnings={};f.addon.warn=function(_,message,...) warnings[#warnings+1]=string.format(message,...) end
+    local body={name='Fixture',description='A leveling rotation',tags={'AOE','MyLittlePony'},metadata={author='PreZ'},switch={},cooldowns={},rotation={}}
+    f.addon:validate_rotation('Fixture',f.env.DEFAULT,body,true)
+    assert(body.tags and body.tags[2]=='MyLittlePony' and body.description=='A leveling rotation' and body.metadata.author=='PreZ','repair removed supported rotation metadata')
+    assert(#warnings==0,'supported metadata was diagnosed as an extra field')
+end)
 test('legacy repair preserves nested branch data and refuses destructive repair of future branch fields',function()
-    local f=F.new();f.load('Data/plain.lua');f.load('Data/rotation_tree.lua');f.load('Data/validation.lua');f.load('Core/conditions.lua');f.load('Options/conditional.lua');f.load('validate.lua')
+    local f=F.new();f.load('Data/plain.lua');f.load('Data/tags.lua');f.load('Data/rotation_tree.lua');f.load('Data/validation.lua');f.load('Core/conditions.lua');f.load('Options/conditional.lua');f.load('validate.lua')
     f.addon.warn=function() end
     local body={name='Branch fixture',switch={},cooldowns={},rotation={{id='branch',type='branch',mode='true',name='Combat',conditions={},
         onTrue={{id='yes',type='spell',action=403,conditions={}}},onFalse={{id='no',type='none',conditions={},suppress_attack=true}}}}}

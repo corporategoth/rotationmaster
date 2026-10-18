@@ -1,7 +1,7 @@
 local F=dofile('tests/fixtures/addon.lua')
 local test,finish=F.suite()
 test('readonly condition sessions allow inspection but reject every mutation path',function()
-    local a={};for _,file in ipairs({'Data/plain.lua','Data/rotation_tree.lua','Data/condition_draft.lua','Core/condition_editor.lua'}) do assert(loadfile(file))('rotationmaster',a) end
+    local a={};for _,file in ipairs({'Data/plain.lua','Data/tags.lua','Data/rotation_tree.lua','Data/condition_draft.lua','Core/condition_editor.lua'}) do assert(loadfile(file))('rotationmaster',a) end
     local original={type='CUSTOM',value=1}
     local s=assert(a:NewConditionEditSession(0,original,nil,{readOnly=true}))
     assert(not s:Command('Remove',{}) and not s:Apply() and not s:Undo() and not s:Redo())
@@ -9,7 +9,7 @@ test('readonly condition sessions allow inspection but reject every mutation pat
 end)
 local function fixture()
     local a={}
-    for _,file in ipairs({'Data/plain.lua','Data/rotation_tree.lua','Data/condition_draft.lua','Data/validation.lua','Data/diff.lua','Core/condition_editor.lua'}) do
+    for _,file in ipairs({'Data/plain.lua','Data/tags.lua','Data/rotation_tree.lua','Data/condition_draft.lua','Data/validation.lua','Data/diff.lua','Core/condition_editor.lua'}) do
         assert(loadfile(file))('rotationmaster',a)
     end
     a.conditionDefinitions={SPELL_KNOWN={fields={spell='number'},requiredFields={'spell'}}}

@@ -50,6 +50,7 @@ function data.BuildVisualComparison(view)
     model.leftName=a.name;model.rightName=b.name
     model.leftNameKey=view.left.nameKey;model.rightNameKey=view.right.nameKey
     model.leftSwitch=data.CopyData(a.switch);model.rightSwitch=data.CopyData(b.switch)
+    model.leftTags=data.GetRotationTags(view.left) or {};model.rightTags=data.GetRotationTags(view.right) or {}
     local indexes={}
     local total=0
     for _,kind in ipairs({"cooldowns","rotation"}) do
@@ -118,6 +119,7 @@ function data.BuildVisualComparison(view)
             local bodyName=#path==2 and path[1].kind=="field" and path[1].key=="body" and path[2].kind=="field" and kind=="name"
             if kind=="switch" then model.switchChanged=true
             elseif rootName or bodyName then model.namesChanged=true
+            elseif kind=="tags" or path[1] and path[1].kind=="field" and path[1].key=="tags" then model.tagsChanged=true
             else model.additionalChanges=model.additionalChanges+1 end
         end
     end

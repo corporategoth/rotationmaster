@@ -1,7 +1,7 @@
 local F=dofile('tests/fixtures/addon.lua')
 local test,finish=F.suite()
 local function fixture()
-    local f=F.new();f.load('Data/plain.lua');f.load('Data/rotation_tree.lua')
+    local f=F.new();f.load('Data/plain.lua');f.load('Data/tags.lua');f.load('Data/rotation_tree.lua')
     local row={id='pack',runtimeKey='pack-key',name='Shaman: early leveling',description='Leveling guidance',enabled=true,eligible=false,
         eligibilityReason='class-mismatch',revision=1,readOnly=true,
         applicability={families={'tbc'},class='SHAMAN',minLevel=1,maxLevel=19},

@@ -4,7 +4,7 @@ return function()
         assert(key~='LibStub' and key~='GetTime' and key~='CreateFrame','data layer requested '..key)
         return _G[key]
     end})
-    for _,path in ipairs({'Data/plain.lua','Data/rotation_tree.lua','Data/validation.lua'}) do
+    for _,path in ipairs({'Data/plain.lua','Data/tags.lua','Data/rotation_tree.lua','Data/validation.lua'}) do
         local load=assert(loadfile(path));setfenv(load,env);load('rotationmaster',addon)
     end
     local schemas={

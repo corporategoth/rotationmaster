@@ -157,6 +157,7 @@ local function validate(envelope, options, bodyOnly)
             end
             optionalType(scope.intent, "string", "$.applicability.intent")
         end
+        if envelope.tags~=nil and not data.NormalizeRotationTags(envelope.tags) then issue("invalid-tags","$.tags","error") end
         if list(envelope.tags, "$.tags", false) then
             for i, tag in ipairs(envelope.tags) do check(tag, nonempty, "$.tags["..i.."]") end
         end
@@ -238,9 +239,10 @@ local function validate(envelope, options, bodyOnly)
     end
     if not object(envelope.body, "$.body") then return finish() end
     local body = envelope.body
-    unknown(body, {name=true,description=true,metadata=true,disabled=true,switch=true,rotation=true,cooldowns=true}, "$.body")
+    unknown(body, {name=true,description=true,metadata=true,tags=true,disabled=true,switch=true,rotation=true,cooldowns=true}, "$.body")
     optionalType(body.name, "string", "$.body.name")
     optionalType(body.description,"string","$.body.description")
+    if body.tags~=nil and not data.NormalizeRotationTags(body.tags) then issue("invalid-tags","$.body.tags","error") end
     if body.metadata~=nil and object(body.metadata,"$.body.metadata") then
         local allowed={author=true,realm=true,email=true,website=true,version=true}
         unknown(body.metadata,allowed,"$.body.metadata")

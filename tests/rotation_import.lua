@@ -7,7 +7,7 @@ local function fixture()
     a.db.global.effects={};a.currentSpec=0
     local n=0;a.uuid=function() n=n+1;return 'fresh-'..n end
     local context={family='tbc',class='SHAMAN',level=11,spec=0,actionContext='player',combatDataPolicy='probe'}
-    for _,path in ipairs({'Data/catalog.lua','Data/diff.lua','Data/import_session.lua','Core/rotation_library.lua','Core/imports.lua'}) do f.load(path) end
+    for _,path in ipairs({'Data/catalog.lua','Data/diff.lua','Data/import_session.lua','Core/rotation_library.lua','Core/rotation_tags.lua','Core/imports.lua'}) do f.load(path) end
     a.GetRotationContext=function() return context end
     assert(a:InitializeRotationLibrary())
     local objects={legacy=envelope().body,modern=envelope()}
@@ -107,5 +107,27 @@ test('replacement refuses malformed retained provenance before touching the targ
         local a,session,_,_,d=fixture();local original=a:GetEditableRotation(0,'old');local expected={profile=a.db.profile,target=original,body=d.CopyData(original)};local candidate=assert(session:Stage('modern'));a.db.profile.rotationLibrary[kind][0]=false
         local id,why=a:ApplyRotationImport(session,candidate.token,0,'Overwrite','old',expected);assert(not id and why=='invalid-import-state' and a:GetEditableRotation(0,'old')==original)
     end
+end)
+test('inherited and edited tags survive imports duplicates and export while source manifests remain unchanged',function()
+    local a,session,objects=fixture();objects.modern.tags={'Raid','MyLittlePony'};local candidate=assert(session:Stage('modern'));local id=assert(a:ApplyRotationImport(session,candidate.token,0,'Tagged'));local view=assert(a:GetRotationExportData(0,id));assert(a.RotationData.GetRotationTags(view)[2]=='MyLittlePony');a:GetEditableRotation(0,id).tags={'PVP'};view=assert(a:GetRotationExportData(0,id));assert(view.tags[1]=='PVP' and a.db.profile.rotationLibrary.imports[0][id].manifest.tags[1]=='Raid');local copy=assert(a:DuplicateCustomRotation(0,id,'Copy'));assert(a:GetRotationExportData(0,copy).tags[1]=='PVP')
+end)
+test('comparison preserves inherited tags across custom default and import-preview routes',function()
+    local a,session,objects,_,d=fixture()
+    local load=assert(loadfile('Data/visual_comparison.lua'));load('rotationmaster',a)
+    local tags=assert(loadfile('Core/rotation_tags.lua'));tags('rotationmaster',a)
+    objects.modern.tags={'Raid'};local candidate=assert(session:Stage('modern'));local first=assert(a:ApplyRotationImport(session,candidate.token,0,'Same'))
+    objects.modern.tags={'PVP'};candidate=assert(session:Stage('modern'));local second=assert(a:ApplyRotationImport(session,candidate.token,0,'Same'))
+    local report=assert(a:BuildRotationComparison(0,second,{kind='custom',id=first}));local model=assert(d.BuildVisualComparison(report.views[1]))
+    assert(model.tagsChanged and model.leftTags[1]=='Raid' and model.rightTags[1]=='PVP','custom comparison lost inherited tags')
+    a:GetEditableRotation(0,second).tags={'Solo'}
+    model=assert(d.BuildVisualComparison(assert(a:BuildRotationComparison(0,second,{kind='custom',id=first})).views[1]))
+    assert(model.leftTags[1]=='Raid' and model.rightTags[1]=='Solo')
+    local pack=d.CopyData(objects.modern);pack.id='unrelated.pack';pack.tags={'Dungeon'};assert(a:RegisterDefaultRotation(pack))
+    model=assert(d.BuildVisualComparison(assert(a:BuildRotationComparison(0,first,{kind='builtin',id=pack.id})).views[1]))
+    assert(model.tagsChanged and model.leftTags[1]=='Dungeon' and model.rightTags[1]=='Raid','default comparison lost inherited tags')
+    local own=a:GetRotationExportData(0,first)
+    model=assert(d.BuildVisualComparison(assert(session:Compare(candidate.token,own.body,d.GetRotationTags(own)))))
+    assert(model.tagsChanged and model.leftTags[1]=='Raid' and model.rightTags[1]=='PVP','import preview lost inherited tags')
+    assert(a:GetEditableRotation(0,first).tags==nil,'comparison materialized inherited tags')
 end)
 finish()

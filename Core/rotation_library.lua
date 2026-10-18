@@ -417,8 +417,11 @@ function addon:BuildRotationComparison(spec,id,target)
             }
             return result
         end
-        local result=data.DiffRotations({body=source.envelope.body},{body=body})
-        result.views={{key="current",left=data.CopyData(source.envelope),right={body=data.CopyData(body)},diff=data.CopyData(result)}}
+        local leftValue=data.RotationComparisonValue(source.envelope.body,source.envelope.tags)
+        local rightValue=data.RotationComparisonValue(body,self:GetRotationTags(spec,id))
+        local result=data.DiffRotations(leftValue,rightValue)
+        leftValue.nameKey=source.envelope.nameKey
+        result.views={{key="current",left=leftValue,right=rightValue,diff=data.CopyData(result)}}
         return result
     elseif target and target.kind=="custom" then
         local other=self:GetEditableRotation(spec,target.id)
@@ -428,8 +431,10 @@ function addon:BuildRotationComparison(spec,id,target)
         if not left or not right then return nil,leftError or rightError end
         local options={}
         if left.kind==right.kind and left.id==right.id then options.leftOrigins,options.rightOrigins=left.origins,right.origins end
-        local result=data.DiffRotations({body=other},{body=body},options)
-        result.views={{key="current",left={body=data.CopyData(other)},right={body=data.CopyData(body)},
+        local leftValue=data.RotationComparisonValue(other,self:GetRotationTags(spec,target.id))
+        local rightValue=data.RotationComparisonValue(body,self:GetRotationTags(spec,id))
+        local result=data.DiffRotations(leftValue,rightValue,options)
+        result.views={{key="current",left=leftValue,right=rightValue,
             leftOrigins=data.CopyData(options.leftOrigins),rightOrigins=data.CopyData(options.rightOrigins),diff=data.CopyData(result)}}
         return result
     end

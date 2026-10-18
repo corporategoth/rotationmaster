@@ -428,6 +428,9 @@ function addon:validate_rotation(prefix, id, rotation, fix)
 
     local template = {
         name = "Some Name",
+        description = "Rotation description",
+        metadata = {},
+        tags = {},
         disabled = false,
         switch = {},
         cooldowns = {},

@@ -1511,3 +1511,10 @@ L['Syntax checked. No custom code was executed.'] = true
 L['The custom condition changed elsewhere. Reopen it before saving.'] = true
 L['Trusted code'] = true
 L['Validate'] = true
+
+-- Rotation tags and roster filtering.
+L['All tags'] = true
+L['Edit the description, tags, author, realm, email, website and version. Source citations remain separate from your attribution. Use changes updates the rotation draft; Apply the rotation to save it. Cancel or Escape restores this dialog’s opening values.'] = true
+L['Invalid tags. Use up to 64 tags of 64 characters, separated by commas.'] = true
+L['Separate tags with commas. Use quotes for tags containing commas. Any personal label is allowed.'] = true
+L['Tags'] = true
