@@ -44,6 +44,17 @@ test('item availability uses its item ID rather than requiring its use spell to 
     s.cooldown=0;s.itemRange=false;assert(not a:NewActionReadiness(100)('item',234,5512))
     s.itemRange=true;assert(a:NewActionReadiness(100)('item',234,5512))
 end)
+test('current boolean item cooldowns reach per-pass advice and unavailable results retry next pass',function()
+    local f=fixture();local a=f.addon;local enabled,calls=true,0
+    f.env.C_Container=nil
+    f.env.C_Item.GetItemCooldown=function(id) assert(id==5512);calls=calls+1;return 0,0,enabled end
+    f.env.GetItemCooldown=function() error('failed native observation must not fall back') end
+    local ready=a:NewActionReadiness(100)
+    assert(ready('item',234,5512) and ready('item',234,5512) and calls==1)
+    enabled=nil;assert(not a:NewActionReadiness(100)('item',234,5512) and calls==2)
+    enabled=true;assert(a:NewActionReadiness(100)('item',234,5512) and calls==3)
+    enabled=false;assert(not a:NewActionReadiness(100)('item',234,5512))
+end)
 test('per-pass policy shares observations but retries unavailable and changed state on the next pass',function()
     local f,s=fixture();local a=f.addon;local count=0
     f.env.C_Spell.IsSpellInRange=function() count=count+1;return s.range end

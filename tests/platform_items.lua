@@ -113,4 +113,40 @@ test('item range requires a positive observation or an explicit rangeless shape 
     f.env.C_Item=nil;f.env.IsItemInRange=nil
     assert(p:GetItemRangeState(5512,'target')==nil)
 end)
+test('current Item cooldown namespace supplies canonical boolean records and readiness without old globals',function()
+    local f=fixture();local p=f.addon.Platform;local enabled=true;local start,duration=0,0
+    f.env.C_Item={GetItemCount=function() return 1 end,IsUsableItem=function() return true,false end,
+        GetItemCooldown=function(id) assert(id==5512);return start,duration,enabled end,
+        GetItemInfoInstant=function() return 5512 end}
+    assert(p.GetItemCooldown,'normalized item cooldown adapter missing')
+    local record=assert(p:GetItemCooldown('Healthstone'));assert(record.startTime==0 and record.duration==0 and record.isEnabled)
+    record.startTime=500;assert(p:GetItemCooldown(5512).startTime==0,'caller mutation changed another cooldown record')
+    assert(p:IsItemReady(5512,100)==true);enabled=false;assert(p:IsItemReady(5512,100)==false)
+    enabled=true;start=90;duration=30;assert(p:IsItemReady(5512,100)==false)
+    start=70;assert(p:IsItemReady(5512,100)==true)
+end)
+test('item cooldown backend precedence and legacy aliases normalize bool or zero-one without failure fallback',function()
+    local f=fixture();local p=f.addon.Platform;local used={}
+    local function backend(name,flag) return function() used[#used+1]=name;return 10,20,flag end end
+    f.env.C_Item={GetItemCooldown=backend('item',true)};f.env.C_Container={GetItemCooldown=backend('container',1)};f.env.GetItemCooldown=backend('legacy',1)
+    assert(p:GetItemCooldown(5512).isEnabled and table.concat(used,',')=='item')
+    f.env.C_Item.GetItemCooldown=function() error('Item query failed') end
+    local record,reason=p:GetItemCooldown(5512);assert(not record and reason=='api-error' and #used==1,'native failure fell through')
+    f.env.C_Item.GetItemCooldown=nil;assert(p:GetItemCooldown(5512).isEnabled and used[2]=='container')
+    f.env.C_Container=nil
+    for _,flag in ipairs({true,false,1,0}) do f.env.GetItemCooldown=backend('legacy',flag);assert(p:GetItemCooldown(5512).isEnabled==(flag==true or flag==1)) end
+    f.env.GetItemCooldown=nil;record,reason=p:GetItemCooldown(5512);assert(not record and reason=='missing-api')
+end)
+test('item cooldown invalid observations and identities remain unavailable rather than becoming disabled or ready',function()
+    local f=fixture();local p=f.addon.Platform;local secret={};f.env.canaccessvalue=function(value) return value~=secret end
+    local calls=0;f.env.C_Item={GetItemCooldown=function() calls=calls+1;return 0,0,true end}
+    for _,id in ipairs({0,-1,1.5,math.huge,{},false,'',secret}) do assert(p:GetItemCooldown(id)==nil) end;assert(calls==0)
+    local fallbackCalls=0
+    f.env.C_Container={GetItemCooldown=function() fallbackCalls=fallbackCalls+1;return 0,0,1 end}
+    for _,tuple in ipairs({{},{0,0},{-1,0,true},{0,-1,true},{math.huge,0,true},{0,math.huge,true},{0/0,0,true},{0,0,2},{0,0,'true'},{secret,0,true},{0,secret,true},{0,0,secret}}) do
+        f.env.C_Item.GetItemCooldown=function() return unpack(tuple) end
+        local record,reason=p:GetItemCooldown(5512);assert(not record and reason,'invalid item cooldown was accepted')
+        assert(fallbackCalls==0,'invalid or restricted native data triggered a fallback query')
+    end
+end)
 finish()

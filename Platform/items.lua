@@ -39,6 +39,25 @@ end
 local function finite(value)
     return type(value)=="number" and value==value and value>=0 and value<math.huge
 end
+function platform:GetItemCooldown(item)
+    local id,reason=self:GetItemID(item)
+    if not id then return nil,reason end
+    local fn=C_Item and C_Item.GetItemCooldown
+    if type(fn)~='function' then fn=C_Container and C_Container.GetItemCooldown end
+    if type(fn)~='function' then fn=GetItemCooldown end
+    if type(fn)~='function' then return nil,'missing-api' end
+    local ok,start,duration,enabled=pcall(fn,id)
+    if not ok then return nil,'api-error' end
+    for _,value in pairs({start=start,duration=duration,enabled=enabled}) do
+        if not self:CanReadValue(value) then return nil,'restricted-value' end
+    end
+    if not finite(start) or not finite(duration) then return nil,'invalid-api-result' end
+    -- Current C_Item uses bool; container/older global versions use 0/1. A
+    -- deprecated global may itself alias C_Item, so validate both tuple forms.
+    if enabled==1 then enabled=true elseif enabled==0 then enabled=false end
+    if type(enabled)~='boolean' then return nil,'invalid-api-result' end
+    return {startTime=start,duration=duration,isEnabled=enabled}
+end
 local function query(fn,...)
     if type(fn)~="function" then return nil,"missing-api" end
     local ok,value=pcall(fn,...)
@@ -62,17 +81,10 @@ function platform:IsItemReady(item,now)
     if not self:CanReadValue(usable) or not self:CanReadValue(power) then return nil,"restricted-value" end
     if type(usable)~="boolean" or type(power)~="boolean" then return nil,"invalid-api-result" end
     if not usable or power then return false end
-    fn=C_Container and C_Container.GetItemCooldown or GetItemCooldown
-    if type(fn)~="function" then return nil,"missing-api" end
-    local start,duration,enabled
-    ok,start,duration,enabled=pcall(fn,id)
-    if not ok then return nil,"api-error" end
-    for _,value in pairs({start=start,duration=duration,enabled=enabled}) do
-        if not self:CanReadValue(value) then return nil,"restricted-value" end
-    end
-    if not finite(start) or not finite(duration) or enabled~=0 and enabled~=1 then return nil,"invalid-api-result" end
-    if enabled==0 then return false end
-    return start+duration<=now
+    local cooldown,cooldownReason=self:GetItemCooldown(id)
+    if not cooldown then return nil,cooldownReason end
+    if not cooldown.isEnabled then return false end
+    return cooldown.startTime+cooldown.duration<=now
 end
 
 function platform:GetItemRangeState(item,unit)
