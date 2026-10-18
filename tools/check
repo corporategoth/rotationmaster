@@ -55,6 +55,7 @@ def main():
             ['lua5.1', 'tests/rotation_library.lua'],
             ['lua5.1', 'tests/defaults_ui.lua'],
             ['lua5.1', 'tests/defaults.lua'],
+            ['lua5.1', 'tests/default_corpus.lua'],
             ['lua5.1', 'tests/rotation_comparison.lua'],
             ['lua5.1', 'tests/visual_comparison.lua'],
             ['lua5.1', 'tests/import_session.lua'],
