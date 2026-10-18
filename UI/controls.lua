@@ -60,18 +60,18 @@ function addon:AlignWorkbenchTextLeft(button,inset)
     local label=button:GetFontString();label:ClearAllPoints();label:SetPoint('LEFT',inset or 4,0);label:SetJustifyH('LEFT');label:SetWidth(math.max(1,button:GetWidth()-(inset or 4)-4))
 end
 ---@class RMWorkbenchPill: RMWorkbenchButton
----@field SetAccent fun(self: RMWorkbenchPill, r: number, g: number, b: number)
+---@field SetAccent fun(self: RMWorkbenchPill, r: number, g: number, b: number, alpha?: number)
 ---@return RMWorkbenchPill
 function addon:CreateWorkbenchPill(parent,label,width)
     local button=self:CreateWorkbenchButton(parent,label,width);button:SetSize(width or 56,18);button.art:Hide()
     button.pillDecoration=self:CreateRoundedCardDecoration(button)
-    local accent={.35,.65,.4}
+    local accent={.35,.65,.4};local accentAlpha=.7
     local function paint(hover)
         local color=button.selected and accent or {.48,.48,.48}
-        button.pillDecoration:SetColors(color[1],color[2],color[3],hover and 1 or .7,button.selected and .6 or .25)
+        button.pillDecoration:SetColors(color[1],color[2],color[3],hover and 1 or button.selected and accentAlpha or .7,button.selected and .6 or .25)
     end
     function button:SetSelected(value) self.selected=value==true;paint(false) end
-    function button:SetAccent(r,g,b) accent={r,g,b};paint(false) end
+    function button:SetAccent(r,g,b,a) accent={r,g,b};accentAlpha=a or .7;paint(false) end
     addon:SetUIScript(button,'OnEnter',function() paint(true);if button.tooltip and GameTooltip then GameTooltip:SetOwner(button,'ANCHOR_RIGHT');GameTooltip:SetText(button.tooltip,1,1,1,1,true) end end)
     addon:SetUIScript(button,'OnLeave',function() paint(false);if GameTooltip and GameTooltip:IsOwned(button) then GameTooltip:Hide() end end)
     paint(false);

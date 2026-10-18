@@ -78,6 +78,7 @@ function addon:CreateWorkbenchLuaEditor(parent,changed,valid,preferred)
     function c:SetCloseHandler(callback) self.closeRequested=callback end
     function c:Acquire(callback,ownerValid)
         self.released=false;self.changed=callback;self.valid=ownerValid
+        if self.ResetInputTrace then addon.luaInputEditor=self;self:ResetInputTrace() end
         if self.syntax then pcall(self.syntax.enable,self.edit,self.syntaxColors,4) end
     end
     function c:Release()
@@ -111,5 +112,6 @@ function addon:CreateWorkbenchLuaEditor(parent,changed,valid,preferred)
             for _,event in ipairs({'OnTextChanged','OnTabPressed','OnUpdate'}) do c.edit:SetScript(event,scripts[event]) end
         end
     end
+    if self.InstallLuaInputDiagnostics then self:InstallLuaInputDiagnostics(c) end
     c:SetText('');return c
 end

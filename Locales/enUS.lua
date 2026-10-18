@@ -1897,6 +1897,10 @@ L['Search existing tags and select any number of them. Click a selected tag to r
 L['Click to remove this tag. Use the search results to change tag colors.'] = true
 
 L['Each callback keeps its own pending text while switching tabs. Undo and Redo edit that callback buffer. Reset restores its last saved code, or the template for a new condition, and can be undone. The main Apply saves and registers all callback buffers and metadata; Discard drops the whole draft. Leaving with changes offers Apply, Discard or Cancel. Check syntax runs no callbacks.'] = true
+L['No native Lua editor has been opened this session.'] = true
+L['Lua input diagnostics'] = true
+L['Move'] = true
+L['/rm editorinfo          - Copy native Lua input diagnostics.'] = true
 L['Edit fields opens a graphical schema draft. Add, name, reorder or remove fields, choose primitive or nested types, and edit nested fields. Apply stages the schema and its field order. Advanced exposes the equivalent raw schema, parsed as data without executing Lua.'] = true
 
 -- Callback documentation

@@ -11,7 +11,7 @@ function addon:condition_edit_box(update,key,source,saveAllowed,embedded)
     if d and not d.closed then if d.OwnerValid and not d.OwnerValid() then d:Close() else d:Show();return d,d.owner end end
     d=d or {frame=CreateFrame('Frame',nil,embedded and embedded.parent or UIParent),nativeCustomEditor=true}
     d.embedded=embedded;d.isEmbedded=embedded~=nil;if embedded then embedded.editor=d end
-    self.nativeCustomConditionDialog=d;d.closed=false;d.validationRequested=false;d.codeHistory={};d.update=update;d.selected='evaluate';d.session=(d.session or 0)+1;local session=d.session;local frame=d.frame
+    self.nativeCustomConditionDialog=d;d.closed=false;d.suspended=nil;d.validationRequested=false;d.codeHistory={};d.update=update;d.selected='evaluate';d.session=(d.session or 0)+1;local session=d.session;local frame=d.frame
     frame:ClearAllPoints();frame:EnableMouse(true)
     if embedded then
         frame:SetParent(embedded.parent);frame:SetSize(embedded.width,embedded.height);frame:SetPoint('TOPLEFT',0,0)
@@ -21,8 +21,8 @@ function addon:condition_edit_box(update,key,source,saveAllowed,embedded)
     end
     d.close=d.close or self:CreateWorkbenchIconButton(frame,'close',L['Close']);d.close:SetPoint('TOPRIGHT',-5,-5)
     d.help=d.help or self:CreateWorkbenchHelpButton(frame,L['Help']);d.help:SetPoint('TOPRIGHT',-28,-4)
-    if embedded then d.close:Hide();d.help:SetPoint('BOTTOMRIGHT',-4,30) else d.close:Show() end
-    d.body=d.body or CreateFrame('Frame',nil,frame);d.body:ClearAllPoints();d.body:SetPoint('TOPLEFT',embedded and 0 or 12,embedded and 0 or -34);d.body:SetSize(frame:GetWidth()-(embedded and 0 or 24),frame:GetHeight()-(embedded and 64 or 98))
+    if embedded then d.close:Hide();d.help:SetPoint('TOPRIGHT',-4,-30) else d.close:Show() end
+    d.body=d.body or CreateFrame('Frame',nil,frame);d.body:ClearAllPoints();d.body:SetPoint('TOPLEFT',embedded and 0 or 12,embedded and 0 or -34);d.body:SetSize(frame:GetWidth()-(embedded and 0 or 24),frame:GetHeight()-(embedded and 32 or 70))
     d.form=d.form or self:CreateSettingsForm(d.body);local p=d.form;p:SetWidth(d.body:GetWidth());p:SetHeight(d.body:GetHeight())
     local profile,global=self.db.profile,self.db.global
     local function valid() return d.session==session and not d.closed and d.owner and d.owner.active and addon.db.profile==profile and addon.db.global==global and (not saveAllowed or saveAllowed()) end
@@ -34,8 +34,11 @@ function addon:condition_edit_box(update,key,source,saveAllowed,embedded)
         d.model=resume.model;d.selected=resume.selected;d.codeHistory=resume.codeHistory;d.originalKey=resume.originalKey;d.expected=resume.expected;d.expectedSource=resume.expectedSource;d.validationRequested=resume.validationRequested;d.pendingRaw=resume.raw
     elseif embedded and embedded.initialize then embedded.initialize(d.model) end
     function d:SetCallback(event,callback) self[event]=callback end
-    function d:Show() if valid() then self.frame:Show();if not self.embedded then addon:RegisterWindowForEscape(self) end end end
-    function d:HideForChild() self.frame:Hide() end
+    function d:ShowFooter(shown)
+        for _,button in ipairs({self.apply,self.cancel,self.viewChanges}) do if shown then button:Show() else button:Hide() end end
+    end
+    function d:Show() if valid() then self.suspended=nil;self.frame:Show();self:ShowFooter(true);if not self.embedded then addon:RegisterWindowForEscape(self) end end end
+    function d:HideForChild() self.suspended=true;self:ShowFooter(false);self.frame:Hide() end
     function d:CodeState()
         local state=self.codeHistory[self.selected]
         if not state then state={text=self.model.value[self.selected],undo={},redo={}};self.codeHistory[self.selected]=state end
@@ -72,7 +75,8 @@ function addon:condition_edit_box(update,key,source,saveAllowed,embedded)
         for _,record in ipairs(p.edits) do if record.dirty then
             for key,control in pairs(p.fields) do if control==record.control then raw[key]=control:GetText();break end end
         end end
-        return {model=self.model,selected=self.selected,codeHistory=self.codeHistory,originalKey=self.originalKey,expected=self.expected,expectedSource=self.expectedSource,validationRequested=self.validationRequested,raw=raw}
+        local schema=self.schemaEditor and self.schemaEditor.active and self.schemaEditor:CaptureDraft() or nil
+        return {model=self.model,selected=self.selected,codeHistory=self.codeHistory,originalKey=self.originalKey,expected=self.expected,expectedSource=self.expectedSource,validationRequested=self.validationRequested,raw=raw,schema=schema}
     end
     function d:CommitCode()
         local source=self:PendingSource();for name in pairs(addon.CustomConditionCallbacks) do self.model:SetFunction(name,source[name]) end
@@ -87,6 +91,7 @@ function addon:condition_edit_box(update,key,source,saveAllowed,embedded)
         if not valid() or not p:FlushEdits() then return false end;self:FlushCode();return true
     end
     function d:IsDirty()
+        if self.schemaEditor and self.schemaEditor.active and self.schemaEditor:IsDirty() then return true end
         if self.embedded and self.embedded.dirty and self.embedded.dirty() then return true end
         if not addon:SettingsDataEqual({key=self.model.key,value=self:PendingSource(),context=self.model.context},self.model.baseline) then return true end
         for _,edit in ipairs(p.edits) do if edit.dirty then return true end end;return false
@@ -141,12 +146,15 @@ function addon:condition_edit_box(update,key,source,saveAllowed,embedded)
         if self.ownedHelp and self.ownedHelp.sections==self.ownedHelpSections then self.ownedHelp:Hide() end
         self.ownedPicker=nil;self.ownedHelp=nil;self.ownedHelpSections=nil
         if self.code then pcall(self.code.Release,self.code) end;p:Release();self.frame:Hide()
+        for _,button in ipairs({self.apply,self.cancel,self.viewChanges}) do button:Hide() end
         if self.OnRelease then self:OnRelease() end
         addon:SetUIScript(self.frame,'OnUpdate',nil)
         self.OwnerValid=nil;self.codeHistory=nil;self.model=nil;self.expected=nil;self.expectedSource=nil;self.validationInput=nil;self.update=nil;self.embedded=nil;p.builder=nil;p.edits={};p.fields={};p.profile=nil;p.global=nil;p.char=nil
         if self.rmCustomTransferForm and self.rmCustomTransferForm.textDialog then local transfer=self.rmCustomTransferForm.textDialog;transfer.input:SetText('');transfer.options=nil end
     end
     function d:Apply()
+        if self.schemaEditor and self.schemaEditor.active and not self.schemaEditor:Apply() then return false end
+        if self.suspended then return false end
         self.validationRequested=true
         if not self:Flush() then self:UpdateActions();return false end
         self:UpdateActions()
@@ -173,6 +181,11 @@ function addon:condition_edit_box(update,key,source,saveAllowed,embedded)
         for key,button in pairs(self.functionTabs) do button:SetSelected(key==name) end
         self:UpdateActions()
     end
+    function d:OpenSchema(fields,fieldOrder,childResume)
+        return addon:ShowFieldSchemaEditor(self,fields,fieldOrder,function(value,ordered)
+            if valid() then self.model:Change(function(model) model.value.fields=value;model.value.fieldOrder=ordered end);p:Draw();self:UpdateActions() end
+        end,valid,childResume)
+    end
     d.undo=d.undo or self:CreateWorkbenchHistoryButton(frame,'undo',L['Undo']);d.undo:SetPoint('BOTTOMLEFT',12,28)
     d.redo=d.redo or self:CreateWorkbenchHistoryButton(frame,'redo',L['Redo']);d.redo:SetPoint('BOTTOMLEFT',86,28)
     d.syntax=d.syntax or self:CreateWorkbenchButton(frame,L['Check syntax'],122);d.syntax:SetPoint('BOTTOMLEFT',164,28)
@@ -191,9 +204,17 @@ function addon:condition_edit_box(update,key,source,saveAllowed,embedded)
     p:Open(function(form)
         if d.chrome and not embedded then d.chrome:SetContext(L['Rotation Master']..': '..(d.model.value.description~='' and d.model.value.description or L['Custom condition']),L['Custom condition'],d.model.key) end
         if embedded and embedded.fields then embedded.fields(form,d) end
-        form:Toggle('definition_enabled',L['Availability'],not d.model.value.disabled,L['Disabled'],L['Enabled'],function(value) d:FlushCode();d.model:Change(function(model) model.value.disabled=not value end);p:Draw();d:UpdateActions() end)
+        local availability=form:Acquire('sourceAvailability',function() return addon:CreateWorkbenchPill(form.child,'',96) end)
+        availability:SetText(d.model.value.disabled and L['Disabled'] or L['Enabled']);availability:SetSelected(not d.model.value.disabled);form.fields.definition_enabled=availability
+        addon:SetUIScript(availability,'OnClick',function() if valid() and d:Flush() then d.model:Change(function(model) model.value.disabled=not model.value.disabled end);p:Draw();d:UpdateActions() end end)
+        availability:ClearAllPoints();if form.fields.delete then availability:SetPoint('RIGHT',form.fields.delete,'LEFT',-6,0) else availability:SetPoint('TOPRIGHT',-4,-4) end
+        if not embedded then form:Row(nil,24) end
+        local identityY=form.y
         form:Edit('identifier',L['Identifier'],d.model.key,function(text) return addon:IsCustomConditionIdentifier(text,text==d.originalKey and d.expectedSource~=nil) and text or nil end,function(text) d.model:Change(function(model) model.key=text end) end)
+        local identifierLabel=form.pool.labels[form.counts.labels]
+        identifierLabel:ClearAllPoints();identifierLabel:SetPoint('TOPLEFT',64,-identityY);identifierLabel:SetWidth(104)
         local identifier=form.fields.identifier
+        identifier:ClearAllPoints();identifier:SetPoint('TOPLEFT',174,-identityY);identifier:SetWidth(form.width-174)
         identifier:SetMaxLetters(d.model.key==d.originalKey and d.expectedSource and math.max(256,#d.originalKey) or 256)
         local changed=identifier:GetScript('OnTextChanged')
         addon:SetUIScript(identifier,'OnTextChanged',function(control,user)
@@ -207,13 +228,19 @@ function addon:condition_edit_box(update,key,source,saveAllowed,embedded)
             if changed then changed(control,user) end
         end)
         if d.originalKey and d.model.key==d.originalKey then identifier:EnableMouse(false) end
+        local descriptionY=form.y
         form:Edit('description',L['Description'],d.model.value.description,nil,function(text) d.model:Change(function(model) model.value.description=text end) end)
-        local icon=form:Button('icon',L['Choose icon'],function()
+        local descriptionLabel=form.pool.labels[form.counts.labels]
+        descriptionLabel:ClearAllPoints();descriptionLabel:SetPoint('TOPLEFT',64,-descriptionY);descriptionLabel:SetWidth(104)
+        form.fields.description:ClearAllPoints();form.fields.description:SetPoint('TOPLEFT',174,-descriptionY);form.fields.description:SetWidth(form.width-174)
+        local icon=form:Acquire('sourceIcon',function() return addon:CreateWorkbenchButton(form.child,'',52) end);form.fields.icon=icon;icon.tooltip=L['Choose icon'];icon:ClearAllPoints();icon:SetPoint('TOPLEFT',0,-identityY);icon:SetSize(52,52)
+        addon:SetUIScript(icon,'OnClick',function()
+            if not valid() then return end
             if not d:Flush() then return end
             d.ownedPicker=addon:ShowWorkbenchIconPicker(d.model.value.icon,function(texture) if valid() and d:Flush() then d.model:Change(function(model) model.value.icon=texture end);p:Draw() end end,valid)
             d.ownedPickerSerial=d.ownedPicker.serial
         end)
-        icon.texture=icon.texture or icon:CreateTexture(nil,'ARTWORK');icon.texture:SetTexture(d.model.value.icon);icon.texture:SetSize(24,24);icon.texture:SetPoint('LEFT',4,0);addon:AlignWorkbenchTextLeft(icon,34)
+        icon.texture=icon.texture or icon:CreateTexture(nil,'ARTWORK');icon.texture:SetTexture(d.model.value.icon);icon.texture:SetAllPoints(icon)
         form:Edit('schema',L['Field schema'],addon:FormatCustomFieldSchema(d.model.value.fields) or '',function(text) return addon:ParseCustomFieldSchema(text) end,function(fields) d.model:Change(function(model) model.value.fields=fields;model.value.fieldOrder=nil end) end)
         form.fields.schema:SetMaxLetters(32768);form.fields.schema:SetText(addon:FormatCustomFieldSchema(d.model.value.fields) or '')
         local schema=form.fields.schema;local schemaY=form.y-28
@@ -221,18 +248,18 @@ function addon:condition_edit_box(update,key,source,saveAllowed,embedded)
             d:FlushCode()
             local parsed=addon:ParseCustomFieldSchema(schema:GetText());if not parsed then form:Message(L['Invalid custom condition.']);return end
             local fieldOrder=addon:SettingsDataEqual(parsed,d.model.value.fields) and d.model.value.fieldOrder or nil
-            addon:ShowFieldSchemaEditor(d,parsed,fieldOrder,function(fields,order)
-                if valid() then d.model:Change(function(model) model.value.fields=fields;model.value.fieldOrder=order end);p:Draw();d:UpdateActions() end
-            end,valid)
+            d:OpenSchema(parsed,fieldOrder)
         end)
         graph:ClearAllPoints();graph:SetPoint('TOPLEFT',220,-schemaY);graph:SetWidth(math.max(80,form.width-312));form.y=form.y-28
         local advanced=form:Button('advancedSchema',L['Advanced'],function() d.advancedSchema=not d.advancedSchema;if d.advancedSchema then schema:Show();graph:Hide() else schema:Hide();graph:Show() end end)
         advanced:ClearAllPoints();advanced:SetPoint('TOPRIGHT',0,-schemaY);advanced:SetWidth(84);form.y=form.y-28;schema:SetWidth(math.max(80,form.width-312))
         if d.advancedSchema then graph:Hide() else schema:Hide() end
-        local perRow=math.max(1,math.floor((form.width+4)/106));local y=form:Row(nil,math.ceil(#order/perRow)*28)
+        local tabWidth=(form.width-3*(#order-1))/#order;local y=form:Row(nil,26)
         d.functionTabs={}
         for i,name in ipairs(order) do
-            local button=form:Acquire('functionTabs',function() return addon:CreateWorkbenchButton(form.child,'',102) end);button:ClearAllPoints();button:SetPoint('TOPLEFT',((i-1)%perRow)*106,-y-math.floor((i-1)/perRow)*28);button:SetSize(102,24);button:SetText(labels[name]);d.functionTabs[name]=button;button:SetSelected(name==d.selected);addon:SetUIScript(button,'OnClick',form:Guard(function() d:SelectFunction(name) end))
+            local button=form:Acquire('functionTabs',function() return addon:CreateWorkbenchButton(form.child,'',tabWidth) end);button:ClearAllPoints();button:SetPoint('TOPLEFT',(i-1)*(tabWidth+3),-y);button:SetSize(tabWidth,22);button:SetText(labels[name]);button.tooltip=labels[name];d.functionTabs[name]=button;button:SetSelected(name==d.selected);addon:SetUIScript(button,'OnClick',form:Guard(function() d:SelectFunction(name) end))
+            local caption=button:GetFontString();caption:SetFontObject('GameFontHighlightSmall')
+            if caption.GetFont and caption:GetStringWidth()>tabWidth-6 then local font,size=caption:GetFont();caption:SetFont(font,math.max(8,size*(tabWidth-6)/caption:GetStringWidth()),'') end
         end
         local actionY=form.y
         for index,entry in ipairs({{'codeUndo','undo',L['Undo']},{'codeRedo','redo',L['Redo']},{'codeReset',nil,L['Reset']}}) do
@@ -250,9 +277,11 @@ function addon:condition_edit_box(update,key,source,saveAllowed,embedded)
         d.documentation=form:Acquire('callbackDocs',function() local text=form.child:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall');text:SetJustifyH('LEFT');text:SetWordWrap(true);return text end)
         d.documentationTop=form.y
         function d:LayoutDocumentation()
-            self.documentation:ClearAllPoints();self.documentation:SetPoint('TOPLEFT',0,-self.documentationTop);self.documentation:SetWidth(form.width);self.documentation:SetText(addon:CustomConditionDocumentation(self.selected));self.documentation:SetHeight(0)
+            self.documentation:ClearAllPoints();self.documentation:SetPoint('TOPLEFT',0,-self.documentationTop);self.documentation:SetWidth(form.width-30);self.documentation:SetText(addon:CustomConditionDocumentation(self.selected));self.documentation:SetHeight(0)
+            if embedded then self.help:SetParent(form.child);self.help:ClearAllPoints();self.help:SetPoint('TOPRIGHT',0,-self.documentationTop) end
             local actionTop=self.documentationTop+self.documentation:GetStringHeight()+8
             for index,control in ipairs({self.codeUndo,self.codeRedo,self.codeReset}) do control:ClearAllPoints();control:SetPoint('TOPLEFT',(index-1)*74,-actionTop) end
+            self.syntax:SetParent(form.child);self.syntax:ClearAllPoints();self.syntax:SetPoint('TOPLEFT',222,-actionTop);self.syntax:Show()
             local signatureTop=actionTop+26
             self.signature:ClearAllPoints();self.signature:SetPoint('TOPLEFT',0,-signatureTop);self.signature:SetWidth(form.width);self.signature:SetHeight(18)
             local codeTop=signatureTop+22
@@ -275,13 +304,15 @@ function addon:condition_edit_box(update,key,source,saveAllowed,embedded)
     end)
     addon:SetUIScript(frame,'OnUpdate',function() if not valid() then d:Close() else d:UpdateActions() end end)
     addon:InstallCustomChangeReview(d)
+    d.undo:Hide();d.redo:Hide();d.apply:Show();d.cancel:Show();d.viewChanges:Show()
     if embedded then
-        d.undo:ClearAllPoints();d.undo:SetPoint('BOTTOMLEFT',0,30);d.redo:ClearAllPoints();d.redo:SetPoint('BOTTOMLEFT',74,30)
-        d.syntax:ClearAllPoints();d.syntax:SetPoint('BOTTOMLEFT',148,30);d.transfer:Hide()
-        d.apply:ClearAllPoints();d.apply:SetPoint('BOTTOMRIGHT',-108,4);d.cancel:ClearAllPoints();d.cancel:SetPoint('BOTTOMRIGHT',0,4);d.cancel:SetText(L['Discard'])
-        d.viewChanges:ClearAllPoints();d.viewChanges:SetPoint('BOTTOMLEFT',0,4)
+        local footer=embedded.footer or frame;d.apply:SetParent(footer);d.cancel:SetParent(footer);d.viewChanges:SetParent(footer);d.transfer:Hide()
+        d.apply:ClearAllPoints();d.apply:SetPoint('BOTTOMRIGHT',-108,4);d.cancel:ClearAllPoints();d.cancel:SetPoint('BOTTOMRIGHT',-8,4);d.cancel:SetWidth(92);d.cancel:SetText(L['Discard'])
+        d.viewChanges:ClearAllPoints();d.viewChanges:SetPoint('RIGHT',d.apply,'LEFT',-6,0)
     else d.transfer:Show();d.cancel:SetText(L['Cancel']);addon:RegisterWindowForEscape(d) end
-    frame:Show();d:UpdateActions();return d,d.owner
+    frame:Show();d:UpdateActions()
+    if resume and resume.schema then d:OpenSchema(d.model.value.fields,d.model.value.fieldOrder,resume.schema) end
+    return d,d.owner
 end
 function addon:LayoutCustomConditionEditor(parent,update,key,source)
     if not parent.nativeCustomEditor then return end

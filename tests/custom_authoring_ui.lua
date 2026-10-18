@@ -1,7 +1,7 @@
 local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite()
 local function fixture(inline)
     local f=F.new();local a=f.addon;dofile('tests/fixtures/native_ui.lua')(f.env);local make=f.env.CreateFrame;f.env.CreateFrame=function(kind,...) local frame=make(kind,...);if kind=='EditBox' then local set=frame.SetText;frame.SetText=function(self,text) if self.maxLetters and self.maxLetters>0 then text=text:sub(1,self.maxLetters) end;set(self,text) end end;return frame end;local data,deps=dofile('tests/fixtures/codec.lua')();a.RotationData=data;a.NewRotationCodec=function() return data.NewCodec(deps) end;a.pretty_name='Rotation Master';a.name='rotationmaster';a.db.char={};a.db.global.custom_conditions={}
-    for _,path in ipairs({'Core/custom_condition_owner.lua','UI/settings_draft.lua','Core/custom_authoring.lua','Core/schema_authoring.lua','UI/schema_editor.lua','UI/settings_history.lua','UI/settings_unsaved.lua','UI/settings_layout.lua','UI/settings_ordered.lua','UI/settings_roster_order.lua','UI/settings_form.lua','UI/settings_transfer.lua','UI/custom_condition_transfer.lua','UI/icon_picker.lua','UI/help.lua','Options/custom_condition.lua','UI/lua_editor.lua','UI/custom_condition_editor.lua'}) do local h=io.open(path);if h then h:close();f.load(path) end end
+    for _,path in ipairs({'Core/custom_condition_owner.lua','UI/settings_draft.lua','Core/custom_authoring.lua','Core/schema_authoring.lua','UI/schema_editor.lua','UI/settings_history.lua','UI/settings_unsaved.lua','UI/settings_layout.lua','UI/settings_ordered.lua','UI/settings_roster_order.lua','UI/settings_form.lua','UI/settings_transfer.lua','UI/custom_condition_transfer.lua','UI/icon_picker.lua','UI/help.lua','Options/custom_condition.lua','UI/lua_input_diagnostics.lua','UI/lua_editor.lua','UI/custom_condition_editor.lua'}) do local h=io.open(path);if h then h:close();f.load(path) end end
     a.conditionDefinitions=a.definitions;a.RegisterCondition=function(self,key,value) self.conditionDefinitions[key]=value;if value.on_register then value.on_register(key) end end
     f.env.loadstring=function(text,name) local fn,why=loadstring(text,name);if fn then setfenv(fn,f.env) end;return fn,why end
     if inline then f.load('UI/settings_collections.lua');f.load('UI/settings_conditions.lua');f.load('UI/condition_source_pane.lua');a.listConditions=function(_,_,_,store) local tags={};for key in pairs((store or a.db).global.custom_conditions) do tags[#tags+1]=key end;table.sort(tags);return tags end end
@@ -239,5 +239,66 @@ test('invalid inline schema still permits category navigation through Apply Disc
     local raw=d.form.fields.schema;raw:SetText('{ broken =');raw.scripts.OnTextChanged(raw,true);d.form.fields.current_category:Click()
     assert(p.prompt and p.prompt.frame:IsShown(),'invalid raw schema blocked pending-change navigation');p.prompt.cancel:Click();assert(d.form.fields.schema:GetText()=='{ broken =')
     d.form.fields.current_category:Click();p.prompt.discard:Click();assert(p.mode=='categories' and not p.inlineCondition)
+end)
+test('inline authoring has one callback row compact identity header and owner footer actions',function()
+    local f,a=fixture(true);local source=a:CopySettingsData(a.empty_condition);source.description='Inline';a.db.global.custom_conditions.INLINE=source;a.conditionDefinitions.INLINE={description='Inline',fields={}}
+    local host=f.env.CreateFrame('Frame');host:SetSize(1100,700);local p=a:OpenNativeSettings(host,'Conditions');local d=p.inlineCondition
+    local row
+    for _,tab in pairs(d.functionTabs) do row=row or tab.point[3];assert(tab.point[3]==row,'callback tabs wrap onto multiple lines') end
+    assert(d.syntax:GetParent()==d.form.child and d.syntax.point[3]==d.codeReset.point[3] and d.syntax.point[2]>d.codeReset.point[2],'syntax is not after Reset')
+    assert(not d.undo:IsShown() and not d.redo:IsShown(),'duplicate footer history still shown')
+    assert(d.apply:GetParent()==p.frame and d.cancel:GetParent()==p.frame and d.viewChanges:GetParent()==p.frame,'source actions scroll instead of anchoring to pane footer')
+    assert(d.viewChanges.point[1]=='RIGHT' and d.viewChanges.point[2]==d.apply,'View Changes is not adjacent to Apply')
+    assert(d.form.fields.definition_enabled.pillDecoration and d.form.fields.definition_enabled.selected,'availability is not the green enabled pill')
+    assert(d.form.fields.definition_enabled.point[1]=='RIGHT' and d.form.fields.definition_enabled.point[2]==d.form.fields.delete,'availability is not beside delete')
+    assert(d.form.fields.icon:GetHeight()>=48 and d.form.fields.icon:GetText()=='','source icon is still a Choose icon button')
+    assert(d.form.fields.identifier.point[2]>d.form.fields.icon.point[2] and d.form.fields.description.point[2]==d.form.fields.identifier.point[2],'identity controls do not share space with source icon')
+    assert(d.form.fields.move_to:GetText()=='Move' and d.form.fields.move_to.point[3]==d.form.fields.current_category.point[3],'category destination duplicates the displayed category')
+end)
+test('inline category Move stages its chosen destination until Apply',function()
+    local f,a=fixture(true);local source=a:CopySettingsData(a.empty_condition);source.description='Inline';a.db.global.custom_conditions.INLINE=source;a.conditionDefinitions.INLINE={description='Inline',fields={}}
+    a.db.profile.condition_groups={{id='group',name='Group',conditions={}}};local host=f.env.CreateFrame('Frame');host:SetSize(1100,700);local p=a:OpenNativeSettings(host,'Conditions');local d=p.inlineCondition
+    d.form.fields.move_to:Click();for _,button in ipairs(d.form.menu.rows) do if button:GetText()=='Group' then button:Click();break end end
+    assert(d.model.context.category=='group' and #a.db.profile.condition_groups[1].conditions==0)
+    d:UpdateActions();assert(d.form.fields.move_to.rmUnsaved);assert(d:Apply());assert(a.db.profile.condition_groups[1].conditions[1]=='INLINE')
+end)
+test('input diagnostics observe native events without exposing source or rewriting the cursor',function()
+    local f,a=fixture();f.load('UI/lua_input_diagnostics.lua');local d=a:condition_edit_box(function() end);local code=d.code;local edit=code.edit
+    edit:SetText('PRIVATE_BODY');edit:SetFocus();edit:SetCursorPosition(3);code:ObserveInput('mouse-up')
+    local report=a:LuaEditorInputReport();assert(not report:find('PRIVATE_BODY',1,true) and report:find('cursor=3',1,true) and report:find('focus=true',1,true))
+    assert(edit:GetCursorPosition()==3 and edit:HasFocus() and edit:GetText()=='PRIVATE_BODY','input report changed the editing state')
+    for i=1,100 do edit:SetCursorPosition(i);code:ObserveInput('cursor') end
+    assert(#code.inputTrace<=32 and code.inputCounts.cursor==100,'input trace is unbounded or loses counters')
+    d:Close();assert(a:LuaEditorInputReport():find('closed',1,true));local reopened=a:condition_edit_box(function() end);assert(reopened.code.inputCounts.cursor==nil,'reused editor retained old traces')
+end)
+test('source footer follows schema child ownership and navigation includes its pending fields',function()
+    local f,a=fixture(true);local source=a:CopySettingsData(a.empty_condition);source.description='Inline';a.db.global.custom_conditions.INLINE=source;a.conditionDefinitions.INLINE={description='Inline',fields={}}
+    local host=f.env.CreateFrame('Frame');host:SetSize(1100,700);local p=a:OpenNativeSettings(host,'Conditions');local d=p.inlineCondition
+    d.form.fields.schemaGraph:Click();local graph=d.schemaEditor;graph.form.fields.add:Click()
+    assert(not d.apply:IsShown() and not d.cancel:IsShown() and not d.viewChanges:IsShown(),'source footer stayed visible under schema child')
+    local left=false;p:RequestLeave(function() left=true end);assert(not left and p.prompt.frame:IsShown(),'schema draft escaped pending navigation')
+    p.prompt.cancel:Click();assert(graph.active);p:RequestLeave(function() left=true end);p.prompt.accept:Click()
+    assert(left and a.db.global.custom_conditions.INLINE.fields.field=='string','Apply lost the schema child draft')
+    d=p.inlineCondition;assert(d.apply:IsShown() and d.cancel:IsShown() and d.viewChanges:IsShown())
+    d.form.fields.schemaGraph:Click();d.schemaEditor.cancel:Click();assert(d.apply:IsShown() and d.viewChanges:IsShown(),'child Cancel did not restore source footer')
+end)
+test('reacquiring a native editor makes it the input diagnostic target',function()
+    local f,a=fixture();local valid=function() return true end
+    local first=a:CreateWorkbenchLuaEditor(f.env.UIParent,function() end,valid,'plain');local second=a:CreateWorkbenchLuaEditor(f.env.UIParent,function() end,valid,'plain')
+    first:Release();second:Release();first:Acquire(function() end,valid);first:ObserveInput('activeA')
+    local report=a:LuaEditorInputReport();assert(report:find('state=open',1,true) and report:find('activeA',1,true),'diagnostics still target another closed editor')
+end)
+test('closing an owner with a schema child does not suspend its next source session',function()
+    local f,a=fixture();local d=a:condition_edit_box(function() end);d.form.fields.schemaGraph:Click();assert(d.suspended);d:Close()
+    local saved;d=a:condition_edit_box(function(key) saved=key end);d.model.key='REOPENED';d.model.value.description='Reopened';d.form:Draw()
+    assert(d:Apply() and saved=='REOPENED','reopened editor remained suspended by the prior child')
+end)
+test('resizing the owner preserves a schema child draft including invalid raw field names',function()
+    local f,a=fixture(true);local source=a:CopySettingsData(a.empty_condition);source.description='Inline';a.db.global.custom_conditions.INLINE=source;a.conditionDefinitions.INLINE={description='Inline',fields={}}
+    local host=f.env.CreateFrame('Frame');host:SetSize(1100,700);local p=a:OpenNativeSettings(host,'Conditions');local d=p.inlineCondition
+    d.form.fields.schemaGraph:Click();d.schemaEditor.form.fields.add:Click();local raw=d.schemaEditor.form.fields.field_1;raw:SetText('bad name');raw.scripts.OnTextChanged(raw,true)
+    p:SetWidth(1060);d=p.inlineCondition;local graph=d.schemaEditor
+    assert(graph.active and graph.form.fields.field_1:GetText()=='bad name' and graph.model.root.children[1].name=='field','resize discarded schema editor state')
+    assert(not d.apply:IsShown());graph.cancel:Click();assert(d.apply:IsShown() and next(d.model.value.fields)==nil)
 end)
 finish()

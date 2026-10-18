@@ -27,4 +27,10 @@ test('dropdown tag colors remain editable for selected tags and tint the pill bo
     assert(rgba.r==1 and rgba.g==0 and rgba.b==0 and #picker.tags==1)
     assert(picker.chips[1].pillDecoration.border[1].color[1]==1 and picker.chips[1].pillDecoration.border[1].color[2]==0)
 end)
+test('tag pill border retains the tag RGBA after layout and pointer leave',function()
+    local f,parent=fixture();local rgba={r=.2,g=.6,b=.9,a=.4}
+    local picker=f.addon:CreateRotationTagPicker(parent,{available=function() return {'PVP'} end,color=function() return rgba end})
+    picker:SetTags({'PVP'});picker:SetWidth(280);local chip=picker.chips[1];chip.scripts.OnLeave()
+    for _,edge in ipairs(chip.pillDecoration.border) do assert(edge.color[1]==rgba.r and edge.color[2]==rgba.g and edge.color[3]==rgba.b and edge.color[4]==rgba.a,'tag border does not match tag color') end
+end)
 finish()

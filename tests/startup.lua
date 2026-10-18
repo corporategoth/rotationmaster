@@ -47,7 +47,7 @@ local function fixture(modern, absentThreat)
         ['AceGUI-3.0-SpellLoader'] = {}, ['AceGUI-3.0-ItemLoader'] = {},
         ['AceLocale-3.0'] = {GetLocale = function() return L end},
         ['LibDBIcon-1.0'] = {Register = function() end}, ['LibSharedMedia-3.0'] = {},
-        ['LibDataBroker-1.1'] = {NewDataObject = function(_, _, data) return data end},
+        ['LibDataBroker-1.1'] = {NewDataObject = function(_, _, data) env.broker=data;return data end},
         ['ThreatClassic-1.0'] = not absentThreat and {Disable = function() end} or nil,
     }
     env.LibStub = function(name, silent)
@@ -1097,6 +1097,15 @@ test('real recommendation engine fills the native preview with spell and item ic
     local w=a:CreateNativePreviewWindow();a:EvaluateNextActionInternal()
     assert(w.count==2 and w.icons[1].spellId==403 and w.icons[2].itemId==5512 and w.icons[2].texture:GetTexture()==5522)
     local first,second=w.icons[1],w.icons[2];state.stock[5512]=0;a:EvaluateNextActionInternal();assert(w.icons[1]==first and not second:IsShown())
+end)
+test('broker launcher toggles the workbench through its guarded Hide without creating dropdowns',function()
+    local env,a,load=fixture(true);load('main.lua');local opened,closed=0,0;local shown=false
+    env.CreateFrame=function() error('left click created a dropdown') end
+    a.ShowConfig=function(_,section) assert(section=='Rotations');opened=opened+1;shown=true end
+    a.configWindow={frame={IsShown=function() return shown end},Hide=function() closed=closed+1 end}
+    env.broker.OnClick(nil,'LeftButton');assert(opened==1 and shown)
+    env.broker.OnClick(nil,'LeftButton');assert(opened==1 and closed==1 and shown,'launcher bypassed pending-change close guard')
+    shown=false;env.broker.OnClick(nil,'LeftButton');assert(opened==2)
 end)
 print(string.format('%d passed, %d failed', passed, failures))
 os.exit(failures == 0 and 0 or 1)

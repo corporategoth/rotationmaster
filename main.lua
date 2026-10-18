@@ -206,12 +206,16 @@ function addon:HandleCommand(str)
         addon:print(L["/rm check               - Check the database integrity."])
         addon:print(L["/rm repair              - Fix any DB errors found in the data with internal validation."])
         addon:print(L["/rm errors              - View and copy Rotation Master errors."])
+        addon:print(L['/rm editorinfo          - Copy native Lua input diagnostics.'])
 
     elseif cmd == "config" then
         self:ShowConfig("Rotations")
 
     elseif cmd == "errors" then
         self:ShowErrors()
+
+    elseif cmd == 'editorinfo' then
+        self:ShowLuaEditorInputReport()
 
     elseif cmd == "disable" then
         addon:disable()
@@ -475,14 +479,14 @@ end
 
 function DataBroker.OnClick(_, button)
     if addon.initializationErrorReport then addon:ShowErrors();return end
-    local frame = CreateFrame("Frame", addon_name .. "LDBFrame")
-    local dropdownFrame = CreateFrame("Frame", addon_name .. "LDBDropdownFrame", frame, "UIDropDownMenuTemplate")
-
     if button == "RightButton" then
+        local frame = CreateFrame("Frame", addon_name .. "LDBFrame")
+        local dropdownFrame = CreateFrame("Frame", addon_name .. "LDBDropdownFrame", frame, "UIDropDownMenuTemplate")
         UIDropDownMenu_Initialize(dropdownFrame, minimapInitialize)
         ToggleDropDownMenu(1, nil, dropdownFrame, "cursor", 5, -10)
     elseif button == "LeftButton" then
-        addon:ShowConfig("Rotations")
+        local shell=addon.configWindow
+        if shell and shell.frame:IsShown() then shell:Hide() else addon:ShowConfig("Rotations") end
     end
 end
 

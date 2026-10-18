@@ -1,7 +1,7 @@
 local addon_name,addon=...
 local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
 local types={{value='string',text=L['Text']},{value='number',text=L['Number']},{value='boolean',text=L['Boolean']},{value='condition',text=L['Condition']},{value='condition[]',text=L['Condition list']},{value='record',text=L['Record / map']},{value='union',text=L['Allowed types / list alternatives']}}
-function addon:ShowFieldSchemaEditor(owner,fields,fieldOrder,changed,ownerValid)
+function addon:ShowFieldSchemaEditor(owner,fields,fieldOrder,changed,ownerValid,resume)
     local d=owner.schemaEditor
     if d and d.active then d.frame:Show();return d end
     d=d or {frame=CreateFrame('Frame',nil,UIParent),path={}};owner.schemaEditor=d;d.active=true;d.path={};d.serial=(d.serial or 0)+1;local serial=d.serial
@@ -12,19 +12,27 @@ function addon:ShowFieldSchemaEditor(owner,fields,fieldOrder,changed,ownerValid)
     d.form=d.form or addon:CreateSettingsForm(d.host);local p=d.form
     local model,why=addon:NewFieldSchemaDraft(fields,fieldOrder)
     if not model then d.active=false;frame:Hide();owner.form:Message(string.format(L['Invalid field schema: %s'],why));return nil end
-    d.model=model;local baseline=addon:CopySettingsData(d.model.root)
+    d.model=resume and resume.model or model;d.path=resume and resume.path or {};local baseline=resume and resume.baseline or addon:CopySettingsData(d.model.root)
+    function d:CaptureDraft()
+        local raw={};for _,record in ipairs(p.edits) do if record.dirty then for key,control in pairs(p.fields) do if control==record.control then raw[key]=control:GetText();break end end end end
+        return {model=self.model,path=addon:CopySettingsData(self.path),baseline=addon:CopySettingsData(baseline),raw=raw}
+    end
     local function valid() return d.active and d.serial==serial and ownerValid() end
     function d:Close()
         if not self.active then return end;self.active=false;p:Release();frame:Hide();self.model=nil
         if ownerValid() then owner:Show() end
     end
-    function d:Hide()
+    function d:IsDirty()
         local dirty=not addon:SettingsDataEqual(d.model.root,baseline);for _,record in ipairs(p.edits) do dirty=dirty or record.dirty end
+        return dirty
+    end
+    function d:Hide()
+        local dirty=self:IsDirty()
         if not valid() or not dirty then self:Close();return end
         p:ConfirmPending(function() self:Apply() end,function() self:Close() end)
     end
     function d:UpdateActions()
-        local dirty=not addon:SettingsDataEqual(d.model.root,baseline);for _,record in ipairs(p.edits) do dirty=dirty or record.dirty end
+        local dirty=self:IsDirty()
         if dirty then d.apply:Enable() else d.apply:Disable() end
         if #d.model.undo>0 then d.undo:Enable() else d.undo:Disable() end
         if #d.model.redo>0 then d.redo:Enable() else d.redo:Disable() end
@@ -75,6 +83,10 @@ function addon:ShowFieldSchemaEditor(owner,fields,fieldOrder,changed,ownerValid)
             local used={};for _,child in ipairs(node.children) do used[child.name]=true end;local name='field';local n=1;while used[name] do n=n+1;name='field'..n end
             d.model:Change(function() node.children[#node.children+1]={name=name,kind='string'} end);form:Draw()
         end)
+        if resume then
+            for _,record in ipairs(form.edits) do for key,text in pairs(resume.raw) do if form.fields[key]==record.control then record.control:SetText(text);record.dirty=true end end end
+            resume=nil
+        end
         d:UpdateActions()
     end)
     addon:SetUIScript(frame,'OnUpdate',function() if not valid() then d:Close() else d:UpdateActions() end end)
