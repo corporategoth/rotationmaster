@@ -24,6 +24,7 @@ def main():
             ['lua5.1', 'tests/buttons.lua'],
             ['lua5.1', 'tests/logging.lua'],
             ['lua5.1', 'tests/conditions.lua'],
+            ['lua5.1', 'tests/announcement_help.lua'],
             ['lua5.1', 'tests/legacy_regressions.lua'],
             ['lua5.1', 'tests/condition_engine.lua'],
             ['lua5.1', 'tests/declaration_schema.lua'],

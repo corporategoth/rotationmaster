@@ -33,7 +33,7 @@ function addon:WorkbenchPageHelp(topic)
     if topic=='Rotations' then
         result[#result+1]=section(L['Navigating rotations'],L['Diagram / List changes only the view. Minus and plus zoom the canvas from 25% to 200%, independently of window Scale; click the percentage to reset to 100%. Drag empty canvas space with the left mouse button to pan. Dragging cards still reorders them. The list shows False before True. Both views currently show at most 200 cards; the remaining saved cards are preserved.'])
         for _,entry in ipairs(self:WorkbenchInteractionHelp('rotation')) do result[#result+1]=entry end
-    else result[#result+1]=section(L['Editing settings'],L['These settings apply immediately. Press Enter or leave a text field to commit it. Invalid text stays red and blocks navigation until corrected. Searchable selectors open on click and filter as you type. Section headings collapse or expand their contents.']) end
+    else result[#result+1]=section(L['Editing settings'],L['Press Enter or leave a text field to stage its value; Apply saves the draft. Invalid text stays red and blocks navigation until corrected. Searchable selectors open on click and filter as you type. Section headings collapse or expand their contents.']) end
     result[#result+1]=section(L['Window controls'],L['Drag the title bar to move. Set Scale with the top-left slider; child windows follow it. The question mark toggles Help. Close with X, Escape, or right-click in the content area.'])
     return result
 end

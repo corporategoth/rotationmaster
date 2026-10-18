@@ -574,4 +574,31 @@ test('item autocomplete selection participates in draft undo and redo',function(
     local f,parent=fixture();local a=f.addon;a.db.profile.itemsets={s={name='Set',items={1}}};a.db.global.itemsets={};f.env.GetItemInfo=function(id) return 'Item '..id,nil,nil,nil,nil,nil,nil,nil,nil,1 end;a:GetReferenceProvider('item').index(2)
     local p=a:OpenNativeSettings(parent,'ItemSets');local c=p.fields.item1;c:SetText('Item 2');c.scripts.OnTextChanged(c,true);assert(p.menu and p.menu.frame:IsShown(),'picker missing');p.menu.rows[1]:Click();assert(p:SettingsData().profile.itemsets.s.items[1]==2 and p.fields.undo:IsEnabled(),'autocomplete bypassed history');p.fields.undo:Click();assert(p:SettingsData().profile.itemsets.s.items[1]==1);p.fields.redo:Click();assert(p:SettingsData().profile.itemsets.s.items[1]==2 and a.db.profile.itemsets.s.items[1]==1);p.fields.undo:Click();a:GetReferenceProvider('item').index(3);c=p.fields.item1;c:SetText('Item 3');c.scripts.OnTextChanged(c,true);p.menu.rows[1]:Click();assert(p:SettingsData().profile.itemsets.s.items[1]==3 and not p.fields.redo:IsEnabled(),'new autocomplete selection retained redo')
 end)
+test('announcement help follows real visible fields and documents all offered choices',function()
+    for _,kind in ipairs({'spell','pet','item'}) do for _,channel in ipairs({'local','audible'}) do
+        local f,parent=fixture();local a=f.addon;a.db.profile.announces={{id='a',name='Example',type=kind,spell=403,item={},event='SUCCEEDED',announce=channel,value='Cast',announce_sound='Bell'}}
+        local p=a:CreateSettingsForm(parent);local controls,choices={},{}
+        for _,method in ipairs({'Edit','Choice','Check','Spell','ItemSequence','Sound'}) do
+            local original=p[method]
+            p[method]=function(self,key,caption,...)
+                local suffix=key:match('^entry1(.*)$');if method=='Sound' and key=='entry1' then suffix='action' end
+                if suffix and ({name=true,type=true,action=true,ranked=true,event=true,channel=true,text=true})[suffix] then
+                    -- Reference and sound controls call Edit/Choice internally;
+                    -- only record the outer public control once.
+                    local id=suffix=='action' and (method=='ItemSequence' and 'items' or method=='Sound' and 'sound' or 'spell') or suffix
+                    if controls[#controls]~=id then controls[#controls+1]=id end
+                    if method=='Choice' then local args={...};for _,option in ipairs(args[2] or {}) do choices[#choices+1]=option.text end end
+                end
+                return original(self,key,caption,...)
+            end
+        end
+        p:Open(function(form) a:BuildAnnounceSettings(form) end)
+        local sections=a:GetDocument_layout_announce_options_help();local positions,titles={},{}
+        for i,entry in ipairs(sections) do positions[entry.id]=i;titles[entry.title]=true end
+        local previous=0
+        for _,id in ipairs(controls) do id=id=='channel' and 'announce' or id;assert(positions[id],'visible control missing help: '..id);assert(positions[id]>previous,'help differs from visible order: '..id);previous=positions[id] end
+        for _,caption in ipairs(choices) do assert(titles[caption],'choice missing help: '..caption) end
+        p:Release()
+    end end
+end)
 finish()
