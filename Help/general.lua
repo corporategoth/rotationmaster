@@ -108,7 +108,7 @@ color.BLIZ_YELLOW .. L["Detailed Profiling"] .. color.RESET .. " - " ..
     extra(L['Vertical'],byTitle[L['Horizontal']].text)
     extra(L['Lock position and size'],L['Prevent moving the preview by its title bar or resizing it by its lower-right corner. Unlock this option in General to adjust it again.'])
     extra(L['Preview window opacity'],L['Adjust the preview background and title bar opacity without fading its icons. At zero only the icons remain, and the hidden frame does not intercept blank-space clicks. Restore opacity in General to access the title bar and resize handle.'])
-    extra(L['Reset preview position'],L['Return the preview window to the screen center and restore 64-pixel icons. Orientation, opacity and locking are preserved.'])
+    extra(L['Reset preview position'],L['Immediately return the preview window to the screen center and restore 64-pixel icons without Apply. Other pending settings are preserved.'])
     extra(L['Highlight preview'],L['The icon shows your selected profile effect, color, size, anchor and offsets.'])
     extra(L['Anchor'],byTitle[L['Position']].text)
     extra(L['V'],L['Vertical offset in pixels. Up and Down change it; hold Shift for ten pixels. Center resets both offsets.'])

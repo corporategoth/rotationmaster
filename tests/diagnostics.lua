@@ -130,4 +130,18 @@ test('owned callback wrappers preserve returns and forward a failure once withou
     wrapped({});wrapped({});assert(#forwarded==1 and env.geterrorhandler()==original)
     local report=d:GetReports()[1];assert(report.context.module=='ui' and report.context.operation=='OnClick')
 end)
+test('reported RM warnings chain the existing collector and exclude unrelated addons and recursive forwarding',function()
+    local d,env,forwarded,setHandler=fixture();local original=env.geterrorhandler()
+    env.seterrorhandler=setHandler
+    assert(d:ObserveReportedErrors());local report=env.geterrorhandler();assert(report~=original)
+    local message="AceLocale-3.0: rotationmaster: Missing entry for 'Weapon'"
+    assert(d:Call({module='ui',operation='OnClick'},function() report(message) end))
+    assert(#forwarded==1 and #d:GetReports()==1 and d:GetReports()[1].context.operation=='OnClick')
+    env.debugstack=function() return 'Interface/AddOns/rotationmaster/Diagnostics/errors.lua:140\nInterface/AddOns/OtherAddon/main.lua:2' end;report('other addon warning');assert(#forwarded==2 and #d:GetReports()==1)
+    env.debugstack=function() return 'Interface/AddOns/rotationmaster/example.lua:7: callback' end
+    d:Call({module='ui'},function() error('thrown',0) end);assert(#d:GetReports()==2 and #forwarded==3,'thrown failure double captured')
+    setHandler(function(message) report(message) end);d:ObserveReportedErrors();env.geterrorhandler()('new collector forwards through older wrapper')
+    assert(#d:GetReports()==3 and #forwarded==4,'collector chaining double captured')
+end)
+
 finish()

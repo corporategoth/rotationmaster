@@ -5,7 +5,7 @@ local sections={
     {value="Rotations",text=L["Rotations"]},{value="General",text=L["General"]},
     {value="Conditions",text=L["Conditions"]},{value="Effects",text=L["Effects"]},
     {value="ItemSets",text=L["Item Sets"]},{value="Announces",text=L["Announces"]},
-    {value="Profiles",text=L["Profiles"]},
+    {value="Profiles",text=L["Profiles"]},{value="Integrations",text=L["Integrations"]},
 }
 
 local function scale(value)
@@ -52,7 +52,7 @@ local function outline(button)
 end
 local descriptions={Rotations=L["Browse, view and edit rotations."],General=L["Configure recommendations and display."],
     Conditions=L["Organize condition types and custom conditions."],Effects=L["Configure highlight effects."],ItemSets=L["Manage interchangeable items and consumables."],
-    Announces=L["Configure optional announcements."],Profiles=L["Manage saved configuration profiles."],About=L["Rotation Master information and credits."]}
+    Announces=L["Configure optional announcements."],Profiles=L["Manage saved configuration profiles."],Integrations=L['Choose optional addon integrations.'],About=L["Rotation Master information and credits."]}
 
 local function newShell()
     local window=CreateFrame("Frame",nil,UIParent)

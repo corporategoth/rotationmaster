@@ -68,6 +68,7 @@ local defaults = {
         damage_history = 30,
         disable_buttons = false,
         rotation_view = "diagram",
+        lua_editor = "auto",
         rotationTagColors = {},
         preview_spells = 0,
         preview_vertical = false,

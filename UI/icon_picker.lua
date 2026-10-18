@@ -2,9 +2,10 @@ local addon_name,addon=...
 local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
 local function catalogs()
     local groups={};local labels={}
+    local names={Combat=L['Combat'],Swords=L['Swords'],Shield=L['Shield'],Healing=L['Healing'],Spells=L['Spells'],Lightning=L['Lightning'],Buffs=L['Buffs'],Fire=L['Fire'],Nature=L['Nature'],Items=L['Items'],Potions=L['Potions'],Weapon=L['Weapon'],Armor=L['Armor'],Food=L['Food'],Groups=L['Groups'],Group=L['Group'],Location=L['Location'],Book=L['Book'],Question=L['Question']}
     for _,group in ipairs({{'Combat',{'Swords','Ability_DualWield'},{'Shield','Ability_Warrior_DefensiveStance'},{'Healing','Spell_Holy_Heal'}},{'Spells',{'Lightning','Spell_Nature_Lightning'},{'Buffs','Spell_Holy_PowerWordShield'},{'Fire','Spell_Fire_FlameBolt'},{'Nature','Spell_Nature_Rejuvenation'}},{'Items',{'Potions','INV_Potion_54'},{'Weapon','INV_Weapon_ShortBlade_01'},{'Armor','INV_Chest_Chain_07'},{'Food','INV_Misc_Food_15'}},{'Groups',{'Group','Spell_Holy_PrayerOfHealing02'},{'Location','INV_Misc_Map_01'},{'Book','INV_Misc_Book_09'},{'Question','INV_Misc_QuestionMark'}}}) do
-        local row={name=L[group[1]],icons={}}
-        for i=2,#group do local entry=group[i];local texture='Interface\\Icons\\'..entry[2];row.icons[#row.icons+1]={texture=texture,name=L[entry[1]]};labels[texture]=L[entry[1]] end;groups[#groups+1]=row
+        local row={name=names[group[1]],icons={}}
+        for i=2,#group do local entry=group[i];local texture='Interface\\Icons\\'..entry[2];row.icons[#row.icons+1]={texture=texture,name=names[entry[1]]};labels[texture]=names[entry[1]] end;groups[#groups+1]=row
     end
     local known={name=L['Known spells'],icons={}};local seen={}
     for _,entry in ipairs(addon.SpellCatalog:GetIndexedSpells()) do if entry.icon and not seen[entry.icon] then seen[entry.icon]=true;known.icons[#known.icons+1]={texture=entry.icon,name=entry.name};labels[entry.icon]=entry.name end end

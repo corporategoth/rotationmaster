@@ -82,7 +82,7 @@ function addon:ShowWorkbenchDraftChanges(owner,kind,before,after,valid,spec,pend
     return self:ShowCollectionComparison(adapter,'profile',before,after,options)
 end
 function addon:CreateViewChangesButton(parent,apply,callback)
-    local button=self:CreateWorkbenchLabeledIconButton(parent,'compare',L['View Changes'],116);button:SetPoint('RIGHT',apply,'LEFT',-6,0);self:SetUIScript(button,'OnClick',callback);button:Disable();return button
+    local button=self:CreateWorkbenchButton(parent,L['View Changes'],116);button:SetPoint('RIGHT',apply,'LEFT',-6,0);self:SetUIScript(button,'OnClick',callback);button:Disable();return button
 end
 function addon:PendingWidgetChanges(widget,result)
     result=result or {}

@@ -39,6 +39,7 @@ function addon:InstallSettingsLayout(p)
             local row=r.rows[i];if not row then row=addon:CreateWorkbenchButton(r.child,'',230);row.icon=row:CreateTexture(nil,'ARTWORK');row.icon:SetSize(24,24);row.icon:SetPoint('LEFT',4,0);r.rows[i]=row end
             row:ClearAllPoints();row:SetPoint('TOPLEFT',0,-(i-1)*34);row:SetSize(r.child:GetWidth(),32);row:SetText(entry.text);row:GetFontString():SetTextColor(entry.custom==false and .4 or .92,entry.custom==false and .7 or .94,entry.custom==false and 1 or .96);row:SetSelected(entry.value==r.current);addon:AlignWorkbenchTextLeft(row,entry.icon and 34 or 6)
             if entry.icon then row.icon:SetTexture(entry.icon);row.icon:Show() else row.icon:Hide() end;row:Show()
+            addon:SetWorkbenchInvalid(row,entry.invalid,entry.validationMessage);row.tooltip=entry.validationMessage
             addon:SetUIScript(row,'OnClick',self:Guard(function() if r.revision~=revision or not self:FlushEdits() then return end;r.choose(entry.value) end));self:BindRosterOrderRow(row,entry,revision)
         end
         for i=#r.matches+1,#r.rows do r.rows[i]:Hide() end

@@ -1,10 +1,14 @@
 local addon_name, addon = ...
 
--- No global error hook: only RM-owned execution boundaries call this service.
+-- RM boundaries catch thrown failures. A narrow observer forwards every
+-- reported error to the existing collector, recording only RM-attributable ones.
 local service = {}
 addon.Diagnostics = service
 local reports, fingerprints, nextId = {}, {}, 0
 local handling = false
+local activeContext
+local observerHandlers=setmetatable({}, {__mode='k'})
+local forwarding=0
 local fields = {"module", "operation", "event", "rotationId", "rotationRevision", "stepId",
                 "conditionPath", "conditionTag", "actionContext", "provider", "providerVersion"}
 local platformFields = {"family", "projectId", "expansion", "classicExpansionLevel", "seasonId", "gameModeId",
@@ -134,9 +138,42 @@ local function recordError(context, message, stack)
     return record.id
 end
 
+function service:ObserveReportedErrors()
+    if type(seterrorhandler)~='function' or type(geterrorhandler)~='function' then return false end
+    local ok,handler=pcall(geterrorhandler)
+    if not ok or type(handler)~='function' then return false end
+    if observerHandlers[handler] then return true end
+    local function observe(message)
+        if handling or forwarding>0 or not readable(message) or type(message)~='string' then return end
+        local stack=''
+        if type(debugstack)=='function' then local traced,value=pcall(function() return debugstack(2,30,20) end);if traced then stack=scalar(value,8192) or '' end end
+        local owned=message:find('AceLocale-3.0: '..addon_name..':',1,true)
+        local prefix='interface/addons/'..addon_name:lower()..'/'
+        for line in stack:lower():gmatch('[^\n]+') do
+            if line:find(prefix,1,true) and not line:find(prefix..'diagnostics/errors.lua',1,true) then owned=true;break end
+        end
+        if not owned then return end
+        handling=true;pcall(recordError,activeContext or {module='ui',operation='reported-error'},message,stack);handling=false
+    end
+    local function wrapper(...)
+        observe((...));forwarding=forwarding+1
+        local function finish(success,...)
+            forwarding=forwarding-1
+            if not success then error((...),0) end
+            return ...
+        end
+        return finish(pcall(handler,...))
+    end
+    observerHandlers[wrapper]=true
+    return pcall(seterrorhandler,wrapper)
+end
+
 function service:Call(context, callback, ...)
+    self:ObserveReportedErrors()
     local args = {n=select("#", ...), ...}
-    return xpcall(function() return callback(unpack(args, 1, args.n)) end, function(message)
+    local previous=activeContext;activeContext=context
+    local function restore(...) activeContext=previous;return ... end
+    return restore(xpcall(function() return callback(unpack(args, 1, args.n)) end, function(message)
         if handling then return 0 end
         handling = true
         -- Capture the stack in the error handler, before xpcall unwinds it.
@@ -153,7 +190,7 @@ function service:Call(context, callback, ...)
         if handlerOk and type(handler) == "function" then pcall(handler, message) end
         handling = false
         return ok and id or 0
-    end)
+    end))
 end
 
 function service:GetReports()

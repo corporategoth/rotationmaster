@@ -30,7 +30,7 @@ return function(env)
         function frame:SetResizeBounds(...) self.resizeBounds={...} end
         function frame:SetClampedToScreen() end
         function frame:SetToplevel() end
-        function frame:EnableMouse() end
+        function frame:EnableMouse(value) self.mouseEnabled=value end
         function frame:EnableKeyboard() end
         function frame:SetPropagateKeyboardInput() end
         function frame:RegisterForDrag(...) self.drags={...} end

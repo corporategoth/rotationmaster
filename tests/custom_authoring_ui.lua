@@ -44,7 +44,7 @@ test('native code control uses the real bundled indentation hooks and returns un
         function edit:GetMaxBytes() return self.maxBytes or 0 end;function edit:SetMaxBytes(v) self.maxBytes=v end;function edit:GetMaxLetters() return self.maxLetters or 0 end;function edit:GetCursorPosition() return self.cursor or 0 end;function edit:IsMultiLine() return self.multiLine end
         return enable(edit,...)
     end
-    local code=a:CreateWorkbenchLuaEditor(f.env.UIParent,function() end,function() return true end);assert(code.syntax,'real syntax engine failed to attach');local source='local count = 1';code:SetText(source);a.LuaSyntax.indentEditbox(code.edit);assert(code:GetText()==source and a.LuaSyntax.coloredGetText(code.edit):find('|c',1,true));code:Release();assert(not code.frame:IsShown())
+    local code=a:CreateWorkbenchLuaEditor(f.env.UIParent,function() end,function() return true end);assert(code.syntax,'real syntax engine failed to attach');local source='local count = 1';code:SetText(source);a.LuaSyntax.indentEditbox(code.edit);assert(code:GetText()==source and a.LuaSyntax.coloredGetText(code.edit):find('|c',1,true));code:GetText();code.nativeSetText(code.edit,'return 123');code.edit.scripts.OnTextChanged(code.edit,true);assert(code:GetText()=='return 123','syntax cache lost a fresh keystroke');code:Release();assert(not code.frame:IsShown());code:Acquire(function() end,function() return true end);code:SetText('return 456');assert(code:GetText()=='return 456');code:Release()
 end)
 test('profile replacement closes native authoring and leaves its captured callbacks inert',function()
     local f,a=fixture();local d=a:condition_edit_box(function() error('stale callback') end);local apply=d.apply.scripts.OnClick;a.db.profile={};d.frame.scripts.OnUpdate();assert(d.closed and not d.frame:IsShown());apply();assert(not next(a.db.global.custom_conditions))
@@ -71,7 +71,7 @@ test('native Duplicate Apply and simulated reload preserve real UUID-generated c
 end)
 test('custom Lua View Changes shows unflushed source without compiling saving or flushing it',function()
     local f,a=fixture();local d=a:condition_edit_box(function() error('saved') end);local original=d.model.value.evaluate;d.code.edit:SetText('invalid lua !!!');d.code.edit.scripts.OnTextChanged(d.code.edit,true);d:UpdateActions()
-    assert(d.viewChanges and d.viewChanges:IsEnabled());d.viewChanges:Click();local view=d.draftComparisonOwner.comparison
+    assert(d.viewChanges and d.viewChanges:IsEnabled() and not d.viewChanges.icon);d.viewChanges:Click();local view=d.draftComparisonOwner.comparison
     assert(view.frame:IsShown() and d.model.value.evaluate==original and not next(a.db.global.custom_conditions));local found=false;for _,row in ipairs(view.rows) do if row.right=='invalid lua !!!' then found=true end end;assert(found)
 end)
 test('condition sidebar transfer opens the shared review dialog and cancel resumes the code editor',function()
@@ -81,5 +81,20 @@ test('condition sidebar transfer opens the shared review dialog and cancel resum
     assert(p.fields.transfer:IsEnabled());p.fields.transfer:Click();local d=a.nativeCustomConditionDialog;local transfer=d.rmCustomTransferForm.textDialog
     assert(transfer.frame:IsShown() and not d.frame:IsShown() and transfer.input:GetText()~='');transfer.cancel:Click();assert(d.frame:IsShown() and a.db.global.custom_conditions.CUSTOM==source)
     d.cancel:Click();p:Release()
+end)
+test('native code accepts focus and invalid form fields do not trap function tabs or drop raw text',function()
+    local f,a=fixture();local d=a:condition_edit_box(function() end)
+    assert(d.code.edit.mouseEnabled and d.code.edit.scripts.OnMouseDown,'code editor lacks explicit focus target')
+    d.code.edit.scripts.OnMouseDown(d.code.edit,'LeftButton');assert(d.code.edit.focused)
+    local field=d.form.fields.identifier;field:SetText('bad identifier!');field.scripts.OnTextChanged(field,true);d.apply:Click();assert(d.form.message:GetText()~='')
+    d.code.edit:SetText('return true');d.code.edit.scripts.OnTextChanged(d.code.edit,true);d.functionTabs.print:Click()
+    assert(d.selected=='print' and field:GetText()=='bad identifier!' and d.model.value.evaluate=='return true')
+end)
+test('custom condition list and draft mark invalid source without running registration code',function()
+    local f,a=fixture();f.load('UI/settings_collections.lua');f.load('UI/settings_conditions.lua')
+    local source=a:CopySettingsData(a.empty_condition);source.description='Broken';source.evaluate='return )';source.on_register='error("must not run")';a.db.global.custom_conditions.BAD=source;a.listConditions=function() return {'BAD'} end
+    local host=f.env.CreateFrame('Frame');host:SetSize(1000,600);local p=a:OpenNativeSettings(host,'Conditions');assert(p.roster.rows[1].rmInvalid and p.roster.rows[1].tooltip:find('Invalid condition:',1,true))
+    p.fields.edit_custom:Click();local d=a.nativeCustomConditionDialog;assert(d.functionTabs.evaluate.rmInvalid and d.code.frame.rmInvalid)
+    d.code.edit:SetText('return true');d.code.edit.scripts.OnTextChanged(d.code.edit,true);assert(not d.code.frame.rmInvalid and not d.functionTabs.evaluate.rmInvalid and a.db.global.custom_conditions.BAD==source)
 end)
 finish()

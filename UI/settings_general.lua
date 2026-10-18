@@ -38,7 +38,17 @@ function addon:BuildGeneralSettings(p)
     local previewY=p.y;local third=p.width/3
     local locked=p:Check('preview_locked',L['Lock position and size'],profile.preview_locked==true,function(v) profile.preview_locked=v;previewChanged() end)
     local orientation=p:Toggle('preview_vertical',nil,profile.preview_vertical==true,L['Horizontal'],L['Vertical'],function(v) profile.preview_vertical=v;previewChanged();p:Draw() end)
-    local reset=p:Button('preview_reset',L['Reset'],function() profile.preview_window=nil;profile.preview_icon_size=64;p:RunSettingsEffect('previewPosition',function() if self.nextWindow then if self.nextWindow.Configure then self.nextWindow:Configure() end;self.nextWindow:ClearAllPoints();self.nextWindow:SetPoint('CENTER',UIParent,'CENTER',0,0) end end) end)
+    local reset=p:Button('preview_reset',L['Reset'],function() end)
+    local resetToken=p.generation
+    -- Moving the preview is immediate, like dragging its title bar. Synchronize
+    -- only these baselines so an unrelated staged setting stays staged.
+    self:SetUIScript(reset,'OnClick',function()
+        if not p:Valid(resetToken) then return end
+        for _,settings in ipairs({self.db.profile,profile,p.draftBaseline and p.draftBaseline.profile or {}}) do settings.preview_window=nil;settings.preview_icon_size=64 end
+        if self.nextWindow then if self.nextWindow.Configure then self.nextWindow:Configure() end;self.nextWindow:ClearAllPoints();self.nextWindow:SetPoint('CENTER',UIParent,'CENTER',0,0) end
+        if p.fields.apply then if p:IsSettingsDraftDirty() then p.fields.apply:Enable() else p.fields.apply:Disable() end end
+        if p.RefreshUnsaved then p:RefreshUnsaved() end
+    end)
     reset.tooltip=L['Reset preview position']
     for i,control in ipairs({locked,orientation,reset}) do control:ClearAllPoints();control:SetPoint('TOPLEFT',(i-1)*third,-previewY);control:SetWidth(third-8) end
     locked:GetFontString():SetWidth(third-30);p.y=previewY+30

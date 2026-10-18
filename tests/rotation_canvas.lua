@@ -203,10 +203,17 @@ test('diagram arm labels sit above split paths or beside the one straight popula
         local s=scene({branch('b',nil,arms[1],arms[2])},nil,{section='rotation'});local b=byId(s,'b');local center=b.x+b.width/2
         for _,label in ipairs(s.armLabels) do
             if #arms[1]>0 and #arms[2]>0 then assert(label.y+18<=b.y+b.height+20 and label.placement=='above')
-            elseif label.arm=='true' and #arms[1]>0 then assert(label.x>center and label.placement=='right');assert(label.y+9==b.y+b.height+10,'side label is not centered before the split')
-            elseif label.arm=='false' and #arms[2]>0 then assert(label.x+100<center and label.placement=='left');assert(label.y+9==b.y+b.height+10,'side label is not centered before the split')
+            elseif label.arm=='true' and #arms[1]>0 then assert(label.x>center and label.placement=='right');assert(label.y+9==b.y+b.height+20,'side label is not centered at the split')
+            elseif label.arm=='false' and #arms[2]>0 then assert(label.x+100<center and label.placement=='left');assert(label.y+9==b.y+b.height+20,'side label is not centered at the split')
             else assert(label.placement=='above' and label.y+18<=b.y+b.height+20) end
         end
+    end
+end)
+test('straight-arm label midpoint aligns exactly with the other arm horizontal split',function()
+    for _,arm in ipairs({'true','false'}) do
+        local s=scene({branch('b',nil,arm=='true' and {leaf('t')} or {},arm=='false' and {leaf('f')} or {})})
+        local other=arm=='true' and 'false' or 'true';local split;for _,edge in ipairs(s.connectors) do if edge.label==other then split=edge.points[2].y;break end end
+        for _,label in ipairs(s.armLabels) do if label.arm==arm then assert(label.y+9==split,'label midpoint is not at other-arm split') end end
     end
 end)
 finish()

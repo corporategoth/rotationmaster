@@ -1794,7 +1794,7 @@ L["Prevent moving the preview by its title bar or resizing it by its lower-right
 
 L["Adjust the preview background and title bar opacity without fading its icons. At zero only the icons remain, and the hidden frame does not intercept blank-space clicks. Restore opacity in General to access the title bar and resize handle."] = true
 
-L["Return the preview window to the screen center and restore 64-pixel icons. Orientation, opacity and locking are preserved."] = true
+L["Immediately return the preview window to the screen center and restore 64-pixel icons without Apply. Other pending settings are preserved."] = true
 
 L["Lock position and size"] = true
 
@@ -1839,3 +1839,36 @@ L['Below the condition list, Import/Export opens the selected custom definition 
 
 L['Comparison limit'] = true
 L['Showing the first 512 conditions per side.'] = true
+
+L['Weapon'] = true
+L['Location'] = true
+L['Book'] = true
+L['Question'] = true
+L['Swords'] = true
+L['Shield'] = true
+L['Healing'] = true
+L['Lightning'] = true
+L['Fire'] = true
+L['Nature'] = true
+L['Potions'] = true
+L['Food'] = true
+L['Armor'] = true
+L['Groups'] = true
+L['Group'] = true
+
+L['Automatic'] = true
+L['Built In syntax highlighting'] = true
+L['Plain text'] = true
+L['Integrations'] = true
+L['Lua editor'] = true
+L['Editor'] = true
+L['Unavailable'] = true
+L['Choose optional addon integrations.'] = true
+L['Automatic uses an available editor integration, with built-in syntax highlighting as its fallback. Plain text disables highlighting. Apply changes the editor used the next time you open a custom condition.'] = true
+L['Optional addons'] = true
+L['Loaded; editor integration not connected.'] = true
+L['Not loaded.'] = true
+L['These addons are optional. Only connected editor providers appear in the Editor menu. Choosing an unavailable or failing editor falls back to the built-in editor.'] = true
+L['Choose the editor for custom Lua conditions. Built In syntax highlighting and Plain text work without another addon. Automatic uses a registered optional provider when available and falls back safely. Apply saves the choice; an open editor keeps its current provider until reopened. LuaWorkbench and WowLua loading status is shown separately from integration availability.'] = true
+
+L["Invalid condition: %s"] = true

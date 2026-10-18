@@ -1,4 +1,17 @@
 local _,addon=...
+function addon:SetWorkbenchInvalid(control,invalid,message)
+    if not control then return end
+    control.rmInvalid=invalid==true;control.rmValidationMessage=invalid and message or nil
+    if invalid and not control.invalidBorder then
+        control.invalidBorder={}
+        for _,edge in ipairs({{'TOPLEFT','TOPRIGHT',true},{'BOTTOMLEFT','BOTTOMRIGHT',true},{'TOPLEFT','BOTTOMLEFT',false},{'TOPRIGHT','BOTTOMRIGHT',false}}) do
+            local line=control:CreateTexture(nil,'OVERLAY');line:SetPoint(edge[1]);line:SetPoint(edge[2]);line:SetColorTexture(1,.2,.2,1)
+            if edge[3] then line:SetHeight(1) else line:SetWidth(1) end
+            control.invalidBorder[#control.invalidBorder+1]=line
+        end
+    end
+    for _,line in ipairs(control.invalidBorder or {}) do if invalid then line:Show() else line:Hide() end end
+end
 -- A separate amber rail preserves the meaning of validation/negation borders.
 function addon:SetWorkbenchUnsaved(control,changed)
     if not control then return end

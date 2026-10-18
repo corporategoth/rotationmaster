@@ -114,6 +114,7 @@ UI/settings_form.lua
 UI/settings_transfer.lua
 UI/custom_condition_transfer.lua
 UI/settings_general.lua
+UI/settings_integrations.lua
 UI/settings_profiles.lua
 UI/collection_compare.lua
 UI/draft_changes.lua

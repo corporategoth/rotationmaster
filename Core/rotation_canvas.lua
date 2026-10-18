@@ -145,7 +145,7 @@ function addon:BuildRotationCanvas(body,view)
                 if not enter.id then line(step.id,nil,{{x=enter.x,y=enter.y},{x=leave.x,y=leave.y}},choice.arm,choice.blocked,nil,step.id) end
                 line(leave.id,nil,{{x=leave.x,y=leave.y},{x=leave.x,y=joinY-8},{x=center,y=joinY-8}},choice.arm,choice.blocked,nil,step.id)
                 local labelX=math.max(x,math.min(x+node.width-100,laneCenter-50));local labelY=armsY-40;local placement='above'
-                if node.single and populated then labelX=center+(choice.arm=='true' and 8 or -108);labelY=y+node.header+(armLead-20)/2-9;placement=choice.arm=='true' and 'right' or 'left' end
+                if node.single and populated then labelX=center+(choice.arm=='true' and 8 or -108);labelY=armsY-20-9;placement=choice.arm=='true' and 'right' or 'left' end
                 scene.armLabels[#scene.armLabels+1]={x=labelX,y=labelY,placement=placement,arm=choice.arm,parentId=step.id,folded=choice.list.folded,count=choice.list.count,inactive=choice.blocked}
             end
             line(nil,nil,{{x=center,y=joinY-8},{x=center,y=joinY}},nil,inactive,nil,step.id)

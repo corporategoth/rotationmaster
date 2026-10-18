@@ -34,6 +34,22 @@ function addon:condition_edit_box(update,key,source,saveAllowed)
         if self.model:IsDirty() or self.code and self.code:GetText()~=self.model.value[self.selected] then return true end
         for _,edit in ipairs(p.edits) do if edit.dirty then return true end end;return false
     end
+    function d:UpdateValidation()
+        if not self.code then return end
+        local input={selected=self.selected,key=p.fields.identifier:GetText(),description=p.fields.description:GetText(),schema=p.fields.schema:GetText(),icon=self.model.value.icon}
+        for name in pairs(addon.CustomConditionCallbacks) do input[name]=name==self.selected and self.code:GetText() or self.model.value[name] end
+        if addon:SettingsDataEqual(input,self.validationInput) then return end
+        self.validationInput=addon:CopySettingsData(input)
+        local source=addon:CopySettingsData(self.model.value);source.description=input.description;source.fields=addon:ParseCustomFieldSchema(input.schema)
+        for name in pairs(addon.CustomConditionCallbacks) do source[name]=input[name] end
+        local checked,why
+        if not input.key:match('^[A-Z0-9_]+$') then why={field='identifier',reason=L['Use letters, numbers and underscores for the condition identifier.']}
+        else checked,why=addon:ValidateCustomConditionSource(input.key,source,self.expectedSource~=nil) end
+        local message=not checked and reason(why) or nil
+        for name,button in pairs(self.functionTabs or {}) do addon:SetWorkbenchInvalid(button,not checked and why and why.callback==name,message);button.tooltip=why and why.callback==name and message or nil end
+        addon:SetWorkbenchInvalid(self.code.frame,not checked and why and why.callback==self.selected,message)
+        for _,field in ipairs({'identifier','description','schema','icon'}) do addon:SetWorkbenchInvalid(p.fields[field],not checked and why and (why.field==field or field=='schema' and why.field=='fields'),message) end
+    end
     function d:UpdateActions()
         if self.closed then return end
         if #self.model.undo>0 or self.code and self.code:GetText()~=self.model.value[self.selected] then self.undo:Enable() else self.undo:Disable() end
@@ -45,6 +61,7 @@ function addon:condition_edit_box(update,key,source,saveAllowed)
         end
         if self.code then addon:SetWorkbenchUnsaved(self.code.frame,self.code:GetText()~=(before.value[self.selected] or '')) end
         for name,button in pairs(self.functionTabs or {}) do addon:SetWorkbenchUnsaved(button,current[name]~=before.value[name] or name==self.selected and self.code and self.code:GetText()~=(before.value[name] or '')) end
+        self:UpdateValidation()
     end
     function d:Close()
         if self.closed then return end;self.closed=true;self.owner.active=false
@@ -56,7 +73,7 @@ function addon:condition_edit_box(update,key,source,saveAllowed)
         if self.code then pcall(self.code.Release,self.code) end;p:Release();self.frame:Hide()
         if self.OnRelease then self:OnRelease() end
         addon:SetUIScript(self.frame,'OnUpdate',nil)
-        self.OwnerValid=nil;self.model=nil;self.expected=nil;self.expectedSource=nil;self.update=nil;p.builder=nil;p.edits={};p.fields={};p.profile=nil;p.global=nil;p.char=nil
+        self.OwnerValid=nil;self.model=nil;self.expected=nil;self.expectedSource=nil;self.validationInput=nil;self.update=nil;p.builder=nil;p.edits={};p.fields={};p.profile=nil;p.global=nil;p.char=nil
         if self.rmCustomTransferForm and self.rmCustomTransferForm.textDialog then local transfer=self.rmCustomTransferForm.textDialog;transfer.input:SetText('');transfer.options=nil end
     end
     function d:Apply()
@@ -75,7 +92,11 @@ function addon:condition_edit_box(update,key,source,saveAllowed)
         p:ConfirmPending(function() self:Apply() end,function() self:Close() end);p.prompt.frame:SetParent(UIParent);addon:RegisterWindowForEscape(p.prompt)
     end
     function d:SelectFunction(name)
-        if not valid() or not addon.CustomConditionCallbacks[name] or not self:Flush() then return end;self.selected=name;p:Draw();self:UpdateActions()
+        if not valid() or not addon.CustomConditionCallbacks[name] then return end
+        self:FlushCode();self.selected=name;self.code:SetText(self.model.value[name])
+        self.signature:SetText('function('..addon.CustomConditionCallbacks[name]..')')
+        for key,button in pairs(self.functionTabs) do button:SetSelected(key==name) end
+        self:UpdateActions()
     end
     d.undo=d.undo or self:CreateWorkbenchHistoryButton(frame,'undo',L['Undo']);d.undo:SetPoint('BOTTOMLEFT',12,28)
     d.redo=d.redo or self:CreateWorkbenchHistoryButton(frame,'redo',L['Redo']);d.redo:SetPoint('BOTTOMLEFT',86,28)
@@ -110,8 +131,10 @@ function addon:condition_edit_box(update,key,source,saveAllowed)
         for i,name in ipairs(order) do
             local button=form:Acquire('functionTabs',function() return addon:CreateWorkbenchButton(form.child,'',102) end);button:ClearAllPoints();button:SetPoint('TOPLEFT',(i-1)*106,-y);button:SetSize(102,24);button:SetText(labels[name]);d.functionTabs[name]=button;button:SetSelected(name==d.selected);addon:SetUIScript(button,'OnClick',form:Guard(function() d:SelectFunction(name) end))
         end
-        form:Text('function('..addon.CustomConditionCallbacks[d.selected]..')')
-        if not d.code then d.code=addon:CreateWorkbenchLuaEditor(form.child,function() if valid() then d:UpdateActions() end end,valid) elseif d.code.released then d.code:Acquire(function() if valid() then d:UpdateActions() end end,valid) end
+        d.signature=form:Text('function('..addon.CustomConditionCallbacks[d.selected]..')')
+        local preference=addon.db.profile.lua_editor or 'auto'
+        if d.code and (d.code.preference~=preference or d.code.released and not d.code.Acquire) then d.code:Release();d.code=nil end
+        if not d.code then d.code=addon:CreateWorkbenchLuaEditor(form.child,function() if valid() then d:UpdateActions() end end,valid);d.code.preference=preference elseif d.code.released then d.code:Acquire(function() if valid() then d:UpdateActions() end end,valid) end
         d.code.frame:ClearAllPoints();d.code.frame:SetPoint('TOPLEFT',0,-form.y);d.code.frame:SetSize(form.width,310);d.code.frame:Show();d.code:SetText(d.model.value[d.selected]);form.y=form.y+318
         form.cleanups[#form.cleanups+1]=function() if d.code then if d.code.edit then d.code.edit:ClearFocus() end;d.code.frame:Hide() end end
     end)

@@ -16,6 +16,10 @@ function addon:BuildConditionSettings(p)
     for _,tag in ipairs(tags) do if not (self.db.global.custom_conditions and self.db.global.custom_conditions[tag] and not custom[tag]) and (p.conditionSource=='all' or (p.conditionSource=='custom')==(custom[tag]~=nil)) and not seen[tag] and (definitions[tag] or (self.conditionSpecials or {})[tag]) then local d=definitions[tag] or self.conditionSpecials[tag];entries[#entries+1]={value=tag,text=d.description or d.desc or tag};seen[tag]=true end end
     if not seen[p.condition] then p.condition=entries[1] and entries[1].value end
     for _,entry in ipairs(entries) do entry.icon=custom[entry.value] and custom[entry.value].icon or self:GetConditionIcon(entry.value);entry.search=entry.value;entry.custom=custom[entry.value]~=nil end
+    if self.ValidateCustomConditionSource then for _,entry in ipairs(entries) do if entry.custom then
+        local checked,why=self:ValidateCustomConditionSource(entry.value,custom[entry.value],true)
+        entry.invalid=not checked;entry.validationMessage=not checked and string.format(L['Invalid condition: %s'],why and (why.detail or why.reason) or L['Invalid custom condition.']) or nil
+    end end end
     local ordered
     if p.category=='SWITCH' or p.category=='DEFAULT' or groupIndex then ordered=tags end
     local function orderChanged(list) if p.category=='SWITCH' then profile.switch_conditions=list elseif p.category=='DEFAULT' then profile.other_conditions_order=list elseif groupIndex then groups[groupIndex].conditions=list end end
@@ -29,6 +33,7 @@ function addon:BuildConditionSettings(p)
     local tag=p.condition;local definition=definitions[tag] or (self.conditionSpecials or {})[tag]
     if tag and definition then
         p:Text(definition.description or definition.desc or tag);p:Text(custom[tag] and L['Custom condition'] or L['Built-in condition']);p:Text(L['Identifier']..': '..tag)
+        for _,entry in ipairs(entries) do if entry.value==tag and entry.invalid then local problem=p:Text(entry.validationMessage);problem:SetTextColor(1,.3,.3) end end
         local special=(self.conditionSpecials or {})[tag]~=nil
         local hidden=p:Check('hidden',L['Hidden'],self:SettingsContains(profile.disabled_conditions,tag),function(value) profile.disabled_conditions=profile.disabled_conditions or {};self:SettingsFlag(profile.disabled_conditions,tag,value) end);if special then hidden:Disable() end
         local switch=p:Check('switch',L['Switch Condition'],self:SettingsContains(profile.switch_conditions,tag),function(value) profile.switch_conditions=profile.switch_conditions or {};self:SettingsFlag(profile.switch_conditions,tag,value) end);if special then switch:Disable() end
