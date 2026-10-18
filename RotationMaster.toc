@@ -45,6 +45,7 @@ profiler.lua
 Diagnostics/errors.lua
 Core/conditions.lua
 Core/item_conditions.lua
+Core/item_sets.lua
 Core/presentation.lua
 Core/custom_condition_owner.lua
 Core/action_policy.lua

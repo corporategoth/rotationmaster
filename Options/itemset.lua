@@ -8,110 +8,13 @@ local CreateFrame, UIParent = CreateFrame, UIParent
 
 local pairs, color, tonumber = pairs, color, tonumber
 local units = addon.units
-local HideOnEscape, getCached, getRetryCached, isint, deepcopy, compareArray =
-    addon.HideOnEscape, addon.getCached, addon.getRetryCached, addon.isint, addon.deepcopy, addon.compareArray
+local HideOnEscape, getRetryCached, isint, deepcopy, compareArray =
+    addon.HideOnEscape, addon.getRetryCached, addon.isint, addon.deepcopy, addon.compareArray
 
 local function spacer(width)
     local rv = AceGUI:Create("Label")
     rv:SetRelativeWidth(width)
     return rv
-end
-
-function addon:FindFirstItemInItems(items)
-    if items == nil then
-        return nil
-    end
-    for _,v in ipairs(items) do
-        if type(v) == "number" then
-            return v -- Assume it's an item ID
-        else
-            local itemid = getRetryCached(addon.longtermCache, GetItemInfoInstant, v)
-            if itemid then
-                return itemid
-            end
-        end
-    end
-    return nil
-end
-
-function addon:FindFirstItemInItemSet(id)
-    local itemsets = self.db.profile.itemsets
-    local global_itemsets = self.db.global.itemsets
-
-    if itemsets[id] ~= nil then
-        return addon:FindFirstItemInItems(itemsets[id].items)
-    elseif global_itemsets[id] ~= nil then
-        return addon:FindFirstItemInItems(global_itemsets[id].items)
-    end
-    return nil
-end
-
-function addon:FindItemInItems(items, item)
-    if items == nil then
-        return nil
-    end
-    if isint(item) then
-        for _,v in ipairs(items) do
-            if getRetryCached(addon.longtermCache, GetItemInfoInstant, v) == tonumber(item) then
-                return tonumber(item)
-            end
-        end
-    else
-        for _,v in ipairs(items) do
-            local name, link = getRetryCached(addon.longtermCache, GetItemInfo, v)
-            if name == item then
-                return select(1, getRetryCached(addon.longtermCache, GetItemInfoInstant, link))
-            end
-        end
-    end
-    return nil
-end
-
-function addon:FindItemInItemSet(id, item)
-    local itemsets = self.db.profile.itemsets
-    local global_itemsets = self.db.global.itemsets
-
-    if itemsets[id] ~= nil then
-        return addon:FindItemInItems(itemsets[id].items, item)
-    elseif global_itemsets[id] ~= nil then
-        return addon:FindItemInItems(global_itemsets[id].items, item)
-    end
-    return nil
-end
-
-function addon:FindFirstItemOfItems(_, items, equipped)
-    if items == nil then
-        return nil
-    end
-    for _, item in ipairs(items) do
-        local itemid
-        if isint(item) then
-            itemid = tonumber(item)
-        else
-            itemid = getRetryCached(addon.longtermCache, GetItemInfoInstant, item)
-        end
-        if itemid then
-            if equipped and getCached(addon.combatCache, IsEquippedItem, itemid) then
-                return itemid
-            end
-            if addon.bagContents[itemid] then
-                return itemid
-            end
-        end
-    end
-    return nil
-end
-
-function addon:FindFirstItemOfItemSet(cache, id, equipped)
-    local itemsets = self.db.profile.itemsets
-    local global_itemsets = self.db.global.itemsets
-
-    if itemsets[id] ~= nil then
-        return addon:FindFirstItemOfItems(cache, itemsets[id].items, equipped)
-    elseif global_itemsets[id] ~= nil then
-        return addon:FindFirstItemOfItems(cache, global_itemsets[id].items, equipped)
-    end
-    return nil
 end
 
 local function CondIsItem(cond, id)

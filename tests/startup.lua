@@ -949,5 +949,21 @@ test('new item-set binding normalizes every slot immediately to the first availa
     env.PickupItem=function(id) held=id end;env.PlaceAction=function(slot) actions[slot]=held end;env.ClearCursor=function() held=nil end
     a:ACTIONBAR_SLOT_CHANGED('ACTIONBAR_SLOT_CHANGED',1);assert(actions[1]==22 and actions[2]==22 and #a.db.char.bindings.s==2)
 end)
+test('real item-set helpers update and unbind bars through native-only item APIs without editor loading',function()
+    local env,a,load=fixture();load('Platform/inventory.lua');load('Core/item_conditions.lua');load('Core/item_sets.lua');load('main.lua');initialize(a)
+    a.debug=function() end;a.ButtonFetch=function() end;a.EndHighlightSlot=function() end
+    a.db.profile.itemsets={s={items={11,22}}};a.db.global.itemsets={};a.db.char.bindings={s={1,2}}
+    env.GetItemInfoInstant=nil;env.IsEquippedItem=nil;env.NUM_BAG_SLOTS=4
+    env.C_Item={IsEquippedItem=function() return false end}
+    env.C_Container={GetContainerNumSlots=function(bag) return bag==0 and 1 or 0 end,
+        GetContainerItemInfo=function() return {itemID=22,stackCount=1} end}
+    local actions={[1]=11,[2]=11,[3]=99};local held
+    env.GetActionInfo=function(slot) return 'item',actions[slot] end
+    env.PickupItem=function(id) held=id end;env.PlaceAction=function(slot) actions[slot]=held end;env.ClearCursor=function() held=nil end
+    env.PickupAction=function(slot) actions[slot]=nil end
+    assert(a:UpdateBoundButton('s') and actions[1]==22 and actions[2]==22,'real native resolver did not normalize bound slots')
+    actions[2]=99;a:UnbindItemSet('s')
+    assert(actions[1]==nil and actions[2]==99 and actions[3]==99 and a.db.char.bindings.s==nil)
+end)
 print(string.format('%d passed, %d failed', passed, failures))
 os.exit(failures == 0 and 0 or 1)
