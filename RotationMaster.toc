@@ -186,3 +186,4 @@ Conditions/misc.lua
 
 # Packaged read-only rotations
 Defaults/tbc/shaman-starter.lua
+Defaults/tbc/mage-starter.lua

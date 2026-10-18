@@ -1549,3 +1549,7 @@ L["The primary tree is derived from readable points, not the saved rotation slot
 -- Protected item observations
 L["Item sets are checked in priority order. Bag counts use the first carried candidate, not the sum. Availability, range and cooldown checks use the first carried or equipped candidate. Missing or restricted observations stay unavailable, including under NOT."] = true
 L["Item Available checks the required level and enabled item cooldown. An active cooldown qualifies only when it ends with the readable global cooldown. This condition does not bypass the action's implicit ownership, usability and range checks."] = true
+
+-- TBC early Frost Mage preview.
+L["Default.TBC.Mage.Starter.Name"] = "Mage: early Frost leveling (1–19)"
+L["Default.TBC.Mage.Starter.Description"] = "TBC single-target Frost starter preview. Optional Intellect and armor upkeep, stationary pulls and combat fillers adapt to trained early ranks. Missing training or unavailable spells can select another filler. Combat priorities stop out of combat. Uses ranked action lookup with availability fallback; no automatic kiting, crowd control, shields, finishers or consumable use. Fire/Arcane specialization and later levels need other rotations."
