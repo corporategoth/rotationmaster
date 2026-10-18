@@ -123,11 +123,26 @@ end)
 test('item suggestions show icons and commit exact item IDs with inventory filtering',function()
     local f=fixture();local a=f.addon
     f.env.GetItemInfo=function(id) local n=tonumber(id)==1 and 'Water' or tonumber(id)==2 and 'Bread';return n,nil,nil,nil,nil,nil,nil,nil,nil,n and tonumber(id)+10 end
-    f.libraries['AceGUI-3.0-ItemLoader'].itemList={[1]={name='Water',icon=11},[2]={name='Bread',icon=12}};a.bagContents={[1]=2}
+    f.libraries['AceGUI-3.0-ItemLoader'].itemList={[1]={name='Water',icon=11},[2]={name='Bread',icon=12}};a.bagContents={[1]={count=2,slots={{bag=0,slot=1}}}}
     local w=a:CreateItemEditBox('Inventory_EditBox',1);w:SetText(1);assert(w:GetText()=='Water');local id
     w:SetCallback('OnEnterPressed',function(_,_,value) id=value end);w:SetFocus();local row=w.rmSpellPopup.rows[1]
     assert(row.itemID==1 and row.icon.texture==11 and not w.rmSpellPopup.rows[2]:IsShown())
     row.scripts.OnMouseDown(row,'LeftButton');assert(id=='1' and w:GetText()=='Water')
+end)
+test('inventory references accept typed and cursor bag items without losing exact identity or cancel state',function()
+    local f=fixture();local a=f.addon
+    f.env.GetItemInfo=function(id) if id==1 then return 'Water',nil,nil,nil,nil,nil,nil,nil,nil,11 end end
+    a.bagContents={[1]={count=2,slots={{bag=0,slot=1}}}}
+    local w=a:CreateItemEditBox('Inventory_EditBox');local values={};w:SetText('')
+    w:SetCallback('OnEnterPressed',function(_,_,value) values[#values+1]=value end)
+    w:SetFocus();w.editbox:SetText('1');w.editbox.scripts.OnEnterPressed(w.editbox)
+    assert(values[1]=='1' and w:GetText()=='Water','typed owned item was rejected')
+    local clears=0;f.env.ClearCursor=function() clears=clears+1 end
+    f.env.GetCursorInfo=function() return 'item',1,'item:1' end
+    w:SetFocus();w.editbox.scripts.OnReceiveDrag(w.editbox);assert(values[2]=='1' and clears==1)
+    f.env.GetCursorInfo=function() return 'item',2,'item:2' end
+    w.editbox.scripts.OnReceiveDrag(w.editbox);assert(#values==2 and clears==1,'unowned item consumed the cursor')
+    w:SetFocus();w.editbox:SetText('unfinished');w:ClearFocus();assert(w:GetText()=='Water' and #values==2)
 end)
 test('uncached item selection refreshes its label without committing a placeholder',function()
     local f=fixture();local ready=false;f.env.GetItemInfo=function(id) if ready then return 'Water' end end
