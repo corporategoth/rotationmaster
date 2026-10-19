@@ -59,7 +59,7 @@ local function fixture(modern, absentThreat)
     end
     env.WOW_PROJECT_BURNING_CRUSADE_CLASSIC=5
     load('Data/artwork.lua')
-    load('Platform/client.lua');load('Platform/items.lua');load('Platform/inventory.lua');load('Platform/specializations.lua');load('Platform/communication.lua');load('Functions/values.lua');load('Functions/text.lua');load('Functions/cache.lua');load('Core/announcements.lua');load('Core/action_policy.lua');load('Core/inventory.lua');load('Core/rotation_references.lua')
+    load('Platform/client.lua');load('Platform/items.lua');load('Platform/inventory.lua');load('Platform/specializations.lua');load('Platform/communication.lua');load('Functions/values.lua');load('Functions/text.lua');load('Functions/collections.lua');load('Functions/cache.lua');load('Core/announcements.lua');load('Core/action_policy.lua');load('Core/inventory.lua');load('Core/rotation_references.lua')
     load('Data/plain.lua');load('Data/tags.lua');load('Data/rotation_tree.lua');load('Data/validation.lua');load('Core/rotation_sequence.lua');load('Core/rotation_selection.lua')
     return env, addon, load
 end
@@ -1089,7 +1089,7 @@ end)
 
 test('item announcements resolve their item action and deduplicate successful casts',function()
     local env,a,load=fixture();load('main.lua');initialize(a)
-    a.debug=function() end;a.deepcopy=function(value) local result={};for k,v in pairs(value) do result[k]=v end;return result end
+    a.debug=function() end;
     env.GetItemInfo=function() return 'Water','item:1' end
     a.db.profile.announces={{id='item',type='item',item={1},event='SUCCEEDED',announce='local',value='Used item'}};a.announced={};a.spellHistory={}
     a.events={SUCCEEDED='Succeeded'};local calls=0;a.announce=function() calls=calls+1 end
@@ -1101,7 +1101,7 @@ end)
 
 test('item announcement links use protected native metadata and preserve literal percent characters',function()
     local env,a,load=fixture();load('main.lua');initialize(a)
-    a.debug=function() end;a.deepcopy=function(value) local result={};for k,v in pairs(value) do result[k]=v end;return result end
+    a.debug=function() end;
     env.GetItemInfo=nil;env.C_Item={GetItemInfo=function() return 'Water 100%','|Hitem:1|h[Water 100%]|h' end}
     a.db.profile.announces={{id='item',type='item',item={1},event='SUCCEEDED',announce='local',value='Used {{item}}'}}
     a.announced={};a.spellHistory={};a.events={SUCCEEDED='Succeeded'};local text
@@ -1117,7 +1117,7 @@ end)
 test('audible announcements play once without chat even without announcement text',function()
     local env,a,load=fixture();local lib=env.LibStub;env.LibStub=function(name,...) if name=='LibSharedMedia-3.0' then return {Fetch=function(_,kind,key) assert(kind=='sound' and key=='Chime');return 'chime.ogg' end} end;return lib(name,...) end
     local played,chat=0,0;env.PlaySoundFile=function(path,channel) assert(path=='chime.ogg' and channel=='Master');played=played+1 end;env.SendChatMessage=function() chat=chat+1 end
-    load('main.lua');initialize(a);a.debug=function() end;a.deepcopy=function(value) local result={};for k,v in pairs(value) do result[k]=v end;return result end;a.announce=function() chat=chat+1 end;a.announced={};a.spellHistory={};a.events={SUCCEEDED='Succeeded'}
+    load('main.lua');initialize(a);a.debug=function() end;a.announce=function() chat=chat+1 end;a.announced={};a.spellHistory={};a.events={SUCCEEDED='Succeeded'}
     a.db.profile.announces={{id='sound',type='spell',spell=403,event='SUCCEEDED',announce='audible',announce_sound='Chime'}};a.GetSpellIds=function() return {403},{} end
     a:UNIT_SPELLCAST_SUCCEEDED('UNIT_SPELLCAST_SUCCEEDED','player','cast-sound',403);a:UNIT_SPELLCAST_SUCCEEDED('UNIT_SPELLCAST_SUCCEEDED','player','cast-sound',403);assert(played==1 and chat==0)
 end)
@@ -1136,12 +1136,12 @@ test('Unbind removes all still-matching bar actions and preserves replaced slots
     assert(a:UnbindItemSet('s')==false and actions[1]==11 and a.db.char.bindings.s);env.InCombatLockdown=function() return false end;a:UnbindItemSet('s');assert(actions[1]==nil and actions[2]==nil and actions[3]==99 and a.db.char.bindings.s==nil)
 end)
 test('audible announcement safely tolerates a missing sound playback API',function()
-    local env,a,load=fixture();env.PlaySoundFile=nil;load('main.lua');initialize(a);a.debug=function() end;a.deepcopy=function(value) local copy={};for key,v in pairs(value) do copy[key]=v end;return copy end;a.announced={};a.spellHistory={};a.events={SUCCEEDED='Success'};a.GetSpellIds=function() return {403},{} end;a.db.profile.announces={{id='sound',type='spell',spell=403,event='SUCCEEDED',announce='audible',announce_sound='Sound'}}
+    local env,a,load=fixture();env.PlaySoundFile=nil;load('main.lua');initialize(a);a.debug=function() end;a.announced={};a.spellHistory={};a.events={SUCCEEDED='Success'};a.GetSpellIds=function() return {403},{} end;a.db.profile.announces={{id='sound',type='spell',spell=403,event='SUCCEEDED',announce='audible',announce_sound='Sound'}}
     local ok,why=pcall(a.UNIT_SPELLCAST_SUCCEEDED,a,'UNIT_SPELLCAST_SUCCEEDED','player','missing-sound-api',403);assert(ok,why)
 end)
 test('real cast announcement supports a native-only chat sender and modern raid roles',function()
     local env,a,load=fixture();load('main.lua');initialize(a);a.debug=function() end
-    a.deepcopy=function(value) local result={};for k,v in pairs(value) do result[k]=v end;return result end
+
     a.Platform.GetSpellLink=function() return 'Lightning Bolt' end;a.GetSpellIds=function() return {403},{} end
     a.announced={};a.spellHistory={};a.events={SUCCEEDED='Succeeded'}
     a.db.profile.announces={{id='native',type='spell',spell=403,event='SUCCEEDED',announce='raidwarn',value='Cast {{spell}}'}}
@@ -1157,7 +1157,7 @@ test('failed chat or sound output does not abort real cast bookkeeping',function
     local env,a,load=fixture();local lib=env.LibStub
     env.LibStub=function(name,...) if name=='LibSharedMedia-3.0' then return {Fetch=function() return 'chime.ogg' end} end;return lib(name,...) end
     load('main.lua');initialize(a);a.debug=function() end
-    a.deepcopy=function(value) local result={};for k,v in pairs(value) do result[k]=v end;return result end
+
     a.Platform.GetSpellLink=function() return 'Lightning Bolt' end;a.GetSpellIds=function() return {403},{} end
     a.announced={};a.spellHistory={};a.events={SUCCEEDED='Succeeded'}
     a.db.profile.announces={{id='failed-output',type='spell',spell=403,event='SUCCEEDED',announce='emote',announce_sound='Chime',value='Cast'}}

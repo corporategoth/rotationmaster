@@ -226,6 +226,7 @@ function addon:HandleCommand(str)
         addon:print(L["/rm errors              - View and copy Rotation Master errors."])
         addon:print(L['/rm editorinfo          - Copy native Lua input diagnostics.'])
         addon:print(L['/rm editorarrows        - Temporarily test native arrows in an open editor.'])
+        addon:print(L['/rm cpu [start|report|cancel] - Capture and inspect CPU costs.'])
 
     elseif cmd == "config" then
         self:ShowConfig("Rotations")
@@ -238,6 +239,9 @@ function addon:HandleCommand(str)
 
     elseif cmd == 'editorarrows' then
         self:ShowLuaEditorArrowProbe()
+
+    elseif cmd == 'cpu' then
+        self:RunCPUProfileAction(AceConsole:GetArgs(str,1,npos))
 
     elseif cmd == "disable" then
         addon:disable()
@@ -420,7 +424,7 @@ function addon:OnInitializeInternal()
     if self.InstallRotationProfileLifecycle then self:InstallRotationProfileLifecycle() end
 
     -- This is here because of order of loading.
-    getCached = addon.getCached
+    getCached = addon.Functions.cache.getCached
 
     --self:SetupOptions()
 end
@@ -1060,7 +1064,7 @@ function addon:EvaluateNextActionInternal()
     end
 
     if GetTime() - self.lastCacheReport > 15 then
-        addon:ReportCacheStats()
+        addon.Functions.cache.ReportCacheStats(addon)
         addon:debug("%s", self.evaluationProfile:report(self.db.profile.detailed_profiling))
         self.evaluationProfile:reset()
         self.lastCacheReport = GetTime()
@@ -1517,7 +1521,7 @@ local function spellcast(self, event, unit, castguid, spellid)
                 end
 
                 if not skip then
-                    local ent = self.deepcopy(value)
+                    local ent = self.Functions.collections.deepcopy(value)
                     if ent.type == BOOKTYPE_SPELL or ent.type == BOOKTYPE_PET then
                         ent.action = ent.spell
                     elseif ent.type == "item" then

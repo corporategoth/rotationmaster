@@ -3,7 +3,7 @@ local function fixture()
     local f=F.new();local a=f.addon;local _,create=dofile('tests/fixtures/native_ui.lua')(f.env)
     local codecData,codecDeps=dofile('tests/fixtures/codec.lua')();a.RotationData=codecData;a.NewRotationCodec=function() return codecData.NewCodec(codecDeps) end
     a.pretty_name='Rotation Master';a.name='rotationmaster';a.configPaneGeneration=1
-    for _,path in ipairs({'Platform/spells.lua','Data/catalog.lua','Data/rotation_store.lua','Core/rotation_library.lua','Core/rotation_scope.lua','Core/rotation_migration.lua','Help/general.lua','Help/conditions.lua','Help/effects.lua','Help/itemsets.lua','Help/announce.lua','UI/window.lua','UI/help.lua','UI/icon_picker.lua','UI/color_picker.lua','UI/settings_roster_order.lua','UI/settings_layout.lua','UI/settings_ordered.lua','UI/settings_draft.lua','UI/settings_history.lua','UI/settings_unsaved.lua','UI/settings_form.lua','UI/settings_transfer.lua','UI/settings_general.lua','UI/settings_profiles.lua','UI/collection_compare.lua','UI/settings_collections.lua','UI/settings_announces.lua','UI/settings_effects.lua','UI/settings_items.lua','UI/settings_conditions.lua'}) do local h=io.open(path);if h then h:close();f.load(path) end end
+    for _,path in ipairs({'Platform/spells.lua','Data/catalog.lua','Data/rotation_store.lua','Core/rotation_library.lua','Core/rotation_scope.lua','Core/rotation_migration.lua','Help/general.lua','Help/conditions.lua','Help/effects.lua','Help/itemsets.lua','Help/announce.lua','UI/window.lua','UI/help.lua','UI/icon_picker.lua','UI/color_picker.lua','UI/settings_roster_order.lua','UI/settings_layout.lua','UI/settings_ordered.lua','UI/settings_draft.lua','UI/settings_history.lua','UI/settings_unsaved.lua','UI/settings_form.lua','UI/settings_transfer.lua','UI/cpu_profile.lua','UI/settings_general.lua','UI/settings_profiles.lua','UI/collection_compare.lua','UI/settings_collections.lua','UI/settings_announces.lua','UI/settings_effects.lua','UI/settings_items.lua','UI/settings_conditions.lua'}) do local h=io.open(path);if h then h:close();f.load(path) end end
     local parent=create('Frame');parent:SetSize(1000,600)
     return f,parent
 end
@@ -33,6 +33,25 @@ test('General controls preserve live callbacks and close their effect preview',f
     p.fields.enable:Click();assert(not a.db.profile.enable and enabled==-1)
     p.fields.live_config_update:SetValue(3);assert(a.db.profile.live_config_update==3 and scheduled==1)
     local stale=p.fields.enable.scripts.OnClick;p:Release();assert(cleared>0);stale();assert(enabled==-1)
+end)
+test('General CPU capture controls bypass pending edits and retain callback leases',function()
+    local f,parent=fixture();local a=f.addon
+    a.db.profile.poll=.15
+    local calls={};a.print=function() end
+    a.StartCPUProfile=function(_,duration) calls[#calls+1]='start:'..duration;return true end
+    a.GetCPUProfileReport=function() return 'CPU report data' end
+    a.CancelCPUProfile=function() calls[#calls+1]='cancel';return true end
+    a.ShowConditionText=function(_,text,title) assert(text=='CPU report data' and title=='CPU profile');calls[#calls+1]='report' end
+    local p=a:OpenNativeSettings(parent,'General')
+    -- An uncommitted native input must neither block a diagnostic nor change live polling.
+    local edit=p:Edit('unrelated','Unrelated','',function() return nil end,function() error('must not flush') end)
+    edit:SetText('invalid');edit.scripts.OnTextChanged(edit,true)
+    local wasDirty=p:IsSettingsDraftDirty()
+    assert(p.fields.cpu_capture and p.fields.cpu_report and p.fields.cpu_cancel)
+    p.fields.cpu_capture:Click();p.fields.cpu_report:Click();p.fields.cpu_cancel:Click()
+    assert(table.concat(calls,',')=='start:10,report,cancel' and a.db.profile.poll==.15)
+    assert(p:IsSettingsDraftDirty()==wasDirty,'diagnostics must not change pending edits')
+    local stale=p.fields.cpu_capture.scripts.OnClick;p:Release();stale();assert(#calls==3)
 end)
 test('profile replacement brackets runtime lifecycle and stale confirmations do not execute',function()
     local f,parent=fixture();local a=f.addon;assert(a.BuildProfileSettings,'native Profiles missing')
@@ -219,7 +238,7 @@ test('General help localizes whole field explanations in the visible control ord
     local f,parent=fixture();local a=f.addon;local L=f.libraries['AceLocale-3.0']:GetLocale('rotationmaster')
     local controls={'enable','poll','disable_autoswitch','disable_buttons','live_config_update','minimap','rotation_view',
         'spell_history','combat_history','damage_history','preview_spells','preview_opacity','preview_locked','preview_vertical','preview_reset',
-        'effect','magnification','color','setpoint','yoffs','xoffs','loglevel','detailed_profiling'}
+        'effect','magnification','color','setpoint','yoffs','xoffs','loglevel','detailed_profiling','cpu_capture','cpu_report','cpu_cancel'}
     for _,key in ipairs(controls) do L['Help.General.'..key]='Translated field '..key end
     local p=a:CreateSettingsForm(parent);p:Open(function(form) a:BuildGeneralSettings(form) end)
     local found,last={},0

@@ -115,6 +115,7 @@ function addon:GetRotationContext(spec)
     if C_PetBattles and read(C_PetBattles.IsInBattle) then context.actionContext="petbattle" end
     return context
 end
+local ownedRotationContext=addon.GetRotationContext
 local function runtimeKey(id, custom)
     local key="RM-BUILTIN:"..id
     while custom[key]~=nil do key=":"..key end
@@ -125,6 +126,7 @@ end
 function addon:BindRotationLibraryReader(bind)
     if type(bind)~='function' then return nil,'invalid-library-reader-binder' end
     local owner=self;local reader={}
+    function reader:OwnsContext(fn) return fn==ownedRotationContext end
     function reader:Generation() local ok,why=ensure(owner);if not ok then return nil,why end;return active.generation end
     function reader:Read(spec,id,project,candidates)
         local ok,why=ensure(owner);if not ok then return nil,why end

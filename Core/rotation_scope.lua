@@ -36,11 +36,19 @@ end
 local function copyRecord(r) local out={} for _,k in ipairs({'body','origin','imported','comparison'}) do if r[k]~=nil then out[k]=copy(r[k]) end end return out end
 local function referenceKey(r) return r.kind=='builtin' and 'builtin\0'..r.id or 'custom\0'..addressKey(r.address) end
 function addon:GetRotationOwnerContext()
-    local context=self:GetRotationContext(self.currentSpec)
-    if not context or not data.IsRotationClassToken(context.class) then return nil,'missing-owner-context' end
+    local class
+    local platform=self.Platform
+    if libraryReader and type(libraryReader.OwnsContext)=='function' and libraryReader:OwnsContext(self.GetRotationContext)
+        and type(platform)=='table' and type(platform.GetPlayerOwnerClassObservation)=='function' then
+        class=platform:GetPlayerOwnerClassObservation()
+    else
+        local context=self:GetRotationContext(self.currentSpec)
+        class=context and context.class
+    end
+    if not data.IsRotationClassToken(class) then return nil,'missing-owner-context' end
     local character=self.db.keys and self.db.keys.char
     if not text(character,512) then character=nil end
-    return {class=context.class,character=character}
+    return {class=class,character=character}
 end
 function addon:GetScopedRotationCoordinator()
     -- Once scoped mode is bound, a profile transition must fail closed until

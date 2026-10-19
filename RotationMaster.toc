@@ -25,6 +25,7 @@
 
 globals.lua
 Platform/client.lua
+Platform/rotation_owner.lua
 Platform/groups.lua
 Platform/roster_class.lua
 Platform/casting.lua
@@ -72,6 +73,7 @@ Functions/trends.lua
 utils.lua
 profiler.lua
 Diagnostics/errors.lua
+Diagnostics/cpu.lua
 Core/conditions.lua
 Core/condition_catalog.lua
 Core/item_conditions.lua
@@ -155,6 +157,7 @@ UI/help.lua
 UI/spell_search.lua
 UI/spell_icon.lua
 UI/errors.lua
+UI/cpu_profile.lua
 UI/settings_launcher.lua
 UI/settings_setup.lua
 UI/settings_roster_order.lua

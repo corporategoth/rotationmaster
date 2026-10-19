@@ -79,6 +79,23 @@ function addon:BuildGeneralSettings(p)
     p:Heading(L['Debugging Options'])
     p:Choice('loglevel',L['Log Level'],profile.loglevel or 2,entries(self.loglevels),function(v) profile.loglevel=v;p:Draw() end)
     local detail=p:Check('detailed_profiling',L['Detailed Profiling'],profile.detailed_profiling,function(v) profile.detailed_profiling=v end);if (profile.loglevel or 2)<3 then detail:Disable() end
+    if self.RunCPUProfileAction then
+        local controls={
+            {key='cpu_capture',text=L['Capture CPU (10s)'],action='start'},
+            {key='cpu_report',text=L['CPU report'],action='report'},
+            {key='cpu_cancel',text=L['Cancel capture'],action='cancel'},
+        }
+        local diagnosticY=p.y;local controlWidth=(p.width-8)/3
+        for i,entry in ipairs(controls) do
+            local control=p:Button(entry.key,entry.text,function() end)
+            control:ClearAllPoints();control:SetPoint('TOPLEFT',(i-1)*(controlWidth+4),-diagnosticY);control:SetWidth(controlWidth)
+            -- Diagnostics use live runtime settings, without applying/flushing a draft.
+            self:SetUIScript(control,'OnClick',p:Guard(function()
+                local ok,message=self:RunCPUProfileAction(entry.action);p:Message(message,ok)
+            end))
+        end
+        p.y=diagnosticY+28
+    end
     if self.Glow and store.global.effects and store.global.effects[profile.effect] then self:Glow(preview,'settings-preview',store.global.effects[profile.effect],profile.color or {r=1,g=1,b=1,a=1},profile.magnification or 1,profile.setpoint or 'CENTER',profile.xoffs or 0,profile.yoffs or 0) end
     p:EndColumns()
     p.cleanups[#p.cleanups+1]=function() if self.HideGlow then self:HideGlow(preview,'settings-preview') end end
