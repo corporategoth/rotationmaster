@@ -20,6 +20,14 @@ test('shared event and vehicle envelopes do not require a class or specializatio
     local result=data.ValidateEnvelope(v,options)
     assert(not result.valid and has(result,'missing-field','$.applicability.families'))
 end)
+test('explicit Universal applicability is typed and cannot also declare a class',function()
+    local v=envelope();v.applicability.class=nil;v.applicability.universal=true
+    assert(data.ValidateEnvelope(v,options).valid)
+    v.applicability.class='SHAMAN';local result=data.ValidateEnvelope(v,options)
+    assert(not result.valid and has(result,'conflicting-class-scope','$.applicability.universal'))
+    v.applicability.class=nil;v.applicability.universal='yes';assert(not data.ValidateEnvelope(v,options).valid)
+    v.applicability.universal=false;assert(data.ValidateEnvelope(v,options).valid,'legacy classless transport was reinterpreted')
+end)
 test('future formats and unknown condition data are preserved but inert',function()
     local v=envelope();v.schemaVersion=9
     local result=data.ValidateEnvelope(v,options)

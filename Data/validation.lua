@@ -5,6 +5,7 @@ local families = {retail=true, era=true, progression=true, tbc=true, forever=tru
 local contexts = {player=true, pet=true, vehicle=true, possession=true, override=true, petbattle=true}
 local classes = {WARRIOR=true, PALADIN=true, HUNTER=true, ROGUE=true, PRIEST=true, DEATHKNIGHT=true,
     SHAMAN=true, MAGE=true, WARLOCK=true, MONK=true, DRUID=true, DEMONHUNTER=true, EVOKER=true}
+function data.IsRotationClassToken(value) return type(value)=="string" and classes[value]==true end
 local function integer(value, minimum)
     return type(value) == "number" and value >= minimum and value % 1 == 0
 end
@@ -128,7 +129,7 @@ local function validate(envelope, options, bodyOnly)
         check(envelope.descriptionKey, nonempty, "$.descriptionKey")
         local scope = envelope.applicability
         if object(scope, "$.applicability") then
-            unknown(scope, {families=true,actionContext=true,class=true,specs=true,minLevel=true,maxLevel=true,
+            unknown(scope, {families=true,actionContext=true,class=true,universal=true,specs=true,minLevel=true,maxLevel=true,
                 roles=true,intent=true,minBuild=true,maxBuild=true,rulesets=true}, "$.applicability")
             if list(scope.families, "$.applicability.families", true) then
                 if #scope.families == 0 then issue("empty-edition-scope", "$.applicability.families", "error") end
@@ -143,6 +144,8 @@ local function validate(envelope, options, bodyOnly)
             if scope.class ~= nil and check(scope.class, nonempty, "$.applicability.class") and not classes[scope.class] then
                 issue("unknown-class", "$.applicability.class", "warning", "unsupported")
             end
+            optionalType(scope.universal,"boolean","$.applicability.universal")
+            if scope.universal==true and scope.class~=nil then issue("conflicting-class-scope","$.applicability.universal","error") end
             for _, pair in ipairs({{"minLevel","maxLevel"},{"minBuild","maxBuild"}}) do
                 for _, key in ipairs(pair) do
                     if scope[key] ~= nil then check(scope[key], function(v) return integer(v, 1) end, "$.applicability."..key) end

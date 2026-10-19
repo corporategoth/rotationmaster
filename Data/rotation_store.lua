@@ -1,7 +1,6 @@
 local _,addon=...
 local data=addon.RotationData
-local classes={WARRIOR=true,PALADIN=true,HUNTER=true,ROGUE=true,PRIEST=true,DEATHKNIGHT=true,
-    SHAMAN=true,MAGE=true,WARLOCK=true,MONK=true,DRUID=true,DEMONHUNTER=true,EVOKER=true}
+local isClass=data.IsRotationClassToken
 local components={'body','origin','imported','comparison'}
 local legacyKinds={rotations='body',origins='origin',imports='imported',comparisons='comparison'}
 local function plain(v) return type(v)=='table' and getmetatable(v)==nil end
@@ -13,11 +12,11 @@ local function fields(v,allowed)
     return true
 end
 local function validAddress(a)
-    return fields(a,{scope=true,class=true,owner=true,spec=true,id=true}) and classes[a.class] and spec(a.spec) and text(a.id,128)
+    return fields(a,{scope=true,class=true,owner=true,spec=true,id=true}) and isClass(a.class) and spec(a.spec) and text(a.id,128)
         and (a.scope=='class' and a.owner==a.class or a.scope=='character' and text(a.owner,512))
 end
 local function visible(a,c)
-    if not plain(c) or not classes[c.class] then return nil,'missing-owner-context' end
+    if not plain(c) or not isClass(c.class) then return nil,'missing-owner-context' end
     if a.scope=='character' and not text(c.character,512) then return nil,'missing-owner-context' end
     if c.class~=a.class or a.scope=='character' and a.owner~=c.character then return nil,'foreign-owner' end
     return true
@@ -87,6 +86,12 @@ local function validLegacy(legacy)
     if legacy.evidence~=nil and not data.CheckPortable(legacy.evidence) then return nil,'invalid-legacy-state' end
     return true
 end
+local function detachedPayload(value,owned)
+    if type(value)~='table' then return true end
+    if owned[value] then return false end
+    for _,child in pairs(value) do if not detachedPayload(child,owned) then return false end end
+    return true
+end
 local function distinctStructure(state)
     local owned,payloads={},{}
     local function claim(value)
@@ -116,24 +121,18 @@ local function distinctStructure(state)
     if state.legacy.evidence~=nil then payloads[#payloads+1]=state.legacy.evidence end
     -- Repeated data references are legal; owner containers must never be data.
     -- Otherwise a later plain table write could mutate another owner's body.
-    local function detached(value)
-        if type(value)~='table' then return true end
-        if owned[value] then return false end
-        for _,child in pairs(value) do if not detached(child) then return false end end
-        return true
-    end
-    for _,value in ipairs(payloads) do if not detached(value) then return false end end
+    for _,value in ipairs(payloads) do if not detachedPayload(value,owned) then return false end end
     return true
 end
 local function validState(state)
     if not fields(state,{version=true,classes=true,characters=true,legacy=true}) or state.version~=1 or not plain(state.classes) or not plain(state.characters) then return nil,'invalid-store' end
     for class,map in pairs(state.classes) do
-        if not classes[class] then return nil,'invalid-store' end
+        if not isClass(class) then return nil,'invalid-store' end
         local ok,why=validSpecMap(map,function(record,id,number) return validRecord(record,{id=id,class=class,spec=number}) end)
         if not ok then return nil,why end
     end
     for owner,bucket in pairs(state.characters) do
-        if not text(owner,512) or not fields(bucket,{class=true,specs=true}) or not classes[bucket.class] then return nil,'invalid-store' end
+        if not text(owner,512) or not fields(bucket,{class=true,specs=true}) or not isClass(bucket.class) then return nil,'invalid-store' end
         local ok,why=validSpecMap(bucket.specs,function(record,id,number) return validRecord(record,{id=id,class=bucket.class,spec=number}) end)
         if not ok then return nil,why end
     end
@@ -168,6 +167,33 @@ function data.NewRotationStore(options)
     local service={};local tokens=setmetatable({},{__mode='k'});local plans=setmetatable({},{__mode='k'})
     local function roots() return {state.classes,state.characters,state.legacy} end
     local function sameRoots(previous) return previous[1]==state.classes and previous[2]==state.characters and previous[3]==state.legacy end
+    -- Built only after full validation or our own detached plain-table writes.
+    local function buildIndex()
+        local result={roots=roots(),classes={},characters={},owned={[state]=true}}
+        for _,root in ipairs(result.roots) do result.owned[root]=true end
+        local function add(bucket,map)
+            result.owned[bucket]=true;result.owned[map]=true
+            local owner={bucket=bucket,map=map,specs={}}
+            for number,rows in pairs(map) do
+                result.owned[rows]=true
+                local scope={rows=rows,records={},count=0};owner.specs[number]=scope
+                for id,record in pairs(rows) do
+                    scope.records[id]=record;scope.count=scope.count+1;result.owned[record]=true
+                end
+            end
+            return owner
+        end
+        for class,map in pairs(state.classes) do result.classes[class]=add(map,map) end
+        for name,bucket in pairs(state.characters) do
+            local owner=add(bucket,bucket.specs);owner.class=bucket.class;result.characters[name]=owner
+        end
+        for kind in pairs(legacyKinds) do if state.legacy[kind] then
+            local map=state.legacy[kind];result.owned[map]=true
+            for _,rows in pairs(map) do result.owned[rows]=true end
+        end end
+        return result
+    end
+    local index=buildIndex()
     local function locate(a)
         local root=a.scope=='class' and state.classes or state.characters
         local bucket=root[a.owner];local map=a.scope=='class' and bucket or bucket and bucket.specs
@@ -192,6 +218,43 @@ function data.NewRotationStore(options)
         if bucket and bucket.class~=a.class then return nil,'foreign-owner' end
         return true
     end
+    local function readRows(a,c)
+        if not validAddress(a) then return nil,'invalid-address' end
+        local allowed,reason=visible(a,c);if not allowed then return nil,reason end
+        if not fields(state,{version=true,classes=true,characters=true,legacy=true}) or state.version~=1
+            or not plain(state.classes) or not plain(state.characters) or not plain(state.legacy) then return nil,'invalid-store' end
+        if not sameRoots(index.roots) then return nil,'stale-store-index' end
+        local root=a.scope=='class' and state.classes or state.characters
+        local indexed=(a.scope=='class' and index.classes or index.characters)[a.owner]
+        local bucket=root[a.owner]
+        if bucket~=nil and not plain(bucket) then return nil,'invalid-store' end
+        if a.scope=='character' and bucket and bucket.class~=a.class then return nil,'foreign-owner' end
+        if bucket~=(indexed and indexed.bucket) then return nil,'stale-store-index' end
+        if not indexed then return true end
+        if a.scope=='character' and bucket.class~=indexed.class then return nil,'stale-store-index' end
+        if a.scope=='character' and not fields(bucket,{class=true,specs=true}) then return nil,'invalid-store' end
+        local map=a.scope=='class' and bucket or bucket.specs
+        if not plain(map) then return nil,'invalid-store' end
+        if map~=indexed.map then return nil,'stale-store-index' end
+        local rows,scope=map[a.spec],indexed.specs[a.spec]
+        if rows~=(scope and scope.rows) then return nil,'stale-store-index' end
+        if rows~=nil and not plain(rows) then return nil,'invalid-store' end
+        return true,rows,scope
+    end
+    local function selected(record,a)
+        local valid,reason=validRecord(record,a);if not valid then return nil,reason end
+        for _,component in ipairs(components) do
+            if not detachedPayload(record[component],index.owned) then return nil,'aliased-store' end
+        end
+        return true
+    end
+    local function readRecord(a,c)
+        local allowed,rows,scope=readRows(a,c);if not allowed then return nil,rows end
+        local record=rows and rows[a.id]
+        if record~=(scope and scope.records[a.id]) then return nil,'stale-store-index' end
+        if record then local valid,reason=selected(record,a);if not valid then return nil,reason end end
+        return true,record
+    end
     local function checkExpected(a,expected)
         local lease=tokens[expected]
         if not lease or not equal(lease.address,a) or not alive(lease) then return nil,'stale-rotation-record' end
@@ -209,10 +272,11 @@ function data.NewRotationStore(options)
         return public
     end
     function service:Get(a,c)
-        local allowed,reason=target(a,c);if not allowed then return nil,reason end
-        local lease=capture(a);if not lease.record then return nil,'unknown-rotation' end
+        local allowed,record=readRecord(a,c);if not allowed then return nil,record end
+        if not record then return nil,'unknown-rotation' end
+        local lease=capture(a)
         local token={};tokens[token]=lease
-        return copyRecord(lease.record),token,data.ValidateBody(lease.record.body,options.validation)
+        return copyRecord(record),token,data.ValidateBody(record.body,options.validation)
     end
     local function row(a,record) return {address=copied(a),record=copyRecord(record),validation=data.ValidateBody(record.body,options.validation)} end
     local function sort(rows)
@@ -224,28 +288,49 @@ function data.NewRotationStore(options)
     end
     function service:ListVisible(number,c)
         if not spec(number) then return nil,'invalid-specialization' end
-        if not plain(c) or not classes[c.class] then return nil,'missing-owner-context' end
-        local valid,reason=validState(state);if not valid then return nil,reason end
+        if not plain(c) or not isClass(c.class) then return nil,'missing-owner-context' end
         local result={}
-        local function add(scope,owner,map)
-            for id,record in pairs(map and map[number] or {}) do result[#result+1]=row({scope=scope,class=c.class,owner=owner,spec=number,id=id},record) end
+        local function add(kind,owner)
+            local a={scope=kind,class=c.class,owner=owner,spec=number,id=options.fallbackID}
+            local allowed,rows,scope=readRows(a,c);if not allowed then return nil,rows end
+            local count=0
+            for id,record in pairs(rows or {}) do
+                if not text(id,128) or scope.records[id]~=record then return nil,'stale-store-index' end
+                count=count+1;a.id=id
+                local valid,reason=selected(record,a);if not valid then return nil,reason end
+                result[#result+1]=row(a,record)
+            end
+            if count~=(scope and scope.count or 0) then return nil,'stale-store-index' end
+            return true
         end
-        add('class',c.class,state.classes[c.class])
-        local character=type(c.character)=='string' and state.characters[c.character]
-        if character and character.class==c.class then add('character',c.character,character.specs) end
+        local allowed,reason=add('class',c.class);if not allowed then return nil,reason end
+        local character
+        if type(c.character)=='string' then character=state.characters[c.character] end
+        if character~=nil and not plain(character) then return nil,'invalid-store' end
+        if not character or character.class==c.class then
+            if text(c.character,512) then allowed,reason=add('character',c.character);if not allowed then return nil,reason end end
+        end
         return sort(result)
     end
     function service:GetFallback(number,c)
-        if not plain(c) or not text(c.character,512) then return nil,'missing-owner-context' end
-        local rows,reason=self:ListVisible(number,c);if not rows then return nil,reason end
-        local character=state.characters[c.character]
-        if character and character.class~=c.class then return nil,'foreign-owner' end
+        if not plain(c) or not isClass(c.class) or not text(c.character,512) then return nil,'missing-owner-context' end
+        if not spec(number) then return nil,'invalid-specialization' end
         local found
-        for _,entry in ipairs(rows) do if entry.address.id==options.fallbackID and (not found or entry.address.scope=='character') then found=entry end end
+        for _,kind in ipairs({'character','class'}) do
+            local a={scope=kind,class=c.class,owner=kind=='class' and c.class or c.character,spec=number,id=options.fallbackID}
+            local allowed,record=readRecord(a,c);if not allowed then return nil,record end
+            if record then found=row(a,record);break end
+        end
         if not found then return nil,'unknown-rotation' end
         if not found.validation.valid then return found,'invalid-fallback' end
         if not found.validation.supported or not found.validation.resolved then return found,'unavailable-fallback' end
         return found
+    end
+    function service:Refresh()
+        local valid,reason=validState(state);if not valid then return nil,reason end
+        local replacement=buildIndex()
+        index=replacement;tokens=setmetatable({},{__mode='k'});plans=setmetatable({},{__mode='k'})
+        return true
     end
     function service:AllStored()
         local valid,reason=validState(state);if not valid then return nil,reason end
@@ -350,7 +435,7 @@ function data.NewRotationStore(options)
                 for kind in pairs(legacyKinds) do local map=state.legacy[kind];local rows=map and map[pending.source.selection.spec];if rows then rows[pending.source.selection.id]=nil end end
             end
         end
-        plans[public]=nil;return true,copied(destination)
+        index=buildIndex();plans[public]=nil;return true,copied(destination)
     end
     return service
 end

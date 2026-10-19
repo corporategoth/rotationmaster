@@ -42,6 +42,7 @@ function addon:RegisterDefaultRotation(envelope)
     local copy,why=data.CopyData(envelope)
     if not copy then return false,why.code end
     if copy.format~="RotationMaster" or copy.schemaVersion~=1 or not data.ValidateEnvelope(copy).valid then return false,"invalid-envelope" end
+    if not copy.applicability.class and copy.applicability.universal~=true then return false,"missing-class-scope" end
     if definitions[copy.id] then return false,"duplicate-default-id" end
     definitions[copy.id]=copy;definitionVersion=definitionVersion+1
     return true
@@ -204,7 +205,8 @@ function addon:CloneDefaultRotation(spec,id,name)
     local ok,why=ensure(self);if not ok then return nil,why end
     local source=active.catalog:Get({kind="builtin",id=id})
     if not source then return nil,"unknown-rotation" end
-    if not matchesClass(source,self:GetRotationContext(spec)) then return nil,"class-mismatch" end
+    local context=self:GetRotationContext(spec)
+    if not data.IsRotationClassToken(context.class) or not matchesClass(source,context) then return nil,"class-mismatch" end
     local state={}
     local temporary=data.NewCatalog({state=state,newId=self.uuid})
     assert(temporary:RegisterBuiltin(source.envelope))
@@ -214,6 +216,9 @@ function addon:CloneDefaultRotation(spec,id,name)
     if rotations[generated]~=nil then return nil,"id-collision" end
     local view=temporary:Get({kind="custom",id=generated})
     local manifest=view.envelope;local body=manifest.body;manifest.body=nil
+    if manifest.applicability.universal then
+        manifest.applicability.universal=nil;manifest.applicability.class=context.class
+    end
     local origins=active.state.origins[spec]
     if origins~=nil and not plainTable(origins) then return nil,"invalid-origin-state" end
     origins=origins or {}

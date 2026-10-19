@@ -269,4 +269,113 @@ test('portable limits apply independently to body and sidecar rather than whole 
     local input,expected=store:Get(address('class','SHAMAN','large'),ctx);input.body.name='Changed'
     assert(store:Commit(assert(store:PlanReplace(address('class','SHAMAN','large'),input,ctx,expected)),ctx))
 end)
+test('indexed reads do zero foreign payload or provenance work at100 and1000 unrelated records',function()
+    local samples={}
+    for _,count in ipairs({100,1000}) do
+        local s=state();for i=1,count do s.classes.MAGE[0]['foreign-'..i]=record('Foreign '..i) end
+        local _,_,template,envelope=fixture();local pack=envelope();pack.applicability.class='MAGE'
+        local n=0;local catalog=assert(template.NewCatalog({newId=function() n=n+1;return 'source-copy-'..n end}))
+        assert(catalog:RegisterBuiltin(pack));local id=assert(catalog:Clone({kind='builtin',id=pack.id},'Foreign'))
+        local source=catalog:Get({kind='custom',id=id});local manifest=copy(source.envelope);manifest.body=nil;manifest.id='foreign-1'
+        s.classes.MAGE[0]['foreign-1'].origin={manifest=manifest,lineage=copy(source.lineage)}
+        local store,_,data=fixture(s);local foreign={};for _,value in pairs(s.classes.MAGE[0]) do foreign[value.body]=true end
+        local portable,newCatalog=data.CheckPortable,data.NewCatalog;local calls,foreignCalls,catalogCalls=0,0,0
+        data.CheckPortable=function(value) calls=calls+1;if foreign[value] then foreignCalls=foreignCalls+1 end;return portable(value) end
+        data.NewCatalog=function(...) catalogCalls=catalogCalls+1;return newCatalog(...) end
+        assert(store:Get(address('class','SHAMAN'),ctx));local get=calls;local getForeign=foreignCalls;local getCatalog=catalogCalls
+        calls,foreignCalls,catalogCalls=0,0,0;assert(#store:ListVisible(0,ctx)==4)
+        samples[#samples+1]={get=get,list=calls,getForeign=getForeign,listForeign=foreignCalls,getCatalog=getCatalog,listCatalog=catalogCalls}
+        data.CheckPortable,data.NewCatalog=portable,newCatalog
+    end
+    for _,sample in ipairs(samples) do
+        assert(sample.getForeign==0 and sample.listForeign==0,'read traversed unrelated foreign bodies')
+        assert(sample.getCatalog==0 and sample.listCatalog==0,'read reconstructed foreign provenance catalog')
+    end
+    assert(samples[1].get==samples[2].get and samples[1].list==samples[2].list,'read work grew with unrelated rows')
+end)
+test('indexed reads reject swapped requested roots owners spec rows and record objects',function()
+    for _,change in ipairs({
+        function(s) s.classes=copy(s.classes) end,
+        function(s) s.classes.SHAMAN=copy(s.classes.SHAMAN) end,
+        function(s) s.classes.SHAMAN[0]=copy(s.classes.SHAMAN[0]) end,
+        function(s) s.classes.SHAMAN[0].shared=copy(s.classes.SHAMAN[0].shared) end,
+        function(s) s.classes.SHAMAN[0].shared=nil end,
+    }) do
+        local store,s=fixture();change(s)
+        reason('stale-store-index',store:Get(address('class','SHAMAN'),ctx))
+        reason('stale-store-index',store:ListVisible(0,ctx))
+    end
+end)
+test('raw unindexed rows and changed visible membership fail explicitly until refresh',function()
+    local store,s=fixture();s.classes.SHAMAN[0].raw=record('Raw addition')
+    reason('stale-store-index',store:Get(address('class','SHAMAN','raw'),ctx))
+    assert(#store:AllStored()==7);reason('stale-store-index',store:Get(address('class','SHAMAN','raw'),ctx))
+    reason('stale-store-index',store:ListVisible(0,ctx))
+    -- A selected sealed path need not enumerate its siblings for one lookup.
+    assert(store:Get(address('class','SHAMAN'),ctx).body.name=='Class')
+    s.classes.SHAMAN[0].raw=nil;s.characters[ctx.character].specs[0].shared=nil
+    reason('stale-store-index',store:ListVisible(0,ctx))
+end)
+test('unindexed Character containers or fallback replacements cannot silently choose Class',function()
+    for _,change in ipairs({
+        function(s) s.characters[ctx.character]=copy(s.characters[ctx.character]) end,
+        function(s) s.characters[ctx.character].specs=copy(s.characters[ctx.character].specs) end,
+        function(s) s.characters[ctx.character].specs[0].Default=nil end,
+        function(s) s.characters[ctx.character].specs[0].Default=record('Replaced fallback') end,
+    }) do local store,s=fixture();change(s);reason('stale-store-index',store:GetFallback(0,ctx)) end
+    local s=state();s.characters[ctx.character]=nil;local store=fixture(s)
+    s.characters[ctx.character]={class='SHAMAN',specs={[0]={Default=record('Raw Character')}}}
+    reason('stale-store-index',store:GetFallback(0,ctx))
+end)
+test('indexed selected payload changes stay current and cycles fail before baseline comparisons',function()
+    local store,s=fixture();local target=address('class','SHAMAN');local _,token=store:Get(target,ctx)
+    s.classes.SHAMAN[0].shared.body.name='Current edit'
+    assert(store:Get(target,ctx).body.name=='Current edit')
+    reason('stale-rotation-record',store:PlanDelete(target,ctx,token))
+    s.classes.SHAMAN[0].shared.body.rotation=false
+    local value,_,validation=store:Get(target,ctx);assert(value.body.rotation==false and not validation.valid)
+    s.classes.SHAMAN[0].shared.body.switch=s.classes.SHAMAN[0].shared.body
+    reason('invalid-record',store:Get(target,ctx));assert(not store:PlanDelete(target,ctx,token))
+    local separate=state();separate.classes.DRUID={};local service=fixture(separate)
+    separate.classes.SHAMAN[0].shared.body.switch=separate.classes.DRUID
+    reason('aliased-store',service:Get(target,ctx))
+end)
+test('foreign corruption cannot force a fast own read to traverse it but full writes reject foreign aliases',function()
+    local store,s=fixture();local target=address('class','SHAMAN');local value,token=store:Get(target,ctx)
+    local plan=assert(store:PlanReplace(target,value,ctx,token));local foreign=s.classes.MAGE[0]
+    s.classes.MAGE[0]=s.classes.SHAMAN[0]
+    local detached=assert(store:Get(target,ctx));detached.body.name='Detached'
+    assert(s.classes.SHAMAN[0].shared.body.name=='Class')
+    assert(not store:Commit(plan,ctx),'write accepted a new foreign structural alias')
+    s.classes.MAGE[0]=foreign;foreign.shared.body.switch=foreign.shared.body
+    assert(store:Get(target,ctx).body.name=='Class','own read traversed corrupt foreign body')
+    assert(not store:Commit(plan,ctx),'write ignored unsafe foreign state')
+end)
+test('Refresh is explicit atomic and retires old authority only after a successful rebuild',function()
+    local store,s=fixture();assert(type(store.Refresh)=='function','explicit index refresh is missing')
+    local target=address('class','SHAMAN');local value,token=store:Get(target,ctx);local plan=assert(store:PlanReplace(target,value,ctx,token))
+    local foreign=s.classes.MAGE[0];s.classes.MAGE[0]=s.classes.SHAMAN[0]
+    reason('aliased-store',store:Refresh());s.classes.MAGE[0]=foreign
+    assert(store:PlanDelete(target,ctx,token),'failed Refresh retired unchanged authority')
+    s.classes.SHAMAN[0].raw=record('Adopted after explicit refresh')
+    reason('stale-store-index',store:ListVisible(0,ctx));assert(store:Refresh())
+    assert(#store:ListVisible(0,ctx)==5 and store:Get(address('class','SHAMAN','raw'),ctx).body.name=='Adopted after explicit refresh')
+    reason('invalid-plan',store:Commit(plan,ctx));reason('stale-rotation-record',store:PlanDelete(target,ctx,token))
+end)
+test('indexed Character class metadata cannot acquire a new owner class without explicit refresh',function()
+    local s=state();s.characters[ctx.character].class='MAGE';local store=fixture(s)
+    s.characters[ctx.character].class='SHAMAN'
+    reason('stale-store-index',store:Get(address('character',ctx.character),ctx))
+    reason('stale-store-index',store:ListVisible(0,ctx));reason('stale-store-index',store:GetFallback(0,ctx))
+    assert(store:Refresh());assert(store:Get(address('character',ctx.character),ctx).body.name=='Character')
+end)
+test('successful commits rebuild the private index while unchanged captured targets remain valid',function()
+    local store=fixture();local class=address('class','SHAMAN');local character=address('character',ctx.character)
+    local a,ta=store:Get(class,ctx);local b,tb=store:Get(character,ctx);a.body.name='Class committed';b.body.name='Character committed'
+    local pa=assert(store:PlanReplace(class,a,ctx,ta));local pb=assert(store:PlanReplace(character,b,ctx,tb))
+    assert(store:Commit(pa,ctx));assert(store:Get(class,ctx).body.name=='Class committed')
+    assert(store:Commit(pb,ctx));assert(store:Get(character,ctx).body.name=='Character committed')
+    assert(store:Commit(assert(store:PlanCreate(address('class','SHAMAN','new'),record('New'),ctx)),ctx))
+    assert(#store:ListVisible(0,ctx)==5)
+end)
 finish()

@@ -29,7 +29,7 @@ Profile Copy/Reset/Import affects the profile domain. It does not copy/reset glo
 
 ## Rotation ownership direction
 
-New custom rotations should default to Class, with Character as an explicit alternative. Built Ins must be limited to their declared class, with a future explicit Universal marker for intentionally shared definitions. Visibility, automatic/manual candidates, tags, comparisons and direct editing must use the same ownership policy.
+New custom rotations should default to Class, with Character as an explicit alternative. Packaged Built Ins require either a declared class or explicit `applicability.universal=true`; Universal and class cannot both be set. Classless legacy portable envelopes remain readable without being reinterpreted as newly packaged Universal definitions. Cloning a Universal Built In restricts the new custom manifest to the current class and preserves the original Universal lineage baseline. Visibility, automatic/manual candidates, tags, comparisons and direct editing must use the same ownership policy.
 
 Ownership needs real partitions behind one storage facade. Adding a class tag to the existing map cannot separate its single `DEFAULT` key into distinct class/character fallbacks. Profile selection and ownership are separate axes. The chosen design retains partitions within each profile, preserving current profile operations. Character fallback takes precedence over Class fallback; both remain separately addressable.
 
@@ -37,7 +37,7 @@ A scope change must be staged until Apply and move body, origins, imports and co
 
 `Data/rotation_store.lua` provides the pure foundation for that integration: full scoped addresses, detached reads with validity diagnostics, explicit fallback selection, and guarded plans for create/replace/delete/move/adoption. A record carries its body and source/comparison sidecars together. The migration planner only proposes an unclaimed archive; it never guesses an owner or writes to a live profile. Production still uses the legacy storage until the workspace, browser, transfer, maintenance and adoption UI migrate together.
 
-The initial foundation conservatively validates the whole supplied store at each operation. It is not ready for polling or scrolling hot paths: a validated ownership index/cache with explicit invalidation and operation-count tests is required before runtime activation. No new persistence root is written merely by loading this module.
+Owned reads use a validated structural index and inspect only the requested records. External container, membership, record-identity or Character-class changes require explicit `Refresh`; successful refresh retires old plans/tokens, and failed refresh publishes no index. Full inventory and every commit still validate the entire store, including cross-owner aliases. Tests keep Get/ListVisible work constant with 100 versus 1,000 unrelated records. These APIs return detached copies; a separate internal runtime/header facade and coherent transaction/UI integration are still required before activation. Loading the module writes no persistence root.
 
 ## Migration safety
 

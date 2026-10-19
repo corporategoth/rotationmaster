@@ -96,13 +96,22 @@ test('matching class keeps candidate broadening and direct clone behavior for ot
     assert(a:SetDefaultRotationEnabled(pack.id,false));context.level=20
     assert(a:CloneDefaultRotation(262,pack.id,'Inspectable disabled default'),'clone incorrectly required runtime eligibility')
 end)
-test('classless legacy definitions retain existing listing clone and candidate behavior',function()
+test('packaged classless definitions require explicit Universal while clones belong to the current class',function()
     local a,envelope,context=fixture();local pack=envelope();pack.applicability.class=nil
+    local registered,why=a:RegisterDefaultRotation(pack);assert(not registered and why=='missing-class-scope')
+    pack.applicability.universal=true
     assert(a:RegisterDefaultRotation(pack));assert(a:InitializeRotationLibrary())
-    context.class=nil
     local rows=a:ListDefaultRotations(0);assert(#rows==1 and rows[1].eligible)
-    local clone=assert(a:CloneDefaultRotation(0,pack.id,'Legacy classless'))
+    local clone=assert(a:CloneDefaultRotation(0,pack.id,'Universal clone'))
+    local source=a:GetSourcedRotationView(0,clone)
+    assert(source.applicability.class=='SHAMAN' and not source.applicability.universal)
+    assert(source.lineage.baseline.applicability.universal and not source.lineage.baseline.applicability.class,'clone rewrote source baseline')
     assert(a:GetRotationCandidates(0)[rows[1].runtimeKey] and a:GetRuntimeRotation(0,clone))
+    context.class='MAGE';assert(#a:ListDefaultRotations(0)==1 and a:GetRuntimeRotation(0,rows[1].runtimeKey))
+    assert(not a:GetRuntimeRotation(0,clone) and not a:GetRotationCandidates(0)[clone],'Universal clone became cross-class custom data')
+    context.class=nil;a.uuid=function() error('clone allocated without class context') end
+    local id,reason=a:CloneDefaultRotation(0,pack.id,'Unknown class');assert(not id and reason=='class-mismatch')
+    context.class='UNKNOWN';id,reason=a:CloneDefaultRotation(0,pack.id,'Unknown class');assert(not id and reason=='class-mismatch')
 end)
 test('packaged snapshots cannot be edited and custom key collisions cannot overwrite data',function()
     local addon,envelope=fixture();local pack=envelope()
