@@ -724,7 +724,6 @@ addon:RegisterCondition("TIME_IN_COMBAT", {
 -- BEGIN GENERATED RM SOURCE BINDINGS
 do
     local function sourceGetter(name)
-        if name=="AceGUI" then return addon:GetConditionWidgetCompatibilityLibrary() end
         if name=="character_class" then return character_class end
         if name=="color" then return color end
         if name=="helpers" then return helpers end

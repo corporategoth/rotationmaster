@@ -1,15 +1,9 @@
 local _,addon=...
-local available,legacyAvailable,observers={},{},{}
+local available,observers={},{}
+local known=setmetatable({}, {__mode='k'})
 local function clear(t) for key in pairs(t or {}) do t[key]=nil end end
-local function ace()
-    if not LibStub then return end
-    local ok,library=pcall(LibStub,'AceGUI-3.0',true)
-    if ok then return library end
-end
--- Saved factory source explicitly binds the real Ace table. Resolve it only
--- when that compatibility value is requested, never while native fields load.
-function addon:GetConditionWidgetCompatibilityLibrary()
-    return LibStub('AceGUI-3.0')
+function addon:IsConditionWidget(widget)
+    return type(widget)=='table' and known[widget]==true
 end
 function addon:ObserveConditionWidgets(callback)
     local token={callback=callback};observers[token]=true
@@ -19,6 +13,39 @@ local function observed(widget)
     local callbacks={};for token in pairs(observers) do callbacks[#callbacks+1]=token end
     for _,token in ipairs(callbacks) do if observers[token] then token.callback(widget) end end
 end
+---@class RMConditionWidget
+---@field type string
+---@field frame Frame
+---@field content? Frame
+---@field parent? RMConditionWidget
+---@field userdata table
+---@field events table
+---@field rmLease? table
+---@field rmActive? boolean
+---@field isQueuedForRelease? boolean
+---@field SetCallback fun(self: RMConditionWidget, event: string, callback: function?)
+---@field Fire fun(self: RMConditionWidget, event: string, ...: any): any
+---@field GetUserData fun(self: RMConditionWidget, key: any): any
+---@field SetUserData fun(self: RMConditionWidget, key: any, value: any)
+---@field GetUserDataTable fun(self: RMConditionWidget): table
+---@field SetParent fun(self: RMConditionWidget, parent: RMConditionWidget)
+---@field SetWidth fun(self: RMConditionWidget, width: number)
+---@field SetHeight fun(self: RMConditionWidget, height: number)
+---@field SetFullWidth fun(self: RMConditionWidget, value: boolean)
+---@field SetFullHeight fun(self: RMConditionWidget, value: boolean)
+---@field IsFullWidth fun(self: RMConditionWidget): boolean
+---@field IsFullHeight fun(self: RMConditionWidget): boolean
+---@field SetRelativeWidth fun(self: RMConditionWidget, value: number)
+---@field IsShown fun(self: RMConditionWidget): boolean
+---@field IsVisible fun(self: RMConditionWidget): boolean
+---@field SetPoint fun(self: RMConditionWidget, ...: any)
+---@field ClearAllPoints fun(self: RMConditionWidget)
+---@field GetPoint fun(self: RMConditionWidget, ...: any): any
+---@field GetNumPoints fun(self: RMConditionWidget): number
+---@field IsReleasing fun(self: RMConditionWidget): boolean
+---@field Release fun(self: RMConditionWidget): boolean
+---@field OnAcquire fun(self: RMConditionWidget)
+---@field OnRelease fun(self: RMConditionWidget)
 local base={}
 local inherited={Release=function(self) return addon:ReleaseConditionWidget(self) end}
 function base:SetCallback(event,callback)
@@ -29,22 +56,24 @@ function base:SetCallback(event,callback)
 end
 function base:Fire(event,...)
     local callback=self.events[event];if not callback then return end
-    -- Ace calls Fire directly while releasing, outside its safecall boundary.
-    -- Preserve that historical protected callback contract for transferred leases.
-    if self.isQueuedForRelease and not self.rmOwnedRelease then
-        if addon.Diagnostics then local ok,value=addon.Diagnostics:Call({module='condition-widget',operation=event},callback,self,event,...);if ok then return value end
-        else
-            local ok,value=pcall(callback,self,event,...);if ok then return value end
-            if geterrorhandler then pcall(geterrorhandler(),value) end
-        end
-        return
-    end
     return callback(self,event,...)
 end
 function base:GetUserData(key) return self.userdata[key] end
 function base:SetUserData(key,value) self.userdata[key]=value end
 function base:GetUserDataTable() return self.userdata end
-function base:SetParent(parent) self.parent=parent;self.frame:SetParent(parent.content or parent.frame) end
+function base:SetParent(parent)
+    if not addon:IsConditionWidget(self) or not self.rmActive or self:IsReleasing() then error('inactive-condition-widget',0) end
+    if not addon:IsConditionWidget(parent) or not parent.rmActive or parent:IsReleasing() then error('foreign-condition-widget-parent',0) end
+    if self.parent and self.parent~=parent then error('condition-child-already-owned',0) end
+    local current=parent
+    for _=1,128 do
+        if not current then break end
+        if current==self then error('condition-widget-parent-cycle',0) end
+        current=current.parent
+    end
+    if current then error('condition-widget-parent-cycle',0) end
+    self.parent=parent;self.frame:SetParent(parent.content or parent.frame)
+end
 function base:SetWidth(width)
     self.sizing=true;self.frame:SetWidth(width);self.frame.width=width;self.sizing=false
     if self.OnWidthSet then self:OnWidthSet(width) end
@@ -69,23 +98,18 @@ function base:IsReleasing()
     for _=1,128 do if not current then return false end;if current.isQueuedForRelease then return true end;current=current.parent end
     return true
 end
--- Historical Ace registrations use the same visuals and public widget shape.
--- Their leases stay with Ace; only ordinary default acquisition uses RM pools.
-function addon:RegisterConditionWidget(widget,version,legacy)
-    local w=widget;setmetatable(w,{__index=inherited});w.userdata={};w.events={};w.frame.obj=w;w.rmWidget=true;w.rmLegacyOwned=legacy==true;w.AceGUIWidgetVersion=version or 1
+-- Native registration establishes ownership; public shape flags are not authority.
+function addon:RegisterConditionWidget(widget)
+    if type(widget)~='table' or known[widget] or not widget.frame then error('invalid-condition-widget-registration',0) end
+    local w=widget;known[w]=true;setmetatable(w,{__index=inherited});w.userdata={};w.events={};w.frame.obj=w;w.rmWidget=true
     if w.content then w.content.obj=w end
     for name,method in pairs(base) do if w[name]==nil then w[name]=method end end
     local acquire,release=w.OnAcquire,w.OnRelease
     function w:OnAcquire()
-        if legacyAvailable[self.type] then legacyAvailable[self.type][self]=nil end
         self.rmLease={};self.rmActive=true;self.parent=nil;self.configure=nil;self.userdata={};self.events={};self.isQueuedForRelease=nil
         if acquire then acquire(self) end
     end
     function w:OnRelease()
-        if not self.rmOwnedRelease then
-            if available[self.type] then available[self.type][self]=nil end
-            self.rmLegacyOwned=true;legacyAvailable[self.type]=legacyAvailable[self.type] or {};legacyAvailable[self.type][self]=true
-        end
         self.rmActive=false
         if release then return release(self) end
     end
@@ -102,33 +126,20 @@ function addon:AcquireConditionWidget(kind,constructor)
     local pool=available[kind] or {};available[kind]=pool
     local widget
     for candidate in pairs(pool) do
-        if not candidate.isQueuedForRelease and not candidate.rmLegacyOwned then widget=candidate;pool[candidate]=nil;break end
+        if not candidate.isQueuedForRelease and not candidate.rmActive and not candidate.rmQuarantined then widget=candidate;pool[candidate]=nil;break end
     end
-    if not widget then
-        for candidate in pairs(legacyAvailable[kind] or {}) do
-            if not candidate.isQueuedForRelease and not candidate.rmActive then
-                local library=ace();if library then widget=library:Create(kind) end
-                break
-            end
-        end
-        if widget then widget.rmLegacyOwned=true else widget=constructor() end
-        if not widget then error('condition-widget-construction-failed',0) end
-    end
-    if not widget.rmActive then
-        local ok,why=pcall(widget.OnAcquire,widget)
-        if not ok then widget.rmActive=false;widget.rmQuarantined=true;error(why,0) end
-    end
+    if not widget then widget=constructor() end
+    if not self:IsConditionWidget(widget) or widget.type~=kind or widget.rmActive then error('condition-widget-construction-failed',0) end
+    local ok,why=pcall(widget.OnAcquire,widget)
+    if not ok then widget.rmActive=false;widget.rmQuarantined=true;error(why,0) end
     if kind=='RM-ConditionGroup' and self.PrepareNativeConditionTable then self:PrepareNativeConditionTable(widget) end
     observed(widget);return widget
 end
 function addon:ReleaseConditionWidget(widget)
-    if not widget or widget.isQueuedForRelease or widget.rmWidget and not widget.rmActive then return false end
-    if not widget.rmWidget or widget.rmLegacyOwned then
-        local library=ace();if not library then error('legacy-widget-library-unavailable',0) end
-        library:Release(widget);return true
-    end
-    if not widget.rmActive then return false end
-    widget.isQueuedForRelease=true;widget.rmOwnedRelease=true
+    if widget==nil then return false end
+    if not self:IsConditionWidget(widget) then error('foreign-condition-widget',0) end
+    if widget.isQueuedForRelease or not widget.rmActive then return false end
+    widget.isQueuedForRelease=true
     if available[widget.type] then available[widget.type][widget]=nil end
     local problem
     local function perform(callback,...)
@@ -141,7 +152,7 @@ function addon:ReleaseConditionWidget(widget)
     widget.rmActive=false;widget.rmLease=nil;widget.parent=nil;clear(widget.userdata);clear(widget.events)
     widget.width=nil;widget.height=nil;widget.relWidth=nil;widget.relHeight=nil;widget.noAutoHeight=nil;widget.sizing=nil
     perform(widget.frame.ClearAllPoints,widget.frame);perform(widget.frame.Hide,widget.frame);perform(widget.frame.SetParent,widget.frame,UIParent)
-    widget.isQueuedForRelease=nil;widget.rmOwnedRelease=nil
+    widget.isQueuedForRelease=nil
     if problem then widget.rmQuarantined=true;error(problem,0) end
     available[widget.type]=available[widget.type] or {};available[widget.type][widget]=true;return true
 end

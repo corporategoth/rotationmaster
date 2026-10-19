@@ -10,43 +10,21 @@ local function source(name) return {name=name,description=name..' documentation'
 local function edit(d,key,value) local c=assert(d.form.fields[key],key);c:SetText(value);c.scripts.OnTextChanged(c,true);c.scripts.OnEnterPressed(c) end
 local function code(d,value) d.code.edit:SetText(value);d.code.edit.scripts.OnTextChanged(d.code.edit,true);d:UpdateActions() end
 local function conditionEditor(f,a)
-    for _,path in ipairs({'Core/custom_condition_owner.lua','Core/custom_authoring.lua','Core/schema_authoring.lua','Core/schema_canvas.lua','UI/schema_cards.lua','UI/schema_editor.lua','UI/custom_source_fields.lua','UI/settings_transfer.lua','UI/custom_condition_transfer.lua','UI/icon_picker.lua','UI/help.lua','Core/custom_condition_services.lua','Options/custom_condition.lua','UI/custom_condition_editor.lua','UI/condition_source_preview.lua'}) do local file=io.open(path);if file then file:close();f.load(path) end end
+    for _,path in ipairs({'Core/custom_condition_owner.lua','Core/custom_authoring.lua','Core/schema_authoring.lua','Core/schema_canvas.lua','UI/schema_cards.lua','UI/schema_editor.lua','UI/custom_source_fields.lua','UI/settings_transfer.lua','UI/custom_condition_transfer.lua','UI/icon_picker.lua','UI/help.lua','Core/custom_condition_services.lua','UI/custom_condition_editor.lua','UI/condition_source_preview.lua'}) do local file=io.open(path);if file then file:close();f.load(path) end end
     a.conditionDefinitions=a.definitions;a.describeCondition=function(self,key) local definition=self.conditionDefinitions[key];return definition and definition.description end
 end
 local function previewContainers(f)
-    local ace=f.libraries['AceGUI-3.0'];local create=ace.Create
-    ace.Create=function(self,kind)
-        local widget=create(self,kind);widget.frame=widget.frame or f.env.CreateFrame('Frame');widget.userdata=widget.userdata or {}
-        if kind=='SimpleGroup' then
-            function widget:DoLayout() local height=0;for _,child in ipairs(self.children) do height=height+(child.frame and child.frame:GetHeight() or 20) end;self.frame:SetHeight(math.max(1,height));if self.LayoutFinished then self:LayoutFinished(self.frame:GetWidth(),height) end end
-            local add=widget.AddChild;function widget:AddChild(child) add(self,child);if child.frame then child.frame:SetParent(self.frame) end;self:DoLayout() end
-        end
-        return widget
-    end
-    ace.Release=function(self,widget)
-        if widget.isQueuedForRelease then return end;widget.isQueuedForRelease=true
-        for _,child in ipairs(widget.children or {}) do self:Release(child) end
-        if widget.OnRelease then widget:OnRelease() end;if widget.frame then widget.frame:Hide() end
-    end
+    assert(f.libraries['AceGUI-3.0']==nil)
 end
 local function pooledPreviewContainers(f)
-    -- Use the shipped pool, container layout and widgets. In particular, pooled
-    -- roots stay hidden until their native host explicitly shows them.
-    local ace=f.libraries['AceGUI-3.0'];local constructors=ace.constructors;local stub=f.env.LibStub;local errors={}
-    f.env.LibStub=setmetatable({NewLibrary=function(_,name) assert(name=='AceGUI-3.0');return ace end},{__call=function(_,...) return stub(...) end})
-    f.env.geterrorhandler=function() return function(err) errors[#errors+1]=err end end
-    f.env.xpcall=function(callback,handler,...) local args={n=select('#',...),...};return xpcall(function() return callback(unpack(args,1,args.n)) end,handler) end
-    f.env.table=setmetatable({wipe=function(value) for key in pairs(value) do value[key]=nil end;return value end},{__index=table})
+    -- Exercise RM's actual native pools and layouts, with no GUI shim.
+    local errors={};f.env.geterrorhandler=function() return function(err) errors[#errors+1]=err end end
     local create=f.env.CreateFrame
     f.env.CreateFrame=function(...)
         local frame=create(...);local setSize=frame.SetSize
-        -- WoW only emits OnSizeChanged for an actual size change.
         function frame:SetSize(width,height) if self.width~=width or self.height~=height then setSize(self,width,height) end end
         return frame
     end
-    f.load('Libs/AceGUI-3.0/AceGUI-3.0.lua')
-    for kind,constructor in pairs(constructors) do ace:RegisterWidgetType(kind,constructor,1) end
-    f.load('Libs/AceGUI-3.0/widgets/AceGUIContainer-SimpleGroup.lua');f.load('Libs/AceGUI-3.0/widgets/AceGUIWidget-Label.lua')
     return errors
 end
 test('Functions opens packaged helpers readonly and duplicates a typed source without saving',function()

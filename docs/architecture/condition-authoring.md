@@ -1,5 +1,8 @@
 # Shared condition and utility authoring
 
+> Current contract: the user explicitly retired all AceGUI support. GUI packages, compatibility renderers/registrations, module AceConfig hosting and seven captured GUI library values are removed. Earlier compatibility checkpoints below are historical. Use the [native-only UI migration](acegui-removal-boundaries.md) for the supported API and current boundaries.
+
+
 Built In source browsing, the compiled utility registry, the Functions roster, dependency bundle review and optional embedded LuaWorkbench editing are implemented. Native WoW verification of the new controls remains necessary; offline fixtures cover data, ownership and execution boundaries.
 
 Built In and custom conditions share one definition contract: identifier, display name, description/help, icon, field schema and the existing callback arguments. Both run compiled Lua functions. Custom source is compiled on registration/save, rather than interpreted for every recommendation. Runtime source kind must not alter condition semantics or platform restrictions.

@@ -50,24 +50,4 @@ test('native syntax engine colors decodes disables and reuses an editbox without
     assert(edit:GetText():find('\n   return 7',1,true),'reused editor retained prior indentation cache')
     lib.disable(edit);assert(edit:GetScript('OnTextChanged')==changed)
 end)
-test('explicit legacy bridge registers the original constructor against the shared engine',function()
-    local f=F.new();local ace=f.libraries['AceGUI-3.0'];local registered,allocations={},0
-    ace.RegisterWidgetType=function(_,kind,create,version) registered={kind=kind,create=create,version=version} end
-    ace.Create=function(_,kind)
-        allocations=allocations+1;assert(kind=='MultiLineEditBox')
-        local edit=nativeEdit(f,'if true then\nreturn 1\nend');edit:SetScript('OnTextSet',function() error('legacy SetText handler survived') end)
-        return {editBox=edit}
-    end
-    f.load('LibsAugment/FAIAP.lua');local lib=f.addon.LuaSyntax
-    assert(not registered.create and allocations==0,'native engine registered or allocated an Ace widget')
-    local enable=lib.enable;local attached
-    lib.enable=function(edit,colors,width) attached={edit,colors,width};return enable(edit,colors,width) end
-    f.load('LibsAugment/FAIAP-AceGUI.lua')
-    assert(f.addon.LuaSyntax==lib and registered.kind=='LuaEditBox' and registered.version==1 and allocations==0)
-    local widget=registered.create()
-    assert(allocations==1 and attached[1]==widget.editBox and attached[2]==nil and attached[3]==4)
-    assert(widget.editBox:GetScript('OnTextSet')==nil and widget.editBox:GetText():find('\n    return 1',1,true))
-    local file=assert(io.open('embeds.xml'));local xml=file:read('*a');file:close()
-    assert(xml:find('<Script file="LibsAugment\\FAIAP.lua" />\n<Script file="LibsAugment\\FAIAP-AceGUI.lua" />',1,true),'bridge must load immediately after engine')
-end)
 finish()

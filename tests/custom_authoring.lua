@@ -1,6 +1,6 @@
 local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite()
 local function fixture()
-    local f=F.new();local a=f.addon;f.load('UI/settings_draft.lua');f.load('Core/custom_condition_services.lua');f.load('Options/custom_condition.lua')
+    local f=F.new();local a=f.addon;f.load('UI/settings_draft.lua');f.load('Core/custom_condition_services.lua')
     local h=io.open('Core/custom_authoring.lua');if h then h:close();f.load('Core/custom_authoring.lua') end
     a.name='rotationmaster';f.env.rotationmaster=a;a.funcDeserialize={};f.env.loadstring=function(text,name) local fn,why=loadstring(text,name);if fn then setfenv(fn,f.env) end;return fn,why end
     return f,a

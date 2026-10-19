@@ -2,12 +2,6 @@ local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite()
 local function fixture()
     local f=F.new();local a=f.addon
     dofile('tests/fixtures/spell_editbox.lua')(f)
-    local ace=f.libraries['AceGUI-3.0'];local create=ace.Create
-    ace.Create=function(self,kind)
-        local w=create(self,kind)
-        if kind=='Icon' then w.frame=f.env.CreateFrame('Button');function w:Fire(event,...) local cb=self.callbacks and self.callbacks[event];if cb then return cb(self,event,...) end end end
-        return w
-    end
     f.env.BOOKTYPE_SPELL='spell'
     f.env.C_Spell={GetSpellInfo=function(id)
         if id=='Shoot' then id=5019 end

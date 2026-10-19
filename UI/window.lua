@@ -15,7 +15,7 @@ function addon:ScaleWorkbenchWindows(value)
 end
 
 -- Apply only to RM-owned dialogs. An opaque layer beneath their native art
--- keeps overlapping configuration windows readable without modifying AceGUI.
+-- keeps overlapping configuration windows readable.
 function addon:MakeWindowOpaque(widget)
     local frame=widget and (widget.frame or widget)
     if not frame or not frame.CreateTexture then return end

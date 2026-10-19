@@ -3,18 +3,7 @@ local test,finish=F.suite()
 local function texture(w) if type(w.image)=='table' then return w.image:GetTexture() end;return w.image end
 local function fixture(allowFields)
     local f=F.new();local frames,create=dofile('tests/fixtures/native_ui.lua')(f.env)
-    local ace=f.libraries['AceGUI-3.0'];local original=ace.Create
-    local pooled
-    ace.Create=function(self,kind)
-        assert(allowFields or kind=='Icon','spell icon still uses a vendor action widget')
-        local w=pooled or original(self,kind);pooled=nil
-        if not w.frame then w.frame=create('Button');w.frame:RegisterForClicks('LeftButtonUp') end
-        function w:SetColor() end
-        if kind:match('^ActionSlot') then w.text=create('FontString');w.SetText=function(self,value) self.actionData=value end end
-        function w:Fire(event,...) if self.callbacks and self.callbacks[event] then return self.callbacks[event](self,event,...) end end
-        return w
-    end
-    ace.Release=function(_,w) if w.rmWidget and not w.rmLegacyOwned then return f.addon:ReleaseConditionWidget(w) end;if w.OnRelease then w:OnRelease() end;w.callbacks={};pooled=w end
+    local lookup=f.env.LibStub;f.env.LibStub=function(name,...) assert(name~='AceGUI-3.0','native icon requested a GUI library');return lookup(name,...) end
     f.env.C_Spell={GetSpellInfo=function(id)
         if id=='Lightning Bolt' then id=403 end
         if id==403 or id==529 then return {spellID=id,name='Lightning Bolt',iconID=135932} end
@@ -27,9 +16,7 @@ local function fixture(allowFields)
     return f
 end
 test('action icons acquire release and reuse owned native controls without Ace allocation',function()
-    local f=fixture();local a=f.addon;local ace=f.libraries['AceGUI-3.0']
-    ace.Create=function() error('action icon allocated through Ace') end
-    ace.Release=function() error('action icon released through Ace') end
+    local f=fixture();local a=f.addon
     local w=a:CreateSpellActionIcon('spell',403);local calls=0
     w:SetCallback('OnEnterPressed',function() calls=calls+1 end);local stale=w.frame:GetScript('OnReceiveDrag')
     assert(w.rmWidget and w.type=='RM-ConditionIcon' and w.image:GetTexture()==135932)
@@ -84,7 +71,7 @@ test('unknown secret malformed or throwing cursor and metadata never invent a se
     assert(not f.cleared and w:GetUserData('spell')==403)
 end)
 test('explicit clearing disabled state and pooling preserve ordinary Icon ownership',function()
-    local f=fixture();local a=f.addon;local ace=f.libraries['AceGUI-3.0']
+    local f=fixture();local a=f.addon
     local w=a:CreateSpellActionIcon('spell',403);local saved=403
     w:SetCallback('OnEnterPressed',function(_,_,value) saved=tonumber(value);w:SetText(saved) end)
     w:SetDisabled(true);w.frame.scripts.OnClick(w.frame,'RightButton');assert(saved==403)
@@ -155,30 +142,17 @@ test('native icon image label disabled state and retired events reset on the nex
     nextIcon:SetCallback('OnEnter',function() calls=calls+10 end);stale(w.frame);assert(calls==1,'old primitive native event reached a new lease')
     nextIcon.frame:GetScript('OnEnter')(nextIcon.frame);assert(calls==11);a:ReleaseConditionWidget(nextIcon)
 end)
-test('native action icons transfer through shipped Ace parents without losing wrappers or leases',function()
-    local f=F.new();dofile('tests/fixtures/native_ui.lua')(f.env);local a=f.addon
-    local ace=f.libraries['AceGUI-3.0'];local constructors=ace.constructors;local stub=f.env.LibStub
-    f.env.LibStub=setmetatable({NewLibrary=function() return ace end},{__call=function(_,...) return stub(...) end})
-    f.env.geterrorhandler=function() return error end
-    f.env.xpcall=function(callback,handler,...) local args={n=select('#',...),...};return xpcall(function() return callback(unpack(args,1,args.n)) end,handler) end
-    f.env.table=setmetatable({wipe=function(t) for k in pairs(t) do t[k]=nil end;return t end},{__index=table})
-    local create=f.env.CreateFrame;f.env.CreateFrame=function(...)
-        local frame=create(...);local size=frame.SetSize
-        function frame:SetSize(width,height) if self.width~=width or self.height~=height then size(self,width,height) end end
-        return frame
-    end
-    f.load('Libs/AceGUI-3.0/AceGUI-3.0.lua');for kind,build in pairs(constructors) do ace:RegisterWidgetType(kind,build,1) end
-    f.load('Libs/AceGUI-3.0/widgets/AceGUIContainer-SimpleGroup.lua');f.load('Platform/spells.lua')
-    f.env.C_Spell={GetSpellInfo=function(id) return {name='Spell',spellID=id,iconID=1} end}
+test('native action roots recycle icon wrappers without stale drops or stranded leases',function()
+    local f=fixture();local a=f.addon
     f.env.GetCursorInfo=function() return 'spell',7,'spell',403 end;f.env.ClearCursor=function() end
     local seen={};local stale;local calls=0
     for _=1,30 do
-        local parent=ace:Create('SimpleGroup');local icon=a:CreateSpellActionIcon('spell',403);seen[icon]=true
+        local parent=a:CreateConditionGroup();local icon=a:CreateSpellActionIcon('spell',403);seen[icon]=true
         icon:SetCallback('OnEnterPressed',function() calls=calls+1 end);if stale then stale(icon.frame) end
-        assert(calls==0,'retired drop crossed an Ace-transferred lease');stale=icon.frame:GetScript('OnReceiveDrag')
-        parent:AddChild(icon);ace:Release(parent);assert(not icon.rmActive and not icon.rmSpellIconActive)
+        assert(calls==0,'retired drop crossed a native lease');stale=icon.frame:GetScript('OnReceiveDrag')
+        parent:AddChild(icon);parent:Release();assert(not icon.rmActive and not icon.rmSpellIconActive)
     end
-    local count=0;for _ in pairs(seen) do count=count+1 end;assert(count<=2,'Ace transfer stranded native icons: '..count)
+    local count=0;for _ in pairs(seen) do count=count+1 end;assert(count==1,'native roots stranded action icons')
 end)
 test('aura spell picker preserves numeric identities so rank matching stays an explicit choice',function()
     local f=fixture(true);local a=f.addon;dofile('tests/fixtures/spell_editbox.lua')(f);f.load('Conditions/common.lua')
@@ -208,8 +182,7 @@ test('actual common item condition uses protected item icon metadata and exact i
     local f=fixture(true);local a=f.addon;dofile('tests/fixtures/spell_editbox.lua')(f)
     f.env.GetItemInfo=nil;f.env.GetItemInfoInstant=nil
     f.env.C_Item={GetItemInfo=function(id) return 'Water','item:'..id,nil,nil,nil,nil,nil,nil,nil,10+id end}
-    f.load('Conditions/common.lua');local ace=f.libraries['AceGUI-3.0'];local create=ace.Create
-    ace.Create=function(self,kind) assert(kind~='ActionSlotItem','real vendor item icon still needs old GetItemInfo');return create(self,kind) end
+    f.load('Conditions/common.lua');assert(f.libraries['AceGUI-3.0']==nil)
     local value={item=1};local updates=0
     local group=a:Widget_SingleItemWidget(0,'Item_EditBox',value,function(id) return type(id)=='number' end,function() updates=updates+1 end)
     local icon=group.children[1];assert(icon.rmItemIconActive and texture(icon)==11)

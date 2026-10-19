@@ -1,7 +1,7 @@
 local addon_name, addon = ...
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 
--- Deliberately independent of AceGUI: errors in the main editor must not hide reports.
+-- Errors in the main editor must not hide this independent native report.
 function addon:ShowErrors()
     local window = self.errorsWindow
     if not window then

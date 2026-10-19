@@ -3,9 +3,6 @@ local test,finish=F.suite()
 local function body() return {name='Mine',switch={},rotation={{id='branch',type='branch',conditions={},onTrue={{id='yes',type='none',conditions={}}},onFalse={{id='no',type='none',conditions={}}}}},cooldowns={{id='optional',type='spell',action=324,conditions={}}}} end
 local function fixture()
     local f=F.new();local a=f.addon;local frames,create=dofile('tests/fixtures/native_ui.lua')(f.env);f.nativeFrames=frames
-    local ace=f.libraries['AceGUI-3.0'];local original=ace.Create
-    ace.Create=function(self,kind) local w=original(self,kind);w.frame=create('Frame');return w end
-    ace.Release=function(_,w) w.frame:Hide() end
     dofile('tests/fixtures/spell_editbox.lua')(f,create)
     a.db.profile.rotations={[0]={mine=body()}};a.configPaneGeneration=1
     function a:GetEditableRotation(spec,id) return self.db.profile.rotations[spec] and self.db.profile.rotations[spec][id] end

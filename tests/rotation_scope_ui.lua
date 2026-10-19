@@ -83,16 +83,12 @@ test('native profile import migrates detached exact legacy bodies and refuses mi
     p.creating=false;p.importProfile=nil;p:Draw();local invalid=a:ProfileToPortable(a.db.profile);invalid.rotationFallbackID=nil;decoded=invalid
     p.fields.transfer:Click();d=p.textDialog;d.destination:Click();d.name:SetText('Invalid');d.apply:Click();assert(d.frame:IsShown() and not p.importProfile and a.db.profiles.Invalid==nil)
 end)
-test('retained public editors delegate to native issued workspaces without touching raw maps',function()
-    local f,a=fixture();local libraries=f.libraries;for _,name in ipairs({'AceConfigDialog-3.0','AceSerializer-3.0','LibDBIcon-1.0'}) do libraries[name]=libraries[name] or {} end
-    local lookup=f.env.LibStub;f.env.LibStub=setmetatable({GetLibrary=function(_,name) return lookup(name) end},{__call=function(_,name) return lookup(name) end})
-    f.load('Options/general.lua');f.load('Options/rotations.lua')
-    a.db.profile.rotations=setmetatable({},{__index=function() error('retained editor reached old flat map') end});a.CreateRotationEditor=function() end;a.CreateRotationBrowser=function() end;a.OpenNativeSettings=function() end;a.BuildGeneralSettings=function() end
-    local frame={};assert(a:BuildRotationEditor(frame,0,ref('character')));local resolved=a:ResolveRotationReference(0,a.selected.selection.id);assert(resolved.address.scope=='character')
-    assert(a:get_rotation_list(frame,0,ref(),'step'));assert(a:ResolveRotationReference(0,a.selected.selection.id).address.scope=='class')
-    assert(a:get_cooldown_list(frame,0,ref('character'),'step'));assert(a.selected.selection.step=='step' and a.selected.selection.list=='cooldowns')
-    assert(a:BuildConfigurationPane(frame,'General'));assert(a.selected.section=='General')
-    a.CreateRotationBrowser=nil;local value,why=a:BuildConfigurationPane(frame,'Rotations');assert(not value and why=='native-configuration-unavailable')
+test('native-only services do not install retired flat-map editor entry points',function()
+    local f,a=fixture();f.load('UI/settings_setup.lua');f.load('UI/condition_entrypoints.lua')
+    a.db.profile.rotations=setmetatable({},{__index=function() error('native services reached old flat map') end})
+    assert(a.BuildRotationEditor==nil and a.get_rotation_list==nil and a.get_cooldown_list==nil and a.BuildConfigurationPane==nil)
+    local snapshot=assert(a:GetRotationRecordSnapshot(0,ref('character')))
+    assert(snapshot.body.name=='Character' and a:ResolveRotationReference(0,ref()).address.scope=='class')
 end)
 test('session baseline ownership and legacy workspace flags stay explicit and additive',function()
     local _,a=fixture();local w=assert(a:GetRotationEditWorkspace(0,ref()));assert(w.session:BaselineOwnership()=='class');assert(w:Command('SetOwnership','character'));assert(w.session:Ownership()=='character' and w.session:BaselineOwnership()=='class')

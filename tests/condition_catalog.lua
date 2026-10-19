@@ -8,8 +8,7 @@ local function fixture(baseline)
     for tag,description in pairs({A='Alpha',B='Beta',C='Gamma',D='Delta',H='Hidden'}) do a:RegisterCondition(tag,{description=description,icon=tag..'-icon',help=help,fields=fields}) end
     a.db.profile={condition_groups={{id='g',conditions={'B','A','B','UNKNOWN'}},{id='second',conditions={'B','SPECIAL'}}},other_conditions_order={'A','C','A','UNKNOWN'},switch_conditions={'B','UNKNOWN','B'},disabled_conditions={'A','B','C','H'}}
     a.db.global={custom_conditions={C={},A={}}}
-    local file=io.open('Core/condition_catalog.lua')
-    if file then file:close();f.load('Core/condition_catalog.lua') elseif baseline then f.load('UI/condition_entrypoints.lua');f.load('Options/conditional.lua') end
+    f.load('Core/condition_catalog.lua')
     return f,a
 end
 local function services(a) for _,name in ipairs(names) do assert(type(a[name])=='function','missing Core catalog service: '..name) end end
@@ -82,10 +81,14 @@ test('widget dispatch preserves arguments no-op cases ignored returns and thrown
     definition.widget=function() error('dispatch sentinel') end
     local ok,why=pcall(a.widgetCondition,a,parent,7,value);assert(not ok and tostring(why):find('dispatch sentinel',1,true))
 end)
-test('dispatch permits explicitly authored Ace fields without introducing an Ace dependency',function()
-    local f,a=fixture(true);services(a);local parent=f.widget('parent');local library=f.libraries['AceGUI-3.0'];local count=0;local create=library.Create
-    library.Create=function(self,kind) count=count+1;return create(self,kind) end
-    a.conditionDefinitions.A.widget=function(container) container:AddChild(library:Create('SimpleGroup')) end
-    a:widgetCondition(parent,0,{type='A'});assert(count==1 and parent.children[1].kind=='SimpleGroup')
+test('dispatch rejects foreign widgets before changing native ownership or the foreign frame',function()
+    local f,a=fixture(true);services(a);local parent=a:CreateConditionGroup();local called=0
+    local foreign={frame={SetParent=function() error('foreign frame reparented') end,Hide=function() error('foreign frame hidden') end},parent={marker=true}}
+    local originalParent=foreign.parent
+    a.conditionDefinitions.A.widget=function(container) called=called+1;container:AddChild(foreign) end
+    local ok,why=pcall(a.widgetCondition,a,parent,0,{type='A'})
+    assert(not ok and tostring(why):find('foreign-or-inactive-condition-child',1,true) and called==1)
+    assert(#parent.children==0 and foreign.parent==originalParent and foreign.parent.marker and parent.rmActive)
+    a:ReleaseConditionWidget(parent)
 end)
 finish()

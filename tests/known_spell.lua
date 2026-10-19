@@ -104,7 +104,7 @@ test('the owned spell picker offers exact lower ranks without the shared scanner
     local edit=parent.children[1];edit:SetFocus()
     local popup=edit.rmSpellPopup
     assert(popup.rows[1].spellID==8045 and popup.rows[2].spellID==8044 and popup.rows[3].spellID==8042)
-    assert(f.libraries['AceGUI-3.0-SpellLoader'].spellList==nil)
+    assert(f.libraries['AceGUI-3.0-SpellLoader']==nil)
 end)
 test('saved unlearned ranked references are indexed and reconfirm through the actual native Enter handler',function()
     local f=fixture();f.env.C_Spell={GetSpellInfo=function(id)

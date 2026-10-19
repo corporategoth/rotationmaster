@@ -1,7 +1,6 @@
 local _,addon=...
--- Rich Table geometry follows the bundled AceGUI Table contract. The native
--- path neither loads Ace nor mutates the caller's column descriptors. Historical
--- constructors keep their exact source. Adapted portions retain this notice:
+-- Native rich Table geometry preserves the established column/cell behavior
+-- without mutating the caller's descriptors. Adapted portions retain this notice:
 --[[
 Copyright (c) 2007, Ace3 Development Team
 
@@ -54,20 +53,25 @@ end
 local function supported(group)
     if group.layout~='Table' then return false end
     local settings=group:GetUserData('table')
-    if type(settings)~='table' or type(settings.columns)~='table' or #settings.columns==0 or not alignments(settings) then return false end
+    if settings==nil and #group.children==0 then return false end
+    if type(settings)~='table' or type(settings.columns)~='table' or not alignments(settings) then error('invalid-condition-table-settings',0) end
+    local length=#settings.columns;local entries=0
+    for key in pairs(settings.columns) do if type(key)~='number' or key%1~=0 or key<1 or key>length then error('invalid-condition-table-columns',0) end;entries=entries+1 end
+    if entries~=length or length==0 and #group.children>0 then error('invalid-condition-table-columns',0) end
+    if length==0 then return false end
     local advanced=settings.align~=nil or settings.alignH~=nil or settings.alignV~=nil
-    for _,key in ipairs({'space','spaceH','spaceV'}) do if settings[key]~=nil then if not finite(settings[key]) then return false end;advanced=true end end
+    for _,key in ipairs({'space','spaceH','spaceV'}) do if settings[key]~=nil then if not finite(settings[key]) then error('invalid-condition-table-settings',0) end;advanced=true end end
     for _,column in ipairs(settings.columns) do
         if type(column)=='table' then
-            advanced=true;if not alignments(column) then return false end
-            for _,key in ipairs({'width','weight','min','max',1,2}) do if column[key]~=nil and not finite(column[key]) then return false end end
-            if column.weight and column.weight<0 then return false end
-        elseif not finite(column) then return false end
+            advanced=true;if not alignments(column) then error('invalid-condition-table-settings',0) end
+            for _,key in ipairs({'width','weight','min','max',1,2}) do if column[key]~=nil and not finite(column[key]) then error('invalid-condition-table-settings',0) end end
+            if column.weight and column.weight<0 then error('invalid-condition-table-settings',0) end
+        elseif not finite(column) then error('invalid-condition-table-settings',0) end
     end
     for _,child in ipairs(group.children) do
         local cell=child:GetUserData('cell')
         if cell~=nil then
-            if type(cell)~='table' or not alignments(cell) or not span(cell.colspan) or not span(cell.rowspan) then return false end
+            if type(cell)~='table' or not alignments(cell) or not span(cell.colspan) or not span(cell.rowspan) then error('invalid-condition-table-settings',0) end
             if cell.colspan or cell.rowspan or cell.align or cell.alignH then advanced=true end
             -- Preserve the existing compact numeric Table's simple alignV path.
             if cell.alignV~=nil then
@@ -179,15 +183,13 @@ local function layout(group)
     end
     group:LayoutFinished(nil,dimension(heights,1,rows,spacingV))
 end
--- A widget can cross RM and real Ace pools. The override belongs to precisely
--- this native acquisition lease, never to a later historical Ace acquisition.
+-- Install the native rich-table route once on each owned group.
 function addon:PrepareNativeConditionTable(group)
     if not group.rmNativeTableOriginal then
         local original=group.DoLayout;group.rmNativeTableOriginal=original
         function group:DoLayout()
-            if self.rmNativeTableLease~=self.rmLease then return original(self) end
             if self.paused or self.layingOut or self.isQueuedForRelease then return end
-            -- Reject unsafe spans before any compatibility delegation as well.
+            -- Reject unsafe work before compact or rich geometry mutates frames.
             guardWork(self)
             if not supported(self) then return original(self) end
             self.layingOut=true;local ok,why=pcall(layout,self);self.layingOut=false
@@ -195,5 +197,4 @@ function addon:PrepareNativeConditionTable(group)
             if self.parent and self.parent.DoLayout then self.parent:DoLayout() end
         end
     end
-    group.rmNativeTableLease=group.rmLease
 end

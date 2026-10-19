@@ -147,8 +147,8 @@ function addon:ShowConditionSourceTest(owner,options)
         return self:Invoke('render-test',function()
         local width=d.frame:GetWidth()-60
         local content=addon:CreateConditionGroup();d.contentPane=content;content:SetLayout('List');content:SetFullWidth(true);content:SetWidth(width);content.frame:SetParent(d.scroll);content.frame:ClearAllPoints();content.frame:SetPoint('TOPLEFT');content.frame:SetWidth(width);content:SetUserData('top',top)
-        -- AceGUI only shows widgets through AddChild. This native scroll root
-        -- bypasses AddChild, so a reused group is still hidden after Release.
+        -- This scroll root bypasses AddChild, which normally shows native children.
+        -- A reused group remains hidden after Release until shown explicitly.
         content.frame:Show()
         content.LayoutFinished=function(_,_,height) if alive() and type(height)=='number' then content.frame:SetHeight(math.max(1,math.min(20000,height)));d.scroll:UpdateWorkbenchScroll() end end
         d.scroll:SetScrollChild(content.frame)

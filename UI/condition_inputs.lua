@@ -1,9 +1,8 @@
 local _,addon=...
 local function finite(value) return type(value)=='number' and value==value and value>-math.huge and value<math.huge end
 
--- Native visuals with the small widget contract used by legacy declarations.
--- Ordinary leases belong to RM; historical custom widgets keep an Ace bridge.
----@class RMConditionInput: AceGUIWidget
+-- Native visuals and pending-input protocol shared by condition fields.
+---@class RMConditionInput: RMConditionWidget
 ---@field editbox EditBox
 ---@field SetFocus fun(self: RMConditionInput)
 ---@field ClearFocus fun(self: RMConditionInput)
@@ -19,7 +18,7 @@ local function finite(value) return type(value)=='number' and value==value and v
 ---@field SetIsPercent fun(self: RMConditionInput, value: boolean?)
 ---@field IsPending fun(self: RMConditionInput): boolean
 ---@field CommitPending fun(self: RMConditionInput): boolean?
-local function constructor(numeric,legacy)
+local function constructor(numeric)
     local w={type=numeric and 'RM-ConditionSlider' or 'RM-ConditionEditBox',alive=false}
     local frame=CreateFrame('Frame',nil,UIParent);w.frame=frame;frame:SetSize(220,44)
     local caption=frame:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall');w.caption=caption
@@ -88,7 +87,6 @@ local function constructor(numeric,legacy)
     function w:SetFocus() if self.alive and not self.disabled then input:SetFocus() end end
     function w:ClearFocus() input:ClearFocus() end
     function w:SetMaxLetters(value) input:SetMaxLetters(value) end
-    function w:DisableButton() end
     function w:SetDisabled(value)
         self.disabled=value==true
         input:EnableMouse(not self.disabled);input:EnableKeyboard(not self.disabled)
@@ -111,7 +109,7 @@ local function constructor(numeric,legacy)
     addon:SetUIScript(input,'OnEnterPressed',function() if w.alive and not w.disabled and w:CommitPending() then input:ClearFocus() end end)
     addon:SetUIScript(input,'OnEditFocusLost',function() if w.alive and not w.disabled and not w.isQueuedForRelease then w:CommitPending() end end)
     addon:SetUIScript(input,'OnEscapePressed',function() if w.alive then paint();input:ClearFocus();pendingChanged() end end)
-    -- Legacy reference popups can temporarily hide their editor. Only release
+    -- Reference popups can temporarily hide their editor. Only release
     -- discards pending input; ordinary hiding must retain invalid blockers too.
     addon:SetUIScript(frame,'OnHide',function() input:ClearFocus() end)
     if slider then
@@ -126,8 +124,8 @@ local function constructor(numeric,legacy)
             if w.alive and not w.disabled and direction~=0 then slider:SetValue((finite(w.value) and w.value or w.minimum)+(direction>0 and w.step or -w.step)) end
         end)
     end
-    ---@cast w AceGUIWidget
-    return addon:RegisterConditionWidget(w,1,legacy)
+    ---@cast w RMConditionWidget
+    return addon:RegisterConditionWidget(w)
 end
 ---@return RMConditionInput
 function addon:CreateConditionEditBox()
@@ -145,7 +143,6 @@ end
 -- BEGIN GENERATED RM SOURCE BINDINGS
 do
     local function sourceGetter(name)
-        if name=="AceGUI" then return addon:GetConditionWidgetCompatibilityLibrary() end
         if name=="CreateConditionEditBox" then return addon.CreateConditionEditBox end
         if name=="CreateConditionSlider" then return addon.CreateConditionSlider end
         if name=="constructor" then return constructor end

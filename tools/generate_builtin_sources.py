@@ -14,9 +14,6 @@ END='-- END GENERATED RM SOURCE BINDINGS'
 DOCS_BEGIN='-- BEGIN GENERATED RM PUBLIC HELPER DOCS'
 DOCS_END='-- END GENERATED RM PUBLIC HELPER DOCS'
 
-RETAINED_ACE_GETTERS={path:'addon:GetConditionWidgetCompatibilityLibrary()' for path in ('UI/selector.lua','UI/checkbox.lua','UI/condition_inputs.lua','Conditions/common.lua','Conditions/combat.lua','Conditions/talent.lua')}
-RETAINED_ACE_GETTERS['UI/condition_layout.lua']='addon:BindConditionGroupCompatibilityLibrary()'
-
 def function_source(source,record,name):
     lines=source.splitlines(keepends=True)
     start=sum(map(len,lines[:record['first']-1]));stop=sum(map(len,lines[:record['last']]))
@@ -114,12 +111,6 @@ def generated():
         # Export live locals by name: getters preserve reassigned module state.
         suffix=[BEGIN,'do','    local function sourceGetter(name)']
         getter_expressions={alias: 'addon.'+entry['addonMember'] if entry.get('addonMember') else alias for alias,entry in bindings.items()}
-        for alias,entry in bindings.items():
-            expression=entry.get('getterExpression')
-            if expression is not None:
-                if alias!='AceGUI' or expression!=RETAINED_ACE_GETTERS.get(path):
-                    raise ValueError('invalid retained widget getter expression: '+path+':'+alias)
-                getter_expressions[alias]=expression
         for alias,expression in legacy_getters.get(path,{}).items():
             if alias in getter_expressions and getter_expressions[alias]!=expression: raise ValueError('conflicting legacy getter: '+path+':'+alias)
             getter_expressions[alias]=expression

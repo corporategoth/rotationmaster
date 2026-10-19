@@ -15,7 +15,7 @@ local expected={
     COMBAT_HISTORY_TIME={valid={isin=3},evaluate={compare=1},print={compareString=1,playerize=1,nullable=3}},
     TIME_IN_COMBAT={valid={isin=1},evaluate={compare=1},print={compareString=1,nullable=1}},
 }
-local valueHashes={color='dbda383d',character_class='d17cf4c1',AceGUI='a287fe2d',helpers='9e28e933'}
+local valueHashes={color='dbda383d',character_class='d17cf4c1',helpers='9e28e933'}
 local function id(name) return 'builtin:'..(groups[name]=='collections' and 'Functions/collections.lua' or 'utils.lua')..':'..name end
 local function qualified(name) return 'Functions.'..groups[name]..'.'..name end
 local function fixture(...)
@@ -101,7 +101,7 @@ test('combat callbacks select eight explicit canonical leaves with exact call co
         local binding='builtin:Conditions/combat.lua:'..name;local record=assert(a.builtinFunctions[binding]);assert(record.valueBinding and a:FunctionSourceHash(record.source)==hash,'historical value metadata changed')
         assert(rawequal(a:ResolveFunctionBinding(binding),a.builtinSourceModules['Conditions/combat.lua'](name)))
     end
-    assert(a:ResolveFunctionBinding('builtin:Conditions/combat.lua:AceGUI')==f.libraries['AceGUI-3.0'])
+    assert(not a.builtinFunctions['builtin:Conditions/combat.lua:AceGUI'] and a:ResolveFunctionBinding('builtin:Conditions/combat.lua:AceGUI')==nil)
     assert(not f.env.Functions and not f.env.functions)
 end)
 test('all registered combat source clones preserve validators engine outcomes and positive or NOT wording across inventory branches',function()

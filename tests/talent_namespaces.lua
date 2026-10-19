@@ -66,7 +66,7 @@ test('talent authored callbacks expose five canonical leaves and preserve local 
         assert(a:FunctionSourceHash(record.source)==hash,'native/local helper changed: '..name)
         assert(a:ResolveFunctionBinding(id)==a.builtinSourceModules['Conditions/talent.lua'](name),'local helper getter identity changed')
     end
-    assert(a:ResolveFunctionBinding('builtin:Conditions/talent.lua:AceGUI')==f.libraries['AceGUI-3.0'],'historical widget capture disappeared')
+    assert(not a.builtinFunctions['builtin:Conditions/talent.lua:AceGUI'] and a:ResolveFunctionBinding('builtin:Conditions/talent.lua:AceGUI')==nil,'retired GUI capture remains available')
     assert(not f.env.Functions and not f.env.functions,'namespace leaked into globals')
 end)
 test('extracted talent clones retain layouts validators and summaries across the reviewed client inventory',function()

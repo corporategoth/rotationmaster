@@ -4,15 +4,6 @@ local test,finish=F.suite()
 local function fixture(product,expansion,realCustom)
     local f=F.new(product,expansion);local a=f.addon;f.env.NEW='New'
     local frames,create=dofile('tests/fixtures/native_ui.lua')(f.env)
-    local ace=f.libraries['AceGUI-3.0'];local original=ace.Create
-    ace.Create=function(self,kind)
-        local w=original(self,kind);w.frame=create('Frame');w.frame:Hide()
-        function w:ReleaseChildren() self.children={} end
-        for _,method in ipairs({'PauseLayout','ResumeLayout','DoLayout','SetTree','SetStatusTable','SetPoint'}) do w[method]=function() end end
-        return w
-    end
-    ace.Release=function(_,w) w.released=true;w.frame:Hide();w.children={} end
-    f.env.LibStub=setmetatable({GetLibrary=function() return {} end},{__call=function(_,name) return f.libraries[name] or {} end})
     local data,envelope,validation=make();a.RotationData=data;a.conditionDefinitions=validation.conditions
     f.load('Data/catalog.lua');f.load('Data/diff.lua');f.load('Core/rotation_library.lua');local tags=io.open('Core/rotation_tags.lua');if tags then tags:close();f.load('Core/rotation_tags.lua') end
     a.GetRotationContext=function(_,spec) return {family='tbc',class='SHAMAN',level=11,spec=spec,actionContext='player',combatDataPolicy='probe'} end
@@ -28,16 +19,23 @@ local function fixture(product,expansion,realCustom)
     a.Platform.GetSpellLink=function() return '|Hspell:403|h[Lightning Bolt]|h' end
     a.printCondition=function() return 'Readable condition' end
     f.load('UI/defaults.lua');f.load('UI/rotation_reference.lua');f.load('UI/settings_setup.lua')
-    -- These old renderer compatibility cases intentionally capture the
-    -- historical body. Public adapters are tested separately against real
-    -- scoped native panes; no production renderer fallback is introduced.
-    dofile('tests/fixtures/legacy_options.lua')(f,'Options/general.lua')
-    local real=a.BuildRotationEditor
-    f.load('Options/general.lua')
+    local nativeEditor
+    if realCustom then
+        a.validateCondition=function() return true end
+        a.GetImportValidationOptions=function() return {conditions=a.conditionDefinitions} end
+        a.UpdateAutoSwitch=function() end;a.SwitchRotation=function() end;a.EvaluateNextAction=function() end
+        for _,path in ipairs({'Platform/spells.lua','Data/rotation_draft.lua','Core/rotation_editor.lua','Core/rotation_workspace.lua','Core/rotation_canvas.lua','UI/window.lua','UI/rotation_cards.lua','UI/rotation_canvas.lua','UI/color_picker.lua','UI/rotation_effect_fields.lua','UI/rotation_fields.lua','UI/rotation_navigation.lua','UI/rotation_metadata.lua','UI/rotation_view.lua','UI/rotation_editor.lua'}) do f.load(path) end
+        nativeEditor=a.CreateRotationEditor
+    end
     local editors={}
-    -- Foreign editor fixtures implement the native factory boundary explicitly;
-    -- the browser must never choose the old renderer because a factory is absent.
+    -- Native pane fixture isolates the roster; the name/apply case below uses
+    -- the actual native editor and the reference case uses native reference controls.
     a.CreateRotationEditor=function(self,parent,spec,id,onSelect)
+        if nativeEditor then
+            local pane,why=nativeEditor(self,parent,spec,id,onSelect)
+            if pane then editors[#editors+1]={pane=pane,spec=spec,id=id,select=onSelect} end
+            return pane,why
+        end
         local pane=self:CreateConditionGroup();pane.frame:SetParent(parent);pane:SetWidth(parent:GetWidth());pane:SetHeight(parent:GetHeight())
         pane.workspace={pending=false};pane.clone={action=function()
             local builtin=self:GetDefaultIdForRuntime(spec,id);local source=self:GetEditableRotation(spec,id)
@@ -48,7 +46,8 @@ local function fixture(product,expansion,realCustom)
         local release=pane.Release
         function pane:Release() self.released=true;self.Release=nil;return release(self) end
         editors[#editors+1]={pane=pane,spec=spec,id=id,select=onSelect}
-        if realCustom or self:GetDefaultIdForRuntime(spec,id) then real(self,pane,spec,id,onSelect)
+        local builtin=self:GetDefaultIdForRuntime(spec,id)
+        if builtin then self:CreateDefaultRotationOptions(pane,spec,builtin,function(generated) onSelect(spec,generated) end)
         else local label=self:CreateConditionLabel();label:SetText('custom editor');pane:AddChild(label) end
         return pane
     end
@@ -133,7 +132,7 @@ end)
 test('native configuration reuses browser frames and releases fields across tabs and close',function()
     local f,_,_,create=fixture();local a=f.addon
     a.pretty_name='Rotation Master';a.name='rotationmaster';a.SetupOptions=function() end
-    a.BuildConfigurationPane=function(_,pane) pane:AddChild(f.widget('general controls')) end
+    a.BuildConfigurationPane=function() error('native shell revived legacy fields') end
     f.load('UI/window.lua');f.load('UI/config.lua')
     local shell=a:ShowConfig('Rotations',{spec=0,id='one'});local browser=shell.pane
     assert(shell.nativePane and browser.selected=='one','native config still embeds the rotation dropdown')
@@ -146,20 +145,18 @@ test('native configuration reuses browser frames and releases fields across tabs
     a:ShowConfig('Rotations',{spec=0,id='one'})
     assert(shell.pane==browser and browser.rowButtons[1]==old and browser.active and browser.selected=='one')
 end)
-test('the actual legacy name editor commits a new row through the browser selection boundary',function()
+test('the actual native name editor stages and applies a new row through the browser selection boundary',function()
     local f,_,_,create=fixture(nil,nil,true);local a=f.addon
     a.configure_frame=function() end;a.usefulCondition=function() return false end
     a.rotationValidConditions=function() return false end;a.db.profile.disable_autoswitch=true
     local browser=a:CreateRotationBrowser(create('Frame'),{spec=0,id='one'})
     browser.newButton:Click();local id=browser.selected
     assert(a:GetEditableRotation(0,id)==nil)
-    local field
-    local function scan(w)
-        if w.kind=='EditBox' and w.label=='Name' then field=w end
-        for _,child in ipairs(w.children) do scan(child) end
-    end
-    scan(browser.pane);assert(field,'new rotation has no name editor')
-    field.callbacks.OnEnterPressed(field,nil,'My new rotation')
+    local pane=browser.pane;local field=pane.name
+    assert(field and pane.apply,'new rotation has no native name/apply controls')
+    field:SetText('My new rotation');field.scripts.OnTextChanged(field,true)
+    assert(a:GetEditableRotation(0,id)==nil,'typing persisted before Apply')
+    pane.apply:Click()
     assert(a:GetEditableRotation(0,id).name=='My new rotation' and browser.selected==id)
     assert(row(browser,id).name=='My new rotation' and browser.pendingId==nil)
 end)
@@ -228,7 +225,7 @@ end)
 test('missing native editor shows feedback without allocating a legacy rotation pane',function()
     local f,_,_,create=fixture();local a=f.addon;a.CreateRotationEditor=nil
     a.BuildRotationEditor=function() error('missing native editor revived the legacy renderer') end
-    f.libraries['AceGUI-3.0'].Create=function() error('missing native editor allocated Ace') end
+    a.GetConditionWidgetCompatibilityLibrary=function() error('missing native editor requested retired GUI') end
     local browser=a:CreateRotationBrowser(create('Frame'),{spec=0,id='one'})
     assert(not browser.pane and browser.detail.rmEditorError and browser.detail.rmEditorError:IsShown())
     assert(browser.detail.rmEditorError:GetText()=='The native rotation editor is unavailable.')

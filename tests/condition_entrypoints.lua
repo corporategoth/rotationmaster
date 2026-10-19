@@ -18,69 +18,23 @@ test('native entry points forward exact arguments and return tuples without any 
     local function compact(...) assert(select('#',...)==3);local first,second,last=...;assert(first=='compact' and second==nil and last==3) end
     compact(a.LayoutConditionFrame(frame));assert(calls.lookups==0)
 end)
-test('legacy registration stays inert and factory initialization is cached and retryable',function()
-    local f,a,calls=fixture();calls.poison=true;f.load('UI/condition_entrypoints.lua');f.load('Options/conditional.lua')
-    assert(calls.lookups==0 and type(a.GetLegacyConditionRenderer)=='function')
-    assert(not pcall(a.GetLegacyConditionRenderer,a) and calls.lookups==1)
-    calls.poison=false;local api=a:GetLegacyConditionRenderer();assert(type(api.LayoutConditionFrame)=='function' and type(api.EditCondition)=='function')
-    assert(a:GetLegacyConditionRenderer()==api and calls.lookups==2)
-    calls.poison=true;a.ShowConditionEditor=function() return 'native' end;assert(a:EditCondition()=='native');assert(a.LayoutConditionFrame({rmCompactRefresh=function() return 'compact' end})=='compact')
-    assert(calls.lookups==2,'native dispatch initialized or revisited Ace after compatibility activation')
+test('missing native editors and unsupported hosts never revive or mutate a legacy renderer',function()
+    local f,a,calls=fixture();calls.poison=true;f.load('UI/condition_entrypoints.lua')
+    a.GetLegacyConditionRenderer=function() error('retired renderer was invoked') end
+    local value={unchanged=true};local callback=function() error('unsupported edit called callback') end
+    local result,why=a:EditCondition(1,0,value,callback,function() return true end)
+    assert(result==nil and type(why)=='string' and why:find('native',1,true))
+    local frame={marker={},rmCompactRefresh=true};local marker=frame.marker
+    result,why=a.LayoutConditionFrame(frame)
+    assert(result==nil and type(why)=='string' and frame.marker==marker and frame.rmCompactRefresh==true and value.unchanged)
+    result,why=a.LayoutConditionFrame(nil);assert(result==nil and type(why)=='string' and calls.lookups==0)
 end)
-local function realAce(f)
-    local e=f.env;local ace=f.libraries['AceGUI-3.0'];local previous=e.LibStub
-    e.LibStub=setmetatable({NewLibrary=function() return ace end},{__call=function(_,...) return previous(...) end})
-    e.geterrorhandler=function() return error end
-    e.xpcall=function(fn,handler,...) local args={n=select('#',...),...};return xpcall(function() return fn(unpack(args,1,args.n)) end,handler) end
-    e.table=setmetatable({wipe=function(value) for k in pairs(value) do value[k]=nil end;return value end},{__index=table})
-    f.load('Libs/AceGUI-3.0/AceGUI-3.0.lua')
-    local made={};local containers={Frame=true,Window=true,ScrollFrame=true,SimpleGroup=true,DisablableInlineGroup=true}
-    -- External widget geometry only; registry, ownership, release, callbacks,
-    -- container methods and the complete legacy renderer remain real.
-    for _,kind in ipairs({'Frame','Window','ScrollFrame','SimpleGroup','DisablableInlineGroup','Icon','InteractiveLabel','Label','EditBox','Dropdown'}) do
-        ace:RegisterWidgetType(kind,function()
-            local w={type=kind,frame=e.CreateFrame('Frame'),OnAcquire=function() end};made[#made+1]=w
-            function w:Show() self.frame:Show() end;function w:Hide() self.frame:Hide() end
-            function w:SetTitle(value) self.title=value end;function w:SetText(value) self.text=value end
-            function w:SetStatusText(value) self.statusText=value end;function w:SetDisabled(value) self.disabled=value end
-            function w:SetImage(value) self.image=value end;function w:SetImageSize() end;function w:SetJustifyH() end
-            function w:DisableButton() end;function w:SetList() end;function w:SetValue() end
-            if containers[kind] then w.content=e.CreateFrame('Frame',nil,w.frame);return ace:RegisterAsContainer(w) end
-            return ace:RegisterAsWidget(w)
-        end,1)
-    end
-    for _,name in ipairs({'Fill','Flow','Table'}) do ace:RegisterLayout(name,function() end) end
-    return ace,made
-end
-test('actual retained renderer uses shipped Ace ownership and preserves legacy close callbacks',function()
-    local f,a=fixture();local ace,made=realAce(f);f.load('UI/condition_entrypoints.lua');f.load('Options/conditional.lua')
-    local widgetCalls,sequence=0,{}
-    a.printCondition=function(_,root,spec) assert(root.type=='A' and spec==2);return 'Original summary' end
-    a.validateCondition=function() return true end;a.listConditions=function() return {'A'} end
-    a.describeCondition=function(_,tag) assert(tag=='A');return 'icon','Original condition' end
-    a.widgetCondition=function(_,parent,spec,value) assert(spec==2 and value.type=='A');widgetCalls=widgetCalls+1;parent:AddChild(a:CreateConditionLabel()) end
-    a.UpdateAutoSwitch=function() sequence[#sequence+1]='auto' end;a.SwitchRotation=function() sequence[#sequence+1]='switch' end
-    a:EditCondition(3,2,{type='A'},function() sequence[#sequence+1]='close' end)
-    local top=made[1];assert(top.type=='Frame' and top.title=='Edit Condition #3' and widgetCalls==1 and top:GetUserData('spec')==2)
-    assert(top.children[1].type=='ScrollFrame' and top.children[1].children[1].type=='DisablableInlineGroup')
-    local api=a:GetLegacyConditionRenderer();a.LayoutConditionFrame(top);assert(a:GetLegacyConditionRenderer()==api and widgetCalls==2 and #top.children==1)
-    local released=0;top:SetCallback('OnRelease',function() released=released+1 end);top:Fire('OnClose')
-    assert(released==1 and not top.frame:IsShown() and #top.children==0 and table.concat(sequence,',')=='close,auto,switch')
-    assert(ace:GetWidgetVersion('Frame')==1)
-end)
-test('deferred helpers keep their registration-time registry special and utility identities',function()
-    local f,a=fixture();local _,made=realAce(f);local used=0;local original=a.cleanArray
-    a.db.profile.condition_groups={};a.ApplyCustomGlow=function() end;a.HideGlow=function() end;a.findConditionGroup=function() end
-    a.cleanArray=function(...) used=used+1;return original(...) end
-    f.load('UI/condition_entrypoints.lua');f.load('Options/conditional.lua')
-    a.conditionDefinitions={};a.conditionSpecials={};a.cleanArray=function() error('late replacement utility used') end
-    a.printCondition=function() return 'Summary' end;a.validateCondition=function() return true end;a.listConditions=function() return {'A'} end
-    a.describeCondition=function() return 'icon','Original condition' end;a.widgetCondition=function() end
-    a:EditCondition(1,0,{type='OTHER'})
-    local top=made[1];local icon=top.children[1].children[1].children[1];icon:Fire('OnClick')
-    local popup;for _,w in ipairs(made) do if w.type=='Window' then popup=w end end
-    assert(popup and popup.children[2].children[1].text:find('Original condition',1,true),'factory rebound a replacement condition registry')
-    local selected=popup.children[2].children[1];top:GetUserData('root').type='OTHER';selected:Fire('OnClick')
-    assert(used==1 and top:GetUserData('root').type=='A','deferred type selection rebound captured utilities')
+test('custom transfer rejects foreign editor owners before touching callbacks visibility or source',function()
+    local f,a,calls=fixture();calls.poison=true;f.load('UI/custom_condition_transfer.lua')
+    local owner={};local parent={rmConditionOwner=owner}
+    parent.Hide=function() error('foreign editor hidden') end;parent.SetCallback=function() error('foreign callbacks changed') end
+    a.NewRotationCodec=function() error('foreign transfer encoded source') end
+    local source={description='Preserve'};local result,why=a:ShowCustomConditionTransfer(parent,function() error('foreign update') end,'ID',source)
+    assert(result==nil and type(why)=='string' and why:find('Native',1,true) and parent.rmConditionOwner==owner and source.description=='Preserve' and calls.lookups==0)
 end)
 finish()

@@ -19,8 +19,7 @@ local function find(root,kind)
     for _,child in ipairs(root.children or {}) do local found=find(child,kind);if found then return found end end
 end
 test('cooldown Help uses only native widgets and retains the explanatory offset row',function()
-    local f,a=fixture();f.load('Help/rotations.lua');local ace=f.libraries['AceGUI-3.0']
-    ace.Create=function() error('Help allocated an ordinary Ace widget') end;ace.Release=function() error('Help released through Ace') end
+    local f,a=fixture();f.load('Help/rotations.lua');assert(f.libraries['AceGUI-3.0']==nil)
     local root=a:CreateConditionGroup();root:SetWidth(680);a.layout_cooldown_help(root)
     local pad=assert(find(root,'RM-ConditionPositionPad'),'offset illustration missing')
     assert(pad.parent.layout=='Table' and pad.parent:GetUserData('table').columns[1]==50,'offset text column changed')
@@ -44,7 +43,6 @@ test('position adapter delegates arrows center and shift steps to the shared com
 end)
 test('position leases disable queued owners and reject retired native callbacks after reuse',function()
     local f,a=fixture();assert(a.CreateConditionPositionPad,'native position factory missing')
-    local ace=f.libraries['AceGUI-3.0'];ace.Create=function() error('position allocated Ace') end;ace.Release=function() error('position released Ace') end
     local w=a:CreateConditionPositionPad();local calls=0;w:SetCallback('OnOffsetChanged',function() calls=calls+1 end)
     local old=w.pad.buttons.Up:GetScript('OnClick');w:SetDisabled(true);old(w.pad.buttons.Up);assert(calls==0)
     w:SetDisabled(false);w.parent={isQueuedForRelease=true};old(w.pad.buttons.Up);assert(calls==0);w.parent=nil
@@ -53,42 +51,21 @@ test('position leases disable queued owners and reject retired native callbacks 
     nextPad.pad.buttons.Down:Click();assert(calls==10);a:ReleaseConditionWidget(nextPad)
 end)
 test('rotation Help remains native and its content survives a release and reopen',function()
-    local f,a=fixture();f.load('Help/rotations.lua');f.libraries['AceGUI-3.0'].Create=function() error('Help allocated Ace') end
+    local f,a=fixture();f.load('Help/rotations.lua');assert(f.libraries['AceGUI-3.0']==nil)
     for _=1,2 do local root=a:CreateConditionGroup();root:SetWidth(600);a.layout_rotation_help(root)
         local text=F.text(root);assert(text:find('order of priority',1,true) and text:find('Attack is the implicit final fallback',1,true))
         a:ReleaseConditionWidget(root)
     end
 end)
-test('position pads transfer through shipped legacy parents without stale clicks or stranded leases',function()
-    local f,a=fixture();local ace=f.libraries['AceGUI-3.0'];local constructors=ace.constructors;local stub=f.env.LibStub
-    f.env.LibStub=setmetatable({NewLibrary=function() return ace end},{__call=function(_,...) return stub(...) end})
-    f.env.geterrorhandler=function() return error end
-    f.env.xpcall=function(callback,handler,...) local args={n=select('#',...),...};return xpcall(function() return callback(unpack(args,1,args.n)) end,handler) end
-    f.env.table=setmetatable({wipe=function(value) for key in pairs(value) do value[key]=nil end;return value end},{__index=table})
-    local create=f.env.CreateFrame
-    f.env.CreateFrame=function(...)
-        local frame=create(...);local width,height=frame:GetWidth(),frame:GetHeight()
-        function frame:GetWidth() return width end
-        function frame:GetHeight() return height end
-        function frame:SetSize(w,h)
-            local changed=width~=w or height~=h;width,height=w,h
-            if changed and self.scripts.OnSizeChanged then self.scripts.OnSizeChanged(self,w,h) end
-        end
-        function frame:SetWidth(value) self:SetSize(value,height) end
-        function frame:SetHeight(value) self:SetSize(width,value) end
-        return frame
-    end
-    f.load('Libs/AceGUI-3.0/AceGUI-3.0.lua')
-    for kind,build in pairs(constructors) do ace:RegisterWidgetType(kind,build,1) end
-    f.load('Libs/AceGUI-3.0/widgets/AceGUIContainer-SimpleGroup.lua')
-    local seen={};local calls=0
+test('native position roots recycle pads without stale clicks or stranded leases',function()
+    local f,a=fixture();local seen={};local calls=0
     for _=1,25 do
-        local parent=ace:Create('SimpleGroup');local w=a:CreateConditionPositionPad();seen[w]=true
+        local parent=a:CreateConditionGroup();local w=a:CreateConditionPositionPad();seen[w]=true
         w:SetCallback('OnOffsetChanged',function() calls=calls+1 end)
         local old=w.pad.buttons.Up:GetScript('OnClick');parent:AddChild(w);w.pad.buttons.Up:Click()
-        ace:Release(parent);assert(not w.rmActive);old(w.pad.buttons.Up)
+        parent:Release();assert(not w.rmActive);old(w.pad.buttons.Up)
     end
     local count=0;for _ in pairs(seen) do count=count+1 end
-    assert(count<=2 and calls==25,'legacy transfer stranded pads or fired retired callbacks')
+    assert(count==1 and calls==25,'native discard stranded pads or fired retired callbacks')
 end)
 finish()

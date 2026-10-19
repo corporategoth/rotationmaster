@@ -27,7 +27,7 @@ local function fixture()
 end
 test('reference inputs own their native lease without Ace allocation and restore the ordinary input on reuse',function()
     local f=fixture();local a=f.addon
-    f.libraries['AceGUI-3.0'].Create=function() error('reference field still allocated through Ace') end
+    assert(not f.libraries['AceGUI-3.0'],'retired GUI library remains')
     local w=a:CreateSpellEditBox('Spell_EditBox',403);w:SetText(403);local count=0
     w:SetCallback('OnEnterPressed',function() count=count+1 end);local stale=w.events and w.events.OnEnterPressed
     w:SetFocus();assert(w.rmSpellPopup:IsShown());a:ReleaseConditionWidget(w);assert(not w.rmSpellPopup:IsShown())
@@ -58,7 +58,7 @@ test('owned spell suggestions show named ranks and commit exact ID without share
     assert(popup:IsShown() and popup.rows[1].spellID==529 and popup.rows[2].spellID==403)
     popup.rows[2].scripts.OnMouseDown(popup.rows[2],'LeftButton')
     assert(chosen=='403' and w:GetText()=='Lightning Bolt (Rank 1)' and not popup:IsShown())
-    assert(f.libraries['AceGUI-3.0-SpellLoader'].spellList==nil)
+    assert(f.libraries['AceGUI-3.0-SpellLoader']==nil)
 end)
 test('scoped suggestions filter current bank and cancellation leaves the saved selection alone',function()
     local f=fixture();local w=f.addon:CreateSpellEditBox('Spec_EditBox')
@@ -142,9 +142,9 @@ test('diagnostic wrappers are restored when a pooled spell field is released',fu
     assert(w.editbox:GetScript('OnEnterPressed') and w.editbox:GetScript('OnEscapePressed'),'ordinary native input scripts were not restored')
 end)
 test('releasing diagnostic-wrapped fields restores exact nonnil original scripts across reuse',function()
-    local f=fixture();f.load('Diagnostics/errors.lua');local ace=f.libraries['AceGUI-3.0'];local original
+    local f=fixture();f.load('Diagnostics/errors.lua');local original
     local plain=f.addon:CreateConditionEditBox();original=plain.editbox:GetScript('OnTextChanged');f.addon:ReleaseConditionWidget(plain)
-    ace.Create=function() error('reference used Ace') end
+    assert(not f.libraries['AceGUI-3.0'])
     for _=1,5 do local w=f.addon:CreateSpellEditBox('Spell_EditBox');assert(w==plain);f.addon:ReleaseConditionWidget(w);assert(w.editbox:GetScript('OnTextChanged')==original) end
 end)
 test('every programmatic numeric spell value displays its name rather than its saved identifier',function()
@@ -158,7 +158,7 @@ end)
 test('item suggestions show icons and commit exact item IDs with inventory filtering',function()
     local f=fixture();local a=f.addon
     f.env.GetItemInfo=function(id) local n=tonumber(id)==1 and 'Water' or tonumber(id)==2 and 'Bread';return n,nil,nil,nil,nil,nil,nil,nil,nil,n and tonumber(id)+10 end
-    f.libraries['AceGUI-3.0-ItemLoader'].itemList={[1]={name='Water',icon=11},[2]={name='Bread',icon=12}};a.bagContents={[1]={count=2,slots={{bag=0,slot=1}}}}
+    assert(a:UpdateReferenceItem(1) and a:UpdateReferenceItem(2));a.bagContents={[1]={count=2,slots={{bag=0,slot=1}}}}
     local w=a:CreateItemEditBox('Inventory_EditBox',1);w:SetText(1);assert(w:GetText()=='Water');local id
     w:SetCallback('OnEnterPressed',function(_,_,value) id=value end);w:SetFocus();local row=w.rmSpellPopup.rows[1]
     assert(row.itemID==1 and row.icon.texture==11 and not w.rmSpellPopup.rows[2]:IsShown())

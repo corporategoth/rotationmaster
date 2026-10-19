@@ -78,7 +78,7 @@ test('public observer source clone resolves actual method and uses live readabil
     s.attack=false;assert(fn(a.Platform,'target')==false)
 end)
 test('only the exact ATTACKABLE evaluator changes from the movement checkpoint with private bindings intact',function()
-    local f,a=fixture();local file=assert(io.open('Conditions/combat.lua'));local source=file:read('*a');file:close();source=dofile('tests/fixtures/restore_unit_flag_repairs.lua')(source)
+    local f,a=fixture();local file=assert(io.open('Conditions/combat.lua'));local source=file:read('*a');file:close();source=dofile('tests/fixtures/restore_unit_flag_repairs.lua')(source);source=dofile('tests/fixtures/restore_retired_gui_getter.lua')(source)
     local repaired=[[    evaluate = function(value, cache)
         return Functions.cache.getCached(cache, addon.Platform.GetUnitAttackabilityObservation, addon.Platform, value.unit)
     end,]]
@@ -93,11 +93,11 @@ test('only the exact ATTACKABLE evaluator changes from the movement checkpoint w
     -- Frozen Conditions/combat.lua at movement checkpoint 8e3892c. Restoring
     -- only ATTACKABLE must preserve MOVING and every other byte, including UI.
     assert(a:FunctionSourceHash(source)=='e33bf6d4','combat module changed beyond the approved attackability evaluator')
-    for name,hash in pairs({color='dbda383d',character_class='d17cf4c1',AceGUI='a287fe2d',helpers='9e28e933'}) do
+    for name,hash in pairs({color='dbda383d',character_class='d17cf4c1',helpers='9e28e933'}) do
         local id='builtin:Conditions/combat.lua:'..name
         assert(a:FunctionSourceHash(assert(a.builtinFunctions[id]).source)==hash,'private source identity changed: '..name)
         assert(a:ResolveFunctionBinding(id)==a.builtinSourceModules['Conditions/combat.lua'](name),'private source getter changed: '..name)
     end
-    assert(a:ResolveFunctionBinding('builtin:Conditions/combat.lua:AceGUI')==f.libraries['AceGUI-3.0'])
+    assert(not a.builtinFunctions['builtin:Conditions/combat.lua:AceGUI'] and a:ResolveFunctionBinding('builtin:Conditions/combat.lua:AceGUI')==nil)
 end)
 finish()

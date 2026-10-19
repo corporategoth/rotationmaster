@@ -23,7 +23,7 @@ test('metadata indexing preserves exact rank identities without claiming learned
     assert(c:SpellName(8042,false)=='Earth Shock|cFF888888 (Rank 1)|r')
     assert(c:SpellName(8042,true)=='Earth Shock')
     assert(f.addon.specSpells==nil)
-    assert(f.libraries['AceGUI-3.0-SpellLoader'].spellList==nil)
+    assert(f.libraries['AceGUI-3.0-SpellLoader']==nil)
 end)
 test('snapshot replacement clears stale pet and spec entries while indexing offspec and passive metadata',function()
     local f=setup();local a=f.addon;a.currentSpec=0

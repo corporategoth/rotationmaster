@@ -1,6 +1,7 @@
 local addon_name,addon=...
 local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
 function addon:ShowCustomConditionTransfer(parent,update,key,condition)
+    if not parent or parent.nativeCustomEditor~=true then return nil,L['Native custom condition editor required.'] end
     local owner=parent.rmConditionOwner;if not owner then return end
     if parent.nativeCustomEditor and self.ShowConditionFunctionBundleTransfer and condition.bindings and next(condition.bindings) then return self:ShowConditionFunctionBundleTransfer(parent,update,key,condition) end
     local codec=self:NewRotationCodec();local text,why=codec:Encode({format='RM-CustomCondition',version=1,name=key or '',condition=condition})
@@ -15,7 +16,7 @@ function addon:ShowCustomConditionTransfer(parent,update,key,condition)
         onClose=function()
             if dialog then owner.widgets[dialog]=nil;dialog.rmConditionOwner=nil end
             if p.active then p:Release() end
-            if valid() then if not parent.nativeCustomEditor then parent:SetCallback('OnClose',function(widget) LibStub('AceGUI-3.0'):Release(widget) end) end;parent:Show() end
+            if valid() then parent:Show() end
         end}
     dialog=self:ShowSettingsTextTransfer(p,L['Import/Export Condition'],text,function(input,settings)
         local parsed,errorText=self:ParseCustomConditionImport(input,codec)

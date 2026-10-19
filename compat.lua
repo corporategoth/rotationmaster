@@ -1,7 +1,7 @@
 local addon_name, addon = ...
 
 -- Modern clients identify Settings panels by category ID. Keep frame.name in
--- sync so child panels and AceConfigDialog can find the registered parent.
+-- sync so native child panels can find the registered parent.
 function addon:RegisterOptionsCategory(frame)
     if Settings and Settings.RegisterCanvasLayoutCategory then
         local category

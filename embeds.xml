@@ -5,26 +5,16 @@
 <Script file="Libs\LibStub\LibStub.lua" />
 <Include file="Libs\CallbackHandler-1.0\CallbackHandler-1.0.xml" />
 <Include file="Libs\AceAddon-3.0\AceAddon-3.0.xml" />
-<Include file="Libs\AceGUI-3.0\AceGUI-3.0.xml" />
-<Include file="Libs\AceConfig-3.0\AceConfig-3.0.xml" />
 <Include file="Libs\AceConsole-3.0\AceConsole-3.0.xml" />
 <Include file="Libs\AceDB-3.0\AceDB-3.0.xml" />
-<Include file="Libs\AceDBOptions-3.0\AceDBOptions-3.0.xml" />
 <Include file="Libs\AceEvent-3.0\AceEvent-3.0.xml" />
 <Include file="Libs\AceTimer-3.0\AceTimer-3.0.xml" />
 <Include file="Libs\AceLocale-3.0\AceLocale-3.0.xml" />
 <Include file="Libs\AceSerializer-3.0\AceSerializer-3.0.xml" />
 <Include file="Libs\AceComm-3.0\AceComm-3.0.xml" />
 <Include file="Libs\AceBucket-3.0\AceBucket-3.0.xml" />
-<Script file="Libs\AceGUI-3.0-Spell-EditBox\SpellLoader.lua" />
-<Script file="Libs\AceGUI-3.0-Item-EditBox\ItemLoader.lua" />
-<Include file="reference-predictors-compat.xml" />
-<Include file="Libs\LibAboutPanel-2.0\lib.xml" />
 <Include file="Libs\LibCompress\lib.xml" />
-<Include file="reference-predictor-augments-compat.xml" />
-<Include file="Libs\AceGUI-3.0-ActionSlotWidgets\widget.xml" />
 <Include file="Libs\LibSharedMedia-3.0\lib.xml" />
-<Include file="Libs\AceGUI-3.0-SharedMediaWidgets\widget.xml" />
 <Script file="Libs\LibDataBroker-1.1\LibDataBroker-1.1.lua" />
 <Include file="Libs\LibDBIcon-1.0\lib.xml" />
 <Include file="Libs\LibCustomGlow-1.0\LibCustomGlow-1.0.xml" />
@@ -32,6 +22,5 @@
 <Include file="Libs\LibClassicDurations\LibClassicDurations.xml" />
 <Script file="Libs\LibRangeCheck-3.0\LibRangeCheck-3.0.lua" />
 <Script file="LibsAugment\FAIAP.lua" />
-<Script file="LibsAugment\FAIAP-AceGUI.lua" />
 
 </Ui>

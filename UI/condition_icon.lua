@@ -1,12 +1,16 @@
 local _,addon=...
 
--- Shared image primitive. RM owns ordinary leases; custom Ace containers may
--- transfer the same public widget contract through the legacy bridge.
----@class RMConditionIcon: AceGUIIcon
+-- Shared native image primitive with owned callback and input leases.
+---@class RMConditionIcon: RMConditionWidget
 ---@field image Texture
 ---@field label FontString
 ---@field SetText fun(self: RMConditionIcon, text: string?)
-local function constructor(legacy)
+---@field SetLabel fun(self: RMConditionIcon, text: string?)
+---@field SetImage fun(self: RMConditionIcon, path: string|number|nil, ...: number)
+---@field SetImageByAtlas fun(self: RMConditionIcon, atlas: string)
+---@field SetImageSize fun(self: RMConditionIcon, width: number, height: number)
+---@field SetDisabled fun(self: RMConditionIcon, value: boolean?)
+local function constructor()
     local w={type='RM-ConditionIcon',alive=false,disabled=false}
     local frame=CreateFrame('Button',nil,UIParent);w.frame=frame;frame:EnableMouse(true)
     local image=frame:CreateTexture(nil,'ARTWORK');w.image=image;image:SetPoint('TOP',0,-5)
@@ -46,7 +50,7 @@ local function constructor(legacy)
         if GameTooltip and GameTooltip:IsOwned(frame) then GameTooltip:Hide() end
         self:SetLabel('');self:SetImage(nil)
     end
-    return addon:RegisterConditionWidget(w,1,legacy)
+    return addon:RegisterConditionWidget(w)
 end
 ---@return RMConditionIcon
 function addon:CreateConditionIcon()

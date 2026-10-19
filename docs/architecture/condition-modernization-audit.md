@@ -1,5 +1,8 @@
 # Condition modernization audit
 
+> Current contract: the user explicitly retired all AceGUI support. GUI packages, compatibility renderers/registrations, module AceConfig hosting and seven captured GUI library values are removed. Earlier compatibility checkpoints below are historical. Use the [native-only UI migration](acegui-removal-boundaries.md) for the supported API and current boundaries.
+
+
 ## Current source and compatibility contract
 
 The reviewed inventory contains 116 Built In condition definitions across supported client/class combinations. Structural AND/OR/NOT nodes belong to the condition tree, rather than invented executable definitions. Authored modules under `Conditions/` remain the source of truth for executable callbacks; the offline source collector extracts their code and captures, and `tools/generate_builtin_sources.py --write` maintains source records and live getters. The game does not reconstruct source or inspect callback bytecode.

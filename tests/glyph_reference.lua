@@ -32,10 +32,9 @@ local function fixture()
     f.env.GetItemInfo=function() error('failed native display fell through to legacy') end
     f.env.C_Spell={GetSpellInfo=function(id) return {spellID=id,name='Unrelated Spell',iconID=99} end};f.load('Platform/spells.lua')
     f.env.ClearCursor=function() state.clears=state.clears+1 end
-    f.libraries['AceGUI-3.0-ItemLoader'].itemList={}
-    for id,entry in pairs(entries) do f.libraries['AceGUI-3.0-ItemLoader'].itemList[id]={name=entry.name,icon=id+1000} end
     local glyph=io.open('Platform/glyphs.lua');if glyph then glyph:close();f.load('Platform/glyphs.lua') end
     f.load('Core/reference_catalog.lua')
+    for id in pairs(entries) do assert(a:UpdateReferenceItem(id)) end
     local w=a:CreateItemEditBox('Glyph_EditBox',101);w:SetText(101)
     local saved,calls=101,0
     w:SetCallback('OnEnterPressed',function(_,_,value) saved=tonumber(value);calls=calls+1 end)
@@ -77,7 +76,7 @@ test('fresh glyph classification rejects stale menu rows and loader records afte
     assert(row.itemID==102);state.instantFailure=true
     row:GetScript('OnMouseDown')(row,'LeftButton');assert(saved()==101,'stale glyph menu bypassed failed native classification')
     enter(w,'102');drop(f,w,'item',102);assert(saved()==101 and state.clears==0)
-    w.editbox:SetText('Glyph');assert(not w.rmSpellPopup.rows[1]:IsShown(),'loader revived glyph choices after failed native classification')
+    w.editbox:SetText('Glyph');assert(not w.rmSpellPopup.rows[1]:IsShown(),'index revived glyph choices after failed native classification')
     state.instantFailure=false;state.class=nil;enter(w,'102');drop(f,w,'item',102)
     assert(saved()==101 and state.clears==0 and not w.rmSpellPopup.rows[1]:IsShown(),'unknown player class accepted an indexed glyph')
     state.class=8;w.editbox:SetText('Glyph');assert(w.rmSpellPopup.rows[1].itemID==103 and not w.rmSpellPopup.rows[2]:IsShown())
@@ -88,16 +87,16 @@ test('restricted glyph classification and native display failure cannot revive i
     local f,w,state,saved=fixture();local secret={};f.env.canaccessvalue=function(value) return not rawequal(value,secret) end
     state.entries[102].subclass=secret;enter(w,'102');drop(f,w,'item',102);assert(saved()==101 and state.clears==0)
     state.entries[102].subclass=7;state.displayFailure=true
-    w:SetFocus();w.editbox:SetText('102');assert(not w.rmSpellPopup.rows[1]:IsShown(),'loader revived failed native display metadata')
+    w:SetFocus();w.editbox:SetText('102');assert(not w.rmSpellPopup.rows[1]:IsShown(),'index revived failed native display metadata')
     w:ClearFocus();assert(saved()==101)
 end)
-test('glyph menu filters before the shared result limit and exact loader-name fallback stays classified',function()
+test('glyph menu filters before the shared result limit and exact indexed-name fallback stays classified',function()
     local f,w,state,saved=fixture()
-    for i=1,20 do local id=200+i;local name=string.format('A wrong glyph %02d',i);state.entries[id]={name=name,class=16,subclass=8};f.libraries['AceGUI-3.0-ItemLoader'].itemList[id]={name=name,icon=id+1000} end
+    for i=1,20 do local id=200+i;local name=string.format('A wrong glyph %02d',i);state.entries[id]={name=name,class=16,subclass=8};assert(f.addon:UpdateReferenceItem(id)) end
     w:SetFocus();w.editbox:SetText('');local popup=w.rmSpellPopup
     assert(popup.rows[1].itemID==101 and popup.rows[2].itemID==102 and not popup.rows[3]:IsShown(),'other-class rows consumed the shared menu limit')
-    state.nameUnavailable=true;enter(w,'Glyph of Water');assert(saved()==102,'readable loader name did not resolve a classified glyph')
-    enter(w,'Glyph of Frost');assert(saved()==102,'loader-name fallback bypassed glyph class filtering')
+    state.nameUnavailable=true;enter(w,'Glyph of Water');assert(saved()==102,'readable indexed name did not resolve a classified glyph')
+    enter(w,'Glyph of Frost');assert(saved()==102,'indexed-name fallback bypassed glyph class filtering')
 end)
 test('glyph cursor remains owned when classification fails between drop preflight and commit',function()
     local f,w,state,saved=fixture();local instant=f.env.C_Item.GetItemInfoInstant;local reads=0

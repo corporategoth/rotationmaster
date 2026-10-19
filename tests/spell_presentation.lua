@@ -37,7 +37,6 @@ test('native spell links retain leading images exact interactions and stale leas
     local f=fixture();local a=f.addon;local owner,shown,clicked
     f.env.GameTooltip={SetOwner=function(_,frame) owner=frame end,SetHyperlink=function(_,link) shown=link end,IsOwned=function(_,frame) return owner==frame end,Hide=function() owner=nil;shown=nil end}
     f.env.SetItemRef=function(link,_,button) clicked={link,button} end
-    f.libraries['AceGUI-3.0'].Create=function() error('spell label allocated through Ace') end
     local root=a:CreateConditionGroup();local link=a:CreateSpellLabel(root,403);assert(link.type=='RM-ConditionLink')
     link:SetImage(11);link:SetImageSize(24,24);link:SetWidth(180)
     assert(link.image:GetTexture()==11 and link.label.point[4]>=24 and link.frame:GetHeight()>=24)

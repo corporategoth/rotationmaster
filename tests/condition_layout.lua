@@ -1,25 +1,12 @@
 local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite()
 local function fixture()
-    local f=F.new();dofile('tests/fixtures/native_ui.lua')(f.env)
-    local ace=f.libraries['AceGUI-3.0'];local constructors=ace.constructors;local stub=f.env.LibStub
-    f.env.LibStub=setmetatable({NewLibrary=function() return ace end},{__call=function(_,...) return stub(...) end})
-    f.env.geterrorhandler=function() return error end
-    f.env.xpcall=function(callback,handler,...) local args={n=select("#",...),...};return xpcall(function() return callback(unpack(args,1,args.n)) end,handler) end
-    f.env.table=setmetatable({wipe=function(value) for key in pairs(value) do value[key]=nil end;return value end},{__index=table})
-    local create=f.env.CreateFrame;f.env.CreateFrame=function(...)
-        local frame=create(...);local size=frame.SetSize
-        function frame:SetSize(width,height) if self.width~=width or self.height~=height then size(self,width,height) end end
-        return frame
-    end
-    f.load('Libs/AceGUI-3.0/AceGUI-3.0.lua')
-    for kind,build in pairs(constructors) do ace:RegisterWidgetType(kind,build,1) end
+    local f=F.new();local lookup=f.env.LibStub
+    f.env.LibStub=function(name,...) assert(name~='AceGUI-3.0','native layout requested a GUI library');return lookup(name,...) end
     return f
 end
 test('five default factories acquire and recycle without Ace allocation or release',function()
-    local f=fixture();local a=f.addon;local ace=f.libraries['AceGUI-3.0']
+    local f=fixture();local a=f.addon
     assert(a.ReleaseConditionWidget,'native lifecycle missing')
-    ace.Create=function() error('ordinary RM factory called Ace') end
-    ace.Release=function() error('ordinary RM release called Ace') end
     for _,name in ipairs({'CreateConditionGroup','CreateConditionEditBox','CreateConditionSlider','CreateConditionCheckBox','CreateConditionDropdown'}) do
         local w=a[name](a);local calls=0;w:SetUserData('old',true);w.configure=function() error('old configure') end;w:SetCallback('Review',function() calls=calls+1 end);local stale=w.events.Review
         assert(w.frame.obj==w);assert(a:ReleaseConditionWidget(w));assert(not a:ReleaseConditionWidget(w))
@@ -28,19 +15,16 @@ test('five default factories acquire and recycle without Ace allocation or relea
         a:ReleaseConditionWidget(nextWidget)
     end
 end)
-test('mixed Ace parents reclaim transferred native leases without accumulating frames',function()
-    local f=fixture();local a=f.addon;local ace=f.libraries['AceGUI-3.0'];assert(a.ReleaseConditionWidget,'native lifecycle missing')
-    f.load('Libs/AceGUI-3.0/widgets/AceGUIContainer-SimpleGroup.lua')
-    local seen={};local calls=0
+test('native parents recycle child leases without accumulating frames or committing drafts',function()
+    local f=fixture();local a=f.addon;local seen={};local calls=0
     for _=1,100 do
-        local parent=ace:Create('SimpleGroup');local child=a:CreateConditionEditBox();seen[child]=true
+        local parent=a:CreateConditionGroup();local child=a:CreateConditionEditBox();seen[child]=true
         child:SetCallback('OnEnterPressed',function() calls=calls+1 end);parent:AddChild(child)
         child:SetText('Before');child.editbox:SetText('Pending');child.editbox.scripts.OnTextChanged(child.editbox,true)
-        ace:Release(parent)
-        local native=a:CreateConditionGroup();local legacy=ace:Create('RM-CheckBox');native:AddChild(legacy);a:ReleaseConditionWidget(native)
+        a:ReleaseConditionWidget(parent)
     end
     local count=0;for _ in pairs(seen) do count=count+1 end
-    assert(count<=2,'mixed-parent opens stranded native controls: '..count);assert(calls==0,'release saved pending text')
+    assert(count==1 and calls==0,'native discard stranded leases or saved pending text')
 end)
 test('release callbacks cannot reacquire queued leases and cleanup survives errors',function()
     local f=fixture();local a=f.addon;local root=a:CreateConditionGroup();local first=a:CreateConditionEditBox();local second=a:CreateConditionCheckBox()
@@ -59,18 +43,17 @@ test('allocation observation covers captured factories and restores nested obser
     local one=captured(a);stopInner();local two=captured(a);stopOuter();local three=captured(a)
     assert(outer==2 and inner==1);a:ReleaseConditionWidget(one);a:ReleaseConditionWidget(two);a:ReleaseConditionWidget(three)
 end)
-test('historic Ace widget methods and protected release callbacks remain usable',function()
-    local f=fixture();local a=f.addon;local ace=f.libraries['AceGUI-3.0']
-    local legacy=ace:Create('RM-CheckBox');assert(rawget(legacy,'Release')==nil and legacy.Release)
-    legacy:Release();assert(not legacy.rmActive and not legacy.alive)
-    local input=ace:Create('RM-ConditionEditBox');input:SetCallback('OnRelease',function() error('legacy release callback failed') end)
-    assert(pcall(ace.Release,ace,input));assert(not input.isQueuedForRelease and not input.rmActive and not input.alive)
-    local reused=a:CreateConditionEditBox();assert(reused==input);a:ReleaseConditionWidget(reused)
+test('native Release methods retire leases and preserve callback error cleanup',function()
+    local f=fixture();local a=f.addon;local child=a:CreateConditionCheckBox()
+    child:Release();assert(not child.rmActive and not child.alive)
+    local input=a:CreateConditionEditBox();input:SetCallback('OnRelease',function() error('release callback failed') end)
+    local ok,why=pcall(input.Release,input);assert(not ok and tostring(why):find('release callback failed',1,true))
+    assert(not input.isQueuedForRelease and not input.rmActive and not input.alive and input.rmQuarantined)
+    local nextWidget=a:CreateConditionEditBox();assert(nextWidget~=input);a:ReleaseConditionWidget(nextWidget)
 end)
 test('ordinary item-set and shapeshift fields use native icons without Ace allocation',function()
     local f=fixture();local a=f.addon;f.env.UnitClass=function() return 'Warrior','WARRIOR',1 end;f.env.GetNumShapeshiftForms=function() return 0 end
     f.load('Conditions/common.lua');f.load('Conditions/combat.lua');a.db.profile.itemsets={};a.db.global.itemsets={}
-    f.libraries['AceGUI-3.0'].Create=function() error('ordinary condition field allocated through Ace') end
     local items=a:Widget_ItemWidget(nil,'Item_EditBox',{},function() return true end,function() end)
     assert(items.children[1].type=='RM-ConditionIcon' and items.children[3].type=='RM-ConditionIcon');a:ReleaseConditionWidget(items)
     local root=a:CreateConditionGroup();local top=f.widget('Frame');top:SetUserData('funcs',{print=function() return '' end});top:SetUserData('root',{type='FORM',value=0});root:SetUserData('top',top)
@@ -129,7 +112,6 @@ test('releasing native layout children discards pending text without callbacks',
     local f=fixture();local a=f.addon;local group=a:CreateConditionGroup();local child=a:CreateConditionEditBox();local called=0
     child:SetText('Before');child:SetCallback('OnEnterPressed',function() called=called+1 end);group:AddChild(child)
     child.editbox:SetText('Pending');child.editbox.scripts.OnTextChanged(child.editbox,true)
-    f.libraries['AceGUI-3.0'].Release=function(_,widget) widget.isQueuedForRelease=true;widget:OnRelease() end
     group:ReleaseChildren();assert(called==0 and #group.children==0 and not child:IsPending(),'release committed abandoned edits')
 end)
 test('pooled root hiding cannot commit child focus loss before recursive release',function()
@@ -137,7 +119,7 @@ test('pooled root hiding cannot commit child focus loss before recursive release
     child:SetText('Before');child:SetCallback('OnEnterPressed',function() called=called+1 end);group:AddChild(child)
     child.editbox:SetText('Pending');child.editbox.scripts.OnTextChanged(child.editbox,true)
     group.frame:SetScript('OnHide',function() child.editbox.scripts.OnEditFocusLost(child.editbox) end)
-    f.libraries['AceGUI-3.0']:Release(group)
+    a:ReleaseConditionWidget(group)
     assert(called==0,'parent release committed child focus loss before its own release')
 end)
 test('zero-width table columns keep intrinsic content sizing beside numeric values',function()
@@ -147,11 +129,11 @@ test('zero-width table columns keep intrinsic content sizing beside numeric valu
     assert(first.frame:GetWidth()==180 and second.frame:GetWidth()==75,'zero column incorrectly consumed free space')
 end)
 test('pooled groups recover layout after a custom child throws during geometry',function()
-    local f=fixture();local a=f.addon;local ace=f.libraries['AceGUI-3.0'];local group=a:CreateConditionGroup()
+    local f=fixture();local a=f.addon;local group=a:CreateConditionGroup()
     local child=a:CreateConditionEditBox();local width=child.SetWidth
     child.SetWidth=function() error('custom field geometry failed') end
     assert(not pcall(group.AddChild,group,child),'custom geometry did not fail')
-    child.SetWidth=width;ace:Release(group)
+    child.SetWidth=width;a:ReleaseConditionWidget(group)
     local reused=a:CreateConditionGroup();assert(reused==group,'regression did not reuse the failed group')
     reused:SetWidth(320);local replacement=a:CreateConditionCheckBox();replacement:SetFullWidth(true);reused:AddChild(replacement)
     assert(replacement.frame:GetWidth()==320 and reused.frame:GetHeight()==24,'pooled group retained the failed layout lock')
@@ -163,17 +145,14 @@ test('one native layout pass visits a deep group chain linearly',function()
     for _,group in ipairs(groups) do local finished=group.LayoutFinished;group.LayoutFinished=function(self,...) passes=passes+1;return finished(self,...) end end
     root:DoLayout();assert(passes<=20,'native layout repeated deep subtrees: '..passes)
 end)
-test('legacy layout height changes propagate to a native parent',function()
-    local f=fixture();local a=f.addon;local ace=f.libraries['AceGUI-3.0'];local height=20
-    ace:RegisterLayout('ReviewLegacy',function(content) content.obj:LayoutFinished(content:GetWidth(),height) end)
-    local parent=a:CreateConditionGroup();local child=a:CreateConditionGroup();child:SetLayout('ReviewLegacy');parent:AddChild(child)
-    assert(parent.frame:GetHeight()==20);height=80;child:DoLayout()
-    assert(parent.frame:GetHeight()==80,'native parent retained the previous legacy child height')
+test('native child height changes propagate to the owning parent',function()
+    local f=fixture();local a=f.addon;local parent=a:CreateConditionGroup();local child=a:CreateConditionGroup();local field=a:CreateConditionCheckBox()
+    child:AddChild(field);parent:AddChild(child);assert(parent.frame:GetHeight()==24)
+    field:SetHeight(80);child:DoLayout();assert(parent.frame:GetHeight()==80)
+    a:ReleaseConditionWidget(parent)
 end)
 test('ordinary item-set table bottom alignment never requests the Ace layout',function()
     local f=fixture();local a=f.addon;f.load('Conditions/common.lua');a.db.profile.itemsets={};a.db.global.itemsets={}
-    local ace=f.libraries['AceGUI-3.0'];ace.Create=function() error('ordinary item field allocated through Ace') end
-    ace.GetLayout=function() error('ordinary item field requested Ace table geometry') end
     local group=a:Widget_ItemWidget(nil,'Inventory_EditBox',{item={}},function() return true end,function() end)
     local button=group.children[3];local bottom=0
     for _,child in ipairs(group.children) do bottom=math.max(bottom,child.frame:GetHeight()) end
@@ -181,7 +160,7 @@ test('ordinary item-set table bottom alignment never requests the Ace layout',fu
     a:ReleaseConditionWidget(group)
 end)
 test('native table vertical alignment uses the tallest current row including partial rows',function()
-    local f=fixture();local a=f.addon;local ace=f.libraries['AceGUI-3.0'];ace.GetLayout=function() error('simple vertical alignment delegated to Ace') end
+    local f=fixture();local a=f.addon
     local group=a:CreateConditionGroup();group:SetWidth(320);group:SetLayout('Table');group:SetUserData('table',{columns={44,1,44}});group:PauseLayout()
     local children={}
     for i,height in ipairs({24,60,40,20,36}) do
@@ -193,20 +172,18 @@ test('native table vertical alignment uses the tallest current row including par
     a:ReleaseConditionWidget(group)
 end)
 test('advanced native table alignment callbacks avoid the compatibility renderer',function()
-    local f=fixture();local a=f.addon;local ace=f.libraries['AceGUI-3.0'];local calls=0
-    ace:RegisterLayout('Table',function(content) calls=calls+1;content.obj:LayoutFinished(content:GetWidth(),88) end)
+    local f=fixture();local a=f.addon
     local group=a:CreateConditionGroup();group:SetLayout('Table');group:SetUserData('table',{columns={44,1}})
     local child=a:CreateConditionCheckBox();child:SetUserData('cell',{alignV=function() return 3 end});group:AddChild(child)
-    assert(calls==0 and group.frame:GetHeight()==24 and child.frame.point[4]==-3);a:ReleaseConditionWidget(group)
+    assert(group.frame:GetHeight()==24 and child.frame.point[4]==-3);a:ReleaseConditionWidget(group)
 end)
 
-test('custom table container alignment and spacing preserve shipped Ace semantics',function()
-    local f=fixture();local a=f.addon;local ace=f.libraries['AceGUI-3.0'];local tableLayout=ace:GetLayout('Table');local calls=0
-    ace:RegisterLayout('Table',function(...) calls=calls+1;return tableLayout(...) end)
+test('custom native table container alignment and spacing preserve geometry',function()
+    local f=fixture();local a=f.addon
     local group=a:CreateConditionGroup();group:SetWidth(320);group:SetLayout('Table');group:PauseLayout();group:SetUserData('table',{columns={1,1},alignV='bottom',spaceV=12})
     local children={}
     for i,height in ipairs({60,24,40,20}) do local child=a:CreateConditionCheckBox();child:SetHeight(height);if i==1 then child:SetUserData('cell',{alignV='top'}) end;group:AddChild(child);children[i]=child end
-    group:ResumeLayout();assert(calls==0,'container alignment requested the legacy renderer')
+    group:ResumeLayout()
     assert(children[2].frame.point[4]==-36 and children[4].frame.point[4]==-92 and group.frame:GetHeight()==112,'container options changed row placement')
     a:ReleaseConditionWidget(group)
 end)

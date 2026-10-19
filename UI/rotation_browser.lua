@@ -120,11 +120,11 @@ local function create(parent)
         addon.configPaneGeneration=(addon.configPaneGeneration or 0)+1
         addon.currentConditionEval=nil
         self.editorOwner=nil
-        -- Custom Fields UI inside a native editor may still own Ace focus.
+        -- Retire native editor focus before releasing its owned pane.
         addon:ClearConditionWidgetFocus()
         if self.pane then
             local pane=self.pane;self.pane=nil
-            if self.nativeDetails then pane:Release() else addon:GetConditionWidgetCompatibilityLibrary():Release(pane) end
+            if self.nativeDetails then pane:Release() end
             self.nativeDetails=nil
         end
     end

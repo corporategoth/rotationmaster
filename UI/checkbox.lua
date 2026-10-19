@@ -1,12 +1,12 @@
 local _,addon=...
 
----@class RMConditionCheckBox: AceGUIWidget
+---@class RMConditionCheckBox: RMConditionWidget
 ---@field button Button
 ---@field SetLabel fun(self: RMConditionCheckBox, text: string)
 ---@field SetValue fun(self: RMConditionCheckBox, value: boolean?)
 ---@field GetValue fun(self: RMConditionCheckBox): boolean
 ---@field SetDisabled fun(self: RMConditionCheckBox, disabled: boolean)
-local function constructor(legacy)
+local function constructor()
     local w={type='RM-CheckBox',alive=false,disabled=false}
     local frame=CreateFrame('Frame',nil,UIParent);w.frame=frame;frame:SetSize(180,24)
     local button=addon:CreateWorkbenchCheckBox(frame,'',180);w.button=button;button:SetAllPoints(frame)
@@ -21,8 +21,8 @@ local function constructor(legacy)
         if not w.alive or w.disabled then return end
         w:SetValue(not w:GetValue());w:Fire('OnValueChanged',w:GetValue())
     end)
-    ---@cast w AceGUIWidget
-    return addon:RegisterConditionWidget(w,1,legacy)
+    ---@cast w RMConditionWidget
+    return addon:RegisterConditionWidget(w)
 end
 ---@return RMConditionCheckBox
 function addon:CreateConditionCheckBox()
@@ -34,7 +34,6 @@ end
 -- BEGIN GENERATED RM SOURCE BINDINGS
 do
     local function sourceGetter(name)
-        if name=="AceGUI" then return addon:GetConditionWidgetCompatibilityLibrary() end
         if name=="CreateConditionCheckBox" then return addon.CreateConditionCheckBox end
         if name=="constructor" then return constructor end
     end

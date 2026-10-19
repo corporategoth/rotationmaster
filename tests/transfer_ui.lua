@@ -44,9 +44,8 @@ local function previewFixture()
     return f,a,{cleanups={},generation=1},view
 end
 test('actual import preview renders native comparison content and releases it on close',function()
-    local f,a,p,view=previewFixture();local ace=f.libraries['AceGUI-3.0']
-    ace.Create=function() error('import preview allocated an ordinary Ace widget') end
-    ace.Release=function() error('import preview released through Ace') end
+    local f,a,p,view=previewFixture();local old=f.env.LibStub
+    f.env.LibStub=function(name,...) assert(name~='AceGUI-3.0','import preview requested retired GUI');return old(name,...) end
     local d=a:ShowNativeImportPreview(p,view,0)
     assert(d.frame:GetFrameStrata()=='FULLSCREEN_DIALOG','preview can hide beneath main configuration')
     assert(d.graph.type=='RM-ConditionGroup' and d.scroll.contentWidget==d.graph,'preview omitted native group viewport')

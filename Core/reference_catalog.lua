@@ -1,6 +1,6 @@
 local addon_name,addon=...
 local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
-local items,blocked={},{}
+local items,indexed,blocked={},{},{}
 local function readable(value) return addon.Platform:CanReadValue(value) end
 local function id(value)
     if not readable(value) or (type(value)~='number' and type(value)~='string') then return end
@@ -48,22 +48,16 @@ local function itemInfo(value)
     local key=id(value);if not key then return end
     local info,reason=addon.Platform:GetItemDisplayInfo(key)
     local record=info and presentation(key,info.name,info.iconID,info.link)
-    local invalid=not info and reason~='item-data-unavailable' and reason~='missing-api'
+    local invalid=info and not record or not info and reason~='item-data-unavailable' and reason~='missing-api'
     -- A failed/restricted observation cannot revive the old cached record or a
-    -- same-ID loader row. Unloaded metadata may still use a valid loader index.
+    -- same-ID indexed row. Unloaded metadata may use a prior readable index.
+    if record then indexed[key]=record end
     items[key]=record;blocked[key]=invalid or nil
     return record and presentation(key,record.name,record.icon,record.link)
 end
 local function indexedItems(owned)
-    local result={};local ok,loader=pcall(LibStub,'AceGUI-3.0-ItemLoader',true)
-    if ok and readable(loader) and type(loader)=='table' and readable(loader.itemList) and type(loader.itemList)=='table' then
-        for key,value in pairs(loader.itemList) do
-            local item=id(key)
-            if item and readable(value) and type(value)=='table' then
-                result[item]=presentation(item,value.name,value.icon,value.link)
-            end
-        end
-    end
+    local result={}
+    for key,value in pairs(indexed) do result[key]=presentation(key,value.name,value.icon,value.link) end
     owned=owned or inventory()
     for key in pairs(owned) do itemInfo(key) end
     -- Nonowned indexed candidates need a fresh opportunity after transient
@@ -73,6 +67,7 @@ local function indexedItems(owned)
     for key in pairs(blocked) do result[key]=nil end
     return result
 end
+function addon:UpdateReferenceItem(value) return itemInfo(value) end
 local function options(settings)
     if settings==nil then return {} end
     if readable(settings) and type(settings)=='table' then return settings end

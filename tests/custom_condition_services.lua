@@ -8,7 +8,7 @@ local function fixture(modern)
     f.env.loadstring=function(text,name) local fn,why=loadstring(text,name);if fn then setfenv(fn,f.env) end;return fn,why end
     f.load('Core/custom_condition_services.lua');return f,a
 end
-test('standalone services initialize templates and the internal legacy bridge without AceGUI',function()
+test('standalone services initialize templates and compiler contracts without GUI libraries',function()
     local _,a=fixture(true);local bridge=assert(a.CustomConditionServices)
     local expected={on_register='function(tag)',on_unregister='function(tag)',valid='function(spec, value)',evaluate='function(value, cache, evalStart)',print='function(spec, value)',widget='function(parent, spec, value)',help='function(frame)'}
     for name,signature in pairs(expected) do assert(bridge.signatures[name]==signature);assert(type(a.empty_condition[name])=='string' and not a.empty_condition[name]:match('^%s*%-%-')) end
@@ -51,19 +51,15 @@ test('modern installation still rolls back saved source and registry after a reg
     local source=a:CopySettingsData(a.empty_condition);source.description='Replacement';source.on_register='error("hook failed")'
     assert(not a:InstallCustomCondition('CUSTOM',source,before) and a.conditionDefinitions.CUSTOM==before and a.db.global.custom_conditions.CUSTOM==saved)
 end)
-test('legacy editor loading reuses service templates registration and compiler without reinitializing them',function()
+test('native editor loading reuses templates registration and compiler services without reinitializing them',function()
     local f,a=fixture(true);local template=a.empty_condition;local registration=a.register_custom_condition;local prepare=a.PrepareCustomConditionEditorSource
-    local bridge=a.CustomConditionServices;template.testMarker='Preserved'
-    local getLibrary=f.env.LibStub
-    f.env.LibStub=function(name,...) if name=='AceGUI-3.0' then return f.libraries[name] end;return getLibrary(name,...) end
-    f.load('Options/custom_condition.lua')
-    assert(a.empty_condition==template and a.empty_condition.testMarker=='Preserved' and a.register_custom_condition==registration and a.PrepareCustomConditionEditorSource==prepare,'legacy renderer reinitialized authoring services')
-    local layout
-    for i=1,30 do local name,value=debug.getupvalue(a.LayoutCustomConditionEditor,i);if not name then break end;if name=='layout_condition_edit_box' then layout=value end end
-    assert(layout,'legacy editor bridge lost its renderer')
-    local signatures,compile
-    for i=1,30 do local name,value=debug.getupvalue(layout,i);if not name then break end;if name=='function_signatures' then signatures=value elseif name=='compile_function' then compile=value end end
-    assert(signatures==bridge.signatures and compile==bridge.compile,'legacy editor retained duplicate signature or compiler bodies')
+    local bridge=a.CustomConditionServices;local compile=bridge.compile;local signatures=bridge.signatures;template.testMarker='Preserved'
+    f.load('UI/custom_condition_editor.lua')
+    assert(a.empty_condition==template and template.testMarker=='Preserved' and a.register_custom_condition==registration and a.PrepareCustomConditionEditorSource==prepare,'native editor reinitialized authoring services')
+    assert(type(a.LayoutCustomConditionEditor)=='function' and bridge.compile==compile and bridge.signatures==signatures)
+    local source=a:CopySettingsData(template);source.testMarker=nil;source.description='Native service reuse'
+    assert(a:register_custom_condition('NATIVE_REUSE',source) and a.definitions.NATIVE_REUSE.description==source.description)
+    assert(bridge.compile==compile and bridge.signatures==signatures and next(a.funcDeserialize)==nil)
 end)
 test('legacy compiler preserves its captured UUID alias and clears temporary functions after success',function()
     local _,a=fixture(false);a.uuid=function() error('compiler reread the UUID alias') end

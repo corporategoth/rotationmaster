@@ -51,7 +51,7 @@ test('condition callbacks share utility bindings and disabled dependencies stay 
     assert(a:InstallCustomFunction('READY',saved,disabled));assert(a:evaluateConditionResult({type='HELPER'}).status=='match')
 end)
 test('saved unavailable consumers survive registration and recover lifecycle when helpers are enabled',function()
-    local f,a=fixture();f.load('Core/conditions.lua');f.load('Core/custom_condition_services.lua');f.load('Options/custom_condition.lua')
+    local f,a=fixture();f.load('Core/conditions.lua');f.load('Core/custom_condition_services.lua')
     local helper=source('return true');helper.disabled=true;assert(a:InstallCustomFunction('READY',helper))
     local c={description='Dependent',icon=134400,fields={},evaluate='return ready(1)',valid='return true',print='return "Dependent"',widget='',help='',on_register='addon.registered=(addon.registered or 0)+1',on_unregister='addon.unregistered=(addon.unregistered or 0)+1',bindings={ready='READY'}}
     a.db.global.custom_conditions={DEPENDENT=c};assert(a:register_custom_condition('DEPENDENT',c));assert(a.conditionDefinitions.DEPENDENT and not a.registered)

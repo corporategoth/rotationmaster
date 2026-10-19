@@ -18,7 +18,7 @@ test('native owner loads without frame allocation Ace lookup or registration',fu
     local f=F.new();local stub=f.env.LibStub;local create=f.env.CreateFrame;local frames=0
     f.env.LibStub=function(name,...) assert(name~='AceGUI-3.0','unit owner queried Ace');return stub(name,...) end
     f.env.CreateFrame=function(...) frames=frames+1;return create(...) end
-    f.libraries['AceGUI-3.0'].RegisterWidgetType=function() error('unit owner registered an Ace widget') end
+    assert(not f.libraries['AceGUI-3.0'])
     f.load('UI/condition_unit.lua');assert(frames==0 and type(f.addon.Widget_UnitWidget)=='function')
     local widget=f.addon:Widget_UnitWidget({unit='player'},choices(),function() end);assert(widget.rmWidget and widget.rmActive and frames>0);f.addon:ReleaseConditionWidget(widget)
 end)
@@ -36,7 +36,7 @@ test('public typed contract original parameter order and documentation remain un
     assert(source.code:find('addon.keys(units)',1,true),'live compatibility dispatch changed')
 end)
 test('default unit field disabled state sorted dropdown and explicit selection are native',function()
-    local f,a=fixture();f.libraries['AceGUI-3.0'].Create=function() error('ordinary unit factory allocated through Ace') end
+    local f,a=fixture();assert(not f.libraries['AceGUI-3.0'])
     local value={unit='target',disabled=true};local updates=0;local units=choices();local widget=a:Widget_UnitWidget(value,units,function() updates=updates+1 end)
     assert(widget.rmWidget and widget.rmActive and not widget.rmLegacyOwned and widget.disabled and widget.caption:GetText()=='Unit')
     widget.configure();assert(widget.list==units and widget.order[1]=='focus' and widget.order[2]=='target' and widget.order[3]=='player' and widget.value=='target' and updates==0)
@@ -73,7 +73,7 @@ test('actual old requirement bundle imports and executes through the exact histo
 end)
 test('compiled packaged factory copy uses native fields live ordering and guarded leases',function()
     local f,a=fixture();assert(a:InstallCustomFunction('COPY_UNIT_FACTORY',a:CopySettingsData(a.builtinFunctions[id].source)));local copied=assert(a:ResolveFunctionBinding('COPY_UNIT_FACTORY'))
-    f.libraries['AceGUI-3.0'].Create=function() error('source clone allocated through Ace') end
+    assert(not f.libraries['AceGUI-3.0'])
     local units=choices();local value={unit='target'};local calls=0;a.keys=function(input) assert(input==units);return {'target','focus'} end
     local widget=copied(a,value,units,function() calls=calls+1 end);widget.configure();assert(widget.rmActive and not widget.rmLegacyOwned and widget.value=='target' and widget.order[1]=='target')
     local retired=widget.events.OnValueChanged;widget:Fire('OnValueChanged','focus');assert(value.unit=='focus' and calls==1);a:ReleaseConditionWidget(widget);retired(widget,'OnValueChanged','player');assert(value.unit=='focus' and calls==1)

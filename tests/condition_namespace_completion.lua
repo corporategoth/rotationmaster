@@ -12,7 +12,6 @@ local baseline={
 local privateHashes={
     ["builtin:Conditions/buffs.lua:color"]="89c33f24",
     ["builtin:Conditions/buffs.lua:helpers"]="e55d7b5a",
-    ["builtin:Conditions/combat.lua:AceGUI"]="a287fe2d",
     ["builtin:Conditions/combat.lua:character_class"]="d17cf4c1",
     ["builtin:Conditions/combat.lua:color"]="dbda383d",
     ["builtin:Conditions/combat.lua:helpers"]="9e28e933",
@@ -28,7 +27,6 @@ local privateHashes={
     ["builtin:Conditions/spatial.lua:helpers"]="9485f785",
     ["builtin:Conditions/spatial.lua:protectedRead"]="cc49d134",
     ["builtin:Conditions/spatial.lua:rcf"]="a7ab75e4",
-    ["builtin:Conditions/talent.lua:AceGUI"]="93be2f51",
     ["builtin:Conditions/talent.lua:dropdown"]="fc359881",
     ["builtin:Conditions/talent.lua:gridWidget"]="d47802ad",
     ["builtin:Conditions/talent.lua:group"]="d6f4e415",
@@ -140,7 +138,7 @@ test('every callback byte and parameter remains identical after reversing only n
         assert(second*65536+first==hash,module..' '..tag..' changed beyond namespaces')
     end end
 end)
-test('all forty-seven existing captured source identities and private helper bodies remain exact',function()
+test('all forty-five remaining captured source identities and private helper bodies remain exact',function()
     local _,a=fixture()
     for id,hash in pairs(privateHashes) do local record=assert(a.builtinFunctions[id]);assert(a:FunctionSourceHash(record.source)==hash,'private source changed '..id)
         local module,name=id:match('^builtin:(.+):([^:]+)$');assert(a:ResolveFunctionBinding(id)==a.builtinSourceModules[module](name))

@@ -216,7 +216,6 @@ addon:RegisterCondition('PRIMARY_TALENT_TREE',{
 -- BEGIN GENERATED RM SOURCE BINDINGS
 do
     local function sourceGetter(name)
-        if name=="AceGUI" then return addon:GetConditionWidgetCompatibilityLibrary() end
         if name=="dropdown" then return dropdown end
         if name=="gridWidget" then return gridWidget end
         if name=="group" then return group end

@@ -1,181 +1,52 @@
 local F=dofile('tests/fixtures/addon.lua')
 local test,finish=F.suite()
-test('native top tabs navigate every section resize and release embedded panes',function()
-    local f=F.new();local a=f.addon;local created,released=0,0
-    local frames,create=dofile('tests/fixtures/native_ui.lua')(f.env)
-    local ace=f.libraries['AceGUI-3.0'];local original=ace.Create;local pooled
-    ace.Create=function(self,kind)
-        assert(kind=='SimpleGroup','outer UI still uses AceGUI '..kind)
-        created=created+1;local w=pooled;pooled=nil
-        if not w then w=original(self,kind);w.frame=create('Frame') end
-        function w:SetLayout(value) self.layout=value end
-        return w
+local function nativePages(f)
+    local a=f.addon;local counters={created=0,released=0,seen={}}
+    local _,create=dofile('tests/fixtures/native_ui.lua')(f.env)
+    a.GetConditionWidgetCompatibilityLibrary=function() error('native shell requested retired GUI library') end
+    a.OpenNativeSettings=function(_,parent,key)
+        counters.created=counters.created+1;counters.seen[#counters.seen+1]=key
+        local p={frame=create('Frame',nil,parent)}
+        function p:SetWidth(value) self.width=value;self.frame:SetWidth(value) end
+        function p:SetHeight(value) self.height=value;self.frame:SetHeight(value) end
+        function p:Release() counters.released=counters.released+1;self.frame:Hide() end
+        p:SetWidth(parent:GetWidth());p:SetHeight(parent:GetHeight());p.frame:Show();return p
     end
-    ace.Release=function(_,widget) released=released+1;widget.frame:Hide();widget.children={};pooled=widget end
+    return counters
+end
+
+test('native top tabs navigate every section resize and release only native owned panes',function()
+    local f=F.new();local a=f.addon;local pages=nativePages(f)
     a.pretty_name='Rotation Master';a.name='rotationmaster';a.configModuleApps={Example='example-options'}
     a.SetupOptions=function() end
-    local seen={}
-    a.BuildConfigurationPane=function(_,parent,key)
-        assert(a.currentConditionEval==nil and a.specTab==nil,'released editor references survived navigation')
-        seen[#seen+1]=key;parent:AddChild(f.widget('content'))
-    end
+    a.BuildConfigurationPane=function() error('native page revived a retired renderer') end
     f.load('UI/window.lua');f.load('UI/help.lua');f.load('UI/config.lua')
-    local shell=a:ShowConfig('Rotations');assert(shell.frame:GetWidth()>=1000 and seen[1]=='Rotations')
+    local shell=a:ShowConfig('Rotations');assert(shell.frame:GetWidth()>=1000 and pages.seen[1]=='Rotations')
     local sections={};for _,tab in ipairs(shell.tabs) do sections[tab.section]=true end
-    assert(#shell.tabs==10 and sections.Functions and sections['module:Example'],'not all sections, Functions and optional module are reachable')
+    assert(#shell.tabs==9 and sections.Functions and not sections['module:Example'],'retired module UI is still registered')
     for _,tab in ipairs(shell.tabs) do
         a.currentConditionEval=function() error('old callback') end;a.specTab={}
-        tab:Click();assert(seen[#seen]==tab.section)
-        assert(shell.pane.frame.visible,'reacquired pane stayed hidden after tab navigation')
+        tab:Click();assert(pages.seen[#pages.seen]==tab.section and a.currentConditionEval==nil and a.specTab==nil)
+        assert(shell.pane.frame.visible,'native pane stayed hidden after tab navigation')
     end
-    local before=created
-    assert(a:ShowConfig('General')==shell and created==before+1,'reopening duplicated the native shell')
+    local before=pages.created
+    assert(a:ShowConfig('General')==shell and pages.created==before+1)
     assert(shell.pane.frame.parent==shell.content and shell.pane.width==shell.content:GetWidth())
-    assert(shell.frame.strata=='FULLSCREEN_DIALOG','shell and legacy pane strata disagree')
     shell.frame:SetSize(700,500)
-    local rows={}
-    for _,tab in ipairs(shell.tabs) do rows[tab.point[5]]=true end
+    local rows={};for _,tab in ipairs(shell.tabs) do rows[tab.point[5]]=true end
     local count=0;for _ in pairs(rows) do count=count+1 end
-    assert(count>1 and shell.content:GetHeight()>200,'tabs did not wrap while preserving content space')
-    a.currentConditionEval=function() end;a.specTab={}
-    shell.close:Click()
-    assert(shell.pane==nil and a.currentConditionEval==nil and a.specTab==nil and not shell.frame.visible)
-    assert(a:ShowConfig('Rotations')==shell and shell.frame.visible and shell.pane,'native shell was not reused after closing')
-    shell.frame.scripts.OnKeyDown(shell.frame,'ESCAPE');assert(not shell.frame.visible)
-    assert(released>0)
+    assert(count>1 and shell.content:GetHeight()>200)
+    a.currentConditionEval=function() end;a.specTab={};shell.close:Click()
+    assert(not shell.pane and not a.currentConditionEval and not a.specTab and not shell.frame.visible)
+    assert(a:ShowConfig('Rotations')==shell and shell.frame.visible and shell.pane)
+    shell.frame.scripts.OnKeyDown(shell.frame,'ESCAPE');assert(not shell.frame.visible and pages.released>0)
 end)
-test('real rotation pane initializes immediately for TBC retail and progression without OnShow scripts',function()
-    for _,client in ipairs({{5,1,0},{1,12,123},{19,5,1}}) do
-        local f=F.new(client[1],client[2]);local a=f.addon
-        local ace=f.libraries['AceGUI-3.0'];local original=ace.Create
-        ace.Create=function(self,kind)
-            local w=original(self,kind);local scripts={}
-            w.frame={SetScript=function(_,event,callback) scripts[event]=callback end,
-                Show=function() if scripts.OnShow then scripts.OnShow() end end}
-            function w:ReleaseChildren() self.children={} end
-            function w:PauseLayout() end
-            function w:ResumeLayout() end
-            function w:DoLayout() end
-            function w:SetGroupList() end
-            function w:SetGroup() end
-            function w:SetTabs() end
-            function w:SelectTab(value) self.callbacks.OnGroupSelected(self,nil,value) end
-            local add=w.AddChild
-            function w:AddChild(child) add(self,child);child.frame:Show() end
-            return w
-        end
-        f.env.LibStub=setmetatable({GetLibrary=function() return {} end},{__call=function(_,name) return f.libraries[name] or {} end})
-        f.env.UnitClass=function() return 'Shaman','SHAMAN',7 end
-        f.env.C_SpecializationInfo={GetNumSpecializationsForClassID=function() return 1 end}
-        f.env.GetNumSpecializationsForClassID=nil
-        f.env.GetSpecializationInfoForClassID=function() return 123,'Restoration' end
-        f.env.GetNumTalentGroups=function() return 1 end
-        a.GetSpecialization=function() return 1 end
-        a.currentSpec=client[3];a.currentRotation='pack-key'
-        a.db.char={specs={[1]='Primary'}};a.db.profile.rotations={}
-        a.uuid=function() return 'unused' end
-        a.configure_frame=function() end
-        a.ListDefaultRotations=function() return {{runtimeKey='pack-key',name='Starter'}} end
-        a.GetDefaultIdForRuntime=function(_,_,key) return key=='pack-key' and 'pack' end
-        local built=0
-        a.CreateDefaultRotationOptions=function() built=built+1 end
-        f.load('UI/settings_setup.lua');dofile('tests/fixtures/legacy_options.lua')(f,'Options/general.lua')
-        local pane=ace:Create('SimpleGroup');pane.frame:Show()
-        a:BuildConfigurationPane(pane,'Rotations')
-        assert(built>0,'already shown rotation pane did not initialize on client '..client[1])
-    end
-end)
-test('general effect preview removes native OnShow before pooled icon reuse',function()
-    local f=F.new();local a=f.addon;local ace=f.libraries['AceGUI-3.0'];local original=ace.Create
-    local icons={};local glows=0
-    ace.Create=function(self,kind)
-        local w=original(self,kind);local scripts={}
-        w.frame={SetScript=function(_,event,fn) scripts[event]=fn end,GetScript=function(_,event) return scripts[event] end}
-        function w:ReleaseChildren() self.children={} end
-        function w:PauseLayout() end
-        function w:ResumeLayout() end
-        function w:DoLayout() end
-        function w:SetList() end
-        function w:SetRelativeWidth() end
-        function w:SetColor() end
-        function w:SetHasAlpha() end
-        function w:SetPoint() end
-        if kind=='Icon' then icons[#icons+1]=w end
-        return w
-    end
-    f.env.LibStub=setmetatable({GetLibrary=function() return {} end},{__call=function(_,name) return f.libraries[name] or {} end})
-    a.db.profile={minimap={},color={r=1,g=1,b=1,a=1},loglevel=2}
-    a.db.global.effects={};a.textured_types={};a.configure_frame=function() end
-    a.Glow=function() glows=glows+1 end;a.HideGlow=function() end
-    f.load('UI/settings_setup.lua');dofile('tests/fixtures/legacy_options.lua')(f,'Options/general.lua')
-    a:BuildConfigurationPane(ace:Create('parent'),'General')
-    local preview=assert(icons[1]);local show=assert(preview.frame:GetScript('OnShow'))
-    assert(glows==1,'normal highlight preview was not initialized when its already-visible icon was added')
-    show(preview.frame);assert(glows==2)
-    preview.callbacks.OnRelease(preview)
-    assert(preview.frame:GetScript('OnShow')==nil,'pooled import/export icon can restart the old effect preview')
-end)
-test('opening the actual custom rotation roster does not write display defaults into saved steps',function()
-    local f=F.new();local a=f.addon;local ace=f.libraries['AceGUI-3.0'];local original=ace.Create
-    ace.Create=function(self,kind)
-        local w=original(self,kind);w.frame={SetScript=function() end}
-        for _,method in ipairs({'PauseLayout','ResumeLayout','DoLayout','SetGroupList','SetGroup','SetTree','SetStatusTable','SetPoint'}) do w[method]=function() end end
-        function w:ReleaseChildren() self.children={} end
-        return w
-    end
-    f.env.BOOKTYPE_SPELL='spell';f.env.BOOKTYPE_PET='pet'
-    f.env.LibStub=setmetatable({GetLibrary=function() return {} end},{__call=function(_,name) return f.libraries[name] or {} end})
-    local first={id='one',type='spell',action=403,conditions={}}
-    local second={id='two',type='spell',action=324,conditions={},name='Shield reminder'}
-    a.db.profile.rotations={[0]={mine={name='Clone',switch={},rotation={first},cooldowns={second}}}}
-    a.db.profile.itemsets={};a.db.global.itemsets={}
-    a.currentRotation='mine';a.manualRotation=true
-    a.ListDefaultRotations=function() return {} end;a.GetDefaultIdForRuntime=function() end
-    a.Platform.GetSpellInfo=function(_,id) return {name=id==403 and 'Lightning Bolt' or 'Lightning Shield',spellID=id} end
-    a.Platform.GetSpellLink=function() end
-    a.configure_frame=function() end;a.usefulCondition=function() return false end
-    a.rotationValidConditions=function() return true end;a.validateCondition=function() return true end
-    a.uuid=function() return 'new-rotation' end
-    f.load('UI/settings_setup.lua');dofile('tests/fixtures/legacy_options.lua')(f,'Options/general.lua')
-    a:BuildConfigurationPane(ace:Create('parent'),'Rotations')
-    assert(first.use_name==nil and second.use_name==nil,'viewing persisted inferred name flags')
-    assert(first.name==nil and second.name=='Shield reminder')
-end)
-test('opening an optional step inherits its highlight without saving a color until confirmed',function()
-    local f=F.new();local a=f.addon;local ace=f.libraries['AceGUI-3.0'];local original=ace.Create
-    local widgets={};local preview
-    ace.Create=function(self,kind)
-        local w=original(self,kind);widgets[#widgets+1]=w
-        w.frame={SetScript=function() end,SetHyperlinksEnabled=function() end}
-        for _,method in ipairs({'PauseLayout','ResumeLayout','DoLayout','SetRelativeWidth','SetPoint','SetList','SetHasAlpha','AddItem'}) do w[method]=function() end end
-        function w:ReleaseChildren() self.children={} end
-        function w:SetColor(...) self.rgba={...} end
-        return w
-    end
-    f.env.BOOKTYPE_SPELL='spell';f.env.BOOKTYPE_PET='pet';f.env.NONE='None'
-    local step={id='reminder',type='none',conditions={}}
-    a.db.profile={rotations={[0]={mine={cooldowns={step}}}},itemsets={},effect='base',color={r=.2,g=.3,b=.4,a=.5}}
-    a.db.global={effects={base={type='pixel',name='Base'}},itemsets={}}
-    a.textured_types={};a.Glow=function(_,_,_,_,color) preview=color end
-    a.HideGlow=function() end;a.RemoveCooldownGlowIfCurrent=function() end
-    a.configure_frame=function() end;a.validateCondition=function() return true end
-    a.printCondition=function() return 'Always' end;a.usefulCondition=function() return false end;a.evaluateCondition=function() return true end
-    dofile('tests/fixtures/legacy_options.lua')(f,'Options/rotations.lua')
-    a:get_cooldown_list(ace:Create('parent'),0,'mine','reminder',function() end)
-    assert(step.color==nil,'opening the optional editor changed the saved highlight color')
-    assert(preview.r==.2 and preview.g==.3 and preview.b==.4 and preview.a==.5,'preview ignored profile inheritance')
-    local picker
-    for _,w in ipairs(widgets) do if w.kind=='ColorPicker' then picker=w end end
-    assert(picker and table.concat(picker.rgba,',')=='0.2,0.3,0.4,0.5','picker and preview disagree')
-    picker.callbacks.OnValueConfirmed(picker,nil,.8,.7,.6,.9)
-    assert(step.color.r==.8 and step.color.a==.9 and preview.r==.8,'explicit color confirmation was not saved')
-    assert(a.db.profile.color.r==.2,'color editing overwrote the inherited profile color')
-end)
+-- The four retired Options renderer tests now have their native behavior covered
+-- by rotation_editor_ui, settings_pages and preview suites. They no longer load
+-- an unsupported renderer merely to recreate removed UI contracts.
 test('workbench title text tabs footer help and bounded scale follow navigation and reopen',function()
     local f=F.new();local a=f.addon;local _,create=dofile('tests/fixtures/native_ui.lua')(f.env)
-    local ace=f.libraries['AceGUI-3.0'];local original=ace.Create
-    ace.Create=function(self,kind) local w=original(self,kind);w.frame=create('Frame');return w end
-    ace.Release=function(_,w) w.frame:Hide() end
+    nativePages(f)
     a.pretty_name='Rotation Master';a.name='rotationmaster';a.db.global.uiScale='bad'
     a.SetupOptions=function() end;a.BuildConfigurationPane=function() end
     f.load('UI/window.lua');f.load('UI/help.lua');f.load('UI/config.lua')
@@ -194,9 +65,7 @@ test('workbench title text tabs footer help and bounded scale follow navigation 
 end)
 test('configuration refresh waits for field callbacks to return and does not reopen a closed window',function()
     local f=F.new();local a=f.addon;local _,create=dofile('tests/fixtures/native_ui.lua')(f.env)
-    local ace=f.libraries['AceGUI-3.0'];local original=ace.Create
-    ace.Create=function(self,kind) local w=original(self,kind);w.frame=create('Frame');return w end
-    ace.Release=function(_,w) w.frame:Hide() end
+    nativePages(f)
     a.pretty_name='Rotation Master';a.name='rotationmaster';a.SetupOptions=function() end;a.BuildConfigurationPane=function() end
     f.load('UI/window.lua');f.load('UI/help.lua');f.load('UI/config.lua')
     local shell=a:ShowConfig('Profiles');local old=shell.pane
@@ -209,9 +78,7 @@ test('header help displays the selected section article and releases it when nav
     local f=F.new();local a=f.addon;local _,create=dofile('tests/fixtures/native_ui.lua')(f.env)
     f.env.ENABLE='Enable'
     f.load('Help/general.lua')
-    local ace=f.libraries['AceGUI-3.0'];local original=ace.Create
-    ace.Create=function(self,kind) local w=original(self,kind);w.frame=create('Frame');return w end
-    ace.Release=function(_,w) w.frame:Hide();w.released=true end
+    nativePages(f)
     a.pretty_name='Rotation Master';a.name='rotationmaster';a.SetupOptions=function() end;a.BuildConfigurationPane=function() end
     f.load('UI/window.lua');f.load('UI/help.lua');f.load('UI/config.lua')
     local shell=a:ShowConfig('General');shell.help:Click()
@@ -223,9 +90,7 @@ test('header help displays the selected section article and releases it when nav
 end)
 test('Plater-style chrome exposes compact bars slider bordered tabs metadata and honest installed-language menu',function()
     local f=F.new();local a=f.addon;local _,create=dofile('tests/fixtures/native_ui.lua')(f.env)
-    local ace=f.libraries['AceGUI-3.0'];local original=ace.Create
-    ace.Create=function(self,kind) local w=original(self,kind);w.frame=create('Frame');return w end
-    ace.Release=function(_,w) w.frame:Hide() end
+    nativePages(f)
     f.env.C_AddOns={GetAddOnMetadata=function(_,key) return ({Author='Makiel',Version='9.9', ['X-Website']='https://example.invalid/rm'})[key] end}
     f.env.GetLocale=function() return 'deDE' end
     a.pretty_name='Rotation Master';a.name='rotationmaster';a.SetupOptions=function() end;a.BuildConfigurationPane=function() end
@@ -242,9 +107,7 @@ test('Plater-style chrome exposes compact bars slider bordered tabs metadata and
 end)
 test('right-click over a child inside content closes the window without replacing deferred refresh ownership',function()
     local f=F.new();local a=f.addon;local _,create=dofile('tests/fixtures/native_ui.lua')(f.env)
-    local ace=f.libraries['AceGUI-3.0'];local original=ace.Create;local released=0
-    ace.Create=function(self,kind) local w=original(self,kind);w.frame=create('Frame');return w end
-    ace.Release=function(_,w) released=released+1;w.frame:Hide() end
+    local pages=nativePages(f)
     a.pretty_name='Rotation Master';a.name='rotationmaster';a.SetupOptions=function() end;a.BuildConfigurationPane=function() end
     f.load('UI/window.lua');f.load('UI/help.lua');f.load('UI/config.lua');local shell=a:ShowConfig('General')
     local down=false;f.env.IsMouseButtonDown=function(button) assert(button=='RightButton');return down end
@@ -254,14 +117,12 @@ test('right-click over a child inside content closes the window without replacin
     down=false;shell.content.scripts.OnUpdate();f.env.RotationMasterFrontmostDialog=nil
     a:RefreshConfiguration();assert(shell.frame.scripts.OnUpdate)
     shell.content.scripts.OnUpdate();down=true;shell.content.scripts.OnUpdate()
-    assert(not shell.frame:IsShown() and released==1 and shell.pane==nil and shell.frame.scripts.OnUpdate==nil)
+    assert(not shell.frame:IsShown() and pages.released==1 and shell.pane==nil and shell.frame.scripts.OnUpdate==nil)
 end)
 test('right-click ignores opening with the button held and unrelated overlapping mouse focus',function()
     for _,api in ipairs({'GetMouseFoci','GetMouseFocus'}) do
         local f=F.new();local a=f.addon;local _,create=dofile('tests/fixtures/native_ui.lua')(f.env)
-        local ace=f.libraries['AceGUI-3.0'];local original=ace.Create
-        ace.Create=function(self,kind) local w=original(self,kind);w.frame=create('Frame');return w end
-        ace.Release=function(_,w) w.frame:Hide() end
+        nativePages(f)
         a.pretty_name='Rotation Master';a.name='rotationmaster';a.SetupOptions=function() end;a.BuildConfigurationPane=function() end
         local down=true;local focus
         f.env.IsMouseButtonDown=function() return down end
@@ -286,9 +147,7 @@ test('right-click ignores opening with the button held and unrelated overlapping
 end)
 test('scaling keeps the window stationary during a drag and applies the chosen intermediate value on release',function()
     local f=F.new();local a=f.addon;local _,create=dofile('tests/fixtures/native_ui.lua')(f.env)
-    local ace=f.libraries['AceGUI-3.0'];local original=ace.Create
-    ace.Create=function(self,kind) local w=original(self,kind);w.frame=create('Frame');return w end
-    ace.Release=function(_,w) w.frame:Hide() end
+    nativePages(f)
     a.pretty_name='Rotation Master';a.name='rotationmaster';a.SetupOptions=function() end;a.BuildConfigurationPane=function() end
     f.load('UI/window.lua');f.load('UI/help.lua');f.load('UI/config.lua');local shell=a:ShowConfig('General')
     shell.scaleSlider.scripts.OnMouseDown(shell.scaleSlider,'LeftButton');shell.scaleSlider:SetValue(83);shell.scaleSlider:SetValue(91)
@@ -314,23 +173,23 @@ test('opening failures and native UI callbacks reach RM reports and the current 
 end)
 test('missing native pages use a native error surface without reviving unregistered legacy panes',function()
     local f=F.new();local a=f.addon;a.pretty_name='Rotation Master';a.name='rotationmaster';a.SetupOptions=function() end
-    f.libraries['AceGUI-3.0'].Create=function() error('missing native page allocated Ace') end
+    a.GetConditionWidgetCompatibilityLibrary=function() error('missing native page allocated retired GUI') end
     f.load('UI/config.lua')
     local shell=a:ShowConfig('General');assert(shell.nativePane and shell.pane and shell.pane.message:GetText():find('General',1,true))
     local first=shell.pane;shell:SelectSection('Profiles');assert(shell.pane==first and shell.pane.frame:IsShown() and shell.pane.message:GetText():find('Profiles',1,true),'error pane was not reused')
     shell:SelectSection('unregistered');assert(shell.section=='Rotations' and shell.pane.message:GetText():find('Rotations',1,true))
     shell.close:Click();assert(not first.frame:IsShown() and not shell.pane)
 end)
-test('known module tabs use the explicit bridge before an isolated legacy renderer',function()
-    local f=F.new();local a=f.addon;local frames,create=dofile('tests/fixtures/native_ui.lua')(f.env);local calls=0
-    for _,name in ipairs({'AceConfig-3.0','AceDBOptions-3.0','LibAboutPanel-2.0'}) do f.libraries[name]={} end
-    f.libraries['AceConfigDialog-3.0']={Open=function(_,application,pane) assert(application=='ApplicationID' and pane.frame:GetParent()==a.configWindow.content);calls=calls+1 end}
-    f.load('UI/settings_setup.lua');a.SetupOptions=function() end;a.configModuleApps={['Module title']='ApplicationID'};a.name='rotationmaster';a.pretty_name='Rotation Master'
-    a.BuildConfigurationPane=function() error('module went through the old built-in renderer') end
-    local ace=f.libraries['AceGUI-3.0'];local build=ace.Create
-    ace.Create=function(self,kind) assert(kind=='SimpleGroup');local pane=build(self,kind);pane.frame=create('Frame');return pane end
-    ace.Release=function(_,pane) pane.frame:Hide() end
+test('retired module maps and foreign builders cannot create tabs render panes or release foreign frames',function()
+    local f=F.new();local a=f.addon;local pages=nativePages(f)
+    a.SetupOptions=function() end;a.configModuleApps={['Module title']='ApplicationID'};a.name='rotationmaster';a.pretty_name='Rotation Master'
+    a.BuildConfigurationPane=function() error('retired foreign renderer invoked') end
+    a.BuildModuleConfigurationPane=function() error('retired module renderer invoked') end
     f.load('UI/config.lua');local shell=a:ShowConfig('module:Module title')
-    assert(calls==1 and not shell.nativePane and shell.pane.layout=='Fill');shell.close:Click()
+    assert(#shell.tabs==9 and shell.section=='Rotations' and shell.nativePane)
+    for _,tab in ipairs(shell.tabs) do assert(not tab.section:match('^module:')) end
+    local native=shell.pane;shell:ReleasePane();assert(pages.released==1 and not native.frame:IsShown())
+    local foreign={Release=function() error('foreign owner released') end}
+    shell.pane=foreign;shell.nativePane=false;shell:ReleasePane();assert(not shell.pane and pages.released==1)
 end)
 finish()

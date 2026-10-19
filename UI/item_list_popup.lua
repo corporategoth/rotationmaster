@@ -98,7 +98,7 @@ local function constructor()
     addon:SetUIScript(frame,'OnHide',function()
         if w.rmActive and not w.isQueuedForRelease then if w:Valid() then frame:Show();w:RequestClose() else w:Close() end end
     end)
-    return addon:RegisterConditionWidget(w,1)
+    return addon:RegisterConditionWidget(w)
 end
 
 function addon:OpenItemListPopup(name,editbox,items,isvalid,update,onclose,options)

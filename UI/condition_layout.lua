@@ -1,25 +1,16 @@
 local _,addon=...
-local AceGUI
--- Advanced saved layouts share this cell with the unchanged constructor.
-function addon:BindConditionGroupCompatibilityLibrary()
-    AceGUI=addon:GetConditionWidgetCompatibilityLibrary()
-    return AceGUI
-end
----@class RMConditionGroup: AceGUIWidget
+---@class RMConditionGroup: RMConditionWidget
 ---@field children table[]
 ---@field rmLease table
 ---@field rmActive boolean
 ---@field SetLayout fun(self: RMConditionGroup, layout: string)
----@field AddChild fun(self: RMConditionGroup, child: AceGUIWidget)
+---@field AddChild fun(self: RMConditionGroup, child: RMConditionWidget)
 ---@field DoLayout fun(self: RMConditionGroup)
 ---@field PauseLayout fun(self: RMConditionGroup)
 ---@field ResumeLayout fun(self: RMConditionGroup)
 ---@field ReleaseChildren fun(self: RMConditionGroup)
 
--- RM owns field geometry and ordinary widget leases. Historical custom child
--- widgets and advanced layouts retain an explicit Ace compatibility path.
--- Simple vertical cell alignment belongs to the native numeric table layout.
--- Other cell features still use the explicitly requested legacy layout.
+-- Native compact rows share rich Table and spell-field geometry with RM controls.
 local function verticalAlignment(value)
     if value==nil then return 0 end
     if type(value)~='string' then return nil end
@@ -28,11 +19,14 @@ local function verticalAlignment(value)
     if value=='end' or value:sub(1,6)=='bottom' then return 1 end
     if value=='middle' or value:sub(1,6)=='center' then return .5 end
 end
-local function constructor(legacy)
+local function constructor()
     local group={type='RM-ConditionGroup',children={}}
     local frame=CreateFrame('Frame',nil,UIParent);group.frame=frame;group.content=frame
     function group:OnAcquire() self.children={};self.layout='List';self.paused=false;self.layingOut=false;self:SetWidth(300);self:SetHeight(1) end
-    function group:SetLayout(layout) self.layout=layout;self:DoLayout() end
+    function group:SetLayout(layout)
+        if layout~='List' and layout~='Table' and layout~='RM-SpellField' then error('unsupported-condition-layout',0) end
+        self.layout=layout;self:DoLayout()
+    end
     function group:PauseLayout() self.paused=true end
     function group:ResumeLayout() self.paused=false;self:DoLayout() end
     function group:OnWidthSet() if not self.sizing then self:DoLayout() end end
@@ -40,14 +34,33 @@ local function constructor(legacy)
         self.sizing=true;frame:SetWidth(width);frame.width=width;self.sizing=false;self:DoLayout()
     end
     function group:LayoutFinished(_,height) self:SetHeight(height or 1) end
+    local function validateChild(self,child,seen)
+        if not addon:IsConditionWidget(child) or not child.rmActive or child:IsReleasing() then error('foreign-or-inactive-condition-child',0) end
+        if not self.rmActive or self:IsReleasing() then error('inactive-condition-parent',0) end
+        if child.parent or seen and seen[child] then error('condition-child-already-owned',0) end
+        local current=self
+        for _=1,128 do
+            if not current then return end
+            if current==child then error('condition-widget-parent-cycle',0) end
+            current=current.parent
+        end
+        error('condition-widget-parent-cycle',0)
+    end
     function group:AddChild(child)
+        validateChild(self,child)
         self.children[#self.children+1]=child;child.parent=self
-        if child.frame then child.frame:SetParent(frame);child.frame:Show() end
+        child.frame:SetParent(frame);child.frame:Show();self:DoLayout()
+    end
+    function group:AddChildren(...)
+        local seen={}
+        for i=1,select('#',...) do local child=select(i,...);validateChild(self,child,seen);seen[child]=true end
+        for i=1,select('#',...) do local child=select(i,...);self.children[#self.children+1]=child;child.parent=self;child.frame:SetParent(frame);child.frame:Show() end
         self:DoLayout()
     end
-    function group:AddChildren(...) for i=1,select('#',...) do self:AddChild(select(i,...)) end end
     function group:ReleaseChildren()
-        local children=self.children;self.children={}
+        local children=self.children
+        for _,child in ipairs(children) do if not addon:IsConditionWidget(child) then error('foreign-condition-child',0) end end
+        self.children={}
         local problem
         for _,child in ipairs(children) do local ok,why=pcall(addon.ReleaseConditionWidget,addon,child);child.parent=nil;if not ok then problem=problem or why end end
         if problem then error(problem,0) end
@@ -56,23 +69,12 @@ local function constructor(legacy)
     function group:DoLayout()
         if self.paused or self.layingOut or self.isQueuedForRelease then return end
         self.layingOut=true
+        local ok,why=pcall(function()
         local width=math.max(1,frame:GetWidth() or 300);local padding=self:GetUserData('padding')
         padding=type(padding)=='number' and padding==padding and math.max(0,math.min(64,padding)) or 0
         width=math.max(1,width-padding*2);local y=padding;local gap=4
         local settings=self:GetUserData('table');local columns=self.layout=='Table' and settings and settings.columns
-        local compatibility=self.layout~='List' and self.layout~='Table' and self.layout~='RM-SpellField'
-        if self.layout=='Table' and settings and (settings.align or settings.alignH or settings.alignV or settings.space~=nil or settings.spaceH~=nil or settings.spaceV~=nil) then compatibility=true end
-        if columns then for _,column in ipairs(columns) do if type(column)~='number' then compatibility=true end end end
-        for _,child in ipairs(self.children) do local cell=child:GetUserData('cell');if cell and (cell.colspan or cell.rowspan or cell.align or cell.alignH or cell.alignV and (self.layout~='Table' or verticalAlignment(cell.alignV)==nil)) then compatibility=true end end
-        local legacy=compatibility and AceGUI.GetLayout and AceGUI:GetLayout(self.layout)
-        if legacy then
-            -- Saved custom callbacks can still request Ace layouts and advanced
-            -- table cells. Retain that explicit compatibility path while RM's
-            -- ordinary built-in groups own their geometry here.
-            legacy(frame,self.children);self.layingOut=false
-            if self.parent and self.parent.DoLayout then self.parent:DoLayout() end
-            return
-        elseif self.layout=='RM-SpellField' then
+        if self.layout=='RM-SpellField' then
             y=addon:LayoutWorkbenchSpellGroup(frame,self.children) or 0
         else
             local widths
@@ -113,11 +115,14 @@ local function constructor(legacy)
             if #row>0 then finishRow() end
             y=math.max(1,y-gap+padding)
         end
-        self:LayoutFinished(width,y);self.layingOut=false
+        self:LayoutFinished(width,y)
+        end)
+        self.layingOut=false
+        if not ok then self.paused=false;error(why,0) end
         if self.parent and self.parent.DoLayout then self.parent:DoLayout() end
     end
-    ---@cast group AceGUIWidget
-    return addon:RegisterConditionWidget(group,1,legacy)
+    ---@cast group RMConditionWidget
+    return addon:RegisterConditionWidget(group)
 end
 ---@return RMConditionGroup
 function addon:CreateConditionGroup()
@@ -129,7 +134,6 @@ end
 -- BEGIN GENERATED RM SOURCE BINDINGS
 do
     local function sourceGetter(name)
-        if name=="AceGUI" then return addon:BindConditionGroupCompatibilityLibrary() end
         if name=="CreateConditionGroup" then return addon.CreateConditionGroup end
         if name=="constructor" then return constructor end
         if name=="verticalAlignment" then return verticalAlignment end

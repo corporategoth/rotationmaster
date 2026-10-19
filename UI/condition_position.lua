@@ -1,11 +1,11 @@
 local _,addon=...
 
 -- Condition/Help adapter for the same arrow block used by settings and cards.
----@class RMConditionPositionPad: AceGUIWidget
+---@class RMConditionPositionPad: RMConditionWidget
 ---@field pad any
 ---@field disabled boolean
 ---@field SetDisabled fun(self: RMConditionPositionPad, value: boolean?)
-local function constructor(legacy)
+local function constructor()
     local w={type='RM-ConditionPositionPad',disabled=false}
     local frame=CreateFrame('Frame',nil,UIParent);w.frame=frame
     local pad=addon:CreateWorkbenchPositionPad(frame);w.pad=pad;pad:SetPoint('TOPLEFT')
@@ -28,7 +28,7 @@ local function constructor(legacy)
     function w:OnRelease()
         pad:Bind(nil,nil,true);self.disabled=true
     end
-    return addon:RegisterConditionWidget(w,1,legacy)
+    return addon:RegisterConditionWidget(w)
 end
 ---@return RMConditionPositionPad
 function addon:CreateConditionPositionPad()

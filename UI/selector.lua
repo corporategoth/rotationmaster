@@ -122,16 +122,15 @@ function addon:CreateWorkbenchSelector()
     frame:Hide();return menu
 end
 
--- AceGUI remains a layout bridge for old condition declarations; no Blizzard
--- dropdown or AceGUI pullout is constructed by this native field adapter.
----@class RMConditionSelector: AceGUIWidget
+-- Native field selector uses the shared bounded workbench menu.
+---@class RMConditionSelector: RMConditionWidget
 ---@field SetList fun(self: RMConditionSelector, values: table, order?: table)
 ---@field SetValue fun(self: RMConditionSelector, value: any)
 ---@field GetValue fun(self: RMConditionSelector): any
 ---@field SetLabel fun(self: RMConditionSelector, text: string)
 ---@field SetDisabled fun(self: RMConditionSelector, disabled: boolean)
 ---@field SetText fun(self: RMConditionSelector, text: string)
-local function selectorWidget(legacy)
+local function selectorWidget()
     local w={type='RM-Selector',list={},order={},disabled=false}
     local frame=CreateFrame('Frame',nil,UIParent);w.frame=frame;frame:SetSize(220,44)
     local caption=frame:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall');w.caption=caption;caption:SetPoint('TOPLEFT',0,0);caption:SetPoint('TOPRIGHT',0,0);caption:SetHeight(18);caption:SetJustifyH('LEFT')
@@ -148,7 +147,6 @@ local function selectorWidget(legacy)
     end
     function w:SetDisabled(value) self.disabled=value==true;if self.disabled then button:Disable();popup:Hide() else button:Enable() end end
     function w:ClearFocus() popup:Hide() end
-    function w:SetPulloutWidth() end
     addon:SetUIScript(button,'OnClick',function()
         if not w.alive or w.disabled then return end
         if popup.frame:IsShown() then popup:Hide();return end
@@ -157,8 +155,8 @@ local function selectorWidget(legacy)
         popup:Open(button,entries,w.value,function(value) if value~=w.value then w:SetValue(value);w:Fire('OnValueChanged',value) end end,function() return w.alive and w.userdata==lifetime and not w.disabled end)
     end)
     addon:SetUIScript(frame,'OnHide',function() popup:Hide() end)
-    ---@cast w AceGUIWidget
-    return addon:RegisterConditionWidget(w,1,legacy)
+    ---@cast w RMConditionWidget
+    return addon:RegisterConditionWidget(w)
 end
 ---@return RMConditionSelector
 function addon:CreateConditionDropdown()
@@ -170,7 +168,6 @@ end
 -- BEGIN GENERATED RM SOURCE BINDINGS
 do
     local function sourceGetter(name)
-        if name=="AceGUI" then return addon:GetConditionWidgetCompatibilityLibrary() end
         if name=="CreateConditionDropdown" then return addon.CreateConditionDropdown end
         if name=="selectorWidget" then return selectorWidget end
     end

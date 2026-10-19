@@ -55,7 +55,7 @@ test('long values and native markup are bounded and cannot impersonate report te
 end)
 test('comparison chooser refreshes a read-only report and Copy keeps the full selection',function()
     local f=fixture();local a=f.addon
-    f.libraries['AceGUI-3.0'].Create=function() error('comparison window allocated through Ace') end
+    local lib=f.env.LibStub;f.env.LibStub=function(name,...) assert(name~='AceGUI-3.0','comparison requested retired GUI');return lib(name,...) end
     a.HideOnEscape=function() end
     a.db.profile.rotations={[0]={mine={name='Mine',rotation={}},other={name='Other',rotation={}}}}
     a.GetEditableRotation=function(self,spec,id) return self.db.profile.rotations[spec][id] end
@@ -138,20 +138,14 @@ test('whole added steps and unknown table fields show their contents in the repo
     assert(text:find('BUFF',1,true) and text:find('threshold',1,true) and text:find('42',1,true))
 end)
 test('graph hides unchanged rows by default and expands them without inventing switch edits',function()
-    local f=fixture();local a=f.addon;local ace=f.libraries['AceGUI-3.0'];local original=ace.Create
-    ace.Create=function(self,kind)
-        local w=original(self,kind)
-        function w:SetRelativeWidth(v) self.relativeWidth=v end
-        function w:ReleaseChildren() self.children={} end
-        return w
-    end
+    local f=fixture();local a=f.addon
     local left={body={name='Source',switch={},rotation={{id='a',type='spell',action=403},{id='b',type='spell',action=8042}}}}
     local right={body={name='Clone',switch={},rotation={{id='a',type='spell',action=403},{id='b',type='spell',action=974}}}}
     local view={left=left,right=right,diff=a.RotationData.DiffRotations(left,right)}
     local seen,conditions={},0
     a.CreateRotationStepCard=function(_,_,_,_,position) seen[#seen+1]=position end
     a.CreateConditionReference=function() conditions=conditions+1 end
-    local parent=ace:Create('SimpleGroup')
+    local parent=a:CreateConditionGroup()
     a:RenderRotationComparison(parent,view,0)
     assert(#seen==2 and seen[1]==2 and seen[2]==2,'unchanged steps were displayed by default')
     assert(conditions==0,'a name change was presented as a switch condition change')
@@ -165,14 +159,7 @@ test('graph hides unchanged rows by default and expands them without inventing s
     assert(#seen==0 and F.text(parent):find('No differences.',1,true),'unchanged comparison is not clear')
 end)
 test('comparison with no other rotations explains the empty roster without comparing to itself',function()
-    local f=fixture();local a=f.addon;local ace=f.libraries['AceGUI-3.0'];local original=ace.Create
-    ace.Create=function(self,kind)
-        local w=original(self,kind)
-        function w:SetList(value) self.list=value end
-        function w:SetRelativeWidth() end
-        function w:ReleaseChildren() self.children={} end
-        return w
-    end
+    local f=fixture();local a=f.addon
     a.HideOnEscape=function() end
     a.db.profile.rotations={[0]={mine={name='Mine',rotation={}}}}
     a.GetEditableRotation=function() return a.db.profile.rotations[0].mine end
@@ -183,25 +170,20 @@ test('comparison with no other rotations explains the empty roster without compa
     assert(frame.chooser.disabled and frame.direction.disabled and frame.copy.disabled,'empty comparison controls remain actionable')
 end)
 test('nested reference and comparison expose branch mode and arm context without evaluating code',function()
-    local f=fixture();local a=f.addon;local ace=f.libraries['AceGUI-3.0'];local create=ace.Create
-    ace.Create=function(self,kind)
-        local w=create(self,kind);function w:ReleaseChildren() self.children={} end
-        function w:SetRelativeWidth(value) self.relativeWidth=value end
-        return w
-    end
+    local f=fixture();local a=f.addon
     a.Platform={GetSpellInfo=function(_,id) return {name='Named spell',spellID=id} end,GetSpellLink=function(_,id) return '|Hspell:'..id..'|h[Named spell]|h' end}
     a.printCondition=function() return 'Readable guard' end
     local body={rotation={{id='b',type='branch',name='Combat phase',mode='false',conditions={},
         onTrue={{id='yes',type='spell',action=403}},onFalse={{id='no',type='spell',action=324}}}},cooldowns={}}
-    local parent=ace:Create('SimpleGroup');a:CreateRotationReference(parent,body,0)
+    local parent=a:CreateConditionGroup();a:CreateRotationReference(parent,body,0)
     local text=F.text(parent)
     assert(text:find('Always false',1,true) and text:find('Combat phase',1,true) and text:find('True',1,true) and text:find('False',1,true))
     local right=a.RotationData.CopyData(body);right.rotation[1].onTrue[1].action=8042
-    parent=ace:Create('SimpleGroup');a:RenderRotationComparison(parent,{left={body=body},right={body=right},diff=a.RotationData.DiffRotations({body=body},{body=right})},0,false)
+    parent=a:CreateConditionGroup();a:RenderRotationComparison(parent,{left={body=body},right={body=right},diff=a.RotationData.DiffRotations({body=body},{body=right})},0,false)
     text=F.text(parent);assert(text:find('Combat phase',1,true) and text:find('True',1,true),'changed descendant lost its branch context')
 end)
 test('reference cards and paired comparisons render through native measured groups without Ace allocation',function()
-    local f=fixture();local a=f.addon;f.libraries['AceGUI-3.0'].Create=function() error('reference renderer allocated through Ace') end
+    local f=fixture();local a=f.addon;local lib=f.env.LibStub;f.env.LibStub=function(name,...) assert(name~='AceGUI-3.0','reference requested retired GUI');return lib(name,...) end
     a.Platform={GetSpellInfo=function(_,id) return {name='Named spell',spellID=id,iconID=id} end,GetSpellLink=function(_,id) return '|Hspell:'..id..'|h[Named spell]|h' end}
     local left={body={switch={},cooldowns={},rotation={{id='a',type='spell',action=403,conditions={}}}}};local right=a.RotationData.CopyData(left);right.body.rotation[1].action=974
     local root=a:CreateConditionGroup();a:CreateRotationReference(root,left.body,0);assert(F.text(root):find('Named spell',1,true));a:ReleaseConditionWidget(root)

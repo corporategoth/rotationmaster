@@ -15,16 +15,12 @@ local function fixture()
     end
     return f,f.addon
 end
-local function legacyFixture(offset)
-    local f,a=fixture();local ace=f.libraries['AceGUI-3.0'];local constructors=ace.constructors;local stub=f.env.LibStub
-    f.env.LibStub=setmetatable({NewLibrary=function() return ace end},{__call=function(_,...) return stub(...) end})
-    f.env.geterrorhandler=function() return error end
-    f.env.xpcall=function(callback,handler,...) local args={n=select('#',...),...};return xpcall(function() return callback(unpack(args,1,args.n)) end,handler) end
-    f.env.table=setmetatable({wipe=function(value) for key in pairs(value) do value[key]=nil end;return value end},{__index=table})
+local function quantizedFixture(offset)
+    local f,a=fixture()
     local create=f.env.CreateFrame;f.env.CreateFrame=function(...)
         local frame=create(...);local width,height=frame:GetWidth(),frame:GetHeight();local requestedHeight=height
-        -- Frame engine dimensions survive Ace clearing its Lua width/height
-        -- caches. Backing-height quantization is also independent of requests.
+        -- Engine dimensions and fractional backing quantization are independent
+        -- of requested Lua geometry values.
         function frame:GetWidth() return width end
         function frame:GetHeight() return height end
         function frame:SetSize(nextWidth,nextHeight)
@@ -37,14 +33,11 @@ local function legacyFixture(offset)
         function frame:SetHeight(value) self:SetSize(width,value) end
         return frame
     end
-    f.load('Libs/AceGUI-3.0/AceGUI-3.0.lua')
-    for kind,build in pairs(constructors) do ace:RegisterWidgetType(kind,build,1) end
-    f.load('Libs/AceGUI-3.0/widgets/AceGUIContainer-SimpleGroup.lua')
-    return f,a,ace
+    return f,a
 end
 local function native(a) assert(a.CreateConditionLabel and a.CreateConditionButton,'native display factories missing') end
 test('ordinary Help primitives allocate and release native controls without Ace calls',function()
-    local f,a=fixture();native(a);local ace=f.libraries['AceGUI-3.0'];ace.Create=function() error('ordinary Help called Ace Create') end;ace.Release=function() error('ordinary Help called Ace Release') end
+    local f,a=fixture();native(a);assert(f.libraries['AceGUI-3.0']==nil)
     local helpers=a.help_funcs
     for _,widget in ipairs({helpers.CreateText('Words'),helpers.CreatePictureText('Texture',32,24,'Picture'),helpers.CreateButtonText('Save','Save words'),helpers.Indent(40,helpers.CreateText('Indented')),helpers.Gap()}) do
         assert(widget.rmWidget and widget.rmActive);assert(a:ReleaseConditionWidget(widget))
@@ -90,29 +83,29 @@ test('button leases suppress retained click callbacks during ancestor release an
     reused.frame:Click();assert(new==1);reused:SetDisabled(true);reused.frame:Click();assert(new==1)
     a:ReleaseConditionWidget(reused)
 end)
-test('mixed legacy parents recycle native display leases without stale events or accumulating widgets',function()
-    local _,a,ace=legacyFixture();native(a)
+test('native parents recycle display leases without stale events or accumulating widgets',function()
+    local _,a=fixture();native(a)
     local labels,buttons={},{};local clicks=0
     for _=1,50 do
-        local parent=ace:Create('SimpleGroup');local label=a:CreateConditionLabel();local button=a:CreateConditionButton();labels[label]=true;buttons[button]=true
+        local parent=a:CreateConditionGroup();local label=a:CreateConditionLabel();local button=a:CreateConditionButton();labels[label]=true;buttons[button]=true
         label:SetFullWidth(true);label:SetText('Mixed Help words');button:SetText('Mixed button');button:SetCallback('OnClick',function() clicks=clicks+1 end)
-        local stale=button.frame:GetScript('OnClick');parent:AddChild(label);parent:AddChild(button);ace:Release(parent)
-        stale(button.frame,'LeftButton');assert(not label.rmActive and not button.rmActive,'legacy parent left a native display active')
+        local stale=button.frame:GetScript('OnClick');parent:AddChild(label);parent:AddChild(button);a:ReleaseConditionWidget(parent)
+        stale(button.frame,'LeftButton');assert(not label.rmActive and not button.rmActive,'native parent left a native display active')
     end
     local labelCount,buttonCount=0,0;for _ in pairs(labels) do labelCount=labelCount+1 end;for _ in pairs(buttons) do buttonCount=buttonCount+1 end
-    assert(labelCount<=2 and buttonCount<=2 and clicks==0,'mixed ownership stranded display widgets or fired a stale callback')
+    assert(labelCount==1 and buttonCount==1 and clicks==0,'native ownership stranded display widgets or fired a stale callback')
 end)
-test('fractional backing heights stay bounded under an actual Ace parent while content grows and shrinks',function()
-    local _,a,ace=legacyFixture(.00001);native(a);local parent=ace:Create('SimpleGroup');local passes=0;local layout=parent.DoLayout
+test('fractional backing heights stay bounded under a native parent while content grows and shrinks',function()
+    local _,a=quantizedFixture(.00001);native(a);local parent=a:CreateConditionGroup();local passes=0;local layout=parent.DoLayout
     parent.DoLayout=function(self,...)
-        passes=passes+1;assert(passes<=100,'fractional native height caused repeated legacy layout')
+        passes=passes+1;assert(passes<=100,'fractional native height caused repeated native layout')
         return layout(self,...)
     end
     local label=a:CreateConditionLabel();label:SetFullWidth(true);label:SetText('short');parent:AddChild(label)
-    assert(passes<10,'initial label did not settle under legacy layout');local short=parent.frame:GetHeight()
-    label:SetText(string.rep('word ',90));assert(parent.frame:GetHeight()>short,'legacy parent lost content growth')
-    local tall=parent.frame:GetHeight();label:SetText('short');assert(parent.frame:GetHeight()<tall,'legacy parent lost content shrink')
-    assert(passes<20,'legacy label updates repeated sublayouts');ace:Release(parent)
+    assert(passes<10,'initial label did not settle under native layout');local short=parent.frame:GetHeight()
+    label:SetText(string.rep('word ',90));assert(parent.frame:GetHeight()>short,'native parent lost content growth')
+    local tall=parent.frame:GetHeight();label:SetText('short');assert(parent.frame:GetHeight()<tall,'native parent lost content shrink')
+    assert(passes<20,'native label updates repeated sublayouts');a:ReleaseConditionWidget(parent)
 end)
 test('pooled displays reset fonts text colors alignment disabled state and callback data',function()
     local _,a=fixture();native(a);local label=a:CreateConditionLabel();label:SetText('Old');label:SetFont('Custom.ttf',30);label:SetColor(.2,.3,.4);label:SetJustifyH('RIGHT');label:SetUserData('old',true)

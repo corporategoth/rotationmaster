@@ -15,10 +15,6 @@ local function fixture(project,expansion)
                 previewRank=0,meetsPrereq=true,meetsPreviewPrereq=true,isExceptional=false,hasGoldBorder=false,isPVPTalentUnlocked=false}
         end}
     for _,path in ipairs({'Platform/talents.lua','Core/conditions.lua','Conditions/common.lua','Conditions/character.lua','Conditions/talent.lua'}) do f.load(path) end
-    local ace=f.libraries['AceGUI-3.0'];local create=ace.Create
-    ace.Create=function(self,kind)
-        local w=create(self,kind);function w:SetList(values,order) self.list,self.order=values,order end;return w
-    end
     return f,state
 end
 local function tree() return {type='TALENT',tree=1,talent=1,operator='EQUALS',value=2} end
@@ -66,7 +62,7 @@ local function fields(f,value,spec)
 end
 test('talent icons and unsupported-layout messages use native primitives without Ace allocation',function()
     for _,branch in ipairs({{5,1},{1,12}}) do
-        local f=fixture(branch[1],branch[2]);f.libraries['AceGUI-3.0'].Create=function() error('talent field allocated through Ace') end
+        local f=fixture(branch[1],branch[2]);assert(f.libraries['AceGUI-3.0']==nil)
         local parent=fields(f,tree());assert(#parent.children>0)
         for _,child in ipairs(parent.children) do assert(child.rmWidget,'non-native talent field') end
     end

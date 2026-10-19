@@ -1,7 +1,7 @@
 local _,addon=...
 local function defaultFont() return GameFontHighlightSmall or 'GameFontHighlightSmall' end
 
----@class RMConditionLabel: AceGUIWidget
+---@class RMConditionLabel: RMConditionWidget
 ---@field label FontString
 ---@field text string
 ---@field SetText fun(self: RMConditionLabel, text: any)
@@ -10,7 +10,7 @@ local function defaultFont() return GameFontHighlightSmall or 'GameFontHighlight
 ---@field SetColor fun(self: RMConditionLabel, red: number?, green: number?, blue: number?, alpha: number?)
 ---@field SetJustifyH fun(self: RMConditionLabel, value: string)
 ---@field SetJustifyV fun(self: RMConditionLabel, value: string)
-local function labelConstructor(legacy,interactive)
+local function labelConstructor(interactive)
     local w={type=interactive and 'RM-ConditionLink' or 'RM-ConditionLabel',text=''}
     local frame=CreateFrame(interactive and 'Button' or 'Frame',nil,UIParent);w.frame=frame
     local image=interactive and frame:CreateTexture(nil,'ARTWORK');w.image=image
@@ -24,7 +24,7 @@ local function labelConstructor(legacy,interactive)
         label:ClearAllPoints();label:SetPoint('TOPLEFT',frame,'TOPLEFT',inset,-(height-textHeight)/2)
         if image then image:ClearAllPoints();image:SetPoint('TOPLEFT',frame,'TOPLEFT',0,-(height-w.imageHeight)/2) end
         -- Backing frame dimensions may be quantized. Compare text requests,
-        -- not engine rounding, before notifying a legacy parent's layout.
+        -- not engine rounding, before notifying the parent layout.
         local changed=height~=w.measuredHeight
         w.measuredHeight=height;w:SetHeight(height)
         return changed
@@ -72,10 +72,10 @@ local function labelConstructor(legacy,interactive)
         self.text='';self.measuring=false;self.measuredHeight=nil;label:SetText('')
         if image then image:Hide();image:SetTexture(nil);self.imagePath=nil;if GameTooltip and GameTooltip:IsOwned(frame) then GameTooltip:Hide() end end
     end
-    return addon:RegisterConditionWidget(w,1,legacy)
+    return addon:RegisterConditionWidget(w)
 end
 
----@class RMConditionButton: AceGUIWidget
+---@class RMConditionButton: RMConditionWidget
 ---@field label FontString
 ---@field text string
 ---@field autoWidth boolean
@@ -83,7 +83,7 @@ end
 ---@field SetText fun(self: RMConditionButton, text: any)
 ---@field SetAutoWidth fun(self: RMConditionButton, value: boolean?)
 ---@field SetDisabled fun(self: RMConditionButton, value: boolean?)
-local function buttonConstructor(legacy)
+local function buttonConstructor()
     local w={type='RM-ConditionButton',text='',disabled=false,autoWidth=false}
     local frame=addon:CreateWorkbenchButton(UIParent,'',200);w.frame=frame
     local label=frame:GetFontString();w.label=label;label:SetWordWrap(false)
@@ -111,7 +111,7 @@ local function buttonConstructor(legacy)
         if GameTooltip and GameTooltip:IsOwned(frame) then GameTooltip:Hide() end
         self.text='';frame:SetText('');label:SetText('');frame.tooltip=nil
     end
-    return addon:RegisterConditionWidget(w,1,legacy)
+    return addon:RegisterConditionWidget(w)
 end
 
 ---@return RMConditionLabel
@@ -125,7 +125,7 @@ function addon:CreateConditionButton() return self:AcquireConditionWidget('RM-Co
 ---@field SetImageSize fun(self: RMConditionLink, width: number, height: number)
 ---@field SetDisabled fun(self: RMConditionLink, disabled: boolean?)
 ---@return RMConditionLink
-function addon:CreateConditionLink() return self:AcquireConditionWidget('RM-ConditionLink',function() return labelConstructor(false,true) end) end
+function addon:CreateConditionLink() return self:AcquireConditionWidget('RM-ConditionLink',function() return labelConstructor(true) end) end
 
 -- BEGIN GENERATED RM SOURCE BINDINGS
 do

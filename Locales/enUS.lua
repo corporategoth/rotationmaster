@@ -2306,6 +2306,11 @@ L['The fallback rotation is unavailable. Open Rotations to complete or recover i
 L['Class rotations are shared by characters of the same class in this settings profile. This character limits the rotation to your current character. Applying a scope change moves the complete saved rotation; an existing destination is never overwritten.'] = true
 L['Rotations belong to the active settings profile. New copies use Class, shared by your characters of that class; Metadata can change this to This character. Built In rotations show only for their declared class or universal use. Equal identifiers in different owners remain separate entries.'] = true
 L['Older rotations without a recorded owner stay in an archive. Recover unassigned rotations opens the current profile and character archives for inspection or copying. Choose Class or This character to adopt one. Adoption preserves its identifier and evidence, refuses an existing destination, and leaves incomplete records unavailable until repaired.'] = true
+L["Unsupported condition editor frame."] = true
+
+L["The native condition editor is unavailable."] = true
+
+L["Native custom condition editor required."] = true
 
 -- BEGIN GENERATED RM PUBLIC HELPER DOCS
 L["All original results, preserving nil positions and return count."] = true
@@ -2340,7 +2345,7 @@ L["Condition value record updated when a unit is chosen."] = true
 L["Configured unit selector; add it with parent:AddChild(widget)."] = true
 L["Copy a table using tostring of each original key as the destination key. Values retain their original identities. Colliding stringified keys overwrite each other in unspecified pairs traversal order."] = true
 L["Count all entries visited by pairs, including false values and sparse numeric or nonnumeric keys. A nil table has length zero."] = true
-L["Create a condition field container with RM-owned List, numeric Table and responsive spell-field layouts. It accepts existing condition widgets and legacy custom child widgets; add children with AddChild and attach the group to the callback parent."] = true
+L["Create a condition field container with RM-owned List, Table and responsive spell-field layouts. It accepts registered native condition widgets; add children with AddChild and attach the group to the callback parent."] = true
 L["Create a configured unit selector bound to a condition value record. Returns the widget for the caller to add to the condition callback parent."] = true
 L["Create a native boolean condition control. Configure SetLabel, SetValue, SetDisabled and OnValueChanged; add it with parent:AddChild(widget)."] = true
 L["Create a native button using the shared condition widget lifecycle and workbench theme. SetText, SetDisabled and SetCallback configure its label and interaction; OnClick receives the mouse button. Add it to the supplied parent."] = true

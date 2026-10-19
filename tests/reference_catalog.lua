@@ -1,10 +1,16 @@
 local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite()
-local function fixture()
+local function fixture(seed)
     local f=F.new();local a=f.addon;local names={[1]='Water',[2]='Bread'}
     f.env.GetItemInfo=function(id) id=tonumber(id) or id=='Water' and 1 or id=='Bread' and 2;local name=names[id];return name,name and '|Hitem:'..id..'|h['..name..']|h',nil,nil,nil,nil,nil,nil,nil,id and id+10 end
     f.env.GetItemInfoInstant=function(value) return tonumber(value) or value=='Water' and 1 or value=='Bread' and 2 end
-    a.bagContents={[1]=2};f.libraries['AceGUI-3.0-ItemLoader'].itemList={[1]={name='Water',icon=11},[2]={name='Bread',icon=12}}
+    a.bagContents={[1]=2}
     local h=io.open('Core/reference_catalog.lua');if h then h:close();f.load('Core/reference_catalog.lua') end
+    function f.seedItem(id,name,icon,link)
+        local previous=f.env.C_Item
+        f.env.C_Item={GetItemInfo=function() return name,link,nil,nil,nil,nil,nil,nil,nil,icon end}
+        local result=a:UpdateReferenceItem(id);f.env.C_Item=previous;return result
+    end
+    if seed~=false then assert(a:UpdateReferenceItem(1) and a:UpdateReferenceItem(2)) end
     return f
 end
 test('item and spell references share presentation while inventory is a scope filter',function()
@@ -48,40 +54,41 @@ test('native display metadata validates optional fields and returns detached rec
         local old=value[bad.slot];value[bad.slot]=bad.value;assert(not p.info(1),'malformed display field was accepted');value[bad.slot]=old
     end
     f.env.C_Item.GetItemInfo=function() error('native failed') end;assert(not p.info(1),'old metadata revived after a failed read')
-    local rows=p.search('Water');assert(#rows==0,'failed native metadata was revived from the loader')
+    local rows=p.search('Water');assert(#rows==0,'failed native metadata was revived from the index')
 end)
-test('malformed loader metadata and unreadable inputs cannot reach sorting string or texture operations',function()
-    local f=fixture();local p=f.addon:GetReferenceProvider('item');local secret={}
+test('malformed native metadata cannot enter the owned reference index or reach sorting',function()
+    local f=fixture(false);local p=f.addon:GetReferenceProvider('item');local secret={}
     f.env.canaccessvalue=function(v) return not rawequal(v,secret) end
-    f.libraries['AceGUI-3.0-ItemLoader'].itemList={[3]={name=secret},[4]={name='Bad icon',icon=secret},[5]={name='Bad link',link=secret},[6]={name=''},[7]={name='Good',icon=17}}
-    f.addon.bagContents={};local rows=p.search('',{limit=20});assert(#rows==1 and rows[1].id==7)
+    f.addon.bagContents={}
+    assert(not f.seedItem(3,secret,nil) and not f.seedItem(4,'Bad icon',secret) and not f.seedItem(5,'Bad link',nil,secret) and not f.seedItem(6,'',nil))
+    assert(f.seedItem(7,'Good',17));local rows=p.search('',{limit=20});assert(#rows==1 and rows[1].id==7)
     for _,value in ipairs({secret,{},false,math.huge}) do assert(not p.resolve(value) and not p.search(value),'non-public text input was accepted') end
     assert(not p.search('',{limit=0/0}),'NaN search limit was accepted')
 end)
-test('equipped-only items are indexed and unloaded metadata does not turn the loader into an ownership source',function()
+test('equipped-only items are indexed and unloaded metadata does not turn the index into an ownership source',function()
     local f=fixture();local a=f.addon;local p=a:GetReferenceProvider('Inventory_EditBox')
-    a.bagContents={};f.libraries['AceGUI-3.0-ItemLoader'].itemList={}
+    a.bagContents={}
     f.env.GetInventoryItemID=function(_,slot) if slot==16 then return 2 end end
     local rows=p.search('',{inventory=true});assert(#rows==1 and rows[1].id==2 and rows[1].name=='Bread')
     f.env.GetInventoryItemID=nil;f.env.GetItemInfo=function() return nil end
-    f.libraries['AceGUI-3.0-ItemLoader'].itemList={[3]={name='Indexed',icon=13}}
+    assert(f.seedItem(3,'Indexed',13))
     rows=p.search('Indexed',{inventory=true});assert(#rows==0)
     rows=p.search('Indexed');assert(#rows==1 and rows[1].id==3)
 end)
 test('unloaded names never excuse malformed optional native display fields',function()
     local f=fixture();local a=f.addon;local p=a:GetReferenceProvider('item');a.bagContents={}
-    f.libraries['AceGUI-3.0-ItemLoader'].itemList={[3]={name='Indexed',icon=13}}
+    assert(f.seedItem(3,'Indexed',13))
     for _,bad in ipairs({{icon={}},{link={}},{icon=false},{link=false}}) do
         f.env.C_Item={GetItemInfo=function() return nil,bad.link,nil,nil,nil,nil,nil,nil,nil,bad.icon end}
-        local rows=p.search('3');assert(#rows==0,'malformed native field revived a loader row')
+        local rows=p.search('3');assert(#rows==0,'malformed native field revived a indexed row')
     end
     f.env.C_Item.GetItemInfo=function() return nil end
-    assert(#p.search('3')==1,'genuinely unloaded metadata should permit the readable loader row')
+    assert(#p.search('3')==1,'genuinely unloaded metadata should permit the readable indexed row')
 end)
 test('failed unowned indexed items recover on subsequent name and blank searches',function()
     for _,query in ipairs({'Indexed',''}) do
-        local f=fixture();local a=f.addon;local p=a:GetReferenceProvider('item');a.bagContents={}
-        f.libraries['AceGUI-3.0-ItemLoader'].itemList={[3]={name='Indexed',icon=13}}
+        local f=fixture(false);local a=f.addon;local p=a:GetReferenceProvider('item');a.bagContents={}
+        assert(f.seedItem(3,'Indexed',13))
         local ready=false;f.env.C_Item={GetItemInfo=function() if ready then return 'Indexed',nil,nil,nil,nil,nil,nil,nil,nil,13 end;error('temporary') end}
         assert(#p.search('3')==0);ready=true
         local rows=p.search(query);assert(#rows==1 and rows[1].id==3,'recovered item remained hidden until its ID was retried')

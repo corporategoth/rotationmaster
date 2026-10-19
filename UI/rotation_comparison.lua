@@ -185,7 +185,7 @@ function addon:ShowRotationComparison(spec,id)
         return now and context and now.class==context.class and now.character==context.character and (not recordToken or coordinator:TokenCurrent(recordToken)) and (not targetToken or coordinator:TokenCurrent(targetToken))
     end
     local function control(widget,x,y,width)
-        widget:SetParent(d);widget.frame:ClearAllPoints();widget.frame:SetPoint('TOPLEFT',d.frame,'TOPLEFT',x,y);widget:SetWidth(width);widget.frame:Show();d.children[#d.children+1]=widget;return widget
+        widget.frame:SetParent(d.frame);widget.frame:ClearAllPoints();widget.frame:SetPoint('TOPLEFT',d.frame,'TOPLEFT',x,y);widget:SetWidth(width);widget.frame:Show();d.children[#d.children+1]=widget;return widget
     end
     d.active=true
     local own=record.body;d.chrome:SetContext(L['Compare rotations'],L['Read-only'],own and own.name or DEFAULT)

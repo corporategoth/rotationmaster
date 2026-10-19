@@ -40,11 +40,10 @@ local function fixture(modern, absentThreat)
     local L = setmetatable({}, {__index = function(_, key) return key end})
     local libs = {
         ['AceAddon-3.0'] = {NewAddon = function(_, object) return object end},
-        ['AceGUI-3.0'] = {}, ['AceConsole-3.0'] = {RegisterChatCommand = function() end,Printf=function() end},
+        ['AceConsole-3.0'] = {RegisterChatCommand = function() end,Printf=function() end},
         ['LibCompress'] = {},
         ['AceEvent-3.0'] = {SendMessage = function() end},
         ['AceDB-3.0'] = {New = function(_, _, defaults) return defaults end},
-        ['AceGUI-3.0-SpellLoader'] = {}, ['AceGUI-3.0-ItemLoader'] = {},
         ['AceLocale-3.0'] = {GetLocale = function() return L end},
         ['LibDBIcon-1.0'] = {Register = function() end}, ['LibSharedMedia-3.0'] = {},
         ['LibDataBroker-1.1'] = {NewDataObject = function(_, _, data) env.broker=data;return data end},
@@ -542,8 +541,8 @@ test('recommendations skip Earth Shock cooldowns in existing rotations and optio
     addon:EvaluateNextActionInternal();assert(glowing==nil and addon.currentSpell==nil,'unknown cooldown retained a recommendation')
     -- The optional preview uses the same modern metadata as bar discovery.
     local widget=dofile('tests/fixtures/addon.lua').new().widget
-    env.LibStub('AceGUI-3.0').Create=function(_,kind) assert(kind=='Icon');return widget(kind) end
     addon.nextWindow=widget('preview')
+    function addon.nextWindow:AddRecommendation(id) local info=addon.Platform:GetSpellInfo(id);self.children[#self.children+1]={label=info.name,image=info.iconID} end
     function addon.nextWindow:ReleaseChildren() self.children={} end
     function addon.nextWindow:PauseLayout() end
     function addon.nextWindow:ResumeLayout() end
@@ -657,7 +656,7 @@ local function persistentFixture(saved,folder,scoped)
     env.Enum={PowerType={Runes=5,SoulShards=7,Chi=12,ArcaneCharges=16}}
     env.GetItemInfo=function() end
     load('globals.lua');load('constants.lua');load('Functions/values.lua');load('Functions/presentation.lua');load('Functions/text.lua');load('Functions/collections.lua');load('Functions/cache.lua');load('utils.lua');load('profiler.lua')
-    load('Core/itemset_services.lua');load('Core/conditions.lua');load('Core/condition_catalog.lua');load('Conditions/known_spell.lua');load('UI/condition_entrypoints.lua');load('Options/conditional.lua')
+    load('Core/itemset_services.lua');load('Core/conditions.lua');load('Core/condition_catalog.lua');load('Conditions/known_spell.lua');load('UI/condition_entrypoints.lua')
     load('main.lua')
     local make=dofile('tests/fixtures/rotation_data.lua')
     local data,envelope=make();addon.RotationData=data
@@ -931,6 +930,15 @@ local function recommendationFixture()
     return env,a,state,a.db.profile.rotations[0]['test-priority'],load
 end
 
+test('unsupported historical previews are ignored without GUI lookup or foreign mutation',function()
+    local env,a,state,body=recommendationFixture()
+    body.rotation={{id='bolt',type='spell',action=403,ranked=true,conditions={}}}
+    local function forbidden() error('foreign preview mutated') end
+    a.nextWindow={ReleaseChildren=forbidden,PauseLayout=forbidden,ResumeLayout=forbidden,DoLayout=forbidden,AddChild=forbidden}
+    local lib=env.LibStub;env.LibStub=function(name,...) assert(name~='AceGUI-3.0');return lib(name,...) end
+    a:EvaluateNextActionInternal();assert(state.main==403 and a.currentSpell==403)
+end)
+
 test('real recommendations choose branch arms, skip forced guards and stop safely on unavailable data',function()
     local _,a,state,b=recommendationFixture()
     b.rotation={{id='branch',type='branch',mode='evaluate',conditions={type='TEST_GATE'},
@@ -984,8 +992,8 @@ test('conditional Stop ends priorities and optionally suppresses Attack while pr
     stop.disabled=false;s.gate=true
     body.rotation={{id='first',type='spell',action=403,ranked=true,conditions={}},stop}
     local widget=dofile('tests/fixtures/addon.lua').new().widget
-    env.LibStub('AceGUI-3.0').Create=function(_,kind) return widget(kind) end
     a.nextWindow=widget('preview')
+    function a.nextWindow:AddRecommendation(id) self.children[#self.children+1]={spellId=id} end
     function a.nextWindow:ReleaseChildren() self.children={} end
     function a.nextWindow:PauseLayout() end;function a.nextWindow:ResumeLayout() end;function a.nextWindow:DoLayout() end
     a.db.profile.preview_spells=5
@@ -1184,7 +1192,7 @@ test('reference-only combat callbacks ignore payloads before logging querying or
         assert(a.combatHistory==combat and next(combat)==nil and a.spellHistory==spells and #spells==0 and a.damageHistory==damage and next(damage)==nil and a.unitsInRange==units and next(units)==nil)
         local learned,items
         a.debug=function() end;a.SpellCatalog={UpdateSpell=function(_,id) learned=id end}
-        env.LibStub('AceGUI-3.0-ItemLoader').UpdateItem=function(_,id) items=id end
+        a.UpdateReferenceItem=function(_,id) items=id end
         a:SPELL_DATA_LOAD_RESULT('SPELL_DATA_LOAD_RESULT',403,true);a:ITEM_DATA_LOAD_RESULT('ITEM_DATA_LOAD_RESULT',1,true)
         assert(learned==403 and items==1,'reference metadata callbacks were suppressed')
     end
@@ -1251,7 +1259,6 @@ end)
 test('real recommendation engine fills the native preview with spell and item icons without AceGUI icons',function()
     local env,a,state,body,load=recommendationFixture();dofile('tests/fixtures/native_ui.lua')(env);load('UI/controls.lua');load('UI/preview.lua')
     env.C_Item.GetItemInfo=function(id) return 'Item '..id,nil,nil,nil,nil,nil,nil,nil,nil,id+10 end
-    env.LibStub('AceGUI-3.0').Create=function() error('native preview allocated AceGUI') end
     local lib=env.LibStub;env.LibStub=function(name,...) assert(name~='AceGUI-3.0','native preview requested legacy widget library');return lib(name,...) end
     a.db.profile.preview_spells=2;state.stock[5512]=1;state.combat=false
     body.rotation={{id='bolt',type='spell',action=403,ranked=true,conditions={}},{id='stone',type='item',action={5512},conditions={}}}
@@ -1268,19 +1275,17 @@ test('broker launcher toggles the workbench through its guarded Hide without cre
     env.broker.OnClick(nil,'LeftButton');assert(opened==1 and closed==1 and shown,'launcher bypassed pending-change close guard')
     shown=false;env.broker.OnClick(nil,'LeftButton');assert(opened==2)
 end)
-test('main metadata events update the actual ItemLoader consumed by native reference search',function()
+test('main metadata events update the native reference index without GUI libraries',function()
     for _,modern in ipairs({false,true}) do
-        local env,a,load=fixture(modern);local previous=env.LibStub;env.LibStub=nil;load('Libs/LibStub/LibStub.lua')
-        local lib=env.LibStub;local call=getmetatable(lib).__call
-        getmetatable(lib).__call=function(self,name,silent) if self.libs[name] then return call(self,name,silent) end;return previous(name,silent) end
-        load('Libs/AceGUI-3.0-Item-EditBox/ItemLoader.lua');local item=lib('AceGUI-3.0-ItemLoader');local available=false
+        local env,a,load=fixture(modern);local available=false
         env.GetItemInfoInstant=function(value) if value==10 or value=='Event potion' then return 10,nil,nil,nil,110 end end
         env.GetItemInfo=function(id) if available and id==10 then return 'Event potion','item:10',nil,nil,nil,nil,nil,nil,nil,110 end end
-        load('main.lua');initialize(a);a.debug=function() end
-        a:ITEM_DATA_LOAD_RESULT('ITEM_DATA_LOAD_RESULT',10,false);assert(not item.itemList[10])
+        load('Core/reference_catalog.lua');load('main.lua');initialize(a);a.debug=function() end;a.bagContents={}
+        local provider=a:GetReferenceProvider('Item_EditBox')
+        a:ITEM_DATA_LOAD_RESULT('ITEM_DATA_LOAD_RESULT',10,false);assert(#provider.search('Event potion',{limit=20})==0)
         available=true;a:ITEM_DATA_LOAD_RESULT('ITEM_DATA_LOAD_RESULT',10,true)
-        assert(item.itemList[10].name=='Event potion' and item.itemList[10].link=='item:10' and item.itemListReverse['event potion']==10 and not item.loader)
-        load('Core/reference_catalog.lua');local rows=a:GetReferenceProvider('Item_EditBox').search('',{limit=20});assert(#rows==1 and rows[1].id==10 and rows[1].name=='Event potion')
+        local rows=provider.search('Event potion',{limit=20});assert(#rows==1 and rows[1].id==10 and rows[1].name=='Event potion' and rows[1].link=='item:10')
+        available=false;assert(#provider.search('Event potion',{limit=20})==1,'unloaded metadata lost native cached search')
     end
 end)
 test('source import provenance has a global default and survives real AceDB reload',function()

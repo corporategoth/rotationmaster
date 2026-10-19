@@ -42,7 +42,6 @@ test('full default reference shows switching, priority and independent optional 
     local f,row=fixture();local a=f.addon
     row.envelope.body.cooldowns={{id='shield',type='spell',action=324,conditions={type='BUFF',spell=324}}}
     row.envelope.body.switch={type='LEVEL',level=20}
-    f.libraries['AceGUI-3.0'].Create=function() error('default reference allocated through Ace') end
     a.CloneDefaultRotation=function() error('viewing must not clone') end
     local frame=a:ShowDefaultRotation(0,'pack',function() end)
     local text=F.text(frame.root)
@@ -100,7 +99,6 @@ test('default exports route through the immutable runtime reference',function()
 end)
 test('native default window owns pooled content and ignores callbacks after close or profile replacement',function()
     local f,row=fixture();local a=f.addon;local before=a.RotationData.CopyData(row.envelope);local changed=0
-    f.libraries['AceGUI-3.0'].Create=function() error('default window allocated through Ace') end
     a.SetDefaultRotationEnabled=function() changed=changed+1;return true end
     a.CloneDefaultRotation=function() changed=changed+1;return 'clone' end
     a.ShowRotationTransfer=function() changed=changed+1 end
@@ -115,21 +113,9 @@ test('native default window owns pooled content and ignores callbacks after clos
     d.frame.scripts.OnUpdate();assert(not d.frame:IsShown() and not root.rmActive)
     assert(a:SettingsDataEqual(row.envelope,before),'reference view changed source data')
 end)
-test('embedded native viewport releases content and restores group methods under a shipped Ace parent',function()
-    local f=fixture();local a=f.addon;local ace=f.libraries['AceGUI-3.0'];local constructors=ace.constructors;local stub=f.env.LibStub
-    f.env.LibStub=setmetatable({NewLibrary=function() return ace end},{__call=function(_,...) return stub(...) end})
-    f.env.geterrorhandler=function() return error end
-    f.env.xpcall=function(callback,handler,...) local args={n=select('#',...),...};return xpcall(function() return callback(unpack(args,1,args.n)) end,handler) end
-    f.env.table=setmetatable({wipe=function(value) for key in pairs(value) do value[key]=nil end;return value end},{__index=table})
-    local create=f.env.CreateFrame;f.env.CreateFrame=function(...)
-        local frame=create(...);local size=frame.SetSize;local width,height=frame:GetWidth(),frame:GetHeight()
-        function frame:GetWidth() return width end;function frame:GetHeight() return height end
-        function frame:SetSize(w,h) w,h=w or width,h or height;if width~=w or height~=h then width,height=w,h;size(self,w,h) end end
-        return frame
-    end
-    f.load('Libs/AceGUI-3.0/AceGUI-3.0.lua');for kind,build in pairs(constructors) do ace:RegisterWidgetType(kind,build,1) end
-    f.load('Libs/AceGUI-3.0/widgets/AceGUIContainer-SimpleGroup.lua')
-    local parent=ace:Create('SimpleGroup');parent:SetWidth(700);parent:SetHeight(620);parent:SetLayout('List')
+test('embedded native viewport releases content and restores group methods under a native parent',function()
+    local f=fixture();local a=f.addon
+    local parent=a:CreateConditionGroup();parent:SetWidth(700);parent:SetHeight(620);parent:SetLayout('List')
     local seen={}
     for _=1,5 do
         a:CreateDefaultRotationOptions(parent,0,'pack',function() end)
@@ -137,7 +123,7 @@ test('embedded native viewport releases content and restores group methods under
         assert(holder.rmWidget and viewport:IsShown() and content and content.rmActive and holder.frame:GetHeight()>=120)
         seen[#seen+1]={holder=holder,content=content,viewport=viewport}
     end
-    ace:Release(parent)
+    a:ReleaseConditionWidget(parent)
     for _,entry in ipairs(seen) do assert(not entry.holder.rmActive and not entry.content.rmActive and not entry.viewport.contentWidget and not entry.viewport:IsShown(),'embedded content retained its owner') end
     local group=a:CreateConditionGroup();group:SetWidth(200);local child=a:CreateConditionCheckBox();group:AddChild(child)
     assert(group.frame:GetHeight()==24 and child.frame:GetParent()==group.frame,'reference viewport methods escaped into an ordinary group lease')

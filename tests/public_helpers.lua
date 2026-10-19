@@ -55,17 +55,14 @@ test('native field helper clones create the same widget contracts and unit contr
     end
     local unit=clone(a,'Widget_UnitWidget');local value={unit='player'};local updates=0;local widget=unit(a,value,{player='Player',target='Target'},function() updates=updates+1 end);widget.configure();assert(widget:GetValue()=='player');widget:Fire('OnValueChanged','target');assert(value.unit=='target' and updates==1)
 end)
-test('saved Ace factory bodies retain captured library bindings after native migration',function()
-    local f,a=fixture()
-    f.load('Conditions/combat.lua');f.load('Conditions/talent.lua')
-    for _,module in ipairs({'Conditions/common.lua','Conditions/combat.lua','Conditions/talent.lua'}) do assert(a:ResolveFunctionBinding('builtin:'..module..':AceGUI')==f.libraries['AceGUI-3.0']) end
-    f.libraries['AceGUI-3.0'].Release=function(_,widget) widget.isQueuedForRelease=true;widget:OnRelease();widget.isQueuedForRelease=nil end
-    for index,entry in ipairs({{'UI/checkbox.lua','RM-CheckBox'},{'UI/selector.lua','RM-Selector'},{'UI/condition_inputs.lua','RM-ConditionEditBox'},{'UI/condition_inputs.lua','RM-ConditionSlider'}}) do
-        local id='builtin:'..entry[1]..':AceGUI';assert(a:ResolveFunctionBinding(id)==f.libraries['AceGUI-3.0'])
-        local source={description='Historical cloned factory',args={{name='self',type='table'}},returns={{type='table'}},bindings={AceGUI=id},code='return AceGUI:Create("'..entry[2]..'")'}
-        assert(a:InstallCustomFunction('OLD_FACTORY_'..index,source))
-        local factory=assert(a:ResolveFunctionBinding('OLD_FACTORY_'..index));local widget=factory(a)
-        assert(widget.type==entry[2] and widget.rmActive and widget.Release);assert(a:ReleaseConditionWidget(widget));assert(not a:ReleaseConditionWidget(widget))
+test('retired GUI factory sources remain stored but cannot resolve an executable function',function()
+    local _,a=fixture()
+    for index,module in ipairs({'Conditions/common.lua','Conditions/combat.lua','Conditions/talent.lua','UI/checkbox.lua','UI/selector.lua','UI/condition_inputs.lua','UI/condition_layout.lua'}) do
+        local id='builtin:'..module..':AceGUI';assert(not a.builtinFunctions[id] and a:ResolveFunctionBinding(id)==nil)
+        local source={description='Historical captured GUI factory',args={},returns={{type='table'}},bindings={AceGUI=id},code='return AceGUI:Create("Label")'}
+        local before=a:CopySettingsData(source);a.db.global.custom_functions=a.db.global.custom_functions or {};a.db.global.custom_functions['OLD_FACTORY_'..index]=source;a:InitializeFunctionRegistry()
+        local fn,why=a:ResolveFunctionBinding('OLD_FACTORY_'..index);assert(fn==nil and why=='missing-function')
+        assert(a:SettingsDataEqual(source,before) and a:SettingsDataEqual(a.db.global.custom_functions['OLD_FACTORY_'..index],before),'retirement rewrote saved source')
     end
 end)
 test('public helper catalog is available across the reviewed client inventory',function()
@@ -81,13 +78,13 @@ test('public descriptions argument help and return help use runtime locale keys'
 end)
 test('spell field clones retain original group callbacks and update the same record fields',function()
     local f,a=fixture(1,10);dofile('tests/fixtures/native_ui.lua')(f.env);local fn=clone(a,'Widget_SpellWidget')
-    local function input() local widget=f.widget('EditBox');widget.type='TestEditBox';widget.frame=f.env.CreateFrame('Frame');return widget end
+    local function input() return a:CreateConditionEditBox() end
     a.CreateSpellEditBox=function() return input() end;a.CreateSpellActionIcon=function() return input() end
     a.SpellCatalog.SpellName=function(_,id) return 'Spell '..tostring(id) end;a.SpellCatalog.GetSpellId=function() return 123 end
     for _,helper in ipairs({a.Widget_SpellWidget,fn}) do
         local value={spell=123};local changed=0;local group=helper(a,0,'Spec_EditBox',value,function() return 456 end,function(id) return type(id)=='number' end,function() changed=changed+1 end)
         assert(group.layout=='RM-SpellField' and #group.children==2)
-        local spell=group.children[2];spell.callbacks.OnEnterPressed(spell,'OnEnterPressed','New name');assert(value.spell==456 and changed==1)
+        local spell=group.children[2];spell:Fire('OnEnterPressed','New name');assert(value.spell==456 and changed==1)
     end
 end)
 test('every generated helper description including private ownership has a registered locale key',function()

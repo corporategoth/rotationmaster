@@ -21,15 +21,6 @@ local function fixture()
  function frame:CreateMaskTexture(...) return self:CreateTexture(...) end;function frame:AddMaskTexture() end
  return frame end
  f.env.CreateFrame=function(...) return augmented(create(...)) end
- local ace=f.libraries['AceGUI-3.0'];local aceCreate=ace.Create
- ace.Create=function(self,kind)
-  local widget=aceCreate(self,kind);widget.frame=widget.frame or f.env.CreateFrame('Frame');widget.userdata=widget.userdata or {}
-  if kind=='SimpleGroup' then
-   function widget:DoLayout() local height=0;for _,child in ipairs(self.children) do height=height+(child.frame and child.frame:GetHeight() or 20) end;self.frame:SetHeight(math.max(1,height));if self.LayoutFinished then self:LayoutFinished(self.frame:GetWidth(),height) end end
-   local add=widget.AddChild;function widget:AddChild(child) add(self,child);if child.frame then child.frame:SetParent(self.frame) end;self:DoLayout() end
-  end;return widget
- end
- ace.Release=function(self,widget) if widget.isQueuedForRelease then return end;widget.isQueuedForRelease=true;for _,child in ipairs(widget.children or {}) do self:Release(child) end;if widget.OnRelease then widget:OnRelease() end;if widget.frame then widget.frame:Hide() end end
  f.load('Core/custom_authoring.lua');f.load('Core/lua_symbols.lua');f.load('UI/settings_transfer.lua');f.load('UI/condition_source_preview.lua');f.load('UI/lua_debug_output.lua');f.load('UI/lua_completion.lua');do local lines=io.open('UI/line_numbers.lua');if lines then lines:close();f.load('UI/line_numbers.lua') end end;f.load('UI/lua_editor.lua');f.load('Libs/LuaWorkbench-Embed/modules.lua');local file=io.open('Integrations/lua_workbench.lua');if file then file:close();f.load('Integrations/lua_workbench.lua') end
  f.env.LuaWorkbench={db={options={autocomplete=true},drafts={user={source='KEEP'}}}};f.env.LuaWorkbenchDB={drafts={user={source='KEEP'}}}
  return f,f.addon
@@ -210,9 +201,9 @@ test('condition callback debugging supplies typed values tags and real disposabl
 end)
 test('debugger tracks orphan controls only during resume and restores every shared factory',function()
  local f,a=fixture();local body={fields={},bindings={}};local owner={frame=f.env.UIParent,model={key='ORPHAN'},OwnerValid=function() return true end,Flush=function() return true end,PendingSource=function() return body end,Show=function() end}
- local create=a.CreateConditionEditBox;local ace=f.libraries['AceGUI-3.0'];local aceCreate=ace.Create;a.capturedConditionFactory=create
+ local create=a.CreateConditionEditBox;a.capturedConditionFactory=create
  local c=a:CreateLuaWorkbenchControl(f.env.UIParent,function() end,function() return true end);c:SetText('addon.orphan=addon.capturedConditionFactory(addon); error("orphan-error")');c:SetContext({kind='condition',id='ORPHAN',callback='widget',source=body,testOwner=owner});assert(c:Debug())
- for i=1,40 do if c.engine.Debugger.paused then c.engine.Debugger:StepOver() else c.engine.Debugger:Pump() end;assert(a.CreateConditionEditBox==create and ace.Create==aceCreate,'shared factories changed while the debugger is paused') end
+ for i=1,40 do if c.engine.Debugger.paused then c.engine.Debugger:StepOver() else c.engine.Debugger:Pump() end;assert(a.CreateConditionEditBox==create,'shared factories changed while the debugger is paused') end
  assert(c.debugError:find('orphan-error',1,true));c:Release();assert(not a.orphan.alive,'failed unattached control leaked')
 end)
 test('function hover keeps interline spacing out of glyph scaling',function()

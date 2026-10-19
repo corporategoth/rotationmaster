@@ -17,8 +17,7 @@
 ## X-Project-Revision: @project-revision@
 ## X-ReleaseDate: @project-date-iso@
 ## SavedVariables: RotationMasterDB
-## OptionalDeps: Ace3, LibAboutPanel-2.0, LibDBIcon-1.0, LibDataBroker-1.1, LibCompress, CallbackHandler-1.0, LibCustomGlow, ThreatClassic-1.0, LibClassicDurations, LibRangeCheck-3.0
-## X-Embeds: AceGUI-3.0-ActionSlotWidgets, AceGUI-3.0-Item-EditBox, AceGUI-3.0-Spell-EditBox
+## OptionalDeps: LibDBIcon-1.0, LibDataBroker-1.1, LibCompress, CallbackHandler-1.0, LibCustomGlow, ThreatClassic-1.0, LibClassicDurations, LibRangeCheck-3.0
 ## X-Credits: None
 ## X-License: MIT
 ## X-Author-Server: Atiesh
@@ -129,14 +128,11 @@ UI/condition_observation.lua
 UI/condition_icon.lua
 UI/condition_position.lua
 UI/condition_display.lua
-UI/native_widget_compat.lua
 UI/selector.lua
 UI/checkbox.lua
 UI/condition_inputs.lua
-UI/native_field_compat.lua
 UI/condition_layout.lua
 UI/condition_table.lua
-UI/native_group_compat.lua
 UI/condition_unit.lua
 UI/icon_picker.lua
 UI/window.lua
@@ -195,9 +191,6 @@ UI/rotation_comparison.lua
 UI/transfer.lua
 UI/rotation_adoption.lua
 
-Widgets/help.lua
-Widgets/directional.lua
-Widgets/disable_inline.lua
 
 # Code authoring UI
 UI/lua_input_diagnostics.lua
@@ -214,8 +207,6 @@ UI/custom_condition_editor.lua
 UI/condition_source_preview.lua
 UI/condition_source_pane.lua
 UI/condition_entrypoints.lua
-# Explicit legacy renderer factory; native entry points do not initialize Ace.
-Options/conditional.lua
 
 # Help Files
 Help/common.lua
@@ -230,7 +221,6 @@ Help/conditional.lua
 
 # Conditions
 Conditions/common.lua
-UI/spell_field_compat.lua
 Conditions/character.lua
 Conditions/talent.lua
 Conditions/stats.lua

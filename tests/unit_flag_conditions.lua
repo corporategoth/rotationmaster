@@ -111,14 +111,15 @@ test('only three exact evaluators change with full module bytes and historical c
     local f,a=fixture()
     for _,case in ipairs({{'combat',{'COMBAT','ENEMY'},'7df14566'},{'misc',{'PVP'},'d2cf6e51'}}) do
         local file=assert(io.open('Conditions/'..case[1]..'.lua'));local text=file:read('*a');file:close()
+        if case[1]=='combat' then text=dofile('tests/fixtures/restore_retired_gui_getter.lua')(text) end
         for _,tag in ipairs(case[2]) do local start=assert(text:find(repaired[tag],1,true),'exact repaired '..tag..' missing');assert(not text:find(repaired[tag],start+1,true),'multiple repaired '..tag..' bodies')
             text=text:sub(1,start-1)..original[tag]..text:sub(start+#repaired[tag])
         end
         assert(a:FunctionSourceHash(text)==case[3],case[1]..' changed beyond three approved flag callbacks from6b046b1')
     end
-    for module,hashes in pairs({['Conditions/combat.lua']={color='dbda383d',character_class='d17cf4c1',AceGUI='a287fe2d',helpers='9e28e933'},['Conditions/misc.lua']={color='89a5436e',helpers='3ab28a24'}}) do
+    for module,hashes in pairs({['Conditions/combat.lua']={color='dbda383d',character_class='d17cf4c1',helpers='9e28e933'},['Conditions/misc.lua']={color='89a5436e',helpers='3ab28a24'}}) do
         for name,hash in pairs(hashes) do local id='builtin:'..module..':'..name;assert(a:FunctionSourceHash(assert(a.builtinFunctions[id]).source)==hash,'private source changed '..id);assert(a:ResolveFunctionBinding(id)==a.builtinSourceModules[module](name)) end
     end
-    assert(a:ResolveFunctionBinding('builtin:Conditions/combat.lua:AceGUI')==f.libraries['AceGUI-3.0'])
+    assert(not a.builtinFunctions['builtin:Conditions/combat.lua:AceGUI'] and a:ResolveFunctionBinding('builtin:Conditions/combat.lua:AceGUI')==nil)
 end)
 finish()

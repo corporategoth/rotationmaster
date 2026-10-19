@@ -14,7 +14,7 @@ local function fixture(native)
     if native then e.C_Item=api;e.C_Container={GetContainerNumSlots=slots,GetContainerItemInfo=info}
     else for key,fn in pairs(api) do e[key]=fn end;e.GetContainerNumSlots=slots;e.GetContainerItemInfo=info end
     e.NUM_BAG_SLOTS=4
-    f.load('Platform/items.lua');f.load('Platform/inventory.lua');f.load('Core/itemset_services.lua');f.load('Options/itemset.lua')
+    f.load('Platform/items.lua');f.load('Platform/inventory.lua');f.load('Core/itemset_services.lua')
     local h=io.open('Core/item_sets.lua');if h then h:close();f.load('Core/item_sets.lua') end
     return f,state,api
 end

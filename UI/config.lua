@@ -185,17 +185,11 @@ local function newShell()
     function shell:ReleasePane()
         addon.configPaneGeneration=(addon.configPaneGeneration or 0)+1
         addon.currentConditionEval=nil;addon.specTab=nil
-        -- Native fields may contain explicit custom Ace children. Preserve
-        -- their focus cleanup at this shared ownership boundary.
+        -- Clear pending native focus before retiring the current pane.
         addon:ClearConditionWidgetFocus()
         if self.pane then
             local pane=self.pane;self.pane=nil
-            if self.nativePane then pane:Release()
-            else
-                -- This branch owns only an explicitly borrowed Ace host.
-                ---@cast pane AceGUIWidget
-                addon:GetConditionWidgetCompatibilityLibrary():Release(pane)
-            end
+            if self.nativePane then pane:Release() end
             self.nativePane=nil
         end
     end
@@ -221,10 +215,6 @@ local function newShell()
     function shell:RefreshTabs()
         local entries={}
         for _,entry in ipairs(sections) do entries[#entries+1]=entry end
-        local modules={}
-        for name in pairs(addon.configModuleApps or {}) do modules[#modules+1]=name end
-        table.sort(modules)
-        for _,name in ipairs(modules) do entries[#entries+1]={value="module:"..name,text=name} end
         self.tabs={}
         for index,entry in ipairs(entries) do
             local tab=self.buttons[index]
@@ -244,7 +234,7 @@ local function newShell()
     end
     function shell:SelectSection(key,approved)
         if not approved and self.pane and self.nativePane and self.pane.RequestLeave then
-            -- Native browser and legacy fields intentionally share this boundary.
+            -- Native editors preserve their pending changes at this boundary.
             ---@type any
             local current=self.pane
             return current:RequestLeave(function() if self.pane==current and self.frame:IsShown() then self:SelectSection(key,true) end end)
@@ -270,29 +260,17 @@ local function newShell()
             local pane=addon:OpenNativeSettings(content,key,self.settingsPanes[key])
             if pane then self.nativePane=true;self.pane=pane;self.settingsPanes[key]=pane;return end
         end
-        local module=key:match('^module:(.+)$')
-        local moduleRenderer=module and addon.configModuleApps and addon.configModuleApps[module] and type(addon.BuildModuleConfigurationPane)=='function'
-        local legacyRenderer=type(addon.BuildConfigurationPane)=='function'
-        if not moduleRenderer and not legacyRenderer then
-            local pane=self.unavailablePane
-            if not pane then
-                pane={frame=CreateFrame('Frame',nil,content)};self.unavailablePane=pane
-                pane.frame:SetPoint('TOPLEFT',content,'TOPLEFT',0,0)
-                pane.message=text(pane.frame);pane.message:SetPoint('TOPLEFT',8,-8);pane.message:SetWordWrap(true)
-                function pane:SetWidth(width) self.frame:SetWidth(width);self.message:SetWidth(math.max(1,width-16)) end
-                function pane:SetHeight(height) self.frame:SetHeight(height) end
-                function pane:Release() self.frame:Hide() end
-            end
-            pane.message:SetText(string.format(L['Native settings page unavailable: %s'],key));pane:SetWidth(content:GetWidth());pane:SetHeight(content:GetHeight());pane.frame:Show()
-            self.nativePane=true;self.pane=pane;return
+        local pane=self.unavailablePane
+        if not pane then
+            pane={frame=CreateFrame('Frame',nil,content)};self.unavailablePane=pane
+            pane.frame:SetPoint('TOPLEFT',content,'TOPLEFT',0,0)
+            pane.message=text(pane.frame);pane.message:SetPoint('TOPLEFT',8,-8);pane.message:SetWordWrap(true)
+            function pane:SetWidth(width) self.frame:SetWidth(width);self.message:SetWidth(math.max(1,width-16)) end
+            function pane:SetHeight(height) self.frame:SetHeight(height) end
+            function pane:Release() self.frame:Hide() end
         end
-        local pane=addon:GetConditionWidgetCompatibilityLibrary():Create("SimpleGroup")
-        self.pane=pane;pane:SetLayout("Fill");pane:SetUserData("appName",addon.name)
-        pane.frame:SetParent(content);pane.frame:ClearAllPoints();pane.frame:SetAllPoints(content)
-        pane:SetWidth(content:GetWidth());pane:SetHeight(content:GetHeight())
-        pane.frame:Show()
-        if moduleRenderer then addon:BuildModuleConfigurationPane(pane,key)
-        else addon:BuildConfigurationPane(pane,key) end
+        pane.message:SetText(string.format(L['Native settings page unavailable: %s'],key));pane:SetWidth(content:GetWidth());pane:SetHeight(content:GetHeight());pane.frame:Show()
+        self.nativePane=true;self.pane=pane
     end
     addon:SetUIScript(window,"OnSizeChanged",function() shell:Layout() end)
     addon:SetUIScript(window,"OnHide",function() shell.scaleDragging=false;shell.pendingScale=nil;addon:SetUIScript(window,"OnUpdate",nil);shell:CloseHelp();shell.languageMenu:Hide();shell.linkPane:Hide();shell.linkInput:ClearFocus();shell:ReleasePane() end)
@@ -300,8 +278,7 @@ local function newShell()
     return shell
 end
 
--- Built-in tabs use native settings forms. Optional modules retain their own
--- configuration renderer behind the same owned pane boundary.
+-- Built-in tabs use native settings forms and owned editor panes.
 function addon:ShowConfig(section,selection)
     self.configRotationSelection=selection
     self:SetupOptions()
@@ -316,8 +293,8 @@ end
 function addon:RefreshConfiguration()
     local shell=self.configWindow
     if not shell or not shell.frame:IsShown() then return end
-    -- AceConfig and legacy fields still use their widget after invoking a set
-    -- callback. Rebuild on the next UI update, after that callback has returned.
+    -- Native controls still use their owner after invoking a field callback.
+    -- Rebuild on the next UI update, after that callback has returned.
     addon:SetUIScript(shell.frame,"OnUpdate",function(frame)
         addon:SetUIScript(frame,"OnUpdate",nil)
         if frame:IsShown() then shell:RefreshTabs();shell:SelectSection(shell.section) end

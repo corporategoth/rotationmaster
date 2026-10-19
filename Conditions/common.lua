@@ -495,7 +495,6 @@ end
 -- BEGIN GENERATED RM SOURCE BINDINGS
 do
     local function sourceGetter(name)
-        if name=="AceGUI" then return addon:GetConditionWidgetCompatibilityLibrary() end
         if name=="SpellData" then return SpellData end
         if name=="Widget_GetSpellId" then return addon.Widget_GetSpellId end
         if name=="Widget_SpellWidget" then return addon.Widget_SpellWidget end

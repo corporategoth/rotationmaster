@@ -15,7 +15,7 @@ end
 local function enter(c,value) c:SetText(tostring(value));c.scripts.OnTextChanged(c,true);c.scripts.OnEnterPressed(c) end
 local function equal(a,b) for k,v in pairs(a) do assert(b[k]==v) end;for k,v in pairs(b) do assert(a[k]==v) end end
 test('native popup edits detached arrays then applies once to the exact supplied table',function()
-    local f,a=fixture();f.libraries['AceGUI-3.0'].Create=function() error('ordinary popup allocated Ace') end;f.libraries['AceGUI-3.0'].Release=function() error('ordinary popup released through Ace') end
+    local f,a=fixture();local lib=f.env.LibStub;f.env.LibStub=function(name,...) assert(name~='AceGUI-3.0','native popup requested retired GUI');return lib(name,...) end
     local items={1,2};local calls,closes=0,0;local original=items
     local d=open(a,items,nil,function() calls=calls+1 end,function(widget) closes=closes+1;assert(widget.rmWidget);a:ReleaseConditionWidget(widget) end)
     assert(d.rmActive and d.form and d.form.fields.apply and d.form.fields.cancel and not d.form.transactionKeys)
@@ -104,6 +104,6 @@ test('native popup Help shows its scoped document and expires with the native le
     local nextDialog=open(a,{3});assert(nextDialog==d);stale();assert(calls==1);nextDialog.helpButton:Click();assert(calls==2);nextDialog:Close()
 end)
 test('legacy six-argument item_list_popup delegates to the native owner',function()
-    local f,a=fixture();assert(a.OpenItemListPopup);f.load('Core/itemset_services.lua');f.load('Options/itemset.lua');local items={1};local d=assert(a:item_list_popup('Legacy','Item_EditBox',items,function() return true end));assert(d.rmWidget);d:Close()
+    local f,a=fixture();assert(a.OpenItemListPopup);f.load('Core/itemset_services.lua');local items={1};local d=assert(a:item_list_popup('Legacy','Item_EditBox',items,function() return true end));assert(d.rmWidget);d:Close()
 end)
 finish()

@@ -3,35 +3,23 @@ local test,finish=F.suite()
 local function fixture()
     local f=F.new();local a=f.addon
     local _,create=dofile('tests/fixtures/native_ui.lua')(f.env)
-    local ace=f.libraries['AceGUI-3.0'];local original=ace.Create;local widgets={}
-    ace.Create=function(self,kind)
-        assert(kind~='Window' and kind~='Frame' and kind~='DisablableInlineGroup','old recursive editor was used')
-        local w=original(self,kind);w.frame=w.frame or create('Frame');widgets[#widgets+1]=w
-        function w:ReleaseChildren() self.children={} end
-        function w:PauseLayout() end
-        function w:ResumeLayout() end
-        function w:DoLayout() end
-        function w:DisableButton() end
-        function w:SetList(list,order) self.list,self.order=list,order end
-        return w
-    end
-    dofile('tests/fixtures/spell_editbox.lua')(f,create)
-    ace.Release=function(_,w) if w.frame then w.frame:Hide() end;w.released=true end
-    for _,file in ipairs({'Data/plain.lua','Data/tags.lua','Data/rotation_tree.lua','Data/condition_draft.lua','Data/validation.lua','Data/diff.lua','Core/conditions.lua','Core/condition_catalog.lua','Core/condition_editor.lua','Core/condition_canvas.lua','UI/window.lua','UI/help.lua','UI/condition_picker.lua','UI/condition_cards.lua','UI/condition_canvas.lua','UI/condition_editor.lua','UI/condition_entrypoints.lua','Options/conditional.lua'}) do f.load(file) end
+    local widgets={}
+    a:ObserveConditionWidgets(function(widget) widgets[#widgets+1]=widget end)
+    for _,file in ipairs({'Data/plain.lua','Data/tags.lua','Data/rotation_tree.lua','Data/condition_draft.lua','Data/validation.lua','Data/diff.lua','Core/conditions.lua','Core/condition_catalog.lua','Core/condition_editor.lua','Core/condition_canvas.lua','UI/window.lua','UI/help.lua','UI/condition_picker.lua','UI/condition_cards.lua','UI/condition_canvas.lua','UI/condition_editor.lua','UI/condition_entrypoints.lua'}) do f.load(file) end
     local h=io.open('UI/condition_text.lua');if h then h:close();f.load('UI/condition_text.lua') end
     a:RegisterCondition('NUMBER',{description='Number check',fields={number='number'},requiredFields={'number'},
         valid=function(_,value) return type(value.number)=='number' end,
         evaluate=function() error('editor must not evaluate combat') end,
         print=function() error('compact tree must not execute a printer') end,
         widget=function(parent,_,value)
-            local slider=ace:Create('Slider');slider:SetLabel('Number');slider:SetValue(value.number)
+            local slider=a:CreateConditionSlider();slider:SetLabel('Number');slider:SetValue(value.number)
             slider:SetCallback('OnValueChanged',function(_,_,amount)
                 value.number=amount
                 local top=parent:GetUserData('top')
                 top:SetStatusText(top:GetUserData('funcs'):print(top:GetUserData('root'),0))
             end)
             parent:AddChild(slider)
-        end,help=function(parent) local label=ace:Create('Label');label:SetText('Number help');parent:AddChild(label) end})
+        end,help=function(parent) local label=a:CreateConditionLabel();label:SetText('Number help');parent:AddChild(label) end})
     a.listConditions=function() return {'AND','OR','NOT','DELETE','NUMBER'} end
     function a:GetImportValidationOptions() return {conditions=self.conditionDefinitions} end
     a.UpdateAutoSwitch=function() end;a.SwitchRotation=function() end;a.configPaneGeneration=1
@@ -78,9 +66,9 @@ test('compact native tree edits one selected leaf in a detached draft and applie
     local shell=a:EditCondition(1,0,root,function() closed=closed+1 end)
     assert(shell.frame.visible and #shell.rows==3 and shell.canvas.cards[1].label.text:find('AND',1,true))
     shell.canvas.cards[2].header:Click()
-    local slider;for _,w in ipairs(widgets) do if w.kind=='Slider' and not w.released then slider=w end end
+    local slider;for _,w in ipairs(widgets) do if w.type=='RM-ConditionSlider' and w.rmActive then slider=w end end
     assert(slider and slider.value==1)
-    slider.callbacks.OnValueChanged(slider,nil,9)
+    slider.events.OnValueChanged(slider,nil,9)
     assert(root.value[1].number==1,'field controls changed the running rotation before Apply')
     shell.apply:Click();assert(root.value[1].number==9 and closed==1 and not shell.frame.visible)
     local reused=a:EditCondition(1,0,root,function() closed=closed+1 end);assert(reused==shell)
@@ -108,14 +96,14 @@ test('custom field configure errors are isolated and keep the draft cancellable'
     local original=a.widgetCondition
     function a:widgetCondition(parent,spec,value)
         original(self,parent,spec,value)
-        local extra=f.widget('Label');extra.configure=function() error('configure rejected') end;parent:AddChild(extra)
+        local extra=a:CreateConditionLabel();extra.configure=function() error('configure rejected') end;parent:AddChild(extra)
     end
     local ok,shell=pcall(a.EditCondition,a,1,0,root,function() end)
     assert(ok,'configure callback escaped the editor boundary');shell.canvas.cards[1].header:Click()
     assert(shell.frame.visible and shell.status.text:find('/rm errors',1,true))
     shell.cancel:Click();assert(not shell.frame.visible and root.number==1)
 end)
-test('legacy child popups hide and restore the compact draft without committing it',function()
+test('native child popups hide and restore the compact draft without committing it',function()
     local f=fixture();local a=f.addon;local root={type='NUMBER',number=1};local closed=0
     local shell=a:EditCondition(1,0,root,function() closed=closed+1 end)
     shell:SetCallback('OnClose',function() end);shell:Hide()
@@ -165,8 +153,8 @@ test('Undo and Redo restore deleted conditions and inline field edits until Appl
     local f,widgets=fixture();local a=f.addon;local root={type='NUMBER',number=1}
     local shell=a:EditCondition(1,0,root,function() end)
     shell.canvas.cards[1].header:Click()
-    local slider;for _,w in ipairs(widgets) do if w.kind=='Slider' then slider=w end end
-    slider.callbacks.OnValueChanged(slider,nil,9)
+    local slider;for _,w in ipairs(widgets) do if w.type=='RM-ConditionSlider' then slider=w end end
+    slider.events.OnValueChanged(slider,nil,9)
     shell.undo:Click();assert(shell.active.working.number==1 and root.number==1)
     shell.redo:Click();assert(shell.active.working.number==9 and root.number==1)
     shell:Command('Remove',{});assert(next(shell.active.working)==nil)
@@ -215,7 +203,7 @@ test('incomplete fields are marked without running validators and the type combo
     shell.canvas.cards[3].header:Click();shell.canvas.cards[3].typeButton:Click()
     local picker=shell.canvas.cards[3].picker
     assert(picker and #picker.categories==3)
-    for _,w in ipairs(widgets) do assert(w.kind~='Slider','an empty condition displayed type-specific fields') end
+    for _,w in ipairs(widgets) do assert(w.type~='RM-ConditionSlider','an empty condition displayed type-specific fields') end
     picker.frame.scripts.OnMouseDown();assert(picker.popup.visible and #picker.matches==2)
     picker.categories[2]:Click();assert(#picker.matches==1 and picker.matches[1]=='NUMBER')
     picker.categories[1]:Click();picker.frame:SetText('combat');picker.frame.scripts.OnTextChanged(picker.frame,true)
@@ -262,8 +250,8 @@ test('released field callbacks cannot change the draft through captured mutable 
     local f,widgets=fixture();local root={type='NUMBER',number=1}
     local shell=f.addon:EditCondition(1,0,root,function() end)
     shell.canvas.cards[1].header:Click()
-    local slider;for _,widget in ipairs(widgets) do if widget.kind=='Slider' then slider=widget end end
-    local stale=slider.callbacks.OnValueChanged
+    local slider;for _,widget in ipairs(widgets) do if widget.type=='RM-ConditionSlider' then slider=widget end end
+    local stale=slider.events.OnValueChanged
     shell.canvas.cards[1].expand:Click();stale(slider,nil,999)
     assert(shell.active.working.number==1)
     shell.apply:Click();assert(root.number==1)
@@ -276,7 +264,7 @@ test('rebuilding cards hides the old native type input and its popup',function()
     assert(not picker.host:IsShown());shell.canvas.cards[1].typeButton:Click();assert(shell.canvas.cards[1].picker==picker and picker.frame:IsShown())
     shell.cancel:Click()
 end)
-test('legacy popup returns through its actual card proxy after the refresh replaces that card',function()
+test('native popup returns through its actual card proxy after the refresh replaces that card',function()
     local f=fixture();local root={type='NUMBER',number=1}
     local shell=f.addon:EditCondition(1,0,root,function() end);shell.canvas.cards[1].header:Click();local top=shell.canvas.cards[1].proxy
     top:SetCallback('OnClose',function() end);top:Hide();assert(not shell.frame.visible and shell.active)
@@ -297,7 +285,7 @@ test('child editors resume their original session after fields retire without re
 end)
 test('native item-list Apply returns to the condition draft and preserves its separate Apply boundary',function()
     local f=fixture();local a=f.addon
-    for _,path in ipairs({'UI/settings_ordered.lua','UI/settings_history.lua','UI/settings_unsaved.lua','UI/settings_form.lua','UI/item_list_popup.lua','Core/itemset_services.lua','Options/itemset.lua','Conditions/common.lua'}) do f.load(path) end
+    for _,path in ipairs({'UI/settings_ordered.lua','UI/settings_history.lua','UI/settings_unsaved.lua','UI/settings_form.lua','UI/item_list_popup.lua','Core/itemset_services.lua','Conditions/common.lua'}) do f.load(path) end
     a.db.profile.itemsets={};a.db.global.itemsets={};f.env.GetItemInfo=function(id) id=tonumber(id);return 'Item '..id,'item:'..id,nil,nil,nil,nil,nil,nil,nil,id end
     a.FindFirstItemOfItems=function() end;a.FindFirstItemInItems=function() end;a.UpdateItem_ID_Image=function() end
     a:RegisterCondition('ITEMLIST',{description='Item list',fields={item={'string',{'number'}}},valid=function(_,value) return type(value.item)=='table' end,
@@ -319,10 +307,10 @@ test('inline parent fields preserve newer edits in independently expanded custom
     shell.canvas.cards[1].header:Click()
     shell.canvas.cards[2].header:Click()
     local function slider(card)
-        for _,child in ipairs(card.pane.children) do if child.kind=='Slider' then return child end end
+        for _,child in ipairs(card.pane.children) do if child.type=='RM-ConditionSlider' then return child end end
     end
     local parent,child=slider(shell.canvas.cards[1]),slider(shell.canvas.cards[2])
-    child.callbacks.OnValueChanged(child,nil,9);parent.callbacks.OnValueChanged(parent,nil,7)
+    child.events.OnValueChanged(child,nil,9);parent.events.OnValueChanged(parent,nil,7)
     assert(shell.active.working.number==7 and shell.active.working.gate.number==9)
     shell.apply:Click();assert(root.number==7 and root.gate.number==9)
 end)
@@ -385,8 +373,8 @@ test('negated fields edit the actual operand and disabling preserves its negatio
     local shell=f.addon:EditCondition(1,0,root,function() end)
     shell.canvas.cards[1].header:Click()
     assert(#shell.canvas.scene.cards==1 and shell.canvas.cards[1].model.negated)
-    local slider;for _,w in ipairs(widgets) do if w.kind=='Slider' then slider=w end end
-    assert(slider);slider.callbacks.OnValueChanged(slider,nil,8)
+    local slider;for _,w in ipairs(widgets) do if w.type=='RM-ConditionSlider' then slider=w end end
+    assert(slider);slider.events.OnValueChanged(slider,nil,8)
     shell.canvas.cards[1].controls.disable:Click();shell.apply:Click()
     assert(root.type=='NOT' and root.value.number==8 and root.disabled==true)
 end)
@@ -396,8 +384,8 @@ test('card duplication is undoable and never aliases source values',function()
     shell.canvas.cards[2].controls.duplicate:Click();assert(#shell.active.working.value==2 and #root.value==1)
     shell.canvas.cards[3].header:Click()
     local pane=shell.canvas.cards[3].pane;local slider
-    for _,widget in ipairs(pane.children) do if widget.kind=='Slider' then slider=widget end end
-    slider.callbacks.OnValueChanged(slider,nil,7)
+    for _,widget in ipairs(pane.children) do if widget.type=='RM-ConditionSlider' then slider=widget end end
+    slider.events.OnValueChanged(slider,nil,7)
     assert(shell.active.working.value[1].number==1 and shell.active.working.value[2].number==7)
     shell.undo:Click();assert(shell.active.working.value[2].number==1)
     shell.undo:Click();assert(#shell.active.working.value==1)
@@ -537,8 +525,8 @@ test('readonly condition view keeps common cards expandable while mutating contr
     shell.canvas.cards[2].header:Click();assert(shell.canvas.cards[2].model.expanded)
     shell:Command('Remove',{});shell.apply:Click()
     assert(root.type=='AND' and root.value[1].number==7 and not shell.active.session:HistoryState().canUndo)
-    for _,w in ipairs(widgets) do if w.kind=='Slider' and not w.released then
-        assert(w.disabled,'readonly fields still permit editing');w.callbacks.OnValueChanged(w,nil,99)
+    for _,w in ipairs(widgets) do if w.type=='RM-ConditionSlider' and w.rmActive then
+        assert(w.disabled,'readonly fields still permit editing');w.events.OnValueChanged(w,nil,99)
     end end
     assert(shell.active.working.value[1].number==7)
     shell.cancel:Click();local editable=a:ShowConditionEditor(1,0,root,nil)
@@ -691,8 +679,8 @@ end)
 test('expanded condition help appends below live fields instead of replacing them',function()
     local f,widgets=fixture();local shell=f.addon:EditCondition(1,0,{type='NUMBER',number=7},function() end)
     shell.canvas.cards[1].header:Click();shell.canvas.cards[1].controls.help:Click();local pane=shell.canvas.cards[1].pane
-    assert(pane.children[1].kind=='Slider' and pane.children[2].text=='Number help','help replaced the editable field')
-    pane.children[1].callbacks.OnValueChanged(pane.children[1],nil,8);shell.apply:Click()
+    assert(pane.children[1].type=='RM-ConditionSlider' and pane.children[2].text=='Number help','help replaced the editable field')
+    pane.children[1].events.OnValueChanged(pane.children[1],nil,8);shell.apply:Click()
 end)
 test('Ctrl drag selects only the source sibling suffix including each group subtree',function()
     local f=fixture();local a=f.addon;local root={type='AND',value={{type='OR',value={}},{type='NUMBER',number=2},{type='AND',value={{type='NUMBER',number=3}}}}}

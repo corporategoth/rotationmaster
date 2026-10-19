@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Ui xmlns="http://www.blizzard.com/wow/ui/">
-<!-- Explicit legacy widget registrations; data services load separately. -->
-<Script file="LibsAugment\Spec-EditBox.lua" />
-<Script file="LibsAugment\Totem-EditBox.lua" />
-<Script file="LibsAugment\Glyph-EditBox.lua" />
-</Ui>

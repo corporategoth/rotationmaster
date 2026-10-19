@@ -4,6 +4,10 @@ local function clamp(value,lo,hi,fallback)
     return type(value)=='number' and value==value and math.max(lo,math.min(hi,value)) or fallback
 end
 ---@class RMRecommendationPreview
+---@field ReleaseChildren fun(self: RMRecommendationPreview)
+---@field PauseLayout fun(self: RMRecommendationPreview)
+---@field ResumeLayout fun(self: RMRecommendationPreview)
+---@field DoLayout fun(self: RMRecommendationPreview)
 ---@field AddRecommendation fun(self: RMRecommendationPreview, spellId: number, itemId?: number)
 function addon:CreateNativePreviewWindow()
     local window=self.nativePreviewWindow

@@ -8,7 +8,6 @@ _G[addon_name] = LibStub("AceAddon-3.0"):NewAddon(addon, addon_name, "AceConsole
 
 local AceConsole = LibStub("AceConsole-3.0")
 local AceEvent = LibStub("AceEvent-3.0")
-local ItemData = LibStub("AceGUI-3.0-ItemLoader")
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 local getCached
 local DBIcon = LibStub("LibDBIcon-1.0")
@@ -918,15 +917,16 @@ function addon:EvaluateNextActionInternal()
         self.evaluationProfile:child("rotation"):start()
         local preview,suppressAttack=0,false
         local weakAuras=_G.WeakAuras
-        ---@type AceGUIContainer
+        ---@type RMRecommendationPreview
         local previewWindow=self.nextWindow
+        local nativePreview=previewWindow and type(previewWindow.AddRecommendation)=="function"
         local staged={}
         local function current()
             return self.currentRotation==selectedRotation and self.currentSpec==selectedSpec and self.db.profile==selectedProfile
                 and self.nextWindow==previewWindow and (not runtimePass or runtimePass:IsCurrent())
         end
         local function stage(callback) staged[#staged+1]=callback end
-        if previewWindow then
+        if nativePreview then
             stage(function() previewWindow:ReleaseChildren();if current() then previewWindow:PauseLayout() end end)
         end
         local function recommend(spellid,cond,index,itemId)
@@ -945,23 +945,7 @@ function addon:EvaluateNextActionInternal()
                     end
                 end
                 if not current() then return end
-                if self.nextWindow and self.nextWindow.AddRecommendation then
-                    ---@cast previewWindow RMRecommendationPreview
-                    previewWindow:AddRecommendation(spellid,itemId)
-                elseif self.nextWindow then
-                    -- Only an explicitly supplied historical preview uses Ace.
-                    local icon=LibStub("AceGUI-3.0"):Create("Icon")
-                    local info=self.Platform:GetSpellInfo(spellid)
-                    icon:SetImage(info and info.iconID or "Interface\\Icons\\INV_Misc_QuestionMark")
-                    icon:SetImageSize(ordinal==1 and 54 or 36,ordinal==1 and 54 or 36)
-                    icon:SetLabel(info and info.name or string.format(L["Unknown spell (%s)"],spellid))
-                    icon:SetCallback("OnEnter",function()
-                        GameTooltip:SetOwner(icon.frame,"ANCHOR_BOTTOMRIGHT",3)
-                        GameTooltip:SetHyperlink("spell:"..spellid)
-                    end)
-                    icon:SetCallback("OnLeave",function() if GameTooltip:IsOwned(icon.frame) then GameTooltip:Hide() end end)
-                    previewWindow:AddChild(icon)
-                end
+                if nativePreview then previewWindow:AddRecommendation(spellid,itemId) end
             end)
         end
         local sequence=self:EvaluateRotationSequence(rot,function(condition,context)
@@ -970,7 +954,7 @@ function addon:EvaluateNextActionInternal()
             local spellid,enabled,itemId=eval(cond)
             if enabled then
                 recommend(spellid,cond,index,itemId)
-                if not self.nextWindow or preview>=self.db.profile.preview_spells then return false end
+                if not nativePreview or preview>=self.db.profile.preview_spells then return false end
             end
             return true
         end)
@@ -989,7 +973,7 @@ function addon:EvaluateNextActionInternal()
                 AceEvent:SendMessage("ROTATIONMASTER_SPELL_UPDATE",self.currentRotation,nil)
             end)
         end
-        if previewWindow then
+        if nativePreview then
             stage(function() previewWindow:ResumeLayout();if current() then previewWindow:DoLayout() end end)
         end
 
@@ -1683,6 +1667,6 @@ end)
 
 addon.ITEM_DATA_LOAD_RESULT = wrapEvent(function(_, _, itemId, success)
     if success then
-        ItemData:UpdateItem(itemId)
+        addon:UpdateReferenceItem(itemId)
     end
 end)
