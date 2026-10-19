@@ -2181,6 +2181,15 @@ L["Logic"] = true
 L["Environment"] = true
 L["Time"] = true
 
+L["Spell Auto-Repeat Active"] = true
+L["%s {{!is|is not}} auto-repeating"] = true
+L["Tests whether the selected spell is currently auto-repeating, such as Shoot or Auto Shot. This is different from a spell being current or queued: a queued cast alone does not satisfy this condition. Unavailable client observations remain unavailable even when negated."] = true
+
+L["Uses readable positions in the same instance, or player-centered range estimates when positions are unavailable. A unit counts only when its upper range bound is within Distance. Uncertain positions, range, subgroup membership or required health/mana values keep the whole condition unavailable, including under Unless. Percentage checks require a positive maximum; empty aggregates have no result."] = true
+
+L["Default.TBC.Warlock.Starter.Name"] = "Warlock: early leveling (1–19)"
+L["Default.TBC.Warlock.Starter.Description"] = "Bounded solo Affliction preview: owned damage-over-time spells, conservative Drain Life, wanding and optional Demon Skin. Manual demon and resource control; expires at level 20."
+
 -- BEGIN GENERATED RM PUBLIC HELPER DOCS
 L["All original results, preserving nil positions and return count."] = true
 L["Arguments forwarded unchanged to the observed function."] = true
@@ -2222,12 +2231,14 @@ L["Missing-value display text; omitted uses the localized value placeholder."] =
 L["Numeric widget supporting slider bounds, percent display and pending-edit validation."] = true
 L["Original non-nil lookup result, or a colored placeholder string."] = true
 L["Original non-nil value, or a colored placeholder string."] = true
+L["Positive integer spell ID, not a spell-book slot."] = true
 L["Predicate that validates the proposed spell value."] = true
 L["RM operator identifier."] = true
 L["Range record with applicable and, when applicable, inRange; nil when unavailable."] = true
 L["Read a normalized charge record: currentCharges, maxCharges, cooldownStartTime, cooldownDuration, chargeModRate and isActive. Unsupported spells or restricted client data return nil with a reason."] = true
 L["Read and normalize a spell cooldown across supported clients. The returned record contains startTime, duration, isEnabled and modRate. The timestamps and duration already describe expiration in GetTime() seconds; do not divide them by modRate."] = true
 L["Read spell-specific range for a unit using the appropriate client API or spell-book slot. A spell without a range restriction returns applicable=false; otherwise applicable=true and inRange records whether the unit is in range. Unknown or inaccessible observations return nil with a reason."] = true
+L["Read the player auto-repeat state for a spell such as Shoot or Auto Shot. This is distinct from a current or queued cast. Modern clients receive the exact spell ID; a legacy query resolves the player spell-book slot first. Restricted client policies, unreadable results and unavailable book slots return nil with a reason. This observes state and never starts or stops a spell."] = true
 L["Readable charge record, or nil when unavailable."] = true
 L["Readable cooldown record, or nil when unavailable."] = true
 L["Reference input kind, such as Spec_EditBox, used for spell suggestions."] = true
@@ -2238,6 +2249,7 @@ L["Resolver mapping a typed spell name to its ID."] = true
 L["Return a present value unchanged, or a red display placeholder for nil. Use for readable condition labels, not as a boolean fallback."] = true
 L["Right operand; DIVISIBLE requires a nonzero divisor."] = true
 L["Rotation Master addon instance (implicit with colon calls)."] = true
+L["Rotation Master platform adapter (implicit with colon calls)."] = true
 L["Rotation Master platform adapter. A dot reference requires addon.Platform as the first argument; a colon call supplies it implicitly."] = true
 L["Selector widget supporting SetList, SetValue, SetLabel, SetDisabled and callbacks."] = true
 L["Specialization scope used to resolve spell suggestions."] = true
@@ -2260,8 +2272,10 @@ L["Trimmed text."] = true
 L["True to require this exact rank; false or nil follows the available rank."] = true
 L["True when array[value] is non-nil."] = true
 L["True when ready by the end of the global cooldown; false when its own cooldown prevents recommendation; nil when the client cannot supply a readable result."] = true
+L["True when the client reports this spell auto-repeating; false when it reports inactive; nil when unavailable."] = true
 L["Unit key-to-display-name map shown in the selector."] = true
 L["Unit token, such as target; nil uses target."] = true
+L["Validation or availability reason for a nil result."] = true
 L["Value record field to edit; defaults to unit."] = true
 L["Value to display; false is preserved."] = true
 L["Wrap text at whitespace boundaries near a target column count. Long words are retained intact."] = true

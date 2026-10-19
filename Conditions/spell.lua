@@ -375,6 +375,39 @@ addon:RegisterCondition("SPELL_ACTIVE", {
     end
 })
 
+addon:RegisterCondition("SPELL_AUTOREPEAT", {
+    description = L["Spell Auto-Repeat Active"],
+    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\spell",
+    fields = { spell = "number", ranked = "boolean" },
+    valid = function(_, value)
+        return addon.IsConditionSpellID(value.spell) and (value.ranked == nil or type(value.ranked) == "boolean")
+    end,
+    evaluate = function(value, cache)
+        local spellid, reason = addon:Widget_GetSpellId(value.spell, value.ranked)
+        if not spellid then return nil, reason or "spell-data-unavailable" end
+        return addon.getCached(cache, addon.Platform.IsAutoRepeatActive, addon.Platform, spellid)
+    end,
+    print = function(_, value)
+        local link = addon:Widget_GetSpellLink(value.spell, value.ranked)
+        return string.format(L["%s {{!is|is not}} auto-repeating"], addon.nullable(link, L["<spell>"]))
+    end,
+    widget = function(parent, spec, value)
+        local top = parent:GetUserData("top")
+        local root = top:GetUserData("root")
+        local funcs = top:GetUserData("funcs")
+        local spell_group = addon:Widget_SpellWidget(spec, "Spec_EditBox", value,
+            function(v) return addon.getSpecSpellID(spec, v) end,
+            function(v) return addon.isSpellOnSpec(spec, v) end,
+            function() top:SetStatusText(funcs:print(root, spec)) end)
+        parent:AddChild(spell_group)
+    end,
+    help = function(frame)
+        frame:AddChild(helpers.CreateText(L["Tests whether the selected spell is currently auto-repeating, such as Shoot or Auto Shot. This is different from a spell being current or queued: a queued cast alone does not satisfy this condition. Unavailable client observations remain unavailable even when negated."]))
+        frame:AddChild(helpers.Gap())
+        addon.layout_condition_spellwidget_help(frame)
+    end
+})
+
 -- BEGIN GENERATED RM SOURCE BINDINGS
 do
     local function sourceGetter(name)

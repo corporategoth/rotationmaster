@@ -4,11 +4,41 @@ local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 local color, pairs = color, pairs
 local helpers = addon.help_funcs
 
+local function observation(cache,method,unit,power)
+    if type(method)~="function" then return nil,"missing-api" end
+    local ok,current
+    if power then ok,current=pcall(addon.getCached,cache,method,unit,Enum.PowerType.Mana)
+    else ok,current=pcall(addon.getCached,cache,method,unit) end
+    if not ok then return nil,"api-error" end
+    if not addon.Platform:CanReadValue(current) then return nil,"restricted-value" end
+    if type(current)~="number" or current~=current or current<0 or current==math.huge then return nil,"statistic-unavailable" end
+    return current
+end
+local function statistic(cache,unit,mana,percentage,deficit)
+    local method=UnitHealth;if mana then method=UnitPower end
+    local current,reason=observation(cache,method,unit,mana)
+    if current==nil then return nil,reason end
+    if percentage or deficit then
+        local maximumMethod=UnitHealthMax;if mana then maximumMethod=UnitPowerMax end
+        local maximum,why=observation(cache,maximumMethod,unit,mana)
+        if maximum==nil then return nil,why end
+        if percentage then
+            if maximum==0 then return nil,"statistic-unavailable" end
+            local percent=current/maximum*100
+            if percent~=percent or percent==math.huge then return nil,"statistic-unavailable" end
+            return percent
+        end
+        return maximum-current
+    end
+    return current
+end
+
 local function aggregate(values,operation)
     if #values==0 then return nil,"no-units-in-range" end
     local value=values[1]
     if operation=="average" then
         local sum=0;for _,current in ipairs(values) do sum=sum+current end
+        if sum==math.huge or sum==-math.huge or sum~=sum then return nil,"statistic-unavailable" end
         return sum/#values
     elseif operation=="minimum" or operation=="maximum" then
         for index=2,#values do
@@ -33,17 +63,15 @@ addon:RegisterCondition("PROXIMITY_HEALTH", {
     end,
     evaluate = function(value, cache)
         local values = {}
-        addon.proximity_eval(value, cache, function(c, unit)
-                    local cur = addon.getCached(c, UnitHealth, unit)
-                    if value.value < 0 then
-                        local max = addon.getCached(c, UnitHealthMax, unit)
-                        cur = (max-cur)
-                    end
-                    table.insert(values, cur)
+        local complete,reason=addon.proximity_eval(value, cache, function(c, unit)
+            local cur,why=statistic(c,unit,false,false,value.value<0)
+            if cur==nil then return nil,why end
+            table.insert(values, cur)
         end)
+        if not complete then return nil,reason end
 
-        local v,reason=aggregate(values,value.operation)
-        if v==nil then return nil,reason end
+        local v,aggregateReason=aggregate(values,value.operation)
+        if v==nil then return nil,aggregateReason end
         return addon.compare(value.operator, v, math.abs(value.value))
     end,
     print = function(_, value)
@@ -116,8 +144,7 @@ addon:RegisterCondition("PROXIMITY_HEALTH", {
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Include Pets"] .. color.RESET .. " - " ..
                 "Include pets in the count."))
         frame:AddChild(helpers.Gap())
-        frame:AddChild(helpers.CreateText(color.RED .. "This will only work for yourself if you are inside " ..
-                "of an instance, and it will be less accurate than outside of an instance." .. color.RESET))
+        frame:AddChild(helpers.CreateText(L["Uses readable positions in the same instance, or player-centered range estimates when positions are unavailable. A unit counts only when its upper range bound is within Distance. Uncertain positions, range, subgroup membership or required health/mana values keep the whole condition unavailable, including under Unless. Percentage checks require a positive maximum; empty aggregates have no result."]))
     end
 })
 
@@ -135,16 +162,14 @@ addon:RegisterCondition("PROXIMITY_HEALTH_COUNT", {
     end,
     evaluate = function(value, cache)
         local count = 0
-        addon.proximity_eval(value, cache, function(c, unit)
-            local cur = addon.getCached(c, UnitHealth, unit)
-            if value.health < 0 then
-                local max = addon.getCached(c, UnitHealthMax, unit)
-                cur = (max-cur)
-            end
+        local complete,reason=addon.proximity_eval(value, cache, function(c, unit)
+            local cur,why=statistic(c,unit,false,false,value.health<0)
+            if cur==nil then return nil,why end
             if addon.compare(value.healthoperator, cur, math.abs(value.health)) then
                 count = count + 1
             end
         end)
+        if not complete then return nil,reason end
 
         return addon.compare(value.operator, count, value.value)
     end,
@@ -202,8 +227,7 @@ addon:RegisterCondition("PROXIMITY_HEALTH_COUNT", {
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Include Pets"] .. color.RESET .. " - " ..
                 "Include pets in the count."))
         frame:AddChild(helpers.Gap())
-        frame:AddChild(helpers.CreateText(color.RED .. "This will only work for yourself if you are inside " ..
-                "of an instance, and it will be less accurate than outside of an instance." .. color.RESET))
+        frame:AddChild(helpers.CreateText(L["Uses readable positions in the same instance, or player-centered range estimates when positions are unavailable. A unit counts only when its upper range bound is within Distance. Uncertain positions, range, subgroup membership or required health/mana values keep the whole condition unavailable, including under Unless. Percentage checks require a positive maximum; empty aggregates have no result."]))
     end
 })
 
@@ -220,14 +244,15 @@ addon:RegisterCondition("PROXIMITY_HEALTHPCT", {
     end,
     evaluate = function(value, cache)
         local values = {}
-        addon.proximity_eval(value, cache, function(c, unit)
-            local cur = addon.getCached(c, UnitHealth, unit)
-            local max = addon.getCached(c, UnitHealthMax, unit)
-            table.insert(values, cur / max * 100)
+        local complete,reason=addon.proximity_eval(value, cache, function(c, unit)
+            local cur,why=statistic(c,unit,false,true,false)
+            if cur==nil then return nil,why end
+            table.insert(values, cur)
         end)
+        if not complete then return nil,reason end
 
-        local v,reason=aggregate(values,value.operation)
-        if v==nil then return nil,reason end
+        local v,aggregateReason=aggregate(values,value.operation)
+        if v==nil then return nil,aggregateReason end
         return addon.compare(value.operator, v, value.value * 100)
     end,
     print = function(_, value)
@@ -299,8 +324,7 @@ addon:RegisterCondition("PROXIMITY_HEALTHPCT", {
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Include Pets"] .. color.RESET .. " - " ..
                 "Include pets in the count."))
         frame:AddChild(helpers.Gap())
-        frame:AddChild(helpers.CreateText(color.RED .. "This will only work for yourself if you are inside " ..
-                "of an instance, and it will be less accurate than outside of an instance." .. color.RESET))
+        frame:AddChild(helpers.CreateText(L["Uses readable positions in the same instance, or player-centered range estimates when positions are unavailable. A unit counts only when its upper range bound is within Distance. Uncertain positions, range, subgroup membership or required health/mana values keep the whole condition unavailable, including under Unless. Percentage checks require a positive maximum; empty aggregates have no result."]))
     end
 })
 
@@ -318,13 +342,14 @@ addon:RegisterCondition("PROXIMITY_HEALTHPCT_COUNT", {
     end,
     evaluate = function(value, cache)
         local count = 0
-        addon.proximity_eval(value, cache, function(c, unit)
-            local cur = addon.getCached(c, UnitHealth, unit)
-            local max = addon.getCached(c, UnitHealthMax, unit)
-            if addon.compare(value.healthoperator, cur / max * 100, value.health * 100) then
+        local complete,reason=addon.proximity_eval(value, cache, function(c, unit)
+            local cur,why=statistic(c,unit,false,true,false)
+            if cur==nil then return nil,why end
+            if addon.compare(value.healthoperator, cur, value.health * 100) then
                 count = count + 1
             end
         end)
+        if not complete then return nil,reason end
         return addon.compare(value.operator, count, value.value)
     end,
     print = function(_, value)
@@ -380,8 +405,7 @@ addon:RegisterCondition("PROXIMITY_HEALTHPCT_COUNT", {
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Include Pets"] .. color.RESET .. " - " ..
                 "Include pets in the count."))
         frame:AddChild(helpers.Gap())
-        frame:AddChild(helpers.CreateText(color.RED .. "This will only work for yourself if you are inside " ..
-                "of an instance, and it will be less accurate than outside of an instance." .. color.RESET))
+        frame:AddChild(helpers.CreateText(L["Uses readable positions in the same instance, or player-centered range estimates when positions are unavailable. A unit counts only when its upper range bound is within Distance. Uncertain positions, range, subgroup membership or required health/mana values keep the whole condition unavailable, including under Unless. Percentage checks require a positive maximum; empty aggregates have no result."]))
     end
 })
 addon:RegisterCondition("PROXIMITY_MANA", {
@@ -397,17 +421,15 @@ addon:RegisterCondition("PROXIMITY_MANA", {
     end,
     evaluate = function(value, cache)
         local values = {}
-        addon.proximity_eval(value, cache, function(c, unit)
-            local cur = addon.getCached(c, UnitPower, unit, Enum.PowerType.Mana)
-            if value.value < 0 then
-                local max = addon.getCached(c, UnitPowerMax, unit, Enum.PowerType.Mana)
-                cur = (max-cur)
-            end
+        local complete,reason=addon.proximity_eval(value, cache, function(c, unit)
+            local cur,why=statistic(c,unit,true,false,value.value<0)
+            if cur==nil then return nil,why end
             table.insert(values, cur)
         end)
+        if not complete then return nil,reason end
 
-        local v,reason=aggregate(values,value.operation)
-        if v==nil then return nil,reason end
+        local v,aggregateReason=aggregate(values,value.operation)
+        if v==nil then return nil,aggregateReason end
         return addon.compare(value.operator, v, math.abs(value.value))
     end,
     print = function(_, value)
@@ -480,8 +502,7 @@ addon:RegisterCondition("PROXIMITY_MANA", {
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Include Pets"] .. color.RESET .. " - " ..
                 "Include pets in the count."))
         frame:AddChild(helpers.Gap())
-        frame:AddChild(helpers.CreateText(color.RED .. "This will only work for yourself if you are inside " ..
-                "of an instance, and it will be less accurate than outside of an instance." .. color.RESET))
+        frame:AddChild(helpers.CreateText(L["Uses readable positions in the same instance, or player-centered range estimates when positions are unavailable. A unit counts only when its upper range bound is within Distance. Uncertain positions, range, subgroup membership or required health/mana values keep the whole condition unavailable, including under Unless. Percentage checks require a positive maximum; empty aggregates have no result."]))
     end
 })
 
@@ -499,16 +520,14 @@ addon:RegisterCondition("PROXIMITY_MANA_COUNT", {
     end,
     evaluate = function(value, cache)
         local count = 0
-        addon.proximity_eval(value, cache, function(c, unit)
-            local cur = addon.getCached(c, UnitPower, unit, Enum.PowerType.Mana)
-            if value.mana < 0 then
-                local max = addon.getCached(c, UnitPowerMax, unit, Enum.PowerType.Mana)
-                cur = (max-cur)
-            end
+        local complete,reason=addon.proximity_eval(value, cache, function(c, unit)
+            local cur,why=statistic(c,unit,true,false,value.mana<0)
+            if cur==nil then return nil,why end
             if addon.compare(value.manaoperator, cur, math.abs(value.mana)) then
                 count = count + 1
             end
         end)
+        if not complete then return nil,reason end
 
         return addon.compare(value.operator, count, value.value)
     end,
@@ -566,8 +585,7 @@ addon:RegisterCondition("PROXIMITY_MANA_COUNT", {
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Include Pets"] .. color.RESET .. " - " ..
                 "Include pets in the count."))
         frame:AddChild(helpers.Gap())
-        frame:AddChild(helpers.CreateText(color.RED .. "This will only work for yourself if you are inside " ..
-                "of an instance, and it will be less accurate than outside of an instance." .. color.RESET))
+        frame:AddChild(helpers.CreateText(L["Uses readable positions in the same instance, or player-centered range estimates when positions are unavailable. A unit counts only when its upper range bound is within Distance. Uncertain positions, range, subgroup membership or required health/mana values keep the whole condition unavailable, including under Unless. Percentage checks require a positive maximum; empty aggregates have no result."]))
     end
 })
 
@@ -584,14 +602,15 @@ addon:RegisterCondition("PROXIMITY_MANAPCT", {
     end,
     evaluate = function(value, cache)
         local values = {}
-        addon.proximity_eval(value, cache, function(c, unit)
-            local cur = addon.getCached(c, UnitPower, unit, Enum.PowerType.Mana)
-            local max = addon.getCached(c, UnitPowerMax, unit, Enum.PowerType.Mana)
-            table.insert(values, cur / max * 100)
+        local complete,reason=addon.proximity_eval(value, cache, function(c, unit)
+            local cur,why=statistic(c,unit,true,true,false)
+            if cur==nil then return nil,why end
+            table.insert(values, cur)
         end)
+        if not complete then return nil,reason end
 
-        local v,reason=aggregate(values,value.operation)
-        if v==nil then return nil,reason end
+        local v,aggregateReason=aggregate(values,value.operation)
+        if v==nil then return nil,aggregateReason end
         return addon.compare(value.operator, v, value.value * 100)
     end,
     print = function(_, value)
@@ -663,8 +682,7 @@ addon:RegisterCondition("PROXIMITY_MANAPCT", {
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Include Pets"] .. color.RESET .. " - " ..
                 "Include pets in the count."))
         frame:AddChild(helpers.Gap())
-        frame:AddChild(helpers.CreateText(color.RED .. "This will only work for yourself if you are inside " ..
-                "of an instance, and it will be less accurate than outside of an instance." .. color.RESET))
+        frame:AddChild(helpers.CreateText(L["Uses readable positions in the same instance, or player-centered range estimates when positions are unavailable. A unit counts only when its upper range bound is within Distance. Uncertain positions, range, subgroup membership or required health/mana values keep the whole condition unavailable, including under Unless. Percentage checks require a positive maximum; empty aggregates have no result."]))
     end
 })
 
@@ -682,13 +700,14 @@ addon:RegisterCondition("PROXIMITY_MANAPCT_COUNT", {
     end,
     evaluate = function(value, cache)
         local count = 0
-        addon.proximity_eval(value, cache, function(c, unit)
-            local cur = addon.getCached(c, UnitPower, unit, Enum.PowerType.Mana)
-            local max = addon.getCached(c, UnitPowerMax, unit, Enum.PowerType.Mana)
-            if addon.compare(value.manaoperator, cur / max * 100, value.mana * 100) then
+        local complete,reason=addon.proximity_eval(value, cache, function(c, unit)
+            local cur,why=statistic(c,unit,true,true,false)
+            if cur==nil then return nil,why end
+            if addon.compare(value.manaoperator, cur, value.mana * 100) then
                 count = count + 1
             end
         end)
+        if not complete then return nil,reason end
         return addon.compare(value.operator, count, value.value)
     end,
     print = function(_, value)
@@ -744,8 +763,7 @@ addon:RegisterCondition("PROXIMITY_MANAPCT_COUNT", {
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Include Pets"] .. color.RESET .. " - " ..
                 "Include pets in the count."))
         frame:AddChild(helpers.Gap())
-        frame:AddChild(helpers.CreateText(color.RED .. "This will only work for yourself if you are inside " ..
-                "of an instance, and it will be less accurate than outside of an instance." .. color.RESET))
+        frame:AddChild(helpers.CreateText(L["Uses readable positions in the same instance, or player-centered range estimates when positions are unavailable. A unit counts only when its upper range bound is within Distance. Uncertain positions, range, subgroup membership or required health/mana values keep the whole condition unavailable, including under Unless. Percentage checks require a positive maximum; empty aggregates have no result."]))
     end
 })
 
@@ -755,6 +773,8 @@ do
         if name=="aggregate" then return aggregate end
         if name=="color" then return color end
         if name=="helpers" then return helpers end
+        if name=="observation" then return observation end
+        if name=="statistic" then return statistic end
     end
     if addon.RegisterBuiltinSourceModule then
         addon:RegisterBuiltinSourceModule("Conditions/spatial_stats.lua", sourceGetter)

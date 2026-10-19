@@ -5,7 +5,7 @@ local function spatial()
     for _,path in ipairs({'Core/conditions.lua','Conditions/common.lua','Conditions/spatial.lua','Conditions/spatial_stats.lua'}) do f.load(path) end
     a.getCached=function(_,fn,...) if fn then return fn(...) end end
     f.env.Enum.PowerType.Mana=0
-    f.env.UnitExists=function(unit) return unit=='player' end
+    f.env.UnitExists=function(unit) return unit=='player' or unit=='party1' or unit=='party2' end
     f.env.IsInRaid=function() return false end
     f.env.IsInGroup=function() return true end
     f.env.UnitPlayerOrPetInParty=function() return true end

@@ -16,7 +16,7 @@ test('all reviewed Built In declarations use bundled original semantic icons',fu
         for tag,definition in pairs(f.addon.definitions) do packaged(definition.icon);seen[tag]=true end
         for _,group in pairs(f.addon.delayed_condition) do for tag,definition in pairs(group) do packaged(definition.icon);seen[tag]=true end end
     end
-    local count=0;for _ in pairs(seen) do count=count+1 end;assert(count==115,'reviewed icon inventory changed: '..count)
+    local count=0;for _ in pairs(seen) do count=count+1 end;assert(count==116,'reviewed icon inventory changed: '..count)
 end)
 test('category defaults follow stable identity while saved custom choices remain exact',function()
     local f=F.new();local a=f.addon

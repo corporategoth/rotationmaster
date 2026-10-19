@@ -547,7 +547,10 @@ function addon:InitializeTalentTreeConditions(_,db)
     end
     append(profile.switch_conditions)
     for _,category in ipairs(profile.condition_groups) do
-        if category.id=='b8136123-2bda-4230-a77a-89ea2aed3a1a' then append(category.conditions);break end
+        if category.id=='b8136123-2bda-4230-a77a-89ea2aed3a1a' then append(category.conditions)
+        elseif category.id=='8034819e-26f5-4f4e-9153-d8cab5e65f31' and not addon.isin(category.conditions,'SPELL_AUTOREPEAT') then
+            category.conditions[#category.conditions+1]='SPELL_AUTOREPEAT'
+        end
     end
 end
 

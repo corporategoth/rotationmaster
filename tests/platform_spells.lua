@@ -173,4 +173,58 @@ test('missing nil restricted and invalid active state never become ordinary fals
         GetSpellCharges=function() error('legacy fallback') end})
     local value,why=p:GetSpellCharges(974);assert(value==nil and why=='api-error')
 end)
+local function repeatFixture(values)
+    values=values or {};values.WOW_PROJECT_ID=values.WOW_PROJECT_ID or 5;values.WOW_PROJECT_BURNING_CRUSADE_CLASSIC=5
+    return fixture(values)
+end
+test('auto-repeat observation uses modern exact IDs and preserves a native false',function()
+    local active=true
+    local p,e=repeatFixture({C_Spell={IsAutoRepeatSpell=function(id) assert(id==5019);return active end},
+        IsAutoRepeatSpell=function() error('native observation fell through') end})
+    assert(p.IsAutoRepeatActive,'auto-repeat adapter missing')
+    assert(p:IsAutoRepeatActive(5019)==true)
+    active=false;assert(p:IsAutoRepeatActive(5019)==false)
+    e.C_Spell.IsAutoRepeatSpell=function() error('failed native observation') end
+    local value,why=p:IsAutoRepeatActive(5019);assert(value==nil and why=='api-error')
+end)
+test('legacy auto-repeat resolves an explicit player book slot without mistaking the spell ID for a slot',function()
+    local active=1
+    local p,e=repeatFixture({BOOKTYPE_SPELL='spell',FindSpellBookSlotBySpellID=function(id,pet) assert(id==5019 and pet==false);return 17 end,
+        IsAutoRepeatSpell=function(slot,bank) assert(slot==17 and bank=='spell');return active end})
+    assert(p.IsAutoRepeatActive,'auto-repeat adapter missing')
+    assert(p:IsAutoRepeatActive(5019)==true)
+    active=0;assert(p:IsAutoRepeatActive(5019)==false)
+    active=false;assert(p:IsAutoRepeatActive(5019)==false)
+    e.FindSpellBookSlotBySpellID=function() return nil end
+    local value,why=p:IsAutoRepeatActive(5019);assert(value==nil and why=='spell-not-in-book')
+end)
+test('auto-repeat input results and policy fail closed without uncertain native fallback',function()
+    local opaque={};local calls=0
+    local p,e=repeatFixture({canaccessvalue=function(v) return v~=opaque end,
+        C_Spell={IsAutoRepeatSpell=function() calls=calls+1;return false end},
+        IsAutoRepeatSpell=function() error('must not fall through') end})
+    assert(p.IsAutoRepeatActive,'auto-repeat adapter missing')
+    for _,id in ipairs({0,-1,1.5,math.huge,0/0,'Shoot',{},opaque}) do assert(p:IsAutoRepeatActive(id)==nil) end
+    assert(calls==0,'invalid identifier queried the game')
+    for _,result in ipairs({opaque,1,0,'true',{}}) do
+        e.C_Spell.IsAutoRepeatSpell=function() return result end
+        assert(p:IsAutoRepeatActive(5019)==nil,'malformed native result became an observation')
+    end
+    e.C_Spell.IsAutoRepeatSpell=function() return nil end;assert(p:IsAutoRepeatActive(5019)==nil)
+    e.C_Spell.IsAutoRepeatSpell=function() error('policy must prevent query') end
+    e.WOW_PROJECT_ID=1;local value,why=p:IsAutoRepeatActive(5019);assert(value==nil and why=='unsupported-policy')
+    e.WOW_PROJECT_ID=nil;value,why=p:IsAutoRepeatActive(5019);assert(value==nil and why=='unsupported-policy')
+end)
+test('missing auto-repeat APIs and malformed legacy slots remain unavailable',function()
+    local p,e=repeatFixture();assert(p.IsAutoRepeatActive,'auto-repeat adapter missing')
+    local value,why=p:IsAutoRepeatActive(5019);assert(value==nil and why=='missing-api')
+    e.IsAutoRepeatSpell=function() error('invalid slot queried') end
+    value,why=p:IsAutoRepeatActive(5019);assert(value==nil and why=='missing-api')
+    for _,slot in ipairs({0,-1,1.5,math.huge,{},'17'}) do
+        e.FindSpellBookSlotBySpellID=function() return slot end
+        assert(p:IsAutoRepeatActive(5019)==nil)
+    end
+    e.FindSpellBookSlotBySpellID=function() error('book unavailable') end
+    value,why=p:IsAutoRepeatActive(5019);assert(value==nil and why=='api-error')
+end)
 finish()

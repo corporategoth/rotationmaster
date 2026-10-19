@@ -203,11 +203,41 @@ function platform:IsCurrentSpell(spell)
     return active
 end
 
+-- This is the client's auto-repeat state, distinct from a current/queued
+-- spell. Legacy numeric arguments are book slots, so resolve the player book
+-- explicitly instead of passing a spell ID into that overload.
+function platform:IsAutoRepeatActive(spellID)
+    if self:GetClientInfo().combatDataPolicy~='probe' then return nil,'unsupported-policy' end
+    local valid,reason=identifier(spellID,true)
+    if not valid then return nil,reason end
+    local native=C_Spell and C_Spell.IsAutoRepeatSpell
+    local ok,active
+    if type(native)=='function' then
+        ok,active=pcall(native,spellID)
+    else
+        if type(IsAutoRepeatSpell)~='function' or type(FindSpellBookSlotBySpellID)~='function' then return nil,'missing-api' end
+        local found,slot=pcall(FindSpellBookSlotBySpellID,spellID,false)
+        if not found then return nil,'api-error' end
+        if not self:CanReadValue(slot) then return nil,'restricted-value' end
+        if slot==nil then return nil,'spell-not-in-book' end
+        if type(slot)~='number' or slot<1 or slot==math.huge or slot%1~=0 then return nil,'invalid-api-result' end
+        ok,active=pcall(IsAutoRepeatSpell,slot,BOOKTYPE_SPELL or 'spell')
+    end
+    if not ok then return nil,'api-error' end
+    if not self:CanReadValue(active) then return nil,'restricted-value' end
+    if type(native)~='function' then
+        if active==0 then active=false elseif active==1 then active=true end
+    end
+    if type(active)~='boolean' then return nil,'invalid-api-result' end
+    return active
+end
+
 -- BEGIN GENERATED RM SOURCE BINDINGS
 do
     local function sourceGetter(name)
         if name=="Platform_GetSpellCharges" then return addon.Platform.GetSpellCharges end
         if name=="Platform_GetSpellCooldown" then return addon.Platform.GetSpellCooldown end
+        if name=="Platform_IsAutoRepeatActive" then return addon.Platform.IsAutoRepeatActive end
         if name=="Platform_IsSpellReady" then return addon.Platform.IsSpellReady end
         if name=="copy" then return copy end
         if name=="identifier" then return identifier end

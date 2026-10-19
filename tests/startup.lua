@@ -639,6 +639,25 @@ test('real AceDB preserves customized condition lists across reload and seeds on
     assert(contains(c.db.profile.switch_conditions,'PRIMARY_TALENT_TREE'),'new-profile conditions were pruned or lost on reload')
 end)
 
+test('real AceDB keeps customized spell arrays unchanged and seeds auto-repeat only for new or reset profiles',function()
+    local env,a,scripts=persistentFixture()
+    local function spells(profile) for _,group in ipairs(profile.condition_groups) do if group.id=='8034819e-26f5-4f4e-9153-d8cab5e65f31' then return group end end end
+    local function contains(list,tag) for _,entry in ipairs(list) do if entry==tag then return true end end end
+    assert(contains(spells(a.db.profile).conditions,'SPELL_AUTOREPEAT'),'new profile lacks auto-repeat')
+    local group=spells(a.db.profile);local reordered={}
+    for i=#group.conditions,1,-1 do if group.conditions[i]~='SPELL_AUTOREPEAT' then reordered[#reordered+1]=group.conditions[i] end end
+    group.conditions=reordered;local expected=table.concat(reordered,',')
+    scripts.OnEvent(nil,'PLAYER_LOGOUT')
+    local nextEnv,b,nextScripts=persistentFixture({RotationMasterDB=savedVariablesCopy(env.RotationMasterDB)})
+    assert(table.concat(spells(b.db.profile).conditions,',')==expected,'reload filled the customized spell array from a newly extended numeric default')
+    b.db:SetProfile('Fresh auto-repeat profile');assert(contains(spells(b.db.profile).conditions,'SPELL_AUTOREPEAT'),'new profile callback did not seed auto-repeat')
+    b.db:CopyProfile('Default');assert(table.concat(spells(b.db.profile).conditions,',')==expected,'copying a customized profile seeded or changed its spell array')
+    b.db:ResetProfile();assert(contains(spells(b.db.profile).conditions,'SPELL_AUTOREPEAT'),'profile reset did not seed auto-repeat')
+    nextScripts.OnEvent(nil,'PLAYER_LOGOUT')
+    local _,c=persistentFixture({RotationMasterDB=savedVariablesCopy(nextEnv.RotationMasterDB)})
+    assert(contains(spells(c.db.profile).conditions,'SPELL_AUTOREPEAT'),'seeded auto-repeat was pruned on reload')
+end)
+
 test('real AceDB clones edits and lineage survive saving only TOC-declared globals across folder casing',function()
     local env,a,scripts=persistentFixture()
     local source='rm.tbc.shaman.leveling'
