@@ -38,6 +38,7 @@ Platform/unit_identity.lua
 Platform/unit_metadata.lua
 Platform/pet.lua
 Platform/threat.lua
+Platform/instance.lua
 Platform/specializations.lua
 Platform/talents.lua
 Platform/spells.lua

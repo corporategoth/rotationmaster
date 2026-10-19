@@ -35,10 +35,20 @@ text.trim = function(s)
     return (s:gsub("^%s*(.-)%s*$", "%1"))
 end
 
+text.starts_with = function(str, start)
+    return str:sub(1, #start) == start
+end
+
+text.ends_with = function(str, ending)
+    return ending == "" or str:sub(-#ending) == ending
+end
+
 -- BEGIN GENERATED RM SOURCE BINDINGS
 do
     local function sourceGetter(name)
+        if name=="ends_with" then return addon.Functions.text.ends_with end
         if name=="split" then return addon.Functions.text.split end
+        if name=="starts_with" then return addon.Functions.text.starts_with end
         if name=="trim" then return addon.Functions.text.trim end
         if name=="wrap" then return addon.Functions.text.wrap end
     end

@@ -2314,6 +2314,7 @@ L["Native custom condition editor required."] = true
 
 -- BEGIN GENERATED RM PUBLIC HELPER DOCS
 L["All original results, preserving nil positions and return count."] = true
+L["Apply the legacy integer or canonical numeric-string spelling test. Numbers use floor equality; strings must equal the spelling obtained after numeric conversion and floor. Other types return false. This is not a finite-number validator."] = true
 L["Arguments forwarded unchanged to the observed function."] = true
 L["Arguments forwarded unchanged; types, identity, arity and nil positions distinguish cache entries."] = true
 L["Availability or query-validation reason for a nil level observation."] = true
@@ -2334,6 +2335,7 @@ L["Checkbox widget with boolean value and callback methods."] = true
 L["Choose the supplied player value only for the literal player unit token; every other unit selects the nonplayer value. Selected false and nil values are preserved."] = true
 L["Classification, validation or availability reason for a nil result."] = true
 L["Classify a numeric item as a glyph for the requested class, using guarded native item metadata. Class is optional and defaults to the readable player class. This establishes item classification only, not equipped status or an item-to-glyph-spell ID mapping."] = true
+L["Client-policy, native-call or required membership availability reason for a nil record."] = true
 L["Collect table keys and sort them by their associated values using Lua less-than comparison. This sorts values rather than key names; equal values have no guaranteed key order."] = true
 L["Compare two exact unit tokens using UnitIsUnit after checking only the first token with UnitExists. A readable absent first unit returns false without comparing. Required missing, failed, restricted or malformed observations return nil with a reason. No second existence query, GUID lookup or inferred identity is added."] = true
 L["Compare two values using an RM operator identifier: LESSTHAN, LESSTHANOREQUALS, GREATERTHAN, GREATERTHANOREQUALS, EQUALS, NOTEQUALS or DIVISIBLE. Invalid operators warn and return nil; operands must support the selected Lua operation."] = true
@@ -2365,6 +2367,7 @@ L["Create native wrapping text with optional leading image and pointer callbacks
 L["Current evaluation time in seconds from GetTime(), normally evalStart."] = true
 L["Current positive visibility distance in yards; nil when unavailable."] = true
 L["Current unit token whose distance from the player should be observed."] = true
+L["Decimal places, default zero; negative values round to tens or larger powers of ten."] = true
 L["Dense array of keys sorted by associated value."] = true
 L["Dense array of nonempty text fields."] = true
 L["Destination array modified in place."] = true
@@ -2390,6 +2393,8 @@ L["Insert each value visited by ipairs at its corresponding leading index in the
 L["Iterator yielding a captured key and its current table value, or no values when exhausted."] = true
 L["Key to look up."] = true
 L["Left operand; use numbers for ordering and divisibility."] = true
+L["Literal prefix, including an empty prefix."] = true
+L["Literal suffix, including an empty suffix."] = true
 L["Localized complete sentence with named slots and optional explicit predicate alternatives."] = true
 L["Look up a table key for display, preserving non-nil results; invalid tables, missing keys and nil keys use nullable placeholder text."] = true
 L["Lookup key."] = true
@@ -2408,6 +2413,7 @@ L["No return values. The destination array is modified in place."] = true
 L["No return values. The supplied table is modified in place."] = true
 L["Normalized bounded socket snapshot with slots and complete, or nil when the query is unavailable."] = true
 L["Number of entries visited."] = true
+L["Number or string to inspect; other types do not match."] = true
 L["Numeric widget supporting slider bounds, percent display and pending-edit validation."] = true
 L["Observation kind: cast or channel. These use different native interruptibility tuple positions."] = true
 L["Observe a readable raw unit level on known clients. A readable absent unit returns exists=false; present units require a positive finite integer UnitLevel. Unknown boss levels, missing, failed, restricted or malformed observations return nil with a reason. This does not use effective or scaled levels."] = true
@@ -2418,6 +2424,7 @@ L["Observe glyph sockets on verified Wrath, Cata and Mists client layouts. Retur
 L["Observe one consumed native unit metadata field after checking UnitExists: class uses UnitClass return two, creature uses the localized UnitCreatureType name, and classification uses UnitClassification. A readable absent unit returns false without querying metadata. Unused tuple fields do not affect availability; a required missing, failed, nil, restricted or malformed value returns nil with a reason. No player class, GUID, enum or translation inference is added."] = true
 L["Observe one current unit flag: combat uses UnitAffectingCombat, enemy uses UnitIsEnemy with player as the first unit, and pvp uses UnitIsPVP. A readable absent unit returns false without querying the flag. Required missing, failed, restricted or malformed observations return nil with a reason. This preserves the exact selected unit and does not infer friendliness, attackability or other unit states."] = true
 L["Observe one independent zero-argument player flag: stealthed uses IsStealthed, control uses HasFullControl, and outdoors uses IsOutdoors. Readable true and false retain their meanings. Required missing, failed, nil, restricted or malformed data returns nil with a reason. No existence, instance or ability-usability inference is added."] = true
+L["Observe one protected zero-argument IsInInstance tuple. Required readable Boolean membership is independent of the type field: known outside returns without interpreting the unused type; inside returns a readable string type or an instanceTypeReason when that secondary field is unavailable. Callers testing outside need only membership; inside type comparisons must check the secondary reason. No outdoors, zone or unit inference is added."] = true
 L["Observe ordered selected-unit existence, hostility from player, then the player threat status on that unit. Known absence, nonenemy and a successfully read nil threat status return false, preserving the no-threat predicate. Finite status numbers including zero retain their original comparison meaning. Required missing, failed, nil, restricted or malformed facts return nil with a reason. No attackability, death, combat or vehicle inference is added."] = true
 L["Observe readable current health and optionally maximum health on supported clients. A readable absent unit returns exists=false. Missing, failed, restricted or malformed observations return nil with a reason; they do not establish an absent unit or a health value."] = true
 L["Observe the player current movement speed on supported readable clients. This queries GetUnitSpeed for player only, without testing another unit or redirecting vehicle ownership. Zero means stationary; positive finite fractional speeds remain valid. Missing, failed, restricted or malformed observations return nil with a reason."] = true
@@ -2426,6 +2433,7 @@ L["Observed membership, or nil when unavailable."] = true
 L["One of class, creature or classification; other metadata kinds are unsupported."] = true
 L["One of combat, enemy or pvp; other flag kinds are not supported."] = true
 L["One of stealthed, control or outdoors; no other predicate is invoked."] = true
+L["One rounded numeric result from the original formula."] = true
 L["Optional collection of key values selecting entries; its own keys are ignored."] = true
 L["Optional ordering callback called as order(t, leftKey, rightKey)."] = true
 L["Optional positive class ID; nil queries the current player class under protection."] = true
@@ -2470,6 +2478,7 @@ L["Readable interval with optional minimum and maximum bounds in yards. At least
 L["Readable selected flag or nil when required data is unavailable."] = true
 L["Readable selected flag, false for a known absent unit, or nil when a required observation is unavailable."] = true
 L["Readable unit equality, false for a known absent first unit, or nil when required observations are unavailable."] = true
+L["Record with inInstance and, when inside, instanceType or instanceTypeReason; nil when membership is unavailable."] = true
 L["Reference input kind, such as Spec_EditBox, used for spell suggestions."] = true
 L["Remove entries in place, preserving only keys listed among except values by default. With invert true, remove listed keys and retain unlisted keys. Without an exception list, the default removes every entry and invert true retains every entry. Nil input does nothing."] = true
 L["Remove leading and trailing Lua-pattern whitespace from a string."] = true
@@ -2483,6 +2492,7 @@ L["Right operand; DIVISIBLE requires a nonzero divisor."] = true
 L["Rotation Master addon instance (implicit with colon calls)."] = true
 L["Rotation Master platform adapter (implicit with colon calls)."] = true
 L["Rotation Master platform adapter. A dot reference requires addon.Platform as the first argument; a colon call supplies it implicitly."] = true
+L["Round with the existing floor(num * 10^places + 0.5) / 10^places formula. Places defaults to zero and may be negative. Halfway negative values round toward positive infinity; no finite-number validation or alternative rounding policy is added."] = true
 L["Second exact unit token, passed unchanged to UnitIsUnit."] = true
 L["Second table to compare."] = true
 L["Selector widget supporting SetList, SetValue, SetLabel, SetDisabled and callbacks."] = true
@@ -2506,8 +2516,11 @@ L["Table to traverse; keys must be mutually comparable when no custom ordering i
 L["Table whose keys should be converted to strings."] = true
 L["Table whose values must be mutually comparable."] = true
 L["Target line width, default 72 characters."] = true
+L["Test a literal byte prefix using a Lua string slice. Empty prefixes match; pattern characters have no special meaning and case is preserved."] = true
+L["Test a literal byte suffix using a Lua string slice. Empty suffixes match; pattern characters have no special meaning and case is preserved."] = true
 L["Text or number shown after the comparison wording."] = true
 L["Text or number shown before the comparison wording."] = true
+L["Text to inspect."] = true
 L["Text to split."] = true
 L["Text to trim."] = true
 L["Text to wrap."] = true
@@ -2539,11 +2552,15 @@ L["Unit token whose raw level should be resolved."] = true
 L["Unit token, such as target; nil uses target."] = true
 L["Validation or availability reason for a nil result."] = true
 L["Value compared with each table value using Lua equality."] = true
+L["Value passed to the original arithmetic formula."] = true
 L["Value record field to edit; defaults to unit."] = true
 L["Value returned for every other unit."] = true
 L["Value returned when unit is player."] = true
 L["Value to display; false is preserved."] = true
 L["Visit entries in both tables and compare each value with the indexed value in the other table using Lua equality. Normal indexing and equality metamethods apply; nested contents are not compared recursively."] = true
+L["Whether the original floor-equality or exact numeric-spelling predicate matches."] = true
+L["Whether the text begins with the exact prefix."] = true
+L["Whether the text ends with the exact suffix."] = true
 L["Wrap text at whitespace boundaries near a target column count. Long words are retained intact."] = true
 L["mana selects the explicit live Mana enum; current reads and forwards the actual UnitPowerType identity, including Mana zero."] = true
 -- END GENERATED RM PUBLIC HELPER DOCS

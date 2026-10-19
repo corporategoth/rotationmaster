@@ -59,7 +59,7 @@ local function fixture(modern, absentThreat)
     end
     env.WOW_PROJECT_BURNING_CRUSADE_CLASSIC=5
     load('Data/artwork.lua')
-    load('Platform/client.lua');load('Platform/items.lua');load('Platform/inventory.lua');load('Platform/specializations.lua');load('Platform/communication.lua');load('Functions/values.lua');load('Functions/cache.lua');load('Core/announcements.lua');load('Core/action_policy.lua');load('Core/inventory.lua');load('Core/rotation_references.lua')
+    load('Platform/client.lua');load('Platform/items.lua');load('Platform/inventory.lua');load('Platform/specializations.lua');load('Platform/communication.lua');load('Functions/values.lua');load('Functions/text.lua');load('Functions/cache.lua');load('Core/announcements.lua');load('Core/action_policy.lua');load('Core/inventory.lua');load('Core/rotation_references.lua')
     load('Data/plain.lua');load('Data/tags.lua');load('Data/rotation_tree.lua');load('Data/validation.lua');load('Core/rotation_sequence.lua');load('Core/rotation_selection.lua')
     return env, addon, load
 end
@@ -1295,6 +1295,22 @@ test('source import provenance has a global default and survives real AceDB relo
     scripts.OnEvent(nil,'PLAYER_LOGOUT')
     local _,b=persistentFixture({RotationMasterDB=savedVariablesCopy(env.RotationMasterDB)})
     assert(b.db.global.function_import_origins['function:example'].sourceId=='original')
+end)
+test('environment scan captures the canonical prefix helper once and excludes mouseover units',function()
+    local env,a,load=fixture(true,true);load('Functions/text.lua');local calls=0;local original=a.Functions.text.starts_with
+    a.Functions.text.starts_with=function(unit,prefix) assert(prefix=='mouseover');calls=calls+1;return original(unit,prefix) end
+    a.starts_with=function() error('legacy addon.starts_with captured by main') end
+    a.isin=a.Functions.values.isin;load('main.lua');initialize(a)
+    a.Functions.text.starts_with=function() error('main lost its captured prefix helper') end
+    a.currentSpec=0;a.currentRotation='prefix';a.units={target='Target',mouseover='Mouseover',mouseoverpet='Mouseover pet'}
+    a.db.profile.rotations[0]={prefix={name='Prefix',rotation={},cooldowns={}}}
+    env.UnitGUID=function(unit) return 'GUID-'..unit end;env.UnitName=function(unit) return unit end
+    env.UnitCanAttack=function() return false end;env.UnitIsEnemy=function() return false end
+    local profile={};function profile:start() end;function profile:stop() end;function profile:child() return self end
+    a.evaluationProfile=profile;a.verbose=function() end
+    local boundary={};a.NewActionReadiness=function() error(boundary) end
+    local ok,why=pcall(a.EvaluateNextActionInternal,a);assert(not ok and why==boundary,'environment scan did not reach action boundary: '..tostring(why))
+    assert(calls==3 and a.unitsInRange['GUID-target'].unit=='target' and not a.unitsInRange['GUID-mouseover'] and not a.unitsInRange['GUID-mouseoverpet'])
 end)
 print(string.format('%d passed, %d failed', passed, failures))
 os.exit(failures == 0 and 0 or 1)

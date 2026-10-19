@@ -73,7 +73,7 @@ test('environment callbacks select current direct calls with eight exact owning 
     for name,count in pairs(counts) do assert(found[name]==count,name..' count changed') end
     assert(not f.env.Functions)
 end)
-test('only the explicitly repaired SELF_LEVEL PVP and OUTDOORS evaluators differ from prior environment sources',function()
+test('only the explicitly repaired SELF_LEVEL PVP OUTDOORS and INSTANCE evaluators differ from prior environment sources',function()
     local _,a=fixture();local baseline={}
     for _,tag in ipairs(tags) do local source=assert(a:GetBuiltinConditionSource(tag))
         if tag=='SELF_LEVEL' then
@@ -88,6 +88,7 @@ test('only the explicitly repaired SELF_LEVEL PVP and OUTDOORS evaluators differ
             assert(source.evaluate=='\n        return Functions.cache.getCached(cache, addon.Platform.GetPlayerFlagObservation, addon.Platform, \"outdoors\")\n    ','unexpected OUTDOORS evaluator repair')
             source.evaluate='\n        return Functions.cache.getCached(cache, IsOutdoors)\n    '
         end
+        if tag=='INSTANCE' then source.evaluate=dofile('tests/fixtures/restore_instance_repairs.lua')(source.evaluate) end
         baseline[tag]=source
     end
     assert(a:FunctionSourceHash(baseline)=='4eb1d87c','unrelated environment source changed')
@@ -127,16 +128,16 @@ test('canonical and old copies share exact cache observations including longterm
     assert(old.INSTANCE.evaluate({value='none'},{})==false)
     s.exists=false;s.calls={};assert(canonical.PVP.evaluate({unit='target'},{})==false and not s.calls.pvp)
 end)
-test('normalized level PVP and OUTDOORS failures stay unavailable while other raw error boundaries remain exact',function()
+test('normalized level PVP OUTDOORS and INSTANCE failures stay unavailable while raw zone error boundaries remain exact',function()
     local _,a,s=fixture();copies(a);copies(a,true)
     for _,entry in ipairs({{'SELF_LEVEL','level'},{'PVP','exists'},{'PVP','pvp'},{'ZONEPVP','zone'},{'INSTANCE','instance'},{'OUTDOORS','outdoors'}}) do
         s.throw=entry[2];s.exists=true
         for _,prefix in ipairs({'','COPY_','OLD_'}) do
             a.longtermCache={};local node={type=prefix..entry[1],unit='target',operator='EQUALS',value=entry[1]=='SELF_LEVEL' and 20 or nil}
             local ok,why=pcall(a.evaluateConditionResult,a,{type='NOT',value=node})
-            if entry[1]=='PVP' or entry[1]=='OUTDOORS' then assert(ok and why.status=='unavailable' and why.reason=='api-error') elseif entry[1]=='SELF_LEVEL' then assert(ok and why.status=='unavailable') else assert(not ok and tostring(why):find('native '..entry[2]..' failed',1,true),entry[1]..' error boundary changed') end
+            if entry[1]=='PVP' or entry[1]=='OUTDOORS' or entry[1]=='INSTANCE' then assert(ok and why.status=='unavailable' and why.reason=='api-error') elseif entry[1]=='SELF_LEVEL' then assert(ok and why.status=='unavailable') else assert(not ok and tostring(why):find('native '..entry[2]..' failed',1,true),entry[1]..' error boundary changed') end
             a.longtermCache={};ok,why=pcall(a.evaluateConditionResult,a,{type='AND',value={node,{type='OUTDOORS'}}})
-            if entry[1]=='PVP' or entry[1]=='OUTDOORS' then assert(ok and why.status=='unavailable' and why.reason=='api-error') elseif entry[1]=='SELF_LEVEL' then assert(ok and why.status=='unavailable') else assert(not ok and tostring(why):find('native '..entry[2]..' failed',1,true)) end
+            if entry[1]=='PVP' or entry[1]=='OUTDOORS' or entry[1]=='INSTANCE' then assert(ok and why.status=='unavailable' and why.reason=='api-error') elseif entry[1]=='SELF_LEVEL' then assert(ok and why.status=='unavailable') else assert(not ok and tostring(why):find('native '..entry[2]..' failed',1,true)) end
         end
     end
 end)

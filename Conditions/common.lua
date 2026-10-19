@@ -401,7 +401,7 @@ function addon:Widget_SingleItemWidget(spec, editbox, value, isvalid, update)
     item:SetUserData("spec", spec)
     item:SetCallback("OnEnterPressed", function(_, _, v)
         local itemid
-        if not addon.isint(v) then
+        if not addon.Functions.values.isint(v) then
             itemid = addon.Platform:GetItemID(v)
         else
             itemid = tonumber(v)

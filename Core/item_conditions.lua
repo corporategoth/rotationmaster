@@ -76,7 +76,7 @@ function addon:EvaluateItemCondition(tag,value,cache,now)
         if not cooldown.isEnabled then return nil,'item-cooldown-disabled' end
         local remaining=math.max(0,cooldown.startTime+cooldown.duration-now)
         if not finite(remaining) then return nil,'invalid-api-result' end
-        return self.Functions.values.compare(value.operator,self.round(remaining,3),value.value)
+        return self.Functions.values.compare(value.operator,self.Functions.values.round(remaining,3),value.value)
     end
     if tag~='ITEM' then return nil,'unknown-item-condition' end
     local levelAllowed,levelReason=read(cache,platform.IsItemLevelAllowed,id)

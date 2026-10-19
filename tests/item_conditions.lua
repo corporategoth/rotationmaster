@@ -128,7 +128,8 @@ test('item service uses canonical cache and receiver comparisons for every quant
     local cached,compare=a.Functions.cache.getCached,a.Functions.values.compare
     local receiver={db={profile={itemsets={own={items={10}}}},global={itemsets={}}},Functions={cache={getCached=function() error('item observer used receiver cache instead of addon owner') end},values={}},
         IsConditionItemReference=a.IsConditionItemReference,GetConditionItemList=a.GetConditionItemList,
-        compare=function() error('legacy receiver.compare used') end,round=function(n,places) assert(places==3);return a.round(n,places) end}
+        compare=function() error('legacy receiver.compare used') end,round=function() error('legacy receiver.round used') end}
+    local rounding=0;receiver.Functions.values.round=function(...) assert(select('#',...)==2);local n,places=...;assert(places==3);rounding=rounding+1;return a.round(n,places) end
     receiver.Functions.values.compare=function(...) assert(select('#',...)==3);local op,left,right=...;comparisons[#comparisons+1]=left;return compare(op,left,right) end
     a.Functions.cache.getCached=function(got,method,...)
         assert(got==cache and select(1,...)==platform,'item service changed cache or captured Platform receiver')
@@ -140,7 +141,7 @@ test('item service uses canonical cache and receiver comparisons for every quant
     assert(evaluate('CARRYING',{},0)==true and evaluate('CARRYING',{},1)==false and cacheCalls==0)
     assert(evaluate('CARRYING','own',2)==true and evaluate('CARRYING',{99},0)==true)
     s.start=99;s.duration=30;assert(evaluate('ITEM_COOLDOWN','own',29)==true and evaluate('ITEM_COOLDOWN','own',28)==false)
-    assert(table.concat(comparisons,',')=='0,0,2,0,29,29' and s.calls.cooldown==1)
+    assert(table.concat(comparisons,',')=='0,0,2,0,29,29' and s.calls.cooldown==1 and rounding==2)
     local original=receiver.db.profile.itemsets.own.items;assert(receiver:GetConditionItemList('own')==original and original[1]==10)
     cache=nil;s.count[10]=4;assert(evaluate('CARRYING','own',4)==true);s.count[10]=5;assert(evaluate('CARRYING','own',5)==true,'nil cache retained a prior inventory observation')
     cache={};s.enabled=false;local result,reason=evaluate('ITEM_COOLDOWN','own',0);assert(result==nil and reason=='item-cooldown-disabled')

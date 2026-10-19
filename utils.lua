@@ -63,30 +63,13 @@ addon.isin = addon.Functions.values.isin
 
 addon.tablelength = addon.Functions.collections.tablelength
 
-addon.round = function (num, numDecimalPlaces)
-    local mult = 10^(numDecimalPlaces or 0)
-    return floor(num * mult + 0.5) / mult
-end
+addon.round = addon.Functions.values.round
 
-addon.isint = function(num)
-    if type(num) == "number" then
-        return floor(num) == num
-    elseif type(num) == "string" then
-        local tmp = tonumber(num)
-        if tmp ~= nil then
-            return tostring(floor(tmp)) == num
-        end
-    end
-    return false
-end
+addon.isint = addon.Functions.values.isint
 
-addon.starts_with = function(str, start)
-    return str:sub(1, #start) == start
-end
+addon.starts_with = addon.Functions.text.starts_with
 
-addon.ends_with = function(str, ending)
-    return ending == "" or str:sub(-#ending) == ending
-end
+addon.ends_with = addon.Functions.text.ends_with
 
 addon.multiinsert = addon.Functions.collections.multiinsert
 

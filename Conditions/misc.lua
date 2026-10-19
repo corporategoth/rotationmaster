@@ -156,9 +156,12 @@ addon:RegisterCondition("INSTANCE", {
         return value.value == nil or Functions.values.isin(addon.instances, value.value);
     end,
     evaluate = function(value, cache)
-        local inInstance, instanceType = Functions.cache.getCached(cache, IsInInstance)
-        if value.value == "none" then return not inInstance end
-        return inInstance and value.value == instanceType
+        local record,reason=Functions.cache.getCached(cache, addon.Platform.GetInstanceObservation, addon.Platform)
+        if not record then return nil,reason end
+        if value.value == "none" then return not record.inInstance end
+        if not record.inInstance then return false end
+        if record.instanceType==nil then return nil,record.instanceTypeReason end
+        return value.value == record.instanceType
     end,
     print = function(_, value)
         return string.format(L["you {{!are|are not}} in a %s instance"],

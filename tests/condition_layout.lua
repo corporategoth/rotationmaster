@@ -207,4 +207,15 @@ test('operator factories resolve live canonical ordering and retain field callba
         assert(value.chosen=='NOTEQUALS' and updates==2)
     end
 end)
+test('single item field resolves canonical integer spelling live and retains native lease guards',function()
+    local f=fixture();local a=f.addon;f.load('Conditions/common.lua');local calls=0;local updates=0;a.ScheduleTimer=function() end
+    local integer=a.isint;a.Functions.values.isint=function(value) calls=calls+1;return integer(value) end
+    a.isint=function() error('legacy addon.isint used by single item field') end
+    local value={item=10};local group=a:Widget_SingleItemWidget(0,'Item_EditBox',value,function() return true end,function() updates=updates+1 end)
+    local edit=group.children[2];edit:Fire('OnEnterPressed','11');assert(value.item==11 and calls==1 and updates==1)
+    local canonical=a.Functions.values.isint;a.Functions.values.isint=function(value) assert(value=='12');return canonical(value) end
+    edit:Fire('OnEnterPressed','12');assert(value.item==12 and calls==2 and updates==2)
+    local stale=edit.events.OnEnterPressed;a:ReleaseConditionWidget(group);stale(edit,'OnEnterPressed','13')
+    assert(value.item==12 and calls==2 and updates==2)
+end)
 finish()

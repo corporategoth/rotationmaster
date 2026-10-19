@@ -75,6 +75,7 @@ test('only three exact evaluator bodies change while complete modules and privat
     for _,case in ipairs({{'combat','024d794b',{'stealthed','control'}},{'misc','81c86e93',{'outdoors'}}}) do
         local file=assert(io.open('Conditions/'..case[1]..'.lua'));local text=file:read('*a');file:close()
         if case[1]=='combat' then text=dofile('tests/fixtures/restore_threat_repairs.lua')(text);text=dofile('tests/fixtures/restore_pet_repairs.lua')(text) end
+        if case[1]=='misc' then text=dofile('tests/fixtures/restore_instance_repairs.lua')(text) end
         for _,kind in ipairs(case[3]) do local repaired='        return Functions.cache.getCached(cache, addon.Platform.GetPlayerFlagObservation, addon.Platform, "'..kind..'")'
             local first=assert(text:find(repaired,1,true),'exact player flag repair missing');assert(not text:find(repaired,first+1,true))
             text=text:sub(1,first-1)..'        return Functions.cache.getCached(cache, '..apis[kind]..')'..text:sub(first+#repaired)

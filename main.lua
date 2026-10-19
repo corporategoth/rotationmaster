@@ -29,7 +29,7 @@ end
 
 local pairs, color, string = pairs, color, string
 local floor = math.floor
-local isin, starts_with, isint = addon.isin, addon.starts_with, addon.isint
+local isin, starts_with, isint = addon.isin, addon.Functions.text.starts_with, addon.isint
 
 addon.pretty_name = GetAddOnMetadata(addon_name, "Title")
 addon.delayed_condition = {}
