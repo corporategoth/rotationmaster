@@ -711,6 +711,22 @@ test('real AceDB defaults to diagram and preserves the chosen rotation view on r
     assert(b.db.profile.rotation_view=='list')
 end)
 
+test('scoped production profile reset preserves the real condition seed callback',function()
+    local _,a=persistentFixture(nil,nil,true)
+    assert(a.rotationProfileLifecycleInstalled and not a.initializationErrorReport)
+    a.DisableRotation=function() end;a.EnableRotation=function() end;a.RefreshConfiguration=function() end
+    a.db:ResetProfile()
+    local function contains(list,tag) for _,entry in ipairs(list) do if entry==tag then return true end end end
+    assert(contains(a.db.profile.switch_conditions,'TALENT_TREE_POINTS') and contains(a.db.profile.switch_conditions,'PRIMARY_TALENT_TREE'),'scoped reset lost real switch-condition seeds')
+    local character,spell
+    for _,group in ipairs(a.db.profile.condition_groups) do
+        if group.id=='b8136123-2bda-4230-a77a-89ea2aed3a1a' then character=group.conditions end
+        if group.id=='8034819e-26f5-4f4e-9153-d8cab5e65f31' then spell=group.conditions end
+    end
+    assert(character and contains(character,'TALENT_TREE_POINTS') and contains(character,'PRIMARY_TALENT_TREE'),'scoped reset lost real character condition seeds')
+    assert(spell and contains(spell,'SPELL_AUTOREPEAT'),'scoped reset lost real spell condition seed')
+end)
+
 test('real AceDB preserves customized condition lists across reload and seeds only new or reset profiles',function()
     local env,a,scripts=persistentFixture()
     local function contains(list,tag) for _,value in ipairs(list) do if value==tag then return true end end end

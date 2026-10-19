@@ -38,7 +38,7 @@ test('SetupOptions registers only one native launcher and opens the standalone w
 end)
 test('profile selection preserves the AceDB handler and refreshes only the standalone configuration',function()
     local f,_,options,count=fixture();local a=f.addon;a:SetupOptions()
-    options.rotationmasterProfiles.handler.SetProfile({},nil,'Different profile')
+    options.rotationmasterProfiles().handler.SetProfile({},nil,'Different profile')
     assert(count()==1 and a.profileSelected=='Different profile' and a.disabled and a.enabled and a.refreshed)
 end)
 test('optional module rendering resolves the registered application and refuses unrelated sections',function()

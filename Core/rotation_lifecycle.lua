@@ -23,9 +23,30 @@ function addon:RotationProfileChanged()
 end
 
 function addon:InstallRotationProfileLifecycle()
-    if self.rotationProfileLifecycleInstalled then return end
-    self.rotationProfileLifecycleInstalled=true
-    for _,event in ipairs({'OnProfileChanged','OnProfileCopied','OnProfileReset'}) do
-        self.db.RegisterCallback(self,event,'RotationProfileChanged')
+    local db=self.db
+    local previous=self.rotationProfileLifecycleDB
+    local previousOwner=self.rotationProfileLifecycleOwner
+    if self.rotationProfileLifecycleInstalled and previous==db and previousOwner then return end
+    -- Retire authority before removing callbacks. A callback already captured
+    -- by a dispatch must not apply the old database's event to a new active DB.
+    self.rotationProfileLifecycleDB=nil
+    self.rotationProfileLifecycleOwner=nil
+    if previous and previousOwner then
+        for _,event in ipairs({'OnProfileChanged','OnProfileCopied','OnProfileReset'}) do
+            previous.UnregisterCallback(previousOwner,event)
+        end
     end
+    -- The addon itself already owns the init reset seeder on this registry.
+    -- Give lifecycle callbacks a distinct binding owner so both can coexist.
+    local owner={}
+    local function changed(...)
+        if self.db~=db or self.rotationProfileLifecycleDB~=db or self.rotationProfileLifecycleOwner~=owner then return end
+        return self:RotationProfileChanged(...)
+    end
+    for _,event in ipairs({'OnProfileChanged','OnProfileCopied','OnProfileReset'}) do
+        db.RegisterCallback(owner,event,changed)
+    end
+    self.rotationProfileLifecycleDB=db
+    self.rotationProfileLifecycleOwner=owner
+    self.rotationProfileLifecycleInstalled=true
 end

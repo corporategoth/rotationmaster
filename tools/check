@@ -189,6 +189,8 @@ def main():
             ['lua5.1', 'tests/window_style.lua'],
             ['lua5.1', 'tests/workbench_scroll.lua'],
             ['lua5.1', 'tests/settings_launcher.lua'],
+            ['lua5.1', 'tests/settings_metadata.lua'],
+            ['luajit', 'tests/settings_metadata.lua'],
             ['lua5.1', 'tests/condition_draft.lua'],
             ['lua5.1', 'tests/condition_canvas.lua'],
             ['lua5.1', 'tests/condition_description.lua'],
