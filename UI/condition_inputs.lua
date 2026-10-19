@@ -3,8 +3,13 @@ local AceGUI=LibStub('AceGUI-3.0')
 local function finite(value) return type(value)=='number' and value==value and value>-math.huge and value<math.huge end
 
 -- Native visuals with the small widget contract used by legacy declarations.
--- Containers/layout and external custom widgets still belong to the Ace bridge.
+-- Ordinary leases belong to RM; historical custom widgets keep an Ace bridge.
 ---@class RMConditionInput: AceGUIWidget
+---@field editbox EditBox
+---@field SetFocus fun(self: RMConditionInput)
+---@field ClearFocus fun(self: RMConditionInput)
+---@field SetMaxLetters fun(self: RMConditionInput, value: number)
+---@field DisableButton fun(self: RMConditionInput)
 ---@field SetText fun(self: RMConditionInput, text: any)
 ---@field GetText fun(self: RMConditionInput): string
 ---@field SetLabel fun(self: RMConditionInput, text: string)
@@ -15,7 +20,7 @@ local function finite(value) return type(value)=='number' and value==value and v
 ---@field SetIsPercent fun(self: RMConditionInput, value: boolean?)
 ---@field IsPending fun(self: RMConditionInput): boolean
 ---@field CommitPending fun(self: RMConditionInput): boolean?
-local function constructor(numeric)
+local function constructor(numeric,legacy)
     local w={type=numeric and 'RM-ConditionSlider' or 'RM-ConditionEditBox',alive=false}
     local frame=CreateFrame('Frame',nil,UIParent);w.frame=frame;frame:SetSize(220,44)
     local caption=frame:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall');w.caption=caption
@@ -81,7 +86,10 @@ local function constructor(numeric)
         if changed then self:Fire(numeric and 'OnValueChanged' or 'OnEnterPressed',value) end
         pendingChanged();return true
     end
+    function w:SetFocus() if self.alive and not self.disabled then input:SetFocus() end end
     function w:ClearFocus() input:ClearFocus() end
+    function w:SetMaxLetters(value) input:SetMaxLetters(value) end
+    function w:DisableButton() end
     function w:SetDisabled(value)
         self.disabled=value==true
         input:EnableMouse(not self.disabled);input:EnableKeyboard(not self.disabled)
@@ -91,7 +99,7 @@ local function constructor(numeric)
     end
     function w:OnAcquire()
         self.alive=true;self.minimum,self.maximum,self.step=0,100,1;self.isPercent=false;self.value=nil;self.text=''
-        self:SetWidth(220);self:SetLabel('');self:SetDisabled(false)
+        self:SetMaxLetters(4096);self:SetWidth(220);self:SetLabel('');self:SetDisabled(false)
         if slider then self:SetSliderValues(0,100,1) end;paint()
     end
     function w:OnRelease() self.alive=false;self.pending=false;input:ClearFocus() end
@@ -120,19 +128,19 @@ local function constructor(numeric)
         end)
     end
     ---@cast w AceGUIWidget
-    return AceGUI:RegisterAsWidget(w)
+    return addon:RegisterConditionWidget(w,1,legacy)
 end
-AceGUI:RegisterWidgetType('RM-ConditionEditBox',function() return constructor(false) end,1)
-AceGUI:RegisterWidgetType('RM-ConditionSlider',function() return constructor(true) end,1)
+AceGUI:RegisterWidgetType('RM-ConditionEditBox',function() return constructor(false,true) end,1)
+AceGUI:RegisterWidgetType('RM-ConditionSlider',function() return constructor(true,true) end,1)
 ---@return RMConditionInput
 function addon:CreateConditionEditBox()
-    local w=AceGUI:Create('RM-ConditionEditBox')
+    local w=addon:AcquireConditionWidget('RM-ConditionEditBox',function() return constructor(false) end)
     ---@cast w RMConditionInput
     return w
 end
 ---@return RMConditionInput
 function addon:CreateConditionSlider()
-    local w=AceGUI:Create('RM-ConditionSlider')
+    local w=addon:AcquireConditionWidget('RM-ConditionSlider',function() return constructor(true) end)
     ---@cast w RMConditionInput
     return w
 end
@@ -143,6 +151,8 @@ do
         if name=="AceGUI" then return AceGUI end
         if name=="CreateConditionEditBox" then return addon.CreateConditionEditBox end
         if name=="CreateConditionSlider" then return addon.CreateConditionSlider end
+        if name=="constructor" then return constructor end
+        if name=="finite" then return finite end
     end
     if addon.RegisterBuiltinSourceModule then
         addon:RegisterBuiltinSourceModule("UI/condition_inputs.lua", sourceGetter)

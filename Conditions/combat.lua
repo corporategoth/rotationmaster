@@ -433,7 +433,7 @@ addon:RegisterCondition("FORM", {
             end
         end
 
-        local formIcon = AceGUI:Create("Icon")
+        local formIcon = addon:CreateConditionIcon()
         local function set_form_icon()
             if value.value ~= nil then
                 if value.value == 0 then

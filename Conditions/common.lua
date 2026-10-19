@@ -215,7 +215,7 @@ function addon:Widget_ItemWidget(top, editbox, value, isvalid, update)
     item_group:SetLayout("Table")
     item_group:SetUserData("table", { columns = { 44, 1, 24 } })
 
-    local itemIcon = AceGUI:Create("Icon")
+    local itemIcon = addon:CreateConditionIcon()
     local update_action_image = function()
         if value.item ~= nil then
             if type(value.item) == "string" then
@@ -253,7 +253,7 @@ function addon:Widget_ItemWidget(top, editbox, value, isvalid, update)
     itemIcon:SetDisabled(value.disabled)
     item_group:AddChild(itemIcon)
 
-    local edit_button = AceGUI:Create("Icon")
+    local edit_button = addon:CreateConditionIcon()
 
     local item = addon:CreateConditionDropdown()
     item:SetFullWidth(true)
@@ -323,7 +323,7 @@ function addon:Widget_ItemWidget(top, editbox, value, isvalid, update)
                     top:Hide()
                 end
                 addon:item_list_popup(itemset.name, editbox, itemset.items, isvalid, edit_callback, top and function(widget)
-                    AceGUI:Release(widget)
+                    addon:ReleaseConditionWidget(widget)
                     addon.LayoutConditionFrame(top)
                     top:Show()
                 end)
@@ -334,7 +334,7 @@ function addon:Widget_ItemWidget(top, editbox, value, isvalid, update)
                 top:Hide()
             end
             addon:item_list_popup(L["Custom"], editbox, value.item, isvalid, edit_callback, top and function(widget)
-                AceGUI:Release(widget)
+                addon:ReleaseConditionWidget(widget)
                 addon.LayoutConditionFrame(top)
                 top:Show()
             end)
@@ -506,6 +506,7 @@ end
 -- BEGIN GENERATED RM SOURCE BINDINGS
 do
     local function sourceGetter(name)
+        if name=="AceGUI" then return AceGUI end
         if name=="SpellData" then return SpellData end
         if name=="Widget_GetSpellId" then return addon.Widget_GetSpellId end
         if name=="Widget_SpellWidget" then return addon.Widget_SpellWidget end

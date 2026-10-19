@@ -3,11 +3,14 @@ local F=dofile('tests/fixtures/addon.lua')
 local inventory=dofile('tests/fixtures/catalog_inventory.lua')
 local modules={}
 local publicHelpers=dofile('tools/public_helpers.lua')
+-- Old saved factory bodies explicitly capture these library bindings. Retain
+-- their original identities even after current factories stop calling Ace.
+local retainedAceBindings={'UI/checkbox.lua','UI/selector.lua','UI/condition_inputs.lua','Conditions/common.lua','Conditions/combat.lua','Conditions/talent.lua'}
 local standard={};for name,value in pairs(_G) do if type(value)=='function' then standard[name]=value end end
 local function descriptor(fn)
     local info=debug.getinfo(fn,'S');return {file=info.source:sub(1,1)=='@' and info.source:sub(2) or info.source,first=info.linedefined,last=info.lastlinedefined,what=info.what}
 end
-local publicIdentities,callbackBindings={},{}
+local publicIdentities,callbackBindings,currentAddon={},{},nil
 local function qualifiedBindings(module,root,value)
     local declared={}
     for alias,id in pairs(callbackBindings[module.file] or {}) do
@@ -33,30 +36,42 @@ local function qualifiedBindings(module,root,value)
     for alias in pairs(declared) do assert(result[alias],'qualified callback binding missing: '..alias) end
     return result
 end
-local function capture(module,fn)
-    local info=descriptor(fn);info.bindings={}
+local function capture(module,fn,captureBindings)
+    local info=descriptor(fn);info.bindings={};local captured={}
     for index=1,200 do
         local name,value=debug.getupvalue(fn,index);if not name then break end
         if name~='addon' and name~='L' and not (type(value)=='function' and standard[name]==value) then
-            local qualified=qualifiedBindings(module,name,value)
-            if qualified then
-                for alias,id in pairs(qualified) do info.bindings[alias]=id end
+            local reference=captureBindings and captureBindings[name]
+            if reference then
+                local path,alias=reference:match('^builtin:(.-):([A-Za-z_][A-Za-z_0-9]*)$')
+                local getter=path and currentAddon.builtinSourceModules and currentAddon.builtinSourceModules[path]
+                assert(type(value)~='function' and type(getter)=='function' and rawequal(getter(alias),value),'captured binding getter mismatch: '..name)
+                local target=modules[path] or {file=path,conditions={},bindings={}};modules[path]=target
+                assert(not target.bindings[alias] or target.bindings[alias].kind==type(value) and not target.bindings[alias].fn,'captured binding identity collision: '..reference)
+                target.bindings[alias]=target.bindings[alias] or {kind=type(value)}
+                info.bindings[name]=reference;captured[name]=true
             else
-                info.bindings[name]='builtin:'..module.file..':'..name
-                if not module.bindings[name] then
-                    local record={kind=type(value)};module.bindings[name]=record
-                    if type(value)=='function' then
-                        local source=descriptor(value)
-                        if source.file==module.file then record.fn=capture(module,value) else record.kind='value' end
+                local qualified=qualifiedBindings(module,name,value)
+                if qualified then
+                    for alias,id in pairs(qualified) do info.bindings[alias]=id end
+                else
+                    info.bindings[name]='builtin:'..module.file..':'..name
+                    if not module.bindings[name] then
+                        local record={kind=type(value)};module.bindings[name]=record
+                        if type(value)=='function' then
+                            local source=descriptor(value)
+                            if source.file==module.file then record.fn=capture(module,value) else record.kind='value' end
+                        end
                     end
                 end
             end
         end
     end
+    for name in pairs(captureBindings or {}) do assert(captured[name],'declared captured binding missing: '..name) end
     return info
 end
 for _,case in ipairs(inventory.branches) do
-    local f=F.new(unpack(case[1]));f.addon.delayed_condition={};publicIdentities={}
+    local f=F.new(unpack(case[1]));f.addon.delayed_condition={};publicIdentities={};currentAddon=f.addon
     f.load('Platform/spells.lua');f.load('Platform/actions.lua');f.load('Platform/range.lua')
     if case[3] then f.env.MI2_GetMobData=function() end end
     for path in io.lines('RotationMaster.toc') do if path:match('^Conditions/') then
@@ -69,13 +84,20 @@ for _,case in ipairs(inventory.branches) do
         assert(type(fn)=='function','public helper missing: '..name)
         local info=descriptor(fn);assert(info.file==documentation.module,'public helper module changed: '..name)
         local module=modules[info.file] or {file=info.file,conditions={},bindings={}};modules[info.file]=module
-        local captured=capture(module,fn)
+        local captured=capture(module,fn,documentation.captureBindings)
         local record=module.bindings[name]
         assert(not record or record.public,'public helper collides with captured local: '..name)
         local id=documentation.bindingID or 'builtin:'..info.file..':'..name
         assert(not publicIdentities[id],'duplicate public helper identity: '..id)
         publicIdentities[id]=fn
         module.bindings[name]={kind='function',fn=captured,public=documentation,addonMember=member}
+    end
+    for _,path in ipairs(retainedAceBindings) do
+        local module=modules[path] or {file=path,conditions={},bindings={}};modules[path]=module
+        local getter=f.addon.builtinSourceModules and f.addon.builtinSourceModules[path]
+        local existing=getter and getter('AceGUI')
+        assert(existing==nil or existing==f.libraries['AceGUI-3.0'],'retained widget library identity mismatch: '..path)
+        module.bindings.AceGUI={kind='table'}
     end
     callbackBindings=f.addon.builtinCallbackBindings or {}
     for _,bindings in pairs(callbackBindings) do assert(f.addon:NormalizeFunctionBindings(bindings),'invalid declared callback bindings') end

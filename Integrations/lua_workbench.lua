@@ -103,13 +103,11 @@ function rm:CreateLuaWorkbenchControl(parent,changed,valid)
         if not surface then return pcall(callback,...) end
         -- Track synchronous allocations only while this invocation is running.
         -- Restore before yielding back to the game or another addon's handler.
-        local ace=LibStub('AceGUI-3.0');local create=ace.Create;local factories={}
+        local ace=LibStub('AceGUI-3.0');local create=ace.Create
         ace.Create=function(library,...) local widget=create(library,...);surface:Guard(widget);return widget end
-        for _,name in ipairs({'CreateConditionEditBox','CreateConditionSlider','CreateConditionDropdown','CreateConditionCheckBox'}) do
-            local original=rm[name];if original then factories[name]=original;rm[name]=function(...) local widget=original(...);surface:Guard(widget);return widget end end
-        end
+        local unsubscribe=rm:ObserveConditionWidgets(function(widget) surface:Guard(widget) end)
         local function pack(...) return {n=select('#',...),...} end
-        local results=pack(pcall(callback,...));ace.Create=create;for name,original in pairs(factories) do rm[name]=original end
+        local results=pack(pcall(callback,...));unsubscribe();ace.Create=create
         return unpack(results,1,results.n)
     end
     local resume=engine.Debugger.Resume

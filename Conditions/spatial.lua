@@ -7,11 +7,17 @@ local helpers = addon.help_funcs
 
 -- Selected canonical helpers stay private to these authored callbacks. The
 -- collector verifies these explicit leaves against their stable public IDs.
-local Functions={values={compare=addon.Functions.values.compare,isin=addon.Functions.values.isin}}
+local Functions={
+    values={compare=addon.Functions.values.compare,isin=addon.Functions.values.isin},
+    presentation={compareString=addon.Functions.presentation.compareString,nullable=addon.Functions.presentation.nullable,playerize=addon.Functions.presentation.playerize},
+}
 addon.builtinCallbackBindings=addon.builtinCallbackBindings or {}
 addon.builtinCallbackBindings["Conditions/spatial.lua"]={
     ["Functions.values.compare"]="builtin:utils.lua:compare",
     ["Functions.values.isin"]="builtin:utils.lua:isin",
+    ["Functions.presentation.compareString"]="builtin:utils.lua:compareString",
+    ["Functions.presentation.nullable"]="builtin:utils.lua:nullable",
+    ["Functions.presentation.playerize"]="builtin:utils.lua:playerize",
 }
 
 local rcf = function(unit) return RangeCheck:GetRange(unit) end
@@ -185,14 +191,14 @@ addon:RegisterCondition("PROXIMITY", {
         return addon.compare(value.operator, count, value.value)
     end,
     print = function(_, value)
-        return string.format(addon.playerize(value.unit, L["%s {{!have|do not have}} %s"], L["%s {{!has|does not have}} %s"]),
-                addon.nullable(addon.units[value.unit], L["<unit>"]),
-                addon.compareString(value.operator,
+        return string.format(Functions.presentation.playerize(value.unit, L["%s {{!have|do not have}} %s"], L["%s {{!has|does not have}} %s"]),
+                Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]),
+                Functions.presentation.compareString(value.operator,
                         string.format(L["number of %s members%s within %d yards"],
                                 (value.samegroup and PARTY or L["Raid or Party"]),
                                 (value.includepets and " (" .. L["including pets"] .. ")" or ""),
-                                addon.nullable(value.distance, L["<distance>"])),
-                        addon.nullable(value.value)))
+                                Functions.presentation.nullable(value.distance, L["<distance>"])),
+                        Functions.presentation.nullable(value.value)))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -253,9 +259,9 @@ addon:RegisterCondition("DISTANCE", {
         return maxRange <= value.value
     end,
     print = function(_, value)
-        return string.format(addon.playerize(value.unit, L["%s {{!are|are not}} %s"], L["%s {{!is|is not}} %s"]),
-                addon.nullable(value.unit, L["<unit>"]),
-                string.format(L["closer than %s yards"], addon.nullable(value.value)))
+        return string.format(Functions.presentation.playerize(value.unit, L["%s {{!are|are not}} %s"], L["%s {{!is|is not}} %s"]),
+                Functions.presentation.nullable(value.unit, L["<unit>"]),
+                string.format(L["closer than %s yards"], Functions.presentation.nullable(value.value)))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -331,11 +337,11 @@ addon:RegisterCondition("DISTANCE_COUNT", {
         return Functions.values.compare(value.operator, count, value.value)
     end,
     print = function(_, value)
-        return addon.compareString(value.operator,
+        return Functions.presentation.compareString(value.operator,
                         string.format(L["Number of %s within %s yards"],
                             (value.enemy and L["enemies"] or "allies"),
-                            addon.nullable(value.distance, L["<distance>"])),
-                        addon.nullable(value.value))
+                            Functions.presentation.nullable(value.distance, L["<distance>"])),
+                        Functions.presentation.nullable(value.value))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -395,7 +401,7 @@ addon:RegisterCondition("ZONE", {
         return value.value == zoneName
     end,
     print = function(_, value)
-        return string.format(L["{{!in|not in}} %s"], addon.nullable(value.value, L["<zone>"]))
+        return string.format(L["{{!in|not in}} %s"], Functions.presentation.nullable(value.value, L["<zone>"]))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")

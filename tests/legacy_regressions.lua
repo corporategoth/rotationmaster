@@ -70,7 +70,7 @@ test('every proximity statistics editor renders and updates the shared distance 
         local distance
         for _,child in ipairs(parent.children) do if child.type=='RM-ConditionEditBox' and child.label=='Distance' then distance=child end end
         assert(distance,'missing distance editor for '..tag)
-        distance.callbacks.OnEnterPressed(nil,nil,'35');assert(value.distance==35 and top.statusText=='Updated condition')
+        distance:Fire('OnEnterPressed','35');assert(value.distance==35 and top.statusText=='Updated condition')
     end
 end)
 test('swing time uses the real channel API and resets the estimate while channeling',function()

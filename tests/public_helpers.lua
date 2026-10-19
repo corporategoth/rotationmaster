@@ -1,5 +1,5 @@
 local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite()
-local expected={getCached='addon.getCached',getRetryCached='addon.getRetryCached',compare='Functions.values.compare',isin='Functions.values.isin',nullable='addon.nullable',nullable_value='addon.nullable_value',split='addon.split',wrap='addon.wrap',trim='addon.trim',CreateConditionGroup='addon:CreateConditionGroup',CreateConditionEditBox='addon:CreateConditionEditBox',CreateConditionSlider='addon:CreateConditionSlider',CreateConditionDropdown='addon:CreateConditionDropdown',CreateConditionCheckBox='addon:CreateConditionCheckBox',Widget_UnitWidget='addon:Widget_UnitWidget',Widget_SpellWidget='addon:Widget_SpellWidget',Widget_GetSpellId='addon:Widget_GetSpellId',Platform_IsSpellReady='addon.Platform:IsSpellReady',Platform_GetSpellCooldown='addon.Platform:GetSpellCooldown',Platform_GetSpellCharges='addon.Platform:GetSpellCharges',Platform_GetSpellRangeState='addon.Platform:GetSpellRangeState'}
+local expected={CreateConditionIcon='addon:CreateConditionIcon',CreateConditionLabel='addon:CreateConditionLabel',CreateConditionButton='addon:CreateConditionButton',getCached='addon.getCached',getRetryCached='addon.getRetryCached',compare='Functions.values.compare',isin='Functions.values.isin',nullable='Functions.presentation.nullable',nullable_value='Functions.presentation.nullable_value',playerize='Functions.presentation.playerize',compareString='Functions.presentation.compareString',split='addon.split',wrap='addon.wrap',trim='addon.trim',CreateConditionGroup='addon:CreateConditionGroup',CreateConditionEditBox='addon:CreateConditionEditBox',CreateConditionSlider='addon:CreateConditionSlider',CreateConditionDropdown='addon:CreateConditionDropdown',CreateConditionCheckBox='addon:CreateConditionCheckBox',Widget_UnitWidget='addon:Widget_UnitWidget',Widget_SpellWidget='addon:Widget_SpellWidget',Widget_GetSpellId='addon:Widget_GetSpellId',Platform_IsSpellReady='addon.Platform:IsSpellReady',Platform_GetSpellCooldown='addon.Platform:GetSpellCooldown',Platform_GetSpellCharges='addon.Platform:GetSpellCharges',Platform_GetSpellRangeState='addon.Platform:GetSpellRangeState'}
 local function fixture(...)
     local f=F.new(...);f.load('Data/builtin_sources.lua');f.load('Core/builtin_sources.lua');f.load('Core/custom_authoring.lua');f.load('Conditions/common.lua');f.load('Platform/spells.lua');f.load('Platform/actions.lua')
     f.env.loadstring=function(text,name) local fn,why=loadstring(text,name);if fn then setfenv(fn,f.env) end;return fn,why end
@@ -19,7 +19,7 @@ test('curated addon helpers register from modules loaded before and after the ca
     for name,callName in pairs(expected) do
         local record,id=public(a,name);assert(record.public and not record.valueBinding and record.callName==callName and record.source.description:find('%S'))
         assert(record.source.code:find('%S') and #record.source.returns>0 and record.source.returns[1].description:find('%S'))
-        for _,arg in ipairs(record.source.args) do assert(arg.type~='any' or arg.name=='...' or name=='nullable' or name=='nullable_value' or name=='isin' or name=='compare');assert(arg.description:find('%S')) end
+        for _,arg in ipairs(record.source.args) do assert(arg.type~='any' or arg.name=='...' or name=='nullable' or name=='nullable_value' or name=='playerize' or name=='isin' or name=='compare');assert(arg.description:find('%S')) end
         assert(not a:InstallCustomFunction(id,a:CopySettingsData(record.source)))
     end
     assert(public(a,'getCached').source.args[1].name=='cache')
@@ -50,10 +50,23 @@ test('cloned utility bodies preserve the real addon helper results',function()
 end)
 test('native field helper clones create the same widget contracts and unit controls',function()
     local f,a=fixture();dofile('tests/fixtures/native_ui.lua')(f.env)
-    for name,kind in pairs({CreateConditionGroup='RM-ConditionGroup',CreateConditionEditBox='RM-ConditionEditBox',CreateConditionSlider='RM-ConditionSlider',CreateConditionDropdown='RM-Selector',CreateConditionCheckBox='RM-CheckBox'}) do
-        local fn=clone(a,name);local widget=fn(a);assert(widget.type==kind and widget.SetCallback and (widget.SetDisabled or widget.AddChild))
+    for name,kind in pairs({CreateConditionIcon='RM-ConditionIcon',CreateConditionLabel='RM-ConditionLabel',CreateConditionButton='RM-ConditionButton',CreateConditionGroup='RM-ConditionGroup',CreateConditionEditBox='RM-ConditionEditBox',CreateConditionSlider='RM-ConditionSlider',CreateConditionDropdown='RM-Selector',CreateConditionCheckBox='RM-CheckBox'}) do
+        local fn=clone(a,name);local widget=fn(a);assert(widget.type==kind and widget.SetCallback and (widget.SetDisabled or widget.AddChild or widget.SetFontObject))
     end
-    local unit=clone(a,'Widget_UnitWidget');local value={unit='player'};local updates=0;local widget=unit(a,value,{player='Player',target='Target'},function() updates=updates+1 end);widget.configure();assert(widget:GetValue()=='player');widget.callbacks.OnValueChanged(widget,'OnValueChanged','target');assert(value.unit=='target' and updates==1)
+    local unit=clone(a,'Widget_UnitWidget');local value={unit='player'};local updates=0;local widget=unit(a,value,{player='Player',target='Target'},function() updates=updates+1 end);widget.configure();assert(widget:GetValue()=='player');widget:Fire('OnValueChanged','target');assert(value.unit=='target' and updates==1)
+end)
+test('saved Ace factory bodies retain captured library bindings after native migration',function()
+    local f,a=fixture()
+    f.load('Conditions/combat.lua');f.load('Conditions/talent.lua')
+    for _,module in ipairs({'Conditions/common.lua','Conditions/combat.lua','Conditions/talent.lua'}) do assert(a:ResolveFunctionBinding('builtin:'..module..':AceGUI')==f.libraries['AceGUI-3.0']) end
+    f.libraries['AceGUI-3.0'].Release=function(_,widget) widget.isQueuedForRelease=true;widget:OnRelease();widget.isQueuedForRelease=nil end
+    for index,entry in ipairs({{'UI/checkbox.lua','RM-CheckBox'},{'UI/selector.lua','RM-Selector'},{'UI/condition_inputs.lua','RM-ConditionEditBox'},{'UI/condition_inputs.lua','RM-ConditionSlider'}}) do
+        local id='builtin:'..entry[1]..':AceGUI';assert(a:ResolveFunctionBinding(id)==f.libraries['AceGUI-3.0'])
+        local source={description='Historical cloned factory',args={{name='self',type='table'}},returns={{type='table'}},bindings={AceGUI=id},code='return AceGUI:Create("'..entry[2]..'")'}
+        assert(a:InstallCustomFunction('OLD_FACTORY_'..index,source))
+        local factory=assert(a:ResolveFunctionBinding('OLD_FACTORY_'..index));local widget=factory(a)
+        assert(widget.type==entry[2] and widget.rmActive and widget.Release);assert(a:ReleaseConditionWidget(widget));assert(not a:ReleaseConditionWidget(widget))
+    end
 end)
 test('public helper catalog is available across the reviewed client inventory',function()
     for _,case in ipairs(dofile('tests/fixtures/catalog_inventory.lua').branches) do

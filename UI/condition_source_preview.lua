@@ -69,7 +69,7 @@ function addon:ShowConditionSourceTest(owner,options)
             widget.LayoutFinished=record.layoutFinished
             for _,child in ipairs(widget.children or {}) do children[child]=true end
         end
-        for widget in pairs(widgets) do if not children[widget] then report('release-preview',AceGUI.Release,AceGUI,widget) end end
+        for widget in pairs(widgets) do if not children[widget] then report('release-preview',addon.ReleaseConditionWidget,addon,widget) end end
         self.pane=nil;self.helpPane=nil;self.contentPane=nil;self.parent=nil
     end
     function d:Fail()
@@ -112,7 +112,8 @@ function addon:ShowConditionSourceTest(owner,options)
         AceGUI.Create=function(library,...)
             local widget=create(library,...);d:Guard(widget);return widget
         end
-        local ok,result,reason=report(operation,callback,...);AceGUI.Create=create
+        local unsubscribe=addon:ObserveConditionWidgets(function(widget) d:Guard(widget) end)
+        local ok,result,reason=report(operation,callback,...);unsubscribe();AceGUI.Create=create
         if not ok then self:Fail();return nil end
         local after=operation=='preview-input' and plainCopy(self.sample)
         if operation=='preview-input' and self.checking and (not after or not addon:SettingsDataEqual(before,after)) then self:Configure();self.lastResult=nil;self.pendingTest=true;self.status:SetText(L['Test values changed. Updating results.']..(self.sampleProblem and '\n'..self.sampleProblem or ''));self.status:SetTextColor(1,.8,.4) end

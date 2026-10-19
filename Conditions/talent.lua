@@ -19,7 +19,7 @@ local function info(value,spec)
     if treeShape(value) then return platform:GetTreeTalentInfo(value.tree,value.talent,group(spec)) end
 end
 local function text(parent,message)
-    local label=AceGUI:Create("Label");label:SetFullWidth(true);label:SetText(message);parent:AddChild(label)
+    local label=addon:CreateConditionLabel();label:SetFullWidth(true);label:SetText(message);parent:AddChild(label)
 end
 local function dropdown(parent,title,changed)
     local widget=addon:CreateConditionDropdown();widget:SetFullWidth(true);widget:SetLabel(title)
@@ -27,7 +27,7 @@ local function dropdown(parent,title,changed)
     return widget
 end
 local function icon(parent,value,spec)
-    local widget=AceGUI:Create("Icon");widget:SetWidth(44);widget:SetHeight(44);widget:SetImageSize(36,36)
+    local widget=addon:CreateConditionIcon();widget:SetWidth(44);widget:SetHeight(44);widget:SetImageSize(36,36)
     local current=info(value,spec);widget:SetImage(current and current.icon)
     widget:SetCallback("OnEnter",function()
         local observed=info(value,spec)

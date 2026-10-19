@@ -2,7 +2,18 @@ local F=dofile('tests/fixtures/addon.lua')
 local test,finish=F.suite()
 local function fixture()
     local f=F.new();local a=f.addon
-    dofile('tests/fixtures/spell_editbox.lua')(f)
+    local factory=a.CreateConditionEditBox
+    a.CreateConditionEditBox=function(self,...)
+        local w=factory(self,...);local field=w.editbox
+        if not field.referenceFixtureEvents then
+            field.referenceFixtureEvents=true
+            local text,focus,blur=field.SetText,field.SetFocus,field.ClearFocus
+            function field:SetText(value) text(self,value);if self.scripts.OnTextChanged then self.scripts.OnTextChanged(self,false) end end
+            function field:SetFocus() local changed=not self:HasFocus();focus(self);if changed and self.scripts.OnEditFocusGained then self.scripts.OnEditFocusGained(self) end end
+            function field:ClearFocus() local changed=self:HasFocus();blur(self);if changed and self.scripts.OnEditFocusLost then self.scripts.OnEditFocusLost(self) end end
+        end
+        return w
+    end
     local info={[403]={name='Lightning Bolt',subtext='Rank 1',spellID=403,iconID=1},
         [529]={name='Lightning Bolt',subtext='Rank 2',spellID=529,iconID=1},
         [974]={name='Earth Shield',spellID=974,iconID=2}}
@@ -14,6 +25,31 @@ local function fixture()
     f.load('UI/window.lua');f.load('UI/spell_search.lua')
     return f
 end
+test('reference inputs own their native lease without Ace allocation and restore the ordinary input on reuse',function()
+    local f=fixture();local a=f.addon
+    f.libraries['AceGUI-3.0'].Create=function() error('reference field still allocated through Ace') end
+    local w=a:CreateSpellEditBox('Spell_EditBox',403);w:SetText(403);local count=0
+    w:SetCallback('OnEnterPressed',function() count=count+1 end);local stale=w.events and w.events.OnEnterPressed
+    w:SetFocus();assert(w.rmSpellPopup:IsShown());a:ReleaseConditionWidget(w);assert(not w.rmSpellPopup:IsShown())
+    local plain=a:CreateConditionEditBox();assert(plain==w and not plain.rmSpellSearchActive and plain.GetReferenceID==nil and plain.editbox.maxLetters==4096)
+    if stale then stale(w,'OnEnterPressed','529') end;assert(count==0);a:ReleaseConditionWidget(plain)
+end)
+test('pending reference commits validate exact scope and never emit unresolved text',function()
+    local f=fixture();local a=f.addon;local w=a:CreateSpellEditBox('Spec_EditBox',403);w:SetUserData('spec',0);w:SetText(403)
+    local values={};w:SetCallback('OnEnterPressed',function(_,_,id) values[#values+1]=id end)
+    w.editbox:SetText('974');w.editbox.scripts.OnTextChanged(w.editbox,true)
+    assert(not w:CommitPending() and #values==0,'out-of-scope text bypassed provider')
+    w.editbox:SetText('403');w.editbox.scripts.OnTextChanged(w.editbox,true)
+    assert(w:CommitPending() and values[1]=='403' and not w:IsPending())
+    a:ReleaseConditionWidget(w)
+end)
+test('retired suggestion script references cannot change a newly leased ordinary input',function()
+    local f=fixture();local a=f.addon;local w=a:CreateSpellEditBox('Spell_EditBox',403);local onText=w.editbox:GetScript('OnTextChanged');local onLost=w.editbox:GetScript('OnEditFocusLost');local onEscape=w.editbox:GetScript('OnEscapePressed')
+    a:ReleaseConditionWidget(w);local plain=a:CreateConditionEditBox();assert(plain==w);plain:SetText('saved');local calls=0;plain:SetCallback('OnEnterPressed',function() calls=calls+1 end)
+    plain.editbox:SetText('pending');plain.editbox.scripts.OnTextChanged(plain.editbox,true)
+    plain:SetFocus();onText(plain.editbox,true);onLost(plain.editbox);onEscape(plain.editbox)
+    assert(plain:IsPending() and plain.editbox:HasFocus() and calls==0 and plain:GetText()=='pending');a:ReleaseConditionWidget(plain)
+end)
 test('owned spell suggestions show named ranks and commit exact ID without shared loader',function()
     local f=fixture();local w=f.addon:CreateSpellEditBox('Spell_EditBox')
     w:SetUserData('norank',false);w:SetText('Lightning Bolt (Rank 1)')
@@ -36,11 +72,11 @@ end)
 test('release closes suggestions and restores all native scripts and pooled methods',function()
     local f=fixture();local w=f.addon:CreateSpellEditBox('Spell_EditBox');local popup=w.rmSpellPopup
     w:SetText('Lightning');w:SetFocus();assert(popup:IsShown())
-    w:OnRelease();assert(w.baseReleased and not popup:IsShown())
-    assert(w.editbox:GetScript('OnEnterPressed')==nil and w.editbox:GetScript('OnEscapePressed')==nil)
+    f.addon:ReleaseConditionWidget(w);assert(not w.rmActive and not popup:IsShown())
+    assert(w.editbox:GetScript('OnEnterPressed') and w.editbox:GetScript('OnEscapePressed'),'ordinary native input scripts were not restored')
     assert(w.rmSpellSearchActive==nil)
     local called=false;w:SetCallback('OnEnterPressed',function() called=true end);w:Fire('OnEnterPressed','unrelated')
-    assert(called,'pooled callback retained spell processing')
+    assert(not called,'released lease accepted callbacks')
 end)
 test('Enter reconfirms an exact displayed rank and Tab chooses a different suggestion',function()
     local f=fixture();local w=f.addon:CreateSpellEditBox('Spell_EditBox');local chosen={}
@@ -70,7 +106,7 @@ end)
 test('selection callbacks may release and reuse the field without stale focus or text writes',function()
     local f=fixture();local w=f.addon:CreateSpellEditBox('Spell_EditBox')
     w:SetText('Lightning');w:SetCallback('OnEnterPressed',function()
-        w:OnRelease();w:SetText('next owner')
+        f.addon:ReleaseConditionWidget(w);w:SetText('next owner')
         w.ClearFocus=function() error('stale callback touched next owner focus') end
     end)
     w:SetFocus();local row=w.rmSpellPopup.rows[1];row.scripts.OnMouseDown(row,'LeftButton')
@@ -102,22 +138,21 @@ test('totem fields preserve selected-book and localized-name filtering on sugges
 end)
 test('diagnostic wrappers are restored when a pooled spell field is released',function()
     local f=fixture();f.load('Diagnostics/errors.lua')
-    local w=f.addon:CreateSpellEditBox('Spell_EditBox');w:OnRelease()
-    assert(w.editbox:GetScript('OnEnterPressed')==nil and w.editbox:GetScript('OnEscapePressed')==nil)
+    local w=f.addon:CreateSpellEditBox('Spell_EditBox');f.addon:ReleaseConditionWidget(w)
+    assert(w.editbox:GetScript('OnEnterPressed') and w.editbox:GetScript('OnEscapePressed'),'ordinary native input scripts were not restored')
 end)
 test('releasing diagnostic-wrapped fields restores exact nonnil original scripts across reuse',function()
-    local f=fixture();f.load('Diagnostics/errors.lua');local ace=f.libraries['AceGUI-3.0'];local create=ace.Create;local original
-    ace.Create=function(self,kind) local w=create(self,kind);original=w.editbox:GetScript('OnTextChanged');return w end
-    local w=f.addon:CreateSpellEditBox('Spell_EditBox');w:OnRelease();assert(w.editbox:GetScript('OnTextChanged')==original)
-    ace.Create=function() return w end
-    for _=1,5 do w=f.addon:CreateSpellEditBox('Spell_EditBox');w:OnRelease();assert(w.editbox:GetScript('OnTextChanged')==original) end
+    local f=fixture();f.load('Diagnostics/errors.lua');local ace=f.libraries['AceGUI-3.0'];local original
+    local plain=f.addon:CreateConditionEditBox();original=plain.editbox:GetScript('OnTextChanged');f.addon:ReleaseConditionWidget(plain)
+    ace.Create=function() error('reference used Ace') end
+    for _=1,5 do local w=f.addon:CreateSpellEditBox('Spell_EditBox');assert(w==plain);f.addon:ReleaseConditionWidget(w);assert(w.editbox:GetScript('OnTextChanged')==original) end
 end)
 test('every programmatic numeric spell value displays its name rather than its saved identifier',function()
     local f=fixture();local a=f.addon
     for _,kind in ipairs({'Spell_EditBox','Spec_EditBox','Totem_EditBox'}) do
         local w=a:CreateSpellEditBox(kind,403);w:SetText(403)
         assert(w:GetText():find('Lightning Bolt',1,true) and w:GetText()~='403')
-        w:OnRelease()
+        f.addon:ReleaseConditionWidget(w)
     end
 end)
 test('item suggestions show icons and commit exact item IDs with inventory filtering',function()
@@ -162,31 +197,31 @@ test('delayed legacy display cannot write into released or directly edited refer
     for _,released in ipairs({true,false}) do
         local f=fixture();local a=f.addon;local ready=false;local queued
         f.env.C_Item={GetItemInfo=function() if ready then return 'Water' end end}
-        a.ScheduleTimer=function(_,method,_,...) queued={method=method,args={...}} end
+        a.ScheduleTimer=function(_,method,_,...) queued={method=method,args={...},n=select('#',...)} end
         local w=a:CreateItemEditBox('Item_EditBox',1)
         a:UpdateItem_Name_ID(1,w,nil);assert(queued)
-        if released then w:OnRelease() end
-        w:SetText('New owner');ready=true;a[queued.method](a,unpack(queued.args))
+        if released then f.addon:ReleaseConditionWidget(w) end
+        w:SetText('New owner');ready=true;a[queued.method](a,unpack(queued.args,1,queued.n))
         assert(w:GetText()=='New owner','late metadata overwrote a released or edited field')
     end
 end)
 test('automatic picker metadata refresh does not cancel the matching icon retry',function()
     local f=fixture();local a=f.addon;local ready=false;local queued
     f.env.C_Item={GetItemInfo=function() if ready then return 'Water' end end}
-    a.ScheduleTimer=function(_,method,_,...) queued={method=method,args={...}} end
+    a.ScheduleTimer=function(_,method,_,...) queued={method=method,args={...},n=select('#',...)} end
     local w=a:CreateItemEditBox('Item_EditBox',1);local icon={SetText=function(self,value) self.value=value end}
     a:UpdateItem_Name_ID(1,w,icon);assert(queued and not icon.value)
     ready=true;w:SetFocus();assert(w:GetText()=='Water')
-    a[queued.method](a,unpack(queued.args));assert(icon.value==1,'same-identity label refresh stranded the icon')
+    a[queued.method](a,unpack(queued.args,1,queued.n));assert(icon.value==1,'same-identity label refresh stranded the icon')
 end)
 test('choosing another duplicate-name item cancels the former identity retry',function()
     local f=fixture();local a=f.addon;local ready=false;local queued
     f.env.C_Item={GetItemInfo=function(id) return 'Same name',nil,nil,nil,nil,nil,nil,nil,nil,(ready or id==2) and 10+id or nil end}
-    a.ScheduleTimer=function(_,method,_,...) queued={method=method,args={...}} end
+    a.ScheduleTimer=function(_,method,_,...) queued={method=method,args={...},n=select('#',...)} end
     local w=a:CreateItemEditBox('Item_EditBox',1)
     local icon={SetImage=function(self,value) self.image=value end}
     a:UpdateItem_Name_Image(1,w,icon);assert(queued);ready=true;w:SetText(2)
     -- Both names are now loaded; the old request must not steal item2's ID.
-    a[queued.method](a,unpack(queued.args));assert(w:GetReferenceID()==2,'retry restored a former same-name identity')
+    a[queued.method](a,unpack(queued.args,1,queued.n));assert(w:GetReferenceID()==2,'retry restored a former same-name identity')
 end)
 finish()

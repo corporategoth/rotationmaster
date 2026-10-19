@@ -1,6 +1,5 @@
 local addon_name,addon=...
 local L=LibStub("AceLocale-3.0"):GetLocale(addon_name)
-local AceGUI=LibStub("AceGUI-3.0")
 local function copyPath(path)
     local result={};for index,part in ipairs(path) do result[index]=part end;return result
 end
@@ -230,7 +229,7 @@ local function createShell()
                 if not self.canvas.building then self.canvas:Reflow() end
             end
         end
-        card.releaseFields=function() pane.LayoutFinished=oldLayout;AceGUI:Release(pane) end
+        card.releaseFields=function() pane.LayoutFinished=oldLayout;addon:ReleaseConditionWidget(pane) end
         local definition=addon.conditionDefinitions[node.type]
         local function build()
             if definition then
@@ -238,6 +237,10 @@ local function createShell()
                 if self.view.help[model.key] and type(definition.help)=="function" then definition.help(pane) end
                 addon:configure_frame(pane)
                 local function bindPending(widget)
+                    local callbacks={};for event,callback in pairs(widget.events or widget.callbacks or {}) do callbacks[event]=callback end
+                    for event,callback in pairs(callbacks) do if type(callback)=='function' then
+                        widget:SetCallback(event,function(...) if alive() then return callback(...) end end)
+                    end end
                     if widget.CommitPending then widget:SetCallback('OnPendingChanged',function() if alive() then shell:UpdateHistoryButtons() end end) end
                     for _,child in ipairs(widget.children or {}) do bindPending(child) end
                 end

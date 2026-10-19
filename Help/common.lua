@@ -1,17 +1,15 @@
 local _, addon = ...
 
-local AceGUI = LibStub("AceGUI-3.0")
 
 local helpers = {}
 local color = color
 
 function helpers.CreateText(text, font, fontheight)
-    local t = AceGUI:Create("SimpleGroup")
+    local t = addon:CreateConditionGroup()
     t:SetFullWidth(true)
     t:SetLayout("List")
 
-    local rv = AceGUI:Create("Label")
-    -- There is a bug in Table (I think) that doesn't handle SetFullWidth correctly
+    local rv = addon:CreateConditionLabel()
     rv:SetFullWidth(true)
     rv:SetText(text .. color.RESET)
     if font then
@@ -27,12 +25,12 @@ function helpers.CreateText(text, font, fontheight)
 end
 
 function helpers.CreatePictureText(texture, width, height, text, font, fontheight, ...)
-    local group = AceGUI:Create("SimpleGroup")
+    local group = addon:CreateConditionGroup()
     group:SetFullWidth(true)
     group:SetLayout("Table")
     group:SetUserData("table", { columns = { width, 1 } })
 
-    local icon = AceGUI:Create("Icon")
+    local icon = addon:CreateConditionIcon()
     icon:SetImage(texture, ...)
     icon:SetImageSize(width, height)
     -- For some reason icon offset by +5 from the top, and the height is set to 10 + image size
@@ -45,12 +43,12 @@ function helpers.CreatePictureText(texture, width, height, text, font, fontheigh
 end
 
 function helpers.CreateButtonText(name, text, font, fontheight, ...)
-    local group = AceGUI:Create("SimpleGroup")
+    local group = addon:CreateConditionGroup()
     group:SetFullWidth(true)
     group:SetLayout("Table")
     group:SetUserData("table", { columns = { 125, 1 } })
 
-    local icon = AceGUI:Create("Button")
+    local icon = addon:CreateConditionButton()
     icon:SetText(name)
     group:AddChild(icon)
 
@@ -60,12 +58,12 @@ function helpers.CreateButtonText(name, text, font, fontheight, ...)
 end
 
 function helpers.Indent(size, target)
-    local group = AceGUI:Create("SimpleGroup")
+    local group = addon:CreateConditionGroup()
     group:SetFullWidth(true)
     group:SetLayout("Table")
     group:SetUserData("table", { columns = { size, 1 } })
 
-    local spacer = AceGUI:Create("Label")
+    local spacer = addon:CreateConditionLabel()
     spacer:SetText(nil)
     spacer:SetWidth(1)
     group:AddChild(spacer)
@@ -76,7 +74,7 @@ function helpers.Indent(size, target)
 end
 
 function helpers.Gap()
-    local rv = AceGUI:Create("Label")
+    local rv = addon:CreateConditionLabel()
     rv:SetText(" ")
     return rv
 end

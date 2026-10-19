@@ -1,5 +1,4 @@
 local addon_name,addon=...
-local AceGUI=LibStub("AceGUI-3.0")
 local L=LibStub("AceLocale-3.0"):GetLocale(addon_name)
 local function clean(text)
     return type(text)=="string" and text:gsub("|c%x%x%x%x%x%x%x%x",""):gsub("|r","") or text
@@ -33,10 +32,9 @@ function addon:CreateReferenceEditBox(kind,initialSpell)
     local provider=self:GetReferenceProvider(kind)
     if type(initialSpell)=="number" then provider.index(initialSpell)
     elseif type(initialSpell)=="string" then provider.resolve(initialSpell) end
-    local widget=AceGUI:Create("EditBox")
-    -- AceGUI exposes no public native-script hooks for its EditBox. Keep this
-    -- temporary bridge to the pinned field shape scoped and restore it on release.
-    ---@diagnostic disable-next-line: access-protected
+    local widget=self:CreateConditionEditBox()
+    -- Suggestions temporarily decorate a native text lease. Restore its exact
+    -- scripts and methods before it returns to the ordinary input pool.
     local field=widget.editbox
     local popup=widget.rmSpellPopup or newPopup(widget)
     local dropHint=field.rmDropHint or field:CreateFontString(nil,'OVERLAY','GameFontDisableSmall');field.rmDropHint=dropHint;dropHint:ClearAllPoints();dropHint:SetPoint('LEFT',5,0);dropHint:SetPoint('RIGHT',-5,0);dropHint:SetJustifyH('LEFT');dropHint:SetText(provider.kind=='item' and L['Search or drag an item here'] or L['Search or drag a spell here'])
@@ -47,7 +45,7 @@ function addon:CreateReferenceEditBox(kind,initialSpell)
     local matches={}
     widget.rmSpellSearchActive=true
     widget:SetMaxLetters(256)
-    local originalText,originalRelease,originalReferenceID=widget.SetText,widget.OnRelease,widget.GetReferenceID
+    local originalText,originalRelease,originalReferenceID,originalCommit=widget.SetText,widget.OnRelease,widget.GetReferenceID,widget.CommitPending
     local scripts={}
     local function install(frame,event,handler)
         local binding={frame=frame,event=event,original=frame:GetScript(event)}
@@ -132,26 +130,32 @@ function addon:CreateReferenceEditBox(kind,initialSpell)
         elseif matches[selected] then commit(matches[selected].id)
         else query() end
     end
+    widget.CommitPending=function(self)
+        if not alive or self.disabled or not self:IsPending() then return true end
+        enter();return field:GetText()==acceptedText or nil
+    end
     local onText=field:GetScript("OnTextChanged")
     install(field,"OnTextChanged",function(self,...)
+        if not alive then return end
         if onText then onText(self,...) end
         if alive then query() end
     end)
     local onFocus=field:GetScript("OnEditFocusGained")
     install(field,"OnEditFocusGained",function(self,...)
+        if not alive then return end
         if onFocus then onFocus(self,...) end
         if alive then query() end
     end)
     local onLost=field:GetScript("OnEditFocusLost")
     install(field,"OnEditFocusLost",function(self,...)
+        if not alive then return end
         if alive then widget:SetText(acceptedID or acceptedText);hide() end
         if onLost then onLost(self,...) end
     end)
     install(field,"OnEnterPressed",enter)
-    ---@diagnostic disable-next-line: access-protected
-    install(widget.button,"OnClick",enter)
-    install(field,"OnEscapePressed",function() hide();widget:ClearFocus() end)
+    install(field,"OnEscapePressed",function() if alive then hide();widget:ClearFocus() end end)
     install(field,"OnTabPressed",function(_,reverse)
+        if not alive or widget.disabled then return end
         if #matches>0 then selected=((selected-1+(reverse and -1 or 1))%#matches)+1;navigated=true;highlight() end
     end)
     local function drag()
@@ -169,6 +173,7 @@ function addon:CreateReferenceEditBox(kind,initialSpell)
     install(field,"OnReceiveDrag",drag);install(field,"OnMouseDown",drag)
     local onHide=widget.frame:GetScript("OnHide")
     install(widget.frame,"OnHide",function(self,...)
+        if not alive then return end
         hide();if onHide then onHide(self,...) end
     end)
     for _,row in ipairs(popup.rows) do
@@ -184,7 +189,7 @@ function addon:CreateReferenceEditBox(kind,initialSpell)
             if binding.frame:GetScript(binding.event)==binding.handler then binding.frame:SetScript(binding.event,binding.original) end
         end
         for _,row in ipairs(popup.rows) do row.spellID=nil;row.itemID=nil;row.referenceID=nil;addon:SetUIScript(row,"OnMouseDown",nil);addon:SetUIScript(row,"OnEnter",nil);addon:SetUIScript(row,"OnLeave",nil) end
-        self.SetText,self.OnRelease,self.GetReferenceID=originalText,originalRelease,originalReferenceID
+        self.SetText,self.OnRelease,self.GetReferenceID,self.CommitPending=originalText,originalRelease,originalReferenceID,originalCommit
         if originalRelease then return originalRelease(self,...) end
     end
     return widget

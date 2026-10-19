@@ -6,7 +6,6 @@ local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 local _G, tostring, tonumber, pairs, color, unpack, type, string = _G, tostring, tonumber, pairs, color, unpack, type, string
 local random, floor = math.random, math.floor
 
-local operators = addon.operators
 
 addon.PopupError = function(s, onaccept)
     StaticPopupDialogs["ROTATIONMASTER_ERROR"] = {
@@ -45,42 +44,11 @@ end
 -- Compatibility API for saved custom source; Functions.values owns the body.
 addon.compare = addon.Functions.values.compare
 
-addon.nullable = function(value, default)
-    if value == nil then
-        if default ~= nil then
-            return color.RED .. default .. color.RESET
-        else
-            return color.RED .. L["<value>"] .. color.RESET
-        end
-    end
-    return value
-end
-
-addon.nullable_value = function(value, array, default)
-    if value == nil or array == nil or type(array) ~= "table" then
-        if default ~= nil then
-            return color.RED .. default .. color.RESET
-        else
-            return color.RED .. L["<value>"] .. color.RESET
-        end
-    end
-    return addon.nullable(array[value], default)
-end
-
-addon.playerize = function(unit, player, nonplayer)
-    if (unit == "player") then
-        return player
-    else
-        return nonplayer
-    end
-end
-
-addon.compareString = function(operator, left, right, primary)
-    local positive=addon.nullable(operators[operator], L["<operator>"])
-    local negative=(addon.negatedOperators or {})[operator]
-    local predicate=negative and ('{{'..(primary and '!' or '')..positive..'|'..negative..'}}') or positive
-    return left .. " " .. predicate .. " " .. right
-end
+-- Compatibility APIs for saved source; presentation owns these exact bodies.
+addon.nullable = addon.Functions.presentation.nullable
+addon.nullable_value = addon.Functions.presentation.nullable_value
+addon.playerize = addon.Functions.presentation.playerize
+addon.compareString = addon.Functions.presentation.compareString
 
 addon.keys = function(array)
     local rv = {}
@@ -666,14 +634,16 @@ do
         if name=="cachedResult" then return cachedResult end
         if name=="color" then return color end
         if name=="compare" then return addon.Functions.values.compare end
+        if name=="compareString" then return addon.Functions.presentation.compareString end
         if name=="getCached" then return addon.getCached end
         if name=="getCachedInternal" then return getCachedInternal end
         if name=="getRetryCached" then return addon.getRetryCached end
         if name=="isin" then return addon.Functions.values.isin end
         if name=="nilArgument" then return nilArgument end
-        if name=="nullable" then return addon.nullable end
-        if name=="nullable_value" then return addon.nullable_value end
+        if name=="nullable" then return addon.Functions.presentation.nullable end
+        if name=="nullable_value" then return addon.Functions.presentation.nullable_value end
         if name=="packResults" then return packResults end
+        if name=="playerize" then return addon.Functions.presentation.playerize end
         if name=="split" then return addon.split end
         if name=="string" then return string end
         if name=="trim" then return addon.trim end

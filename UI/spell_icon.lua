@@ -1,17 +1,15 @@
 local _,addon=...
-local AceGUI=LibStub("AceGUI-3.0")
 local function spellID(value)
     return type(value)=="number" and value>0 and value<math.huge and value%1==0
 end
 
--- Configuration-only spell/item display and drop control. The ordinary Icon
--- remains a layout bridge; identity and metadata belong to RM's adapters.
----@class RMActionIcon: AceGUIIcon
+-- Configuration-only spell/item display and drop control. Both its image
+-- primitive and action identity belong to RM's lifecycle and adapters.
+---@class RMActionIcon: RMConditionIcon
 ---@field SetText fun(self: RMActionIcon, value: any)
 ---@return RMActionIcon
 local function actionIcon(kind,initialSpell,accept)
-    local widget=AceGUI:Create("Icon")
-    -- The pinned ordinary Icon constructor creates a native Button.
+    local widget=addon:CreateConditionIcon()
     ---@type Button
     local frame=widget.frame
     local item=kind=="item"
@@ -50,7 +48,7 @@ local function actionIcon(kind,initialSpell,accept)
     end)
     widget:SetCallback("OnLeave",hideTooltip)
     local function drop()
-        if not alive or widget.disabled or type(GetCursorInfo)~="function" then return end
+        if not alive or widget.disabled or widget:IsReleasing() or type(GetCursorInfo)~="function" then return end
         local cursor={pcall(GetCursorInfo)}
         if not cursor[1] or not addon.Platform:CanReadValue(cursor[2]) then return end
         local action=cursor[2]
@@ -65,11 +63,12 @@ local function actionIcon(kind,initialSpell,accept)
         widget:Fire("OnEnterPressed",tostring(id))
     end
     local function click(_,button)
-        if not alive or widget.disabled then return end
+        if not alive or widget.disabled or widget:IsReleasing() then return end
         if button=="RightButton" then widget:Fire("OnEnterPressed","")
         elseif button=="LeftButton" then drop() end
     end
     local function hide(self,...)
+        if not alive then return end
         hideTooltip()
         if originalHide then return originalHide(self,...) end
     end

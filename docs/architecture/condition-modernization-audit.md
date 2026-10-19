@@ -13,9 +13,9 @@ The older unchecked progress items for the utility registry, readonly Built In s
 * Distance field commits now notify their owning editor through the same status/proxy synchronization used by sibling fields. Previously the field changed a detached value without updating the editor session.
 * Missing, failed, malformed and restricted Distance range observations now return explicit unavailable reasons. Legacy nil-as-false compatibility previously allowed NOT to turn a missing range into a match. Readable intervals retain the documented maximum-bound comparison.
 * Native condition inputs inspect ancestor release flags before committing pending text. AceGUI hides a root before recursively releasing children, so a focus-loss callback could otherwise commit an abandoned child edit.
-* RM owns ordinary List, numeric Table and responsive spell-field geometry in `UI/condition_layout.lua`. Shared Built In field groups, compact condition-editor roots and Test/preview roots use this container. The container still registers with AceGUI for pooling and release, and explicitly accepts legacy custom child widgets. Saved callbacks requesting other registered layouts or complex table cells retain a compatibility path.
+* RM owns ordinary List, numeric Table and responsive spell-field geometry in `UI/condition_layout.lua`. Shared Built In field groups, compact condition-editor roots and Test/preview roots use this container. Ordinary leases now belong to RM; the container retains historical Ace registrations and explicitly accepts legacy custom child widgets. Saved callbacks requesting other registered layouts or complex table cells retain a compatibility path.
 * Native group pooling clears failed-layout state; legacy custom layout height changes reach native parents. A ten-level native group chain previously performed 1,023 layout passes because each child width change was followed by a second explicit layout; the reviewed fix bounds that traversal to the group depth.
-* Twelve condition modules no longer load an unused AceGUI local. Actual uses in common, combat and talent remain visible.
+* Twelve condition modules no longer load an unused AceGUI local. Remaining module-local Ace bindings in common, combat and talent are retained for historical source compatibility; their ordinary Icon/Label fields now use native primitives.
 
 Focused regressions exercise actual Distance declarations, engine behavior beneath NOT, shipped AceGUI pooling/widget methods, real native field controls and the existing condition/Test adapters. Frame fixtures establish offline contracts; they do not establish native input, visual layout or client acceptance.
 
@@ -23,16 +23,16 @@ Focused regressions exercise actual Distance declarations, engine behavior benea
 
 | Owner | Current responsibility | Next coherent boundary |
 | --- | --- | --- |
-| `UI/condition_layout.lua` | Native common geometry; Ace pool/release and explicit custom-layout fallback | Move RM widgets to an owned lifecycle while retaining an isolated legacy-child adapter. |
-| `UI/condition_inputs.lua`, `UI/checkbox.lua`, `UI/selector.lua` | Native frames with Ace registration, events and widget pooling | Share native callback/userdata/size/release behavior; preserve existing public factories. |
-| `UI/spell_search.lua` and `UI/spell_icon.lua` | Owned reference identity/search/drop behavior over Ace EditBox/Icon contracts | Replace allocation/pooling after preserving pending-input, async metadata and exact script restoration tests. |
-| `Conditions/common.lua` | Native field groups; ordinary Icon edit/preview controls and legacy item popup lifetime | Replace remaining Icons/popups through shared owned reference controls. |
-| `Help/common.lua` | Ace SimpleGroup/Label/Icon/Button help output | Introduce owned text/picture/button documentation rows while accepting saved custom help callbacks. |
-| `Conditions/combat.lua`, `Conditions/talent.lua` | Remaining ordinary Icon/Label use | Convert after the shared icon/text contracts exist. |
-| `UI/condition_editor.lua`, `UI/condition_source_preview.lua` | RM root layout; release/tracking of arbitrary custom allocations | Keep explicit custom allocation guards until external widgets no longer need Ace ownership. |
-| Legacy `Options/*`, `Widgets/*`, embedded libraries | Existing APIs still callable by saved source or compatibility entry points | Audit actual callers before removing code or TOC dependencies. |
+| `UI/condition_layout.lua` | RM geometry and lifecycle; explicit custom-layout fallback | Native support for remaining useful table-cell geometry, then isolated arbitrary legacy layouts. |
+| `UI/condition_inputs.lua`, `UI/checkbox.lua`, `UI/selector.lua`, `UI/condition_widgets.lua` | RM frames, callback leases, userdata, size and pools; bridge for historical Ace leases | Continue preserving saved source and mixed-parent ownership while retiring ordinary external allocations. |
+| `UI/spell_search.lua`, `UI/spell_icon.lua`, `UI/condition_icon.lua` | RM reference inputs/icons, provider identity, filtering, cursor drops, metadata retries and cleanup | Reuse those primitives throughout old reference/default/comparison views. |
+| `Conditions/common.lua` | Native ordinary field controls, historical layout binding and old item popup entry point | Replace legacy item popup through shared native ordered rows. |
+| `Help/common.lua`, `UI/condition_display.lua` | Native groups, wrapping labels, pictures and buttons with owned leases | Reuse display primitives in remaining reference views; preserve custom help API contracts. |
+| `Conditions/combat.lua`, `Conditions/talent.lua` | Native ordinary Icon/Label fields; preserved old Ace source getters | Continue the API/condition correctness audit without changing observation semantics. |
+| `UI/condition_editor.lua`, `UI/condition_source_preview.lua`, `Integrations/lua_workbench.lua` | RM roots and native allocation observation, explicit legacy allocation guards | Retain guards for arbitrary saved custom allocations; no factory monkeypatching for native calls. |
+| Legacy `Options/*`, `Widgets/*`, embedded libraries | Existing APIs still callable by saved source, optional module or compatibility entry points | Audit actual callers and move runtime helpers before removing code or TOC dependencies. |
 
-This slice removes ordinary condition layout ownership from AceGUI. It does not remove the AceGUI dependency or imply that legacy custom Lua can lose access to it.
+The native migrations remove ordinary condition layout, field, reference and Help allocation ownership from AceGUI. It does not remove the AceGUI dependency or imply that legacy custom Lua can lose access to it.
 
 ## Function module migration map
 
@@ -40,7 +40,7 @@ The largest authored `addon` references are nullable formatting, cached observat
 
 | Proposed authored module | Existing implementations | Required migration evidence |
 | --- | --- | --- |
-| Pure value/format helpers | `utils.lua`: compare, isin, nullable, nullable_value, compareString, playerize, keys | Identical positional arguments/returns; preserved nil tuples; stable original IDs and compatibility wrappers. |
+| Pure value/format helpers | `Functions/values.lua`: compare/isin; `Functions/presentation.lua`: nullable/nullable_value/compareString/playerize; remaining `utils.lua` helpers | Identical positional arguments/returns; preserved nil tuples; stable original IDs and compatibility wrappers. |
 | Evaluation observations | `utils.lua` cache helpers plus `Platform/*` methods | Explicit cache and receiver inputs; platform unreadable/error results remain unavailable. |
 | Condition field builders | `Conditions/common.lua`, native input/selector/check/group factories | Explicit owner/value/update arguments; same callback parent protocol, pending input and release behavior. |
 | Condition help | `Help/common.lua`, `Help/conditional.lua` | Render-independent documentation where possible; source browsing extracts actual functions without copying their bodies. |
@@ -101,3 +101,37 @@ The current primary [CVar API declaration](https://raw.githubusercontent.com/Get
 Only Distance Count's validated comparison/operator callbacks adopt the qualified calls in this slice. A selected file-private namespace and explicit qualified dependency metadata let the collector verify actual helper identities and emit leaf bindings. Editable clones reconstruct that namespace through the existing private prelude, with no namespace globals or opaque captured module table. Other authored callbacks continue to use compatible addon APIs until their own bounded migration; this is not a corpus-wide namespace completion claim.
 
 The importer accepts the exact historical namespace shapes for unchanged packaged helper requirements, including the existing pre-namespace shape. It reconstructs only declared previous namespace metadata; it does not ignore executable code, arguments, return documentation or dependency bindings in the hash. `tests/condition_namespaces.lua` pins both prior English helper hashes, tests real legacy custom calls and getter/ID preservation, clones real helpers and the migrated callback, rejects collector identity mismatches, and rejects changed bodies/docs/arguments/dependencies. AceGUI allocation, pooling, optional editor integration and custom-widget compatibility remain separate open lifecycle work.
+
+
+## Canonical presentation implementation ownership
+
+`Functions/presentation.lua` owns the single actual bodies for `nullable`, `nullable_value`, `compareString` and `playerize`. Existing addon APIs are direct aliases, and historical utils source getter names remain available. The two previously public helpers retain their exact `builtin:utils.lua:nullable` and `builtin:utils.lua:nullable_value` identities, old source bodies, documentation and captured `builtin:utils.lua:color` dependency. The collector verifies the existing color getter's actual identity before retaining that reference. The two newly public helpers use documented canonical calls and API-shaped stable identities; no earlier packaged source/hash history is invented for them.
+
+Shared colors/localization and false/nil formatting retain their original behavior. The positive operator table remains captured, while negative labels are read from the live addon map. Internal `addon.nullable` calls deliberately retain their live legacy dispatch rather than freezing or silently rewriting saved-source semantics. All four spatial summary callbacks now use the actual canonical presentation functions through selected private qualified bindings. Condition evaluation, target membership and summary wording remain unchanged.
+
+`tests/presentation_functions.lua` pins both historical nullable hashes and their captured color dependency, rejects mismatched captured-value getters, checks localization/color state, false/nil and malformed maps, every operator/primary wording form, live legacy dispatch, real helper clones and registered condition summaries with fixed baseline wording. Other authored modules still need qualified call migration, and text/cache/collection implementations remain in utils. Full AceGUI lifecycle removal continues independently; none of these namespace steps require native WoW access to proceed with source, ownership and fixture verification.
+
+
+## Native condition widget lifecycle ownership
+
+The five ordinary RM field factories (group, text, numeric slider, checkbox and selector) now allocate, acquire, size, dispatch callbacks, clear userdata and recycle through `UI/condition_widgets.lua`. Editor roots release through the same dispatcher. Callback leases reject stale callbacks after reuse. Recursive release marks the ancestor before hiding/blur, detaches the child list, releases every sibling after an error, and quarantines failed objects instead of returning partial state to the native pool.
+
+Historical Ace widget registrations remain for saved custom source and external containers. Direct Ace release transfers a native lease to the compatibility owner; inactive compatibility candidates are reclaimed only through Ace's public Create call, avoiding double pooling and abandoned frames. Inherited `:Release()` and the three historic captured Ace library IDs remain available to old cloned factory bodies. Legacy release callbacks retain their protected dispatch contract. No global Ace pool patch or pool-internal inspection is used.
+
+Synchronous Test/Run/Debug execution subscribes to a central acquisition observer, alongside tracking legacy Ace creation. Captured native factory references and controls not yet attached to a parent are therefore owned and released on failure. Observers and temporary legacy hooks are restored before a paused debugger yields. Native editor field callbacks also check their originating pane lifetime before touching detached values.
+
+The real shipped Ace mixed-parent regression repeats 100 opens, verifies bounded reuse and no blur commit, and checks reentrant acquisition, thrown release callbacks, sibling cleanup and stale leases. Existing condition editor, Test, debugger and saved factory clone regressions exercise the native integration. Native reference EditBox/Icon and Help Label/Button primitives now share that lifecycle. Common item-set, shapeshift and talent fields use them too. Old Options/Widgets and default/reference/comparison entry points remain separate work; this is not removal of the AceGUI embed or of arbitrary saved custom Ace code. Native visuals and client interaction still require WoW acceptance.
+
+
+## Weapon canonical helper consumers
+
+Weapon duration/stack and swing validators, comparisons and summaries now call the actual owned `Functions.values` and `Functions.presentation` helpers through selected private qualified bindings. This is a consumer migration of existing implementations and stable IDs; no native weapon observation, selected-hand logic, cache call, swing history or client registration guard changes. The `enchantObservation`, `numericObservation` and `swingSpeed` source hashes/getter identities remain exact.
+
+The extended weapon suite compares real registered clones across every reviewed client inventory branch, preserving both hand choices, present/absent states, fixed positive and negated summary wording, failed/restricted/missing observations and original API cache reuse. It pins the three existing observation helper source hashes and verifies exported canonical leaf dependencies without namespace globals. Native observation availability remains a separate runtime contract; these source/clone checks do not claim gameplay acceptance. The remaining legacy consumer inventory is still being migrated family by family.
+
+
+## Shared native documentation and image primitives
+
+`UI/condition_icon.lua` and `UI/condition_display.lua` supply reusable native image, wrapping-label and button leases. `Help/common.lua` retains its wording, color suffix, font/texture-coordinate options, picture/table/indent/gap contracts while allocating through RM groups and these primitives. Ordinary spell/item action icons keep their adapter-owned exact identity, cursor, metadata and tooltip contracts. Core callback documentation identifies the supplied native condition container. The new helpers expose typed documentation and actual browsable/duplicatable bodies through the same public source collector.
+
+Text layout caches the last requested text height rather than comparing it exactly to quantized native frame height. Reentrant measurement is guarded and unlocks after failure. A shipped-Ace List fixture with independent backing geometry and a fractional height difference verifies bounded layout while content grows/shrinks. Repeated mixed-parent recycling, fonts, disabled state, stale clicks/tooltip scripts, orphan cleanup and ordinary no-Ace allocation are covered offline. This does not remove compatibility registrations or the shipped Ace dependency while older entry points remain callable.

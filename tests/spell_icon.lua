@@ -1,5 +1,6 @@
 local F=dofile('tests/fixtures/addon.lua')
 local test,finish=F.suite()
+local function texture(w) if type(w.image)=='table' then return w.image:GetTexture() end;return w.image end
 local function fixture(allowFields)
     local f=F.new();local frames,create=dofile('tests/fixtures/native_ui.lua')(f.env)
     local ace=f.libraries['AceGUI-3.0'];local original=ace.Create
@@ -13,7 +14,7 @@ local function fixture(allowFields)
         function w:Fire(event,...) if self.callbacks and self.callbacks[event] then return self.callbacks[event](self,event,...) end end
         return w
     end
-    ace.Release=function(_,w) if w.OnRelease then w:OnRelease() end;w.callbacks={};pooled=w end
+    ace.Release=function(_,w) if w.rmWidget and not w.rmLegacyOwned then return f.addon:ReleaseConditionWidget(w) end;if w.OnRelease then w:OnRelease() end;w.callbacks={};pooled=w end
     f.env.C_Spell={GetSpellInfo=function(id)
         if id=='Lightning Bolt' then id=403 end
         if id==403 or id==529 then return {spellID=id,name='Lightning Bolt',iconID=135932} end
@@ -21,16 +22,31 @@ local function fixture(allowFields)
     f.env.ClearCursor=function() f.cleared=(f.cleared or 0)+1 end
     f.env.GameTooltip={IsVisible=function() return f.tooltip~=nil end,IsOwned=function(_,owner) return f.tooltipOwner==owner end,SetOwner=function(_,owner) f.tooltipOwner=owner end,
         SetHyperlink=function(_,link) f.tooltip=link end,Hide=function() f.tooltip=nil;f.tooltipOwner=nil end}
+    if not f.addon.CreateConditionIcon then f.load('UI/condition_icon.lua') end
     f.load('Platform/client.lua');f.load('Platform/spells.lua');f.load('UI/spell_icon.lua')
     return f
 end
+test('action icons acquire release and reuse owned native controls without Ace allocation',function()
+    local f=fixture();local a=f.addon;local ace=f.libraries['AceGUI-3.0']
+    ace.Create=function() error('action icon allocated through Ace') end
+    ace.Release=function() error('action icon released through Ace') end
+    local w=a:CreateSpellActionIcon('spell',403);local calls=0
+    w:SetCallback('OnEnterPressed',function() calls=calls+1 end);local stale=w.frame:GetScript('OnReceiveDrag')
+    assert(w.rmWidget and w.type=='RM-ConditionIcon' and w.image:GetTexture()==135932)
+    assert(a:ReleaseConditionWidget(w));local nextIcon=a:CreateSpellActionIcon('spell',529);assert(nextIcon==w)
+    nextIcon:SetCallback('OnEnterPressed',function() calls=calls+10 end)
+    f.env.GetCursorInfo=function() return 'spell',7,'spell',529 end;stale(w.frame)
+    assert(calls==0,'retired native drop mutated a recycled owner')
+    nextIcon.frame:GetScript('OnReceiveDrag')(nextIcon.frame);assert(calls==10)
+    a:ReleaseConditionWidget(nextIcon)
+end)
 test('modern spell metadata paints exact IDs without legacy globals or selection callbacks',function()
     local f=fixture();local w=f.addon:CreateSpellActionIcon('spell',403)
     local calls=0;w:SetCallback('OnEnterPressed',function() calls=calls+1 end)
-    assert(w.image==135932 and w:GetUserData('spell')==403)
+    assert(texture(w)==135932 and w:GetUserData('spell')==403)
     w:SetText(529);assert(w:GetUserData('spell')==529 and calls==0)
-    w.callbacks.OnEnter(w);assert(f.tooltip=='spell:529')
-    w.callbacks.OnLeave(w);assert(f.tooltip==nil)
+    w:Fire('OnEnter');assert(f.tooltip=='spell:529')
+    w:Fire('OnLeave');assert(f.tooltip==nil)
     w:SetText(nil);assert(w:GetUserData('spell')==nil)
 end)
 test('drops use exact native spell IDs and validate bank and selection before touching the cursor',function()
@@ -46,6 +62,13 @@ test('drops use exact native spell IDs and validate bank and selection before to
     pet:SetCallback('OnEnterPressed',function(_,_,value) id=tonumber(value) end)
     f.env.GetCursorInfo=function() return 'petaction',529 end
     pet.frame.scripts.OnReceiveDrag(pet.frame);assert(id==529 and f.cleared==2)
+end)
+test('queued ancestor release blocks cursor changes before action callbacks are discarded',function()
+    local f=fixture();local w=f.addon:CreateSpellActionIcon('spell',403)
+    f.env.GetCursorInfo=function() return 'spell',7,'spell',529 end
+    w:SetCallback('OnEnterPressed',function() error('releasing owner committed a drop') end)
+    w.parent={isQueuedForRelease=true};w.frame:GetScript('OnReceiveDrag')(w.frame)
+    assert(not f.cleared,'releasing ancestor consumed the cursor before rejecting its callback')
 end)
 test('unknown secret malformed or throwing cursor and metadata never invent a selection',function()
     local f=fixture();local w=f.addon:CreateSpellActionIcon('spell',403)
@@ -68,11 +91,11 @@ test('explicit clearing disabled state and pooling preserve ordinary Icon owners
     f.env.GetCursorInfo=function() return 'spell',7,'spell',529 end
     w.frame.scripts.OnReceiveDrag(w.frame);assert(saved==403 and not f.cleared)
     w:SetDisabled(false);w.frame.scripts.OnClick(w.frame,'RightButton');assert(saved==nil and w:GetUserData('spell')==nil)
-    local stale=w.frame.scripts.OnReceiveDrag;ace:Release(w)
+    local stale=w.frame.scripts.OnReceiveDrag;a:ReleaseConditionWidget(w)
     assert(w.frame.scripts.OnReceiveDrag==nil and #w.frame.clicks==1 and w.frame.clicks[1]=='LeftButtonUp')
     stale(w.frame);assert(not f.cleared)
     local reused=a:CreateSpellActionIcon('spell',403);assert(reused==w)
-    reused:SetCallback('OnEnterPressed',function() ace:Release(reused) end)
+    reused:SetCallback('OnEnterPressed',function() a:ReleaseConditionWidget(reused) end)
     reused.frame.scripts.OnReceiveDrag(reused.frame)
     assert(not reused.rmSpellIconActive and reused.frame.scripts.OnReceiveDrag==nil,'release during commit touched the next owner')
 end)
@@ -89,7 +112,7 @@ test('clearing an actual common condition icon clears saved spell identity and n
         if named then group=a:Widget_SpellNameWidget(0,'Spell_EditBox',value,valid,function() updates=updates+1 end)
         else group=a:Widget_SpellWidget(0,'Spell_EditBox',value,function() return 403 end,valid,function() updates=updates+1 end) end
         local icon=group.children[1]
-        icon.callbacks.OnEnter(icon)
+        icon:Fire('OnEnter')
         assert(f.tooltip=='spell:403','named condition tooltip did not resolve a numeric spell link')
         f.env.GetCursorInfo=function() return 'spell',7,'spell',529 end
         icon.frame.scripts.OnReceiveDrag(icon.frame)
@@ -98,22 +121,71 @@ test('clearing an actual common condition icon clears saved spell identity and n
         assert(value.spell==nil and updates==2,'clear only changed the picture; saved condition still refers to the spell')
     end
 end)
-test('diagnostic wrappers do not survive release of an owned spell icon',function()
-    local f=fixture();f.load('Diagnostics/errors.lua')
-    local w=f.addon:CreateSpellActionIcon('spell',403);f.libraries['AceGUI-3.0']:Release(w)
-    assert(w.frame:GetScript('OnReceiveDrag')==nil and w.frame:GetScript('OnClick')==nil)
+test('diagnostic action wrappers restore the exact primitive handlers on release',function()
+    local f=fixture();f.load('Diagnostics/errors.lua');local a=f.addon
+    local factory=a.CreateConditionIcon;local original
+    a.CreateConditionIcon=function(self) local w=factory(self);original=w.frame:GetScript('OnClick');return w end
+    local w=a:CreateSpellActionIcon('spell',403);local wrapped=w.frame:GetScript('OnClick')
+    a:ReleaseConditionWidget(w)
+    assert(wrapped~=original and w.frame:GetScript('OnReceiveDrag')==nil and w.frame:GetScript('OnClick')==original)
+end)
+test('retired action hide handlers cannot dismiss a recycled owner tooltip',function()
+    local f=fixture();local a=f.addon;local old=a:CreateSpellActionIcon('spell',403)
+    local hide=old.frame:GetScript('OnHide');a:ReleaseConditionWidget(old)
+    local current=a:CreateSpellActionIcon('spell',529);assert(current==old)
+    current:Fire('OnEnter');assert(f.tooltip=='spell:529')
+    hide(old.frame);assert(f.tooltip=='spell:529','retired OnHide hid the new owner tooltip')
+    a:ReleaseConditionWidget(current)
 end)
 test('releasing icons restores exact nonnil original scripts without stacking diagnostics',function()
-    local f=fixture();f.load('Diagnostics/errors.lua');local ace=f.libraries['AceGUI-3.0'];local base=ace:Create('Icon');local original=function() end
-    base.frame:SetScript('OnClick',original);ace:Release(base)
-    for _=1,5 do local w=f.addon:CreateSpellActionIcon('spell',403);ace:Release(w);assert(w.frame:GetScript('OnClick')==original) end
+    local f=fixture();f.load('Diagnostics/errors.lua');local a=f.addon;local factory=a.CreateConditionIcon;local original=function() end
+    a.CreateConditionIcon=function(self) local w=factory(self);w.frame:SetScript('OnClick',original);return w end
+    for _=1,5 do local w=a:CreateSpellActionIcon('spell',403);a:ReleaseConditionWidget(w);assert(w.frame:GetScript('OnClick')==original) end
+end)
+test('native icon image label disabled state and retired events reset on the next lease',function()
+    local f=fixture();local a=f.addon;local w=a:CreateConditionIcon();local calls=0
+    w:SetImage(123,.1,.9,.2,.8);w:SetImageSize(36,24);w:SetText('Caption')
+    assert(w.image:GetTexture()==123 and w.image:GetWidth()==36 and w.image:GetHeight()==24 and w.label:GetText()=='Caption' and w.frame:GetHeight()==49)
+    assert(w.image.texCoord[1]==.1 and w.image.texCoord[4]==.8)
+    w:SetImage(124);assert(w.image.texCoord[1]==0 and w.image.texCoord[4]==1)
+    w:SetCallback('OnClick',function() calls=calls+1 end);w:SetCallback('OnEnter',function() calls=calls+1 end)
+    w:SetDisabled(true);w.frame:GetScript('OnClick')(w.frame,'LeftButton');assert(calls==0 and not w.frame:IsEnabled())
+    w:SetDisabled(false);local stale=w.frame:GetScript('OnEnter');w.frame:GetScript('OnClick')(w.frame,'LeftButton');assert(calls==1)
+    a:ReleaseConditionWidget(w);local nextIcon=a:CreateConditionIcon();assert(nextIcon==w and not w.disabled and w.image:GetTexture()==nil and not w.label:IsShown())
+    nextIcon:SetCallback('OnEnter',function() calls=calls+10 end);stale(w.frame);assert(calls==1,'old primitive native event reached a new lease')
+    nextIcon.frame:GetScript('OnEnter')(nextIcon.frame);assert(calls==11);a:ReleaseConditionWidget(nextIcon)
+end)
+test('native action icons transfer through shipped Ace parents without losing wrappers or leases',function()
+    local f=F.new();dofile('tests/fixtures/native_ui.lua')(f.env);local a=f.addon
+    local ace=f.libraries['AceGUI-3.0'];local constructors=ace.constructors;local stub=f.env.LibStub
+    f.env.LibStub=setmetatable({NewLibrary=function() return ace end},{__call=function(_,...) return stub(...) end})
+    f.env.geterrorhandler=function() return error end
+    f.env.xpcall=function(callback,handler,...) local args={n=select('#',...),...};return xpcall(function() return callback(unpack(args,1,args.n)) end,handler) end
+    f.env.table=setmetatable({wipe=function(t) for k in pairs(t) do t[k]=nil end;return t end},{__index=table})
+    local create=f.env.CreateFrame;f.env.CreateFrame=function(...)
+        local frame=create(...);local size=frame.SetSize
+        function frame:SetSize(width,height) if self.width~=width or self.height~=height then size(self,width,height) end end
+        return frame
+    end
+    f.load('Libs/AceGUI-3.0/AceGUI-3.0.lua');for kind,build in pairs(constructors) do ace:RegisterWidgetType(kind,build,1) end
+    f.load('Libs/AceGUI-3.0/widgets/AceGUIContainer-SimpleGroup.lua');f.load('Platform/spells.lua')
+    f.env.C_Spell={GetSpellInfo=function(id) return {name='Spell',spellID=id,iconID=1} end}
+    f.env.GetCursorInfo=function() return 'spell',7,'spell',403 end;f.env.ClearCursor=function() end
+    local seen={};local stale;local calls=0
+    for _=1,30 do
+        local parent=ace:Create('SimpleGroup');local icon=a:CreateSpellActionIcon('spell',403);seen[icon]=true
+        icon:SetCallback('OnEnterPressed',function() calls=calls+1 end);if stale then stale(icon.frame) end
+        assert(calls==0,'retired drop crossed an Ace-transferred lease');stale=icon.frame:GetScript('OnReceiveDrag')
+        parent:AddChild(icon);ace:Release(parent);assert(not icon.rmActive and not icon.rmSpellIconActive)
+    end
+    local count=0;for _ in pairs(seen) do count=count+1 end;assert(count<=2,'Ace transfer stranded native icons: '..count)
 end)
 test('aura spell picker preserves numeric identities so rank matching stays an explicit choice',function()
     local f=fixture(true);local a=f.addon;dofile('tests/fixtures/spell_editbox.lua')(f);f.load('Conditions/common.lua')
     local value={spell=403,anyrank=false};local group=a:Widget_SpellNameWidget(0,'Spell_EditBox',value,function(id) return type(id)=='number' end,function() end,true)
-    local icon=group.children[1];icon.callbacks.OnEnterPressed(nil,nil,'529')
+    local icon=group.children[1];icon:Fire('OnEnterPressed','529')
     assert(value.spell==529,'picker silently changed an exact numeric aura to a name-family query')
-    local input=group.children[2];input.callbacks.OnEnterPressed(nil,nil,'403');assert(value.spell==403)
+    local input=group.children[2];input:Fire('OnEnterPressed','403');assert(value.spell==403)
 end)
 test('reconfirming aura selection through native Enter retains identity after text and icon choices',function()
     local f=fixture(true);local a=f.addon;dofile('tests/fixtures/spell_editbox.lua')(f);f.load('Conditions/common.lua')
@@ -122,7 +194,7 @@ test('reconfirming aura selection through native Enter retains identity after te
     local icon,input=group.children[1],group.children[2]
     input.editbox:SetFocus();input.editbox:SetText('403');input.editbox.scripts.OnEnterPressed(input.editbox);assert(value.spell==403)
     input.editbox:SetFocus();input.editbox.scripts.OnEnterPressed(input.editbox);assert(value.spell==403,'unchanged display resolved to another rank')
-    icon.callbacks.OnEnterPressed(nil,nil,'403');input.editbox:SetFocus();input.editbox.scripts.OnEnterPressed(input.editbox);assert(value.spell==403,'icon choice lost retained numeric identity')
+    icon:Fire('OnEnterPressed','403');input.editbox:SetFocus();input.editbox.scripts.OnEnterPressed(input.editbox);assert(value.spell==403,'icon choice lost retained numeric identity')
 end)
 test('reopening an exact lower aura rank keeps icon and tooltip aligned with the saved identity',function()
     local f=fixture(true);local a=f.addon;dofile('tests/fixtures/spell_editbox.lua')(f);f.load('Conditions/common.lua')
@@ -130,7 +202,7 @@ test('reopening an exact lower aura rank keeps icon and tooltip aligned with the
     local value={spell=403};local group=a:Widget_SpellNameWidget(0,'Spell_EditBox',value,function(id) return type(id)=='number' end,function() end,true)
     local icon,input=group.children[1],group.children[2]
     assert(input:GetText():find('Rank 1',1,true));assert(icon:GetUserData('spell')==403,'icon canonicalized the saved rank')
-    icon.callbacks.OnEnter(icon);assert(f.tooltip=='spell:403' and value.spell==403)
+    icon:Fire('OnEnter');assert(f.tooltip=='spell:403' and value.spell==403)
 end)
 test('actual common item condition uses protected item icon metadata and exact item drop controls',function()
     local f=fixture(true);local a=f.addon;dofile('tests/fixtures/spell_editbox.lua')(f)
@@ -140,10 +212,10 @@ test('actual common item condition uses protected item icon metadata and exact i
     ace.Create=function(self,kind) assert(kind~='ActionSlotItem','real vendor item icon still needs old GetItemInfo');return create(self,kind) end
     local value={item=1};local updates=0
     local group=a:Widget_SingleItemWidget(0,'Item_EditBox',value,function(id) return type(id)=='number' end,function() updates=updates+1 end)
-    local icon=group.children[1];assert(icon.rmItemIconActive and icon.image==11)
-    icon.callbacks.OnEnter(icon);assert(f.tooltip=='item:1')
+    local icon=group.children[1];assert(icon.rmItemIconActive and texture(icon)==11)
+    icon:Fire('OnEnter');assert(f.tooltip=='item:1')
     f.env.GetCursorInfo=function() return 'item',2,'item:2' end
-    icon.frame.scripts.OnReceiveDrag(icon.frame);assert(value.item==2 and icon.image==12 and updates==1)
+    icon.frame.scripts.OnReceiveDrag(icon.frame);assert(value.item==2 and texture(icon)==12 and updates==1)
     icon.frame.scripts.OnClick(icon.frame,'RightButton');assert(value.item==nil and updates==2)
 end)
 test('delayed item icon display cannot overwrite a pooled ordinary Icon after release',function()
@@ -152,9 +224,9 @@ test('delayed item icon display cannot overwrite a pooled ordinary Icon after re
     a.ScheduleTimer=function(_,method,_,...) queued={method=method,args={...}} end
     assert(a.CreateItemActionIcon,'owned item icon missing')
     local icon=a:CreateItemActionIcon(1);a:UpdateItem_Name_ID(1,nil,icon);assert(queued)
-    f.libraries['AceGUI-3.0']:Release(icon)
-    local reused=f.libraries['AceGUI-3.0']:Create('Icon');assert(reused==icon);reused:SetImage(99)
-    ready=true;a[queued.method](a,unpack(queued.args));assert(reused.image==99 and not reused.rmItemIconActive)
+    a:ReleaseConditionWidget(icon)
+    local reused=a:CreateConditionIcon();assert(reused==icon);reused:SetImage(99)
+    ready=true;a[queued.method](a,unpack(queued.args));assert(texture(reused)==99 and not reused.rmItemIconActive)
 end)
 test('legacy condition spell rank adapter uses the shared responsive field geometry',function()
     local f=fixture(true);local a=f.addon;dofile('tests/fixtures/spell_editbox.lua')(f);f.env.BOOKTYPE_PET='pet';f.load('Conditions/common.lua')
@@ -163,7 +235,7 @@ test('legacy condition spell rank adapter uses the shared responsive field geome
     local content=f.env.CreateFrame('Frame');content:SetSize(800,200);local height=a:LayoutWorkbenchSpellGroup(content,group.children)
     local spell,rank=group.children[2],group.children[3];assert(spell.frame.point[3]==rank.frame.point[3] and height<=50)
     content:SetWidth(360);height=a:LayoutWorkbenchSpellGroup(content,group.children);assert(spell.frame.point[2]==rank.frame.point[2] and rank.frame.point[3]<spell.frame.point[3] and height>50)
-    rank.callbacks.OnValueChanged(rank,'OnValueChanged',true);assert(value.ranked and spell:GetUserData('norank')==false)
+    rank:Fire('OnValueChanged',true);assert(value.ranked and spell:GetUserData('norank')==false)
 end)
 test('rejected single-item choices preserve cursor ownership and clear direct rejected display identity',function()
     local f=fixture(true);local a=f.addon;dofile('tests/fixtures/spell_editbox.lua')(f)
@@ -173,7 +245,7 @@ test('rejected single-item choices preserve cursor ownership and clear direct re
     local icon,input=group.children[1],group.children[2]
     f.env.GetCursorInfo=function() return 'item',2,'item:2' end;icon.frame.scripts.OnReceiveDrag(icon.frame)
     assert(value.item==1 and icon:GetUserData('item')==1 and updates==0 and not f.cleared,'rejected item consumed the cursor or changed the field')
-    icon.callbacks.OnEnterPressed(icon,'OnEnterPressed','2')
+    icon:Fire('OnEnterPressed','2')
     assert(value.item==nil and icon:GetUserData('item')==nil and input:GetText()=='','rejected direct item retained display identity')
 end)
 test('switching a populated item set to an empty custom list clears its preview',function()
@@ -182,9 +254,9 @@ test('switching a populated item set to an empty custom list clears its preview'
     f.load('Platform/inventory.lua');f.load('Core/item_sets.lua');f.load('Conditions/common.lua')
     a.db.profile.itemsets={example={items={1}}};a.db.global.itemsets={}
     local value={item='example'};local group=a:Widget_ItemWidget(nil,'Item_EditBox',value,function() return true end,function() end)
-    assert(group.children[1].image==11,'test did not start with a populated set preview')
-    group.children[2].callbacks.OnValueChanged(nil,nil,'')
-    assert(type(value.item)=='table' and #value.item==0 and group.children[1].image==nil,'empty custom list kept the previous set icon')
+    assert(texture(group.children[1])==11,'test did not start with a populated set preview')
+    group.children[2]:Fire('OnValueChanged','')
+    assert(type(value.item)=='table' and #value.item==0 and texture(group.children[1])==nil,'empty custom list kept the previous set icon')
 end)
 test('clearing a set selection invalidates the queued item-metadata preview retry',function()
     local f=fixture(true);local a=f.addon;local ready=false;local queued
@@ -194,8 +266,8 @@ test('clearing a set selection invalidates the queued item-metadata preview retr
     a.db.profile.itemsets={example={items={1}}};a.db.global.itemsets={}
     local value={item='example'};local group=a:Widget_ItemWidget(nil,'Item_EditBox',value,function() return true end,function() end)
     assert(queued,'test did not schedule delayed item metadata')
-    group.children[2].callbacks.OnValueChanged(nil,nil,nil);assert(value.item==nil and group.children[1].image==nil)
+    group.children[2]:Fire('OnValueChanged',nil);assert(value.item==nil and texture(group.children[1])==nil)
     ready=true;a[queued.method](a,unpack(queued.args))
-    assert(value.item==nil and group.children[1].image==nil,'late metadata repainted the cleared selection')
+    assert(value.item==nil and texture(group.children[1])==nil,'late metadata repainted the cleared selection')
 end)
 finish()

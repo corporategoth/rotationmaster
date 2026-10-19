@@ -7,7 +7,7 @@ local AceGUI=LibStub('AceGUI-3.0')
 ---@field SetValue fun(self: RMConditionCheckBox, value: boolean?)
 ---@field GetValue fun(self: RMConditionCheckBox): boolean
 ---@field SetDisabled fun(self: RMConditionCheckBox, disabled: boolean)
-local function constructor()
+local function constructor(legacy)
     local w={type='RM-CheckBox',alive=false,disabled=false}
     local frame=CreateFrame('Frame',nil,UIParent);w.frame=frame;frame:SetSize(180,24)
     local button=addon:CreateWorkbenchCheckBox(frame,'',180);w.button=button;button:SetAllPoints(frame)
@@ -23,12 +23,12 @@ local function constructor()
         w:SetValue(not w:GetValue());w:Fire('OnValueChanged',w:GetValue())
     end)
     ---@cast w AceGUIWidget
-    return AceGUI:RegisterAsWidget(w)
+    return addon:RegisterConditionWidget(w,1,legacy)
 end
-AceGUI:RegisterWidgetType('RM-CheckBox',constructor,1)
+AceGUI:RegisterWidgetType('RM-CheckBox',function() return constructor(true) end,1)
 ---@return RMConditionCheckBox
 function addon:CreateConditionCheckBox()
-    local widget=AceGUI:Create('RM-CheckBox')
+    local widget=addon:AcquireConditionWidget('RM-CheckBox',constructor)
     ---@cast widget RMConditionCheckBox
     return widget
 end
@@ -38,6 +38,7 @@ do
     local function sourceGetter(name)
         if name=="AceGUI" then return AceGUI end
         if name=="CreateConditionCheckBox" then return addon.CreateConditionCheckBox end
+        if name=="constructor" then return constructor end
     end
     if addon.RegisterBuiltinSourceModule then
         addon:RegisterBuiltinSourceModule("UI/checkbox.lua", sourceGetter)

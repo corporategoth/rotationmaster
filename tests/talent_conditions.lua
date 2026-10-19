@@ -64,12 +64,19 @@ local function fields(f,value,spec)
     f.addon.conditionDefinitions.TALENT.widget(parent,spec or 0,value)
     return parent
 end
+test('talent icons and unsupported-layout messages use native primitives without Ace allocation',function()
+    for _,branch in ipairs({{5,1},{1,12}}) do
+        local f=fixture(branch[1],branch[2]);f.libraries['AceGUI-3.0'].Create=function() error('talent field allocated through Ace') end
+        local parent=fields(f,tree());assert(#parent.children>0)
+        for _,child in ipairs(parent.children) do assert(child.rmWidget,'non-native talent field') end
+    end
+end)
 test('tree editor names native trees and clears former talent only on an explicit tree change',function()
     local f=fixture();local value=tree();local parent=fields(f,value)
     local trees
     for _,w in ipairs(parent.children) do if (w.caption and w.caption:GetText() or w.label)=='Talent Tree' then trees=w end end
     assert(trees);trees.configure();assert(trees.list[1]=='Elemental' and value.talent==1 and value.layout==nil)
-    trees.callbacks.OnValueChanged(trees,nil,2)
+    trees:Fire('OnValueChanged',2)
     assert(value.tree==2 and value.talent==nil and value.layout=='tree')
     f.env.GetNumTalentTabs=nil;f.env.GetNumTalents=nil;f.env.C_SpecializationInfo=nil
     assert(fields(f,tree()),'missing metadata prevented opening an old condition')
@@ -80,7 +87,7 @@ test('Mists picker does not silently convert historical references and writes gr
     local picker
     for _,w in ipairs(parent.children) do if (w.caption and w.caption:GetText() or w.label)=='Talent' then picker=w end end
     assert(picker);picker.configure();assert(picker.value==nil and #picker.order==18)
-    picker.callbacks.OnValueChanged(picker,nil,3)
+    picker:Fire('OnValueChanged',3)
     assert(value.layout=='grid' and value.value==3 and value.tree==nil and value.talent==nil and value.operator==nil)
     assert(f.addon.conditionDefinitions.TALENT.valid(2,value))
     f=fixture(1,12);value={type='TALENT',value=1};assert(fields(f,value) and value.value==1 and value.layout==nil)
@@ -107,7 +114,7 @@ test('primary tree cache is per evaluation and its native chooser preserves refe
     a.conditionDefinitions.PRIMARY_TALENT_TREE.widget(parent,0,condition)
     local picker=parent.children[1];picker.configure();assert(picker.type=='RM-Selector' and picker:GetValue()==2 and condition.tree==2)
     picker:SetValue(1);assert(condition.tree==2,'view state mutated the authored tree')
-    picker.callbacks.OnValueChanged(picker,nil,1);assert(condition.tree==1 and top.statusText=='Updated')
+    picker:Fire('OnValueChanged',1);assert(condition.tree==1 and top.statusText=='Updated')
     local other=fixture(1,12);local root={type='PRIMARY_TALENT_TREE',tree=2};top,parent=other.widget('Frame'),other.widget('Group');parent:SetUserData('top',top);top:SetUserData('root',root);top:SetUserData('funcs',{print=function() return '' end})
     other.addon.conditionDefinitions.PRIMARY_TALENT_TREE.widget(parent,0,root);assert(root.tree==2 and parent.children[2].disabled,'unsupported view converted or enabled the reference')
 end)

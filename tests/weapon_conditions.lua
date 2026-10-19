@@ -1,6 +1,6 @@
 local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite()
-local function fixture()
-    local f=F.new();f.load('Core/conditions.lua');f.load('Conditions/common.lua');f.load('Conditions/weapon.lua');f.load('Conditions/misc.lua')
+local function fixture(...)
+    local f=F.new(...);f.load('Core/conditions.lua');f.load('Conditions/common.lua');f.load('Conditions/weapon.lua');f.load('Conditions/misc.lua')
     f.env.UnitCastingInfo=function() end;f.env.UnitChannelInfo=function() end
     return f,f.addon
 end
@@ -41,4 +41,72 @@ test('PvP player summary chooses the same unit as validation and fields',functio
     local _,a=fixture();local text=a.conditionDefinitions.PVP.print(0,{unit='player'})
     assert(text:find('you are PVP flagged',1,true),'player summary used third-person grammar')
 end)
+local function sourceFixture(...)
+    local f,a=fixture(...)
+    f.load('Data/builtin_sources.lua');f.load('Core/builtin_sources.lua');f.load('Core/custom_authoring.lua');f.load('Core/function_data.lua')
+    f.env.loadstring=function(text,name) local fn,why=loadstring(text,name);if fn then setfenv(fn,f.env) end;return fn,why end
+    return f,a
+end
+test('weapon authored comparison callbacks declare canonical private dependencies without changing local observation helpers',function()
+    local _,a=sourceFixture()
+    for _,tag in ipairs({'WEAPON_REMAIN','WEAPON_STACKS','SWING_TIME','SWING_TIME_REMAIN'}) do
+        local source=assert(a:GetBuiltinConditionSource(tag))
+        assert(source.valid:find('Functions.values.isin',1,true) and source.evaluate:find('Functions.values.compare',1,true),tag..' still uses legacy comparison calls')
+        assert(source.print:find('Functions.presentation.compareString',1,true) and source.print:find('Functions.presentation.nullable',1,true),tag..' still uses legacy presentation calls')
+        assert(source.bindings['Functions.values.compare']=='builtin:utils.lua:compare' and source.bindings['Functions.values.isin']=='builtin:utils.lua:isin')
+        assert(source.bindings['Functions.presentation.compareString']=='builtin:utils.lua:compareString' and source.bindings['Functions.presentation.nullable']=='builtin:utils.lua:nullable')
+        assert(source.bindings.Functions==nil,'namespace became an opaque captured table')
+    end
+    for name,hash in pairs({enchantObservation='e5464f90',numericObservation='02dee6a9',swingSpeed='56aa868b'}) do
+        local id='builtin:Conditions/weapon.lua:'..name;local record=assert(a.builtinFunctions[id])
+        assert(a:FunctionSourceHash(record.source)==hash,'native observation helper changed during pure-call migration')
+        assert(a:ResolveFunctionBinding(id)==a.builtinSourceModules['Conditions/weapon.lua'](name),'legacy observation getter identity changed')
+    end
+end)
+test('registered weapon clones preserve selected-hand outcomes negation summaries and client registration boundaries',function()
+    local tags={'WEAPON','WEAPON_REMAIN','WEAPON_STACKS','SWING_TIME','SWING_TIME_REMAIN'}
+    local summaries={WEAPON='Your off hand weapon is enchanted',WEAPON_REMAIN='Your off hand weapon buff has the remaining time is equal to 2 seconds',WEAPON_STACKS='Your off hand weapon buff has stacks is equal to 2',SWING_TIME='Your off hand weapon attack speed is equal to 2 seconds',SWING_TIME_REMAIN='Your off hand weapon swing time remaining is equal to 2 seconds'}
+    for _,case in ipairs(dofile('tests/fixtures/catalog_inventory.lua').branches) do
+        local f,a=sourceFixture(unpack(case[1]));f.env.UnitAttackSpeed=function() return 3,2 end;a.lastMainSwing=98;a.lastOffSwing=99
+        for _,tag in ipairs(tags) do
+            local definition=a.conditionDefinitions[tag]
+            if tag:find('WEAPON',1,true) then assert((definition~=nil)==(f.env.WOW_PROJECT_ID~=f.env.WOW_PROJECT_MAINLINE),'weapon registration guard changed') end
+            if definition then
+                local source=assert(a:GetBuiltinConditionSource(tag));local copy=assert(a:CompileCustomCondition('COPY_'..tag,source));a:RegisterCondition('COPY_'..tag,copy)
+                local printed=node(tag,true,2);assert(definition.print(0,printed)==summaries[tag] and copy.print(0,printed)==summaries[tag],tag..' summary changed')
+                assert(copy.print(0,printed,true)==definition.print(0,printed,true),tag..' negated summary changed')
+                for _,main in ipairs({false,true}) do for _,off in ipairs({false,true}) do
+                    f.env.GetWeaponEnchantInfo=function() return main,12000,4,1,off,3000,2,2 end
+                    for _,selected in ipairs({false,true}) do
+                        local amount=tag=='WEAPON_REMAIN' and (selected and 3 or 12) or tag=='WEAPON_STACKS' and (selected and 2 or 4) or tag=='SWING_TIME_REMAIN' and 1 or 2
+                        local original=node(tag,selected,amount);local duplicate=node('COPY_'..tag,selected,amount)
+                        assert(copy.valid(0,duplicate)==definition.valid(0,original),tag..' validator changed')
+                        for _,negated in ipairs({false,true}) do
+                            local left=negated and {type='NOT',value=original} or original;local right=negated and {type='NOT',value=duplicate} or duplicate
+                            assert(a:evaluateConditionResult(left).status==a:evaluateConditionResult(right).status,tag..' clone observation/negation changed')
+                        end
+                    end
+                end end
+            end
+        end
+        assert(not f.env.Functions and not f.env.functions,'weapon clone leaked namespace globals')
+    end
+end)
+test('weapon clones keep failed restricted and missing observations unavailable with the same raw cached APIs',function()
+    local f,a=sourceFixture();local opaque={};a.Platform.CanReadValue=function(_,value) return value~=opaque end
+    for _,tag in ipairs({'WEAPON','WEAPON_REMAIN','WEAPON_STACKS','SWING_TIME','SWING_TIME_REMAIN'}) do
+        local copy=assert(a:CompileCustomCondition('COPY_'..tag,assert(a:GetBuiltinConditionSource(tag))));a:RegisterCondition('COPY_'..tag,copy)
+        for _,mode in ipairs({'failed','restricted','missing','absent'}) do
+            f.env.GetWeaponEnchantInfo=function() if mode=='failed' then error('blocked') end;if mode=='restricted' then return opaque,nil,nil,nil,opaque end;return nil end
+            f.env.UnitAttackSpeed=function() if mode=='failed' then error('blocked') end;if mode=='restricted' then return opaque,opaque end end
+            if mode=='absent' then f.env.GetWeaponEnchantInfo=nil;f.env.UnitAttackSpeed=nil end
+            local result=a:evaluateConditionResult({type='NOT',value=node(tag,false,0)});local clone=a:evaluateConditionResult({type='NOT',value=node('COPY_'..tag,false,0)})
+            assert(result.status==clone.status and result.reason==clone.reason,tag..' changed availability reason')
+            if not (mode=='missing' and tag:find('WEAPON',1,true)) then assert(clone.status=='unavailable',tag..' authorized action from unknown data') end
+        end
+    end
+    local calls=0;f.env.GetWeaponEnchantInfo=function() calls=calls+1;return true,12000,4,1,true,3000,2,2 end
+    assert(a:evaluateCondition({type='AND',value={node('WEAPON_REMAIN',false,12),node('COPY_WEAPON_REMAIN',true,3)}}) and calls==1,'canonical calls changed cached native observation reuse')
+end)
+
 finish()

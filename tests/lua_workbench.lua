@@ -201,8 +201,8 @@ test('condition callback debugging supplies typed values tags and real disposabl
 end)
 test('debugger tracks orphan controls only during resume and restores every shared factory',function()
  local f,a=fixture();local body={fields={},bindings={}};local owner={frame=f.env.UIParent,model={key='ORPHAN'},OwnerValid=function() return true end,Flush=function() return true end,PendingSource=function() return body end,Show=function() end}
- local create=a.CreateConditionEditBox;local ace=f.libraries['AceGUI-3.0'];local aceCreate=ace.Create
- local c=a:CreateLuaWorkbenchControl(f.env.UIParent,function() end,function() return true end);c:SetText('addon.orphan=addon:CreateConditionEditBox(); error("orphan-error")');c:SetContext({kind='condition',id='ORPHAN',callback='widget',source=body,testOwner=owner});assert(c:Debug())
+ local create=a.CreateConditionEditBox;local ace=f.libraries['AceGUI-3.0'];local aceCreate=ace.Create;a.capturedConditionFactory=create
+ local c=a:CreateLuaWorkbenchControl(f.env.UIParent,function() end,function() return true end);c:SetText('addon.orphan=addon.capturedConditionFactory(addon); error("orphan-error")');c:SetContext({kind='condition',id='ORPHAN',callback='widget',source=body,testOwner=owner});assert(c:Debug())
  for i=1,40 do if c.engine.Debugger.paused then c.engine.Debugger:StepOver() else c.engine.Debugger:Pump() end;assert(a.CreateConditionEditBox==create and ace.Create==aceCreate,'shared factories changed while the debugger is paused') end
  assert(c.debugError:find('orphan-error',1,true));c:Release();assert(not a.orphan.alive,'failed unattached control leaked')
 end)

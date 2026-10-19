@@ -6,9 +6,9 @@ local AceGUI=LibStub('AceGUI-3.0')
 ---@field AddChild fun(self: RMConditionGroup, child: AceGUIWidget)
 ---@field DoLayout fun(self: RMConditionGroup)
 
--- RM owns field geometry. AceGUI supplies pooling and releases legacy custom
--- child widgets until those optional APIs can be retired independently.
-local function constructor()
+-- RM owns field geometry and ordinary widget leases. Historical custom child
+-- widgets and advanced layouts retain an explicit Ace compatibility path.
+local function constructor(legacy)
     local group={type='RM-ConditionGroup',children={}}
     local frame=CreateFrame('Frame',nil,UIParent);group.frame=frame;group.content=frame
     function group:OnAcquire() self.children={};self.layout='List';self.paused=false;self.layingOut=false;self:SetWidth(300);self:SetHeight(1) end
@@ -28,7 +28,9 @@ local function constructor()
     function group:AddChildren(...) for i=1,select('#',...) do self:AddChild(select(i,...)) end end
     function group:ReleaseChildren()
         local children=self.children;self.children={}
-        for _,child in ipairs(children) do AceGUI:Release(child);child.parent=nil end
+        local problem
+        for _,child in ipairs(children) do local ok,why=pcall(addon.ReleaseConditionWidget,addon,child);child.parent=nil;if not ok then problem=problem or why end end
+        if problem then error(problem,0) end
         self:DoLayout()
     end
     function group:DoLayout()
@@ -84,12 +86,12 @@ local function constructor()
         if self.parent and self.parent.DoLayout then self.parent:DoLayout() end
     end
     ---@cast group AceGUIWidget
-    return AceGUI:RegisterAsWidget(group)
+    return addon:RegisterConditionWidget(group,1,legacy)
 end
-AceGUI:RegisterWidgetType('RM-ConditionGroup',constructor,1)
+AceGUI:RegisterWidgetType('RM-ConditionGroup',function() return constructor(true) end,1)
 ---@return RMConditionGroup
 function addon:CreateConditionGroup()
-    local group=AceGUI:Create('RM-ConditionGroup')
+    local group=addon:AcquireConditionWidget('RM-ConditionGroup',constructor)
     ---@cast group RMConditionGroup
     return group
 end
@@ -99,6 +101,7 @@ do
     local function sourceGetter(name)
         if name=="AceGUI" then return AceGUI end
         if name=="CreateConditionGroup" then return addon.CreateConditionGroup end
+        if name=="constructor" then return constructor end
     end
     if addon.RegisterBuiltinSourceModule then
         addon:RegisterBuiltinSourceModule("UI/condition_layout.lua", sourceGetter)

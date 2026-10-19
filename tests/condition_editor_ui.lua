@@ -16,7 +16,7 @@ local function fixture()
         return w
     end
     dofile('tests/fixtures/spell_editbox.lua')(f,create)
-    ace.Release=function(_,w) w.frame:Hide();w.released=true end
+    ace.Release=function(_,w) if w.frame then w.frame:Hide() end;w.released=true end
     for _,file in ipairs({'Data/plain.lua','Data/tags.lua','Data/rotation_tree.lua','Data/condition_draft.lua','Data/validation.lua','Data/diff.lua','Core/conditions.lua','Core/condition_editor.lua','Core/condition_canvas.lua','UI/window.lua','UI/help.lua','UI/condition_picker.lua','UI/condition_cards.lua','UI/condition_canvas.lua','UI/condition_editor.lua','Options/conditional.lua'}) do f.load(file) end
     local h=io.open('UI/condition_text.lua');if h then h:close();f.load('UI/condition_text.lua') end
     a:RegisterCondition('NUMBER',{description='Number check',fields={number='number'},requiredFields={'number'},
@@ -142,9 +142,9 @@ test('actual known-spell field controls edit the draft and keep named spell iden
     local root={type='SPELL_KNOWN',spell=403};local shell=a:EditCondition(1,0,root,function() end)
     shell.canvas.cards[1].header:Click()
     local picker
-    for _,w in ipairs(widgets) do if w.kind=='EditBox' and w.label=='Spell' then picker=w end end
+    for _,w in ipairs(shell.canvas.cards[1].pane.children) do if w.type=='RM-ConditionEditBox' and w.label=='Spell' then picker=w end end
     assert(picker and picker.text:find('Lightning Bolt',1,true))
-    picker.callbacks.OnEnterPressed(picker,nil,'8042')
+    picker:Fire('OnEnterPressed','8042')
     assert(root.spell==403 and shell.canvas.cards[1].label.text:find('Earth Shock',1,true))
     shell.apply:Click();assert(root.spell==8042)
 end)
@@ -240,13 +240,13 @@ test('inline layout reflows following cards and resize invalidates old panes and
     local f=fixture();local root={type='AND',value={{type='NUMBER',number=1},{type='NUMBER',number=2}}}
     local shell=f.addon:EditCondition(1,0,root,function() end);local canvas=shell.canvas
     canvas.cards[2].header:Click();canvas.cards[3].header:Click()
-    local pane=canvas.cards[2].pane;local proxy=canvas.cards[2].proxy
+    local pane=canvas.cards[2].pane;local lease=pane.rmLease;local proxy=canvas.cards[2].proxy
     local originalY=canvas.cards[3].model.y
-    pane:LayoutFinished(700,350)
+    pane.children[1].frame:SetHeight(350);pane:DoLayout()
     assert(canvas.cards[3].model.y>originalY and canvas.child:GetHeight()>=canvas.cards[3].model.y+canvas.cards[3].model.height)
     canvas.cards[2].header.scripts.OnDragStart();assert(canvas.drag)
     shell.frame:SetSize(840,520)
-    assert(not canvas.drag and canvas.cards[2].pane~=pane and pane.released)
+    assert(not canvas.drag and canvas.cards[2].pane.rmLease~=lease)
     proxy:SetStatusText();assert(shell.active.working.value[1].number==1 and root.value[1].number==1)
     for _,model in ipairs(canvas.scene.cards) do assert(model.x+model.width<=canvas.frame:GetWidth()) end
     shell.cancel:Click()

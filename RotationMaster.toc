@@ -43,6 +43,7 @@ embeds.xml
 locales.xml
 constants.lua
 Functions/values.lua
+Functions/presentation.lua
 utils.lua
 profiler.lua
 Diagnostics/errors.lua
@@ -101,6 +102,9 @@ validate.lua
 UI/controls.lua
 UI/drag_presentation.lua
 UI/unsaved.lua
+UI/condition_widgets.lua
+UI/condition_icon.lua
+UI/condition_display.lua
 UI/selector.lua
 UI/checkbox.lua
 UI/condition_inputs.lua

@@ -578,7 +578,7 @@ local function persistentFixture(saved,folder)
     for key,value in pairs(saved or {}) do env[key]=value end
     env.Enum={PowerType={Runes=5,SoulShards=7,Chi=12,ArcaneCharges=16}}
     env.GetItemInfo=function() end
-    load('globals.lua');load('constants.lua');load('Functions/values.lua');load('utils.lua');load('profiler.lua')
+    load('globals.lua');load('constants.lua');load('Functions/values.lua');load('Functions/presentation.lua');load('utils.lua');load('profiler.lua')
     load('Core/conditions.lua');load('Conditions/known_spell.lua');load('Options/conditional.lua')
     load('main.lua')
     local make=dofile('tests/fixtures/rotation_data.lua')

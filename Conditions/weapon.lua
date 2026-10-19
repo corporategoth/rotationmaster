@@ -4,6 +4,20 @@ local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 local color = color
 local helpers = addon.help_funcs
 
+-- These pure dependencies are selected from their owning modules and remain
+-- private to the authored callbacks and their editable source copies.
+local Functions={
+    values={isin=addon.Functions.values.isin,compare=addon.Functions.values.compare},
+    presentation={compareString=addon.Functions.presentation.compareString,nullable=addon.Functions.presentation.nullable},
+}
+addon.builtinCallbackBindings=addon.builtinCallbackBindings or {}
+addon.builtinCallbackBindings["Conditions/weapon.lua"]={
+    ["Functions.values.isin"]="builtin:utils.lua:isin",
+    ["Functions.values.compare"]="builtin:utils.lua:compare",
+    ["Functions.presentation.compareString"]="builtin:utils.lua:compareString",
+    ["Functions.presentation.nullable"]="builtin:utils.lua:nullable",
+}
+
 -- Select the requested hand before interpreting observations. Lua's and/or
 -- shorthand falls through to the other hand when the selected value is false.
 local function enchantObservation(value, cache)
@@ -77,7 +91,7 @@ if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
         icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\time",
         fields = { offhand = "boolean", operator = "string", value = "number" },
         valid = function(_, value)
-            return (value.operator ~= nil and addon.isin(addon.operators, value.operator) and
+            return (value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                     value.value ~= nil and value.value >= 0)
         end,
         evaluate = function(value, cache)
@@ -86,11 +100,11 @@ if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
             if not enchanted then return false end
             local duration,why=numericObservation(expires)
             if duration==nil then return nil,why end
-            return addon.compare(value.operator,duration/1000,value.value)
+            return Functions.values.compare(value.operator,duration/1000,value.value)
         end,
         print = function(_, value)
             return string.format(L["Your %s weapon buff has %s"], (value.offhand and L["off hand"] or L["main hand"]),
-                    addon.compareString(value.operator, L["the remaining time"], string.format(L["%s seconds"], addon.nullable(value.value))))
+                    Functions.presentation.compareString(value.operator, L["the remaining time"], string.format(L["%s seconds"], Functions.presentation.nullable(value.value))))
         end,
         widget = function(parent, spec, value)
             local top = parent:GetUserData("top")
@@ -129,7 +143,7 @@ if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
         icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\weapon",
         fields = { offhand = "boolean", operator = "string", value = "number" },
         valid = function(_, value)
-            return (value.operator ~= nil and addon.isin(addon.operators, value.operator) and
+            return (value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                     value.value ~= nil and value.value >= 0)
         end,
         evaluate = function(value, cache)
@@ -138,11 +152,11 @@ if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
             if not enchanted then return false end
             local count,why=numericObservation(charges)
             if count==nil then return nil,why end
-            return addon.compare(value.operator,count,value.value)
+            return Functions.values.compare(value.operator,count,value.value)
         end,
         print = function(_, value)
             return string.format(L["Your %s weapon buff has %s"], (value.offhand and L["off hand"] or L["main hand"]),
-                    addon.compareString(value.operator, L["stacks"], addon.nullable(value.value)))
+                    Functions.presentation.compareString(value.operator, L["stacks"], Functions.presentation.nullable(value.value)))
         end,
         widget = function(parent, spec, value)
             local top = parent:GetUserData("top")
@@ -182,17 +196,17 @@ addon:RegisterCondition("SWING_TIME", {
     icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\time",
     fields = { offhand = "boolean", operator = "string", value = "number" },
     valid = function(_, value)
-        return (value.operator ~= nil and addon.isin(addon.operators, value.operator) and
+        return (value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                 value.value ~= nil and value.value >= 0)
     end,
     evaluate = function(value, cache)
         local speed,reason=swingSpeed(value,cache)
         if speed==nil then return nil,reason end
-        return addon.compare(value.operator,speed,value.value)
+        return Functions.values.compare(value.operator,speed,value.value)
     end,
     print = function(_, value)
         return string.format(L["Your %s weapon %s"], (value.offhand and L["off hand"] or L["main hand"]),
-                addon.compareString(value.operator, L["attack speed"], string.format(L["%s seconds"], addon.nullable(value.value))))
+                Functions.presentation.compareString(value.operator, L["attack speed"], string.format(L["%s seconds"], Functions.presentation.nullable(value.value))))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -229,7 +243,7 @@ addon:RegisterCondition("SWING_TIME_REMAIN", {
     icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\time",
     fields = { offhand = "boolean", operator = "string", value = "number" },
     valid = function(_, value)
-        return (value.operator ~= nil and addon.isin(addon.operators, value.operator) and
+        return (value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                 value.value ~= nil and value.value >= 0)
     end,
     evaluate = function(value, cache, evalStart)
@@ -237,13 +251,13 @@ addon:RegisterCondition("SWING_TIME_REMAIN", {
         if speed==nil then return nil,reason end
         local lastSwing=addon.lastMainSwing;if value.offhand then lastSwing=addon.lastOffSwing end
         if lastSwing==nil or addon.getCached(cache, UnitCastingInfo, "player") or addon.getCached(cache, UnitChannelInfo, "player") then
-            return addon.compare(value.operator,speed,value.value)
+            return Functions.values.compare(value.operator,speed,value.value)
         end
-        return addon.compare(value.operator,speed-math.max(evalStart-lastSwing,0),value.value)
+        return Functions.values.compare(value.operator,speed-math.max(evalStart-lastSwing,0),value.value)
     end,
     print = function(_, value)
         return string.format(L["Your %s weapon %s"], (value.offhand and L["off hand"] or L["main hand"]),
-                addon.compareString(value.operator, L["swing time remaining"], string.format(L["%s seconds"], addon.nullable(value.value))))
+                Functions.presentation.compareString(value.operator, L["swing time remaining"], string.format(L["%s seconds"], Functions.presentation.nullable(value.value))))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")

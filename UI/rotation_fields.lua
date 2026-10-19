@@ -1,6 +1,5 @@
 local addon_name,addon=...
 local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
-local AceGUI=LibStub('AceGUI-3.0')
 
 local function parsedText(key,value)
     local patch={set={},unset={}}
@@ -79,8 +78,8 @@ function addon:InstallRotationFieldDrafts(pane)
     end
 end
 
--- Native leaf controls, with the existing owned spell-search field as the one
--- temporary AceGUI bridge. Every callback commits a detached atomic patch.
+-- Native leaf controls and reference inputs share RM ownership. Every callback
+-- commits a detached atomic patch.
 function addon:BuildRotationCardFields(owner,card,model,alive)
     local step=model.step;local readOnly=owner.workspace.readOnly
     local frame=card.fields;local fieldWidth=model.width-56;local controls,menus,widgets={}, {}, {};card.fieldControls=controls
@@ -219,7 +218,7 @@ function addon:BuildRotationCardFields(owner,card,model,alive)
         end
         for _,control in ipairs(controls) do control:Hide();if control.ClearFocus then control:ClearFocus() end end
         for _,input in ipairs(pool.inputs) do addon:SetUIScript(input,'OnTextChanged',nil);addon:SetUIScript(input,'OnEnterPressed',nil);addon:SetUIScript(input,'OnEscapePressed',nil);addon:SetUIScript(input,'OnEditFocusGained',nil) end
-        for _,widget in ipairs(widgets) do AceGUI:Release(widget) end
+        for _,widget in ipairs(widgets) do addon:ReleaseConditionWidget(widget) end
         card.fieldControls=nil
     end
 end

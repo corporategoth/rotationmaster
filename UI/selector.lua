@@ -66,7 +66,7 @@ end
 ---@field SetLabel fun(self: RMConditionSelector, text: string)
 ---@field SetDisabled fun(self: RMConditionSelector, disabled: boolean)
 ---@field SetText fun(self: RMConditionSelector, text: string)
-local function selectorWidget()
+local function selectorWidget(legacy)
     local w={type='RM-Selector',list={},order={},disabled=false}
     local frame=CreateFrame('Frame',nil,UIParent);w.frame=frame;frame:SetSize(220,44)
     local caption=frame:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall');w.caption=caption;caption:SetPoint('TOPLEFT',0,0);caption:SetPoint('TOPRIGHT',0,0);caption:SetHeight(18);caption:SetJustifyH('LEFT')
@@ -93,12 +93,12 @@ local function selectorWidget()
     end)
     addon:SetUIScript(frame,'OnHide',function() popup:Hide() end)
     ---@cast w AceGUIWidget
-    return AceGUI:RegisterAsWidget(w)
+    return addon:RegisterConditionWidget(w,1,legacy)
 end
-AceGUI:RegisterWidgetType('RM-Selector',selectorWidget,1)
+AceGUI:RegisterWidgetType('RM-Selector',function() return selectorWidget(true) end,1)
 ---@return RMConditionSelector
 function addon:CreateConditionDropdown()
-    local w=AceGUI:Create('RM-Selector')
+    local w=addon:AcquireConditionWidget('RM-Selector',selectorWidget)
     ---@cast w RMConditionSelector
     return w
 end
@@ -108,6 +108,7 @@ do
     local function sourceGetter(name)
         if name=="AceGUI" then return AceGUI end
         if name=="CreateConditionDropdown" then return addon.CreateConditionDropdown end
+        if name=="selectorWidget" then return selectorWidget end
     end
     if addon.RegisterBuiltinSourceModule then
         addon:RegisterBuiltinSourceModule("UI/selector.lua", sourceGetter)
