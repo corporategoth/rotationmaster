@@ -1,7 +1,7 @@
 local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite()
 local tags={'SELF_LEVEL','PVP','ZONEPVP','INSTANCE','OUTDOORS'}
 local owners={isin='values',compare='values',nullable='presentation',compareString='presentation',playerize='presentation',getCached='cache',deepcopy='collections',keys='collections'}
-local counts={isin=4,compare=1,nullable=4,compareString=1,playerize=1,getCached=5,deepcopy=2,keys=2}
+local counts={isin=4,compare=1,nullable=4,compareString=1,playerize=1,getCached=4,deepcopy=2,keys=2}
 local function path(name) return 'Functions.'..owners[name]..'.'..name end
 local function identity(name) return 'builtin:'..(owners[name]=='collections' and 'Functions/collections.lua' or 'utils.lua')..':'..name end
 local function fixture()
@@ -58,7 +58,7 @@ local function equal(a,tag,value)
         end
     end
 end
-test('environment callbacks select all twenty direct calls with eight exact owning leaves',function()
+test('environment callbacks select current direct calls with eight exact owning leaves',function()
     local f,a=fixture();local manifest=assert(a.builtinCallbackBindings and a.builtinCallbackBindings['Conditions/misc.lua'],'environment namespace manifest missing')
     local leaves=0;for alias,id in pairs(manifest) do
         leaves=leaves+1;local name=alias:match('([%w_]+)$');assert(alias==path(name) and id==identity(name))
@@ -73,12 +73,16 @@ test('environment callbacks select all twenty direct calls with eight exact owni
     for name,count in pairs(counts) do assert(found[name]==count,name..' count changed') end
     assert(not f.env.Functions)
 end)
-test('only the explicitly repaired SELF_LEVEL evaluator and optional cache parameter differ from prior environment sources',function()
+test('only the explicitly repaired SELF_LEVEL and PVP evaluators differ from prior environment sources',function()
     local _,a=fixture();local baseline={}
     for _,tag in ipairs(tags) do local source=assert(a:GetBuiltinConditionSource(tag))
         if tag=='SELF_LEVEL' then
             assert(source.evaluate==selfLevelRepair.repaired and table.concat(source.parameters.evaluate,',')=='value,cache')
             source.evaluate=selfLevelRepair.original;source.parameters.evaluate={'value'}
+        end
+        if tag=='PVP' then
+            assert(source.evaluate=='\n        return Functions.cache.getCached(cache, addon.Platform.GetUnitFlagObservation, addon.Platform, value.unit, "pvp")\n    ','unexpected PVP evaluator repair')
+            source.evaluate='\n        if not Functions.cache.getCached(cache, UnitExists, value.unit) then return false end\n        return Functions.cache.getCached(cache, UnitIsPVP, value.unit)\n    '
         end
         baseline[tag]=source
     end
@@ -119,16 +123,16 @@ test('canonical and old copies share exact cache observations including longterm
     assert(old.INSTANCE.evaluate({value='none'},{})==false)
     s.exists=false;s.calls={};assert(canonical.PVP.evaluate({unit='target'},{})==false and not s.calls.pvp)
 end)
-test('raw native failures preserve the existing error boundary through NOT and groups in both copied forms',function()
+test('normalized level and PVP failures stay unavailable while other raw error boundaries remain exact',function()
     local _,a,s=fixture();copies(a);copies(a,true)
     for _,entry in ipairs({{'SELF_LEVEL','level'},{'PVP','exists'},{'PVP','pvp'},{'ZONEPVP','zone'},{'INSTANCE','instance'},{'OUTDOORS','outdoors'}}) do
         s.throw=entry[2];s.exists=true
         for _,prefix in ipairs({'','COPY_','OLD_'}) do
             a.longtermCache={};local node={type=prefix..entry[1],unit='target',operator='EQUALS',value=entry[1]=='SELF_LEVEL' and 20 or nil}
             local ok,why=pcall(a.evaluateConditionResult,a,{type='NOT',value=node})
-            if entry[1]=='SELF_LEVEL' then assert(ok and why.status=='unavailable') else assert(not ok and tostring(why):find('native '..entry[2]..' failed',1,true),entry[1]..' error boundary changed') end
+            if entry[1]=='PVP' then assert(ok and why.status=='unavailable' and why.reason=='api-error') elseif entry[1]=='SELF_LEVEL' then assert(ok and why.status=='unavailable') else assert(not ok and tostring(why):find('native '..entry[2]..' failed',1,true),entry[1]..' error boundary changed') end
             a.longtermCache={};ok,why=pcall(a.evaluateConditionResult,a,{type='AND',value={node,{type='OUTDOORS'}}})
-            if entry[1]=='SELF_LEVEL' then assert(ok and why.status=='unavailable') else assert(not ok and tostring(why):find('native '..entry[2]..' failed',1,true)) end
+            if entry[1]=='PVP' then assert(ok and why.status=='unavailable' and why.reason=='api-error') elseif entry[1]=='SELF_LEVEL' then assert(ok and why.status=='unavailable') else assert(not ok and tostring(why):find('native '..entry[2]..' failed',1,true)) end
         end
     end
 end)

@@ -2366,6 +2366,7 @@ L["Display lookup table."] = true
 L["Evaluation cache, or nil to bypass caching."] = true
 L["Exact selected unit token; the attacker remains player."] = true
 L["Exact unit token whose resource should be observed; this does not redirect player or vehicle units."] = true
+L["Exact unit token whose selected flag should be observed."] = true
 L["First table to compare."] = true
 L["Format comparison wording with named Boolean alternatives when the operator has a negative form. The primary flag marks the positive form as the primary alternative. Positive operator labels use the captured operator map; negative labels and nullable dispatch retain their live addon APIs."] = true
 L["Fresh readable record with active, optional name, remainingSeconds and interruptible. Remaining time is in seconds and is clamped to zero. An unavailable optional field has its own reason; it does not invalidate a readable active name."] = true
@@ -2403,10 +2404,12 @@ L["Observe a readable raw unit level on known clients. A readable absent unit re
 L["Observe a unit casting or channeling on supported readable clients. A readable inactive result returns active=false. Active records contain name and independently available remainingSeconds and interruptible fields, with remainingReason or interruptibleReason when an optional field is unavailable. Missing, failed or restricted observations return nil with a reason."] = true
 L["Observe explicit mana or the current raw power resource on supported readable clients. Select resource identities from the live PowerType enum; explicit mana never falls back to the current bar. Known absence returns exists=false; missing, failed, restricted or malformed observations return nil with a reason. Current-mode quantities preserve signed native resources; explicit mana is nonnegative. Request maximum only when needed; percentage consumers must require a positive maximum."] = true
 L["Observe glyph sockets on verified Wrath, Cata and Mists client layouts. Returns slots and a complete flag. Each slot has active=false when known locked or empty, active=true plus spellID when occupied, or nil active plus reason when unavailable. Unknown layouts and failed count queries return nil with a reason. This does not compare item names or prove exact item-to-spell identity."] = true
+L["Observe one current unit flag: combat uses UnitAffectingCombat, enemy uses UnitIsEnemy with player as the first unit, and pvp uses UnitIsPVP. A readable absent unit returns false without querying the flag. Required missing, failed, restricted or malformed observations return nil with a reason. This preserves the exact selected unit and does not infer friendliness, attackability or other unit states."] = true
 L["Observe readable current health and optionally maximum health on supported clients. A readable absent unit returns exists=false. Missing, failed, restricted or malformed observations return nil with a reason; they do not establish an absent unit or a health value."] = true
 L["Observe the player current movement speed on supported readable clients. This queries GetUnitSpeed for player only, without testing another unit or redirecting vehicle ownership. Zero means stationary; positive finite fractional speeds remain valid. Missing, failed, restricted or malformed observations return nil with a reason."] = true
 L["Observe whether the player can attack a selected unit that is not dead, using the exact UnitExists, UnitCanAttack and UnitIsDead predicates. Known absence or a readable false attack result returns false without querying death. Required missing, failed, restricted or malformed observations return nil with a reason. This does not test ghosts, range, hostility or ability usability, and does not redirect unit ownership."] = true
 L["Observed membership, or nil when unavailable."] = true
+L["One of combat, enemy or pvp; other flag kinds are not supported."] = true
 L["Optional collection of key values selecting entries; its own keys are ignored."] = true
 L["Optional ordering callback called as order(t, leftKey, rightKey)."] = true
 L["Optional positive class ID; nil queries the current player class under protection."] = true
@@ -2416,6 +2419,7 @@ L["Packaged helper from Conditions/spatial.lua."] = true
 L["Packaged helper from utils.lua."] = true
 L["Policy or availability reason for a nil movement observation."] = true
 L["Policy, query-validation or availability reason for a nil resource observation."] = true
+L["Policy, query-validation or availability reason for a nil unit flag."] = true
 L["Policy, query-validation or availability reason for nil attackability."] = true
 L["Policy, validation or availability reason for a nil health observation."] = true
 L["Policy, validation or availability reason for a nil snapshot."] = true
@@ -2440,6 +2444,7 @@ L["Readable canonical itemID/classID/subClassID record when the item is a glyph 
 L["Readable charge record, or nil when unavailable."] = true
 L["Readable cooldown record, or nil when unavailable."] = true
 L["Readable interval with optional minimum and maximum bounds in yards. At least one bound is present; nil when unavailable."] = true
+L["Readable selected flag, false for a known absent unit, or nil when a required observation is unavailable."] = true
 L["Reference input kind, such as Spec_EditBox, used for spell suggestions."] = true
 L["Remove entries in place, preserving only keys listed among except values by default. With invert true, remove listed keys and retain unlisted keys. Without an exception list, the default removes every entry and invert true retains every entry. Nil input does nothing."] = true
 L["Remove leading and trailing Lua-pattern whitespace from a string."] = true

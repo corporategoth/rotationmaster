@@ -402,7 +402,7 @@ test('builtin conditions share the inline source pane without allowing source ed
     a.db.profile.condition_groups={};a.db.profile.disabled_conditions={};a.db.profile.switch_conditions={};a.db.profile.other_conditions_order={}
     a.listConditions=function() return {'COMBAT'} end
     local host=f.env.CreateFrame('Frame');host:SetSize(1000,700);local p=a:OpenNativeSettings(host,'Conditions')
-    local d=assert(p.inlineCondition,'builtin source pane missing');assert(d.readOnly and d.code:GetText():find('UnitAffectingCombat',1,true));assert(not d.code.edit:IsEnabled(),'readonly input still accepts keys');assert(not d.code:GetText():match('^%s'),'shared leading indentation remains');assert(d:PendingSource().evaluate==a:GetBuiltinConditionSource('COMBAT').evaluate,'view formatting changed authored source')
+    local d=assert(p.inlineCondition,'builtin source pane missing');assert(d.readOnly and d.code:GetText():find('GetUnitFlagObservation',1,true) and d.code:GetText():find('"combat"',1,true));assert(not d.code.edit:IsEnabled(),'readonly input still accepts keys');assert(not d.code:GetText():match('^%s'),'shared leading indentation remains');assert(d:PendingSource().evaluate==a:GetBuiltinConditionSource('COMBAT').evaluate,'view formatting changed authored source')
     assert(not d.form.fields.description:IsEnabled() and not d.form.fields.icon:IsEnabled() and not d.form.fields.definition_enabled:IsShown())
     local original=d.code:GetText();d.code.edit:SetText('return false');d.code.edit.scripts.OnTextChanged(d.code.edit,true);assert(d.code:GetText()==original,'readonly source accepted input')
     assert(not d.form.fields.schemaGraph:IsEnabled() and not d:IsDirty())

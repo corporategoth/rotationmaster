@@ -60,7 +60,7 @@ test('public observer source clones preserve the native boundary and actual help
     assert(a:ResolveFunctionBinding(id)==a.Platform.GetPlayerMovementObservation and a.builtinSourceModules['Platform/player_movement.lua']('Platform_GetPlayerMovementObservation')==a.Platform.GetPlayerMovementObservation)
 end)
 test('only the explicit MOVING evaluator changes while all original module bytes and private values retain their identities',function()
-    local f,a=fixture();local file=assert(io.open('Conditions/combat.lua'));local source=file:read('*a');file:close()
+    local f,a=fixture();local file=assert(io.open('Conditions/combat.lua'));local source=file:read('*a');file:close();source=dofile('tests/fixtures/restore_unit_flag_repairs.lua')(source)
     local start=assert(source:find(repairedBody,1,true),'repaired MOVING body missing');assert(not source:find(repairedBody,start+1,true),'movement repair changed multiple bodies')
     source=source:sub(1,start-1)..originalBody..source:sub(start+#repairedBody)
     -- The separate attackability suite pins its whole-file inverse against the

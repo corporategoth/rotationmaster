@@ -303,8 +303,8 @@ Unknown data stays unknown beneath NOT, groups and branch guards. Built In,
 editable condition copies and the public helper use the same implementation;
 saved raw Lua keeps its historical semantics. Other combat callbacks,
 including the movement repair, and original private identities remain exact.
-Raw COMBAT queries and the normalized attackability query retain separate
-cache owners; repeated copies of each share their respective observations.
+Normalized combat-flag and attackability queries retain separate cache
+owners; repeated copies of each share their respective observations.
 
 Current Blizzard-generated API declarations establish non-nil Boolean
 existence and attack results across the reviewed product branches. The
@@ -315,3 +315,32 @@ and treats nil as unavailable. This explicit boundary and the headless tests
 do not certify native return conventions on every supported build. Any
 verified version-specific normalization belongs at this boundary rather than
 in the generic Boolean condition engine.
+
+
+## Shared combat, hostility and PvP flag boundary
+
+`Platform:GetUnitFlagObservation(unit, kind)` supports exactly `combat`,
+`enemy` and `pvp`. These retain `UnitAffectingCombat(unit)`,
+`UnitIsEnemy("player", unit)` and `UnitIsPVP(unit)` respectively. A known absent
+unit returns false before the selected flag API is required. Present units
+require readable Boolean existence and flag observations. Required missing,
+failed, restricted, nil or malformed data returns `nil, reason`; other kinds
+are rejected before any native query. Unsupported combat data policies do not
+query units. Hostility does not imply attackability or friendliness.
+
+COMBAT, ENEMY and PVP now cache the complete result/reason tuple using the
+exact unit and kind within one evaluation pass. False and unavailable tuples
+stay distinct, copies share their observation, different kinds or units do
+not share results, and subsequent passes can recover without a longterm cache.
+Other callbacks, metadata, private identities and saved raw source remain
+unchanged. The inverse proofs restore only the three exact approved bodies
+and compare both complete modules with checkpoint `6b046b1`; earlier movement
+and attackability proofs retain their original hashes.
+
+Current primary declarations establish non-nil Boolean hostility and PvP
+flags across the reviewed branches. Classic generated documents omit
+`UnitAffectingCombat`, just as they omit `UnitIsDead`; they do not declare a
+nil false result. The conservative Boolean model and external corroboration
+remain explicit offline assumptions pending native client acceptance. This
+adapter does not establish a general rule for metadata functions such as
+`UnitClass` or zone PvP metadata, which have documented optional results.

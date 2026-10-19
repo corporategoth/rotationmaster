@@ -103,8 +103,8 @@ test('remaining fifty-four direct calls qualify actual owning leaves with no ext
         end
         for name in pairs(owners) do
             local expectedCount=record.allcounts[name] or 0
-            -- ATTACKABLE now caches one complete observation instead of three raw facts.
-            if module=='combat' and name=='getCached' then expectedCount=expectedCount-2 end
+            -- Normalized ATTACKABLE saves two raw queries; COMBAT/ENEMY each save one.
+            if module=='combat' and name=='getCached' then expectedCount=expectedCount-4 end
             assert((totals[name] or 0)==expectedCount,module..' '..name..' count changed')
         end
     end
@@ -118,6 +118,12 @@ test('every callback byte and parameter remains identical after reversing only n
         if tag=='ECS_STAT' or tag=='ECS_STAT_PCT' then
             source.on_register=source.on_register:gsub('ecs_state%.data%.GetStatInfo%(name%)','ecs_state.data:GetStatInfo(name)')
             source.evaluate=source.evaluate:gsub('ecs_state%.data%.GetStatInfo, value%.stat','ecs_state.data.GetStatInfo, ecs_state.data, value.stat')
+        end
+        if tag=='COMBAT' or tag=='ENEMY' then
+            local kind=tag=='COMBAT' and 'combat' or 'enemy'
+            assert(source.evaluate=='\n        return addon.getCached(cache, addon.Platform.GetUnitFlagObservation, addon.Platform, value.unit, "'..kind..'")\n    ','unexpected unit flag evaluator repair')
+            local arguments=tag=='COMBAT' and 'UnitAffectingCombat, value.unit' or 'UnitIsEnemy, "player", value.unit'
+            source.evaluate='\n        if not addon.getCached(cache, UnitExists, value.unit) then return false end\n        return addon.getCached(cache, '..arguments..')\n    '
         end
         -- The movement readiness suite separately pins this sole semantic body
         -- repair and reverses it against the entire original combat module.

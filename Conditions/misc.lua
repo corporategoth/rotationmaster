@@ -63,8 +63,7 @@ addon:RegisterCondition("PVP", {
         return value.unit ~= nil and Functions.values.isin(addon.units, value.unit)
     end,
     evaluate = function(value, cache)
-        if not Functions.cache.getCached(cache, UnitExists, value.unit) then return false end
-        return Functions.cache.getCached(cache, UnitIsPVP, value.unit)
+        return Functions.cache.getCached(cache, addon.Platform.GetUnitFlagObservation, addon.Platform, value.unit, "pvp")
     end,
     print = function(_, value)
         return string.format(Functions.presentation.playerize(value.unit, L["%s {{!are|are not}} PVP flagged"], L["%s {{!is|is not}} PVP flagged"]),

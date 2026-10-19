@@ -32,8 +32,7 @@ addon:RegisterCondition("COMBAT", {
         return value.unit ~= nil and Functions.values.isin(addon.units, value.unit);
     end,
     evaluate = function(value, cache)
-        if not Functions.cache.getCached(cache, UnitExists, value.unit) then return false end
-        return Functions.cache.getCached(cache, UnitAffectingCombat, value.unit)
+        return Functions.cache.getCached(cache, addon.Platform.GetUnitFlagObservation, addon.Platform, value.unit, "combat")
     end,
     print = function(_, value)
         return string.format(Functions.presentation.playerize(value.unit, L["%s {{!are|are not}} in combat"], L["%s {{!is|is not}} in combat"]),
@@ -537,8 +536,7 @@ addon:RegisterCondition("ENEMY", {
         return value.unit ~= nil and Functions.values.isin(addon.units, value.unit);
     end,
     evaluate = function(value, cache)
-        if not Functions.cache.getCached(cache, UnitExists, value.unit) then return false end
-        return Functions.cache.getCached(cache, UnitIsEnemy, "player", value.unit)
+        return Functions.cache.getCached(cache, addon.Platform.GetUnitFlagObservation, addon.Platform, value.unit, "enemy")
     end,
     print = function(_, value)
         return string.format(L["%s {{!is|is not}} an enemy"], Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]))
