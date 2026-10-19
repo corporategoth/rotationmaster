@@ -33,6 +33,46 @@ local function legacySource(a,source)
     for alias in pairs(old.bindings) do if alias:match('^Functions%.') then old.bindings[alias]=nil end end
     return old
 end
+-- Only these two observations intentionally changed in the readiness repair.
+-- Restore their exact historical source solely for the existing whole-corpus byte pin.
+local originalHealthEvaluates={
+    HEALTH="\n"..[=[
+        if not addon.getCached(cache, UnitExists, value.unit) then return false end
+        local cur = addon.getCached(cache, UnitHealth, value.unit)
+        if value.value < 0 then
+            local max = addon.getCached(cache, UnitHealthMax, value.unit)
+            return addon.compare(value.operator, (max-cur), -value.value)
+        else
+            return addon.compare(value.operator, cur, value.value)
+        end
+    ]=],
+    HEALTHPCT="\n"..[=[
+        if not addon.getCached(cache, UnitExists, value.unit) then return false end
+        local health = addon.getCached(cache, UnitHealth, value.unit) / addon.getCached(cache, UnitHealthMax, value.unit) * 100;
+        return addon.compare(value.operator, health, value.value * 100)
+    ]=],
+}
+local repairedHealthEvaluates={
+    HEALTH="\n"..[=[
+        local record,reason=Functions.cache.getCached(cache,addon.Platform.GetUnitHealthObservation,addon.Platform,value.unit,value.value<0)
+        if not record then return nil,reason end
+        if not record.exists then return false end
+        if value.value < 0 then
+            return Functions.values.compare(value.operator, (record.maximum-record.current), -value.value)
+        else
+            return Functions.values.compare(value.operator, record.current, value.value)
+        end
+    ]=],
+    HEALTHPCT="\n"..[=[
+        local record,reason=Functions.cache.getCached(cache,addon.Platform.GetUnitHealthObservation,addon.Platform,value.unit,true)
+        if not record then return nil,reason end
+        if not record.exists then return false end
+        if record.maximum<=0 then return nil,"invalid-health-maximum" end
+        local health = record.current / record.maximum * 100
+        if health~=health or health==math.huge or health==-math.huge then return nil,"invalid-health-percentage" end
+        return Functions.values.compare(value.operator, health, value.value * 100)
+    ]=],
+}
 local function copies(a)
     local current,old={},{}
     for _,tag in ipairs(tags) do if a.conditionDefinitions[tag] then
@@ -60,7 +100,7 @@ local function unavailable(a,value)
     assert(a:EvaluateRotationSequence(body,function(v) return a:evaluateConditionResult(v) end,function() error('unavailable statistic selected a branch') end).status=='unavailable')
 end
 
-test('eleven statistics declarations qualify exactly118 calls in33 callbacks through five owned leaves',function()
+test('eleven statistics declarations qualify exactly114 calls in33 callbacks through five owned leaves',function()
     local f,a=fixture();local manifest=assert(a.builtinCallbackBindings and a.builtinCallbackBindings['Conditions/stats.lua'],'statistics canonical bindings missing');local leaves=0
     for alias,id in pairs(manifest) do local name=alias:match('([%w_]+)$');leaves=leaves+1;assert(alias==path(name) and id=='builtin:utils.lua:'..name and a:ResolveFunctionBinding(id)==a.Functions[owners[name]][name]) end;assert(leaves==5)
     local totals={isin=0,compare=0,getCached=0,nullable=0,compareString=0};local callbacks=0
@@ -69,11 +109,15 @@ test('eleven statistics declarations qualify exactly118 calls in33 callbacks thr
             local _,n=source[callback]:gsub(path(name):gsub('%.','%%.')..'%(','');totals[name]=totals[name]+n;assert(not source[callback]:find('addon.'..name..'(',1,true))
         end end
     end
-    assert(callbacks==33 and totals.isin==22 and totals.compare==17 and totals.getCached==37 and totals.nullable==27 and totals.compareString==15 and not f.env.Functions)
+    assert(callbacks==33 and totals.isin==22 and totals.compare==17 and totals.getCached==33 and totals.nullable==27 and totals.compareString==15 and not f.env.Functions)
 end)
 test('legacy-shaped full sources retain every original native expression field Help body parameter and private capture hash',function()
     local _,a=fixture();local baseline={};for _,tag in ipairs(tags) do
         baseline[tag]=legacySource(a,assert(a:GetBuiltinConditionSource(tag)))
+        if originalHealthEvaluates[tag] then
+            assert(a:GetBuiltinConditionSource(tag).evaluate==repairedHealthEvaluates[tag],tag.." changed beyond the explicit health repair")
+            baseline[tag].evaluate=originalHealthEvaluates[tag]
+        end
         baseline[tag].icon='Interface\\AddOns\\rotationmaster\\Assets\\Conditions\\'..(tag=='RUNE_COOLDOWN' and 'time' or 'resources')
     end
     assert(a:FunctionSourceHash(baseline)=='2f0261d2','source changed beyond the selected call substitutions')
@@ -125,12 +169,12 @@ test('player class remains longterm-cached while target class and current power 
     sameRun(a,a.conditionDefinitions.POWER,current.POWER,old.POWER,value,{});assert(s.calls.powerType==reads+1)
 end)
 test('known missing units or power identities remain invertible while native errors and invalid arithmetic stay unavailable',function()
-    for _,mode in ipairs({'nil-health','nil-maximum','throw-health','missing-api','opaque-health'}) do local f,a,s=fixture();copies(a)
+    for _,mode in ipairs({'nil-health','nil-maximum','throw-health','missing-api','opaque-health','nil-exists'}) do local f,a,s=fixture();copies(a)
         local opaque={};f.env.canaccessvalue=function(value) return not rawequal(value,opaque) end
-        local tag='HEALTH';if mode=='nil-health' then s.health=nil elseif mode=='nil-maximum' then s.maximum=nil;tag='HEALTHPCT' elseif mode=='throw-health' then s.throw='health' elseif mode=='missing-api' then f.env.UnitHealth=nil else s.health=opaque end
+        local tag='HEALTH';if mode=='nil-exists' then s.exists=nil elseif mode=='nil-health' then s.health=nil elseif mode=='nil-maximum' then s.maximum=nil;tag='HEALTHPCT' elseif mode=='throw-health' then s.throw='health' elseif mode=='missing-api' then f.env.UnitHealth=nil else s.health=opaque end
         for _,prefix in ipairs({'','COPY_','LEGACY_'}) do local value=node(tag);value.type=prefix..tag;unavailable(a,value) end
     end
-    for _,mode in ipairs({'nil-exists','false-exists','nil-power-type','nil-class'}) do local _,a,s=fixture();copies(a)
+    for _,mode in ipairs({'false-exists','nil-power-type','nil-class'}) do local _,a,s=fixture();copies(a)
         if mode=='nil-exists' then s.exists=nil elseif mode=='false-exists' then s.exists=false elseif mode=='nil-power-type' then s.powerType=nil else s.class=nil end
         local tag=mode=='nil-power-type' and 'POWER' or mode=='nil-class' and 'POINT' or 'HEALTH'
         for _,prefix in ipairs({'','COPY_','LEGACY_'}) do local value=node(tag);value.type=prefix..tag;assert(a:evaluateConditionResult(value).status=='no-match' and a:evaluateConditionResult({type='NOT',value=value}).status=='match') end

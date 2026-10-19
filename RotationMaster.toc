@@ -28,6 +28,7 @@ globals.lua
 Platform/client.lua
 Platform/groups.lua
 Platform/casting.lua
+Platform/unit_health.lua
 Platform/specializations.lua
 Platform/talents.lua
 Platform/spells.lua

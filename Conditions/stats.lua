@@ -30,13 +30,13 @@ addon:RegisterCondition("HEALTH", {
                 value.value ~= nil)
     end,
     evaluate = function(value, cache)
-        if not Functions.cache.getCached(cache, UnitExists, value.unit) then return false end
-        local cur = Functions.cache.getCached(cache, UnitHealth, value.unit)
+        local record,reason=Functions.cache.getCached(cache,addon.Platform.GetUnitHealthObservation,addon.Platform,value.unit,value.value<0)
+        if not record then return nil,reason end
+        if not record.exists then return false end
         if value.value < 0 then
-            local max = Functions.cache.getCached(cache, UnitHealthMax, value.unit)
-            return Functions.values.compare(value.operator, (max-cur), -value.value)
+            return Functions.values.compare(value.operator, (record.maximum-record.current), -value.value)
         else
-            return Functions.values.compare(value.operator, cur, value.value)
+            return Functions.values.compare(value.operator, record.current, value.value)
         end
     end,
     print = function(_, value)
@@ -78,8 +78,12 @@ addon:RegisterCondition("HEALTHPCT", {
                 value.value ~= nil and value.value >= 0.00 and value.value <= 1.00)
     end,
     evaluate = function(value, cache)
-        if not Functions.cache.getCached(cache, UnitExists, value.unit) then return false end
-        local health = Functions.cache.getCached(cache, UnitHealth, value.unit) / Functions.cache.getCached(cache, UnitHealthMax, value.unit) * 100;
+        local record,reason=Functions.cache.getCached(cache,addon.Platform.GetUnitHealthObservation,addon.Platform,value.unit,true)
+        if not record then return nil,reason end
+        if not record.exists then return false end
+        if record.maximum<=0 then return nil,"invalid-health-maximum" end
+        local health = record.current / record.maximum * 100
+        if health~=health or health==math.huge or health==-math.huge then return nil,"invalid-health-percentage" end
         return Functions.values.compare(value.operator, health, value.value * 100)
     end,
     print = function(_, value)
