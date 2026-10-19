@@ -9,7 +9,7 @@ local expected={
     MOVING={evaluate={getCached=1}},THREAT={valid={isin=1},evaluate={getCached=3},print={nullable=2}},
     THREAT_COUNT={valid={isin=1},evaluate={compare=1},print={compareString=1,nullable=2}},
     FORM={evaluate={getCached=1},print={nullable=1}},
-    ATTACKABLE={valid={isin=1},evaluate={getCached=3},print={nullable=1}},
+    ATTACKABLE={valid={isin=1},evaluate={getCached=1},print={nullable=1}},
     ENEMY={valid={isin=1},evaluate={getCached=2},print={nullable=1}},
     COMBAT_HISTORY={valid={isin=3},evaluate={compare=1},print={compareString=1,playerize=1,nullable=3}},
     COMBAT_HISTORY_TIME={valid={isin=3},evaluate={compare=1},print={compareString=1,playerize=1,nullable=3}},
@@ -96,7 +96,7 @@ test('combat callbacks select eight explicit canonical leaves with exact call co
             for name in pairs(groups) do assert(source.bindings[qualified(name)]==id(name),'canonical source binding missing') end
         end
     end
-    assert(calls==71 and callbacks==38)
+    assert(calls==69 and callbacks==38)
     for name,hash in pairs(valueHashes) do
         local binding='builtin:Conditions/combat.lua:'..name;local record=assert(a.builtinFunctions[binding]);assert(record.valueBinding and a:FunctionSourceHash(record.source)==hash,'historical value metadata changed')
         assert(rawequal(a:ResolveFunctionBinding(binding),a.builtinSourceModules['Conditions/combat.lua'](name)))
@@ -141,7 +141,7 @@ end)
 test('built-ins and actual public source clones share native cache observations and refresh on the next evaluation',function()
     local _,a,state=fixture();registerCopies(a);state.calls={}
     assert(a:evaluateCondition({type='AND',value={{type='COMBAT',unit='target'},{type='COPY_COMBAT',unit='target'},{type='ATTACKABLE',unit='target'},{type='COPY_ATTACKABLE',unit='target'}}}))
-    assert(state.calls.exists==1 and state.calls.combat==1 and state.calls.attack==1 and state.calls.dead==1,'namespace clone split native cache observations')
+    assert(state.calls.exists==2 and state.calls.combat==1 and state.calls.attack==1 and state.calls.dead==1,'namespace clone split raw combat or normalized attackability observations')
     state.combat=false;assert(a:evaluateConditionResult({type='COPY_COMBAT',unit='target'}).status=='no-match' and state.calls.combat==2)
 end)
 test('native callback failures retain diagnostic unavailability and arbitrary saved source retains addon helper APIs',function()

@@ -510,9 +510,7 @@ addon:RegisterCondition("ATTACKABLE", {
         return value.unit ~= nil and Functions.values.isin(addon.units, value.unit);
     end,
     evaluate = function(value, cache)
-        if not Functions.cache.getCached(cache, UnitExists, value.unit) then return false end
-        return Functions.cache.getCached(cache, UnitCanAttack, "player", value.unit) and
-               not Functions.cache.getCached(cache, UnitIsDead, value.unit)
+        return Functions.cache.getCached(cache, addon.Platform.GetUnitAttackabilityObservation, addon.Platform, value.unit)
     end,
     print = function(_, value)
         return string.format(L["%s {{!is|is not}} attackable"], Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]))

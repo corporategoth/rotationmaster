@@ -2364,6 +2364,7 @@ L["Dense array of nonempty text fields."] = true
 L["Destination array modified in place."] = true
 L["Display lookup table."] = true
 L["Evaluation cache, or nil to bypass caching."] = true
+L["Exact selected unit token; the attacker remains player."] = true
 L["Exact unit token whose resource should be observed; this does not redirect player or vehicle units."] = true
 L["First table to compare."] = true
 L["Format comparison wording with named Boolean alternatives when the operator has a negative form. The primary flag marks the positive form as the primary alternative. Positive operator labels use the captured operator map; negative labels and nullable dispatch retain their live addon APIs."] = true
@@ -2404,6 +2405,7 @@ L["Observe explicit mana or the current raw power resource on supported readable
 L["Observe glyph sockets on verified Wrath, Cata and Mists client layouts. Returns slots and a complete flag. Each slot has active=false when known locked or empty, active=true plus spellID when occupied, or nil active plus reason when unavailable. Unknown layouts and failed count queries return nil with a reason. This does not compare item names or prove exact item-to-spell identity."] = true
 L["Observe readable current health and optionally maximum health on supported clients. A readable absent unit returns exists=false. Missing, failed, restricted or malformed observations return nil with a reason; they do not establish an absent unit or a health value."] = true
 L["Observe the player current movement speed on supported readable clients. This queries GetUnitSpeed for player only, without testing another unit or redirecting vehicle ownership. Zero means stationary; positive finite fractional speeds remain valid. Missing, failed, restricted or malformed observations return nil with a reason."] = true
+L["Observe whether the player can attack a selected unit that is not dead, using the exact UnitExists, UnitCanAttack and UnitIsDead predicates. Known absence or a readable false attack result returns false without querying death. Required missing, failed, restricted or malformed observations return nil with a reason. This does not test ghosts, range, hostility or ability usability, and does not redirect unit ownership."] = true
 L["Observed membership, or nil when unavailable."] = true
 L["Optional collection of key values selecting entries; its own keys are ignored."] = true
 L["Optional ordering callback called as order(t, leftKey, rightKey)."] = true
@@ -2414,6 +2416,7 @@ L["Packaged helper from Conditions/spatial.lua."] = true
 L["Packaged helper from utils.lua."] = true
 L["Policy or availability reason for a nil movement observation."] = true
 L["Policy, query-validation or availability reason for a nil resource observation."] = true
+L["Policy, query-validation or availability reason for nil attackability."] = true
 L["Policy, validation or availability reason for a nil health observation."] = true
 L["Policy, validation or availability reason for a nil snapshot."] = true
 L["Positive integer glyph item ID stored by the condition; arrays, item-set keys and spell IDs are not item references."] = true
@@ -2485,6 +2488,7 @@ L["Transient typed predicate used as a named phrase value; do not persist it as 
 L["Trimmed text."] = true
 L["True also observes maximum health; false or nil reads current health only."] = true
 L["True also observes the selected resource maximum; false or nil reads current quantity only."] = true
+L["True for a readable attackable non-dead unit, false for a conclusive negative result, or nil when a required observation is unavailable."] = true
 L["True includes only listed entries; false or nil excludes listed entries."] = true
 L["True marks the main comparison to negate; false or nil leaves it eligible only when no primary predicate exists."] = true
 L["True removes listed entries; false or nil preserves only listed entries."] = true

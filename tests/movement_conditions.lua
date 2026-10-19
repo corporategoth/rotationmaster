@@ -62,7 +62,15 @@ end)
 test('only the explicit MOVING evaluator changes while all original module bytes and private values retain their identities',function()
     local f,a=fixture();local file=assert(io.open('Conditions/combat.lua'));local source=file:read('*a');file:close()
     local start=assert(source:find(repairedBody,1,true),'repaired MOVING body missing');assert(not source:find(repairedBody,start+1,true),'movement repair changed multiple bodies')
-    source=source:sub(1,start-1)..originalBody..source:sub(start+#repairedBody);assert(a:FunctionSourceHash(source)=='2d740cba','combat module changed beyond the explicit movement repair')
+    source=source:sub(1,start-1)..originalBody..source:sub(start+#repairedBody)
+    -- The separate attackability suite pins its whole-file inverse against the
+    -- movement checkpoint. Restore only that exact approved evaluator here.
+    local attackBody='\n        return Functions.cache.getCached(cache, addon.Platform.GetUnitAttackabilityObservation, addon.Platform, value.unit)\n    '
+    local attackStart=assert(source:find(attackBody,1,true),'approved ATTACKABLE repair missing')
+    assert(not source:find(attackBody,attackStart+1,true),'attackability repair changed multiple bodies')
+    local rawAttack='\n        if not Functions.cache.getCached(cache, UnitExists, value.unit) then return false end\n        return Functions.cache.getCached(cache, UnitCanAttack, "player", value.unit) and\n               not Functions.cache.getCached(cache, UnitIsDead, value.unit)\n    '
+    source=source:sub(1,attackStart-1)..rawAttack..source:sub(attackStart+#attackBody)
+    assert(a:FunctionSourceHash(source)=='2d740cba','combat module changed beyond the approved movement and attackability repairs')
     for name,hash in pairs({color='dbda383d',character_class='d17cf4c1',AceGUI='a287fe2d',helpers='9e28e933'}) do local id='builtin:Conditions/combat.lua:'..name;assert(a:FunctionSourceHash(a.builtinFunctions[id].source)==hash and a:ResolveFunctionBinding(id)==a.builtinSourceModules['Conditions/combat.lua'](name)) end
     assert(a:ResolveFunctionBinding('builtin:Conditions/combat.lua:AceGUI')==f.libraries['AceGUI-3.0'])
 end)

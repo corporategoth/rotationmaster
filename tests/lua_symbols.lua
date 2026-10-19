@@ -140,13 +140,22 @@ end)
 test('actual Attackable and AnySpell Available sources document every cited public reference',function()
  local f,a=fixture();f.load('Data/builtin_sources.lua');f.load('Core/builtin_sources.lua');f.load('Conditions/common.lua');f.load('Platform/spells.lua');f.load('Platform/actions.lua');f.load('Conditions/combat.lua');f.load('Conditions/anyspell.lua')
  local engine=documentationEngine(f);for _,name in ipairs({'UnitExists','UnitCanAttack','UnitIsDead'}) do f.env[name]=function() error('hover must not execute') end end
- for _,case in ipairs({{'ATTACKABLE','evaluate',{'UnitExists','UnitCanAttack','UnitIsDead','Functions.cache.getCached'}},{'ATTACKABLE','valid',{'addon.units'}},{'ANYSPELL_AVAIL','evaluate',{'addon:Widget_GetSpellId','addon.Platform.IsSpellReady','addon.Platform'}}}) do
+ for _,case in ipairs({{'ATTACKABLE','evaluate',{'addon.Platform.GetUnitAttackabilityObservation','addon.Platform','Functions.cache.getCached'}},{'ATTACKABLE','valid',{'addon.units'}},{'ANYSPELL_AVAIL','evaluate',{'addon:Widget_GetSpellId','addon.Platform.IsSpellReady','addon.Platform'}}}) do
   local source=assert(a:GetBuiltinConditionSource(case[1]));a:ApplyLuaContextSymbols(engine,{kind='condition',id=case[1],callback=case[2],source=source},false)
   local paths=engine.APIHelp:Paths(source[case[2]],true)
   for _,name in ipairs(case[3]) do
    local found=false;for _,path in pairs(paths) do if path==name then found=true end end
    assert(found,case[1]..' '..case[2]..' lacks '..name);local text=engine.APIHelp:FullDescription(name);assert(text and text:find('%S'),name..' has no readable documentation')
   end
+ end
+ local id='builtin:Platform/unit_attackability.lua:Platform_GetUnitAttackabilityObservation'
+ local helper=assert(a.builtinFunctions[id]).source
+ a:ApplyLuaContextSymbols(engine,{kind='function',id=id,source=helper},false)
+ local paths=engine.APIHelp:Paths(helper.code,true)
+ for _,name in ipairs({'UnitExists','UnitCanAttack','UnitIsDead'}) do
+  local found=false;for _,path in pairs(paths) do if path==name then found=true end end
+  assert(found,'owned attackability observer lacks '..name)
+  local text=engine.APIHelp:FullDescription(name);assert(text and text:find('%S'),name..' has no readable documentation in its actual owner')
  end
 end)
 finish()

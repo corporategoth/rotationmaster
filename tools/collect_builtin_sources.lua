@@ -147,7 +147,7 @@ capture=function(module,fn,captureBindings,ownedCapture)
 end
 for _,case in ipairs(inventory.branches) do
     local f=F.new(unpack(case[1]));f.addon.delayed_condition={};publicIdentities={};currentAddon=f.addon;ownedCacheSeen={};ownedConditionValues={}
-    f.load('Platform/spells.lua');f.load('Platform/actions.lua');f.load('Platform/range.lua');f.load('Platform/unit_health.lua');f.load('Platform/unit_level.lua');f.load('Platform/unit_power.lua');f.load('Platform/player_movement.lua')
+    f.load('Platform/spells.lua');f.load('Platform/actions.lua');f.load('Platform/range.lua');f.load('Platform/unit_health.lua');f.load('Platform/unit_level.lua');f.load('Platform/unit_power.lua');f.load('Platform/player_movement.lua');f.load('Platform/unit_attackability.lua')
     if case[3] then f.env.MI2_GetMobData=function() end end
     for path in io.lines('RotationMaster.toc') do if path:match('^Conditions/') then
         f.load(path)

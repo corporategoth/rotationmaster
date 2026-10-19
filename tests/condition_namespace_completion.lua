@@ -101,7 +101,12 @@ test('remaining fifty-four direct calls qualify actual owning leaves with no ext
                 totals[name]=(totals[name] or 0)+count(source[callback],path(name):gsub('%.','%%.')..'%(')
             end end end
         end
-        for name in pairs(owners) do assert((totals[name] or 0)==(record.allcounts[name] or 0),module..' '..name..' count changed') end
+        for name in pairs(owners) do
+            local expectedCount=record.allcounts[name] or 0
+            -- ATTACKABLE now caches one complete observation instead of three raw facts.
+            if module=='combat' and name=='getCached' then expectedCount=expectedCount-2 end
+            assert((totals[name] or 0)==expectedCount,module..' '..name..' count changed')
+        end
     end
     assert(changed==54 and not f.env.Functions)
 end)
@@ -119,6 +124,10 @@ test('every callback byte and parameter remains identical after reversing only n
         if tag=='MOVING' then
             assert(source.evaluate=='\n        local record,reason=addon.getCached(cache,addon.Platform.GetPlayerMovementObservation,addon.Platform)\n        if not record then return nil,reason end\n        return record.speed~=0\n    ','unexpected MOVING evaluator repair')
             source.evaluate='\n        return (addon.getCached(cache, GetUnitSpeed, "player") ~= 0)\n    '
+        end
+        if tag=='ATTACKABLE' then
+            assert(source.evaluate=='\n        return addon.getCached(cache, addon.Platform.GetUnitAttackabilityObservation, addon.Platform, value.unit)\n    ','unexpected ATTACKABLE evaluator repair')
+            source.evaluate='\n        if not addon.getCached(cache, UnitExists, value.unit) then return false end\n        return addon.getCached(cache, UnitCanAttack, "player", value.unit) and\n               not addon.getCached(cache, UnitIsDead, value.unit)\n    '
         end
         for _,callback in ipairs(callbacks) do if source.parameters[callback] then parts[#parts+1]=callback;parts[#parts+1]=table.concat(source.parameters[callback],',');parts[#parts+1]=source[callback] end end
         local code=table.concat(parts,'\0');local first,second=1,0;for i=1,#code do first=(first+code:byte(i))%65521;second=(second+first)%65521 end
