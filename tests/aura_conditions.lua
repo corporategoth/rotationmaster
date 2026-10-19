@@ -27,6 +27,15 @@ test('healer maintenance checks the requested unit, caster and charges',function
     assert(f.addon:evaluateCondition(value('BUFF_STACKS',{ownbuff=true})))
     assert(not f.addon:evaluateCondition(value('BUFF_STACKS',{ownbuff=false})))
 end)
+test('shared aura comparisons dispatch through the canonical values namespace',function()
+    local f=fixture(true);local a=f.addon;local compare=a.Functions.values.compare;local seen={}
+    buff(f,{{name='Earth Shield',spellId=974,sourceUnit='player',applications=2,duration=30,expirationTime=103}})
+    a.compare=function() error('shared aura helper used the legacy comparison alias') end
+    a.Functions.values.compare=function(operator,left,right) seen[#seen+1]=left;return compare(operator,left,right) end
+    assert(a:EvaluateAuraCondition(value('BUFF_REMAIN'),{},100,'HELPFUL','remaining'))
+    assert(a:EvaluateAuraCondition(value('BUFF_STACKS'),{},100,'HELPFUL','stacks'))
+    assert(#seen==2 and seen[1]==3 and seen[2]==2)
+end)
 test('portable spell IDs and legacy saved names both work',function()
     local f=fixture(false)
     f.env.UnitAura=function(_,index,filter)

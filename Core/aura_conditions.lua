@@ -87,12 +87,12 @@ function addon:EvaluateAuraCondition(value, cache, start, filter, mode)
             if mode == "remaining" then
                 local remaining, why = platform:AuraRemaining(aura, start or GetTime())
                 if remaining == nil then return nil, why end
-                return addon.compare(value.operator, remaining, value.value)
+                return addon.Functions.values.compare(value.operator, remaining, value.value)
             elseif mode == "stacks" then
                 local stacks, why = platform:ReadAuraField(aura, "applications")
                 if why then return nil, why end
                 if stacks == nil then return nil, "aura-stacks-unavailable" end
-                return addon.compare(value.operator, stacks, value.value)
+                return addon.Functions.values.compare(value.operator, stacks, value.value)
             end
             return true
         end
