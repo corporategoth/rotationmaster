@@ -96,77 +96,10 @@ addon.deepcopy = addon.Functions.collections.deepcopy
 
 addon.compareArray = addon.Functions.collections.compareArray
 
-local cacheHits = 0
-local cacheMisses = 0
-local nilArgument, cachedResult = {}, {}
-
-local function packResults(...)
-    return { n = select('#', ...), ... }
-end
-
-local function getCachedInternal(cache, recordnil, func, ...)
-    if type(func) == 'string' then func = _G[func] end
-    if type(func) ~= 'function' then return end
-    if cache == nil then return func(...) end
-
-    -- Exact keys preserve argument types, identity and arity. Hashing concatenated
-    -- strings allowed unrelated observations to collide, even for numeric IDs.
-    local args, count = { ... }, select('#', ...)
-    for i = 1, count do
-        local value = args[i]
-        if addon.Platform and addon.Platform.CanReadValue and not addon.Platform:CanReadValue(value) then
-            return func(...)
-        end
-        if type(value) == 'number' and value ~= value then return func(...) end
-        if value == nil then args[i] = nilArgument end
-    end
-    local node = cache[func]
-    for i = 1, count do
-        if not node then break end
-        node = node[args[i]]
-    end
-    local result = node and node[cachedResult]
-    if result then
-        cacheHits = cacheHits + 1
-        return unpack(result, 1, result.n)
-    end
-
-    cacheMisses = cacheMisses + 1
-    result = packResults(func(...))
-    local store = recordnil
-    if not store then
-        -- Inspect the packed keys, not potentially restricted return values.
-        for key in pairs(result) do
-            if type(key) == 'number' then store = true; break end
-        end
-    end
-    if store then
-        -- Retry misses and thrown calls must not accumulate empty paths.
-        if not cache[func] then cache[func] = {} end
-        node = cache[func]
-        for i = 1, count do
-            local key = args[i]
-            if not node[key] then node[key] = {} end
-            node = node[key]
-        end
-        node[cachedResult] = result
-    end
-    return unpack(result, 1, result.n)
-end
-
-addon.getCached = function(cache, func, ...)
-    return getCachedInternal(cache, true, func, ...)
-end
-
-addon.getRetryCached = function(cache, func, ...)
-    return getCachedInternal(cache, false, func, ...)
-end
-
-function addon:ReportCacheStats()
-    addon:debug(L["Cache hit rate at %.02f%%"], (cacheHits / (cacheHits + cacheMisses)) * 100)
-    cacheHits = 0
-    cacheMisses = 0
-end
+-- Compatibility APIs for saved custom source; cache owns their shared state.
+addon.getCached = addon.Functions.cache.getCached
+addon.getRetryCached = addon.Functions.cache.getRetryCached
+addon.ReportCacheStats = addon.Functions.cache.ReportCacheStats
 
 -- pass in the spec BOOKTYPE_PET ("pet") to get pet spells
 addon.isSpellOnSpec = function(spec, spellid)
@@ -494,20 +427,20 @@ end
 do
     local function sourceGetter(name)
         if name=="_G" then return _G end
-        if name=="cacheHits" then return cacheHits end
-        if name=="cacheMisses" then return cacheMisses end
-        if name=="cachedResult" then return cachedResult end
+        if name=="cacheHits" then return addon.builtinSourceModules["Functions/cache.lua"]("cacheHits") end
+        if name=="cacheMisses" then return addon.builtinSourceModules["Functions/cache.lua"]("cacheMisses") end
+        if name=="cachedResult" then return addon.builtinSourceModules["Functions/cache.lua"]("cachedResult") end
         if name=="color" then return color end
         if name=="compare" then return addon.Functions.values.compare end
         if name=="compareString" then return addon.Functions.presentation.compareString end
-        if name=="getCached" then return addon.getCached end
-        if name=="getCachedInternal" then return getCachedInternal end
-        if name=="getRetryCached" then return addon.getRetryCached end
+        if name=="getCached" then return addon.Functions.cache.getCached end
+        if name=="getCachedInternal" then return addon.builtinSourceModules["Functions/cache.lua"]("getCachedInternal") end
+        if name=="getRetryCached" then return addon.Functions.cache.getRetryCached end
         if name=="isin" then return addon.Functions.values.isin end
-        if name=="nilArgument" then return nilArgument end
+        if name=="nilArgument" then return addon.builtinSourceModules["Functions/cache.lua"]("nilArgument") end
         if name=="nullable" then return addon.Functions.presentation.nullable end
         if name=="nullable_value" then return addon.Functions.presentation.nullable_value end
-        if name=="packResults" then return packResults end
+        if name=="packResults" then return addon.builtinSourceModules["Functions/cache.lua"]("packResults") end
         if name=="playerize" then return addon.Functions.presentation.playerize end
         if name=="split" then return addon.Functions.text.split end
         if name=="string" then return string end

@@ -45,3 +45,16 @@ function addon.layout_itemsets_options_help(frame)
         frame:AddChild(CreateText((entry.title~='' and color.BLIZ_YELLOW..entry.title..color.RESET..' - ' or '')..entry.text))
     end
 end
+
+-- The native child edits one caller-owned list, not every saved item set.
+function addon:GetNativeItemListHelp()
+    return {
+        {id='popup.overview',title=L['Editing this list'],text=L['Help.ItemSets.popup.overview']},
+        {id='item',title=L['Item'],text=L['Help.ItemSets.item']},
+        {id='add',title=L['Add item'],text=L['Help.ItemSets.add']},
+        {id='order',title=L['Move Up / Move Down'],text=L['Help.ItemSets.order']},
+        {id='popup.delete',title=L['Delete'],text=L['Help.ItemSets.popup.delete']},
+        {id='history',title=L['Undo / Redo'],text=L['Help.ItemSets.history']},
+        {id='popup.save',title=L['Apply / Discard'],text=L['Help.ItemSets.popup.save']},
+    }
+end

@@ -22,6 +22,18 @@ function addon:LuaContextSymbols(context)
             end
             add(entry.callName,'functionName',entry.source.description,'function',args,entry.source.returns,id)
             if entry.callName:find(':',1,true) then add(entry.callName:gsub(':','.'),'functionName',entry.source.description,'function',entry.source.args,entry.source.returns,id) end
+            -- Saved callbacks may still invoke a direct addon alias after the
+            -- implementation moves. Keep its docs/navigation while completion
+            -- offers the canonical namespace rather than another API entry.
+            local name=entry.source.name;local fn=self:ResolveFunctionBinding(id)
+            if type(name)=='string' and name:match('^[A-Za-z_][A-Za-z_0-9]*$') and type(fn)=='function' and rawequal(self[name],fn) then
+                local receiver=entry.source.args and entry.source.args[1] and entry.source.args[1].name=='self'
+                local alias='addon'..(receiver and ':' or '.')..name
+                if alias~=entry.callName then
+                    local aliasArgs={};for index,arg in ipairs(entry.source.args or {}) do if not (receiver and index==1) then aliasArgs[#aliasArgs+1]=arg end end
+                    add(alias,'functionName',entry.source.description,'function',aliasArgs,entry.source.returns,id);symbols[alias].documentationOnly=true
+                end
+            end
         end
     end
     local arguments={}
@@ -101,7 +113,7 @@ function addon:ApplyLuaContextSymbols(engine,context,limited)
                 if catalog[name] and catalog[name].info==symbol.info then catalog[name]=self.rmBaseCatalog and self.rmBaseCatalog[name] end
             end
             self.rmBaseIndex=shallow(index);self.rmBaseCatalog=shallow(catalog)
-            for name,symbol in pairs(engine.rmSymbols or {}) do index[name]=symbol.info;catalog[name]={name=name,kind=symbol.kind=='functionName' and 'apiFunctions' or 'apiOther',info=symbol.info} end
+            for name,symbol in pairs(engine.rmSymbols or {}) do index[name]=symbol.info;if not symbol.documentationOnly then catalog[name]={name=name,kind=symbol.kind=='functionName' and 'apiFunctions' or 'apiOther',info=symbol.info} end end
             self.index,self.catalog=index,catalog;self.rmOverlaySymbols=engine.rmSymbols
             self.source,self.paths,self.text=nil,nil,{};self.revision=self.revision+1
             if engine.KnowledgeBase then engine.KnowledgeBase.entries=nil end
@@ -147,7 +159,14 @@ function addon:ApplyLuaContextSymbols(engine,context,limited)
     if not engine.Autocomplete.rmNames then
         engine.Autocomplete.rmNames=engine.Autocomplete.Names
         function engine.Autocomplete:Names()
-            local names=self:rmNames();for name,symbol in pairs(engine.rmSymbols or {}) do self.nameKinds[name]=symbol.kind end;return names
+            local names=self:rmNames()
+            if self.rmNameSource~=names or self.rmNameSymbols~=engine.rmSymbols then
+                local visible={}
+                for _,name in ipairs(names) do local symbol=engine.rmSymbols and engine.rmSymbols[name];if not symbol or not symbol.documentationOnly then visible[#visible+1]=name end end
+                for name,symbol in pairs(engine.rmSymbols or {}) do self.nameKinds[name]=not symbol.documentationOnly and symbol.kind or nil end
+                self.rmNameSource,self.rmNameSymbols,self.rmVisibleNames=names,engine.rmSymbols,visible
+            end
+            return self.rmVisibleNames
         end
     end
     if engine.Autocomplete.Accept and not engine.Autocomplete.rmAccept then

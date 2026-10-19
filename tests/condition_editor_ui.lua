@@ -285,6 +285,31 @@ test('legacy popup returns through its actual card proxy after the refresh repla
     assert(shell.frame.visible and shell.active.working.number==8 and root.number==1)
     shell.apply:Click();assert(root.number==8)
 end)
+test('child editors resume their original session after fields retire without reviving a different session',function()
+    local f=fixture();local a=f.addon;local root={type='NUMBER',number=1}
+    local shell=a:EditCondition(1,0,root,function() end);shell.canvas.cards[1].header:Click();local top=shell.canvas.cards[1].proxy
+    assert(top.rmResumeFromChild,'child resume must be tied to session rather than field lease')
+    top:SetCallback('OnClose',function() end);top:Hide();top:GetUserData('root').number=8;top:SetStatusText()
+    shell:Render();assert(top.rmResumeFromChild() and shell.frame:IsShown() and shell.active.working.number==8 and root.number==1)
+    shell.cancel:Click();assert(not top.rmResumeFromChild() and not shell.frame:IsShown())
+    local other={type='NUMBER',number=2};a:EditCondition(1,0,other,function() end);assert(not top.rmResumeFromChild() and shell.active.working.number==2)
+    shell.cancel:Click()
+end)
+test('native item-list Apply returns to the condition draft and preserves its separate Apply boundary',function()
+    local f=fixture();local a=f.addon
+    for _,path in ipairs({'UI/settings_ordered.lua','UI/settings_history.lua','UI/settings_unsaved.lua','UI/settings_form.lua','UI/item_list_popup.lua','Options/itemset.lua','Conditions/common.lua'}) do f.load(path) end
+    a.db.profile.itemsets={};a.db.global.itemsets={};f.env.GetItemInfo=function(id) id=tonumber(id);return 'Item '..id,'item:'..id,nil,nil,nil,nil,nil,nil,nil,id end
+    a.FindFirstItemOfItems=function() end;a.FindFirstItemInItems=function() end;a.UpdateItem_ID_Image=function() end
+    a:RegisterCondition('ITEMLIST',{description='Item list',fields={item={'string',{'number'}}},valid=function(_,value) return type(value.item)=='table' end,
+        widget=function(parent,_,value) local top=parent:GetUserData('top');parent:AddChild(a:Widget_ItemWidget(top,'Item_EditBox',value,function(id) return id>0 end,function() top:SetStatusText() end)) end})
+    local popup;local open=a.OpenItemListPopup;a.OpenItemListPopup=function(self,...) popup=open(self,...);return popup end
+    local root={type='ITEMLIST',item={1}};local shell=a:EditCondition(1,0,root,function() end);shell.canvas.cards[1].header:Click()
+    shell.canvas.cards[1].pane.children[1].children[3]:Fire('OnClick');assert(popup and popup.rmActive and not shell.frame:IsShown())
+    local field=popup.form.fields.item1;field:SetText('2');field.scripts.OnTextChanged(field,true);field.scripts.OnEnterPressed(field)
+    assert(root.item[1]==1 and shell.active.working.item[1]==1)
+    popup.form.fields.apply:Click();assert(not popup.rmActive and shell.frame:IsShown() and shell.active.working.item[1]==2 and root.item[1]==1)
+    shell.apply:Click();assert(root.item[1]==2,'condition Apply failed: '..tostring(shell.status:GetText()))
+end)
 test('inline parent fields preserve newer edits in independently expanded custom child fields',function()
     local f=fixture();local a=f.addon;local definition=a.conditionDefinitions.NUMBER
     a:RegisterCondition('CUSTOM',{description='Custom gate',fields={number='number',gate='condition'},requiredFields={'number'},

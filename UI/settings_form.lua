@@ -110,12 +110,16 @@ function addon:CreateSettingsForm(parent)
     function p:Reference(key,caption,value,kind,settings,changed,allowEmpty)
         local provider=addon:GetReferenceProvider(kind);settings=settings or {};settings.limit=12;settings.inventory=provider.inventory
         local selected=value and (tonumber(value) or provider.resolve(value)) or nil
+        local function accepted(id)
+            if not settings.accept then return true end
+            local ok,result=pcall(settings.accept,id);return ok and result and true or false
+        end
         local function display(id) return id and (provider.name(id,settings.norank) or provider.missing) or '' end
         local c,record,paint
         c=self:Edit(key,caption,selected and display(selected) or value or '',function(text)
             if text=='' and allowEmpty then return '' end
-            if selected and text==display(selected) then return selected end
-            return provider.resolve(text,settings)
+            local id=selected and text==display(selected) and selected or provider.resolve(text,settings)
+            if id~=nil and accepted(id) then return id end
         end,function(id) selected=id~='' and id or nil;c:SetText(display(selected));record.baseline=c:GetText();if paint then paint() end;changed(id) end)
         record=self.edits[#self.edits]
         c.referenceIcon=c.referenceIcon or c:CreateTexture(nil,'ARTWORK');c.referenceIcon:SetSize(20,20);c.referenceIcon:SetPoint('LEFT',2,0);c:SetTextInsets(26,4,0,0)
@@ -129,7 +133,7 @@ function addon:CreateSettingsForm(parent)
             for _,entry in ipairs(provider.search(input,settings) or {}) do rows[#rows+1]={value=entry.id,text=entry.display or entry.name,icon=entry.icon} end
             if #rows==0 then if self.menu then self.menu.frame:Hide() end;return end
             self:ShowChoices(c,rows,function(id)
-                if not self:Valid(self.generation) then return end
+                if not self:Valid(self.generation) or not accepted(id) then return end
                 c:SetText(display(id));selected=id;record.dirty=true;if self.transactionKeys and self.fields.apply then self.fields.apply:Enable() end;paint();if self:FlushEdits() then c:ClearFocus() end
             end,true)
         end
@@ -143,7 +147,7 @@ function addon:CreateSettingsForm(parent)
             local observed={pcall(GetCursorInfo)};local ok,cursor,first,third=observed[1],observed[2],observed[3],observed[5]
             if not ok or not addon.Platform:CanReadValue(cursor) then return end
             local id;if provider.kind=='item' and cursor=='item' then id=first elseif provider.kind=='spell' and cursor=='spell' then id=third elseif provider.kind=='spell' and cursor=='petaction' then id=first end
-            if not addon.Platform:CanReadValue(id) or type(id)~='number' or not provider.resolve(tostring(id),settings) then return end
+            if not addon.Platform:CanReadValue(id) or type(id)~='number' or not provider.resolve(tostring(id),settings) or not accepted(id) then return end
             selected=id;c:SetText(display(id));c.dropHint:Hide();record.dirty=true;if self.transactionKeys and self.fields.apply then self.fields.apply:Enable() end;paint()
             if self:FlushEdits() then if self.menu then self.menu.frame:Hide() end;if type(ClearCursor)=='function' then ClearCursor() end;c:ClearFocus() end
         end

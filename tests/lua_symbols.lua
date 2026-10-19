@@ -127,10 +127,20 @@ test('canonical completion separates module namespaces and preserves explicit sa
  assert(symbols['old.path.ready'].id=='CUSTOM' and not symbols['old.path.ready'].requiresBinding,'metadata rename rewrote a saved binding path')
  assert(not a:LuaContextSymbols({kind='function',source={args={{name='custom',type='table'}},bindings={}}})['custom.healing.ready'],'argument-shadowed namespace was offered')
 end)
+test('moved helpers retain verified legacy hover and navigation without duplicate completion entries',function()
+ local f,a=fixture();f.load('Data/builtin_sources.lua');f.load('Core/builtin_sources.lua');local engine=documentationEngine(f)
+ a:ApplyLuaContextSymbols(engine,{kind='condition',callback='evaluate',source={}},false)
+ for _,name in ipairs({'getCached','getRetryCached','compare','nullable','split','deepcopy'}) do
+  local alias='addon.'..name;local symbol=assert(engine.rmSymbols[alias]);assert(symbol.documentationOnly and engine.APIHelp.index[alias] and not engine.APIHelp.catalog[alias])
+  assert(engine.APIHelp:FullDescription(alias):find(symbol.description,1,true))
+ end
+ a.getCached=function() end;a:ApplyLuaContextSymbols(engine,{kind='condition',callback='evaluate',source={}},false)
+ assert(not engine.rmSymbols['addon.getCached'],'changed alias incorrectly inherited another function docs')
+end)
 test('actual Attackable and AnySpell Available sources document every cited public reference',function()
  local f,a=fixture();f.load('Data/builtin_sources.lua');f.load('Core/builtin_sources.lua');f.load('Conditions/common.lua');f.load('Platform/spells.lua');f.load('Platform/actions.lua');f.load('Conditions/combat.lua');f.load('Conditions/anyspell.lua')
  local engine=documentationEngine(f);for _,name in ipairs({'UnitExists','UnitCanAttack','UnitIsDead'}) do f.env[name]=function() error('hover must not execute') end end
- for _,case in ipairs({{'ATTACKABLE','evaluate',{'UnitExists','UnitCanAttack','UnitIsDead'}},{'ATTACKABLE','valid',{'addon.units'}},{'ANYSPELL_AVAIL','evaluate',{'addon:Widget_GetSpellId','addon.Platform.IsSpellReady','addon.Platform'}}}) do
+ for _,case in ipairs({{'ATTACKABLE','evaluate',{'UnitExists','UnitCanAttack','UnitIsDead','addon.getCached'}},{'ATTACKABLE','valid',{'addon.units'}},{'ANYSPELL_AVAIL','evaluate',{'addon:Widget_GetSpellId','addon.Platform.IsSpellReady','addon.Platform'}}}) do
   local source=assert(a:GetBuiltinConditionSource(case[1]));a:ApplyLuaContextSymbols(engine,{kind='condition',id=case[1],callback=case[2],source=source},false)
   local paths=engine.APIHelp:Paths(source[case[2]],true)
   for _,name in ipairs(case[3]) do

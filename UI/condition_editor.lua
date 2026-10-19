@@ -211,6 +211,12 @@ local function createShell()
         function proxy:Show()
             if alive() or (resumeAllowed and shell.active==active) then resumeAllowed=false;shell:Show() end
         end
+        local childProfile,childGlobal=addon.db.profile,addon.db.global
+        proxy.rmResumeFromChild=function()
+            if shell.active~=active or addon.db.profile~=childProfile or addon.db.global~=childGlobal then return false end
+            if active.targetValid then local ok,current=pcall(active.targetValid);if not ok or current~=true then return false end end
+            shell.closeOverride=nil;shell:Render();shell:Show();return true
+        end
         proxy.rmCompactRefresh=function()
             if syncField() then
                 resumeAllowed=shell.closeOverride~=nil and not window:IsShown()

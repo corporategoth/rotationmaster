@@ -110,6 +110,6 @@ test('builtin module namespaces use actual callable member names without changin
     local id='builtin:Platform/spells.lua:Platform_IsSpellReady';local entry=assert(a.builtinFunctions[id])
     assert(entry.source.name=='IsSpellReady' and entry.source.namespace=='Platform.spells')
     assert(a:FunctionQualifiedName(id,entry.source)=='Platform.spells.IsSpellReady' and a:ResolveFunctionBinding(id)==a.Platform.IsSpellReady)
-    local utility=assert(a.builtinFunctions['builtin:utils.lua:getCached']);assert(a:FunctionQualifiedName('builtin:utils.lua:getCached',utility.source)=='utils.getCached')
+    local utility=assert(a.builtinFunctions['builtin:utils.lua:getCached']);assert(a:FunctionQualifiedName('builtin:utils.lua:getCached',utility.source)=='Functions.cache.getCached')
 end)
 finish()

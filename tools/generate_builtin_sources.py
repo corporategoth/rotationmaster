@@ -73,17 +73,18 @@ def generated():
     outputs={};legacy_getters={};catalog={'modules':{},'conditions':{}}
     for module in modules.values():
         for alias,entry in module['bindings'].items():
-            docs=entry.get('public') or {};identity=docs.get('bindingID')
+            docs=entry.get('public') or entry.get('ownership') or {};identity=docs.get('bindingID')
             if identity:
                 matched=re.fullmatch(r'builtin:(.+):([A-Za-z_][A-Za-z_0-9]*)',identity)
-                if not matched: raise ValueError('invalid explicit public binding ID: '+identity)
+                if not matched: raise ValueError('invalid explicit binding ID: '+identity)
                 old_path,old_alias=matched.groups()
                 if old_path not in modules: raise ValueError('legacy binding owner unavailable: '+old_path)
-                legacy_getters.setdefault(old_path,{})[old_alias]='addon.'+entry['addonMember']
+                legacy_getters.setdefault(old_path,{})[old_alias]=('addon.'+entry['addonMember'] if entry.get('addonMember') else 'addon.builtinSourceModules['+lua(module['file'])+']('+lua(alias)+')')
     for path,module in sorted(modules.items()):
         source=authored((ROOT/path).read_text());bindings=module['bindings'];catalog['modules'][path]={'hash':hashlib.sha256(source.encode()).hexdigest(),'bindings':{}}
         for alias,entry in sorted(bindings.items()):
             row={'kind':'function' if entry.get('fn') else 'value'}
+            if entry.get('ownership'): row.update(entry['ownership'])
             if entry.get('fn'):
                 record=entry['fn'];params,body=function_source(source,record,alias)
                 row.update(code=body,parameters=params,bindings=record['bindings'],line=record['first'])

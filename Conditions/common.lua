@@ -212,6 +212,15 @@ function addon:Widget_ItemWidget(top, editbox, value, isvalid, update)
     local global_itemsets = addon.db.global.itemsets
 
     local item_group = addon:CreateConditionGroup()
+    local lease=item_group.rmLease;local profile,global=addon.db.profile,addon.db.global
+    local function ownerAlive() return item_group.rmActive and item_group.rmLease==lease and not item_group:IsReleasing() and addon.db.profile==profile and addon.db.global==global end
+    local function closePopup(widget)
+        addon:ReleaseConditionWidget(widget)
+        if top then
+            if type(top.rmResumeFromChild)=='function' then top.rmResumeFromChild()
+            elseif ownerAlive() then addon.LayoutConditionFrame(top);top:Show() end
+        end
+    end
     item_group:SetLayout("Table")
     item_group:SetUserData("table", { columns = { 44, 1, 24 } })
 
@@ -302,7 +311,9 @@ function addon:Widget_ItemWidget(top, editbox, value, isvalid, update)
     end
     edit_button:SetUserData("cell", { alignV = "bottom" })
     edit_button:SetCallback("OnClick", function()
+        if not ownerAlive() then return end
         local edit_callback = function()
+            if not ownerAlive() then return end
             update_action_image()
             if type(value.item) == "string" then
                 addon:UpdateBoundButton(value.item)
@@ -322,22 +333,23 @@ function addon:Widget_ItemWidget(top, editbox, value, isvalid, update)
                     top:SetCallback("OnClose", function() end)
                     top:Hide()
                 end
-                addon:item_list_popup(itemset.name, editbox, itemset.items, isvalid, edit_callback, top and function(widget)
-                    addon:ReleaseConditionWidget(widget)
-                    addon.LayoutConditionFrame(top)
-                    top:Show()
-                end)
+                local selected,expected,items=value.item,itemset,itemset.items
+                local function current()
+                    if not ownerAlive() or value.item~=selected or expected.items~=items then return false end
+                    local personal=addon.db.profile.itemsets;local shared=addon.db.global.itemsets
+                    local entry=type(personal)=='table' and personal[selected]
+                    if entry==nil then entry=type(shared)=='table' and shared[selected] end
+                    return entry==expected
+                end
+                addon:item_list_popup(itemset.name, editbox, items, isvalid, edit_callback, top and closePopup or nil,{valid=current})
             end
         else
             if top then
                 top:SetCallback("OnClose", function() end)
                 top:Hide()
             end
-            addon:item_list_popup(L["Custom"], editbox, value.item, isvalid, edit_callback, top and function(widget)
-                addon:ReleaseConditionWidget(widget)
-                addon.LayoutConditionFrame(top)
-                top:Show()
-            end)
+            local items=value.item
+            addon:item_list_popup(L["Custom"], editbox, items, isvalid, edit_callback, top and closePopup or nil,{valid=function() return ownerAlive() and value.item==items end})
         end
     end)
     item_group:AddChild(edit_button)

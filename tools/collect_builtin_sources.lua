@@ -3,6 +3,13 @@ local F=dofile('tests/fixtures/addon.lua')
 local inventory=dofile('tests/fixtures/catalog_inventory.lua')
 local modules={}
 local publicHelpers=dofile('tools/public_helpers.lua')
+local cacheOwnership=dofile('tools/cache_ownership.lua')
+assert(cacheOwnership.module=='Functions/cache.lua' and type(cacheOwnership.bindings)=='table','cache ownership manifest invalid')
+local cacheKinds={getCachedInternal='function',packResults='function',cacheHits='number',cacheMisses='number',nilArgument='table',cachedResult='table'}
+for alias,entry in pairs(cacheOwnership.bindings) do
+    assert(cacheKinds[alias]==entry.kind and entry.bindingID=='builtin:utils.lua:'..alias,'cache ownership identity invalid: '..alias)
+end
+for alias in pairs(cacheKinds) do assert(cacheOwnership.bindings[alias],'cache ownership declaration missing: '..alias) end
 -- Old saved factory bodies explicitly capture these library bindings. Retain
 -- their original identities even after current factories stop calling Ace.
 local retainedAceBindings={'UI/checkbox.lua','UI/selector.lua','UI/condition_inputs.lua','Conditions/common.lua','Conditions/combat.lua','Conditions/talent.lua'}
@@ -10,7 +17,7 @@ local standard={};for name,value in pairs(_G) do if type(value)=='function' then
 local function descriptor(fn)
     local info=debug.getinfo(fn,'S');return {file=info.source:sub(1,1)=='@' and info.source:sub(2) or info.source,first=info.linedefined,last=info.lastlinedefined,what=info.what}
 end
-local publicIdentities,callbackBindings,currentAddon={},{},nil
+local publicIdentities,callbackBindings,currentAddon,ownedCacheSeen={},{},nil,{}
 local function qualifiedBindings(module,root,value)
     local declared={}
     for alias,id in pairs(callbackBindings[module.file] or {}) do
@@ -36,20 +43,48 @@ local function qualifiedBindings(module,root,value)
     for alias in pairs(declared) do assert(result[alias],'qualified callback binding missing: '..alias) end
     return result
 end
-local function capture(module,fn,captureBindings)
+local capture
+local function ownedCacheBinding(alias,value)
+    local declaration=assert(cacheOwnership.bindings[alias],'cache ownership declaration missing: '..alias)
+    local owner=currentAddon.builtinSourceModules and currentAddon.builtinSourceModules[cacheOwnership.module]
+    local legacy=currentAddon.builtinSourceModules and currentAddon.builtinSourceModules['utils.lua']
+    assert(type(owner)=='function' and type(legacy)=='function' and type(value)==declaration.kind
+        and rawequal(owner(alias),value) and rawequal(legacy(alias),value),'cache ownership getter mismatch: '..alias)
+    local module=modules[cacheOwnership.module] or {file=cacheOwnership.module,conditions={},bindings={}};modules[module.file]=module
+    if not ownedCacheSeen[alias] then
+        ownedCacheSeen[alias]=true
+        local record={kind=declaration.kind,ownership={bindingID=declaration.bindingID,namespace='utils',description='Packaged helper from utils.lua.'}}
+        module.bindings[alias]=record
+        if declaration.kind=='function' then
+            assert(descriptor(value).file==module.file,'cache ownership function owner mismatch: '..alias)
+            record.fn=capture(module,value,declaration.captureBindings,true)
+        end
+    end
+    return declaration.bindingID
+end
+capture=function(module,fn,captureBindings,ownedCapture)
     local info=descriptor(fn);info.bindings={};local captured={}
     for index=1,200 do
         local name,value=debug.getupvalue(fn,index);if not name then break end
         if name~='addon' and name~='L' and not (type(value)=='function' and standard[name]==value) then
+            local owned=module.file==cacheOwnership.module and cacheOwnership.bindings[name]
             local reference=captureBindings and captureBindings[name]
+            assert(not ownedCapture or reference,'cache ownership capture declaration missing: '..name)
+            reference=reference or owned and owned.bindingID
             if reference then
                 local path,alias=reference:match('^builtin:(.-):([A-Za-z_][A-Za-z_0-9]*)$')
-                local getter=path and currentAddon.builtinSourceModules and currentAddon.builtinSourceModules[path]
-                assert(type(value)~='function' and type(getter)=='function' and rawequal(getter(alias),value),'captured binding getter mismatch: '..name)
-                local target=modules[path] or {file=path,conditions={},bindings={}};modules[path]=target
-                assert(not target.bindings[alias] or target.bindings[alias].kind==type(value) and not target.bindings[alias].fn,'captured binding identity collision: '..reference)
-                target.bindings[alias]=target.bindings[alias] or {kind=type(value)}
-                info.bindings[name]=reference;captured[name]=true
+                if module.file==cacheOwnership.module and path=='utils.lua' and cacheOwnership.bindings[alias] then
+                    assert(name==alias,'cache ownership capture identity mismatch: '..name)
+                    info.bindings[name]=ownedCacheBinding(alias,value)
+                else
+                    local getter=path and currentAddon.builtinSourceModules and currentAddon.builtinSourceModules[path]
+                    assert(type(value)~='function' and type(getter)=='function' and rawequal(getter(alias),value),'captured binding getter mismatch: '..name)
+                    local target=modules[path] or {file=path,conditions={},bindings={}};modules[path]=target
+                    assert(not target.bindings[alias] or target.bindings[alias].kind==type(value) and not target.bindings[alias].fn,'captured binding identity collision: '..reference)
+                    target.bindings[alias]=target.bindings[alias] or {kind=type(value)}
+                    info.bindings[name]=reference
+                end
+                captured[name]=true
             else
                 local qualified=qualifiedBindings(module,name,value)
                 if qualified then
@@ -71,12 +106,15 @@ local function capture(module,fn,captureBindings)
     return info
 end
 for _,case in ipairs(inventory.branches) do
-    local f=F.new(unpack(case[1]));f.addon.delayed_condition={};publicIdentities={};currentAddon=f.addon
+    local f=F.new(unpack(case[1]));f.addon.delayed_condition={};publicIdentities={};currentAddon=f.addon;ownedCacheSeen={}
     f.load('Platform/spells.lua');f.load('Platform/actions.lua');f.load('Platform/range.lua')
     if case[3] then f.env.MI2_GetMobData=function() end end
     for path in io.lines('RotationMaster.toc') do if path:match('^Conditions/') then
         f.load(path)
     end end
+    local cacheGetter=f.addon.builtinSourceModules and f.addon.builtinSourceModules[cacheOwnership.module]
+    assert(type(cacheGetter)=='function','cache ownership module missing')
+    for alias in pairs(cacheOwnership.bindings) do ownedCacheBinding(alias,cacheGetter(alias)) end
     for name,documentation in pairs(publicHelpers) do
         local member=documentation.member or name
         assert(member:match('^[%a_][%w_%.]*$') and not member:find('..',1,true),'invalid public helper path: '..name)

@@ -43,6 +43,15 @@ test('optional workbench engine keeps namespaces completion and debugger state i
  assert(not next(f.env.SlashCmdList),'embedding stole upstream commands')
  one:Release();assert(one.released and not two.released)
 end)
+test('actual embedded completion omits compatibility aliases while their hover documentation remains available',function()
+ local f,a=fixture();f.load('Data/builtin_sources.lua');f.load('Core/builtin_sources.lua')
+ local engine=assert(a:CreateLuaWorkbenchEngine({id='aliases',limited=true}));a:ApplyLuaContextSymbols(engine,{kind='condition',callback='evaluate',source={}},true)
+ local names={};for _,name in ipairs(engine.Autocomplete:Names()) do names[name]=true end
+ assert(names['Functions.cache.getCached'] and not names['addon.getCached'],'real autocomplete still offers compatibility aliases')
+ local context=assert(engine.Autocomplete:Context('addon.get',9));for _,entry in ipairs(engine.Autocomplete:Suggest(context,true)) do assert(entry.name~='addon.getCached') end
+ local paths=engine.APIHelp:Paths('addon.getCached(cache, fn)',true);assert(paths[7]=='addon.getCached' and engine.APIHelp:FullDescription(paths[7]))
+ engine:Release()
+end)
 test('released workbench compiler and debugger can run host code without altering the live workspace',function()
  local f,a=fixture();assert(a.CreateLuaWorkbenchEngine,'optional engine missing')
  local e=assert(a:CreateLuaWorkbenchEngine({id='test',environment={owner={value=9}}}));local code='local doubled=owner.value*2\nprint(doubled)\nreturn doubled'

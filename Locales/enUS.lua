@@ -1621,7 +1621,7 @@ L["Help.ItemSets.items"] = "Click the heading to hide or show the list. Put pref
 L["Help.ItemSets.item"] = "Search by item name and choose a result, or drag an item from your bags or action bar into its field. The icon identifies the item; metadata can take time to load. Edit a row to replace that entry. Use its red trash can to remove it rather than clearing a required item field."
 L["Help.ItemSets.add"] = "Choose or drag an item into the empty Item field, then click Add item to append it to the priority list. Entering an item in this field alone does not add a row."
 L["Move Up / Move Down"] = true
-L["Help.ItemSets.order"] = "Use the arrows on the left, or drag an item row into a highlighted insertion gap. The floating preview identifies what you are moving. Moves past the beginning or end are unavailable. Reordering changes priority and stays in the draft until Apply."
+L["Help.ItemSets.order"] = "Use the arrows on the left, or drag an item row into a highlighted insertion gap. Ctrl-drag moves that row and all following entries together. The floating preview identifies what you are moving. Moves past the beginning or end are unavailable. Reordering changes priority and stays in the draft until Apply."
 L["Bind / Unbind"] = true
 L["Help.ItemSets.binding"] = "Outside combat, apply pending item-set edits before binding. Bind picks up an available item for you to place on an action bar. RM records the slot and updates it as item availability changes. The pill shows bound slot numbers; click it to unbind and remove still-matching bar items. Replaced bar actions are preserved. Binding changes are immediate action-bar operations, independent of the draft and its history."
 L["Help.ItemSets.reset"] = "Restore the packaged item list for this set. Reset is available only for a set with a packaged default. The restored list is staged until Apply; the name is kept."
@@ -2215,6 +2215,15 @@ L["Choose a category and search for a condition. Hidden removes it from pickers 
 L["Select an effect to edit its name, type and type-specific settings. The icon previews it live. Sequence sections edit animation, color, pulse or custom frames in order. Duplicate creates an independent effect. Drag a sequence card surface to reorder it; fields remain editable. New effects can be configured before naming. Apply saves the draft; Discard abandons edits to a saved entry. Import stages a validated replacement."] = true
 L["Choose an item set and edit its priority list. Global shares the set across profiles. Move arrows change item priority. Bind item set picks up an available item for placement on an action bar; The binding pill removes matching bound bar actions when unbinding, outside combat. Reset restores a packaged set. Search or drag items into reference fields. Apply saves settings; Discard abandons edits to a saved entry. Binding changes are explicit action-bar operations."] = true
 L["Press Enter or leave a text field to stage its value; Apply saves the draft. Invalid text stays red and must be corrected before Apply; Discard can abandon it. Searchable selectors open on click and filter as you type. Section headings collapse or expand their contents."] = true
+-- Native condition item-list editor
+L["Apply changes to this selected item list. Other settings keep their own Apply action."] = true
+L["Choose an item list before editing."] = true
+L["The item list changed elsewhere. Close and reopen it before applying."] = true
+
+L["Editing this list"] = true
+L["Help.ItemSets.popup.overview"] = "This window edits only the item list you opened. Search or drag items into the fields, then arrange preferred items first. A named item set is shared by its other users; a custom list belongs to the calling condition or action draft. Applying this list does not apply the parent editor."
+L["Help.ItemSets.popup.delete"] = "Use a row's red trash can to remove that entry from the draft list. This does not delete a named item set or remove an item from your inventory. The removal takes effect when you Apply this list."
+L["Help.ItemSets.popup.save"] = "Apply validates every entry and writes the edited list back to its original owner. Discard closes without changing it. Closing with pending edits offers Apply, Discard or Cancel; Cancel keeps this window open. View Changes compares the original list with this draft. If the original list changed elsewhere, close and reopen it before applying."
 
 -- BEGIN GENERATED RM PUBLIC HELPER DOCS
 L["All original results, preserving nil positions and return count."] = true

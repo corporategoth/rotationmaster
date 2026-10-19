@@ -2,6 +2,19 @@ local addon_name,addon=...
 local L=LibStub("AceLocale-3.0"):GetLocale(addon_name)
 local AceGUI=LibStub("AceGUI-3.0")
 local platform=addon.Platform
+-- Select the pure implementations privately; saved custom source retains its
+-- original addon APIs and the collector verifies these stable helper leaves.
+local Functions={
+    values={isin=addon.Functions.values.isin,compare=addon.Functions.values.compare},
+    presentation={compareString=addon.Functions.presentation.compareString,nullable=addon.Functions.presentation.nullable},
+}
+addon.builtinCallbackBindings=addon.builtinCallbackBindings or {}
+addon.builtinCallbackBindings["Conditions/talent.lua"]={
+    ["Functions.values.isin"]="builtin:utils.lua:isin",
+    ["Functions.values.compare"]="builtin:utils.lua:compare",
+    ["Functions.presentation.compareString"]="builtin:utils.lua:compareString",
+    ["Functions.presentation.nullable"]="builtin:utils.lua:nullable",
+}
 local function integer(value,minimum,maximum)
     return type(value)=="number" and value>=minimum and value<=maximum and value%1==0
 end
@@ -105,7 +118,7 @@ addon:RegisterCondition("TALENT",{
         end
         if legacySlot(value) then return true end
         return treeShape(value) and integer(value.tree,1,16) and integer(value.talent,1,256)
-            and addon.isin(addon.operators,value.operator) and integer(value.value,0,64)
+            and Functions.values.isin(addon.operators,value.operator) and integer(value.value,0,64)
     end,
     evaluate=function(value,cache)
         if legacySlot(value) then return nil,"historical-talent-layout" end
@@ -117,15 +130,15 @@ addon:RegisterCondition("TALENT",{
         end
         talent,reason=addon.getCached(cache,platform.GetTreeTalentInfo,platform,value.tree,value.talent)
         if not talent then return nil,reason end
-        return addon.compare(value.operator,talent.rank,value.value)
+        return Functions.values.compare(value.operator,talent.rank,value.value)
     end,
     print=function(spec,value)
         local talent=info(value,spec)
         if legacySlot(value) then return string.format(L["Historical talent slot %s (unavailable)"],value.value) end
         if value.layout=="grid" then return string.format(L["you {{!are|are not}} talented in %s"],talent and talent.name or L["<talent>"]) end
         local tree=value.tree and platform:GetTalentTreeInfo(value.tree,group(spec))
-        return addon.compareString(value.operator,string.format(L["talent points in %s (%s)"],
-            talent and talent.name or L["<talent>"],tree and tree.name or L["<talent tree>"]),addon.nullable(value.value))
+        return Functions.presentation.compareString(value.operator,string.format(L["talent points in %s (%s)"],
+            talent and talent.name or L["<talent>"],tree and tree.name or L["<talent tree>"]),Functions.presentation.nullable(value.value))
     end,
     widget=function(parent,spec,value)
         local top=parent:GetUserData("top")
@@ -162,15 +175,15 @@ end
 addon:RegisterCondition('TALENT_TREE_POINTS',{
     description=L['Talent Tree Points'],icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\talent",requiredFields={'tree','operator','value'},
     fields={tree='number',operator='string',value='number'},
-    valid=function(_,value) return integer(value.tree,1,16) and addon.isin(addon.operators,value.operator) and integer(value.value,0,512) end,
+    valid=function(_,value) return integer(value.tree,1,16) and Functions.values.isin(addon.operators,value.operator) and integer(value.value,0,512) end,
     evaluate=function(value,cache)
         local exists,why=treeExists(value,cache);if not exists then return nil,why end
         local tree,reason=addon.getCached(cache,platform.GetTalentTreeInfo,platform,value.tree)
         if not tree then return nil,reason end
         if not integer(tree.pointsSpent,0,512) then return nil,'talent-points-unavailable' end
-        return addon.compare(value.operator,tree.pointsSpent,value.value)
+        return Functions.values.compare(value.operator,tree.pointsSpent,value.value)
     end,
-    print=function(spec,value) return addon.compareString(value.operator,string.format(L['points spent in %s'],treeName(value,spec)),addon.nullable(value.value)) end,
+    print=function(spec,value) return Functions.presentation.compareString(value.operator,string.format(L['points spent in %s'],treeName(value,spec)),Functions.presentation.nullable(value.value)) end,
     widget=function(parent,spec,value)
         local top=parent:GetUserData('top');local function update() top:SetStatusText(top:GetUserData('funcs'):print(top:GetUserData('root'),spec)) end
         treePicker(parent,spec,value,update);parent:AddChild(addon:Widget_OperatorWidget(value,L['Points'],update))

@@ -452,45 +452,8 @@ local function create_item_list(frame, editbox, items, isvalid, update)
     frame:DoLayout()
 end
 
-function addon:item_list_popup(name, editbox, items, isvalid, update, onclose)
-    local frame = AceGUI:Create("Frame")
-    frame:PauseLayout()
-
-    frame:SetTitle(L["Item Set"] .. ": " .. name)
-    frame:SetFullWidth(true)
-    frame:SetFullHeight(true)
-    frame:SetLayout("Fill")
-    if onclose then
-        frame:SetCallback("OnClose", function(widget)
-            onclose(widget)
-        end)
-    end
-    HideOnEscape(frame)
-
-    local group = AceGUI:Create("SimpleGroup")
-    group:SetFullWidth(true)
-    group:SetFullHeight(true)
-    group:SetLayout("List")
-    frame:AddChild(group)
-
-    local scrollwin = AceGUI:Create("ScrollFrame")
-    scrollwin:SetFullWidth(true)
-    scrollwin:SetFullHeight(true)
-    scrollwin:SetLayout("Table")
-    scrollwin:SetUserData("table", { columns = { 44, 1, 24, 24, 24, 24, 24 } })
-    group:AddChild(scrollwin)
-
-    create_item_list(scrollwin, editbox, items, isvalid, update)
-
-    local help = AceGUI:Create("Help")
-    help:SetLayout(addon.layout_item_list_help)
-    help:SetTitle(L["Item Set"])
-    frame:AddChild(help)
-    help:SetPoint("TOPRIGHT", 8, 16)
-
-    addon:configure_frame(frame)
-    frame:ResumeLayout()
-    frame:DoLayout()
+function addon:item_list_popup(name, editbox, items, isvalid, update, onclose, options)
+    return self:OpenItemListPopup(name, editbox, items, isvalid, update, onclose, options)
 end
 
 function addon:bind_popup(name, _, _, onclose)

@@ -46,6 +46,7 @@ Functions/values.lua
 Functions/presentation.lua
 Functions/text.lua
 Functions/collections.lua
+Functions/cache.lua
 utils.lua
 profiler.lua
 Diagnostics/errors.lua
@@ -126,6 +127,7 @@ UI/settings_draft.lua
 UI/settings_history.lua
 UI/settings_unsaved.lua
 UI/settings_form.lua
+UI/item_list_popup.lua
 UI/settings_transfer.lua
 UI/custom_condition_transfer.lua
 UI/settings_general.lua

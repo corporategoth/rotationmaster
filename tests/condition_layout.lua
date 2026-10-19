@@ -76,6 +76,29 @@ test('ordinary item-set and shapeshift fields use native icons without Ace alloc
     local root=a:CreateConditionGroup();local top=f.widget('Frame');top:SetUserData('funcs',{print=function() return '' end});top:SetUserData('root',{type='FORM',value=0});root:SetUserData('top',top)
     a.definitions.FORM.widget(root,0,{type='FORM',value=0});assert(root.children[1].type=='RM-ConditionIcon');a:ReleaseConditionWidget(root)
 end)
+test('condition item popup keeps its originating lease and resumes through the session proxy',function()
+    local f=fixture();local a=f.addon;f.load('Conditions/common.lua');a.db.profile.itemsets={};a.db.global.itemsets={}
+    a.UpdateItem_ID_Image=function() end;a.FindFirstItemOfItems=function() end;a.FindFirstItemInItems=function() end
+    local changes,resumed,hidden=0,0,0;local top={SetCallback=function() end,Hide=function() hidden=hidden+1 end,rmResumeFromChild=function() resumed=resumed+1 end}
+    local popup
+    a.item_list_popup=function(_,name,kind,items,valid,changed,closed,options) popup={items=items,changed=changed,closed=closed,options=options};assert(kind=='Inventory_EditBox' and valid(10)) end
+    local value={item={}};local group=a:Widget_ItemWidget(top,'Inventory_EditBox',value,function(id) return id==10 end,function() changes=changes+1 end)
+    group.children[3]:Fire('OnClick');assert(hidden==1 and popup.items==value.item and popup.options.valid())
+    popup.changed();assert(changes==1)
+    a:ReleaseConditionWidget(group);assert(not popup.options.valid());popup.changed();assert(changes==1,'retired popup changed condition fields')
+    local owned=a:CreateConditionGroup();popup.closed(owned);assert(not owned.rmActive and resumed==1,'closed child could not resume session after fields retired')
+end)
+test('named item popup rejects a replaced saved set even while its original field lease is active',function()
+    local f=fixture();local a=f.addon;f.load('Conditions/common.lua')
+    a.db.profile.itemsets={set={name='Selected set',items={10}}};a.db.global.itemsets={set={name='Other set',items={11}}}
+    a.UpdateItem_ID_Image=function() end;a.FindFirstItemOfItemSet=function() end;a.FindFirstItemInItemSet=function() end
+    local options;a.item_list_popup=function(_,_,_,_,_,_,_,guard) options=guard end
+    local value={item='set'};local group=a:Widget_ItemWidget(nil,'Inventory_EditBox',value,function() return true end,function() end)
+    group.children[3]:Fire('OnClick');assert(options.valid())
+    local original=a.db.profile.itemsets.set;a.db.profile.itemsets.set={name='Replacement',items={10}};assert(not options.valid(),'replaced named set remained editable')
+    a.db.profile.itemsets.set=original;assert(options.valid());original.items={10};assert(not options.valid(),'replaced target array remained editable')
+    a:ReleaseConditionWidget(group)
+end)
 test('condition native list owns layout and propagates measured child heights',function()
     local f=fixture();local a=f.addon;local group=a:CreateConditionGroup();group:SetWidth(320);group:SetLayout('List')
     local first=a:CreateConditionEditBox();first:SetLabel('First');first:SetFullWidth(true)

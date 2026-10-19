@@ -132,3 +132,8 @@ Ordinary `CreateConditionGroup/EditBox/Slider/CheckBox/Dropdown` controls use RM
 
 
 `Functions.collections` owns `keys`, `spairs`, `tomap`, `index`, `tablelength`, `multiinsert`, `cleanArray`, `deepcopy` and `compareArray`. These helpers previously had addon APIs but no public source IDs/getters, so their new public identities derive from `Functions/collections.lua`; no historical utils identities or hashes are invented. Original `addon.*` calls remain direct aliases. The historical `deepcopy` API makes a shallow filtered copy, preserving nested identities. `keys` orders by values, and `cleanArray` mutates its input with exception selection inverse to `deepcopy`. No callback source is silently substituted by this ownership step.
+
+
+The condition item-list child editor has a local list draft with Apply/Discard/Cancel, history and View Changes. Applying updates that selected list; the parent condition/action still requires its own Apply. Named lists are shared. Caller validation and inventory restrictions apply to text, suggestions and drops.
+
+`Functions.cache` owns the native cache closure once. Public `getCached`/`getRetryCached` use canonical namespace calls while legacy addon aliases and original saved binding identities remain supported. Private cache records retain their historical metadata/hash and live getters through an offline verified ownership manifest. Saved code's verified direct addon aliases keep hover documentation/navigation without adding duplicate completion entries.
