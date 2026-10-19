@@ -4,22 +4,41 @@ local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 local color = color
 local helpers = addon.help_funcs
 
+-- Canonical callback leaves preserve the repaired observation contract and
+-- the original filtered unit choices, wording and validation semantics.
+local Functions={
+    values={isin=addon.Functions.values.isin,compare=addon.Functions.values.compare},
+    presentation={nullable=addon.Functions.presentation.nullable,compareString=addon.Functions.presentation.compareString,playerize=addon.Functions.presentation.playerize},
+    cache={getCached=addon.Functions.cache.getCached},
+    collections={deepcopy=addon.Functions.collections.deepcopy},
+}
+addon.builtinCallbackBindings=addon.builtinCallbackBindings or {}
+addon.builtinCallbackBindings["Conditions/channeling.lua"]={
+    ["Functions.values.isin"]="builtin:utils.lua:isin",
+    ["Functions.values.compare"]="builtin:utils.lua:compare",
+    ["Functions.presentation.nullable"]="builtin:utils.lua:nullable",
+    ["Functions.presentation.compareString"]="builtin:utils.lua:compareString",
+    ["Functions.presentation.playerize"]="builtin:utils.lua:playerize",
+    ["Functions.cache.getCached"]="builtin:utils.lua:getCached",
+    ["Functions.collections.deepcopy"]="builtin:Functions/collections.lua:deepcopy",
+}
+
 addon:RegisterCondition("CHANNELING", {
     description = L["Channeling"],
     icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\casting",
     fields = { unit = "string" },
     valid = function(_, value)
-        return value.unit ~= nil and addon.isin(addon.units, value.unit)
+        return value.unit ~= nil and Functions.values.isin(addon.units, value.unit)
     end,
     evaluate = function(value, cache)
-        local record,reason=addon.getCached(cache,addon.Platform.GetUnitCastObservation,addon.Platform,value.unit,"channel")
+        local record,reason=Functions.cache.getCached(cache,addon.Platform.GetUnitCastObservation,addon.Platform,value.unit,"channel")
         if not record then return nil,reason end
         if not record.active then return false end
         return true
     end,
     print = function(_, value)
-        return string.format(addon.playerize(value.unit, L["%s {{!are|are not}} currently channeling"], L["%s {{!is|is not}} currently casting"]),
-            addon.nullable(addon.units[value.unit], L["<unit>"]))
+        return string.format(Functions.presentation.playerize(value.unit, L["%s {{!are|are not}} currently channeling"], L["%s {{!is|is not}} currently casting"]),
+            Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -40,17 +59,17 @@ addon:RegisterCondition("CHANNELING_SPELL", {
     icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\casting",
     fields = { unit = "string", spell = "string" },
     valid = function(_, value)
-        return (value.unit ~= nil and addon.isin(addon.units, value.unit) and value.spell ~= nil)
+        return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and value.spell ~= nil)
     end,
     evaluate = function(value, cache)
-        local record,reason=addon.getCached(cache,addon.Platform.GetUnitCastObservation,addon.Platform,value.unit,"channel")
+        local record,reason=Functions.cache.getCached(cache,addon.Platform.GetUnitCastObservation,addon.Platform,value.unit,"channel")
         if not record then return nil,reason end
         if not record.active then return false end
         return record.name==value.spell
     end,
     print = function(_, value)
-        return string.format(addon.playerize(value.unit, L["%s {{!are|are not}} currently channeling %s"], L["%s {{!is|is not}} currently casting %s"]),
-            addon.nullable(addon.units[value.unit], L["<unit>"]), addon.nullable(value.spell, L["<spell>"]))
+        return string.format(Functions.presentation.playerize(value.unit, L["%s {{!are|are not}} currently channeling %s"], L["%s {{!is|is not}} currently casting %s"]),
+            Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]), Functions.presentation.nullable(value.spell, L["<spell>"]))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -78,20 +97,20 @@ addon:RegisterCondition("CHANNELING_REMAIN", {
     icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\time",
     fields = { unit = "string", operator = "string", value = "number" },
     valid = function(_, value)
-        return (value.unit ~= nil and addon.isin(addon.units, value.unit) and
-                value.operator ~= nil and addon.isin(addon.operators, value.operator) and
+        return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
+                value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                 value.value ~= nil and value.value >= 0)
     end,
     evaluate = function(value, cache)
-        local record,reason=addon.getCached(cache,addon.Platform.GetUnitCastObservation,addon.Platform,value.unit,"channel")
+        local record,reason=Functions.cache.getCached(cache,addon.Platform.GetUnitCastObservation,addon.Platform,value.unit,"channel")
         if not record then return nil,reason end
         if not record.active then return false end
         if record.remainingSeconds==nil then return nil,record.remainingReason end
-        return addon.compare(value.operator,record.remainingSeconds,value.value)
+        return Functions.values.compare(value.operator,record.remainingSeconds,value.value)
     end,
     print = function(_, value)
-        return addon.nullable(addon.unitsPossessive[value.unit], L["<unit>"]) .. " " ..
-            addon.compareString(value.operator, L["time remaining on spell channel"], string.format(L["%s seconds"], addon.nullable(value.value)))
+        return Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"]) .. " " ..
+            Functions.presentation.compareString(value.operator, L["time remaining on spell channel"], string.format(L["%s seconds"], Functions.presentation.nullable(value.value)))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -122,24 +141,24 @@ addon:RegisterCondition("CHANNEL_INTERRUPTABLE", {
     icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\casting",
     fields = { unit = "string" },
     valid = function(_, value)
-        return value.unit ~= nil and addon.isin(addon.units, value.unit)
+        return value.unit ~= nil and Functions.values.isin(addon.units, value.unit)
     end,
     evaluate = function(value, cache)
-        local record,reason=addon.getCached(cache,addon.Platform.GetUnitCastObservation,addon.Platform,value.unit,"channel")
+        local record,reason=Functions.cache.getCached(cache,addon.Platform.GetUnitCastObservation,addon.Platform,value.unit,"channel")
         if not record then return nil,reason end
         if not record.active then return false end
         if record.interruptible==nil then return nil,record.interruptibleReason end
         return record.interruptible
     end,
     print = function(_, value)
-        return string.format(L["%s's channeled spell {{!is|is not}} interruptable"], addon.nullable(addon.units[value.unit], L["<unit>"]))
+        return string.format(L["%s's channeled spell {{!is|is not}} interruptable"], Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
-        local unit = addon:Widget_UnitWidget(value, addon.deepcopy(addon.units, { "player", "pet" }),
+        local unit = addon:Widget_UnitWidget(value, Functions.collections.deepcopy(addon.units, { "player", "pet" }),
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
     end,

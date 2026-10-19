@@ -18,6 +18,30 @@ local function descriptor(fn)
     local info=debug.getinfo(fn,'S');return {file=info.source:sub(1,1)=='@' and info.source:sub(2) or info.source,first=info.linedefined,last=info.lastlinedefined,what=info.what}
 end
 local publicIdentities,callbackBindings,currentAddon,ownedCacheSeen={},{},nil,{}
+local function sameCallbacks(left,right)
+    for name,callback in pairs(left) do
+        local other=right[name]
+        if not other or callback.file~=other.file or callback.first~=other.first or callback.last~=other.last or callback.what~=other.what then return false end
+        for alias,id in pairs(callback.bindings) do if other.bindings[alias]~=id then return false end end
+        for alias,id in pairs(other.bindings) do if callback.bindings[alias]~=id then return false end end
+    end
+    for name in pairs(right) do if not left[name] then return false end end
+    return true
+end
+local function storeCallbacks(module,tag,variant,callbacks)
+    local target
+    if variant~=nil then
+        assert(type(variant)=='string' and #variant<=64 and variant:match('^[A-Za-z_][A-Za-z_0-9]*$'),'invalid builtin source variant: '..tag)
+        assert(not module.conditions[tag],'mixed marked/unmarked builtin source variants: '..tag)
+        module.conditionVariants=module.conditionVariants or {};module.conditionVariants[tag]=module.conditionVariants[tag] or {};target=module.conditionVariants[tag]
+    else
+        assert(not (module.conditionVariants and module.conditionVariants[tag]),'mixed marked/unmarked builtin source variants: '..tag)
+        target=module.conditions;variant=tag
+    end
+    local previous=target[variant]
+    assert(not previous or sameCallbacks(previous,callbacks),'ambiguous builtin callback source; declare a distinct builtinSourceVariant: '..tag)
+    target[variant]=callbacks
+end
 local function qualifiedBindings(module,root,value)
     local declared={}
     for alias,id in pairs(callbackBindings[module.file] or {}) do
@@ -142,13 +166,15 @@ for _,case in ipairs(inventory.branches) do
     local definitions={};for tag,definition in pairs(f.addon.definitions) do definitions[tag]=definition end
     for _,group in pairs(f.addon.delayed_condition) do for tag,definition in pairs(group) do definitions[tag]=definition end end
     for tag,definition in pairs(definitions) do
+        local snapshots={}
         for name,fn in pairs(definition) do if type(fn)=='function' then
             local info=descriptor(fn)
             if info.file:match('^Conditions/') then
                 local module=modules[info.file] or {file=info.file,conditions={},bindings={}};modules[info.file]=module
-                module.conditions[tag]=module.conditions[tag] or {};module.conditions[tag][name]=capture(module,fn)
+                snapshots[info.file]=snapshots[info.file] or {};snapshots[info.file][name]=capture(module,fn)
             end
         end end
+        for path,callbacks in pairs(snapshots) do storeCallbacks(modules[path],tag,definition.builtinSourceVariant,callbacks) end
     end
 end
 local function json(value)

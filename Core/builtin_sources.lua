@@ -23,6 +23,10 @@ function addon:GetBuiltinConditionSource(id)
     local record=self.BuiltinSourceCatalog and self.BuiltinSourceCatalog.conditions[id]
     local definition=(self.conditionDefinitions or self.definitions or {})[id]
     if not record or not definition then return nil,'builtin-source-unavailable' end
+    if record.variants then
+        record=record.variants[definition.builtinSourceVariant]
+        if not record then return nil,'builtin-source-variant-unavailable' end
+    elseif definition.builtinSourceVariant~=nil then return nil,'builtin-source-variant-unavailable' end
     local source={description=definition.description or id,icon=definition.icon,fields=self:CopySettingsData(definition.fields or {}),bindings={},parameters={}}
     if definition.requiredFields then source.requiredFields=self:CopySettingsData(definition.requiredFields) end
     for name in pairs(self.CustomConditionCallbacks) do

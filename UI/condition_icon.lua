@@ -1,5 +1,4 @@
 local _,addon=...
-local AceGUI=LibStub('AceGUI-3.0')
 
 -- Shared image primitive. RM owns ordinary leases; custom Ace containers may
 -- transfer the same public widget contract through the legacy bridge.
@@ -49,7 +48,6 @@ local function constructor(legacy)
     end
     return addon:RegisterConditionWidget(w,1,legacy)
 end
-AceGUI:RegisterWidgetType('RM-ConditionIcon',function() return constructor(true) end,1)
 ---@return RMConditionIcon
 function addon:CreateConditionIcon()
     return self:AcquireConditionWidget('RM-ConditionIcon',constructor)

@@ -23,7 +23,7 @@ local function create(parent)
     addon:SetUIScript(search,"OnTextChanged",function(control)
         if not browser.active then return end
         browser.query=string.lower(string.sub(control:GetText() or "",1,128));browser:RefreshRows()
-        if browser.list then browser.list:SetVerticalScroll(0) end
+        if browser.list then browser.list.workbenchBar:SetValue(0) end
     end)
     addon:SetUIScript(search,"OnEscapePressed",function(control) control:ClearFocus() end)
     local filterEntries={{"all",L["All"]},{"builtin",L["Built In"]},{"custom",L["Custom"]}}
@@ -107,8 +107,54 @@ local function create(parent)
             self.nativeDetails=nil
         end
     end
+    function browser:RetireRow(control)
+        control.browserLease=nil;control.browserEntry=nil;control.browserIndex=nil;addon:SetUIScript(control,'OnClick',nil);control:Hide()
+    end
+    function browser:BindRow(control,entry,index)
+        local lease={};local serial,revision,spec,profile=self.serial,self.resultRevision,self.spec,self.profile
+        local navigation=self.navigationRevision;local key=entry.key
+        control.browserLease=lease;control.browserEntry=entry;control.browserIndex=index
+        control:ClearAllPoints();control:SetPoint('TOPLEFT',child,'TOPLEFT',0,-(index-1)*48);control:SetSize(child:GetWidth(),46)
+        control.nameLabel:SetWidth(math.max(32,child:GetWidth()-12));control.statusLabel:SetWidth(math.max(32,child:GetWidth()-12));control.nameLabel:SetText(entry.name)
+        if entry.readOnly then control.nameLabel:SetTextColor(.357,.753,.922) else control.nameLabel:SetTextColor(.9,.92,.94) end
+        local status=entry.readOnly and L['Built In · read-only'] or entry.fallback and L['Fallback rotation'] or L['Custom rotation']
+        if entry.readOnly and not entry.enabled then status=status..' — '..L['Disabled'] elseif entry.readOnly and not entry.eligible then status=status..' — '..L['Not available'] end
+        if not entry.fallback then status=status..' · '..(entry.priority and string.format(L['Priority %d'],entry.priority) or L['Invalid priority']) end
+        control.statusLabel:SetText(status);control.statusLabel:SetTextColor(.67,.72,.77);addon:SetWorkbenchListSelection(control,key==self.selected)
+        local function requestValid() return browser.active and browser.serial==serial and browser.profile==profile and profile==addon.db.profile and browser.spec==spec and browser.navigationRevision==navigation and browser.rowsByKey[key]~=nil end
+        addon:SetUIScript(control,'OnClick',function() if requestValid() and browser.resultRevision==revision and control.browserLease==lease then browser:SelectRotation(spec,key,false,requestValid) end end);control:Show()
+    end
+    function browser:RefreshViewport()
+        if not self.active or self.profile~=addon.db.profile or self.rebuilding or self.refreshing or not self.rows then return end
+        self.refreshing=true;local binding
+        local ok,why=pcall(function()
+            local first,last=addon:GetWorkbenchVisibleRowRange(#self.rows,48,list.workbenchBar:GetValue(),list:GetHeight(),96)
+            local bound={}
+            for _,control in ipairs(self.rowButtons) do if control.browserLease then
+                local index=control.browserIndex
+                if index>=first and index<=last then
+                    bound[index]=control;control:SetWidth(child:GetWidth());control.nameLabel:SetWidth(math.max(32,child:GetWidth()-12));control.statusLabel:SetWidth(math.max(32,child:GetWidth()-12))
+                else self:RetireRow(control) end
+            end end
+            local free=1
+            for index=first,last do if not bound[index] then
+                while self.rowButtons[free] and self.rowButtons[free].browserLease do free=free+1 end
+                local control=self.rowButtons[free]
+                if not control then
+                    control=addon:CreateWorkbenchListRow(child,child:GetWidth(),46);self.rowButtons[free]=control
+                    control.nameLabel=label(control,'GameFontHighlight');control.nameLabel:SetPoint('TOPLEFT',6,-5)
+                    control.statusLabel=label(control);control.statusLabel:SetPoint('TOPLEFT',6,-24)
+                end
+                binding=control;self:BindRow(control,self.rows[index],index);binding=nil
+            end end
+        end)
+        self.refreshing=nil;if not ok then if binding then pcall(self.RetireRow,self,binding) end;error(why,0) end
+    end
     function browser:RefreshRows()
-        if not self.active then return end
+        if not self.active or self.profile~=addon.db.profile then return end
+        local offset=list.workbenchBar:GetValue();local anchor=self.rows and self.rows[math.floor(offset/48)+1];local anchorOffset=offset%48
+        self.rebuilding=true;self.resultRevision=(self.resultRevision or 0)+1
+        for _,control in ipairs(self.rowButtons) do self:RetireRow(control) end
         local all={{key=DEFAULT,name=DEFAULT,kind="custom",fallback=true}}
         for id,body in pairs(addon.db.profile.rotations[self.spec] or {}) do
             if id~=DEFAULT and type(body)=="table" then
@@ -144,34 +190,16 @@ local function create(parent)
         for _,entry in ipairs(all) do
             if (self.filter=='all' or self.filter==entry.kind) and addon.RotationData.RotationTagMatches(entry.tags,self.selectedTags,self.tagMode) and entry.search:find(self.query,1,true) then rows[#rows+1]=entry end
         end
-        self.rows=rows
-        for index,entry in ipairs(rows) do
-            local control=self.rowButtons[index]
-            if not control then
-                control=addon:CreateWorkbenchListRow(child,child:GetWidth(),46)
-                control.nameLabel=label(control,"GameFontHighlight")
-                control.nameLabel:SetPoint("TOPLEFT",6,-5)
-                control.statusLabel=label(control);control.statusLabel:SetPoint("TOPLEFT",6,-24)
-                self.rowButtons[index]=control
-            end
-            control:SetPoint("TOPLEFT",child,"TOPLEFT",0,-(index-1)*48)
-            control:SetSize(child:GetWidth(),46)
-            control.nameLabel:SetWidth(math.max(32,child:GetWidth()-12));control.statusLabel:SetWidth(math.max(32,child:GetWidth()-12))
-            control.nameLabel:SetText(entry.name)
-            if entry.readOnly then control.nameLabel:SetTextColor(.357,.753,.922)
-            else control.nameLabel:SetTextColor(.9,.92,.94) end
-            local status=entry.readOnly and L["Built In · read-only"] or entry.fallback and L["Fallback rotation"] or L["Custom rotation"]
-            if entry.readOnly and not entry.enabled then status=status.." — "..L["Disabled"]
-            elseif entry.readOnly and not entry.eligible then status=status.." — "..L["Not available"] end
-            if not entry.fallback then status=status..' · '..(entry.priority and string.format(L['Priority %d'],entry.priority) or L['Invalid priority']) end
-            control.statusLabel:SetText(status);control.statusLabel:SetTextColor(.67,.72,.77)
-            addon:SetWorkbenchListSelection(control,entry.key==self.selected)
-            local key=entry.key;addon:SetUIScript(control,"OnClick",function() self:SelectRotation(self.spec,key) end)
-            control:Show()
-        end
-        for index=#rows+1,#self.rowButtons do self.rowButtons[index]:Hide();self.rowButtons[index]:SetScript("OnClick",nil) end
+        self.rows=rows;self.rowsByKey={};local positions={}
+        for index,entry in ipairs(rows) do self.rowsByKey[entry.key]=entry;positions[entry.key]=index end
+        local parts={tostring(self.spec),self.filter,self.query,self.tagMode};for _,tag in ipairs(self.selectedTags) do parts[#parts+1]=tag end
+        for index,value in ipairs(parts) do parts[index]=#value..':'..value end
+        local signature=table.concat(parts,';')
+        if signature~=self.navigationSignature then self.navigationSignature=signature;self.navigationRevision=(self.navigationRevision or 0)+1 end
         if #rows==0 then empty:Show() else empty:Hide() end
-        child:SetHeight(math.max(30,#rows*48));list:UpdateScrollChildRect()
+        child:SetHeight(math.max(30,#rows*48));list:UpdateScrollChildRect();list:UpdateWorkbenchScroll()
+        if anchor and positions[anchor.key] then list.workbenchBar:SetValue((positions[anchor.key]-1)*48+anchorOffset) end
+        self.rebuilding=nil;self:RefreshViewport()
         count:SetText(string.format(L["%d of %d rotations"],#rows,#all))
         if self.pendingId==self.selected or self.nativeDetails and self.pane and self.pane.workspace.pending then duplicate:Disable();compare:Disable() else duplicate:Enable();compare:Enable() end
         for key,control in pairs(self.filters) do if key==self.filter then control:Disable() else control:Enable() end end
@@ -179,22 +207,22 @@ local function create(parent)
     function browser:SetTags(tags)
         if not self.active then return end
         local normalized=addon.RotationData.NormalizeRotationTags(tags or {});if not normalized then return end
-        self.selectedTags=normalized;self.tag=normalized[1];self:RefreshRows();list:SetVerticalScroll(0)
+        self.selectedTags=normalized;self.tag=normalized[1];self:RefreshRows();list.workbenchBar:SetValue(0)
     end
     function browser:SetTag(value) if value==nil or type(value)=='string' then self:SetTags(value and {value} or {}) end end
     function browser:SetFilter(value)
         if value~="all" and value~="builtin" and value~="custom" then return end
-        self.filter=value;self:RefreshRows();list:SetVerticalScroll(0)
+        self.filter=value;self:RefreshRows();list.workbenchBar:SetValue(0)
     end
     function browser:RequestLeave(callback)
         if self.nativeDetails and self.pane and self.pane.RequestLeave then return self.pane:RequestLeave(callback) end
         callback();return true
     end
-    function browser:SelectRotation(spec,id,approved)
-        if not self.active then return end
+    function browser:SelectRotation(spec,id,approved,requestValid)
+        if not self.active or self.profile~=addon.db.profile or requestValid and not requestValid() then return end
         if not approved and self.pane and self.nativeDetails then
             local owner=self.editorOwner
-            return self:RequestLeave(function() if self.active and self.editorOwner==owner then self:SelectRotation(spec,id,true) end end)
+            return self:RequestLeave(function() if self.active and self.editorOwner==owner and (not requestValid or requestValid()) then self:SelectRotation(spec,id,true,requestValid) end end)
         end
         local found=false
         for _,entry in ipairs(self.specEntries) do if entry.id==spec then found=true;break end end
@@ -257,17 +285,17 @@ local function create(parent)
         import:SetPoint("BOTTOMLEFT",left,"BOTTOMLEFT",0,0);compare:SetPoint("BOTTOMLEFT",left,"BOTTOMLEFT",buttonWidth+4,0)
         empty:SetWidth(math.max(40,child:GetWidth()-8))
         if self.pane then self.pane:SetWidth(detail:GetWidth());self.pane:SetHeight(detail:GetHeight()) end
-        self:RefreshRows()
+        self:RefreshViewport()
     end
     function browser:SetWidth(value) frame:SetWidth(value) end
     function browser:SetHeight(value) frame:SetHeight(value) end
     function browser:Release()
-        self.active=false;self.tagPicker:Hide();self:ReleaseDetails();self.pendingId=nil;search:ClearFocus();if self.tagMenu then self.tagMenu:Release() end
-        for _,control in ipairs(self.rowButtons) do control:Hide();addon:SetUIScript(control,"OnClick",nil) end
+        self.active=false;self.serial=(self.serial or 0)+1;self.tagPicker:Hide();self:ReleaseDetails();self.pendingId=nil;search:ClearFocus();if self.tagMenu then self.tagMenu:Release() end
+        for _,control in ipairs(self.rowButtons) do self:RetireRow(control) end
         frame:Hide()
     end
     function browser:Open(selection)
-        self.active=false;self.filter="all";self.tag=nil;self.query="";search:SetText("")
+        self.active=false;self.serial=(self.serial or 0)+1;self.tagPicker:Hide();for _,control in ipairs(self.rowButtons) do self:RetireRow(control) end;self.filter="all";self.tag=nil;self.query="";search:SetText("")
         self.specEntries=addon:GetRotationEditorSpecs()
         for index,entry in ipairs(self.specEntries) do
             local control=self.specButtons[index]
@@ -285,6 +313,7 @@ local function create(parent)
         self:SelectRotation(spec,selection and selection.id or spec==addon.currentSpec and addon.currentRotation or DEFAULT)
         return self
     end
+    list.workbenchBar:HookScript('OnValueChanged',function() browser:RefreshViewport() end)
     addon:SetUIScript(frame,"OnSizeChanged",function() browser:Layout() end)
     return browser
 end

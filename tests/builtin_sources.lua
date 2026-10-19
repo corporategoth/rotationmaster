@@ -46,6 +46,73 @@ test('glyph clone retains the expansion-scoped player class binding',function()
     local source=assert(a:GetBuiltinConditionSource('GLYPH'));local copy=assert(a:CompileCustomCondition('MY_GLYPH',source))
     assert(copy.valid(0,{item=123})==true and a.conditionDefinitions.GLYPH.valid(0,{item=123})==true)
 end)
+test('ROLE clones use the registered product variant rather than the last collected callback body',function()
+    for _,case in ipairs({{1,12,true},{19,4,false},{18,12,false},{5,2,false}}) do
+        local f,a=fixture(case[1],case[2]);local calls={inspect=0,talent=0}
+        f.env.UnitExists=function(unit) assert(unit=='target');return true end
+        f.env.GetInspectSpecialization=function(unit) assert(unit=='target');calls.inspect=calls.inspect+1;return 123 end
+        f.env.GetSpecializationInfoByID=function(id) assert(id==123);return id,'Fixture',nil,nil,nil,'HEALER' end
+        f.env.GetTalentGroupRole=function(spec) assert(spec==a.currentSpec);calls.talent=calls.talent+1;return 'TANK' end
+        local source=assert(a:GetBuiltinConditionSource('ROLE'));local copy=assert(a:CompileCustomCondition('COPY_ROLE',source))
+        local value={unit='target',value='HEALER'};local original=a.conditionDefinitions.ROLE
+        assert(copy.evaluate(value,{})==original.evaluate(value,{}),'exported ROLE body selected another client implementation')
+        assert(copy.valid(0,value)==original.valid(0,value) and copy.print(0,value)==original.print(0,value))
+        assert((source.fields.unit~=nil)==case[3],'source fields do not match the selected callback')
+        if case[3] then assert(calls.inspect==2 and calls.talent==0 and copy.evaluate(value,{})==true)
+        else assert(calls.talent==2 and calls.inspect==0 and copy.evaluate(value,{})==false) end
+        local function widgets(definition)
+            local parent=f.widget('Group');local top=f.widget('Frame');top:SetUserData('root',value);top:SetUserData('funcs',{print=function() return 'summary' end});parent:SetUserData('top',top)
+            definition.widget(parent,0,value);return #parent.children
+        end
+        assert(widgets(copy)==widgets(original) and widgets(copy)==(case[3] and 2 or 1))
+    end
+end)
+test('unknown or absent Built In source variants fail closed without mutating saved source',function()
+    local _,a=fixture(1,12);local definition=a.conditionDefinitions.ROLE
+    definition.builtinSourceVariant='unknown';local source,why=a:GetBuiltinConditionSource('ROLE')
+    assert(source==nil and why=='builtin-source-variant-unavailable')
+    definition.builtinSourceVariant=nil;source,why=a:GetBuiltinConditionSource('ROLE')
+    assert(source==nil and why=='builtin-source-variant-unavailable')
+end)
+local function collect(mode)
+    local output
+    local wrapped={new=function(...)
+        local f=F.new(...);local load=f.load
+        f.load=function(path)
+            local result=load(path)
+            if path=='Conditions/character.lua' and f.addon.definitions.ROLE then
+                local role=f.addon.definitions.ROLE
+                if mode=='unmarked' then role.builtinSourceVariant=nil
+                elseif mode=='mixed' and f.env.WOW_PROJECT_ID==1 then role.builtinSourceVariant=nil
+                elseif mode=='same-key' then role.builtinSourceVariant='same'
+                elseif mode=='invalid-key' then role.builtinSourceVariant=true
+                elseif mode=='missing-callback' and f.env.UnitClass()=='DEATHKNIGHT' then role.help=nil end
+            end
+            return result
+        end
+        return f
+    end}
+    local env=setmetatable({dofile=function(path)
+        if path=='tests/fixtures/addon.lua' then return wrapped end
+        local value=dofile(path)
+        if mode=='reverse' and path=='tests/fixtures/catalog_inventory.lua' then
+            local reversed={};for i=#value.branches,1,-1 do reversed[#reversed+1]=value.branches[i] end;value.branches=reversed
+        end
+        return value
+    end,print=function(value) output=value end},{__index=_G})
+    local tool=assert(loadfile('tools/collect_builtin_sources.lua'));setfenv(tool,env)
+    local ok,why=pcall(tool);return ok,why,output
+end
+test('collector rejects unmarked mixed invalid and same-key divergent source variants including missing callbacks',function()
+    for _,entry in ipairs({{'unmarked','ambiguous builtin callback source'},{'mixed','mixed marked/unmarked'},{'same-key','ambiguous builtin callback source'},{'invalid-key','invalid builtin source variant'},{'missing-callback','ambiguous builtin callback source'}}) do
+        local ok,why=collect(entry[1]);assert(not ok and tostring(why):find(entry[2],1,true),entry[1]..' variant ambiguity was accepted: '..tostring(why))
+    end
+end)
+test('all observed source variants are preserved independently of registration inventory traversal order',function()
+    local ok,why,forward=collect();assert(ok,why)
+    local reversed,reason,backward=collect('reverse');assert(reversed,reason)
+    assert(forward==backward,'catalog depends on which client variant was observed last')
+end)
 test('source display removes only common leading indentation and keeps authored source immutable',function()
     local _,a=fixture();assert(a.FormatLuaSourceDisplay,'display formatter missing')
     local authored='\n        if value then\n            return true\n        end\n    '

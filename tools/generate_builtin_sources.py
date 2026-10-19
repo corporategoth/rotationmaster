@@ -96,11 +96,17 @@ def generated():
                     for metadata in ('bindingID','namespace','compatibilityNamespaces'):
                         if metadata in docs: row[metadata]=docs[metadata]
             catalog['modules'][path]['bindings'][alias]=row
-        for tag,callbacks in sorted(module['conditions'].items()):
-            record={'module':path,'callbacks':{}}
+        def condition_callbacks(callbacks):
+            result={}
             for name,callback in sorted(callbacks.items()):
                 params,body=function_source(source,callback,name)
-                record['callbacks'][name]={'code':body,'parameters':params,'bindings':callback['bindings'],'line':callback['first']}
+                result[name]={'code':body,'parameters':params,'bindings':callback['bindings'],'line':callback['first']}
+            return result
+        records={tag:{'module':path,'callbacks':condition_callbacks(callbacks)} for tag,callbacks in module['conditions'].items()}
+        for tag,variants in module.get('conditionVariants',{}).items():
+            if tag in records: raise ValueError('mixed builtin source variants for '+tag)
+            records[tag]={'module':path,'variants':{variant:{'callbacks':condition_callbacks(callbacks)} for variant,callbacks in variants.items()}}
+        for tag,record in sorted(records.items()):
             if tag in catalog['conditions'] and catalog['conditions'][tag]!=record: raise ValueError('ambiguous source for '+tag)
             catalog['conditions'][tag]=record
         # Export live locals by name: getters preserve reassigned module state.

@@ -63,7 +63,7 @@ function addon:InstallSettingsLayout(p)
         r.refreshing=true;local binding
         local ok,why=pcall(function()
             local top=r.scroll.workbenchBar:GetValue();local height=r.scroll:GetHeight()
-            local first=math.max(1,math.floor((top-102)/34)+1);local last=math.min(#r.matches,math.floor((top+height+102)/34)+1)
+            local first,last=addon:GetWorkbenchVisibleRowRange(#r.matches,34,top,height,102)
             local bound={}
             for _,row in ipairs(r.rows) do if row.rosterLease then
                 local index=row.rosterIndex;local carried=r.orderView and r.orderView.carried and r.orderView.carried[row]

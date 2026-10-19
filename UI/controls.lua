@@ -424,6 +424,11 @@ function addon:CreateWorkbenchPositionPad(parent)
     return pad
 end
 
+-- Flat result lists retain complete data while leasing nearby native rows.
+function addon:GetWorkbenchVisibleRowRange(count,pitch,offset,height,margin)
+    return math.max(1,math.floor((offset-margin)/pitch)+1),math.min(count,math.floor((offset+height+margin)/pitch)+1)
+end
+
 function addon:GetWorkbenchSidebarWidth(width)
     return math.max(210,math.min(270,width*.26))
 end

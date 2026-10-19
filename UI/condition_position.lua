@@ -1,5 +1,4 @@
 local _,addon=...
-local AceGUI=LibStub('AceGUI-3.0')
 
 -- Condition/Help adapter for the same arrow block used by settings and cards.
 ---@class RMConditionPositionPad: AceGUIWidget
@@ -31,7 +30,6 @@ local function constructor(legacy)
     end
     return addon:RegisterConditionWidget(w,1,legacy)
 end
-AceGUI:RegisterWidgetType('RM-ConditionPositionPad',function() return constructor(true) end,1)
 ---@return RMConditionPositionPad
 function addon:CreateConditionPositionPad()
     return self:AcquireConditionWidget('RM-ConditionPositionPad',constructor)

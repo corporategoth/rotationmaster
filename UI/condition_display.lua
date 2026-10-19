@@ -1,5 +1,4 @@
 local _,addon=...
-local AceGUI=LibStub('AceGUI-3.0')
 local function defaultFont() return GameFontHighlightSmall or 'GameFontHighlightSmall' end
 
 ---@class RMConditionLabel: AceGUIWidget
@@ -115,10 +114,6 @@ local function buttonConstructor(legacy)
     return addon:RegisterConditionWidget(w,1,legacy)
 end
 
--- Only explicit legacy callers allocate through Ace. Ordinary Help uses RM pools.
-AceGUI:RegisterWidgetType('RM-ConditionLink',function() return labelConstructor(true,true) end,1)
-AceGUI:RegisterWidgetType('RM-ConditionLabel',function() return labelConstructor(true) end,1)
-AceGUI:RegisterWidgetType('RM-ConditionButton',function() return buttonConstructor(true) end,1)
 ---@return RMConditionLabel
 function addon:CreateConditionLabel() return self:AcquireConditionWidget('RM-ConditionLabel',labelConstructor) end
 ---@return RMConditionButton

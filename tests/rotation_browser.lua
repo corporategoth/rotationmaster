@@ -48,7 +48,7 @@ local function fixture(product,expansion,realCustom)
         return pane
     end
     f.load('UI/rotation_browser.lua')
-    return f,pack,editors,create
+    return f,pack,editors,create,frames
 end
 local function row(browser,key)
     for _,r in ipairs(browser.rows) do if r.key==key then return r end end
@@ -225,5 +225,48 @@ test('missing native editor shows feedback without allocating a legacy rotation 
     assert(not browser.pane and browser.detail.rmEditorError and browser.detail.rmEditorError:IsShown())
     assert(browser.detail.rmEditorError:GetText()=='The native rotation editor is unavailable.')
     browser:Release()
+end)
+local function largeBrowser(n)
+    local f,pack,editors,create,frames=fixture();local a=f.addon;a.db.profile.rotations[0]={}
+    for i=1,n do local body={name=string.format('Entry %04d',i),switch={},rotation={},cooldowns={}};assert(a.RotationData.ValidateBody(body,{conditions=a.conditionDefinitions}).valid);a.db.profile.rotations[0]['entry-'..i]=body end
+    local host=create('Frame');host:SetSize(1000,700);local browser=a:CreateRotationBrowser(host,{spec=0,id='entry-1'})
+    return f,browser,editors,frames,create
+end
+local function visibleBrowserRow(browser,id)
+    for _,control in ipairs(browser.rowButtons) do if control.browserLease and control.browserEntry.key==id then return control end end
+end
+test('rotation browser complete1000-row data uses bounded warm native viewport controls',function()
+    local f,b,editors,frames=largeBrowser(1000);local a=f.addon;assert(#b.rows==1003 and #b.rowButtons<25,'rotation browser allocated every result')
+    local pane=b.pane;local count=#editors;local observations=0;local tags=a.GetRotationTagView;a.GetRotationTagView=function(...) observations=observations+1;return tags(...) end
+    for i=0,10 do b.list.workbenchBar:SetValue(b.list.workbenchBar.scrollRange*i/10) end
+    local warm=#frames;for pass=1,2 do for i=10,0,-1 do b.list.workbenchBar:SetValue(b.list.workbenchBar.scrollRange*i/10) end end
+    assert(#frames==warm and observations==0 and b.pane==pane and #editors==count,'scroll rebuilt library metadata, controls or the editor')
+    b.list.workbenchBar:SetValue(b.list.workbenchBar.scrollRange);assert(visibleBrowserRow(b,'entry-1000'));visibleBrowserRow(b,'entry-1000'):Click();assert(b.selected=='entry-1000');b:Release()
+end)
+test('browser filter and recycled callbacks cannot select old rows or approve retired navigation',function()
+    local f,b,editors=largeBrowser(1000);local old=visibleBrowserRow(b,'entry-2').scripts.OnClick;local pending;b.pane.RequestLeave=function(_,callback) pending=callback;return false end
+    visibleBrowserRow(b,'entry-2'):Click();assert(pending);b.search:SetText('Entry 1000');b.search.scripts.OnTextChanged(b.search,true);local count=#editors
+    old();pending();assert(b.selected=='entry-1' and #editors==count,'retired row or navigation reopened an old target')
+    b.pane.RequestLeave=nil;visibleBrowserRow(b,'entry-1000'):Click();assert(b.selected=='entry-1000');b:Release()
+end)
+test('browser resize keeps invalid pending detail focus and remeasures retained labels without metadata scans',function()
+    local f,b,editors,frames,create=largeBrowser(1000);local input=create('EditBox',nil,b.pane.frame);input:SetText('bad pending input');input:SetFocus();input:SetCursorPosition(4)
+    local first=visibleBrowserRow(b,'entry-1');local lease=first.browserLease;local pane=b.pane;local count=#editors;local observations=0;local tags=f.addon.GetRotationTagView;f.addon.GetRotationTagView=function(...) observations=observations+1;return tags(...) end
+    b:SetWidth(700);assert(b.pane==pane and #editors==count and first.browserLease==lease and observations==0,'resize rebound the editor or rebuilt library data')
+    assert(first.nameLabel:GetWidth()==first:GetWidth()-12 and first.statusLabel:GetWidth()==first:GetWidth()-12)
+    assert(input:GetText()=='bad pending input' and input:HasFocus() and input:GetCursorPosition()==4)
+    b:Release();local stale=first.scripts.OnClick;if stale then stale() end;assert(not b.active)
+end)
+test('browser approved navigation survives data refresh but not profile replacement or reopen',function()
+    local f,b,editors=largeBrowser(1000);local pending;b.pane.RequestLeave=function(_,callback) pending=callback;return false end
+    visibleBrowserRow(b,'entry-2'):Click();b:RefreshRows();pending();assert(b.selected=='entry-2','metadata refresh lost an approved target with unchanged filters')
+    local old=visibleBrowserRow(b,'entry-3').scripts.OnClick;local profile=f.addon.db.profile;local count=#editors;f.addon.db.profile={};old();assert(b.selected=='entry-2' and #editors==count,'retired profile callback opened another editor')
+    f.addon.db.profile=profile;b:Release();b:Open({spec=0,id='entry-1'});count=#editors;old();assert(b.selected=='entry-1' and #editors==count,'old browser opening selected a stale target');b:Release()
+end)
+test('browser binding error retires its partial row and recovers without replacing detail state',function()
+    local f,b,editors=largeBrowser(1000);local stale=visibleBrowserRow(b,'entry-2').scripts.OnClick;local pane=b.pane;local select=f.addon.SetWorkbenchListSelection;local failed=false
+    f.addon.SetWorkbenchListSelection=function(...) if not failed then failed=true;error('injected browser binding failure') end;return select(...) end
+    local ok=pcall(b.list.workbenchBar.SetValue,b.list.workbenchBar,b.list.workbenchBar.scrollRange);assert(not ok and failed and not b.refreshing)
+    f.addon.SetWorkbenchListSelection=select;b:RefreshViewport();stale();assert(visibleBrowserRow(b,'entry-1000') and b.pane==pane and b.selected=='entry-1');b:Release()
 end)
 finish()

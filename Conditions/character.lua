@@ -173,6 +173,7 @@ if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
 
 
     addon:RegisterCondition("ROLE", {
+        builtinSourceVariant = "inspect",
         description = L["Role"],
         icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\character",
         fields = { unit = "string", value = "string" },
@@ -232,6 +233,7 @@ else
 
     if LE_EXPANSION_LEVEL_CURRENT >= 2 then
         addon:RegisterCondition("ROLE", {
+            builtinSourceVariant = "talent",
             description = L["Role"],
             icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\character",
             fields = { value = "string" },

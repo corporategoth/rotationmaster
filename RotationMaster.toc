@@ -114,6 +114,7 @@ UI/condition_widgets.lua
 UI/condition_icon.lua
 UI/condition_position.lua
 UI/condition_display.lua
+UI/native_widget_compat.lua
 UI/selector.lua
 UI/checkbox.lua
 UI/condition_inputs.lua

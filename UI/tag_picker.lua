@@ -45,12 +45,14 @@ function addon:CreateRotationTagPicker(parent,options)
         local query=(self.input:GetText() or ''):lower();local entries={};local selected={};for _,tag in ipairs(self.tags) do selected[tag:lower()]=true end
         for _,tag in ipairs(options.available() or {}) do if tag:lower():find(query,1,true) then
             local entry={value=tag,text=tag,selected=selected[tag:lower()],color=color(tag)}
-            if options.setColor and addon.CreateWorkbenchColorPicker then entry.chooseColor=function(swatch,repaint)
-                if not valid() then return end
+            if options.setColor and addon.CreateWorkbenchColorPicker then entry.chooseColor=function(swatch,repaint,leaseValid)
+                local function colorValid() return valid() and (not leaseValid or leaseValid()) end
+                if not colorValid() then return end
                 self.colorPicker=self.colorPicker or addon:CreateWorkbenchColorPicker(frame)
-                self.colorPicker:Open(color(tag),function(r,g,b,a) if valid() then
+                self.colorPicker:Open(color(tag),function(r,g,b,a) if colorValid() then
                     local rgba={r=r,g=g,b=b,a=a};options.setColor(tag,rgba);self:Layout();repaint(rgba)
-                end end,valid,swatch)
+                end end,colorValid,swatch)
+                return self.colorPicker
             end end
             entries[#entries+1]=entry
         end end
