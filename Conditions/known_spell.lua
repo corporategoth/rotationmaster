@@ -71,9 +71,15 @@ addon:RegisterCondition("SPELL_KNOWN", {
 })
 
 -- BEGIN GENERATED RM SOURCE BINDINGS
-if addon.RegisterBuiltinSourceModule then
-    addon:RegisterBuiltinSourceModule("Conditions/known_spell.lua", function(name)
+do
+    local function sourceGetter(name)
         if name=="validID" then return validID end
-    end)
+    end
+    if addon.RegisterBuiltinSourceModule then
+        addon:RegisterBuiltinSourceModule("Conditions/known_spell.lua", sourceGetter)
+    else
+        addon.builtinSourceModules=addon.builtinSourceModules or {}
+        addon.builtinSourceModules["Conditions/known_spell.lua"]=sourceGetter
+    end
 end
 -- END GENERATED RM SOURCE BINDINGS

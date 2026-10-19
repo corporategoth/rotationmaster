@@ -2,24 +2,30 @@ local addon_name,addon=...
 local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
 -- Text-only transfers never execute Lua. The caller validates the candidate
 -- and applies it only while its original form and database are still alive.
+function addon:CreateWorkbenchTransferShell(width,height)
+    width,height=width or 570,height or 430
+    local d={frame=CreateFrame('Frame',nil,UIParent),sharedTransferShell=true}
+    d.frame:SetSize(width,height);d.frame:SetPoint('CENTER');d.frame:SetFrameStrata('FULLSCREEN_DIALOG');d.frame:EnableMouse(true);d.frame:SetToplevel(true);self:MakeWindowOpaque(d.frame)
+    d.title=d.frame:CreateFontString(nil,'OVERLAY','GameFontNormal');d.chrome=self:CreateWorkbenchDialogChrome(d.frame,d.title);d.chromeUpdate=d.frame:GetScript('OnUpdate')
+    d.scroll=self:CreateWorkbenchScrollFrame(d.frame);d.scroll:SetPoint('TOPLEFT',12,-40);d.scroll:SetSize(width-50,height-130)
+    d.input=CreateFrame('EditBox',nil,d.scroll);d.input:SetFontObject('GameFontHighlightSmall');d.input:SetMultiLine(true);d.input:SetAutoFocus(false);d.input:SetMaxLetters(131072);d.input:SetSize(width-60,height-130);d.input:SetPoint('TOPLEFT');d.scroll:SetScrollChild(d.input)
+    d.copy=self:CreateWorkbenchButton(d.frame,L['Copy'],64);d.copy:SetPoint('BOTTOMLEFT',12,28)
+    d.clear=self:CreateWorkbenchButton(d.frame,L['Clear'],64);d.clear:SetPoint('BOTTOMLEFT',82,28)
+    d.apply=self:CreateWorkbenchButton(d.frame,L['Import'],100);d.apply:SetPoint('BOTTOMRIGHT',-120,28)
+    d.cancel=self:CreateWorkbenchButton(d.frame,L['Cancel'],100);d.cancel:SetPoint('BOTTOMRIGHT',-12,28)
+    d.close=self:CreateWorkbenchIconButton(d.frame,'close',L['Close']);d.close:SetPoint('TOPRIGHT',-5,-5)
+    return d
+end
 function addon:ShowSettingsTextTransfer(p,title,text,apply,options)
     local d=p.textDialog
     if not d then
-        d={frame=CreateFrame('Frame',nil,UIParent)};p.textDialog=d;d.frame:SetSize(570,430);d.frame:SetPoint('CENTER');d.frame:SetFrameStrata('FULLSCREEN_DIALOG');d.frame:EnableMouse(true);d.frame:SetToplevel(true);addon:MakeWindowOpaque(d.frame)
-        d.title=d.frame:CreateFontString(nil,'OVERLAY','GameFontNormal');d.chrome=addon:CreateWorkbenchDialogChrome(d.frame,d.title)
-        d.scroll=addon:CreateWorkbenchScrollFrame(d.frame);d.scroll:SetPoint('TOPLEFT',12,-40);d.scroll:SetSize(520,300)
-        d.input=CreateFrame('EditBox',nil,d.scroll);d.input:SetFontObject('GameFontHighlightSmall');d.input:SetMultiLine(true);d.input:SetAutoFocus(false);d.input:SetMaxLetters(131072);d.input:SetSize(510,300);d.input:SetPoint('TOPLEFT');d.scroll:SetScrollChild(d.input)
+        d=self:CreateWorkbenchTransferShell(570,430);p.textDialog=d
         d.original=d.frame:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall');d.original:SetPoint('TOPLEFT',12,-36);d.original:SetSize(546,22);d.original:SetJustifyH('LEFT')
         d.destination=addon:CreateWorkbenchCheckBox(d.frame,L['Replace selected entry'],210);d.destination:SetPoint('TOPLEFT',12,-62)
         d.nameLabel=d.frame:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall');d.nameLabel:SetPoint('TOPLEFT',232,-62);d.nameLabel:SetSize(54,24);d.nameLabel:SetText(L['Name'])
         d.name=addon:CreateWorkbenchEditBox(d.frame);d.name:SetPoint('TOPLEFT',290,-62);d.name:SetSize(268,24);d.name:SetMaxLetters(256)
         d.status=d.frame:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall');d.status:SetPoint('TOPLEFT',12,-346);d.status:SetSize(546,32);d.status:SetWordWrap(true);d.status:SetJustifyH('LEFT')
-        d.copy=addon:CreateWorkbenchButton(d.frame,L['Copy'],64);d.copy:SetPoint('BOTTOMLEFT',12,28)
-        d.clear=addon:CreateWorkbenchButton(d.frame,L['Clear'],64);d.clear:SetPoint('BOTTOMLEFT',82,28)
-        d.apply=addon:CreateWorkbenchButton(d.frame,L['Import'],100);d.apply:SetPoint('BOTTOMRIGHT',-120,28)
-        d.cancel=addon:CreateWorkbenchButton(d.frame,L['Cancel'],100);d.cancel:SetPoint('BOTTOMRIGHT',-12,28)
         d.preview=addon:CreateWorkbenchButton(d.frame,L['Preview import'],90);d.preview:SetPoint('BOTTOMLEFT',152,28);d.inspect=addon:CreateWorkbenchButton(d.frame,L['Inspect import'],90);d.inspect:SetPoint('BOTTOMLEFT',248,28)
-        d.close=addon:CreateWorkbenchIconButton(d.frame,'close',L['Close']);d.close:SetPoint('TOPRIGHT',-5,-5)
         local function hide() d.frame:Hide() end
         addon:SetUIScript(d.cancel,'OnClick',hide);addon:SetUIScript(d.close,'OnClick',hide);addon:SetUIScript(d.frame,'OnHide',function() d.input:ClearFocus();if d.options and d.options.onClose then d.options.onClose() end end)
         addon:SetUIScript(d.input,'OnSizeChanged',function() d.scroll:UpdateWorkbenchScroll() end)

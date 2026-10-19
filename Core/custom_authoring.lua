@@ -89,13 +89,24 @@ function addon:NormalizeCustomConditionRequiredFields(required,fields)
     return result
 end
 function addon:CustomConditionSignature(source,name)
-    local params=source.parameters and source.parameters[name]
-    return 'function('..(params and table.concat(params,', ') or callbacks[name])..')'
+    return 'function('..callbacks[name]..')'
+end
+function addon:CustomConditionParameterAliases(source,name)
+    local aliases={};local doc=docs[name]
+    for index,original in ipairs(source.parameters and source.parameters[name] or {}) do
+        local canonical=doc and doc.args[index] and doc.args[index][1]
+        if canonical and original~='...' and original~=canonical then aliases[original]=canonical end
+    end
+    return aliases
 end
 function addon:CompileCustomConditionCallback(key,name,code,bindings,parameters)
-    local params=parameters and parameters[name] and table.concat(parameters[name],',') or callbacks[name]
+    local params=callbacks[name]
     if not params or type(code)~='string' then return nil,'invalid-callback' end
-    return loadstring('return function(addon, L)\nreturn function('..params..')\n'..(bindings and self:FunctionBindingPrelude(bindings) or '')..'\n'..code..'\nend\nend','@RotationMaster:custom:'..tostring(key):sub(1,128)..':'..name)
+    local names,values={},{};for alias,canonical in pairs(self:CustomConditionParameterAliases({parameters=parameters},name)) do names[#names+1]=alias;values[#values+1]=canonical end
+    -- Original packaged names stay compatible while the editor and new code
+    -- always receive the complete public callback contract.
+    local aliases=#names>0 and 'local '..table.concat(names,',')..'='..table.concat(values,',')..'\n' or ''
+    return self:CompileLuaCallbackBody(aliases..code,params,bindings,'@RotationMaster:custom:'..tostring(key):sub(1,128)..':'..name)
 end
 function addon:ValidateCustomConditionSource(key,source,compatibility,allowUnavailable)
     if type(loadstring)~='function' then return nil,{field='compiler',reason='compiler-unavailable'} end

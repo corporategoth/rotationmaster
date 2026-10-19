@@ -58,7 +58,7 @@ function addon:BuildInlineCustomCondition(p,key,source,readOnly)
     local geometry=self:GetWorkbenchRosterGeometry(p.frame:GetWidth(),p.frame:GetHeight())
     local options={readOnly=readOnly,parent=p.frame,x=geometry.detailX,footer=p.frame,width=geometry.detailWidth,height=math.max(160,p.frame:GetHeight()-34),editor=p.inlineEditorCache,resume=p.inlineResume};p.inlineResume=nil
     options.initialize=function(model)
-        if isNew and p.newConditionKey then model.key=p.newConditionKey end
+        if isNew and p.newConditionKey then model.key=p.newConditionKey;model.baseline.key=model.key;model.creationPending=true end
         model.context=self:CopySettingsData(preferences);model.baseline.context=self:CopySettingsData(preferences)
     end
     options.closeOwner=function(mouse)

@@ -66,6 +66,8 @@ Core/functions.lua
 Data/builtin_sources.lua
 Core/builtin_sources.lua
 Core/custom_authoring.lua
+Core/lua_symbols.lua
+Core/function_data.lua
 Core/schema_authoring.lua
 Core/aura_conditions.lua
 Data/plain.lua
@@ -128,6 +130,10 @@ UI/settings_announces.lua
 UI/settings_effects.lua
 UI/settings_items.lua
 UI/settings_conditions.lua
+UI/settings_functions.lua
+UI/function_bindings.lua
+UI/function_source_pane.lua
+UI/function_bundle_transfer.lua
 UI/config.lua
 UI/rotation_browser.lua
 UI/condition_picker.lua
@@ -163,11 +169,15 @@ Options/itemset.lua
 Options/rotations.lua
 Options/custom_condition.lua
 UI/lua_input_diagnostics.lua
+Libs/LuaWorkbench-Embed/modules.lua
+Integrations/lua_workbench.lua
+UI/lua_completion.lua
 UI/lua_editor.lua
 UI/schema_cards.lua
 UI/schema_editor.lua
 UI/custom_source_fields.lua
 UI/custom_condition_editor.lua
+UI/condition_source_preview.lua
 UI/condition_source_pane.lua
 Options/conditions.lua
 Options/conditional.lua

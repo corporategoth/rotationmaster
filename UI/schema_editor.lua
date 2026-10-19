@@ -7,7 +7,7 @@ function addon:ShowFieldSchemaEditor(owner,fields,fieldOrder,changed,ownerValid,
     local frame=d.frame;frame:SetSize(760,540);frame:ClearAllPoints();frame:SetPoint('CENTER');frame:EnableMouse(true);frame:SetToplevel(true);frame:SetClampedToScreen(true);addon:MakeWindowOpaque(frame)
     d.title=d.title or frame:CreateFontString(nil,'OVERLAY','GameFontNormal');d.chrome=d.chrome or addon:CreateWorkbenchDialogChrome(frame,d.title);d.chrome:SetContext(L['Field schema'],L['Fields'],owner.model.key)
     d.close=d.close or addon:CreateWorkbenchIconButton(frame,'close',L['Close']);d.close:SetPoint('TOPRIGHT',-5,-5)
-    d.host=d.host or CreateFrame('Frame',nil,frame);d.host:SetPoint('TOPLEFT',8,-38);d.host:SetSize(744,438)
+    d.host=d.host or CreateFrame('Frame',nil,frame);d.host:SetPoint('TOPLEFT',8,-64);d.host:SetSize(744,420)
     d.form=d.form or addon:CreateSettingsForm(d.host);local p=d.form
     local model,why=addon:NewFieldSchemaDraft(fields,fieldOrder)
     if not model then d.active=false;frame:Hide();owner.form:Message(string.format(L['Invalid field schema: %s'],why));return nil end
@@ -44,15 +44,20 @@ function addon:ShowFieldSchemaEditor(owner,fields,fieldOrder,changed,ownerValid,
     end
     for i,entry in ipairs({{'undo','undo',L['Undo']},{'redo','redo',L['Redo']},{'apply',nil,L['Apply']},{'cancel',nil,L['Cancel']}}) do
         d[entry[1]]=d[entry[1]] or (entry[2] and addon:CreateWorkbenchHistoryButton(frame,entry[2],entry[3]) or addon:CreateWorkbenchButton(frame,entry[3],90))
-        local b=d[entry[1]];b:ClearAllPoints();if i<3 then b:SetPoint('BOTTOMLEFT',12+(i-1)*74,28) else b:SetPoint('BOTTOMRIGHT',-12-(4-i)*98,28) end
+        local b=d[entry[1]];b:ClearAllPoints();if i<3 then b:SetPoint('TOPLEFT',12+(i-1)*74,-34) else b:SetPoint('BOTTOMRIGHT',-12-(4-i)*98,24) end
         addon:SetUIScript(b,'OnClick',function()
             if not valid() then return end
             if i==4 then d:Close() elseif i==3 then d:Apply() elseif p:FlushEdits() and d.model:Travel(i==2) then p:Draw() end
         end)
     end
+    d.add=d.add or addon:CreateWorkbenchLabeledIconButton(frame,'plus',L['Add field'],150);d.add:ClearAllPoints();d.add:SetPoint('TOPRIGHT',-12,-34)
+    addon:SetUIScript(d.add,'OnClick',function() if valid() and p:FlushEdits() and d.model:Add({}) then p:Draw() end end)
     addon:SetUIScript(d.close,'OnClick',function() if valid() then d:Hide() end end)
     p:SetWidth(d.host:GetWidth());p:SetHeight(d.host:GetHeight())
     p:Open(function(form)
+        form.scroll:ClearAllPoints();form.scroll:SetPoint('TOPLEFT',0,0);form.scroll:SetSize(form.frame:GetWidth()-20,form.frame:GetHeight())
+        form.fields.add=d.add
+        form.message:SetParent(frame);form.message:ClearAllPoints();form.message:SetPoint('BOTTOMLEFT',12,26);form.message:SetPoint('RIGHT',d.apply,'LEFT',-8,0);form.message:SetHeight(20)
         addon:BuildFieldSchemaCards(form,d)
         if resume then
             for _,record in ipairs(form.edits) do for key,text in pairs(resume.raw) do if form.fields[key]==record.control then record.control:SetText(text);record.dirty=true end end end

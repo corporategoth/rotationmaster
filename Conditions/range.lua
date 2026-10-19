@@ -27,8 +27,14 @@ addon:RegisterCondition("BEYOND_MELEE",{
 })
 
 -- BEGIN GENERATED RM SOURCE BINDINGS
-if addon.RegisterBuiltinSourceModule then
-    addon:RegisterBuiltinSourceModule("Conditions/range.lua", function(name)
-    end)
+do
+    local function sourceGetter(name)
+    end
+    if addon.RegisterBuiltinSourceModule then
+        addon:RegisterBuiltinSourceModule("Conditions/range.lua", sourceGetter)
+    else
+        addon.builtinSourceModules=addon.builtinSourceModules or {}
+        addon.builtinSourceModules["Conditions/range.lua"]=sourceGetter
+    end
 end
 -- END GENERATED RM SOURCE BINDINGS

@@ -690,12 +690,18 @@ addon:RegisterCondition("IMMUNE", {
 end
 
 -- BEGIN GENERATED RM SOURCE BINDINGS
-if addon.RegisterBuiltinSourceModule then
-    addon:RegisterBuiltinSourceModule("Conditions/character.lua", function(name)
+do
+    local function sourceGetter(name)
         if name=="character_class" then return character_class end
         if name=="color" then return color end
         if name=="helpers" then return helpers end
         if name=="unit_class_num" then return unit_class_num end
-    end)
+    end
+    if addon.RegisterBuiltinSourceModule then
+        addon:RegisterBuiltinSourceModule("Conditions/character.lua", sourceGetter)
+    else
+        addon.builtinSourceModules=addon.builtinSourceModules or {}
+        addon.builtinSourceModules["Conditions/character.lua"]=sourceGetter
+    end
 end
 -- END GENERATED RM SOURCE BINDINGS

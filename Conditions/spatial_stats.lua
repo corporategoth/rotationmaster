@@ -751,11 +751,17 @@ addon:RegisterCondition("PROXIMITY_MANAPCT_COUNT", {
 })
 
 -- BEGIN GENERATED RM SOURCE BINDINGS
-if addon.RegisterBuiltinSourceModule then
-    addon:RegisterBuiltinSourceModule("Conditions/spatial_stats.lua", function(name)
+do
+    local function sourceGetter(name)
         if name=="aggregate" then return aggregate end
         if name=="color" then return color end
         if name=="helpers" then return helpers end
-    end)
+    end
+    if addon.RegisterBuiltinSourceModule then
+        addon:RegisterBuiltinSourceModule("Conditions/spatial_stats.lua", sourceGetter)
+    else
+        addon.builtinSourceModules=addon.builtinSourceModules or {}
+        addon.builtinSourceModules["Conditions/spatial_stats.lua"]=sourceGetter
+    end
 end
 -- END GENERATED RM SOURCE BINDINGS

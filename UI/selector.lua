@@ -102,3 +102,18 @@ function addon:CreateConditionDropdown()
     ---@cast w RMConditionSelector
     return w
 end
+
+-- BEGIN GENERATED RM SOURCE BINDINGS
+do
+    local function sourceGetter(name)
+        if name=="AceGUI" then return AceGUI end
+        if name=="CreateConditionDropdown" then return addon.CreateConditionDropdown end
+    end
+    if addon.RegisterBuiltinSourceModule then
+        addon:RegisterBuiltinSourceModule("UI/selector.lua", sourceGetter)
+    else
+        addon.builtinSourceModules=addon.builtinSourceModules or {}
+        addon.builtinSourceModules["UI/selector.lua"]=sourceGetter
+    end
+end
+-- END GENERATED RM SOURCE BINDINGS

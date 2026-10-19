@@ -207,10 +207,16 @@ addon:RegisterCondition("OUTDOORS", {
 })
 
 -- BEGIN GENERATED RM SOURCE BINDINGS
-if addon.RegisterBuiltinSourceModule then
-    addon:RegisterBuiltinSourceModule("Conditions/misc.lua", function(name)
+do
+    local function sourceGetter(name)
         if name=="color" then return color end
         if name=="helpers" then return helpers end
-    end)
+    end
+    if addon.RegisterBuiltinSourceModule then
+        addon:RegisterBuiltinSourceModule("Conditions/misc.lua", sourceGetter)
+    else
+        addon.builtinSourceModules=addon.builtinSourceModules or {}
+        addon.builtinSourceModules["Conditions/misc.lua"]=sourceGetter
+    end
 end
 -- END GENERATED RM SOURCE BINDINGS

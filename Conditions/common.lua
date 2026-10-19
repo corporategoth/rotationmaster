@@ -501,3 +501,20 @@ function addon:Widget_UnitWidget(value, units, update, field)
 
     return unit
 end
+
+-- BEGIN GENERATED RM SOURCE BINDINGS
+do
+    local function sourceGetter(name)
+        if name=="AceGUI" then return AceGUI end
+        if name=="SpellData" then return SpellData end
+        if name=="Widget_SpellWidget" then return addon.Widget_SpellWidget end
+        if name=="Widget_UnitWidget" then return addon.Widget_UnitWidget end
+    end
+    if addon.RegisterBuiltinSourceModule then
+        addon:RegisterBuiltinSourceModule("Conditions/common.lua", sourceGetter)
+    else
+        addon.builtinSourceModules=addon.builtinSourceModules or {}
+        addon.builtinSourceModules["Conditions/common.lua"]=sourceGetter
+    end
+end
+-- END GENERATED RM SOURCE BINDINGS

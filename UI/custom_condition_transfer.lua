@@ -2,6 +2,7 @@ local addon_name,addon=...
 local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
 function addon:ShowCustomConditionTransfer(parent,update,key,condition)
     local owner=parent.rmConditionOwner;if not owner then return end
+    if parent.nativeCustomEditor and self.ShowConditionFunctionBundleTransfer and condition.bindings and next(condition.bindings) then return self:ShowConditionFunctionBundleTransfer(parent,update,key,condition) end
     local codec=self:NewRotationCodec();local text,why=codec:Encode({format='RM-CustomCondition',version=1,name=key or '',condition=condition})
     if not text then return nil,why end
     local p=parent.rmCustomTransferForm
@@ -17,7 +18,14 @@ function addon:ShowCustomConditionTransfer(parent,update,key,condition)
             if valid() then if not parent.nativeCustomEditor then parent:SetCallback('OnClose',function(widget) LibStub('AceGUI-3.0'):Release(widget) end) end;parent:Show() end
         end}
     dialog=self:ShowSettingsTextTransfer(p,L['Import/Export Condition'],text,function(input,settings)
-        local parsed,errorText=self:ParseCustomConditionImport(input,codec);if not parsed then return false,errorText end
+        local parsed,errorText=self:ParseCustomConditionImport(input,codec)
+        if not parsed then
+            if parent.nativeCustomEditor and self.ShowConditionFunctionBundleTransfer then
+                local bundle=self:ParseFunctionBundleImport(input,codec)
+                if bundle and bundle.root.kind=='condition' then dialog.frame:Hide();self:ShowConditionFunctionBundleTransfer(parent,update,key,condition,input);return false,L['Review the dependency bundle before applying it.'] end
+            end
+            return false,errorText
+        end
         local destination=settings.mode=='replace' and key or settings.name
         if not self:IsCustomConditionIdentifier(destination,settings.mode=='replace') then return false,L['Use letters, numbers and underscores for the condition identifier.'] end
         if settings.mode=='new' and self:describeCondition(destination)~=nil then return false,L['That condition identifier already exists.'] end

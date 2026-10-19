@@ -27,6 +27,23 @@ function addon:FunctionBindingPrelude(bindings)
     local lines={};for _,alias in ipairs(keys) do lines[#lines+1]='local '..alias..'=addon:RequireFunctionBinding('..string.format('%q',bindings[alias])..')' end
     return table.concat(lines,'\n')
 end
+function addon:NormalizeLuaSourceForEditor(code)
+    code=(code or ''):gsub('^[ \t\r]*\n','')
+    while code:match('^[ \t\r]*\n') do code=code:gsub('^[ \t\r]*\n','') end
+    local syntax=self.LuaSyntax
+    -- Use the existing Lua tokenizer/formatter so multiline literals retain
+    -- their contents; stripping whitespace from every line would change them.
+    if syntax and syntax.indentCode then code=syntax.decode(syntax.indentCode(syntax.encode(code),4)) end
+    return code
+end
+function addon:CompileLuaCallbackBody(code,parameters,bindings,chunkName)
+    if type(loadstring)~='function' then return nil,'compiler-unavailable' end
+    -- A valid generated wrapper alone is insufficient: an unmatched `end` in
+    -- the supplied body can escape into its return list and run at bind time.
+    -- Check the body as an independent chunk first. Neither chunk is executed.
+    local body,why=loadstring(code,chunkName);if not body then return nil,why end
+    return loadstring('return function(addon,L) return function('..parameters..')\n'..self:FunctionBindingPrelude(bindings)..'\n'..code..'\nend end',chunkName)
+end
 function addon:ValidateCustomFunctionSource(id,source)
     if not self:IsCustomFunctionIdentifier(id) then return nil,'invalid-function-identifier' end
     if type(source)~='table' or getmetatable(source) or not text(source.description,4096,true) or not text(source.code,65536) or source.name~=nil and not text(source.name,256) or source.disabled~=nil and type(source.disabled)~='boolean' then return nil,'invalid-function-source' end
@@ -45,7 +62,7 @@ function addon:ValidateCustomFunctionSource(id,source)
     local bindings,why=self:NormalizeFunctionBindings(source.bindings,source.args);if not bindings then return nil,why end
     if source.disabled then return {bindings=bindings} end
     local params={};for _,argument in ipairs(source.args) do params[#params+1]=argument.name end
-    local chunk,errorText=loadstring('return function(addon,L) return function('..table.concat(params,',')..')\n'..self:FunctionBindingPrelude(bindings)..'\n'..source.code..'\nend end','@RotationMaster:function:'..id)
+    local chunk,errorText=self:CompileLuaCallbackBody(source.code,table.concat(params,','),bindings,'@RotationMaster:function:'..id)
     if not chunk then return nil,errorText end
     return {bindings=bindings,chunk=chunk}
 end
@@ -121,20 +138,25 @@ function addon:PrepareFunctionConsumerTransition(registry)
     end
     return true
 end
-function addon:RefreshFunctionConsumers()
+-- Staged imports defer runtime selection refresh until commit and retain every
+-- resume attempt so rollback can release partially initialized hook resources.
+function addon:RefreshFunctionConsumers(deferRefresh)
+    local successful,attempted=true,{}
     for id,definition in pairs(self.conditionDefinitions or {}) do
         if definition.functionBindings then
             local ok,why=self:AreFunctionBindingsAvailable(definition.functionBindings)
             definition.functionUnavailable=not ok and why or nil
             if ok and definition.functionSuspended and not definition.disabled then
+                attempted[#attempted+1]={id=id,definition=definition}
                 local registered=true;if definition.on_register then registered=pcall(definition.on_register,id) end
-                if registered then definition.functionSuspended=nil else definition.functionUnavailable='function-consumer-registration-failed' end
+                if registered then definition.functionSuspended=nil else successful=false;definition.functionUnavailable='function-consumer-registration-failed' end
             end
             if self.ResetConditionQuarantine then self:ResetConditionQuarantine(definition) end
         end
     end
     self.conditionRegistryVersion=(self.conditionRegistryVersion or 0)+1
-    if self.RefreshConditionConsumers then self:RefreshConditionConsumers() end
+    if not deferRefresh and self.RefreshConditionConsumers then self:RefreshConditionConsumers() end
+    return successful,not successful and 'function-consumer-registration-failed' or nil,attempted
 end
 function addon:InstallCustomFunction(id,source,expected)
     if not self:IsCustomFunctionIdentifier(id) then return nil,'invalid-function-identifier' end

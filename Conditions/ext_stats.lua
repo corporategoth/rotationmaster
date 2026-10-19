@@ -208,11 +208,17 @@ addon.delayed_condition["ExtendedCharacterStats"]["ECS_STAT_PCT"] = {
 }
 
 -- BEGIN GENERATED RM SOURCE BINDINGS
-if addon.RegisterBuiltinSourceModule then
-    addon:RegisterBuiltinSourceModule("Conditions/ext_stats.lua", function(name)
+do
+    local function sourceGetter(name)
         if name=="color" then return color end
         if name=="ecs_state" then return ecs_state end
         if name=="helpers" then return helpers end
-    end)
+    end
+    if addon.RegisterBuiltinSourceModule then
+        addon:RegisterBuiltinSourceModule("Conditions/ext_stats.lua", sourceGetter)
+    else
+        addon.builtinSourceModules=addon.builtinSourceModules or {}
+        addon.builtinSourceModules["Conditions/ext_stats.lua"]=sourceGetter
+    end
 end
 -- END GENERATED RM SOURCE BINDINGS

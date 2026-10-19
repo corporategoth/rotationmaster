@@ -207,8 +207,8 @@ addon:RegisterCondition("TOTEM_SPELL_REMAIN", {
 })
 
 -- BEGIN GENERATED RM SOURCE BINDINGS
-if addon.RegisterBuiltinSourceModule then
-    addon:RegisterBuiltinSourceModule("Conditions/totem.lua", function(name)
+do
+    local function sourceGetter(name)
         if name=="amount" then return amount end
         if name=="color" then return color end
         if name=="element" then return element end
@@ -218,6 +218,12 @@ if addon.RegisterBuiltinSourceModule then
         if name=="platform" then return platform end
         if name=="remaining" then return remaining end
         if name=="specific" then return specific end
-    end)
+    end
+    if addon.RegisterBuiltinSourceModule then
+        addon:RegisterBuiltinSourceModule("Conditions/totem.lua", sourceGetter)
+    else
+        addon.builtinSourceModules=addon.builtinSourceModules or {}
+        addon.builtinSourceModules["Conditions/totem.lua"]=sourceGetter
+    end
 end
 -- END GENERATED RM SOURCE BINDINGS

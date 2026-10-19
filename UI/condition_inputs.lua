@@ -131,3 +131,19 @@ function addon:CreateConditionSlider()
     ---@cast w RMConditionInput
     return w
 end
+
+-- BEGIN GENERATED RM SOURCE BINDINGS
+do
+    local function sourceGetter(name)
+        if name=="AceGUI" then return AceGUI end
+        if name=="CreateConditionEditBox" then return addon.CreateConditionEditBox end
+        if name=="CreateConditionSlider" then return addon.CreateConditionSlider end
+    end
+    if addon.RegisterBuiltinSourceModule then
+        addon:RegisterBuiltinSourceModule("UI/condition_inputs.lua", sourceGetter)
+    else
+        addon.builtinSourceModules=addon.builtinSourceModules or {}
+        addon.builtinSourceModules["UI/condition_inputs.lua"]=sourceGetter
+    end
+end
+-- END GENERATED RM SOURCE BINDINGS

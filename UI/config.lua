@@ -3,7 +3,7 @@ local L=LibStub("AceLocale-3.0"):GetLocale(addon_name)
 local AceGUI=LibStub("AceGUI-3.0")
 local sections={
     {value="Rotations",text=L["Rotations"]},{value="General",text=L["General"]},
-    {value="Conditions",text=L["Conditions"]},{value="Effects",text=L["Effects"]},
+    {value="Conditions",text=L["Conditions"]},{value="Functions",text=L["Functions"]},{value="Effects",text=L["Effects"]},
     {value="ItemSets",text=L["Item Sets"]},{value="Announces",text=L["Announces"]},
     {value="Profiles",text=L["Profiles"]},{value="Integrations",text=L["Integrations"]},
 }
@@ -51,7 +51,7 @@ local function outline(button)
     return border
 end
 local descriptions={Rotations=L["Browse, view and edit rotations."],General=L["Configure recommendations and display."],
-    Conditions=L["Organize condition types and custom conditions."],Effects=L["Configure highlight effects."],ItemSets=L["Manage interchangeable items and consumables."],
+    Conditions=L["Organize condition types and custom conditions."],Functions=L['Browse packaged helpers and edit reusable custom Lua functions.'],Effects=L["Configure highlight effects."],ItemSets=L["Manage interchangeable items and consumables."],
     Announces=L["Configure optional announcements."],Profiles=L["Manage saved configuration profiles."],Integrations=L['Choose optional addon integrations.'],About=L["Rotation Master information and credits."]}
 
 local function newShell()

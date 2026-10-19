@@ -32,3 +32,18 @@ function addon:CreateConditionCheckBox()
     ---@cast widget RMConditionCheckBox
     return widget
 end
+
+-- BEGIN GENERATED RM SOURCE BINDINGS
+do
+    local function sourceGetter(name)
+        if name=="AceGUI" then return AceGUI end
+        if name=="CreateConditionCheckBox" then return addon.CreateConditionCheckBox end
+    end
+    if addon.RegisterBuiltinSourceModule then
+        addon:RegisterBuiltinSourceModule("UI/checkbox.lua", sourceGetter)
+    else
+        addon.builtinSourceModules=addon.builtinSourceModules or {}
+        addon.builtinSourceModules["UI/checkbox.lua"]=sourceGetter
+    end
+end
+-- END GENERATED RM SOURCE BINDINGS

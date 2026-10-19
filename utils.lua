@@ -674,3 +674,34 @@ end
 function addon:UpdateItem_Name_Image(item,text,icon,attempt,ticket)
     updateItem(self,'UpdateItem_Name_Image',true,true,item,text,icon,attempt,ticket)
 end
+
+-- BEGIN GENERATED RM SOURCE BINDINGS
+do
+    local function sourceGetter(name)
+        if name=="_G" then return _G end
+        if name=="cacheHits" then return cacheHits end
+        if name=="cacheMisses" then return cacheMisses end
+        if name=="cachedResult" then return cachedResult end
+        if name=="color" then return color end
+        if name=="compare" then return addon.compare end
+        if name=="getCached" then return addon.getCached end
+        if name=="getCachedInternal" then return getCachedInternal end
+        if name=="getRetryCached" then return addon.getRetryCached end
+        if name=="isin" then return addon.isin end
+        if name=="nilArgument" then return nilArgument end
+        if name=="nullable" then return addon.nullable end
+        if name=="nullable_value" then return addon.nullable_value end
+        if name=="packResults" then return packResults end
+        if name=="split" then return addon.split end
+        if name=="string" then return string end
+        if name=="trim" then return addon.trim end
+        if name=="wrap" then return addon.wrap end
+    end
+    if addon.RegisterBuiltinSourceModule then
+        addon:RegisterBuiltinSourceModule("utils.lua", sourceGetter)
+    else
+        addon.builtinSourceModules=addon.builtinSourceModules or {}
+        addon.builtinSourceModules["utils.lua"]=sourceGetter
+    end
+end
+-- END GENERATED RM SOURCE BINDINGS

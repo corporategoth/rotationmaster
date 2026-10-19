@@ -21,7 +21,8 @@ test('native top tabs navigate every section resize and release embedded panes',
     end
     f.load('UI/window.lua');f.load('UI/help.lua');f.load('UI/config.lua')
     local shell=a:ShowConfig('Rotations');assert(shell.frame:GetWidth()>=1000 and seen[1]=='Rotations')
-    assert(#shell.tabs==9,'not all sections and optional module are reachable')
+    local sections={};for _,tab in ipairs(shell.tabs) do sections[tab.section]=true end
+    assert(#shell.tabs==10 and sections.Functions and sections['module:Example'],'not all sections, Functions and optional module are reachable')
     for _,tab in ipairs(shell.tabs) do
         a.currentConditionEval=function() error('old callback') end;a.specTab={}
         tab:Click();assert(seen[#seen]==tab.section)

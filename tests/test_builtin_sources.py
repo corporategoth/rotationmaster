@@ -27,6 +27,12 @@ end, other = function() return false end'''
         self.assertEqual(params,['_','input']);self.assertEqual(body,' return input ')
         params,body=module.function_source('valid=function() return true end, evaluate=function(value) return value end',{'first':1,'last':1},'evaluate')
         self.assertEqual(params,['value']);self.assertEqual(body,' return value ')
+    def test_public_method_signatures_keep_actual_dot_and_colon_parameters(self):
+        params,body=module.function_source('function addon.trim(s) return s end',{'first':1,'last':1},'trim')
+        self.assertEqual(params,['s']);self.assertEqual(body,' return s ')
+        params,body=module.function_source('function addon:CreateConditionEditBox() return self.widget end',{'first':1,'last':1},'CreateConditionEditBox')
+        self.assertEqual(params,['self']);self.assertEqual(body,' return self.widget ')
+
     def test_unterminated_or_non_lua_functions_fail_generation(self):
         with self.assertRaises(ValueError): module.function_source('function() if true then return 1 end',{'first':1,'last':1},'evaluate')
 if __name__=='__main__': unittest.main()

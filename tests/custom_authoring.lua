@@ -42,4 +42,19 @@ end)
 test('saved source collisions need an explicit matching baseline even without a runtime entry',function()
     local f,a=fixture();local old={description='Saved old'};a.db.global.custom_conditions={COLLISION=old};a.conditionDefinitions={};a.RegisterCondition=function(self,key,value) self.conditionDefinitions[key]=value end;local source=a:CopySettingsData(a.empty_condition);source.description='New';assert(not a:InstallCustomCondition('COLLISION',source,nil) and a.db.global.custom_conditions.COLLISION==old);assert(not a:InstallCustomCondition('COLLISION',source,nil,{description='Wrong'}));assert(a:InstallCustomCondition('COLLISION',source,nil,a:CopySettingsData(old)) and a.db.global.custom_conditions.COLLISION.description=='New')
 end)
+test('callback wrapper escape is rejected without running expressions in a source preview compile',function()
+    local f,a=fixture();local source=a:CopySettingsData(a.empty_condition);source.description='Test';source.evaluate='end, (function() previewExecuted=true end)(), function()'
+    assert(not a:CompileCustomCondition('ESCAPE',source) and not f.env.previewExecuted,'condition body escaped the compile-only boundary')
+end)
+test('callback signatures expose full standard arguments while preserving old authored parameter aliases',function()
+    local f,a=fixture();local source=a:CopySettingsData(a.empty_condition);source.description='Contract';source.parameters={evaluate={'candidate','cache'},print={'_','value'}}
+    source.evaluate='return candidate == value and evalStart == 55';source.print='return tostring(spec)..":"..tostring(_)'
+    assert(a:CustomConditionSignature(source,'evaluate')=='function(value, cache, evalStart)' and a:CustomConditionSignature(source,'print')=='function(spec, value)')
+    local definition=assert(a:CompileCustomCondition('CONTRACT',source));assert(definition.evaluate({}, {},55)==true and definition.print(7,{})=='7:7')
+end)
+test('editor whitespace normalization keeps multiline literal values unchanged',function()
+    local f,a=fixture();f.load('LibsAugment/FAIAP.lua')
+    local code='\n        return [=[\n        literal whitespace stays\n          inside the string |c12345678\n        ]=]\n'
+    local normalized=a:NormalizeLuaSourceForEditor(code);assert(normalized:sub(1,6)=='return');assert(assert(loadstring(code))()==assert(loadstring(normalized))(),'editor formatting changed a multiline literal')
+end)
 finish()

@@ -102,6 +102,7 @@ local defaults = {
         effects = {},
         custom_conditions = {},
         custom_functions = {},
+        condition_test_values = {},
     }
 }
 

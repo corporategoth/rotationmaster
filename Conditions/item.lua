@@ -249,12 +249,18 @@ addon:RegisterCondition("ITEM_COOLDOWN", {
 })
 
 -- BEGIN GENERATED RM SOURCE BINDINGS
-if addon.RegisterBuiltinSourceModule then
-    addon:RegisterBuiltinSourceModule("Conditions/item.lua", function(name)
+do
+    local function sourceGetter(name)
         if name=="color" then return color end
         if name=="get_item_desc" then return get_item_desc end
         if name=="helpers" then return helpers end
         if name=="itemHelp" then return itemHelp end
-    end)
+    end
+    if addon.RegisterBuiltinSourceModule then
+        addon:RegisterBuiltinSourceModule("Conditions/item.lua", sourceGetter)
+    else
+        addon.builtinSourceModules=addon.builtinSourceModules or {}
+        addon.builtinSourceModules["Conditions/item.lua"]=sourceGetter
+    end
 end
 -- END GENERATED RM SOURCE BINDINGS

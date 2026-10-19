@@ -402,11 +402,28 @@ test('builtin conditions share the inline source pane without allowing source ed
     a.db.profile.condition_groups={};a.db.profile.disabled_conditions={};a.db.profile.switch_conditions={};a.db.profile.other_conditions_order={}
     a.listConditions=function() return {'COMBAT'} end
     local host=f.env.CreateFrame('Frame');host:SetSize(1000,700);local p=a:OpenNativeSettings(host,'Conditions')
-    local d=assert(p.inlineCondition,'builtin source pane missing');assert(d.readOnly and d.code:GetText():find('UnitAffectingCombat',1,true))
+    local d=assert(p.inlineCondition,'builtin source pane missing');assert(d.readOnly and d.code:GetText():find('UnitAffectingCombat',1,true));assert(not d.code.edit:IsEnabled(),'readonly input still accepts keys');assert(not d.code:GetText():match('^%s'),'shared leading indentation remains');assert(d:PendingSource().evaluate==a:GetBuiltinConditionSource('COMBAT').evaluate,'view formatting changed authored source')
     assert(not d.form.fields.description:IsEnabled() and not d.form.fields.icon:IsEnabled() and not d.form.fields.definition_enabled:IsShown())
     local original=d.code:GetText();d.code.edit:SetText('return false');d.code.edit.scripts.OnTextChanged(d.code.edit,true);assert(d.code:GetText()==original,'readonly source accepted input')
     assert(not d.form.fields.schemaGraph:IsEnabled() and not d:IsDirty())
     d.form.fields.hidden:Click();d.apply:Click();assert(a:SettingsContains(a.db.profile.disabled_conditions,'COMBAT') and not a.db.global.custom_conditions.COMBAT)
     p.fields.duplicate_custom:Click();assert(p.inlineCondition and not p.inlineCondition.readOnly and p.inlineCondition.model.value.parameters.evaluate);local clone=p.inlineCondition;for _,field in ipairs({'identifier','description','icon','schema','schemaGraph','advancedSchema'}) do assert(clone.form.fields[field]:IsEnabled(),field..' remained disabled after builtin view') end
+end)
+test('duplicating source starts with clean fields and normalized code rather than formatter changes',function()
+    local f,a=fixture(true);f.load('LibsAugment/FAIAP.lua');local enable=a.LuaSyntax.enable
+    a.LuaSyntax.enable=function(edit,...)
+        local methods={GetText=edit.GetText,SetText=edit.SetText};setmetatable(edit,{__index=methods})
+        function edit:GetMaxBytes() return self.maxBytes or 0 end;function edit:SetMaxBytes(v) self.maxBytes=v end;function edit:GetMaxLetters() return self.maxLetters or 0 end;function edit:IsMultiLine() return self.multiLine end
+        return enable(edit,...)
+    end
+    local source=a:CopySettingsData(a.empty_condition);source.description='Indented';source.fields={unit='string'};source.evaluate='\n        if true then\n            return true\n        end\n'
+    a.db.global.custom_conditions.INDENTED=source;assert(a:register_custom_condition('INDENTED',source))
+    a.db.profile.condition_groups={};a.db.profile.disabled_conditions={};a.db.profile.switch_conditions={};a.db.profile.other_conditions_order={}
+    local host=f.env.CreateFrame('Frame');host:SetSize(1000,700);local p=a:OpenNativeSettings(host,'Conditions');p.fields.duplicate_custom:Click()
+    local d=p.inlineCondition;assert(d and not d.readOnly);a.LuaSyntax.indentEditbox(d.code.edit);d:UpdateActions();d.form:RefreshUnsaved()
+    assert(not d.code:GetText():match('^%s'),'clone retained a blank first line or shared indentation')
+    assert(not d.code.frame.rmUnsaved and not d.functionTabs.evaluate.rmUnsaved,'formatter made a fresh clone look edited')
+    assert(not d.form.fields.description.rmUnsaved and not d.form.fields.schema.rmUnsaved and not d.form.fields.identifier.rmUnsaved,'pooled field baselines leaked into a fresh clone')
+    assert(d.apply:IsEnabled(),'new clone still needs Apply to create it')
 end)
 finish()

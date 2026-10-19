@@ -12,7 +12,7 @@ function addon:BuildIntegrationSettings(p)
     local loaded=C_AddOns and C_AddOns.IsAddOnLoaded or IsAddOnLoaded
     for _,entry in ipairs({{'!!!LuaWorkbench','LuaWorkbench'},{'WowLua','WowLua'}}) do
         local ok,present=false,false;if type(loaded)=='function' then ok,present=pcall(loaded,entry[1]) end
-        p:Text(entry[2]..': '..(ok and present and L['Loaded; editor integration not connected.'] or L['Not loaded.']))
+        p:Text(entry[2]..': '..(ok and present and (entry[1]=='!!!LuaWorkbench' and L['Connected: embedded editing, completion, API knowledge and debugging.'] or L['Loaded; editor integration not connected.']) or L['Not loaded.']))
     end
     p:Text(L['These addons are optional. Only connected editor providers appear in the Editor menu. Choosing an unavailable or failing editor falls back to the built-in editor.'])
 end

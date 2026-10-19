@@ -200,8 +200,8 @@ addon:RegisterCondition('PRIMARY_TALENT_TREE',{
 })
 
 -- BEGIN GENERATED RM SOURCE BINDINGS
-if addon.RegisterBuiltinSourceModule then
-    addon:RegisterBuiltinSourceModule("Conditions/talent.lua", function(name)
+do
+    local function sourceGetter(name)
         if name=="AceGUI" then return AceGUI end
         if name=="dropdown" then return dropdown end
         if name=="gridWidget" then return gridWidget end
@@ -217,6 +217,12 @@ if addon.RegisterBuiltinSourceModule then
         if name=="treePicker" then return treePicker end
         if name=="treeShape" then return treeShape end
         if name=="treeWidget" then return treeWidget end
-    end)
+    end
+    if addon.RegisterBuiltinSourceModule then
+        addon:RegisterBuiltinSourceModule("Conditions/talent.lua", sourceGetter)
+    else
+        addon.builtinSourceModules=addon.builtinSourceModules or {}
+        addon.builtinSourceModules["Conditions/talent.lua"]=sourceGetter
+    end
 end
 -- END GENERATED RM SOURCE BINDINGS

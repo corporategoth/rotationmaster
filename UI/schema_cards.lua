@@ -131,8 +131,6 @@ function addon:BuildFieldSchemaCards(form,owner)
         end
         return y
     end
-    form:Heading(L['Fields']);local y=form.y
-    form.y=4;local add=form:Button('add',L['Add field'],function() if model:Add({}) then form:Draw() end end,'plus');add:ClearAllPoints();add:SetPoint('TOPRIGHT',form.child,'TOPRIGHT',0,-4);add:SetWidth(150);form.y=y
     form.y=children(form.child,model.root,{},form.y,0,form.width)
     if rendered>=200 then form:Text(L['Showing the first 200 fields. Use Advanced schema for larger definitions.']) end
     owner:UpdateActions()

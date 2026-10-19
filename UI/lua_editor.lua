@@ -1,6 +1,7 @@
 local addon_name,addon=...
 local providers={}
 function addon:ListLuaEditorProviders()
+    if self.DiscoverLuaEditorIntegrations then self:DiscoverLuaEditorIntegrations() end
     local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
     local entries={{value='auto',text=L['Automatic']},{value='native',text=L['Built In syntax highlighting']},{value='plain',text=L['Plain text']}}
     local names={};for name in pairs(providers) do names[#names+1]=name end;table.sort(names)
@@ -21,6 +22,7 @@ function addon:RegisterLuaEditorProvider(name,create)
     providers[name]=create;return true
 end
 function addon:CreateWorkbenchLuaEditor(parent,changed,valid,preferred)
+    if self.DiscoverLuaEditorIntegrations then self:DiscoverLuaEditorIntegrations() end
     preferred=preferred or self.db.profile.lua_editor or 'auto'
     if preferred=='auto' then
         local names={};for name in pairs(providers) do names[#names+1]=name end;table.sort(names);preferred=names[1] or 'native'
@@ -29,10 +31,10 @@ function addon:CreateWorkbenchLuaEditor(parent,changed,valid,preferred)
         local host=CreateFrame('Frame',nil,parent)
         local ok,control=pcall(providers[preferred],host,changed,valid)
         if ok and type(control)=='table' and usableFrame(control.frame) and type(control.GetText)=='function' and type(control.SetText)=='function' and type(control.Release)=='function' then
-            local c={frame=host,provider=preferred,inner=control,lastText=''}
+            local c={frame=host,provider=preferred,inner=control,edit=control.edit,lastText=''}
             local function fallback()
                 pcall(c.inner.Release,c.inner);hideFrame(c.inner.frame)
-                c.inner=addon:CreateWorkbenchLuaEditor(host,changed,valid,'native');c.inner.frame:SetAllPoints(host);c.provider='native';c.edit=c.inner.edit;c.inner:SetText(c.lastText);if c.closeRequested then c.inner:SetCloseHandler(c.closeRequested) end
+                c.inner=addon:CreateWorkbenchLuaEditor(host,changed,valid,'native');c.inner.frame:SetAllPoints(host);c.provider='native';c.edit=c.inner.edit;c.inner:SetText(c.lastText);c.inner:SetReadOnly(c.readOnly);if c.closeRequested then c.inner:SetCloseHandler(c.closeRequested) end;if c.context and c.inner.SetContext then c.inner:SetContext(c.context) end
             end
             ---@return string
     function c:GetText()
@@ -40,11 +42,34 @@ function addon:CreateWorkbenchLuaEditor(parent,changed,valid,preferred)
                 if not read or type(text)~='string' then fallback();text=self.inner:GetText() end
                 self.lastText=text;return text
             end
+            function c:SetContext(context) self.context=context;if self.inner.SetContext and not pcall(self.inner.SetContext,self.inner,context) then fallback() end end
+            function c:SetReadOnly(value) self.readOnly=value==true;if self.inner.SetReadOnly then self.inner:SetReadOnly(self.readOnly) end end
             function c:SetCloseHandler(callback) self.closeRequested=callback;if self.inner.SetCloseHandler then self.inner:SetCloseHandler(callback) end end
             function c:SetText(text)
                 self.lastText=text or '';if not pcall(self.inner.SetText,self.inner,self.lastText) then fallback() end
             end
-            function c:Release() if self.released then return end;self.released=true;pcall(self.inner.Release,self.inner);self.frame:Hide() end
+            function c:Acquire(callback,ownerValid)
+                changed,valid=callback,ownerValid
+                if not self.released then return end
+                self.released=false
+                local created,nextControl=pcall(providers[preferred],host,changed,valid)
+                if created and type(nextControl)=='table' and usableFrame(nextControl.frame) and type(nextControl.GetText)=='function' and type(nextControl.SetText)=='function' and type(nextControl.Release)=='function' then
+                    self.inner=nextControl;self.provider=preferred;self.edit=nextControl.edit
+                    local attached=pcall(function() nextControl.frame:SetParent(host);nextControl.frame:SetAllPoints(host) end)
+                    if not attached then fallback() end
+                else
+                    if created and type(nextControl)=='table' then if type(nextControl.Release)=='function' then pcall(nextControl.Release,nextControl) end;hideFrame(nextControl.frame) end
+                    fallback()
+                end
+                self:SetText(self.lastText);self:SetReadOnly(self.readOnly)
+                if self.context then self:SetContext(self.context) end
+                self.inner.frame:Show()
+            end
+            function c:Release()
+                if self.released then return end
+                local read,text=pcall(self.inner.GetText,self.inner);if read and type(text)=='string' then self.lastText=text end
+                self.released=true;self.closeRequested=nil;pcall(self.inner.Release,self.inner);self.frame:Hide()
+            end
             local attached=pcall(function() control.frame:SetParent(host);control.frame:SetAllPoints(host) end)
             if not attached then fallback() end
             return c
@@ -56,7 +81,8 @@ function addon:CreateWorkbenchLuaEditor(parent,changed,valid,preferred)
     c.scroll=self:CreateWorkbenchScrollFrame(c.frame);c.scroll:SetPoint('TOPLEFT',4,-4);c.content=CreateFrame('Frame',nil,c.scroll);c.content:EnableMouse(false);c.scroll:SetScrollChild(c.content);c.edit=CreateFrame('EditBox',nil,c.content);c.edit:SetMultiLine(true);c.edit:SetAutoFocus(false);c.edit:EnableMouse(true);c.edit:SetAltArrowKeyMode(false);c.edit:SetBlinkSpeed(.5);c.edit:SetCountInvisibleLetters(false);c.edit:SetTextColor(1,1,1);c.edit:SetJustifyH('LEFT');c.edit:SetJustifyV('TOP');c.edit:SetFontObject('GameFontHighlightSmall');c.edit:SetTextInsets(6,6,4,4);c.edit:SetMaxLetters(0);c.edit:SetAllPoints(c.content)
     -- Let the native EditBox own mouse placement and keyboard navigation.
     -- Focusing it from the covering scroll frame resets placement to the end.
-    c.scroll:EnableMouse(false)
+    c.scroll:EnableMouse(false);c.frame:EnableMouseWheel(true)
+    addon:SetUIScript(c.frame,'OnMouseWheel',function(_,delta) c.scroll.workbenchBar:SetValue(c.scroll.workbenchBar:GetValue()-delta*36) end)
     c.editorDecoration=self:CreateRoundedCardDecoration(c.frame);c.editorDecoration:SetColors(.38,.43,.48,1,.95)
     addon:SetUIScript(c.edit,'OnEditFocusGained',function() c.editorDecoration:SetColors(.45,.7,.85,1,.95) end)
     addon:SetUIScript(c.edit,'OnEditFocusLost',function() c.editorDecoration:SetColors(.38,.43,.48,1,.95) end)
@@ -69,10 +95,14 @@ function addon:CreateWorkbenchLuaEditor(parent,changed,valid,preferred)
         -- Native coordinates round through effective UI scale. Rewriting an
         -- almost-identical size reflows EditBox text and can reset its caret.
         local function differs(current,wanted) return math.abs(current-wanted)>.1 end
-        local scrollWidth=math.max(1,self.frame:GetWidth()-8);local width=math.max(1,scrollWidth-24);local height=math.max(1,self.frame:GetHeight()-8)
+        -- The shared track sits beyond the viewport. Reserve its space here,
+        -- keeping both the text and the track within the editor card.
+        local scrollWidth=math.max(1,self.frame:GetWidth()-32);local width=scrollWidth;local height=math.max(1,self.frame:GetHeight()-8)
         if differs(self.scroll:GetWidth(),scrollWidth) or differs(self.scroll:GetHeight(),height) then self.scroll:SetSize(scrollWidth,height) end
         if differs(self.edit:GetWidth(),width) then self.layoutCounts.width=self.layoutCounts.width+1;self.edit:SetWidth(width) end
-        self.measure:SetWidth(math.max(1,width-12));self.measure:SetText(self:GetText());local editHeight=math.max(height,self.measure:GetStringHeight()+16)
+        -- Hover hit geometry gives this font a fixed height. Let it measure
+        -- the complete new source before sizing the backing scroll child.
+        self.measure:SetHeight(0);self.measure:SetWidth(math.max(1,width-12));self.measure:SetText(self:GetText());local editHeight=math.max(height,self.measure:GetStringHeight()+16)
         -- Multiline EditBoxes own their text height. Size a backing frame
         -- and anchor the edit to it instead of fighting native text layout.
         if differs(self.content:GetWidth(),width) or differs(self.content:GetHeight(),editHeight) then self.layoutCounts.content=self.layoutCounts.content+1;self.content:SetSize(width,editHeight) end
@@ -86,16 +116,18 @@ function addon:CreateWorkbenchLuaEditor(parent,changed,valid,preferred)
         return self.edit:GetText() or ''
     end
     function c:SetText(text) self.setting=true;self.edit:SetText(text or '');self.readOnlyText=text or '';self.setting=false;self:Layout() end
-    function c:SetReadOnly(value) self.readOnly=value==true;self.readOnlyText=self:GetText() end
+    function c:SetContext(context) self.context=context;if self.UpdateSymbols then self:UpdateSymbols(context) end end
+    function c:SetReadOnly(value) self.readOnly=value==true;self.readOnlyText=self:GetText();if self.readOnly then self.edit:ClearFocus();self.edit:Disable() else self.edit:Enable() end end
     function c:SetChanged(callback) self.changed=callback end
     function c:SetCloseHandler(callback) self.closeRequested=callback end
     function c:Acquire(callback,ownerValid)
         self.released=false;self.readOnly=false;self.readOnlyText=nil;self.changed=callback;self.valid=ownerValid;self.layoutCounts=nil
         if self.ResetInputTrace then addon.luaInputEditor=self;self:ResetInputTrace() end
         if self.syntax then pcall(self.syntax.enable,self.edit,self.syntaxColors,4) end
+        if self.AcquireCompletion then self:AcquireCompletion() end
     end
     function c:Release()
-        if self.released then return end;self.released=true;self.edit:ClearFocus()
+        if self.released then return end;if self.ReleaseCompletion then self:ReleaseCompletion() end;self.released=true;self.edit:ClearFocus()
         if self.syntax then pcall(self.syntax.disable,self.edit) end
         self.changed=nil;self.closeRequested=nil;self.valid=function() return false end
         self.edit.GetText=self.nativeGetText;self.edit.SetText=self.nativeSetText
@@ -126,5 +158,6 @@ function addon:CreateWorkbenchLuaEditor(parent,changed,valid,preferred)
         end
     end
     if self.InstallLuaInputDiagnostics then self:InstallLuaInputDiagnostics(c) end
+    if self.InstallRMCodeCompletion then self:InstallRMCodeCompletion(c) end
     c:SetText('');return c
 end

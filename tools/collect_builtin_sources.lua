@@ -2,6 +2,7 @@
 local F=dofile('tests/fixtures/addon.lua')
 local inventory=dofile('tests/fixtures/catalog_inventory.lua')
 local modules={}
+local publicHelpers=dofile('tools/public_helpers.lua')
 local standard={};for name,value in pairs(_G) do if type(value)=='function' then standard[name]=value end end
 local function descriptor(fn)
     local info=debug.getinfo(fn,'S');return {file=info.source:sub(1,1)=='@' and info.source:sub(2) or info.source,first=info.linedefined,last=info.lastlinedefined,what=info.what}
@@ -29,6 +30,15 @@ for _,case in ipairs(inventory.branches) do
     for path in io.lines('RotationMaster.toc') do if path:match('^Conditions/') then
         f.load(path)
     end end
+    for name,documentation in pairs(publicHelpers) do
+        local fn=f.addon[name];assert(type(fn)=='function','public helper missing: '..name)
+        local info=descriptor(fn);assert(info.file==documentation.module,'public helper module changed: '..name)
+        local module=modules[info.file] or {file=info.file,conditions={},bindings={}};modules[info.file]=module
+        local captured=capture(module,fn)
+        local record=module.bindings[name]
+        assert(not record or record.public,'public helper collides with captured local: '..name)
+        module.bindings[name]={kind='function',fn=captured,public=documentation,addonMember=name}
+    end
     local definitions={};for tag,definition in pairs(f.addon.definitions) do definitions[tag]=definition end
     for _,group in pairs(f.addon.delayed_condition) do for tag,definition in pairs(group) do definitions[tag]=definition end end
     for tag,definition in pairs(definitions) do

@@ -69,7 +69,6 @@ return ''
 --    parent - A bounding box that will contain this condition's widgets.
 --    spec - The talent specialization in use (as a number).
 --    value - The storage for this condition (ie. where it's parameters are stored).
-local AceGUI = LibStub("AceGUI-3.0")
 local top = parent:GetUserData("top")
 local root = top:GetUserData("root")
 local funcs = top:GetUserData("funcs")
@@ -95,11 +94,13 @@ for name in pairs(function_signatures) do
     end
     templateHeaders[name]=code:sub(1,offset-1);addon.empty_condition[name]=code:sub(offset)
 end
-function addon:PrepareCustomConditionEditorSource(source)
+function addon:PrepareCustomConditionEditorSource(source,preserveFormatting)
     local result=self:CopySettingsData(source)
+    if preserveFormatting then return result end
     for name,prefix in pairs(templateHeaders) do
         if prefix~='' and type(result[name])=='string' and result[name]:sub(1,#prefix)==prefix then result[name]=result[name]:sub(#prefix+1) end
     end
+    for name in pairs(self.CustomConditionCallbacks) do if type(result[name])=='string' then result[name]=self:NormalizeLuaSourceForEditor(result[name]) end end
     return result
 end
 

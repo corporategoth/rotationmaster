@@ -322,6 +322,15 @@
         "ItemLoader.lua": "a251cdeb48fceca55bd91c3dc75a9e29789d5c795f3d0f802da874e613d3db8b",
         "Items-Editbox.lua": "e6fbf0aeb412e5eab2eabd0558e068b4593310e7d609fb4815d271432af237e2"
       }
+    },
+    "LuaWorkbench-Embed": {
+      "source": "https://github.com/R41z0r/LuaWorkbench",
+      "revision": "9abc82050f70fca204a19965a717abc6e1eae952",
+      "files": {
+        "modules.lua": "60d9996e12c6a81b161f6f17721ff56ab555a72ab391eb8bd5496280ce37da44",
+        "LICENSE": "0403db2d4020c42b27ae872de1ab237a539ec35b4c592b942eb97a7322ca09c8",
+        "manifest.json": "501f5726d49fed44f4145c59fdd7cbd0b88c87665d0cf861acf6d0c96045fa1d"
+      }
     }
   },
   "notes": [

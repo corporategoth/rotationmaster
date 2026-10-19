@@ -40,7 +40,7 @@ function addon:InstallSettingsUnsaved(p)
             if collection and before==nil and current~=nil or field(current,key)~=nil and not defaults[key] then missing=true
             else if not defaults[key] then defaults[key]={value=addon:CopySettingsData(value)} end;baseline=defaults[key].value end
         end
-        if kind=='Check' or kind=='Toggle' then baseline=baseline==true end
+        if kind=='Check' or kind=='Toggle' then baseline=baseline==true;value=value==true end
         self.unsavedBindings[key]={control=control,value=addon:CopySettingsData(value),baseline=addon:CopySettingsData(baseline),kind=kind,missing=missing}
         return self.unsavedBindings[key]
     end

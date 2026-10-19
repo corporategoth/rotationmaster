@@ -804,4 +804,21 @@ test('item set Global shares the wide Name row without mutating scope on open',f
     assert(p.fields.global.point[3]==p.fields.name.point[3] and p.fields.global.point[2]>p.fields.name.point[2]+p.fields.name:GetWidth(),'Global is not beside Name')
     assert(a.db.profile.itemsets.set and not a.db.global.itemsets.set)
 end)
+test('unset exact rank is not marked changed when first viewing an announcement',function()
+    local f,parent=fixture();local a=f.addon;a.db.profile.announces={{type='spell',spell=403,event='SUCCEEDED',announce='local',value='Cast'}}
+    local p=a:OpenNativeSettings(parent,'Announces');local rank=p.fields.entry1ranked
+    assert(rank and not rank.rmUnsaved and not p.fields.apply:IsEnabled() and not p.fields.viewChanges:IsEnabled(),'untouched exact rank has an unsaved marker')
+    rank:Click();assert(rank.rmUnsaved and p.fields.apply:IsEnabled(),'rank change lost its marker')
+end)
+test('unset reverse is not marked changed when first viewing a rotating starburst effect',function()
+    local f,parent=fixture();local a=f.addon;a.db.global.effects={star={name='Star',type='rotate',texture='Interface\\Icons\\INV_Misc_QuestionMark'}}
+    local p=a:OpenNativeSettings(parent,'Effects');assert(p.fields.reverse and not p.fields.reverse.rmUnsaved,'untouched reverse has an unsaved marker');assert(not p.fields.apply:IsEnabled())
+    p.fields.reverse:Click();assert(p.fields.reverse.rmUnsaved and p.fields.apply:IsEnabled())
+end)
+test('all text transfer variants can share one themed shell with Copy Clear and close controls',function()
+    local f,parent=fixture();local a=f.addon;assert(a.CreateWorkbenchTransferShell,'shared transfer shell missing')
+    local d=a:CreateWorkbenchTransferShell(880,720);assert(d.input and d.scroll and d.copy and d.clear and d.apply and d.cancel and d.close and d.frame.rmRightClickWatcher)
+    assert(d.frame:GetWidth()==880 and d.sharedTransferShell)
+    local p=a:CreateSettingsForm(parent);p:Open(function() end);local legacy=a:ShowSettingsTextTransfer(p,'Transfer','text',function() return true end);assert(legacy.sharedTransferShell,'simple transfer bypassed the shared shell')
+end)
 finish()

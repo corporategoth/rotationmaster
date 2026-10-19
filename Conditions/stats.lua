@@ -720,10 +720,16 @@ addon:RegisterCondition("TT_HEALTHPCT", {
 })
 
 -- BEGIN GENERATED RM SOURCE BINDINGS
-if addon.RegisterBuiltinSourceModule then
-    addon:RegisterBuiltinSourceModule("Conditions/stats.lua", function(name)
+do
+    local function sourceGetter(name)
         if name=="color" then return color end
         if name=="helpers" then return helpers end
-    end)
+    end
+    if addon.RegisterBuiltinSourceModule then
+        addon:RegisterBuiltinSourceModule("Conditions/stats.lua", sourceGetter)
+    else
+        addon.builtinSourceModules=addon.builtinSourceModules or {}
+        addon.builtinSourceModules["Conditions/stats.lua"]=sourceGetter
+    end
 end
 -- END GENERATED RM SOURCE BINDINGS

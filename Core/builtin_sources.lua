@@ -4,11 +4,21 @@ function addon:RegisterBuiltinSourceModule(path,getter)
     self.builtinSourceModules=self.builtinSourceModules or {};self.builtinSourceModules[path]=getter
     local module=self.BuiltinSourceCatalog and self.BuiltinSourceCatalog.modules[path];if not module then return end
     for alias,entry in pairs(module.bindings) do
-        local args={};for _,name in ipairs(entry.parameters or {}) do args[#args+1]={name=name,type='any',description=''} end
-        local source={name=alias,description=string.format(L['Packaged helper from %s.'],path),args=args,returns={{type='any',description=''}},code=entry.code or '',bindings=entry.bindings or {}}
-        self:RegisterBuiltinFunction('builtin:'..path..':'..alias,source,function() return getter(alias) end,entry.kind~='function')
+        local args={};for index,name in ipairs(entry.parameters or {}) do
+            local doc=entry.args and entry.args[index]
+            args[#args+1]={name=name,type=doc and doc.type or 'any',description=doc and L[doc.description] or ''}
+        end
+        local returns={};for _,doc in ipairs(entry.returns or {{type='any',description=''}}) do returns[#returns+1]={type=doc.type,description=doc.description~='' and L[doc.description] or ''} end
+        local source={name=alias,description=entry.description and L[entry.description] or string.format(L['Packaged helper from %s.'],path),args=args,returns=returns,code=entry.code or '',bindings=entry.bindings or {}}
+        local id='builtin:'..path..':'..alias
+        if self:RegisterBuiltinFunction(id,source,function() return getter(alias) end,entry.kind~='function') then
+            local record=self.builtinFunctions[id];record.callName=entry.callName;record.public=entry.callName~=nil
+        end
     end
 end
+-- utils/native field factories load before this module. Their generated suffixes
+-- queue live getters; registering them here preserves the normal TOC order.
+for path,getter in pairs(addon.builtinSourceModules or {}) do addon:RegisterBuiltinSourceModule(path,getter) end
 function addon:GetBuiltinConditionSource(id)
     local record=self.BuiltinSourceCatalog and self.BuiltinSourceCatalog.conditions[id]
     local definition=(self.conditionDefinitions or self.definitions or {})[id]
@@ -26,4 +36,20 @@ function addon:GetBuiltinConditionSource(id)
         end
     end
     return source
+end
+
+-- Display only: never canonicalize Lua string contents or change a clone's
+-- executable source merely to remove the containing Lua table's indentation.
+function addon:FormatLuaSourceDisplay(source)
+    local lines={};for line in ((source or '')..'\n'):gmatch('(.-)\n') do lines[#lines+1]=line end
+    while #lines>0 and not lines[1]:find('%S') do table.remove(lines,1) end
+    while #lines>0 and not lines[#lines]:find('%S') do table.remove(lines) end
+    local prefix
+    for _,line in ipairs(lines) do if line:find('%S') then
+        local whitespace=line:match('^[ \t]*');if prefix==nil then prefix=whitespace else
+            local n=0;while n<#prefix and n<#whitespace and prefix:sub(n+1,n+1)==whitespace:sub(n+1,n+1) do n=n+1 end;prefix=prefix:sub(1,n)
+        end
+    end end
+    if prefix and #prefix>0 then for i,line in ipairs(lines) do if line:sub(1,#prefix)==prefix then lines[i]=line:sub(#prefix+1) end end end
+    return table.concat(lines,'\n')
 end
