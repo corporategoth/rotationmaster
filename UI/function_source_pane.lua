@@ -146,7 +146,7 @@ function addon:BuildInlineFunction(p,key,source,readOnly)
         input:SetMultiLine(true);input:SetTextInsets(5,5,compact and 4 or 5,compact and 4 or 5);input:SetCursorPosition(0)
         local measure=form:Acquire('functionDescriptionMeasure',function() return form.child:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall') end)
         measure:SetWidth(math.max(40,input:GetWidth()-10));measure:SetWordWrap(true);measure:SetText(value or '');measure:SetHeight(0)
-        local height=math.max(compact and 28 or 54,measure:GetStringHeight()+(compact and 8 or 12));measure:Hide();input:SetHeight(height);form.y=y+height+(compact and 2 or 8)
+        local height=math.max(28,measure:GetStringHeight()+(compact and 8 or 12));measure:Hide();input:SetHeight(height);form.y=y+height+(compact and 2 or 4)
         enable(input,not d.readOnly);return input
     end
     local function metadata(field,caption,values)
