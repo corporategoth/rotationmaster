@@ -258,17 +258,14 @@ function addon:BuildInlineFunction(p,key,source,readOnly)
             input=description('description',L['Description'],d.value.description or '',function(value) d.value.description=value;d:UpdateActions() end);input.rmFunctionValue=function() return d.value.description end;input.rmFunctionBaseline=d.baseline.description
             metadata('args',L['Arguments'],d.value.args);metadata('returns',L['Returns'],d.value.returns)
         end
-        local actionY=f.y;local bindingX,bindingY,bindingWidth
+        local actionY=f.y;local bindingLayout
         f.y=actionY+28
         addon:BuildFunctionBindingFields(f,d,{header=function(button)
-            bindingWidth=math.max(90,math.ceil(button:GetFontString():GetStringWidth())+24)
-            local narrow=f.width<348+bindingWidth
-            bindingX=narrow and 0 or 222;bindingY=actionY+(narrow and 28 or 0)
-            bindingWidth=math.min(bindingWidth,math.max(90,f.width-(narrow and 126 or 348)))
-            return {x=bindingX,y=bindingY,width=bindingWidth}
-        end,hideDescription=true})
+            bindingLayout=addon:GetFunctionBindingToolbarGeometry(f.width,button,actionY)
+            return bindingLayout
+        end})
         for index,entry in ipairs({{'codeUndo','Undo','undo'},{'codeRedo','Redo','redo'},{'codeReset','Reset'},{'syntax','Check syntax'}}) do
-            local button=f:Acquire('functionActions',function() return addon:CreateWorkbenchButton(f.child,'',index==4 and 120 or 68) end);d[entry[1]]=button;button:ClearAllPoints();button:SetPoint('TOPLEFT',index==4 and bindingX+bindingWidth+6 or (index-1)*74,-(index==4 and bindingY or actionY));button:SetWidth(index==4 and 120 or 68);button:SetText(actionLabels[entry[1]])
+            local button=f:Acquire('functionActions',function() return addon:CreateWorkbenchButton(f.child,'',index==4 and 120 or 68) end);d[entry[1]]=button;button:ClearAllPoints();button:SetPoint('TOPLEFT',index==4 and bindingLayout.syntaxX or (index-1)*74,-(index==4 and bindingLayout.syntaxY or actionY));button:SetWidth(index==4 and 120 or 68);button:SetText(actionLabels[entry[1]])
             addon:SetUIScript(button,'OnClick',function()
                 if not valid() then return end
                 if entry[1]=='codeUndo' or entry[1]=='codeRedo' then d:TravelCode(entry[1]=='codeRedo')

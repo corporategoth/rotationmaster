@@ -587,4 +587,16 @@ test('untouched compatibility schemas validate from the model while dirty Advanc
     input:SetText(input:GetText()..' ');input.scripts.OnTextChanged(input,true);d:UpdateActions();assert(input.rmInvalid and not d:Flush(),'dirty Advanced text bypassed its bounded parser')
     input.scripts.OnEscapePressed(input);d:UpdateActions();assert(not input.rmInvalid and not d:IsDirty() and source.fields.field600=='number')
 end)
+test('bound-helper navigation offers pending condition choices before selecting its function',function()
+    local f,a=fixture(true);f.load('UI/settings_functions.lua');f.load('UI/function_bindings.lua')
+    a.db.global.custom_functions={HELPER={name='helper',namespace='custom',description='Helper',args={},returns={{type='boolean',description='Result'}},code='return true',bindings={}}};a:InitializeFunctionRegistry()
+    local source=a:CopySettingsData(a.empty_condition);source.description='Inline';source.bindings={['custom.helper']='HELPER'};a.db.global.custom_conditions.INLINE=source;a.conditionDefinitions.INLINE={description='Inline',fields={}}
+    local host=f.env.CreateFrame('Frame');host:SetSize(1100,700);local p=a:OpenNativeSettings(host,'Conditions');local d=p.inlineCondition
+    a.configWindow={pane=p};local opened;a.ShowConfig=function(_,section) opened=section end
+    d.code.edit:SetText('return false');d.code.edit.scripts.OnTextChanged(d.code.edit,true);d.form.fields.function_bindings:Click()
+    local alias=d.form.fields.binding_alias_1;alias:SetText('not a valid alias');alias.scripts.OnTextChanged(alias,true);d.form.fields.binding_target_1:Click()
+    assert(p.prompt and p.prompt.frame:IsShown() and not opened and not a.configFunctionSelection,'helper jump bypassed pending condition edits')
+    p.prompt.cancel:Click();assert(d.OwnerValid() and d.code:GetText()=='return false' and alias:GetText()=='not a valid alias' and not opened)
+    d.form.fields.binding_target_1:Click();p.prompt.discard:Click();assert(opened=='Functions' and a.configFunctionSelection=='HELPER' and a.db.global.custom_conditions.INLINE.evaluate==source.evaluate)
+end)
 finish()

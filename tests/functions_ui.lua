@@ -434,4 +434,24 @@ test('changing root requirements invalidates configured condition Test samples',
     local f,a=fixture();local d=checkEditor(f,a);d.test:Click();local view=d.sourcePreview;view.sample.count=3;view.check:Click();view:Close();assert(a:ConditionTestValues(d))
     d.model.value.requiredFields={'count'};assert(not a:ConditionTestValues(d),'old sample authorization survived changed requirements')
 end)
+test('condition bindings share compact source toolbar navigate helpers and keep remapping separate',function()
+    local f,a=fixture();conditionEditor(f,a);a.db.global.custom_conditions={};a.db.global.custom_functions.HELPER=source('Helper');a.db.global.custom_functions.OTHER=source('Other');a:InitializeFunctionRegistry()
+    local value=a:CopySettingsData(a.empty_condition);value.description='Bound';value.bindings={helper='HELPER'}
+    local d=a:condition_edit_box(function() end,'TEST',value)
+    for _,width in ipairs({1100,340,1800,600}) do
+        d.body:SetWidth(width);d.form:SetWidth(width);d.form:Draw();local button=d.form.fields.function_bindings
+        assert(button:GetText()=='Bindings (1)','condition keeps its oversized separate binding section')
+        assert(button:GetWidth()<=math.max(90,math.ceil(button:GetFontString():GetStringWidth())+24),'binding fills width')
+        assert(button.point[2]>=d.codeReset.point[2]+d.codeReset:GetWidth() or button.point[3]<d.codeReset.point[3],'binding is not after Reset')
+        assert(d.syntax.point[2]==button.point[2]+button:GetWidth()+6 and d.syntax.point[3]==button.point[3],'syntax does not follow binding')
+        assert(d.syntax.point[2]+d.syntax:GetWidth()<=d.form.width,'toolbar overflows narrow condition pane')
+    end
+    d.form.fields.function_bindings:Click();assert(d.form.fields.binding_alias_1 and d.form.fields.binding_remap_1)
+    local opened;a.ShowFunctionSource=function(_,id) opened=id end
+    d.form.fields.binding_target_1:Click();assert(opened=='HELPER' and d.model.value.bindings.helper=='HELPER','binding click changed mapping instead of navigating')
+    opened=nil;d.form.fields.binding_remap_1:Click();assert(d.form.menu.frame:IsShown());d.form.menu.rows[2]:Click()
+    assert(not opened and d.model.value.bindings.helper=='OTHER','remap control navigated or failed to stage mapping')
+    for _,label in ipairs(d.form.pool.text or {}) do if label:IsShown() then assert(not label:GetText():find('Choose a source helper',1,true),'binding instructions still occupy editor') end end
+    local dirty=d:IsDirty();d:SelectFunction('widget');assert(d:IsDirty()==dirty and d.form.fields.function_bindings.point[3]==d.syntax.point[3],'callback docs moved binding out of toolbar')
+end)
 finish()

@@ -8,7 +8,7 @@ local helpers = addon.help_funcs
 -- Explicit callback leaves; retain native statistic helper closures.
 local Functions={
     values={isin=addon.Functions.values.isin,compare=addon.Functions.values.compare},
-    presentation={nullable=addon.Functions.presentation.nullable,compareString=addon.Functions.presentation.compareString},
+    presentation={nullable=addon.Functions.presentation.nullable,phrase=addon.Functions.presentation.phrase,predicate=addon.Functions.presentation.predicate},
     collections={keys=addon.Functions.collections.keys},
 }
 addon.builtinCallbackBindings=addon.builtinCallbackBindings or {}
@@ -16,7 +16,8 @@ addon.builtinCallbackBindings["Conditions/spatial_stats.lua"]={
     ["Functions.values.isin"]="builtin:utils.lua:isin",
     ["Functions.values.compare"]="builtin:utils.lua:compare",
     ["Functions.presentation.nullable"]="builtin:utils.lua:nullable",
-    ["Functions.presentation.compareString"]="builtin:utils.lua:compareString",
+    ["Functions.presentation.phrase"]="builtin:Functions/presentation.lua:phrase",
+    ["Functions.presentation.predicate"]="builtin:Functions/presentation.lua:predicate",
     ["Functions.collections.keys"]="builtin:Functions/collections.lua:keys",
 }
 -- END SPATIAL STATS CALLBACK NAMESPACE
@@ -92,20 +93,21 @@ addon:RegisterCondition("PROXIMITY_HEALTH", {
         return Functions.values.compare(value.operator, v, math.abs(value.value))
     end,
     print = function(_, value)
-        local conditionstr = string.format(
-                ((value.value ~= nil and value.value < 0) and
-                        L["The %s health defecit of %s members%s within %d yards of %s"] or
-                        L["The %s health of %s members%s within %d yards of %s"]),
-                Functions.presentation.nullable(value.operation, L["<operation>"]),
-                (value.samegroup and PARTY or L["Raid or Party"]),
-                (value.includepets and " (" .. L["including pets"] .. ")" or ""),
-                Functions.presentation.nullable(value.distance, L["<distance>"]),
-                Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]))
-        if value.value ~= nil and value.value < 0 then
-            return Functions.presentation.compareString(value.operator, conditionstr, -value.value)
-        else
-            return Functions.presentation.compareString(value.operator, conditionstr, Functions.presentation.nullable(value.value))
-        end
+        local threshold = value.value
+        local deficit = threshold ~= nil and threshold < 0
+        if deficit then threshold = -threshold end
+        return Functions.presentation.phrase(
+                (deficit and L["The {operation} health defecit of {members} members{pets} within {distance} yards of {unit} {comparison} {threshold}"] or
+                L["The {operation} health of {members} members{pets} within {distance} yards of {unit} {comparison} {threshold}"]),
+                {
+                    operation = Functions.presentation.nullable(value.operation, L["<operation>"]),
+                    members = value.samegroup and PARTY or L["Raid or Party"],
+                    pets = value.includepets and " (" .. L["including pets"] .. ")" or "",
+                    distance = Functions.presentation.nullable(value.distance, L["<distance>"]),
+                    unit = Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]),
+                    comparison = Functions.presentation.predicate(value.operator, true),
+                    threshold = Functions.presentation.nullable(threshold),
+                })
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -191,20 +193,22 @@ addon:RegisterCondition("PROXIMITY_HEALTH_COUNT", {
         return Functions.values.compare(value.operator, count, value.value)
     end,
     print = function(_, value)
-        local conditionstr
-        if value.health ~= nil and value.health < 0 then
-            conditionstr = Functions.presentation.compareString(value.healthoperator, L["%s health defecit"], -value.health)
-        else
-            conditionstr = Functions.presentation.compareString(value.healthoperator, L["%s health"], Functions.presentation.nullable(value.health))
-        end
-        return Functions.presentation.compareString(value.operator,
-                string.format(conditionstr,
-                        string.format(L["The number %s members%s within %d yards of %s whose"],
-                                (value.samegroup and PARTY or L["Raid or Party"]),
-                                (value.includepets and " (" .. L["including pets"] .. ")" or ""),
-                                Functions.presentation.nullable(value.distance, L["<distance>"]),
-                                Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]))),
-                Functions.presentation.nullable(value.value),true)
+        local threshold = value.health
+        local deficit = threshold ~= nil and threshold < 0
+        if deficit then threshold = -threshold end
+        return Functions.presentation.phrase(
+                (deficit and L["The number {members} members{pets} within {distance} yards of {unit} whose health defecit {qualifier} {threshold} {comparison} {value}"] or
+                L["The number {members} members{pets} within {distance} yards of {unit} whose health {qualifier} {threshold} {comparison} {value}"]),
+                {
+                    members = value.samegroup and PARTY or L["Raid or Party"],
+                    pets = value.includepets and " (" .. L["including pets"] .. ")" or "",
+                    distance = Functions.presentation.nullable(value.distance, L["<distance>"]),
+                    unit = Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]),
+                    comparison = Functions.presentation.predicate(value.operator, true),
+                    threshold = Functions.presentation.nullable(threshold),
+                    qualifier = Functions.presentation.predicate(value.healthoperator),
+                    value = Functions.presentation.nullable(value.value),
+                })
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -273,19 +277,19 @@ addon:RegisterCondition("PROXIMITY_HEALTHPCT", {
         return Functions.values.compare(value.operator, v, value.value * 100)
     end,
     print = function(_, value)
-        local v = value.value
-        if v ~= nil then
-            v = v * 100
-        end
-        return Functions.presentation.compareString(value.operator,
-                string.format(
-                        L["The %s health percentage of %s members%s within %d yards of %s"],
-                        Functions.presentation.nullable(value.operation, L["<operation>"]),
-                        (value.samegroup and PARTY or L["Raid or Party"]),
-                        (value.includepets and " (" .. L["including pets"] .. ")" or ""),
-                        Functions.presentation.nullable(value.distance, L["<distance>"]),
-                        Functions.presentation.nullable(addon.units[value.unit], L["<unit>"])),
-                Functions.presentation.nullable(v) .. '%')
+        local threshold = value.value
+        if threshold ~= nil then threshold = threshold * 100 end
+        return Functions.presentation.phrase(
+                L["The {operation} health percentage of {members} members{pets} within {distance} yards of {unit} {comparison} {threshold}%"],
+                {
+                    operation = Functions.presentation.nullable(value.operation, L["<operation>"]),
+                    members = value.samegroup and PARTY or L["Raid or Party"],
+                    pets = value.includepets and " (" .. L["including pets"] .. ")" or "",
+                    distance = Functions.presentation.nullable(value.distance, L["<distance>"]),
+                    unit = Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]),
+                    comparison = Functions.presentation.predicate(value.operator, true),
+                    threshold = Functions.presentation.nullable(threshold),
+                })
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -370,19 +374,20 @@ addon:RegisterCondition("PROXIMITY_HEALTHPCT_COUNT", {
         return Functions.values.compare(value.operator, count, value.value)
     end,
     print = function(_, value)
-        local v = value.health
-        if v ~= nil then
-            v = v * 100
-        end
-        return Functions.presentation.compareString(value.operator,
-                Functions.presentation.compareString(value.healthoperator,
-                        string.format(L["The number %s members%s within %d yards of %s whose health percentage"],
-                                (value.samegroup and PARTY or L["Raid or Party"]),
-                                (value.includepets and " (" .. L["including pets"] .. ")" or ""),
-                                Functions.presentation.nullable(value.distance, L["<distance>"]),
-                                Functions.presentation.nullable(addon.units[value.unit], L["<unit>"])),
-                        Functions.presentation.nullable(v) .. "%"),
-                Functions.presentation.nullable(value.value),true)
+        local threshold = value.health
+        if threshold ~= nil then threshold = threshold * 100 end
+        return Functions.presentation.phrase(
+                L["The number {members} members{pets} within {distance} yards of {unit} whose health percentage {qualifier} {threshold}% {comparison} {value}"],
+                {
+                    members = value.samegroup and PARTY or L["Raid or Party"],
+                    pets = value.includepets and " (" .. L["including pets"] .. ")" or "",
+                    distance = Functions.presentation.nullable(value.distance, L["<distance>"]),
+                    unit = Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]),
+                    comparison = Functions.presentation.predicate(value.operator, true),
+                    threshold = Functions.presentation.nullable(threshold),
+                    qualifier = Functions.presentation.predicate(value.healthoperator),
+                    value = Functions.presentation.nullable(value.value),
+                })
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -450,20 +455,21 @@ addon:RegisterCondition("PROXIMITY_MANA", {
         return Functions.values.compare(value.operator, v, math.abs(value.value))
     end,
     print = function(_, value)
-        local conditionstr = string.format(
-                ((value.value ~= nil and value.value < 0) and
-                        L["The %s mana defecit of %s members%s within %d yards of %s"] or
-                        L["The %s mana of %s members%s within %d yards of %s"]),
-                Functions.presentation.nullable(value.operation, L["<operation>"]),
-                (value.samegroup and PARTY or L["Raid or Party"]),
-                (value.includepets and " (" .. L["including pets"] .. ")" or ""),
-                Functions.presentation.nullable(value.distance, L["<distance>"]),
-                Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]))
-        if value.value ~= nil and value.value < 0 then
-            return Functions.presentation.compareString(value.operator, conditionstr, -value.value)
-        else
-            return Functions.presentation.compareString(value.operator, conditionstr, Functions.presentation.nullable(value.value))
-        end
+        local threshold = value.value
+        local deficit = threshold ~= nil and threshold < 0
+        if deficit then threshold = -threshold end
+        return Functions.presentation.phrase(
+                (deficit and L["The {operation} mana defecit of {members} members{pets} within {distance} yards of {unit} {comparison} {threshold}"] or
+                L["The {operation} mana of {members} members{pets} within {distance} yards of {unit} {comparison} {threshold}"]),
+                {
+                    operation = Functions.presentation.nullable(value.operation, L["<operation>"]),
+                    members = value.samegroup and PARTY or L["Raid or Party"],
+                    pets = value.includepets and " (" .. L["including pets"] .. ")" or "",
+                    distance = Functions.presentation.nullable(value.distance, L["<distance>"]),
+                    unit = Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]),
+                    comparison = Functions.presentation.predicate(value.operator, true),
+                    threshold = Functions.presentation.nullable(threshold),
+                })
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -549,20 +555,22 @@ addon:RegisterCondition("PROXIMITY_MANA_COUNT", {
         return Functions.values.compare(value.operator, count, value.value)
     end,
     print = function(_, value)
-        local conditionstr
-        if value.mana ~= nil and value.mana < 0 then
-            conditionstr = Functions.presentation.compareString(value.manaoperator, L["%s mana defecit"], -value.mana)
-        else
-            conditionstr = Functions.presentation.compareString(value.manaoperator, L["%s mana"], Functions.presentation.nullable(value.mana))
-        end
-        return Functions.presentation.compareString(value.operator,
-                string.format(conditionstr,
-                        string.format(L["The number %s members%s within %d yards of %s whose"],
-                                (value.samegroup and PARTY or L["Raid or Party"]),
-                                (value.includepets and " (" .. L["including pets"] .. ")" or ""),
-                                Functions.presentation.nullable(value.distance, L["<distance>"]),
-                                Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]))),
-                Functions.presentation.nullable(value.value),true)
+        local threshold = value.mana
+        local deficit = threshold ~= nil and threshold < 0
+        if deficit then threshold = -threshold end
+        return Functions.presentation.phrase(
+                (deficit and L["The number {members} members{pets} within {distance} yards of {unit} whose mana defecit {qualifier} {threshold} {comparison} {value}"] or
+                L["The number {members} members{pets} within {distance} yards of {unit} whose mana {qualifier} {threshold} {comparison} {value}"]),
+                {
+                    members = value.samegroup and PARTY or L["Raid or Party"],
+                    pets = value.includepets and " (" .. L["including pets"] .. ")" or "",
+                    distance = Functions.presentation.nullable(value.distance, L["<distance>"]),
+                    unit = Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]),
+                    comparison = Functions.presentation.predicate(value.operator, true),
+                    threshold = Functions.presentation.nullable(threshold),
+                    qualifier = Functions.presentation.predicate(value.manaoperator),
+                    value = Functions.presentation.nullable(value.value),
+                })
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -631,19 +639,19 @@ addon:RegisterCondition("PROXIMITY_MANAPCT", {
         return Functions.values.compare(value.operator, v, value.value * 100)
     end,
     print = function(_, value)
-        local v = value.value
-        if v ~= nil then
-            v = v * 100
-        end
-        return Functions.presentation.compareString(value.operator,
-                string.format(
-                        L["The %s mana percentage of %s members%s within %d yards of %s"],
-                        Functions.presentation.nullable(value.operation, L["<operation>"]),
-                        (value.samegroup and PARTY or L["Raid or Party"]),
-                        (value.includepets and " (" .. L["including pets"] .. ")" or ""),
-                        Functions.presentation.nullable(value.distance, L["<distance>"]),
-                        Functions.presentation.nullable(addon.units[value.unit], L["<unit>"])),
-                Functions.presentation.nullable(v) .. '%')
+        local threshold = value.value
+        if threshold ~= nil then threshold = threshold * 100 end
+        return Functions.presentation.phrase(
+                L["The {operation} mana percentage of {members} members{pets} within {distance} yards of {unit} {comparison} {threshold}%"],
+                {
+                    operation = Functions.presentation.nullable(value.operation, L["<operation>"]),
+                    members = value.samegroup and PARTY or L["Raid or Party"],
+                    pets = value.includepets and " (" .. L["including pets"] .. ")" or "",
+                    distance = Functions.presentation.nullable(value.distance, L["<distance>"]),
+                    unit = Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]),
+                    comparison = Functions.presentation.predicate(value.operator, true),
+                    threshold = Functions.presentation.nullable(threshold),
+                })
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -728,19 +736,20 @@ addon:RegisterCondition("PROXIMITY_MANAPCT_COUNT", {
         return Functions.values.compare(value.operator, count, value.value)
     end,
     print = function(_, value)
-        local v = value.mana
-        if v ~= nil then
-            v = v * 100
-        end
-        return Functions.presentation.compareString(value.operator,
-                Functions.presentation.compareString(value.manaoperator,
-                        string.format(L["The number %s members%s within %d yards of %s whose mana percentage"],
-                                (value.samegroup and PARTY or L["Raid or Party"]),
-                                (value.includepets and " (" .. L["including pets"] .. ")" or ""),
-                                Functions.presentation.nullable(value.distance, L["<distance>"]),
-                                Functions.presentation.nullable(addon.units[value.unit], L["<unit>"])),
-                        Functions.presentation.nullable(v) .. "%"),
-                Functions.presentation.nullable(value.value),true)
+        local threshold = value.mana
+        if threshold ~= nil then threshold = threshold * 100 end
+        return Functions.presentation.phrase(
+                L["The number {members} members{pets} within {distance} yards of {unit} whose mana percentage {qualifier} {threshold}% {comparison} {value}"],
+                {
+                    members = value.samegroup and PARTY or L["Raid or Party"],
+                    pets = value.includepets and " (" .. L["including pets"] .. ")" or "",
+                    distance = Functions.presentation.nullable(value.distance, L["<distance>"]),
+                    unit = Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]),
+                    comparison = Functions.presentation.predicate(value.operator, true),
+                    threshold = Functions.presentation.nullable(threshold),
+                    qualifier = Functions.presentation.predicate(value.manaoperator),
+                    value = Functions.presentation.nullable(value.value),
+                })
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")

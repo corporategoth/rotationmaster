@@ -405,4 +405,15 @@ test('running render callbacks shows their preview without a second empty output
  assert(c.status and c.status:GetText():find('Preview',1,true),'render result has no visible inline feedback')
  c:SetText('error("RENDER_ERROR")');assert(not c:Run() and c.outputWindow.frame:IsShown(),'render failures lost their copyable output');c:Release()
 end)
+test('Run renders typed condition summaries without changing extra nil returns or function table results',function()
+ local f,a=fixture();f.load('Core/conditions.lua')
+ local body={fields={unit='string'},bindings={}};local owner={model={key='SUMMARY'},OwnerValid=function() return true end,PendingSource=function() return body end}
+ owner.conditionTestState={configured=true,key='SUMMARY',values={unit='you {literal} 50%'},source=body,profile=a.db.profile,global=a.db.global}
+ local c=a:CreateLuaWorkbenchControl(f.env.UIParent,function() end,function() return true end)
+ c:SetContext({kind='condition',id='SUMMARY',callback='print',source=body,testOwner=owner});c:SetText('return addon.Functions.presentation.phrase("{unit} {{!is|is not}} ready",{unit=value.unit}),nil,7')
+ assert(c:Run());local text=table.concat(c.engine.Query.Console.lines,' ')
+ assert(text:find('you {literal} 50% is ready  nil  7',1,true),'typed callback summary is hidden as an opaque table')
+ c:SetContext({kind='function',id='TABLE_RESULT',source={args={},bindings={}}});c.arguments:SetText('{}');c:SetText('return {note="raw function result"}')
+ assert(c:Run());local raw=table.concat(c.engine.Query.Console.lines,' ');assert(not raw:find('Condition summary unavailable',1,true),'function table was mistaken for a condition summary');c:Release()
+end)
 finish()

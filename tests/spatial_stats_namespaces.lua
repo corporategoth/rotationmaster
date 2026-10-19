@@ -1,9 +1,12 @@
 local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite()
-local groups={isin='values',compare='values',nullable='presentation',compareString='presentation',keys='collections'}
+local groups={isin='values',compare='values',nullable='presentation',phrase='presentation',predicate='presentation',keys='collections'}
 local tags={'PROXIMITY_HEALTH','PROXIMITY_HEALTH_COUNT','PROXIMITY_HEALTHPCT','PROXIMITY_HEALTHPCT_COUNT','PROXIMITY_MANA','PROXIMITY_MANA_COUNT','PROXIMITY_MANAPCT','PROXIMITY_MANAPCT_COUNT'}
 local hashes={observation='83c25a41',statistic='3bd1d048',aggregate='e171a72c',color='e50480ee',helpers='91169864'}
 local function qualified(name) return 'Functions.'..groups[name]..'.'..name end
-local function binding(name) return name=='keys' and 'builtin:Functions/collections.lua:keys' or 'builtin:utils.lua:'..name end
+local function binding(name)
+    if name=='phrase' or name=='predicate' then return 'builtin:Functions/presentation.lua:'..name end
+    return name=='keys' and 'builtin:Functions/collections.lua:keys' or 'builtin:utils.lua:'..name
+end
 local function fixture(...)
     local f=F.new(...);local a,e=f.addon,f.env
     local state={units={player={x=0,y=0,health=50,maxhealth=100,mana=30,maxmana=100},party1={x=3,y=4,health=20,maxhealth=100,mana=10,maxmana=100}},calls={},opaque={}}
@@ -25,7 +28,7 @@ local function fixture(...)
     return f,a,state
 end
 local function legacy(code)
-    for name in pairs(groups) do code=code:gsub(qualified(name):gsub('%.','%%.')..'%(', 'addon.'..name..'(') end
+    for name in pairs(groups) do if name~='phrase' and name~='predicate' then code=code:gsub(qualified(name):gsub('%.','%%.')..'%(', 'addon.'..name..'(') end end
     return code
 end
 local function copies(a)
@@ -65,12 +68,12 @@ local function sameEngine(a,tag,node)
     end
 end
 
-test('spatial statistics callbacks select exactly88 calls through five canonical leaves across28 callbacks',function()
+test('spatial statistics callbacks select exactly92 calls through six canonical leaves across28 callbacks',function()
     local f,a=fixture();local declared=assert(a.builtinCallbackBindings and a.builtinCallbackBindings['Conditions/spatial_stats.lua'],'spatial statistic canonical dependency manifest missing')
-    local leaves=0;for alias,id in pairs(declared) do leaves=leaves+1;local name=alias:match('([%w_]+)$');assert(alias==qualified(name) and id==binding(name)) end;assert(leaves==5)
+    local leaves=0;for alias,id in pairs(declared) do leaves=leaves+1;local name=alias:match('([%w_]+)$');assert(alias==qualified(name) and id==binding(name)) end;assert(leaves==6)
     local calls,callbacks=0,0
-    for _,tag in ipairs(tags) do local source=assert(a:GetBuiltinConditionSource(tag));local count=tag:find('_COUNT',1,true);local pct=tag:find('PCT',1,true)
-        local expected={valid={isin=3},evaluate={compare=count and 2 or 1},print={nullable=4,compareString=count and (pct and 2 or 3) or (pct and 1 or 2)}}
+    for _,tag in ipairs(tags) do local source=assert(a:GetBuiltinConditionSource(tag));local count=tag:find('_COUNT',1,true)
+        local expected={valid={isin=3},evaluate={compare=count and 2 or 1},print={nullable=4,phrase=1,predicate=count and 2 or 1}}
         if not count then expected.widget={keys=1} end
         assert(not source.bindings.Functions,'opaque namespace captured')
         for alias,id in pairs(declared) do assert(source.bindings[alias]==id) end
@@ -80,15 +83,16 @@ test('spatial statistics callbacks select exactly88 calls through five canonical
             assert(not code:find('addon.'..name..'(',1,true),'direct callback retained legacy call')
         end end
     end
-    assert(calls==88 and callbacks==28 and not f.env.Functions and not f.env.functions)
+    assert(calls==92 and callbacks==28 and not f.env.Functions and not f.env.functions)
 end)
-test('native statistic helpers captures and all source bytes outside selected call spelling remain exact',function()
+test('native statistic helpers captures and all source bytes outside eight print callbacks remain exact',function()
     local _,a=fixture()
     for name,hash in pairs(hashes) do local id='builtin:Conditions/spatial_stats.lua:'..name;local record=assert(a.builtinFunctions[id]);assert(a:FunctionSourceHash(record.source)==hash,'private source changed: '..name);assert(a:ResolveFunctionBinding(id)==a.builtinSourceModules['Conditions/spatial_stats.lua'](name)) end
     local file=assert(io.open('Conditions/spatial_stats.lua'));local code=file:read('*a');file:close()
     code=code:gsub('%-%- BEGIN GENERATED RM SOURCE BINDINGS.*','')
     code=code:gsub('%-%- BEGIN SPATIAL STATS CALLBACK NAMESPACE.-%-%- END SPATIAL STATS CALLBACK NAMESPACE\n\n','')
-    assert(a:FunctionSourceHash({code=legacy(code)})=='0cfcffaa','source changed beyond selected canonical callback calls')
+    local count;code,count=code:gsub('    print = function%(_, value%)\n.-    end,\n    widget','    -- PRINT BODY EXCLUDED\n    widget')
+    assert(count==8 and a:FunctionSourceHash({code=code})=='3ce4f7bb','source changed outside eight print callbacks')
     assert(a.builtinSourceModules['Conditions/spatial_stats.lua']('observation')~=nil)
 end)
 test('registered editable and legacy-shaped spatial callbacks preserve validators summaries raw errors and engine results across inventory branches',function()
@@ -156,7 +160,11 @@ test('spatial operation controls Help and arbitrary saved addon helper APIs stay
             local help=f.widget('Group');definition.help(help);assert(F.text(help):find('upper range bound',1,true))
         end
     end
-    for name,group in pairs(groups) do assert(a[name]==a.Functions[group][name] and a:ResolveFunctionBinding(binding(name))==a[name] and a.builtinSourceModules[name=='keys' and 'Functions/collections.lua' or 'utils.lua'](name)==a[name]) end
+    for name,group in pairs(groups) do
+        local current=a.Functions[group][name];assert(a:ResolveFunctionBinding(binding(name))==current)
+        if name=='phrase' or name=='predicate' then assert(a.builtinSourceModules['Functions/presentation.lua'](name)==current)
+        else assert(a[name]==current and a.builtinSourceModules[name=='keys' and 'Functions/collections.lua' or 'utils.lua'](name)==current) end
+    end
     assert(a:InstallCustomFunction('LEGACY_SPATIAL_STATS',{description='Legacy spatial helpers',args={},returns={},bindings={},code='return addon.isin({x=false},"x"),addon.compare("EQUALS",1,1),addon.nullable(false),addon.compareString("EQUALS","left","right"),addon.keys({a=1})[1]'}))
     local present,equal,boolean,summary,key=assert(a:ResolveFunctionBinding('LEGACY_SPATIAL_STATS'))();assert(present and equal and boolean==false and summary==a.Functions.presentation.compareString('EQUALS','left','right') and key=='a')
 end)

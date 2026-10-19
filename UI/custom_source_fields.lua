@@ -17,7 +17,6 @@ end
 -- Source metadata shows its schema directly. The same schema draft/editor
 -- handles every entry; Advanced changes its presentation, never its format.
 function addon:BuildCustomSourceFields(form,owner)
-    if self.BuildFunctionBindingFields then self:BuildFunctionBindingFields(form,owner) end
     local graph,why=self:NewFieldSchemaDraft(owner.model.value.fields,owner.model.value.fieldOrder,owner.model.value.requiredFields)
     local fieldsGraph=graph or self:NewFieldSchemaDraft(owner.model.value.fields,nil,owner.model.value.requiredFields)
     local nodes=fieldsGraph and fieldsGraph.root.children or {};local short=form.frame:GetHeight()<480

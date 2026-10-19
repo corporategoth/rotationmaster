@@ -142,6 +142,92 @@ function addon:RenderConditionPhrase(text,negated)
     if negated and count==0 then return string.format(L['not (%s)'],text) end
     return rendered
 end
+-- Transient summary authority is shared by native and compiled helper calls.
+-- Values are detached before rendering and are never parsed as template syntax.
+local summaryRecords=setmetatable({}, {__mode='k'})
+local SUMMARY_LIMIT,SUMMARY_PARTS=64000,4096
+local function summaryObject(record)
+    local object={};summaryRecords[object]=record;return object
+end
+local function invalidSummary() return summaryObject({kind='invalid'}) end
+local function summaryFallback()
+    local key='Condition summary unavailable: invalid template or values.'
+    local text=L[key];return type(text)=='string' and #text<=SUMMARY_LIMIT and text or key
+end
+local function summaryScalar(value)
+    local kind=type(value)
+    if kind=='string' then return #value<=SUMMARY_LIMIT and value or nil end
+    if kind=='boolean' or kind=='number' and value==value and value~=math.huge and value~=-math.huge then return tostring(value) end
+end
+function addon:CreateConditionSummaryPredicate(positive,negative,primary)
+    if type(positive)~='string' or #positive>SUMMARY_LIMIT or negative~=nil and (type(negative)~='string' or #negative>SUMMARY_LIMIT) or primary~=nil and type(primary)~='boolean' then return invalidSummary() end
+    return summaryObject({kind='predicate',positive=positive,negative=negative,primary=primary==true})
+end
+function addon:CreateConditionSummaryPhrase(template,values)
+    if type(template)~='string' or #template>SUMMARY_LIMIT or type(values)~='table' or getmetatable(values)~=nil then return invalidSummary() end
+    local copied,count={},0
+    for key,value in pairs(values) do
+        count=count+1
+        if count>SUMMARY_PARTS or type(key)~='string' or not key:match('^[A-Za-z_][A-Za-z_0-9]*$') then return invalidSummary() end
+        local predicate=type(value)=='table' and summaryRecords[value]
+        if predicate and predicate.kind=='predicate' then copied[key]=predicate
+        else copied[key]=summaryScalar(value);if copied[key]==nil then return invalidSummary() end end
+    end
+    local parts,index={},1
+    local function add(part) parts[#parts+1]=part;return #parts<=SUMMARY_PARTS end
+    while index<=#template do
+        local head=template:sub(index,index+3)
+        if head=='{{{{' or head=='}}}}' then
+            if not add(head:sub(1,2)) then return invalidSummary() end;index=index+4
+        elseif template:sub(index,index+1)=='{{' then
+            local closing=template:find('}}',index+2,true);if not closing then return invalidSummary() end
+            local body=template:sub(index+2,closing-1)
+            local positive,negative=body:match('^([^|{}]*)|([^|{}]*)$');if not positive then return invalidSummary() end
+            local primary=positive:sub(1,1)=='!';if primary then positive=positive:sub(2) end
+            if not add({kind='predicate',positive=positive,negative=negative,primary=primary}) then return invalidSummary() end
+            index=closing+2
+        elseif template:sub(index,index)=='{' then
+            local closing=template:find('}',index+1,true);if not closing then return invalidSummary() end
+            local name=template:sub(index+1,closing-1)
+            if not name:match('^[A-Za-z_][A-Za-z_0-9]*$') or copied[name]==nil or not add(copied[name]) then return invalidSummary() end
+            index=closing+1
+        elseif template:sub(index,index)=='}' then return invalidSummary()
+        else
+            local nextBrace=template:find('[{}]',index) or #template+1
+            if not add(template:sub(index,nextBrace-1)) then return invalidSummary() end;index=nextBrace
+        end
+    end
+    return summaryObject({kind='phrase',parts=parts})
+end
+function addon:RenderConditionSummary(result,negated)
+    if type(result)=='string' then return self:RenderConditionPhrase(result,negated) end
+    local record=type(result)=='table' and summaryRecords[result]
+    if not record or record.kind~='phrase' then return summaryFallback() end
+    local primary=false
+    for _,part in ipairs(record.parts) do if type(part)=='table' and part.negative~=nil and part.primary then primary=true;break end end
+    local output,bytes,first,predicates={},0,true,0
+    for _,part in ipairs(record.parts) do
+        local text=part
+        if type(part)=='table' then
+            local eligible=not primary or part.primary
+            text=part.positive
+            if part.negative~=nil then
+                predicates=predicates+1
+                if negated and first and eligible then text=part.negative end
+                if eligible then first=false end
+            end
+        end
+        bytes=bytes+#text;if bytes>SUMMARY_LIMIT then return summaryFallback() end
+        output[#output+1]=text
+    end
+    local text=table.concat(output)
+    if negated and predicates==0 then
+        local ok,wrapped=pcall(string.format,L['not (%s)'],text)
+        if not ok then return summaryFallback() end;text=wrapped
+    end
+    if #text>SUMMARY_LIMIT then return summaryFallback() end
+    return text
+end
 ---@param text string
 ---@return string
 local function trimOuter(text)
@@ -292,7 +378,7 @@ function addon:RegisterCondition(tag, array)
     end
     if type(array.print)=='function' and not printerSources[array.print] then
         local raw=array.print
-        local wrapped=function(spec,value,negated) return addon:RenderConditionPhrase(raw(spec,value),negated) end
+        local wrapped=function(spec,value,negated) return addon:RenderConditionSummary(raw(spec,value),negated) end
         printerSources[wrapped]=raw;array.print=wrapped
     end
     conditions[tag] = array

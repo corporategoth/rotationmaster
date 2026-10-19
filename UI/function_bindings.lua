@@ -82,6 +82,14 @@ function addon:RefreshFunctionBindingMarkers(form,owner)
     self:SetWorkbenchUnsaved(form.fields.function_bindings,dirty)
     for key,control in pairs(form.fields) do if key:match('^binding_alias_') or key:match('^binding_target_') then self:SetWorkbenchUnsaved(control,dirty) end end
 end
+-- One compact geometry contract for condition and utility-function toolbars.
+function addon:GetFunctionBindingToolbarGeometry(width,button,top)
+    local bindingWidth=math.max(90,math.ceil(button:GetFontString():GetStringWidth())+24)
+    local narrow=width<348+bindingWidth
+    local x=narrow and 0 or 222;local y=top+(narrow and 28 or 0)
+    bindingWidth=math.min(bindingWidth,math.max(90,width-(narrow and 126 or 348)))
+    return {x=x,y=y,width=bindingWidth,syntaxX=x+bindingWidth+6,syntaxY=y,bottom=y+28}
+end
 function addon:BuildFunctionBindingFields(form,owner,options)
     options=options or {}
     local source=owner.model and owner.model.value or owner.value;local bindings=source.bindings or {}
@@ -102,7 +110,6 @@ function addon:BuildFunctionBindingFields(form,owner,options)
     if options.header then local header=type(options.header)=='function' and options.header(button) or options.header;button:ClearAllPoints();button:SetPoint('TOPLEFT',header.x,-header.y);button:SetWidth(header.width);form.y=math.max(y,header.y+28) end
     if not owner.bindingExpanded then return end
     local targets=self:FunctionBindingChoices()
-    if not options.hideDescription then form:Text(L['Choose a source helper and its name in this Lua body, such as custom.ready or utils.getCached. Namespaces are private to this callback. Renaming a binding does not rewrite code.']) end
     local aliasWidth=math.max(80,form.width*.28);local labelY=form.y
     for index,caption in ipairs({L['Name in code'],L['Source helper']}) do
         local label=form:Acquire('bindingLabels',function() return form.child:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall') end)
@@ -116,10 +123,17 @@ function addon:BuildFunctionBindingFields(form,owner,options)
         end,function(value) if value~=alias then mutate(function(values) values[value]=values[alias];values[alias]=nil end);alias=value end;owner:UpdateActions() end)
         input:ClearAllPoints();input:SetPoint('TOPLEFT',0,-y);input:SetWidth(aliasWidth);input:SetMultiLine(false);input:SetHeight(24);input:SetTextInsets(4,4,0,0);input:SetCursorPosition(0);input.rmFunctionValue=nil;input.rmFunctionBaseline=nil;input.tooltip=L['Name in code'];input:Enable()
         local choices=self:CopySettingsData(targets);local found=false;for _,entry in ipairs(choices) do if entry.value==id then found=true end end;if not found then choices[#choices+1]={value=id,text=id} end
-        local target=form:Choice('binding_target_'..index,nil,id,choices,function(value) mutate(function(values) values[alias]=value end);refresh() end)
-        target:ClearAllPoints();target:SetPoint('TOPLEFT',aliasWidth+6,-y);target:SetWidth(math.max(60,form.width-aliasWidth-40));target.tooltip=L['Source helper']
-        if owner.readOnly then input:Disable();target:Disable()
-        else
+        local caption=id;for _,entry in ipairs(choices) do if entry.value==id then caption=entry.text;break end end
+        local target=form:Button('binding_target_'..index,caption,function() if self.ShowFunctionSource then self:ShowFunctionSource(id) end end)
+        target:ClearAllPoints();target:SetPoint('TOPLEFT',aliasWidth+6,-y);target:SetWidth(math.max(30,form.width-aliasWidth-72));target.tooltip=L['View source']
+        -- Navigation must permit Discard even while a raw alias is invalid.
+        self:SetUIScript(target,'OnClick',form:Guard(function() if self.ShowFunctionSource then self:ShowFunctionSource(id) end end))
+        if self.FunctionSource and self:FunctionSource(id) and self.ShowFunctionSource then target:Enable() else target:Disable() end
+        local remap=form:Acquire('bindingRemaps',function() return self:CreateWorkbenchIconButton(form.child,'chevron-down',L['Change source helper']) end)
+        remap:ClearAllPoints();remap:SetPoint('TOPRIGHT',-32,-y);remap:SetSize(24,24);form.fields['binding_remap_'..index]=remap
+        self:SetUIScript(remap,'OnClick',form:Guard(function() if form:FlushEdits() then form:ShowChoices(remap,choices,function(value) mutate(function(values) values[alias]=value end);refresh() end,true) end end))
+        if owner.readOnly then input:Disable();remap:Disable()
+        else remap:Enable()
             local remove=form:Button('binding_remove_'..index,L['Remove binding'],function() mutate(function(values) values[alias]=nil end);refresh() end,'trash')
             remove:ClearAllPoints();remove:SetPoint('TOPRIGHT',0,-y);remove:SetWidth(26)
         end;form.y=y+30

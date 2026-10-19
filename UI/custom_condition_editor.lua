@@ -228,6 +228,7 @@ function addon:condition_edit_box(update,key,source,saveAllowed,embedded)
         {title=L['Field schema'],text=L['Edit fields opens a graphical schema draft. Add, name, reorder or remove fields, choose primitive or nested types, and edit nested fields. Apply stages the schema and its field order. Advanced exposes the equivalent raw schema, parsed as data without executing Lua.']},
         {title=L['Test'],text=L['Test opens one condition-level dialog from any callback tab. It renders Fields UI and Help together with detached values. Committing a field value validates and evaluates once. Run test refreshes the current values, while only valid values are evaluated. Opening the dialog does not evaluate defaults. Live is opt-in and stops when the dialog closes. Committed test values are available to the debugger and stay separate from source, exports and rotation edits. Check syntax never runs a callback.']},
         {title=L['Functions reference'],text=L['The Functions page documents public helpers and their typed arguments, return values and source. Context completion and hover use that reference; Ctrl-click a known helper to open its source. Use explicit binding aliases for reusable custom helpers.']},
+        {title=L['Function bindings'],text=L['Help.Functions.bindings']},
         {title=L['Trusted code'],text=L['Custom Lua has the same access as the addon. Only import code you trust. Syntax validation cannot establish that a callback is safe or correct. Existing custom widget callbacks still use their original UI contract.']}},frame);d.ownedHelpSections=d.ownedHelp.sections end end)
     p:Open(function(form)
         form.width=d.body:GetWidth();form.child:SetWidth(form.width);form:Layout()
@@ -297,6 +298,20 @@ function addon:condition_edit_box(update,key,source,saveAllowed,embedded)
         d.signature=form:Acquire('callbackSignature',function() local text=form.child:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall');text:SetJustifyH('LEFT');return text end);d.signature:SetText(addon:CustomConditionSignature(d.model.value,d.selected))
         d.documentation=form:Acquire('callbackDocs',function() local text=form.child:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall');text:SetJustifyH('LEFT');text:SetWordWrap(true);return text end)
         d.documentationTop=form.y
+        d.bindingPanel=nil;d.bindingLayout=nil;d.bindingHeight=26
+        if addon.BuildFunctionBindingFields then
+            local panel=form:Acquire('conditionBindingsPanel',function() return CreateFrame('Frame',nil,form.child) end)
+            panel:SetWidth(form.width);d.bindingPanel=panel
+            local surface,savedY=form.surface,form.y;form.surface=panel;form.y=0
+            addon:BuildFunctionBindingFields(form,d,{header=function(button)
+                d.bindingLayout=addon:GetFunctionBindingToolbarGeometry(form.width,button,0)
+                return d.bindingLayout
+            end})
+            d.bindingHeight=form.y;panel:SetHeight(d.bindingHeight);form.surface=surface;form.y=savedY
+            -- Only expanded rows live on the movable panel. The header shares
+            -- the actual toolbar parent so navigation and resizing align alike.
+            form.fields.function_bindings:SetParent(form.child)
+        end
         function d:LayoutDocumentation()
             self.documentation:ClearAllPoints();self.documentation:SetPoint('TOPLEFT',0,-self.documentationTop);self.documentation:SetWidth(form.width-30);self.documentation:SetText(addon:CustomConditionDocumentation(self.selected));self.documentation:SetHeight(0)
             self.compactDocumentation=form.frame:GetHeight()-(self.documentationTop+self.documentation:GetStringHeight()+56+8)<100
@@ -304,8 +319,14 @@ function addon:condition_edit_box(update,key,source,saveAllowed,embedded)
             if embedded then self.help:SetParent(form.child);self.help:ClearAllPoints();self.help:SetPoint('TOPRIGHT',0,-self.documentationTop) end
             local actionTop=self.documentationTop+self.documentation:GetStringHeight()+8
             for index,control in ipairs({self.codeUndo,self.codeRedo,self.codeReset}) do control:ClearAllPoints();control:SetPoint('TOPLEFT',(index-1)*74,-actionTop) end
-            self.syntax:SetParent(form.child);self.syntax:ClearAllPoints();self.syntax:SetPoint('TOPLEFT',222,-actionTop);self.syntax:Show()
-            local signatureTop=actionTop+26
+            local syntaxX,syntaxY=222,actionTop
+            if self.bindingPanel then
+                self.bindingPanel:ClearAllPoints();self.bindingPanel:SetPoint('TOPLEFT',0,-actionTop)
+                local binding=form.fields.function_bindings;binding:ClearAllPoints();binding:SetPoint('TOPLEFT',self.bindingLayout.x,-actionTop-self.bindingLayout.y)
+                syntaxX=self.bindingLayout.syntaxX;syntaxY=actionTop+self.bindingLayout.syntaxY
+            end
+            self.syntax:SetParent(form.child);self.syntax:ClearAllPoints();self.syntax:SetPoint('TOPLEFT',syntaxX,-syntaxY);self.syntax:Show()
+            local signatureTop=actionTop+self.bindingHeight
             self.signature:ClearAllPoints();self.signature:SetPoint('TOPLEFT',0,-signatureTop);self.signature:SetWidth(form.width);self.signature:SetHeight(18)
             local codeTop=signatureTop+22
             local codeHeight=math.max(60,form.frame:GetHeight()-codeTop-8)

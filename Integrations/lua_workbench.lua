@@ -199,6 +199,12 @@ function rm:CreateLuaWorkbenchControl(parent,changed,valid)
         local function pack(...) return {n=select('#',...),...} end
         local results=pack(self:InvokeWithSurface(chunk,unpack(arguments,1,arguments.n or #arguments)))
         if not results[1] then C:ReportError(results[2]);self:ShowDebugOutput();return false end
+        -- Named condition summaries are transient tokens, not useful raw table
+        -- output. Render only that callback's first structured return; preserve
+        -- legacy strings, extra returns and ordinary function table inspection.
+        if results.n>1 and self.context.kind=='condition' and self.context.callback=='print' and type(results[2])=='table' and rm.RenderConditionSummary then
+            results[2]=rm:RenderConditionSummary(results[2],false)
+        end
         if results.n>1 then C:Write('return',unpack(results,2,results.n)) end
         if self.debugSurface then C:SetStatus(L['Preview rendered. Use Output for printed messages.'],false)
         else C:SetStatus(engine.L.queryLuaComplete,false);self:ShowDebugOutput() end;return true

@@ -57,6 +57,8 @@ def main():
             ['lua5.1', 'tests/collections_functions.lua'],
             ['lua5.1', 'tests/condition_engine.lua'],
             ['lua5.1', 'tests/condition_catalog.lua'],
+            ['lua5.1', 'tests/summary_templates.lua'],
+            ['luajit', 'tests/summary_templates.lua'],
             ['lua5.1', 'tests/declaration_schema.lua'],
             ['lua5.1', 'tests/catalog.lua'],
             ['lua5.1', 'tests/diagnostics.lua'],
