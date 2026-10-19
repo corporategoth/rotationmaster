@@ -62,7 +62,7 @@ end)
 test('all prior utility source hashes and source-bound live dispatches remain exact',function()
     local f,a=fixture();local rows={}
     for id,record in pairs(a.builtinFunctions) do
-        local new=id=='builtin:Functions/values.lua:floor'
+        local new=id=='builtin:Functions/values.lua:floor' or id=='builtin:Functions/trends.lua:calculate' or id=='builtin:Functions/trends.lua:calculateOld'
         for name in pairs(owners) do new=new or id==identity(name) end
         if not new and (id:match('^builtin:utils.lua:') or id:match('^builtin:Functions/')) then rows[#rows+1]=id..'='..a:FunctionSourceHash(record.source) end
     end

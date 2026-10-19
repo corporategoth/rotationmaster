@@ -203,6 +203,7 @@ test('legacy-shaped full sources retain every original native expression field H
     local _,a=fixture();local baseline={};for _,tag in ipairs(tags) do
         local source=assert(a:GetBuiltinConditionSource(tag))
         if tag=='POINT' then source=a:CopySettingsData(source);source.evaluate=dofile('tests/fixtures/restore_point_repairs.lua')(source.evaluate,true) end
+        if tag=='TT_HEALTH' then source=a:CopySettingsData(source);source.evaluate=dofile('tests/fixtures/restore_health_forecast_deficit.lua')(source.evaluate,tag) end
         baseline[tag]=legacySource(a,source)
         if tag=='RUNE_COOLDOWN' then baseline[tag].evaluate=dofile('tests/fixtures/restore_rounding_qualifiers.lua')(baseline[tag].evaluate,tag,true) end
         if originalHealthEvaluates[tag] then

@@ -508,7 +508,7 @@ addon:RegisterCondition("TT_HEALTH", {
             local health = Functions.cache.getCached(cache, UnitHealth, value.unit)
 
             local target_health = value.health
-            if value.value < 0 then
+            if value.health < 0 then
                 local max = Functions.cache.getCached(cache, UnitHealthMax, value.unit)
                 target_health = target_health + max
             end

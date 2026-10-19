@@ -1,20 +1,34 @@
 local _,addon=...
+local function near(left,right) return math.abs(left-right)<=.1 end
+local geometry={width=true,textWidth=true,left=true,right=true,top=true,bottom=true,scroll=true,viewport=true,viewportWidth=true,gutterWidth=true}
+local function sameRender(before,after)
+    if not before then return false end
+    for key,value in pairs(after) do
+        local old=before[key]
+        if geometry[key] and type(old)=='number' and type(value)=='number' then
+            if not near(old,value) then return false end
+        elseif old~=value then return false end
+    end
+    for key in pairs(before) do if after[key]==nil then return false end end
+    return true
+end
+
 -- Reuse LuaWorkbench's gutter, callbacks and visible-row renderer. Source-line
 -- heights must use the native font's measured glyph metrics, including the
 -- trailing spacing between logical lines and any rows introduced by wrapping.
 function addon:InstallLuaLineNumberControl(control,console,input,options)
     options=options or {};local update=console.UpdateLineNumbers
-    function console:UpdateLineNumbers()
-        local state=input.queryLineNumbers
+    local function render(self,state)
         if state then
             local edit=input.editBox;local source=self.source or ''
             local width=edit:GetWidth();local font,size,flags=edit:GetFont();local spacing=edit:GetSpacing() or 0
-            local left,right=edit:GetTextInsets();local textWidth=math.max(1,width-(left or 0)-(right or 0))
+            local left,right,top,bottom=edit:GetTextInsets();left,right,top,bottom=left or 0,right or 0,top or 0,bottom or 0
+            local scale=edit:GetEffectiveScale();local textWidth=math.max(1,width-(left or 0)-(right or 0))
             -- LuaWorkbench's overlay and FAIAP escape source pipes before
             -- rendering; a plain EditBox retains native WoW markup behavior.
             local literalPipes=not options.native or control.syntax~=nil
             local cache=state.rmMetrics
-            if not cache or cache.source~=source or cache.width~=textWidth or cache.font~=font or cache.size~=size or cache.flags~=flags or cache.spacing~=spacing or cache.literalPipes~=literalPipes then
+            if not cache or cache.source~=source or not near(cache.width,textWidth) or cache.font~=font or cache.size~=size or cache.flags~=flags or cache.spacing~=spacing or cache.literalPipes~=literalPipes or cache.scale~=scale then
                 local measure=state.measure;measure:SetFont(font,size,flags);measure:SetSpacing(spacing);measure:SetWidth(textWidth);measure:SetHeight(0)
                 local positions,heights,offset,start={}, {},0,1
                 for text in (source..'\n'):gmatch('(.-)\n') do
@@ -26,18 +40,51 @@ function addon:InstallLuaLineNumberControl(control,console,input,options)
                     offset=offset+height;start=start+#text+1
                 end
                 state.positions,state.lineHeights=positions,heights
-                state.rmMetrics={source=source,width=textWidth,font=font,size=size,flags=flags,spacing=spacing,literalPipes=literalPipes}
+                state.rmMetrics={source=source,width=textWidth,font=font,size=size,flags=flags,spacing=spacing,literalPipes=literalPipes,scale=scale}
             end
             -- Tell the upstream renderer its layout is current so it does not
             -- replace these exact metrics with its nominal font-size estimate.
             state.source,state.width,state.font,state.size,state.flags,state.spacing=source,width,font,size,flags,spacing
+            local engine=control.engine or control.completionEngine
+            local workspace=engine and engine.Workspace;local debugger=engine and engine.Debugger;local debugUI=engine and engine.DebugUI
+            local record=debugUI and debugUI.CurrentSource and debugUI:CurrentSource()
+            local registered=debugger and debugger.armed and debugger.sources and workspace and debugger.sources[workspace.current]
+            local scroll=input.scrollFrame
+            local view={source=source,metrics=state.rmMetrics,width=width,textWidth=textWidth,font=font,size=size,flags=flags,spacing=spacing,
+                left=left,right=right,top=top,bottom=bottom,scale=scale,scroll=scroll:GetVerticalScroll(),viewport=scroll:GetHeight(),viewportWidth=scroll:GetWidth(),gutterWidth=state.gutter:GetWidth(),
+                current=self:GetLinePosition(source,edit:GetCursorPosition()),error=self.lastError and self.lastError.line,
+                workspace=workspace,db=workspace and workspace.db,script=workspace and workspace.current,debugger=debugger,
+                breakpointRevision=debugger and debugger.breakpointRevision,armed=debugger and debugger.armed==true,paused=debugger and debugger.paused==true,debugLine=debugger and debugger.line,
+                debugUI=debugUI,pausedLine=debugUI and debugUI.pausedLine,recordId=record and record.id,recordSource=record and record.source,registered=registered,registeredSource=registered and registered.source}
+            -- Match UpdateGutter's pause-marker and registered-draft inputs.
+            -- CurrentSource may synthesize a new fallback record each call;
+            -- only its consumed id/source fields affect the rendered markers.
+            if sameRender(state.rmRender,view) then return end
+            local result=update(self)
+            -- Upstream treats false as a present position when hiding this
+            -- texture; clear its highlight when this editor has no pause row.
+            local pausedPosition=view.paused and view.recordId==view.script and view.recordSource==source and state.positions[view.debugLine]
+            if debugUI and debugUI.pausedLine and not pausedPosition then debugUI.pausedLine:Hide() end
+            -- The native renderer can load/remap persisted breakpoints.
+            view.breakpointRevision=debugger and debugger.breakpointRevision
+            state.rmRender=view;return result
         end
-        return update(self)
+    end
+    function console:UpdateLineNumbers()
+        local state=input.queryLineNumbers
+        if not state then return update(self) end
+        if state.rmRendering then return end
+        state.rmRendering=true
+        local ok,result=pcall(render,self,state);state.rmRendering=nil
+        if not ok then error(result,0) end
+        return result
     end
     function control:SetLineNumbers(visible)
         visible=visible~=false
         if self.lineNumbersVisible==visible then return end
         self.lineNumbersVisible=visible
+        local previous=input.queryLineNumbers or input.queryLineNumberCache
+        if previous then previous.rmRender=nil end
         if visible then
             console:AttachLineNumbers(input)
             if options.native then

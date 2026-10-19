@@ -1,0 +1,124 @@
+local _,addon=...
+local trends={}
+addon.Functions=addon.Functions or {}
+addon.Functions.trends=trends
+
+-- Runtime history services keep their live addon/profile, clock and legacy
+-- rounding lookups. Canonical ownership does not change those contracts.
+function trends.calculateOld(health)
+    if not health then
+        return 0
+    end
+
+    local damage_history = addon.db.profile.damage_history
+    local now = GetTime()
+    local total, count, seconds = 0, 0, 0
+
+    local last_health, last_offs, last_max
+    local offs_total = 0
+    for _,v in ipairs(health) do
+        if v.value >= v.max or v.value == 0 then
+            break
+        end
+
+        if last_max ~= v.max then
+            last_health = nil
+            last_max = v.max
+        end
+
+        local offs = addon.round(now - v.time)
+        if last_health ~= nil then
+            offs_total = offs_total + (last_health - v.value)
+
+            if last_offs ~= offs then
+                local scale = damage_history - offs
+                count = count + scale
+                total = total + (offs_total * scale)
+                seconds = seconds + 1
+                offs_total = 0
+            end
+        end
+        last_health = v.value
+        last_offs = offs
+    end
+
+    if seconds then
+        return total / count, seconds
+    end
+    return 0
+end
+
+function trends.calculate(history, window, noheals, nodmg)
+    if not history then
+        return 0
+    end
+
+    if not window then
+        window = addon.db.profile.damage_history
+    end
+
+    local now = GetTime()
+    local damage_total, damage_count, damage_seconds = 0, 0, 0
+    local heal_total, heal_count, heal_seconds = 0, 0, 0
+
+    local maxoffs, data = 0, {}
+    if not nodmg then
+        for _,v in ipairs(history.damage) do
+            local diff = now - v.time
+            local scale = window - diff
+            maxoffs = addon.round(diff)
+            if maxoffs > window then
+                break
+            end
+
+            if v.value then
+                data[maxoffs] = (data[maxoffs] or 0) + (v.value * scale)
+            end
+        end
+        damage_seconds = maxoffs
+        for i=0,maxoffs do
+            damage_total = damage_total + (data[i] or 0)
+            damage_count = damage_count + (window - i)
+        end
+    end
+
+    if not noheals then
+        maxoffs, data = 0, {}
+        for _,v in ipairs(history.heals) do
+            local diff = now - v.time
+            local scale = window - diff
+            maxoffs = addon.round(diff)
+            if maxoffs > window then
+                break
+            end
+
+            if v.value then
+                data[maxoffs] = (data[maxoffs] or 0) + (v.value * scale)
+            end
+        end
+        heal_seconds = maxoffs
+        for i=0,maxoffs do
+            heal_total = heal_total + (data[i] or 0)
+            heal_count = heal_count + (window - i)
+        end
+    end
+
+    return (((damage_count > 0) and (-damage_total / damage_count) or 0) +
+           ((heal_count > 0) and (heal_total / heal_count) or 0)),
+           (damage_seconds > heal_seconds and damage_seconds or heal_seconds)
+end
+
+-- BEGIN GENERATED RM SOURCE BINDINGS
+do
+    local function sourceGetter(name)
+        if name=="calculate" then return addon.Functions.trends.calculate end
+        if name=="calculateOld" then return addon.Functions.trends.calculateOld end
+    end
+    if addon.RegisterBuiltinSourceModule then
+        addon:RegisterBuiltinSourceModule("Functions/trends.lua", sourceGetter)
+    else
+        addon.builtinSourceModules=addon.builtinSourceModules or {}
+        addon.builtinSourceModules["Functions/trends.lua"]=sourceGetter
+    end
+end
+-- END GENERATED RM SOURCE BINDINGS
