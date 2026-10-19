@@ -8,7 +8,7 @@ end
 addon:RegisterCondition("SPELL_KNOWN", {
     requiredFields = {"spell"},
     description = L["Spell Known"],
-    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\spell",
+    icon = addon.Artwork.condition["SPELL_KNOWN"],
     fields = {spell="number", pet="boolean"},
     valid = function(_, value)
         return validID(value.spell) and (value.pet == nil or type(value.pet) == "boolean")

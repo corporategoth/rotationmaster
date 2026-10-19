@@ -22,7 +22,7 @@ addon.builtinCallbackBindings["Conditions/debuffs.lua"]={
 
 addon:RegisterCondition("DEBUFF", {
     description = L["Debuff Present"],
-    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\debuff",
+    icon = addon.Artwork.condition["DEBUFF"],
     fields = { unit = "string", spell = {"string", "number"}, anyrank = "boolean", owndebuff = "boolean" },
     valid = function(_, value)
         return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and value.spell ~= nil)
@@ -73,7 +73,7 @@ addon:RegisterCondition("DEBUFF", {
 
 addon:RegisterCondition("DEBUFF_REMAIN", {
     description = L["Debuff Time Remaining"],
-    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\time",
+    icon = addon.Artwork.condition["DEBUFF_REMAIN"],
     fields = { unit = "string", spell = {"string", "number"}, anyrank = "boolean", owndebuff = "boolean", operator = "string", value = "number" },
     valid = function(_, value)
         return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and value.spell ~= nil and
@@ -134,7 +134,7 @@ addon:RegisterCondition("DEBUFF_REMAIN", {
 
 addon:RegisterCondition("DEBUFF_STACKS", {
     description = L["Debuff Stacks"],
-    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\debuff",
+    icon = addon.Artwork.condition["DEBUFF_STACKS"],
     fields = { unit = "string", spell = {"string", "number"}, anyrank = "boolean", owndebuff = "boolean", operator = "string", value = "number" },
     valid = function(_, value)
         return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and value.spell ~= nil and
@@ -195,7 +195,7 @@ addon:RegisterCondition("DEBUFF_STACKS", {
 
 addon:RegisterCondition("DISPELLABLE", {
     description = L["Debuff Type Present"],
-    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\debuff",
+    icon = addon.Artwork.condition["DISPELLABLE"],
     fields = { unit = "string", debufftype = "string", owndebuff = "boolean", dispellable = "boolean" },
     valid = function(_, value)
         return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and

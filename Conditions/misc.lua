@@ -25,7 +25,7 @@ addon.builtinCallbackBindings["Conditions/misc.lua"]={
 
 addon:RegisterCondition("SELF_LEVEL", {
     description = L["Level"],
-    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\character",
+    icon = addon.Artwork.condition["SELF_LEVEL"],
     fields = { operator = "string", value = "number" },
     valid = function(_, value)
         return (value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
@@ -54,7 +54,7 @@ addon:RegisterCondition("SELF_LEVEL", {
 
 addon:RegisterCondition("PVP", {
     description = L["PVP Flagged"],
-    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\combat",
+    icon = addon.Artwork.condition["PVP"],
     fields = { unit = "string" },
     valid = function(_, value)
         return value.unit ~= nil and Functions.values.isin(addon.units, value.unit)
@@ -84,7 +84,7 @@ addon:RegisterCondition("PVP", {
 
 addon:RegisterCondition("ZONEPVP", {
     description = L["Zone PVP"],
-    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\combat",
+    icon = addon.Artwork.condition["ZONEPVP"],
     fields = { value = "string" },
     valid = function(_, value)
         return value.value == nil or Functions.values.isin(addon.zonepvp, value.value)
@@ -148,7 +148,7 @@ addon:RegisterCondition("ZONEPVP", {
 
 addon:RegisterCondition("INSTANCE", {
     description = L["Instance"],
-    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\environment",
+    icon = addon.Artwork.condition["INSTANCE"],
     fields = { value = "string" },
     valid = function(_, value)
         return value.value == nil or Functions.values.isin(addon.instances, value.value);
@@ -208,7 +208,7 @@ addon:RegisterCondition("INSTANCE", {
 
 addon:RegisterCondition("OUTDOORS", {
     description = L["Outdoors"],
-    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\environment",
+    icon = addon.Artwork.condition["OUTDOORS"],
     fields = { },
     valid = function()
         return true

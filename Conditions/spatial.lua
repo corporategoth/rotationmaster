@@ -173,7 +173,7 @@ end
 
 addon:RegisterCondition("PROXIMITY", {
     description = L["Allies Within Range"],
-    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\spatial",
+    icon = addon.Artwork.condition["PROXIMITY"],
     fields = { unit = "string", operator = "string", value = "number", distance = "number", samegroup = "boolean", includepets = "boolean" },
     valid = function(_, value)
         return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
@@ -236,7 +236,7 @@ addon:RegisterCondition("PROXIMITY", {
 
 addon:RegisterCondition("DISTANCE", {
     description = L["Distance"],
-    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\spatial",
+    icon = addon.Artwork.condition["DISTANCE"],
     fields = { unit = "string", value = "number" },
     valid = function(_, value)
         return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
@@ -294,7 +294,7 @@ addon:RegisterCondition("DISTANCE", {
 
 addon:RegisterCondition("DISTANCE_COUNT", {
     description = L["Distance Count"],
-    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\spatial",
+    icon = addon.Artwork.condition["DISTANCE_COUNT"],
     fields = { value = "number", operator = "string", distance = "number", enemy = "boolean" },
     valid = function(_, value)
         return finite(value.value) and value.value >= 0 and
@@ -390,7 +390,7 @@ addon:RegisterCondition("DISTANCE_COUNT", {
 
 addon:RegisterCondition("ZONE", {
     description = L["Zone"],
-    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\spatial",
+    icon = addon.Artwork.condition["ZONE"],
     fields = { value = "string", subzone = "boolean" },
     valid = function(_, value)
         return value.value ~= nil

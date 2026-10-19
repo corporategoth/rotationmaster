@@ -24,7 +24,7 @@ addon.builtinCallbackBindings["Conditions/buffs.lua"]={
 addon:RegisterCondition("BUFF", {
     requiredFields = {"unit","spell"},
     description = L["Buff Present"],
-    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\buff",
+    icon = addon.Artwork.condition["BUFF"],
     fields = { unit = "string", spell = {"string", "number"}, anyrank = "boolean", ownbuff = "boolean" },
     valid = function(_, value)
         return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and value.spell ~= nil)
@@ -81,7 +81,7 @@ addon:RegisterCondition("BUFF", {
 
 addon:RegisterCondition("BUFF_REMAIN", {
     description = L["Buff Time Remaining"],
-    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\time",
+    icon = addon.Artwork.condition["BUFF_REMAIN"],
     fields = { unit = "string", spell = {"string", "number"}, anyrank = "boolean", ownbuff = "boolean", operator = "string", value = "number" },
     valid = function(_, value)
         return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and value.spell ~= nil and
@@ -142,7 +142,7 @@ addon:RegisterCondition("BUFF_REMAIN", {
 
 addon:RegisterCondition("BUFF_STACKS", {
     description = L["Buff Stacks"],
-    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\buff",
+    icon = addon.Artwork.condition["BUFF_STACKS"],
     fields = { unit = "string", spell = {"string", "number"}, anyrank = "boolean", ownbuff = "boolean", operator = "string", value = "number" },
     valid = function(_, value)
         return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and value.spell ~= nil and
@@ -203,7 +203,7 @@ addon:RegisterCondition("BUFF_STACKS", {
 
 addon:RegisterCondition("STEALABLE", {
     description = L["Has Stealable Buff"],
-    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\buff",
+    icon = addon.Artwork.condition["STEALABLE"],
     fields = { unit = "string" },
     valid = function(_, value)
         return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit))

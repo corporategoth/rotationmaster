@@ -14,9 +14,11 @@ def main():
     commands = [[sys.executable, 'tests/verify.py'],
                 [sys.executable, 'tools/catalog_check.py'],
                 [sys.executable, 'tools/lint.py'],
-                [sys.executable, 'tools/generate_builtin_sources.py']]
+                [sys.executable, 'tools/generate_builtin_sources.py'],
+                [sys.executable, 'tools/generate_artwork_catalog.py']]
     if not args.static:
         commands.extend([
+            [sys.executable, 'tests/test_artwork.py'],
             ['lua5.1', 'tests/startup.lua'],
             ['lua5.1', 'tests/profiler.lua'],
             ['lua5.1', 'tests/settings.lua'],

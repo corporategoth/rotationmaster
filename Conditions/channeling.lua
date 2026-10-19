@@ -25,7 +25,7 @@ addon.builtinCallbackBindings["Conditions/channeling.lua"]={
 
 addon:RegisterCondition("CHANNELING", {
     description = L["Channeling"],
-    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\casting",
+    icon = addon.Artwork.condition["CHANNELING"],
     fields = { unit = "string" },
     valid = function(_, value)
         return value.unit ~= nil and Functions.values.isin(addon.units, value.unit)
@@ -56,7 +56,7 @@ addon:RegisterCondition("CHANNELING", {
 
 addon:RegisterCondition("CHANNELING_SPELL", {
     description = L["Specific Spell Channeling"],
-    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\casting",
+    icon = addon.Artwork.condition["CHANNELING_SPELL"],
     fields = { unit = "string", spell = "string" },
     valid = function(_, value)
         return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and value.spell ~= nil)
@@ -94,7 +94,7 @@ addon:RegisterCondition("CHANNELING_SPELL", {
 
 addon:RegisterCondition("CHANNELING_REMAIN", {
     description = L["Channel Time Remaining"],
-    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\time",
+    icon = addon.Artwork.condition["CHANNELING_REMAIN"],
     fields = { unit = "string", operator = "string", value = "number" },
     valid = function(_, value)
         return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
@@ -138,7 +138,7 @@ addon:RegisterCondition("CHANNELING_REMAIN", {
 
 addon:RegisterCondition("CHANNEL_INTERRUPTABLE", {
     description = L["Channel Interruptable"],
-    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\casting",
+    icon = addon.Artwork.condition["CHANNEL_INTERRUPTABLE"],
     fields = { unit = "string" },
     valid = function(_, value)
         return value.unit ~= nil and Functions.values.isin(addon.units, value.unit)

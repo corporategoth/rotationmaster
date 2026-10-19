@@ -1,0 +1,127 @@
+{
+  "version": 1,
+  "tool": "Built-in image_gen.imagegen",
+  "transparent_background": true,
+  "runtime_sizes": [
+    128,
+    256
+  ],
+  "entries": [
+    {
+      "key": "arcane-ring",
+      "name": "arcane-ring-r2",
+      "kind": "overlay",
+      "subject": "A thin broken circular arcane energy halo formed from three hand-painted violet-white spell wisps, with three oversized carved rune fragments hovering at the outer rim. Open airy center.",
+      "prompt": "Edit this original painted fantasy arcane highlight overlay. Preserve the carved purple rune fragments and luminous violet-white wisps, original Warcraft-world magical materials. Make the ring much THINNER and the clear center much LARGER: every visible fragment and wisp must lie only in a narrow annulus at38 to46percent of canvas width in radius from image center. Keep a completely empty fully transparent CENTRAL SQUARE spanning25 to75percent of canvas width AND height. No energy, colored haze, stray pixel or object in that central square. Keep clean transparent margin and corners. Three small rune fragments spaced around the thin broken halo, no thick stone frame, no full plate, no checkerboard, no text. This overlays a spell icon: underlying central art must remain entirely unobscured. Preserve partial alpha glow on the outer magic edges.",
+      "runtime": "Assets/Overlays/v1/arcane-ring-r2.tga",
+      "status": "generated",
+      "generated_path": "/home/prez/.codex/generated_images/01a151f7-65fd-7b00-8ff0-ff1079fa606f/exec-1af3f739-f482-480a-9330-75cab48afed8.png",
+      "source_sha256": "81e86d1e34a54f447bbc4e35f2092bcbd6567b909ed41cfc1feb17e0e919b419",
+      "earlier_versions": [
+        {
+          "key": "arcane-ring",
+          "name": "arcane-ring",
+          "kind": "overlay",
+          "subject": "A thin broken circular arcane energy halo formed from three hand-painted violet-white spell wisps, with three oversized carved rune fragments hovering at the outer rim. Open airy center.",
+          "prompt": "Use case: stylized-concept. Asset type: ORIGINAL TRANSPARENT fantasy action-button highlight OVERLAY texture, intended to sit on top of an existing game spell icon. Subject: A thin broken circular arcane energy halo formed from three hand-painted violet-white spell wisps, with three oversized carved rune fragments hovering at the outer rim. Open airy center. Style: hand-painted classic Warcraft-world spellbook/actionbar magic, painterly luminous energy, carved fantasy materials when relevant, rich irregular edges and strong broad forms, wholly original. Composition: ONE overlay asset on square canvas, no sprite sheet. The central square spanning 30 to 70 percent of image width AND height must remain completely transparent, so the underlying spell icon stays readable. Only outer magical wisps/shards/leaves/light form the artwork, soft partially transparent glow outside solid highlights; maintain transparent corners and margin. No opaque or painted square, no full plate, no flat UI/vector symbols, no modern logo, no lettering, no words, no watermark, no black backdrop. Real RGBA alpha, no checkerboard illustration. Crisp high-contrast energy still visible at32and48px, broad simple silhouette.",
+          "runtime": "Assets/Overlays/v1/arcane-ring.tga",
+          "status": "generated",
+          "generated_path": "/home/prez/.codex/generated_images/01a151f7-65fd-7b00-8ff0-ff1079fa606f/exec-3337e96c-ff6d-4951-b447-91f9164f2c00.png",
+          "source_sha256": "5ecdb91e5140b9f7e1cd51560230ea70e5d5888a42497c897456d718d3d756ab"
+        }
+      ],
+      "refinement": "Framing/clear-center refinement with built-in imagegen; preceding generated originals retained unchanged.",
+      "referenced_image_paths": [
+        "/home/prez/src/rotationmaster/Assets/Overlays/v1/source/arcane-ring.png"
+      ]
+    },
+    {
+      "key": "ember-corners",
+      "name": "ember-corners",
+      "kind": "overlay",
+      "subject": "Four irregular tongues of white-silver magical flame curling inward slightly from the four corners, like a fantasy fire spell awakening around an action button. Center is fully empty.",
+      "prompt": "Use case: stylized-concept. Asset type: ORIGINAL TRANSPARENT fantasy action-button highlight OVERLAY texture, intended to sit on top of an existing game spell icon. Subject: Four irregular tongues of white-silver magical flame curling inward slightly from the four corners, like a fantasy fire spell awakening around an action button. Center is fully empty. Style: hand-painted classic Warcraft-world spellbook/actionbar magic, painterly luminous energy, carved fantasy materials when relevant, rich irregular edges and strong broad forms, wholly original. Composition: ONE overlay asset on square canvas, no sprite sheet. The central square spanning 30 to 70 percent of image width AND height must remain completely transparent, so the underlying spell icon stays readable. Only outer magical wisps/shards/leaves/light form the artwork, soft partially transparent glow outside solid highlights; maintain transparent corners and margin. No opaque or painted square, no full plate, no flat UI/vector symbols, no modern logo, no lettering, no words, no watermark, no black backdrop. Real RGBA alpha, no checkerboard illustration. Crisp high-contrast energy still visible at32and48px, broad simple silhouette. IMPORTANT tintability: art is multiplied by user-selected red/green/blue then ADD blended. Emissive cores MUST BE WHITE/SILVER with neutral pale gray highlights, virtually no chromatic pigment. Shape and painted fantasy materials carry motif identity. Preserve genuine alpha and empty center.",
+      "runtime": "Assets/Overlays/v1/ember-corners.tga",
+      "status": "generated",
+      "generated_path": "/home/prez/.codex/generated_images/01a151f7-65fd-7b00-8ff0-ff1079fa606f/exec-0777c43e-2bf3-407a-9ee9-86757fab3518.png",
+      "source_sha256": "f7ffc14b432c999bd41012fdb39ea23a787622a3052f3e3b66a4a76dddc5b49d"
+    },
+    {
+      "key": "frost-shards",
+      "name": "frost-shards",
+      "kind": "overlay",
+      "subject": "Six broad icy crystalline shards and wisps of white-silver freezing vapor radiating outward from the outer rim of an open circular space. No shard crosses the central opening.",
+      "prompt": "Use case: stylized-concept. Asset type: ORIGINAL TRANSPARENT fantasy action-button highlight OVERLAY texture, intended to sit on top of an existing game spell icon. Subject: Six broad icy crystalline shards and wisps of white-silver freezing vapor radiating outward from the outer rim of an open circular space. No shard crosses the central opening. Style: hand-painted classic Warcraft-world spellbook/actionbar magic, painterly luminous energy, carved fantasy materials when relevant, rich irregular edges and strong broad forms, wholly original. Composition: ONE overlay asset on square canvas, no sprite sheet. The central square spanning 30 to 70 percent of image width AND height must remain completely transparent, so the underlying spell icon stays readable. Only outer magical wisps/shards/leaves/light form the artwork, soft partially transparent glow outside solid highlights; maintain transparent corners and margin. No opaque or painted square, no full plate, no flat UI/vector symbols, no modern logo, no lettering, no words, no watermark, no black backdrop. Real RGBA alpha, no checkerboard illustration. Crisp high-contrast energy still visible at32and48px, broad simple silhouette. IMPORTANT tintability: art is multiplied by user-selected red/green/blue then ADD blended. Emissive cores MUST BE WHITE/SILVER with neutral pale gray highlights, virtually no chromatic pigment. Shape and painted fantasy materials carry motif identity. Preserve genuine alpha and empty center.",
+      "runtime": "Assets/Overlays/v1/frost-shards.tga",
+      "status": "generated",
+      "generated_path": "/home/prez/.codex/generated_images/01a151f7-65fd-7b00-8ff0-ff1079fa606f/exec-52c85834-0bb5-44ad-8d10-2e532cbbcb73.png",
+      "source_sha256": "f12baeb325a664c7b7a3477449c9ab376dc9ef37e300edeccfbc75b2bdbf2e55"
+    },
+    {
+      "key": "nature-vines",
+      "name": "nature-vines",
+      "kind": "overlay",
+      "subject": "Two asymmetrical curling thorny silver-white magical vines with a few oversized luminous leaves wrapping around an open central space, painted druidic fantasy magic.",
+      "prompt": "Use case: stylized-concept. Asset type: ORIGINAL TRANSPARENT fantasy action-button highlight OVERLAY texture, intended to sit on top of an existing game spell icon. Subject: Two asymmetrical curling thorny silver-white magical vines with a few oversized luminous leaves wrapping around an open central space, painted druidic fantasy magic. Style: hand-painted classic Warcraft-world spellbook/actionbar magic, painterly luminous energy, carved fantasy materials when relevant, rich irregular edges and strong broad forms, wholly original. Composition: ONE overlay asset on square canvas, no sprite sheet. The central square spanning 30 to 70 percent of image width AND height must remain completely transparent, so the underlying spell icon stays readable. Only outer magical wisps/shards/leaves/light form the artwork, soft partially transparent glow outside solid highlights; maintain transparent corners and margin. No opaque or painted square, no full plate, no flat UI/vector symbols, no modern logo, no lettering, no words, no watermark, no black backdrop. Real RGBA alpha, no checkerboard illustration. Crisp high-contrast energy still visible at32and48px, broad simple silhouette. IMPORTANT tintability: art is multiplied by user-selected red/green/blue then ADD blended. Emissive cores MUST BE WHITE/SILVER with neutral pale gray highlights, virtually no chromatic pigment. Shape and painted fantasy materials carry motif identity. Preserve genuine alpha and empty center.",
+      "runtime": "Assets/Overlays/v1/nature-vines.tga",
+      "status": "generated",
+      "generated_path": "/home/prez/.codex/generated_images/01a151f7-65fd-7b00-8ff0-ff1079fa606f/exec-a17a68b3-cb68-4185-8534-0b716e8abd91.png",
+      "source_sha256": "e3345317a19df6d1e42b6ad13a922b9f27b40b53f28571616eb5f7b2e4c2219d"
+    },
+    {
+      "key": "lightning-sweep",
+      "name": "lightning-sweep",
+      "kind": "overlay",
+      "subject": "Two jagged silver-white lightning arcs sweeping along opposite outer sides of a large empty center, with a few large bright sparks; violent shamanic energy, no central bolt.",
+      "prompt": "Use case: stylized-concept. Asset type: ORIGINAL TRANSPARENT fantasy action-button highlight OVERLAY texture, intended to sit on top of an existing game spell icon. Subject: Two jagged silver-white lightning arcs sweeping along opposite outer sides of a large empty center, with a few large bright sparks; violent shamanic energy, no central bolt. Style: hand-painted classic Warcraft-world spellbook/actionbar magic, painterly luminous energy, carved fantasy materials when relevant, rich irregular edges and strong broad forms, wholly original. Composition: ONE overlay asset on square canvas, no sprite sheet. The central square spanning 30 to 70 percent of image width AND height must remain completely transparent, so the underlying spell icon stays readable. Only outer magical wisps/shards/leaves/light form the artwork, soft partially transparent glow outside solid highlights; maintain transparent corners and margin. No opaque or painted square, no full plate, no flat UI/vector symbols, no modern logo, no lettering, no words, no watermark, no black backdrop. Real RGBA alpha, no checkerboard illustration. Crisp high-contrast energy still visible at32and48px, broad simple silhouette. IMPORTANT tintability: art is multiplied by user-selected red/green/blue then ADD blended. Emissive cores MUST BE WHITE/SILVER with neutral pale gray highlights, virtually no chromatic pigment. Shape and painted fantasy materials carry motif identity. Preserve genuine alpha and empty center.",
+      "runtime": "Assets/Overlays/v1/lightning-sweep.tga",
+      "status": "generated",
+      "generated_path": "/home/prez/.codex/generated_images/01a151f7-65fd-7b00-8ff0-ff1079fa606f/exec-a99e9b77-14e8-4f56-9709-9e1de2caf61c.png",
+      "source_sha256": "bcab8860afc280899160d36d9a891b01baadd5cf3c0c8612d4cea784ffe677a4"
+    },
+    {
+      "key": "holy-rays",
+      "name": "holy-rays",
+      "kind": "overlay",
+      "subject": "A soft white-silver holy nimbus with four tapered painterly rays at the cardinal directions around an open central space; broad warm magical radiance, no central disc.",
+      "prompt": "Use case: stylized-concept. Asset type: ORIGINAL TRANSPARENT fantasy action-button highlight OVERLAY texture, intended to sit on top of an existing game spell icon. Subject: A soft white-silver holy nimbus with four tapered painterly rays at the cardinal directions around an open central space; broad warm magical radiance, no central disc. Style: hand-painted classic Warcraft-world spellbook/actionbar magic, painterly luminous energy, carved fantasy materials when relevant, rich irregular edges and strong broad forms, wholly original. Composition: ONE overlay asset on square canvas, no sprite sheet. The central square spanning 30 to 70 percent of image width AND height must remain completely transparent, so the underlying spell icon stays readable. Only outer magical wisps/shards/leaves/light form the artwork, soft partially transparent glow outside solid highlights; maintain transparent corners and margin. No opaque or painted square, no full plate, no flat UI/vector symbols, no modern logo, no lettering, no words, no watermark, no black backdrop. Real RGBA alpha, no checkerboard illustration. Crisp high-contrast energy still visible at32and48px, broad simple silhouette. IMPORTANT tintability: art is multiplied by user-selected red/green/blue then ADD blended. Emissive cores MUST BE WHITE/SILVER with neutral pale gray highlights, virtually no chromatic pigment. Shape and painted fantasy materials carry motif identity. Preserve genuine alpha and empty center.",
+      "runtime": "Assets/Overlays/v1/holy-rays.tga",
+      "status": "generated",
+      "generated_path": "/home/prez/.codex/generated_images/01a151f7-65fd-7b00-8ff0-ff1079fa606f/exec-a5836af9-1e88-4bc6-96a3-2038054ed486.png",
+      "source_sha256": "f8f612fddaeeb4437a002e8454c602bf351a9c5e29f02a0904933a013b25727d"
+    },
+    {
+      "key": "shadow-claws",
+      "name": "shadow-claws",
+      "kind": "overlay",
+      "subject": "Four smoky white-silver spectral claw wisps curling around the edges of an open center, sharp claw tips and flowing dark-magic vapor, no creature body.",
+      "prompt": "Use case: stylized-concept. Asset type: ORIGINAL TRANSPARENT fantasy action-button highlight OVERLAY texture, intended to sit on top of an existing game spell icon. Subject: Four smoky white-silver spectral claw wisps curling around the edges of an open center, sharp claw tips and flowing dark-magic vapor, no creature body. Style: hand-painted classic Warcraft-world spellbook/actionbar magic, painterly luminous energy, carved fantasy materials when relevant, rich irregular edges and strong broad forms, wholly original. Composition: ONE overlay asset on square canvas, no sprite sheet. The central square spanning 30 to 70 percent of image width AND height must remain completely transparent, so the underlying spell icon stays readable. Only outer magical wisps/shards/leaves/light form the artwork, soft partially transparent glow outside solid highlights; maintain transparent corners and margin. No opaque or painted square, no full plate, no flat UI/vector symbols, no modern logo, no lettering, no words, no watermark, no black backdrop. Real RGBA alpha, no checkerboard illustration. Crisp high-contrast energy still visible at32and48px, broad simple silhouette. IMPORTANT tintability: art is multiplied by user-selected red/green/blue then ADD blended. Emissive cores MUST BE WHITE/SILVER with neutral pale gray highlights, virtually no chromatic pigment. Shape and painted fantasy materials carry motif identity. Preserve genuine alpha and empty center.",
+      "runtime": "Assets/Overlays/v1/shadow-claws.tga",
+      "status": "generated",
+      "generated_path": "/home/prez/.codex/generated_images/01a151f7-65fd-7b00-8ff0-ff1079fa606f/exec-8f088dcd-eff7-4b17-ba50-e9402dfb0148.png",
+      "source_sha256": "6a8f20a3dab00ebe952b7c3e6fc3135330f094ee36a049514b62df0fc66d0a4f"
+    },
+    {
+      "key": "rune-diamond",
+      "name": "rune-diamond",
+      "kind": "overlay",
+      "subject": "Four separate thick silver-white carved rune fragments at the corners of an open diamond, each surrounded by subtle neutral pearl-gray spell energy; empty center, no enclosing solid geometric frame.",
+      "prompt": "Use case: stylized-concept. Asset type: ORIGINAL TRANSPARENT fantasy action-button highlight OVERLAY texture, intended to sit on top of an existing game spell icon. Subject: Four separate thick silver-white carved rune fragments at the corners of an open diamond, each surrounded by subtle neutral pearl-gray spell energy; empty center, no enclosing solid geometric frame. Style: hand-painted classic Warcraft-world spellbook/actionbar magic, painterly luminous energy, carved fantasy materials when relevant, rich irregular edges and strong broad forms, wholly original. Composition: ONE overlay asset on square canvas, no sprite sheet. The central square spanning 30 to 70 percent of image width AND height must remain completely transparent, so the underlying spell icon stays readable. Only outer magical wisps/shards/leaves/light form the artwork, soft partially transparent glow outside solid highlights; maintain transparent corners and margin. No opaque or painted square, no full plate, no flat UI/vector symbols, no modern logo, no lettering, no words, no watermark, no black backdrop. Real RGBA alpha, no checkerboard illustration. Crisp high-contrast energy still visible at32and48px, broad simple silhouette. IMPORTANT tintability: art is multiplied by user-selected red/green/blue then ADD blended. Emissive cores MUST BE WHITE/SILVER with neutral pale gray highlights, virtually no chromatic pigment. Shape and painted fantasy materials carry motif identity. Preserve genuine alpha and empty center.",
+      "runtime": "Assets/Overlays/v1/rune-diamond.tga",
+      "status": "generated",
+      "generated_path": "/home/prez/.codex/generated_images/01a151f7-65fd-7b00-8ff0-ff1079fa606f/exec-f57f8ffc-cccc-4c9d-94b0-791ebad9a509.png",
+      "source_sha256": "7fb63ecd320b637e710477783a5ce5f9f7b8dc3d34f5a0325e85ff4a803e2b02"
+    },
+    {
+      "key": "arcane-ring-neutral",
+      "name": "arcane-ring-neutral",
+      "kind": "overlay",
+      "subject": "Thin open ring of white-silver spell wisps with three carved rune fragments and enormous fully empty center.",
+      "prompt": "Use case: stylized-concept. Generate ONE ORIGINAL transparent raster fantasy action-button highlight overlay. A THIN broken ring of hand-painted WHITE and SILVER arcane spell wisps with three large carved neutral silver rune fragments, classic Warcraft-world fantasy magic, not a modern vector logo. User tint multiplies RGB and uses ADD blending, so the emissive core MUST BE PURE WHITE with neutral gray translucent edges, virtually no intrinsic color. All art stays at the extreme outer perimeter, only in radius40to46percent from square center. The entire central square from25to75percent of width/height is empty alpha0. Preserve transparent corners and margin. No painted square/frame/background, no plate or central object, no checkerboard, no text or letters, no watermark. Painterly fantasy energy with bold readable wisps at32px; no tiny filigree.",
+      "runtime": "Assets/Overlays/v1/arcane-ring-neutral.tga",
+      "status": "generated",
+      "generated_path": "/home/prez/.codex/generated_images/01a151f7-65fd-7b00-8ff0-ff1079fa606f/exec-62c42674-26ca-41f3-90a8-c762bb2fb16e.png",
+      "source_sha256": "1140997fb2f2912124d0c3e4c12f62a0ca8bb5eb22738873c43c3a271915796f"
+    }
+  ]
+}

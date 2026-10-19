@@ -46,7 +46,7 @@ end
 
 addon:RegisterCondition("EQUIPPED", {
     description = L["Have Item Equipped"],
-    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\item",
+    icon = addon.Artwork.condition["EQUIPPED"],
     requiredFields={'item'},
     fields = { item = { "string", { "string", "number" } } },
     valid = function(_, value)
@@ -75,7 +75,7 @@ addon:RegisterCondition("EQUIPPED", {
 
 addon:RegisterCondition("CARRYING", {
     description = L["Have Item In Bags"],
-    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\item",
+    icon = addon.Artwork.condition["CARRYING"],
     requiredFields={'item','operator','value'},
     fields = { item = { "string", { "string", "number" } }, operator = "string", value = "number" },
     valid = function(_, value)
@@ -115,7 +115,7 @@ addon:RegisterCondition("CARRYING", {
 
 addon:RegisterCondition("ITEM", {
     description = L["Item Available"],
-    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\item",
+    icon = addon.Artwork.condition["ITEM"],
     requiredFields={'item'},
     fields = { item = { "string", { "string", "number" } }, notcarrying = "boolean" },
     valid = function(_, value)
@@ -161,7 +161,7 @@ addon:RegisterCondition("ITEM", {
 
 addon:RegisterCondition("ITEM_RANGE", {
     description = L["Item In Range"],
-    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\item",
+    icon = addon.Artwork.condition["ITEM_RANGE"],
     requiredFields={'item'},
     fields = { item = { "string", { "string", "number" } }, notcarrying = "boolean" },
     valid = function(_, value)
@@ -205,7 +205,7 @@ addon:RegisterCondition("ITEM_RANGE", {
 
 addon:RegisterCondition("ITEM_COOLDOWN", {
     description = L["Item Cooldown"],
-    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\time",
+    icon = addon.Artwork.condition["ITEM_COOLDOWN"],
     requiredFields={'item','operator','value'},
     fields = { item = { "string", { "string", "number" } }, notcarrying = "boolean", operator = "string", value = "number" },
     valid = function(_, value)

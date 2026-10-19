@@ -25,7 +25,7 @@ addon.builtinCallbackBindings["Conditions/casting.lua"]={
 
 addon:RegisterCondition("CASTING", {
     description = L["Casting"],
-    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\casting",
+    icon = addon.Artwork.condition["CASTING"],
     fields = { unit = "string" },
     valid = function(_, value)
         return value.unit ~= nil and Functions.values.isin(addon.units, value.unit)
@@ -56,7 +56,7 @@ addon:RegisterCondition("CASTING", {
 
 addon:RegisterCondition("CASTING_SPELL", {
     description = L["Specific Spell Casting"],
-    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\casting",
+    icon = addon.Artwork.condition["CASTING_SPELL"],
     fields = { unit = "string", spell = "string" },
     valid = function(_, value)
         return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and value.spell ~= nil)
@@ -94,7 +94,7 @@ addon:RegisterCondition("CASTING_SPELL", {
 
 addon:RegisterCondition("CASTING_REMAIN", {
     description = L["Cast Time Remaining"],
-    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\time",
+    icon = addon.Artwork.condition["CASTING_REMAIN"],
     fields = { unit = "string", operator = "string", value = "number" },
     valid = function(_, value)
         return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
@@ -138,7 +138,7 @@ addon:RegisterCondition("CASTING_REMAIN", {
 
 addon:RegisterCondition("CAST_INTERRUPTABLE", {
     description = L["Cast Interruptable"],
-    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\casting",
+    icon = addon.Artwork.condition["CAST_INTERRUPTABLE"],
     fields = { unit = "string" },
     valid = function(_, value)
         return value.unit ~= nil and Functions.values.isin(addon.units, value.unit)

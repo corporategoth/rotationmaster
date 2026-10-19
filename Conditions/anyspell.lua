@@ -24,7 +24,7 @@ addon.builtinCallbackBindings["Conditions/anyspell.lua"]={
 
 addon:RegisterCondition("ANYSPELL_AVAIL", {
     description = L["Any Spell Available"],
-    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\spell",
+    icon = addon.Artwork.condition["ANYSPELL_AVAIL"],
     fields = { spell = "number", ranked = "boolean" },
     valid = function(_, value)
         if value.spell ~= nil then
@@ -61,7 +61,7 @@ addon:RegisterCondition("ANYSPELL_AVAIL", {
 
 addon:RegisterCondition("ANYSPELL_RANGE", {
     description = L["Any Spell In Range"],
-    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\spell",
+    icon = addon.Artwork.condition["ANYSPELL_RANGE"],
     fields = { spell = "number", ranked = "boolean" },
     valid = function(_, value)
         if value.spell ~= nil then
@@ -101,7 +101,7 @@ addon:RegisterCondition("ANYSPELL_RANGE", {
 
 addon:RegisterCondition("ANYSPELL_COOLDOWN", {
     description = L["Any Spell Cooldown"],
-    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\time",
+    icon = addon.Artwork.condition["ANYSPELL_COOLDOWN"],
     fields = { spell = "number", ranked = "boolean", operator = "string", value = "number" },
     valid = function(_, value)
         if value.spell ~= nil then
@@ -152,7 +152,7 @@ addon:RegisterCondition("ANYSPELL_COOLDOWN", {
 
 addon:RegisterCondition("ANYSPELL_REMAIN", {
     description = L["Any Spell Recharge Time"],
-    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\time",
+    icon = addon.Artwork.condition["ANYSPELL_REMAIN"],
     fields = { spell = "number", ranked = "boolean", operator = "string", value = "number" },
     valid = function(_, value)
         if value.spell ~= nil then
@@ -205,7 +205,7 @@ addon:RegisterCondition("ANYSPELL_REMAIN", {
 
 addon:RegisterCondition("ANYSPELL_CHARGES", {
     description = L["Any Spell Charges"],
-    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\spell",
+    icon = addon.Artwork.condition["ANYSPELL_CHARGES"],
     fields = { spell = "number", ranked = "boolean", operator = "string", value = "number" },
     valid = function(_, value)
         if value.spell ~= nil then

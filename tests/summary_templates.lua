@@ -296,6 +296,7 @@ test('existing presentation source hashes and every nonprint spatial byte remain
     local file=assert(io.open('Conditions/spatial_stats.lua'));local text=file:read('*a');file:close()
     text=text:gsub('%-%- BEGIN GENERATED RM SOURCE BINDINGS.*',''):gsub('%-%- BEGIN SPATIAL STATS CALLBACK NAMESPACE.-%-%- END SPATIAL STATS CALLBACK NAMESPACE\n\n','')
     local count;text,count=text:gsub('    print = function%(_, value%)\n.-    end,\n    widget','    -- PRINT BODY EXCLUDED\n    widget')
+    text=dofile('tests/fixtures/artwork.lua')(text,'spatial',8)
     assert(count==8 and a:FunctionSourceHash({code=text})=='3ce4f7bb','nonprint spatial source changed')
 end)
 test('translated actual spatial templates reorder slots without expanding data or observing native state',function()

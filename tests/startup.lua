@@ -59,6 +59,7 @@ local function fixture(modern, absentThreat)
         chunk('rotationmaster', addon)
     end
     env.WOW_PROJECT_BURNING_CRUSADE_CLASSIC=5
+    load('Data/artwork.lua')
     load('Platform/client.lua');load('Platform/items.lua');load('Platform/inventory.lua');load('Platform/specializations.lua');load('Platform/communication.lua');load('Core/announcements.lua');load('Core/action_policy.lua');load('Core/inventory.lua');load('Core/rotation_references.lua')
     load('Data/plain.lua');load('Data/tags.lua');load('Data/rotation_tree.lua');load('Data/validation.lua');load('Core/rotation_sequence.lua');load('Core/rotation_selection.lua')
     return env, addon, load

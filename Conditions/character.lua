@@ -27,7 +27,7 @@ addon.builtinCallbackBindings["Conditions/character.lua"]={
 
 addon:RegisterCondition("ISSAME", {
     description = L["Is Same As"],
-    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\logic",
+    icon = addon.Artwork.condition["ISSAME"],
     fields = { unit = "string", otherunit = "string" },
     valid = function(_, value)
         return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
@@ -60,7 +60,7 @@ addon:RegisterCondition("ISSAME", {
 
 addon:RegisterCondition("CLASS", {
     description = L["Class"],
-    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\character",
+    icon = addon.Artwork.condition["CLASS"],
     fields = { unit = "string", value = "string" },
     valid = function(_, value)
         return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
@@ -110,7 +110,7 @@ addon:RegisterCondition("CLASS", {
 local character_class = select(2, UnitClass("player"))
 addon:RegisterCondition("CLASS_GROUP", {
     description = L["Class In Group"],
-    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\character",
+    icon = addon.Artwork.condition["CLASS_GROUP"],
     fields = { class = "string", operator = "string", value = "number", raid = "boolean" },
     valid = function(_, value)
         return (value.class ~= nil and Functions.values.isin(LOCALIZED_CLASS_NAMES_MALE, value.class) and
@@ -195,7 +195,7 @@ if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
     addon:RegisterCondition("ROLE", {
         builtinSourceVariant = "inspect",
         description = L["Role"],
-        icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\character",
+        icon = addon.Artwork.condition["ROLE"],
         fields = { unit = "string", value = "string" },
         valid = function(_, value)
             return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
@@ -255,7 +255,7 @@ else
         addon:RegisterCondition("ROLE", {
             builtinSourceVariant = "talent",
             description = L["Role"],
-            icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\character",
+            icon = addon.Artwork.condition["ROLE"],
             fields = { value = "string" },
             valid = function(_, value)
                 return value.value ~= nil and Functions.values.isin(addon.roles, value.value)
@@ -304,7 +304,7 @@ if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE or LE_EXPANSION_LEVEL_CURRENT >= 2) t
     unit_class_num = select(3, UnitClass("player"))
     addon:RegisterCondition("GLYPH", {
         description = L["Glyph"],
-        icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\talent",
+        icon = addon.Artwork.condition["GLYPH"],
         fields = { item = "number" },
         valid = function(_, value)
             if value.item ~= nil then
@@ -361,7 +361,7 @@ end
 
 addon:RegisterCondition("CREATURE", {
     description = L["Creature Type"],
-    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\character",
+    icon = addon.Artwork.condition["CREATURE"],
     fields = { unit = "string", value = "string" },
     valid = function(_, value)
         return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
@@ -410,7 +410,7 @@ addon:RegisterCondition("CREATURE", {
 
 addon:RegisterCondition("CLASSIFICATION", {
     description = L["Unit Classification"],
-    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\character",
+    icon = addon.Artwork.condition["CLASSIFICATION"],
     fields = { unit = "string", value = "string" },
     valid = function(_, value)
         return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
@@ -460,7 +460,7 @@ addon:RegisterCondition("CLASSIFICATION", {
 addon:RegisterCondition("LEVEL", {
     requiredFields = {"unit","operator","value"},
     description = L["Level"],
-    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\character",
+    icon = addon.Artwork.condition["LEVEL"],
     fields = { unit = "string", operator = "string", value = "number", relative = "boolean" },
     valid = function(_, value)
         return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
@@ -518,7 +518,7 @@ addon:RegisterCondition("LEVEL", {
 
 addon:RegisterCondition("GROUP", {
     description = L["In Group"],
-    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\character",
+    icon = addon.Artwork.condition["GROUP"],
     fields = { raid = "boolean" },
     valid = function()
         return true
@@ -554,7 +554,7 @@ addon:RegisterCondition("GROUP", {
 if MI2_GetMobData then
 addon:RegisterCondition("RUNNER", {
     description = L["Runner"],
-    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\combat",
+    icon = addon.Artwork.condition["RUNNER"],
     fields = { unit = "string" },
     valid = function(_, value)
         return value.unit ~= nil and Functions.values.isin(addon.units, value.unit)
@@ -587,7 +587,7 @@ addon:RegisterCondition("RUNNER", {
 
 addon:RegisterCondition("RESIST", {
     description = L["Resistant"],
-    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\combat",
+    icon = addon.Artwork.condition["RESIST"],
     fields = { unit = "string", school = "string", operator = "string", value = "number" },
     valid = function(_, value)
         return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit)) and
@@ -654,7 +654,7 @@ addon:RegisterCondition("RESIST", {
 
 addon:RegisterCondition("IMMUNE", {
     description = L["Immune"],
-    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\combat",
+    icon = addon.Artwork.condition["IMMUNE"],
     fields = { unit = "string", school = "string", partial = "boolean" },
     valid = function(_, value)
         return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit)) and

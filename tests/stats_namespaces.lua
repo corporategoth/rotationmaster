@@ -72,7 +72,10 @@ test('eleven statistics declarations qualify exactly118 calls in33 callbacks thr
     assert(callbacks==33 and totals.isin==22 and totals.compare==17 and totals.getCached==37 and totals.nullable==27 and totals.compareString==15 and not f.env.Functions)
 end)
 test('legacy-shaped full sources retain every original native expression field Help body parameter and private capture hash',function()
-    local _,a=fixture();local baseline={};for _,tag in ipairs(tags) do baseline[tag]=legacySource(a,assert(a:GetBuiltinConditionSource(tag))) end
+    local _,a=fixture();local baseline={};for _,tag in ipairs(tags) do
+        baseline[tag]=legacySource(a,assert(a:GetBuiltinConditionSource(tag)))
+        baseline[tag].icon='Interface\\AddOns\\rotationmaster\\Assets\\Conditions\\'..(tag=='RUNE_COOLDOWN' and 'time' or 'resources')
+    end
     assert(a:FunctionSourceHash(baseline)=='2f0261d2','source changed beyond the selected call substitutions')
     for name,hash in pairs({color='89107d36',helpers='c19dbbac'}) do local id='builtin:Conditions/stats.lua:'..name;assert(a:FunctionSourceHash(a.builtinFunctions[id].source)==hash and a:ResolveFunctionBinding(id)==a.builtinSourceModules['Conditions/stats.lua'](name)) end
 end)

@@ -49,7 +49,7 @@ function addon:BuildEffectSettings(p)
             -- empty sequence before replacing the saved object or previewing.
             if isNew then p.newEffect=candidate else effects[id]=candidate end;effect=candidate;refresh();p:Draw()
         end)
-        if effect.type=='texture' or effect.type=='dazzle' or effect.type=='pulse' or effect.type=='rotate' then p:Edit('texture',L['Texture'],effect.texture or '',nil,function(value) effect.texture=tonumber(value) or value;refresh();p:UpdateRosterEntry(id,{text=effect.name,search=effect.type,icon=effect.texture or self:ControlTexture('preview')}) end) end
+        if effect.type=='texture' or effect.type=='dazzle' or effect.type=='pulse' or effect.type=='rotate' then p:Texture('texture',L['Texture'],effect.texture or '',function(value) effect.texture=tonumber(value) or value;refresh();p:UpdateRosterEntry(id,{text=effect.name,search=effect.type,icon=effect.texture or self:ControlTexture('preview')}) end,{preview=false}) end
         for _,entry in ipairs(schemas[effect.type] or {}) do local key=entry[1];p:Slider(key,L[entry[2]],effect[key] or entry[3],entry[4],entry[5],entry[6],function(value) effect[key]=value;refresh() end) end
         if effect.type=='proc' then
             p:Check('startAnim',L['Start burst'],effect.startAnim==true,function(value) effect.startAnim=value;refresh() end)

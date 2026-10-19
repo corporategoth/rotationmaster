@@ -72,7 +72,7 @@ end
 
 addon:RegisterCondition("TOTEM", {
     description = L["Totem Present"],
-    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\totem",
+    icon = addon.Artwork.condition["TOTEM"],
     fields = { spell = "number" }, requiredFields = { "spell" },
     valid = function(_, value) return element(value) end,
     evaluate = function(value, cache, start)
@@ -108,7 +108,7 @@ addon:RegisterCondition("TOTEM", {
 
 addon:RegisterCondition("TOTEM_SPELL", {
     description = L["Specific Totem Present"],
-    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\totem",
+    icon = addon.Artwork.condition["TOTEM_SPELL"],
     fields = { spell = "number", ranked = "boolean" }, requiredFields = { "spell" },
     valid = function(_, value) return specific(value) end,
     evaluate = function(value, cache, start) return findSpecific(value,cache,start,false) end,
@@ -138,7 +138,7 @@ addon:RegisterCondition("TOTEM_SPELL", {
 
 addon:RegisterCondition("TOTEM_REMAIN", {
     description = L["Totem Time Remaining"],
-    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\time",
+    icon = addon.Artwork.condition["TOTEM_REMAIN"],
     fields = { spell = "number", operator = "string", value = "number" }, requiredFields = { "spell", "operator", "value" },
     valid = function(_, value) return element(value) and amount(value) end,
     evaluate = function(value, cache, start)
@@ -184,7 +184,7 @@ addon:RegisterCondition("TOTEM_REMAIN", {
 
 addon:RegisterCondition("TOTEM_SPELL_REMAIN", {
     description = L["Specific Totem Time Remaining"],
-    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\time",
+    icon = addon.Artwork.condition["TOTEM_SPELL_REMAIN"],
     fields = { spell = "number", ranked = "boolean", operator = "string", value = "number" }, requiredFields = { "spell", "operator", "value" },
     valid = function(_, value) return specific(value) and amount(value) end,
     evaluate = function(value, cache, start) return findSpecific(value,cache,start,true) end,

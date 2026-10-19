@@ -8,6 +8,7 @@ local function catalogs()
         for i=2,#group do local entry=group[i];local texture='Interface\\Icons\\'..entry[2];row.icons[#row.icons+1]={texture=texture,name=names[entry[1]]};labels[texture]=names[entry[1]] end;groups[#groups+1]=row
     end
     local originals={name=L['Rotation Master'],icons={}}
+    for _,entry in ipairs(addon.Artwork.icons) do originals.icons[#originals.icons+1]=entry;labels[entry.texture]=entry.name end
     for _,entry in ipairs({{'combat',L['Combat']},{'character',L['Character']},{'spell',L['Spells']},{'buff',L['Buffs']},{'debuff',L['Debuffs']},{'item',L['Items']},{'weapon',L['Weapon']},{'spatial',L['Spatial']},{'resources',L['Resources']},{'pet',L['Pet']},{'talent',L['Talent']},{'casting',L['Casting']},{'logic',L['Logic']},{'totem',L['Totem']},{'environment',L['Environment']},{'time',L['Time']}}) do
         local texture='Interface\\AddOns\\'..addon_name..'\\Assets\\Conditions\\'..entry[1]
         originals.icons[#originals.icons+1]={texture=texture,name=entry[2]};labels[texture]=entry[2]

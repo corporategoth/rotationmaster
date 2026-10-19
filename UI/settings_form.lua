@@ -91,9 +91,22 @@ function addon:CreateSettingsForm(parent)
         addon:SetUIScript(c,'OnEscapePressed',self:Guard(function() record.dirty=false;c:SetText(record.baseline);c:SetTextColor(1,1,1);c:ClearFocus();self:Message('') end))
         addon:SetUIScript(c,'OnEditFocusLost',self:Guard(function() self:FlushEdits() end));return c
     end
-    function p:Texture(key,caption,value,changed)
+    function p:Texture(key,caption,value,changed,options)
+        options=options or {}
         local c;c=self:Edit(key,caption,value,nil,function(v) local texture=tonumber(v) or v;c.texturePreview:SetTexture(texture);changed(texture) end)
-        c.texturePreview=c.texturePreview or c:CreateTexture(nil,'ARTWORK');c.texturePreview:ClearAllPoints();c.texturePreview:SetPoint('RIGHT',c,'LEFT',-6,0);c.texturePreview:SetSize(26,26);c.texturePreview:SetTexture(value);c.texturePreview:Show();return c
+        local record=self.edits[#self.edits]
+        c.texturePreview=c.texturePreview or c:CreateTexture(nil,'ARTWORK');c.texturePreview:ClearAllPoints();c.texturePreview:SetPoint('RIGHT',c,'LEFT',-6,0);c.texturePreview:SetSize(26,26);c.texturePreview:SetTexture(value)
+        if options.preview==false then c.texturePreview:Hide() else c.texturePreview:Show() end
+        local catalog=self:Acquire('textureCatalogs',function() return addon:CreateWorkbenchIconButton(self.child,'chevron-down',L['Choose overlay']) end)
+        -- Anchor to the input rather than storing any engine-specific geometry.
+        catalog:ClearAllPoints();catalog:SetPoint('TOPLEFT',c,'TOPRIGHT',4,0);catalog:SetSize(24,24)
+        catalog:Enable()
+        c:SetWidth(math.max(1,c:GetWidth()-28));self.fields[key..'_catalog']=catalog
+        addon:SetUIScript(catalog,'OnClick',self:Guard(function()
+            if self:FlushEdits() then self:ShowChoices(catalog,addon.Artwork.overlays,function(texture)
+                c:SetText(texture);record.dirty=true;self:FlushEdits()
+            end,true) end
+        end));return c
     end
     function p:Slider(key,caption,value,lo,hi,step,changed)
         local y=self:Row(caption);local c=self:Acquire('sliders',function() return addon:CreateWorkbenchSlider(self.child,lo,hi,step,140) end)

@@ -70,7 +70,7 @@ end
 
 addon:RegisterCondition("PROXIMITY_HEALTH", {
     description = L["Health Within Range"],
-    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\spatial",
+    icon = addon.Artwork.condition["PROXIMITY_HEALTH"],
     fields = { unit = "string", operation = "string", operator = "string", value = "number", distance = "number", samegroup = "boolean", includepets = "boolean" },
     valid = function(_, value)
         return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
@@ -169,7 +169,7 @@ addon:RegisterCondition("PROXIMITY_HEALTH", {
 
 addon:RegisterCondition("PROXIMITY_HEALTH_COUNT", {
     description = L["Health Count Within Range"],
-    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\spatial",
+    icon = addon.Artwork.condition["PROXIMITY_HEALTH_COUNT"],
     fields = { unit = "string", healthoperator = "string", health = "number", operator = "string", value = "number", distance = "number", samegroup = "boolean", includepets = "boolean" },
     valid = function(_, value)
         return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
@@ -254,7 +254,7 @@ addon:RegisterCondition("PROXIMITY_HEALTH_COUNT", {
 
 addon:RegisterCondition("PROXIMITY_HEALTHPCT", {
     description = L["Health Percentage Within Range"],
-    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\spatial",
+    icon = addon.Artwork.condition["PROXIMITY_HEALTHPCT"],
     fields = { unit = "string", operation = "string", operator = "string", value = "number", distance = "number", samegroup = "boolean", includepets = "boolean" },
     valid = function(_, value)
         return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
@@ -351,7 +351,7 @@ addon:RegisterCondition("PROXIMITY_HEALTHPCT", {
 
 addon:RegisterCondition("PROXIMITY_HEALTHPCT_COUNT", {
     description = L["Health Percentage Count Within Range"],
-    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\spatial",
+    icon = addon.Artwork.condition["PROXIMITY_HEALTHPCT_COUNT"],
     fields = { unit = "string", healthoperator = "string", health = "number", operator = "string", value = "number", distance = "number", samegroup = "boolean", includepets = "boolean" },
     valid = function(_, value)
         return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
@@ -432,7 +432,7 @@ addon:RegisterCondition("PROXIMITY_HEALTHPCT_COUNT", {
 })
 addon:RegisterCondition("PROXIMITY_MANA", {
     description = L["Mana Within Range"],
-    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\spatial",
+    icon = addon.Artwork.condition["PROXIMITY_MANA"],
     fields = { unit = "string", operation = "string", operator = "string", value = "number", distance = "number", samegroup = "boolean", includepets = "boolean" },
     valid = function(_, value)
         return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
@@ -531,7 +531,7 @@ addon:RegisterCondition("PROXIMITY_MANA", {
 
 addon:RegisterCondition("PROXIMITY_MANA_COUNT", {
     description = L["Mana Count Within Range"],
-    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\spatial",
+    icon = addon.Artwork.condition["PROXIMITY_MANA_COUNT"],
     fields = { unit = "string", manaoperator = "string", mana = "number", operator = "string", value = "number", distance = "number", samegroup = "boolean", includepets = "boolean" },
     valid = function(_, value)
         return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
@@ -616,7 +616,7 @@ addon:RegisterCondition("PROXIMITY_MANA_COUNT", {
 
 addon:RegisterCondition("PROXIMITY_MANAPCT", {
     description = L["Mana Percentage Within Range"],
-    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\spatial",
+    icon = addon.Artwork.condition["PROXIMITY_MANAPCT"],
     fields = { unit = "string", operation = "string", operator = "string", value = "number", distance = "number", samegroup = "boolean", includepets = "boolean" },
     valid = function(_, value)
         return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
@@ -713,7 +713,7 @@ addon:RegisterCondition("PROXIMITY_MANAPCT", {
 
 addon:RegisterCondition("PROXIMITY_MANAPCT_COUNT", {
     description = L["Mana Percentage Count Within Range"],
-    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\spatial",
+    icon = addon.Artwork.condition["PROXIMITY_MANAPCT_COUNT"],
     fields = { unit = "string", manaoperator = "string", mana = "number", operator = "string", value = "number", distance = "number", samegroup = "boolean", includepets = "boolean" },
     valid = function(_, value)
         return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and

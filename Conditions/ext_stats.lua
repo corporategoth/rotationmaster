@@ -25,7 +25,7 @@ addon.builtinCallbackBindings["Conditions/ext_stats.lua"]={
 
 addon:RegisterCondition("STAT", {
     description = L["Character Stat"],
-    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\resources",
+    icon = addon.Artwork.condition["STAT"],
     fields = { stat = "number", operator = "string", unit = "string", value = "number" },
     valid = function(_, value)
         return (value.stat ~= nil and Functions.values.isin(addon.stats, value.stat) and
@@ -127,7 +127,7 @@ end
 addon.delayed_condition["ExtendedCharacterStats"]["ECS_STAT"] = {
     on_register = init_ecs,
     description = L["Extended Character Stat"],
-    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\resources",
+    icon = addon.Artwork.condition["ECS_STAT"],
     fields = { stat = "string", operator = "string", value = "number" },
     valid = function(_, value)
         return (value.stat ~= nil and Functions.values.isin(ecs_state.stats, value.stat) and
@@ -175,7 +175,7 @@ addon.delayed_condition["ExtendedCharacterStats"]["ECS_STAT"] = {
 addon.delayed_condition["ExtendedCharacterStats"]["ECS_STAT_PCT"] = {
     on_register = init_ecs,
     description = L["Extended Character Stat Percentage"],
-    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\resources",
+    icon = addon.Artwork.condition["ECS_STAT_PCT"],
     fields = { stat = "string", operator = "string", value = "number" },
     valid = function(_, value)
         return (value.stat ~= nil and Functions.values.isin(ecs_state.percentages, value.stat) and

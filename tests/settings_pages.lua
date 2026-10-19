@@ -1020,4 +1020,23 @@ test('Proc effects show unsupported fallback without dirty defaults and stage po
     local codec=a:NewRotationCodec();local decoded=assert(codec:Decode(assert(codec:Encode(value))));assert(a:SettingsDataEqual(value,decoded.value))
     a.GetProcGlowSupport=function() return true end;p:Draw();assert(not p.fields.proc_support)
 end)
+test('overlay catalog stages exact texture paths across effect fields and rejects stale choices',function()
+    local f,parent=fixture();local a=f.addon
+    a.db.global.effects={e={name='A Overlay',type='texture',texture='existing'},other={name='Other',type='pixel'}}
+    a.Glow=function() end;a.HideGlow=function() end
+    local p=a:OpenNativeSettings(parent,'Effects')
+    assert(p.selection=='e' and not p:IsSettingsDraftDirty())
+    p.fields.texture_catalog:Click();assert(#p.menu.entries==9)
+    local entry=p.menu.entries[2];local row=p.menu.rows[2];row:Click()
+    assert(p.draft.global.effects.e.texture==entry.value and a.db.global.effects.e.texture=='existing')
+    assert(p.fields.texture:GetText()==entry.value and p:IsSettingsDraftDirty())
+    local decoded=assert(a:NewRotationCodec():Decode(assert(a:NewRotationCodec():Encode(p.draft.global.effects.e))))
+    assert(decoded.value.texture==entry.value)
+    p.fields.texture_catalog:Click();local stale=p.menu.rows[3].scripts.OnClick
+    p.fields.cancel:Click();stale();assert(a.db.global.effects.e.texture=='existing' and not p:IsSettingsDraftDirty())
+    p:Release();a.db.global.effects={e={name='Sequence',type='animate',frequency=.25,sequence={'old'}}};p=a:OpenNativeSettings(parent,'Effects')
+    p.fields.seq1_catalog:Click();local selected=p.menu.entries[1].value;p.menu.rows[1]:Click()
+    assert(p.draft.global.effects.e.sequence[1]==selected and p.fields.seq1.texturePreview.texture==selected)
+    assert(a.db.global.effects.e.sequence[1]=='old')
+end)
 finish()

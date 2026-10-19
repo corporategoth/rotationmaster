@@ -53,7 +53,7 @@ end
 if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
     addon:RegisterCondition("WEAPON", {
         description = L["Weapon Enchant Present"],
-        icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\weapon",
+        icon = addon.Artwork.condition["WEAPON"],
         fields = { offhand = "boolean" },
         valid = function()
             return true
@@ -90,7 +90,7 @@ if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
 
     addon:RegisterCondition("WEAPON_REMAIN", {
         description = L["Weapon Enchant Time Remaining"],
-        icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\time",
+        icon = addon.Artwork.condition["WEAPON_REMAIN"],
         fields = { offhand = "boolean", operator = "string", value = "number" },
         valid = function(_, value)
             return (value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
@@ -142,7 +142,7 @@ if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
 
     addon:RegisterCondition("WEAPON_STACKS", {
         description = L["Weapon Enchant Stacks"],
-        icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\weapon",
+        icon = addon.Artwork.condition["WEAPON_STACKS"],
         fields = { offhand = "boolean", operator = "string", value = "number" },
         valid = function(_, value)
             return (value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
@@ -195,7 +195,7 @@ end
 
 addon:RegisterCondition("SWING_TIME", {
     description = L["Weapon Swing Time"],
-    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\time",
+    icon = addon.Artwork.condition["SWING_TIME"],
     fields = { offhand = "boolean", operator = "string", value = "number" },
     valid = function(_, value)
         return (value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
@@ -242,7 +242,7 @@ addon:RegisterCondition("SWING_TIME", {
 
 addon:RegisterCondition("SWING_TIME_REMAIN", {
     description = L["Weapon Swing Time Remaining"],
-    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\time",
+    icon = addon.Artwork.condition["SWING_TIME_REMAIN"],
     fields = { offhand = "boolean", operator = "string", value = "number" },
     valid = function(_, value)
         return (value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and

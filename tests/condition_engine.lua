@@ -7,6 +7,7 @@ env.LibStub=function(name)
     assert(name=='AceLocale-3.0','Headless engine requested '..name)
     return {GetLocale=function() return setmetatable({}, {__index=function(_,key) return key end}) end}
 end
+local artwork=assert(loadfile('Data/artwork.lua'));setfenv(artwork,env);artwork('rotationmaster',addon)
 local core=assert(loadfile('Core/conditions.lua'));setfenv(core,env);core('rotationmaster',addon)
 local function definition(result)
     return {valid=function() return true end,evaluate=function() return result end,

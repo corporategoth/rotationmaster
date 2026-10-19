@@ -80,7 +80,7 @@ function addon:BuildInlineCustomCondition(p,key,source,readOnly)
     end
     options.category=function(form,d)
         local context=d.model.context;local savedCategory=d.model.baseline.context.category
-        local groups=store.profile.condition_groups or {};local destinations={{value='DEFAULT',text=L['Other']}};local current=L['Other'];local icon=self:GetConditionCategoryIcon(nil)
+        local groups=store.profile.condition_groups or {};local destinations={{value='DEFAULT',text=L['Other'],icon=self:GetConditionCategoryIcon(nil)}};local current=L['Other'];local icon=self:GetConditionCategoryIcon(nil)
         for _,group in ipairs(groups) do destinations[#destinations+1]={value=group.id,text=group.name or group.id,icon=self:GetConditionCategoryIcon(group)};if group.id==savedCategory then current=group.name or group.id;icon=self:GetConditionCategoryIcon(group) end end
         local function visitCategory()
             p:RequestLeave(function() if p.active then p.mode='categories';p.categorySelection=savedCategory;p:Draw() end end)

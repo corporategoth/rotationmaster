@@ -22,6 +22,8 @@ class RunnerTests(unittest.TestCase):
             (root / 'tools/catalog_check.py').write_text('')
             (root / 'tools/lint.py').write_text('')
             (root / 'tools/generate_builtin_sources.py').write_text('')
+            (root / 'tools/generate_artwork_catalog.py').write_text('')
+            (root / 'tests/test_artwork.py').write_text('')
             result = subprocess.run([sys.executable, str(root / 'tools/check')],
                                     env=dict(os.environ, PATH=''), capture_output=True, text=True)
             self.assertEqual(result.returncode, 127)

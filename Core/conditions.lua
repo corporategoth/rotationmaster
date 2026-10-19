@@ -11,9 +11,9 @@ local special = {}
 addon.conditionSpecials = special
 local quarantined = setmetatable({}, {__mode="k"})
 special["DELETE"] = { desc = DELETE, icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Controls\\trash.tga", fields = { } }
-special["AND"] = { desc = L["AND"], icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\logic", fields = { value = "condition[]" } }
-special["OR"] = { desc = L["OR"], icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\logic", fields = { value = "condition[]" } }
-special["NOT"] = { desc = L["NOT"], icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\logic", fields = { value = "condition" } }
+special["AND"] = { desc = L["AND"], icon = addon.Artwork.logic["AND"], fields = { value = "condition[]" } }
+special["OR"] = { desc = L["OR"], icon = addon.Artwork.logic["OR"], fields = { value = "condition[]" } }
+special["NOT"] = { desc = L["NOT"], icon = addon.Artwork.logic["NOT"], fields = { value = "condition" } }
 
 -- Inputs here are normalized, readable data. Client adapters own secret-value access.
 local function outcome(status, reason, path)

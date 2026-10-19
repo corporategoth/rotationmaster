@@ -7,12 +7,12 @@ function addon:BuildConditionSettings(p)
     if p.mode=='categories' then return self:BuildConditionCategorySettings(p) end
     local profile=store.profile;local groups=profile.condition_groups or {};local definitions=self:CopySettingsData(self.conditionDefinitions or {});local custom=store.global.custom_conditions or {}
     for tag,definition in pairs(custom) do if not definitions[tag] then definitions[tag]={description=definition.description,icon=definition.icon} end end
-    local categories={{value='ALL',text=L['All'],icon='Interface\\Icons\\INV_Misc_Book_09'},{value='SWITCH',text=L['Switch']}}
+    local categories={{value='ALL',text=L['All'],icon=self:GetConditionCategoryIcon({id='ALL'})},{value='SWITCH',text=L['Switch'],icon=self:GetConditionCategoryIcon({id='SWITCH'})}}
     if p.category=='CUSTOM' or p.category=='BUILTIN' then p.conditionSource=p.category=='CUSTOM' and 'custom' or 'builtin';p.category='ALL' end
     p.conditionSource=p.conditionSource or 'all'
     local groupIndex
     for i,group in ipairs(groups) do categories[#categories+1]={value=group.id,text=group.name or group.id,icon=self:GetConditionCategoryIcon(group)};if group.id==p.category then groupIndex=i end end
-    categories[#categories+1]={value='DEFAULT',text=L['Other']};if p.category~='ALL'  and p.category~='SWITCH' and p.category~='DEFAULT' and not groupIndex then p.category='ALL' end
+    categories[#categories+1]={value='DEFAULT',text=L['Other'],icon=self:GetConditionCategoryIcon(nil)};if p.category~='ALL'  and p.category~='SWITCH' and p.category~='DEFAULT' and not groupIndex then p.category='ALL' end
     local tags=self:listConditions(p.category,true,store);local entries={};local seen={}
     if p.category=='ALL' then for tag in pairs(custom) do local exists=false;for _,value in ipairs(tags) do if value==tag then exists=true end end;if not exists then tags[#tags+1]=tag end end end
     for _,tag in ipairs(tags) do if tag~='DELETE' and not (self.db.global.custom_conditions and self.db.global.custom_conditions[tag] and not custom[tag]) and (p.conditionSource=='all' or (p.conditionSource=='custom')==(custom[tag]~=nil)) and not seen[tag] and (definitions[tag] or (self.conditionSpecials or {})[tag]) then local d=definitions[tag] or self.conditionSpecials[tag];entries[#entries+1]={value=tag,text=d.description or d.desc or tag};seen[tag]=true end end

@@ -89,6 +89,7 @@ test('native statistic helpers captures and all source bytes outside eight print
     local _,a=fixture()
     for name,hash in pairs(hashes) do local id='builtin:Conditions/spatial_stats.lua:'..name;local record=assert(a.builtinFunctions[id]);assert(a:FunctionSourceHash(record.source)==hash,'private source changed: '..name);assert(a:ResolveFunctionBinding(id)==a.builtinSourceModules['Conditions/spatial_stats.lua'](name)) end
     local file=assert(io.open('Conditions/spatial_stats.lua'));local code=file:read('*a');file:close()
+    code=dofile('tests/fixtures/artwork.lua')(code,'spatial',8)
     code=code:gsub('%-%- BEGIN GENERATED RM SOURCE BINDINGS.*','')
     code=code:gsub('%-%- BEGIN SPATIAL STATS CALLBACK NAMESPACE.-%-%- END SPATIAL STATS CALLBACK NAMESPACE\n\n','')
     local count;code,count=code:gsub('    print = function%(_, value%)\n.-    end,\n    widget','    -- PRINT BODY EXCLUDED\n    widget')

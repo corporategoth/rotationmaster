@@ -111,7 +111,7 @@ local function gridWidget(parent,spec,value,update)
     picker.configure=function() picker:SetList(choices,order);picker:SetValue(value.layout=="grid" and value.value or nil) end
 end
 addon:RegisterCondition("TALENT",{
-    description=L["Talent"],icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\talent",
+    description=L["Talent"],icon = addon.Artwork.condition["TALENT"],
     fields={layout="string",tree="number",talent="number",operator="string",value="number"},
     valid=function(_,value)
         if value.layout=="grid" then
@@ -174,7 +174,7 @@ local function treeExists(value,cache)
     return true
 end
 addon:RegisterCondition('TALENT_TREE_POINTS',{
-    description=L['Talent Tree Points'],icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\talent",requiredFields={'tree','operator','value'},
+    description=L['Talent Tree Points'],icon = addon.Artwork.condition["TALENT_TREE_POINTS"],requiredFields={'tree','operator','value'},
     fields={tree='number',operator='string',value='number'},
     valid=function(_,value) return integer(value.tree,1,16) and Functions.values.isin(addon.operators,value.operator) and integer(value.value,0,512) end,
     evaluate=function(value,cache)
@@ -195,7 +195,7 @@ addon:RegisterCondition('TALENT_TREE_POINTS',{
     end,
 })
 addon:RegisterCondition('PRIMARY_TALENT_TREE',{
-    description=L['Primary Talent Tree'],icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\talent",requiredFields={'tree'},fields={tree='number'},
+    description=L['Primary Talent Tree'],icon = addon.Artwork.condition["PRIMARY_TALENT_TREE"],requiredFields={'tree'},fields={tree='number'},
     valid=function(_,value) return integer(value.tree,1,16) end,
     evaluate=function(value,cache)
         local exists,why=treeExists(value,cache);if not exists then return nil,why end
