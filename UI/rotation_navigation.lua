@@ -4,7 +4,7 @@ local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
 function addon:InstallRotationNavigation(pane)
     function pane:ConfirmDelete()
         local workspace=self.workspace
-        if not self.active or workspace.readOnly or workspace.pending or workspace.id==DEFAULT then return end
+        if not self.active or workspace.readOnly or workspace.pending or workspace.fallback then return end
         if not self.deletePrompt then
             local frame=CreateFrame('Frame',nil,self.frame);frame:SetSize(390,110);frame:SetPoint('CENTER');frame:EnableMouse(true)
             local bg=frame:CreateTexture(nil,'BACKGROUND');bg:SetAllPoints(frame);bg:SetColorTexture(.06,.07,.08,1)
@@ -14,12 +14,19 @@ function addon:InstallRotationNavigation(pane)
             local cancel=addon:CreateWorkbenchButton(frame,L['Cancel'],90);cancel:SetPoint('BOTTOMRIGHT',-12,12)
             self.deletePrompt={frame=frame,confirm=confirm,cancel=cancel};frame:Hide()
         end
+        local reference,expected
+        if addon.GetRotationRecordSnapshot and workspace.TargetReference then
+            reference=addon.RotationData.CopyData(workspace.reference)
+            local record
+            record,expected=addon:GetRotationRecordSnapshot(workspace.spec,reference)
+            if not record then self:Message(expected);return end
+        end
         local prompt=self.deletePrompt;local token=self.generation
         local function valid() return pane.active and pane.generation==token and pane.workspace==workspace and prompt.frame:IsShown() and workspace:ValidTarget() end
         addon:SetUIScript(prompt.cancel,'OnClick',function() if valid() then prompt.frame:Hide() end end)
         addon:SetUIScript(prompt.confirm,'OnClick',function()
             if not valid() then return end
-            local ok,why=addon:DeleteCustomRotation(workspace.spec,workspace.id)
+            local ok,why=addon:DeleteCustomRotation(workspace.spec,reference or workspace.id,expected)
             if not ok then pane:Message(why);return end
             prompt.frame:Hide();pane:RefreshAdvice();pane:AfterDelete()
         end)
@@ -53,7 +60,7 @@ function addon:InstallRotationNavigation(pane)
         addon:SetUIScript(prompt.discard,'OnClick',function()
             if not valid() then return end
             local ok,why=pane.workspace:Discard();if not ok then pane:Message(why);return end
-            pane.nameDirty=false;pane.descriptionDirty=false;pane.metadataDirty=false;pane.tagsDirty=false;pane.priorityDirty=false;pane:ClearPendingFields();prompt.frame:Hide();callback()
+            pane.nameDirty=false;pane.descriptionDirty=false;pane.metadataDirty=false;pane.tagsDirty=false;pane.priorityDirty=false;pane.scopeDirty=false;pane.scopeDraft=nil;pane:ClearPendingFields();prompt.frame:Hide();callback()
         end)
         addon:SetUIScript(prompt.cancel,'OnClick',function() if valid() then prompt.frame:Hide() end end)
         prompt.message:SetText(L['Apply this draft, discard its changes, or keep editing.'])

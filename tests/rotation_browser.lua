@@ -27,8 +27,13 @@ local function fixture(product,expansion,realCustom)
     a.Platform.GetSpellInfo=function(_,id) return {spellID=id,name='Lightning Bolt'} end
     a.Platform.GetSpellLink=function() return '|Hspell:403|h[Lightning Bolt]|h' end
     a.printCondition=function() return 'Readable condition' end
-    f.load('UI/defaults.lua');f.load('UI/rotation_reference.lua');f.load('UI/settings_setup.lua');f.load('Options/general.lua')
+    f.load('UI/defaults.lua');f.load('UI/rotation_reference.lua');f.load('UI/settings_setup.lua')
+    -- These old renderer compatibility cases intentionally capture the
+    -- historical body. Public adapters are tested separately against real
+    -- scoped native panes; no production renderer fallback is introduced.
+    dofile('tests/fixtures/legacy_options.lua')(f,'Options/general.lua')
     local real=a.BuildRotationEditor
+    f.load('Options/general.lua')
     local editors={}
     -- Foreign editor fixtures implement the native factory boundary explicitly;
     -- the browser must never choose the old renderer because a factory is absent.
@@ -47,6 +52,7 @@ local function fixture(product,expansion,realCustom)
         else local label=self:CreateConditionLabel();label:SetText('custom editor');pane:AddChild(label) end
         return pane
     end
+    dofile('tests/fixtures/rotation_header_backend.lua')(a,f.env.DEFAULT,f.env.NEW)
     f.load('UI/rotation_browser.lua')
     return f,pack,editors,create,frames
 end

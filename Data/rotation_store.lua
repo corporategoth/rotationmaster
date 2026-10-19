@@ -62,8 +62,9 @@ local function validRecord(record,address)
             or not originMap(provenance.stepOrigins) then return nil,'invalid-record' end
     end
     local comparison=record.comparison
-    if comparison and (not fields(comparison,{kind=true,id=true,origins=true}) or comparison.kind~='custom' and comparison.kind~='builtin'
-        or not text(comparison.id,128) or not originMap(comparison.origins)) then return nil,'invalid-record' end
+    if comparison and (not fields(comparison,{kind=true,id=true,origins=true,sourceAddress=true}) or comparison.kind~='custom' and comparison.kind~='builtin'
+        or not text(comparison.id,128) or not originMap(comparison.origins)
+        or comparison.sourceAddress~=nil and (comparison.kind~='custom' or not validAddress(comparison.sourceAddress) or comparison.sourceAddress.id~=comparison.id)) then return nil,'invalid-record' end
     return true
 end
 local function validSpecMap(map,visit)

@@ -159,6 +159,9 @@ function addon:ShowComparisonReport(report)
     d:SetReport(L['Comparison diagnostic details'],report);return d
 end
 function addon:ShowRotationComparison(spec,id)
+    local reference,reason=self:ResolveRotationReference(spec,id);if not reference then return nil,reason end
+    local record,recordToken=self:GetRotationRecordSnapshot(spec,reference);if not record then return nil,recordToken end
+    local coordinator=self:GetScopedRotationCoordinator();local context=self:GetRotationOwnerContext();local targetToken
     local d=self.rotationComparisonWindow
     if not d then
         d={frame=CreateFrame('Frame',nil,UIParent),children={}};self.rotationComparisonWindow=d
@@ -176,21 +179,27 @@ function addon:ShowRotationComparison(spec,id)
         addon:SetUIScript(d.close,'OnClick',function() d:Hide() end);addon:SetUIScript(d.frame,'OnHide',function() d:Clear() end);d.frame:Hide()
     end
     d:Clear();d.serial=(d.serial or 0)+1;local serial=d.serial;local profile=self.db.profile
-    local function valid() return d.active and d.serial==serial and d.frame:IsShown() and addon.db.profile==profile end
+    local function valid()
+        if not d.active or d.serial~=serial or not d.frame:IsShown() or addon.db.profile~=profile or addon:GetScopedRotationCoordinator()~=coordinator or not coordinator or not coordinator:CheckReady() then return false end
+        local now=addon:GetRotationOwnerContext()
+        return now and context and now.class==context.class and now.character==context.character and (not recordToken or coordinator:TokenCurrent(recordToken)) and (not targetToken or coordinator:TokenCurrent(targetToken))
+    end
     local function control(widget,x,y,width)
         widget:SetParent(d);widget.frame:ClearAllPoints();widget.frame:SetPoint('TOPLEFT',d.frame,'TOPLEFT',x,y);widget:SetWidth(width);widget.frame:Show();d.children[#d.children+1]=widget;return widget
     end
     d.active=true
-    local own=self:GetEditableRotation(spec,id);d.chrome:SetContext(L['Compare rotations'],L['Read-only'],own and own.name or DEFAULT)
+    local own=record.body;d.chrome:SetContext(L['Compare rotations'],L['Read-only'],own and own.name or DEFAULT)
     d.summary:SetText(string.format(L['Your rotation: %s'],own and own.name or DEFAULT))
-    local targets,labels={},{};local selected;local sourced=self:GetSourcedRotationView(spec,id)
-    for _,row in ipairs(self:ListDefaultRotations(spec)) do
-        targets[#targets+1]={kind='builtin',id=row.id};labels[#targets]='|cff5bc0eb'..row.name..'|r ('..L['Built In · read-only']..')'
-        if sourced and sourced.lineage.sourceId==row.id and sourced.lineage.sourceKind=='builtin' then selected=#targets end
+    local targets,labels={},{};local selected;local sourced=self:GetSourcedRotationView(spec,reference)
+    local rows,headerReason=self:ListRotationHeaders(spec);if not rows then d:Clear();return nil,headerReason end
+    table.sort(rows,function(a,b) if a.name==b.name then return a.key<b.key end;return a.name<b.name end)
+    for _,row in ipairs(rows) do
+        if not row.pending and not self:SettingsDataEqual(row.reference,reference) then
+            targets[#targets+1]=row.reference;labels[#targets]=row.kind=='builtin' and '|cff5bc0eb'..row.name..'|r ('..L['Built In · read-only']..')' or row.name
+            if row.scope then labels[#targets]=labels[#targets]..' · '..(row.scope=='character' and L['This character'] or L['Class']) end
+            if row.kind=='builtin' and sourced and sourced.lineage.sourceId==row.canonicalId and sourced.lineage.sourceKind=='builtin' then selected=#targets end
+        end
     end
-    local custom={};for key,body in pairs(profile.rotations[spec] or {}) do if key~=id then custom[#custom+1]={id=key,name=body.name or DEFAULT} end end
-    table.sort(custom,function(a,b) if a.name==b.name then return a.id<b.id end;return a.name<b.name end)
-    for _,entry in ipairs(custom) do targets[#targets+1]={kind='custom',id=entry.id};labels[#targets]=entry.name end
     local chooser=control(self:CreateConditionDropdown(),12,-68,510);d.chooser=chooser;chooser:SetLabel(L['Compare against'])
     local order={};for i=1,#labels do order[i]=i end;chooser:SetList(labels,order);selected=selected or 1;chooser:SetValue(selected)
     local direction=control(self:CreateConditionDropdown(),536,-68,510);d.direction=direction;direction:SetLabel(L['Comparison view'])
@@ -205,7 +214,12 @@ function addon:ShowRotationComparison(spec,id)
     end
     local function refresh(index)
         if not valid() then return end
-        local why;result,why=addon:BuildRotationComparison(spec,id,targets[index]);report=result and addon:FormatRotationComparison(result) or string.format(L['Comparison unavailable: %s'],why)
+        local target=targets[index];if not target then return end
+        local snapshot,token=addon:GetRotationRecordSnapshot(spec,target);if not snapshot then d:Hide();return end
+        targetToken=token
+        local why;result,why=addon:BuildRotationComparison(spec,reference,target)
+        if not valid() then d:Hide();return end
+        report=result and addon:FormatRotationComparison(result) or string.format(L['Comparison unavailable: %s'],why)
         local names,viewOrder={},{};for i,view in ipairs(result and result.views or {}) do names[i]=directionNames[view.key] or L['Comparison'];viewOrder[i]=i end
         direction:SetList(names,viewOrder);direction:SetValue(1);direction:SetDisabled(#names==0);show(1)
     end

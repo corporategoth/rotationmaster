@@ -688,7 +688,11 @@ function addon:validate(template, fix)
         -- Ownership archives must never be removed by the legacy shape repair.
         -- Their pure schema is validated independently, without guessing owners
         -- or mutating a future/invalid format that may need explicit recovery.
-        validate_basic("profile:" .. profile, data, profile_template, fix,{rotationStore=true})
+        validate_basic("profile:" .. profile, data, profile_template, fix,{rotationStore=true,rotationFallbackID=true,rotations=addon.InitializeScopedRotationStorage~=nil,rotationLibrary=addon.InitializeScopedRotationStorage~=nil})
+        local fallback=data.rotationFallbackID
+        if (data.rotationStore~=nil or fallback~=nil) and (type(fallback)~='string' or #fallback==0 or #fallback>128 or not fallback:find('%S') or fallback:find('[%z\1-\31\127]')) then
+            addon:warn(L['Invalid rotation fallback configuration in profile %s; data preserved.'],profile)
+        end
         if data.rotationStore~=nil then
             local ok,why=addon.RotationData.ValidateRotationStore(data.rotationStore)
             if not ok then addon:warn(L["Invalid rotation ownership data in profile %s (%s); record preserved."],profile,tostring(why)) end
@@ -725,7 +729,7 @@ function addon:validate(template, fix)
             apply_remove(toremove, data.announces, fix)
         end
 
-        if data.rotations then
+        if data.rotations and not addon.InitializeScopedRotationStorage then
             local specremove = {}
             for spec, rotations in pairs(data.rotations) do
                 if type(spec) ~= "number" then

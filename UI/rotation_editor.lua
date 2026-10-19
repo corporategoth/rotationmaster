@@ -21,7 +21,7 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
     function pane:Message(message) self.status:SetText(message or '') end
     function pane:UpdateHistory()
         local state=self.workspace.session:HistoryState()
-        local pending=not self.workspace.readOnly and (self.nameDirty or self.descriptionDirty or self.metadataDirty or self.tagsDirty or self.priorityDirty or self:HasPendingFields())
+        local pending=not self.workspace.readOnly and (self.nameDirty or self.descriptionDirty or self.metadataDirty or self.tagsDirty or self.priorityDirty or self.scopeDirty or self:HasPendingFields())
         if state.canUndo or pending then self.undo:Enable() else self.undo:Disable() end
         if state.canRedo and not pending then self.redo:Enable() else self.redo:Disable() end
         if not self.workspace.readOnly and (self.workspace.pending or self:HasUnsavedChanges()) then self.apply:Enable() else self.apply:Disable() end
@@ -71,14 +71,14 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
         local snapshot=self.workspace:Snapshot()
         if self.metadataWindow and self.metadataWindow.frame:IsShown() and not self.metadataDirty then self.metadataWindow:Sync() end
         if not self.descriptionDirty then self.description:SetText(type(snapshot.description)=='string' and snapshot.description or (self.workspace.readOnly and type(self.workspace.description)=='string' and self.workspace.description or '')) end
-        if not self.nameDirty and self.name:GetText()~=(snapshot.name or (id==DEFAULT and DEFAULT or '')) then self.name:SetText(addon:PlainWorkbenchName(type(snapshot.name)=='string' and snapshot.name or (id==DEFAULT and DEFAULT or ''))) end
+        if not self.nameDirty and self.name:GetText()~=(snapshot.name or (workspace.fallback and DEFAULT or '')) then self.name:SetText(addon:PlainWorkbenchName(type(snapshot.name)=='string' and snapshot.name or (workspace.fallback and DEFAULT or ''))) end
         self.origin:SetText('')
-        self.switchText:SetText(addon:PlainWorkbenchName(id==DEFAULT and L['No other rotations match.'] or addon:DescribeCardCondition(snapshot.switch or {},spec)))
-        if id==DEFAULT then self.switch:Disable() else self.switch:Enable() end
+        self.switchText:SetText(addon:PlainWorkbenchName(workspace.fallback and L['No other rotations match.'] or addon:DescribeCardCondition(snapshot.switch or {},spec)))
+        if workspace.fallback then self.switch:Disable() else self.switch:Enable() end
         self:BuildScene();self:LayoutGeometry();self.canvas:Render()
         for _,control in ipairs({self.compare,self.clone}) do if self.workspace.pending then control:Disable() else control:Enable() end end
         self.clone:SetText(self.workspace.readOnly and L['Clone to edit'] or L['Duplicate'])
-        if self.workspace.readOnly or id==DEFAULT or self.workspace.pending then self.delete:Disable() else self.delete:Enable() end
+        if self.workspace.readOnly or workspace.fallback or self.workspace.pending then self.delete:Disable() else self.delete:Enable() end
         self.enable:SetSelected(self.workspace.readOnly and self.workspace.source.enabled or not self.workspace.readOnly and not snapshot.disabled)
         self.enable:SetText(self.workspace.readOnly and (self.workspace.source.enabled and L['Enabled'] or L['Disabled']) or snapshot.disabled and L['Disabled'] or L['Enabled'])
     end
@@ -133,11 +133,11 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
     table.remove(pane.tools);pane.compare:Hide()
     pane.clone=tool(workspace.readOnly and L['Clone to edit'] or L['Duplicate'],110,function()
         local function duplicate()
-            local generated,problem
+            local generated,problem,reference
             local name=string.format(L['Copy of %s'],workspace:Snapshot().name or workspace.title)
-            if workspace.readOnly then generated,problem=addon:CloneDefaultRotation(spec,workspace.builtin,name)
-            else generated,problem=addon:DuplicateCustomRotation(spec,id,name) end
-            if generated and onSelect then onSelect(spec,generated) else pane:Message(problem) end
+            if workspace.readOnly then generated,problem,reference=addon:CloneDefaultRotation(spec,workspace.builtin,name)
+            else generated,problem,reference=addon:DuplicateCustomRotation(spec,id,name) end
+            if generated and onSelect then onSelect(spec,reference or generated) else pane:Message(problem) end
         end
         if pane.RequestLeave then pane:RequestLeave(duplicate) else duplicate() end
     end,'copy')
@@ -158,8 +158,8 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
     pane.hint=text(pane.frame);pane.hint:SetPoint('BOTTOMLEFT',8,12);pane.hint:SetText(L['Click condition text on any card to view or edit its conditions.'])
     pane.apply=self:CreateWorkbenchButton(pane.frame,L['Apply'],86);pane.apply:SetPoint('BOTTOMRIGHT',-100,8)
     pane.discard=self:CreateWorkbenchButton(pane.frame,L['Discard'],86);pane.discard:SetPoint('BOTTOMRIGHT',-8,8)
-    function pane:RefreshAdvice(previous)
-        if previous and addon.currentSpec==spec and addon.currentRotation==id then
+    function pane:RefreshAdvice(previous,previousId)
+        if previous and addon.currentSpec==spec and (addon.currentRotation==(previousId or id) or addon.currentRotation==id or workspace.effectiveFallback and addon.currentRotation==DEFAULT) then
             -- Removed/changed actions must be cleared using their old identities.
             for _,step in ipairs(previous.cooldowns or {}) do
                 if addon.GetSpellIds and addon.GlowCooldown then for _,spell in ipairs(addon:GetSpellIds(step)) do addon:GlowCooldown(spell,false) end end
@@ -178,8 +178,13 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
         local fieldsOk,fieldsError=self:FlushFieldEdits();if not fieldsOk then self:Message(fieldsError);return nil,fieldsError end
         local flushed,flushError=self:FlushName();if not flushed then return nil,flushError end
         local previous=workspace.original and data.CopyData(workspace.original)
-        local ok,problem=workspace:Apply()
-        if ok then self:Message('');self:RefreshAdvice(previous);self:Render()
+        local previousId=id;local ok,problem=workspace:Apply()
+        if ok then
+            if workspace.id~=id then
+                if addon.currentSpec==spec and addon.currentRotation==previousId then addon.currentRotation=workspace.id end
+                self:Open(spec,workspace.id,onSelect)
+            end
+            self:Message('');self:RefreshAdvice(previous,previousId);self:Render()
         else self:Message(problem) end
         return ok,problem
     end
@@ -188,9 +193,11 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
         if not manifest then for _,kind in ipairs({'origins','imports'}) do local record=self.workspace.reserved and self.workspace.reserved[kind];if type(record)=='table' and type(record.manifest)=='table' then manifest=record.manifest;break end end end
         return data.GetRotationTags({body=snapshot,tags=manifest and manifest.tags}) or {}
     end
+    function pane:EffectiveScope() return self.scopeDirty and self.scopeDraft or self.workspace.scope end
+    function pane:BaselineScope() return self.workspace.session.BaselineOwnership and self.workspace.session:BaselineOwnership() end
     function pane:FlushName()
         if self.deleted or workspace.readOnly then return true end
-        if self.nameDirty and id~=DEFAULT then local ok,problem=workspace:Command('SetBodyField','name',self.name:GetText());if not ok then self:Message(problem);return nil,problem end;self.nameDirty=false end
+        if self.nameDirty and not workspace.fallback then local ok,problem=workspace:Command('SetBodyField','name',self.name:GetText());if not ok then self:Message(problem);return nil,problem end;self.nameDirty=false end
         if self.descriptionDirty or self.metadataDirty or self.tagsDirty or self.priorityDirty then
             local snapshot=workspace:Snapshot();local tags=snapshot.tags;local priority=snapshot.priority
             if self.priorityDirty then
@@ -207,9 +214,10 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
             local ok,problem=workspace:Command('SetDetails',details);if not ok then self:Message(problem);return nil,problem end
             self.descriptionDirty=false;self.metadataDirty=false;self.tagsDirty=false;self.priorityDirty=false;self:Message('')
         end
+        if self.scopeDirty then local ok,problem=workspace:Command('SetOwnership',self.scopeDraft);if not ok then self:Message(problem);return nil,problem end;self.scopeDirty=false end
         return true
     end
-    function pane:HasUnsavedChanges() return not self.deleted and not self.workspace.readOnly and (self.workspace:IsDirty() or self.nameDirty==true or self.descriptionDirty==true or self.metadataDirty==true or self.tagsDirty==true or self.priorityDirty==true or self:HasPendingFields()) end
+    function pane:HasUnsavedChanges() return not self.deleted and not self.workspace.readOnly and (self.workspace:IsDirty() or self.nameDirty==true or self.descriptionDirty==true or self.metadataDirty==true or self.tagsDirty==true or self.priorityDirty==true or self.scopeDirty==true or self:HasPendingFields()) end
     function pane:LayoutGeometry()
         if not self.ready then return end
         local width,height=self.frame:GetWidth(),self.frame:GetHeight();local x,y=8,34
@@ -228,7 +236,7 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
         self.switchLabel:ClearAllPoints();self.switchLabel:SetPoint('TOPLEFT',8,-switchTop)
         self.switch:ClearAllPoints();self.switch:SetPoint('TOPLEFT',8,-switchTop-22)
         self.switchText:SetWidth(math.max(100,width-28))
-        self.switchText:SetText(addon:PlainWorkbenchName(id==DEFAULT and L['No other rotations match.'] or addon:DescribeCardCondition(self.workspace:Snapshot().switch or {},spec)))
+        self.switchText:SetText(addon:PlainWorkbenchName(workspace.fallback and L['No other rotations match.'] or addon:DescribeCardCondition(self.workspace:Snapshot().switch or {},spec)))
         local switchHeight=math.max(20,self.switchText:GetStringHeight());self.switchText:SetHeight(math.min(72,switchHeight))
         self.switch:SetSize(math.max(100,width-16),math.min(72,switchHeight)+8)
         self.switch:Show()
@@ -249,11 +257,11 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
     function pane:Open(nextSpec,nextId,nextSelect)
         local selected,problem=addon:GetRotationEditWorkspace(nextSpec,nextId);if not selected then return nil,problem end
         if self.active then self:Release() end
-        workspace=selected;spec=nextSpec;id=nextId;onSelect=nextSelect;self.workspace=workspace
+        workspace=selected;spec=nextSpec;id=selected.id;onSelect=nextSelect;self.workspace=workspace
         workspace.uiView=workspace.uiView or {collapsed={},expanded={},detailsHeights={}};self.view=workspace.uiView
         local preferred=addon.db.profile.rotation_view=='list' and 'list' or 'diagram'
         if self.view.defaultLayout~=preferred then self.view.layout=preferred;self.view.defaultLayout=preferred end
-        self.nameDirty=false;self.descriptionDirty=false;self.metadataDirty=false;self.tagsDirty=false;self.priorityDirty=false;self.metadataDraft=nil;self.deleted=false;self.active=true;self.generation=(self.generation or 0)+1
+        self.nameDirty=false;self.descriptionDirty=false;self.metadataDirty=false;self.tagsDirty=false;self.priorityDirty=false;self.scopeDirty=false;self.scopeDraft=nil;self.metadataDraft=nil;self.deleted=false;self.active=true;self.generation=(self.generation or 0)+1
         local token=self.generation
         local function alive() return self.active and self.generation==token end
         for _,control in ipairs(self.tools) do
@@ -278,17 +286,17 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
         self.view.section=self.view.section=='cooldowns' and 'cooldowns' or 'rotation'
         self.view.cardStates=self.view.cardStates or {};self.view.sectionsCollapsed={};self.view.hiddenChildren=self.view.hiddenChildren or {};self.view.switchCollapsed=nil
         self:BindViewControls(alive)
-        addon:SetUIScript(self.name,'OnTextChanged',function(_,userInput) if alive() and userInput and not workspace.readOnly and id~=DEFAULT then self.nameDirty=true;self:UpdateHistory() end end)
+        addon:SetUIScript(self.name,'OnTextChanged',function(_,userInput) if alive() and userInput and not workspace.readOnly and not workspace.fallback then self.nameDirty=true;self:UpdateHistory() end end)
         addon:SetUIScript(self.name,'OnEnterPressed',function(control) if alive() then control:ClearFocus();if self:FlushName() then self:Render() end end end)
-        addon:SetUIScript(self.name,'OnEditFocusGained',(workspace.readOnly or id==DEFAULT) and function(control) control:ClearFocus() end or nil)
+        addon:SetUIScript(self.name,'OnEditFocusGained',(workspace.readOnly or workspace.fallback) and function(control) control:ClearFocus() end or nil)
         addon:SetUIScript(self.apply,'OnClick',function() if alive() then self:Apply() end end)
         addon:SetUIScript(self.discard,'OnClick',function()
             if not alive() then return end
-            local ok,reason=workspace:Discard();if ok then self.metadataWindow:Close(true); self.nameDirty=false;self.descriptionDirty=false;self.metadataDirty=false;self.tagsDirty=false;self.priorityDirty=false;self:ClearPendingFields();self:Render() else self:Message(reason) end
+            local ok,reason=workspace:Discard();if ok then self.metadataWindow:Close(true); self.nameDirty=false;self.descriptionDirty=false;self.metadataDirty=false;self.tagsDirty=false;self.priorityDirty=false;self.scopeDirty=false;self.scopeDraft=nil;self:ClearPendingFields();self:Render() else self:Message(reason) end
         end)
         if workspace.readOnly then self.apply:Disable();self.discard:Disable() else self.apply:Enable();self.discard:Enable() end
         for _,control in ipairs({self.compare,self.clone}) do if workspace.pending then control:Disable() else control:Enable() end end
-        self.name:EnableMouse(not workspace.readOnly and id~=DEFAULT);self.canvas.frame:Show();self.frame:Show();self:Message('')
+        self.name:EnableMouse(not workspace.readOnly and not workspace.fallback);self.canvas.frame:Show();self.frame:Show();self:Message('')
         self.frame:SetSize(parent:GetWidth(),parent:GetHeight());self:Layout();return self
     end
     addon:SetUIScript(pane.frame,'OnSizeChanged',function() pane:Layout() end)

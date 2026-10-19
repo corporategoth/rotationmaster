@@ -365,7 +365,11 @@ function addon:RefreshConditionConsumers()
     -- Built-in and saved definitions register before runtime initialization.
     if self.currentSpec==nil or type(self.autoswitchRotation)~='table' or not self.UpdateAutoSwitch then return end
     self:UpdateAutoSwitch()
-    if self.currentRotation and self.GetRuntimeRotation and not self:GetRuntimeRotation(self.currentSpec,self.currentRotation) then self:DisableRotation() end
+    if self.currentRotation and self.GetRuntimeRotation then
+        local pass=self.GetScopedRotationCoordinator and self:GetScopedRotationCoordinator() and self:AcquireRotationRuntimePass(self.currentSpec)
+        local body;if pass then body=pass:Get(self.currentRotation) else body=self:GetRuntimeRotation(self.currentSpec,self.currentRotation) end
+        if not body then self:DisableRotation() end
+    end
     self:SwitchRotation()
 end
 

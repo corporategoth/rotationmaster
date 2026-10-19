@@ -1,0 +1,166 @@
+local _,addon=...
+local data=addon.RotationData
+local migrations,adoptions=setmetatable({},{__mode='k'}),setmetatable({},{__mode='k'})
+local function plain(v) return type(v)=='table' and getmetatable(v)==nil end
+local function text(v) return type(v)=='string' and #v>0 and #v<=128 and v:find('%S')~=nil and not v:find('[%z\1-\31\127]') end
+local function clone(v,seen)
+    if type(v)~='table' then return v end;seen=seen or {};if seen[v] then return seen[v] end
+    local result={};seen[v]=result;for k,child in pairs(v) do result[k]=clone(child,seen) end;return result
+end
+local function same(a,b)
+    if type(a)~=type(b) then return false end;if type(a)~='table' then return a==b end
+    for k,v in pairs(a) do if not same(v,b[k]) then return false end end;for k in pairs(b) do if a[k]==nil then return false end end;return true
+end
+local function legacy(profile)
+    local library=profile.rotationLibrary
+    if library~=nil and not plain(library) then return nil,'invalid-library-state' end
+    local result={}
+    for _,kind in ipairs({'rotations','origins','imports','comparisons'}) do
+        local value;if kind=='rotations' then value=profile.rotations elseif library then value=library[kind] end
+        if value~=nil and not plain(value) then return nil,'invalid-legacy-state' end
+        result[kind]=value==nil and {} or value
+    end
+    return result
+end
+local function retiredLibrary(library)
+    if not library then return nil end
+    local result={origins={},imports={},comparisons={}}
+    for key,value in pairs(library) do if key~='origins' and key~='imports' and key~='comparisons' then
+        local detached,why=data.CopyData(value);if why then return nil,why.code end;result[key]=detached
+    end end
+    return result
+end
+local function nonempty(map) if type(map)~='table' then return map~=nil end;for _,rows in pairs(map) do if type(rows)~='table' or next(rows)~=nil then return true end end;return false end
+function addon:PlanRotationProfileMigration(profile,fallbackID)
+    if type(profile)~='table' then return nil,'invalid-profile' end
+    local old,legacyReason=legacy(profile);if not old then return nil,legacyReason end
+    if profile.rotationStore~=nil then
+        if not text(profile.rotationFallbackID) then return nil,'missing-fallback-configuration' end
+        local valid,why=data.ValidateRotationStore(profile.rotationStore);if not valid then return nil,why end
+        for _,map in pairs(old) do if nonempty(map) then return nil,'conflicting-legacy-rotation-roots' end end
+        local public={unchanged=true};migrations[public]={profile=profile,store=profile.rotationStore,fallback=profile.rotationFallbackID};return public
+    end
+    if not text(fallbackID) then return nil,'missing-fallback-configuration' end
+    local proposed,planReason=data.PlanRotationStoreMigration(old);if not proposed then return nil,planReason end
+    local public={unchanged=false};migrations[public]={profile=profile,store=nil,fallback=fallbackID,proposed=proposed,
+        rotations=profile.rotations,library=profile.rotationLibrary,baseline=proposed.legacy,previousFallback=profile.rotationFallbackID};return public
+end
+function addon:ApplyRotationProfileMigration(public)
+    local plan=migrations[public];if not plan then return nil,'invalid-migration-plan' end
+    local profile=plan.profile
+    if plan.store then
+        if profile.rotationStore~=plan.store or profile.rotationFallbackID~=plan.fallback then return nil,'stale-migration-plan' end
+        local valid,why=data.ValidateRotationStore(plan.store);if not valid then return nil,why end
+        local old,legacyReason=legacy(profile);if not old then return nil,legacyReason end
+        for _,map in pairs(old) do if nonempty(map) then return nil,'conflicting-legacy-rotation-roots' end end
+        migrations[public]=nil;return true
+    end
+    if profile.rotationStore~=nil or profile.rotations~=plan.rotations or profile.rotationLibrary~=plan.library or profile.rotationFallbackID~=plan.previousFallback then return nil,'stale-migration-plan' end
+    local old,legacyReason=legacy(profile);if not old then return nil,legacyReason end
+    local checked,checkReason=data.PlanRotationStoreMigration(old);if not checked then return nil,checkReason end
+    if not same(checked.legacy,plan.baseline) then return nil,'stale-migration-plan' end
+    local replacement,libraryReason=retiredLibrary(profile.rotationLibrary);if libraryReason then return nil,libraryReason end
+    -- Archive all four roots before retiring their old active homes. Ownership
+    -- remains unknown even when a retained manifest happens to declare a class.
+    profile.rotationStore=plan.proposed;profile.rotationFallbackID=plan.fallback;profile.rotations={}
+    if profile.rotationLibrary then profile.rotationLibrary=replacement end
+    profile.version=3;migrations[public]=nil;return true
+end
+-- Explicit startup entry point; the caller activates it only when every UI and
+-- runtime route is ready. Profiles migrate independently; char archives stay put.
+function addon:InitializeScopedRotationStorage()
+    local results={};local visited={}
+    for name,profile in pairs(self.db.sv and self.db.sv.profiles or {}) do
+        visited[profile]=true;local plan,why=self:PlanRotationProfileMigration(profile,profile.rotationFallbackID or DEFAULT)
+        local ok;if plan then ok,why=self:ApplyRotationProfileMigration(plan) end;results[#results+1]={profile=name,ok=ok==true,reason=why}
+    end
+    if not visited[self.db.profile] then
+        local p=self.db.profile;local plan,why=self:PlanRotationProfileMigration(p,p.rotationFallbackID or DEFAULT)
+        local ok;if plan then ok,why=self:ApplyRotationProfileMigration(plan) end;results[#results+1]={profile=false,ok=ok==true,reason=why}
+    end
+    local ok,why=self:BindRotationProfile();return ok,why,results
+end
+local function currentCharacter(owner)
+    local c,why=owner:GetRotationOwnerContext();if not c or not c.character then return nil,why or 'missing-owner-context' end
+    local root=owner.db.sv and owner.db.sv.char;local char=root and root[c.character]
+    return char,c,root
+end
+local function validSelection(selection)
+    if not plain(selection) or (selection.kind~='profile' and selection.kind~='character') or type(selection.spec)~='number' or selection.spec<0 or selection.spec==math.huge or selection.spec%1~=0 or not text(selection.id) then return false end
+    for key in pairs(selection) do if key~='kind' and key~='spec' and key~='id' then return false end end
+    return true
+end
+-- Inspection is a detached recovery boundary, never an ownership decision or
+-- an adoption. Orphan source components remain available without a body.
+function addon:GetUnassignedRotationSnapshot(selection)
+    if not validSelection(selection) then return nil,'invalid-legacy-selection' end
+    local coordinator=self:GetScopedRotationCoordinator();if not coordinator then return nil,'rotation-profile-not-bound' end
+    local ready,why=coordinator:CheckReady();if not ready then return nil,why end
+    local context,contextReason=self:GetRotationOwnerContext();if not context then return nil,contextReason end
+    if selection.kind=='profile' then
+        local rows,reason=coordinator:Unassigned();if not rows then return nil,reason end
+        for _,row in ipairs(rows) do if row.address.spec==selection.spec and row.address.id==selection.id then return row.record end end
+    else
+        local char,c=currentCharacter(self);if not char then return nil,type(c)=='string' and c or 'unknown-rotation' end
+        if not plain(char) then return nil,'invalid-legacy-state' end
+        local archive,reason=data.PlanRotationStoreMigration({rotations=char.rotations});if not archive then return nil,reason end
+        local rows=archive.legacy.rotations and archive.legacy.rotations[selection.spec]
+        local body=rows and rows[selection.id];if body~=nil then return {body=body} end
+    end
+    return nil,'unknown-rotation'
+end
+function addon:ListUnassignedRotations()
+    local coordinator=self:GetScopedRotationCoordinator();if not coordinator then return nil,'rotation-profile-not-bound' end
+    local ready,readinessReason=coordinator:CheckReady();if not ready then return nil,readinessReason end
+    local rows,why=coordinator:Unassigned();if not rows then return nil,why end
+    local result={}
+    local function add(kind,number,id,record,validation)
+        local body=record.body;result[#result+1]={selection={kind=kind,spec=number,id=id},kind=kind,spec=number,id=id,
+            name=type(body)=='table' and type(body.name)=='string' and body.name or id,hasBody=body~=nil,validation=validation}
+    end
+    for _,row in ipairs(rows) do add('profile',row.address.spec,row.address.id,row.record,row.validation) end
+    local char,c=currentCharacter(self)
+    if char and char.rotations~=nil then
+        local proposed,why=data.PlanRotationStoreMigration({rotations=char.rotations});if not proposed then return nil,why end
+        for number,map in pairs(proposed.legacy.rotations) do for id,body in pairs(map) do add('character',number,id,{body=body},data.ValidateBody(body,self:GetRotationValidationOptions())) end end
+    end
+    table.sort(result,function(a,b) if a.kind~=b.kind then return a.kind<b.kind end;if a.spec~=b.spec then return a.spec<b.spec end;return a.id<b.id end)
+    return result
+end
+function addon:PlanRotationAdoption(selection,scope)
+    if not validSelection(selection) then return nil,'invalid-legacy-selection' end
+    scope=scope or 'class'
+    local coordinator=self:GetScopedRotationCoordinator();if not coordinator then return nil,'rotation-profile-not-bound' end
+    local ready,readinessReason=coordinator:CheckReady();if not ready then return nil,readinessReason end
+    if selection.kind=='profile' then
+        local plan,why=coordinator:PlanAdoption(selection,scope or 'class');if not plan then return nil,why end
+        adoptions[plan]={coordinator=coordinator};return plan
+    end
+    local char,c,charRoot=currentCharacter(self);if not char then return nil,type(c)=='string' and c or 'unknown-rotation' end
+    if scope~='class' and scope~='character' then return nil,'invalid-owner-scope' end
+    local archive,why=data.PlanRotationStoreMigration({rotations=char.rotations});if not archive then return nil,why end
+    local rows=archive.legacy.rotations and archive.legacy.rotations[selection.spec];local body=rows and rows[selection.id];if not body then return nil,'unknown-rotation' end
+    local original=self.db.profile.rotationStore;local valid,stateReason=data.ValidateRotationStore(original);if not valid then return nil,stateReason end
+    local proposed=clone(original);local service,storeReason=data.NewRotationStore({state=proposed,fallbackID=self.db.profile.rotationFallbackID});if not service then return nil,storeReason end
+    local address={scope=scope,class=c.class,owner=scope=='class' and c.class or c.character,spec=selection.spec,id=selection.id}
+    local transaction,planReason=service:PlanCreate(address,{body=body},c);if not transaction then return nil,planReason end
+    local committed,commitReason=service:Commit(transaction,c);if not committed then return nil,commitReason end
+    rows[selection.id]=nil
+    local public={reference={kind='custom',address=clone(address)},selection=clone(selection),scope=scope}
+    adoptions[public]={coordinator=coordinator,profile=self.db.profile,fallback=self.db.profile.rotationFallbackID,context=c,char=char,charRoot=charRoot,original=original,baseline=clone(original),
+        rotations=char.rotations,charBaseline=data.PlanRotationStoreMigration({rotations=char.rotations}),proposed=proposed,charReplacement=archive.legacy.rotations,reference=clone(public.reference)}
+    return public
+end
+function addon:ApplyRotationAdoption(public)
+    local plan=adoptions[public];if not plan or self:GetScopedRotationCoordinator()~=plan.coordinator then return nil,'invalid-adoption-plan' end
+    local ready,readinessReason=plan.coordinator:CheckReady();if not ready then return nil,readinessReason end
+    if not plan.profile then local ok,reference=plan.coordinator:ApplyAdoption(public);if ok then adoptions[public]=nil end;return ok,reference end
+    local char,c,charRoot=currentCharacter(self)
+    if self.db.profile~=plan.profile or not same(c,plan.context) or char~=plan.char or charRoot~=plan.charRoot or char.rotations~=plan.rotations or plan.profile.rotationStore~=plan.original or plan.profile.rotationFallbackID~=plan.fallback then return nil,'stale-adoption-plan' end
+    local valid,why=data.ValidateRotationStore(plan.original);if not valid then return nil,why end
+    local now,archiveReason=data.PlanRotationStoreMigration({rotations=char.rotations});if not now then return nil,archiveReason end
+    if not same(plan.original,plan.baseline) or not same(now,plan.charBaseline) then return nil,'stale-adoption-plan' end
+    plan.profile.rotationStore=plan.proposed;char.rotations=plan.charReplacement;adoptions[public]=nil
+    local bound,bindReason=self:BindRotationProfile();if not bound then return nil,bindReason end
+    return true,clone(plan.reference)
+end

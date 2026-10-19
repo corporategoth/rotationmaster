@@ -39,6 +39,15 @@ test('original error forwards once to current collector and retains stack/contex
     assert(not text:find('Private',1,true))
     assert(text:find('step-9',1,true) and text:find('BUFF',1,true))
 end)
+test('opaque rotation handles are resolved to canonical diagnostic IDs and retired handles are omitted',function()
+    local d,_,_,_,addon=fixture();local handle=string.char(1)..'rm:rotation:7';addon.currentSpec=0
+    addon.ResolveRotationReference=function(_,spec,value) assert(spec==0 and value==handle);return {kind='custom',address={id='canonical-id'}} end
+    local _,id=d:Call({rotationId=handle},function() error('current failure',0) end)
+    assert(d:GetReports()[1].context.rotationId=='canonical-id' and not d:FormatReport(id):find(handle,1,true))
+    addon.ResolveRotationReference=function() return nil,'retired' end
+    local _,nextId=d:Call({rotationId=handle},function() error('retired failure',0) end)
+    assert(not d:FormatReport(nextId):find(handle,1,true))
+end)
 test('repeated errors group locally and records are bounded',function()
     local d=fixture()
     for _=1,4 do d:Call({module='same'},function() error('repeat',0) end) end

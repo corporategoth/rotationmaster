@@ -27,6 +27,29 @@ end
 
 function addon:ItemSetInUse(id)
     local bindings = self.db.char.bindings
+    local scoped=self.GetScopedRotationCoordinator and self:GetScopedRotationCoordinator()
+    if scoped then
+        if bindings[id]~=nil then return true end
+        local records=scoped:StoredRecords();if not records then return true end
+        local seen,count={},0
+        local function uses(value,depth)
+            if type(value)~='table' then return false end
+            depth=depth or 0;if depth>64 then return true end
+            if seen[value] then return false end;seen[value]=true;count=count+1;if count>20000 then return true end
+            for key,child in pairs(value) do
+                if child==id and (key=='action' or key=='item') then return true end
+                if type(child)=='table' and uses(child,depth+1) then return true end
+            end
+            return false
+        end
+        for _,row in ipairs(records) do for _,component in pairs(row.record) do if uses(component) then return true end end end
+        -- Recovery archives have unknown profile ownership. Keep their item-set
+        -- references reserved rather than silently breaking an eventual adoption.
+        for _,char in pairs(self.db.sv and self.db.sv.char or {}) do
+            if type(char)=='table' and char.rotations and uses(char.rotations) then return true end
+        end
+        return false
+    end
     local rotations = self.db.profile.rotations
 
     if bindings[id] ~= nil then

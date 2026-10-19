@@ -5,6 +5,21 @@ local function fixture()
     local f=F.new();local a=f.addon
     local data,envelope=make();a.RotationData=data
     f.load('UI/settings_transfer.lua');f.load('Data/diff.lua');f.load('Data/visual_comparison.lua');f.load('UI/rotation_reference.lua');f.load('UI/rotation_comparison.lua')
+    -- Pure report tests inject the detached scoped service boundary. Actual
+    -- store authority and ownership are covered by rotation_scope_ui.lua.
+    dofile('tests/fixtures/rotation_header_backend.lua')(a,f.env.DEFAULT,f.env.NEW)
+    local coordinator={}
+    function coordinator:CheckReady() return true end
+    function a:GetScopedRotationCoordinator() return coordinator end
+    function a:GetRotationOwnerContext() return {class='SHAMAN',character='Fixture - Realm'} end
+    function a:GetRotationRecordSnapshot(spec,value)
+        local reference,why=self:ResolveRotationReference(spec,value);if not reference then return nil,why end
+        local body=self.db.profile.rotations[spec][reference.address.id];if not body then return nil,'unknown-rotation' end
+        return {body=data.CopyData(body)},{profile=self.db.profile,body=body,baseline=data.CopyData(body)}
+    end
+    function coordinator:TokenCurrent(token)
+        return token.profile==a.db.profile and a:SettingsDataEqual(token.body,token.baseline)
+    end
     return f,envelope
 end
 test('comparison text preserves direction, false values, moves and incomplete status',function()
@@ -48,7 +63,7 @@ test('comparison chooser refreshes a read-only report and Copy keeps the full se
     a.ListDefaultRotations=function() return {} end
     local compared={}
     a.BuildRotationComparison=function(_,spec,id,target)
-        compared[#compared+1]=target.id
+        compared[#compared+1]=target.address and target.address.id or target.id
         local left={body={rotation={{id='step',type='spell',action=403,conditions={}}}}}
         local right={body={rotation={{id='step',type='spell',action=8042,conditions={}}}}}
         local result=a.RotationData.DiffRotations(left,right)
@@ -73,7 +88,7 @@ test('comparison chooser refreshes a read-only report and Copy keeps the full se
         return n
     end
     assert(count(frame)==2,'before/after native spell identities were not paired')
-    assert(#chooser.list==1 and chooser.list[1]=='Other','self is offered as a comparison target')
+    assert(#chooser.list==1 and chooser.list[1]=='Other · Class','self is offered as a comparison target')
     chooser:Fire('OnValueChanged',1);assert(#compared==2 and compared[2]=='other')
     local details=copy:Fire('OnClick');report=details.input
     assert(report and details.chrome,'diagnostic details were not available separately')

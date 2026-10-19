@@ -96,6 +96,9 @@ Data/visual_comparison.lua
 Data/import_session.lua
 Data/rotation_store.lua
 Core/rotation_library.lua
+Core/rotation_scope.lua
+Core/rotation_migration.lua
+Core/rotation_lifecycle.lua
 Core/rotation_tags.lua
 Core/imports.lua
 Core/condition_editor.lua
@@ -183,6 +186,7 @@ UI/rotation_reference.lua
 UI/defaults.lua
 UI/rotation_comparison.lua
 UI/transfer.lua
+UI/rotation_adoption.lua
 
 Widgets/help.lua
 Widgets/directional.lua

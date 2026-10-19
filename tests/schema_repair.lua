@@ -138,7 +138,7 @@ end)
 test('repair retains scoped ownership roots including incomplete and invalid archives without adopting them',function()
     local f,a,db,template,warnings=fixture();a.RotationData=dofile('tests/fixtures/rotation_data.lua')();f.load('Data/catalog.lua');f.load('Data/rotation_store.lua')
     local root={version=1,classes={SHAMAN={[0]={same={body={name='Incomplete',rotation=false,cooldowns={}}}}}},characters={},legacy={origins={[0]={orphan={source='unknown'}}}}}
-    db.profiles.Fixture.rotationStore=root;local before=a:CopySettingsData(db);local oldTemplate=a:CopySettingsData(template)
+    db.profiles.Fixture.rotationStore=root;db.profiles.Fixture.rotationFallbackID='Saved fallback';local before=a:CopySettingsData(db);local oldTemplate=a:CopySettingsData(template)
     a:validate(template,false);a:validate(template,true);assert(a:SettingsDataEqual(before,db) and db.profiles.Fixture.rotationStore==root,'repair erased or rewrote owned records')
     assert(#warnings==0 and a:SettingsDataEqual(template,oldTemplate),'repair invented defaults or reported valid ownership as extra')
     root.version=999;before=a:CopySettingsData(db);a:validate(template,false);a:validate(template,true)

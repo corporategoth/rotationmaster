@@ -3,7 +3,7 @@ local function fixture()
     local f=F.new();local a=f.addon;local _,create=dofile('tests/fixtures/native_ui.lua')(f.env)
     local codecData,codecDeps=dofile('tests/fixtures/codec.lua')();a.RotationData=codecData;a.NewRotationCodec=function() return codecData.NewCodec(codecDeps) end
     a.pretty_name='Rotation Master';a.name='rotationmaster';a.configPaneGeneration=1
-    for _,path in ipairs({'Platform/spells.lua','Help/general.lua','Help/conditions.lua','Help/effects.lua','Help/itemsets.lua','Help/announce.lua','UI/window.lua','UI/help.lua','UI/icon_picker.lua','UI/color_picker.lua','UI/settings_roster_order.lua','UI/settings_layout.lua','UI/settings_ordered.lua','UI/settings_draft.lua','UI/settings_history.lua','UI/settings_unsaved.lua','UI/settings_form.lua','UI/settings_transfer.lua','UI/settings_general.lua','UI/settings_profiles.lua','UI/collection_compare.lua','UI/settings_collections.lua','UI/settings_announces.lua','UI/settings_effects.lua','UI/settings_items.lua','UI/settings_conditions.lua'}) do local h=io.open(path);if h then h:close();f.load(path) end end
+    for _,path in ipairs({'Platform/spells.lua','Data/catalog.lua','Data/rotation_store.lua','Core/rotation_library.lua','Core/rotation_scope.lua','Core/rotation_migration.lua','Help/general.lua','Help/conditions.lua','Help/effects.lua','Help/itemsets.lua','Help/announce.lua','UI/window.lua','UI/help.lua','UI/icon_picker.lua','UI/color_picker.lua','UI/settings_roster_order.lua','UI/settings_layout.lua','UI/settings_ordered.lua','UI/settings_draft.lua','UI/settings_history.lua','UI/settings_unsaved.lua','UI/settings_form.lua','UI/settings_transfer.lua','UI/settings_general.lua','UI/settings_profiles.lua','UI/collection_compare.lua','UI/settings_collections.lua','UI/settings_announces.lua','UI/settings_effects.lua','UI/settings_items.lua','UI/settings_conditions.lua'}) do local h=io.open(path);if h then h:close();f.load(path) end end
     local parent=create('Frame');parent:SetSize(1000,600)
     return f,parent
 end
@@ -572,8 +572,8 @@ test('profile imports accept the real initialization schema and preserve selecte
     a.db.SetProfile=function(_,name) profiles[name]=profiles[name] or {poll=.15};current=name;a.db.profile=profiles[name] end
     a.db.ResetProfile=function() profiles[current]={poll=.15};a.db.profile=profiles[current] end
     local p=a:OpenNativeSettings(parent,'Profiles');p.fields.transfer:Click();local d=p.textDialog;local exported=d.input:GetText();d.destination:Click();d.name:SetText('Imported');d.name.scripts.OnTextChanged(d.name,true);d.apply:Click()
-    assert(not d.frame:IsShown(),'profile import rejected: '..tostring(d.status:GetText()));assert(p.creating and not profiles.Imported);p.fields.apply:Click();assert(current=='Default' and profiles.Imported and profiles.Imported.version==defaults.profile.version)
-    p.fields.transfer:Click();d.input:SetText(exported);d.apply:Click();assert(not d.frame:IsShown() and profiles.Imported.version==defaults.profile.version and current=='Default')
+    assert(not d.frame:IsShown(),'profile import rejected: '..tostring(d.status:GetText()));assert(p.creating and not profiles.Imported);p.fields.apply:Click();assert(current=='Default' and profiles.Imported and profiles.Imported.version==3 and profiles.Imported.rotationStore.version==1 and profiles.Imported.rotationFallbackID==f.env.DEFAULT)
+    p.fields.transfer:Click();d.input:SetText(exported);d.apply:Click();assert(not d.frame:IsShown() and profiles.Imported.version==3 and profiles.Imported.rotationStore.version==1 and profiles.Imported.rotationFallbackID==f.env.DEFAULT and current=='Default')
 end)
 test('named item-set imports and legacy lists share destination controls and undo history',function()
     local f,parent=fixture();local a=f.addon;a.db.profile.itemsets={s={name='Selected',items={1}}};a.db.global.itemsets={};local p=a:OpenNativeSettings(parent,'ItemSets');p.fields.transfer:Click();local d=p.textDialog

@@ -1,22 +1,26 @@
 local F=dofile('tests/fixtures/addon.lua');local make=dofile('tests/fixtures/rotation_data.lua');local test,finish=F.suite()
 test('shared native rotation transfer invalidates previews and applies copy or selected replacement explicitly',function()
     local f=F.new();local a=f.addon;dofile('tests/fixtures/native_ui.lua')(f.env);local data,envelope,options=make();a.RotationData=data
-    for _,path in ipairs({'Data/diff.lua','Data/import_session.lua','UI/settings_layout.lua','UI/settings_roster_order.lua','UI/settings_draft.lua','UI/settings_history.lua','UI/settings_ordered.lua','UI/settings_form.lua','UI/settings_transfer.lua','UI/rotation_comparison.lua','UI/transfer.lua'}) do f.load(path) end
-    local body=envelope().body;a.GetRotationExportData=function() return data.CopyData(body) end;a.GetEditableRotation=function() return body end;a.GetDefaultIdForRuntime=function() end;a.GetImportValidationOptions=function() return options end
+    a.conditionDefinitions=options.conditions;a.db.keys={char='A - Realm'};local n=0;a.uuid=function() n=n+1;return 'transfer-'..n end
+    for _,path in ipairs({'Data/catalog.lua','Data/diff.lua','Data/import_session.lua','Data/rotation_store.lua','Data/rotation_draft.lua','Core/rotation_library.lua','Core/rotation_scope.lua','Core/imports.lua','Core/rotation_editor.lua','Core/rotation_workspace.lua','UI/settings_layout.lua','UI/settings_roster_order.lua','UI/settings_draft.lua','UI/settings_history.lua','UI/settings_ordered.lua','UI/settings_form.lua','UI/settings_transfer.lua','UI/rotation_comparison.lua','UI/transfer.lua'}) do f.load(path) end
+    local body=envelope().body;a.db.profile={rotationFallbackID='Default',rotationStore={version=1,classes={SHAMAN={[0]={mine={body=body}}}},characters={},legacy={}}}
+    a.GetRotationContext=function(_,spec) return {class='SHAMAN',family='tbc',spec=spec,actionContext='player',combatDataPolicy='probe'} end;assert(a:BindRotationProfile())
+    a.GetEditableRotation=function() error('ordinary transfer used mutable getter') end
     a.NewRotationCodec=function() return {Encode=function() return 'export-text' end,Decode=function(_,text)
         if text=='bad' then return nil,'invalid-base64' end
         if text=='future' then local incoming=envelope();incoming.futureMetadata={coefficient=42};return {kind='envelope',original=text,value=incoming} end
         local incoming=data.CopyData(body);incoming.rotation[1].action=974;return {kind='legacy',original=text,value=incoming}
     end} end
     local renders,applied,target=0,0,nil;a.ShowComparisonReport=function(_,text) return text end;a.ShowNativeImportPreview=function(_,_,view) renders=renders+1;assert(view.right.body.rotation[1].action==974 or view.right.body.rotation[1].action==403) end
-    a.ApplyRotationImport=function(_,session,token,spec,name,selected) assert(session:GetReady(token) and spec==0 and name~='');applied=applied+1;target=selected;return selected or 'new-copy' end;a.ShowConfig=function(_,section) assert(section=='Rotations') end
+    local apply=a.ApplyRotationImport
+    a.ApplyRotationImport=function(self,session,token,spec,name,selected,expected,settings) assert(session:GetReady(token) and spec==0 and name~='');local id,why,reference=apply(self,session,token,spec,name,selected,expected,settings);if id then applied=applied+1;target=selected end;return id,why,reference end;a.ShowConfig=function(_,section) assert(section=='Rotations') end
     local d=a:ShowRotationTransfer(0,'mine');assert(d.destination:GetChecked() and d.original and d.name and not d.apply:IsEnabled());d.copy:Click();assert(d.input.focused and d.input.selection[2]==-1)
     d.input:SetText('incoming');d.input.scripts.OnTextChanged(d.input,true);assert(renders==0);d.preview:Click();assert(renders==1 and d.apply:IsEnabled())
     d.clear:Click();assert(d.input:GetText()=='' and not d.apply:IsEnabled());d.apply:Click();assert(applied==0)
     d.input:SetText('bad');d.input.scripts.OnTextChanged(d.input,true);assert(not d.apply:IsEnabled());d.apply:Click();assert(applied==0);d.preview:Click();assert(not d.apply:IsEnabled())
     d.input:SetText('future');d.input.scripts.OnTextChanged(d.input,true);d.preview:Click();assert(not d.apply:IsEnabled());local details=d.inspect.scripts.OnClick();assert(details:find('futureMetadata',1,true))
     d.input:SetText('incoming');d.input.scripts.OnTextChanged(d.input,true);d.preview:Click();d.destination:Click();d.name:SetText('Copy');d.name.scripts.OnTextChanged(d.name,true);d.apply:Click();assert(applied==1 and not target and not d.frame:IsShown() and body.rotation[1].action==403)
-    d=a:ShowRotationTransfer(0,'mine');d.preview:Click();d.apply:Click();assert(applied==2 and target=='mine')
+    d=a:ShowRotationTransfer(0,'mine');d.preview:Click();d.apply:Click();assert(applied==2 and target.kind=='custom' and target.address.scope=='class' and target.address.id=='mine' and a:GetRotationRecordSnapshot(0,target).body.rotation[1].action==974)
 end)
 test('shared transfer shell keeps moved coordinates while its text and themed context refresh',function()
     local f=F.new();local a=f.addon;dofile('tests/fixtures/native_ui.lua')(f.env);f.load('UI/settings_transfer.lua')

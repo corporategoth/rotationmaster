@@ -34,6 +34,22 @@ local isin, starts_with, isint = addon.isin, addon.starts_with, addon.isint
 
 addon.pretty_name = GetAddOnMetadata(addon_name, "Title")
 addon.delayed_condition = {}
+-- The engine borrows its own validated pass; legacy public getters retain
+-- their historical mutable-body contract without becoming the polling path.
+local function runtimeRows(owner,spec,candidates)
+    if owner.GetScopedRotationCoordinator and owner:GetScopedRotationCoordinator() then
+        local pass,why=owner:AcquireRotationRuntimePass(spec);if not pass then return {},why end
+        return pass:Candidates(candidates==true)
+    end
+    return owner:GetRuntimeRotations(spec,true,candidates)
+end
+local function runtimeOne(owner,spec,value)
+    if owner.GetScopedRotationCoordinator and owner:GetScopedRotationCoordinator() then
+        local pass,why=owner:AcquireRotationRuntimePass(spec);if not pass then return nil,why end
+        return pass:Get(value)
+    end
+    return owner:GetRuntimeRotation(spec,value)
+end
 local DataBroker = LibStub("LibDataBroker-1.1"):NewDataObject(addon_name,
         { type = "data source", label = addon.pretty_name, icon = addon.logoTexture })
 
@@ -250,6 +266,9 @@ function addon:HandleCommand(str)
             self.manualRotation = true
             addon:info(L["Active rotation manually switched to " .. color.WHITE .. "%s" .. color.INFO], name)
         elseif name == DEFAULT then
+            if self.GetScopedRotationCoordinator and self:GetScopedRotationCoordinator() and not runtimeOne(self,self.currentSpec,DEFAULT) then
+                addon:warn(L['The fallback rotation is unavailable. Open Rotations to complete or recover it.']);return
+            end
             self:RemoveAllCurrentGlows()
             self.manualRotation = true
             self.currentRotation = DEFAULT
@@ -262,7 +281,11 @@ function addon:HandleCommand(str)
             addon:info(L["Active rotation manually switched to " .. color.WHITE .. "%s" .. color.INFO], name)
         else
             do
-                for id, rot in pairs(self:GetRuntimeRotations(self.currentSpec,true)) do
+                local matches={}
+                for id,rot in pairs(runtimeRows(self,self.currentSpec)) do if rot.name==name then matches[#matches+1]={id=id,body=rot} end end
+                if #matches>1 then addon:warn(L['More than one rotation is named %s. Select its Class or This character entry in the rotation browser.'],name);return end
+                for _,entry in ipairs(matches) do
+                    local id,rot=entry.id,entry.body
                     if rot.name == name then
                         self:RemoveAllCurrentGlows()
                         self.manualRotation = true
@@ -303,6 +326,11 @@ function addon:OnInitializeInternal()
     end)
 
     self:augmentDefaults(defaults)
+    if self.InitializeScopedRotationStorage then
+        -- Even false/malformed legacy roots are evidence. AceDB table defaults
+        -- would replace false before migration can inventory it.
+        defaults.profile.rotations=nil;defaults.profile.rotationLibrary=nil
+    end
     self.db = LibStub("AceDB-3.0"):New(self.savedVariableName, defaults, true)
 
     for ext_addon,conditions in pairs(self.delayed_condition) do
@@ -313,6 +341,7 @@ function addon:OnInitializeInternal()
         end
     end
 
+    if self.RefreshRotationProfileStorage then self:RefreshRotationProfileStorage() end
     self:init()
     self:validate(defaults)
 
@@ -385,6 +414,7 @@ function addon:OnInitializeInternal()
 
     self.currentSpell = nil
     self.nextWindow = nil
+    if self.InstallRotationProfileLifecycle then self:InstallRotationProfileLifecycle() end
 
     -- This is here because of order of loading.
     getCached = addon.getCached
@@ -408,10 +438,9 @@ end
 function addon:GetRotationName(id)
     if id == DEFAULT then
         return DEFAULT
-    elseif self:GetRuntimeRotation(self.currentSpec,id) then
-        return self:GetRuntimeRotation(self.currentSpec,id).name
     else
-        return nil
+        local body=runtimeOne(self,self.currentSpec,id)
+        return body and body.name or nil
     end
 end
 
@@ -471,7 +500,7 @@ function minimapInitialize()
     info.text, info.arg1, info.checked = DEFAULT, DEFAULT, (addon.manualRotation == true and addon.currentRotation == DEFAULT)
     UIDropDownMenu_AddButton(info)
     do
-        for id, rot in pairs(addon:GetRuntimeRotations(addon.currentSpec,true)) do
+        for id, rot in pairs(runtimeRows(addon,addon.currentSpec)) do
             if id ~= DEFAULT then
                 info.text, info.arg1, info.checked = rot.name, id, (addon.manualRotation == true and addon.currentRotation == id)
                 if addon:IsDefaultRuntimeRotation(addon.currentSpec,id) then info.text="|cff5bc0eb"..rot.name.."|r ("..L["Built In · read-only"]..")" end
@@ -589,7 +618,7 @@ function addon:rotationValidConditions(rot,spec)
 end
 
 function addon:UpdateAutoSwitch()
-    local rotations=self:GetRotationCandidates(self.currentSpec)
+    local rotations=runtimeRows(self,self.currentSpec,true)
     self.autoswitchRotation=self:GetOrderedAutoSwitchRotations(self.currentSpec,rotations)
 
     addon:debug(L["Autoswitch rotation list has been updated."])
@@ -602,7 +631,16 @@ function addon:SwitchRotation()
     end
 
     local newRotation
-    local rotations=self:GetRuntimeRotations(self.currentSpec,true)
+    local selectedSpec,selectedProfile,selectedRotation=self.currentSpec,self.db.profile,self.currentRotation
+    local selectionPass,rotations
+    if self.GetScopedRotationCoordinator and self:GetScopedRotationCoordinator() then
+        selectionPass=self:AcquireRotationRuntimePass(selectedSpec);if not selectionPass then return end
+        local why;rotations,why=selectionPass:Candidates(false);if why then return end
+    else rotations=runtimeRows(self,selectedSpec) end
+    local function current()
+        return self.currentSpec==selectedSpec and self.db.profile==selectedProfile and self.currentRotation==selectedRotation
+            and not self.db.profile.disable_autoswitch and not self.manualRotation and (not selectionPass or selectionPass:IsCurrent())
+    end
     for _, v in ipairs(self.autoswitchRotation) do
         -- A packaged recommendation must not displace the user's saved fallback.
         if self:IsDefaultRuntimeRotation(self.currentSpec,v) and rotations[DEFAULT]
@@ -619,18 +657,25 @@ function addon:SwitchRotation()
         self:rotationValidConditions(rotations[DEFAULT], self.currentSpec) then
         newRotation = DEFAULT
     end
+    if not current() then return end
 
     if newRotation then
         if self.currentRotation ~= newRotation then
-            addon:info(L["Active rotation automatically switched to " .. color.WHITE .. "%s" .. color.INFO], self:GetRotationName(newRotation))
+            local name=newRotation==DEFAULT and DEFAULT or rotations[newRotation].name
             self:RemoveAllCurrentGlows()
+            if not current() then return end
             self.currentRotation = newRotation
+            selectedRotation=newRotation
             self.skipAnnounce = true
             self.avail_announced = {}
             self.announced = {}
             self:EnableRotationTimer()
-            DataBroker.text = self:GetRotationName(newRotation)
-            AceEvent:SendMessage("ROTATIONMASTER_ROTATION", self.currentRotation, self:GetRotationName(self.currentRotation))
+            if not current() then return end
+            DataBroker.text = name
+            if not current() then return end
+            addon:info(L["Active rotation automatically switched to " .. color.WHITE .. "%s" .. color.INFO],name)
+            if not current() then return end
+            AceEvent:SendMessage("ROTATIONMASTER_ROTATION",self.currentRotation,name)
         end
         return
     end
@@ -638,6 +683,7 @@ function addon:SwitchRotation()
     -- Could not find a rotation to switch to, even the default one.
     if self.currentRotation ~= nil then
         addon:warn(L["No rotation is active as there is none suitable to automatically switch to."])
+        if not current() then return end
         self:DisableRotation()
     end
 end
@@ -760,10 +806,19 @@ function addon:EvaluateNextAction()
 end
 
 function addon:EvaluateNextActionInternal()
+    local selectedRotation,selectedSpec,selectedProfile=self.currentRotation,self.currentSpec,self.db.profile
+    local runtimePass,rot
+    if selectedRotation~=nil then
+        if self.GetScopedRotationCoordinator and self:GetScopedRotationCoordinator() then
+            runtimePass=self:AcquireRotationRuntimePass(selectedSpec)
+            if runtimePass then rot=runtimePass:Get(selectedRotation) end
+        else rot=self:GetRuntimeRotation(selectedSpec,selectedRotation) end
+    end
     if self.currentRotation == nil then
         addon:DisableRotationTimer()
         return
-    elseif not self:GetRuntimeRotation(self.currentSpec,self.currentRotation) then
+    elseif not rot then
+        self.manualRotation=false
         self:DisableRotation()
         return
     else
@@ -861,42 +916,53 @@ function addon:EvaluateNextActionInternal()
         end
 
         self.evaluationProfile:child("rotation"):start()
-        local rot = self:GetRuntimeRotation(self.currentSpec,self.currentRotation)
         local preview,suppressAttack=0,false
         local weakAuras=_G.WeakAuras
         ---@type AceGUIContainer
         local previewWindow=self.nextWindow
-        if self.nextWindow then
-            self.nextWindow:ReleaseChildren()
-            self.nextWindow:PauseLayout()
+        local staged={}
+        local function current()
+            return self.currentRotation==selectedRotation and self.currentSpec==selectedSpec and self.db.profile==selectedProfile
+                and self.nextWindow==previewWindow and (not runtimePass or runtimePass:IsCurrent())
+        end
+        local function stage(callback) staged[#staged+1]=callback end
+        if previewWindow then
+            stage(function() previewWindow:ReleaseChildren();if current() then previewWindow:PauseLayout() end end)
         end
         local function recommend(spellid,cond,index,itemId)
             preview=preview+1
-            if preview==1 then
-                self.currentSpell=spellid
-                if not addon:IsGlowing(spellid,itemId) then
-                    if not self.db.profile.disable_buttons then addon:GlowNextSpell(spellid,itemId) end
-                    if weakAuras and type(weakAuras.ScanEvents)=="function" then weakAuras.ScanEvents("ROTATIONMASTER_SPELL_UPDATE",cond.type,spellid) end
-                    AceEvent:SendMessage("ROTATIONMASTER_SPELL_UPDATE",self.currentRotation,index,cond.id,cond.type,spellid)
+            local ordinal=preview
+            stage(function()
+                if ordinal==1 then
+                    self.currentSpell=spellid
+                    if not addon:IsGlowing(spellid,itemId) then
+                        if not current() then return end
+                        if not self.db.profile.disable_buttons then addon:GlowNextSpell(spellid,itemId) end
+                        if not current() then return end
+                        if weakAuras and type(weakAuras.ScanEvents)=="function" then weakAuras.ScanEvents("ROTATIONMASTER_SPELL_UPDATE",cond.type,spellid) end
+                        if not current() then return end
+                        AceEvent:SendMessage("ROTATIONMASTER_SPELL_UPDATE",self.currentRotation,index,cond.id,cond.type,spellid)
+                    end
                 end
-            end
-            if self.nextWindow and self.nextWindow.AddRecommendation then
-                ---@cast previewWindow RMRecommendationPreview
-                previewWindow:AddRecommendation(spellid,itemId)
-            elseif self.nextWindow then
-                -- Only an explicitly supplied historical preview uses Ace.
-                local icon=LibStub("AceGUI-3.0"):Create("Icon")
-                local info=self.Platform:GetSpellInfo(spellid)
-                icon:SetImage(info and info.iconID or "Interface\\Icons\\INV_Misc_QuestionMark")
-                icon:SetImageSize(preview==1 and 54 or 36,preview==1 and 54 or 36)
-                icon:SetLabel(info and info.name or string.format(L["Unknown spell (%s)"],spellid))
-                icon:SetCallback("OnEnter",function()
-                    GameTooltip:SetOwner(icon.frame,"ANCHOR_BOTTOMRIGHT",3)
-                    GameTooltip:SetHyperlink("spell:"..spellid)
-                end)
-                icon:SetCallback("OnLeave",function() if GameTooltip:IsOwned(icon.frame) then GameTooltip:Hide() end end)
-                previewWindow:AddChild(icon)
-            end
+                if not current() then return end
+                if self.nextWindow and self.nextWindow.AddRecommendation then
+                    ---@cast previewWindow RMRecommendationPreview
+                    previewWindow:AddRecommendation(spellid,itemId)
+                elseif self.nextWindow then
+                    -- Only an explicitly supplied historical preview uses Ace.
+                    local icon=LibStub("AceGUI-3.0"):Create("Icon")
+                    local info=self.Platform:GetSpellInfo(spellid)
+                    icon:SetImage(info and info.iconID or "Interface\\Icons\\INV_Misc_QuestionMark")
+                    icon:SetImageSize(ordinal==1 and 54 or 36,ordinal==1 and 54 or 36)
+                    icon:SetLabel(info and info.name or string.format(L["Unknown spell (%s)"],spellid))
+                    icon:SetCallback("OnEnter",function()
+                        GameTooltip:SetOwner(icon.frame,"ANCHOR_BOTTOMRIGHT",3)
+                        GameTooltip:SetHyperlink("spell:"..spellid)
+                    end)
+                    icon:SetCallback("OnLeave",function() if GameTooltip:IsOwned(icon.frame) then GameTooltip:Hide() end end)
+                    previewWindow:AddChild(icon)
+                end
+            end)
         end
         local sequence=self:EvaluateRotationSequence(rot,function(condition,context)
             return addon:evaluateConditionResult(condition,context)
@@ -914,73 +980,93 @@ function addon:EvaluateNextActionInternal()
             if attack then recommend(attack,{id="RM-IMPLICIT:ATTACK",type="spell"},sequence.fallbackOrdinal or #(rot.rotation or {})+1) end
         end
         if preview==0 then
-            self.currentSpell=nil
-            if not self.db.profile.disable_buttons then addon:GlowClear() end
-            if weakAuras and type(weakAuras.ScanEvents)=="function" then weakAuras.ScanEvents("ROTATIONMASTER_SPELL_UPDATE",nil,nil) end
-            AceEvent:SendMessage("ROTATIONMASTER_SPELL_UPDATE",self.currentRotation,nil)
+            stage(function()
+                self.currentSpell=nil
+                if not self.db.profile.disable_buttons then addon:GlowClear() end
+                if not current() then return end
+                if weakAuras and type(weakAuras.ScanEvents)=="function" then weakAuras.ScanEvents("ROTATIONMASTER_SPELL_UPDATE",nil,nil) end
+                if not current() then return end
+                AceEvent:SendMessage("ROTATIONMASTER_SPELL_UPDATE",self.currentRotation,nil)
+            end)
         end
-        if self.nextWindow then
-            self.nextWindow:ResumeLayout()
-            self.nextWindow:DoLayout()
+        if previewWindow then
+            stage(function() previewWindow:ResumeLayout();if current() then previewWindow:DoLayout() end end)
         end
 
         self.evaluationProfile:child("rotation"):stop()
         self.evaluationProfile:child("cooldowns"):start()
         if rot.cooldowns ~= nil then
-            local enabled_cooldowns = {}
-            local enabled_items = {}
-            local disabled_cooldowns = {}
-            for id, cond in pairs(rot.cooldowns) do
-                local spellid, enabled, itemId = eval(cond)
-                local previous=addon.avail_announced[cond.id]
-                if previous and (previous~=spellid or not enabled) and not enabled_cooldowns[previous] then
-                    disabled_cooldowns[previous]=cond
-                end
-                if spellid then
-                    if enabled then
-                        addon:verbose("Cooldown %d [%s] is enabled", id, cond.id)
-                        if addon.avail_announced[cond.id] ~= spellid then
-                            if not addon.skipAnnounce then
-                                local link = spellLink(spellid)
-                                addon:DispatchAnnouncement(cond, string.format(L["%s is now available!"], link))
+            local observations={}
+            for id,cond in pairs(rot.cooldowns) do
+                local spellid,enabled,itemId=eval(cond)
+                observations[#observations+1]={id=id,condition=cond,spellid=spellid,enabled=enabled,itemId=itemId}
+            end
+            stage(function()
+                local enabled_cooldowns = {}
+                local enabled_items = {}
+                local disabled_cooldowns = {}
+                for _,observation in ipairs(observations) do
+                    if not current() then return end
+                    local id,cond=observation.id,observation.condition
+                    local spellid,enabled,itemId=observation.spellid,observation.enabled,observation.itemId
+                    local previous=addon.avail_announced[cond.id]
+                    if previous and (previous~=spellid or not enabled) and not enabled_cooldowns[previous] then
+                        disabled_cooldowns[previous]=cond
+                    end
+                    if spellid then
+                        if enabled then
+                            addon:verbose("Cooldown %d [%s] is enabled", id, cond.id)
+                            if addon.avail_announced[cond.id] ~= spellid then
+                                if not addon.skipAnnounce then
+                                    local link = spellLink(spellid)
+                                    addon:DispatchAnnouncement(cond, string.format(L["%s is now available!"], link))
+                                end
+                                if not current() then return end
+                                addon.avail_announced[cond.id] = spellid;
+                                AceEvent:SendMessage("ROTATIONMASTER_COOLDOWN_UPDATE", self.currentRotation, id, cond.id, cond.type, spellid)
+                                if not current() then return end
                             end
-                            addon.avail_announced[cond.id] = spellid;
-                            AceEvent:SendMessage("ROTATIONMASTER_COOLDOWN_UPDATE", self.currentRotation, id, cond.id, cond.type, spellid)
-                        end
-                        if not enabled_cooldowns[spellid] then
-                            enabled_cooldowns[spellid] = cond
-                            enabled_items[spellid] = itemId
-                            disabled_cooldowns[spellid] = nil
+                            if not enabled_cooldowns[spellid] then
+                                enabled_cooldowns[spellid] = cond
+                                enabled_items[spellid] = itemId
+                                disabled_cooldowns[spellid] = nil
+                            end
+                        else
+                            if addon.avail_announced[cond.id] then
+                                addon.avail_announced[cond.id] = nil;
+                                AceEvent:SendMessage("ROTATIONMASTER_COOLDOWN_UPDATE", self.currentRotation, id, cond.id, nil)
+                            end
+                            addon:verbose("Cooldown %d [%s] is disabled", id, cond.id)
+                            if not enabled_cooldowns[spellid] then
+                                disabled_cooldowns[spellid] = cond
+                            end
                         end
                     else
                         if addon.avail_announced[cond.id] then
                             addon.avail_announced[cond.id] = nil;
                             AceEvent:SendMessage("ROTATIONMASTER_COOLDOWN_UPDATE", self.currentRotation, id, cond.id, nil)
                         end
-                        addon:verbose("Cooldown %d [%s] is disabled", id, cond.id)
-                        if not enabled_cooldowns[spellid] then
-                            disabled_cooldowns[spellid] = cond
-                        end
-                    end
-                else
-                    if addon.avail_announced[cond.id] then
-                        addon.avail_announced[cond.id] = nil;
-                        AceEvent:SendMessage("ROTATIONMASTER_COOLDOWN_UPDATE", self.currentRotation, id, cond.id, nil)
                     end
                 end
-            end
-            for spellid, cond in pairs(disabled_cooldowns) do
-                addon:GlowCooldown(spellid, false, cond)
-            end
-            for spellid, cond in pairs(enabled_cooldowns) do
-                addon:GlowCooldown(spellid, true, cond, enabled_items[spellid])
-            end
+                for spellid, cond in pairs(disabled_cooldowns) do
+                    if not current() then return end
+                    addon:GlowCooldown(spellid, false, cond)
+                end
+                for spellid, cond in pairs(enabled_cooldowns) do
+                    if not current() then return end
+                    addon:GlowCooldown(spellid, true, cond, enabled_items[spellid])
+                end
+            end)
         end
         self.evaluationProfile:child("cooldowns"):stop()
 
         -- We only skip the FIRST cycle of enabling/disabling cooldowns.
-        addon.skipAnnounce = false
-        addon.announced = {}
+        stage(function() addon.skipAnnounce=false;addon.announced={} end)
+
+        -- Every condition and readiness callback finishes before advice becomes
+        -- externally visible. Recheck between publishers too: another addon's
+        -- message/glow callback may retire this profile or selected record.
+        for _,publish in ipairs(staged) do if not current() then break end;publish() end
 
         self.evaluationProfile:stop()
     end

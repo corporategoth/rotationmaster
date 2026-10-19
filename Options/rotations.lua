@@ -1095,3 +1095,13 @@ function addon:get_rotation_list(frame, specID, rotid, id, callback)
 
 end
 
+
+-- Preserve captured legacy helpers, but route ordinary public callers through
+-- a detached workspace and the native editor rather than saved-map closures.
+local function nativeRotationList(owner,specID,rotid,id,list)
+    if type(owner.ShowConfig)~='function' or type(owner.CreateRotationEditor)~='function' then return nil,'native-configuration-unavailable' end
+    local workspace,why=owner:GetRotationEditWorkspace(specID,rotid);if not workspace then return nil,why end
+    return owner:ShowConfig('Rotations',{spec=specID,id=workspace.id,step=id,list=list})
+end
+function addon:get_cooldown_list(frame,specID,rotid,id,callback) return nativeRotationList(self,specID,rotid,id,'cooldowns') end
+function addon:get_rotation_list(frame,specID,rotid,id,callback) return nativeRotationList(self,specID,rotid,id,'rotation') end

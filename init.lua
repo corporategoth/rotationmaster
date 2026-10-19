@@ -239,7 +239,7 @@ local default_disabled_conditions = {
 }
 
 local function updateRotationData(rot_func, cond_func)
-    if not addon.db.profile.rotations then
+    if addon.InitializeScopedRotationStorage or addon.db.profile.rotationStore~=nil or not addon.db.profile.rotations then
         return
     end
 
@@ -281,6 +281,7 @@ local function upgradeTexturesToEffects()
 end
 
 local function upgradeGlobalRotationstoPlayer()
+    if addon.InitializeScopedRotationStorage or addon.db.profile.rotationStore~=nil then return end
     if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
         -- Upgrade from TBC -> Wrath
         if (LE_EXPANSION_LEVEL_CURRENT >= 2) and
@@ -479,6 +480,24 @@ function addon:getDefaultItemset(id)
 end
 
 local function moveProfileItems()
+    if addon.InitializeScopedRotationStorage or addon.db.profile.rotationStore~=nil then
+        -- Rotation ownership migration never chooses a different profile or
+        -- consumes char archives. Keep the unrelated old settings migration
+        -- narrow: only an empty active-profile destination may receive data.
+        for _,kind in ipairs({'itemsets','announces'}) do
+            local source=addon.db.char[kind]
+            if source~=nil and (type(source)~='table' or getmetatable(source)~=nil or next(source)~=nil) then
+                local destination=addon.db.profile[kind]
+                local copied=addon.RotationData.CopyData(source)
+                if type(copied)=='table' and (destination==nil or type(destination)=='table' and next(destination)==nil) then
+                    addon.db.profile[kind]=copied;addon.db.char[kind]=nil
+                elseif addon.warn then
+                    addon:warn(L['Legacy character %s data conflicts with the active profile; character data preserved.'],kind)
+                end
+            end
+        end
+        return
+    end
     if not addon.db.profile.version or addon.db.profile.version < 2 then
         local rotations = addon.db.char.rotations
         addon.db.char.rotations = nil
@@ -577,7 +596,8 @@ function addon:init()
     upgradeBindingSlots()
 
     addon.db.char.version = CHAR_VERSION
-    addon.db.profile.version = PROFILE_VERSION
+    if addon.db.profile.rotationStore~=nil then addon.db.profile.version=3
+    elseif not addon.InitializeScopedRotationStorage then addon.db.profile.version=PROFILE_VERSION end
     addon.db.global.version = GLOBAL_VERSION
 end
 

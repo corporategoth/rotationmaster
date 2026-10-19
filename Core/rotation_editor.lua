@@ -22,7 +22,10 @@ function addon:NewRotationEditSession(spec,original,options)
     options=options or {}
     if type(options)~='table' or getmetatable(options)~=nil or
         options.targetValid~=nil and type(options.targetValid)~='function' or
-        options.readOnly~=nil and type(options.readOnly)~='boolean' then return nil,'invalid-rotation-editor-options' end
+        options.readOnly~=nil and type(options.readOnly)~='boolean' or
+        options.commit~=nil and type(options.commit)~='function' or
+        options.ownership~=nil and options.ownership~='class' and options.ownership~='character' or
+        options.setOwnershipAllowed~=nil and type(options.setOwnershipAllowed)~='boolean' then return nil,'invalid-rotation-editor-options' end
     local newId=options.newId or self.uuid
     local draft,why=data.NewRotationDraft(original,newId,options.reserved)
     if not draft then return nil,why end
@@ -32,6 +35,7 @@ function addon:NewRotationEditSession(spec,original,options)
     local dirtyBaseline=data.CopyData(original)
     if dirtyBaseline.rotation==nil then dirtyBaseline.rotation={} end
     if dirtyBaseline.cooldowns==nil then dirtyBaseline.cooldowns={} end
+    local ownership,originalOwnership=options.ownership,options.ownership
     local readOnly=options.readOnly==true
     local targetValid=options.targetValid
     local closed,busy=false,false
@@ -61,16 +65,22 @@ function addon:NewRotationEditSession(spec,original,options)
     local session={}
     function session:Snapshot() return draft:Snapshot() end
     function session:Baseline() return data.CopyData(dirtyBaseline) end
-    function session:IsDirty() return not equal(dirtyBaseline,draft:Snapshot()) end
+    function session:Ownership() return ownership end
+    function session:BaselineOwnership() return originalOwnership end
+    function session:IsDirty() return ownership~=originalOwnership or not equal(dirtyBaseline,draft:Snapshot()) end
     function session:HistoryState()
         return {canUndo=not closed and not busy and not readOnly and #undo>0,
             canRedo=not closed and not busy and not readOnly and #redo>0}
     end
     function session:Command(name,...)
         local ok,reason=writable();if not ok then return nil,reason end
-        local before=draft:Snapshot()
-        local changed,result=draft:Command(name,...)
-        if changed and not equal(before,draft:Snapshot()) then
+        local before={body=draft:Snapshot(),ownership=ownership}
+        local changed,result
+        if name=='SetOwnership' then
+            local scope=(...);if not options.setOwnershipAllowed or (scope~='class' and scope~='character') then return nil,'invalid-owner-scope' end
+            changed=true;ownership=scope
+        else changed,result=draft:Command(name,...) end
+        if changed and (before.ownership~=ownership or not equal(before.body,draft:Snapshot())) then
             while #redo>0 do pop(redo) end
             push(undo,before);trim()
         end
@@ -79,9 +89,11 @@ function addon:NewRotationEditSession(spec,original,options)
     local function travel(source,destination)
         local ok,reason=writable();if not ok then return nil,reason end
         if #source==0 then return nil,'rotation-history-empty' end
-        local previous=draft:Snapshot()
-        local restored,problem=draft:Restore(source[#source].value)
+        local previous={body=draft:Snapshot(),ownership=ownership}
+        local frame=source[#source].value
+        local restored,problem=draft:Restore(frame.body)
         if not restored then return nil,problem end
+        ownership=frame.ownership
         pop(source);push(destination,previous);trim()
         return true
     end
@@ -120,6 +132,12 @@ function addon:NewRotationEditSession(spec,original,options)
         if not valid then return finish(nil,'invalid-condition-fields') end
         if not owner() then return finish(nil,'rotation-target-missing') end
         if not equal(baseline,original) then return finish(nil,'rotation-changed-externally') end
+        if options.commit then
+            local success,committed,problem,details=pcall(options.commit,snapshot,ownership)
+            if not success then return finish(nil,'rotation-commit-error') end
+            if not committed then return finish(nil,problem,details) end
+            close();return finish(true,nil,problem)
+        end
         for key in pairs(original) do original[key]=nil end
         for key,value in pairs(snapshot) do original[key]=value end
         close();return finish(true)

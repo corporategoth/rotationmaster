@@ -8,6 +8,13 @@ local function label(parent,font)
     text:SetJustifyH("LEFT");text:SetWordWrap(false)
     return text
 end
+local function sameReference(a,b)
+    if type(a)~='table' or type(b)~='table' or a.kind~=b.kind then return false end
+    if a.kind=='builtin' then return a.id==b.id end
+    if type(a.address)~='table' or type(b.address)~='table' then return false end
+    for _,key in ipairs({'scope','class','owner','spec','id'}) do if a.address[key]~=b.address[key] then return false end end
+    return true
+end
 local function create(parent)
     local frame=CreateFrame("Frame",nil,parent);frame:SetPoint("TOPLEFT",parent,"TOPLEFT",0,0)
     local browser={frame=frame,rowButtons={},specButtons={},filters={},rows={},active=false,filter="all",query=""}
@@ -52,15 +59,10 @@ local function create(parent)
         if not browser.active then return end
         browser:RequestLeave(function()
         if not browser.active then return end
-        local custom=addon.db.profile.rotations[browser.spec] or {}
-        local id
-        for _=1,100 do
-            local candidate=addon:uuid()
-            if type(candidate)=="string" and custom[candidate]==nil and not addon:GetDefaultIdForRuntime(browser.spec,candidate) and candidate~=DEFAULT then id=candidate;break end
-        end
-        if not id then return end
-        browser.pendingId=id;browser.filter="all";browser.tag=nil;browser.selectedTags={};browser.query="";search:SetText("")
-        browser:SelectRotation(browser.spec,id,true)
+        local reference,key=addon:NewRotationDraftTarget(browser.spec)
+        if not reference then if browser.pane then browser.pane:Message(key) end;return end
+        browser.pendingId=key;browser.filter="all";browser.tag=nil;browser.selectedTags={};browser.query="";search:SetText("")
+        browser:SelectRotation(browser.spec,key,true)
         end)
     end)
     local duplicate=addon:CreateWorkbenchLabeledIconButton(left,"copy",L["Duplicate"],112);browser.duplicateButton=duplicate
@@ -73,12 +75,11 @@ local function create(parent)
                 if not browser.pane.workspace.pending then browser.pane.clone.action() end
             else
                 local builtin=addon:GetDefaultIdForRuntime(browser.spec,browser.selected)
-                local source=addon:GetEditableRotation(browser.spec,browser.selected);local title=source and source.name
-                if builtin then for _,entry in ipairs(addon:ListDefaultRotations(browser.spec)) do if entry.id==builtin then title=entry.name;break end end end
+                local source=browser.allByKey and browser.allByKey[browser.selected];local title=source and source.name
                 local name=string.format(L["Copy of %s"],title or browser.selected)
-                local id
-                if builtin then id=addon:CloneDefaultRotation(browser.spec,builtin,name) else id=addon:DuplicateCustomRotation(browser.spec,browser.selected,name) end
-                if id then browser:SelectRotation(browser.spec,id,true) end
+                local id,why,reference
+                if builtin then id,why,reference=addon:CloneDefaultRotation(browser.spec,builtin,name) else id,why,reference=addon:DuplicateCustomRotation(browser.spec,browser.selected,name) end
+                if id then browser:SelectRotation(browser.spec,reference or id,true) end
             end
         end)
     end)
@@ -92,6 +93,27 @@ local function create(parent)
         local owner=browser.editorOwner
         browser:RequestLeave(function()
             if browser.active and browser.editorOwner==owner and addon.ShowRotationComparison then addon:ShowRotationComparison(browser.spec,browser.selected) end
+        end)
+    end)
+    local recovery=button(left,L['Recover unassigned rotations'],240);browser.recoveryButton=recovery;recovery:Hide()
+    function browser:RefreshRecovery()
+        local rows,why
+        if addon.ListUnassignedRotations and addon.ShowRotationAdoption then rows,why=addon:ListUnassignedRotations() end
+        self.hasRecovery=rows and #rows>0 or why~=nil
+        if self.hasRecovery then recovery:Show() else recovery:Hide() end
+    end
+    addon:SetUIScript(recovery,'OnClick',function()
+        if not browser.active or browser.profile~=addon.db.profile then return end
+        local serial,profile=browser.serial,browser.profile
+        browser:RequestLeave(function()
+            if not browser.active or browser.serial~=serial or addon.db.profile~=profile then return end
+            addon:ShowRotationAdoption(browser,function(reference)
+                if not browser.active or browser.serial~=serial or addon.db.profile~=profile then return end
+                browser:RefreshRecovery();browser:Layout()
+                browser:SelectRotation(reference.address.spec,reference,true)
+                if addon.UpdateAutoSwitch then addon:UpdateAutoSwitch() end
+                if addon.SwitchRotation then addon:SwitchRotation() end
+            end)
         end)
     end)
     function browser:ReleaseDetails()
@@ -117,8 +139,10 @@ local function create(parent)
         control.nameLabel:SetWidth(math.max(32,child:GetWidth()-12));control.statusLabel:SetWidth(math.max(32,child:GetWidth()-12));control.nameLabel:SetText(entry.name)
         if entry.readOnly then control.nameLabel:SetTextColor(.357,.753,.922) else control.nameLabel:SetTextColor(.9,.92,.94) end
         local status=entry.readOnly and L['Built In · read-only'] or entry.fallback and L['Fallback rotation'] or L['Custom rotation']
+        if entry.scope then status=status..' · '..(entry.scope=='character' and L['This character'] or L['Class']) end
         if entry.readOnly and not entry.enabled then status=status..' — '..L['Disabled'] elseif entry.readOnly and not entry.eligible then status=status..' — '..L['Not available'] end
         if not entry.fallback then status=status..' · '..(entry.priority and string.format(L['Priority %d'],entry.priority) or L['Invalid priority']) end
+        if entry.validationState and entry.validationState~='valid' and entry.validationState~='pending' then status=status..' — '..L['Not available'] end
         control.statusLabel:SetText(status);control.statusLabel:SetTextColor(.67,.72,.77);addon:SetWorkbenchListSelection(control,key==self.selected)
         local function requestValid() return browser.active and browser.serial==serial and browser.profile==profile and profile==addon.db.profile and browser.spec==spec and browser.navigationRevision==navigation and browser.rowsByKey[key]~=nil end
         addon:SetUIScript(control,'OnClick',function() if requestValid() and browser.resultRevision==revision and control.browserLease==lease then browser:SelectRotation(spec,key,false,requestValid) end end);control:Show()
@@ -154,23 +178,20 @@ local function create(parent)
         local offset=list.workbenchBar:GetValue();local anchor=self.rows and self.rows[math.floor(offset/48)+1];local anchorOffset=offset%48
         self.rebuilding=true;self.resultRevision=(self.resultRevision or 0)+1
         for _,control in ipairs(self.rowButtons) do self:RetireRow(control) end
-        local all={{key=DEFAULT,name=DEFAULT,kind="custom",fallback=true}}
-        for id,body in pairs(addon.db.profile.rotations[self.spec] or {}) do
-            if id~=DEFAULT and type(body)=="table" then
-                all[#all+1]={key=id,name=type(body.name)=="string" and body.name or tostring(id),kind="custom",enabled=not body.disabled}
+        local all,state=addon:ListRotationHeaders(self.spec)
+        local reason=not all and state or nil;self.rosterStamp=all and state or nil
+        all=all or {};self.loadError=reason
+        local byKey={};for _,entry in ipairs(all) do byKey[entry.key]=entry end
+        for _,entry in ipairs(addon.ListPendingRotationDrafts and addon:ListPendingRotationDrafts(self.spec) or {}) do
+            if not byKey[entry.key] then
+                local view=entry.presentation or {};local row={key=entry.key,reference=entry.reference,canonicalId=entry.canonicalId,name=entry.name,scope=entry.scope,kind='custom',pending=true,
+                    fallback=entry.fallback,effectiveFallback=false,validationState='pending',tags=addon.RotationData.GetRotationTags(view) or {},
+                    search=addon.RotationData.RotationSearchText(view,entry.name,view.description),priority=addon.RotationData.GetRotationPriority(view.priority)}
+                all[#all+1]=row;byKey[row.key]=row
             end
         end
-        for _,entry in ipairs(addon:ListDefaultRotations(self.spec)) do
-            all[#all+1]={key=entry.runtimeKey,id=entry.id,name=entry.name,description=entry.description,
-                kind="builtin",enabled=entry.enabled,eligible=entry.eligible,readOnly=true}
-        end
-        local pending={}
-        for _,entry in ipairs(addon.ListPendingRotationDrafts and addon:ListPendingRotationDrafts(self.spec) or {}) do
-            pending[entry.id]=true;all[#all+1]={key=entry.id,name=entry.name,kind="custom",pending=true,presentation=entry.presentation}
-        end
-        if self.pendingId and not addon:GetEditableRotation(self.spec,self.pendingId) then
-            if not pending[self.pendingId] then all[#all+1]={key=self.pendingId,name=NEW,kind="custom",pending=true} end
-        else self.pendingId=nil end
+        if self.pendingId and byKey[self.pendingId] and not byKey[self.pendingId].pending then self.pendingId=nil end
+        self.allByKey=byKey
         table.sort(all,function(a,b)
             if a.fallback~=b.fallback then return a.fallback==true end
             if a.name~=b.name then return a.name<b.name end
@@ -178,10 +199,7 @@ local function create(parent)
         end)
         local tags,seen={},{};self.tagRevision=(self.tagRevision or 0)+1
         for _,entry in ipairs(all) do
-            local view=entry.pending and entry.presentation or addon:GetRotationTagView(self.spec,entry.key)
-            entry.tags=addon.RotationData.GetRotationTags(view) or {};entry.search=addon.RotationData.RotationSearchText(view,entry.name,entry.description)
-            local body=type(view.body)=='table' and view.body or view;entry.priority=addon.RotationData.GetRotationPriority(body.priority)
-            for _,tag in ipairs(entry.tags) do local canonical=tag:lower();if not seen[canonical] then tags[#tags+1]=tag;seen[canonical]=true end end
+            for _,tag in ipairs(entry.tags or {}) do local canonical=tag:lower();if not seen[canonical] then tags[#tags+1]=tag;seen[canonical]=true end end
         end
         table.sort(tags,function(a,b) return a:lower()<b:lower() end);self.availableTags=tags
         local selected={};for _,tag in ipairs(self.selectedTags) do if seen[tag:lower()] then selected[#selected+1]=tag end end;self.selectedTags=selected;self.tag=selected[1];self.tagPicker:SetTags(selected)
@@ -195,12 +213,12 @@ local function create(parent)
         for index,value in ipairs(parts) do parts[index]=#value..':'..value end
         local signature=table.concat(parts,';')
         if signature~=self.navigationSignature then self.navigationSignature=signature;self.navigationRevision=(self.navigationRevision or 0)+1 end
-        if #rows==0 then empty:Show() else empty:Hide() end
+        empty:SetText(reason or L['No rotations match this search.']);if #rows==0 then empty:Show() else empty:Hide() end
         child:SetHeight(math.max(30,#rows*48));list:UpdateScrollChildRect();list:UpdateWorkbenchScroll()
         if anchor and positions[anchor.key] then list.workbenchBar:SetValue((positions[anchor.key]-1)*48+anchorOffset) end
         self.rebuilding=nil;self:RefreshViewport()
         count:SetText(string.format(L["%d of %d rotations"],#rows,#all))
-        if self.pendingId==self.selected or self.nativeDetails and self.pane and self.pane.workspace.pending then duplicate:Disable();compare:Disable() else duplicate:Enable();compare:Enable() end
+        if not self.selected or self.pendingId==self.selected or self.nativeDetails and self.pane and self.pane.workspace.pending then duplicate:Disable();compare:Disable() else duplicate:Enable();compare:Enable() end
         for key,control in pairs(self.filters) do if key==self.filter then control:Disable() else control:Enable() end end
     end
     function browser:SetTags(tags)
@@ -228,10 +246,16 @@ local function create(parent)
         if not found then spec=self.specEntries[1].id end
         if spec~=self.spec then self.pendingId=nil;self.query="";search:SetText("") end
         self.spec=spec
-        local draftExists=false
-        for _,entry in ipairs(addon.ListPendingRotationDrafts and addon:ListPendingRotationDrafts(spec) or {}) do if entry.id==id then draftExists=true;break end end
-        local exists=draftExists or id==DEFAULT or addon:GetEditableRotation(spec,id) or addon:GetDefaultIdForRuntime(spec,id) or id==self.pendingId
-        self.selected=exists and id or DEFAULT
+        local headers,headerState=addon:ListRotationHeaders(spec)
+        local headerError=not headers and headerState or nil
+        local reference,selectionError=addon:ResolveRotationReference(spec,id)
+        local key,fallback
+        for _,entry in ipairs(headers or {}) do
+            if reference and sameReference(reference,entry.reference) then key=entry.key end
+            if entry.effectiveFallback or not fallback and entry.fallback then fallback=entry.key end
+        end
+        if not key and reference and type(id)=='string' then key=id end
+        self.selected=key or fallback or headers and headers[1] and headers[1].key
         addon.configRotationSelection={spec=spec,id=self.selected}
         self:ReleaseDetails()
         local owner={};self.editorOwner=owner
@@ -239,7 +263,8 @@ local function create(parent)
             if self.active and self.editorOwner==owner then self:SelectRotation(nextSpec,nextId) end
         end
         local pane,problem
-        if type(addon.CreateRotationEditor)=='function' then pane,problem=addon:CreateRotationEditor(detail,spec,self.selected,selected)
+        if not self.selected then problem=headerError or selectionError or L['No rotations match this search.']
+        elseif type(addon.CreateRotationEditor)=='function' then pane,problem=addon:CreateRotationEditor(detail,spec,self.selected,selected)
         else problem=L['The native rotation editor is unavailable.'] end
         if not pane then
             self.editorOwner=nil
@@ -248,7 +273,9 @@ local function create(parent)
         else
             if detail.rmEditorError then detail.rmEditorError:Hide() end
             self.nativeDetails=true;self.pane=pane
-            pane.onSaved=function() if self.active and self.editorOwner==owner then self:RefreshRows() end end
+            pane.onSaved=function() if self.active and self.editorOwner==owner then
+                self.selected=pane.workspace.id or self.selected;addon.configRotationSelection={spec=self.spec,id=self.selected};self:RefreshRows()
+            end end
         end
         for _,control in ipairs(self.specButtons) do
             if control.spec==spec then control:Disable() else control:Enable() end
@@ -272,7 +299,8 @@ local function create(parent)
         detail:SetPoint("TOPLEFT",frame,"TOPLEFT",geometry.detailX,-top);detail:SetSize(geometry.detailWidth,geometry.sidebarHeight)
         for index,key in ipairs({'all','builtin','custom'}) do local filter=self.filters[key];filter:ClearAllPoints();filter:SetPoint('TOPLEFT',left,'TOPLEFT',(index-1)*(leftWidth+4)/3,-28);filter:SetWidth((leftWidth-8)/3) end
         search:SetWidth(leftWidth)
-        local footerHeight=50
+        local footerExtra=self.hasRecovery and 26 or 0
+        local footerHeight=50+footerExtra
         self.tagPicker:SetWidth(leftWidth)
         local listTop=56+self.tagPicker.height+8
         list:SetPoint("TOPLEFT",left,"TOPLEFT",0,-listTop);list:SetSize(leftWidth-24,math.max(64,left:GetHeight()-listTop-36-footerHeight))
@@ -280,8 +308,9 @@ local function create(parent)
         count:ClearAllPoints();count:SetPoint("BOTTOMLEFT",left,"BOTTOMLEFT",0,footerHeight+8)
         local buttonWidth=(leftWidth-4)/2
         for _,control in ipairs({new,duplicate,import,compare}) do control:ClearAllPoints();control:SetWidth(buttonWidth) end
-        new:SetPoint("BOTTOMLEFT",left,"BOTTOMLEFT",0,24);duplicate:SetPoint("BOTTOMLEFT",left,"BOTTOMLEFT",buttonWidth+4,24)
-        import:SetPoint("BOTTOMLEFT",left,"BOTTOMLEFT",0,0);compare:SetPoint("BOTTOMLEFT",left,"BOTTOMLEFT",buttonWidth+4,0)
+        new:SetPoint("BOTTOMLEFT",left,"BOTTOMLEFT",0,24+footerExtra);duplicate:SetPoint("BOTTOMLEFT",left,"BOTTOMLEFT",buttonWidth+4,24+footerExtra)
+        import:SetPoint("BOTTOMLEFT",left,"BOTTOMLEFT",0,footerExtra);compare:SetPoint("BOTTOMLEFT",left,"BOTTOMLEFT",buttonWidth+4,footerExtra)
+        recovery:ClearAllPoints();recovery:SetPoint("BOTTOMLEFT",left,"BOTTOMLEFT",0,0);recovery:SetWidth(leftWidth)
         empty:SetWidth(math.max(40,child:GetWidth()-8))
         if self.pane then self.pane:SetWidth(detail:GetWidth());self.pane:SetHeight(detail:GetHeight()) end
         self:RefreshViewport()
@@ -304,7 +333,7 @@ local function create(parent)
             if #self.specEntries>1 then control:Show() else control:Hide() end
         end
         for index=#self.specEntries+1,#self.specButtons do self.specButtons[index]:Hide();self.specButtons[index]:SetScript("OnClick",nil) end
-        self:Layout();frame:Show()
+        self:RefreshRecovery();self:Layout();frame:Show()
         local spec=selection and selection.spec or addon.currentSpec
         local found=false;for _,entry in ipairs(self.specEntries) do if entry.id==spec then found=true;break end end
         if not found then spec=self.specEntries[1].id end

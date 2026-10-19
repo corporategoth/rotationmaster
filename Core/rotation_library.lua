@@ -71,7 +71,7 @@ function addon:InitializeRotationLibrary()
         bodies[id]=data.CopyData(views[id].envelope.body)
         bodies[id].name=L[views[id].nameKey]
     end
-    active={profile=profile,state=state,catalog=catalog,views=views,bodies=bodies,cloneScopes={},version=definitionVersion,referenceStamp=referenceStamp}
+    active={profile=profile,state=state,catalog=catalog,views=views,bodies=bodies,cloneScopes={},version=definitionVersion,referenceStamp=referenceStamp,generation={}}
     for spec,origins in pairs(state.origins) do
         if type(spec)=="number" and plainTable(origins) then
             active.cloneScopes[spec]={}
@@ -120,16 +120,42 @@ local function runtimeKey(id, custom)
     while custom[key]~=nil do key=":"..key end
     return key
 end
+-- One-time handoff to the scoped coordinator. No canonical source getter stays
+-- on the addon surface after its consumer captures this private reader.
+function addon:BindRotationLibraryReader(bind)
+    if type(bind)~='function' then return nil,'invalid-library-reader-binder' end
+    local owner=self;local reader={}
+    function reader:Generation() local ok,why=ensure(owner);if not ok then return nil,why end;return active.generation end
+    function reader:Read(spec,id,project,candidates)
+        local ok,why=ensure(owner);if not ok then return nil,why end
+        local view=active.views[id];if not view then return nil,'unknown-rotation' end
+        local context=owner:GetRotationContext(spec);context.spec=spec
+        if not matchesClass(view,context) then return nil,'class-mismatch' end
+        local allowed,reason=eligible(view,context,candidates)
+        return true,project(view,active.bodies[id],allowed,reason),active.generation
+    end
+    function reader:List(spec,project)
+        local ok,why=ensure(owner);if not ok then return nil,why end
+        local context=owner:GetRotationContext(spec);context.spec=spec;local rows={}
+        for id,view in pairs(active.views) do if matchesClass(view,context) then rows[#rows+1]=project(id,view,active.bodies[id]) end end
+        return rows,active.generation
+    end
+    function reader:Eligible(view,spec,candidates) local context=owner:GetRotationContext(spec);context.spec=spec;return eligible(view,context,candidates) end
+    function reader:Reserve(used) for id,envelope in pairs(definitions) do used[id]=true;data.ReserveRotationIdentities(envelope,used) end end
+    bind(reader);return true
+end
+
 function addon:ListDefaultRotations(spec)
     local ok,why=ensure(self)
     if not ok then return {},why end
     local context=self:GetRotationContext(spec);context.spec=spec
-    local custom=self.db.profile.rotations[spec] or {}
+    local custom=(self.db.profile.rotations or {})[spec] or {}
     local rows={}
     for id,view in pairs(active.views) do
         if matchesClass(view,context) then
             local row=data.CopyData(view)
-            row.runtimeKey=runtimeKey(id,custom)
+            local scoped=self.GetScopedRotationCoordinator and self:GetScopedRotationCoordinator()
+            row.runtimeKey=scoped and scoped:Key({kind='builtin',id=id}) or runtimeKey(id,custom)
             row.eligible,row.eligibilityReason=eligible(view,context)
             row.name=L[row.nameKey or id]
             row.description=L[row.descriptionKey or ""]
@@ -146,10 +172,11 @@ end
 function addon:SetDefaultRotationEnabled(id,value)
     local ok,why=ensure(self);if not ok then return false,why end
     local saved,reason=active.catalog:SetEnabled({kind="builtin",id=id},value)
-    if saved then active.views[id]=active.catalog:Get({kind="builtin",id=id}) end
+    if saved then active.views[id]=active.catalog:Get({kind="builtin",id=id});active.generation={} end
     return saved,reason
 end
 function addon:GetEditableRotation(spec,id)
+    local scoped=self.GetScopedRotationCoordinator and self:GetScopedRotationCoordinator();if scoped then return scoped:GetEditableRotation(spec,id) end
     local rotations=self.db.profile.rotations[spec]
     return rotations and rotations[id]
 end
@@ -161,6 +188,8 @@ function addon:OwnsRotationCondition(spec,id,step,condition)
     return false
 end
 function addon:GetRuntimeRotations(spec, internal, candidates)
+    local scoped=self.GetScopedRotationCoordinator and self:GetScopedRotationCoordinator()
+    if scoped then local pass,why=scoped:RuntimePass(spec);if not pass then return {},why end;local rows,reason=pass:Candidates(candidates==true);for key,body in pairs(rows) do local ref=scoped:Resolve(spec,key);if ref and ref.kind=='custom' then rows[key]=scoped:GetEditableRotation(spec,key) else rows[key]=data.CopyData(body) end end;return rows,reason end
     local rotations={}
     if spec==nil then return rotations end
     local ready=ensure(self)
@@ -199,9 +228,16 @@ function addon:GetRuntimeRotations(spec, internal, candidates)
     return rotations
 end
 function addon:GetRuntimeRotation(spec,id)
+    local scoped=self.GetScopedRotationCoordinator and self:GetScopedRotationCoordinator();if scoped then
+        local pass,why=scoped:RuntimePass(spec);if not pass then return nil,why end
+        local body,bodyReason=pass:Get(id);if not body then return nil,bodyReason end
+        local reference=scoped:Resolve(spec,id);if reference.kind=='custom' then return scoped:GetEditableRotation(spec,reference) end
+        return data.CopyData(body)
+    end
     return self:GetRuntimeRotations(spec,true)[id]
 end
-function addon:CloneDefaultRotation(spec,id,name)
+function addon:CloneDefaultRotation(spec,id,name,options)
+    local coordinator=self.GetScopedRotationCoordinator and self:GetScopedRotationCoordinator();if coordinator then return coordinator:Copy(spec,{kind='builtin',id=id},name,options) end
     local ok,why=ensure(self);if not ok then return nil,why end
     local source=active.catalog:Get({kind="builtin",id=id})
     if not source then return nil,"unknown-rotation" end
@@ -232,6 +268,7 @@ function addon:CloneDefaultRotation(spec,id,name)
     return generated
 end
 function addon:GetSourcedRotationView(spec,id)
+    local scoped=self.GetScopedRotationCoordinator and self:GetScopedRotationCoordinator();if scoped then return scoped:SourceView(spec,id,false) end
     local ok,why=ensure(self);if not ok then return nil,why end
     local origins=active.state.origins[spec]
     if origins==nil then return nil,"no-source-baseline" end
@@ -253,15 +290,17 @@ function addon:GetSourcedRotationView(spec,id)
 end
 
 function addon:IsDefaultRuntimeRotation(spec,key)
+    local scoped=self.GetScopedRotationCoordinator and self:GetScopedRotationCoordinator();if scoped then return self:GetDefaultIdForRuntime(spec,key)~=nil end
     if not ensure(self) then return false end
-    local custom=self.db.profile.rotations[spec] or {}
+    local custom=(self.db.profile.rotations or {})[spec] or {}
     for id in pairs(active.views) do if runtimeKey(id,custom)==key then return true end end
     return false
 end
 
 function addon:GetDefaultIdForRuntime(spec,key)
+    local scoped=self.GetScopedRotationCoordinator and self:GetScopedRotationCoordinator();if scoped then local ref=scoped:Resolve(spec,key);return ref and ref.kind=='builtin' and ref.id or nil end
     if not ensure(self) then return nil end
-    local custom=self.db.profile.rotations[spec] or {}
+    local custom=(self.db.profile.rotations or {})[spec] or {}
     for id in pairs(active.views) do if runtimeKey(id,custom)==key then return id end end
 end
 
@@ -272,6 +311,7 @@ function addon:GetRotationCandidates(spec)
     return self:GetRuntimeRotations(spec,true,true)
 end
 function addon:GetRotationForCleanup(spec,key)
+    local scoped=self.GetScopedRotationCoordinator and self:GetScopedRotationCoordinator();if scoped then return scoped:Cleanup(spec,key) end
     local custom=self:GetEditableRotation(spec,key)
     if custom then return custom end
     if not ensure(self) then return nil end
@@ -282,6 +322,7 @@ end
 -- Correspondence for ordinary duplicates needs only origin IDs. It must not
 -- pretend an incomplete legacy body is a validated historical envelope.
 function addon:GetRotationComparisonIdentity(spec,id)
+    local scoped=self.GetScopedRotationCoordinator and self:GetScopedRotationCoordinator();if scoped then return scoped:ComparisonIdentity(spec,id) end
     if not ensure(self) then return nil,"invalid-library-state" end
     local rows=active.state.comparisons[spec]
     if rows~=nil and not plainTable(rows) then return nil,"invalid-comparison-origin" end
@@ -310,7 +351,8 @@ end
 
 -- Transitional legacy editing still writes bodies directly. Duplication must use
 -- a real data copy, fresh step identities, and explicitly retain source lineage.
-function addon:DuplicateCustomRotation(spec,id,name)
+function addon:DuplicateCustomRotation(spec,id,name,options)
+    local scoped=self.GetScopedRotationCoordinator and self:GetScopedRotationCoordinator();if scoped then return scoped:Copy(spec,id,name,options) end
     if self.GetImportedRotationView then
         local imported,reason=self:GetImportedRotationView(spec,id)
         if imported then
@@ -413,6 +455,40 @@ function addon:DuplicateCustomRotation(spec,id,name)
 end
 
 function addon:BuildRotationComparison(spec,id,target)
+    local scoped=self.GetScopedRotationCoordinator and self:GetScopedRotationCoordinator()
+    if scoped then
+        local reference,why=scoped:Resolve(spec,id);if not reference then return nil,why end
+        if not target then return nil,'missing-comparison-target' end
+        local targetReference
+        if type(target)=='table' and target.kind=='custom' and not target.address then targetReference,why=scoped:Resolve(spec,target.id)
+        else targetReference,why=scoped:Resolve(spec,target) end
+        if not targetReference then return nil,why end
+        local function sameAddress(a,b)
+            if a.kind~=b.kind then return false end;if a.kind=='builtin' then return a.id==b.id end
+            for _,key in ipairs({'scope','class','owner','spec','id'}) do if a.address[key]~=b.address[key] then return false end end;return true
+        end
+        if sameAddress(reference,targetReference) then return nil,'self-comparison' end
+        local current,currentReason=scoped:Snapshot(spec,reference);if not current then return nil,currentReason end
+        local other,targetReason=scoped:Snapshot(spec,targetReference);if not other then return nil,targetReason end
+        local view=scoped:SourceView(spec,reference,false)
+        if view and targetReference.kind=='builtin' and view.lineage.sourceKind=='builtin' and view.lineage.sourceId==targetReference.id then
+            local source=other.source;local result=data.CompareClone(view,source)
+            result.views={{key='current',left=data.CopyData(source.envelope),right=data.CopyData(view.envelope),rightOrigins=data.CopyData(view.lineage.stepOrigins),diff=result.currentDifferences},
+                {key='source',left=data.CopyData(view.lineage.baseline),right=data.CopyData(source.envelope),diff=result.sourceChanges},
+                {key='custom',left=data.CopyData(view.lineage.baseline),right=data.CopyData(view.envelope),rightOrigins=data.CopyData(view.lineage.stepOrigins),diff=result.customChanges}}
+            return result
+        end
+        local left,leftError=scoped:ComparisonIdentity(spec,targetReference);local right,rightError=scoped:ComparisonIdentity(spec,reference)
+        if not left or not right then return nil,leftError or rightError end
+        local options={}
+        local exact=left.kind=='builtin' or left.kind=='import' or left.kind=='custom' and left.sourceAddress and right.sourceAddress and sameAddress({kind='custom',address=left.sourceAddress},{kind='custom',address=right.sourceAddress})
+        if exact and left.kind==right.kind and left.id==right.id then options.leftOrigins,options.rightOrigins=left.origins,right.origins end
+        local leftValue=data.RotationComparisonValue(other.body,self:GetRotationTags(spec,targetReference))
+        local rightValue=data.RotationComparisonValue(current.body,self:GetRotationTags(spec,reference))
+        local result=data.DiffRotations(leftValue,rightValue,options)
+        result.views={{key='current',left=leftValue,right=rightValue,leftOrigins=data.CopyData(options.leftOrigins),rightOrigins=data.CopyData(options.rightOrigins),diff=data.CopyData(result)}}
+        return result
+    end
     if target and target.kind=="custom" and target.id==id then return nil,"self-comparison" end
     local body=self:GetEditableRotation(spec,id)
     if not body then return nil,"unknown-rotation" end
@@ -454,7 +530,22 @@ function addon:BuildRotationComparison(spec,id,target)
     return nil,"missing-comparison-target"
 end
 
-function addon:DeleteCustomRotation(spec,id)
+function addon:DeleteCustomRotation(spec,id,expected)
+    local scoped=self.GetScopedRotationCoordinator and self:GetScopedRotationCoordinator();if scoped then
+        local reference,why=scoped:Resolve(spec,id);if not reference then return nil,why end
+        if reference.kind=='builtin' then return nil,'read-only-rotation' end
+        if not expected then local record;record,expected=scoped:Snapshot(spec,reference);if not record then return nil,expected end end
+        local currentReference=self.currentRotation and (self.currentSpec==nil or self.currentSpec==spec) and scoped:Resolve(spec,self.currentRotation)
+        local deletingCurrent=currentReference and currentReference.kind=='custom'
+        if deletingCurrent then for _,field in ipairs({'scope','class','owner','spec','id'}) do if currentReference.address[field]~=reference.address[field] then deletingCurrent=false;break end end end
+        local ok,problem=scoped:Delete(reference,expected)
+        if not ok then return nil,problem end
+        if deletingCurrent then
+            if self.RemoveAllCurrentGlows then self:RemoveAllCurrentGlows() end
+            self.currentRotation=nil;self.manualRotation=false
+        end
+        return true
+    end
     if id==(DEFAULT or L['Default']) or self:GetDefaultIdForRuntime(spec,id) then return nil,'read-only-rotation' end
     local body=self:GetEditableRotation(spec,id)
     if type(body)~='table' then return nil,'unknown-rotation' end

@@ -8,8 +8,11 @@ function addon:BuildProfileSettings(p)
     local function overlay(destination,incoming) for key,value in pairs(incoming) do if (key=='color' or key=='minimap' or key=='preview_window') and type(value)=='table' and type(destination[key])=='table' then for field,entry in pairs(value) do destination[key][field]=self:CopySettingsData(entry) end else destination[key]=self:CopySettingsData(value) end end end
     local function change(operation,name,after)
         if self.DisableRotation then self:DisableRotation() end
+        local depth=self.rotationProfileChangeDepth or 0;self.rotationProfileChangeDepth=depth+1
         local ok,why=pcall(function() db[operation](db,name);if after then after() end end)
-        if self.EnableRotation then self:EnableRotation() end
+        self.rotationProfileChangeDepth=depth
+        if self.RotationProfileChanged then self:RotationProfileChanged()
+        elseif self.EnableRotation then self:EnableRotation() end
         if not ok then p:Message(tostring(why));return false end
         p.profile=db.profile;p.selection=p.selectAfterProfileChange or db:GetCurrentProfile();p.selectAfterProfileChange=nil;p:Draw();if self.RefreshConfiguration then self:RefreshConfiguration() end;return true
     end
@@ -26,8 +29,11 @@ function addon:BuildProfileSettings(p)
             end
             local baseline=selected and self:CopySettingsData(selected)
             self:ShowSettingsTextTransfer(p,L['Profiles'],text,function(input,settings)
-                local decoded,errorText=codec:Decode(input);local wrapper=decoded and decoded.value;local candidate=type(wrapper)=='table' and self:ProfileFromPortable(wrapper.profile)
-                if type(wrapper)~='table' or wrapper.format~='RM-Profile' or wrapper.version~=1 or type(candidate)~='table' or not self:ValidateProfileTransfer(candidate) then return false,errorText or L['Invalid profile.'] end
+                local decoded,errorText=codec:Decode(input);local wrapper=decoded and decoded.value;local candidate=type(wrapper)=='table' and self:ProfileFromPortable(wrapper.profile,{preserveLegacyBodies=true})
+                if type(wrapper)~='table' or wrapper.format~='RM-Profile' or wrapper.version~=1 or type(candidate)~='table' then return false,errorText or L['Invalid profile.'] end
+                local plan,migrationError=self:PlanRotationProfileMigration(candidate,candidate.rotationFallbackID or DEFAULT)
+                if not plan then return false,migrationError end
+                local migrated,why=self:ApplyRotationProfileMigration(plan);if not migrated or not self:ValidateProfileTransfer(candidate) then return false,why or L['Invalid profile.'] end
                 if settings.mode=='replace' and selected then
                     local target=selectedName==db:GetCurrentProfile() and db.profile or db.profiles[selectedName]
                     if target~=selected or not self:SettingsDataEqual(baseline,self:CopySettingsData(target)) then return false,L['The selected profile changed. Reopen the import window.'] end
@@ -52,7 +58,9 @@ function addon:BuildProfileSettings(p)
     if selected then
         p:Heading(selectedName)
         local active=p:Button('activate',selectedName==current and L['Active profile'] or L['Activate profile'],function() change('SetProfile',selectedName) end);if selectedName==current then active:Disable() end
-        local summary={};for _,group in pairs(selected.rotations or {}) do for _,rotation in pairs(group) do summary[#summary+1]=rotation.name or L['Unnamed rotation'] end end;table.sort(summary);p:Text(#summary>0 and table.concat(summary,'\n') or L['No rotations in this profile.'])
+        local rows,recovery=self:GetProfileRotationHeaders(selected)
+        local summary={};for _,row in ipairs(rows or {}) do summary[#summary+1]=row.name end;table.sort(summary)
+        p:Text(not rows and string.format(L['Rotation data requires recovery: %s'],recovery) or #summary>0 and table.concat(summary,'\n') or L['No rotations in this profile.'])
         local others={};for _,entry in ipairs(entries) do if entry.value~=current then others[#others+1]=entry end end
         -- Keep explicit copying into the active profile available, with its
         -- existing replacement confirmation and runtime lifecycle.

@@ -6,6 +6,7 @@ local function settings(self)
 end
 function addon:GetImportValidationOptions() return settings(self) end
 function addon:GetImportedRotationView(spec,id)
+    local scoped=self.GetScopedRotationCoordinator and self:GetScopedRotationCoordinator();if scoped then return scoped:SourceView(spec,id,true) end
     local state=self.db.profile.rotationLibrary
     if state==nil then return nil,"not-imported" end
     if not plain(state) then return nil,"invalid-import-state" end
@@ -25,7 +26,8 @@ function addon:GetImportedRotationView(spec,id)
         validation=data.ValidateEnvelope(envelope,settings(self)),sourceId=record.sourceId,
         sourceRevision=record.sourceRevision,stepOrigins=record.stepOrigins}
 end
-function addon:CreateImportedRotation(prepared,spec,name,replacement)
+function addon:CreateImportedRotation(prepared,spec,name,replacement,options)
+    local scoped=self.GetScopedRotationCoordinator and self:GetScopedRotationCoordinator();if scoped then return scoped:Import(prepared,spec,name,replacement,options) end
     if type(spec)~="number" or spec<0 or spec%1~=0 then return nil,"invalid-specialization" end
     if type(name)~="string" or #name==0 or #name>256 then return nil,"invalid-name" end
     local rotationsRoot=self.db.profile.rotations
@@ -107,7 +109,27 @@ local function equal(a,b)
     if type(a)~=type(b) then return false end;if type(a)~='table' then return a==b end
     for key,value in pairs(a) do if not equal(value,b[key]) then return false end end;for key in pairs(b) do if a[key]==nil then return false end end;return true
 end
-function addon:ApplyRotationImport(session,token,spec,name,target,expected)
+function addon:ApplyRotationImport(session,token,spec,name,target,expected,options)
+    local scoped=self.GetScopedRotationCoordinator and self:GetScopedRotationCoordinator()
+    if scoped then
+        local prepared,why=session:GetReady(token);if not prepared then return nil,why end
+        if not target then return self:CreateImportedRotation(prepared,spec,name,nil,options) end
+        local reference,referenceReason=scoped:Resolve(spec,target);if not reference then return nil,referenceReason end
+        if reference.kind~='custom' then return nil,'read-only-rotation' end
+        if type(expected)~='table' or expected.profile~=self.db.profile then return nil,'rotation-changed-externally' end
+        local workspace=self.GetRotationWorkspace and self:GetRotationWorkspace(spec,reference);if workspace and workspace:IsDirty() then return nil,'rotation-has-unsaved-changes' end
+        local record,token=scoped:Snapshot(spec,reference);if not record then return nil,token end
+        if expected.recordToken then
+            if not equal(expected.reference,reference) then return nil,'rotation-changed-externally' end;token=expected.recordToken
+        else
+            local original=self:GetEditableRotation(spec,reference)
+            if expected.target~=original or not data.CheckPortable(original) or not equal(original,expected.body) then return nil,'rotation-changed-externally' end
+        end
+        local id,commitReason,saved=self:CreateImportedRotation(prepared,spec,record.body.name or name,{profile=self.db.profile,reference=reference,recordToken=token},options)
+        if not id then return nil,commitReason end
+        if self.UpdateAutoSwitch then self:UpdateAutoSwitch() end;if self.SwitchRotation then self:SwitchRotation() end;if self.EvaluateNextAction then self:EvaluateNextAction() end
+        return id,nil,saved
+    end
     local prepared,why=session:GetReady(token);if not prepared then return nil,why end
     if not target then return self:CreateImportedRotation(prepared,spec,name) end
     local profile=self.db.profile;local original=self:GetEditableRotation(spec,target)
@@ -127,6 +149,14 @@ function addon:ApplyRotationImport(session,token,spec,name,target,expected)
 end
 
 function addon:GetRotationExportData(spec,id)
+    local scoped=self.GetScopedRotationCoordinator and self:GetScopedRotationCoordinator();if scoped then
+        local record,why=scoped:Snapshot(spec,id);if not record then return nil,why end
+        local result
+        if record.source then result=record.source.envelope
+        elseif record.origin or record.imported then local retained=record.origin or record.imported;result=data.CopyData(retained.manifest);result.body=record.body
+        else return record.body end
+        if result.body.tags~=nil then result.tags=data.CopyData(result.body.tags) end;return result
+    end
     local function currentTags(envelope)
         if type(envelope)=='table' and type(envelope.body)=='table' and envelope.body.tags~=nil then
             local copy,why=data.CopyData(envelope);if not copy then return nil,why end

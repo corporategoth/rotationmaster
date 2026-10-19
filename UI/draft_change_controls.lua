@@ -9,6 +9,8 @@ function addon:InstallRotationChangeReview(pane)
         if self.metadataDirty then snapshot.metadata=addon.RotationData.CopyData(self.metadataDraft) end
         if self.tagsDirty then local tags=addon.RotationData.ParseRotationTags(self.tags:GetText());if tags then snapshot.tags=tags else pending[#pending+1]={label=L['Tags'],before=addon.RotationData.FormatRotationTags(self:EffectiveTags(snapshot)),after=self.tags:GetText()} end end
         if self.priorityDirty then local raw=self.priority:GetText();local value=raw=='' and 0 or tonumber(raw);if value and addon.RotationData.GetRotationPriority(value)~=nil then snapshot.priority=value else pending[#pending+1]={label=L['Switch priority'],before=snapshot.priority or 0,after=raw} end end
+        local beforeScope=self:BaselineScope();local afterScope=self:EffectiveScope()
+        if beforeScope~=nil and beforeScope~=afterScope then pending[#pending+1]={label=L['Applies to'],before=beforeScope=='character' and L['This character'] or L['Class'],after=afterScope=='character' and L['This character'] or L['Class']} end
         if not metadataOnly then self:ReviewPendingFields(snapshot,pending) end;return snapshot,pending
     end
     pane.viewChanges=addon:CreateViewChangesButton(pane.frame,pane.apply,function()

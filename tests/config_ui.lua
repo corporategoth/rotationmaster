@@ -79,7 +79,7 @@ test('real rotation pane initializes immediately for TBC retail and progression 
         a.GetDefaultIdForRuntime=function(_,_,key) return key=='pack-key' and 'pack' end
         local built=0
         a.CreateDefaultRotationOptions=function() built=built+1 end
-        f.load('UI/settings_setup.lua');f.load('Options/general.lua')
+        f.load('UI/settings_setup.lua');dofile('tests/fixtures/legacy_options.lua')(f,'Options/general.lua')
         local pane=ace:Create('SimpleGroup');pane.frame:Show()
         a:BuildConfigurationPane(pane,'Rotations')
         assert(built>0,'already shown rotation pane did not initialize on client '..client[1])
@@ -107,7 +107,7 @@ test('general effect preview removes native OnShow before pooled icon reuse',fun
     a.db.profile={minimap={},color={r=1,g=1,b=1,a=1},loglevel=2}
     a.db.global.effects={};a.textured_types={};a.configure_frame=function() end
     a.Glow=function() glows=glows+1 end;a.HideGlow=function() end
-    f.load('UI/settings_setup.lua');f.load('Options/general.lua')
+    f.load('UI/settings_setup.lua');dofile('tests/fixtures/legacy_options.lua')(f,'Options/general.lua')
     a:BuildConfigurationPane(ace:Create('parent'),'General')
     local preview=assert(icons[1]);local show=assert(preview.frame:GetScript('OnShow'))
     assert(glows==1,'normal highlight preview was not initialized when its already-visible icon was added')
@@ -136,7 +136,7 @@ test('opening the actual custom rotation roster does not write display defaults 
     a.configure_frame=function() end;a.usefulCondition=function() return false end
     a.rotationValidConditions=function() return true end;a.validateCondition=function() return true end
     a.uuid=function() return 'new-rotation' end
-    f.load('UI/settings_setup.lua');f.load('Options/general.lua')
+    f.load('UI/settings_setup.lua');dofile('tests/fixtures/legacy_options.lua')(f,'Options/general.lua')
     a:BuildConfigurationPane(ace:Create('parent'),'Rotations')
     assert(first.use_name==nil and second.use_name==nil,'viewing persisted inferred name flags')
     assert(first.name==nil and second.name=='Shield reminder')
@@ -160,7 +160,7 @@ test('opening an optional step inherits its highlight without saving a color unt
     a.HideGlow=function() end;a.RemoveCooldownGlowIfCurrent=function() end
     a.configure_frame=function() end;a.validateCondition=function() return true end
     a.printCondition=function() return 'Always' end;a.usefulCondition=function() return false end;a.evaluateCondition=function() return true end
-    f.load('Options/rotations.lua')
+    dofile('tests/fixtures/legacy_options.lua')(f,'Options/rotations.lua')
     a:get_cooldown_list(ace:Create('parent'),0,'mine','reminder',function() end)
     assert(step.color==nil,'opening the optional editor changed the saved highlight color')
     assert(preview.r==.2 and preview.g==.3 and preview.b==.4 and preview.a==.5,'preview ignored profile inheritance')

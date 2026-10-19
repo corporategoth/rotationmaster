@@ -1069,3 +1069,19 @@ function addon:BuildConfigurationPane(frame,section)
         AceConfigDialog:Open(self.configModuleApps[section:match("^module:(.*)$")],frame)
     end
 end
+
+-- Historical renderer closures remain available to already captured source.
+-- Public configuration entrypoints now use the owned native navigation path.
+local retainedConfigurationPane=addon.BuildConfigurationPane
+function addon:BuildRotationEditor(frame,specID,rotid,onSelect)
+    if type(self.ShowConfig)~='function' or type(self.CreateRotationEditor)~='function' then return nil,'native-configuration-unavailable' end
+    local workspace,why=self:GetRotationEditWorkspace(specID,rotid);if not workspace then return nil,why end
+    return self:ShowConfig('Rotations',{spec=specID,id=workspace.id})
+end
+function addon:BuildConfigurationPane(frame,section)
+    if type(section)=='string' and section:match('^module:') then return retainedConfigurationPane(self,frame,section) end
+    local builders={General=self.BuildGeneralSettings,Profiles=self.BuildProfileSettings,About=self.BuildAboutSettings,
+        Announces=self.BuildAnnounceSettings,Effects=self.BuildEffectSettings,ItemSets=self.BuildItemSettings,Conditions=self.BuildConditionSettings,Functions=self.BuildFunctionSettings,Integrations=self.BuildIntegrationSettings}
+    if type(self.ShowConfig)~='function' or section=='Rotations' and type(self.CreateRotationBrowser)~='function' or section~='Rotations' and (type(self.OpenNativeSettings)~='function' or type(builders[section])~='function') then return nil,'native-configuration-unavailable' end
+    return self:ShowConfig(section)
+end

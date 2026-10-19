@@ -43,7 +43,18 @@ end
 local function contextCopy(context)
     local copy = {}
     if readable(context) and type(context) == "table" then
-        for _, key in ipairs(fields) do copy[key] = scalar(rawget(context, key)) end
+        for _,key in ipairs(fields) do
+            local value=rawget(context,key)
+            if key=='rotationId' and readable(value) and type(value)=='string' and value:find('[%z\1-\31\127]') then
+                -- Issued row/runtime handles are private session authority,
+                -- not printable or portable identifiers. Never report one.
+                local ok,reference=pcall(function()
+                    if addon.ResolveRotationReference then return addon:ResolveRotationReference(addon.currentSpec,value) end
+                end)
+                value=ok and type(reference)=='table' and (reference.kind=='builtin' and reference.id or type(reference.address)=='table' and reference.address.id) or nil
+            end
+            copy[key]=scalar(value)
+        end
     end
     return copy
 end

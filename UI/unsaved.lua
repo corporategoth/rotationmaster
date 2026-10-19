@@ -34,7 +34,8 @@ function addon:InstallRotationUnsaved(pane)
         local tags=self:EffectiveTags(current);if self.tagsDirty then tags=addon.RotationData.ParseRotationTags(self.tags:GetText()) end
         local raw=self.priority:GetText();local priority=current.priority or 0;if self.priorityDirty then priority=raw=='' and 0 or tonumber(raw) end
         local details=description~=(baseline.description or '') or not addon:UnsavedDataEqual(metadata,baseline.metadata) or not addon:UnsavedDataEqual(tags,self:EffectiveTags(baseline)) or priority~=(baseline.priority or 0)
-        addon:SetWorkbenchUnsaved(self.info,writable and details)
+        local scopeChanged=self:BaselineScope()~=nil and self:EffectiveScope()~=self:BaselineScope()
+        addon:SetWorkbenchUnsaved(self.info,writable and (details or scopeChanged))
         local index=addon.RotationData.IndexRotationSteps(current)
         local pendingCards={}
         for id,fields in pairs(self.view.pendingFields or {}) do if next(fields) and index and index.byId[id] then
@@ -53,6 +54,7 @@ function addon:InstallRotationUnsaved(pane)
                 if key=='description' then dirty=(self.descriptionDirty and self.description:GetText() or current.description or '')~=(baseline.description or '')
                 elseif key=='tags' then dirty=not addon:UnsavedDataEqual(tags,self:EffectiveTags(baseline))
                 elseif key=='priority' then dirty=priority~=(baseline.priority or 0)
+                elseif key=='scope' then dirty=scopeChanged
                 else dirty=not addon:UnsavedDataEqual(metadata and metadata[key],original[key]) end
                 addon:SetWorkbenchUnsaved(input,writable and dirty);if key=='tags' and dialog.tagPicker then addon:SetWorkbenchUnsaved(dialog.tagPicker.frame,writable and dirty) end
             end

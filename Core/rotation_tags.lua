@@ -3,6 +3,7 @@ local data=addon.RotationData
 -- Roster presentation reads only metadata, never copies the action tree or
 -- populates optional saved fields while a user is browsing.
 function addon:GetRotationTagView(spec,id)
+    local scoped=self.GetScopedRotationCoordinator and self:GetScopedRotationCoordinator();if scoped then return scoped:TagView(spec,id) or {} end
     local default=self:GetDefaultIdForRuntime(spec,id)
     if default then
         local source=self.GetDefaultRotation and self:GetDefaultRotation(default)
@@ -21,6 +22,11 @@ function addon:GetRotationTags(spec,id)
     return data.GetRotationTags(self:GetRotationTagView(spec,id)) or {}
 end
 function addon:GetAllRotationTags(spec)
+    local scoped=self.GetScopedRotationCoordinator and self:GetScopedRotationCoordinator();if scoped then
+        local result,seen={},{};local headers,why=scoped:Headers(spec);if not headers then return {},why end
+        for _,row in ipairs(headers) do for _,tag in ipairs(row.tags) do if not seen[tag:lower()] then seen[tag:lower()]=true;result[#result+1]=tag end end end
+        table.sort(result,function(a,b) return a:lower()<b:lower() end);return result
+    end
     local result,seen={},{}
     local function add(tags) for _,tag in ipairs(tags or {}) do if not seen[tag:lower()] then seen[tag:lower()]=true;result[#result+1]=tag end end end
     for _,entry in ipairs(self.ListDefaultRotations and self:ListDefaultRotations(spec) or {}) do add(data.GetRotationTags(entry.envelope)) end

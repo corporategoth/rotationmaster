@@ -31,12 +31,23 @@ function addon:ShowRotationTransfer(spec,id)
     local p=self.rotationTransferForm
     if p then p:Release() else local host=CreateFrame('Frame',nil,UIParent);host:SetSize(1,1);host:Hide();p=self:CreateSettingsForm(host);self.rotationTransferForm=p end
     p:Open(function() end)
-    local original=self:GetEditableRotation(spec,id);local expected={profile=self.db.profile,target=original,body=original and self.RotationData.CopyData(original)}
-    local canReplace=original~=nil and not self:GetDefaultIdForRuntime(spec,id);local candidate
-    local options={canReplace=canReplace,selectedName=original and original.name or source and (source.body and source.body.name or source.nameKey or source.name),fallbackName=L['Imported rotation'],requirePreview=true}
+    local reference=self:ResolveRotationReference(spec,id)
+    local record,recordToken;if reference then record,recordToken=self:GetRotationRecordSnapshot(spec,reference) end
+    local original=record and record.body;local profile=self.db.profile;local coordinator=self:GetScopedRotationCoordinator();local context=self:GetRotationOwnerContext()
+    local expected={profile=profile,reference=reference,recordToken=recordToken}
+    local candidate,dialog;local active=true;local generation=p.generation
+    local function valid()
+        if not active or not p:Valid(generation) or addon.db.profile~=profile or addon:GetScopedRotationCoordinator()~=coordinator or not coordinator or not coordinator:CheckReady() then return false end
+        local now=addon:GetRotationOwnerContext()
+        if not now or not context or now.class~=context.class or now.character~=context.character then return false end
+        return not recordToken or coordinator:TokenCurrent(recordToken)
+    end
+    local canReplace=reference and reference.kind=='custom' and recordToken~=nil
+    local options={valid=valid,canReplace=canReplace,selectedName=original and original.name or source and (source.body and source.body.name or source.nameKey or source.name),fallbackName=L['Imported rotation'],requirePreview=true}
     options.originalName=function(text) local decoded=codec:Decode(text);local value=decoded and decoded.value;if type(value)=='table' then return value.body and value.body.name or value.nameKey or value.name end end
-    options.invalidate=function(d) candidate=nil;session:Clear();d.apply:Disable();d.inspect:Disable();d.status:SetText(L['Text changed. Preview again before importing.']);if p.importPreview then p.importPreview.frame:Hide() end end
+    options.invalidate=function(d) if not valid() or dialog and (d~=dialog or d.options~=options) then return end;candidate=nil;session:Clear();d.apply:Disable();d.inspect:Disable();d.status:SetText(L['Text changed. Preview again before importing.']);if p.importPreview then p.importPreview.frame:Hide() end end
     options.preview=function(d)
+        if not valid() then return end
         local why;candidate,why=session:Stage(d.input:GetText());d.apply:Disable();d.inspect:Disable()
         if not candidate then d.status:SetText(string.format(L['Import preview unavailable: %s'],why));return end
         d.inspect:Enable();local ready,reason=session:GetReady(candidate.token)
@@ -44,17 +55,34 @@ function addon:ShowRotationTransfer(spec,id)
         local own=original or source and (source.body or source) or {rotation={},cooldowns={}};local view=session:Compare(candidate.token,own,self.RotationData.GetRotationTags(source));if view then self:ShowNativeImportPreview(p,view,spec) end
     end
     options.inspect=function()
-        if not candidate then return end;local object=candidate.kind=='envelope' and candidate.value or {body=candidate.value};local report=self.RotationData.DiffRotations({},object)
+        if not valid() or not candidate then return end;local object=candidate.kind=='envelope' and candidate.value or {body=candidate.value};local report=self.RotationData.DiffRotations({},object)
         for _,diagnostic in ipairs(candidate.validation.diagnostics) do report.diagnostics[#report.diagnostics+1]=diagnostic end;return self:ShowComparisonReport(self:FormatRotationComparison(report))
     end
-    options.onClose=function() session:Clear();if p.active then p:Release() end end
-    local dialog=self:ShowSettingsTextTransfer(p,L['Import/Export Rotation'],exported or '',function(_,settings)
+    options.onClose=function() active=false;session:Clear();if p.active and p.generation==generation then p:Release() end end
+    dialog=self:ShowSettingsTextTransfer(p,L['Import/Export Rotation'],exported or '',function(_,settings)
         if not candidate then return false,L['Preview a pasted rotation before importing it.'] end
-        local target=settings.mode=='replace' and id or nil
-        local generated,why=self:ApplyRotationImport(session,candidate.token,spec,settings.name,target,expected)
+        local target=settings.mode=='replace' and reference or nil
+        local generated,why,saved=self:ApplyRotationImport(session,candidate.token,spec,settings.name,target,expected,{scope=dialog.scope:GetChecked() and 'character' or 'class'})
         if not generated then return false,string.format(L['Could not import this rotation: %s'],why) end
-        self:ShowConfig('Rotations',{spec=spec,id=generated});return true
+        local workspace,problem=self:GetRotationEditWorkspace(spec,saved);if not workspace then return false,problem end
+        self:ShowConfig('Rotations',{spec=spec,id=workspace.id});return true
     end,options)
+    if not dialog.scope then
+        dialog.classScope=self:CreateWorkbenchCheckBox(dialog.frame,L['Class'],210);dialog.classScope:SetPoint('TOPLEFT',12,-98)
+        dialog.scope=self:CreateWorkbenchCheckBox(dialog.frame,L['This character'],268);dialog.scope:SetPoint('TOPLEFT',290,-98)
+    end
+    dialog.scope:SetChecked(false);dialog.scope:Show();dialog.classScope:Show()
+    local function scopeState()
+        if dialog.mode=='replace' then dialog.scope:SetChecked(reference and reference.address and reference.address.scope=='character');dialog.scope:Disable()
+        elseif context and context.character then dialog.scope:Enable() else dialog.scope:SetChecked(false);dialog.scope:Disable() end
+        dialog.classScope:SetChecked(not dialog.scope:GetChecked());if dialog.mode=='new' then dialog.classScope:Enable() else dialog.classScope:Disable() end
+    end
+    local destination=dialog.destination:GetScript('OnClick')
+    self:SetUIScript(dialog.destination,'OnClick',function(...) if valid() and dialog.options==options then destination(...);if dialog.mode=='new' then dialog.scope:SetChecked(false) end;scopeState() end end)
+    self:SetUIScript(dialog.scope,'OnClick',function() if valid() and dialog.options==options and dialog.mode=='new' and context.character then dialog.scope:SetChecked(true);scopeState() end end)
+    self:SetUIScript(dialog.classScope,'OnClick',function() if valid() and dialog.options==options and dialog.mode=='new' then dialog.scope:SetChecked(false);scopeState() end end)
+    dialog.scope.tooltip=L['Copies belong to your Class unless This character is selected. Replacement keeps its original owner.']
+    dialog.scroll:ClearAllPoints();dialog.scroll:SetPoint('TOPLEFT',12,-130);dialog.scroll:SetHeight(200);dialog.input:SetHeight(200);scopeState()
     if exportError then dialog.status:SetText(string.format(L['Export unavailable: %s'],exportError)) end
     return dialog
 end

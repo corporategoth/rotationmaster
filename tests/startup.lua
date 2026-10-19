@@ -75,6 +75,14 @@ local function initialize(addon)
     addon:OnInitialize()
 end
 
+test('manual selection refuses ambiguous names instead of choosing an arbitrary owner',function()
+    local env,a,load=fixture(true,true);load('main.lua');initialize(a);a.currentSpec=0
+    env.LibStub('AceConsole-3.0').GetArgs=function() return 'set',5 end
+    a.db.profile.rotations[0]={first={name='Twin'},second={name='Twin'}}
+    local message;a.warn=function(_,text) message=text end
+    a:HandleCommand('set Twin');assert(not a.currentRotation and message:find('More than one',1,true))
+end)
+
 test('namespaced metadata allows main and delayed conditions to load', function()
     local env, addon, load = fixture(true, false)
     load('main.lua')
@@ -560,7 +568,7 @@ test('startup failures remain copyable and cannot enable partial state or cascad
     end
 end)
 
-local function persistentFixture(saved,folder)
+local function persistentFixture(saved,folder,scoped)
     local env,addon=fixture(true,true)
     env.securecallfunction=function(fn,...) return fn(...) end
     env.UnitFactionGroup=function() return 'Horde' end
@@ -593,7 +601,8 @@ local function persistentFixture(saved,folder)
     load('main.lua')
     local make=dofile('tests/fixtures/rotation_data.lua')
     local data,envelope=make();addon.RotationData=data
-    load('Data/catalog.lua');load('Data/diff.lua');load('Core/rotation_library.lua')
+    load('Data/catalog.lua');load('Data/diff.lua');load('Data/rotation_store.lua');load('Core/rotation_library.lua')
+    if scoped then load('Core/rotation_scope.lua');load('Core/rotation_migration.lua');load('Core/rotation_lifecycle.lua') end
     addon.GetRotationContext=function() return {family='tbc',class='SHAMAN',level=11,spec=0,actionContext='player',combatDataPolicy='probe'} end
     local n=0;addon.uuid=function() n=n+1;return '00000000-0000-0000-0000-'..string.format('%012d',n) end
     assert(addon:RegisterDefaultRotation(envelope()))
@@ -614,6 +623,26 @@ local function savedVariablesCopy(value)
     for key,entry in pairs(value) do result[savedVariablesCopy(key)]=savedVariablesCopy(entry) end
     return result
 end
+
+test('production scoped startup archives exact legacy roots before init and preserves unknown character owners',function()
+    local empty={};local saved={profiles={Default={version=1,rotations={[0]={old=empty}},rotationLibrary={imports={[0]={old={originalID='evidence'}}}}}},char={['Fixture Character - Fixture Realm']={version=1,rotations={[0]={character={}}}}}}
+    local env,a,scripts=persistentFixture({RotationMasterDB=saved},nil,true)
+    assert(not a.initializationErrorReport,'scoped initialization failed')
+    assert(a.db:GetCurrentProfile()=='Default' and a.db.profile.rotationStore and a.db.profile.rotationFallbackID=='Default')
+    assert(next(a.db.profile.rotationStore.legacy.rotations[0].old)==nil and a.db.profile.rotationStore.legacy.imports[0].old.originalID=='evidence')
+    assert(a.db.char.rotations[0].character and #a:ListUnassignedRotations()==2)
+    for _,row in ipairs(a:ListRotationHeaders(0)) do assert(row.canonicalId~='old' and row.canonicalId~='character') end
+    scripts.OnEvent(nil,'PLAYER_LOGOUT')
+    local _,b=persistentFixture({RotationMasterDB=savedVariablesCopy(env.RotationMasterDB)},nil,true)
+    assert(not b.initializationErrorReport and #b:ListUnassignedRotations()==2)
+end)
+test('production scoped startup and repair retain malformed roots without AceDB default substitution',function()
+    local _,a=persistentFixture({RotationMasterDB={profiles={Default={version=1,rotations=false}},char={['Fixture Character - Fixture Realm']={rotations={[0]={old={}}}}}}},nil,true)
+    assert(not a.initializationErrorReport and a.rotationStorageError and a.db.profile.rotations==false)
+    assert(a.db.char.rotations[0].old and not a:ListRotationHeaders(0))
+    a:validate({global={},char={},profile={}},true)
+    assert(a.db.profile.rotations==false and a.db.char.rotations[0].old)
+end)
 
 test('real AceDB defaults to diagram and preserves the chosen rotation view on reload',function()
     local env,a,scripts=persistentFixture();assert(a.db.profile.rotation_view=='diagram')
