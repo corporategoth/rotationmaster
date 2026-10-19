@@ -249,6 +249,39 @@ test('other settings Help pages retain their authored field descriptions',functi
         local found=false;for _,entry in ipairs(a:WorkbenchPageHelp(topic)) do if entry.title==title and #entry.text>15 then found=true end end;assert(found,topic..' lost '..title..' help')
     end
 end)
+test('Effects help covers every real effect type and its sequence controls with whole translations',function()
+    local f,parent=fixture();local a=f.addon;local L=f.libraries['AceLocale-3.0']:GetLocale('rotationmaster')
+    local variants={
+        texture={texture='texture'},
+        pixel={lines='pixel.lines',frequency='pixel.frequency',length='pixel.length',thickness='pixel.thickness'},
+        autocast={particles='autocast.particles',frequency='autocast.frequency',scale='autocast.scale'},
+        blizzard={frequency='blizzard.frequency'},
+        dazzle={texture='texture',frequency='dazzle.frequency',seq1='sequence.color'},
+        animate={frequency='animate.frequency',seq1='sequence.texture'},
+        pulse={texture='texture',frequency='pulse.frequency',seq1='sequence.magnification'},
+        rotate={texture='texture',frequency='rotate.frequency',steps='rotate.steps',reverse='rotate.reverse'},
+        custom={frequency='custom.frequency',seq1texture='sequence.texture',seq1angle='sequence.angle',seq1mag='sequence.magnification',seq1color='sequence.color'},
+    }
+    for _,id in ipairs({'name','type','save','delete','collections','sequence','sequence.texture','sequence.color','sequence.magnification','sequence.angle'}) do L['Help.Effects.'..id]='Translated effect '..id end
+    for kind,fields in pairs(variants) do
+        L['Help.Effects.type.'..kind]='Translated type '..kind
+        for _,id in pairs(fields) do L['Help.Effects.'..id]='Translated effect '..id end
+    end
+    for kind,fields in pairs(variants) do
+        local entry=kind=='animate' and 'texture' or kind=='pulse' and 1 or kind=='dazzle' and {r=1,g=1,b=1,a=1} or {texture='texture',angle=0,magnification=1,color={r=1,g=1,b=1,a=1}}
+        a.db.global.effects={e={name='Effect',type=kind,texture='texture',sequence={entry}}}
+        local p=a:CreateSettingsForm(parent);p:Open(function(form) a:BuildEffectSettings(form) end)
+        local docs={};for _,row in ipairs(a:GetDocument_layout_effects_options_help()) do if row.id then docs[row.id]=row.text end end
+        assert(docs['type.'..kind]=='Translated type '..kind,'missing localized type documentation: '..kind)
+        for control,id in pairs(fields) do
+            assert(p.fields[control],'fixture did not render '..kind..'.'..control)
+            assert(docs[id]=='Translated effect '..id,'missing localized field help: '..kind..'.'..control)
+        end
+        for _,id in ipairs({'name','type','save','delete','collections'}) do assert(docs[id]=='Translated effect '..id,'missing effect control help: '..id) end
+        p:Release()
+    end
+end)
+
 test('category maintenance is separate from condition details and deletion keeps definitions',function()
     local f,parent=fixture();local a=f.addon;a.conditionDefinitions={A={description='Alpha'}};a.conditionSpecials={};a.db.global.custom_conditions={};a.db.profile.condition_groups={{id='g',name='Group',conditions={'A'}}};a.listConditions=function() return {'A'} end
     local p=a:CreateSettingsForm(parent);p:Open(function(form) a:BuildConditionSettings(form) end)

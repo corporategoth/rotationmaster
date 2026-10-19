@@ -34,7 +34,7 @@ end
 
 addon:RegisterCondition("EQUIPPED", {
     description = L["Have Item Equipped"],
-    icon = "Interface\\Icons\\Ability_warrior_shieldbash",
+    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\item",
     requiredFields={'item'},
     fields = { item = { "string", { "string", "number" } } },
     valid = function(_, value)
@@ -63,7 +63,7 @@ addon:RegisterCondition("EQUIPPED", {
 
 addon:RegisterCondition("CARRYING", {
     description = L["Have Item In Bags"],
-    icon = "Interface\\Icons\\inv_misc_bag_07",
+    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\item",
     requiredFields={'item','operator','value'},
     fields = { item = { "string", { "string", "number" } }, operator = "string", value = "number" },
     valid = function(_, value)
@@ -103,7 +103,7 @@ addon:RegisterCondition("CARRYING", {
 
 addon:RegisterCondition("ITEM", {
     description = L["Item Available"],
-    icon = "Interface\\Icons\\Inv_drink_05",
+    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\item",
     requiredFields={'item'},
     fields = { item = { "string", { "string", "number" } }, notcarrying = "boolean" },
     valid = function(_, value)
@@ -149,7 +149,7 @@ addon:RegisterCondition("ITEM", {
 
 addon:RegisterCondition("ITEM_RANGE", {
     description = L["Item In Range"],
-    icon = "Interface\\Icons\\inv_misc_bandage_13",
+    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\item",
     requiredFields={'item'},
     fields = { item = { "string", { "string", "number" } }, notcarrying = "boolean" },
     valid = function(_, value)
@@ -193,7 +193,7 @@ addon:RegisterCondition("ITEM_RANGE", {
 
 addon:RegisterCondition("ITEM_COOLDOWN", {
     description = L["Item Cooldown"],
-    icon = "Interface\\Icons\\Spell_holy_sealofsacrifice",
+    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\time",
     requiredFields={'item','operator','value'},
     fields = { item = { "string", { "string", "number" } }, notcarrying = "boolean", operator = "string", value = "number" },
     valid = function(_, value)

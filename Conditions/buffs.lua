@@ -8,7 +8,7 @@ local helpers = addon.help_funcs
 addon:RegisterCondition("BUFF", {
     requiredFields = {"unit","spell"},
     description = L["Buff Present"],
-    icon = "Interface\\Icons\\spell_holy_divinespirit",
+    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\buff",
     fields = { unit = "string", spell = {"string", "number"}, anyrank = "boolean", ownbuff = "boolean" },
     valid = function(_, value)
         return (value.unit ~= nil and addon.isin(addon.units, value.unit) and value.spell ~= nil)
@@ -65,7 +65,7 @@ addon:RegisterCondition("BUFF", {
 
 addon:RegisterCondition("BUFF_REMAIN", {
     description = L["Buff Time Remaining"],
-    icon = "Interface\\Icons\\Spell_frost_stun",
+    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\time",
     fields = { unit = "string", spell = {"string", "number"}, anyrank = "boolean", ownbuff = "boolean", operator = "string", value = "number" },
     valid = function(_, value)
         return (value.unit ~= nil and addon.isin(addon.units, value.unit) and value.spell ~= nil and
@@ -126,7 +126,7 @@ addon:RegisterCondition("BUFF_REMAIN", {
 
 addon:RegisterCondition("BUFF_STACKS", {
     description = L["Buff Stacks"],
-    icon = "Interface\\Icons\\Inv_misc_coin_02",
+    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\buff",
     fields = { unit = "string", spell = {"string", "number"}, anyrank = "boolean", ownbuff = "boolean", operator = "string", value = "number" },
     valid = function(_, value)
         return (value.unit ~= nil and addon.isin(addon.units, value.unit) and value.spell ~= nil and
@@ -187,7 +187,7 @@ addon:RegisterCondition("BUFF_STACKS", {
 
 addon:RegisterCondition("STEALABLE", {
     description = L["Has Stealable Buff"],
-    icon = "Interface\\Icons\\Inv_weapon_shortblade_22",
+    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\buff",
     fields = { unit = "string" },
     valid = function(_, value)
         return (value.unit ~= nil and addon.isin(addon.units, value.unit))

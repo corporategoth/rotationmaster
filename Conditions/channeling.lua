@@ -6,7 +6,7 @@ local helpers = addon.help_funcs
 
 addon:RegisterCondition("CHANNELING", {
     description = L["Channeling"],
-    icon = "Interface\\Icons\\Spell_holy_searinglight",
+    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\casting",
     fields = { unit = "string" },
     valid = function(_, value)
         return value.unit ~= nil and addon.isin(addon.units, value.unit)
@@ -36,7 +36,7 @@ addon:RegisterCondition("CHANNELING", {
 
 addon:RegisterCondition("CHANNELING_SPELL", {
     description = L["Specific Spell Channeling"],
-    icon = "Interface\\Icons\\Spell_holy_greaterheal",
+    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\casting",
     fields = { unit = "string", spell = "string" },
     valid = function(_, value)
         return (value.unit ~= nil and addon.isin(addon.units, value.unit) and value.spell ~= nil)
@@ -73,7 +73,7 @@ addon:RegisterCondition("CHANNELING_SPELL", {
 
 addon:RegisterCondition("CHANNELING_REMAIN", {
     description = L["Channel Time Remaining"],
-    icon = "Interface\\Icons\\Inv_misc_pocketwatch_01",
+    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\time",
     fields = { unit = "string", operator = "string", value = "number" },
     valid = function(_, value)
         return (value.unit ~= nil and addon.isin(addon.units, value.unit) and
@@ -118,7 +118,7 @@ addon:RegisterCondition("CHANNELING_REMAIN", {
 
 addon:RegisterCondition("CHANNEL_INTERRUPTABLE", {
     description = L["Channel Interruptable"],
-    icon = "Interface\\Icons\\spell_holy_righteousfury",
+    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\casting",
     fields = { unit = "string" },
     valid = function(_, value)
         return value.unit ~= nil and addon.isin(addon.units, value.unit)

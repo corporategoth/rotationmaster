@@ -6,7 +6,7 @@ local helpers = addon.help_funcs
 
 addon:RegisterCondition("PETSPELL_AVAIL", {
     description = L["Pet Spell Available"],
-    icon = "Interface\\Icons\\Ability_druid_bash",
+    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\pet",
     fields = { spell = "number", ranked = "boolean" },
     valid = function(_, value)
         if value.spell ~= nil then
@@ -46,7 +46,7 @@ addon:RegisterCondition("PETSPELL_AVAIL", {
 
 addon:RegisterCondition("PETSPELL_RANGE", {
     description = L["Pet Spell In Range"],
-    icon = "Interface\\Icons\\inv_misc_bandage_03",
+    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\pet",
     fields = { spell = "number", ranked = "boolean" },
     valid = function(_, value)
         if value.spell ~= nil then
@@ -89,7 +89,7 @@ addon:RegisterCondition("PETSPELL_RANGE", {
 
 addon:RegisterCondition("PETSPELL_COOLDOWN", {
     description = L["Pet Spell Cooldown"],
-    icon = "Interface\\Icons\\Spell_nature_sleep",
+    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\time",
     fields = { spell = "number", ranked = "boolean", operator = "string", value = "number" },
     valid = function(_, value)
         if value.spell ~= nil then
@@ -143,7 +143,7 @@ addon:RegisterCondition("PETSPELL_COOLDOWN", {
 
 addon:RegisterCondition("PETSPELL_REMAIN", {
     description = L["Pet Spell Recharge Time"],
-    icon = "Interface\\Icons\\ability_hunter_pet_raptor",
+    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\time",
     fields = { spell = "number", ranked = "boolean", operator = "string", value = "number" },
     valid = function(_, value)
         if value.spell ~= nil then
@@ -199,7 +199,7 @@ addon:RegisterCondition("PETSPELL_REMAIN", {
 
 addon:RegisterCondition("PETSPELL_CHARGES", {
     description = L["Pet Spell Charges"],
-    icon = "Interface\\Icons\\Ability_mount_nightmarehorse",
+    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\pet",
     fields = { spell = "number", ranked = "boolean", operator = "string", value = "number" },
     valid = function(_, value)
         if value.spell ~= nil then
@@ -250,7 +250,7 @@ addon:RegisterCondition("PETSPELL_CHARGES", {
 
 addon:RegisterCondition("PETSPELL_HISTORY", {
     description = L["Pet Spell Cast History"],
-    icon = "Interface\\Icons\\ability_racial_ultravision",
+    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\pet",
     fields = { spell = "number", ranked = "boolean", operator = "string", value = "number" },
     valid = function(_, value)
         if value.spell ~= nil then
@@ -306,7 +306,7 @@ addon:RegisterCondition("PETSPELL_HISTORY", {
 
 addon:RegisterCondition("PETSPELL_HISTORY_TIME", {
     description = L["Pet Spell Cast History Time"],
-    icon = "Interface\\Icons\\ability_druid_mangle",
+    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\time",
     fields = { spell = "number", ranked = "boolean", operator = "string", value = "number" },
     valid = function(_, value)
         if value.spell ~= nil then
@@ -361,7 +361,7 @@ addon:RegisterCondition("PETSPELL_HISTORY_TIME", {
 
 addon:RegisterCondition("PETSPELL_ACTIVE", {
     description = L["Pet Spell Active or Pending"],
-    icon = "Interface\\Icons\\ability_druid_supriseattack",
+    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\pet",
     fields = { spell = "number", ranked = "boolean" },
     valid = function(_, value)
         if value.spell ~= nil then

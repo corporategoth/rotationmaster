@@ -2135,6 +2135,52 @@ L["Help.General.spec2"] = "Choose the display name for your secondary specializa
 L["Help.General.loglevel"] = "Choose the amount of Rotation Master chat output. Quiet suppresses routine output. Default reports normal changes such as rotation switching. Debug adds runtime statistics and trigger information. Verbose includes detailed condition and highlight activity and can produce substantial output."
 L["Help.General.detailed_profiling"] = "Include component timings in profiling statistics rather than only overall evaluation time. This option is available with Debug or Verbose logging. Extra profiling detail has a processing cost and is intended for investigation."
 
+-- Complete Effects field and interaction documentation.
+L["Help.Effects.overview"] = "Effects define how action-bar icons are highlighted. They are shared across characters. General settings select the main recommendation effect and cooldown default; individual cooldowns can choose another effect. Select an effect in the sidebar to inspect or edit it."
+L["Help.Effects.name"] = "Give the effect a name used by selectors in General and cooldown action details. New drafts can change type and fields before being named, but Apply requires a nonempty, unique name."
+L["Help.Effects.type"] = "Choose the highlight implementation. Changing type stages the new fields and resets its sequence because different sequence types store different values. Choosing the current type preserves existing values. Apply saves the change; Discard restores the saved effect."
+L["Help.Effects.type.texture"] = "Texture: overlay a single image from game data or an installed addon. Its color, magnification and position come from the profile or the individual cooldown."
+L["Help.Effects.type.pixel"] = "Pixel: animate short lines around the action icon border. Lines, Frequency, Length and Thickness control this library glow."
+L["Help.Effects.type.autocast"] = "Auto Cast: animate groups of glowing particles around the action icon. Particles, Frequency and Scale control this library glow."
+L["Help.Effects.type.blizzard"] = "Glow: use the familiar Blizzard-style button glow. Frequency controls its animation rate."
+L["Help.Effects.type.dazzle"] = "Dazzle: keep one texture and cycle through the sequence of colors. Each sequence card contains one RGBA color."
+L["Help.Effects.type.animate"] = "Animate: cycle through the sequence of texture images. Each card selects one image and previews that selection."
+L["Help.Effects.type.pulse"] = "Pulse: keep one texture and cycle through the sequence of magnifications. Each card selects one scale relative to the action icon."
+L["Help.Effects.type.rotate"] = "Rotate: animate one texture through evenly spaced angles around a full circle. Steps chooses the number of angles and Reverse changes their order."
+L["Help.Effects.type.custom"] = "Custom: cycle through cards containing a texture, angle, magnification and color. Each card supplies its own settings instead of relying on one shared texture."
+L["Help.Effects.preview"] = "The image beside Name and Type previews the current draft with a white color and standard size. Texture and sequence changes update the preview without saving. Actual recommendations use their profile or cooldown color, size and offsets."
+L["Help.Effects.texture"] = "For Texture, Dazzle, Pulse and Rotate, choose the image used throughout the effect. Enter an available texture path or numeric file ID. Animate and Custom choose images in their sequence cards instead."
+L["Help.Effects.pixel.lines"] = "Pixel effects: choose the number of animated lines around the button, from 1 to 20."
+L["Help.Effects.pixel.frequency"] = "Pixel effects: signed cycles per second. A larger magnitude moves faster; a negative value reverses direction. Zero uses the glow library default of one cycle every four seconds."
+L["Help.Effects.pixel.length"] = "Pixel effects: choose line length in pixels. The glow library limits it to the smaller button dimension."
+L["Help.Effects.pixel.thickness"] = "Pixel effects: choose line thickness in pixels, from 1 to 5."
+L["Help.Effects.autocast.particles"] = "Auto Cast effects: choose 1 to 4 particles in each of the glow library particle groups."
+L["Help.Effects.autocast.frequency"] = "Auto Cast effects: signed cycles per second. A larger magnitude moves faster; a negative value reverses direction. Zero uses the glow library default of one cycle every eight seconds."
+L["Help.Effects.autocast.scale"] = "Auto Cast effects: scale the particles relative to the glow library default. A value of 1 uses their normal size."
+L["Help.Effects.blizzard.frequency"] = "Glow effects: adjust the library animation rate. Larger positive values animate faster. Zero uses the library default rather than stopping the glow."
+L["Help.Effects.dazzle.frequency"] = "Dazzle effects: seconds between color cards. A smaller positive interval changes colors more often; the sequence repeats after the last color."
+L["Help.Effects.animate.frequency"] = "Animate effects: seconds between texture cards. A smaller positive interval changes images more often; the sequence repeats after the last image."
+L["Help.Effects.pulse.frequency"] = "Pulse effects: seconds between magnification cards. A smaller positive interval changes size more often; the sequence repeats after the last size."
+L["Help.Effects.rotate.frequency"] = "Rotate effects: seconds between angle steps. A smaller positive interval rotates faster. One full cycle uses this interval multiplied by Steps."
+L["Help.Effects.rotate.steps"] = "Rotate effects: choose 2 to 36 evenly spaced angles for a full turn. More steps at the same Frequency interval make a longer complete cycle."
+L["Help.Effects.rotate.reverse"] = "Rotate effects: reverse the order of angle steps. Changing this checkbox does not alter the texture or number of steps."
+L["Help.Effects.custom.frequency"] = "Custom effects: seconds between sequence cards. A smaller positive interval changes settings more often; the sequence repeats after the last card."
+L["Help.Effects.sequence"] = "Sequence cards play in order and repeat. Add step appends a card. Drag a card into an insertion gap to reorder it; hold Ctrl when starting to carry it and all following cards. Up and Down move one card and are disabled at their respective ends. The red trash removes a card from the draft. Canceling a drag restores its original position."
+L["Help.Effects.sequence.texture"] = "Animate and Custom cards: choose a texture path or numeric file ID. The card preview shows the selected image. Custom also keeps an independent angle, magnification and color on that card."
+L["Help.Effects.sequence.angle"] = "Custom cards: set the texture angle in degrees from 0 to 359. This is the angle for this card, rather than a continuous rotation speed."
+L["Help.Effects.sequence.magnification"] = "Pulse and Custom cards: scale the texture relative to the action icon. A value of 1 uses the icon size. Use the slider or edit its numeric value."
+L["Help.Effects.sequence.color"] = "Dazzle and Custom cards: choose an RGBA color. Click the swatch to open the picker, or edit channels between 0 and 1. Alpha controls opacity."
+L["Help.Effects.save"] = "Edits and sequence changes remain in a draft. Apply saves; Discard restores the saved effect. View Changes compares saved and unsaved values. New drafts must have a unique name and valid fields before Apply. Leaving with edits offers Apply, Discard or Cancel."
+L["Help.Effects.delete"] = "The red trash at the upper right deletes the selected effect after a permanent-deletion warning. Resolve pending edits first. Choose a replacement for any profile or cooldown using that effect; deletion does not silently rewrite those references."
+L["Help.Effects.collections"] = "New, Duplicate, Import/Export and Compare are below the sidebar. Duplicate copies the selected effect into a draft. Transfers show the original name and let you create a renamed copy or replace the selection when allowed. Compare inspects differences without saving them."
+
+L["Debuffs"] = true
+L["Resources"] = true
+L["Pet"] = true
+L["Logic"] = true
+L["Environment"] = true
+L["Time"] = true
+
 -- BEGIN GENERATED RM PUBLIC HELPER DOCS
 L["All original results, preserving nil positions and return count."] = true
 L["Arguments forwarded unchanged to the observed function."] = true

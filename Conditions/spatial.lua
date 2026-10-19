@@ -118,7 +118,7 @@ end
 
 addon:RegisterCondition("PROXIMITY", {
     description = L["Allies Within Range"],
-    icon = "Interface\\Icons\\Spell_holy_prayerofspirit",
+    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\spatial",
     fields = { unit = "string", operator = "string", value = "number", distance = "number", samegroup = "boolean", includepets = "boolean" },
     valid = function(_, value)
         return (value.unit ~= nil and addon.isin(addon.units, value.unit) and
@@ -181,7 +181,7 @@ addon:RegisterCondition("PROXIMITY", {
 
 addon:RegisterCondition("DISTANCE", {
     description = L["Distance"],
-    icon = "Interface\\Icons\\Spell_arcane_teleportorgrimmar",
+    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\spatial",
     fields = { unit = "string", value = "number" },
     valid = function(_, value)
         return (value.unit ~= nil and addon.isin(addon.units, value.unit) and
@@ -239,7 +239,7 @@ addon:RegisterCondition("DISTANCE", {
 
 addon:RegisterCondition("DISTANCE_COUNT", {
     description = L["Distance Count"],
-    icon = "Interface\\Icons\\Spell_arcane_teleportstormwind",
+    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\spatial",
     fields = { value = "number", operator = "string", distance = "number", enemy = "boolean" },
     valid = function(_, value)
         return (value.value ~= nil and value.value >= 0 and
@@ -320,7 +320,7 @@ addon:RegisterCondition("DISTANCE_COUNT", {
 
 addon:RegisterCondition("ZONE", {
     description = L["Zone"],
-    icon = "Interface\\Icons\\spell_nature_farsight",
+    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\spatial",
     fields = { value = "string", subzone = "boolean" },
     valid = function(_, value)
         return value.value ~= nil

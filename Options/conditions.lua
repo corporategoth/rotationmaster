@@ -8,10 +8,10 @@ local color, table, pairs, ipairs = color, table, pairs, ipairs
 local wrap, HideOnEscape, deepcopy= addon.wrap, addon.HideOnEscape, addon.deepcopy
 
 local special = {}
-special["DELETE"] = { desc = DELETE, icon = "Interface\\Icons\\Trade_Engineering" }
-special["AND"] = { desc = L["AND"], icon = "Interface\\Icons\\Spell_ChargePositive" }
-special["OR"] = { desc = L["OR"], icon = "Interface\\Icons\\Spell_ChargeNegative" }
-special["NOT"] = { desc = L["NOT"], icon = "Interface\\PaperDollInfoFrame\\UI-GearManager-LeaveItem-Transparent" }
+special["DELETE"] = { desc = DELETE, icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Controls\\trash.tga" }
+special["AND"] = { desc = L["AND"], icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\logic" }
+special["OR"] = { desc = L["OR"], icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\logic" }
+special["NOT"] = { desc = L["NOT"], icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\logic" }
 
 local ENTRIES_PER_ROW = 5
 

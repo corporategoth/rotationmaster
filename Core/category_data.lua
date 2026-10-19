@@ -3,12 +3,24 @@ local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
 function addon:IsCategoryIcon(value)
     return type(value)=='string' and #value>0 and #value<=1024 or type(value)=='number' and value>0 and value<math.huge and value%1==0
 end
+local packagedCategoryIcons={
+    ['b3d7df2c-f257-4a2d-961e-66e49336d109']='combat',
+    ['b8136123-2bda-4230-a77a-89ea2aed3a1a']='character',
+    ['8034819e-26f5-4f4e-9153-d8cab5e65f31']='spell',
+    ['fca4ff75-4085-458a-b5bf-27a6b52f2092']='item',
+    ['e618608c-92ec-4ae9-9dde-40a397d7beb9']='buff',
+    ['fa10aaf8-bc71-480f-9062-c949fd7c74e9']='spatial',
+}
+local conditionIconRoot='Interface\\AddOns\\'..addon_name..'\\Assets\\Conditions\\'
 function addon:GetConditionCategoryIcon(group)
     if type(group)=='table' then
         if self:IsCategoryIcon(group.icon) then return group.icon end
+        -- Stable identity survives renames/reordering without inheriting an
+        -- indexed AceDB default or changing a saved explicit icon choice.
+        local packaged=packagedCategoryIcons[group.id];if packaged then return conditionIconRoot..packaged end
         for _,tag in ipairs(group.conditions or {}) do local definition=(self.conditionDefinitions or {})[tag];if definition and definition.icon then return definition.icon end end
     end
-    return 'Interface\\Icons\\INV_Misc_Book_09'
+    return conditionIconRoot..'logic'
 end
 function addon:ParseConditionCategoryImport(text,codec)
     if type(text)~='string' or #text>131072 then return nil,L['Invalid import.'] end

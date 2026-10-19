@@ -4,17 +4,47 @@ local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 local color = color
 local helpers = addon.help_funcs
 
+-- Select the requested hand before interpreting observations. Lua's and/or
+-- shorthand falls through to the other hand when the selected value is false.
+local function enchantObservation(value, cache)
+    if type(GetWeaponEnchantInfo)~="function" then return nil,nil,nil,"missing-api" end
+    -- The protected cached API returns both hands' original tuple unchanged.
+    ---@diagnostic disable-next-line: unbalanced-assignments
+    local ok, main, mainExpires, mainCharges, _, off, offExpires, offCharges = pcall(addon.getCached, cache, GetWeaponEnchantInfo)
+    if not ok then return nil,nil,nil,"api-error" end
+    local enchanted, expires, charges=main,mainExpires,mainCharges
+    if value.offhand then enchanted,expires,charges=off,offExpires,offCharges end
+    if not addon.Platform:CanReadValue(enchanted) then return nil,nil,nil,"restricted-value" end
+    if enchanted==nil or enchanted==false or enchanted==0 then return false end
+    if enchanted~=true and enchanted~=1 then return nil,nil,nil,"invalid-weapon-observation" end
+    return true,expires,charges
+end
+local function numericObservation(value)
+    if not addon.Platform:CanReadValue(value) then return nil,"restricted-value" end
+    if type(value)~="number" or value~=value or value<0 or value==math.huge then return nil,"invalid-weapon-observation" end
+    return value
+end
+local function swingSpeed(value,cache)
+    if type(UnitAttackSpeed)~="function" then return nil,"missing-api" end
+    -- pcall forwards the mainhand and offhand speeds from the observation.
+    ---@diagnostic disable-next-line: unbalanced-assignments
+    local ok,main,off=pcall(addon.getCached,cache,UnitAttackSpeed,"player")
+    if not ok then return nil,"api-error" end
+    local speed=main;if value.offhand then speed=off end
+    return numericObservation(speed)
+end
+
 if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
     addon:RegisterCondition("WEAPON", {
         description = L["Weapon Enchant Present"],
-        icon = "Interface\\Icons\\Inv_staff_18",
+        icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\weapon",
         fields = { offhand = "boolean" },
         valid = function()
             return true
         end,
         evaluate = function(value, cache)
-            local mainEnchant, _, _, _, offEnchant, _, _, _ = addon.getCached(cache, GetWeaponEnchantInfo)
-            return (value.offhand and offEnchant or mainEnchant)
+            local enchanted, _, _, reason=enchantObservation(value,cache)
+            return enchanted,reason
         end,
         print = function(_, value)
             return string.format(L["Your %s weapon {{!is|is not}} enchanted"],
@@ -44,19 +74,19 @@ if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
 
     addon:RegisterCondition("WEAPON_REMAIN", {
         description = L["Weapon Enchant Time Remaining"],
-        icon = "Interface\\Icons\\Inv_mace_13",
+        icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\time",
         fields = { offhand = "boolean", operator = "string", value = "number" },
         valid = function(_, value)
             return (value.operator ~= nil and addon.isin(addon.operators, value.operator) and
                     value.value ~= nil and value.value >= 0)
         end,
         evaluate = function(value, cache)
-            local mainEnchant, mainExpires, _, _, offEnchant, offExpires, _, _ = addon.getCached(cache, GetWeaponEnchantInfo)
-            if (value.offhand and offEnchant or mainEnchant) then
-                local remain = (value.offhands and offExpires or mainExpires) / 1000
-                return addon.compare(value.operator, remain, value.value)
-            end
-            return false
+            local enchanted, expires, _, reason=enchantObservation(value,cache)
+            if enchanted==nil then return nil,reason end
+            if not enchanted then return false end
+            local duration,why=numericObservation(expires)
+            if duration==nil then return nil,why end
+            return addon.compare(value.operator,duration/1000,value.value)
         end,
         print = function(_, value)
             return string.format(L["Your %s weapon buff has %s"], (value.offhand and L["off hand"] or L["main hand"]),
@@ -96,18 +126,19 @@ if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
 
     addon:RegisterCondition("WEAPON_STACKS", {
         description = L["Weapon Enchant Stacks"],
-        icon = "Interface\\Icons\\Inv_misc_coin_04",
+        icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\weapon",
         fields = { offhand = "boolean", operator = "string", value = "number" },
         valid = function(_, value)
             return (value.operator ~= nil and addon.isin(addon.operators, value.operator) and
                     value.value ~= nil and value.value >= 0)
         end,
         evaluate = function(value, cache)
-            local mainEnchant, _, mainCharges, _, offEnchant, _, offCharges, _ = addon.getCached(cache, GetWeaponEnchantInfo)
-            if (value.offhand and offEnchant or mainEnchant) then
-                return addon.compare(value.operator, (value.offhand and offCharges or mainCharges), value.value)
-            end
-            return false
+            local enchanted, _, charges, reason=enchantObservation(value,cache)
+            if enchanted==nil then return nil,reason end
+            if not enchanted then return false end
+            local count,why=numericObservation(charges)
+            if count==nil then return nil,why end
+            return addon.compare(value.operator,count,value.value)
         end,
         print = function(_, value)
             return string.format(L["Your %s weapon buff has %s"], (value.offhand and L["off hand"] or L["main hand"]),
@@ -148,15 +179,16 @@ end
 
 addon:RegisterCondition("SWING_TIME", {
     description = L["Weapon Swing Time"],
-    icon = 135561,
+    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\time",
     fields = { offhand = "boolean", operator = "string", value = "number" },
     valid = function(_, value)
         return (value.operator ~= nil and addon.isin(addon.operators, value.operator) and
                 value.value ~= nil and value.value >= 0)
     end,
     evaluate = function(value, cache)
-        local mainSpeed, offSpeed = addon.getCached(cache, UnitAttackSpeed, "player")
-        return addon.compare(value.operator, value.offhand and offSpeed or mainSpeed, value.value)
+        local speed,reason=swingSpeed(value,cache)
+        if speed==nil then return nil,reason end
+        return addon.compare(value.operator,speed,value.value)
     end,
     print = function(_, value)
         return string.format(L["Your %s weapon %s"], (value.offhand and L["off hand"] or L["main hand"]),
@@ -194,20 +226,20 @@ addon:RegisterCondition("SWING_TIME", {
 
 addon:RegisterCondition("SWING_TIME_REMAIN", {
     description = L["Weapon Swing Time Remaining"],
-    icon = 135672,
+    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\time",
     fields = { offhand = "boolean", operator = "string", value = "number" },
     valid = function(_, value)
         return (value.operator ~= nil and addon.isin(addon.operators, value.operator) and
                 value.value ~= nil and value.value >= 0)
     end,
     evaluate = function(value, cache, evalStart)
-        local mainSpeed, offSpeed = addon.getCached(cache, UnitAttackSpeed, "player")
-        if (value.offhand and (addon.lastOffSwing == nil) or (addon.lastMainSwing == nil)) or
-            addon.getCached(cache, UnitCastingInfo, "player") or addon.getCached(cache, UnitChannelInfo, "player") then
-            return addon.compare(value.operator, value.offhand and offSpeed or mainSpeed, value.value)
+        local speed,reason=swingSpeed(value,cache)
+        if speed==nil then return nil,reason end
+        local lastSwing=addon.lastMainSwing;if value.offhand then lastSwing=addon.lastOffSwing end
+        if lastSwing==nil or addon.getCached(cache, UnitCastingInfo, "player") or addon.getCached(cache, UnitChannelInfo, "player") then
+            return addon.compare(value.operator,speed,value.value)
         end
-        return addon.compare(value.operator, value.offhand and (offSpeed - math.max(evalStart - addon.lastOffSwing, 0)) or
-                (mainSpeed - math.max(evalStart - addon.lastMainSwing, 0)), value.value)
+        return addon.compare(value.operator,speed-math.max(evalStart-lastSwing,0),value.value)
     end,
     print = function(_, value)
         return string.format(L["Your %s weapon %s"], (value.offhand and L["off hand"] or L["main hand"]),
@@ -247,7 +279,10 @@ addon:RegisterCondition("SWING_TIME_REMAIN", {
 do
     local function sourceGetter(name)
         if name=="color" then return color end
+        if name=="enchantObservation" then return enchantObservation end
         if name=="helpers" then return helpers end
+        if name=="numericObservation" then return numericObservation end
+        if name=="swingSpeed" then return swingSpeed end
     end
     if addon.RegisterBuiltinSourceModule then
         addon:RegisterBuiltinSourceModule("Conditions/weapon.lua", sourceGetter)

@@ -7,6 +7,12 @@ local function catalogs()
         local row={name=names[group[1]],icons={}}
         for i=2,#group do local entry=group[i];local texture='Interface\\Icons\\'..entry[2];row.icons[#row.icons+1]={texture=texture,name=names[entry[1]]};labels[texture]=names[entry[1]] end;groups[#groups+1]=row
     end
+    local originals={name=L['Rotation Master'],icons={}}
+    for _,entry in ipairs({{'combat',L['Combat']},{'character',L['Character']},{'spell',L['Spells']},{'buff',L['Buffs']},{'debuff',L['Debuffs']},{'item',L['Items']},{'weapon',L['Weapon']},{'spatial',L['Spatial']},{'resources',L['Resources']},{'pet',L['Pet']},{'talent',L['Talent']},{'casting',L['Casting']},{'logic',L['Logic']},{'totem',L['Totem']},{'environment',L['Environment']},{'time',L['Time']}}) do
+        local texture='Interface\\AddOns\\'..addon_name..'\\Assets\\Conditions\\'..entry[1]
+        originals.icons[#originals.icons+1]={texture=texture,name=entry[2]};labels[texture]=entry[2]
+    end
+    groups[#groups+1]=originals
     local known={name=L['Known spells'],icons={}};local seen={}
     for _,entry in ipairs(addon.SpellCatalog:GetIndexedSpells()) do if entry.icon and not seen[entry.icon] then seen[entry.icon]=true;known.icons[#known.icons+1]={texture=entry.icon,name=entry.name};labels[entry.icon]=entry.name end end
     if #known.icons>0 then groups[#groups+1]=known end

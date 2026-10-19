@@ -165,4 +165,37 @@ test('legacy condition spell rank adapter uses the shared responsive field geome
     content:SetWidth(360);height=a:LayoutWorkbenchSpellGroup(content,group.children);assert(spell.frame.point[2]==rank.frame.point[2] and rank.frame.point[3]<spell.frame.point[3] and height>50)
     rank.callbacks.OnValueChanged(rank,'OnValueChanged',true);assert(value.ranked and spell:GetUserData('norank')==false)
 end)
+test('rejected single-item choices preserve cursor ownership and clear direct rejected display identity',function()
+    local f=fixture(true);local a=f.addon;dofile('tests/fixtures/spell_editbox.lua')(f)
+    f.env.C_Item={GetItemInfo=function(id) return 'Item '..id,'item:'..id,nil,nil,nil,nil,nil,nil,nil,10+id end}
+    f.load('Conditions/common.lua');local value={item=1};local updates=0
+    local group=a:Widget_SingleItemWidget(0,'Item_EditBox',value,function(id) return id==1 end,function() updates=updates+1 end)
+    local icon,input=group.children[1],group.children[2]
+    f.env.GetCursorInfo=function() return 'item',2,'item:2' end;icon.frame.scripts.OnReceiveDrag(icon.frame)
+    assert(value.item==1 and icon:GetUserData('item')==1 and updates==0 and not f.cleared,'rejected item consumed the cursor or changed the field')
+    icon.callbacks.OnEnterPressed(icon,'OnEnterPressed','2')
+    assert(value.item==nil and icon:GetUserData('item')==nil and input:GetText()=='','rejected direct item retained display identity')
+end)
+test('switching a populated item set to an empty custom list clears its preview',function()
+    local f=fixture(true);local a=f.addon
+    f.env.C_Item={GetItemInfo=function(id) return 'Item '..id,'item:'..id,nil,nil,nil,nil,nil,nil,nil,10+id end}
+    f.load('Platform/inventory.lua');f.load('Core/item_sets.lua');f.load('Conditions/common.lua')
+    a.db.profile.itemsets={example={items={1}}};a.db.global.itemsets={}
+    local value={item='example'};local group=a:Widget_ItemWidget(nil,'Item_EditBox',value,function() return true end,function() end)
+    assert(group.children[1].image==11,'test did not start with a populated set preview')
+    group.children[2].callbacks.OnValueChanged(nil,nil,'')
+    assert(type(value.item)=='table' and #value.item==0 and group.children[1].image==nil,'empty custom list kept the previous set icon')
+end)
+test('clearing a set selection invalidates the queued item-metadata preview retry',function()
+    local f=fixture(true);local a=f.addon;local ready=false;local queued
+    f.env.C_Item={GetItemInfo=function(id) if ready then return 'Item '..id,'item:'..id,nil,nil,nil,nil,nil,nil,nil,10+id end end}
+    a.ScheduleTimer=function(_,method,_,...) queued={method=method,args={...}} end
+    f.load('Platform/inventory.lua');f.load('Core/item_sets.lua');f.load('Conditions/common.lua')
+    a.db.profile.itemsets={example={items={1}}};a.db.global.itemsets={}
+    local value={item='example'};local group=a:Widget_ItemWidget(nil,'Item_EditBox',value,function() return true end,function() end)
+    assert(queued,'test did not schedule delayed item metadata')
+    group.children[2].callbacks.OnValueChanged(nil,nil,nil);assert(value.item==nil and group.children[1].image==nil)
+    ready=true;a[queued.method](a,unpack(queued.args))
+    assert(value.item==nil and group.children[1].image==nil,'late metadata repainted the cleared selection')
+end)
 finish()

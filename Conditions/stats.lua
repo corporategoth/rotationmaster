@@ -6,7 +6,7 @@ local helpers = addon.help_funcs
 
 addon:RegisterCondition("HEALTH", {
     description = L["Health"],
-    icon = "Interface\\Icons\\inv_potion_36",
+    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\resources",
     fields = { unit = "string", operator = "string", value = "number" },
     valid = function(_, value)
         return (value.operator ~= nil and addon.isin(addon.operators, value.operator) and
@@ -54,7 +54,7 @@ addon:RegisterCondition("HEALTH", {
 
 addon:RegisterCondition("HEALTHPCT", {
     description = L["Health Percentage"],
-    icon = "Interface\\Icons\\inv_potion_35",
+    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\resources",
     fields = { unit = "string", operator = "string", value = "number" },
     valid = function(_, value)
         return (value.operator ~= nil and addon.isin(addon.operators, value.operator) and
@@ -97,7 +97,7 @@ addon:RegisterCondition("HEALTHPCT", {
 
 addon:RegisterCondition("MANA", {
     description = L["Mana"],
-    icon = "Interface\\Icons\\inv_potion_71",
+    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\resources",
     fields = { unit = "string", operator = "string", value = "number" },
     valid = function(_, value)
         return (value.operator ~= nil and addon.isin(addon.operators, value.operator) and
@@ -145,7 +145,7 @@ addon:RegisterCondition("MANA", {
 
 addon:RegisterCondition("MANAPCT", {
     description = L["Mana Percentage"],
-    icon = "Interface\\Icons\\inv_potion_70",
+    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\resources",
     fields = { unit = "string", operator = "string", value = "number" },
     valid = function(_, value)
         return (value.operator ~= nil and addon.isin(addon.operators, value.operator) and
@@ -188,7 +188,7 @@ addon:RegisterCondition("MANAPCT", {
 
 addon:RegisterCondition("POWER", {
     description = L["Power"],
-    icon = "Interface\\Icons\\inv_potion_92",
+    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\resources",
     fields = { unit = "string", operator = "string", value = "number" },
     valid = function(_, value)
         return (value.operator ~= nil and addon.isin(addon.operators, value.operator) and
@@ -244,7 +244,7 @@ addon:RegisterCondition("POWER", {
 
 addon:RegisterCondition("POWERPCT", {
     description = L["Power Percentage"],
-    icon = "Interface\\Icons\\inv_potion_91",
+    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\resources",
     fields = { unit = "string", operator = "string", value = "number" },
     valid = function(_, value)
         return (value.operator ~= nil and addon.isin(addon.operators, value.operator) and
@@ -294,7 +294,7 @@ addon:RegisterCondition("POWERPCT", {
 
 addon:RegisterCondition("POINT", {
     description = L["Points"],
-    icon = "Interface\\Icons\\Inv_jewelry_amulet_01",
+    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\resources",
     fields = { unit = "string", operator = "string", value = "number" },
     valid = function(_, value)
         return (value.operator ~= nil and addon.isin(addon.operators, value.operator) and
@@ -357,7 +357,7 @@ if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE and LE_EXPANSION_LEVEL_CURRENT >= 2 a
     select(2, UnitClass("player")) == "DEATHKNIGHT") then
     addon:RegisterCondition("RUNE", {
         description = L["Runes"],
-        icon = "Interface\\Icons\\spell_deathknight_empowerruneblade",
+        icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\resources",
         fields = { rune = "number", operator = "string", value = "number" },
         valid = function(_, value)
             return (value.operator ~= nil and addon.isin(addon.operators, value.operator) and
@@ -415,7 +415,7 @@ if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE and LE_EXPANSION_LEVEL_CURRENT >= 2 a
 
     addon:RegisterCondition("RUNE_COOLDOWN", {
         description = L["Rune Cooldown"],
-        icon = "Interface\\Icons\\spell_deathknight_empowerruneblade2",
+        icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\time",
         fields = { rune = "number", operator = "string", value = "number" },
         valid = function(_, value)
             return (value.operator ~= nil and addon.isin(addon.operators, value.operator) and
@@ -481,7 +481,7 @@ end
 
 addon:RegisterCondition("TT_HEALTH", {
     description = L["Time Until Health"],
-    icon = "Interface\\Icons\\inv_potion_21",
+    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\resources",
     fields = { unit = "string", operator = "string", value = "number", health = "number", mode = "string" },
     valid = function(_, value)
         return (value.operator ~= nil and addon.isin(addon.operators, value.operator) and
@@ -597,7 +597,7 @@ addon:RegisterCondition("TT_HEALTH", {
 
 addon:RegisterCondition("TT_HEALTHPCT", {
     description = L["Time Until Health Percentage"],
-    icon = "Interface\\Icons\\inv_potion_24",
+    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\resources",
     fields = { unit = "string", operator = "string", value = "number", health = "number", mode = "string" },
     valid = function(_, value)
         return (value.operator ~= nil and addon.isin(addon.operators, value.operator) and

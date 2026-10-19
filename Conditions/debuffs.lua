@@ -6,7 +6,7 @@ local helpers = addon.help_funcs
 
 addon:RegisterCondition("DEBUFF", {
     description = L["Debuff Present"],
-    icon = "Interface\\Icons\\spell_shadow_curseoftounges",
+    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\debuff",
     fields = { unit = "string", spell = {"string", "number"}, anyrank = "boolean", owndebuff = "boolean" },
     valid = function(_, value)
         return (value.unit ~= nil and addon.isin(addon.units, value.unit) and value.spell ~= nil)
@@ -57,7 +57,7 @@ addon:RegisterCondition("DEBUFF", {
 
 addon:RegisterCondition("DEBUFF_REMAIN", {
     description = L["Debuff Time Remaining"],
-    icon = "Interface\\Icons\\ability_creature_cursed_04",
+    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\time",
     fields = { unit = "string", spell = {"string", "number"}, anyrank = "boolean", owndebuff = "boolean", operator = "string", value = "number" },
     valid = function(_, value)
         return (value.unit ~= nil and addon.isin(addon.units, value.unit) and value.spell ~= nil and
@@ -118,7 +118,7 @@ addon:RegisterCondition("DEBUFF_REMAIN", {
 
 addon:RegisterCondition("DEBUFF_STACKS", {
     description = L["Debuff Stacks"],
-    icon = "Interface\\Icons\\Inv_misc_coin_06",
+    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\debuff",
     fields = { unit = "string", spell = {"string", "number"}, anyrank = "boolean", owndebuff = "boolean", operator = "string", value = "number" },
     valid = function(_, value)
         return (value.unit ~= nil and addon.isin(addon.units, value.unit) and value.spell ~= nil and
@@ -179,7 +179,7 @@ addon:RegisterCondition("DEBUFF_STACKS", {
 
 addon:RegisterCondition("DISPELLABLE", {
     description = L["Debuff Type Present"],
-    icon = "Interface\\Icons\\spell_shadow_curseofsargeras",
+    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\debuff",
     fields = { unit = "string", debufftype = "string", owndebuff = "boolean", dispellable = "boolean" },
     valid = function(_, value)
         return (value.unit ~= nil and addon.isin(addon.units, value.unit) and

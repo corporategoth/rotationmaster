@@ -6,7 +6,7 @@ local helpers = addon.help_funcs
 
 addon:RegisterCondition("SELF_LEVEL", {
     description = L["Level"],
-    icon = "Interface\\Icons\\spell_holy_blessedrecovery",
+    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\character",
     fields = { operator = "string", value = "number" },
     valid = function(_, value)
         return (value.operator ~= nil and addon.isin(addon.operators, value.operator) and
@@ -35,7 +35,7 @@ addon:RegisterCondition("SELF_LEVEL", {
 
 addon:RegisterCondition("PVP", {
     description = L["PVP Flagged"],
-    icon = "Interface\\Icons\\Inv_banner_03",
+    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\combat",
     fields = { unit = "string" },
     valid = function(_, value)
         return value.unit ~= nil and addon.isin(addon.units, value.unit)
@@ -45,7 +45,7 @@ addon:RegisterCondition("PVP", {
         return addon.getCached(cache, UnitIsPVP, value.unit)
     end,
     print = function(_, value)
-        return string.format(addon.playerize(value.uinit, L["%s {{!are|are not}} PVP flagged"], L["%s {{!is|is not}} PVP flagged"]),
+        return string.format(addon.playerize(value.unit, L["%s {{!are|are not}} PVP flagged"], L["%s {{!is|is not}} PVP flagged"]),
                 addon.nullable(addon.units[value.unit], L["<unit>"]))
     end,
     widget = function(parent, spec, value)
@@ -65,7 +65,7 @@ addon:RegisterCondition("PVP", {
 
 addon:RegisterCondition("ZONEPVP", {
     description = L["Zone PVP"],
-    icon = "Interface\\Icons\\Inv_bannerpvp_01",
+    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\combat",
     fields = { value = "string" },
     valid = function(_, value)
         return value.value == nil or addon.isin(addon.zonepvp, value.value)
@@ -129,7 +129,7 @@ addon:RegisterCondition("ZONEPVP", {
 
 addon:RegisterCondition("INSTANCE", {
     description = L["Instance"],
-    icon = "Interface\\Icons\\Spell_nature_astralrecal",
+    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\environment",
     fields = { value = "string" },
     valid = function(_, value)
         return value.value == nil or addon.isin(addon.instances, value.value);
@@ -189,7 +189,7 @@ addon:RegisterCondition("INSTANCE", {
 
 addon:RegisterCondition("OUTDOORS", {
     description = L["Outdoors"],
-    icon = "Interface\\Icons\\Inv_misc_flower_02",
+    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\environment",
     fields = { },
     valid = function()
         return true

@@ -8,7 +8,7 @@ local helpers = addon.help_funcs
 addon:RegisterCondition("COMBAT", {
     requiredFields = {"unit"},
     description = L["In Combat"],
-    icon = "Interface\\Icons\\ability_dualwield",
+    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\combat",
     fields = { unit = "string" },
     valid = function(_, value)
         return value.unit ~= nil and addon.isin(addon.units, value.unit);
@@ -37,7 +37,7 @@ addon:RegisterCondition("COMBAT", {
 
 addon:RegisterCondition("PET", {
     description = L["Have Pet"],
-    icon = "Interface\\Icons\\Inv_box_petcarrier_01",
+    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\pet",
     fields = { },
     valid = function()
         return true
@@ -55,7 +55,7 @@ addon:RegisterCondition("PET", {
 
 addon:RegisterCondition("PET_NAME", {
     description = L["Have Named Pet"],
-    icon = "Interface\\Icons\\inv_box_birdcage_01",
+    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\pet",
     fields = { value = "string" },
     valid = function(_, value)
         return value.value ~= nil
@@ -90,7 +90,7 @@ addon:RegisterCondition("PET_NAME", {
 
 addon:RegisterCondition("STEALTHED", {
     description = L["Stealth"],
-    icon = "Interface\\Icons\\ability_stealth",
+    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\combat",
     fields = { },
     valid = function()
         return true
@@ -108,7 +108,7 @@ addon:RegisterCondition("STEALTHED", {
 
 addon:RegisterCondition("INCONTROL", {
     description = L["In Control"],
-    icon = "Interface\\Icons\\spell_nature_polymorph",
+    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\combat",
     fields = { },
     valid = function()
         return true
@@ -126,7 +126,7 @@ addon:RegisterCondition("INCONTROL", {
 
 addon:RegisterCondition("LOC_TYPE", {
     description = L["Loss Of Control Type"],
-    icon = "Interface\\Icons\\spell_nature_polymorph_cow",
+    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\combat",
     fields = { operator = "string", value = "number", loc_type = "string" },
     valid = function(_, value)
         return (value.operator ~= nil and addon.isin(addon.operators, value.operator) and
@@ -181,7 +181,7 @@ addon:RegisterCondition("LOC_TYPE", {
 
 addon:RegisterCondition("LOC_BLOCKED", {
     description = L["Loss Of Control Blocked"],
-    icon = "Interface\\Icons\\inv_misc_fish_turtle_03",
+    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\combat",
     fields = { operator = "string", value = "number", school = "string" },
     valid = function(_, value)
         return (value.operator ~= nil and addon.isin(addon.operators, value.operator) and
@@ -233,7 +233,7 @@ addon:RegisterCondition("LOC_BLOCKED", {
 
 addon:RegisterCondition("MOVING", {
     description = L["Moving"],
-    icon = "Interface\\Icons\\Ability_druid_dash",
+    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\spatial",
     fields = { },
     valid = function()
         return true
@@ -251,7 +251,7 @@ addon:RegisterCondition("MOVING", {
 
 addon:RegisterCondition("THREAT", {
     description = L["Threat"],
-    icon = "Interface\\Icons\\ability_physical_taunt",
+    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\combat",
     fields = { unit = "string", threat = "number" },
     valid = function(_, value)
         return value.unit ~= nil and addon.isin(addon.units, value.unit) and
@@ -320,7 +320,7 @@ addon:RegisterCondition("THREAT", {
 
 addon:RegisterCondition("THREAT_COUNT", {
     description = L["Threat Count"],
-    icon = "Interface\\Icons\\Ability_racial_bloodrage",
+    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\combat",
     fields = { threat = "number", operator = "string", value = "number" },
     valid = function(_, value)
         return value.value ~= nil and value.value >= 0 and
@@ -388,7 +388,7 @@ addon:RegisterCondition("THREAT_COUNT", {
 local character_class = select(2, UnitClass("player"))
 addon:RegisterCondition("FORM", {
     description = L["Shapeshift Form"],
-    icon = "Interface\\Icons\\ability_hunter_pet_bear",
+    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\character",
     fields = { value = "number" },
     valid = function(_, value)
         return value.value ~= nil and value.value >= 0 and value.value <= (character_class == "SHAMAN" and 1 or GetNumShapeshiftForms())
@@ -484,7 +484,7 @@ addon:RegisterCondition("FORM", {
 addon:RegisterCondition("ATTACKABLE", {
     requiredFields = {"unit"},
     description = L["Attackable"],
-    icon = "Interface\\Icons\\inv_misc_head_dragon_bronze",
+    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\combat",
     fields = { unit = "string" },
     valid = function(_, value)
         return value.unit ~= nil and addon.isin(addon.units, value.unit);
@@ -513,7 +513,7 @@ addon:RegisterCondition("ATTACKABLE", {
 
 addon:RegisterCondition("ENEMY", {
     description = L["Hostile"],
-    icon = "Interface\\Icons\\inv_misc_head_dragon_01",
+    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\combat",
     fields = { unit = "string" },
     valid = function(_, value)
         return value.unit ~= nil and addon.isin(addon.units, value.unit);
@@ -541,7 +541,7 @@ addon:RegisterCondition("ENEMY", {
 
 addon:RegisterCondition("COMBAT_HISTORY", {
     description = L["Combat Action History"],
-    icon = "Interface\\Icons\\Spell_shadow_shadowward",
+    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\combat",
     fields = { unit = "string", action = "string", operator = "string", value = "number" },
     valid = function(_, value)
         return (value.unit ~= nil and addon.isin(addon.units, value.unit) and
@@ -607,7 +607,7 @@ addon:RegisterCondition("COMBAT_HISTORY", {
 
 addon:RegisterCondition("COMBAT_HISTORY_TIME", {
     description = L["Combat Action History Time"],
-    icon = "Interface\\Icons\\Spell_shadow_shadetruesight",
+    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\time",
     fields = { unit = "string", action = "string", operator = "string", value = "number" },
     valid = function(_, value)
         return (value.unit ~= nil and addon.isin(addon.units, value.unit) and
@@ -673,7 +673,7 @@ addon:RegisterCondition("COMBAT_HISTORY_TIME", {
 
 addon:RegisterCondition("TIME_IN_COMBAT", {
     description = L["Time Since Combat Start"],
-    icon = "Interface\\Icons\\Spell_holy_borrowedtime",
+    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\time",
     fields = { operator = "string", value = "number" },
     valid = function(_, value)
         return ( value.operator ~= nil and addon.isin(addon.operators, value.operator) and value.value ~= nil and value.value >= 0)

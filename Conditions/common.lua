@@ -221,12 +221,14 @@ function addon:Widget_ItemWidget(top, editbox, value, isvalid, update)
             if type(value.item) == "string" then
                 local itemid = addon:FindFirstItemOfItemSet({}, value.item, true) or addon:FindFirstItemInItemSet(value.item)
                 addon:UpdateItem_ID_Image(itemid, nil, itemIcon)
-            elseif value.item ~= nil and #value.item > 0 then
+            elseif #value.item > 0 then
                 local itemid = addon:FindFirstItemOfItems({}, value.item, true) or addon:FindFirstItemInItems(value.item)
                 addon:UpdateItem_ID_Image(itemid, nil, itemIcon)
+            else
+                addon:UpdateItem_ID_Image(nil, nil, itemIcon)
             end
         else
-            itemIcon:SetImage(nil)
+            addon:UpdateItem_ID_Image(nil, nil, itemIcon)
         end
     end
     update_action_image()
@@ -350,7 +352,7 @@ function addon:Widget_SingleItemWidget(spec, editbox, value, isvalid, update)
     item_group:SetUserData("table", { columns = { 44, 1 } })
 
     local item = addon:CreateItemEditBox(editbox,value.item)
-    local itemIcon = addon:CreateItemActionIcon(value.item)
+    local itemIcon = addon:CreateItemActionIcon(value.item,isvalid)
     itemIcon:SetWidth(44)
     itemIcon:SetHeight(44)
     itemIcon:SetCallback("OnEnterPressed", function(_, _, v)
@@ -366,7 +368,7 @@ function addon:Widget_SingleItemWidget(spec, editbox, value, isvalid, update)
                 GameTooltip:Hide()
             end
         end
-        addon:UpdateItem_Name_ID(v, item, itemIcon)
+        addon:UpdateItem_Name_ID(value.item, item, itemIcon)
         update()
     end)
     itemIcon:SetCallback("OnEnter", function()

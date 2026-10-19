@@ -55,3 +55,13 @@ Spatial proximity's player fallback currently consumes the first LibRangeCheck b
 Other older condition families still invoke client globals directly. Their client API availability, restricted observations and finite numeric validation need family-specific adapter tests before being described as fully migrated. The existing source/catalog corpus validates declarations and compatibility but does not substitute for gameplay observations across clients.
 
 Native acceptance should cover repeated open/close and owner replacement; translated wide/narrow fields; numeric/raw pending input; item popup return; real spell/item drops and asynchronous metadata; field/help heights; and the optional advanced editor's Test/Run/Debug ownership. The offline suites do not make native acceptance claims.
+
+## Follow-up corrections and original icon batch
+
+Hand selection now happens before interpreting enchant observations. This fixes unenchanted offhand predicates falling through to an enchanted main hand, the `offhands` expiration typo, and offhand swing history being ignored before a mainhand swing. Selected malformed/restricted or failed observations stay unavailable beneath NOT. A PvP summary typo now uses the same player/unit choice as its fields and validator.
+
+Single-item controls validate drops before consuming the cursor. Direct rejected inputs repaint their accepted stored value. Switching to an empty custom item list clears the old set preview and invalidates outstanding metadata updates.
+
+The first original icon batch contains sixteen generated transparent fantasy families: combat, character, spell, buff, debuff, item, weapon, spatial, resources, pet, talent, casting, logic, totem, environment and time. All 115 reviewed Built In identities now reference these bundled families; AND/OR/NOT share logic, and Delete uses RM's original trash control. Packaged category icons follow stable category identities after honoring explicit saved choices. No indexed defaults or saved categories are rewritten. Original PNGs, exact generation prompts/provenance, alpha reports, 64/128-pixel RGBA TGA exports and contrasting-background contact sheets remain under `Assets/Conditions/`.
+
+Root and asset reviewers inspected the 20/24/32 and 64/128-pixel contact sheets. The family silhouettes and color cues remain distinct, while fine internal detail is necessarily reduced at small sizes. This is sixteen semantic designs reused across the condition inventory, not 115 unique illustrations. Separate AND/OR/NOT glyphs and more specific health/mana, aura-stack, movement/threat, range and hand-specific variants remain design follow-up. A client reload and native visual acceptance are still required.

@@ -6,7 +6,7 @@ local helpers = addon.help_funcs
 
 addon:RegisterCondition("SPELL_AVAIL", {
     description = L["Spell Available"],
-    icon = "Interface\\Icons\\Spell_holy_renew",
+    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\spell",
     fields = { spell = "number", ranked = "boolean" },
     valid = function(_, value)
         if value.spell ~= nil then
@@ -43,7 +43,7 @@ addon:RegisterCondition("SPELL_AVAIL", {
 
 addon:RegisterCondition("SPELL_RANGE", {
     description = L["Spell In Range"],
-    icon = "Interface\\Icons\\inv_misc_bandage_02",
+    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\spell",
     fields = { spell = "number", ranked = "boolean" },
     valid = function(_, value)
         if value.spell ~= nil then
@@ -83,7 +83,7 @@ addon:RegisterCondition("SPELL_RANGE", {
 
 addon:RegisterCondition("SPELL_COOLDOWN", {
     description = L["Spell Cooldown"],
-    icon = "Interface\\Icons\\spell_nature_timestop",
+    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\time",
     fields = { spell = "number", ranked = "boolean", operator = "string", value = "number" },
     valid = function(_, value)
         if value.spell ~= nil then
@@ -134,7 +134,7 @@ addon:RegisterCondition("SPELL_COOLDOWN", {
 
 addon:RegisterCondition("SPELL_REMAIN", {
     description = L["Spell Recharge Time"],
-    icon = "Interface\\Icons\\inv_misc_pocketwatch_03",
+    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\time",
     fields = { spell = "number", ranked = "boolean", operator = "string", value = "number" },
     valid = function(_, value)
         if value.spell ~= nil then
@@ -187,7 +187,7 @@ addon:RegisterCondition("SPELL_REMAIN", {
 
 addon:RegisterCondition("SPELL_CHARGES", {
     description = L["Spell Charges"],
-    icon = "Interface\\Icons\\Spell_nature_astralrecalgroup",
+    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\spell",
     fields = { spell = "number", ranked = "boolean", operator = "string", value = "number" },
     valid = function(_, value)
         if value.spell ~= nil then
@@ -235,7 +235,7 @@ addon:RegisterCondition("SPELL_CHARGES", {
 
 addon:RegisterCondition("SPELL_HISTORY", {
     description = L["Spell Cast History"],
-    icon = "Interface\\Icons\\Spell_shadow_nightofthedead",
+    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\spell",
     fields = { spell = "number", ranked = "boolean", operator = "string", value = "number" },
     valid = function(_, value)
         if value.spell ~= nil then
@@ -288,7 +288,7 @@ addon:RegisterCondition("SPELL_HISTORY", {
 
 addon:RegisterCondition("SPELL_HISTORY_TIME", {
     description = L["Spell Cast History Time"],
-    icon = "Interface\\Icons\\Spell_fire_sealoffire",
+    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\time",
     fields = { spell = "number", ranked = "boolean", operator = "string", value = "number" },
     valid = function(_, value)
         if value.spell ~= nil then
@@ -340,7 +340,7 @@ addon:RegisterCondition("SPELL_HISTORY_TIME", {
 
 addon:RegisterCondition("SPELL_ACTIVE", {
     description = L["Spell Active or Pending"],
-    icon = 132212,
+    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\spell",
     fields = { spell = "number", ranked = "boolean" },
     valid = function(_, value)
         if value.spell ~= nil then

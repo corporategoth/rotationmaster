@@ -8,7 +8,7 @@ local helpers = addon.help_funcs
 
 addon:RegisterCondition("ANYSPELL_AVAIL", {
     description = L["Any Spell Available"],
-    icon = "Interface\\Icons\\spell_frost_manarecharge",
+    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\spell",
     fields = { spell = "number", ranked = "boolean" },
     valid = function(_, value)
         if value.spell ~= nil then
@@ -45,7 +45,7 @@ addon:RegisterCondition("ANYSPELL_AVAIL", {
 
 addon:RegisterCondition("ANYSPELL_RANGE", {
     description = L["Any Spell In Range"],
-    icon = "Interface\\Icons\\inv_misc_bandage_01",
+    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\spell",
     fields = { spell = "number", ranked = "boolean" },
     valid = function(_, value)
         if value.spell ~= nil then
@@ -85,7 +85,7 @@ addon:RegisterCondition("ANYSPELL_RANGE", {
 
 addon:RegisterCondition("ANYSPELL_COOLDOWN", {
     description = L["Any Spell Cooldown"],
-    icon = "Interface\\Icons\\spell_nature_invisibilty",
+    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\time",
     fields = { spell = "number", ranked = "boolean", operator = "string", value = "number" },
     valid = function(_, value)
         if value.spell ~= nil then
@@ -136,7 +136,7 @@ addon:RegisterCondition("ANYSPELL_COOLDOWN", {
 
 addon:RegisterCondition("ANYSPELL_REMAIN", {
     description = L["Any Spell Recharge Time"],
-    icon = "Interface\\Icons\\spell_holy_dizzy",
+    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\time",
     fields = { spell = "number", ranked = "boolean", operator = "string", value = "number" },
     valid = function(_, value)
         if value.spell ~= nil then
@@ -189,7 +189,7 @@ addon:RegisterCondition("ANYSPELL_REMAIN", {
 
 addon:RegisterCondition("ANYSPELL_CHARGES", {
     description = L["Any Spell Charges"],
-    icon = "Interface\\Icons\\spell_fire_meteorstorm",
+    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\spell",
     fields = { spell = "number", ranked = "boolean", operator = "string", value = "number" },
     valid = function(_, value)
         if value.spell ~= nil then

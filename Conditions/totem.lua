@@ -57,7 +57,7 @@ end
 
 addon:RegisterCondition("TOTEM", {
     description = L["Totem Present"],
-    icon = "Interface\\Icons\\spell_nature_manaregentotem",
+    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\totem",
     fields = { spell = "number" }, requiredFields = { "spell" },
     valid = function(_, value) return element(value) end,
     evaluate = function(value, cache, start)
@@ -93,7 +93,7 @@ addon:RegisterCondition("TOTEM", {
 
 addon:RegisterCondition("TOTEM_SPELL", {
     description = L["Specific Totem Present"],
-    icon = "Interface\\Icons\\spell_nature_stoneskintotem",
+    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\totem",
     fields = { spell = "number", ranked = "boolean" }, requiredFields = { "spell" },
     valid = function(_, value) return specific(value) end,
     evaluate = function(value, cache, start) return findSpecific(value,cache,start,false) end,
@@ -123,7 +123,7 @@ addon:RegisterCondition("TOTEM_SPELL", {
 
 addon:RegisterCondition("TOTEM_REMAIN", {
     description = L["Totem Time Remaining"],
-    icon = "Interface\\Icons\\spell_nature_agitatingtotem",
+    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\time",
     fields = { spell = "number", operator = "string", value = "number" }, requiredFields = { "spell", "operator", "value" },
     valid = function(_, value) return element(value) and amount(value) end,
     evaluate = function(value, cache, start)
@@ -169,7 +169,7 @@ addon:RegisterCondition("TOTEM_REMAIN", {
 
 addon:RegisterCondition("TOTEM_SPELL_REMAIN", {
     description = L["Specific Totem Time Remaining"],
-    icon = "Interface\\Icons\\spell_fireresistancetotem_01",
+    icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\time",
     fields = { spell = "number", ranked = "boolean", operator = "string", value = "number" }, requiredFields = { "spell", "operator", "value" },
     valid = function(_, value) return specific(value) and amount(value) end,
     evaluate = function(value, cache, start) return findSpecific(value,cache,start,true) end,

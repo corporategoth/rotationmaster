@@ -1,7 +1,7 @@
 local addon_name, addon = ...
 local L=LibStub("AceLocale-3.0"):GetLocale(addon_name)
 addon:RegisterCondition("BEYOND_MELEE",{
-    description=L["Beyond Melee Range"],icon="Interface\\Icons\\Ability_hunter_snipershot",
+    description=L["Beyond Melee Range"],icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\spatial",
     fields={unit="string"},requiredFields={"unit"},
     valid=function(_,value) return type(value.unit)=="string" and addon.units[value.unit]~=nil end,
     evaluate=function(value)
