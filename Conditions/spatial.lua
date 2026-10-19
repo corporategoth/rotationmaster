@@ -23,10 +23,7 @@ addon.builtinCallbackBindings["Conditions/spatial.lua"]={
 }
 
 local rcf = function(unit) return RangeCheck:GetRange(unit) end
-local function protectedRead(cache,method,...)
-    if type(method)~="function" then return false,"missing-api" end
-    return pcall(addon.getCached,cache,method,...)
-end
+local protectedRead = addon.Functions.cache.protectedRead
 local function finite(value) return type(value)=="number" and value==value and value>-math.huge and value<math.huge end
 local function booleanRead(cache,method,...)
     local ok,result=protectedRead(cache,method,...)
@@ -447,7 +444,7 @@ do
         if name=="color" then return color end
         if name=="finite" then return finite end
         if name=="helpers" then return helpers end
-        if name=="protectedRead" then return protectedRead end
+        if name=="protectedRead" then return addon.builtinSourceModules["Functions/cache.lua"]("protectedRead") end
         if name=="rcf" then return rcf end
     end
     if addon.RegisterBuiltinSourceModule then

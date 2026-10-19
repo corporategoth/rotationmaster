@@ -90,4 +90,10 @@ test('spell field clones retain original group callbacks and update the same rec
         local spell=group.children[2];spell.callbacks.OnEnterPressed(spell,'OnEnterPressed','New name');assert(value.spell==456 and changed==1)
     end
 end)
+test('every generated helper description including private ownership has a registered locale key',function()
+    local f=F.new();local locale=f.libraries['AceLocale-3.0']:GetLocale('rotationmaster');local metatable=getmetatable(locale);local fallback=metatable.__index
+    metatable.__index=function(self,key) assert(f.translations[key]~=nil,'Missing helper locale entry: '..key);return fallback(self,key) end
+    f.load('Data/builtin_sources.lua');f.load('Core/builtin_sources.lua')
+    for _,module in pairs(f.addon.BuiltinSourceCatalog.modules) do for _,record in pairs(module.bindings) do if record.description then assert(locale[record.description]) end end end
+end)
 finish()

@@ -4,6 +4,15 @@ local inventory=dofile('tests/fixtures/catalog_inventory.lua')
 local modules={}
 local publicHelpers=dofile('tools/public_helpers.lua')
 local cacheOwnership=dofile('tools/cache_ownership.lua')
+local conditionOwnership=dofile('tools/condition_ownership.lua')
+for alias in pairs(conditionOwnership) do assert(alias=='protectedRead','condition ownership manifest invalid') end
+local conditionOwner=conditionOwnership.protectedRead
+assert(type(conditionOwner)=='table' and next(conditionOwnership,'protectedRead')==nil
+    and conditionOwner.module=='Functions/cache.lua' and conditionOwner.member=='Functions.cache.protectedRead'
+    and conditionOwner.legacyModule=='Conditions/spatial.lua' and conditionOwner.legacyAlias=='protectedRead'
+    and conditionOwner.bindingID=='builtin:Conditions/spatial.lua:protectedRead' and conditionOwner.namespace=='Conditions.spatial'
+    and conditionOwner.description=='Packaged helper from Conditions/spatial.lua.'
+    and type(conditionOwner.captureBindings)=='table' and next(conditionOwner.captureBindings)==nil,'condition ownership manifest invalid')
 assert(cacheOwnership.module=='Functions/cache.lua' and type(cacheOwnership.bindings)=='table','cache ownership manifest invalid')
 local cacheKinds={getCachedInternal='function',packResults='function',cacheHits='number',cacheMisses='number',nilArgument='table',cachedResult='table'}
 for alias,entry in pairs(cacheOwnership.bindings) do
@@ -19,7 +28,7 @@ local standard={};for name,value in pairs(_G) do if type(value)=='function' then
 local function descriptor(fn)
     local info=debug.getinfo(fn,'S');return {file=info.source:sub(1,1)=='@' and info.source:sub(2) or info.source,first=info.linedefined,last=info.lastlinedefined,what=info.what}
 end
-local publicIdentities,callbackBindings,currentAddon,ownedCacheSeen={},{},nil,{}
+local publicIdentities,callbackBindings,currentAddon,ownedCacheSeen,ownedConditionValues={},{},nil,{},{}
 local function sameCallbacks(left,right)
     for name,callback in pairs(left) do
         local other=right[name]
@@ -112,8 +121,13 @@ capture=function(module,fn,captureBindings,ownedCapture)
                 end
                 captured[name]=true
             else
-                local qualified=qualifiedBindings(module,name,value)
-                if qualified then
+                local ownedCondition=module.file==conditionOwner.legacyModule and name==conditionOwner.legacyAlias
+                local qualified=not ownedCondition and qualifiedBindings(module,name,value)
+                if ownedCondition then
+                    assert(type(value)=='function' and value==ownedConditionValues[conditionOwner.bindingID],
+                        'condition ownership capture mismatch: '..module.file..':'..name)
+                    info.bindings[name]=conditionOwner.bindingID
+                elseif qualified then
                     for alias,id in pairs(qualified) do info.bindings[alias]=id end
                 else
                     info.bindings[name]='builtin:'..module.file..':'..name
@@ -132,7 +146,7 @@ capture=function(module,fn,captureBindings,ownedCapture)
     return info
 end
 for _,case in ipairs(inventory.branches) do
-    local f=F.new(unpack(case[1]));f.addon.delayed_condition={};publicIdentities={};currentAddon=f.addon;ownedCacheSeen={}
+    local f=F.new(unpack(case[1]));f.addon.delayed_condition={};publicIdentities={};currentAddon=f.addon;ownedCacheSeen={};ownedConditionValues={}
     f.load('Platform/spells.lua');f.load('Platform/actions.lua');f.load('Platform/range.lua')
     if case[3] then f.env.MI2_GetMobData=function() end end
     for path in io.lines('RotationMaster.toc') do if path:match('^Conditions/') then
@@ -141,6 +155,24 @@ for _,case in ipairs(inventory.branches) do
     local cacheGetter=f.addon.builtinSourceModules and f.addon.builtinSourceModules[cacheOwnership.module]
     assert(type(cacheGetter)=='function','cache ownership module missing')
     for alias in pairs(cacheOwnership.bindings) do ownedCacheBinding(alias,cacheGetter(alias)) end
+    for alias,entry in pairs(conditionOwnership) do
+        local fn=f.addon
+        for part in entry.member:gmatch('[%w_]+') do fn=type(fn)=='table' and rawget(fn,part) or nil end
+        local owner=f.addon.builtinSourceModules and f.addon.builtinSourceModules[entry.module]
+        local legacy=f.addon.builtinSourceModules and f.addon.builtinSourceModules[entry.legacyModule]
+        assert(type(fn)=='function' and descriptor(fn).file==entry.module and type(owner)=='function' and owner(alias)==fn
+            and type(legacy)=='function' and legacy(entry.legacyAlias)==fn,'condition ownership getter mismatch: '..alias)
+        local module=modules[entry.module] or {file=entry.module,conditions={},bindings={}};modules[entry.module]=module
+        local captured=capture(module,fn,entry.captureBindings,true)
+        local previous=module.bindings[alias]
+        assert(not previous or previous.ownership and sameCallbacks({[alias]=previous.fn},{[alias]=captured}),
+            'condition ownership identity collision: '..alias)
+        module.bindings[alias]={kind='function',fn=captured,
+            ownership={bindingID=entry.bindingID,namespace=entry.namespace,description=entry.description}}
+        ownedConditionValues[entry.bindingID]=fn
+        assert(not publicIdentities[entry.bindingID],'condition ownership duplicate identity: '..alias)
+        publicIdentities[entry.bindingID]=fn
+    end
     for name,documentation in pairs(publicHelpers) do
         local member=documentation.member or name
         assert(member:match('^[%a_][%w_%.]*$') and not member:find('..',1,true),'invalid public helper path: '..name)

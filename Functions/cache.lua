@@ -1,11 +1,18 @@
 local addon_name,addon=...
 local L=LibStub("AceLocale-3.0"):GetLocale(addon_name)
+-- Preserve the original global type/pcall lookups and live legacy cache dispatch.
+local function protectedRead(cache,method,...)
+    if type(method)~="function" then return false,"missing-api" end
+    return pcall(addon.getCached,cache,method,...)
+end
+
 local _G,unpack,type,pairs=_G,unpack,type,pairs
 
 -- One closure owns native cache state; legacy addon APIs remain direct aliases.
 local cache={}
 addon.Functions=addon.Functions or {}
 addon.Functions.cache=cache
+cache.protectedRead=protectedRead
 
 local cacheHits = 0
 local cacheMisses = 0
@@ -90,6 +97,7 @@ do
         if name=="getRetryCached" then return addon.Functions.cache.getRetryCached end
         if name=="nilArgument" then return nilArgument end
         if name=="packResults" then return packResults end
+        if name=="protectedRead" then return protectedRead end
     end
     if addon.RegisterBuiltinSourceModule then
         addon:RegisterBuiltinSourceModule("Functions/cache.lua", sourceGetter)

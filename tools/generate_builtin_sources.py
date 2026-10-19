@@ -135,8 +135,9 @@ def generated():
     descriptions=set()
     for module in catalog['modules'].values():
         for row in module['bindings'].values():
-            if row.get('callName'):
+            if row.get('description'):
                 descriptions.add(row['description'])
+            if row.get('callName'):
                 descriptions.update(item['description'] for item in row['args']+row['returns'])
     locale=(ROOT/'Locales/enUS.lua').read_text()
     if DOCS_BEGIN in locale:
