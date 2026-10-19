@@ -2,23 +2,29 @@ local _,addon=...
 local function near(left,right) return math.abs(left-right)<=.1 end
 local geometry={width=true,textWidth=true,left=true,right=true,top=true,bottom=true,scroll=true,viewport=true,viewportWidth=true,gutterWidth=true}
 local function sameRender(before,after)
-    if not before then return false end
+    if not before then return false,'initial' end
+    local changed={}
     for key,value in pairs(after) do
         local old=before[key]
         if geometry[key] and type(old)=='number' and type(value)=='number' then
-            if not near(old,value) then return false end
-        elseif old~=value then return false end
+            if not near(old,value) then changed[#changed+1]=key end
+        elseif old~=value then changed[#changed+1]=key end
     end
-    for key in pairs(before) do if after[key]==nil then return false end end
-    return true
+    for key in pairs(before) do if after[key]==nil then changed[#changed+1]=key end end
+    table.sort(changed)
+    return #changed==0,table.concat(changed,',')
+end
+local function counters(control)
+    if not control.lineNumberCounts then control.lineNumberCounts={calls=0,skips=0,renders=0,metrics=0,reentries=0,errors=0,detached=0} end
+    return control.lineNumberCounts
 end
 
 -- Reuse LuaWorkbench's gutter, callbacks and visible-row renderer. Source-line
 -- heights must use the native font's measured glyph metrics, including the
 -- trailing spacing between logical lines and any rows introduced by wrapping.
 function addon:InstallLuaLineNumberControl(control,console,input,options)
-    options=options or {};local update=console.UpdateLineNumbers
-    local function render(self,state)
+    options=options or {};local update=console.UpdateLineNumbers;control.lineNumberInput=input
+    local function render(self,state,counts)
         if state then
             local edit=input.editBox;local source=self.source or ''
             local width=edit:GetWidth();local font,size,flags=edit:GetFont();local spacing=edit:GetSpacing() or 0
@@ -27,8 +33,10 @@ function addon:InstallLuaLineNumberControl(control,console,input,options)
             -- LuaWorkbench's overlay and FAIAP escape source pipes before
             -- rendering; a plain EditBox retains native WoW markup behavior.
             local literalPipes=not options.native or control.syntax~=nil
-            local cache=state.rmMetrics
-            if not cache or cache.source~=source or not near(cache.width,textWidth) or cache.font~=font or cache.size~=size or cache.flags~=flags or cache.spacing~=spacing or cache.literalPipes~=literalPipes or cache.scale~=scale then
+            local metrics={source=source,width=textWidth,font=font,size=size,flags=flags,spacing=spacing,literalPipes=literalPipes,scale=scale}
+            local unchanged,metricKeys=sameRender(state.rmMetrics,metrics)
+            if not unchanged then
+                counts.metrics=counts.metrics+1;counts.lastMetric=metricKeys
                 local measure=state.measure;measure:SetFont(font,size,flags);measure:SetSpacing(spacing);measure:SetWidth(textWidth);measure:SetHeight(0)
                 local positions,heights,offset,start={}, {},0,1
                 for text in (source..'\n'):gmatch('(.-)\n') do
@@ -40,7 +48,7 @@ function addon:InstallLuaLineNumberControl(control,console,input,options)
                     offset=offset+height;start=start+#text+1
                 end
                 state.positions,state.lineHeights=positions,heights
-                state.rmMetrics={source=source,width=textWidth,font=font,size=size,flags=flags,spacing=spacing,literalPipes=literalPipes,scale=scale}
+                state.rmMetrics=metrics
             end
             -- Tell the upstream renderer its layout is current so it does not
             -- replace these exact metrics with its nominal font-size estimate.
@@ -59,7 +67,9 @@ function addon:InstallLuaLineNumberControl(control,console,input,options)
             -- Match UpdateGutter's pause-marker and registered-draft inputs.
             -- CurrentSource may synthesize a new fallback record each call;
             -- only its consumed id/source fields affect the rendered markers.
-            if sameRender(state.rmRender,view) then return end
+            local settled,renderKeys=sameRender(state.rmRender,view)
+            if settled then counts.skips=counts.skips+1;return end
+            counts.renders=counts.renders+1;counts.lastRender=renderKeys
             local result=update(self)
             -- Upstream treats false as a present position when hiding this
             -- texture; clear its highlight when this editor has no pause row.
@@ -71,12 +81,13 @@ function addon:InstallLuaLineNumberControl(control,console,input,options)
         end
     end
     function console:UpdateLineNumbers()
+        local counts=counters(control);counts.calls=counts.calls+1
         local state=input.queryLineNumbers
-        if not state then return update(self) end
-        if state.rmRendering then return end
+        if not state then counts.detached=counts.detached+1;return update(self) end
+        if state.rmRendering then counts.reentries=counts.reentries+1;return end
         state.rmRendering=true
-        local ok,result=pcall(render,self,state);state.rmRendering=nil
-        if not ok then error(result,0) end
+        local ok,result=pcall(render,self,state,counts);state.rmRendering=nil
+        if not ok then counts.errors=counts.errors+1;error(result,0) end
         return result
     end
     function control:SetLineNumbers(visible)

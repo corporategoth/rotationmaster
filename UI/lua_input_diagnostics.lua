@@ -131,7 +131,7 @@ function addon:InstallLuaInputDiagnostics(control)
             if original then control[name]=function(self,...) self:ResetNativeArrowProbe();return original(self,...) end end
         end
     end
-    function control:ResetInputTrace() self:ResetNativeArrowProbe();self.inputTrace={};self.inputCounts={};self.inputPoll=nil;self.layoutCounts=nil end
+    function control:ResetInputTrace() self:ResetNativeArrowProbe();self.inputTrace={};self.inputCounts={};self.inputPoll=nil;self.layoutCounts=nil;self.lineNumberCounts=nil end
     function control:ObserveInput(event,...)
         if self.released then return end
         local edit=self.edit;local raw=self.nativeGetText or edit.GetText
@@ -185,6 +185,22 @@ function addon:LuaEditorInputReport()
     end
     lines[#lines+1]='arrowHook='..tostring(type(edit:GetScript('OnArrowPressed'))=='function')..' probe='..tostring(control.nativeArrowProbe~=nil)
     lines[#lines+1]='lineNumbers visible='..tostring(control.lineNumbersVisible)..' setting='..tostring(control.lineNumberSetting)
+    local gutter=control.lineNumberCounts
+    if gutter then
+        lines[#lines+1]='gutter calls='..gutter.calls..' skips='..gutter.skips..' renders='..gutter.renders..' metricRebuilds='..gutter.metrics..' reentries='..gutter.reentries..' errors='..gutter.errors..' detached='..gutter.detached
+        lines[#lines+1]='gutter last render keys='..(gutter.lastRender or 'none')
+        lines[#lines+1]='gutter last metric keys='..(gutter.lastMetric or 'none')
+    else lines[#lines+1]='gutter counters=unavailable' end
+    local input=control.lineNumberInput;local state=input and (input.queryLineNumbers or input.queryLineNumberCache)
+    local function frameInfo(label,frame)
+        lines[#lines+1]='gutter '..label..' width='..read(frame,'GetWidth')..' height='..read(frame,'GetHeight')..' scale='..read(frame,'GetEffectiveScale')..' level='..read(frame,'GetFrameLevel')..' mouse='..read(frame,'IsMouseEnabled')..' bounds='..read(frame,'GetLeft')..','..read(frame,'GetRight')..','..read(frame,'GetTop')..','..read(frame,'GetBottom')
+    end
+    local function object(frame,method)
+        if not frame or type(frame[method])~='function' then return nil end
+        local ok,value=pcall(frame[method],frame);if ok then return value end
+    end
+    frameInfo('frame',state and state.gutter);frameInfo('container',control.frame);frameInfo('edit',edit);frameInfo('scroll',control.scroll)
+    frameInfo('child',object(control.scroll,'GetScrollChild'));frameInfo('edit parent',object(edit,'GetParent'))
     local counts={};for event,count in pairs(control.inputCounts) do counts[#counts+1]=event..'='..count end;table.sort(counts)
     lines[#lines+1]=table.concat(counts,' ')
     for _,entry in ipairs(control.inputTrace) do lines[#lines+1]=entry end

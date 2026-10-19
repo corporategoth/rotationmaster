@@ -1,6 +1,6 @@
 local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite()
 local function fixture(provider)
- local f,a=dofile('tests/fixtures/lua_workbench.lua')();f.env.IsAddOnLoaded=function() return true end
+ local f,a=dofile('tests/fixtures/lua_workbench.lua')();f.load('UI/lua_input_diagnostics.lua');f.env.IsAddOnLoaded=function() return true end
  local changes=0;local code=a:CreateWorkbenchLuaEditor(f.env.UIParent,function() changes=changes+1 end,function() return true end,provider or 'plain');local c=code.inner or code
  c.frame:SetSize(620,300);code:SetText('first line\nsecond line\nthird line');code:SetContext({kind='function',id='GUTTER',source={args={},bindings={}}});c.edit:SetCursorPosition(2);c:Layout()
  local engine=c.completionEngine or c.engine;local C=engine.Query.Console;local input=C.input;local state=assert(input.queryLineNumbers)
@@ -90,4 +90,25 @@ test('gutter detach and reacquisition retire cached rendering and reject synchro
  local settled=writes();C:UpdateLineNumbers();assert(writes()==settled,'reattached gutter did not settle')
  code:Release();code:Acquire(function() end,function() return true end);code:SetText('reopened\nsource');assert(input.queryLineNumbers and #input.queryLineNumbers.positions==2,'reacquisition kept stale source metrics');code:Release();assert(changes()==0,'gutter events created source history')
 end)
+test('gutter diagnostics count settling and invalidation keys without source for active providers',function()
+ for _,provider in ipairs({'plain','LuaWorkbench'}) do
+  local _,a,code,c,_,C,input,state,_,_,cursor=fixture(provider);local counts=assert(c.lineNumberCounts,'missing gutter counters')
+  local calls,skips,renders,metrics=counts.calls,counts.skips,counts.renders,counts.metrics
+  for i=1,100 do cursor() end
+  assert(counts.calls==calls+100 and counts.skips==skips+100 and counts.renders==renders and counts.metrics==metrics,'settled gutter counts disagree')
+  c.edit:SetWidth(c.edit:GetWidth()-20);C:UpdateLineNumbers();assert(counts.metrics==metrics+1 and counts.lastMetric:find('width',1,true) and counts.lastRender:find('metrics',1,true),'metric reason missing')
+  local rebuilt=counts.metrics;code:SetText('PRIVATE_GUTTER_DIAGNOSTIC_BODY');C:UpdateLineNumbers();assert(counts.metrics>rebuilt and state.rmMetrics.source==C.source,'source metrics not counted')
+  local report=a:LuaEditorInputReport();for _,text in ipairs({'gutter calls=','skips=','renders=','metricRebuilds=','reentries=','gutter last render keys=','gutter last metric keys=','gutter frame ','gutter scroll ','gutter child ','gutter edit parent '}) do assert(report:find(text,1,true),'missing '..text) end
+  assert(report:find('provider='..(provider=='plain' and 'native' or provider),1,true),'wrong active provider');assert(not report:find('PRIVATE_GUTTER_DIAGNOSTIC_BODY',1,true),'source leaked into report')
+  local original=state.gutter.GetHeight;state.gutter.GetHeight=function() error('PRIVATE_GEOMETRY_FAILURE') end;report=a:LuaEditorInputReport();assert(report:find('height=unavailable',1,true) and not report:find('PRIVATE_GEOMETRY_FAILURE',1,true),'geometry failure leaked or threw');state.gutter.GetHeight=original
+  code:Release();assert(a:LuaEditorInputReport():find('state=closed',1,true),'historical report missing');code:Acquire(function() end,function() return true end);local active=code.inner or code;assert(active.lineNumberCounts~=counts,'reopening retained prior counters');code:Release()
+ end
+end)
+test('gutter diagnostics count reentry and protected rendering failure without error text',function()
+ local _,a,code,c,_,C,input,state=fixture('plain');local counts=c.lineNumberCounts;local original=state.measure.SetText
+ state.measure.SetText=function(self,text) C:UpdateLineNumbers();return original(self,text) end;C.lastError={line=2};C:UpdateLineNumbers();assert(counts.reentries>0,'reentry counter missing');state.measure.SetText=original
+ local getFont=c.edit.GetFont;c.edit.GetFont=function() error('PRIVATE_GUTTER_ERROR') end;local ok=pcall(C.UpdateLineNumbers,C);assert(not ok and counts.errors==1 and not state.rmRendering,'failed render was not counted or cleared');c.edit.GetFont=getFont
+ C:UpdateLineNumbers();local report=a:LuaEditorInputReport();assert(report:find('errors=1',1,true) and not report:find('PRIVATE_GUTTER_ERROR',1,true),'failure report leaked source');code:Release()
+end)
+
 finish()
