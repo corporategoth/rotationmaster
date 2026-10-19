@@ -26,11 +26,13 @@
 
 globals.lua
 Platform/client.lua
+Platform/groups.lua
 Platform/casting.lua
 Platform/specializations.lua
 Platform/talents.lua
 Platform/spells.lua
 Platform/items.lua
+Platform/glyphs.lua
 Platform/macros.lua
 Platform/communication.lua
 Platform/inventory.lua
@@ -118,6 +120,7 @@ UI/native_widget_compat.lua
 UI/selector.lua
 UI/checkbox.lua
 UI/condition_inputs.lua
+UI/native_field_compat.lua
 UI/condition_layout.lua
 UI/icon_picker.lua
 UI/window.lua

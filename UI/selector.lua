@@ -1,6 +1,5 @@
 local addon_name,addon=...
 local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
-local AceGUI=LibStub('AceGUI-3.0')
 -- Popups are outside scroll children. Leases also protect rows recycled inside
 -- one opening, and active color children retain their original anchor frame.
 function addon:CreateWorkbenchSelector()
@@ -161,7 +160,6 @@ local function selectorWidget(legacy)
     ---@cast w AceGUIWidget
     return addon:RegisterConditionWidget(w,1,legacy)
 end
-AceGUI:RegisterWidgetType('RM-Selector',function() return selectorWidget(true) end,1)
 ---@return RMConditionSelector
 function addon:CreateConditionDropdown()
     local w=addon:AcquireConditionWidget('RM-Selector',selectorWidget)
@@ -172,7 +170,7 @@ end
 -- BEGIN GENERATED RM SOURCE BINDINGS
 do
     local function sourceGetter(name)
-        if name=="AceGUI" then return AceGUI end
+        if name=="AceGUI" then return addon:GetConditionWidgetCompatibilityLibrary() end
         if name=="CreateConditionDropdown" then return addon.CreateConditionDropdown end
         if name=="selectorWidget" then return selectorWidget end
     end

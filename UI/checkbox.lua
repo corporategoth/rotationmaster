@@ -1,5 +1,4 @@
 local _,addon=...
-local AceGUI=LibStub('AceGUI-3.0')
 
 ---@class RMConditionCheckBox: AceGUIWidget
 ---@field button Button
@@ -25,7 +24,6 @@ local function constructor(legacy)
     ---@cast w AceGUIWidget
     return addon:RegisterConditionWidget(w,1,legacy)
 end
-AceGUI:RegisterWidgetType('RM-CheckBox',function() return constructor(true) end,1)
 ---@return RMConditionCheckBox
 function addon:CreateConditionCheckBox()
     local widget=addon:AcquireConditionWidget('RM-CheckBox',constructor)
@@ -36,7 +34,7 @@ end
 -- BEGIN GENERATED RM SOURCE BINDINGS
 do
     local function sourceGetter(name)
-        if name=="AceGUI" then return AceGUI end
+        if name=="AceGUI" then return addon:GetConditionWidgetCompatibilityLibrary() end
         if name=="CreateConditionCheckBox" then return addon.CreateConditionCheckBox end
         if name=="constructor" then return constructor end
     end

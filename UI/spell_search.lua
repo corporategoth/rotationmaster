@@ -81,6 +81,7 @@ function addon:CreateReferenceEditBox(kind,initialSpell)
         widget:Fire("OnEnterPressed",tostring(resolved))
         -- A callback may rebuild/release this field; never touch its next owner.
         if alive then widget:ClearFocus() end
+        return true
     end
     local function query()
         if not alive or setting or widget.disabled or not field:HasFocus() then return end
@@ -167,7 +168,7 @@ function addon:CreateReferenceEditBox(kind,initialSpell)
         if provider.kind=="item" and cursor=="item" then id=first elseif provider.kind=="spell" and cursor=="spell" then id=third elseif provider.kind=="spell" and cursor=="petaction" then id=first end
         if not addon.Platform:CanReadValue(id) or type(id)~="number" then return end
         if provider.resolve(tostring(id),settings()) then
-            commit(id);if type(ClearCursor)=="function" then ClearCursor() end
+            if commit(id) and type(ClearCursor)=="function" then ClearCursor() end
         end
     end
     install(field,"OnReceiveDrag",drag);install(field,"OnMouseDown",drag)

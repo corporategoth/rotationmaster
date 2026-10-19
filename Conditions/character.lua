@@ -288,20 +288,33 @@ if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE or LE_EXPANSION_LEVEL_CURRENT >= 2) t
         fields = { item = "number" },
         valid = function(_, value)
             if value.item ~= nil then
-                local _, _, _, _, _, type, class = GetItemInfoInstant(value.item)
-                return (type == 16 and class == unit_class_num)
+                return addon.Platform:GetGlyphItemInfo(value.item, unit_class_num) ~= nil
             else
                 return false
             end
         end,
-        evaluate = function(value)
-            local glyph_name = addon.getCached(addon.longtermCache, GetItemInfo, value.item)
-            for i=1, GetNumGlyphSockets() do
-                local spell = select(3, addon.getCached(addon.combatCache, GetGlyphSocketInfo, i))
-                if addon.getCached(addon.longtermCache, GetSpellInfo, spell) == glyph_name then
-                    return true
+        evaluate = function(value, cache)
+            local item, itemReason = addon.getCached(cache, addon.Platform.GetGlyphItemInfo, addon.Platform, value.item, unit_class_num)
+            if not item then return nil, itemReason end
+            local info, infoReason = addon.getCached(cache, addon.Platform.GetItemDisplayInfo, addon.Platform, item.itemID)
+            if not info then return nil, infoReason end
+            local snapshot, snapshotReason = addon.getCached(cache, addon.Platform.GetGlyphSocketSnapshot, addon.Platform)
+            if not snapshot then return nil, snapshotReason end
+            local unavailable
+            for _, slot in ipairs(snapshot.slots) do
+                if slot.active then
+                    local spell, spellReason = addon.getCached(cache, addon.Platform.GetSpellInfo, addon.Platform, slot.spellID)
+                    if spell then
+                        if spell.name == info.name then return true end
+                    else
+                        unavailable = unavailable or spellReason or "spell-data-unavailable"
+                    end
+                elseif slot.active == nil then
+                    unavailable = unavailable or slot.reason or "glyph-socket-unavailable"
                 end
             end
+            if unavailable then return nil, unavailable end
+            if not snapshot.complete then return nil, "glyph-socket-unavailable" end
             return false
         end,
         print = function(_, value)
@@ -315,8 +328,7 @@ if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE or LE_EXPANSION_LEVEL_CURRENT >= 2) t
 
             local item_group = addon:Widget_SingleItemWidget(spec, "Glyph_EditBox", value,
                     function(v)
-                        local _, _, _, _, _, type, class = GetItemInfoInstant(v)
-                        return (type == 16 and class == unit_class_num)
+                        return addon.Platform:GetGlyphItemInfo(v, unit_class_num) ~= nil
                     end,
                     function() top:SetStatusText(funcs:print(root, spec)) end)
             parent:AddChild(item_group)
@@ -492,7 +504,7 @@ addon:RegisterCondition("GROUP", {
         return true
     end,
     evaluate = function(value, cache)
-        return value.raid and addon.getCached(cache, IsInRaid) or addon.getCached(cache, IsInGroup)
+        return addon.getCached(cache, addon.Platform.GetGroupMembership, addon.Platform, value.raid)
     end,
     print = function(_, value)
         return value.raid and L["you {{!are|are not}} in a raid"] or L["you {{!are|are not}} in a group"]

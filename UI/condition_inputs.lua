@@ -1,5 +1,4 @@
 local _,addon=...
-local AceGUI=LibStub('AceGUI-3.0')
 local function finite(value) return type(value)=='number' and value==value and value>-math.huge and value<math.huge end
 
 -- Native visuals with the small widget contract used by legacy declarations.
@@ -130,8 +129,6 @@ local function constructor(numeric,legacy)
     ---@cast w AceGUIWidget
     return addon:RegisterConditionWidget(w,1,legacy)
 end
-AceGUI:RegisterWidgetType('RM-ConditionEditBox',function() return constructor(false,true) end,1)
-AceGUI:RegisterWidgetType('RM-ConditionSlider',function() return constructor(true,true) end,1)
 ---@return RMConditionInput
 function addon:CreateConditionEditBox()
     local w=addon:AcquireConditionWidget('RM-ConditionEditBox',function() return constructor(false) end)
@@ -148,7 +145,7 @@ end
 -- BEGIN GENERATED RM SOURCE BINDINGS
 do
     local function sourceGetter(name)
-        if name=="AceGUI" then return AceGUI end
+        if name=="AceGUI" then return addon:GetConditionWidgetCompatibilityLibrary() end
         if name=="CreateConditionEditBox" then return addon.CreateConditionEditBox end
         if name=="CreateConditionSlider" then return addon.CreateConditionSlider end
         if name=="constructor" then return constructor end

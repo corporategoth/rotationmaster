@@ -42,7 +42,7 @@ test('cloned deferred stat initialization retains shared integration state acros
     assert(copy.evaluate({stat='power',operator='GREATERTHAN',value=40},{})==true)
 end)
 test('glyph clone retains the expansion-scoped player class binding',function()
-    local f,a=fixture(19,4,'SHAMAN');f.env.GetItemInfoInstant=function() return nil,nil,nil,nil,nil,16,7 end
+    local f,a=fixture(19,4,'SHAMAN');f.env.GetItemInfoInstant=function(item) return item,nil,nil,nil,nil,16,7 end
     local source=assert(a:GetBuiltinConditionSource('GLYPH'));local copy=assert(a:CompileCustomCondition('MY_GLYPH',source))
     assert(copy.valid(0,{item=123})==true and a.conditionDefinitions.GLYPH.valid(0,{item=123})==true)
 end)

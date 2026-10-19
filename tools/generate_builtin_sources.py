@@ -112,6 +112,12 @@ def generated():
         # Export live locals by name: getters preserve reassigned module state.
         suffix=[BEGIN,'do','    local function sourceGetter(name)']
         getter_expressions={alias: 'addon.'+entry['addonMember'] if entry.get('addonMember') else alias for alias,entry in bindings.items()}
+        for alias,entry in bindings.items():
+            expression=entry.get('getterExpression')
+            if expression is not None:
+                if alias!='AceGUI' or path not in ('UI/selector.lua','UI/checkbox.lua','UI/condition_inputs.lua') or expression!='addon:GetConditionWidgetCompatibilityLibrary()':
+                    raise ValueError('invalid retained widget getter expression: '+path+':'+alias)
+                getter_expressions[alias]=expression
         for alias,expression in legacy_getters.get(path,{}).items():
             if alias in getter_expressions and getter_expressions[alias]!=expression: raise ValueError('conflicting legacy getter: '+path+':'+alias)
             getter_expressions[alias]=expression

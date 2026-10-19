@@ -40,6 +40,22 @@ end
 local function finite(value)
     return type(value)=="number" and value==value and value>=0 and value<math.huge
 end
+-- Native classification is independent of display loading and gameplay policy.
+function platform:GetItemInfoInstant(item)
+    local valid,reason=identifier(item)
+    if not valid then return nil,reason end
+    local fn=C_Item and C_Item.GetItemInfoInstant
+    if type(fn)~='function' then fn=GetItemInfoInstant end
+    if type(fn)~='function' then return nil,'missing-api' end
+    local ok,tuple=pcall(function() return {fn(item)} end)
+    if not ok then return nil,'api-error' end
+    local id,class,subclass=tuple[1],tuple[6],tuple[7]
+    if not self:CanReadValue(id) or not self:CanReadValue(class) or not self:CanReadValue(subclass) then return nil,'restricted-value' end
+    if id==nil then return nil,'item-data-unavailable' end
+    if not finite(id) or id<=0 or id%1~=0 or not finite(class) or class%1~=0
+        or not finite(subclass) or subclass%1~=0 or type(item)=='number' and id~=item then return nil,'invalid-api-result' end
+    return {itemID=id,classID=class,subClassID=subclass}
+end
 -- Display metadata does not need a minimum-level observation. Keep the
 -- gameplay metadata contract separate so a readable name/icon is still usable
 -- in editors, while readiness never guesses a missing required level.
@@ -160,3 +176,20 @@ function platform:GetItemRangeState(item,unit)
     if type(inRange)~="boolean" then return nil,"invalid-range-check" end
     return {applicable=true,inRange=inRange}
 end
+
+-- BEGIN GENERATED RM SOURCE BINDINGS
+do
+    local function sourceGetter(name)
+        if name=="Platform_GetItemInfoInstant" then return addon.Platform.GetItemInfoInstant end
+        if name=="finite" then return finite end
+        if name=="identifier" then return identifier end
+        if name=="platform" then return platform end
+    end
+    if addon.RegisterBuiltinSourceModule then
+        addon:RegisterBuiltinSourceModule("Platform/items.lua", sourceGetter)
+    else
+        addon.builtinSourceModules=addon.builtinSourceModules or {}
+        addon.builtinSourceModules["Platform/items.lua"]=sourceGetter
+    end
+end
+-- END GENERATED RM SOURCE BINDINGS

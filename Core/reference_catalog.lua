@@ -77,7 +77,7 @@ local function options(settings)
     if settings==nil then return {} end
     if readable(settings) and type(settings)=='table' then return settings end
 end
-local function itemResolve(input,settings)
+local function itemResolve(input,settings,accept)
     settings=options(settings);local text=queryText(input);if not settings or not text then return end
     local key=id(text) or id(text:match('|Hitem:(%d+)')) or id(text:match('^item:(%d+)'))
     if not key then
@@ -85,23 +85,38 @@ local function itemResolve(input,settings)
         if reason and reason~='missing-api' and reason~='item-data-unavailable' then return end
         key=id(value)
     end
-    if not key then for item,record in pairs(indexedItems()) do if record.name:lower()==text:lower() then key=item;break end end end
+    if not key then for item,record in pairs(indexedItems()) do if record.name:lower()==text:lower() and (not accept or accept(item)) then key=item;break end end end
     if key and settings.inventory and not inventory()[key] then return nil,'item-not-in-inventory' end
-    if key then itemInfo(key);return key end
+    if key then
+        if accept then local allowed,reason=accept(key);if not allowed then return nil,reason end end
+        itemInfo(key);return key
+    end
 end
-local function itemSearch(input,settings)
+local function itemSearch(input,settings,accept)
     settings=options(settings);if not settings then return nil,'invalid-search-options' end
     local limit=settings.limit or 30
     if not readable(limit) or type(limit)~='number' or limit<1 or limit>100 or limit%1~=0 then return nil,'invalid-search-options' end
     local query=queryText(input);if not query then return nil,'invalid-search-query' end;query=query:lower()
     local exact=id(query) or id(query:match('|Hitem:(%d+)'));if exact then itemInfo(exact) end
     local owned=settings.inventory and inventory();local matches={}
-    for key,record in pairs(indexedItems(owned)) do if (not owned or owned[key]) and (exact and exact==key or not exact and record.name:lower():find(query,1,true)) then matches[#matches+1]=record end end
+    for key,record in pairs(indexedItems(owned)) do if (not owned or owned[key]) and (exact and exact==key or not exact and record.name:lower():find(query,1,true)) and (not accept or accept(key)) then matches[#matches+1]=record end end
     table.sort(matches,function(a,b) if a.name==b.name then return a.id<b.id end;return a.name:lower()<b.name:lower() end)
     local result={};for i=1,math.min(limit,#matches) do local row=matches[i];result[i]=presentation(row.id,row.name,row.icon,row.link) end
     return result,{coverage='indexed-metadata',more=#matches>limit}
 end
+local function glyphItem(value) return addon.Platform:GetGlyphItemInfo(value) end
+local function glyphInfo(value)
+    local key=id(value);if not key then return end
+    local accepted,reason=glyphItem(key);if not accepted then return nil,reason end
+    return itemInfo(key)
+end
 function addon:GetReferenceProvider(kind)
+    if kind=='Glyph_EditBox' then
+        return {kind='item',index=glyphInfo,info=glyphInfo,
+            resolve=function(value,settings) return itemResolve(value,settings,glyphItem) end,
+            search=function(value,settings) return itemSearch(value,settings,glyphItem) end,
+            name=function(value) local record=glyphInfo(value);return record and record.name end,missing=L['Item data loading']}
+    end
     if kind=='Item_EditBox' or kind=='Inventory_EditBox' or kind=='item' then
         return {kind='item',index=itemInfo,info=itemInfo,resolve=itemResolve,search=itemSearch,
             name=function(value) local record=itemInfo(value);return record and record.name end,

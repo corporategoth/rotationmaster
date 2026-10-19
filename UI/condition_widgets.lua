@@ -6,6 +6,11 @@ local function ace()
     local ok,library=pcall(LibStub,'AceGUI-3.0',true)
     if ok then return library end
 end
+-- Saved factory source explicitly binds the real Ace table. Resolve it only
+-- when that compatibility value is requested, never while native fields load.
+function addon:GetConditionWidgetCompatibilityLibrary()
+    return LibStub('AceGUI-3.0')
+end
 function addon:ObserveConditionWidgets(callback)
     local token={callback=callback};observers[token]=true
     return function() observers[token]=nil end
