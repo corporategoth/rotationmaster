@@ -178,10 +178,10 @@ function addon:CreateSettingsForm(parent)
         local items=type(value)=='table' and value or type(value)=='number' and {value} or {}
         local function replace(copy) items=copy;changed(copy) end
         for i,item in ipairs(items) do
-            self:Item(key..i,string.format(L['Item %d'],i),item,function(id) local copy=addon.deepcopy(items);copy[i]=id;replace(copy) end)
-            self:Actions({{key=key..'_delete'..i,text=L['Delete'],icon='trash',action=function() local copy=addon.deepcopy(items);table.remove(copy,i);replace(copy);self:Draw() end}})
+            self:Item(key..i,string.format(L['Item %d'],i),item,function(id) local copy=addon.Functions.collections.deepcopy(items);copy[i]=id;replace(copy) end)
+            self:Actions({{key=key..'_delete'..i,text=L['Delete'],icon='trash',action=function() local copy=addon.Functions.collections.deepcopy(items);table.remove(copy,i);replace(copy);self:Draw() end}})
         end
-        self:Item(key..'_new',L['Add item'],'',function(id) if id~='' then local copy=addon.deepcopy(items);copy[#copy+1]=id;replace(copy);self:Draw() end end,true)
+        self:Item(key..'_new',L['Add item'],'',function(id) if id~='' then local copy=addon.Functions.collections.deepcopy(items);copy[#copy+1]=id;replace(copy);self:Draw() end end,true)
     end
     function p:Sound(key,caption,value,changed)
         local ok,media=pcall(LibStub,'LibSharedMedia-3.0',true);local sounds={}

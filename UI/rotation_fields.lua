@@ -190,14 +190,14 @@ function addon:BuildRotationCardFields(owner,card,model,alive)
                 field.frame:SetParent(frame);field.frame:ClearAllPoints();field.frame:SetPoint('TOPLEFT',44,-y);field:SetWidth(math.max(40,fieldWidth-70));field:SetLabel('');field:SetText(item or '')
                 field:SetCallback('OnEnterPressed',function(_,_,value)
                     if not active() then return end
-                    local id=tonumber(value);local copy=addon.deepcopy(items)
+                    local id=tonumber(value);local copy=addon.Functions.collections.deepcopy(items)
                     if id and id>0 and id%1==0 then copy[index]=id elseif index<=#copy then table.remove(copy,index) else return end
                     patch({action=copy})
                 end)
                 field:SetDisabled(readOnly);field.frame:Show()
                 if item then
                     local remove=acquire('choices',function() return addon:CreateWorkbenchIconButton(frame,'trash',L['Delete']) end);remove:ClearAllPoints();remove:SetPoint('TOPLEFT',fieldWidth-22,-y);remove:SetSize(20,20);controls[#controls+1]=remove
-                    addon:SetUIScript(remove,'OnClick',function() if active() then local copy=addon.deepcopy(items);table.remove(copy,index);patch({action=copy}) end end);if readOnly then remove:Disable() else remove:Enable() end
+                    addon:SetUIScript(remove,'OnClick',function() if active() then local copy=addon.Functions.collections.deepcopy(items);table.remove(copy,index);patch({action=copy}) end end);if readOnly then remove:Disable() else remove:Enable() end
                 end
                 y=y+28
             end

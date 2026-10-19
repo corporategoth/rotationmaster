@@ -26,7 +26,7 @@ function addon:GetConditionItemList(reference)
     return source.items
 end
 local function read(cache,method,...)
-    return addon.getCached(cache,method,platform,...)
+    return addon.Functions.cache.getCached(cache,method,platform,...)
 end
 local function selectItem(list,cache,equipped,notcarrying)
     local first
@@ -53,13 +53,13 @@ function addon:EvaluateItemCondition(tag,value,cache,now)
         return false
     end
     if tag=='CARRYING' then
-        if #list==0 then return self.compare(value.operator,0,value.value) end
+        if #list==0 then return self.Functions.values.compare(value.operator,0,value.value) end
         local counts,why=read(cache,platform.GetBagItemCounts);if not counts then return nil,why end
         for _,entry in ipairs(list) do
             local id,problem=read(cache,platform.GetItemID,entry);if not id then return nil,problem end
-            if counts[id] then return self.compare(value.operator,counts[id],value.value) end
+            if counts[id] then return self.Functions.values.compare(value.operator,counts[id],value.value) end
         end
-        return self.compare(value.operator,0,value.value)
+        return self.Functions.values.compare(value.operator,0,value.value)
     end
     local id,_,why=selectItem(list,cache,true,value.notcarrying)
     if why then return nil,why end
@@ -76,7 +76,7 @@ function addon:EvaluateItemCondition(tag,value,cache,now)
         if not cooldown.isEnabled then return nil,'item-cooldown-disabled' end
         local remaining=math.max(0,cooldown.startTime+cooldown.duration-now)
         if not finite(remaining) then return nil,'invalid-api-result' end
-        return self.compare(value.operator,self.round(remaining,3),value.value)
+        return self.Functions.values.compare(value.operator,self.round(remaining,3),value.value)
     end
     if tag~='ITEM' then return nil,'unknown-item-condition' end
     local levelAllowed,levelReason=read(cache,platform.IsItemLevelAllowed,id)

@@ -966,4 +966,20 @@ test('active diagram panning populates newly exposed cards before the gesture en
     assert(c.pan and visibleCard(pane,'entry350'),'panning showed an empty viewport until mouse release')
     c:CancelDrag()
 end)
+test('item field edits and deletion use canonical copies with private history and stale callback guards',function()
+    local f,parent=fixture();local a=f.addon;local saved=a.db.profile.rotations[0].mine.cooldowns[1];saved.type='item';saved.action={5512,5513}
+    local original=saved.action;local pane=assert(a:CreateRotationEditor(parent,0,'mine'));card(pane,'optional').action:Click()
+    a.deepcopy=function() error('retired addon.deepcopy used by rotation fields') end
+    local input=card(pane,'optional').fieldControls.item1;input:Fire('OnEnterPressed','5514')
+    assert(pane.workspace:Snapshot().cooldowns[1].action[1]==5514 and original[1]==5512 and original[2]==5513)
+    pane.undo:Click();assert(pane.workspace:Snapshot().cooldowns[1].action[1]==5512)
+    pane.redo:Click();assert(pane.workspace:Snapshot().cooldowns[1].action[1]==5514)
+    local fields=card(pane,'optional').fieldControls;local remove
+    for _,control in ipairs(fields) do if control.icon and control.icon.texture==a:ControlTexture('trash') then remove=control;break end end
+    assert(remove,'item delete control missing');remove:Click()
+    assert(pane.workspace:Snapshot().cooldowns[1].action[1]==5513 and #pane.workspace:Snapshot().cooldowns[1].action==1 and original[1]==5512)
+    pane.undo:Click();assert(#pane.workspace:Snapshot().cooldowns[1].action==2)
+    local stale=card(pane,'optional').fieldControls.item1;pane:Release();stale:Fire('OnEnterPressed','5515')
+    assert(pane.workspace:Snapshot().cooldowns[1].action[1]==5514 and saved.action==original)
+end)
 finish()

@@ -111,6 +111,7 @@ test('only three exact evaluators change with full module bytes and historical c
     local f,a=fixture()
     for _,case in ipairs({{'combat',{'COMBAT','ENEMY'},'7df14566'},{'misc',{'PVP'},'d2cf6e51'}}) do
         local file=assert(io.open('Conditions/'..case[1]..'.lua'));local text=file:read('*a');file:close()
+        text=dofile('tests/fixtures/restore_player_flag_repairs.lua')(text,case[1]=='combat' and {'stealthed','control'} or {'outdoors'})
         if case[1]=='combat' then text=dofile('tests/fixtures/restore_retired_gui_getter.lua')(text) end
         for _,tag in ipairs(case[2]) do local start=assert(text:find(repaired[tag],1,true),'exact repaired '..tag..' missing');assert(not text:find(repaired[tag],start+1,true),'multiple repaired '..tag..' bodies')
             text=text:sub(1,start-1)..original[tag]..text:sub(start+#repaired[tag])

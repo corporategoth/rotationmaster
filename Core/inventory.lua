@@ -3,7 +3,7 @@ local _,addon=...
 -- Keep the legacy snapshot shape for custom/UI consumers while publishing only
 -- complete, normalized bag observations. Runtime item predicates query Platform.
 function addon:UpdateBagContents(cache)
-    local snapshot,reason=self.getCached(cache,self.Platform.GetBagSnapshot,self.Platform)
+    local snapshot,reason=self.Functions.cache.getCached(cache,self.Platform.GetBagSnapshot,self.Platform)
     if not snapshot then
         self.bagContents={};self.bagContentsUnavailable=reason or 'inventory-unavailable'
         return false,self.bagContentsUnavailable

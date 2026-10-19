@@ -1039,4 +1039,15 @@ test('overlay catalog stages exact texture paths across effect fields and reject
     assert(p.draft.global.effects.e.sequence[1]==selected and p.fields.seq1.texturePreview.texture==selected)
     assert(a.db.global.effects.e.sequence[1]=='old')
 end)
+test('item sequence callbacks use canonical shallow copies without editing the supplied list',function()
+    local f,parent=fixture();local a=f.addon;local nested={marker='retained'};local supplied={1,2,metadata=nested};local current=supplied;local changes=0
+    local p=a:CreateSettingsForm(parent);p:Open(function(form) form:ItemSequence('items',current,function(value) changes=changes+1;current=value end) end)
+    a.deepcopy=function() error('retired addon.deepcopy used by item sequence') end
+    local function edit(key,text) local c=p.fields[key];c:SetText(text);c.scripts.OnTextChanged(c,true);c.scripts.OnEnterPressed(c) end
+    edit('items1','3');assert(current~=supplied and current[1]==3 and current[2]==2 and current.metadata==nested and supplied[1]==1)
+    local previous=current;edit('items_new','4');assert(current~=previous and current[1]==3 and current[2]==2 and current[3]==4 and current.metadata==nested and previous[3]==nil)
+    previous=current;p.fields.items_delete2:Click();assert(current~=previous and current[1]==3 and current[2]==4 and current[3]==nil and current.metadata==nested and previous[2]==2)
+    local stale=p.fields.items1;local count=changes;p:Release();stale:SetText('5');stale.scripts.OnEnterPressed(stale)
+    assert(changes==count and current[1]==3 and supplied[1]==1 and supplied[2]==2)
+end)
 finish()

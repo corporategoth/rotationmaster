@@ -158,7 +158,7 @@ end
 function addon:OpenSettingsCustomCondition(p,key,condition)
     if p.transactionKeys and p:IsSettingsDraftDirty() then p:Message(L['Apply or discard current settings before opening the custom code editor.']);return end
     local token=p.generation
-    local dialog,owner=self:condition_edit_box(p:Guard(function(newKey) if p.draft then p.draft.global.custom_conditions=self:CopySettingsData(self.db.global.custom_conditions);p.draftBaseline.global.custom_conditions=self:CopySettingsData(self.db.global.custom_conditions) end;p.condition=newKey;p.category='ALL';p.conditionSource='custom';p:Draw() end),key,condition and self.deepcopy(condition) or nil,function() return p:Valid(token) end)
+    local dialog,owner=self:condition_edit_box(p:Guard(function(newKey) if p.draft then p.draft.global.custom_conditions=self:CopySettingsData(self.db.global.custom_conditions);p.draftBaseline.global.custom_conditions=self:CopySettingsData(self.db.global.custom_conditions) end;p.condition=newKey;p.category='ALL';p.conditionSource='custom';p:Draw() end),key,condition and self.Functions.collections.deepcopy(condition) or nil,function() return p:Valid(token) end)
     if dialog then p.cleanups[#p.cleanups+1]=function() addon:CloseCustomConditionEditor(dialog,owner) end end
     return dialog,owner
 end

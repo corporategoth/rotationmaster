@@ -599,4 +599,20 @@ test('bound-helper navigation offers pending condition choices before selecting 
     p.prompt.cancel:Click();assert(d.OwnerValid() and d.code:GetText()=='return false' and alias:GetText()=='not a valid alias' and not opened)
     d.form.fields.binding_target_1:Click();p.prompt.discard:Click();assert(opened=='Functions' and a.configFunctionSelection=='HELPER' and a.db.global.custom_conditions.INLINE.evaluate==source.evaluate)
 end)
+test('settings custom editor opens a canonical shallow copy and preserves source and owner guards',function()
+    local f,a=fixture(true);local source=a:CopySettingsData(a.empty_condition);source.description='Original';source.fields={count='number'}
+    a.db.global.custom_conditions.CUSTOM=source;a.conditionDefinitions.CUSTOM={description='Original'}
+    local p=a:CreateSettingsForm(f.env.UIParent);p:Open(function() end)
+    local copy,seen;local canonical=a.Functions.collections.deepcopy
+    a.Functions.collections.deepcopy=function(value,...) local result=canonical(value,...);if value==source then copy=result;seen=true end;return result end
+    a.deepcopy=function() error('retired addon.deepcopy used by settings custom editor') end
+    local d,owner=a:OpenSettingsCustomCondition(p,'CUSTOM',source)
+    assert(seen and copy~=source and copy.fields==source.fields and d.nativeCustomEditor and owner.active)
+    local description=d.form.fields.description;description:SetText('Edited');description.scripts.OnTextChanged(description,true);description.scripts.OnEnterPressed(description)
+    assert(source.description=='Original' and a.db.global.custom_conditions.CUSTOM==source and d:PendingSource().description=='Edited')
+    d:UpdateActions();d.apply:Click();assert(a.db.global.custom_conditions.CUSTOM.description=='Edited' and source.description=='Original' and p.condition=='CUSTOM' and p.category=='ALL' and p.conditionSource=='custom')
+    local saved=a.db.global.custom_conditions.CUSTOM;d,owner=a:OpenSettingsCustomCondition(p,'CUSTOM',saved)
+    local apply=d.apply.scripts.OnClick;p:Release();apply()
+    assert(a.db.global.custom_conditions.CUSTOM==saved and source.description=='Original' and not owner.active)
+end)
 finish()

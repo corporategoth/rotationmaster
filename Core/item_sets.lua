@@ -6,7 +6,7 @@ local function list(items)
     return items
 end
 local function read(cache,method,...)
-    return addon.getCached(cache,method,platform,...)
+    return addon.Functions.cache.getCached(cache,method,platform,...)
 end
 -- First-defined identity is useful for previews even without ownership. Do not
 -- store failed name resolution in a long-lived cache: item metadata loads later.

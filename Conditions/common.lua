@@ -436,7 +436,7 @@ function addon:Widget_OperatorWidget(value, name, update, op_field, val_field)
     end)
     operator:SetDisabled(value.disabled)
     operator.configure = function()
-        operator:SetList(addon.operators, addon.keys(addon.operators))
+        operator:SetList(addon.operators, addon.Functions.collections.keys(addon.operators))
         operator:SetValue(value[op_field or "operator"])
     end
     operator_group:AddChild(operator)
@@ -469,7 +469,7 @@ function addon:Widget_OperatorPercentWidget(value, name, update, op_field, val_f
     end)
     operator:SetDisabled(value.disabled)
     operator.configure = function()
-        operator:SetList(addon.operators, addon.keys(addon.operators))
+        operator:SetList(addon.operators, addon.Functions.collections.keys(addon.operators))
         operator:SetValue(value[op_field or "operator"])
     end
     operator_group:AddChild(operator)

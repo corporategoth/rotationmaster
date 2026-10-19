@@ -2371,6 +2371,7 @@ L["Destination array modified in place."] = true
 L["Display lookup table."] = true
 L["Evaluation cache, or nil to bypass caching."] = true
 L["Exact selected unit token; the attacker remains player."] = true
+L["Exact unit token checked for existence and passed to the selected metadata API."] = true
 L["Exact unit token whose resource should be observed; this does not redirect player or vehicle units."] = true
 L["Exact unit token whose selected flag should be observed."] = true
 L["First exact unit token, checked for existence before comparison."] = true
@@ -2411,12 +2412,16 @@ L["Observe a readable raw unit level on known clients. A readable absent unit re
 L["Observe a unit casting or channeling on supported readable clients. A readable inactive result returns active=false. Active records contain name and independently available remainingSeconds and interruptible fields, with remainingReason or interruptibleReason when an optional field is unavailable. Missing, failed or restricted observations return nil with a reason."] = true
 L["Observe explicit mana or the current raw power resource on supported readable clients. Select resource identities from the live PowerType enum; explicit mana never falls back to the current bar. Known absence returns exists=false; missing, failed, restricted or malformed observations return nil with a reason. Current-mode quantities preserve signed native resources; explicit mana is nonnegative. Request maximum only when needed; percentage consumers must require a positive maximum."] = true
 L["Observe glyph sockets on verified Wrath, Cata and Mists client layouts. Returns slots and a complete flag. Each slot has active=false when known locked or empty, active=true plus spellID when occupied, or nil active plus reason when unavailable. Unknown layouts and failed count queries return nil with a reason. This does not compare item names or prove exact item-to-spell identity."] = true
+L["Observe one consumed native unit metadata field after checking UnitExists: class uses UnitClass return two, creature uses the localized UnitCreatureType name, and classification uses UnitClassification. A readable absent unit returns false without querying metadata. Unused tuple fields do not affect availability; a required missing, failed, nil, restricted or malformed value returns nil with a reason. No player class, GUID, enum or translation inference is added."] = true
 L["Observe one current unit flag: combat uses UnitAffectingCombat, enemy uses UnitIsEnemy with player as the first unit, and pvp uses UnitIsPVP. A readable absent unit returns false without querying the flag. Required missing, failed, restricted or malformed observations return nil with a reason. This preserves the exact selected unit and does not infer friendliness, attackability or other unit states."] = true
+L["Observe one independent zero-argument player flag: stealthed uses IsStealthed, control uses HasFullControl, and outdoors uses IsOutdoors. Readable true and false retain their meanings. Required missing, failed, nil, restricted or malformed data returns nil with a reason. No existence, instance or ability-usability inference is added."] = true
 L["Observe readable current health and optionally maximum health on supported clients. A readable absent unit returns exists=false. Missing, failed, restricted or malformed observations return nil with a reason; they do not establish an absent unit or a health value."] = true
 L["Observe the player current movement speed on supported readable clients. This queries GetUnitSpeed for player only, without testing another unit or redirecting vehicle ownership. Zero means stationary; positive finite fractional speeds remain valid. Missing, failed, restricted or malformed observations return nil with a reason."] = true
 L["Observe whether the player can attack a selected unit that is not dead, using the exact UnitExists, UnitCanAttack and UnitIsDead predicates. Known absence or a readable false attack result returns false without querying death. Required missing, failed, restricted or malformed observations return nil with a reason. This does not test ghosts, range, hostility or ability usability, and does not redirect unit ownership."] = true
 L["Observed membership, or nil when unavailable."] = true
+L["One of class, creature or classification; other metadata kinds are unsupported."] = true
 L["One of combat, enemy or pvp; other flag kinds are not supported."] = true
+L["One of stealthed, control or outdoors; no other predicate is invoked."] = true
 L["Optional collection of key values selecting entries; its own keys are ignored."] = true
 L["Optional ordering callback called as order(t, leftKey, rightKey)."] = true
 L["Optional positive class ID; nil queries the current player class under protection."] = true
@@ -2425,6 +2430,8 @@ L["Original non-nil value, or a colored placeholder string."] = true
 L["Packaged helper from Conditions/spatial.lua."] = true
 L["Packaged helper from utils.lua."] = true
 L["Policy or availability reason for a nil movement observation."] = true
+L["Policy, query-validation or availability reason for a nil metadata observation."] = true
+L["Policy, query-validation or availability reason for a nil player flag."] = true
 L["Policy, query-validation or availability reason for a nil resource observation."] = true
 L["Policy, query-validation or availability reason for a nil unit flag."] = true
 L["Policy, query-validation or availability reason for nil attackability."] = true
@@ -2450,8 +2457,10 @@ L["Read the public LibRangeCheck interval for a unit. A successful upper bound i
 L["Readable canonical item classification record, or nil when unavailable."] = true
 L["Readable canonical itemID/classID/subClassID record when the item is a glyph for the requested class; nil for invalid or unavailable metadata."] = true
 L["Readable charge record, or nil when unavailable."] = true
+L["Readable consumed metadata string, false for a known absent unit, or nil when required data is unavailable."] = true
 L["Readable cooldown record, or nil when unavailable."] = true
 L["Readable interval with optional minimum and maximum bounds in yards. At least one bound is present; nil when unavailable."] = true
+L["Readable selected flag or nil when required data is unavailable."] = true
 L["Readable selected flag, false for a known absent unit, or nil when a required observation is unavailable."] = true
 L["Readable unit equality, false for a known absent first unit, or nil when required observations are unavailable."] = true
 L["Reference input kind, such as Spec_EditBox, used for spell suggestions."] = true

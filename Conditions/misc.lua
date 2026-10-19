@@ -216,7 +216,7 @@ addon:RegisterCondition("OUTDOORS", {
         return true
     end,
     evaluate = function(_, cache)
-        return Functions.cache.getCached(cache, IsOutdoors)
+        return Functions.cache.getCached(cache, addon.Platform.GetPlayerFlagObservation, addon.Platform, "outdoors")
     end,
     print = function()
         return L["you {{!are|are not}} in a outdoors"]

@@ -88,6 +88,7 @@ test('public observer editable clone resolves its actual owner and current reada
 end)
 test('only one exact evaluator changes with full module bytes and four private identities intact',function()
     local _,a=fixture();local file=assert(io.open('Conditions/character.lua'));local text=file:read('*a');file:close()
+    text=dofile('tests/fixtures/restore_unit_metadata_repairs.lua')(text)
     local first=assert(text:find(repaired,1,true),'exact repaired identity callback missing');assert(not text:find(repaired,first+1,true),'multiple identity replacements')
     text=text:sub(1,first-1)..original..text:sub(first+#repaired)
     assert(a:FunctionSourceHash(text)=='7c75697a','character changed beyond the approved ISSAME evaluator from a8711a9')

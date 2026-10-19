@@ -123,6 +123,11 @@ test('every callback byte and parameter remains identical after reversing only n
             local arguments=tag=='COMBAT' and 'UnitAffectingCombat, value.unit' or 'UnitIsEnemy, "player", value.unit'
             source.evaluate='\n        if not addon.getCached(cache, UnitExists, value.unit) then return false end\n        return addon.getCached(cache, '..arguments..')\n    '
         end
+        if tag=='STEALTHED' or tag=='INCONTROL' then
+            local kind=tag=='STEALTHED' and 'stealthed' or 'control'
+            assert(source.evaluate=='\n        return addon.getCached(cache, addon.Platform.GetPlayerFlagObservation, addon.Platform, \"'..kind..'\")\n    ','unexpected player flag evaluator repair')
+            source.evaluate='\n        return addon.getCached(cache, '..(tag=='STEALTHED' and 'IsStealthed' or 'HasFullControl')..')\n    '
+        end
         -- The movement readiness suite separately pins this sole semantic body
         -- repair and reverses it against the entire original combat module.
         if tag=='MOVING' then

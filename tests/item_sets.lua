@@ -71,4 +71,23 @@ test('restricted identity ownership or bag observations never reach comparison o
     f.env.C_Container.GetContainerItemInfo=function() return secret end
     assert(a:FindFirstItemOfItems({}, {10},false)==nil)
 end)
+test('available item selection uses canonical cache with exact supplied cache and ordered input identity',function()
+    local f,s,api=fixture(true);local a=f.addon;local platform=a.Platform;local original=a.Functions.cache.getCached;local cache={};local implicit;local calls={};local items={10,11}
+    a.Functions.cache.getCached=function(got,method,...)
+        if cache then assert(got==cache,'item selection lost caller cache') else implicit=implicit or got;assert(type(got)=='table' and got==implicit,'nil caller cache did not create one local pass') end
+        assert(select(1,...)==platform,'item selection lost captured Platform')
+        assert(select('#',...)==(method==platform.GetBagItemCounts and 1 or 2),'item selection added a receiver or argument')
+        calls[method]=(calls[method] or 0)+1;return original(got,method,...)
+    end
+    a.getCached=function() error('legacy addon.getCached used by item selection') end
+    assert(a:FindFirstItemOfItems(cache,items,false)==10 and a:FindFirstItemOfItems(cache,items,false)==10)
+    assert(calls[platform.GetItemID]==2 and calls[platform.GetBagItemCounts]==2 and items[1]==10 and items[2]==11)
+    s.bags[10]=0;assert(a:FindFirstItemOfItems(cache,items,false)==10,'shared caller cache was bypassed')
+    cache={};assert(a:FindFirstItemOfItems(cache,items,false)==11,'fresh pass did not refresh ordered selection')
+    cache={};api.IsEquippedItem=function() error('first ownership unavailable') end
+    local id,reason=a:FindFirstItemOfItems(cache,items,true);assert(id==nil and reason=='api-error','unknown first candidate advanced to the second')
+    assert(items[1]==10 and items[2]==11 and #items==2)
+    cache=nil;implicit=nil;assert(a:FindFirstItemOfItems(nil,items,false)==11);local previous=implicit
+    s.bags[10]=3;implicit=nil;assert(a:FindFirstItemOfItems(nil,items,false)==10 and implicit~=previous,'nil cache persisted between selections')
+end)
 finish()

@@ -44,4 +44,26 @@ test('legacy snapshots can resolve links without returning protected or malforme
     f.env.GetContainerNumSlots=function() return secret end
     local snapshot,reason=p:GetBagSnapshot();assert(not snapshot and reason=='restricted-value')
 end)
+test('runtime inventory uses its receiver canonical cache and publishes detached complete snapshots',function()
+    local f=fixture(true);f.load('Core/inventory.lua');local a=f.addon;local cache={};local calls,dispatches=0,0
+    local snapshot={[10]={count=2,slots={{bag=0,slot=3}}}};local observation=snapshot;local why
+    local platform={};function platform:GetBagSnapshot() assert(self==platform);calls=calls+1;return observation,why end
+    function platform:GetItemUseSpell(id) assert(self==platform and id==10);return {name='Potion'} end
+    local receiver={Platform=platform,Functions={cache={}},bagContents={[99]={count=8}}};local canonical=a.Functions.cache.getCached
+    receiver.Functions.cache.getCached=function(got,method,...)
+        assert(got==cache and method==platform.GetBagSnapshot and select('#',...)==1 and select(1,...)==platform)
+        dispatches=dispatches+1;return canonical(got,method,...)
+    end
+    receiver.getCached=function() error('legacy receiver.getCached used by inventory') end;a.getCached=function() error('inventory used captured addon instead of receiver') end
+    local function pack(...) return {n=select('#',...),...} end
+    local ready=pack(a.UpdateBagContents(receiver,cache));assert(ready.n==1 and ready[1]==true);local first=receiver.bagContents
+    assert(first[10].count==2 and first[10].spell=='Potion' and first[10].slots[1]==3 and first[10].locations[1].bag==0)
+    first[10].locations[1].bag=7;first[10].slots[1]=9
+    assert(a.UpdateBagContents(receiver,cache)==true and calls==1 and dispatches==2 and receiver.bagContents~=first)
+    assert(receiver.bagContents[10].locations[1].bag==0 and receiver.bagContents[10].slots[1]==3 and snapshot[10].slots[1].bag==0)
+    cache={};observation=false;why='inventory-blocked';ready=pack(a.UpdateBagContents(receiver,cache))
+    assert(ready.n==2 and ready[1]==false and ready[2]=='inventory-blocked' and next(receiver.bagContents)==nil and receiver.bagContentsUnavailable==ready[2])
+    cache={};observation=nil;why=nil;ready=pack(a.UpdateBagContents(receiver,cache));assert(ready.n==2 and ready[1]==false and ready[2]=='inventory-unavailable')
+    cache={};observation={};assert(a.UpdateBagContents(receiver,cache)==true and next(receiver.bagContents)==nil and receiver.bagContentsUnavailable==nil)
+end)
 finish()

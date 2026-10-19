@@ -66,9 +66,10 @@ addon:RegisterCondition("CLASS", {
                 value.value ~= nil and Functions.values.isin(LOCALIZED_CLASS_NAMES_MALE, value.value))
     end,
     evaluate = function(value, cache)
-        if not Functions.cache.getCached(cache, UnitExists, value.unit) then return false end
-        local _, englishClass = Functions.cache.getCached(cache, UnitClass, value.unit)
-        return englishClass == value.value
+        local observed,reason=Functions.cache.getCached(cache, addon.Platform.GetUnitMetadataObservation, addon.Platform, value.unit, "class")
+        if observed==nil then return nil,reason end
+        if observed==false then return false end
+        return observed == value.value
     end,
     print = function(_, value)
         return string.format(Functions.presentation.playerize(value.unit, L["%s {{!are|are not}} a %s"], L["%s {{!is|is not}} a %s"]),
@@ -367,8 +368,10 @@ addon:RegisterCondition("CREATURE", {
                 value.value ~= nil and Functions.values.isin(addon.creatures, value.value))
     end,
     evaluate = function(value, cache)
-        if not Functions.cache.getCached(cache, UnitExists, value.unit) then return false end
-        return (Functions.cache.getCached(cache, UnitCreatureType, value.unit) == addon.creatures[value.value])
+        local observed,reason=Functions.cache.getCached(cache, addon.Platform.GetUnitMetadataObservation, addon.Platform, value.unit, "creature")
+        if observed==nil then return nil,reason end
+        if observed==false then return false end
+        return observed == addon.creatures[value.value]
     end,
     print = function(_, value)
         return string.format(Functions.presentation.playerize(value.unit, L["%s {{!are|are not}} a %s"], L["%s {{!is|is not}} a %s"]),
@@ -416,8 +419,10 @@ addon:RegisterCondition("CLASSIFICATION", {
                 value.value ~= nil and Functions.values.isin(addon.classifications, value.value))
     end,
     evaluate = function(value, cache)
-        if not Functions.cache.getCached(cache, UnitExists, value.unit) then return false end
-        return (Functions.cache.getCached(cache, UnitClassification, value.unit) == value.value)
+        local observed,reason=Functions.cache.getCached(cache, addon.Platform.GetUnitMetadataObservation, addon.Platform, value.unit, "classification")
+        if observed==nil then return nil,reason end
+        if observed==false then return false end
+        return observed == value.value
     end,
     print = function(_, value)
         return string.format(Functions.presentation.playerize(value.unit, L["%s {{!are|are not}} a %s"], L["%s {{!is|is not}} a %s"]),

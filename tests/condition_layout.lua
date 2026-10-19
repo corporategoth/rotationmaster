@@ -188,4 +188,23 @@ test('custom native table container alignment and spacing preserve geometry',fun
     a:ReleaseConditionWidget(group)
 end)
 
+test('operator factories resolve live canonical ordering and retain field callbacks and retired leases',function()
+    for _,name in ipairs({'Widget_OperatorWidget','Widget_OperatorPercentWidget'}) do
+        local f=fixture();local a=f.addon;f.load('Conditions/common.lua');local ordered=a.Functions.collections.keys;local calls=0
+        a.Functions.collections.keys=function(values) assert(values==a.operators);calls=calls+1;return ordered(values) end
+        a.keys=function() error('legacy addon.keys used by operator fields') end
+        local value={chosen='EQUALS',amount=.333333333,operator='untouched',value=99,disabled=true};local updates=0
+        local group=a[name]({},value,'Amount',function(...) assert(select('#',...)==0);updates=updates+1 end,'chosen','amount')
+        local operator,edit=group.children[1],group.children[2];operator.configure()
+        assert(calls==1 and operator.list==a.operators and operator.value=='EQUALS' and operator.disabled and edit.disabled and updates==0)
+        a.operators={EQUALS='Same',NOTEQUALS='Other'};a.Functions.collections.keys=function(values) assert(values==a.operators);calls=calls+1;return ordered(values) end
+        operator.configure();assert(calls==2 and operator.list==a.operators and operator.order[1]=='NOTEQUALS' and operator.order[2]=='EQUALS')
+        operator:SetDisabled(false);edit:SetDisabled(false);operator:Fire('OnValueChanged','NOTEQUALS')
+        if name=='Widget_OperatorWidget' then edit:Fire('OnEnterPressed','7.5');assert(value.amount==7.5)
+        else assert(edit:GetValue()==.333333333);edit:Fire('OnValueChanged','.625');assert(value.amount==.625) end
+        assert(value.chosen=='NOTEQUALS' and value.operator=='untouched' and value.value==99 and updates==2)
+        local stale=operator.events.OnValueChanged;a:ReleaseConditionWidget(group);stale(operator,'OnValueChanged','EQUALS')
+        assert(value.chosen=='NOTEQUALS' and updates==2)
+    end
+end)
 finish()

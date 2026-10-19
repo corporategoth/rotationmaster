@@ -113,7 +113,7 @@ addon:RegisterCondition("STEALTHED", {
         return true
     end,
     evaluate = function(_, cache)
-        return Functions.cache.getCached(cache, IsStealthed)
+        return Functions.cache.getCached(cache, addon.Platform.GetPlayerFlagObservation, addon.Platform, "stealthed")
     end,
     print = function()
         return L["you {{!are|are not}} stealthed"]
@@ -131,7 +131,7 @@ addon:RegisterCondition("INCONTROL", {
         return true
     end,
     evaluate = function(_, cache)
-        return Functions.cache.getCached(cache, HasFullControl)
+        return Functions.cache.getCached(cache, addon.Platform.GetPlayerFlagObservation, addon.Platform, "control")
     end,
     print = function()
         return L["you {{!are|are not}} in control of your character"]
