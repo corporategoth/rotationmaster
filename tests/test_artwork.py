@@ -47,6 +47,17 @@ class ArtworkTests(unittest.TestCase):
         self.assertEqual((ROOT / 'Data/artwork.lua').read_text(), GENERATOR.generate())
         self.assertEqual((ROOT / '.pkgmeta').read_text(), GENERATOR.release_metadata())
 
+    def test_release_package_matches_case_sensitive_root_toc(self):
+        # The release packager resolves package-as + flavor suffix + '.toc'
+        # case-sensitively on Linux; compare actual directory entry names too.
+        entries = [line.split(':', 1)[1].strip() for line in
+                   (ROOT / '.pkgmeta').read_text().splitlines()
+                   if line.startswith('package-as:')]
+        self.assertEqual(len(entries), 1)
+        names = {path.name for path in ROOT.iterdir() if path.is_file()}
+        self.assertIn(entries[0] + '.toc', names,
+                      'package-as must name the actual root TOC with matching case')
+
     def test_release_keeps_selected_runtime_and_excludes_originals_and_superseded_art(self):
         items = [line[4:] for line in GENERATOR.release_metadata().splitlines() if line.startswith('  - ')]
         patterns = [item + '/*' if (ROOT / item).is_dir() else item for item in items]
