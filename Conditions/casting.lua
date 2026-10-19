@@ -12,9 +12,10 @@ addon:RegisterCondition("CASTING", {
         return value.unit ~= nil and addon.isin(addon.units, value.unit)
     end,
     evaluate = function(value, cache)
-        if not addon.getCached(cache, UnitExists, value.unit) then return false end
-        local name = addon.getCached(cache, UnitCastingInfo, value.unit)
-        return name ~= nil
+        local record,reason=addon.getCached(cache,addon.Platform.GetUnitCastObservation,addon.Platform,value.unit,"cast")
+        if not record then return nil,reason end
+        if not record.active then return false end
+        return true
     end,
     print = function(_, value)
         return string.format(addon.playerize(value.unit, L["%s {{!are|are not}} currently casting"], L["%s {{!is|is not}} currently casting"]),
@@ -42,9 +43,10 @@ addon:RegisterCondition("CASTING_SPELL", {
         return (value.unit ~= nil and addon.isin(addon.units, value.unit) and value.spell ~= nil)
     end,
     evaluate = function(value, cache)
-        if not addon.getCached(cache, UnitExists, value.unit) then return false end
-        local name = addon.getCached(cache, UnitCastingInfo, value.unit)
-        return name == value.spell
+        local record,reason=addon.getCached(cache,addon.Platform.GetUnitCastObservation,addon.Platform,value.unit,"cast")
+        if not record then return nil,reason end
+        if not record.active then return false end
+        return record.name==value.spell
     end,
     print = function(_, value)
         return string.format(addon.playerize(value.unit, L["%s {{!are|are not}} currently casting %s"], L["%s {{!is|is not}} currently casting %s"]),
@@ -81,12 +83,11 @@ addon:RegisterCondition("CASTING_REMAIN", {
                 value.value ~= nil and value.value >= 0)
     end,
     evaluate = function(value, cache)
-        if not addon.getCached(cache, UnitExists, value.unit) then return false end
-        local name, _, _, _, endTimeMS = addon.getCached(cache, UnitCastingInfo, value.unit)
-        if name ~= nil then
-            return addon.compare(value.operator, endTimeMS - (GetTime()*1000), value.value)
-        end
-        return false
+        local record,reason=addon.getCached(cache,addon.Platform.GetUnitCastObservation,addon.Platform,value.unit,"cast")
+        if not record then return nil,reason end
+        if not record.active then return false end
+        if record.remainingSeconds==nil then return nil,record.remainingReason end
+        return addon.compare(value.operator,record.remainingSeconds,value.value)
     end,
     print = function(_, value)
         return addon.nullable(addon.unitsPossessive[value.unit], L["<unit>"]) .. " " ..
@@ -124,9 +125,11 @@ addon:RegisterCondition("CAST_INTERRUPTABLE", {
         return value.unit ~= nil and addon.isin(addon.units, value.unit)
     end,
     evaluate = function(value, cache)
-        if not addon.getCached(cache, UnitExists, value.unit) then return false end
-        local name, _, _, _, _, _, _, notInterruptible = addon.getCached(cache, UnitCastingInfo, value.unit)
-        return name ~= nil and not notInterruptible
+        local record,reason=addon.getCached(cache,addon.Platform.GetUnitCastObservation,addon.Platform,value.unit,"cast")
+        if not record then return nil,reason end
+        if not record.active then return false end
+        if record.interruptible==nil then return nil,record.interruptibleReason end
+        return record.interruptible
     end,
     print = function(_, value)
         return string.format(L["%s's spell {{!is|is not}} interruptable"], addon.nullable(addon.units[value.unit], L["<unit>"]))

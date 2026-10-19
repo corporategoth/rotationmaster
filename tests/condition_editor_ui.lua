@@ -17,7 +17,7 @@ local function fixture()
     end
     dofile('tests/fixtures/spell_editbox.lua')(f,create)
     ace.Release=function(_,w) if w.frame then w.frame:Hide() end;w.released=true end
-    for _,file in ipairs({'Data/plain.lua','Data/tags.lua','Data/rotation_tree.lua','Data/condition_draft.lua','Data/validation.lua','Data/diff.lua','Core/conditions.lua','Core/condition_catalog.lua','Core/condition_editor.lua','Core/condition_canvas.lua','UI/window.lua','UI/help.lua','UI/condition_picker.lua','UI/condition_cards.lua','UI/condition_canvas.lua','UI/condition_editor.lua','Options/conditional.lua'}) do f.load(file) end
+    for _,file in ipairs({'Data/plain.lua','Data/tags.lua','Data/rotation_tree.lua','Data/condition_draft.lua','Data/validation.lua','Data/diff.lua','Core/conditions.lua','Core/condition_catalog.lua','Core/condition_editor.lua','Core/condition_canvas.lua','UI/window.lua','UI/help.lua','UI/condition_picker.lua','UI/condition_cards.lua','UI/condition_canvas.lua','UI/condition_editor.lua','UI/condition_entrypoints.lua','Options/conditional.lua'}) do f.load(file) end
     local h=io.open('UI/condition_text.lua');if h then h:close();f.load('UI/condition_text.lua') end
     a:RegisterCondition('NUMBER',{description='Number check',fields={number='number'},requiredFields={'number'},
         valid=function(_,value) return type(value.number)=='number' end,

@@ -6,7 +6,6 @@ local IsAddOnLoaded = C_AddOns and C_AddOns.IsAddOnLoaded or IsAddOnLoaded
 
 _G[addon_name] = LibStub("AceAddon-3.0"):NewAddon(addon, addon_name, "AceConsole-3.0", "AceEvent-3.0", "AceTimer-3.0")
 
-local AceGUI = LibStub("AceGUI-3.0")
 local AceConsole = LibStub("AceConsole-3.0")
 local AceEvent = LibStub("AceEvent-3.0")
 local ItemData = LibStub("AceGUI-3.0-ItemLoader")
@@ -884,7 +883,8 @@ function addon:EvaluateNextActionInternal()
                 ---@cast previewWindow RMRecommendationPreview
                 previewWindow:AddRecommendation(spellid,itemId)
             elseif self.nextWindow then
-                local icon=AceGUI:Create("Icon")
+                -- Only an explicitly supplied historical preview uses Ace.
+                local icon=LibStub("AceGUI-3.0"):Create("Icon")
                 local info=self.Platform:GetSpellInfo(spellid)
                 icon:SetImage(info and info.iconID or "Interface\\Icons\\INV_Misc_QuestionMark")
                 icon:SetImageSize(preview==1 and 54 or 36,preview==1 and 54 or 36)

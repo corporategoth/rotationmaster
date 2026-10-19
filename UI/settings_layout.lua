@@ -29,22 +29,94 @@ function addon:InstallSettingsLayout(p)
         for _,entry in ipairs(r.entries) do if entry.value==value then entry.text=presentation.text or entry.text;entry.search=presentation.search or '';entry.icon=presentation.icon or nil;break end end
         self:RefreshRoster()
     end
+    function p:RetireRosterRow(row)
+        row.rosterLease=nil;row.rosterEntry=nil;row.rosterIndex=nil
+        for _,event in ipairs({'OnClick','OnMouseDown','OnDragStart','OnDragStop'}) do addon:SetUIScript(row,event,nil) end
+        row.rmDragged=nil;row.rmDragOriginalDown=nil;row.rmDragDownWrapper=nil
+        if row.up then addon:SetUIScript(row.up,'OnClick',nil);addon:SetUIScript(row.down,'OnClick',nil);row.up:Hide();row.down:Hide() end
+        row:Hide()
+    end
+    function p:ReleaseRoster()
+        local r=self.roster;if not r then return end
+        r.active=false;r.rebuilding=true;r.unsavedState=nil;r.unsavedByValue={}
+        if r.orderView then r.orderView:Cancel() end
+        for _,row in ipairs(r.rows) do self:RetireRosterRow(row) end
+        for _,placeholder in ipairs(r.dragPlaceholders or {}) do placeholder:Hide();placeholder.rosterPlaceholderIndex=nil end
+        r.rebuilding=nil;r.search:ClearFocus();r.frame:Hide()
+    end
+    function p:BindRosterViewportRow(row,entry,index)
+        local r=self.roster;local lease={};local revision=r.revision
+        row.rosterLease=lease;row.rosterEntry=entry;row.rosterIndex=index;row.rmDragged=nil
+        row:SetParent(r.child);row:ClearAllPoints();row:SetPoint('TOPLEFT',0,-(index-1)*34);row:SetSize(r.child:GetWidth(),32)
+        row:SetText(entry.text);row:GetFontString():SetTextColor(entry.custom==false and .4 or .92,entry.custom==false and .7 or .94,entry.custom==false and 1 or .96)
+        addon:SetWorkbenchListSelection(row,entry.value==r.current);addon:AlignWorkbenchTextLeft(row,entry.icon and 34 or 6)
+        if entry.icon then row.icon:SetTexture(entry.icon);row.icon:Show() else row.icon:Hide() end
+        addon:SetWorkbenchInvalid(row,entry.invalid,entry.validationMessage);row.tooltip=entry.validationMessage
+        addon:SetWorkbenchUnsaved(row,self.RosterEntryUnsaved and self:RosterEntryUnsaved(entry) or false)
+        if entry.disabled then row:GetFontString():SetTextColor(.5,.5,.5) end
+        addon:SetUIScript(row,'OnClick',self:Guard(function() if r.active and r.revision==revision and row.rosterLease==lease and self:FlushEdits() then r.choose(entry.value) end end))
+        self:BindRosterOrderRow(row,entry,revision);row:Show()
+    end
+    function p:RefreshRosterViewport()
+        local r=self.roster
+        if not r or not r.active or r.rebuilding or r.refreshing or not r.matches or not self:Valid(r.generation) then return end
+        r.refreshing=true;local binding
+        local ok,why=pcall(function()
+            local top=r.scroll.workbenchBar:GetValue();local height=r.scroll:GetHeight()
+            local first=math.max(1,math.floor((top-102)/34)+1);local last=math.min(#r.matches,math.floor((top+height+102)/34)+1)
+            local bound={}
+            for _,row in ipairs(r.rows) do if row.rosterLease then
+                local index=row.rosterIndex;local carried=r.orderView and r.orderView.carried and r.orderView.carried[row]
+                if index>=first and index<=last or carried then
+                    bound[index]=row
+                    if not carried then
+                        row:SetWidth(r.child:GetWidth())
+                        local entry=row.rosterEntry;local ordered=r.orderIndex[entry.value]
+                        addon:AlignWorkbenchTextLeft(row,entry.icon and (ordered and 54 or 34) or 6)
+                    end
+                else self:RetireRosterRow(row) end
+            end end
+            local free,placeholders=1,0
+            for index=first,last do if not bound[index] then
+                local view=r.orderView
+                if view and view:Carries(r.matches[index]) then
+                    placeholders=placeholders+1;r.dragPlaceholders=r.dragPlaceholders or {}
+                    local placeholder=r.dragPlaceholders[placeholders]
+                    if not placeholder then placeholder=CreateFrame('Frame',nil,r.child);placeholder:EnableMouse(false);placeholder.decoration=addon:CreateRoundedCardDecoration(placeholder);placeholder.decoration:SetColors(.4,.4,.4,.7,.12);r.dragPlaceholders[placeholders]=placeholder end
+                    placeholder.rosterPlaceholderIndex=index;placeholder:ClearAllPoints();placeholder:SetPoint('TOPLEFT',0,-(index-1)*34);placeholder:SetSize(r.child:GetWidth(),32);placeholder:Show()
+                else
+                while r.rows[free] and r.rows[free].rosterLease do free=free+1 end
+                local row=r.rows[free]
+                if not row then
+                    row=addon:CreateWorkbenchListRow(r.child,230,32);r.rows[free]=row
+                    row.icon=row:CreateTexture(nil,'ARTWORK');row.icon:SetSize(24,24);row.icon:SetPoint('LEFT',4,0)
+                end
+                binding=row;self:BindRosterViewportRow(row,r.matches[index],index);binding=nil
+                end
+            end end
+            for i=placeholders+1,#(r.dragPlaceholders or {}) do local placeholder=r.dragPlaceholders[i];placeholder.rosterPlaceholderIndex=nil;placeholder:Hide() end
+            self:BuildRosterOrderZones()
+        end)
+        r.refreshing=nil
+        if not ok then if binding then pcall(self.RetireRosterRow,self,binding) end;error(why,0) end
+    end
     function p:RefreshRoster()
         local r=self.roster;if not r then return end
-        r.revision=(r.revision or 0)+1;local revision=r.revision;self:PrepareRosterOrder(revision);local query=(r.search:GetText() or ''):lower();r.matches={}
+        local top=r.scroll.workbenchBar:GetValue();local anchor=r.matches and r.matches[math.floor(top/34)+1];local offset=top%34
+        r.rebuilding=true
+        if r.orderView then r.orderView:Cancel() end
+        for _,row in ipairs(r.rows) do self:RetireRosterRow(row) end
+        r.revision=(r.revision or 0)+1;local query=(r.search:GetText() or ''):lower();r.matches={};r.matchIndex={}
         for _,entry in ipairs(r.entries) do
-            if ((entry.text or '')..' '..(entry.search or '')):lower():find(query,1,true) then r.matches[#r.matches+1]=entry end
+            if ((entry.text or '')..' '..(entry.search or '')):lower():find(query,1,true) then
+                r.matches[#r.matches+1]=entry;r.matchIndex[entry.value]=r.matchIndex[entry.value] or #r.matches
+            end
         end
-        for i,entry in ipairs(r.matches) do
-            local row=r.rows[i];if not row then row=addon:CreateWorkbenchListRow(r.child,230,32);row.icon=row:CreateTexture(nil,'ARTWORK');row.icon:SetSize(24,24);row.icon:SetPoint('LEFT',4,0);r.rows[i]=row end
-            row:ClearAllPoints();row:SetPoint('TOPLEFT',0,-(i-1)*34);row:SetSize(r.child:GetWidth(),32);row:SetText(entry.text);row:GetFontString():SetTextColor(entry.custom==false and .4 or .92,entry.custom==false and .7 or .94,entry.custom==false and 1 or .96);addon:SetWorkbenchListSelection(row,entry.value==r.current);addon:AlignWorkbenchTextLeft(row,entry.icon and 34 or 6)
-            if entry.icon then row.icon:SetTexture(entry.icon);row.icon:Show() else row.icon:Hide() end;row:Show()
-            addon:SetWorkbenchInvalid(row,entry.invalid,entry.validationMessage);row.tooltip=entry.validationMessage
-            if entry.disabled then row:GetFontString():SetTextColor(.5,.5,.5) end
-            addon:SetUIScript(row,'OnClick',self:Guard(function() if r.revision~=revision or not self:FlushEdits() then return end;r.choose(entry.value) end));self:BindRosterOrderRow(row,entry,revision)
-        end
-        for i=#r.matches+1,#r.rows do r.rows[i]:Hide() end
-        self:BuildRosterOrderZones();r.child:SetHeight(math.max(1,#r.matches*34));if #r.matches==0 then r.empty:Show() else r.empty:Hide() end;r.scroll:UpdateWorkbenchScroll()
+        self:PrepareRosterOrder(r.revision)
+        r.child:SetHeight(math.max(1,#r.matches*34));if #r.matches==0 then r.empty:Show() else r.empty:Hide() end
+        r.scroll:UpdateWorkbenchScroll()
+        if anchor and r.matchIndex[anchor.value] then r.scroll.workbenchBar:SetValue((r.matchIndex[anchor.value]-1)*34+offset) end
+        r.rebuilding=nil;self:RefreshRosterViewport()
     end
     function p:SetRosterActions(entries,keepManage)
         local r=self.roster;if not r then return end
@@ -64,12 +136,15 @@ function addon:InstallSettingsLayout(p)
             r.category=addon:CreateWorkbenchLabeledIconButton(r.frame,'chevron-down','',238);r.category:SetPoint('TOPLEFT',0,0)
             r.search=addon:CreateWorkbenchEditBox(r.frame);r.search:SetMaxLetters(128);addon:AttachWorkbenchSearchHint(r.search)
             r.scroll=addon:CreateWorkbenchScrollFrame(r.frame);r.child=CreateFrame('Frame',nil,r.scroll);r.scroll:SetScrollChild(r.child)
+            r.scroll.workbenchBar:HookScript('OnValueChanged',function() self:RefreshRosterViewport() end)
             r.empty=r.child:CreateFontString(nil,'OVERLAY','GameFontDisableSmall');r.empty:SetPoint('TOPLEFT',6,-6);r.empty:SetText(L['No matches.'])
             r.new=addon:CreateWorkbenchLabeledIconButton(r.frame,'plus',L['New'],238);r.new:SetPoint('BOTTOMLEFT',0,0)
             r.manage=addon:CreateWorkbenchButton(r.frame,'',238);r.manage:SetPoint('BOTTOMLEFT',0,30)
         end
         r.footerActions=nil;r.footerManage=false;for _,button in ipairs(r.actionButtons or {}) do button:Hide() end
-        r.entries=entries;r.current=current;r.choose=choose;r.options=options;r.frame:Show();r.search:SetText(self.rosterQuery or '')
+        r.rebuilding=true;r.entries=entries;r.current=current;r.choose=choose;r.options=options;r.active=true;r.generation=self.generation;r.frame:Show();
+        local generation=self.generation;self.cleanups[#self.cleanups+1]=function() if r.generation==generation then self:ReleaseRoster() end end
+        r.search:SetText(self.rosterQuery or '')
         addon:SetUIScript(r.search,'OnTextChanged',self:Guard(function(_,user) if user then self.rosterQuery=r.search:GetText();self:RefreshRoster() end end));addon:SetUIScript(r.search,'OnEscapePressed',self:Guard(function() r.search:ClearFocus() end))
         r.sourceButtons=r.sourceButtons or {}
         for i,entry in ipairs(options.sources or {}) do
@@ -103,5 +178,6 @@ function addon:InstallSettingsLayout(p)
         if r.footerActions then local width=(side-6)/2;for i,button in ipairs(r.actionButtons) do button:ClearAllPoints();button:SetPoint('BOTTOMLEFT',((i-1)%2)*(width+6),(r.footerManage and 30 or 0)+(math.ceil(#r.footerActions/2)-1-math.floor((i-1)/2))*28);button:SetWidth(width);addon:AlignWorkbenchTextLeft(button,24) end end
         local top=filterTop+(r.options.categories and 32 or 4);r.scroll:ClearAllPoints();r.scroll:SetPoint('TOPLEFT',0,-top);r.scroll:SetSize(side-24,math.max(1,sidebarHeight-top-footerHeight));r.child:SetWidth(side-24)
         self.scroll:ClearAllPoints();self.scroll:SetPoint('TOPLEFT',geometry.detailX,0);self.scroll:SetSize(geometry.detailWidth-18,height);self.message:SetWidth(math.max(1,self.frame:GetWidth()-(self.creationUsed and 340 or 20)))
+        self:RefreshRosterViewport()
     end
 end

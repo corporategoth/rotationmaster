@@ -19,11 +19,11 @@ Configured `module:*` applications have a separate `BuildModuleConfigurationPane
 
 ## Ordinary field and auxiliary windows
 
-RM owns normal field allocation, leases, pooling, callbacks and geometry. Reference providers, item-list drafts, Test/Run/Debug surfaces, Built In references, comparisons and import previews use native groups and measured viewports. The native recommendation preview implements `AddRecommendation`; main's old Icon fallback is only for an externally supplied legacy preview.
+RM owns normal field allocation, leases, pooling, callbacks and geometry. Reference providers, item-list drafts, Test/Run/Debug surfaces, Built In references, comparisons and import previews use native groups and measured viewports. The native recommendation preview implements `AddRecommendation`; main's old Icon fallback is only for an externally supplied legacy preview. Main no longer looks up AceGUI at registration or during native recommendations; only that explicit fallback resolves its widget library.
 
 Numeric Table fields support simple top/middle/bottom vertical cell alignment without Ace layout lookup. Rows are measured before positioning, including partial rows and changing child heights. Container-level alignment/spacing, nonnumeric columns, row/column spans, arbitrary align callbacks and other advanced custom layouts retain the explicit compatibility route. Actual shipped ItemWidget tests forbid both Ace construction and GetLayout; real Ace tests retain the advanced route and its spacing/alignment semantics.
 
-`Options/conditional.lua` remains loaded as an explicit compatibility adapter. Its `EditCondition` delegates to the native editor when present, and `LayoutConditionFrame` recognizes native compact refresh roots. Its old full renderer and `Widgets/help.lua`, `directional.lua`, `disable_inline.lua` remain available to historical custom code. Live catalog/query/dispatch no longer depends on this renderer.
+`UI/condition_entrypoints.lua` owns the native `EditCondition` and compact `LayoutConditionFrame` dispatch without looking up AceGUI. `Options/conditional.lua` remains loaded as an inert compatibility factory: its historical renderer initializes once, on an actual legacy route, preserving registration-time registry and utility captures. Its old full renderer and `Widgets/help.lua`, `directional.lua`, `disable_inline.lua` remain available to historical custom code. Live catalog/query/dispatch no longer depends on initializing this renderer.
 
 ## Dependencies that still prevent removing the AceGUI embed
 

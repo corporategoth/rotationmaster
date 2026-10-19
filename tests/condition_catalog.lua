@@ -9,7 +9,7 @@ local function fixture(baseline)
     a.db.profile={condition_groups={{id='g',conditions={'B','A','B','UNKNOWN'}},{id='second',conditions={'B','SPECIAL'}}},other_conditions_order={'A','C','A','UNKNOWN'},switch_conditions={'B','UNKNOWN','B'},disabled_conditions={'A','B','C','H'}}
     a.db.global={custom_conditions={C={},A={}}}
     local file=io.open('Core/condition_catalog.lua')
-    if file then file:close();f.load('Core/condition_catalog.lua') elseif baseline then f.load('Options/conditional.lua') end
+    if file then file:close();f.load('Core/condition_catalog.lua') elseif baseline then f.load('UI/condition_entrypoints.lua');f.load('Options/conditional.lua') end
     return f,a
 end
 local function services(a) for _,name in ipairs(names) do assert(type(a[name])=='function','missing Core catalog service: '..name) end end

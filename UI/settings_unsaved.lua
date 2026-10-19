@@ -14,6 +14,32 @@ local function context(p,store,id)
         return {hidden=contains(profile.disabled_conditions,tag),switch=contains(profile.switch_conditions,tag),move_to=category,custom=(global.custom_conditions or {})[tag]}
     end
 end
+-- Build membership/order lookups once when draft markers change. Viewport
+-- binding reads these retained maps without rescanning the complete roster.
+local function rosterLookup(p,store)
+    store=store or {};local profile=store.profile or {};local result={profile=profile,global=store.global or {},groups={},categories={},hidden={},switch={},positions={},announces={}}
+    for _,tag in ipairs(profile.disabled_conditions or {}) do result.hidden[tag]=true end
+    for _,tag in ipairs(profile.switch_conditions or {}) do result.switch[tag]=true end
+    for _,group in ipairs(profile.condition_groups or {}) do
+        result.groups[group.id]=group;for _,tag in ipairs(group.conditions or {}) do result.categories[tag]=group.id end
+    end
+    for _,entry in ipairs(profile.announces or {}) do if entry.id then result.announces[entry.id]=entry end end
+    local ordered
+    if p.mode=='categories' then ordered=profile.condition_groups
+    elseif p.category=='SWITCH' then ordered=profile.switch_conditions
+    elseif p.category=='DEFAULT' then ordered=profile.other_conditions_order
+    else local group=result.groups[p.category];ordered=group and group.conditions end
+    for index,entry in ipairs(ordered or {}) do local id=type(entry)=='table' and entry.id or entry;if result.positions[id]==nil then result.positions[id]=index end end
+    return result
+end
+local function rosterContext(p,store,id,lookup,currentAnnounces)
+    if p.settingsKey=='Conditions' then
+        if p.mode=='categories' then local group=lookup.groups[id];return group and {group_name=group.name,category_icon=group.icon,conditions=group.conditions} end
+        return {hidden=lookup.hidden[id]==true,switch=lookup.switch[id]==true,move_to=lookup.categories[id] or 'DEFAULT',custom=(lookup.global.custom_conditions or {})[id]}
+    end
+    if p.settingsKey=='Announces' then local entry=currentAnnounces[id];return entry and entry.id and lookup.announces[entry.id] or (lookup.profile.announces or {})[id] end
+    return context(p,store,id)
+end
 local function field(object,key)
     if type(object)~='table' then return nil end
     key=key:gsub('^entry%d+',''):gsub('^new_','')
@@ -44,6 +70,20 @@ function addon:InstallSettingsUnsaved(p)
         self.unsavedBindings[key]={control=control,value=addon:CopySettingsData(value),baseline=addon:CopySettingsData(baseline),kind=kind,missing=missing}
         return self.unsavedBindings[key]
     end
+    function p:RosterEntryUnsaved(entry)
+        local r=self.roster;local state=r and r.unsavedState;if not state then return false end
+        local cached=r.unsavedByValue[entry.value];if cached~=nil then return cached end
+        local id=entry.value
+        local moved=self.settingsKey=='Conditions' and state.before.positions[id]~=state.current.positions[id]
+        local before=rosterContext(self,self.draftBaseline,id,state.before,state.announces)
+        local current=rosterContext(self,self.draft,id,state.current,state.announces)
+        local changed=moved or id==state.selected and state.pending or not addon:UnsavedDataEqual(before,current)
+        r.unsavedByValue[id]=changed==true;return changed==true
+    end
+    function p:RefreshRosterMarkers()
+        if not self.roster then return end
+        for _,row in ipairs(self.roster.rows) do if row.rosterLease then addon:SetWorkbenchUnsaved(row,self:RosterEntryUnsaved(row.rosterEntry)) end end
+    end
     function p:RefreshUnsaved()
         if not self.active then return end
         local changedRows={};local pending=false
@@ -71,22 +111,15 @@ function addon:InstallSettingsUnsaved(p)
             local key=view.unsavedKey;local old=before and before[key];local now=current and current[key]
             addon:SetWorkbenchUnsaved(row,changedRows[row] or key and not addon:UnsavedDataEqual(old and old[i],now and now[i]))
         end end
-        if self.roster and self.draftBaseline then for i,row in ipairs(self.roster.rows) do
-            local entry=self.roster.matches and self.roster.matches[i]
-            if entry then
-                local moved=false
-                if self.settingsKey=='Conditions' then
-                    local function position(store) local profile=store and store.profile or {};local list
-                        if self.mode=='categories' then list=profile.condition_groups
-                        elseif self.category=='SWITCH' then list=profile.switch_conditions elseif self.category=='DEFAULT' then list=profile.other_conditions_order else local group=find(profile.condition_groups,self.category);list=group and group.conditions end
-                        for index,value in ipairs(list or {}) do if (type(value)=='table' and value.id or value)==entry.value then return index end end
-                    end
-                    moved=position(self.draftBaseline)~=position(self.draft)
-                end
-                local selected=self.mode=='categories' and self.categorySelection or self.settingsKey=='Conditions' and self.condition or self.selection
-                addon:SetWorkbenchUnsaved(row,moved or entry.value==selected and pending or not addon:UnsavedDataEqual(context(self,self.draftBaseline,entry.value),context(self,self.draft,entry.value)))
+        if self.roster then
+            self.roster.unsavedByValue={};self.roster.unsavedState=nil
+            if self.draftBaseline then
+                self.roster.unsavedState={before=rosterLookup(self,self.draftBaseline),current=rosterLookup(self,self.draft),pending=pending,
+                    selected=self.mode=='categories' and self.categorySelection or self.settingsKey=='Conditions' and self.condition or self.selection,
+                    announces=self.draft and self.draft.profile.announces or addon.db.profile.announces or {}}
             end
-        end end
+            self:RefreshRosterMarkers()
+        end
         if self.fields.apply and self.fields.apply.IsEnabled then addon:SetWorkbenchUnsaved(self.fields.apply,self.fields.apply:IsEnabled() and (pending or self:IsSettingsDraftDirty() or self:IsCreationDirty())) end
     end
     for _,definition in ipairs({{'Edit',5},{'Check',4},{'Slider',7},{'Choice',5},{'Color',4},{'Reference',6},{'Toggle',6}}) do

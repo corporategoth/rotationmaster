@@ -2,8 +2,6 @@ local addon_name, addon = ...
 
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 
-local AceGUI = LibStub("AceGUI-3.0")
-
 local error, pairs = error, pairs
 local ceil, min = math.ceil, math.min
 
@@ -16,6 +14,14 @@ local cleanArray, deepcopy, wrap, HideOnEscape = addon.cleanArray, addon.deepcop
 
 local conditions = addon.conditionDefinitions
 local special = addon.conditionSpecials
+
+-- Keep registration-time registry/utility identities above. Ace and the old
+-- renderer closures are only initialized for an actual compatibility route.
+local renderer
+function addon:GetLegacyConditionRenderer()
+    if renderer then return renderer end
+    local AceGUI = LibStub("AceGUI-3.0")
+    local api = {}
 
 local function LayoutConditionTab(top, frame, funcs, value, selected, index, group, filter)
     frame:ReleaseChildren()
@@ -425,7 +431,7 @@ local function ActionGroup(parent, value, idx, array)
     parent:AddChild(group)
 end
 
-addon.LayoutConditionFrame = function(frame)
+api.LayoutConditionFrame = function(frame)
     if frame.rmCompactRefresh then return frame.rmCompactRefresh() end
     local root = frame:GetUserData("root")
     local funcs = frame:GetUserData("funcs")
@@ -458,7 +464,7 @@ end
 --  Dealing with Conditionals
 -------------------------------
 
-function addon:EditCondition(index, spec, value, callback, targetValid)
+function api:EditCondition(index, spec, value, callback, targetValid)
     if self.ShowConditionEditor then return self:ShowConditionEditor(index,spec,value,callback,targetValid) end
     local funcs = {
         print = addon.printCondition,
@@ -484,4 +490,8 @@ function addon:EditCondition(index, spec, value, callback, targetValid)
 
     addon.LayoutConditionFrame(frame)
     HideOnEscape(frame)
+end
+
+    renderer=api
+    return api
 end

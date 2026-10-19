@@ -26,6 +26,7 @@
 
 globals.lua
 Platform/client.lua
+Platform/casting.lua
 Platform/specializations.lua
 Platform/talents.lua
 Platform/spells.lua
@@ -191,6 +192,8 @@ UI/custom_source_fields.lua
 UI/custom_condition_editor.lua
 UI/condition_source_preview.lua
 UI/condition_source_pane.lua
+UI/condition_entrypoints.lua
+# Explicit legacy renderer factory; native entry points do not initialize Ace.
 Options/conditional.lua
 
 # Help Files

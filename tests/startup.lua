@@ -90,6 +90,14 @@ test('legacy metadata remains usable', function()
     assert(addon.pretty_name == 'Rotation Master')
 end)
 
+test('main registration does not request the legacy preview widget library',function()
+    for _,modern in ipairs({false,true}) do
+        local env,addon,load=fixture(modern);local lib=env.LibStub
+        env.LibStub=function(name,...) assert(name~='AceGUI-3.0','main eagerly requested legacy widgets');return lib(name,...) end
+        load('main.lua');assert(addon.pretty_name=='Rotation Master')
+    end
+end)
+
 test('namespaced addon lookup registers installed extension conditions', function()
     local env, addon, load = fixture(true, true)
     env.C_AddOns.IsAddOnLoaded = function(name) return name == 'ExampleExtension' end
@@ -579,7 +587,7 @@ local function persistentFixture(saved,folder)
     env.Enum={PowerType={Runes=5,SoulShards=7,Chi=12,ArcaneCharges=16}}
     env.GetItemInfo=function() end
     load('globals.lua');load('constants.lua');load('Functions/values.lua');load('Functions/presentation.lua');load('Functions/text.lua');load('Functions/collections.lua');load('Functions/cache.lua');load('utils.lua');load('profiler.lua')
-    load('Core/itemset_services.lua');load('Core/conditions.lua');load('Core/condition_catalog.lua');load('Conditions/known_spell.lua');load('Options/conditional.lua')
+    load('Core/itemset_services.lua');load('Core/conditions.lua');load('Core/condition_catalog.lua');load('Conditions/known_spell.lua');load('UI/condition_entrypoints.lua');load('Options/conditional.lua')
     load('main.lua')
     local make=dofile('tests/fixtures/rotation_data.lua')
     local data,envelope=make();addon.RotationData=data
@@ -1137,6 +1145,7 @@ test('real recommendation engine fills the native preview with spell and item ic
     local env,a,state,body,load=recommendationFixture();dofile('tests/fixtures/native_ui.lua')(env);load('UI/controls.lua');load('UI/preview.lua')
     env.C_Item.GetItemInfo=function(id) return 'Item '..id,nil,nil,nil,nil,nil,nil,nil,nil,id+10 end
     env.LibStub('AceGUI-3.0').Create=function() error('native preview allocated AceGUI') end
+    local lib=env.LibStub;env.LibStub=function(name,...) assert(name~='AceGUI-3.0','native preview requested legacy widget library');return lib(name,...) end
     a.db.profile.preview_spells=2;state.stock[5512]=1;state.combat=false
     body.rotation={{id='bolt',type='spell',action=403,ranked=true,conditions={}},{id='stone',type='item',action={5512},conditions={}}}
     local w=a:CreateNativePreviewWindow();a:EvaluateNextActionInternal()

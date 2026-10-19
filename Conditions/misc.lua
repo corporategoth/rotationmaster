@@ -4,19 +4,38 @@ local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 local color = color
 local helpers = addon.help_funcs
 
+-- Explicit callback leaves; retain raw game observations and argument order.
+local Functions={
+    values={isin=addon.Functions.values.isin,compare=addon.Functions.values.compare},
+    presentation={nullable=addon.Functions.presentation.nullable,compareString=addon.Functions.presentation.compareString,playerize=addon.Functions.presentation.playerize},
+    cache={getCached=addon.Functions.cache.getCached},
+    collections={deepcopy=addon.Functions.collections.deepcopy,keys=addon.Functions.collections.keys},
+}
+addon.builtinCallbackBindings=addon.builtinCallbackBindings or {}
+addon.builtinCallbackBindings["Conditions/misc.lua"]={
+    ["Functions.values.isin"]="builtin:utils.lua:isin",
+    ["Functions.values.compare"]="builtin:utils.lua:compare",
+    ["Functions.presentation.nullable"]="builtin:utils.lua:nullable",
+    ["Functions.presentation.compareString"]="builtin:utils.lua:compareString",
+    ["Functions.presentation.playerize"]="builtin:utils.lua:playerize",
+    ["Functions.cache.getCached"]="builtin:utils.lua:getCached",
+    ["Functions.collections.deepcopy"]="builtin:Functions/collections.lua:deepcopy",
+    ["Functions.collections.keys"]="builtin:Functions/collections.lua:keys",
+}
+
 addon:RegisterCondition("SELF_LEVEL", {
     description = L["Level"],
     icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\character",
     fields = { operator = "string", value = "number" },
     valid = function(_, value)
-        return (value.operator ~= nil and addon.isin(addon.operators, value.operator) and
+        return (value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                 value.value ~= nil and value.value >= 0)
     end,
     evaluate = function(value)
-        return addon.compare(value.operator, addon.getCached(addon.longtermCache, UnitLevel, "player"), value.value)
+        return Functions.values.compare(value.operator, Functions.cache.getCached(addon.longtermCache, UnitLevel, "player"), value.value)
     end,
     print = function(_, value)
-        return addon.compareString(value.operator, L["your level"], addon.nullable(value.value, L["<level>"]))
+        return Functions.presentation.compareString(value.operator, L["your level"], Functions.presentation.nullable(value.value, L["<level>"]))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -38,21 +57,21 @@ addon:RegisterCondition("PVP", {
     icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\combat",
     fields = { unit = "string" },
     valid = function(_, value)
-        return value.unit ~= nil and addon.isin(addon.units, value.unit)
+        return value.unit ~= nil and Functions.values.isin(addon.units, value.unit)
     end,
     evaluate = function(value, cache)
-        if not addon.getCached(cache, UnitExists, value.unit) then return false end
-        return addon.getCached(cache, UnitIsPVP, value.unit)
+        if not Functions.cache.getCached(cache, UnitExists, value.unit) then return false end
+        return Functions.cache.getCached(cache, UnitIsPVP, value.unit)
     end,
     print = function(_, value)
-        return string.format(addon.playerize(value.unit, L["%s {{!are|are not}} PVP flagged"], L["%s {{!is|is not}} PVP flagged"]),
-                addon.nullable(addon.units[value.unit], L["<unit>"]))
+        return string.format(Functions.presentation.playerize(value.unit, L["%s {{!are|are not}} PVP flagged"], L["%s {{!is|is not}} PVP flagged"]),
+                Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
-        local funits = addon.deepcopy(addon.units, { "pet" })
+        local funits = Functions.collections.deepcopy(addon.units, { "pet" })
 
         local unit = addon:Widget_UnitWidget(value, funits,
                 function() top:SetStatusText(funcs:print(root, spec)) end)
@@ -68,20 +87,20 @@ addon:RegisterCondition("ZONEPVP", {
     icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\combat",
     fields = { value = "string" },
     valid = function(_, value)
-        return value.value == nil or addon.isin(addon.zonepvp, value.value)
+        return value.value == nil or Functions.values.isin(addon.zonepvp, value.value)
     end,
     evaluate = function(value, cache)
-        local pvpType = addon.getCached(cache, GetZonePVPInfo)
+        local pvpType = Functions.cache.getCached(cache, GetZonePVPInfo)
         return value.value == pvpType
     end,
     print = function(_, value)
-        return string.format(L["zone {{!is|is not}} a %s zone"], addon.nullable(addon.zonepvp[value.value], L["no PVP"]))
+        return string.format(L["zone {{!is|is not}} a %s zone"], Functions.presentation.nullable(addon.zonepvp[value.value], L["no PVP"]))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
-        local zonepvp_local = addon.deepcopy(addon.zonepvp)
+        local zonepvp_local = Functions.collections.deepcopy(addon.zonepvp)
         zonepvp_local[""] = L["no PVP"]
 
         local zone = addon:CreateConditionDropdown()
@@ -95,7 +114,7 @@ addon:RegisterCondition("ZONEPVP", {
             top:SetStatusText(funcs:print(root, spec))
         end)
         zone.configure = function()
-            zone:SetList(zonepvp_local, addon.keys(zonepvp_local))
+            zone:SetList(zonepvp_local, Functions.collections.keys(zonepvp_local))
             if (value.value ~= nil) then
                 zone:SetValue(value.value)
             else
@@ -132,16 +151,16 @@ addon:RegisterCondition("INSTANCE", {
     icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\environment",
     fields = { value = "string" },
     valid = function(_, value)
-        return value.value == nil or addon.isin(addon.instances, value.value);
+        return value.value == nil or Functions.values.isin(addon.instances, value.value);
     end,
     evaluate = function(value, cache)
-        local inInstance, instanceType = addon.getCached(cache, IsInInstance)
+        local inInstance, instanceType = Functions.cache.getCached(cache, IsInInstance)
         if value.value == "none" then return not inInstance end
         return inInstance and value.value == instanceType
     end,
     print = function(_, value)
         return string.format(L["you {{!are|are not}} in a %s instance"],
-                addon.nullable(addon.instances[value.value], L["Other (scenario)"]))
+                Functions.presentation.nullable(addon.instances[value.value], L["Other (scenario)"]))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -159,7 +178,7 @@ addon:RegisterCondition("INSTANCE", {
             top:SetStatusText(funcs:print(root, spec))
         end)
         instance.configure = function()
-            instance:SetList(addon.instances, addon.keys(addon.instances))
+            instance:SetList(addon.instances, Functions.collections.keys(addon.instances))
             if (value.value ~= nil) then
                 instance:SetValue(value.value)
             else
@@ -195,7 +214,7 @@ addon:RegisterCondition("OUTDOORS", {
         return true
     end,
     evaluate = function(_, cache)
-        return addon.getCached(cache, IsOutdoors)
+        return Functions.cache.getCached(cache, IsOutdoors)
     end,
     print = function()
         return L["you {{!are|are not}} in a outdoors"]

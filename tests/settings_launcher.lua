@@ -53,6 +53,6 @@ test('normal load order keeps native services and the explicit conditional compa
     local file=assert(io.open('RotationMaster.toc'));local text=file:read('*a');file:close();local entries={}
     for line in text:gmatch('[^\n]+') do if not line:match('^#') then entries[line]=true end end
     for _,name in ipairs({'general','effects','announce','itemset','rotations','custom_condition','conditions'}) do assert(not entries['Options/'..name..'.lua'],'ordinary TOC still installs '..name..' legacy renderer') end
-    for _,path in ipairs({'Core/condition_catalog.lua','Core/itemset_services.lua','Core/custom_condition_services.lua','UI/settings_setup.lua','Options/conditional.lua'}) do assert(entries[path],'required native/compatibility service missing: '..path) end
+    for _,path in ipairs({'Core/condition_catalog.lua','Core/itemset_services.lua','Core/custom_condition_services.lua','UI/settings_setup.lua','UI/condition_entrypoints.lua','Options/conditional.lua'}) do assert(entries[path],'required native/compatibility service missing: '..path) end
 end)
 finish()

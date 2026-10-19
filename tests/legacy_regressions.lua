@@ -92,7 +92,7 @@ test('Lua editor default indentation uses the declared two-space setting',functi
     assert(text:find('\n  print(1)',1,true),'default indentation looked up an accidental global')
 end)
 test('explicit legacy repair removes a malformed union field without losing valid siblings',function()
-    local f=F.new();f.load('Core/conditions.lua');f.load('Core/condition_catalog.lua');f.load('Options/conditional.lua');f.load('validate.lua')
+    local f=F.new();f.load('Core/conditions.lua');f.load('Core/condition_catalog.lua');f.load('UI/condition_entrypoints.lua');f.load('Options/conditional.lua');f.load('validate.lua')
     f.addon:RegisterCondition('UNION_FIXTURE',{description='Fixture',fields={choice={'string','number'},kept='number'}})
     f.addon.warn=function() end
     local body={name='Fixture',switch={type='UNION_FIXTURE',choice={invalid=true},kept=7},rotation={},cooldowns={}}
@@ -100,7 +100,7 @@ test('explicit legacy repair removes a malformed union field without losing vali
     assert(body.switch.choice==nil and body.switch.type=='UNION_FIXTURE' and body.switch.kept==7)
 end)
 test('explicit repair preserves supported Boolean labels and Stop suppression',function()
-    local f=F.new();f.load('Core/conditions.lua');f.load('Core/condition_catalog.lua');f.load('Options/conditional.lua');f.load('validate.lua')
+    local f=F.new();f.load('Core/conditions.lua');f.load('Core/condition_catalog.lua');f.load('UI/condition_entrypoints.lua');f.load('Options/conditional.lua');f.load('validate.lua')
     f.addon.warn=function() end
     local body={name='Fixture',switch={type='AND',name='Opening checks',value={}},cooldowns={},rotation={
         {id='00000000-0000-0000-0000-000000000001',type='none',suppress_attack=true,conditions={type='NOT',name='Combat boundary',value={}}}}}
@@ -108,7 +108,7 @@ test('explicit repair preserves supported Boolean labels and Stop suppression',f
     assert(body.switch.name=='Opening checks' and body.rotation[1].suppress_attack==true and body.rotation[1].conditions.name=='Combat boundary')
 end)
 test('explicit repair preserves tags description and attribution on flat rotations',function()
-    local f=F.new();f.load('Core/conditions.lua');f.load('Core/condition_catalog.lua');f.load('Options/conditional.lua');f.load('validate.lua')
+    local f=F.new();f.load('Core/conditions.lua');f.load('Core/condition_catalog.lua');f.load('UI/condition_entrypoints.lua');f.load('Options/conditional.lua');f.load('validate.lua')
     local warnings={};f.addon.warn=function(_,message,...) warnings[#warnings+1]=string.format(message,...) end
     f.addon.RotationData=dofile('tests/fixtures/rotation_data.lua')()
     local body={name='Fixture',description='A leveling rotation',tags={'AOE','MyLittlePony'},metadata={author='PreZ'},priority=42,switch={},cooldowns={},rotation={}}
@@ -129,7 +129,7 @@ test('legacy validation diagnoses malformed priorities and explicit repair resto
     end
 end)
 test('legacy repair preserves nested branch data and refuses destructive repair of future branch fields',function()
-    local f=F.new();f.load('Data/plain.lua');f.load('Data/tags.lua');f.load('Data/rotation_tree.lua');f.load('Data/validation.lua');f.load('Core/conditions.lua');f.load('Core/condition_catalog.lua');f.load('Options/conditional.lua');f.load('validate.lua')
+    local f=F.new();f.load('Data/plain.lua');f.load('Data/tags.lua');f.load('Data/rotation_tree.lua');f.load('Data/validation.lua');f.load('Core/conditions.lua');f.load('Core/condition_catalog.lua');f.load('UI/condition_entrypoints.lua');f.load('Options/conditional.lua');f.load('validate.lua')
     f.addon.warn=function() end
     local body={name='Branch fixture',switch={},cooldowns={},rotation={{id='branch',type='branch',mode='true',name='Combat',conditions={},
         onTrue={{id='yes',type='spell',action=403,conditions={}}},onFalse={{id='no',type='none',conditions={},suppress_attack=true}}}}}
