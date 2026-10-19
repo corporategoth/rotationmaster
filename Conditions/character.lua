@@ -34,8 +34,7 @@ addon:RegisterCondition("ISSAME", {
                 value.otherunit ~= nil and Functions.values.isin(addon.units, value.otherunit))
     end,
     evaluate = function(value, cache)
-        if not Functions.cache.getCached(cache, UnitExists, value.unit) then return false end
-        return Functions.cache.getCached(cache, UnitIsUnit, value.unit, value.otherunit)
+        return Functions.cache.getCached(cache, addon.Platform.GetUnitIdentityObservation, addon.Platform, value.unit, value.otherunit)
     end,
     print = function(_, value)
         return string.format(L["%s {{!is|is not}} %s"], Functions.presentation.nullable(addon.units[value.unit]), Functions.presentation.nullable(addon.units[value.otherunit]))

@@ -347,3 +347,11 @@ nil false result. The conservative Boolean model and external corroboration
 remain explicit offline assumptions pending native client acceptance. This
 adapter does not establish a general rule for metadata functions such as
 `UnitClass` or zone PvP metadata, which have documented optional results.
+
+## Ordered unit identity observation
+
+`Platform:GetUnitIdentityObservation(unit, otherunit)` preserves ISSAME's two exact unit tokens and original query order: `UnitExists(unit)` followed by `UnitIsUnit(unit, otherunit)`. Readable false existence returns false without an identity query. No second-unit existence query, GUID comparison or inferred identity is added. Both input tokens are validated/readable before native access; required observations must be readable Booleans. Missing, failed, nil, restricted or malformed observations return `nil, reason`. Unsupported combat-data policies make no native calls.
+
+Current ISSAME and its editable copies cache the complete result/reason tuple per evaluation pass and ordered token pair. Unknown identity no longer selects either branch or becomes true through NOT. Known true, false and first-unit absence keep their existing meanings. Raw saved callback source is unchanged. Tests restore only the exact new evaluator in memory to pin every other byte of Conditions/character.lua against a8711a9, alongside its four private source identities.
+
+The pinned [Anniversary declaration](https://github.com/Gethe/wow-ui-source/blob/2cfec7c00f0f24762d5ca35a4beb1e93c0cde328/Interface/AddOns/Blizzard_APIDocumentationGenerated/UnitDocumentation.lua) declares two required UnitTokens, RequiresComparableUnitTokens and a nonnil Boolean result. Era/Classic agree. [Retail](https://github.com/Gethe/wow-ui-source/blob/b9be9379719047977fca4dba1bb1d9988e8840b3/Interface/AddOns/Blizzard_APIDocumentationGenerated/UnitDocumentation.lua) and Forever also mark restricted comparisons. Probe-only policy remains RM's conservative boundary; these declarations and headless tests do not establish native return/access acceptance. CLASS and other metadata conditions retain their distinct contracts and remain separate audit work.

@@ -33,6 +33,7 @@ Platform/unit_power.lua
 Platform/player_movement.lua
 Platform/unit_attackability.lua
 Platform/unit_flags.lua
+Platform/unit_identity.lua
 Platform/specializations.lua
 Platform/talents.lua
 Platform/spells.lua
