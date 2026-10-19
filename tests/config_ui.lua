@@ -79,7 +79,7 @@ test('real rotation pane initializes immediately for TBC retail and progression 
         a.GetDefaultIdForRuntime=function(_,_,key) return key=='pack-key' and 'pack' end
         local built=0
         a.CreateDefaultRotationOptions=function() built=built+1 end
-        f.load('Options/general.lua')
+        f.load('UI/settings_setup.lua');f.load('Options/general.lua')
         local pane=ace:Create('SimpleGroup');pane.frame:Show()
         a:BuildConfigurationPane(pane,'Rotations')
         assert(built>0,'already shown rotation pane did not initialize on client '..client[1])
@@ -107,7 +107,7 @@ test('general effect preview removes native OnShow before pooled icon reuse',fun
     a.db.profile={minimap={},color={r=1,g=1,b=1,a=1},loglevel=2}
     a.db.global.effects={};a.textured_types={};a.configure_frame=function() end
     a.Glow=function() glows=glows+1 end;a.HideGlow=function() end
-    f.load('Options/general.lua')
+    f.load('UI/settings_setup.lua');f.load('Options/general.lua')
     a:BuildConfigurationPane(ace:Create('parent'),'General')
     local preview=assert(icons[1]);local show=assert(preview.frame:GetScript('OnShow'))
     assert(glows==1,'normal highlight preview was not initialized when its already-visible icon was added')
@@ -136,7 +136,7 @@ test('opening the actual custom rotation roster does not write display defaults 
     a.configure_frame=function() end;a.usefulCondition=function() return false end
     a.rotationValidConditions=function() return true end;a.validateCondition=function() return true end
     a.uuid=function() return 'new-rotation' end
-    f.load('Options/general.lua')
+    f.load('UI/settings_setup.lua');f.load('Options/general.lua')
     a:BuildConfigurationPane(ace:Create('parent'),'Rotations')
     assert(first.use_name==nil and second.use_name==nil,'viewing persisted inferred name flags')
     assert(first.name==nil and second.name=='Shield reminder')
@@ -311,5 +311,26 @@ test('opening failures and native UI callbacks reach RM reports and the current 
     a:SetUIScript(control,'OnClick',function() error('owned-click-failed',0) end)
     control:Click();assert(#errors==2 and a.Diagnostics:GetReports()[2].context.operation=='OnClick')
     control:Click();assert(#errors==2,'failed callback was not retired')
+end)
+test('missing native pages use a native error surface without reviving unregistered legacy panes',function()
+    local f=F.new();local a=f.addon;a.pretty_name='Rotation Master';a.name='rotationmaster';a.SetupOptions=function() end
+    f.libraries['AceGUI-3.0'].Create=function() error('missing native page allocated Ace') end
+    f.load('UI/config.lua')
+    local shell=a:ShowConfig('General');assert(shell.nativePane and shell.pane and shell.pane.message:GetText():find('General',1,true))
+    local first=shell.pane;shell:SelectSection('Profiles');assert(shell.pane==first and shell.pane.frame:IsShown() and shell.pane.message:GetText():find('Profiles',1,true),'error pane was not reused')
+    shell:SelectSection('unregistered');assert(shell.section=='Rotations' and shell.pane.message:GetText():find('Rotations',1,true))
+    shell.close:Click();assert(not first.frame:IsShown() and not shell.pane)
+end)
+test('known module tabs use the explicit bridge before an isolated legacy renderer',function()
+    local f=F.new();local a=f.addon;local frames,create=dofile('tests/fixtures/native_ui.lua')(f.env);local calls=0
+    for _,name in ipairs({'AceConfig-3.0','AceDBOptions-3.0','LibAboutPanel-2.0'}) do f.libraries[name]={} end
+    f.libraries['AceConfigDialog-3.0']={Open=function(_,application,pane) assert(application=='ApplicationID' and pane.frame:GetParent()==a.configWindow.content);calls=calls+1 end}
+    f.load('UI/settings_setup.lua');a.SetupOptions=function() end;a.configModuleApps={['Module title']='ApplicationID'};a.name='rotationmaster';a.pretty_name='Rotation Master'
+    a.BuildConfigurationPane=function() error('module went through the old built-in renderer') end
+    local ace=f.libraries['AceGUI-3.0'];local build=ace.Create
+    ace.Create=function(self,kind) assert(kind=='SimpleGroup');local pane=build(self,kind);pane.frame=create('Frame');return pane end
+    ace.Release=function(_,pane) pane.frame:Hide() end
+    f.load('UI/config.lua');local shell=a:ShowConfig('module:Module title')
+    assert(calls==1 and not shell.nativePane and shell.pane.layout=='Fill');shell.close:Click()
 end)
 finish()

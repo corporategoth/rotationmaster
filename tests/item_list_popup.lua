@@ -104,6 +104,6 @@ test('native popup Help shows its scoped document and expires with the native le
     local nextDialog=open(a,{3});assert(nextDialog==d);stale();assert(calls==1);nextDialog.helpButton:Click();assert(calls==2);nextDialog:Close()
 end)
 test('legacy six-argument item_list_popup delegates to the native owner',function()
-    local f,a=fixture();assert(a.OpenItemListPopup);f.load('Options/itemset.lua');local items={1};local d=assert(a:item_list_popup('Legacy','Item_EditBox',items,function() return true end));assert(d.rmWidget);d:Close()
+    local f,a=fixture();assert(a.OpenItemListPopup);f.load('Core/itemset_services.lua');f.load('Options/itemset.lua');local items={1};local d=assert(a:item_list_popup('Legacy','Item_EditBox',items,function() return true end));assert(d.rmWidget);d:Close()
 end)
 finish()

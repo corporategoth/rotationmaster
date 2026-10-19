@@ -51,7 +51,9 @@ utils.lua
 profiler.lua
 Diagnostics/errors.lua
 Core/conditions.lua
+Core/condition_catalog.lua
 Core/item_conditions.lua
+Core/itemset_services.lua
 Core/rotation_references.lua
 Core/item_sets.lua
 Core/inventory.lua
@@ -71,6 +73,7 @@ Core/functions.lua
 Data/builtin_sources.lua
 Core/builtin_sources.lua
 Core/custom_authoring.lua
+Core/custom_condition_services.lua
 Core/lua_symbols.lua
 Core/function_data.lua
 Core/schema_authoring.lua
@@ -120,6 +123,7 @@ UI/spell_search.lua
 UI/spell_icon.lua
 UI/errors.lua
 UI/settings_launcher.lua
+UI/settings_setup.lua
 UI/settings_roster_order.lua
 UI/settings_layout.lua
 UI/settings_ordered.lua
@@ -172,13 +176,7 @@ Widgets/help.lua
 Widgets/directional.lua
 Widgets/disable_inline.lua
 
-# Configuration UI
-Options/general.lua
-Options/effects.lua
-Options/announce.lua
-Options/itemset.lua
-Options/rotations.lua
-Options/custom_condition.lua
+# Code authoring UI
 UI/lua_input_diagnostics.lua
 Libs/LuaWorkbench-Embed/modules.lua
 UI/lua_debug_output.lua
@@ -192,7 +190,6 @@ UI/custom_source_fields.lua
 UI/custom_condition_editor.lua
 UI/condition_source_preview.lua
 UI/condition_source_pane.lua
-Options/conditions.lua
 Options/conditional.lua
 
 # Help Files

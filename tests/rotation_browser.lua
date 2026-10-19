@@ -27,13 +27,25 @@ local function fixture(product,expansion,realCustom)
     a.Platform.GetSpellInfo=function(_,id) return {spellID=id,name='Lightning Bolt'} end
     a.Platform.GetSpellLink=function() return '|Hspell:403|h[Lightning Bolt]|h' end
     a.printCondition=function() return 'Readable condition' end
-    f.load('UI/defaults.lua');f.load('UI/rotation_reference.lua');f.load('Options/general.lua')
+    f.load('UI/defaults.lua');f.load('UI/rotation_reference.lua');f.load('UI/settings_setup.lua');f.load('Options/general.lua')
     local real=a.BuildRotationEditor
     local editors={}
-    a.BuildRotationEditor=function(self,pane,spec,id,onSelect)
+    -- Foreign editor fixtures implement the native factory boundary explicitly;
+    -- the browser must never choose the old renderer because a factory is absent.
+    a.CreateRotationEditor=function(self,parent,spec,id,onSelect)
+        local pane=self:CreateConditionGroup();pane.frame:SetParent(parent);pane:SetWidth(parent:GetWidth());pane:SetHeight(parent:GetHeight())
+        pane.workspace={pending=false};pane.clone={action=function()
+            local builtin=self:GetDefaultIdForRuntime(spec,id);local source=self:GetEditableRotation(spec,id)
+            local title=source and source.name or id;local name='Copy of '..title
+            local generated=builtin and self:CloneDefaultRotation(spec,builtin,name) or self:DuplicateCustomRotation(spec,id,name)
+            if generated then onSelect(spec,generated) end
+        end}
+        local release=pane.Release
+        function pane:Release() self.released=true;self.Release=nil;return release(self) end
         editors[#editors+1]={pane=pane,spec=spec,id=id,select=onSelect}
-        if realCustom or self:GetDefaultIdForRuntime(spec,id) then return real(self,pane,spec,id,onSelect) end
-        pane:AddChild(f.widget('custom editor'))
+        if realCustom or self:GetDefaultIdForRuntime(spec,id) then real(self,pane,spec,id,onSelect)
+        else local label=self:CreateConditionLabel();label:SetText('custom editor');pane:AddChild(label) end
+        return pane
     end
     f.load('UI/rotation_browser.lua')
     return f,pack,editors,create
@@ -204,5 +216,14 @@ test('tag filter text input remains visible after closing and reopening the brow
     assert(b.rowButtons[1].art,'rotation list bypasses shared row styling')
     assert(b.tagPicker.frame:IsShown() and b.tagPicker.input:IsShown(),'tag search remains hidden after reopening')
     assert(b.tagPicker.frame.point[3]==-56 and b.tagPicker.input.point[2]==92 and b.tagPicker.input:GetWidth()==b.left:GetWidth()-92,'tag search is not beside Any/All')
+end)
+test('missing native editor shows feedback without allocating a legacy rotation pane',function()
+    local f,_,_,create=fixture();local a=f.addon;a.CreateRotationEditor=nil
+    a.BuildRotationEditor=function() error('missing native editor revived the legacy renderer') end
+    f.libraries['AceGUI-3.0'].Create=function() error('missing native editor allocated Ace') end
+    local browser=a:CreateRotationBrowser(create('Frame'),{spec=0,id='one'})
+    assert(not browser.pane and browser.detail.rmEditorError and browser.detail.rmEditorError:IsShown())
+    assert(browser.detail.rmEditorError:GetText()=='The native rotation editor is unavailable.')
+    browser:Release()
 end)
 finish()

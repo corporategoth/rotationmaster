@@ -17,7 +17,7 @@ local function fixture()
     end
     dofile('tests/fixtures/spell_editbox.lua')(f,create)
     ace.Release=function(_,w) if w.frame then w.frame:Hide() end;w.released=true end
-    for _,file in ipairs({'Data/plain.lua','Data/tags.lua','Data/rotation_tree.lua','Data/condition_draft.lua','Data/validation.lua','Data/diff.lua','Core/conditions.lua','Core/condition_editor.lua','Core/condition_canvas.lua','UI/window.lua','UI/help.lua','UI/condition_picker.lua','UI/condition_cards.lua','UI/condition_canvas.lua','UI/condition_editor.lua','Options/conditional.lua'}) do f.load(file) end
+    for _,file in ipairs({'Data/plain.lua','Data/tags.lua','Data/rotation_tree.lua','Data/condition_draft.lua','Data/validation.lua','Data/diff.lua','Core/conditions.lua','Core/condition_catalog.lua','Core/condition_editor.lua','Core/condition_canvas.lua','UI/window.lua','UI/help.lua','UI/condition_picker.lua','UI/condition_cards.lua','UI/condition_canvas.lua','UI/condition_editor.lua','Options/conditional.lua'}) do f.load(file) end
     local h=io.open('UI/condition_text.lua');if h then h:close();f.load('UI/condition_text.lua') end
     a:RegisterCondition('NUMBER',{description='Number check',fields={number='number'},requiredFields={'number'},
         valid=function(_,value) return type(value.number)=='number' end,
@@ -297,7 +297,7 @@ test('child editors resume their original session after fields retire without re
 end)
 test('native item-list Apply returns to the condition draft and preserves its separate Apply boundary',function()
     local f=fixture();local a=f.addon
-    for _,path in ipairs({'UI/settings_ordered.lua','UI/settings_history.lua','UI/settings_unsaved.lua','UI/settings_form.lua','UI/item_list_popup.lua','Options/itemset.lua','Conditions/common.lua'}) do f.load(path) end
+    for _,path in ipairs({'UI/settings_ordered.lua','UI/settings_history.lua','UI/settings_unsaved.lua','UI/settings_form.lua','UI/item_list_popup.lua','Core/itemset_services.lua','Options/itemset.lua','Conditions/common.lua'}) do f.load(path) end
     a.db.profile.itemsets={};a.db.global.itemsets={};f.env.GetItemInfo=function(id) id=tonumber(id);return 'Item '..id,'item:'..id,nil,nil,nil,nil,nil,nil,nil,id end
     a.FindFirstItemOfItems=function() end;a.FindFirstItemInItems=function() end;a.UpdateItem_ID_Image=function() end
     a:RegisterCondition('ITEMLIST',{description='Item list',fields={item={'string',{'number'}}},valid=function(_,value) return type(value.item)=='table' end,

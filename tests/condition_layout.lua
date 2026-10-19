@@ -170,4 +170,45 @@ test('legacy layout height changes propagate to a native parent',function()
     assert(parent.frame:GetHeight()==20);height=80;child:DoLayout()
     assert(parent.frame:GetHeight()==80,'native parent retained the previous legacy child height')
 end)
+test('ordinary item-set table bottom alignment never requests the Ace layout',function()
+    local f=fixture();local a=f.addon;f.load('Conditions/common.lua');a.db.profile.itemsets={};a.db.global.itemsets={}
+    local ace=f.libraries['AceGUI-3.0'];ace.Create=function() error('ordinary item field allocated through Ace') end
+    ace.GetLayout=function() error('ordinary item field requested Ace table geometry') end
+    local group=a:Widget_ItemWidget(nil,'Inventory_EditBox',{item={}},function() return true end,function() end)
+    local button=group.children[3];local bottom=0
+    for _,child in ipairs(group.children) do bottom=math.max(bottom,child.frame:GetHeight()) end
+    assert(button.frame.point[5]==-(bottom-button.frame:GetHeight()),'item list action was not aligned to the row bottom')
+    a:ReleaseConditionWidget(group)
+end)
+test('native table vertical alignment uses the tallest current row including partial rows',function()
+    local f=fixture();local a=f.addon;local ace=f.libraries['AceGUI-3.0'];ace.GetLayout=function() error('simple vertical alignment delegated to Ace') end
+    local group=a:CreateConditionGroup();group:SetWidth(320);group:SetLayout('Table');group:SetUserData('table',{columns={44,1,44}});group:PauseLayout()
+    local children={}
+    for i,height in ipairs({24,60,40,20,36}) do
+        local child=a:CreateConditionCheckBox();child:SetHeight(height);child:SetUserData('cell',{alignV=({'bottom','top','middle','end','start'})[i]});group:AddChild(child);children[i]=child
+    end
+    group:ResumeLayout();assert(children[1].frame.point[5]==-36 and children[2].frame.point[5]==0 and children[3].frame.point[5]==-10)
+    assert(children[4].frame.point[5]==-80 and children[5].frame.point[5]==-64 and group.frame:GetHeight()==100)
+    children[2]:SetHeight(80);group:DoLayout();assert(children[1].frame.point[5]==-56 and children[4].frame.point[5]==-100 and group.frame:GetHeight()==120)
+    a:ReleaseConditionWidget(group)
+end)
+test('advanced custom table geometry retains its explicit legacy path',function()
+    local f=fixture();local a=f.addon;local ace=f.libraries['AceGUI-3.0'];local calls=0
+    ace:RegisterLayout('Table',function(content) calls=calls+1;content.obj:LayoutFinished(content:GetWidth(),88) end)
+    local group=a:CreateConditionGroup();group:SetLayout('Table');group:SetUserData('table',{columns={44,1}})
+    local child=a:CreateConditionCheckBox();child:SetUserData('cell',{alignV=function() return 3 end});group:AddChild(child)
+    assert(calls==1 and group.frame:GetHeight()==88);a:ReleaseConditionWidget(group)
+end)
+
+test('custom table container alignment and spacing preserve shipped Ace semantics',function()
+    local f=fixture();local a=f.addon;local ace=f.libraries['AceGUI-3.0'];local tableLayout=ace:GetLayout('Table');local calls=0
+    ace:RegisterLayout('Table',function(...) calls=calls+1;return tableLayout(...) end)
+    local group=a:CreateConditionGroup();group:SetWidth(320);group:SetLayout('Table');group:PauseLayout();group:SetUserData('table',{columns={1,1},alignV='bottom',spaceV=12})
+    local children={}
+    for i,height in ipairs({60,24,40,20}) do local child=a:CreateConditionCheckBox();child:SetHeight(height);if i==1 then child:SetUserData('cell',{alignV='top'}) end;group:AddChild(child);children[i]=child end
+    group:ResumeLayout();assert(calls==1,'container alignment bypassed the requested legacy layout')
+    assert(children[2].frame.point[4]==-36 and children[4].frame.point[4]==-92 and group.frame:GetHeight()==112,'container options changed row placement')
+    a:ReleaseConditionWidget(group)
+end)
+
 finish()

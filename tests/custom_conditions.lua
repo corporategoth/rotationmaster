@@ -7,7 +7,7 @@ local function fixture()
         {__call=function(_,name) if name=='AceSerializer-3.0' then return {} end;return getLibrary(name) end})
     f.env.loadstring=function(text) local fn,err=loadstring(text);if fn then setfenv(fn,f.env) end;return fn,err end
     f.addon.name='rotationmaster';f.env.rotationmaster=f.addon;f.addon.funcDeserialize={}
-    f.load('Options/custom_condition.lua')
+    f.load('Core/custom_condition_services.lua');f.load('Options/custom_condition.lua')
     return f
 end
 test('custom condition registration retains an independent field schema',function()

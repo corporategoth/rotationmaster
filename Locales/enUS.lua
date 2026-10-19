@@ -2224,6 +2224,9 @@ L["Editing this list"] = true
 L["Help.ItemSets.popup.overview"] = "This window edits only the item list you opened. Search or drag items into the fields, then arrange preferred items first. A named item set is shared by its other users; a custom list belongs to the calling condition or action draft. Applying this list does not apply the parent editor."
 L["Help.ItemSets.popup.delete"] = "Use a row's red trash can to remove that entry from the draft list. This does not delete a named item set or remove an item from your inventory. The removal takes effect when you Apply this list."
 L["Help.ItemSets.popup.save"] = "Apply validates every entry and writes the edited list back to its original owner. Discard closes without changing it. Closing with pending edits offers Apply, Discard or Cancel; Cancel keeps this window open. View Changes compares the original list with this draft. If the original list changed elsewhere, close and reopen it before applying."
+L["Native settings page unavailable: %s"] = true
+
+L["The native rotation editor is unavailable."] = true
 
 -- BEGIN GENERATED RM PUBLIC HELPER DOCS
 L["All original results, preserving nil positions and return count."] = true

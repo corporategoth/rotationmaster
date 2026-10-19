@@ -5,21 +5,37 @@ local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 local color, tostring, tonumber, pairs = color, tostring, tonumber, pairs
 local helpers = addon.help_funcs
 
+-- Private canonical leaves preserve explicit saved-source dependency identities.
+local Functions={
+    values={compare=addon.Functions.values.compare,isin=addon.Functions.values.isin},
+    presentation={nullable=addon.Functions.presentation.nullable,playerize=addon.Functions.presentation.playerize,compareString=addon.Functions.presentation.compareString},
+    cache={getCached=addon.Functions.cache.getCached},
+}
+addon.builtinCallbackBindings=addon.builtinCallbackBindings or {}
+addon.builtinCallbackBindings["Conditions/combat.lua"]={
+    ["Functions.values.compare"]="builtin:utils.lua:compare",
+    ["Functions.values.isin"]="builtin:utils.lua:isin",
+    ["Functions.presentation.nullable"]="builtin:utils.lua:nullable",
+    ["Functions.presentation.playerize"]="builtin:utils.lua:playerize",
+    ["Functions.presentation.compareString"]="builtin:utils.lua:compareString",
+    ["Functions.cache.getCached"]="builtin:utils.lua:getCached",
+}
+
 addon:RegisterCondition("COMBAT", {
     requiredFields = {"unit"},
     description = L["In Combat"],
     icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\combat",
     fields = { unit = "string" },
     valid = function(_, value)
-        return value.unit ~= nil and addon.isin(addon.units, value.unit);
+        return value.unit ~= nil and Functions.values.isin(addon.units, value.unit);
     end,
     evaluate = function(value, cache)
-        if not addon.getCached(cache, UnitExists, value.unit) then return false end
-        return addon.getCached(cache, UnitAffectingCombat, value.unit)
+        if not Functions.cache.getCached(cache, UnitExists, value.unit) then return false end
+        return Functions.cache.getCached(cache, UnitAffectingCombat, value.unit)
     end,
     print = function(_, value)
-        return string.format(addon.playerize(value.unit, L["%s {{!are|are not}} in combat"], L["%s {{!is|is not}} in combat"]),
-            addon.nullable(addon.units[value.unit], L["<unit>"]))
+        return string.format(Functions.presentation.playerize(value.unit, L["%s {{!are|are not}} in combat"], L["%s {{!is|is not}} in combat"]),
+            Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -43,7 +59,7 @@ addon:RegisterCondition("PET", {
         return true
     end,
     evaluate = function(_, cache)
-        return addon.getCached(cache, UnitExists, "pet")
+        return Functions.cache.getCached(cache, UnitExists, "pet")
     end,
     print = function()
         return L["you {{!have|do not have}} a pet"]
@@ -61,10 +77,10 @@ addon:RegisterCondition("PET_NAME", {
         return value.value ~= nil
     end,
     evaluate = function(value, cache)
-        return addon.getCached(cache, GetUnitName, "pet") == value.value
+        return Functions.cache.getCached(cache, GetUnitName, "pet") == value.value
     end,
     print = function(_, value)
-        return string.format(L["you {{!have|do not have}} a pet named %s"], addon.nullable(value.value, L["<name>"]))
+        return string.format(L["you {{!have|do not have}} a pet named %s"], Functions.presentation.nullable(value.value, L["<name>"]))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -96,7 +112,7 @@ addon:RegisterCondition("STEALTHED", {
         return true
     end,
     evaluate = function(_, cache)
-        return addon.getCached(cache, IsStealthed)
+        return Functions.cache.getCached(cache, IsStealthed)
     end,
     print = function()
         return L["you {{!are|are not}} stealthed"]
@@ -114,7 +130,7 @@ addon:RegisterCondition("INCONTROL", {
         return true
     end,
     evaluate = function(_, cache)
-        return addon.getCached(cache, HasFullControl)
+        return Functions.cache.getCached(cache, HasFullControl)
     end,
     print = function()
         return L["you {{!are|are not}} in control of your character"]
@@ -129,25 +145,25 @@ addon:RegisterCondition("LOC_TYPE", {
     icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\combat",
     fields = { operator = "string", value = "number", loc_type = "string" },
     valid = function(_, value)
-        return (value.operator ~= nil and addon.isin(addon.operators, value.operator) and
+        return (value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                 value.value ~= nil and value.value >= 0.0 and
-                value.loc_type ~= nil and addon.isin(addon.loc_types, value.loc_type))
+                value.loc_type ~= nil and Functions.values.isin(addon.loc_types, value.loc_type))
     end,
     evaluate = function(value, cache)
-        for i=1,addon.getCached(cache, C_LossOfControl.GetNumEvents) do
-            local loc_type, _, _, _, _, remain = addon.getCached(cache, C_LossOfControl.GetEventInfo, i)
+        for i=1,Functions.cache.getCached(cache, C_LossOfControl.GetNumEvents) do
+            local loc_type, _, _, _, _, remain = Functions.cache.getCached(cache, C_LossOfControl.GetEventInfo, i)
             if addon.loc_equivalent[loc_type] then
                 loc_type = addon.loc_equivalent[loc_type]
             end
             if loc_type == value.loc_type then
-                return addon.compare(value.operator, remain, value.value)
+                return Functions.values.compare(value.operator, remain, value.value)
             end
         end
         return false
     end,
     print = function(_, value)
-        return addon.compareString(value.operator, string.format(L["time remaining on %s"],
-                addon.nullable(addon.loc_types[value.loc_type], L["<school>"])), string.format(L["%s seconds"], addon.nullable(value.value)))
+        return Functions.presentation.compareString(value.operator, string.format(L["time remaining on %s"],
+                Functions.presentation.nullable(addon.loc_types[value.loc_type], L["<school>"])), string.format(L["%s seconds"], Functions.presentation.nullable(value.value)))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -184,22 +200,22 @@ addon:RegisterCondition("LOC_BLOCKED", {
     icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\combat",
     fields = { operator = "string", value = "number", school = "string" },
     valid = function(_, value)
-        return (value.operator ~= nil and addon.isin(addon.operators, value.operator) and
+        return (value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                 value.value ~= nil and value.value >= 0.0 and
-                value.school ~= nil and addon.isin(SCHOOL_STRINGS, value.school))
+                value.school ~= nil and Functions.values.isin(SCHOOL_STRINGS, value.school))
     end,
     evaluate = function(value, cache)
-        for i=1,addon.getCached(cache, C_LossOfControl.GetNumEvents) do
-            local _, _, _, _, _, remain, _, school = addon.getCached(cache, C_LossOfControl.GetEventInfo, i)
+        for i=1,Functions.cache.getCached(cache, C_LossOfControl.GetNumEvents) do
+            local _, _, _, _, _, remain, _, school = Functions.cache.getCached(cache, C_LossOfControl.GetEventInfo, i)
             if bit.band(school, bit.lshift(1, value.school-1)) then
-                return addon.compare(value.operator, remain, value.value)
+                return Functions.values.compare(value.operator, remain, value.value)
             end
         end
         return false
     end,
     print = function(_, value)
-        return addon.compareString(value.operator, string.format(L["time remaining on block of your %s abilities"],
-            addon.nullable(SCHOOL_STRINGS[value.school], L["<school>"])), string.format(L["%s seconds"], addon.nullable(value.value)))
+        return Functions.presentation.compareString(value.operator, string.format(L["time remaining on block of your %s abilities"],
+            Functions.presentation.nullable(SCHOOL_STRINGS[value.school], L["<school>"])), string.format(L["%s seconds"], Functions.presentation.nullable(value.value)))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -239,7 +255,7 @@ addon:RegisterCondition("MOVING", {
         return true
     end,
     evaluate = function(_, cache)
-        return (addon.getCached(cache, GetUnitSpeed, "player") ~= 0)
+        return (Functions.cache.getCached(cache, GetUnitSpeed, "player") ~= 0)
     end,
     print = function()
         return L["you {{!are|are not}} moving"]
@@ -254,14 +270,14 @@ addon:RegisterCondition("THREAT", {
     icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\combat",
     fields = { unit = "string", threat = "number" },
     valid = function(_, value)
-        return value.unit ~= nil and addon.isin(addon.units, value.unit) and
+        return value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
                value.threat ~= nil and value.threat >= 1 and value.threat <= 4
     end,
     evaluate = function(value, cache)
-        if not addon.getCached(cache, UnitExists, value.unit) then return false end
-        local enemy = addon.getCached(cache, UnitIsEnemy, "player", value.unit)
+        if not Functions.cache.getCached(cache, UnitExists, value.unit) then return false end
+        local enemy = Functions.cache.getCached(cache, UnitIsEnemy, "player", value.unit)
         if enemy then
-            local rv = addon.getCached(cache, UnitThreatSituation, "player", value.unit)
+            local rv = Functions.cache.getCached(cache, UnitThreatSituation, "player", value.unit)
             if rv ~= nil and rv >= value.threat - 1 then
                 return true
             else
@@ -272,8 +288,8 @@ addon:RegisterCondition("THREAT", {
         end
     end,
     print = function(_, value)
-        return string.format(L["you {{!are|are not}} at least %s on %s"], addon.nullable(addon.threat[value.threat], L["<threat>"]),
-        addon.nullable(addon.units[value.unit], L["<unit>"]))
+        return string.format(L["you {{!are|are not}} at least %s on %s"], Functions.presentation.nullable(addon.threat[value.threat], L["<threat>"]),
+        Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -324,7 +340,7 @@ addon:RegisterCondition("THREAT_COUNT", {
     fields = { threat = "number", operator = "string", value = "number" },
     valid = function(_, value)
         return value.value ~= nil and value.value >= 0 and
-                value.operator ~= nil and addon.isin(addon.operators, value.operator) and
+                value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                 value.threat ~= nil and value.threat >= 1 and value.threat <= 4
     end,
     evaluate = function(value)
@@ -334,13 +350,13 @@ addon:RegisterCondition("THREAT_COUNT", {
                 count = count + 1
             end
         end
-        return addon.compare(value.operator, count, value.value)
+        return Functions.values.compare(value.operator, count, value.value)
     end,
     print = function(_, value)
-        return addon.compareString(value.operator,
+        return Functions.presentation.compareString(value.operator,
                         string.format(L["number of enemies you are at least %s"],
-                        addon.nullable(addon.threat[value.threat], L["<threat>"])),
-                        addon.nullable(value.value))
+                        Functions.presentation.nullable(addon.threat[value.threat], L["<threat>"])),
+                        Functions.presentation.nullable(value.value))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -394,7 +410,7 @@ addon:RegisterCondition("FORM", {
         return value.value ~= nil and value.value >= 0 and value.value <= (character_class == "SHAMAN" and 1 or GetNumShapeshiftForms())
     end,
     evaluate = function(value, cache)
-        return addon.getCached(cache, GetShapeshiftForm) == value.value
+        return Functions.cache.getCached(cache, GetShapeshiftForm) == value.value
     end,
     print = function(_, value)
         local form
@@ -407,7 +423,7 @@ addon:RegisterCondition("FORM", {
                 form = GetSpellInfo(select(4, GetShapeshiftFormInfo(value.value)))
             end
         end
-        return string.format(L["you {{!are|are not}} in %s form"], addon.nullable(form, L["<form>"]))
+        return string.format(L["you {{!are|are not}} in %s form"], Functions.presentation.nullable(form, L["<form>"]))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -487,15 +503,15 @@ addon:RegisterCondition("ATTACKABLE", {
     icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\combat",
     fields = { unit = "string" },
     valid = function(_, value)
-        return value.unit ~= nil and addon.isin(addon.units, value.unit);
+        return value.unit ~= nil and Functions.values.isin(addon.units, value.unit);
     end,
     evaluate = function(value, cache)
-        if not addon.getCached(cache, UnitExists, value.unit) then return false end
-        return addon.getCached(cache, UnitCanAttack, "player", value.unit) and
-               not addon.getCached(cache, UnitIsDead, value.unit)
+        if not Functions.cache.getCached(cache, UnitExists, value.unit) then return false end
+        return Functions.cache.getCached(cache, UnitCanAttack, "player", value.unit) and
+               not Functions.cache.getCached(cache, UnitIsDead, value.unit)
     end,
     print = function(_, value)
-        return string.format(L["%s {{!is|is not}} attackable"], addon.nullable(addon.units[value.unit], L["<unit>"]))
+        return string.format(L["%s {{!is|is not}} attackable"], Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -516,14 +532,14 @@ addon:RegisterCondition("ENEMY", {
     icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\combat",
     fields = { unit = "string" },
     valid = function(_, value)
-        return value.unit ~= nil and addon.isin(addon.units, value.unit);
+        return value.unit ~= nil and Functions.values.isin(addon.units, value.unit);
     end,
     evaluate = function(value, cache)
-        if not addon.getCached(cache, UnitExists, value.unit) then return false end
-        return addon.getCached(cache, UnitIsEnemy, "player", value.unit)
+        if not Functions.cache.getCached(cache, UnitExists, value.unit) then return false end
+        return Functions.cache.getCached(cache, UnitIsEnemy, "player", value.unit)
     end,
     print = function(_, value)
-        return string.format(L["%s {{!is|is not}} an enemy"], addon.nullable(addon.units[value.unit], L["<unit>"]))
+        return string.format(L["%s {{!is|is not}} an enemy"], Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -544,15 +560,15 @@ addon:RegisterCondition("COMBAT_HISTORY", {
     icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\combat",
     fields = { unit = "string", action = "string", operator = "string", value = "number" },
     valid = function(_, value)
-        return (value.unit ~= nil and addon.isin(addon.units, value.unit) and
-                value.action ~= nil and addon.isin(addon.actions, value.action) and
-                value.operator ~= nil and addon.isin(addon.operators, value.operator) and
+        return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
+                value.action ~= nil and Functions.values.isin(addon.actions, value.action) and
+                value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                 value.value ~= nil and value.value >= 0)
     end,
     evaluate = function(value)
         if addon.combatHistory[value.unit] ~= nil then
             for idx, entry in pairs(addon.combatHistory[value.unit]) do
-                if (addon.compare(value.operator, idx, value.value)) and (value.action == entry.action or
+                if (Functions.values.compare(value.operator, idx, value.value)) and (value.action == entry.action or
                     (entry.severity ~= nil and value.action == (entry.action .. '_' .. entry.severity))) then
                     return true
                 end
@@ -561,9 +577,9 @@ addon:RegisterCondition("COMBAT_HISTORY", {
         return false
     end,
     print = function(_, value)
-        return addon.compareString(value.operator, string.format(addon.playerize(value.unit, L["%s were %s"], L["%s was %s"]),
-                             addon.nullable(addon.units[value.unit], L["<unit>"]), addon.nullable(addon.actions[value.action], L["<action>"])),
-                             string.format(L["%s actions ago"], addon.nullable(value.value)))
+        return Functions.presentation.compareString(value.operator, string.format(Functions.presentation.playerize(value.unit, L["%s were %s"], L["%s was %s"]),
+                             Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]), Functions.presentation.nullable(addon.actions[value.action], L["<action>"])),
+                             string.format(L["%s actions ago"], Functions.presentation.nullable(value.value)))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -610,15 +626,15 @@ addon:RegisterCondition("COMBAT_HISTORY_TIME", {
     icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\time",
     fields = { unit = "string", action = "string", operator = "string", value = "number" },
     valid = function(_, value)
-        return (value.unit ~= nil and addon.isin(addon.units, value.unit) and
-                value.action ~= nil and addon.isin(addon.actions, value.action) and
-                value.operator ~= nil and addon.isin(addon.operators, value.operator) and
+        return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
+                value.action ~= nil and Functions.values.isin(addon.actions, value.action) and
+                value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                 value.value ~= nil and value.value >= 0)
     end,
     evaluate = function(value, _, evalStart)
         if addon.combatHistory[value.unit] ~= nil then
             for _, entry in pairs(addon.combatHistory[value.unit]) do
-                if addon.compare(value.operator, (evalStart - entry.time), value.value) and (value.action == entry.action or
+                if Functions.values.compare(value.operator, (evalStart - entry.time), value.value) and (value.action == entry.action or
                         (entry.severity ~= nil and value.action == (entry.action .. '_' .. entry.severity))) then
                     return true
                 end
@@ -627,9 +643,9 @@ addon:RegisterCondition("COMBAT_HISTORY_TIME", {
         return false
     end,
     print = function(_, value)
-        return addon.compareString(value.operator, string.format(addon.playerize(value.unit, L["%s were %s"], L["%s was %s"]),
-            addon.nullable(addon.units[value.unit], L["<unit>"]), addon.nullable(addon.actions[value.action], L["<action>"])),
-            string.format(L["%s seconds ago"], addon.nullable(value.value)))
+        return Functions.presentation.compareString(value.operator, string.format(Functions.presentation.playerize(value.unit, L["%s were %s"], L["%s was %s"]),
+            Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]), Functions.presentation.nullable(addon.actions[value.action], L["<action>"])),
+            string.format(L["%s seconds ago"], Functions.presentation.nullable(value.value)))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -676,16 +692,16 @@ addon:RegisterCondition("TIME_IN_COMBAT", {
     icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\time",
     fields = { operator = "string", value = "number" },
     valid = function(_, value)
-        return ( value.operator ~= nil and addon.isin(addon.operators, value.operator) and value.value ~= nil and value.value >= 0)
+        return ( value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and value.value ~= nil and value.value >= 0)
     end,
     evaluate = function(value, _, evalStart)
         if addon.combatStart ~= nil then
-            return addon.compare(value.operator, (evalStart - addon.combatStart), value.value)
+            return Functions.values.compare(value.operator, (evalStart - addon.combatStart), value.value)
         end
         return false
     end,
     print = function(_, value)
-        return addon.compareString(value.operator,L["Time in combat"],string.format(L["%s seconds"],addon.nullable(value.value)))
+        return Functions.presentation.compareString(value.operator,L["Time in combat"],string.format(L["%s seconds"],Functions.presentation.nullable(value.value)))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")

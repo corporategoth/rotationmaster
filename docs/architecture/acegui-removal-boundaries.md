@@ -1,51 +1,39 @@
-# Remaining AceGUI boundary audit
+# Remaining AceGUI boundaries
 
-Source boundary audit after `6ba007c`, including the completed native item-list popup. No production files changed.
+## Normal page loading
 
-## Result
+The TOC no longer loads the seven old ordinary page renderers in `Options/general.lua`, `effects.lua`, `announce.lua`, `itemset.lua`, `rotations.lua`, `custom_condition.lua` and `conditions.lua`. Their files remain available for explicit compatibility callers and regression fixtures. This does not remove AceDB, AceEvent, AceTimer, AceLocale, serialization or communication services.
 
-I found no additional ordinary shipped configuration path constructing Ace widgets after the item-list popup replacement. AceGUI is still loaded and required for compatibility registrations, optional module settings, and historical custom Fields UI/Help code. Removing its embed now would break those contracts even though the main UI is native.
+Live services have independent owners:
 
-## Traced entry points
+| Owner | Contract |
+| --- | --- |
+| `Core/condition_catalog.lua` | Condition group/catalog queries, four-result descriptions and widget callback dispatch. Original registry identities, ordering/hiding quirks and callback arguments remain. |
+| `Core/custom_condition_services.lua` | Templates, generated-header normalization and modern/legacy registration. The old renderer reuses an internal compiler/signature bridge without resetting services. |
+| `Core/itemset_services.lua` | Secure ItemSet macro buttons, use queries, named-set lists and the native popup forwarding API. Original captured APIs, list/priority semantics and secure-button policy remain. |
+| `UI/settings_setup.lua` | Native launcher/category registration, specialization metadata, preview forwarding and optional module discovery. Preserves profile/about option metadata and profile-switch lifecycle. |
 
-| Entry point | Actual route | Remaining Ace boundary |
-| --- | --- | --- |
-| `/rm config` / settings launcher | `UI/config.lua:281` → `SelectSection` → `CreateRotationBrowser` or `OpenNativeSettings` | Every shipped tab has a native builder in `UI/settings_collections.lua:22`. `UI/config.lua:267` constructs an Ace group only after both native routes decline; optional `module:*` tabs intentionally take this branch. |
-| Rotation selection | `UI/rotation_browser.lua:213` → `CreateRotationEditor` | Its Ace group at line 225 is the fallback only when the native factory is absent. A native construction failure displays its reason; it does **not** fall back to Ace. |
-| Condition editing | `Options/conditional.lua:461` → `ShowConditionEditor` | The legacy Frame construction is below the native early return. Native field cards dispatch the registered `definition.widget`; built-in declarations now acquire RM primitives. Custom callbacks may deliberately acquire Ace widgets. |
-| Spells/items/totems/glyphs | `Conditions/common.lua` → `UI/spell_search.lua:31` → `CreateConditionEditBox` | Strings such as `Spec_EditBox`, `Totem_EditBox`, and `Glyph_EditBox` select provider/filter semantics; they do not instantiate the corresponding old Ace widget. |
-| Custom condition source editing | Native source pane → `condition_edit_box` | `UI/custom_condition_editor.lua:8` overrides the earlier legacy function from `Options/custom_condition.lua`; its native `LayoutCustomConditionEditor` also overrides the legacy implementation. |
-| Built In reference/comparison/import | `UI/defaults.lua`, `UI/rotation_comparison.lua`, `UI/transfer.lua` | Native groups, links and measured viewports. The embedded legacy holder is itself an RM group; its host may still be an explicit Ace caller. |
-| Recommendation preview | `UI/preview.lua:8` supplies `AddRecommendation` | The Ace Icon fallback at `main.lua:887` runs only for a non-native externally supplied/legacy `nextWindow`. The shipped preview always takes the native branch at line 883. |
-| Item-list condition editing | `Widget_ItemWidget` → `item_list_popup` | `Options/itemset.lua:455` delegates to `OpenItemListPopup`, which uses the native form/ordered-row primitives and its own detached list draft. |
+Every shipped ordinary tab opens the native browser or native settings forms. A missing native page displays an explicit native error surface; it does not revive an unloaded renderer. Rotation selection similarly reports a missing native editor. Explicit externally supplied legacy page builders remain an opt-in compatibility path.
 
-## Compatibility that remains intentional
+Configured `module:*` applications have a separate `BuildModuleConfigurationPane` bridge to AceConfigDialog. The module display name resolves to its registered application ID. Only this known module host or an explicitly supplied compatibility renderer allocates the shell's Ace group. Shell/browser pane release still clears Ace focus because native condition fields can contain explicitly authored historical Ace children.
 
-- `UI/config.lua` / `Options/general.lua:1078`: optional modules register their own AceConfig applications through `SetupOptions`. Opening a module tab still calls `AceConfigDialog:Open` in an Ace host. Built-in Profiles/About no longer require that renderer, although their old option tables are still registered during setup.
-- `UI/condition_widgets.lua`, `condition_layout.lua`, `condition_display.lua`, `condition_inputs.lua`, `condition_icon.lua`, `condition_position.lua`, `checkbox.lua`, `selector.lua`: RM factories own normal acquisition/release. Their Ace registrations and explicit legacy-pool transfer preserve saved/custom source compatibility. Advanced custom layout requests still use `AceGUI:GetLayout`.
-- `Conditions/common.lua:8`: the named `RM-SpellField` Ace layout remains available to historical Fields UI code. The ordinary native layout calls the same RM geometry directly.
-- `Widgets/help.lua`, `directional.lua`, `disable_inline.lua`: remaining in-repository constructors are reached from legacy `Options/*` renderers, or explicitly authored custom code. In particular, `DisablableInlineGroup` is used by the legacy conditional renderer; native condition cards do not use it.
-- `Integrations/lua_workbench.lua:106` temporarily observes Ace allocations only while explicitly running/debugging user Fields UI/Help. This is a disposal compatibility hook, not an ordinary editor constructor.
+## Ordinary field and auxiliary windows
 
-## Safest next extraction order
+RM owns normal field allocation, leases, pooling, callbacks and geometry. Reference providers, item-list drafts, Test/Run/Debug surfaces, Built In references, comparisons and import previews use native groups and measured viewports. The native recommendation preview implements `AddRecommendation`; main's old Icon fallback is only for an externally supplied legacy preview.
 
-1. **Extract live non-UI helpers before unloading Options files.**
-   - `Options/conditional.lua:489–610`: condition catalog/query/dispatch functions (`findConditionGroup`, `listConditions`, `describeCondition`, `widgetCondition`) are used by the native picker/settings, validation and callback rendering. Keep `EditCondition` as the native forwarding API. Keep the compact `LayoutConditionFrame` forwarding contract used by historical field callbacks.
-   - `Options/custom_condition.lua`: move `empty_condition`, template-header normalization / `PrepareCustomConditionEditorSource`, and `register_custom_condition` out of the old editor module. Startup (`main.lua:328`), validation, new drafts and native source editing still depend on these.
-   - `Options/itemset.lua`: move `UpdateItemSetButtons` (startup/runtime and native Apply), `get_item_list` (ordinary condition picker), and the native `item_list_popup` forwarding API. Preserve `ItemSetInUse` if retaining its existing public compatibility API. Do not mix this mechanical extraction with changes to secure bar binding behavior.
-   - `Options/general.lua:967`: native browser still requires `GetRotationEditorSpecs`. Move it independently of the legacy rotation renderer. Retain the native `CreatePreviewWindow` forwarding API if external compatibility is preserved.
+Numeric Table fields support simple top/middle/bottom vertical cell alignment without Ace layout lookup. Rows are measured before positioning, including partial rows and changing child heights. Container-level alignment/spacing, nonnumeric columns, row/column spans, arbitrary align callbacks and other advanced custom layouts retain the explicit compatibility route. Actual shipped ItemWidget tests forbid both Ace construction and GetLayout; real Ace tests retain the advanced route and its spacing/alignment semantics.
 
-2. **Separate native setup from the optional-module bridge.** `SetupOptions` still creates the native launcher, registers the Blizzard settings category and discovers module applications. Keep those operations. Profiles/About Ace option table registration can be isolated with the module renderer rather than loading the whole old General UI. Built-in tabs should fail explicitly if a native builder is absent instead of silently reviving their old renderers.
+`Options/conditional.lua` remains loaded as an explicit compatibility adapter. Its `EditCondition` delegates to the native editor when present, and `LayoutConditionFrame` recognizes native compact refresh roots. Its old full renderer and `Widgets/help.lua`, `directional.lua`, `disable_inline.lua` remain available to historical custom code. Live catalog/query/dispatch no longer depends on this renderer.
 
-3. **Then stop loading old built-in renderers.** `Options/effects.lua`, `announce.lua`, `rotations.lua`, `conditions.lua` contain legacy rendering APIs without an ordinary native caller. After the helper extraction, the UI-heavy portions of General/Itemset/Custom Condition/Conditional can be excluded too. Keep any desired old public renderer APIs in a clearly named compatibility module rather than deleting them accidentally during extraction.
+## Dependencies that still prevent removing the AceGUI embed
 
-4. **Separate syntax/data services from widget wrappers before editing `embeds.xml`.**
-   - `LibsAugment/FAIAP.lua` exports `addon.LuaSyntax` used by native `UI/lua_editor.lua:160`; its last section also registers legacy `LuaEditBox`. Keep the engine while isolating that registration.
-   - `AceGUI-3.0-ItemLoader` is still used by `Core/reference_catalog.lua:58` for item discovery and by `main.lua:1589` for metadata-load updates. The loader is a data service, distinct from the old ItemPredictor widgets. Removing the entire item-editbox XML would remove this service too.
-   - Native spell search uses `SpellCatalog`; the old spell/totem/spec/glyph predictor registrations are needed only for explicit historical widgets after this split.
+- Saved custom Fields UI/Help can deliberately request Ace controls, source bindings and arbitrary registered layouts. Native containers accept those children, and shared disposal observers cover unattached allocations during errors/debugger pauses.
+- Optional modules can register AceConfig applications. Removing their configuration bridge would change a public extension contract.
+- Historical RM widget registrations preserve original saved-source identities and mixed native/Ace pool transfer. The normal factories acquire RM widgets directly; the registrations are compatibility entry points.
+- `LibsAugment/FAIAP.lua` bundles the syntax engine used by native editors with a trailing historical LuaEditBox widget registration. Separate those responsibilities before changing embeds.
+- `AceGUI-3.0-ItemLoader` supplies item discovery and metadata callbacks used by Core/reference_catalog and main. It is a data service despite its library name. The Item/Spell XMLs also bundle predictor widgets; split service loading from compatibility registration before pruning them.
+- Spell/spec/totem/glyph, ActionSlot and SharedMedia widget registrations may be explicitly requested by historical source or optional modules. Their names are not evidence that an ordinary native control uses them.
 
-5. **Decide compatibility policy before removing AceGUI itself.** Optional module AceConfig rendering, native-to-Ace pool/layout bridges, and explicitly selected source bindings still require it. AceDB, AceEvent, AceTimer, AceLocale, AceSerializer and AceComm are separate services; replacing GUI calls does not require replacing them.
+## Verification
 
-## Verification to retain at each extraction
-
-Keep the existing no-Ace allocation tests for built-in fields, settings pages, references, comparisons, previews and item-list popup. Also retain shipped-Ace mixed-parent/pool tests, historical custom Fields UI tests, and an optional module tab test. Run the generated-source compatibility gate after moving public/helper bodies so stable captured identities and dependencies remain valid.
+Run `python3 tools/check`, including source catalog/hash compatibility, no-Ace normal field/settings/window allocation, real Ace mixed-parent/pool/layout tests, custom source/Test/debug disposal, native popup drafts, secure ItemSet service behavior and configured module-host tests. Fixture checks establish source/runtime contracts; native input, layering and gameplay acceptance still require WoW.

@@ -4,6 +4,18 @@ local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 local color = color
 local helpers = addon.help_funcs
 
+-- Select pure helpers from their actual owners for authored and cloned callbacks.
+local Functions={
+    values={isin=addon.Functions.values.isin},
+    presentation={nullable=addon.Functions.presentation.nullable,compareString=addon.Functions.presentation.compareString},
+}
+addon.builtinCallbackBindings=addon.builtinCallbackBindings or {}
+addon.builtinCallbackBindings["Conditions/item.lua"]={
+    ["Functions.values.isin"]="builtin:utils.lua:isin",
+    ["Functions.presentation.nullable"]="builtin:utils.lua:nullable",
+    ["Functions.presentation.compareString"]="builtin:utils.lua:compareString",
+}
+
 local function itemHelp(frame)
     addon.layout_condition_itemwidget_help(frame)
     frame:AddChild(helpers.Gap())
@@ -44,7 +56,7 @@ addon:RegisterCondition("EQUIPPED", {
         return addon:EvaluateItemCondition("EQUIPPED",value,cache,now)
     end,
     print = function(_, value)
-        return string.format(L["you {{!have|do not have}} %s equipped"], addon.nullable(get_item_desc(value.item), L["<item>"]))
+        return string.format(L["you {{!have|do not have}} %s equipped"], Functions.presentation.nullable(get_item_desc(value.item), L["<item>"]))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -68,16 +80,16 @@ addon:RegisterCondition("CARRYING", {
     fields = { item = { "string", { "string", "number" } }, operator = "string", value = "number" },
     valid = function(_, value)
         return (addon:IsConditionItemReference(value.item) and
-                value.operator ~= nil and addon.isin(addon.operators, value.operator) and
+                value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                 type(value.value)=="number" and value.value>=0 and value.value<math.huge)
     end,
     evaluate = function(value, cache, now)
         return addon:EvaluateItemCondition("CARRYING",value,cache,now)
     end,
     print = function(_, value)
-        return addon.compareString(value.operator,
-                string.format(L["the number of %s you are carrying"], addon.nullable(get_item_desc(value.item), L["<item>"])),
-                addon.nullable(value.value, L["<quantity>"]))
+        return Functions.presentation.compareString(value.operator,
+                string.format(L["the number of %s you are carrying"], Functions.presentation.nullable(get_item_desc(value.item), L["<item>"])),
+                Functions.presentation.nullable(value.value, L["<quantity>"]))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -113,7 +125,7 @@ addon:RegisterCondition("ITEM", {
         return addon:EvaluateItemCondition("ITEM",value,cache,now)
     end,
     print = function(_, value)
-        return string.format(L["%s {{!is|is not}} available"], addon.nullable(get_item_desc(value.item), L["<item>"])) ..
+        return string.format(L["%s {{!is|is not}} available"], Functions.presentation.nullable(get_item_desc(value.item), L["<item>"])) ..
                 (value.notcarrying and L[", even if you do not currently have one"] or "")
     end,
     widget = function(parent, spec, value)
@@ -159,7 +171,7 @@ addon:RegisterCondition("ITEM_RANGE", {
         return addon:EvaluateItemCondition("ITEM_RANGE",value,cache,now)
     end,
     print = function(_, value)
-        return string.format(L["%s {{!is|is not}} in range"], addon.nullable(get_item_desc(value.item), L["<item>"])) ..
+        return string.format(L["%s {{!is|is not}} in range"], Functions.presentation.nullable(get_item_desc(value.item), L["<item>"])) ..
             (value.notcarrying and L[", even if you do not currently have one"] or "")
     end,
     widget = function(parent, spec, value)
@@ -197,7 +209,7 @@ addon:RegisterCondition("ITEM_COOLDOWN", {
     requiredFields={'item','operator','value'},
     fields = { item = { "string", { "string", "number" } }, notcarrying = "boolean", operator = "string", value = "number" },
     valid = function(_, value)
-        return (value.operator ~= nil and addon.isin(addon.operators, value.operator) and
+        return (value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                 addon:IsConditionItemReference(value.item) and (value.notcarrying==nil or type(value.notcarrying)=="boolean") and type(value.value)=="number" and value.value>=0 and value.value<math.huge)
     end,
     evaluate = function(value, cache, now)
@@ -205,8 +217,8 @@ addon:RegisterCondition("ITEM_COOLDOWN", {
     end,
     print = function(_, value)
         return string.format(L["the %s"],
-            addon.compareString(value.operator, string.format(L["cooldown on %s"], addon.nullable(get_item_desc(value.item), L["<item>"])),
-                                string.format(L["%s seconds"], addon.nullable(value.value)))) ..
+            Functions.presentation.compareString(value.operator, string.format(L["cooldown on %s"], Functions.presentation.nullable(get_item_desc(value.item), L["<item>"])),
+                                string.format(L["%s seconds"], Functions.presentation.nullable(value.value)))) ..
                 (value.notcarrying and L[", even if you do not currently have one"] or "")
     end,
     widget = function(parent, spec, value)

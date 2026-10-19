@@ -25,7 +25,7 @@ local function fixture(native)
     local c=f.libraries.LibCompress;c.fcs16init=function() return '' end;c.fcs16update=function(_,hash,value) return hash..':'..value end;c.fcs16final=function(_,hash) return hash end
     for _,path in ipairs({'Platform/spells.lua','Platform/items.lua','Platform/inventory.lua','Core/conditions.lua'}) do f.load(path) end
     local file=io.open('Core/item_conditions.lua');if file then file:close();f.load('Core/item_conditions.lua') end
-    f.load('Options/itemset.lua');f.load('Conditions/item.lua');return f,s,api
+    f.load('Core/itemset_services.lua');f.load('Options/itemset.lua');f.load('Conditions/item.lua');return f,s,api
 end
 local function value(tag,extra)
     local v={type=tag,item='pots',operator='EQUALS',value=2};for k,x in pairs(extra or {}) do v[k]=x end;return v

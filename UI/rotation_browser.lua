@@ -99,6 +99,7 @@ local function create(parent)
         addon.configPaneGeneration=(addon.configPaneGeneration or 0)+1
         addon.currentConditionEval=nil
         self.editorOwner=nil
+        -- Custom Fields UI inside a native editor may still own Ace focus.
         if AceGUI.ClearFocus then AceGUI:ClearFocus() end
         if self.pane then
             local pane=self.pane;self.pane=nil
@@ -210,22 +211,17 @@ local function create(parent)
         local function selected(nextSpec,nextId)
             if self.active and self.editorOwner==owner then self:SelectRotation(nextSpec,nextId) end
         end
-        if addon.CreateRotationEditor then
-            local pane,problem=addon:CreateRotationEditor(detail,spec,self.selected,selected)
-            if not pane then
-                self.editorOwner=nil
-                local label=detail.rmEditorError or detail:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall")
-                detail.rmEditorError=label;label:SetPoint("TOPLEFT",8,-8);label:SetText(tostring(problem));label:Show()
-            else
-                if detail.rmEditorError then detail.rmEditorError:Hide() end
-                self.nativeDetails=true;self.pane=pane
-                pane.onSaved=function() if self.active and self.editorOwner==owner then self:RefreshRows() end end
-            end
+        local pane,problem
+        if type(addon.CreateRotationEditor)=='function' then pane,problem=addon:CreateRotationEditor(detail,spec,self.selected,selected)
+        else problem=L['The native rotation editor is unavailable.'] end
+        if not pane then
+            self.editorOwner=nil
+            local label=detail.rmEditorError or detail:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall")
+            detail.rmEditorError=label;label:SetPoint("TOPLEFT",8,-8);label:SetText(tostring(problem or L['The native rotation editor is unavailable.']));label:Show()
         else
-            local pane=AceGUI:Create("SimpleGroup");self.pane=pane;pane:SetLayout("Flow")
-            pane.frame:SetParent(detail);pane.frame:ClearAllPoints();pane.frame:SetAllPoints(detail)
-            pane:SetWidth(detail:GetWidth());pane:SetHeight(detail:GetHeight());pane.frame:Show()
-            addon:BuildRotationEditor(pane,spec,self.selected,selected)
+            if detail.rmEditorError then detail.rmEditorError:Hide() end
+            self.nativeDetails=true;self.pane=pane
+            pane.onSaved=function() if self.active and self.editorOwner==owner then self:RefreshRows() end end
         end
         for _,control in ipairs(self.specButtons) do
             if control.spec==spec then control:Disable() else control:Enable() end

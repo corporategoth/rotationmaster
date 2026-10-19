@@ -4,105 +4,11 @@ local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 
 local AceGUI = LibStub("AceGUI-3.0")
 
-local HideOnEscape, deepcopy, uuid = addon.HideOnEscape, addon.deepcopy, addon.uuid
+local HideOnEscape, deepcopy = addon.HideOnEscape, addon.deepcopy
 local pairs = pairs
 
-local function_signatures = {
-    on_register = "function(tag)",
-    on_unregister = "function(tag)",
-    valid = "function(spec, value)",
-    evaluate = "function(value, cache, evalStart)",
-    print = "function(spec, value)",
-    widget = "function(parent, spec, value)",
-    help = "function(frame)",
-}
-
-addon.empty_condition = {
-    description = "",
-    icon = "Interface\\Icons\\Inv_misc_questionmark",
-    fields = {},
-    on_register = [[
--- Call this when the condition is registered (could initialize some data or something).
--- Params:
---    tag - The tag (aka. type) this condition is registered as
-]],
-    on_unregister = [[
--- Call this when the condition is unregistered (could destroy some data or something).
--- Params:
---    tag - The tag (aka. type) this condition was registered as
-]],
-    valid = [[
--- Validate that the condition has all required values set and they are in
--- acceptable bounds.  This does not indicate if the condition is true or not.
--- Params:
---    spec - The talent specialization in use (as a number).
---    value - The storage for this condition (ie. where it's parameters are stored).
--- Return: true if the condition is valid
-
-return true
-]],
-    evaluate = [[
--- Evaluate the condition at runtime, and let us know if the current situation
--- makes this condition pass.
--- Params:
---    value - The storage for this condition (ie. where it's parameters are stored).
---    cache - A cache for this evaluation run (it is reset every evaluation cycle).
---            You can also use addon.combatCache (only reset when going out of combat)
---            or addon.longtermCache (only reset when your skills are updated).
---    evalStart - The timestamp (GetTime()) of when this evaluation cycle started.
--- Return: true if the condition passes
-
-return true
-]],
-    print = [[
--- Create a printable string that describes this condition in words.
--- Params:
---    spec - The talent specialization in use (as a number).
---    value - The storage for this condition (ie. where it's parameters are stored).
--- Return: A string that describes this condition
-
-return ''
-]],
-    widget = [[
--- Create the widgets required to configure this condition.
--- Params:
---    parent - A bounding box that will contain this condition's widgets.
---    spec - The talent specialization in use (as a number).
---    value - The storage for this condition (ie. where it's parameters are stored).
-local top = parent:GetUserData("top")
-local root = top:GetUserData("root")
-local funcs = top:GetUserData("funcs")
-
-]],
-    help = [[
--- Create the required help information for this condition
--- Params:
---    frame - The frame the help widgets will be layed out in.
-local helpers = addon.help_funcs
-
-]],
-}
-
--- Retain exact old template headers only to recognize generated boilerplate in
--- saved conditions. Arbitrary user comments are preserved.
-local templateHeaders={}
-for name in pairs(function_signatures) do
-    local code=addon.empty_condition[name];local offset=1
-    while offset<=#code do
-        local ending=code:find('\n',offset,true) or #code+1;local line=code:sub(offset,ending-1)
-        if line:match('^%s*%-%-') or line:match('^%s*$') then offset=ending+1 else break end
-    end
-    templateHeaders[name]=code:sub(1,offset-1);addon.empty_condition[name]=code:sub(offset)
-end
-function addon:PrepareCustomConditionEditorSource(source,preserveFormatting)
-    local result=self:CopySettingsData(source)
-    if preserveFormatting then return result end
-    for name,prefix in pairs(templateHeaders) do
-        if prefix~='' and type(result[name])=='string' and result[name]:sub(1,#prefix)==prefix then result[name]=result[name]:sub(#prefix+1) end
-    end
-    for name in pairs(self.CustomConditionCallbacks) do if type(result[name])=='string' then result[name]=self:NormalizeLuaSourceForEditor(result[name]) end end
-    return result
-end
+local services = addon.CustomConditionServices
+local function_signatures, compile_function = services.signatures, services.compile
 
 local function open_icon_window(parent, update)
     parent:SetCallback("OnClose", function() end)
@@ -212,58 +118,6 @@ end
 
 local function ImportExport(parent,update,key,condition)
     return addon:ShowCustomConditionTransfer(parent,update,key,condition)
-end
-
-local function compile_function(sel, val)
-    local funcid = uuid()
-    local str = string.format([[
-_G.%s.funcDeserialize["%s"] = %s
-local addon = _G.%s
-local L = LibStub("AceLocale-3.0"):GetLocale("%s")
-%s
-end
-]], addon.name, funcid, function_signatures[sel], addon.name, addon.name, val)
-    local comp = loadstring(str)
-    if not comp then
-        return nil
-    end
-
-    comp()
-    local rv = addon.funcDeserialize[funcid]
-    addon.funcDeserialize[funcid] = nil
-    return rv
-end
-
-local function copy_fields(value, seen)
-    if type(value) ~= "table" then return value end
-    seen = seen or {}
-    if seen[value] then return seen[value] end
-    local copy = {}
-    seen[value] = copy
-    for key, field in pairs(value) do copy[key] = copy_fields(field, seen) end
-    return copy
-end
-
-function addon:register_custom_condition(key, condition)
-    if self.CompileCustomCondition then
-        local compiled=self:CompileCustomCondition(key,condition,true)
-        if not compiled then return false end
-        self:RegisterCondition(key,compiled)
-        return true
-    end
-    local newcond = { description = condition.description, icon = condition.icon,
-                     fields = copy_fields(condition.fields or {}), customCode = true }
-
-    for field, _ in pairs(function_signatures) do
-        local func = compile_function(field, condition[field])
-        if not func then
-            return false
-        end
-        newcond[field] = func
-    end
-
-    addon:RegisterCondition(key, newcond)
-    return true
 end
 
 layout_condition_edit_box = function(frame, update, orig_key, condition)

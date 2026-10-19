@@ -300,7 +300,7 @@ test('successive announcement item edits and add/delete keep the current sequenc
     edit('entry1action1','6');p.fields.entry1action_delete2:Click();assert(table.concat(a.db.profile.announces[1].item,',')=='6,5')
 end)
 test('category imports move membership between named groups and Other using the real list implementation',function()
-    local f,parent=fixture();local a=f.addon;f.load('Core/conditions.lua');f.load('Options/conditional.lua');a:RegisterCondition('A',{description='Alpha'});a.conditionSpecials={}
+    local f,parent=fixture();local a=f.addon;f.load('Core/conditions.lua');f.load('Core/condition_catalog.lua');f.load('Options/conditional.lua');a:RegisterCondition('A',{description='Alpha'});a.conditionSpecials={}
     a.db.profile.condition_groups={{id='g',name='Group',conditions={}}};a.db.profile.other_conditions_order={'A'};a.db.profile.switch_conditions={};a.db.profile.disabled_conditions={};a.db.global.custom_conditions={}
     local p=a:CreateSettingsForm(parent);p.mode='categories';p:Open(function(form) a:BuildConditionSettings(form) end)
     p.fields.transfer:Click();p.textDialog.input:SetText('A');p.textDialog.apply:Click();assert(a:listConditions('g',true)[1]=='A' and not a:SettingsContains(a:listConditions('DEFAULT',true),'A'))
@@ -471,7 +471,7 @@ test('native collection pages stage edits until Apply and Cancel discards them',
     c=p.fields.name;c:SetText('Conflict');c.scripts.OnTextChanged(c,true);a.db.global.effects.e.name='External';p.fields.apply:Click();assert(a.db.global.effects.e.name=='External' and p.message:GetText()~='')
 end)
 test('condition assignment is staged and current category opens management while ordering lives in sidebar',function()
-    local f,parent=fixture();local a=f.addon;f.load('Core/conditions.lua');f.load('Options/conditional.lua');a:RegisterCondition('A',{description='Alpha'});a:RegisterCondition('B',{description='Beta'});a.conditionSpecials={};a.db.global.custom_conditions={};a.db.profile={condition_groups={{id='g',name='Group',conditions={'A','B'}}},other_conditions_order={},switch_conditions={},disabled_conditions={}}
+    local f,parent=fixture();local a=f.addon;f.load('Core/conditions.lua');f.load('Core/condition_catalog.lua');f.load('Options/conditional.lua');a:RegisterCondition('A',{description='Alpha'});a:RegisterCondition('B',{description='Beta'});a.conditionSpecials={};a.db.global.custom_conditions={};a.db.profile={condition_groups={{id='g',name='Group',conditions={'A','B'}}},other_conditions_order={},switch_conditions={},disabled_conditions={}}
     local p=a:CreateSettingsForm(parent);p:Open(function(form) a:BuildConditionSettings(form) end);p.category='g';p:Draw();assert(p.roster.rows[1].up and not p.roster.rows[1].up:IsEnabled());p.roster.rows[2].up:Click();assert(a.db.profile.condition_groups[1].conditions[1]=='B')
     p.fields.move_to:Click();for _,row in ipairs(p.menu.rows) do if row:GetText()=='Other' then row:Click();break end end;assert(#a.db.profile.condition_groups[1].conditions==2);p.fields.apply_move:Click();assert(#a.db.profile.condition_groups[1].conditions==1)
     p.fields.current_category:Click();assert(p.mode=='categories' and p.categorySelection=='DEFAULT')
@@ -618,7 +618,7 @@ test('unchanged legacy profile exports with an empty Default placeholder remain 
     assert(not a:ValidateProfileTransfer(a:ProfileFromPortable({version=2,rotations={['0']={Broken={rotation='invalid'}}}})))
 end)
 test('custom definition imports accept the actual legacy editor Item Set schema',function()
-    local f=fixture();local a=f.addon;f.load('Options/custom_condition.lua');local value=a:CopySettingsData(a.empty_condition);value.description='Item condition';value.fields={items='{ string, { string, number } }'};local codec=a:NewRotationCodec();assert(a:ParseCustomConditionImport(assert(codec:Encode(value)),codec),'editor schema rejected');assert(type(a.LayoutCustomConditionEditor)=='function','production editor entry point missing')
+    local f=fixture();local a=f.addon;f.load('Core/custom_condition_services.lua');f.load('Options/custom_condition.lua');local value=a:CopySettingsData(a.empty_condition);value.description='Item condition';value.fields={items='{ string, { string, number } }'};local codec=a:NewRotationCodec();assert(a:ParseCustomConditionImport(assert(codec:Encode(value)),codec),'editor schema rejected');assert(type(a.LayoutCustomConditionEditor)=='function','production editor entry point missing')
 end)
 test('item autocomplete selection participates in draft undo and redo',function()
     local f,parent=fixture();local a=f.addon;a.db.profile.itemsets={s={name='Set',items={1}}};a.db.global.itemsets={};f.env.GetItemInfo=function(id) return 'Item '..id,nil,nil,nil,nil,nil,nil,nil,nil,1 end;a:GetReferenceProvider('item').index(2)

@@ -186,10 +186,17 @@ local function newShell()
     function shell:ReleasePane()
         addon.configPaneGeneration=(addon.configPaneGeneration or 0)+1
         addon.currentConditionEval=nil;addon.specTab=nil
+        -- Native fields may contain explicit custom Ace children. Preserve
+        -- their focus cleanup at this shared ownership boundary.
         if AceGUI.ClearFocus then AceGUI:ClearFocus() end
         if self.pane then
             local pane=self.pane;self.pane=nil
-            if self.nativePane then pane:Release() else AceGUI:Release(pane) end
+            if self.nativePane then pane:Release()
+            else
+                -- This branch owns only an explicitly borrowed Ace host.
+                ---@cast pane AceGUIWidget
+                AceGUI:Release(pane)
+            end
             self.nativePane=nil
         end
     end
@@ -264,12 +271,29 @@ local function newShell()
             local pane=addon:OpenNativeSettings(content,key,self.settingsPanes[key])
             if pane then self.nativePane=true;self.pane=pane;self.settingsPanes[key]=pane;return end
         end
+        local module=key:match('^module:(.+)$')
+        local moduleRenderer=module and addon.configModuleApps and addon.configModuleApps[module] and type(addon.BuildModuleConfigurationPane)=='function'
+        local legacyRenderer=type(addon.BuildConfigurationPane)=='function'
+        if not moduleRenderer and not legacyRenderer then
+            local pane=self.unavailablePane
+            if not pane then
+                pane={frame=CreateFrame('Frame',nil,content)};self.unavailablePane=pane
+                pane.frame:SetPoint('TOPLEFT',content,'TOPLEFT',0,0)
+                pane.message=text(pane.frame);pane.message:SetPoint('TOPLEFT',8,-8);pane.message:SetWordWrap(true)
+                function pane:SetWidth(width) self.frame:SetWidth(width);self.message:SetWidth(math.max(1,width-16)) end
+                function pane:SetHeight(height) self.frame:SetHeight(height) end
+                function pane:Release() self.frame:Hide() end
+            end
+            pane.message:SetText(string.format(L['Native settings page unavailable: %s'],key));pane:SetWidth(content:GetWidth());pane:SetHeight(content:GetHeight());pane.frame:Show()
+            self.nativePane=true;self.pane=pane;return
+        end
         local pane=AceGUI:Create("SimpleGroup")
         self.pane=pane;pane:SetLayout("Fill");pane:SetUserData("appName",addon.name)
         pane.frame:SetParent(content);pane.frame:ClearAllPoints();pane.frame:SetAllPoints(content)
         pane:SetWidth(content:GetWidth());pane:SetHeight(content:GetHeight())
         pane.frame:Show()
-        addon:BuildConfigurationPane(pane,key)
+        if moduleRenderer then addon:BuildModuleConfigurationPane(pane,key)
+        else addon:BuildConfigurationPane(pane,key) end
     end
     addon:SetUIScript(window,"OnSizeChanged",function() shell:Layout() end)
     addon:SetUIScript(window,"OnHide",function() shell.scaleDragging=false;shell.pendingScale=nil;addon:SetUIScript(window,"OnUpdate",nil);shell:CloseHelp();shell.languageMenu:Hide();shell.linkPane:Hide();shell.linkInput:ClearFocus();shell:ReleasePane() end)
