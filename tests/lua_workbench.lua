@@ -20,7 +20,16 @@ local function fixture()
  function frame:CreateMaskTexture(...) return self:CreateTexture(...) end;function frame:AddMaskTexture() end
  return frame end
  f.env.CreateFrame=function(...) return augmented(create(...)) end
- f.load('Core/custom_authoring.lua');f.load('Core/lua_symbols.lua');f.load('UI/lua_completion.lua');f.load('UI/lua_editor.lua');f.load('Libs/LuaWorkbench-Embed/modules.lua');local file=io.open('Integrations/lua_workbench.lua');if file then file:close();f.load('Integrations/lua_workbench.lua') end
+ local ace=f.libraries['AceGUI-3.0'];local aceCreate=ace.Create
+ ace.Create=function(self,kind)
+  local widget=aceCreate(self,kind);widget.frame=widget.frame or f.env.CreateFrame('Frame');widget.userdata=widget.userdata or {}
+  if kind=='SimpleGroup' then
+   function widget:DoLayout() local height=0;for _,child in ipairs(self.children) do height=height+(child.frame and child.frame:GetHeight() or 20) end;self.frame:SetHeight(math.max(1,height));if self.LayoutFinished then self:LayoutFinished(self.frame:GetWidth(),height) end end
+   local add=widget.AddChild;function widget:AddChild(child) add(self,child);if child.frame then child.frame:SetParent(self.frame) end;self:DoLayout() end
+  end;return widget
+ end
+ ace.Release=function(self,widget) if widget.isQueuedForRelease then return end;widget.isQueuedForRelease=true;for _,child in ipairs(widget.children or {}) do self:Release(child) end;if widget.OnRelease then widget:OnRelease() end;if widget.frame then widget.frame:Hide() end end
+ f.load('Core/custom_authoring.lua');f.load('Core/lua_symbols.lua');f.load('UI/settings_transfer.lua');f.load('UI/condition_source_preview.lua');f.load('UI/lua_debug_output.lua');f.load('UI/lua_completion.lua');f.load('UI/lua_editor.lua');f.load('Libs/LuaWorkbench-Embed/modules.lua');local file=io.open('Integrations/lua_workbench.lua');if file then file:close();f.load('Integrations/lua_workbench.lua') end
  f.env.LuaWorkbench={db={options={autocomplete=true},drafts={user={source='KEEP'}}}};f.env.LuaWorkbenchDB={drafts={user={source='KEEP'}}}
  return f,f.addon
 end
@@ -60,11 +69,11 @@ end)
 test('optional provider detection and plain opt-out preserve host context and debug test arguments',function()
  local f,a=fixture();f.env.IsAddOnLoaded=function(name) return name=='!!!LuaWorkbench' end
  local code=a:CreateWorkbenchLuaEditor(f.env.UIParent,function() end,function() return true end,'LuaWorkbench');assert(code.provider=='LuaWorkbench')
- code:SetText('print(value.amount)');code:SetContext({kind='condition',id='CHECK',callback='evaluate',source={fields={amount='number'},bindings={}}})
- local c=code.inner;c.arguments:SetText('{ {amount=17}, {}, 100 }');assert(c:Debug())
+ code:SetText('print(value.amount)');code:SetContext({kind='function',id='CHECK',source={args={{name='value',type='table'}},bindings={}}})
+ local c=code.inner;c.arguments:SetText('{ {amount=17} }');assert(c:Debug())
  for i=1,20 do if c.engine.Debugger.paused then c.engine.Debugger:StepOver() else c.engine.Debugger:Pump() end end
  assert(table.concat(c.engine.Query.Console.lines,' '):find('17',1,true));assert(f.env.LuaWorkbenchDB.drafts.user.source=='KEEP')
- c.engine.Debugger:Stop();c.arguments:SetText('{ {amount=21} }');code:SetContext({kind='condition',id='CHECK',callback='evaluate',source={fields={amount='number'},bindings={}}});assert(c.arguments:GetText()=='{ {amount=21} }','stable context reset test arguments')
+ c.engine.Debugger:Stop();c.arguments:SetText('{ {amount=21} }');code:SetContext({kind='function',id='CHECK',source={args={{name='value',type='table'}},bindings={}}});assert(c.arguments:GetText()=='{ {amount=21} }','stable context reset test arguments')
  code:Release();local plain=a:CreateWorkbenchLuaEditor(f.env.UIParent,function() end,function() return true end,'plain');assert(plain.provider=='native' and not plain.syntax);plain:Release()
 end)
 test('native completion shortcut removes only its own native space insertion',function()
@@ -155,9 +164,45 @@ test('RM public helpers complete as methods and debug exposes the full callback 
  local f,a=fixture();a.builtinFunctions={['builtin:field']={public=true,callName='addon:MakeField',source={description='Native field',args={{name='self',type='RMAddon'}},returns={{type='RMInput'}}}}}
  local plain=a:CreateWorkbenchLuaEditor(f.env.UIParent,function() end,function() return true end,'plain');plain:SetContext({kind='condition',id='COMPLETE',callback='evaluate',source={fields={},bindings={}}})
  local autocomplete=plain.completionEngine.Autocomplete;local context=assert(autocomplete:Context('addon:Make',10));local choices=autocomplete:Suggest(context,true);assert(choices[1] and choices[1].name=='addon:MakeField','public method is absent from completion');plain:Release()
- local advanced=a:CreateLuaWorkbenchControl(f.env.UIParent,function() end,function() return true end)
- advanced:SetText('print(value.amount, candidate.amount, evalStart)');advanced:SetContext({kind='condition',id='DEBUG_ALIAS',callback='evaluate',source={parameters={evaluate={'candidate','cache'}},fields={},bindings={}}});advanced.arguments:SetText('{{amount=17},{},55}');assert(advanced:Debug())
+ local advanced=a:CreateLuaWorkbenchControl(f.env.UIParent,function() end,function() return true end);local body={parameters={evaluate={'candidate','cache'}},fields={amount='number'},bindings={}}
+ local owner={model={key='DEBUG_ALIAS'},OwnerValid=function() return true end,PendingSource=function() return body end};owner.conditionTestState={configured=true,key='DEBUG_ALIAS',values={amount=17},source=body,profile=a.db.profile,global=a.db.global}
+ advanced:SetText('print(value.amount, candidate.amount, evalStart)');advanced:SetContext({kind='condition',id='DEBUG_ALIAS',callback='evaluate',source=body,testOwner=owner});assert(advanced:Debug())
  for i=1,20 do if advanced.engine.Debugger.paused then advanced.engine.Debugger:StepOver() else advanced.engine.Debugger:Pump() end end
- local output=table.concat(advanced.engine.Query.Console.lines,' ');assert(output:find('17',1,true) and output:find('55',1,true),output);advanced:Release()
+ local output=table.concat(advanced.engine.Query.Console.lines,' ');assert(output:find('17',1,true) and output:find('100',1,true),output);advanced:Release()
+end)
+test('Evaluate debug cannot bypass condition Test and uses its detached fields once configured',function()
+ local f,a=fixture();local body={fields={amount='number'},bindings={}};local owner={model={key='TESTED'},OwnerValid=function() return true end,PendingSource=function() return body end}
+ local c=a:CreateLuaWorkbenchControl(f.env.UIParent,function() end,function() return true end);c:SetText('print(value.amount)');c:SetContext({kind='condition',id='TESTED',callback='evaluate',source=body,testOwner=owner});c.arguments:SetText('{{amount=999}}')
+ assert(not c:Debug() and not c.engine.Debugger.armed,'raw argument field bypasses Test')
+ owner.conditionTestState={configured=true,key='TESTED',values={amount=31},source=body,profile=a.db.profile,global=a.db.global};assert(c:Debug())
+ for i=1,20 do if c.engine.Debugger.paused then c.engine.Debugger:StepOver() else c.engine.Debugger:Pump() end end
+ assert(table.concat(c.engine.Query.Console.lines,' '):find('31',1,true));assert(owner.conditionTestState.values.amount==31);c:Release()
+end)
+test('debug error output keeps the complete message in a themed scrollable copy view',function()
+ local f,a=fixture();local c=a:CreateLuaWorkbenchControl(f.env.UIParent,function() end,function() return true end);c:SetContext({kind='function',id='FAIL',source={args={},bindings={}}})
+ c:SetText('error(string.rep("x",5000).."END_OF_ERROR")');assert(c:Debug());for i=1,20 do if c.engine.Debugger.paused then c.engine.Debugger:StepOver() else c.engine.Debugger:Pump() end end
+ assert(c.ShowDebugOutput,'copyable output view missing');local report=c:ShowDebugOutput();assert(report.input:GetText():find('END_OF_ERROR',1,true),'full error was truncated');assert(report.chrome and report.scroll and report.frame:IsShown())
+ report.copy:Click();assert(report.input:HasFocus() and report.input.selection,'copy did not select the report');c:Release();assert(not report.frame:IsShown())
+end)
+test('condition callback debugging supplies typed values tags and real disposable render containers',function()
+ local f,a=fixture();local body={fields={amount='number'},bindings={}};local owner={frame=f.env.UIParent,model={key='CALLBACK'},OwnerValid=function() return true end,Flush=function() return true end,PendingSource=function() return body end,Show=function() end}
+ owner.conditionTestState={configured=true,key='CALLBACK',values={amount=31},source=body,profile=a.db.profile,global=a.db.global}
+ local c=a:CreateLuaWorkbenchControl(f.env.UIParent,function() end,function() return true end)
+ local function run(callback,code)
+  c:SetText(code);c:SetContext({kind='condition',id='CALLBACK',callback=callback,source=body,testOwner=owner});assert(c:Debug())
+  for i=1,40 do if c.engine.Debugger.paused then c.engine.Debugger:StepOver() else c.engine.Debugger:Pump() end end
+  assert(not c.engine.Query.Console.statusFailed,tostring(c.engine.Query.Console.statusText))
+ end
+ run('valid','assert(spec==0 and value.amount==31)');run('print','print(spec,value.amount)');run('on_register','assert(tag=="CALLBACK")')
+ run('widget','assert(parent:GetUserData("top"):GetUserData("root")==value); addon.debugInput=addon:CreateConditionEditBox();addon.debugInput:SetText("rendered");parent:AddChild(addon.debugInput)')
+ local surface=assert(c.debugSurface);assert(a.debugInput.alive);surface:Close();assert(not c.engine.Debugger.armed and not a.debugInput.alive,'closed render surface retained active debug resources')
+ run('help','frame:AddChild(addon.help_funcs.CreateText("Help output"))');assert(c.debugSurface.parent.children[1]);c:Release()
+end)
+test('debugger tracks orphan controls only during resume and restores every shared factory',function()
+ local f,a=fixture();local body={fields={},bindings={}};local owner={frame=f.env.UIParent,model={key='ORPHAN'},OwnerValid=function() return true end,Flush=function() return true end,PendingSource=function() return body end,Show=function() end}
+ local create=a.CreateConditionEditBox;local ace=f.libraries['AceGUI-3.0'];local aceCreate=ace.Create
+ local c=a:CreateLuaWorkbenchControl(f.env.UIParent,function() end,function() return true end);c:SetText('addon.orphan=addon:CreateConditionEditBox(); error("orphan-error")');c:SetContext({kind='condition',id='ORPHAN',callback='widget',source=body,testOwner=owner});assert(c:Debug())
+ for i=1,40 do if c.engine.Debugger.paused then c.engine.Debugger:StepOver() else c.engine.Debugger:Pump() end;assert(a.CreateConditionEditBox==create and ace.Create==aceCreate,'shared factories changed while the debugger is paused') end
+ assert(c.debugError:find('orphan-error',1,true));c:Release();assert(not a.orphan.alive,'failed unattached control leaked')
 end)
 finish()

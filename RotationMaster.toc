@@ -170,6 +170,7 @@ Options/rotations.lua
 Options/custom_condition.lua
 UI/lua_input_diagnostics.lua
 Libs/LuaWorkbench-Embed/modules.lua
+UI/lua_debug_output.lua
 Integrations/lua_workbench.lua
 UI/lua_completion.lua
 UI/lua_editor.lua

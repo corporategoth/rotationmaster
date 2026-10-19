@@ -384,7 +384,7 @@ test('syntax success is green and shares the footer action row',function()
     local f,a=fixture(true);local source=a:CopySettingsData(a.empty_condition);source.description='Inline';a.db.global.custom_conditions.INLINE=source;a.conditionDefinitions.INLINE={description='Inline',fields={}}
     local host=f.env.CreateFrame('Frame');host:SetSize(1100,700);local p=a:OpenNativeSettings(host,'Conditions');local d=p.inlineCondition
     d.syntax:Click();local message=d.form.message;assert(message.textColor[2]>message.textColor[1],'successful syntax check has an error color')
-    assert(message:GetParent()==d.apply:GetParent() and message.actionAnchor==d.viewChanges,'syntax message occupies a separate editor row')
+    assert(message:GetParent()==d.apply:GetParent() and message.actionAnchor==d.test and d.test.point[2]==d.viewChanges,'syntax message and Test do not share the footer action row')
     d.code:SetText('return )');d.syntax:Click();assert(message.textColor[1]>message.textColor[2],'syntax failures no longer use the error color')
     d.form.fields.schemaGraph:Click();assert(not message:IsShown(),'source notification remains visible under schema child');d.schemaEditor.cancel:Click();assert(message:IsShown())
 end)

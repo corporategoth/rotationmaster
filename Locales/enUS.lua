@@ -2,6 +2,16 @@ local addon_name = ...
 
 local L = LibStub("AceLocale-3.0"):NewLocale(addon_name, "enUS", true)
 if not L then return end
+L['Test opens one condition-level dialog from any callback tab. It renders Fields UI and Help together with detached values. Committing a field value validates and evaluates once. Run test refreshes the current values, while only valid values are evaluated. Opening the dialog does not evaluate defaults. Live is opt-in and stops when the dialog closes. Committed test values are available to the debugger and stay separate from source, exports and rotation edits. Check syntax never runs a callback.'] = true
+L['Test values changed. Updating results.'] = true
+L['Complete the highlighted test inputs before testing.'] = true
+L['The current source could not be compiled. Fix it before testing again.'] = true
+L['Refresh'] = true
+L['Debug output'] = true
+L['Output'] = true
+L['View and copy full debugger output and errors.'] = true
+L['Arguments from Test'] = true
+L['Set values in Test before debugging this condition.'] = true
 L['Rotation Master addon instance. Public helper functions are documented in Functions.'] = true
 L['Localized Rotation Master text, indexed by its English key.'] = true
 L["Undo"] = true
@@ -2015,6 +2025,15 @@ L["The imported definition type does not match this editor."] = true
 
 L['Test values changed. Check again to refresh the result.'] = true
 L['Complete the highlighted test inputs before checking.'] = true
+
+L['Test'] = true
+L['Run test'] = true
+L['Test condition'] = true
+L['Debugger output'] = true
+L['Set test values in Test before debugging Evaluate.'] = true
+L['Debugger output uses a detached sample and the normal field or help container.'] = true
+L['Choose test values in Fields UI, then Run test to validate and evaluate. Help is shown below the fields. Opening Test does not evaluate defaults. Live is opt-in.'] = true
+L['Test opens one condition-level dialog from any callback tab. It renders Fields UI and Help together with detached values. Choose the fields and Run test to validate, then evaluate only valid values. Opening the dialog does not evaluate defaults. Live is opt-in and stops when the dialog closes. Committed test values are available to the debugger and stay separate from source, exports and rotation edits. Check syntax never runs a callback.'] = true
 
 -- BEGIN GENERATED RM PUBLIC HELPER DOCS
 L["All original results, preserving nil positions and return count."] = true

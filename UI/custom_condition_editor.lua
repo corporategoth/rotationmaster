@@ -11,7 +11,7 @@ function addon:condition_edit_box(update,key,source,saveAllowed,embedded)
     if d and not d.closed then if d.OwnerValid and not d.OwnerValid() then d:Close() else d:Show();return d,d.owner end end
     d=d or {frame=CreateFrame('Frame',nil,embedded and embedded.parent or UIParent),nativeCustomEditor=true}
     d.readOnly=embedded and embedded.readOnly==true;if d.readOnly then d.advancedSchema=false end;d.embedded=embedded;d.isEmbedded=embedded~=nil;if embedded then embedded.editor=d end
-    self.nativeCustomConditionDialog=d;d.closed=false;d.suspended=nil;d.validationRequested=false;d.codeHistory={};d.update=update;d.selected='evaluate';d.session=(d.session or 0)+1;local session=d.session;local frame=d.frame
+    self.nativeCustomConditionDialog=d;d.closed=false;d.suspended=nil;d.conditionTestState=nil;d.validationRequested=false;d.codeHistory={};d.update=update;d.selected='evaluate';d.session=(d.session or 0)+1;local session=d.session;local frame=d.frame
     frame:ClearAllPoints();frame:EnableMouse(true)
     if embedded then
         frame:SetParent(embedded.parent);frame:SetSize(embedded.width,embedded.height);frame:SetPoint('TOPLEFT',embedded.x or 0,0)
@@ -31,11 +31,11 @@ function addon:condition_edit_box(update,key,source,saveAllowed,embedded)
     d.originalKey=key;d.expected=(self.conditionDefinitions or {})[key];d.expectedSource=key and self:CopySettingsData((global.custom_conditions or {})[key]);d.model=self:NewCustomConditionDraft(key,self:PrepareCustomConditionEditorSource(source or self.empty_condition,d.readOnly))
     local resume=embedded and embedded.resume
     if resume then
-        d.model=resume.model;d.selected=resume.selected;d.codeHistory=resume.codeHistory;d.originalKey=resume.originalKey;d.expected=resume.expected;d.expectedSource=resume.expectedSource;d.validationRequested=resume.validationRequested;d.pendingRaw=resume.raw
+        d.model=resume.model;d.selected=resume.selected;d.codeHistory=resume.codeHistory;d.originalKey=resume.originalKey;d.expected=resume.expected;d.expectedSource=resume.expectedSource;d.validationRequested=resume.validationRequested;d.pendingRaw=resume.raw;d.conditionTestState=resume.conditionTestState
     elseif embedded and embedded.initialize then embedded.initialize(d.model) end
     function d:SetCallback(event,callback) self[event]=callback end
     function d:ShowFooter(shown)
-        for _,button in ipairs({self.apply,self.cancel,self.viewChanges,self.form.message}) do if shown then button:Show() else button:Hide() end end
+        for _,button in ipairs({self.apply,self.cancel,self.viewChanges,self.test,self.form.message}) do if shown then button:Show() else button:Hide() end end
     end
     function d:Show() if valid() then self.suspended=nil;self.frame:Show();self:ShowFooter(true);if not self.embedded then addon:RegisterWindowForEscape(self) end end end
     function d:HideForChild() self.suspended=true;self:ShowFooter(false);self.frame:Hide() end
@@ -76,7 +76,7 @@ function addon:condition_edit_box(update,key,source,saveAllowed,embedded)
             for key,control in pairs(p.fields) do if control==record.control then raw[key]=control:GetText();break end end
         end end
         local schema=self.schemaEditor and self.schemaEditor.active and self.schemaEditor:CaptureDraft() or nil
-        return {model=self.model,selected=self.selected,codeHistory=self.codeHistory,originalKey=self.originalKey,expected=self.expected,expectedSource=self.expectedSource,validationRequested=self.validationRequested,raw=raw,schema=schema}
+        return {model=self.model,selected=self.selected,codeHistory=self.codeHistory,originalKey=self.originalKey,expected=self.expected,expectedSource=self.expectedSource,validationRequested=self.validationRequested,raw=raw,schema=schema,conditionTestState=self.conditionTestState}
     end
     function d:CommitCode()
         local source=self:PendingSource();for name in pairs(addon.CustomConditionCallbacks) do self.model:SetFunction(name,source[name]) end
@@ -149,10 +149,10 @@ function addon:condition_edit_box(update,key,source,saveAllowed,embedded)
         if self.ownedHelp and self.ownedHelp.sections==self.ownedHelpSections then self.ownedHelp:Hide() end
         self.ownedPicker=nil;self.ownedHelp=nil;self.ownedHelpSections=nil
         if self.code then pcall(self.code.Release,self.code) end;p:Release();self.frame:Hide()
-        for _,button in ipairs({self.apply,self.cancel,self.viewChanges,self.form.message}) do button:Hide() end
+        for _,button in ipairs({self.apply,self.cancel,self.viewChanges,self.test,self.form.message}) do button:Hide() end
         if self.OnRelease then self:OnRelease() end
         addon:SetUIScript(self.frame,'OnUpdate',nil)
-        self.OwnerValid=nil;self.codeHistory=nil;self.model=nil;self.expected=nil;self.expectedSource=nil;self.validationInput=nil;self.update=nil;self.embedded=nil;p.builder=nil;p.edits={};p.fields={};p.profile=nil;p.global=nil;p.char=nil
+        self.OwnerValid=nil;self.conditionTestState=nil;self.codeHistory=nil;self.model=nil;self.expected=nil;self.expectedSource=nil;self.validationInput=nil;self.update=nil;self.embedded=nil;p.builder=nil;p.edits={};p.fields={};p.profile=nil;p.global=nil;p.char=nil
         if self.rmCustomTransferForm and self.rmCustomTransferForm.textDialog then local transfer=self.rmCustomTransferForm.textDialog;transfer.input:SetText('');transfer.options=nil end
     end
     function d:Apply()
@@ -181,7 +181,7 @@ function addon:condition_edit_box(update,key,source,saveAllowed,embedded)
         if not valid() or not addon.CustomConditionCallbacks[name] then return end
         self:FlushCode();self.selected=name;self:SetCode(self:CodeState().text)
         self.signature:SetText(addon:CustomConditionSignature(self.model.value,name));self:LayoutDocumentation()
-        if self.code.SetContext then self.code:SetContext({kind='condition',id=self.model.key,name=self.model.value.description,source=self:PendingSource(),callback=self.selected}) end
+        if self.code.SetContext then self.code:SetContext({kind='condition',id=self.model.key,name=self.model.value.description,source=self:PendingSource(),callback=self.selected,testOwner=self}) end
         for key,button in pairs(self.functionTabs) do button:SetSelected(key==name) end
         self:UpdateActions()
     end
@@ -194,8 +194,8 @@ function addon:condition_edit_box(update,key,source,saveAllowed,embedded)
     d.undo=d.undo or self:CreateWorkbenchHistoryButton(frame,'undo',L['Undo']);d.undo:SetPoint('BOTTOMLEFT',12,28)
     d.redo=d.redo or self:CreateWorkbenchHistoryButton(frame,'redo',L['Redo']);d.redo:SetPoint('BOTTOMLEFT',86,28)
     d.syntax=d.syntax or self:CreateWorkbenchButton(frame,L['Check syntax'],122);d.syntax:SetPoint('BOTTOMLEFT',164,28)
-    d.preview=d.preview or self:CreateWorkbenchButton(frame,L['Preview'],84)
-    addon:SetUIScript(d.preview,'OnClick',function() if valid() and addon.ShowConditionSourcePreview then addon:ShowConditionSourcePreview(d) end end)
+    d.test=d.test or self:CreateWorkbenchButton(frame,L['Test'],84)
+    addon:SetUIScript(d.test,'OnClick',function() if valid() and addon.ShowConditionSourceTest then addon:ShowConditionSourceTest(d) end end)
     d.transfer=d.transfer or self:CreateWorkbenchButton(frame,L['Import/Export'],126);d.transfer:SetPoint('BOTTOMLEFT',292,28)
     d.apply=d.apply or self:CreateWorkbenchButton(frame,L['Apply'],100);d.apply:SetPoint('BOTTOMRIGHT',-120,28)
     d.cancel=d.cancel or self:CreateWorkbenchButton(frame,L['Cancel'],100);d.cancel:SetPoint('BOTTOMRIGHT',-12,28)
@@ -208,8 +208,7 @@ function addon:condition_edit_box(update,key,source,saveAllowed,embedded)
         {title=L['Editing code'],text=L['Each callback keeps its own pending text while switching tabs. Undo and Redo edit that callback buffer. Reset restores its last saved code, or the template for a new condition, and can be undone. The main Apply saves and registers all callback buffers and metadata; Discard drops the whole draft. Leaving with changes offers Apply, Discard or Cancel. Check syntax runs no callbacks.']},
         {title=labels[d.selected],text=addon:CustomConditionDocumentation(d.selected)},
         {title=L['Field schema'],text=L['Edit fields opens a graphical schema draft. Add, name, reorder or remove fields, choose primitive or nested types, and edit nested fields. Apply stages the schema and its field order. Advanced exposes the equivalent raw schema, parsed as data without executing Lua.']},
-        {title=L['Preview'],text=L['Fields UI and Help offer an explicit Preview of the current callback. Preview uses detached sample values and the normal field or help renderer. It does not save, register, validate or evaluate the condition. Closing it releases its controls and returns to the source draft. Check syntax never runs a callback.']},
-        {title=L['Check'],text=L['Evaluate and Validate offer Check with the same Fields UI and detached sample values. Check runs validation first, then evaluates only valid values. Results show true, false or an unavailable reason. Live is opt-in and checks at most twice per second while this panel is shown; closing stops it. Test values are saved separately and never enter condition exports or rotation edits. Source changes run no callbacks unless you check again or enable Live.']},
+        {title=L['Test'],text=L['Test opens one condition-level dialog from any callback tab. It renders Fields UI and Help together with detached values. Committing a field value validates and evaluates once. Run test refreshes the current values, while only valid values are evaluated. Opening the dialog does not evaluate defaults. Live is opt-in and stops when the dialog closes. Committed test values are available to the debugger and stay separate from source, exports and rotation edits. Check syntax never runs a callback.']},
         {title=L['Functions reference'],text=L['The Functions page documents public helpers and their typed arguments, return values and source. Context completion and hover use that reference; Ctrl-click a known helper to open its source. Use explicit binding aliases for reusable custom helpers.']},
         {title=L['Trusted code'],text=L['Custom Lua has the same access as the addon. Only import code you trust. Syntax validation cannot establish that a callback is safe or correct. Existing custom widget callbacks still use their original UI contract.']}},frame);d.ownedHelpSections=d.ownedHelp.sections end end)
     p:Open(function(form)
@@ -288,9 +287,6 @@ function addon:condition_edit_box(update,key,source,saveAllowed,embedded)
             local actionTop=self.documentationTop+self.documentation:GetStringHeight()+8
             for index,control in ipairs({self.codeUndo,self.codeRedo,self.codeReset}) do control:ClearAllPoints();control:SetPoint('TOPLEFT',(index-1)*74,-actionTop) end
             self.syntax:SetParent(form.child);self.syntax:ClearAllPoints();self.syntax:SetPoint('TOPLEFT',222,-actionTop);self.syntax:Show()
-            self.preview:SetParent(form.child);self.preview:ClearAllPoints();self.preview:SetPoint('TOPLEFT',350,-actionTop);self.preview:SetWidth(math.max(60,math.min(84,form.width-350)))
-            self.preview:SetText((self.selected=='evaluate' or self.selected=='valid') and L['Check'] or L['Preview'])
-            if addon.ShowConditionSourcePreview and (self.selected=='widget' or self.selected=='help' or self.selected=='evaluate' or self.selected=='valid') then self.preview:Show() else self.preview:Hide() end
             local signatureTop=actionTop+26
             self.signature:ClearAllPoints();self.signature:SetPoint('TOPLEFT',0,-signatureTop);self.signature:SetWidth(form.width);self.signature:SetHeight(18)
             local codeTop=signatureTop+22
@@ -306,7 +302,7 @@ function addon:condition_edit_box(update,key,source,saveAllowed,embedded)
             if not valid() then return end
             if embedded and embedded.closeOwner then embedded.closeOwner(mouse) else d:Hide() end
         end) end
-        d.code.frame:ClearAllPoints();d.code.frame:SetPoint('TOPLEFT',0,-form.y);d.code.frame:SetSize(form.width,310);d.code.frame:Show();d:SetCode(d:CodeState().text);if d.code.SetContext then d.code:SetContext({kind='condition',id=d.model.key,name=d.model.value.description,source=d:PendingSource(),callback=d.selected}) end;d:LayoutDocumentation()
+        d.code.frame:ClearAllPoints();d.code.frame:SetPoint('TOPLEFT',0,-form.y);d.code.frame:SetSize(form.width,310);d.code.frame:Show();d:SetCode(d:CodeState().text);if d.code.SetContext then d.code:SetContext({kind='condition',id=d.model.key,name=d.model.value.description,source=d:PendingSource(),callback=d.selected,testOwner=d}) end;d:LayoutDocumentation()
         if d.pendingRaw then
             for _,record in ipairs(form.edits) do for key,text in pairs(d.pendingRaw) do if form.fields[key]==record.control then record.control:SetText(text);record.dirty=true end end end
             d.pendingRaw=nil
@@ -319,7 +315,7 @@ function addon:condition_edit_box(update,key,source,saveAllowed,embedded)
     end
     addon:SetUIScript(frame,'OnUpdate',function() if not valid() then d:Close() else d:UpdateActions() end end)
     addon:InstallCustomChangeReview(d)
-    d.undo:Hide();d.redo:Hide();d.apply:Show();d.cancel:Show();d.viewChanges:Show()
+    d.undo:Hide();d.redo:Hide();d.apply:Show();d.cancel:Show();d.viewChanges:Show();d.test:Show()
     if embedded then
         local footer=embedded.footer or frame;d.apply:SetParent(footer);d.cancel:SetParent(footer);d.viewChanges:SetParent(footer);d.transfer:Hide()
         d.apply:ClearAllPoints();d.apply:SetPoint('BOTTOMRIGHT',-108,4);d.cancel:ClearAllPoints();d.cancel:SetPoint('BOTTOMRIGHT',-8,4);d.cancel:SetWidth(92);d.cancel:SetText(L['Discard'])
@@ -329,7 +325,8 @@ function addon:condition_edit_box(update,key,source,saveAllowed,embedded)
         d.transfer:ClearAllPoints();d.transfer:SetPoint('BOTTOMLEFT',12,4);d.transfer:Show();d.cancel:SetText(L['Cancel']);addon:RegisterWindowForEscape(d)
     end
     local footer=embedded and embedded.footer or frame
-    p.message:SetParent(footer);p.message:ClearAllPoints();p.message:SetPoint('RIGHT',d.viewChanges,'LEFT',-8,0);if embedded then p.message:SetPoint('LEFT',footer,'BOTTOMLEFT',embedded.x or 0,16) else p.message:SetPoint('LEFT',d.transfer,'RIGHT',8,0) end;p.message:SetHeight(20);p.message:SetWordWrap(false);p.message:SetJustifyH('LEFT');p.message.actionAnchor=d.viewChanges;p.message:Show()
+    d.test:SetParent(footer);d.test:ClearAllPoints();d.test:SetPoint('RIGHT',d.viewChanges,'LEFT',-6,0)
+    p.message:SetParent(footer);p.message:ClearAllPoints();p.message:SetPoint('RIGHT',d.test,'LEFT',-8,0);if embedded then p.message:SetPoint('LEFT',footer,'BOTTOMLEFT',embedded.x or 0,16) else p.message:SetPoint('LEFT',d.transfer,'RIGHT',8,0) end;p.message:SetHeight(20);p.message:SetWordWrap(false);p.message:SetJustifyH('LEFT');p.message.actionAnchor=d.test;p.message:Show()
     frame:Show();d:UpdateActions()
     if resume and resume.schema then d:OpenSchema(d.model.value.fields,d.model.value.fieldOrder,resume.schema) end
     return d,d.owner

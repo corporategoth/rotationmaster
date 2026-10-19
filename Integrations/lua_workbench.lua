@@ -70,24 +70,70 @@ function rm:CreateLuaWorkbenchControl(parent,changed,valid)
     function UI:Editor(owner,label,readonly) local input=baseEditor(self,owner,label,readonly);input.editBox:SetFont('Interface\\AddOns\\'..addon_name..'\\Fonts\\Inconsolata-Regular.ttf',12,'');return input end
     function UI:Scroll(owner) local scroll=rm:CreateWorkbenchScrollFrame(owner);scroll.bar=scroll.workbenchBar;return scroll end
     local input=UI:Editor(frame,'');input.editBox:SetText('');C.input=input;c.edit=input.editBox;input.frame:SetAllPoints(frame)
-    c.arguments=rm:CreateWorkbenchEditBox(input.frame);c.arguments:SetText('{}');c.arguments:SetPoint('TOPLEFT',88,-2);c.arguments:SetPoint('RIGHT',input.frame,'RIGHT',-94,0);c.arguments:SetHeight(22)
+    c.arguments=rm:CreateWorkbenchEditBox(input.frame);c.arguments:SetText('{}');c.arguments:SetPoint('TOPLEFT',88,-2);c.arguments:SetPoint('RIGHT',input.frame,'RIGHT',-168,0);c.arguments:SetHeight(22)
     c.argumentLabel=input.frame:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall');c.argumentLabel:SetPoint('TOPLEFT',4,-7);c.argumentLabel:SetText(L['Test arguments'])
     c.play=UI:Button(input.frame,'play',engine.L.debugStart,function() c:Debug() end);c.play:SetPoint('TOPRIGHT',-3,-1)
     engine.DebugUI:Build(c.play)
     c.knowledge=rm:CreateWorkbenchIconButton(input.frame,'search',L['API knowledge']);c.knowledge:SetPoint('RIGHT',W.debugButton,'LEFT',-2,0)
     rm:SetUIScript(c.knowledge,'OnClick',function() if not c.released and valid() then engine.KnowledgeBase:Show() end end)
+    c.output=rm:CreateWorkbenchButton(input.frame,L['Output'],64);c.output:SetPoint('RIGHT',c.knowledge,'LEFT',-4,0);c.output.tooltip=L['View and copy full debugger output and errors.']
+    function c:ShowDebugOutput() return rm:ShowLuaDebugOutput(self) end
+    rm:SetUIScript(c.output,'OnClick',function() c:ShowDebugOutput() end)
+    local function fullError(value)
+        if issecretvalue and issecretvalue(value) then return '<secret>' end
+        local ok,text=pcall(tostring,value);return ok and text or L['Unavailable']
+    end
+    local fail=engine.Debugger.Fail
+    function engine.Debugger:Fail(value)
+        c.debugError=fullError(value)..(self.line and '\n'..tostring(W.current)..':'..tostring(self.line) or '')
+        return fail(self,value)
+    end
+    local report=C.ReportError
+    function C:ReportError(value,stack) c.debugError=fullError(value)..(stack and '\n'..fullError(stack) or '');return report(self,value,stack) end
+    function c:CloseDebugSurface() if self.debugSurface then self.debugSurface:Close();self.debugSurface=nil end end
+    local stop=engine.Debugger.Stop
+    function engine.Debugger:Stop() local result=stop(self);if not c.startingDebug then c:CloseDebugSurface() end;return result end
+    local resume=engine.Debugger.Resume
+    function engine.Debugger:Resume(...)
+        local surface=c.debugSurface
+        if not surface then return resume(self,...) end
+        -- Track synchronous allocations only while the coroutine is running.
+        -- Restore before yielding back to the game or another addon's handler.
+        local ace=LibStub('AceGUI-3.0');local create=ace.Create;local factories={}
+        ace.Create=function(library,...) local widget=create(library,...);surface:Guard(widget);return widget end
+        for _,name in ipairs({'CreateConditionEditBox','CreateConditionSlider','CreateConditionDropdown','CreateConditionCheckBox'}) do
+            local original=rm[name];if original then factories[name]=original;rm[name]=function(...) local widget=original(...);surface:Guard(widget);return widget end end
+        end
+        local ok,result=pcall(resume,self,...);ace.Create=create;for name,original in pairs(factories) do rm[name]=original end
+        if not ok then self:Fail(result) end
+    end
     function engine.DebugUI:Start() return c:Debug() end
     function engine.DebugUI:Menu(owner)
         W:OpenMenu(owner,{{text=engine.L.debugStart,action=function() c:Debug() end},{text=engine.L.debugBreakpoint,action=function() self:ToggleLine(C:GetLinePosition(C.source,c.edit:GetCursorPosition())) end},{text=engine.L.debugStop,action=function() engine.Debugger:Stop() end}})
     end
     function c:Debug()
         if self.released or not valid() or input.readonly then return false end
-        local parse,why=loadstring('return '..self.arguments:GetText(),'@RotationMaster:test-arguments')
-        if not parse then C:SetStatus(why,true);return false end
-        local environment=setmetatable({addon=rm,L=L},{__index=_G});setfenv(parse,environment)
-        local ok,arguments=pcall(parse)
-        if not ok or type(arguments)~='table' then C:SetStatus(ok and L['Test arguments must be a Lua table.'] or tostring(arguments),true);return false end
-        local source=self.context.source or {};local names={}
+        engine.Debugger:Stop();self.debugError=nil
+        local source=self.context.source or {};local names,arguments={},{}
+        if self.context.kind=='condition' then
+            local owner=self.context.testOwner;local callback=self.context.callback or 'evaluate'
+            if not owner or not owner.OwnerValid or not owner.OwnerValid() then C:SetStatus(L['Set values in Test before debugging this condition.'],true);return false end
+            source=owner:PendingSource()
+            if callback=='evaluate' or callback=='valid' or callback=='print' then
+                local values,why=rm:ConditionTestValues(owner);if not values then C:SetStatus(why or L['Set values in Test before debugging this condition.'],true);return false end
+                arguments=callback=='evaluate' and {values,{},GetTime()} or {rm.currentSpec or 0,values}
+            elseif callback=='widget' or callback=='help' then
+                local surface=rm:CreateConditionDebugSurface(owner,callback);if not surface then C:SetStatus(L['Unavailable'],true);return false end
+                self.debugSurface=surface;surface.onClose=function() if c.debugSurface==surface then c.debugSurface=nil;engine.Debugger:Stop() end end
+                arguments=callback=='widget' and {surface.parent,rm.currentSpec or 0,surface.values} or {surface.parent}
+            else arguments={owner.model.key} end
+        else
+            local parse,why=loadstring('return '..self.arguments:GetText(),'@RotationMaster:test-arguments')
+            if not parse then C:SetStatus(why,true);return false end
+            local environment=setmetatable({addon=rm,L=L},{__index=_G});setfenv(parse,environment)
+            local ok,value=pcall(parse)
+            if not ok or type(value)~='table' then C:SetStatus(ok and L['Test arguments must be a Lua table.'] or tostring(value),true);return false end;arguments=value
+        end
         if self.context.kind=='function' then for _,entry in ipairs(source.args or {}) do names[#names+1]=entry.name end
         else
             for name in (rm.CustomConditionCallbacks[self.context.callback or 'evaluate'] or ''):gmatch('[%w_]+') do names[#names+1]=name end
@@ -96,11 +142,19 @@ function rm:CreateLuaWorkbenchControl(parent,changed,valid)
         engine.embeddingOptions.parameterNames={}
         for i,name in ipairs(names or {}) do if name~='...' then self.environment[name]=arguments[i];engine.embeddingOptions.parameterNames[name]=true end end
         if self.context.kind~='function' then for alias,canonical in pairs(rm:CustomConditionParameterAliases(source,self.context.callback or 'evaluate')) do self.environment[alias]=self.environment[canonical];engine.embeddingOptions.parameterNames[alias]=true end end
-        for alias,id in pairs(source.bindings or {}) do local value,errorText=rm:ResolveFunctionBinding(id);if errorText then C:SetStatus(errorText,true);return false end;self.environment[alias]=value end
-        engine.DebugUI.drawerOpen=true;return engine.Debugger:Start(W.current,self:GetText())
+        for alias,id in pairs(source.bindings or {}) do local value,errorText=rm:ResolveFunctionBinding(id);if errorText then self:CloseDebugSurface();C:SetStatus(errorText,true);return false end;self.environment[alias]=value end
+        engine.DebugUI.drawerOpen=true;self.startingDebug=true;local ok,result=pcall(engine.Debugger.Start,engine.Debugger,W.current,self:GetText());self.startingDebug=nil
+        if not ok then self:CloseDebugSurface();C:SetStatus(fullError(result),true);self.debugError=fullError(result);return false end
+        return result
     end
     local updateLabel=C.UpdateEditorLabel
     function C:UpdateEditorLabel() updateLabel(self);input.label:Hide() end
+    function c:UpdateDebugAvailability()
+        local owner=self.context.testOwner;local state=owner and owner.conditionTestState
+        local needsValues=self.context.kind=='condition' and (self.context.callback=='evaluate' or self.context.callback=='valid' or self.context.callback=='print')
+        local ready=not needsValues or owner and owner.OwnerValid and owner.OwnerValid() and state and state.configured
+        self.play:SetEnabled(not input.readonly and not not ready)
+    end
     function c:Layout()
         if self.released then return end
         input.frame:SetAllPoints(frame);input.frame:SetSize(frame:GetWidth(),frame:GetHeight())
@@ -110,7 +164,8 @@ function rm:CreateLuaWorkbenchControl(parent,changed,valid)
             input.scrollBG:SetPoint('TOPLEFT',input.frame,'TOPLEFT',6,engine.Debugger.armed and -60 or -28)
             engine.DebugUI.toolbar:SetPoint('TOPLEFT',6,-28);engine.DebugUI.toolbar:SetPoint('TOPRIGHT',-6,-28)
         end
-        C:UpdateLineNumbers();self.arguments:SetShown(not engine.Debugger.armed);self.argumentLabel:SetShown(not engine.Debugger.armed)
+        C:UpdateLineNumbers();self.arguments:SetShown(not engine.Debugger.armed and self.context.kind~='condition');self.argumentLabel:SetShown(not engine.Debugger.armed)
+        self.argumentLabel:SetText(self.context.kind=='condition' and L['Arguments from Test'] or L['Test arguments']);self:UpdateDebugAvailability()
     end
     input.changed=function(text)
         if c.released or not valid() then return end
@@ -132,16 +187,17 @@ function rm:CreateLuaWorkbenchControl(parent,changed,valid)
         local defaults=self.context.kind=='condition' and self.context.callback=='evaluate' and '{ {}, {}, GetTime() }' or '{}'
         self.arguments:SetText(defaults)
         W.db.snippets[W.current]={name=W.currentName,source=self:GetText()};W.db.drafts[W.current]={name=W.currentName,source=self:GetText()}
+        self:Layout()
     end
-    function c:Release() if self.released then return end;self.released=true;engine:Release();frame:Hide();self.changed=nil;self.closeRequested=nil end
+    function c:Release() if self.released then return end;self.released=true;engine:Release();if self.outputWindow then self.outputWindow:Hide() end;frame:Hide();self.changed=nil;self.closeRequested=nil end
     self:SetUIScript(c.edit,'OnEscapePressed',function() if c.closeRequested then c.edit:ClearFocus();c.closeRequested(false) end end)
     self:SetUIScript(c.edit,'OnKeyDown',function(_,key) W:RunShortcut(key) end)
     self:SetUIScript(c.edit,'OnKeyUp',function(_,key) engine.DebugUI:KeyUp(key);engine.Navigation.held=nil;W.f5Held=nil end)
     self:SetUIScript(c.edit,'OnMouseDown',function(_,button) if button=='RightButton' and c.closeRequested then c.edit:ClearFocus();c.closeRequested(true) end end)
     C:AttachLineNumbers(input);E:Attach(input)
     self:SetUIScript(frame,'OnSizeChanged',function() c:Layout() end)
-    self:SetUIScript(frame,'OnUpdate',function(_,elapsed) if not c.released and valid() then engine.DebugUI:HoverUpdate(elapsed) end end)
-    self:SetUIScript(frame,'OnHide',function() engine.Debugger:Stop();engine.Autocomplete:Hide();W:HidePanels() end)
+    self:SetUIScript(frame,'OnUpdate',function(_,elapsed) if not c.released and valid() then c:UpdateDebugAvailability();engine.DebugUI:HoverUpdate(elapsed) end end)
+    self:SetUIScript(frame,'OnHide',function() engine.Debugger:Stop();engine.Autocomplete:Hide();W:HidePanels();if c.outputWindow then c.outputWindow:Hide() end end)
     local mouseUp=c.edit:GetScript('OnMouseUp')
     self:SetUIScript(c.edit,'OnMouseUp',function(edit,button)
         if mouseUp then mouseUp(edit,button) end
