@@ -380,6 +380,29 @@ test('native multiline input owns text height without a forced-height feedback l
     assert(writes==0 and edit:GetCursorPosition()==3 and edit:HasFocus(),'viewport sizing repeatedly overrides native multiline geometry')
     assert(code.content and code.scroll:GetScrollChild()==code.content and edit:GetParent()==code.content,'text is not anchored within a stable scroll child')
 end)
+test('native text geometry is independent of viewport height and blank space can focus it',function()
+    local f,a=fixture();local changed=0;local valid=true
+    local code=a:CreateWorkbenchLuaEditor(f.env.UIParent,function() changed=changed+1 end,function() return valid end,'plain')
+    code.frame:SetSize(600,300);code:SetText('return true');local edit=code.edit
+    -- SetAllPoints supplies a bottom anchor, imposing the backing viewport's
+    -- height on a multiline EditBox instead of letting its text own that axis.
+    assert(not edit.allPoints,'multiline input remains vertically constrained to the viewport')
+    assert(edit.point and edit.point[1]=='TOPLEFT' and edit.point[2]==code.content and edit.point[3]=='TOPLEFT','multiline input has no stable top anchor')
+    local nativeHeight=24;edit.GetHeight=function() return nativeHeight end
+    edit:SetFocus();edit:SetCursorPosition(3);local before=changed
+    code.frame:SetSize(600,420);code:Layout()
+    assert(edit:GetHeight()==24 and edit:GetCursorPosition()==3 and edit:HasFocus() and changed==before,'viewport resize rewrote text or caret')
+    assert(code.content:GetHeight()>=code.scroll:GetHeight(),'blank viewport lost its backing hit area')
+    edit:ClearFocus();code.content.scripts.OnMouseDown(code.content,'LeftButton');assert(edit:HasFocus(),'blank backing space cannot focus an empty/short editor')
+    assert(edit:GetCursorPosition()==3,'blank-space focus changed the insertion point')
+    edit:SetCursorPosition(5);edit.scripts.OnMouseDown(edit,'LeftButton');assert(edit:GetCursorPosition()==5,'text clicks are intercepted by backing-space focus')
+    code:SetText(string.rep('return true\n',100));assert(code.content:GetHeight()>code.scroll:GetHeight(),'long source no longer creates a scroll range')
+    code.scroll.workbenchBar:SetValue(code.scroll.workbenchBar.scrollRange);assert(code.scroll.workbenchBar:GetValue()>0,'long source cannot scroll')
+    local closed=0;code:SetCloseHandler(function() closed=closed+1 end);code.content.scripts.OnMouseDown(code.content,'RightButton');assert(closed==1,'blank backing space cannot close the editor')
+    edit:ClearFocus();code:SetReadOnly(true);code.content.scripts.OnMouseDown(code.content,'LeftButton');assert(not edit:HasFocus(),'blank-space click focuses readonly source')
+    code:SetReadOnly(false);valid=false;code.content.scripts.OnMouseDown(code.content,'LeftButton');assert(not edit:HasFocus(),'stale owner accepts focus')
+    valid=true;code:Release();code.content.scripts.OnMouseDown(code.content,'LeftButton');assert(not edit:HasFocus(),'released editor accepts focus')
+end)
 test('syntax success is green and shares the footer action row',function()
     local f,a=fixture(true);local source=a:CopySettingsData(a.empty_condition);source.description='Inline';a.db.global.custom_conditions.INLINE=source;a.conditionDefinitions.INLINE={description='Inline',fields={}}
     local host=f.env.CreateFrame('Frame');host:SetSize(1100,700);local p=a:OpenNativeSettings(host,'Conditions');local d=p.inlineCondition

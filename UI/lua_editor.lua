@@ -84,10 +84,19 @@ function addon:CreateWorkbenchLuaEditor(parent,changed,valid,preferred)
         host:Hide()
     end
     local c={frame=CreateFrame('Frame',nil,parent),provider='native',valid=valid,changed=changed}
-    c.scroll=self:CreateWorkbenchScrollFrame(c.frame);c.scroll:SetPoint('TOPLEFT',4,-4);c.content=CreateFrame('Frame',nil,c.scroll);c.content:EnableMouse(false);c.scroll:SetScrollChild(c.content);c.edit=CreateFrame('EditBox',nil,c.content);c.edit:SetMultiLine(true);c.edit:SetAutoFocus(false);c.edit:EnableMouse(true);c.edit:SetAltArrowKeyMode(false);c.edit:SetBlinkSpeed(.5);c.edit:SetCountInvisibleLetters(false);c.edit:SetTextColor(1,1,1);c.edit:SetJustifyH('LEFT');c.edit:SetJustifyV('TOP');c.edit:SetFontObject('GameFontHighlightSmall');c.edit:SetTextInsets(6,6,4,4);c.edit:SetMaxLetters(0);c.edit:SetAllPoints(c.content)
+    c.scroll=self:CreateWorkbenchScrollFrame(c.frame);c.scroll:SetPoint('TOPLEFT',4,-4);c.content=CreateFrame('Frame',nil,c.scroll);c.content:EnableMouse(false);c.scroll:SetScrollChild(c.content);c.edit=CreateFrame('EditBox',nil,c.content);c.edit:SetMultiLine(true);c.edit:SetAutoFocus(false);c.edit:EnableMouse(true);c.edit:SetAltArrowKeyMode(false);c.edit:SetBlinkSpeed(.5);c.edit:SetCountInvisibleLetters(false);c.edit:SetTextColor(1,1,1);c.edit:SetJustifyH('LEFT');c.edit:SetJustifyV('TOP');c.edit:SetFontObject('GameFontHighlightSmall');c.edit:SetTextInsets(6,6,4,4);c.edit:SetMaxLetters(0);c.edit:SetHeight(1);c.edit:SetPoint('TOPLEFT',c.content,'TOPLEFT',0,0)
     -- Let the native EditBox own mouse placement and keyboard navigation.
     -- Focusing it from the covering scroll frame resets placement to the end.
     c.scroll:EnableMouse(false);c.frame:EnableMouseWheel(true)
+    -- Only the backing frame fills the viewport. A bottom anchor on the
+    -- multiline input would constrain its native text height and caret layout.
+    -- Blank-space clicks can focus short/empty text without replacing native
+    -- mouse placement or moving an existing insertion point to the end.
+    c.content:EnableMouse(true)
+    addon:SetUIScript(c.content,'OnMouseDown',function(_,button)
+        if button=='LeftButton' and not c.readOnly and not c.released and c.valid() then c.edit:SetFocus()
+        elseif button=='RightButton' then local handler=c.edit:GetScript('OnMouseDown');if handler then handler(c.edit,button) end end
+    end)
     addon:SetUIScript(c.frame,'OnMouseWheel',function(_,delta) c.scroll.workbenchBar:SetValue(c.scroll.workbenchBar:GetValue()-delta*36) end)
     c.editorDecoration=self:CreateRoundedCardDecoration(c.frame);c.editorDecoration:SetColors(.38,.43,.48,1,.95)
     addon:SetUIScript(c.edit,'OnEditFocusGained',function() c.editorDecoration:SetColors(.45,.7,.85,1,.95) end)
@@ -113,7 +122,7 @@ function addon:CreateWorkbenchLuaEditor(parent,changed,valid,preferred)
         -- the complete new source before sizing the backing scroll child.
         self.measure:SetHeight(0);self.measure:SetWidth(math.max(1,width-12));self.measure:SetText(self:GetText());local editHeight=math.max(height,self.measure:GetStringHeight()+16)
         -- Multiline EditBoxes own their text height. Size a backing frame
-        -- and anchor the edit to it instead of fighting native text layout.
+        -- without a bottom anchor on the edit, preserving native text layout.
         if differs(self.content:GetWidth(),width) or differs(self.content:GetHeight(),editHeight) then self.layoutCounts.content=self.layoutCounts.content+1;self.content:SetSize(width,editHeight) end
         self.scroll:UpdateWorkbenchScroll();if self.RefreshLineNumbers then self:RefreshLineNumbers() end;self.layingOut=nil
     end

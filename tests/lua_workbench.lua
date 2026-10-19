@@ -407,4 +407,59 @@ test('Run renders typed condition summaries without changing extra nil returns o
  c:SetContext({kind='function',id='TABLE_RESULT',source={args={},bindings={}}});c.arguments:SetText('{}');c:SetText('return {note="raw function result"}')
  assert(c:Run());local raw=table.concat(c.engine.Query.Console.lines,' ');assert(not raw:find('Condition summary unavailable',1,true),'function table was mistaken for a condition summary');c:Release()
 end)
+test('advanced insertion and deletion repaint despite repeated native caret notifications',function()
+ for _,gutter in ipairs({false,true}) do for _,case in ipairs({{'return 1','return 12',9},{'return 12','return 1',8}}) do
+  local f,a=fixture();a.db.profile.lua_line_numbers=gutter;local changes=0
+  local c=a:CreateLuaWorkbenchControl(f.env.UIParent,function() changes=changes+1 end,function() return true end)
+  c.frame:SetSize(600,300);c:Layout();c:SetText(case[1]);c.edit:SetFocus()
+  local input=c.engine.Query.Console.input;local state=input.queryEditor;local editor=c.engine.Query.Editor
+  local paint=editor.Paint;local paints=0;function editor:Paint(target) paints=paints+1;return paint(self,target) end
+  local setText=c.edit.SetText;local writes=0;function c.edit:SetText(text) writes=writes+1;return setText(self,text) end
+  local oldOverlay=state.overlay:GetText();c.edit:SetText(case[2]);c.edit:SetCursorPosition(case[3]);c.edit:GetScript('OnTextChanged')(c.edit,true)
+  assert(c:GetText()==case[2] and changes==1 and c.engine.Query.Console.source==case[2],'source or change notification was delayed')
+  for tick=1,6 do
+   c.edit:GetScript('OnCursorChanged')(c.edit,case[3]*7,0,2,12)
+   c.edit:GetScript('OnUpdate')(c.edit,1/60);c.frame:GetScript('OnUpdate')(c.frame,1/60)
+  end
+  assert(state.renderSource==case[2] and state.overlay:GetText()~=oldOverlay,'native caret notifications starved the changed text overlay')
+  assert(c.edit:GetCursorPosition()==case[3] and changes==1 and writes==1,'repaint rewrote source cursor or host history')
+  assert(paints==1 and not state.pending,'pending repaint was not coalesced')
+  for tick=1,60 do c.edit:GetScript('OnCursorChanged')(c.edit,case[3]*7,0,2,12);c.edit:GetScript('OnUpdate')(c.edit,1/60);c.frame:GetScript('OnUpdate')(c.frame,1/60) end
+  assert(paints==1 and writes==1 and changes==1,'settled editor kept repainting or rewriting source');c:Release()
+ end end
+end)
+test('advanced continuous input coalesces bounded repaint independently of the caret blink clock',function()
+ for _,gutter in ipairs({false,true}) do
+  local f,a=fixture();a.db.profile.lua_line_numbers=gutter;local changes=0
+  local c=a:CreateLuaWorkbenchControl(f.env.UIParent,function() changes=changes+1 end,function() return true end)
+  c.frame:SetSize(600,300);c:Layout();c:SetText('return 1');c.edit:SetFocus()
+  -- Settle upstream's initial documentation/color refresh before counting the
+  -- paints caused by this edit sequence and its subsequent idle notifications.
+  c.engine.Autocomplete:Update(c.engine.Query.Console.input,false)
+  local input=c.engine.Query.Console.input;local state=input.queryEditor;local editor=c.engine.Query.Editor
+  local paint=editor.Paint;local paints,lastPaint=0,0;function editor:Paint(target) paints=paints+1;return paint(self,target) end
+  for tick=1,30 do
+   local text='return '..string.rep('1',tick+1);c.edit:SetText(text);c.edit:SetCursorPosition(#text);c.edit:GetScript('OnTextChanged')(c.edit,true)
+   c.edit:GetScript('OnCursorChanged')(c.edit,#text*7,0,2,12);c.edit:GetScript('OnUpdate')(c.edit,1/60);c.frame:GetScript('OnUpdate')(c.frame,1/60)
+   if state.renderSource==text then lastPaint=tick end
+   assert(tick-lastPaint<=5,'continuous input postponed rendering beyond the repaint bound')
+   assert(c.edit:GetCursorPosition()==#text and changes==tick,'repaint disturbed ongoing native input')
+  end
+  assert(paints>=5 and paints<=7 and state.renderSource==c:GetText(),'continuous repaint was missing or ran every frame')
+  local before=paints;for tick=1,30 do c.edit:GetScript('OnCursorChanged')(c.edit,259,0,2,12);c.edit:GetScript('OnUpdate')(c.edit,1/60);c.frame:GetScript('OnUpdate')(c.frame,1/60) end
+  assert(paints==before,'idle caret notifications triggered redundant paints');c:Release()
+ end
+end)
+test('advanced pending repaint respects invalid owners read-only input and released callbacks',function()
+ local f,a=fixture();local valid=true;local changes=0
+ local c=a:CreateLuaWorkbenchControl(f.env.UIParent,function() changes=changes+1 end,function() return valid end)
+ c.frame:SetSize(600,300);c:Layout();c:SetText('return 1');local input=c.engine.Query.Console.input;local editor=c.engine.Query.Editor
+ local paint=editor.Paint;local paints=0;function editor:Paint(target) paints=paints+1;return paint(self,target) end
+ c:SetReadOnly(true);c.edit:SetText('forbidden');c.edit:GetScript('OnTextChanged')(c.edit,true)
+ assert(c:GetText()=='return 1' and changes==0 and not c.edit:IsEnabled(),'read-only native input was accepted')
+ for tick=1,10 do c.frame:GetScript('OnUpdate')(c.frame,1/60) end;assert(paints==0,'read-only rollback created a pending repaint')
+ c:SetReadOnly(false);c.edit:SetText('return 12');c.edit:GetScript('OnTextChanged')(c.edit,true);assert(changes==1)
+ valid=false;local update=c.frame:GetScript('OnUpdate');for tick=1,10 do update(c.frame,1/60) end;assert(paints==0,'invalid owner repainted')
+ c:Release();update(c.frame,1);assert(paints==0 and not input.queryEditor,'released callback repainted or revived editor state')
+end)
 finish()

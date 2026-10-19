@@ -281,7 +281,19 @@ function rm:CreateLuaWorkbenchControl(parent,changed,valid)
     E:Attach(input)
     if rm.InstallLuaLineNumberControl then rm:InstallLuaLineNumberControl(c,C,input);c:RefreshLineNumbers() else C:AttachLineNumbers(input) end
     self:SetUIScript(frame,'OnSizeChanged',function() c:Layout() end)
-    self:SetUIScript(frame,'OnUpdate',function(_,elapsed) if not c.released and valid() then c:UpdateDebugAvailability();if c.RefreshLineNumbers then c:RefreshLineNumbers() end;engine.DebugUI:HoverUpdate(elapsed) end end)
+    local pendingPaintElapsed=0
+    self:SetUIScript(frame,'OnUpdate',function(_,elapsed)
+        if c.released or not valid() then return end
+        c:UpdateDebugAvailability();if c.RefreshLineNumbers then c:RefreshLineNumbers() end
+        -- Upstream uses its caret clock to debounce painting. Native cursor
+        -- notifications can reset that clock continuously while text is dirty.
+        local state=input.queryEditor
+        if state and state.pending then
+            pendingPaintElapsed=pendingPaintElapsed+elapsed
+            if pendingPaintElapsed>=.08 then pendingPaintElapsed=0;E:Paint(input) end
+        else pendingPaintElapsed=0 end
+        engine.DebugUI:HoverUpdate(elapsed)
+    end)
     self:SetUIScript(frame,'OnHide',function() engine.Debugger:Stop();engine.Autocomplete:Hide();W:HidePanels();if c.outputWindow then c.outputWindow:Hide() end end)
     local mouseUp=c.edit:GetScript('OnMouseUp')
     self:SetUIScript(c.edit,'OnMouseUp',function(edit,button)
