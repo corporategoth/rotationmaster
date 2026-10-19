@@ -379,8 +379,13 @@ if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE and LE_EXPANSION_LEVEL_CURRENT >= 2 a
         evaluate = function(value, cache)
             local count = 0
             for i=1,6 do
-                if Functions.cache.getCached(cache, GetRuneType, i) == value.rune then
-                    if select(3, Functions.cache.getCached(cache, GetRuneCooldown, i)) then count = count + 1 end
+                local runeType,reason=Functions.cache.getCached(cache, addon.Platform.GetRuneTypeObservation, addon.Platform, i)
+                if runeType==nil then return nil,reason end
+                if runeType == value.rune then
+                    local observation,why=Functions.cache.getCached(cache, addon.Platform.GetRuneCooldownObservation, addon.Platform, i)
+                    if observation==nil then return nil,why end
+                    if observation.ready==nil then return nil,observation.readyReason end
+                    if observation.ready then count = count + 1 end
                 end
             end
             return Functions.values.compare(value.operator, count, value.value)
@@ -435,17 +440,28 @@ if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE and LE_EXPANSION_LEVEL_CURRENT >= 2 a
                     value.rune ~= nil and Functions.values.isin(addon.runes, value.rune))
         end,
         evaluate = function(value, cache)
-            local now = GetTime()
+            local now,timeReason=addon.Platform:GetRuneEvaluationTime()
             local lowest_remain
             for i=1,6 do
-                if Functions.cache.getCached(cache, GetRuneType, i) == value.rune then
-                    local start, duration = Functions.cache.getCached(cache, GetRuneCooldown, i)
-                    local remain = math.max(addon.Functions.values.round(duration - (now - start), 3), 0)
+                local runeType,reason=Functions.cache.getCached(cache, addon.Platform.GetRuneTypeObservation, addon.Platform, i)
+                if runeType==nil then return nil,reason end
+                if runeType == value.rune then
+                    if now==nil then return nil,timeReason end
+                    local observation,why=Functions.cache.getCached(cache, addon.Platform.GetRuneCooldownObservation, addon.Platform, i)
+                    if observation==nil then return nil,why end
+                    if observation.start==nil then return nil,observation.startReason end
+                    if observation.duration==nil then return nil,observation.durationReason end
+                    local remain = observation.duration - (now - observation.start)
+                    if remain~=remain or remain>=math.huge or remain<=-math.huge then return nil,'invalid-rune-time' end
+                    remain = addon.Functions.values.round(remain, 3)
+                    if type(remain)~='number' or remain~=remain or remain>=math.huge or remain<=-math.huge then return nil,'invalid-rune-time' end
+                    remain = math.max(remain, 0)
                     if lowest_remain == nil or remain < lowest_remain then
                         lowest_remain = remain
                     end
                 end
             end
+            if lowest_remain==nil then return false end
             return Functions.values.compare(value.operator, lowest_remain, value.value)
         end,
         print = function(_, value)

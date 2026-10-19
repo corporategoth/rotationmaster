@@ -111,4 +111,66 @@ test('gutter diagnostics count reentry and protected rendering failure without e
  C:UpdateLineNumbers();local report=a:LuaEditorInputReport();assert(report:find('errors=1',1,true) and not report:find('PRIVATE_GUTTER_ERROR',1,true),'failure report leaked source');code:Release()
 end)
 
+local function tick(frame)
+ local update=frame:GetScript('OnUpdate');if update then update(frame,.016) end
+ for _,hook in ipairs(frame.hooks and frame.hooks.OnUpdate or {}) do hook(frame,.016) end
+end
+test('explicit gutter probe defers cursor nested scroll and direct updates to one owner tick',function()
+ for _,provider in ipairs({'plain','LuaWorkbench'}) do
+  local _,a,code,c,_,C,input,state,_,changes=fixture(provider)
+  assert(type(c.ToggleDeferredGutterProbe)=='function','deferred gutter probe missing')
+  input.scrollFrame:SetHeight(10);C:UpdateLineNumbers()
+  local original,base=C.UpdateLineNumbers,c.frame:GetScript('OnUpdate');local arrow=c.edit:GetScript('OnArrowPressed')
+  local source=code:GetText();local caret=c.edit:GetCursorPosition();local width,height=c.edit:GetWidth(),c.edit:GetHeight();c.edit:SetFocus()
+  local depth=0;local getFont=c.edit.GetFont;local reads=0;c.edit.GetFont=function(self) assert(depth==0,'gutter read inside cursor or nested scroll event');reads=reads+1;return getFont(self) end
+  local setScroll=input.scrollFrame.SetVerticalScroll;input.scrollFrame.SetVerticalScroll=function(self,value) setScroll(self,value);local handler=self:GetScript('OnVerticalScroll');if handler then handler(self,value) end end
+  assert(c:ToggleDeferredGutterProbe()==true and C.UpdateLineNumbers~=original)
+  depth=1;c.edit:GetScript('OnCursorChanged')(c.edit,14,-400,1,12);input.scrollFrame:GetScript('OnSizeChanged')(input.scrollFrame,input.scrollFrame:GetWidth(),input.scrollFrame:GetHeight());C:UpdateLineNumbers();depth=0
+  local counts=c.gutterProbeCounts;assert(counts.requests>=4 and counts.flushes==0 and reads==0 and c.deferredGutterProbe.pending,'gutter route escaped queue '..provider..'/'..counts.requests..'/'..reads)
+  tick(c.frame);assert(counts.flushes==1 and reads>0 and not c.deferredGutterProbe.pending,'frame did not coalesce requests');local flushedReads=reads
+  tick(c.frame);assert(counts.flushes==1 and reads==flushedReads,'idle frame flushed gutter again')
+  assert(c.frame:GetScript('OnUpdate')==base and c.edit:GetScript('OnArrowPressed')==arrow,'probe replaced provider update or keyboard handler')
+  assert(code:GetText()==source and c.edit:GetCursorPosition()==caret and c.edit:GetWidth()==width and c.edit:GetHeight()==height and state.gutter:IsShown() and c.edit:HasFocus() and changes()==0,'probe changed input or visible gutter')
+  local report=a:LuaEditorInputReport();assert(report:find('gutterProbe enabled=true pending=false',1,true) and report:find('flushes=1',1,true) and not report:find(source,1,true),'probe status missing or source leaked')
+  assert(c:ToggleDeferredGutterProbe()==false and C.UpdateLineNumbers==original);code:Release()
+ end
+end)
+test('gutter probe drains feedback on a later tick and disable refreshes pending work outside events',function()
+ for _,provider in ipairs({'plain','LuaWorkbench'}) do
+  local _,_,code,c,_,C,input,state=fixture(provider);assert(type(c.ToggleDeferredGutterProbe)=='function','deferred gutter probe missing')
+  local original=C.UpdateLineNumbers;assert(c:ToggleDeferredGutterProbe());C.lastError={line=2}
+  local measure=state.measure.SetText;local feedback=true;state.measure.SetText=function(self,text) if feedback then feedback=false;C:UpdateLineNumbers() end;return measure(self,text) end
+  C:UpdateLineNumbers();tick(c.frame);assert(c.gutterProbeCounts.flushes==1 and c.deferredGutterProbe.pending,'render feedback was lost or flushed recursively')
+  tick(c.frame);assert(c.gutterProbeCounts.flushes==2 and not c.deferredGutterProbe.pending,'render feedback did not settle next frame');state.measure.SetText=measure
+  C.lastError={line=3};C:UpdateLineNumbers();local calls=c.lineNumberCounts.calls
+  assert(c:ToggleDeferredGutterProbe()==false and C.UpdateLineNumbers==original and c.lineNumberCounts.calls==calls,'disable rendered synchronously or lost updater')
+  tick(c.frame);assert(c.lineNumberCounts.calls==calls+1 and state.rmRender.error==3,'disabled probe lost pending final redraw');tick(c.frame);assert(c.lineNumberCounts.calls==calls+1,'disable refresh repeated')
+  assert(c.gutterProbeCounts.flushes==2,'disable lost comparison counters');assert(c:ToggleDeferredGutterProbe());assert(c.gutterProbeCounts.flushes==2,'re-enable reset lease counters');c:ResetInputTrace();assert(not c.deferredGutterProbe and not c.gutterProbeCounts and C.UpdateLineNumbers==original,'trace reset retained probe work or counters')
+  code:Release()
+ end
+end)
+test('gutter probe retires pending work and stale queue callbacks before release acquisition and detachment',function()
+ for _,provider in ipairs({'plain','LuaWorkbench'}) do
+  local _,_,code,c,_,C,input=fixture(provider);assert(type(c.ToggleDeferredGutterProbe)=='function','deferred gutter probe missing')
+  local original=C.UpdateLineNumbers;assert(c:ToggleDeferredGutterProbe());local stale=C.UpdateLineNumbers;stale(C);local counts=c.gutterProbeCounts
+  code:Release();assert(not c.deferredGutterProbe and C.UpdateLineNumbers==original,'release retained updater or pending probe');stale(C);tick(c.frame);assert(counts.flushes==0,'released tick or stale callback rendered')
+  code:Acquire(function() end,function() return true end);local active=code.inner or code;assert(not active.deferredGutterProbe,'new lease retained probe')
+  stale(C);assert(not active.deferredGutterProbe,'old queue callback revived probe')
+  local engine=active.engine or active.completionEngine;local console=engine.Query.Console;local updater=console.UpdateLineNumbers
+  assert(active:ToggleDeferredGutterProbe());console:UpdateLineNumbers();active:SetLineNumbers(false);tick(active.frame);assert(not active.deferredGutterProbe and console.UpdateLineNumbers==updater,'detachment retained deferred updater')
+  assert(active:ToggleDeferredGutterProbe()==nil,'detached owner accepted probe');active:SetLineNumbers(true)
+  assert(active:ToggleDeferredGutterProbe());console:UpdateLineNumbers();active:ToggleDeferredGutterProbe();assert(active.gutterProbeRefresh,'pending disable has no final refresh');code:Release();local calls=active.lineNumberCounts.calls;tick(active.frame);assert(not active.gutterProbeRefresh and active.lineNumberCounts.calls==calls,'release left a final redraw pending')
+ end
+end)
+test('gutter probe rejects invalid owners preserves newer updaters and recovers after failed flushes',function()
+ for _,provider in ipairs({'plain','LuaWorkbench'}) do
+  local _,_,code,c,_,C=fixture(provider);assert(type(c.ToggleDeferredGutterProbe)=='function','deferred gutter probe missing')
+  local valid=c.valid;c.valid=function() return false end;assert(c:ToggleDeferredGutterProbe()==nil);c.valid=valid
+  local original=C.UpdateLineNumbers;assert(c:ToggleDeferredGutterProbe());C:UpdateLineNumbers();c.valid=function() return false end;tick(c.frame);assert(not c.deferredGutterProbe and C.UpdateLineNumbers==original and c.gutterProbeCounts.flushes==0,'invalid owner rendered or kept probe');c.valid=valid
+  assert(c:ToggleDeferredGutterProbe());local queue=C.UpdateLineNumbers;local newer=function() error('newer updater must not run from retired probe') end;C.UpdateLineNumbers=newer;tick(c.frame);assert(not c.deferredGutterProbe and C.UpdateLineNumbers==newer,'retiring probe overwrote newer updater');queue(C);tick(c.frame);C.UpdateLineNumbers=original
+  assert(c:ToggleDeferredGutterProbe());C:UpdateLineNumbers();local font=c.edit.GetFont;c.edit.GetFont=function() error('PRIVATE_FLUSH_FAILURE') end;assert(not pcall(tick,c.frame));assert(not c.deferredGutterProbe.pending and c.gutterProbeCounts.flushes==1,'failed flush retained pending or recursive state');c.edit.GetFont=font
+  C:UpdateLineNumbers();tick(c.frame);assert(c.gutterProbeCounts.flushes==2 and not c.deferredGutterProbe.pending,'probe failed to recover');code:Release()
+ end
+end)
+
 finish()

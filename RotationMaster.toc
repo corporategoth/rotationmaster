@@ -36,6 +36,7 @@ Platform/unit_flags.lua
 Platform/player_flags.lua
 Platform/form.lua
 Platform/points.lua
+Platform/runes.lua
 Platform/unit_identity.lua
 Platform/unit_metadata.lua
 Platform/pet.lua

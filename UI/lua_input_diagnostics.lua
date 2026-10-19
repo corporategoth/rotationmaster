@@ -64,23 +64,23 @@ function addon:GetLuaEditorDiagnosticsWidth(code,width)
     return 0
 end
 
--- Observe input without changing its state. Only the explicit temporary arrow
--- probe removes a handler; ordinary reports contain counts, never source.
+-- Reports contain counts, never source. The explicit temporary probes own
+-- their changes until disabled or the current editor lease ends.
 function addon:InstallLuaInputDiagnostics(control)
     self.luaInputEditor=control
     if not control.inputDiagnosticsToolbar then
         local toolbar={};control.inputDiagnosticsToolbar=toolbar
         toolbar.diagnostics=self:CreateWorkbenchButton(control.frame,L['Diagnostics'],90)
-        toolbar.arrows=self:CreateWorkbenchButton(control.frame,L['Arrow test'],90)
+        toolbar.gutter=self:CreateWorkbenchButton(control.frame,L['Gutter test'],90)
         toolbar.input=self:CreateWorkbenchButton(control.frame,L['Input test'],90)
-        for _,button in ipairs({toolbar.diagnostics,toolbar.arrows,toolbar.input}) do button:SetHeight(22);button:SetFrameLevel(control.frame:GetFrameLevel()+30);button:GetFontString():SetWordWrap(false) end
+        for _,button in ipairs({toolbar.diagnostics,toolbar.gutter,toolbar.input}) do button:SetHeight(22);button:SetFrameLevel(control.frame:GetFrameLevel()+30);button:GetFontString():SetWordWrap(false) end
         self:SetUIScript(toolbar.diagnostics,'OnClick',function()
             if not activeControl(control) then return end
             addon.luaInputEditor=control;addon:ShowLuaEditorInputReport()
         end)
-        self:SetUIScript(toolbar.arrows,'OnClick',function()
+        self:SetUIScript(toolbar.gutter,'OnClick',function()
             if not activeControl(control) then return end
-            addon.luaInputEditor=control;addon:ShowLuaEditorArrowProbe()
+            addon.luaInputEditor=control;addon:ShowLuaEditorGutterProbe()
         end)
         self:SetUIScript(toolbar.input,'OnClick',function()
             if not activeControl(control) then return end
@@ -92,23 +92,23 @@ function addon:InstallLuaInputDiagnostics(control)
         local toolbar=self.inputDiagnosticsToolbar;local buttonWidth=math.min(90,math.max(1,((width or self.frame:GetWidth())-56)/3))
         if toolbar.buttonWidth==nil or math.abs(toolbar.buttonWidth-buttonWidth)>.1 then
             toolbar.buttonWidth=buttonWidth
-            for _,button in ipairs({toolbar.diagnostics,toolbar.arrows,toolbar.input}) do button:SetWidth(buttonWidth);button:GetFontString():SetWidth(math.max(1,buttonWidth-8)) end
+            for _,button in ipairs({toolbar.diagnostics,toolbar.gutter,toolbar.input}) do button:SetWidth(buttonWidth);button:GetFontString():SetWidth(math.max(1,buttonWidth-8)) end
             toolbar.diagnostics:ClearAllPoints();toolbar.diagnostics:SetPoint('BOTTOMRIGHT',self.frame,'TOPRIGHT',-2*(buttonWidth+4),0)
-            toolbar.arrows:ClearAllPoints();toolbar.arrows:SetPoint('BOTTOMRIGHT',self.frame,'TOPRIGHT',-buttonWidth-4,0)
+            toolbar.gutter:ClearAllPoints();toolbar.gutter:SetPoint('BOTTOMRIGHT',self.frame,'TOPRIGHT',-buttonWidth-4,0)
             toolbar.input:ClearAllPoints();toolbar.input:SetPoint('BOTTOMRIGHT',self.frame,'TOPRIGHT',0,0)
         end
         buttonWidth=toolbar.buttonWidth;toolbar.width=buttonWidth*3+16
-        local compact=buttonWidth<78;local probe=self.nativeArrowProbe~=nil
+        local compact=buttonWidth<78;local probe=self.deferredGutterProbe~=nil
         local diagnosticLabel=compact and L['Info'] or L['Diagnostics']
         local inputLabel=compact and L['Test'] or L['Input test']
         if toolbar.input:GetText()~=inputLabel then toolbar.input:SetText(inputLabel) end
-        local arrowLabel=probe and (compact and L['On'] or L['Arrows: on']) or (compact and L['Arrows'] or L['Arrow test'])
+        local gutterLabel=probe and (compact and L['On'] or L['Gutter: on']) or (compact and L['Gutter'] or L['Gutter test'])
         if toolbar.diagnostics:GetText()~=diagnosticLabel then toolbar.diagnostics:SetText(diagnosticLabel) end
-        if toolbar.arrows:GetText()~=arrowLabel then toolbar.arrows:SetText(arrowLabel) end
-        if toolbar.probe~=probe then toolbar.probe=probe;toolbar.arrows:SetSelected(probe) end
+        if toolbar.gutter:GetText()~=gutterLabel then toolbar.gutter:SetText(gutterLabel) end
+        if toolbar.probe~=probe then toolbar.probe=probe;toolbar.gutter:SetSelected(probe) end
         toolbar.input.tooltip=L['Input test']
         toolbar.diagnostics.tooltip=L['Show input diagnostics for this open Lua editor.']
-        toolbar.arrows.tooltip=probe and L['Temporary native arrow test enabled. Click to restore the editor hook.'] or L['Temporarily remove the editor arrow hook to test native navigation.']
+        toolbar.gutter.tooltip=probe and L['Deferred gutter test enabled. Click to restore immediate updates.'] or L['Temporarily defer line-number updates to test input.']
     end
     function control:ResetNativeArrowProbe()
         local probe=self.nativeArrowProbe;self.nativeArrowProbe=nil
@@ -131,7 +131,10 @@ function addon:InstallLuaInputDiagnostics(control)
             if original then control[name]=function(self,...) self:ResetNativeArrowProbe();return original(self,...) end end
         end
     end
-    function control:ResetInputTrace() self:ResetNativeArrowProbe();self.inputTrace={};self.inputCounts={};self.inputPoll=nil;self.layoutCounts=nil;self.lineNumberCounts=nil end
+    function control:ResetInputTrace()
+        self:ResetNativeArrowProbe();if self.ResetDeferredGutterProbe then self:ResetDeferredGutterProbe() end
+        self.inputTrace={};self.inputCounts={};self.inputPoll=nil;self.layoutCounts=nil;self.lineNumberCounts=nil;self.gutterProbeCounts=nil
+    end
     function control:ObserveInput(event,...)
         if self.released then return end
         local edit=self.edit;local raw=self.nativeGetText or edit.GetText
@@ -185,6 +188,8 @@ function addon:LuaEditorInputReport()
     end
     lines[#lines+1]='arrowHook='..tostring(type(edit:GetScript('OnArrowPressed'))=='function')..' probe='..tostring(control.nativeArrowProbe~=nil)
     lines[#lines+1]='lineNumbers visible='..tostring(control.lineNumbersVisible)..' setting='..tostring(control.lineNumberSetting)
+    local probe,probeCounts=control.deferredGutterProbe,control.gutterProbeCounts or {}
+    lines[#lines+1]='gutterProbe enabled='..tostring(probe~=nil)..' pending='..tostring(probe~=nil and probe.pending==true)..' requests='..tostring(probeCounts.requests or 0)..' flushes='..tostring(probeCounts.flushes or 0)
     local gutter=control.lineNumberCounts
     if gutter then
         lines[#lines+1]='gutter calls='..gutter.calls..' skips='..gutter.skips..' renders='..gutter.renders..' metricRebuilds='..gutter.metrics..' reentries='..gutter.reentries..' errors='..gutter.errors..' detached='..gutter.detached
@@ -208,6 +213,15 @@ function addon:LuaEditorInputReport()
 end
 function addon:ShowLuaEditorInputReport()
     self:ShowConditionText(self:LuaEditorInputReport(),L['Lua input diagnostics'])
+end
+
+function addon:ShowLuaEditorGutterProbe()
+    local control=self.luaInputEditor
+    local enabled
+    if control and control.ToggleDeferredGutterProbe then enabled=control:ToggleDeferredGutterProbe() end
+    if enabled==nil then self:print(L['Open a Lua editor with line numbers enabled before using Gutter test.'])
+    elseif enabled then self:print(L['Gutter test enabled. Try Up/Down and the caret, then click again to restore normal updates.'])
+    else self:print(L['Gutter test disabled; immediate line-number updates are restored.']) end
 end
 
 function addon:ShowLuaEditorArrowProbe()

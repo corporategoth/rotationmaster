@@ -65,7 +65,7 @@ test('current editable copies share native cache and live canonical rounding on 
 end)
 test('saved raw evaluator source keeps its live legacy rounding lookup without rewriting',function()
     for tag in pairs(modules) do local _,a,s=fixture(tag=='RUNE_COOLDOWN' and inventory[5] or inventory[3],true)
-        local source=assert(a:GetBuiltinConditionSource(tag));source.evaluate=restore(source.evaluate,tag,true);local before=a:CopySettingsData(source)
+        local source=assert(a:GetBuiltinConditionSource(tag));if tag=='RUNE_COOLDOWN' then source.evaluate=dofile('tests/fixtures/restore_rune_repairs.lua')(source.evaluate,tag) end;source.evaluate=restore(source.evaluate,tag,true);local before=a:CopySettingsData(source)
         local copy=assert(a:CompileCustomCondition('RAW_'..tag,source));a.round=function(...) assert(select('#',...)==2 and select(2,...)==3);return 9 end
         a.Functions.values.round=function() error('saved raw callback was silently canonicalized') end
         assert(copy.evaluate(node(tag,9),{},100)==true and a:SettingsDataEqual(before,source))
@@ -74,7 +74,7 @@ end)
 test('only five approved callback expressions change full module bytes and every private source remains exact',function()
     local _,a=fixture(inventory[3],true)
     for tag,module in pairs(modules) do local path='Conditions/'..module..'.lua';local file=assert(io.open(path));local text=file:read('*a');file:close()
-        if module=='stats' then text=dofile('tests/fixtures/restore_health_forecast_deficit.lua')(text);text=dofile('tests/fixtures/restore_point_repairs.lua')(text) end
+        if module=='stats' then text=dofile('tests/fixtures/restore_rune_repairs.lua')(text);text=dofile('tests/fixtures/restore_health_forecast_deficit.lua')(text);text=dofile('tests/fixtures/restore_point_repairs.lua')(text) end
         local inverse=restore(text,tag);assert(a:FunctionSourceHash(inverse)==moduleHashes[module],module..' changed beyond exact rounding qualification fromf537fe1')
         assert(not pcall(restore,inverse,tag),'inverse accepted missing repaired expression')
         for name,hash in pairs(privateHashes[module]) do local id='builtin:'..path..':'..name

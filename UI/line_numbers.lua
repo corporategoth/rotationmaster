@@ -90,9 +90,60 @@ function addon:InstallLuaLineNumberControl(control,console,input,options)
         if not ok then counts.errors=counts.errors+1;error(result,0) end
         return result
     end
+    local function probeOwner(self,probe)
+        if self.released or self.edit~=probe.edit or input.editBox~=probe.edit or input.queryLineNumbers~=probe.state or type(self.valid)~='function' then return false end
+        local ok,valid=pcall(self.valid);return ok and not not valid
+    end
+    function control:ResetDeferredGutterProbe()
+        local probe=self.deferredGutterProbe;self.deferredGutterProbe=nil;self.gutterProbeRefresh=nil
+        if probe then
+            probe.pending=false
+            if console.UpdateLineNumbers==probe.queue then console.UpdateLineNumbers=probe.update end
+        end
+        if self.LayoutInputDiagnostics then self:LayoutInputDiagnostics() end
+    end
+    function control:ToggleDeferredGutterProbe()
+        local probe=self.deferredGutterProbe
+        if probe then
+            local pending=probe.pending;self:ResetDeferredGutterProbe()
+            if pending and probeOwner(self,probe) and console.UpdateLineNumbers==probe.update then self.gutterProbeRefresh=probe end
+            return false
+        end
+        probe={edit=input.editBox,state=input.queryLineNumbers,update=console.UpdateLineNumbers,pending=false}
+        if not probe.state or not probeOwner(self,probe) then return nil end
+        self.gutterProbeRefresh=nil;self.gutterProbeCounts=self.gutterProbeCounts or {requests=0,flushes=0}
+        local counts=self.gutterProbeCounts
+        probe.queue=function()
+            if self.deferredGutterProbe~=probe or not probeOwner(self,probe) then return end
+            counts.requests=counts.requests+1;probe.pending=true
+        end
+        self.deferredGutterProbe=probe;console.UpdateLineNumbers=probe.queue
+        if self.LayoutInputDiagnostics then self:LayoutInputDiagnostics() end
+        return true
+    end
+    -- The temporary probe moves every gutter request out of cursor/scroll
+    -- callbacks. Keep the provider's own update handler and normal input intact.
+    control.frame:HookScript('OnUpdate',function()
+        local probe=control.deferredGutterProbe
+        if probe then
+            if not probeOwner(control,probe) or console.UpdateLineNumbers~=probe.queue then control:ResetDeferredGutterProbe();return end
+            if probe.pending then
+                probe.pending=false;control.gutterProbeCounts.flushes=control.gutterProbeCounts.flushes+1
+                probe.update(console)
+            end
+        elseif control.gutterProbeRefresh then
+            probe=control.gutterProbeRefresh;control.gutterProbeRefresh=nil
+            if probeOwner(control,probe) and console.UpdateLineNumbers==probe.update then probe.update(console) end
+        end
+    end)
+    for _,name in ipairs({'Release','Acquire'}) do
+        local original=control[name]
+        if original then control[name]=function(self,...) self:ResetDeferredGutterProbe();return original(self,...) end end
+    end
     function control:SetLineNumbers(visible)
         visible=visible~=false
         if self.lineNumbersVisible==visible then return end
+        if not visible then self:ResetDeferredGutterProbe() end
         self.lineNumbersVisible=visible
         local previous=input.queryLineNumbers or input.queryLineNumberCache
         if previous then previous.rmRender=nil end

@@ -193,6 +193,7 @@ test('eleven statistics namespace substitutions retain their exact historical104
     local totals={isin=0,compare=0,getCached=0,nullable=0,compareString=0};local callbacks=0
     for _,tag in ipairs(tags) do local source=assert(a:GetBuiltinConditionSource(tag));assert(not source.bindings.Functions,'opaque namespace table capture')
         if tag=='POINT' then source=a:CopySettingsData(source);source.evaluate=dofile('tests/fixtures/restore_point_repairs.lua')(source.evaluate,true) end
+        if tag=='RUNE' or tag=='RUNE_COOLDOWN' then source=a:CopySettingsData(source);source.evaluate=dofile('tests/fixtures/restore_rune_repairs.lua')(source.evaluate,tag) end
         for _,callback in ipairs({'valid','evaluate','print'}) do callbacks=callbacks+1;for name in pairs(owners) do
             local _,n=source[callback]:gsub(path(name):gsub('%.','%%.')..'%(','');totals[name]=totals[name]+n;assert(not source[callback]:find('addon.'..name..'(',1,true))
         end end
@@ -203,6 +204,7 @@ test('legacy-shaped full sources retain every original native expression field H
     local _,a=fixture();local baseline={};for _,tag in ipairs(tags) do
         local source=assert(a:GetBuiltinConditionSource(tag))
         if tag=='POINT' then source=a:CopySettingsData(source);source.evaluate=dofile('tests/fixtures/restore_point_repairs.lua')(source.evaluate,true) end
+        if tag=='RUNE' or tag=='RUNE_COOLDOWN' then source=a:CopySettingsData(source);source.evaluate=dofile('tests/fixtures/restore_rune_repairs.lua')(source.evaluate,tag) end
         if tag=='TT_HEALTH' then source=a:CopySettingsData(source);source.evaluate=dofile('tests/fixtures/restore_health_forecast_deficit.lua')(source.evaluate,tag) end
         baseline[tag]=legacySource(a,source)
         if tag=='RUNE_COOLDOWN' then baseline[tag].evaluate=dofile('tests/fixtures/restore_rounding_qualifiers.lua')(baseline[tag].evaluate,tag,true) end
