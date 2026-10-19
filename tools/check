@@ -116,6 +116,7 @@ def main():
             ['luajit', 'tests/settings_pages.lua'],
             ['lua5.1', 'tests/selector.lua'],
             ['lua5.1', 'tests/condition_inputs.lua'],
+            ['lua5.1', 'tests/condition_layout.lua'],
             ['lua5.1', 'tests/custom_condition_owner.lua'],
             ['luajit', 'tests/compression.lua'],
             ['luajit', 'tests/rotation_codec.lua'],

@@ -1,6 +1,5 @@
 local addon_name, addon = ...
 
-local AceGUI = LibStub("AceGUI-3.0")
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 local color, tonumber = color, tonumber
 local helpers = addon.help_funcs

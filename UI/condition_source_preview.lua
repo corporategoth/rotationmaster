@@ -150,7 +150,7 @@ function addon:ShowConditionSourceTest(owner,options)
         self:ReleaseWidgets();self.failed=false
         return self:Invoke('render-test',function()
         local width=d.frame:GetWidth()-60
-        local content=AceGUI:Create('SimpleGroup');d.contentPane=content;content:SetLayout('List');content:SetFullWidth(true);content:SetWidth(width);content.frame:SetParent(d.scroll);content.frame:ClearAllPoints();content.frame:SetPoint('TOPLEFT');content.frame:SetWidth(width);content:SetUserData('top',top)
+        local content=addon:CreateConditionGroup();d.contentPane=content;content:SetLayout('List');content:SetFullWidth(true);content:SetWidth(width);content.frame:SetParent(d.scroll);content.frame:ClearAllPoints();content.frame:SetPoint('TOPLEFT');content.frame:SetWidth(width);content:SetUserData('top',top)
         -- AceGUI only shows widgets through AddChild. This native scroll root
         -- bypasses AddChild, so a reused group is still hidden after Release.
         content.frame:Show()
@@ -159,7 +159,7 @@ function addon:ShowConditionSourceTest(owner,options)
         if debugSurface then d.parent=content;d.pane=content;return end
         for _,callback in ipairs({'widget','help'}) do
             content:AddChild(addon.help_funcs.CreateText(callback=='widget' and L['Fields UI'] or L['Help']))
-            local pane=AceGUI:Create('SimpleGroup');if callback=='widget' then d.pane=pane else d.helpPane=pane end;pane:SetLayout('List');pane:SetFullWidth(true);pane:SetWidth(width);pane.frame:SetWidth(width);pane:SetUserData('top',top);content:AddChild(pane)
+            local pane=addon:CreateConditionGroup();if callback=='widget' then d.pane=pane else d.helpPane=pane end;pane:SetLayout('List');pane:SetFullWidth(true);pane:SetWidth(width);pane.frame:SetWidth(width);pane:SetUserData('top',top);content:AddChild(pane)
             local fn=definition and definition[callback]
             if not fn then local chunk,why=addon:CompileCustomConditionCallback(key,callback,current[callback],current.bindings,current.parameters);if not chunk then error(why,0) end;fn=chunk()(addon,L) end
             if callback=='widget' then fn(pane,addon.currentSpec or 0,d.sample) else fn(pane) end

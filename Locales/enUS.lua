@@ -2107,6 +2107,34 @@ L['Set values in Test before running or debugging this condition.'] = true
 L['The argument name is the local parameter available in the Lua body. Use a valid Lua identifier. Renaming this documentation does not rewrite references in the code.'] = true
 L['Type and Nullable describe the values accepted or returned by this function. They document the contract; they do not rewrite or validate values in the Lua body.'] = true
 
+-- Whole-field General help; each paragraph can be translated independently.
+L["Help.General.enable"] = "Enable Rotation Master recommendations, automatic rotation switching and bound item-set updates. Disabling clears active advice and highlights and hides the preview. Apply saves the change."
+L["Help.General.poll"] = "Set how often Rotation Master reevaluates the active rotation and independent cooldowns, in seconds. A shorter interval updates advice more often and uses more processing time. It does not cast spells, queue actions, or predict future combat."
+L["Help.General.disable_autoswitch"] = "Keep Rotation Master from automatically selecting another rotation from its switch condition. This preference survives reloads. Manually choosing a rotation with /rm set <rotation> also suspends automatic switching until you choose automatic selection again."
+L["Help.General.disable_buttons"] = "Hide the main rotation recommendation on action bars. Independent cooldown highlights remain available. Enable Preview Spells if you want to see the main advice in a separate window; with both displays off, the main recommendation has no visible icon."
+L["Help.General.live_config_update"] = "Set the refresh interval for condition status while editing, in seconds. Zero turns off periodic status updates. This is separate from the recommendation polling interval and does not enable live condition testing unless you explicitly choose it."
+L["Help.General.minimap"] = "Show the Rotation Master minimap icon. Left-click toggles the configuration window. Right-click opens the quick menu for enabling recommendations and choosing a rotation or automatic switching."
+L["Help.General.rotation_view"] = "Choose Diagram or List as the starting rotation view. This profile preference applies when opening a rotation; changing the view inside the editor does not change this setting. Cooldowns always use a scrolling grid."
+L["Help.General.spell_history"] = "Choose how many seconds of previous spell casts to retain for history-based conditions. Older casts are removed as recommendations update. A longer history retains more records."
+L["Help.General.combat_history"] = "Choose how many seconds of combat events to retain for conditions such as recent hits, parries and blocks. Older events are removed as recommendations update. Availability depends on the client combat-data policy."
+L["Help.General.damage_history"] = "Choose how many seconds of observed damage and healing to retain for burn-rate and time-to-die estimates. Recent observations receive more weight. A longer window uses more records and smooths short changes; it cannot supply events the client does not expose."
+L["Help.General.preview_spells"] = "Choose a whole number of upcoming recommendations, from zero (hidden) to five. The preview shows current priority results, not a simulation of future cooldowns or combat. Icons start at 64 pixels; resizing scales all icons while preserving their square shape and the window ratio."
+L["Help.General.preview_opacity"] = "Adjust the preview background and title bar opacity without fading its icons. At zero only the icons remain, and the hidden frame does not intercept blank-space clicks. Restore opacity in General to access the title bar and resize handle."
+L["Help.General.preview_locked"] = "Prevent moving the preview by its title bar or resizing it by its lower-right corner. Unlock this option in General to adjust it again."
+L["Help.General.preview_vertical"] = "Arrange preview icons horizontally (default) or vertically. Lock, Direction and Reset share one row below the opacity slider. Changing direction keeps icons square and adjusts the window ratio."
+L["Help.General.preview_reset"] = "Immediately return the preview window to the screen center and restore 64-pixel icons without Apply. Other pending settings are preserved."
+L["Help.General.preview"] = "This icon previews the selected profile effect, color, size, anchor and offsets. Previewing an effect does not save the draft or change the spell being recommended."
+L["Help.General.effect"] = "Choose the highlight used for the main recommendation and as the default for independent cooldowns. Manage available effects on the Effects page. A cooldown can override these profile settings in its action details."
+L["Help.General.magnification"] = "Scale the highlight relative to its action icon. A value of 1 uses the icon size. Drag the slider or type its numeric value; the preview updates as you edit."
+L["Help.General.color"] = "Choose the highlight color and opacity. Click the color swatch to open the picker, or enter R, G, B and A values between 0 and 1. Alpha controls opacity; individual cooldowns may override this profile color."
+L["Help.General.setpoint"] = "Choose the point on the action icon where a texture highlight is anchored by its center. Changing Anchor resets the offsets. The preview shows the resulting placement; non-texture glows may use offsets without a texture anchor."
+L["Help.General.yoffs"] = "Vertical offset in pixels. Use Up or Down on the position control, or edit V directly. Hold Shift while using an arrow for ten pixels. Center resets both offsets and the anchor to Center."
+L["Help.General.xoffs"] = "Horizontal offset in pixels. Use Left or Right on the position control, or edit H directly. Hold Shift while using an arrow for ten pixels. Non-texture glows interpret offsets according to their effect shape."
+L["Help.General.spec1"] = "Choose the display name for your primary specialization. This changes its label in Rotation Master, not your character talents or specialization."
+L["Help.General.spec2"] = "Choose the display name for your secondary specialization. This changes its label in Rotation Master, not your character talents or specialization."
+L["Help.General.loglevel"] = "Choose the amount of Rotation Master chat output. Quiet suppresses routine output. Default reports normal changes such as rotation switching. Debug adds runtime statistics and trigger information. Verbose includes detailed condition and highlight activity and can produce substantial output."
+L["Help.General.detailed_profiling"] = "Include component timings in profiling statistics rather than only overall evaluation time. This option is available with Debug or Verbose logging. Extra profiling detail has a processing cost and is intended for investigation."
+
 -- BEGIN GENERATED RM PUBLIC HELPER DOCS
 L["All original results, preserving nil positions and return count."] = true
 L["Arguments forwarded unchanged to the observed function."] = true
@@ -2123,9 +2151,11 @@ L["Check whether a table has a non-nil value at a key. A stored false value stil
 L["Checkbox widget with boolean value and callback methods."] = true
 L["Compare two values using an RM operator identifier: LESSTHAN, LESSTHANOREQUALS, GREATERTHAN, GREATERTHANOREQUALS, EQUALS, NOTEQUALS or DIVISIBLE. Invalid operators warn and return nil; operands must support the selected Lua operation."] = true
 L["Comparison result, or nil for an unknown operator."] = true
+L["Condition container supporting SetLayout, AddChild, SetUserData, SetWidth and DoLayout."] = true
 L["Condition value record containing spell, ranked and disabled fields; updated in place."] = true
 L["Condition value record updated when a unit is chosen."] = true
 L["Configured unit selector; add it with parent:AddChild(widget)."] = true
+L["Create a condition field container with RM-owned List, numeric Table and responsive spell-field layouts. It accepts existing condition widgets and legacy custom child widgets; add children with AddChild and attach the group to the callback parent."] = true
 L["Create a configured unit selector bound to a condition value record. Returns the widget for the caller to add to the condition callback parent."] = true
 L["Create a native boolean condition control. Configure SetLabel, SetValue, SetDisabled and OnValueChanged; add it with parent:AddChild(widget)."] = true
 L["Create a native condition selector. SetList accepts key-to-label or key-to-entry maps; SetValue selects a key and OnValueChanged reports changes. Add it with parent:AddChild(widget)."] = true

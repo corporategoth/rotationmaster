@@ -1,6 +1,5 @@
 local addon_name, addon = ...
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
-local AceGUI = LibStub("AceGUI-3.0")
 
 local function validID(value)
     return type(value) == "number" and value > 0 and value < math.huge and value % 1 == 0

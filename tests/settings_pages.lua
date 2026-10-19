@@ -212,8 +212,24 @@ test('General page help retains authored explanations without scattering questio
     assert(not p.fields.poll_help)
     local all=a:WorkbenchPageHelp('General');local fields={};for _,entry in ipairs(all) do fields[entry.title]=entry.text end
     for _,caption in ipairs({'Enable','Polling Interval (seconds)','Disable Auto-Switching','Live Status Update Frequency (seconds)','Minimap Icon','Default rotation view','Disable Bar Highlighting','Spell History Memory (seconds)','Combat History Memory (seconds)','Damage History Memory (seconds)','Preview Spells','Effect','Magnification','Highlight Color','Anchor','V','H','Log Level','Detailed Profiling'}) do assert(fields[caption],caption..' missing help') end
-    assert(fields['Polling Interval (seconds)']:find('response time',1,true))
     local order={};for i,entry in ipairs(all) do order[entry.title]=i end;assert(order['Disable Bar Highlighting']==order['Disable Auto-Switching']+1 and order['Magnification']==order['Effect']+1)
+end)
+
+test('General help localizes whole field explanations in the visible control order',function()
+    local f,parent=fixture();local a=f.addon;local L=f.libraries['AceLocale-3.0']:GetLocale('rotationmaster')
+    local controls={'enable','poll','disable_autoswitch','disable_buttons','live_config_update','minimap','rotation_view',
+        'spell_history','combat_history','damage_history','preview_spells','preview_opacity','preview_locked','preview_vertical','preview_reset',
+        'effect','magnification','color','setpoint','yoffs','xoffs','loglevel','detailed_profiling'}
+    for _,key in ipairs(controls) do L['Help.General.'..key]='Translated field '..key end
+    local p=a:CreateSettingsForm(parent);p:Open(function(form) a:BuildGeneralSettings(form) end)
+    local found,last={},0
+    for index,entry in ipairs(a:GetGeneralOptionHelp()) do if entry.id then found[entry.id]={entry=entry,index=index} end end
+    for _,key in ipairs(controls) do
+        assert(p.fields[key],'test fixture did not expose actual control '..key)
+        local row=assert(found[key],'missing authored help for '..key)
+        assert(row.entry.text=='Translated field '..key,'field explanation bypassed localization: '..key)
+        assert(row.index>last,'help order differs from controls: '..key);last=row.index
+    end
 end)
 
 test('item announcements preserve item-set and custom-list storage and new announcements get an identity',function()

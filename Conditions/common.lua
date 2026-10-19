@@ -4,6 +4,7 @@ local AceGUI = LibStub("AceGUI-3.0")
 local SpellData = addon.SpellCatalog
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 
+-- Preserve the named layout for saved custom Fields UI using AceGUI directly.
 if AceGUI.RegisterLayout then AceGUI:RegisterLayout('RM-SpellField',function(content,children) addon:LayoutWorkbenchSpellGroup(content,children) end) end
 
 -- Portable condition fields contain ordinary saved data, never live secrets.
@@ -38,9 +39,7 @@ function addon:Widget_GetSpellLink(spellid, ranked)
 end
 
 function addon:Widget_SpellWidget(spec, editbox, value, nametoid, isvalid, update)
-    local spell_group = AceGUI:Create("SimpleGroup")
-    -- AceGUI registers this native layout above; the upstream type lists only its bundled layouts.
-    ---@diagnostic disable-next-line: type-mismatch
+    local spell_group = addon:CreateConditionGroup()
     spell_group:SetLayout('RM-SpellField')
     local rankChoice
 
@@ -129,7 +128,7 @@ function addon:Widget_SpellWidget(spec, editbox, value, nametoid, isvalid, updat
 end
 
 function addon:Widget_SpellNameWidget(spec, editbox, value, isvalid, update, storeId)
-    local spell_group = AceGUI:Create("SimpleGroup")
+    local spell_group = addon:CreateConditionGroup()
     spell_group:SetLayout("Table")
     spell_group:SetUserData("table", { columns = { 44, 1 } })
 
@@ -212,7 +211,7 @@ function addon:Widget_ItemWidget(top, editbox, value, isvalid, update)
     local itemsets = addon.db.profile.itemsets
     local global_itemsets = addon.db.global.itemsets
 
-    local item_group = AceGUI:Create("SimpleGroup")
+    local item_group = addon:CreateConditionGroup()
     item_group:SetLayout("Table")
     item_group:SetUserData("table", { columns = { 44, 1, 24 } })
 
@@ -345,7 +344,7 @@ function addon:Widget_ItemWidget(top, editbox, value, isvalid, update)
 end
 
 function addon:Widget_SingleItemWidget(spec, editbox, value, isvalid, update)
-    local item_group = AceGUI:Create("SimpleGroup")
+    local item_group = addon:CreateConditionGroup()
     item_group:SetLayout("Table")
 
     item_group:SetUserData("table", { columns = { 44, 1 } })
@@ -414,7 +413,7 @@ function addon:Widget_SingleItemWidget(spec, editbox, value, isvalid, update)
 end
 
 function addon:Widget_OperatorWidget(value, name, update, op_field, val_field)
-    local operator_group = AceGUI:Create("SimpleGroup")
+    local operator_group = addon:CreateConditionGroup()
     operator_group:SetLayout("Table")
     operator_group:SetUserData("table", { columns = { 0, 75 } })
 
@@ -447,7 +446,7 @@ function addon:Widget_OperatorWidget(value, name, update, op_field, val_field)
 end
 
 function addon:Widget_OperatorPercentWidget(value, name, update, op_field, val_field)
-    local operator_group = AceGUI:Create("SimpleGroup")
+    local operator_group = addon:CreateConditionGroup()
     operator_group:SetLayout("Table")
     operator_group:SetUserData("table", { columns = { 0, 150 } })
 
@@ -505,7 +504,6 @@ end
 -- BEGIN GENERATED RM SOURCE BINDINGS
 do
     local function sourceGetter(name)
-        if name=="AceGUI" then return AceGUI end
         if name=="SpellData" then return SpellData end
         if name=="Widget_GetSpellId" then return addon.Widget_GetSpellId end
         if name=="Widget_SpellWidget" then return addon.Widget_SpellWidget end

@@ -1,5 +1,5 @@
 local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite()
-local expected={getCached='addon.getCached',getRetryCached='addon.getRetryCached',compare='addon.compare',isin='addon.isin',nullable='addon.nullable',nullable_value='addon.nullable_value',split='addon.split',wrap='addon.wrap',trim='addon.trim',CreateConditionEditBox='addon:CreateConditionEditBox',CreateConditionSlider='addon:CreateConditionSlider',CreateConditionDropdown='addon:CreateConditionDropdown',CreateConditionCheckBox='addon:CreateConditionCheckBox',Widget_UnitWidget='addon:Widget_UnitWidget',Widget_SpellWidget='addon:Widget_SpellWidget',Widget_GetSpellId='addon:Widget_GetSpellId',Platform_IsSpellReady='addon.Platform:IsSpellReady',Platform_GetSpellCooldown='addon.Platform:GetSpellCooldown',Platform_GetSpellCharges='addon.Platform:GetSpellCharges',Platform_GetSpellRangeState='addon.Platform:GetSpellRangeState'}
+local expected={getCached='addon.getCached',getRetryCached='addon.getRetryCached',compare='addon.compare',isin='addon.isin',nullable='addon.nullable',nullable_value='addon.nullable_value',split='addon.split',wrap='addon.wrap',trim='addon.trim',CreateConditionGroup='addon:CreateConditionGroup',CreateConditionEditBox='addon:CreateConditionEditBox',CreateConditionSlider='addon:CreateConditionSlider',CreateConditionDropdown='addon:CreateConditionDropdown',CreateConditionCheckBox='addon:CreateConditionCheckBox',Widget_UnitWidget='addon:Widget_UnitWidget',Widget_SpellWidget='addon:Widget_SpellWidget',Widget_GetSpellId='addon:Widget_GetSpellId',Platform_IsSpellReady='addon.Platform:IsSpellReady',Platform_GetSpellCooldown='addon.Platform:GetSpellCooldown',Platform_GetSpellCharges='addon.Platform:GetSpellCharges',Platform_GetSpellRangeState='addon.Platform:GetSpellRangeState'}
 local function fixture(...)
     local f=F.new(...);f.load('Data/builtin_sources.lua');f.load('Core/builtin_sources.lua');f.load('Core/custom_authoring.lua');f.load('Conditions/common.lua');f.load('Platform/spells.lua');f.load('Platform/actions.lua')
     f.env.loadstring=function(text,name) local fn,why=loadstring(text,name);if fn then setfenv(fn,f.env) end;return fn,why end
@@ -50,8 +50,8 @@ test('cloned utility bodies preserve the real addon helper results',function()
 end)
 test('native field helper clones create the same widget contracts and unit controls',function()
     local f,a=fixture();dofile('tests/fixtures/native_ui.lua')(f.env)
-    for name,kind in pairs({CreateConditionEditBox='RM-ConditionEditBox',CreateConditionSlider='RM-ConditionSlider',CreateConditionDropdown='RM-Selector',CreateConditionCheckBox='RM-CheckBox'}) do
-        local fn=clone(a,name);local widget=fn(a);assert(widget.type==kind and widget.SetCallback and widget.SetDisabled)
+    for name,kind in pairs({CreateConditionGroup='RM-ConditionGroup',CreateConditionEditBox='RM-ConditionEditBox',CreateConditionSlider='RM-ConditionSlider',CreateConditionDropdown='RM-Selector',CreateConditionCheckBox='RM-CheckBox'}) do
+        local fn=clone(a,name);local widget=fn(a);assert(widget.type==kind and widget.SetCallback and (widget.SetDisabled or widget.AddChild))
     end
     local unit=clone(a,'Widget_UnitWidget');local value={unit='player'};local updates=0;local widget=unit(a,value,{player='Player',target='Target'},function() updates=updates+1 end);widget.configure();assert(widget:GetValue()=='player');widget.callbacks.OnValueChanged(widget,'OnValueChanged','target');assert(value.unit=='target' and updates==1)
 end)
@@ -67,8 +67,8 @@ test('public descriptions argument help and return help use runtime locale keys'
     assert(record.source.description=='Localized helper' and record.source.args[1].description=='Localized argument' and record.source.returns[1].description=='Localized return')
 end)
 test('spell field clones retain original group callbacks and update the same record fields',function()
-    local f,a=fixture(1,10);local fn=clone(a,'Widget_SpellWidget')
-    local function input() local widget=f.widget('EditBox');widget.type='TestEditBox';widget.frame={};return widget end
+    local f,a=fixture(1,10);dofile('tests/fixtures/native_ui.lua')(f.env);local fn=clone(a,'Widget_SpellWidget')
+    local function input() local widget=f.widget('EditBox');widget.type='TestEditBox';widget.frame=f.env.CreateFrame('Frame');return widget end
     a.CreateSpellEditBox=function() return input() end;a.CreateSpellActionIcon=function() return input() end
     a.SpellCatalog.SpellName=function(_,id) return 'Spell '..tostring(id) end;a.SpellCatalog.GetSpellId=function() return 123 end
     for _,helper in ipairs({a.Widget_SpellWidget,fn}) do

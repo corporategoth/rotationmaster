@@ -103,6 +103,7 @@ UI/unsaved.lua
 UI/selector.lua
 UI/checkbox.lua
 UI/condition_inputs.lua
+UI/condition_layout.lua
 UI/icon_picker.lua
 UI/window.lua
 UI/help.lua

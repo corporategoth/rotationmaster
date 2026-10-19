@@ -72,4 +72,13 @@ test('opening the real Distance Count declaration never fills a missing numeric 
     assert(value.distance==nil and slider:GetValue()==nil and slider.editbox:GetText()=='','opening the field manufactured a saved distance')
     enter(slider,'25','OnEnterPressed');assert(value.distance==25)
 end)
+test('real Distance field commits notify its owning detached editor',function()
+    local f=fixture();local a=f.addon
+    f.load('Conditions/common.lua');f.load('Conditions/spatial.lua')
+    local value={unit='target',value=20};local parent,top=f.widget('Group'),f.widget('Frame');local updates=0
+    parent:SetUserData('top',top);top:SetUserData('root',value);top:SetUserData('funcs',{print=function(_,root) updates=updates+1;assert(root==value);return 'Updated' end})
+    a.definitions.DISTANCE.widget(parent,0,value)
+    local input=parent.children[2];enter(input,'30','OnEnterPressed')
+    assert(value.value==30 and updates==1,'Distance commit bypassed editor synchronization')
+end)
 finish()

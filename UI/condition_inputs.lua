@@ -66,7 +66,12 @@ local function constructor(numeric)
     function w:SetIsPercent(value) self.isPercent=value==true;paint() end
     function w:IsPending() return self.alive and not self.disabled and self.pending==true end
     function w:CommitPending()
-        if self.isQueuedForRelease then return true end
+        local owner=self
+        for _=1,128 do
+            if not owner then break end
+            if owner.isQueuedForRelease then return true end
+            owner=owner.parent
+        end
         if not self:IsPending() then return true end
         local text=input:GetText();local value=numeric and parse(text) or text
         if numeric and not finite(value) then input:SetTextColor(1,.35,.35);return nil end

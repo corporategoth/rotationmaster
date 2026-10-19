@@ -219,7 +219,7 @@ local function createShell()
             end
         end
         card.proxy=proxy
-        local pane=AceGUI:Create("SimpleGroup");card.pane=pane;pane:SetLayout("List");pane:SetFullWidth(true)
+        local pane=addon:CreateConditionGroup();card.pane=pane;pane:SetLayout("List");pane:SetFullWidth(true)
         pane.frame:SetParent(card.fields);pane.frame:ClearAllPoints();pane.frame:SetPoint("TOPLEFT",0,0);pane:SetWidth(model.width-58);pane.frame:Show();pane:SetUserData("top",proxy)
         pane.frame:ClearAllPoints();pane.frame:SetPoint("TOPLEFT",card.fields,"TOPLEFT",0,0)
         local oldLayout=pane.LayoutFinished

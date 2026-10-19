@@ -1,6 +1,5 @@
 local addon_name, addon = ...
 
-local AceGUI = LibStub("AceGUI-3.0")
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 local RangeCheck = LibStub("LibRangeCheck-3.0")
 local color, pairs = color, pairs
@@ -190,8 +189,18 @@ addon:RegisterCondition("DISTANCE", {
     end,
     evaluate = function(value, cache)
         if not addon.getCached(cache, UnitExists, value.unit) then return false end
-        local maxRange = select(2, addon.getCached(cache, rcf, value.unit))
-        return maxRange and maxRange <= value.value
+        -- pcall preserves both range bounds returned by the cached observation.
+        ---@diagnostic disable-next-line: unbalanced-assignments
+        local ok, minRange, maxRange = pcall(addon.getCached, cache, rcf, value.unit)
+        if not ok then return nil, "range-provider-error" end
+        if not addon.Platform:CanReadValue(minRange) or not addon.Platform:CanReadValue(maxRange) then return nil, "restricted-value" end
+        for index=1,2 do
+            local distance=minRange;if index==2 then distance=maxRange end
+            if distance~=nil and (type(distance)~="number" or distance~=distance or distance<0 or distance==math.huge) then return nil, "invalid-range-result" end
+        end
+        if maxRange==nil then return nil, "range-unavailable" end
+        if minRange and minRange>maxRange then return nil, "invalid-range-result" end
+        return maxRange <= value.value
     end,
     print = function(_, value)
         return string.format(addon.playerize(value.unit, L["%s {{!are|are not}} %s"], L["%s {{!is|is not}} %s"]),
@@ -213,6 +222,7 @@ addon:RegisterCondition("DISTANCE", {
         distance:SetText(value.value)
         distance:SetCallback("OnEnterPressed", function(_, _, v)
             value.value = tonumber(v)
+            top:SetStatusText(funcs:print(root, spec))
         end)
         parent:AddChild(distance)
     end,

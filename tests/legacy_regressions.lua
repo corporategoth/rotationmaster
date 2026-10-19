@@ -20,6 +20,19 @@ local function spatial()
     f.env.UnitPowerMax=function() return 100 end
     return f
 end
+test('Distance keeps missing invalid and restricted range observations unavailable under NOT',function()
+    local f=spatial();local a=f.addon;local provider=f.libraries['LibRangeCheck-3.0'];local low,high
+    provider.GetRange=function() return low,high end
+    local value={type='NOT',value={type='DISTANCE',unit='player',value=20}}
+    assert(a:evaluateConditionResult(value).status=='unavailable','missing distance became true under NOT')
+    low,high=0,10;assert(not a:evaluateCondition(value),'readable nearby interval did not match Distance')
+    low,high=20,30;assert(a:evaluateCondition(value),'readable distant upper bound lost existing Distance semantics')
+    for _,invalid in ipairs({-1,0/0,math.huge,'unknown'}) do high=invalid;assert(a:evaluateConditionResult(value).status=='unavailable','invalid interval became actionable') end
+    local opaque={};low,high=0,opaque;a.Platform.CanReadValue=function(_,v) return v~=opaque end
+    assert(a:evaluateConditionResult(value).status=='unavailable','restricted upper bound became actionable')
+    provider.GetRange=function() error('provider failed') end
+    assert(a:evaluateConditionResult(value).status=='unavailable','provider error escaped protected observation')
+end)
 test('proximity health and mana aggregates consume actual party values for min average and max',function()
     local f=spatial()
     for _,entry in ipairs({{'PROXIMITY_HEALTH',20,50,80},{'PROXIMITY_HEALTHPCT',.2,.5,.8},
