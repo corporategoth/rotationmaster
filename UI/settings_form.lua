@@ -46,7 +46,7 @@ function addon:CreateSettingsForm(parent)
     function p:CreationActions(apply,cancel,pageDraft)
         self.creationUsed=true;self.creationUsedForNew=not pageDraft
         if not pageDraft then self.creationBaseline=self.creationBaseline or addon:CopySettingsData(self:CreationState());self.creationApply=apply end
-        for _,entry in ipairs({{'apply',L['Apply'],apply},{'cancel',L['Cancel'],cancel}}) do
+        for _,entry in ipairs({{'apply',L['Apply'],apply},{'cancel',pageDraft and L['Discard'] or L['Cancel'],cancel}}) do
             local c=self:Acquire('creationButtons',function() return addon:CreateWorkbenchButton(self.frame,'',92) end);c:SetParent(self.frame);c:ClearAllPoints();c:SetPoint('BOTTOMRIGHT',entry[1]=='apply' and -108 or -8,2);c:SetWidth(92);c:SetText(entry[2]);c:Enable();self.fields[entry[1]]=c
             addon:SetUIScript(c,'OnClick',self:Guard(function()
                 if entry[1]=='cancel' then cancel();if self.transactionKeys then self:DiscardSettingsDraft();self:Draw() end

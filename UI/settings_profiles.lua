@@ -54,7 +54,7 @@ function addon:BuildProfileSettings(p)
         -- existing replacement confirmation and runtime lifecycle.
         local copy=p:Choice('copy',L['Copy from profile'],nil,others,function(name) p:Confirm(string.format(L['Replace the current profile with %s?'],name),function() change('CopyProfile',name) end) end);if #others==0 then copy:Disable() end
         local reset=p:Button('reset',L['Reset current profile'],function() p:Confirm(L['Reset this profile to its defaults? Custom rotations and settings in it will be replaced.'],function() change('ResetProfile') end) end);if selectedName~=current then reset:Disable() end
-        local trash=self:SettingsTopDelete(p,function() p:Confirm(string.format(L['Delete profile %s? This cannot be undone.'],selectedName),function() db:DeleteProfile(selectedName);p.selection=current;p:Draw() end) end);if selectedName==current or selectedName==DEFAULT then trash:Disable() end
+        local trash=self:SettingsTopDelete(p,function() p:Confirm(string.format(L['Delete profile %s? This cannot be undone.'],selectedName),function() db:DeleteProfile(selectedName);p.selection=current;p:Draw() end) end);if selectedName==current or selectedName=='Default' then trash:Disable() end
         -- Compatibility for existing direct current-profile callers; sidebar
         -- selection is inspection, activation is always explicit.
         p.fields.current=p.fields.activate

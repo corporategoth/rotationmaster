@@ -1,6 +1,23 @@
 local addon_name,addon=...
 local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
 local function section(title,text) return {title=title,text=text} end
+function addon:GetProfileOptionHelp()
+    return {
+        {id='activate',title=L['Activate profile'],text=L['Help.Profiles.activate']},
+        {id='copy',title=L['Copy from profile'],text=L['Help.Profiles.copy']},
+        {id='reset',title=L['Reset current profile'],text=L['Help.Profiles.reset']},
+        {id='delete',title=L['Delete'],text=L['Help.Profiles.delete']},
+        {id='new_name',title=L['New profile name'],text=L['Help.Profiles.new_name']},
+        {id='collections',title=L['New / Duplicate / Import / Compare'],text=L['Help.Profiles.collections']},
+    }
+end
+function addon:GetIntegrationOptionHelp()
+    return {
+        {id='lua_editor',title=L['Editor'],text=L['Help.Integrations.lua_editor']},
+        {id='lua_line_numbers',title=L['Show line numbers'],text=L['Help.Integrations.lua_line_numbers']},
+        {id='optional_addons',title=L['Optional addons'],text=L['Help.Integrations.optional_addons']},
+    }
+end
 function addon:WorkbenchInteractionHelp(kind)
     local result={section(L['Names and details'],L['Click a name to rename it. Clear a custom step name to restore its action name. Click a collapsed title to show its summary. Click action or condition text to open its details; the double chevron returns from fields to the summary.'])}
     if kind=='condition' then
@@ -27,23 +44,23 @@ function addon:WorkbenchPageHelp(topic)
         section(L['Window controls'],L['Drag the title bar to move. Set Scale with the top-left slider; child windows follow it. The question mark toggles Help. Close with X, Escape, or right-click in the content area.'])} end
     local description={
         General=L['Configure recommendation timing, automatic switching, history, preview and profile highlight defaults. Labels are on the left. Checkboxes toggle options, sliders show numeric values, and fields validate before saving.'],
-        Conditions=L['Choose a category and search for a condition. Hidden removes it from pickers without deleting its definition. Switch Condition controls its availability for automatic rotation switching. Move To stages a category destination; its Apply button confirms the move. The assigned category opens category management. Sidebar arrows and dragging order entries. Page Apply saves the draft; Cancel discards it. Custom conditions can be edited, duplicated or deleted.'],
-        Effects=L['Select an effect to edit its name, type and type-specific settings. The icon previews it live. Sequence sections edit animation, color, pulse or custom frames in order. Duplicate creates an independent effect. Drag a sequence card surface to reorder it; fields remain editable. New effects can be configured before naming. Apply saves the draft; Cancel discards it. Import stages a validated replacement.'],
-        ItemSets=L['Choose an item set and edit its priority list. Global shares the set across profiles. Move arrows change item priority. Bind item set picks up an available item for placement on an action bar; The binding pill removes matching bound bar actions when unbinding, outside combat. Reset restores a packaged set. Search or drag items into reference fields. Apply saves settings; Cancel discards them. Binding changes are explicit action-bar operations.'],
+        Conditions=L['Choose a category and search for a condition. Hidden removes it from pickers without deleting its definition. Switch Condition controls its availability for automatic rotation switching. Move To stages a category destination; its Apply button confirms the move. The assigned category opens category management. Sidebar arrows and dragging order entries. Page Apply saves the draft; Discard abandons edits to a saved entry. Custom conditions can be edited, duplicated or deleted.'],
+        Effects=L['Select an effect to edit its name, type and type-specific settings. The icon previews it live. Sequence sections edit animation, color, pulse or custom frames in order. Duplicate creates an independent effect. Drag a sequence card surface to reorder it; fields remain editable. New effects can be configured before naming. Apply saves the draft; Discard abandons edits to a saved entry. Import stages a validated replacement.'],
+        ItemSets=L['Choose an item set and edit its priority list. Global shares the set across profiles. Move arrows change item priority. Bind item set picks up an available item for placement on an action bar; The binding pill removes matching bound bar actions when unbinding, outside combat. Reset restores a packaged set. Search or drag items into reference fields. Apply saves settings; Discard abandons edits to a saved entry. Binding changes are explicit action-bar operations.'],
         Announces=L['Expand an announcement to choose its action, event, channel and text. Spell fields search the catalog; exact rank limits matching to that rank. Enabled toggles the announcement. New opens a draft with Apply and Cancel. Audible replaces text with sound selection and Play. Duplicate, Import/Export and Compare are below the list; imports are validated and never execute code. Apply saves changes.'],
         Profiles=L['Select a profile in the sidebar to inspect it, then Activate profile to switch. New and Duplicate open a named draft with Apply and Cancel. Import stages a validated new profile; Compare shows setting differences. Copy and Reset replace the active profile after confirmation; the red trash deletes an inactive profile.'],
         About=L['Version, author, credits and project links are shown here. Click a link field to select its text for copying.'],
         Rotations=L['Search or filter the rotation roster, then select a rotation. Blue Built In rotations use the same editor but remain read-only; Duplicate makes an editable copy. The name and Metadata describe the rotation. Switch condition selects when it applies. Use the Rotation and Cooldowns tabs to select the content below the switch condition. Cooldowns highlight independently of the ordered rotation.']}
     description.Integrations=L['Choose the editor for custom Lua conditions and functions. Show line numbers applies across code editors. Built In syntax highlighting and Plain text work without another addon. Automatic selects a connected provider or falls back safely. Apply saves settings; editor changes take effect on reopening, and line-number visibility updates open editors. LuaWorkbench and WowLua loading status is shown separately from integration availability.']
     local result={section(L['Using this page'],description[topic] or L['Optional addon settings.'])}
-    if topic~='Profiles' and topic~='Rotations' and topic~='About' then result[#result+1]=section(L['Apply / Cancel'],L['Edits stay in a draft until Apply. Cancel restores saved settings. Changing tabs or closing asks to apply pending changes; Cancel on the page discards them. Effect previews do not save changes. Action-bar binding operations are explicit and immediate.']) end
+    if topic~='Profiles' and topic~='Rotations' and topic~='About' then result[#result+1]=section(L['Apply / Discard'],L['Edits stay in a draft until Apply. Discard abandons pending changes. Leaving with changes offers Apply, Discard or Cancel; Cancel keeps the page and draft open. Effect previews do not save changes. Action-bar binding operations are explicit and immediate.']) end
     if topic=='General' and self.GetGeneralOptionHelp then for _,entry in ipairs(self:GetGeneralOptionHelp()) do result[#result+1]=entry end end
-    local authored={Conditions=self.GetDocument_layout_conditions_options_help,Effects=self.GetDocument_layout_effects_options_help,ItemSets=self.GetDocument_layout_itemsets_options_help,Announces=self.GetDocument_layout_announce_options_help}
+    local authored={Conditions=self.GetDocument_layout_conditions_options_help,Effects=self.GetDocument_layout_effects_options_help,ItemSets=self.GetDocument_layout_itemsets_options_help,Announces=self.GetDocument_layout_announce_options_help,Profiles=self.GetProfileOptionHelp,Integrations=self.GetIntegrationOptionHelp}
     if authored[topic] then for _,entry in ipairs(authored[topic](self)) do result[#result+1]=entry end end
     if topic=='Rotations' then
-        result[#result+1]=section(L['Navigating rotations'],L['Diagram / List changes only the rotation view; General settings choose the default. Diagram has floating minus, percentage and plus controls at the bottom right. Scroll to zoom from 25% to 200%; click the percentage or middle-click to reset to 100%. Drag empty diagram space to pan. List uses normal scrollbars with touching cards and boxed branch arms, False before True. Cooldowns use a separate scrolling grid. Dragging cards reorders them in every view. Each workspace currently shows at most 200 cards; the remaining saved cards are preserved.'])
+        result[#result+1]=section(L['Navigating rotations'],L['Diagram / List changes only the rotation view; General settings choose the default. Diagram has floating minus, percentage and plus controls at the bottom right. Scroll to zoom from 25% to 200%; click the percentage or middle-click to reset to 100%. Drag empty diagram space to pan. List uses normal scrollbars with touching cards and boxed branch arms, False before True. Cooldowns use a separate scrolling grid. Dragging cards reorders them in every view. Valid rotation bodies can contain up to 2,000 total steps; large workspaces reuse nearby card controls as you navigate. Folded branches intentionally hide their children.'])
         for _,entry in ipairs(self:WorkbenchInteractionHelp('rotation')) do result[#result+1]=entry end
-    else result[#result+1]=section(L['Editing settings'],L['Press Enter or leave a text field to stage its value; Apply saves the draft. Invalid text stays red and blocks navigation until corrected. Searchable selectors open on click and filter as you type. Section headings collapse or expand their contents.']) end
+    elseif topic~='Profiles' and topic~='About' then result[#result+1]=section(L['Editing settings'],L['Press Enter or leave a text field to stage its value; Apply saves the draft. Invalid text stays red and must be corrected before Apply; Discard can abandon it. Searchable selectors open on click and filter as you type. Section headings collapse or expand their contents.']) end
     result[#result+1]=section(L['Window controls'],L['Drag the title bar to move. Set Scale with the top-left slider; child windows follow it. The question mark toggles Help. Close with X, Escape, or right-click in the content area.'])
     return result
 end

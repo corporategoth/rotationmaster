@@ -908,4 +908,69 @@ test('ordered reorder confirmation defers changes and rejects stale accepted mov
     assert(accept() and values[1]=='two');view=p.ordered.rows;view:BeginDrag(1);view:Drop(3);p:Draw();assert(not accept() and values[1]=='two','stale accepted confirmation changed new form')
     p:Release()
 end)
+test('Profiles Help documents actual controls creation and immediate actions with localized field order',function()
+    local f,parent=fixture();local a=f.addon;local L=f.libraries['AceLocale-3.0']:GetLocale('rotationmaster')
+    assert(a.GetProfileOptionHelp,'Profiles lacks structured field Help')
+    local order={'activate','copy','reset','delete','new_name','collections'}
+    for _,key in ipairs(order) do L['Help.Profiles.'..key]='Translated profile '..key end
+    local rows=a:GetProfileOptionHelp();local documented,position={},{}
+    for i,row in ipairs(rows) do documented[row.id]=row;position[row.id]=i end
+    for i,key in ipairs(order) do assert(documented[key] and documented[key].text=='Translated profile '..key);if i>1 then assert(position[key]>position[order[i-1]]) end end
+    a.db.GetCurrentProfile=function() return 'One' end;a.db.GetProfiles=function() return {'One','Two'} end;a.db.profiles={Two={}}
+    local p=a:OpenNativeSettings(parent,'Profiles')
+    for _,key in ipairs({'activate','copy','reset','delete'}) do assert(p.fields[key] and documented[key],'visible Profile control lacks Help: '..key) end
+    for _,key in ipairs({'new_collection','duplicate','transfer','compare'}) do assert(p.fields[key] and documented.collections) end
+    p.fields.new_collection:Click();assert(p.fields.new_name and documented.new_name)
+    local help=a:WorkbenchPageHelp('Profiles');local found={};for _,row in ipairs(help) do if row.id then found[row.id]=row.text end end
+    assert(found.activate=='Translated profile activate' and found.new_name=='Translated profile new_name')
+end)
+test('Integrations Help covers provider choices line numbers and loaded versus connected status',function()
+    local f,parent=fixture();local a=f.addon;f.load('UI/lua_editor.lua');f.load('UI/settings_integrations.lua')
+    assert(a.GetIntegrationOptionHelp,'Integrations lacks structured field Help')
+    local L=f.libraries['AceLocale-3.0']:GetLocale('rotationmaster')
+    local order={'lua_editor','lua_line_numbers','optional_addons'}
+    for _,key in ipairs(order) do L['Help.Integrations.'..key]='Translated integration '..key end
+    local rows=a:GetIntegrationOptionHelp();for i,key in ipairs(order) do assert(rows[i].id==key and rows[i].text=='Translated integration '..key) end
+    local p=a:OpenNativeSettings(parent,'Integrations');assert(p.fields.lua_editor and p.fields.lua_line_numbers)
+    local all=a:WorkbenchPageHelp('Integrations');local found={};for _,row in ipairs(all) do if row.id then found[row.id]=row.text end end
+    for _,key in ipairs(order) do assert(found[key]=='Translated integration '..key) end
+end)
+test('rotation navigation Help no longer claims a200card truncation and saving names actual choices',function()
+    local f=fixture();local a=f.addon;local function text(topic) local parts={};for _,row in ipairs(a:WorkbenchPageHelp(topic)) do parts[#parts+1]=row.text end;return table.concat(parts,'\n') end
+    local rotations=text('Rotations');assert(not rotations:find('at most 200 cards',1,true) and rotations:find('2,000',1,true),'rotation navigation Help describes obsolete truncation')
+    local general=text('General');assert(general:find('Apply, Discard or Cancel',1,true),'Help omits actual navigation choices')
+end)
+test('literal AceDB Default is protected independently of the localized Default label',function()
+    local f,parent=fixture();local a=f.addon;f.env.DEFAULT='Défaut'
+    a.db.GetCurrentProfile=function() return 'Other' end;a.db.GetProfiles=function() return {'Default','Other','Défaut'} end
+    a.db.profiles={Default={},Other=a.db.profile,['Défaut']={}}
+    local p=a:OpenNativeSettings(parent,'Profiles');p.selection='Default';p:Draw()
+    assert(not p.fields.delete:IsEnabled(),'localized client can delete the true AceDB Default')
+    p.selection='Défaut';p:Draw();assert(p.fields.delete:IsEnabled(),'custom profile matching translated label was incorrectly protected')
+end)
+test('loaded editor addons only show Connected when their provider is actually registered',function()
+    local f,parent=fixture();local a=f.addon;f.load('UI/lua_editor.lua');f.load('UI/settings_integrations.lua')
+    f.env.IsAddOnLoaded=function(name) return name=='!!!LuaWorkbench' end
+    local p=a:CreateSettingsForm(parent);local texts={};local original=p.Text
+    p.Text=function(self,text) texts[#texts+1]=text;return original(self,text) end
+    p:Open(function(form) a:BuildIntegrationSettings(form) end)
+    local function status() for _,text in ipairs(texts) do if text:find('LuaWorkbench:',1,true)==1 then return text end end end
+    assert(status()=='LuaWorkbench: Loaded; editor integration not connected.','loaded addon falsely advertised a connected provider')
+    a:RegisterLuaEditorProvider('LuaWorkbench',function() error('must not create editor from settings') end)
+    texts={};p:Draw();assert(status()=='LuaWorkbench: Connected: embedded editing, completion, API knowledge and debugging.')
+end)
+test('saved settings pages use Discard while new profile drafts keep Cancel',function()
+    local f,parent=fixture();local a=f.addon;local p=a:OpenNativeSettings(parent,'General')
+    assert(p.fields.cancel:GetText()=='Discard','saved-page footer does not match navigation and Help')
+    a.db.GetCurrentProfile=function() return 'One' end;a.db.GetProfiles=function() return {'One'} end
+    p=a:OpenNativeSettings(parent,'Profiles');p.fields.new_collection:Click()
+    assert(p.fields.cancel:GetText()=='Cancel','new creation lost its Cancel action')
+end)
+test('collection Help describes confirmed immediate entity deletion and staged row edits separately',function()
+    local f=fixture();local a=f.addon;local item={};for _,row in ipairs(a:GetDocument_layout_itemsets_options_help()) do item[row.id]=row.text end
+    local announce={};for _,row in ipairs(a:GetDocument_layout_announce_options_help()) do announce[row.id]=row.text end
+    assert(item.delete:find('permanently',1,true) and not item.delete:find('staged',1,true),'item-set entity deletion Help still describes old pending deletes')
+    assert(announce.collections:find('permanently',1,true) and not announce.collections:find('draft; Cancel',1,true),'announcement entity deletion Help still describes old pending deletes')
+    assert(item.save:find('Discard',1,true) and announce.save:find('Discard',1,true))
+end)
 finish()
