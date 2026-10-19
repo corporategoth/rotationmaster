@@ -720,4 +720,122 @@ test('condition View Changes shows saved versus unsaved expressions without comm
     shell:Command('Replace',{}, {type='NUMBER',number=2});shell.viewChanges:Click();local d=shell.draftComparisonOwner.comparison
     assert(d.frame:IsShown() and #d.rows>0 and root.number==1);shell.cancel:Click();d.frame.scripts.OnUpdate();assert(not d.frame:IsShown())
 end)
+local function viewportCard(shell,path)
+    for _,card in ipairs(shell.canvas.cards) do
+        if card.token and card.model and #card.model.path==#path then
+            local same=true;for i,part in ipairs(path) do if card.model.path[i]~=part then same=false end end
+            if same then return card end
+        end
+    end
+end
+test('large condition scenes reach the last node with a bounded reusable card and marker pool',function()
+    local f=fixture();local a=f.addon;local root={type='AND',value={}};for i=1,1000 do root.value[i]={type='NUMBER',number=i} end
+    local shell=a:EditCondition(1,0,root,function() end);local c=shell.canvas
+    assert(c.scene.complete and #c.scene.cards==1001,'large condition scene was truncated')
+    if shell.copyExpression:IsShown() then assert(shell.copyExpression:GetWidth()>=shell.copyExpression:GetFontString():GetStringWidth()+12,'copy description caption is clipped') end
+    c.frame.workbenchBar:SetValue(c.scene.cards[2].y)
+    local first=assert(viewportCard(shell,{'value',1}));local stale=first.controls.remove.scripts.OnClick
+    assert(not viewportCard(shell,{'value',1000}) and #c.cards<80,'offscreen condition controls were allocated')
+    c.frame.workbenchBar:SetValue(c.frame.workbenchBar.scrollRange)
+    assert(viewportCard(shell,{'value',1000}) and not viewportCard(shell,{'value',1}),'scroll did not materialize final condition')
+    stale();assert(#shell.active.working.value==1000,'recycled callback changed its old condition')
+    local peak=#c.cards;for pass=1,2 do for i=0,10 do c.frame.workbenchBar:SetValue(c.frame.workbenchBar.scrollRange*i/10) end end
+    assert(#c.cards<80 and #c.cards<=peak+3 and #c.zones<100 and #c.lines<100,'viewport pools grew with total conditions')
+    shell:Command('Replace',{'value',1000},{type='NUMBER',number=9000});shell.apply:Click();assert(root.value[1000].number==9000 and #root.value==1000)
+end)
+test('offscreen pending native fields remain leased and invalid fields still block Apply',function()
+    local f=fixture();local a=f.addon
+    a:RegisterCondition('NATIVE',{description='Native',fields={number='number'},valid=function(_,v) return type(v.number)=='number' end,print=function() return 'Native' end,
+        widget=function(parent,_,value) local w=a:CreateConditionSlider();w:SetSliderValues(0,100,1);w:SetValue(value.number);w:SetCallback('OnValueChanged',function(_,_,v) value.number=v;parent:GetUserData('top'):SetStatusText() end);parent:AddChild(w) end})
+    local root={type='AND',value={}};for i=1,350 do root.value[i]={type='NATIVE',number=1} end
+    local shell=a:EditCondition(1,0,root,function() end);local c=shell.canvas;c.frame.workbenchBar:SetValue(c.scene.cards[2].y);local first=assert(viewportCard(shell,{'value',1}));first.header:Click();first=assert(viewportCard(shell,{'value',1}))
+    local input=first.pane.children[1];input.editbox:SetText('invalid');input.editbox.scripts.OnTextChanged(input.editbox,true)
+    c.frame.workbenchBar:SetValue(c.frame.workbenchBar.scrollRange)
+    assert(first.token and first.pane and input:GetText()=='invalid' and input:IsPending(),'scroll released invalid pending field')
+    shell.apply:Click();assert(shell.active and root.value[1].number==1)
+    input.editbox:SetText('8');input.editbox.scripts.OnTextChanged(input.editbox,true);shell.apply:Click();assert(root.value[1].number==8 and not shell.active)
+end)
+test('large condition drag keeps complete final destinations and carries offscreen suffixes atomically',function()
+    local f=fixture();local a=f.addon;local root={type='AND',value={}};for i=1,350 do root.value[i]={type='NUMBER',number=i} end
+    local shell=a:EditCondition(1,0,root,function() end);local c=shell.canvas
+    f.env.IsControlKeyDown=function() return true end;c:StartDrag({'value',349},c.generation);assert(c.drag and #c.drag.paths==2)
+    c.frame.workbenchBar:SetValue(0);assert(c:Drop({destination={path={},field='value',index=1}}));assert(shell.active.working.value[1].number==349 and shell.active.working.value[2].number==350 and #root.value==350)
+    shell.undo:Click();assert(shell.active.working.value[1].number==1)
+    c:StartInsert({type='NUMBER',number=777});c.frame.workbenchBar:SetValue(c.frame.workbenchBar.scrollRange)
+    local target;for _,zone in ipairs(c.zones) do if zone.target and zone.target.destination.index==351 and zone:IsShown() then target=zone.target end end
+    assert(target and c:Drop(target),'last complete drop target was not reachable');assert(shell.active.working.value[351].number==777 and #root.value==350)
+    shell.cancel:Click();assert(not c.drag and not c.ghost:IsShown())
+end)
+test('scrolled group drag hides its leased connector textures and restores them on cancel',function()
+    local f=fixture();local a=f.addon;local root={type='AND',value={}};for i=1,350 do root.value[i]={type='NUMBER',number=i} end
+    root.value[300]={type='AND',value={{type='NUMBER',number=1}}}
+    local shell=a:EditCondition(1,0,root,function() end);local c=shell.canvas;local group=c.scene.cardsByKey[a.ConditionPathKey({'value',300})]
+    c.frame.workbenchBar:SetValue(group.y);local groupCard=assert(viewportCard(shell,{'value',300}));assert(viewportCard(shell,{'value',300,'value',1}))
+    local edge=c.scene.connectorsByTo[a.ConditionPathKey({'value',300,'value',1})][2];local source
+    for _,line in ipairs(c.lines) do if line:IsShown() and line.point[4]==edge.x and line.point[5]==-edge.y then source=line end end
+    assert(source,'expected visible child connector');c:StartDrag(group.path,c.generation)
+    assert(c.drag and groupCard.frame:GetParent()==c.ghost and not source:IsShown(),'drag did not hide the leased original connector')
+    c.frame.workbenchBar:SetValue(group.y+16)
+    local function visibleOriginal() for _,line in ipairs(c.lines) do if line:IsShown() and line.point[4]==edge.x and line.point[5]==-edge.y then return true end end end
+    assert(not visibleOriginal(),'scroll refresh redrew a carried connector in its original position')
+    c:CancelDrag();assert(visibleOriginal() and groupCard.frame:GetParent()==c.child and not c.ghost:IsShown(),'cancel did not restore connector and card ownership');shell.cancel:Click()
+end)
+test('large condition range selection stays an antichain across offscreen siblings',function()
+    local f=fixture();local root={type='AND',value={}};for i=1,600 do root.value[i]={type='NUMBER',number=i} end
+    root.value[301]={type='AND',value={{type='NUMBER',number=1}}}
+    local shell=f.addon:EditCondition(1,0,root,function() end);local c=shell.canvas
+    c:Select({'value',301,'value',1},false,false);c.anchor={'value',1};c:Select({'value',600},true,true)
+    local selected=c:Selection();assert(#selected==600 and #selected[301]==2,'range kept a hidden descendant or lost an offscreen sibling')
+    assert(#c.cards<80 and #root.value==600)
+end)
+test('viewport reflow pins a focused offscreen name and retired Escape cannot affect its recycled control',function()
+    local f=fixture();local a=f.addon
+    local root={type='AND',value={}};for i=1,350 do root.value[i]={type='AND',value={},name='Entry '..i} end
+    local shell=a:EditCondition(1,0,root,function() end);local c=shell.canvas;c.frame.workbenchBar:SetValue(c.scene.cards[2].y)
+    local first=assert(viewportCard(shell,{'value',1}));first.nameButton:Click();first.name:SetText('Still typing');first.name.scripts.OnTextChanged(first.name,true)
+    local escape=first.name.scripts.OnEscapePressed;c.frame.workbenchBar:SetValue(c.frame.workbenchBar.scrollRange)
+    assert(first.token and first.name:HasFocus() and first.name:IsShown() and first.name:GetText()=='Still typing','scroll reflow hid a focused name')
+    first.name:ClearFocus();c.frame.workbenchBar:SetValue(c.frame.workbenchBar.scrollRange/2)
+    assert(first.token and first.model.path[2]~=1,'released name slot was not recycled')
+    first.nameButton:Click();assert(first.name:HasFocus());escape();assert(first.name:HasFocus(),'retired Escape cleared the newly leased name input')
+    assert(root.value[1].name=='Entry 1' and shell.active.working.value[1].name=='Still typing');shell.cancel:Click()
+end)
+test('offscreen child popup ownership pins its source fields until the original draft resumes',function()
+    local f=fixture();local a=f.addon;local root={type='AND',value={}};for i=1,350 do root.value[i]={type='NUMBER',number=i} end
+    local shell=a:EditCondition(1,0,root,function() end);local c=shell.canvas;c.frame.workbenchBar:SetValue(c.scene.cards[2].y)
+    local first=assert(viewportCard(shell,{'value',1}));first.header:Click();first=assert(viewportCard(shell,{'value',1}));local top=first.proxy;local pane=first.pane
+    top:SetCallback('OnClose',function() end);top:Hide();assert(not shell.frame:IsShown() and shell.closeOverride)
+    c.frame.workbenchBar:SetValue(c.frame.workbenchBar.scrollRange);assert(first.token and first.proxy==top and first.pane==pane,'scroll retired a child-owned field pane')
+    top:GetUserData('root').value[1].number=8;a.LayoutConditionFrame(top);top:Show()
+    assert(shell.frame:IsShown() and shell.active.working.value[1].number==8 and root.value[1].number==1)
+    shell.apply:Click();assert(root.value[1].number==8 and not shell.active)
+end)
+test('large viewport height changes retain a visible scroll anchor and invalid pending input',function()
+    local f=fixture();local a=f.addon
+    a:RegisterCondition('NATIVE',{description='Native',fields={number='number'},valid=function() return true end,print=function() return 'Native' end,
+        widget=function(parent,_,value) local w=a:CreateConditionSlider();w:SetValue(value.number);parent:AddChild(w) end})
+    local root={type='AND',value={}};for i=1,350 do root.value[i]={type='NATIVE',number=1} end
+    local shell=a:EditCondition(1,0,root,function() end);local c=shell.canvas;c.frame.workbenchBar:SetValue(c.scene.cards[2].y)
+    local first=assert(viewportCard(shell,{'value',1}));first.header:Click();first=assert(viewportCard(shell,{'value',1}))
+    c.frame.workbenchBar:SetValue(first.model.y+7);local before=c.frame.workbenchBar:GetValue()-first.model.y
+    local input=first.pane.children[1];input.editbox:SetText('invalid');input.editbox.scripts.OnTextChanged(input.editbox,true);input:SetFocus()
+    first.pane:LayoutFinished(nil,220)
+    assert(c.frame.workbenchBar:GetValue()-first.model.y==before,'height reflow jumped away from the visible condition')
+    assert(input:IsPending() and input:GetText()=='invalid' and input.editbox:HasFocus(),'height reflow rebound the pending field')
+    shell.cancel:Click();assert(not first.token and not input.rmActive and not c.drag and not c.scene)
+end)
+test('incomplete condition presentation rows show an explicit failure without an editable partial scene',function()
+    local f=fixture();local root={type='NUMBER',number=1};local shell=f.addon:EditCondition(1,0,root,function() end);local c=shell.canvas;local stale=c.cards[1].controls.remove.scripts.OnClick
+    local session=shell.active.session;local rows=session.Rows;session.Rows=function(self,limit) local value=rows(self,limit);return value,false end
+    shell:Render();assert(not c.scene and not c.cards[1].token and shell.status:GetText()=='This condition exceeds the supported editor limits.')
+    stale();assert(root.number==1 and shell.active.working.number==1);shell.cancel:Click()
+end)
+test('largest accepted condition tree remains reachable and applies its final node without allocating all controls',function()
+    local f=fixture();local a=f.addon;a:RegisterCondition('EMPTY',{description='Empty',fields={},valid=function() return true end,print=function() return 'Empty' end})
+    local root={type='AND',value={}};for i=1,4095 do root.value[i]={type='EMPTY'} end
+    local shell=a:EditCondition(1,0,root,function() end);local c=shell.canvas;assert(#c.scene.cards==4096 and c.scene.complete)
+    c.frame.workbenchBar:SetValue(c.frame.workbenchBar.scrollRange);local last=assert(viewportCard(shell,{'value',4095}));assert(last.controls.disable:IsEnabled() and #c.cards<80)
+    last.controls.disable:Click();assert(root.value[4095].disabled==nil and shell.active.working.value[4095].disabled)
+    shell.apply:Click();assert(not shell.active and root.value[4095].disabled and #root.value==4095)
+end)
 finish()

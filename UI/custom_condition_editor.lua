@@ -103,11 +103,12 @@ function addon:condition_edit_box(update,key,source,saveAllowed,embedded)
     end
     function d:UpdateValidation()
         if not self.code or self.readOnly then return end
-        local input={functionRevision=addon.functionRegistryVersion or 0,disabled=self.model.value.disabled,selected=self.selected,requested=self.validationRequested,key=p.fields.identifier:GetText(),description=p.fields.description:GetText(),schema=p.fields.schema:GetText(),icon=self.model.value.icon}
+        local input={functionRevision=addon.functionRegistryVersion or 0,disabled=self.model.value.disabled,requiredFields=self.model.value.requiredFields,selected=self.selected,requested=self.validationRequested,key=p.fields.identifier:GetText(),description=p.fields.description:GetText(),schema=p.fields.schema:GetText(),icon=self.model.value.icon}
         for name in pairs(addon.CustomConditionCallbacks) do input[name]=name==self.selected and self.code:GetText() or self.codeHistory[name] and self.codeHistory[name].text or self.model.value[name] end
         if addon:SettingsDataEqual(input,self.validationInput) then return end
         self.validationInput=addon:CopySettingsData(input)
         local source=addon:CopySettingsData(self.model.value);source.description=input.description;source.fields=addon:ParseCustomFieldSchema(input.schema)
+        if source.fields and not addon:SettingsDataEqual(source.fields,self.model.value.fields) then source.requiredFields=addon:FilterCustomRequiredFields(source.requiredFields,source.fields) end
         for name in pairs(addon.CustomConditionCallbacks) do source[name]=input[name] end
         local checked,why
         if not addon:IsCustomConditionIdentifier(input.key,input.key==self.originalKey and self.expectedSource~=nil) then why={field='identifier',reason=L['Use letters, numbers and underscores for the condition identifier.']}
@@ -119,12 +120,12 @@ function addon:condition_edit_box(update,key,source,saveAllowed,embedded)
             addon:SetWorkbenchInvalid(button,not compiled,syntax);button.tooltip=not compiled and syntax or nil
         end
         addon:SetWorkbenchInvalid(self.code.frame,callbackErrors[self.selected]~=nil,callbackErrors[self.selected])
-        for _,field in ipairs({'identifier','description','schema','icon'}) do addon:SetWorkbenchInvalid(p.fields[field],self.validationRequested and not checked and why and (why.field==field or field=='schema' and why.field=='fields'),message) end
+        for _,field in ipairs({'identifier','description','schema','icon'}) do addon:SetWorkbenchInvalid(p.fields[field],self.validationRequested and not checked and why and (why.field==field or field=='schema' and (why.field=='fields' or why.field=='requiredFields')),message) end
     end
     function d:SyncFunctionContext()
         if not self.code or not self.code.SetContext then return end
         local source=self:PendingSource()
-        local signature={id=self.model.key,name=self.model.value.description,callback=self.selected,fields=source.fields,bindings=source.bindings,parameters=source.parameters,revision=addon.functionRegistryVersion or 0}
+        local signature={id=self.model.key,name=self.model.value.description,callback=self.selected,fields=source.fields,requiredFields=source.requiredFields,bindings=source.bindings,parameters=source.parameters,revision=addon.functionRegistryVersion or 0}
         if addon:SettingsDataEqual(signature,self.functionContextSignature) then return end
         self.functionContextSignature=addon:CopySettingsData(signature)
         self.code:SetContext({kind='condition',id=self.model.key,name=self.model.value.description,source=source,callback=self.selected,testOwner=self,bindFunction=function(id,alias) return valid() and addon:BindEditorFunction(self,id,alias) end})
@@ -146,7 +147,7 @@ function addon:condition_edit_box(update,key,source,saveAllowed,embedded)
             if #state.undo>0 then self.codeUndo:Enable() else self.codeUndo:Disable() end
             if #state.redo>0 then self.codeRedo:Enable() else self.codeRedo:Disable() end
         end
-        local schemaDirty=not addon:SettingsDataEqual(current.fields,before.value.fields) or not addon:SettingsDataEqual(current.fieldOrder,before.value.fieldOrder)
+        local schemaDirty=not addon:SettingsDataEqual(current.fields,before.value.fields) or not addon:SettingsDataEqual(current.fieldOrder,before.value.fieldOrder) or not addon:SettingsDataEqual(current.requiredFields,before.value.requiredFields)
         for _,record in ipairs(p.edits) do if record.control==p.fields.schema and record.dirty then schemaDirty=schemaDirty or record.control:GetText()~=(addon:FormatCustomFieldSchema(before.value.fields) or '') end end
         addon:SetWorkbenchUnsaved(self.schemaViewport,schemaDirty);addon:SetWorkbenchUnsaved(p.fields.schemaGraph,false)
         if addon.RefreshFunctionBindingMarkers then addon:RefreshFunctionBindingMarkers(p,self) end
@@ -202,9 +203,9 @@ function addon:condition_edit_box(update,key,source,saveAllowed,embedded)
     end
     function d:OpenSchema(fields,fieldOrder,childResume)
         if self.readOnly then return end
-        return addon:ShowFieldSchemaEditor(self,fields,fieldOrder,function(value,ordered)
-            if valid() then self.model:Change(function(model) model.value.fields=value;model.value.fieldOrder=ordered end);p:Draw();self:UpdateActions() end
-        end,valid,childResume)
+        return addon:ShowFieldSchemaEditor(self,fields,fieldOrder,function(value,ordered,required)
+            if valid() then self.model:Change(function(model) model.value.fields=value;model.value.fieldOrder=ordered;model.value.requiredFields=required end);p:Draw();self:UpdateActions() end
+        end,valid,childResume,self.model.value.requiredFields)
     end
     d.undo=d.undo or self:CreateWorkbenchHistoryButton(frame,'undo',L['Undo']);d.undo:SetPoint('BOTTOMLEFT',12,28)
     d.redo=d.redo or self:CreateWorkbenchHistoryButton(frame,'redo',L['Redo']);d.redo:SetPoint('BOTTOMLEFT',86,28)

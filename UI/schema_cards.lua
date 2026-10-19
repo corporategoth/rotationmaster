@@ -101,6 +101,11 @@ function addon:BuildFieldSchemaCards(form,owner)
             row.type=kind;kind:ClearAllPoints();kind:SetPoint('TOPLEFT',34+nameWidth,-23);kind:SetWidth(width-nameWidth-64)
             if index==1 then row.up:Disable() else row.up:Enable() end;if index==#node.children then row.down:Disable() else row.down:Enable() end
             local function command(fn) if valid() and form:FlushEdits() and fn() then form:Draw() end end
+            row.required=nil
+            if #pathHere==1 then
+                local required=form:Check('required_'..id,L['Required'],child.required==true,function(value) command(function() return model:SetRequired(pathHere,value) end) end)
+                row.required=required;required:ClearAllPoints();required:SetPoint('TOPRIGHT',-30,-2);required:SetWidth(106);required:GetFontString():SetWidth(82)
+            end
             addon:SetUIScript(row.up,'OnClick',form:Guard(function() command(function() return model:Transfer(pathHere,path,index-1) end) end))
             addon:SetUIScript(row.down,'OnClick',form:Guard(function() command(function() return model:Transfer(pathHere,path,index+2) end) end))
             addon:SetUIScript(row.duplicate,'OnClick',form:Guard(function() command(function() return model:Duplicate(pathHere) end) end))
@@ -109,6 +114,7 @@ function addon:BuildFieldSchemaCards(form,owner)
                 addon:ShowWorkbenchHelp(tostring(child.name),{
                     {title=L['Fields'],text=L['Field names are Lua identifiers. Choose a field type from its dropdown. Records contain named fields; allowed types contain alternatives, including nested records.']},
                     {title=L['Move, copy and remove'],text=L['Drag one entry; Ctrl-drag moves it and all following siblings.']..' '..L['A container carries its nested fields. Drop into a highlighted gap. Up / Down moves within the current container; Duplicate copies the complete field; the red trash can deletes it.']},
+                    {title=L['Required'],text=L['Required root fields must have a value before this condition can run. Rename, reorder and duplicate keep this flag; removing the field removes its requirement. Moving it into a nested structure makes it optional. Undo restores both. Callback code is unchanged.']},
                     {title=L['Help and saving'],text=L['The chevron hides or shows nested fields. Add field appends to that container. Undo / Redo affect the draft. Apply validates and stages the schema; Cancel leaves the condition unchanged. Red borders mark invalid names or incomplete types.']}
                 },owner.chrome and owner.chrome.owner or L['Field schema'])
             end))

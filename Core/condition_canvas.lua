@@ -19,7 +19,8 @@ end
 
 -- The input rows come from the bounded draft model. This scene holds plain,
 -- detached presentation values; it never calls condition printers or widgets.
-function addon:BuildConditionCanvas(root,rows,view)
+function addon:BuildConditionCanvas(root,rows,view,rowsComplete)
+    if rowsComplete==false or #rows>4096 then return nil,{code="condition-limit"} end
     view=view or {}
     -- NOT is stored as a node, but shown as a property of its operand. Keep
     -- both paths: structural commands act on the outer wrapper; fields act
@@ -58,7 +59,7 @@ function addon:BuildConditionCanvas(root,rows,view)
     if tree then project(tree,0) end
     rows=projected
     local width=math.max(340,dimension(view.width,1000,4000))
-    local scene={cards={},connectors={},dropTargets={},width=width,complete=true}
+    local scene={cards={},cardsByKey={},commandPathsByKey={},connectors={},connectorsByTo={},dropTargets={},width=width,complete=true}
     local stack,y,hiddenDepth={},8,nil
     local function finish(depth)
         while #stack>0 and stack[#stack].depth>=depth do
@@ -75,7 +76,6 @@ function addon:BuildConditionCanvas(root,rows,view)
     for _,row in ipairs(rows) do
         if hiddenDepth and row.depth<=hiddenDepth then hiddenDepth=nil end
         if not hiddenDepth then
-            if #scene.cards>=200 then scene.complete=false;break end
             finish(row.depth)
             local node=row.node;local key=addon.ConditionPathKey(row.path)
             local group=row.type=="AND" or row.type=="OR" or row.type=="NOT"
@@ -93,12 +93,17 @@ function addon:BuildConditionCanvas(root,rows,view)
                 selected=view.selection and view.selection[key]==true or false,
                 x=x,y=y,width=math.max(340,dimension((view.labelWidths or {})[key],0,1200)+192),height=ownHeight,ownHeight=ownHeight,headerHeight=headerHeight}
             local parent=stack[#stack]
+            card.ordinal=#scene.cards+1;card.parentKey=parent and parent.key
+            scene.cardsByKey[key]=card
+            scene.commandPathsByKey[addon.ConditionPathKey(card.fieldPath)]=card.path
+            scene.commandPathsByKey[addon.ConditionPathKey(card.namePath)]=card.path
             if parent then
                 parent.contentRight=math.max(parent.contentRight or 0,x+card.width)
                 local stemTop=parent.y+(parent.compact and 26 or 66)
                 scene.connectors[#scene.connectors+1]={x=parent.x+10,y=stemTop,width=2,height=math.max(2,y+22-stemTop),from=parent.key,to=card.key}
                 scene.connectors[#scene.connectors+1]={x=parent.x+10,y=y+22,width=math.max(2,x-parent.x-10),height=2,from=parent.key,to=card.key}
             end
+            if parent then scene.connectorsByTo[key]={scene.connectors[#scene.connectors-1],scene.connectors[#scene.connectors]} end
             scene.cards[#scene.cards+1]=card;y=y+ownHeight+8
             if type(row.path[#row.path])=="number" then
                 local parentPath=copy(row.path);local index=table.remove(parentPath);local field=table.remove(parentPath)
@@ -134,12 +139,12 @@ function addon:BuildConditionCanvas(root,rows,view)
     for _,card in ipairs(scene.cards) do scene.width=math.max(scene.width,card.x+card.width+16) end
     local destinations,unique={},{}
     for _,target in ipairs(scene.dropTargets) do
-        for _,card in ipairs(scene.cards) do if card.key==target.cardKey then
+        local card=scene.cardsByKey[target.cardKey]
+        if card then
             if target.kind~="inside" then target.width=card.width end
             if target.kind=="after" then target.y=card.y+card.height end
             if target.kind=="inside" and target.destination.field==nil then target.x=card.x+32;target.width=card.width-64 end
-            break
-        end end
+        end
         if target.kind=="inside" then unique[#unique+1]=target
         else
             local destination=target.destination
@@ -155,6 +160,27 @@ function addon:BuildConditionCanvas(root,rows,view)
             or target.previousY and target.previousY+4 or target.nextY-4
         target.y=center-4;target.height=8
     end end
-    scene.dropTargets=unique
+    scene.dropTargets=unique;scene.dropTargetsByY={};scene.maxDropHeight=0
+    for i,target in ipairs(unique) do target.ordinal=i;scene.dropTargetsByY[i]=target;scene.maxDropHeight=math.max(scene.maxDropHeight,target.height) end
+    table.sort(scene.dropTargetsByY,function(a,b) if a.y~=b.y then return a.y<b.y end;return a.ordinal<b.ordinal end)
     return scene
+end
+
+-- Complete geometry is indexed independently of leased native controls. Only
+-- nearby rows and their enclosing outlines are needed for a viewport query.
+function addon:GetConditionCanvasViewport(scene,left,top,right,bottom)
+    local cards=scene.cards;local low,high=1,#cards
+    while low<=high do local middle=math.floor((low+high)/2);if cards[middle].y<top then low=middle+1 else high=middle-1 end end
+    local first=math.max(1,low-1);local wanted,result={},{}
+    local function include(card)
+        while card do
+            if wanted[card.key] then break end
+            if card.x+card.width>=left and card.x<=right and card.y+card.height>=top and card.y<=bottom then wanted[card.key]=card end
+            card=card.parentKey and scene.cardsByKey[card.parentKey]
+        end
+    end
+    for index=first,#cards do local card=cards[index];if card.y>bottom then break end;include(card) end
+    for _,card in pairs(wanted) do result[#result+1]=card end
+    table.sort(result,function(a,b) return a.ordinal<b.ordinal end)
+    return result
 end

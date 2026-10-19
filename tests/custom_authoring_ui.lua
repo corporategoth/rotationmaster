@@ -458,4 +458,50 @@ test('condition deletion offers Discard for invalid pending schema before perman
     d.form.fields.delete:Click();assert(p.prompt.discard:IsShown(),'invalid schema blocked deletion navigation');p.prompt.cancel:Click();assert(d.form.fields.schema:GetText()=='{ invalid =')
     d.form.fields.delete:Click();p.prompt.discard:Click();assert(p.prompt.text:GetText():find('cannot be undone',1,true) and a.db.global.custom_conditions.A);p.prompt.accept:Click();assert(not a.db.global.custom_conditions.A and not a.conditionDefinitions.A and not p:IsSettingsDraftDirty())
 end)
+test('renaming required schema fields stages their metadata atomically and leaves code unchanged',function()
+    local f,a=fixture();local source=a:CopySettingsData(a.empty_condition);source.description='Required unit';source.fields={unit='string'};source.requiredFields={'unit'}
+    a.db.global.custom_conditions.REQUIRED=source;a.conditionDefinitions.REQUIRED={description=source.description};local original=a:CopySettingsData(source)
+    local d=a:condition_edit_box(function() end,'REQUIRED',source);d.form.fields.schemaGraph:Click();local g=d.schemaEditor
+    local name=g.form.fields.field_1;name:SetText('renamed');name.scripts.OnTextChanged(name,true);g:UpdateActions();g.apply:Click()
+    assert(d.model.value.requiredFields[1]=='renamed','schema child kept a stale required name')
+    assert(d.schemaViewport.rmUnsaved and a:SettingsDataEqual(a.db.global.custom_conditions.REQUIRED,original))
+    assert(d:Apply(),'parent Apply failed after a valid root rename');local saved=a.db.global.custom_conditions.REQUIRED
+    assert(saved.fields.renamed=='string' and saved.requiredFields[1]=='renamed')
+    for name in pairs(a.CustomConditionCallbacks) do assert(saved[name]==original[name],'schema metadata rewrote callback text') end
+end)
+test('root Required controls stay detached through Cancel Undo and parent Discard',function()
+    local f,a=fixture();local source=a:CopySettingsData(a.empty_condition);source.description='Optional fields';source.fields={group={child='number'},unit='string'}
+    a.db.global.custom_conditions.OPTIONAL=source;a.conditionDefinitions.OPTIONAL={description=source.description};local d=a:condition_edit_box(function() end,'OPTIONAL',source)
+    d.form.fields.schemaGraph:Click();local g=d.schemaEditor;assert(not g:IsDirty() and not g.cards['1/1'].required,'nested fields got root requirement controls')
+    assert(g.cards['2'].required and not g.cards['2'].required:GetChecked());g.cards['2'].required:Click()
+    assert(g.model.root.children[2].required and source.requiredFields==nil);g.cancel:Click();assert(d.model.value.requiredFields==nil and not d:IsDirty())
+    d.form.fields.schemaGraph:Click();g=d.schemaEditor;g.model:SetRequired({2},true);g:UpdateActions();g.apply:Click();assert(d.model.value.requiredFields[1]=='unit' and d.schemaViewport.rmUnsaved)
+    assert(d:TravelModel(false));d.form:Draw();d:UpdateActions();assert(d.model.value.requiredFields==nil and not d.schemaViewport.rmUnsaved)
+    d:Close();assert(source.requiredFields==nil)
+end)
+test('advanced schema reconciles explicit removed requirements but invalid text preserves them',function()
+    local f,a=fixture();local source=a:CopySettingsData(a.empty_condition);source.description='Required';source.fields={unit='string',count='number'};source.requiredFields={'unit','count'}
+    a.db.global.custom_conditions.ADVANCED=source;a.conditionDefinitions.ADVANCED={description=source.description};local d=a:condition_edit_box(function() end,'ADVANCED',source)
+    local raw=d.form.fields.schema;raw:SetText('{broken=');raw.scripts.OnTextChanged(raw,true);assert(not d:Flush() and #d.model.value.requiredFields==2)
+    raw:SetText('{ count = number }');raw.scripts.OnTextChanged(raw,true);d:UpdateActions();assert(d:Flush());assert(#d.model.value.requiredFields==1 and d.model.value.requiredFields[1]=='count')
+    d:Close();assert(#source.requiredFields==2 and source.fields.unit=='string')
+end)
+test('invalid requirement references remain unchanged on open and repair only on explicit child Apply',function()
+    local f,a=fixture();local source=a:CopySettingsData(a.empty_condition);source.description='Legacy requirements';source.fields={unit='string'};source.requiredFields={'missing','unit'}
+    a.db.global.custom_conditions.REPAIR=source;a.conditionDefinitions.REPAIR={description=source.description};local d=a:condition_edit_box(function() end,'REPAIR',source)
+    assert(d.model.value.requiredFields[1]=='missing' and d.schemaViewport.rmInvalid);d.form.fields.schemaGraph:Click();local g=d.schemaEditor
+    assert(g.requiresApply and g.form.message:GetText():find('Required field references',1,true));g.cancel:Click();assert(#d.model.value.requiredFields==2 and #source.requiredFields==2)
+    d.form.fields.schemaGraph:Click();g=d.schemaEditor;g.apply:Click();assert(#d.model.value.requiredFields==1 and d.model.value.requiredFields[1]=='unit' and #source.requiredFields==2)
+    assert(d:Apply() and #a.db.global.custom_conditions.REPAIR.requiredFields==1)
+end)
+test('required flags and pending root names survive owner resize until explicit Apply',function()
+    local f,a=fixture(true);local source=a:CopySettingsData(a.empty_condition);source.description='Inline requirements';source.fields={unit='string'}
+    a.db.global.custom_conditions.INLINE=source;a.conditionDefinitions.INLINE={description=source.description,fields=source.fields}
+    local host=f.env.CreateFrame('Frame');host:SetSize(1100,700);local p=a:OpenNativeSettings(host,'Conditions');local d=p.inlineCondition
+    d.form.fields.schemaGraph:Click();local g=d.schemaEditor;g.cards['1'].required:Click();local raw=g.form.fields.field_1;raw:SetText('renamed');raw.scripts.OnTextChanged(raw,true)
+    p:SetWidth(1060);d=p.inlineCondition;g=d.schemaEditor
+    assert(g.active and g.model.root.children[1].required and g.form.fields.field_1:GetText()=='renamed');assert(source.requiredFields==nil and source.fields.unit=='string')
+    assert(g:Apply() and d.model.value.requiredFields[1]=='renamed' and d.model.value.fields.renamed=='string')
+    assert(source.requiredFields==nil and source.fields.unit=='string');p:Release()
+end)
 finish()

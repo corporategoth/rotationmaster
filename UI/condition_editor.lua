@@ -42,6 +42,7 @@ local function caption(node)
     return text
 end
 local messages={
+    ["condition-limit"]=L["This condition exceeds the supported editor limits."],
     ["condition-property-conflict"]=L["Resolve the wrapper's name or unsupported fields before removing its negation."],
     ["condition-target-missing"]=L["The original rotation or step was removed or replaced. Cancel this draft and reopen the current one."],
     ["condition-changed-externally"]=L["This condition changed in another editor. Cancel and reopen it before applying."],
@@ -105,21 +106,26 @@ local function createShell()
     end
     function shell:Scene()
         self.view.width=self.canvas.frame:GetWidth()-8;self.view.definitions=addon.conditionDefinitions
-        local rows=self.active.session:Rows(4096);self.rows=rows
-        local scene=addon:BuildConditionCanvas(self.active.working,rows,self.view)
+        local rows,complete=self.active.session:Rows(4096);self.rows=rows
+        local scene,problem=addon:BuildConditionCanvas(self.active.working,rows,self.view,complete)
+        if not scene then self:Message(problem and problem.code);return nil end
         local baseline=self.active.session:Baseline()
         local result=addon.RotationData.ValidateBody({switch=self.active.working,rotation={},cooldowns={}},addon:GetImportValidationOptions())
+        local byDiagnosticPath={}
         for _,card in ipairs(scene.cards) do
             card.changed=not self.active.readOnly and not addon:UnsavedDataEqual(at(self.active.working,card.path),at(baseline,card.path))
             local path="$.body.switch"
             for _,part in ipairs(card.path) do path=path..(type(part)=="number" and "["..part.."]" or "."..part) end
-            for _,diagnostic in ipairs(result.diagnostics) do
-                if diagnostic.path==path or diagnostic.path:sub(1,#path+1)==path.."." or diagnostic.path:sub(1,#path+1)==path.."[" then
-                    card.invalid=true;card.problem=diagnostic.code;card.problemField=diagnostic.path:match("%.([%w_]+)$");break
-                end
-            end
+            byDiagnosticPath[path]=card
         end
-        if not scene.complete then self.status:SetText(L["Only the first 200 conditions are shown. Other conditions are preserved."]) end
+        for _,diagnostic in ipairs(result.diagnostics) do
+            local function flag(path)
+                local card=byDiagnosticPath[path]
+                if card and not card.invalid then card.invalid=true;card.problem=diagnostic.code;card.problemField=diagnostic.path:match("%.([%w_]+)$") end
+            end
+            flag(diagnostic.path)
+            for cursor=1,#diagnostic.path do local ch=diagnostic.path:sub(cursor,cursor);if ch=='.' or ch=='[' then flag(diagnostic.path:sub(1,cursor-1)) end end
+        end
         return scene
     end
     function shell:Caption(model)
@@ -191,6 +197,7 @@ local function createShell()
             if not alive() then return end
             if active.readOnly then return end
             if model.missingOperand and next(node)==nil then return true end
+            if addon:UnsavedDataEqual(node,fieldBaseline) then return true end
             local portable=addon.RotationData.CheckPortable(node)
             if not portable then self:Message("invalid-condition-data");return end
             local latest=at(active.working,model.fieldPath)
@@ -231,8 +238,11 @@ local function createShell()
         pane.LayoutFinished=function(widget,width,height)
             if oldLayout then oldLayout(widget,width,height) end
             if alive() and type(height)=="number" and height>=0 then
-                self.view.detailsHeights[model.key]=math.min(5000,height+12)
-                if not self.canvas.building then self.canvas:Reflow() end
+                local measured=math.min(5000,height+12)
+                if self.view.detailsHeights[model.key]~=measured then
+                    self.view.detailsHeights[model.key]=measured
+                    if not self.canvas.building then self.canvas:Reflow() end
+                end
             end
         end
         card.releaseFields=function() pane.LayoutFinished=oldLayout;addon:ReleaseConditionWidget(pane) end
@@ -277,12 +287,10 @@ local function createShell()
         elseif name=="Remove" then paths={parentPath(path)}
         elseif name=="Move" then local moved=copyPath(path);moved[#moved]=moved[#moved]+value;paths={moved}
         else paths={copyPath(path)} end
-        local scene=self:Scene()
+        local scene=self:Scene();if not scene then return end
         for index,selected in ipairs(paths) do
-            local key=pathKey(selected)
-            for _,model in ipairs(scene.cards) do
-                if pathKey(model.fieldPath)==key or pathKey(model.namePath)==key then paths[index]=copyPath(model.path);break end
-            end
+            local projected=scene.commandPathsByKey[pathKey(selected)]
+            if projected then paths[index]=copyPath(projected) end
         end
         self.view.selection={};for _,selected in ipairs(paths) do self.view.selection[pathKey(selected)]=true end
         if name=="Insert" then for _,selected in ipairs(paths) do self.view.expanded[pathKey(selected)]=true end end
@@ -343,7 +351,7 @@ local function createShell()
     separator:Hide()
     shell.dragHint=window:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall");shell.dragHint:SetWidth(100);shell.dragHint:SetText("");shell.dragHint:Hide()
     shell.description=window:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall");shell.description:SetPoint("BOTTOMLEFT",16,34);shell.description:SetJustifyH("LEFT");shell.description:SetWordWrap(true)
-    shell.copyExpression=button(L["Copy full condition"],140,function() if addon.ShowConditionText then addon:ShowConditionText(shell.fullDescription) end end,true);shell.copyExpression:Hide()
+    shell.copyExpression=button(L["Copy condition description"],140,function() if addon.ShowConditionText then addon:ShowConditionText(shell.fullDescription) end end,true);shell.copyExpression:SetWidth(math.max(140,shell.copyExpression:GetFontString():GetStringWidth()+20));shell.copyExpression:Hide()
     addon:InstallSpellHyperlinks(window)
     function shell:LayoutBody()
         if not self.bodyTop then return end

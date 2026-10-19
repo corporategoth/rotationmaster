@@ -5,20 +5,34 @@ local color = color
 
 local helpers = addon.help_funcs
 
+-- Canonical pure leaves; aura observations, spell identity and rank stay owned
+-- by the existing aura services and field callbacks.
+local Functions={
+    values={isin=addon.Functions.values.isin},
+    presentation={nullable=addon.Functions.presentation.nullable,compareString=addon.Functions.presentation.compareString,playerize=addon.Functions.presentation.playerize},
+}
+addon.builtinCallbackBindings=addon.builtinCallbackBindings or {}
+addon.builtinCallbackBindings["Conditions/buffs.lua"]={
+    ["Functions.values.isin"]="builtin:utils.lua:isin",
+    ["Functions.presentation.nullable"]="builtin:utils.lua:nullable",
+    ["Functions.presentation.compareString"]="builtin:utils.lua:compareString",
+    ["Functions.presentation.playerize"]="builtin:utils.lua:playerize",
+}
+
 addon:RegisterCondition("BUFF", {
     requiredFields = {"unit","spell"},
     description = L["Buff Present"],
     icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\buff",
     fields = { unit = "string", spell = {"string", "number"}, anyrank = "boolean", ownbuff = "boolean" },
     valid = function(_, value)
-        return (value.unit ~= nil and addon.isin(addon.units, value.unit) and value.spell ~= nil)
+        return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and value.spell ~= nil)
     end,
     evaluate = function(value, cache, start)
         return addon:EvaluateAuraCondition(value, cache, start, "HELPFUL", "present")
     end,
     print = function(_, value)
-        return string.format(addon.playerize(value.unit, L["%s {{!have|do not have}} %s"], L["%s {{!has|does not have}} %s"]),
-                addon.nullable(addon.units[value.unit], L["<unit>"]),
+        return string.format(Functions.presentation.playerize(value.unit, L["%s {{!have|do not have}} %s"], L["%s {{!has|does not have}} %s"]),
+                Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]),
                 string.format(value.ownbuff and L["your own %s"] or "%s", (value.spell and addon:AuraSpellLabel(value) or L["<buff>"])))
     end,
     widget = function(parent, spec, value)
@@ -68,18 +82,18 @@ addon:RegisterCondition("BUFF_REMAIN", {
     icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\time",
     fields = { unit = "string", spell = {"string", "number"}, anyrank = "boolean", ownbuff = "boolean", operator = "string", value = "number" },
     valid = function(_, value)
-        return (value.unit ~= nil and addon.isin(addon.units, value.unit) and value.spell ~= nil and
-                value.operator ~= nil and addon.isin(addon.operators, value.operator) and
+        return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and value.spell ~= nil and
+                value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                 value.value ~= nil and value.value >= 0)
     end,
     evaluate = function(value, cache, start)
         return addon:EvaluateAuraCondition(value, cache, start, "HELPFUL", "remaining")
     end,
     print = function(_, value)
-        return string.format(addon.playerize(value.unit, L["%s {{!have|do not have}} %s where %s"], L["%s {{!have|do not have}} %s where %s"]),
-            addon.nullable(addon.units[value.unit], L["<unit>"]),
+        return string.format(Functions.presentation.playerize(value.unit, L["%s {{!have|do not have}} %s where %s"], L["%s {{!have|do not have}} %s where %s"]),
+            Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]),
                 string.format(value.ownbuff and L["your own %s"] or "%s", (value.spell and addon:AuraSpellLabel(value) or L["<buff>"])),
-                addon.compareString(value.operator, L["the remaining time"], string.format(L["%s seconds"], addon.nullable(value.value))))
+                Functions.presentation.compareString(value.operator, L["the remaining time"], string.format(L["%s seconds"], Functions.presentation.nullable(value.value))))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -129,18 +143,18 @@ addon:RegisterCondition("BUFF_STACKS", {
     icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\buff",
     fields = { unit = "string", spell = {"string", "number"}, anyrank = "boolean", ownbuff = "boolean", operator = "string", value = "number" },
     valid = function(_, value)
-        return (value.unit ~= nil and addon.isin(addon.units, value.unit) and value.spell ~= nil and
-                value.operator ~= nil and addon.isin(addon.operators, value.operator) and
+        return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and value.spell ~= nil and
+                value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                 value.value ~= nil and value.value >= 0)
     end,
     evaluate = function(value, cache, start)
         return addon:EvaluateAuraCondition(value, cache, start, "HELPFUL", "stacks")
     end,
     print = function(_, value)
-        return addon.nullable(addon.unitsPossessive[value.unit], L["<unit>"]) .. " " ..
-                addon.compareString(value.operator, string.format(L["stacks of %s"],
+        return Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"]) .. " " ..
+                Functions.presentation.compareString(value.operator, string.format(L["stacks of %s"],
                 string.format(value.ownbuff and L["your own %s"] or "%s", (value.spell and addon:AuraSpellLabel(value) or L["<buff>"]))),
-                addon.nullable(value.value))
+                Functions.presentation.nullable(value.value))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -190,13 +204,13 @@ addon:RegisterCondition("STEALABLE", {
     icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\buff",
     fields = { unit = "string" },
     valid = function(_, value)
-        return (value.unit ~= nil and addon.isin(addon.units, value.unit))
+        return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit))
     end,
     evaluate = function(value, cache, start)
         return addon:EvaluateAuraCondition(value, cache, start, "HELPFUL", "stealable")
     end,
     print = function(_, value)
-        return string.format(L["%s {{!has|does not have}} a stealable buff"], addon.nullable(addon.units[value.unit], L["<unit>"]))
+        return string.format(L["%s {{!has|does not have}} a stealable buff"], Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")

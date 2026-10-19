@@ -18,17 +18,18 @@ end
 -- handles every entry; Advanced changes its presentation, never its format.
 function addon:BuildCustomSourceFields(form,owner)
     if self.BuildFunctionBindingFields then self:BuildFunctionBindingFields(form,owner) end
-    local graph,why=self:NewFieldSchemaDraft(owner.model.value.fields,owner.model.value.fieldOrder)
-    local fieldsGraph=graph or self:NewFieldSchemaDraft(owner.model.value.fields)
+    local graph,why=self:NewFieldSchemaDraft(owner.model.value.fields,owner.model.value.fieldOrder,owner.model.value.requiredFields)
+    local fieldsGraph=graph or self:NewFieldSchemaDraft(owner.model.value.fields,nil,owner.model.value.requiredFields)
     local nodes=fieldsGraph and fieldsGraph.root.children or {};local short=form.frame:GetHeight()<480
     local height=owner.advancedSchema and (short and 56 or 80) or math.max(24,math.min(short and 1 or 3,#nodes)*20)
     local y=form:Row(L['Field schema'],height+8);local title=form.pool.labels[form.counts.labels];title:SetSize(168,24);form.fields.schemaLabel=title
     local width=math.max(80,form.width-278)
     local scroll=form:Acquire('sourceSchemaScroll',function() return addon:CreateWorkbenchScrollFrame(form.child) end);scroll:ClearAllPoints();scroll:SetPoint('TOPLEFT',174,-y);scroll:SetSize(width,height);owner.schemaViewport=scroll;form.fields.schemaViewport=scroll
     scroll.decoration=scroll.decoration or addon:CreateRoundedCardDecoration(scroll);scroll.decoration:SetColors(.38,.43,.48,.8,.95)
-    addon:SetWorkbenchInvalid(scroll,not graph,why and string.format(L['Invalid field schema: %s'],why))
+    local requirementError=graph and graph.requiredFieldsInvalid
+    addon:SetWorkbenchInvalid(scroll,not graph or requirementError,string.format(L['Invalid field schema: %s'],why or requirementError and 'invalid-required-fields' or ''))
     local raw=addon:FormatCustomFieldSchema(owner.model.value.fields) or recoveryText(owner.model.value.fields)
-    local schema=form:Edit('schema',nil,raw,function(text) return addon:ParseCustomFieldSchema(text) end,function(fields) owner.model:Change(function(model) model.value.fields=fields;model.value.fieldOrder=nil end) end)
+    local schema=form:Edit('schema',nil,raw,function(text) return addon:ParseCustomFieldSchema(text) end,function(fields) owner.model:Change(function(model) model.value.fields=fields;model.value.fieldOrder=nil;model.value.requiredFields=addon:FilterCustomRequiredFields(model.value.requiredFields,fields) end) end)
     scroll.schemaContent=scroll.schemaContent or CreateFrame('Frame',nil,scroll);local content=scroll.schemaContent
     scroll.schemaMeasure=scroll.schemaMeasure or scroll:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall');local measure=scroll.schemaMeasure;measure:SetWordWrap(true);measure:Hide()
     schema:SetMaxLetters(32768);schema:SetMultiLine(true);schema:ClearAllPoints();schema:SetParent(content);schema:SetTextInsets(6,6,4,4);schema:SetJustifyV('TOP');schema:SetAltArrowKeyMode(false);schema:SetAllPoints(content);schema:SetText(raw)

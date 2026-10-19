@@ -30,7 +30,7 @@ function addon:ConditionTestValues(owner)
     local why=L['Set values in Test before running or debugging this condition.'];local state=owner and owner.conditionTestState
     if not owner or not owner.OwnerValid or not owner.OwnerValid() or not state or not state.configured or state.profile~=self.db.profile or state.global~=self.db.global or state.key~=owner.model.key then return nil,why end
     local source=owner:PendingSource()
-    if not state.source or not self:SettingsDataEqual(source.fields,state.source.fields) or not self:SettingsDataEqual(source.bindings,state.source.bindings) then return nil,why end
+    if not state.source or not self:SettingsDataEqual(source.fields,state.source.fields) or not self:SettingsDataEqual(source.bindings,state.source.bindings) or not self:SettingsDataEqual(source.requiredFields,state.source.requiredFields) then return nil,why end
     local values=plainCopy(state.values);if type(values)~='table' then return nil,why end;return values
 end
 function addon:ShowConditionSourceTest(owner,options)

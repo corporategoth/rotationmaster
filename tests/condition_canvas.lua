@@ -17,7 +17,7 @@ test('collapsed descendants do not consume the visible budget or hide following 
     local many={type='AND',value={}};for i=1,250 do many.value[i]={type='A'} end
     local s=scene({type='AND',value={many,{type='B'}}},{collapsed={['string:value/number:1']=true}})
     assert(s.complete and #s.cards==3 and s.cards[3].type=='B')
-    s=scene(many);assert(not s.complete and #s.cards==200)
+    s=scene(many);assert(s.complete and #s.cards==251,'valid condition scene was truncated')
 end)
 test('scene paths and drop destinations are detached and deep indentation preserves usable width',function()
     local root={type='A'};for i=1,18 do root={type='AND',value={root}} end
@@ -108,5 +108,29 @@ end)
 test('every group connector reaches its horizontal child arm',function()
     local s=scene({type='AND',value={{type='A'},{type='NOT',value={type='B'}}}})
     for i=1,#s.connectors,2 do local stem,arm=s.connectors[i],s.connectors[i+1];assert(stem.y+stem.height>=arm.y,'disconnected group arm') end
+end)
+test('complete condition geometry indexes every accepted node and final destination without changing model limits',function()
+    local root={type='AND',value={}};for i=1,4095 do root.value[i]={type='A'} end
+    local s=scene(root);assert(s.complete and #s.cards==4096,'largest valid condition scene was truncated')
+    local last=s.cards[4096];assert(last.path[2]==4095 and s.cardsByKey[last.key]==last and last.parentKey==s.cards[1].key)
+    local found=false;for _,target in ipairs(s.dropTargets) do if target.destination.index==4096 then found=true;assert(target.y>=last.y) end end;assert(found)
+    local visible=assert(a:GetConditionCanvasViewport(s,0,last.y,800,last.y+200));assert(#visible<10 and visible[#visible]==last,'viewport did not retain the final row and its ancestor')
+    root.value[4096]={type='A'};local draft,why=a.RotationData.NewConditionDraft(root);assert(not draft and why=='condition-limit','model condition bound changed')
+end)
+test('incomplete draft rows fail explicitly rather than publishing a partial scene',function()
+    local d=assert(a.RotationData.NewConditionDraft({type='AND',value={{type='A'},{type='B'}}}));local rows,complete=d:Rows(2)
+    local s,why=a:BuildConditionCanvas(d:Snapshot(),rows,{},complete)
+    assert(not s and why.code=='condition-limit','partial rows published an editable scene')
+end)
+test('indexed scene geometry work grows linearly with flat node count',function()
+    if jit then return end -- Lua VM instruction counts are not a JIT benchmark.
+    local function work(count)
+        local root={type='AND',value={}};for i=1,count do root.value[i]={type='A'} end
+        local d=assert(a.RotationData.NewConditionDraft(root));local snapshot,rows=d:Snapshot(),d:Rows(4096);local instructions=0
+        debug.sethook(function() instructions=instructions+1000 end,'',1000)
+        local ok,result=pcall(a.BuildConditionCanvas,a,snapshot,rows,{})
+        debug.sethook();assert(ok,result);return instructions
+    end
+    local small,large=work(250),work(1000);assert(large<small*6,'scene still has quadratic per-target card scans: '..small..' -> '..large)
 end)
 finish()

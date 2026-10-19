@@ -1,6 +1,6 @@
 local addon_name,addon=...
 local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
-function addon:ShowFieldSchemaEditor(owner,fields,fieldOrder,changed,ownerValid,resume)
+function addon:ShowFieldSchemaEditor(owner,fields,fieldOrder,changed,ownerValid,resume,requiredFields)
     local d=owner.schemaEditor
     if d and d.active then d.frame:Show();return d end
     d=d or {frame=CreateFrame('Frame',nil,UIParent),path={}};owner.schemaEditor=d;d.active=true;d.path={};d.serial=(d.serial or 0)+1;local serial=d.serial
@@ -9,9 +9,9 @@ function addon:ShowFieldSchemaEditor(owner,fields,fieldOrder,changed,ownerValid,
     d.close=d.close or addon:CreateWorkbenchIconButton(frame,'close',L['Close']);d.close:SetPoint('TOPRIGHT',-5,-5)
     d.host=d.host or CreateFrame('Frame',nil,frame);d.host:SetPoint('TOPLEFT',8,-64);d.host:SetSize(744,420)
     d.form=d.form or addon:CreateSettingsForm(d.host);local p=d.form
-    local model,why=addon:NewFieldSchemaDraft(fields,fieldOrder)
+    local model,why=addon:NewFieldSchemaDraft(fields,fieldOrder,requiredFields)
     if not model then d.active=false;frame:Hide();owner.form:Message(string.format(L['Invalid field schema: %s'],why));return nil end
-    d.model=resume and resume.model or model;d.path=resume and resume.path or {};d.requiresApply=resume and resume.requiresApply or false;local baseline=resume and resume.baseline or addon:CopySettingsData(d.model.root);d.baseline=baseline;d.folded=resume and resume.folded or {}
+    d.model=resume and resume.model or model;d.path=resume and resume.path or {};d.requiresApply=resume and resume.requiresApply or model.requiredFieldsInvalid or false;local baseline=resume and resume.baseline or addon:CopySettingsData(d.model.root);d.baseline=baseline;d.folded=resume and resume.folded or {}
     function d:CaptureDraft()
         local raw={};for _,record in ipairs(p.edits) do if record.dirty then for key,control in pairs(p.fields) do if control==record.control then raw[key]=control:GetText();break end end end end
         return {model=self.model,path=addon:CopySettingsData(self.path),baseline=addon:CopySettingsData(baseline),raw=raw,requiresApply=self.requiresApply,folded=addon:CopySettingsData(self.folded)}
@@ -39,8 +39,8 @@ function addon:ShowFieldSchemaEditor(owner,fields,fieldOrder,changed,ownerValid,
     end
     function d:Apply()
         if not valid() or not p:FlushEdits() then return false end
-        local value,order=d.model:Snapshot();if not value then p:Message(string.format(L['Invalid field schema: %s'],order));return false end
-        changed(value,order);d:Close();return true
+        local value,order,required=d.model:Snapshot();if not value then p:Message(string.format(L['Invalid field schema: %s'],order));return false end
+        changed(value,order,required);d:Close();return true
     end
     for i,entry in ipairs({{'undo','undo',L['Undo']},{'redo','redo',L['Redo']},{'apply',nil,L['Apply']},{'cancel',nil,L['Cancel']}}) do
         d[entry[1]]=d[entry[1]] or (entry[2] and addon:CreateWorkbenchHistoryButton(frame,entry[2],entry[3]) or addon:CreateWorkbenchButton(frame,entry[3],90))
@@ -65,6 +65,7 @@ function addon:ShowFieldSchemaEditor(owner,fields,fieldOrder,changed,ownerValid,
         end
         d:UpdateActions()
     end)
+    if d.model.requiredFieldsInvalid then p:Message(L['Required field references need review. Apply keeps the displayed root requirements.']) end
     addon:SetUIScript(frame,'OnUpdate',function() if not valid() then d:Close() else d:UpdateActions() end end)
     owner:HideForChild();frame:Show();addon:RegisterWindowForEscape(d);return d
 end

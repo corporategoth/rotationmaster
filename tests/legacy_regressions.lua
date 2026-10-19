@@ -86,12 +86,8 @@ test('swing time uses the real channel API and resets the estimate while channel
     assert(not f.addon.definitions.SWING_TIME_REMAIN.evaluate(value,{},100))
 end)
 test('Lua editor default indentation uses the declared two-space setting',function()
-    local f=F.new();local constructor
-    f.libraries['AceGUI-3.0'].RegisterWidgetType=function(_,_,fn) constructor=fn end
-    f.load('LibsAugment/FAIAP.lua')
-    local library
-    for i=1,20 do local name,value=debug.getupvalue(constructor,i);if not name then break end;if name=='lib' then library=value end end
-    assert(library)
+    local f=F.new();f.load('LibsAugment/FAIAP.lua')
+    local library=assert(f.addon.LuaSyntax)
     local text=library.indentCode('if true then\nprint(1)\nend',nil,nil)
     assert(text:find('\n  print(1)',1,true),'default indentation looked up an accidental global')
 end)

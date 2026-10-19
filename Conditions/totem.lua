@@ -7,6 +7,19 @@ local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 local color = color
 local helpers = addon.help_funcs
 
+-- Canonical leaves for direct callbacks; private observation and validation
+-- helpers keep their existing source contracts for saved custom requirements.
+local Functions={
+    values={compare=addon.Functions.values.compare},
+    presentation={nullable=addon.Functions.presentation.nullable,compareString=addon.Functions.presentation.compareString},
+}
+addon.builtinCallbackBindings=addon.builtinCallbackBindings or {}
+addon.builtinCallbackBindings["Conditions/totem.lua"]={
+    ["Functions.values.compare"]="builtin:utils.lua:compare",
+    ["Functions.presentation.nullable"]="builtin:utils.lua:nullable",
+    ["Functions.presentation.compareString"]="builtin:utils.lua:compareString",
+}
+
 local platform=addon.Platform
 local function observe(cache,method,...)
     return addon.getCached(cache,method,platform,...)
@@ -66,7 +79,7 @@ addon:RegisterCondition("TOTEM", {
         return record.active and remaining(record,start)>0
     end,
     print = function(_, value)
-        return string.format(L["%s totem {{!is|is not}} active"], addon.nullable(addon.totems[value.spell], L["<element>"]))
+        return string.format(L["%s totem {{!is|is not}} active"], Functions.presentation.nullable(addon.totems[value.spell], L["<element>"]))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -99,7 +112,7 @@ addon:RegisterCondition("TOTEM_SPELL", {
     evaluate = function(value, cache, start) return findSpecific(value,cache,start,false) end,
     print = function(_, value)
         local link = addon:Widget_GetSpellLink(value.spell, value.ranked)
-        return string.format(L["%s {{!is|is not}} active"], addon.nullable(link, L["<totem>"]))
+        return string.format(L["%s {{!is|is not}} active"], Functions.presentation.nullable(link, L["<totem>"]))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -130,12 +143,12 @@ addon:RegisterCondition("TOTEM_REMAIN", {
         local record,reason=observe(cache,platform.GetTotemInfo,value.spell)
         if not record then return nil,reason end
         local seconds=remaining(record,start)
-        return record.active and seconds>0 and addon.compare(value.operator,addon.round(seconds,3),value.value)
+        return record.active and seconds>0 and Functions.values.compare(value.operator,addon.round(seconds,3),value.value)
     end,
     print = function(_, value)
         return string.format(L["you {{!have|do not have}} a %s totem active with %s"],
-            addon.nullable(addon.totems[value.spell], L["<element>"]),
-                addon.compareString(value.operator, L["the remaining time"], string.format(L["%s seconds"], addon.nullable(value.value))))
+            Functions.presentation.nullable(addon.totems[value.spell], L["<element>"]),
+                Functions.presentation.compareString(value.operator, L["the remaining time"], string.format(L["%s seconds"], Functions.presentation.nullable(value.value))))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -175,8 +188,8 @@ addon:RegisterCondition("TOTEM_SPELL_REMAIN", {
     evaluate = function(value, cache, start) return findSpecific(value,cache,start,true) end,
     print = function(_, value)
         local link = addon:Widget_GetSpellLink(value.spell, value.ranked)
-        return string.format(L["%s {{!is|is not}} active with %s"], addon.nullable(link, L["<totem>"]),
-            addon.compareString(value.operator, L["the remaining time"], string.format(L["%s seconds"], addon.nullable(value.value))))
+        return string.format(L["%s {{!is|is not}} active with %s"], Functions.presentation.nullable(link, L["<totem>"]),
+            Functions.presentation.compareString(value.operator, L["the remaining time"], string.format(L["%s seconds"], Functions.presentation.nullable(value.value))))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")

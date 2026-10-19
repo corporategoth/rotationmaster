@@ -2227,6 +2227,14 @@ L["Help.ItemSets.popup.save"] = "Apply validates every entry and writes the edit
 L["Native settings page unavailable: %s"] = true
 
 L["The native rotation editor is unavailable."] = true
+L["Required"] = true
+
+L["Required field references need review. Apply keeps the displayed root requirements."] = true
+
+L["Required root fields must have a value before this condition can run. Rename, reorder and duplicate keep this flag; removing the field removes its requirement. Moving it into a nested structure makes it optional. Undo restores both. Callback code is unchanged."] = true
+L["Copy condition description"] = true
+
+L["This condition exceeds the supported editor limits."] = true
 
 -- BEGIN GENERATED RM PUBLIC HELPER DOCS
 L["All original results, preserving nil positions and return count."] = true

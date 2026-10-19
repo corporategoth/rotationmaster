@@ -430,4 +430,8 @@ test('symbol navigation selects a helper outside the current namespace filter',f
     a.configWindow={pane=p};a.ShowConfig=function(_,section) assert(section=='Functions');p:Draw() end
     a:ShowFunctionSource('A');assert(p.functionID=='A' and p.inlineFunction.key=='A','namespace filtering replaced the requested symbol with another function')
 end)
+test('changing root requirements invalidates configured condition Test samples',function()
+    local f,a=fixture();local d=checkEditor(f,a);d.test:Click();local view=d.sourcePreview;view.sample.count=3;view.check:Click();view:Close();assert(a:ConditionTestValues(d))
+    d.model.value.requiredFields={'count'};assert(not a:ConditionTestValues(d),'old sample authorization survived changed requirements')
+end)
 finish()

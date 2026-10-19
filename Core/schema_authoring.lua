@@ -23,9 +23,21 @@ function addon:NormalizeCustomFieldOrder(order,fields)
     if entries~=#order then return nil,'invalid-field-order' end
     return result
 end
+-- Reconcile only after an explicit schema edit/Apply, never while rendering.
+function addon:FilterCustomRequiredFields(required,fields)
+    if required==nil then return nil end
+    local result,seen={},{}
+    if type(required)=='table' and not getmetatable(required) then
+        for index=1,math.min(128,#required) do
+            local name=required[index]
+            if type(name)=='string' and fields[name]~=nil and not seen[name] then seen[name]=true;result[#result+1]=name end
+        end
+    end
+    return result
+end
 -- A schema is data: records have named children; numeric children describe
 -- alternatives, including list element schemas. Lua source is never evaluated.
-function addon:NewFieldSchemaDraft(fields,fieldOrder)
+function addon:NewFieldSchemaDraft(fields,fieldOrder,requiredFields)
     local normalized,why=self:NormalizeCustomFieldSchema(fields,true);if not normalized then return nil,why end
     local order,errorCode=self:NormalizeCustomFieldOrder(fieldOrder,normalized);if not order then return nil,errorCode end
     local ranks={};for i,path in ipairs(order) do ranks[pathKey(path)]=i end
@@ -43,6 +55,12 @@ function addon:NewFieldSchemaDraft(fields,fieldOrder)
         return node
     end
     local d={root=build(normalized,{}),undo={},redo={},revision=0}
+    if requiredFields~=nil then
+        d.root.requiredFieldsPresent=true
+        d.requiredFieldsInvalid=not self:NormalizeCustomConditionRequiredFields(requiredFields,normalized)
+        local required={};for _,name in ipairs(self:FilterCustomRequiredFields(requiredFields,normalized)) do required[name]=true end
+        for _,node in ipairs(d.root.children) do if required[node.name] then node.required=true end end
+    end
     function d:Change(fn)
         local before=copy(self.root);fn(self.root)
         if addon:SettingsDataEqual(before,self.root) then return false end
@@ -60,6 +78,12 @@ function addon:NewFieldSchemaDraft(fields,fieldOrder)
         end
         return node
     end
+    function d:SetRequired(path,required)
+        if #path~=1 or type(required)~='boolean' then return false end
+        local node=self:Node(path);if not node or (node.required==true)==required then return false end
+        return self:Change(function(root) node.required=required or nil;root.requiredFieldsPresent=true end)
+    end
+
     local function parentPath(path) local result=copy(path);table.remove(result);return result end
     local function uniqueName(parent,base,except)
         base=type(base)=='string' and base:match('^[%a_][%w_]*$') and base or 'field'
@@ -127,6 +151,7 @@ function addon:NewFieldSchemaDraft(fields,fieldOrder)
             local moved={};for _=1,count do moved[#moved+1]=table.remove(parent.children,index) end
             if parent==target and gap>index then gap=gap-count end
             for i,node in ipairs(moved) do
+                if target~=self.root then node.required=nil end
                 if target.kind=='record' and type(node.name)~='string' then node.name=uniqueName(target,'field') end
                 table.insert(target.children,gap+i-1,node)
             end
@@ -148,7 +173,12 @@ function addon:NewFieldSchemaDraft(fields,fieldOrder)
         end
         local ok,value=pcall(encode,self.root,{},0);if not ok then return nil,value end
         local checked,problem=addon:NormalizeCustomFieldSchema(value);if not checked then return nil,problem end
-        return checked,order
+        local required
+        if self.root.requiredFieldsPresent then
+            required={};for _,node in ipairs(self.root.children) do if node.required then required[#required+1]=node.name end end
+            if #required>128 then return nil,'invalid-required-fields' end
+        end
+        return checked,order,required
     end
     return d
 end

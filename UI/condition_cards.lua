@@ -30,6 +30,7 @@ function addon:CreateConditionCard(parent)
     card.controls.operator=addon:CreateWorkbenchPill(frame,'',34);card.controls.operator:SetPoint('TOPLEFT',90,-3);card.controls.operator.tooltip=L['Switch All / Any']
     card.fields=CreateFrame('Frame',nil,frame)
     function card:Place(model,title,summary)
+        local editingName=self.name:HasFocus()
         frame:ClearAllPoints();frame:SetPoint('TOPLEFT',parent,'TOPLEFT',model.x,-model.y);frame:SetSize(model.width,model.height);self.model=model;addon:SetWorkbenchUnsaved(frame,model.changed)
         local gray=model.disabled or model.unreachable;local r,g,b=.25,.55,.32
         if model.invalid then r,g,b=.8,.24,.20 elseif gray then r,g,b=.4,.4,.4 elseif model.negated then r,g,b=.8,.24,.20 end
@@ -41,7 +42,7 @@ function addon:CreateConditionCard(parent)
         self.expand:PointState(model.compact and 'compact' or model.expanded and 'expanded' or 'normal')
         local header=model.headerHeight or 26;local contentWidth=model.width-(model.group and 82 or 58)
         self.header:ClearAllPoints();self.header:SetPoint('TOPLEFT',26,-header);self.header:SetSize(contentWidth,math.max(18,model.ownHeight-header-4));self.summary:SetWidth(contentWidth)
-        self.fields:ClearAllPoints();self.fields:SetPoint('TOPLEFT',26,-header);self.fields:SetSize(contentWidth,math.max(1,model.ownHeight-header-4));self.name:Hide()
+        self.fields:ClearAllPoints();self.fields:SetPoint('TOPLEFT',26,-header);self.fields:SetSize(contentWidth,math.max(1,model.ownHeight-header-4));if not editingName then self.name:Hide() end
         self.typeButton:SetWidth(model.width-186);self.label:SetWidth(model.width-192)
         self.nameButton:ClearAllPoints();self.name:ClearAllPoints()
         self.nameButton:SetPoint('TOPLEFT',model.group and 128 or 90,model.group and -2 or -23)
@@ -70,13 +71,14 @@ function addon:CreateConditionCard(parent)
         end
         if model.group then self.fold:Show();self.fold:SetSelected(model.collapsed);self.icon:Hide() else self.fold:Hide() end
         self.name:ClearAllPoints();self.name:SetPoint('TOPLEFT',self.nameButton,'TOPLEFT',0,0);self.name:SetSize(self.nameButton:GetWidth(),self.nameButton:GetHeight())
-        if self.pane then self.pane:SetWidth(contentWidth) end
+        if editingName then self.name:Show();self.nameButton:Hide() end
+        if self.pane and self.pane.frame:GetWidth()~=contentWidth then self.pane:SetWidth(contentWidth) end
         frame:Show()
     end
     function card:Release()
         self.token=nil;if self.helpText then self.helpText:Hide() end;if self.picker then self.picker:Release() end
         if self.releaseFields then self.releaseFields();self.releaseFields=nil end
-        self.pane=nil;self.proxy=nil;self.frame:Hide();self.name:ClearFocus()
+        self.pane=nil;self.proxy=nil;self.model=nil;self.frame:Hide();self.name:ClearFocus()
         for _,event in ipairs({'OnClick','OnMouseDown','OnDragStart','OnDragStop'}) do addon:SetUIScript(self.header,event,nil);addon:SetUIScript(self.nameButton,event,nil);addon:SetUIScript(self.typeButton,event,nil) end
         for _,control in pairs(self.controls) do addon:SetUIScript(control,'OnClick',nil) end
         for _,event in ipairs({'OnEditFocusGained','OnEditFocusLost','OnUpdate'}) do addon:SetUIScript(self.name,event,nil) end
