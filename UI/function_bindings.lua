@@ -106,7 +106,7 @@ function addon:BuildFunctionBindingFields(form,owner,options)
         else source.bindings=source.bindings or {};change(source.bindings) end
     end
     local y=form.y
-    local button=form:Button('function_bindings',string.format(options.header and L['Bindings (%d)'] or L['Function bindings (%d)'],count),function() owner.bindingExpanded=not owner.bindingExpanded;refresh() end)
+    local button=form:Button('function_bindings',string.format(L['Dependencies (%d)'],count),function() owner.bindingExpanded=not owner.bindingExpanded;refresh() end)
     if options.header then local header=type(options.header)=='function' and options.header(button) or options.header;button:ClearAllPoints();button:SetPoint('TOPLEFT',header.x,-header.y);button:SetWidth(header.width);form.y=math.max(y,header.y+28) end
     if not owner.bindingExpanded then return end
     local targets=self:FunctionBindingChoices()
@@ -134,11 +134,11 @@ function addon:BuildFunctionBindingFields(form,owner,options)
         self:SetUIScript(remap,'OnClick',form:Guard(function() if form:FlushEdits() then form:ShowChoices(remap,choices,function(value) mutate(function(values) values[alias]=value end);refresh() end,true) end end))
         if owner.readOnly then input:Disable();remap:Disable()
         else remap:Enable()
-            local remove=form:Button('binding_remove_'..index,L['Remove binding'],function() mutate(function(values) values[alias]=nil end);refresh() end,'trash')
+            local remove=form:Button('binding_remove_'..index,L['Remove dependency'],function() mutate(function(values) values[alias]=nil end);refresh() end,'trash')
             remove:ClearAllPoints();remove:SetPoint('TOPRIGHT',0,-y);remove:SetWidth(26)
         end;form.y=y+30
     end
-    if not owner.readOnly then form:Button('add_binding',L['Add binding'],function()
+    if not owner.readOnly then form:Button('add_binding',L['Add dependency'],function()
         local id=targets[1] and targets[1].value or 'MISSING';local record=self.builtinFunctions and self.builtinFunctions[id];local value=record and record.source or (self.db.global.custom_functions or {})[id]
         local base=self:FunctionQualifiedName(id,value);local alias=base;local n=2;local used={addon=true,L=true};for _,arg in ipairs(source.args or {}) do used[arg.name]=true end
         while bindings[alias] or used[alias] do alias=base:sub(1,116)..n;n=n+1 end

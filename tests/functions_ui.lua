@@ -440,7 +440,7 @@ test('condition bindings share compact source toolbar navigate helpers and keep 
     local d=a:condition_edit_box(function() end,'TEST',value)
     for _,width in ipairs({1100,340,1800,600}) do
         d.body:SetWidth(width);d.form:SetWidth(width);d.form:Draw();local button=d.form.fields.function_bindings
-        assert(button:GetText()=='Bindings (1)','condition keeps its oversized separate binding section')
+        assert(button:GetText()=='Dependencies (1)','condition does not identify the helper dependency toolbar')
         assert(button:GetWidth()<=math.max(90,math.ceil(button:GetFontString():GetStringWidth())+24),'binding fills width')
         assert(button.point[2]>=d.codeReset.point[2]+d.codeReset:GetWidth() or button.point[3]<d.codeReset.point[3],'binding is not after Reset')
         assert(d.syntax.point[2]==button.point[2]+button:GetWidth()+6 and d.syntax.point[3]==button.point[3],'syntax does not follow binding')
@@ -453,5 +453,19 @@ test('condition bindings share compact source toolbar navigate helpers and keep 
     assert(not opened and d.model.value.bindings.helper=='OTHER','remap control navigated or failed to stage mapping')
     for _,label in ipairs(d.form.pool.text or {}) do if label:IsShown() then assert(not label:GetText():find('Choose a source helper',1,true),'binding instructions still occupy editor') end end
     local dirty=d:IsDirty();d:SelectFunction('widget');assert(d:IsDirty()==dirty and d.form.fields.function_bindings.point[3]==d.syntax.point[3],'callback docs moved binding out of toolbar')
+end)
+test('same-name dependencies remain explicit without marking the source changed',function()
+    local _,a,host=fixture();local helper=source('ready');helper.namespace='custom'
+    local caller=source('Caller');caller.bindings={['custom.ready']='HELPER'};caller.code='return custom.ready(value)'
+    a.db.global.custom_functions.CALLER=caller;a.db.global.custom_functions.HELPER=helper;a:InitializeFunctionRegistry()
+    a.configFunctionSelection='CALLER';local p=a:OpenNativeSettings(host,'Functions');local d=p.inlineFunction
+    assert(d.key=='CALLER' and not d:IsDirty())
+    assert(d.form.fields.function_bindings:GetText()=='Dependencies (1)')
+    d.form.fields.function_bindings:Click()
+    assert(d.form.fields.binding_alias_1:GetText()=='custom.ready' and not d:IsDirty())
+    assert(d:PendingSource().bindings['custom.ready']=='HELPER','matching name erased the stable dependency')
+    local invoke=assert(a:ResolveFunctionBinding('CALLER'));assert(invoke(7)==7)
+    a.db.global.custom_functions.HELPER.disabled=true;a:InitializeFunctionRegistry()
+    assert(not a:FunctionAvailable('CALLER'),'disabled same-name dependency did not invalidate its consumer')
 end)
 finish()
