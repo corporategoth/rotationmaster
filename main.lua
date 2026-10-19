@@ -768,6 +768,7 @@ function addon:EvaluateNextActionInternal()
         return
     else
         self.evaluationProfile:start()
+        if self.RefreshMacroButtons then self:RefreshMacroButtons() end
 
         local now = GetTime()
         local cache = {}

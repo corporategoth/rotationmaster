@@ -188,5 +188,82 @@ test('unavailable macro observations skip one button without stopping ordinary d
     env.GetMacroItem=function() error('temporary failure') end;a:Fetch();assert(a:FindSpell({133})==133)
     env.GetMacroItem=function() return nil,nil end;env.ActionButton2=nil;a:Fetch();assert(a:FindSpell({133})==133)
 end)
+test('macro observations refresh mappings and retire old highlights without scanning ordinary buttons',function()
+    local env,a,macro=fixture({type='macro',macro=1},{})
+    local observed=133
+    env.GetMacroItem=function() return nil,nil end
+    env.GetMacroSpell=function() return observed end
+    local ordinary={GetAttribute=function(_,key) if key=='type' then return 'spell' elseif key=='spell' then return 133 end end}
+    env.ActionButton2=ordinary
+    a:Fetch()
+    local lit={}
+    a.Glow=function(_,button,key) lit[button]=lit[button] or {};lit[button][key]=true end
+    a.HideGlow=function(_,button,key) if lit[button] then lit[button][key]=nil end end
+    a.db.profile.effect='test';a.db.global.effects.test={type='pixel'}
+    a:GlowNextSpell(133);a:GlowCooldown(133,true,{id='cooldown'})
+    assert(lit[macro].next and lit[macro][133])
+    env.GetSpellInfo=function() error('ordinary spell metadata must not be rescanned') end
+    observed=116
+    assert(a.RefreshMacroButtons,'dynamic refresh is missing');a:RefreshMacroButtons()
+    assert(a:FindSpell({116})==116 and a:FindSpell({133})==133,'changed macro displaced ordinary mapping')
+    assert(not lit[macro].next and not lit[macro][133],'outgoing macro highlights survived')
+    assert(not a:IsGlowing(133),'old highlight identity suppressed reapplication')
+    a:GlowNextSpell(116);a:GlowCooldown(116,true,{id='cooldown'})
+    assert(lit[macro].next and lit[macro][116] and not lit[ordinary][116])
+    a:RefreshMacroButtons()
+    assert(lit[macro].next and lit[macro][116] and a:IsGlowing(116),'unchanged macro reset highlights')
+end)
+test('unavailable macro buttons recover and exact item changes cannot borrow previous ownership',function()
+    local env,a,button=fixture({type='macro',macro=1},{})
+    local item
+    env.GetMacroItem=function() if item then return 'Item','item:'..item end end
+    env.GetMacroSpell=function() return nil end
+    env.C_Item={GetItemSpell=function() return 'Shared use',234 end,GetItemInfoInstant=function(link) return tonumber(link:match('item:(%d+)')) end}
+    a:Fetch();assert(not a:FindSpell({234}))
+    assert(a.RefreshMacroButtons,'dynamic refresh is missing')
+    item=5512;a:RefreshMacroButtons();assert(a:FindSpell({234},{5512})==234)
+    item=5513;a:RefreshMacroButtons();assert(a:FindSpell({234},{5513})==234 and not a:FindSpell({234},{5512}))
+    env.GetMacroItem=function() error('temporary API failure') end
+    a:RefreshMacroButtons();assert(not a:FindSpell({234}),'failed observation retained stale action')
+    env.GetMacroItem=function() return 'Item','item:5512' end
+    a:RefreshMacroButtons();assert(a:FindSpell({234},{5512})==234)
+    env.WOW_PROJECT_ID=1;env.GetMacroItem=function() error('restricted policy queried a macro') end
+    a:RefreshMacroButtons();assert(not a:FindSpell({234}),'policy transition retained action mappings')
+end)
+test('duplicate bar registrations share one macro observation and one highlight per button',function()
+    local env,a,button,loaded=fixture({type='macro',macro=1},{})
+    env.ButtonForge1=button;loaded.ButtonForge=true
+    local calls=0
+    env.GetMacroItem=function() return nil,nil end
+    env.GetMacroSpell=function() calls=calls+1;return 133 end
+    local other={GetAttribute=function(_,key) if key=='type' then return 'macro' elseif key=='macro' then return 1 end end}
+    env.ActionButton2=other;a:Fetch()
+    assert(a.RefreshMacroButtons,'dynamic refresh is missing');calls=0;a:RefreshMacroButtons()
+    assert(calls==1,'one macro was observed repeatedly in a pass')
+    local glows={};a.Glow=function(_,b) glows[b]=(glows[b] or 0)+1 end
+    a.db.profile.effect='test';a.db.global.effects.test={type='pixel'}
+    a:GlowNextSpell(133);assert(glows[button]==1 and glows[other]==1,'duplicate scanner registration repeated a highlight')
+    env.ActionButton1=nil;env.ActionButton2=nil;env.ButtonForge1=nil;a:Fetch()
+    calls=0;a:RefreshMacroButtons();assert(calls==0 and not a:FindSpell({133}),'full scan retained old macro records')
+end)
+test('duplicate scans cannot leave a button indexed under an earlier exposed macro action',function()
+    local env,a,button,loaded=fixture({type='macro',macro=1},{})
+    loaded.ButtonForge=true;env.ButtonForge1=button
+    local reads=0;env.GetMacroItem=function() return nil,nil end
+    env.GetMacroSpell=function() reads=reads+1;return reads==1 and 133 or 116 end
+    a:Fetch();a:RefreshMacroButtons()
+    assert(a:FindSpell({116})==116 and not a:FindSpell({133}),'duplicate discovery retained old ownership')
+end)
+test('unreadable macro attributes and failed button reads recover without a bar rescan',function()
+    local secret={};local attributes={type='macro',macro=secret}
+    local env,a,button=fixture(attributes,{})
+    env.canaccessvalue=function(value) return value~=secret end
+    env.GetMacroItem=function() return nil,nil end;env.GetMacroSpell=function() return 133 end
+    a:Fetch();assert(not a:FindSpell({133}))
+    attributes.macro=1;a:RefreshMacroButtons();assert(a:FindSpell({133})==133,'initial restricted observation was not retained for recovery')
+    local read=button.GetAttribute;button.GetAttribute=function() error('temporarily unavailable') end
+    a:RefreshMacroButtons();assert(not a:FindSpell({133}),'failed button read retained stale action')
+    button.GetAttribute=read;a:RefreshMacroButtons();assert(a:FindSpell({133})==133)
+end)
 print(string.format('%d passed, %d failed', passed, failed))
 os.exit(failed == 0 and 0 or 1)

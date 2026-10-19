@@ -21,6 +21,8 @@ end
 
 local Spells = {}
 local ButtonItems = {}
+local ButtonSpells = {}
+local MacroButtons = {}
 local Flags = {}
 local SpellsGlowing = {}
 local FramePool = {}
@@ -282,13 +284,14 @@ local function AddButton(spellId, button, itemId)
 		if Spells[spellId] == nil then
 			Spells[spellId] = {}
 		end
-		tinsert(Spells[spellId], button)
+        if ButtonSpells[button]~=spellId then tinsert(Spells[spellId], button) end
+        ButtonSpells[button]=spellId
         ButtonItems[button]=itemId
 	end
 end
 
 local function ValidActionSlot(slot)
-    return type(slot) == 'number' and slot > 0
+    return addon.Platform:CanReadValue(slot) and type(slot) == 'number' and slot > 0 and slot < math.huge and slot%1 == 0
 end
 
 local function GetActionSlot(button)
@@ -313,42 +316,98 @@ local function GetActionSlot(button)
     if ValidActionSlot(button.action) then return button.action end
 end
 
+local function ReadStandardAction(button)
+    local kind=button:GetAttribute('type')
+    if not addon.Platform:CanReadValue(kind) then return end
+    if kind~='action' and kind~='macro' and kind~='item' and kind~='spell' then return end
+    local action=button:GetAttribute(kind)
+    if kind=='action' then
+        local slot=GetActionSlot(button)
+        if not slot or not HasAction(slot) then return end
+        kind,action=GetActionInfo(slot)
+    end
+    if not addon.Platform:CanReadValue(kind) then return end
+    if not addon.Platform:CanReadValue(action) then return kind end
+    return kind,action
+end
+
+local function ResolveStandardAction(kind,action)
+    if kind=='macro' then
+        local observed=addon.Platform:GetMacroAction(action)
+        if observed then return observed.spellID,observed.itemID end
+    elseif kind=='item' then
+        local item=addon.Platform:GetItemID(action)
+        if item then return itemUseSpellID(item),item end
+    elseif kind=='spell' then
+        return spellMetadataID(action)
+    end
+end
+
 local function AddStandardButton(button)
-	if not button then return end
-	local type = button:GetAttribute('type')
-	if type then
-		local actionType = button:GetAttribute(type)
-		local spellId,itemId
+    if not button or ButtonSpells[button] then return end
+    local ok,kind,action=pcall(ReadStandardAction,button)
+    if not ok then return end
+    -- Retain macros whose current observation is unavailable so a later pass
+    -- can recover without waiting for a bar-edit event.
+    if kind=='macro' then MacroButtons[button]=true end
+    local spell,item=ResolveStandardAction(kind,action)
+    AddButton(spell,button,item)
+end
 
-		if type == 'action' then
-			local slot = GetActionSlot(button)
-			if slot and HasAction(slot) then
-				type, actionType = GetActionInfo(slot);
-			else
-				return;
-			end
-		end
-
-		if type == 'macro' then
-            local action=addon.Platform:GetMacroAction(actionType)
-            if not action then return end
-            spellId,itemId=action.spellID,action.itemID
-			addon:verbose("Found macro button with spell ID %s", spellId)
-		elseif type == 'item' then
-			itemId=addon.Platform:GetItemID(actionType)
-            if not itemId then return end
-            spellId = itemUseSpellID(itemId)
-			if not spellId then
-				return
+-- Macro conditionals and cast sequences can change their exposed action
+-- without moving a slot or editing the macro. Observe known macro buttons on
+-- the existing recommendation cadence; never parse or execute macro bodies.
+function addon:RefreshMacroButtons()
+    if self.Platform:GetClientInfo().combatDataPolicy~='probe' then
+        if next(Spells) then self:Fetch() end
+        return
+    end
+    local observations,changes,affected={},{},{}
+    for button in pairs(MacroButtons) do
+        local ok,kind,action=pcall(ReadStandardAction,button)
+        local spell,item
+        if ok then
+            local cacheable=kind=='macro' and (type(action)=='string' or
+                type(action)=='number' and action>0 and action<math.huge and action%1==0)
+            if cacheable then
+                local observed=observations[action]
+                if observed==nil then
+                    observed=self.Platform:GetMacroAction(action) or false
+                    observations[action]=observed
+                end
+                if observed then spell,item=observed.spellID,observed.itemID end
+            else
+                spell,item=ResolveStandardAction(kind,action)
             end
-			addon:verbose("Found item button with spell ID %s", spellId)
-		elseif type == 'spell' then
-			spellId = spellMetadataID(actionType)
-			addon:verbose("Found button with spell ID %s", spellId)
-		end
-
-		AddButton(spellId, button, itemId)
-	end
+        end
+        local previous=ButtonSpells[button]
+        if previous~=spell or ButtonItems[button]~=item then
+            changes[#changes+1]={button=button,spell=spell,item=item,previous=previous}
+            if previous then affected[previous]=true end
+            if spell then affected[spell]=true end
+        end
+    end
+    -- Invalidate the affected identities before reindexing. Other buttons for
+    -- those spells need their recommendation/cooldown glow reapplied as well.
+    for spell in pairs(affected) do
+        for _,button in ipairs(Spells[spell] or {}) do
+            self:HideGlow(button,'next')
+            self:HideGlow(button,spell)
+        end
+        SpellsGlowing[spell]=nil
+        Flags[spell]=nil
+    end
+    for _,change in ipairs(changes) do
+        local buttons=change.previous and Spells[change.previous]
+        if buttons then
+            for index=#buttons,1,-1 do
+                if buttons[index]==change.button then table.remove(buttons,index) end
+            end
+            if #buttons==0 then Spells[change.previous]=nil end
+        end
+        ButtonSpells[change.button],ButtonItems[change.button]=nil,nil
+        AddButton(change.spell,change.button,change.item)
+    end
 end
 
 function FetchNeuron()
@@ -571,6 +630,8 @@ function addon:Fetch()
 
 	Spells = {}
     ButtonItems = {}
+    ButtonSpells = {}
+    MacroButtons = {}
 	Flags = {}
 	SpellsGlowing = {}
 

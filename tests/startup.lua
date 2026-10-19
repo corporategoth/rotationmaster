@@ -905,6 +905,32 @@ test('real recommendation and real button registry cannot borrow an unavailable 
     assert(not(lit[first] and (lit[first].next or lit[first][234])),'wrong item highlighted in a main or optional channel')
 end)
 
+test('real recommendation passes follow a changed macro without a full bar fetch or edit event',function()
+    local env,a,s,body,load=recommendationFixture();s.combat=false
+    env.LibStub:NewLibrary('LibCustomGlow-1.0',1);env.tinsert=table.insert
+    local exposed=403
+    env.GetMacroItem=function() return nil,nil end
+    env.GetMacroSpell=function() return exposed end
+    local button={GetAttribute=function(_,key) if key=='type' then return 'macro' elseif key=='macro' then return 1 end end}
+    env.ActionButton1=button;load('Platform/macros.lua');load('buttons.lua')
+    a.db.profile.effect='test';a.db.global.effects.test={type='pixel'}
+    local lit={}
+    a.Glow=function(_,frame,key) assert(frame==button);lit[key]=true end
+    a.HideGlow=function(_,frame,key) assert(frame==button);lit[key]=nil end
+    local rotation=a.currentRotation;a.currentRotation=nil;a:Fetch();a.currentRotation=rotation
+    a.Fetch=function() error('ordinary recommendation rescanned all bars') end
+    body.rotation={{id='bolt',type='spell',ranked=true,action=403,conditions={}},
+        {id='shock',type='spell',ranked=true,action=8042,conditions={}}}
+    body.cooldowns={{id='optional-bolt',type='spell',ranked=true,action=403,conditions={}},
+        {id='optional-shock',type='spell',ranked=true,action=8042,conditions={}}}
+    a:EvaluateNextActionInternal();assert(a.currentSpell==403 and lit.next and lit[403])
+    exposed=8042;a:EvaluateNextActionInternal()
+    assert(a.currentSpell==8042 and lit.next and lit[8042] and not lit[403],'changed macro kept stale priority or cooldown')
+    exposed=nil;a:EvaluateNextActionInternal()
+    assert(a.currentSpell==nil and not next(lit),'unavailable macro retained a recommendation')
+    exposed=403;a:EvaluateNextActionInternal();assert(a.currentSpell==403 and lit.next and lit[403])
+end)
+
 test('workbench scale has a canonical default and survives real SavedVariables reload',function()
     local env,a,scripts=persistentFixture()
     assert(a.db.global.uiScale==1)
