@@ -118,6 +118,7 @@ function addon:AcquireConditionWidget(kind,constructor)
         local ok,why=pcall(widget.OnAcquire,widget)
         if not ok then widget.rmActive=false;widget.rmQuarantined=true;error(why,0) end
     end
+    if kind=='RM-ConditionGroup' and self.PrepareNativeConditionTable then self:PrepareNativeConditionTable(widget) end
     observed(widget);return widget
 end
 function addon:ReleaseConditionWidget(widget)

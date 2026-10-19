@@ -192,12 +192,12 @@ test('native table vertical alignment uses the tallest current row including par
     children[2]:SetHeight(80);group:DoLayout();assert(children[1].frame.point[5]==-56 and children[4].frame.point[5]==-100 and group.frame:GetHeight()==120)
     a:ReleaseConditionWidget(group)
 end)
-test('advanced custom table geometry retains its explicit legacy path',function()
+test('advanced native table alignment callbacks avoid the compatibility renderer',function()
     local f=fixture();local a=f.addon;local ace=f.libraries['AceGUI-3.0'];local calls=0
     ace:RegisterLayout('Table',function(content) calls=calls+1;content.obj:LayoutFinished(content:GetWidth(),88) end)
     local group=a:CreateConditionGroup();group:SetLayout('Table');group:SetUserData('table',{columns={44,1}})
     local child=a:CreateConditionCheckBox();child:SetUserData('cell',{alignV=function() return 3 end});group:AddChild(child)
-    assert(calls==1 and group.frame:GetHeight()==88);a:ReleaseConditionWidget(group)
+    assert(calls==0 and group.frame:GetHeight()==24 and child.frame.point[4]==-3);a:ReleaseConditionWidget(group)
 end)
 
 test('custom table container alignment and spacing preserve shipped Ace semantics',function()
@@ -206,7 +206,7 @@ test('custom table container alignment and spacing preserve shipped Ace semantic
     local group=a:CreateConditionGroup();group:SetWidth(320);group:SetLayout('Table');group:PauseLayout();group:SetUserData('table',{columns={1,1},alignV='bottom',spaceV=12})
     local children={}
     for i,height in ipairs({60,24,40,20}) do local child=a:CreateConditionCheckBox();child:SetHeight(height);if i==1 then child:SetUserData('cell',{alignV='top'}) end;group:AddChild(child);children[i]=child end
-    group:ResumeLayout();assert(calls==1,'container alignment bypassed the requested legacy layout')
+    group:ResumeLayout();assert(calls==0,'container alignment requested the legacy renderer')
     assert(children[2].frame.point[4]==-36 and children[4].frame.point[4]==-92 and group.frame:GetHeight()==112,'container options changed row placement')
     a:ReleaseConditionWidget(group)
 end)

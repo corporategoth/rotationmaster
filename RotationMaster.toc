@@ -124,6 +124,7 @@ UI/checkbox.lua
 UI/condition_inputs.lua
 UI/native_field_compat.lua
 UI/condition_layout.lua
+UI/condition_table.lua
 UI/native_group_compat.lua
 UI/condition_unit.lua
 UI/icon_picker.lua
