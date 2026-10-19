@@ -1,4 +1,5 @@
 local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite()
+local restoreStat=dofile('tests/fixtures/restore_unit_stat_repairs.lua')
 local baseline={
     buffs={["allcounts"]={["compareString"]=2,["deepcopy"]=1,["isin"]=6,["nullable"]=6,["playerize"]=2},["count"]=1,["counts"]={["deepcopy"]=1},["hashes"]={["BUFF"]=2290721974,["BUFF_REMAIN"]=385400309,["BUFF_STACKS"]=832467388,["STEALABLE"]=2149712789},["tags"]={["STEALABLE"]={["deepcopy"]=1}}},
     debuffs={["allcounts"]={["compareString"]=2,["isin"]=7,["keys"]=1,["nullable"]=7,["playerize"]=3},["count"]=1,["counts"]={["keys"]=1},["hashes"]={["DEBUFF"]=2337578661,["DEBUFF_REMAIN"]=172345129,["DEBUFF_STACKS"]=3832970224,["DISPELLABLE"]=2640440305},["tags"]={["DISPELLABLE"]={["keys"]=1}}},
@@ -79,14 +80,15 @@ local function fixture(case)
     e.loadstring=function(code,name) local fn,why=loadstring(code,name);if fn then setfenv(fn,e) end;return fn,why end
     return f,a,s
 end
-local function legacy(a,source)
+local function legacy(a,source,tag)
     local result=a:CopySettingsData(source)
+    if tag=='STAT' then result.evaluate=restoreStat(result.evaluate,true) end
     for callback in pairs(a.CustomConditionCallbacks) do if result[callback] then for name in pairs(owners) do result[callback]=result[callback]:gsub(path(name):gsub('%.','%%.')..'([%(,])','addon.'..name..'%1') end end end
     for name in pairs(owners) do result.bindings[path(name)]=nil end
     return result
 end
 local function copies(a,tag)
-    local source=assert(a:GetBuiltinConditionSource(tag));local canonical=assert(a:CompileCustomCondition('COPY_'..tag,source));local old=assert(a:CompileCustomCondition('OLD_'..tag,legacy(a,source)));a:RegisterCondition('COPY_'..tag,canonical);a:RegisterCondition('OLD_'..tag,old);return canonical,old
+    local source=assert(a:GetBuiltinConditionSource(tag));local canonical=assert(a:CompileCustomCondition('COPY_'..tag,source));local old=assert(a:CompileCustomCondition('OLD_'..tag,legacy(a,source,tag)));a:RegisterCondition('COPY_'..tag,canonical);a:RegisterCondition('OLD_'..tag,old);return canonical,old
 end
 local function count(code,pattern) local _,n=code:gsub(pattern,'');return n end
 test('remaining fifty-four direct calls qualify actual owning leaves with no extra callback aliases',function()
@@ -94,6 +96,7 @@ test('remaining fifty-four direct calls qualify actual owning leaves with no ext
     for module,record in pairs(baseline) do local declared=assert(a.builtinCallbackBindings and a.builtinCallbackBindings['Conditions/'..module..'.lua'],'missing canonical manifest '..module);changed=changed+record.count
         for name in pairs(record.allcounts) do assert(declared[path(name)]==identity(name) and a:ResolveFunctionBinding(identity(name))==a.Functions[owners[name]][name]) end
         local totals={};for tag in pairs(record.hashes) do local source=assert(a:GetBuiltinConditionSource(tag));assert(not source.bindings.Functions)
+            if tag=='STAT' then source.evaluate=restoreStat(source.evaluate,true) end
             for callback in pairs(a.CustomConditionCallbacks) do if source[callback] then for name in pairs(owners) do
                 assert(not source[callback]:find('addon.'..name..'(',1,true),tag..' direct legacy '..name..' remains')
                 totals[name]=(totals[name] or 0)+count(source[callback],path(name):gsub('%.','%%.')..'%(')
@@ -116,7 +119,7 @@ test('every callback byte and parameter remains identical after reversing only n
         if tag=='TOTEM_REMAIN' then current.evaluate=dofile('tests/fixtures/restore_rounding_qualifiers.lua')(current.evaluate,tag,true) end
         if tag=='THREAT' then current.evaluate=dofile('tests/fixtures/restore_threat_repairs.lua')(current.evaluate,true) end
         if tag=='PET' or tag=='PET_NAME' then current.evaluate=dofile('tests/fixtures/restore_pet_repairs.lua')(current.evaluate,tag) end
-        local source=legacy(a,current);local parts={}
+        local source=legacy(a,current,tag);local parts={}
         -- Separate ECS API regression tests require the corrected dot contract.
         -- Reverse only those explicit semantic fixes for this namespace-only byte proof.
         if tag=='ECS_STAT' or tag=='ECS_STAT_PCT' then
@@ -168,6 +171,9 @@ test('native stat and deferred ECS copies retain corrected dot API shared cache 
     for _,tag in ipairs({'STAT','ECS_STAT','ECS_STAT_PCT'}) do local canonical,old=copies(a,tag);assert(s.imports==1,'cloned callback lost shared deferred initialization')
         local v={type=tag,unit='player',stat=tag=='STAT' and 1 or tag=='ECS_STAT' and 'power' or 'chance',operator='EQUALS',value=tag=='ECS_STAT_PCT' and 0.125 or 42};local cache={}
         assert(a.conditionDefinitions[tag].evaluate(v,cache)==true);local before=a:CopySettingsData(s.calls)
+        -- Archived STAT keeps native-function cache keys; its distinct first
+        -- observation is warmed before checking repeated-call cache stability.
+        if tag=='STAT' then assert(old.evaluate(v,cache)==true);before=a:CopySettingsData(s.calls) end
         assert(canonical.evaluate(v,cache)==true and old.evaluate(v,cache)==true and a:SettingsDataEqual(before,s.calls))
         assert(a.conditionDefinitions[tag].valid(0,v)==canonical.valid(0,v) and canonical.valid(0,v)==old.valid(0,v))
         for _,negated in ipairs({false,true}) do local text=a.conditionDefinitions[tag].print(0,v,negated);assert(text==canonical.print(0,v,negated) and text==old.print(0,v,negated)) end

@@ -518,36 +518,15 @@ addon:RegisterCondition("TT_HEALTH", {
                 value.health ~= nil)
     end,
     evaluate = function(value, cache)
-        if not Functions.cache.getCached(cache, UnitExists, value.unit) then return false end
-        local target = Functions.cache.getCached(cache, UnitGUID, value.unit)
-        if target then
-            local health = Functions.cache.getCached(cache, UnitHealth, value.unit)
-
-            local target_health = value.health
-            if value.health < 0 then
-                local max = Functions.cache.getCached(cache, UnitHealthMax, value.unit)
-                target_health = target_health + max
-            end
-            if health == target_health then
-                return Functions.values.compare(value.operator, 0, value.value)
-            elseif addon.damageHistory[target] then
-                local trend, seconds = addon.Functions.trends.calculate(addon.damageHistory[target], nil, value.mode == "noheals", value.mode == "nodmg")
-                if trend and seconds > 2 then
-                    local ttt = 0 -- Time Til Target
-                    if trend < 0 then
-                        if target_health < health then
-                            ttt = (health - target_health) / -trend
-                        end
-                    elseif trend > 0 then
-                        if target_health > health then
-                            ttt = (target_health - health) / trend
-                        end
-                    end
-                    return Functions.values.compare(value.operator, ttt, value.value)
-                end
-            end
-        end
-        return false
+        local eta,reason=addon:GetConditionHealthForecast(value.unit,value.health,false,value.mode,cache)
+        if not addon.Platform:CanReadValue(eta) then return nil,'restricted-value' end
+        if eta==nil then return nil,reason end
+        if eta==false then return false end
+        if type(eta)~='number' or eta~=eta or eta>=math.huge or eta<=-math.huge then return nil,'invalid-health-forecast-eta' end
+        local threshold=value.value
+        if not addon.Platform:CanReadValue(threshold) then return nil,'restricted-value' end
+        if type(threshold)~='number' or threshold~=threshold or threshold>=math.huge or threshold<=-math.huge then return nil,'invalid-health-forecast-threshold' end
+        return Functions.values.compare(value.operator,eta,threshold)
     end,
     print = function(_, value)
         local conditionstr
@@ -634,41 +613,15 @@ addon:RegisterCondition("TT_HEALTHPCT", {
                 value.health ~= nil and value.health >= 0.00 and value.health <= 1.00)
     end,
     evaluate = function(value, cache)
-        if not Functions.cache.getCached(cache, UnitExists, value.unit) then return false end
-        local target = Functions.cache.getCached(cache, UnitGUID, value.unit)
-        if target then
-            local health, maxhealth
-            if RealMobHealth then
-                health, maxhealth = RealMobHealth.GetUnitHealth(value.unit)
-            end
-            if not health then
-                health = Functions.cache.getCached(cache, UnitHealth, value.unit)
-            end
-            if not maxhealth then
-                maxhealth = Functions.cache.getCached(cache, UnitHealthMax, value.unit)
-            end
-
-            local target_health = (maxhealth * value.health)
-            if health == target_health then
-                return Functions.values.compare(value.operator, 0, value.value)
-            elseif addon.damageHistory[target] then
-                local trend, seconds = addon.Functions.trends.calculate(addon.damageHistory[target], nil, value.mode == "noheals", value.mode == "nodmg")
-                if trend and seconds > 2 then
-                    local ttt = 0 -- Time Til Target
-                    if trend < 0 then
-                        if target_health < health then
-                            ttt = (health - target_health) / -trend
-                        end
-                    elseif trend > 0 then
-                        if target_health > health then
-                            ttt = (target_health - health) / trend
-                        end
-                    end
-                    return Functions.values.compare(value.operator, ttt, value.value)
-                end
-            end
-        end
-        return false
+        local eta,reason=addon:GetConditionHealthForecast(value.unit,value.health,true,value.mode,cache)
+        if not addon.Platform:CanReadValue(eta) then return nil,'restricted-value' end
+        if eta==nil then return nil,reason end
+        if eta==false then return false end
+        if type(eta)~='number' or eta~=eta or eta>=math.huge or eta<=-math.huge then return nil,'invalid-health-forecast-eta' end
+        local threshold=value.value
+        if not addon.Platform:CanReadValue(threshold) then return nil,'restricted-value' end
+        if type(threshold)~='number' or threshold~=threshold or threshold>=math.huge or threshold<=-math.huge then return nil,'invalid-health-forecast-threshold' end
+        return Functions.values.compare(value.operator,eta,threshold)
     end,
     print = function(_, value)
         local v = value.health

@@ -1,5 +1,8 @@
+-- Historical canonical-consumer regression. Current bounded forecast behavior
+-- is exercised by health_forecast_conditions.lua; restore only its two bodies.
 local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite()
 local inverse,oldBodies,newBodies=dofile('tests/fixtures/restore_trend_consumer_qualifiers.lua')
+local restoreForecast=dofile('tests/fixtures/restore_health_forecast_repairs.lua')
 local branches=dofile('tests/fixtures/catalog_inventory.lua').branches
 local tags={'TT_HEALTH','TT_HEALTHPCT'}
 local function fixture(case)
@@ -14,7 +17,20 @@ local function fixture(case)
  e.GetTime=function(...) assert(select('#',...)==0);return s.now end
  s.history={damage={{time=100,value=10},{time=99,value=12},{time=97,value=8}},heals={{time=100,value=2},{time=97,value=3}}}
  a.damageHistory={[s.guid]=s.history};a.db.profile.damage_history=10
- for _,path in ipairs({'Diagnostics/errors.lua','Core/conditions.lua','Data/plain.lua','Data/tags.lua','Data/rotation_tree.lua','Core/rotation_sequence.lua','Conditions/stats.lua','Data/builtin_sources.lua','Core/builtin_sources.lua','Core/custom_authoring.lua','Core/function_data.lua'}) do f.load(path) end
+ for _,path in ipairs({'Diagnostics/errors.lua','Core/conditions.lua','Data/plain.lua','Data/tags.lua','Data/rotation_tree.lua','Core/rotation_sequence.lua','Conditions/stats.lua','Data/builtin_sources.lua','Core/builtin_sources.lua','Core/custom_authoring.lua','Core/function_data.lua'}) do
+  if path=='Conditions/stats.lua' then
+   local h=assert(io.open(path));local text=h:read('*a');h:close()
+   local chunk=assert(loadstring(restoreForecast(text),'@'..path));setfenv(chunk,e);chunk('rotationmaster',a)
+  else
+   f.load(path)
+   if path=='Data/builtin_sources.lua' then
+    for _,tag in ipairs(tags) do
+     local callback=assert(a.BuiltinSourceCatalog.conditions[tag].callbacks.evaluate)
+     callback.code=restoreForecast(callback.code,tag,true)
+    end
+   end
+  end
+ end
  e.loadstring=function(code,name) local fn,why=loadstring(code,name);if fn then setfenv(fn,e) end;return fn,why end
  return f,a,s
 end
@@ -91,8 +107,8 @@ test('actual trend services retain their exact formulas bodies tuples and three 
 end)
 test('strict inverse restores only both full evaluators and all private trend and stats source identities',function()
  local _,a=fixture();local file=assert(io.open('Conditions/stats.lua'));local text=file:read('*a');file:close()
- assert(a:FunctionSourceHash(inverse(text))=='3174a034','stats changed beyond two trend consumer expressions from d8bdba6')
- assert(not pcall(inverse,text..text),'inverse accepted duplicate evaluator blocks')
+ assert(a:FunctionSourceHash(inverse(restoreForecast(text)))=='3174a034','stats changed beyond two trend consumer expressions from d8bdba6')
+ assert(not pcall(function() return inverse(restoreForecast(text..text)) end),'inverse accepted duplicate evaluator blocks')
  for _,tag in ipairs(tags) do assert(inverse(newBodies[tag],tag,true)==oldBodies[tag]);assert(not pcall(inverse,oldBodies[tag],tag,true));assert(not pcall(inverse,newBodies[tag]..' ',tag,true));assert(not pcall(inverse,newBodies[tag],'OTHER',true)) end
  for id,hash in pairs({['builtin:Conditions/stats.lua:color']='89107d36',['builtin:Conditions/stats.lua:helpers']='c19dbbac',['builtin:Functions/trends.lua:calculate']='26e53807',['builtin:Functions/trends.lua:calculateOld']='a7c35d84'}) do
   assert(a:FunctionSourceHash(assert(a.builtinFunctions[id]).source)==hash,'published/private source identity changed: '..id)
@@ -102,7 +118,7 @@ test('strict inverse restores only both full evaluators and all private trend an
  for alias in pairs(a.builtinCallbackBindings['Conditions/stats.lua']) do assert(not alias:find('trends',1,true),'trend added a captured Functions leaf') end
 end)
 if arg[1]~='--runtime-only' then
- test('new source copies use live canonical trend while archived exact raw sources retain legacy authority',function()
+ test('historical restored actual source copies use canonical trend while archived exact raw sources retain legacy authority',function()
   for _,tag in ipairs(tags) do local _,a,s=fixture();local source=assert(a:GetBuiltinConditionSource(tag));assert(source.evaluate==newBodies[tag],'current forecast source catalog stale')
    local copy=assert(a:CompileCustomCondition('COPY_'..tag,source));local rawSource=a:CopySettingsData(source);rawSource.evaluate=oldBodies[tag]
    local hashes={TT_HEALTH='771c0082',TT_HEALTHPCT='0def75eb'};assert(a:FunctionSourceHash(rawSource)==hashes[tag],'prequalification archived source changed')

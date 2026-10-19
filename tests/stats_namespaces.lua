@@ -194,6 +194,7 @@ test('eleven statistics namespace substitutions retain their exact historical104
     for _,tag in ipairs(tags) do local source=assert(a:GetBuiltinConditionSource(tag));assert(not source.bindings.Functions,'opaque namespace table capture')
         if tag=='POINT' then source=a:CopySettingsData(source);source.evaluate=dofile('tests/fixtures/restore_point_repairs.lua')(source.evaluate,true) end
         if tag=='RUNE' or tag=='RUNE_COOLDOWN' then source=a:CopySettingsData(source);source.evaluate=dofile('tests/fixtures/restore_rune_repairs.lua')(source.evaluate,tag) end
+        if tag=='TT_HEALTH' or tag=='TT_HEALTHPCT' then source=a:CopySettingsData(source);source.evaluate=dofile('tests/fixtures/restore_health_forecast_repairs.lua')(source.evaluate,tag,true) end
         for _,callback in ipairs({'valid','evaluate','print'}) do callbacks=callbacks+1;for name in pairs(owners) do
             local _,n=source[callback]:gsub(path(name):gsub('%.','%%.')..'%(','');totals[name]=totals[name]+n;assert(not source[callback]:find('addon.'..name..'(',1,true))
         end end
@@ -205,6 +206,7 @@ test('legacy-shaped full sources retain every original native expression field H
         local source=assert(a:GetBuiltinConditionSource(tag))
         if tag=='POINT' then source=a:CopySettingsData(source);source.evaluate=dofile('tests/fixtures/restore_point_repairs.lua')(source.evaluate,true) end
         if tag=='RUNE' or tag=='RUNE_COOLDOWN' then source=a:CopySettingsData(source);source.evaluate=dofile('tests/fixtures/restore_rune_repairs.lua')(source.evaluate,tag) end
+        if tag=='TT_HEALTH' or tag=='TT_HEALTHPCT' then source=a:CopySettingsData(source);source.evaluate=dofile('tests/fixtures/restore_health_forecast_repairs.lua')(source.evaluate,tag,true) end
         if tag=='TT_HEALTH' or tag=='TT_HEALTHPCT' then source=a:CopySettingsData(source);source.evaluate=dofile('tests/fixtures/restore_trend_consumer_qualifiers.lua')(source.evaluate,tag,true) end
         if tag=='TT_HEALTH' then source=a:CopySettingsData(source);source.evaluate=dofile('tests/fixtures/restore_health_forecast_deficit.lua')(source.evaluate,tag) end
         baseline[tag]=legacySource(a,source)

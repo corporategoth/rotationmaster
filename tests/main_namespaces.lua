@@ -1,5 +1,6 @@
 local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite()
 local restore=dofile('tests/fixtures/restore_main_qualifiers.lua')
+local restoreUnused=dofile('tests/fixtures/restore_main_unused_capture.lua')
 local function pack(...) return {n=select('#',...),...} end
 local function fixture(failCache)
  local rawLoad=loadfile;local calls={early=0,middle=0,late=0,sites={},caches={}};local nativeCache
@@ -92,8 +93,8 @@ test('actual cpu command uses bundled argument parser for start report cancel an
 end)
 test('strict inverse retains postslash main bytes unused capture aliases and existing source contracts',function()
  local f=F.new();f.load('Core/function_data.lua');local a=f.addon;local function hash(text) return a:FunctionSourceHash(text) end
- local h=assert(io.open('main.lua'));local text=h:read('*a');h:close();local old=restore(text,hash)
- assert(hash(old)=='4e3a4815' and not pcall(restore,old,hash) and not pcall(restore,text..text,hash) and not pcall(restore,text..'\n-- unrelated change\n',hash))
+ local h=assert(io.open('main.lua'));local text=h:read('*a');h:close();local active=restoreUnused(text,hash);local old=restore(active,hash)
+ assert(hash(old)=='4e3a4815' and not pcall(restore,old,hash) and not pcall(restore,active..active,hash) and not pcall(restore,active..'\n-- unrelated change\n',hash))
  f.load('Data/builtin_sources.lua');f.load('Core/builtin_sources.lua');assert(not a.BuiltinSourceCatalog.modules['main.lua'] and not a.builtinFunctions['builtin:Functions/cache.lua:ReportCacheStats'])
  assert(a.getCached==a.Functions.cache.getCached and a.ReportCacheStats==a.Functions.cache.ReportCacheStats and a.deepcopy==a.Functions.collections.deepcopy and a.isint==a.Functions.values.isint,'direct compatibility aliases changed')
 end)

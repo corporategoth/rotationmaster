@@ -34,14 +34,10 @@ addon:RegisterCondition("STAT", {
                 value.value ~= nil and value.value >= 0)
     end,
     evaluate = function(value, cache)
-        if not Functions.cache.getCached(cache, UnitExists, value.unit) then return false end
-        local cur
-        if value.stat <= 5 then
-            cur = select(2, Functions.cache.getCached(cache, UnitStat, value.unit, value.stat))
-        else
-            cur = select(2, Functions.cache.getCached(cache, UnitArmor, value.unit))
-        end
-        return Functions.values.compare(value.operator, cur, value.value)
+        local record,reason=Functions.cache.getCached(cache,addon.Platform.GetUnitStatObservation,addon.Platform,value.unit,value.stat)
+        if record==nil then return nil,reason end
+        if not record.exists then return false end
+        return Functions.values.compare(value.operator,record.value,value.value)
     end,
     print = function(_, value)
         return Functions.presentation.compareString(value.operator, string.format("%s %s",

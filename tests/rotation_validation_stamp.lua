@@ -46,6 +46,24 @@ test('default-map metatables are observed without materializing missing shadow k
  for i=1,25 do assert(stamp(a)==s);local opts,nextStamp=a:GetRotationValidationOptions();assert(nextStamp==s and opts.itemsets.shared==a.db.global.itemsets.shared) end
  assert(indexes==0 and next(default)==nil,'stamp lookup materialized an AceDB-style default')
 end)
+test('unchanged identity scans keep Lua dispatch overhead independent of registry size',function()
+ local a=fixture()
+ local function measure(size)
+  a.conditionDefinitions={};for i=1,size do local value={};if i%3==0 then value=false end;a.conditionDefinitions['CONDITION_'..i]=value end
+  local expected=stamp(a);local calls=0
+  local previous,mask,count=debug.gethook();local compiling=jit and jit.status()
+  if jit then jit.off();jit.flush() end
+  debug.sethook(function(event)
+   if event=='call' then local info=debug.getinfo(2,'S');if info.what=='Lua' and not info.source:match('^@tests/') then calls=calls+1 end end
+  end,'c')
+  local ok,why=pcall(function() for _=1,20 do assert(rawequal(a:GetRotationValidationStamp(),expected)) end end)
+  if previous then debug.sethook(previous,mask,count) else debug.sethook() end
+  if compiling then jit.on() end
+  assert(ok,why);return calls
+ end
+ local small,large=measure(1),measure(256)
+ assert(large-small<=20,'unchanged registry size added '..(large-small)..' Lua calls to20 freshness checks')
+end)
 local function runtimeFixture()
  local h=assert(io.open('tests/rotation_scope_runtime.lua'));local source=h:read('*a');h:close();local prefix=assert(source:match('^(.-)\nlocal function gate'));return assert(loadstring(prefix..'\nreturn fixture','@validation-stamp-real-runtime'))()()
 end

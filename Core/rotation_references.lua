@@ -14,7 +14,7 @@ local function sameEntries(value,previous,expected)
     local count=0
     if type(value)=='table' then
         for key,item in pairs(value) do
-            if not rawequal(normalized(item),previous[key]) then return false end
+            if not rawequal(type(item)=='table' and item or false,previous[key]) then return false end
             count=count+1
         end
     end
@@ -31,14 +31,14 @@ local function sameItemsets(shared,personal,previous,expected)
             -- Only actual personal entries shadow shared entries. A missing-key
             -- lookup could materialize an AceDB default and mutate the source.
             if not personal or rawget(personal,key)==nil then
-                if not rawequal(normalized(item),previous[key]) then return false end
+                if not rawequal(type(item)=='table' and item or false,previous[key]) then return false end
                 count=count+1
             end
         end
     end
     if personal then
         for key,item in pairs(personal) do
-            if not rawequal(normalized(item),previous[key]) then return false end
+            if not rawequal(type(item)=='table' and item or false,previous[key]) then return false end
             count=count+1
         end
     end
