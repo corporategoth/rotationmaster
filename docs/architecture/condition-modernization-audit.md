@@ -62,9 +62,11 @@ Hand selection now happens before interpreting enchant observations. This fixes 
 
 Single-item controls validate drops before consuming the cursor. Direct rejected inputs repaint their accepted stored value. Switching to an empty custom item list clears the old set preview and invalidates outstanding metadata updates.
 
-The first original icon batch contains sixteen generated transparent fantasy families: combat, character, spell, buff, debuff, item, weapon, spatial, resources, pet, talent, casting, logic, totem, environment and time. All 116 reviewed Built In identities now reference these bundled families; AND/OR/NOT share logic, and Delete uses RM's original trash control. Packaged category icons follow stable category identities after honoring explicit saved choices. No indexed defaults or saved categories are rewritten. Original PNGs, exact generation prompts/provenance, alpha reports, 64/128-pixel RGBA TGA exports and contrasting-background contact sheets remain under `Assets/Conditions/`.
+The first sixteen shared fantasy families are retained as historical artwork. They are superseded in the active catalog by 128 distinct selected designs: one for each of the 116 Built In condition identities, nine category designs, and separate AND/OR/NOT glyphs. The second batch combines subjects with qualifiers so, for example, buff time and cast time have different silhouettes. `Data/artwork.lua` is generated from the selected artwork manifest; explicit saved category and custom icon choices keep their original values.
 
-Root and asset reviewers inspected the 20/24/32 and 64/128-pixel contact sheets. The family silhouettes and color cues remain distinct, while fine internal detail is necessarily reduced at small sizes. This is sixteen semantic designs reused across the condition inventory, not 116 unique illustrations. Separate AND/OR/NOT glyphs and more specific health/mana, aura-stack, movement/threat, range and hand-specific variants remain design follow-up. A client reload and native visual acceptance are still required.
+The selected condition/category textures ship at 128 and 64 pixels. Nine new transparent overlays ship at 256 and 128 pixels and are available through the shared Effects texture selector. Original PNGs, generation prompts, provenance and contrasting-background QA remain in Git under `Assets/Conditions/v2/` and `Assets/Overlays/`; the generated release manifest excludes source/QA artifacts and superseded textures. The 274 selected runtime TGA paths total approximately 12.81 MiB. The package name matches the case of the actual root `RotationMaster.toc`.
+
+Root and independent reviewers inspected the small-size contact sheets and overlay composites. Coverage, distinct file hashes, alpha, selected paths and native-draft portability are checked offline. The unique-artwork batch is integrated and committed; native WoW rendering and a complete release-archive smoke test remain separate acceptance work.
 
 ## Proximity interval and observation contract
 
@@ -264,3 +266,22 @@ Generated localization now includes every packaged helper description, including
 Configuration, browser and Test/preview modules no longer acquire AceGUI while loading. Explicit legacy/module hosts still request the real compatibility library when constructed or released. Shared focus cleanup supports native inputs and optional legacy focus.
 
 `UI/condition_observation.lua` brackets synchronous native and optional Ace allocations for both Test/preview and embedded LuaWorkbench debugging. It preserves the caller's protected-execution result tuple, including nil values, and restores observers and the previous Create function on callback/executor failures and nested scopes. This removes duplicated interception code without changing saved factory bodies, getters or hashes. Headless checks exercise native-only and actual shipped-Ace allocation/lifecycle paths; advanced saved layouts, arbitrary saved Ace widget code and optional module hosting still require their explicit compatibility distribution.
+
+## Player movement observation boundary
+
+`Platform:GetPlayerMovementObservation()` observes only the first return of
+`GetUnitSpeed("player")`. It keeps the original actor and arguments, with no
+new existence, form, target or vehicle queries. A readable finite nonnegative
+speed is returned in a fresh record: zero is stationary, and positive
+fractional speeds are valid. Missing, failed, restricted, nil or malformed
+observations return `nil, reason` on supported probe policies. Other policies
+remain unavailable without calling the native API.
+
+The Built In MOVING evaluator caches that complete observation only within its
+evaluation pass. Unavailable speed no longer satisfies either MOVING or its
+negation, including when guarding a rotation branch. Known zero and positive
+speeds retain their ordinary Boolean meanings. Current editable condition and
+public helper copies share this boundary; saved raw Lua keeps its original
+behavior. The movement tests pin every other combat callback and original
+private helper identity, as well as fresh-pass recovery and exact native calls.
+These checks do not establish native gameplay acceptance across WoW clients.

@@ -257,7 +257,9 @@ addon:RegisterCondition("MOVING", {
         return true
     end,
     evaluate = function(_, cache)
-        return (Functions.cache.getCached(cache, GetUnitSpeed, "player") ~= 0)
+        local record,reason=Functions.cache.getCached(cache,addon.Platform.GetPlayerMovementObservation,addon.Platform)
+        if not record then return nil,reason end
+        return record.speed~=0
     end,
     print = function()
         return L["you {{!are|are not}} moving"]

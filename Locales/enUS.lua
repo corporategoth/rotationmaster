@@ -2371,6 +2371,7 @@ L["Fresh readable record with active, optional name, remainingSeconds and interr
 L["Fresh readable record with exists and, when present, a positive integer level."] = true
 L["Fresh readable record with exists and, when present, current health. Maximum health is included only when requested."] = true
 L["Fresh readable record with exists and, when present, powerType and finite current quantity. Requested maximum is finite and nonnegative. Quantities may be fractional; current-mode current may be signed."] = true
+L["Fresh readable record with finite nonnegative speed, or nil when unavailable."] = true
 L["Function or global function name to call."] = true
 L["Identifier-keyed scalar values or typed predicates. Strings, finite numbers and booleans are supported; referenced slots must be present. Values are captured when the phrase is created."] = true
 L["Insert each value visited by ipairs at its corresponding leading index in the destination array. Existing entries shift after the inserted prefix; traversal stops at the first missing source index."] = true
@@ -2402,6 +2403,7 @@ L["Observe a unit casting or channeling on supported readable clients. A readabl
 L["Observe explicit mana or the current raw power resource on supported readable clients. Select resource identities from the live PowerType enum; explicit mana never falls back to the current bar. Known absence returns exists=false; missing, failed, restricted or malformed observations return nil with a reason. Current-mode quantities preserve signed native resources; explicit mana is nonnegative. Request maximum only when needed; percentage consumers must require a positive maximum."] = true
 L["Observe glyph sockets on verified Wrath, Cata and Mists client layouts. Returns slots and a complete flag. Each slot has active=false when known locked or empty, active=true plus spellID when occupied, or nil active plus reason when unavailable. Unknown layouts and failed count queries return nil with a reason. This does not compare item names or prove exact item-to-spell identity."] = true
 L["Observe readable current health and optionally maximum health on supported clients. A readable absent unit returns exists=false. Missing, failed, restricted or malformed observations return nil with a reason; they do not establish an absent unit or a health value."] = true
+L["Observe the player current movement speed on supported readable clients. This queries GetUnitSpeed for player only, without testing another unit or redirecting vehicle ownership. Zero means stationary; positive finite fractional speeds remain valid. Missing, failed, restricted or malformed observations return nil with a reason."] = true
 L["Observed membership, or nil when unavailable."] = true
 L["Optional collection of key values selecting entries; its own keys are ignored."] = true
 L["Optional ordering callback called as order(t, leftKey, rightKey)."] = true
@@ -2410,6 +2412,7 @@ L["Original non-nil lookup result, or a colored placeholder string."] = true
 L["Original non-nil value, or a colored placeholder string."] = true
 L["Packaged helper from Conditions/spatial.lua."] = true
 L["Packaged helper from utils.lua."] = true
+L["Policy or availability reason for a nil movement observation."] = true
 L["Policy, query-validation or availability reason for a nil resource observation."] = true
 L["Policy, validation or availability reason for a nil health observation."] = true
 L["Policy, validation or availability reason for a nil snapshot."] = true

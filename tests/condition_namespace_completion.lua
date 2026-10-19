@@ -114,6 +114,12 @@ test('every callback byte and parameter remains identical after reversing only n
             source.on_register=source.on_register:gsub('ecs_state%.data%.GetStatInfo%(name%)','ecs_state.data:GetStatInfo(name)')
             source.evaluate=source.evaluate:gsub('ecs_state%.data%.GetStatInfo, value%.stat','ecs_state.data.GetStatInfo, ecs_state.data, value.stat')
         end
+        -- The movement readiness suite separately pins this sole semantic body
+        -- repair and reverses it against the entire original combat module.
+        if tag=='MOVING' then
+            assert(source.evaluate=='\n        local record,reason=addon.getCached(cache,addon.Platform.GetPlayerMovementObservation,addon.Platform)\n        if not record then return nil,reason end\n        return record.speed~=0\n    ','unexpected MOVING evaluator repair')
+            source.evaluate='\n        return (addon.getCached(cache, GetUnitSpeed, "player") ~= 0)\n    '
+        end
         for _,callback in ipairs(callbacks) do if source.parameters[callback] then parts[#parts+1]=callback;parts[#parts+1]=table.concat(source.parameters[callback],',');parts[#parts+1]=source[callback] end end
         local code=table.concat(parts,'\0');local first,second=1,0;for i=1,#code do first=(first+code:byte(i))%65521;second=(second+first)%65521 end
         assert(second*65536+first==hash,module..' '..tag..' changed beyond namespaces')
