@@ -38,6 +38,7 @@ def main():
             ['lua5.1', 'tests/native_widget_registration.lua'],
             ['lua5.1', 'tests/native_field_registration.lua'],
             ['lua5.1', 'tests/native_condition_compatibility.lua'],
+            ['lua5.1', 'tests/native_group_registration.lua'],
             ['luajit', 'tests/character_namespaces.lua'],
             ['luajit', 'tests/stats_namespaces.lua'],
             ['luajit', 'tests/spatial_stats_namespaces.lua'],

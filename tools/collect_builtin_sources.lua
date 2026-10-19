@@ -12,8 +12,9 @@ end
 for alias in pairs(cacheKinds) do assert(cacheOwnership.bindings[alias],'cache ownership declaration missing: '..alias) end
 -- Old saved factory bodies explicitly capture these library bindings. Retain
 -- their original identities even after current factories stop calling Ace.
-local retainedAceBindings={'UI/checkbox.lua','UI/selector.lua','UI/condition_inputs.lua','Conditions/common.lua','Conditions/combat.lua','Conditions/talent.lua'}
-local lazyAceGetters={};for _,path in ipairs(retainedAceBindings) do lazyAceGetters[path]=true end
+local retainedAceBindings={'UI/checkbox.lua','UI/selector.lua','UI/condition_inputs.lua','Conditions/common.lua','Conditions/combat.lua','Conditions/talent.lua','UI/condition_layout.lua'}
+local lazyAceGetters={};for _,path in ipairs(retainedAceBindings) do lazyAceGetters[path]='addon:GetConditionWidgetCompatibilityLibrary()' end
+lazyAceGetters['UI/condition_layout.lua']='addon:BindConditionGroupCompatibilityLibrary()'
 local standard={};for name,value in pairs(_G) do if type(value)=='function' then standard[name]=value end end
 local function descriptor(fn)
     local info=debug.getinfo(fn,'S');return {file=info.source:sub(1,1)=='@' and info.source:sub(2) or info.source,first=info.linedefined,last=info.lastlinedefined,what=info.what}
@@ -160,7 +161,7 @@ for _,case in ipairs(inventory.branches) do
         local getter=f.addon.builtinSourceModules and f.addon.builtinSourceModules[path]
         local existing=getter and getter('AceGUI')
         assert((not lazyAceGetters[path] and existing==nil) or existing==f.libraries['AceGUI-3.0'],'retained widget library identity mismatch: '..path)
-        module.bindings.AceGUI={kind='table',getterExpression=lazyAceGetters[path] and 'addon:GetConditionWidgetCompatibilityLibrary()' or nil}
+        module.bindings.AceGUI={kind='table',getterExpression=lazyAceGetters[path]}
     end
     callbackBindings=f.addon.builtinCallbackBindings or {}
     for _,bindings in pairs(callbackBindings) do assert(f.addon:NormalizeFunctionBindings(bindings),'invalid declared callback bindings') end

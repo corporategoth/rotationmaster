@@ -99,7 +99,7 @@ function addon:BuildFunctionBindingFields(form,owner,options)
     end
     local y=form.y
     local button=form:Button('function_bindings',string.format(options.header and L['Bindings (%d)'] or L['Function bindings (%d)'],count),function() owner.bindingExpanded=not owner.bindingExpanded;refresh() end)
-    if options.header then local header=options.header;button:ClearAllPoints();button:SetPoint('TOPLEFT',header.x,-header.y);button:SetWidth(header.width);form.y=math.max(y,header.y+28) end
+    if options.header then local header=type(options.header)=='function' and options.header(button) or options.header;button:ClearAllPoints();button:SetPoint('TOPLEFT',header.x,-header.y);button:SetWidth(header.width);form.y=math.max(y,header.y+28) end
     if not owner.bindingExpanded then return end
     local targets=self:FunctionBindingChoices()
     if not options.hideDescription then form:Text(L['Choose a source helper and its name in this Lua body, such as custom.ready or utils.getCached. Namespaces are private to this callback. Renaming a binding does not rewrite code.']) end

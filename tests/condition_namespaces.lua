@@ -95,4 +95,31 @@ test('exact previous namespace hashes import without weakening executable docume
         assert(a:ApplyFunctionBundleImport(plan));assert(a:ResolveFunctionBinding('LEGACY_'..name)())
     end
 end)
+test('Distance protects the canonical cache function reference and preserves both range results across real clones',function()
+    local f,a=fixture();local reads={exists=0,range=0};local bounds={nil,10};local checker=f.libraries['LibRangeCheck-3.0']
+    f.env.UnitExists=function(unit) assert(unit=='target');reads.exists=reads.exists+1;return true end
+    checker.GetRange=function(self,unit) assert(self==checker and unit=='target');reads.range=reads.range+1;return bounds[1],bounds[2] end
+    local source=assert(a:GetBuiltinConditionSource('DISTANCE'))
+    assert(source.evaluate:find('pcall(Functions.cache.getCached, cache, rcf, value.unit)',1,true),'protected cache reference still uses legacy API')
+    local copy=assert(a:CompileCustomCondition('COPY_DISTANCE',source))
+    local previous=a:CopySettingsData(source);previous.evaluate=previous.evaluate:gsub('Functions%.cache%.getCached','addon.getCached')
+    local old=assert(a:CompileCustomCondition('OLD_DISTANCE',previous));local value={unit='target',value=10};local cache={}
+    for _,definition in ipairs({a.conditionDefinitions.DISTANCE,copy,old}) do assert(definition.evaluate(value,cache)==true) end
+    assert(reads.exists==1 and reads.range==1,'canonical reference split cache identity or dropped the second nil-prefixed result')
+    bounds={5,15};for _,definition in ipairs({a.conditionDefinitions.DISTANCE,copy,old}) do assert(definition.evaluate(value,{})==false) end
+    bounds={nil,10};assert(copy.evaluate(value,{})==true)
+    assert(a:FunctionSourceHash(a.builtinFunctions['builtin:Conditions/spatial.lua:rcf'].source)=='a7ab75e4')
+    assert(a:FunctionSourceHash(a.builtinFunctions['builtin:Conditions/spatial.lua:protectedRead'].source)=='cc49d134')
+end)
+test('Distance canonical protected cache preserves unavailable reasons and negation on failed observations',function()
+    local f,a=fixture();f.env.UnitExists=function() return true end
+    local state={};local opaque={};f.env.canaccessvalue=function(value) return not rawequal(value,opaque) end
+    f.libraries['LibRangeCheck-3.0'].GetRange=function() if state.fail then error('range failed') end;return nil,state.upper end
+    local copy=assert(a:CompileCustomCondition('COPY_DISTANCE',a:GetBuiltinConditionSource('DISTANCE')));a:RegisterCondition('COPY_DISTANCE',copy)
+    for _,entry in ipairs({{upper=nil,reason='range-unavailable'},{upper=opaque,reason='restricted-value'},{upper=-1,reason='invalid-range-result'},{fail=true,reason='range-provider-error'}}) do
+        state=entry
+        for _,definition in ipairs({a.conditionDefinitions.DISTANCE,copy}) do local result,why=definition.evaluate({unit='target',value=10},{});assert(result==nil and why==entry.reason) end
+        assert(a:evaluateConditionResult({type='NOT',value={type='COPY_DISTANCE',unit='target',value=10}}).status=='unavailable')
+    end
+end)
 finish()

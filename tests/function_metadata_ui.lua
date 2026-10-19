@@ -132,4 +132,19 @@ test('inserting before saved parameters warns because existing argument position
     assert(#d.value.args==2 and d.value.args[1].name=='argument1' and d.value.args[2].name=='value' and #original.args==1)
     add=d.form.fields.add_args;add:GetScript('OnDragStart')(add);d.form.ordered.function_args:Drop(3);assert(#d.value.args==3 and not d.form.prompt.frame:IsShown(),'append warned despite preserving existing positions')
 end)
+test('binding caption keeps compact width and adjacent syntax action when resizing or expanding',function()
+    for _,readonly in ipairs({false,true}) do
+        local _,_,_,d=fixture(readonly)
+        for _,width in ipairs({1100,280,1800,600}) do
+            d.frame:SetWidth(width);d.form:Draw();local binding=d.form.fields.function_bindings
+            local natural=math.max(90,math.ceil(binding:GetFontString():GetStringWidth())+24)
+            assert(binding:GetWidth()<=natural,'Bindings stretches to fill the pane')
+            assert(d.syntax.point[2]==binding.point[2]+binding:GetWidth()+6 and d.syntax.point[3]==binding.point[3],'Check syntax is separated from Bindings')
+            assert(d.syntax.point[2]+d.syntax:GetWidth()<=d.form.width,'binding actions overflow a narrow pane')
+        end
+        d.form.fields.function_bindings:Click();local binding=d.form.fields.function_bindings
+        for _,label in ipairs(d.form.pool.bindingLabels or {}) do if label:IsShown() then assert(label.point[3]<binding.point[3],'expanded binding content overlaps the compact toolbar') end end
+        assert(not d:IsDirty(),'opening or resizing binding actions changed source')
+    end
+end)
 finish()

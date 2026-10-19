@@ -249,7 +249,7 @@ addon:RegisterCondition("DISTANCE", {
         if not Functions.cache.getCached(cache, UnitExists, value.unit) then return false end
         -- pcall preserves both range bounds returned by the cached observation.
         ---@diagnostic disable-next-line: unbalanced-assignments
-        local ok, minRange, maxRange = pcall(addon.getCached, cache, rcf, value.unit)
+        local ok, minRange, maxRange = pcall(Functions.cache.getCached, cache, rcf, value.unit)
         if not ok then return nil, "range-provider-error" end
         if not addon.Platform:CanReadValue(minRange) or not addon.Platform:CanReadValue(maxRange) then return nil, "restricted-value" end
         for index=1,2 do

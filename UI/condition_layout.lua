@@ -1,5 +1,10 @@
 local _,addon=...
-local AceGUI=LibStub('AceGUI-3.0')
+local AceGUI
+-- Advanced saved layouts share this cell with the unchanged constructor.
+function addon:BindConditionGroupCompatibilityLibrary()
+    AceGUI=addon:GetConditionWidgetCompatibilityLibrary()
+    return AceGUI
+end
 ---@class RMConditionGroup: AceGUIWidget
 ---@field children table[]
 ---@field rmLease table
@@ -114,7 +119,6 @@ local function constructor(legacy)
     ---@cast group AceGUIWidget
     return addon:RegisterConditionWidget(group,1,legacy)
 end
-AceGUI:RegisterWidgetType('RM-ConditionGroup',function() return constructor(true) end,1)
 ---@return RMConditionGroup
 function addon:CreateConditionGroup()
     local group=addon:AcquireConditionWidget('RM-ConditionGroup',constructor)
@@ -125,7 +129,7 @@ end
 -- BEGIN GENERATED RM SOURCE BINDINGS
 do
     local function sourceGetter(name)
-        if name=="AceGUI" then return AceGUI end
+        if name=="AceGUI" then return addon:BindConditionGroupCompatibilityLibrary() end
         if name=="CreateConditionGroup" then return addon.CreateConditionGroup end
         if name=="constructor" then return constructor end
         if name=="verticalAlignment" then return verticalAlignment end

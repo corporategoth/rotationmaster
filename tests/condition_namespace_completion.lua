@@ -83,7 +83,7 @@ local function fixture(case)
 end
 local function legacy(a,source)
     local result=a:CopySettingsData(source)
-    for callback in pairs(a.CustomConditionCallbacks) do if result[callback] then for name in pairs(owners) do result[callback]=result[callback]:gsub(path(name):gsub('%.','%%.')..'%(','addon.'..name..'(') end end end
+    for callback in pairs(a.CustomConditionCallbacks) do if result[callback] then for name in pairs(owners) do result[callback]=result[callback]:gsub(path(name):gsub('%.','%%.')..'([%(,])','addon.'..name..'%1') end end end
     for name in pairs(owners) do result.bindings[path(name)]=nil end
     return result
 end
