@@ -69,6 +69,7 @@ local defaults = {
         disable_buttons = false,
         rotation_view = "diagram",
         lua_editor = "auto",
+        lua_line_numbers = true,
         rotationTagColors = {},
         preview_spells = 0,
         preview_vertical = false,

@@ -427,3 +427,36 @@ function addon:LayoutWorkbenchSpellGroup(content,children)
     if content.obj and content.obj.LayoutFinished then content.obj:LayoutFinished(nil,height) end
     return height
 end
+
+-- Editable combobox suggestions share the flat selector used by tags. The
+-- edit retains its ordinary parser/commit handlers, so typed new values work.
+function addon:AttachWorkbenchEditSuggestions(form,input,entries,changed,valid)
+    local menu=input.suggestions or self:CreateWorkbenchSelector();input.suggestions=menu
+    local function alive() return not valid or valid() end
+    local function suggest(all)
+        if not alive() or not input:IsEnabled() then menu:Hide();return end
+        local query=all and '' or (input:GetText() or ''):lower();local matches={}
+        local values=type(entries)=='function' and entries() or entries
+        for _,entry in ipairs(values or {}) do if tostring(entry.text):lower():find(query,1,true) then matches[#matches+1]=entry end end
+        if #matches==0 then menu:Hide();return end
+        menu:Open(input,matches,input:GetText(),function(value)
+            if not alive() then return end
+            input:SetText(value);input:SetTextColor(1,1,1)
+            for _,record in ipairs(form.edits or {}) do if record.control==input then record.dirty=false;record.baseline=tostring(value) end end
+            changed(value);input:ClearFocus()
+        end,alive,true)
+    end
+    for _,event in ipairs({'OnTextChanged','OnEditFocusGained'}) do
+        local previous=input:GetScript(event)
+        self:SetUIScript(input,event,function(control,user,...)
+            if previous then previous(control,user,...) end
+            if event=='OnEditFocusGained' or user then suggest(event=='OnEditFocusGained') end
+        end)
+    end
+    for _,event in ipairs({'OnEscapePressed','OnEnterPressed'}) do
+        local previous=input:GetScript(event)
+        self:SetUIScript(input,event,function(...) menu:Hide();if previous then return previous(...) end end)
+    end
+    form.cleanups[#form.cleanups+1]=function() menu:Release() end
+    return menu
+end

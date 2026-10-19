@@ -134,3 +134,21 @@ function platform:IsMeleeAttackNeeded(unit)
     if beyond==nil then return nil,why end
     return not beyond
 end
+
+-- BEGIN GENERATED RM SOURCE BINDINGS
+do
+    local function sourceGetter(name)
+        if name=="Platform_GetSpellRangeState" then return addon.Platform.GetSpellRangeState end
+        if name=="call" then return call end
+        if name=="findSlot" then return findSlot end
+        if name=="platform" then return platform end
+        if name=="spellID" then return spellID end
+    end
+    if addon.RegisterBuiltinSourceModule then
+        addon:RegisterBuiltinSourceModule("Platform/actions.lua", sourceGetter)
+    else
+        addon.builtinSourceModules=addon.builtinSourceModules or {}
+        addon.builtinSourceModules["Platform/actions.lua"]=sourceGetter
+    end
+end
+-- END GENERATED RM SOURCE BINDINGS

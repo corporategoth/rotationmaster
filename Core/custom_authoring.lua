@@ -116,13 +116,15 @@ function addon:ValidateCustomConditionSource(key,source,compatibility,allowUnava
     if not compatibility then for field in pairs(source) do if field~='description' and field~='icon' and field~='fields' and field~='disabled' and field~='fieldOrder' and field~='bindings' and field~='parameters' and field~='requiredFields' and not callbacks[field] then return nil,{field=field,reason='unknown-field'} end end end
     local fields,why=self:NormalizeCustomFieldSchema(source.fields,true);if not fields then return nil,{field='fields',reason=why} end
     if source.fieldOrder~=nil and not self:NormalizeCustomFieldOrder(source.fieldOrder,fields) then return nil,{field='fields',reason='invalid-field-order'} end
+    local parameters,parameterError=self:NormalizeCustomConditionParameters(source.parameters);if not parameters then return nil,{field='parameters',reason=parameterError} end
     local bindings,unavailable
     if source.bindings~=nil then
-        local why;bindings,why=self:NormalizeFunctionBindings(source.bindings,{{name='value'},{name='cache'},{name='evalStart'},{name='spec'},{name='parent'},{name='frame'},{name='tag'}})
+        local arguments={{name='value'},{name='cache'},{name='evalStart'},{name='spec'},{name='parent'},{name='frame'},{name='tag'}}
+        for _,aliases in pairs(parameters) do for _,name in ipairs(aliases) do arguments[#arguments+1]={name=name} end end
+        local why;bindings,why=self:NormalizeFunctionBindings(source.bindings,arguments)
         if not bindings then return nil,{field='bindings',reason=why} end
         local available,problem=self:AreFunctionBindingsAvailable(bindings);if not available then if not allowUnavailable then return nil,{field='bindings',reason=problem} end;unavailable=problem end
     end
-    local parameters,parameterError=self:NormalizeCustomConditionParameters(source.parameters);if not parameters then return nil,{field='parameters',reason=parameterError} end
     local required;if source.requiredFields then required=self:NormalizeCustomConditionRequiredFields(source.requiredFields,fields);if not required then return nil,{field='requiredFields',reason='invalid-required-fields'} end end
     local compiled,total={},0
     for name in pairs(callbacks) do

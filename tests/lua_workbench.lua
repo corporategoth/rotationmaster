@@ -30,7 +30,7 @@ local function fixture()
   end;return widget
  end
  ace.Release=function(self,widget) if widget.isQueuedForRelease then return end;widget.isQueuedForRelease=true;for _,child in ipairs(widget.children or {}) do self:Release(child) end;if widget.OnRelease then widget:OnRelease() end;if widget.frame then widget.frame:Hide() end end
- f.load('Core/custom_authoring.lua');f.load('Core/lua_symbols.lua');f.load('UI/settings_transfer.lua');f.load('UI/condition_source_preview.lua');f.load('UI/lua_debug_output.lua');f.load('UI/lua_completion.lua');f.load('UI/lua_editor.lua');f.load('Libs/LuaWorkbench-Embed/modules.lua');local file=io.open('Integrations/lua_workbench.lua');if file then file:close();f.load('Integrations/lua_workbench.lua') end
+ f.load('Core/custom_authoring.lua');f.load('Core/lua_symbols.lua');f.load('UI/settings_transfer.lua');f.load('UI/condition_source_preview.lua');f.load('UI/lua_debug_output.lua');f.load('UI/lua_completion.lua');do local lines=io.open('UI/line_numbers.lua');if lines then lines:close();f.load('UI/line_numbers.lua') end end;f.load('UI/lua_editor.lua');f.load('Libs/LuaWorkbench-Embed/modules.lua');local file=io.open('Integrations/lua_workbench.lua');if file then file:close();f.load('Integrations/lua_workbench.lua') end
  f.env.LuaWorkbench={db={options={autocomplete=true},drafts={user={source='KEEP'}}}};f.env.LuaWorkbenchDB={drafts={user={source='KEEP'}}}
  return f,f.addon
 end
@@ -250,5 +250,133 @@ test('advanced documentation resolves complete bare function references passed a
  for character=1,10 do assert(editor:HoverSourcePosition(input,100+(character-.5)*7,205)==first,'advanced hover misses function-name character '..character) end
  assert(editor:HoverSourcePosition(input,171,205)==nil,'argument separator was included in reference hitbox')
  c:Release()
+end)
+test('clicked Run executes without arming and clicked debugger controls advance above the text viewport',function()
+ local f,a=fixture();f.env.GameTooltip={Hide=function() end};local c=a:CreateLuaWorkbenchControl(f.env.UIParent,function() end,function() return true end)
+ c.frame:SetSize(600,220);c:SetText('local first=2\nlocal second=first+3\nreturn second');c:SetContext({kind='function',id='CLICKED',source={args={},bindings={}}})
+ c.play:Click();assert(not c.engine.Debugger.armed,'Run started the debugger instead of running');assert(table.concat(c.engine.Query.Console.lines,' '):find('5',1,true),'Run lost returned values')
+ local u,d=c.engine.DebugUI,c.engine.Debugger
+ local topOffset;local bg=c.engine.Query.Console.input.scrollBG;local setPoint=bg.SetPoint;function bg:SetPoint(...) local point={...};if point[1]=='TOPLEFT' then topOffset=point[5] end;return setPoint(self,...) end
+ c.engine.Workspace.debugButton:Click();assert(d.armed and d.paused,'Debug did not start at a checkpoint')
+ assert(u.toolbar:GetFrameLevel()>c.edit:GetFrameLevel(),'code viewport can intercept debugger button clicks')
+ assert(u.dock:IsShown(),'terminal is hidden in a minimum-height code pane')
+ assert(topOffset==-60,'debug toolbar does not reserve a compact strip above the editor')
+ local line=d.line;u.buttons[2]:Click();assert(d.line~=line and d.paused,'clicked Step over did not move')
+ u.buttons[3]:Click();assert(d.paused,'clicked Step into did not pause')
+ u.buttons[1]:Click();assert(not d.thread and not d.lastError,'clicked Continue did not complete')
+ c:Release();assert(not d.armed and not u.dock:IsShown(),'released host retained debugger UI')
+end)
+test('Run shares Test callback context preserves nil returns and displays full errors',function()
+ local f,a=fixture();local body={fields={amount='number'},bindings={}};local owner={model={key='RUN_TEST'},OwnerValid=function() return true end,PendingSource=function() return body end}
+ local c=a:CreateLuaWorkbenchControl(f.env.UIParent,function() end,function() return true end);c:SetText('return value.amount,nil,evalStart');c:SetContext({kind='condition',id='RUN_TEST',callback='evaluate',source=body,testOwner=owner})
+ assert(c.Run and not c:Run(),'Run bypassed condition Test setup');owner.conditionTestState={configured=true,key='RUN_TEST',values={amount=42},source=body,profile=a.db.profile,global=a.db.global}
+ assert(c:Run() and not c.engine.Debugger.armed);assert(table.concat(c.engine.Query.Console.lines,' '):find('42  nil  100',1,true),'Run lost the complete callback arguments or nil results')
+ c:SetText('error(string.rep("x",5000).."RUN_ERROR_END")');assert(not c:Run());local output=c:ShowDebugOutput();assert(output.input:GetText():find('RUN_ERROR_END',1,true),'Run error is truncated');c:Release()
+end)
+test('Run and Debug keep lexical parameters varargs and namespaced bindings consistent',function()
+ local f,a=fixture();local c=a:CreateLuaWorkbenchControl(f.env.UIParent,function() end,function() return true end)
+ a.builtinFunctions={CHECK={source={description='check',args={},returns={}},get=function() return function(value) return value*2 end end}}
+ c:SetContext({kind='function',id='VARARGS',source={args={{name='first',type='number'},{name='...',type='any'}},bindings={twice='CHECK'}}})
+ c.arguments:SetText('{ n=3, 7, nil, 9 }');c:SetText('print(first, select("#", ...), functions.twice(9)); return ...')
+ assert(c:Run());local text=table.concat(c.engine.Query.Console.lines,' ');assert(text:find('7  2  18',1,true) and text:find('return  nil  9',1,true),text)
+ c.engine.Query.Console:Clear();assert(c:Debug());c.engine.Debugger:Continue();local output=table.concat(c.engine.Query.Console.lines,' ');assert(output:find('7  2  18',1,true),output)
+ c:SetReadOnly(true);c.arguments:SetText('{ 1, 2 }');assert(c:Run() and not c.edit:IsEnabled(),'readonly source cannot run explicitly or became editable');c:Release()
+end)
+test('line numbers follow native glyph heights spacing wrapped source lines and blank lines',function()
+ local f,a=fixture();local c=a:CreateLuaWorkbenchControl(f.env.UIParent,function() end,function() return true end);c:SetText('short\n'..string.rep('w',100)..'\n\nlast')
+ local input=c.engine.Query.Console.input;local state=input.queryLineNumbers;assert(state,'default line numbers missing')
+ function state.measure:GetStringHeight() local rows=math.max(1,math.ceil(#(self:GetText() or '')*7/math.max(1,self:GetWidth())));return rows*12.1875+(rows-1)*2 end
+ state.source=nil;state.rmMetrics=nil;input.editBox:SetWidth(100);c.engine.Query.Console:UpdateLineNumbers()
+ assert(math.abs(state.positions[2].offset-14.1875)<.0001,'font spacing was omitted from native logical-line advance')
+ assert(math.abs(state.positions[3].offset-(14.1875+7*14.1875))<.0001,'wrapped line did not reserve all native rows')
+ assert(math.abs(state.positions[4].offset-state.positions[3].offset-14.1875)<.0001,'blank line lost its row spacing')
+ c:SetText(string.rep('return true\n',60));state.source=nil;c.engine.Query.Console:UpdateLineNumbers();assert(math.abs(state.positions[61].offset-60*14.1875)<.0001,'fractional glyph spacing drifted over a long snippet');c:Release()
+end)
+test('line number preference controls advanced and native gutters without rewriting source or cursor',function()
+ local f,a=fixture();local advanced=a:CreateLuaWorkbenchControl(f.env.UIParent,function() end,function() return true end)
+ local native=a:CreateWorkbenchLuaEditor(f.env.UIParent,function() end,function() return true end,'plain')
+ for _,c in ipairs({advanced,native}) do
+  c.frame:SetSize(600,300);c:SetText('return true\nreturn false');c.edit:SetCursorPosition(5);c:Layout()
+  assert(type(c.SetLineNumbers)=='function' and c.lineNumbersVisible,'editor has no visible shared gutter')
+  c:SetLineNumbers(false);assert(not c.lineNumbersVisible,'explicit gutter hide failed');c:SetLineNumbers(true)
+ end
+ a.db.profile.lua_line_numbers=false
+ for _,c in ipairs({advanced,native}) do c:Layout();assert(not c.lineNumbersVisible,'global preference left a gutter visible');assert(c:GetText()=='return true\nreturn false' and c.edit:GetCursorPosition()==5,'gutter preference rewrote code/cursor') end
+ a.db.profile.lua_line_numbers=true
+ for _,c in ipairs({advanced,native}) do c:Layout();assert(c.lineNumbersVisible,'global preference did not restore gutter');c:Release() end
+end)
+test('native gutters measure inside text insets and survive release and reacquire without input hooks leaking',function()
+ local f,a=fixture();local c=a:CreateWorkbenchLuaEditor(f.env.UIParent,function() end,function() return true end,'plain');c.frame:SetSize(188,300);c:SetText('abcdefghijklmn\nnext')
+ local console=c.completionEngine.Query.Console;local state=console.input.queryLineNumbers
+ assert(c.edit:GetWidth()==100 and state.positions[2].offset==24,'native line wrapping ignored the edit text insets')
+ local width=c.scroll:GetWidth();c:SetLineNumbers(false);assert(c.scroll:GetWidth()==width+56,'hidden gutter kept its blank margin')
+ c:Release();assert(not console.input.queryLineNumbers,'released native gutter still owns cursor handlers')
+ c:Acquire(function() end,function() return true end);c:SetText('return true');assert(console.input.queryLineNumbers and c.lineNumbersVisible,'reopened editor lost line numbers')
+ a.db.profile.lua_line_numbers=false;c.frame:GetScript('OnUpdate')(c.frame,.1);assert(not console.input.queryLineNumbers,'open native editor did not notice the global preference');c:Release()
+end)
+test('Run and Debug match private qualified binding namespaces and explicit method receivers',function()
+ local f,a=fixture();local c=a:CreateLuaWorkbenchControl(f.env.UIParent,function() end,function() return true end)
+ a.builtinFunctions={READY={source={description='ready',args={},returns={}},get=function() return function(receiver,value) assert(receiver==a);return value+10 end end},DOUBLE={source={description='double',args={},returns={}},get=function() return function(value) return value*2 end end}}
+ f.env.myTools={sentinel=true};local source={args={},bindings={['myTools.nested.ready']='READY',loose='DOUBLE',['functions.ready2']='READY'}}
+ c:SetContext({kind='function',id='QUALIFIED',source=source});c:SetText('assert(myTools.sentinel==nil)\nprint(myTools.nested.ready(addon,2),loose(3),functions.loose(4),functions.ready2(addon,5))')
+ assert(c:Run(),'qualified binding failed to run');assert(table.concat(c.engine.Query.Console.lines,' '):find('12  6  8  15',1,true),'Run did not match live binding paths')
+ c.engine.Query.Console:Clear();assert(c:Debug());c.engine.Debugger:Continue();assert(table.concat(c.engine.Query.Console.lines,' '):find('12  6  8  15',1,true),'Debug did not match live binding paths');assert(f.env.myTools.sentinel and not f.env.myTools.nested,'binding namespaces leaked into game globals')
+ source={args={{name='functions',type='table'}},bindings={['myTools.ready']='READY'}};c:SetContext({kind='function',id='SHADOW',source=source});c.arguments:SetText('{{legacy="kept"}}');c:SetText('print(functions.legacy,myTools.ready(addon,1))');assert(c:Run());assert(table.concat(c.engine.Query.Console.lines,' '):find('kept  11',1,true),'canonical functions parameter was replaced')
+ a.builtinFunctions.NOTHING={source={description='empty',args={},returns={}},get=function() return nil end,valueBinding=true};f.env.hidden='game global';c:SetContext({kind='function',id='NIL_BINDING',source={args={},bindings={hidden='NOTHING'}}});c.arguments:SetText('{}');c:SetText('assert(hidden==nil and functions.hidden==nil)');assert(c:Run(),'nil binding fell through to a game global');assert(c:Debug());c.engine.Debugger:Continue();assert(not c.debugError,'debug nil binding fell through to a game global');c:Release()
+end)
+test('condition legacy parameter aliases shadow qualified namespace roots exactly as live callbacks do',function()
+ local f,a=fixture();local body={fields={amount='number'},parameters={evaluate={'myTools','cache'}},bindings={['myTools.ready']='READY'}}
+ a.builtinFunctions={READY={source={description='ready',args={},returns={}},get=function() return function() return 99 end end}}
+ local owner={model={key='LEGACY_ROOT'},OwnerValid=function() return true end,PendingSource=function() return body end};owner.conditionTestState={configured=true,key='LEGACY_ROOT',values={amount=7},source=body,profile=a.db.profile,global=a.db.global}
+ local c=a:CreateLuaWorkbenchControl(f.env.UIParent,function() end,function() return true end);c:SetContext({kind='condition',id='LEGACY_ROOT',callback='evaluate',source=body,testOwner=owner});c:SetText('assert(myTools==value and myTools.ready==nil);print(myTools.amount)');assert(c:Run(),'legacy alias was overwritten by a namespace root')
+ c.engine.Query.Console:Clear();assert(c:Debug());c.engine.Debugger:Continue();assert(not c.debugError and table.concat(c.engine.Query.Console.lines,' '):find('7',1,true),'Debug lost the legacy root shadow');c:Release()
+end)
+test('advanced gutter toggles preserve editor caret handlers and release unwinds both layers',function()
+ local f,a=fixture();local c=a:CreateLuaWorkbenchControl(f.env.UIParent,function() end,function() return true end);c:SetText('return true\nreturn false')
+ local input=c.engine.Query.Console.input;local state=input.queryEditor
+ c:SetLineNumbers(false);c.edit:SetCursorPosition(6);c.edit:GetScript('OnCursorChanged')(c.edit,42,-14,2,12)
+ assert(state.lastCursor==6 and state.caret.point[4]==42 and state.caret.point[5]==-14,'hiding gutter removed the active editor caret handler')
+ c:SetLineNumbers(true);c.edit:SetCursorPosition(3);c.edit:GetScript('OnCursorChanged')(c.edit,21,0,2,12)
+ assert(state.lastCursor==3 and state.caret.point[4]==21,'restoring gutter lost native editor cursor behavior')
+ c:Release();assert(not input.queryEditor and not input.queryLineNumbers,'release left a live editor/gutter state')
+ local calls=0;c.engine.Query.Console.UpdateLineNumbers=function() calls=calls+1 end
+ c.edit:GetScript('OnCursorChanged')(c.edit,14,0,2,12);assert(calls==0,'release restored a stale gutter callback')
+end)
+test('Output Clear clears both printed and terminal output before refreshing the visible report',function()
+ local f,a=fixture();local c=a:CreateLuaWorkbenchControl(f.env.UIParent,function() end,function() return true end);c:SetContext({kind='function',id='CLEAR_OUTPUT',source={args={},bindings={}}})
+ c.engine.Query.Console:Write('printed output');c.engine.Debugger:TerminalWrite('terminal output');c.debugError='runtime error'
+ local output=c:ShowDebugOutput();assert(output.input:GetText():find('terminal output',1,true));output.clear:Click()
+ assert(#c.engine.Query.Console.lines==0 and #c.engine.Debugger.terminalLines==0,'Clear left terminal entries retained')
+ assert(c.engine.DebugUI.terminalOutput:GetText()=='','Clear left the dock terminal populated')
+ assert(not output.input:GetText():find('terminal output',1,true) and not output.input:GetText():find('runtime error',1,true),'Clear report still contains previous output');c:Release()
+end)
+test('line metrics measure literal markup in advanced and highlighted editors while plain uses native rendering',function()
+ local f,a=fixture();local first='local text = "|cffaabbcclong|r |Hspell:1234|h[Lightning]|h |TInterface\\Icons\\Test:16|t"';local source=first..'\nreturn true'
+ local function rendered(text)
+  return (text:gsub('||','\1'):gsub('|c%x%x%x%x%x%x%x%x',''):gsub('|r',''):gsub('|H.-|h(.-)|h','%1'):gsub('|T.-|t','x'):gsub('\1','|'))
+ end
+ local function check(c,advanced,literal)
+  c.frame:SetSize(188,300);c:SetText(source)
+  local input=advanced and c.engine.Query.Console.input or c.completionEngine.Query.Console.input
+  local console=advanced and c.engine.Query.Console or c.completionEngine.Query.Console;local state=input.queryLineNumbers
+  function state.measure:GetStringHeight()
+   local rows=math.max(1,math.ceil(#rendered(self:GetText() or '')*7/math.max(1,self:GetWidth())))
+   return rows*12+(rows-1)*self:GetSpacing()
+  end
+  state.rmMetrics=nil;console:UpdateLineNumbers()
+  local left,right=c.edit:GetTextInsets();local width=c.edit:GetWidth()-left-right;local display=literal and first or rendered(first)
+  local rows=math.max(1,math.ceil(#display*7/width));local expected=rows*(12+c.edit:GetSpacing())
+  assert(state.positions[2].offset==expected,'line wrapping does not match provider markup rendering')
+  assert(c:GetText()==source and state.positions[2].sourceStart==#first+2,'measuring markup altered source bytes or line starts');c:Release()
+ end
+ check(a:CreateLuaWorkbenchControl(f.env.UIParent,function() end,function() return true end),true,true)
+ check(a:CreateWorkbenchLuaEditor(f.env.UIParent,function() end,function() return true end,'plain'),false,false)
+ f.load('LibsAugment/FAIAP.lua');local enable=a.LuaSyntax.enable
+ a.LuaSyntax.enable=function(edit,...)
+  local methods={GetText=edit.GetText,SetText=edit.SetText};setmetatable(edit,{__index=methods})
+  function edit:GetMaxBytes() return self.maxBytes or 0 end;function edit:SetMaxBytes(value) self.maxBytes=value end;function edit:GetMaxLetters() return self.maxLetters or 0 end;function edit:IsMultiLine() return self.multiLine end
+  return enable(edit,...)
+ end
+ local highlighted=a:CreateWorkbenchLuaEditor(f.env.UIParent,function() end,function() return true end,'native');assert(highlighted.syntax,'native syntax engine did not attach');check(highlighted,false,true)
 end)
 finish()

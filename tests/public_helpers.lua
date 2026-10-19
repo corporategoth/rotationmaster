@@ -1,7 +1,7 @@
 local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite()
-local expected={getCached='addon.getCached',getRetryCached='addon.getRetryCached',compare='addon.compare',isin='addon.isin',nullable='addon.nullable',nullable_value='addon.nullable_value',split='addon.split',wrap='addon.wrap',trim='addon.trim',CreateConditionEditBox='addon:CreateConditionEditBox',CreateConditionSlider='addon:CreateConditionSlider',CreateConditionDropdown='addon:CreateConditionDropdown',CreateConditionCheckBox='addon:CreateConditionCheckBox',Widget_UnitWidget='addon:Widget_UnitWidget',Widget_SpellWidget='addon:Widget_SpellWidget'}
+local expected={getCached='addon.getCached',getRetryCached='addon.getRetryCached',compare='addon.compare',isin='addon.isin',nullable='addon.nullable',nullable_value='addon.nullable_value',split='addon.split',wrap='addon.wrap',trim='addon.trim',CreateConditionEditBox='addon:CreateConditionEditBox',CreateConditionSlider='addon:CreateConditionSlider',CreateConditionDropdown='addon:CreateConditionDropdown',CreateConditionCheckBox='addon:CreateConditionCheckBox',Widget_UnitWidget='addon:Widget_UnitWidget',Widget_SpellWidget='addon:Widget_SpellWidget',Widget_GetSpellId='addon:Widget_GetSpellId',Platform_IsSpellReady='addon.Platform:IsSpellReady',Platform_GetSpellCooldown='addon.Platform:GetSpellCooldown',Platform_GetSpellCharges='addon.Platform:GetSpellCharges',Platform_GetSpellRangeState='addon.Platform:GetSpellRangeState'}
 local function fixture(...)
-    local f=F.new(...);f.load('Data/builtin_sources.lua');f.load('Core/builtin_sources.lua');f.load('Core/custom_authoring.lua');f.load('Conditions/common.lua')
+    local f=F.new(...);f.load('Data/builtin_sources.lua');f.load('Core/builtin_sources.lua');f.load('Core/custom_authoring.lua');f.load('Conditions/common.lua');f.load('Platform/spells.lua');f.load('Platform/actions.lua')
     f.env.loadstring=function(text,name) local fn,why=loadstring(text,name);if fn then setfenv(fn,f.env) end;return fn,why end
     return f,f.addon
 end
@@ -25,6 +25,14 @@ test('curated addon helpers register from modules loaded before and after the ca
     assert(public(a,'getCached').source.args[1].name=='cache')
     assert(public(a,'CreateConditionEditBox').source.args[1].name=='self')
     local _,trimID=public(a,'trim');a.trim=function() return 'live namespace getter' end;assert(a:ResolveFunctionBinding(trimID)()=='live namespace getter')
+end)
+test('platform public helpers retain real source getters typed receivers and multiple results',function()
+    local _,a=fixture();local record,id=public(a,'Platform_IsSpellReady')
+    assert(record.source.args[1].name=='self' and record.source.args[1].type=='RMPlatform' and #record.source.returns==2)
+    assert(a:ResolveFunctionBinding(id)==a.Platform.IsSpellReady,'dotted getter did not reference the real platform method')
+    local ready=clone(a,'Platform_IsSpellReady');a.Platform.GetSpellCooldown=function() return {isEnabled=true,startTime=0,duration=0} end
+    assert(ready(a.Platform,403,100)==true)
+    local spell=public(a,'Widget_GetSpellId');assert(#spell.source.returns==2 and spell.source.args[2].name=='spellid')
 end)
 test('cloned cache helpers preserve nil tuples retry misses and cache identity',function()
     local _,a=fixture();local cached=clone(a,'getCached');local retry=clone(a,'getRetryCached');local calls=0

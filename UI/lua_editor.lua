@@ -49,6 +49,7 @@ function addon:CreateWorkbenchLuaEditor(parent,changed,valid,preferred)
                     if not pcall(self.inner.SetReadOnly,self.inner,self.readOnly) then fallback() end
                 elseif self.readOnly then fallback() end
             end
+            function c:SetLineNumbers(visible) if self.inner.SetLineNumbers and not pcall(self.inner.SetLineNumbers,self.inner,visible) then fallback() end end
             function c:SetCloseHandler(callback) self.closeRequested=callback;if self.inner.SetCloseHandler then self.inner:SetCloseHandler(callback) end end
             function c:SetText(text)
                 self.lastText=text or '';if not pcall(self.inner.SetText,self.inner,self.lastText) then fallback() end
@@ -102,7 +103,10 @@ function addon:CreateWorkbenchLuaEditor(parent,changed,valid,preferred)
         local function differs(current,wanted) return math.abs(current-wanted)>.1 end
         -- The shared track sits beyond the viewport. Reserve its space here,
         -- keeping both the text and the track within the editor card.
-        local scrollWidth=math.max(1,self.frame:GetWidth()-32);local width=scrollWidth;local height=math.max(1,self.frame:GetHeight()-8)
+        if self.RefreshLineNumbers then self:RefreshLineNumbers() end
+        local gutter=self.lineNumbersVisible and 56 or 0
+        if self.lineNumberLayoutGutter~=gutter then self.lineNumberLayoutGutter=gutter;self.scroll:SetPoint('TOPLEFT',4+gutter,-4) end
+        local scrollWidth=math.max(1,self.frame:GetWidth()-32-gutter);local width=scrollWidth;local height=math.max(1,self.frame:GetHeight()-8)
         if differs(self.scroll:GetWidth(),scrollWidth) or differs(self.scroll:GetHeight(),height) then self.scroll:SetSize(scrollWidth,height) end
         if differs(self.edit:GetWidth(),width) then self.layoutCounts.width=self.layoutCounts.width+1;self.edit:SetWidth(width) end
         -- Hover hit geometry gives this font a fixed height. Let it measure
@@ -111,7 +115,7 @@ function addon:CreateWorkbenchLuaEditor(parent,changed,valid,preferred)
         -- Multiline EditBoxes own their text height. Size a backing frame
         -- and anchor the edit to it instead of fighting native text layout.
         if differs(self.content:GetWidth(),width) or differs(self.content:GetHeight(),editHeight) then self.layoutCounts.content=self.layoutCounts.content+1;self.content:SetSize(width,editHeight) end
-        self.scroll:UpdateWorkbenchScroll();self.layingOut=nil
+        self.scroll:UpdateWorkbenchScroll();if self.RefreshLineNumbers then self:RefreshLineNumbers() end;self.layingOut=nil
     end
     ---@return string
     function c:GetText()
@@ -130,9 +134,10 @@ function addon:CreateWorkbenchLuaEditor(parent,changed,valid,preferred)
         if self.ResetInputTrace then addon.luaInputEditor=self;self:ResetInputTrace() end
         if self.syntax then pcall(self.syntax.enable,self.edit,self.syntaxColors,4) end
         if self.AcquireCompletion then self:AcquireCompletion() end
+        if self.RefreshLineNumbers then self:RefreshLineNumbers() end
     end
     function c:Release()
-        if self.released then return end;if self.ReleaseCompletion then self:ReleaseCompletion() end;self.released=true;self.edit:ClearFocus()
+        if self.released then return end;if self.ReleaseLineNumbers then self:ReleaseLineNumbers() end;if self.ReleaseCompletion then self:ReleaseCompletion() end;self.released=true;self.edit:ClearFocus()
         if self.syntax then pcall(self.syntax.disable,self.edit) end
         self.changed=nil;self.closeRequested=nil;self.valid=function() return false end
         self.edit.GetText=self.nativeGetText;self.edit.SetText=self.nativeSetText
@@ -164,5 +169,9 @@ function addon:CreateWorkbenchLuaEditor(parent,changed,valid,preferred)
     end
     if self.InstallLuaInputDiagnostics then self:InstallLuaInputDiagnostics(c) end
     if self.InstallRMCodeCompletion then self:InstallRMCodeCompletion(c) end
+    if self.InstallNativeLuaLineNumbers then
+        self:InstallNativeLuaLineNumbers(c)
+        addon:SetUIScript(c.frame,'OnUpdate',function() if not c.released and c.valid() and c.RefreshLineNumbers and c.lineNumberSetting~=(addon.db.profile.lua_line_numbers~=false) then c:Layout() end end)
+    end
     c:SetText('');return c
 end

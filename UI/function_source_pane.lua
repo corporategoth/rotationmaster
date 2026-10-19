@@ -44,12 +44,12 @@ end
 function addon:FunctionSignature(id,source)
     local args,returns={},{};for _,arg in ipairs(source.args or {}) do args[#args+1]=(arg.name or '?')..': '..(arg.type or '?') end
     for _,result in ipairs(source.returns or {}) do returns[#returns+1]=result.type or '?' end
-    return (source.name or id)..'('..table.concat(args,', ')..')'..(#returns>0 and ' -> '..table.concat(returns,', ') or '')
+    return self:FunctionQualifiedName(id,source)..'('..table.concat(args,', ')..')'..(#returns>0 and ' -> '..table.concat(returns,', ') or '')
 end
 function addon:BuildInlineFunction(p,key,source,readOnly)
     local d=p.functionEditorCache or {frame=CreateFrame('Frame',nil,p.frame)};p.functionEditorCache=d;p.inlineFunction=d
     local resume=p.functionResume;p.functionResume=nil
-    d.closed=false;d.key=key;d.readOnly=readOnly==true;d.value=self:CopySettingsData(source);if not d.readOnly then d.value.code=self:NormalizeLuaSourceForEditor(d.value.code);if self.FunctionEditorName then d.value.name=self:FunctionEditorName(key,d.value) end end;d.codeExpanded=false;d.baseline=self:CopySettingsData(d.value);d.expected=self:CopySettingsData((self.db.global.custom_functions or {})[key]);d.isNew=p.newFunctionSource~=nil;d.undo={};d.redo={};d.validationInput=nil;d.contextInput=nil;d.session=(d.session or 0)+1
+    d.closed=false;d.key=key;d.readOnly=readOnly==true;d.value=self:CopySettingsData(source);if not d.readOnly then d.value.code=self:NormalizeLuaSourceForEditor(d.value.code);if self.FunctionEditorName then d.value.name=self:FunctionEditorName(key,d.value) end end;d.codeExpanded=false;d.metadataCollapsed={};d.baseline=self:CopySettingsData(d.value);d.expected=self:CopySettingsData((self.db.global.custom_functions or {})[key]);d.isNew=p.newFunctionSource~=nil;d.undo={};d.redo={};d.validationInput=nil;d.contextInput=nil;d.session=(d.session or 0)+1
     if resume then for field,value in pairs(resume) do d[field]=value end end
     local token,session=p.generation,d.session
     local function valid() return not d.closed and d.session==session and p:Valid(token) end;d.OwnerValid=valid
@@ -59,7 +59,7 @@ function addon:BuildInlineFunction(p,key,source,readOnly)
     function d:PendingSource() local value=addon:CopySettingsData(self.value);if not self.readOnly and self.code and not self.code.released then value.code=self.code:GetText() end;return value end
     function d:CaptureDraft()
         local raw={};for _,record in ipairs(form.edits) do if record.dirty then for name,control in pairs(form.fields) do if control==record.control then raw[name]=record.control:GetText() end end end end
-        return {value=self:PendingSource(),baseline=self.baseline,expected=self.expected,isNew=self.isNew,undo=self.undo,redo=self.redo,pendingRaw=raw,codeExpanded=self.codeExpanded}
+        return {value=self:PendingSource(),baseline=self.baseline,expected=self.expected,isNew=self.isNew,undo=self.undo,redo=self.redo,pendingRaw=raw,codeExpanded=self.codeExpanded,metadataCollapsed=self.metadataCollapsed}
     end
     function d:IsDirty()
         if self.readOnly then return false end
@@ -69,23 +69,45 @@ function addon:BuildInlineFunction(p,key,source,readOnly)
     function d:Flush() return valid() and form:FlushEdits() end
     function d:CodeChanged()
         if self.loading or self.readOnly or not self.code then return end
-        local text=self.code:GetText();if text~=self.value.code then self.undo[#self.undo+1]=self.value.code;self.redo={};self.value.code=text;while #self.undo>100 do table.remove(self.undo,1) end end;self:UpdateActions()
+        local text=self.code:GetText();if text~=self.value.code then if not self.pendingFunctionBinding then self.undo[#self.undo+1]=self.value.code;self.redo={} end;self.value.code=text;while #self.undo>100 do table.remove(self.undo,1) end end;self:UpdateActions()
     end
     function d:SetCode(text) self.loading=true;self.code:SetText(self.readOnly and addon.FormatLuaSourceDisplay and addon:FormatLuaSourceDisplay(text) or text);self.loading=false;self.value.code=text end
     function d:TravelCode(redo)
         if not valid() or self.readOnly then return end
         local from,to=redo and self.redo or self.undo,redo and self.undo or self.redo
-        if #from>0 then to[#to+1]=self.code:GetText();self:SetCode(table.remove(from));self:UpdateActions() end
+        if #from>0 then
+            local entry=table.remove(from)
+            if type(entry)=='table' and entry.kind=='function-completion' then to[#to+1]=addon:TravelFunctionCompletion(self,entry)
+            else to[#to+1]=self.code:GetText();self:SetCode(entry) end
+            self:UpdateActions()
+        end
+    end
+    function d:UpdateSignature()
+        if not self.signature then return end
+        local text=addon:FunctionSignature(self.key,self.value)
+        if self.signature:GetText()==text then return end
+        local oldHeight=self.signature:GetHeight();self.signature:SetText(text);self.signature:SetHeight(0)
+        local height=math.max(20,self.signature:GetStringHeight());self.signature:SetHeight(height)
+        local delta=height-oldHeight
+        if delta~=0 and self.code and self.codeTop then
+            self.codeTop=self.codeTop+delta
+            self.code.frame:ClearAllPoints();self.code.frame:SetPoint('TOPLEFT',0,-self.codeTop)
+            self.code.frame:SetHeight(math.max(220,self.frame:GetHeight()-self.codeTop-30))
+            form.y=self.codeTop+self.code.frame:GetHeight()+12;form.child:SetHeight(math.max(1,form.y));form.scroll:UpdateWorkbenchScroll()
+        end
     end
     function d:UpdateActions()
         if not valid() or not self.apply then return end
+        self:UpdateSignature()
         local dirty=self:IsDirty();enable(self.apply,dirty);enable(self.viewChanges,dirty);enable(self.codeUndo,not self.readOnly and #self.undo>0);enable(self.codeRedo,not self.readOnly and #self.redo>0);enable(self.codeReset,not self.readOnly and self.code:GetText()~=self.baseline.code)
         addon:SetWorkbenchUnsaved(self.code.frame,not self.readOnly and self.code:GetText()~=self.baseline.code);addon:SetWorkbenchUnsaved(form.fields.definition_enabled,not not self.value.disabled~=not not self.baseline.disabled)
         for _,record in ipairs(form.edits) do addon:SetWorkbenchUnsaved(record.control,not self.readOnly and (record.control:GetText()~=record.baseline or record.control.rmFunctionValue~=nil and not addon:SettingsDataEqual(record.control.rmFunctionValue(),record.control.rmFunctionBaseline))) end
         for _,control in ipairs(form.functionTypeFields or {}) do addon:SetWorkbenchUnsaved(control,not self.readOnly and control.rmFunctionTypeValue()~=control.rmFunctionTypeBaseline) end
+        for _,field in ipairs({'args','returns'}) do addon:SetWorkbenchUnsaved(form.fields['section_'..field],not self.readOnly and not addon:SettingsDataEqual(self.value[field],self.baseline[field])) end
+        for field,view in pairs(form.functionMetadataViews or {}) do for index,row in ipairs(view.rows) do addon:SetWorkbenchUnsaved(row,not self.readOnly and not addon:SettingsDataEqual(self.value[field][index],self.baseline[field] and self.baseline[field][index])) end end
         addon:RefreshFunctionBindingMarkers(form,self)
-        local current=self:PendingSource();local context=addon:CopySettingsData(current);context.code=nil
-        if self.code.SetContext and not addon:SettingsDataEqual(context,self.contextInput) then self.contextInput=context;self.code:SetContext({kind='function',id=self.key,name=self.value.name,source=current}) end
+        local current=self:PendingSource();local context=addon:CopySettingsData(current);context.code=nil;context.registryRevision=addon.functionRegistryVersion or 0
+        if self.code.SetContext and not addon:SettingsDataEqual(context,self.contextInput) then self.contextInput=context;self.code:SetContext({kind='function',id=self.key,name=self.value.name,source=current,bindFunction=function(id,alias) return addon:BindEditorFunction(self,id,alias) end}) end
         current.disabled=false
         local input={key=self.readOnly and 'READONLY_HELPER' or self.key,source=current,revision=addon.functionRegistryVersion or 0}
         if not addon:SettingsDataEqual(input,self.validationInput) then self.validationInput=addon:CopySettingsData(input);local checked,why=addon:ValidateCustomFunctionSource(input.key,current);self.validationChecked=checked~=nil;self.validationProblem=why end
@@ -96,6 +118,7 @@ function addon:BuildInlineFunction(p,key,source,readOnly)
     function form:RefreshUnsaved() if valid() then d:UpdateActions() end end
     function d:Close()
         if self.closed then return end;self.closed=true
+        if self.pendingFunctionBinding then self.pendingFunctionBinding:rollback() end
         if self.code then self.code:Release() end;form:Release();self.frame:Hide()
         for _,control in ipairs({self.apply,self.cancel,self.viewChanges,self.codeExpand,form.message}) do if control then control:Hide() end end
         addon:SetUIScript(self.frame,'OnUpdate',nil)
@@ -106,7 +129,7 @@ function addon:BuildInlineFunction(p,key,source,readOnly)
         local ok,why
         ok,why=addon:InstallCustomFunction(self.key,self:PendingSource(),self.expected)
         if not ok then form:Message(string.format(L['Function unavailable: %s'],tostring(why)));return false end
-        p:DiscardSettingsDraft();clearNew(p);p.functionID=self.key;self:Close();p:Draw();return true
+        p:DiscardSettingsDraft();clearNew(p);p.functionID=self.key;p.functionNamespaceFilter=addon:FunctionNamespace(self.key,self.value);self:Close();p:Draw();return true
     end
     local function refresh()
         if not valid() or not d:Flush() then return end
@@ -127,38 +150,56 @@ function addon:BuildInlineFunction(p,key,source,readOnly)
         enable(input,not d.readOnly);return input
     end
     local function metadata(field,caption,values)
-        form:Heading(caption)
-        if field=='returns' then form:Text(L['Lua returns multiple values in order. Each row documents one result.']) end
-        for index,record in ipairs(values) do
-            local prefix=(field=='args' and 'arg_' or 'return_')..index..'_';local y=form.y
+        local headerY=form.y
+        local heading=form:Acquire('functionMetadataHeadings',function() return addon:CreateWorkbenchButton(form.child,'',240) end)
+        heading:ClearAllPoints();heading:SetPoint('TOPLEFT',0,-headerY);heading:SetSize(math.max(60,form.width-118),22);heading:SetText(caption);heading.art:Hide();heading:GetFontString():SetTextColor(1,.82,.2);addon:AlignWorkbenchTextLeft(heading,0);form.fields['section_'..field]=heading
+        addon:SetUIScript(heading,'OnClick',form:Guard(function() if d:Flush() then d.metadataCollapsed[field]=not d.metadataCollapsed[field];refresh() end end))
+        local function factory()
+            if field=='returns' then return {type='any',description=''} end
+            local used={};for _,entry in ipairs(values) do used[entry.name]=true end;local n=1;while used['argument'..n] do n=n+1 end
+            return {name='argument'..n,type='any',description=''}
+        end
+        local add=form:Button('add_'..field,field=='args' and L['Argument'] or L['Return'],function() values[#values+1]=factory();d.metadataCollapsed[field]=false;refresh() end,'plus')
+        add:ClearAllPoints();add:SetPoint('TOPRIGHT',0,-headerY);add:SetWidth(112);enable(add,not d.readOnly);form.y=headerY+28
+        local viewKey='function_'..field
+        local function beginInsert()
+            if d.readOnly or not valid() or not d:Flush() then return end
+            if d.metadataCollapsed[field] then d.metadataCollapsed[field]=false;refresh() end
+            local view=form.ordered and form.ordered[viewKey];if view and view.BeginInsert then view:BeginInsert(factory,field=='args' and L['Argument'] or L['Return']) end
+        end
+        addon:BindWorkbenchDragSource(add,beginInsert,function() local view=form.ordered and form.ordered[viewKey];if view then view:EndDrag() end end)
+        if d.metadataCollapsed[field] then return end
+        local view=form:OrderedCollection(viewKey,values,function(index) return field=='args' and (values[index].name or L['Argument']) or (values[index].type or L['Return']) end,function(rowForm,index,record,row)
+            local prefix=(field=='args' and 'arg_' or 'return_')..index..'_'
+            form.fields[field..'_up_'..index]=row.up;form.fields[field..'_down_'..index]=row.down;form.fields[field..'_delete_'..index]=row.remove
             if field=='args' then
-                fieldLabel(L['Name'],y)
+                local y=form.y;fieldLabel(L['Name'],y)
                 local input=form:Edit(prefix..'name',nil,record.name or '',nil,function(value) record.name=value;d:UpdateActions() end)
-                input:SetMultiLine(false);input:SetHeight(24);input:SetTextInsets(4,4,0,0);input:SetCursorPosition(0);input:ClearAllPoints();input:SetPoint('TOPLEFT',70,-y);input:SetWidth(math.max(80,form.width-158));input.tooltip=L['Argument name'];enable(input,not d.readOnly)
+                input:SetMultiLine(false);input:SetHeight(24);input:SetTextInsets(4,4,0,0);input:SetCursorPosition(0);input:ClearAllPoints();input:SetPoint('TOPLEFT',70,-y);input:SetWidth(math.max(40,form.width-70));input.tooltip=L['Argument name'];enable(input,not d.readOnly)
                 input.rmFunctionValue=function() return record.name end;input.rmFunctionBaseline=d.baseline[field] and d.baseline[field][index] and d.baseline[field][index].name
             end
-            local function move(offset) if not d:Flush() then return end;local value=table.remove(values,index);table.insert(values,index+offset,value);refresh() end
-            local actions={{key=field..'_up_'..index,text=L['Move Up'],icon='up',enabled=not d.readOnly and index>1,action=function() move(-1) end},{key=field..'_down_'..index,text=L['Move Down'],icon='down',enabled=not d.readOnly and index<#values,action=function() move(1) end},{key=field..'_delete_'..index,text=L['Delete'],icon='trash',enabled=not d.readOnly,action=function() table.remove(values,index);refresh() end}}
-            form:Actions(actions);for i,entry in ipairs(actions) do local control=form.fields[entry.key];control:ClearAllPoints();control:SetPoint('TOPLEFT',form.width-80+(i-1)*28,-y);control:SetWidth(24) end
-            local typeY=y+28;fieldLabel(L['Type'],typeY)
+            local typeY=form.y;fieldLabel(L['Type'],typeY)
             local base,nullable=splitType(record.type)
             local function setType(nextBase,nextNullable) record.type=nextBase..(nextNullable and nextBase~='nil' and ' | nil' or '');refresh() end
             local choose=form:Choice(prefix..'type',nil,base,typeChoices(addon,base),function(value) setType(value,nullable) end)
             choose:ClearAllPoints();choose:SetPoint('TOPLEFT',70,-typeY);choose:SetWidth(math.max(40,form.width-182));choose.tooltip=L['Type'];enable(choose,not d.readOnly)
             choose.rmFunctionTypeValue=function() return record.type end;choose.rmFunctionTypeBaseline=d.baseline[field] and d.baseline[field][index] and d.baseline[field][index].type
             local check=form:Check(prefix..'nullable',L['Nullable'],nullable,function(value) setType(base,value) end)
-            check:ClearAllPoints();check:SetPoint('TOPLEFT',form.width-106,-typeY);check:SetWidth(102);check:GetFontString():SetWidth(80);enable(check,not d.readOnly and base~='nil')
+            check:ClearAllPoints();check:SetPoint('TOPLEFT',math.max(70,form.width-106),-typeY);check:SetWidth(102);check:GetFontString():SetWidth(80);enable(check,not d.readOnly and base~='nil')
+            if form.width<218 then check:ClearAllPoints();check:SetPoint('TOPLEFT',70,-typeY-26);choose:SetWidth(math.max(40,form.width-70));form.y=typeY+54 else form.y=typeY+28 end
             check.rmFunctionTypeValue=function() return record.type end;check.rmFunctionTypeBaseline=choose.rmFunctionTypeBaseline;form.functionTypeFields[#form.functionTypeFields+1]=choose;form.functionTypeFields[#form.functionTypeFields+1]=check
-            form.y=typeY+28;fieldLabel(L['Description'],form.y)
-            local input=description(prefix..'description',nil,record.description or '',function(value) record.description=value;d:UpdateActions() end,70,form.width-70)
+            fieldLabel(L['Description'],form.y)
+            local input=description(prefix..'description',nil,record.description or '',function(value) record.description=value;d:UpdateActions() end,70,math.max(40,form.width-70))
             input.rmFunctionValue=function() return record.description end;input.rmFunctionBaseline=d.baseline[field] and d.baseline[field][index] and d.baseline[field][index].description
-        end
-        local add=form:Button('add_'..field,field=='args' and L['Add argument'] or L['Add return value'],function() values[#values+1]=field=='args' and {name='argument'..(#values+1),type='any',description=''} or {type='any',description=''};refresh() end,'plus');enable(add,not d.readOnly)
+        end,function() if not d.readOnly then if d.code then d.value.code=d.code:GetText() end;d:UpdateActions() end end,{header=false,prefix=field=='args' and 'arg_' or 'return_',readOnly=d.readOnly,confirmReorder=function(apply)
+            if d.isNew then apply() else form:Confirm(field=='args' and L['Changing argument order can break existing callers. Rotation Master will not rewrite their Lua code. Continue?'] or L['Changing return documentation order does not rewrite return statements or existing callers. Review the Lua body and callers for the new order. Continue?'],apply) end
+        end})
+        form.functionMetadataViews[field]=view
     end
     form:Open(function(f)
-        f.functionTypeFields={}
+        f.functionTypeFields={};f.functionMetadataViews={};d.invocationText=nil
         f.width=math.max(240,d.frame:GetWidth()-34);f.child:SetWidth(f.width)
-        f:Heading(d.readOnly and L['Built-in function'] or L['Custom function']);f:Text(L['Identifier']..': '..d.key)
+        f:Heading(d.readOnly and L['Built-in function'] or L['Custom function'])
         local available,problem=addon:AreFunctionBindingsAvailable(d.value.bindings)
         if d.value.disabled or not available then local warning=f:Text(string.format(L['Function unavailable: %s'],d.value.disabled and 'disabled-function' or problem));warning:SetTextColor(1,.35,.35) end
         if not d.readOnly then
@@ -173,17 +214,29 @@ function addon:BuildInlineFunction(p,key,source,readOnly)
             end) end
         end
         if not d.codeExpanded then
-            local input=f:Edit('name',L['Name'],d.value.name or '',not d.readOnly and function(value) if addon:IsCustomFunctionIdentifier(value) then return value end end or nil,function(value) d.value.name=value;d:UpdateActions() end)
+            local function setNamespace(value)
+                -- Choosing the displayed legacy default does not materialize
+                -- absent metadata and create an otherwise empty edit.
+                if not (value=='functions' and (d.value.namespace==nil or d.value.namespace=='')) then d.value.namespace=value end
+                d:UpdateActions()
+            end
+            local input=f:Edit('namespace',L['Namespace'],addon:FunctionNamespace(d.key,d.value),function(value) return addon:IsFunctionNamespace(value) and value or nil end,setNamespace)
+            input:SetMultiLine(false);input:SetHeight(24);input:SetTextInsets(4,4,0,0);input:SetCursorPosition(0);input.rmFunctionValue=function() return d.value.namespace end;input.rmFunctionBaseline=d.baseline.namespace;enable(input,not d.readOnly)
+            if not d.readOnly and addon.AttachWorkbenchEditSuggestions and addon.FunctionNamespaces then
+                addon:AttachWorkbenchEditSuggestions(f,input,addon:FunctionNamespaces(),setNamespace,valid)
+            end
+            input=f:Edit('name',L['Name'],d.value.name or '',not d.readOnly and function(value) if addon:IsCustomFunctionIdentifier(value) then return value end end or nil,function(value) d.value.name=value;d:UpdateActions() end)
             input:SetMultiLine(false);input:SetHeight(24);input:SetTextInsets(4,4,0,0);input:SetCursorPosition(0);input.rmFunctionValue=function() return d.value.name end;input.rmFunctionBaseline=d.baseline.name;enable(input,not d.readOnly)
             if not d.readOnly and addon.ConfigureFunctionNameInput then addon:ConfigureFunctionNameInput(f,input) end
             input=description('description',L['Description'],d.value.description or '',function(value) d.value.description=value;d:UpdateActions() end);input.rmFunctionValue=function() return d.value.description end;input.rmFunctionBaseline=d.baseline.description
             metadata('args',L['Arguments'],d.value.args);metadata('returns',L['Returns'],d.value.returns)
-            addon:BuildFunctionBindingFields(f,d)
-            f:Text(d.readOnly and L['Packaged source is read-only. Duplicate it to create an editable custom function.'] or L['Arguments become Lua parameters. Bindings expose selected helpers under explicit local aliases. Editing an alias does not rewrite your Lua body.'])
         end
-        local actionY=f.y;f.y=f.y+28
+        local actionY=f.y;local narrow=f.width<456;local bindingY=actionY+(narrow and 28 or 0)
+        local bindingX=narrow and 0 or 222;local bindingWidth=narrow and math.max(90,f.width-126) or math.max(90,f.width-348)
+        f.y=bindingY+28
+        addon:BuildFunctionBindingFields(f,d,{header={x=bindingX,y=bindingY,width=bindingWidth},hideDescription=true})
         for index,entry in ipairs({{'codeUndo','Undo','undo'},{'codeRedo','Redo','redo'},{'codeReset','Reset'},{'syntax','Check syntax'}}) do
-            local button=f:Acquire('functionActions',function() return addon:CreateWorkbenchButton(f.child,'',index==4 and 120 or 68) end);d[entry[1]]=button;button:ClearAllPoints();button:SetPoint('TOPLEFT',(index-1)*74,-actionY);button:SetWidth(index==4 and 120 or 68);button:SetText(actionLabels[entry[1]])
+            local button=f:Acquire('functionActions',function() return addon:CreateWorkbenchButton(f.child,'',index==4 and 120 or 68) end);d[entry[1]]=button;button:ClearAllPoints();button:SetPoint('TOPLEFT',index==4 and f.width-120 or (index-1)*74,-(index==4 and bindingY or actionY));button:SetWidth(index==4 and 120 or 68);button:SetText(actionLabels[entry[1]])
             addon:SetUIScript(button,'OnClick',function()
                 if not valid() then return end
                 if entry[1]=='codeUndo' or entry[1]=='codeRedo' then d:TravelCode(entry[1]=='codeRedo')
@@ -191,7 +244,7 @@ function addon:BuildInlineFunction(p,key,source,readOnly)
                 elseif d:Flush() then local candidate=d:PendingSource();candidate.disabled=false;local checked,why=addon:ValidateCustomFunctionSource(d.readOnly and 'READONLY_HELPER' or key,candidate);f:Message(checked and L['Syntax checked. No custom code was executed.'] or tostring(why),not not checked) end
             end)
         end
-        d.signature=f:Text(addon:FunctionSignature(key,d.value));local codeTop=f.y
+        d.signature=f:Text(addon:FunctionSignature(key,d.value));local codeTop=f.y;d.codeTop=codeTop
         local preference=addon.db.profile.lua_editor or 'auto'
         if d.code and d.code.preference~=preference then d.code:Release();d.code=nil end
         if not d.code then d.code=addon:CreateWorkbenchLuaEditor(f.child,function() if valid() then d:CodeChanged() end end,valid,preference);d.code.preference=preference elseif d.code.released then d.code:Acquire(function() if valid() then d:CodeChanged() end end,valid) end

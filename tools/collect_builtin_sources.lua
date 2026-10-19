@@ -26,18 +26,22 @@ local function capture(module,fn)
 end
 for _,case in ipairs(inventory.branches) do
     local f=F.new(unpack(case[1]));f.addon.delayed_condition={}
+    f.load('Platform/spells.lua');f.load('Platform/actions.lua')
     if case[3] then f.env.MI2_GetMobData=function() end end
     for path in io.lines('RotationMaster.toc') do if path:match('^Conditions/') then
         f.load(path)
     end end
     for name,documentation in pairs(publicHelpers) do
-        local fn=f.addon[name];assert(type(fn)=='function','public helper missing: '..name)
+        local member=documentation.member or name
+        assert(member:match('^[%a_][%w_%.]*$') and not member:find('..',1,true),'invalid public helper path: '..name)
+        local fn=f.addon;for part in member:gmatch('[%w_]+') do fn=type(fn)=='table' and rawget(fn,part) or nil end
+        assert(type(fn)=='function','public helper missing: '..name)
         local info=descriptor(fn);assert(info.file==documentation.module,'public helper module changed: '..name)
         local module=modules[info.file] or {file=info.file,conditions={},bindings={}};modules[info.file]=module
         local captured=capture(module,fn)
         local record=module.bindings[name]
         assert(not record or record.public,'public helper collides with captured local: '..name)
-        module.bindings[name]={kind='function',fn=captured,public=documentation,addonMember=name}
+        module.bindings[name]={kind='function',fn=captured,public=documentation,addonMember=member}
     end
     local definitions={};for tag,definition in pairs(f.addon.definitions) do definitions[tag]=definition end
     for _,group in pairs(f.addon.delayed_condition) do for tag,definition in pairs(group) do definitions[tag]=definition end end
@@ -55,6 +59,7 @@ local function json(value)
     if type(value)=='string' then return '"'..value:gsub('[%z\1-\31\\"]',function(c) if c=='"' then return '\\"' elseif c=='\\' then return '\\\\' end;return string.format('\\u%04x',c:byte()) end)..'"'
     elseif type(value)=='number' then return tostring(value)
     elseif type(value)=='table' then
+        if #value>0 then local items={};for _,item in ipairs(value) do items[#items+1]=json(item) end;return '['..table.concat(items,',')..']' end
         local keys={};for name in pairs(value) do keys[#keys+1]=name end;table.sort(keys);local fields={}
         for _,name in ipairs(keys) do fields[#fields+1]=json(name)..':'..json(value[name]) end;return '{'..table.concat(fields,',')..'}'
     end

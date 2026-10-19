@@ -84,9 +84,31 @@ Function and condition bodies are syntax-checked as independent chunks before in
 
 Built In and custom function sources use the same metadata controls. Built In inputs and code remain read-only; selected editor providers still supply API knowledge. Providers without a working read-only control fall back to the native locked editor. Type dropdowns include primitive and registered documented types, retaining imported unions; Nullable adds or removes only `nil`. Multiple return rows describe Lua's ordered return values. Descriptions wrap from their beginning, and the source corner control expands the code area while retaining the metadata draft and provider.
 
-The Name field is a valid Lua local identifier suggested when adding a binding. It is separate from the stable registry identity used by dependencies and imports. Legacy display names are normalized for editing before the draft baseline is captured; saved records and references remain untouched until Apply. Binding rows show a local name and a source helper with its module or custom identity, distinguishing captured helpers such as AceGUI. Renaming a binding never rewrites source text. Binding changes retain saved-baseline markers.
+The Name field is a valid Lua identifier forming the last component of its namespace-qualified call. It is separate from the stable registry identity used by dependencies and imports. Legacy display names are normalized for editing before the draft baseline is captured; saved records and references remain untouched until Apply. Binding rows show the name in code (qualified path or legacy alias) and a source helper with its module or custom identity, distinguishing captured helpers such as AceGUI. Renaming a binding never rewrites source text. Binding changes retain saved-baseline markers.
 
 Hover uses the same token spans as the embedded editor, covering identifier glyphs without parentheses or adjacent arguments. Native measurement text uses the input's left/top alignment. The pinned LuaWorkbench adapter accounts for line spacing exactly once when normalizing glyph rectangles. Bare documented function references (for example UnitExists passed to getCached) use LuaWorkbench APIHelp rather than a separate RM API database.
 
 
 Entity deletion is immediate after confirmation. Outstanding edits use the normal Apply/Discard/Cancel navigation prompt first. The delete operation then resolves the current saved entity, commits its removal and runtime cleanup, and opens a clean successor; deleting the last entry leaves a clean empty page. Deletion does not create a separate draft state or activate Apply/View Changes on the next entity.
+
+
+## Utility namespaces and editor consistency
+
+Built In functions derive namespaces from their source path: `utils.lua` becomes `utils`, and `Platform/spells.lua` becomes `Platform.spells`. Custom functions have editable Namespace metadata (new functions default to `custom`; legacy sources without it retain `functions`). The roster filters inferred namespaces alongside Built In/Custom and search; namespaces have no separate maintenance entity. Names and namespaces are staged until Apply.
+
+The canonical invocation is `namespace.name(...)`. A Lua colon call is syntactic receiver passing (`object:method(x)` equals `object.method(object,x)`), not a namespace declaration. Namespaced bindings use dot calls; methods include their original receiver explicitly. The source signature shows the qualified call without an Invoke label or a separate Existing API line. Original addon dot/colon APIs remain available for saved definitions. Invocation guidance belongs in Help.
+
+A binding maps a qualified call path to a stable registry ID. Compilation creates callback-private nested tables rather than addon globals. Accepting completion stages code and dependency as one undoable transaction, rolling both back on failed or stale insertion. Existing simple aliases and `functions.alias` remain supported. Renaming source metadata never rewrites existing consumer code or binding paths; bundle imports remap dependency IDs without altering call paths. Conflicting prefixes, reserved/library roots and parameter shadows are rejected.
+
+RM symbols include typed public addon values and callable helpers with their actual receiver and origin. Client WoW API metadata continues to come from LuaWorkbench. An undocumented global callable is identified honestly without inventing a signature or Blizzard attribution for RM helpers.
+
+Run executes the prepared callback without debugger instrumentation; Debug starts the debugger. Condition data-dependent callbacks use configured detached Test values. The raised toolbar and terminal dock retain native mouse input and compact layouts. Output preserves full errors and debugger terminal lines for copying.
+
+Line numbers use measured glyph height plus line spacing, text insets and wrapped logical-line heights in both editor providers. The Integrations line-number preference applies to all source panes and removes gutter width when hidden.
+
+
+Functions metadata places an editable namespace combobox before Name. Suggestions use the shared flat selector, show existing namespaces on focus and filter while typing; a valid new namespace remains ordinary staged text. Stable registry IDs remain internal rather than occupying the form.
+
+Arguments and Returns are collapsible ordered collections using the same rounded row, arrows, drag presentation and gap targets as other editors. Their right-aligned + controls append when clicked or insert where dropped. Saved-function reorder uses a confirmation because positional callers may break; cancellation and stale callbacks do not change the array. Argument order changes compiled parameter order, while return order is documentation and requires manual review of Lua return statements. New drafts have no saved callers and reorder directly. Bindings shares the code action row immediately before Check syntax. Longer invocation and multiple-result guidance stays in Help.
+
+Committed signature changes remeasure only the signature and adjust existing code geometry when its height changes. They preserve source, caret and provider ownership; unchanged updates do not repeatedly reflow the editor.

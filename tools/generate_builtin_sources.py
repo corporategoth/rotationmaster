@@ -81,7 +81,8 @@ def generated():
                 if entry.get('public'):
                     docs=entry['public']
                     if set(docs['args'])!=set(params): raise ValueError('public helper argument metadata drift: '+alias)
-                    row.update(callName=docs['callName'],description=docs['description'],args=[dict(name=name,**docs['args'][name]) for name in params],returns=[docs['returns']])
+                    returns=docs['returns'] if isinstance(docs['returns'],list) else [docs['returns']]
+                    row.update(callName=docs['callName'],description=docs['description'],args=[dict(name=name,**docs['args'][name]) for name in params],returns=returns)
             catalog['modules'][path]['bindings'][alias]=row
         for tag,callbacks in sorted(module['conditions'].items()):
             record={'module':path,'callbacks':{}}

@@ -1,7 +1,7 @@
 local addon_name,addon=...
 local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
 function addon:NewFunctionSource()
-    return {name='newFunction',description=L['Describe what this function does.'],args={},returns={},code='return nil',bindings={}}
+    return {name='newFunction',namespace='custom',description=L['Describe what this function does.'],args={},returns={},code='return nil',bindings={}}
 end
 function addon:ConfigureFunctionNameInput(form,input)
     input:SetMaxLetters(128)
@@ -27,7 +27,7 @@ end
 function addon:OpenNewFunction(p,source)
     p:RequestLeave(function()
         if not p.active then return end
-        p.functionID=nil;p.newFunctionID='FUNCTION_'..self:uuid():gsub('-','_');p.newFunctionSource=self:CopySettingsData(source or self:NewFunctionSource());p.functionSource='custom';p:Draw()
+        p.functionID=nil;p.newFunctionID='FUNCTION_'..self:uuid():gsub('-','_');p.newFunctionSource=self:CopySettingsData(source or self:NewFunctionSource());p.functionSource='custom';p.functionNamespaceFilter='*';p:Draw()
     end)
 end
 function addon:ShowFunctionSource(id)
@@ -40,14 +40,25 @@ function addon:ShowFunctionSource(id)
     end
     self.configFunctionSelection=id;return self:ShowConfig('Functions')
 end
+function addon:FunctionNamespaces()
+    local names={}
+    for id,record in pairs(self.builtinFunctions or {}) do if not record.valueBinding then names[self:FunctionNamespace(id,record.source)]=true end end
+    for id,value in pairs(self.db.global.custom_functions or {}) do names[self:FunctionNamespace(id,value)]=true end
+    local ordered={};for name in pairs(names) do ordered[#ordered+1]=name end;table.sort(ordered)
+    local entries={};for _,name in ipairs(ordered) do entries[#entries+1]={value=name,text=name} end;return entries
+end
 function addon:BuildFunctionSettings(p)
     self:InstallInlineFunctionNavigation(p)
-    if self.configFunctionSelection then p.functionID=self.configFunctionSelection;p.functionSource='all';p.newFunctionID=nil;p.newFunctionSource=nil;self.configFunctionSelection=nil end
+    if self.configFunctionSelection then p.functionID=self.configFunctionSelection;p.functionSource='all';p.functionNamespaceFilter='*';p.newFunctionID=nil;p.newFunctionSource=nil;self.configFunctionSelection=nil end
     local custom=self.db.global.custom_functions or {};local entries={};local selected
+    local namespaceSet={};local namespaces={{value='*',text=L['All namespaces']}}
+    for _,entry in ipairs(self:FunctionNamespaces()) do namespaceSet[entry.value]=true;namespaces[#namespaces+1]=entry end
+    p.functionNamespaceFilter=p.functionNamespaceFilter or '*';if p.functionNamespaceFilter~='*' and not namespaceSet[p.functionNamespaceFilter] then p.functionNamespaceFilter='*' end
     local function add(id,source,builtin)
         if p.functionSource=='builtin' and not builtin or p.functionSource=='custom' and builtin then return end
+        if p.functionNamespaceFilter~='*' and self:FunctionNamespace(id,source)~=p.functionNamespaceFilter then return end
         local available,why=self:FunctionAvailable(id)
-        entries[#entries+1]={value=id,text=source.name or id,search=id..' '..(source.description or ''),custom=not builtin,invalid=not available,disabled=source.disabled==true,validationMessage=not available and string.format(L['Function unavailable: %s'],why) or nil}
+        entries[#entries+1]={value=id,text=self:FunctionQualifiedName(id,source),search=id..' '..self:FunctionQualifiedName(id,source)..' '..(source.description or ''),custom=not builtin,invalid=not available,disabled=source.disabled==true,validationMessage=not available and string.format(L['Function unavailable: %s'],why) or nil}
         if p.functionID==id then selected=true end
     end
     p.functionSource=p.functionSource or 'all'
@@ -57,12 +68,13 @@ function addon:BuildFunctionSettings(p)
     if not selected and not p.newFunctionSource then p.functionID=entries[1] and entries[1].value end
     p:UseRoster(entries,p.functionID,function(id) p:RequestLeave(function() p.functionID=id;p.newFunctionSource=nil;p.newFunctionID=nil;p:Draw() end) end,{
         newText=L['New'],new=function() self:OpenNewFunction(p) end,
+        categories=namespaces,category=p.functionNamespaceFilter,chooseCategory=function(value) p:RequestLeave(function() p.functionNamespaceFilter=value;p.functionID=nil;p.newFunctionSource=nil;p.newFunctionID=nil;p:Draw() end) end,
         sources={{value='all',text=L['All']},{value='builtin',text=L['Built In']},{value='custom',text=L['Custom']}},source=p.functionSource,
         chooseSource=function(value) p:RequestLeave(function() p.functionSource=value;p.functionID=nil;p.newFunctionSource=nil;p.newFunctionID=nil;p:Draw() end) end})
     local source,readOnly=self:FunctionSource(p.functionID)
     local comparisons={}
-    for id,record in pairs(self.builtinFunctions or {}) do if id~=p.functionID and not record.valueBinding then comparisons[#comparisons+1]={value=id,text=record.source.name or id} end end
-    for id,value in pairs(custom) do if id~=p.functionID then comparisons[#comparisons+1]={value=id,text=value.name or id} end end
+    for id,record in pairs(self.builtinFunctions or {}) do if id~=p.functionID and not record.valueBinding then comparisons[#comparisons+1]={value=id,text=self:FunctionQualifiedName(id,record.source)} end end
+    for id,value in pairs(custom) do if id~=p.functionID then comparisons[#comparisons+1]={value=id,text=self:FunctionQualifiedName(id,value)} end end
     table.sort(comparisons,function(a,b) if a.text==b.text then return a.value<b.value end;return a.text<b.text end)
     p:SetRosterActions({{key='new_function',text=L['New'],icon='plus',action=p.roster.options.new},
         {key='duplicate_function',text=L['Duplicate'],icon='copy',enabled=source~=nil,action=function() local copy=self:CopySettingsData(source);copy.name=self:DuplicateFunctionName(p.functionID,copy);self:OpenNewFunction(p,copy) end},

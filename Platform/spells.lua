@@ -202,3 +202,22 @@ function platform:IsCurrentSpell(spell)
     if type(active)~="boolean" then return nil,"invalid-api-result" end
     return active
 end
+
+-- BEGIN GENERATED RM SOURCE BINDINGS
+do
+    local function sourceGetter(name)
+        if name=="Platform_GetSpellCharges" then return addon.Platform.GetSpellCharges end
+        if name=="Platform_GetSpellCooldown" then return addon.Platform.GetSpellCooldown end
+        if name=="Platform_IsSpellReady" then return addon.Platform.IsSpellReady end
+        if name=="copy" then return copy end
+        if name=="identifier" then return identifier end
+        if name=="platform" then return platform end
+    end
+    if addon.RegisterBuiltinSourceModule then
+        addon:RegisterBuiltinSourceModule("Platform/spells.lua", sourceGetter)
+    else
+        addon.builtinSourceModules=addon.builtinSourceModules or {}
+        addon.builtinSourceModules["Platform/spells.lua"]=sourceGetter
+    end
+end
+-- END GENERATED RM SOURCE BINDINGS

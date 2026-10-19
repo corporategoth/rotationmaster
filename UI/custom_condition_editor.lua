@@ -48,9 +48,10 @@ function addon:condition_edit_box(update,key,source,saveAllowed,embedded)
         if self.loadingCode or self.readOnly or not self.code then return end
         local state=self:CodeState();local text=self.code:GetText()
         if text~=state.text then
-            state.undo[#state.undo+1]=state.text;state.redo={};state.text=text
-            local bytes=0;for _,value in ipairs(state.undo) do bytes=bytes+#value end
-            while #state.undo>100 or bytes>4194304 do bytes=bytes-#table.remove(state.undo,1) end
+            if not self.pendingFunctionBinding then state.undo[#state.undo+1]=state.text;state.redo={} end;state.text=text
+            local function length(value) return #(type(value)=='table' and value.text or value) end
+            local bytes=0;for _,value in ipairs(state.undo) do bytes=bytes+length(value) end
+            while #state.undo>100 or bytes>4194304 do bytes=bytes-length(table.remove(state.undo,1)) end
         end
         self:UpdateActions()
     end
@@ -60,7 +61,10 @@ function addon:condition_edit_box(update,key,source,saveAllowed,embedded)
     function d:TravelCode(redo)
         local state=self:CodeState();local from=redo and state.redo or state.undo;local to=redo and state.undo or state.redo
         if #from==0 then return end
-        to[#to+1]=self.code:GetText();self:SetCode(table.remove(from));self:UpdateActions()
+        local entry=table.remove(from)
+        if type(entry)=='table' and entry.kind=='function-completion' then to[#to+1]=addon:TravelFunctionCompletion(self,entry)
+        else to[#to+1]=self.code:GetText();self:SetCode(entry) end
+        self:UpdateActions()
     end
     function d:FlushCode()
         if self.code and not self.readOnly then self:CodeState().text=self.code:GetText() end
@@ -117,6 +121,14 @@ function addon:condition_edit_box(update,key,source,saveAllowed,embedded)
         addon:SetWorkbenchInvalid(self.code.frame,callbackErrors[self.selected]~=nil,callbackErrors[self.selected])
         for _,field in ipairs({'identifier','description','schema','icon'}) do addon:SetWorkbenchInvalid(p.fields[field],self.validationRequested and not checked and why and (why.field==field or field=='schema' and why.field=='fields'),message) end
     end
+    function d:SyncFunctionContext()
+        if not self.code or not self.code.SetContext then return end
+        local source=self:PendingSource()
+        local signature={id=self.model.key,name=self.model.value.description,callback=self.selected,fields=source.fields,bindings=source.bindings,parameters=source.parameters,revision=addon.functionRegistryVersion or 0}
+        if addon:SettingsDataEqual(signature,self.functionContextSignature) then return end
+        self.functionContextSignature=addon:CopySettingsData(signature)
+        self.code:SetContext({kind='condition',id=self.model.key,name=self.model.value.description,source=source,callback=self.selected,testOwner=self,bindFunction=function(id,alias) return valid() and addon:BindEditorFunction(self,id,alias) end})
+    end
     function d:UpdateActions()
         if self.closed then return end
         if #self.model.undo>0 or #self:CodeState().undo>0 then self.undo:Enable() else self.undo:Disable() end
@@ -139,10 +151,12 @@ function addon:condition_edit_box(update,key,source,saveAllowed,embedded)
         addon:SetWorkbenchUnsaved(self.schemaViewport,schemaDirty);addon:SetWorkbenchUnsaved(p.fields.schemaGraph,false)
         if addon.RefreshFunctionBindingMarkers then addon:RefreshFunctionBindingMarkers(p,self) end
         if self.embedded and self.embedded.updateActions then self.embedded.updateActions(self) end
-        self:UpdateValidation()
+        self:SyncFunctionContext();self:UpdateValidation()
     end
     function d:Close()
-        if self.closed then return end;self.closed=true;self.owner.active=false
+        if self.closed then return end
+        if self.pendingFunctionBinding then self.pendingFunctionBinding:rollback() end
+        self.closed=true;self.owner.active=false
         local children={};for child in pairs(self.owner.widgets) do if child~=self then children[#children+1]=child end end
         for _,child in ipairs(children) do child:Hide() end
         if self.schemaEditor and self.schemaEditor.active then self.schemaEditor:Close() end
@@ -182,7 +196,7 @@ function addon:condition_edit_box(update,key,source,saveAllowed,embedded)
         if not valid() or not addon.CustomConditionCallbacks[name] then return end
         self:FlushCode();self.selected=name;self:SetCode(self:CodeState().text)
         self.signature:SetText(addon:CustomConditionSignature(self.model.value,name));self:LayoutDocumentation()
-        if self.code.SetContext then self.code:SetContext({kind='condition',id=self.model.key,name=self.model.value.description,source=self:PendingSource(),callback=self.selected,testOwner=self}) end
+        if self.code.SetContext then self.code:SetContext({kind='condition',id=self.model.key,name=self.model.value.description,source=self:PendingSource(),callback=self.selected,testOwner=self,bindFunction=function(id,alias) return addon:BindEditorFunction(self,id,alias) end}) end
         for key,button in pairs(self.functionTabs) do button:SetSelected(key==name) end
         self:UpdateActions()
     end
@@ -200,8 +214,8 @@ function addon:condition_edit_box(update,key,source,saveAllowed,embedded)
     d.transfer=d.transfer or self:CreateWorkbenchButton(frame,L['Import/Export'],126);d.transfer:SetPoint('BOTTOMLEFT',292,28)
     d.apply=d.apply or self:CreateWorkbenchButton(frame,L['Apply'],100);d.apply:SetPoint('BOTTOMRIGHT',-120,28)
     d.cancel=d.cancel or self:CreateWorkbenchButton(frame,L['Cancel'],100);d.cancel:SetPoint('BOTTOMRIGHT',-12,28)
-    addon:SetUIScript(d.undo,'OnClick',function() if valid() and d:Flush() then if #d.model.undo>0 then if d:TravelModel(false) then p:Draw();d:UpdateActions() end else d:TravelCode(false) end end end)
-    addon:SetUIScript(d.redo,'OnClick',function() if valid() and d:Flush() then if #d.model.redo>0 then if d:TravelModel(true) then p:Draw();d:UpdateActions() end else d:TravelCode(true) end end end)
+    addon:SetUIScript(d.undo,'OnClick',function() if valid() and d:Flush() then if #d.model.undo>0 and not (addon.PreferFunctionCodeHistory and addon:PreferFunctionCodeHistory(d,false)) then if d:TravelModel(false) then p:Draw();d:UpdateActions() end else d:TravelCode(false) end end end)
+    addon:SetUIScript(d.redo,'OnClick',function() if valid() and d:Flush() then if #d.model.redo>0 and not (addon.PreferFunctionCodeHistory and addon:PreferFunctionCodeHistory(d,true)) then if d:TravelModel(true) then p:Draw();d:UpdateActions() end else d:TravelCode(true) end end end)
     addon:SetUIScript(d.apply,'OnClick',function() if valid() then d:Apply() end end);addon:SetUIScript(d.cancel,'OnClick',function() if valid() then d:Close();if embedded and embedded.discard then embedded.discard() end end end);addon:SetUIScript(d.close,'OnClick',function() if valid() then d:Hide() end end)
     addon:SetUIScript(d.syntax,'OnClick',function() if not valid() then return end;d.validationRequested=true;if d:Flush() then local ok,why=addon:ValidateCustomConditionSource(d.model.key,d:PendingSource(),d.model.key==d.originalKey and d.expectedSource~=nil);p:Message(ok and L['Syntax checked. No custom code was executed.'] or reason(why),not not ok) end end)
     addon:SetUIScript(d.transfer,'OnClick',function() if valid() and d:Flush() then addon:ShowCustomConditionTransfer(d,update,d.model.key,d:PendingSource()) end end)
@@ -303,7 +317,7 @@ function addon:condition_edit_box(update,key,source,saveAllowed,embedded)
             if not valid() then return end
             if embedded and embedded.closeOwner then embedded.closeOwner(mouse) else d:Hide() end
         end) end
-        d.code.frame:ClearAllPoints();d.code.frame:SetPoint('TOPLEFT',0,-form.y);d.code.frame:SetSize(form.width,310);d.code.frame:Show();d:SetCode(d:CodeState().text);if d.code.SetContext then d.code:SetContext({kind='condition',id=d.model.key,name=d.model.value.description,source=d:PendingSource(),callback=d.selected,testOwner=d}) end;d:LayoutDocumentation()
+        d.code.frame:ClearAllPoints();d.code.frame:SetPoint('TOPLEFT',0,-form.y);d.code.frame:SetSize(form.width,310);d.code.frame:Show();d:SetCode(d:CodeState().text);if d.code.SetContext then d.code:SetContext({kind='condition',id=d.model.key,name=d.model.value.description,source=d:PendingSource(),callback=d.selected,testOwner=d,bindFunction=function(id,alias) return addon:BindEditorFunction(d,id,alias) end}) end;d:LayoutDocumentation()
         if d.pendingRaw then
             for _,record in ipairs(form.edits) do for key,text in pairs(d.pendingRaw) do if form.fields[key]==record.control then record.control:SetText(text);record.dirty=true end end end
             d.pendingRaw=nil

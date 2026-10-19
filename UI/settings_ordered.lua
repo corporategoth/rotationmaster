@@ -8,17 +8,28 @@ function addon:InstallSettingsOrdered(p)
         local view={rows={},zones={},compact=options.compact==true,ghost=ghost,unsavedKey=key:match("^items_") and "items" or "sequence"};self.ordered[key]=view
         local function valid() return p:Valid(token) end
         function view:CancelDrag()
-            self.drag=nil;self.tail=nil
+            self.drag=nil;self.tail=nil;self.insertFactory=nil
             if self.ghost.rmCollectionDragOwner==self or self.ghost.rmCollectionDragOwner==nil then
                 self.ghost.rmCollectionDragOwner=nil;if options.endPreview then options.endPreview(self.ghost) end;self.ghost:Hide();addon:SetUIScript(self.ghost,'OnUpdate',nil)
                 for _,zone in ipairs(self.zones) do zone:Hide();zone.marker:Hide() end
             end
         end
-        function view:CanDrop(gap) return valid() and addon:CanReorderWorkbenchRange(items,self.drag,gap,self.tail) end
+        function view:CanDrop(gap)
+            if not valid() or options.readOnly then return false end
+            if self.insertFactory then return type(gap)=='number' and gap%1==0 and gap>=1 and gap<=#items+1 end
+            return addon:CanReorderWorkbenchRange(items,self.drag,gap,self.tail)
+        end
         function view:Drop(gap)
-            local from,tail=self.drag,self.tail;local allowed=self:CanDrop(gap);self:CancelDrag()
+            local from,tail,factory=self.drag,self.tail,self.insertFactory;local allowed=self:CanDrop(gap);self:CancelDrag()
             if not allowed or not p:FlushEdits() or not valid() then return false end
-            p:WithSettingsHistory(function() addon:ReorderWorkbenchRange(items,from,gap,tail);changed();p:Draw() end);return true
+            local original={};for i,value in ipairs(items) do original[i]=value end
+            local function apply()
+                if not valid() or #items~=#original then return false end
+                for i,value in ipairs(original) do if items[i]~=value then return false end end
+                p:WithSettingsHistory(function() if factory then table.insert(items,gap,factory()) else addon:ReorderWorkbenchRange(items,from,gap,tail) end;changed();p:Draw() end);return true
+            end
+            if not factory and options.confirmReorder then options.confirmReorder(apply,from,gap,tail);return true end
+            return apply()
         end
         function view:Hover()
             local selected
@@ -29,7 +40,7 @@ function addon:InstallSettingsOrdered(p)
         function view:EndDrag() local gap=self:Hover();if gap then self:Drop(gap) else self:CancelDrag() end end
         function view:BeginDrag(index)
             if self.drag==index then return end
-            self:CancelDrag();if not valid() or not p:FlushEdits() or not valid() then return end
+            self:CancelDrag();if not valid() or options.readOnly or not p:FlushEdits() or not valid() then return end
             self.drag=index;self.tail=IsControlKeyDown and IsControlKeyDown() or false;self.ghost.rmCollectionDragOwner=self;self.ghost:Present((self.tail and L['Move this and following entries']..': ' or '')..title(index),(options.dragSummary and options.dragSummary(index)..'\n' or '')..L['Drop in a highlighted gap.'],p.frame,self.tail and #items-index+1 or 1)
             self.ghost.texture=self.ghost.texture or self.ghost:CreateTexture(nil,'ARTWORK');self.ghost.texture:SetSize(28,28);self.ghost.texture:SetPoint('TOPLEFT',8,-8);local icon=options.dragIcon and options.dragIcon(index);self.ghost.label:ClearAllPoints();self.ghost.label:SetPoint('TOPLEFT',icon and 44 or 10,-8);self.ghost.label:SetWidth((self.tail and #items-index+1>1 and 230 or 320)-(icon and 34 or 0));if icon then self.ghost.texture:SetTexture(icon);self.ghost.texture:Show() else self.ghost.texture:Hide() end
             local entries={}
@@ -40,6 +51,19 @@ function addon:InstallSettingsOrdered(p)
                 if not valid() then self:CancelDrag();return end
                 self.ghost:FollowPointer();self:Hover();if IsMouseButtonDown and not IsMouseButtonDown('LeftButton') then self:EndDrag() end
             end)
+        end
+        function view:BeginInsert(factory,label)
+            self:CancelDrag();if not valid() or options.readOnly or type(factory)~='function' or not p:FlushEdits() or not valid() then return false end
+            self.insertFactory=factory;self.ghost.rmCollectionDragOwner=self
+            self.ghost:Present(label,L['Drop in a highlighted gap.'],p.frame,1)
+            self.ghost.label:ClearAllPoints();self.ghost.label:SetPoint('TOPLEFT',10,-8);self.ghost.label:SetWidth(320);if self.ghost.texture then self.ghost.texture:Hide() end
+            self.ghost:CaptureCancel(function() self:CancelDrag() end)
+            for _,zone in ipairs(self.zones) do zone:Show() end
+            addon:SetUIScript(self.ghost,'OnUpdate',function()
+                if not valid() then self:CancelDrag();return end
+                self.ghost:FollowPointer();self:Hover();if IsMouseButtonDown and not IsMouseButtonDown('LeftButton') then self:EndDrag() end
+            end)
+            return true
         end
         local boundaries={self.y}
         for i in ipairs(items) do
@@ -58,9 +82,10 @@ function addon:InstallSettingsOrdered(p)
             row.up:ClearAllPoints();row.down:ClearAllPoints();row.remove:ClearAllPoints()
             row.up:SetPoint('TOPLEFT',3,options.compact and -1 or options.header==false and -4 or -26);row.down:SetPoint('TOPLEFT',3,options.compact and -14 or options.header==false and -22 or -44)
             row.up:SetSize(18,options.compact and 13 or 18);row.down:SetSize(18,options.compact and 13 or 18);row.remove:SetPoint('TOPRIGHT',-4,-3)
-            if i==1 then row.up:Disable() else row.up:Enable() end;if i==#items then row.down:Disable() else row.down:Enable() end
+            if options.readOnly or i==1 then row.up:Disable() else row.up:Enable() end;if options.readOnly or i==#items then row.down:Disable() else row.down:Enable() end
             addon:SetUIScript(row.up,'OnClick',self:Guard(function() view.drag=i;view.tail=false;view:Drop(i-1) end));addon:SetUIScript(row.down,'OnClick',self:Guard(function() view.drag=i;view.tail=false;view:Drop(i+2) end))
-            addon:SetUIScript(row.remove,'OnClick',self:Guard(function() if self:FlushEdits() and valid() then table.remove(items,i);changed();self:Draw() end end))
+            if options.readOnly then row.remove:Disable() else row.remove:Enable() end
+            addon:SetUIScript(row.remove,'OnClick',self:Guard(function() if not options.readOnly and self:FlushEdits() and valid() then table.remove(items,i);changed();self:Draw() end end))
             local function startDrag() view:BeginDrag(i) end;local function stopDrag() if valid() then view:EndDrag() end end
             row:EnableMouse(true);row.body:EnableMouse(true)
             for _,surface in ipairs({row,row.body}) do

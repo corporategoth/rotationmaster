@@ -293,4 +293,96 @@ test('function deletion allows discarding an invalid name before permanent confi
     assert(p.prompt.discard and p.prompt.discard:IsShown(),'invalid name blocked Discard');p.prompt.cancel:Click();assert(d.form.fields.name:GetText()=='' and a.db.global.custom_functions.A)
     d.form.fields.delete:Click();p.prompt.discard:Click();assert(p.prompt.frame:IsShown() and a.db.global.custom_functions.A);p.prompt.accept:Click();assert(not a.db.global.custom_functions.A and p.functionID=='B' and not p.inlineFunction:IsDirty())
 end)
+test('function pane shows exact callable paths and attaching completion keeps a stable exportable binding',function()
+    local _,a,host=fixture();a.db.global.custom_functions.HELPER=source('doubleValue');a:InitializeFunctionRegistry()
+    local p=a:OpenNativeSettings(host,'Functions');local d=p.inlineFunction
+    assert(a.FunctionInvocation and a:FunctionInvocation('HELPER',d.value)=='functions.doubleValue(value)','call form missing')
+    a:RegisterBuiltinFunction('builtin:method',{name='MakeField',description='Field',args={{name='self',type='RMAddon'},{name='value',type='table'}},returns={},code='return value'},function() return function(_,v) return v end end)
+    a.builtinFunctions['builtin:method'].callName='addon:MakeField';a.builtinFunctions['builtin:method'].public=true
+    assert(a:FunctionInvocation('builtin:method',a.builtinFunctions['builtin:method'].source)=='builtin.MakeField(addon, value)')
+    assert(a:FunctionInvocation('builtin:method',a.builtinFunctions['builtin:method'].source,true)=='addon:MakeField(value)')
+    p.fields.new_function:Click();d=p.inlineFunction;assert(a.BindEditorFunction,'completion binding bridge missing')
+    local insertion=assert(a:BindEditorFunction(d,'HELPER','doubleValue'));assert(d.value.bindings.doubleValue=='HELPER' and not a.db.global.custom_functions[p.newFunctionID])
+    code(d,'return functions.doubleValue(4)');assert(insertion:commit());d:UpdateActions();assert(d.form.fields.function_bindings.rmUnsaved and d.code.context.bindFunction)
+    d.apply:Click();assert(a:ResolveFunctionBinding(p.functionID)()==4)
+    local bundle=assert(a:BuildFunctionBundle('function',p.functionID));assert(#bundle.dependencies==1 and bundle.dependencies[1].id=='HELPER')
+end)
+test('completion binding rejects readonly stale conflicting and self references without changing saved source',function()
+    local _,a,host=fixture();a.db.global.custom_functions.A=source('alpha');a.db.global.custom_functions.B=source('beta');a:InitializeFunctionRegistry()
+    local p=a:OpenNativeSettings(host,'Functions');local d=p.inlineFunction;assert(a.BindEditorFunction)
+    assert(not a:BindEditorFunction(d,'A','alpha'));d.readOnly=true;assert(not a:BindEditorFunction(d,'B','beta'));d.readOnly=false
+    d.value.bindings.beta='A';assert(not a:BindEditorFunction(d,'B','beta'));p:Release();assert(not a:BindEditorFunction(d,'B','other'));assert(not next(a.db.global.custom_functions.A.bindings))
+end)
+test('condition completion binding refreshes symbols without losing pending callback code',function()
+    local f,a=fixture();conditionEditor(f,a);a.db.global.custom_conditions={};a.db.global.custom_functions.HELPER=source('helper');a:InitializeFunctionRegistry()
+    local value=a:CopySettingsData(a.empty_condition);value.description='Completion test';local d=a:condition_edit_box(function() end,'TEST',value)
+    local insertion=assert(a:BindEditorFunction(d,'HELPER','helper'));code(d,'return functions.helper(value)');assert(insertion:commit())
+    assert(d.code.context.source.bindings.helper=='HELPER' and d.code:GetText()=='return functions.helper(value)' and d.code.context.bindFunction,'completion context kept an unbound source')
+    d:SelectFunction('print');assert(d.code.context.source.bindings.helper=='HELPER' and d:PendingSource().evaluate=='return functions.helper(value)')
+end)
+local function completion(f,a,d)
+    f.env.GetLocale=function() return 'enUS' end;f.load('Libs/LuaWorkbench-Embed/modules.lua');f.load('Core/lua_symbols.lua')
+    local create=f.env.CreateFrame;f.env.CreateFrame=function(...) local frame=create(...);frame.RegisterEvent=function() end;frame.UnregisterAllEvents=function() end;return frame end
+    local engine={L={},UI={},Workspace={db={options={}}},Query={Console={SetStatus=function() end}}}
+    for _,name in ipairs({'Localization','LuaEditor','Analysis','APIHelp','Autocomplete'}) do a.LuaWorkbenchModules[name]('rotationmaster',engine) end
+    local input={editBox=d.code.edit,GetText=function() return d.code:GetText() end};engine.Query.Console.input=input
+    function engine.Query.Editor:SetSource(_,text,cursor) code(d,text);d.code.edit:SetCursorPosition(cursor) end
+    a:ApplyLuaContextSymbols(engine,{kind=d.model and 'condition' or 'function',id=d.model and d.model.key or d.key,callback=d.selected,source=d:PendingSource(),bindFunction=function(id,alias) return a:BindEditorFunction(d,id,alias) end},true)
+    local complete=engine.Autocomplete;function complete:Update() end
+    d.code.edit:SetCursorPosition(#d.code:GetText());complete.input=input;complete.context=assert(complete:Context(input:GetText(),d.code.edit:GetCursorPosition()));complete.items=complete:Suggest(complete.context,true)
+    for index,item in ipairs(complete.items) do if item.name=='functions.helper' then complete.selected=index end end
+    assert(complete.selected,'helper suggestion missing');complete.panel={IsShown=function() return true end,Hide=function() end}
+    return complete,input
+end
+test('accepted function completion is one undoable code and dependency transaction',function()
+    local f,a,host=fixture();a.db.global.custom_functions.HELPER=source('helper');a:InitializeFunctionRegistry();local p=a:OpenNativeSettings(host,'Functions');p.fields.new_function:Click();local d=p.inlineFunction
+    code(d,'return functions.he');local complete,input=completion(f,a,d);assert(complete:Accept(input));assert(d.code:GetText()=='return functions.helper' and d.value.bindings['functions.helper']=='HELPER')
+    code(d,'return functions.helper(3)');d.codeUndo:Click();assert(d.code:GetText()=='return functions.helper' and d.value.bindings['functions.helper']=='HELPER')
+    d.codeUndo:Click();assert(d.code:GetText()=='return functions.he' and not (d.value.bindings or {})['functions.helper'],'Undo split binding from insertion')
+    d.codeRedo:Click();assert(d.code:GetText()=='return functions.helper' and d.value.bindings['functions.helper']=='HELPER');d.codeRedo:Click();assert(d.code:GetText()=='return functions.helper(3)')
+    d.apply:Click();assert(a:ResolveFunctionBinding(p.functionID)()==3);local bundle=assert(a:BuildFunctionBundle('function',p.functionID));assert(#bundle.dependencies==1 and bundle.dependencies[1].id=='HELPER')
+end)
+test('condition completion travels atomically through global and code history around model edits',function()
+    local f,a=fixture();conditionEditor(f,a);a.db.global.custom_conditions={};a.db.global.custom_functions.HELPER=source('helper');a:InitializeFunctionRegistry()
+    local value=a:CopySettingsData(a.empty_condition);value.description='Before';local d=a:condition_edit_box(function() end,'TEST',value)
+    d.model:Change(function(model) model.value.description='Earlier metadata' end);code(d,'return functions.he')
+    local complete,input=completion(f,a,d);assert(complete:Accept(input));d.model:Change(function(model) model.value.description='Later metadata' end)
+    d.undo:Click();assert(d.model.value.description=='Earlier metadata' and d.code:GetText()=='return functions.helper' and d.model.value.bindings['functions.helper']=='HELPER')
+    d.undo:Click();assert(d.code:GetText()=='return functions.he' and not (d.model.value.bindings or {})['functions.helper'],'global Undo left an unbound function call')
+    d.undo:Click();assert(d.model.value.description=='Before');d.redo:Click();assert(d.model.value.description=='Earlier metadata');d.redo:Click();assert(d.code:GetText()=='return functions.helper' and d.model.value.bindings['functions.helper']=='HELPER')
+    code(d,'return functions.helper(value)');d:TravelCode(false);assert(d.code:GetText()=='return functions.helper' and d.model.value.bindings['functions.helper']=='HELPER')
+    d:TravelCode(false);assert(d.code:GetText()=='return functions.he' and not (d.model.value.bindings or {})['functions.helper']);d:TravelCode(true);assert(d.code:GetText()=='return functions.helper' and d.model.value.bindings['functions.helper']=='HELPER')
+end)
+test('declined or failing insertion rolls back its staged binding and partial text without history',function()
+    for _,throws in ipairs({false,true}) do
+        local f,a,host=fixture();a.db.global.custom_functions.HELPER=source('helper');a:InitializeFunctionRegistry();local p=a:OpenNativeSettings(host,'Functions');p.fields.new_function:Click();local d=p.inlineFunction;code(d,'return functions.he')
+        local complete,input=completion(f,a,d);local count=#d.undo
+        complete.rmAccept=function() if throws then code(d,'partial');error('insertion failed') end;return false end
+        local ok,accepted=pcall(complete.Accept,complete,input);assert(throws and not ok or not throws and ok and not accepted)
+        assert(d.code:GetText()=='return functions.he' and not (d.value.bindings or {})['functions.helper'] and not d.pendingFunctionBinding and #d.undo==count,'failed insertion retained a dependency, partial code or history')
+    end
+end)
+test('accepting an already typed full name records only the new dependency and Undo restores it',function()
+    local f,a,host=fixture();a.db.global.custom_functions.HELPER=source('helper');a:InitializeFunctionRegistry();local p=a:OpenNativeSettings(host,'Functions');p.fields.new_function:Click();local d=p.inlineFunction;code(d,'return functions.helper')
+    local transaction=assert(a:BindEditorFunction(d,'HELPER','functions.helper'));assert(transaction:commit() and d.value.bindings['functions.helper']=='HELPER');d.codeUndo:Click();assert(d.code:GetText()=='return functions.helper' and not (d.value.bindings or {})['functions.helper'])
+    d.codeRedo:Click();assert(d.code:GetText()=='return functions.helper' and d.value.bindings['functions.helper']=='HELPER')
+end)
+test('function namespaces derive the roster filter and custom metadata stays staged',function()
+    local _,a,host=fixture();assert(a.FunctionNamespace,'namespace metadata missing')
+    a.db.global.custom_functions.A=source('same');a.db.global.custom_functions.A.namespace='alpha'
+    a.db.global.custom_functions.B=source('same');a.db.global.custom_functions.B.namespace='beta';a:InitializeFunctionRegistry()
+    local built=source('cached');built.namespace='utils';a:RegisterBuiltinFunction('builtin:utils.lua:cached',built,function() return function(v) return v end end)
+    local p=a:OpenNativeSettings(host,'Functions');assert(p.roster.options.categories and #p.roster.options.categories==4,'namespace filter is not derived from existing helpers')
+    p.roster.options.chooseCategory('beta');assert(#p.roster.entries==1 and p.functionID=='B' and p.inlineFunction.value.namespace=='beta')
+    local d=p.inlineFunction;edit(d,'namespace','myTools');assert(a.db.global.custom_functions.B.namespace=='beta' and d:IsDirty())
+    d.apply:Click();assert(a.db.global.custom_functions.B.namespace=='myTools' and p.functionID=='B' and not p.inlineFunction:IsDirty(),'moving namespace lost the selected function')
+    assert(a:FunctionInvocation('B',a.db.global.custom_functions.B)=='myTools.same(value)')
+end)
+test('symbol navigation selects a helper outside the current namespace filter',function()
+    local _,a,host=fixture();a.db.global.custom_functions.A=source('alpha');a.db.global.custom_functions.A.namespace='first'
+    a.db.global.custom_functions.B=source('beta');a.db.global.custom_functions.B.namespace='second';a:InitializeFunctionRegistry()
+    local p=a:OpenNativeSettings(host,'Functions');p.roster.options.chooseCategory('second');assert(p.functionID=='B')
+    a.configWindow={pane=p};a.ShowConfig=function(_,section) assert(section=='Functions');p:Draw() end
+    a:ShowFunctionSource('A');assert(p.functionID=='A' and p.inlineFunction.key=='A','namespace filtering replaced the requested symbol with another function')
+end)
 finish()

@@ -83,7 +83,7 @@ function addon:CreateSettingsForm(parent)
     end
     function p:Edit(key,caption,value,parse,changed)
         local y=self:Row(caption);local c=self:Acquire('edits',function() return addon:CreateWorkbenchEditBox(self.child) end)
-        c:ClearAllPoints();c:SetPoint('TOPLEFT',220,-y);c:SetSize(self.width-220,24);c:SetMaxLetters(4096);c:EnableMouse(true);c:SetText(tostring(value or ''));c:SetTextColor(1,1,1);c:SetTextInsets(4,4,0,0);if c.referenceIcon then c.referenceIcon:Hide() end;if c.texturePreview then c.texturePreview:Hide() end;c:ClearFocus()
+        c:ClearAllPoints();c:SetPoint('TOPLEFT',220,-y);c:SetSize(math.max(1,self.width-220),24);c:SetMaxLetters(4096);c:EnableMouse(true);c:SetText(tostring(value or ''));c:SetTextColor(1,1,1);c:SetTextInsets(4,4,0,0);if c.referenceIcon then c.referenceIcon:Hide() end;if c.texturePreview then c.texturePreview:Hide() end;c:ClearFocus()
         addon:SetUIScript(c,'OnReceiveDrag',nil);addon:SetUIScript(c,'OnMouseDown',nil);if c.dropHint then c.dropHint:Hide() end;addon:SetUIScript(c,'OnEditFocusGained',nil);addon:SetUIScript(c,'OnEnter',nil);addon:SetUIScript(c,'OnLeave',nil)
         local record={control=c,parse=parse or identity,changed=changed,dirty=false,baseline=tostring(value or '')};self.edits[#self.edits+1]=record;self.fields[key]=c
         addon:SetUIScript(c,'OnTextChanged',self:Guard(function(_,user) if user then record.dirty=true;if self.transactionKeys and self.fields.apply then self.fields.apply:Enable() end;local v=record.parse(c:GetText());c:SetTextColor(1,v~=nil and 1 or .35,v~=nil and 1 or .35) end end))
@@ -199,7 +199,7 @@ function addon:CreateSettingsForm(parent)
     end
     function p:Choice(key,caption,value,entries,changed)
         local y=self:Row(caption);local c=self:Acquire('choices',function() return addon:CreateWorkbenchLabeledIconButton(self.child,'chevron-down','',220) end)
-        c:ClearAllPoints();c:SetPoint('TOPLEFT',220,-y);c:SetWidth(self.width-220);c:Enable();self.fields[key]=c
+        c:ClearAllPoints();c:SetPoint('TOPLEFT',220,-y);c:SetWidth(math.max(1,self.width-220));c:Enable();self.fields[key]=c
         local selected=L['Select'];local chosen;for _,entry in ipairs(entries) do if entry.value==value then selected=entry.text;chosen=entry;break end end;addon:PaintSelectorSelection(c,chosen,selected)
         addon:SetUIScript(c,'OnClick',self:Guard(function() if self:FlushEdits() then self:ShowChoices(c,entries,function(nextValue) if nextValue~=value then value=nextValue;changed(nextValue) end end) end end));return c
     end

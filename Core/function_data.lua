@@ -88,6 +88,17 @@ local function lookup(self,id)
     local built=self.builtinFunctions and self.builtinFunctions[id]
     return built and built.source or (self.db.global.custom_functions or {})[id],built~=nil
 end
+local function requirementHashMatches(self,requirement,current,isBuiltin)
+    if self:FunctionSourceHash(current)==requirement.hash then return true end
+    if not isBuiltin then return false end
+    -- Older packaged catalogs used the captured local alias as the display
+    -- name and had no namespace metadata. Reconstruct only that exact shape;
+    -- executable code, arguments, bindings and documentation remain hashed.
+    local alias=requirement.id:match('^builtin:.*:([^:]+)$') or requirement.id:match('^builtin:([^:]+)$')
+    if not alias then return false end
+    local legacy=self:CopySettingsData(current);legacy.namespace=nil;legacy.name=alias
+    return self:FunctionSourceHash(legacy)==requirement.hash
+end
 function addon:BuildFunctionBundle(kind,id,source,includeDependencies)
     if kind~='function' and kind~='condition' or not identity(id) then return nil,'invalid-bundle-root' end
     source=source or (kind=='function' and lookup(self,id) or (self.db.global.custom_conditions or {})[id])
@@ -203,7 +214,7 @@ function addon:PlanFunctionBundleImport(value,choices)
         local current,isBuiltin=lookup(self,requirement.id);local status='included'
         if not included[requirement.id] then
             local available=self:FunctionAvailable(requirement.id)
-            if not current then status='missing-function' elseif isBuiltin~=requirement.builtin or self:FunctionSourceHash(current)~=requirement.hash then status='incompatible-function' elseif not available then status='unavailable-function' else status='available' end
+            if not current then status='missing-function' elseif isBuiltin~=requirement.builtin or not requirementHashMatches(self,requirement,current,isBuiltin) then status='incompatible-function' elseif not available then status='unavailable-function' else status='available' end
             if status~='available' then problem(requirement.id,status) end
             baselines['requirement:'..requirement.id]={kind='requirement',id=requirement.id,source=self:CopySettingsData(current),builtin=isBuiltin}
         end

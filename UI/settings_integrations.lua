@@ -7,6 +7,8 @@ function addon:BuildIntegrationSettings(p)
     for _,entry in ipairs(entries) do if entry.value==selected then known=true end end
     if not known then entries[#entries+1]={value=selected,text=selected..' ('..L['Unavailable']..')'} end
     p:Choice('lua_editor',L['Editor'],selected,entries,function(value) profile.lua_editor=value end)
+    p:Check('lua_line_numbers',L['Show line numbers'],profile.lua_line_numbers~=false,function(value) profile.lua_line_numbers=value end)
+    p:Text(L['Line-number visibility applies to every condition and function code editor.'])
     p:Text(L['Automatic uses an available editor integration, with built-in syntax highlighting as its fallback. Plain text disables highlighting. Apply changes the editor used the next time you open a custom condition.'])
     p:Heading(L['Optional addons'])
     local loaded=C_AddOns and C_AddOns.IsAddOnLoaded or IsAddOnLoaded

@@ -4,18 +4,24 @@ function addon:LuaContextSymbols(context)
     context=context or {};local source=context.source or {};local symbols={}
     local function add(name,kind,description,typeName,args,returns,id)
         local info={Name=name,Type=kind=='functionName' and 'Function' or 'Parameter',Documentation={description or ''},Arguments={},Returns={}}
+        if kind~='functionName' and typeName then table.insert(info.Documentation,1,string.format(L['Type: %s'],typeName)) end
         for _,arg in ipairs(args or {}) do info.Arguments[#info.Arguments+1]={Name=arg.name,Type=arg.type,Documentation={arg.description or ''}} end
         for i,result in ipairs(returns or {}) do info.Returns[#info.Returns+1]={Name='result'..i,Type=result.type,Documentation={result.description or ''}} end
-        symbols[name]={name=name,kind=kind,description=description or '',type=typeName,info=info,id=id}
+        symbols[name]={name=name,kind=kind,description=description or '',type=typeName,info=info,id=id,origin=id and (id:match('^builtin:') and 'builtin' or 'custom') or 'context'}
     end
     add('addon','identifier',L['Rotation Master addon instance. Public helper functions are documented in Functions.'],'RMAddon')
     add('L','identifier',L['Localized Rotation Master text, indexed by its English key.'],'table')
+    add('addon.units','identifier',L['Supported unit-token to localized unit-name lookup. Use value.unit as a key; for example addon.units[value.unit]. Available tokens vary by client.'],'table<string, string>')
+    add('addon.unitsPossessive','identifier',L['Supported unit-token to localized possessive unit-name lookup, such as your target.'],'table<string, string>')
+    add('addon.Platform','identifier',L['Rotation Master client compatibility adapter. Its methods return ordinary readable results or nil with a reason when an observation is unavailable. Use a colon call, or pass addon.Platform explicitly as self with a dot reference.'],'RMPlatform')
+    add('addon.SpellCatalog','identifier',L['Rotation Master spell catalog for resolving client-specific spell IDs, ranks, names, icons and links.'],'RMSpellCatalog')
     for id,entry in pairs(self.builtinFunctions or {}) do
         if entry.public and entry.callName and entry.source then
             local args={};for index,arg in ipairs(entry.source.args or {}) do
                 if not (index==1 and arg.name=='self' and entry.callName:find(':',1,true)) then args[#args+1]=arg end
             end
             add(entry.callName,'functionName',entry.source.description,'function',args,entry.source.returns,id)
+            if entry.callName:find(':',1,true) then add(entry.callName:gsub(':','.'),'functionName',entry.source.description,'function',entry.source.args,entry.source.returns,id) end
         end
     end
     local arguments={}
@@ -29,16 +35,62 @@ function addon:LuaContextSymbols(context)
     end
     for _,arg in ipairs(arguments) do if arg.name~='...' then add(arg.name,'parameter',arg.description,arg.type) end end
     if symbols.value then for name,typeName in pairs(source.fields or {}) do if type(name)=='string' then add('value.'..name,'identifier',name,type(typeName)=='string' and typeName or 'table') end end end
+    local namespace=true;local bindingArguments={}
+    for _,arg in ipairs(arguments) do bindingArguments[#bindingArguments+1]=arg;if arg.name=='functions' then namespace=false end end
+    for _,parameters in pairs(source.parameters or {}) do for _,name in ipairs(parameters) do bindingArguments[#bindingArguments+1]={name=name};if name=='functions' then namespace=false end end end
+    if source.bindings and source.bindings.functions then namespace=false end
+    if namespace then add('functions','identifier',L['Utility functions explicitly bound to this condition or function. Choose a completion to bind an available custom function before inserting its reference.'],'table<string, function>') end
+    local function addNamespace(path)
+        local parent=path:match('^(.*)%.');local prefix=''
+        for part in (parent or ''):gmatch('[^.]+') do
+            prefix=prefix=='' and part or prefix..'.'..part
+            if not symbols[prefix] then add(prefix,'identifier',L['Private utility-function namespace. It contains only explicit bindings for this callback.'],'table<string, function | table>') end
+        end
+    end
+    local bound={}
     for alias,id in pairs(source.bindings or {}) do
         local builtin=self.builtinFunctions and self.builtinFunctions[id];local custom=(self.db.global.custom_functions or {})[id];local entry=custom or builtin and builtin.source
-        if entry then add(alias,builtin and builtin.valueBinding and 'identifier' or 'functionName',entry.description,builtin and builtin.valueBinding and 'any' or 'function',entry.args,entry.returns,id) end
+        if entry then
+            add(alias,builtin and builtin.valueBinding and 'identifier' or 'functionName',entry.description,builtin and builtin.valueBinding and 'any' or 'function',entry.args,entry.returns,id)
+            bound[alias]=true;addNamespace(alias)
+            if namespace and not alias:find('.',1,true) and not (builtin and builtin.valueBinding) then add('functions.'..alias,'functionName',entry.description,'function',entry.args,entry.returns,id);bound['functions.'..alias]=true end
+        end
     end
+    local candidates={}
+    local function candidate(id,entry)
+        if type(entry)~='table' or entry.disabled or entry.namespace~=nil and not self:IsFunctionNamespace(entry.namespace) or context.kind=='function' and context.id==id then return end
+        local name=self:FunctionQualifiedName(id,entry)
+        local bindings={};for alias,target in pairs(source.bindings or {}) do bindings[alias]=target end
+        if bindings[name] and bindings[name]~=id then return end;bindings[name]=id
+        if not self:NormalizeFunctionBindings(bindings,bindingArguments) then return end
+        if candidates[name] then candidates[name]=false elseif candidates[name]~=false then candidates[name]={id=id,entry=entry} end
+    end
+    for id,entry in pairs(self.db.global.custom_functions or {}) do candidate(id,entry) end
+    for id,entry in pairs(self.builtinFunctions or {}) do if not entry.valueBinding and entry.source then candidate(id,entry.source) end end
+    for name,item in pairs(candidates) do if item and not bound[name] then
+        addNamespace(name);add(name,'functionName',item.entry.description,'function',item.entry.args,item.entry.returns,item.id)
+        symbols[name].requiresBinding=true;symbols[name].bindingName=name
+    end end
     return symbols
 end
 function addon:ApplyLuaContextSymbols(engine,context,limited)
     local api=engine.APIHelp
     local function shallow(value) local result={};for key,entry in pairs(value or {}) do result[key]=entry end;return result end
     if not api.rmSyncSymbols then
+        local describe=api.FullDescription
+        function api:FullDescription(name,rich,links)
+            local symbol=engine.rmSymbols and engine.rmSymbols[name]
+            local text=describe(self,name,rich,links)
+            if symbol and text then
+                local heading=symbol.kind=='functionName' and (symbol.origin=='custom' and L['Rotation Master custom function'] or L['Rotation Master built-in function']) or L['Rotation Master value']
+                if rich then heading='|cffe6c07b'..heading:gsub('|','||')..'|r' end
+                return text:gsub('^[^\n]*',function() return heading end,1)
+            end
+            if not text and not self.rmLimited and self.rmUndocumented and self.rmUndocumented[name] then
+                return L['Global function (documentation unavailable on this client)']..'\n'..name..'\n\n'..L['This client does not provide signature documentation for this function. No arguments or return types have been inferred.']
+            end
+            return text
+        end
         function api:rmSyncSymbols()
             -- Documentation can arrive after the editor opens (combat defers
             -- upstream loading). Strip only our previous overlay, retain newly
@@ -64,12 +116,25 @@ function addon:ApplyLuaContextSymbols(engine,context,limited)
             local result=paths(self,source,force)
             if not force and not self:Enabled() then return result end
             local analysis=engine.Analysis:Get(source);local chain,previous,declaration
+            self.rmUndocumented=self.rmUndocumented or {}
+            local function globalFunction(name)
+                if self.rmLimited or name:match('^addon[.:]') or name:match('^functions[.:]') then return false end
+                local value=_G
+                for part in name:gmatch('[%w_]+') do
+                    if type(value)~='table' or issecretvalue and issecretvalue(value) then return false end
+                    value=rawget(value,part)
+                end
+                return not (issecretvalue and issecretvalue(value)) and type(value)=='function'
+            end
             for _,token in ipairs(analysis.tokens) do
                 if token.kind~='space' and token.kind~='newline' and token.kind~='comment' then
                     if token.kind=='identifier' or token.kind=='call' then
                         if chain and previous and (previous.text=='.' or previous.text==':') then chain=chain..previous.text..token.text
                         else chain=token.semanticKind=='globalVariable' and not token.definition and not analysis.globals[token.text] and token.text or nil;declaration=previous and previous.text=='function' end
-                        if chain and not declaration and not token.definition and engine.rmSymbols[chain] then result[token.start]=chain end
+                        if chain and not declaration and not token.definition then
+                            if engine.rmSymbols[chain] then result[token.start]=chain
+                            elseif not result[token.start] and globalFunction(chain) then result[token.start]=chain;self.rmUndocumented[chain]=true end
+                        end
                     elseif token.text~='.' and token.text~=':' then chain=nil end
                     previous=token
                 end
@@ -77,12 +142,37 @@ function addon:ApplyLuaContextSymbols(engine,context,limited)
             return result
         end
     end
-    engine.rmSymbols=self:LuaContextSymbols(context);api:rmSyncSymbols()
+    engine.rmContext=context;api.rmLimited=limited==true;engine.rmSymbols=self:LuaContextSymbols(context);api:rmSyncSymbols()
     if limited then api.ready=true;function api:Load() end end
     if not engine.Autocomplete.rmNames then
         engine.Autocomplete.rmNames=engine.Autocomplete.Names
         function engine.Autocomplete:Names()
             local names=self:rmNames();for name,symbol in pairs(engine.rmSymbols or {}) do self.nameKinds[name]=symbol.kind end;return names
+        end
+    end
+    if engine.Autocomplete.Accept and not engine.Autocomplete.rmAccept then
+        engine.Autocomplete.rmAccept=engine.Autocomplete.Accept
+        function engine.Autocomplete:Accept(input)
+            -- Mirror upstream's source/cursor/read-only guard before creating a
+            -- dependency. Merely displaying or cancelling suggestions is inert.
+            if self.context and input:GetText()~=self.context.source then self:Refine(input,input:GetText(),input.editBox:GetCursorPosition()) end
+            local current=self.context;local item=self.items and self.items[self.selected]
+            if self.input~=input or not self.panel or not self.panel:IsShown() or not current or not item
+                or input:GetText()~=current.source or input.editBox:GetCursorPosition()~=current.cursor
+                or not self:Enabled(input) or engine.Query.Editor:IsReadOnly(input) then return false end
+            local symbol=engine.rmSymbols and engine.rmSymbols[item.name]
+            local transaction
+            if symbol and symbol.requiresBinding then
+                local ownerContext=engine.rmContext
+                if not ownerContext or type(ownerContext.bindFunction)~='function' then return false end
+                transaction=ownerContext.bindFunction(symbol.id,symbol.bindingName);if not transaction then return false end
+            end
+            local called,accepted=pcall(self.rmAccept,self,input)
+            if type(transaction)=='table' then
+                if called and accepted then accepted=transaction:commit() else transaction:rollback() end
+            end
+            if not called then error(accepted,0) end
+            return accepted
         end
     end
     engine.Autocomplete:Hide()
