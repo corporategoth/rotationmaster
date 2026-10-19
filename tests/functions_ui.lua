@@ -29,6 +29,25 @@ local function previewContainers(f)
         if widget.OnRelease then widget:OnRelease() end;if widget.frame then widget.frame:Hide() end
     end
 end
+local function pooledPreviewContainers(f)
+    -- Use the shipped pool, container layout and widgets. In particular, pooled
+    -- roots stay hidden until their native host explicitly shows them.
+    local ace=f.libraries['AceGUI-3.0'];local constructors=ace.constructors;local stub=f.env.LibStub;local errors={}
+    f.env.LibStub=setmetatable({NewLibrary=function(_,name) assert(name=='AceGUI-3.0');return ace end},{__call=function(_,...) return stub(...) end})
+    f.env.geterrorhandler=function() return function(err) errors[#errors+1]=err end end
+    f.env.table=setmetatable({wipe=function(value) for key in pairs(value) do value[key]=nil end;return value end},{__index=table})
+    local create=f.env.CreateFrame
+    f.env.CreateFrame=function(...)
+        local frame=create(...);local setSize=frame.SetSize
+        -- WoW only emits OnSizeChanged for an actual size change.
+        function frame:SetSize(width,height) if self.width~=width or self.height~=height then setSize(self,width,height) end end
+        return frame
+    end
+    f.load('Libs/AceGUI-3.0/AceGUI-3.0.lua')
+    for kind,constructor in pairs(constructors) do ace:RegisterWidgetType(kind,constructor,1) end
+    f.load('Libs/AceGUI-3.0/widgets/AceGUIContainer-SimpleGroup.lua');f.load('Libs/AceGUI-3.0/widgets/AceGUIWidget-Label.lua')
+    return errors
+end
 test('Functions opens packaged helpers readonly and duplicates a typed source without saving',function()
     local f,a,host=fixture();assert(a.BuildFunctionSettings,'Functions page missing')
     a:RegisterBuiltinFunction('builtin:test',source('Packaged helper'),function() return function(v) return v end end)
@@ -190,7 +209,7 @@ end)
 test('unified Test renders fields and help together and defaults do not configure debugger values',function()
     local f,a=fixture();local d=checkEditor(f,a);assert(a.ConditionTestValues and d.test,'unified Test bridge missing');d.model.value.help='frame:AddChild(addon.help_funcs.CreateText("Combined help"))';d:SelectFunction('on_register');d.test:Click();local view=d.sourcePreview
     assert(view.pane.children[1] and view.helpPane.children[1].children[1].text:find('Combined help',1,true));assert(not view.lastResult and not a.checkedValid and not a.checkedEvaluate,'opening Test evaluated defaults')
-    local values,why=a:ConditionTestValues(d);assert(not values and why=='Set test values in Test before debugging Evaluate.' and not d.conditionTestState.configured)
+    local values,why=a:ConditionTestValues(d);assert(not values and why=='Set values in Test before running or debugging this condition.' and not d.conditionTestState.configured)
     view.sample.count=3;view.check:Click();assert(view.lastResult.status=='match' and d.conditionTestState.configured);view.close:Click();values=assert(a:ConditionTestValues(d));assert(values.count==3);values.count=900;assert(a:ConditionTestValues(d).count==3,'debugger received live sample storage')
     d.model.value.fields.extra='number';assert(not a:ConditionTestValues(d),'stale schema reused configured samples')
 end)
@@ -234,6 +253,31 @@ test('packaged readonly conditions use the same Test fields help and results wit
     d:SelectFunction('help');d.test:Click();local view=d.sourcePreview;assert(not view.failed and view.pane.children[1] and view.helpPane.children[1])
     local unit=view.pane.children[1];unit.callbacks.OnValueChanged(unit,'OnValueChanged','player');view.frame.scripts.OnUpdate(view.frame,0)
     assert(view.lastResult and view.lastResult.status=='match' and d.conditionTestState.values.unit=='player');view:Close();assert(d.readOnly and not d:IsDirty() and a:SettingsDataEqual(d:PendingSource(),source) and not (a.db.global.custom_conditions or {}).COMBAT)
+end)
+test('pooled Test roots keep real Attackable and Allies fields visible and editable on reopening',function()
+    for _,key in ipairs({'ATTACKABLE','PROXIMITY'}) do
+        local f,a=fixture();local errors=pooledPreviewContainers(f);conditionEditor(f,a)
+        f.load('Data/builtin_sources.lua');f.load('Core/builtin_sources.lua');f.load('Conditions/common.lua');f.load('Conditions/combat.lua');f.load('Conditions/spatial.lua')
+        f.env.loadstring=function(text,name) local fn,why=loadstring(text,name);if fn then setfenv(fn,f.env) end;return fn,why end
+        local src=assert(a:GetBuiltinConditionSource(key));local host=f.env.CreateFrame('Frame');host:SetSize(1000,700)
+        local d=a:condition_edit_box(function() error('must not save') end,key,src,nil,{readOnly=true,parent=host,width=900,height=650})
+        for pass=1,2 do
+            d.test:Click();local view=d.sourcePreview;assert(not view.failed,view.status:GetText())
+            assert(view.contentPane.frame:IsShown(),key..' pooled Test scroll root remained hidden')
+            assert(view.pane.frame:IsShown() and view.pane.frame:GetHeight()>0 and #view.helpPane.children>0)
+            local unit=assert(view.pane.children[1]);assert(unit.type=='RM-Selector' and unit.frame:IsShown() and unit.frame:GetHeight()==44)
+            unit.button:Click();local menu=unit.selector;assert(menu.frame:IsShown())
+            local wanted=key=='ATTACKABLE' and 'target' or 'player'
+            for index,id in ipairs(unit.order) do if id==wanted then menu.rows[index]:Click();break end end
+            assert(view.sample.unit==wanted and not menu.frame:IsShown(),'native unit selector did not update test values')
+            assert(#errors==0,table.concat(errors,'\n'));view:Close()
+        end
+        for pass=1,2 do
+            local surface=a:CreateConditionDebugSurface(d,'widget');assert(surface.contentPane.frame:IsShown(),'pooled callback output root remained hidden')
+            assert(surface.chrome and surface.info:GetText():find('Rendered output',1,true));surface:Close()
+        end
+        assert(not d:IsDirty() and a:SettingsDataEqual(d:PendingSource(),src))
+    end
 end)
 test('function names are valid local call names while legacy registry references stay stable',function()
     local f,a,host=fixture();assert(a.FunctionEditorName,'callable names missing')

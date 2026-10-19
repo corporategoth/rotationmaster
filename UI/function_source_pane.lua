@@ -140,13 +140,13 @@ function addon:BuildInlineFunction(p,key,source,readOnly)
         local label=form:Acquire('functionMetadataLabels',function() return form.child:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall') end)
         label:ClearAllPoints();label:SetPoint('TOPLEFT',0,-y);label:SetSize(width or 66,24);label:SetJustifyH('LEFT');label:SetJustifyV('MIDDLE');label:SetWordWrap(true);label:SetText(text);return label
     end
-    local function description(key,caption,value,changed,left,width)
+    local function description(key,caption,value,changed,left,width,compact)
         local y=form.y;local input=form:Edit(key,caption,value,nil,changed)
         if left then input:ClearAllPoints();input:SetPoint('TOPLEFT',left,-y);input:SetWidth(width) end
-        input:SetMultiLine(true);input:SetTextInsets(5,5,5,5);input:SetCursorPosition(0)
+        input:SetMultiLine(true);input:SetTextInsets(5,5,compact and 4 or 5,compact and 4 or 5);input:SetCursorPosition(0)
         local measure=form:Acquire('functionDescriptionMeasure',function() return form.child:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall') end)
         measure:SetWidth(math.max(40,input:GetWidth()-10));measure:SetWordWrap(true);measure:SetText(value or '');measure:SetHeight(0)
-        local height=math.max(54,measure:GetStringHeight()+12);measure:Hide();input:SetHeight(height);form.y=y+height+8
+        local height=math.max(compact and 28 or 54,measure:GetStringHeight()+(compact and 8 or 12));measure:Hide();input:SetHeight(height);form.y=y+height+(compact and 2 or 8)
         enable(input,not d.readOnly);return input
     end
     local function metadata(field,caption,values)
@@ -169,30 +169,57 @@ function addon:BuildInlineFunction(p,key,source,readOnly)
         end
         addon:BindWorkbenchDragSource(add,beginInsert,function() local view=form.ordered and form.ordered[viewKey];if view then view:EndDrag() end end)
         if d.metadataCollapsed[field] then return end
+        local function confirmOrderChange(apply)
+            if d.isNew then apply() else form:Confirm(field=='args' and L['Changing argument order can break existing callers. Rotation Master will not rewrite their Lua code. Continue?'] or L['Changing return documentation order does not rewrite return statements or existing callers. Review the Lua body and callers for the new order. Continue?'],apply) end
+        end
         local view=form:OrderedCollection(viewKey,values,function(index) return field=='args' and (values[index].name or L['Argument']) or (values[index].type or L['Return']) end,function(rowForm,index,record,row)
             local prefix=(field=='args' and 'arg_' or 'return_')..index..'_'
             form.fields[field..'_up_'..index]=row.up;form.fields[field..'_down_'..index]=row.down;form.fields[field..'_delete_'..index]=row.remove
-            if field=='args' then
-                local y=form.y;fieldLabel(L['Name'],y)
-                local input=form:Edit(prefix..'name',nil,record.name or '',nil,function(value) record.name=value;d:UpdateActions() end)
-                input:SetMultiLine(false);input:SetHeight(24);input:SetTextInsets(4,4,0,0);input:SetCursorPosition(0);input:ClearAllPoints();input:SetPoint('TOPLEFT',70,-y);input:SetWidth(math.max(40,form.width-70));input.tooltip=L['Argument name'];enable(input,not d.readOnly)
-                input.rmFunctionValue=function() return record.name end;input.rmFunctionBaseline=d.baseline[field] and d.baseline[field][index] and d.baseline[field][index].name
-            end
-            local typeY=form.y;fieldLabel(L['Type'],typeY)
+            local top,width=form.y,form.width;local isArgument=field=='args';local wide=width>=(isArgument and 370 or 220)
             local base,nullable=splitType(record.type)
             local function setType(nextBase,nextNullable) record.type=nextBase..(nextNullable and nextBase~='nil' and ' | nil' or '');refresh() end
+            fieldLabel(L['Type'],top,30)
             local choose=form:Choice(prefix..'type',nil,base,typeChoices(addon,base),function(value) setType(value,nullable) end)
-            choose:ClearAllPoints();choose:SetPoint('TOPLEFT',70,-typeY);choose:SetWidth(math.max(40,form.width-182));choose.tooltip=L['Type'];enable(choose,not d.readOnly)
+            local typeWidth=wide and (isArgument and math.min(140,math.floor(width*.25)) or width-144) or width-34
+            choose:ClearAllPoints();choose:SetPoint('TOPLEFT',34,-top);choose:SetWidth(math.max(40,typeWidth));addon:AlignWorkbenchTextLeft(choose,26);choose:GetFontString():SetWordWrap(false);choose.tooltip=L['Type'];enable(choose,not d.readOnly)
             choose.rmFunctionTypeValue=function() return record.type end;choose.rmFunctionTypeBaseline=d.baseline[field] and d.baseline[field][index] and d.baseline[field][index].type
+            if isArgument then
+                local nameY=wide and top or top+28;local nameLabelX=wide and 34+typeWidth+6 or 0;local nameX=nameLabelX+38
+                local nameLabel=fieldLabel(L['Name'],nameY,34);nameLabel:ClearAllPoints();nameLabel:SetPoint('TOPLEFT',nameLabelX,-nameY)
+                form.y=nameY
+                local input=form:Edit(prefix..'name',nil,record.name or '',nil,function(value) record.name=value;d:UpdateActions() end)
+                input:SetMultiLine(false);input:SetHeight(24);input:SetTextInsets(4,4,0,0);input:SetCursorPosition(0);input:ClearAllPoints();input:SetPoint('TOPLEFT',nameX,-nameY);input:SetWidth(math.max(40,(wide and width-110 or width)-nameX));input.tooltip=L['Argument name'];enable(input,not d.readOnly)
+                input.rmFunctionValue=function() return record.name end;input.rmFunctionBaseline=d.baseline[field] and d.baseline[field][index] and d.baseline[field][index].name
+            end
+            local nullableY=wide and top or top+(isArgument and 56 or 28)
+            form.y=nullableY
             local check=form:Check(prefix..'nullable',L['Nullable'],nullable,function(value) setType(base,value) end)
-            check:ClearAllPoints();check:SetPoint('TOPLEFT',math.max(70,form.width-106),-typeY);check:SetWidth(102);check:GetFontString():SetWidth(80);enable(check,not d.readOnly and base~='nil')
-            if form.width<218 then check:ClearAllPoints();check:SetPoint('TOPLEFT',70,-typeY-26);choose:SetWidth(math.max(40,form.width-70));form.y=typeY+54 else form.y=typeY+28 end
+            check:ClearAllPoints();check:SetPoint('TOPLEFT',wide and width-104 or 34,-nullableY);check:SetWidth(102);check:GetFontString():SetWidth(80);enable(check,not d.readOnly and base~='nil');form.y=nullableY+28
             check.rmFunctionTypeValue=function() return record.type end;check.rmFunctionTypeBaseline=choose.rmFunctionTypeBaseline;form.functionTypeFields[#form.functionTypeFields+1]=choose;form.functionTypeFields[#form.functionTypeFields+1]=check
             fieldLabel(L['Description'],form.y)
-            local input=description(prefix..'description',nil,record.description or '',function(value) record.description=value;d:UpdateActions() end,70,math.max(40,form.width-70))
+            local input=description(prefix..'description',nil,record.description or '',function(value) record.description=value;d:UpdateActions() end,70,math.max(40,form.width-70),true)
             input.rmFunctionValue=function() return record.description end;input.rmFunctionBaseline=d.baseline[field] and d.baseline[field][index] and d.baseline[field][index].description
-        end,function() if not d.readOnly then if d.code then d.value.code=d.code:GetText() end;d:UpdateActions() end end,{header=false,prefix=field=='args' and 'arg_' or 'return_',readOnly=d.readOnly,confirmReorder=function(apply)
-            if d.isNew then apply() else form:Confirm(field=='args' and L['Changing argument order can break existing callers. Rotation Master will not rewrite their Lua code. Continue?'] or L['Changing return documentation order does not rewrite return statements or existing callers. Review the Lua body and callers for the new order. Continue?'],apply) end
+            row.functionHelp=row.functionHelp or addon:CreateWorkbenchHelpButton(row,L['Help']);row.functionHelp:ClearAllPoints();row.functionHelp:SetPoint('TOPRIGHT',-4,-3);row.functionHelp:SetSize(20,20);row.functionHelp.icon:SetSize(18,18);row.functionHelp:Enable();row.functionHelp:Show();form.fields[prefix..'help']=row.functionHelp
+            addon:SetUIScript(row.functionHelp,'OnClick',form:Guard(function()
+                local sections={{title=L['Type'],text=L['Type and Nullable describe the values accepted or returned by this function. They document the contract; they do not rewrite or validate values in the Lua body.']},{title=L['Description'],text=L['Describe this value for function documentation, completion and hover help. Changes remain in the draft until Apply.']}}
+                if isArgument then sections[#sections+1]={title=L['Name'],text=L['The argument name is the local parameter available in the Lua body. Use a valid Lua identifier. Renaming this documentation does not rewrite references in the code.']} end
+                sections[#sections+1]={title=L['Card controls'],text=isArgument and L['Drag a card to reorder arguments; Ctrl-drag includes following arguments. Up and down move one position. Duplicate copies the argument with a unique name; the trash can removes it. Reordering a saved function requires confirmation because existing callers are not rewritten.'] or L['Drag a card to reorder return documentation; Ctrl-drag includes following returns. Up and down move one position. Duplicate copies the documented return value; the trash can removes it. Return order in this list does not rewrite return statements or callers.']}
+                addon:ShowWorkbenchHelp(isArgument and L['Argument'] or L['Return'],sections,addon:FunctionQualifiedName(d.key,d.value))
+            end))
+            row.functionDuplicate=row.functionDuplicate or addon:CreateWorkbenchIconButton(row,'copy',L['Duplicate']);row.functionDuplicate:ClearAllPoints();row.functionDuplicate:SetPoint('TOPRIGHT',-4,-25);row.functionDuplicate:SetSize(20,20);enable(row.functionDuplicate,not d.readOnly);row.functionDuplicate:Show();form.fields[prefix..'duplicate']=row.functionDuplicate
+            addon:SetUIScript(row.functionDuplicate,'OnClick',form:Guard(function()
+                if d.readOnly or not d:Flush() then return end
+                local copy=addon:CopySettingsData(record);local position=index+1
+                if isArgument then
+                    local used={};for _,entry in ipairs(values) do used[entry.name]=true end
+                    local base=record.name=='...' and 'argument_copy' or addon:FunctionEditorName('argument',record):sub(1,118)..'_copy';local name,n=base,2
+                    while used[name] do name=base..n;n=n+1 end;copy.name=name;if record.name=='...' then position=index end
+                end
+                table.insert(values,position,copy);refresh()
+            end))
+            row.remove:ClearAllPoints();row.remove:SetPoint('TOPRIGHT',-4,-47);form.fields[prefix..'remove']=row.remove
+        end,function() if not d.readOnly then if d.code then d.value.code=d.code:GetText() end;d:UpdateActions() end end,{header=false,prefix=field=='args' and 'arg_' or 'return_',readOnly=d.readOnly,confirmReorder=confirmOrderChange,confirmInsert=function(apply,gap)
+            if gap<=#values then confirmOrderChange(apply) else apply() end
         end})
         form.functionMetadataViews[field]=view
     end

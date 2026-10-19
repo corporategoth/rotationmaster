@@ -379,4 +379,21 @@ test('line metrics measure literal markup in advanced and highlighted editors wh
  end
  local highlighted=a:CreateWorkbenchLuaEditor(f.env.UIParent,function() end,function() return true end,'native');assert(highlighted.syntax,'native syntax engine did not attach');check(highlighted,false,true)
 end)
+test('unconfigured condition actions stay clickable and explain the required Test setup visibly',function()
+ local f,a=fixture();local body={fields={unit='string'},bindings={}};f.env.GameTooltip={Hide=function() end};local owner={model={key='MISSING_TEST'},OwnerValid=function() return true end,PendingSource=function() return body end}
+ local c=a:CreateLuaWorkbenchControl(f.env.UIParent,function() end,function() return true end);c:SetText('return value.unit');c:SetContext({kind='condition',id='MISSING_TEST',callback='evaluate',source=body,testOwner=owner})
+ assert(c.play:IsEnabled() and c.engine.Workspace.debugButton:IsEnabled(),'unconfigured actions silently disable mouse feedback')
+ c.play:Click();assert(c.status and c.status:IsShown() and c.status:GetText():find('Test',1,true),'Run prerequisite feedback is invisible')
+ assert(not c.engine.Debugger.armed and not c.outputWindow,'missing Test unexpectedly executed or opened output')
+ c.engine.Workspace.debugButton:Click();assert(c.status:GetText():find('Test',1,true) and not c.engine.Debugger.armed,'Debug prerequisite feedback is invisible');c:Release()
+end)
+test('running render callbacks shows their preview without a second empty output dialog',function()
+ local f,a=fixture();local body={fields={},bindings={}};local owner={frame=f.env.UIParent,model={key='RENDER_RUN'},OwnerValid=function() return true end,Flush=function() return true end,PendingSource=function() return body end,Show=function() end}
+ local c=a:CreateLuaWorkbenchControl(f.env.UIParent,function() end,function() return true end)
+ c:SetContext({kind='condition',id='RENDER_RUN',callback='help',source=body,testOwner=owner});c:SetText('frame:AddChild(addon.help_funcs.CreateText("rendered help"))');assert(c:Run())
+ assert(c.debugSurface and c.debugSurface.frame:IsShown() and c.debugSurface.parent.children[1],'render callback produced no visible preview')
+ assert(not c.outputWindow or not c.outputWindow.frame:IsShown(),'successful render opened a redundant Output window')
+ assert(c.status and c.status:GetText():find('Preview',1,true),'render result has no visible inline feedback')
+ c:SetText('error("RENDER_ERROR")');assert(not c:Run() and c.outputWindow.frame:IsShown(),'render failures lost their copyable output');c:Release()
+end)
 finish()

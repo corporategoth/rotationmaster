@@ -28,6 +28,7 @@ function addon:InstallSettingsOrdered(p)
                 for i,value in ipairs(original) do if items[i]~=value then return false end end
                 p:WithSettingsHistory(function() if factory then table.insert(items,gap,factory()) else addon:ReorderWorkbenchRange(items,from,gap,tail) end;changed();p:Draw() end);return true
             end
+            if factory and options.confirmInsert then options.confirmInsert(apply,gap);return true end
             if not factory and options.confirmReorder then options.confirmReorder(apply,from,gap,tail);return true end
             return apply()
         end

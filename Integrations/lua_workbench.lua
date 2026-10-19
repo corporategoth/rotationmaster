@@ -70,6 +70,7 @@ function rm:CreateLuaWorkbenchControl(parent,changed,valid)
     function UI:Editor(owner,label,readonly) local input=baseEditor(self,owner,label,readonly);input.editBox:SetFont('Interface\\AddOns\\'..addon_name..'\\Fonts\\Inconsolata-Regular.ttf',12,'');return input end
     function UI:Scroll(owner) local scroll=rm:CreateWorkbenchScrollFrame(owner);scroll.bar=scroll.workbenchBar;return scroll end
     local input=UI:Editor(frame,'');input.editBox:SetText('');C.input=input;c.edit=input.editBox;input.frame:SetAllPoints(frame)
+    c.status=input.frame:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall');c.status:SetPoint('BOTTOMLEFT',6,3);c.status:SetPoint('BOTTOMRIGHT',-6,3);c.status:SetHeight(18);c.status:SetJustifyH('LEFT');c.status:SetJustifyV('MIDDLE');c.status:SetText('')
     c.arguments=rm:CreateWorkbenchEditBox(input.frame);c.arguments:SetText('{}');c.arguments:SetPoint('TOPLEFT',88,-2);c.arguments:SetPoint('RIGHT',input.frame,'RIGHT',-168,0);c.arguments:SetHeight(22)
     c.argumentLabel=input.frame:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall');c.argumentLabel:SetPoint('TOPLEFT',4,-7);c.argumentLabel:SetText(L['Test arguments'])
     c.play=UI:Button(input.frame,'play',engine.L.queryLuaRun or L['Run test'],function() c:Run() end);c.play:SetPoint('TOPRIGHT',-3,-1)
@@ -126,10 +127,10 @@ function rm:CreateLuaWorkbenchControl(parent,changed,valid)
         local source=self.context.source or {};local names,arguments={},{}
         if self.context.kind=='condition' then
             local owner=self.context.testOwner;local callback=self.context.callback or 'evaluate'
-            if not owner or not owner.OwnerValid or not owner.OwnerValid() then C:SetStatus(L['Set values in Test before debugging this condition.'],true);return false end
+            if not owner or not owner.OwnerValid or not owner.OwnerValid() then C:SetStatus(L['Set values in Test before running or debugging this condition.'],true);return false end
             source=owner:PendingSource()
             if callback=='evaluate' or callback=='valid' or callback=='print' then
-                local values,why=rm:ConditionTestValues(owner);if not values then C:SetStatus(why or L['Set values in Test before debugging this condition.'],true);return false end
+                local values,why=rm:ConditionTestValues(owner);if not values then C:SetStatus(why or L['Set values in Test before running or debugging this condition.'],true);return false end
                 arguments=callback=='evaluate' and {values,{},GetTime()} or {rm.currentSpec or 0,values}
             elseif callback=='widget' or callback=='help' then
                 local surface=rm:CreateConditionDebugSurface(owner,callback);if not surface then C:SetStatus(L['Unavailable'],true);return false end
@@ -208,7 +209,8 @@ function rm:CreateLuaWorkbenchControl(parent,changed,valid)
         local results=pack(self:InvokeWithSurface(chunk,unpack(arguments,1,arguments.n or #arguments)))
         if not results[1] then C:ReportError(results[2]);self:ShowDebugOutput();return false end
         if results.n>1 then C:Write('return',unpack(results,2,results.n)) end
-        C:SetStatus(engine.L.queryLuaComplete,false);self:ShowDebugOutput();return true
+        if self.debugSurface then C:SetStatus(L['Preview rendered. Use Output for printed messages.'],false)
+        else C:SetStatus(engine.L.queryLuaComplete,false);self:ShowDebugOutput() end;return true
     end
     local updateLabel=C.UpdateEditorLabel
     function C:UpdateEditorLabel() updateLabel(self);input.label:Hide() end
@@ -216,7 +218,17 @@ function rm:CreateLuaWorkbenchControl(parent,changed,valid)
         local owner=self.context.testOwner;local state=owner and owner.conditionTestState
         local needsValues=self.context.kind=='condition' and (self.context.callback=='evaluate' or self.context.callback=='valid' or self.context.callback=='print')
         local ready=not needsValues or owner and owner.OwnerValid and owner.OwnerValid() and state and state.configured
-        self.play:SetEnabled(not not ready);W.debugButton:SetEnabled(not not ready)
+        -- Keep actions clickable so prerequisites can be explained rather than
+        -- silently dropping native clicks on disabled buttons.
+        self.play:SetEnabled(true);W.debugButton:SetEnabled(true)
+        ready=not not ready
+        if self.executionReady~=ready then
+            local why=L['Set values in Test before running or debugging this condition.']
+            if ready and C.statusText==why then C:SetStatus(nil) end
+            self.executionReady=ready
+            UI:Tooltip(self.play,ready and (engine.L.queryLuaRun or L['Run test']) or why)
+            UI:Tooltip(W.debugButton,ready and engine.L.debugStart or why)
+        end
     end
     function engine.DebugUI:Layout()
         if not self.toolbar then return end
@@ -225,11 +237,11 @@ function rm:CreateLuaWorkbenchControl(parent,changed,valid)
         self.toolbar:ClearAllPoints();self.toolbar:SetPoint('TOPLEFT',6,-28);self.toolbar:SetPoint('TOPRIGHT',-6,-28)
         local top=active and 60 or 28
         local height=math.min(180,math.max(80,input.frame:GetHeight()*.4))
-        local drawer=active and self.drawerOpen and input.frame:GetHeight()-top-height>=32
-        self.dock:SetShown(drawer==true);self.dock:SetHeight(height)
+        local drawer=active and self.drawerOpen and input.frame:GetHeight()-top-height-24>=32
+        self.dock:SetShown(drawer==true);self.dock:SetHeight(height);self.dock:ClearAllPoints();self.dock:SetPoint('BOTTOMLEFT',6,24);self.dock:SetPoint('BOTTOMRIGHT',-6,24)
         self.terminalOutput.frame:SetWidth(math.max(120,input.frame:GetWidth()*.62-16))
         input.scrollBG:SetPoint('TOPLEFT',input.frame,'TOPLEFT',6,-top)
-        input.scrollBG:SetPoint('BOTTOMRIGHT',input.frame,'BOTTOMRIGHT',-16,drawer and height+8 or 8)
+        input.scrollBG:SetPoint('BOTTOMRIGHT',input.frame,'BOTTOMRIGHT',-16,drawer and height+28 or 28)
         c.arguments:SetShown(not active and c.context.kind~='condition');c.argumentLabel:SetShown(not active)
     end
     function c:Layout()

@@ -18,4 +18,14 @@ test('shared native rotation transfer invalidates previews and applies copy or s
     d.input:SetText('incoming');d.input.scripts.OnTextChanged(d.input,true);d.preview:Click();d.destination:Click();d.name:SetText('Copy');d.name.scripts.OnTextChanged(d.name,true);d.apply:Click();assert(applied==1 and not target and not d.frame:IsShown() and body.rotation[1].action==403)
     d=a:ShowRotationTransfer(0,'mine');d.preview:Click();d.apply:Click();assert(applied==2 and target=='mine')
 end)
+test('shared transfer shell keeps moved coordinates while its text and themed context refresh',function()
+    local f=F.new();local a=f.addon;dofile('tests/fixtures/native_ui.lua')(f.env);f.load('UI/settings_transfer.lua')
+    local d=a:CreateWorkbenchTransferShell(570,430);local started,stopped=0,0
+    function d.frame:StartMoving() started=started+1 end;function d.frame:StopMovingOrSizing() stopped=stopped+1 end
+    local drag=assert(d.chrome.drag,'transfer/output shell omitted common title dragging')
+    drag:GetScript('OnDragStart')(drag,'LeftButton');d.frame:SetPoint('BOTTOMLEFT',f.env.UIParent,'BOTTOMLEFT',210,175);drag:GetScript('OnDragStop')(drag)
+    d.input:SetText('Copyable output');d.chrome:SetContext('Output','Output','');d.scroll:UpdateWorkbenchScroll()
+    assert(started==1 and stopped==1 and d.frame.point[4]==210 and d.frame.point[5]==175)
+    assert(d.close:GetParent()==d.frame and d.input:GetParent()==d.scroll and not d.input.drags,'dragging changed close or editable text ownership')
+end)
 finish()

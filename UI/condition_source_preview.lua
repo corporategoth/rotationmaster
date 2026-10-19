@@ -27,7 +27,7 @@ local function sample(schema,depth)
     local result={};for key,child in pairs(schema) do result[key]=sample(child,(depth or 0)+1) end;return result
 end
 function addon:ConditionTestValues(owner)
-    local why=L['Set test values in Test before debugging Evaluate.'];local state=owner and owner.conditionTestState
+    local why=L['Set values in Test before running or debugging this condition.'];local state=owner and owner.conditionTestState
     if not owner or not owner.OwnerValid or not owner.OwnerValid() or not state or not state.configured or state.profile~=self.db.profile or state.global~=self.db.global or state.key~=owner.model.key then return nil,why end
     local source=owner:PendingSource()
     if not state.source or not self:SettingsDataEqual(source.fields,state.source.fields) or not self:SettingsDataEqual(source.bindings,state.source.bindings) then return nil,why end
@@ -132,8 +132,8 @@ function addon:ShowConditionSourceTest(owner,options)
         if onClose then report('close-test-surface',onClose,self) end
     end
     function d:Hide() self:Close() end
-    d.chrome:SetContext(debugSurface and L['Debugger output'] or L['Test condition'],L['Test'],source.description)
-    d.info:SetText(debugSurface and L['Debugger output uses a detached sample and the normal field or help container.'] or L['Choose test values in Fields UI, then Run test to validate and evaluate. Help is shown below the fields. Opening Test does not evaluate defaults. Live is opt-in.'])
+    d.chrome:SetContext(debugSurface and (options.callback=='help' and L['Help preview'] or L['Fields UI preview']) or L['Test condition'],L['Test'],source.description)
+    d.info:SetText(debugSurface and L['Rendered output appears here when the callback runs or steps through widget creation.'] or L['Choose test values in Fields UI, then Run test to validate and evaluate. Help is shown below the fields. Opening Test does not evaluate defaults. Live is opt-in.'])
     d.info:SetWidth(d.frame:GetWidth()-24);d.status:SetWidth(d.frame:GetWidth()-24);d.scroll:SetWidth(d.frame:GetWidth()-36)
     d.status:ClearAllPoints();d.scroll:ClearAllPoints()
     if checking then d.check:Show();d.live:Show();d.status:SetPoint('TOPLEFT',12,-112);d.status:SetHeight(52);d.scroll:SetPoint('TOPLEFT',12,-172);d.scroll:SetHeight(306)
@@ -151,6 +151,9 @@ function addon:ShowConditionSourceTest(owner,options)
         return self:Invoke('render-test',function()
         local width=d.frame:GetWidth()-60
         local content=AceGUI:Create('SimpleGroup');d.contentPane=content;content:SetLayout('List');content:SetFullWidth(true);content:SetWidth(width);content.frame:SetParent(d.scroll);content.frame:ClearAllPoints();content.frame:SetPoint('TOPLEFT');content.frame:SetWidth(width);content:SetUserData('top',top)
+        -- AceGUI only shows widgets through AddChild. This native scroll root
+        -- bypasses AddChild, so a reused group is still hidden after Release.
+        content.frame:Show()
         content.LayoutFinished=function(_,_,height) if alive() and type(height)=='number' then content.frame:SetHeight(math.max(1,math.min(20000,height)));d.scroll:UpdateWorkbenchScroll() end end
         d.scroll:SetScrollChild(content.frame)
         if debugSurface then d.parent=content;d.pane=content;return end
@@ -195,7 +198,7 @@ function addon:ShowConditionSourceTest(owner,options)
             local defaults=sample(current.fields or {}) or {};for field,value in pairs(defaults) do if self.sample[field]==nil then self.sample[field]=value end end
             self:Render(current,definition);if self.failed then return end
         end
-        if automatic then if not addon:ConditionTestValues(owner) then self.status:SetText(L['Set test values in Test before debugging Evaluate.']);return end
+        if automatic then if not addon:ConditionTestValues(owner) then self.status:SetText(L['Set values in Test before running or debugging this condition.']);return end
         elseif not self:Configure() then self.status:SetText(self.sampleProblem);return end
         local accepted,validationReason
         if definition.functionUnavailable then validationReason=definition.functionUnavailable else accepted,validationReason=self:Invoke('check-valid',definition.valid,addon.currentSpec or 0,self.sample) end

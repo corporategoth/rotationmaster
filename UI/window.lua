@@ -160,9 +160,27 @@ function addon:EnableWorkbenchRightClickClose(frame)
         rightDown=down
     end)
 end
+-- Only the header receives movement gestures. Body EditBoxes and controls keep
+-- their native mouse selection, dragging and right-click behavior.
+function addon:EnableWorkbenchTitleDrag(frame)
+    if frame.rmWorkbenchTitleDrag then return frame.rmWorkbenchTitleDrag end
+    frame:SetMovable(true);frame:SetClampedToScreen(true)
+    local drag=CreateFrame('Frame',nil,frame);frame.rmWorkbenchTitleDrag=drag
+    drag:SetPoint('TOPLEFT',1,-1);drag:SetPoint('TOPRIGHT',-58,-1);drag:SetHeight(28)
+    drag:EnableMouse(true);drag:RegisterForDrag('LeftButton')
+    local function stop() drag.moving=nil;frame:StopMovingOrSizing() end
+    addon:SetUIScript(drag,'OnDragStart',function(_,button)
+        if button and button~='LeftButton' or not frame:IsShown() then return end
+        drag.moving=true;frame:StartMoving()
+    end)
+    addon:SetUIScript(drag,'OnDragStop',stop)
+    addon:SetUIScript(drag,'OnMouseUp',function(_,button) if button=='LeftButton' and drag.moving then stop() end end)
+    addon:SetUIScript(drag,'OnHide',stop)
+    return drag
+end
 function addon:CreateWorkbenchDialogChrome(frame,title)
     local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
-    local chrome={};self:EnableWorkbenchRightClickClose(frame)
+    local chrome={};self:EnableWorkbenchRightClickClose(frame);chrome.drag=self:EnableWorkbenchTitleDrag(frame)
     local function fill(parent,r,g,b)
         local art=parent:CreateTexture(nil,'BACKGROUND');art:SetAllPoints(parent);art:SetColorTexture(r,g,b,1);return art
     end
