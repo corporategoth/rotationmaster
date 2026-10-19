@@ -87,7 +87,11 @@ function addon:BuildConditionSettings(p)
             toggle:ClearAllPoints();toggle:SetPoint('TOPRIGHT',-28,-4);toggle:SetWidth(84);p.y=enabledY
             p:Actions({{key='edit_custom',text=L['Edit'],icon='info',action=function() self:OpenSettingsCustomCondition(p,tag,custom[tag]) end},
                 })
-            p.fields.delete_custom=self:SettingsTopDelete(p,function() p:Confirm(L['Delete this custom condition? Existing rotations using it will become unavailable.'],function() self:StageSettingsDeletion(p,source.description or tag,function() custom[tag]=nil;p:RunSettingsEffect('custom_'..tag,function() self:UnregisterCondition(tag) end) end) end) end)
+            p.fields.delete_custom=self:SettingsTopDelete(p,function()
+                self:ConfirmSettingsDeletion(p,L['Delete this custom condition? Existing rotations using it will become unavailable.'],function()
+                    local ok,why=self:DeleteSavedCustomCondition(tag);if ok then p.condition=nil end;return ok,why
+                end)
+            end)
         end
     end
 end
@@ -141,7 +145,13 @@ function addon:BuildConditionCategorySettings(p)
             end;return true
         end,{canReplace=true,selectedName=group and group.name or category=='SWITCH' and L['Switch'] or L['Other'],fallbackName=L['Imported category'],originalName=function(input) local parsed=self:ParseConditionCategoryImport(input,codec);return parsed and parsed.name end})
     end
-    if group then p.fields.delete_category=self:SettingsTopDelete(p,function() p:Confirm(L['Delete this category? Its conditions will remain available under Other.'],function() self:StageSettingsDeletion(p,group.name or category,function() table.remove(groups,index);if p.category==category then p.category='DEFAULT' end end) end) end) end
+    if group then p.fields.delete_category=self:SettingsTopDelete(p,function()
+        self:ConfirmSettingsDeletion(p,L['Delete this category? Its conditions will remain available under Other.'],function()
+            for i,current in ipairs(self.db.profile.condition_groups or {}) do if current.id==category then
+                table.remove(self.db.profile.condition_groups,i);if p.category==category then p.category='DEFAULT' end;p.categorySelection=nil;return true
+            end end;return false,'category-changed'
+        end)
+    end) end
 end
 function addon:OpenSettingsCustomCondition(p,key,condition)
     if p.transactionKeys and p:IsSettingsDraftDirty() then p:Message(L['Apply or discard current settings before opening the custom code editor.']);return end

@@ -2045,7 +2045,9 @@ L['Local name in code'] = true
 L['Source helper'] = true
 L['Function names use letters, numbers and underscores, beginning with a letter or underscore. Names suggest the local binding used to call them; registry identifiers stay stable.'] = true
 
-L['Deletion staged. Apply to remove this entry, or Discard to keep it.'] = true
+
+L['This cannot be undone.'] = true
+L['Delete this announcement?'] = true
 
 -- BEGIN GENERATED RM PUBLIC HELPER DOCS
 L["All original results, preserving nil positions and return count."] = true

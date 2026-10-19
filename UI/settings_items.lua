@@ -57,7 +57,16 @@ function addon:BuildItemSettings(p)
                 end,{canReplace=true,selectedName=set.name,fallbackName=L['Imported item set'],originalName=function(input) local candidate=self:ParseItemSetImport(input,codec);return candidate and candidate.name end})
             end},
             {key='reset',text=L['Reset'],icon='undo',enabled=self.getDefaultItemset and self:getDefaultItemset(id)~=nil or false,action=function() local defaults=self:getDefaultItemset(id);if defaults then set.items=self:CopySettingsData(defaults);update();set.modified=false;p:Draw() end end},
-            {key='delete',text=L['Delete'],icon='trash',action=function() p:Confirm(L['Delete this item set and its binding? Rotations referencing it will need another item set.'],function() self:StageSettingsDeletion(p,set.name or id,function() local removedItems=self:CopySettingsData(items);profileSets[id]=nil;globalSets[id]=nil;p:RunSettingsEffect('delete_set_'..id,function() if self.UnbindItemSet then self:UnbindItemSet(id,removedItems) else bindings[id]=nil end;if self.UpdateItemSetButtons then self:UpdateItemSetButtons(id) end end) end) end) end}}
+            {key='delete',text=L['Delete'],icon='trash',action=function()
+                self:ConfirmSettingsDeletion(p,L['Delete this item set and its binding? Rotations referencing it will need another item set.'],function()
+                    local profile,global=self.db.profile.itemsets or {},self.db.global.itemsets or {};local current=profile[id] or global[id]
+                    if not current then return false,'item-set-changed' end
+                    if self.UnbindItemSet then if self:UnbindItemSet(id,self:CopySettingsData(current.items or {}))==false then return false,L['Leave combat before changing action bar bindings.'] end
+                    elseif self.db.char and self.db.char.bindings then self.db.char.bindings[id]=nil end
+                    profile[id]=nil;global[id]=nil;if self.UpdateItemSetButtons then self:UpdateItemSetButtons(id) end;return true
+                end)
+            end}}
+
         self:CollectionFooter(p,'itemset',merged,id,actionEntries[1],actionEntries[2]);self:SettingsTopDelete(p,actionEntries[4].action)
         local reset=p:Acquire('resetPill',function() return self:CreateWorkbenchPill(p.child,L['Reset'],62) end);reset:ClearAllPoints();reset:SetPoint('TOPRIGHT',-30,-4);reset:SetSize(62,18);reset:SetText(L['Reset']);p.fields.reset=reset;if actionEntries[3].enabled then reset:Enable() else reset:Disable() end;self:SetUIScript(reset,'OnClick',p:Guard(function() if p:FlushEdits() then actionEntries[3].action() end end))
     end

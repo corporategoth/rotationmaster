@@ -87,7 +87,12 @@ function addon:BuildEffectSettings(p)
                     elseif isNew then p.newEffect=value else effects[id]=value end;refresh();return true
                 end,{canReplace=not isNew,selectedName=effect.name,fallbackName=L['Imported effect'],originalName=function(input) local decoded=codec:Decode(input);return decoded and type(decoded.value)=='table' and decoded.value.name end})
             end},
-            {key='delete',text=L['Delete'],icon='trash',action=function() p:Confirm(L['Delete this effect? Rotations using it will need another effect.'],function() self:StageSettingsDeletion(p,effect.name or id,function() effects[id]=nil;refresh() end) end) end}}
+            {key='delete',text=L['Delete'],icon='trash',action=function()
+                self:ConfirmSettingsDeletion(p,L['Delete this effect? Rotations using it will need another effect.'],function()
+                    if not (self.db.global.effects or {})[id] then return false,'effect-changed' end
+                    self.db.global.effects[id]=nil;return true
+                end)
+            end}}
         actionEntries[1].enabled=not isNew;self:CollectionFooter(p,'effect',effects,isNew and nil or id,actionEntries[1],actionEntries[2]);if not isNew then self:SettingsTopDelete(p,actionEntries[3].action) end
         refresh()
     end

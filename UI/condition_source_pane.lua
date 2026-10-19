@@ -73,10 +73,8 @@ function addon:BuildInlineCustomCondition(p,key,source,readOnly)
         local hidden=form:Check('hidden',L['Hidden'],context.hidden,function(value) d.model:Change(function(model) model.context.hidden=value end);d:UpdateActions() end);hidden:SetWidth(checkWidth);hidden:GetFontString():SetWidth(checkWidth-22)
         local switch=form:Check('switch',L['Switch Condition'],context.switch,function(value) d.model:Change(function(model) model.context.switch=value end);d:UpdateActions() end);switch:ClearAllPoints();switch:SetPoint('TOPLEFT',checkWidth+8,-y);switch:SetWidth(checkWidth);switch:GetFontString():SetWidth(checkWidth-22);form.y=form.y-28
         if key and not readOnly then self:SettingsTopDelete(form,function()
-            p:RequestLeave(function()
-                p:Confirm(L['Delete this custom condition? Existing rotations using it will become unavailable.'],function()
-                    self:StageSettingsDeletion(p,d.model.value.description or key,function() local data=p:SettingsData();data.global.custom_conditions[key]=nil;p:RunSettingsEffect('custom_'..key,function() self:UnregisterCondition(key) end);clearNew(p) end)
-                end)
+            self:ConfirmSettingsDeletion(p,L['Delete this custom condition? Existing rotations using it will become unavailable.'],function()
+                local ok,why=self:DeleteSavedCustomCondition(key);if ok then clearNew(p);p.condition=nil end;return ok,why
             end)
         end) end
     end

@@ -7,10 +7,11 @@ local function splitType(value)
     for part in tostring(value or 'any'):gmatch('[^|]+') do
         part=part:match('^%s*(.-)%s*$');if part=='nil' then nullable=true else parts[#parts+1]=part end
     end
+    if #parts==0 and nullable then return 'nil',false end
     return #parts>0 and table.concat(parts,' | ') or 'any',nullable
 end
 local function typeChoices(addon,current)
-    local names={};for _,name in ipairs({'any','boolean','number','string','table','function','thread','userdata'}) do names[name]=true end
+    local names={};for _,name in ipairs({'any','boolean','number','string','table','function','thread','userdata','nil'}) do names[name]=true end
     local function collect(source)
         for _,field in ipairs({'args','returns'}) do for _,record in ipairs(source and source[field] or {}) do local base=splitType(record.type);names[base]=true;for part in base:gmatch('[^|]+') do names[part:match('^%s*(.-)%s*$')]=true end end end
     end
@@ -48,7 +49,7 @@ end
 function addon:BuildInlineFunction(p,key,source,readOnly)
     local d=p.functionEditorCache or {frame=CreateFrame('Frame',nil,p.frame)};p.functionEditorCache=d;p.inlineFunction=d
     local resume=p.functionResume;p.functionResume=nil
-    d.closed=false;d.key=key;d.readOnly=readOnly==true;d.value=self:CopySettingsData(source);if not d.readOnly then d.value.code=self:NormalizeLuaSourceForEditor(d.value.code);if self.FunctionEditorName then d.value.name=self:FunctionEditorName(key,d.value) end end;d.codeExpanded=false;d.baseline=self:CopySettingsData(d.value);d.expected=self:CopySettingsData((self.db.global.custom_functions or {})[key]);d.isNew=p.newFunctionSource~=nil;d.deleting=false;d.undo={};d.redo={};d.validationInput=nil;d.contextInput=nil;d.session=(d.session or 0)+1
+    d.closed=false;d.key=key;d.readOnly=readOnly==true;d.value=self:CopySettingsData(source);if not d.readOnly then d.value.code=self:NormalizeLuaSourceForEditor(d.value.code);if self.FunctionEditorName then d.value.name=self:FunctionEditorName(key,d.value) end end;d.codeExpanded=false;d.baseline=self:CopySettingsData(d.value);d.expected=self:CopySettingsData((self.db.global.custom_functions or {})[key]);d.isNew=p.newFunctionSource~=nil;d.undo={};d.redo={};d.validationInput=nil;d.contextInput=nil;d.session=(d.session or 0)+1
     if resume then for field,value in pairs(resume) do d[field]=value end end
     local token,session=p.generation,d.session
     local function valid() return not d.closed and d.session==session and p:Valid(token) end;d.OwnerValid=valid
@@ -58,11 +59,11 @@ function addon:BuildInlineFunction(p,key,source,readOnly)
     function d:PendingSource() local value=addon:CopySettingsData(self.value);if not self.readOnly and self.code and not self.code.released then value.code=self.code:GetText() end;return value end
     function d:CaptureDraft()
         local raw={};for _,record in ipairs(form.edits) do if record.dirty then for name,control in pairs(form.fields) do if control==record.control then raw[name]=record.control:GetText() end end end end
-        return {value=self:PendingSource(),baseline=self.baseline,expected=self.expected,isNew=self.isNew,deleting=self.deleting,undo=self.undo,redo=self.redo,pendingRaw=raw,codeExpanded=self.codeExpanded}
+        return {value=self:PendingSource(),baseline=self.baseline,expected=self.expected,isNew=self.isNew,undo=self.undo,redo=self.redo,pendingRaw=raw,codeExpanded=self.codeExpanded}
     end
     function d:IsDirty()
         if self.readOnly then return false end
-        if self.isNew or self.deleting or not addon:SettingsDataEqual(self:PendingSource(),self.baseline) then return true end
+        if self.isNew or not addon:SettingsDataEqual(self:PendingSource(),self.baseline) then return true end
         for _,record in ipairs(form.edits) do if record.dirty and record.control:GetText()~=record.baseline then return true end end;return false
     end
     function d:Flush() return valid() and form:FlushEdits() end
@@ -103,9 +104,9 @@ function addon:BuildInlineFunction(p,key,source,readOnly)
         if not valid() or self.readOnly or not self:Flush() then return false end
         if InCombatLockdown and InCombatLockdown() then form:Message(L['Leave combat before applying these settings.']);return false end
         local ok,why
-        if self.deleting then ok,why=addon:RemoveCustomFunction(self.key,self.expected) else ok,why=addon:InstallCustomFunction(self.key,self:PendingSource(),self.expected) end
+        ok,why=addon:InstallCustomFunction(self.key,self:PendingSource(),self.expected)
         if not ok then form:Message(string.format(L['Function unavailable: %s'],tostring(why)));return false end
-        p:DiscardSettingsDraft();clearNew(p);p.functionID=self.deleting and nil or self.key;self:Close();p:Draw();return true
+        p:DiscardSettingsDraft();clearNew(p);p.functionID=self.key;self:Close();p:Draw();return true
     end
     local function refresh()
         if not valid() or not d:Flush() then return end
@@ -141,12 +142,12 @@ function addon:BuildInlineFunction(p,key,source,readOnly)
             form:Actions(actions);for i,entry in ipairs(actions) do local control=form.fields[entry.key];control:ClearAllPoints();control:SetPoint('TOPLEFT',form.width-80+(i-1)*28,-y);control:SetWidth(24) end
             local typeY=y+28;fieldLabel(L['Type'],typeY)
             local base,nullable=splitType(record.type)
-            local function setType(nextBase,nextNullable) record.type=nextBase..(nextNullable and ' | nil' or '');refresh() end
+            local function setType(nextBase,nextNullable) record.type=nextBase..(nextNullable and nextBase~='nil' and ' | nil' or '');refresh() end
             local choose=form:Choice(prefix..'type',nil,base,typeChoices(addon,base),function(value) setType(value,nullable) end)
             choose:ClearAllPoints();choose:SetPoint('TOPLEFT',70,-typeY);choose:SetWidth(math.max(40,form.width-182));choose.tooltip=L['Type'];enable(choose,not d.readOnly)
             choose.rmFunctionTypeValue=function() return record.type end;choose.rmFunctionTypeBaseline=d.baseline[field] and d.baseline[field][index] and d.baseline[field][index].type
             local check=form:Check(prefix..'nullable',L['Nullable'],nullable,function(value) setType(base,value) end)
-            check:ClearAllPoints();check:SetPoint('TOPLEFT',form.width-106,-typeY);check:SetWidth(102);check:GetFontString():SetWidth(80);enable(check,not d.readOnly)
+            check:ClearAllPoints();check:SetPoint('TOPLEFT',form.width-106,-typeY);check:SetWidth(102);check:GetFontString():SetWidth(80);enable(check,not d.readOnly and base~='nil')
             check.rmFunctionTypeValue=function() return record.type end;check.rmFunctionTypeBaseline=choose.rmFunctionTypeBaseline;form.functionTypeFields[#form.functionTypeFields+1]=choose;form.functionTypeFields[#form.functionTypeFields+1]=check
             form.y=typeY+28;fieldLabel(L['Description'],form.y)
             local input=description(prefix..'description',nil,record.description or '',function(value) record.description=value;d:UpdateActions() end,70,form.width-70)
@@ -163,7 +164,13 @@ function addon:BuildInlineFunction(p,key,source,readOnly)
         if not d.readOnly then
             local pill=f:Acquire('functionEnable',function() return addon:CreateWorkbenchPill(f.child,'',88) end);f.fields.definition_enabled=pill;pill:ClearAllPoints();pill:SetPoint('TOPRIGHT',-28,-4);pill:SetWidth(88);pill:SetText(d.value.disabled and L['Disabled'] or L['Enabled']);pill:SetSelected(not d.value.disabled)
             addon:SetUIScript(pill,'OnClick',f:Guard(function() if d:Flush() then d.value.disabled=not d.value.disabled;refresh() end end))
-            if not d.isNew then addon:SettingsTopDelete(f,function() f:Confirm(L['Delete this function? Existing dependents will become unavailable.'],function() d.deleting=true;f:Message(L['Deletion staged. Apply to remove this function.']);d:UpdateActions() end) end) end
+            if not d.isNew then addon:SettingsTopDelete(f,function()
+                local id=d.key
+                addon:ConfirmSettingsDeletion(p,L['Delete this function? Existing dependents will become unavailable.'],function()
+                    local current=(addon.db.global.custom_functions or {})[id];if not current then return false,'function-changed' end
+                    local ok,why=addon:RemoveCustomFunction(id,addon:CopySettingsData(current));if ok then clearNew(p);p.functionID=nil end;return ok,why
+                end)
+            end) end
         end
         if not d.codeExpanded then
             local input=f:Edit('name',L['Name'],d.value.name or '',not d.readOnly and function(value) if addon:IsCustomFunctionIdentifier(value) then return value end end or nil,function(value) d.value.name=value;d:UpdateActions() end)
@@ -203,7 +210,7 @@ function addon:BuildInlineFunction(p,key,source,readOnly)
     d.cancel:SetPoint('BOTTOMRIGHT',-8,4);d.apply:SetPoint('RIGHT',d.cancel,'LEFT',-6,0);d.viewChanges:SetPoint('RIGHT',d.apply,'LEFT',-6,0)
     self:SetUIScript(d.apply,'OnClick',function() if valid() then d:Apply() end end)
     self:SetUIScript(d.cancel,'OnClick',function() if valid() then d:Close();clearNew(p);p:DiscardSettingsDraft();p:Draw() end end)
-    self:SetUIScript(d.viewChanges,'OnClick',function() if valid() then local pending={};for _,record in ipairs(form.edits) do if record.dirty then pending[#pending+1]={label=L['Fields'],before=record.baseline,after=record.control:GetText()} end end;addon:ShowWorkbenchDraftChanges(d,'profile',d.baseline,d.deleting and {} or d:PendingSource(),valid,nil,pending) end end)
+    self:SetUIScript(d.viewChanges,'OnClick',function() if valid() then local pending={};for _,record in ipairs(form.edits) do if record.dirty then pending[#pending+1]={label=L['Fields'],before=record.baseline,after=record.control:GetText()} end end;addon:ShowWorkbenchDraftChanges(d,'profile',d.baseline,d:PendingSource(),valid,nil,pending) end end)
     form.message:SetParent(p.frame);form.message:ClearAllPoints();form.message:SetPoint('BOTTOMLEFT',geometry.detailX,4);form.message:SetPoint('RIGHT',d.viewChanges,'LEFT',-8,0);form.message:SetHeight(20);form.message:Show()
     p.cleanups[#p.cleanups+1]=function() d:Close() end
     self:SetUIScript(d.frame,'OnUpdate',function() if not valid() then d:Close() else d:UpdateActions() end end)

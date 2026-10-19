@@ -441,14 +441,21 @@ test('builtin condition code keeps the selected documentation provider in read-o
     assert(not d.code.edit:IsEnabled() and d.code.inner.readOnly,'provider source view permits typing')
     assert(d.code.inner.context.kind=='condition' and d.code.inner.context.id=='COMBAT','readonly provider lost its RM symbol context');assert(not d:IsDirty())
 end)
-test('staged condition deletion keeps a tombstone until Apply and leaves the next source clean',function()
+test('confirmed condition deletion removes source and registry immediately and leaves its successor clean',function()
     local f,a=fixture(true);for _,key in ipairs({'A','B'}) do local source=a:CopySettingsData(a.empty_condition);source.description=key;a.db.global.custom_conditions[key]=source;a.conditionDefinitions[key]={description=key,fields={}} end
-    a.UnregisterCondition=function(self,key) self.conditionDefinitions[key]=nil end
-    local host=f.env.CreateFrame('Frame');host:SetSize(1100,700);local p=a:OpenNativeSettings(host,'Conditions');assert(p.condition=='A');p.inlineCondition.form.fields.delete:Click();p.prompt.accept:Click()
-    assert(p.pendingDeletion and not p.inlineCondition and a.db.global.custom_conditions.A,'deletion falsely selects an edited successor or commits before Apply')
-    assert(p.fields.apply:IsEnabled() and p.fields.viewChanges and p.fields.viewChanges:IsEnabled(),'pending deletion has no apply/review path')
-    p.fields.cancel:Click();assert(p.condition=='A' and p.inlineCondition and not p.inlineCondition:IsDirty() and a.db.global.custom_conditions.A,'Discard did not restore the selected source')
-    p.inlineCondition.form.fields.delete:Click();p.prompt.accept:Click();p.fields.apply:Click();local d=p.inlineCondition
-    assert(not a.db.global.custom_conditions.A and not a.conditionDefinitions.A and p.condition=='B' and not p.pendingDeletion and d and not d:IsDirty() and not d.apply:IsEnabled() and not d.viewChanges:IsEnabled(),'successor source inherits deleted entry dirty state')
+    local removed=0;a.UnregisterCondition=function(self,key) removed=removed+1;self.conditionDefinitions[key]=nil end
+    local host=f.env.CreateFrame('Frame');host:SetSize(1100,700);local p=a:OpenNativeSettings(host,'Conditions');assert(p.condition=='A');p.inlineCondition.form.fields.delete:Click()
+    assert(p.prompt.text:GetText():find('cannot be undone',1,true) and a.db.global.custom_conditions.A and removed==0);p.prompt.accept:Click();local d=p.inlineCondition
+    assert(not a.db.global.custom_conditions.A and not a.conditionDefinitions.A and removed==1 and p.condition=='B' and d and not d:IsDirty() and not d.apply:IsEnabled() and not d.viewChanges:IsEnabled(),'successor inherited deleted entry dirty state')
+end)
+test('failed condition unregister keeps both saved source and registered definition',function()
+    local f,a=fixture(true);local source=a:CopySettingsData(a.empty_condition);source.description='A';a.db.global.custom_conditions.A=source;local definition={description='A',fields={}};a.conditionDefinitions.A=definition
+    a.UnregisterCondition=function() error('cleanup failed') end;local host=f.env.CreateFrame('Frame');host:SetSize(1100,700);local p=a:OpenNativeSettings(host,'Conditions');p.inlineCondition.form.fields.delete:Click();p.prompt.accept:Click();assert(a.db.global.custom_conditions.A==source and a.conditionDefinitions.A==definition and p.inlineCondition,'failed unregister partially removed a condition')
+end)
+test('condition deletion offers Discard for invalid pending schema before permanent confirmation',function()
+    local f,a=fixture(true);local source=a:CopySettingsData(a.empty_condition);source.description='A';a.db.global.custom_conditions.A=source;a.conditionDefinitions.A={description='A',fields={}};a.UnregisterCondition=function(self,key) self.conditionDefinitions[key]=nil end
+    local host=f.env.CreateFrame('Frame');host:SetSize(1100,700);local p=a:OpenNativeSettings(host,'Conditions');local d=p.inlineCondition;d.form.fields.schema:SetText('{ invalid =');d.form.fields.schema.scripts.OnTextChanged(d.form.fields.schema,true)
+    d.form.fields.delete:Click();assert(p.prompt.discard:IsShown(),'invalid schema blocked deletion navigation');p.prompt.cancel:Click();assert(d.form.fields.schema:GetText()=='{ invalid =')
+    d.form.fields.delete:Click();p.prompt.discard:Click();assert(p.prompt.text:GetText():find('cannot be undone',1,true) and a.db.global.custom_conditions.A);p.prompt.accept:Click();assert(not a.db.global.custom_conditions.A and not a.conditionDefinitions.A and not p:IsSettingsDraftDirty())
 end)
 finish()

@@ -465,16 +465,16 @@ test('profile duplication persists through real AceDB logout and reinitializatio
     local p=a:CreateSettingsForm(parent);p:Open(function(form) a:BuildProfileSettings(form) end);p.fields.duplicate:Click();p.fields.apply:Click();assert(db:GetCurrentProfile()=='Default' and p.selection=='Copy of Default');logout(nil,'PLAYER_LOGOUT')
     local restarted=env.LibStub('AceDB-3.0'):New(a:CopySettingsData(env.RMTestDB),defaults,true);assert(restarted:GetCurrentProfile()=='Default' and restarted.profiles['Copy of Default'].poll==.2 and restarted.profiles['Copy of Default'].rotations[0].DEFAULT.name=='Rotation')
 end)
-test('custom condition duplicate and delete commit registry and saved definition together',function()
+test('custom condition duplicate applies normally and confirmed deletion commits registry immediately',function()
     local f,parent=fixture();local a=f.addon;a.db.global.custom_conditions={C={description='Custom',icon=1,fields={}}};a.conditionDefinitions={C={description='Custom',icon=1,fields={}}};a.conditionSpecials={};a.db.profile={condition_groups={},disabled_conditions={},switch_conditions={},other_conditions_order={}};a.listConditions=function(_,_,_,store) local keys={};for key in pairs((store or a.db).global.custom_conditions) do keys[#keys+1]=key end;return keys end
     local registered,removed=0,0;a.register_custom_condition=function(_,key,value) registered=registered+1;a.conditionDefinitions[key]=value;return true end;a.UnregisterCondition=function(_,key) removed=removed+1;a.conditionDefinitions[key]=nil end
     local p=a:OpenNativeSettings(parent,'Conditions');p.fields.duplicate_custom:Click();assert(registered==0 and a.db.global.custom_conditions.C and p:IsSettingsDraftDirty());p.fields.apply:Click();assert(registered==1)
-    p.fields.delete_custom:Click();p.prompt.accept:Click();assert(removed==0);p.fields.cancel:Click();assert(removed==0);p.fields.delete_custom:Click();p.prompt.accept:Click();p.fields.apply:Click();assert(removed==1)
+    p.fields.delete_custom:Click();p.prompt.cancel:Click();assert(removed==0);p.fields.delete_custom:Click();p.prompt.accept:Click();assert(removed==1 and not p:IsSettingsDraftDirty());p.fields.cancel:Click();assert(removed==1)
 end)
-test('item set deletion keeps bindings until Apply and uses guarded unbind at commit',function()
+test('item set deletion keeps bindings until confirmation and unbinds immediately',function()
     local f,parent=fixture();local a=f.addon;a.db.profile.itemsets={s={name='Set',items={1}}};a.db.char={bindings={s={1,2}}};local unbound=0;a.UnbindItemSet=function(_,id,items) assert(id=='s' and items[1]==1);unbound=unbound+1;a.db.char.bindings[id]=nil;return true end
-    local p=a:OpenNativeSettings(parent,'ItemSets');p.fields.delete:Click();p.prompt.accept:Click();assert(a.db.char.bindings.s);p.fields.cancel:Click();assert(a.db.char.bindings.s and a.db.profile.itemsets.s)
-    p.fields.delete:Click();p.prompt.accept:Click();p.fields.apply:Click();assert(unbound==1 and not a.db.char.bindings.s and not a.db.profile.itemsets.s)
+    local p=a:OpenNativeSettings(parent,'ItemSets');p.fields.delete:Click();p.prompt.cancel:Click();assert(a.db.char.bindings.s and a.db.profile.itemsets.s)
+    p.fields.delete:Click();p.prompt.accept:Click();assert(unbound==1 and not a.db.char.bindings.s and not a.db.profile.itemsets.s and not p:IsSettingsDraftDirty())
 end)
 test('Bind does not touch cursor or pending binding during combat',function()
     local f,parent=fixture();local a=f.addon;a.db.profile.itemsets={s={name='Set',items={1}}};a.db.char={bindings={}};a.FindFirstItemInItems=function() return 1 end;local picked=0;f.env.PickupItem=function() picked=picked+1 end;f.env.InCombatLockdown=function() return true end
