@@ -5,6 +5,16 @@ local modules={}
 local publicHelpers=dofile('tools/public_helpers.lua')
 local cacheOwnership=dofile('tools/cache_ownership.lua')
 local conditionOwnership=dofile('tools/condition_ownership.lua')
+local retainedValues=dofile('tools/retained_builtin_values.lua')
+local retainedExpected={module='Conditions/character.lua',alias='character_class',bindingID='builtin:Conditions/character.lua:character_class',
+    declaration='local character_class = select(2, UnitClass("player"))',namespace='Conditions.character',
+    description='Packaged helper from Conditions/character.lua.',sourceHash='f9f4e4b5'}
+assert(type(retainedValues)=='table' and not getmetatable(retainedValues) and type(rawget(retainedValues,'character_class'))=='table' and not getmetatable(rawget(retainedValues,'character_class')),'retained value manifest invalid')
+for alias in pairs(retainedValues) do assert(alias=='character_class','retained value manifest invalid') end
+local retainedDeclaration=retainedValues.character_class
+for field,value in pairs(retainedExpected) do assert(retainedDeclaration[field]==value,'retained value manifest invalid: '..field) end
+for field in pairs(retainedDeclaration) do assert(retainedExpected[field]~=nil,'retained value manifest invalid: '..field) end
+local retainedSnapshot,retainedGetterDescriptor
 for alias in pairs(conditionOwnership) do assert(alias=='protectedRead','condition ownership manifest invalid') end
 local conditionOwner=conditionOwnership.protectedRead
 assert(type(conditionOwner)=='table' and next(conditionOwnership,'protectedRead')==nil
@@ -73,6 +83,32 @@ local function qualifiedBindings(module,root,value)
     for alias in pairs(declared) do assert(result[alias],'qualified callback binding missing: '..alias) end
     return result
 end
+local function seedRetainedValue()
+    local declaration=retainedDeclaration
+    local getter=currentAddon.builtinSourceModules and currentAddon.builtinSourceModules[declaration.module]
+    assert(type(getter)=='function','retained value getter missing')
+    local info=descriptor(getter)
+    assert(info.file==declaration.module and info.what=='Lua','retained value getter owner mismatch')
+    local found,value=0,nil
+    for index=1,200 do
+        local name,captured=debug.getupvalue(getter,index);if not name then break end
+        if name==declaration.alias then found=found+1;value=captured end
+    end
+    assert(found==1 and rawequal(getter(declaration.alias),value),'retained value getter upvalue mismatch')
+    if retainedGetterDescriptor then
+        for key,field in pairs(info) do assert(retainedGetterDescriptor[key]==field,'retained value getter descriptor drift') end
+        for key,field in pairs(retainedGetterDescriptor) do assert(info[key]==field,'retained value getter descriptor drift') end
+    else retainedGetterDescriptor=info end
+    -- Keep a record even when the actual historical value is nil.
+    retainedSnapshot={kind=type(value),value=value}
+    local module=modules[declaration.module] or {file=declaration.module,conditions={},bindings={}};modules[module.file]=module
+    local previous=module.bindings[declaration.alias]
+    assert(not previous or previous.retained and not previous.fn and not previous.public and not previous.ownership,'retained value binding collision')
+    module.bindings[declaration.alias]={kind=type(value),retained={declaration=declaration,getter=info}}
+end
+local function verifyRetainedCapture(value)
+    assert(retainedSnapshot and type(value)==retainedSnapshot.kind and rawequal(value,retainedSnapshot.value),'retained value capture mismatch')
+end
 local capture
 local function ownedCacheBinding(alias,value)
     local declaration=assert(cacheOwnership.bindings[alias],'cache ownership declaration missing: '..alias)
@@ -97,6 +133,13 @@ capture=function(module,fn,captureBindings,ownedCapture)
     for index=1,200 do
         local name,value=debug.getupvalue(fn,index);if not name then break end
         if name~='addon' and name~='L' and not (type(value)=='function' and standard[name]==value) then
+            if module.file==retainedDeclaration.module and name==retainedDeclaration.alias then
+                verifyRetainedCapture(value)
+                local reference=captureBindings and captureBindings[name]
+                assert(not reference or reference==retainedDeclaration.bindingID,'retained value capture identity mismatch')
+                if reference then captured[name]=true end
+                info.bindings[name]=retainedDeclaration.bindingID
+            else
             local owned=module.file==cacheOwnership.module and cacheOwnership.bindings[name]
             local reference=captureBindings and captureBindings[name]
             assert(not ownedCapture or reference,'cache ownership capture declaration missing: '..name)
@@ -108,6 +151,7 @@ capture=function(module,fn,captureBindings,ownedCapture)
                     info.bindings[name]=ownedCacheBinding(alias,value)
                 else
                     local getter=path and currentAddon.builtinSourceModules and currentAddon.builtinSourceModules[path]
+                    if path==retainedDeclaration.module and alias==retainedDeclaration.alias then verifyRetainedCapture(value) end
                     assert(type(value)~='function' and type(getter)=='function' and rawequal(getter(alias),value),'captured binding getter mismatch: '..name)
                     local target=modules[path] or {file=path,conditions={},bindings={}};modules[path]=target
                     assert(not target.bindings[alias] or target.bindings[alias].kind==type(value) and not target.bindings[alias].fn,'captured binding identity collision: '..reference)
@@ -135,6 +179,7 @@ capture=function(module,fn,captureBindings,ownedCapture)
                     end
                 end
             end
+            end
         end
     end
     for name in pairs(captureBindings or {}) do assert(captured[name],'declared captured binding missing: '..name) end
@@ -147,6 +192,7 @@ for _,case in ipairs(inventory.branches) do
     for path in io.lines('RotationMaster.toc') do if path:match('^Conditions/') then
         f.load(path)
     end end
+    seedRetainedValue()
     local cacheGetter=f.addon.builtinSourceModules and f.addon.builtinSourceModules[cacheOwnership.module]
     assert(type(cacheGetter)=='function','cache ownership module missing')
     for alias in pairs(cacheOwnership.bindings) do ownedCacheBinding(alias,cacheGetter(alias)) end

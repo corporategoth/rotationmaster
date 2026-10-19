@@ -240,4 +240,29 @@ test('render diagnostics distinguish detached queues and stale or hidden overlay
  code:Release();report=a:LuaEditorInputReport();assert(report:find('provider render attached=false',1,true),'released overlay appears attached')
 end)
 
+for _,provider in ipairs({'plain','LuaWorkbench'}) do
+ test(provider..' frame update installation preserves deferred hooks under native SetScript replacement',function()
+  local f,a=dofile('tests/fixtures/lua_workbench.lua')();f.load('UI/lua_input_diagnostics.lua');f.env.IsAddOnLoaded=function() return true end
+  local create=f.env.CreateFrame
+  f.env.CreateFrame=function(...)
+   local frame=create(...);local set=frame.SetScript
+   function frame:SetScript(event,callback)
+    set(self,event,callback)
+    -- Native SetScript replaces existing hooks for that event. The generic
+    -- fixture stores hooks separately, so reproduce that boundary explicitly.
+    if event=='OnUpdate' and self.hooks then self.hooks[event]=nil end
+   end
+   return frame
+  end
+  local code=a:CreateWorkbenchLuaEditor(f.env.UIParent,function() end,function() return true end,provider);code:Acquire(function() end,function() return true end)
+  local c=code.inner or code;local engine=c.engine or c.completionEngine;local C=engine.Query.Console;local input=C.input
+  code.frame:SetSize(620,300);code:SetText('return 1\nreturn 2');code.frame:Show();c.edit:SetCursorPosition(3);c.edit:SetFocus();tick(c.frame)
+  assert(c.lineNumberCounts and c.lineNumberCounts.flushes>0,provider..' queued gutter never reached owner update')
+  assert(#input.queryLineNumbers.positions==2 and #input.queryLineNumbers.rows==2,provider..' failed to paint numbers')
+  if provider=='LuaWorkbench' then assert(input.queryEditor.renderSource==code:GetText() and #input.queryEditor.renderedText>0 and input.queryEditor.overlay:IsShown(),'provider waiting for gutter left source blank') end
+  assert(c.inputCounts.poll and c.edit:GetCursorPosition()==3 and c.edit:HasFocus(),'provider replacement lost diagnostic poll or changed input')
+  code:Release()
+ end)
+end
+
 finish()

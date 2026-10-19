@@ -300,7 +300,6 @@ function rm:CreateLuaWorkbenchControl(parent,changed,valid)
     -- Layer ownership in attach order, then unwind gutter before editor on
     -- release. Toggling the gutter must restore the active editor handlers.
     E:Attach(input)
-    if rm.InstallLuaLineNumberControl then rm:InstallLuaLineNumberControl(c,C,input);c:RefreshLineNumbers() else C:AttachLineNumbers(input) end
     self:SetUIScript(frame,'OnSizeChanged',function() c:Layout() end)
     local pendingPaintElapsed=0
     self:SetUIScript(frame,'OnUpdate',function(_,elapsed)
@@ -316,6 +315,8 @@ function rm:CreateLuaWorkbenchControl(parent,changed,valid)
         else pendingPaintElapsed=0 end
         engine.DebugUI:HoverUpdate(elapsed)
     end)
+    -- Hook the completed provider handler; later SetScript would erase it.
+    if rm.InstallLuaLineNumberControl then rm:InstallLuaLineNumberControl(c,C,input);c:RefreshLineNumbers() else C:AttachLineNumbers(input) end
     self:SetUIScript(frame,'OnHide',function() engine.Debugger:Stop();engine.Autocomplete:Hide();W:HidePanels();if c.outputWindow then c.outputWindow:Hide() end end)
     local mouseUp=c.edit:GetScript('OnMouseUp')
     self:SetUIScript(c.edit,'OnMouseUp',function(edit,button)

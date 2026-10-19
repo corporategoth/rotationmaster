@@ -68,7 +68,8 @@ test('lifecycle registration preserves the actual init reset seeder on the addon
     local a,_,load,c=fixture();a.InitializeScopedRotationStorage=function() return true end
     local file=assert(io.open('init.lua'));local source=file:read('*a');file:close()
     local method=assert(source:match('(function addon:InitializeTalentTreeConditions.-)\nfunction addon:init%(%)'))
-    a.isin=function(list,tag) for _,value in ipairs(list) do if value==tag then return true end end;return false end
+    load('Functions/values.lua')
+    local function contains(list,tag) for _,value in ipairs(list) do if value==tag then return true end end;return false end
     assert(loadstring('local addon=...; '..method))(a)
     a.db:RegisterDefaults({profile={enable=true,switch_conditions={},condition_groups={
         {id='b8136123-2bda-4230-a77a-89ea2aed3a1a',conditions={}},
@@ -79,9 +80,9 @@ test('lifecycle registration preserves the actual init reset seeder on the addon
     load('Core/rotation_lifecycle.lua');a:InstallRotationProfileLifecycle();a.db:ResetProfile()
     assert(a.db.callbacks.events.OnProfileReset[a]==seed,'lifecycle replaced the addon-owned reset initializer')
     local profile=a.db.profile
-    assert(a.isin(profile.switch_conditions,'TALENT_TREE_POINTS') and a.isin(profile.switch_conditions,'PRIMARY_TALENT_TREE'))
-    assert(a.isin(profile.condition_groups[1].conditions,'TALENT_TREE_POINTS') and a.isin(profile.condition_groups[1].conditions,'PRIMARY_TALENT_TREE'))
-    assert(a.isin(profile.condition_groups[2].conditions,'SPELL_AUTOREPEAT'))
+    assert(contains(profile.switch_conditions,'TALENT_TREE_POINTS') and contains(profile.switch_conditions,'PRIMARY_TALENT_TREE'))
+    assert(contains(profile.condition_groups[1].conditions,'TALENT_TREE_POINTS') and contains(profile.condition_groups[1].conditions,'PRIMARY_TALENT_TREE'))
+    assert(contains(profile.condition_groups[2].conditions,'SPELL_AUTOREPEAT'))
     assert(c.disable==1 and c.refresh==1 and c.enable==1)
 end)
 

@@ -26,6 +26,7 @@
 globals.lua
 Platform/client.lua
 Platform/groups.lua
+Platform/roster_class.lua
 Platform/casting.lua
 Platform/unit_health.lua
 Platform/unit_level.lua
@@ -76,6 +77,7 @@ Core/condition_catalog.lua
 Core/item_conditions.lua
 Core/level_conditions.lua
 Core/point_conditions.lua
+Core/class_group_conditions.lua
 Core/itemset_services.lua
 Core/rotation_references.lua
 Core/item_sets.lua

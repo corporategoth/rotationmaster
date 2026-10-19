@@ -6,6 +6,7 @@ local expected={isin=21,compare=4,nullable=23,compareString=3,playerize=4,getCac
 local branchCounts={61,47,47,56,56,56,56,68}
 local baselineHashes={['CLASS:common']=3088725613,['CLASSIFICATION:common']=3454430665,['CLASS_GROUP:common']=1911721314,['CREATURE:common']=1392664048,['GLYPH:common']=233563292,['GROUP:common']=1891586705,['IMMUNE:common']=3885939024,['ISSAME:common']=2733275963,['LEVEL:common']=2839935621,['RESIST:common']=899540765,['ROLE:inspect']=1626999136,['ROLE:talent']=1169248649,['RUNNER:common']=3996103689}
 local callbacks={'valid','evaluate','print','widget','help'}
+local restoreClassGroup=dofile('tests/fixtures/restore_class_group_repairs.lua')
 local function path(name) return 'Functions.'..owners[name]..'.'..name end
 local function identity(name) return 'builtin:'..(owners[name]=='collections' and 'Functions/collections.lua' or 'utils.lua')..':'..name end
 local function fixture(case)
@@ -124,6 +125,7 @@ local function copies(a,selected)
     return canonical,legacy
 end
 local function counts(source)
+    if source.evaluate and source.evaluate:find('addon:GetClassGroupCount',1,true) then source= {evaluate=restoreClassGroup(source.evaluate,true),valid=source.valid,print=source.print,widget=source.widget,help=source.help} end
     local result={};for _,callback in ipairs(callbacks) do if source[callback] then for name in pairs(owners) do local _,n=source[callback]:gsub(path(name):gsub('%.','%%.')..'%(','');result[name]=(result[name] or 0)+n;assert(not source[callback]:find('addon.'..name..'(',1,true),'legacy direct call remains') end end end;return result
 end
 local function unknown(a,v)
@@ -144,6 +146,7 @@ end)
 test('reverse-qualified source preserves every original callback byte and parameter across variants',function()
     for _,case in ipairs(cases) do local _,a,_,selected=fixture(case)
         for _,tag in ipairs(selected) do local original=a:GetBuiltinConditionSource(tag)
+            if tag=='CLASS_GROUP' then original.evaluate=restoreClassGroup(original.evaluate,true);assert(table.concat(original.parameters.evaluate,',')=='value,cache') end
             if metadataRepairBodies[tag] then
                 assert(original.evaluate==metadataRepairBodies[tag].repaired,tag..' changed beyond the exact metadata repair')
                 assert(table.concat(original.parameters.evaluate,',')=='value,cache')

@@ -27,7 +27,7 @@ local function apply_remove(toremove, tbl, fix)
         end
     end
 
-    addon.cleanArray(toremove)
+    addon.Functions.collections.cleanArray(toremove)
 end
 
 local function validate_basic(prefix, data, template, fix, preserved)
@@ -42,7 +42,7 @@ local function validate_basic(prefix, data, template, fix, preserved)
             addon:warn("Incorrect type for %s:%s (was %s, expected %s)", prefix, tostring(k), type(v), type(template[k]))
             mark_for_remove(toremove, k)
         elseif type(v) == "table" then
-            if addon.tablelength(template[k]) > 0 and #template[k] == 0 then
+            if addon.Functions.collections.tablelength(template[k]) > 0 and #template[k] == 0 then
                 validate_basic(prefix .. ":" .. k, v, template[k], fix)
             end
         end
@@ -69,7 +69,7 @@ function addon:validate_itemset(prefix, name, itemset, fix)
     if not is_uuid(name) then
         addon:warn("Invalid ID for itemset %s:%s", prefix, name)
         if fix then
-            addon.cleanArray(itemset)
+            addon.Functions.collections.cleanArray(itemset)
             return
         end
     end
@@ -86,14 +86,14 @@ function addon:validate_effect(prefix, name, effect, fix)
     if not is_uuid(name) then
         addon:warn("Invalid ID for effect %s:%s", prefix, name)
         if fix then
-            addon.cleanArray(effect)
+            addon.Functions.collections.cleanArray(effect)
             return
         end
     end
     if not effect["type"] then
         addon:warn("No effect type for %s:%s", prefix, name)
         if fix then
-            addon.cleanArray(effect)
+            addon.Functions.collections.cleanArray(effect)
         end
         return
     end
@@ -208,7 +208,7 @@ function addon:validate_announce(prefix, idx, announce, fix)
     if not announce["type"] then
         addon:warn("No announce type for %s:%s", prefix, idx)
         if fix then
-            addon.cleanArray(announce)
+            addon.Functions.collections.cleanArray(announce)
         end
         return
     end
@@ -232,7 +232,7 @@ function addon:validate_announce(prefix, idx, announce, fix)
     else
         addon:warn("Invalid type for announce %s:%s", prefix, tostring(announce["id"]))
         if fix then
-            addon.cleanArray(announce)
+            addon.Functions.collections.cleanArray(announce)
             return
         end
     end
@@ -242,7 +242,7 @@ function addon:validate_announce(prefix, idx, announce, fix)
     if not announce["id"] or not is_uuid(announce["id"]) then
         addon:warn("Invalid ID for announce %s:%s", prefix, tostring(announce["id"]))
         if fix then
-            addon.cleanArray(announce)
+            addon.Functions.collections.cleanArray(announce)
             return
         end
     end
@@ -310,20 +310,20 @@ function addon:validate_custom_condition(prefix, name, custom_condition, fix)
 end
 
 local function validate_rotation_condition(prefix, condition, fix)
-    if addon.tablelength(condition) == 0 then
+    if addon.Functions.collections.tablelength(condition) == 0 then
         return
     end
 
     if type(condition["type"]) ~= "string" then
         addon:warn("Invalid type for %s", prefix)
         if fix then
-            addon.cleanArray(condition)
+            addon.Functions.collections.cleanArray(condition)
         end
         return
     end
 
     local full_id = prefix .. ":" .. condition["type"]
-    local fields = addon.deepcopy(select(4, addon:describeCondition(condition["type"])))
+    local fields = addon.Functions.collections.deepcopy(select(4, addon:describeCondition(condition["type"])))
     -- The condition might not exist if you're not playing a class where it is active.
     if not fields then
         return
@@ -386,7 +386,7 @@ local function validate_rotation_condition(prefix, condition, fix)
             elseif field == "condition" then
                 validate_rotation_condition(full_id, data, fix)
             elseif type(field) == "string" and type(data) == "table" then
-                if addon.tablelength(data) ~= #data then
+                if addon.Functions.collections.tablelength(data) ~= #data then
                     addon:warn("Condition %s.%s provides a table where an array is required", full_id, subtree)
                     mark_for_remove(keyremove, key)
                 elseif #data > 0 then
@@ -446,7 +446,7 @@ function addon:validate_rotation(prefix, id, rotation, fix)
     if id ~= DEFAULT and not is_uuid(id) then
         addon:warn("Invalid ID for rotation %s:%s", prefix, id)
         if fix then
-            addon.cleanArray(rotation)
+            addon.Functions.collections.cleanArray(rotation)
             return
         end
     end
@@ -467,7 +467,7 @@ function addon:validate_rotation(prefix, id, rotation, fix)
     if id ~= DEFAULT and not rotation["name"] then
         addon:warn("Unnamed non-default rotation %s:%s", prefix, id)
         if fix then
-            addon.cleanArray(rotation)
+            addon.Functions.collections.cleanArray(rotation)
             return
         end
     end
@@ -491,7 +491,7 @@ function addon:validate_rotation(prefix, id, rotation, fix)
         disabled = false,
         conditions = {},
     }
-    local cooldown_template = addon.deepcopy(rotation_template)
+    local cooldown_template = addon.Functions.collections.deepcopy(rotation_template)
 
     local function augment_template_type(template, rot)
         if rot.type=="none" then template.suppress_attack=false end
@@ -509,7 +509,7 @@ function addon:validate_rotation(prefix, id, rotation, fix)
     if rotation["cooldowns"] then
         local toremove = {}
         for idx, rot in pairs(rotation["cooldowns"]) do
-            local template = addon.deepcopy(cooldown_template)
+            local template = addon.Functions.collections.deepcopy(cooldown_template)
             augment_template_type(template, rot)
             validate_basic(prefix .. ":" .. id .. ":cooldown:" .. idx, rot, template, fix)
             if not is_uuid(rot["id"]) then
@@ -541,7 +541,7 @@ function addon:validate_rotation(prefix, id, rotation, fix)
                 validate_rotation_condition( string.format("%s:%s:cooldowns:%d", prefix, id, idx),
                         rot["conditions"], fix)
             end
-            if addon.tablelength(rot) == 0 then
+            if addon.Functions.collections.tablelength(rot) == 0 then
                 mark_for_remove(toremove, idx)
             end
         end
@@ -551,7 +551,7 @@ function addon:validate_rotation(prefix, id, rotation, fix)
     if rotation["rotation"] then
         local toremove = {}
         for idx, rot in pairs(rotation["rotation"]) do
-            local template = addon.deepcopy(rotation_template)
+            local template = addon.Functions.collections.deepcopy(rotation_template)
             augment_template_type(template, rot)
             validate_basic(prefix .. ":" .. id .. ":rotation:" .. idx, rot, template, fix)
             if not is_uuid(rot["id"]) then
@@ -581,7 +581,7 @@ function addon:validate_rotation(prefix, id, rotation, fix)
                 validate_rotation_condition( string.format("%s:%s:rotation:%d", prefix, id, idx),
                         rot["conditions"], fix)
             end
-            if addon.tablelength(rot) == 0 then
+            if addon.Functions.collections.tablelength(rot) == 0 then
                 mark_for_remove(toremove, idx)
             end
         end
@@ -597,7 +597,7 @@ end
 function addon:validate(template, fix)
     local DB = _G[self.savedVariableName or "RotationMasterDB"]
 
-    local glob_template = addon.deepcopy(template.global)
+    local glob_template = addon.Functions.collections.deepcopy(template.global)
     glob_template.itemsets = {}
     glob_template.effects = {}
     validate_basic("global", DB.global, glob_template, fix)
@@ -606,7 +606,7 @@ function addon:validate(template, fix)
         local toremove = {}
         for name, itemset in pairs(DB.global.itemsets) do
             addon:validate_itemset("global", name, itemset, fix)
-            if addon.tablelength(itemset) == 0 then
+            if addon.Functions.collections.tablelength(itemset) == 0 then
                 mark_for_remove(toremove, name)
             end
         end
@@ -617,7 +617,7 @@ function addon:validate(template, fix)
         local toremove = {}
         for name, effect in pairs(DB.global.effects) do
             addon:validate_effect("global", name, effect, fix)
-            if addon.tablelength(effect) == 0 then
+            if addon.Functions.collections.tablelength(effect) == 0 then
                 mark_for_remove(toremove, name)
             end
         end
@@ -628,7 +628,7 @@ function addon:validate(template, fix)
         local toremove = {}
         for name, custom_condition in pairs(DB.global.custom_conditions) do
             addon:validate_custom_condition("global", name, custom_condition, fix)
-            if addon.tablelength(custom_condition) == 0 then
+            if addon.Functions.collections.tablelength(custom_condition) == 0 then
                 mark_for_remove(toremove, name)
             end
         end
@@ -637,7 +637,7 @@ function addon:validate(template, fix)
 
     -- Offline characters can still own their v1 data until their explicit
     -- login migration. Recognize these roots without moving or inspecting them.
-    local char_template=addon.deepcopy(template.char)
+    local char_template=addon.Functions.collections.deepcopy(template.char)
     char_template.rotations={}
     char_template.itemsets={}
     char_template.announces={}
@@ -676,9 +676,9 @@ function addon:validate(template, fix)
 
     -- These optional library-owned values are recognized schema, not defaults:
     -- their absence preserves LibDBIcon's own placement and interaction policy.
-    local profile_template=addon.deepcopy(template.profile)
+    local profile_template=addon.Functions.collections.deepcopy(template.profile)
     if type(profile_template.minimap)=="table" then
-        profile_template.minimap=addon.deepcopy(profile_template.minimap)
+        profile_template.minimap=addon.Functions.collections.deepcopy(profile_template.minimap)
         profile_template.minimap.minimapPos=0
         profile_template.minimap.radius=0
         profile_template.minimap.lock=false
@@ -711,7 +711,7 @@ function addon:validate(template, fix)
             local toremove = {}
             for name, itemset in pairs(data.itemsets) do
                 addon:validate_itemset("profile:" .. profile, name, itemset, fix)
-                if addon.tablelength(itemset) == 0 then
+                if addon.Functions.collections.tablelength(itemset) == 0 then
                     mark_for_remove(toremove, name)
                 end
             end
@@ -722,7 +722,7 @@ function addon:validate(template, fix)
             local toremove = {}
             for idx, announce in pairs(data.announces) do
                 addon:validate_announce("profile:" .. profile, idx, announce, fix)
-                if addon.tablelength(announce) == 0 then
+                if addon.Functions.collections.tablelength(announce) == 0 then
                     mark_for_remove(toremove, idx)
                 end
             end
@@ -738,7 +738,7 @@ function addon:validate(template, fix)
                 local toremove = {}
                 for id, rotation in pairs(rotations) do
                     addon:validate_rotation("profile:" .. profile .. ":" .. spec, id, rotation, fix)
-                    if addon.tablelength(rotation) == 0 then
+                    if addon.Functions.collections.tablelength(rotation) == 0 then
                         mark_for_remove(toremove, id)
                     end
                 end
@@ -758,7 +758,7 @@ function addon:validate(template, fix)
                     mark_for_remove(toremove, idx)
                 end
                 addon:validate_condition_group("profile:" .. profile, idx, group, fix)
-                if addon.tablelength(group) == 0 then
+                if addon.Functions.collections.tablelength(group) == 0 then
                     mark_for_remove(toremove, idx)
                 end
             end

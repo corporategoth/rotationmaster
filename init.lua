@@ -2,7 +2,7 @@ local addon_name, addon = ...
 
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 
-local multiinsert, deepcopy = addon.multiinsert, addon.deepcopy
+local multiinsert, deepcopy = addon.Functions.collections.multiinsert, addon.Functions.collections.deepcopy
 
 local CHAR_VERSION = 1
 local PROFILE_VERSION = 2
@@ -561,13 +561,13 @@ function addon:InitializeTalentTreeConditions(_,db)
     local profile=db.profile
     local function append(list)
         for _,tag in ipairs({'TALENT_TREE_POINTS','PRIMARY_TALENT_TREE'}) do
-            if not addon.isin(list,tag) then list[#list+1]=tag end
+            if not addon.Functions.values.isin(list,tag) then list[#list+1]=tag end
         end
     end
     append(profile.switch_conditions)
     for _,category in ipairs(profile.condition_groups) do
         if category.id=='b8136123-2bda-4230-a77a-89ea2aed3a1a' then append(category.conditions)
-        elseif category.id=='8034819e-26f5-4f4e-9153-d8cab5e65f31' and not addon.isin(category.conditions,'SPELL_AUTOREPEAT') then
+        elseif category.id=='8034819e-26f5-4f4e-9153-d8cab5e65f31' and not addon.Functions.values.isin(category.conditions,'SPELL_AUTOREPEAT') then
             category.conditions[#category.conditions+1]='SPELL_AUTOREPEAT'
         end
     end

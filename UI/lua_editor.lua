@@ -199,11 +199,13 @@ function addon:CreateWorkbenchLuaEditor(parent,changed,valid,preferred)
             for _,event in ipairs({'OnTextChanged','OnTabPressed','OnUpdate'}) do c.edit:SetScript(event,scripts[event]) end
         end
     end
-    if self.InstallLuaInputDiagnostics then self:InstallLuaInputDiagnostics(c) end
-    if self.InstallRMCodeCompletion then self:InstallRMCodeCompletion(c) end
+    -- Install the provider handler before post-hooks: native SetScript clears
+    -- existing HookScript callbacks, including deferred gutters/diagnostics.
     if self.InstallNativeLuaLineNumbers then
-        self:InstallNativeLuaLineNumbers(c)
         addon:SetUIScript(c.frame,'OnUpdate',function() if not c.released and c.valid() and c.RefreshLineNumbers and c.lineNumberSetting~=(addon.db.profile.lua_line_numbers~=false) then c:Layout('line-number-setting') end end)
     end
+    if self.InstallLuaInputDiagnostics then self:InstallLuaInputDiagnostics(c) end
+    if self.InstallRMCodeCompletion then self:InstallRMCodeCompletion(c) end
+    if self.InstallNativeLuaLineNumbers then self:InstallNativeLuaLineNumbers(c) end
     c:SetText('');return c
 end

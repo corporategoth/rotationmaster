@@ -118,24 +118,9 @@ addon:RegisterCondition("CLASS_GROUP", {
                 value.value ~= nil and value.value >= 0)
     end,
     evaluate = function(value, cache)
-        if not Functions.cache.getCached(cache, IsInGroup) then
-            return Functions.values.compare(value.operator, (character_class == value.class and 1 or 0), value.value)
-        end
-
-        local count = 0
-        local prefix, size = "party", 4
-        if value.raid and Functions.cache.getCached(cache, IsInRaid) then
-            prefix, size = "raid", 40
-        end
-        if prefix == "party" and character_class == value.class then
-            count = count + 1
-        end
-        for i=1,size do
-            if select(2, Functions.cache.getCached(cache, UnitClass, prefix .. tostring(i))) == value.class then
-                count = count + 1
-            end
-        end
-        return Functions.values.compare(value.operator, count, value.value)
+        local count,reason=addon:GetClassGroupCount(cache,value.class,value.raid)
+        if count==nil then return nil,reason end
+        return Functions.values.compare(value.operator,count,value.value)
     end,
     print = function(_, value)
         return Functions.presentation.compareString(value.operator, string.format(L["Number of %ss in the %s"],
