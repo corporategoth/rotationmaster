@@ -2261,6 +2261,14 @@ L["Copy condition description"] = true
 
 L["This condition exceeds the supported editor limits."] = true
 
+L["Proc Glow"] = true
+L["Loop duration"] = true
+L["Start burst"] = true
+L["Proc Glow is unavailable on this client; Pixel glow will be used."] = true
+L["Help.Effects.type.proc"] = "Proc Glow: use the animated actionbar proc border from LibCustomGlow. Rotation Master checks the required game artwork and animation support before using it. Unsupported clients use Pixel glow instead; the definition remains portable. Color and offsets come from the profile or the cooldown."
+L["Help.Effects.proc.duration"] = "Time in seconds for one repeating proc-border animation, from 0.1 to 5. Use the slider or enter an exact value in its number field. Changing the value updates the preview."
+L["Help.Effects.proc.startAnim"] = "Play the opening burst when this highlight first appears, then repeat its border animation. Off by default. Refreshing an already visible Proc Glow does not restart the burst."
+
 -- BEGIN GENERATED RM PUBLIC HELPER DOCS
 L["All original results, preserving nil positions and return count."] = true
 L["Arguments forwarded unchanged to the observed function."] = true

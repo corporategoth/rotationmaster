@@ -116,6 +116,8 @@ function addon:validate_effect(prefix, name, effect, fix)
                 frequency = 0.25,
                 scale = 1.0
             }
+        elseif type == "proc" then
+            return {duration=1,startAnim=false}
         elseif type == "blizzard" then
             return {
                 frequency = 0.125

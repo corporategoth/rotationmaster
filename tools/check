@@ -23,6 +23,8 @@ def main():
             ['lua5.1', 'tests/rangecheck.lua'],
             ['lua5.1', 'tests/aboutpanel.lua'],
             ['lua5.1', 'tests/buttons.lua'],
+            ['lua5.1', 'tests/proc_glow.lua'],
+            ['luajit', 'tests/proc_glow.lua'],
             ['lua5.1', 'tests/logging.lua'],
             ['lua5.1', 'tests/conditions.lua'],
             ['lua5.1', 'tests/announcement_help.lua'],

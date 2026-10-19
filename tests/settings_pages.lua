@@ -256,6 +256,7 @@ test('Effects help covers every real effect type and its sequence controls with 
         pixel={lines='pixel.lines',frequency='pixel.frequency',length='pixel.length',thickness='pixel.thickness'},
         autocast={particles='autocast.particles',frequency='autocast.frequency',scale='autocast.scale'},
         blizzard={frequency='blizzard.frequency'},
+        proc={duration='proc.duration',startAnim='proc.startAnim'},
         dazzle={texture='texture',frequency='dazzle.frequency',seq1='sequence.color'},
         animate={frequency='animate.frequency',seq1='sequence.texture'},
         pulse={texture='texture',frequency='pulse.frequency',seq1='sequence.magnification'},
@@ -1004,5 +1005,19 @@ test('profile export rejects failed scoped conversion instead of encoding a miss
     local before=a:CopySettingsData(a.db.profile);local p=a:CreateSettingsForm(parent);p:Open(function(form) a:BuildProfileSettings(form) end)
     p.fields.transfer:Click();assert(not p.textDialog or not p.textDialog.frame:IsShown(),'export encoded a wrapper with its profile missing')
     assert(p.message:GetText()=='Invalid profile.' and a:SettingsDataEqual(before,a.db.profile),'failed export lost original data or feedback')
+end)
+test('Proc effects show unsupported fallback without dirty defaults and stage portable controls',function()
+    local f,parent=fixture();local a=f.addon;a.db.global.effects={e={name='Proc',type='proc'}}
+    a.GetProcGlowSupport=function() return false end;a.Glow=function() end;a.HideGlow=function() end
+    local before=a:CopySettingsData(a.db.global.effects);local p=a:OpenNativeSettings(parent,'Effects')
+    assert(p.fields.duration and p.fields.duration_value and p.fields.startAnim,'Proc controls missing')
+    assert(p.fields.proc_support and p.fields.proc_support:GetText():find('Pixel',1,true),'unsupported effect has no fallback explanation')
+    assert(not p:IsSettingsDraftDirty() and not p.fields.apply:IsEnabled())
+    assert(not p.fields.startAnim.unsavedMarker or not p.fields.startAnim.unsavedMarker:IsShown())
+    assert(a:SettingsDataEqual(before,a.db.global.effects),'opening Proc wrote defaults')
+    p.fields.startAnim:Click();assert(p.draft.global.effects.e.startAnim==true and a.db.global.effects.e.startAnim==nil)
+    p.fields.duration:SetValue(1.75);local value=p.draft.global.effects.e
+    local codec=a:NewRotationCodec();local decoded=assert(codec:Decode(assert(codec:Encode(value))));assert(a:SettingsDataEqual(value,decoded.value))
+    a.GetProcGlowSupport=function() return true end;p:Draw();assert(not p.fields.proc_support)
 end)
 finish()

@@ -10,6 +10,44 @@ local IsAddOnLoaded = C_AddOns and C_AddOns.IsAddOnLoaded or IsAddOnLoaded
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 local CustomGlow = LibStub("LibCustomGlow-1.0")
 
+local procSupport,procProbe
+local function methods(value,names)
+    for _,name in ipairs(names) do if type(value[name])~='function' then return false end end
+    return true
+end
+local function probeProcGlow(atlas)
+    for _,name in ipairs({'UI-HUD-ActionBar-Proc-Start-Flipbook','UI-HUD-ActionBar-Proc-Loop-Flipbook'}) do
+        if type(atlas(name))~='table' then return false end
+    end
+    if not procProbe then procProbe=CreateFrame('Frame',nil,UIParent);procProbe:Hide();procProbe:SetSize(40,40) end
+    local texture=procProbe:CreateTexture(nil,'ARTWORK');if type(texture.SetAtlas)~='function' then return false end
+    texture:SetAtlas('UI-HUD-ActionBar-Proc-Start-Flipbook');texture:SetAtlas('UI-HUD-ActionBar-Proc-Loop-Flipbook')
+    procProbe.ProcLoop=texture
+    local group=procProbe:CreateAnimationGroup()
+    if not methods(group,{'Stop','Play','IsPlaying','SetLooping','SetToFinalAlpha','SetScript'}) then return false end
+    group:SetLooping('REPEAT');group:SetToFinalAlpha(true)
+    local alpha=group:CreateAnimation('Alpha')
+    if not methods(alpha,{'SetChildKey','SetDuration','SetOrder','SetFromAlpha','SetToAlpha'}) then return false end
+    alpha:SetChildKey('ProcLoop');alpha:SetDuration(.001);alpha:SetOrder(0);alpha:SetFromAlpha(1);alpha:SetToAlpha(1)
+    local flipbook=group:CreateAnimation('FlipBook')
+    if not methods(flipbook,{'SetChildKey','SetDuration','SetOrder','SetFlipBookRows','SetFlipBookColumns','SetFlipBookFrames','SetFlipBookFrameWidth','SetFlipBookFrameHeight'}) then return false end
+    flipbook:SetChildKey('ProcLoop');flipbook:SetDuration(1);flipbook:SetOrder(0)
+    flipbook:SetFlipBookRows(6);flipbook:SetFlipBookColumns(5);flipbook:SetFlipBookFrames(30);flipbook:SetFlipBookFrameWidth(0);flipbook:SetFlipBookFrameHeight(0)
+    group:Stop();return true
+end
+-- Method names alone do not establish animation/atlas support on Classic.
+-- This hidden probe never plays, and stable capabilities need no warm allocation.
+function addon:GetProcGlowSupport()
+    local atlas=C_Texture and C_Texture.GetAtlasInfo or rawget(_G,'GetAtlasInfo')
+    if procSupport and procSupport.atlas==atlas and procSupport.create==CreateFrame
+        and procSupport.start==CustomGlow.ProcGlow_Start and procSupport.stop==CustomGlow.ProcGlow_Stop then return procSupport.available end
+    procSupport={atlas=atlas,create=CreateFrame,start=CustomGlow.ProcGlow_Start,stop=CustomGlow.ProcGlow_Stop,available=false}
+    if type(atlas)=='function' and type(CreateFrame)=='function' and type(procSupport.start)=='function' and type(procSupport.stop)=='function' then
+        local ok,value=pcall(probeProcGlow,atlas);procSupport.available=ok and value==true
+    end
+    return procSupport.available
+end
+
 local function spellMetadataID(spell)
     local info=addon.Platform:GetSpellInfo(spell)
     return info and info.spellID
@@ -61,6 +99,17 @@ function addon:ApplyCustomGlow(effect, frame, id, color, xoffs, yoffs)
 		CustomGlow.AutoCastGlow_Start(frame, c, effect.particles, effect.frequency, effect.scale, xoffs, yoffs, id)
 	elseif effect.type == "blizzard" then
 		CustomGlow.ButtonGlow_Start(frame, c, effect.frequency)
+	elseif effect.type == 'proc' then
+        if self:GetProcGlowSupport() then
+            local duration=effect.duration
+            if type(duration)~='number' or duration~=duration or duration<.1 or duration>5 then duration=1 end
+            local ok=pcall(CustomGlow.ProcGlow_Start,frame,{key=tostring(id or ''),color=c,duration=duration,startAnim=effect.startAnim==true,xOffset=xoffs or 0,yOffset=yoffs or 0})
+            if ok then return end
+            procSupport.available=false
+        end
+        -- Another frame may have retired shared support while this key was lit.
+        if type(CustomGlow.ProcGlow_Stop)=='function' then pcall(CustomGlow.ProcGlow_Stop,frame,tostring(id or '')) end
+        CustomGlow.PixelGlow_Start(frame,c,nil,nil,nil,nil,xoffs,yoffs,false,id)
 	end
 end
 
@@ -86,10 +135,11 @@ local function StopOverlay(frame)
 	frame.sequenceIdx = nil
 end
 
-function addon:HideGlow(frame, id)
+function addon:HideGlow(frame, id, keepProc)
 	CustomGlow.PixelGlow_Stop(frame, id)
 	CustomGlow.AutoCastGlow_Stop(frame, id)
 	CustomGlow.ButtonGlow_Stop(frame)
+    if not keepProc and type(CustomGlow.ProcGlow_Stop)=='function' then CustomGlow.ProcGlow_Stop(frame,tostring(id or '')) end
 	if id ~= nil and frame.rmOverlays and frame.rmOverlays[id] then
 		StopOverlay(frame.rmOverlays[id])
 		frame.rmOverlays[id]:Hide()
@@ -261,7 +311,7 @@ function addon:Glow(button, id, effect, color, mags, setp, xoffs, yoffs, angle)
     color=self:ResolveHighlightColor(color)
 
 	local type = effect.type
-	addon:HideGlow(button, id)
+	addon:HideGlow(button, id, type=='proc')
 	if addon.index(addon.textured_types, type) then
 		if not button.rmOverlays then
 			button.rmOverlays = {}

@@ -1,7 +1,7 @@
 local addon_name,addon=...
 local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
-local types={{value='texture',text=L['Texture']},{value='pixel',text=L['Pixel']},{value='autocast',text=L['Auto Cast']},{value='blizzard',text=L['Glow']},{value='dazzle',text=L['Dazzle']},{value='animate',text=L['Animate']},{value='pulse',text=L['Pulse']},{value='rotate',text=L['Rotate']},{value='custom',text=L['Custom']}}
-local schemas={pixel={{'lines','Lines',8,1,20,1},{'frequency','Frequency',.25,-1.5,1.5,.05},{'length','Length',2,1,20,1},{'thickness','Thickness',2,1,5,1}},autocast={{'particles','Particles',4,1,4,1},{'frequency','Frequency',.125,-1.5,1.5,.05},{'scale','Scale',1,.25,5,.25}},blizzard={{'frequency','Frequency',.125,0,1.5,.05}},dazzle={{'frequency','Frequency',.25,.1,5,.05}},animate={{'frequency','Frequency',.25,.1,5,.05}},pulse={{'frequency','Frequency',.25,.1,5,.05}},custom={{'frequency','Frequency',.25,.1,5,.05}},rotate={{'frequency','Frequency',.25,.1,5,.05},{'steps','Steps',4,2,36,1}}}
+local types={{value='texture',text=L['Texture']},{value='pixel',text=L['Pixel']},{value='autocast',text=L['Auto Cast']},{value='blizzard',text=L['Glow']},{value='proc',text=L['Proc Glow']},{value='dazzle',text=L['Dazzle']},{value='animate',text=L['Animate']},{value='pulse',text=L['Pulse']},{value='rotate',text=L['Rotate']},{value='custom',text=L['Custom']}}
+local schemas={proc={{'duration','Loop duration',1,.1,5,.05}},pixel={{'lines','Lines',8,1,20,1},{'frequency','Frequency',.25,-1.5,1.5,.05},{'length','Length',2,1,20,1},{'thickness','Thickness',2,1,5,1}},autocast={{'particles','Particles',4,1,4,1},{'frequency','Frequency',.125,-1.5,1.5,.05},{'scale','Scale',1,.25,5,.25}},blizzard={{'frequency','Frequency',.125,0,1.5,.05}},dazzle={{'frequency','Frequency',.25,.1,5,.05}},animate={{'frequency','Frequency',.25,.1,5,.05}},pulse={{'frequency','Frequency',.25,.1,5,.05}},custom={{'frequency','Frequency',.25,.1,5,.05}},rotate={{'frequency','Frequency',.25,.1,5,.05},{'steps','Steps',4,2,36,1}}}
 local function defaults(effect)
     for _,entry in ipairs(schemas[effect.type] or {}) do local v=effect[entry[1]];if type(v)~='number' or v~=v or v<entry[4] or v>entry[5] then effect[entry[1]]=entry[3] end end
     if effect.type=='dazzle' or effect.type=='animate' or effect.type=='pulse' or effect.type=='custom' then effect.sequence=effect.sequence or {} end
@@ -10,6 +10,7 @@ local function validEffect(effect)
     if type(effect)~='table' or type(effect.name)~='string' or not effect.name:find('%S') then return false end
     local known=false;for _,entry in ipairs(types) do known=known or entry.value==effect.type end;if not known then return false end
     for _,entry in ipairs(schemas[effect.type] or {}) do local v=effect[entry[1]];if v~=nil and (type(v)~='number' or v~=v or v<entry[4] or v>entry[5]) then return false end end
+    if effect.type=='proc' and effect.startAnim~=nil and type(effect.startAnim)~='boolean' then return false end
     if effect.texture~=nil and type(effect.texture)~='string' and type(effect.texture)~='number' then return false end
     if effect.sequence~=nil then
         if type(effect.sequence)~='table' or #effect.sequence>256 then return false end
@@ -50,6 +51,10 @@ function addon:BuildEffectSettings(p)
         end)
         if effect.type=='texture' or effect.type=='dazzle' or effect.type=='pulse' or effect.type=='rotate' then p:Edit('texture',L['Texture'],effect.texture or '',nil,function(value) effect.texture=tonumber(value) or value;refresh();p:UpdateRosterEntry(id,{text=effect.name,search=effect.type,icon=effect.texture or self:ControlTexture('preview')}) end) end
         for _,entry in ipairs(schemas[effect.type] or {}) do local key=entry[1];p:Slider(key,L[entry[2]],effect[key] or entry[3],entry[4],entry[5],entry[6],function(value) effect[key]=value;refresh() end) end
+        if effect.type=='proc' then
+            p:Check('startAnim',L['Start burst'],effect.startAnim==true,function(value) effect.startAnim=value;refresh() end)
+            if not self.GetProcGlowSupport or not self:GetProcGlowSupport() then p.fields.proc_support=p:Text(L['Proc Glow is unavailable on this client; Pixel glow will be used.']) end
+        end
         if effect.type=='rotate' then p:Check('reverse',L['Reverse'],effect.reverse,function(value) effect.reverse=value;refresh() end) end
         if effect.type=='dazzle' or effect.type=='animate' or effect.type=='pulse' or effect.type=='custom' then
             p:Heading(L['Sequence'])

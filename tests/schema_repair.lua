@@ -124,6 +124,14 @@ test('flat step repair keeps type rejection and reports malformed UUID fields wi
         if not fix then assert(a:SettingsDataEqual(body,before)) elseif mode=='id' then assert(#body[scope]==0) elseif mode=='field-types' then assert(step.action==nil and step.ranked==nil and step.color==nil and step.effect==nil and step.unexpected==nil) end
     end end end
 end)
+test('Proc Glow definitions remain portable and repair preserves optional controls',function()
+    local f,a=fixture();f.load('UI/settings_effects.lua')
+    for _,value in ipairs({{name='Proc',type='proc'},{name='Proc',type='proc',duration=1.75,startAnim=true},{name='Proc',type='proc',duration=.1,startAnim=false}}) do
+        assert(a:IsValidEffectDefinition(value),'Proc schema rejected a valid definition')
+        local before=a:CopySettingsData(value);a:validate_effect('global',uuid,value,true);assert(a:SettingsDataEqual(value,before),'repair rewrote valid Proc settings')
+    end
+    for _,value in ipairs({{name='Proc',type='proc',duration=0},{name='Proc',type='proc',duration=math.huge},{name='Proc',type='proc',startAnim='yes'}}) do assert(not a:IsValidEffectDefinition(value)) end
+end)
 test('unknown effect kinds are reported without throwing or deleting future records',function()
     for _,fix in ipairs({false,true}) do local _,a,_,_,warnings=fixture();local v={name='Future effect',type='future-kind',texture=123,sequence={{future=true}}};local before=a:CopySettingsData(v);a:validate_effect('global',uuid,v,fix);assert(a:SettingsDataEqual(v,before) and #warnings>0) end
 end)
