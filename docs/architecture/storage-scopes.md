@@ -35,6 +35,10 @@ Ownership needs real partitions behind one storage facade. Adding a class tag to
 
 A scope change must be staged until Apply and move body, origins, imports and comparison mappings atomically. Workspace identities and concurrency guards must include the partition. Reuse AceDB's character keys rather than inventing a name/realm format. Owner identity is distinct from source applicability and user-entered author metadata.
 
+`Data/rotation_store.lua` provides the pure foundation for that integration: full scoped addresses, detached reads with validity diagnostics, explicit fallback selection, and guarded plans for create/replace/delete/move/adoption. A record carries its body and source/comparison sidecars together. The migration planner only proposes an unclaimed archive; it never guesses an owner or writes to a live profile. Production still uses the legacy storage until the workspace, browser, transfer, maintenance and adoption UI migrate together.
+
+The initial foundation conservatively validates the whole supplied store at each operation. It is not ready for polling or scrolling hot paths: a validated ownership index/cache with explicit invalidation and operation-count tests is required before runtime activation. No new persistence root is written merely by loading this module.
+
 ## Migration safety
 
 Legacy ordinary bodies have no authoritative class/character owner. Profile names, numeric spec keys and spell contents are insufficient evidence. Valid source manifests can establish declared class applicability, while unknown records need preserved recovery/adoption rather than assignment to whichever character logs in first. Independent class/character fallback collisions must remain separate; no silent merge or replacement is acceptable.

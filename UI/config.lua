@@ -1,6 +1,5 @@
 local addon_name,addon=...
 local L=LibStub("AceLocale-3.0"):GetLocale(addon_name)
-local AceGUI=LibStub("AceGUI-3.0")
 local sections={
     {value="Rotations",text=L["Rotations"]},{value="General",text=L["General"]},
     {value="Conditions",text=L["Conditions"]},{value="Functions",text=L["Functions"]},{value="Effects",text=L["Effects"]},
@@ -188,14 +187,14 @@ local function newShell()
         addon.currentConditionEval=nil;addon.specTab=nil
         -- Native fields may contain explicit custom Ace children. Preserve
         -- their focus cleanup at this shared ownership boundary.
-        if AceGUI.ClearFocus then AceGUI:ClearFocus() end
+        addon:ClearConditionWidgetFocus()
         if self.pane then
             local pane=self.pane;self.pane=nil
             if self.nativePane then pane:Release()
             else
                 -- This branch owns only an explicitly borrowed Ace host.
                 ---@cast pane AceGUIWidget
-                AceGUI:Release(pane)
+                addon:GetConditionWidgetCompatibilityLibrary():Release(pane)
             end
             self.nativePane=nil
         end
@@ -287,7 +286,7 @@ local function newShell()
             pane.message:SetText(string.format(L['Native settings page unavailable: %s'],key));pane:SetWidth(content:GetWidth());pane:SetHeight(content:GetHeight());pane.frame:Show()
             self.nativePane=true;self.pane=pane;return
         end
-        local pane=AceGUI:Create("SimpleGroup")
+        local pane=addon:GetConditionWidgetCompatibilityLibrary():Create("SimpleGroup")
         self.pane=pane;pane:SetLayout("Fill");pane:SetUserData("appName",addon.name)
         pane.frame:SetParent(content);pane.frame:ClearAllPoints();pane.frame:SetAllPoints(content)
         pane:SetWidth(content:GetWidth());pane:SetHeight(content:GetHeight())

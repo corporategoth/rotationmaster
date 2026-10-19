@@ -1,6 +1,5 @@
 local addon_name,addon=...
 local L=LibStub("AceLocale-3.0"):GetLocale(addon_name)
-local AceGUI=LibStub("AceGUI-3.0")
 local function button(parent,text,width)
     return addon:CreateWorkbenchButton(parent,text,width)
 end
@@ -100,10 +99,10 @@ local function create(parent)
         addon.currentConditionEval=nil
         self.editorOwner=nil
         -- Custom Fields UI inside a native editor may still own Ace focus.
-        if AceGUI.ClearFocus then AceGUI:ClearFocus() end
+        addon:ClearConditionWidgetFocus()
         if self.pane then
             local pane=self.pane;self.pane=nil
-            if self.nativeDetails then pane:Release() else AceGUI:Release(pane) end
+            if self.nativeDetails then pane:Release() else addon:GetConditionWidgetCompatibilityLibrary():Release(pane) end
             self.nativeDetails=nil
         end
     end

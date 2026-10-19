@@ -101,14 +101,7 @@ function rm:CreateLuaWorkbenchControl(parent,changed,valid)
     function c:InvokeWithSurface(callback,...)
         local surface=self.debugSurface
         if not surface then return pcall(callback,...) end
-        -- Track synchronous allocations only while this invocation is running.
-        -- Restore before yielding back to the game or another addon's handler.
-        local ace=LibStub('AceGUI-3.0');local create=ace.Create
-        ace.Create=function(library,...) local widget=create(library,...);surface:Guard(widget);return widget end
-        local unsubscribe=rm:ObserveConditionWidgets(function(widget) surface:Guard(widget) end)
-        local function pack(...) return {n=select('#',...),...} end
-        local results=pack(pcall(callback,...));unsubscribe();ace.Create=create
-        return unpack(results,1,results.n)
+        return rm:WithConditionWidgetObservation(function(widget) surface:Guard(widget) end,pcall,callback,...)
     end
     local resume=engine.Debugger.Resume
     function engine.Debugger:Resume(...)

@@ -1,6 +1,5 @@
 local addon_name,addon=...
 local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
-local AceGUI=LibStub('AceGUI-3.0')
 local function plainCopy(value)
     local active,nodes,bytes={},0,0
     local function copy(v,depth)
@@ -108,12 +107,8 @@ function addon:ShowConditionSourceTest(owner,options)
         local before=operation=='preview-input' and plainCopy(self.sample)
         -- Track synchronous allocations as well as attached children so an
         -- exception between Create and AddChild cannot leak a native control.
-        local create=AceGUI.Create
-        AceGUI.Create=function(library,...)
-            local widget=create(library,...);d:Guard(widget);return widget
-        end
-        local unsubscribe=addon:ObserveConditionWidgets(function(widget) d:Guard(widget) end)
-        local ok,result,reason=report(operation,callback,...);unsubscribe();AceGUI.Create=create
+        local ok,result,reason=addon:WithConditionWidgetObservation(function(widget) d:Guard(widget) end,
+            function(fn,...) return report(operation,fn,...) end,callback,...)
         if not ok then self:Fail();return nil end
         local after=operation=='preview-input' and plainCopy(self.sample)
         if operation=='preview-input' and self.checking and (not after or not addon:SettingsDataEqual(before,after)) then self:Configure();self.lastResult=nil;self.pendingTest=true;self.status:SetText(L['Test values changed. Updating results.']..(self.sampleProblem and '\n'..self.sampleProblem or ''));self.status:SetTextColor(1,.8,.4) end

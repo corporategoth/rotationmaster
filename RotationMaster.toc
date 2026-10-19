@@ -93,6 +93,7 @@ Data/catalog.lua
 Data/diff.lua
 Data/visual_comparison.lua
 Data/import_session.lua
+Data/rotation_store.lua
 Core/rotation_library.lua
 Core/rotation_tags.lua
 Core/imports.lua
@@ -113,6 +114,7 @@ UI/controls.lua
 UI/drag_presentation.lua
 UI/unsaved.lua
 UI/condition_widgets.lua
+UI/condition_observation.lua
 UI/condition_icon.lua
 UI/condition_position.lua
 UI/condition_display.lua
