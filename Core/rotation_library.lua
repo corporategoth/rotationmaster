@@ -116,6 +116,35 @@ function addon:GetRotationContext(spec)
     return context
 end
 local ownedRotationContext=addon.GetRotationContext
+local clientContextReader
+local bindClient=addon.BindRotationClientReader
+if type(bindClient)=='function' then
+    bindClient(addon,function(reader) clientContextReader=reader end)
+    addon.BindRotationClientReader=nil
+end
+-- Only the exact owned methods use the narrow projection. Overrides retain
+-- their actual receiver, first result, shared table and error behavior.
+local function rotationContext(owner,spec)
+    local method=owner.GetRotationContext
+    if method~=ownedRotationContext or not clientContextReader then return method(owner,spec) end
+    local context=clientContextReader(owner.Platform)
+    local function read(fn,...)
+        if type(fn)~="function" then return nil end
+        local ok,value=pcall(fn,...)
+        if ok and owner.Platform:CanReadValue(value) then return value end
+    end
+    local function class() local _,token=UnitClass("player");return token end
+    context.class=read(class)
+    context.level=read(UnitLevel,"player")
+    context.build=tonumber(context.build)
+    context.spec=spec
+    context.actionContext="player"
+    local vehicle=read(UnitHasVehicleUI,"player")
+    if vehicle==nil then vehicle=read(UnitInVehicle,"player") end
+    if vehicle then context.actionContext="vehicle" end
+    if C_PetBattles and read(C_PetBattles.IsInBattle) then context.actionContext="petbattle" end
+    return context
+end
 local function runtimeKey(id, custom)
     local key="RM-BUILTIN:"..id
     while custom[key]~=nil do key=":"..key end
@@ -127,22 +156,23 @@ function addon:BindRotationLibraryReader(bind)
     if type(bind)~='function' then return nil,'invalid-library-reader-binder' end
     local owner=self;local reader={}
     function reader:OwnsContext(fn) return fn==ownedRotationContext end
+    function reader:Context(spec) return rotationContext(owner,spec) end
     function reader:Generation() local ok,why=ensure(owner);if not ok then return nil,why end;return active.generation end
     function reader:Read(spec,id,project,candidates)
         local ok,why=ensure(owner);if not ok then return nil,why end
         local view=active.views[id];if not view then return nil,'unknown-rotation' end
-        local context=owner:GetRotationContext(spec);context.spec=spec
+        local context=rotationContext(owner,spec);context.spec=spec
         if not matchesClass(view,context) then return nil,'class-mismatch' end
         local allowed,reason=eligible(view,context,candidates)
         return true,project(view,active.bodies[id],allowed,reason),active.generation
     end
     function reader:List(spec,project)
         local ok,why=ensure(owner);if not ok then return nil,why end
-        local context=owner:GetRotationContext(spec);context.spec=spec;local rows={}
+        local context=rotationContext(owner,spec);context.spec=spec;local rows={}
         for id,view in pairs(active.views) do if matchesClass(view,context) then rows[#rows+1]=project(id,view,active.bodies[id]) end end
         return rows,active.generation
     end
-    function reader:Eligible(view,spec,candidates) local context=owner:GetRotationContext(spec);context.spec=spec;return eligible(view,context,candidates) end
+    function reader:Eligible(view,spec,candidates) local context=rotationContext(owner,spec);context.spec=spec;return eligible(view,context,candidates) end
     function reader:Reserve(used) for id,envelope in pairs(definitions) do used[id]=true;data.ReserveRotationIdentities(envelope,used) end end
     bind(reader);return true
 end

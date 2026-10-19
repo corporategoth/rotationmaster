@@ -187,8 +187,9 @@ if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
                     value.value ~= nil and Functions.values.isin(addon.roles, value.value))
         end,
         evaluate = function(value, cache)
-            if not Functions.cache.getCached(cache, UnitExists, value.unit) then return false end
-            local role = select(6, Functions.cache.getCached(cache, GetSpecializationInfoByID, Functions.cache.getCached(cache, GetInspectSpecialization, value.unit)))
+            local role,reason=Functions.cache.getCached(cache, addon.Platform.GetInspectRoleObservation, addon.Platform, value.unit)
+            if role==nil then return nil,reason end
+            if role==false then return false end
             return role == value.value
         end,
         print = function(_, value)
@@ -246,7 +247,9 @@ else
                 return value.value ~= nil and Functions.values.isin(addon.roles, value.value)
             end,
             evaluate = function(value, cache)
-                return Functions.cache.getCached(cache, GetTalentGroupRole, addon.currentSpec) == value.value
+                local role,reason=Functions.cache.getCached(cache, addon.Platform.GetTalentGroupRoleObservation, addon.Platform, addon.currentSpec)
+                if role==nil then return nil,reason end
+                return role == value.value
             end,
             print = function(_, value)
                 return string.format(L["Your talent {{!is|is not}} a %s role"],

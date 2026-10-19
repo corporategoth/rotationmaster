@@ -428,3 +428,24 @@ FORM now reads the current player form through a probe-only Platform observation
 Only FORM.evaluate changes. Its captured SHAMAN mapping, inclusive configured bounds, raw non-SHAMAN form count and existing label/icon/Fields UI metadata remain separate audit work. Current editable source copies and the public helper use the normalized boundary; historical raw source is preserved. An exact whole-module inverse retains private identities and every unrelated authored byte.
 
 ZONEPVP and INSTANCE each correct one misspelled value field in their existing empty-selection callback. Selecting ZONEPVP's existing no-PvP row now clears the previous stored mode before formatting the summary. INSTANCE keeps its current list, which has no empty entry; its defensive empty callback receives the same narrow correction. No new option or nil-selector meaning is inferred. Real native-selector tests cover list ownership, status ordering, reopen, normal choices, recycled callback guards, current exported copies and unchanged historical source. Strict full-widget inverses preserve the prior source proofs without broad exclusions.
+
+
+## Effective statistics and health forecasting
+
+STAT now observes only the effective statistic in native return two: UnitStat(unit, selector) for the five authored attribute choices and UnitArmor(unit) for the armor choice. Known absence differs from missing, failed, restricted or invalid required values. Signed, fractional and zero finite values remain valid. Configured comparison-threshold validation is unchanged. ECS continues using its independently corrected one-argument dot API.
+
+Time Until Health and Time Until Health Percentage now use the checked services described in [Health forecast observations](../health-forecasting.md). The new kernel bounds visited rows and accumulation bins, preserves ordinary ordered arithmetic and deliberate no-estimate/initialized-zero distinctions, and leaves published historical trend functions and saved raw sources untouched.
+
+## Role observations
+
+ROLE retains its existing product/expansion registration branches. Its inspection variant uses a probe-policy adapter with exact selected-unit existence, modern-first inspection capability selection and a legacy fallback only when that callable is absent. A selected capability's failure does not trigger another backend. A positive finite integral specialization ID leads to the existing one-argument GetSpecializationInfoByID call; role is consumed from return five, while unrelated tuple fields are ignored. No inspection request, class inference or extra actor query is added.
+
+The talent variant keeps the exact live currentSpec argument to GetTalentGroupRole, including a readable nil forwarded as one argument. A complete primary declaration for that legacy API remains unavailable; no native group-domain guarantee or substitute API is invented. Both observers require a readable nonempty string role, preserve future strings exactly and keep missing/failed/restricted/malformed facts unavailable through negation and branches. These readiness and probe-policy choices are explicit RM policy. Retail/Forever denial remains separate from positive probe-policy fixture tests. Complete tuples share the existing per-condition cache, with fresh-pass recovery.
+
+Current editable callbacks and helper copies receive these observations. Saved raw ROLE sources retain their old global dispatch and old sixth-result behavior. Strict two-evaluator and whole-character inverses protect all unrelated callbacks, schemas, Help, registration variants, retained class state and private source identities.
+
+## Local combat-time arithmetic
+
+TIME_IN_COMBAT reads the live stored combatStart and the evaluation timestamp already supplied by the engine. Readable nil start remains deliberate absence and skips the timestamp. Present timestamps and their derived difference must be readable finite numbers; signed, fractional and negative elapsed values remain exact. Unknown facts cannot authorize either branch or become a match through negation. No clock call, new policy gate, cache or producer change is added.
+
+This bounded consumer change leaves threshold validation and outer clock/error handling unchanged. A nil returned by the event producer still has the existing absence representation; distinguishing producer failure requires a separate producer-state contract. Current editable source receives the guard, while archived raw code retains its prior behavior. Exact single-evaluator and whole-combat inverses protect every other callback and private identity.

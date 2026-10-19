@@ -49,9 +49,11 @@ end)
 test('ROLE clones use the registered product variant rather than the last collected callback body',function()
     for _,case in ipairs({{1,12,true},{19,4,false},{18,12,false},{5,2,false}}) do
         local f,a=fixture(case[1],case[2]);local calls={inspect=0,talent=0}
+        -- Isolate source-variant dispatch; role_conditions.lua checks real policy denial.
+        a.Platform.GetClientInfo=function() return {combatDataPolicy='probe'} end
         f.env.UnitExists=function(unit) assert(unit=='target');return true end
         f.env.GetInspectSpecialization=function(unit) assert(unit=='target');calls.inspect=calls.inspect+1;return 123 end
-        f.env.GetSpecializationInfoByID=function(id) assert(id==123);return id,'Fixture',nil,nil,nil,'HEALER' end
+        f.env.GetSpecializationInfoByID=function(id) assert(id==123);return id,'Fixture',nil,nil,'HEALER','SHAMAN' end
         f.env.GetTalentGroupRole=function(spec) assert(spec==a.currentSpec);calls.talent=calls.talent+1;return 'TANK' end
         local source=assert(a:GetBuiltinConditionSource('ROLE'));local copy=assert(a:CompileCustomCondition('COPY_ROLE',source))
         local value={unit='target',value='HEALER'};local original=a.conditionDefinitions.ROLE

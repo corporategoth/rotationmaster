@@ -52,6 +52,37 @@ function platform:GetClientInfo()
     return info
 end
 
+local ownedClientInfo=platform.GetClientInfo
+-- One-time private handoff. Public client metadata keeps its complete shape.
+function addon:BindRotationClientReader(bind)
+    if type(bind)~='function' then return nil,'invalid-client-reader-binder' end
+    bind(function(current)
+        local method=current.GetClientInfo
+        if method~=ownedClientInfo then return method(current) end
+        local project=primitive(WOW_PROJECT_ID)
+        local function isProject(constant)
+            return type(project)=='number' and type(constant)=='number' and project==constant
+        end
+        local family='unknown'
+        if isProject(WOW_PROJECT_CAMELOT) then family='forever'
+        elseif isProject(WOW_PROJECT_MAINLINE) then family='retail'
+        elseif isProject(WOW_PROJECT_CLASSIC) then family='era'
+        elseif isProject(WOW_PROJECT_BURNING_CRUSADE_CLASSIC) then family='tbc'
+        elseif isProject(WOW_PROJECT_MISTS_CLASSIC) or isProject(WOW_PROJECT_CATACLYSM_CLASSIC)
+            or isProject(WOW_PROJECT_WRATH_CLASSIC) then family='progression' end
+        local context={family=family}
+        if type(GetBuildInfo)=='function' then
+            local ok,_,build=pcall(GetBuildInfo)
+            if ok then context.build=primitive(build) end
+        end
+        if family=='retail' or family=='forever' then context.combatDataPolicy='restricted'
+        elseif family=='unknown' then context.combatDataPolicy='unsupported'
+        else context.combatDataPolicy='probe' end
+        return context
+    end)
+    return true
+end
+
 function platform:CanReadValue(value)
     if not readable(value) then return false, "restricted-value" end
     return true

@@ -1,3 +1,4 @@
+-- Historical ROLE qualifier proof; role_conditions.lua covers current role readiness.
 local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite()
 local cases=dofile('tests/fixtures/catalog_inventory.lua').branches
 local tags={'ISSAME','CLASS','CLASS_GROUP','ROLE','GLYPH','CREATURE','CLASSIFICATION','LEVEL','GROUP','RUNNER','RESIST','IMMUNE'}
@@ -7,6 +8,7 @@ local branchCounts={61,47,47,56,56,56,56,68}
 local baselineHashes={['CLASS:common']=3088725613,['CLASSIFICATION:common']=3454430665,['CLASS_GROUP:common']=1911721314,['CREATURE:common']=1392664048,['GLYPH:common']=233563292,['GROUP:common']=1891586705,['IMMUNE:common']=3885939024,['ISSAME:common']=2733275963,['LEVEL:common']=2839935621,['RESIST:common']=899540765,['ROLE:inspect']=1626999136,['ROLE:talent']=1169248649,['RUNNER:common']=3996103689}
 local callbacks={'valid','evaluate','print','widget','help'}
 local restoreClassGroup=dofile('tests/fixtures/restore_class_group_repairs.lua')
+local restoreRole,_,_,oldRoleBindings=dofile('tests/fixtures/restore_role_repairs.lua')
 local function path(name) return 'Functions.'..owners[name]..'.'..name end
 local function identity(name) return 'builtin:'..(owners[name]=='collections' and 'Functions/collections.lua' or 'utils.lua')..':'..name end
 local function fixture(case)
@@ -27,7 +29,20 @@ local function fixture(case)
     e.GetNumGlyphSockets=function() call('count');return 1 end;e.GetGlyphSocketInfo=function() call('socket');if case[1][1]==19 then return true,1,2,9001,1 end;return true,1,9001,1 end
     e.GetSpellInfo=function() call('spell');return s.spellName end
     if case[3] then e.MI2_GetMobData=function() call('mob');return {resists=s.resists,lowHpAction=s.runner} end end
-    for _,file in ipairs({'Platform/spells.lua','Diagnostics/errors.lua','Core/conditions.lua','Data/plain.lua','Data/tags.lua','Data/rotation_tree.lua','Core/rotation_sequence.lua','Conditions/character.lua','Data/builtin_sources.lua','Core/builtin_sources.lua','Core/custom_authoring.lua','Core/function_data.lua'}) do f.load(file) end
+    for _,file in ipairs({'Platform/spells.lua','Diagnostics/errors.lua','Core/conditions.lua','Data/plain.lua','Data/tags.lua','Data/rotation_tree.lua','Core/rotation_sequence.lua','Conditions/character.lua','Data/builtin_sources.lua','Core/builtin_sources.lua','Core/custom_authoring.lua','Core/function_data.lua'}) do
+        if file=='Conditions/character.lua' then
+            local h=assert(io.open(file));local text=h:read('*a');h:close()
+            local chunk=assert(loadstring(restoreRole(text),'@'..file));setfenv(chunk,e);chunk('rotationmaster',a)
+        else
+            f.load(file)
+            if file=='Data/builtin_sources.lua' then
+                for variant,row in pairs(assert(a.BuiltinSourceCatalog.conditions.ROLE.variants)) do
+                    row.callbacks.evaluate.code=restoreRole(row.callbacks.evaluate.code,variant,true)
+                    row.callbacks.evaluate.bindings=a:CopySettingsData(oldRoleBindings[variant])
+                end
+            end
+        end
+    end
     e.loadstring=function(code,name) local fn,why=loadstring(code,name);if fn then setfenv(fn,e) end;return fn,why end
     local selected={};for _,tag in ipairs(tags) do if a.conditionDefinitions[tag] then selected[#selected+1]=tag end end
     return f,a,s,selected

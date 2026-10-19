@@ -715,10 +715,16 @@ addon:RegisterCondition("TIME_IN_COMBAT", {
         return ( value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and value.value ~= nil and value.value >= 0)
     end,
     evaluate = function(value, _, evalStart)
-        if addon.combatStart ~= nil then
-            return Functions.values.compare(value.operator, (evalStart - addon.combatStart), value.value)
-        end
-        return false
+        local start=addon.combatStart
+        if not addon.Platform:CanReadValue(start) then return nil,'restricted-value' end
+        if start==nil then return false end
+        if type(start)~='number' or start~=start or start>=math.huge or start<=-math.huge then return nil,'invalid-combat-start' end
+        if not addon.Platform:CanReadValue(evalStart) then return nil,'restricted-value' end
+        if type(evalStart)~='number' or evalStart~=evalStart or evalStart>=math.huge or evalStart<=-math.huge then return nil,'invalid-combat-time' end
+        local elapsed=evalStart-start
+        if not addon.Platform:CanReadValue(elapsed) then return nil,'restricted-value' end
+        if elapsed~=elapsed or elapsed>=math.huge or elapsed<=-math.huge then return nil,'invalid-combat-elapsed' end
+        return Functions.values.compare(value.operator,elapsed,value.value)
     end,
     print = function(_, value)
         return Functions.presentation.compareString(value.operator,L["Time in combat"],string.format(L["%s seconds"],Functions.presentation.nullable(value.value)))

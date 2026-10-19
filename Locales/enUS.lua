@@ -2467,10 +2467,13 @@ L["Integral RM statistic selector 1..5, or 6 for effective armor."] = true
 L["Iterator yielding a captured key and its current table value, or no values when exhausted."] = true
 L["Key to look up."] = true
 L["Known active count from zero through the RM scan budget, or nil when unavailable."] = true
+L["Known nonempty role string, false for known absent unit, or nil when unavailable."] = true
+L["Known nonempty role string, or nil when unavailable."] = true
 L["Larger rounded stream age in seconds, not a sample count or proof of continuous observation. Omitted when history is falsy."] = true
 L["Left operand; use numbers for ordering and divisibility."] = true
 L["Literal prefix, including an empty prefix."] = true
 L["Literal suffix, including an empty suffix."] = true
+L["Live selected talent-group argument, forwarded unchanged as one argument after readability checking."] = true
 L["Localized complete sentence with named slots and optional explicit predicate alternatives."] = true
 L["Look up a table key for display, preserving non-nil results; invalid tables, missing keys and nil keys use nullable placeholder text."] = true
 L["Lookup key."] = true
@@ -2499,6 +2502,7 @@ L["Observation kind: cast or channel. These use different native interruptibilit
 L["Observation, history, work-limit or arithmetic availability reason."] = true
 L["Observe a fresh protected zero-argument GetTime for a needed health forecast. Require readability and a finite number; preserve signed and fractional values without adding a monotonic, integral or nonnegative restriction. No clock cache or extra native query is used."] = true
 L["Observe a readable raw unit level on known clients. A readable absent unit returns exists=false; present units require a positive finite integer UnitLevel. Unknown boss levels, missing, failed, restricted or malformed observations return nil with a reason. This does not use effective or scaled levels."] = true
+L["Observe a selected unit role on probe-policy clients without issuing inspection requests. Known unit absence returns false. Prefer the callable modern inspection API, with legacy fallback only when that callable is absent; a selected failure never falls through. Require a positive finite integral specialization ID and consume only role return five from the exact one-argument GetSpecializationInfoByID call. Missing, failed, restricted or malformed required facts are unavailable; readable nonempty future role strings remain exact."] = true
 L["Observe a unit casting or channeling on supported readable clients. A readable inactive result returns active=false. Active records contain name and independently available remainingSeconds and interruptible fields, with remainingReason or interruptibleReason when an optional field is unavailable. Missing, failed or restricted observations return nil with a reason."] = true
 L["Observe exact pet existence and optionally its formatted GetUnitName display name. Presence-only queries never require name data. Known absence skips the name query. Present pets require a readable nonempty name only when requested; required missing, failed, nil, restricted or malformed observations return nil with a reason. The display helper is called with its single original pet argument, without UnitName fallback or inferred bar, health or ability state."] = true
 L["Observe exact selected-unit existence and optionally its class filename for point-resource conditions. Known absence returns exists=false without reading class. Present units require only UnitClass return two when requested; unused localized names and IDs do not affect availability. Required missing, failed, restricted or malformed observations remain unavailable. This does not select a resource or cache identity."] = true
@@ -2513,6 +2517,7 @@ L["Observe ordered selected-unit existence, hostility from player, then the play
 L["Observe readable current health and optionally maximum health on supported clients. A readable absent unit returns exists=false. Missing, failed, restricted or malformed observations return nil with a reason; they do not establish an absent unit or a health value."] = true
 L["Observe the current player form with one protected zero-argument GetShapeshiftForm call. Preserve every readable finite numeric result, including zero, signed and fractional values; no stronger native index domain is inferred. Missing, failed, nil, restricted or nonfinite data remains unavailable. No form count, class, spell ID, unit or optional argument is added."] = true
 L["Observe the effective statistic from native return two only. On probe-policy clients query exact UnitExists(unit), then UnitStat(unit,stat) for selector 1..5 or UnitArmor(unit) for selector 6. Known absence returns exists=false; missing, failed, restricted or nonfinite required facts return nil. Preserve finite signed, fractional and zero values; ignore all unused tuple fields. The 1..6 route is an RM selector policy, not a native value-domain limit."] = true
+L["Observe the first role result of the exact legacy GetTalentGroupRole(group) dot call on probe-policy clients. Forward the readable selected group unchanged, including nil as one argument; do not infer group bounds, substitute another API or query a player unit. The complete legacy primary declaration is not established. Missing, failed, restricted, empty or malformed role data is unavailable; readable nonempty future strings remain exact."] = true
 L["Observe the first zone PvP classification result with one protected zero-argument dot call. Prefer callable C_PvP.GetZonePVPInfo and use the global helper only when the modern callable is absent. A successful nil or no returned values produces a known empty record; missing, failed, restricted or malformed observations remain unavailable. Readable empty and future strings retain their exact meaning, and unused return fields do not determine availability. Never switch backends after a modern result or failure."] = true
 L["Observe the player current movement speed on supported readable clients. This queries GetUnitSpeed for player only, without testing another unit or redirecting vehicle ownership. Zero means stationary; positive finite fractional speeds remain valid. Missing, failed, restricted or malformed observations return nil with a reason."] = true
 L["Observe whether the player can attack a selected unit that is not dead, using the exact UnitExists, UnitCanAttack and UnitIsDead predicates. Known absence or a readable false attack result returns false without querying death. Required missing, failed, restricted or malformed observations return nil with a reason. This does not test ghosts, range, hostility or ability usability, and does not redirect unit ownership."] = true
@@ -2536,6 +2541,7 @@ L["Partial record containing ready or readyReason, start or startReason, and dur
 L["Pet observation with Boolean exists and, for a requested present pet, name; nil when required data is unavailable."] = true
 L["Policy or availability reason for a nil movement observation."] = true
 L["Policy, capability or clock observation availability reason for a nil time."] = true
+L["Policy, capability or required-observation availability reason."] = true
 L["Policy, query, capability or required row/subject availability reason for a nil record."] = true
 L["Policy, query-validation or availability reason for a nil metadata observation."] = true
 L["Policy, query-validation or availability reason for a nil pet observation."] = true
@@ -2618,6 +2624,7 @@ L["Second table to compare."] = true
 L["Selected nonempty unit token, unchanged in native calls."] = true
 L["Selected nonempty unit token."] = true
 L["Selected nonempty unit token; this call alone does not establish presence."] = true
+L["Selected nonempty unit token; unchanged native argument."] = true
 L["Selected unit token forwarded as the only provider argument."] = true
 L["Selected unit token, unchanged in observations."] = true
 L["Selector widget supporting SetList, SetValue, SetLabel, SetDisabled and callbacks."] = true

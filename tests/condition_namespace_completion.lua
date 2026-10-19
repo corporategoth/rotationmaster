@@ -114,6 +114,7 @@ end)
 test('every callback byte and parameter remains identical after reversing only namespace qualifiers',function()
     local _,a=fixture();local callbacks={};for name in pairs(a.CustomConditionCallbacks) do callbacks[#callbacks+1]=name end;table.sort(callbacks)
     for module,record in pairs(baseline) do for tag,hash in pairs(record.hashes) do local current=a:GetBuiltinConditionSource(tag)
+        if tag=='TIME_IN_COMBAT' then current.evaluate=dofile('tests/fixtures/restore_combat_time_repairs.lua')(current.evaluate,true) end
         if tag=='FORM' then current.evaluate=dofile('tests/fixtures/restore_form_repairs.lua')(current.evaluate,tag) end
         if tag=='LOC_TYPE' or tag=='LOC_BLOCKED' then current.evaluate=dofile('tests/fixtures/restore_loss_of_control_repairs.lua')(current.evaluate,tag) end
         if tag=='TOTEM_REMAIN' then current.evaluate=dofile('tests/fixtures/restore_rounding_qualifiers.lua')(current.evaluate,tag,true) end

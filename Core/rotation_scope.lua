@@ -4,6 +4,12 @@ local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
 local libraryReader
 local bindLibrary=addon.BindRotationLibraryReader
 if type(bindLibrary)=='function' then bindLibrary(addon,function(reader) libraryReader=reader end);addon.BindRotationLibraryReader=nil end
+local function rotationContext(owner,spec)
+    local method=libraryReader and libraryReader.Context
+    if type(method)=='function' then return method(libraryReader,spec) end
+    local fallback=owner.GetRotationContext
+    return fallback(owner,spec)
+end
 local current,serial
 serial=0
 -- Exposure survives explicit Refresh/rebinding while that canonical body lives.
@@ -503,7 +509,7 @@ function addon:BindRotationProfile()
         local validation,referenceStamp=owner:GetRotationValidationOptions();local revision=owner.conditionRegistryVersion;local generation=libraryReader and libraryReader:Generation();local pass={}
         local selected,untracked,listSeal={},{},nil
         local function eligibilityContext()
-            local value=owner:GetRotationContext(number);local result={}
+            local value=rotationContext(owner,number);local result={}
             for _,key in ipairs({'family','class','spec','actionContext','level','build','combatDataPolicy'}) do result[key]=value and value[key] end
             return result
         end
@@ -580,7 +586,7 @@ function addon:BindRotationProfile()
             if asset.unavailable or not status.valid or not status.supported or not status.resolved then return nil,reference.address.id==fallbackID and 'invalid-fallback' or asset.unavailable or 'rotation-unavailable' end
             if asset.body.disabled then return nil,'disabled' end
             if asset.applicability then local allowed,eligibilityReason=libraryReader:Eligible({enabled=true,validation=status,applicability=asset.applicability},number,candidates);if not allowed then return nil,eligibilityReason end
-            elseif owner:GetRotationContext(number).combatDataPolicy~='probe' then return nil,'restricted-or-unsupported-client' end
+            elseif rotationContext(owner,number).combatDataPolicy~='probe' then return nil,'restricted-or-unsupported-client' end
             if owner:HasDisabledRotationDependency(asset.body) then return nil,'disabled-dependency' end
             if not batch then local current,problemText=pass:IsCurrent();if not current then return nil,problemText end end
             return asset.body
