@@ -1,11 +1,7 @@
 local addon_name, addon = ...
 
-local AceGUI = LibStub("AceGUI-3.0")
 local SpellData = addon.SpellCatalog
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
-
--- Preserve the named layout for saved custom Fields UI using AceGUI directly.
-if AceGUI.RegisterLayout then AceGUI:RegisterLayout('RM-SpellField',function(content,children) addon:LayoutWorkbenchSpellGroup(content,children) end) end
 
 -- Portable condition fields contain ordinary saved data, never live secrets.
 function addon.IsConditionSpellID(value)
@@ -518,7 +514,7 @@ end
 -- BEGIN GENERATED RM SOURCE BINDINGS
 do
     local function sourceGetter(name)
-        if name=="AceGUI" then return AceGUI end
+        if name=="AceGUI" then return addon:GetConditionWidgetCompatibilityLibrary() end
         if name=="SpellData" then return SpellData end
         if name=="Widget_GetSpellId" then return addon.Widget_GetSpellId end
         if name=="Widget_SpellWidget" then return addon.Widget_SpellWidget end

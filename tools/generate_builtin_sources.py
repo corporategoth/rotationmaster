@@ -115,7 +115,7 @@ def generated():
         for alias,entry in bindings.items():
             expression=entry.get('getterExpression')
             if expression is not None:
-                if alias!='AceGUI' or path not in ('UI/selector.lua','UI/checkbox.lua','UI/condition_inputs.lua') or expression!='addon:GetConditionWidgetCompatibilityLibrary()':
+                if alias!='AceGUI' or path not in ('UI/selector.lua','UI/checkbox.lua','UI/condition_inputs.lua','Conditions/common.lua','Conditions/combat.lua','Conditions/talent.lua') or expression!='addon:GetConditionWidgetCompatibilityLibrary()':
                     raise ValueError('invalid retained widget getter expression: '+path+':'+alias)
                 getter_expressions[alias]=expression
         for alias,expression in legacy_getters.get(path,{}).items():

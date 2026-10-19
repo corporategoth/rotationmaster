@@ -36,7 +36,7 @@ local function helper(a,name) return a:ResolveFunctionBinding('builtin:Condition
 
 test('totem callbacks select exactly nine direct canonical pure calls while local helpers stay legacy',function()
     local f,a=fixture(true);local declared=assert(a.builtinCallbackBindings and a.builtinCallbackBindings['Conditions/totem.lua'],'totem canonical leaves missing');local leaves=0;local total=0
-    for path in pairs(declared) do leaves=leaves+1;assert(not path:find('getCached',1,true) and not path:find('isin',1,true)) end;assert(leaves==3)
+    for path in pairs(declared) do leaves=leaves+1;assert(not path:find('getCached',1,true) and not path:find('isin',1,true)) end;assert(leaves==4);assert(declared['Functions.collections.keys']=='builtin:Functions/collections.lua:keys')
     for name,group in pairs(groups) do local path='Functions.'..group..'.'..name;assert(declared[path]=='builtin:utils.lua:'..name and a:ResolveFunctionBinding(declared[path])==a.Functions[group][name]) end
     for _,tag in ipairs(tags) do local source=assert(a:GetBuiltinConditionSource(tag));assert(not source.bindings.Functions)
         for callback,counts in pairs(expected[tag]) do for name,group in pairs(groups) do local path='Functions.'..group..'.'..name;local n=count(source[callback],path:gsub('%.','%%.')..'%(');assert(n==(counts[name] or 0),tag..'.'..callback..' '..name..' count changed');total=total+n;assert(not source[callback]:find('addon.'..name..'(',1,true)) end end

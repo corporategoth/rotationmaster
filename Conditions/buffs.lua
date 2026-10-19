@@ -8,11 +8,13 @@ local helpers = addon.help_funcs
 -- Canonical pure leaves; aura observations, spell identity and rank stay owned
 -- by the existing aura services and field callbacks.
 local Functions={
+    collections={deepcopy=addon.Functions.collections.deepcopy},
     values={isin=addon.Functions.values.isin},
     presentation={nullable=addon.Functions.presentation.nullable,compareString=addon.Functions.presentation.compareString,playerize=addon.Functions.presentation.playerize},
 }
 addon.builtinCallbackBindings=addon.builtinCallbackBindings or {}
 addon.builtinCallbackBindings["Conditions/buffs.lua"]={
+    ["Functions.collections.deepcopy"]="builtin:Functions/collections.lua:deepcopy",
     ["Functions.values.isin"]="builtin:utils.lua:isin",
     ["Functions.presentation.nullable"]="builtin:utils.lua:nullable",
     ["Functions.presentation.compareString"]="builtin:utils.lua:compareString",
@@ -217,7 +219,7 @@ addon:RegisterCondition("STEALABLE", {
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
-        local unit = addon:Widget_UnitWidget(value, addon.deepcopy(addon.units, { "player", "pet" }),
+        local unit = addon:Widget_UnitWidget(value, Functions.collections.deepcopy(addon.units, { "player", "pet" }),
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
     end,

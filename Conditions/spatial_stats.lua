@@ -4,6 +4,23 @@ local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 local color, pairs = color, pairs
 local helpers = addon.help_funcs
 
+-- BEGIN SPATIAL STATS CALLBACK NAMESPACE
+-- Explicit callback leaves; retain native statistic helper closures.
+local Functions={
+    values={isin=addon.Functions.values.isin,compare=addon.Functions.values.compare},
+    presentation={nullable=addon.Functions.presentation.nullable,compareString=addon.Functions.presentation.compareString},
+    collections={keys=addon.Functions.collections.keys},
+}
+addon.builtinCallbackBindings=addon.builtinCallbackBindings or {}
+addon.builtinCallbackBindings["Conditions/spatial_stats.lua"]={
+    ["Functions.values.isin"]="builtin:utils.lua:isin",
+    ["Functions.values.compare"]="builtin:utils.lua:compare",
+    ["Functions.presentation.nullable"]="builtin:utils.lua:nullable",
+    ["Functions.presentation.compareString"]="builtin:utils.lua:compareString",
+    ["Functions.collections.keys"]="builtin:Functions/collections.lua:keys",
+}
+-- END SPATIAL STATS CALLBACK NAMESPACE
+
 local function observation(cache,method,unit,power)
     if type(method)~="function" then return nil,"missing-api" end
     local ok,current
@@ -55,9 +72,9 @@ addon:RegisterCondition("PROXIMITY_HEALTH", {
     icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\spatial",
     fields = { unit = "string", operation = "string", operator = "string", value = "number", distance = "number", samegroup = "boolean", includepets = "boolean" },
     valid = function(_, value)
-        return (value.unit ~= nil and addon.isin(addon.units, value.unit) and
-                value.operation ~= nil and addon.isin(addon.math_operations, value.operation) and
-                value.operator ~= nil and addon.isin(addon.operators, value.operator) and
+        return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
+                value.operation ~= nil and Functions.values.isin(addon.math_operations, value.operation) and
+                value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                 value.value ~= nil and type(value.value) == "number" and
                 value.distance ~= nil and value.distance >= 0)
     end,
@@ -72,22 +89,22 @@ addon:RegisterCondition("PROXIMITY_HEALTH", {
 
         local v,aggregateReason=aggregate(values,value.operation)
         if v==nil then return nil,aggregateReason end
-        return addon.compare(value.operator, v, math.abs(value.value))
+        return Functions.values.compare(value.operator, v, math.abs(value.value))
     end,
     print = function(_, value)
         local conditionstr = string.format(
                 ((value.value ~= nil and value.value < 0) and
                         L["The %s health defecit of %s members%s within %d yards of %s"] or
                         L["The %s health of %s members%s within %d yards of %s"]),
-                addon.nullable(value.operation, L["<operation>"]),
+                Functions.presentation.nullable(value.operation, L["<operation>"]),
                 (value.samegroup and PARTY or L["Raid or Party"]),
                 (value.includepets and " (" .. L["including pets"] .. ")" or ""),
-                addon.nullable(value.distance, L["<distance>"]),
-                addon.nullable(addon.units[value.unit], L["<unit>"]))
+                Functions.presentation.nullable(value.distance, L["<distance>"]),
+                Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]))
         if value.value ~= nil and value.value < 0 then
-            return addon.compareString(value.operator, conditionstr, -value.value)
+            return Functions.presentation.compareString(value.operator, conditionstr, -value.value)
         else
-            return addon.compareString(value.operator, conditionstr, addon.nullable(value.value))
+            return Functions.presentation.compareString(value.operator, conditionstr, Functions.presentation.nullable(value.value))
         end
     end,
     widget = function(parent, spec, value)
@@ -106,7 +123,7 @@ addon:RegisterCondition("PROXIMITY_HEALTH", {
             top:SetStatusText(funcs:print(root, spec))
         end)
         operation.configure = function()
-            operation:SetList(addon.math_operations, addon.keys(addon.math_operations))
+            operation:SetList(addon.math_operations, Functions.collections.keys(addon.math_operations))
             if (value.operation ~= nil) then
                 operation:SetValue(value.operation)
             end
@@ -153,10 +170,10 @@ addon:RegisterCondition("PROXIMITY_HEALTH_COUNT", {
     icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\spatial",
     fields = { unit = "string", healthoperator = "string", health = "number", operator = "string", value = "number", distance = "number", samegroup = "boolean", includepets = "boolean" },
     valid = function(_, value)
-        return (value.unit ~= nil and addon.isin(addon.units, value.unit) and
-                value.healthoperator ~= nil and addon.isin(addon.operators, value.healthoperator) and
+        return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
+                value.healthoperator ~= nil and Functions.values.isin(addon.operators, value.healthoperator) and
                 value.health ~= nil and type(value.health) == "number" and
-                value.operator ~= nil and addon.isin(addon.operators, value.operator) and
+                value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                 value.value ~= nil and value.value >= 0 and
                 value.distance ~= nil and value.distance >= 0)
     end,
@@ -165,29 +182,29 @@ addon:RegisterCondition("PROXIMITY_HEALTH_COUNT", {
         local complete,reason=addon.proximity_eval(value, cache, function(c, unit)
             local cur,why=statistic(c,unit,false,false,value.health<0)
             if cur==nil then return nil,why end
-            if addon.compare(value.healthoperator, cur, math.abs(value.health)) then
+            if Functions.values.compare(value.healthoperator, cur, math.abs(value.health)) then
                 count = count + 1
             end
         end)
         if not complete then return nil,reason end
 
-        return addon.compare(value.operator, count, value.value)
+        return Functions.values.compare(value.operator, count, value.value)
     end,
     print = function(_, value)
         local conditionstr
         if value.health ~= nil and value.health < 0 then
-            conditionstr = addon.compareString(value.healthoperator, L["%s health defecit"], -value.health)
+            conditionstr = Functions.presentation.compareString(value.healthoperator, L["%s health defecit"], -value.health)
         else
-            conditionstr = addon.compareString(value.healthoperator, L["%s health"], addon.nullable(value.health))
+            conditionstr = Functions.presentation.compareString(value.healthoperator, L["%s health"], Functions.presentation.nullable(value.health))
         end
-        return addon.compareString(value.operator,
+        return Functions.presentation.compareString(value.operator,
                 string.format(conditionstr,
                         string.format(L["The number %s members%s within %d yards of %s whose"],
                                 (value.samegroup and PARTY or L["Raid or Party"]),
                                 (value.includepets and " (" .. L["including pets"] .. ")" or ""),
-                                addon.nullable(value.distance, L["<distance>"]),
-                                addon.nullable(addon.units[value.unit], L["<unit>"]))),
-                addon.nullable(value.value),true)
+                                Functions.presentation.nullable(value.distance, L["<distance>"]),
+                                Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]))),
+                Functions.presentation.nullable(value.value),true)
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -236,9 +253,9 @@ addon:RegisterCondition("PROXIMITY_HEALTHPCT", {
     icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\spatial",
     fields = { unit = "string", operation = "string", operator = "string", value = "number", distance = "number", samegroup = "boolean", includepets = "boolean" },
     valid = function(_, value)
-        return (value.unit ~= nil and addon.isin(addon.units, value.unit) and
-                value.operation ~= nil and addon.isin(addon.math_operations, value.operation) and
-                value.operator ~= nil and addon.isin(addon.operators, value.operator) and
+        return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
+                value.operation ~= nil and Functions.values.isin(addon.math_operations, value.operation) and
+                value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                 value.value ~= nil and value.value >= 0.00 and value.value <= 1.00 and
                 value.distance ~= nil and value.distance >= 0)
     end,
@@ -253,22 +270,22 @@ addon:RegisterCondition("PROXIMITY_HEALTHPCT", {
 
         local v,aggregateReason=aggregate(values,value.operation)
         if v==nil then return nil,aggregateReason end
-        return addon.compare(value.operator, v, value.value * 100)
+        return Functions.values.compare(value.operator, v, value.value * 100)
     end,
     print = function(_, value)
         local v = value.value
         if v ~= nil then
             v = v * 100
         end
-        return addon.compareString(value.operator,
+        return Functions.presentation.compareString(value.operator,
                 string.format(
                         L["The %s health percentage of %s members%s within %d yards of %s"],
-                        addon.nullable(value.operation, L["<operation>"]),
+                        Functions.presentation.nullable(value.operation, L["<operation>"]),
                         (value.samegroup and PARTY or L["Raid or Party"]),
                         (value.includepets and " (" .. L["including pets"] .. ")" or ""),
-                        addon.nullable(value.distance, L["<distance>"]),
-                        addon.nullable(addon.units[value.unit], L["<unit>"])),
-                addon.nullable(v) .. '%')
+                        Functions.presentation.nullable(value.distance, L["<distance>"]),
+                        Functions.presentation.nullable(addon.units[value.unit], L["<unit>"])),
+                Functions.presentation.nullable(v) .. '%')
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -286,7 +303,7 @@ addon:RegisterCondition("PROXIMITY_HEALTHPCT", {
             top:SetStatusText(funcs:print(root, spec))
         end)
         operation.configure = function()
-            operation:SetList(addon.math_operations, addon.keys(addon.math_operations))
+            operation:SetList(addon.math_operations, Functions.collections.keys(addon.math_operations))
             if (value.operation ~= nil) then
                 operation:SetValue(value.operation)
             end
@@ -333,10 +350,10 @@ addon:RegisterCondition("PROXIMITY_HEALTHPCT_COUNT", {
     icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\spatial",
     fields = { unit = "string", healthoperator = "string", health = "number", operator = "string", value = "number", distance = "number", samegroup = "boolean", includepets = "boolean" },
     valid = function(_, value)
-        return (value.unit ~= nil and addon.isin(addon.units, value.unit) and
-                value.healthoperator ~= nil and addon.isin(addon.operators, value.healthoperator) and
+        return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
+                value.healthoperator ~= nil and Functions.values.isin(addon.operators, value.healthoperator) and
                 value.health ~= nil and value.health >= 0.00 and value.health <= 1.00 and
-                value.operator ~= nil and addon.isin(addon.operators, value.operator) and
+                value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                 value.value ~= nil and value.value >= 0 and
                 value.distance ~= nil and value.distance >= 0)
     end,
@@ -345,27 +362,27 @@ addon:RegisterCondition("PROXIMITY_HEALTHPCT_COUNT", {
         local complete,reason=addon.proximity_eval(value, cache, function(c, unit)
             local cur,why=statistic(c,unit,false,true,false)
             if cur==nil then return nil,why end
-            if addon.compare(value.healthoperator, cur, value.health * 100) then
+            if Functions.values.compare(value.healthoperator, cur, value.health * 100) then
                 count = count + 1
             end
         end)
         if not complete then return nil,reason end
-        return addon.compare(value.operator, count, value.value)
+        return Functions.values.compare(value.operator, count, value.value)
     end,
     print = function(_, value)
         local v = value.health
         if v ~= nil then
             v = v * 100
         end
-        return addon.compareString(value.operator,
-                addon.compareString(value.healthoperator,
+        return Functions.presentation.compareString(value.operator,
+                Functions.presentation.compareString(value.healthoperator,
                         string.format(L["The number %s members%s within %d yards of %s whose health percentage"],
                                 (value.samegroup and PARTY or L["Raid or Party"]),
                                 (value.includepets and " (" .. L["including pets"] .. ")" or ""),
-                                addon.nullable(value.distance, L["<distance>"]),
-                                addon.nullable(addon.units[value.unit], L["<unit>"])),
-                        addon.nullable(v) .. "%"),
-                addon.nullable(value.value),true)
+                                Functions.presentation.nullable(value.distance, L["<distance>"]),
+                                Functions.presentation.nullable(addon.units[value.unit], L["<unit>"])),
+                        Functions.presentation.nullable(v) .. "%"),
+                Functions.presentation.nullable(value.value),true)
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -413,9 +430,9 @@ addon:RegisterCondition("PROXIMITY_MANA", {
     icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\spatial",
     fields = { unit = "string", operation = "string", operator = "string", value = "number", distance = "number", samegroup = "boolean", includepets = "boolean" },
     valid = function(_, value)
-        return (value.unit ~= nil and addon.isin(addon.units, value.unit) and
-                value.operation ~= nil and addon.isin(addon.math_operations, value.operation) and
-                value.operator ~= nil and addon.isin(addon.operators, value.operator) and
+        return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
+                value.operation ~= nil and Functions.values.isin(addon.math_operations, value.operation) and
+                value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                 value.value ~= nil and type(value.value) == "number" and
                 value.distance ~= nil and value.distance >= 0)
     end,
@@ -430,22 +447,22 @@ addon:RegisterCondition("PROXIMITY_MANA", {
 
         local v,aggregateReason=aggregate(values,value.operation)
         if v==nil then return nil,aggregateReason end
-        return addon.compare(value.operator, v, math.abs(value.value))
+        return Functions.values.compare(value.operator, v, math.abs(value.value))
     end,
     print = function(_, value)
         local conditionstr = string.format(
                 ((value.value ~= nil and value.value < 0) and
                         L["The %s mana defecit of %s members%s within %d yards of %s"] or
                         L["The %s mana of %s members%s within %d yards of %s"]),
-                addon.nullable(value.operation, L["<operation>"]),
+                Functions.presentation.nullable(value.operation, L["<operation>"]),
                 (value.samegroup and PARTY or L["Raid or Party"]),
                 (value.includepets and " (" .. L["including pets"] .. ")" or ""),
-                addon.nullable(value.distance, L["<distance>"]),
-                addon.nullable(addon.units[value.unit], L["<unit>"]))
+                Functions.presentation.nullable(value.distance, L["<distance>"]),
+                Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]))
         if value.value ~= nil and value.value < 0 then
-            return addon.compareString(value.operator, conditionstr, -value.value)
+            return Functions.presentation.compareString(value.operator, conditionstr, -value.value)
         else
-            return addon.compareString(value.operator, conditionstr, addon.nullable(value.value))
+            return Functions.presentation.compareString(value.operator, conditionstr, Functions.presentation.nullable(value.value))
         end
     end,
     widget = function(parent, spec, value)
@@ -464,7 +481,7 @@ addon:RegisterCondition("PROXIMITY_MANA", {
             top:SetStatusText(funcs:print(root, spec))
         end)
         operation.configure = function()
-            operation:SetList(addon.math_operations, addon.keys(addon.math_operations))
+            operation:SetList(addon.math_operations, Functions.collections.keys(addon.math_operations))
             if (value.operation ~= nil) then
                 operation:SetValue(value.operation)
             end
@@ -511,10 +528,10 @@ addon:RegisterCondition("PROXIMITY_MANA_COUNT", {
     icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\spatial",
     fields = { unit = "string", manaoperator = "string", mana = "number", operator = "string", value = "number", distance = "number", samegroup = "boolean", includepets = "boolean" },
     valid = function(_, value)
-        return (value.unit ~= nil and addon.isin(addon.units, value.unit) and
-                value.manaoperator ~= nil and addon.isin(addon.operators, value.manaoperator) and
+        return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
+                value.manaoperator ~= nil and Functions.values.isin(addon.operators, value.manaoperator) and
                 value.mana ~= nil and type(value.mana) == "number" and
-                value.operator ~= nil and addon.isin(addon.operators, value.operator) and
+                value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                 value.value ~= nil and value.value >= 0 and
                 value.distance ~= nil and value.distance >= 0)
     end,
@@ -523,29 +540,29 @@ addon:RegisterCondition("PROXIMITY_MANA_COUNT", {
         local complete,reason=addon.proximity_eval(value, cache, function(c, unit)
             local cur,why=statistic(c,unit,true,false,value.mana<0)
             if cur==nil then return nil,why end
-            if addon.compare(value.manaoperator, cur, math.abs(value.mana)) then
+            if Functions.values.compare(value.manaoperator, cur, math.abs(value.mana)) then
                 count = count + 1
             end
         end)
         if not complete then return nil,reason end
 
-        return addon.compare(value.operator, count, value.value)
+        return Functions.values.compare(value.operator, count, value.value)
     end,
     print = function(_, value)
         local conditionstr
         if value.mana ~= nil and value.mana < 0 then
-            conditionstr = addon.compareString(value.manaoperator, L["%s mana defecit"], -value.mana)
+            conditionstr = Functions.presentation.compareString(value.manaoperator, L["%s mana defecit"], -value.mana)
         else
-            conditionstr = addon.compareString(value.manaoperator, L["%s mana"], addon.nullable(value.mana))
+            conditionstr = Functions.presentation.compareString(value.manaoperator, L["%s mana"], Functions.presentation.nullable(value.mana))
         end
-        return addon.compareString(value.operator,
+        return Functions.presentation.compareString(value.operator,
                 string.format(conditionstr,
                         string.format(L["The number %s members%s within %d yards of %s whose"],
                                 (value.samegroup and PARTY or L["Raid or Party"]),
                                 (value.includepets and " (" .. L["including pets"] .. ")" or ""),
-                                addon.nullable(value.distance, L["<distance>"]),
-                                addon.nullable(addon.units[value.unit], L["<unit>"]))),
-                addon.nullable(value.value),true)
+                                Functions.presentation.nullable(value.distance, L["<distance>"]),
+                                Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]))),
+                Functions.presentation.nullable(value.value),true)
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -594,9 +611,9 @@ addon:RegisterCondition("PROXIMITY_MANAPCT", {
     icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\spatial",
     fields = { unit = "string", operation = "string", operator = "string", value = "number", distance = "number", samegroup = "boolean", includepets = "boolean" },
     valid = function(_, value)
-        return (value.unit ~= nil and addon.isin(addon.units, value.unit) and
-                value.operation ~= nil and addon.isin(addon.math_operations, value.operation) and
-                value.operator ~= nil and addon.isin(addon.operators, value.operator) and
+        return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
+                value.operation ~= nil and Functions.values.isin(addon.math_operations, value.operation) and
+                value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                 value.value ~= nil and value.value >= 0.00 and value.value <= 1.00 and
                 value.distance ~= nil and value.distance >= 0)
     end,
@@ -611,22 +628,22 @@ addon:RegisterCondition("PROXIMITY_MANAPCT", {
 
         local v,aggregateReason=aggregate(values,value.operation)
         if v==nil then return nil,aggregateReason end
-        return addon.compare(value.operator, v, value.value * 100)
+        return Functions.values.compare(value.operator, v, value.value * 100)
     end,
     print = function(_, value)
         local v = value.value
         if v ~= nil then
             v = v * 100
         end
-        return addon.compareString(value.operator,
+        return Functions.presentation.compareString(value.operator,
                 string.format(
                         L["The %s mana percentage of %s members%s within %d yards of %s"],
-                        addon.nullable(value.operation, L["<operation>"]),
+                        Functions.presentation.nullable(value.operation, L["<operation>"]),
                         (value.samegroup and PARTY or L["Raid or Party"]),
                         (value.includepets and " (" .. L["including pets"] .. ")" or ""),
-                        addon.nullable(value.distance, L["<distance>"]),
-                        addon.nullable(addon.units[value.unit], L["<unit>"])),
-                addon.nullable(v) .. '%')
+                        Functions.presentation.nullable(value.distance, L["<distance>"]),
+                        Functions.presentation.nullable(addon.units[value.unit], L["<unit>"])),
+                Functions.presentation.nullable(v) .. '%')
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -644,7 +661,7 @@ addon:RegisterCondition("PROXIMITY_MANAPCT", {
             top:SetStatusText(funcs:print(root, spec))
         end)
         operation.configure = function()
-            operation:SetList(addon.math_operations, addon.keys(addon.math_operations))
+            operation:SetList(addon.math_operations, Functions.collections.keys(addon.math_operations))
             if (value.operation ~= nil) then
                 operation:SetValue(value.operation)
             end
@@ -691,10 +708,10 @@ addon:RegisterCondition("PROXIMITY_MANAPCT_COUNT", {
     icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\spatial",
     fields = { unit = "string", manaoperator = "string", mana = "number", operator = "string", value = "number", distance = "number", samegroup = "boolean", includepets = "boolean" },
     valid = function(_, value)
-        return (value.unit ~= nil and addon.isin(addon.units, value.unit) and
-                value.manaoperator ~= nil and addon.isin(addon.operators, value.manaoperator) and
+        return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
+                value.manaoperator ~= nil and Functions.values.isin(addon.operators, value.manaoperator) and
                 value.mana ~= nil and value.mana >= 0.00 and value.mana <= 1.00 and
-                value.operator ~= nil and addon.isin(addon.operators, value.operator) and
+                value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                 value.value ~= nil and value.value >= 0 and
                 value.distance ~= nil and value.distance >= 0)
     end,
@@ -703,27 +720,27 @@ addon:RegisterCondition("PROXIMITY_MANAPCT_COUNT", {
         local complete,reason=addon.proximity_eval(value, cache, function(c, unit)
             local cur,why=statistic(c,unit,true,true,false)
             if cur==nil then return nil,why end
-            if addon.compare(value.manaoperator, cur, value.mana * 100) then
+            if Functions.values.compare(value.manaoperator, cur, value.mana * 100) then
                 count = count + 1
             end
         end)
         if not complete then return nil,reason end
-        return addon.compare(value.operator, count, value.value)
+        return Functions.values.compare(value.operator, count, value.value)
     end,
     print = function(_, value)
         local v = value.mana
         if v ~= nil then
             v = v * 100
         end
-        return addon.compareString(value.operator,
-                addon.compareString(value.manaoperator,
+        return Functions.presentation.compareString(value.operator,
+                Functions.presentation.compareString(value.manaoperator,
                         string.format(L["The number %s members%s within %d yards of %s whose mana percentage"],
                                 (value.samegroup and PARTY or L["Raid or Party"]),
                                 (value.includepets and " (" .. L["including pets"] .. ")" or ""),
-                                addon.nullable(value.distance, L["<distance>"]),
-                                addon.nullable(addon.units[value.unit], L["<unit>"])),
-                        addon.nullable(v) .. "%"),
-                addon.nullable(value.value),true)
+                                Functions.presentation.nullable(value.distance, L["<distance>"]),
+                                Functions.presentation.nullable(addon.units[value.unit], L["<unit>"])),
+                        Functions.presentation.nullable(v) .. "%"),
+                Functions.presentation.nullable(value.value),true)
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")

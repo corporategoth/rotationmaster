@@ -1,5 +1,5 @@
 local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite()
-local groups={compare='values',isin='values',nullable='presentation',playerize='presentation',compareString='presentation',getCached='cache'}
+local groups={compare='values',isin='values',nullable='presentation',playerize='presentation',compareString='presentation',getCached='cache',deepcopy='collections',keys='collections'}
 local expected={
     COMBAT={valid={isin=1},evaluate={getCached=2},print={playerize=1,nullable=1}},
     PET={evaluate={getCached=1}},PET_NAME={evaluate={getCached=1},print={nullable=1}},
@@ -16,7 +16,7 @@ local expected={
     TIME_IN_COMBAT={valid={isin=1},evaluate={compare=1},print={compareString=1,nullable=1}},
 }
 local valueHashes={color='dbda383d',character_class='d17cf4c1',AceGUI='a287fe2d',helpers='9e28e933'}
-local function id(name) return 'builtin:utils.lua:'..name end
+local function id(name) return 'builtin:'..(groups[name]=='collections' and 'Functions/collections.lua' or 'utils.lua')..':'..name end
 local function qualified(name) return 'Functions.'..groups[name]..'.'..name end
 local function fixture(...)
     local f=F.new(...);local a,e=f.addon,f.env
@@ -80,9 +80,9 @@ local vectors={
     COMBAT_HISTORY_TIME={{unit='player',action='WOUND_CRITICAL',operator='LESSTHAN',value=3},{unit='player',action='MISS',operator='EQUALS',value=5},{unit='target',action='HEAL',operator='EQUALS',value=3},{}},
     TIME_IN_COMBAT={{operator='EQUALS',value=5},{operator='LESSTHAN',value=5},{operator='TYPO',value=5},{}},
 }
-test('combat callbacks select six explicit canonical leaves with exact call counts and retain historical value identities',function()
+test('combat callbacks select eight explicit canonical leaves with exact call counts and retain historical value identities',function()
     local f,a=fixture();local bindings=assert(a.builtinCallbackBindings and a.builtinCallbackBindings['Conditions/combat.lua'],'combat qualified dependency manifest missing')
-    local leaves=0;for alias,binding in pairs(bindings) do leaves=leaves+1;local name=alias:match('([%w_]+)$');assert(alias==qualified(name) and binding==id(name)) end;assert(leaves==6)
+    local leaves=0;for alias,binding in pairs(bindings) do leaves=leaves+1;local name=alias:match('([%w_]+)$');assert(alias==qualified(name) and binding==id(name)) end;assert(leaves==8)
     local calls,callbacks=0,0
     for tag,changes in pairs(expected) do
         local source=assert(a:GetBuiltinConditionSource(tag));assert(not source.bindings.Functions,'namespace captured as an opaque value')
@@ -150,7 +150,7 @@ test('native callback failures retain diagnostic unavailability and arbitrary sa
     for _,tag in ipairs({'COMBAT','ATTACKABLE','ENEMY'}) do
         same(a,tag,{unit='target'});assert(a:evaluateConditionResult({type='NOT',value={type='COPY_'..tag,unit='target'}}).status=='unavailable')
     end
-    for name,group in pairs(groups) do assert(a[name]==a.Functions[group][name] and a:ResolveFunctionBinding(id(name))==a[name] and a.builtinSourceModules['utils.lua'](name)==a[name]) end
+    for name,group in pairs(groups) do assert(a[name]==a.Functions[group][name] and a:ResolveFunctionBinding(id(name))==a[name] and a.builtinSourceModules[group=='collections' and 'Functions/collections.lua' or 'utils.lua'](name)==a[name]) end
     assert(a:InstallCustomFunction('LEGACY_COMBAT_API',{description='Legacy combat helper consumer',args={},returns={},bindings={},code='return addon.isin({x=false},"x"),addon.compare("EQUALS",1,1),addon.nullable(false),addon.playerize("player","yes","no"),addon.compareString("EQUALS","left","right"),addon.getCached(nil,function() return 9 end)'}))
     local present,equal,boolean,pronoun,summary,cached=assert(a:ResolveFunctionBinding('LEGACY_COMBAT_API'))()
     assert(present and equal and boolean==false and pronoun=='yes' and summary==a.Functions.presentation.compareString('EQUALS','left','right') and cached==9)

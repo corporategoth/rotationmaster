@@ -10,11 +10,13 @@ local helpers = addon.help_funcs
 -- Canonical leaves for direct callbacks; private observation and validation
 -- helpers keep their existing source contracts for saved custom requirements.
 local Functions={
+    collections={keys=addon.Functions.collections.keys},
     values={compare=addon.Functions.values.compare},
     presentation={nullable=addon.Functions.presentation.nullable,compareString=addon.Functions.presentation.compareString},
 }
 addon.builtinCallbackBindings=addon.builtinCallbackBindings or {}
 addon.builtinCallbackBindings["Conditions/totem.lua"]={
+    ["Functions.collections.keys"]="builtin:Functions/collections.lua:keys",
     ["Functions.values.compare"]="builtin:utils.lua:compare",
     ["Functions.presentation.nullable"]="builtin:utils.lua:nullable",
     ["Functions.presentation.compareString"]="builtin:utils.lua:compareString",
@@ -93,7 +95,7 @@ addon:RegisterCondition("TOTEM", {
             top:SetStatusText(funcs:print(root, spec))
         end)
         totem.configure = function()
-            totem:SetList(addon.totems, addon.keys(addon.totems))
+            totem:SetList(addon.totems, Functions.collections.keys(addon.totems))
             totem:SetValue(value.spell)
         end
         parent:AddChild(totem)
@@ -162,7 +164,7 @@ addon:RegisterCondition("TOTEM_REMAIN", {
             top:SetStatusText(funcs:print(root, spec))
         end)
         totem.configure = function()
-            totem:SetList(addon.totems, addon.keys(addon.totems))
+            totem:SetList(addon.totems, Functions.collections.keys(addon.totems))
             totem:SetValue(value.spell)
         end
         parent:AddChild(totem)

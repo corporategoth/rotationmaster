@@ -33,7 +33,7 @@ test('all supported catalog branches have compilable source including deferred i
 end)
 test('cloned deferred stat initialization retains shared integration state across callbacks',function()
     local f,a=fixture();local loads=0
-    local data={GetStatInfo=function(_,key) return key=='power' and 42 or nil end}
+    local data={GetStatInfo=function(key) return key=='power' and 42 or nil end}
     f.env.ECSLoader={ImportModule=function() loads=loads+1;return data end};f.env.ExtendedCharacterStats={profile={refName='power',text='Power'}}
     a.conditionDefinitions.ECS_STAT=a.delayed_condition.ExtendedCharacterStats.ECS_STAT
     local source=assert(a:GetBuiltinConditionSource('ECS_STAT'));local copy,why=a:CompileCustomCondition('MY_STAT',source);assert(copy,why and why.reason)

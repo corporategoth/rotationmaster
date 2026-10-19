@@ -8,11 +8,13 @@ local helpers = addon.help_funcs
 -- Selected canonical helpers stay private to these authored callbacks. The
 -- collector verifies these explicit leaves against their stable public IDs.
 local Functions={
+    cache={getCached=addon.Functions.cache.getCached},
     values={compare=addon.Functions.values.compare,isin=addon.Functions.values.isin},
     presentation={compareString=addon.Functions.presentation.compareString,nullable=addon.Functions.presentation.nullable,playerize=addon.Functions.presentation.playerize},
 }
 addon.builtinCallbackBindings=addon.builtinCallbackBindings or {}
 addon.builtinCallbackBindings["Conditions/spatial.lua"]={
+    ["Functions.cache.getCached"]="builtin:utils.lua:getCached",
     ["Functions.values.compare"]="builtin:utils.lua:compare",
     ["Functions.values.isin"]="builtin:utils.lua:isin",
     ["Functions.presentation.compareString"]="builtin:utils.lua:compareString",
@@ -177,8 +179,8 @@ addon:RegisterCondition("PROXIMITY", {
     icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\spatial",
     fields = { unit = "string", operator = "string", value = "number", distance = "number", samegroup = "boolean", includepets = "boolean" },
     valid = function(_, value)
-        return (value.unit ~= nil and addon.isin(addon.units, value.unit) and
-                value.operator ~= nil and addon.isin(addon.operators, value.operator) and
+        return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
+                value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                 value.value ~= nil and value.value >= 0 and
                 value.distance ~= nil and value.distance >= 0)
     end,
@@ -188,7 +190,7 @@ addon:RegisterCondition("PROXIMITY", {
             count = count + 1
         end)
         if not complete then return nil,reason end
-        return addon.compare(value.operator, count, value.value)
+        return Functions.values.compare(value.operator, count, value.value)
     end,
     print = function(_, value)
         return string.format(Functions.presentation.playerize(value.unit, L["%s {{!have|do not have}} %s"], L["%s {{!has|does not have}} %s"]),
@@ -240,11 +242,11 @@ addon:RegisterCondition("DISTANCE", {
     icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\spatial",
     fields = { unit = "string", value = "number" },
     valid = function(_, value)
-        return (value.unit ~= nil and addon.isin(addon.units, value.unit) and
+        return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
                 value.value ~= nil and value.value >= 0 and value.value <= 40)
     end,
     evaluate = function(value, cache)
-        if not addon.getCached(cache, UnitExists, value.unit) then return false end
+        if not Functions.cache.getCached(cache, UnitExists, value.unit) then return false end
         -- pcall preserves both range bounds returned by the cached observation.
         ---@diagnostic disable-next-line: unbalanced-assignments
         local ok, minRange, maxRange = pcall(addon.getCached, cache, rcf, value.unit)
@@ -303,7 +305,7 @@ addon:RegisterCondition("DISTANCE_COUNT", {
             finite(value.distance) and value.distance >= 0
     end,
     evaluate = function(value, cache)
-        local maximum,reason=addon.getCached(cache,addon.Platform.GetNameplateMaxDistance,addon.Platform)
+        local maximum,reason=Functions.cache.getCached(cache,addon.Platform.GetNameplateMaxDistance,addon.Platform)
         if maximum==nil then return nil,reason end
         if value.distance>maximum then return nil,"distance-exceeds-nameplate-limit" end
         if type(addon.unitsInRange)~="table" then return nil,"unit-snapshot-unavailable" end
@@ -326,7 +328,7 @@ addon:RegisterCondition("DISTANCE_COUNT", {
                     local enemy,problem=booleanRead(cache,UnitIsEnemy,"player",entity.unit)
                     if enemy==nil then return nil,problem end
                     if enemy==value.enemy then
-                        local bounds,why=addon.getCached(cache,addon.Platform.GetRangeCheckBounds,addon.Platform,entity.unit)
+                        local bounds,why=Functions.cache.getCached(cache,addon.Platform.GetRangeCheckBounds,addon.Platform,entity.unit)
                         if not bounds then return nil,why end
                         if bounds.maximum and bounds.maximum<=value.distance then count=count+1
                         elseif not (bounds.minimum and (bounds.minimum>value.distance or bounds.minimum>0 and bounds.minimum==value.distance)) then return nil,"range-uncertain" end
@@ -397,7 +399,7 @@ addon:RegisterCondition("ZONE", {
         return value.value ~= nil
     end,
     evaluate = function(value, cache)
-        local zoneName = value.subzone and addon.getCached(cache, GetSubZoneText) or addon.getCached(cache, GetZoneText)
+        local zoneName = value.subzone and Functions.cache.getCached(cache, GetSubZoneText) or Functions.cache.getCached(cache, GetZoneText)
         return value.value == zoneName
     end,
     print = function(_, value)

@@ -55,6 +55,7 @@ test('weapon authored comparison callbacks declare canonical private dependencie
         assert(source.print:find('Functions.presentation.compareString',1,true) and source.print:find('Functions.presentation.nullable',1,true),tag..' still uses legacy presentation calls')
         assert(source.bindings['Functions.values.compare']=='builtin:utils.lua:compare' and source.bindings['Functions.values.isin']=='builtin:utils.lua:isin')
         assert(source.bindings['Functions.presentation.compareString']=='builtin:utils.lua:compareString' and source.bindings['Functions.presentation.nullable']=='builtin:utils.lua:nullable')
+        assert(source.bindings['Functions.cache.getCached']=='builtin:utils.lua:getCached')
         assert(source.bindings.Functions==nil,'namespace became an opaque captured table')
     end
     for name,hash in pairs({enchantObservation='e5464f90',numericObservation='02dee6a9',swingSpeed='56aa868b'}) do

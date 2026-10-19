@@ -213,6 +213,7 @@ Help/conditional.lua
 
 # Conditions
 Conditions/common.lua
+UI/spell_field_compat.lua
 Conditions/character.lua
 Conditions/talent.lua
 Conditions/stats.lua

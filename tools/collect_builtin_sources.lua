@@ -13,7 +13,7 @@ for alias in pairs(cacheKinds) do assert(cacheOwnership.bindings[alias],'cache o
 -- Old saved factory bodies explicitly capture these library bindings. Retain
 -- their original identities even after current factories stop calling Ace.
 local retainedAceBindings={'UI/checkbox.lua','UI/selector.lua','UI/condition_inputs.lua','Conditions/common.lua','Conditions/combat.lua','Conditions/talent.lua'}
-local lazyAceGetters={['UI/checkbox.lua']=true,['UI/selector.lua']=true,['UI/condition_inputs.lua']=true}
+local lazyAceGetters={};for _,path in ipairs(retainedAceBindings) do lazyAceGetters[path]=true end
 local standard={};for name,value in pairs(_G) do if type(value)=='function' then standard[name]=value end end
 local function descriptor(fn)
     local info=debug.getinfo(fn,'S');return {file=info.source:sub(1,1)=='@' and info.source:sub(2) or info.source,first=info.linedefined,last=info.lastlinedefined,what=info.what}

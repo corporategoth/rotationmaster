@@ -7,11 +7,13 @@ local helpers = addon.help_funcs
 -- These pure dependencies are selected from their owning modules and remain
 -- private to the authored callbacks and their editable source copies.
 local Functions={
+    cache={getCached=addon.Functions.cache.getCached},
     values={isin=addon.Functions.values.isin,compare=addon.Functions.values.compare},
     presentation={compareString=addon.Functions.presentation.compareString,nullable=addon.Functions.presentation.nullable},
 }
 addon.builtinCallbackBindings=addon.builtinCallbackBindings or {}
 addon.builtinCallbackBindings["Conditions/weapon.lua"]={
+    ["Functions.cache.getCached"]="builtin:utils.lua:getCached",
     ["Functions.values.isin"]="builtin:utils.lua:isin",
     ["Functions.values.compare"]="builtin:utils.lua:compare",
     ["Functions.presentation.compareString"]="builtin:utils.lua:compareString",
@@ -250,7 +252,7 @@ addon:RegisterCondition("SWING_TIME_REMAIN", {
         local speed,reason=swingSpeed(value,cache)
         if speed==nil then return nil,reason end
         local lastSwing=addon.lastMainSwing;if value.offhand then lastSwing=addon.lastOffSwing end
-        if lastSwing==nil or addon.getCached(cache, UnitCastingInfo, "player") or addon.getCached(cache, UnitChannelInfo, "player") then
+        if lastSwing==nil or Functions.cache.getCached(cache, UnitCastingInfo, "player") or Functions.cache.getCached(cache, UnitChannelInfo, "player") then
             return Functions.values.compare(value.operator,speed,value.value)
         end
         return Functions.values.compare(value.operator,speed-math.max(evalStart-lastSwing,0),value.value)

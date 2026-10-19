@@ -7,11 +7,13 @@ local helpers = addon.help_funcs
 -- Canonical pure leaves; aura observations, spell identity and rank stay owned
 -- by the existing aura services and field callbacks.
 local Functions={
+    collections={keys=addon.Functions.collections.keys},
     values={isin=addon.Functions.values.isin},
     presentation={nullable=addon.Functions.presentation.nullable,compareString=addon.Functions.presentation.compareString,playerize=addon.Functions.presentation.playerize},
 }
 addon.builtinCallbackBindings=addon.builtinCallbackBindings or {}
 addon.builtinCallbackBindings["Conditions/debuffs.lua"]={
+    ["Functions.collections.keys"]="builtin:Functions/collections.lua:keys",
     ["Functions.values.isin"]="builtin:utils.lua:isin",
     ["Functions.presentation.nullable"]="builtin:utils.lua:nullable",
     ["Functions.presentation.compareString"]="builtin:utils.lua:compareString",
@@ -224,7 +226,7 @@ addon:RegisterCondition("DISPELLABLE", {
             top:SetStatusText(funcs:print(root, spec))
         end)
         debufftype.configure = function()
-            debufftype:SetList(addon.debufftypes, addon.keys(addon.debufftypes))
+            debufftype:SetList(addon.debufftypes, Functions.collections.keys(addon.debufftypes))
             debufftype:SetValue(value.debufftype)
         end
         parent:AddChild(debufftype)

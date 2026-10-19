@@ -1,15 +1,16 @@
 local addon_name,addon=...
 local L=LibStub("AceLocale-3.0"):GetLocale(addon_name)
-local AceGUI=LibStub("AceGUI-3.0")
 local platform=addon.Platform
 -- Select the pure implementations privately; saved custom source retains its
 -- original addon APIs and the collector verifies these stable helper leaves.
 local Functions={
+    cache={getCached=addon.Functions.cache.getCached},
     values={isin=addon.Functions.values.isin,compare=addon.Functions.values.compare},
     presentation={compareString=addon.Functions.presentation.compareString,nullable=addon.Functions.presentation.nullable},
 }
 addon.builtinCallbackBindings=addon.builtinCallbackBindings or {}
 addon.builtinCallbackBindings["Conditions/talent.lua"]={
+    ["Functions.cache.getCached"]="builtin:utils.lua:getCached",
     ["Functions.values.isin"]="builtin:utils.lua:isin",
     ["Functions.values.compare"]="builtin:utils.lua:compare",
     ["Functions.presentation.compareString"]="builtin:utils.lua:compareString",
@@ -124,11 +125,11 @@ addon:RegisterCondition("TALENT",{
         if legacySlot(value) then return nil,"historical-talent-layout" end
         local talent,reason
         if value.layout=="grid" then
-            talent,reason=addon.getCached(cache,platform.GetGridTalentInfo,platform,value.value)
+            talent,reason=Functions.cache.getCached(cache,platform.GetGridTalentInfo,platform,value.value)
             if not talent then return nil,reason end
             return talent.selected
         end
-        talent,reason=addon.getCached(cache,platform.GetTreeTalentInfo,platform,value.tree,value.talent)
+        talent,reason=Functions.cache.getCached(cache,platform.GetTreeTalentInfo,platform,value.tree,value.talent)
         if not talent then return nil,reason end
         return Functions.values.compare(value.operator,talent.rank,value.value)
     end,
@@ -178,7 +179,7 @@ addon:RegisterCondition('TALENT_TREE_POINTS',{
     valid=function(_,value) return integer(value.tree,1,16) and Functions.values.isin(addon.operators,value.operator) and integer(value.value,0,512) end,
     evaluate=function(value,cache)
         local exists,why=treeExists(value,cache);if not exists then return nil,why end
-        local tree,reason=addon.getCached(cache,platform.GetTalentTreeInfo,platform,value.tree)
+        local tree,reason=Functions.cache.getCached(cache,platform.GetTalentTreeInfo,platform,value.tree)
         if not tree then return nil,reason end
         if not integer(tree.pointsSpent,0,512) then return nil,'talent-points-unavailable' end
         return Functions.values.compare(value.operator,tree.pointsSpent,value.value)
@@ -198,7 +199,7 @@ addon:RegisterCondition('PRIMARY_TALENT_TREE',{
     valid=function(_,value) return integer(value.tree,1,16) end,
     evaluate=function(value,cache)
         local exists,why=treeExists(value,cache);if not exists then return nil,why end
-        local primary,reason=addon.getCached(cache,platform.GetPrimaryTalentTree,platform)
+        local primary,reason=Functions.cache.getCached(cache,platform.GetPrimaryTalentTree,platform)
         if not primary then return nil,reason end
         return primary.index==value.tree
     end,
@@ -215,7 +216,7 @@ addon:RegisterCondition('PRIMARY_TALENT_TREE',{
 -- BEGIN GENERATED RM SOURCE BINDINGS
 do
     local function sourceGetter(name)
-        if name=="AceGUI" then return AceGUI end
+        if name=="AceGUI" then return addon:GetConditionWidgetCompatibilityLibrary() end
         if name=="dropdown" then return dropdown end
         if name=="gridWidget" then return gridWidget end
         if name=="group" then return group end

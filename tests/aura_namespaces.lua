@@ -52,7 +52,7 @@ test('eight aura declarations select exactly thirty-five owned pure helper calls
         if tag~='STEALABLE' and tag~='DISPELLABLE' then assert(source.fields.anyrank=='boolean' and source.widget:find('Widget_AuraRankWidget',1,true) and source.widget:find('"Spell_EditBox"',1,true)) end
     end
     assert(total==35 and not f.env.Functions)
-    local stealable=a:GetBuiltinConditionSource('STEALABLE');assert(count(stealable.widget,'addon%.deepcopy%(')==1,'collection behavior migrated with pure formatting')
+    local stealable=a:GetBuiltinConditionSource('STEALABLE');assert(count(stealable.widget,'Functions%.collections%.deepcopy%(')==1,'collection helper is not canonical');assert(stealable.bindings['Functions.collections.deepcopy']=='builtin:Functions/collections.lua:deepcopy');local dispel=a:GetBuiltinConditionSource('DISPELLABLE');assert(count(dispel.widget,'Functions%.collections%.keys%(')==1 and dispel.bindings['Functions.collections.keys']=='builtin:Functions/collections.lua:keys')
 end)
 test('original color and Help captured identities and public helper APIs remain stable',function()
     local _,a=fixture(true)

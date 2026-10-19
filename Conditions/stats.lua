@@ -4,30 +4,46 @@ local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 local color, tonumber = color, tonumber
 local helpers = addon.help_funcs
 
+-- Canonical callback leaves preserve the native observations, resource keys,
+-- arithmetic and cache lifetimes of these existing statistic predicates.
+local Functions={
+    values={isin=addon.Functions.values.isin,compare=addon.Functions.values.compare},
+    cache={getCached=addon.Functions.cache.getCached},
+    presentation={nullable=addon.Functions.presentation.nullable,compareString=addon.Functions.presentation.compareString},
+}
+addon.builtinCallbackBindings=addon.builtinCallbackBindings or {}
+addon.builtinCallbackBindings["Conditions/stats.lua"]={
+    ["Functions.values.isin"]="builtin:utils.lua:isin",
+    ["Functions.values.compare"]="builtin:utils.lua:compare",
+    ["Functions.cache.getCached"]="builtin:utils.lua:getCached",
+    ["Functions.presentation.nullable"]="builtin:utils.lua:nullable",
+    ["Functions.presentation.compareString"]="builtin:utils.lua:compareString",
+}
+
 addon:RegisterCondition("HEALTH", {
     description = L["Health"],
     icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\resources",
     fields = { unit = "string", operator = "string", value = "number" },
     valid = function(_, value)
-        return (value.operator ~= nil and addon.isin(addon.operators, value.operator) and
-                value.unit ~= nil and addon.isin(addon.units, value.unit) and
+        return (value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
+                value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
                 value.value ~= nil)
     end,
     evaluate = function(value, cache)
-        if not addon.getCached(cache, UnitExists, value.unit) then return false end
-        local cur = addon.getCached(cache, UnitHealth, value.unit)
+        if not Functions.cache.getCached(cache, UnitExists, value.unit) then return false end
+        local cur = Functions.cache.getCached(cache, UnitHealth, value.unit)
         if value.value < 0 then
-            local max = addon.getCached(cache, UnitHealthMax, value.unit)
-            return addon.compare(value.operator, (max-cur), -value.value)
+            local max = Functions.cache.getCached(cache, UnitHealthMax, value.unit)
+            return Functions.values.compare(value.operator, (max-cur), -value.value)
         else
-            return addon.compare(value.operator, cur, value.value)
+            return Functions.values.compare(value.operator, cur, value.value)
         end
     end,
     print = function(_, value)
         if value.value ~= nil and value.value < 0 then
-            return addon.compareString(value.operator, string.format(L["%s health defecit"], addon.nullable(addon.unitsPossessive[value.unit], L["<unit>"])), -value.value)
+            return Functions.presentation.compareString(value.operator, string.format(L["%s health defecit"], Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"])), -value.value)
         else
-            return addon.compareString(value.operator, string.format(L["%s health"], addon.nullable(addon.unitsPossessive[value.unit], L["<unit>"])), addon.nullable(value.value))
+            return Functions.presentation.compareString(value.operator, string.format(L["%s health"], Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"])), Functions.presentation.nullable(value.value))
         end
     end,
     widget = function(parent, spec, value)
@@ -57,21 +73,21 @@ addon:RegisterCondition("HEALTHPCT", {
     icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\resources",
     fields = { unit = "string", operator = "string", value = "number" },
     valid = function(_, value)
-        return (value.operator ~= nil and addon.isin(addon.operators, value.operator) and
-                value.unit ~= nil and addon.isin(addon.units, value.unit) and
+        return (value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
+                value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
                 value.value ~= nil and value.value >= 0.00 and value.value <= 1.00)
     end,
     evaluate = function(value, cache)
-        if not addon.getCached(cache, UnitExists, value.unit) then return false end
-        local health = addon.getCached(cache, UnitHealth, value.unit) / addon.getCached(cache, UnitHealthMax, value.unit) * 100;
-        return addon.compare(value.operator, health, value.value * 100)
+        if not Functions.cache.getCached(cache, UnitExists, value.unit) then return false end
+        local health = Functions.cache.getCached(cache, UnitHealth, value.unit) / Functions.cache.getCached(cache, UnitHealthMax, value.unit) * 100;
+        return Functions.values.compare(value.operator, health, value.value * 100)
     end,
     print = function(_, value)
         local v = value.value
         if v ~= nil then
             v = v * 100
         end
-        return addon.compareString(value.operator, string.format(L["%s health"], addon.nullable(addon.unitsPossessive[value.unit], L["<unit>"])), addon.nullable(v) .. "%")
+        return Functions.presentation.compareString(value.operator, string.format(L["%s health"], Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"])), Functions.presentation.nullable(v) .. "%")
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -100,25 +116,25 @@ addon:RegisterCondition("MANA", {
     icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\resources",
     fields = { unit = "string", operator = "string", value = "number" },
     valid = function(_, value)
-        return (value.operator ~= nil and addon.isin(addon.operators, value.operator) and
-                value.unit ~= nil and addon.isin(addon.units, value.unit) and
+        return (value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
+                value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
                 value.value ~= nil)
     end,
     evaluate = function(value, cache)
-        if not addon.getCached(cache, UnitExists, value.unit) then return false end
-        local cur = addon.getCached(cache, UnitPower, value.unit, Enum.PowerType.Mana)
+        if not Functions.cache.getCached(cache, UnitExists, value.unit) then return false end
+        local cur = Functions.cache.getCached(cache, UnitPower, value.unit, Enum.PowerType.Mana)
         if value.value < 0 then
-            local max = addon.getCached(cache, UnitPowerMax, value.unit, Enum.PowerType.Mana)
-            return addon.compare(value.operator, (max-cur), -value.value)
+            local max = Functions.cache.getCached(cache, UnitPowerMax, value.unit, Enum.PowerType.Mana)
+            return Functions.values.compare(value.operator, (max-cur), -value.value)
         else
-            return addon.compare(value.operator, cur, value.value)
+            return Functions.values.compare(value.operator, cur, value.value)
         end
     end,
     print = function(_, value)
         if value.value ~= nil and value.value < 0 then
-            return addon.compareString(value.operator, string.format(L["%s mana defecit"], addon.nullable(addon.unitsPossessive[value.unit], L["<unit>"])), -value.value)
+            return Functions.presentation.compareString(value.operator, string.format(L["%s mana defecit"], Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"])), -value.value)
         else
-            return addon.compareString(value.operator, string.format(L["%s mana"], addon.nullable(addon.unitsPossessive[value.unit], L["<unit>"])), addon.nullable(value.value))
+            return Functions.presentation.compareString(value.operator, string.format(L["%s mana"], Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"])), Functions.presentation.nullable(value.value))
         end
     end,
     widget = function(parent, spec, value)
@@ -148,21 +164,21 @@ addon:RegisterCondition("MANAPCT", {
     icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\resources",
     fields = { unit = "string", operator = "string", value = "number" },
     valid = function(_, value)
-        return (value.operator ~= nil and addon.isin(addon.operators, value.operator) and
-                value.unit ~= nil and addon.isin(addon.units, value.unit) and
+        return (value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
+                value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
                 value.value ~= nil and value.value >= 0.00 and value.value <= 1.00)
     end,
     evaluate = function(value, cache)
-        if not addon.getCached(cache, UnitExists, value.unit) then return false end
-        local mana = addon.getCached(cache, UnitPower, value.unit, Enum.PowerType.Mana) / addon.getCached(cache, UnitPowerMax, value.unit, Enum.PowerType.Mana) * 100;
-        return addon.compare(value.operator, mana, value.value * 100)
+        if not Functions.cache.getCached(cache, UnitExists, value.unit) then return false end
+        local mana = Functions.cache.getCached(cache, UnitPower, value.unit, Enum.PowerType.Mana) / Functions.cache.getCached(cache, UnitPowerMax, value.unit, Enum.PowerType.Mana) * 100;
+        return Functions.values.compare(value.operator, mana, value.value * 100)
     end,
     print = function(_, value)
         local v = value.value
         if v ~= nil then
             v = v * 100
         end
-        return addon.compareString(value.operator, string.format(L["%s mana"], addon.nullable(addon.unitsPossessive[value.unit], L["<unit>"])), addon.nullable(v) .. "%")
+        return Functions.presentation.compareString(value.operator, string.format(L["%s mana"], Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"])), Functions.presentation.nullable(v) .. "%")
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -191,32 +207,32 @@ addon:RegisterCondition("POWER", {
     icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\resources",
     fields = { unit = "string", operator = "string", value = "number" },
     valid = function(_, value)
-        return (value.operator ~= nil and addon.isin(addon.operators, value.operator) and
-                value.unit ~= nil and addon.isin(addon.units, value.unit) and
+        return (value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
+                value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
                 value.value ~= nil)
     end,
     evaluate = function(value, cache)
-        if not addon.getCached(cache, UnitExists, value.unit) then return false end
+        if not Functions.cache.getCached(cache, UnitExists, value.unit) then return false end
         -- Cannot use longterm cache for player as different forms may have different powers
-        local power = addon.getCached(cache, UnitPowerType, value.unit)
+        local power = Functions.cache.getCached(cache, UnitPowerType, value.unit)
 
         if (power == nil) then
             return false
         end
 
-        local cur = addon.getCached(cache, UnitPower, value.unit, power)
+        local cur = Functions.cache.getCached(cache, UnitPower, value.unit, power)
         if value.value < 0 then
-            local max = addon.getCached(cache, UnitPowerMax, value.unit, power)
-            return addon.compare(value.operator, (max-cur), -value.value)
+            local max = Functions.cache.getCached(cache, UnitPowerMax, value.unit, power)
+            return Functions.values.compare(value.operator, (max-cur), -value.value)
         else
-            return addon.compare(value.operator, cur, value.value)
+            return Functions.values.compare(value.operator, cur, value.value)
         end
     end,
     print = function(_, value)
         if value.value ~= nil and value.value < 0 then
-            return addon.compareString(value.operator, string.format(L["%s power defecit"], addon.nullable(addon.unitsPossessive[value.unit], L["<unit>"])), value.value)
+            return Functions.presentation.compareString(value.operator, string.format(L["%s power defecit"], Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"])), value.value)
         else
-            return addon.compareString(value.operator, string.format(L["%s power"], addon.nullable(addon.unitsPossessive[value.unit], L["<unit>"])), addon.nullable(value.value))
+            return Functions.presentation.compareString(value.operator, string.format(L["%s power"], Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"])), Functions.presentation.nullable(value.value))
         end
     end,
     widget = function(parent, spec, value)
@@ -247,27 +263,27 @@ addon:RegisterCondition("POWERPCT", {
     icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\resources",
     fields = { unit = "string", operator = "string", value = "number" },
     valid = function(_, value)
-        return (value.operator ~= nil and addon.isin(addon.operators, value.operator) and
-                value.unit ~= nil and addon.isin(addon.units, value.unit) and
+        return (value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
+                value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
                 value.value ~= nil and value.value >= 0.00 and value.value <= 1.00)
     end,
     evaluate = function(value, cache)
-        if not addon.getCached(cache, UnitExists, value.unit) then return false end
+        if not Functions.cache.getCached(cache, UnitExists, value.unit) then return false end
         -- Cannot use longterm cache for player as different forms may have different powers
-        local power = addon.getCached(cache, UnitPowerType, value.unit)
+        local power = Functions.cache.getCached(cache, UnitPowerType, value.unit)
 
         if (power == nil) then
             return false
         end
-        local mana = addon.getCached(cache, UnitPower, value.unit, power) / addon.getCached(cache, UnitPowerMax, value.unit, power) * 100;
-        return addon.compare(value.operator, mana, value.value)
+        local mana = Functions.cache.getCached(cache, UnitPower, value.unit, power) / Functions.cache.getCached(cache, UnitPowerMax, value.unit, power) * 100;
+        return Functions.values.compare(value.operator, mana, value.value)
     end,
     print = function(_, value)
         local v = value.value
         if v ~= nil then
             v = v * 100
         end
-        return addon.compareString(value.operator, string.format(L["%s power"], addon.nullable(addon.unitsPossessive[value.unit], L["<unit>"])), addon.nullable(v) .. "%")
+        return Functions.presentation.compareString(value.operator, string.format(L["%s power"], Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"])), Functions.presentation.nullable(v) .. "%")
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -297,26 +313,26 @@ addon:RegisterCondition("POINT", {
     icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\resources",
     fields = { unit = "string", operator = "string", value = "number" },
     valid = function(_, value)
-        return (value.operator ~= nil and addon.isin(addon.operators, value.operator) and
-                value.unit ~= nil and addon.isin(addon.units, value.unit) and
+        return (value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
+                value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
                 value.value ~= nil)
     end,
     evaluate = function(value, cache)
-        if not addon.getCached(cache, UnitExists, value.unit) then return false end
+        if not Functions.cache.getCached(cache, UnitExists, value.unit) then return false end
         local class
         if value.unit == "player" then
-            class = select(2, addon.getCached(addon.longtermCache, UnitClass, value.unit))
+            class = select(2, Functions.cache.getCached(addon.longtermCache, UnitClass, value.unit))
         else
-            class = select(2, addon.getCached(cache, UnitClass, value.unit))
+            class = select(2, Functions.cache.getCached(cache, UnitClass, value.unit))
         end
         if class ~= nil then
             local point = addon.points[class] or Enum.PowerType.ComboPoints
-            local cur = addon.getCached(cache, UnitPower, value.unit, point)
+            local cur = Functions.cache.getCached(cache, UnitPower, value.unit, point)
             if value.value < 0 then
-                local max = addon.getCached(cache, UnitPowerMax, value.unit, point)
-                return addon.compare(value.operator, (max-cur), -value.value)
+                local max = Functions.cache.getCached(cache, UnitPowerMax, value.unit, point)
+                return Functions.values.compare(value.operator, (max-cur), -value.value)
             else
-                return addon.compare(value.operator, cur, value.value)
+                return Functions.values.compare(value.operator, cur, value.value)
             end
         else
             return false
@@ -324,9 +340,9 @@ addon:RegisterCondition("POINT", {
     end,
     print = function(_, value)
         if value.value ~= nil and value.value < 0 then
-            return addon.compareString(value.operator, string.format(L["%s point defecit"], addon.nullable(addon.unitsPossessive[value.unit], L["<unit>"])), value.value)
+            return Functions.presentation.compareString(value.operator, string.format(L["%s point defecit"], Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"])), value.value)
         else
-            return addon.compareString(value.operator, string.format(L["%s points"], addon.nullable(addon.unitsPossessive[value.unit], L["<unit>"])), addon.nullable(value.value))
+            return Functions.presentation.compareString(value.operator, string.format(L["%s points"], Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"])), Functions.presentation.nullable(value.value))
         end
     end,
     widget = function(parent, spec, value)
@@ -360,23 +376,23 @@ if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE and LE_EXPANSION_LEVEL_CURRENT >= 2 a
         icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\resources",
         fields = { rune = "number", operator = "string", value = "number" },
         valid = function(_, value)
-            return (value.operator ~= nil and addon.isin(addon.operators, value.operator) and
+            return (value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                     value.value ~= nil and value.value >= 0 and value.value <= 2 and
-                    value.rune ~= nil and addon.isin(addon.runes, value.rune))
+                    value.rune ~= nil and Functions.values.isin(addon.runes, value.rune))
         end,
         evaluate = function(value, cache)
             local count = 0
             for i=1,6 do
-                if addon.getCached(cache, GetRuneType, i) == value.rune then
-                    if select(3, addon.getCached(cache, GetRuneCooldown, i)) then count = count + 1 end
+                if Functions.cache.getCached(cache, GetRuneType, i) == value.rune then
+                    if select(3, Functions.cache.getCached(cache, GetRuneCooldown, i)) then count = count + 1 end
                 end
             end
-            return addon.compare(value.operator, count, value.value)
+            return Functions.values.compare(value.operator, count, value.value)
         end,
         print = function(_, value)
             local rune_type = value.rune and addon.runes[value.rune] or L["<rune type>"]
-            return addon.compareString(value.operator, string.format(L["%s runes available"], rune_type),
-                        addon.nullable(value.value))
+            return Functions.presentation.compareString(value.operator, string.format(L["%s runes available"], rune_type),
+                        Functions.presentation.nullable(value.value))
         end,
         widget = function(parent, spec, value)
             local top = parent:GetUserData("top")
@@ -418,29 +434,29 @@ if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE and LE_EXPANSION_LEVEL_CURRENT >= 2 a
         icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\time",
         fields = { rune = "number", operator = "string", value = "number" },
         valid = function(_, value)
-            return (value.operator ~= nil and addon.isin(addon.operators, value.operator) and
+            return (value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                     value.value ~= nil and value.value >= 0 and
-                    value.rune ~= nil and addon.isin(addon.runes, value.rune))
+                    value.rune ~= nil and Functions.values.isin(addon.runes, value.rune))
         end,
         evaluate = function(value, cache)
             local now = GetTime()
             local lowest_remain
             for i=1,6 do
-                if addon.getCached(cache, GetRuneType, i) == value.rune then
-                    local start, duration = addon.getCached(cache, GetRuneCooldown, i)
+                if Functions.cache.getCached(cache, GetRuneType, i) == value.rune then
+                    local start, duration = Functions.cache.getCached(cache, GetRuneCooldown, i)
                     local remain = math.max(addon.round(duration - (now - start), 3), 0)
                     if lowest_remain == nil or remain < lowest_remain then
                         lowest_remain = remain
                     end
                 end
             end
-            return addon.compare(value.operator, lowest_remain, value.value)
+            return Functions.values.compare(value.operator, lowest_remain, value.value)
         end,
         print = function(_, value)
             local rune_type = value.rune and addon.runes[value.rune] or L["<rune type>"]
             return string.format(L["the %s"],
-                    addon.compareString(value.operator, string.format(L["cooldown on %s rune"], rune_type),
-                    string.format(L["%s seconds"], addon.nullable(value.value))))
+                    Functions.presentation.compareString(value.operator, string.format(L["cooldown on %s rune"], rune_type),
+                    string.format(L["%s seconds"], Functions.presentation.nullable(value.value))))
         end,
         widget = function(parent, spec, value)
             local top = parent:GetUserData("top")
@@ -484,24 +500,24 @@ addon:RegisterCondition("TT_HEALTH", {
     icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\resources",
     fields = { unit = "string", operator = "string", value = "number", health = "number", mode = "string" },
     valid = function(_, value)
-        return (value.operator ~= nil and addon.isin(addon.operators, value.operator) and
-                value.unit ~= nil and addon.isin(addon.units, value.unit) and
+        return (value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
+                value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
                 value.value ~= nil and value.value >= 0.00 and
                 value.health ~= nil)
     end,
     evaluate = function(value, cache)
-        if not addon.getCached(cache, UnitExists, value.unit) then return false end
-        local target = addon.getCached(cache, UnitGUID, value.unit)
+        if not Functions.cache.getCached(cache, UnitExists, value.unit) then return false end
+        local target = Functions.cache.getCached(cache, UnitGUID, value.unit)
         if target then
-            local health = addon.getCached(cache, UnitHealth, value.unit)
+            local health = Functions.cache.getCached(cache, UnitHealth, value.unit)
 
             local target_health = value.health
             if value.value < 0 then
-                local max = addon.getCached(cache, UnitHealthMax, value.unit)
+                local max = Functions.cache.getCached(cache, UnitHealthMax, value.unit)
                 target_health = target_health + max
             end
             if health == target_health then
-                return addon.compare(value.operator, 0, value.value)
+                return Functions.values.compare(value.operator, 0, value.value)
             elseif addon.damageHistory[target] then
                 local trend, seconds = addon.calculate_trend(addon.damageHistory[target], nil, value.mode == "noheals", value.mode == "nodmg")
                 if trend and seconds > 2 then
@@ -515,7 +531,7 @@ addon:RegisterCondition("TT_HEALTH", {
                             ttt = (target_health - health) / trend
                         end
                     end
-                    return addon.compare(value.operator, ttt, value.value)
+                    return Functions.values.compare(value.operator, ttt, value.value)
                 end
             end
         end
@@ -525,14 +541,14 @@ addon:RegisterCondition("TT_HEALTH", {
         local conditionstr
         if value.health ~= nil and value.health < 0 then
             conditionstr = string.format(L["time until %s is at %s health defecit"],
-                    addon.nullable(value.unit, L["<unit>"]), -value.health)
+                    Functions.presentation.nullable(value.unit, L["<unit>"]), -value.health)
         else
             conditionstr = string.format(L["time until %s is at %s health"],
-                    addon.nullable(value.unit, L["<unit>"]), addon.nullable(value.health))
+                    Functions.presentation.nullable(value.unit, L["<unit>"]), Functions.presentation.nullable(value.health))
         end
         return string.format(L["%s with %s"],
-            addon.compareString(value.operator, conditionstr,
-            string.format(L["%s seconds"], addon.nullable(value.value))), addon.trendmode[value.mode or "both"])
+            Functions.presentation.compareString(value.operator, conditionstr,
+            string.format(L["%s seconds"], Functions.presentation.nullable(value.value))), addon.trendmode[value.mode or "both"])
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -600,29 +616,29 @@ addon:RegisterCondition("TT_HEALTHPCT", {
     icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\resources",
     fields = { unit = "string", operator = "string", value = "number", health = "number", mode = "string" },
     valid = function(_, value)
-        return (value.operator ~= nil and addon.isin(addon.operators, value.operator) and
-                value.unit ~= nil and addon.isin(addon.units, value.unit) and
+        return (value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
+                value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
                 value.value ~= nil and value.value >= 0.00 and
                 value.health ~= nil and value.health >= 0.00 and value.health <= 1.00)
     end,
     evaluate = function(value, cache)
-        if not addon.getCached(cache, UnitExists, value.unit) then return false end
-        local target = addon.getCached(cache, UnitGUID, value.unit)
+        if not Functions.cache.getCached(cache, UnitExists, value.unit) then return false end
+        local target = Functions.cache.getCached(cache, UnitGUID, value.unit)
         if target then
             local health, maxhealth
             if RealMobHealth then
                 health, maxhealth = RealMobHealth.GetUnitHealth(value.unit)
             end
             if not health then
-                health = addon.getCached(cache, UnitHealth, value.unit)
+                health = Functions.cache.getCached(cache, UnitHealth, value.unit)
             end
             if not maxhealth then
-                maxhealth = addon.getCached(cache, UnitHealthMax, value.unit)
+                maxhealth = Functions.cache.getCached(cache, UnitHealthMax, value.unit)
             end
 
             local target_health = (maxhealth * value.health)
             if health == target_health then
-                return addon.compare(value.operator, 0, value.value)
+                return Functions.values.compare(value.operator, 0, value.value)
             elseif addon.damageHistory[target] then
                 local trend, seconds = addon.calculate_trend(addon.damageHistory[target], nil, value.mode == "noheals", value.mode == "nodmg")
                 if trend and seconds > 2 then
@@ -636,7 +652,7 @@ addon:RegisterCondition("TT_HEALTHPCT", {
                             ttt = (target_health - health) / trend
                         end
                     end
-                    return addon.compare(value.operator, ttt, value.value)
+                    return Functions.values.compare(value.operator, ttt, value.value)
                 end
             end
         end
@@ -648,9 +664,9 @@ addon:RegisterCondition("TT_HEALTHPCT", {
             v = v * 100
         end
         return string.format(L["%s with %s"],
-            addon.compareString(value.operator, string.format(L["time until %s is at %s%% health"],
-                                                           addon.nullable(value.unit, L["<unit>"]), addon.nullable(v)),
-                            string.format(L["%s seconds"], addon.nullable(value.value))),
+            Functions.presentation.compareString(value.operator, string.format(L["time until %s is at %s%% health"],
+                                                           Functions.presentation.nullable(value.unit, L["<unit>"]), Functions.presentation.nullable(v)),
+                            string.format(L["%s seconds"], Functions.presentation.nullable(value.value))),
                             addon.trendmode[value.mode or "both"])
 
     end,

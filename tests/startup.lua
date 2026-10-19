@@ -79,6 +79,7 @@ test('namespaced metadata allows main and delayed conditions to load', function(
     load('main.lua')
     assert(addon.pretty_name == 'Rotation Master')
     function addon:RegisterCondition(name, value) self.registered[name] = value end
+    for _,path in ipairs({'Functions/values.lua','Functions/presentation.lua','Functions/collections.lua','Functions/cache.lua'}) do load(path) end
     load('Conditions/ext_stats.lua')
     assert(addon.registered.STAT, 'base stat condition was not registered')
     assert(addon.delayed_condition.ExtendedCharacterStats.ECS_STAT, 'extended stats were not queued')

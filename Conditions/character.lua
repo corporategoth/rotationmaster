@@ -5,27 +5,47 @@ local color = color
 local helpers = addon.help_funcs
 local unit_class_num
 
+-- Snapshot only the explicit pure/cache leaves used by these callbacks.
+-- Native observations, source variants and captured class values stay intact.
+local Functions={
+    values={isin=addon.Functions.values.isin,compare=addon.Functions.values.compare},
+    presentation={nullable=addon.Functions.presentation.nullable,compareString=addon.Functions.presentation.compareString,playerize=addon.Functions.presentation.playerize},
+    cache={getCached=addon.Functions.cache.getCached},
+    collections={deepcopy=addon.Functions.collections.deepcopy,keys=addon.Functions.collections.keys},
+}
+addon.builtinCallbackBindings=addon.builtinCallbackBindings or {}
+addon.builtinCallbackBindings["Conditions/character.lua"]={
+    ["Functions.values.isin"]="builtin:utils.lua:isin",
+    ["Functions.values.compare"]="builtin:utils.lua:compare",
+    ["Functions.presentation.nullable"]="builtin:utils.lua:nullable",
+    ["Functions.presentation.compareString"]="builtin:utils.lua:compareString",
+    ["Functions.presentation.playerize"]="builtin:utils.lua:playerize",
+    ["Functions.cache.getCached"]="builtin:utils.lua:getCached",
+    ["Functions.collections.deepcopy"]="builtin:Functions/collections.lua:deepcopy",
+    ["Functions.collections.keys"]="builtin:Functions/collections.lua:keys",
+}
+
 addon:RegisterCondition("ISSAME", {
     description = L["Is Same As"],
     icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\logic",
     fields = { unit = "string", otherunit = "string" },
     valid = function(_, value)
-        return (value.unit ~= nil and addon.isin(addon.units, value.unit) and
-                value.otherunit ~= nil and addon.isin(addon.units, value.otherunit))
+        return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
+                value.otherunit ~= nil and Functions.values.isin(addon.units, value.otherunit))
     end,
     evaluate = function(value, cache)
-        if not addon.getCached(cache, UnitExists, value.unit) then return false end
-        return addon.getCached(cache, UnitIsUnit, value.unit, value.otherunit)
+        if not Functions.cache.getCached(cache, UnitExists, value.unit) then return false end
+        return Functions.cache.getCached(cache, UnitIsUnit, value.unit, value.otherunit)
     end,
     print = function(_, value)
-        return string.format(L["%s {{!is|is not}} %s"], addon.nullable(addon.units[value.unit]), addon.nullable(addon.units[value.otherunit]))
+        return string.format(L["%s {{!is|is not}} %s"], Functions.presentation.nullable(addon.units[value.unit]), Functions.presentation.nullable(addon.units[value.otherunit]))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
-        local unit = addon:Widget_UnitWidget(value, addon.deepcopy(addon.units, { "player", "pet" }),
+        local unit = addon:Widget_UnitWidget(value, Functions.collections.deepcopy(addon.units, { "player", "pet" }),
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
 
@@ -43,24 +63,24 @@ addon:RegisterCondition("CLASS", {
     icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\character",
     fields = { unit = "string", value = "string" },
     valid = function(_, value)
-        return (value.unit ~= nil and addon.isin(addon.units, value.unit) and
-                value.value ~= nil and addon.isin(LOCALIZED_CLASS_NAMES_MALE, value.value))
+        return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
+                value.value ~= nil and Functions.values.isin(LOCALIZED_CLASS_NAMES_MALE, value.value))
     end,
     evaluate = function(value, cache)
-        if not addon.getCached(cache, UnitExists, value.unit) then return false end
-        local _, englishClass = addon.getCached(cache, UnitClass, value.unit)
+        if not Functions.cache.getCached(cache, UnitExists, value.unit) then return false end
+        local _, englishClass = Functions.cache.getCached(cache, UnitClass, value.unit)
         return englishClass == value.value
     end,
     print = function(_, value)
-        return string.format(addon.playerize(value.unit, L["%s {{!are|are not}} a %s"], L["%s {{!is|is not}} a %s"]),
-            addon.nullable(addon.units[value.unit]), addon.nullable(LOCALIZED_CLASS_NAMES_MALE[value.value], L["<class>"]))
+        return string.format(Functions.presentation.playerize(value.unit, L["%s {{!are|are not}} a %s"], L["%s {{!is|is not}} a %s"]),
+            Functions.presentation.nullable(addon.units[value.unit]), Functions.presentation.nullable(LOCALIZED_CLASS_NAMES_MALE[value.value], L["<class>"]))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
-        local unit = addon:Widget_UnitWidget(value, addon.deepcopy(addon.units, { "player", "pet" }),
+        local unit = addon:Widget_UnitWidget(value, Functions.collections.deepcopy(addon.units, { "player", "pet" }),
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
 
@@ -93,34 +113,34 @@ addon:RegisterCondition("CLASS_GROUP", {
     icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\character",
     fields = { class = "string", operator = "string", value = "number", raid = "boolean" },
     valid = function(_, value)
-        return (value.class ~= nil and addon.isin(LOCALIZED_CLASS_NAMES_MALE, value.class) and
-                value.operator ~= nil and addon.isin(addon.operators, value.operator) and
+        return (value.class ~= nil and Functions.values.isin(LOCALIZED_CLASS_NAMES_MALE, value.class) and
+                value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                 value.value ~= nil and value.value >= 0)
     end,
     evaluate = function(value, cache)
-        if not addon.getCached(cache, IsInGroup) then
-            return addon.compare(value.operator, (character_class == value.class and 1 or 0), value.value)
+        if not Functions.cache.getCached(cache, IsInGroup) then
+            return Functions.values.compare(value.operator, (character_class == value.class and 1 or 0), value.value)
         end
 
         local count = 0
         local prefix, size = "party", 4
-        if value.raid and addon.getCached(cache, IsInRaid) then
+        if value.raid and Functions.cache.getCached(cache, IsInRaid) then
             prefix, size = "raid", 40
         end
         if prefix == "party" and character_class == value.class then
             count = count + 1
         end
         for i=1,size do
-            if select(2, addon.getCached(cache, UnitClass, prefix .. tostring(i))) == value.class then
+            if select(2, Functions.cache.getCached(cache, UnitClass, prefix .. tostring(i))) == value.class then
                 count = count + 1
             end
         end
-        return addon.compare(value.operator, count, value.value)
+        return Functions.values.compare(value.operator, count, value.value)
     end,
     print = function(_, value)
-        return addon.compareString(value.operator, string.format(L["Number of %ss in the %s"],
-                addon.nullable(LOCALIZED_CLASS_NAMES_MALE[value.class], L["<class>"]),
-                (value.raid and RAID or PARTY)), addon.nullable(value.value))
+        return Functions.presentation.compareString(value.operator, string.format(L["Number of %ss in the %s"],
+                Functions.presentation.nullable(LOCALIZED_CLASS_NAMES_MALE[value.class], L["<class>"]),
+                (value.raid and RAID or PARTY)), Functions.presentation.nullable(value.value))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -178,25 +198,25 @@ if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
         icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\character",
         fields = { unit = "string", value = "string" },
         valid = function(_, value)
-            return (value.unit ~= nil and addon.isin(addon.units, value.unit) and
-                    value.value ~= nil and addon.isin(addon.roles, value.value))
+            return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
+                    value.value ~= nil and Functions.values.isin(addon.roles, value.value))
         end,
         evaluate = function(value, cache)
-            if not addon.getCached(cache, UnitExists, value.unit) then return false end
-            local role = select(6, addon.getCached(cache, GetSpecializationInfoByID, addon.getCached(cache, GetInspectSpecialization, value.unit)))
+            if not Functions.cache.getCached(cache, UnitExists, value.unit) then return false end
+            local role = select(6, Functions.cache.getCached(cache, GetSpecializationInfoByID, Functions.cache.getCached(cache, GetInspectSpecialization, value.unit)))
             return role == value.value
         end,
         print = function(_, value)
             return string.format(L["%s {{!is|is not}} in a %s role"],
-                addon.nullable(addon.unitsPossessive[value.unit], L["<unit>"]),
-                addon.nullable(addon.roles[value.value], L["<role>"]))
+                Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"]),
+                Functions.presentation.nullable(addon.roles[value.value], L["<role>"]))
         end,
         widget = function(parent, spec, value)
             local top = parent:GetUserData("top")
             local root = top:GetUserData("root")
             local funcs = top:GetUserData("funcs")
 
-            local unit = addon:Widget_UnitWidget(value, addon.deepcopy(addon.units, { "player", "pet" }),
+            local unit = addon:Widget_UnitWidget(value, Functions.collections.deepcopy(addon.units, { "player", "pet" }),
                 function() top:SetStatusText(funcs:print(root, spec)) end)
             parent:AddChild(unit)
 
@@ -207,7 +227,7 @@ if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
                 top:SetStatusText(funcs:print(root, spec))
             end)
             role.configure = function()
-                role:SetList(addon.roles, addon.keys(addon.roles))
+                role:SetList(addon.roles, Functions.collections.keys(addon.roles))
                 if (value.value ~= nil) then
                     role:SetValue(value.value)
                 end
@@ -238,14 +258,14 @@ else
             icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\character",
             fields = { value = "string" },
             valid = function(_, value)
-                return value.value ~= nil and addon.isin(addon.roles, value.value)
+                return value.value ~= nil and Functions.values.isin(addon.roles, value.value)
             end,
             evaluate = function(value, cache)
-                return addon.getCached(cache, GetTalentGroupRole, addon.currentSpec) == value.value
+                return Functions.cache.getCached(cache, GetTalentGroupRole, addon.currentSpec) == value.value
             end,
             print = function(_, value)
                 return string.format(L["Your talent {{!is|is not}} a %s role"],
-                        addon.nullable(addon.roles[value.value], L["<role>"]))
+                        Functions.presentation.nullable(addon.roles[value.value], L["<role>"]))
             end,
             widget = function(parent, spec, value)
                 local top = parent:GetUserData("top")
@@ -259,7 +279,7 @@ else
                     top:SetStatusText(funcs:print(root, spec))
                 end)
                 role.configure = function()
-                    role:SetList(addon.roles, addon.keys(addon.roles))
+                    role:SetList(addon.roles, Functions.collections.keys(addon.roles))
                     if (value.value ~= nil) then
                         role:SetValue(value.value)
                     end
@@ -294,16 +314,16 @@ if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE or LE_EXPANSION_LEVEL_CURRENT >= 2) t
             end
         end,
         evaluate = function(value, cache)
-            local item, itemReason = addon.getCached(cache, addon.Platform.GetGlyphItemInfo, addon.Platform, value.item, unit_class_num)
+            local item, itemReason = Functions.cache.getCached(cache, addon.Platform.GetGlyphItemInfo, addon.Platform, value.item, unit_class_num)
             if not item then return nil, itemReason end
-            local info, infoReason = addon.getCached(cache, addon.Platform.GetItemDisplayInfo, addon.Platform, item.itemID)
+            local info, infoReason = Functions.cache.getCached(cache, addon.Platform.GetItemDisplayInfo, addon.Platform, item.itemID)
             if not info then return nil, infoReason end
-            local snapshot, snapshotReason = addon.getCached(cache, addon.Platform.GetGlyphSocketSnapshot, addon.Platform)
+            local snapshot, snapshotReason = Functions.cache.getCached(cache, addon.Platform.GetGlyphSocketSnapshot, addon.Platform)
             if not snapshot then return nil, snapshotReason end
             local unavailable
             for _, slot in ipairs(snapshot.slots) do
                 if slot.active then
-                    local spell, spellReason = addon.getCached(cache, addon.Platform.GetSpellInfo, addon.Platform, slot.spellID)
+                    local spell, spellReason = Functions.cache.getCached(cache, addon.Platform.GetSpellInfo, addon.Platform, slot.spellID)
                     if spell then
                         if spell.name == info.name then return true end
                     else
@@ -319,7 +339,7 @@ if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE or LE_EXPANSION_LEVEL_CURRENT >= 2) t
         end,
         print = function(_, value)
             local link = value.item and select(2, GetItemInfo(value.item)) or nil
-            return string.format(L["you {{!have|do not have}} %s glyph"], addon.nullable(link, L["<glyph>"]))
+            return string.format(L["you {{!have|do not have}} %s glyph"], Functions.presentation.nullable(link, L["<glyph>"]))
         end,
         widget = function(parent, spec, value)
             local top = parent:GetUserData("top")
@@ -344,23 +364,23 @@ addon:RegisterCondition("CREATURE", {
     icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\character",
     fields = { unit = "string", value = "string" },
     valid = function(_, value)
-        return (value.unit ~= nil and addon.isin(addon.units, value.unit) and
-                value.value ~= nil and addon.isin(addon.creatures, value.value))
+        return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
+                value.value ~= nil and Functions.values.isin(addon.creatures, value.value))
     end,
     evaluate = function(value, cache)
-        if not addon.getCached(cache, UnitExists, value.unit) then return false end
-        return (addon.getCached(cache, UnitCreatureType, value.unit) == addon.creatures[value.value])
+        if not Functions.cache.getCached(cache, UnitExists, value.unit) then return false end
+        return (Functions.cache.getCached(cache, UnitCreatureType, value.unit) == addon.creatures[value.value])
     end,
     print = function(_, value)
-        return string.format(addon.playerize(value.unit, L["%s {{!are|are not}} a %s"], L["%s {{!is|is not}} a %s"]),
-            addon.nullable(addon.units[value.unit]), addon.nullable(addon.creatures[value.value], L["<creature type>"]))
+        return string.format(Functions.presentation.playerize(value.unit, L["%s {{!are|are not}} a %s"], L["%s {{!is|is not}} a %s"]),
+            Functions.presentation.nullable(addon.units[value.unit]), Functions.presentation.nullable(addon.creatures[value.value], L["<creature type>"]))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
-        local unit = addon:Widget_UnitWidget(value, addon.deepcopy(addon.units, { "player", "pet" }),
+        local unit = addon:Widget_UnitWidget(value, Functions.collections.deepcopy(addon.units, { "player", "pet" }),
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
 
@@ -371,7 +391,7 @@ addon:RegisterCondition("CREATURE", {
             top:SetStatusText(funcs:print(root, spec))
         end)
         class.configure = function()
-            class:SetList(addon.creatures, addon.keys(addon.creatures))
+            class:SetList(addon.creatures, Functions.collections.keys(addon.creatures))
             if (value.value ~= nil) then
                 class:SetValue(value.value)
             end
@@ -393,23 +413,23 @@ addon:RegisterCondition("CLASSIFICATION", {
     icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\character",
     fields = { unit = "string", value = "string" },
     valid = function(_, value)
-        return (value.unit ~= nil and addon.isin(addon.units, value.unit) and
-                value.value ~= nil and addon.isin(addon.classifications, value.value))
+        return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
+                value.value ~= nil and Functions.values.isin(addon.classifications, value.value))
     end,
     evaluate = function(value, cache)
-        if not addon.getCached(cache, UnitExists, value.unit) then return false end
-        return (addon.getCached(cache, UnitClassification, value.unit) == value.value)
+        if not Functions.cache.getCached(cache, UnitExists, value.unit) then return false end
+        return (Functions.cache.getCached(cache, UnitClassification, value.unit) == value.value)
     end,
     print = function(_, value)
-        return string.format(addon.playerize(value.unit, L["%s {{!are|are not}} a %s"], L["%s {{!is|is not}} a %s"]),
-                addon.nullable(addon.units[value.unit]), addon.nullable(addon.classifications[value.value], L["<classification>"]))
+        return string.format(Functions.presentation.playerize(value.unit, L["%s {{!are|are not}} a %s"], L["%s {{!is|is not}} a %s"]),
+                Functions.presentation.nullable(addon.units[value.unit]), Functions.presentation.nullable(addon.classifications[value.value], L["<classification>"]))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
-        local unit = addon:Widget_UnitWidget(value, addon.deepcopy(addon.units, { "player", "pet" }),
+        local unit = addon:Widget_UnitWidget(value, Functions.collections.deepcopy(addon.units, { "player", "pet" }),
                 function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
 
@@ -420,7 +440,7 @@ addon:RegisterCondition("CLASSIFICATION", {
             top:SetStatusText(funcs:print(root, spec))
         end)
         class.configure = function()
-            class:SetList(addon.classifications, addon.keys(addon.classifications))
+            class:SetList(addon.classifications, Functions.collections.keys(addon.classifications))
             if (value.value ~= nil) then
                 class:SetValue(value.value)
             end
@@ -443,25 +463,25 @@ addon:RegisterCondition("LEVEL", {
     icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\character",
     fields = { unit = "string", operator = "string", value = "number", relative = "boolean" },
     valid = function(_, value)
-        return (value.unit ~= nil and addon.isin(addon.units, value.unit) and
-                value.operator ~= nil and addon.isin(addon.operators, value.operator) and
+        return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and
+                value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                 value.value ~= nil and (value.relative or value.value >= 0))
     end,
     evaluate = function(value, cache)
-        if not addon.getCached(cache, UnitExists, value.unit) then return false end
+        if not Functions.cache.getCached(cache, UnitExists, value.unit) then return false end
         local level = value.value
         if value.relative then
-            level = addon.getCached(addon.longtermCache, UnitLevel, "player") + value.value
+            level = Functions.cache.getCached(addon.longtermCache, UnitLevel, "player") + value.value
         end
-        return addon.compare(value.operator, addon.getCached(cache, UnitLevel, value.unit), level)
+        return Functions.values.compare(value.operator, Functions.cache.getCached(cache, UnitLevel, value.unit), level)
     end,
     print = function(_, value)
         local level = value.value
         if value.relative and value.value ~= nil then
-            level = addon.getCached(addon.longtermCache, UnitLevel, "player") + value.value
+            level = Functions.cache.getCached(addon.longtermCache, UnitLevel, "player") + value.value
         end
-        return addon.compareString(value.operator, addon.playerize(value.unit, L["your level"], string.format(L["%s's level"],
-                addon.nullable(addon.units[value.unit], L["<unit>"]))), addon.nullable(level, L["<level>"]))
+        return Functions.presentation.compareString(value.operator, Functions.presentation.playerize(value.unit, L["your level"], string.format(L["%s's level"],
+                Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]))), Functions.presentation.nullable(level, L["<level>"]))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -504,7 +524,7 @@ addon:RegisterCondition("GROUP", {
         return true
     end,
     evaluate = function(value, cache)
-        return addon.getCached(cache, addon.Platform.GetGroupMembership, addon.Platform, value.raid)
+        return Functions.cache.getCached(cache, addon.Platform.GetGroupMembership, addon.Platform, value.raid)
     end,
     print = function(_, value)
         return value.raid and L["you {{!are|are not}} in a raid"] or L["you {{!are|are not}} in a group"]
@@ -537,22 +557,22 @@ addon:RegisterCondition("RUNNER", {
     icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\combat",
     fields = { unit = "string" },
     valid = function(_, value)
-        return value.unit ~= nil and addon.isin(addon.units, value.unit)
+        return value.unit ~= nil and Functions.values.isin(addon.units, value.unit)
     end,
     evaluate = function(value, cache)
-        if not addon.getCached(cache, UnitExists, value.unit) then return false end
+        if not Functions.cache.getCached(cache, UnitExists, value.unit) then return false end
         local data = MI2_GetMobData(UnitName(value.unit), UnitLevel(value.unit), value.unit)
         return (data.lowHpAction and true or false)
     end,
     print = function(_, value)
-        return string.format(L["%s {{!will|will not}} run"], addon.nullable(addon.units[value.unit]), addon.nullable(addon.units[value.otherunit]))
+        return string.format(L["%s {{!will|will not}} run"], Functions.presentation.nullable(addon.units[value.unit]), Functions.presentation.nullable(addon.units[value.otherunit]))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
-        local unit = addon:Widget_UnitWidget(value, addon.deepcopy(addon.units, { "player", "pet" }),
+        local unit = addon:Widget_UnitWidget(value, Functions.collections.deepcopy(addon.units, { "player", "pet" }),
                 function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
     end,
@@ -570,31 +590,31 @@ addon:RegisterCondition("RESIST", {
     icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\combat",
     fields = { unit = "string", school = "string", operator = "string", value = "number" },
     valid = function(_, value)
-        return (value.unit ~= nil and addon.isin(addon.units, value.unit)) and
-               (value.school ~= nil and addon.isin(addon.spell_schools, value.school)) and
-               (value.operator ~= nil and addon.isin(addon.operators, value.operator)) and
+        return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit)) and
+               (value.school ~= nil and Functions.values.isin(addon.spell_schools, value.school)) and
+               (value.operator ~= nil and Functions.values.isin(addon.operators, value.operator)) and
                (value.value ~= nil and value.value >= 0.00 and value.value <= 1.00)
     end,
     evaluate = function(value, cache)
-        if not addon.getCached(cache, UnitExists, value.unit) then return false end
+        if not Functions.cache.getCached(cache, UnitExists, value.unit) then return false end
         local data = MI2_GetMobData(UnitName(value.unit), UnitLevel(value.unit), value.unit)
         if data.resists[value.school] ~= nil and data.resists[value.school] > 0 then
             local hits = data.resists[value.school .. 'Hits'] or 1
-            return addon.compare(value.operator, (data.resists[value.school] / hits), value.value)
+            return Functions.values.compare(value.operator, (data.resists[value.school] / hits), value.value)
         end
         return false
     end,
     print = function(_, value)
-        return addon.compareString(value.operator, string.format(L["%s's resistance to %s"],
-                addon.nullable(addon.units[value.unit], L["<unit>"]), addon.nullable(addon.spell_schools[value.school], L["<school>"])),
-                addon.nullable(value.value and value.value * 100 or nil) .. '%')
+        return Functions.presentation.compareString(value.operator, string.format(L["%s's resistance to %s"],
+                Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]), Functions.presentation.nullable(addon.spell_schools[value.school], L["<school>"])),
+                Functions.presentation.nullable(value.value and value.value * 100 or nil) .. '%')
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
-        local unit = addon:Widget_UnitWidget(value, addon.deepcopy(addon.units, { "player", "pet" }),
+        local unit = addon:Widget_UnitWidget(value, Functions.collections.deepcopy(addon.units, { "player", "pet" }),
                 function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
 
@@ -637,11 +657,11 @@ addon:RegisterCondition("IMMUNE", {
     icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\combat",
     fields = { unit = "string", school = "string", partial = "boolean" },
     valid = function(_, value)
-        return (value.unit ~= nil and addon.isin(addon.units, value.unit)) and
-                (value.school ~= nil and addon.isin(addon.spell_schools, value.school))
+        return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit)) and
+                (value.school ~= nil and Functions.values.isin(addon.spell_schools, value.school))
     end,
     evaluate = function(value, cache)
-        if not addon.getCached(cache, UnitExists, value.unit) then return false end
+        if not Functions.cache.getCached(cache, UnitExists, value.unit) then return false end
         local data = MI2_GetMobData(UnitName(value.unit), UnitLevel(value.unit), value.unit)
         if data.resists[value.school] ~= nil and data.resists[value.school] < 0 then
             local hits = data.resists[value.school .. 'Hits'] or 1
@@ -651,14 +671,14 @@ addon:RegisterCondition("IMMUNE", {
     end,
     print = function(_, value)
         return string.format(value.partial and L["%s {{!is|is not}} sometimes immune to %s"] or L["%s {{!is|is not}} immune to %s"],
-                addon.nullable(addon.units[value.unit], L["<unit>"]), addon.nullable(addon.spell_schools[value.school], L["<school>"]))
+                Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]), Functions.presentation.nullable(addon.spell_schools[value.school], L["<school>"]))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
-        local unit = addon:Widget_UnitWidget(value, addon.deepcopy(addon.units, { "player", "pet" }),
+        local unit = addon:Widget_UnitWidget(value, Functions.collections.deepcopy(addon.units, { "player", "pet" }),
                 function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
 

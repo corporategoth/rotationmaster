@@ -1,6 +1,6 @@
 local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite()
 local tags={'TALENT','TALENT_TREE_POINTS','PRIMARY_TALENT_TREE'}
-local ids={isin='builtin:utils.lua:isin',compare='builtin:utils.lua:compare',compareString='builtin:utils.lua:compareString',nullable='builtin:utils.lua:nullable'}
+local ids={isin='builtin:utils.lua:isin',compare='builtin:utils.lua:compare',compareString='builtin:utils.lua:compareString',nullable='builtin:utils.lua:nullable',getCached='builtin:utils.lua:getCached'}
 local helperHashes={integer='e1bd3b0e',treeShape='f0ba2bf9',legacySlot='b8bfb514',group='d6f4e415',info='c0972f2d',treeExists='85703f5a',treeName='19de3afd'}
 local function fixture(...)
     local f=F.new(...);local a,e=f.addon,f.env
@@ -47,9 +47,9 @@ local function sameOutcome(a,tag,value)
         assert(a:printCondition(negated and {type='NOT',value=original} or original,0)==a:printCondition(negated and {type='NOT',value=copy} or copy,0),tag..' summary differs')
     end
 end
-test('talent authored callbacks expose four canonical leaves and preserve local helper identities',function()
+test('talent authored callbacks expose five canonical leaves and preserve local helper identities',function()
     local f,a=fixture();local declared=assert(a.builtinCallbackBindings and a.builtinCallbackBindings['Conditions/talent.lua'],'talent qualified dependencies missing')
-    local count=0;for _ in pairs(declared) do count=count+1 end;assert(count==4,'talent namespace contains extra dependencies')
+    local count=0;for _ in pairs(declared) do count=count+1 end;assert(count==5,'talent namespace contains extra dependencies');assert(declared['Functions.cache.getCached']==ids.getCached)
     for _,tag in ipairs({'TALENT','TALENT_TREE_POINTS'}) do
         local source=assert(a:GetBuiltinConditionSource(tag))
         for _,callback in ipairs({'valid','evaluate','print'}) do assert(not source[callback]:find('addon.isin',1,true) and not source[callback]:find('addon.compare',1,true) and not source[callback]:find('addon.nullable',1,true),'authored callback retains a legacy pure call') end
@@ -108,7 +108,7 @@ end)
 test('arbitrary saved source keeps original addon helper APIs and stable bindings',function()
     local _,a=fixture()
     for name,id in pairs(ids) do
-        local group=(name=='isin' or name=='compare') and a.Functions.values or a.Functions.presentation
+        local group=name=='getCached' and a.Functions.cache or (name=='isin' or name=='compare') and a.Functions.values or a.Functions.presentation
         assert(a[name]==group[name] and a.builtinSourceModules['utils.lua'](name)==group[name] and a:ResolveFunctionBinding(id)==group[name])
     end
     local source={description='Legacy talent consumer',args={},returns={},bindings={},code='return addon.isin({flag=false},"flag"),addon.compare("EQUALS",false,false),addon.nullable(false),addon.compareString("EQUALS","left","right")'}

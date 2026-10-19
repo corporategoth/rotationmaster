@@ -1,18 +1,20 @@
 local addon_name, addon = ...
 
-local AceGUI = LibStub("AceGUI-3.0")
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 local color, tostring, tonumber, pairs = color, tostring, tonumber, pairs
 local helpers = addon.help_funcs
 
 -- Private canonical leaves preserve explicit saved-source dependency identities.
 local Functions={
+    collections={deepcopy=addon.Functions.collections.deepcopy,keys=addon.Functions.collections.keys},
     values={compare=addon.Functions.values.compare,isin=addon.Functions.values.isin},
     presentation={nullable=addon.Functions.presentation.nullable,playerize=addon.Functions.presentation.playerize,compareString=addon.Functions.presentation.compareString},
     cache={getCached=addon.Functions.cache.getCached},
 }
 addon.builtinCallbackBindings=addon.builtinCallbackBindings or {}
 addon.builtinCallbackBindings["Conditions/combat.lua"]={
+    ["Functions.collections.deepcopy"]="builtin:Functions/collections.lua:deepcopy",
+    ["Functions.collections.keys"]="builtin:Functions/collections.lua:keys",
     ["Functions.values.compare"]="builtin:utils.lua:compare",
     ["Functions.values.isin"]="builtin:utils.lua:isin",
     ["Functions.presentation.nullable"]="builtin:utils.lua:nullable",
@@ -296,7 +298,7 @@ addon:RegisterCondition("THREAT", {
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
-        local unit = addon:Widget_UnitWidget(value, addon.deepcopy(addon.units, { "player", "pet" }),
+        local unit = addon:Widget_UnitWidget(value, Functions.collections.deepcopy(addon.units, { "player", "pet" }),
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
 
@@ -518,7 +520,7 @@ addon:RegisterCondition("ATTACKABLE", {
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
-        local unit = addon:Widget_UnitWidget(value, addon.deepcopy(addon.units, { "player", "pet" }),
+        local unit = addon:Widget_UnitWidget(value, Functions.collections.deepcopy(addon.units, { "player", "pet" }),
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
     end,
@@ -546,7 +548,7 @@ addon:RegisterCondition("ENEMY", {
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
-        local unit = addon:Widget_UnitWidget(value, addon.deepcopy(addon.units, { "player", "pet" }),
+        local unit = addon:Widget_UnitWidget(value, Functions.collections.deepcopy(addon.units, { "player", "pet" }),
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
     end,
@@ -586,7 +588,7 @@ addon:RegisterCondition("COMBAT_HISTORY", {
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
-        local unit = addon:Widget_UnitWidget(value, addon.deepcopy(addon.units, { "player", "pet", "target" }, true),
+        local unit = addon:Widget_UnitWidget(value, Functions.collections.deepcopy(addon.units, { "player", "pet", "target" }, true),
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
 
@@ -597,7 +599,7 @@ addon:RegisterCondition("COMBAT_HISTORY", {
             top:SetStatusText(funcs:print(root, spec))
         end)
         action.configure = function()
-            action:SetList(addon.actions, addon.keys(addon.actions))
+            action:SetList(addon.actions, Functions.collections.keys(addon.actions))
             action:SetValue(value.action)
         end
         parent:AddChild(action)
@@ -652,7 +654,7 @@ addon:RegisterCondition("COMBAT_HISTORY_TIME", {
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
 
-        local unit = addon:Widget_UnitWidget(value, addon.deepcopy(addon.units, { "player", "pet", "target" }, true),
+        local unit = addon:Widget_UnitWidget(value, Functions.collections.deepcopy(addon.units, { "player", "pet", "target" }, true),
             function() top:SetStatusText(funcs:print(root, spec)) end)
         parent:AddChild(unit)
 
@@ -663,7 +665,7 @@ addon:RegisterCondition("COMBAT_HISTORY_TIME", {
             top:SetStatusText(funcs:print(root, spec))
         end)
         action.configure = function()
-            action:SetList(addon.actions, addon.keys(addon.actions))
+            action:SetList(addon.actions, Functions.collections.keys(addon.actions))
             action:SetValue(value.action)
         end
         parent:AddChild(action)
@@ -724,7 +726,7 @@ addon:RegisterCondition("TIME_IN_COMBAT", {
 -- BEGIN GENERATED RM SOURCE BINDINGS
 do
     local function sourceGetter(name)
-        if name=="AceGUI" then return AceGUI end
+        if name=="AceGUI" then return addon:GetConditionWidgetCompatibilityLibrary() end
         if name=="character_class" then return character_class end
         if name=="color" then return color end
         if name=="helpers" then return helpers end
