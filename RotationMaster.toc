@@ -77,6 +77,7 @@ Core/custom_condition_services.lua
 Core/lua_symbols.lua
 Core/function_data.lua
 Core/schema_authoring.lua
+Core/schema_canvas.lua
 Core/aura_conditions.lua
 Data/plain.lua
 Data/tags.lua

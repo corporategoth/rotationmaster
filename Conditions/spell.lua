@@ -4,6 +4,22 @@ local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 local color = color
 local helpers = addon.help_funcs
 
+-- Direct callback leaves use their owning modules. Spell observations,
+-- rank resolution and cache call arguments keep their existing contracts.
+local Functions={
+    values={isin=addon.Functions.values.isin,compare=addon.Functions.values.compare},
+    cache={getCached=addon.Functions.cache.getCached},
+    presentation={nullable=addon.Functions.presentation.nullable,compareString=addon.Functions.presentation.compareString},
+}
+addon.builtinCallbackBindings=addon.builtinCallbackBindings or {}
+addon.builtinCallbackBindings["Conditions/spell.lua"]={
+    ["Functions.values.isin"]="builtin:utils.lua:isin",
+    ["Functions.values.compare"]="builtin:utils.lua:compare",
+    ["Functions.cache.getCached"]="builtin:utils.lua:getCached",
+    ["Functions.presentation.nullable"]="builtin:utils.lua:nullable",
+    ["Functions.presentation.compareString"]="builtin:utils.lua:compareString",
+}
+
 addon:RegisterCondition("SPELL_AVAIL", {
     description = L["Spell Available"],
     icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\spell",
@@ -19,11 +35,11 @@ addon:RegisterCondition("SPELL_AVAIL", {
     evaluate = function(value, cache, evalStart)
         local spellid, reason = addon:Widget_GetSpellId(value.spell, value.ranked)
         if not spellid then return nil, reason or "spell-data-unavailable" end
-        return addon.getCached(cache, addon.Platform.IsSpellReady, addon.Platform, spellid, evalStart)
+        return Functions.cache.getCached(cache, addon.Platform.IsSpellReady, addon.Platform, spellid, evalStart)
     end,
     print = function(_, value)
         local link = addon:Widget_GetSpellLink(value.spell, value.ranked)
-        return string.format(L["%s {{!is|is not}} available"], addon.nullable(link, L["<spell>"]))
+        return string.format(L["%s {{!is|is not}} available"], Functions.presentation.nullable(link, L["<spell>"]))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -54,16 +70,16 @@ addon:RegisterCondition("SPELL_RANGE", {
         end
     end,
     evaluate = function(value, cache)
-        if not addon.getCached(cache, UnitExists, "target") then return false end
+        if not Functions.cache.getCached(cache, UnitExists, "target") then return false end
         local spellid, reason = addon:Widget_GetSpellId(value.spell, value.ranked)
         if not spellid then return nil, reason or "spell-data-unavailable" end
-        local range, why = addon.getCached(cache, addon.Platform.GetSpellRangeState, addon.Platform, spellid, "target", "spell")
+        local range, why = Functions.cache.getCached(cache, addon.Platform.GetSpellRangeState, addon.Platform, spellid, "target", "spell")
         if not range then return nil, why end
         return range.applicable and range.inRange or false
     end,
     print = function(_, value)
         local link = addon:Widget_GetSpellLink(value.spell, value.ranked)
-        return string.format(L["%s {{!is|is not}} in range"], addon.nullable(link, L["<spell>"]))
+        return string.format(L["%s {{!is|is not}} in range"], Functions.presentation.nullable(link, L["<spell>"]))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -88,7 +104,7 @@ addon:RegisterCondition("SPELL_COOLDOWN", {
     valid = function(_, value)
         if value.spell ~= nil then
             local validSpell = addon.IsConditionSpellID(value.spell)
-            return (value.operator ~= nil and addon.isin(addon.operators, value.operator) and
+            return (value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                     validSpell and value.value ~= nil and value.value >= 0)
         else
             return false
@@ -97,17 +113,17 @@ addon:RegisterCondition("SPELL_COOLDOWN", {
     evaluate = function(value, cache, evalStart)
         local spellid, reason = addon:Widget_GetSpellId(value.spell, value.ranked)
         if not spellid then return nil, reason or "spell-data-unavailable" end
-        local cooldown, why = addon.getCached(cache, addon.Platform.GetSpellCooldown, addon.Platform, spellid)
+        local cooldown, why = Functions.cache.getCached(cache, addon.Platform.GetSpellCooldown, addon.Platform, spellid)
         if not cooldown then return nil, why end
         if not cooldown.isEnabled then return nil, "cooldown-held" end
         local remain = math.max(0, addon.round(cooldown.startTime + cooldown.duration - evalStart, 3))
-        return addon.compare(value.operator, remain, value.value)
+        return Functions.values.compare(value.operator, remain, value.value)
     end,
     print = function(_, value)
         local link = addon:Widget_GetSpellLink(value.spell, value.ranked)
         return string.format(L["the %s"],
-                addon.compareString(value.operator, string.format(L["cooldown on %s"],  addon.nullable(link, L["<spell>"])),
-                string.format(L["%s seconds"], addon.nullable(value.value))))
+                Functions.presentation.compareString(value.operator, string.format(L["cooldown on %s"],  Functions.presentation.nullable(link, L["<spell>"])),
+                string.format(L["%s seconds"], Functions.presentation.nullable(value.value))))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -139,7 +155,7 @@ addon:RegisterCondition("SPELL_REMAIN", {
     valid = function(_, value)
         if value.spell ~= nil then
             local validSpell = addon.IsConditionSpellID(value.spell)
-            return (value.operator ~= nil and addon.isin(addon.operators, value.operator) and
+            return (value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                     validSpell and value.value ~= nil and value.value >= 0)
         else
             return false
@@ -148,19 +164,19 @@ addon:RegisterCondition("SPELL_REMAIN", {
     evaluate = function(value, cache, evalStart)
         local spellid, reason = addon:Widget_GetSpellId(value.spell, value.ranked)
         if not spellid then return nil, reason or "spell-data-unavailable" end
-        local charges, why = addon.getCached(cache, addon.Platform.GetSpellCharges, addon.Platform, spellid)
+        local charges, why = Functions.cache.getCached(cache, addon.Platform.GetSpellCharges, addon.Platform, spellid)
         if not charges then return nil, why end
         local remain = 0
         if charges.isActive then
             remain = math.max(0, charges.cooldownStartTime + charges.cooldownDuration - evalStart)
         end
-        return addon.compare(value.operator, remain, value.value)
+        return Functions.values.compare(value.operator, remain, value.value)
     end,
     print = function(_, value)
         local link = addon:Widget_GetSpellLink(value.spell, value.ranked)
         return string.format(L["the %s"],
-            addon.compareString(value.operator, string.format(L["recharge time on %s"], addon.nullable(link, L["<spell>"])),
-                            string.format(L["%s seconds"], addon.nullable(value.value))))
+            Functions.presentation.compareString(value.operator, string.format(L["recharge time on %s"], Functions.presentation.nullable(link, L["<spell>"])),
+                            string.format(L["%s seconds"], Functions.presentation.nullable(value.value))))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -192,7 +208,7 @@ addon:RegisterCondition("SPELL_CHARGES", {
     valid = function(_, value)
         if value.spell ~= nil then
             local validSpell = addon.IsConditionSpellID(value.spell)
-            return (value.operator ~= nil and addon.isin(addon.operators, value.operator) and
+            return (value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                     validSpell and value.value ~= nil and value.value >= 0)
         else
             return false
@@ -201,14 +217,14 @@ addon:RegisterCondition("SPELL_CHARGES", {
     evaluate = function(value, cache)
         local spellid, reason = addon:Widget_GetSpellId(value.spell, value.ranked)
         if not spellid then return nil, reason or "spell-data-unavailable" end
-        local charges, why = addon.getCached(cache, addon.Platform.GetSpellCharges, addon.Platform, spellid)
+        local charges, why = Functions.cache.getCached(cache, addon.Platform.GetSpellCharges, addon.Platform, spellid)
         if not charges then return nil, why end
-        return addon.compare(value.operator, charges.currentCharges, value.value)
+        return Functions.values.compare(value.operator, charges.currentCharges, value.value)
     end,
     print = function(_, value)
         local link = addon:Widget_GetSpellLink(value.spell, value.ranked)
         return string.format(L["the %s"],
-            addon.compareString(value.operator, string.format(L["number of charges on %s"], addon.nullable(link, L["<spell>"])), addon.nullable(value.value)))
+            Functions.presentation.compareString(value.operator, string.format(L["number of charges on %s"], Functions.presentation.nullable(link, L["<spell>"])), Functions.presentation.nullable(value.value)))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -240,7 +256,7 @@ addon:RegisterCondition("SPELL_HISTORY", {
     valid = function(_, value)
         if value.spell ~= nil then
             local validSpell = addon.IsConditionSpellID(value.spell)
-            return (value.operator ~= nil and addon.isin(addon.operators, value.operator) and
+            return (value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                     validSpell and value.value ~= nil and value.value >= 0)
         else
             return false
@@ -250,14 +266,14 @@ addon:RegisterCondition("SPELL_HISTORY", {
         local spellid, reason = addon:Widget_GetSpellId(value.spell, value.ranked)
         if not spellid then return nil, reason or "spell-data-unavailable" end
         for idx, entry in pairs(addon.spellHistory) do
-            return entry.spell == spellid and addon.compare(value.operator, idx, value.value)
+            return entry.spell == spellid and Functions.values.compare(value.operator, idx, value.value)
         end
         return false
     end,
     print = function(_, value)
         local link = addon:Widget_GetSpellLink(value.spell, value.ranked)
-        return addon.compareString(value.operator, string.format(L["%s was cast"], addon.nullable(link, L["<spell>"])),
-                        string.format(L["%s casts ago"], addon.nullable(value.value)))
+        return Functions.presentation.compareString(value.operator, string.format(L["%s was cast"], Functions.presentation.nullable(link, L["<spell>"])),
+                        string.format(L["%s casts ago"], Functions.presentation.nullable(value.value)))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -293,7 +309,7 @@ addon:RegisterCondition("SPELL_HISTORY_TIME", {
     valid = function(_, value)
         if value.spell ~= nil then
             local validSpell = addon.IsConditionSpellID(value.spell)
-            return (value.operator ~= nil and addon.isin(addon.operators, value.operator) and
+            return (value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                     validSpell and value.value ~= nil and value.value >= 0)
         else
             return false
@@ -303,14 +319,14 @@ addon:RegisterCondition("SPELL_HISTORY_TIME", {
         local spellid, reason = addon:Widget_GetSpellId(value.spell, value.ranked)
         if not spellid then return nil, reason or "spell-data-unavailable" end
         for _, entry in pairs(addon.spellHistory) do
-            return entry.spell == spellid and addon.compare(value.operator, (evalStart - entry.time), value.value)
+            return entry.spell == spellid and Functions.values.compare(value.operator, (evalStart - entry.time), value.value)
         end
         return false
     end,
     print = function(_, value)
         local link = addon:Widget_GetSpellLink(value.spell, value.ranked)
-        return addon.compareString(value.operator, string.format(L["%s was cast"], addon.nullable(link, L["<spell>"])),
-                string.format(L["%s seconds ago"], addon.nullable(value.value)))
+        return Functions.presentation.compareString(value.operator, string.format(L["%s was cast"], Functions.presentation.nullable(link, L["<spell>"])),
+                string.format(L["%s seconds ago"], Functions.presentation.nullable(value.value)))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -353,11 +369,11 @@ addon:RegisterCondition("SPELL_ACTIVE", {
     evaluate = function(value, cache)
         local spellid, reason = addon:Widget_GetSpellId(value.spell, value.ranked)
         if not spellid then return nil, reason or "spell-data-unavailable" end
-        return addon.getCached(cache, addon.Platform.IsCurrentSpell, addon.Platform, spellid)
+        return Functions.cache.getCached(cache, addon.Platform.IsCurrentSpell, addon.Platform, spellid)
     end,
     print = function(_, value)
         local link = addon:Widget_GetSpellLink(value.spell, value.ranked)
-        return string.format(L["%s {{!is|is not}} active or pending"], addon.nullable(link, L["<spell>"]))
+        return string.format(L["%s {{!is|is not}} active or pending"], Functions.presentation.nullable(link, L["<spell>"]))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -385,11 +401,11 @@ addon:RegisterCondition("SPELL_AUTOREPEAT", {
     evaluate = function(value, cache)
         local spellid, reason = addon:Widget_GetSpellId(value.spell, value.ranked)
         if not spellid then return nil, reason or "spell-data-unavailable" end
-        return addon.getCached(cache, addon.Platform.IsAutoRepeatActive, addon.Platform, spellid)
+        return Functions.cache.getCached(cache, addon.Platform.IsAutoRepeatActive, addon.Platform, spellid)
     end,
     print = function(_, value)
         local link = addon:Widget_GetSpellLink(value.spell, value.ranked)
-        return string.format(L["%s {{!is|is not}} auto-repeating"], addon.nullable(link, L["<spell>"]))
+        return string.format(L["%s {{!is|is not}} auto-repeating"], Functions.presentation.nullable(link, L["<spell>"]))
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")

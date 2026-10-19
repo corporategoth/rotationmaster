@@ -13,8 +13,12 @@ function addon:ShowFieldSchemaEditor(owner,fields,fieldOrder,changed,ownerValid,
     if not model then d.active=false;frame:Hide();owner.form:Message(string.format(L['Invalid field schema: %s'],why));return nil end
     d.model=resume and resume.model or model;d.path=resume and resume.path or {};d.requiresApply=resume and resume.requiresApply or model.requiredFieldsInvalid or false;local baseline=resume and resume.baseline or addon:CopySettingsData(d.model.root);d.baseline=baseline;d.folded=resume and resume.folded or {}
     function d:CaptureDraft()
-        local raw={};for _,record in ipairs(p.edits) do if record.dirty then for key,control in pairs(p.fields) do if control==record.control then raw[key]=control:GetText();break end end end end
-        return {model=self.model,path=addon:CopySettingsData(self.path),baseline=addon:CopySettingsData(baseline),raw=raw,requiresApply=self.requiresApply,folded=addon:CopySettingsData(self.folded)}
+        local raw,focus={},nil
+        for _,record in ipairs(p.edits) do for key,control in pairs(p.fields) do if control==record.control then
+            if record.dirty then raw[key]=control:GetText() end
+            if control:HasFocus() then focus={key=key,cursor=control.GetCursorPosition and control:GetCursorPosition()} end;break
+        end end end
+        return {model=self.model,path=addon:CopySettingsData(self.path),baseline=addon:CopySettingsData(baseline),raw=raw,focus=focus,scroll=p.scroll.workbenchBar:GetValue(),requiresApply=self.requiresApply,folded=addon:CopySettingsData(self.folded)}
     end
     local function valid() return d.active and d.serial==serial and ownerValid() end
     function d:Close()
@@ -22,7 +26,7 @@ function addon:ShowFieldSchemaEditor(owner,fields,fieldOrder,changed,ownerValid,
         if ownerValid() then owner:Show() end
     end
     function d:IsDirty()
-        local dirty=self.requiresApply or not addon:SettingsDataEqual(d.model.root,baseline);for _,record in ipairs(p.edits) do dirty=dirty or record.dirty end
+        local dirty=self.requiresApply or addon:GetFieldSchemaIndex(d.model,baseline).dirty;for _,record in ipairs(p.edits) do dirty=dirty or record.dirty end
         return dirty
     end
     function d:Hide()
@@ -54,17 +58,15 @@ function addon:ShowFieldSchemaEditor(owner,fields,fieldOrder,changed,ownerValid,
     addon:SetUIScript(d.add,'OnClick',function() if valid() and p:FlushEdits() and d.model:Add({}) then p:Draw() end end)
     addon:SetUIScript(d.close,'OnClick',function() if valid() then d:Hide() end end)
     p:SetWidth(d.host:GetWidth());p:SetHeight(d.host:GetHeight())
+    d.pendingRaw=resume and resume.raw;d.pendingFocus=resume and resume.focus;local restoredScroll=resume and resume.scroll
     p:Open(function(form)
         form.scroll:ClearAllPoints();form.scroll:SetPoint('TOPLEFT',0,0);form.scroll:SetSize(form.frame:GetWidth()-20,form.frame:GetHeight())
         form.fields.add=d.add
         form.message:SetParent(frame);form.message:ClearAllPoints();form.message:SetPoint('BOTTOMLEFT',12,26);form.message:SetPoint('RIGHT',d.apply,'LEFT',-8,0);form.message:SetHeight(20)
         addon:BuildFieldSchemaCards(form,d)
-        if resume then
-            for _,record in ipairs(form.edits) do for key,text in pairs(resume.raw) do if form.fields[key]==record.control then record.control:SetText(text);record.dirty=true end end end
-            resume=nil
-        end
         d:UpdateActions()
     end)
+    p.scroll.workbenchBar:SetValue(restoredScroll or 0)
     if d.model.requiredFieldsInvalid then p:Message(L['Required field references need review. Apply keeps the displayed root requirements.']) end
     addon:SetUIScript(frame,'OnUpdate',function() if not valid() then d:Close() else d:UpdateActions() end end)
     owner:HideForChild();frame:Show();addon:RegisterWindowForEscape(d);return d

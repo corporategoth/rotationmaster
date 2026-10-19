@@ -10,7 +10,7 @@ local function source(name) return {name=name,description=name..' documentation'
 local function edit(d,key,value) local c=assert(d.form.fields[key],key);c:SetText(value);c.scripts.OnTextChanged(c,true);c.scripts.OnEnterPressed(c) end
 local function code(d,value) d.code.edit:SetText(value);d.code.edit.scripts.OnTextChanged(d.code.edit,true);d:UpdateActions() end
 local function conditionEditor(f,a)
-    for _,path in ipairs({'Core/custom_condition_owner.lua','Core/custom_authoring.lua','Core/schema_authoring.lua','UI/schema_cards.lua','UI/schema_editor.lua','UI/custom_source_fields.lua','UI/settings_transfer.lua','UI/custom_condition_transfer.lua','UI/icon_picker.lua','UI/help.lua','Core/custom_condition_services.lua','Options/custom_condition.lua','UI/custom_condition_editor.lua','UI/condition_source_preview.lua'}) do local file=io.open(path);if file then file:close();f.load(path) end end
+    for _,path in ipairs({'Core/custom_condition_owner.lua','Core/custom_authoring.lua','Core/schema_authoring.lua','Core/schema_canvas.lua','UI/schema_cards.lua','UI/schema_editor.lua','UI/custom_source_fields.lua','UI/settings_transfer.lua','UI/custom_condition_transfer.lua','UI/icon_picker.lua','UI/help.lua','Core/custom_condition_services.lua','Options/custom_condition.lua','UI/custom_condition_editor.lua','UI/condition_source_preview.lua'}) do local file=io.open(path);if file then file:close();f.load(path) end end
     a.conditionDefinitions=a.definitions;a.describeCondition=function(self,key) local definition=self.conditionDefinitions[key];return definition and definition.description end
 end
 local function previewContainers(f)

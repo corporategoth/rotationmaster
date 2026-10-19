@@ -31,7 +31,9 @@ function addon:FormatCustomFieldSchema(fields)
     return format(normalized)
 end
 function addon:ParseCustomFieldSchema(text)
-    if type(text)~='string' or #text>32768 then return nil,'schema-limit' end
+    -- 512 nodes with valid 64-byte field names can exceed 32 KiB. Keep
+    -- byte work bounded while allowing every newly supported graph to roundtrip.
+    if type(text)~='string' or #text>65536 then return nil,'schema-limit' end
     local cursor,nodes=1,0
     local function skip() local _,last=text:find('^%s*',cursor);cursor=(last or cursor-1)+1 end
     local function token(pattern) skip();local first,last=text:find('^'..pattern,cursor);if first then local v=text:sub(first,last);cursor=last+1;return v end end

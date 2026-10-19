@@ -1,7 +1,7 @@
 local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite()
 local function fixture(inline)
     local f=F.new();local a=f.addon;dofile('tests/fixtures/native_ui.lua')(f.env);local make=f.env.CreateFrame;f.env.CreateFrame=function(kind,...) local frame=make(kind,...);if kind=='EditBox' then local set=frame.SetText;frame.SetText=function(self,text) if self.maxLetters and self.maxLetters>0 then text=text:sub(1,self.maxLetters) end;set(self,text) end end;return frame end;local data,deps=dofile('tests/fixtures/codec.lua')();a.RotationData=data;a.NewRotationCodec=function() return data.NewCodec(deps) end;a.pretty_name='Rotation Master';a.name='rotationmaster';a.db.char={};a.db.global.custom_conditions={}
-    for _,path in ipairs({'Core/custom_condition_owner.lua','UI/settings_draft.lua','Core/custom_authoring.lua','Core/schema_authoring.lua','UI/schema_cards.lua','UI/schema_editor.lua','UI/custom_source_fields.lua','UI/settings_history.lua','UI/settings_unsaved.lua','UI/settings_layout.lua','UI/settings_ordered.lua','UI/settings_roster_order.lua','UI/settings_form.lua','UI/settings_transfer.lua','UI/custom_condition_transfer.lua','UI/icon_picker.lua','UI/help.lua','Core/custom_condition_services.lua','Options/custom_condition.lua','UI/lua_input_diagnostics.lua','UI/lua_editor.lua','UI/custom_condition_editor.lua'}) do local h=io.open(path);if h then h:close();f.load(path) end end
+    for _,path in ipairs({'Core/custom_condition_owner.lua','UI/settings_draft.lua','Core/custom_authoring.lua','Core/schema_authoring.lua','Core/schema_canvas.lua','UI/schema_cards.lua','UI/schema_editor.lua','UI/custom_source_fields.lua','UI/settings_history.lua','UI/settings_unsaved.lua','UI/settings_layout.lua','UI/settings_ordered.lua','UI/settings_roster_order.lua','UI/settings_form.lua','UI/settings_transfer.lua','UI/custom_condition_transfer.lua','UI/icon_picker.lua','UI/help.lua','Core/custom_condition_services.lua','Options/custom_condition.lua','UI/lua_input_diagnostics.lua','UI/lua_editor.lua','UI/custom_condition_editor.lua'}) do local h=io.open(path);if h then h:close();f.load(path) end end
     a.conditionDefinitions=a.definitions;a.RegisterCondition=function(self,key,value) self.conditionDefinitions[key]=value;if value.on_register then value.on_register(key) end end
     f.env.loadstring=function(text,name) local fn,why=loadstring(text,name);if fn then setfenv(fn,f.env) end;return fn,why end
     if inline then f.load('UI/settings_collections.lua');f.load('UI/settings_conditions.lua');f.load('UI/condition_source_pane.lua');a.listConditions=function(_,_,_,store) local tags={};for key in pairs((store or a.db).global.custom_conditions) do tags[#tags+1]=key end;table.sort(tags);return tags end end
@@ -345,7 +345,7 @@ end)
 test('schema cards show nested field types controls and detached editing',function()
     local f,a=fixture();local d=a:condition_edit_box(function() end);d.model.value.fields={group={inner='number'},last='boolean'};d.form:Draw();d.form.fields.schemaGraph:Click();local g=d.schemaEditor
     assert(g.cards and g.cards['1'] and g.cards['1/1'] and g.cards['2'],'schema is still a flat drill-down list')
-    local parent,child=g.cards['1'],g.cards['1/1'];assert(parent.decoration and child.frame:GetParent()==parent.frame and child.frame.point[2]>0)
+    local parent,child=g.cards['1'],g.cards['1/1'];assert(parent.decoration and child.frame:GetParent()==g.form.child and child.frame.point[2]>parent.frame.point[2] and child.frame:GetFrameLevel()>parent.frame:GetFrameLevel())
     assert(not parent.up:IsEnabled() and not g.cards['2'].down:IsEnabled());assert(parent.help and parent.duplicate and parent.remove.icon and parent.type and parent.name)
     child.duplicate:Click();assert(#g.model.root.children[1].children==2 and not d.model.value.fields.group.inner_copy)
     g.cards['1'].fold:Click();assert(not g.cards['1/1'] and g.cards['1']);g.cards['1'].fold:Click();assert(g.cards['1/1'])
@@ -369,7 +369,7 @@ test('schema field dirty markers and validation update before redraw',function()
 end)
 test('deep legacy schemas stay repairable with positive controls and overlong names are marked',function()
     local f,a=fixture();local d=a:condition_edit_box(function() end);local nested='number';for i=1,36 do nested={field=nested} end;d.model.value.fields=nested;d.form:Draw();d.form.fields.schemaGraph:Click();local g=d.schemaEditor
-    local count=0;for _,card in pairs(g.cards) do count=count+1;assert(card.type:GetWidth()>=80 and card.name:GetWidth()>=80 and card.frame:GetWidth()>=300,'legacy nesting made controls unusable') end;assert(count==36)
+    local count=0;for _,card in pairs(g.cards) do count=count+1;assert(card.type:GetWidth()>=80 and card.name:GetWidth()>=80 and card.frame:GetWidth()>=300,'legacy nesting made controls unusable') end;assert(g.cardView.scene.byKey[string.rep('1/',35)..'1'] and count<36);g.form.scroll.workbenchBar:SetValue(g.cardView.scene.byKey[string.rep('1/',35)..'1'].y);assert(g.cards[string.rep('1/',35)..'1'])
     g.cancel:Click();d.model.value.fields={[string.rep('x',65)]='number'};d.form:Draw();d.form.fields.schemaGraph:Click();assert(d.schemaEditor.cards['1'].frame.rmInvalid,'overlong legacy field is unmarked')
 end)
 test('native multiline input owns text height without a forced-height feedback loop',function()
@@ -503,5 +503,88 @@ test('required flags and pending root names survive owner resize until explicit 
     assert(g.active and g.model.root.children[1].required and g.form.fields.field_1:GetText()=='renamed');assert(source.requiredFields==nil and source.fields.unit=='string')
     assert(g:Apply() and d.model.value.requiredFields[1]=='renamed' and d.model.value.fields.renamed=='string')
     assert(source.requiredFields==nil and source.fields.unit=='string');p:Release()
+end)
+test('complete graphical schemas reach their last root field with bounded reusable rows and cached validation',function()
+    local f,a=fixture();local d=a:condition_edit_box(function() end);local fields={};for i=1,511 do fields[string.format('field%03d',i)]='number' end
+    d.model.value.fields=fields;d.form:Draw();d.form.fields.schemaGraph:Click();local g=d.schemaEditor;local view=g.cardView
+    assert(view.scene and #view.scene.rows==511,'graphical schema still truncates the complete model')
+    local calls=0;local original=a.IsEditableFieldSchemaName;a.IsEditableFieldSchemaName=function(...) calls=calls+1;return original(...) end
+    g.form.scroll.workbenchBar:SetValue(g.form.scroll.workbenchBar.scrollRange);assert(g.cards['511'] and g.cards['511'].required,'last root field is inaccessible')
+    local stale=g.cards['511'].remove.scripts.OnClick;local high=#view.rows
+    local warmRows,warmZones
+    for pass=1,2 do for i=0,10 do g.form.scroll.workbenchBar:SetValue(g.form.scroll.workbenchBar.scrollRange*i/10) end
+        if pass==1 then warmRows,warmZones=#view.rows,#view.zones else assert(#view.rows==warmRows and #view.zones==warmZones,'warm scrolling allocated additional row or gap leases') end
+    end
+    assert(#view.rows<40 and #view.rows<=high+4 and #view.zones<40,'schema pools grew with the complete model: '..#view.rows..'/'..high..'/'..#view.zones);assert(calls==0,'scroll repeated complete schema validation')
+    g.form.scroll.workbenchBar:SetValue(0);stale();assert(#g.model.root.children==511,'retired row callback removed its old field')
+    g.form.scroll.workbenchBar:SetValue(g.form.scroll.workbenchBar.scrollRange);local row=g.cards['511'];row.name:SetText('renamed');row.name.scripts.OnTextChanged(row.name,true);row.type:Click();for _,choice in ipairs(g.form.menu.rows) do if choice:GetText()=='Boolean' then choice:Click();break end end
+    g.cards['511'].required:Click();g.apply:Click()
+    assert(d.model.value.fields.renamed=='boolean' and d.model.value.requiredFields[1]=='renamed' and fields.field511=='number')
+end)
+test('unchanged schema action updates reuse dirty comparisons and invalid raw names pin recycled rows',function()
+    local f,a=fixture();local d=a:condition_edit_box(function() end);local fields={};for i=1,511 do fields[string.format('field%03d',i)]='number' end
+    d.model.value.fields=fields;d.form:Draw();d.form.fields.schemaGraph:Click();local g=d.schemaEditor;local first=g.cards['1'];local input=first.name
+    local comparisons=0;local equal=a.SettingsDataEqual;a.SettingsDataEqual=function(...) comparisons=comparisons+1;return equal(...) end
+    for i=1,20 do g:UpdateActions() end;assert(comparisons==0,'unchanged action updates traversed the schema baseline')
+    input:SetText('bad name');input.scripts.OnTextChanged(input,true);input:SetFocus();input:SetCursorPosition(3);local stale=input.scripts.OnEscapePressed
+    g.form.scroll.workbenchBar:SetValue(g.form.scroll.workbenchBar.scrollRange);assert(g.cards['1']==first and input:HasFocus() and input:GetText()=='bad name')
+    assert(not g:Apply() and g.active and fields.field001=='number')
+    input.scripts.OnEscapePressed(input);g.form.scroll.workbenchBar:SetValue(g.form.scroll.workbenchBar.scrollRange/2)
+    assert(first.lease and first.path[1]~=1,'clean released name slot was not recycled');first.name:SetFocus();stale();assert(first.name:HasFocus(),'retired Escape affected a new schema row')
+    g.cancel:Click()
+end)
+test('offscreen pending schema names and caret survive owner resize and remain repairable',function()
+    local f,a=fixture(true);local source=a:CopySettingsData(a.empty_condition);source.description='Large inline schema';source.fields={};for i=1,511 do source.fields[string.format('field%03d',i)]='number' end
+    a.db.global.custom_conditions.INLINE=source;a.conditionDefinitions.INLINE={description=source.description,fields=source.fields}
+    local host=f.env.CreateFrame('Frame');host:SetSize(1100,700);local p=a:OpenNativeSettings(host,'Conditions');local d=p.inlineCondition;d.form.fields.schemaGraph:Click();local g=d.schemaEditor
+    g.form.scroll.workbenchBar:SetValue(g.form.scroll.workbenchBar.scrollRange);local input=g.cards['511'].name;input:SetText('bad name');input.scripts.OnTextChanged(input,true);input:SetFocus();input:SetCursorPosition(3);g.form.scroll.workbenchBar:SetValue(0)
+    p:SetWidth(1060);d=p.inlineCondition;g=d.schemaEditor;input=g.form.fields.field_511
+    assert(input and input:GetText()=='bad name' and input:HasFocus() and input:GetCursorPosition()==3,'resize lost the offscreen pending name or native caret')
+    assert(not g:Apply() and source.fields.field511=='number');input:SetText('renamed');input.scripts.OnTextChanged(input,true);assert(g:Apply() and d.model.value.fields.renamed=='number');p:Release()
+end)
+test('nested schema viewport drag carries complete hidden descendants to newly exposed final gaps',function()
+    local f,a=fixture();local d=a:condition_edit_box(function() end);local fields={};for i=1,50 do local child={};for j=1,9 do child['child'..j]='string' end;fields[string.format('group%02d',i)]=child end
+    d.model.value.fields=fields;d.form:Draw();d.form.fields.schemaGraph:Click();local g=d.schemaEditor;local view=g.cardView;assert(#view.scene.rows==500)
+    g.form.scroll.workbenchBar:SetValue(g.form.scroll.workbenchBar.scrollRange);assert(g.cards['50'] and g.cards['50'].required and #view.rows<40)
+    view:BeginDrag({50});assert(view.ghost.count:GetText()=='10 cards');g.form.scroll.workbenchBar:SetValue(0)
+    local first;for _,zone in ipairs(view.zones) do if zone.target and #zone.path==0 and zone.gap==1 then first=zone end end
+    assert(first and view:Drop(first.path,first.gap));assert(g.model.root.children[1].name=='group50' and #g.model.root.children[1].children==9)
+    g.undo:Click();view=g.cardView;view:BeginDrag({1});g.form.scroll.workbenchBar:SetValue(g.form.scroll.workbenchBar.scrollRange)
+    local final;for _,zone in ipairs(view.zones) do if zone.target and #zone.path==0 and zone.gap==51 then final=zone end end
+    assert(final and view:Drop(final.path,final.gap));assert(g.model.root.children[50].name=='group01');g.undo:Click();assert(g.model.root.children[1].name=='group01');g.cancel:Click()
+end)
+test('schema viewport binding failure retires the partial lease and a later refresh recovers',function()
+    local f,a=fixture();local d=a:condition_edit_box(function() end);local fields={};for i=1,511 do fields[string.format('field%03d',i)]='number' end
+    d.model.value.fields=fields;d.form:Draw();d.form.fields.schemaGraph:Click();local g=d.schemaEditor;local view=g.cardView
+    local paint=a.PaintSelectorSelection;local failed=false;a.PaintSelectorSelection=function(...) if not failed then failed=true;error('injected schema binding failure') end;return paint(...) end
+    local ok=pcall(g.form.scroll.workbenchBar.SetValue,g.form.scroll.workbenchBar,g.form.scroll.workbenchBar.scrollRange)
+    assert(not ok and failed and not view.refreshing,'failed schema binding kept the viewport reentry guard')
+    assert(#g.form.edits==0 and next(g.cards)==nil,'failed binding retained records for retired input leases')
+    a.PaintSelectorSelection=paint;view:Refresh();assert(g.cards['511'] and g.cards['511'].name:GetText()=='field511')
+    local input=g.cards['511'].name;input:SetText('renamed');input.scripts.OnTextChanged(input,true);assert(g:Apply() and d.model.value.fields.renamed=='number');d:Close()
+end)
+test('legacy field names keep their complete text for graphical repair without changing the source',function()
+    local f,a=fixture();local d=a:condition_edit_box(function() end);local name=string.rep('a',5000);local fields={[name]='number'}
+    d.model.value.fields=fields;d.form:Draw();d.form.fields.schemaGraph:Click();local g=d.schemaEditor;local input=g.cards['1'].name
+    assert(input:GetText()==name and g.cards['1'].frame.rmInvalid,'accepted compatibility name was truncated before repair')
+    input:SetText('repaired');input.scripts.OnTextChanged(input,true);assert(g:Apply() and d.model.value.fields.repaired=='number' and fields[name]=='number');d:Close()
+end)
+test('every supported graphical schema fits the parent Advanced field without truncation or false errors',function()
+    local f,a=fixture();local source=a:CopySettingsData(a.empty_condition);source.description='Full supported schema';source.fields={}
+    for i=1,511 do source.fields['f'..string.rep('x',60)..string.format('%03d',i)]='number' end
+    a.db.global.custom_conditions.FULL_SCHEMA=source;a.conditionDefinitions.FULL_SCHEMA={description=source.description,fields=source.fields}
+    local original=a:CopySettingsData(source);local d=a:condition_edit_box(function() end,'FULL_SCHEMA',source);local input=d.form.fields.schema;local raw=a:FormatCustomFieldSchema(source.fields)
+    assert(#raw>32768 and input.maxLetters>=#raw and input:GetText()==raw,'supported schema was truncated by its parent input')
+    assert(a:ParseCustomFieldSchema(raw),'the supported graph cannot roundtrip through Advanced')
+    d.validationRequested=true;d:UpdateActions();assert(not input.rmInvalid and not d:IsDirty() and a:SettingsDataEqual(source,original))
+end)
+test('untouched compatibility schemas validate from the model while dirty Advanced text keeps strict parser limits',function()
+    local f,a=fixture();local source=a:CopySettingsData(a.empty_condition);source.description='Legacy schema';source.fields={}
+    for i=1,600 do source.fields['field'..i]='number' end
+    a.db.global.custom_conditions.LEGACY_SCHEMA=source;a.conditionDefinitions.LEGACY_SCHEMA={description=source.description,fields=source.fields}
+    local d=a:condition_edit_box(function() end,'LEGACY_SCHEMA',source);d.validationRequested=true;d:UpdateActions();local input=d.form.fields.schema
+    assert(not input.rmInvalid and not d:IsDirty(),'hidden raw schema imposed new save limits on untouched compatibility data')
+    input:SetText(input:GetText()..' ');input.scripts.OnTextChanged(input,true);d:UpdateActions();assert(input.rmInvalid and not d:Flush(),'dirty Advanced text bypassed its bounded parser')
+    input.scripts.OnEscapePressed(input);d:UpdateActions();assert(not input.rmInvalid and not d:IsDirty() and source.fields.field600=='number')
 end)
 finish()

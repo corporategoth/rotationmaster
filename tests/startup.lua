@@ -1152,5 +1152,20 @@ test('broker launcher toggles the workbench through its guarded Hide without cre
     env.broker.OnClick(nil,'LeftButton');assert(opened==1 and closed==1 and shown,'launcher bypassed pending-change close guard')
     shown=false;env.broker.OnClick(nil,'LeftButton');assert(opened==2)
 end)
+test('main metadata events update the actual ItemLoader consumed by native reference search',function()
+    for _,modern in ipairs({false,true}) do
+        local env,a,load=fixture(modern);local previous=env.LibStub;env.LibStub=nil;load('Libs/LibStub/LibStub.lua')
+        local lib=env.LibStub;local call=getmetatable(lib).__call
+        getmetatable(lib).__call=function(self,name,silent) if self.libs[name] then return call(self,name,silent) end;return previous(name,silent) end
+        load('Libs/AceGUI-3.0-Item-EditBox/ItemLoader.lua');local item=lib('AceGUI-3.0-ItemLoader');local available=false
+        env.GetItemInfoInstant=function(value) if value==10 or value=='Event potion' then return 10,nil,nil,nil,110 end end
+        env.GetItemInfo=function(id) if available and id==10 then return 'Event potion','item:10',nil,nil,nil,nil,nil,nil,nil,110 end end
+        load('main.lua');initialize(a);a.debug=function() end
+        a:ITEM_DATA_LOAD_RESULT('ITEM_DATA_LOAD_RESULT',10,false);assert(not item.itemList[10])
+        available=true;a:ITEM_DATA_LOAD_RESULT('ITEM_DATA_LOAD_RESULT',10,true)
+        assert(item.itemList[10].name=='Event potion' and item.itemList[10].link=='item:10' and item.itemListReverse['event potion']==10 and not item.loader)
+        load('Core/reference_catalog.lua');local rows=a:GetReferenceProvider('Item_EditBox').search('',{limit=20});assert(#rows==1 and rows[1].id==10 and rows[1].name=='Event potion')
+    end
+end)
 print(string.format('%d passed, %d failed', passed, failures))
 os.exit(failures == 0 and 0 or 1)

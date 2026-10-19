@@ -32,7 +32,7 @@ function addon:BuildCustomSourceFields(form,owner)
     local schema=form:Edit('schema',nil,raw,function(text) return addon:ParseCustomFieldSchema(text) end,function(fields) owner.model:Change(function(model) model.value.fields=fields;model.value.fieldOrder=nil;model.value.requiredFields=addon:FilterCustomRequiredFields(model.value.requiredFields,fields) end) end)
     scroll.schemaContent=scroll.schemaContent or CreateFrame('Frame',nil,scroll);local content=scroll.schemaContent
     scroll.schemaMeasure=scroll.schemaMeasure or scroll:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall');local measure=scroll.schemaMeasure;measure:SetWordWrap(true);measure:Hide()
-    schema:SetMaxLetters(32768);schema:SetMultiLine(true);schema:ClearAllPoints();schema:SetParent(content);schema:SetTextInsets(6,6,4,4);schema:SetJustifyV('TOP');schema:SetAltArrowKeyMode(false);schema:SetAllPoints(content);schema:SetText(raw)
+    schema:SetMaxLetters(math.max(65536,#raw));schema:SetMultiLine(true);schema:ClearAllPoints();schema:SetParent(content);schema:SetTextInsets(6,6,4,4);schema:SetJustifyV('TOP');schema:SetAltArrowKeyMode(false);schema:SetAllPoints(content);schema:SetText(raw)
     local function layoutRaw()
         local innerWidth=math.max(1,width-18);measure:SetWidth(math.max(1,innerWidth-12));measure:SetText(schema:GetText())
         local contentHeight=math.max(height,measure:GetStringHeight()+12)

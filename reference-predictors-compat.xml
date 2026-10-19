@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Ui xmlns="http://www.blizzard.com/wow/ui/">
+<!-- Explicit legacy widget registrations; data services load separately. -->
+<Script file="Libs\AceGUI-3.0-Spell-EditBox\EditBox-Core.lua" />
+<Script file="Libs\AceGUI-3.0-Spell-EditBox\Spells-Editbox.lua" />
+<Script file="Libs\AceGUI-3.0-Spell-EditBox\Casts-EditBox.lua" />
+<Script file="Libs\AceGUI-3.0-Spell-EditBox\Auras-EditBox.lua" />
+<Script file="Libs\AceGUI-3.0-Spell-EditBox\Player-EditBox.lua" />
+<Script file="Libs\AceGUI-3.0-Item-EditBox\EditBox-Core.lua" />
+<Script file="Libs\AceGUI-3.0-Item-EditBox\Items-Editbox.lua" />
+<Script file="Libs\AceGUI-3.0-Item-EditBox\Inventory-EditBox.lua" />
+</Ui>

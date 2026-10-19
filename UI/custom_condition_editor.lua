@@ -103,11 +103,13 @@ function addon:condition_edit_box(update,key,source,saveAllowed,embedded)
     end
     function d:UpdateValidation()
         if not self.code or self.readOnly then return end
-        local input={functionRevision=addon.functionRegistryVersion or 0,disabled=self.model.value.disabled,requiredFields=self.model.value.requiredFields,selected=self.selected,requested=self.validationRequested,key=p.fields.identifier:GetText(),description=p.fields.description:GetText(),schema=p.fields.schema:GetText(),icon=self.model.value.icon}
+        local schemaDirty=false;for _,record in ipairs(p.edits) do if record.control==p.fields.schema and record.dirty then schemaDirty=true end end
+        local input={functionRevision=addon.functionRegistryVersion or 0,disabled=self.model.value.disabled,requiredFields=self.model.value.requiredFields,selected=self.selected,requested=self.validationRequested,key=p.fields.identifier:GetText(),description=p.fields.description:GetText(),schema=p.fields.schema:GetText(),schemaDirty=schemaDirty,icon=self.model.value.icon}
         for name in pairs(addon.CustomConditionCallbacks) do input[name]=name==self.selected and self.code:GetText() or self.codeHistory[name] and self.codeHistory[name].text or self.model.value[name] end
         if addon:SettingsDataEqual(input,self.validationInput) then return end
         self.validationInput=addon:CopySettingsData(input)
-        local source=addon:CopySettingsData(self.model.value);source.description=input.description;source.fields=addon:ParseCustomFieldSchema(input.schema)
+        local source=addon:CopySettingsData(self.model.value);source.description=input.description
+        if input.schemaDirty then source.fields=addon:ParseCustomFieldSchema(input.schema) end
         if source.fields and not addon:SettingsDataEqual(source.fields,self.model.value.fields) then source.requiredFields=addon:FilterCustomRequiredFields(source.requiredFields,source.fields) end
         for name in pairs(addon.CustomConditionCallbacks) do source[name]=input[name] end
         local checked,why

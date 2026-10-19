@@ -57,4 +57,8 @@ test('editor whitespace normalization keeps multiline literal values unchanged',
     local code='\n        return [=[\n        literal whitespace stays\n          inside the string |c12345678\n        ]=]\n'
     local normalized=a:NormalizeLuaSourceForEditor(code);assert(normalized:sub(1,6)=='return');assert(assert(loadstring(code))()==assert(loadstring(normalized))(),'editor formatting changed a multiline literal')
 end)
+test('Advanced schema byte allowance fits full graphs while retaining its hard input bound',function()
+    local _,a=fixture();assert(a:ParseCustomFieldSchema('{}'..string.rep(' ',40000)))
+    local value,why=a:ParseCustomFieldSchema('{}'..string.rep(' ',65535));assert(not value and why=='schema-limit')
+end)
 finish()

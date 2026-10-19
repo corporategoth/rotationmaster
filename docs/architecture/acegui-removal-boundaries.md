@@ -31,7 +31,7 @@ Numeric Table fields support simple top/middle/bottom vertical cell alignment wi
 - Optional modules can register AceConfig applications. Removing their configuration bridge would change a public extension contract.
 - Historical RM widget registrations preserve original saved-source identities and mixed native/Ace pool transfer. The normal factories acquire RM widgets directly; the registrations are compatibility entry points.
 - `LibsAugment/FAIAP.lua` now exports the native syntax engine without any Ace lookup. Its unchanged historical LuaEditBox constructor lives in the separately loaded `FAIAP-AceGUI.lua` compatibility bridge and shares the same engine. The bridge remains loaded for existing custom sources.
-- `AceGUI-3.0-ItemLoader` supplies item discovery and metadata callbacks used by Core/reference_catalog and main. It is a data service despite its library name. The Item/Spell XMLs also bundle predictor widgets; split service loading from compatibility registration before pruning them.
+- `AceGUI-3.0-ItemLoader` supplies item discovery and metadata callbacks used by Core/reference_catalog and main. It is a data service despite its library name. RM loads the two unchanged loader scripts directly. The root `reference-predictors-compat.xml` and `reference-predictor-augments-compat.xml` manifests retain predictor and augmentation registrations separately and in their original order. Both compatibility manifests remain loaded; no vendor file, LibStub name, widget version or constructor was changed.
 - Spell/spec/totem/glyph, ActionSlot and SharedMedia widget registrations may be explicitly requested by historical source or optional modules. Their names are not evidence that an ordinary native control uses them.
 
 ## Verification
