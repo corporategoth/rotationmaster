@@ -60,7 +60,9 @@ addon:RegisterCondition("PET", {
         return true
     end,
     evaluate = function(_, cache)
-        return Functions.cache.getCached(cache, UnitExists, "pet")
+        local record,reason=Functions.cache.getCached(cache, addon.Platform.GetPetObservation, addon.Platform, false)
+        if not record then return nil,reason end
+        return record.exists
     end,
     print = function()
         return L["you {{!have|do not have}} a pet"]
@@ -78,7 +80,10 @@ addon:RegisterCondition("PET_NAME", {
         return value.value ~= nil
     end,
     evaluate = function(value, cache)
-        return Functions.cache.getCached(cache, GetUnitName, "pet") == value.value
+        local record,reason=Functions.cache.getCached(cache, addon.Platform.GetPetObservation, addon.Platform, true)
+        if not record then return nil,reason end
+        if not record.exists then return false end
+        return record.name == value.value
     end,
     print = function(_, value)
         return string.format(L["you {{!have|do not have}} a pet named %s"], Functions.presentation.nullable(value.value, L["<name>"]))
@@ -277,18 +282,10 @@ addon:RegisterCondition("THREAT", {
                value.threat ~= nil and value.threat >= 1 and value.threat <= 4
     end,
     evaluate = function(value, cache)
-        if not Functions.cache.getCached(cache, UnitExists, value.unit) then return false end
-        local enemy = Functions.cache.getCached(cache, UnitIsEnemy, "player", value.unit)
-        if enemy then
-            local rv = Functions.cache.getCached(cache, UnitThreatSituation, "player", value.unit)
-            if rv ~= nil and rv >= value.threat - 1 then
-                return true
-            else
-                return false
-            end
-        else
-            return false
-        end
+        local observed,reason=Functions.cache.getCached(cache, addon.Platform.GetUnitThreatObservation, addon.Platform, value.unit)
+        if observed==nil then return nil,reason end
+        if observed==false then return false end
+        return observed >= value.threat - 1
     end,
     print = function(_, value)
         return string.format(L["you {{!are|are not}} at least %s on %s"], Functions.presentation.nullable(addon.threat[value.threat], L["<threat>"]),

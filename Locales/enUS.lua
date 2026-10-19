@@ -2372,8 +2372,10 @@ L["Display lookup table."] = true
 L["Evaluation cache, or nil to bypass caching."] = true
 L["Exact selected unit token; the attacker remains player."] = true
 L["Exact unit token checked for existence and passed to the selected metadata API."] = true
+L["Exact unit token used for existence and as the recipient of player hostility and threat queries."] = true
 L["Exact unit token whose resource should be observed; this does not redirect player or vehicle units."] = true
 L["Exact unit token whose selected flag should be observed."] = true
+L["Finite native threat status, false for known absence/nonenemy/no-threat, or nil for unavailable observations."] = true
 L["First exact unit token, checked for existence before comparison."] = true
 L["First table to compare."] = true
 L["Format comparison wording with named Boolean alternatives when the operator has a negative form. The primary flag marks the positive form as the primary alternative. Positive operator labels use the captured operator map; negative labels and nullable dispatch retain their live addon APIs."] = true
@@ -2410,11 +2412,13 @@ L["Numeric widget supporting slider bounds, percent display and pending-edit val
 L["Observation kind: cast or channel. These use different native interruptibility tuple positions."] = true
 L["Observe a readable raw unit level on known clients. A readable absent unit returns exists=false; present units require a positive finite integer UnitLevel. Unknown boss levels, missing, failed, restricted or malformed observations return nil with a reason. This does not use effective or scaled levels."] = true
 L["Observe a unit casting or channeling on supported readable clients. A readable inactive result returns active=false. Active records contain name and independently available remainingSeconds and interruptible fields, with remainingReason or interruptibleReason when an optional field is unavailable. Missing, failed or restricted observations return nil with a reason."] = true
+L["Observe exact pet existence and optionally its formatted GetUnitName display name. Presence-only queries never require name data. Known absence skips the name query. Present pets require a readable nonempty name only when requested; required missing, failed, nil, restricted or malformed observations return nil with a reason. The display helper is called with its single original pet argument, without UnitName fallback or inferred bar, health or ability state."] = true
 L["Observe explicit mana or the current raw power resource on supported readable clients. Select resource identities from the live PowerType enum; explicit mana never falls back to the current bar. Known absence returns exists=false; missing, failed, restricted or malformed observations return nil with a reason. Current-mode quantities preserve signed native resources; explicit mana is nonnegative. Request maximum only when needed; percentage consumers must require a positive maximum."] = true
 L["Observe glyph sockets on verified Wrath, Cata and Mists client layouts. Returns slots and a complete flag. Each slot has active=false when known locked or empty, active=true plus spellID when occupied, or nil active plus reason when unavailable. Unknown layouts and failed count queries return nil with a reason. This does not compare item names or prove exact item-to-spell identity."] = true
 L["Observe one consumed native unit metadata field after checking UnitExists: class uses UnitClass return two, creature uses the localized UnitCreatureType name, and classification uses UnitClassification. A readable absent unit returns false without querying metadata. Unused tuple fields do not affect availability; a required missing, failed, nil, restricted or malformed value returns nil with a reason. No player class, GUID, enum or translation inference is added."] = true
 L["Observe one current unit flag: combat uses UnitAffectingCombat, enemy uses UnitIsEnemy with player as the first unit, and pvp uses UnitIsPVP. A readable absent unit returns false without querying the flag. Required missing, failed, restricted or malformed observations return nil with a reason. This preserves the exact selected unit and does not infer friendliness, attackability or other unit states."] = true
 L["Observe one independent zero-argument player flag: stealthed uses IsStealthed, control uses HasFullControl, and outdoors uses IsOutdoors. Readable true and false retain their meanings. Required missing, failed, nil, restricted or malformed data returns nil with a reason. No existence, instance or ability-usability inference is added."] = true
+L["Observe ordered selected-unit existence, hostility from player, then the player threat status on that unit. Known absence, nonenemy and a successfully read nil threat status return false, preserving the no-threat predicate. Finite status numbers including zero retain their original comparison meaning. Required missing, failed, nil, restricted or malformed facts return nil with a reason. No attackability, death, combat or vehicle inference is added."] = true
 L["Observe readable current health and optionally maximum health on supported clients. A readable absent unit returns exists=false. Missing, failed, restricted or malformed observations return nil with a reason; they do not establish an absent unit or a health value."] = true
 L["Observe the player current movement speed on supported readable clients. This queries GetUnitSpeed for player only, without testing another unit or redirecting vehicle ownership. Zero means stationary; positive finite fractional speeds remain valid. Missing, failed, restricted or malformed observations return nil with a reason."] = true
 L["Observe whether the player can attack a selected unit that is not dead, using the exact UnitExists, UnitCanAttack and UnitIsDead predicates. Known absence or a readable false attack result returns false without querying death. Required missing, failed, restricted or malformed observations return nil with a reason. This does not test ghosts, range, hostility or ability usability, and does not redirect unit ownership."] = true
@@ -2429,10 +2433,13 @@ L["Original non-nil lookup result, or a colored placeholder string."] = true
 L["Original non-nil value, or a colored placeholder string."] = true
 L["Packaged helper from Conditions/spatial.lua."] = true
 L["Packaged helper from utils.lua."] = true
+L["Pet observation with Boolean exists and, for a requested present pet, name; nil when required data is unavailable."] = true
 L["Policy or availability reason for a nil movement observation."] = true
 L["Policy, query-validation or availability reason for a nil metadata observation."] = true
+L["Policy, query-validation or availability reason for a nil pet observation."] = true
 L["Policy, query-validation or availability reason for a nil player flag."] = true
 L["Policy, query-validation or availability reason for a nil resource observation."] = true
+L["Policy, query-validation or availability reason for a nil threat observation."] = true
 L["Policy, query-validation or availability reason for a nil unit flag."] = true
 L["Policy, query-validation or availability reason for nil attackability."] = true
 L["Policy, token-validation or availability reason for a nil identity result."] = true
@@ -2517,6 +2524,7 @@ L["True includes only listed entries; false or nil excludes listed entries."] = 
 L["True marks the main comparison to negate; false or nil leaves it eligible only when no primary predicate exists."] = true
 L["True removes listed entries; false or nil preserves only listed entries."] = true
 L["True requests raid membership; false or nil requests any group membership."] = true
+L["True requests the formatted pet name; false or omitted reads presence only."] = true
 L["True to require this exact rank; false or nil follows the available rank."] = true
 L["True when array[value] is non-nil."] = true
 L["True when every visited entry compares equal in both directions."] = true

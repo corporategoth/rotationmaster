@@ -9,7 +9,7 @@ The reviewed inventory contains 116 Built In condition definitions across suppor
 
 The Functions namespace system is already implemented. `Core/functions.lua` validates explicit qualified call paths, builds callback-private namespace tables at compilation, and resolves stable dependency identities. It does not publish ambient `Conditions`, `Platform.spells` or `utils` globals. A displayed namespace is therefore not evidence that the authored callback has migrated to a function module. Existing `addon` dot/colon methods and original captured bindings must remain available to saved custom definitions, imports and source duplicates.
 
-The older unchecked progress items for the utility registry, readonly Built In source/duplicates, transitive dependency transfer and definition enable/disable describe work now implemented. Native client acceptance remains separate from those offline contracts. The AceGUI removal checklist is still real.
+The older unchecked progress items for the utility registry, readonly Built In source/duplicates, transitive dependency transfer and definition enable/disable describe work now implemented. Native client acceptance remains separate from those offline contracts. AceGUI removal is complete in a8711a9; historical compatibility checkpoints below describe the migration path, not supported GUI APIs. Current native-only boundaries override those earlier records.
 
 ## Implemented audit corrections
 
@@ -373,3 +373,12 @@ Fifteen ordinary consumers now use their actual owners: six UI shallow copies, s
 Actual UI/runtime regressions poison the old aliases and verify nested shallow identity, ordered item selection, exact cache receiver/argument arity, nil/false reasons, refresh, detached inventory publication, private workspace history and stale-owner callbacks. Reversing each of the fifteen individual qualifications fails its regression. Reversing the exact expressions restores every affected product file to742794c. The nine Core/common changes leave collector metadata byte-identical.
 
 The selected helper-family audit now has fifteen deliberately retained references: ten in saved-source-bound/live-dispatch helpers, three live presentation nullable calls and two live condition-catalog index calls. UnitWidget's current keys dispatch, protectedRead's current cache/type/pcall dispatch, presentation's current nullable/operator maps and catalog's current index dispatch have explicit compatibility tests. Private executable bodies, IDs, getters and import requirements remain intact. These are compatibility boundaries, not evidence that normal UI/runtime consumers still need the old alias. Every inventoried direct condition callback helper call and the DISTANCE passed cache reference is already canonical.
+
+
+## Pet and threat continuation
+
+The next bounded pet observation retains UnitExists("pet") and the actual GetUnitName("pet") wrapper, including its realm-display formatting and omitted optional argument. Presence-only checks do not require name metadata. An observed absent pet is false; a present pet with an unavailable required name remains unknown. The two modes have separate per-pass cache identities. Do not replace the display helper with UnitName or infer a usable pet from bars, health, range or abilities.
+
+The THREAT observation preserves selected-unit existence followed by UnitIsEnemy("player", unit) and UnitThreatSituation("player", unit). Known absence or nonenemy short-circuits false. Required missing, failed, nil, restricted or malformed Boolean observations remain unknown. A successfully read nil threat result preserves the existing no-threat/no-match behavior. Native zero remains numeric and can satisfy the lowest configured threshold; other finite numbers retain the same comparison without new integer/range tightening. Nonfinite/nonnumber threat values are unavailable. THREAT_COUNT is a separate tracked snapshot predicate.
+
+All five pinned primary Unit API declarations explicitly allow nil for UnitThreatSituation and declare Boolean existence/hostility. Nilability supports preserving the old optional-result handling; it does not by itself describe gameplay meaning. These contracts and the source/engine tests remain offline evidence, with actual client return/access acceptance separate.

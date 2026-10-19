@@ -101,8 +101,8 @@ test('remaining fifty-four direct calls qualify actual owning leaves with no ext
         end
         for name in pairs(owners) do
             local expectedCount=record.allcounts[name] or 0
-            -- Normalized ATTACKABLE saves two raw queries; COMBAT/ENEMY each save one.
-            if module=='combat' and name=='getCached' then expectedCount=expectedCount-4 end
+            -- ATTACKABLE and THREAT each save two raw queries; COMBAT/ENEMY each save one.
+            if module=='combat' and name=='getCached' then expectedCount=expectedCount-6 end
             assert((totals[name] or 0)==expectedCount,module..' '..name..' count changed')
         end
     end
@@ -110,7 +110,10 @@ test('remaining fifty-four direct calls qualify actual owning leaves with no ext
 end)
 test('every callback byte and parameter remains identical after reversing only namespace qualifiers',function()
     local _,a=fixture();local callbacks={};for name in pairs(a.CustomConditionCallbacks) do callbacks[#callbacks+1]=name end;table.sort(callbacks)
-    for module,record in pairs(baseline) do for tag,hash in pairs(record.hashes) do local source=legacy(a,a:GetBuiltinConditionSource(tag));local parts={}
+    for module,record in pairs(baseline) do for tag,hash in pairs(record.hashes) do local current=a:GetBuiltinConditionSource(tag)
+        if tag=='THREAT' then current.evaluate=dofile('tests/fixtures/restore_threat_repairs.lua')(current.evaluate,true) end
+        if tag=='PET' or tag=='PET_NAME' then current.evaluate=dofile('tests/fixtures/restore_pet_repairs.lua')(current.evaluate,tag) end
+        local source=legacy(a,current);local parts={}
         -- Separate ECS API regression tests require the corrected dot contract.
         -- Reverse only those explicit semantic fixes for this namespace-only byte proof.
         if tag=='ECS_STAT' or tag=='ECS_STAT_PCT' then

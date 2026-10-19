@@ -6,7 +6,7 @@ local expected={
     STEALTHED={evaluate={getCached=1}},INCONTROL={evaluate={getCached=1}},
     LOC_TYPE={valid={isin=2},evaluate={getCached=2,compare=1},print={compareString=1,nullable=2}},
     LOC_BLOCKED={valid={isin=2},evaluate={getCached=2,compare=1},print={compareString=1,nullable=2}},
-    MOVING={evaluate={getCached=1}},THREAT={valid={isin=1},evaluate={getCached=3},print={nullable=2}},
+    MOVING={evaluate={getCached=1}},THREAT={valid={isin=1},evaluate={getCached=1},print={nullable=2}},
     THREAT_COUNT={valid={isin=1},evaluate={compare=1},print={compareString=1,nullable=2}},
     FORM={evaluate={getCached=1},print={nullable=1}},
     ATTACKABLE={valid={isin=1},evaluate={getCached=1},print={nullable=1}},
@@ -96,7 +96,7 @@ test('combat callbacks select eight explicit canonical leaves with exact call co
             for name in pairs(groups) do assert(source.bindings[qualified(name)]==id(name),'canonical source binding missing') end
         end
     end
-    assert(calls==67 and callbacks==38)
+    assert(calls==65 and callbacks==38)
     for name,hash in pairs(valueHashes) do
         local binding='builtin:Conditions/combat.lua:'..name;local record=assert(a.builtinFunctions[binding]);assert(record.valueBinding and a:FunctionSourceHash(record.source)==hash,'historical value metadata changed')
         assert(rawequal(a:ResolveFunctionBinding(binding),a.builtinSourceModules['Conditions/combat.lua'](name)))
