@@ -125,13 +125,13 @@ addon:RegisterCondition("MANA", {
                 value.value ~= nil)
     end,
     evaluate = function(value, cache)
-        if not Functions.cache.getCached(cache, UnitExists, value.unit) then return false end
-        local cur = Functions.cache.getCached(cache, UnitPower, value.unit, Enum.PowerType.Mana)
+        local record,reason=Functions.cache.getCached(cache,addon.Platform.GetUnitPowerObservation,addon.Platform,value.unit,"mana",value.value<0)
+        if not record then return nil,reason end
+        if not record.exists then return false end
         if value.value < 0 then
-            local max = Functions.cache.getCached(cache, UnitPowerMax, value.unit, Enum.PowerType.Mana)
-            return Functions.values.compare(value.operator, (max-cur), -value.value)
+            return Functions.values.compare(value.operator, (record.maximum-record.current), -value.value)
         else
-            return Functions.values.compare(value.operator, cur, value.value)
+            return Functions.values.compare(value.operator, record.current, value.value)
         end
     end,
     print = function(_, value)
@@ -173,9 +173,13 @@ addon:RegisterCondition("MANAPCT", {
                 value.value ~= nil and value.value >= 0.00 and value.value <= 1.00)
     end,
     evaluate = function(value, cache)
-        if not Functions.cache.getCached(cache, UnitExists, value.unit) then return false end
-        local mana = Functions.cache.getCached(cache, UnitPower, value.unit, Enum.PowerType.Mana) / Functions.cache.getCached(cache, UnitPowerMax, value.unit, Enum.PowerType.Mana) * 100;
-        return Functions.values.compare(value.operator, mana, value.value * 100)
+        local record,reason=Functions.cache.getCached(cache,addon.Platform.GetUnitPowerObservation,addon.Platform,value.unit,"mana",true)
+        if not record then return nil,reason end
+        if not record.exists then return false end
+        if record.maximum<=0 then return nil,"invalid-power-maximum" end
+        local percentage = record.current / record.maximum * 100
+        if percentage~=percentage or percentage==math.huge or percentage==-math.huge then return nil,"invalid-power-percentage" end
+        return Functions.values.compare(value.operator, percentage, value.value * 100)
     end,
     print = function(_, value)
         local v = value.value
@@ -216,20 +220,15 @@ addon:RegisterCondition("POWER", {
                 value.value ~= nil)
     end,
     evaluate = function(value, cache)
-        if not Functions.cache.getCached(cache, UnitExists, value.unit) then return false end
-        -- Cannot use longterm cache for player as different forms may have different powers
-        local power = Functions.cache.getCached(cache, UnitPowerType, value.unit)
-
-        if (power == nil) then
-            return false
-        end
-
-        local cur = Functions.cache.getCached(cache, UnitPower, value.unit, power)
+        local record,reason=Functions.cache.getCached(cache,addon.Platform.GetUnitPowerObservation,addon.Platform,value.unit,"current",value.value<0)
+        if not record then return nil,reason end
+        if not record.exists then return false end
         if value.value < 0 then
-            local max = Functions.cache.getCached(cache, UnitPowerMax, value.unit, power)
-            return Functions.values.compare(value.operator, (max-cur), -value.value)
+            local deficit = record.maximum-record.current
+            if deficit~=deficit or deficit==math.huge or deficit==-math.huge then return nil,"invalid-power-deficit" end
+            return Functions.values.compare(value.operator, deficit, -value.value)
         else
-            return Functions.values.compare(value.operator, cur, value.value)
+            return Functions.values.compare(value.operator, record.current, value.value)
         end
     end,
     print = function(_, value)
@@ -272,15 +271,13 @@ addon:RegisterCondition("POWERPCT", {
                 value.value ~= nil and value.value >= 0.00 and value.value <= 1.00)
     end,
     evaluate = function(value, cache)
-        if not Functions.cache.getCached(cache, UnitExists, value.unit) then return false end
-        -- Cannot use longterm cache for player as different forms may have different powers
-        local power = Functions.cache.getCached(cache, UnitPowerType, value.unit)
-
-        if (power == nil) then
-            return false
-        end
-        local mana = Functions.cache.getCached(cache, UnitPower, value.unit, power) / Functions.cache.getCached(cache, UnitPowerMax, value.unit, power) * 100;
-        return Functions.values.compare(value.operator, mana, value.value)
+        local record,reason=Functions.cache.getCached(cache,addon.Platform.GetUnitPowerObservation,addon.Platform,value.unit,"current",true)
+        if not record then return nil,reason end
+        if not record.exists then return false end
+        if record.maximum<=0 then return nil,"invalid-power-maximum" end
+        local percentage = record.current / record.maximum * 100
+        if percentage~=percentage or percentage==math.huge or percentage==-math.huge then return nil,"invalid-power-percentage" end
+        return Functions.values.compare(value.operator, percentage, value.value * 100)
     end,
     print = function(_, value)
         local v = value.value

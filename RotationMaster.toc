@@ -30,6 +30,7 @@ Platform/groups.lua
 Platform/casting.lua
 Platform/unit_health.lua
 Platform/unit_level.lua
+Platform/unit_power.lua
 Platform/specializations.lua
 Platform/talents.lua
 Platform/spells.lua

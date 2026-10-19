@@ -73,6 +73,93 @@ local repairedHealthEvaluates={
         return Functions.values.compare(value.operator, health, value.value * 100)
     ]=],
 }
+local originalPowerEvaluates={
+    MANA="\n"..[=[
+        if not addon.getCached(cache, UnitExists, value.unit) then return false end
+        local cur = addon.getCached(cache, UnitPower, value.unit, Enum.PowerType.Mana)
+        if value.value < 0 then
+            local max = addon.getCached(cache, UnitPowerMax, value.unit, Enum.PowerType.Mana)
+            return addon.compare(value.operator, (max-cur), -value.value)
+        else
+            return addon.compare(value.operator, cur, value.value)
+        end
+    ]=],
+    MANAPCT="\n"..[=[
+        if not addon.getCached(cache, UnitExists, value.unit) then return false end
+        local mana = addon.getCached(cache, UnitPower, value.unit, Enum.PowerType.Mana) / addon.getCached(cache, UnitPowerMax, value.unit, Enum.PowerType.Mana) * 100;
+        return addon.compare(value.operator, mana, value.value * 100)
+    ]=],
+    POWER="\n"..[=[
+        if not addon.getCached(cache, UnitExists, value.unit) then return false end
+        -- Cannot use longterm cache for player as different forms may have different powers
+        local power = addon.getCached(cache, UnitPowerType, value.unit)
+
+        if (power == nil) then
+            return false
+        end
+
+        local cur = addon.getCached(cache, UnitPower, value.unit, power)
+        if value.value < 0 then
+            local max = addon.getCached(cache, UnitPowerMax, value.unit, power)
+            return addon.compare(value.operator, (max-cur), -value.value)
+        else
+            return addon.compare(value.operator, cur, value.value)
+        end
+    ]=],
+    POWERPCT="\n"..[=[
+        if not addon.getCached(cache, UnitExists, value.unit) then return false end
+        -- Cannot use longterm cache for player as different forms may have different powers
+        local power = addon.getCached(cache, UnitPowerType, value.unit)
+
+        if (power == nil) then
+            return false
+        end
+        local mana = addon.getCached(cache, UnitPower, value.unit, power) / addon.getCached(cache, UnitPowerMax, value.unit, power) * 100;
+        return addon.compare(value.operator, mana, value.value)
+    ]=],
+}
+local repairedPowerEvaluates={
+    MANA="\n"..[=[
+        local record,reason=Functions.cache.getCached(cache,addon.Platform.GetUnitPowerObservation,addon.Platform,value.unit,"mana",value.value<0)
+        if not record then return nil,reason end
+        if not record.exists then return false end
+        if value.value < 0 then
+            return Functions.values.compare(value.operator, (record.maximum-record.current), -value.value)
+        else
+            return Functions.values.compare(value.operator, record.current, value.value)
+        end
+    ]=],
+    MANAPCT="\n"..[=[
+        local record,reason=Functions.cache.getCached(cache,addon.Platform.GetUnitPowerObservation,addon.Platform,value.unit,"mana",true)
+        if not record then return nil,reason end
+        if not record.exists then return false end
+        if record.maximum<=0 then return nil,"invalid-power-maximum" end
+        local percentage = record.current / record.maximum * 100
+        if percentage~=percentage or percentage==math.huge or percentage==-math.huge then return nil,"invalid-power-percentage" end
+        return Functions.values.compare(value.operator, percentage, value.value * 100)
+    ]=],
+    POWER="\n"..[=[
+        local record,reason=Functions.cache.getCached(cache,addon.Platform.GetUnitPowerObservation,addon.Platform,value.unit,"current",value.value<0)
+        if not record then return nil,reason end
+        if not record.exists then return false end
+        if value.value < 0 then
+            local deficit = record.maximum-record.current
+            if deficit~=deficit or deficit==math.huge or deficit==-math.huge then return nil,"invalid-power-deficit" end
+            return Functions.values.compare(value.operator, deficit, -value.value)
+        else
+            return Functions.values.compare(value.operator, record.current, value.value)
+        end
+    ]=],
+    POWERPCT="\n"..[=[
+        local record,reason=Functions.cache.getCached(cache,addon.Platform.GetUnitPowerObservation,addon.Platform,value.unit,"current",true)
+        if not record then return nil,reason end
+        if not record.exists then return false end
+        if record.maximum<=0 then return nil,"invalid-power-maximum" end
+        local percentage = record.current / record.maximum * 100
+        if percentage~=percentage or percentage==math.huge or percentage==-math.huge then return nil,"invalid-power-percentage" end
+        return Functions.values.compare(value.operator, percentage, value.value * 100)
+    ]=],
+}
 local function copies(a)
     local current,old={},{}
     for _,tag in ipairs(tags) do if a.conditionDefinitions[tag] then
@@ -100,7 +187,7 @@ local function unavailable(a,value)
     assert(a:EvaluateRotationSequence(body,function(v) return a:evaluateConditionResult(v) end,function() error('unavailable statistic selected a branch') end).status=='unavailable')
 end
 
-test('eleven statistics declarations qualify exactly114 calls in33 callbacks through five owned leaves',function()
+test('eleven statistics declarations qualify exactly104 calls in33 callbacks through five owned leaves',function()
     local f,a=fixture();local manifest=assert(a.builtinCallbackBindings and a.builtinCallbackBindings['Conditions/stats.lua'],'statistics canonical bindings missing');local leaves=0
     for alias,id in pairs(manifest) do local name=alias:match('([%w_]+)$');leaves=leaves+1;assert(alias==path(name) and id=='builtin:utils.lua:'..name and a:ResolveFunctionBinding(id)==a.Functions[owners[name]][name]) end;assert(leaves==5)
     local totals={isin=0,compare=0,getCached=0,nullable=0,compareString=0};local callbacks=0
@@ -109,7 +196,7 @@ test('eleven statistics declarations qualify exactly114 calls in33 callbacks thr
             local _,n=source[callback]:gsub(path(name):gsub('%.','%%.')..'%(','');totals[name]=totals[name]+n;assert(not source[callback]:find('addon.'..name..'(',1,true))
         end end
     end
-    assert(callbacks==33 and totals.isin==22 and totals.compare==17 and totals.getCached==33 and totals.nullable==27 and totals.compareString==15 and not f.env.Functions)
+    assert(callbacks==33 and totals.isin==22 and totals.compare==17 and totals.getCached==23 and totals.nullable==27 and totals.compareString==15 and not f.env.Functions)
 end)
 test('legacy-shaped full sources retain every original native expression field Help body parameter and private capture hash',function()
     local _,a=fixture();local baseline={};for _,tag in ipairs(tags) do
@@ -117,6 +204,11 @@ test('legacy-shaped full sources retain every original native expression field H
         if originalHealthEvaluates[tag] then
             assert(a:GetBuiltinConditionSource(tag).evaluate==repairedHealthEvaluates[tag],tag.." changed beyond the explicit health repair")
             baseline[tag].evaluate=originalHealthEvaluates[tag]
+        end
+        if originalPowerEvaluates[tag] then
+            local source=a:GetBuiltinConditionSource(tag)
+            assert(source.evaluate==repairedPowerEvaluates[tag] and table.concat(source.parameters.evaluate,',')=='value,cache',tag.." changed beyond the explicit power repair")
+            baseline[tag].evaluate=originalPowerEvaluates[tag]
         end
         baseline[tag].icon='Interface\\AddOns\\rotationmaster\\Assets\\Conditions\\'..(tag=='RUNE_COOLDOWN' and 'time' or 'resources')
     end
@@ -154,7 +246,7 @@ test('deficit percentage trend RealMobHealth and rune calculations preserve thei
             for _,mode in ipairs({'both','noheals','nodmg'}) do value.mode=mode;s.realHealth=80;s.realMaximum=120;sameRun(a,a.conditionDefinitions[tag],current[tag],old[tag],value) end
         end end end
         s.realHealth=nil;s.realMaximum=150;sameRun(a,a.conditionDefinitions.TT_HEALTHPCT,current.TT_HEALTHPCT,old.TT_HEALTHPCT,node('TT_HEALTHPCT'))
-        local value=node('POWERPCT');value.operator='EQUALS';value.value=20;assert(current.POWERPCT.evaluate(value,{})==true,'legacy raw-percent comparison was silently changed')
+        local value=node('POWERPCT');value.operator='EQUALS';value.value=.2;assert(current.POWERPCT.evaluate(value,{})==true,'repaired power percentage did not use its stored fractional threshold')
         value=node('RUNE');value.operator='EQUALS';value.value=1;assert(current.RUNE.evaluate(value,{})==true)
         value=node('RUNE_COOLDOWN');value.operator='EQUALS';value.value=8;assert(current.RUNE_COOLDOWN.evaluate(value,{})==true)
     end
@@ -169,14 +261,14 @@ test('player class remains longterm-cached while target class and current power 
     sameRun(a,a.conditionDefinitions.POWER,current.POWER,old.POWER,value,{});assert(s.calls.powerType==reads+1)
 end)
 test('known missing units or power identities remain invertible while native errors and invalid arithmetic stay unavailable',function()
-    for _,mode in ipairs({'nil-health','nil-maximum','throw-health','missing-api','opaque-health','nil-exists'}) do local f,a,s=fixture();copies(a)
+    for _,mode in ipairs({'nil-health','nil-maximum','throw-health','missing-api','opaque-health','nil-exists','nil-power-type'}) do local f,a,s=fixture();copies(a)
         local opaque={};f.env.canaccessvalue=function(value) return not rawequal(value,opaque) end
-        local tag='HEALTH';if mode=='nil-exists' then s.exists=nil elseif mode=='nil-health' then s.health=nil elseif mode=='nil-maximum' then s.maximum=nil;tag='HEALTHPCT' elseif mode=='throw-health' then s.throw='health' elseif mode=='missing-api' then f.env.UnitHealth=nil else s.health=opaque end
+        local tag='HEALTH';if mode=='nil-power-type' then s.powerType=nil;tag='POWER' elseif mode=='nil-exists' then s.exists=nil elseif mode=='nil-health' then s.health=nil elseif mode=='nil-maximum' then s.maximum=nil;tag='HEALTHPCT' elseif mode=='throw-health' then s.throw='health' elseif mode=='missing-api' then f.env.UnitHealth=nil else s.health=opaque end
         for _,prefix in ipairs({'','COPY_','LEGACY_'}) do local value=node(tag);value.type=prefix..tag;unavailable(a,value) end
     end
-    for _,mode in ipairs({'false-exists','nil-power-type','nil-class'}) do local _,a,s=fixture();copies(a)
-        if mode=='nil-exists' then s.exists=nil elseif mode=='false-exists' then s.exists=false elseif mode=='nil-power-type' then s.powerType=nil else s.class=nil end
-        local tag=mode=='nil-power-type' and 'POWER' or mode=='nil-class' and 'POINT' or 'HEALTH'
+    for _,mode in ipairs({'false-exists','nil-class'}) do local _,a,s=fixture();copies(a)
+        if mode=='false-exists' then s.exists=false else s.class=nil end
+        local tag=mode=='nil-class' and 'POINT' or 'HEALTH'
         for _,prefix in ipairs({'','COPY_','LEGACY_'}) do local value=node(tag);value.type=prefix..tag;assert(a:evaluateConditionResult(value).status=='no-match' and a:evaluateConditionResult({type='NOT',value=value}).status=='match') end
     end
 end)

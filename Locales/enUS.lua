@@ -2364,11 +2364,13 @@ L["Dense array of nonempty text fields."] = true
 L["Destination array modified in place."] = true
 L["Display lookup table."] = true
 L["Evaluation cache, or nil to bypass caching."] = true
+L["Exact unit token whose resource should be observed; this does not redirect player or vehicle units."] = true
 L["First table to compare."] = true
 L["Format comparison wording with named Boolean alternatives when the operator has a negative form. The primary flag marks the positive form as the primary alternative. Positive operator labels use the captured operator map; negative labels and nullable dispatch retain their live addon APIs."] = true
 L["Fresh readable record with active, optional name, remainingSeconds and interruptible. Remaining time is in seconds and is clamped to zero. An unavailable optional field has its own reason; it does not invalidate a readable active name."] = true
 L["Fresh readable record with exists and, when present, a positive integer level."] = true
 L["Fresh readable record with exists and, when present, current health. Maximum health is included only when requested."] = true
+L["Fresh readable record with exists and, when present, powerType and finite current quantity. Requested maximum is finite and nonnegative. Quantities may be fractional; current-mode current may be signed."] = true
 L["Function or global function name to call."] = true
 L["Identifier-keyed scalar values or typed predicates. Strings, finite numbers and booleans are supported; referenced slots must be present. Values are captured when the phrase is created."] = true
 L["Insert each value visited by ipairs at its corresponding leading index in the destination array. Existing entries shift after the inserted prefix; traversal stops at the first missing source index."] = true
@@ -2397,6 +2399,7 @@ L["Numeric widget supporting slider bounds, percent display and pending-edit val
 L["Observation kind: cast or channel. These use different native interruptibility tuple positions."] = true
 L["Observe a readable raw unit level on known clients. A readable absent unit returns exists=false; present units require a positive finite integer UnitLevel. Unknown boss levels, missing, failed, restricted or malformed observations return nil with a reason. This does not use effective or scaled levels."] = true
 L["Observe a unit casting or channeling on supported readable clients. A readable inactive result returns active=false. Active records contain name and independently available remainingSeconds and interruptible fields, with remainingReason or interruptibleReason when an optional field is unavailable. Missing, failed or restricted observations return nil with a reason."] = true
+L["Observe explicit mana or the current raw power resource on supported readable clients. Select resource identities from the live PowerType enum; explicit mana never falls back to the current bar. Known absence returns exists=false; missing, failed, restricted or malformed observations return nil with a reason. Current-mode quantities preserve signed native resources; explicit mana is nonnegative. Request maximum only when needed; percentage consumers must require a positive maximum."] = true
 L["Observe glyph sockets on verified Wrath, Cata and Mists client layouts. Returns slots and a complete flag. Each slot has active=false when known locked or empty, active=true plus spellID when occupied, or nil active plus reason when unavailable. Unknown layouts and failed count queries return nil with a reason. This does not compare item names or prove exact item-to-spell identity."] = true
 L["Observe readable current health and optionally maximum health on supported clients. A readable absent unit returns exists=false. Missing, failed, restricted or malformed observations return nil with a reason; they do not establish an absent unit or a health value."] = true
 L["Observed membership, or nil when unavailable."] = true
@@ -2407,6 +2410,7 @@ L["Original non-nil lookup result, or a colored placeholder string."] = true
 L["Original non-nil value, or a colored placeholder string."] = true
 L["Packaged helper from Conditions/spatial.lua."] = true
 L["Packaged helper from utils.lua."] = true
+L["Policy, query-validation or availability reason for a nil resource observation."] = true
 L["Policy, validation or availability reason for a nil health observation."] = true
 L["Policy, validation or availability reason for a nil snapshot."] = true
 L["Positive integer glyph item ID stored by the condition; arrays, item-set keys and spell IDs are not item references."] = true
@@ -2477,6 +2481,7 @@ L["Transient trusted phrase recognized by condition summary rendering; do not pe
 L["Transient typed predicate used as a named phrase value; do not persist it as condition data."] = true
 L["Trimmed text."] = true
 L["True also observes maximum health; false or nil reads current health only."] = true
+L["True also observes the selected resource maximum; false or nil reads current quantity only."] = true
 L["True includes only listed entries; false or nil excludes listed entries."] = true
 L["True marks the main comparison to negate; false or nil leaves it eligible only when no primary predicate exists."] = true
 L["True removes listed entries; false or nil preserves only listed entries."] = true
@@ -2501,4 +2506,5 @@ L["Value returned when unit is player."] = true
 L["Value to display; false is preserved."] = true
 L["Visit entries in both tables and compare each value with the indexed value in the other table using Lua equality. Normal indexing and equality metamethods apply; nested contents are not compared recursively."] = true
 L["Wrap text at whitespace boundaries near a target column count. Long words are retained intact."] = true
+L["mana selects the explicit live Mana enum; current reads and forwards the actual UnitPowerType identity, including Mana zero."] = true
 -- END GENERATED RM PUBLIC HELPER DOCS
