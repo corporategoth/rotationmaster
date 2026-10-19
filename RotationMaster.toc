@@ -44,6 +44,8 @@ locales.xml
 constants.lua
 Functions/values.lua
 Functions/presentation.lua
+Functions/text.lua
+Functions/collections.lua
 utils.lua
 profiler.lua
 Diagnostics/errors.lua
@@ -104,6 +106,7 @@ UI/drag_presentation.lua
 UI/unsaved.lua
 UI/condition_widgets.lua
 UI/condition_icon.lua
+UI/condition_position.lua
 UI/condition_display.lua
 UI/selector.lua
 UI/checkbox.lua

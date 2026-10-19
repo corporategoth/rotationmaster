@@ -1,6 +1,5 @@
 local addon_name, addon = ...
 local L=LibStub("AceLocale-3.0"):GetLocale(addon_name)
-local AceGUI=LibStub("AceGUI-3.0")
 
 -- Consumes trusted results from RotationData, never live observations or Lua.
 function addon:FormatRotationComparison(result)
@@ -73,11 +72,11 @@ function addon:FormatRotationComparison(result)
 end
 
 local function label(parent,text,kind)
-    local widget=AceGUI:Create(kind or "Label");widget:SetFullWidth(true);widget:SetText(text);parent:AddChild(widget)
+    local widget=addon:CreateConditionLabel();if kind=='Heading' then widget:SetFontObject('GameFontNormal');widget:SetColor(1,.82,.25) end;widget:SetFullWidth(true);widget:SetText(text);parent:AddChild(widget)
     return widget
 end
 local directionNames={current=L["Selected rotation → your rotation"],source=L["Built In updates since cloning"],custom=L["Your edits since cloning"]}
-function addon:RenderRotationComparison(parent,view,spec,showUnchanged)
+local function renderComparison(self,parent,view,spec,showUnchanged)
     parent:ReleaseChildren()
     local model=self.RotationData.BuildVisualComparison(view)
     if not model then label(parent,L["This comparison could not be completed."]);return end
@@ -90,7 +89,7 @@ function addon:RenderRotationComparison(parent,view,spec,showUnchanged)
     end end
     if model.complete and model.displayChangeCount==0 then label(parent,L["No differences."]) end
     if unchanged>0 then
-        local toggle=AceGUI:Create("CheckBox");toggle:SetFullWidth(true)
+        local toggle=addon:CreateConditionCheckBox();toggle:SetFullWidth(true)
         toggle:SetLabel(L["Show unchanged steps"]);toggle:SetValue(showUnchanged==true)
         toggle:SetCallback("OnValueChanged",function(_,_,value) addon:RenderRotationComparison(parent,view,spec,value==true) end)
         parent:AddChild(toggle)
@@ -100,17 +99,15 @@ function addon:RenderRotationComparison(parent,view,spec,showUnchanged)
     local rightTitle=view.key=="source" and L["Current Built In rotation"] or view.key=="import" and L["Incoming rotation"] or L["Your rotation"]
     if view.key=="import" then leftTitle=L["Your rotation"] end
     local function pair(left,right,render)
-        local row=AceGUI:Create("SimpleGroup");row:SetFullWidth(true);row:SetLayout("Flow")
+        local row=addon:CreateConditionGroup();row:SetFullWidth(true);row:SetLayout('Table');row:SetUserData('table',{columns={1,1}});parent:AddChild(row)
         for _,side in ipairs({"left","right"}) do
-            local column=AceGUI:Create("SimpleGroup");column:SetRelativeWidth(0.5);column:SetLayout("List");column.alignoffset=0
+            local column=addon:CreateConditionGroup();column:SetFullWidth(true);column:SetLayout('List');row:AddChild(column)
             label(column,side=="left" and leftTitle or rightTitle,"Heading")
             local entry
             if side=="left" then entry=left else entry=right end
             if entry then render(column,entry) else label(column,L["No corresponding step"])
             end
-            row:AddChild(column)
         end
-        parent:AddChild(row)
     end
     if model.namesChanged then
         label(parent,L["Rotation names"],"Heading")
@@ -148,65 +145,74 @@ function addon:RenderRotationComparison(parent,view,spec,showUnchanged)
         end
     end
 end
+function addon:RenderRotationComparison(parent,view,spec,showUnchanged)
+    local paused=type(parent.PauseLayout)=='function' and type(parent.ResumeLayout)=='function'
+    if paused then parent:PauseLayout() end
+    local ok,why=pcall(renderComparison,self,parent,view,spec,showUnchanged)
+    if paused then parent:ResumeLayout() end
+    if not ok then error(why,0) end
+end
+
 function addon:ShowComparisonReport(report)
-    local frame=AceGUI:Create("Window")
-    frame:SetTitle(L["Comparison diagnostic details"]);frame:SetWidth(820);frame:SetHeight(500);frame:SetLayout("Flow")
-    frame:SetCallback("OnClose",function(widget) AceGUI:Release(widget) end);self.HideOnEscape(frame)
-    local text=AceGUI:Create("MultiLineEditBox")
-    text:SetLabel(L["Press Ctrl+C to copy the selected diagnostic details."])
-    text:SetFullWidth(true);text:SetFullHeight(true);text:SetNumLines(24);text:DisableButton(true)
-    local setting=false
-    text:SetText(report)
-    text:SetCallback("OnTextChanged",function(_,_,current)
-        if not setting and current~=report then setting=true;text:SetText(report);setting=false end
-    end)
-    frame:AddChild(text);text:SetFocus();text:SetCursorPosition(0);text:HighlightText(0,-1)
-    return frame
+    local d=self.rotationComparisonReport
+    if not d then d=self:CreateWorkbenchTextReport(820,500);self.rotationComparisonReport=d end
+    d:SetReport(L['Comparison diagnostic details'],report);return d
 end
 function addon:ShowRotationComparison(spec,id)
-    local frame=AceGUI:Create("Window")
-    frame:SetTitle(L["Compare rotations"]);frame:SetWidth(1080);frame:SetHeight(700);frame:SetLayout("Flow")
-    frame:SetCallback("OnClose",function(widget) AceGUI:Release(widget) end);self.HideOnEscape(frame)
-    local own=self:GetEditableRotation(spec,id)
-    label(frame,string.format(L["Your rotation: %s"],own and own.name or DEFAULT))
-    local targets,labels={},{}
-    local selected
-    local sourced=self:GetSourcedRotationView(spec,id)
+    local d=self.rotationComparisonWindow
+    if not d then
+        d={frame=CreateFrame('Frame',nil,UIParent),children={}};self.rotationComparisonWindow=d
+        d.frame:SetSize(1080,700);d.frame:SetPoint('CENTER');d.frame:SetFrameStrata('FULLSCREEN_DIALOG');d.frame:SetToplevel(true);d.frame:SetClampedToScreen(true);d.frame:EnableMouse(true);self:MakeWindowOpaque(d.frame)
+        d.title=d.frame:CreateFontString(nil,'OVERLAY','GameFontNormal');d.chrome=self:CreateWorkbenchDialogChrome(d.frame,d.title)
+        d.summary=d.frame:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall');d.summary:SetPoint('TOPLEFT',12,-38);d.summary:SetSize(1030,20);d.summary:SetJustifyH('LEFT');d.summary:SetWordWrap(false);d.summary:SetMaxLines(1)
+        d.close=self:CreateWorkbenchIconButton(d.frame,'close',L['Close']);d.close:SetPoint('TOPRIGHT',-5,-5)
+        d.scroll=self:CreateWorkbenchGroupViewport(d.frame);d.scroll:SetPoint('TOPLEFT',12,-154);d.scroll:SetSize(1030,518)
+        function d:Hide() self.frame:Hide() end
+        function d:Clear()
+            self.active=false;self.scroll:ReleaseConditionContent()
+            for _,widget in ipairs(self.children) do if widget~=self.graph then addon:ReleaseConditionWidget(widget) end end
+            self.children={};self.graph=nil
+        end
+        addon:SetUIScript(d.close,'OnClick',function() d:Hide() end);addon:SetUIScript(d.frame,'OnHide',function() d:Clear() end);d.frame:Hide()
+    end
+    d:Clear();d.serial=(d.serial or 0)+1;local serial=d.serial;local profile=self.db.profile
+    local function valid() return d.active and d.serial==serial and d.frame:IsShown() and addon.db.profile==profile end
+    local function control(widget,x,y,width)
+        widget:SetParent(d);widget.frame:ClearAllPoints();widget.frame:SetPoint('TOPLEFT',d.frame,'TOPLEFT',x,y);widget:SetWidth(width);widget.frame:Show();d.children[#d.children+1]=widget;return widget
+    end
+    d.active=true
+    local own=self:GetEditableRotation(spec,id);d.chrome:SetContext(L['Compare rotations'],L['Read-only'],own and own.name or DEFAULT)
+    d.summary:SetText(string.format(L['Your rotation: %s'],own and own.name or DEFAULT))
+    local targets,labels={},{};local selected;local sourced=self:GetSourcedRotationView(spec,id)
     for _,row in ipairs(self:ListDefaultRotations(spec)) do
-        targets[#targets+1]={kind="builtin",id=row.id}
-        labels[#targets]="|cff5bc0eb"..row.name.."|r ("..L["Built In · read-only"]..")"
-        if sourced and sourced.lineage.sourceId==row.id and sourced.lineage.sourceKind=="builtin" then selected=#targets end
+        targets[#targets+1]={kind='builtin',id=row.id};labels[#targets]='|cff5bc0eb'..row.name..'|r ('..L['Built In · read-only']..')'
+        if sourced and sourced.lineage.sourceId==row.id and sourced.lineage.sourceKind=='builtin' then selected=#targets end
     end
-    local custom={}
-    for key,body in pairs(self.db.profile.rotations[spec] or {}) do
-        if key~=id then custom[#custom+1]={id=key,name=body.name or DEFAULT} end
-    end
+    local custom={};for key,body in pairs(profile.rotations[spec] or {}) do if key~=id then custom[#custom+1]={id=key,name=body.name or DEFAULT} end end
     table.sort(custom,function(a,b) if a.name==b.name then return a.id<b.id end;return a.name<b.name end)
-    for _,entry in ipairs(custom) do targets[#targets+1]={kind="custom",id=entry.id};labels[#targets]=entry.name end
-    local chooser=AceGUI:Create("Dropdown")
-    chooser:SetFullWidth(true);chooser:SetLabel(L["Compare against"]);chooser:SetList(labels)
-    selected=selected or 1;chooser:SetValue(selected);frame:AddChild(chooser)
-    local direction=AceGUI:Create("Dropdown");direction:SetFullWidth(true);direction:SetLabel(L["Comparison view"]);frame:AddChild(direction)
-    local copy=AceGUI:Create("Button");copy:SetText(L["Copy diagnostic details"]);frame:AddChild(copy)
-    local graph=AceGUI:Create("ScrollFrame");graph:SetLayout("List");graph:SetFullWidth(true);graph:SetFullHeight(true);frame:AddChild(graph)
+    for _,entry in ipairs(custom) do targets[#targets+1]={kind='custom',id=entry.id};labels[#targets]=entry.name end
+    local chooser=control(self:CreateConditionDropdown(),12,-68,510);d.chooser=chooser;chooser:SetLabel(L['Compare against'])
+    local order={};for i=1,#labels do order[i]=i end;chooser:SetList(labels,order);selected=selected or 1;chooser:SetValue(selected)
+    local direction=control(self:CreateConditionDropdown(),536,-68,510);d.direction=direction;direction:SetLabel(L['Comparison view'])
+    local copy=control(self:CreateConditionButton(),12,-120,200);d.copy=copy;copy:SetText(L['Copy diagnostic details'])
+    local graph=self:CreateConditionGroup();graph:SetLayout('List');d.graph=graph;d.children[#d.children+1]=graph;d.scroll:SetConditionContent(graph)
     local result,report
     local function show(index)
+        if not valid() then return end
         local view=result and result.views and result.views[index]
-        if view then addon:RenderRotationComparison(graph,view,spec)
-        else graph:ReleaseChildren();label(graph,L["This comparison could not be completed."]) end
+        if view then addon:RenderRotationComparison(graph,view,spec) else graph:ReleaseChildren();label(graph,L['This comparison could not be completed.']) end
+        d.scroll:UpdateWorkbenchScroll()
     end
     local function refresh(index)
-        local why
-        result,why=addon:BuildRotationComparison(spec,id,targets[index])
-        report=result and addon:FormatRotationComparison(result) or string.format(L["Comparison unavailable: %s"],why)
-        local names={}
-        for i,view in ipairs(result and result.views or {}) do names[i]=directionNames[view.key] or L["Comparison"] end
-        direction:SetList(names);direction:SetValue(1);show(1)
+        if not valid() then return end
+        local why;result,why=addon:BuildRotationComparison(spec,id,targets[index]);report=result and addon:FormatRotationComparison(result) or string.format(L['Comparison unavailable: %s'],why)
+        local names,viewOrder={},{};for i,view in ipairs(result and result.views or {}) do names[i]=directionNames[view.key] or L['Comparison'];viewOrder[i]=i end
+        direction:SetList(names,viewOrder);direction:SetValue(1);direction:SetDisabled(#names==0);show(1)
     end
-    copy:SetCallback("OnClick",function() return addon:ShowComparisonReport(report) end)
-    direction:SetCallback("OnValueChanged",function(_,_,index) show(index) end)
-    chooser:SetCallback("OnValueChanged",function(_,_,index) refresh(index) end)
-    if #targets>0 then refresh(selected)
-    else chooser:SetDisabled(true);direction:SetDisabled(true);copy:SetDisabled(true);label(graph,L["No other rotations to compare."]) end
-    return frame
+    copy:SetCallback('OnClick',function() if valid() then return addon:ShowComparisonReport(report) end end)
+    direction:SetCallback('OnValueChanged',function(_,_,index) show(index) end);chooser:SetCallback('OnValueChanged',function(_,_,index) refresh(index) end)
+    d.frame:Show();self:RegisterWindowForEscape(d)
+    if #targets>0 then refresh(selected) else chooser:SetDisabled(true);direction:SetDisabled(true);copy:SetDisabled(true);label(graph,L['No other rotations to compare.']) end
+    addon:SetUIScript(d.frame,'OnUpdate',function() if d.active and d.serial==serial and not valid() then d:Hide() end end)
+    return d
 end

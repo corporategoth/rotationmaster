@@ -16,6 +16,37 @@ function addon:CreateWorkbenchTransferShell(width,height)
     d.close=self:CreateWorkbenchIconButton(d.frame,'close',L['Close']);d.close:SetPoint('TOPRIGHT',-5,-5)
     return d
 end
+-- Shared themed, copyable report surface. It never accepts document changes.
+function addon:CreateWorkbenchTextReport(width,height)
+    local d=self:CreateWorkbenchTransferShell(width or 820,height or 500)
+    d.apply:Hide();d.cancel:Hide();d.clear:Hide();d.input:SetMaxLetters(0);d.input:SetTextInsets(4,4,4,4)
+    d.content=CreateFrame('Frame',nil,d.scroll);d.input:SetParent(d.content);d.input:ClearAllPoints();d.input:SetPoint('TOPLEFT');d.scroll:SetScrollChild(d.content)
+    d.measure=d.content:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall');d.measure:SetWordWrap(true);d.measure:Hide()
+    function d:Layout()
+        local width=math.max(1,self.scroll:GetWidth()-8);self.measure:SetWidth(math.max(1,width-8));self.measure:SetHeight(0);self.measure:SetText(self.text or '')
+        local height=math.max(self.scroll:GetHeight(),self.measure:GetStringHeight()+12);self.content:SetSize(width,height);self.input:SetSize(width,height);self.scroll:UpdateWorkbenchScroll()
+    end
+    function d:Hide() self.frame:Hide() end
+    function d:SetReport(title,value,context)
+        self.text=tostring(value or '');self.chrome:SetContext(title,L['Read-only'],context or addon.pretty_name)
+        self.setting=true;self.input:SetText(self.text);self.setting=false;self:Layout();self.frame:Show();addon:RegisterWindowForEscape(self)
+        self.input:SetFocus();self.input:SetCursorPosition(0);self.input:HighlightText(0,-1);self.scroll.workbenchBar:SetValue(0)
+    end
+    addon:SetUIScript(d.input,'OnTextChanged',function()
+        if not d.setting and d.input:GetText()~=d.text then d.setting=true;d.input:SetText(d.text or '');d.setting=false end;d:Layout()
+    end)
+    addon:SetUIScript(d.input,'OnCursorChanged',function(_,_,y,_,height)
+        if d.setting or type(y)~='number' then return end
+        local top=-y;local bar=d.scroll.workbenchBar;d.scroll:UpdateWorkbenchScroll()
+        if top<bar:GetValue() then bar:SetValue(top) elseif top+(height or 0)>bar:GetValue()+d.scroll:GetHeight() then bar:SetValue(top+(height or 0)-d.scroll:GetHeight()) end
+    end)
+    addon:SetUIScript(d.copy,'OnClick',function() d.input:SetFocus();d.input:SetCursorPosition(0);d.input:HighlightText(0,-1) end)
+    addon:SetUIScript(d.close,'OnClick',function() d:Hide() end);addon:SetUIScript(d.input,'OnEscapePressed',function() d:Hide() end)
+    addon:SetUIScript(d.frame,'OnHide',function() d.input:ClearFocus() end)
+    d.input:EnableMouseWheel(true);addon:SetUIScript(d.input,'OnMouseWheel',function(_,delta) d.scroll.workbenchBar:SetValue(d.scroll.workbenchBar:GetValue()-delta*40) end)
+    return d
+end
+
 function addon:ShowSettingsTextTransfer(p,title,text,apply,options)
     local d=p.textDialog
     if not d then

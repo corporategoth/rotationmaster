@@ -71,7 +71,7 @@ test('disabled and inapplicable defaults remain inspectable and clone into the s
     browser:SelectRotation(0,'RM-BUILTIN:'..pack.id)
     assert(F.text(browser.pane):find('Sequential priority',1,true),'full default was not integrated')
     local clone=assert(findWidget(browser.pane,'Clone to edit'));local source=a:GetDefaultRotation(pack.id)
-    clone.callbacks.OnClick()
+    clone:Fire('OnClick')
     assert(browser.selected~='RM-BUILTIN:'..pack.id and a:GetEditableRotation(0,browser.selected),'clone callback did not select the new editor')
     assert(editors[#editors].id==browser.selected)
     assert(a:GetDefaultRotation(pack.id).envelope.body.rotation[1].action==source.envelope.body.rotation[1].action)

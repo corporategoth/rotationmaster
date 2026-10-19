@@ -2,9 +2,14 @@ local _,addon=...
 local AceGUI=LibStub('AceGUI-3.0')
 ---@class RMConditionGroup: AceGUIWidget
 ---@field children table[]
+---@field rmLease table
+---@field rmActive boolean
 ---@field SetLayout fun(self: RMConditionGroup, layout: string)
 ---@field AddChild fun(self: RMConditionGroup, child: AceGUIWidget)
 ---@field DoLayout fun(self: RMConditionGroup)
+---@field PauseLayout fun(self: RMConditionGroup)
+---@field ResumeLayout fun(self: RMConditionGroup)
+---@field ReleaseChildren fun(self: RMConditionGroup)
 
 -- RM owns field geometry and ordinary widget leases. Historical custom child
 -- widgets and advanced layouts retain an explicit Ace compatibility path.
@@ -36,7 +41,9 @@ local function constructor(legacy)
     function group:DoLayout()
         if self.paused or self.layingOut or self.isQueuedForRelease then return end
         self.layingOut=true
-        local width=math.max(1,frame:GetWidth() or 300);local y=0;local gap=4
+        local width=math.max(1,frame:GetWidth() or 300);local padding=self:GetUserData('padding')
+        padding=type(padding)=='number' and padding==padding and math.max(0,math.min(64,padding)) or 0
+        width=math.max(1,width-padding*2);local y=padding;local gap=4
         local settings=self:GetUserData('table');local columns=self.layout=='Table' and settings and settings.columns
         local compatibility=self.layout~='List' and self.layout~='Table' and self.layout~='RM-SpellField'
         if columns then for _,column in ipairs(columns) do if type(column)~='number' then compatibility=true end end end
@@ -66,21 +73,21 @@ local function constructor(legacy)
                 end
                 for i,column in ipairs(columns) do if not widths[i] then widths[i]=math.max(1,(width-fixed)*(type(column)=='number' and column or 1)/math.max(1,weight)) end end
             end
-            local x,rowHeight,column=0,0,1
+            local x,rowHeight,column=padding,0,1
             for _,child in ipairs(self.children) do
                 local control=child.frame
                 if control then
-                    local childWidth=widths and widths[column] or (child.width=='fill' or child.fullWidth) and width or child.width or control:GetWidth()
+                    local childWidth=widths and widths[column] or (child.width=='fill' or child.fullWidth) and width or child.width=='relative' and width*(child.relWidth or 1) or child.width or control:GetWidth()
                     if type(childWidth)~='number' then childWidth=width end
                     child:SetWidth(math.max(1,childWidth));if child.DoLayout and child.type~='RM-ConditionGroup' then child:DoLayout() end
                     control:ClearAllPoints();control:SetPoint('TOPLEFT',frame,'TOPLEFT',x,-y)
                     local height=control:GetHeight() or child.height or 0;rowHeight=math.max(rowHeight,height)
                     if widths and column<#widths then x=x+widths[column]+gap;column=column+1
-                    else y=y+rowHeight+gap;x,rowHeight,column=0,0,1 end
+                    else y=y+rowHeight+gap;x,rowHeight,column=padding,0,1 end
                 end
             end
             if column>1 then y=y+rowHeight+gap end
-            y=math.max(1,y-gap)
+            y=math.max(1,y-gap+padding)
         end
         self:LayoutFinished(width,y);self.layingOut=false
         if self.parent and self.parent.DoLayout then self.parent:DoLayout() end

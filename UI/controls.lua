@@ -293,6 +293,41 @@ function addon:CreateWorkbenchScrollFrame(parent)
     return scroll
 end
 
+-- A single native scroll host for measured RM groups. Content ownership and
+-- its callback lease are detached before recycling, so old windows cannot
+-- resize a root that has already been borrowed by another editor.
+function addon:CreateWorkbenchGroupViewport(parent)
+    local scroll=self:CreateWorkbenchScrollFrame(parent)
+    local empty=CreateFrame('Frame',nil,scroll);empty:SetSize(1,1);scroll:SetScrollChild(empty)
+    function scroll:ReleaseConditionContent()
+        local root,lease,finish=self.contentWidget,self.contentLease,self.originalLayoutFinished
+        self.contentWidget=nil;self.contentLease=nil;self.originalLayoutFinished=nil;self:SetScrollChild(empty)
+        if root and root.rmLease==lease and root.rmActive then root.LayoutFinished=finish;addon:ReleaseConditionWidget(root) end
+        self:UpdateWorkbenchScroll()
+    end
+    function scroll:SetConditionContent(root)
+        if root then assert(root.rmWidget and root.rmActive and root.DoLayout,'native-condition-group-required') end
+        if self.contentWidget==root and (not root or self.contentLease==root.rmLease) then if root then root:SetWidth(self:GetWidth()) end;return end
+        self:ReleaseConditionContent();if not root then return end
+        self.contentWidget=root;local lease=root.rmLease;self.contentLease=lease;local finish=root.LayoutFinished;self.originalLayoutFinished=finish
+        root.LayoutFinished=function(widget,width,height)
+            if scroll.contentWidget~=widget or widget.rmLease~=lease or not widget.rmActive then return end
+            if finish then finish(widget,width,height) end;scroll:UpdateWorkbenchScroll()
+        end
+        root.frame:SetParent(self);root.frame:ClearAllPoints();root.frame:SetPoint('TOPLEFT',self,'TOPLEFT',0,0)
+        self:SetScrollChild(root.frame);root:SetWidth(self:GetWidth());root.frame:Show();self:UpdateWorkbenchScroll()
+    end
+    local resized=scroll:GetScript('OnSizeChanged')
+    addon:SetUIScript(scroll,'OnSizeChanged',function(frame,width,height)
+        local root=frame.contentWidget
+        if root then
+            if root.rmActive and root.rmLease==frame.contentLease then root:SetWidth(width) else frame:ReleaseConditionContent() end
+        end
+        if resized then resized(frame,width,height) end
+    end)
+    return scroll
+end
+
 function addon:IsWorkbenchDropZoneUnderPointer(zone,viewport)
     if GetCursorPosition and zone.GetLeft and zone.GetRight and zone.GetTop and zone.GetBottom then
         local x,y=GetCursorPosition()

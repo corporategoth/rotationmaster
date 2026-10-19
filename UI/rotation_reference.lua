@@ -1,8 +1,7 @@
 local addon_name,addon=...
 local L=LibStub("AceLocale-3.0"):GetLocale(addon_name)
-local AceGUI=LibStub("AceGUI-3.0")
 local function label(parent,text,kind)
-    local widget=AceGUI:Create(kind or "Label")
+    local widget=addon:CreateConditionLabel();if kind=='Heading' then widget:SetFontObject('GameFontNormal');widget:SetColor(1,.82,.25) end
     widget:SetFullWidth(true);widget:SetText(text);parent:AddChild(widget)
     return widget
 end
@@ -23,11 +22,18 @@ end
 -- The same read-only cards are used for reference and comparison. They receive
 -- snapshots and register no callbacks that can change a rotation.
 function addon:CreateRotationStepCard(parent,step,spec,position,kind,status)
-    local card=AceGUI:Create("InlineGroup")
-    card:SetFullWidth(true);card:SetLayout("List")
+    local card=addon:CreateConditionGroup()
+    card:SetFullWidth(true);card:SetLayout("List");card:SetUserData('padding',8);parent:AddChild(card)
+    local art=card.rmReferenceDecoration or addon:CreateRoundedCardDecoration(card.frame);card.rmReferenceDecoration=art;art:SetColors(.48,.5,.53,.85,.6)
+    for _,parts in ipairs({art.fill,art.border}) do for _,part in ipairs(parts) do part:Show() end end
+    local release=card.OnRelease
+    card.OnRelease=function(self,...)
+        for _,parts in ipairs({art.fill,art.border}) do for _,part in ipairs(parts) do part:Hide() end end
+        self.OnRelease=release;return release(self,...)
+    end
     local title=kind=="cooldowns" and L["Optional highlight"] or string.format(L["Priority %s"],position)
     if status then title=status.." · "..title end
-    card:SetTitle(title)
+    label(card,title,"Heading")
     if step.type=="spell" or step.type=="pet" or step.type=="any" then
         label(card,step.type=="pet" and L["Pet spell"] or step.type=="any" and L["Player or pet spell"] or L["Player spell"])
         local identity=self:CreateSpellLabel(card,step.action)
@@ -52,7 +58,6 @@ function addon:CreateRotationStepCard(parent,step,spec,position,kind,status)
     if step.ranked then label(card,L["Use this exact spell rank"]) end
     if step.name and step.name~="" and step.type~="item" then label(card,step.name) end
     self:CreateConditionReference(card,step.conditions,spec)
-    parent:AddChild(card)
     return card
 end
 function addon:CreateRotationBranchBreadcrumb(parent,path)
@@ -63,7 +68,7 @@ function addon:CreateRotationBranchBreadcrumb(parent,path)
     end
     if #parts>0 then return label(parent,table.concat(parts," → ")) end
 end
-function addon:CreateRotationReference(parent,body,spec)
+local function renderReference(self,parent,body,spec)
     label(parent,L["Actions automatically require a learned spell or carried item, usable resources, cooldown readiness and valid range. Conditions can additionally test other actions."])
     label(parent,L["Switch conditions"],"Heading")
     self:CreateConditionReference(parent,body.switch,spec)
@@ -90,4 +95,12 @@ function addon:CreateRotationReference(parent,body,spec)
     local info=self.Platform and self.Platform:GetSpellInfo(6603)
     if info and info.iconID then attack:SetImage(info.iconID);attack:SetImageSize(24,24) end
     label(parent,L["When no priority action is ready, Attack is the implicit final fallback for a living hostile target in melee combat, if autoattack is inactive. It uses the normal rotation highlight and never presses a button."])
+end
+
+function addon:CreateRotationReference(parent,body,spec)
+    local paused=type(parent.PauseLayout)=='function' and type(parent.ResumeLayout)=='function'
+    if paused then parent:PauseLayout() end
+    local ok,why=pcall(renderReference,self,parent,body,spec)
+    if paused then parent:ResumeLayout() end
+    if not ok then error(why,0) end
 end

@@ -15,8 +15,7 @@ local function fixture()
     return f,row
 end
 test('default view exposes reference, enable and clone controls without edit/delete widgets',function()
-    local f=fixture();local frame=f.widget('parent')
-    function frame:ReleaseChildren() self.children={} end
+    local f=fixture();local frame=f.addon:CreateConditionGroup()
     local selected
     f.addon.CloneDefaultRotation=function(_,spec,id,name)
         assert(spec==0 and id=='pack' and name~='');return 'new-custom'
@@ -29,40 +28,33 @@ test('default view exposes reference, enable and clone controls without edit/del
     local clone,enable
     local function scan(widget)
         assert(widget.kind~='EditBox' and widget.kind~='Spell_EditBox','editable default field')
-        if widget.kind=='Button' and widget.text=='Clone to edit' then clone=widget end
-        if widget.kind=='CheckBox' then enable=widget end
-        for _,child in ipairs(widget.children) do scan(child) end
+        if widget.type=='RM-ConditionButton' and widget.text=='Clone to edit' then clone=widget end
+        if widget.type=='RM-CheckBox' then enable=widget end
+        for _,child in ipairs(widget.children or {}) do scan(child) end
     end
     scan(frame);assert(clone and enable)
-    clone.callbacks.OnClick();assert(selected=='new-custom')
+    clone:Fire('OnClick');assert(selected=='new-custom')
     local toggled=false
     f.addon.SetDefaultRotationEnabled=function(_,id,value) assert(id=='pack' and value==false);toggled=true;return true end
-    enable.callbacks.OnValueChanged(nil,nil,false);assert(toggled)
+    enable:Fire('OnValueChanged',false);assert(toggled)
 end)
 test('full default reference shows switching, priority and independent optional steps without cloning',function()
     local f,row=fixture();local a=f.addon
     row.envelope.body.cooldowns={{id='shield',type='spell',action=324,conditions={type='BUFF',spell=324}}}
     row.envelope.body.switch={type='LEVEL',level=20}
-    local original=f.libraries['AceGUI-3.0'].Create
-    f.libraries['AceGUI-3.0'].Create=function(self,kind)
-        local w=original(self,kind)
-        function w:SetTitle(text) self.title=text end
-        function w:ReleaseChildren() self.children={} end
-        return w
-    end
-    a.HideOnEscape=function() end
+    f.libraries['AceGUI-3.0'].Create=function() error('default reference allocated through Ace') end
     a.CloneDefaultRotation=function() error('viewing must not clone') end
     local frame=a:ShowDefaultRotation(0,'pack',function() end)
-    local text=F.text(frame)
+    local text=F.text(frame.root)
     assert(text:find('Switch conditions',1,true) and text:find('Sequential priority',1,true))
     assert(text:find('Optional highlights',1,true) and text:find('independently',1,true))
     local links={}
     local function scan(w)
         assert(w.kind~='EditBox' and w.kind~='Spell_EditBox','default reference became editable')
-        if w.kind=='InteractiveLabel' and w.text:find('|Hspell:',1,true) then links[w:GetUserData('spell')]=w.image end
-        for _,child in ipairs(w.children) do scan(child) end
+        if w.type=='RM-ConditionLink' and w.text:find('|Hspell:',1,true) then links[w:GetUserData('spell')]=w.image end
+        for _,child in ipairs(w.children or {}) do scan(child) end
     end
-    scan(frame);assert(links[403] and links[324] and links[6603],'authored steps and implicit fallback need native spell links and icons')
+    scan(frame.root);assert(links[403] and links[324] and links[6603],'authored steps and implicit fallback need native spell links and icons')
 end)
 test('item lists render each item instead of throwing or hiding their contents',function()
     local f=fixture();local parent=f.widget('parent')
@@ -90,26 +82,82 @@ test('read-only references never run custom Lua printers even inside nested fiel
     assert(F.text(parent):find('My custom check',1,true),'data-only custom condition description is missing')
 end)
 test('cloning from a separate reference opens a fresh editor without touching a released source pane',function()
-    local f=fixture();local a=f.addon;local original=f.libraries['AceGUI-3.0'].Create
-    f.libraries['AceGUI-3.0'].Create=function(self,kind)
-        local w=original(self,kind);function w:ReleaseChildren() self.children={} end
-        function w:Hide() self.hidden=true end
-        return w
-    end
-    a.HideOnEscape=function() end
+    local f=fixture();local a=f.addon
     a.CloneDefaultRotation=function() return 'new-clone' end
     local opened=false
     a.ShowConfig=function(_,section,selection) assert(section=='Rotations' and selection.spec==0 and selection.id=='new-clone');opened=true end
     local window=a:ShowDefaultRotation(0,'pack',function() error('source editor has been released') end)
-    for _,child in ipairs(window.children) do if child.kind=='Button' and child.text=='Clone to edit' then child.callbacks.OnClick() end end
-    assert(opened and window.hidden)
+    for _,child in ipairs(window.root.children) do if child.type=='RM-ConditionButton' and child.text=='Clone to edit' then child:Fire('OnClick') end end
+    assert(opened and not window.frame:IsShown() and not window.root)
 end)
 test('default exports route through the immutable runtime reference',function()
-    local f=fixture();local parent=f.widget('parent');function parent:ReleaseChildren() self.children={} end
+    local f=fixture();local parent=f.addon:CreateConditionGroup()
     local exported=false
     f.addon.ShowRotationTransfer=function(_,spec,key) assert(spec==0 and key=='pack-key');exported=true end
     f.addon:CreateDefaultRotationOptions(parent,0,'pack',function() error('export cloned a default') end)
-    for _,child in ipairs(parent.children) do if child.kind=='Button' and child.text=='Export Built In' then child.callbacks.OnClick() end end
+    for _,child in ipairs(parent.children) do if child.type=='RM-ConditionButton' and child.text=='Export Built In' then child:Fire('OnClick') end end
     assert(exported)
+end)
+test('native default window owns pooled content and ignores callbacks after close or profile replacement',function()
+    local f,row=fixture();local a=f.addon;local before=a.RotationData.CopyData(row.envelope);local changed=0
+    f.libraries['AceGUI-3.0'].Create=function() error('default window allocated through Ace') end
+    a.SetDefaultRotationEnabled=function() changed=changed+1;return true end
+    a.CloneDefaultRotation=function() changed=changed+1;return 'clone' end
+    a.ShowRotationTransfer=function() changed=changed+1 end
+    local d=a:ShowDefaultRotation(0,'pack');local root=d.root;local old={}
+    for _,child in ipairs(root.children) do if child.type=='RM-ConditionButton' or child.type=='RM-CheckBox' then old[#old+1]=child.events.OnClick or child.events.OnValueChanged end end
+    assert(d.chrome and d.viewport.contentWidget==root and d.frame:IsShown())
+    d:Hide();assert(not root.rmActive and not d.root)
+    local reopened=a:ShowDefaultRotation(0,'pack');assert(reopened==d and reopened.root.rmActive);root=reopened.root
+    for _,callback in ipairs(old) do callback(nil,nil,false) end;assert(changed==0,'closed view retained live actions')
+    local enable;for _,child in ipairs(root.children) do if child.type=='RM-CheckBox' then enable=child end end
+    a.db.profile={};enable:Fire('OnValueChanged',false);assert(changed==0,'stale profile callback changed preferences')
+    d.frame.scripts.OnUpdate();assert(not d.frame:IsShown() and not root.rmActive)
+    assert(a:SettingsDataEqual(row.envelope,before),'reference view changed source data')
+end)
+test('embedded native viewport releases content and restores group methods under a shipped Ace parent',function()
+    local f=fixture();local a=f.addon;local ace=f.libraries['AceGUI-3.0'];local constructors=ace.constructors;local stub=f.env.LibStub
+    f.env.LibStub=setmetatable({NewLibrary=function() return ace end},{__call=function(_,...) return stub(...) end})
+    f.env.geterrorhandler=function() return error end
+    f.env.xpcall=function(callback,handler,...) local args={n=select('#',...),...};return xpcall(function() return callback(unpack(args,1,args.n)) end,handler) end
+    f.env.table=setmetatable({wipe=function(value) for key in pairs(value) do value[key]=nil end;return value end},{__index=table})
+    local create=f.env.CreateFrame;f.env.CreateFrame=function(...)
+        local frame=create(...);local size=frame.SetSize;local width,height=frame:GetWidth(),frame:GetHeight()
+        function frame:GetWidth() return width end;function frame:GetHeight() return height end
+        function frame:SetSize(w,h) w,h=w or width,h or height;if width~=w or height~=h then width,height=w,h;size(self,w,h) end end
+        return frame
+    end
+    f.load('Libs/AceGUI-3.0/AceGUI-3.0.lua');for kind,build in pairs(constructors) do ace:RegisterWidgetType(kind,build,1) end
+    f.load('Libs/AceGUI-3.0/widgets/AceGUIContainer-SimpleGroup.lua')
+    local parent=ace:Create('SimpleGroup');parent:SetWidth(700);parent:SetHeight(620);parent:SetLayout('List')
+    local seen={}
+    for _=1,5 do
+        a:CreateDefaultRotationOptions(parent,0,'pack',function() end)
+        local holder=parent.children[#parent.children];local viewport=holder.rmDefaultViewport;local content=viewport.contentWidget
+        assert(holder.rmWidget and viewport:IsShown() and content and content.rmActive and holder.frame:GetHeight()>=120)
+        seen[#seen+1]={holder=holder,content=content,viewport=viewport}
+    end
+    ace:Release(parent)
+    for _,entry in ipairs(seen) do assert(not entry.holder.rmActive and not entry.content.rmActive and not entry.viewport.contentWidget and not entry.viewport:IsShown(),'embedded content retained its owner') end
+    local group=a:CreateConditionGroup();group:SetWidth(200);local child=a:CreateConditionCheckBox();group:AddChild(child)
+    assert(group.frame:GetHeight()==24 and child.frame:GetParent()==group.frame,'reference viewport methods escaped into an ordinary group lease')
+    a:ReleaseConditionWidget(group)
+end)
+test('failed default reference rendering releases unattached and attached native groups',function()
+    local f=fixture();local a=f.addon;local allocated={};local stop=a:ObserveConditionWidgets(function(widget) allocated[#allocated+1]=widget end)
+    a.CreateRotationReference=function(_,parent) local text=a:CreateConditionLabel();parent:AddChild(text);error('injected reference failure') end
+    local ok,why=pcall(a.ShowDefaultRotation,a,0,'pack');stop();assert(not ok and why:find('injected reference failure',1,true))
+    for _,widget in ipairs(allocated) do assert(not widget.rmActive,'failed default reference orphaned '..widget.type) end
+end)
+test('unavailable references stay native and failed enable or clone actions show their reason',function()
+    local f=fixture();local a=f.addon;local root=a:CreateConditionGroup();root:SetUserData('defaultWholeScroll',true)
+    a.SetDefaultRotationEnabled=function() return nil,'blocked' end;a.CloneDefaultRotation=function() return nil,'blocked clone' end
+    a:CreateDefaultRotationOptions(root,0,'pack',function() error('failed clone navigated') end)
+    for _,child in ipairs(root.children) do if child.type=='RM-CheckBox' then child:Fire('OnValueChanged',false) end end
+    assert(F.text(root):find('blocked',1,true))
+    for _,child in ipairs(root.children) do if child.type=='RM-ConditionButton' and child.text=='Clone to edit' then child:Fire('OnClick') end end
+    assert(F.text(root):find('blocked clone',1,true));a.ListDefaultRotations=function() return {} end
+    a:CreateDefaultRotationOptions(root,0,'missing',function() end);assert(#root.children==1 and F.text(root):find('unavailable',1,true))
+    a:ReleaseConditionWidget(root)
 end)
 finish()

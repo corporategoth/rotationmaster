@@ -1,7 +1,6 @@
 local addon_name, addon = ...
 
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
-local AceGUI = LibStub("AceGUI-3.0")
 local color = color
 
 local helpers = addon.help_funcs
@@ -71,13 +70,14 @@ local function help_effect_group(group, singular)
             "what type of highlight the effect is.)  The highlight is always anchored at it's center"))
 
     group:AddChild(Gap())
-    local directional_group = AceGUI:Create("SimpleGroup")
+    local directional_group = addon:CreateConditionGroup()
     directional_group:SetFullWidth(true)
     directional_group:SetLayout("Table")
     directional_group:SetUserData("table", { columns = { 50, 1 } })
     group:AddChild(directional_group)
 
-    local directional = AceGUI:Create("Directional")
+    local directional = addon:CreateConditionPositionPad()
+    directional:SetDisabled(true)
     directional_group:AddChild(directional)
 
     directional_group:AddChild(CreateText(color.BLIZ_YELLOW .. "Offset" .. color.RESET .. " - " ..

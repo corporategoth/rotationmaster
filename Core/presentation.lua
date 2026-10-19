@@ -1,6 +1,5 @@
 local addon_name, addon = ...
 local L=LibStub("AceLocale-3.0"):GetLocale(addon_name)
-local AceGUI=LibStub("AceGUI-3.0")
 
 function addon:SpellLabel(spell)
     if self.Platform then
@@ -39,8 +38,8 @@ function addon:InstallSpellHyperlinks(frame)
     end)
 end
 function addon:CreateSpellLabel(parent,spell)
-    local widget=AceGUI:Create("InteractiveLabel")
-    widget:SetFullWidth(true);widget:SetText(self:SpellLabel(spell));widget:SetUserData("spell",spell)
+    local widget=self:CreateConditionLink()
+    widget:SetFullWidth(true);parent:AddChild(widget);widget:SetText(self:SpellLabel(spell));widget:SetUserData("spell",spell)
     self:InstallSpellHyperlinks(widget.frame)
     -- Whole-label interactions also work when the client cannot enable native
     -- hyperlink regions on a widget frame.
@@ -57,7 +56,6 @@ function addon:CreateSpellLabel(parent,spell)
         local info=addon.Platform and addon.Platform:GetSpellInfo(id)
         if info and info.spellID and type(SetItemRef)=="function" then SetItemRef("spell:"..info.spellID,addon:SpellLabel(id),button or "LeftButton") end
     end)
-    parent:AddChild(widget)
     return widget
 end
 

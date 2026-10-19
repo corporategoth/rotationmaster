@@ -33,6 +33,21 @@ test('native hyperlinks support hover/click without replacing existing widget ha
     frame.hooks.OnHyperlinkLeave(frame);assert(shown==nil)
     clicked=nil;frame.hooks.OnHyperlinkClick(frame,'not-a-spell:1');assert(clicked==nil)
 end)
+test('native spell links retain leading images exact interactions and stale lease protection',function()
+    local f=fixture();local a=f.addon;local owner,shown,clicked
+    f.env.GameTooltip={SetOwner=function(_,frame) owner=frame end,SetHyperlink=function(_,link) shown=link end,IsOwned=function(_,frame) return owner==frame end,Hide=function() owner=nil;shown=nil end}
+    f.env.SetItemRef=function(link,_,button) clicked={link,button} end
+    f.libraries['AceGUI-3.0'].Create=function() error('spell label allocated through Ace') end
+    local root=a:CreateConditionGroup();local link=a:CreateSpellLabel(root,403);assert(link.type=='RM-ConditionLink')
+    link:SetImage(11);link:SetImageSize(24,24);link:SetWidth(180)
+    assert(link.image:GetTexture()==11 and link.label.point[4]>=24 and link.frame:GetHeight()>=24)
+    link.frame.scripts.OnEnter(link.frame);assert(shown=='spell:403')
+    link.frame.scripts.OnClick(link.frame,'RightButton');assert(clicked[1]=='spell:403' and clicked[2]=='RightButton')
+    local oldEnter,oldLeave=link.frame.scripts.OnEnter,link.frame.scripts.OnLeave;a:ReleaseConditionWidget(root);assert(shown==nil)
+    local other=a:CreateConditionGroup();local reused=a:CreateSpellLabel(other,403);assert(reused==link and not reused.image:IsShown())
+    oldEnter(reused.frame);assert(shown==nil);reused.frame.scripts.OnEnter(reused.frame);assert(shown=='spell:403');oldLeave(reused.frame);assert(shown=='spell:403')
+    a:ReleaseConditionWidget(other);assert(shown==nil)
+end)
 test('numeric aura and learned-state descriptions present readable linked spells',function()
     local f=fixture()
     f.load('Core/conditions.lua');f.load('Conditions/known_spell.lua');f.load('Conditions/buffs.lua');f.load('Conditions/debuffs.lua')

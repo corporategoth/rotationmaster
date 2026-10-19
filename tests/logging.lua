@@ -29,6 +29,8 @@ LibStub:NewLibrary('LibCompress', 1)
 local addon = {pretty_name = 'Rotation Master'}
 assert(loadfile('Functions/values.lua'))('rotationmaster', addon)
 assert(loadfile('Functions/presentation.lua'))('rotationmaster', addon)
+assert(loadfile('Functions/text.lua'))('rotationmaster', addon)
+assert(loadfile('Functions/collections.lua'))('rotationmaster', addon)
 assert(loadfile('utils.lua'))('rotationmaster', addon)
 local function logAll()
     addon:verbose('verbose %s', 'fixture')

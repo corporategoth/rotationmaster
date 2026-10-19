@@ -50,66 +50,18 @@ addon.nullable_value = addon.Functions.presentation.nullable_value
 addon.playerize = addon.Functions.presentation.playerize
 addon.compareString = addon.Functions.presentation.compareString
 
-addon.keys = function(array)
-    local rv = {}
-    for k,_ in pairs(array) do
-        table.insert(rv, k)
-    end
-    -- Sort the keys
-    table.sort(rv, function (lhs, rhs) return array[lhs] < array[rhs] end)
-    return rv
-end
+addon.keys = addon.Functions.collections.keys
 
-addon.spairs = function (t, order)
-    -- collect the keys
-    local keys = {}
-    for k in pairs(t) do keys[#keys+1] = k end
+addon.spairs = addon.Functions.collections.spairs
 
-    -- if order function given, sort by it by passing the table and keys a, b,
-    -- otherwise just sort the keys
-    if order then
-        table.sort(keys, function(a,b) return order(t, a, b) end)
-    else
-        table.sort(keys)
-    end
+addon.tomap = addon.Functions.collections.tomap
 
-    -- return the iterator function
-    local i = 0
-    return function()
-        i = i + 1
-        if keys[i] then
-            return keys[i], t[keys[i]]
-        end
-    end
-end
-
-addon.tomap = function(array)
-    local rv = {}
-    for k,v in pairs(array) do
-        rv[tostring(k)] = v
-    end
-    return rv
-end
-
-addon.index = function(array, value)
-    if not array then return nil end
-
-    for idx,v in pairs(array) do
-        if (v == value) then
-            return idx
-        end
-    end
-end
+addon.index = addon.Functions.collections.index
 
 -- Compatibility API for saved custom source; Functions.values owns the body.
 addon.isin = addon.Functions.values.isin
 
-addon.tablelength = function(T)
-    if T == nil then return 0 end
-    local count = 0
-    for _ in pairs(T) do count = count + 1 end
-    return count
-end
+addon.tablelength = addon.Functions.collections.tablelength
 
 addon.round = function (num, numDecimalPlaces)
     local mult = 10^(numDecimalPlaces or 0)
@@ -136,75 +88,13 @@ addon.ends_with = function(str, ending)
     return ending == "" or str:sub(-#ending) == ending
 end
 
-addon.multiinsert = function(t, values)
-    for i,v in ipairs(values) do
-	    table.insert(t, i, v)
-    end
-end
+addon.multiinsert = addon.Functions.collections.multiinsert
 
-addon.cleanArray = function(array, except, invert)
-    if array == nil then
-        return
-    end
-    if invert == nil then
-        invert = false
-    end
+addon.cleanArray = addon.Functions.collections.cleanArray
 
-    for k,_ in pairs(array) do
-        local skip = invert
-        if except ~= nil then
-            for _,v2 in pairs(except) do
-                if (k == v2) then
-                    skip = not invert
-                    break
-                end
-            end
-        end
-        if not skip then
-            array[k] = nil
-        end
-    end
-end
+addon.deepcopy = addon.Functions.collections.deepcopy
 
-addon.deepcopy = function(array, except, invert)
-    if array == nil then
-        return nil
-    end
-    if invert == nil then
-        invert = false
-    end
-
-    local rv = {}
-    for k,v in pairs(array) do
-        local skip = invert
-        if except ~= nil then
-            for _,v2 in pairs(except) do
-                if (k == v2) then
-                    skip = not invert
-                    break
-                end
-            end
-        end
-        if not skip then
-            rv[k] = v
-        end
-    end
-    return rv
-end
-
-addon.compareArray = function(lhs, rhs)
-    for k,v in pairs(lhs) do
-        if rhs[k] ~= v then
-            return false
-        end
-    end
-    for k,v in pairs(rhs) do
-        if lhs[k] ~= v then
-            return false
-        end
-    end
-    return true
-end
+addon.compareArray = addon.Functions.collections.compareArray
 
 local cacheHits = 0
 local cacheMisses = 0
@@ -390,34 +280,9 @@ function width_split(s, sz)
     return rv
 end
 
-function addon.split(inputstr, sep)
-    if sep == nil then
-        sep = "%s"
-    end
-    local t={}
-    for str in string.gmatch(inputstr, "([^"..sep.."]+)") do
-        table.insert(t, str)
-    end
-    return t
-end
-
-function addon.wrap(str, limit)
-    limit = limit or 72
-    local here = 1
-
-    -- the "".. is there because :gsub returns multiple values
-    return ""..str:gsub("(%s+)()(%S+)()",
-            function(_, st, word, fi)
-                if fi-here > limit then
-                    here = st
-                    return "\n"..word
-                end
-            end)
-end
-
-function addon.trim(s)
-    return (s:gsub("^%s*(.-)%s*$", "%1"))
-end
+addon.split=addon.Functions.text.split
+addon.wrap=addon.Functions.text.wrap
+addon.trim=addon.Functions.text.trim
 
 -- This will look at the damage done over damage_history, and gives progressively more weight
 -- to more recent damage (so that theoretically if damage has decreased/increased it will adjust.)
@@ -644,10 +509,10 @@ do
         if name=="nullable_value" then return addon.Functions.presentation.nullable_value end
         if name=="packResults" then return packResults end
         if name=="playerize" then return addon.Functions.presentation.playerize end
-        if name=="split" then return addon.split end
+        if name=="split" then return addon.Functions.text.split end
         if name=="string" then return string end
-        if name=="trim" then return addon.trim end
-        if name=="wrap" then return addon.wrap end
+        if name=="trim" then return addon.Functions.text.trim end
+        if name=="wrap" then return addon.Functions.text.wrap end
     end
     if addon.RegisterBuiltinSourceModule then
         addon:RegisterBuiltinSourceModule("utils.lua", sourceGetter)

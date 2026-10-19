@@ -28,4 +28,54 @@ test('shared transfer shell keeps moved coordinates while its text and themed co
     assert(started==1 and stopped==1 and d.frame.point[4]==210 and d.frame.point[5]==175)
     assert(d.close:GetParent()==d.frame and d.input:GetParent()==d.scroll and not d.input.drags,'dragging changed close or editable text ownership')
 end)
+local function previewFixture()
+    local f=F.new();local a=f.addon;a.RotationData=make()
+    for _,path in ipairs({'Data/diff.lua','Data/visual_comparison.lua','UI/rotation_reference.lua','UI/rotation_comparison.lua','UI/transfer.lua'}) do f.load(path) end
+    a.Platform={GetSpellInfo=function(_,id) return {name='Spell '..id,spellID=id,iconID=id} end,
+        GetSpellLink=function(_,id) return '|Hspell:'..id..'|h[Named spell]|h' end}
+    a.printCondition=function() return 'Readable conditions' end
+    local left={body={rotation={{id='step',type='spell',action=403,conditions={}}}}}
+    local right={body={rotation={{id='step',type='spell',action=8042,conditions={}}}}}
+    local view={key='import',left=left,right=right,diff=a.RotationData.DiffRotations(left,right)}
+    return f,a,{cleanups={},generation=1},view
+end
+test('actual import preview renders native comparison content and releases it on close',function()
+    local f,a,p,view=previewFixture();local ace=f.libraries['AceGUI-3.0']
+    ace.Create=function() error('import preview allocated an ordinary Ace widget') end
+    ace.Release=function() error('import preview released through Ace') end
+    local d=a:ShowNativeImportPreview(p,view,0)
+    assert(d.frame:GetFrameStrata()=='FULLSCREEN_DIALOG','preview can hide beneath main configuration')
+    assert(d.graph.type=='RM-ConditionGroup' and d.scroll.contentWidget==d.graph,'preview omitted native group viewport')
+    assert(d.graph.frame:GetParent()==d.scroll and d.scroll:GetScrollChild()==d.graph.frame)
+    assert(F.text(d.graph):find('Always',1,true) and F.text(d.graph):find('Incoming rotation',1,true),'real comparison content missing')
+    local root=d.graph;d.close:Click();assert(not d.frame:IsShown() and not root.rmActive and not d.graph and not d.scroll.contentWidget)
+end)
+test('cached import preview reopens with a fresh root lease and old cleanup cannot hide it',function()
+    local _,a,p,view=previewFixture();view.left={body={rotation={}}};view.right={body={rotation={}}};view.diff=a.RotationData.DiffRotations(view.left,view.right)
+    local d=a:ShowNativeImportPreview(p,view,0);local root=d.graph;local lease=root.rmLease;local old=p.cleanups[1]
+    d.frame:SetPoint('BOTTOMLEFT',210,175);d.close:Click()
+    local reopened=a:ShowNativeImportPreview(p,view,0)
+    assert(reopened==d and d.graph==root and root.rmLease~=lease,'dialog or native root did not recycle')
+    assert(d.frame.point[1]=='BOTTOMLEFT' and d.frame.point[2]==210,'reopen discarded moved coordinates')
+    old();assert(d.frame:IsShown() and root.rmActive,'retired import cleanup closed the newer preview')
+    p.generation=p.generation+1;p.cleanups[#p.cleanups]();assert(not d.frame:IsShown() and not root.rmActive,'generation advance prevented current cleanup')
+end)
+test('import cleanup cannot release a preview root that another native owner has borrowed',function()
+    local _,a,p,view=previewFixture();view.left={body={rotation={}}};view.right={body={rotation={}}};view.diff=a.RotationData.DiffRotations(view.left,view.right)
+    local d=a:ShowNativeImportPreview(p,view,0);local root=d.graph
+    a:ReleaseConditionWidget(root);local borrowed=a:CreateConditionGroup();assert(borrowed==root);borrowed:SetWidth(222)
+    local finished=function() end;borrowed.LayoutFinished=finished
+    d.frame:Hide();assert(borrowed.rmActive and borrowed.LayoutFinished==finished and borrowed.frame:GetWidth()==222,'preview cleanup corrupted a new root lease')
+    a:ReleaseConditionWidget(borrowed)
+end)
+test('failed native import rendering releases its partially populated root',function()
+    local _,a,p,view=previewFixture();local root
+    a.RenderRotationComparison=function(_,graph)
+        root=graph;local label=a:CreateConditionLabel();label:SetText('Partial preview');graph:AddChild(label)
+        error('injected import rendering failure')
+    end
+    local ok,why=pcall(a.ShowNativeImportPreview,a,p,view,0)
+    assert(not ok and why:find('injected import rendering failure',1,true))
+    assert(root and not root.rmActive and not p.importPreview.graph and not p.importPreview.scroll.contentWidget,'failed preview stranded an active root')
+end)
 finish()

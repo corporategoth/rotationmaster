@@ -1,6 +1,5 @@
 local addon_name,addon=...
 local L=LibStub("AceLocale-3.0"):GetLocale(addon_name)
-local AceGUI=LibStub("AceGUI-3.0")
 function addon:NewRotationCodec()
     local serializer,compressor=LibStub("AceSerializer-3.0"),LibStub("LibCompress")
     return self.RotationData.NewCodec({
@@ -13,16 +12,18 @@ end
 function addon:ShowNativeImportPreview(p,view,spec)
     local d=p.importPreview
     if not d then
-        d={frame=CreateFrame('Frame',nil,UIParent)};p.importPreview=d;d.frame:SetSize(940,620);d.frame:SetPoint('CENTER');d.frame:EnableMouse(true);self:MakeWindowOpaque(d.frame)
+        d={frame=CreateFrame('Frame',nil,UIParent)};p.importPreview=d;d.frame:SetSize(940,620);d.frame:SetPoint('CENTER');d.frame:SetFrameStrata('FULLSCREEN_DIALOG');d.frame:SetToplevel(true);d.frame:SetClampedToScreen(true);d.frame:EnableMouse(true);self:MakeWindowOpaque(d.frame)
         d.title=d.frame:CreateFontString(nil,'OVERLAY','GameFontNormal');d.chrome=self:CreateWorkbenchDialogChrome(d.frame,d.title);d.close=self:CreateWorkbenchIconButton(d.frame,'close',L['Close']);d.close:SetPoint('TOPRIGHT',-5,-5);self:SetUIScript(d.close,'OnClick',function() d.frame:Hide() end)
-        self:SetUIScript(d.frame,'OnHide',function() if d.graph then AceGUI:Release(d.graph);d.graph=nil end end);d.frame:Hide()
+        d.scroll=self:CreateWorkbenchGroupViewport(d.frame);d.scroll:SetPoint('TOPLEFT',12,-34);d.scroll:SetSize(898,560)
+        function d:Clear() self.scroll:ReleaseConditionContent();self.graph=nil end
+        self:SetUIScript(d.frame,'OnHide',function() d:Clear() end);d.frame:Hide()
     end
-    if d.graph then AceGUI:Release(d.graph) end
-    local graph=AceGUI:Create('ScrollFrame');d.graph=graph;graph:SetLayout('List');graph:SetWidth(898);graph:SetHeight(560)
-    ---@diagnostic disable-next-line: access-protected
-    local frame=graph.frame;frame:SetParent(d.frame);frame:ClearAllPoints();frame:SetPoint('TOPLEFT',12,-34)
-    d.chrome:SetContext(L['Import comparison'],L['Read-only'],self.pretty_name);self:RenderRotationComparison(graph,view,spec)
-    p.cleanups[#p.cleanups+1]=function() d.frame:Hide() end;d.frame:Show();self:RegisterWindowForEscape(d);return d
+    d:Clear();d.serial=(d.serial or 0)+1;local serial=d.serial
+    local graph=self:CreateConditionGroup();d.graph=graph;graph:SetLayout('List');d.scroll:SetConditionContent(graph)
+    d.chrome:SetContext(L['Import comparison'],L['Read-only'],self.pretty_name)
+    local ok,why=pcall(self.RenderRotationComparison,self,graph,view,spec)
+    if not ok then d:Clear();error(why,0) end
+    p.cleanups[#p.cleanups+1]=function() if d.serial==serial then d.frame:Hide() end end;d.frame:Show();self:RegisterWindowForEscape(d);return d
 end
 function addon:ShowRotationTransfer(spec,id)
     local codec=self:NewRotationCodec();local session=self.RotationData.NewImportSession(codec,self:GetImportValidationOptions())

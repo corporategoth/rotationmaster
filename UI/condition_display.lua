@@ -11,14 +11,19 @@ local function defaultFont() return GameFontHighlightSmall or 'GameFontHighlight
 ---@field SetColor fun(self: RMConditionLabel, red: number?, green: number?, blue: number?, alpha: number?)
 ---@field SetJustifyH fun(self: RMConditionLabel, value: string)
 ---@field SetJustifyV fun(self: RMConditionLabel, value: string)
-local function labelConstructor(legacy)
-    local w={type='RM-ConditionLabel',text=''}
-    local frame=CreateFrame('Frame',nil,UIParent);w.frame=frame
+local function labelConstructor(legacy,interactive)
+    local w={type=interactive and 'RM-ConditionLink' or 'RM-ConditionLabel',text=''}
+    local frame=CreateFrame(interactive and 'Button' or 'Frame',nil,UIParent);w.frame=frame
+    local image=interactive and frame:CreateTexture(nil,'ARTWORK');w.image=image
     local label=frame:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall');w.label=label
     label:SetPoint('TOPLEFT');label:SetWordWrap(true);label:SetHeight(0)
     local function layoutText()
-        label:SetWidth(math.max(1,frame:GetWidth()))
-        local height=math.max(1,label:GetStringHeight() or 0)
+        local inset=image and w.imagePath and (w.imageWidth+4) or 0
+        label:SetWidth(math.max(1,frame:GetWidth()-inset))
+        local textHeight=math.max(1,label:GetStringHeight() or 0)
+        local height=math.max(textHeight,image and w.imagePath and w.imageHeight or 0)
+        label:ClearAllPoints();label:SetPoint('TOPLEFT',frame,'TOPLEFT',inset,-(height-textHeight)/2)
+        if image then image:ClearAllPoints();image:SetPoint('TOPLEFT',frame,'TOPLEFT',0,-(height-w.imageHeight)/2) end
         -- Backing frame dimensions may be quantized. Compare text requests,
         -- not engine rounding, before notifying a legacy parent's layout.
         local changed=height~=w.measuredHeight
@@ -43,11 +48,31 @@ local function labelConstructor(legacy)
     end
     function w:SetJustifyH(value) label:SetJustifyH(value) end
     function w:SetJustifyV(value) label:SetJustifyV(value) end
+    if interactive then
+        function w:SetImage(path,...)
+            self.imagePath=path;image:SetTexture(path)
+            local count=select('#',...);if count==4 or count==8 then image:SetTexCoord(...) else image:SetTexCoord(0,1,0,1) end
+            if path then image:Show() else image:Hide() end;measure()
+        end
+        function w:SetImageSize(width,height) self.imageWidth,self.imageHeight=width,height;image:SetSize(width,height);measure() end
+        function w:SetDisabled(value) self.disabled=value==true;if self.disabled then frame:Disable() else frame:Enable() end end
+    end
     function w:OnAcquire()
         self.measuring=false;self.measuredHeight=nil
+        if interactive then self.imagePath=nil;self.imageWidth,self.imageHeight=24,24;image:SetTexture(nil);image:SetSize(24,24);image:Hide();self:SetDisabled(false) end
         self:SetText('');self:SetFontObject();self:SetColor();self:SetJustifyH('LEFT');self:SetJustifyV('TOP');self:SetWidth(200)
+        if interactive then
+            frame:RegisterForClicks('LeftButtonUp','RightButtonUp');local lease=self.rmLease
+            local function live() return w.rmActive and w.rmLease==lease and not w:IsReleasing() end
+            addon:SetUIScript(frame,'OnEnter',function() if live() then w:Fire('OnEnter') end end)
+            addon:SetUIScript(frame,'OnLeave',function() if live() then w:Fire('OnLeave') end end)
+            addon:SetUIScript(frame,'OnClick',function(_,button) if live() and not w.disabled then w:Fire('OnClick',button) end end)
+        end
     end
-    function w:OnRelease() self.text='';self.measuring=false;self.measuredHeight=nil;label:SetText('') end
+    function w:OnRelease()
+        self.text='';self.measuring=false;self.measuredHeight=nil;label:SetText('')
+        if image then image:Hide();image:SetTexture(nil);self.imagePath=nil;if GameTooltip and GameTooltip:IsOwned(frame) then GameTooltip:Hide() end end
+    end
     return addon:RegisterConditionWidget(w,1,legacy)
 end
 
@@ -91,6 +116,7 @@ local function buttonConstructor(legacy)
 end
 
 -- Only explicit legacy callers allocate through Ace. Ordinary Help uses RM pools.
+AceGUI:RegisterWidgetType('RM-ConditionLink',function() return labelConstructor(true,true) end,1)
 AceGUI:RegisterWidgetType('RM-ConditionLabel',function() return labelConstructor(true) end,1)
 AceGUI:RegisterWidgetType('RM-ConditionButton',function() return buttonConstructor(true) end,1)
 ---@return RMConditionLabel
@@ -98,11 +124,20 @@ function addon:CreateConditionLabel() return self:AcquireConditionWidget('RM-Con
 ---@return RMConditionButton
 function addon:CreateConditionButton() return self:AcquireConditionWidget('RM-ConditionButton',buttonConstructor) end
 
+---@class RMConditionLink: RMConditionLabel
+---@field image Texture
+---@field SetImage fun(self: RMConditionLink, path: any, ...: number)
+---@field SetImageSize fun(self: RMConditionLink, width: number, height: number)
+---@field SetDisabled fun(self: RMConditionLink, disabled: boolean?)
+---@return RMConditionLink
+function addon:CreateConditionLink() return self:AcquireConditionWidget('RM-ConditionLink',function() return labelConstructor(false,true) end) end
+
 -- BEGIN GENERATED RM SOURCE BINDINGS
 do
     local function sourceGetter(name)
         if name=="CreateConditionButton" then return addon.CreateConditionButton end
         if name=="CreateConditionLabel" then return addon.CreateConditionLabel end
+        if name=="CreateConditionLink" then return addon.CreateConditionLink end
         if name=="buttonConstructor" then return buttonConstructor end
         if name=="defaultFont" then return defaultFont end
         if name=="labelConstructor" then return labelConstructor end
