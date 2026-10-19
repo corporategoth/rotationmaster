@@ -42,6 +42,7 @@ compat.lua
 embeds.xml
 locales.xml
 constants.lua
+Functions/values.lua
 utils.lua
 profiler.lua
 Diagnostics/errors.lua

@@ -9,10 +9,10 @@ function addon:RegisterBuiltinSourceModule(path,getter)
             args[#args+1]={name=name,type=doc and doc.type or 'any',description=doc and L[doc.description] or ''}
         end
         local returns={};for _,doc in ipairs(entry.returns or {{type='any',description=''}}) do returns[#returns+1]={type=doc.type,description=doc.description~='' and L[doc.description] or ''} end
-        local source={name=entry.callName and entry.callName:match('([%w_]+)$') or alias,namespace=path:gsub('%.lua$',''):gsub('[/\\]','.'),description=entry.description and L[entry.description] or string.format(L['Packaged helper from %s.'],path),args=args,returns=returns,code=entry.code or '',bindings=entry.bindings or {}}
-        local id='builtin:'..path..':'..alias
+        local source={name=entry.callName and entry.callName:match('([%w_]+)$') or alias,namespace=entry.namespace or path:gsub('%.lua$',''):gsub('[/\\]','.'),description=entry.description and L[entry.description] or string.format(L['Packaged helper from %s.'],path),args=args,returns=returns,code=entry.code or '',bindings=entry.bindings or {}}
+        local id=entry.bindingID or 'builtin:'..path..':'..alias
         if self:RegisterBuiltinFunction(id,source,function() return getter(alias) end,entry.kind~='function') then
-            local record=self.builtinFunctions[id];record.callName=entry.callName;record.public=entry.callName~=nil
+            local record=self.builtinFunctions[id];record.callName=entry.callName;record.public=entry.callName~=nil;record.compatibilityNamespaces=entry.compatibilityNamespaces
         end
     end
 end

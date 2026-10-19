@@ -42,25 +42,8 @@ addon.uuid = function()
     end)
 end
 
-addon.compare = function(operator, left, right)
-    if operator == "LESSTHAN" then
-        return left < right
-    elseif operator == "LESSTHANOREQUALS" then
-        return left <= right
-    elseif operator == "GREATERTHAN" then
-        return left > right
-    elseif operator == "GREATERTHANOREQUALS" then
-        return left >= right
-    elseif operator == "EQUALS" then
-        return left == right
-    elseif operator == "NOTEQUALS" then
-        return left ~= right
-    elseif operator == "DIVISIBLE" then
-        return (left % right) == 0
-    else
-        addon:warn("Invalid Operator %s", operator)
-    end
-end
+-- Compatibility API for saved custom source; Functions.values owns the body.
+addon.compare = addon.Functions.values.compare
 
 addon.nullable = function(value, default)
     if value == nil then
@@ -150,9 +133,8 @@ addon.index = function(array, value)
     end
 end
 
-addon.isin = function(array, value)
-    return array[value] ~= nil
-end
+-- Compatibility API for saved custom source; Functions.values owns the body.
+addon.isin = addon.Functions.values.isin
 
 addon.tablelength = function(T)
     if T == nil then return 0 end
@@ -683,11 +665,11 @@ do
         if name=="cacheMisses" then return cacheMisses end
         if name=="cachedResult" then return cachedResult end
         if name=="color" then return color end
-        if name=="compare" then return addon.compare end
+        if name=="compare" then return addon.Functions.values.compare end
         if name=="getCached" then return addon.getCached end
         if name=="getCachedInternal" then return getCachedInternal end
         if name=="getRetryCached" then return addon.getRetryCached end
-        if name=="isin" then return addon.isin end
+        if name=="isin" then return addon.Functions.values.isin end
         if name=="nilArgument" then return nilArgument end
         if name=="nullable" then return addon.nullable end
         if name=="nullable_value" then return addon.nullable_value end

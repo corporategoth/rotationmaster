@@ -70,7 +70,16 @@ def lua(value):
 
 def generated():
     modules=json.loads(subprocess.check_output(['lua5.1','tools/collect_builtin_sources.lua'],cwd=ROOT,text=True))
-    outputs={};catalog={'modules':{},'conditions':{}}
+    outputs={};legacy_getters={};catalog={'modules':{},'conditions':{}}
+    for module in modules.values():
+        for alias,entry in module['bindings'].items():
+            docs=entry.get('public') or {};identity=docs.get('bindingID')
+            if identity:
+                matched=re.fullmatch(r'builtin:(.+):([A-Za-z_][A-Za-z_0-9]*)',identity)
+                if not matched: raise ValueError('invalid explicit public binding ID: '+identity)
+                old_path,old_alias=matched.groups()
+                if old_path not in modules: raise ValueError('legacy binding owner unavailable: '+old_path)
+                legacy_getters.setdefault(old_path,{})[old_alias]='addon.'+entry['addonMember']
     for path,module in sorted(modules.items()):
         source=authored((ROOT/path).read_text());bindings=module['bindings'];catalog['modules'][path]={'hash':hashlib.sha256(source.encode()).hexdigest(),'bindings':{}}
         for alias,entry in sorted(bindings.items()):
@@ -83,6 +92,8 @@ def generated():
                     if set(docs['args'])!=set(params): raise ValueError('public helper argument metadata drift: '+alias)
                     returns=docs['returns'] if isinstance(docs['returns'],list) else [docs['returns']]
                     row.update(callName=docs['callName'],description=docs['description'],args=[dict(name=name,**docs['args'][name]) for name in params],returns=returns)
+                    for metadata in ('bindingID','namespace','compatibilityNamespaces'):
+                        if metadata in docs: row[metadata]=docs[metadata]
             catalog['modules'][path]['bindings'][alias]=row
         for tag,callbacks in sorted(module['conditions'].items()):
             record={'module':path,'callbacks':{}}
@@ -93,9 +104,12 @@ def generated():
             catalog['conditions'][tag]=record
         # Export live locals by name: getters preserve reassigned module state.
         suffix=[BEGIN,'do','    local function sourceGetter(name)']
-        for alias,entry in sorted(bindings.items()):
+        getter_expressions={alias: 'addon.'+entry['addonMember'] if entry.get('addonMember') else alias for alias,entry in bindings.items()}
+        for alias,expression in legacy_getters.get(path,{}).items():
+            if alias in getter_expressions and getter_expressions[alias]!=expression: raise ValueError('conflicting legacy getter: '+path+':'+alias)
+            getter_expressions[alias]=expression
+        for alias,expression in sorted(getter_expressions.items()):
             if not re.fullmatch('[A-Za-z_][A-Za-z_0-9]*',alias): raise ValueError('invalid binding identifier')
-            expression='addon.'+entry['addonMember'] if entry.get('addonMember') else alias
             suffix.append('        if name=='+lua(alias)+' then return '+expression+' end')
         suffix+=['    end','    if addon.RegisterBuiltinSourceModule then',
                  '        addon:RegisterBuiltinSourceModule('+lua(path)+', sourceGetter)',

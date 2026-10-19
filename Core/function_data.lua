@@ -91,6 +91,13 @@ end
 local function requirementHashMatches(self,requirement,current,isBuiltin)
     if self:FunctionSourceHash(current)==requirement.hash then return true end
     if not isBuiltin then return false end
+    -- A declared ownership move may change only its source namespace. Keep
+    -- executable bodies, arguments, bindings and documentation in the hash.
+    local builtinRecord=self.builtinFunctions and self.builtinFunctions[requirement.id]
+    for _,namespace in ipairs(builtinRecord and builtinRecord.compatibilityNamespaces or {}) do
+        local previous=self:CopySettingsData(current);previous.namespace=namespace
+        if self:FunctionSourceHash(previous)==requirement.hash then return true end
+    end
     -- Older packaged catalogs used the captured local alias as the display
     -- name and had no namespace metadata. Reconstruct only that exact shape;
     -- executable code, arguments, bindings and documentation remain hashed.

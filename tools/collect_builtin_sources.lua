@@ -7,17 +7,48 @@ local standard={};for name,value in pairs(_G) do if type(value)=='function' then
 local function descriptor(fn)
     local info=debug.getinfo(fn,'S');return {file=info.source:sub(1,1)=='@' and info.source:sub(2) or info.source,first=info.linedefined,last=info.lastlinedefined,what=info.what}
 end
+local publicIdentities,callbackBindings={},{}
+local function qualifiedBindings(module,root,value)
+    local declared={}
+    for alias,id in pairs(callbackBindings[module.file] or {}) do
+        if alias:match('^([^.]+)%.')==root then declared[alias]=id end
+    end
+    if not next(declared) then return nil end
+    local result,seen={},{}
+    local function visit(current,path,depth)
+        assert(depth<=8,'qualified callback binding depth: '..path)
+        if type(current)=='function' then
+            local id=declared[path]
+            assert(id and publicIdentities[id]==current,'qualified callback binding identity mismatch: '..path)
+            result[path]=id;return
+        end
+        assert(type(current)=='table' and not getmetatable(current) and not seen[current],'invalid qualified callback namespace: '..path)
+        seen[current]=true
+        for name,child in pairs(current) do
+            assert(type(name)=='string' and name:match('^[A-Za-z_][A-Za-z_0-9]*$'),'invalid qualified callback name: '..path)
+            visit(child,path..'.'..name,depth+1)
+        end
+    end
+    visit(value,root,1)
+    for alias in pairs(declared) do assert(result[alias],'qualified callback binding missing: '..alias) end
+    return result
+end
 local function capture(module,fn)
     local info=descriptor(fn);info.bindings={}
     for index=1,200 do
         local name,value=debug.getupvalue(fn,index);if not name then break end
         if name~='addon' and name~='L' and not (type(value)=='function' and standard[name]==value) then
-            info.bindings[name]='builtin:'..module.file..':'..name
-            if not module.bindings[name] then
-                local record={kind=type(value)};module.bindings[name]=record
-                if type(value)=='function' then
-                    local source=descriptor(value)
-                    if source.file==module.file then record.fn=capture(module,value) else record.kind='value' end
+            local qualified=qualifiedBindings(module,name,value)
+            if qualified then
+                for alias,id in pairs(qualified) do info.bindings[alias]=id end
+            else
+                info.bindings[name]='builtin:'..module.file..':'..name
+                if not module.bindings[name] then
+                    local record={kind=type(value)};module.bindings[name]=record
+                    if type(value)=='function' then
+                        local source=descriptor(value)
+                        if source.file==module.file then record.fn=capture(module,value) else record.kind='value' end
+                    end
                 end
             end
         end
@@ -25,7 +56,7 @@ local function capture(module,fn)
     return info
 end
 for _,case in ipairs(inventory.branches) do
-    local f=F.new(unpack(case[1]));f.addon.delayed_condition={}
+    local f=F.new(unpack(case[1]));f.addon.delayed_condition={};publicIdentities={}
     f.load('Platform/spells.lua');f.load('Platform/actions.lua');f.load('Platform/range.lua')
     if case[3] then f.env.MI2_GetMobData=function() end end
     for path in io.lines('RotationMaster.toc') do if path:match('^Conditions/') then
@@ -41,8 +72,13 @@ for _,case in ipairs(inventory.branches) do
         local captured=capture(module,fn)
         local record=module.bindings[name]
         assert(not record or record.public,'public helper collides with captured local: '..name)
+        local id=documentation.bindingID or 'builtin:'..info.file..':'..name
+        assert(not publicIdentities[id],'duplicate public helper identity: '..id)
+        publicIdentities[id]=fn
         module.bindings[name]={kind='function',fn=captured,public=documentation,addonMember=member}
     end
+    callbackBindings=f.addon.builtinCallbackBindings or {}
+    for _,bindings in pairs(callbackBindings) do assert(f.addon:NormalizeFunctionBindings(bindings),'invalid declared callback bindings') end
     local definitions={};for tag,definition in pairs(f.addon.definitions) do definitions[tag]=definition end
     for _,group in pairs(f.addon.delayed_condition) do for tag,definition in pairs(group) do definitions[tag]=definition end end
     for tag,definition in pairs(definitions) do

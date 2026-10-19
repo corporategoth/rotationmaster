@@ -5,6 +5,15 @@ local RangeCheck = LibStub("LibRangeCheck-3.0")
 local color, pairs = color, pairs
 local helpers = addon.help_funcs
 
+-- Selected canonical helpers stay private to these authored callbacks. The
+-- collector verifies these explicit leaves against their stable public IDs.
+local Functions={values={compare=addon.Functions.values.compare,isin=addon.Functions.values.isin}}
+addon.builtinCallbackBindings=addon.builtinCallbackBindings or {}
+addon.builtinCallbackBindings["Conditions/spatial.lua"]={
+    ["Functions.values.compare"]="builtin:utils.lua:compare",
+    ["Functions.values.isin"]="builtin:utils.lua:isin",
+}
+
 local rcf = function(unit) return RangeCheck:GetRange(unit) end
 local function protectedRead(cache,method,...)
     if type(method)~="function" then return false,"missing-api" end
@@ -284,7 +293,7 @@ addon:RegisterCondition("DISTANCE_COUNT", {
     fields = { value = "number", operator = "string", distance = "number", enemy = "boolean" },
     valid = function(_, value)
         return finite(value.value) and value.value >= 0 and
-            addon.isin(addon.operators, value.operator) and type(value.enemy)=="boolean" and
+            Functions.values.isin(addon.operators, value.operator) and type(value.enemy)=="boolean" and
             finite(value.distance) and value.distance >= 0
     end,
     evaluate = function(value, cache)
@@ -319,7 +328,7 @@ addon:RegisterCondition("DISTANCE_COUNT", {
                 end
             end
         end
-        return addon.compare(value.operator, count, value.value)
+        return Functions.values.compare(value.operator, count, value.value)
     end,
     print = function(_, value)
         return addon.compareString(value.operator,
