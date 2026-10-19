@@ -92,8 +92,9 @@ addon:RegisterCondition("ZONEPVP", {
         return value.value == nil or Functions.values.isin(addon.zonepvp, value.value)
     end,
     evaluate = function(value, cache)
-        local pvpType = Functions.cache.getCached(cache, GetZonePVPInfo)
-        return value.value == pvpType
+        local record,reason=Functions.cache.getCached(cache, addon.Platform.GetZonePVPObservation, addon.Platform)
+        if not record then return nil,reason end
+        return value.value == record.pvpType
     end,
     print = function(_, value)
         return string.format(L["zone {{!is|is not}} a %s zone"], Functions.presentation.nullable(addon.zonepvp[value.value], L["no PVP"]))

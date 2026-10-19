@@ -37,8 +37,8 @@ local function fixture(...)
     e.GetNumShapeshiftForms=function() return 3 end
     e.GetShapeshiftFormInfo=function(index) return 1,'Form '..index,false,100+index end
     e.GetSpellInfo=function(spell) return spell=='Ghost Wolf' and 'Ghost Wolf' or 'Form '..tostring(spell) end
-    e.C_LossOfControl={GetNumEvents=function() called('eventCount');return #state.events end,
-        GetEventInfo=function(index) called('eventInfo');local event=state.events[index];return event.kind,nil,nil,nil,nil,event.remain,nil,event.school end}
+    e.C_LossOfControl={GetActiveLossOfControlDataCount=function() called('eventCount');return #state.events end,
+        GetActiveLossOfControlData=function(index) called('eventInfo');local event=state.events[index];return {locType=event.kind,timeRemaining=event.remain,lockoutSchool=event.school} end}
     e.SCHOOL_STRINGS={[1]='Physical',[2]='Holy',[3]='Fire'}
     e.bit={lshift=function(value,count) return value*2^count end,band=function(left,right)
         local value,power=0,1

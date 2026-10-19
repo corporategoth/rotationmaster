@@ -445,7 +445,7 @@ if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE and LE_EXPANSION_LEVEL_CURRENT >= 2 a
             for i=1,6 do
                 if Functions.cache.getCached(cache, GetRuneType, i) == value.rune then
                     local start, duration = Functions.cache.getCached(cache, GetRuneCooldown, i)
-                    local remain = math.max(addon.round(duration - (now - start), 3), 0)
+                    local remain = math.max(addon.Functions.values.round(duration - (now - start), 3), 0)
                     if lowest_remain == nil or remain < lowest_remain then
                         lowest_remain = remain
                     end

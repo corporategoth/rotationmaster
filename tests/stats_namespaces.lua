@@ -201,6 +201,7 @@ end)
 test('legacy-shaped full sources retain every original native expression field Help body parameter and private capture hash',function()
     local _,a=fixture();local baseline={};for _,tag in ipairs(tags) do
         baseline[tag]=legacySource(a,assert(a:GetBuiltinConditionSource(tag)))
+        if tag=='RUNE_COOLDOWN' then baseline[tag].evaluate=dofile('tests/fixtures/restore_rounding_qualifiers.lua')(baseline[tag].evaluate,tag,true) end
         if originalHealthEvaluates[tag] then
             assert(a:GetBuiltinConditionSource(tag).evaluate==repairedHealthEvaluates[tag],tag.." changed beyond the explicit health repair")
             baseline[tag].evaluate=originalHealthEvaluates[tag]

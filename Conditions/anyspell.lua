@@ -118,7 +118,7 @@ addon:RegisterCondition("ANYSPELL_COOLDOWN", {
         local cooldown, why = Functions.cache.getCached(cache, addon.Platform.GetSpellCooldown, addon.Platform, spellid)
         if not cooldown then return nil, why end
         if not cooldown.isEnabled then return nil, "cooldown-held" end
-        local remain = math.max(0, addon.round(cooldown.startTime + cooldown.duration - evalStart, 3))
+        local remain = math.max(0, addon.Functions.values.round(cooldown.startTime + cooldown.duration - evalStart, 3))
         return Functions.values.compare(value.operator, remain, value.value)
     end,
     print = function(_, value)

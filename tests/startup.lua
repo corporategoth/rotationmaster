@@ -1312,5 +1312,20 @@ test('environment scan captures the canonical prefix helper once and excludes mo
     local ok,why=pcall(a.EvaluateNextActionInternal,a);assert(not ok and why==boundary,'environment scan did not reach action boundary: '..tostring(why))
     assert(calls==3 and a.unitsInRange['GUID-target'].unit=='target' and not a.unitsInRange['GUID-mouseover'] and not a.unitsInRange['GUID-mouseoverpet'])
 end)
+test('environment membership snapshots the canonical predicate and retains current tracked unit identities',function()
+    local env,a,load=fixture(true,true);local calls=0;local original=a.Functions.values.isin
+    a.Functions.values.isin=function(units,unit) assert(units==a.units);calls=calls+1;return original(units,unit) end
+    a.isin=function() error('legacy addon.isin captured by main') end
+    load('main.lua');initialize(a);a.Functions.values.isin=function() error('main lost captured membership predicate') end
+    a.currentSpec=0;a.currentRotation='membership';a.units={target='Target'}
+    a.db.profile.rotations[0]={membership={name='Membership',rotation={},cooldowns={}}}
+    a.unitsInRange={['GUID-target']={unit='target',name='Target'},['GUID-old']={unit='target',name='Old'}}
+    env.UnitGUID=function(unit) return 'GUID-'..unit end;env.UnitExists=function() return true end
+    env.UnitCanAttack=function() return false end;env.UnitIsEnemy=function() return false end
+    local profile={};function profile:start() end;function profile:stop() end;function profile:child() return self end
+    a.evaluationProfile=profile;a.verbose=function() end;local boundary={};a.NewActionReadiness=function() error(boundary) end
+    local ok,why=pcall(a.EvaluateNextActionInternal,a);assert(not ok and why==boundary,'membership scan did not reach action boundary: '..tostring(why))
+    assert(calls==2 and a.unitsInRange['GUID-target'].unit=='target' and a.unitsInRange['GUID-old']==nil)
+end)
 print(string.format('%d passed, %d failed', passed, failures))
 os.exit(failures == 0 and 0 or 1)

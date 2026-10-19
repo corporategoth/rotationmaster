@@ -156,13 +156,18 @@ addon:RegisterCondition("LOC_TYPE", {
                 value.loc_type ~= nil and Functions.values.isin(addon.loc_types, value.loc_type))
     end,
     evaluate = function(value, cache)
-        for i=1,Functions.cache.getCached(cache, C_LossOfControl.GetNumEvents) do
-            local loc_type, _, _, _, _, remain = Functions.cache.getCached(cache, C_LossOfControl.GetEventInfo, i)
+        local count,reason=Functions.cache.getCached(cache, addon.Platform.GetLossOfControlCount, addon.Platform)
+        if count==nil then return nil,reason end
+        for i=1,count do
+            local record,why=Functions.cache.getCached(cache, addon.Platform.GetLossOfControlEvent, addon.Platform, i, "type")
+            if not record then return nil,why end
+            local loc_type = record.locType
             if addon.loc_equivalent[loc_type] then
                 loc_type = addon.loc_equivalent[loc_type]
             end
             if loc_type == value.loc_type then
-                return Functions.values.compare(value.operator, remain, value.value)
+                if record.timeRemaining==nil then return nil,record.timeRemainingReason end
+                return Functions.values.compare(value.operator, record.timeRemaining, value.value)
             end
         end
         return false
@@ -204,17 +209,33 @@ addon:RegisterCondition("LOC_TYPE", {
 addon:RegisterCondition("LOC_BLOCKED", {
     description = L["Loss Of Control Blocked"],
     icon = addon.Artwork.condition["LOC_BLOCKED"],
-    fields = { operator = "string", value = "number", school = "string" },
+    fields = { operator = "string", value = "number", school = "number" },
     valid = function(_, value)
         return (value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                 value.value ~= nil and value.value >= 0.0 and
                 value.school ~= nil and Functions.values.isin(SCHOOL_STRINGS, value.school))
     end,
     evaluate = function(value, cache)
-        for i=1,Functions.cache.getCached(cache, C_LossOfControl.GetNumEvents) do
-            local _, _, _, _, _, remain, _, school = Functions.cache.getCached(cache, C_LossOfControl.GetEventInfo, i)
-            if bit.band(school, bit.lshift(1, value.school-1)) then
-                return Functions.values.compare(value.operator, remain, value.value)
+        local count,reason=Functions.cache.getCached(cache, addon.Platform.GetLossOfControlCount, addon.Platform)
+        if count==nil then return nil,reason end
+        for i=1,count do
+            local record,why=Functions.cache.getCached(cache, addon.Platform.GetLossOfControlEvent, addon.Platform, i, "school")
+            if not record then return nil,why end
+            if not addon.Platform:CanReadValue(bit) then return nil,"restricted-value" end
+            if type(bit)~="table" then return nil,"missing-api" end
+            local shiftOk,selectedBit=pcall(function() return bit.lshift(1, value.school-1) end)
+            if not shiftOk then return nil,"api-error" end
+            if not addon.Platform:CanReadValue(selectedBit) then return nil,"restricted-value" end
+            if canaccessvalue and not canaccessvalue(selectedBit) then return nil,"restricted-value" end
+            if type(selectedBit)~="number" or selectedBit~=selectedBit or selectedBit==math.huge or selectedBit==-math.huge or selectedBit%1~=0 then return nil,"invalid-api-result" end
+            local bandOk,blocked=pcall(function() return bit.band(record.lockoutSchool, selectedBit) end)
+            if not bandOk then return nil,"api-error" end
+            if not addon.Platform:CanReadValue(blocked) then return nil,"restricted-value" end
+            if canaccessvalue and not canaccessvalue(blocked) then return nil,"restricted-value" end
+            if type(blocked)~="number" or blocked~=blocked or blocked==math.huge or blocked==-math.huge or blocked%1~=0 then return nil,"invalid-api-result" end
+            if blocked~=0 then
+                if record.timeRemaining==nil then return nil,record.timeRemainingReason end
+                return Functions.values.compare(value.operator, record.timeRemaining, value.value)
             end
         end
         return false

@@ -2335,8 +2335,10 @@ L["Checkbox widget with boolean value and callback methods."] = true
 L["Choose the supplied player value only for the literal player unit token; every other unit selects the nonplayer value. Selected false and nil values are preserved."] = true
 L["Classification, validation or availability reason for a nil result."] = true
 L["Classify a numeric item as a glyph for the requested class, using guarded native item metadata. Class is optional and defaults to the readable player class. This establishes item classification only, not equipped status or an item-to-glyph-spell ID mapping."] = true
+L["Client-policy, capability, call or observation availability reason for a nil record."] = true
 L["Client-policy, native-call or required membership availability reason for a nil record."] = true
 L["Collect table keys and sort them by their associated values using Lua less-than comparison. This sorts values rather than key names; equal values have no guaranteed key order."] = true
+L["Combat-policy, capability, observation or scan-budget reason for a nil count."] = true
 L["Compare two exact unit tokens using UnitIsUnit after checking only the first token with UnitExists. A readable absent first unit returns false without comparing. Required missing, failed, restricted or malformed observations return nil with a reason. No second existence query, GUID lookup or inferred identity is added."] = true
 L["Compare two values using an RM operator identifier: LESSTHAN, LESSTHANOREQUALS, GREATERTHAN, GREATERTHANOREQUALS, EQUALS, NOTEQUALS or DIVISIBLE. Invalid operators warn and return nil; operands must support the selected Lua operation."] = true
 L["Comparison operator key, such as EQUALS or LESSTHAN."] = true
@@ -2378,6 +2380,7 @@ L["Exact unit token checked for existence and passed to the selected metadata AP
 L["Exact unit token used for existence and as the recipient of player hostility and threat queries."] = true
 L["Exact unit token whose resource should be observed; this does not redirect player or vehicle units."] = true
 L["Exact unit token whose selected flag should be observed."] = true
+L["Exactly type or school; selects the required subject field without requiring the other."] = true
 L["Finite native threat status, false for known absence/nonenemy/no-threat, or nil for unavailable observations."] = true
 L["First exact unit token, checked for existence before comparison."] = true
 L["First table to compare."] = true
@@ -2392,6 +2395,7 @@ L["Identifier-keyed scalar values or typed predicates. Strings, finite numbers a
 L["Insert each value visited by ipairs at its corresponding leading index in the destination array. Existing entries shift after the inserted prefix; traversal stops at the first missing source index."] = true
 L["Iterator yielding a captured key and its current table value, or no values when exhausted."] = true
 L["Key to look up."] = true
+L["Known active count from zero through the RM scan budget, or nil when unavailable."] = true
 L["Left operand; use numbers for ordering and divisibility."] = true
 L["Literal prefix, including an empty prefix."] = true
 L["Literal suffix, including an empty suffix."] = true
@@ -2406,12 +2410,14 @@ L["Native button with label, disabled state and lease-protected callbacks."] = t
 L["Native directional pad with center reset and lease-protected callbacks."] = true
 L["Native image control with label, texture, disabled state and callbacks."] = true
 L["Native interactive text and image control with measured height and disabled state."] = true
+L["Native one-based integral active-row index within the 256-row RM scan budget."] = true
 L["Native wrapping text control with font, color and alignment methods."] = true
 L["New shallow filtered table, or nil for nil input."] = true
 L["New table with stringified keys and unchanged values."] = true
 L["No return values. The destination array is modified in place."] = true
 L["No return values. The supplied table is modified in place."] = true
 L["Normalized bounded socket snapshot with slots and complete, or nil when the query is unavailable."] = true
+L["Normalized requested subject with finite timeRemaining or timeRemainingReason; nil when the required row or subject is unavailable."] = true
 L["Number of entries visited."] = true
 L["Number or string to inspect; other types do not match."] = true
 L["Numeric widget supporting slider bounds, percent display and pending-edit validation."] = true
@@ -2427,6 +2433,7 @@ L["Observe one independent zero-argument player flag: stealthed uses IsStealthed
 L["Observe one protected zero-argument IsInInstance tuple. Required readable Boolean membership is independent of the type field: known outside returns without interpreting the unused type; inside returns a readable string type or an instanceTypeReason when that secondary field is unavailable. Callers testing outside need only membership; inside type comparisons must check the secondary reason. No outdoors, zone or unit inference is added."] = true
 L["Observe ordered selected-unit existence, hostility from player, then the player threat status on that unit. Known absence, nonenemy and a successfully read nil threat status return false, preserving the no-threat predicate. Finite status numbers including zero retain their original comparison meaning. Required missing, failed, nil, restricted or malformed facts return nil with a reason. No attackability, death, combat or vehicle inference is added."] = true
 L["Observe readable current health and optionally maximum health on supported clients. A readable absent unit returns exists=false. Missing, failed, restricted or malformed observations return nil with a reason; they do not establish an absent unit or a health value."] = true
+L["Observe the first zone PvP classification result with one protected zero-argument dot call. Prefer callable C_PvP.GetZonePVPInfo and use the global helper only when the modern callable is absent. A successful nil or no returned values produces a known empty record; missing, failed, restricted or malformed observations remain unavailable. Readable empty and future strings retain their exact meaning, and unused return fields do not determine availability. Never switch backends after a modern result or failure."] = true
 L["Observe the player current movement speed on supported readable clients. This queries GetUnitSpeed for player only, without testing another unit or redirecting vehicle ownership. Zero means stationary; positive finite fractional speeds remain valid. Missing, failed, restricted or malformed observations return nil with a reason."] = true
 L["Observe whether the player can attack a selected unit that is not dead, using the exact UnitExists, UnitCanAttack and UnitIsDead predicates. Known absence or a readable false attack result returns false without querying death. Required missing, failed, restricted or malformed observations return nil with a reason. This does not test ghosts, range, hostility or ability usability, and does not redirect unit ownership."] = true
 L["Observed membership, or nil when unavailable."] = true
@@ -2443,6 +2450,7 @@ L["Packaged helper from Conditions/spatial.lua."] = true
 L["Packaged helper from utils.lua."] = true
 L["Pet observation with Boolean exists and, for a requested present pet, name; nil when required data is unavailable."] = true
 L["Policy or availability reason for a nil movement observation."] = true
+L["Policy, query, capability or required row/subject availability reason for a nil record."] = true
 L["Policy, query-validation or availability reason for a nil metadata observation."] = true
 L["Policy, query-validation or availability reason for a nil pet observation."] = true
 L["Policy, query-validation or availability reason for a nil player flag."] = true
@@ -2464,9 +2472,11 @@ L["Range record with applicable and, when applicable, inRange; nil when unavaila
 L["Read a normalized charge record: currentCharges, maxCharges, cooldownStartTime, cooldownDuration, chargeModRate and isActive. Unsupported spells or restricted client data return nil with a reason."] = true
 L["Read and normalize a spell cooldown across supported clients. The returned record contains startTime, duration, isEnabled and modRate. The timestamps and duration already describe expiration in GetTime() seconds; do not divide them by modRate."] = true
 L["Read normalized native item classification metadata. The record contains canonical itemID, classID and subClassID; it does not require loaded item display text. Missing, failed, malformed or restricted metadata returns nil with a reason."] = true
+L["Read one documented active loss-of-control row by its native index and requested subject kind. Type queries require only the readable control type string; school queries require only the readable finite nonnegative integer school mask. Optional timing is returned as a finite timeRemaining or an explicit per-field reason, so an unrelated subject does not require a usable timer. Missing rows are unavailable snapshot observations. No display fields, inferred deadline, duration sum, maximum or native alias fallback is used."] = true
 L["Read public group membership on identified client families. Unknown clients are unsupported. True raidOnly checks IsInRaid; false or nil checks IsInGroup using its native default group category. A readable false result stays false. Missing, failed, malformed or restricted observations return nil with a reason."] = true
 L["Read spell-specific range for a unit using the appropriate client API or spell-book slot. A spell without a range restriction returns applicable=false; otherwise applicable=true and inRange records whether the unit is in range. Unknown or inaccessible observations return nil with a reason."] = true
 L["Read the current positive nameplate visibility distance using the supported CVar API. This limits a Distance Count query; it does not prove that all nearby units have been observed. Missing, malformed, restricted or failed observations return nil with a reason."] = true
+L["Read the documented active loss-of-control count with a protected zero-argument dot call. Require a readable finite nonnegative integer. Zero is a complete empty scan and does not require a row API. RM limits a scan to 256 rows and returns unavailable beyond that resource budget; this is not a declared native maximum. Required missing, failed, restricted or malformed observations remain unavailable."] = true
 L["Read the player auto-repeat state for a spell such as Shoot or Auto Shot. This is distinct from a current or queued cast. Modern clients receive the exact spell ID; a legacy query resolves the player spell-book slot first. Restricted client policies, unreadable results and unavailable book slots return nil with a reason. This observes state and never starts or stops a spell."] = true
 L["Read the public LibRangeCheck interval for a unit. A successful upper bound is inclusive; a positive failed lower bound is strict. A zero lower floor is synthetic. Neither bound is an exact distance, and a missing upper bound is not proof that the unit is outside every radius. Unavailable, malformed, restricted or failed observations return nil with a reason."] = true
 L["Readable canonical item classification record, or nil when unavailable."] = true
@@ -2507,6 +2517,7 @@ L["Spell field group containing an action icon, reference input and optional ran
 L["Spell-book scope: spell, pet or any."] = true
 L["Split a string into nonempty runs between separator characters. The separator is inserted into a Lua pattern character class; it is not a literal multi-character delimiter. Empty fields are omitted."] = true
 L["Stored spell ID to resolve."] = true
+L["Successful observation record with pvpType string or nil; nil record means unavailable."] = true
 L["Table to copy shallowly, or nil."] = true
 L["Table to count, or nil for zero."] = true
 L["Table to inspect."] = true

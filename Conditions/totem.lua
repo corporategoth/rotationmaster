@@ -145,7 +145,7 @@ addon:RegisterCondition("TOTEM_REMAIN", {
         local record,reason=observe(cache,platform.GetTotemInfo,value.spell)
         if not record then return nil,reason end
         local seconds=remaining(record,start)
-        return record.active and seconds>0 and Functions.values.compare(value.operator,addon.round(seconds,3),value.value)
+        return record.active and seconds>0 and Functions.values.compare(value.operator,addon.Functions.values.round(seconds,3),value.value)
     end,
     print = function(_, value)
         return string.format(L["you {{!have|do not have}} a %s totem active with %s"],
