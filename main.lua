@@ -225,6 +225,7 @@ function addon:HandleCommand(str)
         addon:print(L["/rm repair              - Fix any DB errors found in the data with internal validation."])
         addon:print(L["/rm errors              - View and copy Rotation Master errors."])
         addon:print(L['/rm editorinfo          - Copy native Lua input diagnostics.'])
+        addon:print(L['/rm editorarrows        - Temporarily test native arrows in an open editor.'])
 
     elseif cmd == "config" then
         self:ShowConfig("Rotations")
@@ -234,6 +235,9 @@ function addon:HandleCommand(str)
 
     elseif cmd == 'editorinfo' then
         self:ShowLuaEditorInputReport()
+
+    elseif cmd == 'editorarrows' then
+        self:ShowLuaEditorArrowProbe()
 
     elseif cmd == "disable" then
         addon:disable()

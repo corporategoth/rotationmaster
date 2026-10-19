@@ -104,27 +104,50 @@ function addon:CreateWorkbenchLuaEditor(parent,changed,valid,preferred)
     c.measure=c.frame:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall');c.measure:SetJustifyH('LEFT');c.measure:SetJustifyV('TOP');c.measure:SetWordWrap(true);c.measure:Hide()
     if c.edit.SetFont then c.edit:SetFont('Interface\\AddOns\\'..addon_name..'\\Fonts\\Inconsolata-Regular.ttf',12,'') end
     if c.measure.SetFont then c.measure:SetFont('Interface\\AddOns\\'..addon_name..'\\Fonts\\Inconsolata-Regular.ttf',12,'') end
-    function c:Layout()
+    function c:Layout(origin)
         if self.layingOut then return end;self.layingOut=true
         self.layoutCounts=self.layoutCounts or {calls=0,width=0,content=0};self.layoutCounts.calls=self.layoutCounts.calls+1
+        if origin~='set-text' and origin~='text-changed' and origin~='owner-size' and origin~='line-number-setting' then origin='direct' end
+        local counts=self.layoutCounts;counts.origins=counts.origins or {};counts.origins[origin]=(counts.origins[origin] or 0)+1
+        if origin=='owner-size' then counts.ownerWidth,counts.ownerHeight=self.frame:GetWidth(),self.frame:GetHeight() end
         -- Native coordinates round through effective UI scale. Rewriting an
         -- almost-identical size reflows EditBox text and can reset its caret.
         local function differs(current,wanted) return math.abs(current-wanted)>.1 end
+        -- Keep incoming event counts while coalescing unchanged text geometry.
+        -- Cursor and scrolling callbacks continue to own visible gutter updates.
+        local frameWidth,frameHeight=self.frame:GetWidth(),self.frame:GetHeight()
+        local scale,source=self.frame:GetEffectiveScale(),self:GetText()
+        local font,size,flags,measureFont,measureSize,measureFlags
+        if self.edit.GetFont then font,size,flags=self.edit:GetFont() end
+        if self.measure.GetFont then measureFont,measureSize,measureFlags=self.measure:GetFont() end
+        local spacing=self.edit.GetSpacing and self.edit:GetSpacing()
+        local measureSpacing=self.measure.GetSpacing and self.measure:GetSpacing()
+        local wanted=addon.db.profile.lua_line_numbers~=false
+        local last=self.layoutInput
+        if last and not differs(last.width,frameWidth) and not differs(last.height,frameHeight) and last.scale==scale and last.source==source
+            and last.wanted==wanted and last.setting==self.lineNumberSetting and last.visible==self.lineNumbersVisible
+            and last.font==font and last.size==size and last.flags==flags and last.spacing==spacing
+            and last.measureFont==measureFont and last.measureSize==measureSize and last.measureFlags==measureFlags and last.measureSpacing==measureSpacing then
+            counts.skips=(counts.skips or 0)+1;self.layingOut=nil;return
+        end
         -- The shared track sits beyond the viewport. Reserve its space here,
         -- keeping both the text and the track within the editor card.
         if self.RefreshLineNumbers then self:RefreshLineNumbers() end
         local gutter=self.lineNumbersVisible and 56 or 0
         if self.lineNumberLayoutGutter~=gutter then self.lineNumberLayoutGutter=gutter;self.scroll:SetPoint('TOPLEFT',4+gutter,-4) end
-        local scrollWidth=math.max(1,self.frame:GetWidth()-32-gutter);local width=scrollWidth;local height=math.max(1,self.frame:GetHeight()-8)
+        local scrollWidth=math.max(1,frameWidth-32-gutter);local width=scrollWidth;local height=math.max(1,frameHeight-8)
         if differs(self.scroll:GetWidth(),scrollWidth) or differs(self.scroll:GetHeight(),height) then self.scroll:SetSize(scrollWidth,height) end
         if differs(self.edit:GetWidth(),width) then self.layoutCounts.width=self.layoutCounts.width+1;self.edit:SetWidth(width) end
         -- Hover hit geometry gives this font a fixed height. Let it measure
         -- the complete new source before sizing the backing scroll child.
-        self.measure:SetHeight(0);self.measure:SetWidth(math.max(1,width-12));self.measure:SetText(self:GetText());local editHeight=math.max(height,self.measure:GetStringHeight()+16)
+        self.measure:SetHeight(0);self.measure:SetWidth(math.max(1,width-12));self.measure:SetText(source);local editHeight=math.max(height,self.measure:GetStringHeight()+16)
         -- Multiline EditBoxes own their text height. Size a backing frame
         -- without a bottom anchor on the edit, preserving native text layout.
         if differs(self.content:GetWidth(),width) or differs(self.content:GetHeight(),editHeight) then self.layoutCounts.content=self.layoutCounts.content+1;self.content:SetSize(width,editHeight) end
-        self.scroll:UpdateWorkbenchScroll();if self.RefreshLineNumbers then self:RefreshLineNumbers() end;self.layingOut=nil
+        self.scroll:UpdateWorkbenchScroll();if self.RefreshLineNumbers then self:RefreshLineNumbers() end
+        self.layoutInput={width=frameWidth,height=frameHeight,scale=scale,source=source,wanted=wanted,setting=self.lineNumberSetting,visible=self.lineNumbersVisible,
+            font=font,size=size,flags=flags,spacing=spacing,measureFont=measureFont,measureSize=measureSize,measureFlags=measureFlags,measureSpacing=measureSpacing}
+        self.layingOut=nil
     end
     ---@return string
     function c:GetText()
@@ -133,13 +156,13 @@ function addon:CreateWorkbenchLuaEditor(parent,changed,valid,preferred)
         if self.syntax then local text=self.syntax.decode(self.nativeGetText(self.edit));return type(text)=='string' and text or '' end
         return self.edit:GetText() or ''
     end
-    function c:SetText(text) self.setting=true;self.edit:SetText(text or '');self.readOnlyText=text or '';self.setting=false;self:Layout() end
+    function c:SetText(text) self.setting=true;self.edit:SetText(text or '');self.readOnlyText=text or '';self.setting=false;self:Layout('set-text') end
     function c:SetContext(context) self.context=context;if self.UpdateSymbols then self:UpdateSymbols(context) end end
     function c:SetReadOnly(value) self.readOnly=value==true;self.readOnlyText=self:GetText();if self.readOnly then self.edit:ClearFocus();self.edit:Disable() else self.edit:Enable() end end
     function c:SetChanged(callback) self.changed=callback end
     function c:SetCloseHandler(callback) self.closeRequested=callback end
     function c:Acquire(callback,ownerValid)
-        self.released=false;self.readOnly=false;self.readOnlyText=nil;self.changed=callback;self.valid=ownerValid;self.layoutCounts=nil
+        self.released=false;self.readOnly=false;self.readOnlyText=nil;self.changed=callback;self.valid=ownerValid;self.layoutCounts=nil;self.layoutInput=nil
         if self.ResetInputTrace then addon.luaInputEditor=self;self:ResetInputTrace() end
         if self.syntax then pcall(self.syntax.enable,self.edit,self.syntaxColors,4) end
         if self.AcquireCompletion then self:AcquireCompletion() end
@@ -153,8 +176,8 @@ function addon:CreateWorkbenchLuaEditor(parent,changed,valid,preferred)
         for _,event in ipairs({'OnTextChanged','OnTabPressed','OnUpdate'}) do self.edit:SetScript(event,self.nativeScripts[event]) end
         self.edit:SetText('');self.frame:Hide()
     end
-    addon:SetUIScript(c.edit,'OnTextChanged',function() if c.readOnly and not c.setting and c:GetText()~=c.readOnlyText then c:SetText(c.readOnlyText);return end;c:Layout();if not c.setting and not c.released and c.valid() and c.changed then c.changed(c:GetText()) end end)
-    addon:SetUIScript(c.frame,'OnSizeChanged',function() c:Layout() end)
+    addon:SetUIScript(c.edit,'OnTextChanged',function() if c.readOnly and not c.setting and c:GetText()~=c.readOnlyText then c:SetText(c.readOnlyText);return end;c:Layout('text-changed');if not c.setting and not c.released and c.valid() and c.changed then c.changed(c:GetText()) end end)
+    addon:SetUIScript(c.frame,'OnSizeChanged',function() c:Layout('owner-size') end)
     addon:SetUIScript(c.edit,'OnMouseWheel',function(_,delta) c.scroll.workbenchBar:SetValue(c.scroll.workbenchBar:GetValue()-delta*36) end);c.edit:EnableMouseWheel(true)
     addon:SetUIScript(c.edit,'OnCursorChanged',function(_,_,y,_,height) local bar=c.scroll.workbenchBar;local top=-y;if top<bar:GetValue() then bar:SetValue(top) elseif top+height>bar:GetValue()+c.scroll:GetHeight() then bar:SetValue(top+height-c.scroll:GetHeight()) end end)
     local function closeEditor(mouse)
@@ -180,7 +203,7 @@ function addon:CreateWorkbenchLuaEditor(parent,changed,valid,preferred)
     if self.InstallRMCodeCompletion then self:InstallRMCodeCompletion(c) end
     if self.InstallNativeLuaLineNumbers then
         self:InstallNativeLuaLineNumbers(c)
-        addon:SetUIScript(c.frame,'OnUpdate',function() if not c.released and c.valid() and c.RefreshLineNumbers and c.lineNumberSetting~=(addon.db.profile.lua_line_numbers~=false) then c:Layout() end end)
+        addon:SetUIScript(c.frame,'OnUpdate',function() if not c.released and c.valid() and c.RefreshLineNumbers and c.lineNumberSetting~=(addon.db.profile.lua_line_numbers~=false) then c:Layout('line-number-setting') end end)
     end
     c:SetText('');return c
 end

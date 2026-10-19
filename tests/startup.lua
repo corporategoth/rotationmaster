@@ -159,6 +159,11 @@ test('legacy metadata remains usable', function()
     assert(addon.pretty_name == 'Rotation Master')
 end)
 
+test('editor arrow command dispatches the temporary diagnostic and help describes its open editor scope',function()
+    local env,a,load=fixture(true,true);local lib=env.LibStub;env.LibStub=function(name,...) if name=='AceConsole-3.0' then return {GetArgs=function(_,text) return text,1 end} end;return lib(name,...) end
+    load('main.lua');a.warn=function() end;local calls=0;a.ShowLuaEditorArrowProbe=function() calls=calls+1 end;a:HandleCommand('editorarrows');assert(calls==1,'editor arrow probe command was not dispatched')
+    local lines={};a.print=function(_,text) lines[#lines+1]=text end;a:HandleCommand('help');assert(table.concat(lines,'\n'):find('/rm editorarrows',1,true),'temporary arrow probe missing from help')
+end)
 test('main registration does not request the legacy preview widget library',function()
     for _,modern in ipairs({false,true}) do
         local env,addon,load=fixture(modern);local lib=env.LibStub

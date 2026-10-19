@@ -1,30 +1,5 @@
 local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite()
-local function fixture()
- local f=F.new();dofile('tests/fixtures/native_ui.lua')(f.env);f.env.C_Timer={After=function(_,callback) callback() end};f.env.GetLocale=function() return "enUS" end;f.env.SlashCmdList={};f.env.StaticPopupDialogs={}
- local create=f.env.CreateFrame;local function augmented(frame) function frame:RegisterEvent() end;function frame:SetShown(value) if value then self:Show() else self:Hide() end end
- function frame:SetEnabled(value) if value then self:Enable() else self:Disable() end end
- function frame:GetTextColor() return unpack(self.textColor or {1,1,1,1}) end
- function frame:GetFont() return 'Fonts\\FRIZQT__.TTF',12,'' end
- function frame:SetFont() end
- function frame:SetSpacing(value) self.spacing=value end;function frame:GetSpacing() return self.spacing or 0 end
- function frame:SetJustifyH(value) self.justifyH=value end
- function frame:SetNonSpaceWrap() end
- function frame:GetTextInsets() return unpack(self.textInsets or {0,0,0,0}) end
- function frame:GetVerticalScroll() return self.scrollOffset or 0 end
- function frame:GetVerticalScrollRange() return math.max(0,(self.scrollChild and self.scrollChild:GetHeight() or 0)-self:GetHeight()) end
- function frame:GetPoint() return unpack(self.point or {'CENTER'}) end
- function frame:GetTop() return 500 end;function frame:GetBottom() return 200 end;function frame:GetLeft() return 0 end;function frame:SetClipsChildren() end;function frame:IsMouseOver() return false end;function frame:GetAltArrowKeyMode() return self.altArrowKeyMode end;function frame:SetHistoryLines() end;function frame:SetObeyStepOnDrag() end;function frame:GetFontObject() return "ChatFontNormal" end
- function frame:UnregisterAllEvents() self.eventsCleared=true end;local texture,fontstring=frame.CreateTexture,frame.CreateFontString
- function frame:CreateTexture(...) return augmented(texture(self,...)) end
- function frame:CreateFontString(...) return augmented(fontstring(self,...)) end
- function frame:CreateLine(...) return self:CreateTexture(...) end;function frame:SetStartPoint() end;function frame:SetEndPoint() end;function frame:SetThickness() end
- function frame:CreateMaskTexture(...) return self:CreateTexture(...) end;function frame:AddMaskTexture() end
- return frame end
- f.env.CreateFrame=function(...) return augmented(create(...)) end
- f.load('Core/custom_authoring.lua');f.load('Core/lua_symbols.lua');f.load('UI/settings_transfer.lua');f.load('UI/condition_source_preview.lua');f.load('UI/lua_debug_output.lua');f.load('UI/lua_completion.lua');do local lines=io.open('UI/line_numbers.lua');if lines then lines:close();f.load('UI/line_numbers.lua') end end;f.load('UI/lua_editor.lua');f.load('Libs/LuaWorkbench-Embed/modules.lua');local file=io.open('Integrations/lua_workbench.lua');if file then file:close();f.load('Integrations/lua_workbench.lua') end
- f.env.LuaWorkbench={db={options={autocomplete=true},drafts={user={source='KEEP'}}}};f.env.LuaWorkbenchDB={drafts={user={source='KEEP'}}}
- return f,f.addon
-end
+local fixture=dofile('tests/fixtures/lua_workbench.lua')
 test('optional workbench engine keeps namespaces completion and debugger state independent',function()
  local f,a=fixture();assert(a.CreateLuaWorkbenchEngine,'optional engine missing')
  local one=assert(a:CreateLuaWorkbenchEngine({id='one'}));local two=assert(a:CreateLuaWorkbenchEngine({id='two'}))
@@ -461,5 +436,69 @@ test('advanced pending repaint respects invalid owners read-only input and relea
  c:SetReadOnly(false);c.edit:SetText('return 12');c.edit:GetScript('OnTextChanged')(c.edit,true);assert(changes==1)
  valid=false;local update=c.frame:GetScript('OnUpdate');for tick=1,10 do update(c.frame,1/60) end;assert(paints==0,'invalid owner repainted')
  c:Release();update(c.frame,1);assert(paints==0 and not input.queryEditor,'released callback repainted or revived editor state')
+end)
+test('actual workbench provider supports source-free diagnostics and reversible arrow probes across release',function()
+ local f,a=fixture();f.load('UI/lua_input_diagnostics.lua');f.env.IsAddOnLoaded=function(name) return name=='!!!LuaWorkbench' end
+ local valid=true;local code=a:CreateWorkbenchLuaEditor(f.env.UIParent,function() end,function() return valid end,'LuaWorkbench');local c=code.inner
+ assert(c.provider=='LuaWorkbench' and c.scroll==c.engine.Query.Console.input.scrollFrame and c.valid,'workbench diagnostics control contract missing')
+ assert(a.luaInputEditor==c and c.ToggleNativeArrowProbe,'actual provider was not registered with diagnostics')
+ code:SetText('SECRET_BUFFER_TEXT');local owner={code=code,session=91};a.configWindow={pane={inlineFunction=owner}}
+ local report=a:LuaEditorInputReport();assert(report:find('provider=LuaWorkbench',1,true) and report:find('matches source editor=true',1,true) and report:find('source kind=function',1,true),'wrapped provider owner not matched')
+ assert(not report:find('SECRET_BUFFER_TEXT',1,true),'diagnostics included source text')
+ local arrow=c.edit:GetScript('OnArrowPressed');assert(type(arrow)=='function');assert(c:ToggleNativeArrowProbe()==true and c.edit:GetScript('OnArrowPressed')==nil)
+ assert(c:ToggleNativeArrowProbe()==false and c.edit:GetScript('OnArrowPressed')==arrow,'probe did not restore the actual attached handler')
+ assert(c:ToggleNativeArrowProbe()==true);local newer=function() end;c.edit:SetScript('OnArrowPressed',newer);assert(c:ToggleNativeArrowProbe()==false and c.edit:GetScript('OnArrowPressed')==newer,'probe overwrote newer handler');c.edit:SetScript('OnArrowPressed',arrow)
+ valid=false;assert(c:ToggleNativeArrowProbe()==nil,'invalid owner enabled probe');valid=true;assert(c:ToggleNativeArrowProbe()==true)
+ code:Release();assert(c.released and not c.nativeArrowProbe and not c.engine.Query.Console.input.queryEditor,'release retained probe/editor state');assert(c:ToggleNativeArrowProbe()==nil,'released provider accepted probe')
+end)
+test('settled workbench layouts and idle ticks do not rewrite geometry or redraw gutters',function()
+ for _,gutter in ipairs({false,true}) do
+  local f,a=fixture();a.db.profile.lua_line_numbers=gutter;local changes=0
+  local c=a:CreateLuaWorkbenchControl(f.env.UIParent,function() changes=changes+1 end,function() return true end);c.frame:SetSize(600,300);c:SetText('first\nsecond\nthird');c.edit:SetFocus();c.edit:SetCursorPosition(2);c:Layout()
+  local input=c.engine.Query.Console.input;local counts={geometry=0,gutter=0,text=0,cursor=0,focus=0,chrome=0}
+  local function watch(object,method,bucket) local original=object[method];object[method]=function(self,...) counts[bucket]=counts[bucket]+1;return original(self,...) end end
+  for _,entry in ipairs({{input.frame,'SetAllPoints'},{input.frame,'SetSize'},{input.scrollBG,'SetPoint'},{c.engine.DebugUI.toolbar,'ClearAllPoints'},{c.engine.DebugUI.dock,'ClearAllPoints'},{c.engine.DebugUI.dock,'SetHeight'},{c.engine.DebugUI.terminalOutput.frame,'SetWidth'}}) do watch(entry[1],entry[2],'geometry') end
+  watch(c.engine.Query.Console,'UpdateLineNumbers','gutter');watch(c.edit,'SetText','text');watch(c.edit,'SetCursorPosition','cursor');watch(c.edit,'SetFocus','focus')
+  watch(c.argumentLabel,'SetText','chrome')
+  for _,button in ipairs({c.play,c.engine.Workspace.debugButton}) do watch(button,'SetEnabled','chrome');watch(button,'Enable','chrome') end
+  -- Real native size reads round through effective scale; an immaterial
+  -- difference must not keep rebuilding the anchored native input.
+  local getWidth=input.frame.GetWidth;input.frame.GetWidth=function(self) return getWidth(self)+.00003051758 end
+  for tick=1,100 do c:Layout();c.frame:GetScript('OnUpdate')(c.frame,1/60) end
+  assert(counts.geometry==0,'settled workbench kept writing anchored input/debugger geometry')
+  assert(counts.gutter==0,'settled workbench kept redrawing its gutter')
+  assert(counts.chrome==0,'settled workbench kept rewriting labels or enabling action buttons')
+  assert(counts.text==0 and counts.cursor==0 and counts.focus==0 and changes==0 and c.edit:GetCursorPosition()==2 and c.edit:HasFocus(),'idle workbench changed source caret focus or history')
+  c.play:Disable();c.engine.Workspace.debugButton:Disable();c.frame:GetScript('OnUpdate')(c.frame,1/60)
+  assert(c.play:IsEnabled() and c.engine.Workspace.debugButton:IsEnabled(),'prerequisite actions were left disabled')
+  c:SetContext({kind='condition',id='LABEL',callback='evaluate',source={fields={},bindings={}}});assert(c.argumentLabel:GetText()=='Arguments from Test','changed context retained old argument label');c:Release()
+ end
+end)
+test('workbench resize reentry settles and debugger drawer geometry follows real bounds',function()
+ local f,a=fixture();local c=a:CreateLuaWorkbenchControl(f.env.UIParent,function() end,function() return true end);c.frame:SetSize(600,300);c:SetText('first\nsecond');c.edit:SetCursorPosition(3)
+ local input=c.engine.Query.Console.input;local D=c.engine.Debugger;local U=c.engine.DebugUI;local setSize=input.frame.SetSize;local writes=0
+ input.frame.SetSize=function(self,...)
+  writes=writes+1;assert(writes<=4,'native size feedback recursively rebuilt workbench');setSize(self,...);c:Layout()
+ end
+ local points={};local setPoint=input.scrollBG.SetPoint;input.scrollBG.SetPoint=function(self,anchor,...) points[anchor]={...};return setPoint(self,anchor,...) end
+ c.frame:SetSize(720,420);assert(writes==1 and input.frame:GetWidth()==720 and input.frame:GetHeight()==420,'actual resize did not settle once')
+ D.armed=true;U.drawerOpen=true;c:Layout();assert(U.toolbar:IsShown() and U.dock:IsShown() and U.dock:GetHeight()==168,'debugger drawer did not open within bounds')
+ assert(points.TOPLEFT[4]==-60 and points.BOTTOMRIGHT[4]==196,'active debugger did not reserve drawer edges')
+ c.frame:SetSize(720,180);assert(not U.dock:IsShown() and points.BOTTOMRIGHT[4]==28,'small owner did not collapse debugger drawer')
+ c.frame:SetSize(720,420);assert(U.dock:IsShown(),'drawer did not recover after resize');D.armed=false;c:Layout();assert(not U.toolbar:IsShown() and not U.dock:IsShown() and points.TOPLEFT[4]==-28,'stopped debugger retained code inset')
+ local settled=writes;for i=1,50 do c:Layout() end;assert(writes==settled and c.edit:GetCursorPosition()==3 and c:GetText()=='first\nsecond','resized workbench kept rewriting its input');c:Release()
+end)
+test('workbench gutter follows text cursor scroll resize and preference events without idle polling',function()
+ local f,a=fixture();local c=a:CreateLuaWorkbenchControl(f.env.UIParent,function() end,function() return true end);c.frame:SetSize(600,300);c:SetText('first');c.edit:SetCursorPosition(2);c:Layout()
+ local C=c.engine.Query.Console;local input=C.input;local update=C.UpdateLineNumbers;local renders=0
+ function C:UpdateLineNumbers() renders=renders+1;return update(self) end
+ c:SetText('first\nsecond\nthird');assert(renders>0 and #input.queryLineNumbers.positions==3,'source change left gutter stale')
+ local before=renders;c.edit:SetCursorPosition(8);c.edit:GetScript('OnCursorChanged')(c.edit,14,-14,2,12);assert(renders>before,'cursor event no longer updates gutter')
+ before=renders;input.scrollFrame:SetVerticalScroll(10);input.scrollFrame:GetScript('OnVerticalScroll')(input.scrollFrame,10);assert(renders>before,'scroll event no longer updates gutter')
+ before=renders;input.scrollFrame:SetSize(500,200);assert(renders>before,'viewport size event no longer updates gutter')
+ before=renders;for i=1,100 do c.frame:GetScript('OnUpdate')(c.frame,1/60) end;assert(renders==before,'idle frames redraw unchanged gutter')
+ a.db.profile.lua_line_numbers=false;c.frame:GetScript('OnUpdate')(c.frame,1/60);assert(not c.lineNumbersVisible and not input.queryLineNumbers,'preference did not detach gutter')
+ a.db.profile.lua_line_numbers=true;c.frame:GetScript('OnUpdate')(c.frame,1/60);assert(c.lineNumbersVisible and #input.queryLineNumbers.positions==3,'preference did not restore current gutter')
+ assert(c.edit:GetCursorPosition()==8 and c:GetText()=='first\nsecond\nthird','gutter preference changed caret/source');c:Release()
 end)
 finish()

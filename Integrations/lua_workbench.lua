@@ -61,7 +61,7 @@ end
 
 function rm:CreateLuaWorkbenchControl(parent,changed,valid)
     local frame=CreateFrame('Frame',nil,parent);frame:SetSize(600,300)
-    local c={frame=frame,changed=changed,valid=valid,setting=false,context={},environment={addon=self,L=L}}
+    local c={frame=frame,provider='LuaWorkbench',changed=changed,valid=valid,setting=false,context={},environment={addon=self,L=L}}
     local engine=assert(self:CreateLuaWorkbenchEngine({id='RM',environment=c.environment,status=function(text,failed) if c.status then c.status:SetText(text or '');c.status:SetTextColor(failed and 1 or .5,failed and .3 or .85,.5) end end,show=function() if c.showOwner then c.showOwner() end end,help=function() self:ShowWorkbenchHelp(L['Lua editor'],{{title=L['Run current buffer'],text=L['Play runs the current buffer once without debugging. Condition callbacks use the fields configured in Test; functions use Test arguments. Returns, printed output and full errors are available in Output. Running does not apply source changes or replace the live callback.']},{title=L['Debug current buffer'],text=L['The Debug button starts a separate session and pauses at the first executable line or breakpoint. Continue resumes execution, Step over advances past the current operation, and Step into enters instrumented script functions. Native functions cannot be stepped into. Stop ends the session. F5 continues, F10 steps over, F11 steps into, and Shift+F5 stops.']},{title=L['Debugger terminal'],text=L['The debugger terminal appears below the code while debugging. When paused, enter expressions or assignments to inspect or change the current variables. The drawer button hides or shows the terminal. Output provides a copyable report of printed output, terminal evaluations and complete errors.']}},frame) end}))
     c.engine=engine;engine.control=c
     local UI,W,C,E=engine.UI,engine.Workspace,engine.Query.Console,engine.Query.Editor
@@ -69,7 +69,7 @@ function rm:CreateLuaWorkbenchControl(parent,changed,valid)
     local baseEditor=UI.Editor
     function UI:Editor(owner,label,readonly) local input=baseEditor(self,owner,label,readonly);input.editBox:SetFont('Interface\\AddOns\\'..addon_name..'\\Fonts\\Inconsolata-Regular.ttf',12,'');return input end
     function UI:Scroll(owner) local scroll=rm:CreateWorkbenchScrollFrame(owner);scroll.bar=scroll.workbenchBar;return scroll end
-    local input=UI:Editor(frame,'');input.editBox:SetText('');C.input=input;c.edit=input.editBox;input.frame:SetAllPoints(frame)
+    local input=UI:Editor(frame,'');input.editBox:SetText('');C.input=input;c.edit=input.editBox;c.scroll=input.scrollFrame;input.frame:SetAllPoints(frame)
     c.status=input.frame:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall');c.status:SetPoint('BOTTOMLEFT',6,3);c.status:SetPoint('BOTTOMRIGHT',-6,3);c.status:SetHeight(18);c.status:SetJustifyH('LEFT');c.status:SetJustifyV('MIDDLE');c.status:SetText('')
     c.arguments=rm:CreateWorkbenchEditBox(input.frame);c.arguments:SetText('{}');c.arguments:SetPoint('TOPLEFT',88,-2);c.arguments:SetPoint('RIGHT',input.frame,'RIGHT',-168,0);c.arguments:SetHeight(22)
     c.argumentLabel=input.frame:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall');c.argumentLabel:SetPoint('TOPLEFT',4,-7);c.argumentLabel:SetText(L['Test arguments'])
@@ -217,7 +217,8 @@ function rm:CreateLuaWorkbenchControl(parent,changed,valid)
         local ready=not needsValues or owner and owner.OwnerValid and owner.OwnerValid() and state and state.configured
         -- Keep actions clickable so prerequisites can be explained rather than
         -- silently dropping native clicks on disabled buttons.
-        self.play:SetEnabled(true);W.debugButton:SetEnabled(true)
+        if not self.play:IsEnabled() then self.play:Enable() end
+        if not W.debugButton:IsEnabled() then W.debugButton:Enable() end
         ready=not not ready
         if self.executionReady~=ready then
             local why=L['Set values in Test before running or debugging this condition.']
@@ -227,26 +228,46 @@ function rm:CreateLuaWorkbenchControl(parent,changed,valid)
             UI:Tooltip(W.debugButton,ready and engine.L.debugStart or why)
         end
     end
+    local function differs(current,wanted) return math.abs(current-wanted)>.1 end
     function engine.DebugUI:Layout()
         if not self.toolbar then return end
         local active=engine.Debugger.armed==true
         self.toolbar:SetShown(active)
-        self.toolbar:ClearAllPoints();self.toolbar:SetPoint('TOPLEFT',6,-28);self.toolbar:SetPoint('TOPRIGHT',-6,-28)
+        if not self.rmAnchors then
+            self.rmAnchors=true
+            self.toolbar:ClearAllPoints();self.toolbar:SetPoint('TOPLEFT',6,-28);self.toolbar:SetPoint('TOPRIGHT',-6,-28)
+            self.dock:ClearAllPoints();self.dock:SetPoint('BOTTOMLEFT',6,24);self.dock:SetPoint('BOTTOMRIGHT',-6,24)
+        end
         local top=active and 60 or 28
         local height=math.min(180,math.max(80,input.frame:GetHeight()*.4))
         local drawer=active and self.drawerOpen and input.frame:GetHeight()-top-height-24>=32
-        self.dock:SetShown(drawer==true);self.dock:SetHeight(height);self.dock:ClearAllPoints();self.dock:SetPoint('BOTTOMLEFT',6,24);self.dock:SetPoint('BOTTOMRIGHT',-6,24)
-        self.terminalOutput.frame:SetWidth(math.max(120,input.frame:GetWidth()*.62-16))
-        input.scrollBG:SetPoint('TOPLEFT',input.frame,'TOPLEFT',6,-top)
-        input.scrollBG:SetPoint('BOTTOMRIGHT',input.frame,'BOTTOMRIGHT',-16,drawer and height+28 or 28)
+        self.dock:SetShown(drawer==true)
+        if differs(self.dock:GetHeight(),height) then self.dock:SetHeight(height) end
+        local terminalWidth=math.max(120,input.frame:GetWidth()*.62-16)
+        if differs(self.terminalOutput.frame:GetWidth(),terminalWidth) then self.terminalOutput.frame:SetWidth(terminalWidth) end
+        local bottom=drawer and height+28 or 28
+        local changed=self.rmTop~=top or self.rmBottom==nil or differs(self.rmBottom,bottom)
+        if self.rmTop~=top then self.rmTop=top;input.scrollBG:SetPoint('TOPLEFT',input.frame,'TOPLEFT',6,-top) end
+        if self.rmBottom==nil or differs(self.rmBottom,bottom) then self.rmBottom=bottom;input.scrollBG:SetPoint('BOTTOMRIGHT',input.frame,'BOTTOMRIGHT',-16,bottom) end
         c.arguments:SetShown(not active and c.context.kind~='condition');c.argumentLabel:SetShown(not active)
+        return changed
     end
     function c:Layout()
-        if self.released then return end
-        input.frame:SetAllPoints(frame);input.frame:SetSize(frame:GetWidth(),frame:GetHeight())
-        engine.DebugUI:Layout()
-        if self.RefreshLineNumbers then self:RefreshLineNumbers() else C:UpdateLineNumbers() end
-        self.argumentLabel:SetText(self.context.kind=='condition' and L['Arguments from Test'] or L['Test arguments']);self:UpdateDebugAvailability()
+        if self.released or self.layingOut then return end;self.layingOut=true
+        local width,height=frame:GetWidth(),frame:GetHeight()
+        local resized=self.layoutWidth==nil or differs(self.layoutWidth,width) or differs(self.layoutHeight,height)
+        if resized then self.layoutWidth,self.layoutHeight=width,height end
+        -- The input keeps its construction-time anchors. Repeated size writes
+        -- invalidate native multiline layout even when the host has not moved.
+        if differs(input.frame:GetWidth(),width) or differs(input.frame:GetHeight(),height) then input.frame:SetSize(width,height) end
+        local changed=engine.DebugUI:Layout()
+        if resized or changed or self.lineNumberSetting~=(rm.db.profile.lua_line_numbers~=false) then
+            if self.RefreshLineNumbers then self:RefreshLineNumbers() else C:UpdateLineNumbers() end
+        end
+        local label=self.context.kind=='condition' and L['Arguments from Test'] or L['Test arguments']
+        if self.argumentLabel:GetText()~=label then self.argumentLabel:SetText(label) end
+        self:UpdateDebugAvailability()
+        self.layingOut=nil
     end
     for _,control in ipairs({c.play,W.debugButton,engine.DebugUI.stopButton,c.knowledge,c.output,c.arguments}) do control:SetFrameLevel(c.edit:GetFrameLevel()+12) end
     input.changed=function(text)
@@ -284,7 +305,8 @@ function rm:CreateLuaWorkbenchControl(parent,changed,valid)
     local pendingPaintElapsed=0
     self:SetUIScript(frame,'OnUpdate',function(_,elapsed)
         if c.released or not valid() then return end
-        c:UpdateDebugAvailability();if c.RefreshLineNumbers then c:RefreshLineNumbers() end
+        c:UpdateDebugAvailability()
+        if c.RefreshLineNumbers and c.lineNumberSetting~=(rm.db.profile.lua_line_numbers~=false) then c:RefreshLineNumbers() end
         -- Upstream uses its caret clock to debounce painting. Native cursor
         -- notifications can reset that clock continuously while text is dirty.
         local state=input.queryEditor
@@ -300,6 +322,7 @@ function rm:CreateLuaWorkbenchControl(parent,changed,valid)
         if mouseUp then mouseUp(edit,button) end
         if button=='LeftButton' and IsControlKeyDown and IsControlKeyDown() and rm.NavigateLuaSymbol then rm:NavigateLuaSymbol(engine,input,c:GetText(),edit:GetCursorPosition()) end
     end)
+    if self.InstallLuaInputDiagnostics then self:InstallLuaInputDiagnostics(c) end
     engine.APIHelp:Load()
     c:Layout();return c
 end

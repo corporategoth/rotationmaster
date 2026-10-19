@@ -1956,6 +1956,10 @@ L['No native Lua editor has been opened this session.'] = true
 L['Lua input diagnostics'] = true
 L['Move'] = true
 L['/rm editorinfo          - Copy native Lua input diagnostics.'] = true
+L['/rm editorarrows        - Temporarily test native arrows in an open editor.'] = true
+L['Open or reopen a Lua editor before using /rm editorarrows.'] = true
+L['Temporary native arrow test enabled. Try up/down; run /rm editorarrows again to restore the editor hook.'] = true
+L['Temporary native arrow test disabled; the editor hook is restored.'] = true
 L['Edit fields opens a graphical schema draft. Add, name, reorder or remove fields, choose primitive or nested types, and edit nested fields. Apply stages the schema and its field order. Advanced exposes the equivalent raw schema, parsed as data without executing Lua.'] = true
 
 -- Callback documentation

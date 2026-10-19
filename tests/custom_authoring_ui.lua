@@ -272,6 +272,75 @@ test('input diagnostics observe native events without exposing source or rewriti
     assert(#code.inputTrace<=32 and code.inputCounts.cursor==100,'input trace is unbounded or loses counters')
     d:Close();assert(a:LuaEditorInputReport():find('closed',1,true));local reopened=a:condition_edit_box(function() end);assert(reopened.code.inputCounts.cursor==nil,'reused editor retained old traces')
 end)
+test('input diagnostics attribute layout origins without source or editing changes',function()
+    local f,a=fixture();local d=a:condition_edit_box(function() end);local code=d.code;local edit=code.edit
+    code:ResetInputTrace();code:SetText('PRIVATE_LAYOUT_BODY');edit:SetCursorPosition(3);edit:SetFocus()
+    edit.scripts.OnTextChanged(edit,false);edit.scripts.OnTextChanged(edit,true)
+    code.frame:SetSize(640,280);code.frame:SetSize(640,280);code:Layout()
+    local origins=assert(code.layoutCounts.origins,'layout origins missing')
+    assert(origins['set-text']==1 and origins['text-changed']==2 and origins['owner-size']==2 and origins.direct==1,'layout origin attribution lost repeated native size/text events')
+    local report=a:LuaEditorInputReport()
+    for _,text in ipairs({'provider=native','layout origins=','owner-size=2','text-changed=2','set-text=1','direct=1','last owner-size=640x280','lineNumbers visible=nil setting=nil'}) do assert(report:find(text,1,true),'missing diagnostic '..text) end
+    assert(not report:find('PRIVATE_LAYOUT_BODY',1,true) and edit:GetCursorPosition()==3 and edit:HasFocus(),'layout report changed or exposed editing state')
+    local valid=function() return true end;code:Release();code:Acquire(function() end,valid);assert(not code.layoutCounts or not code.layoutCounts.origins or not code.layoutCounts.origins['owner-size'],'reacquired editor retained old layout origins')
+    a.InstallNativeLuaLineNumbers=function(_,control) function control:RefreshLineNumbers() self.lineNumberSetting=a.db.profile.lua_line_numbers~=false;self.lineNumbersVisible=self.lineNumberSetting end;control:RefreshLineNumbers() end
+    local lines=a:CreateWorkbenchLuaEditor(f.env.UIParent,function() end,valid,'plain');lines:ResetInputTrace();a.db.profile.lua_line_numbers=false;lines.frame.scripts.OnUpdate(lines.frame)
+    assert(lines.layoutCounts.origins['line-number-setting']==1 and lines.lineNumbersVisible==false and lines.lineNumberSetting==false,'line-number setting invalidation lost its origin')
+end)
+test('input diagnostic source ownership follows wrappers and labels closed traces',function()
+    local _,a=fixture();local d=a:condition_edit_box(function() end);local code=d.code
+    d.code={provider='LuaWorkbench',inner={inner=code}};code.provider='LuaWorkbench';local report=a:LuaEditorInputReport()
+    assert(report:find('matches source editor=true',1,true) and report:find('provider=LuaWorkbench',1,true) and report:find('source editor=active',1,true),'active wrapped source control is misidentified')
+    d.code=code;code:Release();d.closed=true;report=a:LuaEditorInputReport()
+    assert(report:find('state=closed',1,true) and report:find('historical trace',1,true) and report:find('source editor=closed',1,true),'closed trace can be mistaken for the active editor')
+end)
+test('input diagnostics resolve the matching Functions and Conditions pane owners',function()
+    local f,a=fixture();local old=a:condition_edit_box(function() end);old:Close()
+    local code=a:CreateWorkbenchLuaEditor(f.env.UIParent,function() end,function() return true end,'plain')
+    local owner={code={inner=code},session=42};a.configWindow={pane={inlineFunction=owner}}
+    local report=a:LuaEditorInputReport();assert(report:find('matches source editor=true',1,true) and report:find('source editor=active',1,true) and report:find('source kind=function',1,true) and report:find('session=42',1,true),'Functions pane wrapper is not recognized as the active source owner')
+    owner.closed=true;a.configWindow.pane.inlineCondition={code={inner={inner=code}},session=43};report=a:LuaEditorInputReport()
+    assert(report:find('source kind=condition',1,true) and report:find('session=43',1,true),'matching active Conditions pane did not replace historical owner')
+    a.configWindow=nil;code.context={testOwner={code=code,session=44}};report=a:LuaEditorInputReport();assert(report:find('source kind=condition',1,true) and report:find('session=44',1,true),'standalone condition context owner is lost without a shell')
+    code.context=nil;code:Release();report=a:LuaEditorInputReport();assert(report:find('source editor=closed',1,true) and report:find('historical trace',1,true),'historical closed dialog fallback was discarded')
+end)
+test('actual LuaWorkbench reports overlay highlighting without inventing native layout counters',function()
+    local f,a=dofile('tests/fixtures/lua_workbench.lua')();f.load('UI/lua_input_diagnostics.lua')
+    local code=a:CreateLuaWorkbenchControl(f.env.UIParent,function() end,function() return true end);local report=a:LuaEditorInputReport()
+    assert(report:find('provider=LuaWorkbench',1,true) and report:find('highlighting=true',1,true),'overlay highlighting was reported as plain native text')
+    assert(report:find('native layout counters=unavailable',1,true) and not report:find('layout calls=',1,true) and not report:find('layout origins=',1,true),'unmeasured native counters were reported as zero for LuaWorkbench')
+    code:Release()
+end)
+test('condition host idle action and cursor updates do not rewrite editor geometry',function()
+    local f,a=fixture(true);a.db.profile.lua_editor='plain';local source=a:CopySettingsData(a.empty_condition);source.description='Inline';a.db.global.custom_conditions.INLINE=source;a.conditionDefinitions.INLINE={description='Inline',fields={}}
+    local host=f.env.CreateFrame('Frame');host:SetSize(1100,700);local p=a:OpenNativeSettings(host,'Conditions');local d=p.inlineCondition;local code=d.code
+    local writes=0;for _,method in ipairs({'ClearAllPoints','SetPoint','SetSize','SetWidth','SetHeight'}) do local original=code.frame[method];code.frame[method]=function(self,...) writes=writes+1;return original(self,...) end end
+    code.edit:SetCursorPosition(3);local before=code.layoutCounts.calls
+    for i=1,120 do if p.frame.scripts.OnUpdate then p.frame.scripts.OnUpdate(p.frame,1/60) end;d.frame.scripts.OnUpdate(d.frame,1/60);code.edit.scripts.OnCursorChanged(code.edit,24,-16,1,16) end
+    assert(writes==0 and code.layoutCounts.calls==before and code.edit:GetCursorPosition()==3,'host idle or cursor notifications invalidate native editor geometry')
+end)
+test('temporary native arrow probe restores exact handler without changing input state',function()
+    local f,a=fixture();local valid=true;local code=a:CreateWorkbenchLuaEditor(f.env.UIParent,function() error('probe edited source') end,function() return valid end,'plain');local edit=code.edit
+    local arrow=function() end;local key=function() end;edit:SetScript('OnArrowPressed',arrow);edit:SetScript('OnKeyDown',key);code:SetText('PRIVATE_ARROW_BODY');edit:SetFocus();edit:SetCursorPosition(4)
+    assert(type(code.ToggleNativeArrowProbe)=='function','native arrow probe missing')
+    assert(code:ToggleNativeArrowProbe()==true and edit:GetScript('OnArrowPressed')==nil)
+    local report=a:LuaEditorInputReport();assert(report:find('arrowHook=false probe=true',1,true) and not report:find('PRIVATE_ARROW_BODY',1,true),'arrow probe report absent or exposes source')
+    assert(edit:GetScript('OnKeyDown')==key and edit:GetText()=='PRIVATE_ARROW_BODY' and edit:GetCursorPosition()==4 and edit:HasFocus(),'probe changed unrelated native state')
+    assert(code:ToggleNativeArrowProbe()==false and edit:GetScript('OnArrowPressed')==arrow,'probe did not restore exact original hook')
+    assert(a:LuaEditorInputReport():find('arrowHook=true probe=false',1,true),'restored arrow hook missing from report')
+    edit:SetScript('OnArrowPressed',nil);assert(code:ToggleNativeArrowProbe()==true);assert(code:ToggleNativeArrowProbe()==false and edit:GetScript('OnArrowPressed')==nil,'original nil arrow script changed')
+    valid=false;assert(code:ToggleNativeArrowProbe()==nil,'invalid owner accepted arrow probe');valid=true
+    assert(code:ToggleNativeArrowProbe()==true);local newer=function() end;edit:SetScript('OnArrowPressed',newer);assert(code:ToggleNativeArrowProbe()==false and edit:GetScript('OnArrowPressed')==newer,'probe overwrote a newer lease handler')
+end)
+test('arrow probe release and reacquisition cannot restore stale handlers',function()
+    local f,a=fixture();local code=a:CreateWorkbenchLuaEditor(f.env.UIParent,function() end,function() return true end,'plain');local edit=code.edit;local arrow=function() end;edit:SetScript('OnArrowPressed',arrow)
+    assert(type(code.ToggleNativeArrowProbe)=='function','native arrow probe missing');assert(code:ToggleNativeArrowProbe()==true);code:Release()
+    assert(not code.nativeArrowProbe and edit:GetScript('OnArrowPressed')==arrow and code:ToggleNativeArrowProbe()==nil,'release failed to end probe or closed control accepted it')
+    local newLease=function() end;edit:SetScript('OnArrowPressed',newLease);code:Acquire(function() end,function() return true end)
+    assert(not code.nativeArrowProbe and edit:GetScript('OnArrowPressed')==newLease,'acquisition restored stale arrow handler')
+    assert(code:ToggleNativeArrowProbe()==true);code:ResetInputTrace();assert(not code.nativeArrowProbe and edit:GetScript('OnArrowPressed')==newLease,'trace reset retained a temporary probe')
+    local messages={};a.print=function(_,text) messages[#messages+1]=text end;a:ShowLuaEditorArrowProbe();assert(code.nativeArrowProbe and messages[#messages]:find('enabled',1,true));a:ShowLuaEditorArrowProbe();assert(not code.nativeArrowProbe and messages[#messages]:find('disabled',1,true));code:Release();a:ShowLuaEditorArrowProbe();assert(messages[#messages]:find('reopen',1,true),'closed command does not explain how to capture active input')
+end)
 test('source footer follows schema child ownership and navigation includes its pending fields',function()
     local f,a=fixture(true);local source=a:CopySettingsData(a.empty_condition);source.description='Inline';a.db.global.custom_conditions.INLINE=source;a.conditionDefinitions.INLINE={description='Inline',fields={}}
     local host=f.env.CreateFrame('Frame');host:SetSize(1100,700);local p=a:OpenNativeSettings(host,'Conditions');local d=p.inlineCondition
@@ -371,6 +440,61 @@ test('deep legacy schemas stay repairable with positive controls and overlong na
     local f,a=fixture();local d=a:condition_edit_box(function() end);local nested='number';for i=1,36 do nested={field=nested} end;d.model.value.fields=nested;d.form:Draw();d.form.fields.schemaGraph:Click();local g=d.schemaEditor
     local count=0;for _,card in pairs(g.cards) do count=count+1;assert(card.type:GetWidth()>=80 and card.name:GetWidth()>=80 and card.frame:GetWidth()>=300,'legacy nesting made controls unusable') end;assert(g.cardView.scene.byKey[string.rep('1/',35)..'1'] and count<36);g.form.scroll.workbenchBar:SetValue(g.cardView.scene.byKey[string.rep('1/',35)..'1'].y);assert(g.cards[string.rep('1/',35)..'1'])
     g.cancel:Click();d.model.value.fields={[string.rep('x',65)]='number'};d.form:Draw();d.form.fields.schemaGraph:Click();assert(d.schemaEditor.cards['1'].frame.rmInvalid,'overlong legacy field is unmarked')
+end)
+test('settled native layouts perform no measurement gutter or scroll writes',function()
+    local f,a=dofile('tests/fixtures/lua_workbench.lua')();f.load('UI/lua_input_diagnostics.lua')
+    local code=a:CreateWorkbenchLuaEditor(f.env.UIParent,function() error('idle layout edited source') end,function() return true end,'plain')
+    code.frame:SetSize(620,300);code:SetText('return true\nreturn false');code:SetContext({kind='condition',id='IDLE_LAYOUT',callback='evaluate',source={fields={},bindings={}}});code:Layout();code.edit:SetCursorPosition(4);code.edit:SetFocus()
+    local writes,reads=0,0;local watched={}
+    local function watch(frame)
+        if not frame or watched[frame] then return end;watched[frame]=true
+        for _,method in ipairs({'SetHeight','SetWidth','SetSize','ClearAllPoints','SetPoint','SetAllPoints','SetText','SetFont','SetSpacing','SetTextColor','SetVerticalScroll','SetMinMaxValues','SetValue','Show','Hide'}) do
+            local original=frame[method];if original then frame[method]=function(self,...) writes=writes+1;return original(self,...) end end
+        end
+    end
+    local state=code.completionEngine.Query.Console.input.queryLineNumbers
+    for _,frame in ipairs({code.measure,code.scroll,code.content,code.edit,code.scroll.workbenchBar,state.gutter,state.measure}) do watch(frame) end
+    for _,row in ipairs(state.rows) do watch(row) end
+    local measure=code.measure.GetStringHeight;code.measure.GetStringHeight=function(self) reads=reads+1;return measure(self) end
+    local frameWidth=code.frame.GetWidth;code.frame.GetWidth=function(self) return frameWidth(self)+.00003051758 end
+    code:ResetInputTrace();for i=1,120 do code:Layout('owner-size') end
+    assert(writes==0 and reads==0,'unchanged native layout repeated '..writes..' UI writes and '..reads..' measurements')
+    assert(code.layoutCounts.calls==120 and code.layoutCounts.origins['owner-size']==120 and code.layoutCounts.skips==120,'coalescing hid incoming layout origins')
+    assert(code.edit:GetCursorPosition()==4 and code.edit:HasFocus() and code.scroll:GetVerticalScroll()==0,'idle guard changed native editing or scrolling')
+    assert(a:LuaEditorInputReport():find('skips=120',1,true),'layout skip count missing from native report')
+end)
+test('native layout cache invalidates real source dimensions scale fonts gutters and leases',function()
+    for _,mode in ipairs({'plain','native'}) do
+        local f,a=dofile('tests/fixtures/lua_workbench.lua')()
+        if mode=='native' then
+            f.load('LibsAugment/FAIAP.lua');local enable=a.LuaSyntax.enable
+            a.LuaSyntax.enable=function(edit,...)
+                local methods={GetText=edit.GetText,SetText=edit.SetText};setmetatable(edit,{__index=methods})
+                function edit:GetMaxBytes() return self.maxBytes or 0 end;function edit:SetMaxBytes(v) self.maxBytes=v end;function edit:GetMaxLetters() return self.maxLetters or 0 end;function edit:IsMultiLine() return self.multiLine end
+                return enable(edit,...)
+            end
+        end
+        local changes=0;local code=a:CreateWorkbenchLuaEditor(f.env.UIParent,function() changes=changes+1 end,function() return true end,mode);if mode=='native' then assert(code.syntax,'actual FAIAP missing') end
+        code.frame:SetSize(620,300);code:SetText('return true');code:SetContext({kind='condition',id='LAYOUT',callback='evaluate',source={fields={},bindings={}}})
+        local measured=0;local set=code.measure.SetText;code.measure.SetText=function(self,text) measured=measured+1;return set(self,text) end
+        local function remeasured(body,label) local before=measured;body();assert(measured>before,label..' reused stale measurement');local settled=measured;code:Layout();assert(measured==settled,label..' did not settle after remeasurement') end
+        remeasured(function() code:SetText(string.rep('return true\n',80)) end,'text growth');assert(code.content:GetHeight()>code.scroll:GetHeight())
+        remeasured(function() code:SetText('return false') end,'text shrink');assert(code.content:GetHeight()==code.scroll:GetHeight())
+        code.edit:SetFocus();code.edit:SetCursorPosition(4);local beforeChanges=changes
+        remeasured(function() code.frame:SetSize(700,340) end,'resize')
+        remeasured(function() code.frame:SetScale(1.25);code:Layout() end,'effective scale')
+        local font=code.edit.GetFont;remeasured(function() code.edit.GetFont=function(self) local name,size,flags=font(self);return name,size+1,flags end;code:Layout() end,'font metrics')
+        remeasured(function() a.db.profile.lua_line_numbers=false;code:Layout() end,'gutter preference');assert(not code.lineNumbersVisible)
+        remeasured(function() a.db.profile.lua_line_numbers=true;code:Layout() end,'gutter restore');assert(code.lineNumbersVisible)
+        remeasured(function() code:SetLineNumbers(false) end,'explicit gutter visibility');assert(not code.lineNumbersVisible)
+        code:SetLineNumbers(true);local unchanged=measured;code:SetContext({kind='condition',id='LAYOUT',callback='print',source={fields={},bindings={}}});code:Layout();assert(measured==unchanged,'context-only tab change rewrote text geometry')
+        assert(code.edit:GetCursorPosition()==4 and code.edit:HasFocus() and changes==beforeChanges,'layout invalidation changed source caret focus or change callbacks')
+        remeasured(function() code.nativeSetText(code.edit,'return 17');code.edit.scripts.OnTextChanged(code.edit,true) end,'fresh native text');assert(code:GetText()=='return 17' and changes==beforeChanges+1,'decoded source cache missed a native edit')
+        code:SetReadOnly(true);remeasured(function() code:SetText('return 3') end,'readonly source');assert(code:GetText()=='return 3');code:SetReadOnly(false)
+        code:Release();remeasured(function() code:Acquire(function() changes=changes+1 end,function() return true end);code:SetText('return 3') end,'reacquisition')
+        if mode=='native' then a.LuaSyntax.indentEditbox(code.edit);code:Layout();assert(code:GetText()=='return 3','actual FAIAP changed decoded layout source') end
+        code:Release()
+    end
 end)
 test('native multiline input owns text height without a forced-height feedback loop',function()
     local f,a=fixture();local code=a:CreateWorkbenchLuaEditor(f.env.UIParent,function() end,function() return true end,'plain');code.frame:SetSize(600,300);code:SetText('return true')
