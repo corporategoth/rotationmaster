@@ -92,7 +92,7 @@ test('public observer copy resolves real owner and current readability with pres
 end)
 test('only the exact pet and threat repairs change complete combat bytes and private identities',function()
     local _,a=fixture();local file=assert(io.open('Conditions/combat.lua'));local text=file:read('*a');file:close()
-    text=dofile('tests/fixtures/restore_loss_of_control_repairs.lua')(text)
+    text=dofile('tests/fixtures/restore_form_repairs.lua')(text);text=dofile('tests/fixtures/restore_loss_of_control_repairs.lua')(text)
     text=dofile('tests/fixtures/restore_threat_repairs.lua')(text)
     text=dofile('tests/fixtures/restore_pet_repairs.lua')(text)
     assert(a:FunctionSourceHash(text)=='f0ca653e','combat changed beyond PET/PET_NAME/THREAT repairs from4487926')

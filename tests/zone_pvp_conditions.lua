@@ -66,8 +66,9 @@ test('raw old saved source remains exact and keeps its global native lookup and 
 end)
 test('only exact zone evaluator differs from complete baseline and private identities stay exact',function()
     local _,a=fixture();local file=assert(io.open('Conditions/misc.lua'));local text=file:read('*a');file:close()
-    assert(a:FunctionSourceHash(inverse(text))=='15ea8cff','misc changed beyond ZONEPVP fromf537fe1')
+    assert(a:FunctionSourceHash(inverse(dofile('tests/fixtures/restore_environment_selector_repairs.lua')(text)))=='15ea8cff','misc changed beyond ZONEPVP fromf537fe1')
     for name,hash in pairs({color='89a5436e',helpers='3ab28a24'}) do local id='builtin:Conditions/misc.lua:'..name;assert(a:FunctionSourceHash(a.builtinFunctions[id].source)==hash and a:ResolveFunctionBinding(id)==a.builtinSourceModules['Conditions/misc.lua'](name)) end
-    assert(a:FunctionSourceHash(a:GetBuiltinConditionSource('INSTANCE'))=='9b6a3bdb','unrelated instance source changed')
+    local instance=a:GetBuiltinConditionSource('INSTANCE');instance.widget=dofile('tests/fixtures/restore_environment_selector_repairs.lua')(instance.widget,'INSTANCE')
+    assert(a:FunctionSourceHash(instance)=='9b6a3bdb','instance source changed beyond its separate approved selector repair')
 end)
 finish()

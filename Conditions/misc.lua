@@ -110,7 +110,7 @@ addon:RegisterCondition("ZONEPVP", {
         zone:SetLabel(L["Mode"])
         zone:SetCallback("OnValueChanged", function(_, _, v)
             if v == "" then
-                value.vlaue = nil
+                value.value = nil
             else
                 value.value = v
             end
@@ -177,7 +177,7 @@ addon:RegisterCondition("INSTANCE", {
         instance:SetLabel(L["Mode"])
         instance:SetCallback("OnValueChanged", function(_, _, v)
             if v == "" then
-                value.vlaue = nil
+                value.value = nil
             else
                 value.value = v
             end

@@ -431,7 +431,9 @@ addon:RegisterCondition("FORM", {
         return value.value ~= nil and value.value >= 0 and value.value <= (character_class == "SHAMAN" and 1 or GetNumShapeshiftForms())
     end,
     evaluate = function(value, cache)
-        return Functions.cache.getCached(cache, GetShapeshiftForm) == value.value
+        local form,reason=Functions.cache.getCached(cache, addon.Platform.GetPlayerFormObservation, addon.Platform)
+        if form==nil then return nil,reason end
+        return form == value.value
     end,
     print = function(_, value)
         local form

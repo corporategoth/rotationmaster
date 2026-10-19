@@ -90,6 +90,7 @@ test('only the explicitly repaired environment evaluators differ from prior sour
         end
         if tag=='INSTANCE' then source.evaluate=dofile('tests/fixtures/restore_instance_repairs.lua')(source.evaluate) end
         if tag=='ZONEPVP' then source.evaluate=dofile('tests/fixtures/restore_zone_pvp_repairs.lua')(source.evaluate,true) end
+        if tag=='INSTANCE' or tag=='ZONEPVP' then source.widget=dofile('tests/fixtures/restore_environment_selector_repairs.lua')(source.widget,tag) end
         baseline[tag]=source
     end
     assert(a:FunctionSourceHash(baseline)=='4eb1d87c','unrelated environment source changed')

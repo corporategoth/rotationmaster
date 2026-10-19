@@ -34,6 +34,7 @@ Platform/player_movement.lua
 Platform/unit_attackability.lua
 Platform/unit_flags.lua
 Platform/player_flags.lua
+Platform/form.lua
 Platform/unit_identity.lua
 Platform/unit_metadata.lua
 Platform/pet.lua
