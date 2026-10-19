@@ -1,5 +1,9 @@
 local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite()
 local fixture=dofile('tests/fixtures/lua_workbench.lua')
+local function frameTick(c,elapsed)
+ local update=c.frame:GetScript('OnUpdate');if update then update(c.frame,elapsed or .1) end
+ for _,hook in ipairs(c.frame.hooks and c.frame.hooks.OnUpdate or {}) do hook(c.frame,elapsed or .1) end
+end
 test('optional workbench engine keeps namespaces completion and debugger state independent',function()
  local f,a=fixture();assert(a.CreateLuaWorkbenchEngine,'optional engine missing')
  local one=assert(a:CreateLuaWorkbenchEngine({id='one'}));local two=assert(a:CreateLuaWorkbenchEngine({id='two'}))
@@ -204,7 +208,7 @@ test('native hover covers every character of function names and excludes the arg
   local inset=self.justifyH=='LEFT' and 0 or (self:GetWidth()-#self:GetText()*7)/2
   return {{left=inset+(first-1)*7,bottom=0,width=(last-first+1)*7,height=12}}
  end
- c.edit:GetScript('OnUpdate')(c.edit,.2);local input=c.completionEngine.Query.Console.input;local editor=c.completionEngine.Query.Editor
+ frameTick(c);c.edit:GetScript('OnUpdate')(c.edit,.2);local input=c.completionEngine.Query.Console.input;local editor=c.completionEngine.Query.Editor
  for character=1,7 do assert(editor:HoverSourcePosition(input,(character-.5)*7,205)==1,'native hover misses function-name character '..character) end
  assert(editor:HoverSourcePosition(input,7.5*7,205)==nil,'opening parenthesis is included in the function hitbox')
  assert(editor:HoverSourcePosition(input,8.5*7,205)==9,'argument did not keep its own separate identifier hitbox')
@@ -214,7 +218,7 @@ test('advanced documentation resolves complete bare function references passed a
  local f,a=fixture();f.env.UnitExists=function() end;f.env.APIDocumentation={functions={{Name='UnitExists',Type='Function',Documentation={'Whether the unit exists'}}}}
  local c=a:CreateLuaWorkbenchControl(f.env.UIParent,function() end,function() return true end);c:SetReadOnly(true);assert(not c.edit:IsEnabled(),'readonly documentation view permits typing');c:SetContext({kind='function',id='REF',source={args={},bindings={}}})
  local source='getCached(cache, UnitExists, value.unit)';c:SetText(source);local input=c.engine.Query.Console.input;local state=input.queryEditor;local editor=c.engine.Query.Editor
- editor:Paint(input);local paths=c.engine.APIHelp:Paths(source,true);local first=assert(source:find('UnitExists',1,true));assert(paths[first]=='UnitExists','bare documented reference lost its documentation')
+ frameTick(c);editor:Paint(input);local paths=c.engine.APIHelp:Paths(source,true);local first=assert(source:find('UnitExists',1,true));assert(paths[first]=='UnitExists','bare documented reference lost its documentation')
  local font=state.overlay;local target
  for _,span in ipairs(state.renderSpans) do if span.source==first then target=span end end;assert(target and target.text=='UnitExists')
  function font:GetNumLines() return 1 end;function font:GetStringHeight() return 12 end;function font:GetHeight() return 12 end
@@ -261,11 +265,11 @@ test('line numbers follow native glyph heights spacing wrapped source lines and 
  local f,a=fixture();local c=a:CreateLuaWorkbenchControl(f.env.UIParent,function() end,function() return true end);c:SetText('short\n'..string.rep('w',100)..'\n\nlast')
  local input=c.engine.Query.Console.input;local state=input.queryLineNumbers;assert(state,'default line numbers missing')
  function state.measure:GetStringHeight() local rows=math.max(1,math.ceil(#(self:GetText() or '')*7/math.max(1,self:GetWidth())));return rows*12.1875+(rows-1)*2 end
- state.source=nil;state.rmMetrics=nil;input.editBox:SetWidth(100);c.engine.Query.Console:UpdateLineNumbers()
+ state.source=nil;state.rmMetrics=nil;input.editBox:SetWidth(100);c.engine.Query.Console:UpdateLineNumbers();frameTick(c)
  assert(math.abs(state.positions[2].offset-14.1875)<.0001,'font spacing was omitted from native logical-line advance')
  assert(math.abs(state.positions[3].offset-(14.1875+7*14.1875))<.0001,'wrapped line did not reserve all native rows')
  assert(math.abs(state.positions[4].offset-state.positions[3].offset-14.1875)<.0001,'blank line lost its row spacing')
- c:SetText(string.rep('return true\n',60));state.source=nil;c.engine.Query.Console:UpdateLineNumbers();assert(math.abs(state.positions[61].offset-60*14.1875)<.0001,'fractional glyph spacing drifted over a long snippet');c:Release()
+ c:SetText(string.rep('return true\n',60));state.source=nil;c.engine.Query.Console:UpdateLineNumbers();frameTick(c);assert(math.abs(state.positions[61].offset-60*14.1875)<.0001,'fractional glyph spacing drifted over a long snippet');c:Release()
 end)
 test('line number preference controls advanced and native gutters without rewriting source or cursor',function()
  local f,a=fixture();local advanced=a:CreateLuaWorkbenchControl(f.env.UIParent,function() end,function() return true end)
@@ -282,12 +286,12 @@ test('line number preference controls advanced and native gutters without rewrit
 end)
 test('native gutters measure inside text insets and survive release and reacquire without input hooks leaking',function()
  local f,a=fixture();local c=a:CreateWorkbenchLuaEditor(f.env.UIParent,function() end,function() return true end,'plain');c.frame:SetSize(188,300);c:SetText('abcdefghijklmn\nnext')
- local console=c.completionEngine.Query.Console;local state=console.input.queryLineNumbers
+ local console=c.completionEngine.Query.Console;local state=console.input.queryLineNumbers;frameTick(c)
  assert(c.edit:GetWidth()==100 and state.positions[2].offset==24,'native line wrapping ignored the edit text insets')
  local width=c.scroll:GetWidth();c:SetLineNumbers(false);assert(c.scroll:GetWidth()==width+56,'hidden gutter kept its blank margin')
  c:Release();assert(not console.input.queryLineNumbers,'released native gutter still owns cursor handlers')
  c:Acquire(function() end,function() return true end);c:SetText('return true');assert(console.input.queryLineNumbers and c.lineNumbersVisible,'reopened editor lost line numbers')
- a.db.profile.lua_line_numbers=false;c.frame:GetScript('OnUpdate')(c.frame,.1);assert(not console.input.queryLineNumbers,'open native editor did not notice the global preference');c:Release()
+ a.db.profile.lua_line_numbers=false;frameTick(c,.1);assert(not console.input.queryLineNumbers,'open native editor did not notice the global preference');c:Release()
 end)
 test('Run and Debug match private qualified binding namespaces and explicit method receivers',function()
  local f,a=fixture();local c=a:CreateLuaWorkbenchControl(f.env.UIParent,function() end,function() return true end)
@@ -338,7 +342,7 @@ test('line metrics measure literal markup in advanced and highlighted editors wh
    local rows=math.max(1,math.ceil(#rendered(self:GetText() or '')*7/math.max(1,self:GetWidth())))
    return rows*12+(rows-1)*self:GetSpacing()
   end
-  state.rmMetrics=nil;console:UpdateLineNumbers()
+  state.rmMetrics=nil;console:UpdateLineNumbers();frameTick(c)
   local left,right=c.edit:GetTextInsets();local width=c.edit:GetWidth()-left-right;local display=literal and first or rendered(first)
   local rows=math.max(1,math.ceil(#display*7/width));local expected=rows*(12+c.edit:GetSpacing())
   assert(state.positions[2].offset==expected,'line wrapping does not match provider markup rendering')
@@ -386,7 +390,7 @@ test('advanced insertion and deletion repaint despite repeated native caret noti
  for _,gutter in ipairs({false,true}) do for _,case in ipairs({{'return 1','return 12',9},{'return 12','return 1',8}}) do
   local f,a=fixture();a.db.profile.lua_line_numbers=gutter;local changes=0
   local c=a:CreateLuaWorkbenchControl(f.env.UIParent,function() changes=changes+1 end,function() return true end)
-  c.frame:SetSize(600,300);c:Layout();c:SetText(case[1]);c.edit:SetFocus()
+  c.frame:SetSize(600,300);c:Layout();c:SetText(case[1]);frameTick(c);frameTick(c);c.edit:SetFocus()
   local input=c.engine.Query.Console.input;local state=input.queryEditor;local editor=c.engine.Query.Editor
   local paint=editor.Paint;local paints=0;function editor:Paint(target) paints=paints+1;return paint(self,target) end
   local setText=c.edit.SetText;local writes=0;function c.edit:SetText(text) writes=writes+1;return setText(self,text) end
@@ -394,12 +398,12 @@ test('advanced insertion and deletion repaint despite repeated native caret noti
   assert(c:GetText()==case[2] and changes==1 and c.engine.Query.Console.source==case[2],'source or change notification was delayed')
   for tick=1,6 do
    c.edit:GetScript('OnCursorChanged')(c.edit,case[3]*7,0,2,12)
-   c.edit:GetScript('OnUpdate')(c.edit,1/60);c.frame:GetScript('OnUpdate')(c.frame,1/60)
+   c.edit:GetScript('OnUpdate')(c.edit,1/60);frameTick(c,1/60)
   end
   assert(state.renderSource==case[2] and state.overlay:GetText()~=oldOverlay,'native caret notifications starved the changed text overlay')
   assert(c.edit:GetCursorPosition()==case[3] and changes==1 and writes==1,'repaint rewrote source cursor or host history')
   assert(paints==1 and not state.pending,'pending repaint was not coalesced')
-  for tick=1,60 do c.edit:GetScript('OnCursorChanged')(c.edit,case[3]*7,0,2,12);c.edit:GetScript('OnUpdate')(c.edit,1/60);c.frame:GetScript('OnUpdate')(c.frame,1/60) end
+  for tick=1,60 do c.edit:GetScript('OnCursorChanged')(c.edit,case[3]*7,0,2,12);c.edit:GetScript('OnUpdate')(c.edit,1/60);frameTick(c,1/60) end
   assert(paints==1 and writes==1 and changes==1,'settled editor kept repainting or rewriting source');c:Release()
  end end
 end)
@@ -407,7 +411,7 @@ test('advanced continuous input coalesces bounded repaint independently of the c
  for _,gutter in ipairs({false,true}) do
   local f,a=fixture();a.db.profile.lua_line_numbers=gutter;local changes=0
   local c=a:CreateLuaWorkbenchControl(f.env.UIParent,function() changes=changes+1 end,function() return true end)
-  c.frame:SetSize(600,300);c:Layout();c:SetText('return 1');c.edit:SetFocus()
+  c.frame:SetSize(600,300);c:Layout();c:SetText('return 1');frameTick(c);frameTick(c);c.edit:SetFocus()
   -- Settle upstream's initial documentation/color refresh before counting the
   -- paints caused by this edit sequence and its subsequent idle notifications.
   c.engine.Autocomplete:Update(c.engine.Query.Console.input,false)
@@ -415,24 +419,24 @@ test('advanced continuous input coalesces bounded repaint independently of the c
   local paint=editor.Paint;local paints,lastPaint=0,0;function editor:Paint(target) paints=paints+1;return paint(self,target) end
   for tick=1,30 do
    local text='return '..string.rep('1',tick+1);c.edit:SetText(text);c.edit:SetCursorPosition(#text);c.edit:GetScript('OnTextChanged')(c.edit,true)
-   c.edit:GetScript('OnCursorChanged')(c.edit,#text*7,0,2,12);c.edit:GetScript('OnUpdate')(c.edit,1/60);c.frame:GetScript('OnUpdate')(c.frame,1/60)
+   c.edit:GetScript('OnCursorChanged')(c.edit,#text*7,0,2,12);c.edit:GetScript('OnUpdate')(c.edit,1/60);frameTick(c,1/60)
    if state.renderSource==text then lastPaint=tick end
    assert(tick-lastPaint<=5,'continuous input postponed rendering beyond the repaint bound')
    assert(c.edit:GetCursorPosition()==#text and changes==tick,'repaint disturbed ongoing native input')
   end
   assert(paints>=5 and paints<=7 and state.renderSource==c:GetText(),'continuous repaint was missing or ran every frame')
-  local before=paints;for tick=1,30 do c.edit:GetScript('OnCursorChanged')(c.edit,259,0,2,12);c.edit:GetScript('OnUpdate')(c.edit,1/60);c.frame:GetScript('OnUpdate')(c.frame,1/60) end
+  local before=paints;for tick=1,30 do c.edit:GetScript('OnCursorChanged')(c.edit,259,0,2,12);c.edit:GetScript('OnUpdate')(c.edit,1/60);frameTick(c,1/60) end
   assert(paints==before,'idle caret notifications triggered redundant paints');c:Release()
  end
 end)
 test('advanced pending repaint respects invalid owners read-only input and released callbacks',function()
  local f,a=fixture();local valid=true;local changes=0
  local c=a:CreateLuaWorkbenchControl(f.env.UIParent,function() changes=changes+1 end,function() return valid end)
- c.frame:SetSize(600,300);c:Layout();c:SetText('return 1');local input=c.engine.Query.Console.input;local editor=c.engine.Query.Editor
+ c.frame:SetSize(600,300);c:Layout();c:SetText('return 1');frameTick(c);frameTick(c);local input=c.engine.Query.Console.input;local editor=c.engine.Query.Editor
  local paint=editor.Paint;local paints=0;function editor:Paint(target) paints=paints+1;return paint(self,target) end
  c:SetReadOnly(true);c.edit:SetText('forbidden');c.edit:GetScript('OnTextChanged')(c.edit,true)
  assert(c:GetText()=='return 1' and changes==0 and not c.edit:IsEnabled(),'read-only native input was accepted')
- for tick=1,10 do c.frame:GetScript('OnUpdate')(c.frame,1/60) end;assert(paints==0,'read-only rollback created a pending repaint')
+ for tick=1,10 do frameTick(c,1/60) end;assert(paints==0,'read-only rollback created a pending repaint')
  c:SetReadOnly(false);c.edit:SetText('return 12');c.edit:GetScript('OnTextChanged')(c.edit,true);assert(changes==1)
  valid=false;local update=c.frame:GetScript('OnUpdate');for tick=1,10 do update(c.frame,1/60) end;assert(paints==0,'invalid owner repainted')
  c:Release();update(c.frame,1);assert(paints==0 and not input.queryEditor,'released callback repainted or revived editor state')
@@ -464,12 +468,12 @@ test('settled workbench layouts and idle ticks do not rewrite geometry or redraw
   -- Real native size reads round through effective scale; an immaterial
   -- difference must not keep rebuilding the anchored native input.
   local getWidth=input.frame.GetWidth;input.frame.GetWidth=function(self) return getWidth(self)+.00003051758 end
-  for tick=1,100 do c:Layout();c.frame:GetScript('OnUpdate')(c.frame,1/60) end
+  for tick=1,100 do c:Layout();frameTick(c,1/60) end
   assert(counts.geometry==0,'settled workbench kept writing anchored input/debugger geometry')
   assert(counts.gutter==0,'settled workbench kept redrawing its gutter')
   assert(counts.chrome==0,'settled workbench kept rewriting labels or enabling action buttons')
   assert(counts.text==0 and counts.cursor==0 and counts.focus==0 and changes==0 and c.edit:GetCursorPosition()==2 and c.edit:HasFocus(),'idle workbench changed source caret focus or history')
-  c.play:Disable();c.engine.Workspace.debugButton:Disable();c.frame:GetScript('OnUpdate')(c.frame,1/60)
+  c.play:Disable();c.engine.Workspace.debugButton:Disable();frameTick(c,1/60)
   assert(c.play:IsEnabled() and c.engine.Workspace.debugButton:IsEnabled(),'prerequisite actions were left disabled')
   c:SetContext({kind='condition',id='LABEL',callback='evaluate',source={fields={},bindings={}}});assert(c.argumentLabel:GetText()=='Arguments from Test','changed context retained old argument label');c:Release()
  end
@@ -488,17 +492,17 @@ test('workbench resize reentry settles and debugger drawer geometry follows real
  c.frame:SetSize(720,420);assert(U.dock:IsShown(),'drawer did not recover after resize');D.armed=false;c:Layout();assert(not U.toolbar:IsShown() and not U.dock:IsShown() and points.TOPLEFT[4]==-28,'stopped debugger retained code inset')
  local settled=writes;for i=1,50 do c:Layout() end;assert(writes==settled and c.edit:GetCursorPosition()==3 and c:GetText()=='first\nsecond','resized workbench kept rewriting its input');c:Release()
 end)
-test('workbench gutter follows text cursor scroll resize and preference events without idle polling',function()
- local f,a=fixture();local c=a:CreateLuaWorkbenchControl(f.env.UIParent,function() end,function() return true end);c.frame:SetSize(600,300);c:SetText('first');c.edit:SetCursorPosition(2);c:Layout()
- local C=c.engine.Query.Console;local input=C.input;local update=C.UpdateLineNumbers;local renders=0
- function C:UpdateLineNumbers() renders=renders+1;return update(self) end
- c:SetText('first\nsecond\nthird');assert(renders>0 and #input.queryLineNumbers.positions==3,'source change left gutter stale')
- local before=renders;c.edit:SetCursorPosition(8);c.edit:GetScript('OnCursorChanged')(c.edit,14,-14,2,12);assert(renders>before,'cursor event no longer updates gutter')
- before=renders;input.scrollFrame:SetVerticalScroll(10);input.scrollFrame:GetScript('OnVerticalScroll')(input.scrollFrame,10);assert(renders>before,'scroll event no longer updates gutter')
- before=renders;input.scrollFrame:SetSize(500,200);assert(renders>before,'viewport size event no longer updates gutter')
- before=renders;for i=1,100 do c.frame:GetScript('OnUpdate')(c.frame,1/60) end;assert(renders==before,'idle frames redraw unchanged gutter')
- a.db.profile.lua_line_numbers=false;c.frame:GetScript('OnUpdate')(c.frame,1/60);assert(not c.lineNumbersVisible and not input.queryLineNumbers,'preference did not detach gutter')
- a.db.profile.lua_line_numbers=true;c.frame:GetScript('OnUpdate')(c.frame,1/60);assert(c.lineNumbersVisible and #input.queryLineNumbers.positions==3,'preference did not restore current gutter')
+test('workbench gutter follows queued text cursor scroll resize and preference events without idle polling',function()
+ local f,a=fixture();local c=a:CreateLuaWorkbenchControl(f.env.UIParent,function() end,function() return true end);c.frame:SetSize(600,300);c:SetText('first');c.edit:SetCursorPosition(2);c:Layout();frameTick(c)
+ local C=c.engine.Query.Console;local input=C.input;local counts=c.lineNumberCounts
+ c:SetText('first\nsecond\nthird');assert(c.lineNumberQueue.pending,'source change did not queue gutter');frameTick(c);assert(#input.queryLineNumbers.positions==3,'source change left gutter stale')
+ local before=counts.calls;c.edit:SetCursorPosition(8);c.edit:GetScript('OnCursorChanged')(c.edit,14,-14,2,12);assert(counts.calls>before,'cursor no longer queues gutter');frameTick(c)
+ before=counts.calls;input.scrollFrame:SetVerticalScroll(10);input.scrollFrame:GetScript('OnVerticalScroll')(input.scrollFrame,10);assert(counts.calls>before,'scroll no longer queues gutter');frameTick(c)
+ before=counts.calls;input.scrollFrame:SetSize(500,200);assert(counts.calls>before,'viewport size no longer queues gutter');frameTick(c)
+ before=counts.flushes;for i=1,100 do frameTick(c,1/60) end;assert(counts.flushes==before,'idle frames flush unchanged gutter')
+ a.db.profile.lua_line_numbers=false;frameTick(c,1/60);assert(not c.lineNumbersVisible and not input.queryLineNumbers and not c.lineNumberQueue,'preference did not detach gutter')
+ a.db.profile.lua_line_numbers=true;frameTick(c,1/60);assert(c.lineNumbersVisible and #input.queryLineNumbers.positions==3,'preference did not restore current gutter')
  assert(c.edit:GetCursorPosition()==8 and c:GetText()=='first\nsecond\nthird','gutter preference changed caret/source');c:Release()
 end)
+
 finish()

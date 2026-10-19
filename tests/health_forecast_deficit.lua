@@ -42,13 +42,13 @@ test('missing or failed maximum follows existing callback diagnostics rather tha
  end
 end)
 test('current source duplicate gets the repair while saved raw source retains the exact original guard',function()
- local _,a=fixture();local source=assert(a:GetBuiltinConditionSource('TT_HEALTH'));assert(source.evaluate==newBody,'current forecast source catalog stale');local copy=assert(a:CompileCustomCondition('COPY_FORECAST',source));a:RegisterCondition('COPY_FORECAST',copy);repairedControls(a,'COPY_FORECAST')
+ local _,a=fixture();local source=assert(a:GetBuiltinConditionSource('TT_HEALTH'));assert(dofile('tests/fixtures/restore_trend_consumer_qualifiers.lua')(source.evaluate,'TT_HEALTH',true)==newBody,'current forecast source catalog stale');local copy=assert(a:CompileCustomCondition('COPY_FORECAST',source));a:RegisterCondition('COPY_FORECAST',copy);repairedControls(a,'COPY_FORECAST')
  source.evaluate=oldBody;local before=a:CopySettingsData(source);a.db.global.custom_conditions={RAW_FORECAST=source};local raw=assert(a:CompileCustomCondition('RAW_FORECAST',source));a:RegisterCondition('RAW_FORECAST',raw)
  local v=node(-10,0,nil,'RAW_FORECAST');valid(a,v);assert(raw.evaluate(v,{})==false and a:evaluateConditionResult({type='NOT',value=v}).status=='match');local r,selected=branch(a,v);assert(r.status=='complete' and selected=='no')
  assert(a:SettingsDataEqual(before,source) and a.db.global.custom_conditions.RAW_FORECAST==source,'saved raw source was rewritten')
 end)
 test('one exact guard repair inverses the complete committed module and private identities',function()
- local _,a=fixture();local file=assert(io.open('Conditions/stats.lua'));local text=file:read('*a');file:close();text=dofile('tests/fixtures/restore_rune_repairs.lua')(text);assert(a:FunctionSourceHash(inverse(text))=='0cd932cd','stats differs beyond target field guard from5e907ef')
+ local _,a=fixture();local file=assert(io.open('Conditions/stats.lua'));local text=file:read('*a');file:close();text=dofile('tests/fixtures/restore_trend_consumer_qualifiers.lua')(text);text=dofile('tests/fixtures/restore_rune_repairs.lua')(text);assert(a:FunctionSourceHash(inverse(text))=='0cd932cd','stats differs beyond target field guard from5e907ef')
  assert(inverse(newBody,'TT_HEALTH')==oldBody);assert(not pcall(inverse,oldBody,'TT_HEALTH'));assert(not pcall(inverse,newBody..' ','TT_HEALTH'));assert(not pcall(inverse,newBody,'OTHER'));assert(not pcall(inverse,text..text),'inverse accepted duplicate whole callback')
  for name,hash in pairs({color='89107d36',helpers='c19dbbac'}) do local id='builtin:Conditions/stats.lua:'..name;assert(a:FunctionSourceHash(a.builtinFunctions[id].source)==hash and a:ResolveFunctionBinding(id)==a.builtinSourceModules['Conditions/stats.lua'](name)) end
 end)

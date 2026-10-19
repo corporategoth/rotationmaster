@@ -87,7 +87,7 @@ test('archived raw callback keeps old nil-ready and no-type operator semantics w
  end
 end)
 test('strict entire-module inverse preserves every other callback and private source hash',function()
- local _,a=fixture();local file=assert(io.open('Conditions/stats.lua'));local text=file:read('*a');file:close();text=dofile('tests/fixtures/restore_rune_repairs.lua')(text);assert(a:FunctionSourceHash(text)=='3648aa46','stats differs from790b732 beyond two rune evaluators')
+ local _,a=fixture();local file=assert(io.open('Conditions/stats.lua'));local text=file:read('*a');file:close();text=dofile('tests/fixtures/restore_trend_consumer_qualifiers.lua')(text);text=dofile('tests/fixtures/restore_rune_repairs.lua')(text);assert(a:FunctionSourceHash(text)=='3648aa46','stats differs from790b732 beyond two rune evaluators')
  for name,hash in pairs({color='89107d36',helpers='c19dbbac'}) do local id='builtin:Conditions/stats.lua:'..name;assert(a:FunctionSourceHash(assert(a.builtinFunctions[id]).source)==hash and a:ResolveFunctionBinding(id)==a.builtinSourceModules['Conditions/stats.lua'](name)) end
 end)
 finish()

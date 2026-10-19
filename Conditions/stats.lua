@@ -531,7 +531,7 @@ addon:RegisterCondition("TT_HEALTH", {
             if health == target_health then
                 return Functions.values.compare(value.operator, 0, value.value)
             elseif addon.damageHistory[target] then
-                local trend, seconds = addon.calculate_trend(addon.damageHistory[target], nil, value.mode == "noheals", value.mode == "nodmg")
+                local trend, seconds = addon.Functions.trends.calculate(addon.damageHistory[target], nil, value.mode == "noheals", value.mode == "nodmg")
                 if trend and seconds > 2 then
                     local ttt = 0 -- Time Til Target
                     if trend < 0 then
@@ -652,7 +652,7 @@ addon:RegisterCondition("TT_HEALTHPCT", {
             if health == target_health then
                 return Functions.values.compare(value.operator, 0, value.value)
             elseif addon.damageHistory[target] then
-                local trend, seconds = addon.calculate_trend(addon.damageHistory[target], nil, value.mode == "noheals", value.mode == "nodmg")
+                local trend, seconds = addon.Functions.trends.calculate(addon.damageHistory[target], nil, value.mode == "noheals", value.mode == "nodmg")
                 if trend and seconds > 2 then
                     local ttt = 0 -- Time Til Target
                     if trend < 0 then
