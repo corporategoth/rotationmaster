@@ -140,6 +140,7 @@ local function validState(state)
     if not distinctStructure(state) then return nil,'aliased-store' end
     return true
 end
+function data.ValidateRotationStore(state) return validState(state) end
 local function copyLegacy(legacy)
     local result={}
     for kind in pairs(legacyKinds) do if legacy[kind]~=nil then

@@ -6,8 +6,53 @@ end
 local function fields(value,schema)
     if type(value)~='table' then return false end;for key,item in pairs(value) do if type(item)~=schema[key] then return false end end;return true
 end
+local function specKey(key,encode)
+    local number=type(key)=='string' and not encode and key:match('^%d+$') and tonumber(key) or key
+    if type(number)~='number' or number<0 or number==math.huge or number%1~=0 then return nil end
+    local text=tostring(number)
+    if not text:match('^%d+$') or type(key)=='string' and key~=text then return nil end
+    return encode and text or number
+end
+local function specMap(map,encode)
+    if type(map)~='table' or getmetatable(map) then return nil end
+    local result={}
+    for key,value in pairs(map) do local converted=specKey(key,encode);if converted==nil or result[converted]~=nil then return nil end;result[converted]=value end
+    return result
+end
+-- Preserve the whole reference graph while converting only structural spec-map
+-- keys. A map aliased through another owner or payload must remain aliased for
+-- the pure store validator to reject it; conversion must never hide that defect.
+local function scopedStore(addon,state,encode)
+    local function plain(v) return type(v)=='table' and getmetatable(v)==nil end
+    if not plain(state) or not plain(state.classes) or not plain(state.characters) or not plain(state.legacy) then return nil end
+    if encode and not addon.RotationData.ValidateRotationStore(state) then return nil end
+    local maps={}
+    for _,map in pairs(state.classes) do if not plain(map) then return nil end;maps[map]=true end
+    for _,bucket in pairs(state.characters) do if not plain(bucket) or not plain(bucket.specs) then return nil end;maps[bucket.specs]=true end
+    for _,kind in ipairs({'rotations','origins','imports','comparisons'}) do
+        local map=state.legacy[kind];if map~=nil then if not plain(map) then return nil end;maps[map]=true end
+    end
+    local seen={};local failed=false
+    local function copy(value)
+        if type(value)~='table' then return value end
+        if not plain(value) then failed=true;return nil end
+        if seen[value] then return seen[value] end
+        local result={};seen[value]=result
+        for key,child in pairs(value) do
+            local converted=key
+            if maps[value] then converted=specKey(key,encode) end
+            if converted==nil or result[converted]~=nil then failed=true;return nil end
+            result[converted]=copy(child)
+        end
+        return result
+    end
+    local result=copy(state)
+    if failed or not encode and not addon.RotationData.ValidateRotationStore(result) then return nil end
+    return result
+end
 function addon:ValidateProfileTransfer(value)
-    if type(value)~='table' or not self.RotationData.CheckPortable(self:ProfileToPortable(value)) then return false end
+    if type(value)~='table' then return false end
+    local wire=self:ProfileToPortable(value);if not wire or not self.RotationData.CheckPortable(wire) then return false end
     local function stringValue(v) return type(v)=='string' end
     for key,item in pairs(value) do
         if scalar[key] then if type(item)~=scalar[key] then return false end
@@ -28,6 +73,8 @@ function addon:ValidateProfileTransfer(value)
                 if type(spec)~='number' or spec<0 or spec%1~=0 or type(rotations)~='table' then return false end
                 for id,body in pairs(rotations) do if type(id)~='string' then return false end;local check=self.RotationData.ValidateBody(body,{conditions=self.conditionDefinitions,itemsets=value.itemsets,effects=self.db.global.effects});if not check.valid then return false end end
             end
+        elseif key=='rotationStore' then
+            if not self.RotationData.ValidateRotationStore(item) then return false end
         elseif key=='rotationLibrary' then
             if type(item)~='table' then return false end
             -- Library preferences and clone provenance are portable data only;
@@ -63,27 +110,19 @@ end
 -- use canonical decimal strings and restore numbers only in these namespaces.
 function addon:ProfileToPortable(profile)
     local copy=self:CopySettingsData(profile)
-    local function encode(map)
-        if type(map)~='table' then return map end
-        local result={};for key,value in pairs(map) do result[type(key)=='number' and tostring(key) or key]=value end;return result
-    end
+    local function encode(map) return specMap(map,true) end
     if type(copy)=='table' then
-        copy.rotations=encode(copy.rotations)
-        if type(copy.rotationLibrary)=='table' then for _,key in ipairs({'origins','comparisons','imports'}) do copy.rotationLibrary[key]=encode(copy.rotationLibrary[key]) end end
+        if copy.rotations~=nil then copy.rotations=encode(copy.rotations);if not copy.rotations then return nil end end
+        if type(copy.rotationLibrary)=='table' then for _,key in ipairs({'origins','comparisons','imports'}) do if copy.rotationLibrary[key]~=nil then copy.rotationLibrary[key]=encode(copy.rotationLibrary[key]);if not copy.rotationLibrary[key] then return nil end end end end
+        if copy.rotationStore~=nil then copy.rotationStore=scopedStore(self,profile.rotationStore,true);if not copy.rotationStore then return nil end end
     end
     return copy
 end
 function addon:ProfileFromPortable(profile)
     local copy=self:CopySettingsData(profile)
-    local function decode(map)
-        if type(map)~='table' then return map end
-        local result={};for key,value in pairs(map) do
-            local id=type(key)=='string' and key:match('^%d+$') and tonumber(key) or key
-            if type(id)~='number' or id<0 or id%1~=0 or type(key)=='string' and tostring(id)~=key or result[id]~=nil then return nil end
-            result[id]=value
-        end;return result
-    end
+    local function decode(map) return specMap(map,false) end
     if type(copy)~='table' then return nil end
+    if copy.rotationStore~=nil then copy.rotationStore=scopedStore(self,profile.rotationStore,false);if not copy.rotationStore then return nil end end
     if copy.rotations~=nil then copy.rotations=decode(copy.rotations);if not copy.rotations then return nil end end
     -- Older profile exports can retain an entirely empty default placeholder.
     -- Materialize only its missing empty lists; malformed nonempty records still

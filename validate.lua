@@ -683,7 +683,14 @@ function addon:validate(template, fix)
         profile_template.minimap.showInCompartment=false
     end
     for profile, data in pairs(DB.profiles) do
-        validate_basic("profile:" .. profile, data, profile_template, fix)
+        -- Ownership archives must never be removed by the legacy shape repair.
+        -- Their pure schema is validated independently, without guessing owners
+        -- or mutating a future/invalid format that may need explicit recovery.
+        validate_basic("profile:" .. profile, data, profile_template, fix,{rotationStore=true})
+        if data.rotationStore~=nil then
+            local ok,why=addon.RotationData.ValidateRotationStore(data.rotationStore)
+            if not ok then addon:warn(L["Invalid rotation ownership data in profile %s (%s); record preserved."],profile,tostring(why)) end
+        end
         if type(data.minimap)=="table" then
             for _,key in ipairs({"minimapPos","radius"}) do
                 local value=data.minimap[key]

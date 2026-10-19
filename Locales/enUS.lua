@@ -2,6 +2,7 @@ local addon_name = ...
 
 local L = LibStub("AceLocale-3.0"):NewLocale(addon_name, "enUS", true)
 if not L then return end
+L["Invalid rotation ownership data in profile %s (%s); record preserved."] = true
 L['Test opens one condition-level dialog from any callback tab. It renders Fields UI and Help together with detached values. Committing a field value validates and evaluates once. Run test refreshes the current values, while only valid values are evaluated. Opening the dialog does not evaluate defaults. Live is opt-in and stops when the dialog closes. Committed test values are available to the debugger and stay separate from source, exports and rotation edits. Check syntax never runs a callback.'] = true
 L['Test values changed. Updating results.'] = true
 L['Complete the highlighted test inputs before testing.'] = true

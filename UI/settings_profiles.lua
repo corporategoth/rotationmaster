@@ -19,7 +19,11 @@ function addon:BuildProfileSettings(p)
     self:CollectionFooter(p,'profile',compareValues,selected and selectedName or nil,
         {key='duplicate',text=L['Duplicate'],icon='copy',enabled=selected~=nil,action=function() p.previousSelection=p.selection;p.profileSource=selectedName;p.newProfileName=string.format(L['Copy of %s'],selectedName);p.creating=true;p:Draw() end},
         {key='transfer',text=L['Import/Export'],icon='transfer',action=function()
-            local codec=self:NewRotationCodec();local text,why='',nil;if selected then text,why=codec:Encode({format='RM-Profile',version=1,name=selectedName,profile=self:ProfileToPortable(selected)});if not text then p:Message(why);return end end
+            local codec=self:NewRotationCodec();local text,why='',nil
+            if selected then
+                local portable=self:ProfileToPortable(selected);if not portable then p:Message(L['Invalid profile.']);return end
+                text,why=codec:Encode({format='RM-Profile',version=1,name=selectedName,profile=portable});if not text then p:Message(why);return end
+            end
             local baseline=selected and self:CopySettingsData(selected)
             self:ShowSettingsTextTransfer(p,L['Profiles'],text,function(input,settings)
                 local decoded,errorText=codec:Decode(input);local wrapper=decoded and decoded.value;local candidate=type(wrapper)=='table' and self:ProfileFromPortable(wrapper.profile)

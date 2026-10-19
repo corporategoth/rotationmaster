@@ -983,4 +983,26 @@ test('profile transport preserves optional LibDBIcon state without inventing abs
     assert(absent.minimap.minimapPos==nil and absent.minimap.lock==nil and absent.minimap.showInCompartment==nil and absent.minimap.radius==nil)
     for _,bad in ipairs({{showInCompartment=1},{lock='yes'},{minimapPos='123'},{unexpected=true}}) do assert(not a:ValidateProfileTransfer({minimap=bad})) end
 end)
+test('native condition rosters distinguish switch entries and hide the internal delete operation',function()
+    local f,parent=fixture();local a=f.addon;f.load('Core/conditions.lua');f.load('Core/condition_catalog.lua')
+    a:RegisterCondition('LEVEL',{description='Level',fields={}});a:RegisterCondition('SELF_LEVEL',{description='Level',fields={}})
+    a.db.profile.condition_groups={{id='g',name='Group',conditions={'LEVEL','SELF_LEVEL','DELETE'}}};a.db.profile.other_conditions_order={};a.db.profile.switch_conditions={'SELF_LEVEL','DELETE'};a.db.profile.disabled_conditions={};a.db.global.custom_conditions={}
+    local before=a:CopySettingsData(a.db.profile);local p=a:CreateSettingsForm(parent);p:Open(function(form) a:BuildConditionSettings(form) end)
+    local rows={};for _,row in ipairs(p.roster.rows) do if row.rosterLease then rows[row.rosterEntry.value]=row end end
+    assert(not rows.DELETE,'legacy Delete operation leaked into native roster')
+    local normal,switch=assert(rows.LEVEL):GetFontString().textColor,assert(rows.SELF_LEVEL):GetFontString().textColor
+    assert(normal[1]==.4 and normal[2]==.7 and normal[3]==1,'ordinary condition should stay blue')
+    assert(switch[1]==1 and switch[2]==.82 and switch[3]==.25,'switch condition should be gold')
+    assert(a.conditionSpecials.DELETE and a:SettingsDataEqual(before,a.db.profile),'presentation removed legacy operation or changed saved categories')
+    p.mode='categories';p.categorySelection='g';p:Draw();assert(p.fields.member_LEVEL and p.fields.member_SELF_LEVEL and not p.fields.member_DELETE)
+    assert(p.fields.member_SELF_LEVEL:GetFontString().textColor[1]==1 and p.fields.member_LEVEL:GetFontString().textColor[3]==1)
+    p.mode=nil;p.category='SWITCH';p:Draw();for _,entry in ipairs(p.roster.entries) do assert(entry.value~='DELETE') end
+end)
+test('profile export rejects failed scoped conversion instead of encoding a missing profile',function()
+    local f,parent=fixture();local a=f.addon;f.load('Data/catalog.lua');f.load('Data/rotation_store.lua')
+    a.db.profile={rotationStore={version=999,classes={},characters={},legacy={}}};a.db.GetCurrentProfile=function() return 'One' end;a.db.GetProfiles=function() return {'One'} end
+    local before=a:CopySettingsData(a.db.profile);local p=a:CreateSettingsForm(parent);p:Open(function(form) a:BuildProfileSettings(form) end)
+    p.fields.transfer:Click();assert(not p.textDialog or not p.textDialog.frame:IsShown(),'export encoded a wrapper with its profile missing')
+    assert(p.message:GetText()=='Invalid profile.' and a:SettingsDataEqual(before,a.db.profile),'failed export lost original data or feedback')
+end)
 finish()

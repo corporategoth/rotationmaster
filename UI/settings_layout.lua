@@ -48,7 +48,9 @@ function addon:InstallSettingsLayout(p)
         local r=self.roster;local lease={};local revision=r.revision
         row.rosterLease=lease;row.rosterEntry=entry;row.rosterIndex=index;row.rmDragged=nil
         row:SetParent(r.child);row:ClearAllPoints();row:SetPoint('TOPLEFT',0,-(index-1)*34);row:SetSize(r.child:GetWidth(),32)
-        row:SetText(entry.text);row:GetFontString():SetTextColor(entry.custom==false and .4 or .92,entry.custom==false and .7 or .94,entry.custom==false and 1 or .96)
+        row:SetText(entry.text)
+        local color=entry.textColor
+        row:GetFontString():SetTextColor(color and color[1] or entry.custom==false and .4 or .92,color and color[2] or entry.custom==false and .7 or .94,color and color[3] or entry.custom==false and 1 or .96)
         addon:SetWorkbenchListSelection(row,entry.value==r.current);addon:AlignWorkbenchTextLeft(row,entry.icon and 34 or 6)
         if entry.icon then row.icon:SetTexture(entry.icon);row.icon:Show() else row.icon:Hide() end
         addon:SetWorkbenchInvalid(row,entry.invalid,entry.validationMessage);row.tooltip=entry.validationMessage

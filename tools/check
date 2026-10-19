@@ -168,6 +168,7 @@ def main():
             ['lua5.1', 'tests/condition_edit_session.lua'],
             ['lua5.1', 'tests/condition_editor_ui.lua'],
             ['luajit', 'tests/settings_pages.lua'],
+            ['luajit', 'tests/profile_rotation_store.lua'],
             ['lua5.1', 'tests/selector.lua'],
             ['lua5.1', 'tests/condition_inputs.lua'],
             ['lua5.1', 'tests/condition_layout.lua'],

@@ -1,5 +1,7 @@
 local addon_name,addon=...
 local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
+local normalColor={.4,.7,1}
+local switchColor={1,.82,.25}
 function addon:BuildConditionSettings(p)
     local store=p:SettingsData()
     if p.mode=='categories' then return self:BuildConditionCategorySettings(p) end
@@ -13,9 +15,9 @@ function addon:BuildConditionSettings(p)
     categories[#categories+1]={value='DEFAULT',text=L['Other']};if p.category~='ALL'  and p.category~='SWITCH' and p.category~='DEFAULT' and not groupIndex then p.category='ALL' end
     local tags=self:listConditions(p.category,true,store);local entries={};local seen={}
     if p.category=='ALL' then for tag in pairs(custom) do local exists=false;for _,value in ipairs(tags) do if value==tag then exists=true end end;if not exists then tags[#tags+1]=tag end end end
-    for _,tag in ipairs(tags) do if not (self.db.global.custom_conditions and self.db.global.custom_conditions[tag] and not custom[tag]) and (p.conditionSource=='all' or (p.conditionSource=='custom')==(custom[tag]~=nil)) and not seen[tag] and (definitions[tag] or (self.conditionSpecials or {})[tag]) then local d=definitions[tag] or self.conditionSpecials[tag];entries[#entries+1]={value=tag,text=d.description or d.desc or tag};seen[tag]=true end end
+    for _,tag in ipairs(tags) do if tag~='DELETE' and not (self.db.global.custom_conditions and self.db.global.custom_conditions[tag] and not custom[tag]) and (p.conditionSource=='all' or (p.conditionSource=='custom')==(custom[tag]~=nil)) and not seen[tag] and (definitions[tag] or (self.conditionSpecials or {})[tag]) then local d=definitions[tag] or self.conditionSpecials[tag];entries[#entries+1]={value=tag,text=d.description or d.desc or tag};seen[tag]=true end end
     if not seen[p.condition] and not p.creatingCondition then p.condition=entries[1] and entries[1].value end
-    for _,entry in ipairs(entries) do entry.icon=custom[entry.value] and custom[entry.value].icon or self:GetConditionIcon(entry.value);entry.search=entry.value;entry.custom=custom[entry.value]~=nil end
+    for _,entry in ipairs(entries) do entry.icon=custom[entry.value] and custom[entry.value].icon or self:GetConditionIcon(entry.value);entry.search=entry.value;entry.custom=custom[entry.value]~=nil;entry.textColor=self:SettingsContains(profile.switch_conditions,entry.value) and switchColor or normalColor end
     if self.ValidateCustomConditionSource then for _,entry in ipairs(entries) do if entry.custom then
         local checked,why=self:ValidateCustomConditionSource(entry.value,custom[entry.value],true)
         entry.invalid=not checked;entry.validationMessage=not checked and string.format(L['Invalid condition: %s'],why and (why.detail or why.reason) or L['Invalid custom condition.']) or nil
@@ -122,11 +124,11 @@ function addon:BuildConditionCategorySettings(p)
             p.cleanups[#p.cleanups+1]=function() if picker.serial==serial then picker.frame:Hide() end end
         end))
     else p:Text(L['Built-in category']) end
-    local tags=self:listConditions(category,true,store);local cols=math.max(1,math.floor(p.width/240));local cellWidth=(p.width-8*(cols-1))/cols;local top=p.y
+    local tags={};for _,tag in ipairs(self:listConditions(category,true,store)) do if tag~='DELETE' then tags[#tags+1]=tag end end;local cols=math.max(1,math.floor(p.width/240));local cellWidth=(p.width-8*(cols-1))/cols;local top=p.y
     for i,tag in ipairs(tags) do
-        local definition=definitions[tag] or (self.conditionSpecials or {})[tag];local custom=(store.global.custom_conditions or {})[tag]~=nil
+        local definition=definitions[tag] or (self.conditionSpecials or {})[tag]
         local cell=p:Acquire('categoryMembers',function() local button=self:CreateWorkbenchButton(p.child,'',cellWidth);button.image=button:CreateTexture(nil,'ARTWORK');button.image:SetSize(24,24);button.image:SetPoint('LEFT',3,0);return button end)
-        cell:ClearAllPoints();cell:SetPoint('TOPLEFT',((i-1)%cols)*(cellWidth+8),-top-math.floor((i-1)/cols)*32);cell:SetSize(cellWidth,28);cell:SetText(definition and (definition.description or definition.desc) or tag);self:AlignWorkbenchTextLeft(cell,34);cell.image:SetTexture(self:GetConditionIcon(tag));cell:GetFontString():SetTextColor(custom and .92 or .4,custom and .94 or .7,custom and .96 or 1);p.fields['member_'..tag]=cell
+        cell:ClearAllPoints();cell:SetPoint('TOPLEFT',((i-1)%cols)*(cellWidth+8),-top-math.floor((i-1)/cols)*32);cell:SetSize(cellWidth,28);cell:SetText(definition and (definition.description or definition.desc) or tag);self:AlignWorkbenchTextLeft(cell,34);cell.image:SetTexture(self:GetConditionIcon(tag));local color=self:SettingsContains(profile.switch_conditions,tag) and switchColor or normalColor;cell:GetFontString():SetTextColor(unpack(color));p.fields['member_'..tag]=cell
         self:SetUIScript(cell,'OnClick',p:Guard(function() if p:FlushEdits() then p.mode=nil;p.category=category;p.conditionSource='all';p.condition=tag;p:Draw() end end))
     end
     p.y=top+math.ceil(#tags/cols)*32+8
