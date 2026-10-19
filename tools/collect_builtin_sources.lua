@@ -26,7 +26,7 @@ local function capture(module,fn)
 end
 for _,case in ipairs(inventory.branches) do
     local f=F.new(unpack(case[1]));f.addon.delayed_condition={}
-    f.load('Platform/spells.lua');f.load('Platform/actions.lua')
+    f.load('Platform/spells.lua');f.load('Platform/actions.lua');f.load('Platform/range.lua')
     if case[3] then f.env.MI2_GetMobData=function() end end
     for path in io.lines('RotationMaster.toc') do if path:match('^Conditions/') then
         f.load(path)

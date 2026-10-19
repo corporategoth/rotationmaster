@@ -37,3 +37,50 @@ function platform:IsBeyondMeleeRange(unit)
     if minimum and minimum>=5 then return true,nil,"estimated-five-yard-range" end
     return nil,"range-uncertain"
 end
+
+-- This setting limits nameplate visibility, not the completeness of any scan.
+function platform:GetNameplateMaxDistance()
+    local query=C_CVar and C_CVar.GetCVar or GetCVar
+    if type(query)~='function' then return nil,'missing-api' end
+    local ok,value=pcall(query,'nameplateMaxDistance')
+    if not ok then return nil,'api-error' end
+    if not self:CanReadValue(value) then return nil,'restricted-value' end
+    if type(value)~='string' and type(value)~='number' then return nil,'nameplate-distance-unavailable' end
+    local maximum=tonumber(value)
+    if not maximum or maximum~=maximum or maximum<=0 or maximum==math.huge then return nil,'nameplate-distance-unavailable' end
+    return maximum
+end
+
+-- Public LibRangeCheck intervals retain their bounds. Never invent an exact
+-- distance from either bound or turn an absent result into an outside result.
+function platform:GetRangeCheckBounds(unit)
+    if not self:CanReadValue(unit) then return nil,'restricted-value' end
+    if type(unit)~='string' or unit=='' then return nil,'invalid-unit' end
+    if not LibStub then return nil,'missing-range-provider' end
+    local loaded,provider=pcall(function() return LibStub('LibRangeCheck-3.0',true) end)
+    if not loaded or not provider or type(provider.GetRange)~='function' then return nil,'missing-range-provider' end
+    local ok,minimum,maximum=pcall(provider.GetRange,provider,unit)
+    if not ok then return nil,'range-provider-error' end
+    if not self:CanReadValue(minimum) or not self:CanReadValue(maximum) then return nil,'restricted-value' end
+    for _,bound in pairs({minimum=minimum,maximum=maximum}) do
+        if type(bound)~='number' or bound~=bound or bound<0 or bound==math.huge then return nil,'invalid-range-result' end
+    end
+    if minimum==nil and maximum==nil then return nil,'range-unavailable' end
+    if minimum and maximum and minimum>maximum then return nil,'invalid-range-result' end
+    return {minimum=minimum,maximum=maximum}
+end
+
+-- BEGIN GENERATED RM SOURCE BINDINGS
+do
+    local function sourceGetter(name)
+        if name=="Platform_GetNameplateMaxDistance" then return addon.Platform.GetNameplateMaxDistance end
+        if name=="Platform_GetRangeCheckBounds" then return addon.Platform.GetRangeCheckBounds end
+    end
+    if addon.RegisterBuiltinSourceModule then
+        addon:RegisterBuiltinSourceModule("Platform/range.lua", sourceGetter)
+    else
+        addon.builtinSourceModules=addon.builtinSourceModules or {}
+        addon.builtinSourceModules["Platform/range.lua"]=sourceGetter
+    end
+end
+-- END GENERATED RM SOURCE BINDINGS

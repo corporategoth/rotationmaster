@@ -2190,12 +2190,18 @@ L["Uses readable positions in the same instance, or player-centered range estima
 L["Default.TBC.Warlock.Starter.Name"] = "Warlock: early leveling (1–19)"
 L["Default.TBC.Warlock.Starter.Description"] = "Bounded solo Affliction preview: owned damage-over-time spells, conservative Drain Life, wanding and optional Demon Skin. Manual demon and resource control; expires at level 20."
 
+L["Count enemies when selected, or non-enemies when cleared."] = true
+L["The number of observed units proven within Distance of you."] = true
+L["Counts the addon's observed unit snapshot, including nameplates and tracked unit aliases, rather than every nearby unit. A unit counts only when its upper range bound is within Distance; uncertain membership or unreadable identity, hostility, range or nameplate settings makes the whole count unavailable, including under Unless. Known vanished or reused unit tokens are excluded. Distance cannot exceed the current nameplate distance setting; that setting does not guarantee a complete scan."] = true
+
 -- BEGIN GENERATED RM PUBLIC HELPER DOCS
 L["All original results, preserving nil positions and return count."] = true
 L["Arguments forwarded unchanged to the observed function."] = true
 L["Arguments forwarded unchanged; types, identity, arity and nil positions distinguish cache entries."] = true
+L["Availability or validation reason for a nil result."] = true
 L["Availability or validation reason when the record is nil."] = true
 L["Availability or validation reason when the result is nil."] = true
+L["Availability reason for a nil result."] = true
 L["Availability reason when resolution fails; nil on success."] = true
 L["Cache an observation after it returns a non-nil value; retry observations whose entire return tuple is nil. Uses the same exact argument keys as getCached."] = true
 L["Call an observation once per cache and exact argument tuple, including nil results. Pass the evaluation cache to share observations within a recommendation cycle; nil cache calls directly."] = true
@@ -2218,6 +2224,8 @@ L["Create a native numeric condition input with a slider and typed numeric field
 L["Create a native text input using the condition widget contract. SetLabel, SetText, SetDisabled and SetCallback configure it; OnEnterPressed commits text. Add it to the callback parent with parent:AddChild(widget)."] = true
 L["Create a spell input with suggestions, validation and spell-link support for custom condition widgets. The update callback owns saving a chosen value; add the returned widget to the callback parent."] = true
 L["Current evaluation time in seconds from GetTime(), normally evalStart."] = true
+L["Current positive visibility distance in yards; nil when unavailable."] = true
+L["Current unit token whose distance from the player should be observed."] = true
 L["Dense array of nonempty text fields."] = true
 L["Display lookup table."] = true
 L["Evaluation cache, or nil to bypass caching."] = true
@@ -2238,9 +2246,12 @@ L["Range record with applicable and, when applicable, inRange; nil when unavaila
 L["Read a normalized charge record: currentCharges, maxCharges, cooldownStartTime, cooldownDuration, chargeModRate and isActive. Unsupported spells or restricted client data return nil with a reason."] = true
 L["Read and normalize a spell cooldown across supported clients. The returned record contains startTime, duration, isEnabled and modRate. The timestamps and duration already describe expiration in GetTime() seconds; do not divide them by modRate."] = true
 L["Read spell-specific range for a unit using the appropriate client API or spell-book slot. A spell without a range restriction returns applicable=false; otherwise applicable=true and inRange records whether the unit is in range. Unknown or inaccessible observations return nil with a reason."] = true
+L["Read the current positive nameplate visibility distance using the supported CVar API. This limits a Distance Count query; it does not prove that all nearby units have been observed. Missing, malformed, restricted or failed observations return nil with a reason."] = true
 L["Read the player auto-repeat state for a spell such as Shoot or Auto Shot. This is distinct from a current or queued cast. Modern clients receive the exact spell ID; a legacy query resolves the player spell-book slot first. Restricted client policies, unreadable results and unavailable book slots return nil with a reason. This observes state and never starts or stops a spell."] = true
+L["Read the public LibRangeCheck interval for a unit. A successful upper bound is inclusive; a positive failed lower bound is strict. A zero lower floor is synthetic. Neither bound is an exact distance, and a missing upper bound is not proof that the unit is outside every radius. Unavailable, malformed, restricted or failed observations return nil with a reason."] = true
 L["Readable charge record, or nil when unavailable."] = true
 L["Readable cooldown record, or nil when unavailable."] = true
+L["Readable interval with optional minimum and maximum bounds in yards. At least one bound is present; nil when unavailable."] = true
 L["Reference input kind, such as Spec_EditBox, used for spell suggestions."] = true
 L["Remove leading and trailing Lua-pattern whitespace from a string."] = true
 L["Resolve the spell identifier stored by a condition. With exact rank enabled the supplied ID is retained; otherwise ranked Classic clients resolve the currently known rank through the spell catalog. Returns nil and an availability reason if resolution cannot be completed."] = true

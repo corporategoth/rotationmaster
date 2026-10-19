@@ -31,6 +31,7 @@ def main():
             ['lua5.1', 'tests/weapon_conditions.lua'],
             ['lua5.1', 'tests/auto_repeat_condition.lua'],
             ['lua5.1', 'tests/proximity_conditions.lua'],
+            ['lua5.1', 'tests/distance_count.lua'],
             ['lua5.1', 'tests/condition_engine.lua'],
             ['lua5.1', 'tests/declaration_schema.lua'],
             ['lua5.1', 'tests/catalog.lua'],

@@ -283,18 +283,39 @@ addon:RegisterCondition("DISTANCE_COUNT", {
     icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Conditions\\spatial",
     fields = { value = "number", operator = "string", distance = "number", enemy = "boolean" },
     valid = function(_, value)
-        return (value.value ~= nil and value.value >= 0 and
-                value.operator ~= nil and addon.isin(addon.operators, value.operator) and value.enemy ~= nil and
-                value.distance ~= nil and value.distance >= 0 and
-                value.distance <= tonumber(C_CVar.GetCVar("nameplateMaxDistance")))
+        return finite(value.value) and value.value >= 0 and
+            addon.isin(addon.operators, value.operator) and type(value.enemy)=="boolean" and
+            finite(value.distance) and value.distance >= 0
     end,
     evaluate = function(value, cache)
+        local maximum,reason=addon.getCached(cache,addon.Platform.GetNameplateMaxDistance,addon.Platform)
+        if maximum==nil then return nil,reason end
+        if value.distance>maximum then return nil,"distance-exceeds-nameplate-limit" end
+        if type(addon.unitsInRange)~="table" then return nil,"unit-snapshot-unavailable" end
         local count = 0
-        for _, entity in pairs(addon.unitsInRange) do
-            if entity.enemy == value.enemy then
-                local maxRange = select(2, addon.getCached(cache, rcf, entity.unit))
-                if maxRange and maxRange <= value.distance then
-                    count = count + 1
+        for guid, entity in pairs(addon.unitsInRange) do
+            if not addon.Platform:CanReadValue(guid) then return nil,"restricted-value" end
+            if type(guid)~="string" or guid=="" or type(entity)~="table" then return nil,"invalid-unit-snapshot" end
+            if not addon.Platform:CanReadValue(entity.unit) then return nil,"restricted-value" end
+            if type(entity.unit)~="string" or entity.unit=="" then return nil,"invalid-unit-snapshot" end
+            local present,issue=booleanRead(cache,UnitExists,entity.unit)
+            if present==nil then return nil,issue end
+            if present then
+                local ok,current=protectedRead(cache,UnitGUID,entity.unit)
+                if not ok then return nil,current=="missing-api" and current or "api-error" end
+                if not addon.Platform:CanReadValue(current) then return nil,"restricted-value" end
+                if type(current)~="string" or current=="" then return nil,"unit-identity-unavailable" end
+                -- A recycled token belongs to another identity. Do not expand
+                -- the snapshot to include that replacement before its event.
+                if current==guid then
+                    local enemy,problem=booleanRead(cache,UnitIsEnemy,"player",entity.unit)
+                    if enemy==nil then return nil,problem end
+                    if enemy==value.enemy then
+                        local bounds,why=addon.getCached(cache,addon.Platform.GetRangeCheckBounds,addon.Platform,entity.unit)
+                        if not bounds then return nil,why end
+                        if bounds.maximum and bounds.maximum<=value.distance then count=count+1
+                        elseif not (bounds.minimum and (bounds.minimum>value.distance or bounds.minimum>0 and bounds.minimum==value.distance)) then return nil,"range-uncertain" end
+                    end
                 end
             end
         end
@@ -315,12 +336,7 @@ addon:RegisterCondition("DISTANCE_COUNT", {
         local enemy = addon:CreateConditionCheckBox()
         enemy:SetWidth(100)
         enemy:SetLabel(L["Enemy"])
-        if (value.enemy ~= nil) then
-            enemy:SetValue(value.enemy)
-        else
-            value.enemy = false
-            enemy:SetValue(false)
-        end
+        enemy:SetValue(value.enemy==true)
         enemy:SetCallback("OnValueChanged", function(_, _, v)
             value.enemy = v
             top:SetStatusText(funcs:print(root, spec))
@@ -335,7 +351,9 @@ addon:RegisterCondition("DISTANCE_COUNT", {
         distance:SetWidth(150)
         distance:SetLabel(L["Distance"])
         distance:SetValue(value.distance)
-        distance:SetSliderValues(1, tonumber(C_CVar.GetCVar("nameplateMaxDistance")), 1)
+        local maximum=addon.Platform:GetNameplateMaxDistance()
+        distance:SetSliderValues(0, maximum or math.max(1,finite(value.distance) and value.distance or 1), 1)
+        distance:SetDisabled(maximum==nil)
         distance:SetCallback("OnValueChanged", function(_, _, v)
             value.distance = tonumber(v)
             top:SetStatusText(funcs:print(root, spec))
@@ -345,16 +363,13 @@ addon:RegisterCondition("DISTANCE_COUNT", {
     end,
     help = function(frame)
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Enemy"] .. color.RESET .. " - " ..
-            "The addon.units you are checking the distance of are enemies."))
+            L["Count enemies when selected, or non-enemies when cleared."]))
         frame:AddChild(helpers.Gap())
         addon.layout_condition_operatorwidget_help(frame, L["Distance Count"], L["Count"],
-            "The number of enemies or allies whose proximity is measured in relation to you.")
+            L["The number of observed units proven within Distance of you."])
         frame:AddChild(helpers.Gap())
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Distance"] .. color.RESET .. " - " ..
-                "This distance enemies or allies must be within, in yards.  There are significant restrictions " ..
-                "on how accurately distances can be measured, and all distances are within a range.  This will " ..
-                "assume all addon.units are at their maximum of the measurable range.  The maximum range is set using " ..
-                "Game Options -> Interface -> Game tab -> Names -> Nameplate Distance."))
+                L["Counts the addon's observed unit snapshot, including nameplates and tracked unit aliases, rather than every nearby unit. A unit counts only when its upper range bound is within Distance; uncertain membership or unreadable identity, hostility, range or nameplate settings makes the whole count unavailable, including under Unless. Known vanished or reused unit tokens are excluded. Distance cannot exceed the current nameplate distance setting; that setting does not guarantee a complete scan."]))
         frame:AddChild(helpers.Gap())
     end
 })
@@ -411,8 +426,11 @@ addon:RegisterCondition("ZONE", {
 do
     local function sourceGetter(name)
         if name=="RangeCheck" then return RangeCheck end
+        if name=="booleanRead" then return booleanRead end
         if name=="color" then return color end
+        if name=="finite" then return finite end
         if name=="helpers" then return helpers end
+        if name=="protectedRead" then return protectedRead end
         if name=="rcf" then return rcf end
     end
     if addon.RegisterBuiltinSourceModule then
