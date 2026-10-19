@@ -187,11 +187,12 @@ local function unavailable(a,value)
     assert(a:EvaluateRotationSequence(body,function(v) return a:evaluateConditionResult(v) end,function() error('unavailable statistic selected a branch') end).status=='unavailable')
 end
 
-test('eleven statistics declarations qualify exactly104 calls in33 callbacks through five owned leaves',function()
+test('eleven statistics namespace substitutions retain their exact historical104 calls outside approved readiness repairs',function()
     local f,a=fixture();local manifest=assert(a.builtinCallbackBindings and a.builtinCallbackBindings['Conditions/stats.lua'],'statistics canonical bindings missing');local leaves=0
     for alias,id in pairs(manifest) do local name=alias:match('([%w_]+)$');leaves=leaves+1;assert(alias==path(name) and id=='builtin:utils.lua:'..name and a:ResolveFunctionBinding(id)==a.Functions[owners[name]][name]) end;assert(leaves==5)
     local totals={isin=0,compare=0,getCached=0,nullable=0,compareString=0};local callbacks=0
     for _,tag in ipairs(tags) do local source=assert(a:GetBuiltinConditionSource(tag));assert(not source.bindings.Functions,'opaque namespace table capture')
+        if tag=='POINT' then source=a:CopySettingsData(source);source.evaluate=dofile('tests/fixtures/restore_point_repairs.lua')(source.evaluate,true) end
         for _,callback in ipairs({'valid','evaluate','print'}) do callbacks=callbacks+1;for name in pairs(owners) do
             local _,n=source[callback]:gsub(path(name):gsub('%.','%%.')..'%(','');totals[name]=totals[name]+n;assert(not source[callback]:find('addon.'..name..'(',1,true))
         end end
@@ -200,7 +201,9 @@ test('eleven statistics declarations qualify exactly104 calls in33 callbacks thr
 end)
 test('legacy-shaped full sources retain every original native expression field Help body parameter and private capture hash',function()
     local _,a=fixture();local baseline={};for _,tag in ipairs(tags) do
-        baseline[tag]=legacySource(a,assert(a:GetBuiltinConditionSource(tag)))
+        local source=assert(a:GetBuiltinConditionSource(tag))
+        if tag=='POINT' then source=a:CopySettingsData(source);source.evaluate=dofile('tests/fixtures/restore_point_repairs.lua')(source.evaluate,true) end
+        baseline[tag]=legacySource(a,source)
         if tag=='RUNE_COOLDOWN' then baseline[tag].evaluate=dofile('tests/fixtures/restore_rounding_qualifiers.lua')(baseline[tag].evaluate,tag,true) end
         if originalHealthEvaluates[tag] then
             assert(a:GetBuiltinConditionSource(tag).evaluate==repairedHealthEvaluates[tag],tag.." changed beyond the explicit health repair")
@@ -270,7 +273,10 @@ test('known missing units or power identities remain invertible while native err
     for _,mode in ipairs({'false-exists','nil-class'}) do local _,a,s=fixture();copies(a)
         if mode=='false-exists' then s.exists=false else s.class=nil end
         local tag=mode=='nil-class' and 'POINT' or 'HEALTH'
-        for _,prefix in ipairs({'','COPY_','LEGACY_'}) do local value=node(tag);value.type=prefix..tag;assert(a:evaluateConditionResult(value).status=='no-match' and a:evaluateConditionResult({type='NOT',value=value}).status=='match') end
+        for _,prefix in ipairs({'','COPY_','LEGACY_'}) do local value=node(tag);value.type=prefix..tag
+            if mode=='nil-class' then unavailable(a,value)
+            else assert(a:evaluateConditionResult(value).status=='no-match' and a:evaluateConditionResult({type='NOT',value=value}).status=='match') end
+        end
     end
 end)
 test('registration branches and legacy addon helper consumers retain their original public contracts',function()

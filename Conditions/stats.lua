@@ -319,24 +319,19 @@ addon:RegisterCondition("POINT", {
                 value.value ~= nil)
     end,
     evaluate = function(value, cache)
-        if not Functions.cache.getCached(cache, UnitExists, value.unit) then return false end
-        local class
-        if value.unit == "player" then
-            class = select(2, Functions.cache.getCached(addon.longtermCache, UnitClass, value.unit))
+        local point,reason=addon:GetConditionPointResource(value.unit,cache)
+        if point==nil then return nil,reason end
+        if point==false then return false end
+        local cur,why=Functions.cache.getCached(cache,addon.Platform.GetUnitPointPowerObservation,addon.Platform,value.unit,point,"current")
+        if cur==nil then return nil,why end
+        if value.value < 0 then
+            local maximum,maximumReason=Functions.cache.getCached(cache,addon.Platform.GetUnitPointPowerObservation,addon.Platform,value.unit,point,"maximum")
+            if maximum==nil then return nil,maximumReason end
+            local deficit=maximum-cur
+            if deficit~=deficit or deficit==math.huge or deficit==-math.huge then return nil,"invalid-point-deficit" end
+            return Functions.values.compare(value.operator, deficit, -value.value)
         else
-            class = select(2, Functions.cache.getCached(cache, UnitClass, value.unit))
-        end
-        if class ~= nil then
-            local point = addon.points[class] or Enum.PowerType.ComboPoints
-            local cur = Functions.cache.getCached(cache, UnitPower, value.unit, point)
-            if value.value < 0 then
-                local max = Functions.cache.getCached(cache, UnitPowerMax, value.unit, point)
-                return Functions.values.compare(value.operator, (max-cur), -value.value)
-            else
-                return Functions.values.compare(value.operator, cur, value.value)
-            end
-        else
-            return false
+            return Functions.values.compare(value.operator, cur, value.value)
         end
     end,
     print = function(_, value)

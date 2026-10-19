@@ -1954,6 +1954,19 @@ L['Click to remove this tag. Use the search results to change tag colors.'] = tr
 L['Each callback keeps its own pending text while switching tabs. Undo and Redo edit that callback buffer. Reset restores its last saved code, or the template for a new condition, and can be undone. The main Apply saves and registers all callback buffers and metadata; Discard drops the whole draft. Leaving with changes offers Apply, Discard or Cancel. Check syntax runs no callbacks.'] = true
 L['No native Lua editor has been opened this session.'] = true
 L['Lua input diagnostics'] = true
+L['Native input test'] = true
+L['Input test'] = true
+L['Stock font'] = true
+L['RM font'] = true
+L['Click the sample, then try Up/Down and look for the caret. Compare Stock font and RM font. This temporary text is not saved.'] = true
+L['Diagnostics'] = true
+L['Arrow test'] = true
+L['Arrows: on'] = true
+L['Arrows'] = true
+L['Info'] = true
+L['Show input diagnostics for this open Lua editor.'] = true
+L['Temporary native arrow test enabled. Click to restore the editor hook.'] = true
+L['Temporarily remove the editor arrow hook to test native navigation.'] = true
 L['Move'] = true
 L['/rm editorinfo          - Copy native Lua input diagnostics.'] = true
 L['/rm editorarrows        - Temporarily test native arrows in an open editor.'] = true
@@ -2380,12 +2393,20 @@ L["Dense array of nonempty text fields."] = true
 L["Destination array modified in place."] = true
 L["Display lookup table."] = true
 L["Evaluation cache, or nil to bypass caching."] = true
+L["Evaluation-pass cache, or nil to observe identity directly. Resource mapping is resolved live on each invocation."] = true
+L["Exact selected unit token; player class alone may use the successful longterm cache."] = true
 L["Exact selected unit token; the attacker remains player."] = true
 L["Exact unit token checked for existence and passed to the selected metadata API."] = true
+L["Exact unit token passed unchanged to UnitExists and, when required, UnitClass."] = true
 L["Exact unit token used for existence and as the recipient of player hostility and threat queries."] = true
 L["Exact unit token whose resource should be observed; this does not redirect player or vehicle units."] = true
 L["Exact unit token whose selected flag should be observed."] = true
+L["Exact unit token whose selected resource quantity is requested."] = true
+L["Exactly current for UnitPower or maximum for UnitPowerMax; no other native query is added."] = true
 L["Exactly type or school; selects the required subject field without requiring the other."] = true
+L["Explicit nonnegative integer power selector, false for a known absent unit, or nil when required data is unavailable."] = true
+L["Explicit readable finite nonnegative integer power selector, including zero."] = true
+L["Finite native resource quantity, retaining its sign and fractional part; nil when unavailable."] = true
 L["Finite native threat status, false for known absence/nonenemy/no-threat, or nil for unavailable observations."] = true
 L["First exact unit token, checked for existence before comparison."] = true
 L["First table to compare."] = true
@@ -2430,6 +2451,7 @@ L["Observation kind: cast or channel. These use different native interruptibilit
 L["Observe a readable raw unit level on known clients. A readable absent unit returns exists=false; present units require a positive finite integer UnitLevel. Unknown boss levels, missing, failed, restricted or malformed observations return nil with a reason. This does not use effective or scaled levels."] = true
 L["Observe a unit casting or channeling on supported readable clients. A readable inactive result returns active=false. Active records contain name and independently available remainingSeconds and interruptible fields, with remainingReason or interruptibleReason when an optional field is unavailable. Missing, failed or restricted observations return nil with a reason."] = true
 L["Observe exact pet existence and optionally its formatted GetUnitName display name. Presence-only queries never require name data. Known absence skips the name query. Present pets require a readable nonempty name only when requested; required missing, failed, nil, restricted or malformed observations return nil with a reason. The display helper is called with its single original pet argument, without UnitName fallback or inferred bar, health or ability state."] = true
+L["Observe exact selected-unit existence and optionally its class filename for point-resource conditions. Known absence returns exists=false without reading class. Present units require only UnitClass return two when requested; unused localized names and IDs do not affect availability. Required missing, failed, restricted or malformed observations remain unavailable. This does not select a resource or cache identity."] = true
 L["Observe explicit mana or the current raw power resource on supported readable clients. Select resource identities from the live PowerType enum; explicit mana never falls back to the current bar. Known absence returns exists=false; missing, failed, restricted or malformed observations return nil with a reason. Current-mode quantities preserve signed native resources; explicit mana is nonnegative. Request maximum only when needed; percentage consumers must require a positive maximum."] = true
 L["Observe glyph sockets on verified Wrath, Cata and Mists client layouts. Returns slots and a complete flag. Each slot has active=false when known locked or empty, active=true plus spellID when occupied, or nil active plus reason when unavailable. Unknown layouts and failed count queries return nil with a reason. This does not compare item names or prove exact item-to-spell identity."] = true
 L["Observe one consumed native unit metadata field after checking UnitExists: class uses UnitClass return two, creature uses the localized UnitCreatureType name, and classification uses UnitClassification. A readable absent unit returns false without querying metadata. Unused tuple fields do not affect availability; a required missing, failed, nil, restricted or malformed value returns nil with a reason. No player class, GUID, enum or translation inference is added."] = true
@@ -2460,10 +2482,13 @@ L["Policy, query, capability or required row/subject availability reason for a n
 L["Policy, query-validation or availability reason for a nil metadata observation."] = true
 L["Policy, query-validation or availability reason for a nil pet observation."] = true
 L["Policy, query-validation or availability reason for a nil player flag."] = true
+L["Policy, query-validation or availability reason for a nil quantity."] = true
 L["Policy, query-validation or availability reason for a nil resource observation."] = true
 L["Policy, query-validation or availability reason for a nil threat observation."] = true
 L["Policy, query-validation or availability reason for a nil unit flag."] = true
 L["Policy, query-validation or availability reason for nil attackability."] = true
+L["Policy, query-validation or identity/selector availability reason for a nil selector."] = true
+L["Policy, query-validation or required observation availability reason for a nil record."] = true
 L["Policy, token-validation or availability reason for a nil identity result."] = true
 L["Policy, validation or availability reason for a nil health observation."] = true
 L["Policy, validation or availability reason for a nil snapshot."] = true
@@ -2479,6 +2504,7 @@ L["Read a normalized charge record: currentCharges, maxCharges, cooldownStartTim
 L["Read and normalize a spell cooldown across supported clients. The returned record contains startTime, duration, isEnabled and modRate. The timestamps and duration already describe expiration in GetTime() seconds; do not divide them by modRate."] = true
 L["Read normalized native item classification metadata. The record contains canonical itemID, classID and subClassID; it does not require loaded item display text. Missing, failed, malformed or restricted metadata returns nil with a reason."] = true
 L["Read one documented active loss-of-control row by its native index and requested subject kind. Type queries require only the readable control type string; school queries require only the readable finite nonnegative integer school mask. Optional timing is returned as a finite timeRemaining or an explicit per-field reason, so an unrelated subject does not require a usable timer. Missing rows are unavailable snapshot observations. No display fields, inferred deadline, duration sum, maximum or native alias fallback is used."] = true
+L["Read one explicitly selected point-resource quantity with an exact two-argument UnitPower or UnitPowerMax query. The selector is required; no primary-resource inference or actor remapping occurs. Preserve finite signed, fractional and zero quantities without clamping. Missing, failed, restricted or nonfinite data remains unavailable. Current and maximum are separate observations so callers can share current snapshots while requesting maximum lazily."] = true
 L["Read public group membership on identified client families. Unknown clients are unsupported. True raidOnly checks IsInRaid; false or nil checks IsInGroup using its native default group category. A readable false result stays false. Missing, failed, malformed or restricted observations return nil with a reason."] = true
 L["Read spell-specific range for a unit using the appropriate client API or spell-book slot. A spell without a range restriction returns applicable=false; otherwise applicable=true and inRange records whether the unit is in range. Unknown or inaccessible observations return nil with a reason."] = true
 L["Read the current positive nameplate visibility distance using the supported CVar API. This limits a Distance Count query; it does not prove that all nearby units have been observed. Missing, malformed, restricted or failed observations return nil with a reason."] = true
@@ -2492,6 +2518,7 @@ L["Readable consumed metadata string, false for a known absent unit, or nil when
 L["Readable cooldown record, or nil when unavailable."] = true
 L["Readable finite current-form observation, including zero for the current unshifted comparison; nil when unavailable."] = true
 L["Readable interval with optional minimum and maximum bounds in yards. At least one bound is present; nil when unavailable."] = true
+L["Readable record with Boolean exists and the requested class filename when present; nil when required data is unavailable."] = true
 L["Readable selected flag or nil when required data is unavailable."] = true
 L["Readable selected flag, false for a known absent unit, or nil when a required observation is unavailable."] = true
 L["Readable unit equality, false for a known absent first unit, or nil when required observations are unavailable."] = true
@@ -2500,6 +2527,7 @@ L["Reference input kind, such as Spec_EditBox, used for spell suggestions."] = t
 L["Remove entries in place, preserving only keys listed among except values by default. With invert true, remove listed keys and retain unlisted keys. Without an exception list, the default removes every entry and invert true retains every entry. Nil input does nothing."] = true
 L["Remove leading and trailing Lua-pattern whitespace from a string."] = true
 L["Resolve a readable raw unit level for condition evaluation. Known absence returns false; unavailable observations return nil with a reason. Cache observations within the supplied evaluation pass. Only valid player levels are retained between passes until a skill, profile or level refresh."] = true
+L["Resolve the selected unit point-resource selector using the live class-to-resource map and ComboPoints fallback. Known absence returns false; unavailable required identity or selector data returns nil with a reason. Share complete identity observations within the evaluation pass. Only successful player class observations persist in the current longterm cache, tied to the native UnitClass identity; existence is refreshed each pass. This selects a resource without reading its current or maximum quantity."] = true
 L["Resolve the spell identifier stored by a condition. With exact rank enabled the supplied ID is retained; otherwise ranked Classic clients resolve the currently known rank through the spell catalog. Returns nil and an availability reason if resolution cannot be completed."] = true
 L["Resolved spell ID, or nil when unavailable."] = true
 L["Resolver mapping a typed spell name to its ID."] = true
@@ -2550,6 +2578,7 @@ L["Transient typed predicate used as a named phrase value; do not persist it as 
 L["Trimmed text."] = true
 L["True also observes maximum health; false or nil reads current health only."] = true
 L["True also observes the selected resource maximum; false or nil reads current quantity only."] = true
+L["True also requires the present unit class filename; false reads existence only."] = true
 L["True for a readable attackable non-dead unit, false for a conclusive negative result, or nil when a required observation is unavailable."] = true
 L["True includes only listed entries; false or nil excludes listed entries."] = true
 L["True marks the main comparison to negate; false or nil leaves it eligible only when no primary predicate exists."] = true

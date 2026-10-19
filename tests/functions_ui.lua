@@ -1,7 +1,7 @@
 local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite()
 local function fixture()
     local f=F.new();local a=f.addon;dofile('tests/fixtures/native_ui.lua')(f.env);a.db.char={};a.db.global.custom_functions={}
-    for _,path in ipairs({'Core/function_data.lua','UI/settings_history.lua','UI/settings_unsaved.lua','UI/settings_layout.lua','UI/settings_ordered.lua','UI/settings_roster_order.lua','UI/settings_form.lua','UI/settings_collections.lua','UI/settings_transfer.lua','UI/lua_input_diagnostics.lua','UI/lua_editor.lua','UI/settings_functions.lua','UI/function_bindings.lua','UI/function_source_pane.lua','UI/function_bundle_transfer.lua'}) do local file=io.open(path);if file then file:close();f.load(path) end end
+    for _,path in ipairs({'Core/function_data.lua','UI/settings_history.lua','UI/settings_unsaved.lua','UI/settings_layout.lua','UI/settings_ordered.lua','UI/settings_roster_order.lua','UI/settings_form.lua','UI/settings_collections.lua','UI/settings_transfer.lua','UI/lua_input_probe.lua','UI/lua_input_diagnostics.lua','UI/lua_editor.lua','UI/settings_functions.lua','UI/function_bindings.lua','UI/function_source_pane.lua','UI/function_bundle_transfer.lua'}) do local file=io.open(path);if file then file:close();f.load(path) end end
     local data,deps=dofile('tests/fixtures/codec.lua')();a.RotationData=data;a.NewRotationCodec=function() return data.NewCodec(deps) end
     local host=f.env.CreateFrame('Frame');host:SetSize(1100,700)
     return f,a,host
@@ -27,6 +27,15 @@ local function pooledPreviewContainers(f)
     end
     return errors
 end
+test('function signatures reserve clickable diagnostics across wrapping and width changes',function()
+    local f,a,host=fixture();a.db.global.custom_functions.A=source('LongFunctionName');local p=a:OpenNativeSettings(host,'Functions');local d=p.inlineFunction
+    for _,width in ipairs({700,320,180}) do
+        d.frame:SetWidth(width+34);d.form:SetWidth(width+34);d.form:Draw();d:UpdateActions();local reserve=a:GetLuaEditorDiagnosticsWidth(d.code);local toolbar=d.code.inputDiagnosticsToolbar
+        assert(toolbar and toolbar.input and reserve>0 and reserve<=d.form.width-40 and d.signature:GetWidth()+reserve<=d.form.width+.1,'function signature overlaps clickable diagnostics '..width..'/'..d.form.width..' signature='..d.signature:GetWidth()..' reserve='..reserve..' code='..d.code.frame:GetWidth())
+        assert(d.codeTop>=-d.signature.point[#d.signature.point]+d.signature:GetHeight()+4,'wrapped function signature overlaps editor')
+        local top=d.codeTop;local height=d.code.frame:GetHeight();for i=1,30 do d:UpdateActions() end;assert(d.codeTop==top and d.code.frame:GetHeight()==height,'unchanged signature row keeps reflowing')
+    end
+end)
 test('Functions opens packaged helpers readonly and duplicates a typed source without saving',function()
     local f,a,host=fixture();assert(a.BuildFunctionSettings,'Functions page missing')
     a:RegisterBuiltinFunction('builtin:test',source('Packaged helper'),function() return function(v) return v end end)

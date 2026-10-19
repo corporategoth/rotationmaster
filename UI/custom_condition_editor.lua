@@ -327,8 +327,11 @@ function addon:condition_edit_box(update,key,source,saveAllowed,embedded)
             end
             self.syntax:SetParent(form.child);self.syntax:ClearAllPoints();self.syntax:SetPoint('TOPLEFT',syntaxX,-syntaxY);self.syntax:Show()
             local signatureTop=actionTop+self.bindingHeight
-            self.signature:ClearAllPoints();self.signature:SetPoint('TOPLEFT',0,-signatureTop);self.signature:SetWidth(form.width);self.signature:SetHeight(18)
-            local codeTop=signatureTop+22
+            self.signature:ClearAllPoints();self.signature:SetPoint('TOPLEFT',0,-signatureTop)
+            local reserve=addon.GetLuaEditorDiagnosticsWidth and addon:GetLuaEditorDiagnosticsWidth(self.code,form.width) or 0
+            self.signature:SetWidth(math.max(1,form.width-reserve));self.signature:SetWordWrap(true);self.signature:SetHeight(0)
+            local signatureHeight=math.max(18,self.signature:GetStringHeight());self.signature:SetHeight(signatureHeight)
+            local codeTop=signatureTop+signatureHeight+4
             local codeHeight=math.max(60,form.frame:GetHeight()-codeTop-8)
             if self.code then self.code.frame:ClearAllPoints();self.code.frame:SetPoint('TOPLEFT',0,-codeTop);self.code.frame:SetSize(form.width,codeHeight) end
             form.y=codeTop+codeHeight;form.child:SetHeight(form.y+12);form.scroll:Hide()

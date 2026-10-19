@@ -85,8 +85,10 @@ function addon:BuildInlineFunction(p,key,source,readOnly)
     function d:UpdateSignature()
         if not self.signature then return end
         local text=addon:FunctionSignature(self.key,self.value)
-        if self.signature:GetText()==text then return end
-        local oldHeight=self.signature:GetHeight();self.signature:SetText(text);self.signature:SetHeight(0)
+        local reserve=addon.GetLuaEditorDiagnosticsWidth and addon:GetLuaEditorDiagnosticsWidth(self.code,form.width) or 0
+        local width=math.max(1,form.width-reserve)
+        if self.signature:GetText()==text and math.abs(self.signature:GetWidth()-width)<.1 then return end
+        local oldHeight=self.signature:GetHeight();self.signature:SetWidth(width);self.signature:SetText(text);self.signature:SetHeight(0)
         local height=math.max(20,self.signature:GetStringHeight());self.signature:SetHeight(height)
         local delta=height-oldHeight
         if delta~=0 and self.code and self.codeTop then
@@ -277,7 +279,7 @@ function addon:BuildInlineFunction(p,key,source,readOnly)
         local preference=addon.db.profile.lua_editor or 'auto'
         if d.code and d.code.preference~=preference then d.code:Release();d.code=nil end
         if not d.code then d.code=addon:CreateWorkbenchLuaEditor(f.child,function() if valid() then d:CodeChanged() end end,valid,preference);d.code.preference=preference elseif d.code.released then d.code:Acquire(function() if valid() then d:CodeChanged() end end,valid) end
-        d.code:SetReadOnly(d.readOnly);d.code.frame:SetParent(f.child);d.code.frame:ClearAllPoints();d.code.frame:SetPoint('TOPLEFT',0,-codeTop);d.code.frame:SetSize(f.width,math.max(220,d.frame:GetHeight()-codeTop-30));d.code.frame:Show();d:SetCode(d.value.code)
+        d.code:SetReadOnly(d.readOnly);d.code.frame:SetParent(f.child);d.code.frame:ClearAllPoints();d.code.frame:SetPoint('TOPLEFT',0,-codeTop);d.code.frame:SetSize(f.width,math.max(220,d.frame:GetHeight()-codeTop-30));d.code.frame:Show();d:SetCode(d.value.code);d:UpdateSignature();codeTop=d.codeTop
         if d.code.SetCloseHandler then d.code:SetCloseHandler(function(mouse) local shell=addon.configWindow;if valid() and shell and shell.pane==p then if mouse then shell.rightDown=true end;shell:Hide() end end) end
         d.codeExpand=d.codeExpand or addon:CreateWorkbenchIconButton(d.code.frame,'expand-all',L['Expand code editor'])
         d.codeExpand:SetParent(d.code.frame);d.codeExpand:ClearAllPoints();d.codeExpand:SetPoint('BOTTOMRIGHT',-18,2);d.codeExpand:SetFrameLevel(d.code.frame:GetFrameLevel()+20);d.codeExpand.icon:SetTexture(addon:ControlTexture(d.codeExpanded and 'collapse-all' or 'expand-all'));d.codeExpand.tooltip=d.codeExpanded and L['Restore code editor'] or L['Expand code editor'];d.codeExpand:Show()

@@ -22,7 +22,7 @@ return function()
  function frame:CreateMaskTexture(...) return self:CreateTexture(...) end;function frame:AddMaskTexture() end
  return frame end
  f.env.CreateFrame=function(...) return augmented(create(...)) end
- f.load('Core/custom_authoring.lua');f.load('Core/lua_symbols.lua');f.load('UI/settings_transfer.lua');f.load('UI/condition_source_preview.lua');f.load('UI/lua_debug_output.lua');f.load('UI/lua_completion.lua');do local lines=io.open('UI/line_numbers.lua');if lines then lines:close();f.load('UI/line_numbers.lua') end end;f.load('UI/lua_editor.lua');f.load('Libs/LuaWorkbench-Embed/modules.lua');local file=io.open('Integrations/lua_workbench.lua');if file then file:close();f.load('Integrations/lua_workbench.lua') end
+ f.load('Core/custom_authoring.lua');f.load('Core/lua_symbols.lua');f.load('UI/settings_transfer.lua');f.load('UI/condition_source_preview.lua');f.load('UI/lua_debug_output.lua');f.load('UI/lua_completion.lua');do local lines=io.open('UI/line_numbers.lua');if lines then lines:close();f.load('UI/line_numbers.lua') end end;f.load('UI/lua_input_probe.lua');f.load('UI/lua_editor.lua');f.load('Libs/LuaWorkbench-Embed/modules.lua');local file=io.open('Integrations/lua_workbench.lua');if file then file:close();f.load('Integrations/lua_workbench.lua') end
  f.env.LuaWorkbench={db={options={autocomplete=true},drafts={user={source='KEEP'}}}};f.env.LuaWorkbenchDB={drafts={user={source='KEEP'}}}
  return f,f.addon
 end

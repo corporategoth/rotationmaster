@@ -35,6 +35,7 @@ Platform/unit_attackability.lua
 Platform/unit_flags.lua
 Platform/player_flags.lua
 Platform/form.lua
+Platform/points.lua
 Platform/unit_identity.lua
 Platform/unit_metadata.lua
 Platform/pet.lua
@@ -72,6 +73,7 @@ Core/conditions.lua
 Core/condition_catalog.lua
 Core/item_conditions.lua
 Core/level_conditions.lua
+Core/point_conditions.lua
 Core/itemset_services.lua
 Core/rotation_references.lua
 Core/item_sets.lua
@@ -202,6 +204,7 @@ UI/rotation_adoption.lua
 
 
 # Code authoring UI
+UI/lua_input_probe.lua
 UI/lua_input_diagnostics.lua
 Libs/LuaWorkbench-Embed/modules.lua
 UI/lua_debug_output.lua
