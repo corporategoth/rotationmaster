@@ -1177,5 +1177,13 @@ test('main metadata events update the actual ItemLoader consumed by native refer
         load('Core/reference_catalog.lua');local rows=a:GetReferenceProvider('Item_EditBox').search('',{limit=20});assert(#rows==1 and rows[1].id==10 and rows[1].name=='Event potion')
     end
 end)
+test('source import provenance has a global default and survives real AceDB reload',function()
+    local env,a,scripts=persistentFixture()
+    assert(type(a.db.global.function_import_origins)=='table','source provenance is missing from global defaults')
+    a.db.global.function_import_origins['function:example']={sourceId='original',name='Example'}
+    scripts.OnEvent(nil,'PLAYER_LOGOUT')
+    local _,b=persistentFixture({RotationMasterDB=savedVariablesCopy(env.RotationMasterDB)})
+    assert(b.db.global.function_import_origins['function:example'].sourceId=='original')
+end)
 print(string.format('%d passed, %d failed', passed, failures))
 os.exit(failures == 0 and 0 or 1)

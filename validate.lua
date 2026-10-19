@@ -30,10 +30,12 @@ local function apply_remove(toremove, tbl, fix)
     addon.cleanArray(toremove)
 end
 
-local function validate_basic(prefix, data, template, fix)
+local function validate_basic(prefix, data, template, fix, preserved)
     local toremove = {}
     for k,v in pairs(data) do
-        if template[k] == nil then
+        if preserved and preserved[k] then
+            -- Semantic source metadata has its own non-destructive validator.
+        elseif template[k] == nil then
             addon:warn("Extra Field %s:%s", prefix, tostring(k))
             mark_for_remove(toremove, k)
         elseif type(v) ~= type(template[k]) then
@@ -151,6 +153,11 @@ function addon:validate_effect(prefix, name, effect, fix)
     end
 
     local template = get_effect_template(effect["type"])
+    if not template then
+        addon:warn(L["Unknown effect type for %s:%s (%s); record preserved."], prefix, name, tostring(effect.type))
+        return
+    end
+    if template.texture~=nil and type(effect.texture)=="number" then template.texture=1 end
     template["type"] = "texture"
     template["name"] = "some name"
     validate_basic(prefix .. ":" .. name, effect, template, fix)
@@ -167,7 +174,7 @@ function addon:validate_effect(prefix, name, effect, fix)
                     mark_for_remove(toremove, idx)
                 end
             elseif effect["type"] == "animate" then
-                if type(seq) ~= "string" then
+                if type(seq) ~= "string" and type(seq) ~= "number" then
                     addon:warn("Invalid type on %s effect sequence %s:%s:%d", effect["type"], prefix, name, idx)
                     mark_for_remove(toremove, idx)
                 end
@@ -179,7 +186,7 @@ function addon:validate_effect(prefix, name, effect, fix)
             elseif effect["type"] == "custom" then
                 if type(seq) == "table" then
                     local template = {
-                        texture = "some_texture",
+                        texture = type(seq.texture)=="number" and 1 or "some_texture",
                         angle = 0.0,
                         color = { r = 1.0, g = 1.0, b = 1.0, a = 1.0 },
                         magnification = 0.0,
@@ -218,7 +225,9 @@ function addon:validate_announce(prefix, idx, announce, fix)
     if announce["type"] == "spell" or announce["type"] == "petspell" or announce["type"] == "pet" then
         template["spell"] = 12345
         template["ranked"] = false
-    elseif announce["type"] ~= "item" then
+    elseif announce["type"] == "item" then
+        template["item"] = {}
+    else
         addon:warn("Invalid type for announce %s:%s", prefix, tostring(announce["id"]))
         if fix then
             addon.cleanArray(announce)
@@ -226,7 +235,7 @@ function addon:validate_announce(prefix, idx, announce, fix)
         end
     end
 
-    validate_basic(prefix, announce, template, fix)
+    validate_basic(prefix, announce, template, fix, announce.type=="item" and {item=true} or nil)
 
     if not announce["id"] or not is_uuid(announce["id"]) then
         addon:warn("Invalid ID for announce %s:%s", prefix, tostring(announce["id"]))
@@ -236,15 +245,11 @@ function addon:validate_announce(prefix, idx, announce, fix)
         end
     end
 
-    if announce["type"] == "item" and announce["item"] ~= nil then
-        if type(announce["item"]) == "table" then
-            validate_itemset_items(prefix, announce["id"], announce["item"], fix)
-        elseif type(announce["item"]) ~= "string" then
-            addon:warn("Invalid type for item set for announce %s:%s", prefix, tostring(announce["id"]))
-            if fix then
-                announce.item = nil
-            end
-        end
+    if announce.type=="item" and not addon:IsValidAnnouncementItemReference(announce.item) then
+        local message=fix and L["Invalid item reference for announce %s:%s; reference preserved; announcement disabled."]
+            or L["Invalid item reference for announce %s:%s; explicit repair will preserve the reference and disable the announcement."]
+        addon:warn(message, prefix, tostring(announce.id))
+        if fix then announce.disabled=true end
     end
 end
 
@@ -263,30 +268,43 @@ function addon:validate_condition_group(prefix, idx, group, fix)
 end
 
 function addon:validate_custom_condition(prefix, name, custom_condition, fix)
-    local template={disabled=false,fieldOrder={}};for key,value in pairs(addon.empty_condition) do template[key]=value end
-    validate_basic(prefix .. ":" .. name, custom_condition, template, fix)
+    local semantic={fields=true,icon=true,disabled=true,fieldOrder=true,bindings=true,parameters=true,requiredFields=true}
+    local template={disabled=false,fieldOrder={},bindings={},parameters={},requiredFields={}}
+    for key,value in pairs(addon.empty_condition) do template[key]=value end
+    validate_basic(prefix .. ":" .. name, custom_condition, template, fix, semantic)
 
-    local function validate_custom_field_spec(parent, spec)
-        local toremove = {}
-        for k,v in pairs(spec) do
-            if type(v) == "string" then
-                if not (v == "string" or v == "number" or v == "boolean" or v == "condition" or v == "condition[]") then
-                    addon:warn("Invalid type in custom funcion type spec %s:%s", parent, k)
-                    mark_for_remove(toremove, k)
-                end
-            elseif type(v) == "table" then
-                validate_custom_field_spec(parent .. ":" .. k, v)
-            else
-                addon:warn("Invalid type in custom funcion type spec %s:%s", parent, k)
-                mark_for_remove(toremove, k)
+    local function invalid(field,reason)
+        local message=fix and L["Invalid custom condition %s:%s field %s (%s); source preserved; condition disabled."]
+            or L["Invalid custom condition %s:%s field %s (%s); explicit repair will preserve source and disable the condition."]
+        addon:warn(message, prefix, name, field, reason or "invalid-data")
+        if fix then
+            custom_condition.disabled=true
+            local saved=addon.db and addon.db.global and addon.db.global.custom_conditions
+            local definition=addon.conditionDefinitions and addon.conditionDefinitions[name]
+            if type(saved)=="table" and saved[name]==custom_condition and definition and definition.customCode==true and definition.disabled~=true then
+                -- Do not invoke lifecycle hooks or recompile user source from
+                -- repair. Selection notices this registry version next pass.
+                definition.disabled=true
+                addon.conditionRegistryVersion=(addon.conditionRegistryVersion or 0)+1
             end
         end
-        apply_remove(toremove, spec, fix)
     end
-
-    if custom_condition["fields"] then
-        validate_custom_field_spec(prefix .. ":" .. name, custom_condition["fields"])
+    -- Check data contracts only. Repair must not compile callback text, resolve
+    -- currently unavailable helper bindings, or execute registration hooks.
+    local fields,fieldReason=addon:NormalizeCustomFieldSchema(custom_condition.fields,true)
+    if not fields then invalid("fields",fieldReason) end
+    if not addon:IsCategoryIcon(custom_condition.icon) then invalid("icon","invalid-icon") end
+    if custom_condition.disabled~=nil and type(custom_condition.disabled)~="boolean" then invalid("disabled","invalid-disabled-flag") end
+    local parameters,parameterReason=addon:NormalizeCustomConditionParameters(custom_condition.parameters)
+    if not parameters then invalid("parameters",parameterReason) end
+    if custom_condition.bindings~=nil then
+        local arguments={{name="value"},{name="cache"},{name="evalStart"},{name="spec"},{name="parent"},{name="frame"},{name="tag"}}
+        for _,aliases in pairs(parameters or {}) do for _,alias in ipairs(aliases) do arguments[#arguments+1]={name=alias} end end
+        local bindings,reason=addon:NormalizeFunctionBindings(custom_condition.bindings,arguments)
+        if not bindings then invalid("bindings",reason) end
     end
+    if custom_condition.requiredFields~=nil and not addon:NormalizeCustomConditionRequiredFields(custom_condition.requiredFields,fields or {}) then invalid("requiredFields","invalid-required-fields") end
+    if custom_condition.fieldOrder~=nil and not addon:NormalizeCustomFieldOrder(custom_condition.fieldOrder,fields or {}) then invalid("fieldOrder","invalid-field-order") end
 end
 
 local function validate_rotation_condition(prefix, condition, fix)
@@ -452,21 +470,15 @@ function addon:validate_rotation(prefix, id, rotation, fix)
         end
     end
 
+    -- Normal actions and cooldown actions share the persisted appearance
+    -- schema. These examples validate types; they never materialize defaults.
     local rotation_template = {
-        use_name = false,
-        name = "Some cool name",
-        id = "61b36ed1-fa31-4656-ad71-f3d50f193a85",
-        type = "spell",
-        disabled = false,
-        conditions = {},
-    }
-
-    local cooldown_template = {
         use_name = false,
         name = "Some cool name",
         effect = "61b36ed1-fa31-4656-ad71-f3d50f193a85",
         id = "61b36ed1-fa31-4656-ad71-f3d50f193a85",
         type = "spell",
+        ranked = false,
         color = { r = 1.0, g = 1.0, b = 1.0, a = 1.0 },
         magnification = 1.4,
         setpoint = "CENTER",
@@ -477,13 +489,11 @@ function addon:validate_rotation(prefix, id, rotation, fix)
         disabled = false,
         conditions = {},
     }
+    local cooldown_template = addon.deepcopy(rotation_template)
 
     local function augment_template_type(template, rot)
         if rot.type=="none" then template.suppress_attack=false end
-        if rot["type"] == "spell" then
-            template["action"] = 1234
-            template["ranked"] = false
-        elseif rot["type"] == "petspell" or template["type"] == "anyspell" then
+        if rot.type=="spell" or rot.type=="pet" or rot.type=="any" or rot.type=="petspell" or rot.type=="anyspell" then
             template["action"] = 1234
         elseif rot["type"] == "item" then
             if type(rot["action"]) == "table" then
@@ -501,11 +511,11 @@ function addon:validate_rotation(prefix, id, rotation, fix)
             augment_template_type(template, rot)
             validate_basic(prefix .. ":" .. id .. ":cooldown:" .. idx, rot, template, fix)
             if not is_uuid(rot["id"]) then
-                addon:warn("Invalid ID for cooldown %s:%d:%d", prefix, id, idx)
+                addon:warn("Invalid ID for cooldown %s:%s:%d", prefix, id, idx)
                 mark_for_remove(toremove, idx)
             end
             if rot["effect"] and not is_uuid(rot["effect"]) then
-                addon:warn("Invalid effect ID for cooldown %s:%d:%d", prefix, id, idx)
+                addon:warn("Invalid effect ID for cooldown %s:%s:%d", prefix, id, idx)
                 if fix then
                     rot["effect"] = nil
                 end
@@ -514,12 +524,12 @@ function addon:validate_rotation(prefix, id, rotation, fix)
                 if type(rot["action"]) == "table" then
                     validate_itemset_items(prefix .. ":" .. id .. ":cooldown", idx, rot["action"], fix)
                 elseif type(rot["action"]) ~= "string" then
-                    addon:warn("Invalid type for item action in cooldown %s:%d:%d", prefix, id, idx)
+                    addon:warn("Invalid type for item action in cooldown %s:%s:%d", prefix, id, idx)
                     if fix then
                         rot["action"] = nil
                     end
                 elseif not is_uuid(rot["action"]) then
-                    addon:warn("Invalid itemset ID for cooldown %s:%d:%d", prefix, id, idx)
+                    addon:warn("Invalid itemset ID for cooldown %s:%s:%d", prefix, id, idx)
                     if fix then
                         rot["action"] = nil
                     end
@@ -543,19 +553,23 @@ function addon:validate_rotation(prefix, id, rotation, fix)
             augment_template_type(template, rot)
             validate_basic(prefix .. ":" .. id .. ":rotation:" .. idx, rot, template, fix)
             if not is_uuid(rot["id"]) then
-                addon:warn("Invalid ID for rotation step %s:%d:%d", prefix, id, idx)
+                addon:warn("Invalid ID for rotation step %s:%s:%d", prefix, id, idx)
                 mark_for_remove(toremove, idx)
+            end
+            if rot.effect and not is_uuid(rot.effect) then
+                addon:warn(L["Invalid effect ID for rotation step %s:%s:%d."], prefix, id, idx)
+                if fix then rot.effect=nil end
             end
             if rot["type"] == "item" then
                 if type(rot["action"]) == "table" then
                     validate_itemset_items(prefix .. ":" .. id .. ":rotation", idx, rot["action"], fix)
                 elseif type(rot["action"]) ~= "string" then
-                    addon:warn("Invalid type for item action in rotation %s:%d:%d", prefix, id, idx)
+                    addon:warn("Invalid type for item action in rotation %s:%s:%d", prefix, id, idx)
                     if fix then
                         rot["action"] = nil
                     end
                 elseif not is_uuid(rot["action"]) then
-                    addon:warn("Invalid itemset ID for rotation %s:%d:%d", prefix, id, idx)
+                    addon:warn("Invalid itemset ID for rotation %s:%s:%d", prefix, id, idx)
                     if fix then
                         rot["action"] = nil
                     end
@@ -619,8 +633,14 @@ function addon:validate(template, fix)
         apply_remove(toremove, DB.global.custom_conditions, fix)
     end
 
+    -- Offline characters can still own their v1 data until their explicit
+    -- login migration. Recognize these roots without moving or inspecting them.
+    local char_template=addon.deepcopy(template.char)
+    char_template.rotations={}
+    char_template.itemsets={}
+    char_template.announces={}
     for char, data in pairs(DB.char) do
-        validate_basic("char:" .. char, data, template.char, fix)
+        validate_basic("char:" .. char, data, char_template, fix)
         if data.bindings then
             local toremove = {}
             for id,buttons in pairs(data.bindings) do
@@ -652,8 +672,27 @@ function addon:validate(template, fix)
         end
     end
 
+    -- These optional library-owned values are recognized schema, not defaults:
+    -- their absence preserves LibDBIcon's own placement and interaction policy.
+    local profile_template=addon.deepcopy(template.profile)
+    if type(profile_template.minimap)=="table" then
+        profile_template.minimap=addon.deepcopy(profile_template.minimap)
+        profile_template.minimap.minimapPos=0
+        profile_template.minimap.radius=0
+        profile_template.minimap.lock=false
+        profile_template.minimap.showInCompartment=false
+    end
     for profile, data in pairs(DB.profiles) do
-        validate_basic("profile:" .. profile, data, template.profile, fix)
+        validate_basic("profile:" .. profile, data, profile_template, fix)
+        if type(data.minimap)=="table" then
+            for _,key in ipairs({"minimapPos","radius"}) do
+                local value=data.minimap[key]
+                if type(value)=="number" and (value~=value or value==math.huge or value==-math.huge) then
+                    addon:warn(L["Non-finite minimap value in profile %s: %s."], profile, key)
+                    if fix then data.minimap[key]=nil end
+                end
+            end
+        end
 
         if data.itemsets then
             local toremove = {}

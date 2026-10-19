@@ -16,6 +16,13 @@ L['Rotation Master addon instance. Public helper functions are documented in Fun
 L['Localized Rotation Master text, indexed by its English key.'] = true
 L["Undo"] = true
 L["Redo"] = true
+L["Invalid item reference for announce %s:%s; reference preserved; announcement disabled."] = true
+L["Invalid item reference for announce %s:%s; explicit repair will preserve the reference and disable the announcement."] = true
+L["Invalid custom condition %s:%s field %s (%s); source preserved; condition disabled."] = true
+L["Invalid custom condition %s:%s field %s (%s); explicit repair will preserve source and disable the condition."] = true
+L["Non-finite minimap value in profile %s: %s."] = true
+L["Invalid effect ID for rotation step %s:%s:%d."] = true
+L["Unknown effect type for %s:%s (%s); record preserved."] = true
 
 local color = color
 

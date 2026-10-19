@@ -973,4 +973,14 @@ test('collection Help describes confirmed immediate entity deletion and staged r
     assert(announce.collections:find('permanently',1,true) and not announce.collections:find('draft; Cancel',1,true),'announcement entity deletion Help still describes old pending deletes')
     assert(item.save:find('Discard',1,true) and announce.save:find('Discard',1,true))
 end)
+test('profile transport preserves optional LibDBIcon state without inventing absent values',function()
+    local f=fixture();local a=f.addon
+    local profile={minimap={hide=false,minimapPos=123.5,lock=true,showInCompartment=true,radius=8}}
+    assert(a:ValidateProfileTransfer(profile),'valid library-owned minimap flag rejected')
+    local restored=a:ProfileFromPortable(a:ProfileToPortable(profile))
+    assert(a:ValidateProfileTransfer(restored) and restored.minimap.showInCompartment and restored.minimap.minimapPos==123.5 and restored.minimap.lock and restored.minimap.radius==8)
+    local absent=a:ProfileFromPortable(a:ProfileToPortable({minimap={hide=false}}))
+    assert(absent.minimap.minimapPos==nil and absent.minimap.lock==nil and absent.minimap.showInCompartment==nil and absent.minimap.radius==nil)
+    for _,bad in ipairs({{showInCompartment=1},{lock='yes'},{minimapPos='123'},{unexpected=true}}) do assert(not a:ValidateProfileTransfer({minimap=bad})) end
+end)
 finish()

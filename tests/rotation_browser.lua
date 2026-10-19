@@ -71,14 +71,16 @@ test('roster preserves duplicate identities and searches literally without alter
     browser:SelectRotation(0,'two');assert(editors[#editors].id=='two' and pane.released)
     assert(a.db.profile.rotations[0].one==saved and saved.color==nil and saved.use_name==nil)
 end)
-test('disabled and inapplicable defaults remain inspectable and clone into the same browser',function()
+test('foreign defaults are hidden while disabled current-class defaults remain inspectable and cloneable',function()
     local f,pack,editors,create=fixture();local a=f.addon
     local browser=a:CreateRotationBrowser(create('Frame'),{spec=0,id='one'})
     browser:SetFilter('builtin')
-    local other=assert(row(browser,'RM-BUILTIN:other-pack'))
+    assert(not row(browser,'RM-BUILTIN:other-pack'),'foreign class leaked into the browser')
+    assert(a:SetDefaultRotationEnabled(pack.id,false));browser:RefreshRows()
+    local other=assert(row(browser,'RM-BUILTIN:'..pack.id))
     assert(not other.eligible and not other.enabled and other.readOnly)
     browser:SelectRotation(0,other.key)
-    assert(F.text(browser.pane):find('Different class',1,true) or F.text(browser.pane):find('Disabled',1,true))
+    assert(F.text(browser.pane):find('Disabled',1,true))
     assert(not a:GetEditableRotation(0,other.key),'reference became a custom body')
     browser:SelectRotation(0,'RM-BUILTIN:'..pack.id)
     assert(F.text(browser.pane):find('Sequential priority',1,true),'full default was not integrated')
@@ -236,7 +238,7 @@ local function visibleBrowserRow(browser,id)
     for _,control in ipairs(browser.rowButtons) do if control.browserLease and control.browserEntry.key==id then return control end end
 end
 test('rotation browser complete1000-row data uses bounded warm native viewport controls',function()
-    local f,b,editors,frames=largeBrowser(1000);local a=f.addon;assert(#b.rows==1003 and #b.rowButtons<25,'rotation browser allocated every result')
+    local f,b,editors,frames=largeBrowser(1000);local a=f.addon;assert(#b.rows==1002 and #b.rowButtons<25,'rotation browser allocated every result')
     local pane=b.pane;local count=#editors;local observations=0;local tags=a.GetRotationTagView;a.GetRotationTagView=function(...) observations=observations+1;return tags(...) end
     for i=0,10 do b.list.workbenchBar:SetValue(b.list.workbenchBar.scrollRange*i/10) end
     local warm=#frames;for pass=1,2 do for i=10,0,-1 do b.list.workbenchBar:SetValue(b.list.workbenchBar.scrollRange*i/10) end end

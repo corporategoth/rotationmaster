@@ -1,4 +1,13 @@
 local _,addon=...
+function addon:IsValidAnnouncementItemReference(items)
+    if type(items)=='string' then return #items>0 and #items<=128 end
+    if type(items)~='table' or #items==0 or #items>256 then return false end
+    local count=0
+    for key,item in pairs(items) do
+        if type(key)~='number' or key<1 or key%1~=0 or key>#items or not (type(item)=='number' and item>0 and item<math.huge and item%1==0 or type(item)=='string' and #item>0 and #item<=1024) then return false end;count=count+1
+    end
+    return count==#items
+end
 function addon:IsValidAnnouncement(value,requireIdentity)
     if type(value)~='table' then return false end
     if requireIdentity and (type(value.id)~='string' or not value.id:match('^%x%x%x%x%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%x%x%x%x%x%x%x%x$')) then return false end
@@ -13,11 +22,5 @@ function addon:IsValidAnnouncement(value,requireIdentity)
     if value.announce_sound~=nil and (type(value.announce_sound)~='string' or #value.announce_sound>256) then return false end
     if value.announce=='audible' and (not value.announce_sound or not value.announce_sound:find('%S')) then return false end
     if value.type~='item' then return type(value.spell)=='number' and value.spell>0 and value.spell%1==0 end
-    if type(value.item)=='string' then return #value.item>0 and #value.item<=128 end
-    if type(value.item)~='table' or #value.item==0 or #value.item>256 then return false end
-    local count=0
-    for key,item in pairs(value.item) do
-        if type(key)~='number' or key<1 or key%1~=0 or key>#value.item or not (type(item)=='number' and item>0 and item%1==0 or type(item)=='string' and #item>0 and #item<=1024) then return false end;count=count+1
-    end
-    return count==#value.item
+    return self:IsValidAnnouncementItemReference(value.item)
 end

@@ -27,16 +27,19 @@ for _,client in ipairs(clients) do for _,class in ipairs(classes) do
     test('all shipped defaults load and retain safe scope on '..client[1]..'/'..class,function()
         local f,packs,state=corpus.load(client[2],client[3],class);local a=f.addon;local witnesses={}
         assert(#packs>0,'no default packs loaded')
+        local visibleCount=0
         for _,pack in ipairs(packs) do
             corpus.check(f,pack,false)
+            if not pack.applicability.class or pack.applicability.class==class then visibleCount=visibleCount+1 end
             if matches(pack.applicability,client[1],class) then corpus.check(f,pack,true);visited[pack.id]=true end
         end
         for _,sample in ipairs(samples(packs,client[1],class)) do
             state.level,state.context,state.build=sample.level,sample.context,sample.build
-            local rows=a:ListDefaultRotations(sample.spec);assert(#rows==#packs,'an inapplicable default disappeared')
+            local rows=a:ListDefaultRotations(sample.spec);assert(#rows==visibleCount,'default list did not enforce declared class')
             local runtime=a:GetRuntimeRotations(sample.spec)
             for _,row in ipairs(rows) do
                 assert(row.readOnly and row.builtin)
+                assert(not row.applicability.class or row.applicability.class==class,'foreign default remained visible')
                 assert((runtime[row.runtimeKey]~=nil)==row.eligible,'runtime and catalog eligibility differ')
                 if row.eligible then
                     runnable[row.id]=true;witnesses[row.id]=sample
@@ -52,7 +55,7 @@ for _,client in ipairs(clients) do for _,class in ipairs(classes) do
         for _,pack in ipairs(packs) do
             local witness=witnesses[pack.id];local spec=witness and witness.spec or 0
             if witness then state.level,state.context,state.build=witness.level,witness.context,witness.build end
-            assert(a:SetDefaultRotationEnabled(pack.id,false));assert(#a:ListDefaultRotations(spec)==#packs)
+            assert(a:SetDefaultRotationEnabled(pack.id,false));assert(#a:ListDefaultRotations(spec)==visibleCount)
             local view=a:GetDefaultRotation(pack.id);assert(view.readOnly and not view.enabled)
             local key;for _,row in ipairs(a:ListDefaultRotations(spec)) do if row.id==pack.id then key=row.runtimeKey end end
             assert(not a:GetRuntimeRotations(spec)[key],'disabled default remained runnable')

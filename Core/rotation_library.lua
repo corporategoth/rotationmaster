@@ -8,13 +8,17 @@ local function contains(list, value)
     for _,entry in ipairs(list or {}) do if entry==value then return true end end
     return false
 end
+local function matchesClass(view,context)
+    local scope=view.applicability
+    return not scope or not scope.class or scope.class==context.class
+end
 local function eligible(view, context, candidates)
     if not view.enabled then return false,"disabled" end
     if not view.validation.valid or not view.validation.supported or not view.validation.resolved then return false,"invalid-or-unsupported" end
+    if not matchesClass(view,context) then return false,"class-mismatch" end
     if candidates then return true end
     local scope=view.applicability
     if not scope or not contains(scope.families,context.family) then return false,"edition-mismatch" end
-    if scope.class and scope.class~=context.class then return false,"class-mismatch" end
     if scope.specs and not contains(scope.specs,context.spec) then return false,"specialization-mismatch" end
     if scope.actionContext~=context.actionContext then return false,"action-context-mismatch" end
     for _,range in ipairs({{"minLevel","maxLevel","level"},{"minBuild","maxBuild","build"}}) do
@@ -122,12 +126,14 @@ function addon:ListDefaultRotations(spec)
     local custom=self.db.profile.rotations[spec] or {}
     local rows={}
     for id,view in pairs(active.views) do
-        local row=data.CopyData(view)
-        row.runtimeKey=runtimeKey(id,custom)
-        row.eligible,row.eligibilityReason=eligible(view,context)
-        row.name=L[row.nameKey or id]
-        row.description=L[row.descriptionKey or ""]
-        rows[#rows+1]=row
+        if matchesClass(view,context) then
+            local row=data.CopyData(view)
+            row.runtimeKey=runtimeKey(id,custom)
+            row.eligible,row.eligibilityReason=eligible(view,context)
+            row.name=L[row.nameKey or id]
+            row.description=L[row.descriptionKey or ""]
+            rows[#rows+1]=row
+        end
     end
     table.sort(rows,function(a,b) if a.name==b.name then return a.id<b.id end;return a.name<b.name end)
     return rows
@@ -198,6 +204,7 @@ function addon:CloneDefaultRotation(spec,id,name)
     local ok,why=ensure(self);if not ok then return nil,why end
     local source=active.catalog:Get({kind="builtin",id=id})
     if not source then return nil,"unknown-rotation" end
+    if not matchesClass(source,self:GetRotationContext(spec)) then return nil,"class-mismatch" end
     local state={}
     local temporary=data.NewCatalog({state=state,newId=self.uuid})
     assert(temporary:RegisterBuiltin(source.envelope))
@@ -253,7 +260,8 @@ function addon:GetDefaultIdForRuntime(spec,key)
     for id in pairs(active.views) do if runtimeKey(id,custom)==key then return id end end
 end
 
--- Candidate identities survive level/context changes. Current eligibility is
+-- Candidate identities survive level/context changes within the declared class.
+-- Current eligibility is
 -- always checked again by the runtime facade when switching or evaluating.
 function addon:GetRotationCandidates(spec)
     return self:GetRuntimeRotations(spec,true,true)

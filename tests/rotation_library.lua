@@ -14,7 +14,7 @@ local function fixture()
     addon.GetRotationContext=function() return context end
     return addon,envelope,context,load
 end
-test('all defaults stay visible but only eligible enabled defaults reach runtime',function()
+test('current-class defaults stay visible but only eligible enabled defaults reach runtime',function()
     local addon,envelope,context=fixture()
     local pack=envelope();pack.applicability.maxLevel=19
     assert(addon:RegisterDefaultRotation(pack))
@@ -27,7 +27,7 @@ test('all defaults stay visible but only eligible enabled defaults reach runtime
     assert(addon:SetDefaultRotationEnabled(pack.id,false))
     assert(#addon:ListDefaultRotations(0)==1 and not addon:GetRuntimeRotations(0)[key])
     assert(addon:SetDefaultRotationEnabled(pack.id,true))
-    for _,change in ipairs({{'level',20},{'class','MAGE'},{'family','retail'},{'actionContext','vehicle'},{'level',false}}) do
+    for _,change in ipairs({{'level',20},{'family','retail'},{'actionContext','vehicle'},{'level',false}}) do
         local old=context[change[1]];context[change[1]]=change[2]
         assert(not addon:GetRuntimeRotations(0)[key],change[1]..' failed applicability')
         assert(#addon:ListDefaultRotations(0)==1)
@@ -35,6 +35,74 @@ test('all defaults stay visible but only eligible enabled defaults reach runtime
     end
     context.combatDataPolicy='restricted'
     assert(not addon:GetRuntimeRotations(0)[key])
+end)
+test('declared class is a hard listing and candidate gate while saved references remain intact',function()
+    local a,envelope,context,load=fixture();local pack=envelope()
+    assert(a:RegisterDefaultRotation(pack));assert(a:InitializeRotationLibrary())
+    local key=a:ListDefaultRotations(0)[1].runtimeKey
+    local clone=assert(a:CloneDefaultRotation(0,pack.id,'My clone'))
+    load('Core/imports.lua')
+    local manifest=a.RotationData.CopyData(pack);manifest.body=nil
+    local imported=assert(a:CreateImportedRotation({body=pack.body,manifest=manifest},0,'Imported'))
+    local body=a:GetEditableRotation(0,clone);local origin=a.db.profile.rotationLibrary.origins[0][clone]
+    local importedBody=a:GetEditableRotation(0,imported);local importedOrigin=a.db.profile.rotationLibrary.imports[0][imported]
+    assert(a:GetRotationCandidates(0)[key] and a:GetRotationCandidates(0)[clone] and a:GetRotationCandidates(0)[imported])
+    for _,class in ipairs({{value='MAGE'}, {}}) do
+        context.class=class.value
+        assert(#a:ListDefaultRotations(0)==0,'foreign or unknown class remained in the list')
+        local runtime,candidates=a:GetRuntimeRotations(0),a:GetRotationCandidates(0)
+        for _,id in ipairs({key,clone,imported}) do
+            assert(not runtime[id] and not candidates[id],'declared class escaped the hard eligibility gate')
+        end
+        assert(candidates.user==a.db.profile.rotations[0].user,'unscoped custom behavior changed')
+        assert(a:GetDefaultRotation(pack.id).envelope.body.rotation[1].action==403,'reference getter lost foreign definition')
+        assert(a:GetRotationForCleanup(0,key).rotation[1].action==403,'cleanup lost previous Built In')
+        assert(a:GetRotationForCleanup(0,clone)==body and a:GetEditableRotation(0,imported)==importedBody)
+        assert(a.db.profile.rotationLibrary.origins[0][clone]==origin and a.db.profile.rotationLibrary.imports[0][imported]==importedOrigin)
+    end
+    context.class='SHAMAN'
+    assert(#a:ListDefaultRotations(0)==1 and a:GetRuntimeRotation(0,key) and a:GetRotationCandidates(0)[clone])
+    assert(a:GetRuntimeRotation(0,imported)==importedBody)
+end)
+test('direct clone rejects foreign and missing class before allocating or writing saved data',function()
+    local a,envelope,context=fixture();local pack=envelope()
+    assert(a:RegisterDefaultRotation(pack));assert(a:InitializeRotationLibrary())
+    local saved=a.db.profile.rotations[0].user
+    a.uuid=function() error('rejected clone allocated an identity') end
+    for _,class in ipairs({{value='MAGE'}, {}}) do
+        context.class=class.value
+        local id,why=a:CloneDefaultRotation(0,pack.id,'Rejected')
+        assert(not id and why=='class-mismatch','foreign or missing class clone was accepted')
+        assert(a.db.profile.rotations[0].user==saved and next(a.db.profile.rotationLibrary.origins)==nil)
+        local count=0;for _ in pairs(a.db.profile.rotations[0]) do count=count+1 end
+        assert(count==1,'rejected clone left a body')
+    end
+end)
+test('matching class keeps candidate broadening and direct clone behavior for other constraints',function()
+    local a,envelope,context=fixture();local pack=envelope()
+    pack.applicability.specs={0};pack.applicability.maxLevel=19
+    assert(a:RegisterDefaultRotation(pack));assert(a:InitializeRotationLibrary())
+    local key=a:ListDefaultRotations(0)[1].runtimeKey
+    local clone=assert(a:CloneDefaultRotation(0,pack.id,'Clone'))
+    for _,change in ipairs({{'level',20},{'family','retail'},{'actionContext','vehicle'},{'level',false}}) do
+        local old=context[change[1]];context[change[1]]=change[2]
+        local rows=a:ListDefaultRotations(0)
+        assert(#rows==1 and not rows[1].eligible)
+        assert(not a:GetRuntimeRotation(0,key) and not a:GetRuntimeRotation(0,clone))
+        assert(a:GetRotationCandidates(0)[key] and a:GetRotationCandidates(0)[clone],'non-class candidate broadening changed')
+        context[change[1]]=old
+    end
+    assert(not a:GetRuntimeRotation(262,key) and a:GetRotationCandidates(262)[key],'specialization candidate broadening changed')
+    assert(a:SetDefaultRotationEnabled(pack.id,false));context.level=20
+    assert(a:CloneDefaultRotation(262,pack.id,'Inspectable disabled default'),'clone incorrectly required runtime eligibility')
+end)
+test('classless legacy definitions retain existing listing clone and candidate behavior',function()
+    local a,envelope,context=fixture();local pack=envelope();pack.applicability.class=nil
+    assert(a:RegisterDefaultRotation(pack));assert(a:InitializeRotationLibrary())
+    context.class=nil
+    local rows=a:ListDefaultRotations(0);assert(#rows==1 and rows[1].eligible)
+    local clone=assert(a:CloneDefaultRotation(0,pack.id,'Legacy classless'))
+    assert(a:GetRotationCandidates(0)[rows[1].runtimeKey] and a:GetRuntimeRotation(0,clone))
 end)
 test('packaged snapshots cannot be edited and custom key collisions cannot overwrite data',function()
     local addon,envelope=fixture();local pack=envelope()
