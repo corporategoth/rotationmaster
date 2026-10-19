@@ -70,7 +70,8 @@ function addon:CreateRotationCard(parent)
         if (model.conditionHeight or 0)>0 then
             self.condition:ClearAllPoints();self.condition:SetPoint('TOPLEFT',26,-model.height+model.conditionHeight+4);self.condition:SetSize(model.width-56,model.conditionHeight);self.condition:GetFontString():SetWidth(model.width-62)
         end
-        self.name:Hide()
+        if self.name:HasFocus() then self.name:Show();self.title:Hide()
+        else self.name:Hide();self.title:Show() end
         for key,control in pairs(self.controls) do if (readOnly and key~='help') or (key=='up' and not model.canMoveUp) or (key=='down' and not model.canMoveDown) then control:Disable() else control:Enable() end end
         frame:SetAlpha(model.inactive and .6 or 1);frame:Show()
     end

@@ -886,4 +886,86 @@ test('View Changes compares saved and raw draft values without applying or creat
     assert(foundName and foundBad and a:GetEditableRotation(0,'mine').name=='Mine' and not pane.workspace.session:HistoryState().canUndo)
     pane:Release();d.frame.scripts.OnUpdate();assert(not d.frame:IsShown())
 end)
+test('large list reaches its last row using a bounded reusable native card pool',function()
+    local f,parent=fixture();local many={};for i=1,1000 do many[i]={id='large'..i,type='none',conditions={}} end
+    f.addon.db.profile.rotations[0].mine={name='Large',rotation=many,cooldowns={}}
+    local pane=assert(f.addon:CreateRotationEditor(parent,0,'mine'));pane.view.layout='list';pane:Render()
+    local c=pane.canvas
+    assert(#c.scene.cards==1000 and c.scene.complete,'large scene was truncated')
+    assert(visibleCard(pane,'large1') and not visibleCard(pane,'large1000'))
+    assert(#c.cards<100,'allocated native controls for offscreen cards')
+    local old=visibleCard(pane,'large1').controls.remove.scripts.OnClick
+    c.frame.workbenchBar:SetValue(c.frame.workbenchBar.scrollRange)
+    assert(visibleCard(pane,'large1000') and not visibleCard(pane,'large1'),'scroll did not populate last cards')
+    old();assert(#pane.workspace:Snapshot().rotation==1000,'recycled callback acted on a stale card')
+    c.frame.workbenchBar:SetValue(c.frame.workbenchBar.scrollRange/2);local peak=#c.cards
+    for pass=1,2 do for i=1,10 do c.frame.workbenchBar:SetValue(c.frame.workbenchBar.scrollRange*i/10) end end
+    assert(#c.cards<=peak+2 and #c.cards<100,'pool kept growing after scrolling: '..peak..' -> '..#c.cards)
+    c.frame.workbenchBar:SetValue(0);assert(visibleCard(pane,'large1'))
+end)
+test('large scene scrolling preserves pending names and details without rebinding focused controls',function()
+    local f,parent=fixture();local many={};for i=1,350 do many[i]={id='entry'..i,type='none',conditions={}} end
+    f.addon.db.profile.rotations[0].mine={name='Large',rotation=many,cooldowns={}}
+    local pane=assert(f.addon:CreateRotationEditor(parent,0,'mine'));pane.view.layout='list';pane:Render()
+    pane.view.cardStates.entry350='expanded';pane:Render()
+    local c=pane.canvas;local first=visibleCard(pane,'entry1')
+    first.title:Click();first=visibleCard(pane,'entry1');first.title:Click()
+    first.name:SetText('Still typing');first.name.scripts.OnTextChanged(first.name,true)
+    local input=first.name
+    c.frame.workbenchBar:SetValue(c.frame.workbenchBar.scrollRange)
+    assert(first.token and first.model.id=='entry1' and input:HasFocus() and input:IsShown(),'scroll or measured reflow hid focused name input')
+    input:ClearFocus();c.frame.workbenchBar:SetValue(c.frame.workbenchBar.scrollRange-1)
+    c.frame.workbenchBar:SetValue(0);first=visibleCard(pane,'entry1')
+    assert(first.title:GetText()=='Still typing' and pane.workspace:Snapshot().rotation[1].name==nil)
+    first.action:Click();local field=visibleCard(pane,'entry1').fieldControls
+    assert(field and pane.view.cardStates.entry1=='expanded')
+    c.frame.workbenchBar:SetValue(c.frame.workbenchBar.scrollRange);c.frame.workbenchBar:SetValue(0)
+    assert(visibleCard(pane,'entry1').fieldControls and pane.view.cardStates.entry1=='expanded')
+    assert(pane:HasUnsavedChanges(),'recycling discarded pending text')
+end)
+test('first materialization of an offscreen details card updates its measured geometry',function()
+    local f,parent=fixture();local many={};for i=1,350 do many[i]={id='entry'..i,type='none',conditions={}} end
+    f.addon.db.profile.rotations[0].mine={name='Large',rotation=many,cooldowns={}}
+    local pane=assert(f.addon:CreateRotationEditor(parent,0,'mine'));pane.view.layout='list'
+    pane.view.cardStates.entry300='expanded';pane:Render();local c=pane.canvas
+    local y;for _,m in ipairs(c.scene.cards) do if m.id=='entry300' then y=m.y end end
+    c.frame.workbenchBar:SetValue(y)
+    assert(visibleCard(pane,'entry300') and pane.view.detailsHeights.entry300<80)
+    for _,m in ipairs(c.scene.cards) do if m.id=='entry300' then assert(m.height<120,'newly visible details retained estimated height') end end
+end)
+test('large diagram visibility follows zoom and pan coordinates without recycling a drag source',function()
+    local f,parent=fixture();local many={};for i=1,350 do many[i]={id='entry'..i,type='none',conditions={}} end
+    f.addon.db.profile.rotations[0].mine={name='Large',rotation=many,cooldowns={}}
+    local pane=assert(f.addon:CreateRotationEditor(parent,0,'mine'));local c=pane.canvas
+    local model=c.scene.cards[350]
+    c.frame.workbenchBar:SetValue(c.paddingY+model.y);assert(visibleCard(pane,'entry350'))
+    c:SetZoom(.5);c.frame.workbenchBar:SetValue(c.paddingY+model.y*.5)
+    assert(visibleCard(pane,'entry350') and #c.cards<100,'zoom/padding hid the final card or materialized the whole tree')
+    c:BeginDrag('entry350');local dragged=visibleCard(pane,'entry350');local token=dragged.token
+    c.frame.workbenchBar:SetValue(0);assert(dragged.token==token,'scroll recycled a floating drag source')
+    assert(visibleCard(pane,'entry1'),'drag-scrolling left destination cards blank')
+    c:CancelDrag();assert(not visibleCard(pane,'entry350') and visibleCard(pane,'entry1'))
+end)
+test('failed viewport construction releases its reentry guard so a later refresh can recover',function()
+    local f,parent=fixture();local many={};for i=1,350 do many[i]={id='entry'..i,type='none',conditions={}} end
+    f.addon.db.profile.rotations[0].mine={name='Large',rotation=many,cooldowns={}}
+    local pane=assert(f.addon:CreateRotationEditor(parent,0,'mine'));local c=pane.canvas
+    pane.view.cardStates.entry350='expanded';pane:Render()
+    local build=pane.BuildFields;pane.BuildFields=function() error('transient field construction failure') end
+    local model=c.scene.cards[350];local ok=pcall(function() c.frame.workbenchBar:SetValue(c.paddingY+model.y) end)
+    assert(not ok and not c.refreshing,'failed native construction retained the viewport lock')
+    pane.BuildFields=build;c:RefreshVisibleCards();local recovered=visibleCard(pane,'entry350')
+    assert(recovered and recovered.fieldControls,'partially bound card was retained after a failed construction')
+end)
+test('active diagram panning populates newly exposed cards before the gesture ends',function()
+    local f,parent=fixture();local many={};for i=1,350 do many[i]={id='entry'..i,type='none',conditions={}} end
+    f.addon.db.profile.rotations[0].mine={name='Large',rotation=many,cooldowns={}}
+    local pane=assert(f.addon:CreateRotationEditor(parent,0,'mine'));local c=pane.canvas
+    local x,y=200,200;f.env.GetCursorPosition=function() return x,y end
+    f.env.IsMouseButtonDown=function() return true end
+    assert(c:BeginPan());local last=c.scene.cards[350]
+    y=y+last.y;c.frame.scripts.OnUpdate(c.frame)
+    assert(c.pan and visibleCard(pane,'entry350'),'panning showed an empty viewport until mouse release')
+    c:CancelDrag()
+end)
 finish()

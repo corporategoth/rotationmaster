@@ -27,11 +27,8 @@ function addon:BuildRotationCanvas(body,view)
         local source=step[arm=='true' and 'onTrue' or 'onFalse']
         return source,folded==true
     end
-    local count=0
     local measureList
     local function measureNode(step)
-        if count>=200 then scene.complete=false;return nil end
-        count=count+1
         local row=rows[step]
         local mode=state(step)
         local ownHeader=mode=='compact' and 28 or mode=='expanded' and 28 or (step.type=='branch' and 68 or 78)+math.max(0,height((view.summaryHeights or {})[step.id])-28)

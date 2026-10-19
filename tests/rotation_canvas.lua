@@ -47,7 +47,7 @@ test('collapsed branches hide descendants but do not consume the following visib
     local many={};for i=1,250 do many[i]=leaf('s'..i) end
     local s=scene({branch('b',nil,many),leaf('tail')},{},{collapsed={b=true}})
     assert(s.complete and #s.cards==2 and byId(s,'b').collapsed and byId(s,'tail'))
-    s=scene({branch('b',nil,many),leaf('tail')});assert(not s.complete and #s.cards==200 and not byId(s,'tail'))
+    s=scene({branch('b',nil,many),leaf('tail')});assert(s.complete and #s.cards==252 and byId(s,'tail'),'valid cards above200 were truncated')
 end)
 test('scene copies all card values and paths and never invokes custom condition callbacks',function()
     local body={rotation={branch('b','evaluate',{leaf('x')})},cooldowns={}}
@@ -215,5 +215,13 @@ test('straight-arm label midpoint aligns exactly with the other arm horizontal s
         local other=arm=='true' and 'false' or 'true';local split;for _,edge in ipairs(s.connectors) do if edge.label==other then split=edge.points[2].y;break end end
         for _,label in ipairs(s.armLabels) do if label.arm==arm then assert(label.y+9==split,'label midpoint is not at other-arm split') end end
     end
+end)
+test('full supported node count retains its final card and insertion gap',function()
+    local many={};for i=1,2000 do many[i]=leaf('r'..i) end
+    local s=scene(many,{}, {section='rotation',layout='list'})
+    assert(s.complete and #s.cards==2000 and byId(s,'r2000'))
+    local last=s.dropTargets[#s.dropTargets];assert(last.destination.index==2001 and last.y>=byId(s,'r2000').y)
+    many[2001]=leaf('r2001');local result,why=a:BuildRotationCanvas({rotation=many,cooldowns={}})
+    assert(not result and why.code=='rotation-node-limit')
 end)
 finish()

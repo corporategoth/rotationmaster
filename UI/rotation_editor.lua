@@ -47,7 +47,6 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
             model.displayName=self:FieldText(model.id,'name',model.step.name or '')
             model.expanded=not model.compact and self.view.expanded[model.id]==true
         end
-        if not scene.complete then self:Message(L['Only the first 200 rotation cards are shown. Other cards are preserved.']) end
         return scene
     end
     function pane:RefreshValidation()
