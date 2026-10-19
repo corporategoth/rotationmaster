@@ -222,4 +222,22 @@ test('navigation adapter preserves other-input args results and clears scoped sc
  N:ScrollTo(input,10);assert(calls==1,'failed Position left scroll suppression active');fail=false;c:Release()
 end)
 
+test('render diagnostics distinguish detached queues and stale or hidden overlays without exposing source',function()
+ local _,a,code,c,engine,C,input,state=fixture('LuaWorkbench');local source='PRIVATE_RENDER_DIAGNOSTIC_BODY'
+ code:SetText(source);C.source=source;C:UpdateLineNumbers()
+ local before=code:GetText();local cursor=c.edit:GetCursorPosition();local queue=c.lineNumberQueue
+ local report=a:LuaEditorInputReport()
+ assert(report:find('gutter attachment present=true updaterMatch=true inputMatch=true editMatch=true stateMatch=true',1,true),'active queue identity absent')
+ assert(report:find('provider render attached=true pending=true',1,true) and report:find('sourceMatch=false',1,true),'stale overlay not identified')
+ flush(c,C);report=a:LuaEditorInputReport()
+ assert(report:find('provider render attached=true pending=false',1,true) and report:find('sourceMatch=true',1,true),'painted overlay not identified')
+ assert(report:find('overlay shown=true',1,true),'overlay visibility absent')
+ input.queryEditor.overlay:Hide();report=a:LuaEditorInputReport();assert(report:find('overlay shown=false',1,true),'hidden overlay not identified')
+ local updater=C.UpdateLineNumbers;C.UpdateLineNumbers=function() end;report=a:LuaEditorInputReport();assert(report:find('updaterMatch=false',1,true),'replaced updater not identified');C.UpdateLineNumbers=updater
+ c:ResetLineNumberQueue();report=a:LuaEditorInputReport();assert(report:find('gutter attachment present=false',1,true),'missing queue mistaken for settled queue')
+ assert(not report:find(source,1,true) and not report:find('first line',1,true),'render diagnostics exposed source')
+ assert(code:GetText()==before and c.edit:GetCursorPosition()==cursor and not queue.pending,'report changed source/caret or revived retired queue')
+ code:Release();report=a:LuaEditorInputReport();assert(report:find('provider render attached=false',1,true),'released overlay appears attached')
+end)
+
 finish()

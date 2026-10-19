@@ -312,7 +312,7 @@ function addon:Glow(button, id, effect, color, mags, setp, xoffs, yoffs, angle)
 
 	local type = effect.type
 	addon:HideGlow(button, id, type=='proc')
-	if addon.index(addon.textured_types, type) then
+	if addon.Functions.collections.index(addon.textured_types, type) then
 		if not button.rmOverlays then
 			button.rmOverlays = {}
 		end
@@ -861,7 +861,7 @@ function addon:HighlightSlots(slots)
 			if type == 'action' then
 				local bslot = GetActionSlot(button)
 
-				if bslot and addon.index(slots, bslot) ~= nil then
+				if bslot and addon.Functions.collections.index(slots, bslot) ~= nil then
                     self:Glow(button, "highlight", HighlightOverlay, {}, 1.0, "CENTER", 0, 0)
                 	table.insert(Highlight, button)
 				end

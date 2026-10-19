@@ -35,7 +35,7 @@ local function fixture(attributes, methods, legacy)
     function addon:debug() end
     function addon:verbose() end
     local presentation=assert(loadfile('Core/presentation.lua'));setfenv(presentation,env);presentation('rotationmaster',addon)
-    for _,path in ipairs({'Platform/client.lua','Platform/spells.lua','Platform/items.lua','Platform/macros.lua'}) do
+    for _,path in ipairs({'Platform/client.lua','Platform/spells.lua','Platform/items.lua','Platform/macros.lua','Functions/collections.lua'}) do
         local load=assert(loadfile(path));setfenv(load,env);load('rotationmaster',addon)
     end
     local chunk = assert(loadfile('buttons.lua')); setfenv(chunk, env); chunk('rotationmaster', addon)

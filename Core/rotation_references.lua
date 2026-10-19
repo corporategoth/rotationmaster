@@ -1,35 +1,94 @@
 local _,addon=...
 local observed,stamp
-local function entries(value)
-    local result={}
-    if type(value)=='table' then for key,item in pairs(value) do result[key]=type(item)=='table' and item or false end end
-    return result
+local function normalized(value)
+    return type(value)=='table' and value or false
 end
-local function same(left,right)
-    for key,value in pairs(left) do if not rawequal(value,right[key]) then return false end end
-    for key,value in pairs(right) do if not rawequal(value,left[key]) then return false end end
-    return true
+local function entries(value)
+    local result,count={},0
+    if type(value)=='table' then
+        for key,item in pairs(value) do result[key]=normalized(item);count=count+1 end
+    end
+    return result,count
+end
+local function sameEntries(value,previous,expected)
+    local count=0
+    if type(value)=='table' then
+        for key,item in pairs(value) do
+            if not rawequal(normalized(item),previous[key]) then return false end
+            count=count+1
+        end
+    end
+    return count==expected
+end
+local function validItemsets(shared,personal)
+    return (shared==nil or type(shared)=='table') and (personal==nil or type(personal)=='table')
+end
+local function sameItemsets(shared,personal,previous,expected)
+    if not validItemsets(shared,personal) then return expected==0 end
+    local count=0
+    if shared then
+        for key,item in pairs(shared) do
+            -- Only actual personal entries shadow shared entries. A missing-key
+            -- lookup could materialize an AceDB default and mutate the source.
+            if not personal or rawget(personal,key)==nil then
+                if not rawequal(normalized(item),previous[key]) then return false end
+                count=count+1
+            end
+        end
+    end
+    if personal then
+        for key,item in pairs(personal) do
+            if not rawequal(normalized(item),previous[key]) then return false end
+            count=count+1
+        end
+    end
+    return count==expected
+end
+local function itemsetEntries(shared,personal)
+    if not validItemsets(shared,personal) then return {},0 end
+    local result,count=entries(shared)
+    if personal then
+        for key,item in pairs(personal) do
+            if result[key]==nil then count=count+1 end
+            result[key]=normalized(item)
+        end
+    end
+    return result,count
+end
+-- Observe identities without copying maps on the common unchanged path.
+-- Normalized false markers keep malformed/NaN entries stable, as before.
+local function observe(owner)
+    local profile,global=owner.db.profile,owner.db.global
+    local shared,personal=global.itemsets,profile.itemsets
+    local conditions,effects=owner.conditionDefinitions,global.effects
+    local version=owner.conditionRegistryVersion or 0
+    if observed and observed.profile==profile and observed.global==global and observed.version==version
+        and sameItemsets(shared,personal,observed.itemsets,observed.itemsetCount)
+        and sameEntries(conditions,observed.conditions,observed.conditionCount)
+        and sameEntries(effects,observed.effects,observed.effectCount) then return end
+    local itemsets,itemsetCount=itemsetEntries(shared,personal)
+    local conditionEntries,conditionCount=entries(conditions)
+    local effectEntries,effectCount=entries(effects)
+    observed={profile=profile,global=global,version=version,
+        itemsets=itemsets,itemsetCount=itemsetCount,
+        conditions=conditionEntries,conditionCount=conditionCount,
+        effects=effectEntries,effectCount=effectCount}
+    stamp={}
+end
+-- Internal authority checks need the current stamp, not detached public maps.
+-- Keep checking every dependency at each call, including reentrant mutations.
+function addon:GetRotationValidationStamp()
+    observe(self)
+    return stamp
 end
 -- Dependency maps may carry AceDB defaults metatables. Observe their entries,
 -- without copying/traversing definitions or writing into SavedVariables.
 function addon:GetRotationValidationOptions()
-    local profile,global=self.db.profile,self.db.global
-    local personal=profile.itemsets;local itemsets={}
-    if (personal==nil or type(personal)=='table') and (global.itemsets==nil or type(global.itemsets)=='table') then
-        itemsets=entries(global.itemsets)
-        if personal then for key,value in pairs(personal) do itemsets[key]=type(value)=='table' and value or false end end
-    end
-    -- Invalid entries are unavailable markers, including NaN. Comparing raw NaN
-    -- entries would change the stamp forever and recurse while rebuilding clones.
-    local conditions=entries(self.conditionDefinitions)
-    local effects=entries(global.effects)
-    local version=self.conditionRegistryVersion or 0
-    if not observed or observed.profile~=profile or observed.global~=global or observed.version~=version
-        or not same(observed.itemsets,itemsets) or not same(observed.conditions,conditions) or not same(observed.effects,effects) then
-        observed={profile=profile,global=global,version=version,itemsets=entries(itemsets),conditions=entries(conditions),effects=entries(effects)}
-        stamp={}
-    end
-    -- Maps (including empty fallbacks) are fresh and cannot poison observations.
+    observe(self)
+    -- Public maps remain fresh: consumers cannot poison private observations.
+    local conditions=entries(observed.conditions)
+    local itemsets=entries(observed.itemsets)
+    local effects=entries(observed.effects)
     return {conditions=conditions,itemsets=itemsets,effects=effects},stamp
 end
 

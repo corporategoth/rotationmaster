@@ -505,7 +505,7 @@ function addon:BindRotationProfile()
             local now=context();if not now or not same(now,c) then return nil,'rotation-owner-changed' end
             if not same(observedContext,eligibilityContext()) then return nil,'rotation-context-changed' end
             if libraryReader and libraryReader:Generation()~=generation then return nil,'rotation-library-changed' end
-            local _,stamp=owner:GetRotationValidationOptions();if stamp~=referenceStamp or owner.conditionRegistryVersion~=revision then return nil,'rotation-dependencies-changed' end
+            local stamp=owner:GetRotationValidationStamp();if stamp~=referenceStamp or owner.conditionRegistryVersion~=revision then return nil,'rotation-dependencies-changed' end
             return true
         end
         function pass:IsCurrent()

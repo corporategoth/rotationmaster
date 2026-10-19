@@ -178,14 +178,31 @@ function addon:LuaEditorInputReport()
     end
     lines[#lines+1]='arrowHook='..tostring(type(edit:GetScript('OnArrowPressed'))=='function')..' probe='..tostring(control.nativeArrowProbe~=nil)
     lines[#lines+1]='lineNumbers visible='..tostring(control.lineNumbersVisible)..' setting='..tostring(control.lineNumberSetting)
-    lines[#lines+1]='gutter queue=deferred pending='..tostring(control.lineNumberQueue~=nil and control.lineNumberQueue.pending==true)
+    local input=control.lineNumberInput;local queue=control.lineNumberQueue
+    local engine=control.engine or control.completionEngine;local console=engine and engine.Query and engine.Query.Console
+    lines[#lines+1]='gutter queue=deferred pending='..tostring(queue~=nil and queue.pending==true)
+    lines[#lines+1]='gutter attachment present='..tostring(queue~=nil)..' updaterMatch='..tostring(queue~=nil and console~=nil and console.UpdateLineNumbers==queue.update)
+        ..' inputMatch='..tostring(console~=nil and console.input==input)..' editMatch='..tostring(queue~=nil and queue.edit==edit)
+        ..' stateMatch='..tostring(queue~=nil and queue.state~=nil and input~=nil and queue.state==input.queryLineNumbers)
+    if control.provider=='LuaWorkbench' then
+        local painted=input and input.queryEditor;local source
+        local ok,value=pcall(control.nativeGetText or edit.GetText,edit);if ok and type(value)=='string' then source=value end
+        local function bytes(value) return type(value)=='string' and #value or -1 end
+        local overlay=painted and painted.overlay;local overlayText
+        if overlay and type(overlay.GetText)=='function' then local success,text=pcall(overlay.GetText,overlay);if success then overlayText=text end end
+        lines[#lines+1]='provider render attached='..tostring(painted~=nil)..' pending='..tostring(painted~=nil and painted.pending==true)
+            ..' sourceBytes='..bytes(source)..' renderBytes='..bytes(painted and painted.renderSource)..' sourceMatch='..tostring(source~=nil and painted~=nil and painted.renderSource==source)
+            ..' renderedBytes='..bytes(painted and painted.renderedText)..' nativeText='..tostring(painted and painted.nativeText==true)
+        lines[#lines+1]='overlay shown='..read(overlay,'IsShown')..' visible='..read(overlay,'IsVisible')..' alpha='..read(overlay,'GetAlpha')
+            ..' bytes='..bytes(overlayText)..' width='..read(overlay,'GetWidth')..' height='..read(overlay,'GetHeight')
+    end
     local gutter=control.lineNumberCounts
     if gutter then
         lines[#lines+1]='gutter calls='..gutter.calls..' flushes='..gutter.flushes..' skips='..gutter.skips..' renders='..gutter.renders..' metricRebuilds='..gutter.metrics..' reentries='..gutter.reentries..' errors='..gutter.errors..' detached='..gutter.detached
         lines[#lines+1]='gutter last render keys='..(gutter.lastRender or 'none')
         lines[#lines+1]='gutter last metric keys='..(gutter.lastMetric or 'none')
     else lines[#lines+1]='gutter counters=unavailable' end
-    local input=control.lineNumberInput;local state=input and (input.queryLineNumbers or input.queryLineNumberCache)
+    local state=input and (input.queryLineNumbers or input.queryLineNumberCache)
     local function frameInfo(label,frame)
         lines[#lines+1]='gutter '..label..' width='..read(frame,'GetWidth')..' height='..read(frame,'GetHeight')..' scale='..read(frame,'GetEffectiveScale')..' level='..read(frame,'GetFrameLevel')..' mouse='..read(frame,'IsMouseEnabled')..' bounds='..read(frame,'GetLeft')..','..read(frame,'GetRight')..','..read(frame,'GetTop')..','..read(frame,'GetBottom')
     end

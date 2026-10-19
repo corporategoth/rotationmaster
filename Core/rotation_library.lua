@@ -88,7 +88,7 @@ function addon:InitializeRotationLibrary()
     return true
 end
 local function ensure(self)
-    local _,referenceStamp=self:GetRotationValidationOptions()
+    local referenceStamp=self:GetRotationValidationStamp()
     if not active or active.profile~=self.db.profile or active.state~=self.db.profile.rotationLibrary
         or active.version~=definitionVersion or active.referenceStamp~=referenceStamp then return self:InitializeRotationLibrary() end
     return true
