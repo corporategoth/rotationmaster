@@ -29,6 +29,7 @@ Platform/client.lua
 Platform/groups.lua
 Platform/casting.lua
 Platform/unit_health.lua
+Platform/unit_level.lua
 Platform/specializations.lua
 Platform/talents.lua
 Platform/spells.lua
@@ -58,6 +59,7 @@ Diagnostics/errors.lua
 Core/conditions.lua
 Core/condition_catalog.lua
 Core/item_conditions.lua
+Core/level_conditions.lua
 Core/itemset_services.lua
 Core/rotation_references.lua
 Core/item_sets.lua

@@ -31,8 +31,11 @@ addon:RegisterCondition("SELF_LEVEL", {
         return (value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                 value.value ~= nil and value.value >= 0)
     end,
-    evaluate = function(value)
-        return Functions.values.compare(value.operator, Functions.cache.getCached(addon.longtermCache, UnitLevel, "player"), value.value)
+    evaluate = function(value, cache)
+        local level,reason=addon:GetConditionUnitLevel("player",cache)
+        if level==nil then return nil,reason end
+        if level==false then return false end
+        return Functions.values.compare(value.operator, level, value.value)
     end,
     print = function(_, value)
         return Functions.presentation.compareString(value.operator, L["your level"], Functions.presentation.nullable(value.value, L["<level>"]))

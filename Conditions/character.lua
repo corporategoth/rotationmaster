@@ -468,17 +468,25 @@ addon:RegisterCondition("LEVEL", {
                 value.value ~= nil and (value.relative or value.value >= 0))
     end,
     evaluate = function(value, cache)
-        if not Functions.cache.getCached(cache, UnitExists, value.unit) then return false end
+        local observed,reason=addon:GetConditionUnitLevel(value.unit,cache)
+        if observed==nil then return nil,reason end
+        if observed==false then return false end
         local level = value.value
         if value.relative then
-            level = Functions.cache.getCached(addon.longtermCache, UnitLevel, "player") + value.value
+            local playerLevel,why=addon:GetConditionUnitLevel("player",cache)
+            if playerLevel==nil then return nil,why end
+            if playerLevel==false then return nil,"player-level-unavailable" end
+            level = playerLevel + value.value
+            if level~=level or level==math.huge or level==-math.huge then return nil,"invalid-level-threshold" end
         end
-        return Functions.values.compare(value.operator, Functions.cache.getCached(cache, UnitLevel, value.unit), level)
+        return Functions.values.compare(value.operator, observed, level)
     end,
     print = function(_, value)
         local level = value.value
         if value.relative and value.value ~= nil then
-            level = Functions.cache.getCached(addon.longtermCache, UnitLevel, "player") + value.value
+            local playerLevel=addon:GetConditionUnitLevel("player")
+            level = type(playerLevel)=="number" and playerLevel + value.value or nil
+            if level and (level~=level or level==math.huge or level==-math.huge) then level=nil end
         end
         return Functions.presentation.compareString(value.operator, Functions.presentation.playerize(value.unit, L["your level"], string.format(L["%s's level"],
                 Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]))), Functions.presentation.nullable(level, L["<level>"]))

@@ -1,7 +1,7 @@
 local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite()
 local tags={'SELF_LEVEL','PVP','ZONEPVP','INSTANCE','OUTDOORS'}
 local owners={isin='values',compare='values',nullable='presentation',compareString='presentation',playerize='presentation',getCached='cache',deepcopy='collections',keys='collections'}
-local counts={isin=4,compare=1,nullable=4,compareString=1,playerize=1,getCached=6,deepcopy=2,keys=2}
+local counts={isin=4,compare=1,nullable=4,compareString=1,playerize=1,getCached=5,deepcopy=2,keys=2}
 local function path(name) return 'Functions.'..owners[name]..'.'..name end
 local function identity(name) return 'builtin:'..(owners[name]=='collections' and 'Functions/collections.lua' or 'utils.lua')..':'..name end
 local function fixture()
@@ -22,6 +22,14 @@ local function fixture()
     e.loadstring=function(code,name) local fn,why=loadstring(code,name);if fn then setfenv(fn,e) end;return fn,why end
     return f,a,state
 end
+local selfLevelRepair={original="\n"..[=[
+        return Functions.values.compare(value.operator, Functions.cache.getCached(addon.longtermCache, UnitLevel, "player"), value.value)
+    ]=],repaired="\n"..[=[
+        local level,reason=addon:GetConditionUnitLevel("player",cache)
+        if level==nil then return nil,reason end
+        if level==false then return false end
+        return Functions.values.compare(value.operator, level, value.value)
+    ]=]}
 local function copies(a,legacy)
     local result={}
     for _,tag in ipairs(tags) do
@@ -50,7 +58,7 @@ local function equal(a,tag,value)
         end
     end
 end
-test('environment callbacks select all twenty-one direct calls with eight exact owning leaves',function()
+test('environment callbacks select all twenty direct calls with eight exact owning leaves',function()
     local f,a=fixture();local manifest=assert(a.builtinCallbackBindings and a.builtinCallbackBindings['Conditions/misc.lua'],'environment namespace manifest missing')
     local leaves=0;for alias,id in pairs(manifest) do
         leaves=leaves+1;local name=alias:match('([%w_]+)$');assert(alias==path(name) and id==identity(name))
@@ -64,6 +72,17 @@ test('environment callbacks select all twenty-one direct calls with eight exact 
     end
     for name,count in pairs(counts) do assert(found[name]==count,name..' count changed') end
     assert(not f.env.Functions)
+end)
+test('only the explicitly repaired SELF_LEVEL evaluator and optional cache parameter differ from prior environment sources',function()
+    local _,a=fixture();local baseline={}
+    for _,tag in ipairs(tags) do local source=assert(a:GetBuiltinConditionSource(tag))
+        if tag=='SELF_LEVEL' then
+            assert(source.evaluate==selfLevelRepair.repaired and table.concat(source.parameters.evaluate,',')=='value,cache')
+            source.evaluate=selfLevelRepair.original;source.parameters.evaluate={'value'}
+        end
+        baseline[tag]=source
+    end
+    assert(a:FunctionSourceHash(baseline)=='4eb1d87c','unrelated environment source changed')
 end)
 test('level operators zone kinds instance tuples and unit flags agree for registered canonical and legacy-shaped copies',function()
     local _,a,s=fixture();copies(a);copies(a,true)
@@ -107,9 +126,9 @@ test('raw native failures preserve the existing error boundary through NOT and g
         for _,prefix in ipairs({'','COPY_','OLD_'}) do
             a.longtermCache={};local node={type=prefix..entry[1],unit='target',operator='EQUALS',value=entry[1]=='SELF_LEVEL' and 20 or nil}
             local ok,why=pcall(a.evaluateConditionResult,a,{type='NOT',value=node})
-            assert(not ok and tostring(why):find('native '..entry[2]..' failed',1,true),entry[1]..' error boundary changed')
+            if entry[1]=='SELF_LEVEL' then assert(ok and why.status=='unavailable') else assert(not ok and tostring(why):find('native '..entry[2]..' failed',1,true),entry[1]..' error boundary changed') end
             a.longtermCache={};ok,why=pcall(a.evaluateConditionResult,a,{type='AND',value={node,{type='OUTDOORS'}}})
-            assert(not ok and tostring(why):find('native '..entry[2]..' failed',1,true))
+            if entry[1]=='SELF_LEVEL' then assert(ok and why.status=='unavailable') else assert(not ok and tostring(why):find('native '..entry[2]..' failed',1,true)) end
         end
     end
 end)

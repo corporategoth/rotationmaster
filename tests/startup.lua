@@ -75,6 +75,66 @@ local function initialize(addon)
     addon:OnInitialize()
 end
 
+test('level-up retires normalized and saved raw player levels before dispatch and delayed selection',function()
+    local env,a,load=fixture(true,true);load('main.lua');initialize(a);load('Functions/cache.lua');a.debug=function() end
+    local native=20;env.UnitLevel=function(unit) return unit=='target' and 23 or native end
+    env.UnitExists=function() return true end
+    load('Platform/unit_level.lua');load('Core/level_conditions.lua')
+    local getCached=a.Functions.cache.getCached
+    local retained={fact=true};a.longtermCache.retained=retained
+    assert(a:GetConditionUnitLevel('player',{})==20)
+    assert(getCached(a.longtermCache,env.UnitLevel,'player')==20)
+    assert(getCached(a.longtermCache,env.UnitLevel,'target')==23)
+    local targetObservation=a.longtermCache[env.UnitLevel].target
+    local pending,stages
+    a.ScheduleTimer=function(_,callback,delay) assert(delay==0.01);pending=callback end
+    a.UpdateAutoSwitch=function(self)
+        stages=1
+        assert(self.longtermCache.conditionPlayerLevel==nil,'normalized level survived delayed boundary')
+        assert(self:GetConditionUnitLevel('player',{})==21,'normalized player observation did not recover')
+        assert(getCached(self.longtermCache,env.UnitLevel,'player')==21,'saved raw callback retained previous level')
+    end
+    a.SwitchRotation=function() assert(stages==1);stages=2 end
+    a.currentRotation='selected'
+    a.EvaluateNextAction=function() assert(stages==2);stages=3 end
+    a:PLAYER_LEVEL_UP('PLAYER_LEVEL_UP',21)
+    assert(type(pending)=='function' and stages==nil,'level selection must remain deferred')
+    local levelCache=a.longtermCache[env.UnitLevel]
+    assert(a.longtermCache.conditionPlayerLevel==nil and not (levelCache and levelCache.player),'level event retained prior cache')
+    assert(levelCache and levelCache.target==targetObservation,'player event retired another unit level')
+    -- Other event consumers can observe the old native value before it settles.
+    assert(a:GetConditionUnitLevel('player',{})==20);assert(getCached(a.longtermCache,env.UnitLevel,'player')==20)
+    native=21;pending()
+    assert(stages==3 and a.longtermCache.retained==retained and a.longtermCache[env.UnitLevel].target==targetObservation,'level refresh lost unrelated longterm facts')
+end)
+
+test('level-up remains safe before level APIs and longterm storage are available',function()
+    local env,a,load=fixture(true,true);load('main.lua');initialize(a)
+    env.UnitLevel=nil;a.longtermCache=nil;a.debug=function() end
+    local pending,selected
+    a.ScheduleTimer=function(_,callback) pending=callback end
+    a.UpdateAutoSwitch=function() end;a.SwitchRotation=function() selected=true end
+    a:PLAYER_LEVEL_UP('PLAYER_LEVEL_UP',21);assert(pending);pending();assert(selected)
+end)
+
+test('deferred level refresh invalidates the currently active profile cache',function()
+    local env,a,load=fixture(true,true);load('main.lua');initialize(a);load('Functions/cache.lua');a.debug=function() end
+    env.UnitLevel=function() return 21 end
+    a.longtermCache.conditionPlayerLevel=20
+    local previous=a.longtermCache;local pending
+    a.ScheduleTimer=function(_,callback) pending=callback end
+    a.UpdateAutoSwitch=function(self)
+        assert(self.longtermCache.conditionPlayerLevel==nil and not self.longtermCache[env.UnitLevel].player)
+    end
+    a.SwitchRotation=function() end
+    a:PLAYER_LEVEL_UP('PLAYER_LEVEL_UP',21)
+    a.longtermCache={conditionPlayerLevel=19,other='new profile fact'}
+    local current=a.longtermCache
+    a.Functions.cache.getCached(current,env.UnitLevel,'player')
+    pending()
+    assert(a.longtermCache==current and current.other=='new profile fact' and previous~=current)
+end)
+
 test('manual selection refuses ambiguous names instead of choosing an arbitrary owner',function()
     local env,a,load=fixture(true,true);load('main.lua');initialize(a);a.currentSpec=0
     env.LibStub('AceConsole-3.0').GetArgs=function() return 'set',5 end

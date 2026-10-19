@@ -2,8 +2,8 @@ local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite()
 local cases=dofile('tests/fixtures/catalog_inventory.lua').branches
 local tags={'ISSAME','CLASS','CLASS_GROUP','ROLE','GLYPH','CREATURE','CLASSIFICATION','LEVEL','GROUP','RUNNER','RESIST','IMMUNE'}
 local owners={isin='values',compare='values',nullable='presentation',compareString='presentation',playerize='presentation',getCached='cache',deepcopy='collections',keys='collections'}
-local expected={isin=21,compare=4,nullable=23,compareString=3,playerize=4,getCached=27,deepcopy=8,keys=4}
-local branchCounts={69,55,55,64,64,64,64,76}
+local expected={isin=21,compare=4,nullable=23,compareString=3,playerize=4,getCached=23,deepcopy=8,keys=4}
+local branchCounts={65,51,51,60,60,60,60,72}
 local baselineHashes={['CLASS:common']=3088725613,['CLASSIFICATION:common']=3454430665,['CLASS_GROUP:common']=1911721314,['CREATURE:common']=1392664048,['GLYPH:common']=233563292,['GROUP:common']=1891586705,['IMMUNE:common']=3885939024,['ISSAME:common']=2733275963,['LEVEL:common']=2839935621,['RESIST:common']=899540765,['ROLE:inspect']=1626999136,['ROLE:talent']=1169248649,['RUNNER:common']=3996103689}
 local callbacks={'valid','evaluate','print','widget','help'}
 local function path(name) return 'Functions.'..owners[name]..'.'..name end
@@ -42,6 +42,46 @@ local function legacySource(a,source)
     for name in pairs(owners) do old.bindings[path(name)]=nil end
     return old
 end
+local levelRepairBodies={
+    evaluate={original="\n"..[=[
+        if not Functions.cache.getCached(cache, UnitExists, value.unit) then return false end
+        local level = value.value
+        if value.relative then
+            level = Functions.cache.getCached(addon.longtermCache, UnitLevel, "player") + value.value
+        end
+        return Functions.values.compare(value.operator, Functions.cache.getCached(cache, UnitLevel, value.unit), level)
+    ]=],repaired="\n"..[=[
+        local observed,reason=addon:GetConditionUnitLevel(value.unit,cache)
+        if observed==nil then return nil,reason end
+        if observed==false then return false end
+        local level = value.value
+        if value.relative then
+            local playerLevel,why=addon:GetConditionUnitLevel("player",cache)
+            if playerLevel==nil then return nil,why end
+            if playerLevel==false then return nil,"player-level-unavailable" end
+            level = playerLevel + value.value
+            if level~=level or level==math.huge or level==-math.huge then return nil,"invalid-level-threshold" end
+        end
+        return Functions.values.compare(value.operator, observed, level)
+    ]=]},
+    print={original="\n"..[=[
+        local level = value.value
+        if value.relative and value.value ~= nil then
+            level = Functions.cache.getCached(addon.longtermCache, UnitLevel, "player") + value.value
+        end
+        return Functions.presentation.compareString(value.operator, Functions.presentation.playerize(value.unit, L["your level"], string.format(L["%s's level"],
+                Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]))), Functions.presentation.nullable(level, L["<level>"]))
+    ]=],repaired="\n"..[=[
+        local level = value.value
+        if value.relative and value.value ~= nil then
+            local playerLevel=addon:GetConditionUnitLevel("player")
+            level = type(playerLevel)=="number" and playerLevel + value.value or nil
+            if level and (level~=level or level==math.huge or level==-math.huge) then level=nil end
+        end
+        return Functions.presentation.compareString(value.operator, Functions.presentation.playerize(value.unit, L["your level"], string.format(L["%s's level"],
+                Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]))), Functions.presentation.nullable(level, L["<level>"]))
+    ]=]},
+}
 local function copies(a,selected)
     local canonical,legacy={},{}
     for _,tag in ipairs(selected) do local source=assert(a:GetBuiltinConditionSource(tag));canonical[tag]=assert(a:CompileCustomCondition('COPY_'..tag,source));legacy[tag]=assert(a:CompileCustomCondition('OLD_'..tag,legacySource(a,source)));a:RegisterCondition('COPY_'..tag,canonical[tag]);a:RegisterCondition('OLD_'..tag,legacy[tag]) end
@@ -55,7 +95,7 @@ local function unknown(a,v)
     local body={rotation={{id='guard',type='branch',conditions=v,onTrue={{id='yes',type='spell',action=1}},onFalse={{id='no',type='spell',action=2}}}}}
     assert(a:EvaluateRotationSequence(body,function(x) return a:evaluateConditionResult(x) end,function() error('unknown guard chose action') end).status=='unavailable')
 end
-test('character callbacks use exactly ninety-four direct calls eight stable leaves and both ROLE variants',function()
+test('character callbacks use exactly ninety direct calls eight stable leaves and both ROLE variants',function()
     local seen,totals={},{}
     for index,case in ipairs(cases) do local f,a,_,selected=fixture(case);local manifest=assert(a.builtinCallbackBindings and a.builtinCallbackBindings['Conditions/character.lua'],'character manifest missing');local leaves=0
         for alias,id in pairs(manifest) do leaves=leaves+1;local name=alias:match('([%w_]+)$');assert(alias==path(name) and id==identity(name) and a:ResolveFunctionBinding(id)==a.Functions[owners[name]][name]) end;assert(leaves==8 and not f.env.Functions)
@@ -63,11 +103,17 @@ test('character callbacks use exactly ninety-four direct calls eight stable leav
             for name,n in pairs(found) do branch=branch+n;if not seen[key] then totals[name]=(totals[name] or 0)+n end end;seen[key]=true
         end;assert(branch==branchCounts[index],'branch '..index..' count changed')
     end
-    local total=0;for name,n in pairs(expected) do assert(totals[name]==n,name..' count changed');total=total+n end;assert(total==94 and seen['ROLE:inspect'] and seen['ROLE:talent'])
+    local total=0;for name,n in pairs(expected) do assert(totals[name]==n,name..' count changed');total=total+n end;assert(total==90 and seen['ROLE:inspect'] and seen['ROLE:talent'])
 end)
 test('reverse-qualified source preserves every original callback byte and parameter across variants',function()
     for _,case in ipairs(cases) do local _,a,_,selected=fixture(case)
-        for _,tag in ipairs(selected) do local source=legacySource(a,a:GetBuiltinConditionSource(tag));local parts={}
+        for _,tag in ipairs(selected) do local original=a:GetBuiltinConditionSource(tag)
+            if tag=='LEVEL' then for name,bodies in pairs(levelRepairBodies) do
+                assert(original[name]==bodies.repaired,'LEVEL '..name..' changed beyond the exact level repair')
+                assert(table.concat(original.parameters[name],',')==(name=='evaluate' and 'value,cache' or '_,value'))
+                original[name]=bodies.original
+            end end
+            local source=legacySource(a,original);local parts={}
             for _,callback in ipairs(callbacks) do if source[callback] then parts[#parts+1]=callback;parts[#parts+1]=table.concat(source.parameters[callback],',');parts[#parts+1]=source[callback] end end
             local code=table.concat(parts,'\0');local first,second=1,0;for i=1,#code do first=(first+code:byte(i))%65521;second=(second+first)%65521 end
             local key=tag..':'..(a.conditionDefinitions[tag].builtinSourceVariant or 'common');assert(second*65536+first==baselineHashes[key],key..' nonnamespace callback or parameter changed')

@@ -1359,9 +1359,19 @@ end)
 addon.PLAYER_TALENT_UPDATE = wrapEvent(addon.UpdateSkill)
 addon.ACTIVE_TALENT_GROUP_CHANGED = wrapEvent(addon.UpdateSkill)
 addon.SPELLS_CHANGED = wrapEvent(addon.UpdateSkill)
+local function invalidatePlayerLevel(self)
+    if type(self.longtermCache)~='table' then return end
+    self.longtermCache.conditionPlayerLevel=nil
+    -- Saved raw condition sources may still use the native cache identity.
+    local native=type(UnitLevel)=='function' and self.longtermCache[UnitLevel]
+    if type(native)=='table' then native.player=nil end
+end
+
 addon.PLAYER_LEVEL_UP = wrapEvent(function(self)
+    invalidatePlayerLevel(self)
     -- Level facts can still be old while the event is being dispatched.
     self:ScheduleTimer(function()
+        invalidatePlayerLevel(self)
         self:UpdateAutoSwitch()
         self:SwitchRotation()
         if self.currentRotation then self:EvaluateNextAction() end
