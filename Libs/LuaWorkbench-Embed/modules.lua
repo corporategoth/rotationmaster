@@ -3639,7 +3639,7 @@ function Editor:HoverSourcePosition(input, x, y)
      -- Native selection rectangles can use a fractional row advance while the
      -- rendered text uses a rounded one. Normalize against the measured text
      -- height and visual line count (including wrapping), from the bottom up.
-     local ratio = advance and area.height > 0 and advance / area.height or 1
+     local ratio = advance and area.height + spacing > 0 and advance / (area.height + spacing) or 1
      cache.entries[#cache.entries + 1] = { source = span.source, left = area.left,
       bottom = area.bottom * ratio + (advance and height - textHeight or 0), width = area.width, height = area.height * ratio }
     end

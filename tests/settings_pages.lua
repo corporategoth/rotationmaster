@@ -79,6 +79,7 @@ test('Conditions manages membership hidden flags and category order without writ
     a.db.global.custom_conditions={};a.db.profile.condition_groups={{id='g',name='Group',conditions={'A'}}};a.db.profile.switch_conditions={'A'};a.db.profile.disabled_conditions={}
     a.listConditions=function(_,group) if group=='g' then return {'A'} elseif group=='SWITCH' then return {'A'} else return {'A','B'} end end
     local p=a:CreateSettingsForm(parent);p:Open(function(form) a:BuildConditionSettings(form) end)
+    assert(p.roster.footerManage and p.roster.manage:IsShown() and p.roster.manage:GetText()=='Manage categories');assert(p.roster.actionButtons[3].point[3]>p.roster.manage.point[3],'Manage categories must sit below Import/Export and Compare')
     assert(#a.db.profile.disabled_conditions==0);p.fields.hidden:Click();assert(a.db.profile.disabled_conditions[1]=='A')
     p.fields.switch:Click();assert(#a.db.profile.switch_conditions==0)
     p.fields.move_to:Click();p.menu.rows[2]:Click();assert(#a.db.profile.condition_groups[1].conditions==1);p.fields.apply_move:Click();assert(#a.db.profile.condition_groups[1].conditions==0)

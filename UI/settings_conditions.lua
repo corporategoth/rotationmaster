@@ -45,7 +45,7 @@ function addon:BuildConditionSettings(p)
             p:ShowChoices(p.fields.compare,compareCandidates,function(key)
                 if key~=first and custom[first] and custom[key] then self:ShowCollectionComparison(p,'profile',{name=custom[first].description,profile=custom[first]},{name=custom[key].description,profile=custom[key]}) end
             end)
-        end}})
+        end}},true)
     local builtinSource=not custom[p.condition] and self.GetBuiltinConditionSource and self:GetBuiltinConditionSource(p.condition)
     if self.BuildInlineCustomCondition and (p.creatingCondition or custom[p.condition] or builtinSource) then return self:BuildInlineCustomCondition(p,p.condition,custom[p.condition] or builtinSource,type(builtinSource)=='table') end
     p:Heading(L['Conditions'])
@@ -87,7 +87,7 @@ function addon:BuildConditionSettings(p)
             toggle:ClearAllPoints();toggle:SetPoint('TOPRIGHT',-28,-4);toggle:SetWidth(84);p.y=enabledY
             p:Actions({{key='edit_custom',text=L['Edit'],icon='info',action=function() self:OpenSettingsCustomCondition(p,tag,custom[tag]) end},
                 })
-            p.fields.delete_custom=self:SettingsTopDelete(p,function() p:Confirm(L['Delete this custom condition? Existing rotations using it will become unavailable.'],function() custom[tag]=nil;p:RunSettingsEffect('custom_'..tag,function() self:UnregisterCondition(tag) end);p:Draw() end) end)
+            p.fields.delete_custom=self:SettingsTopDelete(p,function() p:Confirm(L['Delete this custom condition? Existing rotations using it will become unavailable.'],function() self:StageSettingsDeletion(p,source.description or tag,function() custom[tag]=nil;p:RunSettingsEffect('custom_'..tag,function() self:UnregisterCondition(tag) end) end) end) end)
         end
     end
 end
@@ -141,7 +141,7 @@ function addon:BuildConditionCategorySettings(p)
             end;return true
         end,{canReplace=true,selectedName=group and group.name or category=='SWITCH' and L['Switch'] or L['Other'],fallbackName=L['Imported category'],originalName=function(input) local parsed=self:ParseConditionCategoryImport(input,codec);return parsed and parsed.name end})
     end
-    if group then p.fields.delete_category=self:SettingsTopDelete(p,function() p:Confirm(L['Delete this category? Its conditions will remain available under Other.'],function() table.remove(groups,index);if p.category==category then p.category='DEFAULT' end;p.categorySelection=nil;p:Draw() end) end) end
+    if group then p.fields.delete_category=self:SettingsTopDelete(p,function() p:Confirm(L['Delete this category? Its conditions will remain available under Other.'],function() self:StageSettingsDeletion(p,group.name or category,function() table.remove(groups,index);if p.category==category then p.category='DEFAULT' end end) end) end) end
 end
 function addon:OpenSettingsCustomCondition(p,key,condition)
     if p.transactionKeys and p:IsSettingsDraftDirty() then p:Message(L['Apply or discard current settings before opening the custom code editor.']);return end

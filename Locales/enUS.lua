@@ -2035,6 +2035,18 @@ L['Debugger output uses a detached sample and the normal field or help container
 L['Choose test values in Fields UI, then Run test to validate and evaluate. Help is shown below the fields. Opening Test does not evaluate defaults. Live is opt-in.'] = true
 L['Test opens one condition-level dialog from any callback tab. It renders Fields UI and Help together with detached values. Choose the fields and Run test to validate, then evaluate only valid values. Opening the dialog does not evaluate defaults. Live is opt-in and stops when the dialog closes. Committed test values are available to the debugger and stay separate from source, exports and rotation edits. Check syntax never runs a callback.'] = true
 
+L['Nullable'] = true
+L['Add return value'] = true
+L['Lua returns multiple values in order. Each row documents one result.'] = true
+L['Expand code editor'] = true
+L['Restore code editor'] = true
+L['Choose a source helper and the local name used to call it in this Lua body. Renaming the local name does not rewrite code. Source modules distinguish helpers with the same name.'] = true
+L['Local name in code'] = true
+L['Source helper'] = true
+L['Function names use letters, numbers and underscores, beginning with a letter or underscore. Names suggest the local binding used to call them; registry identifiers stay stable.'] = true
+
+L['Deletion staged. Apply to remove this entry, or Discard to keep it.'] = true
+
 -- BEGIN GENERATED RM PUBLIC HELPER DOCS
 L["All original results, preserving nil positions and return count."] = true
 L["Arguments forwarded unchanged to the observed function."] = true

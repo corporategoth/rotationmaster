@@ -10,6 +10,14 @@ PIN='9abc820'
 MODULES=['Localization','BufferedPaste','LuaEditor','Analysis','LuaConsole','UI','Search','Organization','Helpers','Navigation','DebugProbe','DebugCompiler','Debugger','DebugUI','APIHelp','KnowledgeBase','Inspector','Autocomplete','EditorActions','Snippets','Automation']
 def read(repo,path): return subprocess.check_output(['git','show',f'{PIN}:{path}'],cwd=repo,text=True)
 def adapt(name,body):
+    if name=='LuaEditor':
+        # Native rectangles advance by glyph height plus interline spacing.
+        # Dividing by glyph height alone adds spacing a second time and shifts
+        # hover hits above the visible token, increasingly in longer snippets.
+        before='local ratio = advance and area.height > 0 and advance / area.height or 1'
+        after='local ratio = advance and area.height + spacing > 0 and advance / (area.height + spacing) or 1'
+        if body.count(before)!=1: raise ValueError('unexpected upstream hover normalization')
+        body=body.replace(before,after)
     if name in ('DebugProbe','DebugUI'):
         start=body.index('_G.SLASH_');end=body.find('\nend',start)+len('\nend')
         if name=='DebugUI': end=body.find('\n',body.find('_G.SlashCmdList.',start))

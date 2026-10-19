@@ -1,7 +1,24 @@
 local addon_name,addon=...
 local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
 function addon:NewFunctionSource()
-    return {name=L['New function'],description=L['Describe what this function does.'],args={},returns={},code='return nil',bindings={}}
+    return {name='newFunction',description=L['Describe what this function does.'],args={},returns={},code='return nil',bindings={}}
+end
+function addon:ConfigureFunctionNameInput(form,input)
+    input:SetMaxLetters(128)
+    local changed=input:GetScript('OnTextChanged')
+    self:SetUIScript(input,'OnTextChanged',form:Guard(function(control,user)
+        if user then
+            local text=control:GetText();local cursor=control:GetCursorPosition()
+            local filtered=text:gsub('[^A-Za-z_0-9]',''):gsub('^%d+','')
+            if filtered~=text then local before=text:sub(1,cursor):gsub('[^A-Za-z_0-9]',''):gsub('^%d+','');control:SetText(filtered);control:SetCursorPosition(#before) end
+        end
+        if changed then changed(control,user) end
+    end))
+end
+function addon:DuplicateFunctionName(id,source)
+    local base=self:FunctionEditorName(id,source):sub(1,116)..'_copy';local name=base;local n=2
+    local used={};for key,value in pairs(self.db.global.custom_functions or {}) do used[self:FunctionEditorName(key,value)]=true end
+    while used[name] do name=base..n;n=n+1 end;return name
 end
 function addon:FunctionSource(id)
     local custom=(self.db.global.custom_functions or {})[id];if custom then return custom,false end
@@ -48,7 +65,7 @@ function addon:BuildFunctionSettings(p)
     for id,value in pairs(custom) do if id~=p.functionID then comparisons[#comparisons+1]={value=id,text=value.name or id} end end
     table.sort(comparisons,function(a,b) if a.text==b.text then return a.value<b.value end;return a.text<b.text end)
     p:SetRosterActions({{key='new_function',text=L['New'],icon='plus',action=p.roster.options.new},
-        {key='duplicate_function',text=L['Duplicate'],icon='copy',enabled=source~=nil,action=function() local copy=self:CopySettingsData(source);copy.name=string.format(L['Copy of %s'],copy.name or p.functionID);self:OpenNewFunction(p,copy) end},
+        {key='duplicate_function',text=L['Duplicate'],icon='copy',enabled=source~=nil,action=function() local copy=self:CopySettingsData(source);copy.name=self:DuplicateFunctionName(p.functionID,copy);self:OpenNewFunction(p,copy) end},
         {key='transfer',text=L['Import/Export'],icon='transfer',action=function() if self.ShowFunctionBundleTransfer then self:ShowFunctionBundleTransfer(p,p.functionID,p.inlineFunction and p.inlineFunction:PendingSource() or source) end end},
         {key='compare',text=L['Compare'],icon='compare',enabled=source~=nil and #comparisons>0,action=function()
             local selected=p.functionID

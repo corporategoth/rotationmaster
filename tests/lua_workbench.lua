@@ -7,6 +7,7 @@ local function fixture()
  function frame:GetFont() return 'Fonts\\FRIZQT__.TTF',12,'' end
  function frame:SetFont() end
  function frame:SetSpacing(value) self.spacing=value end;function frame:GetSpacing() return self.spacing or 0 end
+ function frame:SetJustifyH(value) self.justifyH=value end
  function frame:SetNonSpaceWrap() end
  function frame:GetTextInsets() return unpack(self.textInsets or {0,0,0,0}) end
  function frame:GetVerticalScroll() return self.scrollOffset or 0 end
@@ -204,5 +205,50 @@ test('debugger tracks orphan controls only during resume and restores every shar
  local c=a:CreateLuaWorkbenchControl(f.env.UIParent,function() end,function() return true end);c:SetText('addon.orphan=addon:CreateConditionEditBox(); error("orphan-error")');c:SetContext({kind='condition',id='ORPHAN',callback='widget',source=body,testOwner=owner});assert(c:Debug())
  for i=1,40 do if c.engine.Debugger.paused then c.engine.Debugger:StepOver() else c.engine.Debugger:Pump() end;assert(a.CreateConditionEditBox==create and ace.Create==aceCreate,'shared factories changed while the debugger is paused') end
  assert(c.debugError:find('orphan-error',1,true));c:Release();assert(not a.orphan.alive,'failed unattached control leaked')
+end)
+test('function hover keeps interline spacing out of glyph scaling',function()
+ local f,a=fixture();local e=assert(a:CreateLuaWorkbenchEngine({id='HOVER'}));local font=f.env.CreateFrame('FontString')
+ font:SetSize(400,40);font:SetSpacing(2);font:SetText('first\nsecond\nthird')
+ function font:GetStringHeight() return 40 end;function font:GetNumLines() return 3 end
+ function font:CalculateScreenAreaFromCharacterSpan(first) return {{left=10,bottom=first==1 and 28 or 14,width=36,height=12}} end
+ local input={queryEditor={overlay=font,renderSource='first\nsecond\nthird',renderSpans={{kind='identifier',text='first',source=1,first=1,last=5},{kind='identifier',text='second',source=7,first=7,last=12}}}}
+ assert(e.Query.Editor:HoverSourcePosition(input,12,229)==1,'hover missed the first function on its actual row')
+ assert(e.Query.Editor:HoverSourcePosition(input,12,243)==nil,'hover matched a function from above its row')
+ assert(e.Query.Editor:HoverSourcePosition(input,12,215)==7,'hover missed the second function on its actual row')
+ -- Rectangles are local; moving or scrolling the text must move the hit rows.
+ function font:GetBottom() return 240 end
+ assert(e.Query.Editor:HoverSourcePosition(input,12,255)==7,'scrolling left hover geometry at the previous position')
+ e:Release()
+end)
+test('native hover covers every character of function names and excludes the arguments',function()
+ local f,a=fixture();a.builtinFunctions={['builtin:hover']={source={description='Hover helper',args={},returns={}}}}
+ local c=a:CreateWorkbenchLuaEditor(f.env.UIParent,function() end,function() return true end,'plain');c.frame:SetSize(600,300)
+ c:SetContext({kind='condition',callback='evaluate',source={fields={},bindings={isReady='builtin:hover'}}});c:SetText('isReady(value)')
+ local font=c.measure
+ function font:CalculateScreenAreaFromCharacterSpan(first,last)
+  local inset=self.justifyH=='LEFT' and 0 or (self:GetWidth()-#self:GetText()*7)/2
+  return {{left=inset+(first-1)*7,bottom=0,width=(last-first+1)*7,height=12}}
+ end
+ c.edit:GetScript('OnUpdate')(c.edit,.2);local input=c.completionEngine.Query.Console.input;local editor=c.completionEngine.Query.Editor
+ for character=1,7 do assert(editor:HoverSourcePosition(input,(character-.5)*7,205)==1,'native hover misses function-name character '..character) end
+ assert(editor:HoverSourcePosition(input,7.5*7,205)==nil,'opening parenthesis is included in the function hitbox')
+ assert(editor:HoverSourcePosition(input,8.5*7,205)==9,'argument did not keep its own separate identifier hitbox')
+ assert(font.justifyV=='TOP','hover geometry is not aligned to the EditBox text top');c:Release()
+end)
+test('advanced documentation resolves complete bare function references passed as arguments',function()
+ local f,a=fixture();f.env.UnitExists=function() end;f.env.APIDocumentation={functions={{Name='UnitExists',Type='Function',Documentation={'Whether the unit exists'}}}}
+ local c=a:CreateLuaWorkbenchControl(f.env.UIParent,function() end,function() return true end);c:SetReadOnly(true);assert(not c.edit:IsEnabled(),'readonly documentation view permits typing');c:SetContext({kind='function',id='REF',source={args={},bindings={}}})
+ local source='getCached(cache, UnitExists, value.unit)';c:SetText(source);local input=c.engine.Query.Console.input;local state=input.queryEditor;local editor=c.engine.Query.Editor
+ editor:Paint(input);local paths=c.engine.APIHelp:Paths(source,true);local first=assert(source:find('UnitExists',1,true));assert(paths[first]=='UnitExists','bare documented reference lost its documentation')
+ local font=state.overlay;local target
+ for _,span in ipairs(state.renderSpans) do if span.source==first then target=span end end;assert(target and target.text=='UnitExists')
+ function font:GetNumLines() return 1 end;function font:GetStringHeight() return 12 end;function font:GetHeight() return 12 end
+ function font:CalculateScreenAreaFromCharacterSpan(start,finish)
+  if start~=target.first then return {} end
+  return {{left=100,bottom=0,width=70,height=12}}
+ end
+ for character=1,10 do assert(editor:HoverSourcePosition(input,100+(character-.5)*7,205)==first,'advanced hover misses function-name character '..character) end
+ assert(editor:HoverSourcePosition(input,171,205)==nil,'argument separator was included in reference hitbox')
+ c:Release()
 end)
 finish()

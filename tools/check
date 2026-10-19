@@ -56,6 +56,8 @@ def main():
             ['lua5.1', 'tests/lua_workbench.lua'],
             ['lua5.1', 'tests/function_data.lua'],
             ['luajit', 'tests/functions_ui.lua'],
+            ['luajit', 'tests/function_metadata_ui.lua'],
+            ['luajit', 'tests/settings_deletion_ui.lua'],
             ['lua5.1', 'tests/builtin_sources.lua'],
             ['lua5.1', 'tests/public_helpers.lua'],
             ['lua5.1', 'tests/schema_authoring.lua'],

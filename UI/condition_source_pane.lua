@@ -75,7 +75,7 @@ function addon:BuildInlineCustomCondition(p,key,source,readOnly)
         if key and not readOnly then self:SettingsTopDelete(form,function()
             p:RequestLeave(function()
                 p:Confirm(L['Delete this custom condition? Existing rotations using it will become unavailable.'],function()
-                    local data=p:SettingsData();data.global.custom_conditions[key]=nil;p:RunSettingsEffect('custom_'..key,function() self:UnregisterCondition(key) end);p.condition=nil;clearNew(p);p:Draw()
+                    self:StageSettingsDeletion(p,d.model.value.description or key,function() local data=p:SettingsData();data.global.custom_conditions[key]=nil;p:RunSettingsEffect('custom_'..key,function() self:UnregisterCondition(key) end);clearNew(p) end)
                 end)
             end)
         end) end

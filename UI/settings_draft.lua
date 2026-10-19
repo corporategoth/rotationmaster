@@ -10,6 +10,8 @@ function addon:CopySettingsData(value,seen)
     local copy={};seen[value]=copy;for key,child in pairs(value) do copy[key]=self:CopySettingsData(child,seen) end;return copy
 end
 function addon:InstallSettingsDraft(p)
+    local release=p.Release
+    function p:Release() if self.pendingDeletion then self.pendingDeletion.restore();self.pendingDeletion=nil end;return release(self) end
     function p:CanAutoCreateCollection(scope,key)
         return not self.emptyDismissed and not (self.draftBaseline and self.draftBaseline[scope] and next(self.draftBaseline[scope][key] or {}))
     end
@@ -22,6 +24,7 @@ function addon:InstallSettingsDraft(p)
         return not equal(self:CreationState(),self.creationBaseline or {})
     end
     function p:DiscardSettingsDraft()
+        if self.pendingDeletion then self.pendingDeletion.restore();self.pendingDeletion=nil end
         if self.ClearSettingsHistory then self:ClearSettingsHistory() end
         self.draft=nil;self.draftBaseline=nil;self.draftEffects=nil;self.newEffect=nil;self.newAnnounce=nil;self.newProfileName=nil;self.importProfile=nil;self.profileSource=nil;self.newItemSetName=nil;self.newGroupName=nil;self.creating=false;self.creatingCategory=false;self.creationBaseline=nil;self.creationApply=nil;self.emptyDismissed=true
     end
@@ -68,7 +71,7 @@ function addon:InstallSettingsDraft(p)
         for scope,keys in pairs(self.transactionKeys) do for _,key in ipairs(keys) do
             if not equal(self.draft[scope][key],self.draftBaseline[scope][key]) then addon.db[scope][key]=addon:CopySettingsData(self.draft[scope][key]) end
         end end
-        local effects=self.draftEffects;if self.ClearSettingsHistory then self:ClearSettingsHistory() end;self.draft=nil;self.draftBaseline=nil;self.draftEffects=nil
+        local effects=self.draftEffects;self.pendingDeletion=nil;if self.ClearSettingsHistory then self:ClearSettingsHistory() end;self.draft=nil;self.draftBaseline=nil;self.draftEffects=nil
         for _,callback in pairs(effects) do callback() end
         if addon.RemoveAllCurrentGlows then addon:RemoveAllCurrentGlows() end
         if addon.ButtonFetch then addon:ButtonFetch() end

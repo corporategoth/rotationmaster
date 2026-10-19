@@ -26,7 +26,7 @@ function addon:OpenNativeSettings(parent,key,cached)
     local p=cached or self:CreateSettingsForm(parent)
     local scopes={Integrations={profile={'lua_editor'}},Effects={global={'effects'}},ItemSets={profile={'itemsets'},global={'itemsets'}},Announces={profile={'announces'}},Conditions={profile={'condition_groups','switch_conditions','other_conditions_order','disabled_conditions'},global={'custom_conditions'}},General={profile={'enable','poll','ignore_mana','ignore_range','effect','color','magnification','setpoint','xoffs','yoffs','loglevel','detailed_profiling','disable_autoswitch','live_config_update','spell_history','combat_history','damage_history','disable_buttons','rotation_view','preview_spells','preview_vertical','preview_locked','preview_opacity','preview_icon_size','preview_window','minimap'},char={'specs'}}}
     scopes.Functions={global={'custom_functions'}}
-    p.settingsKey=key;p.historyEnabled=key=='ItemSets';p.transactionKeys=scopes[key];p:SetWidth(parent:GetWidth());p:SetHeight(parent:GetHeight());p:Open(function(form) build(self,form) end);return p
+    p.settingsKey=key;p.historyEnabled=key=='ItemSets';p.transactionKeys=scopes[key];p:SetWidth(parent:GetWidth());p:SetHeight(parent:GetHeight());p:Open(function(form) if not self:BuildPendingSettingsDeletion(form) then build(self,form) end end);return p
 end
 
 function addon:CollectionFooter(p,kind,values,current,duplicate,transfer)
@@ -39,4 +39,18 @@ end
 function addon:SettingsTopDelete(p,action)
     local c=p:Acquire('rootDelete',function() return self:CreateWorkbenchIconButton(p.child,'trash',L['Delete']) end);c:ClearAllPoints();c:SetPoint('TOPRIGHT',0,-4);c.icon:SetVertexColor(1,.25,.25,1);c:Enable();p.fields.delete=c
     self:SetUIScript(c,'OnClick',p:Guard(function() if p:FlushEdits() then action() end end));return c
+end
+
+-- A staged delete belongs to the removed entry, never the next roster row.
+-- Keep a visible tombstone while the ordinary page transaction owns Apply/Discard.
+function addon:StageSettingsDeletion(p,name,change)
+    local selected,condition,category,filter=p.selection,p.condition,p.categorySelection,p.category
+    p.pendingDeletion={name=name or L['Delete'],restore=function() p.selection=selected;p.condition=condition;p.categorySelection=category;p.category=filter end};p.emptyDismissed=true
+    change();p:Draw()
+end
+function addon:BuildPendingSettingsDeletion(p)
+    local pending=p.pendingDeletion;if not pending then return false end
+    p:UseRoster({{value='pending-delete',text=pending.name}},'pending-delete',function() end,{})
+    p:Heading(pending.name);p:Text(L['Deletion staged. Apply to remove this entry, or Discard to keep it.'])
+    return true
 end

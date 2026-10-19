@@ -11,6 +11,17 @@ local function array(value,limit)
     return count==#value
 end
 function addon:IsCustomFunctionIdentifier(id) return identifier(id) and id~='addon' and id~='L' end
+-- Registry IDs remain stable across name edits; a binding exposes this suggested
+-- local name in a caller. Existing exports with descriptive names still load.
+function addon:FunctionEditorName(id,source)
+    local name=source and source.name
+    if self:IsCustomFunctionIdentifier(name) then return name end
+    name=type(name)=='string' and name:gsub('[^A-Za-z_0-9]','_'):gsub('^%d+','') or ''
+    if name=='' then name=tostring(id or 'helper'):gsub('[^A-Za-z_0-9]','_'):gsub('^%d+','') end
+    name=name:sub(1,128)
+    if not self:IsCustomFunctionIdentifier(name) then name='helper_'..name:sub(1,121) end
+    return name
+end
 function addon:NormalizeFunctionBindings(bindings,arguments)
     if bindings==nil then return {} end
     if type(bindings)~='table' or getmetatable(bindings) then return nil,'invalid-function-bindings' end

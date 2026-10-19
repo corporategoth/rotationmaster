@@ -43,7 +43,12 @@ function addon:CreateWorkbenchLuaEditor(parent,changed,valid,preferred)
                 self.lastText=text;return text
             end
             function c:SetContext(context) self.context=context;if self.inner.SetContext and not pcall(self.inner.SetContext,self.inner,context) then fallback() end end
-            function c:SetReadOnly(value) self.readOnly=value==true;if self.inner.SetReadOnly then self.inner:SetReadOnly(self.readOnly) end end
+            function c:SetReadOnly(value)
+                self.readOnly=value==true
+                if type(self.inner.SetReadOnly)=='function' then
+                    if not pcall(self.inner.SetReadOnly,self.inner,self.readOnly) then fallback() end
+                elseif self.readOnly then fallback() end
+            end
             function c:SetCloseHandler(callback) self.closeRequested=callback;if self.inner.SetCloseHandler then self.inner:SetCloseHandler(callback) end end
             function c:SetText(text)
                 self.lastText=text or '';if not pcall(self.inner.SetText,self.inner,self.lastText) then fallback() end
@@ -86,7 +91,7 @@ function addon:CreateWorkbenchLuaEditor(parent,changed,valid,preferred)
     c.editorDecoration=self:CreateRoundedCardDecoration(c.frame);c.editorDecoration:SetColors(.38,.43,.48,1,.95)
     addon:SetUIScript(c.edit,'OnEditFocusGained',function() c.editorDecoration:SetColors(.45,.7,.85,1,.95) end)
     addon:SetUIScript(c.edit,'OnEditFocusLost',function() c.editorDecoration:SetColors(.38,.43,.48,1,.95) end)
-    c.measure=c.frame:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall');c.measure:SetWordWrap(true);c.measure:Hide()
+    c.measure=c.frame:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall');c.measure:SetJustifyH('LEFT');c.measure:SetJustifyV('TOP');c.measure:SetWordWrap(true);c.measure:Hide()
     if c.edit.SetFont then c.edit:SetFont('Interface\\AddOns\\'..addon_name..'\\Fonts\\Inconsolata-Regular.ttf',12,'') end
     if c.measure.SetFont then c.measure:SetFont('Interface\\AddOns\\'..addon_name..'\\Fonts\\Inconsolata-Regular.ttf',12,'') end
     function c:Layout()

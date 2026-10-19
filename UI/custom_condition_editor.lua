@@ -137,6 +137,7 @@ function addon:condition_edit_box(update,key,source,saveAllowed,embedded)
         local schemaDirty=not addon:SettingsDataEqual(current.fields,before.value.fields) or not addon:SettingsDataEqual(current.fieldOrder,before.value.fieldOrder)
         for _,record in ipairs(p.edits) do if record.control==p.fields.schema and record.dirty then schemaDirty=schemaDirty or record.control:GetText()~=(addon:FormatCustomFieldSchema(before.value.fields) or '') end end
         addon:SetWorkbenchUnsaved(self.schemaViewport,schemaDirty);addon:SetWorkbenchUnsaved(p.fields.schemaGraph,false)
+        if addon.RefreshFunctionBindingMarkers then addon:RefreshFunctionBindingMarkers(p,self) end
         if self.embedded and self.embedded.updateActions then self.embedded.updateActions(self) end
         self:UpdateValidation()
     end
@@ -294,7 +295,7 @@ function addon:condition_edit_box(update,key,source,saveAllowed,embedded)
             if self.code then self.code.frame:ClearAllPoints();self.code.frame:SetPoint('TOPLEFT',0,-codeTop);self.code.frame:SetSize(form.width,codeHeight) end
             form.y=codeTop+codeHeight;form.child:SetHeight(form.y+12);form.scroll:Hide()
         end
-        local preference=d.readOnly and 'native' or addon.db.profile.lua_editor or 'auto'
+        local preference=addon.db.profile.lua_editor or 'auto'
         if d.code and (d.code.preference~=preference or d.code.released and not d.code.Acquire) then d.code:Release();d.code=nil end
         if not d.code then d.code=addon:CreateWorkbenchLuaEditor(form.child,function() if valid() then d:CodeChanged() end end,valid,preference);d.code.preference=preference elseif d.code.released then d.code:Acquire(function() if valid() then d:CodeChanged() end end,valid) end
         if d.code.SetReadOnly then d.code:SetReadOnly(d.readOnly) end

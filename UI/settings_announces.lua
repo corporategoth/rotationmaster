@@ -55,7 +55,7 @@ function addon:BuildAnnounceSettings(p)
             p:Edit('entry'..i..'name',L['Name'],entry.name or '',nil,function(value) update(entry,'name',value) end);drawAction('entry'..i,entry)
         end)
         local enabled=p:Acquire('announceEnabled',function() return self:CreateWorkbenchPill(p.child,'',88) end);enabled:ClearAllPoints();enabled:SetPoint('TOPRIGHT',-30,-4);enabled:SetSize(88,18);enabled:SetText(entry.disabled and L['Disabled'] or L['Enabled']);enabled:SetSelected(not entry.disabled);p.fields['enabled'..i]=enabled;self:SetUIScript(enabled,'OnClick',p:Guard(function() if p:FlushEdits() then entry.disabled=not entry.disabled;p:Draw() end end))
-        p.fields['delete'..i]=self:SettingsTopDelete(p,function() table.remove(values,i);p:Draw() end)
+        p.fields['delete'..i]=self:SettingsTopDelete(p,function() self:StageSettingsDeletion(p,title,function() table.remove(values,i) end) end)
     end
     end
     if p.creating or #values==0 and p:CanAutoCreateCollection('profile','announces') then

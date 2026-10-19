@@ -78,3 +78,15 @@ LuaWorkbench condition debugging receives arguments from Test instead of an edit
 The embedded Output action opens the shared themed text shell with scrolling, Copy, Clear and Refresh. Full error messages are captured before upstream status formatting truncates them. Context and retained console output are included; closing the provider closes its report. Debug execution remains an explicit trusted-code action and never replaces a live saved definition.
 
 Function and condition bodies are syntax-checked as independent chunks before insertion into generated wrappers. This rejects an unmatched `end` that could otherwise escape into wrapper-level expressions. Compiling a registry or import preview never executes supplied bodies. Dependency import apply also treats failed resumed-consumer registration as a transaction failure: attempted resources are cleaned using staged helpers, and the former saved/runtime graph and consumer flags are restored. Trusted external side effects remain best-effort to reverse.
+
+
+## Function metadata and documentation hover
+
+Built In and custom function sources use the same metadata controls. Built In inputs and code remain read-only; selected editor providers still supply API knowledge. Providers without a working read-only control fall back to the native locked editor. Type dropdowns include primitive and registered documented types, retaining imported unions; Nullable adds or removes only `nil`. Multiple return rows describe Lua's ordered return values. Descriptions wrap from their beginning, and the source corner control expands the code area while retaining the metadata draft and provider.
+
+The Name field is a valid Lua local identifier suggested when adding a binding. It is separate from the stable registry identity used by dependencies and imports. Legacy display names are normalized for editing before the draft baseline is captured; saved records and references remain untouched until Apply. Binding rows show a local name and a source helper with its module or custom identity, distinguishing captured helpers such as AceGUI. Renaming a binding never rewrites source text. Binding changes retain saved-baseline markers.
+
+Hover uses the same token spans as the embedded editor, covering identifier glyphs without parentheses or adjacent arguments. Native measurement text uses the input's left/top alignment. The pinned LuaWorkbench adapter accounts for line spacing exactly once when normalizing glyph rectangles. Bare documented function references (for example UnitExists passed to getCached) use LuaWorkbench APIHelp rather than a separate RM API database.
+
+
+Entity deletions on transactional collection pages keep a pending-deletion view for the removed entry until Apply or Discard. The editor does not select a successor while the deletion is staged. Runtime unregister/unbind effects remain deferred to commit; Discard restores the original selection, and a successful commit selects a clean successor without opening a new empty entry.

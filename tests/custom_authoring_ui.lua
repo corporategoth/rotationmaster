@@ -426,4 +426,29 @@ test('duplicating source starts with clean fields and normalized code rather tha
     assert(not d.form.fields.description.rmUnsaved and not d.form.fields.schema.rmUnsaved and not d.form.fields.identifier.rmUnsaved,'pooled field baselines leaked into a fresh clone')
     assert(d.apply:IsEnabled(),'new clone still needs Apply to create it')
 end)
+test('builtin condition code keeps the selected documentation provider in read-only mode',function()
+    local f,a=fixture(true);f.load('Data/builtin_sources.lua');f.load('Core/builtin_sources.lua');f.load('Conditions/combat.lua')
+    a.db.profile.lua_editor='Documentation provider';a:RegisterLuaEditorProvider('Documentation provider',function(parent)
+        local c={frame=f.env.CreateFrame('Frame',nil,parent),edit=f.env.CreateFrame('EditBox',nil,parent)}
+        function c:GetText() return self.edit:GetText() end;function c:SetText(text) self.edit:SetText(text) end
+        function c:SetReadOnly(readonly) self.readOnly=readonly;if readonly then self.edit:Disable() else self.edit:Enable() end end
+        function c:SetContext(context) self.context=context end;function c:Release() self.frame:Hide() end
+        return c
+    end)
+    a.db.profile.condition_groups={};a.db.profile.disabled_conditions={};a.db.profile.switch_conditions={};a.db.profile.other_conditions_order={};a.listConditions=function() return {'COMBAT'} end
+    local host=f.env.CreateFrame('Frame');host:SetSize(1000,700);local p=a:OpenNativeSettings(host,'Conditions');local d=assert(p.inlineCondition)
+    assert(d.readOnly and d.code.provider=='Documentation provider','builtin code discarded the selected provider and its API documentation')
+    assert(not d.code.edit:IsEnabled() and d.code.inner.readOnly,'provider source view permits typing')
+    assert(d.code.inner.context.kind=='condition' and d.code.inner.context.id=='COMBAT','readonly provider lost its RM symbol context');assert(not d:IsDirty())
+end)
+test('staged condition deletion keeps a tombstone until Apply and leaves the next source clean',function()
+    local f,a=fixture(true);for _,key in ipairs({'A','B'}) do local source=a:CopySettingsData(a.empty_condition);source.description=key;a.db.global.custom_conditions[key]=source;a.conditionDefinitions[key]={description=key,fields={}} end
+    a.UnregisterCondition=function(self,key) self.conditionDefinitions[key]=nil end
+    local host=f.env.CreateFrame('Frame');host:SetSize(1100,700);local p=a:OpenNativeSettings(host,'Conditions');assert(p.condition=='A');p.inlineCondition.form.fields.delete:Click();p.prompt.accept:Click()
+    assert(p.pendingDeletion and not p.inlineCondition and a.db.global.custom_conditions.A,'deletion falsely selects an edited successor or commits before Apply')
+    assert(p.fields.apply:IsEnabled() and p.fields.viewChanges and p.fields.viewChanges:IsEnabled(),'pending deletion has no apply/review path')
+    p.fields.cancel:Click();assert(p.condition=='A' and p.inlineCondition and not p.inlineCondition:IsDirty() and a.db.global.custom_conditions.A,'Discard did not restore the selected source')
+    p.inlineCondition.form.fields.delete:Click();p.prompt.accept:Click();p.fields.apply:Click();local d=p.inlineCondition
+    assert(not a.db.global.custom_conditions.A and not a.conditionDefinitions.A and p.condition=='B' and not p.pendingDeletion and d and not d:IsDirty() and not d.apply:IsEnabled() and not d.viewChanges:IsEnabled(),'successor source inherits deleted entry dirty state')
+end)
 finish()

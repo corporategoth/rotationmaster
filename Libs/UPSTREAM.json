@@ -327,9 +327,9 @@
       "source": "https://github.com/R41z0r/LuaWorkbench",
       "revision": "9abc82050f70fca204a19965a717abc6e1eae952",
       "files": {
-        "modules.lua": "60d9996e12c6a81b161f6f17721ff56ab555a72ab391eb8bd5496280ce37da44",
+        "modules.lua": "73574353612d3ed8af497444b527b4c74d490660a20b97f14197537d03b82720",
         "LICENSE": "0403db2d4020c42b27ae872de1ab237a539ec35b4c592b942eb97a7322ca09c8",
-        "manifest.json": "501f5726d49fed44f4145c59fdd7cbd0b88c87665d0cf861acf6d0c96045fa1d"
+        "manifest.json": "d06803ae6c8067a480e5c70c1f5f637c53305734fa16e543be7a5c05f3311ec4"
       }
     }
   },
