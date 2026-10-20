@@ -679,3 +679,10 @@ function addon:GetProfileRotationHeaders(profile)
     if not now or not same(c,now) or profile.rotationStore~=state or profile.rotationFallbackID~=fallback then return finish(nil,'rotation-profile-changed') end
     return finish(result)
 end
+
+-- BEGIN PRIVATE VALIDATION CPU HANDOFF
+do
+ local bind=addon.BindCPUValidationScopeDiagnostic
+ if type(bind)=='function' then bind(addon,'scope',addon.BindRotationProfile,function() return same end) end
+end
+-- END PRIVATE VALIDATION CPU HANDOFF

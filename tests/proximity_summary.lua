@@ -1,5 +1,7 @@
 local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite()
 local inverse,old,repaired=dofile('tests/fixtures/restore_proximity_summary_repairs.lua')
+local previousInverse=inverse;local restoreZone=dofile('tests/fixtures/restore_zone_text_repairs.lua')
+inverse=function(text,body)if not body then text=restoreZone(text) end;return previousInverse(text,body)end
 local newKey='number of %s members%s within %s yards'
 local oldKey='number of %s members%s within %d yards'
 local function read(path) local h=assert(io.open(path));local s=h:read('*a');h:close();return s end

@@ -279,8 +279,152 @@ local function privateCacheSelection(owner,rows)
  end
  return result
 end
-local function finishSample(run,row)
- if not row.sampled then row.sampled=true;row.current,row.currentReason=snapshot(run,row.fn) end
+-- BEGIN PRIVATE VALIDATION SCOPES
+local validationEqual,validationSelect=rawequal,select
+local validationSpecs={
+ {name='references',anchor='GetRotationValidationStamp',slots={'observe','sameEntries','sameItemsets','proofGlobals'}},
+ {name='library',anchor='InitializeRotationLibrary',slots={'ensure','eligible'}},
+ {name='scope',anchor='BindRotationProfile',slots={'same'}},
+}
+local validationGroups,validationClosed,validationCount,validationCapture={},false,0,nil
+local validationInstaller
+local function validationRetire()
+ validationClosed=true
+ if validationEqual(proofRawget(addon,'BindCPUValidationScopeDiagnostic'),validationInstaller) then addon.BindCPUValidationScopeDiagnostic=nil end
+end
+validationInstaller=function(self,name,anchor,reader)
+ if validationClosed or not validationEqual(self,addon) or proofType(name)~='string'
+  or proofType(anchor)~='function' or proofType(reader)~='function' or validationGroups[name] then return false end
+ local found
+ for _,spec in ipairs(validationSpecs) do if name==spec.name then found=true;break end end
+ if not found then return false end
+ validationGroups[name]={anchor=anchor,reader=reader};validationCount=validationCount+1
+ if validationCount==3 then validationRetire() end
+ return true
+end
+addon.BindCPUValidationScopeDiagnostic=validationInstaller
+local function validationClear(run)
+ local state=run.validationScopes
+ if state then state.phase='retired' end
+ run.validationScopes=nil
+ if validationCapture==run then validationCapture=nil end
+end
+local function validationEnding(run,status)
+ if status~='complete' then validationClear(run)
+ elseif run.validationScopes then run.validationScopes.phase='end' end
+end
+local function validationTuple(...) return {n=validationSelect('#',...),...} end
+local function validationSnapshot(run,fn,current)
+ if not current() then return nil,'capture-retired' end
+ local ok,exclusive,calls=proofPcall(run.query,fn,false)
+ if not current() then return nil,'capture-retired' end
+ if not ok then return nil,'function-cpu-query-error' end
+ if not counter(exclusive) or not counter(calls,true) then return nil,'invalid-function-cpu-counter' end
+ if not current() then return nil,'capture-retired' end
+ local good,inclusive,inclusiveCalls=proofPcall(run.query,fn,true)
+ if not current() then return nil,'capture-retired' end
+ if not good then return nil,'function-cpu-query-error' end
+ if not counter(inclusive) or not counter(inclusiveCalls,true) then return nil,'invalid-function-cpu-counter' end
+ if not current() then return nil,'capture-retired' end
+ return {exclusive=exclusive,inclusive=inclusive,calls=calls,inclusiveCalls=inclusiveCalls}
+end
+local function validationFunctions(run,spec,group,current)
+ if not current() then return nil,'capture-retired' end
+ if not validationEqual(run.owner,addon) then return nil,'owner-changed' end
+ if not group then return nil,'unbound' end
+ local anchor=proofRawget(addon,spec.anchor)
+ if not readable(anchor) or not validationEqual(anchor,group.anchor) then return nil,'owner-changed' end
+ if not current() then return nil,'capture-retired' end
+ local values=validationTuple(proofPcall(group.reader))
+ if not current() then return nil,'capture-retired' end
+ if not values[1] then return nil,'provider-unavailable' end
+ if values.n~=#spec.slots+1 then return nil,'invalid-source-function' end
+ for i=1,#spec.slots do
+  local fn=values[i+1]
+  if not readable(fn) or proofType(fn)~='function' then return nil,'invalid-source-function' end
+ end
+ anchor=proofRawget(addon,spec.anchor)
+ if not readable(anchor) or not validationEqual(anchor,group.anchor) then return nil,'owner-changed' end
+ if not current() then return nil,'capture-retired' end
+ return values
+end
+local function validationStart(run)
+ if active~=run then return end
+ local state={phase='start',views={},samples={},groups={}}
+ run.validationScopes=state;validationCapture=run
+ state.current=function()
+  return validationCapture==run and run.validationScopes==state
+   and (state.phase=='start' and active==run or state.phase=='end' and active==nil)
+ end
+ local seen,total={},0
+ local function remember(row) if not seen[row.fn] then seen[row.fn]=row;total=total+1 end end
+ for _,row in ipairs(run.rows) do remember(row) end
+ for _,row in ipairs(run.privateCache.samples) do remember(row) end
+ for _,row in ipairs(run.activity and run.activity.samples or {}) do remember(row) end
+ for _,spec in ipairs(validationSpecs) do
+  local group=validationGroups[spec.name];local funcs,reason=validationFunctions(run,spec,group,state.current)
+  local source={spec=spec,group=group};state.groups[#state.groups+1]=source
+  for i,name in ipairs(spec.slots) do
+   local view={label='Validation.'..spec.name..'.'..name,group=source,slot=i,reason=reason};state.views[#state.views+1]=view
+   if funcs then
+    local fn=funcs[i+1];view.fn=fn
+    local sample=seen[fn]
+    if not sample then
+     if total>=MAX_FUNCTIONS then view.reason='selection-limit'
+     else
+      sample={fn=fn};seen[fn]=sample;total=total+1;state.samples[#state.samples+1]=sample
+      sample.before,sample.reason=validationSnapshot(run,fn,state.current)
+     end
+    end
+    view.sample=sample
+   end
+  end
+ end
+end
+local function appendValidationScopes(report,run,sampleEnd)
+ local state=run.validationScopes
+ local lines={'Private validation scopes (native counters; shared functions overlap):'};local available=0
+ if state then
+  for _,source in ipairs(state.groups) do source.functions,source.reason=validationFunctions(run,source.spec,source.group,state.current) end
+ end
+ local index=0
+ for _,spec in ipairs(validationSpecs) do for _,name in ipairs(spec.slots) do
+  index=index+1;local view=state and state.views[index];local problem
+  if view then problem=view.reason else problem='baseline-unavailable' end
+  local sample,current
+  if view and not problem then
+   local source=view.group;problem=source.reason
+   if not problem and not validationEqual(source.functions[view.slot+1],view.fn) then problem='function-replaced' end
+   sample=view.sample;problem=problem or sample.reason
+   if not problem then current,problem=sampleEnd(run,sample,state.current) end
+   if not problem then
+    for _,key in ipairs({'exclusive','inclusive','calls','inclusiveCalls'}) do if current[key]<sample.before[key] then problem='function-cpu-counter-reset';break end end
+   end
+  end
+  local exclusive,inclusive,calls
+  if not problem then
+   exclusive,inclusive,calls=current.exclusive-sample.before.exclusive,current.inclusive-sample.before.inclusive,current.calls-sample.before.calls
+   if not finite(exclusive) or not finite(inclusive) or not counter(calls,true) then problem='invalid-function-cpu-delta' end
+  end
+  local label='Validation.'..spec.name..'.'..name
+  lines[#lines+1]=problem and label..' | unavailable: '..problem
+   or string.format('%s | exclusive=%.3f ms | inclusive=%.3f ms | calls=%s',label,exclusive,inclusive,tostring(calls))
+  if not problem then available=available+1 end
+ end end
+ lines[#lines+1]=string.format('Fixed validation views: aliases=7; available=%d; unavailable=%d (excluded from rankings above).',available,7-available)
+ lines[#lines+1]='Shared helper counters include all callers; inclusive scopes overlap, not additive.'
+ local bytes=#report-1;for _,line in ipairs(report) do bytes=bytes+#line end
+ local extra=#lines;for _,line in ipairs(lines) do extra=extra+#line end
+ if bytes+extra<16000 then for _,line in ipairs(lines) do report[#report+1]=line end
+ else local omitted='Private validation scopes omitted to keep report bounded.';if bytes+1+#omitted<16000 then report[#report+1]=omitted end end
+end
+-- END PRIVATE VALIDATION SCOPES
+local function finishSample(run,row,guard)
+ if not row.sampled then
+  row.sampled=true
+  if guard then row.current,row.currentReason=validationSnapshot(run,row.fn,guard)
+  else row.current,row.currentReason=snapshot(run,row.fn) end
+ end
  return row.current,row.currentReason
 end
 local function appendPrivateCache(report,run)
@@ -459,6 +603,9 @@ end
 -- END CPU ACTIVITY DIAGNOSTICS
 local function finish(run,status,reason)
  if active~=run then return end
+ -- BEGIN PRIVATE VALIDATION END TOKEN
+ validationEnding(run,status)
+ -- END PRIVATE VALIDATION END TOKEN
  active=nil;run.timer=nil
  -- BEGIN CPU ACTIVITY STOP
  activityStop(run)
@@ -538,14 +685,26 @@ local function finish(run,status,reason)
    -- BEGIN STANDALONE PREVIEW APPENDIX
    appendStandalonePreviewContext(report,run.previewContext,standalonePreviewContext(run.owner))
    -- END STANDALONE PREVIEW APPENDIX
+   -- BEGIN PRIVATE VALIDATION APPENDIX
+   local validationState=run.validationScopes
+   local validationEntered=validationState and validationState.current()
+   appendValidationScopes(report,run,finishSample)
+   if validationEntered and not validationState.current() then validationClear(run);return end
+   -- END PRIVATE VALIDATION APPENDIX
    text=table.concat(report,'\n')
   end
  end
  text=text or 'Rotation Master CPU profile: '..status..(reason and ' ('..reason..')' or '')
+ -- BEGIN PRIVATE VALIDATION CLEANUP
+ validationClear(run)
+ -- END PRIVATE VALIDATION CLEANUP
  lastReport=text
  local callback=field(run.owner,'OnCPUProfileFinished');if type(callback)=='function' then pcall(callback,run.owner,text,status) end
 end
 function addon:StartCPUProfile(duration)
+ -- BEGIN PRIVATE VALIDATION RETIRE
+ validationRetire()
+ -- END PRIVATE VALIDATION RETIRE
  if active then return false,'already-running' end
  if duration==nil then duration=10 end
  if not finite(duration) or duration<1 or duration>60 then return false,'invalid-duration' end
@@ -569,7 +728,15 @@ function addon:StartCPUProfile(duration)
  local activityOK=proofPcall(activityStart,run)
  if not activityOK then activityStop(run);run.activity=nil end
  -- END CPU ACTIVITY START
+ -- BEGIN PRIVATE VALIDATION START
+ local validationEntered=active==run
+ validationStart(run)
+ if validationEntered and active~=run then validationClear(run);return true end
+ -- END PRIVATE VALIDATION START
  local ok,timer=pcall(self.ScheduleTimer,self,function() finish(run,'complete') end,duration)
+ -- BEGIN PRIVATE VALIDATION TIMER FAILURE
+ if not ok or not timer then validationClear(run) end
+ -- END PRIVATE VALIDATION TIMER FAILURE
  if not ok or not timer then if active==run then active=nil end;activityStop(run);return false,'timer-error' end
  run.timer=timer;if active==run then run.executionIndexProof=executionIndexProof() end;lastReport=nil
  -- BEGIN STANDALONE PREVIEW START

@@ -1,6 +1,8 @@
 local function read(p)local h=assert(io.open(p));local s=h:read('*a');h:close();return s end
 local baseline={};local inverse=dofile('tests/fixtures/restore_parser_string_operations.lua')
 local restorePreview=dofile('tests/fixtures/restore_cpu_preview_context.lua')
+local originalPreviewInverse=restorePreview;local restoreScopes=dofile('tests/fixtures/restore_cpu_validation_scopes.lua')
+restorePreview=function(text)return originalPreviewInverse(restoreScopes(text,'Diagnostics/cpu.lua'))end
 for _,p in ipairs({'Data/plain.lua','Data/rotation_tree.lua','Diagnostics/cpu.lua'})do local source=read(p);if p=='Diagnostics/cpu.lua' then source=restorePreview(source) end;baseline[p]=inverse(source,p) end
 -- Use the canonical actual-main setup without its unrelated frozen-index tail.
 -- This feature's own exact inverse supplies the92c8fe8 reference Data owners.

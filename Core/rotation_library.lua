@@ -640,3 +640,10 @@ function addon:DeleteCustomRotation(spec,id,expected)
     if active.cloneScopes[spec] then active.cloneScopes[spec][id]=nil end
     return true
 end
+
+-- BEGIN PRIVATE VALIDATION CPU HANDOFF
+do
+ local bind=addon.BindCPUValidationScopeDiagnostic
+ if type(bind)=='function' then bind(addon,'library',ownedInitializeRotationLibrary,function() return ensure,eligible end) end
+end
+-- END PRIVATE VALIDATION CPU HANDOFF

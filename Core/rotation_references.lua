@@ -204,3 +204,10 @@ function addon:HasDisabledRotationDependency(body)
     for _,row in ipairs(tree.rows) do if condition(row.step.conditions,0) then return true end end
     return false
 end
+
+-- BEGIN PRIVATE VALIDATION CPU HANDOFF
+do
+ local bind=addon.BindCPUValidationScopeDiagnostic
+ if type(bind)=='function' then bind(addon,'references',ownedValidationStamp,function() return observe,sameEntries,sameItemsets,proofGlobals end) end
+end
+-- END PRIVATE VALIDATION CPU HANDOFF

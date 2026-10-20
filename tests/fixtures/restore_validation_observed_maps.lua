@@ -6,7 +6,9 @@ local addition=[==[    -- Public option copying uses live pairs; a prior overrid
         or not proofPlain(proofRawget(observed,'conditions'))
         or not proofPlain(proofRawget(observed,'effects')) then return end
 ]==]
+local restoreScopes=dofile('tests/fixtures/restore_cpu_validation_scopes.lua')
 return function(text,path)
+ if path=='Core/rotation_references.lua' or path=='Core/rotation_library.lua' or path=='Core/rotation_scope.lua' then text=restoreScopes(text,path) end
  if path~='Core/rotation_references.lua' then return text end
  local first,last=text:find(addition,1,true)
  assert(first and not text:find(addition,last+1,true),'missing or duplicate retained-map proof')

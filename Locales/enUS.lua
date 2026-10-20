@@ -2277,6 +2277,9 @@ L["Tests whether the selected spell is currently auto-repeating, such as Shoot o
 
 L["Uses readable positions in the same instance, or player-centered range estimates when positions are unavailable. A unit counts only when its upper range bound is within Distance. Uncertain positions, range, subgroup membership or required health/mana values keep the whole condition unavailable, including under Unless. Percentage checks require a positive maximum; empty aggregates have no result."] = true
 
+L["Default.TBC.Warrior.Starter.Name"] = "Warrior: early leveling (1–19)"
+L["Default.TBC.Warrior.Starter.Description"] = "Bounded combat-only Warrior preview: optional Battle Shout, own Rend, Heroic Strike and normal melee fallback. Queued Heroic Strike is preserved. Rend through level 19 and spending available rage are RM preview policies; pulls, reactive abilities, stances and resource conservation remain manual."
+
 L["Default.TBC.Priest.Starter.Name"] = "Priest: early leveling (1–19)"
 L["Default.TBC.Priest.Starter.Description"] = "Bounded solo Priest preview with optional Inner Fire, opening Mind Blast, own Shadow Word: Pain, wanding and Smite. The half-health cutoff is an RM heuristic; healing, shields, party support and resources remain manual."
 

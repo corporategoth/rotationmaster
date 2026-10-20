@@ -396,7 +396,13 @@ addon:RegisterCondition("ZONE", {
         return value.value ~= nil
     end,
     evaluate = function(value, cache)
-        local zoneName = value.subzone and Functions.cache.getCached(cache, GetSubZoneText) or Functions.cache.getCached(cache, GetZoneText)
+        local method
+        if value.subzone then method=GetSubZoneText else method=GetZoneText end
+        if type(method)~='function' then return nil,'missing-api' end
+        local ok,zoneName=pcall(Functions.cache.getCached,cache,method)
+        if not ok then return nil,'api-error' end
+        if not addon.Platform:CanReadValue(zoneName) then return nil,'restricted-value' end
+        if type(zoneName)~='string' then return nil,'zone-text-unavailable' end
         return value.value == zoneName
     end,
     print = function(_, value)

@@ -97,6 +97,7 @@ test('remaining fifty-four direct calls qualify actual owning leaves with no ext
         for name in pairs(record.allcounts) do assert(declared[path(name)]==identity(name) and a:ResolveFunctionBinding(identity(name))==a.Functions[owners[name]][name]) end
         local totals={};for tag in pairs(record.hashes) do local source=assert(a:GetBuiltinConditionSource(tag));assert(not source.bindings.Functions)
             if tag=='STAT' then source.evaluate=restoreStat(source.evaluate,true) end
+            if tag=='ZONE' then source.evaluate=dofile('tests/fixtures/restore_zone_text_repairs.lua')(source.evaluate,true) end
             if tag=='COMBAT_HISTORY_TIME' then source.evaluate=dofile('tests/fixtures/restore_combat_history_time_repairs.lua')(source.evaluate,true) end
             for callback in pairs(a.CustomConditionCallbacks) do if source[callback] then for name in pairs(owners) do
                 assert(not source[callback]:find('addon.'..name..'(',1,true),tag..' direct legacy '..name..' remains')
@@ -129,6 +130,7 @@ test('every callback byte and parameter remains identical after reversing only n
         if tag=='FORM' then for _,name in ipairs({'print','widget'}) do current[name]=dofile('tests/fixtures/restore_form_presentation_repairs.lua')(dofile('tests/fixtures/restore_form_localization.lua')(current[name],name),name) end end
         if tag=='ECS_STAT_PCT' then current.evaluate=dofile('tests/fixtures/restore_ecs_percentage_sign.lua')(current.evaluate,true) end
         if tag=='PROXIMITY' then current.print=dofile('tests/fixtures/restore_proximity_summary_repairs.lua')(current.print,true) end
+        if tag=='ZONE' then current.evaluate=dofile('tests/fixtures/restore_zone_text_repairs.lua')(current.evaluate,true) end
         local source=legacy(a,current,tag);local parts={}
         -- Separate ECS API regression tests require the corrected dot contract.
         -- Reverse only those explicit semantic fixes for this namespace-only byte proof.
