@@ -493,3 +493,7 @@ Named summaries retain the manager's existing 64,000-byte rendering budget. An a
 ### Literal item names in neighboring summaries
 
 EQUIPPED, ITEM, ITEM_RANGE and ITEM_COOLDOWN now construct typed summary phrases before inserting opaque item/set names. Braces, predicate-looking text, percentages, links and colors in those names cannot become summary grammar. The first three callbacks select one explicit phrase helper; cooldown uses the existing phrase/predicate pair. Evaluation, validation, field UI, item observations and archived source bytes remain unchanged. Normal English output is preserved; the shared bounded summary manager can render its existing fixed fallback for an accepted 64,000-byte item-set name whose formatted output exceeds its presentation bound. That boundary does not change condition decisions.
+
+### Shaman form presentation and localized clients
+
+FORM resolves its fixed Ghost Wolf display identity through spell ID2645, rather than the English spell name. This preserves three metadata calls across summary, selector label and icon while allowing the adapter to return localized text. It deliberately uses the base spell instead of a name-selected override; numeric form selection/evaluation, humanoid laziness and other classes are unchanged. Archived raw callbacks retain their original English-name dispatch; new duplicates use the current ID-based presentation.

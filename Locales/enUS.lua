@@ -2381,6 +2381,21 @@ L["{item} {{!is|is not}} available{carrying}"] = true
 L["{item} {{!is|is not}} in range{carrying}"] = true
 
 L["the cooldown on {item} {comparison} {duration}{carrying}"] = true
+L["Stock counts pending."] = true
+
+L["Stock counts ready."] = true
+
+L["Stock counts unavailable."] = true
+
+L["Carried: %s"] = true
+
+L["Shortage: %s"] = true
+
+L["Copy shortage list"] = true
+
+L["Apply or discard page changes and refresh stock counts before copying."] = true
+
+L["Stock shortage list"] = true
 
 -- BEGIN GENERATED RM PUBLIC HELPER DOCS
 L["Absolute health target (negative means deficit) or percentage fraction."] = true

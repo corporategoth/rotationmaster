@@ -276,8 +276,7 @@ function addon:BuildInlineFunction(p,key,source,readOnly)
         end
         d.signature=f:Text(addon:FunctionSignature(key,d.value));local codeTop=f.y;d.codeTop=codeTop
         local preference=addon.db.profile.lua_editor or 'auto'
-        if d.code and d.code.preference~=preference then d.code:Release();d.code=nil end
-        if not d.code then d.code=addon:CreateWorkbenchLuaEditor(f.child,function() if valid() then d:CodeChanged() end end,valid,preference);d.code.preference=preference elseif d.code.released then d.code:Acquire(function() if valid() then d:CodeChanged() end end,valid) end
+        d.code=addon:AcquireSourceLuaEditor(d,f.child,function() if valid() then d:CodeChanged() end end,valid,preference)
         d.code:SetReadOnly(d.readOnly);d.code.frame:SetParent(f.child);d.code.frame:ClearAllPoints();d.code.frame:SetPoint('TOPLEFT',0,-codeTop);d.code.frame:SetSize(f.width,math.max(220,d.frame:GetHeight()-codeTop-30));d.code.frame:Show();d:SetCode(d.value.code);d:UpdateSignature();codeTop=d.codeTop
         if d.code.SetCloseHandler then d.code:SetCloseHandler(function(mouse) local shell=addon.configWindow;if valid() and shell and shell.pane==p then if mouse then shell.rightDown=true end;shell:Hide() end end) end
         d.codeExpand=d.codeExpand or addon:CreateWorkbenchIconButton(d.code.frame,'expand-all',L['Expand code editor'])

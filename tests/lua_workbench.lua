@@ -72,8 +72,10 @@ test('optional provider can reopen with its new owner callbacks and context',fun
  code:SetContext({kind='function',id='REOPEN',source={args={},bindings={}}});code:SetText('return 1');local previous=code.inner
  code:Release();oldValid=false;assert(type(code.Acquire)=='function','optional provider cannot be reacquired')
  code:Acquire(function() newCalls=newCalls+1 end,function() return newValid end)
- assert(not code.released and code.inner~=previous and previous.engine.released,'released provider engine was reused')
- assert(code.inner.context.id=='REOPEN' and code:GetText()=='return 1','reopening lost editor state')
+ assert(not code.released and code.inner==previous and not previous.engine.released,'known provider engine was not reacquired')
+ assert(code.inner.context.id==nil,'reopening retained the retired source owner')
+ code:SetContext({kind='function',id='REOPEN',source={args={},bindings={}}});code:SetText('return 1')
+ assert(code.inner.context.id=='REOPEN' and code:GetText()=='return 1','reopening lost explicitly rebound editor state')
  code.edit:SetText('return 2');code.edit:GetScript('OnTextChanged')(code.edit,true)
  assert(newCalls==1 and oldCalls==0,'reopened provider used its old change callback')
  newValid=false;code.edit:SetText('return 3');code.edit:GetScript('OnTextChanged')(code.edit,true)

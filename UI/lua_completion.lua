@@ -58,9 +58,17 @@ function addon:InstallRMCodeCompletion(c)
         engine.Workspace.current=context and context.id or 'RM-native';addon:ApplyLuaContextSymbols(engine,context,true)
     end
     function c:ReleaseCompletion()
-        A:Hide();engine.DebugUI:HideTooltip(nil,'owner-closed');engine.Query.Console.source='';if not attached then return end;attached=false
-        for event,script in pairs(originals) do addon:SetUIScript(self.edit,event,script or nil) end;originals={}
+        self.context=nil;self.symbolSignature=nil
+        local failed,why
+        local function attempt(callback,...)
+            local ok,result=pcall(callback,...);if not ok and not failed then failed,why=true,result end
+        end
+        attempt(A.Hide,A);attempt(engine.DebugUI.HideTooltip,engine.DebugUI,nil,'owner-closed')
+        local scripts=originals;originals={};attached=false
+        for event,script in pairs(scripts) do attempt(addon.SetUIScript,addon,self.edit,event,script or nil) end
+        attempt(engine.ResetLease,engine)
+        if failed then error(why,0) end
     end
-    function c:AcquireCompletion() attachedHandler();if self.context then self:UpdateSymbols(self.context) end end
+    function c:AcquireCompletion() engine:Acquire();attachedHandler();if self.context then self:UpdateSymbols(self.context) end end
     c.completionEngine=engine;c:AcquireCompletion()
 end

@@ -10,6 +10,7 @@ local function identity(text) return text end
 function addon:CreateSettingsForm(parent)
     local p={frame=CreateFrame('Frame',nil,parent),pool={},counts={},fields={},edits={},cleanups={},active=false,generation=0,isSettingsForm=true}
     p.frame:SetAllPoints(parent)
+    addon:SetUIScript(p.frame,"OnHide",function()if p.stopStockObservation then p.stopStockObservation()end end)
     p.scroll=addon:CreateWorkbenchScrollFrame(p.frame);p.scroll:SetPoint('TOPLEFT',8,-8)
     p.child=CreateFrame('Frame',nil,p.scroll);p.scroll:SetScrollChild(p.child)
     p.message=label(p.frame);p.message:SetPoint('BOTTOMLEFT',8,4);p.message:SetTextColor(1,.5,.3);p.message:SetHeight(20)
@@ -18,7 +19,7 @@ function addon:CreateSettingsForm(parent)
     end
     function p:Guard(callback)
         local token=self.generation
-        return function(...) if self:Valid(token) then local result;if self.WithSettingsHistory then result=self:WithSettingsHistory(callback,...) else result=callback(...) end;if self.transactionKeys and self.fields.apply and not self.creationUsedForNew then if self:IsSettingsDraftDirty() then self.fields.apply:Enable() else self.fields.apply:Disable() end end;return result end end
+        return function(...) if self:Valid(token) then local result;if self.WithSettingsHistory then result=self:WithSettingsHistory(callback,...) else result=callback(...) end;if self.transactionKeys and self.fields.apply and not self.creationUsedForNew then if self:IsSettingsDraftDirty() then self.fields.apply:Enable() else self.fields.apply:Disable() end end;if self.updateStockObservationActions then self.updateStockObservationActions()end;return result end end
     end
     function p:Acquire(kind,build)
         self.counts[kind]=(self.counts[kind] or 0)+1;local i=self.counts[kind];self.pool[kind]=self.pool[kind] or {}
@@ -289,6 +290,7 @@ function addon:CreateSettingsForm(parent)
         self.builder(self);if self.DraftActions then self:DraftActions() end;if not self.creationUsedForNew then self.creationBaseline=nil;self.creationApply=nil end;self.child:SetHeight(self.y+12);self.scroll:UpdateWorkbenchScroll()
     end
     function p:Open(builder)
+        if self.checkStockObservationOwner then self.checkStockObservationOwner()end
         if self.profile~=addon.db.profile or self.global~=addon.db.global or self.char~=addon.db.char then self.selection=nil;self.creating=false;self.rosterQuery=nil;self.condition=nil;self.category=nil;self.conditionSource=nil;self.newAnnounce=nil;self.newEffectName=nil;self.newItem=nil;self.newItemSetName=nil;self.newGroupName=nil end
         if self.profile~=addon.db.profile or self.global~=addon.db.global then self.draft=nil end
         self.active=true;self.profile=addon.db.profile;self.global=addon.db.global;self.char=addon.db.char;self.builder=builder;self.frame:Show();self:Layout();self:Draw()
@@ -302,6 +304,7 @@ function addon:CreateSettingsForm(parent)
     function p:SetWidth(n) local changed=n~=self.frame:GetWidth();self.frame:SetWidth(n);self:Layout();if changed and self.active and self:FlushEdits() then self:Draw() end end
     function p:SetHeight(n) self.frame:SetHeight(n);self:Layout() end
     function p:Release()
+        if self.stopStockObservation then self.stopStockObservation()end
         if self.ClearSettingsHistory then self:ClearSettingsHistory() end
         self.draft=nil;self.draftBaseline=nil;self.draftEffects=nil;self.active=false;self.generation=self.generation+1;if self.menu then self.menu.frame:Hide() end
         if self.prompt then self.prompt.frame:Hide() end

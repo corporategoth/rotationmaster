@@ -1,15 +1,31 @@
 local addon_name,rm=...
 local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
 local moduleOrder={'BufferedPaste','LuaEditor','Analysis','LuaConsole','UI','Search','Organization','Helpers','Navigation','DebugProbe','DebugCompiler','Debugger','DebugUI','APIHelp','KnowledgeBase','Inspector','Autocomplete','EditorActions','Snippets','Automation'}
+local function editorPreferences()
+    local installed=type(_G.LuaWorkbench)=='table' and _G.LuaWorkbench.db
+    local source=type(installed)=='table' and type(installed.options)=='table' and installed.options or {}
+    local result={}
+    for _,key in ipairs({'autocomplete','autoIndent','autoPairs','apiHelp','debugReadOnly','indentWidth','outputLimit'}) do local value=source[key];if type(value)=='boolean' or type(value)=='number' then result[key]=value end end
+    return result
+end
+-- Cleanup retires the lease first and finishes independent native resources
+-- even if one optional provider/debugger cleanup fails.
+local function cleanup()
+    local failed,why
+    local function attempt(callback,...)
+        local ok,result=pcall(callback,...)
+        if not ok and not failed then failed,why=true,result end
+        return ok
+    end
+    local function finish() if failed then error(why,0) end end
+    return attempt,finish
+end
+local function inactive() return false end
 function rm:CreateLuaWorkbenchEngine(options)
     options=options or {}
     -- Only documented-looking scalar preferences cross this boundary. Never use
     -- the installed workspace's drafts, runtime debugger or mutable namespace.
-    local installed=type(_G.LuaWorkbench)=='table' and _G.LuaWorkbench.db;local source=type(installed)=='table' and type(installed.options)=='table' and installed.options or {}
-    local settings={}
-    for _,key in ipairs({'autocomplete','autoIndent','autoPairs','apiHelp','debugReadOnly','indentWidth','outputLimit'}) do
-        local value=source[key];if type(value)=='boolean' or type(value)=='number' then settings[key]=value end
-    end
+    local settings=editorPreferences()
     local W={current=options.id or 'RM',currentName=options.name or L['Custom condition']}
     W.db={options=settings,snippets={},drafts={},folders={},folderBySnippet={},clearOnRun={},autoRun={},helperModules={},textSnippets={},panelPositions={},split=.65}
     local engine={embedded=true,L={},Workspace=W,embeddingOptions=options}
@@ -49,12 +65,103 @@ function rm:CreateLuaWorkbenchEngine(options)
         local meta=getmetatable(environment);local previous=meta.__index;meta.__index=function(table,key) if options.parameterNames and options.parameterNames[key] then return nil end;if type(previous)=='function' then return previous(table,key) end;return previous and previous[key] end
         return environment
     end
+    local event=engine.APIHelp.events
+    local eventHandler=event and event:GetScript('OnEvent')
+    local eventLease
+    local stopDebugger=engine.Debugger.Stop
+    function engine:Acquire()
+        if self.closing then error('editor-release-in-progress',0) end
+        if self.released==false then return end
+        self.released=false;self.Workspace.db.options=editorPreferences()
+        local lease={};eventLease=lease
+        -- Limited completion never subscribes or loads Blizzard API docs.
+        if event and not options.limited then
+            event:RegisterEvent('PLAYER_REGEN_ENABLED')
+            event:SetScript('OnEvent',function(...) if not self.released and eventLease==lease and eventHandler then return eventHandler(...) end end)
+        end
+    end
+    engine:Acquire()
+    local refresh=engine.Query.Console.Refresh
+    function engine.Query.Console:Refresh(...) if not engine.released then return refresh(self,...) end end
     function engine:Release()
-        if self.released then return end;self.released=true;self.Debugger:Stop();self.DebugProbe:Stop();self.Autocomplete:Hide();self.Workspace:HidePanels()
-        if self.APIHelp.events then self.APIHelp.events:UnregisterAllEvents();self.APIHelp.events:SetScript('OnEvent',nil) end
-        if self.Automation.probe then self.Automation.probe:UnregisterAllEvents() end
+        if self.released then return end
+        self.released=true;self.closing=true;eventLease=nil
+        local attempt,finish=cleanup()
+        if not attempt(self.Debugger.Stop,self.Debugger) and self.Debugger.Stop~=stopDebugger then attempt(stopDebugger,self.Debugger) end
+        attempt(self.DebugProbe.Stop,self.DebugProbe)
+        attempt(self.Autocomplete.Hide,self.Autocomplete)
+        attempt(self.Workspace.HidePanels,self.Workspace)
+        if event then attempt(event.UnregisterAllEvents,event);attempt(event.SetScript,event,'OnEvent',nil) end
+        if self.Automation.probe then attempt(self.Automation.probe.UnregisterAllEvents,self.Automation.probe) end
         local input=self.Query.Console.input
-        if input and input.editBox then self.Query.Editor:Detach(input);input.editBox:ClearFocus();input.frame:Hide() end
+        if input and input.editBox then
+            attempt(self.Query.Editor.Detach,self.Query.Editor,input)
+            attempt(input.editBox.ClearFocus,input.editBox);attempt(input.frame.Hide,input.frame)
+        end
+        self.closing=nil;finish()
+    end
+    function engine:ResetLease()
+        self.released=true;eventLease=nil
+        local attempt,finish=cleanup()
+        local console,editor=self.Query.Console,self.Query.Editor;local input=console.input
+        self.rmContext=nil;self.rmSymbols={}
+        if self.APIHelp.rmSyncSymbols then attempt(self.APIHelp.rmSyncSymbols,self.APIHelp) end
+        local api=self.APIHelp;api.rmUndocumented=nil;api.source=nil;api.paths=nil;api.text={};api.pending=nil;api.pendingForce=nil
+        local autocomplete=self.Autocomplete
+        autocomplete.context,autocomplete.items,autocomplete.input,autocomplete.pending=nil,nil,nil,nil
+        autocomplete.rmNameSymbols,autocomplete.rmNameSource,autocomplete.rmVisibleNames=nil,nil,nil
+        self.Navigation.history={};self.Navigation.held=nil
+        self.Analysis.cache={};self.Analysis.order={};self.Analysis.tokenCount=0;self.Analysis.byteCount=0
+        editor.lexicalCache=nil;editor.viewportLexicalCache=nil
+        console.source='';console.environment=nil;console.linePositionCache=nil;console.lines={};console.characters=0
+        console.undoLines=nil;console.undoDumpLineLimit=nil;console.undoDumpCharacterLimit=nil;console.dumpLineLimit=nil;console.dumpCharacterLimit=nil
+        console.statusText=nil;console.statusFailed=nil;console.lastError=nil
+        for _,key in ipairs({'snippets','drafts','folders','folderBySnippet','clearOnRun','autoRun','helperModules','textSnippets','debugBreakpoints'}) do W.db[key]={} end
+        W.db.startupDebug=nil;W.current='RM';W.currentName='RM';W.dirty=nil;W.f5Held=nil
+        local debugger=self.Debugger
+        debugger.breakpoints={};debugger.breakpointSources={};debugger.loadedBreakpointRecords=nil;debugger.breakpointDB=nil
+        debugger.source=nil;debugger.scriptId=nil;debugger.terminalLines={}
+        local probe=self.DebugProbe;probe.source=nil;probe.scriptId=nil;probe.terminalLines={}
+        local ui=self.DebugUI;ui.snapshotRecord=nil;ui.snapshotLine=nil;ui.snapshotMeasureCache=nil;ui.drawerOpen=false;ui.renderedVariables=nil
+        local inspector=self.Inspector;inspector.refs={};inspector.root=nil;inspector.target=nil;inspector.history={};inspector.rows={}
+        for _,row in ipairs(inspector.buttons or {}) do row.node=nil;attempt(row.Hide,row);if row.text then attempt(row.text.SetText,row.text,'') end end
+        self.Automation.environments={};self.Automation.running={};self.EditorActions.lineClipboard=nil
+        local function clearText(widget) if widget then attempt(widget.SetText,widget,'') end end
+        local function clearInput(value)
+            if not value then return end
+            clearText(value.editBox)
+            local state=value.queryEditor
+            if state then
+                clearText(state.overlay)
+                for key in pairs(state) do if key~='overlay' and key~='caret' and key~='active' then state[key]=nil end end
+            end
+        end
+        clearInput(ui.terminalOutput);clearText(ui.terminalInput)
+        clearInput(ui.snapshotInput);clearText(ui.snapshotTitle);clearText(ui.snapshotMeasure)
+        if probe.terminal then clearInput(probe.terminal.output);clearText(probe.terminal.input) end
+        if probe.snapshot then clearInput(probe.snapshot.code) end
+        if self.Navigation.snapshotInput then clearInput(self.Navigation.snapshotInput) end
+        self.KnowledgeBase.history={}
+        if self.Snippets.panel then self.Snippets.panel.target=nil;self.Snippets.panel.selected=nil end
+        if W.contextMenu then
+            for _,button in ipairs(W.contextMenu.buttons) do button.action=inactive;button.tooltipText=nil;clearText(button.text) end
+            clearText(W.contextMenu.measure)
+        end
+        if input then
+            input.debugHitLayout=nil
+            local state=options.limited and input.queryEditor or input.queryEditorCache
+            if state then
+                clearText(state.overlay)
+                for key in pairs(state) do if key~='overlay' and key~='caret' and key~='active' then state[key]=nil end end
+                if options.limited then state.source='';state.elapsed=0 end
+            end
+            local lines=input.queryLineNumberCache
+            if lines then lines.source=nil;lines.rmMetrics=nil;lines.rmRender=nil;lines.positions=nil;lines.lineHeights=nil;clearText(lines.measure) end
+            -- Native completion keeps its accepted text-clearing order in the
+            -- outer control; never emit a live OnTextChanged from this reset.
+            if not options.limited then clearText(input.editBox) end
+        end
+        finish()
     end
     return engine
 end
@@ -292,7 +399,41 @@ function rm:CreateLuaWorkbenchControl(parent,changed,valid)
         W.db.snippets[W.current]={name=W.currentName,source=self:GetText()};W.db.drafts[W.current]={name=W.currentName,source=self:GetText()}
         self:Layout()
     end
-    function c:Release() if self.released then return end;if self.ReleaseLineNumbers then self:ReleaseLineNumbers() else C:DetachLineNumbers() end;self.released=true;engine:Release();if self.outputWindow then self.outputWindow:Hide() end;frame:Hide();self.changed=nil;self.closeRequested=nil end
+    local pendingPaintElapsed=0
+    local attachMouseUp
+    function c:Acquire(callback,ownerValid)
+        if self.closing then error('editor-release-in-progress',0) end
+        changed,valid=callback,ownerValid;self.changed,self.valid=callback,ownerValid
+        if not self.released then return end
+        self.layingOut=nil
+        self.released=false;self.readOnly=false;input.readonly=false;self.edit:Enable()
+        if self.ResetInputTrace then rm.luaInputEditor=self;self:ResetInputTrace() end
+        self.layoutWidth,self.layoutHeight,self.executionReady=nil,nil,nil;pendingPaintElapsed=0
+        self.edit:SetFont('Interface\\AddOns\\'..addon_name..'\\Fonts\\Inconsolata-Regular.ttf',12,'')
+        engine:Acquire();E:Attach(input);attachMouseUp()
+        if self.RefreshLineNumbers then self:RefreshLineNumbers() end
+        engine.APIHelp:Load();self.frame:Show();self:Layout()
+    end
+    function c:Release()
+        if self.released then return end
+        self.released=true;self.closing=true;self.changed=nil;self.valid=inactive
+        changed=nil;valid=inactive;self.closeRequested=nil;self.showOwner=nil
+        self.context={};self.contextSignature=nil;self.debugError=nil;self.startArguments=nil
+        local attempt,finish=cleanup()
+        if self.ReleaseLineNumbers then attempt(self.ReleaseLineNumbers,self) else attempt(C.DetachLineNumbers,C) end
+        attempt(engine.Release,engine);attempt(self.CloseDebugSurface,self)
+        self.setting=true;attempt(engine.ResetLease,engine);self.setting=false
+        for key in pairs(self.environment) do self.environment[key]=nil end
+        self.environment.addon=rm;self.environment.L=L;engine.embeddingOptions.parameterNames=nil
+        attempt(self.arguments.SetText,self.arguments,'{}');attempt(self.status.SetText,self.status,'')
+        if self.outputWindow then
+            attempt(self.outputWindow.Hide,self.outputWindow)
+            self.outputWindow.text='';self.outputWindow.setting=true
+            attempt(self.outputWindow.input.SetText,self.outputWindow.input,'');self.outputWindow.setting=false
+            attempt(self.outputWindow.measure.SetText,self.outputWindow.measure,'')
+        end
+        attempt(frame.Hide,frame);self.closing=nil;finish()
+    end
     self:SetUIScript(c.edit,'OnEscapePressed',function() if c.closeRequested then c.edit:ClearFocus();c.closeRequested(false) end end)
     self:SetUIScript(c.edit,'OnKeyDown',function(_,key) W:RunShortcut(key) end)
     self:SetUIScript(c.edit,'OnKeyUp',function(_,key) engine.DebugUI:KeyUp(key);engine.Navigation.held=nil;W.f5Held=nil end)
@@ -301,7 +442,6 @@ function rm:CreateLuaWorkbenchControl(parent,changed,valid)
     -- release. Toggling the gutter must restore the active editor handlers.
     E:Attach(input)
     self:SetUIScript(frame,'OnSizeChanged',function() c:Layout() end)
-    local pendingPaintElapsed=0
     self:SetUIScript(frame,'OnUpdate',function(_,elapsed)
         if c.released or not valid() then return end
         c:UpdateDebugAvailability()
@@ -318,11 +458,14 @@ function rm:CreateLuaWorkbenchControl(parent,changed,valid)
     -- Hook the completed provider handler; later SetScript would erase it.
     if rm.InstallLuaLineNumberControl then rm:InstallLuaLineNumberControl(c,C,input);c:RefreshLineNumbers() else C:AttachLineNumbers(input) end
     self:SetUIScript(frame,'OnHide',function() engine.Debugger:Stop();engine.Autocomplete:Hide();W:HidePanels();if c.outputWindow then c.outputWindow:Hide() end end)
-    local mouseUp=c.edit:GetScript('OnMouseUp')
-    self:SetUIScript(c.edit,'OnMouseUp',function(edit,button)
-        if mouseUp then mouseUp(edit,button) end
-        if button=='LeftButton' and IsControlKeyDown and IsControlKeyDown() and rm.NavigateLuaSymbol then rm:NavigateLuaSymbol(engine,input,c:GetText(),edit:GetCursorPosition()) end
-    end)
+    attachMouseUp=function()
+        local mouseUp=c.edit:GetScript('OnMouseUp')
+        rm:SetUIScript(c.edit,'OnMouseUp',function(edit,button)
+            if mouseUp then mouseUp(edit,button) end
+            if not c.released and valid() and button=='LeftButton' and IsControlKeyDown and IsControlKeyDown() and rm.NavigateLuaSymbol then rm:NavigateLuaSymbol(engine,input,c:GetText(),edit:GetCursorPosition()) end
+        end)
+    end
+    attachMouseUp()
     if self.InstallLuaInputDiagnostics then self:InstallLuaInputDiagnostics(c) end
     engine.APIHelp:Load()
     c:Layout();return c
@@ -333,12 +476,16 @@ function rm:IsLuaWorkbenchIntegrationAvailable()
     if type(loaded)~='function' then return false end
     local ok,value=pcall(loaded,'!!!LuaWorkbench');return ok and value==true and type(_G.LuaWorkbench)=='table'
 end
+local ownedWorkbenchControl=rm.CreateLuaWorkbenchControl
+local workbenchProvider
 function rm:DiscoverLuaEditorIntegrations()
     if not self.RegisterLuaEditorProvider then return end
     if self:IsLuaWorkbenchIntegrationAvailable() then
-        self:RegisterLuaEditorProvider('LuaWorkbench',function(parent,changed,valid)
+        if not workbenchProvider then workbenchProvider=function(parent,changed,valid)
             if not self:IsLuaWorkbenchIntegrationAvailable() then return nil end
-            return self:CreateLuaWorkbenchControl(parent,changed,valid)
-        end)
+            local create=self.CreateLuaWorkbenchControl
+            return create(self,parent,changed,valid),create==ownedWorkbenchControl and create or nil
+        end end
+        self:RegisterLuaEditorProvider('LuaWorkbench',workbenchProvider)
     end
 end

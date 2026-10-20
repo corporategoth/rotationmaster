@@ -9,7 +9,7 @@ local function fixture(class,legacy)
  e.GetShapeshiftForm=function(...) assert(select('#',...)==0);s.trace[#s.trace+1]='current';return s.form end
  local function info(id,...)
   log('spell',id,...);if s.mode=='throw' then error('metadata failure') elseif s.mode=='missing' then return nil elseif s.mode=='restricted' then return s.opaque end
-  return {name=id=='Ghost Wolf' and 'Ghost Wolf label' or 'Form '..id,iconID=s.icon,spellID=type(id)=='number' and id or 2645}
+  return {name=(id=='Ghost Wolf' or id==2645) and 'Ghost Wolf label' or 'Form '..id,iconID=s.icon,spellID=type(id)=='number' and id or 2645}
  end
  if legacy then
   e.GetSpellInfo=function(id,...) local r=info(id,...);if r then return r.name,nil,r.iconID,0,0,0,r.spellID end end
@@ -36,7 +36,7 @@ local function reset(s) s.trace={} end
 
 test('modern-only summaries retain humanoid and selected native spell identities',function()
  for _,class in ipairs({'DRUID','SHAMAN'}) do local _,a,s=fixture(class);local v={type='FORM',value=1};assert(a.conditionDefinitions.FORM.valid(0,v));reset(s)
-  local text=a:printCondition(v,7);assert(text:find(class=='SHAMAN' and 'Ghost Wolf label' or 'Form 123',1,true));assert(table.concat(s.trace,',')==(class=='SHAMAN' and 'spell:Ghost Wolf' or 'form:1,spell:123'))
+  local text=a:printCondition(v,7);assert(text:find(class=='SHAMAN' and 'Ghost Wolf label' or 'Form 123',1,true));assert(table.concat(s.trace,',')==(class=='SHAMAN' and 'spell:2645' or 'form:1,spell:123'))
   reset(s);v.value=0;assert(a:printCondition(v,7):find('humanoid',1,true) and #s.trace==0)
  end
 end)
@@ -45,7 +45,7 @@ test('native form choices preserve count order native icon and exact selected nu
  assert(table.concat(s.trace,',')=='count,form:1,spell:123,form:2,spell:456,form:1')
  assert(icon.image:GetTexture()==901 and dropdown.list['0']=='humanoid' and dropdown.list['1']=='Form 123' and dropdown.list['2']=='Form 456' and dropdown:GetValue()=='1')
  assert(table.concat(dropdown.order,',')=='0,1,2');choose(dropdown,'2');assert(v.value==2 and v.sentinel==marker and state.prints==1 and state.statuses==1 and icon.image:GetTexture()==902 and state.status:find('Form 456',1,true));parent:Release()
- local _,b,t=fixture('SHAMAN');reset(t);local image,select,owner=mount(b,{value=1});assert(table.concat(t.trace,',')=='spell:Ghost Wolf,spell:Ghost Wolf' and image.image:GetTexture()==123 and select.list['1']=='Ghost Wolf label');owner:Release()
+ local _,b,t=fixture('SHAMAN');reset(t);local image,select,owner=mount(b,{value=1});assert(table.concat(t.trace,',')=='spell:2645,spell:2645' and image.image:GetTexture()==123 and select.list['1']=='Ghost Wolf label');owner:Release()
 end)
 test('missing failed and restricted metadata decorate without changing form selection or using legacy fallback',function()
  for _,class in ipairs({'DRUID','SHAMAN'}) do for _,mode in ipairs({'missing','throw','restricted'}) do
@@ -68,15 +68,16 @@ test('retired native popup callback cannot edit a recycled form field or its pre
  for _,r in ipairs(dropdown.selector.rows) do if r.menuEntry and r.menuEntry.value=='0' then row=r end end;assert(row);local stale=row.scripts.OnClick;parent:Release()
  local fresh={value=1};local _,reused,owner,nextState=mount(a,fresh);assert(reused==dropdown);stale(row);assert(old.value==1 and fresh.value==1 and state.prints==0 and nextState.prints==0);owner:Release()
 end)
+local localized,_,currentBodies=dofile('tests/fixtures/restore_form_localization.lua')
 local inverse,old,repaired=dofile('tests/fixtures/restore_form_presentation_repairs.lua')
 test('only the two exact presentation bodies change and all private getters retain their identities',function()
- local _,a=fixture();assert(a:FunctionSourceHash(inverse(read('Conditions/combat.lua')))=='656e8e92','combat differs from242faee beyond FORM presentation')
+ local _,a=fixture();assert(a:FunctionSourceHash(inverse(localized(read('Conditions/combat.lua'))))=='656e8e92','combat differs from242faee beyond FORM presentation')
  for _,name in ipairs({'print','widget'}) do assert(inverse(repaired[name],name)==old[name] and not pcall(inverse,old[name],name) and not pcall(inverse,repaired[name]..' ',name));assert(not pcall(inverse,read('Conditions/combat.lua')..repaired[name]..'end,'..'\n'..(name=='print' and 'print = function(_, value)' or 'widget = function(parent, spec, value)')..repaired[name]..'end,')) end
  for name,hash in pairs({character_class='d17cf4c1',color='dbda383d',helpers='9e28e933'}) do local id='builtin:Conditions/combat.lua:'..name;assert(a:FunctionSourceHash(a.builtinFunctions[id].source)==hash and rawequal(a:ResolveFunctionBinding(id),a.builtinSourceModules['Conditions/combat.lua'](name))) end
 end)
 test('current editable copies use actual modern metadata and preserve all unrelated source fields',function()
- for _,class in ipairs({'DRUID','SHAMAN'}) do local _,a,s=fixture(class);local source=assert(a:GetBuiltinConditionSource('FORM'));assert(source.print==repaired.print and source.widget==repaired.widget,'FORM catalog pending')
-  local restored=a:CopySettingsData(source);restored.print=inverse(restored.print,'print');restored.widget=inverse(restored.widget,'widget');assert(a:FunctionSourceHash(restored)=='2eec2558','unrelated complete FORM export changed')
+ for _,class in ipairs({'DRUID','SHAMAN'}) do local _,a,s=fixture(class);local source=assert(a:GetBuiltinConditionSource('FORM'));assert(source.print==currentBodies.print and source.widget==currentBodies.widget,'FORM catalog pending')
+  local restored=a:CopySettingsData(source);restored.print=inverse(localized(restored.print,'print'),'print');restored.widget=inverse(localized(restored.widget,'widget'),'widget');assert(a:FunctionSourceHash(restored)=='2eec2558','unrelated complete FORM export changed')
   local before=a:CopySettingsData(source);local copy=assert(a:CompileCustomCondition('COPY_FORM',source));a:RegisterCondition('COPY_FORM',copy)
   local value={type='COPY_FORM',value=1};assert(copy.valid(0,value) and a:printCondition(value,7):find(class=='SHAMAN' and 'Ghost Wolf label' or 'Form 123',1,true));local icon,dropdown,parent=mount(a,value,copy)
   assert(icon.image:GetTexture()==(class=='SHAMAN' and 123 or 901));choose(dropdown,'0');assert(value.value==0);parent:Release()

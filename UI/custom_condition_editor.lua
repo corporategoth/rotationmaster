@@ -336,8 +336,7 @@ function addon:condition_edit_box(update,key,source,saveAllowed,embedded)
             form.y=codeTop+codeHeight;form.child:SetHeight(form.y+12);form.scroll:Hide()
         end
         local preference=addon.db.profile.lua_editor or 'auto'
-        if d.code and (d.code.preference~=preference or d.code.released and not d.code.Acquire) then d.code:Release();d.code=nil end
-        if not d.code then d.code=addon:CreateWorkbenchLuaEditor(form.child,function() if valid() then d:CodeChanged() end end,valid,preference);d.code.preference=preference elseif d.code.released then d.code:Acquire(function() if valid() then d:CodeChanged() end end,valid) end
+        d.code=addon:AcquireSourceLuaEditor(d,form.child,function() if valid() then d:CodeChanged() end end,valid,preference)
         if d.code.SetReadOnly then d.code:SetReadOnly(d.readOnly) end
         if d.code.SetCloseHandler then d.code:SetCloseHandler(function(mouse)
             if not valid() then return end

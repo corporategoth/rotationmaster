@@ -437,7 +437,7 @@ addon:RegisterCondition("FORM", {
             if value.value == 0 then
                 form = L["humanoid"]
             elseif character_class == "SHAMAN" then
-                local info = addon.Platform:GetSpellInfo("Ghost Wolf")
+                local info = addon.Platform:GetSpellInfo(2645)
                 form = info and info.name
             else
                 local info = addon.Platform:GetSpellInfo(select(4, GetShapeshiftFormInfo(value.value)))
@@ -457,7 +457,7 @@ addon:RegisterCondition("FORM", {
         forms["0"] = L["humanoid"]
         table.insert(formsOrder, "0")
         if character_class == "SHAMAN" then
-            local info = addon.Platform:GetSpellInfo("Ghost Wolf")
+            local info = addon.Platform:GetSpellInfo(2645)
             forms["1"] = info and info.name or L["<form>"]
             table.insert(formsOrder, tostring("1"))
         else
@@ -480,7 +480,7 @@ addon:RegisterCondition("FORM", {
                 else
                     if character_class == "SHAMAN" then
                         if value.value == 1 then
-                            local info = addon.Platform:GetSpellInfo("Ghost Wolf")
+                            local info = addon.Platform:GetSpellInfo(2645)
                             formIcon:SetImage(info and info.iconID or "Interface\\Icons\\INV_Misc_QuestionMark")
                         end
                     else

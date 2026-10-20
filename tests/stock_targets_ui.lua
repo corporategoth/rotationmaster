@@ -4,6 +4,8 @@ local function row(item)return{itemID=item or 1710,minimum=5,target=12,enabled=t
 local function deep()local v={};local n=v;for i=1,20000 do local c={};n.child=c;n=c end;return v end
 local function fixture(plan)
  local f=F.new();local a,e=f.addon,f.env;local _,create=dofile('tests/fixtures/native_ui.lua')(e)
+ local load=f.load;local inverse=dofile('tests/fixtures/restore_stock_targets_observation.lua')
+ f.load=function(path)if path=='UI/settings_stock.lua' or path=='UI/settings_form.lua'then local h=assert(io.open(path));local text=h:read('*a');h:close();local chunk=assert(loadstring(inverse(text,path),'@'..path));setfenv(chunk,e);return chunk('rotationmaster',a)end;return load(path)end
  a.pretty_name='Rotation Master';a.name='rotationmaster';a.configPaneGeneration=1
  for _,path in ipairs({'Platform/spells.lua','Data/plain.lua','Data/tags.lua','Data/rotation_tree.lua','Data/validation.lua','Data/catalog.lua','Data/rotation_store.lua','Core/rotation_library.lua','Core/rotation_scope.lua','Core/rotation_migration.lua','Help/itemsets.lua','Help/general.lua','UI/window.lua','UI/help.lua','UI/icon_picker.lua','UI/color_picker.lua','UI/settings_roster_order.lua','UI/settings_layout.lua','UI/settings_ordered.lua','UI/settings_draft.lua','UI/settings_history.lua','UI/settings_unsaved.lua','UI/settings_form.lua','UI/settings_transfer.lua','UI/collection_compare.lua','UI/settings_collections.lua','UI/settings_stock.lua','UI/settings_items.lua','UI/settings_general.lua'})do
   f.load(path)
