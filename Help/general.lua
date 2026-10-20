@@ -24,6 +24,9 @@ function addon:GetGeneralOptionHelp()
         {id="preview_locked",title=L["Lock position and size"],text=L["Help.General.preview_locked"]},
         {id="preview_vertical",title=L["Horizontal"],text=L["Help.General.preview_vertical"]},
         {id="preview_reset",title=L["Reset preview position"],text=L["Help.General.preview_reset"]},
+        {id="preview_masque",title=L["Use Masque skins"],text=L["Help.General.preview_masque"]},
+        {id="preview_sample",title=L["Preview"],text=L["Help.General.preview_sample"]},
+        {id="masque_settings",title=L["Masque settings"],text=L["Help.General.masque_settings"]},
         {id="preview",title=L["Highlight preview"],text=L["Help.General.preview"]},
         {id="effect",title=L["Effect"],text=L["Help.General.effect"]},
         {id="magnification",title=L["Magnification"],text=L["Help.General.magnification"]},
@@ -38,7 +41,7 @@ function addon:GetGeneralOptionHelp()
     end
     ordered[#ordered+1]={id="loglevel",title=L['Log Level'],text=L['Help.General.loglevel']}
     ordered[#ordered+1]={id="detailed_profiling",title=L['Detailed Profiling'],text=L['Help.General.detailed_profiling']}
-    if self.GetCacheDiagnosticMode then ordered[#ordered+1]={id='cpu_cache_bypass',title=L['Bypass observation cache (reload required)'],text=L['Help.General.cpu_cache_bypass']} end
+    if self.GetCacheDiagnosticMode then ordered[#ordered+1]={id='cpu_cache_bypass',title=L['Bypass observation cache'],text=L['Help.General.cpu_cache_bypass']} end
     if self.RunCPUProfileAction then
         ordered[#ordered+1]={id='cpu_capture',title=L['Capture CPU (10s)'],text=L['Help.General.cpu_capture']}
         ordered[#ordered+1]={id='cpu_report',title=L['CPU report'],text=L['Help.General.cpu_report']}

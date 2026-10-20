@@ -26,10 +26,11 @@ function addon:BuildGeneralSettings(p)
         profile.minimap=profile.minimap or {};profile.minimap.hide=not v;p:RunSettingsEffect('minimap',function() local lib=LibStub('LibDBIcon-1.0');if v then lib:Show(self.name) else lib:Hide(self.name) end end)
     end)
     p:Choice('rotation_view',L['Default rotation view'],profile.rotation_view or 'diagram',{{value='diagram',text=L['Diagram view']},{value='list',text=L['List view']}},function(v) profile.rotation_view=v end)
-    p:Heading(L['History and preview'])
+    p:Heading(L['History'])
     for _,entry in ipairs({{'spell_history','Spell History Memory (seconds)'},{'combat_history','Combat History Memory (seconds)'},{'damage_history','Damage History Memory (seconds)'}}) do
         local key=entry[1];p:Slider(key,L[entry[2]],profile[key],0,300,1,function(v) profile[key]=v end)
     end
+    p:Heading(L['Preview'])
     local function previewChanged()
         p:RunSettingsEffect('preview',function() if self.RefreshPreviewWindow then self:RefreshPreviewWindow() elseif (profile.preview_spells or 0)>0 then if self.nextWindow then self.nextWindow:SetWidth(profile.preview_spells*128) else self:CreatePreviewWindow() end elseif self.nextWindow then self.nextWindow:Release();self.nextWindow=nil end end)
     end
@@ -52,6 +53,29 @@ function addon:BuildGeneralSettings(p)
     reset.tooltip=L['Reset preview position']
     for i,control in ipairs({locked,orientation,reset}) do control:ClearAllPoints();control:SetPoint('TOPLEFT',(i-1)*third,-previewY);control:SetWidth(third-8) end
     locked:GetFontString():SetWidth(third-30);p.y=previewY+30
+    local masqueOk,masque=pcall(LibStub,'Masque',true)
+    local masqueLoaded=masqueOk and type(masque)=='table'
+    local skins=p:Check('preview_masque',L['Use Masque skins'],profile.preview_masque==true,function(v)
+        profile.preview_masque=v;previewChanged()
+    end)
+    if not masqueLoaded and profile.preview_masque~=true then skins:Disable() end
+    local actionsY=p.y
+    local sample=p:Button('preview_sample',L['Preview'],function() end)
+    local settings=p:Button('masque_settings',L['Masque settings'],function() end)
+    local actionX=0
+    for _,control in ipairs({sample,settings}) do
+        local width=math.min((p.width-8)/2,math.max(96,control:GetFontString():GetStringWidth()+24))
+        control:ClearAllPoints();control:SetPoint('TOPLEFT',actionX,-actionsY);control:SetWidth(width);actionX=actionX+width+8
+    end
+    p.y=actionsY+28
+    if type(self.SetPreviewSampleEnabled)=='function' and type(self.IsPreviewSampleEnabled)=='function' then
+        self:SetUIScript(sample,'OnClick',p:Guard(function() self:SetPreviewSampleEnabled(not self:IsPreviewSampleEnabled()) end))
+    else sample:Disable() end
+    if masqueLoaded and type(self.ToggleMasqueSettings)=='function' then
+        self:SetUIScript(settings,'OnClick',p:Guard(function()
+            if not self:ToggleMasqueSettings() then p:Message(L['Masque settings are unavailable.'],false) end
+        end))
+    else settings:Disable() end
     -- This callback belongs to the long-lived preview, never to a released tab.
     local previewOwner=self.db.profile;self.preview_closed_func=function() if addon.db.profile==previewOwner then previewOwner.preview_spells=0 end end
     p:Column(2)
@@ -81,20 +105,20 @@ function addon:BuildGeneralSettings(p)
     local detail=p:Check('detailed_profiling',L['Detailed Profiling'],profile.detailed_profiling,function(v) profile.detailed_profiling=v end);if (profile.loglevel or 2)<3 then detail:Disable() end
     if self.GetCacheDiagnosticMode and self.SetCacheDiagnosticMode then
         local _,requested=self:GetCacheDiagnosticMode()
-        local control=p:Check('cpu_cache_bypass',L['Bypass observation cache (reload required)'],requested=='direct',function() end)
-        local modeText=p:Text('')
-        local function updateModeText()
+        local control=p:Check('cpu_cache_bypass','',requested=='direct',function() end)
+        local function updateModeCaption()
             local loaded,nextMode=self:GetCacheDiagnosticMode()
-            modeText:SetText(string.format(L['Observation cache: %s\nNext reload: %s'],L[loaded],L[nextMode]))
+            control:SetText(loaded==nextMode and L['Bypass observation cache (requires restart)'] or L['Bypass observation cache (pending)'])
+            control:SetChecked(nextMode=='direct')
         end
-        updateModeText();modeText:SetHeight(math.max(40,modeText:GetStringHeight()));p.y=p.y+modeText:GetHeight()-20
+        updateModeCaption()
         -- Diagnostic requests persist independently of pending settings edits.
         self:SetUIScript(control,'OnClick',p:Guard(function()
-            local loaded,current=self:GetCacheDiagnosticMode()
+            local _,current=self:GetCacheDiagnosticMode()
             local wanted=current=='direct' and 'cached' or 'direct'
             local ok=self:SetCacheDiagnosticMode(wanted)
-            control:SetChecked((ok and wanted or current)=='direct');updateModeText()
-            p:Message(ok and string.format(L['Cache diagnostic saved for the next reload. Active mode: %s.'],L[loaded]) or L['Cache diagnostic is unavailable.'],ok)
+            updateModeCaption()
+            p:Message(ok and '' or L['Cache diagnostic is unavailable.'],ok)
         end))
     end
     if self.RunCPUProfileAction then

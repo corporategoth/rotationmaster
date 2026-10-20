@@ -537,6 +537,7 @@ for _,record in pairs(records)do
  record.new=source;record.changes=nil
 end
 return function(path,source)
+ source=dofile('tests/fixtures/restore_general_preview.lua')(path,source)
  local record=records[path]
  if not record or source==record.old then return source end
  assert(source==record.new,'Masque inverse requires exact complete successor: '..path)

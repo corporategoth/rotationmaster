@@ -12,7 +12,7 @@ local function fixture()
   p.removes=p.removes+1;if p.removeHook then p.removeHook(button)end
   p.members[button]=nil;button.texture:SetTexCoord(.2,.8,.2,.8)
  end,ReSkin=function(_,button)p.reskins=p.reskins+1;assert(p.members[button]);if p.resizeHook then p.resizeHook(button)end end}
- p.api={Group=function(_,name,id)p.groups=p.groups+1;assert(name=='rotationmaster'and id=='RecommendationPreview');return p.group end}
+ p.api={Group=function(_,name,id)p.groups=p.groups+1;assert(name=='Rotation Master'and id=='RecommendationPreview');return p.group end}
  local lib=f.env.LibStub
  f.env.LibStub=function(name,silent)if name=='Masque'then assert(silent);p.discoveries=(p.discoveries or 0)+1;return p.api,110210 end;return lib(name)end
  f.env.C_AddOns={GetAddOnMetadata=function()return'12.1.0'end}
@@ -109,5 +109,41 @@ test('additive historical inverse preserves complete old files and rejects unrel
   assert(not pcall(inverse,path,source..'\n'),'whole-file mutation accepted')
   assert(dofile('tests/fixtures/restore_integration_settings.lua')(path,source))
  end
+end)
+test('settings toggle is idle at module load and never discovers or builds preview state',function()
+ local f=F.new();local reads,calls=0,0
+ f.env.SlashCmdList=setmetatable({},{__index=function()reads=reads+1;return function()calls=calls+1 end end})
+ f.env.CreateFrame=function()error('settings helper allocated a frame')end
+ f.env.LibStub=function()error('settings helper discovered a provider')end
+ f.load('Integrations/masque.lua')
+ assert(type(f.addon.ToggleMasqueSettings)=='function','public user-action settings helper missing')
+ assert(reads==0 and calls==0 and not f.addon.nativePreviewWindow,'module load opened settings')
+end)
+test('settings toggle checks namespace and callable command capability',function()
+ local f,a,p=fixture();assert(type(a.ToggleMasqueSettings)=='function','settings toggle missing')
+ for _,commands in ipairs({false,1,'Masque',{}, {MASQUE=false},{MASQUE='toggle'}})do
+  f.env.SlashCmdList=commands;assert(a:ToggleMasqueSettings()==false)
+ end
+ f.env.SlashCmdList=nil;assert(a:ToggleMasqueSettings()==false)
+ assert(not p.discoveries and p.groups==0 and p.adds==0 and not a.nativePreviewWindow)
+end)
+test('settings toggle dispatches exactly one empty argument only for its own receiver',function()
+ local f,a,p=fixture();assert(type(a.ToggleMasqueSettings)=='function','settings toggle missing')
+ local reads,calls=0,0
+ f.env.SlashCmdList=setmetatable({},{__index=function(_,key)
+  reads=reads+1;assert(key=='MASQUE');return function(...)calls=calls+1;assert(select('#',...)==1 and (...)=='','slash argument shape changed');return nil end
+ end})
+ assert(a.ToggleMasqueSettings({})==false and a.ToggleMasqueSettings(nil)==false and reads==0 and calls==0)
+ assert(a:ToggleMasqueSettings()==true and reads==1 and calls==1)
+ assert(a:ToggleMasqueSettings()==true and reads==2 and calls==2)
+ assert(not p.discoveries and p.groups==0 and p.adds==0 and not a.nativePreviewWindow)
+end)
+test('settings toggle contains command lookup and dispatch errors without changing adapter status',function()
+ local f,a=fixture();assert(type(a.ToggleMasqueSettings)=='function','settings toggle missing')
+ local before=a:GetMasquePreviewStatus()
+ for _,commands in ipairs({setmetatable({},{__index=function()error('private lookup')end}),{MASQUE=function()error('private dispatch')end}})do
+  f.env.SlashCmdList=commands;local ok,value=pcall(a.ToggleMasqueSettings,a);assert(ok and value==false)
+ end
+ local after=a:GetMasquePreviewStatus();assert(after.state==before.state and after.enabled==before.enabled and not a.nativePreviewWindow)
 end)
 finish()

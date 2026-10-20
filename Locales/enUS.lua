@@ -12,7 +12,7 @@ L["cached"] = true
 L["direct"] = true
 L["Cache diagnostic saved for the next reload. Active mode: %s."] = true
 L["Cache diagnostic is unavailable."] = true
-L["Help.General.cpu_cache_bypass"] = "Compare RM's standard getCached/getRetryCached helpers with direct reads. This diagnostic request is saved immediately, independently of Apply/Discard. Reload to activate either mode and start with fresh cache state. The report names the active mode and any pending request. Use matching rotation, polling, activity and UI state for both captures. Direct mode reads each invocation again rather than reusing an earlier observation. This bypass leaves execution indexing and structural validation unchanged. Custom code with its own copied cache implementation retains that implementation."
+L["Help.General.cpu_cache_bypass"] = "Diagnostic A/B switch. Checked bypasses observation caching; unchecked uses caching. The checkbox shows the saved choice for the next UI restart. Pending means it differs from the running mode. Use /reload to apply it; no full game restart is needed. This diagnostic saves immediately and does not apply other pending settings."
 L["Cancel capture"] = true
 L["CPU capture requires WoW scriptProfile to be enabled before a reload. RM does not change this setting."] = true
 L["CPU capture is running. Open the report after it finishes."] = true
@@ -2693,11 +2693,26 @@ L['Masque'] = true
 L['Preview appearance'] = true
 L['Skin preview buttons with Masque'] = true
 L['Optional preview-button skins; configure skins with /masque.'] = true
-L['Help.Integrations.preview_masque'] = 'Opt in to skin recommendation preview buttons with separately installed Masque, then Apply. Discard leaves the saved appearance unchanged. Configure skins with /masque. The preview window keeps its native appearance. Masque manages its own settings and profiles; Rotation Master does not synchronize them. Missing or incompatible APIs and provider errors retain the native preview. Native pixel acceptance remains unverified.'
+L['Help.Integrations.preview_masque'] = "General > Preview contains Use Masque skins and the Masque settings button. Enable skins and Apply to use separately installed Masque. This integration pill changes the same profile preference. Masque controls skins in its own settings; /masque toggles the same settings. The preview window keeps its native appearance. Missing or incompatible APIs and provider errors retain the native preview."
 
 
 L["Default.TBC.Priest.Shadow30.Name"] = "Priest: Shadow leveling (30–39)"
 L["Default.TBC.Priest.Shadow30.Description"] = "Bounded Shadow-oriented solo preview; learned spells and native readiness remain authoritative. Choose channels and wand manually; healing and resources remain manual."
+
+
+L["History"] = true
+L["Button skins"] = true
+L["Use Masque skins"] = true
+L["Masque settings"] = true
+L["Masque settings are unavailable."] = true
+L["Bypass observation cache"] = true
+L["Bypass observation cache (requires restart)"] = true
+L["Bypass observation cache (pending)"] = true
+L["Help.General.preview_masque"] = "Use separately installed Masque to skin the recommendation preview buttons. Apply saves this preference; Discard restores it. Missing or incompatible providers keep the native appearance."
+L["Help.General.masque_settings"] = "Open or close Masque settings with its documented command. Choose Rotation Master, then RecommendationPreview. Masque manages its own skins and profiles."
+L["Help.General.preview_sample"] = "Click Preview to toggle temporary sample icons when no real recommendations are available. Real recommendations replace the samples. This does not change Preview Spells, cast spells, or save the sample state."
+
+L["Sample icon"] = true
 
 -- BEGIN GENERATED RM PUBLIC HELPER DOCS
 L["Absolute health target (negative means deficit) or percentage fraction."] = true

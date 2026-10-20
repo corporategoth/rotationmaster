@@ -1,4 +1,4 @@
-local addon_name,addon=...
+local _,addon=...
 -- Optional separately installed provider. All provider calls are cold lifecycle
 -- work except ReSkin on an actual dimension change; publications only set art.
 local status={state='disabled',reason='disabled',enabled=false}
@@ -6,6 +6,19 @@ local function publish(window,state,reason)
  status={state=state,reason=reason,enabled=window and window.profile.preview_masque==true or false,
   version=window and window.masqueVersion,apiMinor=window and window.masqueMinor,nativeAcceptance='unverified',
   versionStatus=window and window.masqueVersion=='12.1.0'and window.masqueMinor==110210 and'source-tested'or'unverified'}
+end
+-- User action only: the documented /masque entrypoint toggles its own panel.
+-- Success means dispatch completed, not that a settings window became visible.
+function addon:ToggleMasqueSettings()
+ if not rawequal(self,addon)then return false end
+ local ok,dispatched=pcall(function()
+  local commands=SlashCmdList
+  if type(commands)~='table'then return false end
+  local toggle=commands.MASQUE
+  if type(toggle)~='function'then return false end
+  toggle('');return true
+ end)
+ return ok and dispatched==true
 end
 function addon:GetMasquePreviewStatus()
  local copy={};for key,value in pairs(status)do copy[key]=value end;return copy
@@ -77,7 +90,7 @@ function addon:ConfigureMasquePreview(window)
   if not rawequal(provider,window.masqueProvider)then
    self:ReleaseMasquePreview(window);epoch=epoch+1
    if not valid()then return end
-   group=groupFn(provider,addon_name,'RecommendationPreview')
+   group=groupFn(provider,'Rotation Master','RecommendationPreview')
    if not valid()then return end
   end
   if type(group)~='table'then fail('incompatible','button-api');return end

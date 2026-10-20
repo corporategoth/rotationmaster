@@ -1,5 +1,12 @@
 local addon_name,addon=...
 local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
+local sampleProfile
+local sampleTextures={'Interface\\Icons\\Spell_Fire_FlameBolt','Interface\\Icons\\Spell_Frost_FrostBolt02',
+    'Interface\\Icons\\Spell_Nature_Lightning','Interface\\Icons\\Spell_Holy_Heal','Interface\\Icons\\INV_Misc_QuestionMark'}
+function addon:IsPreviewSampleEnabled()
+    if sampleProfile~=self.db.profile then sampleProfile=nil end
+    return sampleProfile~=nil
+end
 local function clamp(value,lo,hi,fallback)
     return type(value)=='number' and value==value and math.max(lo,math.min(hi,value)) or fallback
 end
@@ -32,8 +39,35 @@ function addon:CreateNativePreviewWindow()
             return icon
         end
         function window:ReleaseChildren()
-            self.count=0
-            for _,icon in ipairs(self.icons) do if GameTooltip and GameTooltip:IsOwned(icon) then GameTooltip:Hide() end;icon:Hide();addon:SetUIScript(icon,'OnEnter',nil);addon:SetUIScript(icon,'OnLeave',nil) end
+            self.count=0;self.sampleCount=0
+            for _,icon in ipairs(self.icons) do if GameTooltip and GameTooltip:IsOwned(icon) then GameTooltip:Hide() end;icon:Hide();icon.sample,icon.spellId,icon.itemId=nil,nil,nil;addon:SetUIScript(icon,'OnEnter',nil);addon:SetUIScript(icon,'OnLeave',nil) end
+            -- Rotation disable also clears directly, outside a publication batch.
+            if sampleProfile==self.profile then self:PaintSamples();if self.sampleCount>0 then self:DoLayout() end end
+        end
+        function window:ClearSampleIcons()
+            for _,icon in ipairs(self.icons) do if icon.sample then
+                if GameTooltip and GameTooltip:IsOwned(icon) then GameTooltip:Hide() end
+                icon:Hide();icon.sample=nil;addon:SetUIScript(icon,'OnEnter',nil);addon:SetUIScript(icon,'OnLeave',nil)
+            end end
+            self.sampleCount=0
+        end
+        function window:PaintSamples()
+            if not self:Valid() or self.sampleBatch or self.count~=0 or not addon:IsPreviewSampleEnabled() then return end
+            self:ClearSampleIcons()
+            local generation=self.generation
+            for i=1,self.slots do
+                ---@type any
+                local icon=self:EnsureIcon(i);local texture=sampleTextures[i]
+                icon.sample=true;icon.spellId,icon.itemId=nil,nil;icon.texture:SetTexture(texture)
+                if icon.masqueOwner then icon.masqueSurface.texture:SetTexture(texture) end
+                addon:SetUIScript(icon,'OnEnter',function()
+                    if not self:Valid() or generation~=self.generation or not icon.sample or not GameTooltip then return end
+                    GameTooltip:SetOwner(icon,'ANCHOR_BOTTOMRIGHT',3);GameTooltip:SetText(L['Sample icon'])
+                end)
+                addon:SetUIScript(icon,'OnLeave',function() if GameTooltip and GameTooltip:IsOwned(icon) then GameTooltip:Hide() end end)
+                icon:Show()
+            end
+            self.sampleCount=self.slots
         end
         function window:DoLayout()
             if not self.active then return end
@@ -45,7 +79,7 @@ function addon:CreateNativePreviewWindow()
             self.layouting=false
             local titleWidth=math.max(0,self.frame:GetWidth()-28)
             if not sameGeometry(self.title:GetWidth(),titleWidth) then self.title:SetWidth(titleWidth) end
-            local text=self.frame:GetWidth()<140 and 'RM' or addon.pretty_name or L['Rotation Master']
+            local text=(self.sampleCount or 0)>0 and L['Preview'] or self.frame:GetWidth()<140 and 'RM' or addon.pretty_name or L['Rotation Master']
             if self.title:GetText()~=text then self.title:SetText(text) end
             for i,icon in ipairs(self.icons) do
                 local x,y=pad+(self.vertical and 0 or i-1)*size,-title-pad-(self.vertical and i-1 or 0)*size
@@ -62,13 +96,14 @@ function addon:CreateNativePreviewWindow()
         function window:Configure()
             if not self.active then return end
             local profile=self.profile
-            self.slots=math.floor(clamp(profile.preview_spells,1,5,1));self.iconSize=clamp(profile.preview_icon_size,24,160,64);self.vertical=profile.preview_vertical==true;self.locked=profile.preview_locked==true;self.opacity=clamp(profile.preview_opacity,0,1,1)
+            self.slots=addon:IsPreviewSampleEnabled() and (profile.preview_spells or 0)<=0 and 3 or math.floor(clamp(profile.preview_spells,1,5,1));self.iconSize=clamp(profile.preview_icon_size,24,160,64);self.vertical=profile.preview_vertical==true;self.locked=profile.preview_locked==true;self.opacity=clamp(profile.preview_opacity,0,1,1)
             self.body:SetAlpha(self.opacity);self.header:SetAlpha(self.opacity)
             if self.opacity>0 then self.header:Show() else self.header:Hide() end
             self.header:EnableMouse(not self.locked and self.opacity>0);if self.locked then self.frame:StopMovingOrSizing() end
             if not self.locked and self.opacity>0 then self.grip:Show() else self.grip:Hide() end
             for i,icon in ipairs(self.icons) do if i>self.slots then icon:Hide() end end
             if addon.ConfigureMasquePreview then addon:ConfigureMasquePreview(self) end
+            self:PaintSamples()
             self:DoLayout()
         end
         function window:Resize(width,height)
@@ -80,6 +115,7 @@ function addon:CreateNativePreviewWindow()
         end
         function window:AddRecommendation(spellId,itemId)
             if not self:Valid() or self.count>=self.slots then return end
+            if (self.sampleCount or 0)>0 then self:ClearSampleIcons() end
             self.count=self.count+1;local index=self.count
             ---@type any
             local icon=self:EnsureIcon(index)
@@ -95,11 +131,11 @@ function addon:CreateNativePreviewWindow()
             addon:SetUIScript(icon,'OnLeave',function() if GameTooltip and GameTooltip:IsOwned(icon) then GameTooltip:Hide() end end)
             icon:Show();self:DoLayout()
         end
-        function window:PauseLayout() end
-        function window:ResumeLayout() end
+        function window:PauseLayout() self.sampleBatch=true;if (self.sampleCount or 0)>0 then self:ClearSampleIcons() end end
+        function window:ResumeLayout() self.sampleBatch=false;if sampleProfile==self.profile then self:PaintSamples() end end
         function window:Show() if self:Valid() then self.frame:Show() end end
         function window:Hide() self.frame:Hide() end
-        function window:Release() self:ReleaseChildren();self.active=false;self.frame:StopMovingOrSizing();self.frame:Hide();if addon.ReleaseMasquePreview then addon:ReleaseMasquePreview(self) end end
+        function window:Release() if sampleProfile==self.profile then sampleProfile=nil end;self.sampleBatch=false;self:ReleaseChildren();self.active=false;self.frame:StopMovingOrSizing();self.frame:Hide();if addon.ReleaseMasquePreview then addon:ReleaseMasquePreview(self) end end
         function window:SetWidth(width) self:Resize(width,self.frame:GetHeight()) end
         function window:SetHeight(height) self:Resize(self.frame:GetWidth(),height) end
         function window:ClearAllPoints() self.frame:ClearAllPoints() end
@@ -108,7 +144,7 @@ function addon:CreateNativePreviewWindow()
         addon:SetUIScript(frame,'OnSizeChanged',function(_,width,height) if not window.layouting then window:Resize(width,height) end end)
     end
     if window.active and addon.ReleaseMasquePreview then addon:ReleaseMasquePreview(window) end
-    local profile=self.db.profile;window.profile=profile;window.active=true;window.generation=(window.generation or 0)+1;window:ReleaseChildren();self.nextWindow=window
+    local profile=self.db.profile;window.profile=profile;window.active=true;window.sampleBatch=false;window.generation=(window.generation or 0)+1;window:ReleaseChildren();self.nextWindow=window
     local generation=window.generation
     local function valid() return window:Valid() and generation==window.generation end
     addon:SetUIScript(window.close,'OnClick',function()
@@ -129,7 +165,17 @@ function addon:CreateNativePreviewWindow()
 end
 function addon:RefreshPreviewWindow()
     local count=self.db.profile.preview_spells or 0
-    if count<=0 then if self.nextWindow then self.nextWindow:Release();self.nextWindow=nil end
-    elseif self.nextWindow and self.nextWindow.nativePreview and self.nextWindow.profile==self.db.profile then self.nextWindow:Configure();self.nextWindow:Show()
-    else if self.nextWindow then self.nextWindow:Release() end;self:CreateNativePreviewWindow() end
+    if count<=0 and not self:IsPreviewSampleEnabled() then if self.nextWindow then self.nextWindow:Release();self.nextWindow=nil end
+    elseif self.nextWindow and self.nextWindow.nativePreview and self.nextWindow.active and self.nextWindow.profile==self.db.profile then self.nextWindow:Configure();self.nextWindow:Show()
+    else if self.nextWindow and not (self.nextWindow.nativePreview and self.nextWindow.active==false) then self.nextWindow:Release() end;self:CreateNativePreviewWindow() end
+end
+-- Returns the resulting enabled state. Non-Boolean input leaves it unchanged.
+-- The mode belongs only to this loaded UI and current profile; no saved field.
+function addon:SetPreviewSampleEnabled(enabled)
+    if type(enabled)~='boolean' then return self:IsPreviewSampleEnabled() end
+    sampleProfile=enabled and self.db.profile or nil
+    local window=self.nextWindow
+    if not enabled and window and window.nativePreview and window.profile==self.db.profile then window:ClearSampleIcons() end
+    self:RefreshPreviewWindow()
+    return self:IsPreviewSampleEnabled()
 end

@@ -194,7 +194,7 @@ function addon:BuildIntegrationSettings(p)
                 p:RunSettingsEffect('preview_masque',function()self:RefreshPreviewWindow()end);p:Draw()
             end
         end
-        groups[#groups+1]={key='integrations_preview',title=L['Preview appearance'],rows={row}}
+        groups[#groups+1]={key='integrations_themes',title=L['Button skins'],rows={row}}
     end
     group('integrations_actionbars',L['Action bars'],{'ElvUI','Bartender4','ButtonForge','G15Buttons','SyncUI','LUI','Dominos','DiabolicUI','AzeriteUI','Neuron','FarmingBar','TotemTimers','SamyTotemTimers'})
     -- Measure shared columns once per drawing; description receives the remainder.
