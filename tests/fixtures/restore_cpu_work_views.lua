@@ -178,6 +178,7 @@ end
 }
 local function hash(s)local h=0;for i=1,#s do h=(h*33+s:byte(i))%4294967296 end;return string.format('%08x',h)end
 return function(text,path)
+ if path=='main.lua' then text=dofile('tests/fixtures/restore_nameplate_lifecycle.lua')(text,path) end
  local r=assert(records[path],'unknown runtime work inverse path')
  assert(#text==r.length and hash(text)==r.hash,'unrelated runtime work module change: '..path)
  for _,block in ipairs(r.blocks)do

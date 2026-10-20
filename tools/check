@@ -20,6 +20,12 @@ def main():
         commands.extend([
             [sys.executable, 'tests/test_artwork.py'],
             [sys.executable, 'tests/test_no_acegui.py'],
+            ['lua5.1', 'tests/locale_fallback.lua'],
+            ['luajit', 'tests/locale_fallback.lua'],
+            ['lua5.1', 'tests/analytics_replay.lua'],
+            ['luajit', 'tests/analytics_replay.lua'],
+            ['lua5.1', 'tests/nameplate_lifecycle.lua'],
+            ['luajit', 'tests/nameplate_lifecycle.lua'],
             ['lua5.1', 'tests/native_reference_index.lua'],
             ['luajit', 'tests/native_reference_index.lua'],
             ['lua5.1', 'tests/native_widget_ownership.lua'],

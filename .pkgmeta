@@ -6,6 +6,7 @@ ignore:
   - tools
   - docs
   - Assets/Conditions/source
+  - Assets/Conditions/qa
   - Assets/Conditions/export_icons.py
   - Assets/Conditions/v2/source
   - Assets/Conditions/v2/qa

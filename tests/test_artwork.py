@@ -58,6 +58,25 @@ class ArtworkTests(unittest.TestCase):
         self.assertIn(entries[0] + '.toc', names,
                       'package-as must name the actual root TOC with matching case')
 
+    def test_release_excludes_legacy_qa_without_excluding_runtime_or_provenance(self):
+        qa = sorted(str(path.relative_to(ROOT)) for path in
+                    (ROOT / 'Assets/Conditions/qa').rglob('*') if path.is_file())
+        self.assertTrue(qa, 'legacy QA fixture must contain actual files')
+        for label, text in [('generated', GENERATOR.release_metadata()),
+                            ('committed', (ROOT / '.pkgmeta').read_text())]:
+            items = [line[4:] for line in text.splitlines() if line.startswith('  - ')]
+            patterns = [item + '/*' if (ROOT / item).is_dir() else item for item in items]
+            def ignored(path):
+                return any(fnmatch.fnmatchcase(path, pattern) for pattern in patterns)
+            self.assertEqual([path for path in qa if not ignored(path)], [], label + ' ships legacy QA')
+            for directory, _, sizes, entries in self.manifests():
+                for entry in entries:
+                    for size in sizes:
+                        suffix = '' if size == max(sizes) else '-' + str(size)
+                        self.assertFalse(ignored(f"{directory}/{entry['name']}{suffix}.tga"))
+                self.assertFalse(ignored(directory + '/provenance.json'))
+                self.assertFalse(ignored(directory + '/README.md'))
+
     def test_release_keeps_selected_runtime_and_excludes_originals_and_superseded_art(self):
         items = [line[4:] for line in GENERATOR.release_metadata().splitlines() if line.startswith('  - ')]
         patterns = [item + '/*' if (ROOT / item).is_dir() else item for item in items]
