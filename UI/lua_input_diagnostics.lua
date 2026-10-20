@@ -49,68 +49,20 @@ local function sourceOwner(addon,control)
     return nil,nil,false
 end
 
-local function activeControl(control)
-    if control.released or type(control.valid)~='function' then return false end
-    local ok,valid=pcall(control.valid);return ok and not not valid
-end
-
-function addon:GetLuaEditorDiagnosticsWidth(code,width)
-    local seen={}
-    for _=1,8 do
-        if type(code)~='table' or seen[code] then return 0 end
-        if code.inputDiagnosticsToolbar then code:LayoutInputDiagnostics(width);return code.inputDiagnosticsToolbar.width end
-        seen[code]=true;code=code.inner
-    end
-    return 0
-end
-
--- Reports contain counts, never source. The toolbar only opens diagnostics
--- and an isolated stock input sample; ordinary editor input stays native.
+-- Reports contain counts, never source. Keep explicit diagnostic commands
+-- available without adding temporary test controls to the editor chrome.
 function addon:InstallLuaInputDiagnostics(control)
     self.luaInputEditor=control
-    if not control.inputDiagnosticsToolbar then
-        local toolbar={};control.inputDiagnosticsToolbar=toolbar
-        toolbar.diagnostics=self:CreateWorkbenchButton(control.frame,L['Diagnostics'],90)
-        toolbar.input=self:CreateWorkbenchButton(control.frame,L['Input test'],90)
-        for _,button in ipairs({toolbar.diagnostics,toolbar.input}) do button:SetHeight(22);button:SetFrameLevel(control.frame:GetFrameLevel()+30);button:GetFontString():SetWordWrap(false) end
-        self:SetUIScript(toolbar.diagnostics,'OnClick',function()
-            if not activeControl(control) then return end
-            addon.luaInputEditor=control;addon:ShowLuaEditorInputReport()
-        end)
-        self:SetUIScript(toolbar.input,'OnClick',function()
-            if not activeControl(control) then return end
-            addon.luaInputEditor=control;addon:ShowLuaInputProbe()
-        end)
-        control.frame:HookScript('OnSizeChanged',function() control:LayoutInputDiagnostics() end)
-    end
-    function control:LayoutInputDiagnostics(width)
-        local toolbar=self.inputDiagnosticsToolbar;local buttonWidth=math.min(90,math.max(1,((width or self.frame:GetWidth())-52)/2))
-        if toolbar.buttonWidth==nil or math.abs(toolbar.buttonWidth-buttonWidth)>.1 then
-            toolbar.buttonWidth=buttonWidth
-            for _,button in ipairs({toolbar.diagnostics,toolbar.input}) do button:SetWidth(buttonWidth);button:GetFontString():SetWidth(math.max(1,buttonWidth-8)) end
-            toolbar.diagnostics:ClearAllPoints();toolbar.diagnostics:SetPoint('BOTTOMRIGHT',self.frame,'TOPRIGHT',-buttonWidth-4,0)
-            toolbar.input:ClearAllPoints();toolbar.input:SetPoint('BOTTOMRIGHT',self.frame,'TOPRIGHT',0,0)
-        end
-        buttonWidth=toolbar.buttonWidth;toolbar.width=buttonWidth*2+12
-        local compact=buttonWidth<78
-        local diagnosticLabel=compact and L['Info'] or L['Diagnostics']
-        local inputLabel=compact and L['Test'] or L['Input test']
-        if toolbar.input:GetText()~=inputLabel then toolbar.input:SetText(inputLabel) end
-        if toolbar.diagnostics:GetText()~=diagnosticLabel then toolbar.diagnostics:SetText(diagnosticLabel) end
-        toolbar.input.tooltip=L['Input test']
-        toolbar.diagnostics.tooltip=L['Show input diagnostics for this open Lua editor.']
-    end
     function control:ResetNativeArrowProbe()
         local probe=self.nativeArrowProbe;self.nativeArrowProbe=nil
         if probe and probe.edit==self.edit and probe.edit:GetScript('OnArrowPressed')==nil then probe.edit:SetScript('OnArrowPressed',probe.handler) end
-        self:LayoutInputDiagnostics()
     end
     function control:ToggleNativeArrowProbe()
         if self.released or type(self.valid)~='function' then return nil end
         local ok,valid=pcall(self.valid);if not ok or not valid then return nil end
         if self.nativeArrowProbe then self:ResetNativeArrowProbe();return false end
         self.nativeArrowProbe={edit=self.edit,handler=self.edit:GetScript('OnArrowPressed')}
-        self.edit:SetScript('OnArrowPressed',nil);self:LayoutInputDiagnostics();return true
+        self.edit:SetScript('OnArrowPressed',nil);return true
     end
     -- End the old lease before completion/provider release or acquisition
     -- replaces handlers. Never restore the old probe over a newer hook.

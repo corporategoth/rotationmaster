@@ -27,11 +27,11 @@ local function pooledPreviewContainers(f)
     end
     return errors
 end
-test('function signatures reserve clickable diagnostics across wrapping and width changes',function()
+test('function signatures use full width and remain stable without temporary editor controls',function()
     local f,a,host=fixture();a.db.global.custom_functions.A=source('LongFunctionName');local p=a:OpenNativeSettings(host,'Functions');local d=p.inlineFunction
     for _,width in ipairs({700,320,180}) do
-        d.frame:SetWidth(width+34);d.form:SetWidth(width+34);d.form:Draw();d:UpdateActions();local reserve=a:GetLuaEditorDiagnosticsWidth(d.code);local toolbar=d.code.inputDiagnosticsToolbar
-        assert(toolbar and toolbar.input and reserve>0 and reserve<=d.form.width-40 and d.signature:GetWidth()+reserve<=d.form.width+.1,'function signature overlaps clickable diagnostics '..width..'/'..d.form.width..' signature='..d.signature:GetWidth()..' reserve='..reserve..' code='..d.code.frame:GetWidth())
+        d.frame:SetWidth(width+34);d.form:SetWidth(width+34);d.form:Draw();d:UpdateActions()
+        assert(not d.code.inputDiagnosticsToolbar and math.abs(d.signature:GetWidth()-d.form.width)<.1,'function signature still reserves temporary toolbar space')
         assert(d.codeTop>=-d.signature.point[#d.signature.point]+d.signature:GetHeight()+4,'wrapped function signature overlaps editor')
         local top=d.codeTop;local height=d.code.frame:GetHeight();for i=1,30 do d:UpdateActions() end;assert(d.codeTop==top and d.code.frame:GetHeight()==height,'unchanged signature row keeps reflowing')
     end

@@ -23,12 +23,16 @@ local function fixture(...)
     local state={exists={player=true,target=true,pet=true},combat=true,enemy=true,attack=true,dead=false,speed=0,threat=2,
         stealth=false,control=true,petName='Wolf',form=0,calls={},events={{kind='STUN_MECHANIC',remain=4,school=4}}}
     local function called(name) state.calls[name]=(state.calls[name] or 0)+1;if state.throw==name then error('native '..name..' failed') end end
+    state.observed={nameplate1={enemy=true,threat=0},nameplate2={enemy=true,threat=2},nameplate3={enemy=false,threat=3},nameplate4={enemy=true}}
+    state.guids={nameplate1='GUID1',nameplate2='GUID2',nameplate3='GUID3',nameplate4='GUID4'}
+    for unit in pairs(state.observed) do state.exists[unit]=true end
     e.UnitExists=function(unit) called('exists');return state.exists[unit] end
+    e.UnitGUID=function(unit) called('guid');return state.guids[unit] end
     e.UnitAffectingCombat=function() called('combat');return state.combat end
-    e.UnitIsEnemy=function() called('enemy');return state.enemy end
+    e.UnitIsEnemy=function(_,unit) called('enemy');local observed=state.observed[unit];if observed then return observed.enemy end;return state.enemy end
     e.UnitCanAttack=function() called('attack');return state.attack end
     e.UnitIsDead=function() called('dead');return state.dead end
-    e.UnitThreatSituation=function() called('threat');return state.threat end
+    e.UnitThreatSituation=function(_,unit) called('threat');local observed=state.observed[unit];if observed then return observed.threat end;return state.threat end
     e.GetUnitName=function() called('petName');return state.petName end
     e.IsStealthed=function() called('stealth');return state.stealth end
     e.HasFullControl=function() called('control');return state.control end
@@ -46,7 +50,8 @@ local function fixture(...)
         return value
     end}
     a.loc_types={STUN='Stun',FEAR='Fear',INTERRUPT='Interrupt'}
-    a.unitsInRange={{enemy=true,threat=0},{enemy=true,threat=2},{enemy=false,threat=3},{enemy=true}}
+    a.unitsInRange={GUID1={unit='nameplate1',enemy=true,threat=99},GUID2={unit='nameplate2',enemy=false,threat=0},
+        GUID3={unit='nameplate3',enemy=true,threat=99},GUID4={unit='nameplate4',enemy=true,threat=99}}
     a.combatHistory={player={{action='WOUND',severity='CRITICAL',time=98},{action='MISS',time=95}},target={{action='HEAL',time=97}}};a.combatStart=95
     for _,path in ipairs({'Core/conditions.lua','Conditions/common.lua','Conditions/combat.lua','Data/builtin_sources.lua','Core/builtin_sources.lua','Core/custom_authoring.lua','Core/function_data.lua'}) do f.load(path) end
     e.loadstring=function(text,name) local fn,why=loadstring(text,name);if fn then setfenv(fn,e) end;return fn,why end

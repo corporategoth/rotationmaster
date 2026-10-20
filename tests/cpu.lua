@@ -107,23 +107,25 @@ test('selection and report stay bounded with anonymous custom callbacks and host
  local before={};for k,v in pairs(a.Platform) do before[k]=v end;a.OnCPUProfileFinished=function() error('SECRET_SOURCE_TEXT') end;assert(a:StartCPUProfile());assert(#s.queries<=768);s:complete();local text=a:GetCPUProfileReport();private(text);assert(not text:find('PRIVATE_OWNER_',1,true));assert(#text<16000);for k,v in pairs(before) do assert(a.Platform[k]==v) end;local queries=#s.queries;s.timers[1].callback();assert(#s.queries==queries and not a:IsCPUProfileRunning())
 end)
 test('structural validator call counts remain visible below the top timing cutoff including zero',function()
- local _,a,s=fixture();local envelope=function() end;local body=function() end
- a.RotationData={ValidateEnvelope=envelope,ValidateBody=body}
- s.rows[envelope]={{1,2,10},{1,2,10}};s.rows[body]={{1,2,10},{1,2,13}}
+ local _,a,s=fixture();local envelope=function() end;local body=function() end;local index=function() end
+ a.RotationData={ValidateEnvelope=envelope,ValidateBody=body,IndexRotationSteps=index}
+ s.rows[envelope]={{1,2,10},{1,2,10}};s.rows[body]={{1,2,10},{1,2,13}};s.rows[index]={{0,0,2},{0,0,2}}
  for i=1,30 do local key='HOT_'..i;local fn=function() end;a.BuiltinSourceCatalog.conditions[key]={};a.conditionDefinitions[key]={evaluate=fn};s.rows[fn]={{0,0,0},{i,i*2,i}} end
  assert(a:StartCPUProfile());s:complete();local text=a:GetCPUProfileReport()
  contains(text,'Structural validation calls: ValidateEnvelope=0; ValidateBody=3')
+ contains(text,'Execution indexing calls: IndexRotationSteps=0')
  assert(not text:find('RotationData.ValidateEnvelope |',1,true),'zero validator unexpectedly in top timings')
 end)
 test('structural validator summaries preserve unavailable observations and exact pointer deduplication',function()
  for _,mode in ipairs({'missing','replaced','throw','alias'}) do
-  local _,a,s=fixture();local fn=function() end;a.RotationData={ValidateEnvelope=fn,ValidateBody=mode=='alias' and fn or function() end}
+  local _,a,s=fixture();local fn=function() end;a.RotationData={ValidateEnvelope=fn,ValidateBody=mode=='alias' and fn or function() end,IndexRotationSteps=fn}
   s.rows[fn]={{1,2,10},{2,3,14}};if mode=='missing' then a.RotationData.ValidateEnvelope=nil end
   assert(a:StartCPUProfile());if mode=='replaced' then a.RotationData.ValidateEnvelope=function() end elseif mode=='throw' then s.throwFunction=fn end
   local count=0;for _,q in ipairs(s.queries) do if q[1]==fn then count=count+1 end end
   if mode=='alias' then assert(count==2,'aliased validators queried twice') end
   s:complete();local text=a:GetCPUProfileReport()
   contains(text,'Structural validation calls: ValidateEnvelope='..(mode=='alias' and '4' or 'unavailable'))
+  contains(text,'Execution indexing calls: IndexRotationSteps='..((mode=='alias' or mode=='missing') and '4' or 'unavailable'))
   if mode=='alias' then contains(text,'ValidateBody=4');contains(text,'shared functions overlap') end
   private(text)
  end

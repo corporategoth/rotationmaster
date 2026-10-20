@@ -347,35 +347,28 @@ test('arrow probe release and reacquisition cannot restore stale handlers',funct
     assert(code:ToggleNativeArrowProbe()==true);code:ResetInputTrace();assert(not code.nativeArrowProbe and edit:GetScript('OnArrowPressed')==newLease,'trace reset retained a temporary probe')
     local messages={};a.print=function(_,text) messages[#messages+1]=text end;a:ShowLuaEditorArrowProbe();assert(code.nativeArrowProbe and messages[#messages]:find('enabled',1,true));a:ShowLuaEditorArrowProbe();assert(not code.nativeArrowProbe and messages[#messages]:find('disabled',1,true));code:Release();a:ShowLuaEditorArrowProbe();assert(messages[#messages]:find('reopen',1,true),'closed command does not explain how to capture active input')
 end)
-test('shared clickable editor diagnostics select active native and LuaWorkbench controls without editing source',function()
+test('editor diagnostic commands remain source free without temporary buttons in either provider',function()
     for _,provider in ipairs({'plain','LuaWorkbench'}) do
         local f,a=dofile('tests/fixtures/lua_workbench.lua')();f.load('UI/lua_input_diagnostics.lua');f.env.IsAddOnLoaded=function() return true end
-        local valid=true;local changes=0;local code=a:CreateWorkbenchLuaEditor(f.env.UIParent,function() changes=changes+1 end,function() return valid end,provider);local c=code.inner or code;code.frame:SetSize(620,300);c.frame:SetSize(620,300);code:SetText('PRIVATE_BUTTON_BODY');c.edit:SetCursorPosition(3);c.edit:SetFocus()
-        local toolbar=assert(c.inputDiagnosticsToolbar,'shared clickable diagnostic controls missing');assert(toolbar.input,'clickable input test missing');local reports,messages={},{};local inputTests=0
-        local showProbe=assert(a.ShowLuaInputProbe);a.ShowLuaInputProbe=function(self) inputTests=inputTests+1;assert(a.luaInputEditor==c,'input test did not select its active control');return showProbe(self) end
-        a.ShowConditionText=function(_,text) reports[#reports+1]=text;c.edit:ClearFocus() end;a.print=function(_,text) messages[#messages+1]=text end
-        a.luaInputEditor={released=true};toolbar.diagnostics:Click();assert(#reports==1 and a.luaInputEditor==c and reports[1]:find('state=open',1,true) and reports[1]:find('focus=true',1,true) and not reports[1]:find('PRIVATE_BUTTON_BODY',1,true),'click lost active source-free snapshot')
-        c.edit:SetFocus();toolbar.input:Click();assert(inputTests==1 and code:GetText()=='PRIVATE_BUTTON_BODY' and c.edit:GetCursorPosition()==3,'input test altered owner source or caret');assert(a.luaInputProbe.edit~=c.edit and a.luaInputProbe.edit:GetText()~='PRIVATE_BUTTON_BODY' and not next(a.luaInputProbe.edit.scripts),'input sample is not isolated from source or has edit handlers');a.luaInputProbe:Hide();c.edit:SetFocus();local arrow=c.edit:GetScript('OnArrowPressed');assert(not toolbar.gutter and not toolbar.arrows and not c.ToggleDeferredGutterProbe,'temporary gutter/arrow controls remain visible')
-        assert(code:GetText()=='PRIVATE_BUTTON_BODY' and c.edit:GetCursorPosition()==3 and c.edit:HasFocus() and changes==0,'toolbar altered source caret focus or history')
-        a:GetLuaEditorDiagnosticsWidth(code)
-        local writes=0;for _,button in ipairs({toolbar.diagnostics,toolbar.input}) do for _,name in ipairs({'SetWidth','SetPoint','ClearAllPoints','SetText','SetSelected'}) do local original=button[name];button[name]=function(self,...) writes=writes+1;return original(self,...) end end end
-        local getWidth=c.frame.GetWidth;c.frame.GetWidth=function(self) return getWidth(self)+.00003051758 end
-        for i=1,100 do a:GetLuaEditorDiagnosticsWidth(code) end;assert(writes==0,'settled toolbar repeated native UI writes')
-        valid=false;toolbar.diagnostics:Click();toolbar.input:Click();assert(inputTests==1 and #reports==1 and #messages==0,'stale toolbar acted');valid=true;code:Release();assert(not c.lineNumberQueue,'release retained gutter queue')
-        toolbar.diagnostics:Click();toolbar.input:Click();assert(inputTests==1 and #reports==1 and #messages==0,'released toolbar acted');code:Acquire(function() end,function() return true end);local active=code.inner or code;assert(active.inputDiagnosticsToolbar and not active.inputDiagnosticsToolbar.gutter and not active.nativeArrowProbe,'reopening lost controls or retained experiment');code:Release()
+        local changes=0;local code=a:CreateWorkbenchLuaEditor(f.env.UIParent,function() changes=changes+1 end,function() return true end,provider);local c=code.inner or code
+        code:SetText('PRIVATE_COMMAND_BODY');c.edit:SetCursorPosition(3);c.edit:SetFocus()
+        assert(not c.inputDiagnosticsToolbar and not c.LayoutInputDiagnostics,'temporary diagnostic controls remain in the editor')
+        local report;a.ShowConditionText=function(_,text) report=text end;a:ShowLuaEditorInputReport()
+        assert(report:find('state=open',1,true) and report:find('focus=true',1,true) and not report:find('PRIVATE_COMMAND_BODY',1,true),'command lost source-free input snapshot')
+        a:ShowLuaInputProbe();assert(a.luaInputProbe.edit~=c.edit and a.luaInputProbe.edit:GetText()~='PRIVATE_COMMAND_BODY' and not next(a.luaInputProbe.edit.scripts),'explicit input sample is not isolated')
+        a.luaInputProbe:Hide();assert(code:GetText()=='PRIVATE_COMMAND_BODY' and c.edit:GetCursorPosition()==3 and changes==0,'commands changed source/caret/history')
+        code:Release();assert(not c.lineNumberQueue,'release retained gutter queue');code:Acquire(function() end,function() return true end)
+        local active=code.inner or code;assert(not active.inputDiagnosticsToolbar and not active.LayoutInputDiagnostics and not active.nativeArrowProbe,'reopening retained temporary controls or experiment');code:Release()
     end
 end)
-test('condition signature reserves compact diagnostic controls above the code at narrow and wide widths',function()
+test('condition signature uses its full width without temporary editor controls',function()
     local f,a=fixture();local d=a:condition_edit_box(function() end);local footer=d.apply.point
     for _,width in ipairs({700,300,180}) do
-        d.body:SetWidth(width);d.form:SetWidth(width);d.form:Draw();local code=d.code;local reserve=a:GetLuaEditorDiagnosticsWidth(code);local toolbar=code.inputDiagnosticsToolbar
-        assert(reserve>0 and reserve<=d.form.width-40 and d.signature:GetWidth()+reserve<=d.form.width+.1,'condition signature overlaps diagnostic buttons '..width..'/'..d.form.width..' signature='..d.signature:GetWidth()..' reserve='..reserve..' code='..d.code.frame:GetWidth())
-        assert(toolbar.diagnostics.point[1]=='BOTTOMRIGHT' and toolbar.diagnostics.point[2]==code.frame and toolbar.diagnostics.point[3]=='TOPRIGHT','diagnostics are not in the signature row above code')
-        assert(toolbar.input and toolbar.input.point[1]=='BOTTOMRIGHT' and toolbar.input.point[2]==code.frame and toolbar.input.point[3]=='TOPRIGHT','input test overlays source code')
-        assert(toolbar.diagnostics.point[4]+toolbar.diagnostics:GetWidth()<toolbar.input.point[4],'two diagnostic buttons overlap')
+        d.body:SetWidth(width);d.form:SetWidth(width);d.form:Draw();local code=d.code
+        assert(not code.inputDiagnosticsToolbar and math.abs(d.signature:GetWidth()-d.form.width)<.1,'condition signature still reserves temporary toolbar space')
         local signatureTop=-d.signature.point[#d.signature.point];local codeTop=-code.frame.point[#code.frame.point]
         assert(codeTop>=signatureTop+d.signature:GetHeight()+4 and code.frame:GetHeight()>=60,'wrapped signature collides with code')
-        assert(d.apply.point==footer and d.apply:GetParent()==d.frame,'diagnostic controls moved Apply footer')
+        assert(d.apply.point==footer and d.apply:GetParent()==d.frame,'editor controls moved Apply footer')
     end
 end)
 test('source footer follows schema child ownership and navigation includes its pending fields',function()

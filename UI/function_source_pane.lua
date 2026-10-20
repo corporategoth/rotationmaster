@@ -85,8 +85,7 @@ function addon:BuildInlineFunction(p,key,source,readOnly)
     function d:UpdateSignature()
         if not self.signature then return end
         local text=addon:FunctionSignature(self.key,self.value)
-        local reserve=addon.GetLuaEditorDiagnosticsWidth and addon:GetLuaEditorDiagnosticsWidth(self.code,form.width) or 0
-        local width=math.max(1,form.width-reserve)
+        local width=math.max(1,form.width)
         if self.signature:GetText()==text and math.abs(self.signature:GetWidth()-width)<.1 then return end
         local oldHeight=self.signature:GetHeight();self.signature:SetWidth(width);self.signature:SetText(text);self.signature:SetHeight(0)
         local height=math.max(20,self.signature:GetStringHeight());self.signature:SetHeight(height)

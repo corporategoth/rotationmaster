@@ -87,3 +87,109 @@ function data.ReserveRotationIdentities(value,used)
     end
     reserve(value);return true
 end
+
+-- The private execution reader never exposes its index or graph witness.
+-- Trusted standard-at-load primitives; inherited globals never certify reuse.
+local indexType,indexRawget,indexNext,indexEqual=type,rawget,next,rawequal
+local indexGetmetatable=getmetatable
+---@type fun(f: number|function): table
+local indexGetfenv=getfenv
+local indexPairs,indexIpairs=pairs,ipairs
+local indexTable,indexMath,indexString=table,math,string
+local indexSort,indexMax,indexHuge=table.sort,math.max,math.huge
+local indexEnvironment=indexType(indexGetfenv)=="function" and indexGetfenv(1) or nil
+local indexStringMeta=indexGetmetatable("")
+local indexStringMethods=indexType(indexStringMeta)=="table" and indexRawget(indexStringMeta,"__index") or nil
+local indexMatch=indexType(indexStringMethods)=="table" and indexRawget(indexStringMethods,"match") or nil
+local indexSub=indexType(indexStringMethods)=="table" and indexRawget(indexStringMethods,"sub") or nil
+local ownedIndex=data.IndexRotationSteps
+local portableOwned
+local bindPortable=addon.BindRotationPortableReader
+if indexType(bindPortable)=="function" then
+    ---@cast bindPortable function
+    bindPortable(addon,function(reader) portableOwned=reader end)
+    addon.BindRotationPortableReader=nil
+end
+local function indexOwned()
+    return portableOwned and portableOwned(data) and indexType(indexEnvironment)=="table"
+        and indexEqual(indexRawget(data,"IndexRotationSteps"),ownedIndex)
+        and indexEqual(indexGetfenv(ownedIndex),indexEnvironment)
+        and indexEqual(indexGetfenv(child),indexEnvironment)
+        and indexEqual(indexGetfenv(location),indexEnvironment)
+        and indexEqual(indexGetfenv(failure),indexEnvironment)
+        and indexEqual(indexGetfenv(identifier),indexEnvironment)
+        and indexEqual(indexGetfenv(dense),indexEnvironment)
+        and indexEqual(indexRawget(indexEnvironment,"type"),indexType)
+        and indexEqual(indexRawget(indexEnvironment,"pairs"),indexPairs)
+        and indexEqual(indexRawget(indexEnvironment,"ipairs"),indexIpairs)
+        and indexEqual(indexRawget(indexEnvironment,"getmetatable"),indexGetmetatable)
+        and indexEqual(indexRawget(indexEnvironment,"getfenv"),indexGetfenv)
+        and indexEqual(indexRawget(indexEnvironment,"table"),indexTable)
+        and indexEqual(indexRawget(indexTable,"sort"),indexSort)
+        and indexEqual(indexRawget(indexEnvironment,"math"),indexMath)
+        and indexEqual(indexRawget(indexMath,"max"),indexMax)
+        and indexEqual(indexRawget(indexMath,"huge"),indexHuge)
+        and indexType(indexStringMeta)=="table" and indexEqual(indexStringMethods,indexString)
+        and indexType(indexMatch)=="function" and indexType(indexSub)=="function"
+        and indexEqual(indexGetmetatable(""),indexStringMeta)
+        and indexEqual(indexRawget(indexStringMeta,"__index"),indexStringMethods)
+        and indexEqual(indexRawget(indexStringMethods,"match"),indexMatch)
+        and indexEqual(indexRawget(indexStringMethods,"sub"),indexSub)
+end
+local function witness(body)
+    local records,seen={},{}
+    local function visit(value)
+        if indexType(value)~="table" or seen[value] then return end
+        seen[value]=true
+        local row={object=value,values={},count=0};records[#records+1]=row
+        for key,item in indexNext,value do
+            row.values[key]=item;row.count=row.count+1;visit(item)
+        end
+    end
+    visit(body);return records
+end
+local function unchanged(records)
+    for i=1,#records do
+        local row=records[i];local object=row.object
+        if indexGetmetatable(object)~=nil then return false end
+        local count=0
+        for key,value in indexNext,object do
+            if not indexEqual(value,indexRawget(row.values,key)) then return false end
+            count=count+1
+        end
+        if count~=row.count then return false end
+    end
+    return true
+end
+local function materialize(index)
+    local rows,paths={},{}
+    for i=1,#index.rows do
+        local row=index.rows[i];local fresh={}
+        for key,value in indexNext,row do fresh[key]=value end
+        local path=row.path;local copy=paths[path]
+        if not copy then
+            copy={};paths[path]=copy
+            for key,value in indexNext,path do copy[key]=value end
+        end
+        fresh.path=copy;rows[i]=fresh
+    end
+    return {rows=rows}
+end
+function addon:BindRotationExecutionIndexReader(bind)
+    if self~=addon or indexType(bind)~="function" then return end
+    local entry,attempt
+    local function retire() entry=nil;attempt={} end
+    local function read(body,profile,namespace,db)
+        if not indexEqual(namespace,data) or not indexOwned() then retire();return false end
+        if entry and indexEqual(entry.body,body) and indexEqual(entry.profile,profile) and indexEqual(entry.db,db) and unchanged(entry.graph) then
+            return true,materialize(entry.index)
+        end
+        retire();local token=attempt
+        local index,why=ownedIndex(body,{allowMissingIds=true})
+        if not index then return true,nil,why end
+        local graph=witness(body)
+        if indexEqual(attempt,token) and indexOwned() then entry={body=body,profile=profile,db=db,index=index,graph=graph} end
+        return true,materialize(index)
+    end
+    bind(read,retire)
+end

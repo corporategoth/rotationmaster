@@ -86,6 +86,7 @@ Core/level_conditions.lua
 Core/point_conditions.lua
 Core/class_group_conditions.lua
 Core/health_forecast_conditions.lua
+Core/threat_count_conditions.lua
 Core/itemset_services.lua
 Core/rotation_references.lua
 Core/item_sets.lua

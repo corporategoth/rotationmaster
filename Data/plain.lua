@@ -83,3 +83,34 @@ function data.CopyData(value)
     end
     return copy(value)
 end
+
+-- Private source-owner proof. Public portable/copy APIs remain fresh and live.
+local portableType,portableRawget,portableEqual=type,rawget,rawequal
+local portableGetmetatable=getmetatable
+---@type fun(f: number|function): table
+local portableGetfenv=getfenv
+local portablePairs,portableIpairs=pairs,ipairs
+local portableTable,portableMath=table,math
+local portableSort,portableHuge=table.sort,math.huge
+local portableEnvironment=portableType(portableGetfenv)=="function" and portableGetfenv(1) or nil
+local ownedPortable=data.CheckPortable
+local function portableOwned(namespace)
+    return portableEqual(namespace,data) and portableType(portableEnvironment)=="table"
+        and portableEqual(portableRawget(data,"CheckPortable"),ownedPortable)
+        and portableEqual(portableGetfenv(ownedPortable),portableEnvironment)
+        and portableEqual(portableGetfenv(finite),portableEnvironment)
+        and portableEqual(portableGetfenv(diagnostic),portableEnvironment)
+        and portableEqual(portableRawget(portableEnvironment,"type"),portableType)
+        and portableEqual(portableRawget(portableEnvironment,"pairs"),portablePairs)
+        and portableEqual(portableRawget(portableEnvironment,"ipairs"),portableIpairs)
+        and portableEqual(portableRawget(portableEnvironment,"getmetatable"),portableGetmetatable)
+        and portableEqual(portableRawget(portableEnvironment,"getfenv"),portableGetfenv)
+        and portableEqual(portableRawget(portableEnvironment,"math"),portableMath)
+        and portableEqual(portableRawget(portableMath,"huge"),portableHuge)
+        and portableEqual(portableRawget(portableEnvironment,"table"),portableTable)
+        and portableEqual(portableRawget(portableTable,"sort"),portableSort)
+end
+function addon:BindRotationPortableReader(bind)
+    if self~=addon or portableType(bind)~="function" then return end
+    bind(portableOwned)
+end

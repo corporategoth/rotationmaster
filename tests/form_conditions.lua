@@ -60,7 +60,7 @@ test('old saved raw callback keeps equality semantics and source remains unchang
  local definition=assert(a:CompileCustomCondition('SAVED_FORM',source));a:RegisterCondition('SAVED_FORM',definition);s.value=nil;assert(definition.evaluate(node(),{})==false and a:evaluateConditionResult({type='NOT',value=node(0,'SAVED_FORM')}).status=='match');s.value=.5;assert(definition.evaluate(node(.5),{})==true);assert(a:SettingsDataEqual(before,source))
 end)
 test('only exact FORM evaluate changes and all private source identities remain intact',function()
- local _,a=fixture();local file=assert(io.open('Conditions/combat.lua'));local text=file:read('*a');file:close();text=dofile('tests/fixtures/restore_combat_time_repairs.lua')(text);text=dofile('tests/fixtures/restore_form_repairs.lua')(text);assert(a:FunctionSourceHash(text)=='58118515','combat differs from75f8297 beyond FORM evaluate')
+ local _,a=fixture();local file=assert(io.open('Conditions/combat.lua'));local text=file:read('*a');file:close();text=dofile('tests/fixtures/restore_threat_count_repairs.lua')(text);text=dofile('tests/fixtures/restore_combat_time_repairs.lua')(text);text=dofile('tests/fixtures/restore_form_repairs.lua')(text);assert(a:FunctionSourceHash(text)=='58118515','combat differs from75f8297 beyond FORM evaluate')
  for name,hash in pairs({color='dbda383d',character_class='d17cf4c1',helpers='9e28e933'}) do local id='builtin:Conditions/combat.lua:'..name;assert(a:FunctionSourceHash(assert(a.builtinFunctions[id]).source)==hash and a:ResolveFunctionBinding(id)==a.builtinSourceModules['Conditions/combat.lua'](name)) end
 end)
 finish()

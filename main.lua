@@ -10,6 +10,18 @@ local AceConsole = LibStub("AceConsole-3.0")
 local AceEvent = LibStub("AceEvent-3.0")
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 local getCached
+local sequenceRawMethod,sequenceRun
+local bindSequence=addon.BindRotationSequenceReader
+if type(bindSequence)=="function" then
+    bindSequence(addon,function(rawMethod,run) sequenceRawMethod,sequenceRun=rawMethod,run end)
+    addon.BindRotationSequenceReader=nil
+end
+local function evaluateSequence(owner,body,evaluate,visit)
+    local before=sequenceRawMethod and sequenceRawMethod(owner)
+    local method=owner.EvaluateRotationSequence
+    if sequenceRun then return sequenceRun(owner,before,method,body,evaluate,visit) end
+    return method(owner,body,evaluate,visit)
+end
 local DBIcon = LibStub("LibDBIcon-1.0")
 local function spellLink(spellid)
     return addon.Platform:GetSpellLink(spellid) or string.format(L["Unknown spell (%s)"],spellid)
@@ -956,7 +968,7 @@ function addon:EvaluateNextActionInternal()
                 if nativePreview then previewWindow:AddRecommendation(spellid,itemId) end
             end)
         end
-        local sequence=self:EvaluateRotationSequence(rot,function(condition,context)
+        local sequence=evaluateSequence(self,rot,function(condition,context)
             return addon:evaluateConditionResult(condition,context)
         end,function(cond,index)
             local spellid,enabled,itemId=eval(cond)

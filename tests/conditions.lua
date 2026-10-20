@@ -12,10 +12,17 @@ for _, tag in ipairs({'BUFF','BUFF_REMAIN','BUFF_STACKS','ANYSPELL_COOLDOWN','AN
         assert(#F.text(frame)>30)
     end)
 end
-test('threat count uses enemy record threat, not a nested addon', function()
+test('threat count uses current facts for observed identities instead of stale record scalars', function()
     f.addon.unitsInRange={
-        {enemy=true,threat=0}, {enemy=true,threat=2}, {enemy=false,threat=3}, {enemy=true},
+        GUID1={unit='nameplate1',enemy=true,threat=99},GUID2={unit='nameplate2',enemy=false,threat=0},
+        GUID3={unit='nameplate3',enemy=true,threat=99},GUID4={unit='nameplate4',enemy=true,threat=99},
     }
+    local identities={nameplate1='GUID1',nameplate2='GUID2',nameplate3='GUID3',nameplate4='GUID4'}
+    local threat={nameplate1=0,nameplate2=2,nameplate3=3}
+    f.env.UnitExists=function(unit) return identities[unit]~=nil end
+    f.env.UnitGUID=function(unit) return identities[unit] end
+    f.env.UnitIsEnemy=function(actor,unit) assert(actor=='player');return unit~='nameplate3' end
+    f.env.UnitThreatSituation=function(actor,unit) assert(actor=='player');return threat[unit] end
     assert(d.THREAT_COUNT.evaluate({operator='EQUALS',threat=3,value=1}))
     assert(not d.THREAT_COUNT.evaluate({operator='EQUALS',threat=3,value=2}))
 end)

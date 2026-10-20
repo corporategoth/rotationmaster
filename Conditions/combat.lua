@@ -364,13 +364,9 @@ addon:RegisterCondition("THREAT_COUNT", {
                 value.operator ~= nil and Functions.values.isin(addon.operators, value.operator) and
                 value.threat ~= nil and value.threat >= 1 and value.threat <= 4
     end,
-    evaluate = function(value)
-        local count = 0
-        for _, entity in pairs(addon.unitsInRange) do
-            if entity.enemy and entity.threat and entity.threat >= value.threat - 1 then
-                count = count + 1
-            end
-        end
+    evaluate = function(value, cache)
+        local count,reason=addon:GetConditionThreatCount(value.threat-1,cache)
+        if count==nil then return nil,reason end
         return Functions.values.compare(value.operator, count, value.value)
     end,
     print = function(_, value)
