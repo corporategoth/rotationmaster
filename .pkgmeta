@@ -5,6 +5,7 @@ ignore:
   - tests
   - tools
   - docs
+  - Web
   - Assets/Conditions/source
   - Assets/Conditions/qa
   - Assets/Conditions/export_icons.py

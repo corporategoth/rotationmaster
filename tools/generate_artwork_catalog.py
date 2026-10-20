@@ -51,7 +51,7 @@ def generate():
 
 
 def release_metadata():
-    ignored = ['tests', 'tools', 'docs', 'Assets/Conditions/source', 'Assets/Conditions/qa',
+    ignored = ['tests', 'tools', 'docs', 'Web', 'Assets/Conditions/source', 'Assets/Conditions/qa',
                'Assets/Conditions/export_icons.py', 'Assets/Conditions/v2/source',
                'Assets/Conditions/v2/qa', 'Assets/Conditions/v2/export_icons.py',
                'Assets/Conditions/v2/verify_assets.py', 'Assets/Overlays/v1/source',
