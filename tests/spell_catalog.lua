@@ -122,4 +122,111 @@ test('pet and player metadata refresh tolerates an unavailable current specializ
     assert(a.SpellCatalog:SpellName(8042,true)=='Earth Shock','reference metadata must remain available')
     a.currentSpec=264;a:RefreshSpellCatalog();assert(a.specSpells[264][8042])
 end)
+-- These controls load the real catalog with counted standard operations;
+-- no substitute cache implementation or learned-state shortcut is supplied.
+local function countedCatalog()
+    local f=F.new();local metadata={
+        [1]={name='Shock',subtext='Rank 1',iconID=1,spellID=1},
+        [2]={name='Shock',subtext='Rank 2',iconID=2,spellID=2},
+        [3]={name='Other',subtext='',iconID=3,spellID=3}}
+    local counts={sort=0,rank=0,info=0,link=0};local hookSort,hookLink
+    local native={};for key,value in pairs(table) do native[key]=value end
+    native.sort=function(values,compare)
+        counts.sort=counts.sort+1;table.sort(values,compare)
+        if hookSort then hookSort(values) end
+    end
+    f.env.table=native
+    f.env.tonumber=function(...) counts.rank=counts.rank+1;return tonumber(...) end
+    f.addon.Platform.GetSpellInfo=function(_,id) counts.info=counts.info+1;return metadata[id] end
+    f.addon.Platform.GetSpellLink=function(_,id) counts.link=counts.link+1;if hookLink then hookLink(id) end;return 'spell:'..id end
+    f.load('Core/spell_catalog.lua')
+    return f,f.addon.SpellCatalog,metadata,counts,function(sort,link) hookSort,hookLink=sort,link end
+end
+test('warm static groups avoid repeated sorting and rank parsing but every result is fresh',function()
+    local _,c,_,counts=countedCatalog();c:UpdateSpell(1);c:UpdateSpell(2)
+    local first=c:GetAllSpellIds('Shock');local sorted,parsed=counts.sort,counts.rank
+    assert(sorted==1 and parsed>0);first[1]=999;first.extra='caller'
+    for _=1,12 do local next=c:GetAllSpellIds(1);assert(next[1]==2 and next[2]==1 and next~=first and next.extra==nil) end
+    assert(counts.sort==sorted,'unchanged group sorted again')
+    assert(counts.rank==parsed,'unchanged ranks parsed again')
+end)
+test('only affected metadata ordering changes invalidate; same rank icon and link refresh remains live',function()
+    local _,c,m,counts=countedCatalog();c:UpdateSpell(1);c:UpdateSpell(2);c:UpdateSpell(3)
+    c:GetAllSpellIds('Shock');c:GetAllSpellIds('Other');local sorted=counts.sort
+    m[1].iconID=77;c:UpdateSpell(1);assert(counts.link==4 and counts.info==4)
+    c:GetAllSpellIds('Shock');c:GetAllSpellIds('Other');assert(counts.sort==sorted,'unchanged metadata order invalidated')
+    m[1].subtext='Rank 3';c:UpdateSpell(1);assert(c:GetAllSpellIds('Shock')[1]==1);assert(counts.sort==sorted+1)
+    c:GetAllSpellIds('Other');assert(counts.sort==sorted+1,'unrelated group invalidated')
+    m[1].name='Other';c:UpdateSpell(1);assert(table.concat(c:GetAllSpellIds('Shock'),',')=='2');assert(table.concat(c:GetAllSpellIds('Other'),',')=='1,3')
+    m[2].name='Other';c:UpdateSpell(2);local empty=c:GetAllSpellIds('Shock');assert(type(empty)=='table' and #empty==0);empty[1]=99;assert(#c:GetAllSpellIds('Shock')==0)
+end)
+test('case-insensitive groups retain numeric rank and ID tie order including absent ranks',function()
+    local _,c,m=countedCatalog();m[4]={name='SHOCK',subtext='Rank 2',spellID=4};m[5]={name='Shock',spellID=5};m[6]={name='Shock',subtext='',spellID=6}
+    for _,id in ipairs({1,2,4,5,6})do c:UpdateSpell(id) end
+    assert(table.concat(c:GetAllSpellIds('sHoCk'),',')=='4,2,1,6,5')
+    m[4].subtext='Rank 1';c:UpdateSpell(4);assert(table.concat(c:GetAllSpellIds('Shock'),',')=='2,4,1,6,5')
+end)
+test('native canonical rank queries and failures remain fresh after group warming',function()
+    local f,c,m,counts=countedCatalog();c:UpdateSpell(1);c:UpdateSpell(2);c:GetAllSpellIds('Shock')
+    local base=f.addon.Platform.GetSpellInfo;local selected,failed=1,false
+    f.addon.Platform.GetSpellInfo=function(self,id) if id=='Shock' then counts.info=counts.info+1;if failed then return nil,'restricted-value' end;return m[selected] end;return base(self,id) end
+    local before=counts.info;assert(c:GetSpellId(1)==1);assert(counts.info==before+2,'canonical name/numeric refresh skipped')
+    selected=2;assert(c:GetSpellId(1)==2)
+    failed=true;local value,why=c:GetSpellId(1);assert(value==nil and why=='restricted-value')
+    failed=false;m[4]={name='Shock',subtext='Rank 4',spellID=4};selected=4;assert(c:GetSpellId(1)==4);assert(c:GetAllSpellIds('Shock')[1]==4)
+    assert(f.addon.specSpells==nil,'metadata became learned state')
+end)
+test('reentrant link metadata updates cannot leave their intermediate ordered group cached',function()
+    local _,c,m,_,hooks=countedCatalog();c:UpdateSpell(1);c:UpdateSpell(2);c:GetAllSpellIds('Shock')
+    local armed=true
+    hooks(nil,function(id)if id==1 and armed then armed=false;m[1].subtext='Rank 3';c:UpdateSpell(1);assert(c:GetAllSpellIds('Shock')[1]==1);m[1].subtext='Rank 1' end end)
+    c:UpdateSpell(1);assert(table.concat(c:GetAllSpellIds('Shock'),',')=='2,1','outer metadata publication reused nested ordering')
+end)
+test('reentrant sort updates cannot publish stale groups or expose private ordered storage',function()
+    local _,c,m,_,hooks=countedCatalog();c:UpdateSpell(1);c:UpdateSpell(2)
+    local armed=true;local captured
+    hooks(function(values)captured=values;if armed then armed=false;m[4]={name='Shock',subtext='Rank 4',spellID=4};c:UpdateSpell(4) end end)
+    local old=c:GetAllSpellIds('Shock');assert(table.concat(old,',')=='2,1')
+    local current=c:GetAllSpellIds('Shock');assert(table.concat(current,',')=='4,2,1');captured[1]=999;current[2]=888
+    assert(table.concat(c:GetAllSpellIds('Shock'),',')=='4,2,1','sort/caller storage escaped into private cache')
+end)
+test('unknown and failed IDs retry metadata without caching absence',function()
+    local _,c,m,counts=countedCatalog();assert(c:GetAllSpellIds(99)==nil);assert(c:GetAllSpellIds(99)==nil);assert(counts.info==2 and counts.sort==0)
+    m[99]={name='Arrival',subtext='Rank 1',spellID=99};assert(c:GetAllSpellIds(99)[1]==99);local ids=c:GetAllSpellIds('Arrival');ids[1]=1;assert(c:GetAllSpellIds(99)[1]==99)
+end)
+test('name removal invalidates before link callback reads or errors without repairing partial publication',function()
+    local _,c,m,_,hooks=countedCatalog();c:UpdateSpell(1);c:UpdateSpell(2);c:GetAllSpellIds('Shock')
+    m[1].name='Moved';local observed
+    hooks(nil,function(id)if id==1 then observed=c:GetAllSpellIds('Shock');error('link-marker') end end)
+    local ok,why=pcall(c.UpdateSpell,c,1);assert(not ok and tostring(why):find('link-marker',1,true))
+    assert(table.concat(observed,',')=='2','old group remained cached during callback')
+    assert(table.concat(c:GetAllSpellIds(1),',')=='2','partial baseline membership was repaired or hidden')
+    assert(c:GetAllSpellIds('Moved')==nil)
+end)
+test('later rank changes invalidate historical groups retained by reentrant name publication',function()
+    local _,c,m,counts,hooks=countedCatalog()
+    m[1]={name='Old',subtext='Rank 1',spellID=1}
+    m[2]={name='Intermediate',subtext='Rank 5',spellID=2}
+    c:UpdateSpell(1);c:UpdateSpell(2);c:UpdateSpell(3)
+    c:GetAllSpellIds('Other')
+    local armed=true
+    hooks(nil,function(id)
+        if id==1 and armed then
+            armed=false;m[1]={name='Intermediate',subtext='Rank 7',spellID=1}
+            c:UpdateSpell(1);assert(table.concat(c:GetAllSpellIds('Intermediate'),',')=='1,2')
+            m[1]={name='Final',subtext='Rank 1',spellID=1}
+        end
+    end)
+    m[1]={name='Final',subtext='Rank 1',spellID=1};c:UpdateSpell(1)
+    assert(table.concat(c:GetAllSpellIds('Intermediate'),',')=='2,1')
+    assert(table.concat(c:GetAllSpellIds('Old'),',')=='')
+    local sorted,info,links=counts.sort,counts.info,counts.link
+    m[1]={name='Final',subtext='Rank 9',spellID=1};c:UpdateSpell(1)
+    assert(table.concat(c:GetAllSpellIds('Intermediate'),',')=='1,2',
+        'historical group retained stale order after current-name rank refresh')
+    assert(counts.sort==sorted+1,'historical group did not rebuild exactly once')
+    c:GetAllSpellIds('Other');c:GetAllSpellIds('Old');c:GetAllSpellIds('Intermediate')
+    assert(counts.sort==sorted+1,'rank update invalidated an unrelated or removed group')
+    assert(counts.info==info+1 and counts.link==links+1,'native metadata observations changed')
+end)
 finish()
