@@ -127,6 +127,7 @@ test('every callback byte and parameter remains identical after reversing only n
         if tag=='THREAT' then current.evaluate=dofile('tests/fixtures/restore_threat_repairs.lua')(current.evaluate,true) end
         if tag=='PET' or tag=='PET_NAME' then current.evaluate=dofile('tests/fixtures/restore_pet_repairs.lua')(current.evaluate,tag) end
         if tag=='FORM' then for _,name in ipairs({'print','widget'}) do current[name]=dofile('tests/fixtures/restore_form_presentation_repairs.lua')(current[name],name) end end
+        if tag=='ECS_STAT_PCT' then current.evaluate=dofile('tests/fixtures/restore_ecs_percentage_sign.lua')(current.evaluate,true) end
         if tag=='PROXIMITY' then current.print=dofile('tests/fixtures/restore_proximity_summary_repairs.lua')(current.print,true) end
         local source=legacy(a,current,tag);local parts={}
         -- Separate ECS API regression tests require the corrected dot contract.

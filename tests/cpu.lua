@@ -3,6 +3,7 @@ local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite()
 -- query boundary. The new report block alone is removed; unrelated edits fail.
 local function loadHistoricalCPU(f)
  local h=assert(io.open('Diagnostics/cpu.lua'));local source=h:read('*a');h:close()
+ source=dofile('tests/fixtures/restore_private_cache_cpu.lua')(source)
  source=dofile('tests/fixtures/restore_cache_mode_cpu.lua')(source)
  source=dofile('tests/fixtures/restore_rotation_execution_diagnostics.lua')(source,'Diagnostics/cpu.lua')
  local first=source:find('   -- BEGIN INCLUSIVE CPU SCOPES\n',1,true)
@@ -15,7 +16,14 @@ local function loadHistoricalCPU(f)
  assert(#source==16258 and string.format('%08x',hash)=='69259678','unrelated CPU module baseline change')
  local chunk=assert(loadstring(source,'@Diagnostics/cpu.lua'));setfenv(chunk,f.env);chunk('rotationmaster',f.addon)
 end
-local function fixture(historical)
+-- Keep the inclusive-only differential pinned to its exact prior module.
+-- The private appendix has its own current-versus-fc06db4 differential suite.
+local function loadPrePrivateCPU(f)
+ local h=assert(io.open('Diagnostics/cpu.lua'));local source=h:read('*a');h:close()
+ source=dofile('tests/fixtures/restore_private_cache_cpu.lua')(source)
+ local chunk=assert(loadstring(source,'@Diagnostics/cpu.lua'));setfenv(chunk,f.env);chunk('rotationmaster',f.addon)
+end
+local function fixture(historical,prePrivate)
  local f=F.new();local a,e=f.addon,f.env;local s={now=100,enabled='1',phase='start',rows={},timers={},queries={},total={10,50},updates=0,native={},fnIDs={},fnCount=0}
  a.EvaluateNextAction=function() end;a.EvaluateNextActionInternal=a.EvaluateNextAction;s.hot=a.EvaluateNextAction
  a.conditionDefinitions={SAFE_TAG={valid=function() return true end,evaluate=function() return true end},ROW_OWNER_PRIVATE_TEST={customCode=true,code='SECRET_SOURCE_TEXT',evaluate=function() end,valid=function() end}}
@@ -33,7 +41,7 @@ local function fixture(historical)
  function a:ScheduleTimer(callback,delay) local token={callback=callback,delay=delay};s.timers[#s.timers+1]=token;if s.scheduleError then error('SECRET_SOURCE_TEXT') end;return token end
  function a:CancelTimer(token) token.cancelled=true end
  function s:complete() self.now=self.now+10;self.phase='finish';self.timers[#self.timers].callback() end
- if historical then loadHistoricalCPU(f)else local file=io.open('Diagnostics/cpu.lua');if file then file:close();f.load('Diagnostics/cpu.lua')end end
+ if prePrivate then loadPrePrivateCPU(f)elseif historical then loadHistoricalCPU(f)else local file=io.open('Diagnostics/cpu.lua');if file then file:close();f.load('Diagnostics/cpu.lua')end end
  assert(type(a.StartCPUProfile)=='function','native CPU profiler API absent')
  return f,a,s
 end
@@ -161,7 +169,7 @@ end
 local function compareCapture(metric,replaceAlias)
  local captures={}
  for _,historical in ipairs({true,false})do
-  local _,a,s=fixture(historical);measuredRows(a,s,metric);assert(a:StartCPUProfile())
+  local _,a,s=fixture(historical,not historical);measuredRows(a,s,metric);assert(a:StartCPUProfile())
   if replaceAlias then a.GetRotationValidationOptions=function()end end
   s:complete();local report=a:GetCPUProfileReport();local count=#s.native
   a:GetCPUProfileReport();a:IsCPUProfileRunning();s.timers[1].callback();assert(#s.native==count,'idle or stale report queried native API')

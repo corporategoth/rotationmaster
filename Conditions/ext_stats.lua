@@ -180,7 +180,7 @@ addon.delayed_condition["ExtendedCharacterStats"]["ECS_STAT_PCT"] = {
     end,
     evaluate = function(value, cache)
         local curs = Functions.cache.getCached(cache, ecs_state.data.GetStatInfo, value.stat)
-        local cur = tonumber(curs:match("^(%d+%.?%d*)"))
+        local cur = tonumber(curs:match("^(%-?%d+%.?%d*)"))
         return Functions.values.compare(value.operator, cur, value.value * 100)
     end,
     print = function(_, value)

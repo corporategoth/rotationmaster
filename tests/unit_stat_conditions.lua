@@ -57,7 +57,7 @@ test('public adapter source clone keeps exact owner and live readability query a
  local opaque={};s.value=opaque;f.env.canaccessvalue=function(v) return not rawequal(v,opaque) end;local result,why=fn(a.Platform,'pet',6);assert(result==nil and why=='restricted-value');s.exists=false;s.value=nil;assert(fn(a.Platform,'pet',6).exists==false)
 end)
 test('strict whole-module inverse preserves all ECS bytes callbacks private hashes and live getters',function()
- local _,a=fixture();local file=assert(io.open('Conditions/ext_stats.lua'));local text=file:read('*a');file:close();assert(a:FunctionSourceHash(inverse(text))=='3c615e4b','ext_stats changed beyond exactly STAT evaluate')
+ local _,a=fixture();local file=assert(io.open('Conditions/ext_stats.lua'));local text=file:read('*a');file:close();assert(a:FunctionSourceHash(inverse(dofile('tests/fixtures/restore_ecs_percentage_sign.lua')(text)))=='3c615e4b','ext_stats changed beyond exactly STAT evaluate')
  assert(inverse(newBody,true)==oldBody and not pcall(inverse,oldBody,true) and not pcall(inverse,text..text))
  for name,hash in pairs({color='bcd5d295',ecs_state='f87297b5',helpers='8c6f9acb'}) do local id='builtin:Conditions/ext_stats.lua:'..name;assert(a:FunctionSourceHash(a.builtinFunctions[id].source)==hash and rawequal(a:ResolveFunctionBinding(id),a.builtinSourceModules['Conditions/ext_stats.lua'](name))) end
 end)
