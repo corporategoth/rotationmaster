@@ -93,3 +93,27 @@ function addon:ShowWorkbenchHelp(heading,sections,owner)
     d.child:SetHeight(math.max(1,y));local visible=math.min(300,math.max(100,y));d.frame:SetHeight(38+visible+28);d.scroll:SetSize(510,visible);d.chrome:LayoutTitle()
     local front=_G.RotationMasterFrontmostDialog;d.frame:SetFrameLevel(front and front~=d.frame and front:GetFrameLevel()+20 or d.frame:GetFrameLevel()+1);d.frame:Show();d.scroll.workbenchBar:SetValue(0);d.scroll:UpdateWorkbenchScroll();addon:RegisterWindowForEscape(d);return d
 end
+
+-- Only catalogue-owned release URLs enter the copyable report; no browser,
+-- clipboard API, provider discovery or network request runs in the addon.
+function addon:ShowIntegrationProjectLink(id)
+    if type(self.GetIntegrationProjectLinks)~='function' then return end
+    local links=self:GetIntegrationProjectLinks(id)
+    if type(links)~='table' or #links==0 then return end
+    local lines,spans={},{}
+    local bytes=0
+    local function append(line)lines[#lines+1]=line;bytes=bytes+#line+1 end
+    append(L['Addon release pages'])
+    append(L['Release links checked: 2026-10-20.'])
+    append(L['Publisher listings describe release availability; integration behavior on this client may be unverified.'])
+    append('')
+    for i,entry in ipairs(links)do
+        if i>8 then break end
+        append(i..'. '..entry.label..(entry.primary and ' ('..L['Primary']..')'or''))
+        if entry.note then append(entry.note)end
+        local first=bytes;append(entry.url)
+        spans[#spans+1]={label=string.format(L['Copy link %d'],i),first=first,last=first+#entry.url,line=#lines}
+        append('')
+    end
+    return self:ShowConditionText(table.concat(lines,'\n'),L['Addon release pages'],spans)
+end

@@ -2,7 +2,7 @@ local addon_name,addon=...
 local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
 -- Oversized expressions remain fully inspectable/copyable without letting a
 -- footer displace the condition tree or adding a scrollbar to that footer.
-function addon:ShowConditionText(value,heading)
+function addon:ShowConditionText(value,heading,copyLinks)
     if type(value)~='string' then return end
     local dialog=self.conditionTextWindow
     if not dialog then
@@ -29,6 +29,23 @@ function addon:ShowConditionText(value,heading)
         function dialog:Hide() frame:Hide() end
         function dialog:SetText(text) self.text=text;setting=true;edit:SetText(text);setting=false;resize();copy() end
         addon.HideOnEscape(dialog)
+    end
+    -- Release-page reports may offer a bounded set of exact URL selections.
+    -- Other report users always restore the original scroll area and controls.
+    dialog.linkButtons=dialog.linkButtons or {}
+    for _,button in ipairs(dialog.linkButtons)do button:Hide();addon:SetUIScript(button,'OnClick',nil)end
+    local count=type(copyLinks)=='table' and math.min(#copyLinks,8)or 0
+    dialog.scroll:SetHeight(300-math.ceil(count/3)*28)
+    for i=1,count do
+        local entry=copyLinks[i];local button=dialog.linkButtons[i]
+        if not button then button=addon:CreateWorkbenchButton(dialog.frame,'',210);dialog.linkButtons[i]=button end
+        button:ClearAllPoints();button:SetPoint('BOTTOMLEFT',12+((i-1)%3)*220,54+math.floor((i-1)/3)*28)
+        button:SetText(entry.label);button:Show()
+        addon:SetUIScript(button,'OnClick',function()
+            if dialog.text~=value then return end
+            dialog.edit:SetFocus();dialog.edit:SetCursorPosition(entry.first);dialog.edit:HighlightText(entry.first,entry.last)
+            dialog.scroll:SetVerticalScroll(math.max(0,(entry.line-1)*14))
+        end)
     end
     dialog.chrome:SetContext(heading or L['Full condition text'],L['Report'],'');dialog.copy:SetText(heading and L['Copy report'] or L['Copy full condition'])
     dialog:Show();dialog:SetText(value);return dialog

@@ -23,6 +23,37 @@ local providers={
  {'TotemTimers','TotemTimers','Optional action-bar mapping and glow support.'},
  {'SamyTotemTimers','SamyTotemTimers','Optional action-bar mapping and glow support.'},
 }
+-- Primary release pages and edition evidence checked 2026-10-20.
+-- These are publisher listings, not a native compatibility certification.
+local projects={
+ ["ExtendedCharacterStats"]={{["label"]="CurseForge",["url"]="https://www.curseforge.com/wow/addons/extended-character-stats",["primary"]=true,["note"]="Classic Era and TBC. Other editions are unverified; Forever Extended Character Stats is a different project.",["families"]={"era","tbc"}}},
+ ["MobInfo2"]={{["label"]="CurseForge",["url"]="https://www.curseforge.com/wow/addons/mobinfo2",["primary"]=true,["note"]="Publisher lists Retail, Forever, Classic Era, TBC and Mists Classic.",["families"]={"retail","forever","era","progression","tbc"}}},
+ ["!!!LuaWorkbench"]={{["label"]="CurseForge",["url"]="https://www.curseforge.com/wow/addons/luaworkbench",["primary"]=true,["note"]="Retail, Forever and TBC. Other editions are unverified.",["families"]={"retail","forever","tbc"}}},
+ ["WowLua"]={{["label"]="CurseForge",["url"]="https://www.curseforge.com/wow/addons/wowlua",["primary"]=true,["note"]="Retail, Classic Era, TBC and older progression releases. Current-patch support is unverified. RM currently detects WowLua but does not offer it as an editor.",["families"]={"retail","era","progression","tbc"}}},
+ ["WeakAuras"]={{["label"]="CurseForge",["url"]="https://www.curseforge.com/wow/addons/weakauras-2",["primary"]=true,["note"]="Current Classic Era, TBC and Mists Classic releases; Retail release evidence is historical. Current Retail and Forever support is unverified.",["families"]={"era","progression","tbc"}}},
+ ["Questie"]={{["label"]="CurseForge",["url"]="https://www.curseforge.com/wow/addons/questie",["primary"]=true,["note"]="Classic Era, TBC and Mists Classic. Retail and Forever releases are unverified.",["families"]={"era","progression","tbc"}}},
+ ["ElvUI"]={{["label"]="Tukui",["url"]="https://tukui.org/elvui",["primary"]=true,["note"]="Official release channel. Publisher TOC lists Retail, Forever, Classic Era, TBC, Mists and Wrath Classic.",["families"]={"retail","forever","era","progression","tbc"}}},
+ ["Bartender4"]={{["label"]="CurseForge",["url"]="https://www.curseforge.com/wow/addons/bartender4",["primary"]=true,["note"]="Retail, Forever, Classic Era, TBC and Mists Classic. Choose the file for your edition.",["families"]={"retail","forever","era","progression","tbc"}}},
+ ["ButtonForge"]={{["label"]="CurseForge",["url"]="https://www.curseforge.com/wow/addons/button-forge",["primary"]=true,["note"]="Separate Retail, Classic Era, TBC and Mists Classic releases. Forever is unverified.",["families"]={"retail","era","progression","tbc"}}},
+ ["G15Buttons"]={{["label"]="CurseForge",["url"]="https://www.curseforge.com/wow/addons/g15-buttons-continued",["primary"]=true,["note"]="Historical Retail release. All current editions are unverified. This is G15 Buttons (continued).",["families"]={}}},
+ ["SyncUI"]={{["label"]="WoWInterface",["url"]="https://www.wowinterface.com/downloads/info24574-SyncUI.html",["primary"]=true,["note"]="Historical Retail 8.3 release. All current editions are unverified.",["families"]={}}},
+ ["LUI"]={{["label"]="CurseForge",["url"]="https://www.curseforge.com/wow/addons/lui",["primary"]=true,["note"]="Primary LUI Core updates for Retail. Fresh installs use the author-linked full bundle below; Classic uses a separate fork.",["families"]={"retail"}},{["label"]="CurseForge — LUI Classic",["url"]="https://www.curseforge.com/wow/addons/lui-classic",["primary"]=false,["note"]="Classic Era, TBC and Mists Classic fork. Its compatibility with RM action buttons is unverified.",["families"]={"era","progression","tbc"}},{["label"]="WoWInterface — Retail full bundle",["url"]="https://www.wowinterface.com/downloads/fileinfo.php?id=14130",["primary"]=false,["note"]="Author-linked full Retail bundle; historical 10.0.2 release, older than the Core updates.",["families"]={}},{["label"]="WoWInterface — Classic full bundle",["url"]="https://www.wowinterface.com/downloads/info26095-LUIv3forTBCC.html",["primary"]=false,["note"]="Author-linked full Classic bundle; historical Wrath release. For current Classic editions, inspect the newer Classic fork above.",["families"]={}}},
+ ["Dominos"]={{["label"]="CurseForge",["url"]="https://www.curseforge.com/wow/addons/dominos",["primary"]=true,["note"]="Retail, Forever, Classic Era, TBC and Mists Classic.",["families"]={"retail","forever","era","progression","tbc"}}},
+ ["DiabolicUI"]={{["label"]="CurseForge",["url"]="https://www.curseforge.com/wow/addons/diabolicui",["primary"]=true,["note"]="Original historical project. Current editions are unverified; newer forks are not verified replacements for the integration.",["families"]={}}},
+ ["AzeriteUI"]={{["label"]="CurseForge",["url"]="https://www.curseforge.com/wow/addons/azeriteui5",["primary"]=true,["note"]="Legacy AzeriteUI5, now deprecated. Current editions are unverified. RM supports this original addon identity.",["families"]={}},{["label"]="CurseForge — AzeriteUI6 successor",["url"]="https://www.curseforge.com/wow/addons/azeriteui6",["primary"]=false,["note"]="Successor supports all five editions but uses a different addon identity. RM does not yet integrate with AzeriteUI6.",["families"]={"retail","forever","era","progression","tbc"}}},
+ ["Neuron"]={{["label"]="CurseForge",["url"]="https://www.curseforge.com/wow/addons/neuron",["primary"]=true,["note"]="Historical project; author reports a development hiatus. All current editions are unverified.",["families"]={}}},
+ ["FarmingBar"]={{["label"]="CurseForge",["url"]="https://www.curseforge.com/wow/addons/farming-bar",["primary"]=true,["note"]="Retail, Classic Era, TBC and Mists Classic releases. Latest-patch compatibility and Forever are unverified.",["families"]={"retail","era","progression","tbc"}}},
+ ["TotemTimers"]={{["label"]="CurseForge",["url"]="https://www.curseforge.com/wow/addons/totemtimers",["primary"]=true,["note"]="Primary project now releases TotemTimers Forever. Retail files are historical. Classic editions use the separate project below.",["families"]={"forever"}},{["label"]="CurseForge — TotemTimers Classic",["url"]="https://www.curseforge.com/wow/addons/totemtimers-classic",["primary"]=false,["note"]="Classic Era, TBC, Wrath, Cataclysm and Mists Classic. Compatibility with RM action buttons is unverified.",["families"]={"era","progression","tbc"}}},
+ ["SamyTotemTimers"]={{["label"]="CurseForge",["url"]="https://www.curseforge.com/wow/addons/samytotemtimers",["primary"]=true,["note"]="Historical Classic Era and TBC releases. Current editions are unverified. Other similarly named addons are not verified replacements.",["families"]={}}},
+}
+function addon:GetIntegrationProjectLinks(id)
+ local result={}
+ for _,entry in ipairs(projects[id]or{})do
+  local families={};for i,family in ipairs(entry.families)do families[i]=family end
+  result[#result+1]={label=L[entry.label],url=entry.url,note=L[entry.note],primary=entry.primary,families=families}
+ end
+ return result
+end
 local questieStates={available='connected',disabled='disabled',missing='missing',waiting='loaded',
  incompatible='incompatible',['client-restricted']='incompatible',error='unknown',unavailable='unknown'}
 local function readable(value)
@@ -115,7 +146,7 @@ function addon:ListIntegrationStatus()
   -- flag alone never establishes that the addon is not installed.
   local version=text(native('GetAddOnMetadata',provider[1],'Version'),96)
   if loaded==true then state=connection(provider[4]) end
-  rows[#rows+1]={id=provider[1],name=display(provider[2],96),version=version,state=state,detail=display(provider[3],320)}
+  rows[#rows+1]={id=provider[1],name=display(provider[2],96),version=version,state=state,detail=display(provider[3],320),projectURL=projects[provider[1]][1].url}
  end
  return rows
 end

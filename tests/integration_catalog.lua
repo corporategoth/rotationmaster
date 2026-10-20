@@ -97,7 +97,7 @@ end)
 test('every result is detached and no source table or unexpected row field escapes',function()
  local f,p=fixture();p.WeakAuras=true;local rows=f.addon:ListIntegrationStatus();rows[1].id='corrupt';rows[2]=false;rows.extra={}
  local nextRows=f.addon:ListIntegrationStatus();assert(nextRows[1].id==expected[1]and type(nextRows[2])=='table'and nextRows.extra==nil)
- local fields={id=true,name=true,version=true,state=true,detail=true};for _,row in ipairs(nextRows)do for key in pairs(row)do assert(fields[key],key)end end
+ local fields={id=true,name=true,version=true,state=true,detail=true,projectURL=true};for _,row in ipairs(nextRows)do for key in pairs(row)do assert(fields[key],key)end end
  assert(#f.addon.ListIntegrationStatus({})==0)
 end)
 test('missing metadata APIs return unknown and module never invents provider connectivity',function()

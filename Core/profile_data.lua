@@ -1,5 +1,5 @@
 local _,addon=...
-local scalar={rotationFallbackID='string',lua_editor='string',lua_line_numbers='boolean',questie_enabled='boolean',version='number',enable='boolean',poll='number',ignore_mana='boolean',ignore_range='boolean',effect='string',magnification='number',setpoint='string',xoffs='number',yoffs='number',loglevel='number',detailed_profiling='boolean',disable_autoswitch='boolean',live_config_update='number',spell_history='number',combat_history='number',damage_history='number',disable_buttons='boolean',rotation_view='string',preview_spells='number',preview_vertical='boolean',preview_locked='boolean',preview_opacity='number',preview_icon_size='number'}
+local scalar={rotationFallbackID='string',lua_editor='string',lua_native_highlighting='boolean',lua_line_numbers='boolean',questie_enabled='boolean',version='number',enable='boolean',poll='number',ignore_mana='boolean',ignore_range='boolean',effect='string',magnification='number',setpoint='string',xoffs='number',yoffs='number',loglevel='number',detailed_profiling='boolean',disable_autoswitch='boolean',live_config_update='number',spell_history='number',combat_history='number',damage_history='number',disable_buttons='boolean',rotation_view='string',preview_spells='number',preview_vertical='boolean',preview_locked='boolean',preview_opacity='number',preview_icon_size='number'}
 local function dense(value,validate)
     if type(value)~='table' then return false end;local n=0;for key,item in pairs(value) do if type(key)~='number' or key<1 or key%1~=0 or key>#value or not validate(item) then return false end;n=n+1 end;return n==#value
 end
@@ -74,7 +74,11 @@ function addon:ValidateProfileTransfer(value)
         elseif key=='announces' then local seen={};if not dense(item,function(v) if not self:IsValidAnnouncement(v,true) or seen[v.id] then return false end;seen[v.id]=true;return true end) then return false end
         elseif key=='lua_editor_disabled' then
             if type(item)~='table' or getmetatable(item)~=nil then return false end
-            for name,disabled in pairs(item) do if (name~='native' and name~='LuaWorkbench') or disabled~=true then return false end end
+            local count=0
+            for name,disabled in pairs(item) do
+                count=count+1
+                if count>64 or type(name)~='string' or #name>128 or not name:find('%S') or name=='auto' or name=='plain' or disabled~=true then return false end
+            end
         elseif key=='stockTargets' then
             -- Closed optional schema was checked before copying the profile.
         elseif key=='itemsets' then

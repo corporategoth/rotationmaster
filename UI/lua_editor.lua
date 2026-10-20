@@ -1,18 +1,22 @@
 local addon_name,addon=...
 local providers={}
--- Only RM-owned choices have persisted enable switches; extensions retain
--- their existing registration contract and remain available to Automatic.
+-- Saved switches also cover registered extensions; unknown identifiers remain inert.
 local function editorDisabled(self,name)
     local profile=self.db and self.db.profile
     local disabled=profile and profile.lua_editor_disabled
-    return (name=='native' or name=='LuaWorkbench') and type(disabled)=='table' and disabled[name]==true
+    return name~='auto' and name~='plain' and type(disabled)=='table' and disabled[name]==true
 end
 local function resolveEditor(self,preferred)
+    local function available(name)
+        return name~='LuaWorkbench' or type(self.IsLuaWorkbenchIntegrationAvailable)=='function' and self:IsLuaWorkbenchIntegrationAvailable()==true
+    end
     if preferred=='auto' then
-        local names={};for name in pairs(providers) do if not editorDisabled(self,name) then names[#names+1]=name end end
+        local names={};for name in pairs(providers) do if not editorDisabled(self,name) and available(name) then names[#names+1]=name end end
         table.sort(names);preferred=names[1] or 'native'
     end
-    if editorDisabled(self,preferred) then return 'plain' end
+    if editorDisabled(self,preferred) or not available(preferred) then preferred='native' end
+    local profile=self.db and self.db.profile
+    if preferred=='native' and (editorDisabled(self,'native') or profile and profile.lua_native_highlighting==false) then return 'plain' end
     return preferred
 end
 function addon:ListLuaEditorProviders()
@@ -153,7 +157,7 @@ function addon:CreateWorkbenchLuaEditor(parent,changed,valid,preferred)
         end
         retire(lease);if ok then release(control) end;host:Hide()
     end
-    if editorDisabled(self,'native') then preferred='plain' end
+    preferred=resolveEditor(self,preferred=='plain' and 'plain' or 'native')
     local c={frame=CreateFrame('Frame',nil,parent),provider='native',valid=valid,changed=changed}
     c.scroll=self:CreateWorkbenchScrollFrame(c.frame);c.scroll:SetPoint('TOPLEFT',4,-4);c.content=CreateFrame('Frame',nil,c.scroll);c.content:EnableMouse(false);c.scroll:SetScrollChild(c.content);c.edit=CreateFrame('EditBox',nil,c.content);c.edit:SetMultiLine(true);c.edit:SetAutoFocus(false);c.edit:EnableMouse(true);c.edit:SetAltArrowKeyMode(false);c.edit:SetBlinkSpeed(.5);c.edit:SetCountInvisibleLetters(false);c.edit:SetTextColor(1,1,1);c.edit:SetJustifyH('LEFT');c.edit:SetJustifyV('TOP');c.edit:SetFontObject('GameFontHighlightSmall');c.edit:SetTextInsets(6,6,4,4);c.edit:SetMaxLetters(0);c.edit:SetHeight(1);c.edit:SetPoint('TOPLEFT',c.content,'TOPLEFT',0,0)
     -- Let the native EditBox own mouse placement and keyboard navigation.
@@ -302,7 +306,7 @@ function addon:AcquireSourceLuaEditor(owner,parent,changed,valid,preferred)
     if owner.sourceEditorOperation~=operation then return owner.code end
     preferred=preferred or self.db.profile.lua_editor or 'auto'
     local resolved=resolveEditor(self,preferred)
-    if resolved=='LuaWorkbench' and not self:IsLuaWorkbenchIntegrationAvailable() then resolved='native' end
+    if resolved=='LuaWorkbench' and not self:IsLuaWorkbenchIntegrationAvailable() then resolved=resolveEditor(self,'native') end
     if editorDisabled(self,resolved) then resolved='plain' end
     if owner.sourceEditorOperation~=operation then return owner.code end
     local known=resolved=='native' or resolved=='plain' or resolved=='LuaWorkbench'

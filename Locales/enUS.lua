@@ -2307,9 +2307,9 @@ L["Help.Profiles.reset"] = "Reset current profile replaces the active profile wi
 L["Help.Profiles.delete"] = "The red trash can permanently removes the selected inactive profile after confirmation. The active profile and Default cannot be deleted here. Selecting another profile does not delete or activate it."
 L["Help.Profiles.new_name"] = "New and Duplicate open a named draft. Use a nonblank, unused name of at most 50 characters. Apply creates the profile; Cancel abandons creation. Creating a profile leaves the previously active profile active, so use Activate profile when you want to switch to the new copy."
 L["Help.Profiles.collections"] = "The buttons below the list create a new profile, duplicate the selected profile, transfer profiles or compare saved settings. Search narrows the list without activating a profile. Import/Export shows the original name and lets you replace the selection or create a renamed copy. Importing a new profile opens a creation draft; Apply saves it. Replacing a selected profile happens when you confirm the import, and replacing the active profile updates its runtime settings. Compare does not apply changes."
-L["Help.Integrations.lua_editor"] = "Enable and Select are separate profile preferences. Enable an available editor before selecting it. None always uses the plain editor. Automatic chooses an enabled registered provider, then enabled Built In syntax highlighting, otherwise None. Disabling the selected editor chooses None; enabling an editor does not select it. Apply saves both preferences for the next source-editor opening; Discard keeps saved settings and an open editor keeps its current provider. Registered custom extensions retain their existing selection contract."
+L["Help.Integrations.lua_editor"] = "Status pills show Not loaded, Supported, Disabled, Enabled or Selected. Click Enabled to Select or Disable. Disabling Selected chooses the sole enabled available editor, offers a choice when several exist, or leaves none selected. Enabling an editor when none is selected selects it automatically. Native is always available; its Syntax highlighting option is independent of editor selection. With no enabled editor, emergency plain text remains usable. Apply saves preferences for the next source-editor opening; Discard keeps saved settings. An open editor keeps its current provider."
 L["Help.Integrations.lua_line_numbers"] = "Show line numbers controls the gutter in every condition and function code editor. It defaults to enabled. Apply saves the preference and updates open code panes; Discard keeps the saved setting. It does not change the Lua source or its line breaks."
-L["Help.Integrations.optional_addons"] = "The supported-addon inventory shows detected versions and distinguishes missing, loaded, connected, disabled, incompatible and unknown states. Detection and source evidence do not certify native client behavior. Rotation Master does not install or enable other addons."
+L["Help.Integrations.optional_addons"] = "Addon names open copyable links to their primary release pages. Listed game-edition support describes publisher release evidence, not certification of the integration on your client. Some integrations have only historical or unverified releases. Not loaded means unavailable to RM; Supported identifies an available integration without an enable switch. Bundled libraries are excluded. Rotation Master does not install or enable other addons."
 L["Apply / Discard"] = true
 L["Edits stay in a draft until Apply. Discard abandons pending changes. Leaving with changes offers Apply, Discard or Cancel; Cancel keeps the page and draft open. Effect previews do not save changes. Action-bar binding operations are explicit and immediate."] = true
 L["Diagram / List changes only the rotation view; General settings choose the default. Diagram has floating minus, percentage and plus controls at the bottom right. Scroll to zoom from 25% to 200%; click the percentage or middle-click to reset to 100%. Drag empty diagram space to pan. List uses normal scrollbars with touching cards and boxed branch arms, False before True. Cooldowns use a separate scrolling grid. Dragging cards reorders them in every view. Valid rotation bodies can contain up to 2,000 total steps; large workspaces reuse nearby card controls as you navigate. Folded branches intentionally hide their children."] = true
@@ -2458,7 +2458,7 @@ L["Supported addons"] = true
 L["Loaded; integration not connected."] = true
 L["%s (version %s)"] = true
 L["Supported addons are listed even when missing. Loaded addons are only marked connected when their integration is available."] = true
-L["Help.Integrations.overview"] = "Review every supported addon, including missing ones, its detected version and whether its integration is connected. Loaded does not mean connected. Configure editor and optional provider preferences here; Apply saves preferences for this profile, and Discard keeps the saved settings."
+L["Help.Integrations.overview"] = "Review supported addons, detected versions and status by integration type. Click an addon name to copy its release-page link. Configure editor and optional provider preferences here; Apply saves preferences for this profile and Discard keeps saved settings."
 L["Help.Integrations.questie_enabled"] = "Opt in to Questie callbacks for this profile, then Apply. Discard does not change the saved connection. Readiness, API compatibility, source-tested version and native acceptance are reported separately. The adapter retains recent update receipts only; they do not prove quest progress or completion and do not select rotations. No background polling is used."
 L["ExtendedCharacterStats"] = true
 L["MobInfo2"] = true
@@ -2545,6 +2545,95 @@ L["Shared editor settings."] = true
 L["Editor settings"] = true
 L["Enable built-in syntax highlighting"] = true
 L["Lua editor integrations"] = true
+L["Native"] = true
+
+L["Syntax highlighting"] = true
+
+L["Not loaded"] = true
+
+L["Supported"] = true
+
+L["Status"] = true
+
+L["Built-in Lua editor."] = true
+
+L["Registered Lua editor provider."] = true
+
+L["Addon release pages"] = true
+
+L["Publisher listings describe release availability; integration behavior on this client may be unverified."] = true
+
+L["Copy %s"] = true
+
+L["Release links checked: 2026-10-20."] = true
+
+L["CurseForge"] = true
+
+L["Classic Era and TBC. Other editions are unverified; Forever Extended Character Stats is a different project."] = true
+
+L["Publisher lists Retail, Forever, Classic Era, TBC and Mists Classic."] = true
+
+L["Retail, Forever and TBC. Other editions are unverified."] = true
+
+L["Retail, Classic Era, TBC and older progression releases. Current-patch support is unverified. RM currently detects WowLua but does not offer it as an editor."] = true
+
+L["Current Classic Era, TBC and Mists Classic releases; Retail release evidence is historical. Current Retail and Forever support is unverified."] = true
+
+L["Classic Era, TBC and Mists Classic. Retail and Forever releases are unverified."] = true
+
+L["Tukui"] = true
+
+L["Official release channel. Publisher TOC lists Retail, Forever, Classic Era, TBC, Mists and Wrath Classic."] = true
+
+L["Retail, Forever, Classic Era, TBC and Mists Classic. Choose the file for your edition."] = true
+
+L["Separate Retail, Classic Era, TBC and Mists Classic releases. Forever is unverified."] = true
+
+L["Historical Retail release. All current editions are unverified. This is G15 Buttons (continued)."] = true
+
+L["WoWInterface"] = true
+
+L["Historical Retail 8.3 release. All current editions are unverified."] = true
+
+L["Primary LUI Core updates for Retail. Fresh installs use the author-linked full bundle below; Classic uses a separate fork."] = true
+
+L["CurseForge — LUI Classic"] = true
+
+L["Classic Era, TBC and Mists Classic fork. Its compatibility with RM action buttons is unverified."] = true
+
+L["WoWInterface — Retail full bundle"] = true
+
+L["Author-linked full Retail bundle; historical 10.0.2 release, older than the Core updates."] = true
+
+L["WoWInterface — Classic full bundle"] = true
+
+L["Author-linked full Classic bundle; historical Wrath release. For current Classic editions, inspect the newer Classic fork above."] = true
+
+L["Retail, Forever, Classic Era, TBC and Mists Classic."] = true
+
+L["Original historical project. Current editions are unverified; newer forks are not verified replacements for the integration."] = true
+
+L["Legacy AzeriteUI5, now deprecated. Current editions are unverified. RM supports this original addon identity."] = true
+
+L["CurseForge — AzeriteUI6 successor"] = true
+
+L["Successor supports all five editions but uses a different addon identity. RM does not yet integrate with AzeriteUI6."] = true
+
+L["Historical project; author reports a development hiatus. All current editions are unverified."] = true
+
+L["Retail, Classic Era, TBC and Mists Classic releases. Latest-patch compatibility and Forever are unverified."] = true
+
+L["Primary project now releases TotemTimers Forever. Retail files are historical. Classic editions use the separate project below."] = true
+
+L["CurseForge — TotemTimers Classic"] = true
+
+L["Classic Era, TBC, Wrath, Cataclysm and Mists Classic. Compatibility with RM action buttons is unverified."] = true
+
+L["Historical Classic Era and TBC releases. Current editions are unverified. Other similarly named addons are not verified replacements."] = true
+
+L["Copy link %d"] = true
+
+L["Disable"] = true
 
 -- BEGIN GENERATED RM PUBLIC HELPER DOCS
 L["Absolute health target (negative means deficit) or percentage fraction."] = true

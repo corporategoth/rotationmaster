@@ -1,144 +1,219 @@
 local addon_name,addon=...
 local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
-local controllable={native=true,LuaWorkbench=true}
 local function disabled(profile,id)
-    return controllable[id] and type(profile.lua_editor_disabled)=='table' and profile.lua_editor_disabled[id]==true
+    return type(profile.lua_editor_disabled)=='table' and profile.lua_editor_disabled[id]==true
 end
--- This page alone uses aligned cards. The native form still owns pooling,
--- drawing leases, history and the ordinary Apply/Discard transaction.
-local function columns(width)
-    local control=96;local text=math.max(1,width-20-control-12)
-    local name=math.floor(text*.35);local version=math.floor(text*.20)
-    return name,version,text-name-version-12,control
+local function highlighting(profile)
+    if profile.lua_native_highlighting~=nil then return profile.lua_native_highlighting==true end
+    return profile.lua_editor~='plain'
 end
-local function displayName(value)
-    return value:gsub('|','||'):gsub('[%z\1-\31\127]','?')
-end
-local function card(p,id,name,version,description,controls,options)
-    local top,width,surface=p.y,p.width,p.surface
-    local frame=p:Acquire('integrationCards',function()
-        local c=CreateFrame('Frame',nil,p.child);c:EnableMouse(false)
-        c.decoration=addon:CreateRoundedCardDecoration(c);c.decoration:SetColors(.35,.4,.44,.65,.08);return c
-    end)
-    frame:ClearAllPoints();frame:SetPoint('TOPLEFT',0,-top);frame:SetWidth(width)
-    p.fields['integration_card_'..id]=frame
-    p.surface=frame;p.width=width-20;p.y=10
-    local nameWidth,versionWidth,descriptionWidth,controlWidth=columns(width)
-    local height=54
-    local function text(value,x,w)
-        local t=p:Acquire('integrationLabels',function()local f=p.child:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall');f:SetJustifyH('LEFT');f:SetJustifyV('TOP');return f end)
-        t:ClearAllPoints();t:SetPoint('TOPLEFT',10+x,-10);t:SetWidth(math.max(1,w));t:SetWordWrap(true);t:SetText(value or '');t:SetTextColor(.9,.92,.94);t:SetHeight(0)
-        local h=math.max(20,t:GetStringHeight());t:SetHeight(h);height=math.max(height,h+20)
-    end
-    text(name,0,nameWidth);text(version or L['Unknown'],nameWidth+6,versionWidth)
-    text(description,nameWidth+versionWidth+12,descriptionWidth)
-    if controls then controls(function(c,row)
-        c:ClearAllPoints();c:SetPoint('TOPLEFT',width-controlWidth-10,-10-(row or 0)*28);c:SetWidth(controlWidth)
-        if c.rmCheck then c:GetFontString():SetWidth(controlWidth-22) end
-        height=math.max(height,38+(row or 0)*28)
-    end)end
-    p.y=height
-    if options then
-        -- Standard form fields use their existing local offsets inside the card.
-        local body=p:Acquire('integrationOptions',function()local c=CreateFrame('Frame',nil,p.child);c:EnableMouse(false);return c end)
-        body:ClearAllPoints();body:SetPoint('TOPLEFT',10,-height-6);body:SetWidth(p.width)
-        p.surface=body;p.y=0;options();body:SetHeight(p.y);height=height+p.y+16
-    end
-    frame:SetHeight(height)
-    p.surface=surface;p.width=width;p.y=top+height+10
-    return frame
-end
+local function safeName(value)return value:gsub('|','||'):gsub('[%z\1-\31\127]','?')end
+local colors={missing={.48,.48,.48},supported={.25,.55,.9},disabled={.85,.25,.25},enabled={.25,.7,.35},selected={1,.8,.2}}
 function addon:BuildIntegrationSettings(p)
-    local profile=p:SettingsData().profile
-    local inventory,byID=self.ListIntegrationStatus and self:ListIntegrationStatus() or {},{}
-    for _,entry in ipairs(inventory)do byID[entry.id]=entry end
-    local states={missing=L['Not loaded.'],loaded=L['Loaded; connection not confirmed.'],connected=L['Connected'],disabled=L['Disabled'],incompatible=L['Incompatible'],unknown=L['Unknown']}
-    local function description(entry)return (states[entry.state] or L['Unknown'])..(entry.detail and '\n'..entry.detail or '')end
-    local function title(text)
-        p:Heading(text)
-        local nameWidth,versionWidth,descriptionWidth,controlWidth=columns(p.width)
-        local columns={{L['Addon'],10,nameWidth},{L['Version'],16+nameWidth,versionWidth},
-            {L['Description / status'],22+nameWidth+versionWidth,descriptionWidth},{L['Enable / Select'],p.width-controlWidth-10,controlWidth}}
-        local height=24
-        for _,column in ipairs(columns)do
-            local label=p:Acquire('integrationHeadings',function()return p.child:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall')end)
-            label:ClearAllPoints();label:SetPoint('TOPLEFT',column[2],-p.y);label:SetWidth(column[3]);label:SetWordWrap(true);label:SetJustifyH('LEFT');label:SetJustifyV('TOP');label:SetText(column[1]);label:SetHeight(0)
-            local h=math.max(20,label:GetStringHeight());label:SetHeight(h);height=math.max(height,h+6)
-        end
-        p.y=p.y+height
+    local profile=p:SettingsData().profile;local token=p.generation
+    local function current()
+        return p:Valid(token) and (not p.transactionKeys or p.draft and p.draft.profile==profile)
     end
-    local function setEnabled(id,value)
-        if disabled(profile,profile.lua_editor)then profile.lua_editor='plain' end
-        local map={};for key,on in pairs(profile.lua_editor_disabled or {})do map[key]=on end
-        map[id]=not value or nil;profile.lua_editor_disabled=next(map) and map or nil
-        if not value and profile.lua_editor==id then profile.lua_editor='plain' end
+    local function editors()
+        local list=self.ListLuaEditorProviders;if not current()or type(list)~='function'then return end
+        local entries=list(self);if not current()then return end
+        local rows,byID={},{}
+        for _,entry in ipairs(entries)do
+            local id=entry.value
+            if id~='auto' and id~='plain' and id~='native' then
+                local available=true
+                if id=='LuaWorkbench'then
+                    local check=self.IsLuaWorkbenchIntegrationAvailable;if not current()then return end
+                    available=type(check)=='function'and check(self)==true
+                end
+                if not current()then return end
+                if not byID[id]then local row={id=id,name=safeName(entry.text),available=available==true};rows[#rows+1]=row;byID[id]=row end
+            end
+        end
+        table.sort(rows,function(a,b)return a.id<b.id end)
+        if not byID.LuaWorkbench then local row={id='LuaWorkbench',name=L['LuaWorkbench'],available=false};rows[#rows+1]=row;byID.LuaWorkbench=row end
+        local native={id='native',name=L['Native'],available=true};byID.native=native
+        return rows,byID,native
+    end
+    local function effective(rows,byID)
+        local selected=profile.lua_editor or'auto'
+        if selected=='auto'then
+            for _,row in ipairs(rows)do if row.available and not disabled(profile,row.id)then return row.id end end
+        elseif selected~='native'and selected~='plain' then
+            local row=byID[selected];if row and row.available and not disabled(profile,selected)then return selected end
+        end
+        if not disabled(profile,'native')then return'native'end
+    end
+    local function rememberHighlight(value)
+        if profile.lua_native_highlighting==nil then profile.lua_native_highlighting=value end
+    end
+    local function selection(id,value)return id=='native'and(value and'native'or'plain')or id end
+    local function mapWith(id,value)
+        local map,n={},0
+        for key,on in pairs(profile.lua_editor_disabled or{})do if on==true then map[key]=true;n=n+1 end end
+        if value and not map[id]then n=n+1 end
+        if n>64 then p:Message(L['Unavailable']);return end
+        map[id]=value or nil;return map
+    end
+    local function choose(id)
+        local rows,byID=editors();if not rows or not current()then return end
+        local row=byID[id];if not row or not row.available or disabled(profile,id)then return end
+        local value=highlighting(profile);rememberHighlight(value);profile.lua_editor=selection(id,value);p:Draw()
+    end
+    local function enable(id)
+        local rows,byID=editors();if not rows or not current()then return end
+        local row=byID[id];if not row or not row.available or not disabled(profile,id)then return end
+        local selected=effective(rows,byID);local value=highlighting(profile);local map=mapWith(id,false);if not map then return end
+        profile.lua_editor_disabled=next(map)and map or nil
+        if not selected then rememberHighlight(value);profile.lua_editor=selection(id,value)end
         p:Draw()
     end
-    local function editor(id,name,available,entry)
-        local selection=profile.lua_editor or 'auto'
-        if disabled(profile,selection) then selection='plain' end
-        local selected=selection==id
-        local enabled=not disabled(profile,id)
-        local status=available and (enabled and L['Enabled'] or L['Disabled']) or L['Unavailable']
-        if entry then status=status..'\n'..(states[entry.state] or L['Unknown'])end
-        if entry and entry.detail then status=status..'\n'..entry.detail end
-        card(p,'editor_'..id,name,entry and entry.version or nil,status,function(place)
-            if controllable[id] then
-                local c=p:Check('integration_enable_'..id,L['Enabled'],enabled,function(value)
-                    setEnabled(id,value)
-                end);place(c,0)
-            end
-            local button=p:Button('integration_select_'..id,selected and L['Selected'] or L['Select'],function()
-                if available and not disabled(profile,id)then profile.lua_editor=id;p:Draw()end
-            end);place(button,controllable[id] and 1 or 0)
-            if not available or not enabled or selected then button:Disable() end
-        end)
+    local function disable(id,replacement,wasSelected)
+        local rows,byID=editors();if not rows or not current()then return end
+        local row=byID[id];if not row or not row.available or disabled(profile,id)then return end
+        local selected=effective(rows,byID)
+        if wasSelected and selected~=id or not wasSelected and selected==id then return end
+        if replacement then
+            local target=byID[replacement]
+            if not target or replacement==id or not target.available or disabled(profile,replacement)then return end
+        elseif wasSelected then
+            -- A new enabled alternative requires a fresh explicit handoff choice.
+            for other,target in pairs(byID)do if other~=id and target.available and not disabled(profile,other)then return end end
+        end
+        local value=highlighting(profile);local map=mapWith(id,true);if not map then return end
+        rememberHighlight(value);profile.lua_editor_disabled=map
+        if wasSelected then profile.lua_editor=replacement and selection(replacement,value)or'plain'end
+        p:Draw()
     end
-    p:Heading(L['Editor settings'])
-    local selection=profile.lua_editor or 'auto';if disabled(profile,selection)then selection='plain' end
-    for _,entry in ipairs({{'plain',L['None (plain editor)']},{'auto',L['Automatic']},{'native',L['Built In syntax highlighting']}})do
-        local id,name=entry[1],entry[2]
-        local button=p:Button('integration_select_'..id,(selection==id and L['Selected']..': ' or '')..name,function()
-            if not disabled(profile,id)then profile.lua_editor=id;p:Draw()end
-        end)
-        if selection==id or disabled(profile,id)then button:Disable()end
+    local function editorAction(id,anchor)
+        local rows,byID=editors();if not rows or not current()then return end
+        local row=byID[id];if not row or not row.available then return end
+        if disabled(profile,id)then enable(id);return end
+        local selected=effective(rows,byID)
+        if selected~=id then
+            p:ShowChoices(anchor,{{value='disable',text=L['Disable']},{value='select',text=L['Select']}},function(value)
+                if value=='disable'then disable(id,nil,false)elseif value=='select'then choose(id)end
+            end,true)
+            return
+        end
+        local alternatives={}
+        for other,target in pairs(byID)do if other~=id and target.available and not disabled(profile,other)then alternatives[#alternatives+1]={value=other,text=target.name}end end
+        table.sort(alternatives,function(a,b)return a.value<b.value end)
+        if #alternatives==0 then disable(id,nil,true)
+        elseif #alternatives==1 then disable(id,alternatives[1].value,true)
+        else p:ShowChoices(anchor,alternatives,function(other)disable(id,other,true)end,true)end
     end
-    p:Check('integration_enable_native',L['Enable built-in syntax highlighting'],not disabled(profile,'native'),function(value)setEnabled('native',value)end)
-    p:Check('lua_line_numbers',L['Show line numbers'],profile.lua_line_numbers~=false,function(value)profile.lua_line_numbers=value end)
-    p:Text(L['Baseline plain editor; always available.'])
-    p:Text(L['Automatic uses an enabled available provider, then enabled built-in highlighting, otherwise None (plain editor).'])
-    p:Text(L['Line-number visibility applies to every condition and function code editor.'])
-    p:Text(L['Apply changes the editor used the next time a source editor opens. Enable an editor before selecting it.'])
-    title(L['Lua editor integrations'])
-    local entries=self:ListLuaEditorProviders();local found={}
-    for _,entry in ipairs(entries)do if entry.value~='auto' and entry.value~='plain' and entry.value~='native' then
-        found[entry.value]=true
-        local available=entry.value~='LuaWorkbench' or self.IsLuaWorkbenchIntegrationAvailable and self:IsLuaWorkbenchIntegrationAvailable()==true
-        editor(entry.value,displayName(entry.text),available==true,entry.value=='LuaWorkbench' and byID['!!!LuaWorkbench'] or nil)
-    end end
-    if not found.LuaWorkbench then editor('LuaWorkbench',L['LuaWorkbench'],false,byID['!!!LuaWorkbench']) end
-    local wow=byID.WowLua;if wow then card(p,wow.id,wow.name,wow.version,description(wow)) end
-    local function passiveGroup(name,ids)
-        title(name);for _,id in ipairs(ids)do local entry=byID[id];if entry then card(p,id,entry.name,entry.version,description(entry))end end
+    local function inventoryRows()
+        local list=self.ListIntegrationStatus;if not current()then return end
+        local result=type(list)=='function'and list(self)or{}
+        if current()then return result end
     end
-    passiveGroup(L['Condition data'],{'ExtendedCharacterStats','MobInfo2'})
-    passiveGroup(L['Recommendation notifications'],{'WeakAuras'})
-    title(L['Quest callbacks'])
-    local questie=byID.Questie or {id='Questie',name=L['Questie'],state='unknown'}
-    card(p,'Questie',questie.name,questie.version,description(questie),function(place)
-        place(p:Check('questie_enabled',L['Enabled'],profile.questie_enabled==true,function(value)
-            profile.questie_enabled=value;p:RunSettingsEffect('questie',function()self:SyncQuestieIntegration()end)
+    local rows,byID,native=editors();if not rows or not current()then return end
+    local inventory=inventoryRows();if not inventory then return end
+    local metadata={};for _,entry in ipairs(inventory)do metadata[entry.id]=entry end
+    local selected=effective(rows,byID)
+    local function editorRow(row)
+        local entry=metadata[row.id=='LuaWorkbench'and'!!!LuaWorkbench'or row.id]
+        return {id='editor_'..row.id,name=row.name,version=row.id=='native'and''or entry and entry.version,
+            description=row.id=='native'and L['Built-in Lua editor.']or entry and entry.detail or L['Registered Lua editor provider.'],
+            state=not row.available and'missing'or disabled(profile,row.id)and'disabled'or selected==row.id and'selected'or'enabled',
+            action=row.available and function(anchor)editorAction(row.id,anchor)end or nil,
+            entry=entry,help='Help.Integrations.lua_editor',native=row.id=='native'}
+    end
+    local editorRows={editorRow(native)};local found={}
+    for _,row in ipairs(rows)do editorRows[#editorRows+1]=editorRow(row);found[row.id]=true end
+    local function readonly(entry)
+        return{id=entry.id,name=entry.name,version=entry.version,description=entry.detail or'',state=(entry.state=='missing'or entry.state=='unknown')and'missing'or'supported',entry=entry,help='Help.Integrations.optional_addons'}
+    end
+    if metadata.WowLua and not found.WowLua then editorRows[#editorRows+1]=readonly(metadata.WowLua)end
+    local groups={{title=L['Lua editor integrations'],rows=editorRows}}
+    local function group(title,ids)
+        local list={};for _,id in ipairs(ids)do if metadata[id]then list[#list+1]=readonly(metadata[id])end end
+        groups[#groups+1]={title=title,rows=list}
+    end
+    group(L['Condition data'],{'ExtendedCharacterStats','MobInfo2'})
+    group(L['Recommendation notifications'],{'WeakAuras'})
+    local questie=metadata.Questie or{id='Questie',name=L['Questie'],state='missing'}
+    local questieRow=readonly(questie);questieRow.help='Help.Integrations.questie_enabled'
+    if questieRow.state~='missing'then
+        questieRow.state=profile.questie_enabled==true and'enabled'or'disabled'
+        questieRow.action=function()
+            local fresh=inventoryRows();if not fresh then return end
+            local loaded=false;for _,entry in ipairs(fresh)do if entry.id=='Questie'then loaded=entry.state~='missing'and entry.state~='unknown'end end
+            if not loaded then return end
+            profile.questie_enabled=not(profile.questie_enabled==true)
+            p:RunSettingsEffect('questie',function()self:SyncQuestieIntegration()end);p:Draw()
+        end
+    end
+    groups[#groups+1]={title=L['Quest callbacks'],rows={questieRow}}
+    group(L['Action bars'],{'ElvUI','Bartender4','ButtonForge','G15Buttons','SyncUI','LUI','Dominos','DiabolicUI','AzeriteUI','Neuron','FarmingBar','TotemTimers','SamyTotemTimers'})
+    -- Measure shared columns once per drawing; description receives the remainder.
+    p.width=math.max(340,p.frame:GetWidth()-40);p.child:SetWidth(p.width)
+    local measure=p:Acquire('integrationMeasure',function()return p.child:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall')end)
+    measure:SetWordWrap(false);measure:SetWidth(0)
+    local function width(text)measure:SetText(text or'');return measure:GetStringWidth()end
+    local labels={missing=L['Not loaded'],supported=L['Supported'],disabled=L['Disabled'],enabled=L['Enabled'],selected=L['Selected']}
+    local nameWidth,versionWidth,statusWidth=width(L['Addon'])+24,width(L['Version']),width(L['Status'])+16
+    for _,label in pairs(labels)do statusWidth=math.max(statusWidth,width(label)+18)end
+    for _,section in ipairs(groups)do for _,row in ipairs(section.rows)do nameWidth=math.max(nameWidth,width(row.name)+24);versionWidth=math.max(versionWidth,width(row.version))end end
+    measure:SetText('');measure:Hide()
+    local usable=p.width-20;local gap=8
+    statusWidth=math.min(statusWidth,usable*.28);nameWidth=math.min(nameWidth,usable*.30);versionWidth=math.min(versionWidth,usable*.16)
+    local descWidth=usable-nameWidth-versionWidth-statusWidth-gap*3
+    local positions={10,10+nameWidth+gap,10+nameWidth+versionWidth+gap*2,p.width-10-statusWidth}
+    local widths={nameWidth,versionWidth,descWidth,statusWidth}
+    local function label(kind,parent,text,x,y,w)
+        local c=p:Acquire(kind,function()local f=p.child:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall');f:SetJustifyH('LEFT');f:SetJustifyV('TOP');return f end)
+        c:SetParent(parent);c:ClearAllPoints();c:SetPoint('TOPLEFT',x,-y);c:SetWidth(math.max(1,w));c:SetWordWrap(true);c:SetText(text or'');c:SetTextColor(.9,.92,.94);c:SetHeight(0);c:SetHeight(math.max(18,c:GetStringHeight()));return c
+    end
+    local function draw(row)
+        local top=p.y
+        local frame=p:Acquire('integrationCards',function()local c=CreateFrame('Frame',nil,p.child);c:EnableMouse(false);c.decoration=addon:CreateRoundedCardDecoration(c);c.decoration:SetColors(.35,.4,.44,.65,.08);return c end)
+        frame:ClearAllPoints();frame:SetPoint('TOPLEFT',0,-top);frame:SetWidth(p.width);p.fields['integration_card_'..row.id]=frame
+        local name=p:Acquire('integrationNames',function()return addon:CreateWorkbenchButton(p.child,'',nameWidth-24)end)
+        name:SetParent(frame);name:ClearAllPoints();name:SetPoint('TOPLEFT',positions[1],-10);name:SetWidth(math.max(1,nameWidth-24));name.art:Hide();name:SetText(row.name)
+        local caption=name:GetFontString();caption:ClearAllPoints();caption:SetPoint('TOPLEFT');caption:SetWidth(math.max(1,nameWidth-24));caption:SetJustifyH('LEFT');caption:SetJustifyV('TOP');caption:SetWordWrap(true)
+        name:SetHeight(math.max(18,caption:GetStringHeight()));name:Disable();name:SetAlpha(1);caption:SetTextColor(.9,.92,.94);addon:SetUIScript(name,'OnClick',nil)
+        p.fields['integration_name_'..row.id]=name
+        if row.entry and type(row.entry.projectURL)=='string'and row.entry.projectURL~=''then
+            local id=row.entry.id;name:Enable();caption:SetTextColor(.35,.7,1)
+            addon:SetUIScript(name,'OnClick',p:Guard(function()
+                local show=self.ShowIntegrationProjectLink
+                if current()and type(show)=='function'then show(self,id)end
+            end))
+        end
+        local version=label('integrationLabels',frame,row.version or L['Unknown'],positions[2],10,versionWidth)
+        local description=label('integrationLabels',frame,row.description,positions[3],10,descWidth)
+        local pill=p:Acquire('integrationPills',function()return addon:CreateWorkbenchPill(p.child,'',statusWidth)end)
+        pill:SetParent(frame);pill:ClearAllPoints();pill:SetPoint('TOPLEFT',positions[4],-10);pill:SetWidth(statusWidth);pill:SetText(labels[row.state]);pill:Enable()
+        local color=colors[row.state];pill:SetAccent(color[1],color[2],color[3]);pill:SetSelected(true)
+        p.fields['integration_status_'..row.id]=pill
+        addon:SetUIScript(pill,'OnClick',row.action and p:Guard(function()if p:FlushEdits()and current()then row.action(pill)end end)or nil)
+        if not row.action then pill:Disable();pill:SetAlpha(1)end
+        local help=p:Acquire('integrationHelp',function()return addon:CreateWorkbenchIconButton(p.child,'help',L['Help'])end)
+        help:SetParent(frame);help:ClearAllPoints();help:SetPoint('TOPLEFT',positions[2]-gap-20,-10);help:Enable();p.fields['integration_help_'..row.id]=help
+        addon:SetUIScript(help,'OnClick',p:Guard(function()
+            local show=self.ShowWorkbenchHelp
+            if current()and type(show)=='function'then show(self,row.name,{{title=row.name,text=L[row.help]}},p.frame)end
         end))
-    end,function()
-        local status=self.GetQuestieIntegrationStatus and self:GetQuestieIntegrationStatus() or {state='unavailable'}
-        local labels={disabled=L['Disabled'],missing=L['Not loaded.'],waiting=L['Waiting for Questie.'],incompatible=L['Questie API incompatible.'],available=L['Questie callback connection available.'],['client-restricted']=L['Questie values are restricted by this client.'],error=L['Questie integration unavailable after an adapter error.'],unavailable=L['Questie adapter unavailable.']}
-        p:Text(labels[status.state] or L['Questie adapter unavailable.'])
-        if status.version then p:Text(string.format(L['Questie version: %s (%s)'],status.version:gsub('|','||'),status.versionStatus=='source-tested' and L['source-tested'] or L['unverified']))end
-        if status.family then p:Text(string.format(L['Client family: %s (%s)'],status.family,status.familyContract=='declared-unverified' and L['declared; unverified'] or L['unsupported']))end
-        p:Text(L['Native acceptance: unverified. Coverage: recent update receipts only; no quest progress, completion or rotation selection.'])
-        p:Text(L['Questie is optional and disabled by default. Apply saves this profile preference. No background polling is used.'])
-        p:Button('questie_refresh',L['Refresh Questie status'],function()self:RefreshQuestieIntegration();p:Draw()end)
-    end)
-    passiveGroup(L['Action bars'],{'ElvUI','Bartender4','ButtonForge','G15Buttons','SyncUI','LUI','Dominos','DiabolicUI','AzeriteUI','Neuron','FarmingBar','TotemTimers','SamyTotemTimers'})
-    p:Text(L['Supported addons are listed even when missing. Loaded addons are only marked connected when their integration is available.'])
+        local height=math.max(38,name:GetHeight()+20,version:GetHeight()+20,description:GetHeight()+20)
+        if row.native then
+            local surface,available=p.surface,p.width;p.surface=frame;p.width=available-20;p.y=height
+            local line=p:Check('lua_line_numbers',L['Show line numbers'],profile.lua_line_numbers~=false,function(value)profile.lua_line_numbers=value end)
+            local syntax=p:Check('lua_native_highlighting',L['Syntax highlighting'],highlighting(profile),function(value)
+                local liveRows,liveByID=editors();if not liveRows or not current()then return end
+                local active=effective(liveRows,liveByID);profile.lua_native_highlighting=value==true
+                if active=='native'then profile.lua_editor=value and'native'or'plain'end;p:Draw()
+            end)
+            line:ClearAllPoints();line:SetPoint('TOPLEFT',10,-height);syntax:ClearAllPoints();syntax:SetPoint('TOPLEFT',10,-height-30)
+            height=height+64;p.surface=surface;p.width=available
+        end
+        frame:SetHeight(height);p.y=top+height+10
+    end
+    for _,section in ipairs(groups)do if #section.rows>0 then
+        p:Heading(section.title);local height=22
+        for i,text in ipairs({L['Addon'],L['Version'],L['Description'],L['Status']})do local c=label('integrationHeadings',p.child,text,positions[i],p.y,widths[i]);height=math.max(height,c:GetHeight()+6)end
+        p.y=p.y+height
+        for _,row in ipairs(section.rows)do draw(row)end
+    end end
 end

@@ -815,6 +815,7 @@ for _,record in pairs(records)do
  record.new=source;record.changes=nil
 end
 return function(path,source)
+ source=dofile('tests/fixtures/restore_integration_pills.lua')(path,source)
  local record=assert(records[path],'unsupported integration settings inverse path')
  assert(source==record.new,'integration settings inverse requires exact complete successor: '..path)
  return record.old
