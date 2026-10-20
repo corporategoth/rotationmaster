@@ -147,6 +147,8 @@ def main():
             ['luajit', 'tests/unit_identity_conditions.lua'],
             ['lua5.1', 'tests/line_numbers.lua'],
             ['luajit', 'tests/line_numbers.lua'],
+            ['lua5.1', 'tests/native_gutter_clipping.lua'],
+            ['luajit', 'tests/native_gutter_clipping.lua'],
             ['lua5.1', 'tests/lua_input_probe.lua'],
             ['luajit', 'tests/lua_input_probe.lua'],
             ['lua5.1', 'tests/health_forecast_deficit.lua'],

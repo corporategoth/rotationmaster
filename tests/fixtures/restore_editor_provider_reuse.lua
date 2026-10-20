@@ -701,6 +701,42 @@ end
             -- Native hosts may acquire a newly constructed or already active
             -- control. Refresh can keep its existing attachment in that case.
 ]=]},
+  {old=[=[    bindQueue()
+    function control:SetLineNumbers(visible)
+        visible=visible~=false
+        if self.lineNumbersVisible==visible then return end
+        self:ResetLineNumberQueue()
+        self.lineNumbersVisible=visible
+        local previous=input.queryLineNumbers or input.queryLineNumberCache
+        if previous then previous.rmRender=nil end
+]=],current=[=[    bindQueue()
+    function control:SetLineNumbers(visible)
+        visible=visible~=false
+        if self.lineNumbersVisible==visible then return end
+        if options.native and addon.RestoreLuaGutterClippingProbe then addon:RestoreLuaGutterClippingProbe(self) end
+        self:ResetLineNumberQueue()
+        self.lineNumbersVisible=visible
+        local previous=input.queryLineNumbers or input.queryLineNumberCache
+        if previous then previous.rmRender=nil end
+]=]},
+  {old=[=[            bindQueue()
+            console:AttachLineNumbers(input)
+            if options.native then
+                local gutter=input.queryLineNumbers.gutter;gutter:ClearAllPoints();gutter:SetPoint('TOPLEFT',self.frame,'TOPLEFT',4,-8);gutter:SetPoint('BOTTOMLEFT',self.frame,'BOTTOMLEFT',4,4)
+            end
+        else console:DetachLineNumbers() end
+        if options.native and not self.layingOut then self:Layout() end
+    end
+]=],current=[=[            bindQueue()
+            console:AttachLineNumbers(input)
+            if options.native then
+                local gutter=input.queryLineNumbers.gutter;gutter:ClearAllPoints();gutter:SetPoint('TOPLEFT',self.frame,'TOPLEFT',4,-8);gutter:SetPoint('BOTTOMLEFT',self.frame,'BOTTOMLEFT',4,4)
+                if addon.ApplyLuaGutterClippingProbe then addon:ApplyLuaGutterClippingProbe(self,input.queryLineNumbers) end
+            end
+        else console:DetachLineNumbers() end
+        if options.native and not self.layingOut then self:Layout() end
+    end
+]=]},
  }},
 }
 local function hash(text)

@@ -1,5 +1,88 @@
 local addon_name,addon=...
 local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
+-- Explicit, session-only native experiment; default gutters remain untouched.
+local clippingArmed=false
+local clippingGeneration={}
+local clippingApplied={}
+local function clippingValue(gutter)
+    local ok,value=pcall(function() return gutter:DoesClipChildren() end)
+    if ok and type(value)=='boolean' then return value end
+end
+local function clippingOwned(control,record)
+    local input=control.lineNumberInput
+    return input==record.input and record.state.gutter==record.gutter
+        and (input.queryLineNumbers==record.state or input.queryLineNumberCache==record.state)
+end
+function addon:RestoreLuaGutterClippingProbe(control)
+    local record=clippingApplied[control]
+    if not record then return true end
+    if record.restoring then return true end
+    if not clippingOwned(control,record) then clippingApplied[control]=nil;return true end
+    local generation,queue,released=clippingGeneration,control.lineNumberQueue,control.released
+    local function current()
+        return clippingApplied[control]==record and clippingGeneration==generation and clippingOwned(control,record)
+            and control.lineNumberQueue==queue and control.released==released
+    end
+    -- Keep the baseline reserved during native callbacks. A reentrant new
+    -- attachment may inherit it, rather than treating our false as native state.
+    record.restoring=true
+    local value=clippingValue(record.gutter)
+    local setterOk,setter=pcall(function() return record.gutter.SetClipsChildren end)
+    if current() and value~=record.original and value==false and setterOk and type(setter)=='function' then pcall(setter,record.gutter,record.original) end
+    local restored=current() and clippingValue(record.gutter)==record.original
+    record.restoring=nil
+    if not current() then
+        if clippingApplied[control]==record and clippingOwned(control,record) and (not clippingArmed or control.released) then
+            record.restorePending=true;return nil,'clipping-restore-unavailable'
+        end
+        return true
+    end
+    if restored then clippingApplied[control]=nil;return true end
+    record.restorePending=true;return nil,'clipping-restore-unavailable'
+end
+function addon:ApplyLuaGutterClippingProbe(control,state)
+    if not clippingArmed then return end
+    if type(control)~='table' or control.provider~='native' or control.engine or control.released then return end
+    local input=control.lineNumberInput
+    if not input or input.queryLineNumbers~=state or not state or not state.gutter then return end
+    local generation,gutter,ownerValid=clippingGeneration,state.gutter,control.valid
+    if type(ownerValid)~='function' then return end
+    local function current()
+        return clippingArmed and clippingGeneration==generation and not control.released and control.valid==ownerValid
+            and control.lineNumberInput==input and input.queryLineNumbers==state and state.gutter==gutter
+    end
+    local validOk,valid=pcall(ownerValid);if not validOk or not valid or not current() then return end
+    local previous=clippingApplied[control]
+    local inherited
+    if previous and previous.state==state and previous.gutter==state.gutter then
+        if not previous.restoring then return end
+        inherited=previous
+    elseif previous and previous.restoring then return
+    elseif not self:RestoreLuaGutterClippingProbe(control) or not current() then return end
+    local count=0;for _ in pairs(clippingApplied) do count=count+1 end;if count>=8 and not inherited then return end
+    local value=clippingValue(gutter)
+    local setterOk,setter=pcall(function() return gutter.SetClipsChildren end)
+    if value==nil or not setterOk or type(setter)~='function' or not current() then return end
+    local original=value;if inherited then original=inherited.original end
+    local record={input=input,state=state,gutter=gutter,original=original};clippingApplied[control]=record
+    local ok=true
+    if value then ok=pcall(setter,gutter,false) end
+    if clippingApplied[control]~=record then return end
+    if not ok or not clippingOwned(control,record) or control.released or clippingValue(record.gutter)~=false then self:RestoreLuaGutterClippingProbe(control) end
+end
+function addon:SetLuaGutterClippingProbe(enabled)
+    if not rawequal(self,addon) or type(enabled)~='boolean' then return nil,'invalid-clipping-probe' end
+    clippingArmed=enabled;clippingGeneration={}
+    local generation,failed=clippingGeneration,nil
+    if not enabled then for control in pairs(clippingApplied) do
+        if clippingGeneration~=generation then return nil,'clipping-probe-superseded' end
+        local restored=self:RestoreLuaGutterClippingProbe(control)
+        if clippingGeneration~=generation then return nil,'clipping-probe-superseded' end
+        if not restored then failed=true end
+    end end
+    if failed then return nil,'clipping-restore-unavailable' end
+    return true
+end
 local function read(object,method)
     if not object or type(object[method])~='function' then return 'unavailable' end
     local ok,value=pcall(object[method],object)
@@ -130,6 +213,8 @@ function addon:LuaEditorInputReport()
     end
     lines[#lines+1]='arrowHook='..tostring(type(edit:GetScript('OnArrowPressed'))=='function')..' probe='..tostring(control.nativeArrowProbe~=nil)
     lines[#lines+1]='lineNumbers visible='..tostring(control.lineNumbersVisible)..' setting='..tostring(control.lineNumberSetting)
+    local clipping=clippingApplied[control]
+    lines[#lines+1]='clipping probe armed='..tostring(clippingArmed)..' applied='..tostring(clipping~=nil and clippingOwned(control,clipping) and clippingValue(clipping.gutter)==false)..' restorePending='..tostring(clipping~=nil and clipping.restorePending==true)
     local input=control.lineNumberInput;local queue=control.lineNumberQueue
     local engine=control.engine or control.completionEngine;local console=engine and engine.Query and engine.Query.Console
     lines[#lines+1]='gutter queue=deferred pending='..tostring(queue~=nil and queue.pending==true)

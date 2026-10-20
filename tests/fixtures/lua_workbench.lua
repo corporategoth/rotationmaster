@@ -14,7 +14,7 @@ return function()
  function frame:GetVerticalScroll() return self.scrollOffset or 0 end
  function frame:GetVerticalScrollRange() return math.max(0,(self.scrollChild and self.scrollChild:GetHeight() or 0)-self:GetHeight()) end
  function frame:GetPoint() return unpack(self.point or {'CENTER'}) end
- function frame:GetTop() return 500 end;function frame:GetBottom() return 200 end;function frame:GetLeft() return 0 end;function frame:SetClipsChildren() end;function frame:IsMouseOver() return false end;function frame:GetAltArrowKeyMode() return self.altArrowKeyMode end;function frame:SetHistoryLines() end;function frame:SetObeyStepOnDrag() end;function frame:GetFontObject() return "ChatFontNormal" end
+ function frame:GetTop() return 500 end;function frame:GetBottom() return 200 end;function frame:GetLeft() return 0 end;function frame:SetClipsChildren(value)self.clipsChildren=value;self.clippingWrites=(self.clippingWrites or 0)+1 end;function frame:DoesClipChildren()return self.clipsChildren==true end;function frame:IsMouseOver() return false end;function frame:GetAltArrowKeyMode() return self.altArrowKeyMode end;function frame:SetHistoryLines() end;function frame:SetObeyStepOnDrag() end;function frame:GetFontObject() return "ChatFontNormal" end
  function frame:UnregisterAllEvents() self.eventsCleared=true end;local texture,fontstring=frame.CreateTexture,frame.CreateFontString
  function frame:CreateTexture(...) return augmented(texture(self,...)) end
  function frame:CreateFontString(...) return augmented(fontstring(self,...)) end
