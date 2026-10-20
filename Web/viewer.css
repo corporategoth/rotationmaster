@@ -1,0 +1,29 @@
+:root { color-scheme: dark; --stone:#111315; --surface:#202326; --text:#E8DEC9; --muted:#BEB8AA; --gold:#D6B469; --azure:#78C8F2; --line:#5F6468; }
+* { box-sizing:border-box; }
+body { margin:0; background:var(--stone); color:var(--text); font:16px/1.55 Verdana,sans-serif; }
+main { max-width:1200px; margin:0 auto; padding:32px clamp(16px,4vw,48px) 64px; }
+h1 { margin:0; color:var(--gold); font:normal clamp(28px,5vw,40px)/1.2 Georgia,serif; }
+h2 { margin:0 0 12px; color:var(--gold); font-size:20px; }
+h3 { font-size:18px; } h4 { margin:0 0 8px; font-size:16px; }
+p { max-width:78ch; margin:8px 0 16px; }
+.subtitle { margin:4px 0 20px; color:var(--azure); font-size:20px; }
+label { display:block; margin:16px 0 6px; font-weight:bold; }
+textarea { width:100%; max-width:100%; resize:vertical; padding:12px; border:1px solid var(--line); border-radius:3px; background:var(--surface); color:var(--text); font:14px/1.5 monospace; overflow-wrap:anywhere; }
+button { padding:9px 14px; margin:4px 8px 4px 0; border:1px solid var(--azure); border-radius:3px; background:var(--surface); color:var(--azure); font:inherit; cursor:pointer; }
+button:hover { background:#2C3942; } button:disabled { border-color:var(--line); color:var(--muted); cursor:default; }
+:focus-visible { outline:3px solid var(--azure); outline-offset:3px; }
+.actions { display:flex; flex-wrap:wrap; margin:12px 0; }
+#import-status { color:var(--muted); }
+.result { overflow-wrap:anywhere; margin-top:28px; display:grid; grid-template-columns:minmax(0,1fr) minmax(230px,.42fr); gap:24px; }
+.status { grid-column:1/-1; padding-bottom:16px; border-bottom:1px solid var(--line); }
+.declared { grid-column:2; grid-row:2; }
+.content { grid-column:1; grid-row:2; min-width:0; }
+.ordered,.raw,.inspection { min-width:0; }
+.raw { grid-row:auto; } .inspection { grid-column:1/-1; padding:16px; border:1px solid var(--line); background:var(--surface); }
+.step { border-left:3px solid var(--azure); padding:12px 0 12px 16px; margin:16px 0; }
+.raw-row { padding:8px 0; border-bottom:1px solid #393D40; }
+pre { margin:8px 0; font:13px/1.6 monospace; white-space:pre-wrap; overflow-wrap:anywhere; }
+.path { color:var(--muted); font-size:13px; overflow-wrap:anywhere; }
+.caution,.problem { color:var(--gold); }
+[hidden] { display:none !important; }
+@media(max-width:760px) { .result { display:block; } .result>section { margin-bottom:24px; } main { padding-top:20px; } button { min-height:44px; } }

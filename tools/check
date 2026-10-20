@@ -500,6 +500,8 @@ def main():
             ['luajit', 'tests/compression.lua'],
             ['luajit', 'tests/rotation_codec.lua'],
             ['node', '--test', 'tests/web_codec.mjs'],
+            ['node', '--test', 'tests/web_schema.mjs'],
+            ['node', '--test', 'tests/web_viewer.mjs'],
             [sys.executable, 'tests/test_check.py'],
             [sys.executable, 'tests/test_builtin_sources.py'],
             [sys.executable, 'tests/test_retained_builtin_values.py'],
