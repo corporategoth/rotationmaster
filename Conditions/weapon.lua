@@ -255,7 +255,7 @@ addon:RegisterCondition("SWING_TIME_REMAIN", {
         if lastSwing==nil or Functions.cache.getCached(cache, UnitCastingInfo, "player") or Functions.cache.getCached(cache, UnitChannelInfo, "player") then
             return Functions.values.compare(value.operator,speed,value.value)
         end
-        return Functions.values.compare(value.operator,speed-math.max(evalStart-lastSwing,0),value.value)
+        return Functions.values.compare(value.operator,math.max(speed-math.max(evalStart-lastSwing,0),0),value.value)
     end,
     print = function(_, value)
         return string.format(L["Your %s weapon %s"], (value.offhand and L["off hand"] or L["main hand"]),

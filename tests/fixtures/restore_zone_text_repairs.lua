@@ -4,6 +4,7 @@ local repaired="\n        local method\n        if value.subzone then method=Get
 local function inverse(text,callback)
  assert(type(text)=='string','expected source text')
  if callback then assert(text==repaired,'unexpected complete ZONE evaluator');return old end
+ text=dofile('tests/fixtures/restore_distance_presence.lua')(text)
  local from='evaluate = function(value, cache)'..repaired..'end,'
  local to='evaluate = function(value, cache)'..old..'end,'
  local a,b=text:find(from,1,true);assert(a and not text:find(from,b+1,true),'missing or duplicate complete ZONE evaluator')

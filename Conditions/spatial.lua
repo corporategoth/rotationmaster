@@ -243,7 +243,10 @@ addon:RegisterCondition("DISTANCE", {
                 value.value ~= nil and value.value >= 0 and value.value <= 40)
     end,
     evaluate = function(value, cache)
-        if not Functions.cache.getCached(cache, UnitExists, value.unit) then return false end
+        local exists,reason=Functions.cache.getCached(cache,addon.Platform.GetUnitPresenceObservation,addon.Platform,value.unit)
+        if exists==nil then return nil,reason or 'unit-data-unavailable' end
+        if exists==false then return false end
+        if exists~=true then return nil,'invalid-api-result' end
         -- pcall preserves both range bounds returned by the cached observation.
         ---@diagnostic disable-next-line: unbalanced-assignments
         local ok, minRange, maxRange = pcall(Functions.cache.getCached, cache, rcf, value.unit)

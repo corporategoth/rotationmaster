@@ -131,6 +131,8 @@ test('every callback byte and parameter remains identical after reversing only n
         if tag=='ECS_STAT_PCT' then current.evaluate=dofile('tests/fixtures/restore_ecs_percentage_sign.lua')(current.evaluate,true) end
         if tag=='PROXIMITY' then current.print=dofile('tests/fixtures/restore_proximity_summary_repairs.lua')(current.print,true) end
         if tag=='ZONE' then current.evaluate=dofile('tests/fixtures/restore_zone_text_repairs.lua')(current.evaluate,true) end
+        if tag=='DISTANCE' then current.evaluate=dofile('tests/fixtures/restore_distance_presence.lua')(current.evaluate,true) end
+        if tag=='SWING_TIME_REMAIN' then current.evaluate=dofile('tests/fixtures/restore_swing_countdown.lua')(current.evaluate,true) end
         local source=legacy(a,current,tag);local parts={}
         -- Separate ECS API regression tests require the corrected dot contract.
         -- Reverse only those explicit semantic fixes for this namespace-only byte proof.

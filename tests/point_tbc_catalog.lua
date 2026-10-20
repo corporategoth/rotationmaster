@@ -10,6 +10,8 @@ local oldHashes={
 }
 test('all old catalog fields survive exactly after the one callback and four additive bindings',function()
  local _,a=fixture();local catalog=a:CopySettingsData(a.BuiltinSourceCatalog);local modules,bindings,conditions=0,0,0
+ dofile('tests/fixtures/restore_swing_catalog.lua')(catalog)
+ dofile('tests/fixtures/restore_distance_catalog.lua')(catalog)
  for _,m in pairs(catalog.modules)do modules=modules+1;for _ in pairs(m.bindings)do bindings=bindings+1 end end
  for _ in pairs(catalog.conditions)do conditions=conditions+1 end
  assert(modules==75 and bindings==238 and conditions==116,'unexpected catalog inventory change')
