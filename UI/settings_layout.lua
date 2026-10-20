@@ -152,7 +152,7 @@ function addon:InstallSettingsLayout(p)
         for i,entry in ipairs(options.sources or {}) do
             local control=r.sourceButtons[i];if not control then control=addon:CreateWorkbenchButton(r.frame,'',74);r.sourceButtons[i]=control end
             control:SetText(entry.text);control:SetSelected(entry.value==options.source);control:Show()
-            addon:SetUIScript(control,'OnClick',self:Guard(function() if self:FlushEdits() then options.chooseSource(entry.value) end end))
+            addon:SetUIScript(control,'OnClick',self:Guard(function() if options.requestSource then options.requestSource(entry.value) elseif self:FlushEdits() then options.chooseSource(entry.value) end end))
         end
         for i=#(options.sources or {})+1,#r.sourceButtons do r.sourceButtons[i]:Hide() end
         if options.categories then

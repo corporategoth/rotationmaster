@@ -1,7 +1,7 @@
 local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite()
 local function read(path)local h=assert(io.open(path));local s=h:read('*a');h:close();return s end
 local function once(s,old,new)local a,b=assert(s:find(old,1,true));assert(not s:find(old,b+1,true));return s:sub(1,a-1)..new..s:sub(b+1)end
-local featureSource=dofile('tests/fixtures/restore_cpu_retained_activity.lua')(read('Diagnostics/cpu.lua'),'Diagnostics/cpu.lua')
+local featureSource=dofile('tests/fixtures/restore_cpu_retained_activity.lua')(dofile('tests/fixtures/parser_string_history.lua')(read('Diagnostics/cpu.lua'),'Diagnostics/cpu.lua'),'Diagnostics/cpu.lua')
 local baseline=dofile('tests/fixtures/restore_private_cache_cpu.lua')(featureSource)
 -- Reuse the real CPU harness and its exact external native API boundary. Source
 -- owner, lifecycle, source getters and the cache implementation stay real.
@@ -160,7 +160,7 @@ test('synchronous completion samples exactly two boundaries and leaves no retire
  local before=#s.queries;a:GetCPUProfileReport();assert(#s.queries==before and getterCalls==4)
 end)
 test('strict appendix inverse preserves the entire fc06db4 CPU module',function()
- local restore=dofile('tests/fixtures/restore_private_cache_cpu.lua');local current=dofile('tests/fixtures/restore_cpu_retained_activity.lua')(read('Diagnostics/cpu.lua'),'Diagnostics/cpu.lua');assert(restore(current)==baseline)
+ local restore=dofile('tests/fixtures/restore_private_cache_cpu.lua');local current=dofile('tests/fixtures/restore_cpu_retained_activity.lua')(dofile('tests/fixtures/parser_string_history.lua')(read('Diagnostics/cpu.lua'),'Diagnostics/cpu.lua'),'Diagnostics/cpu.lua');assert(restore(current)==baseline)
  assert(not pcall(restore,current..'\n')and not pcall(restore,once(current,"local cacheSourceEqual=rawequal","local cacheSourceEqual=function()return true end")),'inverse accepted altered feature or unrelated source')
 end)
 finish()

@@ -1,6 +1,7 @@
 local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite()
 local function read(path)local h=assert(io.open(path));local s=h:read('*a');h:close();return s end
-local inverse=dofile('tests/fixtures/restore_cpu_retained_activity.lua')
+local priorInverse=dofile('tests/fixtures/restore_cpu_retained_activity.lua')
+local function inverse(text,path)return priorInverse(dofile('tests/fixtures/parser_string_history.lua')(text,path),path)end
 local function once(s,a,b)local i,j=assert(s:find(a,1,true));assert(not s:find(a,j+1,true));return s:sub(1,i-1)..b..s:sub(j+1)end
 local text=read('tests/cpu.lua');text=text:sub(1,assert(text:find("test('module is idle",1,true))-1)
 text=once(text,'local function fixture(historical,prePrivate)','local function fixture(configure,old)')

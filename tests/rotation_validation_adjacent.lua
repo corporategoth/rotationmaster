@@ -151,7 +151,7 @@ test('strict whole-module inverse preserves public bodies and rejects unrelated 
  local inverse=dofile('tests/fixtures/restore_rotation_validation_adjacent.lua');local f=F.new();f.load('Core/function_data.lua');local function hash(value) return f.addon:FunctionSourceHash(value) end
  local frozen={['Core/rotation_references.lua']='ed72c190',['Core/rotation_library.lua']='051d323c',['Core/rotation_scope.lua']='9aeff4f1'}
  for path,wanted in pairs(frozen) do
-  local h=assert(io.open(path));local text=h:read('*a');h:close();local old=inverse(text,path,hash);assert(hash(old)==wanted,'wrong frozen '..path)
+  local h=assert(io.open(path));local text=h:read('*a');h:close();text=dofile('tests/fixtures/restore_validation_observed_maps.lua')(text,path);local old=inverse(text,path,hash);assert(hash(old)==wanted,'wrong frozen '..path)
   assert(not pcall(inverse,text..'\n-- unrelated\n',path,hash));assert(not pcall(inverse,text..text,path,hash));assert(not pcall(inverse,old,path,hash))
  end
 end)
@@ -191,7 +191,7 @@ end)
 local function priorFixture()
  local inverse=dofile('tests/fixtures/restore_rotation_validation_adjacent.lua');local f=F.new();f.load('Core/function_data.lua');local old={}
  for _,path in ipairs({'Core/rotation_references.lua','Core/rotation_library.lua','Core/rotation_scope.lua'}) do
-  local h=assert(io.open(path));local text=h:read('*a');h:close();old[path]=inverse(text,path,function(value) return f.addon:FunctionSourceHash(value) end)
+  local h=assert(io.open(path));local text=h:read('*a');h:close();text=dofile('tests/fixtures/restore_validation_observed_maps.lua')(text,path);old[path]=inverse(text,path,function(value) return f.addon:FunctionSourceHash(value) end)
  end
  local original=loadfile;_G.loadfile=function(path) if old[path] then return loadstring(old[path],'@'..path) end;return original(path) end
  local ok,e,a=pcall(fixture);_G.loadfile=original;assert(ok,e);return e,a

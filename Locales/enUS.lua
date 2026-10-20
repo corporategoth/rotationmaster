@@ -2358,6 +2358,29 @@ L["Unsupported condition editor frame."] = true
 L["The native condition editor is unavailable."] = true
 
 L["Native custom condition editor required."] = true
+L["Stock"] = true
+
+L["Stock targets"] = true
+
+L["Reset targets"] = true
+
+L["Reset invalid stock targets? This cannot be undone."] = true
+
+L["Add stock target"] = true
+
+L["No stock targets."] = true
+
+L["Target"] = true
+
+L["Complete the stock target settings before applying."] = true
+
+L["you {{!have|do not have}} {item} equipped"] = true
+
+L["{item} {{!is|is not}} available{carrying}"] = true
+
+L["{item} {{!is|is not}} in range{carrying}"] = true
+
+L["the cooldown on {item} {comparison} {duration}{carrying}"] = true
 
 -- BEGIN GENERATED RM PUBLIC HELPER DOCS
 L["Absolute health target (negative means deficit) or percentage fraction."] = true

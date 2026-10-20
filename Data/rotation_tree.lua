@@ -1,5 +1,10 @@
 local _,addon=...
 local data=addon.RotationData
+-- The identifier grammar uses the standard pattern operation captured at load,
+-- independently of mutable literal-string method dispatch.
+local parserString=string
+local parserMatch=type(parserString)=="table" and rawget(parserString,"match") or nil
+if type(parserMatch)~="function" then parserMatch=nil end
 local function child(path,key)
     local result={};for i,part in ipairs(path) do result[i]=part end
     result[#result+1]=key;return result
@@ -11,7 +16,7 @@ local function location(path)
 end
 local function failure(code,path) return nil,{code=code,path=location(path),severity="error"} end
 local function identifier(value)
-    return type(value)=="string" and #value>0 and #value<=128 and value:match("^[%w][%w._:%-]*$")~=nil
+    return type(value)=="string" and #value>0 and #value<=128 and parserMatch(value,"^[%w][%w._:%-]*$")~=nil
 end
 local function dense(value)
     if type(value)~="table" then return false end
@@ -95,13 +100,9 @@ local indexGetmetatable=getmetatable
 ---@type fun(f: number|function): table
 local indexGetfenv=getfenv
 local indexPairs,indexIpairs=pairs,ipairs
-local indexTable,indexMath,indexString=table,math,string
+local indexTable,indexMath=table,math
 local indexSort,indexMax,indexHuge=table.sort,math.max,math.huge
 local indexEnvironment=indexType(indexGetfenv)=="function" and indexGetfenv(1) or nil
-local indexStringMeta=indexGetmetatable("")
-local indexStringMethods=indexType(indexStringMeta)=="table" and indexRawget(indexStringMeta,"__index") or nil
-local indexMatch=indexType(indexStringMethods)=="table" and indexRawget(indexStringMethods,"match") or nil
-local indexSub=indexType(indexStringMethods)=="table" and indexRawget(indexStringMethods,"sub") or nil
 local ownedIndex=data.IndexRotationSteps
 local portableOwned,portableStatus
 local bindPortable=addon.BindRotationPortableReader
@@ -129,12 +130,7 @@ local function indexOwned()
         and indexEqual(indexRawget(indexEnvironment,"math"),indexMath)
         and indexEqual(indexRawget(indexMath,"max"),indexMax)
         and indexEqual(indexRawget(indexMath,"huge"),indexHuge)
-        and indexType(indexStringMeta)=="table" and indexType(indexStringMethods)=="table"
-        and indexType(indexMatch)=="function" and indexType(indexSub)=="function"
-        and indexEqual(indexGetmetatable(""),indexStringMeta)
-        and indexEqual(indexRawget(indexStringMeta,"__index"),indexStringMethods)
-        and indexEqual(indexRawget(indexStringMethods,"match"),indexMatch)
-        and indexEqual(indexRawget(indexStringMethods,"sub"),indexSub)
+        and indexType(parserMatch)=="function"
 end
 -- A pure explanation of captured ownership facts, sampled only by the profiler.
 local function indexStatus(namespace)
@@ -160,19 +156,8 @@ local function indexStatus(namespace)
             check("math-huge",indexType(indexMath)=="table" and indexEqual(indexRawget(indexMath,"huge"),indexHuge))
         end
     end
-    local currentMeta=indexGetmetatable("")
-    local currentMethods=indexType(currentMeta)=="table" and indexRawget(currentMeta,"__index") or nil
-    local function shape(value) local kind=indexType(value);return (kind=="table" or kind=="function") and kind or "other" end
-    result.capturedIndex=shape(indexStringMethods);result.currentIndex=shape(currentMethods)
-    check("string-anchor-table",indexType(indexStringMeta)=="table")
-    result.globalString=indexEqual(indexStringMethods,indexString)
-    check("string-index-table",indexType(indexStringMethods)=="table")
-    check("string-match-callable",indexType(indexMatch)=="function")
-    check("string-sub-callable",indexType(indexSub)=="function")
-    check("string-anchor-current",indexEqual(currentMeta,indexStringMeta))
-    check("string-index-current",indexType(indexStringMeta)=="table" and indexEqual(indexRawget(indexStringMeta,"__index"),indexStringMethods))
-    check("string-match-current",indexType(indexStringMethods)=="table" and indexEqual(indexRawget(indexStringMethods,"match"),indexMatch))
-    check("string-sub-current",indexType(indexStringMethods)=="table" and indexEqual(indexRawget(indexStringMethods,"sub"),indexSub))
+    result.parserMatch=indexType(parserMatch)=="function"
+    check("parser-match-unavailable",result.parserMatch)
     return {portable=portable,index=result}
 end
 local function witness(body)
@@ -230,9 +215,5 @@ function addon:BindRotationExecutionIndexReader(bind)
         if indexEqual(attempt,token) and indexOwned() then entry={body=body,profile=profile,db=db,index=index,graph=graph} end
         return true,materialize(index)
     end
-    local reader=read
-    if indexType(indexStringMethods)~="table" then
-        reader=function(body,profile,namespace,db) retire();return false end
-    end
-    bind(reader,retire,indexStatus)
+    bind(read,retire,indexStatus)
 end

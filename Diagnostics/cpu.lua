@@ -16,7 +16,7 @@ function addon:BindCPUExecutionIndexDiagnostic(provider)
  executionIndexDiagnostic=provider;addon.BindCPUExecutionIndexDiagnostic=nil
 end
 local proofReasons={}
-for _,reason in ipairs({"ready","unbound","namespace","capability","env","method","public-env","finite-env","diagnostic-env","raw-type","raw-pairs","raw-ipairs","raw-getmetatable","raw-getfenv","raw-math","raw-table","math-huge","math-max","table-sort","portable-proof","child-env","location-env","failure-env","identifier-env","dense-env","string-anchor-table","string-index-table","string-match-callable","string-sub-callable","string-anchor-current","string-index-current","string-match-current","string-sub-current","owner","db","profile","index-reader"}) do proofReasons[reason]=true end
+for _,reason in ipairs({"ready","unbound","namespace","capability","env","method","public-env","finite-env","diagnostic-env","raw-type","raw-pairs","raw-ipairs","raw-getmetatable","raw-getfenv","raw-math","raw-table","math-huge","math-max","table-sort","portable-proof","child-env","location-env","failure-env","identifier-env","dense-env","parser-match-unavailable","parser-sub-unavailable","owner","db","profile","index-reader"}) do proofReasons[reason]=true end
 local proofOwners={"main","sequence","portable","index"}
 local proofRawKeys={"type","pairs","ipairs","getmetatable","getfenv","math","table"}
 local function executionIndexProof()
@@ -43,13 +43,12 @@ local function executionIndexProof()
    end
    parts[i]=part
   end
-  local index=proofRawget(status,"index")
-  local function shape(key)
-   local value=proofType(index)=="table" and proofRawget(index,key)
-   return (value=="table" or value=="function" or value=="other") and value or "unavailable"
+  local function parserFlag(owner,key)
+   local row=proofRawget(status,owner)
+   local value=proofType(row)=="table" and proofRawget(row,key)
+   return value==true and "1" or value==false and "0" or "?"
   end
-  local alias=proofType(index)=="table" and proofRawget(index,"globalString")
-  return parts[1].."; "..parts[2].."; "..parts[3].."; "..parts[4].."; string-index="..shape("capturedIndex").."/"..shape("currentIndex").."; string-global="..(alias==true and "1" or alias==false and "0" or "?")
+  return parts[1].."; "..parts[2].."; "..parts[3].."; "..parts[4].."; parser-match="..parserFlag("index","parserMatch").."; parser-sub="..parserFlag("portable","parserSub")
  end)
  return ok and text or "probe-unavailable"
 end

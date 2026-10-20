@@ -189,6 +189,7 @@ UI/draft_change_controls.lua
 UI/settings_collections.lua
 UI/settings_announces.lua
 UI/settings_effects.lua
+UI/settings_stock.lua
 UI/settings_items.lua
 UI/settings_conditions.lua
 UI/settings_functions.lua

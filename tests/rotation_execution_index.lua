@@ -82,7 +82,7 @@ local function read(path)local h=assert(io.open(path));local s=h:read('*a');h:cl
 local function unit(old,setup)
  local e={};for k,v in pairs(_G)do e[k]=v end;e._G=e
  local a={db={profile={}}}
- local function load(path)local text=read(path);if old then if path=='Data/rotation_tree.lua'then text=dofile('tests/fixtures/restore_index_unsupported_binding.lua')(text)end;if path=='main.lua'then text=dofile('tests/fixtures/restore_cache_mode_initialization.lua')(text)end;text=restore(dofile('tests/fixtures/restore_rotation_execution_diagnostics.lua')(text,path),path)end;local fn=assert(loadstring(text,'@'..path));setfenv(fn,e);fn('rotationmaster',a)end
+ local function load(path)local text=read(path);if old then text=dofile('tests/fixtures/parser_string_history.lua')(text,path);if path=='Data/rotation_tree.lua'then text=dofile('tests/fixtures/restore_index_unsupported_binding.lua')(text)end;if path=='main.lua'then text=dofile('tests/fixtures/restore_cache_mode_initialization.lua')(text)end;text=restore(dofile('tests/fixtures/restore_rotation_execution_diagnostics.lua')(text,path),path)end;local fn=assert(loadstring(text,'@'..path));setfenv(fn,e);fn('rotationmaster',a)end
  load('Data/plain.lua');if setup then setup('plain',a,e)end
  load('Data/rotation_tree.lua');if setup then setup('tree',a,e)end
  load('Core/rotation_sequence.lua');if setup then setup('sequence',a,e)end
@@ -212,7 +212,7 @@ test('profile and body changes retire one-entry proof; nested calls cannot poiso
  end)
  assert(result.status=='selected'and nested);invoke(a,b,selected,function(_,_,path)assert(path~=paths[1]and path[1]=='rotation');return false end)
 end)
-test('trusted string anchor rejects protected views and live method changes without invoking getter',function()
+test('captured parser operations ignore later native method changes without invoking getters',function()
  local a,e,invoke=unit();local b={rotation={action('x')}};invoke(a,b,selected,visit)
  local mt=getmetatable('');local methods=rawget(mt,'__index');local protection=rawget(mt,'__metatable');local reads=0
  local fake={__index=methods};local changed=setmetatable({},{__index=function(_,key)reads=reads+1;return methods[key]end})
@@ -222,7 +222,7 @@ test('trusted string anchor rejects protected views and live method changes with
   equal(actual,expected);assert(got==reads,'anchor proof chased forged string view')
  end)
  rawset(mt,'__index',methods);rawset(mt,'__metatable',protection);assert(ok,why)
- assert(count(a.RotationData.IndexRotationSteps,function()invoke(a,b,selected,visit);invoke(a,b,selected,visit)end)==1)
+ assert(count(a.RotationData.IndexRotationSteps,function()invoke(a,b,selected,visit);invoke(a,b,selected,visit)end)==0)
 end)
 test('many valid and malformed graphs retain exact result diagnostics and callback histories',function()
  local function execute(old,body)

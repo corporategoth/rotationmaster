@@ -92,7 +92,7 @@ end)
 test('strict safety inverse closes complete baseline modules and rejects unrelated source edits',function()
  local restore=dofile('tests/fixtures/restore_stock_targets_safety_ui.lua')
  for _,path in ipairs({'UI/settings_draft.lua','UI/settings_profiles.lua','UI/settings_collections.lua'})do
-  local file=assert(io.open(path));local source=file:read('*a');file:close();assert(restore(source,path)~=source)
+  local file=assert(io.open(path));local source=file:read('*a');file:close();if path=='UI/settings_draft.lua' or path=='UI/settings_collections.lua' then source=dofile('tests/fixtures/restore_stock_targets_ui.lua')(source,path) end;assert(restore(source,path)~=source)
   assert(not pcall(restore,source..'\n-- unrelated change',path),'whole-module safety inverse accepted unrelated edit')
  end
 end)

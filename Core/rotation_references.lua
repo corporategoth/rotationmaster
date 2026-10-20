@@ -110,6 +110,12 @@ end
 local function validationLayout(owner,method)
     if proofType(owner)~='table'
         or method~=ownedValidationStamp or proofRawget(owner,'GetRotationValidationStamp')~=ownedValidationStamp then return end
+    -- Public option copying uses live pairs; a prior override can retain its
+    -- private input maps. Their later lookups must remain callback-free too.
+    if not proofPlain(observed) or not proofPlain(stamp)
+        or not proofPlain(proofRawget(observed,'itemsets'))
+        or not proofPlain(proofRawget(observed,'conditions'))
+        or not proofPlain(proofRawget(observed,'effects')) then return end
     local db=proofRawget(owner,'db');if proofType(db)~='table' then return end
     local profile,global=proofRawget(db,'profile'),proofRawget(db,'global')
     if not proofPlain(profile) or not proofPlain(global) then return end

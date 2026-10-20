@@ -13,11 +13,13 @@ local Summary={
     phrase=addon.Functions.presentation.phrase,
     predicate=addon.Functions.presentation.predicate,
 }
+local Literal={phrase=addon.Functions.presentation.phrase}
 addon.builtinCallbackBindings=addon.builtinCallbackBindings or {}
 addon.builtinCallbackBindings["Conditions/item.lua"]={
     ["Functions.values.isin"]="builtin:utils.lua:isin",
     ["Functions.presentation.nullable"]="builtin:utils.lua:nullable",
     ["Functions.presentation.compareString"]="builtin:utils.lua:compareString",
+    ["Literal.phrase"]="builtin:Functions/presentation.lua:phrase",
     ["Summary.phrase"]="builtin:Functions/presentation.lua:phrase",
     ["Summary.predicate"]="builtin:Functions/presentation.lua:predicate",
 }
@@ -62,7 +64,7 @@ addon:RegisterCondition("EQUIPPED", {
         return addon:EvaluateItemCondition("EQUIPPED",value,cache,now)
     end,
     print = function(_, value)
-        return string.format(L["you {{!have|do not have}} %s equipped"], Functions.presentation.nullable(get_item_desc(value.item), L["<item>"]))
+        return Literal.phrase(L["you {{!have|do not have}} {item} equipped"], {item = Functions.presentation.nullable(get_item_desc(value.item), L["<item>"])})
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -133,8 +135,10 @@ addon:RegisterCondition("ITEM", {
         return addon:EvaluateItemCondition("ITEM",value,cache,now)
     end,
     print = function(_, value)
-        return string.format(L["%s {{!is|is not}} available"], Functions.presentation.nullable(get_item_desc(value.item), L["<item>"])) ..
-                (value.notcarrying and L[", even if you do not currently have one"] or "")
+        return Literal.phrase(L["{item} {{!is|is not}} available{carrying}"], {
+            item = Functions.presentation.nullable(get_item_desc(value.item), L["<item>"]),
+            carrying = value.notcarrying and L[", even if you do not currently have one"] or "",
+        })
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -179,8 +183,10 @@ addon:RegisterCondition("ITEM_RANGE", {
         return addon:EvaluateItemCondition("ITEM_RANGE",value,cache,now)
     end,
     print = function(_, value)
-        return string.format(L["%s {{!is|is not}} in range"], Functions.presentation.nullable(get_item_desc(value.item), L["<item>"])) ..
-            (value.notcarrying and L[", even if you do not currently have one"] or "")
+        return Literal.phrase(L["{item} {{!is|is not}} in range{carrying}"], {
+            item = Functions.presentation.nullable(get_item_desc(value.item), L["<item>"]),
+            carrying = value.notcarrying and L[", even if you do not currently have one"] or "",
+        })
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -224,10 +230,12 @@ addon:RegisterCondition("ITEM_COOLDOWN", {
         return addon:EvaluateItemCondition("ITEM_COOLDOWN",value,cache,now)
     end,
     print = function(_, value)
-        return string.format(L["the %s"],
-            Functions.presentation.compareString(value.operator, string.format(L["cooldown on %s"], Functions.presentation.nullable(get_item_desc(value.item), L["<item>"])),
-                                string.format(L["%s seconds"], Functions.presentation.nullable(value.value)))) ..
-                (value.notcarrying and L[", even if you do not currently have one"] or "")
+        return Summary.phrase(L["the cooldown on {item} {comparison} {duration}{carrying}"], {
+            item = Functions.presentation.nullable(get_item_desc(value.item), L["<item>"]),
+            comparison = Summary.predicate(value.operator, true),
+            duration = string.format(L["%s seconds"], Functions.presentation.nullable(value.value)),
+            carrying = value.notcarrying and L[", even if you do not currently have one"] or "",
+        })
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")

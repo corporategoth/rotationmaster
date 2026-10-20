@@ -11,6 +11,7 @@ RM stores one account SavedVariables table per client installation, using AceDB'
 | Rotations, fallback rotation, clone/import lineage and comparisons | Selected profile, then Class or Character owner, specialization key and rotation ID |
 | Built In rotation definitions | Immutable packaged assets with class/client applicability |
 | Built In enable preferences | Selected profile |
+| Desired stock targets | Selected profile; exact item IDs and desired minimum/target quantities only |
 | Announcement rules, personal item sets | Selected profile; personal currently means profile, not character |
 | Condition categories, picker visibility/order, tag colors | Selected profile |
 | General, editor, preview and minimap preferences | Selected profile; configuration scale is global |
@@ -58,3 +59,9 @@ The pure model accepts at most 128 uniquely identified item targets and rejects 
 Malformed stock is also excluded by a shallow top-level projection before generic settings-draft copying; saved data remains untouched, and all other profile values keep their original identity before the ordinary detached copy. Profile duplicate, Copy, saved-profile Compare and import replacement validate only the optional stock field again at their actual copy/comparison boundaries. They do not impose the stricter portable profile schema on ordinary copying.
 
 If a profile-change callback invalidates the duplicate source after creating its destination, copying is refused and the previous active profile is restored. The newly created destination is retained because callbacks may have written their own data there. This bounded recovery does not promise rollback of arbitrary callbacks. Other collection comparisons retain the shared footer's existing default behavior. These safety guards prepare the stock editor; they do not add inventory observation or a stock-editing UI.
+
+## Desired stock editor
+
+Item Sets provides separate Item Sets and Stock sources. Stock edits exact item IDs, enabled state, and integer minimum/target quantities through the existing draft, history, View Changes, Apply and Discard controls. Minimum cannot exceed target. Item metadata is presentation only and out-of-bag IDs remain valid. Stock and item-set selections have separate identities even when their saved IDs coincide. This stage does not observe bag counts or generate a live shortage report.
+
+Invalid saved stock is excluded from recursive draft/history/compare operations and remains intact until an explicit stock-only recovery confirmation. Recovery requires the same raw saved root; an equality metamethod cannot authorize replacing another root. Untouched stock is omitted from unrelated Item Sets saves and confirmed item-set deletion, preserving an external stock replacement. Changed stock must pass current/proposed validation and ordinary saved-baseline conflict checks before Apply.

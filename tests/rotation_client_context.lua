@@ -112,7 +112,7 @@ test('context override spec mutation stays at each original library caller and e
  for _,bad in ipairs({false,'wrong',17}) do b.Platform.GetClientInfo=bad;assert(not pcall(context,reader,1)) end
 end)
 local function runtime()
- local h=assert(io.open('tests/rotation_scope_runtime.lua'));local text=h:read('*a');h:close();local prefix=assert(text:match('^(.-)\nlocal function gate'))
+ local h=assert(io.open('tests/rotation_scope_runtime.lua'));local text=h:read('*a');h:close();text=dofile('tests/fixtures/restore_validation_observed_maps.lua')(text,path);local prefix=assert(text:match('^(.-)\nlocal function gate'))
  local e,a,events,body,reference,save,load=assert(loadstring(prefix..'\nreturn fixture','@client-context-actual-main'))()()
  local original,ownedReader
  for i=1,20 do local name,value=debug.getupvalue(a.GetRotationOwnerContext,i);if not name then break end
@@ -150,7 +150,7 @@ end)
 test('strict complete source inverse permits only private additions and the five authorized context expressions',function()
  local inverse=dofile('tests/fixtures/restore_rotation_client_context.lua');local f=F.new();f.load('Core/function_data.lua');local function hash(text) return f.addon:FunctionSourceHash(text) end
  for path,want in pairs({['Platform/client.lua']='6cb90db0',['Core/rotation_library.lua']='a636cfd7',['Core/rotation_scope.lua']='5daa21f1'}) do
-  local h=assert(io.open(path));local text=h:read('*a');h:close();if path~='Platform/client.lua' then text=dofile('tests/fixtures/restore_rotation_validation_adjacent.lua')(text,path,hash) end;local old=inverse(text,path,hash);assert(hash(old)==want)
+  local h=assert(io.open(path));local text=h:read('*a');h:close();text=dofile('tests/fixtures/restore_validation_observed_maps.lua')(text,path);if path~='Platform/client.lua' then text=dofile('tests/fixtures/restore_rotation_validation_adjacent.lua')(text,path,hash) end;local old=inverse(text,path,hash);assert(hash(old)==want)
   assert(not pcall(inverse,old,path,hash) and not pcall(inverse,text..text,path,hash) and not pcall(inverse,text..'\n-- unrelated edit\n',path,hash))
  end
 end)

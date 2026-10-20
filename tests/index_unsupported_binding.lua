@@ -1,8 +1,10 @@
+-- Historical policy regression before captured parser operations; current behavior
+-- is exercised by parser_string_operations.lua and rotation_execution_index.lua.
 -- Private proof is source-owned and pure under trusted standard-at-load natives.
 -- Effectful replacement private installers are outside that existing boundary;
 -- no assertion here claims equivalence for arbitrary substituted proof callbacks.
 local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite()
-local function read(path)local h=assert(io.open(path));local s=h:read('*a');h:close();return s end
+local function read(path)local h=assert(io.open(path));local s=h:read('*a');h:close();return dofile('tests/fixtures/parser_string_history.lua')(s,path) end
 local restore=dofile('tests/fixtures/restore_index_unsupported_binding.lua')
 local current=read('Data/rotation_tree.lua')
 local baseline=current:find('    local reader=read\n',1,true) and restore(current) or current
@@ -46,7 +48,7 @@ local make=dofile('tests/fixtures/rotation_execution.lua')
 local function main(old,target)
  local original=loadfile
  loadfile=function(path)
-  if path=='Data/rotation_tree.lua'and old then return assert(loadstring(baseline,'@'..path))end
+  if path=='Data/rotation_tree.lua'then return assert(loadstring(old and baseline or current,'@'..path))end
   if path=='Data/plain.lua'then return assert(loadstring(read(path)..'\naddon.__testPortableProof=portableOwned\n','@'..path))end
   return original(path)
  end

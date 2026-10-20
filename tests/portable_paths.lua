@@ -1,7 +1,7 @@
 local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite()
 local inverse,old,repaired=dofile('tests/fixtures/restore_portable_paths.lua')
 local function read(path) local h=assert(io.open(path));local text=h:read('*a');h:close();return text end
-local source=dofile('tests/fixtures/restore_rotation_execution_index.lua')(dofile('tests/fixtures/restore_rotation_execution_diagnostics.lua')(read('Data/plain.lua'),'Data/plain.lua'),'Data/plain.lua')
+local source=dofile('tests/fixtures/restore_rotation_execution_index.lua')(dofile('tests/fixtures/restore_rotation_execution_diagnostics.lua')(dofile('tests/fixtures/parser_string_history.lua')(read('Data/plain.lua'),'Data/plain.lua'),'Data/plain.lua'),'Data/plain.lua')
 local function fixture()
  local f=F.new();f.load('Data/plain.lua');local a=f.addon
  local previous=source

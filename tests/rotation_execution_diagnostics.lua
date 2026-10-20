@@ -41,13 +41,13 @@ local function probe(s)assert(type(s.provider)=='function','private diagnostic h
 test('actual native owner chain reports start/end captured facts in the copyable CPU report only',function()
  local _,a,s=fixture();assert(s.probes==0);assert(a.BindCPUExecutionIndexDiagnostic==nil and a.BindRotationSequenceReader==nil and a.BindRotationExecutionIndexReader==nil and a.BindRotationPortableReader==nil)
  assert(a:StartCPUProfile());assert(s.probes==1);a:GetCPUProfileReport();assert(s.probes==1)
- local text=s:complete();contains(text,'Execution index proof start: main=ready; sequence=ready; portable=ready; index=ready; string-index=table/table');contains(text,'Execution index proof end: main=ready; sequence=ready; portable=ready; index=ready; string-index=table/table');assert(s.probes==2 and #text<16000);private(text)
+ local text=s:complete();contains(text,'Execution index proof start: main=ready; sequence=ready; portable=ready; index=ready; parser-match=1; parser-sub=1');contains(text,'Execution index proof end: main=ready; sequence=ready; portable=ready; index=ready; parser-match=1; parser-sub=1');assert(s.probes==2 and #text<16000);private(text)
  local calls=#s.queries;a:GetCPUProfileReport();s.timers[1].callback();assert(s.probes==2 and #s.queries==calls)
 end)
-test('native distinct string alias is advisory while actual native table ownership remains qualified',function()
+test('distinct standard string library captures report callable parser operations',function()
  local _,a,s=fixture(function(phase,e)if phase=='tree'then local clone={};for k,v in pairs(string)do clone[k]=v end;e.string=clone end end)
- local status=probe(s);assert(status.index.reason=='ready' and status.index.globalString==false and status.index.capturedIndex=='table' and status.index.currentIndex=='table')
- assert(a:StartCPUProfile());local text=s:complete();contains(text,'index=ready');contains(text,'string-index=table/table; string-global=0');private(text)
+ local status=probe(s);assert(status.index.reason=='ready' and status.index.parserMatch==true and status.portable.parserSub==true)
+ assert(a:StartCPUProfile());local text=s:complete();contains(text,'index=ready');contains(text,'parser-match=1; parser-sub=1');private(text)
 end)
 test('source status uses raw slots without invoking inherited protected getters or profile defaults',function()
  for _,key in ipairs({'type','pairs','ipairs','getmetatable','getfenv','math','table'})do
@@ -57,12 +57,12 @@ test('source status uses raw slots without invoking inherited protected getters 
  end
  local _,a,s=fixture();local getters=0;a.db=setmetatable({},{__index=function()getters=getters+1;return {private_owner='SECRET_SOURCE'}end});local status=probe(s);assert(status.sequence.reason=='profile' and getters==0)
 end)
-test('public environment changes and function-valued string index are observable without getter execution',function()
+test('public environment changes remain observable and native string lookup is unconsumed',function()
  local _,a,s=fixture();local fn=a.EvaluateRotationSequence;local env=getfenv(fn);setfenv(fn,setmetatable({},{__index=env}));local status=probe(s);assert(status.sequence.reason=='public-env')
  local mt=getmetatable('');local old=rawget(mt,'__index');local getters=0
  local ok,why=pcall(function()
   mt.__index=function(_,key)getters=getters+1;return old[key]end
-  local _,_,state=fixture();getters=0;local result=probe(state);assert(getters==0 and result.index.capturedIndex=='function' and result.index.currentIndex=='function' and result.index.reason=='string-index-table')
+  local _,_,state=fixture();getters=0;local result=probe(state);assert(getters==0 and result.index.reason=='ready' and result.index.parserMatch==true and result.portable.parserSub==true)
  end)
  mt.__index=old;assert(ok,why)
 end)
@@ -100,7 +100,7 @@ test('failed ownership projections never execute public data helpers, gameplay q
  for _,name in ipairs({'GetTime','GetBuildInfo','GetLocale','UnitClass','UnitExists'})do e[name]=forbidden end
  local status=probe(s);assert(calls==0 and status.sequence.reason=='method' and status.portable.reason=='method' and status.index.reason=='portable-proof')
  local e,a,s=fixture();local mt=getmetatable('');local old=rawget(mt,'__index');local fake={}
- local ok,why=pcall(function() mt.__index=fake;local status=probe(s);assert(status.index.reason=='string-index-current' and status.index.currentIndex=='table')end)
+ local ok,why=pcall(function() mt.__index=fake;local status=probe(s);assert(status.index.reason=='ready' and status.index.parserMatch==true)end)
  mt.__index=old;assert(ok,why)
 end)
 test('near-limit diagnostics append only complete bounded snapshots or a fixed omission notice',function()
@@ -133,6 +133,6 @@ test('new diagnostic report bytes are bounded without truncating an oversized ol
 end)
 test('strict diagnostic inverse preserves all five complete originals and composes with old index inverse',function()
  local restore=dofile('tests/fixtures/restore_rotation_execution_diagnostics.lua');local prior=dofile('tests/fixtures/restore_rotation_execution_index.lua')
- for _,path in ipairs({'Data/plain.lua','Data/rotation_tree.lua','Core/rotation_sequence.lua','main.lua','Diagnostics/cpu.lua'})do local source=read(path);if path=='Data/rotation_tree.lua'then source=dofile('tests/fixtures/restore_index_unsupported_binding.lua')(source)end;if path=='main.lua'then source=dofile('tests/fixtures/restore_cache_mode_initialization.lua')(source)end;if path=='Diagnostics/cpu.lua'then source=dofile('tests/fixtures/restore_cpu_retained_activity.lua')(source,path);source=dofile('tests/fixtures/restore_private_cache_cpu.lua')(source);source=dofile('tests/fixtures/restore_cache_mode_cpu.lua')(source)end;local text=restore(source,path);if path~='Diagnostics/cpu.lua'then prior(text,path)end end
+ for _,path in ipairs({'Data/plain.lua','Data/rotation_tree.lua','Core/rotation_sequence.lua','main.lua','Diagnostics/cpu.lua'})do local source=dofile('tests/fixtures/parser_string_history.lua')(read(path),path);if path=='Data/rotation_tree.lua'then source=dofile('tests/fixtures/restore_index_unsupported_binding.lua')(source)end;if path=='main.lua'then source=dofile('tests/fixtures/restore_cache_mode_initialization.lua')(source)end;if path=='Diagnostics/cpu.lua'then source=dofile('tests/fixtures/restore_cpu_retained_activity.lua')(source,path);source=dofile('tests/fixtures/restore_private_cache_cpu.lua')(source);source=dofile('tests/fixtures/restore_cache_mode_cpu.lua')(source)end;local text=restore(source,path);if path~='Diagnostics/cpu.lua'then prior(text,path)end end
 end)
 finish()

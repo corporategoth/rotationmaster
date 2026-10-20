@@ -1,13 +1,18 @@
 local _, addon = ...
 local data = addon.RotationData or {}
 addon.RotationData = data
+-- Owned plain-data diagnostics use standard byte slicing captured at load.
+-- Literal string metatables and later library patches do not define this API.
+local parserString=string
+local parserSub=type(parserString)=="table" and rawget(parserString,"sub") or nil
+if type(parserSub)~="function" then parserSub=nil end
 
 -- Inputs are decoded/packaged data, never unsanitized game observations.
 local maxDepth, maxNodes, maxBytes, maxString = 64, 20000, 1048576, 262144
 local function diagnostic(code, path)
     local location = "$"
     for _, key in ipairs(path) do
-        location = location .. (type(key)=="number" and "["..key.."]" or "."..key:sub(1,80))
+        location = location .. (type(key)=="number" and "["..key.."]" or "."..parserSub(key,1,80))
     end
     return {code=code, path=location, severity="error"}
 end
@@ -96,6 +101,7 @@ local portableEnvironment=portableType(portableGetfenv)=="function" and portable
 local ownedPortable=data.CheckPortable
 local function portableOwned(namespace)
     return portableEqual(namespace,data) and portableType(portableEnvironment)=="table"
+        and portableType(parserSub)=="function"
         and portableEqual(portableRawget(data,"CheckPortable"),ownedPortable)
         and portableEqual(portableGetfenv(ownedPortable),portableEnvironment)
         and portableEqual(portableGetfenv(finite),portableEnvironment)
@@ -122,6 +128,8 @@ local function portableStatus(namespace)
     check("public-env",capability and portableEqual(portableGetfenv(ownedPortable),portableEnvironment))
     check("finite-env",capability and portableEqual(portableGetfenv(finite),portableEnvironment))
     check("diagnostic-env",capability and portableEqual(portableGetfenv(diagnostic),portableEnvironment))
+    result.parserSub=portableType(parserSub)=="function"
+    check("parser-sub-unavailable",result.parserSub)
     local keys={"type","pairs","ipairs","getmetatable","getfenv","math","table"}
     local pointers={portableType,portablePairs,portableIpairs,portableGetmetatable,portableGetfenv,portableMath,portableTable}
     for i=1,7 do
