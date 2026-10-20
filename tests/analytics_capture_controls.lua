@@ -3,10 +3,11 @@ local function read(path)local h=assert(io.open(path));local s=h:read('*a');h:cl
 local function prefix(path,name)return assert(loadstring(assert(read(path):match('^(.-)\ntest%('))..'\nreturn '..name,'@controls-fixture:'..path))()end
 local native=prefix('tests/platform_analytics_casts.lua','fixture')
 local settings=prefix('tests/settings_pages.lua','fixture')
-local function fixture(options)
+local function fixture(options,beforeControls)
  local f=native(options);local a=f.addon;f.env=getfenv(f.service.Start);local L=setmetatable({},{__index=function(_,k)return k end})
  f.env.LibStub=function(name)assert(name=='AceLocale-3.0');return{GetLocale=function()return L end}end
  f.shown={};function a:ShowConditionText(text,title)f.shown[#f.shown+1]={text=text,title=title}end
+ if beforeControls then beforeControls(f,a)end
  local chunk=loadfile('UI/analytics_capture.lua');assert(chunk,'cast capture controls module missing');setfenv(chunk,f.env);chunk('rotationmaster',a)
  assert(a.RunCastCaptureAction and a.ClearCastCaptureForDisable,'cast capture controls missing')
  return f,a
@@ -39,6 +40,67 @@ test('bounded report shows only two hundred rows and explicit omitted count',fun
 end)
 test('native errors give fixed feedback without raw exception data or fake score',function()
  local f,a=fixture();f.throw='client';local ok,message=a:RunCastCaptureAction('start');assert(not ok and not message:find('PRIVATE',1,true));assert(a:RunCastCaptureAction('report'));local text=f.shown[1].text;contains(text,'unavailable');assert(not text:find('PRIVATE',1,true));clean(f)
+end)
+test('report states manual, deadline and context termination without inventing encounter duration',function()
+ for _,reason in ipairs({'stop','end','context'})do
+  local f,a=fixture();assert(a:RunCastCaptureAction('start'));f.now=103
+  if reason=='stop'then assert(a:RunCastCaptureAction('stop'))elseif reason=='end'then f.timers[1].fn()else f:emit('PLAYER_ENTERING_WORLD')end
+  assert(a:RunCastCaptureAction('report'));local text=f.shown[1].text
+  contains(text,'Capture: complete; reason='..reason);contains(text,'Duration: 3 seconds')
+  contains(text,'Rotation attribution: unavailable; capture seconds are not encounter seconds.');clean(f)
+ end
+end)
+test('signal summary counts receipt rows including duplicate signals without counting gameplay opportunities',function()
+ local f,a=fixture();assert(a:RunCastCaptureAction('start'))
+ f:emit('UNIT_SPELLCAST_SENT','player','PRIVATE_TARGET','PRIVATE_CAST',403)
+ f:emit('UNIT_SPELLCAST_START','player','PRIVATE_CAST',403)
+ f:emit('UNIT_SPELLCAST_SUCCEEDED','player','PRIVATE_CAST',403)
+ f:emit('UNIT_SPELLCAST_SUCCEEDED','player','PRIVATE_CAST',403)
+ f:emit('UNIT_SPELLCAST_FAILED','player','other',403)
+ f:emit('UNIT_SPELLCAST_INTERRUPTED','player','other',403)
+ f:emit('UNIT_SPELLCAST_CHANNEL_START','player','channel',403)
+ f:emit('UNIT_SPELLCAST_CHANNEL_STOP','player','channel',403)
+ f:emit('UNIT_SPELLCAST_STOP','player',nil,403)
+ assert(a:RunCastCaptureAction('stop'));assert(a:RunCastCaptureAction('report'));local text=f.shown[1].text
+ contains(text,'Records: 9');contains(text,'Receipt signals: sent=1 start=2 success=2 failed=1 interrupted=1 stop=2')
+ contains(text,'Receipt kinds: channel=2 unmodeled=7')
+ contains(text,'Counts describe receipt rows, not gameplay opportunities.')
+ contains(text,'Scoring: unavailable');assert(not text:find('PRIVATE',1,true));clean(f)
+end)
+test('empty and populated captures keep role results unavailable rather than synthetic zeroes',function()
+ for _,emit in ipairs({false,true})do
+  local f,a=fixture();assert(a:RunCastCaptureAction('start'))
+  if emit then f:emit('UNIT_SPELLCAST_SUCCEEDED','player','a',403)end
+  assert(a:RunCastCaptureAction('stop'));assert(a:RunCastCaptureAction('report'));local text=f.shown[1].text
+  contains(text,'Damage: unavailable (no damage observations or encounter denominator).')
+  contains(text,'Tank: unavailable (no threat, mitigation or survival observations).')
+  contains(text,'Healer: unavailable (no effective healing, absorbs or mana observations).')
+  assert(not text:find('DPS=0',1,true)and not text:find('HPS=0',1,true));clean(f)
+ end
+end)
+test('failed capture reports allowlisted failure and no retained partial row summary',function()
+ local f,a=fixture();assert(a:RunCastCaptureAction('start'));f:emit('UNIT_SPELLCAST_START','player','PRIVATE_CAST',403)
+ f.now=99;f:emit('UNIT_SPELLCAST_SUCCEEDED','player','PRIVATE_CAST',403)
+ assert(a:RunCastCaptureAction('report'));local text=f.shown[1].text
+ contains(text,'Capture: unavailable; reason=invalid-time')
+ assert(not text:find('seq=',1,true)and not text:find('Receipt signals:',1,true)and not text:find('PRIVATE',1,true));clean(f)
+end)
+test('unknown reason and extra snapshot fields never echo private payload',function()
+ local f,a=fixture(nil,function(f)
+  local original=f.service.GetSnapshot
+  f.service.GetSnapshot=function(self)
+   local s=original(self);if s then s.reason='PRIVATE_REASON|Hfake';s.private='PRIVATE_EXTRA'end;return s
+  end
+ end)
+ assert(a:RunCastCaptureAction('start'));assert(a:RunCastCaptureAction('stop'));assert(a:RunCastCaptureAction('report'))
+ local text=f.shown[1].text;contains(text,'Capture: complete; reason=unknown');assert(not text:find('PRIVATE',1,true));clean(f)
+end)
+test('truncated detail retains complete receipt summary rather than first two hundred row counts',function()
+ local f,a=fixture();assert(a:RunCastCaptureAction('start'))
+ for i=1,205 do f:emit('UNIT_SPELLCAST_SUCCEEDED','player','key'..i,403)end
+ assert(a:RunCastCaptureAction('stop'));assert(a:RunCastCaptureAction('report'));local text=f.shown[1].text
+ contains(text,'Receipt signals: sent=0 start=0 success=205 failed=0 interrupted=0 stop=0')
+ contains(text,'Receipt kinds: channel=0 unmodeled=205');contains(text,'Rows omitted: 5');assert(not text:find('seq=201',1,true)and#text<40000);clean(f)
 end)
 test('foreign receiver and unknown action do not affect accepted capture',function()
  local f,a=fixture();assert(a:RunCastCaptureAction('start'));local count=f.calls;assert(not a.RunCastCaptureAction({},'clear'));assert(not a.ClearCastCaptureForDisable({}));assert(not a:RunCastCaptureAction('garbage'));assert(f.calls==count and f.service:GetStatus().phase=='running');a:ClearCastCaptureForDisable();clean(f)

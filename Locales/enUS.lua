@@ -2496,6 +2496,8 @@ L["Advice: not available; presentation: not available; ordinary-cast proof: not 
 L["Attempts: %d; results: %d"] = true
 L["Capture casts (30s)"] = true
 L["Capture: unavailable"] = true
+L["Capture: complete; reason=%s"] = true
+L["Capture: unavailable; reason=%s"] = true
 L["Cast capture cleared."] = true
 L["Cast capture is running. Stop it or wait before opening Cast report."] = true
 L["Cast capture is unavailable."] = true
@@ -2506,15 +2508,22 @@ L["Cast capture stopped. Open Cast report to inspect receipts."] = true
 L["Cast receipt report"] = true
 L["Cast report"] = true
 L["Client: family=%s version=%s build=%s interface=%s locale=%s"] = true
+L["Counts describe receipt rows, not gameplay opportunities."] = true
+L["Damage: unavailable (no damage observations or encounter denominator)."] = true
 L["Duration: %s seconds"] = true
+L["Healer: unavailable (no effective healing, absorbs or mana observations)."] = true
 L["Native acceptance: unverified"] = true
 L["No cast capture is running."] = true
 L["No cast capture report is available. Start a capture first."] = true
 L["Producer: UNIT_SPELLCAST adapter"] = true
 L["Records: %d"] = true
+L["Receipt kinds: channel=%d unmodeled=%d"] = true
+L["Receipt signals: sent=%d start=%d success=%d failed=%d interrupted=%d stop=%d"] = true
 L["Rotation Master cast receipt diagnostics"] = true
+L["Rotation attribution: unavailable; capture seconds are not encounter seconds."] = true
 L["Rows omitted: %d"] = true
 L["Scoring: unavailable"] = true
+L["Tank: unavailable (no threat, mitigation or survival observations)."] = true
 L["unavailable"] = true
 
 L["Default.TBC.Mage.Thirties.Name"] = "TBC Mage 30–39 Frost single-target preview"
