@@ -36,6 +36,16 @@ Optional `declarationCase` selects an observed fixture case rather than a native
 
 Lua metadata-field diagnostic order differs between VMs because its implementation uses `pairs`. JavaScript uses author/realm/email/website/version order for that specific set of type errors. Tests compare code/path multiplicity only in the explicit five-invalid-metadata case; ordinary ordered diagnostics remain exact comparisons. Sampled differential agreement is not exhaustive equivalence or native acceptance.
 
+## Pure two-way comparison
+
+`schema/diff.mjs` exposes `diffRotations(left, right, options?)` for envelope-like Maps. It returns structural `valid`/`complete` flags, changes and diagnostics. This module is not yet connected to a second-input browser UI. It does not infer legacy wrappers, applicability, execution readiness or lineage.
+
+Changes retain typed field/step segments and detached before/after payloads. Priority matching uses exact step IDs or caller-supplied `leftOrigins`/`rightOrigins` Maps, with a longest-increasing-subsequence move calculation. Arbitrary regenerated IDs produce add/remove changes. Both branch arms are indexed, including forced-away arms; ordinary nested fields named `onTrue`/`onFalse` remain data. The saved `body.revision` counter is ignored; root `id`/`revision` are ignored only with explicit Boolean `ignoreIdentity`. Nested custom fields called `revision` remain significant.
+
+Options are a closed, caller-owned plain descriptor object; imported callbacks and accessor options are refused. This is not a sandbox for hostile JavaScript proxies or modified standard primitives. The comparator uses the codec's per-input portable bounds and the schema index's strict 2,000-step/16-branch-depth bounds. It emits at most 500 changes and marks overlong paths or truncated changes incomplete. These logical limits do not establish a precise browser memory or CPU bound.
+
+Typed segments carry identity. Display paths use the actual LuaJIT oracle's quoting of control bytes; Lua 5.1 can spell those paths differently. Preserve byte values and never parse a display path to recover keys. Three-way clone comparison, conflict detection, patches and visual diff remain later work.
+
 ## Checks
 
 From the repository root:
@@ -44,6 +54,7 @@ From the repository root:
 node --test tests/web_codec.mjs
 node --test tests/web_schema.mjs
 node --test tests/web_viewer.mjs
+node --test tests/web_diff.mjs
 python3 tools/check
 ```
 

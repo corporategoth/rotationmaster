@@ -502,6 +502,7 @@ def main():
             ['node', '--test', 'tests/web_codec.mjs'],
             ['node', '--test', 'tests/web_schema.mjs'],
             ['node', '--test', 'tests/web_viewer.mjs'],
+            ['node', '--test', 'tests/web_diff.mjs'],
             [sys.executable, 'tests/test_check.py'],
             [sys.executable, 'tests/test_builtin_sources.py'],
             [sys.executable, 'tests/test_retained_builtin_values.py'],
