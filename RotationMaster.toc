@@ -107,6 +107,7 @@ Core/announcement_data.lua
 Core/announcements.lua
 Core/stock_targets.lua
 Analytics/replay.lua
+Analytics/capture.lua
 Core/profile_data.lua
 Core/collection_data.lua
 Core/custom_condition_data.lua

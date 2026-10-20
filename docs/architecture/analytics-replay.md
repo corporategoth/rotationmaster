@@ -11,3 +11,11 @@ Damage is player-only across explicit available-coverage intervals, with four no
 Bounds are 600 seconds, 4,096 records, 1,024 distinct cast aliases, 128 pending casts, 30-second pending age and a 512-KiB deterministic payload charge. The charge is a validation budget, not a precise Lua heap or wire size. Inputs remain unchanged and reports are detached and contain no input aliases or source text. Both Lua runtimes test frozen associations, expiration, retirement, duplicate/conflicting results, partial damage coverage, overflow and every cap.
 
 Live capture/UI, native tuple validation, presentation acknowledgement and role-specific comparisons remain separate pending work. The pure replay foundation does not complete those features.
+
+## Bounded capture builder
+
+`addon.Analytics.NewCapture(options)` creates an in-memory builder for trusted, caller-normalized receipts. Its colon methods are `Start`, `Push`, `Stop`, `Clear` and `GetSnapshot`. `Start` returns a session lease; stale or foreign leases cannot publish evidence. `Push` accepts advice, presentation, retirement, attempt and result receipts. It assigns elapsed times and sequence numbers, keeps raw cast keys private and emits detached numeric aliases. The optional advice maximum age defaults to 0.5 seconds.
+
+`Stop` retires the session before passing its detached trace to Replay. Pending casts remain conservative; later channel or autorepeat classification excludes the entire alias. No provisional score is returned while a capture is active. The final report explicitly states `collection="not-wired"` and does not certify native evidence.
+
+The builder applies the replay duration, row, alias, pending-count and pending-age limits, plus a deterministic 512-KiB payload budget including private keys. Exceeding a limit produces an unavailable report rather than a partial percentage. It installs no event subscriptions, timers, producers, saved data or capture UI. Native tuple validation, active-rotation epochs, presentation acknowledgements and live capture remain pending integration work.
