@@ -375,6 +375,8 @@ def main():
             ['lua5.1', 'tests/defaults_ui.lua'],
             ['lua5.1', 'tests/defaults.lua'],
             ['lua5.1', 'tests/defaults_mage.lua'],
+            ['lua5.1', 'tests/defaults_mage_30_39.lua'],
+            ['luajit', 'tests/defaults_mage_30_39.lua'],
             ['lua5.1', 'tests/tbc_twenty_defaults.lua'],
             ['luajit', 'tests/tbc_twenty_defaults.lua'],
             ['lua5.1', 'tests/defaults_warlock.lua'],

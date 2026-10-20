@@ -2491,6 +2491,9 @@ L["Incompatible"] = true
 
 L["Loaded; connection not confirmed."] = true
 
+L["Default.TBC.Mage.Thirties.Name"] = "TBC Mage 30–39 Frost single-target preview"
+L["Default.TBC.Mage.Thirties.Description"] = "Bounded level 30–39 Frost single-target preview. Preserves any existing Frost, Ice or Mage Armor; offers learned Mage, then Ice, then Frost Armor only when all are absent. Intellect remains independent. Talents, kiting, emergency defenses and resources stay manual."
+
 -- BEGIN GENERATED RM PUBLIC HELPER DOCS
 L["Absolute health target (negative means deficit) or percentage fraction."] = true
 L["All original results, preserving nil positions and return count."] = true
