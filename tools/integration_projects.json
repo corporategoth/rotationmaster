@@ -1,0 +1,2036 @@
+{
+  "checked": "2026-10-20",
+  "integrations": {
+    "ExtendedCharacterStats": {
+      "links": [
+        {
+          "label": "CurseForge",
+          "url": "https://www.curseforge.com/wow/addons/extended-character-stats",
+          "primary": true,
+          "note": "Classic Era and TBC. Other editions are unverified; Forever Extended Character Stats is a different project.",
+          "families": [
+            "era",
+            "tbc"
+          ],
+          "provider": "curseforge"
+        },
+        {
+          "label": "Wago Addons",
+          "url": "https://addons.wago.io/addons/extendedcharacterstats",
+          "primary": false,
+          "note": "Official project page. Publisher lists Classic Era, TBC, Classic progression. Choose the matching file; exact patch and RM integration behavior may be unverified.",
+          "families": [
+            "era",
+            "tbc",
+            "progression"
+          ],
+          "provider": "wago"
+        },
+        {
+          "label": "GitHub",
+          "url": "https://github.com/BreakBB/ExtendedCharacterStats",
+          "primary": false,
+          "note": "Official source repository. Choose the release for your game edition; source availability does not certify integration behavior.",
+          "families": [
+            "era",
+            "tbc",
+            "progression"
+          ],
+          "provider": "github"
+        }
+      ],
+      "coverage": {
+        "curseforge": {
+          "status": "verified",
+          "query": "Exact ExtendedCharacterStats project/author search and publisher source crosslinks on curseforge",
+          "evidence": [
+            "{\"url\":\"https://www.curseforge.com/wow/addons/extended-character-stats\",\"identity\":\"Verified actual project and owner in prior primary-page freeze; reused, not inferred from installed status.\"}",
+            "https://www.curseforge.com/wow/addons/extended-character-stats"
+          ]
+        },
+        "wowinterface": {
+          "status": "not_found",
+          "query": "Exact ExtendedCharacterStats project/author search and publisher source crosslinks on wowinterface",
+          "evidence": [
+            "{\"query\":\"\\\"ExtendedCharacterStats\\\"\",\"domains\":[\"www.wowinterface.com\"],\"batch\":3}",
+            "{\"query\":\"\\\"Extended Character Stats\\\"\",\"domains\":[\"wowinterface.com\"],\"batch\":4}",
+            "{\"query\":\"\\\"Extended Character Stats\\\" \\\"WoWInterface\\\" \\\"Muhkuhsolvan\\\"\",\"batch\":12}"
+          ]
+        },
+        "wago": {
+          "status": "verified",
+          "query": "Exact ExtendedCharacterStats project/author search and publisher source crosslinks on wago",
+          "evidence": [
+            "{\"url\":\"https://addons.wago.io/addons/extendedcharacterstats\",\"projectId\":\"e56nwDK9\",\"author\":\"TheCrux\"}",
+            "{\"sourceFile\":\"BreakBB-ExtendedCharacterStats-upload-wago.sh\",\"proof\":\"Actual upload destination ID plus supported1.15.9/2.5.6/3.80.2 metadata.\"}",
+            "https://addons.wago.io/addons/extendedcharacterstats"
+          ]
+        },
+        "wowuphub": {
+          "status": "not_found",
+          "query": "Exact ExtendedCharacterStats project/author search and publisher source crosslinks on wowuphub",
+          "evidence": [
+            "{\"url\":\"https://hub.wowup.io/addons/search/retail?query=ExtendedCharacterStats&limit=10\",\"responseFile\":\"hub-search-ExtendedCharacterStats-retail.json\",\"resultCount\":0,\"error\":null}",
+            "{\"url\":\"https://hub.wowup.io/addons/search/forever?query=ExtendedCharacterStats&limit=10\",\"responseFile\":\"hub-search-ExtendedCharacterStats-forever.json\",\"resultCount\":0,\"error\":null}",
+            "{\"url\":\"https://hub.wowup.io/addons/search/classic?query=ExtendedCharacterStats&limit=10\",\"responseFile\":\"hub-search-ExtendedCharacterStats-classic.json\",\"resultCount\":1,\"error\":null}",
+            "{\"url\":\"https://hub.wowup.io/addons/search/mists?query=ExtendedCharacterStats&limit=10\",\"responseFile\":\"hub-search-ExtendedCharacterStats-mists.json\",\"resultCount\":0,\"error\":null}",
+            "{\"url\":\"https://hub.wowup.io/addons/search/burningCrusade?query=ExtendedCharacterStats&limit=10\",\"responseFile\":\"hub-search-ExtendedCharacterStats-burningCrusade.json\",\"resultCount\":1,\"error\":null}",
+            "{\"url\":\"https://hub.wowup.io/addons/search/retail?query=ExtendedCharacterStats&limit=100\",\"responseFile\":\"hub-wide-search-ExtendedCharacterStats-retail.json\",\"resultCount\":0,\"error\":null}",
+            "{\"url\":\"https://hub.wowup.io/addons/search/forever?query=ExtendedCharacterStats&limit=100\",\"responseFile\":\"hub-wide-search-ExtendedCharacterStats-forever.json\",\"resultCount\":0,\"error\":null}",
+            "{\"url\":\"https://hub.wowup.io/addons/search/classic?query=ExtendedCharacterStats&limit=100\",\"responseFile\":\"hub-wide-search-ExtendedCharacterStats-classic.json\",\"resultCount\":1,\"error\":null}",
+            "{\"url\":\"https://hub.wowup.io/addons/search/mists?query=ExtendedCharacterStats&limit=100\",\"responseFile\":\"hub-wide-search-ExtendedCharacterStats-mists.json\",\"resultCount\":0,\"error\":null}",
+            "{\"url\":\"https://hub.wowup.io/addons/search/burningCrusade?query=ExtendedCharacterStats&limit=100\",\"responseFile\":\"hub-wide-search-ExtendedCharacterStats-burningCrusade.json\",\"resultCount\":1,\"error\":null}"
+          ]
+        },
+        "github": {
+          "status": "verified",
+          "query": "Exact ExtendedCharacterStats project/author search and publisher source crosslinks on github",
+          "evidence": [
+            "{\"url\":\"https://github.com/BreakBB/ExtendedCharacterStats\",\"proof\":\"CurseForge Source link; pinned treec48ccf8cab7ef4171209aa49fcdf49b07e83600c.\"}",
+            "https://github.com/BreakBB/ExtendedCharacterStats"
+          ]
+        }
+      },
+      "scope": {
+        "families": [
+          "era",
+          "tbc",
+          "progression"
+        ],
+        "evidence": [
+          "Declared edition scope for the matching addon identity; older patch or missing minor-version evidence alone is not an incompatibility verdict.",
+          "https://www.curseforge.com/wow/addons/extended-character-stats"
+        ],
+        "progression": [
+          "wrath"
+        ]
+      }
+    },
+    "MobInfo2": {
+      "links": [
+        {
+          "label": "CurseForge",
+          "url": "https://www.curseforge.com/wow/addons/mobinfo2",
+          "primary": true,
+          "note": "Publisher lists Retail, Forever, Classic Era, TBC and Mists Classic.",
+          "families": [
+            "retail",
+            "forever",
+            "era",
+            "progression",
+            "tbc"
+          ],
+          "provider": "curseforge"
+        },
+        {
+          "label": "WoWInterface — historical",
+          "url": "https://www.wowinterface.com/downloads/info21571-Mobinfo2.html",
+          "primary": false,
+          "note": "Official historical release page. Current patch compatibility is unverified; inspect the release details before downloading.",
+          "families": [],
+          "provider": "wowinterface"
+        },
+        {
+          "label": "Official source — CurseForge SVN",
+          "url": "https://www.curseforge.com/wow/addons/mobinfo2/source",
+          "primary": false,
+          "note": "Official project page. Release edition and current patch compatibility are unverified.",
+          "families": [],
+          "provider": "curseforge"
+        }
+      ],
+      "coverage": {
+        "curseforge": {
+          "status": "verified",
+          "query": "Exact MobInfo2 project/author search and publisher source crosslinks on curseforge",
+          "evidence": [
+            "{\"url\":\"https://www.curseforge.com/wow/addons/mobinfo2\",\"identity\":\"Verified actual project and owner in prior primary-page freeze; reused, not inferred from installed status.\"}",
+            "https://www.curseforge.com/wow/addons/mobinfo2",
+            "https://www.curseforge.com/wow/addons/mobinfo2/source"
+          ]
+        },
+        "wowinterface": {
+          "status": "verified",
+          "query": "Exact MobInfo2 project/author search and publisher source crosslinks on wowinterface",
+          "evidence": [
+            "{\"url\":\"https://www.wowinterface.com/downloads/info21571-Mobinfo2.html\",\"proof\":\"PublisherILeClerk listed; installation names folderMobInfo2; historicalRetail6.2 release.\"}",
+            "https://www.wowinterface.com/downloads/info21571-Mobinfo2.html"
+          ]
+        },
+        "wago": {
+          "status": "not_found",
+          "query": "Exact MobInfo2 project/author search and publisher source crosslinks on wago",
+          "evidence": [
+            "{\"query\":\"\\\"MobInfo2\\\"\",\"domains\":[\"addons.wago.io\"],\"batches\":[1,9]}",
+            "{\"url\":\"https://addons.wago.io/?search=MobInfo2\",\"responseFile\":\"wago-search-MobInfo2.json\",\"result\":\"search=MobInfo2; game_version=null; total=0\"}"
+          ]
+        },
+        "wowuphub": {
+          "status": "not_found",
+          "query": "Exact MobInfo2 project/author search and publisher source crosslinks on wowuphub",
+          "evidence": [
+            "{\"url\":\"https://hub.wowup.io/addons/search/retail?query=MobInfo2&limit=10\",\"responseFile\":\"hub-search-MobInfo2-retail.json\",\"resultCount\":0,\"error\":null}",
+            "{\"url\":\"https://hub.wowup.io/addons/search/forever?query=MobInfo2&limit=10\",\"responseFile\":\"hub-search-MobInfo2-forever.json\",\"resultCount\":0,\"error\":null}",
+            "{\"url\":\"https://hub.wowup.io/addons/search/classic?query=MobInfo2&limit=10\",\"responseFile\":\"hub-search-MobInfo2-classic.json\",\"resultCount\":0,\"error\":null}",
+            "{\"url\":\"https://hub.wowup.io/addons/search/mists?query=MobInfo2&limit=10\",\"responseFile\":\"hub-search-MobInfo2-mists.json\",\"resultCount\":0,\"error\":null}",
+            "{\"url\":\"https://hub.wowup.io/addons/search/burningCrusade?query=MobInfo2&limit=10\",\"responseFile\":\"hub-search-MobInfo2-burningCrusade.json\",\"resultCount\":0,\"error\":null}"
+          ]
+        },
+        "github": {
+          "status": "not_found",
+          "query": "Exact MobInfo2 project/author search and publisher source crosslinks on github",
+          "evidence": [
+            "{\"query\":\"\\\"MobInfo2\\\" \\\"ileclerk\\\" github\",\"batches\":[7,8,10,11,12]}",
+            "{\"attemptURL\":\"https://github.com/ileclerk/MobInfo2\",\"result\":\"404\"}",
+            "{\"url\":\"https://www.curseforge.com/wow/addons/mobinfo2/source\",\"proof\":\"Current maintainer publishes SVN, not a GitHub repository.\"}"
+          ]
+        }
+      },
+      "scope": {
+        "families": [
+          "retail",
+          "forever",
+          "era",
+          "tbc",
+          "progression"
+        ],
+        "evidence": [
+          "Declared edition scope for the matching addon identity; older patch or missing minor-version evidence alone is not an incompatibility verdict.",
+          "https://www.curseforge.com/wow/addons/mobinfo2",
+          "Official CurseForge description declares Cataclysm 4.4.0/4.4.1 in releases 10.1.24/11.0.20: https://www.curseforge.com/wow/addons/mobinfo2"
+        ],
+        "progression": [
+          "cata",
+          "mists"
+        ]
+      }
+    },
+    "!!!LuaWorkbench": {
+      "links": [
+        {
+          "label": "CurseForge",
+          "url": "https://www.curseforge.com/wow/addons/luaworkbench",
+          "primary": true,
+          "note": "Retail, Forever and TBC. Other editions are unverified.",
+          "families": [
+            "retail",
+            "forever",
+            "tbc"
+          ],
+          "provider": "curseforge"
+        },
+        {
+          "label": "WoWInterface",
+          "url": "https://www.wowinterface.com/downloads/info27254-1.2.1.html",
+          "primary": false,
+          "note": "Official project page. Publisher lists Retail, Forever, TBC. Choose the matching file; exact patch and RM integration behavior may be unverified.",
+          "families": [
+            "retail",
+            "forever",
+            "tbc"
+          ],
+          "provider": "wowinterface"
+        },
+        {
+          "label": "Wago Addons",
+          "url": "https://addons.wago.io/addons/luaworkbench",
+          "primary": false,
+          "note": "Official project page. Publisher lists Retail, Forever, TBC. Choose the matching file; exact patch and RM integration behavior may be unverified.",
+          "families": [
+            "retail",
+            "forever",
+            "tbc"
+          ],
+          "provider": "wago"
+        },
+        {
+          "label": "GitHub",
+          "url": "https://github.com/R41z0r/LuaWorkbench",
+          "primary": false,
+          "note": "Official source repository. Choose the release for your game edition; source availability does not certify integration behavior.",
+          "families": [
+            "retail",
+            "forever",
+            "tbc"
+          ],
+          "provider": "github"
+        }
+      ],
+      "coverage": {
+        "curseforge": {
+          "status": "verified",
+          "query": "Exact !!!LuaWorkbench project/author search and publisher source crosslinks on curseforge",
+          "evidence": [
+            "{\"url\":\"https://www.curseforge.com/wow/addons/luaworkbench\",\"identity\":\"Verified actual project and owner in prior primary-page freeze; reused, not inferred from installed status.\"}",
+            "https://www.curseforge.com/wow/addons/luaworkbench"
+          ]
+        },
+        "wowinterface": {
+          "status": "verified",
+          "query": "Exact !!!LuaWorkbench project/author search and publisher source crosslinks on wowinterface",
+          "evidence": [
+            "{\"url\":\"https://www.wowinterface.com/downloads/info27254-1.2.1.html\",\"proof\":\"r41z0r; sameTOCID27254; current1.2.1.\"}",
+            "https://www.wowinterface.com/downloads/info27254-1.2.1.html"
+          ]
+        },
+        "wago": {
+          "status": "verified",
+          "query": "Exact !!!LuaWorkbench project/author search and publisher source crosslinks on wago",
+          "evidence": [
+            "{\"url\":\"https://addons.wago.io/addons/luaworkbench\",\"responseFile\":\"access-1.html.inertia.json\",\"proof\":\"ActualHTTP200 Inertia addon metadata: idEGPaBWN1,slugluaworkbench,ownerR41z0r,sourceURLR41z0r/LuaWorkbench; release1.2.1 and exactthreeclient versions.\"}",
+            "{\"sourceFile\":\"R41z0r-LuaWorkbench-!!!LuaWorkbench.toc\",\"proof\":\"X-Wago-ID EGPaBWN1 independently matches.\"}",
+            "https://addons.wago.io/addons/luaworkbench"
+          ]
+        },
+        "wowuphub": {
+          "status": "not_found",
+          "query": "Exact !!!LuaWorkbench project/author search and publisher source crosslinks on wowuphub",
+          "evidence": [
+            "{\"url\":\"https://hub.wowup.io/addons/search/retail?query=LuaWorkbench&limit=10\",\"responseFile\":\"hub-search-LuaWorkbench-retail.json\",\"resultCount\":0,\"error\":null}",
+            "{\"url\":\"https://hub.wowup.io/addons/search/forever?query=LuaWorkbench&limit=10\",\"responseFile\":\"hub-search-LuaWorkbench-forever.json\",\"resultCount\":0,\"error\":null}",
+            "{\"url\":\"https://hub.wowup.io/addons/search/classic?query=LuaWorkbench&limit=10\",\"responseFile\":\"hub-search-LuaWorkbench-classic.json\",\"resultCount\":0,\"error\":null}",
+            "{\"url\":\"https://hub.wowup.io/addons/search/mists?query=LuaWorkbench&limit=10\",\"responseFile\":\"hub-search-LuaWorkbench-mists.json\",\"resultCount\":0,\"error\":null}",
+            "{\"url\":\"https://hub.wowup.io/addons/search/burningCrusade?query=LuaWorkbench&limit=10\",\"responseFile\":\"hub-search-LuaWorkbench-burningCrusade.json\",\"resultCount\":0,\"error\":null}"
+          ]
+        },
+        "github": {
+          "status": "verified",
+          "query": "Exact !!!LuaWorkbench project/author search and publisher source crosslinks on github",
+          "evidence": [
+            "{\"url\":\"https://github.com/R41z0r/LuaWorkbench\",\"proof\":\"CurseForge Source link; pinned tree9abc82050f70fca204a19965a717abc6e1eae952; release docs explicitly publish sameZIP to GitHub.\"}",
+            "https://github.com/R41z0r/LuaWorkbench"
+          ]
+        }
+      },
+      "scope": {
+        "families": [
+          "retail",
+          "forever",
+          "tbc"
+        ],
+        "evidence": [
+          "Declared edition scope for the matching addon identity; older patch or missing minor-version evidence alone is not an incompatibility verdict.",
+          "https://www.curseforge.com/wow/addons/luaworkbench"
+        ]
+      }
+    },
+    "WowLua": {
+      "links": [
+        {
+          "label": "CurseForge",
+          "url": "https://www.curseforge.com/wow/addons/wowlua",
+          "primary": true,
+          "note": "Retail, Classic Era, TBC and older progression releases. Current-patch support is unverified. RM currently detects WowLua but does not offer it as an editor.",
+          "families": [
+            "retail",
+            "era",
+            "progression",
+            "tbc"
+          ],
+          "provider": "curseforge"
+        },
+        {
+          "label": "WoWInterface",
+          "url": "https://www.wowinterface.com/downloads/info7366-r35.html",
+          "primary": false,
+          "note": "Official project page. Publisher lists Retail, Classic Era, TBC, Classic progression. Choose the matching file; exact patch and RM integration behavior may be unverified.",
+          "families": [
+            "retail",
+            "era",
+            "tbc",
+            "progression"
+          ],
+          "provider": "wowinterface"
+        },
+        {
+          "label": "GitHub — official published URL, unavailable",
+          "url": "https://github.com/jnwhiteh/WowLua",
+          "primary": false,
+          "note": "Author-published source link. The repository page was unavailable when checked; use another provider if it remains unavailable.",
+          "families": [],
+          "availability": "unverified",
+          "provider": "github"
+        },
+        {
+          "label": "Official source — CurseForge Git",
+          "url": "https://www.curseforge.com/wow/addons/wowlua/source",
+          "primary": false,
+          "note": "Official project page. Release edition and current patch compatibility are unverified.",
+          "families": [],
+          "provider": "curseforge"
+        }
+      ],
+      "coverage": {
+        "curseforge": {
+          "status": "verified",
+          "query": "Exact WowLua project/author search and publisher source crosslinks on curseforge",
+          "evidence": [
+            "{\"url\":\"https://www.curseforge.com/wow/addons/wowlua\",\"identity\":\"Verified actual project and owner in prior primary-page freeze; reused, not inferred from installed status.\"}",
+            "https://www.curseforge.com/wow/addons/wowlua",
+            "https://www.curseforge.com/wow/addons/wowlua/source"
+          ]
+        },
+        "wowinterface": {
+          "status": "verified",
+          "query": "Exact WowLua project/author search and publisher source crosslinks on wowinterface",
+          "evidence": [
+            "{\"url\":\"https://www.wowinterface.com/downloads/info7366-r35.html\",\"responseFile\":\"wowlua-wowinterface.html\",\"proof\":\"Cladhaire originalauthor;1.1.7-release; actualHTML contains jnwhiteh/WowLua release/changelog URLs.\"}",
+            "https://www.wowinterface.com/downloads/info7366-r35.html"
+          ]
+        },
+        "wago": {
+          "status": "not_found",
+          "query": "Exact WowLua project/author search and publisher source crosslinks on wago",
+          "evidence": [
+            "{\"query\":\"\\\"WowLua\\\"\",\"domains\":[\"addons.wago.io\"],\"batches\":[2,9]}",
+            "{\"url\":\"https://addons.wago.io/?search=WowLua\",\"responseFile\":\"wago-search-WowLua.json\",\"result\":\"search=WowLua; game_version=null; total=0\"}"
+          ]
+        },
+        "wowuphub": {
+          "status": "not_found",
+          "query": "Exact WowLua project/author search and publisher source crosslinks on wowuphub",
+          "evidence": [
+            "{\"url\":\"https://hub.wowup.io/addons/search/retail?query=WowLua&limit=10\",\"responseFile\":\"hub-search-WowLua-retail.json\",\"resultCount\":10,\"error\":null}",
+            "{\"url\":\"https://hub.wowup.io/addons/search/forever?query=WowLua&limit=10\",\"responseFile\":\"hub-search-WowLua-forever.json\",\"resultCount\":10,\"error\":null}",
+            "{\"url\":\"https://hub.wowup.io/addons/search/classic?query=WowLua&limit=10\",\"responseFile\":\"hub-search-WowLua-classic.json\",\"resultCount\":10,\"error\":null}",
+            "{\"url\":\"https://hub.wowup.io/addons/search/mists?query=WowLua&limit=10\",\"responseFile\":\"hub-search-WowLua-mists.json\",\"resultCount\":10,\"error\":null}",
+            "{\"url\":\"https://hub.wowup.io/addons/search/burningCrusade?query=WowLua&limit=10\",\"responseFile\":\"hub-search-WowLua-burningCrusade.json\",\"resultCount\":10,\"error\":null}",
+            "{\"url\":\"https://hub.wowup.io/addons/search/retail?query=WowLua&limit=100\",\"responseFile\":\"hub-wide-search-WowLua-retail.json\",\"resultCount\":14,\"error\":null}",
+            "{\"url\":\"https://hub.wowup.io/addons/search/forever?query=WowLua&limit=100\",\"responseFile\":\"hub-wide-search-WowLua-forever.json\",\"resultCount\":13,\"error\":null}",
+            "{\"url\":\"https://hub.wowup.io/addons/search/classic?query=WowLua&limit=100\",\"responseFile\":\"hub-wide-search-WowLua-classic.json\",\"resultCount\":13,\"error\":null}",
+            "{\"url\":\"https://hub.wowup.io/addons/search/mists?query=WowLua&limit=100\",\"responseFile\":\"hub-wide-search-WowLua-mists.json\",\"resultCount\":13,\"error\":null}",
+            "{\"url\":\"https://hub.wowup.io/addons/search/burningCrusade?query=WowLua&limit=100\",\"responseFile\":\"hub-wide-search-WowLua-burningCrusade.json\",\"resultCount\":12,\"error\":null}"
+          ]
+        },
+        "github": {
+          "status": "unverified",
+          "query": "Exact WowLua project/author search and publisher source crosslinks on github",
+          "evidence": [
+            "{\"url\":\"https://github.com/jnwhiteh/WowLua\",\"result\":\"404 through web and rawHTTP; author-published URL remains in actualWoWIreleasechangelog.\"}",
+            "{\"url\":\"https://github.com/jnwhiteh/WowLua/releases\",\"result\":\"404\"}",
+            "{\"url\":\"https://www.curseforge.com/wow/addons/wowlua/source\",\"result\":\"Official alternate Git repository published.\"}",
+            "https://github.com/jnwhiteh/WowLua"
+          ]
+        }
+      },
+      "scope": {
+        "families": [
+          "retail",
+          "era",
+          "tbc",
+          "progression"
+        ],
+        "evidence": [
+          "Declared edition scope for the matching addon identity; older patch or missing minor-version evidence alone is not an incompatibility verdict.",
+          "https://www.curseforge.com/wow/addons/wowlua",
+          "Official WoWInterface release lists Cataclysm 4.4.2: https://www.wowinterface.com/downloads/info7366-r35.html"
+        ],
+        "progression": [
+          "wrath",
+          "cata",
+          "mists"
+        ]
+      }
+    },
+    "WeakAuras": {
+      "links": [
+        {
+          "label": "CurseForge",
+          "url": "https://www.curseforge.com/wow/addons/weakauras-2",
+          "primary": true,
+          "note": "Current Classic Era, TBC and Mists Classic releases; Retail release evidence is historical. Current Retail and Forever support is unverified.",
+          "families": [
+            "era",
+            "progression",
+            "tbc"
+          ],
+          "provider": "curseforge"
+        },
+        {
+          "label": "Wago Addons",
+          "url": "https://addons.wago.io/addons/weakauras",
+          "primary": false,
+          "note": "Official project page. Publisher lists Classic Era, TBC, Classic progression. Choose the matching file; exact patch and RM integration behavior may be unverified.",
+          "families": [
+            "era",
+            "tbc",
+            "progression"
+          ],
+          "provider": "wago"
+        },
+        {
+          "label": "WoWInterface",
+          "url": "https://www.wowinterface.com/downloads/info24910-weakauras2.html",
+          "primary": false,
+          "note": "Official project page. Publisher lists Classic Era, TBC, Classic progression. Choose the matching file; exact patch and RM integration behavior may be unverified.",
+          "families": [
+            "era",
+            "tbc",
+            "progression"
+          ],
+          "provider": "wowinterface"
+        },
+        {
+          "label": "WowUp Hub",
+          "url": "https://wowup.io/addons/10",
+          "primary": false,
+          "note": "Official project page. Publisher lists Classic Era, TBC, Classic progression. Choose the matching file; exact patch and RM integration behavior may be unverified.",
+          "families": [
+            "era",
+            "tbc",
+            "progression"
+          ],
+          "provider": "wowuphub"
+        },
+        {
+          "label": "GitHub",
+          "url": "https://github.com/WeakAuras/WeakAuras2",
+          "primary": false,
+          "note": "Official source repository. Choose the release for your game edition; source availability does not certify integration behavior.",
+          "families": [
+            "era",
+            "tbc",
+            "progression"
+          ],
+          "provider": "github"
+        },
+        {
+          "label": "Official website",
+          "url": "https://weakauras.wtf/",
+          "primary": false,
+          "note": "Official project page. Release edition and current patch compatibility are unverified.",
+          "families": [],
+          "provider": "author"
+        }
+      ],
+      "coverage": {
+        "curseforge": {
+          "status": "verified",
+          "query": "Exact WeakAuras project/author search and publisher source crosslinks on curseforge",
+          "evidence": [
+            "{\"url\":\"https://www.curseforge.com/wow/addons/weakauras-2\",\"identity\":\"Verified actual project and owner in prior primary-page freeze; reused, not inferred from installed status.\"}",
+            "https://www.curseforge.com/wow/addons/weakauras-2"
+          ]
+        },
+        "wowinterface": {
+          "status": "verified",
+          "query": "Exact WeakAuras project/author search and publisher source crosslinks on wowinterface",
+          "evidence": [
+            "{\"url\":\"https://www.wowinterface.com/downloads/info24910-weakauras2.html\",\"proof\":\"Stanzilla; publisherTOCX-WoWI-ID24910; currentClassic5.22.1.\"}",
+            "https://www.wowinterface.com/downloads/info24910-weakauras2.html"
+          ]
+        },
+        "wago": {
+          "status": "verified",
+          "query": "Exact WeakAuras project/author search and publisher source crosslinks on wago",
+          "evidence": [
+            "{\"url\":\"https://addons.wago.io/addons/weakauras\",\"projectId\":\"VBNBxKx5\",\"proof\":\"Stanzilla/Buds/InfusOnWoW team plus matching pinnedTOCX-Wago-ID; primaryversionspage has explicitcurrent/historicalversions.\"}",
+            "{\"url\":\"https://addons.wago.io/addons/weakauras/versions?page=1&stability=stable\",\"example\":\"5.22.1 Oct10,2026; Classic1.15.9,TBC2.5.6,MoP5.5.4,Cata4.4.2,Wrath3.80.2.\"}",
+            "https://addons.wago.io/addons/weakauras"
+          ]
+        },
+        "wowuphub": {
+          "status": "verified",
+          "query": "Exact WeakAuras project/author search and publisher source crosslinks on wowuphub",
+          "evidence": [
+            "{\"url\":\"https://hub.wowup.io/addons/search/retail?query=WeakAuras&limit=10\",\"responseFile\":\"hub-search-WeakAuras-retail.json\",\"resultCount\":0,\"error\":null}",
+            "{\"url\":\"https://hub.wowup.io/addons/search/forever?query=WeakAuras&limit=10\",\"responseFile\":\"hub-search-WeakAuras-forever.json\",\"resultCount\":0,\"error\":null}",
+            "{\"url\":\"https://hub.wowup.io/addons/search/classic?query=WeakAuras&limit=10\",\"responseFile\":\"hub-search-WeakAuras-classic.json\",\"resultCount\":1,\"error\":null}",
+            "{\"url\":\"https://hub.wowup.io/addons/search/mists?query=WeakAuras&limit=10\",\"responseFile\":\"hub-search-WeakAuras-mists.json\",\"resultCount\":1,\"error\":null}",
+            "{\"url\":\"https://hub.wowup.io/addons/search/burningCrusade?query=WeakAuras&limit=10\",\"responseFile\":\"hub-search-WeakAuras-burningCrusade.json\",\"resultCount\":1,\"error\":null}",
+            "{\"url\":\"https://wowup.io/addons/10\",\"proof\":\"Canonical repository is exact; actualpublicHubAPIresponses independentlymatch.\"}",
+            "https://wowup.io/addons/10"
+          ]
+        },
+        "github": {
+          "status": "verified",
+          "query": "Exact WeakAuras project/author search and publisher source crosslinks on github",
+          "evidence": [
+            "{\"url\":\"https://github.com/WeakAuras/WeakAuras2\",\"proof\":\"Officialwebsite andHub canonicalrepository; pinnedtree37c3950c528ea42374b3a79c9fd00fa9e6bd217b.\"}",
+            "https://github.com/WeakAuras/WeakAuras2"
+          ]
+        }
+      },
+      "scope": {
+        "families": [
+          "retail",
+          "era",
+          "tbc",
+          "progression"
+        ],
+        "evidence": [
+          "Declared edition scope for the matching addon identity; older patch or missing minor-version evidence alone is not an incompatibility verdict.",
+          "https://www.curseforge.com/wow/addons/weakauras-2"
+        ],
+        "progression": [
+          "wrath",
+          "cata",
+          "mists"
+        ]
+      }
+    },
+    "Questie": {
+      "links": [
+        {
+          "label": "CurseForge",
+          "url": "https://www.curseforge.com/wow/addons/questie",
+          "primary": true,
+          "note": "Classic Era, TBC and Mists Classic. Retail and Forever releases are unverified.",
+          "families": [
+            "era",
+            "progression",
+            "tbc"
+          ],
+          "provider": "curseforge"
+        },
+        {
+          "label": "Wago Addons",
+          "url": "https://addons.wago.io/addons/questie",
+          "primary": false,
+          "note": "Official project page. Publisher lists Forever, Classic Era, TBC, Classic progression. Choose the matching file; exact patch and RM integration behavior may be unverified.",
+          "families": [
+            "forever",
+            "era",
+            "tbc",
+            "progression"
+          ],
+          "provider": "wago"
+        },
+        {
+          "label": "WoWInterface — historical",
+          "url": "https://www.wowinterface.com/downloads/info24994-Questie.htm",
+          "primary": false,
+          "note": "Official historical release page. Current patch compatibility is unverified; inspect the release details before downloading.",
+          "families": [],
+          "provider": "wowinterface"
+        },
+        {
+          "label": "WowUp Hub",
+          "url": "https://wowup.io/addons/47671",
+          "primary": false,
+          "note": "Official project page. Publisher lists Forever, Classic Era, TBC, Classic progression. Choose the matching file; exact patch and RM integration behavior may be unverified.",
+          "families": [
+            "forever",
+            "era",
+            "tbc",
+            "progression"
+          ],
+          "provider": "wowuphub"
+        },
+        {
+          "label": "GitHub",
+          "url": "https://github.com/Questie/Questie",
+          "primary": false,
+          "note": "Official source repository. Choose the release for your game edition; source availability does not certify integration behavior.",
+          "families": [
+            "forever",
+            "era",
+            "tbc",
+            "progression"
+          ],
+          "provider": "github"
+        }
+      ],
+      "coverage": {
+        "curseforge": {
+          "status": "verified",
+          "query": "Exact Questie project/author search and publisher source crosslinks on curseforge",
+          "evidence": [
+            "{\"url\":\"https://www.curseforge.com/wow/addons/questie\",\"identity\":\"Verified actual project and owner in prior primary-page freeze; reused, not inferred from installed status.\"}",
+            "https://www.curseforge.com/wow/addons/questie"
+          ]
+        },
+        "wowinterface": {
+          "status": "verified",
+          "query": "Exact Questie project/author search and publisher source crosslinks on wowinterface",
+          "evidence": [
+            "{\"url\":\"https://www.wowinterface.com/downloads/info24994-Questie.htm\",\"proof\":\"Original authorsAeroScripts/Logon; folderQuestie; stale6.2.5Classic1.13.7release.\"}",
+            "https://www.wowinterface.com/downloads/info24994-Questie.htm"
+          ]
+        },
+        "wago": {
+          "status": "verified",
+          "query": "Exact Questie project/author search and publisher source crosslinks on wago",
+          "evidence": [
+            "{\"url\":\"https://addons.wago.io/addons/questie\",\"projectId\":\"qv634BKb\",\"proof\":\"DeveloperTheCrux/Aero; matching pinnedQuestie_CamelotTOCID; currentForever1.60.1 included.\"}",
+            "{\"url\":\"https://addons.wago.io/addons/questie/versions?page=1&stability=stable\",\"example\":\"v12.1.0+v1.0.6 Oct12,2026, fiveexactpatchfamilies listed.\"}",
+            "https://addons.wago.io/addons/questie"
+          ]
+        },
+        "wowuphub": {
+          "status": "verified",
+          "query": "Exact Questie project/author search and publisher source crosslinks on wowuphub",
+          "evidence": [
+            "{\"url\":\"https://hub.wowup.io/addons/search/retail?query=Questie&limit=10\",\"responseFile\":\"hub-search-Questie-retail.json\",\"resultCount\":0,\"error\":null}",
+            "{\"url\":\"https://hub.wowup.io/addons/search/forever?query=Questie&limit=10\",\"responseFile\":\"hub-search-Questie-forever.json\",\"resultCount\":2,\"error\":null}",
+            "{\"url\":\"https://hub.wowup.io/addons/search/classic?query=Questie&limit=10\",\"responseFile\":\"hub-search-Questie-classic.json\",\"resultCount\":1,\"error\":null}",
+            "{\"url\":\"https://hub.wowup.io/addons/search/mists?query=Questie&limit=10\",\"responseFile\":\"hub-search-Questie-mists.json\",\"resultCount\":1,\"error\":null}",
+            "{\"url\":\"https://hub.wowup.io/addons/search/burningCrusade?query=Questie&limit=10\",\"responseFile\":\"hub-search-Questie-burningCrusade.json\",\"resultCount\":1,\"error\":null}",
+            "{\"url\":\"https://wowup.io/addons/47671\",\"proof\":\"Canonical repository is exact; actualpublicHubAPIresponses independentlymatch.\"}",
+            "https://wowup.io/addons/47671"
+          ]
+        },
+        "github": {
+          "status": "verified",
+          "query": "Exact Questie project/author search and publisher source crosslinks on github",
+          "evidence": [
+            "{\"url\":\"https://github.com/Questie/Questie\",\"proof\":\"Officialsource/Hubcanonicalrepo; pinnedtree0ddab72c832fcfce1809c3edf296a8f6e7f611f0.\"}",
+            "https://github.com/Questie/Questie"
+          ]
+        }
+      },
+      "scope": {
+        "families": [
+          "forever",
+          "era",
+          "tbc",
+          "progression"
+        ],
+        "evidence": [
+          "Declared edition scope for the matching addon identity; older patch or missing minor-version evidence alone is not an incompatibility verdict.",
+          "https://www.curseforge.com/wow/addons/questie",
+          "Official Questie_Cata.toc at commit 0ddab72c lists Interface 40402, Questie v12.1.0: https://github.com/Questie/Questie"
+        ],
+        "progression": [
+          "wrath",
+          "cata",
+          "mists"
+        ]
+      }
+    },
+    "ElvUI": {
+      "links": [
+        {
+          "label": "Tukui",
+          "url": "https://tukui.org/elvui",
+          "primary": true,
+          "note": "Official release channel. Publisher TOC lists Retail, Forever, Classic Era, TBC, Mists and Wrath Classic.",
+          "families": [
+            "retail",
+            "forever",
+            "era",
+            "progression",
+            "tbc"
+          ],
+          "provider": "author"
+        },
+        {
+          "label": "GitHub",
+          "url": "https://github.com/tukui-org/ElvUI",
+          "primary": false,
+          "note": "Official source repository. Choose the release for your game edition; source availability does not certify integration behavior.",
+          "families": [
+            "retail",
+            "forever",
+            "era",
+            "progression",
+            "tbc"
+          ],
+          "provider": "github"
+        }
+      ],
+      "coverage": {
+        "curseforge": {
+          "status": "not_found",
+          "query": "Exact ElvUI project/author search and publisher source crosslinks on curseforge",
+          "evidence": [
+            "{\"attemptURL\":\"https://www.curseforge.com/wow/addons/elvui\",\"result\":\"404 in primary web tool\"}",
+            "{\"url\":\"https://tukui.org/elvui\",\"result\":\"Official release page; source TOC has Tukui project ID -2, no CurseForge project ID.\"}"
+          ]
+        },
+        "wowinterface": {
+          "status": "not_found",
+          "query": "Exact ElvUI project/author search and publisher source crosslinks on wowinterface",
+          "evidence": [
+            "{\"query\":\"\\\"ElvUI\\\" \\\"WowInterface\\\"\",\"domains\":[\"wowinterface.com\"],\"batch\":7}",
+            "{\"query\":\"\\\"ElvUI\\\"\",\"domains\":[\"wowinterface.com\"],\"batch\":7}",
+            "{\"url\":\"https://github.com/tukui-org/ElvUI/wiki/install\",\"proof\":\"Officialinstallation points toTukui; TOC/packaging publishesTukui; third-party UIcompilations/plugins excluded.\"}"
+          ]
+        },
+        "wago": {
+          "status": "not_found",
+          "query": "Exact ElvUI project/author search and publisher source crosslinks on wago",
+          "evidence": [
+            "{\"query\":\"\\\"ElvUI\\\"\",\"domains\":[\"addons.wago.io\"],\"batches\":[3,6]}",
+            "{\"url\":\"https://addons.wago.io/?search=ElvUI\",\"responseFile\":\"wago-elvui-all-results.json\",\"result\":\"All4pages/56searchresults inspected; plugins, skins andcompilations, no officialElvUIcoreproject.\"}",
+            "{\"sourceFile\":\"tukui-org-ElvUI-ElvUI-ElvUI.toc\",\"proof\":\"OnlyTukuiID; publisherrelease workflowuploads toTukui.\"}"
+          ]
+        },
+        "wowuphub": {
+          "status": "not_found",
+          "query": "Exact ElvUI project/author search and publisher source crosslinks on wowuphub",
+          "evidence": [
+            "{\"url\":\"https://hub.wowup.io/addons/search/retail?query=ElvUI&limit=10\",\"responseFile\":\"hub-search-ElvUI-retail.json\",\"resultCount\":4,\"error\":null}",
+            "{\"url\":\"https://hub.wowup.io/addons/search/forever?query=ElvUI&limit=10\",\"responseFile\":\"hub-search-ElvUI-forever.json\",\"resultCount\":0,\"error\":null}",
+            "{\"url\":\"https://hub.wowup.io/addons/search/classic?query=ElvUI&limit=10\",\"responseFile\":\"hub-search-ElvUI-classic.json\",\"resultCount\":5,\"error\":null}",
+            "{\"url\":\"https://hub.wowup.io/addons/search/mists?query=ElvUI&limit=10\",\"responseFile\":\"hub-search-ElvUI-mists.json\",\"resultCount\":2,\"error\":null}",
+            "{\"url\":\"https://hub.wowup.io/addons/search/burningCrusade?query=ElvUI&limit=10\",\"responseFile\":\"hub-search-ElvUI-burningCrusade.json\",\"resultCount\":3,\"error\":null}",
+            "{\"url\":\"https://hub.wowup.io/addons/search/retail?query=ElvUI&limit=100\",\"responseFile\":\"hub-wide-search-ElvUI-retail.json\",\"resultCount\":4,\"error\":null}",
+            "{\"url\":\"https://hub.wowup.io/addons/search/forever?query=ElvUI&limit=100\",\"responseFile\":\"hub-wide-search-ElvUI-forever.json\",\"resultCount\":0,\"error\":null}",
+            "{\"url\":\"https://hub.wowup.io/addons/search/classic?query=ElvUI&limit=100\",\"responseFile\":\"hub-wide-search-ElvUI-classic.json\",\"resultCount\":5,\"error\":null}",
+            "{\"url\":\"https://hub.wowup.io/addons/search/mists?query=ElvUI&limit=100\",\"responseFile\":\"hub-wide-search-ElvUI-mists.json\",\"resultCount\":2,\"error\":null}",
+            "{\"url\":\"https://hub.wowup.io/addons/search/burningCrusade?query=ElvUI&limit=100\",\"responseFile\":\"hub-wide-search-ElvUI-burningCrusade.json\",\"resultCount\":3,\"error\":null}"
+          ]
+        },
+        "github": {
+          "status": "verified",
+          "query": "Exact ElvUI project/author search and publisher source crosslinks on github",
+          "evidence": [
+            "{\"url\":\"https://github.com/tukui-org/ElvUI\",\"proof\":\"OfficialTukuiwebsiteGitlink; pinnedtreec266febc63c7c44ce6ceaf00d239f46b7a15bf70.\"}",
+            "https://github.com/tukui-org/ElvUI"
+          ]
+        }
+      },
+      "scope": {
+        "families": [
+          "retail",
+          "forever",
+          "era",
+          "tbc",
+          "progression"
+        ],
+        "evidence": [
+          "Declared edition scope for the matching addon identity; older patch or missing minor-version evidence alone is not an incompatibility verdict.",
+          "https://tukui.org/elvui"
+        ],
+        "progression": [
+          "wrath",
+          "mists"
+        ]
+      }
+    },
+    "Bartender4": {
+      "links": [
+        {
+          "label": "CurseForge",
+          "url": "https://www.curseforge.com/wow/addons/bartender4",
+          "primary": true,
+          "note": "Retail, Forever, Classic Era, TBC and Mists Classic. Choose the file for your edition.",
+          "families": [
+            "retail",
+            "forever",
+            "era",
+            "progression",
+            "tbc"
+          ],
+          "provider": "curseforge"
+        },
+        {
+          "label": "GitHub",
+          "url": "https://github.com/Nevcairiel/Bartender4",
+          "primary": false,
+          "note": "Official source repository. Choose the release for your game edition; source availability does not certify integration behavior.",
+          "families": [
+            "retail",
+            "forever",
+            "era",
+            "progression",
+            "tbc"
+          ],
+          "provider": "github"
+        },
+        {
+          "label": "WoWInterface",
+          "url": "https://www.wowinterface.com/downloads/info11190-Bartender4.html",
+          "primary": false,
+          "note": "Official project page. Publisher lists Retail, Classic Era, TBC. Choose the matching file; exact patch and RM integration behavior may be unverified.",
+          "families": [
+            "retail",
+            "era",
+            "tbc"
+          ],
+          "provider": "wowinterface"
+        },
+        {
+          "label": "Wago Addons",
+          "url": "https://addons.wago.io/addons/bartender4",
+          "primary": false,
+          "note": "Official project page. Publisher lists Retail, Forever, Classic Era, Classic progression, TBC. Choose the matching file; exact patch and RM integration behavior may be unverified.",
+          "families": [
+            "retail",
+            "forever",
+            "era",
+            "progression",
+            "tbc"
+          ],
+          "provider": "wago"
+        },
+        {
+          "label": "WoWAce",
+          "url": "https://www.wowace.com/projects/bartender4",
+          "primary": false,
+          "note": "Official project page. Publisher lists Retail, Forever, Classic Era, Classic progression, TBC. Choose the matching file; exact patch and RM integration behavior may be unverified.",
+          "families": [
+            "retail",
+            "forever",
+            "era",
+            "progression",
+            "tbc"
+          ],
+          "provider": "author"
+        }
+      ],
+      "coverage": {
+        "curseforge": {
+          "status": "verified",
+          "query": "Exact Bartender4 project/author search and publisher source crosslinks on curseforge",
+          "evidence": [
+            "https://www.curseforge.com/wow/addons/bartender4",
+            "Opened exact project; title, maintainer and release metadata verified."
+          ]
+        },
+        "wowinterface": {
+          "status": "verified",
+          "query": "Exact Bartender4 project/author search and publisher source crosslinks on wowinterface",
+          "evidence": [
+            "https://www.wowinterface.com/downloads/info11190-Bartender4.html",
+            "Exact addon and author identity verified; historical compatibility limitations remain in each link note."
+          ]
+        },
+        "wago": {
+          "status": "verified",
+          "query": "Exact Bartender4 project/author search and publisher source crosslinks on wago",
+          "evidence": [
+            "https://addons.wago.io/addons/bartender4",
+            "Official Nevcairiel source TOC declares X-Wago-ID v63oVn6b; Wago indexed directory names nevcairiel.",
+            "https://github.com/Nevcairiel/Bartender4/blob/master/Bartender4.toc"
+          ]
+        },
+        "wowuphub": {
+          "status": "not_found",
+          "query": "Exact Bartender4 project/author search and publisher source crosslinks on wowuphub",
+          "evidence": [
+            "https://hub.wowup.io/addons/search/retail?query=Bartender4&limit=10",
+            "Successful official public API queries for retail, forever, classic, mists, burningCrusade; all returned no exact project/repository match. Raw responses: wowup-api-search-evidence.json.",
+            "HTML directory search also checked at https://wowup.io/addons/search?q=Bartender4. Description-only RealUI/CozyFire/CDButtonGlow/Mappy/New Openables matches excluded. This is a bounded catalog search, not a claim that WowUp cannot install an addon from another provider."
+          ]
+        },
+        "github": {
+          "status": "verified",
+          "query": "Exact Bartender4 project/author search and publisher source crosslinks on github",
+          "evidence": [
+            "https://www.curseforge.com/wow/addons/bartender4",
+            "Source link resolves to https://github.com/Nevcairiel/Bartender4; TOC author Nevcairiel and matching CF/WoWI/Wago IDs.",
+            "https://github.com/Nevcairiel/Bartender4"
+          ]
+        }
+      },
+      "scope": {
+        "families": [
+          "retail",
+          "forever",
+          "era",
+          "tbc",
+          "progression"
+        ],
+        "evidence": [
+          "Declared edition scope for the matching addon identity; older patch or missing minor-version evidence alone is not an incompatibility verdict.",
+          "https://www.curseforge.com/wow/addons/bartender4"
+        ],
+        "progression": [
+          "mists"
+        ]
+      }
+    },
+    "ButtonForge": {
+      "links": [
+        {
+          "label": "CurseForge",
+          "url": "https://www.curseforge.com/wow/addons/button-forge",
+          "primary": true,
+          "note": "Separate Retail, Classic Era, TBC and Mists Classic releases. Forever is unverified.",
+          "families": [
+            "retail",
+            "era",
+            "progression",
+            "tbc"
+          ],
+          "provider": "curseforge"
+        },
+        {
+          "label": "WoWInterface",
+          "url": "https://www.wowinterface.com/downloads/info17592-ButtonForge.html",
+          "primary": false,
+          "note": "Official project page. Release edition and current patch compatibility are unverified.",
+          "families": [],
+          "provider": "wowinterface"
+        }
+      ],
+      "coverage": {
+        "curseforge": {
+          "status": "verified",
+          "query": "Exact ButtonForge project/author search and publisher source crosslinks on curseforge",
+          "evidence": [
+            "https://www.curseforge.com/wow/addons/button-forge",
+            "Opened exact project; title, maintainer and release metadata verified."
+          ]
+        },
+        "wowinterface": {
+          "status": "verified",
+          "query": "Exact ButtonForge project/author search and publisher source crosslinks on wowinterface",
+          "evidence": [
+            "https://www.wowinterface.com/downloads/info17592-ButtonForge.html",
+            "Exact addon and author identity verified; historical compatibility limitations remain in each link note."
+          ]
+        },
+        "wago": {
+          "status": "unverified",
+          "query": "Exact ButtonForge project/author search and publisher source crosslinks on wago",
+          "evidence": [
+            "Targeted query: \"ButtonForge\" site:addons.wago.io (also spaced Button Forge/G15 Buttons variants). No exact project result.",
+            "Wago direct pages require JavaScript; site script retrieval returned HTTP403. No accessible authoritative search result proves absence; not marked not_found."
+          ]
+        },
+        "wowuphub": {
+          "status": "not_found",
+          "query": "Exact ButtonForge project/author search and publisher source crosslinks on wowuphub",
+          "evidence": [
+            "https://hub.wowup.io/addons/search/retail?query=ButtonForge&limit=10",
+            "Successful official public API queries for retail, forever, classic, mists, burningCrusade; all returned no exact project/repository match. Raw responses: wowup-api-search-evidence.json.",
+            "HTML directory search also checked at https://wowup.io/addons/search?q=ButtonForge. Description-only RealUI/CozyFire/CDButtonGlow/Mappy/New Openables matches excluded. This is a bounded catalog search, not a claim that WowUp cannot install an addon from another provider."
+          ]
+        },
+        "github": {
+          "status": "unverified",
+          "query": "Exact ButtonForge project/author search and publisher source crosslinks on github",
+          "evidence": [
+            "Queries: \"ButtonForge\" github; \"Button Forge\" \"AlternativeTheory\" github; ButtonForge SunNova GitHub.",
+            "Repos https://github.com/DandierSphinx/ButtonForge (Legion contributor branch), https://github.com/dvipid/ButtonForge (explicit Midnight fork), https://github.com/Linden-Ryuujin/ButtonForgeClassic (explicit Classic fork) exist. Current maintainer's CF project has no Source link, and official primary-repo authority was not established. They are not silently substituted."
+          ]
+        }
+      },
+      "scope": {
+        "families": [
+          "retail",
+          "era",
+          "tbc",
+          "progression"
+        ],
+        "evidence": [
+          "Declared edition scope for the matching addon identity; older patch or missing minor-version evidence alone is not an incompatibility verdict.",
+          "https://www.curseforge.com/wow/addons/button-forge"
+        ],
+        "progression": [
+          "mists"
+        ]
+      }
+    },
+    "G15Buttons": {
+      "links": [
+        {
+          "label": "CurseForge",
+          "url": "https://www.curseforge.com/wow/addons/g15-buttons-continued",
+          "primary": true,
+          "note": "Historical Retail release. All current editions are unverified. This is G15 Buttons (continued).",
+          "families": [],
+          "provider": "curseforge"
+        }
+      ],
+      "coverage": {
+        "curseforge": {
+          "status": "verified",
+          "query": "Exact G15Buttons project/author search and publisher source crosslinks on curseforge",
+          "evidence": [
+            "https://www.curseforge.com/wow/addons/g15-buttons-continued",
+            "Opened exact project; title, maintainer and release metadata verified."
+          ]
+        },
+        "wowinterface": {
+          "status": "not_found",
+          "query": "Exact G15Buttons project/author search and publisher source crosslinks on wowinterface",
+          "evidence": [
+            "Queries: \"G15Buttons\" site:wowinterface.com; \"G15 Buttons\" site:wowinterface.com/downloads/info. No exact release found; crash-log mentions excluded.",
+            "https://www.wowinterface.com/downloads/info8393-2.4.1.6.html is Its' G15 Binder by Itsnoteasy, explicitly a different addon that does not create bars/buttons; excluded."
+          ]
+        },
+        "wago": {
+          "status": "unverified",
+          "query": "Exact G15Buttons project/author search and publisher source crosslinks on wago",
+          "evidence": [
+            "Targeted query: \"G15Buttons\" site:addons.wago.io (also spaced Button Forge/G15 Buttons variants). No exact project result.",
+            "Wago direct pages require JavaScript; site script retrieval returned HTTP403. No accessible authoritative search result proves absence; not marked not_found."
+          ]
+        },
+        "wowuphub": {
+          "status": "not_found",
+          "query": "Exact G15Buttons project/author search and publisher source crosslinks on wowuphub",
+          "evidence": [
+            "https://hub.wowup.io/addons/search/retail?query=G15Buttons&limit=10",
+            "Successful official public API queries for retail, forever, classic, mists, burningCrusade; all returned no exact project/repository match. Raw responses: wowup-api-search-evidence.json.",
+            "HTML directory search also checked at https://wowup.io/addons/search?q=G15Buttons. Description-only RealUI/CozyFire/CDButtonGlow/Mappy/New Openables matches excluded. This is a bounded catalog search, not a claim that WowUp cannot install an addon from another provider."
+          ]
+        },
+        "github": {
+          "status": "not_found",
+          "query": "Exact G15Buttons project/author search and publisher source crosslinks on github",
+          "evidence": [
+            "Queries: \"G15Buttons\" site:github.com; \"G15 Buttons\" github; \"G15 Buttons\" \"_ForgeUser323576\" github. Only other addons listing it as optional dependency; no exact official source repository found.",
+            "https://www.curseforge.com/wow/addons/g15-buttons-continued has no official GitHub Source link."
+          ]
+        }
+      },
+      "scope": {
+        "families": [
+          "retail"
+        ],
+        "evidence": [
+          "Declared edition scope for the matching addon identity; older patch or missing minor-version evidence alone is not an incompatibility verdict.",
+          "https://www.curseforge.com/wow/addons/g15-buttons-continued"
+        ]
+      }
+    },
+    "SyncUI": {
+      "links": [
+        {
+          "label": "WoWInterface",
+          "url": "https://www.wowinterface.com/downloads/info24574-SyncUI.html",
+          "primary": true,
+          "note": "Historical Retail 8.3 release. All current editions are unverified.",
+          "families": [],
+          "provider": "wowinterface"
+        }
+      ],
+      "coverage": {
+        "curseforge": {
+          "status": "not_found",
+          "query": "Exact SyncUI project/author search and publisher source crosslinks on curseforge",
+          "evidence": [
+            "Query: \"SyncUI\" site:curseforge.com/wow/addons. Results were other addons mentioning SyncUI; no exact syncrow/Yves Petsche project found.",
+            "https://www.wowinterface.com/downloads/info24574-SyncUI.html is the verified author release page; it does not establish a CurseForge project."
+          ]
+        },
+        "wowinterface": {
+          "status": "verified",
+          "query": "Exact SyncUI project/author search and publisher source crosslinks on wowinterface",
+          "evidence": [
+            "https://www.wowinterface.com/downloads/info24574-SyncUI.html",
+            "Exact addon and author identity verified; historical compatibility limitations remain in each link note."
+          ]
+        },
+        "wago": {
+          "status": "unverified",
+          "query": "Exact SyncUI project/author search and publisher source crosslinks on wago",
+          "evidence": [
+            "Targeted query: \"SyncUI\" site:addons.wago.io (also spaced Button Forge/G15 Buttons variants). No exact project result.",
+            "Wago direct pages require JavaScript; site script retrieval returned HTTP403. No accessible authoritative search result proves absence; not marked not_found."
+          ]
+        },
+        "wowuphub": {
+          "status": "not_found",
+          "query": "Exact SyncUI project/author search and publisher source crosslinks on wowuphub",
+          "evidence": [
+            "https://hub.wowup.io/addons/search/retail?query=SyncUI&limit=10",
+            "Successful official public API queries for retail, forever, classic, mists, burningCrusade; all returned no exact project/repository match. Raw responses: wowup-api-search-evidence.json.",
+            "HTML directory search also checked at https://wowup.io/addons/search?q=SyncUI. Description-only RealUI/CozyFire/CDButtonGlow/Mappy/New Openables matches excluded. This is a bounded catalog search, not a claim that WowUp cannot install an addon from another provider."
+          ]
+        },
+        "github": {
+          "status": "not_found",
+          "query": "Exact SyncUI project/author search and publisher source crosslinks on github",
+          "evidence": [
+            "Queries: \"SyncUI\" \"syncrow\" github; \"SyncUI\" \"Yves\" github; \"SyncUI\" source code syncrow.",
+            "https://github.com/abhivarde/syncui is an unrelated React component project; excluded. Actual WoW author release page provides no GitHub source link."
+          ]
+        }
+      },
+      "scope": {
+        "families": [
+          "retail"
+        ],
+        "evidence": [
+          "Declared edition scope for the matching addon identity; older patch or missing minor-version evidence alone is not an incompatibility verdict.",
+          "https://www.wowinterface.com/downloads/info24574-SyncUI.html"
+        ]
+      }
+    },
+    "LUI": {
+      "links": [
+        {
+          "label": "CurseForge — LUI Core",
+          "url": "https://www.curseforge.com/wow/addons/lui",
+          "primary": true,
+          "note": "Primary LUI Core updates for Retail. Fresh installs use the author-linked full bundle below; Classic uses a separate fork.",
+          "families": [
+            "retail"
+          ],
+          "provider": "curseforge"
+        },
+        {
+          "label": "CurseForge — LUI Classic fork",
+          "url": "https://www.curseforge.com/wow/addons/lui-classic",
+          "primary": false,
+          "note": "Classic Era, TBC and Mists Classic fork. Its compatibility with RM action buttons is unverified.",
+          "families": [
+            "era",
+            "progression",
+            "tbc"
+          ],
+          "provider": "curseforge"
+        },
+        {
+          "label": "WoWInterface — Retail full bundle",
+          "url": "https://www.wowinterface.com/downloads/fileinfo.php?id=14130",
+          "primary": false,
+          "note": "Author-linked full Retail bundle; historical 10.0.2 release, older than the Core updates.",
+          "families": [],
+          "provider": "wowinterface"
+        },
+        {
+          "label": "WoWInterface — Classic full bundle",
+          "url": "https://www.wowinterface.com/downloads/info26095-LUIv3forTBCC.html",
+          "primary": false,
+          "note": "Author-linked full Classic bundle; historical Wrath release. For current Classic editions, inspect the newer Classic fork above.",
+          "families": [],
+          "provider": "wowinterface"
+        },
+        {
+          "label": "GitHub — LUI Core",
+          "url": "https://github.com/FireSiku/LUI",
+          "primary": false,
+          "note": "Official source repository. Choose the release for your game edition; source availability does not certify integration behavior.",
+          "families": [
+            "retail"
+          ],
+          "provider": "github"
+        },
+        {
+          "label": "GitHub — LUI Classic fork",
+          "url": "https://github.com/Niitek/LUI-Classic",
+          "primary": false,
+          "note": "Official Classic fork for Classic Era, TBC and Mists. RM button integration on this fork is unverified.",
+          "families": [
+            "era",
+            "progression",
+            "tbc"
+          ],
+          "provider": "github"
+        }
+      ],
+      "coverage": {
+        "curseforge": {
+          "status": "verified",
+          "query": "Exact LUI project/author search and publisher source crosslinks on curseforge",
+          "evidence": [
+            "https://www.curseforge.com/wow/addons/lui",
+            "Opened exact project; title, maintainer and release metadata verified.",
+            "https://www.curseforge.com/wow/addons/lui-classic"
+          ]
+        },
+        "wowinterface": {
+          "status": "verified",
+          "query": "Exact LUI project/author search and publisher source crosslinks on wowinterface",
+          "evidence": [
+            "https://www.wowinterface.com/downloads/fileinfo.php?id=14130",
+            "Exact addon and author identity verified; historical compatibility limitations remain in each link note.",
+            "https://www.wowinterface.com/downloads/info26095-LUIv3forTBCC.html"
+          ]
+        },
+        "wago": {
+          "status": "unverified",
+          "query": "Exact LUI project/author search and publisher source crosslinks on wago",
+          "evidence": [
+            "Targeted query: \"LUI\" site:addons.wago.io (also spaced Button Forge/G15 Buttons variants). No exact project result.",
+            "Wago direct pages require JavaScript; site script retrieval returned HTTP403. No accessible authoritative search result proves absence; not marked not_found."
+          ]
+        },
+        "wowuphub": {
+          "status": "not_found",
+          "query": "Exact LUI project/author search and publisher source crosslinks on wowuphub",
+          "evidence": [
+            "https://hub.wowup.io/addons/search/retail?query=LUI&limit=10",
+            "Successful official public API queries for retail, forever, classic, mists, burningCrusade; all returned no exact project/repository match. Raw responses: wowup-api-search-evidence.json.",
+            "HTML directory search also checked at https://wowup.io/addons/search?q=LUI. Description-only RealUI/CozyFire/CDButtonGlow/Mappy/New Openables matches excluded. This is a bounded catalog search, not a claim that WowUp cannot install an addon from another provider."
+          ]
+        },
+        "github": {
+          "status": "verified",
+          "query": "Exact LUI project/author search and publisher source crosslinks on github",
+          "evidence": [
+            "https://www.curseforge.com/wow/addons/lui",
+            "Retail Source link https://github.com/FireSiku/Legacy-LUI redirects to https://github.com/FireSiku/LUI.",
+            "https://www.curseforge.com/wow/addons/lui-classic Source link https://github.com/Niitek/LUI-WotLK redirects to https://github.com/Niitek/LUI-Classic. Separate maintained fork, not Retail alias.",
+            "https://github.com/FireSiku/LUI",
+            "https://github.com/Niitek/LUI-Classic"
+          ]
+        }
+      },
+      "scope": {
+        "families": [
+          "retail",
+          "era",
+          "tbc",
+          "progression"
+        ],
+        "evidence": [
+          "Declared edition scope for the matching addon identity; older patch or missing minor-version evidence alone is not an incompatibility verdict.",
+          "https://www.curseforge.com/wow/addons/lui"
+        ],
+        "progression": [
+          "mists"
+        ]
+      }
+    },
+    "Dominos": {
+      "links": [
+        {
+          "label": "CurseForge",
+          "url": "https://www.curseforge.com/wow/addons/dominos",
+          "primary": true,
+          "note": "Retail, Forever, Classic Era, TBC and Mists Classic.",
+          "families": [
+            "retail",
+            "forever",
+            "era",
+            "progression",
+            "tbc"
+          ],
+          "provider": "curseforge"
+        },
+        {
+          "label": "GitHub",
+          "url": "https://github.com/tullamods/Dominos",
+          "primary": false,
+          "note": "Official source repository. Choose the release for your game edition; source availability does not certify integration behavior.",
+          "families": [
+            "retail",
+            "forever",
+            "era",
+            "progression",
+            "tbc"
+          ],
+          "provider": "github"
+        },
+        {
+          "label": "WoWInterface",
+          "url": "https://www.wowinterface.com/downloads/info9085-Dominos.html",
+          "primary": false,
+          "note": "Official project page. Publisher lists Retail, Classic Era, TBC. Choose the matching file; exact patch and RM integration behavior may be unverified.",
+          "families": [
+            "retail",
+            "era",
+            "tbc"
+          ],
+          "provider": "wowinterface"
+        },
+        {
+          "label": "Wago Addons",
+          "url": "https://addons.wago.io/addons/dominos",
+          "primary": false,
+          "note": "Official project page. Publisher lists Retail, Forever, Classic Era, Classic progression, TBC. Choose the matching file; exact patch and RM integration behavior may be unverified.",
+          "families": [
+            "retail",
+            "forever",
+            "era",
+            "progression",
+            "tbc"
+          ],
+          "provider": "wago"
+        }
+      ],
+      "coverage": {
+        "curseforge": {
+          "status": "verified",
+          "query": "Exact Dominos project/author search and publisher source crosslinks on curseforge",
+          "evidence": [
+            "https://www.curseforge.com/wow/addons/dominos",
+            "Opened exact project; title, maintainer and release metadata verified."
+          ]
+        },
+        "wowinterface": {
+          "status": "verified",
+          "query": "Exact Dominos project/author search and publisher source crosslinks on wowinterface",
+          "evidence": [
+            "https://www.wowinterface.com/downloads/info9085-Dominos.html",
+            "Exact addon and author identity verified; historical compatibility limitations remain in each link note."
+          ]
+        },
+        "wago": {
+          "status": "verified",
+          "query": "Exact Dominos project/author search and publisher source crosslinks on wago",
+          "evidence": [
+            "https://addons.wago.io/addons/dominos",
+            "Wago project 9rN4rdKD names Tuller; current 11.4.5 version row lists all five client families.",
+            "https://addons.wago.io/addons/dominos/versions?page=1&stability=stable"
+          ]
+        },
+        "wowuphub": {
+          "status": "not_found",
+          "query": "Exact Dominos project/author search and publisher source crosslinks on wowuphub",
+          "evidence": [
+            "https://hub.wowup.io/addons/search/retail?query=Dominos&limit=10",
+            "Successful official public API queries for retail, forever, classic, mists, burningCrusade; all returned no exact project/repository match. Raw responses: wowup-api-search-evidence.json.",
+            "HTML directory search also checked at https://wowup.io/addons/search?q=Dominos. Description-only RealUI/CozyFire/CDButtonGlow/Mappy/New Openables matches excluded. This is a bounded catalog search, not a claim that WowUp cannot install an addon from another provider."
+          ]
+        },
+        "github": {
+          "status": "verified",
+          "query": "Exact Dominos project/author search and publisher source crosslinks on github",
+          "evidence": [
+            "https://www.curseforge.com/wow/addons/dominos",
+            "Source link resolves to https://github.com/tullamods/Dominos; author Tuller. https://tullamods.com/dominos redirects to the same repo.",
+            "https://github.com/tullamods/Dominos"
+          ]
+        }
+      },
+      "scope": {
+        "families": [
+          "retail",
+          "forever",
+          "era",
+          "tbc",
+          "progression"
+        ],
+        "evidence": [
+          "Declared edition scope for the matching addon identity; older patch or missing minor-version evidence alone is not an incompatibility verdict.",
+          "https://www.curseforge.com/wow/addons/dominos"
+        ],
+        "progression": [
+          "mists"
+        ]
+      }
+    },
+    "DiabolicUI": {
+      "links": [
+        {
+          "label": "CurseForge",
+          "url": "https://www.curseforge.com/wow/addons/diabolicui",
+          "primary": true,
+          "note": "Original historical project. Current editions are unverified; newer forks are not verified replacements for the integration.",
+          "families": [],
+          "provider": "curseforge"
+        },
+        {
+          "label": "GitHub",
+          "url": "https://github.com/GoldpawsStuff/DiabolicUI",
+          "primary": false,
+          "note": "Official current source/release track uses DiabolicUI2, a different addon identity. Compatibility with the original RM integration is unverified.",
+          "families": [],
+          "provider": "github"
+        },
+        {
+          "label": "Wago Addons",
+          "url": "https://addons.wago.io/addons/diabolicui",
+          "primary": false,
+          "note": "Official current source/release track uses DiabolicUI2, a different addon identity. Compatibility with the original RM integration is unverified.",
+          "families": [],
+          "provider": "wago"
+        }
+      ],
+      "coverage": {
+        "curseforge": {
+          "status": "verified",
+          "query": "Exact DiabolicUI project/author search and publisher source crosslinks on curseforge",
+          "evidence": [
+            "Primary author project directly browsed; exact project/author identity in primary-final-details.json, search-03.json and search-07.json.",
+            "Existing starting link verified again; historical/edition notes retained.",
+            "https://www.curseforge.com/wow/addons/diabolicui"
+          ]
+        },
+        "wowinterface": {
+          "status": "not_found",
+          "query": "Exact DiabolicUI project/author search and publisher source crosslinks on wowinterface",
+          "evidence": [
+            "Direct read-only WoWInterface search returned no matches.",
+            "Actual anonymous search form+POST response HTTP200: wowinterface-three-search-evidence.json and wowinterface-search-DiabolicUI.html; also targeted domain queries search-09.json/search-10.json.",
+            "not_found applies to matching original/official successor identity in this search, not to every similarly named fork on the channel."
+          ]
+        },
+        "wago": {
+          "status": "verified",
+          "query": "Exact DiabolicUI project/author search and publisher source crosslinks on wago",
+          "evidence": [
+            "Actual official Wago public data-page addon/metadata owner and source/project IDs parsed from HTTP200 HTML: addons.wago.io--addons-diabolicui--evidence.json and provider-html-fetch-01.json.",
+            "Cross-matched original-author TOC X-Wago-ID or official README channel link; TotemTimers Classic owner Xianghar/support URL matches official Classic project.",
+            "https://addons.wago.io/addons/diabolicui"
+          ]
+        },
+        "wowuphub": {
+          "status": "not_found",
+          "query": "Exact DiabolicUI project/author search and publisher source crosslinks on wowuphub",
+          "evidence": [
+            "Actual official GET /addons/search/<gameType>?query=DiabolicUI&limit=10 completed HTTP200 for retail/forever/classic/mists/burningCrusade; no matching author/repository identity. See hub-30-api-query-evidence.json and hub-DiabolicUI-*.json.",
+            "Correct public directory search https://wowup.io/addons/search?q=DiabolicUI fetched HTTP200 (provider-html-fetch-01.json); unrelated fuzzy results explicitly rejected. A generic GitHub install URL is not proof of a WowUpHub listing."
+          ]
+        },
+        "github": {
+          "status": "verified",
+          "query": "Exact DiabolicUI project/author search and publisher source crosslinks on github",
+          "evidence": [
+            "Primary repository browse/source-link crosschecks: primary-01.json, search-02.json, search-05.json, search-07.json.",
+            "Pinned actual commit/tree/TOC/README fetches: github-api-fetch-01.json through github-files-fetch-04.json.",
+            "https://github.com/GoldpawsStuff/DiabolicUI"
+          ]
+        }
+      },
+      "scope": {
+        "families": [],
+        "evidence": [
+          "Declared edition scope for the matching addon identity; older patch or missing minor-version evidence alone is not an incompatibility verdict.",
+          "https://www.curseforge.com/wow/addons/diabolicui",
+          "Original DiabolicUI load identity is not the different-folder DiabolicUI2/3 successor; preserve unknown rather than borrow its edition scope."
+        ],
+        "unknown": true
+      }
+    },
+    "AzeriteUI": {
+      "links": [
+        {
+          "label": "CurseForge",
+          "url": "https://www.curseforge.com/wow/addons/azeriteui5",
+          "primary": true,
+          "note": "Legacy AzeriteUI5, now deprecated. Current editions are unverified. RM supports this original addon identity.",
+          "families": [
+            "era",
+            "tbc"
+          ],
+          "provider": "curseforge"
+        },
+        {
+          "label": "CurseForge — AzeriteUI6 successor",
+          "url": "https://www.curseforge.com/wow/addons/azeriteui6",
+          "primary": false,
+          "note": "Successor supports all five editions but uses a different addon identity. RM does not yet integrate with AzeriteUI6.",
+          "families": [
+            "retail",
+            "forever",
+            "era",
+            "progression",
+            "tbc"
+          ],
+          "provider": "curseforge"
+        },
+        {
+          "label": "GitHub",
+          "url": "https://github.com/GoldpawsStuff/AzeriteUI5",
+          "primary": false,
+          "note": "Official source repository. Choose the release for your game edition; source availability does not certify integration behavior.",
+          "families": [
+            "era",
+            "tbc"
+          ],
+          "provider": "github"
+        },
+        {
+          "label": "Wago Addons — AzeriteUI6 successor",
+          "url": "https://addons.wago.io/addons/azeriteui",
+          "primary": false,
+          "note": "Official AzeriteUI6 successor, with a different addon identity. RM does not yet integrate with AzeriteUI6; use the original project for the existing integration.",
+          "families": [
+            "era",
+            "tbc"
+          ],
+          "provider": "wago"
+        },
+        {
+          "label": "GitHub — AzeriteUI6 successor",
+          "url": "https://github.com/GoldpawsStuff/AzeriteUI6",
+          "primary": false,
+          "note": "Official AzeriteUI6 successor, with a different addon identity. RM does not yet integrate with AzeriteUI6; use the original project for the existing integration.",
+          "families": [
+            "retail",
+            "forever",
+            "era",
+            "progression",
+            "tbc"
+          ],
+          "provider": "github"
+        }
+      ],
+      "coverage": {
+        "curseforge": {
+          "status": "verified",
+          "query": "Exact AzeriteUI project/author search and publisher source crosslinks on curseforge",
+          "evidence": [
+            "Primary author project directly browsed; exact project/author identity in primary-final-details.json, search-03.json and search-07.json.",
+            "Existing starting link verified again; historical/edition notes retained.",
+            "https://www.curseforge.com/wow/addons/azeriteui5",
+            "https://www.curseforge.com/wow/addons/azeriteui6"
+          ]
+        },
+        "wowinterface": {
+          "status": "not_found",
+          "query": "Exact AzeriteUI project/author search and publisher source crosslinks on wowinterface",
+          "evidence": [
+            "Direct WoWInterface search redirected only to unofficial JuNNeZ replacement info27105, not original Goldpaw addon distribution.",
+            "Actual anonymous search form+POST response HTTP200: wowinterface-three-search-evidence.json and wowinterface-search-AzeriteUI.html; also targeted domain queries search-09.json/search-10.json.",
+            "not_found applies to matching original/official successor identity in this search, not to every similarly named fork on the channel."
+          ]
+        },
+        "wago": {
+          "status": "verified",
+          "query": "Exact AzeriteUI project/author search and publisher source crosslinks on wago",
+          "evidence": [
+            "Actual official Wago public data-page addon/metadata owner and source/project IDs parsed from HTTP200 HTML: addons.wago.io--addons-azeriteui--evidence.json and provider-html-fetch-01.json.",
+            "Cross-matched original-author TOC X-Wago-ID or official README channel link; TotemTimers Classic owner Xianghar/support URL matches official Classic project.",
+            "https://addons.wago.io/addons/azeriteui"
+          ]
+        },
+        "wowuphub": {
+          "status": "not_found",
+          "query": "Exact AzeriteUI project/author search and publisher source crosslinks on wowuphub",
+          "evidence": [
+            "Actual official GET /addons/search/<gameType>?query=AzeriteUI&limit=10 completed HTTP200 for retail/forever/classic/mists/burningCrusade; no matching author/repository identity. See hub-30-api-query-evidence.json and hub-AzeriteUI-*.json.",
+            "Correct public directory search https://wowup.io/addons/search?q=AzeriteUI fetched HTTP200 (provider-html-fetch-01.json); unrelated fuzzy results explicitly rejected. A generic GitHub install URL is not proof of a WowUpHub listing."
+          ]
+        },
+        "github": {
+          "status": "verified",
+          "query": "Exact AzeriteUI project/author search and publisher source crosslinks on github",
+          "evidence": [
+            "Primary repository browse/source-link crosschecks: primary-01.json, search-02.json, search-05.json, search-07.json.",
+            "Pinned actual commit/tree/TOC/README fetches: github-api-fetch-01.json through github-files-fetch-04.json.",
+            "https://github.com/GoldpawsStuff/AzeriteUI5",
+            "https://github.com/GoldpawsStuff/AzeriteUI6"
+          ]
+        }
+      },
+      "scope": {
+        "families": [
+          "era",
+          "tbc"
+        ],
+        "evidence": [
+          "Declared edition scope for the matching addon identity; older patch or missing minor-version evidence alone is not an incompatibility verdict.",
+          "https://www.curseforge.com/wow/addons/azeriteui5"
+        ]
+      }
+    },
+    "Neuron": {
+      "links": [
+        {
+          "label": "CurseForge",
+          "url": "https://www.curseforge.com/wow/addons/neuron",
+          "primary": true,
+          "note": "Historical project; author reports a development hiatus. All current editions are unverified.",
+          "families": [],
+          "provider": "curseforge"
+        },
+        {
+          "label": "GitHub",
+          "url": "https://github.com/brittyazel/Neuron",
+          "primary": false,
+          "note": "Official source repository. This project is archived; current patch compatibility is unverified.",
+          "families": [],
+          "provider": "github"
+        },
+        {
+          "label": "WoWInterface",
+          "url": "https://www.wowinterface.com/downloads/info10636-Neuron.html",
+          "primary": false,
+          "note": "Official project page. Release edition and current patch compatibility are unverified.",
+          "families": [],
+          "provider": "wowinterface"
+        },
+        {
+          "label": "Wago Addons",
+          "url": "https://addons.wago.io/addons/neuron",
+          "primary": false,
+          "note": "Official project page. Release edition and current patch compatibility are unverified.",
+          "families": [],
+          "provider": "wago"
+        }
+      ],
+      "coverage": {
+        "curseforge": {
+          "status": "verified",
+          "query": "Exact Neuron project/author search and publisher source crosslinks on curseforge",
+          "evidence": [
+            "Primary author project directly browsed; exact project/author identity in primary-final-details.json, search-03.json and search-07.json.",
+            "Existing starting link verified again; historical/edition notes retained.",
+            "https://www.curseforge.com/wow/addons/neuron"
+          ]
+        },
+        "wowinterface": {
+          "status": "verified",
+          "query": "Exact Neuron project/author search and publisher source crosslinks on wowinterface",
+          "evidence": [
+            "Official author release page browsed; source README or pinned X-WoWI-ID cross-matches exact listing. See primary-01.json/search-03.json/search-05.json and pinned TOCs.",
+            "https://www.wowinterface.com/downloads/info10636-Neuron.html"
+          ]
+        },
+        "wago": {
+          "status": "verified",
+          "query": "Exact Neuron project/author search and publisher source crosslinks on wago",
+          "evidence": [
+            "Actual official Wago public data-page addon/metadata owner and source/project IDs parsed from HTTP200 HTML: addons.wago.io--addons-neuron--evidence.json and provider-html-fetch-01.json.",
+            "Cross-matched original-author TOC X-Wago-ID or official README channel link; TotemTimers Classic owner Xianghar/support URL matches official Classic project.",
+            "https://addons.wago.io/addons/neuron"
+          ]
+        },
+        "wowuphub": {
+          "status": "not_found",
+          "query": "Exact Neuron project/author search and publisher source crosslinks on wowuphub",
+          "evidence": [
+            "Actual official GET /addons/search/<gameType>?query=Neuron&limit=10 completed HTTP200 for retail/forever/classic/mists/burningCrusade; no matching author/repository identity. See hub-30-api-query-evidence.json and hub-Neuron-*.json.",
+            "Correct public directory search https://wowup.io/addons/search?q=Neuron fetched HTTP200 (provider-html-fetch-01.json); unrelated fuzzy results explicitly rejected. A generic GitHub install URL is not proof of a WowUpHub listing."
+          ]
+        },
+        "github": {
+          "status": "verified",
+          "query": "Exact Neuron project/author search and publisher source crosslinks on github",
+          "evidence": [
+            "Primary repository browse/source-link crosschecks: primary-01.json, search-02.json, search-05.json, search-07.json.",
+            "Pinned actual commit/tree/TOC/README fetches: github-api-fetch-01.json through github-files-fetch-04.json.",
+            "https://github.com/brittyazel/Neuron"
+          ]
+        }
+      },
+      "scope": {
+        "families": [
+          "retail",
+          "era",
+          "tbc",
+          "progression"
+        ],
+        "evidence": [
+          "Declared edition scope for the matching addon identity; older patch or missing minor-version evidence alone is not an incompatibility verdict.",
+          "https://www.curseforge.com/wow/addons/neuron"
+        ],
+        "progression": [
+          "wrath"
+        ]
+      }
+    },
+    "FarmingBar": {
+      "links": [
+        {
+          "label": "CurseForge",
+          "url": "https://www.curseforge.com/wow/addons/farming-bar",
+          "primary": true,
+          "note": "Retail, Classic Era, TBC and Mists Classic releases. Latest-patch compatibility and Forever are unverified.",
+          "families": [
+            "retail",
+            "era",
+            "progression",
+            "tbc"
+          ],
+          "provider": "curseforge"
+        },
+        {
+          "label": "GitHub",
+          "url": "https://github.com/nikkisaurus/FarmingBar",
+          "primary": false,
+          "note": "Official source repository. Choose the release for your game edition; source availability does not certify integration behavior.",
+          "families": [
+            "retail",
+            "era",
+            "progression",
+            "tbc"
+          ],
+          "provider": "github"
+        },
+        {
+          "label": "WoWInterface",
+          "url": "https://www.wowinterface.com/downloads/info25440-FarmingBar.html",
+          "primary": false,
+          "note": "Official project page. Publisher lists Retail, Classic Era, Classic progression, TBC. Choose the matching file; exact patch and RM integration behavior may be unverified.",
+          "families": [
+            "retail",
+            "era",
+            "progression",
+            "tbc"
+          ],
+          "provider": "wowinterface"
+        },
+        {
+          "label": "Wago Addons",
+          "url": "https://addons.wago.io/addons/farmingbar",
+          "primary": false,
+          "note": "Official project page. Publisher lists Retail, Classic Era, Classic progression, TBC. Choose the matching file; exact patch and RM integration behavior may be unverified.",
+          "families": [
+            "retail",
+            "era",
+            "progression",
+            "tbc"
+          ],
+          "provider": "wago"
+        }
+      ],
+      "coverage": {
+        "curseforge": {
+          "status": "verified",
+          "query": "Exact FarmingBar project/author search and publisher source crosslinks on curseforge",
+          "evidence": [
+            "Primary author project directly browsed; exact project/author identity in primary-final-details.json, search-03.json and search-07.json.",
+            "Existing starting link verified again; historical/edition notes retained.",
+            "https://www.curseforge.com/wow/addons/farming-bar"
+          ]
+        },
+        "wowinterface": {
+          "status": "verified",
+          "query": "Exact FarmingBar project/author search and publisher source crosslinks on wowinterface",
+          "evidence": [
+            "Official author release page browsed; source README or pinned X-WoWI-ID cross-matches exact listing. See primary-01.json/search-03.json/search-05.json and pinned TOCs.",
+            "https://www.wowinterface.com/downloads/info25440-FarmingBar.html"
+          ]
+        },
+        "wago": {
+          "status": "verified",
+          "query": "Exact FarmingBar project/author search and publisher source crosslinks on wago",
+          "evidence": [
+            "Actual official Wago public data-page addon/metadata owner and source/project IDs parsed from HTTP200 HTML: addons.wago.io--addons-farmingbar--evidence.json and provider-html-fetch-01.json.",
+            "Cross-matched original-author TOC X-Wago-ID or official README channel link; TotemTimers Classic owner Xianghar/support URL matches official Classic project.",
+            "https://addons.wago.io/addons/farmingbar"
+          ]
+        },
+        "wowuphub": {
+          "status": "not_found",
+          "query": "Exact FarmingBar project/author search and publisher source crosslinks on wowuphub",
+          "evidence": [
+            "Actual official GET /addons/search/<gameType>?query=FarmingBar&limit=10 completed HTTP200 for retail/forever/classic/mists/burningCrusade; no matching author/repository identity. See hub-30-api-query-evidence.json and hub-FarmingBar-*.json.",
+            "Correct public directory search https://wowup.io/addons/search?q=FarmingBar fetched HTTP200 (provider-html-fetch-01.json); unrelated fuzzy results explicitly rejected. A generic GitHub install URL is not proof of a WowUpHub listing."
+          ]
+        },
+        "github": {
+          "status": "verified",
+          "query": "Exact FarmingBar project/author search and publisher source crosslinks on github",
+          "evidence": [
+            "Primary repository browse/source-link crosschecks: primary-01.json, search-02.json, search-05.json, search-07.json.",
+            "Pinned actual commit/tree/TOC/README fetches: github-api-fetch-01.json through github-files-fetch-04.json.",
+            "https://github.com/nikkisaurus/FarmingBar"
+          ]
+        }
+      },
+      "scope": {
+        "families": [
+          "retail",
+          "era",
+          "tbc",
+          "progression"
+        ],
+        "evidence": [
+          "Declared edition scope for the matching addon identity; older patch or missing minor-version evidence alone is not an incompatibility verdict.",
+          "https://www.curseforge.com/wow/addons/farming-bar"
+        ],
+        "progression": [
+          "mists"
+        ]
+      }
+    },
+    "TotemTimers": {
+      "links": [
+        {
+          "label": "CurseForge",
+          "url": "https://www.curseforge.com/wow/addons/totemtimers",
+          "primary": true,
+          "note": "Primary project now releases TotemTimers Forever. Retail files are historical. Classic editions use the separate project below.",
+          "families": [
+            "forever"
+          ],
+          "provider": "curseforge"
+        },
+        {
+          "label": "CurseForge — TotemTimers Classic",
+          "url": "https://www.curseforge.com/wow/addons/totemtimers-classic",
+          "primary": false,
+          "note": "Classic Era, TBC, Wrath, Cataclysm and Mists Classic. Compatibility with RM action buttons is unverified.",
+          "families": [
+            "era",
+            "progression",
+            "tbc"
+          ],
+          "provider": "curseforge"
+        },
+        {
+          "label": "GitHub",
+          "url": "https://github.com/Xianghar/TotemTimers",
+          "primary": false,
+          "note": "Official source repository. Choose the release for your game edition; source availability does not certify integration behavior.",
+          "families": [
+            "forever"
+          ],
+          "provider": "github"
+        },
+        {
+          "label": "GitHub — TotemTimers Classic",
+          "url": "https://github.com/Xianghar/TotemTimers_Classic",
+          "primary": false,
+          "note": "Official source repository. Choose the release for your game edition; source availability does not certify integration behavior.",
+          "families": [
+            "era",
+            "progression",
+            "tbc"
+          ],
+          "provider": "github"
+        },
+        {
+          "label": "WoWInterface",
+          "url": "https://www.wowinterface.com/downloads/info9481-TotemTimers.html",
+          "primary": false,
+          "note": "Official project page. Release edition and current patch compatibility are unverified.",
+          "families": [],
+          "provider": "wowinterface"
+        },
+        {
+          "label": "WoWInterface — TotemTimers Classic",
+          "url": "https://www.wowinterface.com/downloads/fileinfo.php?id=25223",
+          "primary": false,
+          "note": "Official project page. Publisher lists Classic Era, Classic progression, TBC. Choose the matching file; exact patch and RM integration behavior may be unverified.",
+          "families": [
+            "era",
+            "progression",
+            "tbc"
+          ],
+          "provider": "wowinterface"
+        },
+        {
+          "label": "Wago Addons — TotemTimers Classic",
+          "url": "https://addons.wago.io/addons/totemtimers-classic",
+          "primary": false,
+          "note": "Official project page. Publisher lists Classic Era, Classic progression, TBC. Choose the matching file; exact patch and RM integration behavior may be unverified.",
+          "families": [
+            "era",
+            "progression",
+            "tbc"
+          ],
+          "provider": "wago"
+        }
+      ],
+      "coverage": {
+        "curseforge": {
+          "status": "verified",
+          "query": "Exact TotemTimers project/author search and publisher source crosslinks on curseforge",
+          "evidence": [
+            "Primary author project directly browsed; exact project/author identity in primary-final-details.json, search-03.json and search-07.json.",
+            "Existing starting link verified again; historical/edition notes retained.",
+            "https://www.curseforge.com/wow/addons/totemtimers",
+            "https://www.curseforge.com/wow/addons/totemtimers-classic"
+          ]
+        },
+        "wowinterface": {
+          "status": "verified",
+          "query": "Exact TotemTimers project/author search and publisher source crosslinks on wowinterface",
+          "evidence": [
+            "Official author release page browsed; source README or pinned X-WoWI-ID cross-matches exact listing. See primary-01.json/search-03.json/search-05.json and pinned TOCs.",
+            "https://www.wowinterface.com/downloads/info9481-TotemTimers.html",
+            "https://www.wowinterface.com/downloads/fileinfo.php?id=25223"
+          ]
+        },
+        "wago": {
+          "status": "verified",
+          "query": "Exact TotemTimers project/author search and publisher source crosslinks on wago",
+          "evidence": [
+            "Actual official Wago public data-page addon/metadata owner and source/project IDs parsed from HTTP200 HTML: addons.wago.io--addons-totemtimers-classic--evidence.json and provider-html-fetch-01.json.",
+            "Cross-matched original-author TOC X-Wago-ID or official README channel link; TotemTimers Classic owner Xianghar/support URL matches official Classic project.",
+            "https://addons.wago.io/addons/totemtimers-classic"
+          ]
+        },
+        "wowuphub": {
+          "status": "not_found",
+          "query": "Exact TotemTimers project/author search and publisher source crosslinks on wowuphub",
+          "evidence": [
+            "Actual official GET /addons/search/<gameType>?query=TotemTimers&limit=10 completed HTTP200 for retail/forever/classic/mists/burningCrusade; no matching author/repository identity. See hub-30-api-query-evidence.json and hub-TotemTimers-*.json.",
+            "Correct public directory search https://wowup.io/addons/search?q=TotemTimers fetched HTTP200 (provider-html-fetch-01.json); unrelated fuzzy results explicitly rejected. A generic GitHub install URL is not proof of a WowUpHub listing."
+          ]
+        },
+        "github": {
+          "status": "verified",
+          "query": "Exact TotemTimers project/author search and publisher source crosslinks on github",
+          "evidence": [
+            "Primary repository browse/source-link crosschecks: primary-01.json, search-02.json, search-05.json, search-07.json.",
+            "Pinned actual commit/tree/TOC/README fetches: github-api-fetch-01.json through github-files-fetch-04.json.",
+            "https://github.com/Xianghar/TotemTimers",
+            "https://github.com/Xianghar/TotemTimers_Classic"
+          ]
+        }
+      },
+      "scope": {
+        "families": [
+          "retail",
+          "forever",
+          "era",
+          "tbc",
+          "progression"
+        ],
+        "evidence": [
+          "Declared edition scope for the matching addon identity; older patch or missing minor-version evidence alone is not an incompatibility verdict.",
+          "https://www.curseforge.com/wow/addons/totemtimers"
+        ],
+        "progression": [
+          "wrath",
+          "cata",
+          "mists"
+        ]
+      }
+    },
+    "SamyTotemTimers": {
+      "links": [
+        {
+          "label": "CurseForge",
+          "url": "https://www.curseforge.com/wow/addons/samytotemtimers",
+          "primary": true,
+          "note": "Historical Classic Era and TBC releases. Current editions are unverified. Other similarly named addons are not verified replacements.",
+          "families": [],
+          "provider": "curseforge"
+        },
+        {
+          "label": "GitHub",
+          "url": "https://github.com/Samynix/SamyTotemTimers",
+          "primary": false,
+          "note": "Official source repository. Choose the release for your game edition; source availability does not certify integration behavior.",
+          "families": [],
+          "provider": "github"
+        }
+      ],
+      "coverage": {
+        "curseforge": {
+          "status": "verified",
+          "query": "Exact SamyTotemTimers project/author search and publisher source crosslinks on curseforge",
+          "evidence": [
+            "Primary author project directly browsed; exact project/author identity in primary-final-details.json, search-03.json and search-07.json.",
+            "Existing starting link verified again; historical/edition notes retained.",
+            "https://www.curseforge.com/wow/addons/samytotemtimers"
+          ]
+        },
+        "wowinterface": {
+          "status": "not_found",
+          "query": "Exact SamyTotemTimers project/author search and publisher source crosslinks on wowinterface",
+          "evidence": [
+            "Direct read-only WoWInterface search returned no matches.",
+            "Actual anonymous search form+POST response HTTP200: wowinterface-three-search-evidence.json and wowinterface-search-SamyTotemTimers.html; also targeted domain queries search-09.json/search-10.json.",
+            "not_found applies to matching original/official successor identity in this search, not to every similarly named fork on the channel."
+          ]
+        },
+        "wago": {
+          "status": "not_found",
+          "query": "Exact SamyTotemTimers project/author search and publisher source crosslinks on wago",
+          "evidence": [
+            "Actual https://addons.wago.io/?search=SamyTotemTimers HTTP200 server-rendered search has search=SamyTotemTimers, addons.total=0, empty data; wago-search-fetch.json and wago-samy-search-public.json.",
+            "Targeted web domain queries search-06.json/search-09.json also found no matching release. JS-only browser responses were not used as negative evidence."
+          ]
+        },
+        "wowuphub": {
+          "status": "not_found",
+          "query": "Exact SamyTotemTimers project/author search and publisher source crosslinks on wowuphub",
+          "evidence": [
+            "Actual official GET /addons/search/<gameType>?query=SamyTotemTimers&limit=10 completed HTTP200 for retail/forever/classic/mists/burningCrusade; no matching author/repository identity. See hub-30-api-query-evidence.json and hub-SamyTotemTimers-*.json.",
+            "Correct public directory search https://wowup.io/addons/search?q=SamyTotemTimers fetched HTTP200 (provider-html-fetch-01.json); unrelated fuzzy results explicitly rejected. A generic GitHub install URL is not proof of a WowUpHub listing."
+          ]
+        },
+        "github": {
+          "status": "verified",
+          "query": "Exact SamyTotemTimers project/author search and publisher source crosslinks on github",
+          "evidence": [
+            "Primary repository browse/source-link crosschecks: primary-01.json, search-02.json, search-05.json, search-07.json.",
+            "Pinned actual commit/tree/TOC/README fetches: github-api-fetch-01.json through github-files-fetch-04.json.",
+            "https://github.com/Samynix/SamyTotemTimers"
+          ]
+        }
+      },
+      "scope": {
+        "families": [
+          "era",
+          "tbc",
+          "progression"
+        ],
+        "evidence": [
+          "Declared edition scope for the matching addon identity; older patch or missing minor-version evidence alone is not an incompatibility verdict.",
+          "https://www.curseforge.com/wow/addons/samytotemtimers"
+        ],
+        "progression": [
+          "wrath"
+        ]
+      }
+    }
+  }
+}

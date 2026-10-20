@@ -7,7 +7,17 @@ local function editorDisabled(self,name)
     return name~='auto' and name~='plain' and type(disabled)=='table' and disabled[name]==true
 end
 local function resolveEditor(self,preferred)
+    local client,clientRead
     local function available(name)
+        if name~='native' and name~='plain' and type(self.GetIntegrationClientSupport)=='function' then
+            if not clientRead then
+                clientRead=true
+                local ok,value=pcall(function()return self.Platform and self.Platform:GetClientInfo()end)
+                if ok then client=value end
+            end
+            local ok,state=pcall(self.GetIntegrationClientSupport,self,name=='LuaWorkbench' and '!!!LuaWorkbench'or name,client)
+            if ok and state=='unsupported'then return false end
+        end
         return name~='LuaWorkbench' or type(self.IsLuaWorkbenchIntegrationAvailable)=='function' and self:IsLuaWorkbenchIntegrationAvailable()==true
     end
     if preferred=='auto' then

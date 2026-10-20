@@ -15,9 +15,13 @@ def main():
                 [sys.executable, 'tools/catalog_check.py'],
                 [sys.executable, 'tools/lint.py'],
                 [sys.executable, 'tools/generate_builtin_sources.py'],
-                [sys.executable, 'tools/generate_artwork_catalog.py']]
+                [sys.executable, 'tools/generate_artwork_catalog.py'],
+                [sys.executable, 'tools/generate_integration_projects.py']]
     if not args.static:
         commands.extend([
+            [sys.executable, 'tests/test_integration_projects.py'],
+            ['lua5.1', 'tests/integration_compatibility.lua'],
+            ['luajit', 'tests/integration_compatibility.lua'],
             [sys.executable, 'tests/test_artwork.py'],
             [sys.executable, 'tests/test_no_acegui.py'],
             ['lua5.1', 'tests/locale_fallback.lua'],

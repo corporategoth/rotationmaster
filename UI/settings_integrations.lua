@@ -22,13 +22,31 @@ function addon:BuildIntegrationSettings(p)
     local function current()
         return p:Valid(token) and (not p.transactionKeys or p.draft and p.draft.profile==profile)
     end
+    -- Compatibility is a cold page snapshot; failures retain the unknown entry.
+    local client
+    local ok,value=pcall(function()
+        local platform=self.Platform;if not current()then return end
+        local get=platform and platform.GetClientInfo;if not current()then return end
+        if type(get)=='function'then return get(platform)end
+    end)
+    if not current()then return end
+    if ok then client=value end
+    local function supported(id)
+        local success,state=pcall(function()
+            local check=self.GetIntegrationClientSupport;if not current()then return end
+            if type(check)=='function'then return check(self,id,client)end
+        end)
+        if not current()then return end
+        return not(success and state=='unsupported')
+    end
     local function editors()
         local list=self.ListLuaEditorProviders;if not current()or type(list)~='function'then return end
         local entries=list(self);if not current()then return end
         local rows,byID={},{}
         for _,entry in ipairs(entries)do
             local id=entry.value
-            if id~='auto' and id~='plain' and id~='native' then
+            local allowed=supported(id=='LuaWorkbench'and'!!!LuaWorkbench'or id);if not current()then return end
+            if allowed and id~='auto' and id~='plain' and id~='native' then
                 local available=true
                 if id=='LuaWorkbench'then
                     local check=self.IsLuaWorkbenchIntegrationAvailable;if not current()then return end
@@ -39,7 +57,8 @@ function addon:BuildIntegrationSettings(p)
             end
         end
         table.sort(rows,function(a,b)return a.id<b.id end)
-        if not byID.LuaWorkbench then local row={id='LuaWorkbench',name=L['LuaWorkbench'],available=false};rows[#rows+1]=row;byID.LuaWorkbench=row end
+        local workbenchAllowed=supported('!!!LuaWorkbench');if not current()then return end
+        if workbenchAllowed and not byID.LuaWorkbench then local row={id='LuaWorkbench',name=L['LuaWorkbench'],available=false};rows[#rows+1]=row;byID.LuaWorkbench=row end
         local native={id='native',name=L['Native'],available=true};byID.native=native
         return rows,byID,native
     end
@@ -118,7 +137,10 @@ function addon:BuildIntegrationSettings(p)
     end
     local rows,byID,native=editors();if not rows or not current()then return end
     local inventory=inventoryRows();if not inventory then return end
-    local metadata={};for _,entry in ipairs(inventory)do metadata[entry.id]=entry end
+    local metadata={};for _,entry in ipairs(inventory)do
+        local allowed=supported(entry.id);if not current()then return end
+        if allowed then metadata[entry.id]=entry end
+    end
     local selected=effective(rows,byID)
     local function editorRow(row)
         local entry=metadata[row.id=='LuaWorkbench'and'!!!LuaWorkbench'or row.id]
@@ -126,35 +148,39 @@ function addon:BuildIntegrationSettings(p)
             description=row.id=='native'and L['Built-in Lua editor.']or entry and entry.detail or L['Registered Lua editor provider.'],
             state=not row.available and'missing'or disabled(profile,row.id)and'disabled'or selected==row.id and'selected'or'enabled',
             action=row.available and function(anchor)editorAction(row.id,anchor)end or nil,
-            entry=entry,help='Help.Integrations.lua_editor',native=row.id=='native'}
+            entry=entry,help=row.id=='native'and'Help.Integrations.native_highlighting'or nil,native=row.id=='native'}
     end
     local editorRows={editorRow(native)};local found={}
     for _,row in ipairs(rows)do editorRows[#editorRows+1]=editorRow(row);found[row.id]=true end
     local function readonly(entry)
-        return{id=entry.id,name=entry.name,version=versionFor(entry),description=entry.detail or'',state=(entry.state=='missing'or entry.state=='unknown')and'missing'or'supported',entry=entry,help='Help.Integrations.optional_addons'}
+        return{id=entry.id,name=entry.name,version=versionFor(entry),description=entry.detail or'',state=(entry.state=='missing'or entry.state=='unknown')and'missing'or'supported',entry=entry}
     end
     if metadata.WowLua and not found.WowLua then editorRows[#editorRows+1]=readonly(metadata.WowLua)end
-    local groups={{title=L['Lua editor integrations'],rows=editorRows,editorSettings=true}}
-    local function group(title,ids)
+    local groups={{key='integrations_editors',title=L['Lua editor integrations'],rows=editorRows,editorSettings=true}}
+    local function group(key,title,ids)
         local list={};for _,id in ipairs(ids)do if metadata[id]then list[#list+1]=readonly(metadata[id])end end
-        groups[#groups+1]={title=title,rows=list}
+        groups[#groups+1]={key=key,title=title,rows=list}
     end
-    group(L['Condition data'],{'ExtendedCharacterStats','MobInfo2'})
-    group(L['Recommendation notifications'],{'WeakAuras'})
-    local questie=metadata.Questie or{id='Questie',name=L['Questie'],state='missing'}
-    local questieRow=readonly(questie);questieRow.help='Help.Integrations.questie_enabled'
-    if questieRow.state~='missing'then
-        questieRow.state=profile.questie_enabled==true and'enabled'or'disabled'
-        questieRow.action=function()
-            local fresh=inventoryRows();if not fresh then return end
-            local loaded=false;for _,entry in ipairs(fresh)do if entry.id=='Questie'then loaded=entry.state~='missing'and entry.state~='unknown'end end
-            if not loaded then return end
-            profile.questie_enabled=not(profile.questie_enabled==true)
-            p:RunSettingsEffect('questie',function()self:SyncQuestieIntegration()end);p:Draw()
+    group('integrations_conditions',L['Condition data'],{'ExtendedCharacterStats','MobInfo2'})
+    group('integrations_notifications',L['Recommendation notifications'],{'WeakAuras'})
+    local questieAllowed=supported('Questie');if not current()then return end
+    if questieAllowed then
+        local questie=metadata.Questie or{id='Questie',name=L['Questie'],state='missing'}
+        local questieRow=readonly(questie);questieRow.help='Help.Integrations.questie_enabled'
+        if questieRow.state~='missing'then
+            questieRow.state=profile.questie_enabled==true and'enabled'or'disabled'
+            questieRow.action=function()
+                if not supported('Questie')or not current()then return end
+                local fresh=inventoryRows();if not fresh then return end
+                local loaded=false;for _,entry in ipairs(fresh)do if entry.id=='Questie'then loaded=entry.state~='missing'and entry.state~='unknown'end end
+                if not loaded then return end
+                profile.questie_enabled=not(profile.questie_enabled==true)
+                p:RunSettingsEffect('questie',function()self:SyncQuestieIntegration()end);p:Draw()
+            end
         end
+        groups[#groups+1]={key='integrations_quests',title=L['Quest callbacks'],rows={questieRow}}
     end
-    groups[#groups+1]={title=L['Quest callbacks'],rows={questieRow}}
-    group(L['Action bars'],{'ElvUI','Bartender4','ButtonForge','G15Buttons','SyncUI','LUI','Dominos','DiabolicUI','AzeriteUI','Neuron','FarmingBar','TotemTimers','SamyTotemTimers'})
+    group('integrations_actionbars',L['Action bars'],{'ElvUI','Bartender4','ButtonForge','G15Buttons','SyncUI','LUI','Dominos','DiabolicUI','AzeriteUI','Neuron','FarmingBar','TotemTimers','SamyTotemTimers'})
     -- Measure shared columns once per drawing; description receives the remainder.
     p.width=math.max(340,p.frame:GetWidth()-40);p.child:SetWidth(p.width)
     local measure=p:Acquire('integrationMeasure',function()return p.child:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall')end)
@@ -198,13 +224,16 @@ function addon:BuildIntegrationSettings(p)
         p.fields['integration_status_'..row.id]=pill
         addon:SetUIScript(pill,'OnClick',row.action and p:Guard(function()if p:FlushEdits()and current()then row.action(pill)end end)or nil)
         if not row.action then pill:Disable();pill:SetAlpha(1)end
-        local help=p:Acquire('integrationHelp',function()return addon:CreateWorkbenchIconButton(p.child,'help',L['Help'])end)
-        help:SetParent(frame);help:ClearAllPoints();help:SetPoint('TOPLEFT',positions[2]-gap-20,-10);help:Enable();p.fields['integration_help_'..row.id]=help
-        addon:SetUIScript(help,'OnClick',p:Guard(function()
-            local show=self.ShowWorkbenchHelp
-            if current()and type(show)=='function'then show(self,row.name,{{title=row.name,text=L[row.help]}},p.frame)end
-        end))
         local height=math.max(38,name:GetHeight()+20,version:GetHeight()+20,description:GetHeight()+20)
+        if row.help then
+            local help=p:Acquire('integrationHelp',function()return addon:CreateWorkbenchHelpButton(p.child,L['Help'])end)
+            help:SetParent(frame);help:ClearAllPoints();help:SetPoint('TOPLEFT',positions[4]+statusWidth-24,-10-pill:GetHeight()-6);help:Enable();p.fields['integration_help_'..row.id]=help
+            addon:SetUIScript(help,'OnClick',p:Guard(function()
+                local show=self.ShowWorkbenchHelp
+                if current()and type(show)=='function'then show(self,row.name,{{title=row.name,text=L[row.help]}},p.frame)end
+            end))
+            height=math.max(height,10+pill:GetHeight()+6+24+6)
+        end
         if row.native then
             local surface,available=p.surface,p.width;p.surface=frame;p.width=available-20;p.y=height
             local syntax=p:Check('lua_native_highlighting',L['Syntax highlighting'],highlighting(profile),function(value)
@@ -218,13 +247,14 @@ function addon:BuildIntegrationSettings(p)
         frame:SetHeight(height);p.y=top+height+10
     end
     for _,section in ipairs(groups)do if #section.rows>0 then
-        p:Heading(section.title)
-        if section.editorSettings then
-            p:Check('lua_line_numbers',L['Show line numbers'],profile.lua_line_numbers~=false,function(value)profile.lua_line_numbers=value end)
-        end
-        local height=22
-        for i,text in ipairs({L['Addon'],L['Version'],L['Description'],L['Status']})do local c=label('integrationHeadings',p.child,text,positions[i],p.y,widths[i]);height=math.max(height,c:GetHeight()+6)end
-        p.y=p.y+height
-        for _,row in ipairs(section.rows)do draw(row)end
+        p:Section(section.key,section.title,function()
+            if section.editorSettings then
+                p:Check('lua_line_numbers',L['Show line numbers'],profile.lua_line_numbers~=false,function(value)profile.lua_line_numbers=value end)
+            end
+            local height=22
+            for i,text in ipairs({L['Addon'],L['Version'],L['Description'],L['Status']})do local c=label('integrationHeadings',p.child,text,positions[i],p.y,widths[i]);height=math.max(height,c:GetHeight()+6)end
+            p.y=p.y+height
+            for _,row in ipairs(section.rows)do draw(row)end
+        end)
     end end
 end

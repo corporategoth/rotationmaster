@@ -79,4 +79,13 @@ test('disabled external choice uses enabled Native with its highlighting prefere
   local c=create(f,a,'LuaWorkbench',pooled and{}or nil);assert(c.syntax==a.LuaSyntax);c:Release()
  end
 end)
+test('known incompatible editor is skipped consistently by automatic and explicit cold opening',function()
+ for _,pooled in ipairs({false,true})do for _,preferred in ipairs({'Old editor','auto'})do
+  local f,a=fixture();local calls=0
+  a.Platform.GetClientInfo=function()return{family='era',interface=11509}end
+  a.GetIntegrationClientSupport=function(_,id,client)assert(client.family=='era');return id=='Old editor' and'unsupported'or'unknown'end
+  a:RegisterLuaEditorProvider('Old editor',function()calls=calls+1;error('incompatible provider ran')end)
+  local c=create(f,a,preferred,pooled and{}or nil);assert(calls==0 and c.syntax==a.LuaSyntax);c:Release()
+ end end
+end)
 finish()

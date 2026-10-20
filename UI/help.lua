@@ -17,6 +17,7 @@ function addon:GetIntegrationOptionHelp()
         {id='lua_line_numbers',title=L['Show line numbers'],text=L['Help.Integrations.lua_line_numbers']},
         {id='optional_addons',title=L['Optional addons'],text=L['Help.Integrations.optional_addons']},
         {id='questie_enabled',title=L['Enable Questie integration'],text=L['Help.Integrations.questie_enabled']},
+        {id='native_highlighting',title=L['Syntax highlighting'],text=L['Help.Integrations.native_highlighting']},
     }
 end
 function addon:WorkbenchInteractionHelp(kind)
@@ -136,7 +137,7 @@ function addon:ShowIntegrationProjectLink(id)
     end
     local y=0
     for i,entry in ipairs(links)do
-        if i>8 then break end
+        if i>32 then break end
         local row=d.rows[i]
         if not row then
             row={frame=CreateFrame('Frame',nil,d.child)};d.rows[i]=row

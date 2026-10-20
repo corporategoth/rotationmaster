@@ -158,14 +158,15 @@ end
         frame:SetHeight(height);p.y=top+height+10
     end
     for _,section in ipairs(groups)do if #section.rows>0 then
-        p:Heading(section.title)
-        if section.editorSettings then
-            p:Check('lua_line_numbers',L['Show line numbers'],profile.lua_line_numbers~=false,function(value)profile.lua_line_numbers=value end)
-        end
-        local height=22
-        for i,text in ipairs({L['Addon'],L['Version'],L['Description'],L['Status']})do local c=label('integrationHeadings',p.child,text,positions[i],p.y,widths[i]);height=math.max(height,c:GetHeight()+6)end
-        p.y=p.y+height
-        for _,row in ipairs(section.rows)do draw(row)end
+        p:Section(section.key,section.title,function()
+            if section.editorSettings then
+                p:Check('lua_line_numbers',L['Show line numbers'],profile.lua_line_numbers~=false,function(value)profile.lua_line_numbers=value end)
+            end
+            local height=22
+            for i,text in ipairs({L['Addon'],L['Version'],L['Description'],L['Status']})do local c=label('integrationHeadings',p.child,text,positions[i],p.y,widths[i]);height=math.max(height,c:GetHeight()+6)end
+            p.y=p.y+height
+            for _,row in ipairs(section.rows)do draw(row)end
+        end)
     end end]=]},
 {10517,10516,[=[
 ,highlighting(profile]=]},
@@ -190,13 +191,16 @@ row.entry.projectURL~=''then
         p.fields['integration_status_'..row.id]=pill
         addon:SetUIScript(pill,'OnClick',row.action and p:Guard(function()if p:FlushEdits()and current()then row.action(pill)end end)or nil)
         if not row.action then pill:Disable();pill:SetAlpha(1)end
-        local help=p:Acquire('integrationHelp',function()return addon:CreateWorkbenchIconButton(p.child,'help',L['Help'])end)
-        help:SetParent(frame);help:ClearAllPoints();help:SetPoint('TOPLEFT',positions[2]-gap-20,-10);help:Enable();p.fields['integration_help_'..row.id]=help
-        addon:SetUIScript(help,'OnClick',p:Guard(function()
-            local show=self.ShowWorkbenchHelp
-            if current()and type(show)=='function'then show(self,row.name,{{title=row.name,text=L[row.help]}},p.frame)end
-        end))
         local height=math.max(38,name:GetHeight()+20,version:GetHeight()+20,description:GetHeight()+20)
+        if row.help then
+            local help=p:Acquire('integrationHelp',function()return addon:CreateWorkbenchHelpButton(p.child,L['Help'])end)
+            help:SetParent(frame);help:ClearAllPoints();help:SetPoint('TOPLEFT',positions[4]+statusWidth-24,-10-pill:GetHeight()-6);help:Enable();p.fields['integration_help_'..row.id]=help
+            addon:SetUIScript(help,'OnClick',p:Guard(function()
+                local show=self.ShowWorkbenchHelp
+                if current()and type(show)=='function'then show(self,row.name,{{title=row.name,text=L[row.help]}},p.frame)end
+            end))
+            height=math.max(height,10+pill:GetHeight()+6+24+6)
+        end
         if row.native then
             local surface,]=]},
 {10504,10503,[=[
@@ -271,32 +275,66 @@ Acquire('integrationMeasure',function()return p.child:CreateFontString(nil,'OVER
 -- Measure shared columns once per drawing; description receives the remainder.
     p.width=math.max(340,p.frame:GetWidth()-40);p.child:SetWidth(p.width)
     local measure=]=]},
-{10184,10200,[=[
-g]=]},
-{10173,10178,[=[
-}}]=]},
-{10131,10171,[=[
+{10096,10205,[=[
 ]=]},
-{10100,10129,[=[
+{10051,10093,[=[
 ]=]},
-{10086,10098,[=[
+{10036,10049,[=[
 ]=]},
-{9526,10078,[=[
-{]=]},
-{9209,9523,[=[
-w]=]},
-{9132,9206,[=[
+{10032,10034,[=[
+]=]},
+{9922,10029,[=[
+]=]},
+{9237,9916,[=[
+]=]},
+{9233,9235,[=[
+s_]=]},
+{9214,9221,[=[
+]=]},
+{9209,9212,[=[
+up(]=]},
+{9200,9206,[=[
+d
+    g]=]},
+{9187,9197,[=[
+]=]},
+{9176,9185,[=[
+]=]},
+{9172,9174,[=[
+]=]},
+{9165,9170,[=[
+]=]},
+{9164,9163,[=[
+Row}}
+]=]},
+{9154,9157,[=[
+{q]=]},
+{9144,9152,[=[
+]=]},
+{9142,9142,[=[
+ow]=]},
+{9132,9140,[=[
 ]=]},
 {9107,9128,[=[
 s]=]},
 {9055,9097,[=[
 ]=]},
-{8851,9043,[=[
+{8898,9043,[=[
 ]=]},
-{8847,8849,[=[
+{8894,8896,[=[
 ]=]},
-{8833,8844,[=[
-{]=]},
+{8883,8891,[=[
+s',]=]},
+{8865,8878,[=[
+_q]=]},
+{8859,8863,[=[
+]=]},
+{8847,8848,[=[
+]=]},
+{8835,8845,[=[
+y=']=]},
+{8833,8833,[=[
+{k]=]},
 {8832,8831,[=[
 +1]]=]},
 {8831,8830,[=[
@@ -305,45 +343,47 @@ p]=]},
 [#gro]=]},
 {8822,8825,[=[
 up]=]},
-{8816,8820,[=[
+{8820,8820,[=[
 gr]=]},
-{8800,8810,[=[
-]=]},
-{8790,8791,[=[
+{8790,8810,[=[
 ]=]},
 {8778,8777,[=[
-;p:Draw()]=]},
+;p:Draw()
+            end]=]},
 {8704,8704,[=[
 stie_enabled==true)
-            ]=]},
+                ]=]},
 {8702,8701,[=[
 e.q]=]},
 {8699,8700,[=[
 not(profi]=]},
+{8663,8662,[=[
+                if not loaded then return end
+    ]=]},
 {8661,8661,[=[
-stie'then loaded=entry.state~='missing'and entry.state~='unknown'end end
-            if not loaded then return end]=]},
+stie'then loaded=entry.state~='missing'and entry.state~='unknown'end end]=]},
 {8659,8658,[=[
  fresh=inventoryRows();if not fresh then return end
-            local loaded=false;for _,entry in ipairs(fresh)do if entry.id=='Q]=]},
+                local loaded=false;for _,entry in ipairs(fresh)do if entry.id=='Q]=]},
 {8656,8656,[=[
 )
-            loc]=]},
+                if not supported('Questie')or not current()then return end
+                loc]=]},
 {8646,8646,[=[
  and'enabled'or'disabled'
-        questieRow.action=]=]},
+            questieRow.action=]=]},
 {8613,8616,[=[
 =]=]},
 {8610,8611,[=[
 t]=]},
 {8609,8608,[=[
 g'then
-        questieRow.st]=]},
+            questieRow.st]=]},
 {8607,8607,[=[
 missi]=]},
 {8603,8605,[=[
 
-    if questieRow.state~=]=]},
+        if questieRow.state~=]=]},
 {8556,8586,[=[
 s.]=]},
 {8551,8551,[=[
@@ -361,7 +401,7 @@ Row=re]=]},
 {8483,8497,[=[
 l ]=]},
 {8481,8480,[=[
-lo]=]},
+    lo]=]},
 {8469,8473,[=[
 g]=]},
 {8467,8467,[=[
@@ -370,14 +410,35 @@ missi]=]},
 ]=]},
 {8412,8415,[=[
 metadata]=]},
-{8366,8397,[=[
+{8394,8393,[=[
+    ]=]},
+{8385,8392,[=[
+owed then]=]},
+{8382,8382,[=[
+urrent()then return end
+    if questieA]=]},
+{8380,8379,[=[
+ie');if not]=]},
+{8372,8373,[=[
 ]=]},
+{8371,8370,[=[
+d]=]},
+{8369,8369,[=[
+]=]},
+{8368,8367,[=[
+eAllowed=suppor]=]},
+{8366,8365,[=[
+local ques]=]},
+{8313,8312,[=[
+'integrations_notifications',]=]},
 {8300,8307,[=[
 g]=]},
+{8237,8236,[=[
+'integrations_conditions',]=]},
 {8224,8231,[=[
 g]=]},
 {8216,8215,[=[
-    groups[#groups+1]={title=title,rows=list}
+    groups[#groups+1]={key=key,title=title,rows=list}
     ]=]},
 {8159,8202,[=[
 ]]=]},
@@ -402,7 +463,7 @@ if met]=]},
 {8077,8076,[=[
 local lis]=]},
 {8059,8061,[=[
-titl]=]},
+key,titl]=]},
 {8046,8053,[=[
 g]=]},
 {8024,8025,[=[
@@ -429,74 +490,37 @@ w]=]},
 ,r]=]},
 {7290,7290,[=[
 =]=]},
-{7238,7284,[=[
-={{]=]},
-{7235,7236,[=[
+{6995,7284,[=[
 ]=]},
-{7222,7233,[=[
+{6933,6993,[=[
 ]=]},
-{7091,7219,[=[
+{6921,6931,[=[
 ]=]},
-{7070,7089,[=[
-local g]=]},
-{7061,7064,[=[
-end]=]},
-{7060,7059,[=[
-Rows+1]=readonly(metadata.WowLua]=]},
-{6949,7053,[=[
-#]=]},
-{6921,6947,[=[
+{6913,6919,[=[
 ]=]},
-{6918,6919,[=[
+{6608,6906,[=[
 ]=]},
-{6913,6916,[=[
-Ro]=]},
-{6896,6904,[=[
-]=]},
-{6894,6894,[=[
- and not found.WowLua th]=]},
-{6890,6892,[=[
-u]=]},
-{6888,6888,[=[
-adata.Wow]=]},
-{6886,6886,[=[
-]=]},
-{6882,6884,[=[
-if m]=]},
-{6876,6876,[=[
-]=]},
-{6745,6872,[=[
-]=]},
-{6722,6739,[=[
-}]=]},
-{6711,6720,[=[
-]=]},
-{6707,6709,[=[
-_addon]=]},
-{6703,6704,[=[
-]=]},
-{6678,6698,[=[
-]=]},
-{6666,6676,[=[
-]=]},
-{6643,6664,[=[
-.]=]},
-{6607,6641,[=[
-]=]},
-{6596,6596,[=[
-Help.I]=]},
-{6592,6594,[=[
-lp=]=]},
+{6607,6606,[=[
+s]=]},
+{6594,6594,[=[
+ey=]=]},
+{6593,6592,[=[
+al groups={{]=]},
+{6592,6591,[=[
+n editorRows[#editorRows+1]=readonly(metadata.WowLua)end
+    lo]=]},
 {6588,6589,[=[
 airs(rows)do editorRows[#editorRows+1]=editorRow(row);found[row.id]=true end
     local function readonly(entry)
-        return{id=entry.id,name=entry.name,version=versionFor(entry),description=entry.detail or'',state=(entry.state=='missing'or entry.state=='unknown')and'missing'or'supported',entry=entry,]=]},
+        return{id=entry.id,name=entry.name,version=versionFor(entry),description=entry.detail or'',state=(entry.state=='missing'or entry.state=='unknown')and'missing'or'supported',entry=entry}
+    end
+    if metadata.WowLua and not found.WowLua t]=]},
 {6587,6586,[=[
 local editorRows={editorRow(native)};local found={}
     for _,row in i]=]},
 {6574,6573,[=[
  or nil,
-            entry=entry,help='Help.Integrations.lua_editor',native=row.id=='native'}]=]},
+            entry=entry,help=row.id=='native'and'Help.Integrations.native_highlighting'or nil,native=row.id=='native'}]=]},
 {6570,6569,[=[
 anchor)editorAction(row.id,anchor]=]},
 {6569,6568,[=[
@@ -564,36 +588,47 @@ row.]=]},
 ]=]},
 {6311,6327,[=[
 ]=]},
-{6306,6308,[=[
-{id='edi]=]},
-{6300,6304,[=[
-return]=]},
-{6287,6289,[=[
-kbench'or row.id]=]},
-{6285,6285,[=[
-ch'and'!!!LuaWo]=]},
-{6280,6282,[=[
-row.id=='LuaWorkb]=]},
-{6279,6278,[=[
-=metadata]=]},
-{6266,6273,[=[
+{6309,6308,[=[
+urn {id='edi]=]},
+{6308,6307,[=[
+aWorkbench'or row.id]
+        re]=]},
+{6307,6306,[=[
+ench'and'!!!L]=]},
+{6306,6305,[=[
+entry=metadata[row.id=='LuaWork]=]},
+{6288,6290,[=[
+ID)
+    local function editorRow(row)]=]},
+{6287,6286,[=[
+ows,b]=]},
+{6286,6285,[=[
+ed=effective(]=]},
+{6285,6284,[=[
+d
+    end
+    local selec]=]},
+{6279,6282,[=[
+ ]=]},
+{6273,6272,[=[
+tadata[entry.id]]=]},
+{6271,6270,[=[
+llowed then ]=]},
+{6270,6269,[=[
+ot current()then return end
+        if ]=]},
+{6268,6268,[=[
+);if ]=]},
+{6266,6265,[=[
+allowed=supported(entry.]=]},
+{6227,6247,[=[
 ]=]},
-{6175,6250,[=[
+{6174,6225,[=[
 ]=]},
-{6174,6173,[=[
-Row(row]=]},
-{6166,6165,[=[
-o]=]},
-{6159,6164,[=[
-ct]=]},
-{6158,6157,[=[
-cal fu]=]},
-{6153,6156,[=[
-byID)
-    l]=]},
-{6151,6151,[=[
-ventory)do metadata[entry.id]=entry end
-    local selected=effective(rows]=]},
+{6159,6170,[=[
+]=]},
+{6151,6157,[=[
+ve]=]},
 {6143,6148,[=[
 ]=]},
 {6121,6120,[=[
@@ -993,62 +1028,63 @@ rows,byID]=]},
 v]=]},
 {3438,3437,[=[
 effec]=]},
-{3412,3414,[=[
-   ]=]},
-{3410,3410,[=[
-ws,byID,native
-]=]},
-{3409,3408,[=[
-       return r]=]},
-{3408,3407,[=[
-able=true};byID.native=native
-]=]},
+{3414,3414,[=[
+,name=L['Native'],available=true};byID.native=native
+        return rows,byID,native
+    ]=]},
+{3413,3412,[=[
+native]=]},
+{3412,3411,[=[
+end
+        local native={id=]=]},
+{3411,3410,[=[
+kbench=row]=]},
+{3408,3408,[=[
+able=false};rows[#rows+1]=row;byID.LuaW]=]},
 {3404,3404,[=[
-'],av]=]},
-{3399,3402,[=[
-iv]=]},
-{3397,3397,[=[
-=L['Na]=]},
-{3394,3395,[=[
-,nam]=]},
-{3393,3392,[=[
-ative]=]},
-{3391,3391,[=[
+nch',name=L['LuaWorkbench'],av]=]},
+{3403,3402,[=[
+='LuaWorkb]=]},
+{3400,3401,[=[
+ow={i]=]},
+{3399,3398,[=[
+hen local ]=]},
+{3398,3397,[=[
+ch ]=]},
+{3395,3395,[=[
+LuaWorkb]=]},
+{3393,3393,[=[
+ot byID]=]},
+{3390,3391,[=[
 ]=]},
-{3390,3389,[=[
-       local native={id=]=]},
-{3389,3388,[=[
-
+{3380,3384,[=[
 ]=]},
-{3386,3386,[=[
+{3374,3378,[=[
+]=]},
+{3366,3372,[=[
+]=]},
+{3362,3363,[=[
+chAll]=]},
+{3356,3360,[=[
+kbe]=]},
+{3354,3353,[=[
+       if w]=]},
+{3352,3352,[=[
+nd
+]=]},
+{3349,3350,[=[
+urn ]=]},
+{3345,3347,[=[
 e]=]},
-{3385,3384,[=[
-able=false};rows[#rows+1]=row;byID.LuaWorkbench=row]=]},
-{3369,3381,[=[
-,av]=]},
-{3362,3366,[=[
-ch]=]},
-{3360,3360,[=[
-LuaWorkbe]=]},
-{3357,3356,[=[
-then local row={id='LuaWorkbench',name=]=]},
-{3356,3355,[=[
-kbench]=]},
-{3350,3353,[=[
-W]=]},
-{3347,3348,[=[
-Lu]=]},
-{3346,3345,[=[
-ID]=]},
-{3344,3344,[=[
- b]=]},
-{3343,3342,[=[
-d)
-        if no]=]},
-{3337,3340,[=[
-.id<b.id ]=]},
-{3333,3335,[=[
-]=]},
+{3344,3343,[=[
+()then ]=]},
+{3339,3340,[=[
+d('!!!LuaWorkbench');if not curr]=]},
+{3335,3336,[=[
+uppor]=]},
+{3333,3333,[=[
+a.id<b.id end)
+        local workbenchAllowed=]=]},
 {3325,3324,[=[
 .text),available=available==true};rows[#rows+1]=row;byID[id]=row end
             end
@@ -1068,37 +1104,29 @@ check(self)==true
 {3307,3306,[=[
 'and]=]},
 {3299,3298,[=[
-available=true
+allowed=supported(id=='LuaWorkbench'and'!!!LuaWorkbench'or id);if not current()then return end
+            if allowed and id~='auto' and id~='plain' and id~='native' then
+                local available=true
                 if id=='LuaWorkbench'then
                     local check=self.IsLuaWorkbenchIntegrationAvailable;if not current()then return end
                     available=type(check)==']=]},
-{3289,3288,[=[
-            ]=]},
-{3269,3287,[=[
+{3175,3288,[=[
+     ]=]},
+{3171,3173,[=[
 ]=]},
-{3265,3267,[=[
- the]=]},
-{3245,3262,[=[
-v]=]},
-{3163,3241,[=[
+{3160,3169,[=[
 ]=]},
-{3128,3161,[=[
+{3157,3158,[=[
+
 ]=]},
-{3125,3126,[=[
+{3155,3155,[=[
+lu]=]},
+{3149,3153,[=[
+entry.v]=]},
+{3119,3146,[=[
 ]=]},
-{3123,3123,[=[
-' and id~]=]},
-{3116,3120,[=[
-'pla]=]},
-{3113,3114,[=[
-o' and id~]=]},
-{3112,3111,[=[
-lue
-            if id~='au]=]},
-{3111,3110,[=[
-ry.v]=]},
-{3109,3109,[=[
-id=en]=]},
+{3109,3117,[=[
+]=]},
 {3095,3098,[=[
        ]=]},
 {3087,3093,[=[
@@ -1112,47 +1140,74 @@ es)]=]},
 ]=]},
 {3035,3034,[=[
     ]=]},
-{3023,3028,[=[
-,byID=]=]},
+{3028,3028,[=[
+ows,byID=]=]},
+{3027,3026,[=[
+cal ]=]},
+{3026,3025,[=[
+return end
+        l]=]},
+{3025,3024,[=[
+then]=]},
+{3023,3022,[=[
+=list(self);if not current]=]},
 {3022,3021,[=[
 rn end
-        local row]=]},
-{3012,3019,[=[
-e]=]},
-{3010,3010,[=[
-n ]=]},
-{3009,3008,[=[
-()th]=]},
-{3006,3006,[=[
- curre]=]},
-{3004,3004,[=[
-f no]=]},
-{3001,3002,[=[
-);]=]},
-{2997,2996,[=[
-       local entries=list(]=]},
-{2996,2995,[=[
-
-]=]},
-{2993,2993,[=[
-e]=]},
-{2991,2991,[=[
-rn]=]},
-{2988,2988,[=[
+        local entrie]=]},
+{3019,3019,[=[
 hen re]=]},
-{2986,2986,[=[
+{3017,3017,[=[
 ']=]},
-{2979,2981,[=[
+{3010,3012,[=[
 (list)~='func]=]},
-{2978,2977,[=[
+{3009,3008,[=[
 ()or typ]=]},
-{2975,2975,[=[
+{3006,3006,[=[
 LuaEditorProviders;if not curre]=]},
-{2959,2964,[=[
- p.draft and p.draft.profile==profile)
+{3001,3001,[=[
+.]=]},
+{2998,2997,[=[
+tate=='unsupported')
     end
     local function editors()
-        local list]=]},
+        local list=s]=]},
+{2991,2990,[=[
+rn end
+            if type(check)=='function'then return check(self,id,client)end
+        end)
+        if not current()then return end
+        return not(succes]=]},
+{2988,2988,[=[
+;if not current()then re]=]},
+{2987,2986,[=[
+uppor]=]},
+{2986,2985,[=[
+Client]=]},
+{2974,2973,[=[
+upported(id)
+        local success,state=pcall(function()
+            local check=self.Ge]=]},
+{2973,2972,[=[
+f not current()then return end
+        local get=platform and platform.GetClientInfo;if not current()then return end
+        if type(get)=='function'then return get(platform)end
+    end)
+    if not current()then return end
+    if ok then client=value end
+    local function ]=]},
+{2971,2971,[=[
+Platform;]=]},
+{2961,2964,[=[
+value=pcall(function()
+        local platform]=]},
+{2960,2959,[=[
+ is a cold page snapshot; failures retain the unknown entry.
+    local client
+    local ok]=]},
+{2959,2958,[=[
+ p.draft and p.draft.profile==profile)
+    end
+    -- Compatibilit]=]},
 {2957,2956,[=[
 ()
         return p:Valid(token) and (not p.transactionKeys ]=]},
@@ -1701,7 +1756,17 @@ resolveEditor(self,preferred==]=]},
 name) and available(]=]},
 {496,495,[=[
 
+    local client,clientRead
     local function available(name)
+        if name~='native' and name~='plain' and type(self.GetIntegrationClientSupport)=='function' then
+            if not clientRead then
+                clientRead=true
+                local ok,value=pcall(function()return self.Platform and self.Platform:GetClientInfo()end)
+                if ok then client=value end
+            end
+            local ok,state=pcall(self.GetIntegrationClientSupport,self,name=='LuaWorkbench' and '!!!LuaWorkbench'or name,client)
+            if ok and state=='unsupported'then return false end
+        end
         return name~='LuaWorkbench' or type(self.IsLuaWorkbenchIntegrationAvailable)=='function' and self:IsLuaWorkbenchIntegrationAvailable()==true
     end]=]},
 {393,393,[=[

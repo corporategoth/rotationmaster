@@ -59,7 +59,7 @@ test('line numbers is global directly below editor heading and Native has only s
  assert(not p.fields.integration_card_editor_options)
  assert(p.fields.lua_line_numbers:GetParent()==p.child)
  assert(p.fields.lua_native_highlighting:GetParent()==p.fields.integration_card_editor_native)
- local heading;for _,label in ipairs(p.pool.text or{})do if label:GetText()=='Lua editor integrations'then heading=label end end
+ local heading=p.fields.section_integrations_editors
  assert(heading and -p.fields.lua_line_numbers.point[3]>-heading.point[3] and -p.fields.lua_line_numbers.point[3]<-p.fields.integration_card_editor_native.point[3])
  assert(p.fields.integration_help_editor_native and not p.fields.questie_refresh)
 end)
@@ -254,5 +254,75 @@ test('version display prioritizes explicit addon load evidence independently of 
  local entry;for _,row in ipairs(a:ListIntegrationStatus())do if row.id=='Questie'then entry=row end end
  assert(entry and entry.loaded==true and entry.state=='unknown')
  p:Draw();assert(rendered(),'actual loaded Questie version disappeared after cached-status error')
+end)
+test('shared integration help stays at page level; option help is beneath the status pill',function()
+ local f,a,p=fixture();f.load('UI/help.lua');local shown={};local L=f.env.LibStub('AceLocale-3.0'):GetLocale('rotationmaster')
+ a.ShowWorkbenchHelp=function(_,name,sections)shown={name=name,sections=sections}end
+ for _,id in ipairs({'editor_LuaWorkbench','ExtendedCharacterStats','MobInfo2','WeakAuras','Dominos','WowLua'})do
+  assert(not p.fields['integration_help_'..id],'generic Help repeated on addon '..id)
+ end
+ for _,id in ipairs({'editor_native','Questie'})do
+  local help=assert(p.fields['integration_help_'..id]);local status=pill(p,id);local card=p.fields['integration_card_'..id]
+  assert(help:GetParent()==card and help.point[1]=='TOPLEFT')
+  assert(help.point[2]+help:GetWidth()==status.point[2]+status:GetWidth(),'Help is not right aligned with Status')
+  assert(-help.point[3]>=-status.point[3]+status:GetHeight()+6,'Help is not below Status')
+  assert(-help.point[3]+help:GetHeight()+6<=card:GetHeight(),'Help exceeds its card')
+ end
+ click(p,'integration_help_editor_native');assert(shown.sections[1].text==L['Help.Integrations.native_highlighting'],'Native Help repeats general editor instructions')
+ click(p,'integration_help_Questie');assert(shown.sections[1].text==L['Help.Integrations.questie_enabled'])
+ local page=a:GetIntegrationOptionHelp();local common={};for _,section in ipairs(page)do common[section.id]=section.text end
+ assert(common.lua_editor and common.optional_addons and common.lua_line_numbers,'shared guidance not available in page Help')
+end)
+test('integration sections collapse without settings mutations and retire pooled old callbacks',function()
+ local _,a,p=fixture();local before=a:CopySettingsData(draft(p));local section=assert(p.fields.section_integrations_editors)
+ for _,key in ipairs({'editors','conditions','notifications','quests','actionbars'})do assert(p.fields['section_integrations_'..key])end
+ local stale=p.fields.integration_status_editor_native.scripts.OnClick;local oldSection=section.scripts.OnClick
+ click(p,'section_integrations_editors');assert(p.closedSections.integrations_editors and not p.fields.lua_line_numbers and not p.fields.integration_card_editor_native)
+ assert(p.fields.integration_card_Questie and not p:IsSettingsDraftDirty())
+ stale();oldSection();assert(p.closedSections.integrations_editors and not p.menu)
+ click(p,'section_integrations_editors');assert(p.fields.lua_line_numbers and p.fields.integration_card_editor_native and not p:IsSettingsDraftDirty())
+ assert(draft(p).lua_editor==before.lua_editor and not draft(p).lua_editor_disabled)
+ local retired=p.fields.section_integrations_conditions.scripts.OnClick;p:Release();retired();assert(not p.closedSections.integrations_conditions)
+end)
+test('only explicit unsupported clients hide inventory and editor menu candidates',function()
+ local _,a,p=fixture();local context={family='tbc',build=123};local clientCalls=0;local seen={}
+ a.Platform.GetClientInfo=function()clientCalls=clientCalls+1;return context end
+ a.GetIntegrationClientSupport=function(_,id,client)assert(client==context);seen[id]=true;return ({['!!!LuaWorkbench']='unsupported',Questie='unsupported',Dominos='unsupported',MobInfo2='unknown'})[id] or'supported'end
+ p:Draw();assert(clientCalls==1 and seen['!!!LuaWorkbench'] and not seen.LuaWorkbench)
+ assert(not p.fields.integration_card_editor_LuaWorkbench and not p.fields.integration_card_Questie and not p.fields.section_integrations_quests and not p.fields.integration_card_Dominos)
+ assert(p.fields.integration_card_editor_native and p.fields.integration_card_MobInfo2 and state(p,'editor_native')=='Selected')
+ click(p,'integration_status_editor_native');assert(draft(p).lua_editor=='plain'and draft(p).lua_editor_disabled.native and not p.menu)
+end)
+test('support is rechecked at menu commit and unknown or failed support remains visible',function()
+ local _,a,p=fixture({selected='native'});local reject=false
+ a.GetIntegrationClientSupport=function(_,id)if id=='!!!LuaWorkbench'and reject then return'unsupported'end;return'unknown'end
+ p:Draw();click(p,'integration_status_editor_LuaWorkbench');reject=true;choose(p,'select')
+ assert(draft(p).lua_editor=='native'and not draft(p).lua_editor_disabled)
+ a.GetIntegrationClientSupport=function()error('private compatibility error')end
+ a.Platform.GetClientInfo=function()error('private client error')end
+ assert(pcall(function()p:Draw()end));assert(p.fields.integration_card_editor_LuaWorkbench and p.fields.integration_card_Questie)
+end)
+test('client and support lookups stop an obsolete drawing before provider work',function()
+ local _,a,p=fixture();local calls=0
+ a.GetIntegrationClientSupport=function()calls=calls+1;return'supported'end
+ a.Platform.GetClientInfo=function()p:Release();return{family='retail'}end
+ p:Draw();assert(not p.active and calls==0 and not p.fields.integration_card_editor_native)
+ local _,b,q=fixture();local prior=getmetatable(b);b.GetIntegrationClientSupport=nil
+ setmetatable(b,{__index=function(_,key)if key=='GetIntegrationClientSupport'then q:Release();return function()error('obsolete support call')end end;return prior and prior.__index and prior.__index(b,key)end})
+ assert(pcall(function()q:Draw()end));assert(not q.active and not q.fields.integration_card_editor_native)
+end)
+test('only Native and Questie use gold standard Help below Status at full and narrow widths',function()
+ local _,_,p=fixture()
+ for _,width in ipairs({1300,420})do
+  p.frame:SetWidth(width);p:Draw()
+  for _,id in ipairs({'editor_native','Questie'})do
+   local help=assert(p.fields['integration_help_'..id]);local card=p.fields['integration_card_'..id];local status=pill(p,id)
+   assert(help:GetWidth()==24 and help:GetHeight()==24 and help.icon:GetWidth()==22)
+   assert(help.icon.color[1]==1 and help.icon.color[2]==.82 and help.icon.color[3]==.25)
+   assert(help.point[2]+24==status.point[2]+status:GetWidth())
+   assert(-help.point[3]>=-status.point[3]+status:GetHeight()+6 and -help.point[3]+30<=card:GetHeight())
+  end
+  assert(not p.fields.integration_help_editor_LuaWorkbench and not p.fields.integration_help_Dominos)
+ end
 end)
 finish()
