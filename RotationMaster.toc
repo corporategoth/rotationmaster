@@ -294,6 +294,7 @@ Defaults/tbc/warlock-starter.lua
 Defaults/tbc/warlock-30-39.lua
 Defaults/tbc/priest-starter.lua
 Defaults/tbc/priest-20-29.lua
+Defaults/tbc/priest-30-39.lua
 Defaults/tbc/warrior-starter.lua
 Defaults/tbc/warrior-20-29.lua
 Defaults/tbc/paladin-starter.lua

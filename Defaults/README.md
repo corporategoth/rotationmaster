@@ -106,3 +106,10 @@ This separate revision-1 pack keeps the original1–19 source and saved clones u
 ## TBC Warlock 30–39 single-target preview
 
 `rm.tbc.warlock.starter.30-39` is a separate bounded Affliction-oriented preview. It retains the original owned-DoT, channel-protection, health-dependent Drain Life and wand off-toggle policy, and adds learned Siphon Life after Agony. Shared learning, localized rank families, mappings and native readiness decide whether that optional action can be offered; level never grants a talent. Demon Armor continues to supersede Demon Skin, and an unavailable preferred Armor never licenses Skin fallback. Nightfall-specific priorities, talent-specific movement, pets, Life Tap, shards, fears, AoE and resource optimization remain manual. The original1–29 source and saved clones are unchanged. Offline pipeline checks establish neither current native gameplay acceptance nor a complete/optimal build.
+
+
+## TBC Priest 30–39 Shadow-oriented preview
+
+`rm.tbc.priest.shadow.30-39` is a separate bounded solo continuation. Automatic selection requires Shadow to have the unique positive highest allocation (TBC talent tab3), learned Smite and level30–39. This is an allocation gate, not proof of a complete build, trained Flay or manual-selection eligibility enforcement. The graph retains the 20–29 preview's stationary opener, attributable own Pain, active channel/wand protection and learned Flay fallback. More-than-half target health and opener-only Mind Blast remain RM preview heuristics; they are not guide-derived damage or channel-count calculations. Learned ranks, actual mappings and current native readiness remain authoritative.
+
+[The original-author Shadow leveling guide](https://www.icy-veins.com/tbc-classic/shadow-priest-leveling-guide) was reviewed again for this continuation; its revision is2026-01-12. Healing, defenses, resources, utility and deciding when to begin a channel or wand remain manual. The existing1–19 and20–29 packs and saved clones stay unchanged. Focused modeled pipeline/tuple tests do not establish native gameplay acceptance or optimality.

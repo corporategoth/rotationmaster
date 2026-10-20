@@ -2695,6 +2695,10 @@ L['Skin preview buttons with Masque'] = true
 L['Optional preview-button skins; configure skins with /masque.'] = true
 L['Help.Integrations.preview_masque'] = 'Opt in to skin recommendation preview buttons with separately installed Masque, then Apply. Discard leaves the saved appearance unchanged. Configure skins with /masque. The preview window keeps its native appearance. Masque manages its own settings and profiles; Rotation Master does not synchronize them. Missing or incompatible APIs and provider errors retain the native preview. Native pixel acceptance remains unverified.'
 
+
+L["Default.TBC.Priest.Shadow30.Name"] = "Priest: Shadow leveling (30–39)"
+L["Default.TBC.Priest.Shadow30.Description"] = "Bounded Shadow-oriented solo preview; learned spells and native readiness remain authoritative. Choose channels and wand manually; healing and resources remain manual."
+
 -- BEGIN GENERATED RM PUBLIC HELPER DOCS
 L["Absolute health target (negative means deficit) or percentage fraction."] = true
 L["All original results, preserving nil positions and return count."] = true
