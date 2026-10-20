@@ -3,6 +3,20 @@ local data = addon.RotationData
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 local definitions, definitionVersion = {}, 0
 local active
+local readValidationStamp,checkValidationLayout,validationRawget,validationRawequal,validationType,validationGetmetatable
+local bindValidation=addon.BindRotationValidationReader
+if type(bindValidation)=='function' then
+    bindValidation(addon,function(read,check,raw,identity,kind,meta)
+        if type(read)=='function' and type(check)=='function' and type(raw)=='function'
+            and type(identity)=='function' and type(kind)=='function' and type(meta)=='function' then
+            readValidationStamp,checkValidationLayout,validationRawget,validationRawequal,validationType,validationGetmetatable=read,check,raw,identity,kind,meta
+        end
+    end)
+    addon.BindRotationValidationReader=nil
+end
+local function validationPlain(value)
+    return validationType(value)=='table' and validationGetmetatable(value)==nil
+end
 
 local function contains(list, value)
     for _,entry in ipairs(list or {}) do if entry==value then return true end end
@@ -87,10 +101,29 @@ function addon:InitializeRotationLibrary()
     end
     return true
 end
-local function ensure(self)
-    local referenceStamp=self:GetRotationValidationStamp()
+local ownedInitializeRotationLibrary=addon.InitializeRotationLibrary
+local function ensure(self,needProof)
+    local referenceStamp,method,db,profile,global,conditions,shared,personal,effects,version,state
+    local plainStamps=false
+    if needProof and readValidationStamp then
+        local entryMethod=validationType(self)=='table' and validationRawget(self,'GetRotationValidationStamp') or nil
+        method=self.GetRotationValidationStamp
+        referenceStamp,db,profile,global,conditions,shared,personal,effects,version,state=readValidationStamp(self,method,entryMethod)
+        plainStamps=db~=nil and validationPlain(referenceStamp) and active~=nil
+            and validationPlain(active.referenceStamp) and validationPlain(active.generation)
+    else referenceStamp=self:GetRotationValidationStamp() end
     if not active or active.profile~=self.db.profile or active.state~=self.db.profile.rotationLibrary
-        or active.version~=definitionVersion or active.referenceStamp~=referenceStamp then return self:InitializeRotationLibrary() end
+        or active.version~=definitionVersion or active.referenceStamp~=referenceStamp then
+        -- Initializer overrides may return arbitrary extras; none can authorize
+        -- the private unchanged-branch witness. Generation historically used two.
+        if needProof then local ok,why=self:InitializeRotationLibrary();return ok,why end
+        return self:InitializeRotationLibrary()
+    end
+    -- An initializer call never issues proof, even if it returns the same generation.
+    if plainStamps and validationRawequal(validationRawget(self,'InitializeRotationLibrary'),ownedInitializeRotationLibrary)
+        and checkValidationLayout(self,method,db,profile,global,conditions,shared,personal,effects,version,state) then
+        return true,nil,referenceStamp,true
+    end
     return true
 end
 
@@ -157,7 +190,18 @@ function addon:BindRotationLibraryReader(bind)
     local owner=self;local reader={}
     function reader:OwnsContext(fn) return fn==ownedRotationContext end
     function reader:Context(spec) return rotationContext(owner,spec) end
-    function reader:Generation() local ok,why=ensure(owner);if not ok then return nil,why end;return active.generation end
+    local function generationMethod(self)
+        local ok,why,checked,proof=ensure(owner,true);if not ok then return nil,why end
+        return active.generation,nil,checked,proof
+    end
+    reader.Generation=generationMethod
+    -- The checker captures the definition-owned method; a replaced reader field
+    -- cannot authorize its own returned proof. Nil checks the pre-dispatch layout.
+    local function provesGeneration(method,reference,generation)
+        return validationRawget~=nil and validationPlain(reader) and validationPlain(reference) and validationPlain(generation)
+            and validationRawequal(validationRawget(reader,'Generation'),generationMethod)
+            and (method==nil or validationRawequal(method,generationMethod))
+    end
     function reader:Read(spec,id,project,candidates)
         local ok,why=ensure(owner);if not ok then return nil,why end
         local view=active.views[id];if not view then return nil,'unknown-rotation' end
@@ -174,7 +218,7 @@ function addon:BindRotationLibraryReader(bind)
     end
     function reader:Eligible(view,spec,candidates) local context=rotationContext(owner,spec);context.spec=spec;return eligible(view,context,candidates) end
     function reader:Reserve(used) for id,envelope in pairs(definitions) do used[id]=true;data.ReserveRotationIdentities(envelope,used) end end
-    bind(reader);return true
+    bind(reader,provesGeneration);return true
 end
 
 function addon:ListDefaultRotations(spec)

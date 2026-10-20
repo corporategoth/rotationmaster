@@ -1,5 +1,11 @@
 local _,addon=...
 local observed,stamp
+-- Trusted standard primitives at module load; changed live pointers disable reuse.
+local proofPairs,proofRawget,proofRawequal,proofType,proofGetmetatable=pairs,rawget,rawequal,type,getmetatable
+-- Lua5.1 accepts a stack level or function; the checker declares only levels.
+---@type fun(f: number|function): table
+local proofGetfenv=getfenv
+local proofEnvironment=proofType(proofGetfenv)=='function' and proofGetfenv(1) or nil
 local function normalized(value)
     return type(value)=='table' and value or false
 end
@@ -80,6 +86,61 @@ end
 function addon:GetRotationValidationStamp()
     observe(self)
     return stamp
+end
+local ownedValidationStamp=addon.GetRotationValidationStamp
+-- Even protected metatable metadata can disguise a callback. Only native
+-- primitives stored directly in the owned environment can certify this path.
+local function proofGlobals()
+    return proofType(proofEnvironment)=='table' and proofRawequal(proofRawget(proofEnvironment,'pairs'),proofPairs)
+        and proofRawequal(proofRawget(proofEnvironment,'rawget'),proofRawget) and proofRawequal(proofRawget(proofEnvironment,'rawequal'),proofRawequal)
+        and proofRawequal(proofRawget(proofEnvironment,'type'),proofType) and proofRawequal(proofRawget(proofEnvironment,'getmetatable'),proofGetmetatable)
+        and proofRawequal(proofRawget(proofEnvironment,'getfenv'),proofGetfenv)
+        and proofRawequal(proofGetfenv(ownedValidationStamp),proofEnvironment)
+        and proofRawequal(proofGetfenv(observe),proofEnvironment) and proofRawequal(proofGetfenv(normalized),proofEnvironment)
+        and proofRawequal(proofGetfenv(entries),proofEnvironment) and proofRawequal(proofGetfenv(sameEntries),proofEnvironment)
+        and proofRawequal(proofGetfenv(validItemsets),proofEnvironment) and proofRawequal(proofGetfenv(sameItemsets),proofEnvironment)
+        and proofRawequal(proofGetfenv(itemsetEntries),proofEnvironment)
+end
+local function proofPlain(value)
+    return proofType(value)=='table' and proofGetmetatable(value)==nil
+end
+-- Only raw-present, callback-free layouts can join adjacent observations.
+-- AceAddon owners and AceDB db objects may have metatables: every accessed
+-- slot is raw-present, and neither object participates in equality/tostring.
+local function validationLayout(owner,method)
+    if proofType(owner)~='table'
+        or method~=ownedValidationStamp or proofRawget(owner,'GetRotationValidationStamp')~=ownedValidationStamp then return end
+    local db=proofRawget(owner,'db');if proofType(db)~='table' then return end
+    local profile,global=proofRawget(db,'profile'),proofRawget(db,'global')
+    if not proofPlain(profile) or not proofPlain(global) then return end
+    local conditions,version=proofRawget(owner,'conditionDefinitions'),proofRawget(owner,'conditionRegistryVersion')
+    local shared,personal=proofRawget(global,'itemsets'),proofRawget(profile,'itemsets')
+    local effects,state=proofRawget(global,'effects'),proofRawget(profile,'rotationLibrary')
+    if not proofPlain(conditions) or proofType(version)~='number' or not proofPlain(shared)
+        or not proofPlain(personal) or not proofPlain(effects) or not proofPlain(state) then return end
+    return db,profile,global,conditions,shared,personal,effects,version,state
+end
+local function sameValidationLayout(owner,method,db,profile,global,conditions,shared,personal,effects,version,state)
+    local d,p,g,c,s,i,e,v,l=validationLayout(owner,method)
+    return d~=nil and proofRawequal(d,db) and proofRawequal(p,profile) and proofRawequal(g,global)
+        and proofRawequal(c,conditions) and proofRawequal(s,shared) and proofRawequal(i,personal)
+        and proofRawequal(e,effects) and proofRawequal(v,version) and proofRawequal(l,state)
+end
+local function readValidationStamp(owner,method,entryMethod)
+    local db,profile,global,conditions,shared,personal,effects,version,state
+    -- A successful PRE proof closes the owned scan. POST checks raw layout
+    -- again, without repeating globals that no permitted callback can change.
+    if entryMethod==ownedValidationStamp and proofGlobals() then db,profile,global,conditions,shared,personal,effects,version,state=validationLayout(owner,method) end
+    local value=method(owner)
+    if db then return value,db,profile,global,conditions,shared,personal,effects,version,state end
+    return value
+end
+-- Trusted private module handoff, retired by its consumer. This does not
+-- authenticate a hostile replacement of the complete loader/binder itself.
+function addon:BindRotationValidationReader(bind)
+    if type(bind)~='function' then return nil,'invalid-validation-reader-binder' end
+    bind(readValidationStamp,sameValidationLayout,proofRawget,proofRawequal,proofType,proofGetmetatable)
+    return true
 end
 -- Dependency maps may carry AceDB defaults metatables. Observe their entries,
 -- without copying/traversing definitions or writing into SavedVariables.

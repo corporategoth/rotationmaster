@@ -276,6 +276,8 @@ def main():
             ['luajit', 'tests/rotation_scope_transport.lua'],
             ['lua5.1', 'tests/rotation_scope_runtime.lua'],
             ['luajit', 'tests/rotation_scope_runtime.lua'],
+            ['lua5.1', 'tests/rotation_validation_adjacent.lua'],
+            ['luajit', 'tests/rotation_validation_adjacent.lua'],
             ['lua5.1', 'tests/rotation_validation_stamp.lua'],
             ['luajit', 'tests/rotation_validation_stamp.lua'],
             ['lua5.1', 'tests/rotation_scope_adoption_ui.lua'],

@@ -1,9 +1,12 @@
 local addon_name,addon=...
 local data=addon.RotationData
 local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
-local libraryReader
+local libraryReader,libraryGenerationProof
 local bindLibrary=addon.BindRotationLibraryReader
-if type(bindLibrary)=='function' then bindLibrary(addon,function(reader) libraryReader=reader end);addon.BindRotationLibraryReader=nil end
+if type(bindLibrary)=='function' then
+    bindLibrary(addon,function(reader,proof) libraryReader=reader;if type(proof)=='function' then libraryGenerationProof=proof end end)
+    addon.BindRotationLibraryReader=nil
+end
 local function rotationContext(owner,spec)
     local method=libraryReader and libraryReader.Context
     if type(method)=='function' then return method(libraryReader,spec) end
@@ -518,8 +521,18 @@ function addon:BindRotationProfile()
             local readyNow,problemText=ready();if not readyNow then return nil,problemText end
             local now=context();if not now or not same(now,c) then return nil,'rotation-owner-changed' end
             if not same(observedContext,eligibilityContext()) then return nil,'rotation-context-changed' end
-            if libraryReader and libraryReader:Generation()~=generation then return nil,'rotation-library-changed' end
-            local stamp=owner:GetRotationValidationStamp();if stamp~=referenceStamp or owner.conditionRegistryVersion~=revision then return nil,'rotation-dependencies-changed' end
+            local stamp
+            if libraryReader then
+                local eligible=libraryGenerationProof and libraryGenerationProof(nil,referenceStamp,generation)
+                local method=libraryReader.Generation
+                local currentGeneration,_,checked,proof=method(libraryReader)
+                if currentGeneration~=generation then return nil,'rotation-library-changed' end
+                if eligible and proof and libraryGenerationProof(method,referenceStamp,generation) then stamp=checked end
+            end
+            -- Only the immediately preceding owned, unchanged library check can
+            -- supply this observation; every uncertain path repeats the public read.
+            if stamp==nil then stamp=owner:GetRotationValidationStamp() end
+            if stamp~=referenceStamp or owner.conditionRegistryVersion~=revision then return nil,'rotation-dependencies-changed' end
             return true
         end
         function pass:IsCurrent()
