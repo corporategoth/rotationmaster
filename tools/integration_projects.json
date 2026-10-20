@@ -1275,9 +1275,12 @@
         ],
         "evidence": [
           "Declared edition scope for the matching addon identity; older patch or missing minor-version evidence alone is not an incompatibility verdict.",
-          "https://www.curseforge.com/wow/addons/lui"
+          "https://www.curseforge.com/wow/addons/lui",
+          "https://www.wowinterface.com/downloads/info26095-LUIv3forWotLKc.html — publisher version v3.50.03 lists WOTLK (3.4.0) and addon contents LUI.",
+          "https://raw.githubusercontent.com/Niitek/LUI-Classic/b4532b76f06871244af762fcc4dd673a421b12ab/LUI.toc — exact published version v3.50.03 declares Interface 30402; same commit .pkgmeta specifies package-as: LUI, establishing matching folder identity. Historical edition evidence, not current-patch or native-adapter certification."
         ],
         "progression": [
+          "wrath",
           "mists"
         ]
       }

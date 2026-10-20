@@ -142,7 +142,7 @@ test('missing Questie pill is gray inert and options have no prose or Refresh',f
  assert(not p.fields.questie_enabled and not p.fields.questie_refresh)
  local card=p.fields.integration_card_Questie
  for _,c in ipairs(p.pool.text or{})do assert(c:GetParent()==p.child,'options contain prose')end
- assert(card and p.fields.integration_help_Questie)
+ assert(card and not p.fields.integration_help_Questie)
 end)
 test('draft conflict refuses partial selection and disable publication; Discard restores saved fields',function()
  local _,a,p=fixture({selected='LuaWorkbench'});click(p,'integration_status_editor_LuaWorkbench');a.db.profile.lua_editor_disabled={Other=true}
@@ -258,10 +258,10 @@ end)
 test('shared integration help stays at page level; option help is beneath the status pill',function()
  local f,a,p=fixture();f.load('UI/help.lua');local shown={};local L=f.env.LibStub('AceLocale-3.0'):GetLocale('rotationmaster')
  a.ShowWorkbenchHelp=function(_,name,sections)shown={name=name,sections=sections}end
- for _,id in ipairs({'editor_LuaWorkbench','ExtendedCharacterStats','MobInfo2','WeakAuras','Dominos','WowLua'})do
+ for _,id in ipairs({'editor_LuaWorkbench','ExtendedCharacterStats','MobInfo2','WeakAuras','Dominos','WowLua','Questie'})do
   assert(not p.fields['integration_help_'..id],'generic Help repeated on addon '..id)
  end
- for _,id in ipairs({'editor_native','Questie'})do
+ for _,id in ipairs({'editor_native'})do
   local help=assert(p.fields['integration_help_'..id]);local status=pill(p,id);local card=p.fields['integration_card_'..id]
   assert(help:GetParent()==card and help.point[1]=='TOPLEFT')
   assert(help.point[2]+help:GetWidth()==status.point[2]+status:GetWidth(),'Help is not right aligned with Status')
@@ -269,9 +269,8 @@ test('shared integration help stays at page level; option help is beneath the st
   assert(-help.point[3]+help:GetHeight()+6<=card:GetHeight(),'Help exceeds its card')
  end
  click(p,'integration_help_editor_native');assert(shown.sections[1].text==L['Help.Integrations.native_highlighting'],'Native Help repeats general editor instructions')
- click(p,'integration_help_Questie');assert(shown.sections[1].text==L['Help.Integrations.questie_enabled'])
  local page=a:GetIntegrationOptionHelp();local common={};for _,section in ipairs(page)do common[section.id]=section.text end
- assert(common.lua_editor and common.optional_addons and common.lua_line_numbers,'shared guidance not available in page Help')
+ assert(common.lua_editor and common.optional_addons and common.lua_line_numbers and common.questie_enabled,'shared guidance not available in page Help')
 end)
 test('integration sections collapse without settings mutations and retire pooled old callbacks',function()
  local _,a,p=fixture();local before=a:CopySettingsData(draft(p));local section=assert(p.fields.section_integrations_editors)
@@ -311,11 +310,11 @@ test('client and support lookups stop an obsolete drawing before provider work',
  setmetatable(b,{__index=function(_,key)if key=='GetIntegrationClientSupport'then q:Release();return function()error('obsolete support call')end end;return prior and prior.__index and prior.__index(b,key)end})
  assert(pcall(function()q:Draw()end));assert(not q.active and not q.fields.integration_card_editor_native)
 end)
-test('only Native and Questie use gold standard Help below Status at full and narrow widths',function()
+test('only Native options use gold standard Help below Status at full and narrow widths',function()
  local _,_,p=fixture()
  for _,width in ipairs({1300,420})do
   p.frame:SetWidth(width);p:Draw()
-  for _,id in ipairs({'editor_native','Questie'})do
+  for _,id in ipairs({'editor_native'})do
    local help=assert(p.fields['integration_help_'..id]);local card=p.fields['integration_card_'..id];local status=pill(p,id)
    assert(help:GetWidth()==20 and help:GetHeight()==20 and help.icon:GetWidth()==18,'Help does not match condition card icon dimensions')
    assert(help.icon.color[1]==1 and help.icon.color[2]==.82 and help.icon.color[3]==.25)
@@ -325,7 +324,7 @@ test('only Native and Questie use gold standard Help below Status at full and na
   local syntax=p.fields.lua_native_highlighting;local help=p.fields.integration_help_editor_native
   assert(syntax.point[3]==help.point[3],'Help pushed the first addon option below its row')
   assert(syntax.point[2]+syntax:GetWidth()+8<=help.point[2],'addon option overlaps Help')
-  assert(not p.fields.integration_help_editor_LuaWorkbench and not p.fields.integration_help_Dominos)
+  assert(not p.fields.integration_help_editor_LuaWorkbench and not p.fields.integration_help_Dominos and not p.fields.integration_help_Questie)
  end
 end)
 finish()

@@ -142,13 +142,13 @@ function addon:ShowIntegrationProjectLink(id)
         if not row then
             row={frame=CreateFrame('Frame',nil,d.child)};d.rows[i]=row
             row.frame:SetWidth(600)
-            row.provider=self:CreateWorkbenchButton(row.frame,'',148);row.provider.art:Hide();row.provider:SetPoint('TOPLEFT',0,-2)
-            local label=row.provider:GetFontString();label:ClearAllPoints();label:SetPoint('TOPLEFT');label:SetWidth(148);label:SetJustifyH('LEFT');label:SetJustifyV('TOP');label:SetWordWrap(true)
-            row.edit=self:CreateWorkbenchEditBox(row.frame);row.edit:SetPoint('TOPLEFT',160,0);row.edit:SetSize(404,24);row.edit:SetMultiLine(false);row.edit:SetMaxLetters(4096)
-            row.copy=self:CreateWorkbenchIconButton(row.frame,'copy',L['Select URL for copying (Ctrl+C)']);row.copy:SetPoint('TOPLEFT',576,-2)
+            row.provider=self:CreateWorkbenchButton(row.frame,'',148);row.provider.art:Hide();row.provider:SetPoint('LEFT',row.frame,'LEFT',0,0)
+            local label=row.provider:GetFontString();label:ClearAllPoints();label:SetPoint('LEFT');label:SetWidth(148);label:SetJustifyH('LEFT');label:SetJustifyV('MIDDLE');label:SetWordWrap(true)
+            row.edit=self:CreateWorkbenchEditBox(row.frame);row.edit:SetPoint('LEFT',row.frame,'LEFT',160,0);row.edit:SetSize(404,24);row.edit:SetMultiLine(false);row.edit:SetMaxLetters(4096)
+            row.copy=self:CreateWorkbenchIconButton(row.frame,'copy',L['Select URL for copying (Ctrl+C)']);row.copy:SetPoint('LEFT',row.frame,'LEFT',576,0)
         end
         row.url=entry.url;row.provider:SetText(entry.label);row.provider.tooltip=entry.note
-        local label=row.provider:GetFontString();label:SetHeight(0);local height=math.max(28,label:GetStringHeight()+6);label:SetHeight(height-6);row.provider:SetHeight(height-4)
+        local label=row.provider:GetFontString();label:SetHeight(0);local height=math.max(28,label:GetStringHeight()+6);label:SetHeight(height-4);row.provider:SetHeight(height-4)
         row.frame:ClearAllPoints();row.frame:SetPoint('TOPLEFT',0,-y);row.frame:SetHeight(height);row.frame:Show()
         row.edit:SetText(row.url);row.edit:SetCursorPosition(0);row.edit:HighlightText(0,0);row.edit:ClearFocus()
         addon:SetUIScript(row.copy,'OnClick',function()selectRow(row)end)

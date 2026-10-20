@@ -60,7 +60,7 @@ local scopes={
  ["ButtonForge"]={["families"]={"retail","era","tbc","progression"},["progression"]={"mists"},["interfaceRanges"]={}},
  ["G15Buttons"]={["families"]={"retail"},["interfaceRanges"]={}},
  ["SyncUI"]={["families"]={"retail"},["interfaceRanges"]={}},
- ["LUI"]={["families"]={"retail","era","tbc","progression"},["progression"]={"mists"},["interfaceRanges"]={}},
+ ["LUI"]={["families"]={"retail","era","tbc","progression"},["progression"]={"wrath","mists"},["interfaceRanges"]={}},
  ["Dominos"]={["families"]={"retail","forever","era","tbc","progression"},["progression"]={"mists"},["interfaceRanges"]={}},
  ["DiabolicUI"]={["families"]={},["unknown"]=true,["interfaceRanges"]={}},
  ["AzeriteUI"]={["families"]={"era","tbc"},["interfaceRanges"]={}},

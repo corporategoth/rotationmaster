@@ -166,7 +166,7 @@ function addon:BuildIntegrationSettings(p)
     local questieAllowed=supported('Questie');if not current()then return end
     if questieAllowed then
         local questie=metadata.Questie or{id='Questie',name=L['Questie'],state='missing'}
-        local questieRow=readonly(questie);questieRow.help='Help.Integrations.questie_enabled'
+        local questieRow=readonly(questie)
         if questieRow.state~='missing'then
             questieRow.state=profile.questie_enabled==true and'enabled'or'disabled'
             questieRow.action=function()

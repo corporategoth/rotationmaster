@@ -32,6 +32,10 @@ test('release popup is a compact addon-titled table of readonly URL fields and C
   assert(row.copy.icon:GetTexture()==a:ControlTexture('copy'),'expected standard Copy icon')
   assert(row.edit:GetCursorPosition()==0,'readonly URL starts scrolled to the end')
   assert(row.provider.tooltip:find(link.note,1,true),'edition evidence no longer accessible')
+  assert(row.provider:GetFontString().justifyV=='MIDDLE','provider text is not vertically centered')
+  for _,control in ipairs({row.provider,row.edit,row.copy})do
+   local point=control.point;assert(point[1]=='LEFT' and point[2]==row.frame and point[3]=='LEFT' and point[5]==0,'provider, URL and Copy do not share the row center')
+  end
   local before=row.edit:GetText();row.edit:SetText('changed');row.edit.scripts.OnTextChanged(row.edit,true)
   assert(row.edit:GetText()==before,'URL typing/paste changed canonical read-only field')
  end
