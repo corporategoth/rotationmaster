@@ -508,6 +508,7 @@ def main():
             ['luajit', 'tests/compression.lua'],
             ['luajit', 'tests/rotation_codec.lua'],
             ['node', '--test', 'tests/web_codec.mjs'],
+            ['node', '--test', 'tests/web_encode.mjs'],
             ['node', '--test', 'tests/web_schema.mjs'],
             ['node', '--test', 'tests/web_viewer.mjs'],
             ['node', '--test', 'tests/web_diff.mjs'],

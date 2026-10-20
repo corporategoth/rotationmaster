@@ -80,3 +80,11 @@ Inspected baseline: `2c2a97962b01a6c08607e33c2b280e222a891205`.
 ## Deliberately separate follow-up work
 
 There is no generated JS-readable condition/effect/itemset schema yet. Porting the actual closed rotation schema and its diagnostic/status semantics is a separate unit, followed by ordered rendering, unresolved dependency presentation, structural diff/catalog integration, accessibility and actual-browser acceptance. URL fragments, downloads, URL-size testing, public hosting and any service/account choice remain separate. No import is executed, installed or rewritten to make it fit the browser model.
+
+## New export foundation
+
+`encodeExport(value)` in `export.mjs` accepts an inert portable Map and returns a new `{ok:true,text}` export or a fixed refusal. It independently writes Ace1, LibCompress Store framing and ordinary Base64, using the existing RM1 marker rule. The output is uncompressed and may be larger than the import. Keys are ordered deterministically; wire bytes need not match the original Lua serializer/compressor. Existing accepted-original copy/share/download authority is unchanged, and the viewer does not expose editing or call this encoder yet.
+
+Byte strings, numeric/string key identity, false, empty tables and finite numeric values including negative zero are preserved. Null-valued Map entries are explicitly refused because the actual Ace table parser cannot round-trip them. Strings outside the byte domain require a future editor's explicit encoding choice. No schema repair, callback execution, inferred applicability or automatic revision change occurs.
+
+The writer preserves portable limits and additionally bounds root-inclusive table depth to64, protocol tokens to20,000 and escaped serialized bytes to1MiB before returning output. Refusal never returns a partial export. Tests use the actual bundled Ace parser on both Lua VMs and the full DataCodec/LibCompress path on LuaJIT, including all production manifests and fixed IEEE/byte vectors. Plain Lua5.1 coverage is serializer-only because the bundled full compression library requires bit. These checks do not constitute native-game import acceptance.
