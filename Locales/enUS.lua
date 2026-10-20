@@ -2277,8 +2277,8 @@ L["Tests whether the selected spell is currently auto-repeating, such as Shoot o
 
 L["Uses readable positions in the same instance, or player-centered range estimates when positions are unavailable. A unit counts only when its upper range bound is within Distance. Uncertain positions, range, subgroup membership or required health/mana values keep the whole condition unavailable, including under Unless. Percentage checks require a positive maximum; empty aggregates have no result."] = true
 
-L["Default.TBC.Warlock.Starter.Name"] = "Warlock: early leveling (1–19)"
-L["Default.TBC.Warlock.Starter.Description"] = "Bounded solo Affliction preview: owned damage-over-time spells, conservative Drain Life, wanding and optional Demon Skin. Manual demon and resource control; expires at level 20."
+L["Default.TBC.Warlock.Starter.Name"] = "Warlock: early leveling (1–29)"
+L["Default.TBC.Warlock.Starter.Description"] = "Bounded solo Affliction preview: owned damage-over-time spells, conservative Drain Life, wanding and optional Demon Skin or Demon Armor upkeep. Learned Demon Armor supersedes Demon Skin. Manual demon and resource control; expires at level 30."
 
 L["Count enemies when selected, or non-enemies when cleared."] = true
 L["The number of observed units proven within Distance of you."] = true
@@ -2381,6 +2381,14 @@ L["{item} {{!is|is not}} available{carrying}"] = true
 L["{item} {{!is|is not}} in range{carrying}"] = true
 
 L["the cooldown on {item} {comparison} {duration}{carrying}"] = true
+L["All saved minimums met."] = true
+L["No enabled saved targets."] = true
+L["%d saved targets below minimum."] = true
+L["%d below minimum; %d unknown."] = true
+L["Saved stock counts pending."] = true
+L["Apply or discard page changes to assess saved targets."] = true
+L["Saved stock readiness unavailable."] = true
+
 L["Stock counts pending."] = true
 
 L["Stock counts ready."] = true

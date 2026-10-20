@@ -148,7 +148,9 @@ test('provider getter release returning callable performs zero retired scans',fu
  t:stock();t:flush();assert(t:scans()==0 and #t.native==0 and t:registered()==0 and not t.p.active)
 end)
 test('strict complete module inverses protect every unrelated byte',function()
- local inverse=dofile('tests/fixtures/restore_stock_targets_observation.lua')
+ local previous=dofile('tests/fixtures/restore_stock_targets_observation.lua')
+ local readiness=dofile('tests/fixtures/restore_stock_readiness.lua')
+ local function inverse(text,path)if path=='UI/settings_stock.lua'then text=readiness(text)end;return previous(text,path)end
  for _,path in ipairs({'UI/settings_stock.lua','UI/settings_form.lua'})do
   local file=assert(io.open(path));local source=file:read('*a');file:close()
   local restored=inverse(source,path);assert(type(restored)=='string'and restored~=source)

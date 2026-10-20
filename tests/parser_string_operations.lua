@@ -1,6 +1,7 @@
 local function read(p)local h=assert(io.open(p));local s=h:read('*a');h:close();return s end
 local baseline={};local inverse=dofile('tests/fixtures/restore_parser_string_operations.lua')
-for _,p in ipairs({'Data/plain.lua','Data/rotation_tree.lua','Diagnostics/cpu.lua'})do local source=read(p);baseline[p]=inverse(source,p) end
+local restorePreview=dofile('tests/fixtures/restore_cpu_preview_context.lua')
+for _,p in ipairs({'Data/plain.lua','Data/rotation_tree.lua','Diagnostics/cpu.lua'})do local source=read(p);if p=='Diagnostics/cpu.lua' then source=restorePreview(source) end;baseline[p]=inverse(source,p) end
 -- Use the canonical actual-main setup without its unrelated frozen-index tail.
 -- This feature's own exact inverse supplies the92c8fe8 reference Data owners.
 local fixture=read('tests/fixtures/rotation_execution.lua');local start=assert(fixture:find("local restore=dofile('tests/fixtures/restore_rotation_execution_index.lua')",1,true))
@@ -141,7 +142,7 @@ test('actual CPU report shows fixed captured parser capabilities with source-fre
 end)
 test('complete three-file inverse rejects altered original duplicate and unknown input',function()
  for _,path in ipairs({'Data/plain.lua','Data/rotation_tree.lua','Diagnostics/cpu.lua'})do
-  local source=read(path);assert(inverse(source,path)==baseline[path]);assert(not pcall(inverse,baseline[path],path));assert(not pcall(inverse,source..source,path));assert(not pcall(inverse,source..'\n-- unrelated change\n',path))
+  local source=read(path);if path=='Diagnostics/cpu.lua' then source=restorePreview(source) end;assert(inverse(source,path)==baseline[path]);assert(not pcall(inverse,baseline[path],path));assert(not pcall(inverse,source..source,path));assert(not pcall(inverse,source..'\n-- unrelated change\n',path))
  end
  assert(not pcall(inverse,read('main.lua'),'main.lua'))
 end)

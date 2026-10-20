@@ -146,6 +146,68 @@ local function context(owner)
  return result
  -- END CACHE MODE CONTEXT
 end
+-- BEGIN STANDALONE PREVIEW CONTEXT
+-- Canonical-slot observation only; this does not authenticate foreign frames.
+local previewNumbers={[0]='0','1','2','3','4','5'}
+local function standalonePreviewContext(owner)
+ local ok,text=pcall(function()
+  local selected,canonical=field(owner,'nextWindow'),field(owner,'nativePreviewWindow')
+  if not readable(selected) then return 'selected=unavailable' end
+  if selected==nil then return 'selected=none' end
+  local marker=field(selected,'nativePreview')
+  if not readable(canonical) or not readable(marker) then return 'selected=unavailable' end
+  if type(selected)~='table' or not rawequal(selected,canonical) or marker~=true then return 'selected=custom' end
+  local db=field(owner,'db');local profile=field(db,'profile');local frame=field(selected,'frame')
+  local activeValue,count,slots,windowProfile=field(selected,'active'),field(selected,'count'),field(selected,'slots'),field(selected,'profile')
+  local setting,generation=field(profile,'preview_spells'),field(selected,'generation')
+  local capture=active
+  local function current()
+   return active==capture and rawequal(field(owner,'nextWindow'),selected) and rawequal(field(owner,'nativePreviewWindow'),canonical)
+    and rawequal(field(owner,'db'),db) and rawequal(field(db,'profile'),profile) and rawequal(field(selected,'frame'),frame)
+    and rawequal(field(selected,'nativePreview'),marker) and rawequal(field(selected,'active'),activeValue)
+    and rawequal(field(selected,'count'),count) and rawequal(field(selected,'slots'),slots)
+    and rawequal(field(selected,'profile'),windowProfile) and rawequal(field(profile,'preview_spells'),setting)
+    and rawequal(field(selected,'generation'),generation)
+  end
+  local function number(value)
+   if readable(value) and type(value)=='number' and value==value and value>=0 and value<=5 and value%1==0 then return previewNumbers[value] end
+   return '?'
+  end
+  local function boolean(value)
+   if readable(value) and type(value)=='boolean' then return value and '1' or '0' end
+   return '?'
+  end
+  local shown='?'
+  if readable(frame) and type(frame)=='table' then
+   local valid,value=pcall(function()
+    local method=frame.IsShown
+    if readable(method) and type(method)=='function' and current() then return method(frame) end
+   end)
+   if valid then shown=boolean(value) end
+  end
+  local sameProfile='?'
+  if readable(profile) and readable(windowProfile) and type(profile)=='table' and type(windowProfile)=='table' then
+   sameProfile=rawequal(profile,windowProfile) and 'current' or 'different'
+  end
+  local result='selected=canonical shown='..shown..' active='..boolean(activeValue)..' setting='..number(setting)
+   ..' slots='..number(slots)..' recommendations='..number(count)..' profile='..sameProfile
+  -- A getter or visibility method may retire/rebind this surface mid-snapshot.
+  if not current() then return 'selected=unavailable' end
+  return result
+ end)
+ return ok and text or 'selected=unavailable'
+end
+local function appendStandalonePreviewContext(report,started,ended)
+ local bytes=#report-1;for _,line in ipairs(report) do bytes=bytes+#line end
+ local first='Standalone preview start: '..(started or 'selected=unavailable')
+ local last='Standalone preview end: '..ended
+ if bytes+1+#first+1+#last<16000 then report[#report+1]=first;report[#report+1]=last
+ else
+  local omitted='Standalone preview context omitted to keep report bounded.'
+  if bytes+1+#omitted<16000 then report[#report+1]=omitted end
+ end
+end
+-- END STANDALONE PREVIEW CONTEXT
 local function reference(owner,...)
  local keys={...}
  return function() local value=owner;for _,key in ipairs(keys) do value=field(value,key) end;return value end
@@ -473,6 +535,9 @@ local function finish(run,status,reason)
    -- BEGIN CPU ACTIVITY APPENDIX
    appendActivity(report,run)
    -- END CPU ACTIVITY APPENDIX
+   -- BEGIN STANDALONE PREVIEW APPENDIX
+   appendStandalonePreviewContext(report,run.previewContext,standalonePreviewContext(run.owner))
+   -- END STANDALONE PREVIEW APPENDIX
    text=table.concat(report,'\n')
   end
  end
@@ -507,6 +572,9 @@ function addon:StartCPUProfile(duration)
  local ok,timer=pcall(self.ScheduleTimer,self,function() finish(run,'complete') end,duration)
  if not ok or not timer then if active==run then active=nil end;activityStop(run);return false,'timer-error' end
  run.timer=timer;if active==run then run.executionIndexProof=executionIndexProof() end;lastReport=nil
+ -- BEGIN STANDALONE PREVIEW START
+ if active==run then run.previewContext=standalonePreviewContext(self) end
+ -- END STANDALONE PREVIEW START
  return true
 end
 function addon:CancelCPUProfile()

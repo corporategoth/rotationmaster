@@ -7,16 +7,21 @@ local function stationary() return negate({type='MOVING'}) end
 local function missing(id) return negate({type='DEBUFF',unit='target',spell=id,anyrank=true,owndebuff=true}) end
 local function damage(id,spell,conditions) return {id='warlock-starter-'..id,type='spell',action=spell,ranked=false,conditions=conditions} end
 assert(addon:RegisterDefaultRotation({
-    format='RotationMaster',schemaVersion=1,id='rm.tbc.warlock.starter',revision=1,
+    format='RotationMaster',schemaVersion=1,id='rm.tbc.warlock.starter',revision=2,
     nameKey='Default.TBC.Warlock.Starter.Name',descriptionKey='Default.TBC.Warlock.Starter.Description',
-    applicability={families={'tbc'},actionContext='player',class='WARLOCK',minLevel=1,maxLevel=19},
+    applicability={families={'tbc'},actionContext='player',class='WARLOCK',minLevel=1,maxLevel=29},
     tags={'leveling','solo','starter','affliction','single-target','preview'},
     sources={{url='https://www.icy-veins.com/tbc-classic/affliction-warlock-leveling-guide',
-        title='Icy Veins: Affliction Warlock leveling',reviewedAt='2026-10-18',revision='2026-01-12'}},
+        title='Icy Veins: Affliction Warlock leveling',reviewedAt='2026-10-20',revision='2026-01-12'}},
     body={
-        switch=all({type='SPELL_KNOWN',spell=686},{type='LEVEL',unit='player',operator='LESSTHAN',value=20}),
+        switch=all({type='SPELL_KNOWN',spell=686},{type='LEVEL',unit='player',operator='LESSTHAN',value=30}),
         cooldowns={{id='warlock-starter-skin',type='spell',action=687,ranked=false,
-            conditions=negate({type='BUFF',unit='player',spell=687,anyrank=true})}},
+            conditions=all(negate({type='SPELL_KNOWN',spell=706}),
+                negate({type='BUFF',unit='player',spell=706,anyrank=true}),
+                negate({type='BUFF',unit='player',spell=687,anyrank=true}))},
+            {id='warlock-starter-armor',type='spell',action=706,ranked=false,
+                conditions=all({type='SPELL_KNOWN',spell=706},
+                    negate({type='BUFF',unit='player',spell=706,anyrank=true}))}},
         rotation={{id='warlock-starter-target',type='branch',
             conditions=all({type='ATTACKABLE',unit='target'},
                 {type='OR',value={{type='COMBAT',unit='player'},negate({type='COMBAT',unit='target'})}}),

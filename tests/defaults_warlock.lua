@@ -124,6 +124,6 @@ test('warlock manifest is localized sourced read-only bounded and clones have in
     assert(f.translations[row.nameKey] and f.translations[row.descriptionKey] and #row.envelope.sources==1)
     local id=assert(a:CloneDefaultRotation(0,row.id,'Warlock copy'));local clone=a:GetEditableRotation(0,id)
     clone.rotation[1].onTrue[1].suppress_attack=false;assert(body(a).rotation[1].onTrue[1].suppress_attack)
-    s.level=20;assert(not a:ListDefaultRotations(0)[1].eligible)
+    s.level=30;assert(not a:ListDefaultRotations(0)[1].eligible)
 end)
 finish()
