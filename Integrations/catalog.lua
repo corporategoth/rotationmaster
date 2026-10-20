@@ -8,6 +8,7 @@ local providers={
  {'!!!LuaWorkbench','LuaWorkbench','Lua editor integration. Choose an editor in Lua editor options.','editor'},
  {'WowLua','WowLua','Optional editor addon; no built-in connection is registered.'},
  {'WeakAuras','WeakAuras','Recommendation event bridge; no WeakAuras display is required.'},
+ {'Masque','Masque','Optional preview-button skins; configure skins with /masque.','masque'},
  {'Questie','Questie','Quest update receipts only; native quest progress is not verified.','questie'},
  {'ElvUI','ElvUI','Optional action-bar glow support.'},
  {'Bartender4','Bartender4','Optional action-bar mapping and glow support.'},
@@ -47,6 +48,7 @@ local projects={
  ["FarmingBar"]={{["provider"]="curseforge",["label"]="CurseForge",["url"]="https://www.curseforge.com/wow/addons/farming-bar",["primary"]=true,["note"]="Retail, Classic Era, TBC and Mists Classic releases. Latest-patch compatibility and Forever are unverified.",["families"]={"retail","era","progression","tbc"}},{["provider"]="github",["label"]="GitHub",["url"]="https://github.com/nikkisaurus/FarmingBar",["primary"]=false,["note"]="Official source repository. Choose the release for your game edition; source availability does not certify integration behavior.",["families"]={"retail","era","progression","tbc"}},{["provider"]="wowinterface",["label"]="WoWInterface",["url"]="https://www.wowinterface.com/downloads/info25440-FarmingBar.html",["primary"]=false,["note"]="Official project page. Publisher lists Retail, Classic Era, Classic progression, TBC. Choose the matching file; exact patch and RM integration behavior may be unverified.",["families"]={"retail","era","progression","tbc"}},{["provider"]="wago",["label"]="Wago Addons",["url"]="https://addons.wago.io/addons/farmingbar",["primary"]=false,["note"]="Official project page. Publisher lists Retail, Classic Era, Classic progression, TBC. Choose the matching file; exact patch and RM integration behavior may be unverified.",["families"]={"retail","era","progression","tbc"}}},
  ["TotemTimers"]={{["provider"]="curseforge",["label"]="CurseForge",["url"]="https://www.curseforge.com/wow/addons/totemtimers",["primary"]=true,["note"]="Primary project now releases TotemTimers Forever. Retail files are historical. Classic editions use the separate project below.",["families"]={"forever"}},{["provider"]="curseforge",["label"]="CurseForge — TotemTimers Classic",["url"]="https://www.curseforge.com/wow/addons/totemtimers-classic",["primary"]=false,["note"]="Classic Era, TBC, Wrath, Cataclysm and Mists Classic. Compatibility with RM action buttons is unverified.",["families"]={"era","progression","tbc"}},{["provider"]="github",["label"]="GitHub",["url"]="https://github.com/Xianghar/TotemTimers",["primary"]=false,["note"]="Official source repository. Choose the release for your game edition; source availability does not certify integration behavior.",["families"]={"forever"}},{["provider"]="github",["label"]="GitHub — TotemTimers Classic",["url"]="https://github.com/Xianghar/TotemTimers_Classic",["primary"]=false,["note"]="Official source repository. Choose the release for your game edition; source availability does not certify integration behavior.",["families"]={"era","progression","tbc"}},{["provider"]="wowinterface",["label"]="WoWInterface",["url"]="https://www.wowinterface.com/downloads/info9481-TotemTimers.html",["primary"]=false,["note"]="Official project page. Release edition and current patch compatibility are unverified.",["families"]={}},{["provider"]="wowinterface",["label"]="WoWInterface — TotemTimers Classic",["url"]="https://www.wowinterface.com/downloads/info25223-TotemTimersClassic.html",["primary"]=false,["note"]="Official project page. Publisher lists Classic Era, Classic progression, TBC. Choose the matching file; exact patch and RM integration behavior may be unverified.",["families"]={"era","progression","tbc"}},{["provider"]="wago",["label"]="Wago Addons — TotemTimers Classic",["url"]="https://addons.wago.io/addons/totemtimers-classic",["primary"]=false,["note"]="Official project page. Publisher lists Classic Era, Classic progression, TBC. Choose the matching file; exact patch and RM integration behavior may be unverified.",["families"]={"era","progression","tbc"}}},
  ["SamyTotemTimers"]={{["provider"]="curseforge",["label"]="CurseForge",["url"]="https://www.curseforge.com/wow/addons/samytotemtimers",["primary"]=true,["note"]="Historical Classic Era and TBC releases. Current editions are unverified. Other similarly named addons are not verified replacements.",["families"]={}},{["provider"]="github",["label"]="GitHub",["url"]="https://github.com/Samynix/SamyTotemTimers",["primary"]=false,["note"]="Official source repository. Choose the release for your game edition; source availability does not certify integration behavior.",["families"]={}}},
+ ["Masque"]={{["provider"]="github",["label"]="Official website / GitHub",["url"]="https://github.com/SFX-WoW/Masque",["primary"]=true,["note"]="Author-declared website and source repository. Release 12.1.0 declares Retail, Classic Era, TBC, Wrath, Cataclysm and Mists interfaces; RM native acceptance is unverified.",["families"]={"retail","era","tbc","progression"}},{["provider"]="curseforge",["label"]="CurseForge",["url"]="https://www.curseforge.com/wow/addons/masque",["primary"]=false,["note"]="StormFX project 13592. Publisher lists Retail, Forever, Classic, TBC, Mists and Wrath Titan Reforged releases; choose the file for your edition.",["families"]={"retail","forever","era","tbc","progression"}},{["provider"]="wowinterface",["label"]="WoWInterface",["url"]="https://www.wowinterface.com/downloads/info12097-Masque.html",["primary"]=false,["note"]="StormFX project 12097, version 12.1.0. Publisher declares Retail, Classic, TBC, Wrath and Cataclysm; displayed patch metadata varies from current TOC.",["families"]={"retail","era","tbc","progression"}},{["provider"]="wago",["label"]="Wago Addons",["url"]="https://addons.wago.io/addons/masque",["primary"]=false,["note"]="Official mirror linked by the pinned author README and WoWInterface project. This page requires JavaScript; edition metadata was not independently readable.",["families"]={}},{["provider"]="wowuphub",["label"]="WowUp Hub",["url"]="https://wowup.io/addons/16",["primary"]=false,["note"]="StormFX and JJSheets, official SFX-WoW/Masque repository. Current listed Classic Era 12.1.0; Retail and Wrath listings are historical, with current patch support unverified.",["families"]={"era"}}},
 }
 local scopes={
  ["ExtendedCharacterStats"]={["families"]={"era","tbc","progression"},["progression"]={"wrath"},["interfaceRanges"]={}},
@@ -68,6 +70,7 @@ local scopes={
  ["FarmingBar"]={["families"]={"retail","era","tbc","progression"},["progression"]={"mists"},["interfaceRanges"]={}},
  ["TotemTimers"]={["families"]={"retail","forever","era","tbc","progression"},["progression"]={"wrath","cata","mists"},["interfaceRanges"]={}},
  ["SamyTotemTimers"]={["families"]={"era","tbc","progression"},["progression"]={"wrath"},["interfaceRanges"]={}},
+ ["Masque"]={["families"]={"retail","forever","era","tbc","progression"},["progression"]={"wrath","cata","mists"},["interfaceRanges"]={}},
 }
 -- END GENERATED INTEGRATION PROJECTS
 function addon:GetIntegrationProjectLinks(id)
@@ -174,6 +177,15 @@ local function connection(kind)
  elseif kind=='editor' then
   local create,provider=rawget(addon,'CreateLuaWorkbenchControl'),rawget(_G,'LuaWorkbench')
   if readable(create) and readable(provider) and type(create)=='function' and type(provider)=='table' then return 'connected' end
+ elseif kind=='masque' then
+  local ok,value=pcall(function()
+   local get=addon.GetMasquePreviewStatus
+   if type(get)=='function'then return get(addon)end
+  end)
+  if not ok or not readable(value)or type(value)~='table'then return'unknown'end
+  local state=rawget(value,'state')
+  if not readable(state)or type(state)~='string'then return'unknown'end
+  return ({connected='connected',disabled='disabled',missing='missing',incompatible='incompatible',error='unknown',unavailable='unknown'})[state]or'loaded'
  elseif kind=='questie' then
   -- This is RM's cached, detached singleton status, never provider discovery.
   local ok,value=pcall(function()
@@ -198,7 +210,15 @@ function addon:ListIntegrationStatus()
   -- flag alone never establishes that the addon is not installed.
   local version=text(native('GetAddOnMetadata',provider[1],'Version'),4096,true)
   if loaded==true then state=connection(provider[4]) end
-  rows[#rows+1]={id=provider[1],name=display(provider[2],96),version=version,loaded=knownLoaded,state=state,detail=display(provider[3],320),projectURL=projects[provider[1]][1].url}
+  local detail=display(provider[3],320)
+  if provider[4]=='masque'then
+   local ok,value=pcall(function()return addon:GetMasquePreviewStatus()end)
+   if ok and type(value)=='table'then
+    local minor=rawget(value,'apiMinor')
+    if readable(minor)and type(minor)=='number'and minor==minor and minor>=0 and minor<100000000 then detail=detail..' '..display('API',16)..': '..tostring(minor)end
+   end
+  end
+  rows[#rows+1]={id=provider[1],name=display(provider[2],96),version=version,loaded=knownLoaded,state=state,detail=detail,projectURL=projects[provider[1]][1].url}
  end
  return rows
 end

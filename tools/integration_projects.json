@@ -2051,6 +2051,130 @@
           "wrath"
         ]
       }
+    },
+    "Masque": {
+      "links": [
+        {
+          "provider": "github",
+          "label": "Official website / GitHub",
+          "url": "https://github.com/SFX-WoW/Masque",
+          "primary": true,
+          "note": "Author-declared website and source repository. Release 12.1.0 declares Retail, Classic Era, TBC, Wrath, Cataclysm and Mists interfaces; RM native acceptance is unverified.",
+          "families": [
+            "retail",
+            "era",
+            "tbc",
+            "progression"
+          ]
+        },
+        {
+          "provider": "curseforge",
+          "label": "CurseForge",
+          "url": "https://www.curseforge.com/wow/addons/masque",
+          "primary": false,
+          "note": "StormFX project 13592. Publisher lists Retail, Forever, Classic, TBC, Mists and Wrath Titan Reforged releases; choose the file for your edition.",
+          "families": [
+            "retail",
+            "forever",
+            "era",
+            "tbc",
+            "progression"
+          ]
+        },
+        {
+          "provider": "wowinterface",
+          "label": "WoWInterface",
+          "url": "https://www.wowinterface.com/downloads/info12097-Masque.html",
+          "primary": false,
+          "note": "StormFX project 12097, version 12.1.0. Publisher declares Retail, Classic, TBC, Wrath and Cataclysm; displayed patch metadata varies from current TOC.",
+          "families": [
+            "retail",
+            "era",
+            "tbc",
+            "progression"
+          ]
+        },
+        {
+          "provider": "wago",
+          "label": "Wago Addons",
+          "url": "https://addons.wago.io/addons/masque",
+          "primary": false,
+          "note": "Official mirror linked by the pinned author README and WoWInterface project. This page requires JavaScript; edition metadata was not independently readable.",
+          "families": []
+        },
+        {
+          "provider": "wowuphub",
+          "label": "WowUp Hub",
+          "url": "https://wowup.io/addons/16",
+          "primary": false,
+          "note": "StormFX and JJSheets, official SFX-WoW/Masque repository. Current listed Classic Era 12.1.0; Retail and Wrath listings are historical, with current patch support unverified.",
+          "families": [
+            "era"
+          ]
+        }
+      ],
+      "coverage": {
+        "github": {
+          "status": "verified",
+          "query": "Exact Masque / StormFX project identity and official publisher crosslinks on github",
+          "evidence": [
+            "https://github.com/SFX-WoW/Masque",
+            "Author-declared website and source repository. Release 12.1.0 declares Retail, Classic Era, TBC, Wrath, Cataclysm and Mists interfaces; RM native acceptance is unverified.",
+            "https://github.com/SFX-WoW/Masque/blob/3b1ae9a74bf57452ffe0e0c08c4a62b5d6eebd04/Masque.toc: X-Website; https://github.com/SFX-WoW/Masque/blob/3b1ae9a74bf57452ffe0e0c08c4a62b5d6eebd04/README.md: official mirrors"
+          ]
+        },
+        "curseforge": {
+          "status": "verified",
+          "query": "Exact Masque / StormFX project identity and official publisher crosslinks on curseforge",
+          "evidence": [
+            "https://www.curseforge.com/wow/addons/masque",
+            "StormFX project 13592. Publisher lists Retail, Forever, Classic, TBC, Mists and Wrath Titan Reforged releases; choose the file for your edition."
+          ]
+        },
+        "wowinterface": {
+          "status": "verified",
+          "query": "Exact Masque / StormFX project identity and official publisher crosslinks on wowinterface",
+          "evidence": [
+            "https://www.wowinterface.com/downloads/info12097-Masque.html",
+            "StormFX project 12097, version 12.1.0. Publisher declares Retail, Classic, TBC, Wrath and Cataclysm; displayed patch metadata varies from current TOC."
+          ]
+        },
+        "wago": {
+          "status": "verified",
+          "query": "Exact Masque / StormFX project identity and official publisher crosslinks on wago",
+          "evidence": [
+            "https://addons.wago.io/addons/masque",
+            "Official mirror linked by the pinned author README and WoWInterface project. This page requires JavaScript; edition metadata was not independently readable.",
+            "https://github.com/SFX-WoW/Masque/blob/3b1ae9a74bf57452ffe0e0c08c4a62b5d6eebd04/README.md lines56-60,80: author publishes exact Wago URL; https://www.wowinterface.com/downloads/info12097-Masque.html links same mirror. Direct Wago fetch returned JavaScript requirement, so link identity is verified through author records; no edition claim."
+          ]
+        },
+        "wowuphub": {
+          "status": "verified",
+          "query": "Exact Masque / StormFX project identity and official publisher crosslinks on wowuphub",
+          "evidence": [
+            "https://wowup.io/addons/16",
+            "StormFX and JJSheets, official SFX-WoW/Masque repository. Current listed Classic Era 12.1.0; Retail and Wrath listings are historical, with current patch support unverified."
+          ]
+        }
+      },
+      "scope": {
+        "families": [
+          "retail",
+          "forever",
+          "era",
+          "tbc",
+          "progression"
+        ],
+        "progression": [
+          "wrath",
+          "cata",
+          "mists"
+        ],
+        "evidence": [
+          "https://github.com/SFX-WoW/Masque/blob/3b1ae9a74bf57452ffe0e0c08c4a62b5d6eebd04/Masque.toc: Interface 11509,20506,30405,38002,40402,50504,120100; X-Website https://github.com/SFX-WoW/Masque.",
+          "https://www.curseforge.com/wow/addons/masque/files/all: publisher explicitly lists Forever and 1.60.1, plus Retail, Classic, TBC, Mists and Wrath Titan Reforged release12.1.0. This is declared package scope; no exact Forever TOC constant or native RM acceptance is claimed from the pinned source."
+        ]
+      }
     }
   }
 }

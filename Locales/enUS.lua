@@ -2686,6 +2686,15 @@ L["WoWInterface — TotemTimers Classic"] = "WoWInterface — TotemTimers Classi
 L["Official project page. Publisher lists Classic Era, Classic progression, TBC. Choose the matching file; exact patch and RM integration behavior may be unverified."] = "Official project page. Publisher lists Classic Era, Classic progression, TBC. Choose the matching file; exact patch and RM integration behavior may be unverified."
 L["Wago Addons — TotemTimers Classic"] = "Wago Addons — TotemTimers Classic"
 
+
+
+L['API'] = true
+L['Masque'] = true
+L['Preview appearance'] = true
+L['Skin preview buttons with Masque'] = true
+L['Optional preview-button skins; configure skins with /masque.'] = true
+L['Help.Integrations.preview_masque'] = 'Opt in to skin recommendation preview buttons with separately installed Masque, then Apply. Discard leaves the saved appearance unchanged. Configure skins with /masque. The preview window keeps its native appearance. Masque manages its own settings and profiles; Rotation Master does not synchronize them. Missing or incompatible APIs and provider errors retain the native preview. Native pixel acceptance remains unverified.'
+
 -- BEGIN GENERATED RM PUBLIC HELPER DOCS
 L["Absolute health target (negative means deficit) or percentage fraction."] = true
 L["All original results, preserving nil positions and return count."] = true

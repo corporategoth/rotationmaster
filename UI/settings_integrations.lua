@@ -180,6 +180,22 @@ function addon:BuildIntegrationSettings(p)
         end
         groups[#groups+1]={key='integrations_quests',title=L['Quest callbacks'],rows={questieRow}}
     end
+    local masqueAllowed=supported('Masque');if not current()then return end
+    if masqueAllowed then
+        local entry=metadata.Masque or{id='Masque',name=L['Masque'],state='missing'}
+        local row=readonly(entry)
+        local enabled=profile.preview_masque==true
+        local loaded=entry.loaded==true or entry.loaded==nil and entry.state~='missing'and entry.state~='unknown'
+        row.state=not loaded and'missing'or enabled and'enabled'or'disabled'
+        if row.state~='missing'or enabled then
+            row.action=function()
+                if not supported('Masque')or not current()then return end
+                profile.preview_masque=not(profile.preview_masque==true)
+                p:RunSettingsEffect('preview_masque',function()self:RefreshPreviewWindow()end);p:Draw()
+            end
+        end
+        groups[#groups+1]={key='integrations_preview',title=L['Preview appearance'],rows={row}}
+    end
     group('integrations_actionbars',L['Action bars'],{'ElvUI','Bartender4','ButtonForge','G15Buttons','SyncUI','LUI','Dominos','DiabolicUI','AzeriteUI','Neuron','FarmingBar','TotemTimers','SamyTotemTimers'})
     -- Measure shared columns once per drawing; description receives the remainder.
     p.width=math.max(340,p.frame:GetWidth()-40);p.child:SetWidth(p.width)

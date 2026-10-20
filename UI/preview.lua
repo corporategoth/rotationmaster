@@ -26,6 +26,11 @@ function addon:CreateNativePreviewWindow()
         window.grip=CreateFrame('Button',nil,frame);window.grip:SetSize(12,12);window.grip:SetPoint('BOTTOMRIGHT',0,0)
         local grip=window.grip:CreateTexture(nil,'OVERLAY');grip:SetAllPoints(window.grip);grip:SetTexture('Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Up')
         function window:Valid() return self.active and addon.db.profile==self.profile and addon.nextWindow==self end
+        function window:EnsureIcon(index)
+            local icon=self.icons[index]
+            if not icon then icon=CreateFrame('Button',nil,self.frame);icon.texture=icon:CreateTexture(nil,'ARTWORK');icon.texture:SetAllPoints(icon);icon:Hide();self.icons[index]=icon end
+            return icon
+        end
         function window:ReleaseChildren()
             self.count=0
             for _,icon in ipairs(self.icons) do if GameTooltip and GameTooltip:IsOwned(icon) then GameTooltip:Hide() end;icon:Hide();addon:SetUIScript(icon,'OnEnter',nil);addon:SetUIScript(icon,'OnLeave',nil) end
@@ -51,6 +56,7 @@ function addon:CreateNativePreviewWindow()
                 end
                 if not sameGeometry(icon:GetWidth(),size) or not sameGeometry(icon:GetHeight(),size) then icon:SetSize(size,size) end
                 if icon:GetAlpha()~=1 then icon:SetAlpha(1) end
+                if icon.masqueOwner then addon:ResizeMasquePreviewIcon(self,icon) end
             end
         end
         function window:Configure()
@@ -62,6 +68,7 @@ function addon:CreateNativePreviewWindow()
             self.header:EnableMouse(not self.locked and self.opacity>0);if self.locked then self.frame:StopMovingOrSizing() end
             if not self.locked and self.opacity>0 then self.grip:Show() else self.grip:Hide() end
             for i,icon in ipairs(self.icons) do if i>self.slots then icon:Hide() end end
+            if addon.ConfigureMasquePreview then addon:ConfigureMasquePreview(self) end
             self:DoLayout()
         end
         function window:Resize(width,height)
@@ -73,11 +80,13 @@ function addon:CreateNativePreviewWindow()
         end
         function window:AddRecommendation(spellId,itemId)
             if not self:Valid() or self.count>=self.slots then return end
-            self.count=self.count+1;local index=self.count;local icon=self.icons[index]
-            if not icon then icon=CreateFrame('Button',nil,self.frame);icon.texture=icon:CreateTexture(nil,'ARTWORK');icon.texture:SetAllPoints(icon);self.icons[index]=icon end
+            self.count=self.count+1;local index=self.count
+            ---@type any
+            local icon=self:EnsureIcon(index)
             local info
             if itemId then info=addon.Platform:GetItemDisplayInfo(itemId) else info=addon.Platform:GetSpellInfo(spellId) end
             icon.spellId,icon.itemId=spellId,itemId;icon.texture:SetTexture(info and info.iconID or 'Interface\\Icons\\INV_Misc_QuestionMark')
+            if icon.masqueOwner then icon.masqueSurface.texture:SetTexture(info and info.iconID or 'Interface\\Icons\\INV_Misc_QuestionMark') end
             local generation=self.generation
             addon:SetUIScript(icon,'OnEnter',function()
                 if not self:Valid() or generation~=self.generation or not GameTooltip then return end
@@ -90,7 +99,7 @@ function addon:CreateNativePreviewWindow()
         function window:ResumeLayout() end
         function window:Show() if self:Valid() then self.frame:Show() end end
         function window:Hide() self.frame:Hide() end
-        function window:Release() self:ReleaseChildren();self.active=false;self.frame:StopMovingOrSizing();self.frame:Hide() end
+        function window:Release() self:ReleaseChildren();self.active=false;self.frame:StopMovingOrSizing();self.frame:Hide();if addon.ReleaseMasquePreview then addon:ReleaseMasquePreview(self) end end
         function window:SetWidth(width) self:Resize(width,self.frame:GetHeight()) end
         function window:SetHeight(height) self:Resize(self.frame:GetWidth(),height) end
         function window:ClearAllPoints() self.frame:ClearAllPoints() end
@@ -98,6 +107,7 @@ function addon:CreateNativePreviewWindow()
         function window:GetPoint(...) return self.frame:GetPoint(...) end
         addon:SetUIScript(frame,'OnSizeChanged',function(_,width,height) if not window.layouting then window:Resize(width,height) end end)
     end
+    if window.active and addon.ReleaseMasquePreview then addon:ReleaseMasquePreview(window) end
     local profile=self.db.profile;window.profile=profile;window.active=true;window.generation=(window.generation or 0)+1;window:ReleaseChildren();self.nextWindow=window
     local generation=window.generation
     local function valid() return window:Valid() and generation==window.generation end

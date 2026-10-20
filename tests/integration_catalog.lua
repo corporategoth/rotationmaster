@@ -1,6 +1,6 @@
 local F=dofile('tests/fixtures/addon.lua')
 local test,finish=F.suite()
-local expected={'ExtendedCharacterStats','MobInfo2','!!!LuaWorkbench','WowLua','WeakAuras','Questie','ElvUI','Bartender4','ButtonForge','G15Buttons','SyncUI','LUI','Dominos','DiabolicUI','AzeriteUI','Neuron','FarmingBar','TotemTimers','SamyTotemTimers'}
+local expected={'ExtendedCharacterStats','MobInfo2','!!!LuaWorkbench','WowLua','WeakAuras','Masque','Questie','ElvUI','Bartender4','ButtonForge','G15Buttons','SyncUI','LUI','Dominos','DiabolicUI','AzeriteUI','Neuron','FarmingBar','TotemTimers','SamyTotemTimers'}
 local function fixture(legacy)
  local f=F.new();local present,versions,calls={},{},{}
  local function loaded(id)calls[#calls+1]={'loaded',id};return present[id]==true end
@@ -12,18 +12,18 @@ local function fixture(legacy)
  return f,present,versions,calls
 end
 local function byID(rows,id)for _,row in ipairs(rows)do if row.id==id then return row end end;error('missing '..id)end
-test('module load is idle and all nineteen supported addons remain visible when missing',function()
+test('module load is idle and all twenty supported addons remain visible when missing',function()
  local f,_,_,calls=fixture();assert(#calls==0)
  local rows=f.addon:ListIntegrationStatus();assert(#rows==#expected)
  for i,row in ipairs(rows)do assert(row.id==expected[i]and row.state=='missing'and type(row.name)=='string'and type(row.detail)=='string'and row.version==nil);assert(getmetatable(row)==nil)end
- assert(#calls==38 and getmetatable(rows)==nil)
+ assert(#calls==40 and getmetatable(rows)==nil)
 end)
 test('modern and legacy metadata are exact dot calls and fresh versions',function()
  for _,legacy in ipairs({false,true})do
   local f,p,v,calls=fixture(legacy);p.MobInfo2=true;v.MobInfo2='1.2.3'
   assert(byID(f.addon:ListIntegrationStatus(),'MobInfo2').version=='1.2.3')
   v.MobInfo2='2.0';assert(byID(f.addon:ListIntegrationStatus(),'MobInfo2').version=='2.0')
-  assert(#calls==76)
+  assert(#calls==80)
  end
 end)
 test('not-loaded addons retain safely detected version without implying installed absence',function()
@@ -129,5 +129,13 @@ test('addon loaded evidence stays independent of failed or missing adapter state
  f.addon.GetQuestieIntegrationStatus=function()return{state='missing'}end
  row=byID(f.addon:ListIntegrationStatus(),'Questie');assert(row.loaded==true and row.state=='missing')
  p.Questie=false;row=byID(f.addon:ListIntegrationStatus(),'Questie');assert(row.loaded==false and row.version=='12.1.0')
+end)
+test('Masque inventory reports cached connected compatibility and API minor without discovery',function()
+ local f,p,v=fixture();p.Masque=true;v.Masque='12.1.0';local state='disabled'
+ f.addon.GetMasquePreviewStatus=function()return{state=state,apiMinor=110210}end
+ f.env.LibStub=function()error('inventory discovered provider')end
+ for input,expected in pairs({connected='connected',disabled='disabled',incompatible='incompatible',error='unknown',unavailable='unknown',missing='missing'})do
+  state=input;local row=byID(f.addon:ListIntegrationStatus(),'Masque');assert(row.state==expected and row.version=='12.1.0'and row.detail:find('110210',1,true))
+ end
 end)
 finish()

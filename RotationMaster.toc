@@ -17,7 +17,7 @@
 ## X-Project-Revision: @project-revision@
 ## X-ReleaseDate: @project-date-iso@
 ## SavedVariables: RotationMasterDB
-## OptionalDeps: LibDBIcon-1.0, LibDataBroker-1.1, LibCompress, CallbackHandler-1.0, LibCustomGlow, ThreatClassic-1.0, LibClassicDurations, LibRangeCheck-3.0
+## OptionalDeps: LibDBIcon-1.0, LibDataBroker-1.1, LibCompress, CallbackHandler-1.0, LibCustomGlow, ThreatClassic-1.0, LibClassicDurations, LibRangeCheck-3.0, Masque
 ## X-Credits: None
 ## X-License: MIT
 ## X-Author-Server: Atiesh
@@ -241,6 +241,7 @@ UI/lua_completion.lua
 UI/line_numbers.lua
 UI/lua_editor.lua
 Integrations/questie.lua
+Integrations/masque.lua
 Integrations/catalog.lua
 UI/schema_cards.lua
 UI/schema_editor.lua

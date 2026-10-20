@@ -2100,6 +2100,7 @@ for _,record in pairs(records)do
  record.new=source;record.changes=nil
 end
 return function(path,source)
+ source=dofile('tests/fixtures/restore_masque_preview.lua')(path,source)
  local record=assert(records[path],'unsupported integration pills inverse path')
  if source==record.old then return source end
  assert(source==record.new,'integration pills inverse requires exact complete successor: '..path)

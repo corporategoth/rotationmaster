@@ -16,11 +16,11 @@ local function fixture(options)
   return frame
  end
  f.env.CreateFrame=withFontAPI;create=withFontAPI
- local loaded={LuaWorkbench=options.workbench~=false,Questie=options.questie~=false,ExtendedCharacterStats=true,MobInfo2=false,WeakAuras=true,Dominos=true}
- local calls={sync=0,refresh=0,created=0};a.db.profile.lua_editor=options.selected or'auto'
+ local loaded={LuaWorkbench=options.workbench~=false,Questie=options.questie~=false,Masque=options.masque~=false,ExtendedCharacterStats=true,MobInfo2=false,WeakAuras=true,Dominos=true}
+ local calls={sync=0,refresh=0,created=0,preview=0};a.db.profile.lua_editor=options.selected or'auto'
  a.LuaSyntax={enable=function()end,disable=function()end,decode=function(s)return s end}
  a.ListIntegrationStatus=function()
-  local rows={};for _,row in ipairs({{'!!!LuaWorkbench','LuaWorkbench','Lua editor integration.'},{'WowLua','WowLua','Optional editor addon.'},{'ExtendedCharacterStats','ExtendedCharacterStats','Optional character statistics conditions.'},{'MobInfo2','MobInfo2','Recorded creature history conditions.'},{'WeakAuras','WeakAuras','Recommendation event bridge.'},{'Questie','Questie','Quest update receipts only.'},{'Dominos','Dominos','Optional action-bar glow support.'}})do
+  local rows={};for _,row in ipairs({{'!!!LuaWorkbench','LuaWorkbench','Lua editor integration.'},{'WowLua','WowLua','Optional editor addon.'},{'ExtendedCharacterStats','ExtendedCharacterStats','Optional character statistics conditions.'},{'MobInfo2','MobInfo2','Recorded creature history conditions.'},{'WeakAuras','WeakAuras','Recommendation event bridge.'},{'Questie','Questie','Quest update receipts only.'},{'Masque','Masque','Optional preview-button skins.'},{'Dominos','Dominos','Optional action-bar glow support.'}})do
    rows[#rows+1]={id=row[1],name=row[2],version=loaded[row[2]]and'1.2.3'or nil,state=loaded[row[2]]and'loaded'or'missing',detail=row[3]}
   end;return rows
  end
@@ -28,6 +28,7 @@ local function fixture(options)
  a.IsLuaWorkbenchIntegrationAvailable=function()return loaded.LuaWorkbench end
  a.SyncQuestieIntegration=function()calls.sync=calls.sync+1 end;a.RefreshQuestieIntegration=function()calls.refresh=calls.refresh+1 end
  a.GetQuestieIntegrationStatus=function()return{state='disabled'}end
+ a.RefreshPreviewWindow=function()calls.preview=calls.preview+1 end
  local function register(id)
   a:RegisterLuaEditorProvider(id,function(host,changed,valid)
    calls.created=calls.created+1;if not loaded[id]then return nil end
@@ -258,7 +259,7 @@ end)
 test('shared integration help stays at page level; option help is beneath the status pill',function()
  local f,a,p=fixture();f.load('UI/help.lua');local shown={};local L=f.env.LibStub('AceLocale-3.0'):GetLocale('rotationmaster')
  a.ShowWorkbenchHelp=function(_,name,sections)shown={name=name,sections=sections}end
- for _,id in ipairs({'editor_LuaWorkbench','ExtendedCharacterStats','MobInfo2','WeakAuras','Dominos','WowLua','Questie'})do
+ for _,id in ipairs({'editor_LuaWorkbench','ExtendedCharacterStats','MobInfo2','WeakAuras','Dominos','WowLua','Questie','Masque'})do
   assert(not p.fields['integration_help_'..id],'generic Help repeated on addon '..id)
  end
  for _,id in ipairs({'editor_native'})do
@@ -270,7 +271,7 @@ test('shared integration help stays at page level; option help is beneath the st
  end
  click(p,'integration_help_editor_native');assert(shown.sections[1].text==L['Help.Integrations.native_highlighting'],'Native Help repeats general editor instructions')
  local page=a:GetIntegrationOptionHelp();local common={};for _,section in ipairs(page)do common[section.id]=section.text end
- assert(common.lua_editor and common.optional_addons and common.lua_line_numbers and common.questie_enabled,'shared guidance not available in page Help')
+ assert(common.lua_editor and common.optional_addons and common.lua_line_numbers and common.questie_enabled and common.preview_masque,'shared guidance not available in page Help')
 end)
 test('integration sections collapse without settings mutations and retire pooled old callbacks',function()
  local _,a,p=fixture();local before=a:CopySettingsData(draft(p));local section=assert(p.fields.section_integrations_editors)
@@ -310,7 +311,7 @@ test('client and support lookups stop an obsolete drawing before provider work',
  setmetatable(b,{__index=function(_,key)if key=='GetIntegrationClientSupport'then q:Release();return function()error('obsolete support call')end end;return prior and prior.__index and prior.__index(b,key)end})
  assert(pcall(function()q:Draw()end));assert(not q.active and not q.fields.integration_card_editor_native)
 end)
-test('only Native options use gold standard Help below Status at full and narrow widths',function()
+test('only Native inline options use gold standard Help below Status at full and narrow widths',function()
  local _,_,p=fixture()
  for _,width in ipairs({1300,420})do
   p.frame:SetWidth(width);p:Draw()
@@ -324,7 +325,52 @@ test('only Native options use gold standard Help below Status at full and narrow
   local syntax=p.fields.lua_native_highlighting;local help=p.fields.integration_help_editor_native
   assert(syntax.point[3]==help.point[3],'Help pushed the first addon option below its row')
   assert(syntax.point[2]+syntax:GetWidth()+8<=help.point[2],'addon option overlaps Help')
-  assert(not p.fields.integration_help_editor_LuaWorkbench and not p.fields.integration_help_Dominos and not p.fields.integration_help_Questie)
+  assert(not p.fields.integration_help_editor_LuaWorkbench and not p.fields.integration_help_Dominos and not p.fields.integration_help_Questie and not p.fields.integration_help_Masque)
  end
+end)
+test('Masque appearance pill is opt in and Apply/Discard preserves saved state',function()
+ local _,a,p,_,calls=fixture();assert(state(p,'Masque')=='Disabled'and not a.db.profile.preview_masque)
+ click(p,'integration_status_Masque');assert(draft(p).preview_masque==true and not a.db.profile.preview_masque and calls.preview==0)
+ p:DiscardSettingsDraft();p:Draw();assert(state(p,'Masque')=='Disabled'and calls.preview==0)
+ click(p,'integration_status_Masque');assert(p:SaveSettingsDraft());assert(a.db.profile.preview_masque==true and calls.preview==1)
+ p:Draw();local stale=p.fields.integration_status_Masque.scripts.OnClick;p:Release();stale();assert(a.db.profile.preview_masque==true)
+end)
+test('missing Masque stays inert while an existing opt in remains removable',function()
+ local _,a,p=fixture({masque=false});assert(state(p,'Masque')=='Not loaded'and not pill(p,'Masque'):IsEnabled()and not p.fields.integration_help_Masque)
+ a.db.profile.preview_masque=true;p:DiscardSettingsDraft();p:Draw();assert(pill(p,'Masque'):IsEnabled()and state(p,'Masque')=='Not loaded'and not p.fields.integration_help_Masque)
+ local gray=pill(p,'Masque').pillDecoration.border[1].color;assert(gray[1]==.48 and gray[2]==.48 and gray[3]==.48)
+ click(p,'integration_status_Masque');assert(draft(p).preview_masque==false)
+end)
+test('Masque portable preference accepts only a Boolean and survives copy/reset',function()
+ local _,a=fixture()
+ for _,enabled in ipairs({false,true})do local value={preview_masque=enabled};assert(a:ValidateProfileTransfer(value));assert(a:ProfileFromPortable(a:ProfileToPortable(value)).preview_masque==enabled)end
+ for _,bad in ipairs({'true',1,{}})do assert(not a:ValidateProfileTransfer({preview_masque=bad}))end
+ local f=assert(io.open('tests/startup.lua'));local source=f:read('*a');f:close();local prefix=assert(source:match('^(.-)\ntest%('));local persistent=assert(source:match('(local function persistentFixture.-)\n%-%- WoW SavedVariables'))
+ local make=assert(loadstring(prefix..'\n'..persistent..'\nreturn persistentFixture'))();local _,real=make()
+ real.db.profile.preview_masque=true;real.db:SetProfile('Other');assert(not real.db.profile.preview_masque)
+ real.db:CopyProfile('Default');assert(real.db.profile.preview_masque==true);real.db:ResetProfile();assert(not real.db.profile.preview_masque)
+end)
+test('Masque status keeps the five-label palette and saved preference across backend states',function()
+ local f,a,p=fixture();local list=a.ListIntegrationStatus
+ local backend,loaded='connected',true
+ a.ListIntegrationStatus=function(self)
+  local rows=list(self);for _,row in ipairs(rows)do if row.id=='Masque'then row.state=backend;row.loaded=loaded end end;return rows
+ end
+ local palette={['Not loaded']=true,Supported=true,Disabled=true,Enabled=true,Selected=true}
+ for _,enabled in ipairs({false,true})do
+  a.db.profile.preview_masque=enabled;p:DiscardSettingsDraft()
+  for _,source in ipairs({'connected','loaded','disabled','incompatible','unknown','missing'})do
+   backend=source
+   for _,present in ipairs({false,true})do
+    loaded=present;p:Draw()
+    local expected=present and(enabled and'Enabled'or'Disabled')or'Not loaded'
+    assert(state(p,'Masque')==expected,'Masque backend '..source..' leaked into preference pill')
+    assert(not p.fields.integration_help_Masque and not p.fields.integration_help_Questie,'toggle-only row has card Help')
+    for _,control in ipairs(p.pool.integrationPills or{})do if control:IsShown()then assert(palette[control:GetText()],'extra Status label '..tostring(control:GetText()))end end
+   end
+  end
+ end
+ f.load('UI/help.lua');local help={};for _,entry in ipairs(a:GetIntegrationOptionHelp())do help[entry.id]=entry.text end
+ assert(help.preview_masque:find('/masque',1,true)and help.questie_enabled,'toggle guidance missing from page Help')
 end)
 finish()

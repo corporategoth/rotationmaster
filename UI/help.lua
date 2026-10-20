@@ -16,6 +16,7 @@ function addon:GetIntegrationOptionHelp()
         {id='lua_editor',title=L['Editor'],text=L['Help.Integrations.lua_editor']},
         {id='lua_line_numbers',title=L['Show line numbers'],text=L['Help.Integrations.lua_line_numbers']},
         {id='optional_addons',title=L['Optional addons'],text=L['Help.Integrations.optional_addons']},
+        {id='preview_masque',title=L['Skin preview buttons with Masque'],text=L['Help.Integrations.preview_masque']},
         {id='questie_enabled',title=L['Enable Questie integration'],text=L['Help.Integrations.questie_enabled']},
         {id='native_highlighting',title=L['Syntax highlighting'],text=L['Help.Integrations.native_highlighting']},
     }
