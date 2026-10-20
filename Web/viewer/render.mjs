@@ -1,35 +1,62 @@
 import {formatBytes,pathText,rawEntries,valueText} from './model.mjs';
 
+// Shared bounded text-only drawing, raw paging and byte inspection. Both source
+// readers and comparison details use these exact routines; no imported HTML.
+function drawing(document,root,instance,ticket,current){
+  let nodes=0,chars=0,contextID=0;
+  const add=(parent,tag,content,cls)=>{
+    if(!parent||nodes>=1900||chars>=90000)return null;
+    content=String(content??'');content=content.slice(0,Math.max(0,90000-chars));nodes++;chars+=content.length;
+    const e=document.createElement(tag);e.textContent=content;if(cls)e.setAttribute('class',cls);parent.append(e);return e;
+  };
+  const describe=e=>{if(!e)return;const id='rmv-context-'+instance+'-'+ticket+'-'+(++contextID);e.setAttribute('id',id);return id;};
+  const button=(parent,label,fn,description)=>{const b=add(parent,'button',label);if(!b)return;b.setAttribute('type','button');if(description)b.setAttribute('aria-describedby',description);b.addEventListener('click',()=>{if(current())fn();});return b;};
+  return {add,button,describe,atLimit:()=>nodes>=1900||chars>=90000};
+}
+function rawPage(ui,parent,rows,page,inspect,navigate,heading='Raw decoded data'){
+  const {add,button,describe}=ui,section=add(parent,'section','','raw');const title=add(section,'h2',heading);title?.setAttribute('tabindex','-1');
+  add(section,'p',rows.length+' entries; showing '+(rows.length?page*200+1:0)+'–'+Math.min(rows.length,(page+1)*200)+'. Byte and number keys remain distinct.');
+  for(const row of rows.slice(page*200,(page+1)*200)){
+    const line=add(section,'div','','raw-row');if(!line)break;
+    const path=pathText(row.path),description=describe(add(line,'pre',(path.length>96?path.slice(0,96)+'…':path)+' = '+valueText(row.value,32)));
+    button(line,'Inspect value',()=>inspect(row),description);
+    const key=row.path[row.path.length-1];if(typeof key==='string'&&key.length>80)button(line,'Inspect key',()=>inspect({path:row.path.slice(0,-1),value:key}),description);
+  }
+  if(page>0)button(section,'Previous entries',()=>navigate(page-1));
+  if((page+1)*200<rows.length)button(section,'Next entries',()=>navigate(page+1));
+  return title;
+}
+function diagnosticList(ui,parent,diagnostics,page,navigate){
+  if(!diagnostics.length)return;
+  ui.add(parent,'p','Diagnostics '+(page*20+1)+'–'+Math.min(diagnostics.length,(page+1)*20)+' of '+diagnostics.length);
+  const list=ui.add(parent,'ul','');for(const d of diagnostics.slice(page*20,(page+1)*20))ui.add(list,'li',valueText(d.path||'$',80)+': '+valueText(d.code||'structural-diagnostic',80));
+  if(page>0)ui.button(parent,'Previous diagnostics',()=>navigate(page-1));
+  if((page+1)*20<diagnostics.length)ui.button(parent,'Next diagnostics',()=>navigate(page+1));
+}
+function byteDetails(ui,parent,value,offset,navigate){
+  const part=formatBytes(value,{offset,limit:1024});ui.add(parent,'pre',part.text);
+  ui.add(parent,'p','Bytes '+(value.length?offset+1:0)+'–'+Math.min(value.length,offset+1024)+' of '+value.length+'. '+part.remaining+' remaining.');
+  if(offset>0)ui.button(parent,'Previous bytes',()=>navigate(Math.max(0,offset-1024)));
+  if(part.remaining)ui.button(parent,'Next bytes',()=>navigate(offset+1024));
+}
+
 let nextRenderer=0;
 export function renderViewer(document,root,view){
   const instance=++nextRenderer;
-  let active=true,revision=0,rawPage=0,stepPage=0,diagnosticPage=0,selected=null,byteOffset=0;
+  let active=true,revision=0,rawPageIndex=0,stepPage=0,diagnosticPage=0,selected=null,byteOffset=0;
   const data=view.decode?.value,raw=view.decode?.ok?rawEntries(data):[];
   const rows=view.analysis?.validation.valid&&view.analysis.index?.rows||[];
   let mode=rows.length?'ordered':'raw';
   const shortPath=(path,limit)=>{const text=pathText(path);return text.length>limit?text.slice(0,limit)+'…':text;};
-  const node=(tag,text,cls)=>{const e=document.createElement(tag);if(text!==undefined)e.textContent=text;if(cls)e.setAttribute('class',cls);return e;};
   function draw(focus){
-    if(!active)return;const ticket=++revision;root.replaceChildren();
-    let nodes=0,chars=0,contextID=0,focusTarget;
-    const add=(parent,tag,content,cls)=>{
-      if(nodes>=1900||chars>=90000)return null;
-      content=String(content??'');content=content.slice(0,Math.max(0,90000-chars));nodes++;chars+=content.length;
-      const e=node(tag,content,cls);parent.append(e);return e;
-    };
-    const describe=e=>{if(!e)return;const id='rmv-context-'+instance+'-'+ticket+'-'+(++contextID);e.setAttribute('id',id);return id;};
-    const button=(parent,label,fn,description)=>{const b=add(parent,'button',label);if(!b)return;b.setAttribute('type','button');if(description)b.setAttribute('aria-describedby',description);b.addEventListener('click',()=>{if(active&&ticket===revision)fn();});return b;};
+    if(!active)return;const ticket=++revision;root.replaceChildren();let focusTarget;
+    const ui=drawing(document,root,instance,ticket,()=>active&&ticket===revision),{add,button,describe}=ui;
     if(!view.decode?.ok){add(root,'p','Could not decode: '+(view.decode?.reason||'unknown-transport-error'),'problem');return;}
     const status=add(root,'section','','status');const statusHeading=add(status,'h2','Import status');statusHeading.setAttribute('tabindex','-1');if(focus==='diagnostics')focusTarget=statusHeading;add(status,'p','Decoded '+view.decode.kind+' transport.');
     add(status,'p',view.structureMessage);const validation=view.analysis?.validation;
     if(validation&&view.analysis.recognized!==false){add(status,'p','Structure '+(validation.valid?'valid':'invalid')+'; '+(validation.supported?'supported':'contains unsupported data')+'; References '+(validation.resolved?'found':'unresolved')+'.');}
     add(status,'p','Semantics not evaluated. Native readiness not checked. Gameplay quality unreviewed.','caution');
-    if(validation?.diagnostics.length){
-      add(status,'p','Diagnostics '+(diagnosticPage*20+1)+'–'+Math.min(validation.diagnostics.length,(diagnosticPage+1)*20)+' of '+validation.diagnostics.length);
-      const list=add(status,'ul','');for(const d of validation.diagnostics.slice(diagnosticPage*20,(diagnosticPage+1)*20))add(list,'li',valueText(d.path||'$',80)+': '+valueText(d.code||'structural-diagnostic',80));
-      if(diagnosticPage>0)button(status,'Previous diagnostics',()=>{diagnosticPage--;draw('diagnostics');});
-      if((diagnosticPage+1)*20<validation.diagnostics.length)button(status,'Next diagnostics',()=>{diagnosticPage++;draw('diagnostics');});
-    }
+    if(validation)diagnosticList(ui,status,validation.diagnostics,diagnosticPage,page=>{diagnosticPage=page;draw('diagnostics');});
     const content=add(root,'div','','content');
     const declared=add(root,'section','','declared');add(declared,'h2','Declared information');
     let declaredLeaves=0;
@@ -63,31 +90,69 @@ export function renderViewer(document,root,view){
       const switching=view.analysis.body?.get('switch');if(switching instanceof Map){add(ordered,'h3','Switch conditions');add(ordered,'p','Literal switching guard; native state is not evaluated.');button(ordered,'Inspect switch',()=>{selected={path:['switch'],value:switching};byteOffset=0;draw('inspection');});}
     }else if(view.analysis&&!rows.length){add(content,'p','Ordered preview is unavailable or empty. Inspect the original structure below.');}
     if(mode==='raw'){
-    const rawSection=add(content,'section','','raw');const rawHeading=add(rawSection,'h2','Raw decoded data');rawHeading.setAttribute('tabindex','-1');if(focus==='raw')focusTarget=rawHeading;
-    add(rawSection,'p',raw.length+' entries; showing '+(raw.length?rawPage*200+1:0)+'–'+Math.min(raw.length,(rawPage+1)*200)+'. Byte and number keys remain distinct.');
-    for(const row of raw.slice(rawPage*200,(rawPage+1)*200)){
-      const line=add(rawSection,'div','','raw-row');if(!line)break;
-      const description=describe(add(line,'pre',shortPath(row.path,96)+' = '+valueText(row.value,32)));
-      button(line,'Inspect value',()=>{selected=row;byteOffset=0;draw('inspection');},description);
-      const key=row.path[row.path.length-1];if(typeof key==='string'&&key.length>80)button(line,'Inspect key',()=>{selected={path:row.path.slice(0,-1),value:key};byteOffset=0;draw('inspection');},description);
-    }
-    if(rawPage>0)button(rawSection,'Previous entries',()=>{rawPage--;draw('raw');});
-    if((rawPage+1)*200<raw.length)button(rawSection,'Next entries',()=>{rawPage++;draw('raw');});
+      const heading=rawPage(ui,content,raw,rawPageIndex,row=>{selected=row;byteOffset=0;draw('inspection');},page=>{rawPageIndex=page;draw('raw');});
+      if(focus==='raw')focusTarget=heading;
     }
     if(selected){
       const detail=add(root,'section','','inspection');const inspectionHeading=add(detail,'h2','Value inspection');inspectionHeading.setAttribute('tabindex','-1');if(focus==='inspection')focusTarget=inspectionHeading;
       add(detail,'pre',shortPath(selected.path,4096));
       if(typeof selected.value==='string'){
-        const part=formatBytes(selected.value,{offset:byteOffset,limit:1024});add(detail,'pre',part.text);
-        add(detail,'p','Bytes '+(selected.value.length?byteOffset+1:0)+'–'+Math.min(selected.value.length,byteOffset+1024)+' of '+selected.value.length+'. '+part.remaining+' remaining.');
-        if(byteOffset>0)button(detail,'Previous bytes',()=>{byteOffset=Math.max(0,byteOffset-1024);draw('inspection');});
-        if(part.remaining)button(detail,'Next bytes',()=>{byteOffset+=1024;draw('inspection');});
+        byteDetails(ui,detail,selected.value,byteOffset,offset=>{byteOffset=offset;draw('inspection');});
       }else if(selected.value instanceof Map){for(const row of rawEntries(selected.value).slice(0,20))add(detail,'pre',pathText(row.path).slice(0,256)+' = '+valueText(row.value));add(detail,'p','Nested values remain in the raw decoded data pages.');}
       else add(detail,'pre',valueText(selected.value));
       button(detail,'Close inspection',()=>{selected=null;draw(mode==='raw'?'raw':'ordered');});
     }
     if(focusTarget)focusTarget.focus();
-    if(nodes>=1900||chars>=90000)add(root,'p','Rendering limit reached. Use raw data pages to inspect remaining content.');
+    if(ui.atLimit())add(root,'p','Rendering limit reached. Use raw data pages to inspect remaining content.');
   }
   draw();return ()=>{active=false;revision++;selected=null;root.replaceChildren();};
+}
+
+const segmentText=segments=>'$'+segments.map(s=>'['+s.kind+' '+pathText([s.key]).slice(1)+']').join('');
+export function renderComparison(document,root,view){
+  const instance=++nextRenderer;let active=true,revision=0,page=0,diagnosticPage=0,selected=null,leaf=null,entryPage=0,byteOffset=0;
+  function draw(focus){
+    if(!active)return;const ticket=++revision;root.replaceChildren();
+    const ui=drawing(document,root,instance,ticket,()=>active&&ticket===revision),{add,button,describe}=ui;
+    const section=add(root,'section','','comparison');const heading=add(section,'h2',view.status==='partial'?'Partial comparison':view.status==='complete'?'Structural comparison':'Comparison unavailable');heading.setAttribute('tabindex','-1');let focusTarget=focus==='changes'?heading:null;
+    add(section,'p','Literal data only. Native readiness, compatibility and gameplay quality are not checked.');
+    const diff=view.diff;
+    if(view.status==='unavailable'){
+      const side=view.side==='left'?'First export':view.side==='right'?'Second export':'';
+      const messages={'decode-required':'Decode this export before comparing.','schema-unavailable':'Local structural analysis is unavailable. Raw data and original copy remain available.','invalid-structure':'Inspect and resolve structural diagnostics before comparing.','future-schema':'Unsupported envelope schema. Compare is unavailable; inspect raw data instead.','unrecognized-legacy':'Legacy comparison requires a recognized rotation or cooldown list.','comparison-failed':'The comparison could not be completed. Original exports remain available.'};
+      add(section,'p',(side?side+': ':'')+(messages[view.reason]||'The strict structural comparison is unavailable. Inspect its diagnostics.'),'problem');
+    }
+    if(view.mixed)add(section,'p','Comparing an envelope with a legacy body. Envelope metadata is included; missing legacy metadata is not inferred.');
+    add(section,'p','Different step IDs are not paired automatically. No clone lineage is inferred.');
+    diagnosticList(ui,section,diff?.diagnostics||[],diagnosticPage,n=>{diagnosticPage=n;draw('changes');});
+    const changes=diff?.valid?diff.changes:[];
+    if(view.status==='complete'&&diff?.valid&&diff.complete&&changes.length===0)add(section,'p','No structural differences.');
+    else if(diff?.valid)add(section,'p',(diff.complete?'Complete comparison. ':'Partial comparison; additional differences may be omitted. ')+changes.length+' returned changes; showing '+(changes.length?page*25+1:0)+'–'+Math.min(changes.length,(page+1)*25)+'.');
+    for(let i=page*25;i<Math.min(changes.length,(page+1)*25);i++){
+      const c=changes[i],row=add(section,'article','','step');if(!row)break;
+      const title=add(row,'h3',(i+1)+'. '+c.kind),description=describe(title),text=segmentText(c.segments);add(row,'pre',text.length>256?text.slice(0,256)+'…':text);
+      if(c.fromIndex!==undefined)add(row,'p','From priority '+c.fromIndex);if(c.toIndex!==undefined)add(row,'p','To priority '+c.toIndex);
+      function inspect(label,value,target){selected={label,value,path:text,target};leaf=null;entryPage=0;byteOffset=0;draw('inspection');}
+      const pathValue=new Map(c.segments.map((s,n)=>[n+1,new Map([['kind',s.kind],['key',s.key]])]));
+      const pathButton=button(row,'Inspect path',()=>inspect('Typed path',pathValue,'path-'+i),description);if(focus==='path-'+i)focusTarget=pathButton;
+      for(const side of ['before','after']){
+        const label=side==='before'?'Before':'After';add(row,'p',label+': '+(Object.hasOwn(c,side)?valueText(c[side],32):'Not present'));
+        if(Object.hasOwn(c,side)){const b=button(row,'Inspect '+side,()=>inspect(label+' value',c[side],side+'-'+i),description);if(focus===side+'-'+i)focusTarget=b;}
+      }
+    }
+    if(page>0)button(section,'Previous changes',()=>{page--;selected=null;draw('changes');});
+    if((page+1)*25<changes.length)button(section,'Next changes',()=>{page++;selected=null;draw('changes');});
+    if(selected){
+      const detail=add(root,'section','','inspection'),title=add(detail,'h2',selected.label);title?.setAttribute('tabindex','-1');if(focus==='inspection')focusTarget=title;
+      add(detail,'pre',selected.path.length>4096?selected.path.slice(0,4096)+'…':selected.path);const value=leaf?leaf.value:selected.value;
+      if(leaf)add(detail,'pre',pathText(leaf.path));
+      if(typeof value==='string')byteDetails(ui,detail,value,byteOffset,offset=>{byteOffset=offset;draw('inspection');});
+      else if(value instanceof Map){const rows=rawEntries(value);rawPage(ui,detail,rows,entryPage,row=>{leaf={path:[...(leaf?.path||[]),...row.path],value:row.value};entryPage=0;byteOffset=0;draw('inspection');},n=>{entryPage=n;draw('inspection');},'Value entries');}
+      else add(detail,'pre',valueText(value));
+      if(leaf)button(detail,'Back to value',()=>{leaf=null;entryPage=0;byteOffset=0;draw('inspection');});
+      button(detail,'Close inspection',()=>{const target=selected.target;selected=null;leaf=null;draw(target);});
+    }
+    focusTarget?.focus();
+  }
+  draw();return ()=>{active=false;revision++;selected=null;leaf=null;root.replaceChildren();};
 }

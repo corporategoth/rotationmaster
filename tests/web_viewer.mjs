@@ -181,3 +181,12 @@ test('repeated inspection buttons describe adjacent row context using only gener
  function check(){const controls=all(root).filter(x=>x.tagName==='button'&&/^Inspect (step|value|key)$/.test(x.textContent));assert(controls.length);for(const b of controls){const id=b.attributes['aria-describedby'];assert.match(id,/^rmv-context-\d+-\d+-\d+$/);const context=find(root,x=>x.attributes.id===id);assert(context);assert.equal(context.parentNode,b.parentNode);assert(context.textContent.length);assert(!id.includes('malicious'));}return controls;}
  assert.equal(check().length,2);await find(root,x=>x.tagName==='button'&&x.textContent==='Show raw data').click();assert.equal(check().length,3);
 });
+test('shared raw pager preserves complete long-key inspection and return focus in the single reader',async()=>{
+ const {d,root}=host(),key='k'.repeat(1300);const value=map(Array.from({length:201},(_,i)=>[i+1,false]));value.set(key,'literal');render.renderViewer(d,root,display(value));await find(root,x=>x.tagName==='button'&&x.textContent==='Next entries').click();await find(root,x=>x.tagName==='button'&&x.textContent==='Inspect key').click();assert(root.textContent.includes('of 1300'));await find(root,x=>x.tagName==='button'&&x.textContent==='Next bytes').click();assert(root.textContent.includes('Bytes 1025'));await find(root,x=>x.tagName==='button'&&x.textContent==='Close inspection').click();assert.equal(d.activeElement.textContent,'Raw decoded data');assert(root.textContent.includes('Previous entries'));
+});
+
+test('raw view stays grouped beside declared metadata in the shared content cell',()=>{
+ const {d,root}=host();render.renderViewer(d,root,display(map([['x',false]])));
+ const raw=find(root,e=>e.attributes.class==='raw'),content=find(root,e=>e.attributes.class==='content');
+ assert(raw&&content);assert.equal(raw.parentNode,content);
+});

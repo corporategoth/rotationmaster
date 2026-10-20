@@ -10,7 +10,7 @@ python3 -m http.server 8765 --bind 127.0.0.1 --directory Web
 
 Open `http://127.0.0.1:8765/`. Browser ES modules and the local declaration catalog require HTTP; opening `index.html` with `file://` is not supported. The application fetches only its same-origin static catalog. It does not fetch imported source URLs, spell metadata or remote assets.
 
-Paste one export and choose Decode. Decoding, structural validity, supported fields, declarative reference resolution and native readiness are separate states. Native readiness and gameplay quality are never certified by this viewer. A declared class, edition, source or review date is imported metadata. The browser does not infer missing applicability from spell IDs.
+Paste an export and choose Decode. “Compare another export” opens an optional second input with its own Decode, Clear and original-copy controls. Comparison is explicit and uses two current accepted decodes. Decoding, structural validity, supported fields, declarative reference resolution and native readiness are separate states. Native readiness and gameplay quality are never certified by this viewer. A declared class, edition, source or review date is imported metadata. The browser does not infer missing applicability from spell IDs.
 
 Known structures show ordered actions, cooldowns, branch arms and nested conditions. Unknown or invalid data stays available in a typed raw view. Display is bounded and paginated; byte escapes and shortened previews do not change the import. Copy original export retains the exact successful text, including wrapping. Editing the input retires that copy authority until another successful Decode. Clipboard denial offers a manual-copy field.
 
@@ -38,13 +38,23 @@ Lua metadata-field diagnostic order differs between VMs because its implementati
 
 ## Pure two-way comparison
 
-`schema/diff.mjs` exposes `diffRotations(left, right, options?)` for envelope-like Maps. It returns structural `valid`/`complete` flags, changes and diagnostics. This module is not yet connected to a second-input browser UI. It does not infer legacy wrappers, applicability, execution readiness or lineage.
+`schema/diff.mjs` exposes `diffRotations(left, right, options?)` for envelope-like Maps. It returns structural `valid`/`complete` flags, changes and diagnostics. The local comparison UI uses this module without inferring applicability, execution readiness or lineage. Legacy wrapping follows the explicit eligibility rule below.
 
 Changes retain typed field/step segments and detached before/after payloads. Priority matching uses exact step IDs or caller-supplied `leftOrigins`/`rightOrigins` Maps, with a longest-increasing-subsequence move calculation. Arbitrary regenerated IDs produce add/remove changes. Both branch arms are indexed, including forced-away arms; ordinary nested fields named `onTrue`/`onFalse` remain data. The saved `body.revision` counter is ignored; root `id`/`revision` are ignored only with explicit Boolean `ignoreIdentity`. Nested custom fields called `revision` remain significant.
 
 Options are a closed, caller-owned plain descriptor object; imported callbacks and accessor options are refused. This is not a sandbox for hostile JavaScript proxies or modified standard primitives. The comparator uses the codec's per-input portable bounds and the schema index's strict 2,000-step/16-branch-depth bounds. It emits at most 500 changes and marks overlong paths or truncated changes incomplete. These logical limits do not establish a precise browser memory or CPU bound.
 
-Typed segments carry identity. Display paths use the actual LuaJIT oracle's quoting of control bytes; Lua 5.1 can spell those paths differently. Preserve byte values and never parse a display path to recover keys. Three-way clone comparison, conflict detection, patches and visual diff remain later work.
+Typed segments carry identity. Display paths use the actual LuaJIT oracle's quoting of control bytes; Lua 5.1 can spell those paths differently. Preserve byte values and never parse a display path to recover keys. Three-way clone comparison, conflict detection and patches remain later work.
+
+## Comparing two inputs
+
+Decode each input before choosing Compare; changed text is not silently decoded. Each side retains its own accepted original-copy authority. Editing, clearing or decoding either side retires the pair result. Closing comparison clears the second input and its accepted/manual-copy data, then restores the first reader. Navigation between First export, Second export and Differences does not decode or compare again. Only one result viewport is mounted.
+
+Both inputs need successful transport and valid declarative structure. Future envelope schemas remain raw-only and cannot produce equality. A legacy body is wrapped in-memory only after actual body validation and an exact Map priority field named `rotation` or `cooldowns`; no identifier, class, edition, provenance or source revision is invented. Mixed legacy/envelope comparison includes existing envelope metadata, with missing legacy metadata left absent. Raw-inspectable future branch fields can still fail the comparator's strict graph contract. Unresolved references may be compared as literal data without becoming available for execution.
+
+Only a complete valid comparison with zero changes reports no structural differences. Failed comparisons are unavailable; bounded incomplete results remain partial, including when no changes could be returned. The UI uses the comparator's default full-envelope identity behavior and offers no origin-mapping or automatic merge controls. Regenerated step IDs appear as additions/removals.
+
+Differences page 25 returned changes at a time. Typed field/step segments retain numeric/byte-key distinctions; display paths are text only. Before/after uses the reader's shared raw pager and byte inspector, preserving false, zero, empty values and absent sides. Rendering remains bounded to one result viewport, with no imported code, HTML or URLs executed. Clipboard feedback belongs to its own input and cannot replace a comparison result. These source/state controls do not establish screen-reader or all-browser conformance.
 
 ## Checks
 
@@ -55,6 +65,7 @@ node --test tests/web_codec.mjs
 node --test tests/web_schema.mjs
 node --test tests/web_viewer.mjs
 node --test tests/web_diff.mjs
+node --test tests/web_compare.mjs
 python3 tools/check
 ```
 

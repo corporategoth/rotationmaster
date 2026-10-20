@@ -27,3 +27,9 @@ pre { margin:8px 0; font:13px/1.6 monospace; white-space:pre-wrap; overflow-wrap
 .caution,.problem { color:var(--gold); }
 [hidden] { display:none !important; }
 @media(max-width:760px) { .result { display:block; } .result>section { margin-bottom:24px; } main { padding-top:20px; } button { min-height:44px; } }
+.import-pane,.compare-input { min-width:0; }
+.compare-input { border-top:1px solid var(--line); margin-top:24px; padding-top:24px; }
+.compare-input nav { display:flex; flex-wrap:wrap; margin-top:16px; }
+.compare-input button[aria-pressed="true"] { background:#2C3942; border-width:2px; }
+.comparison { grid-column:1/-1; min-width:0; }
+.comparison .step h3 { margin-top:0; }
