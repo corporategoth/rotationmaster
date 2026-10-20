@@ -98,7 +98,7 @@ test('player exact rank unranked identity schemas and summaries stay unchanged',
  v.value=-1;assert(not a.conditionDefinitions[v.type].valid(0,v));v.value=2.5;assert(a.conditionDefinitions[v.type].valid(0,v) and a:printCondition(v,0):find('2.5 seconds ago',1,true))
 end)
 test('strict time inverses retain completed count fixes whole modules and four private source identities',function()
- local _,a=fixture();for path,hash in pairs({['Conditions/spell.lua']='5826d33a',['Conditions/petspell.lua']='8e83e381'})do local text=dofile('tests/fixtures/restore_spell_range_presence.lua')(read(path),path);assert(a:FunctionSourceHash(inverse(text,path))==hash and inverse(text)==inverse(text,path));assert(not pcall(inverse,text..text,path))end
+ local _,a=fixture();for path,hash in pairs({['Conditions/spell.lua']='5826d33a',['Conditions/petspell.lua']='8e83e381'})do local text=dofile('tests/fixtures/restore_spell_range_presence.lua')(dofile('tests/fixtures/restore_spell_history_time_readiness.lua')(read(path),path),path);assert(a:FunctionSourceHash(inverse(text,path))==hash and inverse(text)==inverse(text,path));assert(not pcall(inverse,text..text,path))end
  for _,tag in ipairs(tags)do assert(inverse(repaired[tag],tag,true)==old[tag] and not pcall(inverse,old[tag],tag,true) and not pcall(inverse,repaired[tag]..' ',tag,true))end
  for path,entries in pairs({['Conditions/spell.lua']={color='906341b8',helpers='769a506e'},['Conditions/petspell.lua']={color='fedaa3e7',helpers='60920b9d'}})do for name,hash in pairs(entries)do local id='builtin:'..path..':'..name;assert(a:FunctionSourceHash(a.builtinFunctions[id].source)==hash and rawequal(a:ResolveFunctionBinding(id),a.builtinSourceModules[path](name)))end end
 end)
@@ -108,7 +108,7 @@ test('raw archived time callbacks keep first-row behavior and stored source with
  end
 end)
 test('actual current editable time copies scan older matches and preserve all unrelated export fields',function()
- for _,modern in ipairs({false,true})do for _,tag in ipairs(tags)do local _,a,s=fixture(modern);older(a,s,tag);local source=a:GetBuiltinConditionSource(tag);assert(source.evaluate==repaired[tag],'spell time catalog pending');local restored=a:CopySettingsData(source);restored.evaluate=inverse(restored.evaluate,tag,true);assert(a:FunctionSourceHash(restored)==(tag=='SPELL_HISTORY_TIME'and'b3baa557'or'5b27b194'))
+ for _,modern in ipairs({false,true})do for _,tag in ipairs(tags)do local _,a,s=fixture(modern);older(a,s,tag);local source=a:GetBuiltinConditionSource(tag);local normalized=dofile('tests/fixtures/restore_spell_history_time_readiness.lua')(source.evaluate,tag,true);assert(normalized==repaired[tag],'spell time catalog pending');local restored=a:CopySettingsData(source);restored.evaluate=inverse(normalized,tag,true);assert(a:FunctionSourceHash(restored)==(tag=='SPELL_HISTORY_TIME'and'b3baa557'or'5b27b194'))
   local before=a:CopySettingsData(source);a:RegisterCondition('COPY_'..tag,assert(a:CompileCustomCondition('COPY_'..tag,source)));local v=node(tag);v.type='COPY_'..tag;known(a,v,true);assert(a:SettingsDataEqual(before,source))
  end end
 end)

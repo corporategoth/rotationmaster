@@ -88,7 +88,7 @@ test('generic presence cache keys separate units and leave longterm storage unch
 end)
 test('strict whole-module and callback inverses preserve all seven existing private identities',function()
  local _,a=fixture(true)
- for path,hash in pairs({['Conditions/spell.lua']='47b95a56',['Conditions/petspell.lua']='9c5ed8dd',['Conditions/anyspell.lua']='c95a5152'})do local text=read(path);assert(a:FunctionSourceHash(restore(text,path))==hash);assert(not pcall(restore,text..'\n',path));assert(not pcall(restore,restore(text,path),path))end
+ for path,hash in pairs({['Conditions/spell.lua']='47b95a56',['Conditions/petspell.lua']='9c5ed8dd',['Conditions/anyspell.lua']='c95a5152'})do local text=read(path);if path~='Conditions/anyspell.lua' then text=dofile('tests/fixtures/restore_spell_history_time_readiness.lua')(text,path) end;assert(a:FunctionSourceHash(restore(text,path))==hash);assert(not pcall(restore,text..'\n',path));assert(not pcall(restore,restore(text,path),path))end
  for _,tag in ipairs(tags)do assert(restore(repaired[tag],tag,true)==old[tag]and not pcall(restore,repaired[tag]..' ',tag,true))end
  for path,map in pairs({['Conditions/spell.lua']={color='906341b8',helpers='769a506e'},['Conditions/petspell.lua']={color='fedaa3e7',helpers='60920b9d'},['Conditions/anyspell.lua']={color='f35f4765',helpers='47f6d2db',SpellData='bd968be4'}})do for name,hash in pairs(map)do local id='builtin:'..path..':'..name;assert(a:FunctionSourceHash(a.builtinFunctions[id].source)==hash and a:ResolveFunctionBinding(id)==a.builtinSourceModules[path](name))end end
 end)

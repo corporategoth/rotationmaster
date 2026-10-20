@@ -283,3 +283,4 @@ Defaults/tbc/priest-starter.lua
 Defaults/tbc/warrior-starter.lua
 Defaults/tbc/paladin-starter.lua
 Defaults/tbc/hunter-starter.lua
+Defaults/tbc/druid-caster-starter.lua

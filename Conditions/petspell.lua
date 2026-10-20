@@ -343,8 +343,18 @@ addon:RegisterCondition("PETSPELL_HISTORY_TIME", {
         if known == nil then return nil, knownReason end
         if not known then return false end
         for _, entry in pairs(addon.spellHistory) do
-            local matches = entry.spell == spellid and Functions.values.compare(value.operator, (evalStart - entry.time), value.value)
-            if matches ~= false then return matches end
+            if entry.spell == spellid then
+                local compare,operator=Functions.values.compare,value.operator
+                local recorded=entry.time
+                if not addon.Platform:CanReadValue(evalStart) or not addon.Platform:CanReadValue(recorded) then return nil,'restricted-value' end
+                if type(evalStart)~='number' or evalStart~=evalStart or evalStart==math.huge or evalStart==-math.huge
+                    or type(recorded)~='number' or recorded~=recorded or recorded==math.huge or recorded==-math.huge then return nil,'history-time-unavailable' end
+                local elapsed=evalStart-recorded
+                if not addon.Platform:CanReadValue(elapsed) then return nil,'restricted-value' end
+                if elapsed~=elapsed or elapsed==math.huge or elapsed==-math.huge then return nil,'history-time-unavailable' end
+                local matches=compare(operator,elapsed,value.value)
+                if matches ~= false then return matches end
+            end
         end
         return false
     end,

@@ -37,6 +37,7 @@ local function copies(a)
     for _,tag in ipairs(tags) do
         local source=assert(a:GetBuiltinConditionSource(tag));clones[tag]=assert(a:CompileCustomCondition('COPY_'..tag,source));a:RegisterCondition('COPY_'..tag,clones[tag])
         local old=a:CopySettingsData(source)
+        if tag=='SPELL_HISTORY_TIME' then old.evaluate=dofile('tests/fixtures/restore_spell_history_time_readiness.lua')(old.evaluate,tag,true) end
         for _,callback in ipairs({'valid','evaluate','print'}) do for name,group in pairs(groups) do old[callback]=old[callback]:gsub('Functions%.'..group..'%.'..name..'%(','addon.'..name..'(') end end
         baseline[tag]=assert(a:CompileCustomCondition('LEGACY_'..tag,old));a:RegisterCondition('LEGACY_'..tag,baseline[tag])
     end
@@ -51,7 +52,8 @@ test('spell callbacks select exactly thirty-seven direct calls with the eight ex
     local totals={isin=0,compare=0,nullable=0,compareString=0,getCached=0}
     for _,tag in ipairs(tags) do local source=assert(a:GetBuiltinConditionSource(tag));assert(not source.bindings.Functions)
         for _,callback in ipairs({'valid','evaluate','print'}) do for name,group in pairs(groups) do
-            local n=count(source[callback],'Functions%.'..group..'%.'..name..'%(');local expected=callback=='valid' and name=='isin' and compared[tag] and 1 or callback=='evaluate' and name=='compare' and compared[tag] and 1 or callback=='print' and name=='nullable' and (compared[tag] and 2 or 1) or callback=='print' and name=='compareString' and compared[tag] and 1 or callback=='evaluate' and name=='getCached' and (tag=='SPELL_RANGE' and 2 or (tag~='SPELL_HISTORY' and tag~='SPELL_HISTORY_TIME') and 1 or 0) or 0
+            local code=source[callback];if tag=='SPELL_HISTORY_TIME' and callback=='evaluate' then code=dofile('tests/fixtures/restore_spell_history_time_readiness.lua')(code,tag,true) end
+            local n=count(code,'Functions%.'..group..'%.'..name..'%(');local expected=callback=='valid' and name=='isin' and compared[tag] and 1 or callback=='evaluate' and name=='compare' and compared[tag] and 1 or callback=='print' and name=='nullable' and (compared[tag] and 2 or 1) or callback=='print' and name=='compareString' and compared[tag] and 1 or callback=='evaluate' and name=='getCached' and (tag=='SPELL_RANGE' and 2 or (tag~='SPELL_HISTORY' and tag~='SPELL_HISTORY_TIME') and 1 or 0) or 0
             assert(n==expected,tag..'.'..callback..' '..name..' count changed');totals[name]=totals[name]+n;assert(not source[callback]:find('addon.'..name..'(',1,true))
         end end
     end

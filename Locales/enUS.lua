@@ -2283,6 +2283,9 @@ L["Default.TBC.Paladin.Starter.Description"] = "Bounded melee preview with optio
 L["Default.TBC.Hunter.Starter.Name"] = "Hunter: early leveling (1–19)"
 L["Default.TBC.Hunter.Starter.Description"] = "Bounded ranged preview: establish Auto Shot, then own Serpent Sting and Arcane Shot; optional Hawk preserves Monkey. No implicit melee advice. Pet control, ammunition, positioning and resource conservation remain manual; native readiness governs recommendations."
 
+L["Default.TBC.Druid.Caster.Starter.Name"] = "Druid: early caster leveling (1–19)"
+L["Default.TBC.Druid.Caster.Starter.Description"] = "Caster-only preview in humanoid form: own Moonfire, then stationary Wrath. Preserves your manually chosen forms and suppresses implicit melee advice. Feral combat, form selection, targeted support and resource decisions remain manual."
+
 L["Default.TBC.Warrior.Starter.Name"] = "Warrior: early leveling (1–19)"
 L["Default.TBC.Warrior.Starter.Description"] = "Bounded combat-only Warrior preview: optional Battle Shout, own Rend, Heroic Strike and normal melee fallback. Queued Heroic Strike is preserved. Rend through level 19 and spending available rage are RM preview policies; pulls, reactive abilities, stances and resource conservation remain manual."
 

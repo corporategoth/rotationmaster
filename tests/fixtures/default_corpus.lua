@@ -14,6 +14,8 @@ function C.load(project,expansion,class)
     local f=F.new(project,expansion,class);local a,e=f.addon,f.env
     local state={level=1,context='player',build=70006}
     e.UnitLevel=function() return state.level end
+    -- FORM validation consumes the native form count; model an unshifted character with no trained forms.
+    e.GetNumShapeshiftForms=function(...) assert(select('#',...)==0);return 0 end
     e.UnitHasVehicleUI=function() return state.context=='vehicle' end
     e.C_PetBattles={IsInBattle=function() return state.context=='petbattle' end}
     e.GetBuildInfo=function() return 'fixture',tostring(state.build),'',1 end
