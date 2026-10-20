@@ -105,8 +105,13 @@ class CoverageGuard(unittest.TestCase):
         data['integrations']['Example']['scope']['interfaceRanges']['tbc']['evidence'] = ['Explicit publisher version bounds, not inferred from an older TOC.']
         generator().validate(data, {'Example'})
 
-    def test_official_project_website_can_be_a_root_domain(self):
+    def test_official_project_website_is_first_and_can_be_a_root_domain(self):
         data = example(); data['integrations']['Example']['links'].append(dict(provider='author', label='Official website', url='https://example.org/', primary=False, note='Official addon website.', families=[]))
+        with self.assertRaisesRegex(ValueError, 'official website'):
+            generator().validate(data, {'Example'})
+        links = data['integrations']['Example']['links']
+        links[0]['primary'] = False
+        website = links.pop(); website['primary'] = True; links.insert(0, website)
         generator().validate(data, {'Example'})
 
     def test_generator_changes_only_owned_block_and_emits_valid_lua(self):

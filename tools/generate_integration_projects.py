@@ -82,6 +82,8 @@ def validate(data, ids):
                     raise ValueError(f'{identity}: nonempty printable {field} required')
             if not isinstance(link['families'], list) or not set(link['families']) <= FAMILIES or len(link['families']) != len(set(link['families'])):
                 raise ValueError(f'{identity}: invalid edition evidence')
+        if any(link['provider'] == 'author' for link in links) and links[0]['provider'] != 'author':
+            raise ValueError(f'{identity}: official website must be the first link')
         if sum(link['primary'] for link in links) != 1 or links[0]['primary'] is not True:
             raise ValueError(f'{identity}: exactly one primary link, listed first')
         for provider, proof in coverage.items():

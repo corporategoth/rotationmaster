@@ -317,11 +317,14 @@ test('only Native and Questie use gold standard Help below Status at full and na
   p.frame:SetWidth(width);p:Draw()
   for _,id in ipairs({'editor_native','Questie'})do
    local help=assert(p.fields['integration_help_'..id]);local card=p.fields['integration_card_'..id];local status=pill(p,id)
-   assert(help:GetWidth()==24 and help:GetHeight()==24 and help.icon:GetWidth()==22)
+   assert(help:GetWidth()==20 and help:GetHeight()==20 and help.icon:GetWidth()==18,'Help does not match condition card icon dimensions')
    assert(help.icon.color[1]==1 and help.icon.color[2]==.82 and help.icon.color[3]==.25)
-   assert(help.point[2]+24==status.point[2]+status:GetWidth())
-   assert(-help.point[3]>=-status.point[3]+status:GetHeight()+6 and -help.point[3]+30<=card:GetHeight())
+   assert(help.point[2]+20==status.point[2]+status:GetWidth())
+   assert(-help.point[3]>=-status.point[3]+status:GetHeight()+6 and -help.point[3]+26<=card:GetHeight())
   end
+  local syntax=p.fields.lua_native_highlighting;local help=p.fields.integration_help_editor_native
+  assert(syntax.point[3]==help.point[3],'Help pushed the first addon option below its row')
+  assert(syntax.point[2]+syntax:GetWidth()+8<=help.point[2],'addon option overlaps Help')
   assert(not p.fields.integration_help_editor_LuaWorkbench and not p.fields.integration_help_Dominos)
  end
 end)

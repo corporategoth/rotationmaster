@@ -152,8 +152,8 @@ end
                 local active=effective(liveRows,liveByID);profile.lua_native_highlighting=value==true
                 if active=='native'then profile.lua_editor=value and'native'or'plain'end;p:Draw()
             end)
-            syntax:ClearAllPoints();syntax:SetPoint('TOPLEFT',10,-height)
-            height=height+34;p.surface=surface;p.width=available
+            syntax:ClearAllPoints();syntax:SetPoint('TOPLEFT',10,-contentTop)
+            height=math.max(height,contentTop+34);p.surface=surface;p.width=available
         end
         frame:SetHeight(height);p.y=top+height+10
     end
@@ -171,7 +171,7 @@ end
 {10517,10516,[=[
 ,highlighting(profile]=]},
 {10515,10514,[=[
-surface,p.width;p.surface=frame;p.width=available-20;p.y=height
+surface,p.width;p.surface=frame;p.width=available-20-(row.help and 28 or 0);p.y=contentTop
             local syntax=p:Check('lua_native_highlighting',L['Syntax highlighting]=]},
 {10514,10513,[=[
 =p]=]},
@@ -192,14 +192,15 @@ row.entry.projectURL~=''then
         addon:SetUIScript(pill,'OnClick',row.action and p:Guard(function()if p:FlushEdits()and current()then row.action(pill)end end)or nil)
         if not row.action then pill:Disable();pill:SetAlpha(1)end
         local height=math.max(38,name:GetHeight()+20,version:GetHeight()+20,description:GetHeight()+20)
+        local contentTop=height
         if row.help then
             local help=p:Acquire('integrationHelp',function()return addon:CreateWorkbenchHelpButton(p.child,L['Help'])end)
-            help:SetParent(frame);help:ClearAllPoints();help:SetPoint('TOPLEFT',positions[4]+statusWidth-24,-10-pill:GetHeight()-6);help:Enable();p.fields['integration_help_'..row.id]=help
+            help:SetParent(frame);help:ClearAllPoints();help:SetSize(20,20);help.icon:SetSize(18,18);help:SetPoint('TOPLEFT',positions[4]+statusWidth-20,-(row.native and contentTop or 10+pill:GetHeight()+6));help:Enable();p.fields['integration_help_'..row.id]=help
             addon:SetUIScript(help,'OnClick',p:Guard(function()
                 local show=self.ShowWorkbenchHelp
                 if current()and type(show)=='function'then show(self,row.name,{{title=row.name,text=L[row.help]}},p.frame)end
             end))
-            height=math.max(height,10+pill:GetHeight()+6+24+6)
+            height=math.max(height,(row.native and contentTop or 10+pill:GetHeight()+6)+20+6)
         end
         if row.native then
             local surface,]=]},

@@ -124,7 +124,7 @@
         },
         {
           "label": "WoWInterface — historical",
-          "url": "https://www.wowinterface.com/downloads/info21571-Mobinfo2.html",
+          "url": "https://www.wowinterface.com/downloads/info21571-MobInfo2.html",
           "primary": false,
           "note": "Official historical release page. Current patch compatibility is unverified; inspect the release details before downloading.",
           "families": [],
@@ -154,7 +154,8 @@
           "query": "Exact MobInfo2 project/author search and publisher source crosslinks on wowinterface",
           "evidence": [
             "{\"url\":\"https://www.wowinterface.com/downloads/info21571-Mobinfo2.html\",\"proof\":\"PublisherILeClerk listed; installation names folderMobInfo2; historicalRetail6.2 release.\"}",
-            "https://www.wowinterface.com/downloads/info21571-Mobinfo2.html"
+            "https://www.wowinterface.com/downloads/info21571-Mobinfo2.html",
+            "Stable named project URL verified on 2026-10-20: https://www.wowinterface.com/downloads/info21571-MobInfo2.html. Numeric project ID 21571 retained; named and previously recorded URL serve the same project title via HTTP 200 without a redirect. Descriptive suffix is not a version pin. Previously recorded URL: https://www.wowinterface.com/downloads/info21571-Mobinfo2.html"
           ]
         },
         "wago": {
@@ -221,7 +222,7 @@
         },
         {
           "label": "WoWInterface",
-          "url": "https://www.wowinterface.com/downloads/info27254-1.2.1.html",
+          "url": "https://www.wowinterface.com/downloads/info27254-LuaWorkbench.html",
           "primary": false,
           "note": "Official project page. Publisher lists Retail, Forever, TBC. Choose the matching file; exact patch and RM integration behavior may be unverified.",
           "families": [
@@ -270,7 +271,8 @@
           "query": "Exact !!!LuaWorkbench project/author search and publisher source crosslinks on wowinterface",
           "evidence": [
             "{\"url\":\"https://www.wowinterface.com/downloads/info27254-1.2.1.html\",\"proof\":\"r41z0r; sameTOCID27254; current1.2.1.\"}",
-            "https://www.wowinterface.com/downloads/info27254-1.2.1.html"
+            "https://www.wowinterface.com/downloads/info27254-1.2.1.html",
+            "Stable named project URL verified on 2026-10-20: https://www.wowinterface.com/downloads/info27254-LuaWorkbench.html. Numeric project ID 27254 retained; named and previously recorded URL serve the same project title via HTTP 200 without a redirect. Descriptive suffix is not a version pin. Previously recorded URL: https://www.wowinterface.com/downloads/info27254-1.2.1.html"
           ]
         },
         "wago": {
@@ -331,7 +333,7 @@
         },
         {
           "label": "WoWInterface",
-          "url": "https://www.wowinterface.com/downloads/info7366-r35.html",
+          "url": "https://www.wowinterface.com/downloads/info7366-WowLua.html",
           "primary": false,
           "note": "Official project page. Publisher lists Retail, Classic Era, TBC, Classic progression. Choose the matching file; exact patch and RM integration behavior may be unverified.",
           "families": [
@@ -375,7 +377,8 @@
           "query": "Exact WowLua project/author search and publisher source crosslinks on wowinterface",
           "evidence": [
             "{\"url\":\"https://www.wowinterface.com/downloads/info7366-r35.html\",\"responseFile\":\"wowlua-wowinterface.html\",\"proof\":\"Cladhaire originalauthor;1.1.7-release; actualHTML contains jnwhiteh/WowLua release/changelog URLs.\"}",
-            "https://www.wowinterface.com/downloads/info7366-r35.html"
+            "https://www.wowinterface.com/downloads/info7366-r35.html",
+            "Stable named project URL verified on 2026-10-20: https://www.wowinterface.com/downloads/info7366-WowLua.html. Numeric project ID 7366 retained; named and previously recorded URL serve the same project title via HTTP 200 without a redirect. Descriptive suffix is not a version pin. Previously recorded URL: https://www.wowinterface.com/downloads/info7366-r35.html"
           ]
         },
         "wago": {
@@ -435,9 +438,17 @@
     "WeakAuras": {
       "links": [
         {
+          "label": "Official website",
+          "url": "https://weakauras.wtf/",
+          "primary": true,
+          "note": "Official project page. Release edition and current patch compatibility are unverified.",
+          "families": [],
+          "provider": "author"
+        },
+        {
           "label": "CurseForge",
           "url": "https://www.curseforge.com/wow/addons/weakauras-2",
-          "primary": true,
+          "primary": false,
           "note": "Current Classic Era, TBC and Mists Classic releases; Retail release evidence is historical. Current Retail and Forever support is unverified.",
           "families": [
             "era",
@@ -460,7 +471,7 @@
         },
         {
           "label": "WoWInterface",
-          "url": "https://www.wowinterface.com/downloads/info24910-weakauras2.html",
+          "url": "https://www.wowinterface.com/downloads/info24910-WeakAuras2.html",
           "primary": false,
           "note": "Official project page. Publisher lists Classic Era, TBC, Classic progression. Choose the matching file; exact patch and RM integration behavior may be unverified.",
           "families": [
@@ -493,14 +504,6 @@
             "progression"
           ],
           "provider": "github"
-        },
-        {
-          "label": "Official website",
-          "url": "https://weakauras.wtf/",
-          "primary": false,
-          "note": "Official project page. Release edition and current patch compatibility are unverified.",
-          "families": [],
-          "provider": "author"
         }
       ],
       "coverage": {
@@ -517,7 +520,8 @@
           "query": "Exact WeakAuras project/author search and publisher source crosslinks on wowinterface",
           "evidence": [
             "{\"url\":\"https://www.wowinterface.com/downloads/info24910-weakauras2.html\",\"proof\":\"Stanzilla; publisherTOCX-WoWI-ID24910; currentClassic5.22.1.\"}",
-            "https://www.wowinterface.com/downloads/info24910-weakauras2.html"
+            "https://www.wowinterface.com/downloads/info24910-weakauras2.html",
+            "Stable named project URL verified on 2026-10-20: https://www.wowinterface.com/downloads/info24910-WeakAuras2.html. Numeric project ID 24910 retained; named and previously recorded URL serve the same project title via HTTP 200 without a redirect. Descriptive suffix is not a version pin. Previously recorded URL: https://www.wowinterface.com/downloads/info24910-weakauras2.html"
           ]
         },
         "wago": {
@@ -547,7 +551,8 @@
           "query": "Exact WeakAuras project/author search and publisher source crosslinks on github",
           "evidence": [
             "{\"url\":\"https://github.com/WeakAuras/WeakAuras2\",\"proof\":\"Officialwebsite andHub canonicalrepository; pinnedtree37c3950c528ea42374b3a79c9fd00fa9e6bd217b.\"}",
-            "https://github.com/WeakAuras/WeakAuras2"
+            "https://github.com/WeakAuras/WeakAuras2",
+            "Official project website https://weakauras.wtf/ is preferred first; its own page links the canonical GitHub and CurseForge projects. Verified on2026-10-20."
           ]
         }
       },
@@ -598,7 +603,7 @@
         },
         {
           "label": "WoWInterface — historical",
-          "url": "https://www.wowinterface.com/downloads/info24994-Questie.htm",
+          "url": "https://www.wowinterface.com/downloads/info24994-Questie.html",
           "primary": false,
           "note": "Official historical release page. Current patch compatibility is unverified; inspect the release details before downloading.",
           "families": [],
@@ -645,7 +650,8 @@
           "query": "Exact Questie project/author search and publisher source crosslinks on wowinterface",
           "evidence": [
             "{\"url\":\"https://www.wowinterface.com/downloads/info24994-Questie.htm\",\"proof\":\"Original authorsAeroScripts/Logon; folderQuestie; stale6.2.5Classic1.13.7release.\"}",
-            "https://www.wowinterface.com/downloads/info24994-Questie.htm"
+            "https://www.wowinterface.com/downloads/info24994-Questie.htm",
+            "Stable named project URL verified on 2026-10-20: https://www.wowinterface.com/downloads/info24994-Questie.html. Numeric project ID 24994 retained; named and previously recorded URL serve the same project title via HTTP 200 without a redirect. Descriptive suffix is not a version pin. Previously recorded URL: https://www.wowinterface.com/downloads/info24994-Questie.htm"
           ]
         },
         "wago": {
@@ -802,9 +808,23 @@
     "Bartender4": {
       "links": [
         {
+          "label": "WoWAce",
+          "url": "https://www.wowace.com/projects/bartender4",
+          "primary": true,
+          "note": "Official project page. Publisher lists Retail, Forever, Classic Era, Classic progression, TBC. Choose the matching file; exact patch and RM integration behavior may be unverified.",
+          "families": [
+            "retail",
+            "forever",
+            "era",
+            "progression",
+            "tbc"
+          ],
+          "provider": "author"
+        },
+        {
           "label": "CurseForge",
           "url": "https://www.curseforge.com/wow/addons/bartender4",
-          "primary": true,
+          "primary": false,
           "note": "Retail, Forever, Classic Era, TBC and Mists Classic. Choose the file for your edition.",
           "families": [
             "retail",
@@ -854,20 +874,6 @@
             "tbc"
           ],
           "provider": "wago"
-        },
-        {
-          "label": "WoWAce",
-          "url": "https://www.wowace.com/projects/bartender4",
-          "primary": false,
-          "note": "Official project page. Publisher lists Retail, Forever, Classic Era, Classic progression, TBC. Choose the matching file; exact patch and RM integration behavior may be unverified.",
-          "families": [
-            "retail",
-            "forever",
-            "era",
-            "progression",
-            "tbc"
-          ],
-          "provider": "author"
         }
       ],
       "coverage": {
@@ -884,7 +890,8 @@
           "query": "Exact Bartender4 project/author search and publisher source crosslinks on wowinterface",
           "evidence": [
             "https://www.wowinterface.com/downloads/info11190-Bartender4.html",
-            "Exact addon and author identity verified; historical compatibility limitations remain in each link note."
+            "Exact addon and author identity verified; historical compatibility limitations remain in each link note.",
+            "Stable named project URL verified on 2026-10-20: https://www.wowinterface.com/downloads/info11190-Bartender4.html. Numeric project ID 11190 retained; named and previously recorded URL serve the same project title via HTTP 200 without a redirect. Descriptive suffix is not a version pin. Previously recorded URL: https://www.wowinterface.com/downloads/info11190-Bartender4.html"
           ]
         },
         "wago": {
@@ -911,7 +918,8 @@
           "evidence": [
             "https://www.curseforge.com/wow/addons/bartender4",
             "Source link resolves to https://github.com/Nevcairiel/Bartender4; TOC author Nevcairiel and matching CF/WoWI/Wago IDs.",
-            "https://github.com/Nevcairiel/Bartender4"
+            "https://github.com/Nevcairiel/Bartender4",
+            "Official project home https://www.wowace.com/projects/bartender4 is preferred first: publisher Bartender4.toc X-Website points there. This is the author-selected WoWAce project portal, not a separate personal domain. Source: https://raw.githubusercontent.com/Nevcairiel/Bartender4/master/Bartender4.toc . Verified on2026-10-20."
           ]
         }
       },
@@ -970,7 +978,8 @@
           "query": "Exact ButtonForge project/author search and publisher source crosslinks on wowinterface",
           "evidence": [
             "https://www.wowinterface.com/downloads/info17592-ButtonForge.html",
-            "Exact addon and author identity verified; historical compatibility limitations remain in each link note."
+            "Exact addon and author identity verified; historical compatibility limitations remain in each link note.",
+            "Stable named project URL verified on 2026-10-20: https://www.wowinterface.com/downloads/info17592-ButtonForge.html. Numeric project ID 17592 retained; named and previously recorded URL serve the same project title via HTTP 200 without a redirect. Descriptive suffix is not a version pin. Previously recorded URL: https://www.wowinterface.com/downloads/info17592-ButtonForge.html"
           ]
         },
         "wago": {
@@ -1104,7 +1113,8 @@
           "query": "Exact SyncUI project/author search and publisher source crosslinks on wowinterface",
           "evidence": [
             "https://www.wowinterface.com/downloads/info24574-SyncUI.html",
-            "Exact addon and author identity verified; historical compatibility limitations remain in each link note."
+            "Exact addon and author identity verified; historical compatibility limitations remain in each link note.",
+            "Stable named project URL verified on 2026-10-20: https://www.wowinterface.com/downloads/info24574-SyncUI.html. Numeric project ID 24574 retained; named and previously recorded URL serve the same project title via HTTP 200 without a redirect. Descriptive suffix is not a version pin. Previously recorded URL: https://www.wowinterface.com/downloads/info24574-SyncUI.html"
           ]
         },
         "wago": {
@@ -1169,7 +1179,7 @@
         },
         {
           "label": "WoWInterface — Retail full bundle",
-          "url": "https://www.wowinterface.com/downloads/fileinfo.php?id=14130",
+          "url": "https://www.wowinterface.com/downloads/info14130-LUI.html",
           "primary": false,
           "note": "Author-linked full Retail bundle; historical 10.0.2 release, older than the Core updates.",
           "families": [],
@@ -1177,7 +1187,7 @@
         },
         {
           "label": "WoWInterface — Classic full bundle",
-          "url": "https://www.wowinterface.com/downloads/info26095-LUIv3forTBCC.html",
+          "url": "https://www.wowinterface.com/downloads/info26095-LUIv3forWotLKc.html",
           "primary": false,
           "note": "Author-linked full Classic bundle; historical Wrath release. For current Classic editions, inspect the newer Classic fork above.",
           "families": [],
@@ -1222,7 +1232,9 @@
           "evidence": [
             "https://www.wowinterface.com/downloads/fileinfo.php?id=14130",
             "Exact addon and author identity verified; historical compatibility limitations remain in each link note.",
-            "https://www.wowinterface.com/downloads/info26095-LUIv3forTBCC.html"
+            "https://www.wowinterface.com/downloads/info26095-LUIv3forTBCC.html",
+            "Stable named project URL verified on 2026-10-20: https://www.wowinterface.com/downloads/info14130-LUI.html. Numeric project ID 14130 retained; named and previously recorded URL serve the same project title via HTTP 200 without a redirect. Descriptive suffix is not a version pin. Previously recorded URL: https://www.wowinterface.com/downloads/fileinfo.php?id=14130",
+            "Stable named project URL verified on 2026-10-20: https://www.wowinterface.com/downloads/info26095-LUIv3forWotLKc.html. Numeric project ID 26095 retained; named and previously recorded URL serve the same project title via HTTP 200 without a redirect. Descriptive suffix is not a version pin. Previously recorded URL: https://www.wowinterface.com/downloads/info26095-LUIv3forTBCC.html"
           ]
         },
         "wago": {
@@ -1341,7 +1353,8 @@
           "query": "Exact Dominos project/author search and publisher source crosslinks on wowinterface",
           "evidence": [
             "https://www.wowinterface.com/downloads/info9085-Dominos.html",
-            "Exact addon and author identity verified; historical compatibility limitations remain in each link note."
+            "Exact addon and author identity verified; historical compatibility limitations remain in each link note.",
+            "Stable named project URL verified on 2026-10-20: https://www.wowinterface.com/downloads/info9085-Dominos.html. Numeric project ID 9085 retained; named and previously recorded URL serve the same project title via HTTP 200 without a redirect. Descriptive suffix is not a version pin. Previously recorded URL: https://www.wowinterface.com/downloads/info9085-Dominos.html"
           ]
         },
         "wago": {
@@ -1645,7 +1658,8 @@
           "query": "Exact Neuron project/author search and publisher source crosslinks on wowinterface",
           "evidence": [
             "Official author release page browsed; source README or pinned X-WoWI-ID cross-matches exact listing. See primary-01.json/search-03.json/search-05.json and pinned TOCs.",
-            "https://www.wowinterface.com/downloads/info10636-Neuron.html"
+            "https://www.wowinterface.com/downloads/info10636-Neuron.html",
+            "Stable named project URL verified on 2026-10-20: https://www.wowinterface.com/downloads/info10636-Neuron.html. Numeric project ID 10636 retained; named and previously recorded URL serve the same project title via HTTP 200 without a redirect. Descriptive suffix is not a version pin. Previously recorded URL: https://www.wowinterface.com/downloads/info10636-Neuron.html"
           ]
         },
         "wago": {
@@ -1761,7 +1775,8 @@
           "query": "Exact FarmingBar project/author search and publisher source crosslinks on wowinterface",
           "evidence": [
             "Official author release page browsed; source README or pinned X-WoWI-ID cross-matches exact listing. See primary-01.json/search-03.json/search-05.json and pinned TOCs.",
-            "https://www.wowinterface.com/downloads/info25440-FarmingBar.html"
+            "https://www.wowinterface.com/downloads/info25440-FarmingBar.html",
+            "Stable named project URL verified on 2026-10-20: https://www.wowinterface.com/downloads/info25440-FarmingBar.html. Numeric project ID 25440 retained; named and previously recorded URL serve the same project title via HTTP 200 without a redirect. Descriptive suffix is not a version pin. Previously recorded URL: https://www.wowinterface.com/downloads/info25440-FarmingBar.html"
           ]
         },
         "wago": {
@@ -1863,7 +1878,7 @@
         },
         {
           "label": "WoWInterface — TotemTimers Classic",
-          "url": "https://www.wowinterface.com/downloads/fileinfo.php?id=25223",
+          "url": "https://www.wowinterface.com/downloads/info25223-TotemTimersClassic.html",
           "primary": false,
           "note": "Official project page. Publisher lists Classic Era, Classic progression, TBC. Choose the matching file; exact patch and RM integration behavior may be unverified.",
           "families": [
@@ -1903,7 +1918,9 @@
           "evidence": [
             "Official author release page browsed; source README or pinned X-WoWI-ID cross-matches exact listing. See primary-01.json/search-03.json/search-05.json and pinned TOCs.",
             "https://www.wowinterface.com/downloads/info9481-TotemTimers.html",
-            "https://www.wowinterface.com/downloads/fileinfo.php?id=25223"
+            "https://www.wowinterface.com/downloads/fileinfo.php?id=25223",
+            "Stable named project URL verified on 2026-10-20: https://www.wowinterface.com/downloads/info9481-TotemTimers.html. Numeric project ID 9481 retained; named and previously recorded URL serve the same project title via HTTP 200 without a redirect. Descriptive suffix is not a version pin. Previously recorded URL: https://www.wowinterface.com/downloads/info9481-TotemTimers.html",
+            "Stable named project URL verified on 2026-10-20: https://www.wowinterface.com/downloads/info25223-TotemTimersClassic.html. Numeric project ID 25223 retained; named and previously recorded URL serve the same project title via HTTP 200 without a redirect. Descriptive suffix is not a version pin. Previously recorded URL: https://www.wowinterface.com/downloads/fileinfo.php?id=25223"
           ]
         },
         "wago": {
