@@ -19,6 +19,29 @@
       "ChatInfoDocumentation.lua": "present",
       "SecretPredicatesDocumentation.lua": "present",
       "SecretPredicateAPIDocumentation.lua": "present"
+    },
+    "sourceVersion": {
+      "value": "12.1.5.70448",
+      "path": "version.txt",
+      "sha256": "d8868595b1381b4fe95c4c181404e64769a79ea4dbb5e824703ad009fd93bf2c",
+      "bytes": 13
+    },
+    "fileEvidence": {
+      "Interface/AddOns/Blizzard_ProjectConstants/ProjectConstants.lua": {
+        "sha256": "fc3627a28301be286f9db136ac6185c48ac908e90afb7433706bbb19cb3cd5aa",
+        "bytes": 50
+      }
+    },
+    "evidenceScope": "Client-authored declarations retrieved through the Gethe source mirror, not native execution. apiDocuments records presence; fileEvidence hashes only the exact files inspected in this refresh. An unlisted hash does not mean an API is absent.",
+    "officialProductFeed": {
+      "url": "https://us.version.battle.net/wow/versions",
+      "region": "us",
+      "sequence": 4086275,
+      "version": "12.1.5.70448",
+      "build": 70448,
+      "responseSHA256": "965f78ca9eb50079001fd2890f4d6d5c68e6f36fdbbba9cbdd9b72bb482444e6",
+      "containsAddonInterface": false,
+      "scope": "Observed Blizzard product version/build metadata only; not addon loading, native API or gameplay acceptance."
     }
   },
   "classic_era": {
@@ -37,10 +60,33 @@
       "SpellBookDocumentation.lua": "present",
       "SpellSharedDocumentation.lua": "present",
       "UnitAuraSharedDocumentation.lua": "present"
+    },
+    "sourceVersion": {
+      "value": "1.15.9.70003",
+      "path": "version.txt",
+      "sha256": "fa1546c2dd6cacec3bc6a99e2c81d565dac9eae622843066765ab3fc6a7aa938",
+      "bytes": 13
+    },
+    "fileEvidence": {
+      "Interface/AddOns/Blizzard_SharedXML/ProjectConstants.lua": {
+        "sha256": "fc3627a28301be286f9db136ac6185c48ac908e90afb7433706bbb19cb3cd5aa",
+        "bytes": 50
+      }
+    },
+    "evidenceScope": "Client-authored declarations retrieved through the Gethe source mirror, not native execution. apiDocuments records presence; fileEvidence hashes only the exact files inspected in this refresh. An unlisted hash does not mean an API is absent.",
+    "officialProductFeed": {
+      "url": "https://us.version.battle.net/wow_classic_era/versions",
+      "region": "us",
+      "sequence": 4086286,
+      "version": "1.15.9.70003",
+      "build": 70003,
+      "responseSHA256": "9e06fdb03ce50f83da315ee954954a6b541ee1571cb1f3518b6a4a2d5bfce3f6",
+      "containsAddonInterface": false,
+      "scope": "Observed Blizzard product version/build metadata only; not addon loading, native API or gameplay acceptance."
     }
   },
   "classic": {
-    "revision": "72cd28b019e536e9d2e82f036394ec10856d28a1",
+    "revision": "15c8a754451ce09a688be11ffa03c064e4973c14",
     "repository": "https://github.com/Gethe/wow-ui-source",
     "projectConstants": {
       "Interface/AddOns/Blizzard_SharedXML/ProjectConstants.lua": "WOW_PROJECT_MAINLINE = 1;\nWOW_PROJECT_CLASSIC = 2;"
@@ -54,7 +100,55 @@
       "GameRulesDocumentation.lua": "present",
       "SpellBookDocumentation.lua": "present",
       "SpellSharedDocumentation.lua": "present",
-      "UnitAuraSharedDocumentation.lua": "present"
+      "UnitAuraSharedDocumentation.lua": "present",
+      "EventUtilsDocumentation.lua": "present"
+    },
+    "sourceVersion": {
+      "value": "5.5.4.70469",
+      "path": "version.txt",
+      "sha256": "e6e74b49014a2cc595b806864ea4a50c1174627149dfc8724708c9d11795b07e",
+      "bytes": 12
+    },
+    "fileEvidence": {
+      "Interface/AddOns/Blizzard_SharedXML/ProjectConstants.lua": {
+        "sha256": "fc3627a28301be286f9db136ac6185c48ac908e90afb7433706bbb19cb3cd5aa",
+        "bytes": 50
+      },
+      "Interface/AddOns/Blizzard_APIDocumentationGenerated/SpellDocumentation.lua": {
+        "sha256": "ea113d235a7950b358765739c5b3670412232cb44a70cdb3f9ed73fae9251350",
+        "bytes": 21215
+      },
+      "Interface/AddOns/Blizzard_APIDocumentationGenerated/SpellBookDocumentation.lua": {
+        "sha256": "e0266b68ab72e6681a28bfcc26c82074f90589e6dd4eeea2e767281cac4f8827",
+        "bytes": 8037
+      },
+      "Interface/AddOns/Blizzard_APIDocumentationGenerated/UnitAuraDocumentation.lua": {
+        "sha256": "bcad1e458c058eeb7c52400e71c8668998d828a70648c1b7436125b4eca9fa32",
+        "bytes": 13052
+      },
+      "Interface/AddOns/Blizzard_APIDocumentationGenerated/AssistedCombatDocumentation.lua": {
+        "sha256": "edf6dfd613c2c619fb247e41c6d5e390cd66c8dd04e0e7fb3605a13a78ee9e82",
+        "bytes": 1196
+      },
+      "Interface/AddOns/Blizzard_APIDocumentationGenerated/EventUtilsDocumentation.lua": {
+        "sha256": "34a462143dc3e9b6ec117fb3be146dbf74a964662872a2d0830b68e59736376e",
+        "bytes": 720
+      }
+    },
+    "evidenceScope": "Client-authored declarations retrieved through the Gethe source mirror, not native execution. apiDocuments records presence; fileEvidence hashes only the exact files inspected in this refresh. An unlisted hash does not mean an API is absent.",
+    "previousSnapshotComparison": {
+      "revision": "72cd28b019e536e9d2e82f036394ec10856d28a1",
+      "scope": "The five hashed API declaration files are byte-identical to this previous revision; no wider API equivalence is claimed."
+    },
+    "officialProductFeed": {
+      "url": "https://us.version.battle.net/wow_classic/versions",
+      "region": "us",
+      "sequence": 4086274,
+      "version": "5.5.4.70469",
+      "build": 70469,
+      "responseSHA256": "c45cc9d448c4686198ab08c1dec95291a5074f5fda54999b8fed7b11d2143028",
+      "containsAddonInterface": false,
+      "scope": "Observed Blizzard product version/build metadata only; not addon loading, native API or gameplay acceptance."
     }
   },
   "classic_anniversary": {
@@ -73,6 +167,25 @@
       "SpellBookDocumentation.lua": "present",
       "SpellSharedDocumentation.lua": "present",
       "UnitAuraSharedDocumentation.lua": "present"
+    },
+    "sourceVersion": {
+      "value": "2.5.6.70006",
+      "path": "version.txt",
+      "sha256": "e764020ca66c64f99d6139d8cfd7b511511357b14d61cbe0afe0cca3a9013108",
+      "bytes": 12
+    },
+    "fileEvidence": {
+      "Interface/AddOns/Blizzard_SharedXML/ProjectConstants.lua": {
+        "sha256": "6167412ff1bf3c3ab439590e87bafce10f35f9efbbe68c56ee7e3c39a031a57a",
+        "bytes": 51
+      }
+    },
+    "evidenceScope": "Client-authored declarations retrieved through the Gethe source mirror, not native execution. apiDocuments records presence; fileEvidence hashes only the exact files inspected in this refresh. An unlisted hash does not mean an API is absent.",
+    "nativeObservation": {
+      "version": "2.5.6",
+      "interface": 20506,
+      "source": "Existing user report of the running Anniversary client",
+      "scope": "Independent of the mirrored source build; not blanket API, taint or gameplay acceptance."
     }
   },
   "forever": {
@@ -96,6 +209,19 @@
       "ChatInfoDocumentation.lua": "present",
       "SecretPredicatesDocumentation.lua": "present",
       "SecretPredicateAPIDocumentation.lua": "present"
-    }
+    },
+    "sourceVersion": {
+      "value": "1.60.1.70450",
+      "path": "version.txt",
+      "sha256": "5383b6a4a75fd29f7db026621c4df5fd6d603fb4ef03f665f7cb5d1f03a2ea76",
+      "bytes": 13
+    },
+    "fileEvidence": {
+      "Interface/AddOns/Blizzard_ProjectConstants/Camelot/ProjectConstants.lua": {
+        "sha256": "93abd3ead633a3167265d68eea2f00d42dbf72170b089114b8cb45aa6922e1bd",
+        "bytes": 64
+      }
+    },
+    "evidenceScope": "Client-authored declarations retrieved through the Gethe source mirror, not native execution. apiDocuments records presence; fileEvidence hashes only the exact files inspected in this refresh. An unlisted hash does not mean an API is absent."
   }
 }
