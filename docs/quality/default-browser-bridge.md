@@ -1,14 +1,13 @@
-# Default browser bridge
+# Built In browser and reference boundary
 
-Use the existing options dropdown and AceGUI containers for this transitional view. Do not choose the final replacement renderer here. Native WoW fonts and spacing keep the view coherent with current configuration. Existing custom names retain their usual white text; packaged names use azure `#5BC0EB`, reinforced by a read-only text label. Body text uses the current WoW highlight color; enabled/availability is text rather than another decorative color system. Left align description, scope, source links and numbered priorities. Numbers encode actual recommendation order.
+The shipped Rotations browser uses native WoW frames and shared Workbench controls. `UI/rotation_browser.lua` owns the specialization tabs, All/Built In/Custom filters, search, tags, pooled roster rows and selected native editor pane. It reads scoped headers through `ListRotationHeaders`; it does not use an AceGUI container or the former options dropdown. `UI/rotation_editor.lua` owns the detail editor and its read-only Built In mode.
 
-```
-Rotation [ Shaman: early leveling (Default, read-only) v ]
-Shaman: early leveling                       Default · read-only
-Description and scope
-[x] Enable default                 [Clone to edit]
-Available for this character / reason it is unavailable
-[scroll: ordered actions, each with its condition; sources below]
-```
+Ordinary browsing respects the current ownership boundary. Custom rows belong to the active profile's current Class or Character partition. Built In lists filter declared class applicability; matching-class packs from another edition or outside the current level range, and disabled packs, can remain visible with an availability reason. An All filter does not mean every class's packaged assets are ordinary runtime candidates. `Core/rotation_scope.lua` supplies scoped headers and `Core/rotation_library.lua` supplies class-filtered definitions and fresh eligibility checks.
 
-All packs remain discoverable, including other classes/editions/disabled packs. Never put a packaged body through name, step, condition, import-replace or delete controls. Clone transfers a separate body into existing custom editing and retains its source baseline. No extra window, icon pack, new typeface, animation or ornamental status cards are needed for this bridge. Source URLs are reference text, not automatic external navigation. The final compact roster/editor needs its own preview and renderer decision.
+Built In rows show a distinct name color and the text “Built In · read-only.” The selected reference presents description, level range/source revision, enabled state and current availability. `UI/defaults.lua` owns the shared Built In options/reference dialog, including Enable Built In, Clone to edit and export. `UI/rotation_reference.lua` owns ordered read-only action/condition cards and the explanation of sequential priority. Source titles and URLs are reference text; displaying them does not navigate externally or establish that a recommendation is available.
+
+Keep packaged bodies out of editable name, action, condition, import-replace and delete operations. Cloning creates an independent custom body with new step identities and retained source lineage; editing that copy must not change the packaged definition or another clone. Cloning retains class/ownership checks; a copy can still be reference-only on the current client, and execution checks current applicability again. Enabling a Built In is a profile preference, not permission to bypass those checks.
+
+Ordinary list filtering does not erase explicit inspection or recovery boundaries. `GetDefaultRotation(id)` can return a packaged definition by its exact ID for reference/comparison, and explicit cleanup reads retain access to old selected bodies. Neither is runtime authorization. Unclaimed legacy profile/character data remains available through the browser's “Recover unassigned rotations” flow (`UI/rotation_adoption.lua`); it is not silently assigned to the current owner or made executable by being displayed. The shared reference dialog itself still uses the class-filtered Built In list.
+
+Profile/owner changes and pane release must retire callbacks and stale selections before later UI work. Search, filters, reference cards and source inspection must not execute saved custom code. Native-client rendering and input acceptance remain separate from the headless ownership, clone, lifecycle and ordered-reference checks.

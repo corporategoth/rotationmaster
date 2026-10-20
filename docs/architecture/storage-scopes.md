@@ -18,6 +18,7 @@ RM stores one account SavedVariables table per client installation, using AceDB'
 | Effects, custom conditions/functions and source import provenance | Global reusable libraries |
 | Global item sets | Global; a same-ID profile set takes precedence |
 | Condition Test samples | Global, keyed by condition identifier; restored samples do not authorize debugging |
+| Observation-cache diagnostic request (`diagnosticCacheBypass`) | Global; requested cached/direct mode is selected after database initialization and takes effect on reload |
 | Item-set action-bar bindings and optional specialization labels | Character |
 | Which profile is selected | Character, managed by AceDB |
 | Observation caches, compiled registries, combat histories, editor drafts/camera/undo and diagnostics | Runtime only |
@@ -26,7 +27,7 @@ Declared class applicability is a hard gate for packaged/sourced rotation candid
 
 “Global” means shared by characters using that account's SavedVariables store. It does not imply sharing across accounts, client installations or game editions. No current data requires realm-only storage. The `realm` field in rotation metadata is attribution, not an ownership key.
 
-Profile Copy/Reset/Import affects the profile domain. It does not copy/reset global source libraries or character bindings. A profile export is consequently not a complete backup of referenced global effects, item sets or trusted code.
+Profile Copy/Reset/Import affects the profile domain, including every Class and Character rotation partition in that profile, not just the owner currently visible in the browser. It does not copy/reset global source libraries or character bindings. Profile export includes the scoped rotation store and its lineage, but excludes those separate global/character domains; it is consequently not a complete backup of referenced global effects, item sets, custom conditions or custom functions.
 
 ## Rotation ownership
 
