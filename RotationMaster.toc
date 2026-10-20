@@ -73,6 +73,7 @@ Functions/presentation.lua
 Functions/text.lua
 Functions/collections.lua
 Functions/cache.lua
+Diagnostics/cache_mode.lua
 Functions/trends.lua
 Functions/forecast.lua
 utils.lua

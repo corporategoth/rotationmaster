@@ -129,7 +129,18 @@ local function context(owner)
  local combat='unavailable';if type(InCombatLockdown)=='function' then local ok,value=pcall(InCombatLockdown);if ok and readable(value) and type(value)=='boolean' then combat=tostring(value) end end
  local profile=field(field(owner,'db'),'profile')
  local function interval(key) local value=field(profile,key);if finite(value) or readable(value) and type(value)=='boolean' then return tostring(value) end;return 'unavailable' end
- return 'config='..(config==true and 'shown' or config==false and 'hidden' or 'unavailable')..' combat='..combat..' poll='..interval('poll')..' live='..interval('live_config_update')
+ local result='config='..(config==true and 'shown' or config==false and 'hidden' or 'unavailable')..' combat='..combat..' poll='..interval('poll')..' live='..interval('live_config_update')
+ -- BEGIN CACHE MODE CONTEXT
+ local mode=field(owner,'GetCacheDiagnosticMode')
+ if type(mode)=='function' then
+  local ok,loaded,requested,pending=pcall(mode,owner)
+  local function known(value) return readable(value) and type(value)=='string' and (value=='cached' or value=='direct') end
+  if ok and known(loaded) and known(requested) and readable(pending) and type(pending)=='boolean' then
+   result=result..' observation-cache='..loaded..' requested='..requested..' reload='..tostring(pending)
+  else result=result..' observation-cache=unavailable' end
+ end
+ return result
+ -- END CACHE MODE CONTEXT
 end
 local function reference(owner,...)
  local keys={...}

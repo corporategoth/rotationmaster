@@ -106,7 +106,7 @@ test('actual trend services retain their exact formulas bodies tuples and three 
  a.round=function() error('LIVE_LEGACY_ROUND') end;for _,fn in ipairs({current,old}) do local ok,why=pcall(fn,fn==current and s.history or {{time=100,value=80,max=100}});assert(not ok and tostring(why):find('LIVE_LEGACY_ROUND',1,true)) end
 end)
 test('strict inverse restores only both full evaluators and all private trend and stats source identities',function()
- local _,a=fixture();local file=assert(io.open('Conditions/stats.lua'));local text=file:read('*a');file:close()
+ local _,a=fixture();local file=assert(io.open('Conditions/stats.lua'));local text=file:read('*a');file:close();text=dofile('tests/fixtures/restore_resource_deficit_summary_repairs.lua')(text)
  assert(a:FunctionSourceHash(inverse(restoreForecast(text)))=='3174a034','stats changed beyond two trend consumer expressions from d8bdba6')
  assert(not pcall(function() return inverse(restoreForecast(text..text)) end),'inverse accepted duplicate evaluator blocks')
  for _,tag in ipairs(tags) do assert(inverse(newBodies[tag],tag,true)==oldBodies[tag]);assert(not pcall(inverse,oldBodies[tag],tag,true));assert(not pcall(inverse,newBodies[tag]..' ',tag,true));assert(not pcall(inverse,newBodies[tag],'OTHER',true)) end

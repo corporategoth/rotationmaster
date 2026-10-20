@@ -233,7 +233,7 @@ addon:RegisterCondition("POWER", {
     end,
     print = function(_, value)
         if value.value ~= nil and value.value < 0 then
-            return Functions.presentation.compareString(value.operator, string.format(L["%s power defecit"], Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"])), value.value)
+            return Functions.presentation.compareString(value.operator, string.format(L["%s power defecit"], Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"])), -value.value)
         else
             return Functions.presentation.compareString(value.operator, string.format(L["%s power"], Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"])), Functions.presentation.nullable(value.value))
         end
@@ -336,7 +336,7 @@ addon:RegisterCondition("POINT", {
     end,
     print = function(_, value)
         if value.value ~= nil and value.value < 0 then
-            return Functions.presentation.compareString(value.operator, string.format(L["%s point defecit"], Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"])), value.value)
+            return Functions.presentation.compareString(value.operator, string.format(L["%s point defecit"], Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"])), -value.value)
         else
             return Functions.presentation.compareString(value.operator, string.format(L["%s points"], Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"])), Functions.presentation.nullable(value.value))
         end

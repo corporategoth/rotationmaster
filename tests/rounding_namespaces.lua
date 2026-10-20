@@ -74,7 +74,7 @@ end)
 test('only five approved callback expressions change full module bytes and every private source remains exact',function()
     local _,a=fixture(inventory[3],true)
     for tag,module in pairs(modules) do local path='Conditions/'..module..'.lua';local file=assert(io.open(path));local text=file:read('*a');file:close()
-        if module=='stats' then text=dofile('tests/fixtures/restore_health_forecast_repairs.lua')(text);text=dofile('tests/fixtures/restore_trend_consumer_qualifiers.lua')(text);text=dofile('tests/fixtures/restore_rune_repairs.lua')(text);text=dofile('tests/fixtures/restore_health_forecast_deficit.lua')(text);text=dofile('tests/fixtures/restore_point_repairs.lua')(text) end
+        if module=='stats' then text=dofile('tests/fixtures/restore_resource_deficit_summary_repairs.lua')(text);text=dofile('tests/fixtures/restore_health_forecast_repairs.lua')(text);text=dofile('tests/fixtures/restore_trend_consumer_qualifiers.lua')(text);text=dofile('tests/fixtures/restore_rune_repairs.lua')(text);text=dofile('tests/fixtures/restore_health_forecast_deficit.lua')(text);text=dofile('tests/fixtures/restore_point_repairs.lua')(text) end
         local inverse=restore(text,tag);assert(a:FunctionSourceHash(inverse)==moduleHashes[module],module..' changed beyond exact rounding qualification fromf537fe1')
         assert(not pcall(restore,inverse,tag),'inverse accepted missing repaired expression')
         for name,hash in pairs(privateHashes[module]) do local id='builtin:'..path..':'..name

@@ -79,6 +79,24 @@ function addon:BuildGeneralSettings(p)
     p:Heading(L['Debugging Options'])
     p:Choice('loglevel',L['Log Level'],profile.loglevel or 2,entries(self.loglevels),function(v) profile.loglevel=v;p:Draw() end)
     local detail=p:Check('detailed_profiling',L['Detailed Profiling'],profile.detailed_profiling,function(v) profile.detailed_profiling=v end);if (profile.loglevel or 2)<3 then detail:Disable() end
+    if self.GetCacheDiagnosticMode and self.SetCacheDiagnosticMode then
+        local _,requested=self:GetCacheDiagnosticMode()
+        local control=p:Check('cpu_cache_bypass',L['Bypass observation cache (reload required)'],requested=='direct',function() end)
+        local modeText=p:Text('')
+        local function updateModeText()
+            local loaded,nextMode=self:GetCacheDiagnosticMode()
+            modeText:SetText(string.format(L['Observation cache: %s\nNext reload: %s'],L[loaded],L[nextMode]))
+        end
+        updateModeText();modeText:SetHeight(math.max(40,modeText:GetStringHeight()));p.y=p.y+modeText:GetHeight()-20
+        -- Diagnostic requests persist independently of pending settings edits.
+        self:SetUIScript(control,'OnClick',p:Guard(function()
+            local loaded,current=self:GetCacheDiagnosticMode()
+            local wanted=current=='direct' and 'cached' or 'direct'
+            local ok=self:SetCacheDiagnosticMode(wanted)
+            control:SetChecked((ok and wanted or current)=='direct');updateModeText()
+            p:Message(ok and string.format(L['Cache diagnostic saved for the next reload. Active mode: %s.'],L[loaded]) or L['Cache diagnostic is unavailable.'],ok)
+        end))
+    end
     if self.RunCPUProfileAction then
         local controls={
             {key='cpu_capture',text=L['Capture CPU (10s)'],action='start'},

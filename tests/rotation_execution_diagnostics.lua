@@ -133,6 +133,6 @@ test('new diagnostic report bytes are bounded without truncating an oversized ol
 end)
 test('strict diagnostic inverse preserves all five complete originals and composes with old index inverse',function()
  local restore=dofile('tests/fixtures/restore_rotation_execution_diagnostics.lua');local prior=dofile('tests/fixtures/restore_rotation_execution_index.lua')
- for _,path in ipairs({'Data/plain.lua','Data/rotation_tree.lua','Core/rotation_sequence.lua','main.lua','Diagnostics/cpu.lua'})do local text=restore(read(path),path);if path~='Diagnostics/cpu.lua'then prior(text,path)end end
+ for _,path in ipairs({'Data/plain.lua','Data/rotation_tree.lua','Core/rotation_sequence.lua','main.lua','Diagnostics/cpu.lua'})do local source=read(path);if path=='Diagnostics/cpu.lua'then source=dofile('tests/fixtures/restore_cache_mode_cpu.lua')(source)end;local text=restore(source,path);if path~='Diagnostics/cpu.lua'then prior(text,path)end end
 end)
 finish()
