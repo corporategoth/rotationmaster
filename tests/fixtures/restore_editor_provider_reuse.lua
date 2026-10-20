@@ -726,6 +726,7 @@ local function hash(text)
  return string.format('%08x',value)
 end
 return function(text,path)
+ if path=='UI/lua_editor.lua' then text=dofile('tests/fixtures/restore_integration_settings.lua')(path,text) end
  if path=='UI/function_source_pane.lua' then text=dofile('tests/fixtures/restore_variadic_argument_append.lua')(text,path) end
  local record=records[path];assert(type(text)=='string' and record,'unknown editor reuse inverse input')
  for _,patch in ipairs(record.patches) do

@@ -2307,7 +2307,7 @@ L["Help.Profiles.reset"] = "Reset current profile replaces the active profile wi
 L["Help.Profiles.delete"] = "The red trash can permanently removes the selected inactive profile after confirmation. The active profile and Default cannot be deleted here. Selecting another profile does not delete or activate it."
 L["Help.Profiles.new_name"] = "New and Duplicate open a named draft. Use a nonblank, unused name of at most 50 characters. Apply creates the profile; Cancel abandons creation. Creating a profile leaves the previously active profile active, so use Activate profile when you want to switch to the new copy."
 L["Help.Profiles.collections"] = "The buttons below the list create a new profile, duplicate the selected profile, transfer profiles or compare saved settings. Search narrows the list without activating a profile. Import/Export shows the original name and lets you replace the selection or create a renamed copy. Importing a new profile opens a creation draft; Apply saves it. Replacing a selected profile happens when you confirm the import, and replacing the active profile updates its runtime settings. Compare does not apply changes."
-L["Help.Integrations.lua_editor"] = "Automatic uses a connected editor provider when available, then falls back to Built In syntax highlighting. Built In syntax highlighting and Plain text work without another addon; Plain text disables highlighting. Choose an available provider for its connected features. An unavailable or failing provider falls back safely. Apply saves the choice for the next opening of a condition or function code editor; it does not replace an editor already open."
+L["Help.Integrations.lua_editor"] = "Enable and Select are separate profile preferences. Enable an available editor before selecting it. None always uses the plain editor. Automatic chooses an enabled registered provider, then enabled Built In syntax highlighting, otherwise None. Disabling the selected editor chooses None; enabling an editor does not select it. Apply saves both preferences for the next source-editor opening; Discard keeps saved settings and an open editor keeps its current provider. Registered custom extensions retain their existing selection contract."
 L["Help.Integrations.lua_line_numbers"] = "Show line numbers controls the gutter in every condition and function code editor. It defaults to enabled. Apply saves the preference and updates open code panes; Discard keeps the saved setting. It does not change the Lua source or its line breaks."
 L["Help.Integrations.optional_addons"] = "The supported-addon inventory shows detected versions and distinguishes missing, loaded, connected, disabled, incompatible and unknown states. Detection and source evidence do not certify native client behavior. Rotation Master does not install or enable other addons."
 L["Apply / Discard"] = true
@@ -2516,6 +2516,35 @@ L["Rotation Master cast receipt diagnostics"] = true
 L["Rows omitted: %d"] = true
 L["Scoring: unavailable"] = true
 L["unavailable"] = true
+
+L["Default.TBC.Mage.Thirties.Name"] = "TBC Mage 30–39 Frost single-target preview"
+L["Default.TBC.Mage.Thirties.Description"] = "Bounded level 30–39 Frost single-target preview. Preserves any existing Frost, Ice or Mage Armor; offers learned Mage, then Ice, then Frost Armor only when all are absent. Intellect remains independent. Talents, kiting, emergency defenses and resources stay manual."
+
+L["Default.TBC.Shaman.Enhancement30.Name"] = "Shaman: Enhancement leveling (30–39)"
+L["Default.TBC.Shaman.Enhancement30.Description"] = "Bounded TBC solo Enhancement-oriented preview for levels30–39, selected only when Enhancement has the unique positive highest talent allocation. Uses learned ranks for a Lightning Bolt pull, Earth Shock in combat and stationary ranged Lightning Bolt, with independent Lightning Shield and mainhand imbue reminders. Prefers learned Windfury over Rockbiter only when no temporary mainhand enchant is present; preserves any manual enchant and does not infer a weapon type or complete build. Equipment, healing, interrupts, totems, consumables, weapon timing and resource optimization remain manual. Not native gameplay certified."
+
+L["Default.TBC.Warlock.Thirties.Name"] = "TBC Warlock 30–39 single-target preview"
+L["Default.TBC.Warlock.Thirties.Description"] = "Bounded Affliction-oriented preview with learned Siphon Life; proc priorities, talents, pets and resources remain manual."
+
+L["Action bars"] = true
+L["Addon"] = true
+L["Apply changes the editor used the next time a source editor opens. Enable an editor before selecting it."] = true
+L["Automatic uses an enabled available provider, then enabled built-in highlighting, otherwise None (plain editor)."] = true
+L["Baseline plain editor; always available."] = true
+L["Built in"] = true
+L["Condition data"] = true
+L["Description / status"] = true
+L["Editor options"] = true
+L["Enable / Select"] = true
+L["Lua editors"] = true
+L["None (plain editor)"] = true
+L["Quest callbacks"] = true
+L["Recommendation notifications"] = true
+L["Selected"] = true
+L["Shared editor settings."] = true
+L["Editor settings"] = true
+L["Enable built-in syntax highlighting"] = true
+L["Lua editor integrations"] = true
 
 -- BEGIN GENERATED RM PUBLIC HELPER DOCS
 L["Absolute health target (negative means deficit) or percentage fraction."] = true

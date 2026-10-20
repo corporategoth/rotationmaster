@@ -71,6 +71,7 @@ function addon:OnInitializeInternal()
  },
 }
 return function(text,path)
+ if path=='UI/settings_collections.lua' and text:find('lua_editor_disabled',1,true) then text=dofile('tests/fixtures/restore_integration_settings.lua')(path,text) end
  local rows=assert(paths[path],'unknown Questie wiring inverse path')
  for _,row in ipairs(rows) do
   local a,b=text:find(row.new,1,true);assert(a,'Questie wiring block changed: '..path)

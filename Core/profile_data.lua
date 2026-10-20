@@ -72,6 +72,9 @@ function addon:ValidateProfileTransfer(value)
         elseif key=='condition_groups' then
             if not dense(item,function(group) return type(group)=='table' and fields(group,{id='string',name='string',conditions='table',icon=type(group.icon)}) and type(group.id)=='string' and type(group.name)=='string' and dense(group.conditions,stringValue) and (group.icon==nil or self:IsCategoryIcon(group.icon)) end) then return false end
         elseif key=='announces' then local seen={};if not dense(item,function(v) if not self:IsValidAnnouncement(v,true) or seen[v.id] then return false end;seen[v.id]=true;return true end) then return false end
+        elseif key=='lua_editor_disabled' then
+            if type(item)~='table' or getmetatable(item)~=nil then return false end
+            for name,disabled in pairs(item) do if (name~='native' and name~='LuaWorkbench') or disabled~=true then return false end end
         elseif key=='stockTargets' then
             -- Closed optional schema was checked before copying the profile.
         elseif key=='itemsets' then

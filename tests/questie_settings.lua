@@ -30,7 +30,15 @@ local function fixture(enabled)
  return env,a,load,frames,trace,function()return made end
 end
 local function page(a,load)
- load('UI/settings_draft.lua');load('UI/settings_integrations.lua');load('UI/settings_collections.lua')
+ load('UI/settings_draft.lua');load('UI/settings_integrations.lua')
+ -- These historical page-double assertions retain the exact c737 page contract.
+ -- Current native cards/Questie Apply/Refresh/conflicts are covered by
+ -- tests/integration_settings.lua groups 11, 15 and 19, without this adapter.
+ local path='UI/settings_integrations.lua'
+ local source=dofile('tests/fixtures/restore_integration_settings.lua')(path,read(path))
+ local chunk=assert(loadstring(source,'@questie/historical-integration-page'))
+ setfenv(chunk,getfenv(a.BuildIntegrationSettings));chunk('rotationmaster',a)
+ load('UI/settings_collections.lua')
  a.StockSettings={DraftProfile=function(profile)return profile end}
  a.ListLuaEditorProviders=function()return{{value='auto',text='Automatic'}}end
  a.ListIntegrationStatus=function()return{{id='loaded',name='Loaded provider',version='1.2.3',state='loaded',detail='Loaded receipt'},

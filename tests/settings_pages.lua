@@ -846,8 +846,8 @@ end)
 test('Integrations lists actual editor providers and stages the preference with profile portability',function()
     local f,parent=fixture();local a=f.addon;f.load('UI/lua_editor.lua');local h=io.open('UI/settings_integrations.lua');if h then h:close();f.load('UI/settings_integrations.lua') end
     assert(a.BuildIntegrationSettings,'Integrations page missing');a:RegisterLuaEditorProvider('Example',function() error('not created while browsing settings') end)
-    local p=a:OpenNativeSettings(parent,'Integrations');p.fields.lua_editor:Click();p.menu.rows[3]:Click();assert(p:SettingsData().profile.lua_editor=='plain' and not a.db.profile.lua_editor)
-    p.fields.apply:Click();assert(a.db.profile.lua_editor=='plain' and a:ValidateProfileTransfer(a:ProfileToPortable(a.db.profile)) and not p.fields.lua_editor.rmUnsaved)
+    local p=a:OpenNativeSettings(parent,'Integrations');p.fields.integration_select_plain:Click();assert(p:SettingsData().profile.lua_editor=='plain' and not a.db.profile.lua_editor)
+    p.fields.apply:Click();assert(a.db.profile.lua_editor=='plain' and a:ValidateProfileTransfer(a:ProfileToPortable(a.db.profile)) and not p.fields.integration_select_plain.rmUnsaved and not p:IsSettingsDraftDirty())
     local entries=a:ListLuaEditorProviders();assert(entries[#entries].value=='Example');local code=a:CreateWorkbenchLuaEditor(parent,function() end,function() return true end);assert(not code.syntax and code.provider=='native')
 end)
 test('icon picker preset labels all exist in the actual base locale',function()
@@ -951,7 +951,7 @@ test('Integrations Help covers provider choices line numbers and loaded versus c
     local order={'lua_editor','lua_line_numbers','optional_addons'}
     for _,key in ipairs(order) do L['Help.Integrations.'..key]='Translated integration '..key end
     local rows=a:GetIntegrationOptionHelp();for i,key in ipairs(order) do assert(rows[i].id==key and rows[i].text=='Translated integration '..key) end
-    local p=a:OpenNativeSettings(parent,'Integrations');assert(p.fields.lua_editor and p.fields.lua_line_numbers)
+    local p=a:OpenNativeSettings(parent,'Integrations');assert(p.fields.integration_select_plain and p.fields.integration_select_auto and p.fields.lua_line_numbers)
     local all=a:WorkbenchPageHelp('Integrations');local found={};for _,row in ipairs(all) do if row.id then found[row.id]=row.text end end
     for _,key in ipairs(order) do assert(found[key]=='Translated integration '..key) end
 end)
@@ -972,15 +972,18 @@ test('supported editor inventory distinguishes loaded metadata from available co
     local f,parent=fixture();local a=f.addon;f.load('UI/lua_editor.lua');f.load('UI/settings_integrations.lua');f.load('Integrations/catalog.lua')
     f.env.IsAddOnLoaded=function(name) return name=='!!!LuaWorkbench' end
     f.env.GetAddOnMetadata=function(name,key) assert(key=='Version');if name=='!!!LuaWorkbench' then return '1.2.3' end end
-    local p=a:CreateSettingsForm(parent);local texts={};local original=p.Text
-    p.Text=function(self,text) texts[#texts+1]=text;return original(self,text) end
+    local p=a:CreateSettingsForm(parent)
     p:Open(function(form) a:BuildIntegrationSettings(form) end)
-    local function status() for _,text in ipairs(texts) do if text:find('LuaWorkbench (version 1.2.3):',1,true)==1 then return text end end end
-    assert(status()=='LuaWorkbench (version 1.2.3): Loaded; connection not confirmed.','loaded addon falsely advertised a connected integration')
+    local function cardText()
+        local card=assert(p.fields.integration_card_editor_LuaWorkbench);local rows={}
+        for _,label in ipairs(p.pool.integrationLabels or {})do if label:GetParent()==card then rows[#rows+1]=label:GetText()end end
+        return table.concat(rows,'\n')
+    end
+    assert(cardText():find('1.2.3',1,true) and cardText():find('Loaded; connection not confirmed.',1,true),'loaded addon falsely advertised a connected integration')
     a:RegisterLuaEditorProvider('LuaWorkbench',function() error('must not create editor from settings') end)
-    texts={};p:Draw();assert(status()=='LuaWorkbench (version 1.2.3): Loaded; connection not confirmed.','registration alone fabricated native availability')
+    p:Draw();assert(cardText():find('Loaded; connection not confirmed.',1,true),'registration alone fabricated native availability')
     a.CreateLuaWorkbenchControl=function()error('must not construct editor from inventory')end;f.env.LuaWorkbench={}
-    texts={};p:Draw();assert(status()=='LuaWorkbench (version 1.2.3): Connected')
+    p:Draw();assert(cardText():find('Connected',1,true))
 end)
 test('saved settings pages use Discard while new profile drafts keep Cancel',function()
     local f,parent=fixture();local a=f.addon;local p=a:OpenNativeSettings(parent,'General')

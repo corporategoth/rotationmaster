@@ -1,10 +1,20 @@
 # Optional integration status
 
-The Integrations page combines editor/provider preferences with a fixed inventory of supported addons. Each row shows the addon, its detected Version metadata when available, a connection state and the feature it can extend. Addons that are not loaded remain listed; a detected version does not imply the addon is loaded. Missing metadata is not proof that an addon is uninstalled.
+The Integrations page combines editor/provider preferences with a fixed inventory of supported addons. Aligned RM cards are grouped into Lua editors, condition data, recommendation notifications, quest callbacks and action bars. Their columns show Addon, Version, Description/status and the controls that RM actually supports; settings stay under the relevant card. Addons that are not loaded remain listed; a detected version does not imply the addon is loaded. Missing metadata is not proof that an addon is uninstalled.
 
 The inventory covers LuaWorkbench editing and detection of WowLua, ExtendedCharacterStats and MobInfo2 conditions, WeakAuras notifications, Questie callbacks and the action-bar providers recognized by RM. Bundled libraries are implementation dependencies rather than install suggestions. Arbitrary user extension modules have no reliable addon identity and are not fabricated as inventory rows.
 
 Loaded and connected are separate observations. The catalog uses existing RM editor/condition availability and the cached Questie service status when it can establish a connection. Other loaded providers remain connection-unconfirmed. Rows do not construct editors, query gameplay values, invoke provider discovery or install/load another addon. Reading the page performs bounded addon loading/version metadata queries; loading the catalog itself does no work. Labels and versions escape native markup and controls and retain complete UTF-8 characters within their display limits.
+
+## Editor enablement and selection
+
+The editor cards keep enabled and selected separate. None is always available and persists the existing `profile.lua_editor="plain"` choice. Automatic is a selection mode, not an addon: it chooses an enabled registered provider, then enabled built-in highlighting, otherwise plain. An enabled available editor can be selected directly even when another editor is selected. Disabling the selected editor stages None; enabling it does not select it. Missing providers remain visible with status rather than becoming selectable.
+
+The optional `profile.lua_editor_disabled` map is closed to true values for the known `native` and `LuaWorkbench` IDs. An absent or empty map preserves existing enabled defaults. Registered custom editor extensions keep their selection and Automatic contract without fabricated persisted enable switches. WowLua is detection-only. Integrations without implemented preferences remain status-only rather than receiving fake Enable controls. Status-only does not imply data-only passivity: ExtendedCharacterStats, MobInfo2 and WeakAuras invoke provider APIs.
+
+Both fields use the existing Integrations Apply/Discard transaction. Conflicts refuse partial publication, profile copy/import retain the map, and reset returns to enabled defaults. Apply affects the next source-editor opening; it does not forcibly replace a control already open. The bundled baseline choices, highlighting preference and line numbers live in a separate Editor settings area without Addon/Version cards, and Questie retains its own independent preference and receipt details.
+
+All added resolution work is on editor opening or provider listing. The page creates no gameplay subscription, timer or polling loop and does not change recommendation evaluation or CPU profiling. Its pooled controls retain native form owner/drawing guards; offline layout tests do not claim actual-client pixel acceptance.
 
 ## Questie callbacks
 
