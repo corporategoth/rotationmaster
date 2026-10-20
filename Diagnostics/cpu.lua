@@ -2,6 +2,64 @@ local addon_name,addon=...
 -- Opt-in cumulative snapshots. No functions are wrapped and shared counters are
 -- never reset. Only this module's one completion timer exists during capture.
 local active,lastReport
+-- Fixed, source-free proof snapshots. The installer is retired by main;
+-- this reader is private and is never invoked outside capture boundaries.
+local proofType,proofRawget,proofPcall=type,rawget,pcall
+local executionIndexDiagnostic
+function addon:BindCPUExecutionIndexDiagnostic(provider)
+ if self~=addon or executionIndexDiagnostic or proofType(provider)~="function" then return end
+ executionIndexDiagnostic=provider;addon.BindCPUExecutionIndexDiagnostic=nil
+end
+local proofReasons={}
+for _,reason in ipairs({"ready","unbound","namespace","capability","env","method","public-env","finite-env","diagnostic-env","raw-type","raw-pairs","raw-ipairs","raw-getmetatable","raw-getfenv","raw-math","raw-table","math-huge","math-max","table-sort","portable-proof","child-env","location-env","failure-env","identifier-env","dense-env","string-anchor-table","string-index-table","string-match-callable","string-sub-callable","string-anchor-current","string-index-current","string-match-current","string-sub-current","owner","db","profile","index-reader"}) do proofReasons[reason]=true end
+local proofOwners={"main","sequence","portable","index"}
+local proofRawKeys={"type","pairs","ipairs","getmetatable","getfenv","math","table"}
+local function executionIndexProof()
+ if not executionIndexDiagnostic then return "probe-unavailable" end
+ local ok,text=proofPcall(function()
+  local status=executionIndexDiagnostic()
+  if proofType(status)~="table" then return "probe-unavailable" end
+  local parts={}
+  for i=1,4 do
+   local name=proofOwners[i];local row=proofRawget(status,name)
+   local reason=proofType(row)=="table" and proofRawget(row,"reason") or nil
+   reason=proofType(reason)=="string" and proofRawget(proofReasons,reason) and reason or "unavailable"
+   local part=name.."="..reason
+   if reason~="ready" and name~="main" then
+    local flags=proofType(row)=="table" and proofRawget(row,"raw") or nil
+    part=part.."["
+    for keyIndex=1,7 do
+     local key=proofRawKeys[keyIndex]
+     if name~="sequence" or key=="type" or key=="ipairs" or key=="getfenv" then
+      local flag=proofType(flags)=="table" and proofRawget(flags,key)
+      part=part..key.."="..(flag==true and "1" or flag==false and "0" or "?").."," end
+    end
+    part=part.."]"
+   end
+   parts[i]=part
+  end
+  local index=proofRawget(status,"index")
+  local function shape(key)
+   local value=proofType(index)=="table" and proofRawget(index,key)
+   return (value=="table" or value=="function" or value=="other") and value or "unavailable"
+  end
+  local alias=proofType(index)=="table" and proofRawget(index,"globalString")
+  return parts[1].."; "..parts[2].."; "..parts[3].."; "..parts[4].."; string-index="..shape("capturedIndex").."/"..shape("currentIndex").."; string-global="..(alias==true and "1" or alias==false and "0" or "?")
+ end)
+ return ok and text or "probe-unavailable"
+end
+local function appendExecutionIndexProof(report,started,ended)
+ local bytes=#report-1
+ for i=1,#report do bytes=bytes+#report[i] end
+ local first="Execution index proof start: "..(started or "probe-unavailable")
+ local last="Execution index proof end: "..ended
+ if bytes+1+#first+1+#last<16000 then
+  report[#report+1]=first;report[#report+1]=last
+ else
+  local omitted="Execution index proof omitted to keep report bounded."
+  if bytes+1+#omitted<16000 then report[#report+1]=omitted end
+ end
+end
 local MAX_FUNCTIONS,MAX_SCAN,TOP=384,512,20
 local runtimeNames={
  'EvaluateNextAction','EvaluateNextActionInternal','UpdateCurrentCondition','Fetch','UpdateBagContents',
@@ -180,6 +238,9 @@ local function finish(run,status,reason)
     end
    end
    -- END INCLUSIVE CPU SCOPES
+   -- BEGIN EXECUTION INDEX DIAGNOSTICS
+   appendExecutionIndexProof(report,run.executionIndexProof,executionIndexProof())
+   -- END EXECUTION INDEX DIAGNOSTICS
    text=table.concat(report,'\n')
   end
  end
@@ -205,7 +266,7 @@ function addon:StartCPUProfile(duration)
  active=run
  local ok,timer=pcall(self.ScheduleTimer,self,function() finish(run,'complete') end,duration)
  if not ok or not timer then if active==run then active=nil end;return false,'timer-error' end
- run.timer=timer;lastReport=nil
+ run.timer=timer;if active==run then run.executionIndexProof=executionIndexProof() end;lastReport=nil
  return true
 end
 function addon:CancelCPUProfile()

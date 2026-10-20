@@ -57,7 +57,7 @@ test('new public service clone resolves real observers cache authority and priva
  s.facts.nameplate1.enemy=nil;local count,why=fn(a,1,{});assert(count==nil and type(why)=='string')
 end)
 test('one exact evaluator inverse retains whole combat old exports private identities and reused public bodies',function()
- local _,a=fixture(true);a:InitializeFunctionRegistry();local h=assert(io.open('Conditions/combat.lua'));local text=h:read('*a');h:close();local inverse=dofile('tests/fixtures/restore_threat_count_repairs.lua');local restored,oldBody,newBody,bindings,parameters=inverse(dofile('tests/fixtures/restore_combat_history_time_repairs.lua')(text))
+ local _,a=fixture(true);a:InitializeFunctionRegistry();local h=assert(io.open('Conditions/combat.lua'));local text=h:read('*a');h:close();local inverse=dofile('tests/fixtures/restore_threat_count_repairs.lua');local restored,oldBody,newBody,bindings,parameters=inverse(dofile('tests/fixtures/restore_combat_history_time_repairs.lua')(dofile('tests/fixtures/restore_form_presentation_repairs.lua')(text)))
  assert(a:FunctionSourceHash(restored)=='6c85f357','combat changed beyond THREAT_COUNT from frozen baseline')
  assert(not pcall(inverse,text..text),'ambiguous callback repair accepted');assert(not pcall(inverse,'changed'..newBody,true),'unexpected callback bytes accepted')
  local source=assert(a:GetBuiltinConditionSource('THREAT_COUNT'));assert(source.evaluate==newBody,'catalog is pending exact evaluator');source.evaluate=oldBody;source.bindings=a:CopySettingsData(bindings);source.parameters.evaluate=a:CopySettingsData(parameters);assert(a:FunctionSourceHash(source)=='7ca1d784','unrelated THREAT_COUNT export metadata changed')

@@ -10,10 +10,10 @@ local AceConsole = LibStub("AceConsole-3.0")
 local AceEvent = LibStub("AceEvent-3.0")
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 local getCached
-local sequenceRawMethod,sequenceRun
+local sequenceRawMethod,sequenceRun,sequenceStatus
 local bindSequence=addon.BindRotationSequenceReader
 if type(bindSequence)=="function" then
-    bindSequence(addon,function(rawMethod,run) sequenceRawMethod,sequenceRun=rawMethod,run end)
+    bindSequence(addon,function(rawMethod,run,status) sequenceRawMethod,sequenceRun,sequenceStatus=rawMethod,run,status end)
     addon.BindRotationSequenceReader=nil
 end
 local function evaluateSequence(owner,body,evaluate,visit)
@@ -21,6 +21,16 @@ local function evaluateSequence(owner,body,evaluate,visit)
     local method=owner.EvaluateRotationSequence
     if sequenceRun then return sequenceRun(owner,before,method,body,evaluate,visit) end
     return method(owner,body,evaluate,visit)
+end
+-- One-time private handoff to the earlier-loaded optional CPU sampler.
+local bindCPUStatus=addon.BindCPUExecutionIndexDiagnostic
+if type(bindCPUStatus)=="function" then
+    bindCPUStatus(addon,function()
+        local status=sequenceStatus and sequenceStatus(addon) or {}
+        status.main={reason=sequenceRawMethod and sequenceRun and sequenceStatus and "ready" or "unbound"}
+        return status
+    end)
+    addon.BindCPUExecutionIndexDiagnostic=nil
 end
 local DBIcon = LibStub("LibDBIcon-1.0")
 local function spellLink(spellid)

@@ -62,12 +62,36 @@ local sequenceIpairs=ipairs
 local sequenceGetfenv=getfenv
 local sequenceEnvironment=sequenceType(sequenceGetfenv)=="function" and sequenceGetfenv(1) or nil
 local ownedSequence=addon.EvaluateRotationSequence
-local readIndex,retireIndex
+local readIndex,retireIndex,indexStatus
 local bindIndex=addon.BindRotationExecutionIndexReader
 if sequenceType(bindIndex)=="function" then
     ---@cast bindIndex function
-    bindIndex(addon,function(read,retire) readIndex,retireIndex=read,retire end)
+    bindIndex(addon,function(read,retire,status) readIndex,retireIndex,indexStatus=read,retire,status end)
     addon.BindRotationExecutionIndexReader=nil
+end
+-- Source-owned status carries no body, cache, method, or profile references.
+local function sequenceStatus(owner)
+    local result={reason="ready",raw={}}
+    local function check(reason,ok) if result.reason=="ready" and not ok then result.reason=reason end end
+    local ownerTable=sequenceType(owner)=="table"
+    local db=ownerTable and sequenceRawget(owner,"db") or nil
+    local profile=sequenceType(db)=="table" and sequenceRawget(db,"profile") or nil
+    local environment=sequenceType(sequenceEnvironment)=="table"
+    local capability=sequenceType(sequenceGetfenv)=="function"
+    check("owner",sequenceEqual(owner,addon))
+    check("method",ownerTable and sequenceEqual(sequenceRawget(owner,"EvaluateRotationSequence"),ownedSequence))
+    check("namespace",ownerTable and sequenceEqual(sequenceRawget(owner,"RotationData"),data))
+    check("db",sequenceType(db)=="table");check("profile",sequenceType(profile)=="table")
+    check("index-reader",sequenceType(readIndex)=="function")
+    check("capability",capability);check("env",environment)
+    check("public-env",capability and sequenceEqual(sequenceGetfenv(ownedSequence),sequenceEnvironment))
+    local keys={"type","ipairs","getfenv"};local pointers={sequenceType,sequenceIpairs,sequenceGetfenv}
+    for i=1,3 do
+        local key=keys[i];local ok=environment and sequenceEqual(sequenceRawget(sequenceEnvironment,key),pointers[i]) or false
+        result.raw[key]=ok;check("raw-"..key,ok)
+    end
+    local status=indexStatus and indexStatus(data) or {portable={reason="unbound"},index={reason="unbound"}}
+    status.sequence=result;return status
 end
 function addon:BindRotationSequenceReader(bind)
     if self~=addon or sequenceType(bind)~="function" then return end
@@ -101,5 +125,5 @@ function addon:BindRotationSequenceReader(bind)
         local function each(list) return sequenceEnvironment.ipairs(list) end
         return execute(body,evaluate,visit,rows,ordinal,kind,each)
     end
-    bind(rawMethod,run)
+    bind(rawMethod,run,sequenceStatus)
 end

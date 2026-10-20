@@ -126,6 +126,7 @@ test('every callback byte and parameter remains identical after reversing only n
         if tag=='TOTEM_REMAIN' then current.evaluate=dofile('tests/fixtures/restore_rounding_qualifiers.lua')(current.evaluate,tag,true) end
         if tag=='THREAT' then current.evaluate=dofile('tests/fixtures/restore_threat_repairs.lua')(current.evaluate,true) end
         if tag=='PET' or tag=='PET_NAME' then current.evaluate=dofile('tests/fixtures/restore_pet_repairs.lua')(current.evaluate,tag) end
+        if tag=='FORM' then for _,name in ipairs({'print','widget'}) do current[name]=dofile('tests/fixtures/restore_form_presentation_repairs.lua')(current[name],name) end end
         local source=legacy(a,current,tag);local parts={}
         -- Separate ECS API regression tests require the corrected dot contract.
         -- Reverse only those explicit semantic fixes for this namespace-only byte proof.

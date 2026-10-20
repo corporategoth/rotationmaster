@@ -11,6 +11,10 @@ The Functions namespace system is already implemented. `Core/functions.lua` vali
 
 The older unchecked progress items for the utility registry, readonly Built In source/duplicates, transitive dependency transfer and definition enable/disable describe work now implemented. Native client acceptance remains separate from those offline contracts. AceGUI removal is complete in a8711a9; historical compatibility checkpoints below describe the migration path, not supported GUI APIs. Current native-only boundaries override those earlier records.
 
+## Current presentation audit follow-up
+
+FORM summaries and field choices now obtain spell names/icons through the existing platform spell adapter. GLYPH summaries use the existing item display adapter for their link. These changes retain live metadata reads, configured values, native form enumeration, class capture and existing placeholders; they add no negative cache. Evaluators, validators, schemas and historical private source identities remain unchanged. Dedicated current-source/duplicate tests cover readable, missing, failed and restricted metadata, alongside strict historical module inverses. Native appearance and optional client branches remain separate acceptance work.
+
 ## Implemented audit corrections
 
 * Distance field commits now notify their owning editor through the same status/proxy synchronization used by sibling fields. Previously the field changed a detached value without updating the editor session.

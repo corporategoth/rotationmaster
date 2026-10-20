@@ -3,6 +3,7 @@ local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite()
 -- query boundary. The new report block alone is removed; unrelated edits fail.
 local function loadHistoricalCPU(f)
  local h=assert(io.open('Diagnostics/cpu.lua'));local source=h:read('*a');h:close()
+ source=dofile('tests/fixtures/restore_rotation_execution_diagnostics.lua')(source,'Diagnostics/cpu.lua')
  local first=source:find('   -- BEGIN INCLUSIVE CPU SCOPES\n',1,true)
  if first then
   local marker='   -- END INCLUSIVE CPU SCOPES\n';local last=assert(source:find(marker,first,true))

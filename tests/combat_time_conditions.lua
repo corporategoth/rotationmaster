@@ -100,7 +100,7 @@ test('current editable clone repairs observations while raw saved source remains
     assert(a:FunctionSourceHash(restored)=='81aec83c','export metadata or bindings changed beyond callback')
 end)
 test('strict one evaluator inverse preserves whole combat source and all private records and getters',function()
-    local _,a=fixture();local text=dofile('tests/fixtures/restore_combat_history_time_repairs.lua')(read('Conditions/combat.lua'));text=dofile('tests/fixtures/restore_threat_count_repairs.lua')(text)
+    local _,a=fixture();local text=dofile('tests/fixtures/restore_combat_history_time_repairs.lua')(dofile('tests/fixtures/restore_form_presentation_repairs.lua')(read('Conditions/combat.lua')));text=dofile('tests/fixtures/restore_threat_count_repairs.lua')(text)
     assert(a:FunctionSourceHash(inverse(text))=='380252c0','combat changed beyond TIME_IN_COMBAT.evaluate')
     assert(inverse(newBody,true)==oldBody and not pcall(inverse,oldBody,true) and not pcall(inverse,newBody..' ',true))
     assert(not pcall(inverse,text..text),'duplicate repair accepted')

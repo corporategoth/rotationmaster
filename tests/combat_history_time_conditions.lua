@@ -99,7 +99,7 @@ test('archived raw saved callback keeps original arithmetic and stored source un
  assert(a:SettingsDataEqual(raw,stored) and a.db.global.custom_conditions.RAW_HISTORY==raw,'saved source rewritten')
 end)
 test('only the exact callback changes whole combat and preserves private source/getter identities',function()
- local _,a=fixture();a:InitializeFunctionRegistry();local text=read('Conditions/combat.lua');assert(a:FunctionSourceHash(inverse(text))=='250de3b3','combat changed beyond COMBAT_HISTORY_TIME from0db0ca6')
+ local _,a=fixture();a:InitializeFunctionRegistry();local text=read('Conditions/combat.lua');assert(a:FunctionSourceHash(inverse(dofile('tests/fixtures/restore_form_presentation_repairs.lua')(text)))=='250de3b3','combat changed beyond COMBAT_HISTORY_TIME from0db0ca6')
  assert(inverse(newBody,true)==oldBody and not pcall(inverse,oldBody,true) and not pcall(inverse,newBody..' ',true) and not pcall(inverse,text..text))
  for name,hash in pairs({character_class='d17cf4c1',color='dbda383d',helpers='9e28e933'}) do local id='builtin:Conditions/combat.lua:'..name;assert(a:FunctionSourceHash(assert(a.builtinFunctions[id]).source)==hash and rawequal(a:ResolveFunctionBinding(id),a.builtinSourceModules['Conditions/combat.lua'](name)),'private identity changed '..name) end
 end)

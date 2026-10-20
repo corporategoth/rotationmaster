@@ -53,7 +53,7 @@ local function fixture(...)
     a.unitsInRange={GUID1={unit='nameplate1',enemy=true,threat=99},GUID2={unit='nameplate2',enemy=false,threat=0},
         GUID3={unit='nameplate3',enemy=true,threat=99},GUID4={unit='nameplate4',enemy=true,threat=99}}
     a.combatHistory={player={{action='WOUND',severity='CRITICAL',time=98},{action='MISS',time=95}},target={{action='HEAL',time=97}}};a.combatStart=95
-    for _,path in ipairs({'Core/conditions.lua','Conditions/common.lua','Conditions/combat.lua','Data/builtin_sources.lua','Core/builtin_sources.lua','Core/custom_authoring.lua','Core/function_data.lua'}) do f.load(path) end
+    for _,path in ipairs({'Platform/spells.lua','Core/conditions.lua','Conditions/common.lua','Conditions/combat.lua','Data/builtin_sources.lua','Core/builtin_sources.lua','Core/custom_authoring.lua','Core/function_data.lua'}) do f.load(path) end
     e.loadstring=function(text,name) local fn,why=loadstring(text,name);if fn then setfenv(fn,e) end;return fn,why end
     return f,a,state
 end

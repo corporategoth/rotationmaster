@@ -326,7 +326,8 @@ if (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE or LE_EXPANSION_LEVEL_CURRENT >= 2) t
             return false
         end,
         print = function(_, value)
-            local link = value.item and select(2, GetItemInfo(value.item)) or nil
+            local info = value.item and addon.Platform:GetItemDisplayInfo(value.item) or nil
+            local link = info and info.link or nil
             return string.format(L["you {{!have|do not have}} %s glyph"], Functions.presentation.nullable(link, L["<glyph>"]))
         end,
         widget = function(parent, spec, value)

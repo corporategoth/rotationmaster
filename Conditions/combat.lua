@@ -437,9 +437,11 @@ addon:RegisterCondition("FORM", {
             if value.value == 0 then
                 form = L["humanoid"]
             elseif character_class == "SHAMAN" then
-                form = select(1, GetSpellInfo("Ghost Wolf"))
+                local info = addon.Platform:GetSpellInfo("Ghost Wolf")
+                form = info and info.name
             else
-                form = GetSpellInfo(select(4, GetShapeshiftFormInfo(value.value)))
+                local info = addon.Platform:GetSpellInfo(select(4, GetShapeshiftFormInfo(value.value)))
+                form = info and info.name
             end
         end
         return string.format(L["you {{!are|are not}} in %s form"], Functions.presentation.nullable(form, L["<form>"]))
@@ -455,7 +457,8 @@ addon:RegisterCondition("FORM", {
         forms["0"] = L["humanoid"]
         table.insert(formsOrder, "0")
         if character_class == "SHAMAN" then
-            forms["1"] = select(1, GetSpellInfo("Ghost Wolf"))
+            local info = addon.Platform:GetSpellInfo("Ghost Wolf")
+            forms["1"] = info and info.name or L["<form>"]
             table.insert(formsOrder, tostring("1"))
         else
             for i=1,GetNumShapeshiftForms() do
@@ -463,7 +466,8 @@ addon:RegisterCondition("FORM", {
                 if spellid == nil then
                     break
                 end
-                forms[tostring(i)] = GetSpellInfo(spellid)
+                local info = addon.Platform:GetSpellInfo(spellid)
+                forms[tostring(i)] = info and info.name or L["<form>"]
                 table.insert(formsOrder, tostring(i))
             end
         end
@@ -476,7 +480,8 @@ addon:RegisterCondition("FORM", {
                 else
                     if character_class == "SHAMAN" then
                         if value.value == 1 then
-                            formIcon:SetImage(GetSpellTexture("Ghost Wolf"))
+                            local info = addon.Platform:GetSpellInfo("Ghost Wolf")
+                            formIcon:SetImage(info and info.iconID or "Interface\\Icons\\INV_Misc_QuestionMark")
                         end
                     else
                         formIcon:SetImage(GetShapeshiftFormInfo(value.value))

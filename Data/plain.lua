@@ -110,7 +110,29 @@ local function portableOwned(namespace)
         and portableEqual(portableRawget(portableEnvironment,"table"),portableTable)
         and portableEqual(portableRawget(portableTable,"sort"),portableSort)
 end
+-- Capture-only explanation of the existing proof; never authorizes execution.
+local function portableStatus(namespace)
+    local result={reason="ready",raw={}}
+    local function check(reason,ok) if result.reason=="ready" and not ok then result.reason=reason end end
+    local environment=portableType(portableEnvironment)=="table"
+    local capability=portableType(portableGetfenv)=="function"
+    check("namespace",portableEqual(namespace,data));check("capability",capability)
+    check("env",environment)
+    check("method",portableEqual(portableRawget(data,"CheckPortable"),ownedPortable))
+    check("public-env",capability and portableEqual(portableGetfenv(ownedPortable),portableEnvironment))
+    check("finite-env",capability and portableEqual(portableGetfenv(finite),portableEnvironment))
+    check("diagnostic-env",capability and portableEqual(portableGetfenv(diagnostic),portableEnvironment))
+    local keys={"type","pairs","ipairs","getmetatable","getfenv","math","table"}
+    local pointers={portableType,portablePairs,portableIpairs,portableGetmetatable,portableGetfenv,portableMath,portableTable}
+    for i=1,7 do
+        local key=keys[i];local ok=environment and portableEqual(portableRawget(portableEnvironment,key),pointers[i]) or false
+        result.raw[key]=ok;check("raw-"..key,ok)
+        if key=="math" then check("math-huge",portableType(portableMath)=="table" and portableEqual(portableRawget(portableMath,"huge"),portableHuge)) end
+        if key=="table" then check("table-sort",portableType(portableTable)=="table" and portableEqual(portableRawget(portableTable,"sort"),portableSort)) end
+    end
+    return result
+end
 function addon:BindRotationPortableReader(bind)
     if self~=addon or portableType(bind)~="function" then return end
-    bind(portableOwned)
+    bind(portableOwned,portableStatus)
 end

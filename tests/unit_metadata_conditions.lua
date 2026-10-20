@@ -123,7 +123,7 @@ test('public helper editable clone uses actual owner and live consumed-field rea
     s.class='MAGE';s.label=opaque;assert(fn(a.Platform,'target','class')=='MAGE')
 end)
 test('exactly three evaluator bodies change with full module inverse and four private identities',function()
-    local _,a=fixture();local file=assert(io.open('Conditions/character.lua'));local text=file:read('*a');file:close();text=dofile('tests/fixtures/restore_mobinfo2_repairs.lua')(text);text=dofile('tests/fixtures/restore_role_repairs.lua')(text);text=dofile('tests/fixtures/restore_class_group_repairs.lua')(text)
+    local _,a=fixture();local file=assert(io.open('Conditions/character.lua'));local text=file:read('*a');file:close();text=dofile('tests/fixtures/restore_glyph_presentation_repairs.lua')(text);text=dofile('tests/fixtures/restore_mobinfo2_repairs.lua')(text);text=dofile('tests/fixtures/restore_role_repairs.lua')(text);text=dofile('tests/fixtures/restore_class_group_repairs.lua')(text)
     for tag in pairs(kinds) do local first=assert(text:find(repaired[tag],1,true),'exact repaired '..tag..' missing');assert(not text:find(repaired[tag],first+1,true),'multiple repaired '..tag..' bodies')
         text=text:sub(1,first-1)..original[tag]..text:sub(first+#repaired[tag])
     end
