@@ -82,7 +82,7 @@ local function read(path)local h=assert(io.open(path));local s=h:read('*a');h:cl
 local function unit(old,setup)
  local e={};for k,v in pairs(_G)do e[k]=v end;e._G=e
  local a={db={profile={}}}
- local function load(path)local text=read(path);if old then text=restore(dofile('tests/fixtures/restore_rotation_execution_diagnostics.lua')(text,path),path)end;local fn=assert(loadstring(text,'@'..path));setfenv(fn,e);fn('rotationmaster',a)end
+ local function load(path)local text=read(path);if old then if path=='main.lua'then text=dofile('tests/fixtures/restore_cache_mode_initialization.lua')(text)end;text=restore(dofile('tests/fixtures/restore_rotation_execution_diagnostics.lua')(text,path),path)end;local fn=assert(loadstring(text,'@'..path));setfenv(fn,e);fn('rotationmaster',a)end
  load('Data/plain.lua');if setup then setup('plain',a,e)end
  load('Data/rotation_tree.lua');if setup then setup('tree',a,e)end
  load('Core/rotation_sequence.lua');if setup then setup('sequence',a,e)end

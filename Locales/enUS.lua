@@ -690,6 +690,7 @@ L["Mana Percentage Count Within Range"] = true
 L["%s is an enemy"] = true
 L["%s is attackable"] = true
 L["number of %s members%s within %d yards"] = true
+L["number of %s members%s within %s yards"] = true
 L["number of enemies you are at least %s"] = true
 L["closer than %s yards"] = true
 L["allies"] = true

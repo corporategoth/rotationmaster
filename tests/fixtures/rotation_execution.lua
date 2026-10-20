@@ -94,7 +94,7 @@ source=source:sub(1,hitStart-1).." local tracking=false;local observed={}\n loca
 source=source.." return {a=a,e=e,tick=tick,load=load,reset=function(track)native={};observed={};tracking=track end,snapshot=function()return native,observed end}\nend\nreturn make"
 local factory=assert(loadstring('local persistent=...\nlocal function fixture()local e,a,_,load=persistent(nil,nil,true);a.currentSpec=0;e.GetTime=function()return 100 end;a.lastCacheReport=100;return e,a,nil,nil,nil,nil,load end\n'..source,'@external-normalized-shaman-factory'))(makePersistent)
 local restore=dofile('tests/fixtures/restore_rotation_execution_index.lua')
-local frozen={};for _,path in ipairs({'Core/rotation_sequence.lua','main.lua','Data/plain.lua','Data/rotation_tree.lua'})do frozen[path]=restore(dofile('tests/fixtures/restore_rotation_execution_diagnostics.lua')(read(path),path),path)end
+local frozen={};for _,path in ipairs({'Core/rotation_sequence.lua','main.lua','Data/plain.lua','Data/rotation_tree.lua'})do local text=read(path);if path=='main.lua'then text=dofile('tests/fixtures/restore_cache_mode_initialization.lua')(text)end;frozen[path]=restore(dofile('tests/fixtures/restore_rotation_execution_diagnostics.lua')(text,path),path)end
 return function(options,old)
  local original=loadfile
  if old then _G.loadfile=function(path)if frozen[path]then return assert(loadstring(frozen[path],'@'..path))end;return original(path)end end

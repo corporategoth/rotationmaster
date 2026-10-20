@@ -13,6 +13,8 @@ The older unchecked progress items for the utility registry, readonly Built In s
 
 ## Current presentation audit follow-up
 
+PROXIMITY's summary now preserves its accepted fractional distance and the empty-field editing placeholder. Its current text uses the new `number of %s members%s within %s yards` locale key. The old integer-format key remains available for archived custom callbacks; no saved source or external translation is rewritten. Range, membership, counts, evaluation and field behavior are unchanged.
+
 POWER and POINT deficit summaries now display the positive amount that their evaluators compare. Their stored negative sentinel and all runtime observations remain unchanged. Fractional deficits, signed zero, localization, negation, current duplicates and archived source contracts have dedicated coverage.
 
 FORM summaries and field choices now obtain spell names/icons through the existing platform spell adapter. GLYPH summaries use the existing item display adapter for their link. These changes retain live metadata reads, configured values, native form enumeration, class capture and existing placeholders; they add no negative cache. Evaluators, validators, schemas and historical private source identities remain unchanged. Dedicated current-source/duplicate tests cover readable, missing, failed and restricted metadata, alongside strict historical module inverses. Native appearance and optional client branches remain separate acceptance work.

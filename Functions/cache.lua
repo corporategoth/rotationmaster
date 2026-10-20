@@ -22,6 +22,7 @@ local function packResults(...)
     return { n = select('#', ...), ... }
 end
 
+---@param cache table|nil
 local function getCachedInternal(cache, recordnil, func, ...)
     if type(func) == 'string' then func = _G[func] end
     if type(func) ~= 'function' then return end
@@ -72,12 +73,32 @@ local function getCachedInternal(cache, recordnil, func, ...)
     return unpack(result, 1, result.n)
 end
 
+-- Keep the source-owned implementation above and its generated getter intact.
+-- Both existing public wrappers share this diagnostic-only dispatch cell.
+do
+local originalGetCachedInternal=getCachedInternal
+local getCachedInternal=getCachedInternal
+local bound=false
+function addon:BindCacheDiagnosticDispatcher(bind)
+    if self~=addon or type(bind)~="function" or bound then return end
+    bound=true
+    local selected=false
+    bind(function(direct)
+        if selected or type(direct)~="boolean" then return false end
+        selected=true
+        if direct then
+            getCachedInternal=function(_,recordnil,func,...) return originalGetCachedInternal(nil,recordnil,func,...) end
+        end
+        return true
+    end)
+end
 cache.getCached = function(cache, func, ...)
     return getCachedInternal(cache, true, func, ...)
 end
 
 cache.getRetryCached = function(cache, func, ...)
     return getCachedInternal(cache, false, func, ...)
+end
 end
 
 function cache:ReportCacheStats()

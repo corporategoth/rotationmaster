@@ -193,7 +193,7 @@ addon:RegisterCondition("PROXIMITY", {
         return string.format(Functions.presentation.playerize(value.unit, L["%s {{!have|do not have}} %s"], L["%s {{!has|does not have}} %s"]),
                 Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]),
                 Functions.presentation.compareString(value.operator,
-                        string.format(L["number of %s members%s within %d yards"],
+                        string.format(L["number of %s members%s within %s yards"],
                                 (value.samegroup and PARTY or L["Raid or Party"]),
                                 (value.includepets and " (" .. L["including pets"] .. ")" or ""),
                                 Functions.presentation.nullable(value.distance, L["<distance>"])),

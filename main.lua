@@ -361,6 +361,11 @@ function addon:OnInitializeInternal()
         defaults.profile.rotations=nil;defaults.profile.rotationLibrary=nil
     end
     self.db = LibStub("AceDB-3.0"):New(self.savedVariableName, defaults, true)
+    -- BEGIN CACHE DIAGNOSTIC INITIALIZATION
+    if type(self.InitializeCacheDiagnosticMode)=="function" then
+        self:InitializeCacheDiagnosticMode(self.db.global)
+    end
+    -- END CACHE DIAGNOSTIC INITIALIZATION
 
     for ext_addon,conditions in pairs(self.delayed_condition) do
         if IsAddOnLoaded(ext_addon) then
