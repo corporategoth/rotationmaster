@@ -46,6 +46,7 @@ Platform/runes.lua
 Platform/unit_identity.lua
 Platform/unit_metadata.lua
 Platform/creature_type.lua
+Platform/unit_presence.lua
 Platform/pet.lua
 Platform/threat.lua
 Platform/instance.lua

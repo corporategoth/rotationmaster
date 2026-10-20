@@ -73,7 +73,9 @@ addon:RegisterCondition("PETSPELL_RANGE", {
         end
     end,
     evaluate = function(value, cache)
-        if not Functions.cache.getCached(cache, UnitExists, "target") then return false end
+        local exists,presenceReason=Functions.cache.getCached(cache, addon.Platform.GetUnitPresenceObservation, addon.Platform, "target")
+        if exists==nil then return nil,presenceReason or 'unit-data-unavailable' end
+        if not exists then return false end
         local spellid, reason = addon:Widget_GetSpellId(value.spell, false)
         if not spellid then return nil, reason or "spell-data-unavailable" end
         local known, knownReason = Functions.cache.getCached(cache, addon.Platform.IsSpellKnown, addon.Platform, spellid, true)

@@ -1,6 +1,18 @@
 -- Curated public authoring documentation. Executable bodies are extracted from
 -- the actual addon functions; this file must never contain copied Lua bodies.
 return {
+Platform_GetUnitPresenceObservation={
+ module='Platform/unit_presence.lua',member='Platform.GetUnitPresenceObservation',callName='addon.Platform:GetUnitPresenceObservation',
+ description='Observe unit presence on identified client families. Pass the selected unit unchanged to one protected UnitExists call. Preserve readable true and false; missing, failed, restricted, nil or malformed required observations return nil with a reason. No identity, visibility, range or combat-state query is added.',
+ args={
+  self={type='RMPlatform',description='Rotation Master platform adapter (implicit with colon calls).'},
+  unit={type='string',description='Readable nonempty unit token, passed unchanged as the single native argument.'},
+ },
+ returns={
+  {type='boolean | nil',description='Known unit presence or absence; nil when the required observation is unavailable.'},
+  {type='string | nil',description='Client-family, query-validation or required-observation availability reason for a nil result.'},
+ },
+},
 Platform_GetUnitCreatureTypeID={
  module='Platform/creature_type.lua',
  member='Platform.GetUnitCreatureTypeID',

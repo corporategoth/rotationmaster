@@ -74,6 +74,7 @@ end)
 test('only five approved callback expressions change full module bytes and every private source remains exact',function()
     local _,a=fixture(inventory[3],true)
     for tag,module in pairs(modules) do local path='Conditions/'..module..'.lua';local file=assert(io.open(path));local text=file:read('*a');file:close()
+        if module=='spell' or module=='petspell' or module=='anyspell' then text=dofile('tests/fixtures/restore_spell_range_presence.lua')(text,path) end
         if module=='spell' or module=='petspell' then text=dofile('tests/fixtures/restore_spell_history_time.lua')(text,path);text=dofile('tests/fixtures/restore_spell_history_count.lua')(text,path) end
         if module=='stats' then text=dofile('tests/fixtures/restore_resource_deficit_summary_repairs.lua')(text);text=dofile('tests/fixtures/restore_health_forecast_repairs.lua')(text);text=dofile('tests/fixtures/restore_trend_consumer_qualifiers.lua')(text);text=dofile('tests/fixtures/restore_rune_repairs.lua')(text);text=dofile('tests/fixtures/restore_health_forecast_deficit.lua')(text);text=dofile('tests/fixtures/restore_point_repairs.lua')(text) end
         local inverse=restore(text,tag);assert(a:FunctionSourceHash(inverse)==moduleHashes[module],module..' changed beyond exact rounding qualification fromf537fe1')

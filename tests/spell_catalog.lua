@@ -3,12 +3,13 @@ local test,finish=F.suite()
 local function setup()
     local f=F.new()
     local ranks={[8042]=1,[8044]=2,[8045]=3}
-    f.addon.Platform={GetSpellInfo=function(_,id)
+    f.addon.Platform.GetSpellInfo=function(_,id)
         if id=='Lightning Bolt' then id=403 end
         if ranks[id] then return {name='Earth Shock',subtext='Rank '..ranks[id],iconID=1,spellID=id} end
         if id==403 then return {name='Lightning Bolt',spellID=id} end
         if id==974 then return {name='Earth Shield',spellID=id} end
-    end,GetSpellLink=function(_,id) return 'spell:'..id end}
+    end
+    f.addon.Platform.GetSpellLink=function(_,id) return 'spell:'..id end
     f.load('Core/spell_catalog.lua')
     return f
 end
