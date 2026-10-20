@@ -16,6 +16,7 @@ function addon:GetIntegrationOptionHelp()
         {id='lua_editor',title=L['Editor'],text=L['Help.Integrations.lua_editor']},
         {id='lua_line_numbers',title=L['Show line numbers'],text=L['Help.Integrations.lua_line_numbers']},
         {id='optional_addons',title=L['Optional addons'],text=L['Help.Integrations.optional_addons']},
+        {id='questie_enabled',title=L['Enable Questie integration'],text=L['Help.Integrations.questie_enabled']},
     }
 end
 function addon:WorkbenchInteractionHelp(kind)
@@ -51,7 +52,7 @@ function addon:WorkbenchPageHelp(topic)
         Profiles=L['Select a profile in the sidebar to inspect it, then Activate profile to switch. New and Duplicate open a named draft with Apply and Cancel. Import stages a validated new profile; Compare shows setting differences. Copy and Reset replace the active profile after confirmation; the red trash deletes an inactive profile.'],
         About=L['Version, author, credits and project links are shown here. Click a link field to select its text for copying.'],
         Rotations=L['Search or filter the rotation roster, then select a rotation. Blue Built In rotations use the same editor but remain read-only; Duplicate makes an editable copy. The name and Metadata describe the rotation. Switch condition selects when it applies. Use the Rotation and Cooldowns tabs to select the content below the switch condition. Cooldowns highlight independently of the ordered rotation.']}
-    description.Integrations=L['Choose the editor for custom Lua conditions and functions. Show line numbers applies across code editors. Built In syntax highlighting and Plain text work without another addon. Automatic selects a connected provider or falls back safely. Apply saves settings; editor changes take effect on reopening, and line-number visibility updates open editors. LuaWorkbench and WowLua loading status is shown separately from integration availability.']
+    description.Integrations=L['Help.Integrations.overview']
     local result={section(L['Using this page'],description[topic] or L['Optional addon settings.'])}
     if topic~='Profiles' and topic~='Rotations' and topic~='About' then result[#result+1]=section(L['Apply / Discard'],L['Edits stay in a draft until Apply. Discard abandons pending changes. Leaving with changes offers Apply, Discard or Cancel; Cancel keeps the page and draft open. Effect previews do not save changes. Action-bar binding operations are explicit and immediate.']) end
     if topic=='General' and self.GetGeneralOptionHelp then for _,entry in ipairs(self:GetGeneralOptionHelp()) do result[#result+1]=entry end end

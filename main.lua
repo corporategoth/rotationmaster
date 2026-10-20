@@ -141,6 +141,7 @@ local defaults = {
         rotation_view = "diagram",
         lua_editor = "auto",
         lua_line_numbers = true,
+        questie_enabled = false,
         rotationTagColors = {},
         preview_spells = 0,
         preview_vertical = false,
@@ -401,6 +402,42 @@ function addon:HandleCommand(str)
     end
 end
 
+-- One optional-provider lifetime, independent of the rotation event owner.
+-- Settings only publish saved preferences through SyncQuestieIntegration.
+local questieService,questieEvents,questieEnabled
+function addon:InitializeQuestieIntegration()
+    if questieService then return end
+    local factory=self.Integrations and self.Integrations.NewQuestie
+    if type(factory)~='function' then return end
+    questieService=factory()
+    self:SyncQuestieIntegration()
+end
+function addon:SyncQuestieIntegration()
+    if not questieService then return false end
+    local enabled=self.db and self.db.profile and self.db.profile.questie_enabled==true or false
+    if enabled==questieEnabled then return true end
+    questieEnabled=enabled
+    if enabled then
+        if not questieEvents then
+            questieEvents=CreateFrame('Frame')
+            questieEvents:SetScript('OnEvent',function(_,event,name)
+                if event=='ADDON_LOADED' and name=='Questie' and questieEnabled then questieService:Refresh() end
+            end)
+        end
+        questieEvents:RegisterEvent('ADDON_LOADED')
+    elseif questieEvents then questieEvents:UnregisterEvent('ADDON_LOADED') end
+    questieService:SetEnabled(enabled)
+    return true
+end
+function addon:GetQuestieIntegrationStatus()
+    if questieService then return questieService:GetStatus() end
+    return {state='unavailable',reason='adapter-unavailable',nativeAcceptance='unverified'}
+end
+function addon:RefreshQuestieIntegration()
+    if questieService and questieEnabled then return questieService:Refresh() end
+    return self:GetQuestieIntegrationStatus()
+end
+
 function addon:OnInitializeInternal()
     AceConsole:RegisterChatCommand("rm", function(str)
         addon:HandleCommand(str)
@@ -507,6 +544,8 @@ function addon:OnInitializeInternal()
 
     -- This is here because of order of loading.
     getCached = addon.Functions.cache.getCached
+
+    self:InitializeQuestieIntegration()
 
     --self:SetupOptions()
 end

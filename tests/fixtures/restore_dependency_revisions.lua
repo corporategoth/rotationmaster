@@ -4373,6 +4373,7 @@ end
  },
 }
 return function(text,path,baseline)
+ if path=='UI/settings_collections.lua' and not baseline then text=dofile('tests/fixtures/restore_questie_wiring.lua')(text,path) end
  local old=assert(records[path],'unknown dependency-revision module')
  if baseline then assert(text==nil);return old end
  assert(type(text)=='string')

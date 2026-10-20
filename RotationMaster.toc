@@ -238,6 +238,8 @@ Integrations/lua_workbench.lua
 UI/lua_completion.lua
 UI/line_numbers.lua
 UI/lua_editor.lua
+Integrations/questie.lua
+Integrations/catalog.lua
 UI/schema_cards.lua
 UI/schema_editor.lua
 UI/custom_source_fields.lua

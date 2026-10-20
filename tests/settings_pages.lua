@@ -968,16 +968,19 @@ test('literal AceDB Default is protected independently of the localized Default 
     assert(not p.fields.delete:IsEnabled(),'localized client can delete the true AceDB Default')
     p.selection='Défaut';p:Draw();assert(p.fields.delete:IsEnabled(),'custom profile matching translated label was incorrectly protected')
 end)
-test('loaded editor addons only show Connected when their provider is actually registered',function()
-    local f,parent=fixture();local a=f.addon;f.load('UI/lua_editor.lua');f.load('UI/settings_integrations.lua')
+test('supported editor inventory distinguishes loaded metadata from available connection',function()
+    local f,parent=fixture();local a=f.addon;f.load('UI/lua_editor.lua');f.load('UI/settings_integrations.lua');f.load('Integrations/catalog.lua')
     f.env.IsAddOnLoaded=function(name) return name=='!!!LuaWorkbench' end
+    f.env.GetAddOnMetadata=function(name,key) assert(key=='Version');if name=='!!!LuaWorkbench' then return '1.2.3' end end
     local p=a:CreateSettingsForm(parent);local texts={};local original=p.Text
     p.Text=function(self,text) texts[#texts+1]=text;return original(self,text) end
     p:Open(function(form) a:BuildIntegrationSettings(form) end)
-    local function status() for _,text in ipairs(texts) do if text:find('LuaWorkbench:',1,true)==1 then return text end end end
-    assert(status()=='LuaWorkbench: Loaded; editor integration not connected.','loaded addon falsely advertised a connected provider')
+    local function status() for _,text in ipairs(texts) do if text:find('LuaWorkbench (version 1.2.3):',1,true)==1 then return text end end end
+    assert(status()=='LuaWorkbench (version 1.2.3): Loaded; connection not confirmed.','loaded addon falsely advertised a connected integration')
     a:RegisterLuaEditorProvider('LuaWorkbench',function() error('must not create editor from settings') end)
-    texts={};p:Draw();assert(status()=='LuaWorkbench: Connected: embedded editing, completion, API knowledge and debugging.')
+    texts={};p:Draw();assert(status()=='LuaWorkbench (version 1.2.3): Loaded; connection not confirmed.','registration alone fabricated native availability')
+    a.CreateLuaWorkbenchControl=function()error('must not construct editor from inventory')end;f.env.LuaWorkbench={}
+    texts={};p:Draw();assert(status()=='LuaWorkbench (version 1.2.3): Connected')
 end)
 test('saved settings pages use Discard while new profile drafts keep Cancel',function()
     local f,parent=fixture();local a=f.addon;local p=a:OpenNativeSettings(parent,'General')
