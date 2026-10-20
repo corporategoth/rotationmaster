@@ -2491,6 +2491,32 @@ L["Incompatible"] = true
 
 L["Loaded; connection not confirmed."] = true
 
+-- Volatile cast receipt diagnostic controls.
+L["Advice: not available; presentation: not available; ordinary-cast proof: not available."] = true
+L["Attempts: %d; results: %d"] = true
+L["Capture casts (30s)"] = true
+L["Capture: unavailable"] = true
+L["Cast capture cleared."] = true
+L["Cast capture is running. Stop it or wait before opening Cast report."] = true
+L["Cast capture is unavailable."] = true
+L["Cast capture started for 30 seconds. Configuration can be closed during capture."] = true
+L["Cast capture status: idle"] = true
+L["Cast capture status: running"] = true
+L["Cast capture stopped. Open Cast report to inspect receipts."] = true
+L["Cast receipt report"] = true
+L["Cast report"] = true
+L["Client: family=%s version=%s build=%s interface=%s locale=%s"] = true
+L["Duration: %s seconds"] = true
+L["Native acceptance: unverified"] = true
+L["No cast capture is running."] = true
+L["No cast capture report is available. Start a capture first."] = true
+L["Producer: UNIT_SPELLCAST adapter"] = true
+L["Records: %d"] = true
+L["Rotation Master cast receipt diagnostics"] = true
+L["Rows omitted: %d"] = true
+L["Scoring: unavailable"] = true
+L["unavailable"] = true
+
 -- BEGIN GENERATED RM PUBLIC HELPER DOCS
 L["Absolute health target (negative means deficit) or percentage fraction."] = true
 L["All original results, preserving nil positions and return count."] = true

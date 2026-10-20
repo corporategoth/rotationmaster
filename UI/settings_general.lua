@@ -114,6 +114,34 @@ function addon:BuildGeneralSettings(p)
         end
         p.y=diagnosticY+28
     end
+    if self.RunCastCaptureAction then
+        local controls={
+            {key='cast_capture',text=L['Capture casts (30s)'],action='start'},
+            {key='cast_stop',text=L['Stop'],action='stop'},
+            {key='cast_report',text=L['Cast report'],action='report'},
+            {key='cast_clear',text=L['Clear'],action='clear'},
+        }
+        local diagnosticY=p.y;local buttons={};local minimumWidth=120
+        local statusText;local diagnosticToken=p.generation
+        for i,entry in ipairs(controls) do
+            local control=p:Button(entry.key,entry.text,function() end)
+            buttons[i]=control
+            minimumWidth=math.max(minimumWidth,control:GetFontString():GetStringWidth()+20)
+            self:SetUIScript(control,'OnClick',p:Guard(function()
+                local ok,message,current=self:RunCastCaptureAction(entry.action)
+                if current==false or not p:Valid(diagnosticToken) then return end
+                p:Message(message,ok)
+                if statusText then statusText:SetText(self:GetCastCaptureStatusText()) end
+            end))
+        end
+        local columns=p.width>=minimumWidth*4+12 and 4 or p.width>=minimumWidth*2+4 and 2 or 1
+        local controlWidth=(p.width-(columns-1)*4)/columns
+        for i,control in ipairs(buttons) do
+            control:ClearAllPoints();control:SetPoint('TOPLEFT',((i-1)%columns)*(controlWidth+4),-diagnosticY-math.floor((i-1)/columns)*28);control:SetWidth(controlWidth)
+        end
+        p.y=diagnosticY+math.ceil(#buttons/columns)*28
+        if self.GetCastCaptureStatusText then statusText=p:Text(self:GetCastCaptureStatusText()) end
+    end
     if self.Glow and store.global.effects and store.global.effects[profile.effect] then self:Glow(preview,'settings-preview',store.global.effects[profile.effect],profile.color or {r=1,g=1,b=1,a=1},profile.magnification or 1,profile.setpoint or 'CENTER',profile.xoffs or 0,profile.yoffs or 0) end
     p:EndColumns()
     p.cleanups[#p.cleanups+1]=function() if self.HideGlow then self:HideGlow(preview,'settings-preview') end end

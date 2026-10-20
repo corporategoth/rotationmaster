@@ -108,6 +108,7 @@ Core/announcements.lua
 Core/stock_targets.lua
 Analytics/replay.lua
 Analytics/capture.lua
+Platform/analytics_casts.lua
 Core/profile_data.lua
 Core/collection_data.lua
 Core/custom_condition_data.lua
@@ -175,6 +176,7 @@ UI/spell_search.lua
 UI/spell_icon.lua
 UI/errors.lua
 UI/cpu_profile.lua
+UI/analytics_capture.lua
 UI/settings_launcher.lua
 UI/settings_setup.lua
 UI/settings_roster_order.lua
