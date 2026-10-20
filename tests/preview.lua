@@ -41,4 +41,121 @@ test('preview count direction axis resizing and saved movement remain consistent
     local stale=w.header.scripts.OnDragStop;a.db.profile={preview_spells=1};stale();assert(not a.db.profile.preview_window)
     a:RefreshPreviewWindow();assert(a.nextWindow.profile==a.db.profile);a.db.profile.preview_spells=0;a:RefreshPreviewWindow();assert(not a.nextWindow and not w.frame:IsShown())
 end)
+local function geometrySpy(w)
+    local writes={}
+    local function watch(object,keys,prefix)
+        for _,key in ipairs(keys) do local original=object[key]
+            object[key]=function(...) writes[prefix..'.'..key]=(writes[prefix..'.'..key] or 0)+1;return original(...) end
+        end
+    end
+    watch(w.frame,{'SetSize'},'frame');watch(w.title,{'SetWidth','SetText'},'title')
+    for i,icon in ipairs(w.icons) do watch(icon,{'ClearAllPoints','SetPoint','SetSize','SetAlpha'},'icon'..i) end
+    return function() local count=0;for _,value in pairs(writes) do count=count+value end;return count end
+end
+test('unchanged preview refresh performs no geometry writes while metadata and hover stay fresh',function()
+    local f,a=fixture();local w=a:CreateNativePreviewWindow()
+    for i=1,3 do w:AddRecommendation(400+i) end
+    w:ReleaseChildren();w:AddRecommendation(403);w:DoLayout()
+    local writes=geometrySpy(w);local metadata,tooltip=0,{};local texture=1000
+    a.Platform.GetSpellInfo=function(_,id) metadata=metadata+1;return {iconID=texture+id} end
+    f.env.GameTooltip={IsOwned=function() return true end,Hide=function() tooltip[#tooltip+1]='hide' end,
+        SetOwner=function() tooltip[#tooltip+1]='owner' end,SetHyperlink=function(_,value) tooltip[#tooltip+1]=value end}
+    for i=1,10 do w:ReleaseChildren();w:PauseLayout();w:AddRecommendation(403);w:ResumeLayout();w:DoLayout() end
+    assert(writes()==0,'unchanged preview native writes='..writes())
+    assert(metadata==10 and w.count==1 and w.icons[1]:IsShown() and not w.icons[2]:IsShown())
+    assert(w.icons[1].texture:GetTexture()==1403)
+    texture=2000;w:ReleaseChildren();w:AddRecommendation(8042);w:DoLayout()
+    assert(metadata==11 and w.icons[1].texture:GetTexture()==10042 and writes()==0)
+    w.icons[1].scripts.OnEnter();assert(tooltip[#tooltip]=='spell:8042')
+    local before=#tooltip;w.icons[1].scripts.OnLeave();assert(#tooltip==before+1 and tooltip[#tooltip]=='hide')
+end)
+test('new unanchored and multiply anchored icons get one exact owned anchor',function()
+    local _,a=fixture();local w=a:CreateNativePreviewWindow();w:AddRecommendation(403)
+    local icon=w.icons[1];assert(icon:GetNumPoints()==1)
+    local getter=icon.GetPoint
+    for _,multiple in ipairs({false,true}) do
+        icon:ClearAllPoints()
+        if multiple then icon:SetPoint('TOPLEFT',w.frame,'TOPLEFT',1,2);icon:SetPoint('BOTTOMRIGHT',w.frame,'BOTTOMRIGHT',3,4);assert(icon:GetNumPoints()==2) end
+        icon.GetPoint=function() error('layout read an absent or ambiguous anchor') end
+        w:DoLayout();icon.GetPoint=getter
+        local point,parent,relative,x,y=icon:GetPoint(1)
+        assert(icon:GetNumPoints()==1 and point=='TOPLEFT' and parent==w.frame and relative=='TOPLEFT' and x==4 and y==-24)
+    end
+    -- SetPoint replaces a same-name anchor; it does not append duplicates.
+    icon:SetPoint('TOPLEFT',w.frame,'TOPLEFT',9,10);assert(icon:GetNumPoints()==1)
+    w:DoLayout();local _,_,_,x,y=icon:GetPoint();assert(x==4 and y==-24)
+end)
+test('layout repairs actual frame title icon anchor size and alpha disturbances then settles',function()
+    local f,a=fixture();local w=a:CreateNativePreviewWindow();w:AddRecommendation(403)
+    local icon=w.icons[1];a.db.profile.preview_locked=true;w:Configure()
+    w.frame:SetSize(999,888);assert(w.frame:GetWidth()==200 and w.frame:GetHeight()==92)
+    icon:SetSize(7,8);icon:SetAlpha(.3);icon:ClearAllPoints();icon:SetPoint('TOPLEFT',f.env.UIParent,'CENTER',1,2)
+    w.title:SetWidth(1);w.title:SetText('stale')
+    w:DoLayout();local point,parent,relative,x,y=icon:GetPoint(1)
+    assert(point=='TOPLEFT' and parent==w.frame and relative=='TOPLEFT' and x==4 and y==-24)
+    assert(icon:GetWidth()==64 and icon:GetHeight()==64 and icon:GetAlpha()==1 and w.title:GetWidth()==172 and w.title:GetText()=='Rotation Master')
+    a.pretty_name='New preview title';w:DoLayout();assert(w.title:GetText()=='New preview title')
+    local writes=geometrySpy(w);w:DoLayout();assert(writes()==0)
+end)
+test('geometry tolerance settles floating readback while alpha text and meaningful changes remain exact',function()
+    local _,a=fixture();local w=a:CreateNativePreviewWindow();w:AddRecommendation(403);local icon=w.icons[1]
+    w.frame.width=w.frame.width+.05;w.frame.height=w.frame.height-.05
+    icon.width=icon.width+.05;icon.height=icon.height-.05;icon:SetPoint('TOPLEFT',w.frame,'TOPLEFT',4.05,-24.05)
+    local writes=geometrySpy(w);w:DoLayout();assert(writes()==0,'small native float differences caused geometry writes')
+    icon:SetAlpha(.999);w.title:SetText('stale');local previous=writes();w:DoLayout();assert(writes()==previous+2 and icon:GetAlpha()==1 and w.title:GetText()=='Rotation Master')
+    w.frame.width=201;icon.width=65;icon:SetPoint('TOPLEFT',w.frame,'TOPLEFT',5,-24)
+    w:DoLayout();assert(w.frame:GetWidth()==200 and icon:GetWidth()==64);local _,_,_,x=icon:GetPoint();assert(x==4)
+end)
+test('empty previews hide all slots and metadata changes do not cache recommendation results',function()
+    local _,a=fixture();local w=a:CreateNativePreviewWindow()
+    for i=1,3 do w:AddRecommendation(400+i) end
+    w:ReleaseChildren();w:DoLayout();assert(w.count==0 and w.frame:GetWidth()==200 and w.frame:GetHeight()==92)
+    for _,icon in ipairs(w.icons) do assert(not icon:IsShown() and not icon.scripts.OnEnter and not icon.scripts.OnLeave) end
+    local calls=0;a.Platform.GetItemDisplayInfo=function(_,id) calls=calls+1;return {iconID=id+calls} end
+    for i=1,2 do w:ReleaseChildren();w:AddRecommendation(6603,123) end
+    assert(calls==2 and w.icons[1].spellId==6603 and w.icons[1].itemId==123 and w.icons[1].texture:GetTexture()==125)
+    a.db.profile.preview_spells=1;w:Configure();w:AddRecommendation(403);assert(w.count==1 and not w.icons[2]:IsShown())
+end)
+test('provider error and reentrant reacquisition preserve refresh recovery without batching state',function()
+    local _,a=fixture();local w=a:CreateNativePreviewWindow();w:AddRecommendation(403)
+    local original=a.Platform.GetSpellInfo;local marker={};a.Platform.GetSpellInfo=function() error(marker) end
+    local ok,why=pcall(w.AddRecommendation,w,8042);assert(not ok and why==marker and w.count==2 and w.icons[2])
+    a.Platform.GetSpellInfo=original;w:ReleaseChildren();w:AddRecommendation(403);assert(w.count==1 and w.icons[1]:IsShown() and not w.icons[2]:IsShown())
+    local once=false;a.Platform.GetSpellInfo=function(self,id)
+        if not once then once=true;w:Release();assert(a:CreateNativePreviewWindow()==w) end
+        return original(self,id)
+    end
+    w:ReleaseChildren();w:AddRecommendation(8042);w:DoLayout();assert(once and w.active and a.nextWindow==w)
+    a.Platform.GetSpellInfo=original;w:ReleaseChildren();w:AddRecommendation(403);w:DoLayout()
+    assert(w.count==1 and w.icons[1].spellId==403 and w.icons[1]:IsShown() and not w.layouting)
+end)
+test('failed needed geometry writes retry and do not leave a stale layout success',function()
+    for _,after in ipairs({false,true}) do
+        local _,a=fixture();local w=a:CreateNativePreviewWindow();w:AddRecommendation(403)
+        local set=w.frame.SetSize;local once=false;local marker={}
+        w.frame.SetSize=function(...)
+            if not once then once=true;if after then set(...) end;error(marker) end
+            return set(...)
+        end
+        a.db.profile.preview_icon_size=80;local ok,why=pcall(w.Configure,w);assert(not ok and why==marker)
+        w:DoLayout();assert(w.layouting==false and w.frame:GetWidth()==248 and w.frame:GetHeight()==108 and w.icons[1]:GetWidth()==80)
+        local writes=geometrySpy(w);w:DoLayout();assert(writes()==0)
+    end
+end)
+test('release stale callbacks and profile reacquisition retain their current lease behavior',function()
+    local _,a=fixture();local w=a:CreateNativePreviewWindow();w:AddRecommendation(403)
+    local stale=w.close.scripts.OnClick;w:Release();local writes=geometrySpy(w);w:DoLayout();assert(writes()==0 and not w.active and not w.frame:IsShown())
+    a.db.profile={preview_spells=2,preview_icon_size=80};a:RefreshPreviewWindow();assert(a.nextWindow==w and w.profile==a.db.profile)
+    stale();assert(w.active and a.nextWindow==w and a.db.profile.preview_spells==2)
+    w:AddRecommendation(8042);assert(w.count==1 and w.icons[1].spellId==8042 and w.icons[1]:GetWidth()==80)
+end)
+test('small frame width changes crossing the title threshold retain the original title branch',function()
+    local _,a=fixture();a.pretty_name='Rotation Master';a.db.profile.preview_icon_size=43.99
+    local w=a:CreateNativePreviewWindow();assert(w.frame:GetWidth()<140 and w.title:GetText()=='RM')
+    a.db.profile.preview_icon_size=44;w:Configure()
+    assert(w.frame:GetWidth()==140 and w.title:GetText()=='Rotation Master','tolerance retained narrow title across140')
+    a.db.profile.preview_icon_size=43.99;w:Configure()
+    assert(w.frame:GetWidth()<140 and w.title:GetText()=='RM','tolerance retained wide title below140')
+    local writes=geometrySpy(w);w:DoLayout();assert(writes()==0)
+end)
 finish()

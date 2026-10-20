@@ -1,14 +1,28 @@
 local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite()
-local function fixture()
- local f=F.new();local a,e=f.addon,f.env;local s={now=100,enabled='1',phase='start',rows={},timers={},queries={},total={10,50},updates=0}
+-- Replay the exact pre-inclusive module to compare every old report byte and
+-- query boundary. The new report block alone is removed; unrelated edits fail.
+local function loadHistoricalCPU(f)
+ local h=assert(io.open('Diagnostics/cpu.lua'));local source=h:read('*a');h:close()
+ local first=source:find('   -- BEGIN INCLUSIVE CPU SCOPES\n',1,true)
+ if first then
+  local marker='   -- END INCLUSIVE CPU SCOPES\n';local last=assert(source:find(marker,first,true))
+  assert(not source:find('   -- BEGIN INCLUSIVE CPU SCOPES\n',first+1,true))
+  source=source:sub(1,first-1)..source:sub(last+#marker)
+ end
+ local hash=0;for i=1,#source do hash=(hash*33+source:byte(i))%4294967296 end
+ assert(#source==16258 and string.format('%08x',hash)=='69259678','unrelated CPU module baseline change')
+ local chunk=assert(loadstring(source,'@Diagnostics/cpu.lua'));setfenv(chunk,f.env);chunk('rotationmaster',f.addon)
+end
+local function fixture(historical)
+ local f=F.new();local a,e=f.addon,f.env;local s={now=100,enabled='1',phase='start',rows={},timers={},queries={},total={10,50},updates=0,native={},fnIDs={},fnCount=0}
  a.EvaluateNextAction=function() end;a.EvaluateNextActionInternal=a.EvaluateNextAction;s.hot=a.EvaluateNextAction
  a.conditionDefinitions={SAFE_TAG={valid=function() return true end,evaluate=function() return true end},ROW_OWNER_PRIVATE_TEST={customCode=true,code='SECRET_SOURCE_TEXT',evaluate=function() end,valid=function() end}}
  a.BuiltinSourceCatalog={conditions={SAFE_TAG={}}};a.db.profile.poll=.1;a.db.profile.live_config_update=.2
- e.GetTimePreciseSec=function(...) assert(select('#',...)==0);return s.now end
- e.GetCVar=function(...) assert(select('#',...)==1 and (...)=='scriptProfile');return s.enabled end
- e.UpdateAddOnCPUUsage=function(...) assert(select('#',...)==0);s.updates=s.updates+1;if s.throwUpdate then error('SECRET_SOURCE_TEXT') end end
- e.GetAddOnCPUUsage=function(...) assert(select('#',...)==1 and (...)=='rotationmaster');if s.throwTotal then error('SECRET_SOURCE_TEXT') end;return s.total[s.phase=='start' and 1 or 2] end
- e.GetFunctionCPUUsage=function(...) assert(select('#',...)==2);local fn,inclusive=...;assert(type(fn)=='function' and type(inclusive)=='boolean');s.queries[#s.queries+1]={fn,inclusive}
+ e.GetTimePreciseSec=function(...) s.native[#s.native+1]='clock';assert(select('#',...)==0);return s.now end
+ e.GetCVar=function(...) s.native[#s.native+1]='cvar';assert(select('#',...)==1 and (...)=='scriptProfile');return s.enabled end
+ e.UpdateAddOnCPUUsage=function(...) s.native[#s.native+1]='update';assert(select('#',...)==0);s.updates=s.updates+1;if s.throwUpdate then error('SECRET_SOURCE_TEXT') end end
+ e.GetAddOnCPUUsage=function(...) s.native[#s.native+1]='total';assert(select('#',...)==1 and (...)=='rotationmaster');if s.throwTotal then error('SECRET_SOURCE_TEXT') end;return s.total[s.phase=='start' and 1 or 2] end
+ e.GetFunctionCPUUsage=function(...) assert(select('#',...)==2);local fn,inclusive=...;assert(type(fn)=='function' and type(inclusive)=='boolean');s.queries[#s.queries+1]={fn,inclusive};if not s.fnIDs[fn]then s.fnCount=s.fnCount+1;s.fnIDs[fn]=s.fnCount end;s.native[#s.native+1]='function:'..s.fnIDs[fn]..':'..tostring(inclusive)
   if s.throwFunction==fn then error('SECRET_SOURCE_TEXT') end
   local row=s.rows[fn];if not row then return 0,0 end;local value=row[s.phase=='start' and 1 or 2];return value[inclusive and 2 or 1],value[3],nil
  end
@@ -17,7 +31,7 @@ local function fixture()
  function a:ScheduleTimer(callback,delay) local token={callback=callback,delay=delay};s.timers[#s.timers+1]=token;if s.scheduleError then error('SECRET_SOURCE_TEXT') end;return token end
  function a:CancelTimer(token) token.cancelled=true end
  function s:complete() self.now=self.now+10;self.phase='finish';self.timers[#self.timers].callback() end
- local file=io.open('Diagnostics/cpu.lua');if file then file:close();f.load('Diagnostics/cpu.lua') end
+ if historical then loadHistoricalCPU(f)else local file=io.open('Diagnostics/cpu.lua');if file then file:close();f.load('Diagnostics/cpu.lua')end end
  assert(type(a.StartCPUProfile)=='function','native CPU profiler API absent')
  return f,a,s
 end
@@ -129,6 +143,60 @@ test('structural validator summaries preserve unavailable observations and exact
   if mode=='alias' then contains(text,'ValidateBody=4');contains(text,'shared functions overlap') end
   private(text)
  end
+end)
+
+local inclusiveHeading='Inclusive scopes (top 10; includes descendants; overlapping, not additive):'
+local function inclusiveSection(text)
+ local first=assert(text:find(inclusiveHeading,1,true),'inclusive scope section absent')
+ return text:sub(first+#inclusiveHeading+1),text:sub(1,first-2)
+end
+local function measuredRows(a,s,metric)
+ local parent=function()end;a.GetRotationValidationStamp=parent;a.GetRotationValidationOptions=parent
+ s.rows[parent]={{0,0,0},{.01,87,100}}
+ for i=1,31 do local key=string.format('HOT_%02d',i);local fn=function()end;a.BuiltinSourceCatalog.conditions[key]={};a.conditionDefinitions[key]={evaluate=fn};s.rows[fn]={{0,0,0},{metric or i,metric or i+1,1}}end
+ return parent
+end
+local function compareCapture(metric,replaceAlias)
+ local captures={}
+ for _,historical in ipairs({true,false})do
+  local _,a,s=fixture(historical);measuredRows(a,s,metric);assert(a:StartCPUProfile())
+  if replaceAlias then a.GetRotationValidationOptions=function()end end
+  s:complete();local report=a:GetCPUProfileReport();local count=#s.native
+  a:GetCPUProfileReport();a:IsCPUProfileRunning();s.timers[1].callback();assert(#s.native==count,'idle or stale report queried native API')
+  captures[#captures+1]={text=report,native=table.concat(s.native,'|'),queries=#s.queries}
+ end
+ assert(captures[1].native==captures[2].native and captures[1].queries==captures[2].queries,'inclusive report changed native query order/count')
+ return captures[1].text,captures[2].text
+end
+test('inclusive scopes expose a hidden expensive parent using the same aliased snapshots and unchanged exclusive report',function()
+ local old,new=compareCapture();local section,prefix=inclusiveSection(new);assert(prefix==old,'old report bytes changed')
+ assert(not old:find('Runtime.GetRotationValidationStamp |',1,true),'parent is not hidden in exclusive baseline')
+ contains(section,'Runtime.GetRotationValidationStamp | inclusive=87.000 ms | exclusive=0.010 ms | calls=100')
+ assert(section:find('Runtime.GetRotationValidationStamp |',1,true)<section:find('Condition.HOT_31.evaluate',1,true))
+ assert(not section:find('Runtime.GetRotationValidationOptions',1,true),'alias created another scope')
+ local _,rows=section:gsub(' | inclusive=','');assert(rows==10 and #new<16000);private(new)
+end)
+test('inclusive scope ties rank by exclusive cost then existing safe label',function()
+ local _,a,s=fixture()
+ for _,row in ipairs({{'TIE_A',2},{'TIE_B',2},{'TIE_C',3}})do local fn=function()end;a.BuiltinSourceCatalog.conditions[row[1]]={};a.conditionDefinitions[row[1]]={evaluate=fn};s.rows[fn]={{0,0,0},{row[2],100,1}}end
+ assert(a:StartCPUProfile());s:complete();local section=inclusiveSection(a:GetCPUProfileReport())
+ assert(section:find('Condition.TIE_C.evaluate',1,true)<section:find('Condition.TIE_A.evaluate',1,true))
+ assert(section:find('Condition.TIE_A.evaluate',1,true)<section:find('Condition.TIE_B.evaluate',1,true))
+end)
+test('inclusive scopes omit unavailable alias rows and retain every old notice before the new heading',function()
+ local old,new=compareCapture(nil,true);local section,prefix=inclusiveSection(new);assert(prefix==old)
+ contains(old,'Runtime.GetRotationValidationStamp | unavailable: function-replaced')
+ assert(not section:find('Runtime.GetRotationValidationStamp',1,true));private(new)
+end)
+test('inclusive append clips only new rows below16000 bytes while preserving near-limit old report',function()
+ local old,new=compareCapture(1e200);local section,prefix=inclusiveSection(new)
+ assert(prefix==old and #old<16000 and #new<16000 and #new>#old)
+ contains(section,'Additional inclusive scopes omitted to keep report bounded.')
+ local _,rows=section:gsub(' | inclusive=','');assert(rows>0 and rows<10,'near-bound control did not clip new rows')
+end)
+test('inclusive report leaves an already oversized accepted finite baseline byte-exact without growth',function()
+ local old,new=compareCapture(1e308);assert(#old>=16000,'oversized existing report control absent')
+ assert(new==old and not new:find(inclusiveHeading,1,true),'new section grew or truncated old oversized report')
 end)
 
 finish()

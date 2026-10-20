@@ -14,8 +14,20 @@ return function(env)
         function frame:SetScale(value) self.scale=value end
         function frame:GetScale() return self.scale or 1 end
         function frame:SetFontString(value) self.fontString=value end
-        function frame:SetPoint(...) self.point={...} end
-        function frame:ClearAllPoints() self.point=nil end
+        function frame:SetPoint(...)
+            local point={...};self.point=point;self.points=self.points or {}
+            for index,anchor in ipairs(self.points) do
+                if anchor[1]==point[1] then self.points[index]=point;return end
+            end
+            self.points[#self.points+1]=point
+        end
+        function frame:ClearAllPoints() self.point=nil;self.points=nil end
+        function frame:GetNumPoints() return self.points and #self.points or 0 end
+        function frame:GetPoint(index)
+            local point=self.points and self.points[index or 1]
+            assert(point,'Frame:GetPoint(): point index out of bounds')
+            return unpack(point)
+        end
         function frame:SetAllPoints(owner) self.allPoints=owner end
         function frame:SetParent(owner) self.parent=owner end
         function frame:GetParent() return self.parent end

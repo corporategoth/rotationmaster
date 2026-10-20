@@ -10,6 +10,8 @@ Compare separate captures with the rotation active and inactive. Record whether 
 
 The report uses differences between native cumulative counters for the same function objects. Exclusive costs rank the selected functions; inclusive costs include their callees and overlap, so they must not be added together. Call counts and per-call costs help distinguish frequent inexpensive work from a few costly calls. A separate Structural validation calls line always reports ValidateEnvelope and ValidateBody counts, including zero; missing, replaced or failed counters say unavailable. Shared function objects overlap and must not be summed. This distinguishes full structural checks from dependency-freshness scans even when validation falls below the top timing rows. This is selected coverage, not a complete accounting of every function, frame script, native operation, or shared-library cost. Collection overhead is part of the measurement.
 
+An additional **Inclusive scopes** section ranks up to ten of the same selected functions by inclusive cost. It can reveal an expensive parent whose own exclusive work is small. It reuses the collected snapshots; repeated and overlapping rows must not be added together. The extra section can be shortened or omitted when the report is large; existing report lines are retained.
+
 Missing APIs, invalid counters, counter resets, and functions replaced during capture are reported as unavailable. A capture must not turn those cases into zero CPU usage. Captures remain in session memory and include no source code, condition values, or character ownership keys.
 
 ## Cache and validation boundaries

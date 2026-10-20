@@ -91,7 +91,7 @@ test('public observer copy resolves real owner and current readability with pres
     local opaque={};f.env.canaccessvalue=function(v) return not rawequal(v,opaque) end;s.threat=opaque;local value,why=fn(a.Platform,'target');assert(value==nil and why=='restricted-value')
 end)
 test('only the exact pet and threat repairs change complete combat bytes and private identities',function()
-    local _,a=fixture();local file=assert(io.open('Conditions/combat.lua'));local text=file:read('*a');file:close();text=dofile('tests/fixtures/restore_threat_count_repairs.lua')(text);text=dofile('tests/fixtures/restore_combat_time_repairs.lua')(text)
+    local _,a=fixture();local file=assert(io.open('Conditions/combat.lua'));local text=file:read('*a');file:close();text=dofile('tests/fixtures/restore_combat_history_time_repairs.lua')(text);text=dofile('tests/fixtures/restore_threat_count_repairs.lua')(text);text=dofile('tests/fixtures/restore_combat_time_repairs.lua')(text)
     text=dofile('tests/fixtures/restore_form_repairs.lua')(text);text=dofile('tests/fixtures/restore_loss_of_control_repairs.lua')(text)
     text=dofile('tests/fixtures/restore_threat_repairs.lua')(text)
     text=dofile('tests/fixtures/restore_pet_repairs.lua')(text)

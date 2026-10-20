@@ -650,7 +650,18 @@ addon:RegisterCondition("COMBAT_HISTORY_TIME", {
     evaluate = function(value, _, evalStart)
         if addon.combatHistory[value.unit] ~= nil then
             for _, entry in pairs(addon.combatHistory[value.unit]) do
-                if Functions.values.compare(value.operator, (evalStart - entry.time), value.value) and (value.action == entry.action or
+                local compare,operator=Functions.values.compare,value.operator
+                if not addon.Platform:CanReadValue(evalStart) then return nil,'restricted-value' end
+                if type(evalStart)~='number' or evalStart~=evalStart or evalStart>=math.huge or evalStart<=-math.huge then return nil,'invalid-combat-history-time' end
+                if not addon.Platform:CanReadValue(entry) then return nil,'restricted-value' end
+                if type(entry)~='table' then return nil,'invalid-combat-history-entry' end
+                local timestamp=entry.time
+                if not addon.Platform:CanReadValue(timestamp) then return nil,'restricted-value' end
+                if type(timestamp)~='number' or timestamp~=timestamp or timestamp>=math.huge or timestamp<=-math.huge then return nil,'invalid-combat-history-time' end
+                local elapsed=evalStart-timestamp
+                if not addon.Platform:CanReadValue(elapsed) then return nil,'restricted-value' end
+                if elapsed~=elapsed or elapsed>=math.huge or elapsed<=-math.huge then return nil,'invalid-combat-history-elapsed' end
+                if compare(operator, elapsed, value.value) and (value.action == entry.action or
                         (entry.severity ~= nil and value.action == (entry.action .. '_' .. entry.severity))) then
                     return true
                 end

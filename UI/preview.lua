@@ -3,6 +3,10 @@ local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
 local function clamp(value,lo,hi,fallback)
     return type(value)=='number' and value==value and math.max(lo,math.min(hi,value)) or fallback
 end
+-- Native geometry can read back with small floating-point differences.
+local function sameGeometry(a,b)
+    return type(a)=='number' and type(b)=='number' and math.abs(a-b)<=.1
+end
 ---@class RMRecommendationPreview
 ---@field ReleaseChildren fun(self: RMRecommendationPreview)
 ---@field PauseLayout fun(self: RMRecommendationPreview)
@@ -29,9 +33,25 @@ function addon:CreateNativePreviewWindow()
         function window:DoLayout()
             if not self.active then return end
             local n=self.slots or 1;local size=self.iconSize;local pad=self.opacity>0 and 4 or 0;local title=self.opacity>0 and 20 or 0
-            self.layouting=true;self.frame:SetSize((self.vertical and 1 or n)*size+2*pad,(self.vertical and n or 1)*size+2*pad+title);self.layouting=false
-            self.title:SetWidth(math.max(0,self.frame:GetWidth()-28));self.title:SetText(self.frame:GetWidth()<140 and 'RM' or addon.pretty_name or L['Rotation Master'])
-            for i,icon in ipairs(self.icons) do icon:ClearAllPoints();icon:SetPoint('TOPLEFT',self.frame,'TOPLEFT',pad+(self.vertical and 0 or i-1)*size,-title-pad-(self.vertical and i-1 or 0)*size);icon:SetSize(size,size);icon:SetAlpha(1) end
+            local width,height=(self.vertical and 1 or n)*size+2*pad,(self.vertical and n or 1)*size+2*pad+title
+            self.layouting=true
+            local currentWidth=self.frame:GetWidth()
+            if not sameGeometry(currentWidth,width) or not sameGeometry(self.frame:GetHeight(),height) or (currentWidth<140)~=(width<140) then self.frame:SetSize(width,height) end
+            self.layouting=false
+            local titleWidth=math.max(0,self.frame:GetWidth()-28)
+            if not sameGeometry(self.title:GetWidth(),titleWidth) then self.title:SetWidth(titleWidth) end
+            local text=self.frame:GetWidth()<140 and 'RM' or addon.pretty_name or L['Rotation Master']
+            if self.title:GetText()~=text then self.title:SetText(text) end
+            for i,icon in ipairs(self.icons) do
+                local x,y=pad+(self.vertical and 0 or i-1)*size,-title-pad-(self.vertical and i-1 or 0)*size
+                local pointCount=icon:GetNumPoints();local point,parent,relative,oldx,oldy
+                if pointCount==1 then point,parent,relative,oldx,oldy=icon:GetPoint(1) end
+                if pointCount~=1 or point~='TOPLEFT' or parent~=self.frame or relative~='TOPLEFT' or not sameGeometry(oldx,x) or not sameGeometry(oldy,y) then
+                    icon:ClearAllPoints();icon:SetPoint('TOPLEFT',self.frame,'TOPLEFT',x,y)
+                end
+                if not sameGeometry(icon:GetWidth(),size) or not sameGeometry(icon:GetHeight(),size) then icon:SetSize(size,size) end
+                if icon:GetAlpha()~=1 then icon:SetAlpha(1) end
+            end
         end
         function window:Configure()
             if not self.active then return end

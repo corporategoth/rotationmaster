@@ -94,7 +94,7 @@ test('combat callbacks select eight explicit canonical leaves with exact call co
         for callback,counts in pairs(changes) do
             callbacks=callbacks+1
             for name in pairs(groups) do
-                local code=source[callback];local _,count=code:gsub(qualified(name):gsub('%.','%%.')..'%(', '')
+                local code=source[callback];if tag=='COMBAT_HISTORY_TIME' and callback=='evaluate' then code=dofile('tests/fixtures/restore_combat_history_time_repairs.lua')(code,true) end;local _,count=code:gsub(qualified(name):gsub('%.','%%.')..'%(', '')
                 assert(count==(counts[name] or 0),tag..'.'..callback..' canonical '..name..' call count differs');calls=calls+count
                 assert(not code:find('addon.'..name..'(',1,true),'selected callback retains legacy call')
             end

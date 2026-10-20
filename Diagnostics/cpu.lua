@@ -164,6 +164,22 @@ local function finish(run,status,reason)
    end
    for index=1,math.min(10,#unavailable) do local row=unavailable[index];report[#report+1]=row.label..' | unavailable: '..row.reason end
    if #unavailable>10 then report[#report+1]='Additional unavailable rows omitted.' end
+   -- BEGIN INCLUSIVE CPU SCOPES
+   -- Existing lines are complete before this second view of the same rows.
+   local reportBytes=#report-1
+   for _,line in ipairs(report) do reportBytes=reportBytes+#line end
+   local title='Inclusive scopes (top 10; includes descendants; overlapping, not additive):'
+   local omitted='Additional inclusive scopes omitted to keep report bounded.'
+   if reportBytes+1+#title+1+#omitted<16000 then
+    report[#report+1]=title;reportBytes=reportBytes+1+#title
+    table.sort(ranked,function(a,b) if a.inclusive~=b.inclusive then return a.inclusive>b.inclusive end;if a.exclusive~=b.exclusive then return a.exclusive>b.exclusive end;return a.label<b.label end)
+    for index=1,math.min(10,#ranked) do local row=ranked[index]
+     local line=string.format('%s | inclusive=%.3f ms | exclusive=%.3f ms | calls=%s',row.label,row.inclusive,row.exclusive,tostring(row.calls))
+     if reportBytes+1+#line+1+#omitted>=16000 then report[#report+1]=omitted;break end
+     report[#report+1]=line;reportBytes=reportBytes+1+#line
+    end
+   end
+   -- END INCLUSIVE CPU SCOPES
    text=table.concat(report,'\n')
   end
  end

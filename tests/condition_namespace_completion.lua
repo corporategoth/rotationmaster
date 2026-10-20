@@ -97,6 +97,7 @@ test('remaining fifty-four direct calls qualify actual owning leaves with no ext
         for name in pairs(record.allcounts) do assert(declared[path(name)]==identity(name) and a:ResolveFunctionBinding(identity(name))==a.Functions[owners[name]][name]) end
         local totals={};for tag in pairs(record.hashes) do local source=assert(a:GetBuiltinConditionSource(tag));assert(not source.bindings.Functions)
             if tag=='STAT' then source.evaluate=restoreStat(source.evaluate,true) end
+            if tag=='COMBAT_HISTORY_TIME' then source.evaluate=dofile('tests/fixtures/restore_combat_history_time_repairs.lua')(source.evaluate,true) end
             for callback in pairs(a.CustomConditionCallbacks) do if source[callback] then for name in pairs(owners) do
                 assert(not source[callback]:find('addon.'..name..'(',1,true),tag..' direct legacy '..name..' remains')
                 totals[name]=(totals[name] or 0)+count(source[callback],path(name):gsub('%.','%%.')..'%(')
@@ -118,6 +119,7 @@ test('every callback byte and parameter remains identical after reversing only n
             local restored,_,_,bindings,parameters=dofile('tests/fixtures/restore_threat_count_repairs.lua')(current.evaluate,true)
             current.evaluate=restored;current.bindings=a:CopySettingsData(bindings);current.parameters.evaluate=a:CopySettingsData(parameters)
         end
+        if tag=='COMBAT_HISTORY_TIME' then current.evaluate=dofile('tests/fixtures/restore_combat_history_time_repairs.lua')(current.evaluate,true) end
         if tag=='TIME_IN_COMBAT' then current.evaluate=dofile('tests/fixtures/restore_combat_time_repairs.lua')(current.evaluate,true) end
         if tag=='FORM' then current.evaluate=dofile('tests/fixtures/restore_form_repairs.lua')(current.evaluate,tag) end
         if tag=='LOC_TYPE' or tag=='LOC_BLOCKED' then current.evaluate=dofile('tests/fixtures/restore_loss_of_control_repairs.lua')(current.evaluate,tag) end
