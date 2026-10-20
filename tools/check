@@ -135,6 +135,8 @@ def main():
             ['lua5.1', 'tests/text_functions.lua'],
             ['lua5.1', 'tests/collections_functions.lua'],
             ['lua5.1', 'tests/condition_engine.lua'],
+            ['lua5.1', 'tests/condition_outcomes.lua'],
+            ['luajit', 'tests/condition_outcomes.lua'],
             ['lua5.1', 'tests/condition_catalog.lua'],
             ['lua5.1', 'tests/summary_templates.lua'],
             ['luajit', 'tests/summary_templates.lua'],

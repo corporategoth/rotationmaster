@@ -19,7 +19,10 @@ special["OR"] = { desc = L["OR"], icon = addon.Artwork.logic["OR"], fields = { v
 special["NOT"] = { desc = L["NOT"], icon = addon.Artwork.logic["NOT"], fields = { value = "condition" } }
 
 -- Inputs here are normalized, readable data. Client adapters own secret-value access.
+local matchedOutcome,unmatchedOutcome={status="match"},{status="no-match"}
 local function outcome(status, reason, path)
+    if status=="match" then return matchedOutcome end
+    if status=="no-match" then return unmatchedOutcome end
     return {status=status, reason=reason, path=path}
 end
 
@@ -411,7 +414,9 @@ function addon:UnregisterCondition(tag)
 end
 
 function addon:evaluateConditionResult(value, context)
-    return evaluate(value, {}, GetTime(), {active={}, count=0, context=context}, 0, "condition")
+    local result=evaluate(value, {}, GetTime(), {active={}, count=0, context=context}, 0, "condition")
+    if result==matchedOutcome or result==unmatchedOutcome then return {status=result.status} end
+    return result
 end
 
 function addon:evaluateCondition(value, context)
