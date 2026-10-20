@@ -205,7 +205,7 @@ end
         self.edit:SetFont('Interface\\AddOns\\'..addon_name..'\\Fonts\\Inconsolata-Regular.ttf',12,'')
         engine:Acquire();E:Attach(input);attachMouseUp()
         if self.RefreshLineNumbers then self:RefreshLineNumbers() end
-        engine.APIHelp:Load();self.frame:Show();self:Layout()
+        engine.APIHelp:Load();input.frame:Show();self.frame:Show();self:Layout()
     end
     function c:Release()
         if self.released then return end
@@ -513,6 +513,8 @@ end
     function c:SetCloseHandler(callback) self.closeRequested=callback end
     function c:Acquire(callback,ownerValid)
         if self.closing then error('editor-release-in-progress',0) end
+        self.changed,self.valid=callback,ownerValid
+        if not self.released then return end
         if self.released then self.layingOut=nil end
         self.released=false;self.readOnly=false;self.readOnlyText=nil;self.changed=callback;self.valid=ownerValid;self.layoutCounts=nil;self.layoutInput=nil
         self.edit:Enable()
@@ -674,6 +676,30 @@ end
         if d.code.SetCloseHandler then d.code:SetCloseHandler(function(mouse) local shell=addon.configWindow;if valid() and shell and shell.pane==p then if mouse then shell.rightDown=true end;shell:Hide() end end) end
         d.codeExpand=d.codeExpand or addon:CreateWorkbenchIconButton(d.code.frame,'expand-all',L['Expand code editor'])
         d.codeExpand:SetParent(d.code.frame);d.codeExpand:ClearAllPoints();d.codeExpand:SetPoint('BOTTOMRIGHT',-18,2);d.codeExpand:SetFrameLevel(d.code.frame:GetFrameLevel()+20);d.codeExpand.icon:SetTexture(addon:ControlTexture(d.codeExpanded and 'collapse-all' or 'expand-all'));d.codeExpand.tooltip=d.codeExpanded and L['Restore code editor'] or L['Expand code editor'];d.codeExpand:Show()
+]=]},
+ }},
+ [ [=[UI/line_numbers.lua]=] ]={bytes=14690,hash=[=[98862390]=],patches={
+  {old=[=[    end)
+    local acquire=control.Acquire
+    if acquire then
+        function control:Acquire(...)
+            self:ResetLineNumberQueue()
+            local values=results(acquire(self,...))
+            -- Native hosts may acquire a newly constructed or already active
+            -- control. Refresh can keep its existing attachment in that case.
+]=],current=[=[    end)
+    local acquire=control.Acquire
+    if acquire then
+        function control:Acquire(...)
+            if not self.released then
+                local state,queue=input.queryLineNumbers,self.lineNumberQueue
+                if not state or queue and console.UpdateLineNumbers==queue.update and console.input==input
+                    and input.editBox==queue.edit and queue.state==state then return acquire(self,...) end
+            end
+            self:ResetLineNumberQueue()
+            local values=results(acquire(self,...))
+            -- Native hosts may acquire a newly constructed or already active
+            -- control. Refresh can keep its existing attachment in that case.
 ]=]},
  }},
 }

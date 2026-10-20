@@ -412,7 +412,7 @@ function rm:CreateLuaWorkbenchControl(parent,changed,valid)
         self.edit:SetFont('Interface\\AddOns\\'..addon_name..'\\Fonts\\Inconsolata-Regular.ttf',12,'')
         engine:Acquire();E:Attach(input);attachMouseUp()
         if self.RefreshLineNumbers then self:RefreshLineNumbers() end
-        engine.APIHelp:Load();self.frame:Show();self:Layout()
+        engine.APIHelp:Load();input.frame:Show();self.frame:Show();self:Layout()
     end
     function c:Release()
         if self.released then return end

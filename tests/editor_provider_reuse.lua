@@ -251,7 +251,7 @@ test('released native context menu rows drop captured source insertion actions',
  menu.buttons[1].action();assert(e.Query.Console.source=='','retired menu mutated source')
 end)
 
-test('strict five-module inverse preserves complete baseline files and rejects unrelated edits',function()
+test('strict six-module inverse preserves complete baseline files and rejects unrelated edits',function()
  local restore=dofile('tests/fixtures/restore_editor_provider_reuse.lua')
  local baseline={
   ['Integrations/lua_workbench.lua']={bytes=28485,hash='ac736727'},
@@ -259,6 +259,7 @@ test('strict five-module inverse preserves complete baseline files and rejects u
   ['UI/lua_completion.lua']={bytes=5966,hash='98b42492'},
   ['UI/custom_condition_editor.lua']={bytes=37284,hash='ad0919b6'},
   ['UI/function_source_pane.lua']={bytes=31725,hash='b7ae6968'},
+  ['UI/line_numbers.lua']={bytes=14690,hash='98862390'},
  }
  local function hash(text)local n=5381;for i=1,#text do n=(n*33+text:byte(i))%4294967296 end;return string.format('%08x',n)end
  for path,want in pairs(baseline)do
@@ -307,10 +308,11 @@ end)
 
 test('native text events preserve active readonly protection and leave released buffers empty',function()
  for _,provider in ipairs({'plain','native'})do
-  local f,a=fixture()
+  local f,a=fixture();local enables=0
   if provider=='native' then
    f.load('LibsAugment/FAIAP.lua');local enable=a.LuaSyntax.enable
    a.LuaSyntax.enable=function(edit,...)
+    enables=enables+1
     local methods={GetText=edit.GetText,SetText=edit.SetText};setmetatable(edit,{__index=methods})
     function edit:GetMaxBytes()return self.maxBytes or 0 end;function edit:SetMaxBytes(v)self.maxBytes=v end;function edit:GetMaxLetters()return self.maxLetters or 0 end;function edit:IsMultiLine()return self.multiLine end
     return enable(edit,...)
@@ -319,6 +321,9 @@ test('native text events preserve active readonly protection and leave released 
   local changes=0;local c=a:CreateWorkbenchLuaEditor(f.env.UIParent,function()changes=changes+1 end,function()return true end,provider)
   if provider=='native' then assert(c.syntax,'actual syntax provider absent')end
   c:SetText('return 4');c:SetReadOnly(true)
+  local enabled=enables;local trace,queue=c.inputTrace,c.lineNumberQueue
+  c:Acquire(function()changes=changes+1 end,function()return true end)
+  assert(c.readOnly and not c.edit:IsEnabled() and enables==enabled and c.inputTrace==trace and c.lineNumberQueue==queue,'active syntax refresh reset input/readonly/attachment')
   -- WoW SetText emits OnTextChanged; the external primitive normally leaves
   -- dispatch explicit, so model that native boundary for the retired clear.
   local set=c.nativeSetText
@@ -330,4 +335,47 @@ test('native text events preserve active readonly protection and leave released 
  end
 end)
 
+test('LuaWorkbench released leases restore the visible input subtree with either gutter preference',function()
+ local f,a,frames=fixture();local owner={};local first,warm
+ local function visible(frame)
+  while frame do
+   if not frame:IsShown() then return false end
+   frame=frame:GetParent()
+  end
+  return true
+ end
+ for _,numbers in ipairs({true,false,true})do
+  a.db.profile.lua_line_numbers=numbers
+  for cycle=1,3 do
+   local c=a:AcquireSourceLuaEditor(owner,f.env.UIParent,function()end,function()return true end,'LuaWorkbench');local inner=actual(c)
+   if first then assert(inner==first,'visibility repair recreated provider')else first=inner end
+   c.frame:Show();c:SetText('local visible='..cycle..'\nreturn visible');c:SetContext(context('visible'));tick(c);tick(c)
+   local input=inner.engine.Query.Console.input
+   assert(input.frame:IsShown() and visible(c.edit),'released embedded input stayed hidden')
+   assert(input.queryEditor.renderSource==c:GetText(),'visible source did not paint')
+   if numbers then assert(input.queryLineNumbers and #input.queryLineNumbers.positions==2)else assert(not inner.lineNumbersVisible)end
+   c:Release();assert(not input.frame:IsShown() and not visible(c.edit),'released input remained visible')
+   if warm then assert(frames()==warm,'visibility repair allocated frames')else warm=frames()end
+  end
+ end
+end)
+
+test('active native refresh retains readonly focus layout trace and latest callbacks',function()
+ for _,provider in ipairs({'plain','native'})do
+  local f,a=fixture();local c=a:CreateWorkbenchLuaEditor(f.env.UIParent,function()error('old callback')end,function()return true end,provider)
+  c:SetText('return 1');c:SetContext(context('active'));c.frame:Show();tick(c)
+  c:SetReadOnly(true);local trace,layout,queue=c.inputTrace,c.layoutInput,c.lineNumberQueue
+  local enables=0;local enable=c.edit.Enable;c.edit.Enable=function(self,...)enables=enables+1;return enable(self,...)end
+  c:Acquire(function()error('readonly callback')end,function()return true end)
+  assert(c.readOnly and not c.edit:IsEnabled() and c.layoutInput==layout and c.inputTrace==trace and c.lineNumberQueue==queue,'active native refresh reset readonly/layout/trace/queue')
+  assert(enables==0,'active native refresh enabled readonly input')
+  c:SetReadOnly(false);local changes=0;c:Acquire(function()changes=changes+1 end,function()return true end)
+  c.edit:SetText('return 2');c.edit:GetScript('OnTextChanged')(c.edit,true);assert(changes==1,'latest callback not used')
+  local retired=c.lineNumberQueue;c:Release();c:Acquire(function()changes=changes+10 end,function()return true end)
+  c.frame:Show();c:SetText('return 3');c:SetContext(context('restored'));tick(c)
+  assert(not c.readOnly and c.edit:IsEnabled() and c.lineNumberQueue~=retired,'released native restore skipped')
+  local pending=c.lineNumberQueue.pending;retired.update();assert(c.lineNumberQueue.pending==pending,'retired queue reached restored input')
+  c.edit:SetText('return 4');c.edit:GetScript('OnTextChanged')(c.edit,true);assert(changes==11,'released callback not rebound');c:Release()
+ end
+end)
 finish()

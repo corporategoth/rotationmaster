@@ -265,4 +265,61 @@ for _,provider in ipairs({'plain','LuaWorkbench'}) do
  end)
 end
 
+test('active acquire retains pending attachment without native or completion lease reset',function()
+ for _,provider in ipairs({'plain','LuaWorkbench'})do
+  local _,_,code,c,_,C,_,state=fixture(provider)
+  local queue,trace=c.lineNumberQueue,c.inputTrace;C:UpdateLineNumbers();assert(queue.pending)
+  local writes=0
+  for _,key in ipairs({'Enable','SetTextColor','SetAlpha','SetFont','SetCursorPosition'})do
+   local original=c.edit[key];if original then c.edit[key]=function(self,...)writes=writes+1;return original(self,...)end end
+  end
+  local reset=c.ResetInputTrace;c.ResetInputTrace=function(self,...)writes=writes+1;return reset(self,...)end
+  local completion=c.AcquireCompletion;if completion then c.AcquireCompletion=function(self,...)writes=writes+1;return completion(self,...)end end
+  local changed=0;code:Acquire(function()changed=changed+1 end,function()return true end)
+  assert(c.lineNumberQueue==queue and queue.pending and c.inputTrace==trace,'active acquire replaced pending queue or trace')
+  assert(writes==0,'active acquire reset native input/completion')
+  tick(c.frame);assert(c.lineNumberQueue==queue and not queue.pending and c.lineNumberInput.queryLineNumbers==state)
+  c.edit:SetText('latest callback');c.edit:GetScript('OnTextChanged')(c.edit,true);assert(changed==1,'new callback missing')
+  code:Acquire(function()error('invalid owner callback')end,function()return false end)
+  c.edit:SetText('invalid owner');c.edit:GetScript('OnTextChanged')(c.edit,true);assert(changed==1,'new validity ignored')
+  code:Release()
+ end
+end)
+test('active acquire repairs invalidated or stale gutter attachments without resetting input',function()
+ for _,provider in ipairs({'plain','LuaWorkbench'})do
+  local _,_,code,c,_,C,input,state=fixture(provider);local source=code:GetText();local cursor=c.edit:GetCursorPosition();c.edit:SetFocus()
+  code:Acquire(function()end,function()return false end);C:UpdateLineNumbers();tick(c.frame);assert(not c.lineNumberQueue)
+  local resets=0;local reset=c.ResetInputTrace;c.ResetInputTrace=function(self,...)resets=resets+1;return reset(self,...)end
+  code:Acquire(function()end,function()return true end)
+  assert(c.lineNumberQueue and c.lineNumberQueue.pending,'valid owner did not recover missing attachment')
+  tick(c.frame);assert(c.lineNumberInput.queryLineNumbers==state and #state.rows==3)
+  local old=c.lineNumberQueue;old.state={};code:Acquire(function()end,function()return true end)
+  assert(c.lineNumberQueue~=old and c.lineNumberQueue.pending,'stale attachment did not rebind')
+  tick(c.frame);assert(resets==0 and code:GetText()==source and c.edit:GetCursorPosition()==cursor and c.edit:HasFocus(),'queue recovery reset input source cursor or focus')
+  c:SetLineNumbers(false);local hiddenTrace=c.inputTrace;code:Acquire(function()end,function()return true end)
+  assert(not input.queryLineNumbers and not c.lineNumberQueue and c.inputTrace==hiddenTrace,'numbers OFF reattached gutter or reset trace')
+  code:Release()
+ end
+end)
+test('active and recovered acquisition preserve callback argument and nil-result arity',function()
+ local f,a=dofile('tests/fixtures/lua_workbench.lua')();f.load('UI/lua_input_diagnostics.lua');f.env.IsAddOnLoaded=function()return true end
+ local install=a.InstallLuaLineNumberControl
+ a.InstallLuaLineNumberControl=function(self,c,...)
+  local acquire=c.Acquire
+  c.Acquire=function(control,callback,valid,...)
+   assert(select('#',...)==2 and (...)=='tail' and select(2,...)==false,'Acquire varargs changed')
+   acquire(control,callback,valid);return 'return',nil,false
+  end
+  return install(self,c,...)
+ end
+ local function packed(...)return {n=select('#',...),...}end
+ for _,provider in ipairs({'plain','LuaWorkbench'})do
+  local code=a:CreateWorkbenchLuaEditor(f.env.UIParent,function()end,function()return true end,provider);local c=code.inner or code;assert(c.provider==(provider=='plain'and'native'or provider),'wrong tuple test provider')
+  local function acquire()
+   local result=packed(c:Acquire(function()end,function()return true end,'tail',false))
+   assert(result.n==3 and result[1]=='return'and result[2]==nil and result[3]==false,'Acquire tuple changed')
+  end
+  acquire();c:ResetLineNumberQueue();acquire();code:Release();acquire();code:Release()
+ end
+end)
 finish()

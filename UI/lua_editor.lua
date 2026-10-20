@@ -220,6 +220,8 @@ function addon:CreateWorkbenchLuaEditor(parent,changed,valid,preferred)
     function c:SetCloseHandler(callback) self.closeRequested=callback end
     function c:Acquire(callback,ownerValid)
         if self.closing then error('editor-release-in-progress',0) end
+        self.changed,self.valid=callback,ownerValid
+        if not self.released then return end
         if self.released then self.layingOut=nil end
         self.released=false;self.readOnly=false;self.readOnlyText=nil;self.changed=callback;self.valid=ownerValid;self.layoutCounts=nil;self.layoutInput=nil
         self.edit:Enable()

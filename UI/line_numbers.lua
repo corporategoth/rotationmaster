@@ -176,6 +176,11 @@ function addon:InstallLuaLineNumberControl(control,console,input,options)
     local acquire=control.Acquire
     if acquire then
         function control:Acquire(...)
+            if not self.released then
+                local state,queue=input.queryLineNumbers,self.lineNumberQueue
+                if not state or queue and console.UpdateLineNumbers==queue.update and console.input==input
+                    and input.editBox==queue.edit and queue.state==state then return acquire(self,...) end
+            end
             self:ResetLineNumberQueue()
             local values=results(acquire(self,...))
             -- Native hosts may acquire a newly constructed or already active
