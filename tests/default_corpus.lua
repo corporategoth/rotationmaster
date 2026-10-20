@@ -66,6 +66,11 @@ for _,client in ipairs(clients) do for _,class in ipairs(classes) do
         end
     end)
 end end
+test('TOC includes every reviewed starter pack exactly once',function()
+    local _,packs=corpus.load(5,1,'PRIEST');local wanted={['rm.tbc.shaman.starter']=true,['rm.tbc.mage.starter']=true,['rm.tbc.warlock.starter']=true,['rm.tbc.priest.starter']=true}
+    for _,pack in ipairs(packs)do assert(wanted[pack.id],pack.id..' is unexpected or duplicated');wanted[pack.id]=nil end
+    assert(not next(wanted),'reviewed starter pack missing from TOC')
+end)
 test('every shipped pack has a matching family and class schema fixture',function()
     local _,packs=corpus.load(5,1,'SHAMAN');for _,pack in ipairs(packs) do
         assert(visited[pack.id],pack.id..' has no matching schema fixture')

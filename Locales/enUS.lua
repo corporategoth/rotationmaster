@@ -2277,6 +2277,9 @@ L["Tests whether the selected spell is currently auto-repeating, such as Shoot o
 
 L["Uses readable positions in the same instance, or player-centered range estimates when positions are unavailable. A unit counts only when its upper range bound is within Distance. Uncertain positions, range, subgroup membership or required health/mana values keep the whole condition unavailable, including under Unless. Percentage checks require a positive maximum; empty aggregates have no result."] = true
 
+L["Default.TBC.Priest.Starter.Name"] = "Priest: early leveling (1–19)"
+L["Default.TBC.Priest.Starter.Description"] = "Bounded solo Priest preview with optional Inner Fire, opening Mind Blast, own Shadow Word: Pain, wanding and Smite. The half-health cutoff is an RM heuristic; healing, shields, party support and resources remain manual."
+
 L["Default.TBC.Warlock.Starter.Name"] = "Warlock: early leveling (1–29)"
 L["Default.TBC.Warlock.Starter.Description"] = "Bounded solo Affliction preview: owned damage-over-time spells, conservative Drain Life, wanding and optional Demon Skin or Demon Armor upkeep. Learned Demon Armor supersedes Demon Skin. Manual demon and resource control; expires at level 30."
 

@@ -1,120 +1,99 @@
+-- Production property on actual native/plain editor gutters; no opt-in mode.
 local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite()
-local function fixture(armed,provider)
- local f,a=dofile('tests/fixtures/lua_workbench.lua')();f.load('UI/lua_input_diagnostics.lua');f.env.IsAddOnLoaded=function()return true end
- assert(type(a.SetLuaGutterClippingProbe)=='function','clipping probe API absent')
- if armed then assert(a:SetLuaGutterClippingProbe(true))end
- local code=a:CreateWorkbenchLuaEditor(f.env.UIParent,function()end,function()return true end,provider or 'plain');local c=code.inner or code
- code.frame:Show();code:SetText('return 1');code:SetContext({kind='function',id='PROBE',source={args={},bindings={}}})
- local input=c.lineNumberInput;local state=input.queryLineNumbers or input.queryLineNumberCache
- return f,a,code,c,input,state
+local function actual(code)return code.inner or code end
+local function tick(code)
+ local c=actual(code);local frame=c.frame;local fn=frame:GetScript('OnUpdate');if fn then fn(frame,.1)end
+ for _,hook in ipairs(frame.hooks.OnUpdate or{})do hook(frame,.1)end
+ local edit=c.edit;local update=edit:GetScript('OnUpdate');if update then update(edit,.1)end
 end
-test('unset probe makes no additional native clipping write and leaves full provider untouched',function()
- for _,provider in ipairs({'plain','LuaWorkbench'})do local _,a,code,_,_,state=fixture(false,provider)
-  assert(state.gutter:DoesClipChildren() and state.gutter.clippingWrites==1)
-  assert(a:LuaEditorInputReport():find('clipping probe armed=false applied=false',1,true));code:Release();assert(state.gutter.clippingWrites==1)
- end
-end)
-test('arm before opening applies only native gutter and disable restores the exact Boolean',function()
- local _,a,code,c,_,state=fixture(true);assert(not state.gutter:DoesClipChildren()and state.gutter.clippingWrites==2)
- assert(a:LuaEditorInputReport():find('clipping probe armed=true applied=true',1,true))
- local text,cursor,focus=code:GetText(),c.edit:GetCursorPosition(),c.edit:HasFocus();assert(a:SetLuaGutterClippingProbe(false))
- assert(state.gutter:DoesClipChildren()and state.gutter.clippingWrites==3 and code:GetText()==text and c.edit:GetCursorPosition()==cursor and c.edit:HasFocus()==focus)
- assert(a:SetLuaGutterClippingProbe(false)and state.gutter.clippingWrites==3);code:Release()
-end)
-test('armed mode persists over numbers OFF and release while cached native controls restore and reapply',function()
- local _,a,code,c,input,state=fixture(true)
- c:SetLineNumbers(false);assert(state.gutter:DoesClipChildren());c:SetLineNumbers(true);assert(not state.gutter:DoesClipChildren())
- code:Release();assert(state.gutter:DoesClipChildren());code:Acquire(function()end,function()return true end);code.frame:Show();assert(not state.gutter:DoesClipChildren()and input.queryLineNumbers==state)
- code:Release();assert(state.gutter:DoesClipChildren());a:SetLuaGutterClippingProbe(false)
-end)
-test('full LuaWorkbench is unchanged while native probe is armed',function()
- local _,a,code,_,_,state=fixture(true,'LuaWorkbench');assert(state.gutter:DoesClipChildren()and state.gutter.clippingWrites==1)
- a:SetLuaGutterClippingProbe(false);assert(state.gutter.clippingWrites==1);code:Release()
-end)
-test('native original false clipping restores false without redundant writes',function()
- local _,a,code,c,_,state=fixture(false);c:SetLineNumbers(false);state.gutter:SetClipsChildren(false);local n=state.gutter.clippingWrites
- a:SetLuaGutterClippingProbe(true);c:SetLineNumbers(true);assert(not state.gutter:DoesClipChildren()and state.gutter.clippingWrites==n)
- a:SetLuaGutterClippingProbe(false);assert(not state.gutter:DoesClipChildren()and state.gutter.clippingWrites==n);code:Release()
-end)
-test('missing malformed and throwing capabilities leave native state untouched and expose no error source',function()
- for _,mode in ipairs({'missing','malformed','throw'})do
-  local _,a,code,c,_,state=fixture(false);c:SetLineNumbers(false);local n=state.gutter.clippingWrites
-  if mode=='missing'then state.gutter.DoesClipChildren=false elseif mode=='malformed'then state.gutter.DoesClipChildren=function()return 'true'end else state.gutter.DoesClipChildren=function()error('PRIVATE SOURCE MARKER')end end
-  a:SetLuaGutterClippingProbe(true);c:SetLineNumbers(true);assert(state.gutter.clippingWrites==n)
-  local report=a:LuaEditorInputReport();assert(report:find('clipping probe armed=true applied=false',1,true)and not report:find('PRIVATE SOURCE MARKER',1,true));code:Release()
- end
-end)
-test('stale gutter identity never restores through a replacement and owner arguments are validated',function()
- local f,a,code,c,input,state=fixture(true);local old=state.gutter;local replacement=f.env.CreateFrame('Frame',nil,c.frame);replacement:SetClipsChildren(false);state.gutter=replacement
- assert(a:SetLuaGutterClippingProbe(false));assert(not replacement:DoesClipChildren()and replacement.clippingWrites==1)
- assert(a.SetLuaGutterClippingProbe({},true)==nil and a:SetLuaGutterClippingProbe('yes')==nil)
- state.gutter=old;old:SetClipsChildren(true);code:Release()
-end)
-test('setter failure and callback-driven release do not revive a stale probe attachment',function()
- local _,a,code,c,_,state=fixture(false);c:SetLineNumbers(false);local original=state.gutter.SetClipsChildren
- state.gutter.SetClipsChildren=function()error('PRIVATE SETTER ERROR')end
- a:SetLuaGutterClippingProbe(true);c:SetLineNumbers(true);assert(state.gutter:DoesClipChildren())
- assert(not a:LuaEditorInputReport():find('PRIVATE SETTER ERROR',1,true));state.gutter.SetClipsChildren=original
- c:SetLineNumbers(false);state.gutter.SetClipsChildren=function(self,value)original(self,value);if not value then code:Release()end end
- c:SetLineNumbers(true);assert(c.released and state.gutter:DoesClipChildren());a:SetLuaGutterClippingProbe(false)
-end)
-test('invalid native owners are not probed and restoration failures remain honest and retryable',function()
- local _,a,code,c,_,state=fixture(false);c:SetLineNumbers(false);c.valid=function()return false end
- local n=state.gutter.clippingWrites;a:SetLuaGutterClippingProbe(true);c:SetLineNumbers(true);assert(state.gutter.clippingWrites==n)
- c:SetLineNumbers(false);c.valid=function()return true end;c:SetLineNumbers(true);assert(not state.gutter:DoesClipChildren())
- local original=state.gutter.SetClipsChildren;state.gutter.SetClipsChildren=function(self,value)if value then error('PRIVATE RESTORE ERROR')end;return original(self,value)end
- local ok,why=a:SetLuaGutterClippingProbe(false);assert(ok==nil and why=='clipping-restore-unavailable')
- local report=a:LuaEditorInputReport();assert(report:find('armed=false applied=true restorePending=true',1,true)and not report:find('PRIVATE RESTORE ERROR',1,true))
- state.gutter.SetClipsChildren=original;assert(a:SetLuaGutterClippingProbe(false)and state.gutter:DoesClipChildren());code:Release()
-end)
-test('armed probe performs no idle clipping work and bounds simultaneous native attachments',function()
- local f,a,code,c,_,state=fixture(true);local n=state.gutter.clippingWrites;local reads=0;local read=state.gutter.DoesClipChildren
- state.gutter.DoesClipChildren=function(self)reads=reads+1;return read(self)end
- for i=1,10 do local update=c.frame:GetScript('OnUpdate');if update then update(c.frame,.1)end;for _,hook in ipairs(c.frame.hooks.OnUpdate or{})do hook(c.frame,.1)end end
- assert(state.gutter.clippingWrites==n and reads==0,'idle work touched clipping')
- local controls={code}
- for i=2,9 do controls[i]=a:CreateWorkbenchLuaEditor(f.env.UIParent,function()end,function()return true end,'plain')end
- local clipped=0
- for _,control in ipairs(controls)do if not control.lineNumberInput.queryLineNumbers.gutter:DoesClipChildren()then clipped=clipped+1 end end
- assert(clipped==8,'native probe attachment bound changed');assert(a:SetLuaGutterClippingProbe(false))
- for _,control in ipairs(controls)do assert(control.lineNumberInput.queryLineNumbers.gutter:DoesClipChildren());control:Release()end
-end)
-test('validity and native getter callbacks cannot apply a probe after unarming it',function()
- for _,mode in ipairs({'valid','getter'})do
-  local _,a,code,c,_,state=fixture(false);c:SetLineNumbers(false);local writes=state.gutter.clippingWrites
-  a:SetLuaGutterClippingProbe(true)
-  if mode=='valid'then c.valid=function()a:SetLuaGutterClippingProbe(false);return true end
-  else local original=state.gutter.DoesClipChildren;state.gutter.DoesClipChildren=function(self)self.DoesClipChildren=original;a:SetLuaGutterClippingProbe(false);return original(self)end end
-  c:SetLineNumbers(true);assert(state.gutter:DoesClipChildren()and state.gutter.clippingWrites==writes,'callback installed clipping after unarm')
-  assert(a:LuaEditorInputReport():find('armed=false applied=false',1,true));code:Release()
- end
-end)
-test('older restoration cannot overwrite a rearmed attachment or lose its original clipping baseline',function()
- for _,mode in ipairs({'getter','setter'})do
-  local _,a,code,c,_,state=fixture(true)
-  local function rearm()assert(a:SetLuaGutterClippingProbe(true));c:SetLineNumbers(false);c:SetLineNumbers(true)end
-  if mode=='getter'then local original=state.gutter.DoesClipChildren;state.gutter.DoesClipChildren=function(self)self.DoesClipChildren=original;rearm();return original(self)end
-  else local original=state.gutter.SetClipsChildren;state.gutter.SetClipsChildren=function(self,value)self.SetClipsChildren=original;original(self,value);rearm()end end
-  a:SetLuaGutterClippingProbe(false)
-  assert(not state.gutter:DoesClipChildren(),'retired restoration overwrote newer probe')
-  assert(a:LuaEditorInputReport():find('armed=true applied=true',1,true))
-  assert(a:SetLuaGutterClippingProbe(false)and state.gutter:DoesClipChildren(),'rearmed probe lost original true baseline')
-  code:Release()
- end
-end)
-test('superseded disable stops before other newly rearmed native records',function()
- local f,a,first=fixture(true);local second=a:CreateWorkbenchLuaEditor(f.env.UIParent,function()end,function()return true end,'plain')
- local controls={first,second};local fired=false
- for _,c in ipairs(controls)do local gutter=c.lineNumberInput.queryLineNumbers.gutter;local original=gutter.DoesClipChildren
-  gutter.DoesClipChildren=function(self)
-   self.DoesClipChildren=original
-   if not fired then fired=true;assert(a:SetLuaGutterClippingProbe(true));for _,other in ipairs(controls)do other:SetLineNumbers(false);other:SetLineNumbers(true)end end
-   return original(self)
+local function fixture(provider,numbers)
+ local f,a=dofile('tests/fixtures/lua_workbench.lua')();f.load('UI/lua_input_diagnostics.lua');f.env.IsAddOnLoaded=function()return true end
+ a.db.profile.lua_line_numbers=numbers~=false
+ if provider=='native'then
+  f.load('LibsAugment/FAIAP.lua');local enable=a.LuaSyntax.enable
+  a.LuaSyntax.enable=function(edit,...)
+   local methods={GetText=edit.GetText,SetText=edit.SetText};setmetatable(edit,{__index=methods})
+   function edit:GetMaxBytes()return self.maxBytes or 0 end;function edit:SetMaxBytes(v)self.maxBytes=v end
+   function edit:GetMaxLetters()return self.maxLetters or 0 end;function edit:IsMultiLine()return self.multiLine end
+   return enable(edit,...)
   end
  end
- local ok,why=a:SetLuaGutterClippingProbe(false);assert(ok==nil and why=='clipping-probe-superseded')
- for _,c in ipairs(controls)do assert(not c.lineNumberInput.queryLineNumbers.gutter:DoesClipChildren(),'superseded loop touched a new attachment')end
- assert(a:SetLuaGutterClippingProbe(false))
- for _,c in ipairs(controls)do assert(c.lineNumberInput.queryLineNumbers.gutter:DoesClipChildren());c:Release()end
+ local changed=0;local code=a:CreateWorkbenchLuaEditor(f.env.UIParent,function()changed=changed+1 end,function()return true end,provider or'plain');local c=actual(code)
+ if provider=='native'then assert(c.syntax,'actual bundled highlighter was not attached')end
+ code.frame:Show();code:SetText('local value=1\nreturn value');code:SetContext({kind='function',id='CLIPPING_TEST',source={args={},bindings={}}})
+ local input=c.lineNumberInput;local state=input.queryLineNumbers or input.queryLineNumberCache
+ return f,a,code,c,input,state,function()return changed end
+end
+for _,provider in ipairs({'plain','native'})do test(provider..' numbers ON uses nonclipping gutter without a diagnostic command',function()
+ local _,_,code,c,input,state=fixture(provider)
+ assert(state and not state.gutter:DoesClipChildren(),'native gutter still clips child text')
+ assert(state.gutter.clippingWrites==2,'expected vendor initialization plus one native override')
+ assert(not state.positions,'gutter rendered synchronously during input construction')
+ tick(code);tick(code);assert(input.queryLineNumbers==state and #state.positions==2 and state.rows[1]:IsShown())
+ assert(code:GetText()=='local value=1\nreturn value'and c.edit:GetAlpha()==1);code:Release()
+end)end
+test('full LuaWorkbench retains upstream clipping through source and lease changes',function()
+ local _,_,code,_,input,state=fixture('LuaWorkbench');assert(state.gutter:DoesClipChildren()and state.gutter.clippingWrites==1)
+ tick(code);code:SetText('return 2');tick(code);assert(#state.positions==1)
+ code:Release();assert(state.gutter:DoesClipChildren());code:Acquire(function()end,function()return true end);code.frame:Show();tick(code)
+ assert(input.queryLineNumbers==state and state.gutter:DoesClipChildren()and state.gutter.clippingWrites==1)
+end)
+test('numbers OFF does not create a gutter and later ON attaches the native production property',function()
+ for _,provider in ipairs({'plain','native'})do local _,a,code,c,input=fixture(provider,false)
+  assert(not input.queryLineNumbers and not input.queryLineNumberCache);a.db.profile.lua_line_numbers=true;tick(code);tick(code)
+  local state=assert(input.queryLineNumbers);assert(not state.gutter:DoesClipChildren()and #state.positions==2);code:Release()
+ end
+end)
+test('native OFF ON and released reacquisition retain one owned gutter with the same clipping policy',function()
+ for _,provider in ipairs({'plain','native'})do local _,_,code,c,input,state=fixture(provider);tick(code)
+  c:SetLineNumbers(false);assert(not input.queryLineNumbers and not state.gutter:IsShown()and not state.gutter:DoesClipChildren())
+  c:SetLineNumbers(true);tick(code);assert(input.queryLineNumbers==state and not state.gutter:DoesClipChildren())
+  code:Release();assert(not state.gutter:IsShown()and not state.gutter:DoesClipChildren());code:Acquire(function()end,function()return true end);code.frame:Show();code:SetText('return 3');tick(code)
+  assert(input.queryLineNumbers==state and #state.positions==1 and not state.gutter:DoesClipChildren());code:Release()
+ end
+end)
+test('active acquisition preserves pending queue latest callbacks readonly and no extra clipping writes',function()
+ local _,_,code,c,input,state,changes=fixture('plain');local queue=c.lineNumberQueue;assert(queue.pending);local writes=state.gutter.clippingWrites;local latest=0
+ code:SetReadOnly(true);local source=code:GetText();code:Acquire(function()latest=latest+1 end,function()return true end)
+ assert(c.lineNumberQueue==queue and queue.pending and state.gutter.clippingWrites==writes and c.readOnly)
+ tick(code);assert(input.queryLineNumbers==state and #state.positions==2 and code:GetText()==source and changes()==0 and latest==0)
+ code:SetReadOnly(false);c.nativeSetText(c.edit,'return 4');c.edit:GetScript('OnTextChanged')(c.edit,true);assert(latest==1 and changes()==0);code:Release()
+end)
+test('settled cursor scroll and frame updates perform no clipping reads or writes',function()
+ for _,provider in ipairs({'plain','native','LuaWorkbench'})do local _,_,code,c,_,state,changes=fixture(provider);tick(code);tick(code)
+  local text=code:GetText();c.edit:SetCursorPosition(2);c.edit:SetFocus();local reads,writes=0,0;local get,set=state.gutter.DoesClipChildren,state.gutter.SetClipsChildren
+  state.gutter.DoesClipChildren=function(self)reads=reads+1;return get(self)end
+  state.gutter.SetClipsChildren=function(self,...)writes=writes+1;return set(self,...)end
+  for i=1,100 do local cursor=c.edit:GetScript('OnCursorChanged');if cursor then cursor(c.edit,14,-4,1,12)end;local scroll=c.scroll or c.lineNumberInput.scrollFrame;local update=scroll:GetScript('OnVerticalScroll');if update then update(scroll,0)end;tick(code)end
+  assert(reads==0 and writes==0 and code:GetText()==text and c.edit:GetCursorPosition()==2 and c.edit:HasFocus()and changes()==0,'settled events changed clipping/input')
+  code:Release();assert(writes==0,'release restored a retired probe property')
+ end
+end)
+test('more than eight native attachments receive production policy and stay independent of full provider',function()
+ local f,a,first,_,_,state=fixture('plain');local controls={first};for i=2,10 do controls[i]=a:CreateWorkbenchLuaEditor(f.env.UIParent,function()end,function()return true end,'plain')end
+ local full=a:CreateWorkbenchLuaEditor(f.env.UIParent,function()end,function()return true end,'LuaWorkbench');assert(actual(full).lineNumberInput.queryLineNumbers.gutter:DoesClipChildren())
+ for _,code in ipairs(controls)do assert(not actual(code).lineNumberInput.queryLineNumbers.gutter:DoesClipChildren());code:Release()end;full:Release();assert(not state.gutter:DoesClipChildren())
+end)
+test('source-host provider switches reopen bounded native and full gutters without sharing policy',function()
+ local f,a=fixture('plain');local owner={};local saved={};local count=0;local create=f.env.CreateFrame;f.env.CreateFrame=function(...)count=count+1;return create(...)end;local warm
+ for cycle=1,4 do
+  for _,provider in ipairs({'plain','native','LuaWorkbench'})do
+   local code=a:AcquireSourceLuaEditor(owner,f.env.UIParent,function()end,function()return true end,provider);local c=actual(code);code.frame:Show();code:SetText('return '..cycle);tick(code);local state=assert(c.lineNumberInput.queryLineNumbers)
+   if saved[provider]then assert(saved[provider]==state)else saved[provider]=state end
+   assert(state.gutter:DoesClipChildren()==(provider=='LuaWorkbench'));code:Release()
+  end
+  if warm then assert(count==warm,'provider switches allocated new gutter frames')else warm=count end
+ end
+end)
+test('temporary clipping probe state APIs hooks and report claims are retired',function()
+ local _,a,code=fixture('plain')
+ for _,name in ipairs({'SetLuaGutterClippingProbe','ApplyLuaGutterClippingProbe','RestoreLuaGutterClippingProbe'})do assert(a[name]==nil,'retired probe API remains '..name)end
+ local report=a:LuaEditorInputReport();assert(not report:find('clipping probe',1,true)and report:find('gutter queue=deferred',1,true)and not report:find('local value',1,true));code:Release()
+end)
+test('strict six-module provider inverse retains every actual historical module contract',function()
+ local inverse=dofile('tests/fixtures/restore_editor_provider_reuse.lua')
+ for _,path in ipairs({'Integrations/lua_workbench.lua','UI/lua_editor.lua','UI/lua_completion.lua','UI/custom_condition_editor.lua','UI/function_source_pane.lua','UI/line_numbers.lua'})do
+  local h=assert(io.open(path));local s=h:read('*a');h:close();assert(type(inverse(s,path))=='string');assert(not pcall(inverse,s..'\n-- unrelated',path))
+ end
 end)
 finish()

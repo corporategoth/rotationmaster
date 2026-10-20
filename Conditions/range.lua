@@ -9,7 +9,8 @@ addon:RegisterCondition("BEYOND_MELEE",{
         local ok,exists=pcall(UnitExists,value.unit)
         if not ok then return nil,"api-error" end
         if not addon.Platform:CanReadValue(exists) then return nil,"restricted-value" end
-        if exists==nil or exists==false then return false end
+        if exists==nil then return nil,'unit-data-unavailable' end
+        if exists==false then return false end
         if exists~=true and exists~=1 then return nil,"invalid-api-result" end
         return addon.Platform:IsBeyondMeleeRange(value.unit)
     end,

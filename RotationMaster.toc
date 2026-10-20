@@ -279,3 +279,4 @@ Conditions/misc.lua
 Defaults/tbc/shaman-starter.lua
 Defaults/tbc/mage-starter.lua
 Defaults/tbc/warlock-starter.lua
+Defaults/tbc/priest-starter.lua
