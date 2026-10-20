@@ -56,6 +56,16 @@ Only a complete valid comparison with zero changes reports no structural differe
 
 Differences page 25 returned changes at a time. Typed field/step segments retain numeric/byte-key distinctions; display paths are text only. Before/after uses the reader's shared raw pager and byte inspector, preserving false, zero, empty values and absent sides. Rendering remains bounded to one result viewport, with no imported code, HTML or URLs executed. Clipboard feedback belongs to its own input and cannot replace a comparison result. These source/state controls do not establish screen-reader or all-browser conformance.
 
+## Bundled source catalog
+
+`catalog/defaults.json` contains the fifteen current bundled definitions, generated through production registration, library initialization and export. It records explicit `enUS` display strings separately from unchanged symbolic manifest keys and raw Lua bytes. Source file hashes provide consistency metadata; they do not authenticate upstream content or establish native readiness. The file adds no addon runtime work and is not yet a catalog browsing UI.
+
+Generate the primary catalog with `lua5.1 tools/export_web_defaults.lua` or `luajit tools/export_web_defaults.lua` from the repository root. Both produce identical sorted typed JSON. The trusted generator loads only reviewed fixed source paths and supplies an explicit offline English locale; it does not execute condition/provider callbacks or query gameplay facts. `luajit tools/export_web_defaults.lua --fixtures` creates actual bundled-codec wire snapshots. Their decoded semantics are tested; compressed/serialized wire iteration order is not promised to be canonical.
+
+`createBundledRotationCatalog(text, declarationCatalogText)` in `catalog/defaults.mjs` accepts JSON text and the existing declaration catalog text. It returns a private facade with fresh detached `list()` summaries and `get(id)` manifests, or a fixed failure reason. Applicability/tags and manifest tables remain typed Maps; human display strings remain Unicode. Number markers retain finite IEEE-754 bits, including signed zero values; byte markers retain exact raw bytes. Duplicate decoded keys, malformed closed fields and inconsistent declared IDs/source/display keys are refused.
+
+The parser bounds catalog UTF-8 text to 2 MiB, records to 64 and source-file declarations to 128. Each manifest retains the codec's depth/node/string bounds and actual schema/strict graph checks. Validity, support and reference resolution remain separate; native availability is always unverified. The facade executes no imported code and invokes no game/provider callbacks, DOM, fetch or encoder. Sharing, catalog UI, generated exports and execution are separate work.
+
 ## Checks
 
 From the repository root:
