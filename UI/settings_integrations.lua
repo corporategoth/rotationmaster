@@ -8,6 +8,14 @@ local function highlighting(profile)
     return profile.lua_editor~='plain'
 end
 local function safeName(value)return value:gsub('|','||'):gsub('[%z\1-\31\127]','?')end
+local versionStates={loaded=true,connected=true,disabled=true,incompatible=true}
+local function versionFor(entry)
+    if entry then
+        local loaded=entry.loaded
+        if loaded==true or loaded==nil and versionStates[entry.state]then return entry.version or''end
+    end
+    return''
+end
 local colors={missing={.48,.48,.48},supported={.25,.55,.9},disabled={.85,.25,.25},enabled={.25,.7,.35},selected={1,.8,.2}}
 function addon:BuildIntegrationSettings(p)
     local profile=p:SettingsData().profile;local token=p.generation
@@ -114,7 +122,7 @@ function addon:BuildIntegrationSettings(p)
     local selected=effective(rows,byID)
     local function editorRow(row)
         local entry=metadata[row.id=='LuaWorkbench'and'!!!LuaWorkbench'or row.id]
-        return {id='editor_'..row.id,name=row.name,version=row.id=='native'and''or entry and entry.version,
+        return {id='editor_'..row.id,name=row.name,version=row.id=='native'and''or versionFor(entry),
             description=row.id=='native'and L['Built-in Lua editor.']or entry and entry.detail or L['Registered Lua editor provider.'],
             state=not row.available and'missing'or disabled(profile,row.id)and'disabled'or selected==row.id and'selected'or'enabled',
             action=row.available and function(anchor)editorAction(row.id,anchor)end or nil,
@@ -123,10 +131,10 @@ function addon:BuildIntegrationSettings(p)
     local editorRows={editorRow(native)};local found={}
     for _,row in ipairs(rows)do editorRows[#editorRows+1]=editorRow(row);found[row.id]=true end
     local function readonly(entry)
-        return{id=entry.id,name=entry.name,version=entry.version,description=entry.detail or'',state=(entry.state=='missing'or entry.state=='unknown')and'missing'or'supported',entry=entry,help='Help.Integrations.optional_addons'}
+        return{id=entry.id,name=entry.name,version=versionFor(entry),description=entry.detail or'',state=(entry.state=='missing'or entry.state=='unknown')and'missing'or'supported',entry=entry,help='Help.Integrations.optional_addons'}
     end
     if metadata.WowLua and not found.WowLua then editorRows[#editorRows+1]=readonly(metadata.WowLua)end
-    local groups={{title=L['Lua editor integrations'],rows=editorRows}}
+    local groups={{title=L['Lua editor integrations'],rows=editorRows,editorSettings=true}}
     local function group(title,ids)
         local list={};for _,id in ipairs(ids)do if metadata[id]then list[#list+1]=readonly(metadata[id])end end
         groups[#groups+1]={title=title,rows=list}
@@ -164,7 +172,7 @@ function addon:BuildIntegrationSettings(p)
     local widths={nameWidth,versionWidth,descWidth,statusWidth}
     local function label(kind,parent,text,x,y,w)
         local c=p:Acquire(kind,function()local f=p.child:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall');f:SetJustifyH('LEFT');f:SetJustifyV('TOP');return f end)
-        c:SetParent(parent);c:ClearAllPoints();c:SetPoint('TOPLEFT',x,-y);c:SetWidth(math.max(1,w));c:SetWordWrap(true);c:SetText(text or'');c:SetTextColor(.9,.92,.94);c:SetHeight(0);c:SetHeight(math.max(18,c:GetStringHeight()));return c
+        c:SetParent(parent);c:ClearAllPoints();c:SetPoint('TOPLEFT',x,-y);c:SetWidth(math.max(1,w));c:SetWordWrap(true);if c.SetNonSpaceWrap then c:SetNonSpaceWrap(true)end;if c.SetMaxLines then c:SetMaxLines(0)end;c:SetText(text or'');c:SetTextColor(.9,.92,.94);c:SetHeight(0);c:SetHeight(math.max(18,c:GetStringHeight()));return c
     end
     local function draw(row)
         local top=p.y
@@ -182,7 +190,7 @@ function addon:BuildIntegrationSettings(p)
                 if current()and type(show)=='function'then show(self,id)end
             end))
         end
-        local version=label('integrationLabels',frame,row.version or L['Unknown'],positions[2],10,versionWidth)
+        local version=label('integrationLabels',frame,row.version or'',positions[2],10,versionWidth)
         local description=label('integrationLabels',frame,row.description,positions[3],10,descWidth)
         local pill=p:Acquire('integrationPills',function()return addon:CreateWorkbenchPill(p.child,'',statusWidth)end)
         pill:SetParent(frame);pill:ClearAllPoints();pill:SetPoint('TOPLEFT',positions[4],-10);pill:SetWidth(statusWidth);pill:SetText(labels[row.state]);pill:Enable()
@@ -199,19 +207,22 @@ function addon:BuildIntegrationSettings(p)
         local height=math.max(38,name:GetHeight()+20,version:GetHeight()+20,description:GetHeight()+20)
         if row.native then
             local surface,available=p.surface,p.width;p.surface=frame;p.width=available-20;p.y=height
-            local line=p:Check('lua_line_numbers',L['Show line numbers'],profile.lua_line_numbers~=false,function(value)profile.lua_line_numbers=value end)
             local syntax=p:Check('lua_native_highlighting',L['Syntax highlighting'],highlighting(profile),function(value)
                 local liveRows,liveByID=editors();if not liveRows or not current()then return end
                 local active=effective(liveRows,liveByID);profile.lua_native_highlighting=value==true
                 if active=='native'then profile.lua_editor=value and'native'or'plain'end;p:Draw()
             end)
-            line:ClearAllPoints();line:SetPoint('TOPLEFT',10,-height);syntax:ClearAllPoints();syntax:SetPoint('TOPLEFT',10,-height-30)
-            height=height+64;p.surface=surface;p.width=available
+            syntax:ClearAllPoints();syntax:SetPoint('TOPLEFT',10,-height)
+            height=height+34;p.surface=surface;p.width=available
         end
         frame:SetHeight(height);p.y=top+height+10
     end
     for _,section in ipairs(groups)do if #section.rows>0 then
-        p:Heading(section.title);local height=22
+        p:Heading(section.title)
+        if section.editorSettings then
+            p:Check('lua_line_numbers',L['Show line numbers'],profile.lua_line_numbers~=false,function(value)profile.lua_line_numbers=value end)
+        end
+        local height=22
         for i,text in ipairs({L['Addon'],L['Version'],L['Description'],L['Status']})do local c=label('integrationHeadings',p.child,text,positions[i],p.y,widths[i]);height=math.max(height,c:GetHeight()+6)end
         p.y=p.y+height
         for _,row in ipairs(section.rows)do draw(row)end

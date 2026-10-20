@@ -78,7 +78,7 @@ test('native malformed and restricted values cannot imply loaded or expose versi
 end)
 test('native and localized display text is bounded control-sanitized and pipe-escaped',function()
  local f,p,v=fixture();p.MobInfo2=true;v.MobInfo2='|Tprivate-path|t\n'..string.rep('x',500)
- local row=byID(f.addon:ListIntegrationStatus(),'MobInfo2');assert(#row.version<=96 and row.version:find('||Tprivate-path||t?',1,true)==1 and not row.version:find('\n'))
+ local row=byID(f.addon:ListIntegrationStatus(),'MobInfo2');assert(row.version=='||Tprivate-path||t?'..string.rep('x',500),'version was clipped or not sanitized')
 end)
 test('localized names and descriptions use the locale table and remain inert',function()
  local f=fixture();local L=f.env.LibStub('AceLocale-3.0'):GetLocale('RotationMaster')
@@ -97,7 +97,7 @@ end)
 test('every result is detached and no source table or unexpected row field escapes',function()
  local f,p=fixture();p.WeakAuras=true;local rows=f.addon:ListIntegrationStatus();rows[1].id='corrupt';rows[2]=false;rows.extra={}
  local nextRows=f.addon:ListIntegrationStatus();assert(nextRows[1].id==expected[1]and type(nextRows[2])=='table'and nextRows.extra==nil)
- local fields={id=true,name=true,version=true,state=true,detail=true,projectURL=true};for _,row in ipairs(nextRows)do for key in pairs(row)do assert(fields[key],key)end end
+ local fields={id=true,name=true,version=true,state=true,detail=true,projectURL=true,loaded=true};for _,row in ipairs(nextRows)do for key in pairs(row)do assert(fields[key],key)end end
  assert(#f.addon.ListIntegrationStatus({})==0)
 end)
 test('missing metadata APIs return unknown and module never invents provider connectivity',function()
@@ -110,10 +110,24 @@ test('display limits preserve complete UTF8 codepoints and define malformed byte
  L['Recorded creature history conditions; no current history is queried.']=string.rep('€',106)..'😀'
  local row=byID(f.addon:ListIntegrationStatus(),'MobInfo2')
  assert(row.name==string.rep('é',47),'name split a valid Unicode character')
- assert(row.version==string.rep('é',46)..'||','version split a character after expanded pipe')
+ assert(row.version==string.rep('é',46)..'||😀','version was clipped after expanded pipe')
  assert(row.detail==string.rep('€',106),'detail split a valid Unicode character')
  versions.MobInfo2=string.char(255,192,128,237,160,128,244,144,128,128)..'é'..string.char(240,159)
  assert(byID(f.addon:ListIntegrationStatus(),'MobInfo2').version==string.rep('?',10)..'é??','malformed byte policy changed')
  versions.MobInfo2='é€😀|\n';assert(byID(f.addon:ListIntegrationStatus(),'MobInfo2').version=='é€😀||?')
+end)
+test('full normal version strings are retained; oversized metadata is omitted instead of clipped',function()
+ local f,p,v=fixture();p.MobInfo2=true;v.MobInfo2='v'..string.rep('123456789-',24)
+ assert(byID(f.addon:ListIntegrationStatus(),'MobInfo2').version==v.MobInfo2)
+ v.MobInfo2=string.rep('x',4096);assert(byID(f.addon:ListIntegrationStatus(),'MobInfo2').version==v.MobInfo2)
+ v.MobInfo2=v.MobInfo2..'x';assert(byID(f.addon:ListIntegrationStatus(),'MobInfo2').version==nil,'oversized version displayed a misleading truncated prefix')
+end)
+test('addon loaded evidence stays independent of failed or missing adapter state',function()
+ local f,p,v=fixture();p.Questie=true;v.Questie='12.1.0'
+ f.addon.GetQuestieIntegrationStatus=function()error('provider failed')end
+ local row=byID(f.addon:ListIntegrationStatus(),'Questie');assert(row.loaded==true and row.state=='unknown' and row.version=='12.1.0')
+ f.addon.GetQuestieIntegrationStatus=function()return{state='missing'}end
+ row=byID(f.addon:ListIntegrationStatus(),'Questie');assert(row.loaded==true and row.state=='missing')
+ p.Questie=false;row=byID(f.addon:ListIntegrationStatus(),'Questie');assert(row.loaded==false and row.version=='12.1.0')
 end)
 finish()

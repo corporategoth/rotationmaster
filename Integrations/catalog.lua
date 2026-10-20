@@ -52,7 +52,9 @@ function addon:GetIntegrationProjectLinks(id)
   local families={};for i,family in ipairs(entry.families)do families[i]=family end
   result[#result+1]={label=L[entry.label],url=entry.url,note=L[entry.note],primary=entry.primary,families=families}
  end
- return result
+ local name
+ for _,provider in ipairs(providers)do if provider[1]==id then name=L[provider[2]];break end end
+ return result,name
 end
 local questieStates={available='connected',disabled='disabled',missing='missing',waiting='loaded',
  incompatible='incompatible',['client-restricted']='incompatible',error='unknown',unavailable='unknown'}
@@ -65,7 +67,7 @@ local function readable(value)
 end
 ---@param value any
 ---@param limit number
-local function text(value,limit)
+local function text(value,limit,complete)
  if not readable(value) or type(value)~='string' then return nil end
  local result,bytes,index={},0,1
  -- Bound output/work, retaining complete UTF-8 codepoints and doubled pipes.
@@ -95,6 +97,7 @@ local function text(value,limit)
   if bytes+#char>limit then break end
   result[#result+1]=char;bytes=bytes+#char;index=index+width
  end
+ if complete and index<=#value then return nil end
  return table.concat(result)
 end
 local function display(key,limit)
@@ -141,12 +144,13 @@ function addon:ListIntegrationStatus()
  local rows={}
  for _,provider in ipairs(providers)do
   local loaded=native('IsAddOnLoaded',provider[1])
+  local knownLoaded;if loaded==true or loaded==false then knownLoaded=loaded end
   local state=loaded==true and 'loaded' or loaded==false and 'missing' or 'unknown'
   -- Metadata may exist for an installed but not loaded addon. A false loaded
   -- flag alone never establishes that the addon is not installed.
-  local version=text(native('GetAddOnMetadata',provider[1],'Version'),96)
+  local version=text(native('GetAddOnMetadata',provider[1],'Version'),4096,true)
   if loaded==true then state=connection(provider[4]) end
-  rows[#rows+1]={id=provider[1],name=display(provider[2],96),version=version,state=state,detail=display(provider[3],320),projectURL=projects[provider[1]][1].url}
+  rows[#rows+1]={id=provider[1],name=display(provider[2],96),version=version,loaded=knownLoaded,state=state,detail=display(provider[3],320),projectURL=projects[provider[1]][1].url}
  end
  return rows
 end

@@ -7,6 +7,15 @@ local function fixture(options)
  local ok=pcall(require,'bit')
  if ok then local data,deps=dofile('tests/fixtures/codec.lua')();a.RotationData=data;a.NewRotationCodec=function()return data.NewCodec(deps)end
  elseif not a.RotationData then for _,path in ipairs({'Data/plain.lua','Data/tags.lua','Data/rotation_tree.lua','Data/validation.lua'})do f.load(path)end end
+ local rawCreate=create
+ local function withFontAPI(kind,name,parent,template)
+  local frame=rawCreate(kind,name,parent,template);local make=frame.CreateFontString
+  function frame:CreateFontString(...)
+   local label=make(self,...);function label:SetNonSpaceWrap(value)self.nonSpaceWrap=value end;return label
+  end
+  return frame
+ end
+ f.env.CreateFrame=withFontAPI;create=withFontAPI
  local loaded={LuaWorkbench=options.workbench~=false,Questie=options.questie~=false,ExtendedCharacterStats=true,MobInfo2=false,WeakAuras=true,Dominos=true}
  local calls={sync=0,refresh=0,created=0};a.db.profile.lua_editor=options.selected or'auto'
  a.LuaSyntax={enable=function()end,disable=function()end,decode=function(s)return s end}
@@ -44,11 +53,14 @@ local function choose(p,id)
 end
 local function count(t)local n=0;for _ in pairs(t or{})do n=n+1 end;return n end
 
-test('Native is one editor integration with exactly two options and no Auto None area',function()
+test('line numbers is global directly below editor heading and Native has only syntax highlighting',function()
  local _,_,p=fixture();assert(p.fields.integration_card_editor_native and p.fields.lua_line_numbers and p.fields.lua_native_highlighting)
  assert(not p.fields.integration_select_auto and not p.fields.integration_select_plain and not p.fields.integration_enable_native)
  assert(not p.fields.integration_card_editor_options)
- assert(p.fields.lua_line_numbers:GetParent()==p.fields.lua_native_highlighting:GetParent())
+ assert(p.fields.lua_line_numbers:GetParent()==p.child)
+ assert(p.fields.lua_native_highlighting:GetParent()==p.fields.integration_card_editor_native)
+ local heading;for _,label in ipairs(p.pool.text or{})do if label:GetText()=='Lua editor integrations'then heading=label end end
+ assert(heading and -p.fields.lua_line_numbers.point[3]>-heading.point[3] and -p.fields.lua_line_numbers.point[3]<-p.fields.integration_card_editor_native.point[3])
  assert(p.fields.integration_help_editor_native and not p.fields.questie_refresh)
 end)
 test('pill colors and fixed states replace description status and passive switches',function()
@@ -192,5 +204,55 @@ test('registered custom editor can be selected and persistently disabled through
  click(p,'integration_status_editor_Another');choose(p,'select');assert(draft(p).lua_editor=='Another')
  click(p,'integration_status_editor_Another');choose(p,'native')
  assert(draft(p).lua_editor_disabled.Another and draft(p).lua_editor=='native'and state(p,'editor_Another')=='Disabled')
+end)
+test('loaded versions preserve complete short and long text with nonspace wrapping at full and narrow width',function()
+ local _,a,p=fixture();local original=a.ListIntegrationStatus;local version=string.rep('1234567890',28)
+ a.ListIntegrationStatus=function(self)local rows=original(self);for _,row in ipairs(rows)do if row.id=='Questie'then row.version=version end end;return rows end
+ for _,width in ipairs({1300,420})do
+  p.frame:SetWidth(width);p:Draw();local card=assert(p.fields.integration_card_Questie);local versionLabel
+  for _,label in ipairs(p.pool.integrationLabels)do if label:GetParent()==card and label:GetText()==version then versionLabel=label end end
+  assert(versionLabel and versionLabel.nonSpaceWrap==true and versionLabel.maxLines==0,'version can still clip a nonspace run')
+  assert(versionLabel:GetHeight()>=versionLabel:GetStringHeight() and card:GetHeight()>=versionLabel:GetHeight()+20)
+  local x=versionLabel.point[2];assert(x>=0 and x+versionLabel:GetWidth()<=card:GetWidth())
+ end
+ version='1.2.3';p.frame:SetWidth(1300);p:Draw();local found
+ for _,label in ipairs(p.pool.integrationLabels)do if label:GetParent()==p.fields.integration_card_Questie and label:GetText()==version then found=label end end
+ assert(found and found:GetWidth()>=found:GetStringWidth(),'natural short version was squeezed')
+end)
+test('not loaded versions remain empty even when installed metadata includes a version',function()
+ local _,a,p=fixture({workbench=false,questie=false});local original=a.ListIntegrationStatus
+ a.ListIntegrationStatus=function(self)local rows=original(self);for _,row in ipairs(rows)do if row.state=='missing'then row.version='99.88.installed-not-loaded'end end;return rows end
+ p:Draw()
+ for _,id in ipairs({'editor_LuaWorkbench','WowLua','MobInfo2','Questie'})do
+  local card=assert(p.fields['integration_card_'..id]);local empty=0
+  for _,label in ipairs(p.pool.integrationLabels)do if label:GetParent()==card then assert(label:GetText()~='99.88.installed-not-loaded'and label:GetText()~='Unknown');if label:GetText()==''then empty=empty+1 end end end
+  assert(empty>=1,'missing addon version cell not empty')
+ end
+ -- Actual addon load evidence, not editor-capability availability, owns version display.
+ a.ListIntegrationStatus=function(self)local rows=original(self);for _,row in ipairs(rows)do if row.id=='!!!LuaWorkbench'then row.state='loaded';row.version='7.8.9.loaded-capability-unavailable'end end;return rows end
+ p:Draw();local found=false
+ for _,label in ipairs(p.pool.integrationLabels)do if label:GetParent()==p.fields.integration_card_editor_LuaWorkbench and label:GetText()=='7.8.9.loaded-capability-unavailable'then found=true end end
+ assert(found,'loaded version was hidden by editor capability failure')
+end)
+test('version display prioritizes explicit addon load evidence independently of connection status',function()
+ local f,a,p=fixture();local original=a.ListIntegrationStatus;local version='4.3.2.load-evidence'
+ local function rendered()
+  local card=assert(p.fields.integration_card_Questie)
+  for _,label in ipairs(p.pool.integrationLabels)do if label:GetParent()==card and label:GetText()==version then return true end end
+  return false
+ end
+ for _,case in ipairs({{loaded=true,state='unknown',show=true},{loaded=true,state='missing',show=true},{loaded=false,state='connected',show=false},{state='connected',show=true},{state='unknown',show=false}})do
+  a.ListIntegrationStatus=function(self)local rows=original(self);for _,row in ipairs(rows)do if row.id=='Questie'then row.loaded=case.loaded;row.state=case.state;row.version=version end end;return rows end
+  p:Draw();assert(rendered()==case.show,'load evidence lost to connection state '..case.state)
+ end
+ -- Actual catalog: native load/version succeeds while cached Questie status fails.
+ f.env.IsAddOnLoaded=function(id)return id=='Questie'end
+ f.env.GetAddOnMetadata=function(_,field)assert(field=='Version');return version end
+ a.Platform.CanReadValue=function()return true end
+ a.GetQuestieIntegrationStatus=function()error('private cached connection failure')end
+ f.load('Integrations/catalog.lua')
+ local entry;for _,row in ipairs(a:ListIntegrationStatus())do if row.id=='Questie'then entry=row end end
+ assert(entry and entry.loaded==true and entry.state=='unknown')
+ p:Draw();assert(rendered(),'actual loaded Questie version disappeared after cached-status error')
 end)
 finish()

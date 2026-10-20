@@ -94,26 +94,74 @@ function addon:ShowWorkbenchHelp(heading,sections,owner)
     local front=_G.RotationMasterFrontmostDialog;d.frame:SetFrameLevel(front and front~=d.frame and front:GetFrameLevel()+20 or d.frame:GetFrameLevel()+1);d.frame:Show();d.scroll.workbenchBar:SetValue(0);d.scroll:UpdateWorkbenchScroll();addon:RegisterWindowForEscape(d);return d
 end
 
--- Only catalogue-owned release URLs enter the copyable report; no browser,
--- clipboard API, provider discovery or network request runs in the addon.
+-- Release pages use their own small, pooled table; ordinary diagnostic reports
+-- retain the full copyable report window and its independent selection.
 function addon:ShowIntegrationProjectLink(id)
     if type(self.GetIntegrationProjectLinks)~='function' then return end
-    local links=self:GetIntegrationProjectLinks(id)
+    local links,name=self:GetIntegrationProjectLinks(id)
     if type(links)~='table' or #links==0 then return end
-    local lines,spans={},{}
-    local bytes=0
-    local function append(line)lines[#lines+1]=line;bytes=bytes+#line+1 end
-    append(L['Addon release pages'])
-    append(L['Release links checked: 2026-10-20.'])
-    append(L['Publisher listings describe release availability; integration behavior on this client may be unverified.'])
-    append('')
+    local d=self.integrationProjectWindow
+    if not d then
+        d={frame=CreateFrame('Frame',nil,UIParent),rows={},generation=0};self.integrationProjectWindow=d
+        local frame=d.frame;frame:SetPoint('CENTER');frame:SetSize(640,140);frame:SetFrameStrata('FULLSCREEN_DIALOG');frame:SetToplevel(true);frame:SetClampedToScreen(true);frame:EnableMouse(true)
+        d.title=frame:CreateFontString(nil,'OVERLAY','GameFontNormal');d.chrome=self:CreateWorkbenchDialogChrome(frame,d.title)
+        local function heading(text,x,width)
+            local label=frame:CreateFontString(nil,'OVERLAY','GameFontNormalSmall');label:SetPoint('TOPLEFT',x,-36);label:SetWidth(width);label:SetHeight(18);label:SetJustifyH('LEFT');label:SetText(text);return label
+        end
+        d.providerHeading=heading(L['Provider'],12,148);d.urlHeading=heading(L['URL'],172,404);d.copyHeading=heading(L['Copy'],584,40)
+        d.scroll=self:CreateWorkbenchScrollFrame(frame);d.scroll:SetPoint('TOPLEFT',12,-58);d.scroll:SetWidth(616)
+        d.child=CreateFrame('Frame',nil,d.scroll);d.child:SetWidth(600);d.scroll:SetScrollChild(d.child)
+        d.close=self:CreateWorkbenchIconButton(frame,'close',L['Close']);d.close:SetPoint('TOPRIGHT',-5,-5)
+        addon:SetUIScript(d.close,'OnClick',function()frame:Hide()end)
+        function d:Retire()
+            self.generation=self.generation+1;self.active=false
+            for _,row in ipairs(self.rows)do
+                row.edit:ClearFocus();row.edit:HighlightText(0,0);row.url=nil;row.provider.tooltip=nil
+                for _,event in ipairs({'OnTextChanged','OnEditFocusGained','OnMouseUp','OnEscapePressed'})do addon:SetUIScript(row.edit,event,nil)end
+                addon:SetUIScript(row.copy,'OnClick',nil);row.frame:Hide()
+            end
+        end
+        addon:SetUIScript(frame,'OnHide',function()d:Retire()end)
+        function d:Hide()self.frame:Hide()end
+        function d:Show()self.frame:Show()end
+        addon.HideOnEscape(d)
+    end
+    d:Retire();d.active=true;local token=d.generation
+    local function current(row)return d.active and d.generation==token and row.url~=nil and row.frame:IsShown()end
+    local function selectRow(row)
+        if not current(row)then return end
+        for _,other in ipairs(d.rows)do if other~=row then other.edit:ClearFocus();other.edit:HighlightText(0,0)end end
+        if not row.edit:HasFocus()then row.edit:SetFocus()end
+        row.edit:SetCursorPosition(0);row.edit:HighlightText(0,-1)
+    end
+    local y=0
     for i,entry in ipairs(links)do
         if i>8 then break end
-        append(i..'. '..entry.label..(entry.primary and ' ('..L['Primary']..')'or''))
-        if entry.note then append(entry.note)end
-        local first=bytes;append(entry.url)
-        spans[#spans+1]={label=string.format(L['Copy link %d'],i),first=first,last=first+#entry.url,line=#lines}
-        append('')
+        local row=d.rows[i]
+        if not row then
+            row={frame=CreateFrame('Frame',nil,d.child)};d.rows[i]=row
+            row.frame:SetWidth(600)
+            row.provider=self:CreateWorkbenchButton(row.frame,'',148);row.provider.art:Hide();row.provider:SetPoint('TOPLEFT',0,-2)
+            local label=row.provider:GetFontString();label:ClearAllPoints();label:SetPoint('TOPLEFT');label:SetWidth(148);label:SetJustifyH('LEFT');label:SetJustifyV('TOP');label:SetWordWrap(true)
+            row.edit=self:CreateWorkbenchEditBox(row.frame);row.edit:SetPoint('TOPLEFT',160,0);row.edit:SetSize(404,24);row.edit:SetMultiLine(false);row.edit:SetMaxLetters(4096)
+            row.copy=self:CreateWorkbenchIconButton(row.frame,'copy',L['Select URL for copying (Ctrl+C)']);row.copy:SetPoint('TOPLEFT',576,-2)
+        end
+        row.url=entry.url;row.provider:SetText(entry.label);row.provider.tooltip=entry.note
+        local label=row.provider:GetFontString();label:SetHeight(0);local height=math.max(28,label:GetStringHeight()+6);label:SetHeight(height-6);row.provider:SetHeight(height-4)
+        row.frame:ClearAllPoints();row.frame:SetPoint('TOPLEFT',0,-y);row.frame:SetHeight(height);row.frame:Show()
+        row.edit:SetText(row.url);row.edit:SetCursorPosition(0);row.edit:HighlightText(0,0);row.edit:ClearFocus()
+        addon:SetUIScript(row.copy,'OnClick',function()selectRow(row)end)
+        addon:SetUIScript(row.edit,'OnEditFocusGained',function()selectRow(row)end)
+        addon:SetUIScript(row.edit,'OnMouseUp',function(_,button)if button=='LeftButton'then selectRow(row)end end)
+        -- Native EditBoxes allow selection/copy; retain the canonical URL across
+        -- typing, paste, deletion and cut without publishing any edited value.
+        addon:SetUIScript(row.edit,'OnTextChanged',function()
+            if current(row)and row.edit:GetText()~=row.url then row.edit:SetText(row.url);row.edit:SetCursorPosition(0);row.edit:HighlightText(0,-1)end
+        end)
+        addon:SetUIScript(row.edit,'OnEscapePressed',function()if current(row)then d:Hide()end end)
+        y=y+height+4
     end
-    return self:ShowConditionText(table.concat(lines,'\n'),L['Addon release pages'],spans)
+    d.child:SetHeight(math.max(1,y));d.scroll:SetHeight(math.min(240,y));d.scroll:SetVerticalScroll(0)
+    d.frame:SetSize(640,86+math.min(240,y));d.chrome:SetContext(name or id,L['Links'],'');d.title:SetText(name or id)
+    d:Show();self:RegisterWindowForEscape(d);return d
 end

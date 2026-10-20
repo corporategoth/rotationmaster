@@ -2634,6 +2634,11 @@ L["Historical Classic Era and TBC releases. Current editions are unverified. Oth
 L["Copy link %d"] = true
 
 L["Disable"] = true
+L["Provider"] = true
+
+L["URL"] = true
+
+L["Select URL for copying (Ctrl+C)"] = true
 
 -- BEGIN GENERATED RM PUBLIC HELPER DOCS
 L["Absolute health target (negative means deficit) or percentage fraction."] = true

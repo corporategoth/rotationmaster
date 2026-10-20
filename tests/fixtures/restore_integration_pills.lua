@@ -147,28 +147,31 @@ function addon:BuildIntegrationSettings(p)
 end
 ]=],changes={
 {10518,10517,[=[
-profile.lua_line_numbers=value end)
-            local syntax=p:Check('lua_native_highlighting',L['Syntax highlighting'],highlighting(profile),function(value)
+,function(value)
                 local liveRows,liveByID=editors();if not liveRows or not current()then return end
                 local active=effective(liveRows,liveByID);profile.lua_native_highlighting=value==true
                 if active=='native'then profile.lua_editor=value and'native'or'plain'end;p:Draw()
             end)
-            line:ClearAllPoints();line:SetPoint('TOPLEFT',10,-height);syntax:ClearAllPoints();syntax:SetPoint('TOPLEFT',10,-height-30)
-            height=height+64;p.surface=surface;p.width=available
+            syntax:ClearAllPoints();syntax:SetPoint('TOPLEFT',10,-height)
+            height=height+34;p.surface=surface;p.width=available
         end
         frame:SetHeight(height);p.y=top+height+10
     end
     for _,section in ipairs(groups)do if #section.rows>0 then
-        p:Heading(section.title);local height=22
+        p:Heading(section.title)
+        if section.editorSettings then
+            p:Check('lua_line_numbers',L['Show line numbers'],profile.lua_line_numbers~=false,function(value)profile.lua_line_numbers=value end)
+        end
+        local height=22
         for i,text in ipairs({L['Addon'],L['Version'],L['Description'],L['Status']})do local c=label('integrationHeadings',p.child,text,positions[i],p.y,widths[i]);height=math.max(height,c:GetHeight()+6)end
         p.y=p.y+height
         for _,row in ipairs(section.rows)do draw(row)end
     end end]=]},
 {10517,10516,[=[
-,profile.lua_line_numbers~=false,function(value]=]},
+,highlighting(profile]=]},
 {10515,10514,[=[
 surface,p.width;p.surface=frame;p.width=available-20;p.y=height
-            local line=p:Check('lua_line_numbers',L['Show line numbers]=]},
+            local syntax=p:Check('lua_native_highlighting',L['Syntax highlighting]=]},
 {10514,10513,[=[
 =p]=]},
 {10505,10504,[=[
@@ -179,7 +182,7 @@ row.entry.projectURL~=''then
                 if current()and type(show)=='function'then show(self,id)end
             end))
         end
-        local version=label('integrationLabels',frame,row.version or L['Unknown'],positions[2],10,versionWidth)
+        local version=label('integrationLabels',frame,row.version or'',positions[2],10,versionWidth)
         local description=label('integrationLabels',frame,row.description,positions[3],10,descWidth)
         local pill=p:Acquire('integrationPills',function()return addon:CreateWorkbenchPill(p.child,'',statusWidth)end)
         pill:SetParent(frame);pill:ClearAllPoints();pill:SetPoint('TOPLEFT',positions[4],-10);pill:SetWidth(statusWidth);pill:SetText(labels[row.state]);pill:Enable()
@@ -212,22 +215,18 @@ Cards',function()local c=CreateFrame('Frame',nil,p.child);c:EnableMouse(false);c
 {10489,10489,[=[
 e(']=]},
 {10487,10486,[=[
-=p:Acqu]=]},
-{10485,10485,[=[
-op=p.y
-        local fram]=]},
-{10483,10482,[=[
-t,text,x,y,w)
-        local c=p:Acquire(kind,function()local f=p.child:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall');f:SetJustifyH('LEFT');f:SetJustifyV('TOP');return f end)
-        c:SetParent(parent);c:ClearAllPoints();c:SetPoint('TOPLEFT',x,-y);c:SetWidth(math.max(1,w));c:SetWordWrap(true);c:SetText(text or'');c:SetTextColor(.9,.92,.94);c:SetHeight(0);c:SetHeight(math.max(18,c:GetStringHeight()));return c
+n c:SetMaxLines(0)end;c:SetText(text or'');c:SetTextColor(.9,.92,.94);c:SetHeight(0);c:SetHeight(math.max(18,c:GetStringHeight()));return c
     end
     local function draw(row)
-        local]=]},
-{10481,10480,[=[
-s={nameWidth,versionWidth,descWidth,statusWidth}
-    local function label(kind,par]=]},
+        local top=p.y
+        local frame=p:Acqu]=]},
+{10484,10483,[=[
+c:SetNonSpaceWrap(true)end;if c.SetMaxLines ]=]},
 {10480,10479,[=[
-idt]=]},
+idths={nameWidth,versionWidth,descWidth,statusWidth}
+    local function label(kind,parent,text,x,y,w)
+        local c=p:Acquire(kind,function()local f=p.child:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall');f:SetJustifyH('LEFT');f:SetJustifyV('TOP');return f end)
+        c:SetParent(parent);c:ClearAllPoints();c:SetPoint('TOPLEFT',x,-y);c:SetWidth(math.max(1,w));c:SetWordWrap(true);if c.SetNonSpaceWrap t]=]},
 {10478,10477,[=[
 =L['Selected']}
     local nameWidth,versionWidth,statusWidth=width(L['Addon'])+24,width(L['Version']),width(L['Status'])+16
@@ -406,12 +405,22 @@ local lis]=]},
 titl]=]},
 {8046,8053,[=[
 g]=]},
-{8001,8025,[=[
+{8024,8025,[=[
 }}]=]},
-{7945,7999,[=[
+{8016,8022,[=[
+gs=tru]=]},
+{8014,8014,[=[
 ]=]},
-{7693,7942,[=[
-R]=]},
+{7966,8011,[=[
+]=]},
+{7874,7964,[=[
+]=]},
+{7863,7872,[=[
+S]=]},
+{7706,7856,[=[
+]=]},
+{7693,7704,[=[
+Rows]=]},
 {7339,7686,[=[
 ]=]},
 {7327,7336,[=[
@@ -481,7 +490,7 @@ lp=]=]},
 {6588,6589,[=[
 airs(rows)do editorRows[#editorRows+1]=editorRow(row);found[row.id]=true end
     local function readonly(entry)
-        return{id=entry.id,name=entry.name,version=entry.version,description=entry.detail or'',state=(entry.state=='missing'or entry.state=='unknown')and'missing'or'supported',entry=entry,]=]},
+        return{id=entry.id,name=entry.name,version=versionFor(entry),description=entry.detail or'',state=(entry.state=='missing'or entry.state=='unknown')and'missing'or'supported',entry=entry,]=]},
 {6587,6586,[=[
 local editorRows={editorRow(native)};local found={}
     for _,row in i]=]},
@@ -535,8 +544,12 @@ w.id=='native'and L['Bu]=]},
 ptio]=]},
 {6423,6422,[=[
 descr]=]},
-{6408,6409,[=[
-=row.id=='native'and''or entry and entry.version,]=]},
+{6410,6409,[=[
+,]=]},
+{6409,6408,[=[
+entry]=]},
+{6408,6407,[=[
+=row.id=='native'and''or versionFor]=]},
 {6400,6404,[=[
 vers]=]},
 {6357,6393,[=[
@@ -1151,50 +1164,117 @@ o]=]},
 funct]=]},
 {2940,2939,[=[
 ;local token=p.generation]=]},
-{1280,2853,[=[
-}}]=]},
-{1089,1278,[=[
+{2657,2853,[=[
+2}}]=]},
+{2630,2655,[=[
 ]=]},
-{1086,1086,[=[
-8]=]},
-{1084,1083,[=[
-},selected={1]=]},
-{1060,1080,[=[
-7,]=]},
-{1010,1058,[=[
-25,]=]},
-{987,1008,[=[
-d={]=]},
-{949,981,[=[
+{2627,2628,[=[
+.8]=]},
+{2606,2625,[=[
+={1]=]},
+{2599,2604,[=[
+e]=]},
+{2589,2597,[=[
+c]=]},
+{2551,2586,[=[
 ]=]},
-{919,947,[=[
-.25,.25},]=]},
-{916,917,[=[
-={.85]=]},
-{908,914,[=[
-ble]=]},
-{905,906,[=[
+{2546,2548,[=[
+d={.25,.7,.35},]=]},
+{2523,2540,[=[
+]=]},
+{2516,2521,[=[
+d={.85,.25,.25},]=]},
+{2514,2514,[=[
+bl]=]},
+{2511,2512,[=[
 d={.25,.55,.9},dis]=]},
-{847,902,[=[
+{2507,2508,[=[
 ]=]},
-{846,845,[=[
-ppo]=]},
-{806,842,[=[
-.48}]=]},
-{794,804,[=[
-.48]=]},
-{793,792,[=[
-g={.48]=]},
-{791,791,[=[
-ssi]=]},
-{790,789,[=[
-={m]=]},
-{769,787,[=[
-lo]=]},
-{766,767,[=[
+{2505,2505,[=[
+{missing={.48,.48,.48},suppo]=]},
+{2504,2503,[=[
+olors]=]},
+{2259,2496,[=[
 ]=]},
-{762,764,[=[
+{1960,2254,[=[
 ]=]},
+{1932,1958,[=[
+']=]},
+{1913,1929,[=[
+]=]},
+{1883,1911,[=[
+u]=]},
+{1882,1881,[=[
+re]=]},
+{1606,1868,[=[
+]=]},
+{1467,1602,[=[
+]=]},
+{1449,1465,[=[
+]=]},
+{1327,1447,[=[
+]=]},
+{1316,1325,[=[
+ o]=]},
+{1207,1308,[=[
+]=]},
+{1125,1205,[=[
+y]=]},
+{1116,1123,[=[
+t]=]},
+{1108,1113,[=[
+]=]},
+{1054,1100,[=[
+ ]=]},
+{1051,1052,[=[
+e]the]=]},
+{1043,1048,[=[
+y.st]=]},
+{1037,1041,[=[
+t]=]},
+{1033,1035,[=[
+s[e]=]},
+{1020,1029,[=[
+St]=]},
+{1016,1016,[=[
+ded==nil and vers]=]},
+{1015,1014,[=[
+ lo]=]},
+{1012,1012,[=[
+d==true ]=]},
+{1008,1009,[=[
+if loa]=]},
+{977,998,[=[
+]=]},
+{949,975,[=[
+]=]},
+{948,947,[=[
+y.load]=]},
+{946,946,[=[
+ent]=]},
+{944,944,[=[
+loaded]=]},
+{903,928,[=[
+]=]},
+{851,901,[=[
+]=]},
+{843,849,[=[
+]=]},
+{835,841,[=[
+]=]},
+{828,832,[=[
+if entry]=]},
+{811,821,[=[
+y]=]},
+{796,807,[=[
+]=]},
+{793,794,[=[
+For(]=]},
+{771,785,[=[
+]=]},
+{755,754,[=[
+
+local versionStates={loaded=true,connected=true,disabled=true,incompatible=true}]=]},
 {751,751,[=[
 ]=]},
 {692,696,[=[
