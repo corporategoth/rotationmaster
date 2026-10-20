@@ -96,7 +96,7 @@ test('canonical cleanup count and copy failures retain warning mutation and retu
 end)
 test('strict inverse restores full7111658 source and helper aliases getters catalog stay unchanged',function()
  local f=F.new();local a=f.addon;f.load('Core/function_data.lua');local function hash(text) return a:FunctionSourceHash(text) end
- local h=assert(io.open('validate.lua'));local text=h:read('*a');h:close();local old=restore(text,hash)
+ local h=assert(io.open('validate.lua'));local text=h:read('*a');h:close();local old=restore(dofile('tests/fixtures/restore_stock_targets_unit1.lua')(text,'validate.lua'),hash)
  assert(hash(old)=='25c084e8');assert(not pcall(restore,old,hash) and not pcall(restore,text..text,hash),'inverse accepted absent/duplicate qualifications')
  assert(not pcall(restore,text..'\n-- unrelated change\n',hash),'inverse accepted unrelated changes')
  f.load('Data/builtin_sources.lua');f.load('Core/builtin_sources.lua');assert(not a.BuiltinSourceCatalog.modules['validate.lua'])
@@ -106,7 +106,7 @@ test('strict inverse restores full7111658 source and helper aliases getters cata
  end
 end)
 test('actual schema legacy and boundary fixtures exercise every one of the30 consumer sites',function()
- local expected={cleanArray={30,72,89,96,211,235,245,320,449,470},tablelength={45,313,389,544,584,609,620,631,714,725,741,761},deepcopy={326,494,512,554,600,640,679,681}}
+ local expected={cleanArray={30,72,89,96,211,235,245,320,449,470},tablelength={45,313,389,544,584,609,620,631,719,730,746,766},deepcopy={326,494,512,554,600,640,679,681}}
  local count=0;for name,lines in pairs(expected) do for _,line in ipairs(lines) do assert(sites[line]==name,'unexercised canonical validation site '..line);count=count+1 end end
  assert(count==30)
 end)

@@ -341,7 +341,8 @@ addon:RegisterCondition("PETSPELL_HISTORY_TIME", {
         if known == nil then return nil, knownReason end
         if not known then return false end
         for _, entry in pairs(addon.spellHistory) do
-            return entry.spell == spellid and Functions.values.compare(value.operator, (evalStart - entry.time), value.value)
+            local matches = entry.spell == spellid and Functions.values.compare(value.operator, (evalStart - entry.time), value.value)
+            if matches ~= false then return matches end
         end
         return false
     end,

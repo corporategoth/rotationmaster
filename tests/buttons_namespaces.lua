@@ -79,7 +79,7 @@ test('button consumers preserve canonical errors and live lookup for slot select
  assert(pack(a:Glow(target,'none',nil)).n==0,'nil effect stopped returning without a lookup')
 end)
 test('exact two-expression inverse restores every other button byte without touching helpers aliases or source catalog',function()
- local f,a=fixture();local file=assert(io.open('buttons.lua'));local text=file:read('*a');file:close();assert(a:FunctionSourceHash(inverse(text))=='fe287825','buttons changed outside two index qualifications from3568806')
+ local f,a=fixture();local file=assert(io.open('buttons.lua'));local text=file:read('*a');file:close();assert(a:FunctionSourceHash(inverse(dofile('tests/fixtures/restore_cpu_retained_activity.lua')(text,'buttons.lua')))=='fe287825','buttons changed outside two index qualifications from3568806')
  assert(not pcall(inverse,text..text),'inverse accepted duplicate index consumers');assert(not pcall(inverse,inverse(text)),'inverse accepted original source')
  assert(a.index==a.Functions.collections.index and debug.getinfo(a.index,'S').source=='@Functions/collections.lua','canonical implementation/legacy alias changed')
  f.load('Data/builtin_sources.lua');f.load('Core/builtin_sources.lua');local id='builtin:Functions/collections.lua:index';assert(a:ResolveFunctionBinding(id)==a.index and a.builtinSourceModules['Functions/collections.lua']('index')==a.index,'actual public getter identity changed')

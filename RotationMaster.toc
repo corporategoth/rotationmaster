@@ -101,6 +101,7 @@ Core/reference_catalog.lua
 Core/category_data.lua
 Core/announcement_data.lua
 Core/announcements.lua
+Core/stock_targets.lua
 Core/profile_data.lua
 Core/collection_data.lua
 Core/custom_condition_data.lua

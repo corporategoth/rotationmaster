@@ -90,7 +90,7 @@ test('schema thresholds summaries and source fields retain their original contra
 end)
 test('strict evaluator inverses preserve complete modules and every private identity',function()
  local _,a=fixture()
- for path,hash in pairs({['Conditions/spell.lua']='6b6e47be',['Conditions/petspell.lua']='325bd9c5'})do local text=read(path);assert(a:FunctionSourceHash(inverse(text,path))==hash and inverse(text)==inverse(text,path));assert(not pcall(inverse,text..text,path))end
+ for path,hash in pairs({['Conditions/spell.lua']='6b6e47be',['Conditions/petspell.lua']='325bd9c5'})do local text=read(path);assert(a:FunctionSourceHash(inverse(dofile('tests/fixtures/restore_spell_history_time.lua')(text,path),path))==hash and inverse(text)==inverse(text,path));assert(not pcall(inverse,text..text,path))end
  for _,tag in ipairs(tags)do assert(inverse(repaired[tag],tag,true)==old[tag] and not pcall(inverse,old[tag],tag,true) and not pcall(inverse,repaired[tag]..' ',tag,true))end
  for path,entries in pairs({['Conditions/spell.lua']={color='906341b8',helpers='769a506e'},['Conditions/petspell.lua']={color='fedaa3e7',helpers='60920b9d'}})do for name,hash in pairs(entries)do local id='builtin:'..path..':'..name;assert(a:FunctionSourceHash(a.builtinFunctions[id].source)==hash and rawequal(a:ResolveFunctionBinding(id),a.builtinSourceModules[path](name)))end end
 end)

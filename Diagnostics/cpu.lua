@@ -254,9 +254,154 @@ local function appendPrivateCache(report,run)
  else local omitted='Private cache helpers omitted to keep report bounded.';if bytes+1+#omitted<16000 then report[#report+1]=omitted end end
 end
 -- END PRIVATE CACHE SAMPLES
+-- BEGIN CPU ACTIVITY DIAGNOSTICS
+local activityProviders,activityFrame,activityAPI={},nil,nil
+local activityEqual,activityCreate=rawequal,CreateFrame
+function addon:BindCPUActivityDiagnostic(name,reader)
+ if self~=addon or (name~='spell' and name~='item' and name~='visual') or proofType(reader)~='function' or activityProviders[name] then return false end
+ activityProviders[name]=reader
+ if activityProviders.spell and activityProviders.item and activityProviders.visual then addon.BindCPUActivityDiagnostic=nil end
+ return true
+end
+local function activityRead()
+ local result={}
+ for _,name in ipairs({'spell','item','visual'}) do
+  local reader=activityProviders[name]
+  if reader then local ok,value=proofPcall(reader,activityAPI);if ok and proofType(value)=='table' then result[name]=value end end
+ end
+ return result
+end
+local function activityEvent(run,event,_,success)
+ if not readable(success) or proofType(success)~='boolean' then run.activity.events.unknown=run.activity.events.unknown+1;return end
+ if success then
+  if event=='SPELL_DATA_LOAD_RESULT' then run.activity.events.spell=run.activity.events.spell+1
+  elseif event=='ITEM_DATA_LOAD_RESULT' then run.activity.events.item=run.activity.events.item+1 end
+ end
+end
+local function activityStop(run)
+ local state=run.activity;if not state then return end
+ if state.lease then state.lease.run=nil;state.lease=nil end
+ local frame,api=state.frame,state.api;state.frame=nil;state.api=nil
+ if frame and api then
+  local ok,current=proofPcall(api.GetScript,frame,'OnEvent')
+  local released=false
+  if ok and activityEqual(current,state.handler) then
+   local events=proofPcall(api.UnregisterAllEvents,frame);local handler=proofPcall(api.SetScript,frame,'OnEvent',nil);released=events and handler
+  end
+  if not released then
+   state.events.available=false
+   if activityEqual(activityFrame,frame) then activityFrame=nil;activityAPI=nil end
+  end
+ end
+ state.handler=nil
+end
+local function activityStart(run)
+ addon.BindCPUActivityDiagnostic=nil
+ run.activity={events={spell=0,item=0,unknown=0,available=false},views={},samples={}}
+ local state=run.activity
+ if not activityFrame and proofType(activityCreate)=='function' then
+  local ok,frame=proofPcall(activityCreate,'Frame')
+  if ok and frame then
+   local api={};local valid=true
+   for _,name in ipairs({'GetScript','SetScript','RegisterEvent','UnregisterAllEvents','Hide','GetParent','IsVisible'}) do
+    local method=frame[name];if proofType(method)~='function' then valid=false end;api[name]=method
+   end
+   if valid then activityFrame,activityAPI=frame,api;proofPcall(api.Hide,frame) end
+  end
+ end
+ if activityFrame then
+  state.frame=activityFrame;state.api=activityAPI
+  local lease={run=run};state.lease=lease
+  state.handler=function(_,event,...)
+   local current=lease.run;if not current or active~=current then return end
+   if not proofPcall(activityEvent,current,event,...) then current.activity.events.unknown=current.activity.events.unknown+1 end
+  end
+  local ok=proofPcall(function()
+   activityAPI.SetScript(activityFrame,'OnEvent',state.handler)
+   activityAPI.RegisterEvent(activityFrame,'SPELL_DATA_LOAD_RESULT');activityAPI.RegisterEvent(activityFrame,'ITEM_DATA_LOAD_RESULT')
+  end)
+  if ok then state.events.available=true else activityStop(run) end
+ end
+ state.started=activityRead()
+ local seen,totalSamples={},#run.rows+#run.privateCache.samples
+ for _,row in ipairs(run.rows) do seen[row.fn]=row end
+ for _,row in ipairs(run.privateCache.samples) do seen[row.fn]=row end
+ local visual=state.started.visual
+ for _,name in ipairs({'overlay','pixel','autocast','blizzard'}) do
+  local view={name=name};state.views[#state.views+1]=view
+  local callbacks=field(visual,'callbacks');local ambiguous=field(visual,'ambiguous')
+  local fn=field(callbacks,name)
+  if field(ambiguous,name)==true then view.reason='ambiguous-callback'
+  elseif proofType(fn)~='function' or not readable(fn) then view.reason='no-start-callback'
+  else
+   local sample=seen[fn]
+   if not sample then
+    if totalSamples>=MAX_FUNCTIONS then view.reason='selection-limit'
+    else sample={fn=fn};seen[fn]=sample;totalSamples=totalSamples+1;state.samples[#state.samples+1]=sample;sample.before,sample.reason=snapshot(run,fn) end
+   end
+   view.sample=sample
+  end
+ end
+end
+local function appendActivity(report,run)
+ local state=run.activity;if not state then return end
+ local lines={'Retained catalogs and animation activity (capture only):'}
+ local function retained(root,key)
+  local object=field(root,key);local n=field(object,'n');local capped=field(object,'capped')
+  if not counter(n,true) or n>4096 or proofType(capped)~='boolean' then return 'unavailable' end
+  return (capped and '>=' or '')..tostring(n),not capped and n or nil
+ end
+ for _,entry in ipairs({{'spell','spellIDs','spell IDs'},{'spell','spellNames','spell name groups'},{'item','itemRecords','item records'},{'item','itemIndex','item index'},{'item','itemBlocked','blocked items'}}) do
+  local start,before=retained(field(state.started,entry[1]),entry[2]);local ending,after=retained(field(state.ended,entry[1]),entry[2])
+  lines[#lines+1]=entry[3]..': start='..start..'; end='..ending..'; change='..(before~=nil and after~=nil and tostring(after-before) or 'unavailable')
+ end
+ local events=state.events
+ lines[#lines+1]=events.available and string.format('metadata successes: spell=%s; item=%s; unknown=%s',tostring(events.spell),tostring(events.item),tostring(events.unknown)) or 'metadata successes: unavailable'
+ local function visual(label,value)
+  if proofType(value)~='table' then return label..' visuals: unavailable' end
+  local parts={label..' visuals:'}
+  for _,key in ipairs({'buttons','slots','logical','overlays','sequence','pixel','autocast','blizzard','proc'}) do
+   local n=field(value,key);parts[#parts+1]=key..'='..(counter(n,true) and n<=4096 and tostring(n) or 'unavailable')
+  end
+  parts[#parts+1]='capped='..(field(value,'capped')==true and 'true' or 'false')
+  if field(value,'unsupported')==true then parts[#parts+1]='native-observation=unavailable' end
+  return table.concat(parts,' ')
+ end
+ lines[#lines+1]=visual('start',field(state.started,'visual'));lines[#lines+1]=visual('end',field(state.ended,'visual'))
+ local labels={overlay='RM.UpdateOverlay',pixel='SharedGlow.Pixel.OnUpdate',autocast='SharedGlow.AutoCast.OnUpdate',blizzard='SharedGlow.Blizzard.OnUpdate'}
+ local available=0
+ for _,view in ipairs(state.views) do
+  local sample,problem=view.sample,view.reason
+  if not field(state.ended,'visual') then problem=problem or 'source-reader-changed' end
+  problem=problem or sample and sample.reason
+  local current
+  if not problem then current,problem=finishSample(run,sample) end
+  if not problem then
+   for _,key in ipairs({'exclusive','inclusive','calls','inclusiveCalls'}) do if current[key]<sample.before[key] then problem='function-cpu-counter-reset';break end end
+  end
+  local exclusive,inclusive,calls
+  if not problem then
+   exclusive,inclusive,calls=current.exclusive-sample.before.exclusive,current.inclusive-sample.before.inclusive,current.calls-sample.before.calls
+   if not finite(exclusive) or not finite(inclusive) or not counter(calls,true) then problem='invalid-function-cpu-delta' end
+  end
+  lines[#lines+1]=problem and labels[view.name]..' | unavailable: '..problem or string.format('%s | exclusive=%.3f ms | inclusive=%.3f ms | calls=%s',labels[view.name],exclusive,inclusive,tostring(calls))
+  if not problem then available=available+1 end
+ end
+ lines[#lines+1]=string.format('Animation views: aliases=4; available=%d; unavailable=%d (excluded from rankings above).',available,4-available)
+ lines[#lines+1]='Catalog counts are keys, not bytes; global metadata arrivals may originate outside RM. Capped counts are lower bounds; sequence counts timer handles regardless of visibility, not measured executions.'
+ lines[#lines+1]='Shared glow frames are associated with RM-active slots; shared callback counters include all callers. Start callbacks only; end-only callbacks lack a baseline. Proc uses native animations.'
+ local bytes=#report-1;for _,line in ipairs(report) do bytes=bytes+#line end
+ local extra=#lines;for _,line in ipairs(lines) do extra=extra+#line end
+ if bytes+extra<16000 then for _,line in ipairs(lines) do report[#report+1]=line end
+ else local omitted='Retained activity omitted to keep report bounded.';if bytes+1+#omitted<16000 then report[#report+1]=omitted end end
+end
+-- END CPU ACTIVITY DIAGNOSTICS
 local function finish(run,status,reason)
  if active~=run then return end
  active=nil;run.timer=nil
+ -- BEGIN CPU ACTIVITY STOP
+ activityStop(run)
+ -- END CPU ACTIVITY STOP
  local text
  if status=='complete' then
   local now,why=clock(run.clock);local elapsed=now and now-run.started
@@ -270,6 +415,9 @@ local function finish(run,status,reason)
   if status=='complete' then local value,problem=total(run);if value==nil or value<run.initialTotal then status,reason='invalid',problem or 'addon-cpu-counter-reset' else used=value-run.initialTotal;if not finite(used) then status,reason='invalid','invalid-addon-cpu-delta' end end end
   if status=='complete' then rate=used/elapsed;if not finite(rate) then status,reason='invalid','invalid-cpu-rate' end end
   if status=='complete' then
+   -- BEGIN CPU ACTIVITY END
+   if run.activity then run.activity.ended=activityRead() end
+   -- END CPU ACTIVITY END
    local ranked,unavailable={},{}
    for _,row in ipairs(run.rows) do
     local problem=row.reason
@@ -323,6 +471,9 @@ local function finish(run,status,reason)
    -- BEGIN PRIVATE CACHE APPENDIX
    appendPrivateCache(report,run)
    -- END PRIVATE CACHE APPENDIX
+   -- BEGIN CPU ACTIVITY APPENDIX
+   appendActivity(report,run)
+   -- END CPU ACTIVITY APPENDIX
    text=table.concat(report,'\n')
   end
  end
@@ -350,8 +501,12 @@ function addon:StartCPUProfile(duration)
  for _,sample in ipairs(run.privateCache.samples) do sample.before,sample.reason=snapshot(run,sample.fn) end
  -- END PRIVATE CACHE START
  active=run
+ -- BEGIN CPU ACTIVITY START
+ local activityOK=proofPcall(activityStart,run)
+ if not activityOK then activityStop(run);run.activity=nil end
+ -- END CPU ACTIVITY START
  local ok,timer=pcall(self.ScheduleTimer,self,function() finish(run,'complete') end,duration)
- if not ok or not timer then if active==run then active=nil end;return false,'timer-error' end
+ if not ok or not timer then if active==run then active=nil end;activityStop(run);return false,'timer-error' end
  run.timer=timer;if active==run then run.executionIndexProof=executionIndexProof() end;lastReport=nil
  return true
 end

@@ -122,3 +122,21 @@ function addon:GetReferenceProvider(kind)
         name=function(value,norank) return catalog:SpellName(value,norank) end,search=function(value,options) return catalog:Search(value,options) end,
         info=function(value) local info=self.Platform:GetSpellInfo(value);return info and {id=value,name=info.name,display=info.name,icon=info.iconID} end,missing=L['Unknown spell']}
 end
+
+-- BEGIN CPU ACTIVITY HANDOFF
+-- Count retained keys directly only when an explicit CPU capture asks.
+do
+    local raw,nextKey,kind,equal=rawget,next,type,rawequal
+    local ownedUpdate,ownedProvider=addon.UpdateReferenceItem,addon.GetReferenceProvider
+    local function count(map)
+        local n,key=0,nil
+        repeat key=nextKey(map,key);if key~=nil then n=n+1 end until key==nil or n>4096
+        return {n=n>4096 and 4096 or n,capped=n>4096}
+    end
+    local bind=raw(addon,'BindCPUActivityDiagnostic')
+    if kind(bind)=='function' then bind(addon,'item',function()
+        if not equal(raw(addon,'UpdateReferenceItem'),ownedUpdate) or not equal(raw(addon,'GetReferenceProvider'),ownedProvider) then return end
+        return {itemRecords=count(items),itemIndex=count(indexed),itemBlocked=count(blocked)}
+    end) end
+end
+-- END CPU ACTIVITY HANDOFF

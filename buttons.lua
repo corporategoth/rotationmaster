@@ -870,3 +870,63 @@ function addon:HighlightSlots(slots)
 	end
 end
 
+
+-- BEGIN CPU ACTIVITY HANDOFF
+-- Only the private RM button maps and their current logical slots are inspected.
+-- Shared glow fields establish association, never exclusive caller ownership.
+do
+    local raw,nextKey,kind,equal,protect,text=rawget,next,type,rawequal,pcall,tostring
+    local ownedGlow,ownedFetch=addon.Glow,addon.Fetch
+    local starts={pixel=CustomGlow.PixelGlow_Start,autocast=CustomGlow.AutoCastGlow_Start,blizzard=CustomGlow.ButtonGlow_Start}
+    local bind=raw(addon,'BindCPUActivityDiagnostic')
+    if kind(bind)=='function' then bind(addon,'visual',function(api)
+        if not equal(raw(addon,'Glow'),ownedGlow) or not equal(raw(addon,'Fetch'),ownedFetch) then return end
+        for name,method in nextKey,starts do
+            local key=name=='pixel' and 'PixelGlow_Start' or name=='autocast' and 'AutoCastGlow_Start' or 'ButtonGlow_Start'
+            if not equal(raw(CustomGlow,key),method) then return end
+        end
+        local result={buttons=0,slots=0,logical=0,overlays=0,sequence=0,pixel=0,autocast=0,blizzard=0,proc=0,capped=false,callbacks={overlay=UpdateOverlay},ambiguous={}}
+        if kind(api)~='table' or kind(raw(api,'GetParent'))~='function' or kind(raw(api,'IsVisible'))~='function' or kind(raw(api,'GetScript'))~='function' then result.unsupported=true;return result end
+        local highlighted,seen={},{};local n=0
+        for _,button in nextKey,Highlight do n=n+1;if n>128 then result.capped=true;break end;highlighted[button]=true end
+        local function inspect(frame,button,name)
+            result.slots=result.slots+1;if result.slots>512 then result.slots=512;result.capped=true;return end
+            if kind(frame)~='table' or seen[frame] then return end
+            local ok,parent=protect(api.GetParent,frame);if not ok or not equal(parent,button) then return end
+            seen[frame]=true
+            if name=='overlays' and raw(frame,'sequenceTimer')~=nil then result.sequence=result.sequence+1 end
+            local visible,shown=protect(api.IsVisible,frame)
+            if not visible then result.unsupported=true;return end
+            if shown~=true then return end
+            result[name]=result[name]+1
+            if name=='overlays' or name=='proc' then return end
+            local success,fn=protect(api.GetScript,frame,'OnUpdate')
+            if not success or kind(fn)~='function' then return end
+            if result.callbacks[name] and not equal(result.callbacks[name],fn) then result.callbacks[name]=nil;result.ambiguous[name]=true
+            elseif not result.ambiguous[name] then result.callbacks[name]=fn end
+        end
+        for button,spell in nextKey,ButtonSpells do
+            result.buttons=result.buttons+1;if result.buttons>128 then result.buttons=128;result.capped=true;break end
+            if result.capped and result.slots>=512 then break end
+            if kind(button)=='table' then
+                local ids={}
+                local glowing,flag=SpellsGlowing[spell],Flags[spell]
+                if glowing and (glowing.itemId==nil or equal(glowing.itemId,ButtonItems[button])) then ids[#ids+1]='next' end
+                if flag and (flag.itemId==nil or equal(flag.itemId,ButtonItems[button])) then ids[#ids+1]=spell end
+                if highlighted[button] then ids[#ids+1]='highlight' end
+                for _,id in nextKey,ids do
+                    result.logical=result.logical+1
+                    local overlays=raw(button,'rmOverlays');inspect(kind(overlays)=='table' and raw(overlays,id),button,'overlays')
+                    local key=text(id)
+                    inspect(raw(button,'_PixelGlow'..key),button,'pixel')
+                    inspect(raw(button,'_AutoCastGlow'..key),button,'autocast')
+                    inspect(raw(button,'_ProcGlow'..key),button,'proc')
+                    if result.slots>=512 then result.capped=true;break end
+                end
+                if #ids>0 then inspect(raw(button,'_ButtonGlow'),button,'blizzard') end
+            end
+        end
+        return result
+    end) end
+end
+-- END CPU ACTIVITY HANDOFF

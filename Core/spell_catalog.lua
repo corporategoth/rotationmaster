@@ -134,3 +134,21 @@ function catalog:GetIndexedSpells()
     end
     return result
 end
+
+-- BEGIN CPU ACTIVITY HANDOFF
+-- Private capture-only cardinality; no metadata query or per-event bookkeeping.
+do
+    local raw,nextKey,kind,equal=rawget,next,type,rawequal
+    local ownedUpdate=catalog.UpdateSpell
+    local function count(map)
+        local n,key=0,nil
+        repeat key=nextKey(map,key);if key~=nil then n=n+1 end until key==nil or n>4096
+        return {n=n>4096 and 4096 or n,capped=n>4096}
+    end
+    local bind=raw(addon,'BindCPUActivityDiagnostic')
+    if kind(bind)=='function' then bind(addon,'spell',function()
+        if not equal(raw(addon,'SpellCatalog'),catalog) or not equal(raw(catalog,'UpdateSpell'),ownedUpdate) then return end
+        return {spellIDs=count(entries),spellNames=count(byName)}
+    end) end
+end
+-- END CPU ACTIVITY HANDOFF

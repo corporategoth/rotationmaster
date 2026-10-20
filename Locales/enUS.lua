@@ -29,6 +29,7 @@ L["Help.General.cpu_capture"] = "Capture native cumulative function CPU costs an
 L["Help.General.cpu_report"] = "Open a selectable, copyable report with total addon CPU, measured function costs and calls, sample boundaries, and unavailable or replaced functions. Inclusive costs overlap and must not be added together. Boundary state does not prove configuration or combat stayed unchanged throughout the capture. Untracked functions and native work may account for remaining costs."
 L["Help.General.cpu_cancel"] = "Cancel the active diagnostic capture without changing settings, gameplay polling, or shared profiler counters."
 L["Invalid rotation ownership data in profile %s (%s); record preserved."] = true
+L["Invalid stock targets in profile %s (%s); data preserved."] = true
 L['View source'] = true
 L['Change source helper'] = true
 L['Dependencies (%d)'] = true

@@ -3,6 +3,7 @@ local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite()
 -- query boundary. The new report block alone is removed; unrelated edits fail.
 local function loadHistoricalCPU(f)
  local h=assert(io.open('Diagnostics/cpu.lua'));local source=h:read('*a');h:close()
+ source=dofile('tests/fixtures/restore_cpu_retained_activity.lua')(source,'Diagnostics/cpu.lua')
  source=dofile('tests/fixtures/restore_private_cache_cpu.lua')(source)
  source=dofile('tests/fixtures/restore_cache_mode_cpu.lua')(source)
  source=dofile('tests/fixtures/restore_rotation_execution_diagnostics.lua')(source,'Diagnostics/cpu.lua')
@@ -20,6 +21,7 @@ end
 -- The private appendix has its own current-versus-fc06db4 differential suite.
 local function loadPrePrivateCPU(f)
  local h=assert(io.open('Diagnostics/cpu.lua'));local source=h:read('*a');h:close()
+ source=dofile('tests/fixtures/restore_cpu_retained_activity.lua')(source,'Diagnostics/cpu.lua')
  source=dofile('tests/fixtures/restore_private_cache_cpu.lua')(source)
  local chunk=assert(loadstring(source,'@Diagnostics/cpu.lua'));setfenv(chunk,f.env);chunk('rotationmaster',f.addon)
 end

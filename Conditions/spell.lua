@@ -320,7 +320,8 @@ addon:RegisterCondition("SPELL_HISTORY_TIME", {
         local spellid, reason = addon:Widget_GetSpellId(value.spell, value.ranked)
         if not spellid then return nil, reason or "spell-data-unavailable" end
         for _, entry in pairs(addon.spellHistory) do
-            return entry.spell == spellid and Functions.values.compare(value.operator, (evalStart - entry.time), value.value)
+            local matches = entry.spell == spellid and Functions.values.compare(value.operator, (evalStart - entry.time), value.value)
+            if matches ~= false then return matches end
         end
         return false
     end,

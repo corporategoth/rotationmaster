@@ -50,8 +50,15 @@ local function scopedStore(addon,state,encode)
     if failed or not encode and not addon.RotationData.ValidateRotationStore(result) then return nil end
     return result
 end
+-- Reject malformed optional stock before generic recursive profile copying.
+local function validStockTargets(addon,profile)
+    if type(profile)~='table' then return true end
+    local plan=rawget(profile,'stockTargets')
+    return plan==nil or addon.StockTargets.Validate(plan)==true
+end
 function addon:ValidateProfileTransfer(value)
     if type(value)~='table' then return false end
+    if not validStockTargets(self,value) then return false end
     local wire=self:ProfileToPortable(value);if not wire or not self.RotationData.CheckPortable(wire) then return false end
     local function stringValue(v) return type(v)=='string' end
     for key,item in pairs(value) do
@@ -65,6 +72,8 @@ function addon:ValidateProfileTransfer(value)
         elseif key=='condition_groups' then
             if not dense(item,function(group) return type(group)=='table' and fields(group,{id='string',name='string',conditions='table',icon=type(group.icon)}) and type(group.id)=='string' and type(group.name)=='string' and dense(group.conditions,stringValue) and (group.icon==nil or self:IsCategoryIcon(group.icon)) end) then return false end
         elseif key=='announces' then local seen={};if not dense(item,function(v) if not self:IsValidAnnouncement(v,true) or seen[v.id] then return false end;seen[v.id]=true;return true end) then return false end
+        elseif key=='stockTargets' then
+            -- Closed optional schema was checked before copying the profile.
         elseif key=='itemsets' then
             if type(item)~='table' then return false end;for id,set in pairs(item) do if type(id)~='string' or not fields(set,{name='string',items='table',modified='boolean'}) or type(set.name)~='string' or not dense(set.items,function(v) return type(v)=='string' and #v>0 or type(v)=='number' and v>0 and v%1==0 end) then return false end end
         elseif key=='rotations' then
@@ -110,6 +119,7 @@ end
 -- intentionally accepts only positive numeric table keys, so profile wire maps
 -- use canonical decimal strings and restore numbers only in these namespaces.
 function addon:ProfileToPortable(profile)
+    if not validStockTargets(self,profile) then return nil end
     local copy=self:CopySettingsData(profile)
     local function encode(map) return specMap(map,true) end
     if type(copy)=='table' then
@@ -120,6 +130,7 @@ function addon:ProfileToPortable(profile)
     return copy
 end
 function addon:ProfileFromPortable(profile,options)
+    if not validStockTargets(self,profile) then return nil end
     local copy=self:CopySettingsData(profile)
     local function decode(map) return specMap(map,false) end
     if type(copy)~='table' then return nil end
