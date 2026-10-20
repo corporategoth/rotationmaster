@@ -1,4 +1,6 @@
 local addon_name, addon = ...
+local invalidateDependencies=addon.InvalidateRotationDependencies
+if type(invalidateDependencies)~='function' then invalidateDependencies=nil end
 
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 
@@ -409,6 +411,7 @@ local function upgradeEffectsToGUID()
             button2 = NO,
             OnAccept = function()
                 addon.db.global.effects = deepcopy(default_effects)
+                if invalidateDependencies then invalidateDependencies(addon,'effect',nil) end
             end,
             showAlert = 1,
             timeout = 0,
@@ -599,5 +602,6 @@ function addon:init()
     if addon.db.profile.rotationStore~=nil then addon.db.profile.version=3
     elseif not addon.InitializeScopedRotationStorage then addon.db.profile.version=PROFILE_VERSION end
     addon.db.global.version = GLOBAL_VERSION
+    if invalidateDependencies then invalidateDependencies(addon,'all',nil) end
 end
 

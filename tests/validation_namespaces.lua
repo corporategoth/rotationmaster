@@ -1,6 +1,25 @@
 local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite()
 local restore=dofile('tests/fixtures/restore_validation_qualifiers.lua')
 local sites={};local uuid='61b36ed1-fa31-4656-ad71-f3d50f193a85'
+-- Preserve the historical 30-site coverage coordinates through exact reviewed
+-- line insertions. Every canonical call must retain its full original line.
+local file=assert(io.open('validate.lua'));local currentSource=file:read('*a');file:close()
+local baselineSource=dofile('tests/fixtures/restore_revision_changes.lua')(currentSource,'validate.lua')
+local function callSites(text)
+ local result={};local number=0
+ for line in (text..'\n'):gmatch('(.-)\n')do
+  number=number+1;local name=line:match('addon%.Functions%.collections%.([%w_]+)%(')
+  if name then result[#result+1]={line=number,name=name,text=line}end
+ end
+ return result
+end
+local currentSites,baselineSites=callSites(currentSource),callSites(baselineSource)
+assert(#currentSites==30 and #baselineSites==30,'canonical validation site count changed')
+local baselineLine={}
+for i,site in ipairs(currentSites)do
+ local old=baselineSites[i];assert(site.name==old.name and site.text==old.text,'canonical validation call changed')
+ baselineLine[site.line]=old.line
+end
 local function pack(...) return {n=select('#',...),...} end
 -- Poison only validation callers: source-bound legacy consumers elsewhere keep
 -- their real behavior. Canonical spies delegate to actual collection functions.
@@ -13,7 +32,7 @@ local function instrument(f)
    return old(...)
   end
   a.Functions.collections[name]=function(...)
-   local info=debug.getinfo(2,'Sl');if info and info.source=='@validate.lua' then sites[info.currentline]=name end
+   local info=debug.getinfo(2,'Sl');if info and info.source=='@validate.lua' then sites[assert(baselineLine[info.currentline],'unmapped canonical validation site')]=name end
    return leaf(...)
   end
  end
@@ -96,7 +115,7 @@ test('canonical cleanup count and copy failures retain warning mutation and retu
 end)
 test('strict inverse restores full7111658 source and helper aliases getters catalog stay unchanged',function()
  local f=F.new();local a=f.addon;f.load('Core/function_data.lua');local function hash(text) return a:FunctionSourceHash(text) end
- local h=assert(io.open('validate.lua'));local text=h:read('*a');h:close();local old=restore(dofile('tests/fixtures/restore_stock_targets_unit1.lua')(text,'validate.lua'),hash)
+ local h=assert(io.open('validate.lua'));local text=h:read('*a');h:close();local old=restore(dofile('tests/fixtures/restore_stock_targets_unit1.lua')(dofile('tests/fixtures/restore_revision_changes.lua')(text,'validate.lua'),'validate.lua'),hash)
  assert(hash(old)=='25c084e8');assert(not pcall(restore,old,hash) and not pcall(restore,text..text,hash),'inverse accepted absent/duplicate qualifications')
  assert(not pcall(restore,text..'\n-- unrelated change\n',hash),'inverse accepted unrelated changes')
  f.load('Data/builtin_sources.lua');f.load('Core/builtin_sources.lua');assert(not a.BuiltinSourceCatalog.modules['validate.lua'])

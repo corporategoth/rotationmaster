@@ -1,5 +1,13 @@
 local _,addon=...
 local observed,stamp
+local dependencyReader
+local bindDependency=addon.BindRotationDependencyReader
+if type(bindDependency)=='function' then
+    bindDependency(addon,function(reader) if type(reader)=='function' then dependencyReader=reader end end)
+    addon.BindRotationDependencyReader=nil
+end
+local dependencyIdentity=rawequal
+local managed
 -- Trusted standard primitives at module load; changed live pointers disable reuse.
 local proofPairs,proofRawget,proofRawequal,proofType,proofGetmetatable=pairs,rawget,rawequal,type,getmetatable
 -- Lua5.1 accepts a stack level or function; the checker declares only levels.
@@ -63,7 +71,7 @@ local function itemsetEntries(shared,personal)
 end
 -- Observe identities without copying maps on the common unchanged path.
 -- Normalized false markers keep malformed/NaN entries stable, as before.
-local function observe(owner)
+local function observeLegacy(owner)
     local profile,global=owner.db.profile,owner.db.global
     local shared,personal=global.itemsets,profile.itemsets
     local conditions,effects=owner.conditionDefinitions,global.effects
@@ -81,11 +89,33 @@ local function observe(owner)
         effects=effectEntries,effectCount=effectCount}
     stamp={}
 end
+-- Managed ownership does not require plain/default-free maps. AceDB may
+-- materialize default metatables; contents change through explicit publication.
+local function observe(owner)
+    if not dependencyReader or not dependencyIdentity(owner,addon) then
+        observeLegacy(owner);return observed,stamp
+    end
+    local epoch=dependencyReader(owner)
+    local db=owner.db;local profile,global=db.profile,db.global
+    local conditions,version=owner.conditionDefinitions,owner.conditionRegistryVersion or 0
+    local shared,personal,effects=global.itemsets,profile.itemsets,global.effects
+    if not managed or not dependencyIdentity(managed.epoch,epoch) or not dependencyIdentity(managed.db,db)
+        or not dependencyIdentity(managed.profile,profile) or not dependencyIdentity(managed.global,global)
+        or not dependencyIdentity(managed.conditions,conditions) or not dependencyIdentity(managed.shared,shared)
+        or not dependencyIdentity(managed.personal,personal) or not dependencyIdentity(managed.effects,effects)
+        or not dependencyIdentity(managed.version,version) then
+        managed={epoch=epoch,db=db,profile=profile,global=global,conditions=conditions,
+            shared=shared,personal=personal,effects=effects,version=version,stamp={}}
+    end
+    -- Public options copy actual source maps, never a retained private map.
+    -- Capture this invocation's roots and generation before live iteration.
+    return managed,managed.stamp
+end
 -- Internal authority checks need the current stamp, not detached public maps.
 -- Keep checking every dependency at each call, including reentrant mutations.
 function addon:GetRotationValidationStamp()
-    observe(self)
-    return stamp
+    local _,current=observe(self)
+    return current
 end
 local ownedValidationStamp=addon.GetRotationValidationStamp
 -- Even protected metatable metadata can disguise a callback. Only native
@@ -96,7 +126,7 @@ local function proofGlobals()
         and proofRawequal(proofRawget(proofEnvironment,'type'),proofType) and proofRawequal(proofRawget(proofEnvironment,'getmetatable'),proofGetmetatable)
         and proofRawequal(proofRawget(proofEnvironment,'getfenv'),proofGetfenv)
         and proofRawequal(proofGetfenv(ownedValidationStamp),proofEnvironment)
-        and proofRawequal(proofGetfenv(observe),proofEnvironment) and proofRawequal(proofGetfenv(normalized),proofEnvironment)
+        and proofRawequal(proofGetfenv(observe),proofEnvironment) and proofRawequal(proofGetfenv(observeLegacy),proofEnvironment) and proofRawequal(proofGetfenv(normalized),proofEnvironment)
         and proofRawequal(proofGetfenv(entries),proofEnvironment) and proofRawequal(proofGetfenv(sameEntries),proofEnvironment)
         and proofRawequal(proofGetfenv(validItemsets),proofEnvironment) and proofRawequal(proofGetfenv(sameItemsets),proofEnvironment)
         and proofRawequal(proofGetfenv(itemsetEntries),proofEnvironment)
@@ -133,6 +163,9 @@ local function sameValidationLayout(owner,method,db,profile,global,conditions,sh
         and proofRawequal(e,effects) and proofRawequal(v,version) and proofRawequal(l,state)
 end
 local function readValidationStamp(owner,method,entryMethod)
+    if dependencyReader and dependencyIdentity(owner,addon) then
+        local value=method(owner);return value
+    end
     local db,profile,global,conditions,shared,personal,effects,version,state
     -- A successful PRE proof closes the owned scan. POST checks raw layout
     -- again, without repeating globals that no permitted callback can change.
@@ -151,12 +184,15 @@ end
 -- Dependency maps may carry AceDB defaults metatables. Observe their entries,
 -- without copying/traversing definitions or writing into SavedVariables.
 function addon:GetRotationValidationOptions()
-    observe(self)
+    local snapshot,current=observe(self)
     -- Public maps remain fresh: consumers cannot poison private observations.
-    local conditions=entries(observed.conditions)
-    local itemsets=entries(observed.itemsets)
-    local effects=entries(observed.effects)
-    return {conditions=conditions,itemsets=itemsets,effects=effects},stamp
+    local conditions=entries(snapshot.conditions)
+    local itemsets
+    if dependencyReader and dependencyIdentity(self,addon) then
+        itemsets=itemsetEntries(snapshot.shared,snapshot.personal)
+    else itemsets=entries(snapshot.itemsets) end
+    local effects=entries(snapshot.effects)
+    return {conditions=conditions,itemsets=itemsets,effects=effects},current
 end
 
 -- Legacy bodies have no envelope. Inspect their semantic condition edges too,

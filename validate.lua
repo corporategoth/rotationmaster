@@ -1,4 +1,6 @@
 local addon_name, addon = ...
+local invalidateDependencies=addon.InvalidateRotationDependencies
+if type(invalidateDependencies)~='function' then invalidateDependencies=nil end
 
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 
@@ -27,6 +29,7 @@ local function apply_remove(toremove, tbl, fix)
         end
     end
 
+    if fix and toremove.data and invalidateDependencies then invalidateDependencies(addon,'all',nil) end
     addon.Functions.collections.cleanArray(toremove)
 end
 
@@ -70,6 +73,7 @@ function addon:validate_itemset(prefix, name, itemset, fix)
         addon:warn("Invalid ID for itemset %s:%s", prefix, name)
         if fix then
             addon.Functions.collections.cleanArray(itemset)
+            if invalidateDependencies then invalidateDependencies(addon,'itemset',name) end
             return
         end
     end
@@ -87,6 +91,7 @@ function addon:validate_effect(prefix, name, effect, fix)
         addon:warn("Invalid ID for effect %s:%s", prefix, name)
         if fix then
             addon.Functions.collections.cleanArray(effect)
+            if invalidateDependencies then invalidateDependencies(addon,'effect',name) end
             return
         end
     end
@@ -94,6 +99,7 @@ function addon:validate_effect(prefix, name, effect, fix)
         addon:warn("No effect type for %s:%s", prefix, name)
         if fix then
             addon.Functions.collections.cleanArray(effect)
+            if invalidateDependencies then invalidateDependencies(addon,'effect',name) end
         end
         return
     end
@@ -288,6 +294,7 @@ function addon:validate_custom_condition(prefix, name, custom_condition, fix)
                 -- repair. Selection notices this registry version next pass.
                 definition.disabled=true
                 addon.conditionRegistryVersion=(addon.conditionRegistryVersion or 0)+1
+                if invalidateDependencies then invalidateDependencies(addon,'condition',name) end
             end
         end
     end
@@ -453,6 +460,7 @@ function addon:validate_rotation(prefix, id, rotation, fix)
 
     local template = {
         name = "Some Name",
+        revision = 1,
         description = "Rotation description",
         metadata = {},
         tags = {},
@@ -595,6 +603,7 @@ function addon:validate_rotation(prefix, id, rotation, fix)
 end
 
 function addon:validate(template, fix)
+    if fix then if invalidateDependencies then invalidateDependencies(addon,'all',nil) end end
     local DB = _G[self.savedVariableName or "RotationMasterDB"]
 
     local glob_template = addon.Functions.collections.deepcopy(template.global)
@@ -798,4 +807,5 @@ function addon:validate(template, fix)
             apply_remove(toremove, data.disabled_conditions, fix)
         end
     end
+    if fix then if invalidateDependencies then invalidateDependencies(addon,'all',nil) end end
 end

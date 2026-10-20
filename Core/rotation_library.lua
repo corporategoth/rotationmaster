@@ -315,6 +315,7 @@ end
 function addon:CloneDefaultRotation(spec,id,name,options)
     local coordinator=self.GetScopedRotationCoordinator and self:GetScopedRotationCoordinator();if coordinator then return coordinator:Copy(spec,{kind='builtin',id=id},name,options) end
     local ok,why=ensure(self);if not ok then return nil,why end
+    local profile=self.db.profile;local roots,library=profile.rotations,profile.rotationLibrary
     local source=active.catalog:Get({kind="builtin",id=id})
     if not source then return nil,"unknown-rotation" end
     local context=self:GetRotationContext(spec)
@@ -324,6 +325,7 @@ function addon:CloneDefaultRotation(spec,id,name,options)
     assert(temporary:RegisterBuiltin(source.envelope))
     local generated,reason=temporary:Clone({kind="builtin",id=id},name)
     if not generated then return nil,reason end
+    if self.db.profile~=profile or profile.rotations~=roots or profile.rotationLibrary~=library then return nil,'rotation-changed-externally' end
     local rotations=self.db.profile.rotations[spec] or {}
     if rotations[generated]~=nil then return nil,"id-collision" end
     local view=temporary:Get({kind="custom",id=generated})
@@ -429,20 +431,26 @@ end
 -- a real data copy, fresh step identities, and explicitly retain source lineage.
 function addon:DuplicateCustomRotation(spec,id,name,options)
     local scoped=self.GetScopedRotationCoordinator and self:GetScopedRotationCoordinator();if scoped then return scoped:Copy(spec,id,name,options) end
+    local profile=self.db.profile;local roots,library=profile.rotations,profile.rotationLibrary
     if self.GetImportedRotationView then
         local imported,reason=self:GetImportedRotationView(spec,id)
         if imported then
             local prepared={body=imported.envelope.body,manifest=data.CopyData(imported.envelope),sourceId=imported.sourceId,
                 sourceRevision=imported.sourceRevision,stepOrigins=imported.stepOrigins}
-            prepared.manifest.body=nil
+            local revision,problem=data.GetRotationContentRevision(prepared.body);if not revision then return nil,problem end
+            prepared.manifest.body=nil;prepared.body.revision=1
+            if self.db.profile~=profile or profile.rotations~=roots or profile.rotationLibrary~=library then return nil,'rotation-changed-externally' end
             return self:CreateImportedRotation(prepared,spec,name)
         elseif reason~="not-imported" then return nil,reason end
     end
     local source=self:GetEditableRotation(spec,id)
     local body,problem=data.CopyData(source)
     if problem or type(body)~="table" then return nil,"invalid-custom-body" end
+    local revision,revisionError=data.GetRotationContentRevision(body);if not revision then return nil,revisionError end
     if type(name)~="string" or name=="" then return nil,"invalid-name" end
+    if self.db.profile~=profile or profile.rotations~=roots or profile.rotationLibrary~=library then return nil,'rotation-changed-externally' end
     local ok,why=ensure(self);if not ok then return nil,why end
+    if library==nil then library=profile.rotationLibrary end
     local origins=active.state.origins[spec]
     if origins~=nil and not plainTable(origins) then return nil,"invalid-origin-state" end
     local sourceView
@@ -515,13 +523,14 @@ function addon:DuplicateCustomRotation(spec,id,name,options)
         correspondence.origins[stepId]=identity.origins and identity.origins[entry.id] or entry.id
         entry.id=stepId
     end
-    body.name=name
+    body.name=name;body.revision=1
     local metadata
     if sourceView then
         local manifest=data.CopyData(sourceView.envelope);manifest.body=nil;manifest.id=generated;manifest.revision=1;manifest.nameKey=name
         metadata={manifest=manifest,lineage=lineage}
     end
     if origins and origins[generated]~=nil or comparisonRows and comparisonRows[generated]~=nil then return nil,"id-collision" end
+    if self.db.profile~=profile or profile.rotations~=roots or profile.rotationLibrary~=library then return nil,'rotation-changed-externally' end
     self.db.profile.rotations[spec][generated]=body
     if metadata then origins[generated]=metadata end
     comparisonRows=comparisonRows or {};active.state.comparisons[spec]=comparisonRows

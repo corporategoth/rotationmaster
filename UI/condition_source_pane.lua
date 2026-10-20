@@ -1,4 +1,6 @@
 local addon_name,addon=...
+local invalidateDependencies=addon.InvalidateRotationDependencies
+if type(invalidateDependencies)~='function' then invalidateDependencies=nil end
 local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
 local function clearNew(p) p.creatingCondition=nil;p.newConditionKey=nil;p.newConditionSource=nil end
 function addon:InstallInlineConditionNavigation(p)
@@ -130,6 +132,7 @@ function addon:BuildInlineCustomCondition(p,key,source,readOnly)
             if changed then
                 local current=self.conditionDefinitions[identifier];if current and not current.disabled and current.on_unregister then pcall(current.on_unregister,identifier) end
                 self.db.global.custom_conditions[identifier]=previous;self.conditionDefinitions[identifier]=oldDefinition;self.conditionRegistryVersion=(self.conditionRegistryVersion or 0)+1
+                if invalidateDependencies then invalidateDependencies(addon,'condition',identifier) end
                 if oldDefinition and not oldDefinition.disabled and oldDefinition.on_register then pcall(oldDefinition.on_register,identifier) end
                 if self.RefreshConditionConsumers then self:RefreshConditionConsumers() end
                 p.draft.global.custom_conditions[identifier]=self:CopySettingsData(previous);p.draftBaseline.global.custom_conditions[identifier]=self:CopySettingsData(previous)

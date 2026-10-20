@@ -1,4 +1,6 @@
 local _,addon=...
+local invalidateDependencies=addon.InvalidateRotationDependencies
+if type(invalidateDependencies)~='function' then invalidateDependencies=nil end
 local MAX_ENTRIES,MAX_BYTES,MAX_DEPTH=128,1048576,64
 -- Bound and reject hostile data before any recursive copy or source compilation.
 local function portable(value)
@@ -297,7 +299,9 @@ function addon:ApplyFunctionBundleImport(plan)
     local function restoreConsumers()
         for id,record in pairs(oldDefinitions) do
             local definition=record.definition;local resume=definition.functionSuspended and not record.suspended
+            local changed=definition.functionSuspended~=record.suspended or definition.functionUnavailable~=record.unavailable
             definition.functionSuspended=record.suspended;definition.functionUnavailable=record.unavailable
+            if changed and invalidateDependencies then invalidateDependencies(addon,'condition',id) end
             if resume and definition.on_register and not definition.disabled and not record.unavailable then pcall(definition.on_register,id) end
         end
     end
@@ -309,10 +313,12 @@ function addon:ApplyFunctionBundleImport(plan)
         local previous=registry[id]
         if previous and not previous.disabled and not previous.functionUnavailable and not previous.functionSuspended then
             previous.functionSuspended=true
+            if invalidateDependencies then invalidateDependencies(addon,'condition',id) end
             if previous.on_unregister and not pcall(previous.on_unregister,id) then restoreConsumers();return nil,'condition-cleanup-failed' end
         end
     end
     self.db.global.custom_functions=sources;self.functionRegistry=staged
+    if invalidateDependencies then invalidateDependencies(addon,'function',nil) end
     -- Isolate saved tables too: a failing trusted hook may write to these maps.
     self.db.global.custom_conditions=self:CopySettingsData(oldConditions or {})
     self.db.global.function_import_origins=self:CopySettingsData(oldOrigins or {})
@@ -338,8 +344,10 @@ function addon:ApplyFunctionBundleImport(plan)
             local key=record.entry.destinationID;local current=registry[key]
             if current and current~=(oldDefinitions[key] and oldDefinitions[key].definition) and current.on_unregister and not current.disabled and not current.functionUnavailable then pcall(current.on_unregister,key) end
             registry[key]=oldDefinitions[key] and oldDefinitions[key].definition
+            if invalidateDependencies then invalidateDependencies(addon,'condition',key) end
         end
         self.db.global.custom_functions=oldSources;self.functionRegistry=oldRegistry;self.functionRegistryVersion=oldVersion;self.db.global.custom_conditions=oldConditions;self.db.global.function_import_origins=oldOrigins;self.conditionRegistryVersion=oldConditionVersion
+        if invalidateDependencies then invalidateDependencies(addon,'all',nil) end
         restoreConsumers();return nil,failureReason
     end
     local conditionSources=self:CopySettingsData(oldConditions or {});local origins=self:CopySettingsData(oldOrigins or {})

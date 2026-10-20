@@ -1,4 +1,6 @@
 local addon_name,addon=...
+local invalidateDependencies=addon.InvalidateRotationDependencies
+if type(invalidateDependencies)~='function' then invalidateDependencies=nil end
 local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
 local reserved={['and']=true,['break']=true,['do']=true,['else']=true,['elseif']=true,['end']=true,['false']=true,['for']=true,['function']=true,['if']=true,['in']=true,['local']=true,['nil']=true,['not']=true,['or']=true,['repeat']=true,['return']=true,['then']=true,['true']=true,['until']=true,['while']=true}
 local function identifier(name)
@@ -154,6 +156,7 @@ function addon:BuildFunctionRegistry(sources)
 end
 function addon:InitializeFunctionRegistry()
     self.functionRegistry=self:BuildFunctionRegistry(self.db.global.custom_functions or {}) or {};self.functionRegistryVersion=(self.functionRegistryVersion or 0)+1
+    if invalidateDependencies then invalidateDependencies(addon,'function',nil) end
 end
 function addon:FunctionAvailable(id,registry,active,depth,memo)
     registry=registry or self.functionRegistry;if not registry then self:InitializeFunctionRegistry();registry=self.functionRegistry end
@@ -193,10 +196,10 @@ function addon:PrepareFunctionConsumerTransition(registry)
         if definition.functionBindings and not definition.disabled and not definition.functionUnavailable and not definition.functionSuspended and not self:AreFunctionBindingsAvailable(definition.functionBindings,registry) then
             local ok=true;if definition.on_unregister then ok=pcall(definition.on_unregister,id) end
             if not ok then
-                for _,entry in ipairs(cleaned) do entry[2].functionSuspended=nil;if entry[2].on_register then pcall(entry[2].on_register,entry[1]) end end
+                for _,entry in ipairs(cleaned) do entry[2].functionSuspended=nil;if invalidateDependencies then invalidateDependencies(addon,'condition',entry[1]) end;if entry[2].on_register then pcall(entry[2].on_register,entry[1]) end end
                 return nil,'function-consumer-cleanup-failed'
             end
-            definition.functionSuspended=true;cleaned[#cleaned+1]={id,definition}
+            definition.functionSuspended=true;if invalidateDependencies then invalidateDependencies(addon,'condition',id) end;cleaned[#cleaned+1]={id,definition}
         end
     end
     return true
@@ -208,16 +211,21 @@ function addon:RefreshFunctionConsumers(deferRefresh)
     for id,definition in pairs(self.conditionDefinitions or {}) do
         if definition.functionBindings then
             local ok,why=self:AreFunctionBindingsAvailable(definition.functionBindings)
+            local previousUnavailable=definition.functionUnavailable
             definition.functionUnavailable=not ok and why or nil
+            if previousUnavailable~=definition.functionUnavailable then if invalidateDependencies then invalidateDependencies(addon,'condition',id) end end
             if ok and definition.functionSuspended and not definition.disabled then
                 attempted[#attempted+1]={id=id,definition=definition}
+                if invalidateDependencies then invalidateDependencies(addon,'condition',id) end
                 local registered=true;if definition.on_register then registered=pcall(definition.on_register,id) end
                 if registered then definition.functionSuspended=nil else successful=false;definition.functionUnavailable='function-consumer-registration-failed' end
+                if invalidateDependencies then invalidateDependencies(addon,'condition',id) end
             end
             if self.ResetConditionQuarantine then self:ResetConditionQuarantine(definition) end
         end
     end
     self.conditionRegistryVersion=(self.conditionRegistryVersion or 0)+1
+    if invalidateDependencies then invalidateDependencies(addon,'condition',nil) end
     if not deferRefresh and self.RefreshConditionConsumers then self:RefreshConditionConsumers() end
     return successful,not successful and 'function-consumer-registration-failed' or nil,attempted
 end
@@ -230,11 +238,11 @@ function addon:InstallCustomFunction(id,source,expected)
     local registry,problem=self:BuildFunctionRegistry(sources);if not registry then return nil,problem end
     if not source.disabled then local available,reason=self:FunctionAvailable(id,registry);if not available then return nil,reason end end
     local prepared,prepareError=self:PrepareFunctionConsumerTransition(registry);if not prepared then return nil,prepareError end
-    self.db.global.custom_functions=sources;self.functionRegistry=registry;self.functionRegistryVersion=(self.functionRegistryVersion or 0)+1;self:RefreshFunctionConsumers();return true
+    self.db.global.custom_functions=sources;self.functionRegistry=registry;self.functionRegistryVersion=(self.functionRegistryVersion or 0)+1;if invalidateDependencies then invalidateDependencies(addon,'function',id) end;self:RefreshFunctionConsumers();return true
 end
 function addon:RemoveCustomFunction(id,expected)
     local current=(self.db.global.custom_functions or {})[id];if not current or not self:SettingsDataEqual(current,expected) then return nil,'function-changed' end
     local sources=self:CopySettingsData(self.db.global.custom_functions);sources[id]=nil;local registry,why=self:BuildFunctionRegistry(sources);if not registry then return nil,why end
     local prepared,prepareError=self:PrepareFunctionConsumerTransition(registry);if not prepared then return nil,prepareError end
-    self.db.global.custom_functions=sources;self.functionRegistry=registry;self.functionRegistryVersion=(self.functionRegistryVersion or 0)+1;self:RefreshFunctionConsumers();return true
+    self.db.global.custom_functions=sources;self.functionRegistry=registry;self.functionRegistryVersion=(self.functionRegistryVersion or 0)+1;if invalidateDependencies then invalidateDependencies(addon,'function',id) end;self:RefreshFunctionConsumers();return true
 end

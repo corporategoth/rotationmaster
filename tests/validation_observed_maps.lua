@@ -44,7 +44,7 @@ test('retained map throwing getter preserves the exact fresh-path error object',
  setmetatable(leaked,{__index=function()reads=reads+1;error(marker)end});local ok,why=pcall(p.IsCurrent,p);assert(not ok and why==marker and reads==1)
 end)
 test('strict inverse restores the entire previous module and rejects unrelated edits',function()
- local inverse=dofile('tests/fixtures/restore_validation_observed_maps.lua');local path='Core/rotation_references.lua';local current=read(path);local old=inverse(current,path)
+ local inverse=dofile('tests/fixtures/restore_validation_observed_maps.lua');local path='Core/rotation_references.lua';local current=dofile('tests/fixtures/restore_revision_changes.lua')(read(path),path);local old=inverse(current,path)
  assert(old:find('local function validationLayout',1,true) and not old:find('proofPlain(observed)',1,true))
  assert(not pcall(inverse,current..'\n-- unrelated\n',path));assert(not pcall(inverse,current..current,path));assert(not pcall(inverse,old,path))
 end)

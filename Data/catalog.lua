@@ -162,14 +162,81 @@ function data.NewCatalog(options)
         view.envelope.body.disabled = not value
         return self:Save(reference, view.envelope)
     end
+    -- Authority seals never enter live copy/iteration callbacks. The plain-data
+    -- limits match Data/plain; ordinary preparation still uses public helpers.
+    local sealType,sealNext,sealRaw,sealMeta,sealEqual,sealInfinity=type,next,rawget,getmetatable,rawequal,math.huge
+    local function savedSeal(value)
+        local copies,visiting,nodes={},{},0
+        local function copy(current,depth)
+            nodes=nodes+1
+            if nodes>20000 or depth>64 then return nil end
+            local kind=sealType(current)
+            if kind~='table' then
+                if kind=='nil' or kind=='boolean' or kind=='string' then return current end
+                if kind=='number' and current==current and current~=sealInfinity and current~=-sealInfinity then return current end
+                return nil
+            end
+            if sealMeta(current)~=nil or visiting[current] then return nil end
+            if copies[current] then return copies[current] end
+            local result={};copies[current]=result;visiting[current]=true
+            for key in sealNext,current do
+                nodes=nodes+1
+                local keyType=sealType(key)
+                if nodes>20000 or not (keyType=='string' or keyType=='number' and key>=1 and key%1==0) then return nil end
+                local child=copy(sealRaw(current,key),depth+1)
+                if child==nil then return nil end
+                result[key]=child
+            end
+            visiting[current]=nil;return result
+        end
+        return copy(value,0)
+    end
+    -- A revision preparation can call overridable copy helpers. Keep the
+    -- canonical body exact until that new stage has completed.
+    local function sameSavedValue(a,b,mode)
+        if sealType(a)~=sealType(b) then return false end
+        if sealType(a)~='table' then return a==b end
+        if sealMeta(a)~=nil or sealMeta(b)~=nil then return false end
+        for key,value in sealNext,a do
+            if not (key=='revision' and (mode=='envelope' or mode=='body')) then
+                local child=mode=='envelope' and key=='body' and 'body' or 'exact'
+                if not sameSavedValue(value,sealRaw(b,key),child) then return false end
+            end
+        end
+        for key in sealNext,b do if not (key=='revision' and (mode=='envelope' or mode=='body')) and sealRaw(a,key)==nil then return false end end
+        return true
+    end
     function catalog:Save(reference, envelope)
         local key, why = owned(reference)
         if not key then return false, why end
         local copy, reason, validation = storable(envelope)
         if not copy then return false, reason, validation end
         if copy.id ~= key then return false, "id-mismatch" end
-        local previous = state.custom[key]
+        local custom=state.custom
+        local previous = custom[key]
         if copy.schemaVersion == 1 then
+            local oldBody=sealType(previous)=='table' and sealRaw(previous,'body')
+            local baseline
+            if type(oldBody)=='table' then
+                baseline=savedSeal(previous)
+                if not baseline then return false,'invalid-rotation-body' end
+            end
+            local function unchanged()
+                return sealEqual(sealRaw(state,'custom'),custom)
+                    and (sealEqual(sealRaw(custom,key),previous) or sealType(previous)=='number' and previous~=previous and sealType(sealRaw(custom,key))=='number' and sealRaw(custom,key)~=sealRaw(custom,key))
+                    and (not baseline or sameSavedValue(previous,baseline,'exact'))
+            end
+            local comparison
+            if baseline then
+                local problem;comparison,problem=data.CopyData(oldBody)
+                if not comparison then return false,problem and problem.code or 'invalid-rotation-body' end
+                if not unchanged() then return false,'rotation-changed-externally' end
+            end
+            local changed=baseline and not sameSavedValue(baseline,copy,'envelope') or false
+            local body,problem=data.PrepareRotationContentRevision(copy.body,comparison,type(oldBody)=='table' and 'edit' or 'create',changed)
+            if not body then return false,problem end
+            if not unchanged() then return false,'rotation-changed-externally' end
+            copy.body=body
             local revision = type(previous) == "table" and previous.revision
             if type(revision) == "number" and revision >= 1 and revision < 9007199254740991 and revision % 1 == 0 then
                 copy.revision = revision+1
@@ -183,6 +250,15 @@ function data.NewCatalog(options)
         if not copy then return false, why, validation end
         if builtins[copy.id] then return false, "read-only" end
         if state.custom[copy.id] ~= nil then return false, "duplicate-id" end
+        local custom=state.custom
+        if copy.schemaVersion==1 then
+            local body,reason=data.PrepareRotationContentRevision(copy.body,nil,'import')
+            if not body then return false,reason end
+            copy.body=body
+        end
+        if not rawequal(state.custom,custom) then return false,'rotation-changed-externally' end
+        if builtins[copy.id] then return false,'read-only' end
+        if state.custom[copy.id]~=nil then return false,'duplicate-id' end
         state.custom[copy.id] = copy
         return true
     end
@@ -246,6 +322,7 @@ function data.NewCatalog(options)
             sourceRevision=source.lineage and source.lineage.sourceRevision or clone.revision,
             baseline=baseline, stepOrigins={}, clonedFrom=source.id}
         clone.id, clone.revision = newId, 1
+        clone.body.revision=1
         if name then clone.nameKey, clone.body.name = name, name end
         local failed
         local indexed,indexError=steps(clone, function(step)

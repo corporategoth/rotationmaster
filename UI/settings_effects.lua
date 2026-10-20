@@ -1,4 +1,6 @@
 local addon_name,addon=...
+local invalidateDependencies=addon.InvalidateRotationDependencies
+if type(invalidateDependencies)~='function' then invalidateDependencies=nil end
 local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
 local types={{value='texture',text=L['Texture']},{value='pixel',text=L['Pixel']},{value='autocast',text=L['Auto Cast']},{value='blizzard',text=L['Glow']},{value='proc',text=L['Proc Glow']},{value='dazzle',text=L['Dazzle']},{value='animate',text=L['Animate']},{value='pulse',text=L['Pulse']},{value='rotate',text=L['Rotate']},{value='custom',text=L['Custom']}}
 local schemas={proc={{'duration','Loop duration',1,.1,5,.05}},pixel={{'lines','Lines',8,1,20,1},{'frequency','Frequency',.25,-1.5,1.5,.05},{'length','Length',2,1,20,1},{'thickness','Thickness',2,1,5,1}},autocast={{'particles','Particles',4,1,4,1},{'frequency','Frequency',.125,-1.5,1.5,.05},{'scale','Scale',1,.25,5,.25}},blizzard={{'frequency','Frequency',.125,0,1.5,.05}},dazzle={{'frequency','Frequency',.25,.1,5,.05}},animate={{'frequency','Frequency',.25,.1,5,.05}},pulse={{'frequency','Frequency',.25,.1,5,.05}},custom={{'frequency','Frequency',.25,.1,5,.05}},rotate={{'frequency','Frequency',.25,.1,5,.05},{'steps','Steps',4,2,36,1}}}
@@ -95,7 +97,7 @@ function addon:BuildEffectSettings(p)
             {key='delete',text=L['Delete'],icon='trash',action=function()
                 self:ConfirmSettingsDeletion(p,L['Delete this effect? Rotations using it will need another effect.'],function()
                     if not (self.db.global.effects or {})[id] then return false,'effect-changed' end
-                    self.db.global.effects[id]=nil;return true
+                    self.db.global.effects[id]=nil;if invalidateDependencies then invalidateDependencies(addon,'effect',id) end;return true
                 end)
             end}}
         actionEntries[1].enabled=not isNew;self:CollectionFooter(p,'effect',effects,isNew and nil or id,actionEntries[1],actionEntries[2]);if not isNew then self:SettingsTopDelete(p,actionEntries[3].action) end

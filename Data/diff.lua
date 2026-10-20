@@ -167,7 +167,8 @@ function data.DiffRotations(left, right, options)
             return
         end
         for _,key in ipairs(keys(a,b)) do
-            if not (step and key=="id") and not (#segments==0 and options.ignoreIdentity and (key=="id" or key=="revision")) then
+            if not (step and key=="id") and not (#segments==0 and options.ignoreIdentity and (key=="id" or key=="revision"))
+                and not (#segments==1 and segments[1].kind=="field" and segments[1].key=="body" and key=="revision") then
                 local where,location=path..fieldSuffix(key),child(segments,"field",key)
                 if step and (a.type=="branch" or b.type=="branch") and (key=="onTrue" or key=="onFalse") then
                     priorities(a[key],b[key],where,location)

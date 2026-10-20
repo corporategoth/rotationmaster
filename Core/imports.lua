@@ -30,7 +30,8 @@ function addon:CreateImportedRotation(prepared,spec,name,replacement,options)
     local scoped=self.GetScopedRotationCoordinator and self:GetScopedRotationCoordinator();if scoped then return scoped:Import(prepared,spec,name,replacement,options) end
     if type(spec)~="number" or spec<0 or spec%1~=0 then return nil,"invalid-specialization" end
     if type(name)~="string" or #name==0 or #name>256 then return nil,"invalid-name" end
-    local rotationsRoot=self.db.profile.rotations
+    local profile=self.db.profile
+    local rotationsRoot=profile.rotations
     if rotationsRoot~=nil and not plain(rotationsRoot) then return nil,"invalid-rotation-storage" end
     if rotationsRoot and rotationsRoot[spec]~=nil and not plain(rotationsRoot[spec]) then return nil,"invalid-rotation-storage" end
     local body,problem=data.CopyData(prepared.body)
@@ -89,11 +90,18 @@ function addon:CreateImportedRotation(prepared,spec,name,replacement,options)
         step.id=stepId
     end
     body.name=name
+    local previous=replacement and self:GetEditableRotation(spec,id) or nil
+    local revised,revisionError=data.PrepareRotationContentRevision(body,previous,replacement and 'edit' or 'import',replacement~=nil)
+    if not revised then return nil,revisionError end
+    body=revised
     if manifest then manifest.id=id;manifest.revision=1;manifest.nameKey=name end
     -- Commit only after every validation/copy/allocation succeeds. Imported
     -- bodies have one saved home; the manifest contains no duplicate body.
     if replacement and not replacement.valid() then return nil,'rotation-changed-externally' end
+    if self.db.profile~=profile or profile.rotations~=rotationsRoot or profile.rotationLibrary~=state then return nil,'rotation-changed-externally' end
     local rotations=rotationsRoot and rotationsRoot[spec] or {}
+    if replacement and rotations[id]~=previous then return nil,'rotation-changed-externally' end
+    if not replacement and rotations[id]~=nil then return nil,'id-collision' end
     self.db.profile.rotations=rotationsRoot or {}
     self.db.profile.rotations[spec]=rotations;rotations[id]=body
     if replacement then

@@ -24,6 +24,7 @@
 ## X-Author-Faction: Horde
 
 globals.lua
+Core/dependency_revisions.lua
 Platform/client.lua
 Platform/rotation_owner.lua
 Platform/groups.lua
@@ -119,6 +120,7 @@ Core/schema_authoring.lua
 Core/schema_canvas.lua
 Core/aura_conditions.lua
 Data/plain.lua
+Data/rotation_revision.lua
 Data/tags.lua
 Data/rotation_tree.lua
 Data/condition_draft.lua

@@ -5,10 +5,10 @@ local function read(path)local h=assert(io.open(path));local s=h:read('*a');h:cl
 local startup=assert(read('tests/startup.lua'):match('(local function fixture%(modern, absentThreat%).-)\nlocal function initialize'))
 startup=startup:gsub('fixture%(modern, absentThreat%)','fixture(modern, absentThreat, configure, noCPU)',1)
 startup=startup:gsub('    env%._G = env','    env._G = env\n    for _,key in ipairs({"type","pairs","ipairs","getfenv","getmetatable","rawget","rawequal","next","math","table","string","pcall","tostring"}) do env[key]=_G[key] end',1)
-local loadLine="    load('Data/plain.lua');load('Data/tags.lua');load('Data/rotation_tree.lua');load('Data/validation.lua');load('Core/rotation_sequence.lua');load('Core/rotation_selection.lua')"
+local loadLine="    load('Data/plain.lua');load('Data/rotation_revision.lua');load('Data/tags.lua');load('Data/rotation_tree.lua');load('Data/validation.lua');load('Core/rotation_sequence.lua');load('Core/rotation_selection.lua')"
 local first,last=assert(startup:find(loadLine,1,true));startup=startup:sub(1,first-1)..[[    if not noCPU then load('Diagnostics/cpu.lua') end
     if configure then configure('plain',env,addon) end
-    load('Data/plain.lua');load('Data/tags.lua')
+    load('Data/plain.lua');load('Data/rotation_revision.lua');load('Data/tags.lua')
     if configure then configure('tree',env,addon) end
     load('Data/rotation_tree.lua');load('Data/validation.lua')
     if configure then configure('sequence',env,addon) end

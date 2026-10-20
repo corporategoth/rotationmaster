@@ -58,9 +58,10 @@ local function fixture(modern, absentThreat)
         chunk('rotationmaster', addon)
     end
     env.WOW_PROJECT_BURNING_CRUSADE_CLASSIC=5
+    load('Core/dependency_revisions.lua')
     load('Data/artwork.lua')
     load('Platform/client.lua');load('Platform/items.lua');load('Platform/inventory.lua');load('Platform/specializations.lua');load('Platform/communication.lua');load('Functions/values.lua');load('Functions/text.lua');load('Functions/collections.lua');load('Functions/cache.lua');load('Core/announcements.lua');load('Core/action_policy.lua');load('Core/inventory.lua');load('Core/rotation_references.lua')
-    load('Data/plain.lua');load('Data/tags.lua');load('Data/rotation_tree.lua');load('Data/validation.lua');load('Core/rotation_sequence.lua');load('Core/rotation_selection.lua')
+    load('Data/plain.lua');load('Data/rotation_revision.lua');load('Data/tags.lua');load('Data/rotation_tree.lua');load('Data/validation.lua');load('Core/rotation_sequence.lua');load('Core/rotation_selection.lua')
     return env, addon, load
 end
 
@@ -342,7 +343,7 @@ end)
 
 test('live autoswitch reads packaged rotations through the facade and prefers existing custom choices',function()
     local env,addon,load=fixture(true,true)
-    load('Data/plain.lua');load('Data/tags.lua');load('Data/rotation_tree.lua');load('Data/validation.lua');load('Data/catalog.lua');load('Data/diff.lua')
+    load('Data/plain.lua');load('Data/rotation_revision.lua');load('Data/tags.lua');load('Data/rotation_tree.lua');load('Data/validation.lua');load('Data/catalog.lua');load('Data/diff.lua')
     load('Core/rotation_library.lua');load('main.lua')
     local _,envelope=dofile('tests/fixtures/rotation_data.lua')()
     local pack=envelope();pack.body.switch={type='READY'}
@@ -383,7 +384,7 @@ end)
 
 test('switching revisits previously inapplicable packs and clears outgoing cooldowns',function()
     local env,addon,load=fixture(true,true)
-    load('Data/plain.lua');load('Data/tags.lua');load('Data/rotation_tree.lua');load('Data/validation.lua');load('Data/catalog.lua');load('Data/diff.lua')
+    load('Data/plain.lua');load('Data/rotation_revision.lua');load('Data/tags.lua');load('Data/rotation_tree.lua');load('Data/validation.lua');load('Data/catalog.lua');load('Data/diff.lua')
     load('Core/rotation_library.lua');load('main.lua')
     local _,envelope=dofile('tests/fixtures/rotation_data.lua')()
     local first,second=envelope(),envelope()
@@ -1257,8 +1258,8 @@ test('real AceDB global item references refresh packaged validation without copy
     assert(a:RegisterDefaultRotation(pack));assert(a:InitializeRotationLibrary())
     local function row() for _,value in ipairs(a:ListDefaultRotations(0)) do if value.id==id then return value end end end
     assert(row().eligible and a.db.profile.itemsets.shared==nil)
-    a.db.global.itemsets.shared=nil;assert(not row().eligible)
-    a.db.global.itemsets.shared={name='Restored',items={5512}};assert(row().eligible)
+    a.db.global.itemsets.shared=nil;a:InvalidateRotationDependencies('itemset','shared');assert(not row().eligible)
+    a.db.global.itemsets.shared={name='Restored',items={5512}};a:InvalidateRotationDependencies('itemset','shared');assert(row().eligible)
     assert(a.db.profile.itemsets.shared==nil,'reference normalization wrote global sets into the profile')
 end)
 test('real recommendation engine fills the native preview with spell and item icons without AceGUI icons',function()

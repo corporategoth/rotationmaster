@@ -217,7 +217,7 @@ function addon:BindRotationProfile()
         if used[id] then return nil,'unknown-rotation' end
         local key=keyFor(reference);pending[referenceKey(reference)]={reference=copy(reference),key=key};return reference,key
     end
-    function coordinator:Commit(reference,token,record,scope)
+    function coordinator:Commit(reference,token,record,scope,revisionPolicy)
         local ok,why=ready();if not ok then return nil,why end
         local c,errorText=context();if not c then return nil,errorText end
         if not customReference(reference) then return nil,'invalid-rotation-reference' end
@@ -226,6 +226,31 @@ function addon:BindRotationProfile()
         if scope=='character' and not c.character then return nil,'missing-owner-context' end
         local destination=copy(a);destination.scope=scope;destination.owner=scope=='class' and c.class or c.character
         local issued=token and expected[token];local plan,reason
+        if revisionPolicy~=nil and revisionPolicy~='import' then return nil,'invalid-rotation-revision-policy' end
+        if not plain(record) then return nil,'invalid-record' end
+        if token and (not issued or not same(issued.reference,reference) or not same(issued.context,c)) then return nil,'stale-rotation-record' end
+        local moved=a.scope~=destination.scope or a.owner~=destination.owner
+        local previous
+        if issued then
+            -- Compare the editor's existing empty-list normalization on a
+            -- detached public snapshot; keep the issued authority seal exact.
+            local snapshot,snapshotProblem=store:Get(a,c)
+            if not snapshot then return nil,snapshotProblem end
+            previous=snapshot.body
+            if plain(previous) and plain(record.body) then
+                if previous.rotation==nil and record.body.rotation~=nil then previous.rotation={} end
+                if previous.cooldowns==nil and record.body.cooldowns~=nil then previous.cooldowns={} end
+            end
+        end
+        local body,problem=data.PrepareRotationContentRevision(record.body,previous,
+            token and 'edit' or revisionPolicy=='import' and 'import' or 'create',moved or revisionPolicy=='import')
+        if not body then return nil,problem end
+        local detached=copy(record);if not detached then return nil,'invalid-record' end
+        record=detached;record.body=body
+        local now,contextProblem=context()
+        local current,currentProblem=ready();if not current then return nil,currentProblem end
+        if not now then return nil,contextProblem end
+        if not same(now,c) then return nil,'rotation-owner-changed' end
         if token then
             if not issued or not same(issued.reference,reference) or not same(issued.context,c) then return nil,'stale-rotation-record' end
             if a.scope~=destination.scope or a.owner~=destination.owner then plan,reason=store:PlanMove(a,destination,c,issued.token,record)
@@ -387,7 +412,7 @@ function addon:BindRotationProfile()
         if scope=='character' and not c.character then return nil,'missing-owner-context' end
         reference=reference or {kind='custom',address={scope=scope,class=c.class,owner=scope=='class' and c.class or c.character,spec=number,id=id}}
         if legacyValid then local ok,valid=pcall(legacyValid);if not ok or not valid then return nil,'rotation-changed-externally' end end
-        local saved,commitReason=self:Commit(reference,token,record,scope);if not saved then return nil,commitReason end
+        local saved,commitReason=self:Commit(reference,token,record,scope,'import');if not saved then return nil,commitReason end
         return id,nil,saved
     end
     function coordinator:Copy(number,value,name,options)

@@ -23,6 +23,7 @@ function addon:NewRotationEditSession(spec,original,options)
     if type(options)~='table' or getmetatable(options)~=nil or
         options.targetValid~=nil and type(options.targetValid)~='function' or
         options.readOnly~=nil and type(options.readOnly)~='boolean' or
+        options.newRecord~=nil and type(options.newRecord)~='boolean' or
         options.commit~=nil and type(options.commit)~='function' or
         options.ownership~=nil and options.ownership~='class' and options.ownership~='character' or
         options.setOwnershipAllowed~=nil and type(options.setOwnershipAllowed)~='boolean' then return nil,'invalid-rotation-editor-options' end
@@ -67,7 +68,7 @@ function addon:NewRotationEditSession(spec,original,options)
     function session:Baseline() return data.CopyData(dirtyBaseline) end
     function session:Ownership() return ownership end
     function session:BaselineOwnership() return originalOwnership end
-    function session:IsDirty() return ownership~=originalOwnership or not equal(dirtyBaseline,draft:Snapshot()) end
+    function session:IsDirty() return ownership~=originalOwnership or not data.SameRotationContent(dirtyBaseline,draft:Snapshot()) end
     function session:HistoryState()
         return {canUndo=not closed and not busy and not readOnly and #undo>0,
             canRedo=not closed and not busy and not readOnly and #redo>0}
@@ -138,8 +139,19 @@ function addon:NewRotationEditSession(spec,original,options)
             if not committed then return finish(nil,problem,details) end
             close();return finish(true,nil,problem)
         end
+        local previous
+        if not options.newRecord then
+            previous=data.CopyData(original)
+            if not previous then return finish(nil,'invalid-rotation-data') end
+            if previous.rotation==nil then previous.rotation={} end
+            if previous.cooldowns==nil then previous.cooldowns={} end
+        end
+        local saved,problem=data.PrepareRotationContentRevision(snapshot,previous,options.newRecord and 'create' or 'edit',ownership~=originalOwnership)
+        if not saved then return finish(nil,problem) end
+        if not owner() then return finish(nil,'rotation-target-missing') end
+        if not equal(baseline,original) then return finish(nil,'rotation-changed-externally') end
         for key in pairs(original) do original[key]=nil end
-        for key,value in pairs(snapshot) do original[key]=value end
+        for key,value in pairs(saved) do original[key]=value end
         close();return finish(true)
     end
     return session

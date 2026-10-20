@@ -1,4 +1,6 @@
 local addon_name,addon=...
+local invalidateDependencies=addon.InvalidateRotationDependencies
+if type(invalidateDependencies)~='function' then invalidateDependencies=nil end
 local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
 local docs={
     evaluate={description=L['Decide whether this condition currently matches.'],args={{'value','table',L['The stored values for this condition.']},{'cache','table',L['Shared data for this evaluation cycle.']},{'evalStart','number',L['Evaluation start time, in seconds from GetTime().']}},returns={'boolean | nil',L['True matches; false or nil does not match.']}},
@@ -160,7 +162,7 @@ function addon:InstallCustomCondition(key,source,expected,expectedSource)
     if self.Diagnostics then ok=self.Diagnostics:Call({module='custom_conditions',operation='register',conditionTag=key,customCode=true},self.RegisterCondition,self,key,definition)
     else ok=pcall(self.RegisterCondition,self,key,definition) end
     if not ok then
-        if registry then registry[key]=previous end
+        if registry then local changed=not rawequal(registry[key],previous);registry[key]=previous;if changed and invalidateDependencies then invalidateDependencies(addon,'condition',key) end end
         -- Trusted hooks can have arbitrary external effects. Restore registry
         -- and saved source; restoring the prior hook's setup is best effort.
         if previous and not previous.disabled and previous.on_register then pcall(previous.on_register,key) end

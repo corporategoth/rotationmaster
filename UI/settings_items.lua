@@ -1,4 +1,6 @@
 local addon_name,addon=...
+local invalidateDependencies=addon.InvalidateRotationDependencies
+if type(invalidateDependencies)~='function' then invalidateDependencies=nil end
 local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
 local function itemValue(text)
     local value=text:match('^%s*(.-)%s*$');if value=='' then return end
@@ -65,7 +67,7 @@ function addon:BuildItemSettings(p)
                     if not current then return false,'item-set-changed' end
                     if self.UnbindItemSet then if self:UnbindItemSet(id,self:CopySettingsData(current.items or {}))==false then return false,L['Leave combat before changing action bar bindings.'] end
                     elseif self.db.char and self.db.char.bindings then self.db.char.bindings[id]=nil end
-                    profile[id]=nil;global[id]=nil;if self.UpdateItemSetButtons then self:UpdateItemSetButtons(id) end;return true
+                    profile[id]=nil;global[id]=nil;if invalidateDependencies then invalidateDependencies(addon,'itemset',id) end;if self.UpdateItemSetButtons then self:UpdateItemSetButtons(id) end;return true
                 end)
             end}}
 

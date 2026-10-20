@@ -5,8 +5,16 @@ local function nativeGlobals(e)
  -- WoW's actual global environment stores these native primitives directly.
  for _,name in ipairs({'pairs','rawget','rawequal','type','getmetatable','getfenv'}) do e[name]=_G[name] end
 end
+-- Preserve the scanner compatibility contract. Managed publication is
+-- exercised separately by dependency_revisions.lua against actual AceDB.
+local function withoutManagedDependencies(callback)
+ local previous=loadfile
+ _G.loadfile=function(path)if path=='Core/dependency_revisions.lua' then return function()end end;return previous(path)end
+ local result={pcall(callback)};_G.loadfile=previous;assert(result[1],result[2])
+ return unpack(result,2,8)
+end
 local function fixture()
- local e,a,events,body,reference,save,load=runtimeFixture();nativeGlobals(e);return e,a,events,body,reference,save,load
+ local e,a,events,body,reference,save,load=withoutManagedDependencies(runtimeFixture);nativeGlobals(e);return e,a,events,body,reference,save,load
 end
 local function private(a)
  for i=1,100 do local name,value=debug.getupvalue(a.GetRotationOwnerContext,i);if not name then break end;if name=='libraryReader' then return value end end
@@ -98,7 +106,7 @@ test('changed live pairs can mutate an already-scanned map and the second scan r
  current(a,p,2,'rotation-dependencies-changed');assert(fired)
 end)
 local function libraryFixture(before)
- local f=F.new();nativeGlobals(f.env);local a=f.addon;local data,envelope,validation=dofile('tests/fixtures/rotation_data.lua')();a.RotationData=data;a.conditionDefinitions=validation.conditions
+ local f=withoutManagedDependencies(F.new);nativeGlobals(f.env);local a=f.addon;local data,envelope,validation=dofile('tests/fixtures/rotation_data.lua')();a.RotationData=data;a.conditionDefinitions=validation.conditions
  a.db.profile.itemsets={};a.db.global.itemsets={};a.db.global.effects={};a.conditionRegistryVersion=1
  for _,path in ipairs({'Data/catalog.lua','Data/diff.lua','Data/rotation_store.lua'}) do f.load(path) end
  if before then before(a,f.env) end
@@ -151,7 +159,7 @@ test('strict whole-module inverse preserves public bodies and rejects unrelated 
  local inverse=dofile('tests/fixtures/restore_rotation_validation_adjacent.lua');local f=F.new();f.load('Core/function_data.lua');local function hash(value) return f.addon:FunctionSourceHash(value) end
  local frozen={['Core/rotation_references.lua']='ed72c190',['Core/rotation_library.lua']='051d323c',['Core/rotation_scope.lua']='9aeff4f1'}
  for path,wanted in pairs(frozen) do
-  local h=assert(io.open(path));local text=h:read('*a');h:close();text=dofile('tests/fixtures/restore_validation_observed_maps.lua')(text,path);local old=inverse(text,path,hash);assert(hash(old)==wanted,'wrong frozen '..path)
+  local h=assert(io.open(path));local text=h:read('*a');h:close();text=dofile('tests/fixtures/restore_revision_changes.lua')(text,path);text=dofile('tests/fixtures/restore_validation_observed_maps.lua')(text,path);local old=inverse(text,path,hash);assert(hash(old)==wanted,'wrong frozen '..path)
   assert(not pcall(inverse,text..'\n-- unrelated\n',path,hash));assert(not pcall(inverse,text..text,path,hash));assert(not pcall(inverse,old,path,hash))
  end
 end)
@@ -191,7 +199,7 @@ end)
 local function priorFixture()
  local inverse=dofile('tests/fixtures/restore_rotation_validation_adjacent.lua');local f=F.new();f.load('Core/function_data.lua');local old={}
  for _,path in ipairs({'Core/rotation_references.lua','Core/rotation_library.lua','Core/rotation_scope.lua'}) do
-  local h=assert(io.open(path));local text=h:read('*a');h:close();text=dofile('tests/fixtures/restore_validation_observed_maps.lua')(text,path);old[path]=inverse(text,path,function(value) return f.addon:FunctionSourceHash(value) end)
+  local h=assert(io.open(path));local text=h:read('*a');h:close();text=dofile('tests/fixtures/restore_revision_changes.lua')(text,path);text=dofile('tests/fixtures/restore_validation_observed_maps.lua')(text,path);old[path]=inverse(text,path,function(value) return f.addon:FunctionSourceHash(value) end)
  end
  local original=loadfile;_G.loadfile=function(path) if old[path] then return loadstring(old[path],'@'..path) end;return original(path) end
  local ok,e,a=pcall(fixture);_G.loadfile=original;assert(ok,e);return e,a
@@ -275,10 +283,19 @@ end)
 
 
 test('eligible adjacent reads run exactly one complete environment proof',function()
- local _,a=fixture();local p=assert(a:AcquireRotationRuntimePass(0))
- local count,ok,why=calls(getfenv,function() return p:IsCurrent() end)
- assert(ok,why);assert(count==8,'owned helper environment checks '..count..' expected8 (one complete PRE proof)')
- current(a,p,1)
+ local normalized={}
+ for _,path in ipairs({'Core/rotation_references.lua','Core/rotation_library.lua','Core/rotation_scope.lua'})do
+  local h=assert(io.open(path));local text=h:read('*a');h:close();normalized[path]=dofile('tests/fixtures/restore_revision_changes.lua')(text,path)
+ end
+ for _,old in ipairs({true,false})do
+  local loader=loadfile
+  if old then _G.loadfile=function(path)if normalized[path]then return assert(loadstring(normalized[path],'@'..path))end;return loader(path)end end
+  local ok,_,a=pcall(fixture);_G.loadfile=loader;assert(ok,a)
+  local p=assert(a:AcquireRotationRuntimePass(0));local count,currentOK,why=calls(getfenv,function()return p:IsCurrent()end);assert(currentOK,why)
+  if old then assert(count==8,'frozen helper environment checks '..count..' expected8 (one complete PRE proof)')
+  else assert(count==9,'current helper environment checks '..count..' expected9 (wrapper plus legacy scanner in one PRE proof)')end
+  current(a,p,1)
+ end
 end)
 
 finish()

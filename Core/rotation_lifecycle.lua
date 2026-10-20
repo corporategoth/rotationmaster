@@ -1,9 +1,12 @@
 local addon_name,addon=...
+local invalidateDependencies=addon.InvalidateRotationDependencies
+if type(invalidateDependencies)~='function' then invalidateDependencies=nil end
 local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
 
 -- Also called after import overlays: AceDB emits Reset/Copy before the
 -- importer publishes its final roots, so its event alone cannot authorize them.
 function addon:RefreshRotationProfileStorage()
+    if invalidateDependencies then invalidateDependencies(addon,'all',nil) end
     local ok,why=self:InitializeScopedRotationStorage()
     self.rotationStorageError=not ok and why or nil
     if self.InitializeRotationLibrary then self:InitializeRotationLibrary() end

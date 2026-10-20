@@ -2,7 +2,7 @@ local F=dofile('tests/fixtures/addon.lua')
 local test,finish=F.suite()
 local function fixture()
     local a={}
-    for _,file in ipairs({'Data/plain.lua','Data/tags.lua','Data/rotation_tree.lua','Data/rotation_draft.lua','Data/validation.lua'}) do assert(loadfile(file))('rotationmaster',a) end
+    for _,file in ipairs({'Data/plain.lua','Data/rotation_revision.lua','Data/tags.lua','Data/rotation_tree.lua','Data/rotation_draft.lua','Data/validation.lua'}) do assert(loadfile(file))('rotationmaster',a) end
     local file=io.open('Core/rotation_editor.lua');if file then file:close();assert(loadfile('Core/rotation_editor.lua'))('rotationmaster',a) end
     a.conditionDefinitions={KNOWN={fields={spell='number'},requiredFields={'spell'}}}
     function a:GetImportValidationOptions() return {conditions=self.conditionDefinitions} end

@@ -3,7 +3,7 @@ local test,finish=F.suite()
 local function body(name) return {name=name or 'Mine',switch={},rotation={{id='a',type='spell',action=403,conditions={}}},cooldowns={}} end
 local function fixture()
     local a={db={profile={rotations={[0]={mine=body()}}}}}
-    for _,file in ipairs({'Data/plain.lua','Data/tags.lua','Data/rotation_tree.lua','Data/rotation_draft.lua','Data/validation.lua','Core/rotation_editor.lua'}) do assert(loadfile(file))('rotationmaster',a) end
+    for _,file in ipairs({'Data/plain.lua','Data/rotation_revision.lua','Data/tags.lua','Data/rotation_tree.lua','Data/rotation_draft.lua','Data/validation.lua','Core/rotation_editor.lua'}) do assert(loadfile(file))('rotationmaster',a) end
     local file=io.open('Core/rotation_workspace.lua');if file then file:close();assert(loadfile('Core/rotation_workspace.lua'))('rotationmaster',a) end
     local n=0;function a.uuid() n=n+1;return 'new-'..n end
     function a:GetEditableRotation(spec,id) return self.db.profile.rotations[spec] and self.db.profile.rotations[spec][id] end

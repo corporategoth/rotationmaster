@@ -98,7 +98,7 @@ test('canonical capture and live seed errors propagate without later default or 
 end)
 test('strict four-selection inverse restores every baseline byte while aliases and getters retain ownership',function()
  local f=F.new();f.load('Core/function_data.lua');local a=f.addon;local function hash(text) return a:FunctionSourceHash(text) end
- local h=assert(io.open('init.lua'));local text=h:read('*a');h:close();local original=restore(text,hash)
+ local h=assert(io.open('init.lua'));local text=h:read('*a');h:close();local original=restore(dofile('tests/fixtures/restore_revision_changes.lua')(text,'init.lua'),hash)
  assert(hash(original)=='ea3d0468' and not pcall(restore,original,hash) and not pcall(restore,text..text,hash) and not pcall(restore,text..'\n-- unrelated change\n',hash))
  f.load('Data/builtin_sources.lua');f.load('Core/builtin_sources.lua');assert(not a.BuiltinSourceCatalog.modules['init.lua'])
  for _,entry in ipairs({{'collections','multiinsert'},{'collections','deepcopy'},{'values','isin','builtin:utils.lua:isin'}}) do local namespace,name,binding=unpack(entry);local fn=a.Functions[namespace][name]

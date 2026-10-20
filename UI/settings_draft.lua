@@ -1,4 +1,6 @@
 local addon_name,addon=...
+local invalidateDependencies=addon.InvalidateRotationDependencies
+if type(invalidateDependencies)~='function' then invalidateDependencies=nil end
 local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
 local function equal(a,b)
     if type(a)~=type(b) then return false end;if type(a)~='table' then return a==b end
@@ -77,7 +79,11 @@ function addon:InstallSettingsDraft(p)
         end end end
         if InCombatLockdown and InCombatLockdown() then self:Message(L['Leave combat before applying these settings.']);return false end
         for scope,keys in pairs(self.transactionKeys) do for _,key in ipairs(keys) do
-            if not (scope=='profile' and key=='stockTargets' and stockUnchanged) and not equal(self.draft[scope][key],self.draftBaseline[scope][key]) then addon.db[scope][key]=addon:CopySettingsData(self.draft[scope][key]) end
+            if not (scope=='profile' and key=='stockTargets' and stockUnchanged) and not equal(self.draft[scope][key],self.draftBaseline[scope][key]) then
+                addon.db[scope][key]=addon:CopySettingsData(self.draft[scope][key])
+                if key=='itemsets' and (scope=='profile' or scope=='global') then if invalidateDependencies then invalidateDependencies(addon,'itemset',nil) end
+                elseif key=='effects' and scope=='global' then if invalidateDependencies then invalidateDependencies(addon,'effect',nil) end end
+            end
         end end
         local effects=self.draftEffects;if self.ClearSettingsHistory then self:ClearSettingsHistory() end;self.draft=nil;self.draftBaseline=nil;self.draftEffects=nil
         for _,callback in pairs(effects) do callback() end

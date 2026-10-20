@@ -7,7 +7,7 @@ return function()
         local chunk=assert(loadfile(path));setfenv(chunk,env);chunk('rotationmaster',addon)
     end
     for _,path in ipairs({'Libs/LibStub/LibStub.lua','Libs/LibCompress/LibCompress.lua',
-        'Libs/AceSerializer-3.0/AceSerializer-3.0.lua','Data/plain.lua','Data/tags.lua','Data/rotation_tree.lua','Data/codec.lua','Data/validation.lua','Data/diff.lua','Data/import_session.lua'}) do load(path) end
+        'Libs/AceSerializer-3.0/AceSerializer-3.0.lua','Data/plain.lua','Data/rotation_revision.lua','Data/tags.lua','Data/rotation_tree.lua','Data/codec.lua','Data/validation.lua','Data/diff.lua','Data/import_session.lua'}) do load(path) end
     local compressor,serializer=env.LibStub('LibCompress'),env.LibStub('AceSerializer-3.0')
     local calls={decompress=0,deserialize=0}
     local dependencies={

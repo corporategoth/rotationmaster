@@ -64,8 +64,12 @@ test('unchanged identity scans keep Lua dispatch overhead independent of registr
  local small,large=measure(1),measure(256)
  assert(large-small<=20,'unchanged registry size added '..(large-small)..' Lua calls to20 freshness checks')
 end)
-local function runtimeFixture()
- local h=assert(io.open('tests/rotation_scope_runtime.lua'));local source=h:read('*a');h:close();local prefix=assert(source:match('^(.-)\nlocal function gate'));return assert(loadstring(prefix..'\nreturn fixture','@validation-stamp-real-runtime'))()()
+local function runtimeFixture(legacy)
+ local h=assert(io.open('tests/rotation_scope_runtime.lua'));local source=h:read('*a');h:close();local prefix=assert(source:match('^(.-)\nlocal function gate'));local make=assert(loadstring(prefix..'\nreturn fixture','@validation-stamp-real-runtime'))()
+ if not legacy then return make()end
+ -- Explicit missing-capability compatibility mode retains the raw-write scan.
+ local loader=loadfile;_G.loadfile=function(path)if path=='Core/dependency_revisions.lua'then return function()end end;return loader(path)end
+ local result={pcall(make)};_G.loadfile=loader;assert(result[1],result[2]);return unpack(result,2,8)
 end
 test('repeated real scoped ticks avoid rebuilding public maps for internal freshness checks',function()
  local _,a,events=runtimeFixture();for i=1,3 do a:EvaluateNextActionInternal() end
@@ -73,12 +77,14 @@ test('repeated real scoped ticks avoid rebuilding public maps for internal fresh
  for i=1,10 do a:EvaluateNextActionInternal() end
  assert(a.currentSpell==403 and #events>0,'real recommendation path did not run');assert(count<=20,'internal checks rebuilt public validation maps '..count..' times for10 stable ticks')
 end)
-test('raw dependency mutations during actual condition evaluation still retire staged recommendations',function()
- for _,kind in ipairs({'effects','itemsets','conditions','version'}) do local _,a,events,body,_,save=runtimeFixture();local mutate=false
+test('raw compatibility and notified managed mutations during evaluation both retire staged recommendations',function()
+ for _,legacy in ipairs({true,false})do
+ for _,kind in ipairs({'effects','itemsets','conditions','version'}) do local _,a,events,body,_,save=runtimeFixture(legacy);local mutate=false
   a:RegisterCondition('STAMP_MUTATION',{description='Dependency mutation',fields={},valid=function() return true end,evaluate=function()
-   if not mutate then mutate=true;if kind=='effects' then a.db.global.effects.changed={} elseif kind=='itemsets' then a.db.global.itemsets.changed={} elseif kind=='conditions' then a.conditionDefinitions.NEW={fields={}} else a.conditionRegistryVersion=(a.conditionRegistryVersion or 0)+1 end end;return true end,
+   if not mutate then mutate=true;if kind=='effects' then a.db.global.effects.changed={} elseif kind=='itemsets' then a.db.global.itemsets.changed={} elseif kind=='conditions' then a.conditionDefinitions.NEW={fields={}} else a.conditionRegistryVersion=(a.conditionRegistryVersion or 0)+1 end;if not legacy then a:InvalidateRotationDependencies('all')end end;return true end,
    print=function() return 'Dependency mutation' end,widget=function() end,help=function() end})
   body.rotation[1].conditions={type='STAMP_MUTATION'};save(body);a:EvaluateNextActionInternal();assert(mutate and #events==0,'reentrant '..kind..' mutation published stale advice')
+ end
  end
 end)
 finish()

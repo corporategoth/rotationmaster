@@ -103,7 +103,7 @@ end)
 test('strict complete-module editor inverse rejects unrelated changes and composes before stock safety inverse',function()
  local inverse=dofile('tests/fixtures/restore_stock_targets_ui.lua');local safety=dofile('tests/fixtures/restore_stock_targets_safety_ui.lua')
  for _,path in ipairs({'UI/settings_items.lua','UI/settings_layout.lua','UI/settings_draft.lua','UI/settings_history.lua','UI/settings_unsaved.lua','UI/settings_collections.lua'})do
-  local f=assert(io.open(path));local source=f:read('*a');f:close();local restored=inverse(source,path);assert(restored~=source)
+  local f=assert(io.open(path));local source=f:read('*a');f:close();if path=='UI/settings_items.lua' or path=='UI/settings_draft.lua' or path=='UI/settings_collections.lua' then source=dofile('tests/fixtures/restore_revision_changes.lua')(source,path) end;local restored=inverse(source,path);assert(restored~=source)
   assert(not pcall(inverse,source..'\n-- unrelated',path))
   if path=='UI/settings_draft.lua'or path=='UI/settings_collections.lua'then assert(safety(restored,path))end
  end

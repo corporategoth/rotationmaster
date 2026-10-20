@@ -1,4 +1,6 @@
 local addon_name,addon=...
+local invalidateDependencies=addon.InvalidateRotationDependencies
+if type(invalidateDependencies)~='function' then invalidateDependencies=nil end
 local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
 local function nonempty(text) if text:find('%S') and #text<=50 then return text end end
 function addon:BuildProfileSettings(p)
@@ -17,6 +19,7 @@ function addon:BuildProfileSettings(p)
         local depth=self.rotationProfileChangeDepth or 0;self.rotationProfileChangeDepth=depth+1
         local ok,why=pcall(function() if operation=='CopyProfile' and not stockOK(saved(name)) then error(L['Invalid stock targets; data preserved.'],0) end;db[operation](db,name);if after then after() end end)
         self.rotationProfileChangeDepth=depth
+        if invalidateDependencies then invalidateDependencies(addon,'all',nil) end
         if self.RotationProfileChanged then self:RotationProfileChanged()
         elseif self.EnableRotation then self:EnableRotation() end
         if not ok then p:Message(tostring(why));return false end

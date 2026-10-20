@@ -8,7 +8,7 @@ local persistent=assert(startup:match('(local function persistentFixture%(saved,
 -- Avoid rotation_data.lua's asserting __index global shim in the native model.
 common=once(common,'    env._G = env','    env._G = env\n    for _,key in ipairs({"type","pairs","ipairs","next","rawget","rawset","rawequal","getmetatable","getfenv","math","table","string","tonumber","tostring","unpack","select","pcall","error","assert"})do rawset(env,key,_G[key])end')
 persistent=once(persistent,"    load('main.lua')\n",'')
-persistent=once(persistent,'    local data,envelope=make();addon.RotationData=data',"    local _,envelope=make();addon.RotationData={}\n    load('Data/plain.lua');load('Data/tags.lua');load('Data/rotation_tree.lua');load('Data/validation.lua')\n    local data=addon.RotationData")
+persistent=once(persistent,'    local data,envelope=make();addon.RotationData=data',"    local _,envelope=make();addon.RotationData={}\n    load('Data/plain.lua');load('Data/rotation_revision.lua');load('Data/tags.lua');load('Data/rotation_tree.lua');load('Data/validation.lua')\n    local data=addon.RotationData")
 persistent=once(persistent,'    addon.GetRotationContext=function()',"    load('Core/rotation_sequence.lua');load('main.lua')\n    addon.GetRotationContext=function()")
 local makePersistent=assert(loadstring(common..'\n'..persistent..'\nreturn persistentFixture','@external-toc-ordered-runtime'))()
 local source=[====[local function make(options)

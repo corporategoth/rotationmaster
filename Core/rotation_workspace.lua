@@ -152,7 +152,7 @@ function addon:GetRotationEditWorkspace(spec,id)
     end
     local function sessionFor(body)
         return addon:NewRotationEditSession(spec,body,{readOnly=workspace.readOnly,newId=addon.uuid,
-            reserved=workspace.reserved,targetValid=function() return workspace:ValidTarget() end})
+            reserved=workspace.reserved,newRecord=workspace.pending,targetValid=function() return workspace:ValidTarget() end})
     end
     local reservations,copyError=data.CopyData(retained(profile,spec,id))
     if not reservations then return nil,copyError.code end

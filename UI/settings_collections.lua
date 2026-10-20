@@ -1,4 +1,6 @@
 local addon_name,addon=...
+local invalidateDependencies=addon.InvalidateRotationDependencies
+if type(invalidateDependencies)~='function' then invalidateDependencies=nil end
 local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
 function addon:SettingsEntries(values)
     local entries={};for id,value in pairs(values or {}) do if type(value)=='table' then entries[#entries+1]={value=id,text=type(value.name)=='string' and value.name or tostring(id)} end end
@@ -73,7 +75,7 @@ function addon:DeleteSavedCustomCondition(key)
     -- source and registered definition, rather than leaving an orphaned runtime.
     local definition=self.conditionDefinitions and self.conditionDefinitions[key]
     local ok,why=pcall(self.UnregisterCondition,self,key)
-    if not ok then if self.conditionDefinitions then self.conditionDefinitions[key]=definition end;return false,why end
+    if not ok then if self.conditionDefinitions then local changed=not rawequal(self.conditionDefinitions[key],definition);self.conditionDefinitions[key]=definition;if changed and invalidateDependencies then invalidateDependencies(addon,'condition',key) end end;return false,why end
     self.db.global.custom_conditions[key]=nil
     if self.RefreshConditionConsumers then self:RefreshConditionConsumers() end
     return true

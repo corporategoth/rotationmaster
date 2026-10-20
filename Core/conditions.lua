@@ -1,4 +1,6 @@
 local addon_name, addon = ...
+local invalidateDependencies=addon.InvalidateRotationDependencies
+if type(invalidateDependencies)~='function' then invalidateDependencies=nil end
 
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 
@@ -7,6 +9,7 @@ local printArray, printSingle, validateArray, validateSingle, usefulArray, usefu
 
 local conditions = {}
 addon.conditionDefinitions = conditions
+if invalidateDependencies then invalidateDependencies(addon,'condition',nil) end
 local special = {}
 addon.conditionSpecials = special
 local quarantined = setmetatable({}, {__mode="k"})
@@ -387,6 +390,7 @@ function addon:RegisterCondition(tag, array)
     end
     conditions[tag] = array
     self.conditionRegistryVersion=(self.conditionRegistryVersion or 0)+1
+    if invalidateDependencies then invalidateDependencies(addon,'condition',tag) end
     quarantined[array] = nil
     if not array.disabled and not array.functionUnavailable and array.on_register then
         array.on_register(tag)
@@ -399,8 +403,10 @@ function addon:UnregisterCondition(tag)
     if conditions[tag] and not conditions[tag].disabled and not conditions[tag].functionUnavailable and not conditions[tag].functionSuspended and conditions[tag].on_unregister then
         conditions[tag].on_unregister(tag)
     end
-    if conditions[tag]~=nil then self.conditionRegistryVersion=(self.conditionRegistryVersion or 0)+1 end
+    local removed=conditions[tag]~=nil
+    if removed then self.conditionRegistryVersion=(self.conditionRegistryVersion or 0)+1 end
     conditions[tag] = nil
+    if removed then if invalidateDependencies then invalidateDependencies(addon,'condition',tag) end end
     if wasDisabled then self:RefreshConditionConsumers() end
 end
 

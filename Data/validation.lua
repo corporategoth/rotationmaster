@@ -248,8 +248,9 @@ local function validate(envelope, options, bodyOnly)
     end
     if not object(envelope.body, "$.body") then return finish() end
     local body = envelope.body
-    unknown(body, {name=true,description=true,metadata=true,tags=true,priority=true,disabled=true,switch=true,rotation=true,cooldowns=true}, "$.body")
+    unknown(body, {name=true,description=true,metadata=true,tags=true,revision=true,priority=true,disabled=true,switch=true,rotation=true,cooldowns=true}, "$.body")
     if not data.GetRotationPriority(body.priority) then issue('invalid-priority','$.body.priority','error') end
+    if body.revision~=nil then check(body.revision, function(v) return type(v)=="number" and v>=1 and v<=9007199254740991 and v%1==0 end, "$.body.revision") end
     optionalType(body.name, "string", "$.body.name")
     optionalType(body.description,"string","$.body.description")
     if body.tags~=nil and not data.NormalizeRotationTags(body.tags) then issue("invalid-tags","$.body.tags","error") end
