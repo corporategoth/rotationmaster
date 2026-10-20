@@ -284,7 +284,8 @@ addon:RegisterCondition("PETSPELL_HISTORY", {
         if known == nil then return nil, knownReason end
         if not known then return false end
         for idx, entry in pairs(addon.spellHistory) do
-            return entry.spell == spellid and Functions.values.compare(value.operator, idx, value.value)
+            local matches = entry.spell == spellid and Functions.values.compare(value.operator, idx, value.value)
+            if matches ~= false then return matches end
         end
         return false
     end,

@@ -230,5 +230,9 @@ function addon:BindRotationExecutionIndexReader(bind)
         if indexEqual(attempt,token) and indexOwned() then entry={body=body,profile=profile,db=db,index=index,graph=graph} end
         return true,materialize(index)
     end
-    bind(read,retire,indexStatus)
+    local reader=read
+    if indexType(indexStringMethods)~="table" then
+        reader=function(body,profile,namespace,db) retire();return false end
+    end
+    bind(reader,retire,indexStatus)
 end

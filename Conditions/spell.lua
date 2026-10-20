@@ -266,7 +266,8 @@ addon:RegisterCondition("SPELL_HISTORY", {
         local spellid, reason = addon:Widget_GetSpellId(value.spell, value.ranked)
         if not spellid then return nil, reason or "spell-data-unavailable" end
         for idx, entry in pairs(addon.spellHistory) do
-            return entry.spell == spellid and Functions.values.compare(value.operator, idx, value.value)
+            local matches = entry.spell == spellid and Functions.values.compare(value.operator, idx, value.value)
+            if matches ~= false then return matches end
         end
         return false
     end,
