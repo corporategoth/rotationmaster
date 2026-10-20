@@ -1,8 +1,9 @@
 local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite()
-local function fixture(readonly)
+local function fixture(readonly,arguments)
     local f=F.new();local a=f.addon;dofile('tests/fixtures/native_ui.lua')(f.env);a.db.char={};a.db.global.custom_functions={}
     for _,path in ipairs({'Core/function_data.lua','UI/settings_history.lua','UI/settings_unsaved.lua','UI/settings_layout.lua','UI/settings_ordered.lua','UI/settings_roster_order.lua','UI/settings_form.lua','UI/settings_collections.lua','UI/settings_transfer.lua','UI/lua_input_diagnostics.lua','UI/lua_editor.lua','UI/settings_functions.lua','UI/function_bindings.lua','UI/function_source_pane.lua','UI/function_bundle_transfer.lua'}) do f.load(path) end
     local src={name='helper',description=string.rep('Readable description. ',50),args={{name='value',type='number | nil',description=string.rep('Argument documentation. ',20)}},returns={{type='RMResult | boolean',description='First result'}},code='    return value',bindings={}}
+    if arguments then src.args=arguments;src.code='return ...' end
     if readonly then a:RegisterBuiltinFunction('builtin:test',src,function() return function(v) return v end end) else a.db.global.custom_functions.HELPER=src;a:InitializeFunctionRegistry() end
     local host=f.env.CreateFrame('Frame');host:SetSize(1100,700);local p=a:OpenNativeSettings(host,'Functions');return f,a,p,p.inlineFunction,src
 end
@@ -146,5 +147,56 @@ test('binding caption keeps compact width and adjacent syntax action when resizi
         for _,label in ipairs(d.form.pool.bindingLabels or {}) do if label:IsShown() then assert(label.point[3]<binding.point[3],'expanded binding content overlaps the compact toolbar') end end
         assert(not d:IsDirty(),'opening or resizing binding actions changed source')
     end
+end)
+
+local function vararg()return {name='...',type='any',description='Remaining values'}end
+for _,case in ipairs({{label='variadic only',args={vararg()}},{label='named and variadic',args={{name='value',type='number',description='First'},vararg()}}})do
+ test('ordinary Add Argument warns before changing saved '..case.label..' and Cancel preserves its draft',function()
+  local _,a,_,d,original=fixture(false,case.args);assert(a:ValidateCustomFunctionSource('HELPER',d:PendingSource()))
+  local input=d.form.fields.description;input:SetText('Pending description');input:GetScript('OnTextChanged')(input,true);assert(d:Flush())
+  d.code.edit:SetText('return ... -- pending');d.code.edit:GetScript('OnTextChanged')(d.code.edit,true)
+  local before=d:PendingSource();local saved=a:CopySettingsData(original)
+  d.form.fields.add_args:Click()
+  assert(d.form.prompt and d.form.prompt.frame:IsShown(),'saved variadic append did not warn')
+  assert(a:SettingsDataEqual(d:PendingSource(),before)and a:SettingsDataEqual(original,saved),'append mutated source before confirmation')
+  d.form.prompt.cancel:Click();assert(a:SettingsDataEqual(d:PendingSource(),before)and a:SettingsDataEqual(original,saved),'Cancel lost pending source')
+  d.form.fields.add_args:Click();d.form.prompt.accept:Click()
+  local args=d.value.args;assert(#args==#case.args+1 and args[#args].name=='...'and args[#args-1].name=='argument1')
+  assert(a:ValidateCustomFunctionSource('HELPER',d:PendingSource())and a:SettingsDataEqual(original,saved),'confirmed insertion invalid or saved too early')
+  assert(d.value.description=='Pending description'and d.code:GetText()=='return ... -- pending')
+  assert(d:Apply());local fn=assert(a:ResolveFunctionBinding('HELPER'))
+  if #case.args==1 then assert(fn('consumed','tail')=='tail')else assert(fn('first','consumed','tail')=='tail')end
+ end)
+end
+test('ordinary Add Argument inserts immediately before a new unpublished trailing vararg',function()
+ local _,a,p=fixture(false);p.fields.new_function:Click();local d=p.inlineFunction
+ d.form.fields.add_args:Click();local name=d.form.fields.arg_1_name;name:SetText('...');name:GetScript('OnTextChanged')(name,true);assert(d:Flush())
+ assert(d.isNew and a:ValidateCustomFunctionSource(d.key,d:PendingSource()))
+ d.form.fields.add_args:Click();assert(not d.form.prompt or not d.form.prompt.frame:IsShown())
+ assert(#d.value.args==2 and d.value.args[1].name=='argument1'and d.value.args[2].name=='...')
+ assert(a:ValidateCustomFunctionSource(d.key,d:PendingSource())and not a.db.global.custom_functions[d.key])
+end)
+test('retired variadic append confirmation cannot mutate a rebuilt or closed Functions owner',function()
+ for _,close in ipairs({false,true})do
+  local _,a,p,d,original=fixture(false,{vararg()});d.form.fields.add_args:Click()
+  assert(d.form.prompt and d.form.prompt.frame:IsShown(),'saved variadic append did not warn')
+  local accept=d.form.prompt.accept:GetScript('OnClick');local previous=d.value
+  if close then d:Close()else p:Draw()end
+  local successor=p.inlineFunction;local before=a:CopySettingsData(successor.value)
+  accept();assert(a:SettingsDataEqual(successor.value,before)and #previous.args==1 and #original.args==1,'stale confirmation appended an argument')
+ end
+end)
+test('ordinary nonvariadic Argument append and Return append retain immediate independent policies',function()
+ local _,a,_,d,original=fixture(false);d.form.fields.add_args:Click()
+ assert(#d.value.args==2 and d.value.args[1].name=='value'and d.value.args[2].name=='argument1')
+ assert(not d.form.prompt or not d.form.prompt.frame:IsShown());assert(#original.args==1)
+ local _,a,_,d,original=fixture(false,{vararg()});d.form.fields.add_returns:Click()
+ assert(#d.value.returns==2 and #d.value.args==1 and d.value.args[1].name=='...'and #original.returns==1)
+ assert(not d.form.prompt or not d.form.prompt.frame:IsShown());assert(a:ValidateCustomFunctionSource('HELPER',d:PendingSource()))
+end)
+test('readonly variadic metadata leaves both Add controls disabled and source untouched',function()
+ local _,a,_,d=fixture(true,{vararg()});local before=d:PendingSource()
+ assert(not d.form.fields.add_args:IsEnabled()and not d.form.fields.add_returns:IsEnabled())
+ d.form.fields.add_args:Click();d.form.fields.add_returns:Click();assert(a:SettingsDataEqual(d:PendingSource(),before))
 end)
 finish()

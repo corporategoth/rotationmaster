@@ -160,7 +160,18 @@ function addon:BuildInlineFunction(p,key,source,readOnly)
             local used={};for _,entry in ipairs(values) do used[entry.name]=true end;local n=1;while used['argument'..n] do n=n+1 end
             return {name='argument'..n,type='any',description=''}
         end
-        local add=form:Button('add_'..field,field=='args' and L['Argument'] or L['Return'],function() values[#values+1]=factory();d.metadataCollapsed[field]=false;refresh() end,'plus')
+        local function confirmOrderChange(apply)
+            if d.isNew then apply() else form:Confirm(field=='args' and L['Changing argument order can break existing callers. Rotation Master will not rewrite their Lua code. Continue?'] or L['Changing return documentation order does not rewrite return statements or existing callers. Review the Lua body and callers for the new order. Continue?'],apply) end
+        end
+        local add=form:Button('add_'..field,field=='args' and L['Argument'] or L['Return'],function()
+            local gap=#values+1
+            if field=='args' and values[#values] and values[#values].name=='...' then gap=#values end
+            local function apply()
+                if not valid() or d.readOnly then return end
+                table.insert(values,gap,factory());d.metadataCollapsed[field]=false;refresh()
+            end
+            if gap<=#values then confirmOrderChange(apply) else apply() end
+        end,'plus')
         add:ClearAllPoints();add:SetPoint('TOPRIGHT',0,-headerY);add:SetWidth(112);enable(add,not d.readOnly);form.y=headerY+28
         local viewKey='function_'..field
         local function beginInsert()
@@ -170,9 +181,6 @@ function addon:BuildInlineFunction(p,key,source,readOnly)
         end
         addon:BindWorkbenchDragSource(add,beginInsert,function() local view=form.ordered and form.ordered[viewKey];if view then view:EndDrag() end end)
         if d.metadataCollapsed[field] then return end
-        local function confirmOrderChange(apply)
-            if d.isNew then apply() else form:Confirm(field=='args' and L['Changing argument order can break existing callers. Rotation Master will not rewrite their Lua code. Continue?'] or L['Changing return documentation order does not rewrite return statements or existing callers. Review the Lua body and callers for the new order. Continue?'],apply) end
-        end
         local view=form:OrderedCollection(viewKey,values,function(index) return field=='args' and (values[index].name or L['Argument']) or (values[index].type or L['Return']) end,function(rowForm,index,record,row)
             local prefix=(field=='args' and 'arg_' or 'return_')..index..'_'
             form.fields[field..'_up_'..index]=row.up;form.fields[field..'_down_'..index]=row.down;form.fields[field..'_delete_'..index]=row.remove

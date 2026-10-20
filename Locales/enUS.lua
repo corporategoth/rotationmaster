@@ -2421,6 +2421,11 @@ L["Copy shortage list"] = true
 L["Apply or discard page changes and refresh stock counts before copying."] = true
 
 L["Stock shortage list"] = true
+L["Default.TBC.Priest.Continuation.Name"] = "Priest: wand / learned Mind Flay (20–29)"
+L["Default.TBC.Priest.Continuation.Description"] = "Bounded solo Priest preview for levels 20–29. Optional Inner Fire, opening Mind Blast and own Shadow Word: Pain precede learned Mind Flay above half health, then stationary wanding or Smite fallback. Manually choose when to channel or wand; active channels and wand filler are preserved. Repeated Mind Flay and the half-health cutoff are RM preview policies; talents, healing, shields, party support and resources remain manual."
+
+L["Default.TBC.Warrior.Continuation.Name"] = "Warrior: early leveling (20–29)"
+L["Default.TBC.Warrior.Continuation.Description"] = "Bounded combat-only Warrior preview for levels 20–29. Optional Battle Shout, learned Execute below 20% target health, then Heroic Strike and normal melee fallback. Preserves all four queued Heroic Strike ranks in this bracket. Rend maintenance ends here; reactive abilities, stances, pulls and resource or queue planning remain manual."
 
 -- BEGIN GENERATED RM PUBLIC HELPER DOCS
 L["Absolute health target (negative means deficit) or percentage fraction."] = true

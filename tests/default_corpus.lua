@@ -67,7 +67,7 @@ for _,client in ipairs(clients) do for _,class in ipairs(classes) do
     end)
 end end
 test('TOC includes every reviewed starter pack exactly once',function()
-    local _,packs=corpus.load(5,1,'PRIEST');local wanted={['rm.tbc.shaman.starter']=true,['rm.tbc.mage.starter']=true,['rm.tbc.warlock.starter']=true,['rm.tbc.priest.starter']=true,['rm.tbc.warrior.starter']=true,['rm.tbc.paladin.starter']=true,['rm.tbc.hunter.starter']=true,['rm.tbc.druid.caster.starter']=true,['rm.tbc.rogue.starter']=true}
+    local _,packs=corpus.load(5,1,'PRIEST');local wanted={['rm.tbc.shaman.starter']=true,['rm.tbc.mage.starter']=true,['rm.tbc.warlock.starter']=true,['rm.tbc.priest.starter']=true,['rm.tbc.priest.starter.20-29']=true,['rm.tbc.warrior.starter']=true,['rm.tbc.warrior.starter.20-29']=true,['rm.tbc.paladin.starter']=true,['rm.tbc.hunter.starter']=true,['rm.tbc.druid.caster.starter']=true,['rm.tbc.rogue.starter']=true}
     for _,pack in ipairs(packs)do assert(wanted[pack.id],pack.id..' is unexpected or duplicated');wanted[pack.id]=nil end
     assert(not next(wanted),'reviewed starter pack missing from TOC')
 end)
