@@ -16,16 +16,16 @@ local rotation={{id='mage-starter-target',type='branch',
     onFalse={}}}
 
 assert(addon:RegisterDefaultRotation({
-    format='RotationMaster',schemaVersion=1,id='rm.tbc.mage.starter',revision=2,
+    format='RotationMaster',schemaVersion=1,id='rm.tbc.mage.starter',revision=3,
     nameKey='Default.TBC.Mage.Starter.Name',descriptionKey='Default.TBC.Mage.Starter.Description',
-    applicability={families={'tbc'},actionContext='player',class='MAGE',minLevel=1,maxLevel=19},
+    applicability={families={'tbc'},actionContext='player',class='MAGE',minLevel=1,maxLevel=29},
     tags={'leveling','solo','starter','frost','single-target','preview'},
     sources={
         {url='https://www.icy-veins.com/tbc-classic/frost-single-target-mage-leveling-guide',
-            title='Icy Veins: Frost single-target Mage leveling',reviewedAt='2026-10-18',revision='2026-01-12'},
+            title='Icy Veins: Frost single-target Mage leveling',reviewedAt='2026-10-20',revision='2026-01-12'},
     },
     body={
-        switch=all({type='OR',value={known(133),known(116)}},{type='LEVEL',unit='player',operator='LESSTHAN',value=20}),
+        switch=all({type='OR',value={known(133),known(116)}},{type='LEVEL',unit='player',operator='LESSTHAN',value=30}),
         rotation=rotation,
         cooldowns={
             {id='mage-starter-intellect',type='spell',action=1459,ranked=false,

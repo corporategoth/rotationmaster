@@ -1,3 +1,5 @@
+-- Historical STRING-CREATURE projection; new creature_conditions covers current numeric identity.
+local restoreCreature,_,_,oldCreatureBindings,oldCreatureParameters=dofile('tests/fixtures/restore_creature_type_repairs.lua')
 local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite()
 local kinds={CLASS='class',CREATURE='creature',CLASSIFICATION='classification'}
 local apis={class='UnitClass',creature='UnitCreatureType',classification='UnitClassification'}
@@ -34,7 +36,18 @@ local function fixture(project)
     e.UnitCreatureType=function(...) call('creature',...);if s.noReturns=='creature' then return end;return s.creature,s.creatureID end
     e.UnitClassification=function(...) call('classification',...);if s.noReturns=='classification' then return end;return s.classification end
     local file=io.open('Platform/unit_metadata.lua');if file then file:close();f.load('Platform/unit_metadata.lua') end
-    for _,path in ipairs({'Diagnostics/errors.lua','Core/conditions.lua','Data/plain.lua','Data/tags.lua','Data/rotation_tree.lua','Core/rotation_sequence.lua','Conditions/character.lua','Data/builtin_sources.lua','Core/builtin_sources.lua','Core/custom_authoring.lua','Core/function_data.lua'}) do f.load(path) end
+    for _,path in ipairs({'Diagnostics/errors.lua','Core/conditions.lua','Data/plain.lua','Data/tags.lua','Data/rotation_tree.lua','Core/rotation_sequence.lua','Conditions/character.lua','Data/builtin_sources.lua','Core/builtin_sources.lua','Core/custom_authoring.lua','Core/function_data.lua'}) do
+        if path=='Conditions/character.lua' then
+            local file=assert(io.open(path));local text=file:read('*a');file:close()
+            local chunk=assert(loadstring(restoreCreature(text),'@'..path));setfenv(chunk,e);chunk('rotationmaster',a)
+        else
+            f.load(path)
+            if path=='Data/builtin_sources.lua' then
+                local row=assert(a.BuiltinSourceCatalog.conditions.CREATURE).callbacks.evaluate
+                row.code=restoreCreature(row.code,true);row.bindings=a:CopySettingsData(oldCreatureBindings);row.parameters=a:CopySettingsData(oldCreatureParameters)
+            end
+        end
+    end
     e.loadstring=function(code,name) local fn,why=loadstring(code,name);if fn then setfenv(fn,e) end;return fn,why end
     s.calls={};return f,a,s
 end
@@ -92,7 +105,7 @@ test('unknown policy or transient errors never authorize actions and recover nex
     for _,project in ipairs({1,18,999}) do local _,a,s=fixture(project);for tag in pairs(kinds) do unknown(a,node(tag)) end;assert(#s.calls==0) end
     for tag,kind in pairs(kinds) do local _,a,s=fixture();s.throw=kind;unknown(a,node(tag));s.throw=nil;assert(a:evaluateConditionResult(node(tag)).status=='match') end
 end)
-test('current editable copies share normalized facts and preserve localized versus token comparisons',function()
+test('current class/classification and historical string-creature copies share their normalized facts',function()
     local f,a,s=fixture();clones(a);local cache={}
     for tag,kind in pairs(kinds) do s.calls={};assert(a.conditionDefinitions[tag].evaluate(node(tag),cache)==true and a.conditionDefinitions['COPY_'..tag].evaluate(node('COPY_'..tag),cache)==true and #s.calls==2)
         assert(s.calls[1][1]=='exists' and s.calls[1][2]=='target' and s.calls[2][1]==kind and s.calls[2][2]=='target')
@@ -123,7 +136,7 @@ test('public helper editable clone uses actual owner and live consumed-field rea
     s.class='MAGE';s.label=opaque;assert(fn(a.Platform,'target','class')=='MAGE')
 end)
 test('exactly three evaluator bodies change with full module inverse and four private identities',function()
-    local _,a=fixture();local file=assert(io.open('Conditions/character.lua'));local text=file:read('*a');file:close();text=dofile('tests/fixtures/restore_glyph_presentation_repairs.lua')(text);text=dofile('tests/fixtures/restore_mobinfo2_repairs.lua')(text);text=dofile('tests/fixtures/restore_role_repairs.lua')(text);text=dofile('tests/fixtures/restore_class_group_repairs.lua')(text)
+    local _,a=fixture();local file=assert(io.open('Conditions/character.lua'));local text=file:read('*a');file:close();text=restoreCreature(text);text=dofile('tests/fixtures/restore_glyph_presentation_repairs.lua')(text);text=dofile('tests/fixtures/restore_mobinfo2_repairs.lua')(text);text=dofile('tests/fixtures/restore_role_repairs.lua')(text);text=dofile('tests/fixtures/restore_class_group_repairs.lua')(text)
     for tag in pairs(kinds) do local first=assert(text:find(repaired[tag],1,true),'exact repaired '..tag..' missing');assert(not text:find(repaired[tag],first+1,true),'multiple repaired '..tag..' bodies')
         text=text:sub(1,first-1)..original[tag]..text:sub(first+#repaired[tag])
     end

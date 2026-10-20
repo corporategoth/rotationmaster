@@ -96,11 +96,11 @@ test('unavailable aura observations and learned state never become positive miss
     f.env.IsSpellKnown=nil;assert(not optional(a)[1459] and not optional(a)[168])
     local row=a:ListDefaultRotations(0)[1];assert(a:evaluateConditionResult(row.envelope.body.switch).status=='unavailable')
 end)
-test('mage preview is sourced localized read-only and expires at level20',function()
+test('mage preview is sourced localized read-only and expires at level30',function()
     local f,s=fixture();local a=f.addon;local row=a:ListDefaultRotations(0)[1]
     assert(row.id=='rm.tbc.mage.starter' and row.readOnly and row.validation.valid and row.validation.supported and row.validation.resolved)
     assert(f.translations[row.nameKey] and f.translations[row.descriptionKey] and #row.envelope.sources>=1)
-    s.level=20;assert(not a:ListDefaultRotations(0)[1].eligible)
+    s.level=30;assert(not a:ListDefaultRotations(0)[1].eligible)
 end)
 test('rank-expanded multi-step preview visits each filler family once per selected priority arm',function()
     local f,s=fixture();local a=f.addon

@@ -831,8 +831,8 @@ L["Condition preview unavailable"] = true
 L["Sources"] = true
 L["Unavailable"] = true
 
-L["Default.TBC.Shaman.Starter.Name"] = "Shaman: early leveling (1–19)"
-L["Default.TBC.Shaman.Starter.Description"] = "TBC solo starter preview. Optional highlights remind you to maintain your weapon imbue and Lightning Shield, with Attack as an implicit final priority when needed. The sequence opens with Lightning Bolt, stops further spell suggestions while out of combat, uses Earth Shock in combat, and continues Lightning Bolt beyond close range while stationary. Skips unlearned abilities. Once Attack is active your weapon keeps swinging between spells. Healing, totems, consumables and later talents are not covered."
+L["Default.TBC.Shaman.Starter.Name"] = "Shaman: early leveling (1–29)"
+L["Default.TBC.Shaman.Starter.Description"] = "Bounded TBC solo starter preview for levels 1–29. Optional highlights remind you to maintain your weapon imbue and Lightning Shield, with Attack as an implicit final priority when needed. The sequence opens with Lightning Bolt, stops further spell suggestions while out of combat, uses Earth Shock in combat, and continues Lightning Bolt beyond close range while stationary. Uses learned ranks with native availability checks. Healing, interrupts, totems, consumables, talent cooldowns and resource management remain manual."
 
 L["Could not duplicate this rotation: %s"] = true
 L["Could not duplicate this step: %s"] = true
@@ -1636,8 +1636,8 @@ L["Item sets are checked in priority order. Bag counts use the first carried can
 L["Item Available checks the required level and enabled item cooldown. An active cooldown qualifies only when it ends with the readable global cooldown. This condition does not bypass the action's implicit ownership, usability and range checks."] = true
 
 -- TBC early Frost Mage preview.
-L["Default.TBC.Mage.Starter.Name"] = "Mage: early Frost leveling (1–19)"
-L["Default.TBC.Mage.Starter.Description"] = "TBC single-target Frost starter preview. Optional Intellect and armor upkeep, stationary pulls and combat fillers adapt to trained early ranks. Each training-dependent arm selects one filler; unavailable spells do not select the opposite arm. The same decision handles safe pulls and combat, without duplicated actions. Uses ranked action lookup with availability fallback; no automatic kiting, crowd control, shields, finishers or consumable use. Fire/Arcane specialization and later levels need other rotations."
+L["Default.TBC.Mage.Starter.Name"] = "Mage: early Frost leveling (1–29)"
+L["Default.TBC.Mage.Starter.Description"] = "Bounded TBC single-target Frost preview for levels 1–29. Optional Intellect and Frost Armor upkeep, stationary pulls and combat fillers adapt to trained ranks. Each training-dependent arm selects one filler; unavailable spells do not select the opposite arm. Uses ranked action lookup with availability fallback. Talent cooldowns, mana management, kiting, crowd control, emergency shields and consumables remain manual. Other specializations and levels 30+ need separate rotations."
 
 -- Alternate rotation presentation.
 L["Diagram view"] = true
@@ -2433,6 +2433,7 @@ L["Closed scalar kind: current or maximum."] = true
 L["Collect table keys and sort them by their associated values using Lua less-than comparison. This sorts values rather than key names; equal values have no guaranteed key order."] = true
 L["Combat-policy, capability, observation or scan-budget reason for a nil count."] = true
 L["Combined signed weighted rate from the original formula; malformed or nonfinite inputs retain the legacy error/numeric behavior."] = true
+L["Compare the selected unit creature ID with one existing saved creature-type key. Resolve the fixed key-to-ID identity in one private executable mapper; gameplay matching does not depend on the mutable localized UI caption map. Share complete native observations within the supplied evaluation-pass cache by actual observer, receiver and unit, including absence and unavailable reasons. Known absence or a known different ID returns false; an unavailable required observation returns nil with a reason. No longterm state or caption mutation is added."] = true
 L["Compare two exact unit tokens using UnitIsUnit after checking only the first token with UnitExists. A readable absent first unit returns false without comparing. Required missing, failed, restricted or malformed observations return nil with a reason. No second existence query, GUID lookup or inferred identity is added."] = true
 L["Compare two values using an RM operator identifier: LESSTHAN, LESSTHANOREQUALS, GREATERTHAN, GREATERTHANOREQUALS, EQUALS, NOTEQUALS or DIVISIBLE. Invalid operators warn and return nil; operands must support the selected Lua operation."] = true
 L["Comparison operator key, such as EQUALS or LESSTHAN."] = true
@@ -2476,6 +2477,7 @@ L["Display lookup table."] = true
 L["Estimate signed health change from weighted damage and healing history. Damage contributes a negative rate and healing a positive rate. Read the live profile window when no window is supplied, use the live clock and legacy rounding service, and preserve the existing weighting and rounded-age calculation. This helper does not validate or sanitize history, clamp timestamps, or guarantee finite results."] = true
 L["Estimate time until selected health. Cache complete native identity and lazy scalar observations per evaluation pass, while provider, history, window, clock and forecast stay live. Exact target equality returns zero before history work. Preserve deliberate no-estimate false and initialized-zero results for zero or opposite rates; required invalid facts, overflow or 4096-unit work exhaustion are unavailable. Never mutate history or invent a partial estimate."] = true
 L["Evaluation cache, or nil to bypass caching."] = true
+L["Evaluation-pass cache for complete unit observations; nil observes directly. Different selected keys reuse the same unit snapshot."] = true
 L["Evaluation-pass cache, or nil for fresh observations."] = true
 L["Evaluation-pass cache, or nil to observe identity directly. Resource mapping is resolved live on each invocation."] = true
 L["Evaluation-pass native observation cache; nil queries afresh."] = true
@@ -2492,6 +2494,7 @@ L["Exact unit token whose selected flag should be observed."] = true
 L["Exact unit token whose selected resource quantity is requested."] = true
 L["Exactly current for UnitPower or maximum for UnitPowerMax; no other native query is added."] = true
 L["Exactly type or school; selects the required subject field without requiring the other."] = true
+L["Existing stored CREATURE key: BEAST, DRAGONKIN, DEMON, ELEMENTAL, GIANT, UNDEAD, HUMANOID, CRITTER, MECHANICAL, OTHER, TOTEM, NONCOMBAT_PET or GAS_CLUUD."] = true
 L["Explicit finite clock snapshot; signed and fractional values remain valid."] = true
 L["Explicit finite weighting window; no profile fallback or clamp."] = true
 L["Explicit nonnegative integer power selector, false for a known absent unit, or nil when required data is unavailable."] = true
@@ -2499,6 +2502,7 @@ L["Explicit readable finite nonnegative integer power selector, including zero."
 L["Finite ETA including zero, false for known absence/no estimate, or nil when unavailable."] = true
 L["Finite final stream age, or nil when unavailable."] = true
 L["Finite minimum native threat status, preserving signed and fractional thresholds."] = true
+L["Finite native creature ID, false for known unit absence, or nil when required observations are unavailable."] = true
 L["Finite native resource quantity, retaining its sign and fractional part; nil when unavailable."] = true
 L["Finite native threat status, false for known absence/nonenemy/no-threat, or nil for unavailable observations."] = true
 L["Finite nonnegative native health scalar, or nil when unavailable."] = true
@@ -2560,6 +2564,7 @@ L["Observe a fresh protected zero-argument GetTime for a needed health forecast.
 L["Observe a readable raw unit level on known clients. A readable absent unit returns exists=false; present units require a positive finite integer UnitLevel. Unknown boss levels, missing, failed, restricted or malformed observations return nil with a reason. This does not use effective or scaled levels."] = true
 L["Observe a selected unit role on probe-policy clients without issuing inspection requests. Known unit absence returns false. Prefer the callable modern inspection API, with legacy fallback only when that callable is absent; a selected failure never falls through. Require a positive finite integral specialization ID and consume only role return five from the exact one-argument GetSpecializationInfoByID call. Missing, failed, restricted or malformed required facts are unavailable; readable nonempty future role strings remain exact."] = true
 L["Observe a unit casting or channeling on supported readable clients. A readable inactive result returns active=false. Active records contain name and independently available remainingSeconds and interruptible fields, with remainingReason or interruptibleReason when an optional field is unavailable. Missing, failed or restricted observations return nil with a reason."] = true
+L["Observe creature identity from native UnitCreatureType return two on probe-policy clients. Check exact UnitExists(unit) first; readable false returns false without requiring or calling creature metadata. A present unit requires a readable finite numeric ID; the unused localized name does not affect availability. Preserve signed, fractional, zero and future finite IDs as known values. Missing, failed, nil, restricted or malformed required facts return nil with a reason. No creature enumeration, translated caption comparison or longterm cache is added."] = true
 L["Observe exact pet existence and optionally its formatted GetUnitName display name. Presence-only queries never require name data. Known absence skips the name query. Present pets require a readable nonempty name only when requested; required missing, failed, nil, restricted or malformed observations return nil with a reason. The display helper is called with its single original pet argument, without UnitName fallback or inferred bar, health or ability state."] = true
 L["Observe exact selected-unit existence and optionally its class filename for point-resource conditions. Known absence returns exists=false without reading class. Present units require only UnitClass return two when requested; unused localized names and IDs do not affect availability. Required missing, failed, restricted or malformed observations remain unavailable. This does not select a resource or cache identity."] = true
 L["Observe explicit mana or the current raw power resource on supported readable clients. Select resource identities from the live PowerType enum; explicit mana never falls back to the current bar. Known absence returns exists=false; missing, failed, restricted or malformed observations return nil with a reason. Current-mode quantities preserve signed native resources; explicit mana is nonnegative. Request maximum only when needed; percentage consumers must require a positive maximum."] = true
@@ -2609,6 +2614,8 @@ L["Policy, query-validation or availability reason for a nil unit flag."] = true
 L["Policy, query-validation or availability reason for nil attackability."] = true
 L["Policy, query-validation or identity/selector availability reason for a nil selector."] = true
 L["Policy, query-validation or required observation availability reason for a nil record."] = true
+L["Policy, query-validation or required-observation availability reason for a nil ID."] = true
+L["Policy, query-validation or required-observation availability reason for a nil match."] = true
 L["Policy, slot-validation or required observation availability reason for a nil type."] = true
 L["Policy, slot-validation, capability or native-call availability reason for a nil record."] = true
 L["Policy, snapshot, identity or threat observation availability reason."] = true
@@ -2655,6 +2662,8 @@ L["Readable cooldown record, or nil when unavailable."] = true
 L["Readable finite current-form observation, including zero for the current unshifted comparison; nil when unavailable."] = true
 L["Readable finite positive integral rune type, or nil when unavailable."] = true
 L["Readable interval with optional minimum and maximum bounds in yards. At least one bound is present; nil when unavailable."] = true
+L["Readable nonempty selected unit token, passed unchanged as the single argument to existence and creature metadata queries."] = true
+L["Readable nonempty unit token to match, unchanged in the native observation."] = true
 L["Readable record with Boolean exists and the requested class filename when present; nil when required data is unavailable."] = true
 L["Readable selected flag or nil when required data is unavailable."] = true
 L["Readable selected flag, false for a known absent unit, or nil when a required observation is unavailable."] = true
@@ -2727,6 +2736,7 @@ L["True also observes maximum health; false or nil reads current health only."] 
 L["True also observes the selected resource maximum; false or nil reads current quantity only."] = true
 L["True also requires the present unit class filename; false reads existence only."] = true
 L["True for a readable attackable non-dead unit, false for a conclusive negative result, or nil when a required observation is unavailable."] = true
+L["True for an exact identity match; false for known absence or mismatch; nil when required data or the query is unavailable."] = true
 L["True includes only listed entries; false or nil excludes listed entries."] = true
 L["True marks the main comparison to negate; false or nil leaves it eligible only when no primary predicate exists."] = true
 L["True permits the raid roster when raid membership is known true; false or nil uses the solo or party roster."] = true

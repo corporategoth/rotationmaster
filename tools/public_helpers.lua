@@ -1,6 +1,36 @@
 -- Curated public authoring documentation. Executable bodies are extracted from
 -- the actual addon functions; this file must never contain copied Lua bodies.
 return {
+Platform_GetUnitCreatureTypeID={
+ module='Platform/creature_type.lua',
+ member='Platform.GetUnitCreatureTypeID',
+ callName='addon.Platform:GetUnitCreatureTypeID',
+ description='Observe creature identity from native UnitCreatureType return two on probe-policy clients. Check exact UnitExists(unit) first; readable false returns false without requiring or calling creature metadata. A present unit requires a readable finite numeric ID; the unused localized name does not affect availability. Preserve signed, fractional, zero and future finite IDs as known values. Missing, failed, nil, restricted or malformed required facts return nil with a reason. No creature enumeration, translated caption comparison or longterm cache is added.',
+ args={
+  self={type='RMPlatform',description='Rotation Master platform adapter (implicit with colon calls).'},
+  unit={type='string',description='Readable nonempty selected unit token, passed unchanged as the single argument to existence and creature metadata queries.'},
+ },
+ returns={
+  {type='number | boolean | nil',description='Finite native creature ID, false for known unit absence, or nil when required observations are unavailable.'},
+  {type='string | nil',description='Policy, query-validation or required-observation availability reason for a nil ID.'},
+ },
+},
+GetConditionCreatureTypeMatch={
+ module='Core/creature_conditions.lua',
+ member='GetConditionCreatureTypeMatch',
+ callName='addon:GetConditionCreatureTypeMatch',
+ description='Compare the selected unit creature ID with one existing saved creature-type key. Resolve the fixed key-to-ID identity in one private executable mapper; gameplay matching does not depend on the mutable localized UI caption map. Share complete native observations within the supplied evaluation-pass cache by actual observer, receiver and unit, including absence and unavailable reasons. Known absence or a known different ID returns false; an unavailable required observation returns nil with a reason. No longterm state or caption mutation is added.',
+ args={
+  self={type='RMAddon',description='Rotation Master addon instance (implicit with colon calls).'},
+  unit={type='string',description='Readable nonempty unit token to match, unchanged in the native observation.'},
+  key={type='string',description='Existing stored CREATURE key: BEAST, DRAGONKIN, DEMON, ELEMENTAL, GIANT, UNDEAD, HUMANOID, CRITTER, MECHANICAL, OTHER, TOTEM, NONCOMBAT_PET or GAS_CLUUD.'},
+  cache={type='table | nil',description='Evaluation-pass cache for complete unit observations; nil observes directly. Different selected keys reuse the same unit snapshot.'},
+ },
+ returns={
+  {type='boolean | nil',description='True for an exact identity match; false for known absence or mismatch; nil when required data or the query is unavailable.'},
+  {type='string | nil',description='Policy, query-validation or required-observation availability reason for a nil match.'},
+ },
+},
  Platform_GetMobInfo2Observation={module='Platform/mobinfo2.lua',member='Platform.GetMobInfo2Observation',callName='addon.Platform:GetMobInfo2Observation',description='Read optional MobInfo2 historical observations on probe-policy clients. Cache only exact selected-unit presence; UnitName result one, UnitLevel result one and the three-argument MI2_GetMobData(name,level,unit) dot call stay fresh each invocation. Known absent units and successful unrecorded nil or omitted history remain distinct from unavailable native/provider facts. Preserve readable runner scalar truthiness, school signs and missing-Hits default one. Positive resistance ratios must be finite; complete immunity consumes finite Hits while partial immunity needs only its negative school observation. Never infer native resistance or borrow old records.',args={self={type='RMPlatform',description='Rotation Master platform adapter (implicit with colon calls).'},unit={type='string',description='Selected nonempty unit token, unchanged in native/provider calls.'},kind={type='string',description='Closed kind: runner, resist or immune.'},school={type='string | nil',description='Nonempty historical school key for resist/immune; unused for runner.'},cache={type='table | nil',description='Evaluation-pass presence cache only; name, level and provider history remain fresh.'}},returns={{type='table | nil',description='Record with exists=false; recorded=false for known no history; or runner, ratio, or immune with hits/hitsReason. Nil means a required observation is unavailable.'},{type='string | nil',description='Policy, capability or required-observation availability reason.'}}},
  Platform_GetInspectRoleObservation={module='Platform/role.lua',member='Platform.GetInspectRoleObservation',callName='addon.Platform:GetInspectRoleObservation',description='Observe a selected unit role on probe-policy clients without issuing inspection requests. Known unit absence returns false. Prefer the callable modern inspection API, with legacy fallback only when that callable is absent; a selected failure never falls through. Require a positive finite integral specialization ID and consume only role return five from the exact one-argument GetSpecializationInfoByID call. Missing, failed, restricted or malformed required facts are unavailable; readable nonempty future role strings remain exact.',args={self={type='RMPlatform',description='Rotation Master platform adapter (implicit with colon calls).'},unit={type='string',description='Selected nonempty unit token; unchanged native argument.'}},returns={{type='string | boolean | nil',description='Known nonempty role string, false for known absent unit, or nil when unavailable.'},{type='string | nil',description='Policy, capability or required-observation availability reason.'}}},
  Platform_GetTalentGroupRoleObservation={module='Platform/role.lua',member='Platform.GetTalentGroupRoleObservation',callName='addon.Platform:GetTalentGroupRoleObservation',description='Observe the first role result of the exact legacy GetTalentGroupRole(group) dot call on probe-policy clients. Forward the readable selected group unchanged, including nil as one argument; do not infer group bounds, substitute another API or query a player unit. The complete legacy primary declaration is not established. Missing, failed, restricted, empty or malformed role data is unavailable; readable nonempty future strings remain exact.',args={self={type='RMPlatform',description='Rotation Master platform adapter (implicit with colon calls).'},group={type='any',description='Live selected talent-group argument, forwarded unchanged as one argument after readability checking.'}},returns={{type='string | nil',description='Known nonempty role string, or nil when unavailable.'},{type='string | nil',description='Policy, capability or required-observation availability reason.'}}},

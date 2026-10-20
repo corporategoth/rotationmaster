@@ -1,3 +1,4 @@
+local restoreCreature=dofile('tests/fixtures/restore_creature_type_repairs.lua')
 local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite();local classID='builtin:Conditions/character.lua:character_class'
 local function fixture(project,initial)
  local f=F.new(project or 11,2,'MAGE');local a,e=f.addon,f.env;e.LOCALIZED_CLASS_NAMES_MALE={MAGE='Mage',SHAMAN='Shaman',WARRIOR='Warrior'};local s={group=false,raid=false,classes={player=initial or 'MAGE'},exists={player=true},calls={}};if initial=='nil' then s.classes.player=false end
@@ -89,7 +90,7 @@ test('public count and roster source clones keep receiver cache and runtime quer
  local second=setmetatable({Platform=other},{__index=a});cache={};s.classes.player='SHAMAN';assert(a:GetClassGroupCount(cache,'SHAMAN',nil)==1);assert(clones.GetClassGroupCount(second,cache,'MAGE',nil)==1 and calls==1)
 end)
 test('strict whole-character inverse and all four historical private hashes and actual getters stay exact',function()
- local _,a=fixture();local file=assert(io.open('Conditions/character.lua'));local text=file:read('*a');file:close();text=dofile('tests/fixtures/restore_glyph_presentation_repairs.lua')(text);text=dofile('tests/fixtures/restore_mobinfo2_repairs.lua')(text);text=dofile('tests/fixtures/restore_role_repairs.lua')(text);assert(a:FunctionSourceHash(dofile('tests/fixtures/restore_class_group_repairs.lua')(text))=='ef5eeb1a','character changed beyond CLASS_GROUP evaluate')
+ local _,a=fixture();local file=assert(io.open('Conditions/character.lua'));local text=file:read('*a');file:close();text=restoreCreature(text);text=dofile('tests/fixtures/restore_glyph_presentation_repairs.lua')(text);text=dofile('tests/fixtures/restore_mobinfo2_repairs.lua')(text);text=dofile('tests/fixtures/restore_role_repairs.lua')(text);assert(a:FunctionSourceHash(dofile('tests/fixtures/restore_class_group_repairs.lua')(text))=='ef5eeb1a','character changed beyond CLASS_GROUP evaluate')
  for name,hash in pairs({character_class='f9f4e4b5',color='3f9fe631',helpers='2e9a81e7',unit_class_num='33645816'}) do local id='builtin:Conditions/character.lua:'..name;assert(a:FunctionSourceHash(assert(a.builtinFunctions[id]).source)==hash and rawequal(a:ResolveFunctionBinding(id),a.builtinSourceModules['Conditions/character.lua'](name))) end
  local getter=a.builtinSourceModules['Conditions/character.lua'];local captures=0;for i=1,200 do local name=debug.getupvalue(getter,i);if not name then break end;if name=='character_class' then captures=captures+1 end end;assert(captures==1)
 end)

@@ -357,10 +357,7 @@ addon:RegisterCondition("CREATURE", {
                 value.value ~= nil and Functions.values.isin(addon.creatures, value.value))
     end,
     evaluate = function(value, cache)
-        local observed,reason=Functions.cache.getCached(cache, addon.Platform.GetUnitMetadataObservation, addon.Platform, value.unit, "creature")
-        if observed==nil then return nil,reason end
-        if observed==false then return false end
-        return observed == addon.creatures[value.value]
+        return addon:GetConditionCreatureTypeMatch(value.unit,value.value,cache)
     end,
     print = function(_, value)
         return string.format(Functions.presentation.playerize(value.unit, L["%s {{!are|are not}} a %s"], L["%s {{!is|is not}} a %s"]),

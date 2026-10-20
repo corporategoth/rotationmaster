@@ -1,3 +1,4 @@
+local restoreCreature=dofile('tests/fixtures/restore_creature_type_repairs.lua')
 local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite()
 local function read(path) local h=assert(io.open(path));local s=h:read('*a');h:close();return s end
 local function fixture(legacy)
@@ -55,7 +56,7 @@ test('legacy-only metadata retains exact link and failed display does not change
 end)
 local inverse,old,repaired=dofile('tests/fixtures/restore_glyph_presentation_repairs.lua')
 test('exact summary inverse preserves every other character callback and four private identities',function()
- local _,a=fixture();local text=read('Conditions/character.lua');assert(a:FunctionSourceHash(inverse(text))=='56c3b024','character changed beyond GLYPH print from242faee');assert(inverse(repaired,true)==old and not pcall(inverse,old,true) and not pcall(inverse,repaired..' ',true) and not pcall(inverse,text..text))
+ local _,a=fixture();local text=restoreCreature(read('Conditions/character.lua'));assert(a:FunctionSourceHash(inverse(text))=='56c3b024','character changed beyond GLYPH print from242faee');assert(inverse(repaired,true)==old and not pcall(inverse,old,true) and not pcall(inverse,repaired..' ',true) and not pcall(inverse,text..text))
  for name,hash in pairs({character_class='f9f4e4b5',unit_class_num='33645816',color='3f9fe631',helpers='2e9a81e7'}) do local id='builtin:Conditions/character.lua:'..name;assert(a:FunctionSourceHash(a.builtinFunctions[id].source)==hash and rawequal(a:ResolveFunctionBinding(id),a.builtinSourceModules['Conditions/character.lua'](name))) end
 end)
 test('actual current editable summary clone uses modern link and retains complete other export fields',function()

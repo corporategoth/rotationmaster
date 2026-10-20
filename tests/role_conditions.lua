@@ -1,3 +1,4 @@
+local restoreCreature=dofile('tests/fixtures/restore_creature_type_repairs.lua')
 local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite()
 local function read(path) local h=assert(io.open(path));local s=h:read('*a');h:close();return s end
 local catalog=read('Data/builtin_sources.lua')
@@ -89,7 +90,7 @@ test('archived raw source retains complete bindings global inspect slot6 and nil
  end
 end)
 test('strict inverse restores entire087a686 module both exports and four exact private source identities',function()
- local text=dofile('tests/fixtures/restore_mobinfo2_repairs.lua')(dofile('tests/fixtures/restore_glyph_presentation_repairs.lua')(read('Conditions/character.lua')));local _,a=fixture();assert(a:FunctionSourceHash(inverse(text))=='4df013ba','unexpected change outside two ROLE evaluates')
+ local text=dofile('tests/fixtures/restore_mobinfo2_repairs.lua')(dofile('tests/fixtures/restore_glyph_presentation_repairs.lua')((restoreCreature(read('Conditions/character.lua')))));local _,a=fixture();assert(a:FunctionSourceHash(inverse(text))=='4df013ba','unexpected change outside two ROLE evaluates')
  for _,shape in ipairs(variants) do local _,owner=fixture(shape[1],shape[2]);local source=assert(owner:GetBuiltinConditionSource('ROLE'));source.evaluate=inverse(source.evaluate,shape[3],true);source.bindings=owner:CopySettingsData(oldBindings[shape[3]])
   assert(owner:FunctionSourceHash(source)==(shape[3]=='inspect' and '0e207da1' or '825b57b5'),'non-evaluate ROLE export changed')
  end

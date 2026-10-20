@@ -45,6 +45,7 @@ Platform/points.lua
 Platform/runes.lua
 Platform/unit_identity.lua
 Platform/unit_metadata.lua
+Platform/creature_type.lua
 Platform/pet.lua
 Platform/threat.lua
 Platform/instance.lua
@@ -86,6 +87,7 @@ Core/item_conditions.lua
 Core/level_conditions.lua
 Core/point_conditions.lua
 Core/class_group_conditions.lua
+Core/creature_conditions.lua
 Core/health_forecast_conditions.lua
 Core/threat_count_conditions.lua
 Core/itemset_services.lua

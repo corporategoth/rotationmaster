@@ -8,16 +8,16 @@ local function peaceful() return notCondition({type="COMBAT",unit="player"}) end
 local function attackable() return {type="ATTACKABLE",unit="target"} end
 
 assert(addon:RegisterDefaultRotation({
-    format="RotationMaster",schemaVersion=1,id="rm.tbc.shaman.starter",revision=8,
+    format="RotationMaster",schemaVersion=1,id="rm.tbc.shaman.starter",revision=9,
     nameKey="Default.TBC.Shaman.Starter.Name",descriptionKey="Default.TBC.Shaman.Starter.Description",
-    applicability={families={"tbc"},actionContext="player",class="SHAMAN",minLevel=1,maxLevel=19},
+    applicability={families={"tbc"},actionContext="player",class="SHAMAN",minLevel=1,maxLevel=29},
     tags={"leveling","solo","starter","preview"},
     sources={
         {url="https://www.icy-veins.com/tbc-classic/enhancement-shaman-leveling-guide",
-            title="Icy Veins: Enhancement Shaman leveling",reviewedAt="2026-10-18",revision="2026-01-12"},
+            title="Icy Veins: Enhancement Shaman leveling",reviewedAt="2026-10-20",revision="2026-01-12"},
     },
     body={
-        switch=all(known(403),{type="LEVEL",unit="player",operator="LESSTHAN",value=20}),
+        switch=all(known(403),{type="LEVEL",unit="player",operator="LESSTHAN",value=30}),
         rotation={
             {id="shaman-starter-pull",type="spell",action=403,ranked=false,
                 conditions=all(peaceful(),attackable(),notCondition({type="COMBAT",unit="target"}))},

@@ -1,4 +1,4 @@
--- Historical namespace proof; dedicated ROLE and MobInfo2 suites cover current readiness.
+-- Historical namespace proof; dedicated CREATURE/ROLE/MobInfo2 suites cover current readiness.
 local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite()
 local cases=dofile('tests/fixtures/catalog_inventory.lua').branches
 local tags={'ISSAME','CLASS','CLASS_GROUP','ROLE','GLYPH','CREATURE','CLASSIFICATION','LEVEL','GROUP','RUNNER','RESIST','IMMUNE'}
@@ -7,6 +7,7 @@ local expected={isin=21,compare=4,nullable=23,compareString=3,playerize=4,getCac
 local branchCounts={61,47,47,56,56,56,56,68}
 local baselineHashes={['CLASS:common']=3088725613,['CLASSIFICATION:common']=3454430665,['CLASS_GROUP:common']=1911721314,['CREATURE:common']=1392664048,['GLYPH:common']=233563292,['GROUP:common']=1891586705,['IMMUNE:common']=3885939024,['ISSAME:common']=2733275963,['LEVEL:common']=2839935621,['RESIST:common']=899540765,['ROLE:inspect']=1626999136,['ROLE:talent']=1169248649,['RUNNER:common']=3996103689}
 local callbacks={'valid','evaluate','print','widget','help'}
+local restoreCreature,_,_,oldCreatureBindings,oldCreatureParameters=dofile('tests/fixtures/restore_creature_type_repairs.lua')
 local restoreGlyph=dofile('tests/fixtures/restore_glyph_presentation_repairs.lua')
 local restoreClassGroup=dofile('tests/fixtures/restore_class_group_repairs.lua')
 local restoreRole,_,_,oldRoleBindings=dofile('tests/fixtures/restore_role_repairs.lua')
@@ -34,10 +35,12 @@ local function fixture(case)
     for _,file in ipairs({'Platform/spells.lua','Diagnostics/errors.lua','Core/conditions.lua','Data/plain.lua','Data/tags.lua','Data/rotation_tree.lua','Core/rotation_sequence.lua','Conditions/character.lua','Data/builtin_sources.lua','Core/builtin_sources.lua','Core/custom_authoring.lua','Core/function_data.lua'}) do
         if file=='Conditions/character.lua' then
             local h=assert(io.open(file));local text=h:read('*a');h:close()
-            local chunk=assert(loadstring(restoreRole(restoreMob(restoreGlyph(text))),'@'..file));setfenv(chunk,e);chunk('rotationmaster',a)
+            local chunk=assert(loadstring(restoreRole(restoreMob(restoreGlyph((restoreCreature(text))))),'@'..file));setfenv(chunk,e);chunk('rotationmaster',a)
         else
             f.load(file)
             if file=='Data/builtin_sources.lua' then
+                local creature=assert(a.BuiltinSourceCatalog.conditions.CREATURE).callbacks.evaluate
+                creature.code=restoreCreature(creature.code,true);creature.bindings=a:CopySettingsData(oldCreatureBindings);creature.parameters=a:CopySettingsData(oldCreatureParameters)
                 local glyph=assert(a.BuiltinSourceCatalog.conditions.GLYPH);glyph.callbacks.print.code=restoreGlyph(glyph.callbacks.print.code,true)
                 for _,tag in ipairs({'RUNNER','RESIST','IMMUNE'}) do
                     local row=assert(a.BuiltinSourceCatalog.conditions[tag]);row.callbacks.evaluate.code=restoreMob(row.callbacks.evaluate.code,tag,true)

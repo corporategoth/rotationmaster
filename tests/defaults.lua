@@ -44,12 +44,12 @@ test('shipped starter pack is sourced, localized, valid and scoped to early TBC 
     assert(f.translations[row.nameKey] and f.translations[row.descriptionKey])
     assert(#row.envelope.sources>0 and row.envelope.sources[1].reviewedAt)
     for _,step in ipairs(row.envelope.body.rotation) do assert(a:validateCondition(step.conditions,0)) end
-    state.level=20
+    state.level=30
     assert(not a:ListDefaultRotations(0)[1].eligible)
 end)
 test('starter upkeep uses an explicit portable rank family rather than enumerating shield ranks',function()
     local f=fixture();local row=f.addon:ListDefaultRotations(0)[1];local predicate=row.envelope.body.cooldowns[2].conditions.value
-    assert(predicate.type=='BUFF' and predicate.spell==324 and predicate.anyrank==true and row.envelope.revision==8)
+    assert(predicate.type=='BUFF' and predicate.spell==324 and predicate.anyrank==true and row.envelope.revision==9)
 end)
 test('upkeep stays optional and cannot block the sequential damage recommendation',function()
     local f,state=fixture();local a=f.addon
