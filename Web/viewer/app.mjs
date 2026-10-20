@@ -1,4 +1,4 @@
-import {createComparisonSession,createSchemaAnalyzer,createBundledViewerSession,formatUnicode,formatBytes} from './model.mjs';
+import {createComparisonSession,createSchemaAnalyzer,createBundledViewerSession,createBundledComparisonSession,formatUnicode,formatBytes} from './model.mjs';
 import {createBundledRotationCatalog} from '../catalog/defaults.mjs';
 import {renderViewer,renderComparison} from './render.mjs';
 
@@ -6,7 +6,7 @@ import {renderViewer,renderComparison} from './render.mjs';
 export function mountViewer(document,root,{analyze,writeClipboard,compare:compareData,loadBundled}={}){
   const pair=createComparisonSession({analyze,compare:compareData});let active=true,viewOperation=0,release=()=>{},mode='left',right=null,panelLease=0,controls=null;
   const make=(tag,text)=>{const e=document.createElement(tag);if(text!==undefined)e.textContent=text;return e;};
-  let area='imports',bundleFacade=null,bundleSession=null,bundleRows=[],bundlePending=null,bundleFailure=false,bundleRequest=0,catalogPaint=0,catalogClass='',selectedID=null;
+  let area='imports',bundleFacade=null,bundleSession=null,bundleRows=[],bundlePending=null,bundleFailure=false,bundleRequest=0,catalogPaint=0,catalogClass='',selectedID=null,catalogMode='read',catalogComparison=null;
   const heading=make('h1','Rotation Master'),subtitle=make('p','Export viewer');subtitle.setAttribute('class','subtitle');
   const intro=make('p','Read locally. Imported code is never run.');
   const openComparison=make('button','Compare another export');openComparison.setAttribute('type','button');openComparison.setAttribute('aria-expanded','false');
@@ -26,6 +26,7 @@ export function mountViewer(document,root,{analyze,writeClipboard,compare:compar
     navState();if(focus){const h=result.children[0]?.children[0];if(h?.focus){h.setAttribute('tabindex','-1');h.focus();}}
   }
   function invalidate(side){
+    if(side==='left')retireCatalogComparison();
     viewOperation++;
     if(mode==='diff'||mode===side)clearViewport();
     if(controls){controls.status.textContent='Inputs changed. Decode each export and compare again.';controls.nav.diff.disabled=true;}
@@ -61,6 +62,9 @@ export function mountViewer(document,root,{analyze,writeClipboard,compare:compar
     return {input,form,clear,copy,manual,result,status,synchronize,dispose(){if(!live)return;live=false;retire();session.clear();input.value='';for(const [e,event,fn]of listeners)e.removeEventListener(event,fn);owner.replaceChildren();}};
   }
   const left=pane('left',primaryHost);
+  catalogComparison=createBundledComparisonSession({readImport:()=>left.input.value===pair.pane('left').input()?pair.pane('left').view():null,readBundled:()=>bundleSession?.view()??null,compare:compareData});
+  function retireCatalogComparison(){catalogComparison?.clear();catalogMode='read';}
+  function focusCatalogResult(token){if(!active||area!=='bundled'||token!==viewOperation)return;const h=result.children[0]?.children[0];if(h?.focus){h.setAttribute('tabindex','-1');h.focus();}}
   const open=()=>{
     if(!active||area!=='imports')return;if(right){right.input.focus();return;}const lease=++panelLease;viewOperation++;panel.hidden=false;openComparison.setAttribute('aria-expanded','true');
     const title=make('h2','Second export'),rightHost=make('div');panel.append(title,rightHost);right=pane('right',rightHost);
@@ -120,18 +124,25 @@ export function mountViewer(document,root,{analyze,writeClipboard,compare:compar
     const label=make('label','Declared class');label.setAttribute('for','catalog-filter');const filter=make('select');filter.setAttribute('id','catalog-filter');
     const tokens=[...new Set(bundleRows.map(r=>r.classToken).filter(x=>typeof x==='string'))].sort();
     for(const [value,text]of [['','All declarations'],...tokens.map(x=>[x,formatBytes(x,{limit:80}).text])]){const option=make('option',text);option.value=value;filter.append(option);}filter.value=catalogClass;catalogArea.append(label,filter);
-    filter.addEventListener('change',()=>{if(!current())return;catalogClass=tokens.includes(filter.value)?filter.value:'';const selected=bundleRows.find(r=>r.id===selectedID);if(selected&&catalogClass&&selected.classToken!==catalogClass){selectedID=null;bundleSession.clear();}viewOperation++;drawCatalog(true);});
+    filter.addEventListener('change',()=>{if(!current())return;catalogClass=tokens.includes(filter.value)?filter.value:'';const selected=bundleRows.find(r=>r.id===selectedID);if(selected&&catalogClass&&selected.classToken!==catalogClass){retireCatalogComparison();selectedID=null;bundleSession.clear();}viewOperation++;drawCatalog(true);});
     const list=make('ul');list.setAttribute('id','catalog-list');const rows=bundleRows.filter(r=>!catalogClass||r.classToken===catalogClass);catalogArea.append(make('p',rows.length+' declarations. Select one to inspect its data.'),list);
     for(const row of rows){const item=make('li'),part=formatUnicode(row.name,{limit:80}),choice=make('button',part.text+(part.remaining?'…':''));choice.setAttribute('type','button');choice.setAttribute('data-default-id',row.id);choice.setAttribute('aria-pressed',String(row.id===selectedID));
-      choice.addEventListener('click',()=>{if(!current())return;const token=++viewOperation;const view=bundleSession.select(row.id);if(!current()||token!==viewOperation)return;selectedID=view?row.id:null;drawCatalog();if(view){const h=result.children[0]?.children[0];if(h?.focus){h.setAttribute('tabindex','-1');h.focus();}}});item.append(choice);list.append(item);}
-    const view=bundleSession.view();if(view)release=renderViewer(document,result,view);
+      choice.addEventListener('click',()=>{if(!current())return;const token=++viewOperation;retireCatalogComparison();const view=bundleSession.select(row.id);if(!current()||token!==viewOperation)return;selectedID=view?row.id:null;drawCatalog();if(view){const h=result.children[0]?.children[0];if(h?.focus){h.setAttribute('tabindex','-1');h.focus();}}});item.append(choice);list.append(item);}
+    const view=bundleSession.view();if(!current())return;
+    if(view){
+      const actions=make('div');actions.setAttribute('class','actions');const compare=make('button','Compare with first export'),read=make('button','Read bundled rotation');compare.setAttribute('id','compare-first-bundled');read.setAttribute('id','read-bundled');for(const b of [compare,read])b.setAttribute('type','button');read.disabled=catalogMode==='read';actions.append(compare,read);catalogArea.append(actions);
+      compare.addEventListener('click',()=>{if(!current())return;const token=++viewOperation,value=catalogComparison.compare();if(!current()||token!==viewOperation)return;catalogMode=value?'comparison':'read';drawCatalog();focusCatalogResult(token);});
+      read.addEventListener('click',()=>{if(!current())return;const token=++viewOperation;retireCatalogComparison();drawCatalog();focusCatalogResult(token);});
+      const comparison=catalogMode==='comparison'?catalogComparison.view():null;if(!current())return;
+      if(comparison)release=renderComparison(document,result,comparison);else{catalogMode='read';read.disabled=true;release=renderViewer(document,result,view);}
+    }
     if(focusFilter&&current())filter.focus();
   }
-  const showImports=()=>{if(!active)return;viewOperation++;catalogPaint++;clearViewport();area='imports';sourceState();show(mode);};
+  const showImports=()=>{if(!active)return;retireCatalogComparison();viewOperation++;catalogPaint++;clearViewport();area='imports';sourceState();show(mode);};
   const showBundled=async()=>{if(!active)return;const token=++viewOperation;catalogPaint++;clearViewport();area='bundled';sourceState();const pending=acquireBundle();drawCatalog();await pending;if(active&&area==='bundled'&&token===viewOperation)drawCatalog();};
   importsNavigation.addEventListener('click',showImports);bundledNavigation.addEventListener('click',showBundled);sourceState();
   openComparison.addEventListener('click',open);
-  return {...left,openComparison,importsNavigation,bundledNavigation,get right(){return right;},get compare(){return controls?.compare;},get closeComparison(){return controls?.close;},get comparisonStatus(){return controls?.status;},dispose(){if(!active)return;active=false;bundleRequest++;catalogPaint++;bundleSession?.dispose();bundleRows=[];bundleFacade=null;panelLease++;viewOperation++;clearViewport();left.dispose();right?.dispose();right=null;controls?.dispose();controls=null;pair.dispose();openComparison.removeEventListener('click',open);importsNavigation.removeEventListener('click',showImports);bundledNavigation.removeEventListener('click',showBundled);root.replaceChildren();}};
+  return {...left,openComparison,importsNavigation,bundledNavigation,get right(){return right;},get compare(){return controls?.compare;},get closeComparison(){return controls?.close;},get comparisonStatus(){return controls?.status;},dispose(){if(!active)return;active=false;catalogComparison.dispose();bundleRequest++;catalogPaint++;bundleSession?.dispose();bundleRows=[];bundleFacade=null;panelLease++;viewOperation++;clearViewport();left.dispose();right?.dispose();right=null;controls?.dispose();controls=null;pair.dispose();openComparison.removeEventListener('click',open);importsNavigation.removeEventListener('click',showImports);bundledNavigation.removeEventListener('click',showBundled);root.replaceChildren();}};
 }
 
 const hosts=new WeakMap();

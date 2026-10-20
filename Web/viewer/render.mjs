@@ -123,10 +123,15 @@ export function renderComparison(document,root,view){
     if(!active)return;const ticket=++revision;root.replaceChildren();
     const ui=drawing(document,root,instance,ticket,()=>active&&ticket===revision),{add,button,describe}=ui;
     const section=add(root,'section','','comparison');const heading=add(section,'h2',view.status==='partial'?'Partial comparison':view.status==='complete'?'Structural comparison':'Comparison unavailable');heading.setAttribute('tabindex','-1');let focusTarget=focus==='changes'?heading:null;
+    if(view.comparisonKind==='import-bundled'){
+      add(section,'h3','First export versus Bundled rotation');const source=view.sourceContext?.bundled;
+      if(source){if(typeof source.name==='string'){const part=formatUnicode(source.name,{limit:80});add(section,'p',part.text+(part.remaining?'…':''));}add(section,'p','Declared '+valueText(source.id,128)+'; revision '+valueText(source.revision,32)+'; source '+valueText(source.path,160)+'.');}
+      add(section,'p','Read bundled rotation for full declared information.');
+    }
     add(section,'p','Literal data only. Native readiness, compatibility and gameplay quality are not checked.');
     const diff=view.diff;
     if(view.status==='unavailable'){
-      const side=view.side==='left'?'First export':view.side==='right'?'Second export':'';
+      const side=view.side==='left'?'First export':view.side==='right'?(view.comparisonKind==='import-bundled'?'Bundled rotation':'Second export'):'';
       const messages={'decode-required':'Decode this export before comparing.','schema-unavailable':'Local structural analysis is unavailable. Raw data and original copy remain available.','invalid-structure':'Inspect and resolve structural diagnostics before comparing.','future-schema':'Unsupported envelope schema. Compare is unavailable; inspect raw data instead.','unrecognized-legacy':'Legacy comparison requires a recognized rotation or cooldown list.','comparison-failed':'The comparison could not be completed. Original exports remain available.'};
       add(section,'p',(side?side+': ':'')+(messages[view.reason]||'The strict structural comparison is unavailable. Inspect its diagnostics.'),'problem');
     }

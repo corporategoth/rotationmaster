@@ -81,6 +81,38 @@ export function createBundledViewerSession({catalog,analyze}={}){
     dispose(){active=false;revision++;result=null;}
   };
 }
+// Shared policy keeps the established import accessor/callback order. Only
+// the new source controller supplies a guard around callback-capable reads.
+const apply=Reflect.apply;
+const retiredComparison={};
+function comparisonField(object,key,guard){
+  if(guard&&!guard())throw retiredComparison;const value=object[key];
+  if(guard&&!guard())throw retiredComparison;return value;
+}
+function comparisonEvery(items,callback,guard){return apply(comparisonField(items,'every',guard),items,[callback]);}
+function eligibleImport(view,side,guard){
+  const f=(o,k)=>comparisonField(o,k,guard);
+  if(!(view===null||view===undefined?undefined:f(f(view,'decode'),'ok')))return {status:'unavailable',reason:'decode-required',side};
+  if(!f(view,'analysis'))return {status:'unavailable',reason:'schema-unavailable',side};
+  if(f(f(view,'analysis'),'recognized')===false||f(f(view,'decode'),'kind')==='envelope'&&(Map.prototype.get.call(f(f(view,'decode'),'value'),'schemaVersion')!==1||f(f(view,'analysis'),'recognized')!==true))return {status:'unavailable',reason:'future-schema',side};
+  if(f(f(f(view,'analysis'),'validation'),'valid')!==true)return {status:'unavailable',reason:'invalid-structure',side};
+  if(f(f(view,'decode'),'kind')==='envelope')return {value:f(f(view,'decode'),'value'),legacy:false};
+  const value=f(f(view,'decode'),'value');
+  if(!(value instanceof Map)||!['rotation','cooldowns'].some(key=>Map.prototype.get.call(value,key) instanceof Map))return {status:'unavailable',reason:'unrecognized-legacy',side};
+  return {value:new Map([['body',value]]),legacy:true};
+}
+function denseComparison(items,limit,guard){if(!Array.isArray(items)||comparisonField(items,'length',guard)>limit)return false;for(let i=0;i<comparisonField(items,'length',guard);i++)if(!Object.hasOwn(items,i))return false;return true;}
+function usableComparison(diff,guard){
+  const f=(o,k)=>comparisonField(o,k,guard);
+  return diff&&typeof f(diff,'valid')==='boolean'&&typeof f(diff,'complete')==='boolean'
+    &&denseComparison(f(diff,'changes'),500,guard)&&denseComparison(f(diff,'diagnostics'),100,guard)
+    &&comparisonEvery(f(diff,'diagnostics'),d=>d&&typeof f(d,'code')==='string'&&typeof f(d,'path')==='string',guard)
+    &&comparisonEvery(f(diff,'changes'),c=>c&&['added','removed','changed','moved'].includes(f(c,'kind'))&&typeof f(c,'path')==='string'&&f(c,'path').length<=4096
+      &&denseComparison(f(c,'segments'),64,guard)&&comparisonEvery(f(c,'segments'),s=>s&&['field','step'].includes(f(s,'kind'))&&checkPortable(f(s,'key')).ok&&(typeof f(s,'key')==='string'||f(s,'kind')==='field'&&Number.isInteger(f(s,'key'))&&f(s,'key')>=1),guard)
+      &&['fromIndex','toIndex'].every(k=>f(c,k)===undefined||Number.isInteger(f(c,k))&&f(c,k)>=1&&f(c,k)<=2000)
+      &&(f(c,'stepId')===undefined||typeof f(c,'stepId')==='string')
+      &&['before','after'].every(k=>!Object.hasOwn(c,k)||checkPortable(f(c,k)).ok),guard);
+}
 // Pair authority is separate from either source's accepted decode. No raw input
 // is decoded by Compare, and no inspection-only index authorizes strict diff.
 export function createComparisonSession({analyze,compare=diffRotations}={}){
@@ -92,27 +124,6 @@ export function createComparisonSession({analyze,compare=diffRotations}={}){
     decode(){if(!active)return null;retire();return session.decode();},
     input(){return active?session.input():'';},view(){return active?session.view():null;},original(){return active?session.original():null;}
   };}
-  function eligible(view,side){
-    if(!view?.decode.ok)return {status:'unavailable',reason:'decode-required',side};
-    if(!view.analysis)return {status:'unavailable',reason:'schema-unavailable',side};
-    if(view.analysis.recognized===false||view.decode.kind==='envelope'&&(Map.prototype.get.call(view.decode.value,'schemaVersion')!==1||view.analysis.recognized!==true))return {status:'unavailable',reason:'future-schema',side};
-    if(view.analysis.validation.valid!==true)return {status:'unavailable',reason:'invalid-structure',side};
-    if(view.decode.kind==='envelope')return {value:view.decode.value,legacy:false};
-    const value=view.decode.value;
-    if(!(value instanceof Map)||!['rotation','cooldowns'].some(key=>Map.prototype.get.call(value,key) instanceof Map))return {status:'unavailable',reason:'unrecognized-legacy',side};
-    return {value:new Map([['body',value]]),legacy:true};
-  }
-  function dense(items,limit){if(!Array.isArray(items)||items.length>limit)return false;for(let i=0;i<items.length;i++)if(!Object.hasOwn(items,i))return false;return true;}
-  function usable(diff){
-    return diff&&typeof diff.valid==='boolean'&&typeof diff.complete==='boolean'
-      &&dense(diff.changes,500)&&dense(diff.diagnostics,100)
-      &&diff.diagnostics.every(d=>d&&typeof d.code==='string'&&typeof d.path==='string')
-      &&diff.changes.every(c=>c&&['added','removed','changed','moved'].includes(c.kind)&&typeof c.path==='string'&&c.path.length<=4096
-        &&dense(c.segments,64)&&c.segments.every(s=>s&&['field','step'].includes(s.kind)&&checkPortable(s.key).ok&&(typeof s.key==='string'||s.kind==='field'&&Number.isInteger(s.key)&&s.key>=1))
-        &&['fromIndex','toIndex'].every(k=>c[k]===undefined||Number.isInteger(c[k])&&c[k]>=1&&c[k]<=2000)
-        &&(c.stepId===undefined||typeof c.stepId==='string')
-        &&['before','after'].every(k=>!Object.hasOwn(c,k)||checkPortable(c[k]).ok));
-  }
   return {
     pane(side){if(!Object.hasOwn(panes,side))throw new TypeError('invalid-viewer-side');return panes[side];},
     view(){return active?result:null;},
@@ -120,16 +131,86 @@ export function createComparisonSession({analyze,compare=diffRotations}={}){
       if(!active)return null;const token=++generation;result=null;
       const leftView=sessions.left.view(),rightView=sessions.right.view();
       let left,right;
-      try{left=eligible(leftView,'left');right=eligible(rightView,'right');}catch{left={status:'unavailable',reason:'comparison-failed'};}
+      try{left=eligibleImport(leftView,'left');right=eligibleImport(rightView,'right');}catch{left={status:'unavailable',reason:'comparison-failed'};}
       if(!active||token!==generation||sessions.left.view()!==leftView||sessions.right.view()!==rightView)return null;
       if(left.status||right?.status){result=left.status?left:right;return result;}
       let value;
-      try{const diff=compare(left.value,right.value);value=usable(diff)?{status:diff.valid?(diff.complete?'complete':'partial'):'unavailable',diff,mixed:left.legacy!==right.legacy}: {status:'unavailable',reason:'comparison-failed'};}
+      try{const diff=compare(left.value,right.value);value=usableComparison(diff)?{status:diff.valid?(diff.complete?'complete':'partial'):'unavailable',diff,mixed:left.legacy!==right.legacy}: {status:'unavailable',reason:'comparison-failed'};}
       catch{value={status:'unavailable',reason:'comparison-failed'};}
       if(!active||token!==generation||sessions.left.view()!==leftView||sessions.right.view()!==rightView)return null;
       result=value;return result;
     },
     dispose(){if(!active)return;active=false;retire();sessions.left.clear();sessions.right.clear();}
+  };
+}
+// First-import versus generated selection is a separate authority; it neither
+// edits a source nor adopts the existing two-import comparison session.
+export function createBundledComparisonSession({readImport,readBundled,compare=diffRotations}={}){
+  let active=true,generation=0,pending=null;
+  const live=token=>active&&token===generation;
+  function observe(token){
+    const snapshot={left:null,right:null,leftFailed:false,rightFailed:false};
+    for(const [side,reader]of [['left',readImport],['right',readBundled]]){
+      if(!live(token))throw retiredComparison;
+      try{snapshot[side]=typeof reader==='function'?reader():null;}catch{snapshot[side+'Failed']=true;}
+      if(!live(token))throw retiredComparison;
+    }return snapshot;
+  }
+  const equalSources=(a,b)=>a.leftFailed===b.leftFailed&&a.rightFailed===b.rightFailed&&a.left===b.left&&a.right===b.right;
+  function matches(token,snapshot){
+    if(!live(token))return false;const current=observe(token);if(!equalSources(current,snapshot))return false;
+    // A reader may reenter and change its opposite source. Confirm the pair
+    // again after both callbacks rather than certifying an earlier left read.
+    const confirmed=observe(token);return live(token)&&equalSources(confirmed,snapshot);
+  }
+  function bundledEligible(view,guard){
+    const f=(o,k)=>comparisonField(o,k,guard),side='right';
+    if(!view||f(view,'sourceKind')!=='bundled')return {status:'unavailable',reason:'decode-required',side};
+    const value=f(view,'value');if(!(value instanceof Map))return {status:'unavailable',reason:'invalid-structure',side};
+    const analysis=f(view,'analysis');if(!analysis)return {status:'unavailable',reason:'schema-unavailable',side};
+    if(Map.prototype.get.call(value,'schemaVersion')!==1||f(analysis,'recognized')!==true)return {status:'unavailable',reason:'future-schema',side};
+    const validation=f(analysis,'validation');if(!validation||f(validation,'valid')!==true)return {status:'unavailable',reason:'invalid-structure',side};
+    return {value,legacy:false};
+  }
+  function context(view,guard){
+    if(!view)return {importSide:'left',bundled:null};const f=(o,k)=>comparisonField(o,k,guard);
+    if(f(view,'sourceKind')!=='bundled')return {importSide:'left',bundled:null};
+    const value=f(view,'value');if(!(value instanceof Map))return {importSide:'left',bundled:null};
+    const id=Map.prototype.get.call(value,'id'),revision=Map.prototype.get.call(value,'revision'),source=f(view,'source'),display=f(view,'display');
+    if(!source||!display)return {importSide:'left',bundled:null};const path=f(source,'path'),name=f(display,'name');
+    if(typeof id!=='string'||typeof path!=='string'||typeof name!=='string')return {importSide:'left',bundled:null};
+    return {importSide:'left',bundled:{id,revision,path,name}};
+  }
+  const stamp=(value,sourceContext)=>({...value,comparisonKind:'import-bundled',sourceContext});
+  return {
+    compare(){
+      if(!active)return null;const token=++generation;pending=null;let snapshot,sourceContext={importSide:'left',bundled:null},value;
+      try{
+        snapshot=observe(token);const guard=()=>matches(token,snapshot);if(!guard())return null;
+        sourceContext=context(snapshot.right,guard);
+        if(snapshot.leftFailed||snapshot.rightFailed)value={status:'unavailable',reason:'comparison-failed',side:snapshot.leftFailed?'left':'right'};
+        else{
+          const left=eligibleImport(snapshot.left,'left',guard),right=bundledEligible(snapshot.right,guard);if(!guard())return null;
+          if(left.status||right.status)value=left.status?left:right;
+          else{
+            const diff=compare(left.value,right.value);if(!guard())return null;
+            if(usableComparison(diff,guard))value={status:comparisonField(diff,'valid',guard)?(comparisonField(diff,'complete',guard)?'complete':'partial'):'unavailable',diff,mixed:left.legacy!==right.legacy};
+            else value={status:'unavailable',reason:'comparison-failed'};
+          }
+        }
+        if(!guard())return null;
+      }catch(error){if(error===retiredComparison||!live(token))return null;value={status:'unavailable',reason:'comparison-failed'};}
+      if(!live(token))return null;try{if(snapshot&&!matches(token,snapshot))return null;}catch{return null;}
+      const result=stamp(value,sourceContext);pending={snapshot,result};return result;
+    },
+    clear(){generation++;pending=null;},
+    view(){
+      if(!active||!pending)return null;const current=pending,token=generation;
+      try{if(!matches(token,current.snapshot)){if(live(token)&&pending===current){generation++;pending=null;}return null;}}
+      catch{if(live(token)&&pending===current){generation++;pending=null;}return null;}
+      return live(token)&&pending===current?current.result:null;
+    },
+    dispose(){active=false;generation++;pending=null;}
   };
 }
 const escaped=c=>{const n=c.codePointAt(0);return n<=255?'\\x'+n.toString(16).toUpperCase().padStart(2,'0'):'\\u{'+n.toString(16).toUpperCase()+'}';};
