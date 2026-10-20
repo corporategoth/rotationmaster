@@ -2427,6 +2427,16 @@ L["Default.TBC.Priest.Continuation.Description"] = "Bounded solo Priest preview 
 L["Default.TBC.Warrior.Continuation.Name"] = "Warrior: early leveling (20–29)"
 L["Default.TBC.Warrior.Continuation.Description"] = "Bounded combat-only Warrior preview for levels 20–29. Optional Battle Shout, learned Execute below 20% target health, then Heroic Strike and normal melee fallback. Preserves all four queued Heroic Strike ranks in this bracket. Rend maintenance ends here; reactive abilities, stances, pulls and resource or queue planning remain manual."
 
+L["Default.TBC.Hunter.Continuation.Name"] = "Hunter: early leveling (20–29)"
+L["Default.TBC.Hunter.Continuation.Description"] = "Bounded ranged preview for levels 20–29. Auto Shot, own Serpent Sting and Arcane Shot use native learned ranks and availability. Preserves current casts, channels, Auto Shot, chosen Monkey or Cheetah, and attributable own Scorpid Sting. Pets, melee, ammunition, shot timing, positioning and resources remain manual."
+L["Default.TBC.Paladin.Continuation.Name"] = "Paladin: manual seal/aura preview (20–29)"
+L["Default.TBC.Paladin.Continuation.Description"] = "Bounded preview for levels 20–29. Optional Devotion and Righteousness preserve recognized manual aura and Crusader, Command or Justice choices. Only Righteousness Judgement is advised in combat; choose other seals, auras, their Judgements and resource use manually. Native learned ranks, bar mappings and readiness remain authoritative."
+L["Default.TBC.Druid.Caster.Continuation.Name"] = "Druid: caster leveling (20–29)"
+L["Default.TBC.Druid.Caster.Continuation.Description"] = "Bounded humanoid caster preview for levels 20–29. Maintains attributable own Moonfire, then prefers actually learned stationary Starfire before Wrath fallback. Preserves current casts and channels; shifted forms stop caster advice. Feral attacks, forms, healing, talents, crowd control and resources remain manual."
+
+L["Default.TBC.Rogue.Continuation.Name"] = "Rogue: early leveling (20–29)"
+L["Default.TBC.Rogue.Continuation.Description"] = "Bounded melee preview for levels 20–29. Retains missing own Slice and Dice from two combo points, Eviscerate from five, otherwise Sinister Strike, using actually learned ranks and native readiness. Preserves stealth, casts and channels. Poisons, openers, positional attacks, reactive talents, target lifetime and resources remain manual."
+
 -- BEGIN GENERATED RM PUBLIC HELPER DOCS
 L["Absolute health target (negative means deficit) or percentage fraction."] = true
 L["All original results, preserving nil positions and return count."] = true

@@ -419,6 +419,131 @@ local function appendValidationScopes(report,run,sampleEnd)
  else local omitted='Private validation scopes omitted to keep report bounded.';if bytes+1+#omitted<16000 then report[#report+1]=omitted end end
 end
 -- END PRIVATE VALIDATION SCOPES
+-- BEGIN RUNTIME WORK VIEWS
+-- Fixed pointers only. Readers are source-local literal returns, not helpers.
+local workGroups,workClosed,workCount,workCapture={},false,0,nil
+local workEqual=rawequal
+local workSpecs={
+ {name='store',namespace='RotationData',anchor='NewRotationStore',slots={'Store.plain','Store.fields','Store.validAddress'}},
+ {name='main',anchor='EvaluateNextActionInternal',slots={'Main.UpdateUnitInfo'}},
+ {name='diagnostics',namespace='Diagnostics',member='Call',slots={'Diagnostics.Call'}},
+ {name='profile',namespace='evaluationProfile',member='child',slots={'EvaluationProfile.child'}},
+}
+local workInstaller
+local function workRetire()
+ workClosed=true
+ if workEqual(proofRawget(addon,'BindCPURuntimeWorkDiagnostic'),workInstaller) then addon.BindCPURuntimeWorkDiagnostic=nil end
+end
+workInstaller=function(self,name,anchor,reader)
+ if workClosed or not workEqual(self,addon) or (name~='store' and name~='main')
+  or proofType(anchor)~='function' or proofType(reader)~='function' or workGroups[name] then return false end
+ local namespace=addon;if name=='store' then namespace=proofRawget(addon,'RotationData') end
+ workGroups[name]={anchor=anchor,reader=reader,namespace=namespace}
+ workCount=workCount+1;if workCount==2 then workRetire() end
+ return true
+end
+addon.BindCPURuntimeWorkDiagnostic=workInstaller
+local function workClear(run)
+ local state=run.runtimeWork;if state then state.phase='retired' end
+ run.runtimeWork=nil;if workCapture==run then workCapture=nil end
+end
+local function workEnding(run,status)
+ if status~='complete' then workClear(run) elseif run.runtimeWork then run.runtimeWork.phase='end' end
+end
+local function workNamespace(spec)
+ if spec.namespace then return proofRawget(addon,spec.namespace) end
+ return addon
+end
+local function workFunctions(run,source,current)
+ if not current() then return nil,'capture-retired' end
+ if not workEqual(run.owner,addon) then return nil,'owner-changed' end
+ local spec,group=source.spec,source.group
+ if spec.anchor and not group then return nil,'unbound' end
+ local namespace=workNamespace(spec)
+ if not readable(namespace) or not workEqual(namespace,source.namespace) or proofType(namespace)~='table' then return nil,'owner-changed' end
+ local values
+ if spec.anchor then
+  local anchor=proofRawget(namespace,spec.anchor)
+  if not readable(anchor) or not workEqual(anchor,group.anchor) then return nil,'owner-changed' end
+  if not current() then return nil,'capture-retired' end
+  values=validationTuple(proofPcall(group.reader))
+  if not current() then return nil,'capture-retired' end
+  if not values[1] then return nil,'provider-unavailable' end
+  if values.n~=#spec.slots+1 then return nil,'invalid-source-function' end
+  if not workEqual(proofRawget(addon,spec.namespace or spec.anchor),spec.namespace and namespace or group.anchor)
+   or not workEqual(proofRawget(namespace,spec.anchor),group.anchor) then return nil,'owner-changed' end
+ else values={true,proofRawget(namespace,spec.member)} end
+ for i=1,#spec.slots do if not readable(values[i+1]) or proofType(values[i+1])~='function' then return nil,'invalid-source-function' end end
+ if not current() then return nil,'capture-retired' end
+ if not workEqual(workNamespace(spec),namespace) then return nil,'owner-changed' end
+ if spec.anchor then
+  if not workEqual(proofRawget(namespace,spec.anchor),group.anchor) then return nil,'owner-changed' end
+ elseif not workEqual(proofRawget(namespace,spec.member),values[2]) then return nil,'function-replaced' end
+ return values
+end
+local function workStart(run)
+ if active~=run then return end
+ local state={phase='start',views={},samples={},sources={}};run.runtimeWork=state;workCapture=run
+ state.current=function() return workCapture==run and run.runtimeWork==state
+  and (state.phase=='start' and active==run or state.phase=='end' and active==nil) end
+ local seen,total={},0
+ local function remember(row) if not seen[row.fn] then seen[row.fn]=row;total=total+1 end end
+ for _,row in ipairs(run.rows) do remember(row) end
+ for _,group in ipairs({run.privateCache,run.activity or {},run.validationScopes or {}}) do for _,row in ipairs(group.samples or {}) do remember(row) end end
+ for _,spec in ipairs(workSpecs) do
+  local group=workGroups[spec.name]
+  local namespace=workNamespace(spec);if group then namespace=group.namespace end
+  local source={spec=spec,group=group,namespace=namespace}
+  state.sources[#state.sources+1]=source
+  local funcs,reason=workFunctions(run,source,state.current)
+  for i,name in ipairs(spec.slots) do
+   local view={label='Work.'..name,source=source,slot=i,reason=reason};state.views[#state.views+1]=view
+   if funcs then
+    local fn=funcs[i+1];view.fn=fn;local sample=seen[fn]
+    if not sample then
+     if total>=MAX_FUNCTIONS then view.reason='selection-limit'
+     else sample={fn=fn};seen[fn]=sample;total=total+1;state.samples[#state.samples+1]=sample
+      sample.before,sample.reason=validationSnapshot(run,fn,state.current) end
+    end
+    view.sample=sample
+   end
+  end
+ end
+end
+local function appendWorkViews(report,run,sampleEnd)
+ local state=run.runtimeWork
+ local lines={'Runtime work views (native counters; shared functions overlap):'};local available=0;local index=0
+ if state then for _,source in ipairs(state.sources) do source.functions,source.reason=workFunctions(run,source,state.current) end end
+ for _,spec in ipairs(workSpecs) do for _,name in ipairs(spec.slots) do
+  index=index+1;local view=state and state.views[index];local problem=view and view.reason or 'baseline-unavailable'
+  local sample,current
+  if view then
+   problem=view.reason
+   if not problem then
+    local source=view.source;problem=source.reason
+    if not problem and not workEqual(source.functions[view.slot+1],view.fn) then problem='function-replaced' end
+    sample=view.sample;problem=problem or sample.reason
+    if not problem then current,problem=sampleEnd(run,sample,state.current) end
+    if not problem then for _,key in ipairs({'exclusive','inclusive','calls','inclusiveCalls'}) do if current[key]<sample.before[key] then problem='function-cpu-counter-reset';break end end end
+   end
+  end
+  local exclusive,inclusive,calls
+  if not problem then
+   exclusive,inclusive,calls=current.exclusive-sample.before.exclusive,current.inclusive-sample.before.inclusive,current.calls-sample.before.calls
+   if not finite(exclusive) or not finite(inclusive) or not counter(calls,true) then problem='invalid-function-cpu-delta' end
+  end
+  local label='Work.'..name
+  lines[#lines+1]=problem and label..' | unavailable: '..problem or string.format('%s | exclusive=%.3f ms | inclusive=%.3f ms | calls=%s',label,exclusive,inclusive,tostring(calls))
+  if not problem then available=available+1 end
+ end end
+ lines[#lines+1]=string.format('Fixed runtime work views: aliases=6; available=%d; unavailable=%d (excluded from rankings above).',available,6-available)
+ lines[#lines+1]='Shared function counters include all callers; inclusive scopes overlap, not additive.'
+ local bytes=#report-1;for _,line in ipairs(report) do bytes=bytes+#line end
+ local extra=#lines;for _,line in ipairs(lines) do extra=extra+#line end
+ if bytes+extra<16000 then for _,line in ipairs(lines) do report[#report+1]=line end
+ else local omitted='Runtime work views omitted to keep report bounded.';if bytes+1+#omitted<16000 then report[#report+1]=omitted end end
+end
+-- END RUNTIME WORK VIEWS
 local function finishSample(run,row,guard)
  if not row.sampled then
   row.sampled=true
@@ -606,6 +731,9 @@ local function finish(run,status,reason)
  -- BEGIN PRIVATE VALIDATION END TOKEN
  validationEnding(run,status)
  -- END PRIVATE VALIDATION END TOKEN
+ -- BEGIN RUNTIME WORK END TOKEN
+ workEnding(run,status)
+ -- END RUNTIME WORK END TOKEN
  active=nil;run.timer=nil
  -- BEGIN CPU ACTIVITY STOP
  activityStop(run)
@@ -691,6 +819,12 @@ local function finish(run,status,reason)
    appendValidationScopes(report,run,finishSample)
    if validationEntered and not validationState.current() then validationClear(run);return end
    -- END PRIVATE VALIDATION APPENDIX
+   -- BEGIN RUNTIME WORK APPENDIX
+   local workState=run.runtimeWork
+   local workEntered=workState and workState.current()
+   appendWorkViews(report,run,finishSample)
+   if workEntered and not workState.current() then workClear(run);return end
+   -- END RUNTIME WORK APPENDIX
    text=table.concat(report,'\n')
   end
  end
@@ -698,6 +832,9 @@ local function finish(run,status,reason)
  -- BEGIN PRIVATE VALIDATION CLEANUP
  validationClear(run)
  -- END PRIVATE VALIDATION CLEANUP
+ -- BEGIN RUNTIME WORK CLEANUP
+ workClear(run)
+ -- END RUNTIME WORK CLEANUP
  lastReport=text
  local callback=field(run.owner,'OnCPUProfileFinished');if type(callback)=='function' then pcall(callback,run.owner,text,status) end
 end
@@ -705,6 +842,9 @@ function addon:StartCPUProfile(duration)
  -- BEGIN PRIVATE VALIDATION RETIRE
  validationRetire()
  -- END PRIVATE VALIDATION RETIRE
+ -- BEGIN RUNTIME WORK RETIRE
+ workRetire()
+ -- END RUNTIME WORK RETIRE
  if active then return false,'already-running' end
  if duration==nil then duration=10 end
  if not finite(duration) or duration<1 or duration>60 then return false,'invalid-duration' end
@@ -733,10 +873,18 @@ function addon:StartCPUProfile(duration)
  validationStart(run)
  if validationEntered and active~=run then validationClear(run);return true end
  -- END PRIVATE VALIDATION START
+ -- BEGIN RUNTIME WORK START
+ local workEntered=active==run
+ workStart(run)
+ if workEntered and active~=run then workClear(run);return true end
+ -- END RUNTIME WORK START
  local ok,timer=pcall(self.ScheduleTimer,self,function() finish(run,'complete') end,duration)
  -- BEGIN PRIVATE VALIDATION TIMER FAILURE
  if not ok or not timer then validationClear(run) end
  -- END PRIVATE VALIDATION TIMER FAILURE
+ -- BEGIN RUNTIME WORK TIMER FAILURE
+ if not ok or not timer then workClear(run) end
+ -- END RUNTIME WORK TIMER FAILURE
  if not ok or not timer then if active==run then active=nil end;activityStop(run);return false,'timer-error' end
  run.timer=timer;if active==run then run.executionIndexProof=executionIndexProof() end;lastReport=nil
  -- BEGIN STANDALONE PREVIEW START

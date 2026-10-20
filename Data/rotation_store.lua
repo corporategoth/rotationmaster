@@ -605,3 +605,9 @@ function data.NewRotationStore(options)
     end
     return service
 end
+-- BEGIN CPU RUNTIME WORK HANDOFF
+do
+ local bind=addon.BindCPURuntimeWorkDiagnostic
+ if type(bind)=='function' then bind(addon,'store',data.NewRotationStore,function() return plain,fields,validAddress end) end
+end
+-- END CPU RUNTIME WORK HANDOFF

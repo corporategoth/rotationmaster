@@ -8512,6 +8512,7 @@ return F
 
 }
 return function(text,path)
+ if path=='main.lua' then text=dofile('tests/fixtures/restore_cpu_work_views.lua')(text,path) end
  local row=assert(rows[path],'unknown active-transition inverse path')
  assert(text==row.new,'active-transition source differs: '..path)
  return row.old

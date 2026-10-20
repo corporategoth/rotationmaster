@@ -1856,3 +1856,9 @@ addon.ITEM_DATA_LOAD_RESULT = wrapEvent(function(_, _, itemId, success)
         addon:UpdateReferenceItem(itemId)
     end
 end)
+-- BEGIN CPU RUNTIME WORK HANDOFF
+do
+ local bind=addon.BindCPURuntimeWorkDiagnostic
+ if type(bind)=='function' then bind(addon,'main',addon.EvaluateNextActionInternal,function() return UpdateUnitInfo end) end
+end
+-- END CPU RUNTIME WORK HANDOFF

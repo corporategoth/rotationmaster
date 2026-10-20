@@ -2354,6 +2354,7 @@ return function(text,path,baseline)
  local old=assert(records[path],"unknown validation-scope module")
  if baseline then assert(text==nil);return old end
  assert(type(text)=="string")
+ if path=='Diagnostics/cpu.lua' then text=dofile('tests/fixtures/restore_cpu_work_views.lua')(text,path) end
  for _,patch in ipairs(patches[path])do
   local first,last=text:find(patch.current,1,true);assert(first,"exact validation-scope block missing")
   assert(not text:find(patch.current,last+1,true),"validation-scope block repeated")

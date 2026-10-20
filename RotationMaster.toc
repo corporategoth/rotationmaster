@@ -287,6 +287,10 @@ Defaults/tbc/priest-20-29.lua
 Defaults/tbc/warrior-starter.lua
 Defaults/tbc/warrior-20-29.lua
 Defaults/tbc/paladin-starter.lua
+Defaults/tbc/paladin-20-29.lua
 Defaults/tbc/hunter-starter.lua
+Defaults/tbc/hunter-20-29.lua
 Defaults/tbc/druid-caster-starter.lua
+Defaults/tbc/druid-caster-20-29.lua
 Defaults/tbc/rogue-starter.lua
+Defaults/tbc/rogue-20-29.lua
