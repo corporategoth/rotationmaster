@@ -1,5 +1,8 @@
 local addon_name, addon = ...
 local data = addon.RotationData
+local activeCurrent=addon.IsActiveRotationTransitionCurrent
+local beginActive=addon.BeginActiveRotationTransition
+local retireActive=addon.RetireActiveRotationTransition
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 local definitions, definitionVersion = {}, 0
 local active
@@ -246,9 +249,20 @@ function addon:GetDefaultRotation(id)
     return active.catalog:Get({kind="builtin",id=id})
 end
 function addon:SetDefaultRotationEnabled(id,value)
+    local change=beginActive(self)
     local ok,why=ensure(self);if not ok then return false,why end
+    local selected=self.currentRotation and self:GetDefaultIdForRuntime(self.currentSpec,self.currentRotation)==id
+    if not activeCurrent(self,change) then return false,'rotation-transition-superseded' end
     local saved,reason=active.catalog:SetEnabled({kind="builtin",id=id},value)
     if saved then active.views[id]=active.catalog:Get({kind="builtin",id=id});active.generation={} end
+    if saved and not value and selected and activeCurrent(self,change) then
+        local disable=self.DisableRotation
+        if not activeCurrent(self,change) then return saved,reason end
+        if type(disable)=='function' then
+            local _,nextChange,stopped=disable(self)
+            if stopped~=false and activeCurrent(self,nextChange or change) then self.manualRotation=false end
+        elseif retireActive(self,change) and activeCurrent(self,change) then self.manualRotation=false end
+    end
     return saved,reason
 end
 function addon:GetEditableRotation(spec,id)
@@ -616,6 +630,7 @@ function addon:BuildRotationComparison(spec,id,target)
 end
 
 function addon:DeleteCustomRotation(spec,id,expected)
+    local change=beginActive(self)
     local scoped=self.GetScopedRotationCoordinator and self:GetScopedRotationCoordinator();if scoped then
         local reference,why=scoped:Resolve(spec,id);if not reference then return nil,why end
         if reference.kind=='builtin' then return nil,'read-only-rotation' end
@@ -625,9 +640,15 @@ function addon:DeleteCustomRotation(spec,id,expected)
         if deletingCurrent then for _,field in ipairs({'scope','class','owner','spec','id'}) do if currentReference.address[field]~=reference.address[field] then deletingCurrent=false;break end end end
         local ok,problem=scoped:Delete(reference,expected)
         if not ok then return nil,problem end
-        if deletingCurrent then
-            if self.RemoveAllCurrentGlows then self:RemoveAllCurrentGlows() end
-            self.currentRotation=nil;self.manualRotation=false
+        if deletingCurrent and activeCurrent(self,change) then
+            if retireActive(self,change) and activeCurrent(self,change) then
+                self.manualRotation=false
+                local available=self.RemoveAllCurrentGlows
+                if available and activeCurrent(self,change) then
+                    local remove=self.RemoveAllCurrentGlows
+                    if activeCurrent(self,change) then remove(self) end
+                end
+            end
         end
         return true
     end
@@ -638,10 +659,17 @@ function addon:DeleteCustomRotation(spec,id,expected)
     for _,key in ipairs({'origins','comparisons','imports'}) do
         if active.state[key][spec]~=nil and not plainTable(active.state[key][spec]) then return nil,'invalid-library-state' end
     end
-    if self.currentRotation==id and (self.currentSpec==nil or self.currentSpec==spec) then
-        if self.RemoveAllCurrentGlows then self:RemoveAllCurrentGlows() end
-        self.currentRotation=nil;self.manualRotation=false
+    if self.currentRotation==id and (self.currentSpec==nil or self.currentSpec==spec) and activeCurrent(self,change) then
+        if retireActive(self,change) and activeCurrent(self,change) then
+            self.manualRotation=false
+            local available=self.RemoveAllCurrentGlows
+            if available and activeCurrent(self,change) then
+                local remove=self.RemoveAllCurrentGlows
+                if activeCurrent(self,change) then remove(self) end
+            end
+        end
     end
+    if not activeCurrent(self,change) then return nil,'rotation-transition-superseded' end
     self.db.profile.rotations[spec][id]=nil
     for _,key in ipairs({'origins','comparisons','imports'}) do
         if active.state[key][spec] then active.state[key][spec][id]=nil end

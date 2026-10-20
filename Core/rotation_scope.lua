@@ -1,5 +1,15 @@
 local addon_name,addon=...
 local data=addon.RotationData
+local prepareActivePublication,finishActivePublication,prepareActiveRebind,finishActiveRebind
+local activeCurrent=addon.IsActiveRotationTransitionCurrent
+local protect,raise=pcall,error
+local preparedBinding,bindGeneration
+local bindIdentity=rawequal
+if type(addon.BindActiveRotationPublication)=='function' then
+    addon:BindActiveRotationPublication(function(prepare,finish,rebind,complete)
+        prepareActivePublication,finishActivePublication,prepareActiveRebind,finishActiveRebind=prepare,finish,rebind,complete
+    end)
+end
 local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
 local libraryReader,libraryGenerationProof
 local bindLibrary=addon.BindRotationLibraryReader
@@ -64,13 +74,91 @@ function addon:GetScopedRotationCoordinator()
     -- the explicit event handler rebinds it; never reopen the old flat adapter.
     return current
 end
+local function rebindContext()
+    if not prepareActiveRebind then return nil end
+    local ticket,reference,token,spec,id=prepareActiveRebind(DEFAULT)
+    if not token then return nil end
+    return {ticket=ticket,reference=reference,token=token,spec=spec,id=id}
+end
+local function completeRebind(binding,coordinator,problem)
+    if not binding or not binding.ticket or not activeCurrent(addon,binding.token) then return end
+    local function read(object,name,...)
+        if not activeCurrent(addon,binding.token) then return nil end
+        local method=object[name]
+        if not activeCurrent(addon,binding.token) then return nil end
+        local value=method(object,...)
+        if not activeCurrent(addon,binding.token) then return nil end
+        return value
+    end
+    local function resolve()
+        if problem then return nil end
+        local key=binding.id
+        if key~=DEFAULT then
+            if not binding.reference then return nil end
+            local reference=read(coordinator,'Resolve',binding.spec,binding.reference)
+            if not reference then return nil end
+            key=read(coordinator,'Key',reference)
+        end
+        if not key then return nil end
+        local reference=read(coordinator,'Resolve',binding.spec,key)
+        local pass=reference and read(coordinator,'RuntimePass',binding.spec)
+        local body=pass and read(pass,'Get',key)
+        return key,reference,body
+    end
+    local ok,key,reference,body=protect(resolve)
+    if not activeCurrent(addon,binding.token) then return end
+    local handle,token=finishActiveRebind(binding.ticket,ok and key or nil,ok and reference or nil,ok and body or nil)
+    if not handle and token and activeCurrent(addon,token) then addon.manualRotation=false end
+end
+local function runPreparedBind(owner,binding,method)
+    local previous=preparedBinding;preparedBinding=binding
+    local ok,result,reason=protect(method,owner)
+    if preparedBinding==binding then preparedBinding=previous end
+    if not ok then raise(result,0) end
+    return result,reason
+end
+function addon:BindActiveRotationProfileRebind(receiver)
+    if self~=addon or type(receiver)~='function' then return nil end
+    receiver(rebindContext,runPreparedBind)
+    return true
+end
 function addon:BindRotationProfile()
-    if current then current:Retire() end
-    local owner=self;local profile=self.db.profile;local state=profile.rotationStore;local fallbackID=profile.rotationFallbackID
+    local bindToken={};bindGeneration=bindToken
+    local binding,profile
+    local function bindingCurrent()
+        if bindGeneration~=bindToken or binding and not activeCurrent(self,binding.token) then return false end
+        if profile then local db=self.db;if not bindIdentity(db and db.profile,profile) then return false end end
+        return bindGeneration==bindToken
+    end
+    if self==addon then
+        binding=preparedBinding or rebindContext()
+        if binding then
+            if binding.used or not bindingCurrent() then return nil,'rotation-transition-superseded' end
+            binding.used=true
+        end
+    end
+    if not bindingCurrent() then return nil,'rotation-transition-superseded' end
+    local previous=current
+    if previous then
+        local retire=previous.Retire
+        if not bindingCurrent() then return nil,'rotation-transition-superseded' end
+        retire(previous)
+        if not bindingCurrent() then return nil,'rotation-transition-superseded' end
+    end
+    local owner=self;profile=self.db.profile;local state=profile.rotationStore;local fallbackID=profile.rotationFallbackID
     local reader,store,problem;local alive=true
     if not libraryReader then problem='rotation-library-not-ready'
     elseif not text(profile.rotationFallbackID,128) then problem='missing-fallback-configuration'
-    else store,problem=data.NewRotationStore({state=state,fallbackID=profile.rotationFallbackID,validation=self:GetRotationValidationOptions(),bindInternalReader=function(value) reader=value end}) end
+    else
+        local construct=data.NewRotationStore
+        if not bindingCurrent() then return nil,'rotation-transition-superseded' end
+        local getOptions=self.GetRotationValidationOptions
+        if not bindingCurrent() then return nil,'rotation-transition-superseded' end
+        local validation=getOptions(self)
+        if not bindingCurrent() then return nil,'rotation-transition-superseded' end
+        store,problem=construct({state=state,fallbackID=profile.rotationFallbackID,validation=validation,bindInternalReader=function(value) reader=value end})
+    end
+    if not bindingCurrent() then return nil,'rotation-transition-superseded' end
     local coordinator={};current=coordinator
     local rosterStamp,rosterOwned,rosterLibrary,rosterValidation,rosterVirtual,rosterBuiltin
     local byKey,byReference,expected,pending,assets,headers,cleanup={},{},setmetatable({},{__mode='k'}),{},{},{},{}
@@ -229,6 +317,7 @@ function addon:BindRotationProfile()
         if revisionPolicy~=nil and revisionPolicy~='import' then return nil,'invalid-rotation-revision-policy' end
         if not plain(record) then return nil,'invalid-record' end
         if token and (not issued or not same(issued.reference,reference) or not same(issued.context,c)) then return nil,'stale-rotation-record' end
+        local previousKey=byReference[referenceKey(reference)]
         local moved=a.scope~=destination.scope or a.owner~=destination.owner
         local previous
         if issued then
@@ -247,6 +336,9 @@ function addon:BindRotationProfile()
         if not body then return nil,problem end
         local detached=copy(record);if not detached then return nil,'invalid-record' end
         record=detached;record.body=body
+        local target={kind='custom',address=destination}
+        local fallbackKey=destination.id==profile.rotationFallbackID and DEFAULT or nil
+        local publication=prepareActivePublication and prepareActivePublication(a.spec,previousKey,reference,target,body,nil,fallbackKey)
         local now,contextProblem=context()
         local current,currentProblem=ready();if not current then return nil,currentProblem end
         if not now then return nil,contextProblem end
@@ -259,7 +351,7 @@ function addon:BindRotationProfile()
         if not plan then return nil,reason end
         local committed,problemText=store:Commit(plan,c);if not committed then return nil,problemText end
         if token then expected[token]=nil end
-        local target={kind='custom',address=destination};local oldIndex=referenceKey(reference);local targetIndex=referenceKey(target)
+        local oldIndex=referenceKey(reference);local targetIndex=referenceKey(target)
         local draft=pending[oldIndex]
         if draft then
             for index,value in pairs(pending) do if value==draft then pending[index]=nil;if index~=targetIndex then byReference[index]=nil end end end
@@ -267,7 +359,10 @@ function addon:BindRotationProfile()
         elseif oldIndex~=targetIndex then
             local oldKey=byReference[oldIndex];if oldKey then cleanup[oldKey]=assets[oldIndex] and assets[oldIndex].body;byKey[oldKey]=nil;byReference[oldIndex]=nil end
         end
-        keyFor(target);return target
+        local nextKey=keyFor(target)
+        local transition
+        if finishActivePublication then local _,change=finishActivePublication(publication,nextKey);transition=change end
+        return target,nil,transition
     end
     function coordinator:Delete(reference,token)
         local ok,why=ready();if not ok then return nil,why end
@@ -317,8 +412,14 @@ function addon:BindRotationProfile()
         local ok,why=ready();if not ok then return nil,why end
         local adoption=adoptionPlans[public];if not adoption then return nil,'invalid-adoption-plan' end
         local c,contextReason=context();if not c or not same(c,adoption.context) then return nil,contextReason or 'rotation-owner-changed' end
-        local committed,commitReason=store:Commit(adoption.plan,c);if not committed then return nil,commitReason end
         local reference={kind='custom',address=copy(adoption.target)}
+        local rows=profile.rotationStore.legacy.rotations[adoption.target.spec]
+        local body=rows and rows[adoption.target.id]
+        local fallbackKey=adoption.target.id==profile.rotationFallbackID and DEFAULT or nil
+        local publication=prepareActivePublication and prepareActivePublication(adoption.target.spec,nil,reference,reference,body,nil,fallbackKey)
+        local current,currentReason=ready();if not current then return nil,currentReason end
+        local now,ownerReason=context();if not now or not same(now,c) then return nil,ownerReason or 'rotation-owner-changed' end
+        local committed,commitReason=store:Commit(adoption.plan,c);if not committed then return nil,commitReason end
         local draft=pending[referenceKey(reference)]
         if draft then
             -- Adoption creates a saved entity, not the old virtual draft's
@@ -329,7 +430,9 @@ function addon:BindRotationProfile()
             end end
             byKey[draft.key]=nil;headers[draft.key]=nil
         end
-        adoptionPlans[public]=nil;keyFor(reference);return true,reference
+        adoptionPlans[public]=nil;keyFor(reference)
+        if finishActivePublication then finishActivePublication(publication) end
+        return true,reference
     end
     function coordinator:SourceView(number,value,imported)
         local record,why=self:Snapshot(number,value);if not record then return nil,why end
@@ -412,8 +515,8 @@ function addon:BindRotationProfile()
         if scope=='character' and not c.character then return nil,'missing-owner-context' end
         reference=reference or {kind='custom',address={scope=scope,class=c.class,owner=scope=='class' and c.class or c.character,spec=number,id=id}}
         if legacyValid then local ok,valid=pcall(legacyValid);if not ok or not valid then return nil,'rotation-changed-externally' end end
-        local saved,commitReason=self:Commit(reference,token,record,scope,'import');if not saved then return nil,commitReason end
-        return id,nil,saved
+        local saved,commitReason,transition=self:Commit(reference,token,record,scope,'import');if not saved then return nil,commitReason end
+        return id,nil,saved,transition
     end
     function coordinator:Copy(number,value,name,options)
         if options~=nil and not plain(options) then return nil,'invalid-rotation-options' end
@@ -654,6 +757,7 @@ function addon:BindRotationProfile()
         end
         return pass
     end
+    completeRebind(binding,coordinator,problem)
     if problem then return nil,problem end
     return true
 end

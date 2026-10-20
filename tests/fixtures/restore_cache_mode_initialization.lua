@@ -6,6 +6,7 @@ local block=[=[    -- BEGIN CACHE DIAGNOSTIC INITIALIZATION
     -- END CACHE DIAGNOSTIC INITIALIZATION
 ]=]
 return function(text)
+ text=dofile('tests/fixtures/restore_active_rotation_transition.lua')(text,'main.lua')
  assert(type(text)=='string','cache initialization inverse needs main source')
  local first,last=text:find(block,1,true)
  assert(first and not text:find(block,last+1,true),'missing or duplicate cache initialization')

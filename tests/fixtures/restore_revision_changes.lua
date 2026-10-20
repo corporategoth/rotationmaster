@@ -3545,7 +3545,9 @@ end
 }
 local persistent={['Data/validation.lua']=true,['Data/diff.lua']=true,['Data/catalog.lua']=true,['Core/rotation_scope.lua']=true,['Core/rotation_library.lua']=true,['Core/rotation_workspace.lua']=true,['Core/rotation_editor.lua']=true,['Core/imports.lua']=true,['validate.lua']=true}
 local dependency={['Core/rotation_references.lua']=true,['Core/conditions.lua']=true,['Core/functions.lua']=true,['Core/custom_authoring.lua']=true,['Core/function_data.lua']=true,['UI/condition_source_pane.lua']=true,['UI/settings_collections.lua']=true,['UI/settings_draft.lua']=true,['UI/settings_effects.lua']=true,['UI/settings_items.lua']=true,['Core/rotation_lifecycle.lua']=true,['UI/settings_profiles.lua']=true,['init.lua']=true,['validate.lua']=true,['tests/fixtures/addon.lua']=true}
+local activePaths={['Core/rotation_scope.lua']=true,['Core/rotation_library.lua']=true,['Core/rotation_lifecycle.lua']=true,['Core/rotation_editor.lua']=true,['Core/imports.lua']=true,['tests/fixtures/addon.lua']=true}
 return function(text,path,keep)
+ if activePaths[path] then text=dofile('tests/fixtures/restore_active_rotation_transition.lua')(text,path) end
  assert(keep==nil or keep=='persistent' or keep=='dependency','unknown revision integration stage')
  local row=overlaps[path]
  if row then

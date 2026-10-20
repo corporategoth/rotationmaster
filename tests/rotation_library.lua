@@ -9,6 +9,7 @@ local function fixture()
     local n=0;addon.uuid=function() n=n+1;return '00000000-0000-0000-0000-'..string.format('%012d',n) end
     local env=setmetatable({LibStub=function() return {GetLocale=function() return setmetatable({}, {__index=function(_,k) return k end}) end} end},{__index=_G})
     local function load(p) local f=assert(loadfile(p));setfenv(f,env);f('rotationmaster',addon) end
+    load('Core/rotation_active.lua')
     load('Core/rotation_references.lua')
     load('Data/catalog.lua');load('Data/diff.lua');load('Core/rotation_library.lua');load('Core/rotation_tags.lua')
     addon.GetRotationContext=function() return context end

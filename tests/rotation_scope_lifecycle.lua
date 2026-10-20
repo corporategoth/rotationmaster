@@ -12,7 +12,7 @@ local function fixture(saved,class,name)
     env.LibStub=false;load('Libs/LibStub/LibStub.lua');load('Libs/CallbackHandler-1.0/CallbackHandler-1.0.lua');load('Libs/AceDB-3.0/AceDB-3.0.lua')
     env.LibStub:NewLibrary('AceLocale-3.0',1).GetLocale=function() return setmetatable({},{__index=function(_,k) return k end}) end
     a.db=env.LibStub('AceDB-3.0'):New('ScopeDB',{profile={enable=true},global={effects={}},char={bindings={}}},'Shared')
-    for _,p in ipairs({'Data/catalog.lua','Data/diff.lua','Data/rotation_store.lua','Core/rotation_references.lua','Core/rotation_library.lua','Core/rotation_scope.lua','Core/rotation_migration.lua','Core/rotation_lifecycle.lua'}) do load(p) end
+    for _,p in ipairs({'Core/rotation_active.lua','Data/catalog.lua','Data/diff.lua','Data/rotation_store.lua','Core/rotation_references.lua','Core/rotation_library.lua','Core/rotation_scope.lua','Core/rotation_migration.lua','Core/rotation_lifecycle.lua'}) do load(p) end
     a.GetRotationContext=function() return {class=class,family='tbc',spec=0,level=11,actionContext='player',combatDataPolicy='probe'} end
     return a,env,scripts
 end

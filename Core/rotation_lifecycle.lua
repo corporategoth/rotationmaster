@@ -1,4 +1,7 @@
 local addon_name,addon=...
+local activeCurrent=addon.IsActiveRotationTransitionCurrent
+local beginActive=addon.BeginActiveRotationTransition
+local retireActive=addon.RetireActiveRotationTransition
 local invalidateDependencies=addon.InvalidateRotationDependencies
 if type(invalidateDependencies)~='function' then invalidateDependencies=nil end
 local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
@@ -15,13 +18,43 @@ function addon:RefreshRotationProfileStorage()
 end
 
 function addon:RotationProfileChanged()
-    if (self.rotationProfileChangeDepth or 0)>0 then return self:RefreshRotationProfileStorage() end
-    if self.DisableRotation then self:DisableRotation() end
+    local change=beginActive(self)
+    if not activeCurrent(self,change) then return nil,'rotation-transition-superseded' end
+    if (self.rotationProfileChangeDepth or 0)>0 then
+        if not retireActive(self,change) or not activeCurrent(self,change) then return nil,'rotation-transition-superseded' end
+        local refresh=self.RefreshRotationProfileStorage
+        if not activeCurrent(self,change) then return nil,'rotation-transition-superseded' end
+        return refresh(self)
+    end
+    local available=self.DisableRotation
+    if not activeCurrent(self,change) then return nil,'rotation-transition-superseded' end
+    if available then
+        local disable=self.DisableRotation
+        if not activeCurrent(self,change) then return nil,'rotation-transition-superseded' end
+        local _,nextChange,stopped=disable(self)
+        if stopped==false then return nil,'rotation-transition-superseded' end
+        change=nextChange or change
+        if not activeCurrent(self,change) then return nil,'rotation-transition-superseded' end
+    elseif not retireActive(self,change) or not activeCurrent(self,change) then return nil,'rotation-transition-superseded' end
     self.manualRotation=false;self.autoswitchRotation={};self.longtermCache={}
     self.configRotationSelection=nil
-    local ok,why=self:RefreshRotationProfileStorage()
-    if self.RefreshConfiguration then self:RefreshConfiguration() end
-    if ok and self.db.profile.enable and self.EnableRotation then self:EnableRotation() end
+    local refresh=self.RefreshRotationProfileStorage
+    if not activeCurrent(self,change) then return nil,'rotation-transition-superseded' end
+    local ok,why=refresh(self)
+    if not activeCurrent(self,change) then return nil,'rotation-transition-superseded' end
+    local configure=self.RefreshConfiguration
+    if not activeCurrent(self,change) then return nil,'rotation-transition-superseded' end
+    if configure then
+        configure=self.RefreshConfiguration
+        if not activeCurrent(self,change) then return nil,'rotation-transition-superseded' end
+        configure(self)
+    end
+    if not activeCurrent(self,change) then return nil,'rotation-transition-superseded' end
+    if ok and self.db.profile.enable and self.EnableRotation then
+        local enable=self.EnableRotation
+        if not activeCurrent(self,change) then return nil,'rotation-transition-superseded' end
+        enable(self)
+    end
     return ok,why
 end
 

@@ -1,5 +1,13 @@
 local _,addon=...
 local data=addon.RotationData
+local activeCurrent=addon.IsActiveRotationTransitionCurrent
+local beginActive=addon.BeginActiveRotationTransition
+local prepareActivePublication,finishActivePublication
+if type(addon.BindActiveRotationPublication)=='function' then
+    addon:BindActiveRotationPublication(function(prepare,finish)
+        prepareActivePublication,finishActivePublication=prepare,finish
+    end)
+end
 local function plain(value) return type(value)=="table" and getmetatable(value)==nil end
 local function settings(self)
     local options=self:GetRotationValidationOptions();return options
@@ -95,6 +103,7 @@ function addon:CreateImportedRotation(prepared,spec,name,replacement,options)
     if not revised then return nil,revisionError end
     body=revised
     if manifest then manifest.id=id;manifest.revision=1;manifest.nameKey=name end
+    local publication=prepareActivePublication and prepareActivePublication(spec,id,nil,nil,body)
     -- Commit only after every validation/copy/allocation succeeds. Imported
     -- bodies have one saved home; the manifest contains no duplicate body.
     if replacement and not replacement.valid() then return nil,'rotation-changed-externally' end
@@ -111,13 +120,37 @@ function addon:CreateImportedRotation(prepared,spec,name,replacement,options)
         local rows=state.imports[spec] or {};state.imports[spec]=rows
         rows[id]={manifest=manifest,sourceId=sourceId,sourceRevision=sourceRevision,stepOrigins=origins}
     end
-    return id
+    local transition
+    if finishActivePublication then local _,change=finishActivePublication(publication);transition=change end
+    return id,nil,nil,transition
 end
 local function equal(a,b)
     if type(a)~=type(b) then return false end;if type(a)~='table' then return a==b end
     for key,value in pairs(a) do if not equal(value,b[key]) then return false end end;for key in pairs(b) do if a[key]==nil then return false end end;return true
 end
 function addon:ApplyRotationImport(session,token,spec,name,target,expected,options)
+    local change=beginActive(self)
+    local function current() return activeCurrent(self,change) end
+    local function optional(name,...)
+        local available=self[name]
+        if not current() then return false end
+        if available then
+            local method=self[name]
+            if not current() then return false end
+            method(self,...)
+        end
+        return current()
+    end
+    local function switch()
+        local available=self.SwitchRotation
+        if not current() then return false end
+        if available then
+            local method=self.SwitchRotation
+            if not current() then return false end
+            local _,nextChange=method(self);change=nextChange or change
+        end
+        return current()
+    end
     local scoped=self.GetScopedRotationCoordinator and self:GetScopedRotationCoordinator()
     if scoped then
         local prepared,why=session:GetReady(token);if not prepared then return nil,why end
@@ -133,9 +166,15 @@ function addon:ApplyRotationImport(session,token,spec,name,target,expected,optio
             local original=self:GetEditableRotation(spec,reference)
             if expected.target~=original or not data.CheckPortable(original) or not equal(original,expected.body) then return nil,'rotation-changed-externally' end
         end
-        local id,commitReason,saved=self:CreateImportedRotation(prepared,spec,record.body.name or name,{profile=self.db.profile,reference=reference,recordToken=token},options)
+        local id,commitReason,saved,transition=self:CreateImportedRotation(prepared,spec,record.body.name or name,{profile=self.db.profile,reference=reference,recordToken=token},options)
         if not id then return nil,commitReason end
-        if self.UpdateAutoSwitch then self:UpdateAutoSwitch() end;if self.SwitchRotation then self:SwitchRotation() end;if self.EvaluateNextAction then self:EvaluateNextAction() end
+        change=transition or change
+        if not current() then return id,nil,saved end
+        if not optional('UpdateAutoSwitch') then return id,nil,saved end
+        if not current() then return id,nil,saved end
+        if not switch() then return id,nil,saved end
+        if not current() then return id,nil,saved end
+        optional('EvaluateNextAction')
         return id,nil,saved
     end
     local prepared,why=session:GetReady(token);if not prepared then return nil,why end
@@ -146,13 +185,26 @@ function addon:ApplyRotationImport(session,token,spec,name,target,expected,optio
     end
     if not valid() then return nil,'rotation-changed-externally' end
     if self.GetRotationWorkspace then local workspace=self:GetRotationWorkspace(spec,target);if workspace and workspace:IsDirty() then return nil,'rotation-has-unsaved-changes' end end
-    local id,reason=self:CreateImportedRotation(prepared,spec,original.name or name,{id=target,valid=valid})
+    local id,reason,_,transition=self:CreateImportedRotation(prepared,spec,original.name or name,{id=target,valid=valid})
     if not id then return nil,reason end
+    change=transition or change
+    if not current() then return id end
     if self.currentSpec==spec and self.currentRotation==target then
-        if self.RemoveAllCurrentGlows then self:RemoveAllCurrentGlows() elseif self.GlowClear then self:GlowClear() end
+        local available=self.RemoveAllCurrentGlows
+        if not current() then return id end
+        if available then
+            local remove=self.RemoveAllCurrentGlows
+            if not current() then return id end
+            remove(self)
+        elseif not optional('GlowClear') then return id end
+        if not current() then return id end
         self.currentSpell=nil;self.avail_announced={};self.announced={};self.skipAnnounce=true
     end
-    if self.UpdateAutoSwitch then self:UpdateAutoSwitch() end;if self.SwitchRotation then self:SwitchRotation() end;if self.EvaluateNextAction then self:EvaluateNextAction() end
+    if not optional('UpdateAutoSwitch') then return id end
+    if not current() then return id end
+    if not switch() then return id end
+    if not current() then return id end
+    optional('EvaluateNextAction')
     return id
 end
 

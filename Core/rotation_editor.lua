@@ -1,5 +1,11 @@
 local _,addon=...
 local data=addon.RotationData
+local prepareActivePublication,finishActivePublication
+if type(addon.BindActiveRotationPublication)=='function' then
+    addon:BindActiveRotationPublication(function(prepare,finish)
+        prepareActivePublication,finishActivePublication=prepare,finish
+    end)
+end
 
 local function equal(left,right)
     if not data.CheckPortable(left) or not data.CheckPortable(right) then return false end
@@ -148,10 +154,12 @@ function addon:NewRotationEditSession(spec,original,options)
         end
         local saved,problem=data.PrepareRotationContentRevision(snapshot,previous,options.newRecord and 'create' or 'edit',ownership~=originalOwnership)
         if not saved then return finish(nil,problem) end
+        local publication=prepareActivePublication and prepareActivePublication(spec,nil,nil,nil,saved,original)
         if not owner() then return finish(nil,'rotation-target-missing') end
         if not equal(baseline,original) then return finish(nil,'rotation-changed-externally') end
         for key in pairs(original) do original[key]=nil end
         for key,value in pairs(saved) do original[key]=value end
+        if finishActivePublication then finishActivePublication(publication) end
         close();return finish(true)
     end
     return session

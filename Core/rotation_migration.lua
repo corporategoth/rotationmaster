@@ -1,5 +1,12 @@
 local _,addon=...
 local data=addon.RotationData
+local prepareRootRebind,runRootRebind
+local activeCurrent=addon.IsActiveRotationTransitionCurrent
+if type(addon.BindActiveRotationProfileRebind)=='function' then
+    addon:BindActiveRotationProfileRebind(function(prepare,run)
+        prepareRootRebind,runRootRebind=prepare,run
+    end)
+end
 local migrations,adoptions=setmetatable({},{__mode='k'}),setmetatable({},{__mode='k'})
 local function plain(v) return type(v)=='table' and getmetatable(v)==nil end
 local function text(v) return type(v)=='string' and #v>0 and #v<=128 and v:find('%S')~=nil and not v:find('[%z\1-\31\127]') end
@@ -160,7 +167,23 @@ function addon:ApplyRotationAdoption(public)
     local valid,why=data.ValidateRotationStore(plan.original);if not valid then return nil,why end
     local now,archiveReason=data.PlanRotationStoreMigration({rotations=char.rotations});if not now then return nil,archiveReason end
     if not same(plan.original,plan.baseline) or not same(now,plan.charBaseline) then return nil,'stale-adoption-plan' end
+    local binding=prepareRootRebind and prepareRootRebind()
+    local freshChar,freshContext,freshRoot=currentCharacter(self)
+    if self.db.profile~=plan.profile or not same(freshContext,plan.context) or freshChar~=plan.char or freshRoot~=plan.charRoot
+        or char.rotations~=plan.rotations or plan.profile.rotationStore~=plan.original or plan.profile.rotationFallbackID~=plan.fallback then return nil,'stale-adoption-plan' end
+    local freshArchive,freshArchiveReason=data.PlanRotationStoreMigration({rotations=char.rotations})
+    if not freshArchive then return nil,freshArchiveReason end
+    if not same(plan.original,plan.baseline) or not same(freshArchive,plan.charBaseline) then return nil,'stale-adoption-plan' end
+    if self.db.profile~=plan.profile or char.rotations~=plan.rotations or plan.profile.rotationStore~=plan.original
+        or plan.profile.rotationFallbackID~=plan.fallback then return nil,'stale-adoption-plan' end
     plan.profile.rotationStore=plan.proposed;char.rotations=plan.charReplacement;adoptions[public]=nil
-    local bound,bindReason=self:BindRotationProfile();if not bound then return nil,bindReason end
+    if binding and not activeCurrent(self,binding.token) then return true,clone(plan.reference) end
+    local bind=self.BindRotationProfile
+    if binding and not activeCurrent(self,binding.token) then return true,clone(plan.reference) end
+    local bound,bindReason
+    if binding and runRootRebind then bound,bindReason=runRootRebind(self,binding,bind)
+    else bound,bindReason=bind(self) end
+    if binding and not activeCurrent(self,binding.token) then return true,clone(plan.reference) end
+    if not bound then return nil,bindReason end
     return true,clone(plan.reference)
 end

@@ -1,4 +1,6 @@
 local addon_name,addon=...
+local activeCurrent=addon.IsActiveRotationTransitionCurrent
+local beginActive=addon.BeginActiveRotationTransition
 local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
 local data=addon.RotationData
 local function text(parent,font)
@@ -145,7 +147,7 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
     pane.enable=tool(workspace.readOnly and L['Enable Built In'] or L['Enabled'],116,function()
         if workspace.readOnly then
             local current=workspace.source.enabled;local ok,problem=addon:SetDefaultRotationEnabled(workspace.builtin,not current)
-            if ok then workspace.source.enabled=not current;pane:RefreshAdvice();pane:Render() else pane:Message(problem) end
+            if ok then workspace.source.enabled=not current;if pane:RefreshAdvice() then pane:Render() end else pane:Message(problem) end
         else pane:Command('SetBodyField','disabled',not workspace:Snapshot().disabled) end
     end)
     local oldEnable=pane.enable;oldEnable:Hide();table.remove(pane.tools)
@@ -159,18 +161,58 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
     pane.apply=self:CreateWorkbenchButton(pane.frame,L['Apply'],86);pane.apply:SetPoint('BOTTOMRIGHT',-100,8)
     pane.discard=self:CreateWorkbenchButton(pane.frame,L['Discard'],86);pane.discard:SetPoint('BOTTOMRIGHT',-8,8)
     function pane:RefreshAdvice(previous,previousId)
+        local change=beginActive(addon)
+        local function current() return activeCurrent(addon,change) end
+        local function optional(name,...)
+            local available=addon[name]
+            if not current() then return false end
+            if available then
+                local method=addon[name]
+                if not current() then return false end
+                method(addon,...)
+            end
+            return current()
+        end
         if previous and addon.currentSpec==spec and (addon.currentRotation==(previousId or id) or addon.currentRotation==id or workspace.effectiveFallback and addon.currentRotation==DEFAULT) then
             -- Removed/changed actions must be cleared using their old identities.
             for _,step in ipairs(previous.cooldowns or {}) do
-                if addon.GetSpellIds and addon.GlowCooldown then for _,spell in ipairs(addon:GetSpellIds(step)) do addon:GlowCooldown(spell,false) end end
+                if not current() then return false end
+                local available=addon.GetSpellIds and addon.GlowCooldown
+                if not current() then return false end
+                if available then
+                    local get=addon.GetSpellIds
+                    if not current() then return false end
+                    local ids=get(addon,step)
+                    if not current() then return false end
+                    for _,spell in ipairs(ids) do
+                        if not current() then return false end
+                        local glow=addon.GlowCooldown
+                        if not current() then return false end
+                        glow(addon,spell,false)
+                        if not current() then return false end
+                    end
+                end
             end
-            if addon.GlowClear then addon:GlowClear() end
+            if not optional('GlowClear') then return false end
             addon.currentSpell=nil;addon.avail_announced={};addon.announced={};addon.skipAnnounce=true
         end
-        if addon.UpdateAutoSwitch then addon:UpdateAutoSwitch() end
-        if addon.SwitchRotation then addon:SwitchRotation() end
-        if addon.EvaluateNextAction then addon:EvaluateNextAction() end
-        if self.onSaved then self.onSaved() end
+        if not current() or not optional('UpdateAutoSwitch') then return false end
+        local available=addon.SwitchRotation
+        if not current() then return false end
+        if available then
+            local switch=addon.SwitchRotation
+            if not current() then return false end
+            local _,nextChange=switch(addon);change=nextChange or change
+        end
+        if not current() or not optional('EvaluateNextAction') then return false end
+        local saved=self.onSaved
+        if not current() then return false end
+        if saved then
+            saved=self.onSaved
+            if not current() then return false end
+            saved()
+        end
+        return current()
     end
     function pane:AfterDelete() self.deleted=true;if onSelect then onSelect(spec,DEFAULT) else self:Release() end end
     function pane:Apply()
@@ -178,13 +220,13 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
         local fieldsOk,fieldsError=self:FlushFieldEdits();if not fieldsOk then self:Message(fieldsError);return nil,fieldsError end
         local flushed,flushError=self:FlushName();if not flushed then return nil,flushError end
         local previous=workspace.original and data.CopyData(workspace.original)
-        local previousId=id;local ok,problem=workspace:Apply()
+        local previousId=id;local profile=addon.db.profile;local ok,problem=workspace:Apply()
         if ok then
+            if not self.active or self.workspace~=workspace or addon.db.profile~=profile then return ok,problem end
             if workspace.id~=id then
-                if addon.currentSpec==spec and addon.currentRotation==previousId then addon.currentRotation=workspace.id end
                 self:Open(spec,workspace.id,onSelect)
             end
-            self:Message('');self:RefreshAdvice(previous,previousId);self:Render()
+            self:Message('');if self:RefreshAdvice(previous,previousId) then self:Render() end
         else self:Message(problem) end
         return ok,problem
     end

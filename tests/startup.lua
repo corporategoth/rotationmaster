@@ -59,6 +59,7 @@ local function fixture(modern, absentThreat)
     end
     env.WOW_PROJECT_BURNING_CRUSADE_CLASSIC=5
     load('Core/dependency_revisions.lua')
+    load('Core/rotation_active.lua')
     load('Data/artwork.lua')
     load('Platform/client.lua');load('Platform/items.lua');load('Platform/inventory.lua');load('Platform/specializations.lua');load('Platform/communication.lua');load('Functions/values.lua');load('Functions/text.lua');load('Functions/collections.lua');load('Functions/cache.lua');load('Core/announcements.lua');load('Core/action_policy.lua');load('Core/inventory.lua');load('Core/rotation_references.lua')
     load('Data/plain.lua');load('Data/rotation_revision.lua');load('Data/tags.lua');load('Data/rotation_tree.lua');load('Data/validation.lua');load('Core/rotation_sequence.lua');load('Core/rotation_selection.lua')

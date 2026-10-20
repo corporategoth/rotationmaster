@@ -22,6 +22,7 @@ local function fixture()
     a.DisableRotation=function() counts.disable=counts.disable+1 end
     a.EnableRotation=function() counts.enable=counts.enable+1 end
     a.RefreshConfiguration=function() counts.refresh=counts.refresh+1 end
+    load('Core/rotation_active.lua')
     return a,env,load,counts,lib
 end
 
