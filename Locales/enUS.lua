@@ -2378,6 +2378,7 @@ L["Classify a numeric item as a glyph for the requested class, using guarded nat
 L["Client-policy, capability, call or observation availability reason for a nil form."] = true
 L["Client-policy, capability, call or observation availability reason for a nil record."] = true
 L["Client-policy, native-call or required membership availability reason for a nil record."] = true
+L["Closed kind: runner, resist or immune."] = true
 L["Closed scalar kind: current or maximum."] = true
 L["Collect table keys and sort them by their associated values using Lua less-than comparison. This sorts values rather than key names; equal values have no guaranteed key order."] = true
 L["Combat-policy, capability, observation or scan-budget reason for a nil count."] = true
@@ -2426,6 +2427,7 @@ L["Evaluation cache, or nil to bypass caching."] = true
 L["Evaluation-pass cache, or nil for fresh observations."] = true
 L["Evaluation-pass cache, or nil to observe identity directly. Resource mapping is resolved live on each invocation."] = true
 L["Evaluation-pass native observation cache; nil queries afresh."] = true
+L["Evaluation-pass presence cache only; name, level and provider history remain fresh."] = true
 L["Exact helper-owned player, party1..party4 or raid1..raid40 token."] = true
 L["Exact integral native rune slot from 1 through 6."] = true
 L["Exact selected unit token; player class alone may use the successful longterm cache."] = true
@@ -2493,6 +2495,7 @@ L["Newest-first health snapshots containing time, value and max. Falsy input ret
 L["No return values. The destination array is modified in place."] = true
 L["No return values. The supplied table is modified in place."] = true
 L["Nonempty class filename token to count; no class-token whitelist is applied."] = true
+L["Nonempty historical school key for resist/immune; unused for runner."] = true
 L["Normalized bounded socket snapshot with slots and complete, or nil when the query is unavailable."] = true
 L["Normalized requested subject with finite timeRemaining or timeRemainingReason; nil when the required row or subject is unavailable."] = true
 L["Number of entries visited."] = true
@@ -2580,6 +2583,7 @@ L["Read normalized native item classification metadata. The record contains cano
 L["Read one documented active loss-of-control row by its native index and requested subject kind. Type queries require only the readable control type string; school queries require only the readable finite nonnegative integer school mask. Optional timing is returned as a finite timeRemaining or an explicit per-field reason, so an unrelated subject does not require a usable timer. Missing rows are unavailable snapshot observations. No display fields, inferred deadline, duration sum, maximum or native alias fallback is used."] = true
 L["Read one explicitly selected point-resource quantity with an exact two-argument UnitPower or UnitPowerMax query. The selector is required; no primary-resource inference or actor remapping occurs. Preserve finite signed, fractional and zero quantities without clamping. Missing, failed, restricted or nonfinite data remains unavailable. Current and maximum are separate observations so callers can share current snapshots while requesting maximum lazily."] = true
 L["Read one protected GetRuneCooldown tuple for an exact native slot. Normalize ready, start and duration independently: ready requires a readable Boolean, while each time requires a readable finite number and preserves signed, fractional and zero values. Every unavailable field carries its own reason. A successful empty tuple yields a partial record; missing capability, policy or native-call failure yields nil. Never infer ready from timing or timing from ready. Cache this complete record at the caller to share one observation between rune-count and cooldown predicates."] = true
+L["Read optional MobInfo2 historical observations on probe-policy clients. Cache only exact selected-unit presence; UnitName result one, UnitLevel result one and the three-argument MI2_GetMobData(name,level,unit) dot call stay fresh each invocation. Known absent units and successful unrecorded nil or omitted history remain distinct from unavailable native/provider facts. Preserve readable runner scalar truthiness, school signs and missing-Hits default one. Positive resistance ratios must be finite; complete immunity consumes finite Hits while partial immunity needs only its negative school observation. Never infer native resistance or borrow old records."] = true
 L["Read optional RealMobHealth using its exact one-argument dot call. Absent nil/false namespace returns an empty record. Normalize current and maximum independently: nil/false fields permit native fallback, numeric zero remains present. Malformed, failed, restricted, negative or nonfinite consumed provider facts are unavailable. No provider or stale fallback cache is used."] = true
 L["Read public group membership on identified client families. Unknown clients are unsupported. True raidOnly checks IsInRaid; false or nil checks IsInGroup using its native default group category. A readable false result stays false. Missing, failed, malformed or restricted observations return nil with a reason."] = true
 L["Read public roster identity on identified client families. Input routing is limited to player, party1 through party4 and raid1 through raid40. Call UnitExists with that exact one-argument token first; known false returns false without querying class. For a present unit, consume only UnitClass return two as a readable nonempty class filename string, without a class enum restriction. Missing, failed, malformed or restricted required facts return nil with a reason."] = true
@@ -2602,6 +2606,7 @@ L["Readable selected flag or nil when required data is unavailable."] = true
 L["Readable selected flag, false for a known absent unit, or nil when a required observation is unavailable."] = true
 L["Readable unit equality, false for a known absent first unit, or nil when required observations are unavailable."] = true
 L["Record with exists=false, or exists=true and finite value; nil when unavailable."] = true
+L["Record with exists=false; recorded=false for known no history; or runner, ratio, or immune with hits/hitsReason. Nil means a required observation is unavailable."] = true
 L["Record with inInstance and, when inside, instanceType or instanceTypeReason; nil when membership is unavailable."] = true
 L["Reference input kind, such as Spec_EditBox, used for spell suggestions."] = true
 L["Remove entries in place, preserving only keys listed among except values by default. With invert true, remove listed keys and retain unlisted keys. Without an exception list, the default removes every entry and invert true retains every entry. Nil input does nothing."] = true
@@ -2622,6 +2627,7 @@ L["Run the historical health-snapshot trend formula using the live profile histo
 L["Second exact unit token, passed unchanged to UnitIsUnit."] = true
 L["Second table to compare."] = true
 L["Selected nonempty unit token, unchanged in native calls."] = true
+L["Selected nonempty unit token, unchanged in native/provider calls."] = true
 L["Selected nonempty unit token."] = true
 L["Selected nonempty unit token; this call alone does not establish presence."] = true
 L["Selected nonempty unit token; unchanged native argument."] = true

@@ -1,4 +1,4 @@
--- Historical ROLE qualifier proof; role_conditions.lua covers current role readiness.
+-- Historical namespace proof; dedicated ROLE and MobInfo2 suites cover current readiness.
 local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite()
 local cases=dofile('tests/fixtures/catalog_inventory.lua').branches
 local tags={'ISSAME','CLASS','CLASS_GROUP','ROLE','GLYPH','CREATURE','CLASSIFICATION','LEVEL','GROUP','RUNNER','RESIST','IMMUNE'}
@@ -9,6 +9,7 @@ local baselineHashes={['CLASS:common']=3088725613,['CLASSIFICATION:common']=3454
 local callbacks={'valid','evaluate','print','widget','help'}
 local restoreClassGroup=dofile('tests/fixtures/restore_class_group_repairs.lua')
 local restoreRole,_,_,oldRoleBindings=dofile('tests/fixtures/restore_role_repairs.lua')
+local restoreMob,_,_,oldMobBindings=dofile('tests/fixtures/restore_mobinfo2_repairs.lua')
 local function path(name) return 'Functions.'..owners[name]..'.'..name end
 local function identity(name) return 'builtin:'..(owners[name]=='collections' and 'Functions/collections.lua' or 'utils.lua')..':'..name end
 local function fixture(case)
@@ -32,10 +33,14 @@ local function fixture(case)
     for _,file in ipairs({'Platform/spells.lua','Diagnostics/errors.lua','Core/conditions.lua','Data/plain.lua','Data/tags.lua','Data/rotation_tree.lua','Core/rotation_sequence.lua','Conditions/character.lua','Data/builtin_sources.lua','Core/builtin_sources.lua','Core/custom_authoring.lua','Core/function_data.lua'}) do
         if file=='Conditions/character.lua' then
             local h=assert(io.open(file));local text=h:read('*a');h:close()
-            local chunk=assert(loadstring(restoreRole(text),'@'..file));setfenv(chunk,e);chunk('rotationmaster',a)
+            local chunk=assert(loadstring(restoreRole(restoreMob(text)),'@'..file));setfenv(chunk,e);chunk('rotationmaster',a)
         else
             f.load(file)
             if file=='Data/builtin_sources.lua' then
+                for _,tag in ipairs({'RUNNER','RESIST','IMMUNE'}) do
+                    local row=assert(a.BuiltinSourceCatalog.conditions[tag]);row.callbacks.evaluate.code=restoreMob(row.callbacks.evaluate.code,tag,true)
+                    row.callbacks.evaluate.bindings=a:CopySettingsData(oldMobBindings[tag])
+                end
                 for variant,row in pairs(assert(a.BuiltinSourceCatalog.conditions.ROLE.variants)) do
                     row.callbacks.evaluate.code=restoreRole(row.callbacks.evaluate.code,variant,true)
                     row.callbacks.evaluate.bindings=a:CopySettingsData(oldRoleBindings[variant])

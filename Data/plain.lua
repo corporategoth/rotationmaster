@@ -5,27 +5,31 @@ addon.RotationData = data
 -- Inputs are decoded/packaged data, never unsanitized game observations.
 local maxDepth, maxNodes, maxBytes, maxString = 64, 20000, 1048576, 262144
 local function diagnostic(code, path)
-    return {code=code, path=path, severity="error"}
+    local location = "$"
+    for _, key in ipairs(path) do
+        location = location .. (type(key)=="number" and "["..key.."]" or "."..key:sub(1,80))
+    end
+    return {code=code, path=location, severity="error"}
 end
 local function finite(value)
     return value == value and value ~= math.huge and value ~= -math.huge
 end
 
 function data.CheckPortable(value)
-    local active, nodes, bytes = {}, 0, 0
-    local function text(value, path)
+    local active, path, nodes, bytes = {}, {}, 0, 0
+    local function text(value)
         if #value > maxString then return false, diagnostic("data-string-limit", path) end
         bytes = bytes + #value
         if bytes > maxBytes then return false, diagnostic("data-byte-limit", path) end
         return true
     end
-    local function visit(current, path, depth)
+    local function visit(current, depth)
         nodes = nodes + 1
         if nodes > maxNodes then return false, diagnostic("data-node-limit", path) end
         if depth > maxDepth then return false, diagnostic("data-depth-limit", path) end
         local kind = type(current)
         if kind == "nil" or kind == "boolean" then return true end
-        if kind == "string" then return text(current, path) end
+        if kind == "string" then return text(current) end
         if kind == "number" then
             if finite(current) then return true end
             return false, diagnostic("non-finite-number", path)
@@ -35,8 +39,7 @@ function data.CheckPortable(value)
         if active[current] then return false, diagnostic("data-cycle", path) end
         active[current] = true
         local keys = {}
-        -- Bound collection before sorting or visiting children. A wide hostile
-        -- table must not trigger an unbounded sort merely to report an error.
+        -- Preserve bounded collection and deterministic validation order.
         for key in pairs(current) do
             nodes = nodes + 1
             if nodes > maxNodes then return false, diagnostic("data-node-limit", path) end
@@ -52,17 +55,18 @@ function data.CheckPortable(value)
         end)
         for _, key in ipairs(keys) do
             if type(key) == "string" then
-                local ok, why = text(key, path)
+                local ok, why = text(key)
                 if not ok then return false, why end
             end
-            local suffix = type(key) == "number" and "["..key.."]" or "."..key:sub(1, 80)
-            local ok, why = visit(current[key], path..suffix, depth+1)
+            path[#path+1] = key
+            local ok, why = visit(current[key], depth+1)
+            path[#path] = nil
             if not ok then return false, why end
         end
         active[current] = nil
         return true
     end
-    return visit(value, "$", 0)
+    return visit(value, 0)
 end
 
 function data.CopyData(value)

@@ -560,9 +560,10 @@ addon:RegisterCondition("RUNNER", {
         return value.unit ~= nil and Functions.values.isin(addon.units, value.unit)
     end,
     evaluate = function(value, cache)
-        if not Functions.cache.getCached(cache, UnitExists, value.unit) then return false end
-        local data = MI2_GetMobData(UnitName(value.unit), UnitLevel(value.unit), value.unit)
-        return (data.lowHpAction and true or false)
+        local observation,reason=addon.Platform:GetMobInfo2Observation(value.unit,"runner",nil,cache)
+        if observation==nil then return nil,reason end
+        if not observation.exists or observation.recorded==false then return false end
+        return observation.runner
     end,
     print = function(_, value)
         return string.format(L["%s {{!will|will not}} run"], Functions.presentation.nullable(addon.units[value.unit]), Functions.presentation.nullable(addon.units[value.otherunit]))
@@ -596,13 +597,10 @@ addon:RegisterCondition("RESIST", {
                (value.value ~= nil and value.value >= 0.00 and value.value <= 1.00)
     end,
     evaluate = function(value, cache)
-        if not Functions.cache.getCached(cache, UnitExists, value.unit) then return false end
-        local data = MI2_GetMobData(UnitName(value.unit), UnitLevel(value.unit), value.unit)
-        if data.resists[value.school] ~= nil and data.resists[value.school] > 0 then
-            local hits = data.resists[value.school .. 'Hits'] or 1
-            return Functions.values.compare(value.operator, (data.resists[value.school] / hits), value.value)
-        end
-        return false
+        local observation,reason=addon.Platform:GetMobInfo2Observation(value.unit,"resist",value.school,cache)
+        if observation==nil then return nil,reason end
+        if not observation.exists or observation.recorded==false then return false end
+        return Functions.values.compare(value.operator,observation.ratio,value.value)
     end,
     print = function(_, value)
         return Functions.presentation.compareString(value.operator, string.format(L["%s's resistance to %s"],
@@ -661,13 +659,12 @@ addon:RegisterCondition("IMMUNE", {
                 (value.school ~= nil and Functions.values.isin(addon.spell_schools, value.school))
     end,
     evaluate = function(value, cache)
-        if not Functions.cache.getCached(cache, UnitExists, value.unit) then return false end
-        local data = MI2_GetMobData(UnitName(value.unit), UnitLevel(value.unit), value.unit)
-        if data.resists[value.school] ~= nil and data.resists[value.school] < 0 then
-            local hits = data.resists[value.school .. 'Hits'] or 1
-            return value.partial or (hits < 1)
-        end
-        return false
+        local observation,reason=addon.Platform:GetMobInfo2Observation(value.unit,"immune",value.school,cache)
+        if observation==nil then return nil,reason end
+        if not observation.exists or observation.recorded==false then return false end
+        if value.partial then return value.partial end
+        if observation.hits==nil then return nil,observation.hitsReason end
+        return observation.hits < 1
     end,
     print = function(_, value)
         return string.format(value.partial and L["%s {{!is|is not}} sometimes immune to %s"] or L["%s {{!is|is not}} immune to %s"],

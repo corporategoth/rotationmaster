@@ -29,6 +29,7 @@ Platform/rotation_owner.lua
 Platform/groups.lua
 Platform/roster_class.lua
 Platform/role.lua
+Platform/mobinfo2.lua
 Platform/casting.lua
 Platform/unit_health.lua
 Platform/unit_stat.lua
