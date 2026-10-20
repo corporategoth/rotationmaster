@@ -45,9 +45,35 @@ function platform:GetUnitPointPowerObservation(unit,powerType,kind)
     return result
 end
 
+-- Explicit player/target combo transport. Other units/resources use the observer above.
+function platform:GetPlayerComboPointObservation(powerType,kind)
+    local info=self:GetClientInfo()
+    if info.combatDataPolicy~='probe' then return nil,'unsupported-policy' end
+    local family
+    if self:CanReadValue(info) and type(info)=='table' then family=rawget(info,'family') end
+    if not self:CanReadValue(family) then return nil,'restricted-value' end
+    if canaccessvalue and not canaccessvalue(family) then return nil,'restricted-value' end
+    if family~='tbc' then return nil,'unsupported-point-transport' end
+    if not self:CanReadValue(powerType) or not self:CanReadValue(kind) then return nil,'restricted-value' end
+    if type(powerType)~='number' or powerType~=powerType or powerType<0 or powerType==math.huge or powerType%1~=0 then return nil,'invalid-point-power-query' end
+    if kind~='current' and kind~='maximum' then return nil,'invalid-point-power-query' end
+    local api
+    if kind=='current' then api=GetComboPoints else api=UnitPowerMax end
+    if type(api)~='function' then return nil,'missing-api' end
+    local ok,result
+    if kind=='current' then ok,result=pcall(api,'player','target') else ok,result=pcall(api,'player',powerType) end
+    if not ok then return nil,'api-error' end
+    if not self:CanReadValue(result) then return nil,'restricted-value' end
+    if canaccessvalue and not canaccessvalue(result) then return nil,'restricted-value' end
+    if result==nil then return nil,'point-power-unavailable' end
+    if type(result)~='number' or result~=result or result==math.huge or result==-math.huge then return nil,'invalid-api-result' end
+    return result
+end
+
 -- BEGIN GENERATED RM SOURCE BINDINGS
 do
     local function sourceGetter(name)
+        if name=="Platform_GetPlayerComboPointObservation" then return addon.Platform.GetPlayerComboPointObservation end
         if name=="Platform_GetUnitPointIdentityObservation" then return addon.Platform.GetUnitPointIdentityObservation end
         if name=="Platform_GetUnitPointPowerObservation" then return addon.Platform.GetUnitPointPowerObservation end
     end

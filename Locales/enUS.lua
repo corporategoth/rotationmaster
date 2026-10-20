@@ -2283,6 +2283,8 @@ L["Default.TBC.Paladin.Starter.Description"] = "Bounded melee preview with optio
 L["Default.TBC.Hunter.Starter.Name"] = "Hunter: early leveling (1–19)"
 L["Default.TBC.Hunter.Starter.Description"] = "Bounded ranged preview: establish Auto Shot, then own Serpent Sting and Arcane Shot; optional Hawk preserves Monkey. No implicit melee advice. Pet control, ammunition, positioning and resource conservation remain manual; native readiness governs recommendations."
 
+L["Default.TBC.Rogue.Starter.Name"] = "Rogue: early leveling (1–19)"
+L["Default.TBC.Rogue.Starter.Description"] = "Melee preview: missing own Slice and Dice from two combo points, Eviscerate from five, otherwise Sinister Strike. Preserves stealth, casts and channels. Openers, poisons, utility, targets and resource planning remain manual."
 L["Default.TBC.Druid.Caster.Starter.Name"] = "Druid: early caster leveling (1–19)"
 L["Default.TBC.Druid.Caster.Starter.Description"] = "Caster-only preview in humanoid form: own Moonfire, then stationary Wrath. Preserves your manually chosen forms and suppresses implicit melee advice. Feral combat, form selection, targeted support and resource decisions remain manual."
 
@@ -2504,10 +2506,12 @@ L["Evaluation cache, or nil to bypass caching."] = true
 L["Evaluation-pass cache for complete unit observations; nil observes directly. Different selected keys reuse the same unit snapshot."] = true
 L["Evaluation-pass cache, or nil for fresh observations."] = true
 L["Evaluation-pass cache, or nil to observe identity directly. Resource mapping is resolved live on each invocation."] = true
+L["Evaluation-pass cache, or nil to observe identity directly. Successful player class observations may use the existing longterm identity cache; resource mapping remains live."] = true
 L["Evaluation-pass native observation cache; nil queries afresh."] = true
 L["Evaluation-pass presence cache only; name, level and provider history remain fresh."] = true
 L["Exact helper-owned player, party1..party4 or raid1..raid40 token."] = true
 L["Exact integral native rune slot from 1 through 6."] = true
+L["Exact selected unit token; only the literal player token may select the TBC combo transport."] = true
 L["Exact selected unit token; player class alone may use the successful longterm cache."] = true
 L["Exact selected unit token; the attacker remains player."] = true
 L["Exact unit token checked for existence and passed to the selected metadata API."] = true
@@ -2517,11 +2521,13 @@ L["Exact unit token whose resource should be observed; this does not redirect pl
 L["Exact unit token whose selected flag should be observed."] = true
 L["Exact unit token whose selected resource quantity is requested."] = true
 L["Exactly current for UnitPower or maximum for UnitPowerMax; no other native query is added."] = true
+L["Exactly current for the player/target combo query or maximum for the player capacity query."] = true
 L["Exactly type or school; selects the required subject field without requiring the other."] = true
 L["Existing stored CREATURE key: BEAST, DRAGONKIN, DEMON, ELEMENTAL, GIANT, UNDEAD, HUMANOID, CRITTER, MECHANICAL, OTHER, TOTEM, NONCOMBAT_PET or GAS_CLUUD."] = true
 L["Explicit finite clock snapshot; signed and fractional values remain valid."] = true
 L["Explicit finite weighting window; no profile fallback or clamp."] = true
 L["Explicit nonnegative integer power selector, false for a known absent unit, or nil when required data is unavailable."] = true
+L["Explicit nonnegative integer selector, false for known unit absence, or nil when required data is unavailable."] = true
 L["Explicit readable finite nonnegative integer power selector, including zero."] = true
 L["Finite ETA including zero, false for known absence/no estimate, or nil when unavailable."] = true
 L["Finite final stream age, or nil when unavailable."] = true
@@ -2603,6 +2609,7 @@ L["Observe ordered selected-unit existence, hostility from player, then the play
 L["Observe readable current health and optionally maximum health on supported clients. A readable absent unit returns exists=false. Missing, failed, restricted or malformed observations return nil with a reason; they do not establish an absent unit or a health value."] = true
 L["Observe the current player form with one protected zero-argument GetShapeshiftForm call. Preserve every readable finite numeric result, including zero, signed and fractional values; no stronger native index domain is inferred. Missing, failed, nil, restricted or nonfinite data remains unavailable. No form count, class, spell ID, unit or optional argument is added."] = true
 L["Observe the effective statistic from native return two only. On probe-policy clients query exact UnitExists(unit), then UnitStat(unit,stat) for selector 1..5 or UnitArmor(unit) for selector 6. Known absence returns exists=false; missing, failed, restricted or nonfinite required facts return nil. Preserve finite signed, fractional and zero values; ignore all unused tuple fields. The 1..6 route is an RM selector policy, not a native value-domain limit."] = true
+L["Observe the explicitly selected TBC player combo transport. Current uses exactly GetComboPoints(player,target); maximum uses UnitPowerMax(player,powerType) with the original selector. Other families are unavailable here and must use their existing point-power observer. Preserve readable finite signed, fractional and zero values. Missing, failed, restricted or malformed data remains unavailable; a failed chosen combo query never falls back to UnitPower. This observes no other actor and adds no cache."] = true
 L["Observe the first role result of the exact legacy GetTalentGroupRole(group) dot call on probe-policy clients. Forward the readable selected group unchanged, including nil as one argument; do not infer group bounds, substitute another API or query a player unit. The complete legacy primary declaration is not established. Missing, failed, restricted, empty or malformed role data is unavailable; readable nonempty future strings remain exact."] = true
 L["Observe the first zone PvP classification result with one protected zero-argument dot call. Prefer callable C_PvP.GetZonePVPInfo and use the global helper only when the modern callable is absent. A successful nil or no returned values produces a known empty record; missing, failed, restricted or malformed observations remain unavailable. Readable empty and future strings retain their exact meaning, and unused return fields do not determine availability. Never switch backends after a modern result or failure."] = true
 L["Observe the player current movement speed on supported readable clients. This queries GetUnitSpeed for player only, without testing another unit or redirecting vehicle ownership. Zero means stationary; positive finite fractional speeds remain valid. Missing, failed, restricted or malformed observations return nil with a reason."] = true
@@ -2610,6 +2617,7 @@ L["Observe unit presence on identified client families. Pass the selected unit u
 L["Observe whether the player can attack a selected unit that is not dead, using the exact UnitExists, UnitCanAttack and UnitIsDead predicates. Known absence or a readable false attack result returns false without querying death. Required missing, failed, restricted or malformed observations return nil with a reason. This does not test ghosts, range, hostility or ability usability, and does not redirect unit ownership."] = true
 L["Observed class filename string, false for a known absent unit, or nil when unavailable."] = true
 L["Observed membership, or nil when unavailable."] = true
+L["On a selected resource only, target-combo for the explicit TBC player fallback or power for the existing selected-unit transport."] = true
 L["On probe-policy clients observe exact UnitExists(unit), then UnitGUID(unit) only for a present unit. Known absence is false. Present identity requires a readable nonempty GUID; missing, failed, malformed or restricted required facts are unavailable. No health, provider or extra-unit observation is added."] = true
 L["One of class, creature or classification; other metadata kinds are unsupported."] = true
 L["One of combat, enemy or pvp; other flag kinds are not supported."] = true
@@ -2618,6 +2626,7 @@ L["One rounded numeric result from the original formula."] = true
 L["Optional collection of key values selecting entries; its own keys are ignored."] = true
 L["Optional ordering callback called as order(t, leftKey, rightKey)."] = true
 L["Optional positive class ID; nil queries the current player class under protection."] = true
+L["Original explicit readable finite nonnegative integer combo-resource selector, including zero; retained for the maximum query."] = true
 L["Original non-nil lookup result, or a colored placeholder string."] = true
 L["Original non-nil value, or a colored placeholder string."] = true
 L["Original rounded-age bucket count, omitted for falsy input."] = true
@@ -2639,6 +2648,7 @@ L["Policy, query-validation or availability reason for a nil threat observation.
 L["Policy, query-validation or availability reason for a nil unit flag."] = true
 L["Policy, query-validation or availability reason for nil attackability."] = true
 L["Policy, query-validation or identity/selector availability reason for a nil selector."] = true
+L["Policy, query-validation or required observation availability reason for a nil quantity."] = true
 L["Policy, query-validation or required observation availability reason for a nil record."] = true
 L["Policy, query-validation or required-observation availability reason for a nil ID."] = true
 L["Policy, query-validation or required-observation availability reason for a nil match."] = true
@@ -2702,6 +2712,7 @@ L["Reference input kind, such as Spec_EditBox, used for spell suggestions."] = t
 L["Remove entries in place, preserving only keys listed among except values by default. With invert true, remove listed keys and retain unlisted keys. Without an exception list, the default removes every entry and invert true retains every entry. Nil input does nothing."] = true
 L["Remove leading and trailing Lua-pattern whitespace from a string."] = true
 L["Resolve a readable raw unit level for condition evaluation. Known absence returns false; unavailable observations return nil with a reason. Cache observations within the supplied evaluation pass. Only valid player levels are retained between passes until a skill, profile or level refresh."] = true
+L["Resolve point resources using the original live class mapping and identity cache, with an explicit TBC player ComboPoints-fallback transport policy. A player fallback matching the readable raw Enum.PowerType table and ComboPoints value captured at module load selects target-combo; explicit class-map entries, other actors and other families retain power. Replaced, inherited or unprovable fallback provenance retains power. This versioned policy does not claim native UnitPower is broken or equivalent. Known unit absence returns false; unavailable required observations return nil with a reason. No current or maximum quantity is queried here."] = true
 L["Resolve the selected unit point-resource selector using the live class-to-resource map and ComboPoints fallback. Known absence returns false; unavailable required identity or selector data returns nil with a reason. Share complete identity observations within the evaluation pass. Only successful player class observations persist in the current longterm cache, tied to the native UnitClass identity; existence is refreshed each pass. This selects a resource without reading its current or maximum quantity."] = true
 L["Resolve the spell identifier stored by a condition. With exact rank enabled the supplied ID is retained; otherwise ranked Classic clients resolve the currently known rank through the spell catalog. Returns nil and an availability reason if resolution cannot be completed."] = true
 L["Resolved spell ID, or nil when unavailable."] = true

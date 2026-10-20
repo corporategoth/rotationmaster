@@ -38,6 +38,7 @@ local repaired=[=[    evaluate = function(value, cache)
     end,]=]
 return function(text,callback)
     if callback then
+        text=dofile('tests/fixtures/restore_point_tbc_transport.lua')(text,'POINT',true)
         local before=assert(repaired:match('^    evaluate = function%([^\n]*%)(.*)end,$'))
         local after=assert(original:match('^    evaluate = function%([^\n]*%)(.*)end,$'))
         assert(text==before,'unexpected repaired POINT callback bytes')

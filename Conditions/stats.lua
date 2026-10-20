@@ -319,13 +319,23 @@ addon:RegisterCondition("POINT", {
                 value.value ~= nil)
     end,
     evaluate = function(value, cache)
-        local point,reason=addon:GetConditionPointResource(value.unit,cache)
+        local point,reason,transport=addon:GetConditionPointResourceV2(value.unit,cache)
         if point==nil then return nil,reason end
         if point==false then return false end
-        local cur,why=Functions.cache.getCached(cache,addon.Platform.GetUnitPointPowerObservation,addon.Platform,value.unit,point,"current")
+        local cur,why
+        if transport=="target-combo" then
+            cur,why=Functions.cache.getCached(cache,addon.Platform.GetPlayerComboPointObservation,addon.Platform,point,"current")
+        else
+            cur,why=Functions.cache.getCached(cache,addon.Platform.GetUnitPointPowerObservation,addon.Platform,value.unit,point,"current")
+        end
         if cur==nil then return nil,why end
         if value.value < 0 then
-            local maximum,maximumReason=Functions.cache.getCached(cache,addon.Platform.GetUnitPointPowerObservation,addon.Platform,value.unit,point,"maximum")
+            local maximum,maximumReason
+            if transport=="target-combo" then
+                maximum,maximumReason=Functions.cache.getCached(cache,addon.Platform.GetPlayerComboPointObservation,addon.Platform,point,"maximum")
+            else
+                maximum,maximumReason=Functions.cache.getCached(cache,addon.Platform.GetUnitPointPowerObservation,addon.Platform,value.unit,point,"maximum")
+            end
             if maximum==nil then return nil,maximumReason end
             local deficit=maximum-cur
             if deficit~=deficit or deficit==math.huge or deficit==-math.huge then return nil,"invalid-point-deficit" end

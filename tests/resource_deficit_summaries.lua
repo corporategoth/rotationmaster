@@ -60,7 +60,10 @@ test('only the exact two print expressions change the stats module and inverse r
 end)
 test('complete current and archived exports preserve all metadata and parameter or binding identities',function()
  for tag,hash in pairs({POWER='d33ea310',POINT='a03b3862'}) do local _,a,_,source=setup(tag);local restored=a:CopySettingsData(source);if restored.print==repaired[tag] then restored.print=inverse(restored.print,tag) else assert(restored.print==old[tag]) end
-  assert(a:FunctionSourceHash(restored)==hash,'unrelated complete export changed '..tag);local raw=a:CopySettingsData(source);raw.print=old[tag];assert(a:FunctionSourceHash(raw)==hash)
+  if tag=='POINT' then restored.evaluate=dofile('tests/fixtures/restore_point_tbc_transport.lua')(restored.evaluate,'POINT',true) end
+  assert(a:FunctionSourceHash(restored)==hash,'unrelated complete export changed '..tag);local raw=a:CopySettingsData(source);raw.print=old[tag]
+  if tag=='POINT' then raw.evaluate=dofile('tests/fixtures/restore_point_tbc_transport.lua')(raw.evaluate,'POINT',true) end
+  assert(a:FunctionSourceHash(raw)==hash)
  end
 end)
 test('current generated duplicates display corrected deficits and preserve their complete authored source',function()
