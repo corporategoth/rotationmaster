@@ -515,6 +515,8 @@ def main():
             ['node', '--test', 'tests/web_defaults.mjs'],
             ['node', '--test', 'tests/web_catalog.mjs'],
             ['node', '--test', 'tests/web_catalog_compare.mjs'],
+            ['node', '--test', 'tests/web_share.mjs'],
+            ['node', '--test', 'tests/web_sharing_ui.mjs'],
             [sys.executable, 'tests/test_check.py'],
             [sys.executable, 'tests/test_builtin_sources.py'],
             [sys.executable, 'tests/test_retained_builtin_values.py'],

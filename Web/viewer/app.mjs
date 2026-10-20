@@ -1,9 +1,10 @@
 import {createComparisonSession,createSchemaAnalyzer,createBundledViewerSession,createBundledComparisonSession,formatUnicode,formatBytes} from './model.mjs';
 import {createBundledRotationCatalog} from '../catalog/defaults.mjs';
 import {renderViewer,renderComparison} from './render.mjs';
+import {createShareLink,parseShareFragment,prepareOriginalDownload} from './share.mjs';
 
 // Structural analysis is local/declarative; no imported callback can run.
-export function mountViewer(document,root,{analyze,writeClipboard,compare:compareData,loadBundled}={}){
+export function mountViewer(document,root,{analyze,writeClipboard,compare:compareData,loadBundled,pageURL,downloadFile,readFragment,listenFragment}={}){
   const pair=createComparisonSession({analyze,compare:compareData});let active=true,viewOperation=0,release=()=>{},mode='left',right=null,panelLease=0,controls=null;
   const make=(tag,text)=>{const e=document.createElement(tag);if(text!==undefined)e.textContent=text;return e;};
   let area='imports',bundleFacade=null,bundleSession=null,bundleRows=[],bundlePending=null,bundleFailure=false,bundleRequest=0,catalogPaint=0,catalogClass='',selectedID=null,catalogMode='read',catalogComparison=null;
@@ -16,7 +17,9 @@ export function mountViewer(document,root,{analyze,writeClipboard,compare:compar
   const sourceNav=make('nav');sourceNav.setAttribute('aria-label','Data source');sourceNav.setAttribute('class','source-navigation');
   const importsNavigation=make('button','Imports'),bundledNavigation=make('button','Bundled rotations');for(const b of [importsNavigation,bundledNavigation])b.setAttribute('type','button');sourceNav.append(importsNavigation,bundledNavigation);
   const importsArea=make('section');importsArea.append(primaryHost,openComparison,panel);const catalogArea=make('section');catalogArea.setAttribute('class','bundled-browser');catalogArea.hidden=true;
-  root.replaceChildren(heading,subtitle,intro,sourceNav,importsArea,catalogArea,result);
+  const incoming=make('section');incoming.setAttribute('id','incoming-share');incoming.setAttribute('role','status');incoming.setAttribute('aria-live','polite');incoming.hidden=true;
+  let incomingOperation=0,fragmentCleanup=null;
+  root.replaceChildren(heading,subtitle,intro,sourceNav,incoming,importsArea,catalogArea,result);
   const clearViewport=()=>{release();release=()=>{};};
   function navState(){if(!controls)return;for(const [key,b]of Object.entries(controls.nav))b.setAttribute('aria-pressed',String(mode===key));controls.nav.diff.disabled=pair.view()===null;}
   function show(side,focus=false){
@@ -39,25 +42,49 @@ export function mountViewer(document,root,{analyze,writeClipboard,compare:compar
     const decode=make('button','Decode');decode.setAttribute('type','submit');
     const clear=make('button','Clear');clear.setAttribute('type','button');
     const copy=make('button','Copy original export');copy.setAttribute('type','button');copy.disabled=true;
-    const actions=make('div');actions.setAttribute('class','actions');actions.append(decode,clear,copy);form.append(label,input,guidance,actions);
+    const share=make('button','Copy share link'),download=make('button','Download original export');
+    for(const [button,name]of [[share,'share-link'],[download,'download-original']]){button.setAttribute('type','button');button.setAttribute('id',prefix+name);button.disabled=true;}
+    const actions=make('div');actions.setAttribute('class','actions');actions.append(decode,clear,copy,share,download);form.append(label,input,guidance,actions,make('p','Share links contain the complete original export; anyone with the link can read it.'));
     const status=make('p','Paste an RM export to begin.');status.setAttribute('id',prefix+'import-status');status.setAttribute('role','status');status.setAttribute('aria-live','polite');
     const manualLabel=make('label','Original export — select and copy manually');manualLabel.setAttribute('for',prefix+'manual-export');manualLabel.hidden=true;
     const manual=make('textarea');manual.setAttribute('id',prefix+'manual-export');manual.setAttribute('readonly','');manual.setAttribute('rows','4');manual.hidden=true;
-    owner.append(form,status,manualLabel,manual);
+    const shareLabel=make('label','Share link — select and copy manually');shareLabel.setAttribute('for',prefix+'manual-share-link');shareLabel.hidden=true;
+    const shareManual=make('textarea');shareManual.setAttribute('id',prefix+'manual-share-link');shareManual.setAttribute('readonly','');shareManual.setAttribute('rows','4');shareManual.hidden=true;
+    owner.append(form,status,manualLabel,manual,shareLabel,shareManual);
     const listeners=[],on=(e,event,fn)=>{e.addEventListener(event,fn);listeners.push([e,event,fn]);};
-    const retire=()=>{operation++;copy.disabled=true;manual.hidden=true;manualLabel.hidden=true;manual.value='';};
+    const retire=()=>{operation++;copy.disabled=true;share.disabled=true;download.disabled=true;manual.hidden=true;manualLabel.hidden=true;manual.value='';shareManual.hidden=true;shareLabel.hidden=true;shareManual.value='';};
     const synchronize=()=>{if(!active||!live||area!=='imports')return;invalidate(side);retire();session.edit(input.value);status.textContent='Input changed. Decode to inspect this export.';};
     on(input,'input',synchronize);
     on(form,'submit',event=>{
       event.preventDefault();if(!active||!live||area!=='imports')return;invalidate(side);retire();session.edit(input.value);const token=viewOperation,current=operation,view=session.decode();
       if(!active||!live||area!=='imports'||current!==operation||token!==viewOperation||!view)return;
-      copy.disabled=!view.decode.ok;status.textContent=view.decode.ok?'Decoded. '+view.structureMessage:'Could not decode: '+view.decode.reason;input.setAttribute('aria-invalid',view.decode.ok?'false':'true');show(side);
+      copy.disabled=share.disabled=download.disabled=!view.decode.ok;status.textContent=view.decode.ok?'Decoded. '+view.structureMessage:'Could not decode: '+view.decode.reason;input.setAttribute('aria-invalid',view.decode.ok?'false':'true');show(side);
     });
     on(clear,'click',()=>{if(!active||!live||area!=='imports')return;invalidate(side);retire();session.clear();input.value='';input.setAttribute('aria-invalid','false');status.textContent='Cleared. Paste an RM export to begin.';input.focus();});
     on(copy,'click',async()=>{
-      if(!active||!live||area!=='imports')return;const original=session.original();if(original===null)return;const current=operation,focusToken=viewOperation;
+      if(!active||!live||area!=='imports')return;const original=session.original();if(original===null)return;const current=++operation,focusToken=viewOperation;
       try{if(typeof writeClipboard!=='function')throw Error('clipboard-unavailable');await writeClipboard(original);if(active&&live&&current===operation)status.textContent='Original export copied.';}
       catch{if(!active||!live||current!==operation)return;manual.value=original;manual.hidden=false;manualLabel.hidden=false;status.textContent='Clipboard unavailable. Select and copy the original export below.';if(focusToken===viewOperation){manual.focus();manual.select();}}
+    });
+    const acceptedOriginal=()=>{
+      if(!active||!live||area!=='imports'||root.children[0]!==heading)return null;
+      if(input.value!==session.input()){status.textContent='Decode the current input before sharing or downloading.';return null;}
+      const original=session.original();if(original===null)status.textContent='Decode this export before sharing or downloading.';return original;
+    };
+    const currentAction=(token,original)=>active&&live&&root.children[0]===heading&&token===operation&&input.value===session.input()&&session.original()===original;
+    on(share,'click',async()=>{
+      const original=acceptedOriginal();if(original===null)return;const token=++operation,focusToken=viewOperation;
+      shareManual.hidden=true;shareLabel.hidden=true;shareManual.value='';
+      const link=createShareLink(original,pageURL);
+      if(!link.ok){status.textContent=link.reason==='share-size-limit'?'This export is too large for a share link. Copy or download the original instead.':'Share link unavailable for this page. Copy or download the original instead.';return;}
+      try{if(typeof writeClipboard!=='function')throw Error('clipboard-unavailable');await writeClipboard(link.url);if(currentAction(token,original))status.textContent='Share link copied.';}
+      catch{if(!currentAction(token,original))return;shareManual.value=link.url;shareManual.hidden=false;shareLabel.hidden=false;status.textContent='Clipboard unavailable. Select and copy the share link below.';if(area==='imports'&&focusToken===viewOperation){shareManual.focus();shareManual.select();}}
+    });
+    on(download,'click',async()=>{
+      const original=acceptedOriginal();if(original===null)return;const token=++operation,file=prepareOriginalDownload(original);
+      if(!file.ok){status.textContent='Download unavailable. Copy the original export instead.';return;}
+      try{if(typeof downloadFile!=='function')throw Error('download-unavailable');await downloadFile(file);if(currentAction(token,original))status.textContent='Original export download requested.';}
+      catch{if(currentAction(token,original))status.textContent='Download unavailable. Copy the original export instead.';}
     });
     return {input,form,clear,copy,manual,result,status,synchronize,dispose(){if(!live)return;live=false;retire();session.clear();input.value='';for(const [e,event,fn]of listeners)e.removeEventListener(event,fn);owner.replaceChildren();}};
   }
@@ -142,7 +169,26 @@ export function mountViewer(document,root,{analyze,writeClipboard,compare:compar
   const showBundled=async()=>{if(!active)return;const token=++viewOperation;catalogPaint++;clearViewport();area='bundled';sourceState();const pending=acquireBundle();drawCatalog();await pending;if(active&&area==='bundled'&&token===viewOperation)drawCatalog();};
   importsNavigation.addEventListener('click',showImports);bundledNavigation.addEventListener('click',showBundled);sourceState();
   openComparison.addEventListener('click',open);
-  return {...left,openComparison,importsNavigation,bundledNavigation,get right(){return right;},get compare(){return controls?.compare;},get closeComparison(){return controls?.close;},get comparisonStatus(){return controls?.status;},dispose(){if(!active)return;active=false;catalogComparison.dispose();bundleRequest++;catalogPaint++;bundleSession?.dispose();bundleRows=[];bundleFacade=null;panelLease++;viewOperation++;clearViewport();left.dispose();right?.dispose();right=null;controls?.dispose();controls=null;pair.dispose();openComparison.removeEventListener('click',open);importsNavigation.removeEventListener('click',showImports);bundledNavigation.removeEventListener('click',showBundled);root.replaceChildren();}};
+  function refreshIncoming(){
+    if(!active||root.children[0]!==heading)return;const token=++incomingOperation;let candidate;
+    try{candidate=typeof readFragment==='function'?parseShareFragment(readFragment()):{ok:false,reason:'no-share-fragment'};}
+    catch{candidate={ok:false,reason:'invalid-share-fragment'};}
+    if(!active||token!==incomingOperation||root.children[0]!==heading)return;
+    incoming.replaceChildren();incoming.hidden=candidate.reason==='no-share-fragment';if(incoming.hidden)return;
+    const current=()=>active&&token===incomingOperation&&root.children[0]===heading;
+    if(candidate.ok){
+      incoming.append(make('p','A shared export is available. Load replaces the first input; Decode remains required.'));
+      const load=make('button','Load into first export');load.setAttribute('type','button');
+      load.addEventListener('click',()=>{if(!current())return;incomingOperation++;incoming.replaceChildren();incoming.hidden=true;showImports();left.input.value=candidate.original;left.synchronize();show('left');left.input.setAttribute('aria-invalid','false');left.input.focus();});incoming.append(load);
+    }else incoming.append(make('p',candidate.reason==='unsupported-share-version'?'This shared export version is unsupported.':'The shared export link is unavailable. Imports remain available.'));
+    const dismiss=make('button','Dismiss');dismiss.setAttribute('type','button');dismiss.addEventListener('click',()=>{if(!current())return;incomingOperation++;incoming.replaceChildren();incoming.hidden=true;});incoming.append(dismiss);
+  }
+  refreshIncoming();
+  if(active&&root.children[0]===heading&&typeof listenFragment==='function'){
+    const token=incomingOperation;
+    try{const cleanup=listenFragment(refreshIncoming);if(active)fragmentCleanup=typeof cleanup==='function'?cleanup:null;else if(typeof cleanup==='function')cleanup();}catch{if(active&&token===incomingOperation&&root.children[0]===heading){incoming.append(make('p','Shared export updates are unavailable. Imports remain available.'));incoming.hidden=false;}}
+  }
+  return {...left,openComparison,importsNavigation,bundledNavigation,get right(){return right;},get compare(){return controls?.compare;},get closeComparison(){return controls?.close;},get comparisonStatus(){return controls?.status;},dispose(){if(!active)return;active=false;incomingOperation++;const cleanup=fragmentCleanup;fragmentCleanup=null;if(cleanup)try{cleanup();}catch{}catalogComparison.dispose();bundleRequest++;catalogPaint++;bundleSession?.dispose();bundleRows=[];bundleFacade=null;panelLease++;viewOperation++;clearViewport();left.dispose();right?.dispose();right=null;controls?.dispose();controls=null;pair.dispose();openComparison.removeEventListener('click',open);importsNavigation.removeEventListener('click',showImports);bundledNavigation.removeEventListener('click',showBundled);if(root.children[0]===heading)root.replaceChildren();}};
 }
 
 const hosts=new WeakMap();
@@ -164,19 +210,32 @@ async function readResource(fetcher,spec){
 }
 export async function loadLocalCatalog(fetcher=globalThis.fetch){return readResource(fetcher,schemaResource);}
 export async function loadBundledCatalog(fetcher=globalThis.fetch){return readResource(fetcher,bundledResource);}
-export async function bootstrapViewer(document,root,{loadCatalog=loadLocalCatalog,loadBundled=loadBundledCatalog,writeClipboard}={}){
-  const previous=hosts.get(root);if(previous?.dispose)previous.dispose();
-  const lease={};hosts.set(root,lease);root.textContent='Loading the local declaration catalog…';
+export async function bootstrapViewer(document,root,{loadCatalog=loadLocalCatalog,loadBundled=loadBundledCatalog,writeClipboard,pageURL,downloadFile,readFragment,listenFragment}={}){
+  const previous=hosts.get(root),lease={};hosts.set(root,lease);if(previous?.dispose)previous.dispose();
+  if(hosts.get(root)!==lease)return null;root.textContent='Loading the local declaration catalog…';
   let analyze,schemaText=null;
   try{schemaText=await loadCatalog();analyze=createSchemaAnalyzer(schemaText);analyze({kind:'envelope',value:new Map()});}
   catch{schemaText=null;analyze=()=>{throw Error('schema-unavailable');};}
   if(hosts.get(root)!==lease)return null;
-  const mounted=mountViewer(document,root,{analyze,writeClipboard,loadBundled:async()=>{if(schemaText===null)throw Error('bundled-unavailable');const parsed=createBundledRotationCatalog(await loadBundled(),schemaText);if(!parsed.ok)throw Error('bundled-unavailable');return parsed.catalog;}});const dispose=mounted.dispose;
+  const current=()=>hosts.get(root)===lease;
+  const ownedFragmentRead=typeof readFragment==='function'?()=>current()?readFragment():'':readFragment;
+  const ownedFragmentListen=typeof listenFragment==='function'?callback=>current()?listenFragment(callback):undefined:listenFragment;
+  const mounted=mountViewer(document,root,{analyze,writeClipboard,pageURL,downloadFile,readFragment:ownedFragmentRead,listenFragment:ownedFragmentListen,loadBundled:async()=>{if(schemaText===null)throw Error('bundled-unavailable');const parsed=createBundledRotationCatalog(await loadBundled(),schemaText);if(!parsed.ok)throw Error('bundled-unavailable');return parsed.catalog;}});const dispose=mounted.dispose;
+  if(!current()){dispose();return null;}
   lease.dispose=()=>{if(hosts.get(root)===lease)hosts.delete(root);dispose();};mounted.dispose=lease.dispose;return mounted;
 }
 if(typeof document!=='undefined'){
   const host=document.getElementById('viewer');
-  if(host)bootstrapViewer(document,host,{writeClipboard:text=>{
+  if(host)bootstrapViewer(document,host,{
+    pageURL:globalThis.location?.href,
+    readFragment:()=>globalThis.location?.hash??'',
+    listenFragment:callback=>{globalThis.addEventListener('hashchange',callback);return()=>globalThis.removeEventListener('hashchange',callback);},
+    downloadFile:file=>{
+      const blob=new Blob([file.bytes],{type:file.mediaType,endings:'transparent'}),url=URL.createObjectURL(blob);let link;
+      try{link=document.createElement('a');link.setAttribute('href',url);link.setAttribute('download',file.filename);document.body.append(link);link.click();}
+      finally{try{link?.remove();}finally{URL.revokeObjectURL(url);}}
+    },
+    writeClipboard:text=>{
     if(typeof navigator==='undefined'||typeof navigator.clipboard?.writeText!=='function')return Promise.reject(Error('clipboard-unavailable'));
     return navigator.clipboard.writeText(text);
   }});

@@ -14,7 +14,7 @@ Paste an export and choose Decode. “Compare another export” opens an optiona
 
 Known structures show ordered actions, cooldowns, branch arms and nested conditions. Unknown or invalid data stays available in a typed raw view. Display is bounded and paginated; byte escapes and shortened previews do not change the import. Copy original export retains the exact successful text, including wrapping. Editing the input retires that copy authority until another successful Decode. Clipboard denial offers a manual-copy field.
 
-The current UI is English. Localization, sharing links, downloads and editing remain separate work. There is no local history or application storage. Browser form, clipboard and operating-system behavior are outside that statement.
+The current UI is English. Localization and editing remain separate work. There is no local history or application storage. Browser form, clipboard and operating-system behavior are outside that statement.
 
 ## Transport and data
 
@@ -72,13 +72,21 @@ Choose Bundled rotations to load the packaged catalog on demand. Select an entry
 
 Generated data is identified as Bundled rotation, with source path/hash and declared revision. It is never described as decoded transport and has no original-export copy authority. Human prose preserves Unicode and uses its own code-point pager with visible control/bidi/surrogate escapes; raw Lua byte strings retain the existing byte inspector. Complete long descriptions remain reachable.
 
-Imports and its accepted originals/two-input comparison remain independent. Returning to Imports restores its prior result; source navigation releases old result handlers. Catalog selection does not decode, compare, edit or encode anything. Sharing/downloads and editing remain later work.
+Imports and its accepted originals/two-input comparison remain independent. Returning to Imports restores its prior result; source navigation releases old result handlers. Catalog selection does not decode, compare, edit or encode anything. Bundled generated definitions have no original export to share or download; editing remains later work.
 
 With a bundled definition selected, choose Compare with first export to compare its manifest against the current accepted First export. The Second export and its comparison are preserved. Comparison never decodes changed input, invents catalog transport or changes either source. The same eligibility, strict graph checks, typed structural diff, limits and incomplete-result handling apply to both comparison modes. Missing or unsupported structure is unavailable, never equality.
 
 The comparison names the right source Bundled rotation and shows bounded declared identity/revision/source/name context. Read bundled rotation returns to the complete shared source reader without rerunning comparison. Selecting or reselecting a definition, filtering it out, changing First export, leaving the catalog or disposing the mount retires its comparison. A class filter that retains the same selection may retain the result. Returning to the catalog starts in Read mode. Metadata and matching step IDs do not establish native readiness or clone lineage.
 
 Only fixed local declaration/catalog resources are loaded, with credentials omitted, redirects refused, fatal UTF-8 decoding and separate streamed byte caps: 512 KiB for declarations and 2 MiB for bundled data. A failed catalog has an explicit Retry; it does not disable imported transport/raw recovery. Validated catalog data is cached only for the current mount; retired loads cannot replace newer visible state or focus. No metadata/source-guide URLs are fetched.
+
+## Sharing an original export
+
+After a successful Decode, Copy share link creates a link containing the complete original export in the `#rm-import-v1=` fragment. Anyone with that link can read the export. The browser app does not upload it or shorten the link. The final HTTP(S) link has an 8,192-byte limit; longer exports remain available through exact original copy and download. Clipboard denial offers a separate manual-copy link field. Editing, clearing or replacing the input retires sharing authority until the next successful Decode.
+
+Download original export requests a file named `rotation-master-export.txt`, containing the exact accepted UTF-8 export bytes without newline conversion or re-encoding. Browser download policy determines what happens to that request; RM does not claim a file was saved. Generated bundled definitions have neither original transport nor these sharing controls.
+
+An incoming recognized fragment offers Load into first export or Dismiss. Loading explicitly replaces the First input and retires its old decode/comparison; the Second input is preserved. Decode remains a separate action. Fragment changes never silently decode or compare data, change browser history or overwrite either input. There is no application storage or telemetry service.
 
 ## Checks
 
@@ -93,6 +101,8 @@ node --test tests/web_compare.mjs
 node --test tests/web_defaults.mjs
 node --test tests/web_catalog.mjs
 node --test tests/web_catalog_compare.mjs
+node --test tests/web_share.mjs
+node --test tests/web_sharing_ui.mjs
 python3 tools/check
 ```
 
