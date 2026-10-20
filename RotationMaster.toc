@@ -284,6 +284,7 @@ Conditions/misc.lua
 
 # Packaged read-only rotations
 Defaults/tbc/shaman-starter.lua
+Defaults/tbc/shaman-enhancement-30-39.lua
 Defaults/tbc/mage-starter.lua
 Defaults/tbc/mage-30-39.lua
 Defaults/tbc/warlock-starter.lua

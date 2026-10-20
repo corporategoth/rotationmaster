@@ -2494,6 +2494,9 @@ L["Loaded; connection not confirmed."] = true
 L["Default.TBC.Mage.Thirties.Name"] = "TBC Mage 30–39 Frost single-target preview"
 L["Default.TBC.Mage.Thirties.Description"] = "Bounded level 30–39 Frost single-target preview. Preserves any existing Frost, Ice or Mage Armor; offers learned Mage, then Ice, then Frost Armor only when all are absent. Intellect remains independent. Talents, kiting, emergency defenses and resources stay manual."
 
+L["Default.TBC.Shaman.Enhancement30.Name"] = "Shaman: Enhancement leveling (30–39)"
+L["Default.TBC.Shaman.Enhancement30.Description"] = "Bounded TBC solo Enhancement-oriented preview for levels30–39, selected only when Enhancement has the unique positive highest talent allocation. Uses learned ranks for a Lightning Bolt pull, Earth Shock in combat and stationary ranged Lightning Bolt, with independent Lightning Shield and mainhand imbue reminders. Prefers learned Windfury over Rockbiter only when no temporary mainhand enchant is present; preserves any manual enchant and does not infer a weapon type or complete build. Equipment, healing, interrupts, totems, consumables, weapon timing and resource optimization remain manual. Not native gameplay certified."
+
 -- BEGIN GENERATED RM PUBLIC HELPER DOCS
 L["Absolute health target (negative means deficit) or percentage fraction."] = true
 L["All original results, preserving nil positions and return count."] = true
