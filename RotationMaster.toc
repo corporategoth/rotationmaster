@@ -172,6 +172,7 @@ UI/settings_setup.lua
 UI/settings_roster_order.lua
 UI/settings_layout.lua
 UI/settings_ordered.lua
+UI/stock_profile_safety.lua
 UI/settings_draft.lua
 UI/settings_history.lua
 UI/settings_unsaved.lua

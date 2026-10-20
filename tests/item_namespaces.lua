@@ -1,6 +1,6 @@
 local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite()
 local tags={'EQUIPPED','CARRYING','ITEM','ITEM_RANGE','ITEM_COOLDOWN'}
-local expected={EQUIPPED={valid={},print={nullable=1}},CARRYING={valid={isin=1},print={nullable=2,compareString=1}},ITEM={valid={},print={nullable=1}},ITEM_RANGE={valid={},print={nullable=1}},ITEM_COOLDOWN={valid={isin=1},print={nullable=2,compareString=1}}}
+local expected={EQUIPPED={valid={},print={nullable=1}},CARRYING={valid={isin=1},print={nullable=2}},ITEM={valid={},print={nullable=1}},ITEM_RANGE={valid={},print={nullable=1}},ITEM_COOLDOWN={valid={isin=1},print={nullable=2,compareString=1}}}
 local groups={isin='values',nullable='presentation',compareString='presentation'}
 local function fixture(native)
     local f=F.new();local a,e=f.addon,f.env
@@ -37,7 +37,7 @@ local function copies(a)
 end
 local function count(text,pattern) local _,number=text:gsub(pattern,'');return number end
 
-test('item callbacks select exactly eleven pure helper calls from actual owning namespaces',function()
+test('item callbacks select twelve pure helper calls across their explicit owning roots',function()
     local f,a=fixture(true);local declared=assert(a.builtinCallbackBindings and a.builtinCallbackBindings['Conditions/item.lua'],'item canonical leaf metadata missing')
     local total=0
     for name,group in pairs(groups) do local path='Functions.'..group..'.'..name;assert(declared[path]=='builtin:utils.lua:'..name and a:ResolveFunctionBinding(declared[path])==a.Functions[group][name]) end
@@ -48,10 +48,17 @@ test('item callbacks select exactly eleven pure helper calls from actual owning 
             assert(number==(counts[name] or 0),tag..'.'..callback..' '..path..' count changed');total=total+number
             assert(not source[callback]:find('addon.'..name..'(',1,true),'legacy pure call remained')
         end end
+        if tag=='CARRYING' then
+            for _,name in ipairs({'phrase','predicate'}) do
+                local path='Summary.'..name;local id='builtin:Functions/presentation.lua:'..name
+                assert(source.bindings[path]==id and declared[path]==id and a:ResolveFunctionBinding(id)==a.Functions.presentation[name])
+                local calls=count(source.print,path:gsub('%.','%%.')..'%(');assert(calls==1);total=total+calls
+            end
+        end
         assert(source.widget:find('"Inventory_EditBox"',1,true),'item reference scope changed')
         assert(source.evaluate=='\n        return addon:EvaluateItemCondition("'..tag..'",value,cache,now)\n    ','evaluation body changed')
     end
-    assert(total==11 and not f.env.Functions)
+    assert(total==12 and not f.env.Functions)
 end)
 test('private item descriptor Help bodies captures and source getter identities remain exact',function()
     local _,a=fixture(true)

@@ -29,11 +29,11 @@ function addon:OpenNativeSettings(parent,key,cached)
     p.settingsKey=key;p.historyEnabled=key=='ItemSets';p.transactionKeys=scopes[key];p:SetWidth(parent:GetWidth());p:SetHeight(parent:GetHeight());p:Open(function(form) build(self,form) end);return p
 end
 
-function addon:CollectionFooter(p,kind,values,current,duplicate,transfer)
+function addon:CollectionFooter(p,kind,values,current,duplicate,transfer,compare)
     local candidates={};for _,entry in ipairs(self:SettingsEntries(values)) do if entry.value~=current then candidates[#candidates+1]=entry end end
     p:SetRosterActions({{key='new_collection',text=L['New'],icon='plus',action=p.roster.options.new},duplicate,transfer,
         {key='compare',text=L['Compare'],icon='compare',enabled=values[current]~=nil and #candidates>0,action=function()
-            p:ShowChoices(p.fields.compare,candidates,function(id) p.fields.compare:SetText(L['Compare']);if id~=current and values[id] and values[current] then self:ShowCollectionComparison(p,kind,values[current],values[id]) end end)
+            p:ShowChoices(p.fields.compare,candidates,function(id) p.fields.compare:SetText(L['Compare']);if id~=current and values[id] and values[current] then if compare then compare(values[current],values[id]) else self:ShowCollectionComparison(p,kind,values[current],values[id]) end end end)
         end}})
 end
 function addon:SettingsTopDelete(p,action)

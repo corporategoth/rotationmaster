@@ -18,7 +18,11 @@ test('captured helper and class bindings preserve actual clone behavior',functio
     local f,a=fixture();f.env.UnitExists=function() return true end;f.env.UnitAffectingCombat=function() return true end;a.getCached=function(_,fn,...) return fn(...) end
     local source=assert(a:GetBuiltinConditionSource('COMBAT'));local clone=assert(a:CompileCustomCondition('MY_COMBAT',source))
     assert(clone.evaluate({unit='player'},{})==a.conditionDefinitions.COMBAT.evaluate({unit='player'},{}));assert(clone.print(0,{unit='player'})==a.conditionDefinitions.COMBAT.print(0,{unit='player'}))
-    local itemSource=assert(a:GetBuiltinConditionSource('CARRYING'));local itemClone=assert(a:CompileCustomCondition('MY_ITEM',itemSource));assert(itemClone.print(0,{item={123},operator='GREATERTHAN',value=0})==a.conditionDefinitions.CARRYING.print(0,{item={123},operator='GREATERTHAN',value=0}))
+    -- Metadata registration uses the fixture's inert registry. Load the real
+    -- summary manager for callbacks that return its opaque named protocol.
+    local definitions=a.conditionDefinitions;f.load('Core/conditions.lua');a.conditionDefinitions=definitions
+    local itemSource=assert(a:GetBuiltinConditionSource('CARRYING'));local itemClone=assert(a:CompileCustomCondition('MY_ITEM',itemSource));local node={item={123},operator='GREATERTHAN',value=0}
+    for _,negated in ipairs({false,true}) do assert(a:RenderConditionSummary(itemClone.print(0,node),negated)==a:RenderConditionSummary(a.conditionDefinitions.CARRYING.print(0,node),negated)) end
 end)
 test('builtin utility source is visible independently and duplicating it needs no source copies',function()
     local _,a=fixture();local record=a.builtinFunctions['builtin:Conditions/talent.lua:integer'];assert(record and not record.valueBinding and record.source.code:find('type(value)',1,true))

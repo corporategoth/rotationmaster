@@ -6,10 +6,16 @@ function addon:BuildProfileSettings(p)
     local entries,values={},{};for _,name in ipairs(names) do entries[#entries+1]={value=name,text=name};values[name]=name==current and db.profile or db.profiles and db.profiles[name] or {} end
     if not values[p.selection] and not p.creating then p.selection=current end
     local function overlay(destination,incoming) for key,value in pairs(incoming) do if (key=='color' or key=='minimap' or key=='preview_window') and type(value)=='table' and type(destination[key])=='table' then for field,entry in pairs(value) do destination[key][field]=self:CopySettingsData(entry) end else destination[key]=self:CopySettingsData(value) end end end
+    local function saved(name) return name==db:GetCurrentProfile() and db.profile or db.profiles[name] end
+    local function stockOK(profile)
+        if self.StockSettings.CheckProfile(profile) then return true end
+        p:Message(L['Invalid stock targets; data preserved.']);return false
+    end
     local function change(operation,name,after)
+        if operation=='CopyProfile' and not stockOK(saved(name)) then return false end
         if self.DisableRotation then self:DisableRotation() end
         local depth=self.rotationProfileChangeDepth or 0;self.rotationProfileChangeDepth=depth+1
-        local ok,why=pcall(function() db[operation](db,name);if after then after() end end)
+        local ok,why=pcall(function() if operation=='CopyProfile' and not stockOK(saved(name)) then error(L['Invalid stock targets; data preserved.'],0) end;db[operation](db,name);if after then after() end end)
         self.rotationProfileChangeDepth=depth
         if self.RotationProfileChanged then self:RotationProfileChanged()
         elseif self.EnableRotation then self:EnableRotation() end
@@ -20,13 +26,14 @@ function addon:BuildProfileSettings(p)
     local selected=not p.creating and values[p.selection] or nil;local selectedName=p.selection
     local compareValues={};for name,value in pairs(values) do compareValues[name]={name=name,profile=value} end
     self:CollectionFooter(p,'profile',compareValues,selected and selectedName or nil,
-        {key='duplicate',text=L['Duplicate'],icon='copy',enabled=selected~=nil,action=function() p.previousSelection=p.selection;p.profileSource=selectedName;p.newProfileName=string.format(L['Copy of %s'],selectedName);p.creating=true;p:Draw() end},
+        {key='duplicate',text=L['Duplicate'],icon='copy',enabled=selected~=nil,action=function() if not stockOK(saved(selectedName)) then return end;p.previousSelection=p.selection;p.profileSource=selectedName;p.newProfileName=string.format(L['Copy of %s'],selectedName);p.creating=true;p:Draw() end},
         {key='transfer',text=L['Import/Export'],icon='transfer',action=function()
             local codec=self:NewRotationCodec();local text,why='',nil
             if selected then
                 local portable=self:ProfileToPortable(selected);if not portable then p:Message(L['Invalid profile.']);return end
                 text,why=codec:Encode({format='RM-Profile',version=1,name=selectedName,profile=portable});if not text then p:Message(why);return end
             end
+            if selected and not stockOK(selected) then return end
             local baseline=selected and self:CopySettingsData(selected)
             self:ShowSettingsTextTransfer(p,L['Profiles'],text,function(input,settings)
                 local decoded,errorText=codec:Decode(input);local wrapper=decoded and decoded.value;local candidate=type(wrapper)=='table' and self:ProfileFromPortable(wrapper.profile,{preserveLegacyBodies=true})
@@ -36,6 +43,7 @@ function addon:BuildProfileSettings(p)
                 local migrated,why=self:ApplyRotationProfileMigration(plan);if not migrated or not self:ValidateProfileTransfer(candidate) then return false,why or L['Invalid profile.'] end
                 if settings.mode=='replace' and selected then
                     local target=selectedName==db:GetCurrentProfile() and db.profile or db.profiles[selectedName]
+                    if not stockOK(target) then return false,L['Invalid stock targets; data preserved.'] end
                     if target~=selected or not self:SettingsDataEqual(baseline,self:CopySettingsData(target)) then return false,L['The selected profile changed. Reopen the import window.'] end
                     if selectedName==db:GetCurrentProfile() then return change('ResetProfile',nil,function() overlay(db.profile,candidate) end) end
                     db.profiles[selectedName]=self:CopySettingsData(candidate);p.selection=selectedName;return true
@@ -43,15 +51,20 @@ function addon:BuildProfileSettings(p)
                 for _,name in ipairs(db:GetProfiles()) do if name==settings.name then return false,L['This name is already in use.'] end end
                 p.importProfile=candidate;p.profileSource=nil;p.newProfileName=settings.name;p.previousSelection=p.selection;p.creating=true;return true
             end,{canReplace=selected~=nil,selectedName=selectedName,fallbackName=L['Imported profile'],originalName=function(input) local decoded=codec:Decode(input);return decoded and type(decoded.value)=='table' and decoded.value.name end})
-        end})
+        end},function(left,right)
+            local first,second=saved(left.name),saved(right.name)
+            if not first or not second then p:Message(L['Settings changed elsewhere. Cancel to reload them before applying.']);return end
+            if stockOK(first) and stockOK(second) then self:ShowCollectionComparison(p,'profile',{name=left.name,profile=first},{name=right.name,profile=second}) end
+        end)
     p:Heading(L['Profiles']);p:Text(L['Profile changes apply immediately. Rotations and settings belong to the active profile.'])
     if p.creating then
         p:Edit('new_name',L['New profile name'],p.newProfileName or '',nil,function(text) p.newProfileName=text end)
         p:CreationActions(function()
             local name=nonempty(p.newProfileName or '');if not name then p:Message(L['Enter a profile name first.']);return end
             for _,existing in ipairs(db:GetProfiles()) do if existing==name then p:Message(L['This name is already in use.']);return end end
-            local source=p.profileSource;local imported=p.importProfile;local previous=db:GetCurrentProfile();p.selectAfterProfileChange=name
-            local ok=change('SetProfile',name,function() if source then db:CopyProfile(source) elseif imported then overlay(db.profile,imported) end;db:SetProfile(previous);p.creating=false;p.importProfile=nil;p.profileSource=nil end)
+            local source=p.profileSource;local imported=p.importProfile;local previous=db:GetCurrentProfile()
+            if source and not stockOK(saved(source)) then return end;p.selectAfterProfileChange=name
+            local ok=change('SetProfile',name,function() if source then if not stockOK(saved(source)) then db:SetProfile(previous);error(L['Invalid stock targets; data preserved.'],0) end;db:CopyProfile(source) elseif imported then overlay(db.profile,imported) end;db:SetProfile(previous);p.creating=false;p.importProfile=nil;p.profileSource=nil end)
             if ok then p.newProfileName=nil end
         end,function() p.creating=false;p.selection=p.previousSelection or current;p.profileSource=nil;p.importProfile=nil;p.newProfileName=nil;p:Draw() end);p.fields.new=p.fields.apply;return
     end

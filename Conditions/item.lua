@@ -9,11 +9,17 @@ local Functions={
     values={isin=addon.Functions.values.isin},
     presentation={nullable=addon.Functions.presentation.nullable,compareString=addon.Functions.presentation.compareString},
 }
+local Summary={
+    phrase=addon.Functions.presentation.phrase,
+    predicate=addon.Functions.presentation.predicate,
+}
 addon.builtinCallbackBindings=addon.builtinCallbackBindings or {}
 addon.builtinCallbackBindings["Conditions/item.lua"]={
     ["Functions.values.isin"]="builtin:utils.lua:isin",
     ["Functions.presentation.nullable"]="builtin:utils.lua:nullable",
     ["Functions.presentation.compareString"]="builtin:utils.lua:compareString",
+    ["Summary.phrase"]="builtin:Functions/presentation.lua:phrase",
+    ["Summary.predicate"]="builtin:Functions/presentation.lua:predicate",
 }
 
 local function itemHelp(frame)
@@ -87,9 +93,11 @@ addon:RegisterCondition("CARRYING", {
         return addon:EvaluateItemCondition("CARRYING",value,cache,now)
     end,
     print = function(_, value)
-        return Functions.presentation.compareString(value.operator,
-                string.format(L["the number of %s you are carrying"], Functions.presentation.nullable(get_item_desc(value.item), L["<item>"])),
-                Functions.presentation.nullable(value.value, L["<quantity>"]))
+        return Summary.phrase(L["the number of {item} you are carrying {comparison} {quantity}"], {
+            item = Functions.presentation.nullable(get_item_desc(value.item), L["<item>"]),
+            comparison = Summary.predicate(value.operator, true),
+            quantity = Functions.presentation.nullable(value.value, L["<quantity>"]),
+        })
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")

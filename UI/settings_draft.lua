@@ -35,7 +35,7 @@ function addon:InstallSettingsDraft(p)
     function p:SettingsData()
         if not self.transactionKeys then return addon.db end
         if not self.draft then
-            self.draft={profile=addon:CopySettingsData(addon.db.profile),global=addon:CopySettingsData(addon.db.global),char=addon:CopySettingsData(addon.db.char or {})};self.draftBaseline={};self.draftEffects={}
+            self.draft={profile=addon:CopySettingsData(addon.StockSettings.DraftProfile(addon.db.profile)),global=addon:CopySettingsData(addon.db.global),char=addon:CopySettingsData(addon.db.char or {})};self.draftBaseline={};self.draftEffects={}
             for scope,keys in pairs(self.transactionKeys) do self.draftBaseline[scope]={};for _,key in ipairs(keys) do self.draftBaseline[scope][key]=addon:CopySettingsData(addon.db[scope] and addon.db[scope][key]) end end
         end
         return self.draft
