@@ -1,4 +1,4 @@
-import {formatBytes,pathText,rawEntries,valueText} from './model.mjs';
+import {formatBytes,formatUnicode,pathText,rawEntries,valueText} from './model.mjs';
 
 // Shared bounded text-only drawing, raw paging and byte inspection. Both source
 // readers and comparison details use these exact routines; no imported HTML.
@@ -44,15 +44,19 @@ let nextRenderer=0;
 export function renderViewer(document,root,view){
   const instance=++nextRenderer;
   let active=true,revision=0,rawPageIndex=0,stepPage=0,diagnosticPage=0,selected=null,byteOffset=0;
-  const data=view.decode?.value,raw=view.decode?.ok?rawEntries(data):[];
-  const rows=view.analysis?.validation.valid&&view.analysis.index?.rows||[];
+  const bundled=view.sourceKind==='bundled',data=bundled?view.value:view.decode?.value,accepted=bundled?data instanceof Map:view.decode?.ok,raw=accepted?rawEntries(data):[];
+  const rows=(!bundled||view.analysis?.recognized!==false)&&view.analysis?.validation.valid&&view.analysis.index?.rows||[];
   let mode=rows.length?'ordered':'raw';
   const shortPath=(path,limit)=>{const text=pathText(path);return text.length>limit?text.slice(0,limit)+'…':text;};
   function draw(focus){
     if(!active)return;const ticket=++revision;root.replaceChildren();let focusTarget;
     const ui=drawing(document,root,instance,ticket,()=>active&&ticket===revision),{add,button,describe}=ui;
-    if(!view.decode?.ok){add(root,'p','Could not decode: '+(view.decode?.reason||'unknown-transport-error'),'problem');return;}
-    const status=add(root,'section','','status');const statusHeading=add(status,'h2','Import status');statusHeading.setAttribute('tabindex','-1');if(focus==='diagnostics')focusTarget=statusHeading;add(status,'p','Decoded '+view.decode.kind+' transport.');
+    if(!accepted){add(root,'p','Could not decode: '+(view.decode?.reason||'unknown-transport-error'),'problem');return;}
+    const status=add(root,'section','','status');const statusHeading=add(status,'h2',bundled?'Bundled rotation':'Import status');statusHeading.setAttribute('tabindex','-1');if(focus==='diagnostics')focusTarget=statusHeading;if(bundled){
+      add(status,'p','Generated bundled data. Declared revision '+valueText(data.get('revision'))+'.');
+      add(status,'p','Source '+valueText(view.source?.path,256)+'; SHA-256 '+valueText(view.source?.sha256,64)+'. Consistency metadata, not authenticated upstream content.');
+      for(const [key,label]of [['name','Name'],['description','Description']]){const human=view.display?.[key];if(typeof human!=='string')continue;const part=formatUnicode(human,{limit:key==='name'?80:160});add(status,'p',label+': '+part.text+(part.remaining?'…':''));button(status,'Inspect '+key,()=>{selected={path:[],value:human,human:true,label};byteOffset=0;draw('inspection');});}
+    }else add(status,'p','Decoded '+view.decode.kind+' transport.');
     add(status,'p',view.structureMessage);const validation=view.analysis?.validation;
     if(validation&&view.analysis.recognized!==false){add(status,'p','Structure '+(validation.valid?'valid':'invalid')+'; '+(validation.supported?'supported':'contains unsupported data')+'; References '+(validation.resolved?'found':'unresolved')+'.');}
     add(status,'p','Semantics not evaluated. Native readiness not checked. Gameplay quality unreviewed.','caution');
@@ -90,13 +94,17 @@ export function renderViewer(document,root,view){
       const switching=view.analysis.body?.get('switch');if(switching instanceof Map){add(ordered,'h3','Switch conditions');add(ordered,'p','Literal switching guard; native state is not evaluated.');button(ordered,'Inspect switch',()=>{selected={path:['switch'],value:switching};byteOffset=0;draw('inspection');});}
     }else if(view.analysis&&!rows.length){add(content,'p','Ordered preview is unavailable or empty. Inspect the original structure below.');}
     if(mode==='raw'){
-      const heading=rawPage(ui,content,raw,rawPageIndex,row=>{selected=row;byteOffset=0;draw('inspection');},page=>{rawPageIndex=page;draw('raw');});
+      const heading=rawPage(ui,content,raw,rawPageIndex,row=>{selected=row;byteOffset=0;draw('inspection');},page=>{rawPageIndex=page;draw('raw');},bundled?'Raw manifest data':'Raw decoded data');
       if(focus==='raw')focusTarget=heading;
     }
     if(selected){
       const detail=add(root,'section','','inspection');const inspectionHeading=add(detail,'h2','Value inspection');inspectionHeading.setAttribute('tabindex','-1');if(focus==='inspection')focusTarget=inspectionHeading;
       add(detail,'pre',shortPath(selected.path,4096));
-      if(typeof selected.value==='string'){
+      if(selected.human){
+        const part=formatUnicode(selected.value,{offset:byteOffset,limit:1024});add(detail,'h3',selected.label);add(detail,'pre',part.text);add(detail,'p','Code points '+(part.total?byteOffset+1:0)+'–'+Math.min(part.total,byteOffset+1024)+' of '+part.total+'. '+part.remaining+' remaining.');
+        if(byteOffset>0)button(detail,'Previous text',()=>{byteOffset=Math.max(0,byteOffset-1024);draw('inspection');});
+        if(part.remaining)button(detail,'Next text',()=>{byteOffset+=1024;draw('inspection');});
+      }else if(typeof selected.value==='string'){
         byteDetails(ui,detail,selected.value,byteOffset,offset=>{byteOffset=offset;draw('inspection');});
       }else if(selected.value instanceof Map){for(const row of rawEntries(selected.value).slice(0,20))add(detail,'pre',pathText(row.path).slice(0,256)+' = '+valueText(row.value));add(detail,'p','Nested values remain in the raw decoded data pages.');}
       else add(detail,'pre',valueText(selected.value));

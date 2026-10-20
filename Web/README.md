@@ -58,13 +58,23 @@ Differences page 25 returned changes at a time. Typed field/step segments retain
 
 ## Bundled source catalog
 
-`catalog/defaults.json` contains the fifteen current bundled definitions, generated through production registration, library initialization and export. It records explicit `enUS` display strings separately from unchanged symbolic manifest keys and raw Lua bytes. Source file hashes provide consistency metadata; they do not authenticate upstream content or establish native readiness. The file adds no addon runtime work and is not yet a catalog browsing UI.
+`catalog/defaults.json` contains the fifteen current bundled definitions, generated through production registration, library initialization and export. It records explicit `enUS` display strings separately from unchanged symbolic manifest keys and raw Lua bytes. Source file hashes provide consistency metadata; they do not authenticate upstream content or establish native readiness. The catalog and browser add no addon runtime work.
 
 Generate the primary catalog with `lua5.1 tools/export_web_defaults.lua` or `luajit tools/export_web_defaults.lua` from the repository root. Both produce identical sorted typed JSON. The trusted generator loads only reviewed fixed source paths and supplies an explicit offline English locale; it does not execute condition/provider callbacks or query gameplay facts. `luajit tools/export_web_defaults.lua --fixtures` creates actual bundled-codec wire snapshots. Their decoded semantics are tested; compressed/serialized wire iteration order is not promised to be canonical.
 
 `createBundledRotationCatalog(text, declarationCatalogText)` in `catalog/defaults.mjs` accepts JSON text and the existing declaration catalog text. It returns a private facade with fresh detached `list()` summaries and `get(id)` manifests, or a fixed failure reason. Applicability/tags and manifest tables remain typed Maps; human display strings remain Unicode. Number markers retain finite IEEE-754 bits, including signed zero values; byte markers retain exact raw bytes. Duplicate decoded keys, malformed closed fields and inconsistent declared IDs/source/display keys are refused.
 
 The parser bounds catalog UTF-8 text to 2 MiB, records to 64 and source-file declarations to 128. Each manifest retains the codec's depth/node/string bounds and actual schema/strict graph checks. Validity, support and reference resolution remain separate; native availability is always unverified. The facade executes no imported code and invokes no game/provider callbacks, DOM, fetch or encoder. Sharing, catalog UI, generated exports and execution are separate work.
+
+## Browsing bundled definitions
+
+Choose Bundled rotations to load the packaged catalog on demand. Select an entry to inspect its declared applicability, identity, English name/description and ordered/raw data through the same reader used for imports. Class filtering uses the manifest's declared token; All declarations includes unclassified or universal definitions. Filtering out the selected entry clears its inspection rather than silently selecting another entry. These are declarations, not the current character's eligibility.
+
+Generated data is identified as Bundled rotation, with source path/hash and declared revision. It is never described as decoded transport and has no original-export copy authority. Human prose preserves Unicode and uses its own code-point pager with visible control/bidi/surrogate escapes; raw Lua byte strings retain the existing byte inspector. Complete long descriptions remain reachable.
+
+Imports and its accepted originals/two-input comparison remain independent. Returning to Imports restores its prior result; source navigation releases old result handlers. Catalog selection does not decode, compare, edit or encode anything. Comparing imports with bundled definitions, sharing/downloads and editing remain later work.
+
+Only fixed local declaration/catalog resources are loaded, with credentials omitted, redirects refused, fatal UTF-8 decoding and separate streamed byte caps: 512 KiB for declarations and 2 MiB for bundled data. A failed catalog has an explicit Retry; it does not disable imported transport/raw recovery. Validated catalog data is cached only for the current mount; retired loads cannot replace newer visible state or focus. No metadata/source-guide URLs are fetched.
 
 ## Checks
 

@@ -33,3 +33,12 @@ pre { margin:8px 0; font:13px/1.6 monospace; white-space:pre-wrap; overflow-wrap
 .compare-input button[aria-pressed="true"] { background:#2C3942; border-width:2px; }
 .comparison { grid-column:1/-1; min-width:0; }
 .comparison .step h3 { margin-top:0; }
+
+.source-navigation { display:flex; flex-wrap:wrap; gap:4px; border-bottom:1px solid var(--line); padding-bottom:12px; margin-bottom:24px; }
+.source-navigation button[aria-pressed="true"] { color:var(--text); border-color:var(--gold); border-bottom-width:3px; }
+.bundled-browser { min-width:0; }
+.bundled-browser select { max-width:100%; padding:9px 12px; border:1px solid var(--line); border-radius:3px; background:var(--surface); color:var(--text); font:inherit; }
+#catalog-list { list-style:none; padding:0; display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,290px),1fr)); gap:8px 16px; }
+#catalog-list li { min-width:0; }
+#catalog-list button { width:100%; height:100%; text-align:left; overflow-wrap:anywhere; margin:0; }
+#catalog-list button[aria-pressed="true"] { border-color:var(--gold); color:var(--text); }
