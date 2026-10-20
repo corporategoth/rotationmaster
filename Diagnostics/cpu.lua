@@ -907,4 +907,5 @@ end
 -- The ordinary rotation enable/disable toggle remains independent of capture.
 function addon:OnDisable()
  self:CancelCPUProfile()
+ if type(self.ClearCastCaptureForDisable)=='function' then self:ClearCastCaptureForDisable() end
 end
