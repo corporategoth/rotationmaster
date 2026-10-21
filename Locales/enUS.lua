@@ -1870,6 +1870,7 @@ L["you {{!have|do not have}} a %s totem active with %s"] = true
 L["you {{!have|do not have}} a pet"] = true
 
 L["you {{!have|do not have}} a pet named %s"] = true
+L["you {{!have|do not have}} a pet named {name}"] = true
 
 L["your primary talent tree {{!is|is not}} %s"] = true
 

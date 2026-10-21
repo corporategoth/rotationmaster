@@ -126,6 +126,7 @@ test('every callback byte and parameter remains identical after reversing only n
         if tag=='LOC_TYPE' or tag=='LOC_BLOCKED' then current.evaluate=dofile('tests/fixtures/restore_loss_of_control_repairs.lua')(current.evaluate,tag) end
         if tag=='TOTEM_REMAIN' then current.evaluate=dofile('tests/fixtures/restore_rounding_qualifiers.lua')(current.evaluate,tag,true) end
         if tag=='THREAT' then current.evaluate=dofile('tests/fixtures/restore_threat_repairs.lua')(current.evaluate,true) end
+        if tag=='PET_NAME' then current=dofile('tests/fixtures/restore_pet_name_summary_literals.lua')(current,'export') end
         if tag=='PET' or tag=='PET_NAME' then current.evaluate=dofile('tests/fixtures/restore_pet_repairs.lua')(current.evaluate,tag) end
         if tag=='FORM' then for _,name in ipairs({'print','widget'}) do current[name]=dofile('tests/fixtures/restore_form_presentation_repairs.lua')(dofile('tests/fixtures/restore_form_localization.lua')(current[name],name),name) end end
         if tag=='ECS_STAT_PCT' then current.evaluate=dofile('tests/fixtures/restore_ecs_percentage_sign.lua')(current.evaluate,true) end

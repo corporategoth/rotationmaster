@@ -484,6 +484,8 @@ def main():
             ['luajit', 'tests/validation_observed_maps.lua'],
             ['lua5.1', 'tests/item_neighbor_summary_literals.lua'],
             ['luajit', 'tests/item_neighbor_summary_literals.lua'],
+            ['lua5.1', 'tests/pet_name_summary_literals.lua'],
+            ['luajit', 'tests/pet_name_summary_literals.lua'],
             ['lua5.1', 'tests/stock_targets_observation.lua'],
             ['luajit', 'tests/stock_targets_observation.lua'],
             ['lua5.1', 'tests/stock_readiness.lua'],

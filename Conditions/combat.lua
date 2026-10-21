@@ -5,6 +5,7 @@ local color, tostring, tonumber, pairs = color, tostring, tonumber, pairs
 local helpers = addon.help_funcs
 
 -- Private canonical leaves preserve explicit saved-source dependency identities.
+local PetSummary={phrase=addon.Functions.presentation.phrase}
 local Functions={
     collections={deepcopy=addon.Functions.collections.deepcopy,keys=addon.Functions.collections.keys},
     values={compare=addon.Functions.values.compare,isin=addon.Functions.values.isin},
@@ -13,6 +14,7 @@ local Functions={
 }
 addon.builtinCallbackBindings=addon.builtinCallbackBindings or {}
 addon.builtinCallbackBindings["Conditions/combat.lua"]={
+    ["PetSummary.phrase"]="builtin:Functions/presentation.lua:phrase",
     ["Functions.collections.deepcopy"]="builtin:Functions/collections.lua:deepcopy",
     ["Functions.collections.keys"]="builtin:Functions/collections.lua:keys",
     ["Functions.values.compare"]="builtin:utils.lua:compare",
@@ -86,7 +88,7 @@ addon:RegisterCondition("PET_NAME", {
         return record.name == value.value
     end,
     print = function(_, value)
-        return string.format(L["you {{!have|do not have}} a pet named %s"], Functions.presentation.nullable(value.value, L["<name>"]))
+        return PetSummary.phrase(L["you {{!have|do not have}} a pet named {name}"], {name = Functions.presentation.nullable(value.value, L["<name>"])})
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")

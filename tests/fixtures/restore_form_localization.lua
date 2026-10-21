@@ -14,6 +14,7 @@ end
 local function inverse(text,callback)
  assert(type(text)=='string','expected source text')
  if callback then assert(repaired[callback]and text==repaired[callback],'unexpected complete FORM callback');return old[callback]end
+ text=dofile('tests/fixtures/restore_pet_name_summary_literals.lua')(text)
  for _,name in ipairs({'print','widget'})do
   local header=name=='print'and 'print = function(_, value)'or 'widget = function(parent, spec, value)'
   text=once(text,header..repaired[name]..'end,',header..old[name]..'end,',name)

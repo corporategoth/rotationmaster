@@ -87,6 +87,8 @@ local vectors={
 }
 test('combat callbacks select eight explicit canonical leaves with exact call counts and retain historical value identities',function()
     local f,a=fixture();local bindings=assert(a.builtinCallbackBindings and a.builtinCallbackBindings['Conditions/combat.lua'],'combat qualified dependency manifest missing')
+    bindings=a:CopySettingsData(bindings)
+    assert(bindings['PetSummary.phrase']=='builtin:Functions/presentation.lua:phrase');bindings['PetSummary.phrase']=nil
     local leaves=0;for alias,binding in pairs(bindings) do leaves=leaves+1;local name=alias:match('([%w_]+)$');assert(alias==qualified(name) and binding==id(name)) end;assert(leaves==8)
     local calls,callbacks=0,0
     for tag,changes in pairs(expected) do
