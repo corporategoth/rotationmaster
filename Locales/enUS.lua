@@ -2782,6 +2782,17 @@ L['Advice/presentation rows describe observed delivery boundaries only; ordinary
 L['Coverage rows: advice=%d presentation=%d visible=%d hidden=%d unknown=%d retired=%d (not opportunities).'] = true
 L['Visible means RM-owned preview frame state at a delivery boundary; it does not prove perception or native pixel rendering.'] = true
 
+L["Default.TBC.Mage.Forties.Name"] = "TBC Mage 40–49 Frost single-target preview"
+L["Default.TBC.Mage.Forties.Description"] = "Inherited bounded level 40–49 Frost single-target preview. Preserves manual armor; offers learned Mage, then Ice, then Frost Armor only when all are absent. Talents, kiting, emergency defenses and resources stay manual."
+L["Default.TBC.Warrior.Forty.Name"] = "TBC Warrior40–49 combat preview"
+L["Default.TBC.Warrior.Forty.Description"] = "Levels40–49: inherited melee preview with seven exact learned Heroic Strike queue guards. Stances, talents, reactive abilities and resources remain manual."
+L["Default.TBC.Paladin.Forty.Name"] = "TBC Paladin40–49 manual seal/aura preview"
+L["Default.TBC.Paladin.Forty.Description"] = "Levels40–49: preserve manual auras and seals; only affirmative own Righteousness permits Judgement. Support, talents and resources remain manual."
+L["Default.TBC.Rogue.Forty.Name"] = "Rogue: melee leveling (40–49)"
+L["Default.TBC.Rogue.Forty.Description"] = "Bounded single-target melee preview. Preserves manual stealth, casts and channels. Missing attributable own Slice and Dice from two current-target combo points, Eviscerate at five, otherwise Sinister Strike. Learned ranks, mappings and native readiness govern actions; openers, poisons, talents, positioning, reactive utility, target lifetime and resources remain manual. This inherited subset is not a complete or optimal 40s build."
+L["Default.TBC.Druid.Caster.Forty.Name"] = "Druid: limited caster leveling (40–49)"
+L["Default.TBC.Druid.Caster.Forty.Description"] = "Bounded humanoid caster-only preview. Preserves manual forms, casts and channels; own missing Moonfire, learned stationary Starfire, then independently ready Wrath. Native learned ranks, mappings and readiness govern recommendations. Feral combat, form changes, talents, support and resources remain manual; no implicit melee advice. This inherited subset is not a complete or optimal 40s build."
+
 -- BEGIN GENERATED RM PUBLIC HELPER DOCS
 L["Absolute health target (negative means deficit) or percentage fraction."] = true
 L["All original results, preserving nil positions and return count."] = true
