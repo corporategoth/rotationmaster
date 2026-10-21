@@ -39,6 +39,7 @@ local function fixture(case)
         else
             f.load(file)
             if file=='Data/builtin_sources.lua' then
+                dofile('tests/fixtures/restore_group_unit_membership.lua')(a.BuiltinSourceCatalog,nil,'catalog')
                 local creature=assert(a.BuiltinSourceCatalog.conditions.CREATURE).callbacks.evaluate
                 creature.code=restoreCreature(creature.code,true);creature.bindings=a:CopySettingsData(oldCreatureBindings);creature.parameters=a:CopySettingsData(oldCreatureParameters)
                 local glyph=assert(a.BuiltinSourceCatalog.conditions.GLYPH);glyph.callbacks.print.code=restoreGlyph(glyph.callbacks.print.code,true)

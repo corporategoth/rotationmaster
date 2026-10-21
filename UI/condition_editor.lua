@@ -432,7 +432,7 @@ function addon:ShowConditionEditor(index,spec,value,callback,targetValid,options
         callback=callback,generation=self.configPaneGeneration,targetValid=targetValid,
         comparisonBaseline=options.savedValue and addon.RotationData.CopyData(options.savedValue),readOnly=options.readOnly==true,persistentOwner=options.persistentOwner==true}
     shell.view={selection={[""]=true},collapsed={},cardStates={},hiddenChildren={},expanded={},detailsHeights={},help={}}
-    shell.userdata={funcs={print=function() return "" end}}
+    shell.userdata={funcs={print=function() return "" end},announcement=options.announcement==true}
     local heading=type(options.title)=="string" and addon:PlainWorkbenchName(options.title)
     shell.chrome:SetContext(heading and heading:find("%S") and heading or index and index>0 and string.format(L["Edit Condition #%d"],index) or L["Edit Condition"],options.contextLabel or L["Condition"],options.rotationName);shell.title:Show()
     shell.status:SetText("");shell.showHelp=false;shell.closeOverride=nil

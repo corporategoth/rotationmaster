@@ -517,21 +517,44 @@ addon:RegisterCondition("LEVEL", {
 addon:RegisterCondition("GROUP", {
     description = L["In Group"],
     icon = addon.Artwork.condition["GROUP"],
-    fields = { raid = "boolean" },
-    valid = function()
-        return true
+    fields = { raid = "boolean", unit = "string" },
+    valid = function(_, value)
+        return addon.Platform:CanReadValue(value.unit) and
+            (value.unit == nil or value.unit == "spellrecipient" or Functions.values.isin(addon.units, value.unit))
     end,
     evaluate = function(value, cache)
-        return Functions.cache.getCached(cache, addon.Platform.GetGroupMembership, addon.Platform, value.raid)
+        local unit=value.unit
+        if unit==nil then
+            return Functions.cache.getCached(cache, addon.Platform.GetGroupMembership, addon.Platform, value.raid)
+        end
+        if not addon.Platform:CanReadValue(unit) then return nil,"restricted-value" end
+        if unit=="player" then
+            return Functions.cache.getCached(cache, addon.Platform.GetGroupMembership, addon.Platform, value.raid)
+        end
+        if unit=="spellrecipient" then
+            if not addon.Platform:CanReadValue(cache) or type(cache)~="table" then return nil,"cast-recipient-unavailable" end
+            unit=rawget(cache,"announcementRecipient")
+            if not addon.Platform:CanReadValue(unit) or type(unit)~="string" or unit=="" then return nil,"cast-recipient-unavailable" end
+            return Functions.cache.getCached(cache, addon.Platform.GetAnnouncementRecipientGroupMembership, addon.Platform, unit, value.raid)
+        elseif not Functions.values.isin(addon.units,unit) then return nil,"invalid-unit" end
+        return Functions.cache.getCached(cache, addon.Platform.GetUnitGroupMembership, addon.Platform, unit, value.raid)
     end,
     print = function(_, value)
-        return value.raid and L["you {{!are|are not}} in a raid"] or L["you {{!are|are not}} in a group"]
+        if value.unit==nil or value.unit=="player" then
+            return value.raid and L["you {{!are|are not}} in a raid"] or L["you {{!are|are not}} in a group"]
+        end
+        local label=value.unit=="spellrecipient" and L["Spell recipient"] or Functions.presentation.nullable(addon.units[value.unit],L["<unit>"])
+        return addon:CreateConditionSummaryPhrase(value.raid and L["{unit} {{!is|is not}} in a raid"] or L["{unit} {{!is|is not}} in a group"],{unit=label})
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
         local root = top:GetUserData("root")
         local funcs = top:GetUserData("funcs")
-
+        local units=Functions.collections.deepcopy(addon.units)
+        if top:GetUserData("announcement")==true or value.unit=="spellrecipient" then units.spellrecipient=L["Spell recipient"] end
+        local unit=addon:Widget_UnitWidget(value,units,function() top:SetStatusText(funcs:print(root,spec)) end)
+        unit.configure=function() unit:SetList(units,Functions.collections.keys(units));unit:SetValue(value.unit or "player") end
+        parent:AddChild(unit)
         local raid = addon:CreateConditionCheckBox()
         raid:SetWidth(100)
         raid:SetLabel(L["Raid"])
@@ -543,9 +566,8 @@ addon:RegisterCondition("GROUP", {
         parent:AddChild(raid)
     end,
     help = function(frame)
-        frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Raid"] .. color.RESET ..
-                " - " .. "Check to see if we are in a raid, instead of just a party (note that with ."
-                      .. "this option off, this condition will be true if you are in a part OR a raid)."))
+        frame:AddChild(helpers.CreateText(L["Help.GROUP.unit"]))
+        frame:AddChild(helpers.CreateText(L["Help.GROUP.raid"]))
     end
 })
 

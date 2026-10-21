@@ -2809,6 +2809,15 @@ L['Saved manual choice is unavailable in the current context.'] = true
 -- Capture-only START witness diagnostics.
 L['START witness rows: observed=%s matched=%s mismatch=%s excluded=%s unknown=%s (not ordinary proof).'] = true
 L['START witnesses compare current cast identity and non-autorepeat classification only; they do not classify ordinary casts or enable scoring.'] = true
+L["Edit announcement conditions"] = "Edit announcement conditions"
+L["Announcement conditions"] = "Announcement conditions"
+L["Help.Announces.conditions"] = "Optional conditions use the Switch condition list and All, Any and Not groups. They run only when this announcement's spell and event match. Only a matching result allows its message or sound; unavailable data skips the announcement. In Group can check the Spell recipient recorded for this cast, including click casting, without using your selected target. Missing or ambiguous recipients skip that check. Apply in the condition editor updates the announcement draft; Apply on Announces saves it. Cancel or Discard abandons draft changes."
+
+L["Spell recipient"] = "Spell recipient"
+L["{unit} {{!is|is not}} in a raid"] = "{unit} {{!is|is not}} in a raid"
+L["{unit} {{!is|is not}} in a group"] = "{unit} {{!is|is not}} in a group"
+L["Help.GROUP.unit"] = "Choose the unit whose membership in your party or raid is checked. Player keeps the original player group-status behavior. Spell recipient uses only the current announcement event context; without that readable context the result is unavailable. It never substitutes your selected target or a previous cast."
+L["Help.GROUP.raid"] = "Checked tests raid membership only. Unchecked tests party membership or raid membership. A known nonmember is false; unavailable native data stays unavailable, including under NOT."
 
 -- BEGIN GENERATED RM PUBLIC HELPER DOCS
 L["Absolute health target (negative means deficit) or percentage fraction."] = true
@@ -2899,6 +2908,7 @@ L["Evaluation-pass native observation cache; nil queries afresh."] = true
 L["Evaluation-pass presence cache only; name, level and provider history remain fresh."] = true
 L["Exact helper-owned player, party1..party4 or raid1..raid40 token."] = true
 L["Exact integral native rune slot from 1 through 6."] = true
+L["Exact readable recipient name recorded for this cast."] = true
 L["Exact selected unit token; only the literal player token may select the TBC combo transport."] = true
 L["Exact selected unit token; player class alone may use the successful longterm cache."] = true
 L["Exact selected unit token; the attacker remains player."] = true
@@ -3063,6 +3073,7 @@ L["Read a fresh protected UnitClass player observation for rotation ownership. C
 L["Read a fresh protected zero-argument GetTime for rune cooldown arithmetic. Require a readable finite number. This observation is deliberately uncached; callers preserve the original clock-before-scan order and require its value only when a matching rune needs timing. No evaluation-start substitution or inferred time is supplied."] = true
 L["Read a lazy health scalar after a separate identity gate. Kind current uses exact UnitHealth(unit); maximum uses exact UnitHealthMax(unit). Probe-policy clients accept readable finite nonnegative numbers including zero. No repeated existence/GUID call or alternate tuple fallback is added."] = true
 L["Read a normalized charge record: currentCharges, maxCharges, cooldownStartTime, cooldownDuration, chargeModRate and isActive. Unsupported spells or restricted client data return nil with a reason."] = true
+L["Read a specified unit membership in the player party or raid. True raidOnly queries only UnitInRaid; otherwise a true UnitInParty result short-circuits, false proceeds to UnitInRaid, and unknown remains unavailable. Readable nil raid index means false; integer raid index1..40 means true. Names are passed unchanged to native APIs; native name-query acceptance requires client qualification."] = true
 L["Read and normalize a spell cooldown across supported clients. The returned record contains startTime, duration, isEnabled and modRate. The timestamps and duration already describe expiration in GetTime() seconds; do not divide them by modRate."] = true
 L["Read normalized native item classification metadata. The record contains canonical itemID, classID and subClassID; it does not require loaded item display text. Missing, failed, malformed or restricted metadata returns nil with a reason."] = true
 L["Read one documented active loss-of-control row by its native index and requested subject kind. Type queries require only the readable control type string; school queries require only the readable finite nonnegative integer school mask. Optional timing is returned as a finite timeRemaining or an explicit per-field reason, so an unrelated subject does not require a usable timer. Missing rows are unavailable snapshot observations. No display fields, inferred deadline, duration sum, maximum or native alias fallback is used."] = true
@@ -3087,6 +3098,7 @@ L["Readable finite current-form observation, including zero for the current unsh
 L["Readable finite positive integral rune type, or nil when unavailable."] = true
 L["Readable interval with optional minimum and maximum bounds in yards. At least one bound is present; nil when unavailable."] = true
 L["Readable nonempty selected unit token, passed unchanged as the single argument to existence and creature metadata queries."] = true
+L["Readable nonempty unit token or native-recognized name, passed unchanged."] = true
 L["Readable nonempty unit token to match, unchanged in the native observation."] = true
 L["Readable nonempty unit token, passed unchanged as the single native argument."] = true
 L["Readable record with Boolean exists and the requested class filename when present; nil when required data is unavailable."] = true
@@ -3100,6 +3112,7 @@ L["Reference input kind, such as Spec_EditBox, used for spell suggestions."] = t
 L["Remove entries in place, preserving only keys listed among except values by default. With invert true, remove listed keys and retain unlisted keys. Without an exception list, the default removes every entry and invert true retains every entry. Nil input does nothing."] = true
 L["Remove leading and trailing Lua-pattern whitespace from a string."] = true
 L["Resolve a readable raw unit level for condition evaluation. Known absence returns false; unavailable observations return nil with a reason. Cache observations within the supplied evaluation pass. Only valid player levels are retained between passes until a skill, profile or level refresh."] = true
+L["Resolve an exact cast-recipient name against the current bounded party or raid roster, then observe membership through a unit token. Missing, ambiguous or changing roster data remains unavailable; never reads the selected target or retains state across casts."] = true
 L["Resolve point resources using the original live class mapping and identity cache, with an explicit TBC player ComboPoints-fallback transport policy. A player fallback matching the readable raw Enum.PowerType table and ComboPoints value captured at module load selects target-combo; explicit class-map entries, other actors and other families retain power. Replaced, inherited or unprovable fallback provenance retains power. This versioned policy does not claim native UnitPower is broken or equivalent. Known unit absence returns false; unavailable required observations return nil with a reason. No current or maximum quantity is queried here."] = true
 L["Resolve the selected unit point-resource selector using the live class-to-resource map and ComboPoints fallback. Known absence returns false; unavailable required identity or selector data returns nil with a reason. Share complete identity observations within the evaluation pass. Only successful player class observations persist in the current longterm cache, tied to the native UnitClass identity; existence is refreshed each pass. This selects a resource without reading its current or maximum quantity."] = true
 L["Resolve the spell identifier stored by a condition. With exact rank enabled the supplied ID is retained; otherwise ranked Classic clients resolve the currently known rank through the spell catalog. Returns nil and an availability reason if resolution cannot be completed."] = true
@@ -3161,6 +3174,8 @@ L["Trimmed text."] = true
 L["True also observes maximum health; false or nil reads current health only."] = true
 L["True also observes the selected resource maximum; false or nil reads current quantity only."] = true
 L["True also requires the present unit class filename; false reads existence only."] = true
+L["True checks raid membership only; false or nil checks party or raid."] = true
+L["True checks raid membership only; false or nil checks party then raid."] = true
 L["True for a readable attackable non-dead unit, false for a conclusive negative result, or nil when a required observation is unavailable."] = true
 L["True for an exact identity match; false for known absence or mismatch; nil when required data or the query is unavailable."] = true
 L["True includes only listed entries; false or nil excludes listed entries."] = true

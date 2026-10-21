@@ -19,6 +19,7 @@ local function restore(text,callback)
   assert(text==newBody,'unexpected complete CREATURE evaluator')
   return oldBody,oldBody,newBody,oldBindings,oldParameters
  end
+ if text:find('GetUnitGroupMembership',1,true) then text=dofile('tests/fixtures/restore_group_unit_membership.lua')(text,'Conditions/character.lua') end
  local header='    evaluate = function(value, cache)'
  local from,to=header..newBody..'end,',header..oldBody..'end,'
  local first,last=text:find(from,1,true)

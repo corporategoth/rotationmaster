@@ -1971,7 +1971,11 @@ local currentChannel
 local function spellcast(self, event, unit, castguid, spellid)
     -- even though we check it later, this skips rows entirely.
     if unit == 'player' or unit == "pet" then
-        for _, value in ipairs(self.db.profile.announces) do
+        -- BEGIN ANNOUNCEMENT CONDITION OWNER
+        local profile=self.db.profile
+        local announcements=profile.announces
+        for index, value in ipairs(announcements) do
+        -- END ANNOUNCEMENT CONDITION OWNER
             if (value.value or value.announce == "audible" or value.announce == "gesture") and (not value.disabled) and (value.type == BOOKTYPE_PET and unit == "pet" or unit == "player") and
                 (event == "UNIT_SPELLCAST_" .. value.event or event == "UNIT_SPELLCAST_CHANNEL_" .. value.event) then
                 local skip = false
@@ -1984,16 +1988,21 @@ local function spellcast(self, event, unit, castguid, spellid)
                 end
 
                 if not skip then
-                    local ent = self.Functions.collections.deepcopy(value)
-                    if ent.type == BOOKTYPE_SPELL or ent.type == BOOKTYPE_PET then
-                        ent.action = ent.spell
-                    elseif ent.type == "item" then
-                        ent.action = ent.item
-                    end
-
+                    -- BEGIN ANNOUNCEMENT CONDITION LEASE
+                    local registry=self.conditionRegistryVersion
+                    local ent,current=self:PrepareAnnouncementDelivery(value,function()
+                        return self.db.profile==profile and profile.announces==announcements
+                            and announcements[index]==value and not value.disabled
+                            and self.conditionRegistryVersion==registry
+                    end)
+                    if ent and current() then
+                    -- END ANNOUNCEMENT CONDITION LEASE
                     local spellids, itemids = self:GetSpellIds(ent)
                     for idx, sid in ipairs(spellids) do
                         if spellid == sid then
+                            -- BEGIN ANNOUNCEMENT CONDITION MATCH
+                            if self:AnnouncementConditionMatches(ent,currentSpells[castguid],current) then
+                            -- END ANNOUNCEMENT CONDITION MATCH
                             local text = ent.value or ""
                             if ent.announce~='audible' and ent.announce~='gesture' then
                             if ent.type == BOOKTYPE_SPELL or ent.type == BOOKTYPE_PET then
@@ -2009,16 +2018,20 @@ local function spellcast(self, event, unit, castguid, spellid)
                                 text = text:gsub("{{target}}", currentSpells[castguid] or lastCastTarget[spellid])
                             end
                             end
-                            if ent.announce=='gesture' then self:DispatchAnnouncement(ent,nil,currentSpells[castguid])
-                            else self:DispatchAnnouncement(ent, text) end
-                            if self.announced[value.id] == nil then
-                                self.announced[value.id] = { castguid }
+                            if not current() then return end -- ANNOUNCEMENT CONDITION BEFORE OUTPUT
+                            -- Reserve before any output callback can reenter this cast.
+                            if self.announced[ent.id] == nil then
+                                self.announced[ent.id] = { castguid }
                             else
-                                table.insert(self.announced[value.id], castguid)
+                                table.insert(self.announced[ent.id], castguid)
                             end
+                            if ent.announce=='gesture' then self:DispatchAnnouncement(ent,nil,currentSpells[castguid],current)
+                            else self:DispatchAnnouncement(ent,text,nil,current) end
+                            end -- ANNOUNCEMENT CONDITION OUTPUT
                             break
                         end
                     end
+                    end -- ANNOUNCEMENT CONDITION LEASE
                 end
             end
         end

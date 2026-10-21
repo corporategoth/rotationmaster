@@ -1,6 +1,54 @@
 local _,addon=...
 local platform=addon.Platform
 local direct={['local']='LOCAL',emote='EMOTE',gesture='GESTURE'}
+local conditionRequest=0
+local deliveryRequest=0
+local function same(left,right)
+    if type(left)~=type(right) then return false end
+    if type(left)~='table' then return left==right end
+    if getmetatable(left)~=nil or getmetatable(right)~=nil then return false end
+    for key,value in pairs(left) do if not same(value,rawget(right,key)) then return false end end
+    for key in pairs(right) do if rawget(left,key)==nil then return false end end
+    return true
+end
+-- A cold event owns a detached, immutable witness of its complete entry.
+-- Retain this lease across action resolution, conditions and text formatting.
+function addon:PrepareAnnouncementDelivery(config,owner)
+    deliveryRequest=deliveryRequest+1
+    local request=deliveryRequest
+    local data=self.RotationData
+    if type(config)~='table' or type(owner)~='function' or not data then return nil end
+    local portable,copy=data.CheckPortable,data.CopyData
+    if not portable(config) then return nil end
+    local witness=copy(config)
+    local entry=copy(witness)
+    if entry.type=='spell' or entry.type=='pet' then entry.action=entry.spell
+    elseif entry.type=='item' then entry.action=entry.item end
+    local expected=copy(entry)
+    local function current()
+        if request~=deliveryRequest then return false end
+        local ok,valid=pcall(owner)
+        return ok and valid==true and request==deliveryRequest and same(witness,config) and same(expected,entry)
+    end
+    return entry,current
+end
+-- Called only after a cast matches an announcement, never by cooldown output.
+function addon:AnnouncementConditionMatches(config,recipient,current)
+    conditionRequest=conditionRequest+1
+    local request=conditionRequest
+    local function owned()
+        if request~=conditionRequest then return false end
+        if current then
+            local ok,valid=pcall(current)
+            return ok and valid==true and request==conditionRequest
+        end
+        return true
+    end
+    if not owned() then return false end
+    if config.conditions==nil then return true end
+    local result=self:evaluateAnnouncementConditionResult(config.conditions,recipient)
+    return owned() and type(result)=='table' and result.status=='match'
+end
 -- Two bounded cold-output observations, never a history or polling cache.
 local emoteSerial={automatic=0,test=0}
 local emoteObservation={}
@@ -52,18 +100,27 @@ local function destination(mode)
     end
     return group.inGroup and 'PARTY' or 'LOCAL'
 end
-local function sound(key)
+local function active(current)
+    if not current then return true end
+    local ok,valid=pcall(current)
+    return ok and valid==true
+end
+local function sound(key,current)
+    if not active(current) then return false,'announcement-retired' end
     if not platform:CanReadValue(key) then return false,'restricted-value' end
     if key==nil or key=='' then return false,'not-requested' end
     if type(key)~='string' then return false,'invalid-sound' end
-    if type(PlaySoundFile)~='function' then return false,'missing-api' end
+    local play=PlaySoundFile
+    if type(play)~='function' then return false,'missing-api' end
     local ok,media=pcall(LibStub,'LibSharedMedia-3.0',true)
+    if not active(current) then return false,'announcement-retired' end
     if not ok or type(media)~='table' or type(media.Fetch)~='function' then return false,'missing-media' end
     local fetched,path=pcall(media.Fetch,media,'sound',key,true)
     if not fetched then return false,'media-error' end
     if not platform:CanReadValue(path) then return false,'restricted-value' end
     if not (type(path)=='string' and path~='' or type(path)=='number' and path>0 and path<math.huge and path%1==0) then return false,'sound-unavailable' end
-    local played,willPlay=pcall(PlaySoundFile,path,'Master')
+    if not active(current) then return false,'announcement-retired' end
+    local played,willPlay=pcall(play,path,'Master')
     if not played then return false,'api-error' end
     if not platform:CanReadValue(willPlay) or willPlay==false then return false,'sound-unavailable' end
     return true
@@ -72,27 +129,31 @@ end
 -- Output is best-effort and independent: a failed chat or audio API must not
 -- interrupt cast bookkeeping or recommendation evaluation. This does not
 -- construct templates, match events, or retry messages through another path.
-function addon:DispatchAnnouncement(config,text,castRecipient)
+function addon:DispatchAnnouncement(config,text,castRecipient,current)
     local result={chat=false,sound=false}
     if not platform:CanReadValue(config) or type(config)~='table' then return result end
+    if not active(current) then result.chatReason='announcement-retired';return result end
     local dest,why=destination(config.announce);result.chatReason=why
+    if not active(current) then result.chatReason='announcement-retired';return result end
     if dest=='GESTURE' then
         local serial=beginEmote('automatic')
         local target=config.emote_target and castRecipient or ''
         local detail
         if config.emote_target and (not platform:CanReadValue(target) or type(target)~='string' or target=='') then result.chatReason='cast-recipient-unavailable'
-        else local sent,reason,observed=platform:PerformAnnouncementEmote(config.emote,target);result.chat=sent==true;result.chatReason=reason;detail=observed end
+        else local sent,reason,observed=platform:PerformAnnouncementEmote(config.emote,target,current);result.chat=sent==true;result.chatReason=reason;detail=observed end
         finishEmote('automatic',serial,config.emote_target and 'cast-recipient' or 'none',result.chatReason,detail)
         dest=nil
     end
     if dest then
         if not platform:CanReadValue(text) or type(text)~='string' then result.chatReason='invalid-message'
         elseif dest=='LOCAL' then
-            if type(self.announce)=='function' then result.chat=pcall(self.announce,self,text);if not result.chat then result.chatReason='api-error' end
+            local announce=self.announce
+            if type(announce)=='function' and active(current) then result.chat=pcall(announce,self,text);if not result.chat then result.chatReason='api-error' end
             else result.chatReason='missing-api' end
-        else local sent,reason=platform:SendAnnouncementChat(text,dest);result.chat=sent==true;result.chatReason=reason end
+        else local sent,reason=platform:SendAnnouncementChat(text,dest,current);result.chat=sent==true;result.chatReason=reason end
     end
-    result.sound,result.soundReason=sound(config.announce_sound)
+    if not active(current) then result.soundReason='announcement-retired';return result end
+    result.sound,result.soundReason=sound(config.announce_sound,current)
     return result
 end
 

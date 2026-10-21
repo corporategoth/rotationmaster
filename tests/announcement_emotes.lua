@@ -53,6 +53,6 @@ test('actual cast event routes clickcast recipient across success and stop witho
 end)
 test('strict main inverse accepts only exact event additions and preserves the predecessor',function()
  local source=read('main.lua');local inverse=dofile('tests/fixtures/restore_announcement_emotes.lua');local restored=inverse(source,'main.lua');assert(#restored==87884 and not restored:find('self:DispatchAnnouncement(ent,nil,currentSpells[castguid])',1,true))
- assert(not pcall(inverse,source..' ','main.lua'));local changed=source:gsub('currentSpells%[castguid%]%)','lastCastTarget[spellid])',1);assert(changed~=source and not pcall(inverse,changed,'main.lua'))
+ assert(not pcall(inverse,source..' ','main.lua'));local changed=source:gsub('currentSpells%[castguid%],current%)','lastCastTarget[spellid],current)',1);assert(changed~=source and not pcall(inverse,changed,'main.lua'))
 end)
 finish()

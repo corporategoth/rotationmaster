@@ -17,6 +17,7 @@ function addon:GetDocument_layout_announce_options_help()
         {id="ranked",title=L["Use this exact spell rank"],text=L["Help.Announces.ranked"]},
         {id="items",title=L["Item Set"],text=L["Help.Announces.items"]},
         {id="event",title=L["Event"],text=L["Help.Announces.event"]},
+        {id="conditions",title=L["Announcement conditions"],text=L["Help.Announces.conditions"]},
         {id="event.START",title=L["Started"],text=L["Help.Announces.event.START"]},
         {id="event.STOP",title=L["Stopped"],text=L["Help.Announces.event.STOP"]},
         {id="event.SUCCEEDED",title=L["Succeeded"],text=L["Help.Announces.event.SUCCEEDED"]},

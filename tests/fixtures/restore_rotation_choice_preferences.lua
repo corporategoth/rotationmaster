@@ -397,6 +397,9 @@ Core/rotation_choice_preferences.lua
 }
 local function hash(s)local n=5381;for i=1,#s do n=(n*33+s:byte(i))%4294967296 end;return string.format('%08x',n)end
 return function(text,path)
+ if path=="main.lua" and text:find("-- BEGIN ANNOUNCEMENT CONDITION OWNER",1,true)
+  or path=="Locales/enUS.lua" and text:find('L["Edit announcement conditions"]',1,true)
+  or path=="RotationMaster.toc" and text:find('Platform/announcement_recipient.lua',1,true) then text=dofile("tests/fixtures/restore_announcement_conditions.lua")(text,path) end
  local row=assert(rows[path],'unknown manual-choice inverse path')
  assert(#text==row.bytes and hash(text)==row.hash,'unrelated manual-choice module: '..path)
  for i=#row.edits,1,-1 do local c=row.edits[i];assert(text:sub(c.at,c.at+#c.current-1)==c.current,'manual-choice inverse delta mismatch');text=text:sub(1,c.at-1)..c.previous..text:sub(c.at+#c.current)end

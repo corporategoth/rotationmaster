@@ -11,7 +11,7 @@ end
 function addon:IsValidAnnouncement(value,requireIdentity)
     if type(value)~='table' then return false end
     if requireIdentity and (type(value.id)~='string' or not value.id:match('^%x%x%x%x%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%x%x%x%x%x%x%x%x$')) then return false end
-    local allowed={name=true,id=true,type=true,spell=true,item=true,ranked=true,disabled=true,event=true,announce=true,value=true,announce_sound=true,emote=true,emote_target=true}
+    local allowed={name=true,id=true,type=true,spell=true,item=true,ranked=true,disabled=true,event=true,announce=true,value=true,announce_sound=true,emote=true,emote_target=true,conditions=true}
     for key in pairs(value) do if not allowed[key] then return false end end
     if value.type~='spell' and value.type~='pet' and value.type~='item' then return false end
     if type(value.event)~='string' or not (self.events or {})[value.event] then return false end
@@ -24,6 +24,11 @@ function addon:IsValidAnnouncement(value,requireIdentity)
     if value.emote~=nil and (type(value.emote)~='string' or #value.emote>64 or not value.emote:match('^[A-Z][A-Z0-9_]*$')) then return false end
     if value.announce=='gesture' and value.emote==nil then return false end
     if value.announce=='audible' and (not value.announce_sound or not value.announce_sound:find('%S')) then return false end
+    if value.conditions~=nil then
+        if type(value.conditions)~='table' or not self.RotationData.CheckPortable(value.conditions) then return false end
+        local result=self.RotationData.ValidateBody({switch=value.conditions,rotation={},cooldowns={}},{conditions=self.conditionDefinitions})
+        if not result.valid or not result.supported then return false end
+    end
     if value.type~='item' then return type(value.spell)=='number' and value.spell>0 and value.spell%1==0 end
     return self:IsValidAnnouncementItemReference(value.item)
 end

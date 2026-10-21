@@ -28,6 +28,7 @@ Core/dependency_revisions.lua
 Platform/client.lua
 Platform/rotation_owner.lua
 Platform/groups.lua
+Platform/announcement_recipient.lua
 Platform/roster_class.lua
 Platform/role.lua
 Platform/mobinfo2.lua

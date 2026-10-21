@@ -25,7 +25,7 @@ function platform:GetAnnouncementGroup()
 end
 
 local destinations={PARTY=true,RAID=true,RAID_WARNING=true,SAY=true,YELL=true,EMOTE=true}
-function platform:SendAnnouncementChat(text,destination)
+function platform:SendAnnouncementChat(text,destination,current)
     if not self:CanReadValue(text) or not self:CanReadValue(destination) then return nil,'restricted-value' end
     if type(text)~='string' or type(destination)~='string' or not destinations[destination] then return nil,'invalid-message' end
     local fn=type(C_ChatInfo)=='table' and C_ChatInfo.SendChatMessage
@@ -33,6 +33,7 @@ function platform:SendAnnouncementChat(text,destination)
     if type(fn)~='function' then return nil,'missing-api' end
     -- A selected sender may have side effects before raising. Never retry
     -- through another backend, or attempt to work around client restrictions.
+    if current then local owned,valid=pcall(current);if not owned or valid~=true then return nil,'announcement-retired' end end
     local ok=pcall(fn,text,destination)
     if not ok then return nil,'api-error' end
     return true
@@ -54,7 +55,7 @@ function platform:GetAnnouncementEmotes()
     table.sort(rows,function(a,b)return a.text<b.text end)
     return rows
 end
-function platform:PerformAnnouncementEmote(token,target)
+function platform:PerformAnnouncementEmote(token,target,current)
     if not self:CanReadValue(token) or not self:CanReadValue(target) then return nil,'restricted-value' end
     if type(token)~='string' or type(target)~='string' or #target>512 or target:find('[%z\1-\31\127]') then return nil,'invalid-emote' end
     local found=false;for _,row in ipairs(self:GetAnnouncementEmotes()) do if row.value==token then found=true;break end end
@@ -85,6 +86,7 @@ function platform:PerformAnnouncementEmote(token,target)
         end
         return ok
     end
+    if current then local owned,valid=pcall(current);if not owned or valid~=true then return nil,'announcement-retired' end end
     local ok=observed(pcall(fn,nativeToken,nativeTarget))
     if not ok then return nil,'api-error',observation end
     return true,nil,observation

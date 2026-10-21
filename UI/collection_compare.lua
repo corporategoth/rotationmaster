@@ -42,6 +42,7 @@ function addon:CollectionComparisonRows(kind,left,right,showSame)
         end
         walk(left.profile or {},right.profile or {},'',0)
     elseif kind=='announcement' then
+        add(L['Conditions'],left.conditions,right.conditions,function(value) return self:DescribeCondition(value or {},self.currentSpec) end)
         for _,field in ipairs({{'type','Action Type'},{'event','Event'},{'announce','Announce'},{'value','Text'},{'emote','Emote'},{'emote_target','Use spell recipient ({{target}})'},{'announce_sound','Sound'},{'disabled','Disabled'},{'ranked','Use this exact spell rank'}}) do add(L[field[2]],left[field[1]],right[field[1]]) end
         local function spell(id) return id and self:PlainWorkbenchName(self:SpellLabel(id))..' ('..tostring(id)..')' or L['None'] end
         add(L['Spell'],left.spell,right.spell,spell)

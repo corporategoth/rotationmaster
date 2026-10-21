@@ -21,6 +21,22 @@ function addon:BuildAnnounceSettings(p)
             p:Choice(prefix..'emote',L['Emote'],entry.emote,self.Platform:GetAnnouncementEmotes(),function(v) update(entry,'emote',v) end)
             p:Check(prefix..'emote_target',L['Use spell recipient ({{target}})'],entry.emote_target,function(v) update(entry,'emote_target',v) end)
         elseif entry.announce=='audible' then p:Sound(prefix,L['Sound'],entry.announce_sound,function(v) update(entry,'announce_sound',v) end) else p:Edit(prefix..'text',L['Text'],entry.value or '',nil,function(v) update(entry,'value',v) end) end
+        p:Text(self:DescribeCondition(entry.conditions or {},self.currentSpec))
+        p:Button(prefix..'conditions',L['Edit announcement conditions'],function()
+            local generation=p.generation
+            local source=entry.conditions
+            local draft=self:CopySettingsData(source or {})
+            local baseline=self:CopySettingsData(draft)
+            local function current()
+                if not p:Valid(generation) or entry.conditions~=source or not self:SettingsDataEqual(source or {},baseline) then return false end
+                if p.newAnnounce==entry then return true end
+                for _,candidate in ipairs(store.profile.announces or {}) do if candidate==entry then return true end end
+                return false
+            end
+            self:ShowConditionEditor(nil,self.currentSpec,draft,function(applied)
+                if applied and current() then entry.conditions=next(draft) and draft or nil;p:Draw() end
+            end,current,{persistentOwner=true,announcement=true,title=L['Announcement conditions'],contextLabel=L['Announces']})
+        end)
     end
     local function itemInfo(value)
         if type(value)=='string' then local set=(store.profile.itemsets or {})[value] or (store.global.itemsets or {})[value];local info=set and set.items and self:GetReferenceProvider('item').info(tonumber(set.items[1]) or self:GetReferenceProvider('item').resolve(set.items[1]));return {name=set and set.name or L['Item Set'],icon=info and info.icon} end

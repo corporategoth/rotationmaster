@@ -24,3 +24,11 @@ Remaining UI migration: verified third-party editor integrations, existing legac
 Effects sequences now share ordered native cards for Animate, Pulse, Dazzle and Custom. Item Set entries use compact table rows with the same Up/Down boundary rules, drag ghost, insertion gaps and right-hand Trash. Drag a card header or an item row’s grip; editing text remains ordinary text selection. Invalid pending text blocks reordering/deletion. Redraw, navigation and profile replacement cancel owned drags.
 
 Effects and Item Sets have a two-by-two New/Duplicate/Import-Export/Compare footer below their lists. Compare excludes the selected entry, shows human labels and icons in two columns, hides unchanged fields by default, and is read-only. Root Delete is red and right-aligned. The effect preview spans Name/Type rather than consuming a separate row. Announcement creation has a single Add action in the roster footer, with direct fields and no collapsible creation heading.
+
+### Announcement conditions
+
+Announcements can have an optional condition tree using the Switch condition picker, including All, Any and Not. The tree runs only after a matching spell/event and duplicate check. Only a match permits the announcement's message and sound. Unavailable observations remain unavailable under Not. Announcements without a condition keep their existing behavior.
+
+In Group defaults to Player for existing records and can also check another unit. In an announcement condition editor it offers Spell recipient, resolved from the recipient recorded for that exact cast. Click casting does not substitute the selected target. Missing, ambiguous or unreadable recipient/roster information skips the announcement. These roster reads occur only for matching cast announcements; they do not add polling work or persist across casts.
+
+The condition editor applies to the staged announcement. Apply on Announces saves the parent draft; Discard leaves the saved announcement unchanged. Replaced or externally edited parent data invalidates an open child editor rather than overwriting the new data.

@@ -419,6 +419,14 @@ function addon:evaluateConditionResult(value, context)
     return result
 end
 
+-- Cast-event conditions get their own observation cache. Recipient context
+-- never enters a rotation's polling cache or survives this announcement.
+function addon:evaluateAnnouncementConditionResult(value, recipient)
+    local result=evaluate(value, {announcementRecipient=recipient}, GetTime(), {active={}, count=0}, 0, "announcement")
+    if result==matchedOutcome or result==unmatchedOutcome then return {status=result.status} end
+    return result
+end
+
 function addon:evaluateCondition(value, context)
     return self:evaluateConditionResult(value, context).status == "match"
 end
