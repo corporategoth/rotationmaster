@@ -816,7 +816,7 @@ L["Matches when the game reports that you have full control of your character. T
 L["Matches while the game reports your character as stealthed. It does not test whether an enemy can detect you."] = true
 L["Time Since Combat Start"] = true
 L["Time in combat is %s %s seconds"] = true
-L["This condition matches if any sub-condition matches. With no sub-conditions, it does not match."] = true
+L["This condition matches if any sub-condition matches. With no sub-conditions, it does not match."] = "Any (OR) checks children in order and stops at the first match. An empty group does not match. Encountered unavailable data remains unavailable; later children are skipped."
 
 -- Native diagnostic report access.
 L["Rotation Master errors"] = true
@@ -975,7 +975,7 @@ L["Comparison"] = true
 -- Compact condition editor
 L["A condition could not be validated. Use /rm errors for details."] = true
 L["A custom validator changed the condition while checking it. Fix the validator before applying."] = true
-L["AND requires every child; OR requires any child; NOT reverses its child. Unavailable data remains unavailable."] = true
+L["AND requires every child; OR requires any child; NOT reverses its child. Unavailable data remains unavailable."] = "AND stops at the first non-match; OR stops at the first match. NOT reverses a known result. Encountered unavailable data remains unavailable. Skipped children are not evaluated."
 L["Add condition"] = true
 L["All (AND)"] = true
 L["Any (OR)"] = true
@@ -1071,7 +1071,7 @@ L["%d conditions"] = true
 L["Expand to edit fields"] = true
 L["Negate each"] = true
 
-L["All (AND) requires every child to match. An empty group always matches. Unavailable data remains unavailable."] = true
+L["All (AND) requires every child to match. An empty group always matches. Unavailable data remains unavailable."] = "All (AND) checks children in order and stops at the first non-match. An empty group matches. Encountered unavailable data remains unavailable; later children are skipped."
 L["Select cards with Ctrl-click or Shift-click. Group with All or Any, negate each, move or drag, and remove. Undo and Redo affect only the draft until Apply. Groups can be named and collapsed."] = true
 
 L["Version: %s  ·  Author: %s"] = true

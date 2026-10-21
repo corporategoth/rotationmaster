@@ -37,7 +37,8 @@ test('nested calls cannot mutate pending Boolean results and callbacks retain on
         inner.status='poison';inner.reason='poison'
         return false
     end})
-    local result=a:evaluateConditionResult({type='AND',value={{type='YES'},{type='REENTER'},{type='REENTER'}}})
+    -- False OR prefixes keep both nested callbacks reached after short-circuiting.
+    local result=a:evaluateConditionResult({type='OR',value={{type='NO'},{type='REENTER'},{type='REENTER'}}})
     assert(result.status=='no-match' and calls==2 and observedStart==100)
 end)
 

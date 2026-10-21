@@ -84,8 +84,8 @@ local function evaluate(value, cache, start, state, depth, path)
                 for index = 1, count do
                     local child = evaluate(children[index], cache, start, state, depth+1, path..".value["..index.."]")
                     if child.status == "unavailable" then result = child; break end
-                    if value.type == "AND" and child.status == "no-match" then matched = false end
-                    if value.type == "OR" and child.status == "match" then matched = true end
+                    if value.type == "AND" and child.status == "no-match" then matched = false; break end
+                    if value.type == "OR" and child.status == "match" then matched = true; break end
                 end
                 result = result or outcome(matched and "match" or "no-match")
             end

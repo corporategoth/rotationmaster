@@ -62,11 +62,12 @@ test('unknown invalid and unreadable conditions stay unavailable under NOT',func
         assert(type(result.reason)=='string')
     end
 end)
-test('unavailable propagates through AND and OR regardless of sibling order',function()
-    for _,op in ipairs({'AND','OR'}) do
-        for _,children in ipairs({{{type='YES'},{type='UNKNOWN'}},{{type='UNKNOWN'},{type='NO'}}}) do
-            assert(addon:evaluateConditionResult({type=op,value=children}).status=='unavailable')
-        end
+test('unavailable propagates when reached while decisive prefixes skip later unknowns',function()
+    for _,row in ipairs({{'AND','YES','UNKNOWN','unavailable'},{'AND','UNKNOWN','NO','unavailable'},
+        {'AND','NO','UNKNOWN','no-match'},{'OR','NO','UNKNOWN','unavailable'},
+        {'OR','UNKNOWN','YES','unavailable'},{'OR','YES','UNKNOWN','match'}}) do
+        local result=addon:evaluateConditionResult({type=row[1],value={{type=row[2]},{type=row[3]}}})
+        assert(result.status==row[4]);if result.status=='unavailable' then assert(result.reason=='unknown-condition') end
     end
 end)
 test('malformed cyclic and overdeep trees fail closed without throwing',function()
@@ -157,7 +158,9 @@ end)
 test('disabled definition is unavailable through NOT and Boolean groups without running hooks or callbacks',function()
     local d=definition(true);d.disabled=true;d.valid=function() error('disabled valid called') end;d.evaluate=function() error('disabled evaluate called') end;d.on_register=function() error('disabled register called') end;d.on_unregister=function() error('disabled unregister called') end
     addon:RegisterCondition('OFF',d)
-    for _,value in ipairs({{type='OFF'},{type='NOT',value={type='OFF'}},{type='OR',value={{type='YES'},{type='OFF'}}}}) do local result=addon:evaluateConditionResult(value);assert(result.status=='unavailable' and result.reason=='disabled-condition');assert(not addon:validateCondition(value,0)) end
+    for _,value in ipairs({{type='OFF'},{type='NOT',value={type='OFF'}},{type='OR',value={{type='NO'},{type='OFF'}}}}) do local result=addon:evaluateConditionResult(value);assert(result.status=='unavailable' and result.reason=='disabled-condition');assert(not addon:validateCondition(value,0)) end
+    local skipped={type='OR',value={{type='YES'},{type='OFF'}}}
+    assert(addon:evaluateConditionResult(skipped).status=='match');assert(not addon:validateCondition(skipped,0),'short-circuiting must not make saved schema validation accept disabled definitions')
     addon:UnregisterCondition('OFF')
 end)
 test('definition changes refresh initialized switching and immediately stop unavailable manual rotations',function()

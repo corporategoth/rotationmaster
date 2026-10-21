@@ -18,6 +18,7 @@ end]]},
 }
 return function(text,path)
     assert(path=='Core/conditions.lua','unknown condition outcome inverse path')
+    text=dofile('tests/fixtures/restore_condition_short_circuit.lua')(text,path)
     for _,entry in ipairs(replacements) do
         local first,last=text:find(entry.current,1,true)
         assert(first,'condition outcome block changed')
