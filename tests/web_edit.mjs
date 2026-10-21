@@ -76,13 +76,14 @@ test('missing schema source and disposed editors have no authority',()=>{
 });
 test('modified typed legacy fixture is accepted by actual LuaJIT codec and Lua5.1 Ace parser',()=>{
  const bytes=String.fromCharCode(...Array.from({length:256},(_,i)=>i));
- const value=new Map([['rotation',new Map()],['cooldowns',new Map()],['revision',17],['opaque',new Map([[1,false],['1',bytes],['zero',-0],['empty',new Map()]])]]),{editor}=setup(value);
- assert.equal(editor.start(),true);editor.setPriority(true,-0);editor.setDisabled('false');editor.review();const result=editor.generate();assert.equal(result.ok,true);
+ const value=new Map([['rotation',new Map([[1,new Map([['id','native-step'],['type','none']])]])],['cooldowns',new Map()],['revision',17],['opaque',new Map([[1,false],['1',bytes],['zero',-0],['empty',new Map()]])]]),{editor}=setup(value);
+ assert.equal(editor.start(),true);editor.setPriority(true,-0);editor.setDisabled('false');assert(editor.setStepDisabled('native-step','false'));editor.review();const result=editor.generate();assert.equal(result.ok,true);
  const program=String.raw`
 local payload=io.read('*a');local value
 if mode=='wire' then local data,deps=dofile('tests/fixtures/codec.lua')();value=assert(assert(data.NewCodec(deps)):Decode(payload)).value
 else assert(loadfile('Libs/LibStub/LibStub.lua'))();assert(loadfile('Libs/AceSerializer-3.0/AceSerializer-3.0.lua'))();local raw=payload:gsub('..',function(h)return string.char(tonumber(h,16))end);local ok;ok,value=LibStub('AceSerializer-3.0'):Deserialize(raw);assert(ok)end
 assert(value.priority==0 and 1/value.priority==-math.huge and value.disabled==false and value.revision==17)
+assert(value.rotation[1].id=='native-step' and value.rotation[1].disabled==false)
 assert(value.opaque[1]==false and value.opaque.zero==0 and 1/value.opaque.zero==-math.huge and next(value.opaque.empty)==nil)
 local bytes={};for i=0,255 do bytes[#bytes+1]=string.char(i)end;assert(value.opaque['1']==table.concat(bytes));io.write('accepted')`;
  for(const [vm,mode,payload]of [['luajit','wire',result.text],['lua5.1','serializer',Buffer.from(result.text,'base64').subarray(1).toString('hex')]]){
@@ -109,4 +110,59 @@ test('unchanged zero bits absence and false have no literal review changes and p
   const before=typed(value),{editor}=setup(value);assert.equal(editor.start(),true);editor.setPriority(priority!==undefined,priority);editor.setDisabled(disabled===undefined?'absent':'false');assert.deepEqual(editor.review(),{ok:true,changes:[]});assert.deepEqual(typed(generated(editor)),before);
   editor.setDisabled(disabled===undefined?'false':'absent');const changed=editor.review();assert.equal(changed.changes.length,1);assert.equal(changed.changes[0].field,'disabled');assert.equal(changed.changes[0].before.present,disabled!==undefined);assert.equal(changed.changes[0].after.present,disabled===undefined);
  }
+});
+
+function editableStepBody(){
+ const leaf=(id,type='spell')=>new Map([['id',id],['type',type],...(type==='none'?[]:[['action',type==='item'?new Map([[1,6948]]):403]]),['conditions',new Map()]]);
+ const target=leaf('target'),arm=new Map([[1,target]]),branch=new Map([['id','branch'],['type','branch'],['conditions',new Map()],['onTrue',arm],['onFalse',new Map([[1,leaf('stop','none')]])]]);
+ return new Map([['rotation',new Map([[1,branch],[2,leaf('pet','pet')],[3,leaf('any','any')]])],['cooldowns',new Map([[1,leaf('item','item')]])],['priority',-0],['revision',17]]);
+}
+const targetStep=value=>body(value).get('rotation').get(1).get('onTrue').get(1);
+test('step summaries use exact IDs and detached scalar presence snapshots while branches stay read-only',()=>{
+ const value=editableStepBody(),{editor}=setup(value);assert(editor.start());const page=editor.listSteps(0);assert.equal(page.total,6);assert.equal(page.rows.length,6);assert.equal(page.rows[0].id,'branch');assert.equal(page.rows[0].editable,false);assert.equal(editor.step('target').editable,true);
+ const selected=editor.step('target');assert.deepEqual(selected.disabled,{present:false,value:undefined});selected.disabled.present=true;selected.disabled.value=true;page.rows[1].id='forged';assert.equal(editor.step('target').disabled.present,false);assert.equal(editor.step('forged'),null);
+});
+test('closed step commands preserve absence false true across nested rotation and optional rows',()=>{
+ const value=editableStepBody(),before=typed(value),{editor}=setup(value);assert(editor.start());
+ for(const id of ['target','stop','pet','any','item'])for(const state of ['absent','false','true']){
+  assert.equal(editor.setStepDisabled(id,state),true);const review=editor.review();assert(review.ok);const found=review.changes.filter(c=>c.stepId===id);if(state==='absent')assert.equal(found.length,0);else{assert.equal(found.length,1);assert.equal(found[0].field,'disabled');assert.equal(found[0].before.present,false);assert.equal(found[0].after.value,state==='true');}
+  const decoded=decodeImport(editor.generate().text).value;const index=(id==='item'?decoded.get('cooldowns').get(1):id==='target'?targetStep(decoded):id==='stop'?decoded.get('rotation').get(1).get('onFalse').get(1):decoded.get('rotation').get(id==='pet'?2:3));assert.equal(index.has('disabled'),state!=='absent');if(state!=='absent')assert.equal(index.get('disabled'),state==='true');
+  editor.setStepDisabled(id,'absent');
+ }
+ assert.deepEqual(typed(value),before);
+});
+test('step writes isolate opaque aliases to the selected body list branch arm and step',()=>{
+ for(const alias of ['body','list','branch','arm','step']){
+  const value=decodeImport(record.wire).value,b=editableStepBody();value.set('body',b);const list=b.get('rotation'),branch=list.get(1),arm=branch.get('onTrue'),step=arm.get(1);
+  if(alias==='body')value.set('opaqueBody',b);else b.set('opaqueAlias',{list,branch,arm,step}[alias]);
+  b.set('opaqueBytes',new Map([[1,false],['1',String.fromCharCode(...Array.from({length:256},(_,i)=>i))],['zero',-0]]));
+  const before=typed(value),expected=decodeImport(encodeExport(value).text).value;targetStep(expected).set('disabled',true);
+  const {editor}=setup(value);assert(editor.start());assert(editor.setStepDisabled('target','true'));assert.deepEqual(typed(generated(editor)),typed(expected),alias);assert.deepEqual(typed(value),before,alias);
+ }
+});
+test('body and multiple step edits compose without changing IDs metadata revision or untouched number bits',()=>{
+ const value=decodeImport(record.wire).value;value.set('body',editableStepBody());const expected=decodeImport(encodeExport(value).text).value;targetStep(expected).set('disabled',false);expected.get('body').get('cooldowns').get(1).set('disabled',true);expected.get('body').set('disabled',false);
+ const {editor}=setup(value);assert(editor.start());editor.setStepDisabled('target','false');editor.setDisabled('false');editor.setStepDisabled('item','true');assert.deepEqual(typed(generated(editor)),typed(expected));assert(Object.is(body(generated(editor)).get('priority'),-0));
+ const review=editor.review();assert.equal(review.changes.length,3);assert.deepEqual(review.changes.filter(c=>c.stepId).map(c=>c.stepId).sort(),['item','target']);
+});
+test('invalid branch unknown action and missing IDs or states are refused without coercion or old-output mutation',()=>{
+ const value=editableStepBody();value.get('rotation').set(4,new Map([['id','future'],['type','FUTURE'],['action',403],['conditions',new Map()]]));const {editor}=setup(value);assert(editor.start());generated(editor);const before=editor.view();
+ for(const [id,state]of [['branch','true'],['future','false'],['missing','true'],['target','unset'],[null,'true'],[{toString(){throw Error('no coercion');}},'true']])assert.equal(editor.setStepDisabled(id,state),false);
+ assert.deepEqual(editor.view(),before);assert.equal(editor.step('future').editable,false);
+});
+test('large step pages remain bounded with exact targets through the last admitted row',()=>{
+ const rotation=new Map(Array.from({length:2000},(_,i)=>[i+1,new Map([['id','s'+i],['type','none']])])),value=new Map([['rotation',rotation],['cooldowns',new Map()]]),{editor}=setup(value);assert(editor.start());const page=editor.listSteps(39);assert.equal(page.total,2000);assert.equal(page.pages,40);assert.equal(page.rows.length,50);assert.equal(page.rows.at(-1).id,'s1999');assert(editor.setStepDisabled('s1999','false'));const output=generated(editor);assert.equal(output.get('rotation').get(2000).get('disabled'),false);assert.equal(output.get('rotation').get(1999).has('disabled'),false);
+});
+test('step mutations retire review/output and a retired source keeps readable selected presence without revival',()=>{
+ const s=setup(editableStepBody()),e=s.editor;assert(e.start());generated(e);assert(e.setStepDisabled('target','true'));assert.equal(e.view().review,null);assert.equal(e.view().output,null);assert.equal(e.generate().ok,false);generated(e);const source=s.source();s.replace(null);assert.equal(e.setStepDisabled('target','false'),false);assert.equal(e.step('target').disabled.value,true);assert.equal(e.view().output,null);s.replace(source);assert.equal(e.setStepDisabled('target','absent'),false);assert.equal(e.view().state,'retired');
+});
+test('step no-ops preserve imported explicit false while zero-change review stays complete',()=>{
+ const value=editableStepBody();targetStep(value).set('disabled',false);const {editor}=setup(value);assert(editor.start());assert(editor.setStepDisabled('target','false'));assert.deepEqual(editor.review(),{ok:true,changes:[]});assert.equal(targetStep(decodeImport(editor.generate().text).value).get('disabled'),false);assert(editor.setStepDisabled('target','absent'));const changed=editor.review().changes;assert.equal(changed.length,1);assert.equal(changed[0].before.value,false);assert.equal(changed[0].after.present,false);
+});
+test('step command checks its render guard after final source sync and guards cannot replace its private draft',()=>{
+ const value=editableStepBody(),{editor}=setup(value);assert(editor.start());generated(editor);const before=editor.view();assert.equal(editor.setStepDisabled('target','true',()=>false),false);assert.deepEqual(editor.view(),before);assert.equal(editor.setStepDisabled('target','true',()=>{throw Error('retired-render');}),false);assert.deepEqual(editor.view(),before);
+ assert.equal(editor.setStepDisabled('target','true',()=>{editor.discard();assert(editor.start());return true;}),false);assert.equal(editor.step('target').disabled.present,false);
+});
+test('step action lists and Stop presence summaries are detached bounded literal data',()=>{
+ const value=editableStepBody(),item=value.get('cooldowns').get(1);item.set('action',new Map(Array.from({length:12},(_,i)=>[i+1,i===0?'\xff\x00':6948+i])));targetStep(value).set('suppress_attack',false);const {editor}=setup(value);assert(editor.start());const action=editor.step('item').action;assert.equal(action.values.length,8);assert.equal(action.remaining,4);action.values[0]='forged';assert.equal(editor.step('item').action.values[0],'\xff\x00');assert.deepEqual(editor.step('target').suppressAttack,{present:true,value:false});assert.deepEqual(editor.step('stop').suppressAttack,{present:false,value:undefined});assert.deepEqual(typed(generated(editor)),typed(value));
 });

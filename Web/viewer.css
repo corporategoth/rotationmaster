@@ -50,5 +50,8 @@ pre { margin:8px 0; font:13px/1.6 monospace; white-space:pre-wrap; overflow-wrap
 .draft-editor [aria-invalid="true"] { border:2px solid var(--gold); }
 .draft-editor :disabled { color:var(--muted); }
 #draft-status { color:var(--muted); }
+#draft-steps { display:block; border-top:1px solid var(--line); margin-top:20px; padding-top:4px; }
+#draft-step-select { width:100%; }
+#draft-step-context { overflow-wrap:anywhere; margin-top:12px; }
 #draft-changes { overflow-wrap:anywhere; }
 @media(max-width:760px) { .draft-editor { padding:16px; } .draft-fields { grid-template-columns:minmax(0,1fr); gap:0; } }

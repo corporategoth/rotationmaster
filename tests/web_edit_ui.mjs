@@ -86,3 +86,68 @@ test('mounted unchanged zero bits and literal absence false preserve an empty re
   m.get('draft-disabled').value=disabled===undefined?'absent':'false';await m.get('draft-disabled').fire('change');await m.get('draft-review').click();assert.match(m.get('draft-changes').textContent,/No structural differences/);await m.get('draft-generate').click();assert.deepEqual(toTypedTree(decodeImport(m.get('draft-output').value).value),toTypedTree(source));
  }
 });
+
+function stepWire(count=2){
+ const leaf=id=>new Map([['id',id],['type','none']]),branch=new Map([['id','branch'],['type','branch'],['conditions',new Map()],['onTrue',new Map([[1,leaf('nested')]])],['onFalse',new Map()]]);
+ return encodeExport(new Map([['rotation',new Map([[1,branch],...Array.from({length:count},(_,i)=>[i+2,leaf('row'+i)])])],['cooldowns',new Map()],['priority',-0],['revision',17],['opaque','\xff\x00']])).text;
+}
+async function selectStep(m,id){m.get('draft-step-select').value=id;await m.get('draft-step-select').fire('change');}
+async function stepDisabled(m,state){m.get('draft-step-disabled').value=state;await m.get('draft-step-disabled').fire('change');}
+test('mounted nested step disabled has exact reviewed context and tri-state export with original/Second unchanged',async()=>{
+ const original=stepWire(),copied=[],m=mount({writeClipboard:async t=>copied.push(t)});await decode(m,original);await m.get('edit-copy').click();await selectStep(m,'nested');assert.equal(m.get('draft-step-disabled').value,'absent');assert.match(m.get('draft-step-context').textContent,/nested.*branch.*true/);
+ for(const state of ['false','true','absent']){await stepDisabled(m,state);assert.equal(m.get('draft-output').value,'');assert.equal(m.get('draft-generate').disabled,true);await m.get('draft-review').click();if(state!=='absent')assert.match(m.get('draft-changes').textContent,/Step nested.*Disabled: Unset → (False|True)/);const output=await generate(m),expected=decodeImport(original).value,target=expected.get('rotation').get(1).get('onTrue').get(1);if(state!=='absent')target.set('disabled',state==='true');assert.deepEqual(toTypedTree(decodeImport(output).value),toTypedTree(expected));}
+ await m.app.copy.click();await m.app.openComparison.click();m.app.right.input.value=original;await m.app.right.form.fire('submit');await m.app.right.copy.click();assert.deepEqual(copied,[original,original]);
+});
+test('branches remain read-only and step navigation leaves invalid priority and existing output ownership intact',async()=>{
+ const m=mount();await decode(m,stepWire());await m.get('edit-copy').click();const text=await generate(m);await selectStep(m,'branch');assert.equal(m.get('draft-step-disabled').disabled,true);assert.match(m.get('draft-step-context').textContent,/read-only/);assert.equal(m.get('draft-output').value,text);await priority(m,'bad');await selectStep(m,'nested');await stepDisabled(m,'false');assert.equal(m.get('draft-priority').value,'bad');assert.equal(m.get('draft-review').disabled,true);assert.match(m.get('draft-status').textContent,/Enter an integer/);
+});
+test('step pages cap options at50 and stale retained row handlers cannot edit another page or new draft',async()=>{
+ const m=mount();await decode(m,stepWire(105));await m.get('edit-copy').click();assert.equal(m.get('draft-step-select').children.length,51);await selectStep(m,'nested');const old=m.get('draft-step-disabled'),handler=old.listeners.change[0];await m.get('draft-step-next').click();assert.equal(m.get('draft-step-select').children.length,51);old.value='true';await handler({});let value=decodeImport(await generate(m)).value;assert.equal(value.get('rotation').get(1).get('onTrue').get(1).has('disabled'),false);
+ await m.get('draft-step-next').click();assert.equal(m.get('draft-step-select').children.length,8);await selectStep(m,'row104');await stepDisabled(m,'false');value=decodeImport(await generate(m)).value;assert.equal(value.get('rotation').get(106).get('disabled'),false);await m.get('draft-discard').click();await m.get('edit-copy').click();await handler({});value=decodeImport(await generate(m)).value;assert.equal(value.get('rotation').get(1).get('onTrue').get(1).has('disabled'),false);
+});
+test('retired selected step values remain readable and retained handlers cannot revive authority',async()=>{
+ const m=mount();await decode(m,stepWire());await m.get('edit-copy').click();await selectStep(m,'nested');await stepDisabled(m,'false');const old=m.get('draft-step-disabled'),handler=old.listeners.change[0];await generate(m);await m.app.clear.click();assert.equal(m.get('draft-step-disabled').value,'false');assert.equal(m.get('draft-step-disabled').disabled,true);assert.equal(m.get('draft-output').value,'');old.value='true';await handler({});assert.equal(m.get('draft-step-disabled').value,'false');assert.equal(m.get('draft-generate').disabled,true);
+});
+test('step edits supersede pending copy feedback and disposed or hidden step handlers remain inert',async()=>{
+ let reject;const m=mount({writeClipboard:()=>new Promise((_,r)=>{reject=r;})});await decode(m,stepWire());await m.get('edit-copy').click();await selectStep(m,'nested');await generate(m);const pending=m.get('draft-copy').click();await stepDisabled(m,'true');m.app.input.focus();reject(Error('late'));await pending;assert.equal(m.d.activeElement,m.app.input);assert.doesNotMatch(m.get('draft-status').textContent,/Clipboard unavailable/);assert.equal(m.get('draft-output').value,'');
+ const old=m.get('draft-step-disabled'),handler=old.listeners.change[0];await m.app.bundledNavigation.click();old.value='false';await handler({});await m.app.importsNavigation.click();const value=decodeImport(await generate(m)).value;assert.equal(value.get('rotation').get(1).get('onTrue').get(1).get('disabled'),true);m.app.dispose();await handler({});
+});
+
+test('new step handlers recheck render and draft lease after action visibility and source callbacks',async()=>{
+ const {mountDraftEditor}=await import('../Web/editor/render.mjs');
+ for(const boundary of ['action','visibility','source','redraw'])for(const event of ['select','next','previous','state']){
+  const h=host();let sourceValue=decodeImport(stepWire(105)).value,source={decode:{ok:true,kind:'legacy',value:sourceValue,original:encodeExport(sourceValue).text}},armed=false,controller;
+  const get=id=>{const e=find(h.root,id);assert(e,id);return e;},sentinel=h.d.createElement('input');
+  const replace=()=>{if(!armed)return;armed=false;if(boundary==='redraw'){controller.refresh();sentinel.focus();return;}sourceValue=decodeImport(stepWire(105)).value;sourceValue.set('marker','replacement');source={decode:{ok:true,kind:'legacy',value:sourceValue,original:encodeExport(sourceValue).text}};controller.retire();get('draft-discard').click();get('edit-copy').click();sentinel.focus();};
+  controller=mountDraftEditor(h.d,h.root,{schemaText,readSource(){if(boundary==='source'||boundary==='redraw')replace();return source;},onAction(){if(boundary==='action')replace();},isVisible(){if(boundary==='visibility')replace();return true;}});
+  await get('edit-copy').click();if(event==='state'){get('draft-step-select').value='nested';await get('draft-step-select').fire('change');}if(event==='previous')await get('draft-step-next').click();
+  const selected=get('draft-step-select'),state=get('draft-step-disabled');selected.value='nested';state.value='true';armed=true;
+  if(event==='select')await selected.fire('change');else if(event==='state')await state.fire('change');else await get('draft-step-'+(event==='next'?'next':'prev')).click();
+  assert.equal(h.d.activeElement,sentinel,boundary+'/'+event+' stale focus');
+  if(boundary!=='redraw')assert.equal(get('draft-step-select').value,'',boundary+'/'+event+' stale selection');
+  if(boundary!=='redraw')assert.equal(get('draft-step-prev').disabled,true,boundary+'/'+event+' stale page');
+  await get('draft-review').click();await get('draft-generate').click();const output=decodeImport(get('draft-output').value).value;assert.equal(output.get('rotation').get(1).get('onTrue').get(1).has('disabled'),false,boundary+'/'+event+' stale write');controller.dispose();
+ }
+});
+test('step context shows literal action and Stop suppression while imported bytes are bounded escaped data',async()=>{
+ const importedType='FUTURE\xff\0'+('z'.repeat(1024)),action='Spell\xff\0'+('q'.repeat(1024));
+ const value=new Map([['rotation',new Map([[1,new Map([['id','spell'],['type','spell'],['action',403]])],[2,new Map([['id','stop'],['type','none'],['suppress_attack',true]])],[3,new Map([['id','unknown'],['type',importedType]])],[4,new Map([['id','item'],['type','item'],['action',new Map([[1,action],[2,6948],[3,5512]])]])],[5,new Map([['id','stop-false'],['type','none'],['suppress_attack',false]])],[6,new Map([['id','stop-absent'],['type','none']])]])],['cooldowns',new Map()]]),original=encodeExport(value).text,m=mount();await decode(m,original);await m.get('edit-copy').click();
+ await selectStep(m,'spell');const context=m.get('draft-step-context').textContent;assert.match(context,/action.*403/);assert(context.length<700);assert(!context.includes('\0'));assert.equal(m.get('draft-step-disabled').disabled,false);
+ await selectStep(m,'stop');assert.match(m.get('draft-step-context').textContent,/Stop.*suppress_attack.*true/i);
+ await selectStep(m,'stop-false');assert.match(m.get('draft-step-context').textContent,/Stop.*suppress_attack.*False/);await selectStep(m,'stop-absent');assert.match(m.get('draft-step-context').textContent,/Stop.*suppress_attack.*Unset/);
+ await selectStep(m,'item');assert.match(m.get('draft-step-context').textContent,/action.*Spell\\xFF\\x00.*6948.*5512/);
+ await selectStep(m,'unknown');assert.equal(m.get('draft-step-disabled').disabled,true);assert(!m.get('draft-step-context').textContent.includes('\0'));assert(m.get('draft-step-context').textContent.length<700);assert(m.get('draft-step-select').children.every(e=>e.textContent.length<700&&!e.textContent.includes('\0')));
+ assert.deepEqual(toTypedTree(decodeImport(await generate(m)).value),toTypedTree(value));
+});
+test('last source read inside step write cannot reuse a superseded render or replacement source',async()=>{
+ const {mountDraftEditor}=await import('../Web/editor/render.mjs');for(const replacement of [false,true]){
+  const h=host(),get=id=>find(h.root,id),accepted=value=>({decode:{ok:true,kind:'legacy',value,original:encodeExport(value).text}});let source=accepted(decodeImport(stepWire()).value),controller,armed=false,reads=0;const sentinel=h.d.createElement('input');
+  controller=mountDraftEditor(h.d,h.root,{schemaText,readSource(){if(armed&&++reads===2){armed=false;if(replacement){source=accepted(decodeImport(stepWire()).value);controller.retire();get('draft-discard').click();get('edit-copy').click();}else controller.refresh();sentinel.focus();}return source;}});
+  await get('edit-copy').click();get('draft-step-select').value='nested';await get('draft-step-select').fire('change');get('draft-step-disabled').value='true';armed=true;await get('draft-step-disabled').fire('change');assert.equal(h.d.activeElement,sentinel);await get('draft-review').click();await get('draft-generate').click();assert.equal(decodeImport(get('draft-output').value).value.get('rotation').get(1).get('onTrue').get(1).has('disabled'),false);controller.dispose();
+ }
+});
+test('new step handlers recheck visibility after action callbacks before selecting paging or writing',async()=>{
+ const {mountDraftEditor}=await import('../Web/editor/render.mjs');for(const event of ['select','next','state']){
+  const h=host(),get=id=>find(h.root,id),value=decodeImport(stepWire(105)).value,source={decode:{ok:true,kind:'legacy',value,original:encodeExport(value).text}};let armed=false,visible=true;const sentinel=h.d.createElement('input');const controller=mountDraftEditor(h.d,h.root,{schemaText,readSource:()=>source,isVisible:()=>visible,onAction(){if(armed){armed=false;visible=false;sentinel.focus();}}});await get('edit-copy').click();if(event==='state'){get('draft-step-select').value='nested';await get('draft-step-select').fire('change');}get('draft-step-select').value='nested';get('draft-step-disabled').value='true';armed=true;if(event==='select')await get('draft-step-select').fire('change');else if(event==='next')await get('draft-step-next').click();else await get('draft-step-disabled').fire('change');assert.equal(h.d.activeElement,sentinel);visible=true;await get('draft-review').click();await get('draft-generate').click();assert.equal(decodeImport(get('draft-output').value).value.get('rotation').get(1).get('onTrue').get(1).has('disabled'),false);assert.equal(get('draft-step-prev').disabled,true);controller.dispose();
+ }
+});
