@@ -153,6 +153,10 @@ function addon:GetRotationContext(spec)
 end
 local ownedRotationContext=addon.GetRotationContext
 local clientContextReader
+local contextIpairs,contextRawget,contextEqual=ipairs,rawget,rawequal
+---@type fun(f: number|function): table
+local contextGetfenv=getfenv
+local contextEnvironment=type(contextGetfenv)=="function" and contextGetfenv(1) or nil
 local bindClient=addon.BindRotationClientReader
 if type(bindClient)=='function' then
     bindClient(addon,function(reader) clientContextReader=reader end)
@@ -162,8 +166,8 @@ end
 -- their actual receiver, first result, shared table and error behavior.
 local function rotationContext(owner,spec)
     local method=owner.GetRotationContext
-    if method~=ownedRotationContext or not clientContextReader then return method(owner,spec) end
-    local context=clientContextReader(owner.Platform)
+    if method~=ownedRotationContext or not clientContextReader then local value=method(owner,spec);return value,false end
+    local context,private=clientContextReader(owner.Platform)
     local function read(fn,...)
         if type(fn)~="function" then return nil end
         local ok,value=pcall(fn,...)
@@ -179,7 +183,7 @@ local function rotationContext(owner,spec)
     if vehicle==nil then vehicle=read(UnitInVehicle,"player") end
     if vehicle then context.actionContext="vehicle" end
     if C_PetBattles and read(C_PetBattles.IsInBattle) then context.actionContext="petbattle" end
-    return context
+    return context,private==true
 end
 local function runtimeKey(id, custom)
     local key="RM-BUILTIN:"..id
@@ -192,7 +196,15 @@ function addon:BindRotationLibraryReader(bind)
     if type(bind)~='function' then return nil,'invalid-library-reader-binder' end
     local owner=self;local reader={}
     function reader:OwnsContext(fn) return fn==ownedRotationContext end
-    function reader:Context(spec) return rotationContext(owner,spec) end
+    local function contextMethod(self,spec) return rotationContext(owner,spec) end
+    reader.Context=contextMethod
+    local function ownsPrivateContext(method,projection,dispatch)
+        return contextGetfenv and contextEnvironment
+            and contextEqual(method,contextMethod) and contextEqual(contextRawget(reader,'Context'),contextMethod)
+            and contextEqual(contextGetfenv(contextMethod),contextEnvironment) and contextEqual(contextGetfenv(rotationContext),contextEnvironment)
+            and contextEqual(contextGetfenv(projection),contextEnvironment) and contextEqual(contextGetfenv(dispatch),contextEnvironment)
+            and contextEqual(contextRawget(contextEnvironment,'ipairs'),contextIpairs)
+    end
     local function generationMethod(self)
         local ok,why,checked,proof=ensure(owner,true);if not ok then return nil,why end
         return active.generation,nil,checked,proof
@@ -221,7 +233,7 @@ function addon:BindRotationLibraryReader(bind)
     end
     function reader:Eligible(view,spec,candidates) local context=rotationContext(owner,spec);context.spec=spec;return eligible(view,context,candidates) end
     function reader:Reserve(used) for id,envelope in pairs(definitions) do used[id]=true;data.ReserveRotationIdentities(envelope,used) end end
-    bind(reader,provesGeneration);return true
+    bind(reader,provesGeneration,ownsPrivateContext);return true
 end
 
 function addon:ListDefaultRotations(spec)

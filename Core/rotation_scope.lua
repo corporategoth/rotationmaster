@@ -11,17 +11,17 @@ if type(addon.BindActiveRotationPublication)=='function' then
     end)
 end
 local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
-local libraryReader,libraryGenerationProof
+local libraryReader,libraryGenerationProof,libraryContextProof
 local bindLibrary=addon.BindRotationLibraryReader
 if type(bindLibrary)=='function' then
-    bindLibrary(addon,function(reader,proof) libraryReader=reader;if type(proof)=='function' then libraryGenerationProof=proof end end)
+    bindLibrary(addon,function(reader,proof,contextProof) libraryReader=reader;if type(proof)=='function' then libraryGenerationProof=proof end;if type(contextProof)=='function'then libraryContextProof=contextProof end end)
     addon.BindRotationLibraryReader=nil
 end
 local function rotationContext(owner,spec)
     local method=libraryReader and libraryReader.Context
-    if type(method)=='function' then return method(libraryReader,spec) end
+    if type(method)=='function' then local value,private=method(libraryReader,spec);return value,private,method end
     local fallback=owner.GetRotationContext
-    return fallback(owner,spec)
+    local value=fallback(owner,spec);return value,false
 end
 local current,serial
 serial=0
@@ -640,7 +640,9 @@ function addon:BindRotationProfile()
         local validation,referenceStamp=owner:GetRotationValidationOptions();local revision=owner.conditionRegistryVersion;local generation=libraryReader and libraryReader:Generation();local pass={}
         local selected,untracked,listSeal={},{},nil
         local function eligibilityContext()
-            local value=rotationContext(owner,number);local result={}
+            local value,private,method=rotationContext(owner,number)
+            if libraryContextProof and libraryContextProof(method,eligibilityContext,rotationContext)and private==true then return value end
+            local result={}
             for _,key in ipairs({'family','class','spec','actionContext','level','build','combatDataPolicy'}) do result[key]=value and value[key] end
             return result
         end

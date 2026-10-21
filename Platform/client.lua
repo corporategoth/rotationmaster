@@ -58,7 +58,7 @@ function addon:BindRotationClientReader(bind)
     if type(bind)~='function' then return nil,'invalid-client-reader-binder' end
     bind(function(current)
         local method=current.GetClientInfo
-        if method~=ownedClientInfo then return method(current) end
+        if method~=ownedClientInfo then local value=method(current);return value,false end
         local project=primitive(WOW_PROJECT_ID)
         local function isProject(constant)
             return type(project)=='number' and type(constant)=='number' and project==constant
@@ -78,7 +78,7 @@ function addon:BindRotationClientReader(bind)
         if family=='retail' or family=='forever' then context.combatDataPolicy='restricted'
         elseif family=='unknown' then context.combatDataPolicy='unsupported'
         else context.combatDataPolicy='probe' end
-        return context
+        return context,true
     end)
     return true
 end

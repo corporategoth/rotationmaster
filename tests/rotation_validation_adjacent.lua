@@ -20,13 +20,15 @@ local function private(a)
  for i=1,100 do local name,value=debug.getupvalue(a.GetRotationOwnerContext,i);if not name then break end;if name=='libraryReader' then return value end end
  error('private library reader absent')
 end
-local function calls(fn,run)
- local count=0;local previous,mask,step=debug.gethook();local compiling=jit and jit.status()
+local function calls(fn,run,separate)
+ local count,other=0,0;local previous,mask,step=debug.gethook();local compiling=jit and jit.status()
  if jit then jit.off();jit.flush() end
- debug.sethook(function(event) if event=='call' and debug.getinfo(2,'f').func==fn then count=count+1 end end,'c')
+ debug.sethook(function(event) if event=='call' and debug.getinfo(2,'f').func==fn then
+  if separate and debug.getinfo(3,'f').func==separate then other=other+1 else count=count+1 end
+ end end,'c')
  local ok,result,why=pcall(run)
  if previous then debug.sethook(previous,mask,step) else debug.sethook() end;if compiling then jit.on() end
- assert(ok,result);return count,result,why
+ assert(ok,result);return count,result,why,other
 end
 local function current(a,pass,wanted,reason)
  local n,ok,why=calls(a.GetRotationValidationStamp,function() return pass:IsCurrent() end)
@@ -291,9 +293,12 @@ test('eligible adjacent reads run exactly one complete environment proof',functi
   local loader=loadfile
   if old then _G.loadfile=function(path)if normalized[path]then return assert(loadstring(normalized[path],'@'..path))end;return loader(path)end end
   local ok,_,a=pcall(fixture);_G.loadfile=loader;assert(ok,a)
-  local p=assert(a:AcquireRotationRuntimePass(0));local count,currentOK,why=calls(getfenv,function()return p:IsCurrent()end);assert(currentOK,why)
+  local p=assert(a:AcquireRotationRuntimePass(0));local contextProof
+  if not old then for i=1,100 do local name,value=debug.getupvalue(a:GetScopedRotationCoordinator().RuntimePass,i);if not name then break end;if name=='libraryContextProof'then contextProof=value end end;assert(type(contextProof)=='function')end
+  local count,currentOK,why,contextChecks=calls(getfenv,function()return p:IsCurrent()end,contextProof);assert(currentOK,why)
   if old then assert(count==8,'frozen helper environment checks '..count..' expected8 (one complete PRE proof)')
   else assert(count==9,'current helper environment checks '..count..' expected9 (wrapper plus legacy scanner in one PRE proof)')end
+  assert(contextChecks==(old and 0 or 4),'context producer/projection environment proof count changed')
   current(a,p,1)
  end
 end)

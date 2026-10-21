@@ -95,6 +95,7 @@ end
 }
 local hashes={["Platform/client.lua"]="6cb90db0",["Core/rotation_library.lua"]="a636cfd7",["Core/rotation_scope.lua"]="5daa21f1"}
 return function(text,path,hash)
+ if path=='Platform/client.lua' then text=dofile('tests/fixtures/restore_runtime_context_projection.lua')(text,path) end
  assert(type(text)=='string' and type(hash)=='function' and changes[path],'unknown context inverse input')
  for _,entry in ipairs(changes[path]) do
   local first,last=text:find(entry[1],1,true)
