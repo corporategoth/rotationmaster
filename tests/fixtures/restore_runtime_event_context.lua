@@ -163,6 +163,7 @@ local runtimeContextEvents={PLAYER_LEVEL_UP=true,UNIT_LEVEL=true,PLAYER_ENTERING
 ]====]}}}}
 local function hash(s)local n=5381;for i=1,#s do n=(n*33+s:byte(i))%4294967296 end;return string.format('%08x',n)end
 return function(text,path)
+ if path=='main.lua'and text:find('local function registerOptionalEvent(owner,change,event)',1,true)then text=dofile('tests/fixtures/restore_event_registration.lua')(text,path)end
  local r=rows[path];if not r then return text end
  assert(#text==r.bytes and hash(text)==r.hash,'unrelated event-context source: '..path)
  for _,c in ipairs(r.changes)do local a,b=text:find(c.current,1,true);assert(a and not text:find(c.current,b+1,true),'event inverse anchor: '..path);text=text:sub(1,a-1)..c.previous..text:sub(b+1)end

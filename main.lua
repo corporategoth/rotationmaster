@@ -687,6 +687,20 @@ function addon:toggle()
     end
 end
 
+-- These additional notifications vary by client; leave existing subscriptions
+-- alone and require the native event catalogue to confirm each optional name.
+local function registerOptionalEvent(owner,change,event)
+    if not activeChangeCurrent(owner,change) then return false end
+    local utils=C_EventUtils
+    local validEvent=type(utils)=='table' and utils.IsEventValid
+    if not activeChangeCurrent(owner,change) then return false end
+    if type(validEvent)~='function' then return activeChangeCurrent(owner,change) end
+    local ok,valid=pcall(validEvent,event)
+    if not activeChangeCurrent(owner,change) then return false end
+    if ok and valid==true then return activeCall(owner,change,'RegisterEvent',event) end
+    return true
+end
+
 function addon:enable()
     if self.initializationErrorReport then self:ShowErrors();return end
     local change=beginActive(self)
@@ -704,6 +718,12 @@ function addon:enable()
     extraEvents=extraEvents and mainline_events or family=="progression" and wrath_events
         or family=="tbc" and tbc_events or family=="era" and classic_events or {}
     for _,event in ipairs(extraEvents) do if not activeCall(self,change,'RegisterEvent',event) then return end end
+
+    if not registerOptionalEvent(self,change,'UNIT_EXITED_VEHICLE') then return end
+    if family=='tbc' then
+        if not registerOptionalEvent(self,change,'PLAYER_TALENT_UPDATE') then return end
+        if not registerOptionalEvent(self,change,'ACTIVE_TALENT_GROUP_CHANGED') then return end
+    end
 
     if self.RefreshPreviewWindow then
         if not activeCall(self,change,'RefreshPreviewWindow') then return end
