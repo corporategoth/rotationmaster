@@ -32,6 +32,38 @@ function addon:PrepareAnnouncementDelivery(config,owner)
     end
     return entry,current
 end
+-- Native unit APIs may accept a resolvable name as well as a unit token.
+-- Keep the cast's recorded recipient exact; never infer the selected target.
+local function automaticTarget(recipient,owned)
+    local function readable(value)
+        return platform:CanReadValue(value) and (not canaccessvalue or canaccessvalue(value))
+    end
+    if not readable(recipient) or type(recipient)~='string' or recipient=='' or #recipient>512 or recipient:find('[%z\1-\31\127]') then return end
+    local exists,guid=UnitExists,UnitGUID
+    if type(exists)~='function' or type(guid)~='function' then return end
+    local function live()
+        if not owned() then return false end
+        return exists==UnitExists and guid==UnitGUID
+    end
+    local function observe()
+        if not live() then return end
+        local ok,present=pcall(exists,recipient)
+        if not ok or not readable(present) or present~=true or not live() then return end
+        local identified,id=pcall(guid,recipient)
+        if not identified or not readable(id) then return end
+        if canaccessvalue and not canaccessvalue(id) then return end
+        if type(id)~='string' or id=='' or #id>256 or not live() then return end
+        return id
+    end
+    local identity=observe()
+    if not identity then return end
+    return recipient,function()
+        local now=observe()
+        if canaccessvalue and not canaccessvalue(now) then return false end
+        if canaccessvalue and not canaccessvalue(identity) then return false end
+        return now==identity
+    end
+end
 -- Called only after a cast matches an announcement, never by cooldown output.
 function addon:AnnouncementConditionMatches(config,recipient,current,targetUnit)
     conditionRequest=conditionRequest+1
@@ -46,7 +78,16 @@ function addon:AnnouncementConditionMatches(config,recipient,current,targetUnit)
     end
     if not owned() then return false end
     if config.conditions==nil then return true end
-    local result=self:evaluateAnnouncementConditionResult(config.conditions,recipient,targetUnit)
+    local resolve
+    if config.type~='macro' and targetUnit==nil then
+        resolve=function(tag)
+            local unit,current=automaticTarget(recipient,owned)
+            if unit then return tag=='GROUP' and 'spellrecipient' or unit,current end
+        end
+    end
+    local result
+    if resolve then result=self:evaluateAnnouncementConditionResult(config.conditions,recipient,targetUnit,resolve)
+    else result=self:evaluateAnnouncementConditionResult(config.conditions,recipient,targetUnit) end
     return owned() and type(result)=='table' and result.status=='match'
 end
 -- Two bounded cold-output observations, never a history or polling cache.

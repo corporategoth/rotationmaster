@@ -2811,7 +2811,7 @@ L['START witness rows: observed=%s matched=%s mismatch=%s excluded=%s unknown=%s
 L['START witnesses compare current cast identity and non-autorepeat classification only; they do not classify ordinary casts or enable scoring.'] = true
 L["Edit announcement conditions"] = "Edit announcement conditions"
 L["Announcement conditions"] = "Announcement conditions"
-L["Help.Announces.conditions"] = "Optional conditions use the Announcement condition list and All, Any and Not groups. For spell, pet and item announcements, they run when the configured action and event match. For Via Macro, they run when you invoke the saved identifier. Only a matching result allows its message or sound; unavailable data skips the announcement. In Group can check the Spell recipient recorded for this cast, including click casting, without using your selected target. For Via Macro, choose Announcement target to check the supplied unit; Whisper uses that same unit. Missing or ambiguous required recipients do not match. Apply in the condition editor updates the announcement draft; Apply on Announces saves it. Cancel or Discard abandons draft changes."
+L["Help.Announces.conditions"] = "Optional conditions use the Announcement condition list and All, Any and Not groups. For spell, pet and item announcements, they run when the configured action and event match. For Via Macro, they run when you invoke the saved identifier. Only a matching result allows its message or sound; unavailable data skips the announcement. In Group can check the Spell recipient recorded for this cast, including click casting, without using your selected target. Choose Announcement target to check the spell recipient for automatic entries, or the supplied unit for Via Macro; Whisper uses that same supplied unit. Automatic entries pass the recorded recipient name to native unit queries. A missing or unresolvable recipient skips its required condition; an unrelated selected target is never substituted. Missing or ambiguous required recipients do not match. Apply in the condition editor updates the announcement draft; Apply on Announces saves it. Cancel or Discard abandons draft changes."
 
 L["Spell recipient"] = "Spell recipient"
 L["{unit} {{!is|is not}} in a raid"] = "{unit} {{!is|is not}} in a raid"
@@ -2830,7 +2830,7 @@ L['Workbench Help'] = 'Workbench Help'
 
 L['Navigation'] = 'Navigation'
 
-L['Help.Window.navigation'] = 'Choose tabs to browse Rotations, General, Conditions, Functions, Effects, Item Sets, Announces, Profiles and Integrations. Each tab has its own Help for page controls. Search and filters belong to the current page. Built In entries remain read-only; Duplicate creates an editable copy.'
+L['Help.Window.navigation'] = 'Choose tabs to browse Rotations, General, Conditions, Functions, Effects, Item Sets, Announces, Profiles and Integrations. The opened panes have their own Help for page controls. Search and filters belong to the current page. Built In entries remain read-only; Duplicate creates an editable copy.'
 
 L['Help.Window.scale'] = 'Scale changes the whole workbench and its child windows from 70% to 130%. Drag the top-left slider or enter an integer percentage and press Enter. Escape restores the saved scale text. Drag the title bar to move; drag the lower-right corner to resize.'
 

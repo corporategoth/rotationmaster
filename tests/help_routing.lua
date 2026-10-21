@@ -28,11 +28,26 @@ test('form briefs explain interactions without history or field commits and reti
  local c=p.fields.x;assert(c:GetScript('OnEnter'),'missing pooled field brief');p.WithSettingsHistory=function()error('hover history')end;c:GetScript('OnEnter')(c);assert(t.text and changed==0)
  local stale=c:GetScript('OnEnter');p:Release();t.text=nil;stale(c);assert(t.text==nil and changed==0)
 end)
-test('all nine tabs have local page Help while title Help remains general navigation',function()
- local f=fixture();local a=f.addon;a.SetupOptions=function()end;f.load('UI/config.lua');local shell=a:ShowConfig('General');local p=shell.pane;local c=p.fields.poll_value;c:SetText('bad');c.scripts.OnTextChanged(c,true);c:SetFocus()
- assert(#shell.tabs==9);for _,tab in ipairs(shell.tabs)do assert(tab.help,'missing '..tab.section..' page Help');tab.help:Click();assert(a.helpWindow.heading==(tab.section=='ItemSets' and 'Item Sets' or tab.section));assert(shell.section=='General' and shell.pane==p and c:GetText()=='bad' and c:HasFocus())end
- shell.help:Click();assert(a.helpWindow.heading=='Workbench Help');local text='';for _,entry in ipairs(a.helpWindow.sections)do text=text..entry.text end;assert(text:find('Scale',1,true) and text:find('tabs',1,true))
- local stale=shell.tabs[1].help:GetScript('OnClick');shell:RefreshTabs();a.helpWindow:Hide();stale();assert(not a.helpWindow.frame:IsShown(),'stale tab Help reopened')
+test('top tabs keep navigation briefs without Help icons while window and pane Help remain available',function()
+ local f=fixture();local a=f.addon;a.SetupOptions=function()end;f.load('UI/config.lua');local shell=a:ShowConfig('General');local p=shell.pane;local c=p.fields.poll_value;c:SetText('bad');c.scripts.OnTextChanged(c,true);c:SetFocus();local t=tooltip(f)
+ assert(#shell.tabs==9);for _,tab in ipairs(shell.tabs)do assert(not tab.help,'top-level tab still has Help: '..tab.section);tab:GetScript('OnEnter')(tab);assert(t.visible and t.text,'tab navigation brief missing');tab:GetScript('OnLeave')(tab)end
+ assert(shell.pageHelp and shell.pageHelp:IsShown(),'missing active pane Help');shell.pageHelp:Click();assert(a.helpWindow.heading=='General' and c:GetText()=='bad' and c:HasFocus());shell.help:Click();assert(a.helpWindow.heading=='Workbench Help' and shell.section=='General' and shell.pane==p and c:GetText()=='bad' and c:HasFocus());local text='';for _,entry in ipairs(a.helpWindow.sections)do text=text..entry.text end;assert(text:find('Scale',1,true) and text:find('tabs',1,true))
+ local tab=shell.tabs[1];local stale=tab:GetScript('OnEnter');shell:RefreshTabs();t:Hide();stale(tab);assert(not t.visible,'stale tab hover reopened');for _,current in ipairs(shell.tabs)do assert(not current.help)end
+ local open=a.OpenNativeSettings
+ a.OpenNativeSettings=function(self,parent,key,reuse)
+  if key=='General' or key=='Announces'then return open(self,parent,key,reuse)end
+  local pane={frame=f.env.CreateFrame('Frame',nil,parent)}
+  function pane:SetWidth(n)self.frame:SetWidth(n)end;function pane:SetHeight(n)self.frame:SetHeight(n)end;function pane:Release()self.frame:Hide()end
+  pane.frame:Show();return pane
+ end
+ assert(shell.paneHeader:GetWidth()==shell.content:GetWidth() and shell.paneHeader:GetHeight()==24 and shell.pageHelp:GetWidth()==20 and shell.pageHelp.icon:GetWidth()==18)
+ local stalePage=shell.pageHelp:GetScript('OnClick');shell:SelectSection('Profiles',true);a.helpWindow:Hide();stalePage();assert(not a.helpWindow.frame:IsShown(),'old pane Help reopened after navigation')
+ for _,entry in ipairs(shell.tabs)do shell:SelectSection(entry.section,true);local pane=shell.pane;local existing=pane.fields and pane.fields.announce_help;local help=existing or shell.pageHelp;assert(help:IsShown(),'missing '..entry.section..' pane Help');if existing then assert(not shell.pageHelp:IsShown(),'duplicate Announces page Help')end;help:Click();assert(a.helpWindow.heading==(entry.section=='ItemSets' and 'Item Sets' or entry.section),'wrong pane topic '..entry.section)end
+ shell:SelectSection('General',true);shell.pane:Draw();shell.pageHelp:Click();assert(a.helpWindow.heading=='General','same-page redraw retired page Help')
+ local page=a.WorkbenchPageHelp;local nested=false
+ a.WorkbenchPageHelp=function(self,key)if key=='General' and not nested then nested=true;shell:SelectSection('Profiles',true);shell.pageHelp:Click()end;return page(self,key)end
+ shell.pageHelp:Click();assert(nested and a.helpWindow.heading=='Profiles' and shell.helpDialog and shell.helpDialog.heading=='Profiles','older pane Help request replaced newer owner')
+ local retired=shell.pageHelp:GetScript('OnClick');a.db.profile={};a.helpWindow:Hide();retired();assert(not a.helpWindow.frame:IsShown(),'old profile page Help reopened')
 end)
 test('gold Help factory and optional dialog descriptor use20button18icon read-only route',function()
  local f,parent=fixture();local a=f.addon;local c=a:CreateWorkbenchHelpButton(parent,'Help');assert(c:GetWidth()==20 and c.icon:GetWidth()==18)

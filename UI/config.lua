@@ -95,6 +95,8 @@ local function newShell()
     shell.version:SetText(version)
     shell.edition=text(window);shell.edition:SetPoint("TOPRIGHT",-62,-23);shell.edition:SetJustifyH("RIGHT");shell.edition:SetWordWrap(false);shell.edition:SetWidth(230)
     shell.edition:SetText(edition..(client.version and " "..client.version or ""))
+    local paneHeader=CreateFrame('Frame',nil,window);shell.paneHeader=paneHeader
+    shell.pageHelp=addon:CreateWorkbenchHelpButton(paneHeader,L['Help']);shell.pageHelp:SetPoint('TOPRIGHT',-2,-2);shell.pageHelp:SetSize(20,20);shell.pageHelp.icon:SetSize(18,18)
     local content=CreateFrame("Frame",nil,window);shell.content=content;content:EnableMouse(true)
     addon:SetUIScript(content,"OnMouseDown",function(_,button)
         if button=="RightButton" and not shell.rightDown and contentHasFocus(content) then shell:Hide() end
@@ -164,14 +166,19 @@ local function newShell()
     local linksWidth=0;for _,link in ipairs(links) do linksWidth=linksWidth+link:GetWidth()+6 end
     local linkX=-linksWidth/2;for _,link in ipairs(links) do link:SetPoint("LEFT",footer,"CENTER",linkX,0);linkX=linkX+link:GetWidth()+6 end
     function shell:CloseHelp()
-        if self.helpDialog then self.helpDialog:Hide() end
+        self.helpRequest=nil
+        local dialog=self.helpDialog;self.helpDialog=nil
+        if dialog then dialog:Hide() end
     end
-    function shell:ShowHelp(topic)
+    function shell:ShowHelp(topic,valid)
+        local request={};self.helpRequest=request
         local heading=topic and (topic=='ItemSets' and L['Item Sets'] or L[topic]) or L['Workbench Help']
-        self.helpDialog=addon:OpenWorkbenchHelp({heading=heading,owner=addon.pretty_name,
-            valid=function()return self.frame:IsShown()end,
+        local dialog=addon:OpenWorkbenchHelp({heading=heading,owner=addon.pretty_name,
+            valid=function()return self.helpRequest==request and self.frame:IsShown() and (not valid or valid())end,
             sections=function()return topic and addon:WorkbenchPageHelp(topic) or addon:WorkbenchWindowHelp()end})
-        if self.helpDialog then self.helpPane=self.helpDialog.frame end
+        if self.helpRequest~=request then return end
+        self.helpDialog=dialog
+        if dialog then self.helpPane=dialog.frame end
     end
     addon:SetUIScript(shell.help,'OnClick',function() shell:ShowHelp() end)
     addon:BindWorkbenchHelp(shell.help,{brief=L['Help.Brief.window'],valid=function()return window:IsShown()end})
@@ -185,7 +192,22 @@ local function newShell()
     addon:SetUIScript(grip,"OnMouseUp",function() window:StopMovingOrSizing() end)
     shell.grip=grip
 
+    function shell:BindPaneHelp()
+        local pane,key,generation=self.pane,self.section,addon.configPaneGeneration
+        local profile,global,char=addon.db.profile,addon.db.global,addon.db.char
+        local function current()
+            return self.frame:IsShown() and self.pane==pane and self.section==key and addon.configPaneGeneration==generation
+                and addon.db.profile==profile and addon.db.global==global and addon.db.char==char
+        end
+        addon:SetUIScript(self.pageHelp,'OnClick',addon:GuardWorkbenchHelp(current,function()self:ShowHelp(key,current)end))
+        addon:BindWorkbenchHelp(self.pageHelp,{brief=L['Help.Brief.page'],valid=current})
+        local existing=pane.fields and pane.fields.announce_help
+        if existing and existing:IsShown()then self.pageHelp:Hide();self.paneHeader:Hide();self.paneHeaderHeight=0
+        else self.pageHelp:Show();self.paneHeader:Show();self.paneHeaderHeight=24 end
+        self:Layout()
+    end
     function shell:ReleasePane()
+        self.pageHelp:Hide()
         addon.configPaneGeneration=(addon.configPaneGeneration or 0)+1
         addon.currentConditionEval=nil;addon.specTab=nil
         -- Clear pending native focus before retiring the current pane.
@@ -206,8 +228,9 @@ local function newShell()
             x=x+tabWidth+2
         end
         local top=-y+28
-        content:ClearAllPoints();content:SetPoint("TOPLEFT",window,"TOPLEFT",12,-top)
-        content:SetSize(math.max(1,width-24),math.max(1,height-top-28))
+        paneHeader:ClearAllPoints();paneHeader:SetPoint('TOPLEFT',window,'TOPLEFT',12,-top);paneHeader:SetSize(math.max(1,width-24),self.paneHeaderHeight or 24)
+        content:ClearAllPoints();content:SetPoint("TOPLEFT",paneHeader,"BOTTOMLEFT",0,0)
+        content:SetSize(math.max(1,width-24),math.max(1,height-top-28-(self.paneHeaderHeight or 24)))
         self.status:SetWidth(math.max(1,width/2-270))
         self.language:ClearAllPoints();self.language:SetPoint("TOPRIGHT",-12,-42)
         self.title:SetWidth(math.max(1,width-490));self.activeTitle:SetWidth(math.max(1,width-490));self.activeTitle:SetWordWrap(false)
@@ -228,13 +251,10 @@ local function newShell()
                 tab.border=outline(tab)
             end
             tab.section=entry.value;tab:SetText(entry.text)
-            tab:SetSize(math.min(180,math.max(64,tab:GetFontString():GetStringWidth()+42)),22)
+            tab:SetSize(math.min(180,math.max(64,tab:GetFontString():GetStringWidth()+18)),22)
             local key=entry.value
-            if not tab.help then tab.help=addon:CreateWorkbenchHelpButton(tab,L['Help']);tab.help:SetPoint('RIGHT',-1,0) end
             local text=tab:GetFontString();text:ClearAllPoints();text:SetPoint('LEFT',8,0)
             local function current()return self.frame:IsShown() and self.tabGeneration==generation end
-            addon:SetUIScript(tab.help,'OnClick',addon:GuardWorkbenchHelp(current,function()self:ShowHelp(key)end))
-            addon:BindWorkbenchHelp(tab.help,{brief=L['Help.Brief.page'],valid=current})
             addon:BindWorkbenchHelp(tab,{brief=descriptions[key],valid=current})
             addon:SetUIScript(tab,"OnClick",function() self:SelectSection(key) end)
             tab:Show();self.tabs[#self.tabs+1]=tab
@@ -264,11 +284,11 @@ local function newShell()
         if key=="Rotations" and addon.CreateRotationBrowser then
             self.nativePane=true
             self.pane=addon:CreateRotationBrowser(content,addon.configRotationSelection)
-            return
+            self:BindPaneHelp();return
         end
         if addon.OpenNativeSettings then
             local pane=addon:OpenNativeSettings(content,key,self.settingsPanes[key])
-            if pane then self.nativePane=true;self.pane=pane;self.settingsPanes[key]=pane;return end
+            if pane then self.nativePane=true;self.pane=pane;self.settingsPanes[key]=pane;self:BindPaneHelp();return end
         end
         local pane=self.unavailablePane
         if not pane then
@@ -280,7 +300,7 @@ local function newShell()
             function pane:Release() self.frame:Hide() end
         end
         pane.message:SetText(string.format(L['Native settings page unavailable: %s'],key));pane:SetWidth(content:GetWidth());pane:SetHeight(content:GetHeight());pane.frame:Show()
-        self.nativePane=true;self.pane=pane
+        self.nativePane=true;self.pane=pane;self:BindPaneHelp()
     end
     addon:SetUIScript(window,"OnSizeChanged",function() shell:Layout() end)
     addon:SetUIScript(window,"OnHide",function() shell.scaleDragging=false;shell.pendingScale=nil;addon:SetUIScript(window,"OnUpdate",nil);shell:CloseHelp();shell.languageMenu:Hide();shell.linkPane:Hide();shell.linkInput:ClearFocus();shell:ReleasePane() end)

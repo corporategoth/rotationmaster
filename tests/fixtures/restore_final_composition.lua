@@ -171,6 +171,9 @@ local function catalog(source)
  return catalogs[source]
 end
 return function(value,path,stage,mode)
+ value=dofile('tests/fixtures/restore_automatic_announcement_target.lua')(value,path)
+ if mode~='catalog' and (path=='UI/config.lua' or path=='Locales/enUS.lua') then value=dofile('tests/fixtures/restore_top_tab_help.lua')(value,path)end
+ value=dofile('tests/fixtures/restore_condition_invalid_expansion.lua')(value,path)
  assert(path~='tests/fixtures/restore_final_composition.lua','composition bridge cannot normalize itself')
  if mode=='catalog'then
   local row=rows['Data/builtin_sources.lua'];local wanted=catalog(target(row,stage))

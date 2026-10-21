@@ -205,10 +205,15 @@ local function createShell()
         local open=rawget(addon,'OpenWorkbenchHelp')
         if type(open)=='function' then return open(addon,request) end
     end
-    function shell:Scene()
+    function shell:Scene(includeHidden)
         self.view.width=self.canvas.frame:GetWidth()-8;self.view.definitions=addon.conditionDefinitions
         local rows,complete=self.active.session:Rows(4096);self.rows=rows
-        local scene,problem=addon:BuildConditionCanvas(self.active.working,rows,self.view,complete)
+        local view=self.view
+        if includeHidden then
+            view={};for key,value in pairs(self.view) do view[key]=value end
+            view.collapsed={};view.hiddenChildren={}
+        end
+        local scene,problem=addon:BuildConditionCanvas(self.active.working,rows,view,complete)
         if not scene then self:Message(problem and problem.code);return nil end
         local baseline=self.active.session:Baseline()
         local result=addon.RotationData.ValidateBody({switch=self.active.working,rotation={},cooldowns={}},addon:GetImportValidationOptions())
@@ -228,6 +233,70 @@ local function createShell()
             for cursor=1,#diagnostic.path do local ch=diagnostic.path:sub(cursor,cursor);if ch=='.' or ch=='[' then flag(diagnostic.path:sub(1,cursor-1)) end end
         end
         return scene
+    end
+    -- Seed editable fields only at entry or for newly added/replaced subtrees.
+    -- Redrawing and ordinary field edits retain the user's current fold state.
+    function shell:ExpandInvalid(paths)
+        local active,view=self.active,self.view
+        local working=active.working
+        local definitions,revision=addon.conditionDefinitions,addon.conditionRegistryVersion
+        local function owned()
+            return self.active==active and self.view==view and active.working==working
+                and addon.db.profile==active.profile and addon.db.global==active.global and addon.db.char==active.char
+                and (active.persistentOwner or active.generation==addon.configPaneGeneration)
+                and addon.conditionDefinitions==definitions and addon.conditionRegistryVersion==revision
+        end
+        local function current()
+            if not owned() then return false end
+            if active.targetValid then
+                local ok,valid=pcall(active.targetValid)
+                if not ok or valid~=true then return false end
+            end
+            return owned()
+        end
+        if not current() then return false end
+        local scene=self:Scene(true)
+        if not scene or not current() then return false end
+        for _,card in ipairs(scene.cards) do
+            local selected=false
+            for _,path in ipairs(paths) do
+                local matches=#path<=#card.fieldPath
+                for index,part in ipairs(path) do if card.fieldPath[index]~=part then matches=false;break end end
+                if matches then selected=true;break end
+            end
+            if selected then
+                local invalid=card.invalid
+                if not invalid and not card.group then
+                    local candidate=addon.RotationData.CopyData(at(working,card.fieldPath))
+                    if candidate then
+                        candidate.disabled=nil
+                        local before=addon.RotationData.CopyData(candidate)
+                        local function validate()
+                            if self.userdata.announcementTarget then return addon:validateAnnouncementCondition(candidate,active.spec) end
+                            return addon:validateCondition(candidate,active.spec)
+                        end
+                        local ok,valid
+                        if addon.Diagnostics then
+                            local definition=definitions[candidate.type]
+                            ok,valid=addon.Diagnostics:Call({module='condition-editor',operation='validate',customCode=definition and definition.customCode==true},validate)
+                        else ok,valid=pcall(validate) end
+                        if not current() then return false end
+                        invalid=not ok or not valid or not addon:UnsavedDataEqual(before,candidate)
+                    end
+                end
+                if invalid then
+                    view.cardStates[card.key]='expanded'
+                    local path={}
+                    for index=0,#card.path do
+                        if index>0 then path[index]=card.path[index] end
+                        local key=pathKey(path);view.hiddenChildren[key]=nil;view.collapsed[key]=nil
+                        local parent=scene.cardsByKey[key]
+                        if parent then view.cardStates[key]='expanded' end
+                    end
+                end
+            end
+        end
+        return true
     end
     function shell:Caption(model)
         local node=model.missingOperand and {} or at(self.active.working,model.fieldPath) or {};local label=caption(node)
@@ -388,6 +457,16 @@ local function createShell()
         end
         self.view.selection={};for _,selected in ipairs(paths) do self.view.selection[pathKey(selected)]=true end
         if name=="Insert" then for _,selected in ipairs(paths) do self.view.expanded[pathKey(selected)]=true end end
+        if name=="Replace" or name=="Add" or name=="AddSibling" or name=="Insert" or name=="Duplicate" then
+            local added=paths
+            if name=="Add" then
+                local node=at(self.active.working,path)
+                if node and (node.type=="AND" or node.type=="OR") then
+                    local child=copyPath(path);child[#child+1]='value';child[#child+1]=#node.value;added={child}
+                end
+            end
+            if not self:ExpandInvalid(added) then return end
+        end
         self.active.selected=paths[1] or {};self.status:SetText("");self:Layout();return true
     end
     function shell:SelectedCommand(name,value)
@@ -536,6 +615,7 @@ function addon:ShowConditionEditor(index,spec,value,callback,targetValid,options
     for _,control in pairs(shell.palette) do enabled(control,not shell.active.readOnly) end
     shell.cancel:SetText(shell.active.readOnly and L["Close"] or L["Cancel"])
     if shell.active.readOnly then shell.status:SetText(L["Read-only condition"]) end
+    if not shell:ExpandInvalid({{}}) then return shell end
     shell:Show();shell:Layout();shell:Render()
     return shell
 end

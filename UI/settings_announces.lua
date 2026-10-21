@@ -27,8 +27,6 @@ function addon:BuildAnnounceSettings(p)
         end)
         if entry.type=='macro' then
             p:Edit(prefix..'identifier',L['Identifier'],entry.identifier or '',function(value)if identifierFree(value,entry) then return value end end,function(v)update(entry,'identifier',v)end)
-            p:Text(L['Help.Announces.macro.brief'])
-            p:Text(string.format(L['Macro call: %s'],string.format('/run RM_Annouce(%q,"mouseover",nil)',entry.identifier or 'FOO')))
         elseif entry.type=='item' then p:ItemSequence(prefix..'action',entry.item,function(v) update(entry,'item',v) end)
         else p:Spell(prefix..'action',L['Spell'],entry.spell,entry.type=='pet' and BOOKTYPE_PET or addon.currentSpec,function(v) update(entry,'spell',v) end);p:InlineCheck(prefix..'action',prefix..'ranked',L['Use this exact spell rank'],entry.ranked,function(v) update(entry,'ranked',v) end) end
         if entry.type~='macro' then p:Choice(prefix..'event',L['Event'],entry.event,events,function(v) update(entry,'event',v) end) end
@@ -56,7 +54,7 @@ function addon:BuildAnnounceSettings(p)
             end
             self:ShowConditionEditor(nil,self.currentSpec,draft,function(applied)
                 if applied and current() then entry.conditions=next(draft) and draft or nil;p:Draw() end
-            end,current,{persistentOwner=true,announcement=true,announcementTarget=entry.type=='macro',title=L['Announcement conditions'],contextLabel=L['Announces']})
+            end,current,{persistentOwner=true,announcement=true,announcementTarget=true,title=L['Announcement conditions'],contextLabel=L['Announces']})
         end)
     end
     local function itemInfo(value)

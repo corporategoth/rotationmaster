@@ -109,6 +109,27 @@ local function evaluate(value, cache, start, state, depth, path)
             result = outcome("unavailable", "disabled-condition", path)
         elseif type(definition.valid) ~= "function" or type(definition.evaluate) ~= "function" then
             result = outcome("unavailable", "incomplete-condition-definition", path)
+        elseif state.announcementTarget and value.unit=='announcementtarget' then
+            local unit,current=state.announcementTarget(value.type)
+            if not unit or type(current)~='function' or not current() or type(definition.fields)~='table' or definition.fields.unit~='string' then
+                result=outcome('unavailable','cast-recipient-unavailable',path)
+            else
+                -- Contextual units validate fields with the same representative
+                -- player token used by the editor, then evaluate the exact name.
+                local validation=addon.RotationData.CopyData(value);validation.unit='player'
+                local validOk,valid
+                if current() then validOk,valid=callCondition(definition,'valid',validation,cache,start,path,state.context) end
+                if not current() then result=outcome('unavailable','cast-recipient-changed',path)
+                elseif not validOk or not valid then result=outcome('unavailable','invalid-condition-fields',path)
+                else
+                    local input=addon.RotationData.CopyData(value);input.unit=unit
+                    local evalOk,matched,reason=callCondition(definition,'evaluate',input,cache,start,path,state.context)
+                    if not current() then result=outcome('unavailable','cast-recipient-changed',path)
+                    elseif not evalOk then result=outcome('unavailable','condition-callback-error',path)
+                    elseif matched==nil and reason~=nil then result=outcome('unavailable',reason,path)
+                    else result=outcome(matched and 'match' or 'no-match') end
+                end
+            end
         else
             local validOk, valid = callCondition(definition, "valid", value, cache, start, path, state.context)
             if not validOk then
@@ -450,10 +471,14 @@ local function announcementUnits(value,unit)
     walk(resolved,0,true)
     return resolved
 end
-function addon:evaluateAnnouncementConditionResult(value, recipient, targetUnit)
-    local resolved,reason=announcementUnits(value,targetUnit)
+function addon:evaluateAnnouncementConditionResult(value, recipient, targetUnit, resolveTarget)
+    local resolved,reason
+    if resolveTarget then
+        if not addon.RotationData.CheckPortable(value) then return outcome('unavailable','invalid-announcement-condition','announcement') end
+        resolved=value
+    else resolved,reason=announcementUnits(value,targetUnit) end
     if reason then return outcome('unavailable',reason,'announcement') end
-    local result=evaluate(resolved, {announcementRecipient=recipient}, GetTime(), {active={}, count=0}, 0, "announcement")
+    local result=evaluate(resolved, {announcementRecipient=recipient}, GetTime(), {active={}, count=0, announcementTarget=resolveTarget}, 0, "announcement")
     if result==matchedOutcome or result==unmatchedOutcome then return {status=result.status} end
     return result
 end
