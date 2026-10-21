@@ -1,10 +1,12 @@
 # Native CPU captures
 
-General → Debugging has **Capture CPU (10s)**, **CPU report**, and **Cancel capture**. These diagnostic actions use current runtime settings and do not apply a settings draft.
+General → Debugging has **Capture CPU (10s)**, **CPU report**, **Cancel capture**, and **Native profiler probe**. These diagnostic actions use current runtime settings and do not apply a settings draft.
 
 WoW's `scriptProfile` must already be enabled before a reload. If capture reports that it is disabled, enable it with `/console scriptProfile 1` and `/reload`. RM never changes that setting or resets shared CPU counters. Profiling adds overhead to the client; disable it with `/console scriptProfile 0` and `/reload` when the investigation is finished.
 
 For a normal gameplay measurement, close configuration and run `/rm cpu start`. Leave the same rotation, polling interval, and character activity in place for the ten-second capture. Then use `/rm cpu report` to open the selectable, copyable report. `/rm cpu cancel` cancels an active capture. The buttons provide the same actions without chat commands.
+
+Use **Native profiler probe** or `/rm cpu probe` to run one inert callback and open a copyable native profiler capability report. It checks API access only and does not measure gameplay CPU, change `scriptProfile`, reset counters, or start or cancel a capture. A successful probe does not establish that normal gameplay accounting is complete.
 
 Compare separate captures with the rotation active and inactive. Record whether the character was idle or fighting, which visual effects and preview were enabled, and the polling interval. The report records configuration visibility and combat state at its boundaries; it cannot prove those states stayed unchanged between them.
 

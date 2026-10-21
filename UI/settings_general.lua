@@ -160,17 +160,27 @@ function addon:BuildGeneralSettings(p)
             {key='cpu_capture',text=L['Capture CPU (10s)'],action='start'},
             {key='cpu_report',text=L['CPU report'],action='report'},
             {key='cpu_cancel',text=L['Cancel capture'],action='cancel'},
+            {key='cpu_probe',text=L['Native profiler probe'],action='probe'},
         }
-        local diagnosticY=p.y;local controlWidth=(p.width-8)/3
+        local diagnosticY=p.y;local buttons={};local minimumWidth=120
+        local diagnosticToken=p.generation
         for i,entry in ipairs(controls) do
             local control=p:Button(entry.key,entry.text,function() end)
-            control:ClearAllPoints();control:SetPoint('TOPLEFT',(i-1)*(controlWidth+4),-diagnosticY);control:SetWidth(controlWidth)
+            buttons[i]=control
+            minimumWidth=math.max(minimumWidth,control:GetFontString():GetStringWidth()+20)
             -- Diagnostics use live runtime settings, without applying/flushing a draft.
             self:SetUIScript(control,'OnClick',p:Guard(function()
-                local ok,message=self:RunCPUProfileAction(entry.action);p:Message(message,ok)
+                local ok,message=self:RunCPUProfileAction(entry.action)
+                if not p:Valid(diagnosticToken) then return end
+                p:Message(message,ok)
             end))
         end
-        p.y=diagnosticY+28
+        local columns=p.width>=minimumWidth*4+12 and 4 or p.width>=minimumWidth*2+4 and 2 or 1
+        local controlWidth=(p.width-(columns-1)*4)/columns
+        for i,control in ipairs(buttons) do
+            control:ClearAllPoints();control:SetPoint('TOPLEFT',((i-1)%columns)*(controlWidth+4),-diagnosticY-math.floor((i-1)/columns)*28);control:SetWidth(controlWidth)
+        end
+        p.y=diagnosticY+math.ceil(#buttons/columns)*28
     end
     if self.RunCastCaptureAction then
         local controls={

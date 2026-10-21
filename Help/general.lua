@@ -45,6 +45,7 @@ function addon:GetGeneralOptionHelp()
         ordered[#ordered+1]={id='cpu_capture',title=L['Capture CPU (10s)'],text=L['Help.General.cpu_capture']}
         ordered[#ordered+1]={id='cpu_report',title=L['CPU report'],text=L['Help.General.cpu_report']}
         ordered[#ordered+1]={id='cpu_cancel',title=L['Cancel capture'],text=L['Help.General.cpu_cancel']}
+        ordered[#ordered+1]={id='cpu_probe',title=L['Native profiler probe'],text=L['Help.General.cpu_probe']}
     end
     return ordered
 end
