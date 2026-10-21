@@ -229,6 +229,7 @@ end
 ]====],previous=[====[]====]}}}}
 local function hash(s)local n=0;for i=1,#s do n=(n*33+s:byte(i))%4294967296 end;return string.format('%08x',n)end
 return function(text,path)
+ text=dofile('tests/fixtures/restore_analytics_start_witness.lua')(text,path)
  if path=='main.lua' and text:find('self:DispatchAnnouncement(ent,nil,currentSpells[castguid])',1,true) then text=dofile('tests/fixtures/restore_announcement_emotes.lua')(text,path) end
  local r=rows[path];if not r then return text end
  assert(#text==r.bytes and hash(text)==r.hash,'unrelated analytics-preview source: '..path)

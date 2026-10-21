@@ -2801,6 +2801,10 @@ L["Default.TBC.Rogue.Forty.Description"] = "Bounded single-target melee preview.
 L["Default.TBC.Druid.Caster.Forty.Name"] = "Druid: limited caster leveling (40–49)"
 L["Default.TBC.Druid.Caster.Forty.Description"] = "Bounded humanoid caster-only preview. Preserves manual forms, casts and channels; own missing Moonfire, learned stationary Starfire, then independently ready Wrath. Native learned ranks, mappings and readiness govern recommendations. Feral combat, form changes, talents, support and resources remain manual; no implicit melee advice. This inherited subset is not a complete or optimal 40s build."
 
+-- Capture-only START witness diagnostics.
+L['START witness rows: observed=%s matched=%s mismatch=%s excluded=%s unknown=%s (not ordinary proof).'] = true
+L['START witnesses compare current cast identity and non-autorepeat classification only; they do not classify ordinary casts or enable scoring.'] = true
+
 -- BEGIN GENERATED RM PUBLIC HELPER DOCS
 L["Absolute health target (negative means deficit) or percentage fraction."] = true
 L["All original results, preserving nil positions and return count."] = true

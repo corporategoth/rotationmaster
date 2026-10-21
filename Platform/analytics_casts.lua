@@ -71,6 +71,9 @@ end
 local function wrapper(s,status,why,capture)
  return{format=1,producer='UNIT_SPELLCAST-adapter',status=status,reason=why,
   client=copy(s.client or{}),tupleContract='wow-ui-source:2cfec7c00f0f24762d5ca35a4beb1e93c0cde328:UnitDocumentation',
+  -- BEGIN ANALYTICS START WITNESS SNAPSHOT
+  startWitness=status=='complete'and copy(s.startWitness)or nil,
+  -- END ANALYTICS START WITNESS SNAPSHOT
   nativeAcceptance='unverified',runtimeVerified=false,advice=s.adviceProducer and'primary-publisher-receipts'or'not-wired',presentation=s.previewProducer and'owned-native-preview-boundaries'or'not-wired',ordinary='unavailable',autorepeat='unassociated',damage='unavailable',capture=capture}
 end
 -- Only this frame's original methods and this operation's exact script may be
@@ -250,6 +253,47 @@ local function arm(s)
  installAdvice(sink);if installPreview then installPreview(sink)end
 end
 -- END ANALYTICS PREVIEW RECEIPTS
+-- BEGIN ANALYTICS START WITNESS
+-- Optional event-local diagnostics, never a cast-kind authority. No raw tuple
+-- or identity is retained; two bounded cast reads straddle the repeat query.
+local function startWitness(s,key,spell)
+ local ok,result=pcall(function()
+  if key==nil or spell<=0 then return 'unknown' end
+  local casting=call(s,function()return UnitCastingInfo end)
+  local spells=call(s,function()return C_Spell end)
+  if type(casting)~='function'or type(spells)~='table'then return 'unknown' end
+  local repeatSpell=call(s,function()return spells.IsAutoRepeatSpell end)
+  if type(repeatSpell)~='function'then return 'unknown' end
+  local function same()
+   if not rawequal(call(s,function()return UnitCastingInfo end),casting)then return false end
+   if not rawequal(call(s,function()return C_Spell end),spells)then return false end
+   return rawequal(call(s,function()return spells.IsAutoRepeatSpell end),repeatSpell)
+  end
+  local function observe()
+   ---@type any
+   local tuple=call(s,function()
+    local name,_,_,_,_,trade,castID,_,spellID=casting('player')
+    return{name=name,trade=trade,key=castID,spell=spellID}
+   end)
+   local name,trade,id,action=read(s,tuple.name),read(s,tuple.trade),read(s,tuple.key),read(s,tuple.spell)
+   if not same()then return 'unknown' end
+   if type(name)~='string'or#name==0 or type(trade)~='boolean'or type(id)~='string'or#id<1 or#id>128
+    or not finite(action)or action<=0 or action>2147483647 or action%1~=0 then return 'unknown' end
+   if id~=key or action~=spell then return 'mismatch' end
+   if trade then return 'excluded' end
+   return 'matched'
+  end
+  local first=observe();if first~='matched'then return first end
+  local repeatValue=read(s,call(s,repeatSpell,spell))
+  if not same()or type(repeatValue)~='boolean'then return 'unknown' end
+  if repeatValue then return 'excluded' end
+  return observe()
+ end)
+ fence(s)
+ if not rawequal(active,s)or s.phase~='running'then fail('retired-operation')end
+ return ok and result or 'unknown'
+end
+-- END ANALYTICS START WITNESS
 local function receipt(s,event,unit,key,spell)
  -- The lease check is before native readability or any payload operation.
  if not rawequal(active,s)or s.phase~='running'then return end
@@ -263,6 +307,10 @@ local function receipt(s,event,unit,key,spell)
   -- BEGIN ANALYTICS PREVIEW ATTEMPT
   checkAdvice(s)
   -- END ANALYTICS PREVIEW ATTEMPT
+  -- BEGIN ANALYTICS START WITNESS RECEIPT
+  local witness
+  if event=='UNIT_SPELLCAST_START'then witness=startWitness(s,key,spell)end
+  -- END ANALYTICS START WITNESS RECEIPT
   local r={key=key,actor='player',spell=spell,castKind='unmodeled'}
   if event=='UNIT_SPELLCAST_SENT'or event=='UNIT_SPELLCAST_START'or event=='UNIT_SPELLCAST_CHANNEL_START'then
    r.type='attempt';r.epoch=s.epoch or 1;r.phase=event=='UNIT_SPELLCAST_SENT'and'sent'or'start'
@@ -275,6 +323,11 @@ local function receipt(s,event,unit,key,spell)
   end
   if event=='UNIT_SPELLCAST_CHANNEL_START'or event=='UNIT_SPELLCAST_CHANNEL_STOP'then r.castKind='channel'end
   local n,problem=s.builder:Push(s.builderLease,s.elapsed,r);fence(s);if not n then fail(problem or'builder-error')end
+  -- BEGIN ANALYTICS START WITNESS COUNT
+  if witness then
+   local counts=s.startWitness;counts.observed=counts.observed+1;counts[witness]=counts[witness]+1
+  end
+  -- END ANALYTICS START WITNESS COUNT
  end)
  if not ok and current(s)and rawequal(active,s)then abort(s,issue(why))end
 end
@@ -290,6 +343,9 @@ function service:Start(options)
  if not finite(duration)or duration<=0 or duration>600 then return nil,'invalid-options'end
  generation=generation+1
  local s={generation=generation,lease={},phase='starting',elapsed=0};active=s;phase='starting'
+ -- BEGIN ANALYTICS START WITNESS SESSION
+ s.startWitness={observed=0,matched=0,mismatch=0,excluded=0,unknown=0}
+ -- END ANALYTICS START WITNESS SESSION
  local ok,why=pcall(function()
   loadDependencies(s);clientInfo(s);s.started=clock(s)
   s.builder=assert(newCapture());s.builderLease=assert(s.builder:Start({family='tbc',actor='player',ordinaryEvidence='unavailable',presentationEvidence=installAdvice and installPreview and'trusted-receipt'or'unavailable'}));fence(s)

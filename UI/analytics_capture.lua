@@ -120,6 +120,16 @@ local function report(snapshot)
   end
  end
  if #rows>200 then lines[#lines+1]=string.format(L['Rows omitted: %d'],#rows-200)end
+ -- BEGIN ANALYTICS START WITNESS REPORT
+ if type(snapshot.startWitness)=='table'then
+  local counts=snapshot.startWitness
+  local function count(value)
+   return type(value)=='number'and value==value and value>=0 and value<=4096 and value%1==0 and tostring(value)or '?'
+  end
+  lines[#lines+1]=string.format(L['START witness rows: observed=%s matched=%s mismatch=%s excluded=%s unknown=%s (not ordinary proof).'],count(counts.observed),count(counts.matched),count(counts.mismatch),count(counts.excluded),count(counts.unknown))
+  lines[#lines+1]=L['START witnesses compare current cast identity and non-autorepeat classification only; they do not classify ordinary casts or enable scoring.']
+ end
+ -- END ANALYTICS START WITNESS REPORT
  return table.concat(lines,'\n')
 end
 function addon:RunCastCaptureAction(action)
