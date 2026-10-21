@@ -61,6 +61,7 @@ local function hash(text)
  local value=5381;for i=1,#text do value=(value*33+text:byte(i))%4294967296 end;return string.format('%08x',value)
 end
 return function(text,path)
+ if path=='Core/rotation_library.lua'and text:find('local contextPairs=pairs',1,true)or path=='Core/rotation_scope.lua'and text:find('local evaluationRequest,contextVersion',1,true)then text=dofile('tests/fixtures/restore_runtime_event_context.lua')(text,path)end
  local row=assert(rows[path],'unknown duplicate context inverse path')
  assert(#text==row.newSize and hash(text)==row.newHash,'context projection source differs: '..path)
  for _,change in ipairs(row.changes)do

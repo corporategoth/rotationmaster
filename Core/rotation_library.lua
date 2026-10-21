@@ -153,7 +153,9 @@ function addon:GetRotationContext(spec)
 end
 local ownedRotationContext=addon.GetRotationContext
 local clientContextReader
+local ownedReadValue=addon.Platform.CanReadValue
 local contextIpairs,contextRawget,contextEqual=ipairs,rawget,rawequal
+local contextPairs=pairs
 ---@type fun(f: number|function): table
 local contextGetfenv=getfenv
 local contextEnvironment=type(contextGetfenv)=="function" and contextGetfenv(1) or nil
@@ -185,6 +187,21 @@ local function rotationContext(owner,spec)
     if C_PetBattles and read(C_PetBattles.IsInBattle) then context.actionContext="petbattle" end
     return context,private==true
 end
+-- Uncovered vehicle/pet-battle notifications retain fresh observation at every
+-- publication boundary, even when the other owned eligibility facts are reused.
+local function runtimeActionContext(owner)
+    local function read(fn,...)
+        if type(fn)~="function" then return nil end
+        local ok,value=pcall(fn,...)
+        if ok and owner.Platform:CanReadValue(value) then return value end
+    end
+    local result="player"
+    local vehicle=read(UnitHasVehicleUI,"player")
+    if vehicle==nil then vehicle=read(UnitInVehicle,"player") end
+    if vehicle then result="vehicle" end
+    if C_PetBattles and read(C_PetBattles.IsInBattle) then result="petbattle" end
+    return result
+end
 local function runtimeKey(id, custom)
     local key="RM-BUILTIN:"..id
     while custom[key]~=nil do key=":"..key end
@@ -204,6 +221,31 @@ function addon:BindRotationLibraryReader(bind)
             and contextEqual(contextGetfenv(contextMethod),contextEnvironment) and contextEqual(contextGetfenv(rotationContext),contextEnvironment)
             and contextEqual(contextGetfenv(projection),contextEnvironment) and contextEqual(contextGetfenv(dispatch),contextEnvironment)
             and contextEqual(contextRawget(contextEnvironment,'ipairs'),contextIpairs)
+    end
+    local function runtimeContextGuard(value,method,projection,dispatch)
+        local platform=owner.Platform
+        if not ownsPrivateContext(method,projection,dispatch) or owner.GetRotationContext~=ownedRotationContext
+            or platform.CanReadValue~=ownedReadValue or type(value)~='table'
+            or value.class==nil or type(value.level)~='number' or value.level~=value.level or value.level<=0 or value.level>=math.huge
+            or type(value.build)~='number' or value.build~=value.build or value.build<=0 or value.build>=math.huge or value.family=='unknown'
+            or contextRawget(contextEnvironment,'pairs')~=contextPairs then return nil end
+        local client,readValue=platform.GetClientInfo,platform.CanReadValue
+        local unitClass,unitLevel,buildInfo,project=UnitClass,UnitLevel,GetBuildInfo,WOW_PROJECT_ID
+        local hasVehicle,inVehicle,petBattles=UnitHasVehicleUI,UnitInVehicle,C_PetBattles
+        local inBattle=petBattles and petBattles.IsInBattle
+        local secret,access=issecretvalue,canaccessvalue
+        return function()
+            if not ownsPrivateContext(method,projection,dispatch) or owner.GetRotationContext~=ownedRotationContext
+                or owner.Platform~=platform or platform.GetClientInfo~=client or platform.CanReadValue~=readValue
+                or UnitClass~=unitClass or UnitLevel~=unitLevel or GetBuildInfo~=buildInfo or WOW_PROJECT_ID~=project
+                or UnitHasVehicleUI~=hasVehicle or UnitInVehicle~=inVehicle or C_PetBattles~=petBattles
+                or (petBattles and petBattles.IsInBattle)~=inBattle
+                or issecretvalue~=secret or canaccessvalue~=access
+                or contextGetfenv(runtimeActionContext)~=contextEnvironment or contextGetfenv(readValue)~=contextEnvironment
+                or contextGetfenv(client)~=contextEnvironment
+                or contextRawget(contextEnvironment,'pairs')~=contextPairs then return nil end
+            return runtimeActionContext(owner)==value.actionContext
+        end
     end
     local function generationMethod(self)
         local ok,why,checked,proof=ensure(owner,true);if not ok then return nil,why end
@@ -233,7 +275,7 @@ function addon:BindRotationLibraryReader(bind)
     end
     function reader:Eligible(view,spec,candidates) local context=rotationContext(owner,spec);context.spec=spec;return eligible(view,context,candidates) end
     function reader:Reserve(used) for id,envelope in pairs(definitions) do used[id]=true;data.ReserveRotationIdentities(envelope,used) end end
-    bind(reader,provesGeneration,ownsPrivateContext);return true
+    bind(reader,provesGeneration,ownsPrivateContext,runtimeContextGuard);return true
 end
 
 function addon:ListDefaultRotations(spec)

@@ -45,6 +45,12 @@ local AceConsole = LibStub("AceConsole-3.0")
 local AceEvent = LibStub("AceEvent-3.0")
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 local getCached
+local acquireEvaluationPass,invalidateEvaluationContext
+local bindEvaluationContext=addon.BindRuntimeEvaluationContext
+if type(bindEvaluationContext)=='function' then
+    bindEvaluationContext(addon,function(acquire,invalidate) acquireEvaluationPass,invalidateEvaluationContext=acquire,invalidate end)
+    addon.BindRuntimeEvaluationContext=nil
+end
 local sequenceRawMethod,sequenceRun,sequenceStatus
 local bindSequence=addon.BindRotationSequenceReader
 if type(bindSequence)=="function" then
@@ -996,7 +1002,8 @@ function addon:EvaluateNextActionInternal()
     local runtimePass,rot
     if selectedRotation~=nil then
         if self.GetScopedRotationCoordinator and self:GetScopedRotationCoordinator() then
-            runtimePass=self:AcquireRotationRuntimePass(selectedSpec)
+            if acquireEvaluationPass then runtimePass=acquireEvaluationPass(self,selectedSpec)
+            else runtimePass=self:AcquireRotationRuntimePass(selectedSpec) end
             if runtimePass then rot=runtimePass:Get(selectedRotation) end
         else rot=self:GetRuntimeRotation(selectedSpec,selectedRotation) end
     end
@@ -1424,9 +1431,17 @@ function addon:UpdateBoundButton(id)
     self.updatingBoundButtons[id]=nil;if not ok then error(changed,0) end;return changed
 end
 
+-- These notifications may change eligibility facts or their readability. Other
+-- event handlers do not invalidate a snapshot of player/session eligibility.
+local runtimeContextEvents={PLAYER_LEVEL_UP=true,UNIT_LEVEL=true,PLAYER_ENTERING_WORLD=true,PLAYER_LEAVING_WORLD=true,
+    PLAYER_SPECIALIZATION_CHANGED=true,PLAYER_TALENT_UPDATE=true,ACTIVE_TALENT_GROUP_CHANGED=true,
+    CHARACTER_POINTS_CHANGED=true,SPELLS_CHANGED=true,PLAYER_CONTROL_GAINED=true,PLAYER_CONTROL_LOST=true,
+    UPDATE_SHAPESHIFT_FORM=true,VEHICLE_UPDATE=true,UNIT_ENTERED_VEHICLE=true,UNIT_EXITED_VEHICLE=true,
+    PLAYER_REGEN_ENABLED=true,PLAYER_REGEN_DISABLED=true}
 local function wrapEvent(func)
     local failed = false
     return function(self, event, ...)
+        if invalidateEvaluationContext and (event==nil or runtimeContextEvents[event]) then invalidateEvaluationContext() end
         if failed or self.initializationErrorReport then return end
         local function dispatch(...)
             self:debug("Event %s fired.", event)

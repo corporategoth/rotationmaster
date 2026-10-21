@@ -11,10 +11,13 @@ if type(addon.BindActiveRotationPublication)=='function' then
     end)
 end
 local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
-local libraryReader,libraryGenerationProof,libraryContextProof
+local libraryReader,libraryGenerationProof,libraryContextProof,libraryRuntimeContextGuard
+local evaluationRequest,contextVersion
+contextVersion={}
+local ownedRuntimePasses=setmetatable({},{__mode="kv"})
 local bindLibrary=addon.BindRotationLibraryReader
 if type(bindLibrary)=='function' then
-    bindLibrary(addon,function(reader,proof,contextProof) libraryReader=reader;if type(proof)=='function' then libraryGenerationProof=proof end;if type(contextProof)=='function'then libraryContextProof=contextProof end end)
+    bindLibrary(addon,function(reader,proof,contextProof,runtimeGuard) libraryRuntimeContextGuard=runtimeGuard;libraryReader=reader;if type(proof)=='function' then libraryGenerationProof=proof end;if type(contextProof)=='function'then libraryContextProof=contextProof end end)
     addon.BindRotationLibraryReader=nil
 end
 local function rotationContext(owner,spec)
@@ -635,22 +638,35 @@ function addon:BindRotationProfile()
         return result,rosterStamp
     end
     function coordinator:RuntimePass(number)
+        local request=evaluationRequest;evaluationRequest=nil
+        local version=contextVersion
         local ok,why=ready();if not ok then return nil,why end
         local c,reason=context();if not c then return nil,reason end
         local validation,referenceStamp=owner:GetRotationValidationOptions();local revision=owner.conditionRegistryVersion;local generation=libraryReader and libraryReader:Generation();local pass={}
         local selected,untracked,listSeal={},{},nil
+        local observedPrivate,observedMethod
         local function eligibilityContext()
             local value,private,method=rotationContext(owner,number)
-            if libraryContextProof and libraryContextProof(method,eligibilityContext,rotationContext)and private==true then return value end
+            if libraryContextProof and libraryContextProof(method,eligibilityContext,rotationContext)and private==true then observedPrivate,observedMethod=true,method;return value end
+            observedPrivate=false
             local result={}
             for _,key in ipairs({'family','class','spec','actionContext','level','build','combatDataPolicy'}) do result[key]=value and value[key] end
             return result
         end
         local observedContext=eligibilityContext()
+        local contextGuard=request and observedPrivate and libraryRuntimeContextGuard
+            and libraryRuntimeContextGuard(observedContext,observedMethod,eligibilityContext,rotationContext)
         local function baseCurrent()
             local readyNow,problemText=ready();if not readyNow then return nil,problemText end
             local now=context();if not now or not same(now,c) then return nil,'rotation-owner-changed' end
-            if not same(observedContext,eligibilityContext()) then return nil,'rotation-context-changed' end
+            if request and version~=contextVersion then return nil,'rotation-context-changed' end
+            if contextGuard then
+                local unchanged=contextGuard()
+                if request and version~=contextVersion then return nil,'rotation-context-changed' end
+                if unchanged==false then return nil,'rotation-context-changed' end
+                if unchanged==nil then contextGuard=nil end
+            end
+            if not contextGuard and not same(observedContext,eligibilityContext()) then return nil,'rotation-context-changed' end
             local stamp
             if libraryReader then
                 local eligible=libraryGenerationProof and libraryGenerationProof(nil,referenceStamp,generation)
@@ -759,6 +775,7 @@ function addon:BindRotationProfile()
         end
         return pass
     end
+    ownedRuntimePasses[coordinator]=coordinator.RuntimePass
     completeRebind(binding,coordinator,problem)
     if problem then return nil,problem end
     return true
@@ -773,6 +790,27 @@ function addon:NewRotationDraftTarget(spec,scope,fallback) local c,why=bound();i
 function addon:CommitRotationDraft(reference,token,record,scope) local c,why=bound();if not c then return nil,why end;return c:Commit(reference,token,record,scope) end
 function addon:DeleteRotationRecord(reference,token) local c,why=bound();if not c then return nil,why end;return c:Delete(reference,token) end
 function addon:AcquireRotationRuntimePass(spec) local c,why=bound();if not c then return nil,why end;return c:RuntimePass(spec) end
+
+
+local ownedAcquireRuntimePass=addon.AcquireRotationRuntimePass
+local ownedScopedCoordinator=addon.GetScopedRotationCoordinator
+-- Only main receives this capability. Public/manual RuntimePass callers retain
+-- the fresh provider route, and every main invocation starts a new observation.
+function addon:BindRuntimeEvaluationContext(bind)
+    if self~=addon or type(bind)~='function' then return nil end
+    bind(function(owner,spec)
+        contextVersion={}
+        if owner~=addon or owner.AcquireRotationRuntimePass~=ownedAcquireRuntimePass
+            or owner.GetScopedRotationCoordinator~=ownedScopedCoordinator
+            or not current or current.RuntimePass~=ownedRuntimePasses[current] then return owner:AcquireRotationRuntimePass(spec) end
+        local previous=evaluationRequest;evaluationRequest={}
+        local ok,pass,reason=protect(ownedAcquireRuntimePass,owner,spec)
+        evaluationRequest=previous
+        if not ok then raise(pass,0) end
+        return pass,reason
+    end,function() contextVersion={} end)
+    return true
+end
 
 -- Inspection of another profile never switches the active database or grants
 -- edit authority. Only detached saved headers for the current owner leave here.

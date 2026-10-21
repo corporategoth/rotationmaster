@@ -248,6 +248,8 @@ def main():
             ['luajit', 'tests/forecast_functions.lua'],
             ['lua5.1', 'tests/health_forecast_conditions.lua'],
             ['luajit', 'tests/health_forecast_conditions.lua'],
+            ['lua5.1', 'tests/runtime_event_context.lua'],
+            ['luajit', 'tests/runtime_event_context.lua'],
             ['lua5.1', 'tests/runtime_context_projection.lua'],
             ['luajit', 'tests/runtime_context_projection.lua'],
             ['lua5.1', 'tests/rotation_client_context.lua'],
