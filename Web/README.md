@@ -14,7 +14,7 @@ Paste an export and choose Decode. “Compare another export” opens an optiona
 
 Known structures show ordered actions, cooldowns, branch arms and nested conditions. Unknown or invalid data stays available in a typed raw view. Display is bounded and paginated; byte escapes and shortened previews do not change the import. Copy original export retains the exact successful text, including wrapping. Editing the input retires that copy authority until another successful Decode. Clipboard denial offers a manual-copy field.
 
-The current UI is English. Localization and editing remain separate work. There is no local history or application storage. Browser form, clipboard and operating-system behavior are outside that statement.
+The current UI is English. Localization remains separate work. There is no local history or application storage. Browser form, clipboard and operating-system behavior are outside that statement.
 
 ## Transport and data
 
@@ -109,3 +109,15 @@ python3 tools/check
 These use Node's built-in test runner and the actual Lua 5.1/LuaJIT oracles; no npm install is required. Local verification uses Node 24.22.0. Isolated author worktrees may explicitly supply a read-only codec dependency root; ordinary repository checks use adjacent committed modules. Source tests, actual-browser rendering/accessibility checks and in-game acceptance establish different things. No screen-reader or native-game result follows from headless tests.
 
 `Web/`, tests and build tools are excluded from the WoW addon archive. The browser application adds no gameplay polling or SavedVariables state.
+
+## Local scalar draft editing
+
+After decoding First, choose Edit a copy to create a detached local draft. This slice edits only the literal body priority and disabled fields: priority can be unset or an integer from -100000 to 100000; disabled distinguishes unset, false and true. Opening a draft does not create missing fields. Text, steps, conditions, bundled clones and generated source identities are outside this editor.
+
+Editing requires the local schema, valid recognized structure and a strict step index. Custom or unresolved data may remain opaque without becoming executable or natively available. Invalid/future structures remain read-only. The original accepted input, Second import and bundled catalog remain independent. Existing envelope IDs, revisions and source declarations are retained as imported metadata, not authenticated provenance or a new official revision. No revision is automatically incremented.
+
+Review changes explicitly, then Generate new export and Copy new export. Generation uses the reviewed Ace1/LibCompress Store encoder; a new export can have different compressed bytes from the original while retaining the same typed values except the two edits. Numeric/byte-string keys, opaque subtrees, unedited number bits and byte strings remain data. The comparator ignores body revision, so closed private write commands preserve that field independently of the displayed diff. The draft review separately compares literal priority presence and signed-zero values, so changing 0 to -0 or back is shown before generation even though structural comparison equates them. No custom Lua, provider callbacks, imported HTML or source URLs are executed.
+
+Every edit clears prior review and generated output. Invalid input blocks generation. Encoder refusal shows a bounded failure and keeps the draft; it never substitutes an original or partial export. Clipboard denial leaves the separate, labelled generated manual-copy field available. Original-copy/share/download always refer to the accepted original string. Generated share links and downloads are outside this slice.
+
+Changing, clearing or decoding First retires its draft and clears generated output. Matching text does not revive it. The two draft field values remain visible for recovery until explicit Discard draft; discard before opening another copy. Source-tab navigation preserves a still-current draft. Late copy completions and disposed handlers cannot restore obsolete output or move focus into a hidden draft. Drafts have no persistence and disappear when the page is replaced or closed.
