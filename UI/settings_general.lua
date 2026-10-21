@@ -162,6 +162,10 @@ function addon:BuildGeneralSettings(p)
             {key='cpu_cancel',text=L['Cancel capture'],action='cancel'},
             {key='cpu_probe',text=L['Native profiler probe'],action='probe'},
         }
+        if type(self.StartCPURuntimeCapture)=='function' then
+            controls[#controls+1]={key='cpu_runtime_capture',text=L['Capture runtime (10s)'],action='runtime'}
+            controls[#controls+1]={key='cpu_runtime_report',text=L['Runtime report'],action='runtimereport'}
+        end
         local diagnosticY=p.y;local buttons={};local minimumWidth=120
         local diagnosticToken=p.generation
         for i,entry in ipairs(controls) do

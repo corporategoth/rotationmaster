@@ -2,6 +2,16 @@ local addon_name = ...
 
 local L = LibStub("AceLocale-3.0"):NewLocale(addon_name, "enUS", true)
 if not L then return end
+L["Capture runtime (10s)"] = true
+L["Runtime report"] = true
+L["Runtime profile"] = true
+L["Runtime capture started for 10 seconds. Close configuration, then open Runtime report."] = true
+L["Runtime capture is unavailable: %s"] = true
+L["Runtime capture complete. Use General > Runtime report or /rm cpu runtimereport to view and copy it."] = true
+L["Runtime capture ended without complete measurements. Open Runtime report for details."] = true
+L["Usage: /rm cpu [start|report|cancel|probe|runtime|runtimereport]"] = true
+L["Help.General.cpu_runtime_capture"] = "Measure normal rotation evaluation calls for ten seconds with the native profiler. Polling stays unchanged. The temporary wrapper retires automatically; Cancel capture also stops it. Close configuration after starting. Includes instrumentation overhead; allocation is not retained memory or a leak measurement. Cumulative CPU captures cannot overlap this capture."
+L["Help.General.cpu_runtime_report"] = "Open the copyable runtime report: measured evaluation calls, native elapsed time and gross allocation/deallocation counters. Missing metrics remain unavailable. Measurement covers evaluation calls only, not all addon events or rendering. Reading the report does not sample gameplay."
 L["Report"] = true
 L["CPU profile"] = true
 L["Capture CPU (10s)"] = true
@@ -45,7 +55,7 @@ L["CPU capture cancelled."] = true
 L["Usage: /rm cpu [start|report|cancel]"] = "Usage: /rm cpu [start|report|cancel|probe]"
 L["CPU capture complete. Use General > CPU report or /rm cpu report to view and copy it."] = true
 L["CPU capture could not produce valid measurements. Open CPU report for details."] = true
-L["/rm cpu [start|report|cancel] - Capture and inspect CPU costs."] = true
+L["/rm cpu [start|report|cancel] - Capture and inspect CPU costs."] = "/rm cpu [start|report|cancel|probe|runtime|runtimereport] - Capture and inspect CPU costs."
 L["Help.General.cpu_capture"] = "Capture native cumulative function CPU costs and call counts for ten seconds. Capture uses live settings and does not apply pending changes. Close configuration after starting, or use /rm cpu start while it is closed. WoW scriptProfile must already be enabled before a reload; RM never changes it or resets shared counters. Profiling itself adds overhead."
 L["Help.General.cpu_report"] = "Open a selectable, copyable report with total addon CPU, measured function costs and calls, sample boundaries, and unavailable or replaced functions. Inclusive costs overlap and must not be added together. Boundary state does not prove configuration or combat stayed unchanged throughout the capture. Untracked functions and native work may account for remaining costs."
 L["Help.General.cpu_cancel"] = "Cancel the active diagnostic capture without changing settings, gameplay polling, or shared profiler counters."

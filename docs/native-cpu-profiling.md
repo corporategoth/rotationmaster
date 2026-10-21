@@ -1,12 +1,20 @@
 # Native CPU captures
 
-General → Debugging has **Capture CPU (10s)**, **CPU report**, **Cancel capture**, and **Native profiler probe**. These diagnostic actions use current runtime settings and do not apply a settings draft.
+General → Debugging has **Capture CPU (10s)**, **CPU report**, **Cancel capture**, **Native profiler probe**, **Capture runtime (10s)**, and **Runtime report**. These diagnostic actions use current runtime settings and do not apply a settings draft.
 
 WoW's `scriptProfile` must already be enabled before a reload. If capture reports that it is disabled, enable it with `/console scriptProfile 1` and `/reload`. RM never changes that setting or resets shared CPU counters. Profiling adds overhead to the client; disable it with `/console scriptProfile 0` and `/reload` when the investigation is finished.
 
 For a normal gameplay measurement, close configuration and run `/rm cpu start`. Leave the same rotation, polling interval, and character activity in place for the ten-second capture. Then use `/rm cpu report` to open the selectable, copyable report. `/rm cpu cancel` cancels an active capture. The buttons provide the same actions without chat commands.
 
 Use **Native profiler probe** or `/rm cpu probe` to run one inert callback and open a copyable native profiler capability report. It checks API access only and does not measure gameplay CPU, change `scriptProfile`, reset counters, or start or cancel a capture. A successful probe does not establish that normal gameplay accounting is complete.
+
+For a separate native runtime capture, use **Capture runtime (10s)** or `/rm cpu runtime`, then **Runtime report** or `/rm cpu runtimereport`. This measures normal `EvaluateNextAction` dispatches, including event-triggered calls, without adding polls. The native profiler must be available and enabled; it does not require RM to change `scriptProfile`. Runtime and cumulative captures cannot overlap. **Cancel capture** stops either active capture.
+
+During this explicit capture RM temporarily wraps the outer evaluation entry point and restores its owned wrapper when the capture ends. Original evaluations run exactly once. A failed native measurement never replays an evaluation that has already run. Unusual original errors retain their error value; diagnostic wrapping adds stack frames. Reading the completed report does not execute gameplay or query counters.
+
+Six short markers at the existing root profiler child lookups divide valid samples into selection/macro preparation, environment, history/readiness setup, rotation, transition bookkeeping, cooldown observations, and publication/reporting tail. These are instrumented boundary intervals rather than exclusive function costs. Missing or unexpected markers make phase attribution unavailable for that sample; total evaluation measurements can remain available. The report states the number of covered samples and never substitutes unsupported byte metrics with zero. Marker overhead is included without subtraction.
+
+The report shows native elapsed milliseconds and gross allocated/deallocated bytes where safely readable. It covers the measured evaluation calls, including diagnostic overhead and nested callbacks; it is not complete addon CPU accounting. Allocated bytes measure turnover, not retained heap growth or a leak, and deallocation alone does not attribute a GC pause. Opaque or unsupported byte representations remain unavailable instead of zero. Temporary wrappers and native phase markers add work during capture; those measurements are not uninstrumented gameplay timings.
 
 Compare separate captures with the rotation active and inactive. Record whether the character was idle or fighting, which visual effects and preview were enabled, and the polling interval. The report records configuration visibility and combat state at its boundaries; it cannot prove those states stayed unchanged between them.
 

@@ -839,6 +839,9 @@ local function finish(run,status,reason)
  local callback=field(run.owner,'OnCPUProfileFinished');if type(callback)=='function' then pcall(callback,run.owner,text,status) end
 end
 function addon:StartCPUProfile(duration)
+ -- BEGIN NATIVE RUNTIME EXCLUSION
+ if type(self.IsCPURuntimeCaptureRunning)=='function' and self:IsCPURuntimeCaptureRunning() then return false,'native-runtime-capture-running' end
+ -- END NATIVE RUNTIME EXCLUSION
  -- BEGIN PRIVATE VALIDATION RETIRE
  validationRetire()
  -- END PRIVATE VALIDATION RETIRE
@@ -906,6 +909,9 @@ end
 -- AceAddon invokes this before AceTimer retires the addon's embedded timers.
 -- The ordinary rotation enable/disable toggle remains independent of capture.
 function addon:OnDisable()
+ -- BEGIN NATIVE RUNTIME DISABLE
+ if type(self.CancelCPURuntimeCapture)=='function' then self:CancelCPURuntimeCapture() end
+ -- END NATIVE RUNTIME DISABLE
  self:CancelCPUProfile()
  if type(self.ClearCastCaptureForDisable)=='function' then self:ClearCastCaptureForDisable() end
 end

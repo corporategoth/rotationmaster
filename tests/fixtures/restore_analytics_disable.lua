@@ -3,6 +3,9 @@ local block=" if type(self.ClearCastCaptureForDisable)=='function' then self:Cle
 local function hash(s)local h=0;for i=1,#s do h=(h*33+s:byte(i))%4294967296 end;return string.format('%08x',h)end
 return function(text,path)
  assert(path=='Diagnostics/cpu.lua','unknown cast shutdown inverse path')
+ if type(text)=='string' and text:find('-- BEGIN NATIVE RUNTIME',1,true) then
+  text=dofile('tests/fixtures/restore_cpu_runtime.lua')(text)
+ end
  assert(type(text)=='string'and#text==55206 and hash(text)=='5eeec9b5','unrelated cast shutdown module change')
  local a,b=text:find(block,1,true);assert(a,'cast shutdown block changed')
  assert(not text:find(block,b+1,true),'duplicate cast shutdown block')

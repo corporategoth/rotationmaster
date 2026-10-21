@@ -83,6 +83,7 @@ utils.lua
 profiler.lua
 Diagnostics/errors.lua
 Diagnostics/cpu.lua
+Diagnostics/cpu_runtime.lua
 Core/conditions.lua
 Core/condition_catalog.lua
 Core/item_conditions.lua

@@ -41,6 +41,7 @@ local function probeRunning(owner,getter)
     return value
 end
 local function buildNativeProbe(owner,getter)
+    local runtimeGetter=rawget(owner,'IsCPURuntimeCaptureRunning')
     local state={provider='absent',enabled='absent',measure='absent',event='absent',calls='not run',arguments='not run',returns='not run'}
     local metrics={L['unavailable'],L['unavailable'],L['unavailable']}
     local function render()
@@ -67,9 +68,11 @@ local function buildNativeProbe(owner,getter)
         return probeReadable(namespace) and rawequal(namespace,provider) and rawequal(rawget(provider,'IsEnabled'),enabled)
             and rawequal(rawget(provider,'MeasureCall'),measure) and rawequal(rawget(provider,'AddMeasuredCallEvent'),event)
             and owner.db==db and db.profile==profile and rawequal(rawget(owner,'IsCPUProfileRunning'),getter)
+            and rawequal(rawget(owner,'IsCPURuntimeCaptureRunning'),runtimeGetter)
     end
     local function current()
-        return sameProvider() and probeRunning(owner,getter)==false and sameProvider()
+        return sameProvider() and probeRunning(owner,getter)==false
+            and (runtimeGetter==nil or probeRunning(owner,runtimeGetter)==false) and sameProvider()
     end
     local function changed()
         state.measure='unavailable (context changed)';metrics={L['unavailable'],L['unavailable'],L['unavailable']};return render()
@@ -118,6 +121,10 @@ local function runNativeProbe(owner)
     if not rawequal(owner,addon) or nativeProbeBusy then return false,unavailable end
     nativeProbeBusy=true
     local accepted,result,message=pcall(function()
+        local runtimeGetter=rawget(owner,'IsCPURuntimeCaptureRunning')
+        if runtimeGetter~=nil and probeRunning(owner,runtimeGetter)~=false then
+            return false,L['Native profiler probe is unavailable while CPU capture is running.']
+        end
         local getter=rawget(owner,'IsCPUProfileRunning');local running=probeRunning(owner,getter)
         if running==nil then return false,unavailable end
         if running then
@@ -142,8 +149,22 @@ function addon:RunCPUProfileAction(action)
         local reason;ok,reason=self:StartCPUProfile(10)
         message=ok and L['CPU capture started for 10 seconds. Close configuration to measure normal gameplay, then open CPU report.'] or failure(reason)
     elseif action=='cancel' then
-        local reason;ok,reason=self:CancelCPUProfile()
+        local reason
+        if type(self.IsCPURuntimeCaptureRunning)=='function' and self:IsCPURuntimeCaptureRunning() then
+            ok,reason=self:CancelCPURuntimeCapture()
+        else ok,reason=self:CancelCPUProfile() end
         message=ok and L['CPU capture cancelled.'] or failure(reason)
+    elseif action=='runtime' then
+        local reason
+        if type(self.StartCPURuntimeCapture)=='function' then ok,reason=self:StartCPURuntimeCapture(10)
+        else ok,reason=false,'missing-native-profiler' end
+        message=ok and L['Runtime capture started for 10 seconds. Close configuration, then open Runtime report.']
+            or L['Runtime capture is unavailable: %s']:format(tostring(reason or L['Unknown']))
+    elseif action=='runtimereport' then
+        local report,reason
+        if type(self.GetCPURuntimeCaptureReport)=='function' then report,reason=self:GetCPURuntimeCaptureReport() end
+        if report then self:ShowConditionText(report,L['Runtime profile']);return true,'' end
+        ok=false;message=L['Runtime capture is unavailable: %s']:format(tostring(reason or 'not-captured'))
     elseif action=='probe' then
         return runNativeProbe(self)
     elseif action=='report' then
@@ -151,10 +172,18 @@ function addon:RunCPUProfileAction(action)
         if report then self:ShowConditionText(report,L['CPU profile']);return true,'' end
         ok=false;message=failure(reason)
     else
-        ok=false;message=L['Usage: /rm cpu [start|report|cancel|probe]']
+        ok=false;message=L['Usage: /rm cpu [start|report|cancel|probe|runtime|runtimereport]']
     end
     self:print(message)
     return ok,message
+end
+
+function addon:OnCPURuntimeCaptureFinished(_,status)
+    if status=='complete' then
+        self:print(L['Runtime capture complete. Use General > Runtime report or /rm cpu runtimereport to view and copy it.'])
+    elseif status=='invalid' then
+        self:print(L['Runtime capture ended without complete measurements. Open Runtime report for details.'])
+    end
 end
 
 function addon:OnCPUProfileFinished(_,status)
