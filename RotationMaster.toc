@@ -326,3 +326,4 @@ Defaults/tbc/warrior-40-49.lua
 Defaults/tbc/paladin-40-49.lua
 Defaults/tbc/rogue-40-49.lua
 Defaults/tbc/druid-caster-40-49.lua
+Defaults/tbc/shaman-enhancement-50-59.lua

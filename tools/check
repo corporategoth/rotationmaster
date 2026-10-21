@@ -491,6 +491,8 @@ def main():
             ['luajit', 'tests/defaults_shaman_enhancement_30_39.lua'],
             ['lua5.1', 'tests/defaults_shaman_enhancement_40_49.lua'],
             ['luajit', 'tests/defaults_shaman_enhancement_40_49.lua'],
+            ['lua5.1', 'tests/defaults_shaman_enhancement_50_59.lua'],
+            ['luajit', 'tests/defaults_shaman_enhancement_50_59.lua'],
             ['lua5.1', 'tests/defaults_warlock_30_39.lua'],
             ['luajit', 'tests/defaults_warlock_30_39.lua'],
             ['lua5.1', 'tests/defaults_warlock_40_49.lua'],
