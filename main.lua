@@ -11,6 +11,10 @@ local advanceActiveSpec=addon.AdvanceActiveRotationSpecialization
 local retireActive=addon.RetireActiveRotationTransition
 local commitActive=addon.CommitActiveRotationTransition
 local cleanupActive=addon.GetActiveRotationCleanupSelection
+-- BEGIN EQUIPMENT EVENT LIFETIME
+local equipmentSubscription
+local equipmentCoordinator=addon.GetScopedRotationCoordinator
+-- END EQUIPMENT EVENT LIFETIME
 local function activeChangeCurrent(self,token)
     return type(activeCurrent)=='function' and activeCurrent(self,token)
 end
@@ -700,17 +704,22 @@ local function registerOptionalEvent(owner,change,event)
     local utils=C_EventUtils
     local validEvent=type(utils)=='table' and utils.IsEventValid
     if not activeChangeCurrent(owner,change) then return false end
-    if type(validEvent)~='function' then return activeChangeCurrent(owner,change) end
+    if type(validEvent)~='function' then return activeChangeCurrent(owner,change),false end
     local ok,valid=pcall(validEvent,event)
     if not activeChangeCurrent(owner,change) then return false end
-    if ok and valid==true then return activeCall(owner,change,'RegisterEvent',event) end
-    return true
+    if ok and valid==true then local current=activeCall(owner,change,'RegisterEvent',event);return current,current end
+    return true,false
 end
 
 function addon:enable()
     if self.initializationErrorReport then self:ShowErrors();return end
     local change=beginActive(self)
     if not activeChangeCurrent(self,change) then return end
+    -- BEGIN EQUIPMENT ENABLE LIFETIME
+    equipmentSubscription=nil
+    local equipmentProfile=self.db.profile
+    local equipmentRegistered=false
+    -- END EQUIPMENT ENABLE LIFETIME
     for _,v in pairs(events) do
         if not activeCall(self,change,'RegisterEvent',v) then return end
     end
@@ -729,6 +738,11 @@ function addon:enable()
     if family=='tbc' then
         if not registerOptionalEvent(self,change,'PLAYER_TALENT_UPDATE') then return end
         if not registerOptionalEvent(self,change,'ACTIVE_TALENT_GROUP_CHANGED') then return end
+        -- BEGIN EQUIPMENT EVENT REGISTRATION
+        local current,registered=registerOptionalEvent(self,change,'PLAYER_EQUIPMENT_CHANGED')
+        if not current then return end
+        equipmentRegistered=registered
+        -- END EQUIPMENT EVENT REGISTRATION
     end
 
     if self.RefreshPreviewWindow then
@@ -739,13 +753,21 @@ function addon:enable()
     if not activeChangeCurrent(self,change) then return end
     local _,nextChange=update(self);change=nextChange or change
     if not activeChangeCurrent(self,change) then return end
-    activeCall(self,change,'EnableRotation')
+    -- BEGIN EQUIPMENT ENABLE COMMIT
+    if not activeCall(self,change,'EnableRotation') then return end
+    if equipmentRegistered and self.db.profile==equipmentProfile and activeChangeCurrent(self,change) then
+        equipmentSubscription={}
+    end
+    -- END EQUIPMENT ENABLE COMMIT
 end
 
 function addon:disable()
     if self.initializationErrorReport then return end
     local change=beginActive(self)
     if not activeChangeCurrent(self,change) then return end
+    -- BEGIN EQUIPMENT DISABLE LIFETIME
+    equipmentSubscription=nil
+    -- END EQUIPMENT DISABLE LIFETIME
     local disable=self.DisableRotation
     if not activeChangeCurrent(self,change) then return end
     local _,nextChange,stopped=disable(self);change=nextChange or change
@@ -1484,6 +1506,7 @@ end
 -- These notifications may change eligibility facts or their readability. Other
 -- event handlers do not invalidate a snapshot of player/session eligibility.
 local runtimeContextEvents={PLAYER_LEVEL_UP=true,UNIT_LEVEL=true,PLAYER_ENTERING_WORLD=true,PLAYER_LEAVING_WORLD=true,
+    PLAYER_EQUIPMENT_CHANGED=true,
     PLAYER_SPECIALIZATION_CHANGED=true,PLAYER_TALENT_UPDATE=true,ACTIVE_TALENT_GROUP_CHANGED=true,
     CHARACTER_POINTS_CHANGED=true,SPELLS_CHANGED=true,PLAYER_CONTROL_GAINED=true,PLAYER_CONTROL_LOST=true,
     UPDATE_SHAPESHIFT_FORM=true,VEHICLE_UPDATE=true,UNIT_ENTERED_VEHICLE=true,UNIT_EXITED_VEHICLE=true,
@@ -1632,6 +1655,38 @@ end)
 
 addon.PLAYER_TALENT_UPDATE = wrapEvent(addon.UpdateSkill)
 addon.ACTIVE_TALENT_GROUP_CHANGED = wrapEvent(addon.UpdateSkill)
+-- BEGIN EQUIPMENT EVENT DISPATCH
+local equipmentEvent = wrapEvent(function(self,_,subscription,profile,change)
+    if self~=addon or equipmentSubscription~=subscription or self.db.profile~=profile
+        or not activeChangeCurrent(self,change) then return end
+    local coordinator
+    if self.GetScopedRotationCoordinator~=equipmentCoordinator or not activeChangeCurrent(self,change) then return end
+    if equipmentCoordinator then coordinator=equipmentCoordinator(self) end
+    local function current()
+        if not activeChangeCurrent(self,change) or equipmentSubscription~=subscription
+            or self.db.profile~=profile or self.GetScopedRotationCoordinator~=equipmentCoordinator then return false end
+        if equipmentCoordinator and equipmentCoordinator(self)~=coordinator then return false end
+        return self.db.profile==profile and self.GetScopedRotationCoordinator==equipmentCoordinator
+            and activeChangeCurrent(self,change) and equipmentSubscription==subscription
+    end
+    if not current() or self.enabledState~=true or not current() then return end
+    local switch=self.SwitchRotation
+    if not current() or type(switch)~='function' then return end
+    local _,nextChange=switch(self);change=nextChange or change
+    if not current() or self.currentRotation==nil then return end
+    local evaluate=self.EvaluateNextAction
+    if current() and type(evaluate)=='function' then evaluate(self) end
+end)
+addon.PLAYER_EQUIPMENT_CHANGED=function(self,event)
+    local subscription=equipmentSubscription
+    if not rawequal(self,addon) or not subscription or self.enabledState~=true then return end
+    local profile=self.db.profile
+    if equipmentSubscription~=subscription or type(profile)~='table' then return end
+    local change=beginActive(self)
+    if not activeChangeCurrent(self,change) or equipmentSubscription~=subscription or self.db.profile~=profile then return end
+    return equipmentEvent(self,event,subscription,profile,change)
+end
+-- END EQUIPMENT EVENT DISPATCH
 addon.SPELLS_CHANGED = wrapEvent(addon.UpdateSkill)
 local function invalidatePlayerLevel(self)
     if type(self.longtermCache)~='table' then return end
