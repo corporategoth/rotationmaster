@@ -1,5 +1,14 @@
 local addon_name,addon=...
 local data=addon.RotationData
+local ownedStoreFactory,ownedStoreEnvironment
+local bindOwnedStoreFactory=data.BindOwnedRotationStoreFactory
+if type(bindOwnedStoreFactory)=='function' then
+    bindOwnedStoreFactory(function(factory,environment) ownedStoreFactory,ownedStoreEnvironment=factory,environment end)
+    data.BindOwnedRotationStoreFactory=nil
+end
+---@type fun(f: number|function): table
+local storeGetfenv=getfenv
+local storeScopeEnvironment=type(storeGetfenv)=='function' and storeGetfenv(1) or nil
 local prepareActivePublication,finishActivePublication,prepareActiveRebind,finishActiveRebind
 local activeCurrent=addon.IsActiveRotationTransitionCurrent
 local protect,raise=pcall,error
@@ -149,7 +158,7 @@ function addon:BindRotationProfile()
         if not bindingCurrent() then return nil,'rotation-transition-superseded' end
     end
     local owner=self;profile=self.db.profile;local state=profile.rotationStore;local fallbackID=profile.rotationFallbackID
-    local reader,store,problem;local alive=true
+    local reader,store,problem,ownedPublicationGuard;local alive=true;local managedStoreReader=false
     if not libraryReader then problem='rotation-library-not-ready'
     elseif not text(profile.rotationFallbackID,128) then problem='missing-fallback-configuration'
     else
@@ -159,7 +168,9 @@ function addon:BindRotationProfile()
         if not bindingCurrent() then return nil,'rotation-transition-superseded' end
         local validation=getOptions(self)
         if not bindingCurrent() then return nil,'rotation-transition-superseded' end
-        store,problem=construct({state=state,fallbackID=profile.rotationFallbackID,validation=validation,bindInternalReader=function(value) reader=value end})
+        store,problem,ownedPublicationGuard=construct({state=state,fallbackID=profile.rotationFallbackID,validation=validation,bindInternalReader=function(value) reader=value end})
+        managedStoreReader=construct==ownedStoreFactory and ownedStoreEnvironment~=nil
+            and type(storeGetfenv)=='function' and getfenv==storeGetfenv and storeGetfenv(construct)==ownedStoreEnvironment
     end
     if not bindingCurrent() then return nil,'rotation-transition-superseded' end
     local coordinator={};current=coordinator
@@ -644,6 +655,7 @@ function addon:BindRotationProfile()
         local c,reason=context();if not c then return nil,reason end
         local validation,referenceStamp=owner:GetRotationValidationOptions();local revision=owner.conditionRegistryVersion;local generation=libraryReader and libraryReader:Generation();local pass={}
         local selected,untracked,listSeal={},{},nil
+        local publicationSelected={};local makePublicationGuard=managedStoreReader and ownedPublicationGuard
         local observedPrivate,observedMethod
         local function eligibilityContext()
             local value,private,method=rotationContext(owner,number)
@@ -739,6 +751,7 @@ function addon:BindRotationProfile()
             end)
             if not okRead then return nil,asset end
             selected[index]=seal
+            if request and type(makePublicationGuard)=='function' then publicationSelected[index]=makePublicationGuard(reader,seal,c) end
             if asset.untracked then untracked[index]={address=copy(reference.address),baseline=asset.baseline} end
             if not batch then local current,problemText=pass:IsCurrent();if not current then return nil,problemText end end
             local status=asset.validation
@@ -773,6 +786,36 @@ function addon:BindRotationProfile()
             local complete,completionReason=self:IsCurrent();if not complete then return {},completionReason end
             return result
         end
+        if request and managedStoreReader then
+            local originalCurrent=pass.IsCurrent
+            request.pass=pass
+            request.publication=function()
+                -- Public overrides and list/fallback semantics retain the full route.
+                if pass.IsCurrent~=originalCurrent or listSeal or not storeScopeEnvironment
+                    or getfenv~=storeGetfenv or storeGetfenv(originalCurrent)~=storeScopeEnvironment then return pass:IsCurrent() end
+                local current,problemText=baseCurrent();if not current then return nil,problemText end
+                if listSeal then
+                    if not reader:IsCurrent(listSeal,c) then return nil,'rotation-records-changed' end
+                else
+                    for index,seal in pairs(selected) do
+                        local guard=publicationSelected[index]
+                        local unchanged=guard and guard()
+                        -- Base authority has already run. Fall back only this
+                        -- selected-store check, without repeating callbacks.
+                        if unchanged==nil then unchanged=reader:IsCurrent(seal,c) end
+                        if not unchanged then return nil,'rotation-records-changed' end
+                    end
+                end
+                -- Retain the supported mutable canonical-body watcher verbatim.
+                for _,watch in pairs(untracked) do
+                    local readable,unchanged=reader:Read(watch.address,c,function(record)
+                        return data.CheckPortable(record.body) and same(record.body,watch.baseline)
+                    end)
+                    if not readable or not unchanged then return nil,'rotation-records-changed' end
+                end
+                return true
+            end
+        end
         return pass
     end
     ownedRuntimePasses[coordinator]=coordinator.RuntimePass
@@ -803,11 +846,11 @@ function addon:BindRuntimeEvaluationContext(bind)
         if owner~=addon or owner.AcquireRotationRuntimePass~=ownedAcquireRuntimePass
             or owner.GetScopedRotationCoordinator~=ownedScopedCoordinator
             or not current or current.RuntimePass~=ownedRuntimePasses[current] then return owner:AcquireRotationRuntimePass(spec) end
-        local previous=evaluationRequest;evaluationRequest={}
+        local previous=evaluationRequest;local request={};evaluationRequest=request
         local ok,pass,reason=protect(ownedAcquireRuntimePass,owner,spec)
         evaluationRequest=previous
         if not ok then raise(pass,0) end
-        return pass,reason
+        return pass,reason,request.pass==pass and request.publication or nil
     end,function() contextVersion={} end)
     return true
 end

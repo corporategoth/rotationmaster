@@ -281,6 +281,7 @@ function data.NewRotationStore(options)
     -- must not escape its synchronous projectors; UI keeps snapshot APIs.
     local reader,readerState,readerBusy={},'binding',false
     local readIndex,readEpoch,readRevision=nil,0,0
+    local publicationWriteVersion=0
     local readSeals=setmetatable({},{__mode='k'})
     local nilCharacter={}
     local function detachedAddress(a)
@@ -396,6 +397,61 @@ function data.NewRotationStore(options)
             for i,meta in ipairs(current) do if meta~=entry.items[i] then return nil,'stale-rotation-read-seal' end end
         end
         return true
+    end
+    local ownedReaderIsCurrent=reader.IsCurrent
+    -- Only an owned factory admission may consume this private capability.
+    local guardType,guardPairs,guardGetmetatable,guardRawget=type,pairs,getmetatable,rawget
+    local stringMeta=guardGetmetatable('')
+    local stringIndex=guardType(stringMeta)=='table' and guardRawget(stringMeta,'__index')
+    local stringFind=guardType(stringIndex)=='table' and guardRawget(stringIndex,'find')
+    local function makePublicationGuard(_,seal,c)
+        local entry=readSeals[seal]
+        if not entry or entry.kind~='record' then return nil end
+        local meta=entry.meta;local a=meta.address;c=c or entry.context
+        local owners=a.scope=='class' and readIndex.classes or readIndex.characters
+        local owner=owners[a.owner];local scope=owner and owner.specs[a.spec]
+        local epoch,writeVersion=entry.epoch,publicationWriteVersion
+        local expectedRoots=readIndex.roots;local chain=meta.chain
+        local record,payload=meta.record,meta.payload
+        return function()
+            if reader.IsCurrent~=ownedReaderIsCurrent or type~=guardType or pairs~=guardPairs
+                or getmetatable~=guardGetmetatable or rawget~=guardRawget then return nil end
+            if guardType(stringIndex)~='table' or guardType(stringFind)~='function'
+                or guardGetmetatable('')~=stringMeta or guardRawget(stringMeta,'__index')~=stringIndex
+                or guardRawget(stringIndex,'find')~=stringFind then return nil end
+            -- These retained scalar validators can call custom code. Finish
+            -- them before checking the current lifetime/metadata/raw witnesses.
+            if not plain(c) or not isClass(c.class) or c.class~=entry.context.class or c.character~=entry.context.character then return false end
+            if not isClass(a.class) then return false end
+            if readerState~='active' or readEpoch~=epoch or publicationWriteVersion~=writeVersion
+                or not scope or scope.metadata[a.id]~=meta then return false end
+            -- Preserve all raw state/header/container/component witnesses checked
+            -- by readRows/privateRecord; omit only revalidating immutable private
+            -- addresses and duplicate checks of the same plain class map/body.
+            if not fields(state,stateFields) or state.version~=1 then return false end
+            local classes,characters,legacy=state.classes,state.characters,state.legacy
+            if classes~=expectedRoots[1] or characters~=expectedRoots[2] or legacy~=expectedRoots[3]
+                or not plain(classes) or not plain(characters) or not plain(legacy) then return false end
+            local root=a.scope=='class' and classes or characters
+            if root~=chain[1] then return false end
+            local bucket=root[a.owner]
+            if bucket~=chain[2] or not plain(bucket) then return false end
+            local map=bucket
+            if a.scope=='character' then
+                if bucket.class~=a.class or bucket.class~=owner.class or not fields(bucket,{class=true,specs=true}) then return false end
+                map=bucket.specs
+                if not plain(map) then return false end
+            end
+            if map~=chain[3] then return false end
+            local rows=map[a.spec]
+            if rows~=chain[4] or not plain(rows) or rows[a.id]~=record then return false end
+            if not fields(record,recordFields) then return false end
+            for _,component in ipairs(components) do
+                local value=record[component]
+                if value~=payload[component] or value~=nil and not plain(value) then return false end
+            end
+            return true
+        end
     end
     function reader:ListOwned(number,c)
         local ready,reason=readerReady(true);if not ready then return nil,reason end
@@ -584,6 +640,12 @@ function data.NewRotationStore(options)
             advanceDestination=readRows(destination,c,readIndex)
             if pending.operation=='move' then advanceSource=readRows(pending.address,c,readIndex) end
         end
+        -- A successful write with an unadvanceable stale
+        -- index must retire private publication witnesses, without blessing it
+        -- or changing public unrelated-record seal semantics.
+        if readIndex and (not advanceDestination or pending.operation=='move' and not advanceSource) then
+            publicationWriteVersion=publicationWriteVersion+1
+        end
         -- All checks and copies precede plain table assignments; no callbacks run.
         if pending.operation=='delete' then write(pending.address,nil)
         else
@@ -606,8 +668,15 @@ function data.NewRotationStore(options)
         if not valid then readerState='retired';return nil,reason end
         index=buildIndex();resetReaderIndex();readerState='active'
     end
-    return service
+    -- Keep this capability out of the mutable reader callback transport.
+    return service,nil,makePublicationGuard
 end
+local ownedRotationStoreFactory=data.NewRotationStore
+local storeFactoryEnvironment=type(getfenv)=='function' and getfenv(1) or nil
+function data.BindOwnedRotationStoreFactory(bind)
+    if type(bind)=='function' then bind(ownedRotationStoreFactory,storeFactoryEnvironment) end
+end
+
 -- BEGIN CPU RUNTIME WORK HANDOFF
 do
  local bind=addon.BindCPURuntimeWorkDiagnostic

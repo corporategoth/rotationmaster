@@ -1019,10 +1019,10 @@ end
 
 function addon:EvaluateNextActionInternal()
     local selectedRotation,selectedSpec,selectedProfile=self.currentRotation,self.currentSpec,self.db.profile
-    local runtimePass,rot
+    local runtimePass,rot,publicationGuard
     if selectedRotation~=nil then
         if self.GetScopedRotationCoordinator and self:GetScopedRotationCoordinator() then
-            if acquireEvaluationPass then runtimePass=acquireEvaluationPass(self,selectedSpec)
+            if acquireEvaluationPass then local reason;runtimePass,reason,publicationGuard=acquireEvaluationPass(self,selectedSpec)
             else runtimePass=self:AcquireRotationRuntimePass(selectedSpec) end
             if runtimePass then rot=runtimePass:Get(selectedRotation) end
         else rot=self:GetRuntimeRotation(selectedSpec,selectedRotation) end
@@ -1136,8 +1136,11 @@ function addon:EvaluateNextActionInternal()
         local nativePreview=previewWindow and type(previewWindow.AddRecommendation)=="function"
         local staged={}
         local function current()
-            return self.currentRotation==selectedRotation and self.currentSpec==selectedSpec and self.db.profile==selectedProfile
-                and self.nextWindow==previewWindow and (not runtimePass or runtimePass:IsCurrent())
+            if self.currentRotation~=selectedRotation or self.currentSpec~=selectedSpec or self.db.profile~=selectedProfile
+                or self.nextWindow~=previewWindow then return false end
+            if not runtimePass then return true end
+            if publicationGuard then return publicationGuard() end
+            return runtimePass:IsCurrent()
         end
         local function stage(callback) staged[#staged+1]=callback end
         if nativePreview then
