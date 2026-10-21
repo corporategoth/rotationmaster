@@ -20,8 +20,8 @@ const fields=m=>new Map(m.entries.map(([k,v])=>[Buffer.from(k.hex,'hex').toStrin
 function set(m,k,v){const hex=bytes(k).hex;const row=m.entries.find(([key])=>key.type==='bytes'&&key.hex===hex);if(row)row[1]=v;else m.entries.push([bytes(k),v]);}
 const number=n=>{const b=Buffer.alloc(8);b.writeDoubleBE(n);return{type:'number',bits:b.toString('hex')};};
 
-test('pure catalog exposes all24 actual source definitions without runtime facts',()=>{
- const c=ready(),rows=c.list();assert.equal(rows.length,24);assert.equal(new Set(rows.map(r=>r.id)).size,24);
+test('pure catalog exposes all25 actual source definitions without runtime facts',()=>{
+ const c=ready(),rows=c.list();assert.equal(rows.length,25);assert.equal(new Set(rows.map(r=>r.id)).size,25);
  for(const row of rows){assert.equal(row.applicability.get('families').get(1),'tbc');assert.equal(row.validation.nativeAvailability,'unverified');for(const k of ['eligible','enabled','runtimeKey','spellName','icon'])assert.equal(Object.hasOwn(row,k),false);const value=c.get(row.id);assert(value.ok&&checkPortable(value.envelope).ok);const report=validateEnvelope(value.envelope,declarations);assert(report.valid&&report.supported&&report.resolved);assert(indexRotationSteps(value.envelope.get('body')).ok);}
  assert.deepEqual(c.get({toString(){throw Error('no coercion');}}),{ok:false,reason:'unknown-default'});
 });
@@ -30,22 +30,30 @@ test('production generator is deterministic/current BOTH and source inputs exact
  const doc=raw();for(const[path,sha]of Object.entries(doc.sourceFiles))assert.equal(createHash('sha256').update(readFileSync(new URL('../'+path,import.meta.url))).digest('hex'),sha,path);
  const toc=readFileSync(new URL('../RotationMaster.toc',import.meta.url),'utf8').split(/\r?\n/).filter(s=>/^Defaults\/.+\.lua$/.test(s));assert.deepEqual([...doc.packs.map(p=>p.sourcePath)].sort(),toc.sort());
 });
-test('all24 pinned actual codec wires decode to exact catalog Maps and strict diff equality',()=>{
- const fixture=JSON.parse(readFileSync(new URL('./fixtures/web_defaults.json',import.meta.url))),c=ready();assert.equal(fixture.format,'RotationMasterBundledDefaultWireFixtures');assert.equal(fixture.records.length,24);
- let rows=0;for(const record of fixture.records){const decoded=decodeImport(record.wire);assert(decoded.ok&&decoded.kind==='envelope');const selected=c.get(record.id);assert(selected.ok);assert.deepEqual(toTypedTree(decoded.value),record.expected);assert.deepEqual(toTypedTree(selected.envelope),record.expected);assert.equal(selected.source.sha256,record.sourceSHA);rows+=indexRotationSteps(decoded.value.get('body')).index.rows.length;const diff=diffRotations(decoded.value,selected.envelope);assert(diff.valid&&diff.complete&&diff.changes.length===0);}assert.equal(rows,217);
+test('all25 pinned actual codec wires decode to exact catalog Maps and strict diff equality',()=>{
+ const fixture=JSON.parse(readFileSync(new URL('./fixtures/web_defaults.json',import.meta.url))),c=ready();assert.equal(fixture.format,'RotationMasterBundledDefaultWireFixtures');assert.equal(fixture.records.length,25);
+ let rows=0;for(const record of fixture.records){const decoded=decodeImport(record.wire);assert(decoded.ok&&decoded.kind==='envelope');const selected=c.get(record.id);assert(selected.ok);assert.deepEqual(toTypedTree(decoded.value),record.expected);assert.deepEqual(toTypedTree(selected.envelope),record.expected);assert.equal(selected.source.sha256,record.sourceSHA);rows+=indexRotationSteps(decoded.value.get('body')).index.rows.length;const diff=diffRotations(decoded.value,selected.envelope);assert(diff.valid&&diff.complete&&diff.changes.length===0);}assert.equal(rows,225);
 });
 test('first19 frozen wire records stay exact; Hunter30–39 remains twentieth',()=>{
  const records=JSON.parse(readFileSync(new URL('./fixtures/web_defaults.json',import.meta.url))).records;
- assert.equal(records.length,24);
+ assert.equal(records.length,25);
  assert.equal(createHash('sha256').update(JSON.stringify(records.slice(0,19))).digest('hex'),'354927d1a786ed221d8438670ab6b32689d586b0cf4fd3a288bebda299a86046');
  assert.equal(records[19].id,'rm.tbc.hunter.starter.30-39');
  assert.equal(records.filter(r=>r.id==='rm.tbc.hunter.starter.30-39').length,1);
 });
 test('first20 frozen wire records remain ordered; four class continuations append once',()=>{
  const records=JSON.parse(readFileSync(new URL('./fixtures/web_defaults.json',import.meta.url))).records;
- assert.equal(records.length,24);
+ assert.equal(records.length,25);
  assert.equal(createHash('sha256').update(JSON.stringify(records.slice(0,20))).digest('hex'),'9f0a089c84b90cd7410a08efb7781ac730fbeb716a198b27f100c8af892db090');
- assert.deepEqual(records.slice(20).map(r=>r.id),["rm.tbc.druid.caster.starter.30-39","rm.tbc.paladin.starter.30-39","rm.tbc.rogue.starter.30-39","rm.tbc.warrior.starter.30-39"]);
+ assert.deepEqual(records.slice(20,24).map(r=>r.id),["rm.tbc.druid.caster.starter.30-39","rm.tbc.paladin.starter.30-39","rm.tbc.rogue.starter.30-39","rm.tbc.warrior.starter.30-39"]);
+});
+test('first24 frozen wire records and catalog objects stay exact; Hunter40–49 appends once',()=>{
+ const records=JSON.parse(readFileSync(new URL('./fixtures/web_defaults.json',import.meta.url))).records;
+ assert.equal(createHash('sha256').update(JSON.stringify(records.slice(0,24))).digest('hex'),'c5d5576fe961b713f2ce59ffdcfb13fa49da21129ff75eab1bf4433bd1119e25');
+ assert.equal(records[24].id,'rm.tbc.hunter.starter.40-49');
+ assert.equal(records.filter(r=>r.id==='rm.tbc.hunter.starter.40-49').length,1);
+ const old=raw().packs.filter(p=>p.id!=='rm.tbc.hunter.starter.40-49');
+ assert.equal(createHash('sha256').update(JSON.stringify(old)).digest('hex'),'328b99ef8f466fda2c74db84cce16b72813d581d8470a283609c8caf90d2ac20');
 });
 test('get/list outputs never expose private manifest, facets or declaration state',()=>{
  const c=ready(),first=c.list()[0],before=toTypedTree(c.get(first.id).envelope),one=c.get(first.id);one.envelope.get('body').get('rotation').clear();one.envelope.get('sources').get(1).set('url','poison');one.display.name='poison';one.source.sha256='poison';one.validation.diagnostics?.push('poison');first.applicability.set('class','poison');first.tags?.clear();first.display.name='poison';assert.deepEqual(toTypedTree(c.get(first.id).envelope),before);assert.notEqual(c.list()[0].display.name,'poison');assert.notEqual(c.get(first.id).source.sha256,'poison');
@@ -104,5 +112,5 @@ test('trusted producer refuses native queries, duplicate registration and invali
  }
 });
 test('fresh actual LuaJIT fixture generation stays semantically equal without wire-order claims',()=>{
- const fresh=JSON.parse(execFileSync('luajit',['tools/export_web_defaults.lua','--fixtures'],{cwd:root,encoding:'utf8',maxBuffer:4*1024*1024}));const c=ready();assert.equal(fresh.records.length,24);for(const r of fresh.records){const decoded=decodeImport(r.wire);assert(decoded.ok);assert.deepEqual(toTypedTree(decoded.value),toTypedTree(c.get(r.id).envelope));}
+ const fresh=JSON.parse(execFileSync('luajit',['tools/export_web_defaults.lua','--fixtures'],{cwd:root,encoding:'utf8',maxBuffer:4*1024*1024}));const c=ready();assert.equal(fresh.records.length,25);for(const r of fresh.records){const decoded=decodeImport(r.wire);assert(decoded.ok);assert.deepEqual(toTypedTree(decoded.value),toTypedTree(c.get(r.id).envelope));}
 });

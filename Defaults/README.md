@@ -139,3 +139,7 @@ The inherited humanoid-only caster policy continues: attributable own Moonfire, 
 The bounded generic melee subset retains learned Execute strictly below20% target health before queued/current Heroic Strike checks and a ready HS family. Five exact learned queue guards include11564; each protects lower queued ranks independently of the highest learned rank. Cast/channel Stops protect manual actions such as Slam and guard optional Battle Shout as well. Actual learned families, native usability/range/cooldown and real mappings govern all ranks. Rend, reactive abilities, stance/talent choices, pulls and resource/queue planning remain manual; no optimal Arms priority or fixed rage reserve is claimed.
 
 All four continuations remain TBC/player/class/level bounded. Modeled pipeline tests and source evidence do not establish native gameplay acceptance or optimality.
+
+### Hunter 40–49
+
+`rm.tbc.hunter.starter.40-49` continues the same eight-row generic ranged subset as 30–39 with separate IDs and current level bounds. It preserves casts, channels, deliberate Monkey/Cheetah and attributable own Scorpid; it starts inactive Auto Shot only while stationary, then considers missing own Serpent Sting and Arcane Shot. Learned families, mappings and native readiness govern available ranks. This adds no training schedule, talent gate or complete BM rotation. Pets, ammunition, melee, positioning, shot timing and resources remain manual; native acceptance remains unverified. Earlier sources and saved clones remain separate.
