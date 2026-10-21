@@ -179,6 +179,8 @@ def main():
             ['luajit', 'tests/rotation_store.lua'],
             ['lua5.1', 'tests/rotation_store_schema_allocations.lua'],
             ['luajit', 'tests/rotation_store_schema_allocations.lua'],
+            ['lua5.1', 'tests/rotation_store_character_schema.lua'],
+            ['luajit', 'tests/rotation_store_character_schema.lua'],
             ['lua5.1', 'tests/rotation_store_reader.lua'],
             ['luajit', 'tests/rotation_store_reader.lua'],
             ['lua5.1', 'tests/config_ui.lua'],

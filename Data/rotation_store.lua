@@ -5,6 +5,7 @@ local components={'body','origin','imported','comparison'}
 local addressFields={scope=true,class=true,owner=true,spec=true,id=true}
 local stateFields={version=true,classes=true,characters=true,legacy=true}
 local recordFields={body=true,origin=true,imported=true,comparison=true}
+local characterBucketFields={class=true,specs=true}
 local legacyKinds={rotations='body',origins='origin',imports='imported',comparisons='comparison'}
 local function plain(v) return type(v)=='table' and getmetatable(v)==nil end
 local function text(v,limit) return type(v)=='string' and #v>0 and #v<=limit and v:find('%S')~=nil and not v:find('[%z\1-\31\127]') end
@@ -136,7 +137,7 @@ local function validState(state)
         if not ok then return nil,why end
     end
     for owner,bucket in pairs(state.characters) do
-        if not text(owner,512) or not fields(bucket,{class=true,specs=true}) or not isClass(bucket.class) then return nil,'invalid-store' end
+        if not text(owner,512) or not fields(bucket,characterBucketFields) or not isClass(bucket.class) then return nil,'invalid-store' end
         local ok,why=validSpecMap(bucket.specs,function(record,id,number) return validRecord(record,{id=id,class=bucket.class,spec=number}) end)
         if not ok then return nil,why end
     end
@@ -238,7 +239,7 @@ function data.NewRotationStore(options)
         if bucket~=(indexed and indexed.bucket) then return nil,'stale-store-index' end
         if not indexed then return true end
         if a.scope=='character' and bucket.class~=indexed.class then return nil,'stale-store-index' end
-        if a.scope=='character' and not fields(bucket,{class=true,specs=true}) then return nil,'invalid-store' end
+        if a.scope=='character' and not fields(bucket,characterBucketFields) then return nil,'invalid-store' end
         local map=a.scope=='class' and bucket or bucket.specs
         if not plain(map) then return nil,'invalid-store' end
         if map~=indexed.map then return nil,'stale-store-index' end
@@ -433,7 +434,7 @@ function data.NewRotationStore(options)
             if bucket~=chain[2] or not plain(bucket) then return false end
             local map=bucket
             if a.scope=='character' then
-                if bucket.class~=a.class or bucket.class~=owner.class or not fields(bucket,{class=true,specs=true}) then return false end
+                if bucket.class~=a.class or bucket.class~=owner.class or not fields(bucket,characterBucketFields) then return false end
                 map=bucket.specs
                 if not plain(map) then return false end
             end

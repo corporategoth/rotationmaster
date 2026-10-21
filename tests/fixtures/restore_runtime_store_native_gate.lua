@@ -47,6 +47,7 @@ local changes={
 }
 return function(text,path)
  if path~='Data/rotation_store.lua' then return text end
+ if text:find('local characterBucketFields=',1,true)then text=dofile('tests/fixtures/restore_rotation_store_character_schema.lua')(text,path)end
  assert(#text==40987 and hash(text)=='9d678565','unrelated native-store-guard source')
  for _,change in ipairs(changes)do
   local a,b=text:find(change.current,1,true);assert(a and not text:find(change.current,b+1,true),'native-store-guard inverse anchor')
