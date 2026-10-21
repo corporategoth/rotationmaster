@@ -43,7 +43,7 @@ test('eight aura declarations select exactly thirty-five owned pure helper calls
         for name,group in pairs(groups) do local path='Functions.'..group..'.'..name;assert(declared[path]=='builtin:utils.lua:'..name and a:ResolveFunctionBinding(declared[path])==a.Functions[group][name]) end
     end
     for _,tag in ipairs(tags) do
-        local source=assert(a:GetBuiltinConditionSource(tag));assert(not source.bindings.Functions,'namespace captured as an opaque value')
+        local source=assert(a:GetBuiltinConditionSource(tag));if tag~='STEALABLE'and tag~='DISPELLABLE'then source=dofile('tests/fixtures/restore_aura_name_summary_literals.lua')(source,tag,'export')end;assert(not source.bindings.Functions,'namespace captured as an opaque value')
         for callback,counts in pairs(expected[tag]) do for name,group in pairs(groups) do
             local path='Functions.'..group..'.'..name;local n=count(source[callback],path:gsub('%.','%%.')..'%(');assert(n==(counts[name] or 0),tag..'.'..callback..' '..name..' count changed');total=total+n
             assert(not source[callback]:find('addon.'..name..'(',1,true),'legacy pure helper remained')

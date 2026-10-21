@@ -55,7 +55,7 @@ test('complete evaluator and module inverse protect every Spatial private ID get
 end)
 test('actual current compiled source guards selected facts and whole saved raw source retains its historic fallback',function()
  for _,subzone in ipairs({false,true})do local _,a,s=fixture();local source=a:GetBuiltinConditionSource('ZONE');assert(source.evaluate==repaired,'catalog pending current ZONE evaluator');local before=a:CopySettingsData(source);a:RegisterCondition('COPY',assert(a:CompileCustomCondition('COPY',source)));s[subzone and'subzone'or'zone']=nil;unknown(a,node(subzone,nil,'COPY'),'zone-text-unavailable')
-  local raw=a:CopySettingsData(source);raw.evaluate=inverse(raw.evaluate,true);assert(a:FunctionSourceHash(raw)=='02e5e415','complete archived source changed');local frozen=a:CopySettingsData(raw);a.db.global.custom_conditions={SAVED=raw};a:RegisterCondition('SAVED',assert(a:CompileCustomCondition('SAVED',raw)));known(a,node(subzone,nil,'SAVED'),subzone)
+  local raw=dofile('tests/fixtures/restore_zone_cast_summary_literals.lua')(source,'ZONE','export');raw.evaluate=inverse(raw.evaluate,true);assert(a:FunctionSourceHash(raw)=='02e5e415','complete archived source changed');local frozen=a:CopySettingsData(raw);a.db.global.custom_conditions={SAVED=raw};a:RegisterCondition('SAVED',assert(a:CompileCustomCondition('SAVED',raw)));known(a,node(subzone,nil,'SAVED'),subzone)
   assert(a:SettingsDataEqual(raw,frozen)and a:SettingsDataEqual(source,before)and a.db.global.custom_conditions.SAVED==raw)
  end
 end)

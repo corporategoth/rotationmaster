@@ -7,6 +7,7 @@ local helpers = addon.help_funcs
 
 -- Selected canonical helpers stay private to these authored callbacks. The
 -- collector verifies these explicit leaves against their stable public IDs.
+local LiteralSummary={phrase=addon.Functions.presentation.phrase}
 local Functions={
     cache={getCached=addon.Functions.cache.getCached},
     values={compare=addon.Functions.values.compare,isin=addon.Functions.values.isin},
@@ -14,6 +15,7 @@ local Functions={
 }
 addon.builtinCallbackBindings=addon.builtinCallbackBindings or {}
 addon.builtinCallbackBindings["Conditions/spatial.lua"]={
+    ["LiteralSummary.phrase"]="builtin:Functions/presentation.lua:phrase",
     ["Functions.cache.getCached"]="builtin:utils.lua:getCached",
     ["Functions.values.compare"]="builtin:utils.lua:compare",
     ["Functions.values.isin"]="builtin:utils.lua:isin",
@@ -409,7 +411,7 @@ addon:RegisterCondition("ZONE", {
         return value.value == zoneName
     end,
     print = function(_, value)
-        return string.format(L["{{!in|not in}} %s"], Functions.presentation.nullable(value.value, L["<zone>"]))
+        return LiteralSummary.phrase(L["{{!in|not in}} {zone}"], {zone = Functions.presentation.nullable(value.value, L["<zone>"])})
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")

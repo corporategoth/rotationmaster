@@ -35,6 +35,7 @@ end
 test('cast families qualify exactly forty calls using seven existing owning leaves per module',function()
     local f,a=fixture();local wanted={isin=5,compare=1,nullable=6,compareString=1,playerize=2,getCached=4,deepcopy=1}
     for kind,module in pairs({cast='casting',channel='channeling'}) do local manifest=assert(a.builtinCallbackBindings and a.builtinCallbackBindings['Conditions/'..module..'.lua'],'casting canonical metadata missing');local leaves=0
+        manifest=a:CopySettingsData(manifest);assert(manifest['LiteralSummary.phrase']=='builtin:Functions/presentation.lua:phrase');manifest['LiteralSummary.phrase']=nil
         for alias,id in pairs(manifest) do leaves=leaves+1;local name=alias:match('([%w_]+)$');assert(alias==path(name) and id==identity(name) and a:ResolveFunctionBinding(id)==a.Functions[owners[name]][name]) end;assert(leaves==7)
         local totals={};for _,tag in ipairs(families[kind]) do local source=assert(a:GetBuiltinConditionSource(tag));assert(not source.bindings.Functions)
             for _,callback in ipairs({'valid','evaluate','print','widget','help'}) do if source[callback] then for name in pairs(owners) do local _,n=source[callback]:gsub(path(name):gsub('%.','%%.')..'%(','');totals[name]=(totals[name] or 0)+n;assert(not source[callback]:find('addon.'..name..'(',1,true)) end end end

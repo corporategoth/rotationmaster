@@ -8,6 +8,7 @@ local repaired=[====[        local exists,reason=Functions.cache.getCached(cache
 ]====]
 return function(text,callback)
  assert(type(text)=='string','expected DISTANCE source text')
+ if not callback then text=dofile('tests/fixtures/restore_zone_cast_summary_literals.lua')(text,'ZONE') end
  local first,last=text:find(repaired,1,true);assert(first and not text:find(repaired,last+1,true),'missing or duplicate DISTANCE presence prefix')
  text=text:sub(1,first-1)..old..text:sub(last+1)
  if not callback then

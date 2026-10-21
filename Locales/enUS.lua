@@ -179,6 +179,10 @@ L["Own Buff"] = true
 L["Own Debuff"] = true
 L["Dispellable"] = true
 L["your own %s"] = true
+L["{unit} {{!have|do not have}} {aura}"] = true
+L["{unit} {{!has|does not have}} {aura}"] = true
+L["{unit} {{!have|do not have}} {aura} where {remaining} {comparison} {duration}"] = true
+L["{unit} {stacks} {comparison} {quantity}"] = true
 L["that is dispellable"] = true
 
 L["is less than"] = true
@@ -1769,10 +1773,12 @@ L["%s {{!are|are not}} a %s"] = true
 L["%s {{!are|are not}} currently casting"] = true
 
 L["%s {{!are|are not}} currently casting %s"] = true
+L["{unit} {{!are|are not}} currently casting {spell}"] = true
 
 L["%s {{!are|are not}} currently channeling"] = true
 
 L["%s {{!are|are not}} currently channeling %s"] = true
+L["{unit} {{!are|are not}} currently channeling {spell}"] = true
 
 L["%s {{!are|are not}} in combat"] = true
 
@@ -1809,8 +1815,11 @@ L["%s {{!is|is not}} available"] = true
 L["%s {{!is|is not}} beyond melee range"] = true
 
 L["%s {{!is|is not}} currently casting"] = true
+L["%s {{!is|is not}} currently channeling"] = true
 
 L["%s {{!is|is not}} currently casting %s"] = true
+L["{unit} {{!is|is not}} currently casting {spell}"] = true
+L["{unit} {{!is|is not}} currently channeling {spell}"] = true
 
 L["%s {{!is|is not}} immune to %s"] = true
 
@@ -1887,6 +1896,7 @@ L["your primary talent tree {{!is|is not}} %s"] = true
 L["zone {{!is|is not}} a %s zone"] = true
 
 L["{{!in|not in}} %s"] = true
+L["{{!in|not in}} {zone}"] = true
 
 L["Time in combat"] = true
 

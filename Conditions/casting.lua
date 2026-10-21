@@ -6,6 +6,7 @@ local helpers = addon.help_funcs
 
 -- Canonical callback leaves preserve the repaired observation contract and
 -- the original filtered unit choices, wording and validation semantics.
+local LiteralSummary={phrase=addon.Functions.presentation.phrase}
 local Functions={
     values={isin=addon.Functions.values.isin,compare=addon.Functions.values.compare},
     presentation={nullable=addon.Functions.presentation.nullable,compareString=addon.Functions.presentation.compareString,playerize=addon.Functions.presentation.playerize},
@@ -14,6 +15,7 @@ local Functions={
 }
 addon.builtinCallbackBindings=addon.builtinCallbackBindings or {}
 addon.builtinCallbackBindings["Conditions/casting.lua"]={
+    ["LiteralSummary.phrase"]="builtin:Functions/presentation.lua:phrase",
     ["Functions.values.isin"]="builtin:utils.lua:isin",
     ["Functions.values.compare"]="builtin:utils.lua:compare",
     ["Functions.presentation.nullable"]="builtin:utils.lua:nullable",
@@ -68,8 +70,10 @@ addon:RegisterCondition("CASTING_SPELL", {
         return record.name==value.spell
     end,
     print = function(_, value)
-        return string.format(Functions.presentation.playerize(value.unit, L["%s {{!are|are not}} currently casting %s"], L["%s {{!is|is not}} currently casting %s"]),
-            Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]), Functions.presentation.nullable(value.spell, L["<spell>"]))
+        return LiteralSummary.phrase(Functions.presentation.playerize(value.unit, L["{unit} {{!are|are not}} currently casting {spell}"], L["{unit} {{!is|is not}} currently casting {spell}"]), {
+            unit = Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]),
+            spell = Functions.presentation.nullable(value.spell, L["<spell>"]),
+        })
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")

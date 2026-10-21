@@ -6,6 +6,8 @@ local helpers = addon.help_funcs
 
 -- Canonical pure leaves; aura observations, spell identity and rank stay owned
 -- by the existing aura services and field callbacks.
+local AuraLiteral={phrase=addon.Functions.presentation.phrase}
+local AuraSummary={phrase=addon.Functions.presentation.phrase,predicate=addon.Functions.presentation.predicate}
 local Functions={
     collections={keys=addon.Functions.collections.keys},
     values={isin=addon.Functions.values.isin},
@@ -13,6 +15,9 @@ local Functions={
 }
 addon.builtinCallbackBindings=addon.builtinCallbackBindings or {}
 addon.builtinCallbackBindings["Conditions/debuffs.lua"]={
+    ["AuraLiteral.phrase"]="builtin:Functions/presentation.lua:phrase",
+    ["AuraSummary.phrase"]="builtin:Functions/presentation.lua:phrase",
+    ["AuraSummary.predicate"]="builtin:Functions/presentation.lua:predicate",
     ["Functions.collections.keys"]="builtin:Functions/collections.lua:keys",
     ["Functions.values.isin"]="builtin:utils.lua:isin",
     ["Functions.presentation.nullable"]="builtin:utils.lua:nullable",
@@ -31,9 +36,10 @@ addon:RegisterCondition("DEBUFF", {
         return addon:EvaluateAuraCondition(value, cache, start, "HARMFUL", "present")
     end,
     print = function(_, value)
-        return string.format(Functions.presentation.playerize(value.unit, L["%s {{!have|do not have}} %s"], L["%s {{!has|does not have}} %s"]),
-            Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]),
-            string.format(value.owndebuff and L["your own %s"] or "%s", (value.spell and addon:AuraSpellLabel(value) or L["<debuff>"])))
+        return AuraLiteral.phrase(Functions.presentation.playerize(value.unit, L["{unit} {{!have|do not have}} {aura}"], L["{unit} {{!has|does not have}} {aura}"]), {
+            unit = Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]),
+            aura = string.format(value.owndebuff and L["your own %s"] or "%s", (value.spell and addon:AuraSpellLabel(value) or L["<debuff>"])),
+        })
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -84,10 +90,13 @@ addon:RegisterCondition("DEBUFF_REMAIN", {
         return addon:EvaluateAuraCondition(value, cache, start, "HARMFUL", "remaining")
     end,
     print = function(_, value)
-        return string.format(Functions.presentation.playerize(value.unit, L["%s {{!have|do not have}} %s where %s"], L["%s {{!have|do not have}} %s where %s"]),
-            Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]),
-            string.format(value.owndebuff and L["your own %s"] or "%s", (value.spell and addon:AuraSpellLabel(value) or L["<debuff>"])),
-            Functions.presentation.compareString(value.operator, L["the remaining time"], string.format(L["%s seconds"], Functions.presentation.nullable(value.value))))
+        return AuraSummary.phrase(Functions.presentation.playerize(value.unit, L["{unit} {{!have|do not have}} {aura} where {remaining} {comparison} {duration}"], L["{unit} {{!have|do not have}} {aura} where {remaining} {comparison} {duration}"]), {
+            unit = Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]),
+            aura = string.format(value.owndebuff and L["your own %s"] or "%s", (value.spell and addon:AuraSpellLabel(value) or L["<debuff>"])),
+            remaining = L["the remaining time"],
+            comparison = AuraSummary.predicate(value.operator),
+            duration = string.format(L["%s seconds"], Functions.presentation.nullable(value.value)),
+        })
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -145,10 +154,12 @@ addon:RegisterCondition("DEBUFF_STACKS", {
         return addon:EvaluateAuraCondition(value, cache, start, "HARMFUL", "stacks")
     end,
     print = function(_, value)
-        return Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"]) .. " " ..
-                Functions.presentation.compareString(value.operator, string.format(L["stacks of %s"],
-                string.format(value.owndebuff and L["your own %s"] or "%s", (value.spell and addon:AuraSpellLabel(value) or L["<debuff>"]))),
-                Functions.presentation.nullable(value.value))
+        return AuraSummary.phrase(L["{unit} {stacks} {comparison} {quantity}"], {
+            unit = Functions.presentation.nullable(addon.unitsPossessive[value.unit], L["<unit>"]),
+            stacks = string.format(L["stacks of %s"], string.format(value.owndebuff and L["your own %s"] or "%s", (value.spell and addon:AuraSpellLabel(value) or L["<debuff>"]))),
+            comparison = AuraSummary.predicate(value.operator, true),
+            quantity = Functions.presentation.nullable(value.value),
+        })
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
