@@ -2427,6 +2427,8 @@ L["Default.TBC.Priest.Continuation.Description"] = "Bounded solo Priest preview 
 L["Default.TBC.Warrior.Continuation.Name"] = "Warrior: early leveling (20–29)"
 L["Default.TBC.Warrior.Continuation.Description"] = "Bounded combat-only Warrior preview for levels 20–29. Optional Battle Shout, learned Execute below 20% target health, then Heroic Strike and normal melee fallback. Preserves all four queued Heroic Strike ranks in this bracket. Rend maintenance ends here; reactive abilities, stances, pulls and resource or queue planning remain manual."
 
+L["Default.TBC.Hunter.Thirty.Name"] = "Hunter: ranged leveling (30–39)"
+L["Default.TBC.Hunter.Thirty.Description"] = "Bounded single-target ranged preview. Preserves current casts, channels, chosen Monkey or Cheetah, and attributable own Scorpid. Starts inactive Auto Shot while stationary, then own missing Serpent Sting and Arcane Shot. Learned ranks, mappings and current readiness remain authoritative; pets, ammunition, positioning, shot timing, melee, talents and resources remain manual."
 L["Default.TBC.Hunter.Continuation.Name"] = "Hunter: early leveling (20–29)"
 L["Default.TBC.Hunter.Continuation.Description"] = "Bounded ranged preview for levels 20–29. Auto Shot, own Serpent Sting and Arcane Shot use native learned ranks and availability. Preserves current casts, channels, Auto Shot, chosen Monkey or Cheetah, and attributable own Scorpid Sting. Pets, melee, ammunition, shot timing, positioning and resources remain manual."
 L["Default.TBC.Paladin.Continuation.Name"] = "Paladin: manual seal/aura preview (20–29)"

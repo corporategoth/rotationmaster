@@ -14,8 +14,8 @@ test('outgoing link drops unrelated query/hash and preserves exact wrapping',()=
  assert.deepEqual(make(' \t'+small+'\r\n',base+'?token=private#old'),{ok:true,url:base+'#rm-import-v1=%20%09AV4xXlRedF5e%0D%0A'});
  assert.deepEqual(parse('#rm-import-v1=%20%09AV4xXlRedF5e%0D%0A'),{ok:true,original:' \t'+small+'\r\n'});
 });
-test('all nineteen actual codec wires roundtrip without changing typed data',()=>{
- assert.equal(fixtures.length,19);
+test('all twenty actual codec wires roundtrip without changing typed data',()=>{
+ assert.equal(fixtures.length,20);
  for(const row of fixtures)for(const original of [row.wire,' \r\n'+row.wire+'\t']){
   assert.ok(original.includes('+'),row.id);
   const link=make(original,base);assert.equal(link.ok,true,row.id);

@@ -301,6 +301,7 @@ Defaults/tbc/paladin-starter.lua
 Defaults/tbc/paladin-20-29.lua
 Defaults/tbc/hunter-starter.lua
 Defaults/tbc/hunter-20-29.lua
+Defaults/tbc/hunter-30-39.lua
 Defaults/tbc/druid-caster-starter.lua
 Defaults/tbc/druid-caster-20-29.lua
 Defaults/tbc/rogue-starter.lua
