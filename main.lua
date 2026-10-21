@@ -5,6 +5,18 @@ if addon.BindAnalyticsAdviceCapture then
  addon:BindAnalyticsAdviceCapture(function(sink)adviceCapture=sink end)
 end
 -- END ANALYTICS ADVICE HANDOFF
+-- BEGIN SWITCH UNIT HANDOFF
+local switchConditionEvaluator
+local consumeSwitch=addon.ConsumeSwitchConditionEvaluator
+if type(consumeSwitch)=='function'then
+    switchConditionEvaluator=consumeSwitch(addon)
+    addon.ConsumeSwitchConditionEvaluator=nil
+end
+local function switchConditionMatches(value,current)
+    if switchConditionEvaluator then return switchConditionEvaluator(addon,value,current)end
+    return addon:evaluateCondition(value)
+end
+-- END SWITCH UNIT HANDOFF
 local activeCurrent=addon.IsActiveRotationTransitionCurrent
 local beginActive=addon.BeginActiveRotationTransition
 local advanceActiveSpec=addon.AdvanceActiveRotationSpecialization
@@ -885,18 +897,27 @@ function addon:SwitchRotation()
         selectionPass=self:AcquireRotationRuntimePass(selectedSpec);if not selectionPass then return end
         local why;rotations,why=selectionPass:Candidates(false);if why then return end
     else rotations=runtimeRows(self,selectedSpec) end
+    -- BEGIN SWITCH OWNER LEASE
+    local function switchOwnerCurrent()
+        return activeChangeCurrent(self,change) and self.currentSpec==selectedSpec and self.db.profile==selectedProfile
+            and self.currentRotation==selectedRotation and not self.db.profile.disable_autoswitch and not self.manualRotation
+    end
+    -- END SWITCH OWNER LEASE
     local function current()
         return activeChangeCurrent(self,change) and self.currentSpec==selectedSpec and self.db.profile==selectedProfile and self.currentRotation==selectedRotation
             and not self.db.profile.disable_autoswitch and not self.manualRotation and (not selectionPass or selectionPass:IsCurrent())
     end
     for _, v in ipairs(self.autoswitchRotation) do
+        if not switchOwnerCurrent()then return end
         -- A packaged recommendation must not displace the user's saved fallback.
         if self:IsDefaultRuntimeRotation(self.currentSpec,v) and rotations[DEFAULT]
             and self:rotationValidConditions(rotations[DEFAULT],self.currentSpec) then
             newRotation=DEFAULT
             break
         end
-        if rotations[v] and addon:evaluateCondition(rotations[v].switch) then
+        local matched=rotations[v] and switchConditionMatches(rotations[v].switch,switchOwnerCurrent)
+        if not switchOwnerCurrent()then return end
+        if matched then
             newRotation = v
             break
         end

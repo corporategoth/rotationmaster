@@ -7,6 +7,7 @@ local function hash(s)local n=0;for i=1,#s do n=(n*33+s:byte(i))%4294967296 end;
 local function equal(a,b)if type(a)~=type(b)then return false end;if type(a)~='table'then return a==b end;for k,v in pairs(a)do if not equal(v,b[k])then return false end end;for k in pairs(b)do if a[k]==nil then return false end end;return true end
 local function copy(v)if type(v)~='table'then return v end;local r={};for k,x in pairs(v)do r[k]=copy(x)end;return r end
 return function(value,path,mode)
+ if mode~='catalog' and (path=='main.lua' or path=='Core/conditions.lua') and (value:find('-- BEGIN SWITCH UNIT HANDOFF',1,true) or value:find('-- BEGIN SWITCH UNIT PRESENCE',1,true)) then value=dofile('tests/fixtures/restore_switch_required_units.lua')(value,path)end
  value=outer(value,path,'six',mode)
  value=dofile('tests/fixtures/restore_unit_states.lua')(value,path,mode)
  if mode=='catalog'then
