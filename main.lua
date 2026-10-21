@@ -1874,7 +1874,7 @@ local function spellcast(self, event, unit, castguid, spellid)
     -- even though we check it later, this skips rows entirely.
     if unit == 'player' or unit == "pet" then
         for _, value in ipairs(self.db.profile.announces) do
-            if (value.value or value.announce == "audible") and (not value.disabled) and (value.type == BOOKTYPE_PET and unit == "pet" or unit == "player") and
+            if (value.value or value.announce == "audible" or value.announce == "gesture") and (not value.disabled) and (value.type == BOOKTYPE_PET and unit == "pet" or unit == "player") and
                 (event == "UNIT_SPELLCAST_" .. value.event or event == "UNIT_SPELLCAST_CHANNEL_" .. value.event) then
                 local skip = false
                 if self.announced[value.id] then
@@ -1897,7 +1897,7 @@ local function spellcast(self, event, unit, castguid, spellid)
                     for idx, sid in ipairs(spellids) do
                         if spellid == sid then
                             local text = ent.value or ""
-                            if ent.announce~='audible' then
+                            if ent.announce~='audible' and ent.announce~='gesture' then
                             if ent.type == BOOKTYPE_SPELL or ent.type == BOOKTYPE_PET then
                                 local link = spellLink(sid)
                                 text = text:gsub("{{spell}}", link)
@@ -1911,7 +1911,8 @@ local function spellcast(self, event, unit, castguid, spellid)
                                 text = text:gsub("{{target}}", currentSpells[castguid] or lastCastTarget[spellid])
                             end
                             end
-                            self:DispatchAnnouncement(ent, text)
+                            if ent.announce=='gesture' then self:DispatchAnnouncement(ent,nil,currentSpells[castguid])
+                            else self:DispatchAnnouncement(ent, text) end
                             if self.announced[value.id] == nil then
                                 self.announced[value.id] = { castguid }
                             else

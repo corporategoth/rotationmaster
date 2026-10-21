@@ -1,6 +1,6 @@
 local _,addon=...
 local platform=addon.Platform
-local direct={['local']='LOCAL',say='SAY',yell='YELL',emote='EMOTE'}
+local direct={['local']='LOCAL',say='SAY',yell='YELL',emote='EMOTE',gesture='GESTURE'}
 local function destination(mode)
     if not platform:CanReadValue(mode) or type(mode)~='string' then return nil,'invalid-destination' end
     if direct[mode] then return direct[mode] end
@@ -37,10 +37,16 @@ end
 -- Output is best-effort and independent: a failed chat or audio API must not
 -- interrupt cast bookkeeping or recommendation evaluation. This does not
 -- construct templates, match events, or retry messages through another path.
-function addon:DispatchAnnouncement(config,text)
+function addon:DispatchAnnouncement(config,text,castRecipient)
     local result={chat=false,sound=false}
     if not platform:CanReadValue(config) or type(config)~='table' then return result end
     local dest,why=destination(config.announce);result.chatReason=why
+    if dest=='GESTURE' then
+        local target=config.emote_target and castRecipient or ''
+        if config.emote_target and (not platform:CanReadValue(target) or type(target)~='string' or target=='') then result.chatReason='cast-recipient-unavailable'
+        else local sent,reason=platform:PerformAnnouncementEmote(config.emote,target);result.chat=sent==true;result.chatReason=reason end
+        dest=nil
+    end
     if dest then
         if not platform:CanReadValue(text) or type(text)~='string' then result.chatReason='invalid-message'
         elseif dest=='LOCAL' then

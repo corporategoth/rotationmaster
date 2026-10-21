@@ -1,6 +1,6 @@
 local addon_name,addon=...
 local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
-local channels={{value='audible',text=L['Audible']},{value='partyraid',text=L['Raid or Party']},{value='party',text=L['Party Only']},{value='raidwarn',text=L['Raid Warning']},{value='emote',text=L['Emote']},{value='local',text=L['Local Only']}}
+local channels={{value='audible',text=L['Audible']},{value='partyraid',text=L['Raid or Party']},{value='party',text=L['Party Only']},{value='raidwarn',text=L['Raid Warning']},{value='say',text=L['Say']},{value='yell',text=L['Yell']},{value='gesture',text=L['Emote']},{value='local',text=L['Local Only']}}
 local types={{value='spell',text=L['Spell']},{value='pet',text=L['Pet Spell']},{value='item',text=L['Item']}}
 function addon:BuildAnnounceSettings(p)
     local store=p:SettingsData()
@@ -13,8 +13,13 @@ function addon:BuildAnnounceSettings(p)
         if entry.type=='item' then p:ItemSequence(prefix..'action',entry.item,function(v) update(entry,'item',v) end)
         else p:Spell(prefix..'action',L['Spell'],entry.spell,entry.type=='pet' and BOOKTYPE_PET or addon.currentSpec,function(v) update(entry,'spell',v) end);p:InlineCheck(prefix..'action',prefix..'ranked',L['Use this exact spell rank'],entry.ranked,function(v) update(entry,'ranked',v) end) end
         p:Choice(prefix..'event',L['Event'],entry.event,events,function(v) update(entry,'event',v) end)
-        p:Choice(prefix..'channel',L['Announce'],entry.announce,channels,function(v) update(entry,'announce',v);p:Draw() end)
-        if entry.announce=='audible' then p:Sound(prefix,L['Sound'],entry.announce_sound,function(v) update(entry,'announce_sound',v) end) else p:Edit(prefix..'text',L['Text'],entry.value or '',nil,function(v) update(entry,'value',v) end) end
+        local choices=channels
+        if entry.announce=='emote' then choices={};for _,row in ipairs(channels) do choices[#choices+1]=row end;choices[#choices+1]={value='emote',text=L['Custom emote']} end
+        p:Choice(prefix..'channel',L['Announce'],entry.announce,choices,function(v) update(entry,'announce',v);p:Draw() end)
+        if entry.announce=='gesture' then
+            p:Choice(prefix..'emote',L['Emote'],entry.emote,self.Platform:GetAnnouncementEmotes(),function(v) update(entry,'emote',v) end)
+            p:Check(prefix..'emote_target',L['Use spell recipient ({{target}})'],entry.emote_target,function(v) update(entry,'emote_target',v) end)
+        elseif entry.announce=='audible' then p:Sound(prefix,L['Sound'],entry.announce_sound,function(v) update(entry,'announce_sound',v) end) else p:Edit(prefix..'text',L['Text'],entry.value or '',nil,function(v) update(entry,'value',v) end) end
     end
     local function itemInfo(value)
         if type(value)=='string' then local set=(store.profile.itemsets or {})[value] or (store.global.itemsets or {})[value];local info=set and set.items and self:GetReferenceProvider('item').info(tonumber(set.items[1]) or self:GetReferenceProvider('item').resolve(set.items[1]));return {name=set and set.name or L['Item Set'],icon=info and info.icon} end
@@ -49,11 +54,13 @@ function addon:BuildAnnounceSettings(p)
             end,{canReplace=selected~=nil,selectedName=selected and (self:SettingsNonempty(selected.name) or named[p.selection].name),fallbackName=L['Imported announcement'],originalName=function(input) local decoded=codec:Decode(input);local entry=decoded and type(decoded.value)=='table' and decoded.value.announcement;if type(entry)=='table' then if self:SettingsNonempty(entry.name) then return entry.name end;local info=entry.type=='item' and itemInfo(entry.item) or self.Platform:GetSpellInfo(entry.spell);return info and info.name end end})
         end})
     p:Heading(L['Announces'])
+    local help=p:Acquire('announceHelp',function() return self:CreateWorkbenchHelpButton(p.child,L['Help']) end)
+    help:ClearAllPoints();help:SetPoint('TOPRIGHT',-124,-3);help:SetSize(20,20);help.icon:SetSize(18,18);p.fields.announce_help=help
+    self:SetUIScript(help,'OnClick',p:Guard(function() self:ShowWorkbenchHelp(L['Announces'],self:WorkbenchPageHelp('Announces'),self.pretty_name) end))
     for i,entry in ipairs(values) do if i==p.selection and not p.creating then
         local title=self:SettingsNonempty(entry.name) or entry.type=='item' and (itemInfo(entry.item) and itemInfo(entry.item).name or L['Item data loading']) or self:PlainWorkbenchName(self:SpellLabel(entry.spell))
-        p:Section('announce'..i,title,function()
-            p:Edit('entry'..i..'name',L['Name'],entry.name or '',nil,function(value) update(entry,'name',value) end);drawAction('entry'..i,entry)
-        end)
+        p:Heading(title)
+        p:Edit('entry'..i..'name',L['Name'],entry.name or '',nil,function(value) update(entry,'name',value) end);drawAction('entry'..i,entry)
         local enabled=p:Acquire('announceEnabled',function() return self:CreateWorkbenchPill(p.child,'',88) end);enabled:ClearAllPoints();enabled:SetPoint('TOPRIGHT',-30,-4);enabled:SetSize(88,18);enabled:SetText(entry.disabled and L['Disabled'] or L['Enabled']);enabled:SetSelected(not entry.disabled);p.fields['enabled'..i]=enabled;self:SetUIScript(enabled,'OnClick',p:Guard(function() if p:FlushEdits() then entry.disabled=not entry.disabled;p:Draw() end end))
         local identity=entry.id
         p.fields['delete'..i]=self:SettingsTopDelete(p,function()

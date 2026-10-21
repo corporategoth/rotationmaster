@@ -11,15 +11,18 @@ end
 function addon:IsValidAnnouncement(value,requireIdentity)
     if type(value)~='table' then return false end
     if requireIdentity and (type(value.id)~='string' or not value.id:match('^%x%x%x%x%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%x%x%x%x%x%x%x%x$')) then return false end
-    local allowed={name=true,id=true,type=true,spell=true,item=true,ranked=true,disabled=true,event=true,announce=true,value=true,announce_sound=true}
+    local allowed={name=true,id=true,type=true,spell=true,item=true,ranked=true,disabled=true,event=true,announce=true,value=true,announce_sound=true,emote=true,emote_target=true}
     for key in pairs(value) do if not allowed[key] then return false end end
     if value.type~='spell' and value.type~='pet' and value.type~='item' then return false end
     if type(value.event)~='string' or not (self.events or {})[value.event] then return false end
-    if not ({partyraid=true,party=true,raidwarn=true,emote=true,['local']=true,audible=true,say=true,yell=true})[value.announce] then return false end
+    if not ({partyraid=true,party=true,raidwarn=true,emote=true,['local']=true,audible=true,say=true,yell=true,gesture=true})[value.announce] then return false end
     for _,key in ipairs({'disabled','ranked'}) do if value[key]~=nil and type(value[key])~='boolean' then return false end end
     if value.name~=nil and (type(value.name)~='string' or #value.name>256) then return false end
     if value.value~=nil and (type(value.value)~='string' or #value.value>4096) then return false end
     if value.announce_sound~=nil and (type(value.announce_sound)~='string' or #value.announce_sound>256) then return false end
+    if value.emote_target~=nil and type(value.emote_target)~='boolean' then return false end
+    if value.emote~=nil and (type(value.emote)~='string' or #value.emote>64 or not value.emote:match('^[A-Z][A-Z0-9_]*$')) then return false end
+    if value.announce=='gesture' and value.emote==nil then return false end
     if value.announce=='audible' and (not value.announce_sound or not value.announce_sound:find('%S')) then return false end
     if value.type~='item' then return type(value.spell)=='number' and value.spell>0 and value.spell%1==0 end
     return self:IsValidAnnouncementItemReference(value.item)

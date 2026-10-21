@@ -37,3 +37,34 @@ function platform:SendAnnouncementChat(text,destination)
     if not ok then return nil,'api-error' end
     return true
 end
+
+-- Resolve the current client's own slash-command catalog only on editor/output
+-- requests. No retained global catalog, native target lookup or polling work.
+function platform:GetAnnouncementEmotes()
+    local limit=MAXEMOTEINDEX
+    if not self:CanReadValue(limit) or type(limit)~='number' or limit<1 or limit>1024 or limit%1~=0 then return {} end
+    local rows,seen={},{}
+    for i=1,limit do
+        local token,command=_G['EMOTE'..i..'_TOKEN'],_G['EMOTE'..i..'_CMD1']
+        if self:CanReadValue(token) and type(token)=='string' and #token<=64 and token:match('^[A-Z][A-Z0-9_]*$') and not seen[token]
+            and self:CanReadValue(command) and type(command)=='string' and #command>0 and #command<=128 then
+            seen[token]=true;rows[#rows+1]={value=token,text=command}
+        end
+    end
+    table.sort(rows,function(a,b)return a.text<b.text end)
+    return rows
+end
+function platform:PerformAnnouncementEmote(token,target)
+    if not self:CanReadValue(token) or not self:CanReadValue(target) then return nil,'restricted-value' end
+    if type(token)~='string' or type(target)~='string' or #target>512 or target:find('[%z\1-\31\127]') then return nil,'invalid-emote' end
+    local found=false;for _,row in ipairs(self:GetAnnouncementEmotes()) do if row.value==token then found=true;break end end
+    if not found then return nil,'emote-unavailable' end
+    local fn=type(C_ChatInfo)=='table' and C_ChatInfo.PerformEmote
+    if type(fn)~='function' then fn=DoEmote end
+    if type(fn)~='function' then return nil,'missing-api' end
+    -- Empty target is explicit, as in the client's '/cheer' command. A missing
+    -- cast recipient never substitutes the selected unit or a prior cast.
+    local ok=pcall(fn,token,target)
+    if not ok then return nil,'api-error' end
+    return true
+end

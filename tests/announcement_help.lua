@@ -33,4 +33,9 @@ test('shared settings help does not contradict draft Apply',function()
     for _,entry in ipairs(f.addon:WorkbenchPageHelp('Announces')) do if entry.title=='Editing settings' then editing=entry.text end end
     assert(editing and editing:find('Apply',1,true) and not editing:find('apply immediately',1,true),'help still promises immediate saves')
 end)
+test('Announces page help describes expanded details instead of collapsible editors',function()
+ local f=fixture();local editing
+ for _,entry in ipairs(f.addon:WorkbenchPageHelp('Announces')) do if entry.title=='Editing settings' then editing=entry.text end end
+ assert(editing and editing:find('always expanded',1,true) and not editing:find('collapse',1,true))
+end)
 finish()
