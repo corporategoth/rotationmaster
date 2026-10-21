@@ -13,6 +13,7 @@ local changes={
 }
 local function hash(s)local n=0;for i=1,#s do n=(n*33+s:byte(i))%4294967296 end;return string.format('%08x',n)end
 return function(text,path)
+ if path=='main.lua'and text:find('local prepareChoiceSelection',1,true)then text=dofile('tests/fixtures/restore_rotation_choice_preferences.lua')(text,path)end
  if path=='main.lua' and text:find('-- BEGIN EQUIPMENT EVENT LIFETIME',1,true) then text=dofile('tests/fixtures/restore_equipment_event_refresh.lua')(text,path) end
  if path~='main.lua' then return text end
  assert(#text==88071 and hash(text)=='15dc9e89','unrelated named-emote main source')

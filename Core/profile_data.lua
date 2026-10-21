@@ -56,9 +56,13 @@ local function validStockTargets(addon,profile)
     local plan=rawget(profile,'stockTargets')
     return plan==nil or addon.StockTargets.Validate(plan)==true
 end
+local function validRotationChoices(owner,profile)
+    local value=type(profile)=='table' and rawget(profile,'rotationChoicePreferences')
+    return value==nil or type(owner.ValidateRotationChoicePreferences)=='function' and owner:ValidateRotationChoicePreferences(value)==true
+end
 function addon:ValidateProfileTransfer(value)
     if type(value)~='table' then return false end
-    if not validStockTargets(self,value) then return false end
+    if not validStockTargets(self,value) or not validRotationChoices(self,value) then return false end
     local wire=self:ProfileToPortable(value);if not wire or not self.RotationData.CheckPortable(wire) then return false end
     local function stringValue(v) return type(v)=='string' end
     for key,item in pairs(value) do
@@ -79,6 +83,8 @@ function addon:ValidateProfileTransfer(value)
                 count=count+1
                 if count>64 or type(name)~='string' or #name>128 or not name:find('%S') or name=='auto' or name=='plain' or disabled~=true then return false end
             end
+        elseif key=='rotationChoicePreferences' then
+            -- Closed optional schema checked before generic recursive copying.
         elseif key=='stockTargets' then
             -- Closed optional schema was checked before copying the profile.
         elseif key=='itemsets' then
@@ -126,7 +132,7 @@ end
 -- intentionally accepts only positive numeric table keys, so profile wire maps
 -- use canonical decimal strings and restore numbers only in these namespaces.
 function addon:ProfileToPortable(profile)
-    if not validStockTargets(self,profile) then return nil end
+    if not validStockTargets(self,profile) or not validRotationChoices(self,profile) then return nil end
     local copy=self:CopySettingsData(profile)
     local function encode(map) return specMap(map,true) end
     if type(copy)=='table' then
@@ -137,7 +143,7 @@ function addon:ProfileToPortable(profile)
     return copy
 end
 function addon:ProfileFromPortable(profile,options)
-    if not validStockTargets(self,profile) then return nil end
+    if not validStockTargets(self,profile) or not validRotationChoices(self,profile) then return nil end
     local copy=self:CopySettingsData(profile)
     local function decode(map) return specMap(map,false) end
     if type(copy)~='table' then return nil end

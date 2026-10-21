@@ -417,6 +417,8 @@ def main():
             ['luajit', 'tests/rotation_scope_persistence.lua'],
             ['lua5.1', 'tests/rotation_scope_init.lua'],
             ['luajit', 'tests/rotation_scope_init.lua'],
+            ['lua5.1', 'tests/rotation_choice_preferences.lua'],
+            ['luajit', 'tests/rotation_choice_preferences.lua'],
             ['lua5.1', 'tests/active_rotation_transitions.lua'],
             ['luajit', 'tests/active_rotation_transitions.lua'],
             ['lua5.1', 'tests/active_rotation_integration.lua'],

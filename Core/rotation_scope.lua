@@ -9,6 +9,13 @@ end
 ---@type fun(f: number|function): table
 local storeGetfenv=getfenv
 local storeScopeEnvironment=type(storeGetfenv)=='function' and storeGetfenv(1) or nil
+local prepareChoicePublication,finishChoicePublication
+local consumeChoices=addon.ConsumeRotationChoicePublication
+if type(consumeChoices)=='function' then
+    prepareChoicePublication,finishChoicePublication=consumeChoices(addon)
+    addon.ConsumeRotationChoicePublication=nil
+end
+local invalidateChoiceContext=addon.InvalidateRotationChoiceContext
 local prepareActivePublication,finishActivePublication,prepareActiveRebind,finishActiveRebind
 local activeCurrent=addon.IsActiveRotationTransitionCurrent
 local protect,raise=pcall,error
@@ -135,6 +142,7 @@ function addon:BindActiveRotationProfileRebind(receiver)
     return true
 end
 function addon:BindRotationProfile()
+    if invalidateChoiceContext then invalidateChoiceContext(addon) end
     local bindToken={};bindGeneration=bindToken
     local binding,profile
     local function bindingCurrent()
@@ -353,8 +361,9 @@ function addon:BindRotationProfile()
         local target={kind='custom',address=destination}
         local fallbackKey=destination.id==profile.rotationFallbackID and DEFAULT or nil
         local publication=prepareActivePublication and prepareActivePublication(a.spec,previousKey,reference,target,body,nil,fallbackKey)
+        local choicePublication=prepareChoicePublication and prepareChoicePublication(profile,reference,target)
         local now,contextProblem=context()
-        local current,currentProblem=ready();if not current then return nil,currentProblem end
+        local readyNow,currentProblem=ready();if not readyNow then return nil,currentProblem end
         if not now then return nil,contextProblem end
         if not same(now,c) then return nil,'rotation-owner-changed' end
         if token then
@@ -364,6 +373,7 @@ function addon:BindRotationProfile()
         else plan,reason=store:PlanCreate(destination,record,c) end
         if not plan then return nil,reason end
         local committed,problemText=store:Commit(plan,c);if not committed then return nil,problemText end
+        if finishChoicePublication then finishChoicePublication(choicePublication,alive and current==coordinator) end
         if token then expected[token]=nil end
         local oldIndex=referenceKey(reference);local targetIndex=referenceKey(target)
         local draft=pending[oldIndex]
@@ -384,11 +394,14 @@ function addon:BindRotationProfile()
         local issued=expected[token]
         if not issued or not same(issued.reference,reference) or not same(issued.context,c) then return nil,'stale-rotation-record' end
         if reference.address.id==profile.rotationFallbackID then return nil,'read-only-rotation' end
+        local choicePublication=prepareChoicePublication and prepareChoicePublication(profile,reference,nil)
         local plan,reason=store:PlanDelete(reference.address,c,issued.token);if not plan then return nil,reason end
         local committed,problemText=store:Commit(plan,c);if not committed then return nil,problemText end
+        if finishChoicePublication then finishChoicePublication(choicePublication,alive and current==coordinator) end
         local index=referenceKey(reference);local key=byReference[index]
         if key then cleanup[key]=assets[index] and assets[index].body;byKey[key]=nil;byReference[index]=nil;headers[key]=nil end
-        assets[index]=nil;expected[token]=nil;return true
+        assets[index]=nil;expected[token]=nil
+        return true
     end
     function coordinator:Cleanup(number,value)
         if cleanup[value] then return cleanup[value] end
@@ -434,6 +447,7 @@ function addon:BindRotationProfile()
         local current,currentReason=ready();if not current then return nil,currentReason end
         local now,ownerReason=context();if not now or not same(now,c) then return nil,ownerReason or 'rotation-owner-changed' end
         local committed,commitReason=store:Commit(adoption.plan,c);if not committed then return nil,commitReason end
+        if finishChoicePublication then finishChoicePublication(nil) end
         local draft=pending[referenceKey(reference)]
         if draft then
             -- Adoption creates a saved entity, not the old virtual draft's
@@ -584,6 +598,7 @@ function addon:BindRotationProfile()
             local detached,token=store:Get(reference.address,c);if not detached then return nil,token end
             local plan,planReason=store:PlanReplace(reference.address,detached,c,token);if not plan then return nil,planReason end
             local committed,commitReason=store:Commit(plan,c);if not committed then return nil,commitReason end
+            if finishChoicePublication then finishChoicePublication(nil) end
             -- This transaction changed identity only. Preserve UI authorities
             -- that still describe the exact complete value being detached.
             local _,freshToken=store:Get(reference.address,c)

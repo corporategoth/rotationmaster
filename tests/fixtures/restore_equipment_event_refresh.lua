@@ -75,6 +75,7 @@ end
 }
 local function hash(s)local n=0;for i=1,#s do n=(n*33+s:byte(i))%4294967296 end;return string.format('%08x',n)end
 return function(text,path)
+ if path=='main.lua'and text:find('local prepareChoiceSelection',1,true)then text=dofile('tests/fixtures/restore_rotation_choice_preferences.lua')(text,path)end
  if path~='main.lua'then return text end
  assert(#text==91122 and hash(text)=='1fbe6913','unrelated composed equipment-event source')
  for i=#changes,1,-1 do local c=changes[i];assert(text:sub(c.at,c.at+#c.current-1)==c.current,'composed equipment-event addition mismatch');text=text:sub(1,c.at-1)..c.previous..text:sub(c.at+#c.current)end

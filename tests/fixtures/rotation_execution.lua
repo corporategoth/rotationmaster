@@ -10,6 +10,7 @@ common=once(common,'    env._G = env','    env._G = env\n    for _,key in ipairs
 persistent=once(persistent,"    load('main.lua')\n",'')
 persistent=once(persistent,'    local data,envelope=make();addon.RotationData=data',"    local _,envelope=make();addon.RotationData={}\n    load('Data/plain.lua');load('Data/rotation_revision.lua');load('Data/tags.lua');load('Data/rotation_tree.lua');load('Data/validation.lua')\n    local data=addon.RotationData")
 persistent=once(persistent,'    addon.GetRotationContext=function()',"    load('Core/rotation_sequence.lua');load('main.lua')\n    addon.GetRotationContext=function()")
+persistent=once(persistent,"load('Core/rotation_library.lua')","load('Core/rotation_choice_preferences.lua');load('Core/rotation_library.lua')")
 local makePersistent=assert(loadstring(common..'\n'..persistent..'\nreturn persistentFixture','@external-toc-ordered-runtime'))()
 local source=[====[local function make(options)
  local e,a,_,_,_,_,load=fixture();load('Core/rotation_sequence.lua');local native={};local phase;local trace={};local cacheIDs=setmetatable({},{__mode='k'});local cacheCount=0

@@ -134,7 +134,7 @@ L["/rm enable              - Enable battle rotation."] = true
 L["/rm toggle              - Toggle between enabled and disabled."] = true
 L["/rm current             - Print out the name of the current rotation."] = true
 L["/rm set [auto|profile]  - Switch to a specific rotation, or use automatic switching again."] = true
-L["                          This is reset upon switching specializations."] = true
+L["                          Manual choices are remembered for this character, specialization and action context."] = true
 L["/rm check               - Check the database integrity."] = true
 L["/rm repair              - Fix any DB errors found in the data with internal validation."] = true
 
@@ -2803,6 +2803,8 @@ L["Default.TBC.Rogue.Forty.Name"] = "Rogue: melee leveling (40–49)"
 L["Default.TBC.Rogue.Forty.Description"] = "Bounded single-target melee preview. Preserves manual stealth, casts and channels. Missing attributable own Slice and Dice from two current-target combo points, Eviscerate at five, otherwise Sinister Strike. Learned ranks, mappings and native readiness govern actions; openers, poisons, talents, positioning, reactive utility, target lifetime and resources remain manual. This inherited subset is not a complete or optimal 40s build."
 L["Default.TBC.Druid.Caster.Forty.Name"] = "Druid: limited caster leveling (40–49)"
 L["Default.TBC.Druid.Caster.Forty.Description"] = "Bounded humanoid caster-only preview. Preserves manual forms, casts and channels; own missing Moonfire, learned stationary Starfire, then independently ready Wrath. Native learned ranks, mappings and readiness govern recommendations. Feral combat, form changes, talents, support and resources remain manual; no implicit melee advice. This inherited subset is not a complete or optimal 40s build."
+
+L['Saved manual choice is unavailable in the current context.'] = true
 
 -- Capture-only START witness diagnostics.
 L['START witness rows: observed=%s matched=%s mismatch=%s excluded=%s unknown=%s (not ordinary proof).'] = true

@@ -363,6 +363,7 @@ function addon:EvaluateNextActionInternal()
 ]========]}}}}
 local function hash(s)local n=5381;for i=1,#s do n=(n*33+s:byte(i))%4294967296 end;return string.format('%08x',n)end
 return function(text,path)
+ if path=='Core/rotation_scope.lua'and text:find('local prepareChoicePublication',1,true)then text=dofile('tests/fixtures/restore_rotation_choice_preferences.lua')(text,path)end
  if path=='main.lua'and text:find('-- BEGIN ANALYTICS ADVICE HANDOFF',1,true)then text=dofile('tests/fixtures/restore_analytics_preview_delivery.lua')(text,path)end
  if path=='Data/rotation_store.lua' and text:find("-- Preserve public-reader admission",1,true) then text=dofile('tests/fixtures/restore_runtime_store_native_gate.lua')(text,path) end
  local row=rows[path];if not row then return text end

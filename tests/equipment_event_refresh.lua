@@ -34,7 +34,19 @@ test('real equipment event refreshes existing equipment-conditioned selection af
  f.equipped(false);for i=1,3 do f.c.tick()end;assert(f.a.currentRotation==gear);f.fire(13,false);assert(f.a.currentRotation==f.old);assert(f.calls.evaluations>=8,'event did not immediately evaluate owned action')
 end)
 test('manual and autoswitch-disabled selections remain locked while the current owner refreshes',function()
- for _,key in ipairs({'manual','disabled'})do local f=enabled();if key=='manual'then f.a.manualRotation=true else f.a.db.profile.disable_autoswitch=true end;f.equipped(true);local n=f.calls.evaluations;f.fire(13,true);assert(f.a.currentRotation==f.old,key);assert(f.calls.evaluations==n+1,key..' current manual advice not refreshed')end
+ for _,key in ipairs({'manual','disabled'})do
+  local f=enabled();local a=f.a
+  if key=='manual'then
+   f.e.LibStub('AceConsole-3.0').GetArgs=function(_,s)return s:match('^(%S+)'),(s:find(' ',1,true)or #s)+1 end
+   a:HandleCommand('set '..f.old);assert(a.manualRotation and a.db.profile.rotationChoicePreferences,'actual manual choice was not remembered')
+  else a.db.profile.disable_autoswitch=true end
+  f.equipped(true);local n=f.calls.evaluations;f.fire(13,true);assert(a.currentRotation==f.old,key);assert(f.calls.evaluations==n+1,key..' current manual advice not refreshed')
+  if key=='manual'then
+   a:HandleCommand('set auto');assert(not a.manualRotation and not a.db.profile.rotationChoicePreferences,'actual Auto command retained desired choice')
+   assert(a:GetRuntimeRotation(0,a.currentRotation).name==f.gearName,'Auto did not immediately select equipped rotation')
+   f.equipped(false);n=f.calls.evaluations;f.fire(13,false);assert(a.currentRotation==f.old and not a.manualRotation and f.calls.evaluations==n+1,'Auto did not keep following equipment facts')
+  end
+ end
 end)
 test('combat equipment notification remains advice-only and unavailable gear chooses existing fallback',function()
  local f=enabled({combat=true});f.equipped(true);f.fire(16,true);assert(f.a:GetRuntimeRotation(0,f.a.currentRotation).name==f.gearName);f.e.C_Item.IsEquippedItem=function()return nil end;f.fire(16,false);assert(f.a.currentRotation==f.old and not f.a.adviceErrorReport)

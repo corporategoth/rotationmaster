@@ -11,6 +11,7 @@ RM stores one account SavedVariables table per client installation, using AceDB'
 | Rotations, fallback rotation, clone/import lineage and comparisons | Selected profile, then Class or Character owner, specialization key and rotation ID |
 | Built In rotation definitions | Immutable packaged assets with class/client applicability |
 | Built In enable preferences | Selected profile |
+| Desired manual rotation choice | Selected profile, character, edition family, class, specialization and action context |
 | Desired stock targets | Selected profile; exact item IDs and desired minimum/target quantities only |
 | Announcement rules, personal item sets | Selected profile; personal currently means profile, not character |
 | Condition categories, picker visibility/order, tag colors | Selected profile |
@@ -68,3 +69,45 @@ Item Sets provides separate Item Sets and Stock sources. Stock edits exact item 
 Invalid saved stock is excluded from recursive draft/history/compare operations and remains intact until an explicit stock-only recovery confirmation. Recovery requires the same raw saved root; an equality metamethod cannot authorize replacing another root. Untouched stock is omitted from unrelated Item Sets saves and confirmed item-set deletion, preserving an external stock replacement. Changed stock must pass current/proposed validation and ordinary saved-baseline conflict checks before Apply.
 
 The Stock page also summarizes whether saved enabled targets meet their minimums, using the same already-built count report as shortage copying. It adds no inventory queries or recurring work. Unknown quantities remain unknown; pending counts and dirty/new drafts have distinct guidance. The summary reserves its layout space when the pane is drawn, so count updates do not move the editor or reset focus/history. Readiness describes minimum quantities, while the shortage list still refills qualifying rows to their target.
+
+## Remembered manual selection
+
+Explicit chat/menu selection remembers a detached stable Built In ID or complete
+Class/Character reference in optional `rotationChoicePreferences` version1.
+The bounded dense list has at most256 unique domains; numeric specialization0
+is a value, so profile transport requires no additional numeric-key conversion.
+No entry means Auto. Old profiles are not seeded from transient active IDs.
+Profile copy/import transfers desired data, while reset removes it. Existing
+closed transfer validation rejects extra fields, aliases and foreign reference
+ownership before copying; no runtime handle or native observation is saved.
+
+Restoration is cold on initialization/profile/spec/context notifications and
+managed rotation publications. Ordinary selection calls check only private
+cache/profile/root/spec/character/context-method authority; they do not rescan preferences or query the
+context. The active coordinator resolves the exact reference and fresh runtime
+eligibility, then uses the same chat/menu cleanup/commit/timer/message sequence.
+Manual selection bypasses only the automatic switch predicate. Unavailable
+choices remain saved and suspend, permitting the existing Auto fallback or no
+advice; the broker tooltip reports suspension. Restoration does not clear
+initialization or advice diagnostic stops. Bare custom records gain no inferred
+vehicle applicability: each saved action context is a separate domain.
+
+Successful exact ownership moves retarget only that reference; exact deletion
+removes it, preventing reused IDs from restoring a deleted entity. A consumed
+source-owned cold prepare/finish pair in the scoped coordinator performs these
+changes after Store success, before existing post-save copying, without public
+notification, copy or native callbacks. Finalization checks the live coordinator,
+profile, store root, preference root, private choice generation and unchanged
+prepared data. Newer choices or profile/root replacement win. Failed Store
+commits leave preferences untouched, and unrelated malformed preferences cannot
+block rotation Move/Delete.
+
+A custom Store transport may recursively move/delete the newly saved target
+before returning. If the exact target no longer exists, completion removes only
+the still-matching old desired choice; it does not infer the newest address in a
+chain. One private cold token also detects nested successful scoped publication,
+including deletion followed by exact-ID reuse. Failed writes do not advance it.
+Direct custom Store transports bypassing Scope do not confer chained choice
+ownership. This conservative boundary avoids resurrecting a missing target. It is
+not a move-history registry. Automatic/Single-target/AoE strategy declarations,
+new context-specific packs and target-count rules remain separate work.

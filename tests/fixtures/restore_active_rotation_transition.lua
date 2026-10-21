@@ -8512,6 +8512,7 @@ return F
 
 }
 return function(text,path)
+ if path=='Core/rotation_scope.lua'and text:find('local prepareChoicePublication',1,true)or path=='Core/rotation_library.lua'and text:find('local invalidateChoiceContext',1,true)then text=dofile('tests/fixtures/restore_rotation_choice_preferences.lua')(text,path)end
  if path=='Core/rotation_lifecycle.lua' then text=dofile('tests/fixtures/restore_questie_wiring.lua')(text,path) end
  if path=='main.lua' then text=dofile('tests/fixtures/restore_cpu_work_views.lua')(text,path) end
  local row=assert(rows[path],'unknown active-transition inverse path')

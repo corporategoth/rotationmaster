@@ -11,6 +11,14 @@ local advanceActiveSpec=addon.AdvanceActiveRotationSpecialization
 local retireActive=addon.RetireActiveRotationTransition
 local commitActive=addon.CommitActiveRotationTransition
 local cleanupActive=addon.GetActiveRotationCleanupSelection
+local prepareChoiceSelection,finishChoiceSelection,readDesiredChoice,choiceNeedsRefresh
+local invalidateChoiceContext=addon.InvalidateRotationChoiceContext
+local invalidateChoiceDependencies=addon.InvalidateRotationDependencies
+local consumeChoices=addon.ConsumeRotationChoiceSelection
+if type(consumeChoices)=='function' then
+    prepareChoiceSelection,finishChoiceSelection,readDesiredChoice,choiceNeedsRefresh=consumeChoices(addon)
+    addon.ConsumeRotationChoiceSelection=nil
+end
 -- BEGIN EQUIPMENT EVENT LIFETIME
 local equipmentSubscription
 local equipmentCoordinator=addon.GetScopedRotationCoordinator
@@ -38,6 +46,13 @@ local function activeObjectCall(self,token,object,name,...)
     if not activeChangeCurrent(self,token) then return false end
     method(object,...)
     return activeChangeCurrent(self,token)
+end
+local function activeObjectValue(self,token,object,name,...)
+    if not activeChangeCurrent(self,token) then return false end
+    local method=object[name]
+    if not activeChangeCurrent(self,token) then return false end
+    local value=method(object,...)
+    return activeChangeCurrent(self,token),value
 end
 local function activeBroker(self,token,broker,text)
     if not activeChangeCurrent(self,token) then return false end
@@ -279,6 +294,100 @@ local classic_events = {
 
 }
 
+-- Chat, menu and cold restoration share the existing active transition path.
+local function chooseManualRotation(self,id,change,remember)
+    change=change or beginActive(self)
+    if not activeChangeCurrent(self,change) then return nil end
+    local body=id and runtimeOne(self,self.currentSpec,id)
+    if not activeChangeCurrent(self,change) or id and not body then return nil end
+    local ticket
+    if remember and prepareChoiceSelection then
+        local reference
+        if id then
+            local available=self.GetScopedRotationCoordinator
+            if not activeChangeCurrent(self,change) then return nil end
+            local checked,coordinator
+            if available then checked,coordinator=activeValue(self,change,'GetScopedRotationCoordinator');if not checked then return nil end end
+            if coordinator then checked,reference=activeObjectValue(self,change,coordinator,'Resolve',self.currentSpec,id);if not checked then return nil end end
+        end
+        if not id or reference then ticket=prepareChoiceSelection(self,reference) end
+        if not activeChangeCurrent(self,change) then return nil end
+    end
+    if ticket and invalidateChoiceDependencies then
+        invalidateChoiceDependencies(self,'selection',nil)
+        if not activeChangeCurrent(self,change) then return nil end
+    end
+    self.rotationChoiceSuspended=nil
+    if id==nil then
+        if ticket then finishChoiceSelection(ticket) end
+        self.manualRotation=false
+        return self:SwitchRotation()
+    end
+    local selected=self.currentRotation
+    if not activeChangeCurrent(self,change) then return nil end
+    if selected~=id then
+        if not retireActive(self,change) or not activeChangeCurrent(self,change) then return nil end
+        if not activeCall(self,change,'RemoveAllCurrentGlows') then return nil end
+        if not commitActive(self,change,self.currentSpec,id,body) or not activeChangeCurrent(self,change) then return nil end
+        self.manualRotation=true
+        self.skipAnnounce=true;self.avail_announced={};self.announced={}
+        if not activeCall(self,change,'EnableRotationTimer') then return nil end
+        local named,name=activeValue(self,change,'GetRotationName',id)
+        if not named or not activeBroker(self,change,DataBroker,name) then return nil end
+        if not activeObjectCall(self,change,AceEvent,'SendMessage','ROTATIONMASTER_ROTATION',id,name) then return nil end
+    else self.manualRotation=true end
+    if remember then
+        local named,name=activeValue(self,change,'GetRotationName',id)
+        if not named or not activeCall(self,change,'info',L["Active rotation manually switched to " .. color.WHITE .. "%s" .. color.INFO],name) then return nil end
+        local checked,valid=activeValue(self,change,'rotationValidConditions',body,self.currentSpec)
+        if not checked then return nil end
+        if not valid and not activeCall(self,change,'warn',L["Active rotation is incomplete and may not work correctly!"]) then return nil end
+        if ticket then finishChoiceSelection(ticket) end
+    end
+    return true,change
+end
+
+local function restoreManualChoice(self)
+    if choiceNeedsRefresh and choiceNeedsRefresh(self) then
+        local change=beginActive(self)
+        if not activeChangeCurrent(self,change) then return true end
+        local desired,changed=readDesiredChoice(self)
+        if not activeChangeCurrent(self,change) then return true end
+        if self.adviceErrorReport or self.initializationErrorReport then return true end
+        if changed then
+            local wasManual=self.manualRotation
+            if not activeChangeCurrent(self,change) then return true end
+            self.rotationChoiceSuspended=nil
+            self.manualRotation=false
+            if desired then
+                local available=self.GetScopedRotationCoordinator
+                if not activeChangeCurrent(self,change) then return true end
+                local checked,coordinator,reference,key
+                if available then checked,coordinator=activeValue(self,change,'GetScopedRotationCoordinator');if not checked then return true end end
+                if coordinator then
+                    checked,reference=activeObjectValue(self,change,coordinator,'Resolve',self.currentSpec,desired)
+                    if not checked then return true end
+                    if reference then checked,key=activeObjectValue(self,change,coordinator,'Key',reference);if not checked then return true end end
+                end
+                if not activeChangeCurrent(self,change) then return true end
+                if reference and chooseManualRotation(self,key,change,false) then return true,change end
+                if not activeChangeCurrent(self,change) then return true end
+                self.rotationChoiceSuspended=true
+            end
+            if wasManual and self.currentRotation then
+                local disable=self.DisableRotation
+                if not activeChangeCurrent(self,change) then return true end
+                local _,nextChange,stopped=disable(self)
+                if stopped==false then return true end
+                change=nextChange or change
+                if not activeChangeCurrent(self,change) then return true end
+            end
+        end
+        return false,change
+    end
+    return false
+end
+
 function addon:HandleCommand(str)
     local cmd, npos = AceConsole:GetArgs(str, 1, 1)
     if self.initializationErrorReport and cmd and cmd~="errors" and cmd~="help" then
@@ -294,7 +403,7 @@ function addon:HandleCommand(str)
         addon:print(L["/rm toggle              - Toggle between enabled and disabled."])
         addon:print(L["/rm current             - Print out the name of the current rotation."])
         addon:print(L["/rm set [auto|profile]  - Switch to a specific rotation, or use automatic switching again."])
-        addon:print(L["                          This is reset upon switching specializations."])
+        addon:print(L["                          Manual choices are remembered for this character, specialization and action context."])
         addon:print(L["/rm check               - Check the database integrity."])
         addon:print(L["/rm repair              - Fix any DB errors found in the data with internal validation."])
         addon:print(L["/rm errors              - View and copy Rotation Master errors."])
@@ -342,70 +451,19 @@ function addon:HandleCommand(str)
         local name = string.sub(str, npos)
         if not activeChangeCurrent(self,change) then return end
 
-        if name == "auto" then
-            self.manualRotation = false
-            self:SwitchRotation()
-        elseif name == self.currentRotation then
-            self.manualRotation = true
-            activeCall(self,change,'info',L["Active rotation manually switched to " .. color.WHITE .. "%s" .. color.INFO],name)
-        elseif name == DEFAULT then
-            if self.GetScopedRotationCoordinator and self:GetScopedRotationCoordinator() and not runtimeOne(self,self.currentSpec,DEFAULT) then
-                addon:warn(L['The fallback rotation is unavailable. Open Rotations to complete or recover it.']);return
+        if name=="auto" then
+            chooseManualRotation(self,nil,change,true)
+        elseif name==self.currentRotation or name==DEFAULT then
+            if not chooseManualRotation(self,name,change,true) and activeChangeCurrent(self,change) and name==DEFAULT then
+                self:warn(L['The fallback rotation is unavailable. Open Rotations to complete or recover it.'])
             end
-            if not activeChangeCurrent(self,change) then return end
-            local body=runtimeOne(self,self.currentSpec,DEFAULT)
-            if not activeChangeCurrent(self,change) or not body then return end
-            if not retireActive(self,change) or not activeChangeCurrent(self,change) then return end
-            if not activeCall(self,change,'RemoveAllCurrentGlows') then return end
-            if not commitActive(self,change,self.currentSpec,DEFAULT,body) or not activeChangeCurrent(self,change) then return end
-            self.manualRotation = true
-            self.skipAnnounce = true
-            self.avail_announced = {}
-            self.announced = {}
-            if not activeCall(self,change,'EnableRotationTimer') then return end
-            local named,displayName=activeValue(self,change,'GetRotationName',DEFAULT)
-            if not named then return end
-            if not activeBroker(self,change,DataBroker,displayName) then return end
-            local namedCurrent,currentName=activeValue(self,change,'GetRotationName',self.currentRotation)
-            if not namedCurrent then return end
-            if not activeObjectCall(self,change,AceEvent,'SendMessage',"ROTATIONMASTER_ROTATION",self.currentRotation,currentName) then return end
-            if not activeChangeCurrent(self,change) then return end
-            activeCall(self,change,'info',L["Active rotation manually switched to " .. color.WHITE .. "%s" .. color.INFO],name)
         else
-            do
-                local matches={}
-                for id,rot in pairs(runtimeRows(self,self.currentSpec)) do if rot.name==name then matches[#matches+1]={id=id,body=rot} end end
-                if not activeChangeCurrent(self,change) then return end
-                if #matches>1 then addon:warn(L['More than one rotation is named %s. Select its Class or This character entry in the rotation browser.'],name);return end
-                for _,entry in ipairs(matches) do
-                    local id,rot=entry.id,entry.body
-                    if rot.name == name then
-                        if not activeChangeCurrent(self,change) then return end
-                        if not retireActive(self,change) or not activeChangeCurrent(self,change) then return end
-                        if not activeCall(self,change,'RemoveAllCurrentGlows') then return end
-                        if not commitActive(self,change,self.currentSpec,id,rot) or not activeChangeCurrent(self,change) then return end
-                        self.manualRotation = true
-                        self.skipAnnounce = true
-                        self.avail_announced = {}
-                        self.announced = {}
-                        if not activeCall(self,change,'EnableRotationTimer') then return end
-                        local named,displayName=activeValue(self,change,'GetRotationName',id)
-                        if not named then return end
-                        if not activeBroker(self,change,DataBroker,displayName) then return end
-                        local namedCurrent,currentName=activeValue(self,change,'GetRotationName',self.currentRotation)
-                        if not namedCurrent then return end
-                        if not activeObjectCall(self,change,AceEvent,'SendMessage',"ROTATIONMASTER_ROTATION",self.currentRotation,currentName) then return end
-                        if not activeChangeCurrent(self,change) then return end
-                        activeCall(self,change,'info',L["Active rotation manually switched to " .. color.WHITE .. "%s" .. color.INFO],name)
-                        if not activeChangeCurrent(self,change) then return end
-                        local checked,valid=activeValue(self,change,'rotationValidConditions',rot,self.currentSpec)
-                        if not checked then return end
-                        if not valid then activeCall(self,change,'warn',L["Active rotation is incomplete and may not work correctly!"]) end
-                        return
-                    end
-                end
-            end
-            addon:warn(L["Could not find rotation named " .. color.WHITE .. "%s" .. color.WARN .. " for your current specialization."], name)
+            local matches={}
+            for id,rot in pairs(runtimeRows(self,self.currentSpec)) do if rot.name==name then matches[#matches+1]=id end end
+            if not activeChangeCurrent(self,change) then return end
+            if #matches>1 then self:warn(L['More than one rotation is named %s. Select its Class or This character entry in the rotation browser.'],name);return end
+            if #matches==1 then chooseManualRotation(self,matches[1],change,true);return end
+            self:warn(L["Could not find rotation named " .. color.WHITE .. "%s" .. color.WARN .. " for your current specialization."],name)
         end
     elseif cmd == "check" then
         addon:print(L["Validating database integrity"])
@@ -518,6 +576,7 @@ function addon:OnInitializeInternal()
 
     self.currentRotation = nil
     self.manualRotation = false
+    self.rotationChoiceSuspended=nil
 
     self.inCombat = false
 
@@ -596,36 +655,8 @@ local function minimapToggleRotation(_, _, _, checked)
     end
 end
 
-local function minimapChangeRotation(_, arg1, _, _)
-    local change=beginActive(addon)
-    if not activeChangeCurrent(addon,change) then return end
-    if arg1 == nil then
-        addon.manualRotation = false
-        addon:SwitchRotation()
-    else
-        if addon.currentSpec ~= arg1 then
-            local body=runtimeOne(addon,addon.currentSpec,arg1)
-            if not activeChangeCurrent(addon,change) or not body then return end
-            if not retireActive(addon,change) or not activeChangeCurrent(addon,change) then return end
-            if not activeCall(addon,change,'RemoveAllCurrentGlows') then return end
-            if not commitActive(addon,change,addon.currentSpec,arg1,body) or not activeChangeCurrent(addon,change) then return end
-            addon.skipAnnounce = true
-            addon.avail_announced = {}
-            addon.announced = {}
-            if not activeCall(addon,change,'EnableRotationTimer') then return end
-            local named,name=activeValue(addon,change,'GetRotationName',arg1)
-            if not named then return end
-            if not activeBroker(addon,change,DataBroker,name) then return end
-            local namedCurrent,currentName=activeValue(addon,change,'GetRotationName',addon.currentRotation)
-            if not namedCurrent then return end
-            if not activeObjectCall(addon,change,AceEvent,'SendMessage',"ROTATIONMASTER_ROTATION",addon.currentRotation,currentName) then return end
-            if not activeChangeCurrent(addon,change) then return end
-        end
-        addon.manualRotation = true
-        local named,name=activeValue(addon,change,'GetRotationName',arg1)
-        if not named then return end
-        activeCall(addon,change,'info',L["Active rotation manually switched to " .. color.WHITE .. "%s" .. color.INFO],name)
-    end
+local function minimapChangeRotation(_,arg1)
+    chooseManualRotation(addon,arg1,nil,true)
 end
 
 function minimapInitialize()
@@ -686,6 +717,9 @@ function DataBroker.OnTooltipShow(GameTooltip)
         GameTooltip:AddLine(addon:GetRotationName(addon.currentRotation), 1, 1, 1)
     else
         GameTooltip:AddLine(L["Battle rotation disabled"], 1, 0, 0, 1)
+    end
+    if addon.rotationChoiceSuspended then
+        GameTooltip:AddLine(L['Saved manual choice is unavailable in the current context.'],1,0.8,0.2,true)
     end
 end
 
@@ -835,8 +869,11 @@ end
 
 -- Figure out which of the autoswitch rotations best matches
 function addon:SwitchRotation()
+    local handled,restoredChange=restoreManualChoice(self)
+    if handled then return nil,restoredChange end
     if self.db.profile.disable_autoswitch or self.manualRotation then
-        return
+        if restoredChange and not activeChangeCurrent(self,restoredChange) then return end
+        return nil,restoredChange
     end
 
     local change=beginActive(self)
@@ -1441,6 +1478,7 @@ function addon:UpdateSkill()
     change=advanceActiveSpec(self,change,spec)
     if not activeChangeCurrent(self,change) then return end
     self.longtermCache={}
+    if invalidateChoiceContext then invalidateChoiceContext(self) end
     if not selection then
         self.autoswitchRotation={}
         return nil,change
@@ -1515,6 +1553,7 @@ local function wrapEvent(func)
     local failed = false
     return function(self, event, ...)
         if invalidateEvaluationContext and (event==nil or runtimeContextEvents[event]) then invalidateEvaluationContext() end
+        if invalidateChoiceContext and (event==nil or runtimeContextEvents[event]) then invalidateChoiceContext(self) end
         if failed or self.initializationErrorReport then return end
         local function dispatch(...)
             self:debug("Event %s fired.", event)
@@ -1607,7 +1646,10 @@ addon.ACTIONBAR_HIDEGRID = wrapEvent(addon.ButtonFetch)
 addon.PET_BAR_UPDATE = wrapEvent(addon.ButtonFetch)
 addon.ACTIONBAR_PAGE_CHANGED = wrapEvent(addon.ButtonFetch)
 addon.UPDATE_MACROS = wrapEvent(addon.ButtonFetch)
-addon.VEHICLE_UPDATE = wrapEvent(addon.ButtonFetch)
+addon.VEHICLE_UPDATE = wrapEvent(function(self)
+    restoreManualChoice(self)
+    self:ButtonFetch()
+end)
 
 addon.PLAYER_TARGET_CHANGED = wrapEvent(function(self)
     self:verbose("Player targeted something else.")
@@ -1638,6 +1680,7 @@ addon.UNIT_PET = wrapEvent(function(self, _, unit)
 end)
 
 addon.PLAYER_CONTROL_GAINED = wrapEvent(function(self)
+    restoreManualChoice(self)
     self:verbose("Player regained control.")
     if not self.inCombat then
         self:SwitchRotation()

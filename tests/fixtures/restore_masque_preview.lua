@@ -537,6 +537,7 @@ for _,record in pairs(records)do
  record.new=source;record.changes=nil
 end
 return function(path,source)
+ if path=='Core/profile_data.lua'and source:find('local function validRotationChoices',1,true)then source=dofile('tests/fixtures/restore_rotation_choice_preferences.lua')(source,path)end
  source=dofile('tests/fixtures/restore_general_preview.lua')(path,source)
  local record=records[path]
  if not record or source==record.old then return source end

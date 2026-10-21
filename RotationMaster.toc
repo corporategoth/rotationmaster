@@ -137,6 +137,7 @@ Data/visual_comparison.lua
 Data/import_session.lua
 Data/rotation_store.lua
 Core/rotation_active.lua
+Core/rotation_choice_preferences.lua
 Core/rotation_library.lua
 Core/rotation_scope.lua
 Core/rotation_migration.lua

@@ -1,4 +1,5 @@
 local addon_name, addon = ...
+local invalidateChoiceContext=addon.InvalidateRotationChoiceContext
 local data = addon.RotationData
 local activeCurrent=addon.IsActiveRotationTransitionCurrent
 local beginActive=addon.BeginActiveRotationTransition
@@ -308,7 +309,9 @@ function addon:SetDefaultRotationEnabled(id,value)
     local selected=self.currentRotation and self:GetDefaultIdForRuntime(self.currentSpec,self.currentRotation)==id
     if not activeCurrent(self,change) then return false,'rotation-transition-superseded' end
     local saved,reason=active.catalog:SetEnabled({kind="builtin",id=id},value)
-    if saved then active.views[id]=active.catalog:Get({kind="builtin",id=id});active.generation={} end
+    if saved then active.views[id]=active.catalog:Get({kind="builtin",id=id});active.generation={}
+        if invalidateChoiceContext then invalidateChoiceContext(self) end
+    end
     if saved and not value and selected and activeCurrent(self,change) then
         local disable=self.DisableRotation
         if not activeCurrent(self,change) then return saved,reason end
