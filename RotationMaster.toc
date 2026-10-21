@@ -313,3 +313,4 @@ Defaults/tbc/rogue-20-29.lua
 Defaults/tbc/rogue-30-39.lua
 Defaults/tbc/hunter-40-49.lua
 Defaults/tbc/priest-40-49.lua
+Defaults/tbc/shaman-enhancement-40-49.lua

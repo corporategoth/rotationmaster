@@ -416,6 +416,8 @@ def main():
             ['lua5.1', 'tests/defaults_mage.lua'],
             ['lua5.1', 'tests/defaults_shaman_enhancement_30_39.lua'],
             ['luajit', 'tests/defaults_shaman_enhancement_30_39.lua'],
+            ['lua5.1', 'tests/defaults_shaman_enhancement_40_49.lua'],
+            ['luajit', 'tests/defaults_shaman_enhancement_40_49.lua'],
             ['lua5.1', 'tests/defaults_warlock_30_39.lua'],
             ['luajit', 'tests/defaults_warlock_30_39.lua'],
             ['lua5.1', 'tests/defaults_mage_30_39.lua'],
