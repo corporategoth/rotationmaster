@@ -53,29 +53,54 @@ function addon:BuildGeneralSettings(p)
     reset.tooltip=L['Reset preview position']
     for i,control in ipairs({locked,orientation,reset}) do control:ClearAllPoints();control:SetPoint('TOPLEFT',(i-1)*third,-previewY);control:SetWidth(third-8) end
     locked:GetFontString():SetWidth(third-30);p.y=previewY+30
-    local masqueOk,masque=pcall(LibStub,'Masque',true)
-    local masqueLoaded=masqueOk and type(masque)=='table'
-    local skins=p:Check('preview_masque',L['Use Masque skins'],profile.preview_masque==true,function(v)
-        profile.preview_masque=v;previewChanged()
-    end)
-    if not masqueLoaded and profile.preview_masque~=true then skins:Disable() end
-    local actionsY=p.y
-    local sample=p:Button('preview_sample',L['Preview'],function() end)
-    local settings=p:Button('masque_settings',L['Masque settings'],function() end)
-    local actionX=0
-    for _,control in ipairs({sample,settings}) do
-        local width=math.min((p.width-8)/2,math.max(96,control:GetFontString():GetStringWidth()+24))
-        control:ClearAllPoints();control:SetPoint('TOPLEFT',actionX,-actionsY);control:SetWidth(width);actionX=actionX+width+8
+    -- Masque owns this immediate appearance preference. Keep it outside the
+    -- General draft so Discard never rewinds another addon's skin settings.
+    local skinY=p:Row(L['Skin'],28)
+    local skin=p:Acquire('previewSkins',function() return self:CreateWorkbenchLabeledIconButton(p.child,'chevron-down','',220) end)
+    p.fields.preview_skin=skin
+    local skinToken=p.generation
+    local function currentSkinPage() return p:Valid(skinToken) end
+    local function skinChoices()
+        if not currentSkinPage() then return end
+        if self.db.profile.preview_masque==true and self.GetPreviewSkinChoices then
+            local choices,available=self:GetPreviewSkinChoices()
+            if not currentSkinPage() then return end
+            if available then return choices,true end
+        end
+        return {{value='Blizzard Classic',text=L['Blizzard Classic']}},false
     end
-    p.y=actionsY+28
+    local function paintSkin()
+        local choices,available=skinChoices()
+        if not currentSkinPage() or not choices then return end
+        local value=available and self.GetPreviewSkin and self:GetPreviewSkin() or 'Blizzard Classic'
+        if not currentSkinPage() then return end
+        local selected
+        for _,entry in ipairs(choices) do if entry.value==value then selected=entry;break end end
+        self:PaintSelectorSelection(skin,selected,selected and selected.text or L['Blizzard Classic'])
+        if available then skin:Enable() else skin:Disable() end
+        return choices
+    end
+    if not paintSkin() then return end
+    local skinChanged=p:Guard(function() paintSkin() end)
+    self.previewSkinChanged=skinChanged
+    p.cleanups[#p.cleanups+1]=function() if self.previewSkinChanged==skinChanged then self.previewSkinChanged=nil end end
+    self:SetUIScript(skin,'OnClick',p:Guard(function()
+        local choices=paintSkin()
+        if not choices or not currentSkinPage() or not skin:IsEnabled() then return end
+        p:ShowChoices(skin,choices,function(value)
+            local ok=self.SetPreviewSkin and self:SetPreviewSkin(value)
+            if paintSkin() and currentSkinPage() then p:Message(ok and '' or L['Preview skin is unavailable.'],ok) end
+        end)
+    end))
+    local sample=p:Button('preview_sample',L['Preview'],function() end)
+    local buttonWidth=math.min((p.width-8)/3,math.max(96,sample:GetFontString():GetStringWidth()+24))
+    local skinX=math.min(220,math.max(72,p.width*.25))
+    skin:ClearAllPoints();skin:SetPoint('TOPLEFT',skinX,-skinY);skin:SetWidth(math.max(1,p.width-skinX-buttonWidth-8))
+    sample:ClearAllPoints();sample:SetPoint('TOPLEFT',p.width-buttonWidth,-skinY);sample:SetWidth(buttonWidth)
+    p.y=skinY+28
     if type(self.SetPreviewSampleEnabled)=='function' and type(self.IsPreviewSampleEnabled)=='function' then
         self:SetUIScript(sample,'OnClick',p:Guard(function() self:SetPreviewSampleEnabled(not self:IsPreviewSampleEnabled()) end))
     else sample:Disable() end
-    if masqueLoaded and type(self.ToggleMasqueSettings)=='function' then
-        self:SetUIScript(settings,'OnClick',p:Guard(function()
-            if not self:ToggleMasqueSettings() then p:Message(L['Masque settings are unavailable.'],false) end
-        end))
-    else settings:Disable() end
     -- This callback belongs to the long-lived preview, never to a released tab.
     local previewOwner=self.db.profile;self.preview_closed_func=function() if addon.db.profile==previewOwner then previewOwner.preview_spells=0 end end
     p:Column(2)

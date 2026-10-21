@@ -5,9 +5,11 @@ local function fixture(options)
  options=options or{};local f,parent=make();local a=f.addon
  a.db.profile.preview_masque=options.enabled==true
  local lib=f.env.LibStub;f.env.LibStub=function(name,silent)if name=='Masque'then if options.missing then return nil end;return{}end;return lib(name,silent)end
- local calls={refresh=0,settings=0,sample=0};local sample=false
+ local calls={refresh=0,skin=0,sample=0};local sample=false;local skin='Blizzard Classic'
  a.RefreshPreviewWindow=function()calls.refresh=calls.refresh+1 end
- a.ToggleMasqueSettings=function()calls.settings=calls.settings+1;return true end
+ a.GetPreviewSkinChoices=function()return{{value='Blizzard Classic',text='Blizzard Classic'},{value='Test Skin',text='Test Skin'}},a.db.profile.preview_masque and not options.missing end
+ a.GetPreviewSkin=function()return skin end
+ a.SetPreviewSkin=function(_,id)calls.skin=calls.skin+1;skin=id;return true end
  a.IsPreviewSampleEnabled=function()return sample end
  a.SetPreviewSampleEnabled=function(_,value)sample=value==true;calls.sample=calls.sample+1;return sample end
  a.db.global.diagnosticCacheBypass=options.direct==true
@@ -15,35 +17,73 @@ local function fixture(options)
  local p=a:OpenNativeSettings(parent,'General');return f,a,p,calls
 end
 local function text(p,wanted)for _,t in ipairs(p.pool.text or{})do if t:IsShown()and t:GetText()==wanted then return t end end end
-test('General separates History and Preview and documents visible preview controls',function()
+local function choose(p,wanted)
+ p.fields.preview_skin:Click();assert(p.menu and p.menu.frame:IsShown())
+ for _,row in ipairs(p.menu.rows)do if row:GetText()==wanted then row:Click();return end end
+ error('missing skin choice: '..wanted)
+end
+test('General separates History and Preview and only documents current preview controls',function()
  local _,a,p=fixture();assert(text(p,'History')and text(p,'Preview'));assert(not text(p,'History and preview'))
  local found={};for _,row in ipairs(a:GetGeneralOptionHelp())do found[row.id]=true end
- assert(found.preview_masque and found.masque_settings and found.preview_sample)
+ assert(found.preview_skin and found.preview_sample and not found.preview_masque and not found.masque_settings)
+ assert(not p.fields.preview_masque and not p.fields.masque_settings)
 end)
-test('General Masque preference stages and applies through its own transaction',function()
- local _,a,p,c=fixture();assert(p.fields.preview_masque,'General Masque control missing')
- p.fields.preview_masque:Click();assert(not a.db.profile.preview_masque and p:SettingsData().profile.preview_masque and c.refresh==0)
- assert(p:IsSettingsDraftDirty());p.fields.apply:Click();assert(a.db.profile.preview_masque and c.refresh==1)
- p.fields.preview_masque:Click();assert(a.db.profile.preview_masque);p:DiscardSettingsDraft();p:Draw();assert(p.fields.preview_masque:GetChecked()and c.refresh==1)
+test('skin selection immediately uses provider authority and leaves unrelated General draft intact',function()
+ local _,a,p,c=fixture({enabled=true});p.fields.disable_autoswitch:Click();assert(p:IsSettingsDraftDirty())
+ choose(p,'Test Skin');assert(a:GetPreviewSkin()=='Test Skin'and c.skin==1 and c.refresh==0)
+ assert(a.db.profile.preview_masque and p:IsSettingsDraftDirty()and not a.db.profile.disable_autoswitch)
+ p.fields.cancel:Click();assert(a:GetPreviewSkin()=='Test Skin'and a.db.profile.preview_masque)
 end)
-test('General refuses a concurrent saved Masque change and retires released controls',function()
- local _,a,p,c=fixture();assert(p.fields.preview_masque);p.fields.preview_masque:Click()
- a.db.profile.preview_masque=nil;assert(not p:SaveSettingsDraft());assert(a.db.profile.preview_masque==nil and c.refresh==0)
- local stale=p.fields.preview_masque.scripts.OnClick;p:Release();stale();assert(c.refresh==0)
+test('missing or disabled integration has only native default and Preview still works',function()
+ for _,options in ipairs({{}, {missing=true,enabled=true}})do
+  local _,a,p,c=fixture(options);assert(p.fields.preview_skin:GetText()=='Blizzard Classic'and not p.fields.preview_skin:IsEnabled())
+  assert(p.fields.preview_sample:IsEnabled());p.fields.preview_sample:Click();assert(c.sample==1 and a:IsPreviewSampleEnabled())
+  assert(not p:IsSettingsDraftDirty())
+ end
 end)
-test('missing Masque disables new opt in but permits removal of a saved opt in',function()
- local _,_,p=fixture({missing=true});assert(p.fields.preview_masque and not p.fields.preview_masque:IsEnabled());assert(not p.fields.masque_settings:IsEnabled())
- local _,a,q=fixture({missing=true,enabled=true});assert(q.fields.preview_masque:IsEnabled());q.fields.preview_masque:Click();assert(q:SaveSettingsDraft()and a.db.profile.preview_masque==false)
-end)
-test('Masque settings and sample Preview are explicit actions independent of invalid pending input',function()
- local _,a,p,c=fixture();assert(p.fields.masque_settings and p.fields.preview_sample)
+test('skin and sample actions do not flush unrelated invalid pending inputs',function()
+ local _,a,p,c=fixture({enabled=true})
  local input=p:Edit('unrelated','Unrelated','',function()return nil end,function()error('must not flush')end)
- input:SetText('invalid');input.scripts.OnTextChanged(input,true);local dirty=p:IsSettingsDraftDirty()
- p.fields.masque_settings:Click();assert(c.settings==1 and c.refresh==0)
+ input:SetText('invalid');input.scripts.OnTextChanged(input,true)
+ choose(p,'Test Skin');assert(c.skin==1)
  p.fields.preview_sample:Click();assert(c.sample==1 and a:IsPreviewSampleEnabled())
  p.fields.preview_sample:Click();assert(c.sample==2 and not a:IsPreviewSampleEnabled())
- assert(p:IsSettingsDraftDirty()==dirty and a.db.profile.preview_masque==false)
- local stale=p.fields.masque_settings.scripts.OnClick;p:Release();stale();assert(c.settings==1)
+end)
+test('released skin menu and buttons cannot change provider or sample state',function()
+ local _,a,p,c=fixture({enabled=true});p.fields.preview_skin:Click();local row
+ for _,candidate in ipairs(p.menu.rows)do if candidate:GetText()=='Test Skin'then row=candidate end end
+ assert(row);local chooseSkin=row.scripts.OnClick;local sample=p.fields.preview_sample.scripts.OnClick
+ p:Release();chooseSkin(row);sample();assert(c.skin==0 and c.sample==0)
+end)
+test('external skin notifications repaint the current dropdown and retire on page release',function()
+ local _,a,p=fixture({enabled=true});a.SetPreviewSkin(nil,'Test Skin');a.previewSkinChanged()
+ assert(p.fields.preview_skin:GetText()=='Test Skin')
+ local callback=a.previewSkinChanged;p:Release();assert(a.previewSkinChanged==nil);callback()
+end)
+test('initial drawing provider retirement never publishes a skin listener',function()
+ local _,a,p=fixture({enabled=true});a.GetPreviewSkinChoices=function()p:Release();return{{value='Test Skin',text='Test Skin'}},true end
+ p:Draw();assert(not p.active and a.previewSkinChanged==nil)
+end)
+test('provider reentry retires the drawing before menu or message publication',function()
+ for _,phase in ipairs({'choices','get','set'})do
+  local _,a,p=fixture({enabled=true})
+  if phase=='choices'then a.GetPreviewSkinChoices=function()p:Release();return{{value='Test Skin',text='Test Skin'}},true end
+  elseif phase=='get'then a.GetPreviewSkin=function()p:Release();return'Test Skin'end
+  else a.SetPreviewSkin=function()p:Release();return true end end
+  if phase=='set'then choose(p,'Test Skin')else p.fields.preview_skin:Click()end
+  assert(not p.active and not(p.menu and p.menu.frame:IsShown()),phase)
+ end
+end)
+test('skin failure rereads actual selection and reports failure',function()
+ local _,a,p,c=fixture({enabled=true});a.SetPreviewSkin=function()return false end
+ choose(p,'Test Skin');assert(a:GetPreviewSkin()=='Blizzard Classic'and p.fields.preview_skin:GetText()=='Blizzard Classic')
+ assert(p.message:GetText()=='Preview skin is unavailable.')
+end)
+test('Skin dropdown and compact Preview button share a bounded row',function()
+ local _,_,p=fixture({enabled=true});local skin,button=p.fields.preview_skin,p.fields.preview_sample
+ local _,sx,sy=skin:GetPoint();local _,bx,by=button:GetPoint()
+ assert(sy==by and bx>=sx+skin:GetWidth()+7 and bx+button:GetWidth()<=p.width+.1)
+ assert(button:GetWidth()<180 and skin:GetWidth()>80)
 end)
 test('cache checkbox alone distinguishes active saved mode from a pending reload',function()
  local _,a,p=fixture();local control=p.fields.cpu_cache_bypass;assert(control)
@@ -73,14 +113,27 @@ test('additive General inverse preserves original full-file historical proofs',f
   assert(not pcall(inverse,path,source..'-- unrelated\n'))
  end
 end)
-test('real General actions paint transient samples and dispatch Masque without applying the draft',function()
+test('real Skin dropdown updates existing sample surfaces and follows external Masque selection',function()
+ local h=assert(io.open('tests/masque_skin_selection.lua'));local source=h:read('*a');h:close()
+ local backend=assert(loadstring(assert(source:match('^(.-)\ntest%('))..'\nreturn fixture'))()
+ local _,_,provider=backend()
+ local f,a,p=fixture({enabled=true});local lib=f.env.LibStub
+ f.env.LibStub=function(name,silent)if name=='Masque'then return provider.api,110210 end;return lib(name,silent)end
+ f.load('Integrations/masque.lua');f.load('UI/preview.lua');a.db.profile.preview_spells=0;p:DiscardSettingsDraft();p:Draw()
+ p.fields.preview_sample:Click();local window=a.nextWindow;local child=window.icons[1].masqueSurface
+ assert(window.sampleCount==3 and child and child:IsShown())
+ local adds,removes=provider.adds,provider.removes
+ choose(p,'Round');assert(a.nextWindow==window and window.sampleCount==3 and window.icons[1].masqueSurface==child)
+ assert(child.texture.appliedSkin=='Round'and provider.adds==adds and provider.removes==removes and not p:IsSettingsDraftDirty())
+ provider:external('Square');assert(p.fields.preview_skin:GetText()=='Square'and child.texture.appliedSkin=='Square')
+ p.fields.preview_sample:Click();assert(not a.nextWindow and a.db.profile.preview_spells==0)
+end)
+test('real General Preview action paints transient samples without applying the draft',function()
  local f,a,p=fixture();p:DiscardSettingsDraft();a.db.profile.preview_spells=0;p:Draw()
  f.load('Integrations/masque.lua');f.load('UI/preview.lua')
- local calls=0;f.env.SlashCmdList={MASQUE=function(...)assert(select('#',...)==1 and(...)=='');calls=calls+1 end}
  local dirty=p:IsSettingsDraftDirty();p.fields.preview_sample:Click();local window=a.nextWindow
  assert(a:IsPreviewSampleEnabled()and window:Valid()and window.sampleCount==3 and window.count==0 and window.title:GetText()=='Preview')
  assert(a.db.profile.preview_spells==0 and p:IsSettingsDraftDirty()==dirty)
- p.fields.masque_settings:Click();assert(calls==1 and not a.db.profile.preview_masque)
  local stale=p.fields.preview_sample.scripts.OnClick;p:Release();stale();assert(a:IsPreviewSampleEnabled())
  a:SetPreviewSampleEnabled(false);assert(not a.nextWindow and a.db.profile.preview_spells==0)
 end)

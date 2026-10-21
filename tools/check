@@ -524,6 +524,8 @@ def main():
             ['luajit', 'tests/preview_samples.lua'],
             ['lua5.1', 'tests/masque_preview.lua'],
             ['luajit', 'tests/masque_preview.lua'],
+            ['lua5.1', 'tests/masque_skin_selection.lua'],
+            ['luajit', 'tests/masque_skin_selection.lua'],
             ['lua5.1', 'tests/draft_changes.lua'],
             ['lua5.1', 'tests/condition_edit_session.lua'],
             ['lua5.1', 'tests/condition_editor_ui.lua'],

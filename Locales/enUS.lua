@@ -2693,7 +2693,7 @@ L['Masque'] = true
 L['Preview appearance'] = true
 L['Skin preview buttons with Masque'] = true
 L['Optional preview-button skins; configure skins with /masque.'] = true
-L['Help.Integrations.preview_masque'] = "General > Preview contains Use Masque skins and the Masque settings button. Enable skins and Apply to use separately installed Masque. This integration pill changes the same profile preference. Masque controls skins in its own settings; /masque toggles the same settings. The preview window keeps its native appearance. Missing or incompatible APIs and provider errors retain the native preview."
+L['Help.Integrations.preview_masque'] = "Enable separately installed Masque here and Apply. General > Preview then provides a Skin dropdown that updates the preview immediately. Masque owns the skin selection; /masque opens its other settings. The preview window keeps its native appearance. Missing or incompatible APIs and provider errors retain the native preview."
 
 
 L["Default.TBC.Priest.Shadow30.Name"] = "Priest: Shadow leveling (30–39)"
@@ -2702,14 +2702,13 @@ L["Default.TBC.Priest.Shadow30.Description"] = "Bounded Shadow-oriented solo pre
 
 L["History"] = true
 L["Button skins"] = true
-L["Use Masque skins"] = true
-L["Masque settings"] = true
-L["Masque settings are unavailable."] = true
 L["Bypass observation cache"] = true
 L["Bypass observation cache (requires restart)"] = true
 L["Bypass observation cache (pending)"] = true
-L["Help.General.preview_masque"] = "Use separately installed Masque to skin the recommendation preview buttons. Apply saves this preference; Discard restores it. Missing or incompatible providers keep the native appearance."
-L["Help.General.masque_settings"] = "Open or close Masque settings with its documented command. Choose Rotation Master, then RecommendationPreview. Masque manages its own skins and profiles."
+L["Skin"] = true
+L["Blizzard Classic"] = true
+L["Preview skin is unavailable."] = true
+L["Help.General.preview_skin"] = "Enable Masque in Integrations to choose a skin. Skin changes update the open preview immediately and are saved by Masque, independently of Apply or Discard. Without enabled Masque support, the preview uses Blizzard Classic. Preview toggles sample icons whether Masque is enabled or not."
 L["Help.General.preview_sample"] = "Click Preview to toggle temporary sample icons when no real recommendations are available. Real recommendations replace the samples. This does not change Preview Spells, cast spells, or save the sample state."
 
 L["Sample icon"] = true
