@@ -61,7 +61,7 @@ local function automaticTarget(recipient,owned)
         local now=observe()
         if canaccessvalue and not canaccessvalue(now) then return false end
         if canaccessvalue and not canaccessvalue(identity) then return false end
-        return now==identity
+        return live() and now==identity
     end
 end
 -- Called only after a cast matches an announcement, never by cooldown output.
