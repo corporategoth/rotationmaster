@@ -796,11 +796,11 @@ test('category reordering marks the rows whose saved positions changed',function
     local p=a:OpenNativeSettings(parent,'Conditions');p.roster.manage:Click();p.roster.orderView:Begin('g2','Second',false);assert(p.roster.orderView:Drop(1))
     local marked=0;for i,entry in ipairs(p.roster.matches) do if entry.value=='g1' or entry.value=='g2' then assert(p.roster.rows[i].rmUnsaved);marked=marked+1 end end;assert(marked==2)
 end)
-test('preview orientation lock opacity and count stage together and profile transfers preserve them',function()
+test('preview orientation opacity and count stage while lock is immediate and profile transfers preserve them',function()
     local f,parent=fixture();local a=f.addon;a.db.profile.preview_spells=2;local calls=0;a.RefreshPreviewWindow=function() calls=calls+1 end
     local p=a:OpenNativeSettings(parent,'General');p.fields.preview_vertical:Click();p.fields.preview_locked:Click();p.fields.preview_opacity:SetValue(.5)
-    assert(not a.db.profile.preview_vertical and calls==0);p.fields.apply:Click();assert(a.db.profile.preview_vertical and a.db.profile.preview_locked and a.db.profile.preview_opacity==.5 and calls==1)
-    local portable=a:ProfileToPortable(a.db.profile);local restored=a:ProfileFromPortable(portable);assert(a:ValidateProfileTransfer(restored) and restored.preview_vertical)
+    assert(not a.db.profile.preview_vertical and a.db.profile.preview_locked and calls==1);p.fields.apply:Click();assert(a.db.profile.preview_vertical and a.db.profile.preview_locked and a.db.profile.preview_opacity==.5 and calls==2)
+    local portable=a:ProfileToPortable(a.db.profile);local restored=a:ProfileFromPortable(portable);assert(a:ValidateProfileTransfer(restored) and restored.preview_vertical and restored.preview_locked)
     for _,patch in ipairs({{preview_spells=2.5},{preview_opacity=1.1},{preview_icon_size=12}}) do assert(not a:ValidateProfileTransfer(patch)) end
 end)
 test('settings View Changes inspects invalid pending input without flushing it or saving settings',function()

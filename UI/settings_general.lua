@@ -37,7 +37,16 @@ function addon:BuildGeneralSettings(p)
     p:Slider('preview_spells',L['Preview Spells'],profile.preview_spells,0,5,1,function(v) profile.preview_spells=v;previewChanged() end)
     p:Slider('preview_opacity',L['Preview window opacity'],profile.preview_opacity or 1,0,1,.05,function(v) profile.preview_opacity=v;previewChanged() end)
     local previewY=p.y;local third=p.width/3
-    local locked=p:Check('preview_locked',L['Lock position and size'],profile.preview_locked==true,function(v) profile.preview_locked=v;previewChanged() end)
+    local locked=p:Check('preview_locked',L['Lock position and size'],self.db.profile.preview_locked==true,function() end)
+    -- Locking is an immediate window action, like moving or resetting it.
+    -- Synchronize only this field so unrelated General edits remain pending.
+    self:SetUIScript(locked,'OnClick',p:Guard(function()
+        local value=self.db.profile.preview_locked~=true
+        for _,settings in ipairs({self.db.profile,profile,p.draftBaseline and p.draftBaseline.profile or {}}) do settings.preview_locked=value end
+        locked:SetChecked(value)
+        if p.BindUnsaved then p:BindUnsaved('preview_locked',locked,value,'Check') end
+        if self.RefreshPreviewWindow then self:RefreshPreviewWindow() end
+    end))
     local orientation=p:Toggle('preview_vertical',nil,profile.preview_vertical==true,L['Horizontal'],L['Vertical'],function(v) profile.preview_vertical=v;previewChanged();p:Draw() end)
     local reset=p:Button('preview_reset',L['Reset'],function() end)
     local resetToken=p.generation

@@ -22,6 +22,31 @@ local function choose(p,wanted)
  for _,row in ipairs(p.menu.rows)do if row:GetText()==wanted then row:Click();return end end
  error('missing skin choice: '..wanted)
 end
+test('preview lock and unlock persist and update the same window immediately without Apply',function()
+ for _,initial in ipairs({false,true})do
+  local f,a,p=fixture();a.db.profile.preview_spells=3;a.db.profile.preview_locked=initial;p:DiscardSettingsDraft();p:Draw()
+  f.load('UI/preview.lua');a:RefreshPreviewWindow();local window=a.nextWindow
+  for turn=1,2 do
+   local wanted=initial;if turn==1 then wanted=not initial end
+   p.fields.preview_locked:Click()
+   assert(a.db.profile.preview_locked==wanted and window.locked==wanted and a.nextWindow==window)
+   assert(p:SettingsData().profile.preview_locked==wanted and p.draftBaseline.profile.preview_locked==wanted)
+   assert(not p:IsSettingsDraftDirty()and not p.fields.apply:IsEnabled()and not p.fields.preview_locked.rmUnsaved)
+   assert(window.grip:IsShown()==not wanted)
+  end
+ end
+end)
+test('immediate lock preserves unrelated invalid drafts and retires old click handlers',function()
+ local _,a,p=fixture();p.fields.disable_autoswitch:Click();local draft=p:SettingsData().profile.disable_autoswitch
+ local input=p:Edit('unrelated','Unrelated','',function()return nil end,function()error('must not flush')end)
+ input:SetText('invalid');input.scripts.OnTextChanged(input,true)
+ p.fields.preview_locked:Click();assert(a.db.profile.preview_locked==true and p:IsSettingsDraftDirty())
+ assert(p:SettingsData().profile.disable_autoswitch==draft and not a.db.profile.disable_autoswitch and input:GetText()=='invalid')
+ local stale=p.fields.preview_locked.scripts.OnClick;p:DiscardSettingsDraft();p:Draw()
+ assert(p.fields.preview_locked:GetChecked()and not p:IsSettingsDraftDirty());stale();assert(a.db.profile.preview_locked==true)
+ p.fields.preview_locked:Click();assert(a.db.profile.preview_locked==false and not p:IsSettingsDraftDirty())
+ local closed=p.fields.preview_locked.scripts.OnClick;p:Release();closed();assert(a.db.profile.preview_locked==false)
+end)
 test('General separates History and Preview and only documents current preview controls',function()
  local _,a,p=fixture();assert(text(p,'History')and text(p,'Preview'));assert(not text(p,'History and preview'))
  local found={};for _,row in ipairs(a:GetGeneralOptionHelp())do found[row.id]=true end
