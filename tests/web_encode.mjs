@@ -75,8 +75,8 @@ test('frozen158 protocol cases including149 finite-bit patterns roundtrip throug
  for(let i=0;i<wires.length;i++){assert.equal(native[i].accepted,true,wires[i].id);assert.equal(plain[i].accepted,true,wires[i].id);assert.deepEqual(native[i].value,wires[i].expected,wires[i].id);assert.deepEqual(plain[i].value,wires[i].expected,wires[i].id);assert.deepEqual(toTypedTree(decodeImport(wires[i].payload).value),wires[i].expected);}
  const nil=FROZEN.find(r=>r.accepted===false);assert.equal(oracle('lua5.1','serializer',[{id:nil.id,payload:nil.rawHex}])[0].accepted,false);assert.equal(oracle('luajit','wire',[{id:nil.id,payload:Buffer.concat([Buffer.from([1]),Buffer.from(nil.rawHex,'hex')]).toString('base64')}])[0].accepted,false);refused(map(['k',null]),'non-roundtrippable-nil');
 });
-test('all18 actual production Maps produce native-compatible wire and unchanged I2 validation',()=>{
- assert.equal(production.length,18);const rows=production.map((r,i)=>{const value=decodeImport(r.wire).value,text=success(value),decoded=decodeImport(text);assert.deepEqual(toTypedTree(decoded.value),r.expected);assert.deepEqual(validateEnvelope(decoded.value,schema),validateEnvelope(value,schema));return{id:'pack-'+i,payload:text,expected:r.expected};});
+test('all28 actual production Maps produce native-compatible wire and unchanged I2 validation',()=>{
+ assert.equal(production.length,28);const rows=production.map((r,i)=>{const value=decodeImport(r.wire).value,text=success(value),decoded=decodeImport(text);assert.deepEqual(toTypedTree(decoded.value),r.expected);assert.deepEqual(validateEnvelope(decoded.value,schema),validateEnvelope(value,schema));return{id:'pack-'+i,payload:text,expected:r.expected};});
  for(const output of [oracle('luajit','wire',rows),oracle('lua5.1','serializer',rows.map(r=>({...r,payload:raw(r.payload).toString('hex')})))])for(const [i,row]of output.entries()){assert.equal(row.accepted,true);assert.deepEqual(row.value,rows[i].expected);}
 });
 test('shared acyclic subtrees copy structural values without mutating inputs or output strings',()=>{
