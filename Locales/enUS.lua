@@ -2715,6 +2715,15 @@ L["Help.General.preview_sample"] = "Click Preview to toggle temporary sample ico
 
 L["Sample icon"] = true
 
+L["Default.TBC.Paladin.Thirty.Name"] = "Paladin: manual seals and auras (30–39)"
+L["Default.TBC.Paladin.Thirty.Description"] = "Bounded combat preview with fully manual aura and seal upkeep. Only attributable own Righteousness permits Judgement; conflicting seals and current casts or channels block it. Learned actions, mappings and native readiness govern recommendations; talents, support, resources and other seal judgements remain manual."
+L["Default.TBC.Rogue.Thirty.Name"] = "Rogue: melee leveling (30–39)"
+L["Default.TBC.Rogue.Thirty.Description"] = "Bounded single-target melee preview. Preserves manual stealth, casts and channels. Missing attributable own Slice and Dice from two current-target combo points, Eviscerate at five, otherwise Sinister Strike. Learned ranks, mappings and native readiness govern actions; openers, poisons, talents, positioning, reactive utility, target lifetime and resources remain manual."
+L["Default.TBC.Druid.Caster.Thirty.Name"] = "Druid: caster leveling (30–39)"
+L["Default.TBC.Druid.Caster.Thirty.Description"] = "Bounded humanoid caster preview. Preserves manual forms, casts and channels; own missing Moonfire, learned stationary Starfire, then independently ready Wrath. Native learned ranks, mappings and readiness govern recommendations. Feral combat, talents, support and resources remain manual; no implicit melee advice."
+L["Default.TBC.Warrior.Thirty.Name"] = "Warrior: combat leveling (30–39)"
+L["Default.TBC.Warrior.Thirty.Description"] = "Bounded combat preview. Learned Execute below 20% target health, five exact learned Heroic Strike queue guards, then native-ready Heroic Strike. Optional Battle Shout respects casts and channels. Native ranks, mappings and readiness govern actions; stances, reactive abilities, Rend, pulls, talents and resource or queue planning remain manual."
+
 -- BEGIN GENERATED RM PUBLIC HELPER DOCS
 L["Absolute health target (negative means deficit) or percentage fraction."] = true
 L["All original results, preserving nil positions and return count."] = true

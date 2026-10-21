@@ -120,3 +120,22 @@ This separate revision-1 pack keeps the original1–19 source and saved clones u
 `rm.tbc.hunter.starter.30-39` is a separate generic ranged continuation. It retains the reviewed20–29 graph with only node IDs and level bounds changed: preserve current casts/channels, start inactive Auto Shot while stationary, maintain attributable own Serpent Sting while preserving own Scorpid, then offer ready Arcane Shot. Optional Hawk preserves chosen Monkey/Cheetah. Current learned ranks, actual mappings and native readiness remain authoritative; level grants no spell or talent. The original1–19 and20–29 sources and saved clones stay unchanged.
 
 [Blizzard’s original Hunter manual](https://bnetcmsus-a.akamaihd.net/cms/template_resource/LO0VQ46XB1281555957773363.pdf), printedpp84–85, supplies historical toggle/aspect context, not TBC training evidence. The inherited [Beast Mastery leveling guide](https://www.icy-veins.com/tbc-classic/beast-mastery-hunter-leveling-guide) supplies context for this bounded subset, not a BM talent gate or optimal priority claim. Pets, melee, ammunition, positioning, shot timing, talents and resources remain manual. Readable nil aura caster is not assumed own; restricted ownership skips affected Sting advice. `tests/defaults_hunter_30_39.lua` exercises modeled native observations through the real initialized publisher; current native gameplay acceptance remains unverified.
+
+
+## TBC Paladin 30–39 manual seal/aura preview
+
+This generic continuation leaves all aura and seal upkeep manual, including talent choices such as Sanctity. Only positively attributable own Righteousness permits Judgement; Crusader, Command, Justice, Light and Wisdom observations also block consuming it during overlap. Explicit cast/channel Stops protect manual actions and suppress implicit melee while those states are unavailable. Otherwise the existing native-authorized melee fallback remains. This is a conservative subset, not complete Retribution priorities, seal twisting or a talent gate. Earlier sources and saved clones remain unchanged.
+
+## TBC Rogue 30–39 melee preview
+
+The inherited20–29 melee policy continues with separate IDs and source scope: preserve stealth/casts/channels, missing own Slice from two current-target points, Eviscerate at five, otherwise Sinister Strike. Learned families and current readiness/mappings remain authoritative. This is a generic bounded subset, not a complete Combat build or optimal finisher/lifetime/resource policy. Poisons, openers, talents, positioning and reactive utility remain manual. Earlier sources and saved clones are unchanged.
+
+## TBC Druid 30–39 caster preview
+
+The inherited humanoid-only caster policy continues: attributable own Moonfire, actually learned stationary Starfire, then independently ready Wrath. Nonzero forms, casts/channels and exhausted caster advice suppress implicit melee. No Bear/Aquatic slot, level-granted skill or Balance talent allocation is inferred. Feral, support, talents and resource decisions remain manual. Earlier sources and saved clones remain unchanged.
+
+## TBC Warrior 30–39 combat preview
+
+The bounded generic melee subset retains learned Execute strictly below20% target health before queued/current Heroic Strike checks and a ready HS family. Five exact learned queue guards include11564; each protects lower queued ranks independently of the highest learned rank. Cast/channel Stops protect manual actions such as Slam and guard optional Battle Shout as well. Actual learned families, native usability/range/cooldown and real mappings govern all ranks. Rend, reactive abilities, stance/talent choices, pulls and resource/queue planning remain manual; no optimal Arms priority or fixed rage reserve is claimed.
+
+All four continuations remain TBC/player/class/level bounded. Modeled pipeline tests and source evidence do not establish native gameplay acceptance or optimality.
