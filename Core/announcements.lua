@@ -33,7 +33,7 @@ function addon:PrepareAnnouncementDelivery(config,owner)
     return entry,current
 end
 -- Called only after a cast matches an announcement, never by cooldown output.
-function addon:AnnouncementConditionMatches(config,recipient,current)
+function addon:AnnouncementConditionMatches(config,recipient,current,targetUnit)
     conditionRequest=conditionRequest+1
     local request=conditionRequest
     local function owned()
@@ -46,7 +46,7 @@ function addon:AnnouncementConditionMatches(config,recipient,current)
     end
     if not owned() then return false end
     if config.conditions==nil then return true end
-    local result=self:evaluateAnnouncementConditionResult(config.conditions,recipient)
+    local result=self:evaluateAnnouncementConditionResult(config.conditions,recipient,targetUnit)
     return owned() and type(result)=='table' and result.status=='match'
 end
 -- Two bounded cold-output observations, never a history or polling cache.

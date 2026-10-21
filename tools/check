@@ -210,6 +210,8 @@ def main():
             ['luajit', 'tests/glyph_reference.lua'],
             ['lua5.1', 'tests/platform_macros.lua'],
             ['lua5.1', 'tests/platform_communication.lua'],
+            ['lua5.1', 'tests/announcement_unit_context.lua'],
+            ['luajit', 'tests/announcement_unit_context.lua'],
             ['lua5.1', 'tests/announcement_conditions.lua'],
             ['luajit', 'tests/announcement_conditions.lua'],
             ['lua5.1', 'tests/announcement_conditions_events.lua'],

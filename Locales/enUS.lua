@@ -2818,6 +2818,7 @@ L["{unit} {{!is|is not}} in a raid"] = "{unit} {{!is|is not}} in a raid"
 L["{unit} {{!is|is not}} in a group"] = "{unit} {{!is|is not}} in a group"
 L["Help.GROUP.unit"] = "Choose the unit whose membership in your party or raid is checked. Player keeps the original player group-status behavior. Spell recipient uses only the current announcement event context; without that readable context the result is unavailable. It never substitutes your selected target or a previous cast."
 L["Help.GROUP.raid"] = "Checked tests raid membership only. Unchecked tests party membership or raid membership. A known nonmember is false; unavailable native data stays unavailable, including under NOT."
+L["Announcement target"] = "Announcement target"
 
 -- BEGIN GENERATED RM PUBLIC HELPER DOCS
 L["Absolute health target (negative means deficit) or percentage fraction."] = true

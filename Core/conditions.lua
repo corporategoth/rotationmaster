@@ -421,10 +421,46 @@ end
 
 -- Cast-event conditions get their own observation cache. Recipient context
 -- never enters a rotation's polling cache or survives this announcement.
-function addon:evaluateAnnouncementConditionResult(value, recipient)
-    local result=evaluate(value, {announcementRecipient=recipient}, GetTime(), {active={}, count=0}, 0, "announcement")
+local function announcementUnits(value,unit)
+    local data=addon.RotationData
+    if not data.CheckPortable(value) then return nil,'invalid-announcement-condition' end
+    local count,found=0,false
+    local readable
+    local function walk(node,depth,replace)
+        count=count+1
+        if count>4096 or depth>64 then return false end
+        if type(node)~='table' or node.disabled==true then return true end
+        if node.type=='AND' or node.type=='OR' then
+            if type(node.value)=='table' then for _,child in pairs(node.value) do if not walk(child,depth+1,replace) then return false end end end
+        elseif node.type=='NOT' then return walk(node.value,depth+1,replace)
+        elseif node.unit=='announcementtarget' then
+            local definition=conditions[node.type]
+            found=true
+            if replace then
+                if readable and definition and type(definition.fields)=='table' and definition.fields.unit=='string' then node.unit=unit
+                else node.type=false end -- unavailable only if reached; Boolean prefixes still short-circuit
+            end
+        end
+        return true
+    end
+    if not walk(value,0,false) then return nil,'condition-limit' end
+    if not found then return value end
+    readable=addon.Platform:CanReadValue(unit) and type(unit)=='string' and unit~='' and #unit<=512
+    local resolved=data.CopyData(value);count=0
+    walk(resolved,0,true)
+    return resolved
+end
+function addon:evaluateAnnouncementConditionResult(value, recipient, targetUnit)
+    local resolved,reason=announcementUnits(value,targetUnit)
+    if reason then return outcome('unavailable',reason,'announcement') end
+    local result=evaluate(resolved, {announcementRecipient=recipient}, GetTime(), {active={}, count=0}, 0, "announcement")
     if result==matchedOutcome or result==unmatchedOutcome then return {status=result.status} end
     return result
+end
+
+function addon:validateAnnouncementCondition(value,spec)
+    local resolved,reason=announcementUnits(value,'target')
+    return not reason and validateSingle(resolved,spec)
 end
 
 function addon:evaluateCondition(value, context)

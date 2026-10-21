@@ -78,6 +78,7 @@ L["True checks raid membership only; false or nil checks party then raid."] = tr
 }
 local function hash(s)local n=0;for i=1,#s do n=(n*33+s:byte(i))%4294967296 end;return string.format('%08x',n)end
 return function(text,path)
+ text=dofile('tests/fixtures/restore_announcement_unit_context.lua')(text,path)
  local row=records[path];if not row then return text end
  if #text==row.oldBytes and hash(text)==row.oldHash then return text end
  assert(#text==row.bytes and hash(text)==row.hash,'unrelated complete announcement-condition source: '..path)

@@ -14,7 +14,20 @@ function addon:Widget_UnitWidget(value, units, update, field)
     end)
     unit:SetDisabled(value.disabled)
     unit.configure = function()
-        unit:SetList(units, addon.keys(units))
+        local choices=units
+        local parent=unit.parent
+        local top
+        for _=1,128 do
+            if not parent then break end
+            top=parent:GetUserData('top')
+            if top then break end
+            parent=parent.parent
+        end
+        if field=='unit' and (value[field]=='announcementtarget' or top and top:GetUserData('announcementTarget')==true) then
+            choices={};for key,label in pairs(units) do choices[key]=label end
+            choices.announcementtarget=L['Announcement target']
+        end
+        unit:SetList(choices, addon.keys(choices))
         unit:SetValue(value[field])
     end
 

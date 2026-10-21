@@ -6,6 +6,7 @@ local function needsDataOnly(value,definitions)
         count=count+1
         if count>4096 or depth>32 then return true end
         if type(node)~="table" then return false end
+        if node.unit=='announcementtarget' then return true end
         if node.disabled then return true end
         if node.type=="NOT" and (type(node.value)~="table" or node.value.type==nil) then return true end
         if node.type=="AND" or node.type=="OR" then
@@ -57,7 +58,8 @@ local function describeData(value,definitions)
         table.sort(keys,function(a,b) if type(a)==type(b) then return a<b end;return type(a)=="number" end)
         for _,key in ipairs(keys) do
             if count>=200 then truncated=true;parts[#parts+1]="...";break end
-            parts[#parts+1]=tostring(key):sub(1,80)..": "..render(node[key],depth+1)
+            local text=key=='unit' and node[key]=='announcementtarget' and L['Announcement target'] or render(node[key],depth+1)
+            parts[#parts+1]=tostring(key):sub(1,80)..": "..text
         end
         return bounded(table.concat(parts,"; "))
     end

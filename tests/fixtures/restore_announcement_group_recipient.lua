@@ -4,6 +4,7 @@ local function equal(a,b)if type(a)~=type(b)then return false end;if type(a)~='t
 local function copy(v)if type(v)~='table'then return v end;local r={};for k,x in pairs(v)do r[k]=copy(x)end;return r end
 local function hash(s)local n=0;for i=1,#s do n=(n*33+s:byte(i))%4294967296 end;return string.format('%08x',n)end
 return function(value,path,mode)
+ value=dofile('tests/fixtures/restore_announcement_unit_context.lua')(value,path,mode)
  if mode=='catalog'then
   if not value.modules['Platform/announcement_recipient.lua']then return value end
   for _,d in ipairs(deltas)do local parent=value;for i=1,#d.path-1 do parent=assert(parent[d.path[i]])end;local key=d.path[#d.path];assert(equal(parent[key],d.after),'unexpected complete recipient catalog field');parent[key]=d.beforePresent and copy(d.before)or nil end

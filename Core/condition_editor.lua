@@ -101,7 +101,10 @@ function addon:NewConditionEditSession(spec,original,targetValid,options)
         if not result.supported then return nil,"unsupported-condition-data",result end
         if not result.resolved then return nil,"unresolved-condition-data",result end
         local candidate=data.CopyData(snapshot)
-        local function validate() return addon:validateCondition(candidate,spec) end
+        local function validate()
+            if options.announcementTarget then return addon:validateAnnouncementCondition(candidate,spec) end
+            return addon:validateCondition(candidate,spec)
+        end
         local ok,valid
         if addon.Diagnostics then
             ok,valid=addon.Diagnostics:Call({module="condition-editor",operation="validate",customCode=true},validate)

@@ -552,6 +552,7 @@ addon:RegisterCondition("GROUP", {
         local funcs = top:GetUserData("funcs")
         local units=Functions.collections.deepcopy(addon.units)
         if top:GetUserData("announcement")==true or value.unit=="spellrecipient" then units.spellrecipient=L["Spell recipient"] end
+        if top:GetUserData("announcementTarget")==true or value.unit=="announcementtarget" then units.announcementtarget=L["Announcement target"] end
         local unit=addon:Widget_UnitWidget(value,units,function() top:SetStatusText(funcs:print(root,spec)) end)
         unit.configure=function() unit:SetList(units,Functions.collections.keys(units));unit:SetValue(value.unit or "player") end
         parent:AddChild(unit)
