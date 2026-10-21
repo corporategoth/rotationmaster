@@ -2774,6 +2774,8 @@ L["Default.TBC.Warrior.Thirty.Name"] = "Warrior: combat leveling (30–39)"
 L["Default.TBC.Warrior.Thirty.Description"] = "Bounded combat preview. Learned Execute below 20% target health, five exact learned Heroic Strike queue guards, then native-ready Heroic Strike. Optional Battle Shout respects casts and channels. Native ranks, mappings and readiness govern actions; stances, reactive abilities, Rend, pulls, talents and resource or queue planning remain manual."
 L["Default.TBC.Shaman.Enhancement40.Name"] = "Shaman: Enhancement leveling (40–49)"
 L["Default.TBC.Shaman.Enhancement40.Description"] = "Bounded TBC solo Enhancement-oriented preview for levels40–49, selected only when Enhancement has the unique positive highest talent allocation. Uses learned ranks for a Lightning Bolt pull, Earth Shock in combat and stationary ranged Lightning Bolt, with independent Lightning Shield and mainhand imbue reminders. Prefers learned Windfury over Rockbiter only when no temporary mainhand enchant is present; preserves any manual enchant and does not infer a weapon type or complete build. Equipment, healing, interrupts, totems, consumables, weapon timing and resource optimization remain manual. Not native gameplay certified."
+L["Default.TBC.Warlock.Forties.Name"] = "TBC Warlock 40–49 single-target preview"
+L["Default.TBC.Warlock.Forties.Description"] = "Bounded Affliction-oriented preview with learned Siphon Life; proc priorities, talents, pets and resources remain manual."
 
 -- BEGIN GENERATED RM PUBLIC HELPER DOCS
 L["Absolute health target (negative means deficit) or percentage fraction."] = true
