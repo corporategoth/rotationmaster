@@ -7346,6 +7346,14 @@ L["noheals selects damage only; nodmg selects healing only; other readable value
 ]====]}
 return function(text,path)
  local row=assert(rows[path],'unexpected top-tab Help inverse path')
+ if path=='UI/config.lua' and text~=row.after and text~=row.before then
+  local function once(from,to)
+   local first,last=text:find(from,1,true);assert(first and not text:find(from,last+1,true),'pane anchor inverse drift')
+   text=text:sub(1,first-1)..to..text:sub(last+1)
+  end
+  once('paneHeader:SetSize(math.max(1,width-24),math.max(1,self.paneHeaderHeight or 24))','paneHeader:SetSize(math.max(1,width-24),self.paneHeaderHeight or 24)')
+  once('content:SetPoint("TOPLEFT",window,"TOPLEFT",12,-top-(self.paneHeaderHeight or 24))','content:SetPoint("TOPLEFT",paneHeader,"BOTTOMLEFT",0,0)')
+ end
  if text==row.after or text==row.before then return row.before end
  error('unrelated whole top-tab Help source')
 end

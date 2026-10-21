@@ -228,8 +228,8 @@ local function newShell()
             x=x+tabWidth+2
         end
         local top=-y+28
-        paneHeader:ClearAllPoints();paneHeader:SetPoint('TOPLEFT',window,'TOPLEFT',12,-top);paneHeader:SetSize(math.max(1,width-24),self.paneHeaderHeight or 24)
-        content:ClearAllPoints();content:SetPoint("TOPLEFT",paneHeader,"BOTTOMLEFT",0,0)
+        paneHeader:ClearAllPoints();paneHeader:SetPoint('TOPLEFT',window,'TOPLEFT',12,-top);paneHeader:SetSize(math.max(1,width-24),math.max(1,self.paneHeaderHeight or 24))
+        content:ClearAllPoints();content:SetPoint("TOPLEFT",window,"TOPLEFT",12,-top-(self.paneHeaderHeight or 24))
         content:SetSize(math.max(1,width-24),math.max(1,height-top-28-(self.paneHeaderHeight or 24)))
         self.status:SetWidth(math.max(1,width/2-270))
         self.language:ClearAllPoints();self.language:SetPoint("TOPRIGHT",-12,-42)
