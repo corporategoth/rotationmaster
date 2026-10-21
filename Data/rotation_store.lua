@@ -2,6 +2,9 @@ local _,addon=...
 local data=addon.RotationData
 local isClass=data.IsRotationClassToken
 local components={'body','origin','imported','comparison'}
+local addressFields={scope=true,class=true,owner=true,spec=true,id=true}
+local stateFields={version=true,classes=true,characters=true,legacy=true}
+local recordFields={body=true,origin=true,imported=true,comparison=true}
 local legacyKinds={rotations='body',origins='origin',imports='imported',comparisons='comparison'}
 local function plain(v) return type(v)=='table' and getmetatable(v)==nil end
 local function text(v,limit) return type(v)=='string' and #v>0 and #v<=limit and v:find('%S')~=nil and not v:find('[%z\1-\31\127]') end
@@ -12,7 +15,7 @@ local function fields(v,allowed)
     return true
 end
 local function validAddress(a)
-    return fields(a,{scope=true,class=true,owner=true,spec=true,id=true}) and isClass(a.class) and spec(a.spec) and text(a.id,128)
+    return fields(a,addressFields) and isClass(a.class) and spec(a.spec) and text(a.id,128)
         and (a.scope=='class' and a.owner==a.class or a.scope=='character' and text(a.owner,512))
 end
 local function visible(a,c)
@@ -38,7 +41,7 @@ local function originMap(value)
     return true
 end
 local function validRecord(record,address)
-    if not fields(record,{body=true,origin=true,imported=true,comparison=true}) or not plain(record.body) or not data.CheckPortable(record.body)
+    if not fields(record,recordFields) or not plain(record.body) or not data.CheckPortable(record.body)
         or record.origin~=nil and record.imported~=nil then return nil,'invalid-record' end
     for _,kind in ipairs({'origin','imported','comparison'}) do
         if record[kind]~=nil and (not plain(record[kind]) or not data.CheckPortable(record[kind])) then return nil,'invalid-record' end
@@ -126,7 +129,7 @@ local function distinctStructure(state)
     return true
 end
 local function validState(state)
-    if not fields(state,{version=true,classes=true,characters=true,legacy=true}) or state.version~=1 or not plain(state.classes) or not plain(state.characters) then return nil,'invalid-store' end
+    if not fields(state,stateFields) or state.version~=1 or not plain(state.classes) or not plain(state.characters) then return nil,'invalid-store' end
     for class,map in pairs(state.classes) do
         if not isClass(class) then return nil,'invalid-store' end
         local ok,why=validSpecMap(map,function(record,id,number) return validRecord(record,{id=id,class=class,spec=number}) end)
@@ -224,7 +227,7 @@ function data.NewRotationStore(options)
         source=source or index
         if not validAddress(a) then return nil,'invalid-address' end
         local allowed,reason=visible(a,c);if not allowed then return nil,reason end
-        if not fields(state,{version=true,classes=true,characters=true,legacy=true}) or state.version~=1
+        if not fields(state,stateFields) or state.version~=1
             or not plain(state.classes) or not plain(state.characters) or not plain(state.legacy) then return nil,'invalid-store' end
         if not sameRoots(source.roots) then return nil,'stale-store-index' end
         local root=a.scope=='class' and state.classes or state.characters
@@ -333,7 +336,7 @@ function data.NewRotationStore(options)
         if record~=(scope and scope.records[a.id]) then return nil,'stale-store-index' end
         if not record then return nil,'unknown-rotation' end
         local meta=scope.metadata[a.id]
-        if not fields(record,{body=true,origin=true,imported=true,comparison=true}) or not plain(record.body) then return nil,'invalid-record' end
+        if not fields(record,recordFields) or not plain(record.body) then return nil,'invalid-record' end
         local _,chain=locate(a)
         for i=1,4 do if chain[i]~=meta.chain[i] then return nil,'stale-store-index' end end
         for _,component in ipairs(components) do
