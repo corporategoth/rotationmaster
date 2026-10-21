@@ -125,7 +125,7 @@ test('profile retirement during native call prevents stale numeric report',funct
 end)
 test('actual shared copyable probe window reuses CPU report window and provider UI errors stay contained',function()
  local f,a,calls,shown=fixture();f.load('UI/condition_text.lua');f.env.C_AddOnProfiler=good(calls)
- assert(a:RunCPUProfileAction('probe'));local window=a.conditionTextWindow;assert(window and window.edit:GetText():find('allocatedBytes',1,true))
+ assert(a:RunCPUProfileAction('probe'));local window=a.conditionTextWindow;assert(window and window.edit:GetText():find('allocatedBytes',1,true)and window.edit:GetText():find('HasSecretRestrictions result: unavailable',1,true))
  window.copy:Click();assert(window.edit.focused and window.edit.selection[2]==-1);window.close:Click();assert(not window.frame:IsShown())
  assert(a:RunCPUProfileAction('probe')and a.conditionTextWindow==window);assert(a:RunCPUProfileAction('report'));assert(window.edit:GetText()=='unchanged CPU report bytes')
  a.ShowConditionText=function()error('PRIVATE UI')end;assert(not a:RunCPUProfileAction('probe'));assert(calls.forbidden==0)
@@ -147,4 +147,52 @@ test('provider reentry cannot start cancel or open another CPU report during pro
  provider.IsEnabled=function()calls.enabled=calls.enabled+1;for _,action in ipairs({'start','cancel','report'})do actions[action]=a:RunCPUProfileAction(action)end;return true end
  f.env.C_AddOnProfiler=provider;report(a,shown);assert(mutations==0 and#shown==1 and actions.start==false and actions.cancel==false and actions.report==false)
 end)
+test('explicit eligibility capture reports types and one Boolean only after unchanged measurement',function()
+ for _,value in ipairs({false,true})do
+  local f,a,calls,shown=fixture(function(f,_,calls)
+   f.env.issecretvalue=function()return false end;f.env.canaccessvalue=function()return true end
+   f.env.C_Secrets={HasSecretRestrictions=function(...)assert(select('#',...)==0 and calls.measure==1 and calls.event==1,'queried before normal measurement');calls.eligibility=(calls.eligibility or 0)+1;return value end}
+  end)
+  assert(not calls.eligibility);f.env.C_AddOnProfiler=good(calls);local text=report(a,shown)
+  has(text,'issecretvalue type: function');has(text,'canaccessvalue type: function');has(text,'C_Secrets type: table');has(text,'HasSecretRestrictions type: function');has(text,'HasSecretRestrictions result: '..tostring(value))
+  assert(calls.eligibility==1 and calls.measure==1 and calls.event==1 and calls.forbidden==0);has(text,'Callback arguments: exact');has(text,'Callback returns: exact');has(text,'elapsedMilliseconds: 0.125')
+ end
+end)
+test('eligibility is not queried at load idle ordinary report active capture or disabled measurement',function()
+ local f,a,calls,shown,_,setRunning=fixture(function(f,_,calls)f.env.C_Secrets={HasSecretRestrictions=function()calls.eligibility=(calls.eligibility or 0)+1;return false end}end)
+ assert(not calls.eligibility);assert(a:RunCPUProfileAction('report'));assert(shown[1].text=='unchanged CPU report bytes'and not calls.eligibility)
+ f.env.C_AddOnProfiler=good(calls);setRunning(true);assert(not a:RunCPUProfileAction('probe')and not calls.eligibility);setRunning(false)
+ f.env.C_AddOnProfiler.IsEnabled=function()return false end;local text=report(a,shown);has(text,'HasSecretRestrictions result: unavailable');assert(not calls.eligibility and calls.measure==0)
+end)
+test('missing malformed throwing and unreadable eligibility results remain bounded unavailable',function()
+ for _,kind in ipairs({'missing','metatable','throw','nil','number','opaque'})do
+  local private=setmetatable({},{__tostring=function()error('PRIVATE eligibility tostring')end})
+  local f,a,calls,shown=fixture(function(f,_,calls)
+   f.env.canaccessvalue=function(v)return not rawequal(v,private)end
+   if kind=='missing'then return elseif kind=='metatable'then f.env.C_Secrets=setmetatable({},{__index=function()error('PRIVATE capability getter')end});return end
+   f.env.C_Secrets={HasSecretRestrictions=function()calls.eligibility=(calls.eligibility or 0)+1;if kind=='throw'then error('PRIVATE capability error')elseif kind=='number'then return 0 elseif kind=='opaque'then return private end end}
+  end)
+  f.env.C_AddOnProfiler=good(calls);local text=report(a,shown);has(text,'HasSecretRestrictions result: unavailable');has(text,'Callback returns: exact');if kind=='missing'or kind=='metatable'then assert(calls.eligibility==nil)else assert(calls.eligibility==1)end;assert(calls.measure==1 and calls.event==1 and calls.forbidden==0)
+ end
+end)
+test('eligibility method or namespace changed by measurement is never called',function()
+ for _,kind in ipairs({'method','namespace'})do
+  local f,a,calls,shown=fixture();local oldCalls,newCalls=0,0;local namespace={HasSecretRestrictions=function()oldCalls=oldCalls+1;return false end};f.env.C_Secrets=namespace
+  local provider=good(calls);local measure=provider.MeasureCall;provider.MeasureCall=function(...)local values=pack(measure(...));local replacement=function()newCalls=newCalls+1;return false end;if kind=='method'then namespace.HasSecretRestrictions=replacement else f.env.C_Secrets={HasSecretRestrictions=replacement}end;return unpack(values,1,values.n)end;f.env.C_AddOnProfiler=provider
+  local text=report(a,shown);has(text,'HasSecretRestrictions result: unavailable');has(text,'elapsedMilliseconds: 0.125');assert(oldCalls==0 and newCalls==0 and calls.measure==1 and calls.event==1)
+ end
+end)
+test('eligibility readability callback replacement cannot dispatch stale or replacement method',function()
+ local f,a,calls,shown=fixture();local oldCalls,newCalls=0,0;local method=function()oldCalls=oldCalls+1;return false end;local namespace={HasSecretRestrictions=method};f.env.C_Secrets=namespace
+ f.env.canaccessvalue=function(v)if rawequal(v,method)then namespace.HasSecretRestrictions=function()newCalls=newCalls+1;return false end end;return true end
+ f.env.C_AddOnProfiler=good(calls);local text=report(a,shown);has(text,'HasSecretRestrictions result: unavailable');assert(oldCalls==0 and newCalls==0 and calls.measure==1)
+end)
+test('eligibility call reentry or owner retirement cannot publish stale false',function()
+ for _,kind in ipairs({'method','profile','capture'})do
+  local f,a,calls,shown,_,setRunning=fixture();local nested;local namespace={};f.env.C_Secrets=namespace
+  namespace.HasSecretRestrictions=function()calls.eligibility=(calls.eligibility or 0)+1;nested=a:RunCPUProfileAction('probe');if kind=='method'then namespace.HasSecretRestrictions=function()error('PRIVATE replacement')end elseif kind=='profile'then a.db.profile={}else setRunning(true)end;return false end
+  f.env.C_AddOnProfiler=good(calls);local text=report(a,shown);has(text,'HasSecretRestrictions result: unavailable');assert(nested==false and calls.eligibility==1 and calls.measure==1 and calls.event==1 and#shown==1)
+ end
+end)
+
 finish()

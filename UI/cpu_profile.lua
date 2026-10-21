@@ -44,12 +44,24 @@ local function buildNativeProbe(owner,getter)
     local runtimeGetter=rawget(owner,'IsCPURuntimeCaptureRunning')
     local state={provider='absent',enabled='absent',measure='absent',event='absent',calls='not run',arguments='not run',returns='not run'}
     local metrics={L['unavailable'],L['unavailable'],L['unavailable']}
+    -- Explicit probe snapshot only. No capability query occurs at module load or
+    -- when an existing CPU report is viewed/copied.
+    local secret,access,secrets=rawget(_G,'issecretvalue'),rawget(_G,'canaccessvalue'),rawget(_G,'C_Secrets')
+    local restrictions,restrictionType=nil,'nil'
+    if type(secrets)=='table' then
+        local ok,method=pcall(rawget,secrets,'HasSecretRestrictions')
+        if ok then restrictions,restrictionType=method,type(method) else restrictionType='unavailable' end
+    end
+    local restrictionsResult=L['unavailable']
     local function render()
         return table.concat({L['Native profiler probe'],L['Capability probe only; no evaluator or gameplay was measured.'],L['Native acceptance: unverified'],
             'C_AddOnProfiler: '..L[state.provider],'IsEnabled: '..L[state.enabled],'MeasureCall: '..L[state.measure],
             'AddMeasuredCallEvent: '..L[state.event],L['Callback calls']..': '..((state.calls=='0' or state.calls=='1') and state.calls or L[state.calls]),
             L['Callback arguments']..': '..L[state.arguments],L['Callback returns']..': '..L[state.returns],
-            'elapsedMilliseconds: '..metrics[1],'allocatedBytes: '..metrics[2],'deallocatedBytes: '..metrics[3]},'\n')
+            'elapsedMilliseconds: '..metrics[1],'allocatedBytes: '..metrics[2],'deallocatedBytes: '..metrics[3],
+            'issecretvalue type: '..type(secret),'canaccessvalue type: '..type(access),
+            'C_Secrets type: '..type(secrets),'HasSecretRestrictions type: '..restrictionType,
+            'HasSecretRestrictions result: '..restrictionsResult},'\n')
     end
     local provider=rawget(_G,'C_AddOnProfiler')
     if not probeReadable(provider) then state.provider='restricted';return render() end
@@ -113,6 +125,22 @@ local function buildNativeProbe(owner,getter)
     if not current() then return changed() end
     if state.measure~='call completed' then return render() end
     metrics={probeNumber(rawget(record,'elapsedMilliseconds')),probeNumber(rawget(record,'allocatedBytes'),true),probeNumber(rawget(record,'deallocatedBytes'),true)}
+    if not current() then return changed() end
+    -- This readonly build-capability call is outside the inert measurement.
+    -- Recheck exact captured methods after every callback-capable boundary.
+    local function sameEligibility()
+        return rawequal(rawget(_G,'issecretvalue'),secret) and rawequal(rawget(_G,'canaccessvalue'),access)
+            and rawequal(rawget(_G,'C_Secrets'),secrets)
+            and rawequal(rawget(secrets,'HasSecretRestrictions'),restrictions)
+    end
+    if type(restrictions)=='function' and sameEligibility() and probeReadable(secrets)
+        and sameEligibility() and probeReadable(restrictions) and current() and sameEligibility() then
+        local ok,result=pcall(restrictions)
+        if not current() then return changed() end
+        local readable=ok and sameEligibility() and probeReadable(result)
+        if not current() then return changed() end
+        if readable and sameEligibility() and type(result)=='boolean' then restrictionsResult=result and 'true' or 'false' end
+    end
     if not current() then return changed() end
     return render()
 end
