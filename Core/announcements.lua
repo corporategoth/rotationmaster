@@ -32,6 +32,54 @@ function addon:PrepareAnnouncementDelivery(config,owner)
     end
     return entry,current
 end
+-- One prepared parent lease owns all reached cards. Never prepare a card: that
+-- would replace the parent delivery serial. Public callbacks see a detached view.
+function addon:DispatchAnnouncementSeries(parent,recipient,current,targetUnit,format,deliver)
+    local result={chat=false,sound=false,outputs={}}
+    local cards=parent.outputs
+    if type(cards)~='table' or getmetatable(cards)~=nil or #cards>64 or not current() then return result end
+    local count,seen=0,{}
+    for key,card in pairs(cards) do
+        if not current() then return result end
+        if type(key)~='number' or key%1~=0 or key<1 or key>#cards or not self:IsValidAnnouncementOutput(card,parent.type=='macro') or seen[card.id] then return result end
+        if not current() then return result end
+        count=count+1;seen[card.id]=true
+    end
+    if count~=#cards or not current() then return result end
+    for _,card in ipairs(cards) do
+        if not current() then result.retired=true;break end
+        if not card.disabled then
+            local view=self.RotationData.CopyData(card)
+            view.type=parent.type
+            local expected=self.RotationData.CopyData(view)
+            local function live()return current() and same(view,expected) end
+            local matches=self.AnnouncementConditionMatches
+            if not live() then result.retired=true;break end
+            local ok,matched=pcall(matches,self,view,recipient,live,targetUnit)
+            if not live() then result.retired=true;break end
+            if ok and matched and not (view.announce=='gesture' and view.emote_target and not recipient) then
+                local formatted,value=pcall(format,view,live)
+                if not live() then result.retired=true;break end
+                if formatted and value~=nil then
+                    local sent,output
+                    if deliver then sent,output=pcall(deliver,view,value,live)
+                    else
+                        local dispatch=self.DispatchAnnouncement
+                        if not live() then result.retired=true;break end
+                        sent,output=pcall(dispatch,self,view,value,recipient,live)
+                    end
+                    if sent and type(output)=='table' then
+                        result.outputs[#result.outputs+1]=output
+                        result.chat=result.chat or output.chat==true
+                        result.sound=result.sound or output.sound==true
+                    end
+                    if not live() then result.retired=true;break end
+                end
+            end
+        end
+    end
+    return result
+end
 -- Native unit APIs may accept a resolvable name as well as a unit token.
 -- Keep the cast's recorded recipient exact; never infer the selected target.
 local function automaticTarget(recipient,owned)

@@ -142,7 +142,11 @@ function addon:ShowSettingsTextTransfer(p,title,text,apply,options)
         d.frame:Hide()
     end
     d.serial=(d.serial or 0)+1;local serial=d.serial;local token=p.generation
-    local function valid() return p:Valid(token) and d.serial==serial and d.frame:IsShown() and (not options or not options.valid or options.valid()) end
+    local function valid()
+        if not p:Valid(token)or p.textDialog~=d or d.serial~=serial or not d.frame:IsShown()then return false end
+        if options and options.valid and not options.valid()then return false end
+        return p:Valid(token)and p.textDialog==d and d.serial==serial and d.frame:IsShown()
+    end
     d.chrome:SetContext(title,L['Import/Export'],addon.pretty_name or L['Rotation Master']);d.input:SetText(text or '')
     d.options=options;d.mode=options and options.canReplace and 'replace' or 'new';d.nameDirty=false
     local function destination()
@@ -172,7 +176,7 @@ function addon:ShowSettingsTextTransfer(p,title,text,apply,options)
         if not valid() then return end
         local settings
         if options then local name=d.mode=='new' and d.name:GetText() or options.selectedName;if d.mode=='new' and (not name:find('%S') or #name>256) then d.status:SetText(L['Enter a name first.']);return end;settings={mode=d.mode,name=name,originalName=d.originalName} end
-        local result=p:WithSettingsHistory(function() local ok,why=apply(d.input:GetText(),settings);return {ok,why} end);local ok,why=result[1],result[2];if not ok then d.status:SetText(why or L['Invalid import.']);return end
+        local result=p:WithSettingsHistory(function() local ok,why=apply(d.input:GetText(),settings);return {ok,why} end);if not valid()then return end;local ok,why=result[1],result[2];if not ok then d.status:SetText(why or L['Invalid import.']);return end
         d.frame:Hide();p:Draw()
     end)
     d.frame:SetFrameLevel(p.frame:GetFrameLevel()+250);d.frame:Show();d.scroll.workbenchBar:SetValue(0);d.scroll:UpdateWorkbenchScroll();addon:RegisterWindowForEscape(d);if options then preview() end

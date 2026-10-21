@@ -32,6 +32,8 @@ function addon:GetDocument_layout_announce_options_help()
         {id="event.INTERRUPTED",title=L["Interrupted"],text=L["Help.Announces.event.INTERRUPTED"]},
         {id="event.FAILED",title=L["Failed"],text=L["Help.Announces.event.FAILED"]},
         {id="event.DELAYED",title=L["Delayed"],text=L["Help.Announces.event.DELAYED"]},
+        {id="outputs",title=L["Outputs"],text=L["Help.Announces.outputs"]},
+        {id="channel.channel",title=L["Channel"],text=L["Help.Announces.channel.channel"]},
         {id="announce",title=L["Announce"],text=L["Help.Announces.announce"]},
         {id="channel.audible",title=L["Audible"],text=L["Help.Announces.channel.audible"]},
         {id="channel.partyraid",title=L["Raid or Party"],text=L["Help.Announces.channel.partyraid"]},
@@ -56,4 +58,14 @@ function addon.layout_announce_options_help(frame)
         frame:AddChild(Gap())
         frame:AddChild(CreateText((entry.title~='' and color.BLIZ_YELLOW..entry.title..color.RESET..' - ' or '')..entry.text))
     end
+end
+
+-- Card Help uses the same authored document, limited to its output controls.
+function addon:GetAnnouncementOutputHelp(kind,mode)
+    local sections={};local included={outputs=true,conditions=true,announce=true,text=true,substitutions=true,state=true,save=true}
+    included['channel.'..tostring(mode)]=true
+    if mode=='gesture' then included.emote=true;included[kind=='macro'and 'macro.emote_target'or 'emote_target']=true end
+    if mode=='audible'then included.sound=true end
+    for _,entry in ipairs(self:GetDocument_layout_announce_options_help())do if included[entry.id]then sections[#sections+1]=entry end end
+    return sections
 end

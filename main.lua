@@ -1997,7 +1997,7 @@ local function spellcast(self, event, unit, castguid, spellid)
         local announcements=profile.announces
         for index, value in ipairs(announcements) do
         -- END ANNOUNCEMENT CONDITION OWNER
-            if value.type~='macro' and (value.value or value.announce == "audible" or value.announce == "gesture") and (not value.disabled) and (value.type == BOOKTYPE_PET and unit == "pet" or unit == "player") and
+            if value.type~='macro' and (value.outputs~=nil or value.value or value.announce == "audible" or value.announce == "gesture") and (not value.disabled) and (value.type == BOOKTYPE_PET and unit == "pet" or unit == "player") and
                 (event == "UNIT_SPELLCAST_" .. value.event or event == "UNIT_SPELLCAST_CHANNEL_" .. value.event) then
                 local skip = false
                 if self.announced[value.id] then
@@ -2011,16 +2011,55 @@ local function spellcast(self, event, unit, castguid, spellid)
                 if not skip then
                     -- BEGIN ANNOUNCEMENT CONDITION LEASE
                     local registry=self.conditionRegistryVersion
+                    local seriesRecipient=currentSpells[castguid]
+                    local seriesLifecycle=value.outputs~=nil and self.IsEnabled or nil
+                    local function seriesEnabled()
+                        if value.outputs==nil then return true end
+                        if self.IsEnabled~=seriesLifecycle then return false end
+                        if seriesLifecycle~=nil then
+                            if type(seriesLifecycle)~='function' then return false end
+                            local ok,enabled=pcall(seriesLifecycle,self)
+                            if not ok or enabled~=true then return false end
+                        end
+                        local state=rawget(self,'enabledState')
+                        return self.IsEnabled==seriesLifecycle and rawget(self,'enabledState')==state and (state==nil or state==true)
+                    end
                     local ent,current=self:PrepareAnnouncementDelivery(value,function()
-                        return self.db.profile==profile and profile.announces==announcements
+                        return seriesEnabled() and self.db.profile==profile and profile.announces==announcements
                             and announcements[index]==value and not value.disabled
                             and self.conditionRegistryVersion==registry
+                            and (value.outputs==nil or currentSpells[castguid]==seriesRecipient)
                     end)
-                    if ent and current() then
+                    if ent and current() and (ent.outputs==nil or self:IsValidAnnouncement(value) and current()) then
                     -- END ANNOUNCEMENT CONDITION LEASE
                     local spellids, itemids = self:GetSpellIds(ent)
                     for idx, sid in ipairs(spellids) do
                         if spellid == sid then
+                            if ent.outputs~=nil then
+                                if not current() then return end
+                                -- Reserve the parent once before any card callback.
+                                if self.announced[ent.id]==nil then self.announced[ent.id]={castguid}
+                                else table.insert(self.announced[ent.id],castguid) end
+                                self:DispatchAnnouncementSeries(ent,seriesRecipient,current,nil,function(card,live)
+                                    local text=card.value or ''
+                                    local link,itemLink
+                                    if text:find('{{target}}',1,true) and not seriesRecipient then return nil end
+                                    if text:find('{{spell}}',1,true) then
+                                        if ent.type~=BOOKTYPE_SPELL and ent.type~=BOOKTYPE_PET then return nil end
+                                        link=spellLink(sid)
+                                        if type(link)~='string' or not live() then return nil end
+                                    end
+                                    if text:find('{{item}}',1,true) then
+                                        if ent.type~='item' then return nil end
+                                        local info=self.Platform:GetItemDisplayInfo(itemids[idx])
+                                        itemLink=info and info.link
+                                        if type(itemLink)~='string' or not live() then return nil end
+                                    end
+                                    return text:gsub('{{target}}',function()return seriesRecipient end)
+                                        :gsub('{{spell}}',function()return link end):gsub('{{item}}',function()return itemLink end)
+                                        :gsub('{{event}}',function()return self.events[ent.event]end)
+                                end)
+                            else
                             -- BEGIN ANNOUNCEMENT CONDITION MATCH
                             if self:AnnouncementConditionMatches(ent,currentSpells[castguid],current) then
                             -- END ANNOUNCEMENT CONDITION MATCH
@@ -2049,6 +2088,7 @@ local function spellcast(self, event, unit, castguid, spellid)
                             if ent.announce=='gesture' then self:DispatchAnnouncement(ent,nil,currentSpells[castguid],current)
                             else self:DispatchAnnouncement(ent,text,nil,current) end
                             end -- ANNOUNCEMENT CONDITION OUTPUT
+                            end -- ANNOUNCEMENT SERIES OR LEGACY
                             break
                         end
                     end

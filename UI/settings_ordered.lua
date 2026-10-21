@@ -5,8 +5,12 @@ function addon:InstallSettingsOrdered(p)
         options=options or {};self.ordered=self.ordered or {}
         local token=self.generation;local parent=self.surface or self.child;local width=self.width
         local ghost=self:Acquire('orderedGhosts',function() return addon:CreateWorkbenchDragCard() end);ghost:SetParent(UIParent);ghost:Hide()
-        local view={rows={},zones={},compact=options.compact==true,ghost=ghost,unsavedKey=key:match("^items_") and "items" or "sequence"};self.ordered[key]=view
-        local function valid() return p:Valid(token) end
+        local view={rows={},zones={},compact=options.compact==true,ghost=ghost,unsavedKey=options.unsavedKey or (key:match("^items_") and "items" or "sequence")};self.ordered[key]=view
+        local function valid()
+            if not p:Valid(token) then return false end
+            if options.current and options.current()~=true then return false end
+            return p:Valid(token)
+        end
         function view:CancelDrag()
             self.drag=nil;self.tail=nil;self.insertFactory=nil
             if self.ghost.rmCollectionDragOwner==self or self.ghost.rmCollectionDragOwner==nil then
@@ -96,6 +100,7 @@ function addon:InstallSettingsOrdered(p)
             self.fields[(options.prefix or key)..i..'up']=row.up;self.fields[(options.prefix or key)..i..'down']=row.down;self.fields[(options.prefix or key)..i..'remove']=row.remove
             self.surface=row.body;self.width=width-62;self.y=options.compact and 2 or options.header==false and 4 or 28
             build(self,i,items[i],row)
+            if options.current and not valid()then return view end
             local height=math.max(options.compact and 30 or options.header==false and 44 or 68,self.y+8);row:SetHeight(height);row.body:SetHeight(height);row.body:ClearAllPoints();row.body:SetPoint('TOPLEFT',26,options.header==false and -math.max(0,(height-(self.y-4))/2-4) or 0)
             self.surface=outerSurface;self.width=outerWidth;self.y=y+height+(options.compact and 4 or 12);boundaries[#boundaries+1]=self.y-(options.compact and 2 or 6)
         end

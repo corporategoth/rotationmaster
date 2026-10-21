@@ -4,7 +4,9 @@ local channels={{value='audible',text=L['Audible']},{value='partyraid',text=L['R
 local types={{value='spell',text=L['Spell']},{value='pet',text=L['Pet Spell']},{value='item',text=L['Item']},{value='macro',text=L['Via Macro']}}
 function addon:BuildAnnounceSettings(p)
     local store=p:SettingsData()
-    local values=store.profile.announces or {};local events={};for id,text in pairs(self.events or {}) do events[#events+1]={value=id,text=text} end;table.sort(events,function(a,b) return a.text<b.text end)
+    local values=store.profile.announces or {};local listSource=store.profile.announces;local drawing=p.generation
+    local function storeCurrent()return p:Valid(drawing)and p:SettingsData()==store and store.profile.announces==listSource and p:Valid(drawing)end
+    local events={};for id,text in pairs(self.events or {}) do events[#events+1]={value=id,text=text} end;table.sort(events,function(a,b) return a.text<b.text end)
     local refreshRoster
     local function identifierFree(value,except)
         if not self:IsValidMacroAnnouncementIdentifier(value) then return false end
@@ -18,44 +20,141 @@ function addon:BuildAnnounceSettings(p)
         for i=2,#values+2 do local value=seed..'_'..i;if identifierFree(value) then return value end end
     end
     local function update(entry,key,value) entry[key]=value;if refreshRoster then refreshRoster(entry) end end
+    local outputFields={'announce','value','announce_sound','emote','emote_target','conditions','channel_name'}
+    local function renewOutputs(entry,current)
+        for _,output in ipairs(entry.outputs or {})do
+            if not current()then return false end
+            local id=self:uuid();if not current()then return false end;output.id=id
+        end
+        return current()
+    end
     local function drawAction(prefix,entry)
+        local generation=p.generation;local kind=entry.type;local identity=entry.id;local source=entry.outputs
+        local function parentCurrent()
+            if not p:Valid(generation) or p:SettingsData()~=store or entry.type~=kind or entry.id~=identity or entry.outputs~=source then return false end
+            if p.newAnnounce==entry then return p:Valid(generation)end
+            for _,candidate in ipairs(store.profile.announces or {})do if candidate==entry then return p:Valid(generation)end end
+            return false
+        end
+        local materialize
+        local function change(key,value) if parentCurrent() then update(entry,key,value) end end
         p:Choice(prefix..'type',L['Action Type'],entry.type,types,function(v)
+            if not parentCurrent() then return end
+            if not source and v~='macro'and (entry.announce=='say'or entry.announce=='yell'or entry.announce=='whisper'or entry.announce=='channel')then if not materialize()then return end end
             entry.type=v;entry.spell=nil;entry.item=nil;entry.ranked=nil
             if v=='macro' then entry.event=nil;entry.identifier=nextIdentifier(entry.identifier)
             else entry.identifier=nil;entry.event=entry.event or 'SUCCEEDED' end
             p:Draw()
         end)
         if entry.type=='macro' then
-            p:Edit(prefix..'identifier',L['Identifier'],entry.identifier or '',function(value)if identifierFree(value,entry) then return value end end,function(v)update(entry,'identifier',v)end)
-        elseif entry.type=='item' then p:ItemSequence(prefix..'action',entry.item,function(v) update(entry,'item',v) end)
-        else p:Spell(prefix..'action',L['Spell'],entry.spell,entry.type=='pet' and BOOKTYPE_PET or addon.currentSpec,function(v) update(entry,'spell',v) end);p:InlineCheck(prefix..'action',prefix..'ranked',L['Use this exact spell rank'],entry.ranked,function(v) update(entry,'ranked',v) end) end
-        if entry.type~='macro' then p:Choice(prefix..'event',L['Event'],entry.event,events,function(v) update(entry,'event',v) end) end
-        local choices=channels
-        if entry.type=='macro' then choices={};for _,row in ipairs(channels)do choices[#choices+1]=row end;for _,row in ipairs({{value='say',text=L['Say']},{value='yell',text=L['Yell']},{value='whisper',text=L['Whisper']}})do choices[#choices+1]=row end end
-        if entry.announce=='emote' then local old=choices;choices={};for _,row in ipairs(old) do choices[#choices+1]=row end;choices[#choices+1]={value='emote',text=L['Custom emote']} end
-        p:Choice(prefix..'channel',L['Announce'],entry.announce,choices,function(v) update(entry,'announce',v);p:Draw() end)
-        if entry.type~='macro' and (entry.announce=='say' or entry.announce=='yell') then p:Text(L['Automatic Say and Yell are unavailable. Choose another announcement destination.']) end
-        if entry.announce=='gesture' then
-            p:Choice(prefix..'emote',L['Emote'],entry.emote,self.Platform:GetAnnouncementEmotes(),function(v) update(entry,'emote',v) end)
-            p:Check(prefix..'emote_target',entry.type=='macro' and L['Use supplied macro target ({{target}})'] or L['Use spell recipient ({{target}})'],entry.emote_target,function(v) update(entry,'emote_target',v) end)
-        elseif entry.announce=='audible' then p:Sound(prefix,L['Sound'],entry.announce_sound,function(v) update(entry,'announce_sound',v) end) else p:Edit(prefix..'text',L['Text'],entry.value or '',nil,function(v) update(entry,'value',v) end) end
-        p:Text(self:DescribeCondition(entry.conditions or {},self.currentSpec))
-        p:Button(prefix..'conditions',L['Edit announcement conditions'],function()
-            local generation=p.generation
-            local source=entry.conditions
-            local entryType=entry.type
-            local draft=self:CopySettingsData(source or {})
-            local baseline=self:CopySettingsData(draft)
-            local function current()
-                if not p:Valid(generation) or entry.type~=entryType or entry.conditions~=source or not self:SettingsDataEqual(source or {},baseline) then return false end
-                if p.newAnnounce==entry then return true end
-                for _,candidate in ipairs(store.profile.announces or {}) do if candidate==entry then return true end end
-                return false
+            p:Edit(prefix..'identifier',L['Identifier'],entry.identifier or '',function(value)if identifierFree(value,entry) then return value end end,function(v)change('identifier',v)end)
+        elseif entry.type=='item' then p:ItemSequence(prefix..'action',entry.item,function(v)change('item',v)end)
+        else p:Spell(prefix..'action',L['Spell'],entry.spell,entry.type=='pet' and BOOKTYPE_PET or addon.currentSpec,function(v)change('spell',v)end);p:InlineCheck(prefix..'action',prefix..'ranked',L['Use this exact spell rank'],entry.ranked,function(v)change('ranked',v)end) end
+        if entry.type~='macro' then p:Choice(prefix..'event',L['Event'],entry.event,events,function(v)change('event',v)end) end
+        local items=source or {entry};local snapshot,identities={},{};for i,output in ipairs(items)do snapshot[i]=output;identities[i]=output.id end
+        local function collectionCurrent()
+            if not parentCurrent() or #items~=#snapshot then return false end
+            for i,output in ipairs(snapshot) do if items[i]~=output or output.id~=identities[i]then return false end end
+            return true
+        end
+        materialize=function()
+            if source then return items end
+            local outputs={}
+            for i,output in ipairs(items) do
+                local copy={id=self:uuid()};for _,key in ipairs(outputFields) do copy[key]=self:CopySettingsData(output[key]) end;outputs[i]=copy
             end
-            self:ShowConditionEditor(nil,self.currentSpec,draft,function(applied)
-                if applied and current() then entry.conditions=next(draft) and draft or nil;p:Draw() end
-            end,current,{persistentOwner=true,announcement=true,announcementTarget=true,title=L['Announcement conditions'],contextLabel=L['Announces']})
+            if not parentCurrent() then return end
+            for _,key in ipairs(outputFields) do entry[key]=nil end
+            entry.outputs=outputs;return outputs
+        end
+        local function structuralChange() if parentCurrent() then materialize() end end
+        p:Heading(L['Outputs'])
+        p:OrderedCollection('announce_outputs_'..prefix,items,function(i)return string.format(L['Output %d'],i)end,function(_,index,output,row)
+            local field=index==1 and prefix or prefix..'output'..index
+            local function current()
+                return collectionCurrent() and items[index]==output
+            end
+            local function outputChange(key,value)if current() then output[key]=value;if refreshRoster then refreshRoster(entry) end end end
+            local choices={};for _,choice in ipairs(channels)do choices[#choices+1]=choice end
+            if kind=='macro' then for _,choice in ipairs({{value='say',text=L['Say']},{value='yell',text=L['Yell']},{value='whisper',text=L['Whisper']},{value='channel',text=L['Channel']}})do choices[#choices+1]=choice end end
+            if output.announce=='emote' then choices[#choices+1]={value='emote',text=L['Custom emote']} end
+            -- A prohibited saved destination remains visible until the user chooses a replacement.
+            if kind~='macro' and (output.announce=='say' or output.announce=='yell' or output.announce=='whisper' or output.announce=='channel') then
+                choices[#choices+1]={value=output.announce,text=L[({say='Say',yell='Yell',whisper='Whisper',channel='Channel'})[output.announce]]..' ('..L['Unavailable']..')'}
+            end
+            local choice=p:Choice(field..'channel',L['Announce'],output.announce,choices,function(v)
+                if not current()then return end
+                if v=='channel'and not source then local outputs=materialize();if not outputs then return end;outputs[index].announce=v
+                else outputChange('announce',v)end;p:Draw()
+            end)
+            if kind~='macro' then
+                local allowed={};for _,v in ipairs(choices)do if v.value~='say'and v.value~='yell'and v.value~='whisper'and v.value~='channel'then allowed[#allowed+1]=v end end
+                self:SetUIScript(choice,'OnClick',p:Guard(function()if current()and p:FlushEdits()and current()then p:ShowChoices(choice,allowed,function(v)if current()then outputChange('announce',v);p:Draw()end end)end end))
+            end
+            if output.announce=='channel' then
+                local name=output.channel_name
+                local selector=p:Choice(field..'channel_name',L['Channel'],name,name and {{value=name,text=self:PlainWorkbenchName(name)}}or {},function()end)
+                self:SetUIScript(selector,'OnClick',p:Guard(function()
+                    if not current() or not p:FlushEdits() or not current() then return end
+                    local platform=self.Platform;local query=platform and platform.GetJoinedAnnouncementChannels
+                    if not current() then return end
+                    local ok,found=false,nil
+                    if type(query)=='function' then ok,found=pcall(query,platform,current) end
+                    if not current() or self.Platform~=platform or platform and platform.GetJoinedAnnouncementChannels~=query or not current() then return end
+                    local rows,seen={},{}
+                    if ok and type(found)=='table'and getmetatable(found)==nil then for i=1,math.min(#found,20)do local v=rawget(found,i);local value=type(v)=='table'and getmetatable(v)==nil and rawget(v,'value')
+                        if type(value)=='string'and #value>0 and #value<=256 and not value:find('[%z\1-\31\127]')and not seen[value]then seen[value]=true;rows[#rows+1]={value=value,text=self:PlainWorkbenchName(value)}end
+                    end end
+                    if name and not seen[name] then rows[#rows+1]={value=name,text=self:PlainWorkbenchName(name)..' ('..L['Unavailable']..')'}end
+                    if not current() then return end
+                    p:ShowChoices(selector,rows,function(v)if current()and output.announce=='channel'and output.channel_name==name then outputChange('channel_name',v);p:Draw()end end)
+                end))
+            end
+            if output.announce=='gesture' then
+                local emotes=self.Platform:GetAnnouncementEmotes();if not current()then return end
+                p:Choice(field..'emote',L['Emote'],output.emote,emotes,function(v)outputChange('emote',v)end)
+                p:Check(field..'emote_target',kind=='macro'and L['Use supplied macro target ({{target}})']or L['Use spell recipient ({{target}})'],output.emote_target,function(v)outputChange('emote_target',v)end)
+            elseif output.announce=='audible' then p:Sound(field,L['Sound'],output.announce_sound,function(v)outputChange('announce_sound',v)end)
+            else p:Edit(field..'text',L['Text'],output.value or '',nil,function(v)outputChange('value',v)end)end
+            p:Toggle(field..'enabled',L['Output state'],not output.disabled,L['Disabled'],L['Enabled'],function(v)outputChange('disabled',not v)end)
+            local summary=self:DescribeCondition(output.conditions or {},self.currentSpec);if not current()then return end
+            p:Text(summary)
+            p:Button(field..'conditions',L['Edit announcement conditions'],function()
+                if not current() then return end
+                local conditions=output.conditions;local draft=self:CopySettingsData(conditions or {});local baseline=self:CopySettingsData(draft)
+                local function editing()return current()and output.conditions==conditions and self:SettingsDataEqual(conditions or {},baseline)and current()end
+                if not editing() then return end
+                self:ShowConditionEditor(nil,self.currentSpec,draft,function(applied)if applied and editing()then output.conditions=next(draft)and draft or nil;p:Draw()end end,editing,{persistentOwner=true,announcement=true,announcementTarget=true,title=L['Announcement conditions'],contextLabel=string.format(L['Output %d'],index)})
+            end)
+            row.header:SetWidth(math.max(1,p.width-44))
+            local duplicate=p:Acquire('outputDuplicate',function()return self:CreateWorkbenchIconButton(row,'copy',L['Duplicate'])end)
+            duplicate:SetParent(row);duplicate:ClearAllPoints();duplicate:SetPoint('TOPRIGHT',-28,-3);duplicate:SetSize(20,20);if #items>=64 then duplicate:Disable()else duplicate:Enable()end
+            p.fields[prefix..'output'..index..'duplicate']=duplicate
+            self:SetUIScript(duplicate,'OnClick',p:Guard(function()
+                if not current()or #items>=64 or not p:FlushEdits()or not current()then return end
+                local copy
+                if source then copy=self:CopySettingsData(output)else copy={};for _,key in ipairs(outputFields)do copy[key]=self:CopySettingsData(output[key])end end
+                copy.id=self:uuid();if not current()then return end
+                local outputs=materialize();if not outputs then return end
+                table.insert(outputs,index+1,copy);p:Draw()
+            end))
+            local help=p:Acquire('outputHelp',function()return self:CreateWorkbenchHelpButton(row,L['Help'])end)
+            help:SetParent(row);help:ClearAllPoints();help:SetPoint('TOPRIGHT',-52,-3);help:SetSize(20,20);help.icon:SetSize(18,18);p.fields[prefix..'output'..index..'help']=help
+            self:SetUIScript(help,'OnClick',function()if current()then self:OpenWorkbenchHelp({heading=string.format(L['Output %d'],index),owner=self.pretty_name,valid=current,sections=function()return self:GetAnnouncementOutputHelp(kind,output.announce)end})end end)
+            local candidate=output
+            if not source then candidate={id='00000000-0000-0000-0000-000000000000'};for _,key in ipairs(outputFields)do candidate[key]=output[key]end end
+            local valid=self:IsValidAnnouncementOutput(candidate,kind=='macro');if not current()then return end
+            self:SetWorkbenchInvalid(row,not valid,L['Complete this output or choose a destination available for this action type.'])
+        end,structuralChange,{prefix=prefix..'output',unsavedKey='outputs',current=collectionCurrent})
+        if not parentCurrent()then return false end
+        local add=p:Button(prefix..'add_output',L['Add output'],function()
+            if not collectionCurrent()or #items>=64 or not p:FlushEdits()or not collectionCurrent()then return end
+            local output={id=self:uuid(),announce='partyraid',value=''};if not collectionCurrent()then return end
+            local outputs=materialize();if not outputs then return end
+            outputs[#outputs+1]=output;p:Draw()
         end)
+        if #items>=64 then add:Disable()end
+        return true
     end
     local function itemInfo(value)
         if type(value)=='string' then local set=(store.profile.itemsets or {})[value] or (store.global.itemsets or {})[value];local info=set and set.items and self:GetReferenceProvider('item').info(tonumber(set.items[1]) or self:GetReferenceProvider('item').resolve(set.items[1]));return {name=set and set.name or L['Item Set'],icon=info and info.icon} end
@@ -65,11 +164,16 @@ function addon:BuildAnnounceSettings(p)
         if entry.type=='macro' then return {name=entry.identifier or L['Via Macro']} end
         return entry.type=='item' and itemInfo(entry.item) or self.Platform:GetSpellInfo(entry.spell)
     end
+    local function searchText(entry)
+        local parts={entry.event or ''}
+        for _,output in ipairs(entry.outputs or {entry})do parts[#parts+1]=output.value or '';parts[#parts+1]=output.announce or '';parts[#parts+1]=output.channel_name or ''end
+        return table.concat(parts,' ')
+    end
     refreshRoster=function(entry)
         local info=entryInfo(entry)
-        for i,value in ipairs(values) do if value==entry then p:UpdateRosterEntry(i,{text=self:SettingsNonempty(entry.name) or info and info.name or entry.type=='item' and L['Item data loading'] or L['Unknown spell'],icon=info and (info.icon or info.iconID),search=(entry.value or '')..' '..(entry.event or '')..' '..(entry.announce or '')});break end end
+        for i,value in ipairs(values) do if value==entry then p:UpdateRosterEntry(i,{text=self:SettingsNonempty(entry.name) or info and info.name or entry.type=='item' and L['Item data loading'] or L['Unknown spell'],icon=info and (info.icon or info.iconID),search=searchText(entry)});break end end
     end
-    local entries={};for i,entry in ipairs(values) do local info=entryInfo(entry);entries[#entries+1]={value=i,text=self:SettingsNonempty(entry.name) or info and info.name or entry.type=='item' and L['Item'] or L['Unknown spell'],icon=info and (info.icon or info.iconID),search=(entry.value or '')..' '..(entry.event or '')..' '..(entry.announce or '')} end
+    local entries={};for i,entry in ipairs(values) do local info=entryInfo(entry);entries[#entries+1]={value=i,text=self:SettingsNonempty(entry.name) or info and info.name or entry.type=='item' and L['Item'] or L['Unknown spell'],icon=info and (info.icon or info.iconID),search=searchText(entry)} end
     if not values[p.selection] and not p.creating then p.selection=entries[1] and entries[1].value end
     local function addAnnouncement()
             local entry=p.newAnnounce;local field=entry.type=='item' and 'item' or 'spell'
@@ -82,18 +186,61 @@ function addon:BuildAnnounceSettings(p)
     end
     p:UseRoster(entries,p.selection,function(id) p.selection=id;p.creating=false;p:Draw() end,{newText=L['Add announcement'],new=function() p.previousSelection=p.selection;p.selection=nil;p.creating=true;p.emptyDismissed=false;p:Draw() end})
     local selected=not p.creating and values[p.selection] or nil
-    local named={};for _,row in ipairs(entries) do named[row.value]=self:CopySettingsData(values[row.value]);named[row.value].name=row.text end
+    local named={};for _,row in ipairs(entries)do named[row.value]=self:CopySettingsData(values[row.value]);named[row.value].name=row.text end
+    local selection=p.selection;local selectedID=selected and selected.id
+    local function footerCurrent()
+        if not storeCurrent()or p.selection~=selection then return false end
+        if selected and (values[selection]~=selected or selected.id~=selectedID)then return false end
+        return storeCurrent()and p.selection==selection
+    end
+    -- Ordinary staged edits are current. Freeze values only for one footer operation.
+    local function beginFooter()
+        if not footerCurrent()or not p:FlushEdits()or not footerCurrent()then return end
+        local baseline=selected and self:CopySettingsData(selected)
+        if not footerCurrent()then return end
+        local function current()
+            if not footerCurrent()then return false end
+            if selected and not self:SettingsDataEqual(selected,baseline)then return false end
+            return footerCurrent()
+        end
+        if current()then return current end
+    end
+    if not footerCurrent()then return end
     self:CollectionFooter(p,'announcement',named,selected and p.selection or nil,
-        {key='duplicate',text=L['Duplicate'],icon='copy',enabled=selected~=nil,action=function() local copy=self:CopySettingsData(selected);copy.id=self:uuid();if copy.type=='macro' then copy.identifier=nextIdentifier(copy.identifier) end;values[#values+1]=copy;p.selection=#values;p:Draw() end},
+        {key='duplicate',text=L['Duplicate'],icon='copy',enabled=selected~=nil,action=function()
+            local current=beginFooter();if not current then return end
+            local copy=self:CopySettingsData(selected);if not current()then return end
+            local id=self:uuid();if not current()then return end;copy.id=id
+            if not renewOutputs(copy,current)then return end
+            if copy.type=='macro'then copy.identifier=nextIdentifier(copy.identifier)end
+            if not current()then return end;values[#values+1]=copy;p.selection=#values;p:Draw()
+        end},
         {key='transfer',text=L['Import/Export'],icon='transfer',action=function()
-            local codec=self:NewRotationCodec();local text,why='',nil;if selected then text,why=codec:Encode({format='RM-Announcement',version=1,announcement=selected});if not text then p:Message(why);return end end
+            local current=beginFooter();if not current then return end
+            local codec=self:NewRotationCodec();if not current()then return end
+            local text,why='',nil;if selected then text,why=codec:Encode({format='RM-Announcement',version=selected.outputs and 2 or 1,announcement=selected});if not current()then return end;if not text then p:Message(why);return end end
+            local request={};p.announcementTransferRequest=request
+            local dialog,transferSerial
+            local function transferCurrent()
+                if not current()or p.announcementTransferRequest~=request or p.textDialog~=dialog then return false end
+                return not dialog or dialog.serial==transferSerial and dialog.frame:IsShown()
+            end
             self:ShowSettingsTextTransfer(p,L['Announces'],text,function(input,settings)
-                local decoded,errorText=codec:Decode(input);local wrapper=decoded and decoded.value;local entry=wrapper and wrapper.announcement
-                if type(wrapper)~='table' or wrapper.format~='RM-Announcement' or wrapper.version~=1 or not self:IsValidAnnouncement(entry) then return false,errorText or L['Invalid announcement.'] end
+                if not transferCurrent()then return false end
+                local decoded,errorText=codec:Decode(input);if not transferCurrent()then return false end
+                local wrapper=decoded and decoded.value;local entry=type(wrapper)=='table'and wrapper.announcement
+                if type(wrapper)~='table' or wrapper.format~='RM-Announcement' or (wrapper.version~=1 and wrapper.version~=2) or wrapper.version==1 and type(entry)=='table'and entry.outputs~=nil or wrapper.version==2 and type(entry)=='table'and entry.outputs==nil or not self:IsValidAnnouncement(entry)then return false,errorText or L['Invalid announcement.'] end
+                if not transferCurrent()then return false end
                 if entry.type=='macro' and not identifierFree(entry.identifier,settings.mode=='replace' and selected or nil) then return false,L['Use a unique Via Macro identifier.'] end
-                entry=self:CopySettingsData(entry);entry.id=settings.mode=='replace' and selected and selected.id or self:uuid();entry.value=entry.value or '';store.profile.announces=store.profile.announces or {}
+                if not transferCurrent()then return false end
+                entry=self:CopySettingsData(entry);if not transferCurrent()then return false end
+                local id=settings.mode=='replace'and selected and selected.id or self:uuid();if not transferCurrent()then return false end;entry.id=id
+                if not renewOutputs(entry,transferCurrent)then return false end
+                if not entry.outputs then entry.value=entry.value or ''end
+                if not transferCurrent()then return false end;store.profile.announces=store.profile.announces or {}
                 if settings.mode=='replace' and selected then entry.name=selected.name;store.profile.announces[p.selection]=entry else entry.name=settings.name; store.profile.announces[#store.profile.announces+1]=entry;p.selection=#store.profile.announces end;p.creating=false;p.newAnnounce=nil;return true
             end,{canReplace=selected~=nil,selectedName=selected and (self:SettingsNonempty(selected.name) or named[p.selection].name),fallbackName=L['Imported announcement'],originalName=function(input) local decoded=codec:Decode(input);local entry=decoded and type(decoded.value)=='table' and decoded.value.announcement;if type(entry)=='table' then if self:SettingsNonempty(entry.name) then return entry.name end;local info=entryInfo(entry);return info and info.name end end})
+            dialog=p.textDialog;transferSerial=dialog and dialog.serial
         end})
     p:Heading(L['Announces'])
     local help=p:Acquire('announceHelp',function() return self:CreateWorkbenchHelpButton(p.child,L['Help']) end)
@@ -135,7 +282,7 @@ function addon:BuildAnnounceSettings(p)
     for i,entry in ipairs(values) do if i==p.selection and not p.creating then
         local title=self:SettingsNonempty(entry.name) or entry.type=='item' and (itemInfo(entry.item) and itemInfo(entry.item).name or L['Item data loading']) or entry.type=='macro' and (entry.identifier or L['Via Macro']) or self:PlainWorkbenchName(self:SpellLabel(entry.spell))
         p:Heading(title)
-        p:Edit('entry'..i..'name',L['Name'],entry.name or '',nil,function(value) update(entry,'name',value) end);drawAction('entry'..i,entry)
+        p:Edit('entry'..i..'name',L['Name'],entry.name or '',nil,function(value) update(entry,'name',value) end);if not drawAction('entry'..i,entry)then return end
         local enabled=p:Acquire('announceEnabled',function() return self:CreateWorkbenchPill(p.child,'',88) end);enabled:ClearAllPoints();enabled:SetPoint('TOPRIGHT',-30,-4);enabled:SetSize(88,18);enabled:SetText(entry.disabled and L['Disabled'] or L['Enabled']);enabled:SetSelected(not entry.disabled);p.fields['enabled'..i]=enabled;self:SetUIScript(enabled,'OnClick',p:Guard(function() if p:FlushEdits() then entry.disabled=not entry.disabled;p:Draw() end end))
         local identity=entry.id
         p.fields['delete'..i]=self:SettingsTopDelete(p,function()
@@ -148,7 +295,7 @@ function addon:BuildAnnounceSettings(p)
     end
     end
     if p.creating or #values==0 and p:CanAutoCreateCollection('profile','announces') then
-        p.newAnnounce=p.newAnnounce or {type='spell',event='SUCCEEDED',announce='partyraid',value=''}
-        p:Edit('new_name',L['Name'],p.newAnnounce.name or '',nil,function(value) p.newAnnounce.name=value end);drawAction('new_',p.newAnnounce);p:CreationActions(addAnnouncement,function() p.newAnnounce=nil;p.creating=false;p.selection=p.previousSelection;p.emptyDismissed=true;p:Draw() end)
+        p.newAnnounce=p.newAnnounce or {type='spell',event='SUCCEEDED',outputs={{id=self:uuid(),announce='partyraid',value=''}}}
+        p:Edit('new_name',L['Name'],p.newAnnounce.name or '',nil,function(value) p.newAnnounce.name=value end);if not drawAction('new_',p.newAnnounce)then return end;p:CreationActions(addAnnouncement,function() p.newAnnounce=nil;p.creating=false;p.selection=p.previousSelection;p.emptyDismissed=true;p:Draw() end)
     end
 end
