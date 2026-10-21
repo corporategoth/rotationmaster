@@ -27,9 +27,9 @@ test('direct local and saved legacy destinations do not need group APIs',functio
     local f,o=fixture();local a=f.addon;f.env.IsInRaid=function() error('should not be queried') end
     a:DispatchAnnouncement({announce='local'},'local')
     for _,mode in ipairs({'say','yell','emote'}) do a:DispatchAnnouncement({announce=mode},mode) end
-    assert(o.localText[1]=='local' and #o.chat==3)
-    assert(o.chat[1].destination=='SAY' and o.chat[2].destination=='YELL' and o.chat[3].destination=='EMOTE')
-    a:DispatchAnnouncement({announce='unknown'},'bad');a:DispatchAnnouncement({announce='none'},'none');assert(#o.chat==3 and #o.localText==1)
+    assert(o.localText[1]=='local' and #o.chat==1)
+    assert(o.chat[1].destination=='EMOTE')
+    a:DispatchAnnouncement({announce='unknown'},'bad');a:DispatchAnnouncement({announce='none'},'none');assert(#o.chat==1 and #o.localText==1)
 end)
 test('unknown group membership never guesses a destination',function()
     local f,o=fixture();f.env.IsInRaid=function() error('unavailable') end

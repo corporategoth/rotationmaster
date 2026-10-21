@@ -1,6 +1,6 @@
 local addon_name,addon=...
 local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
-local channels={{value='audible',text=L['Audible']},{value='partyraid',text=L['Raid or Party']},{value='party',text=L['Party Only']},{value='raidwarn',text=L['Raid Warning']},{value='say',text=L['Say']},{value='yell',text=L['Yell']},{value='gesture',text=L['Emote']},{value='local',text=L['Local Only']}}
+local channels={{value='audible',text=L['Audible']},{value='partyraid',text=L['Raid or Party']},{value='party',text=L['Party Only']},{value='raidwarn',text=L['Raid Warning']},{value='gesture',text=L['Emote']},{value='local',text=L['Local Only']}}
 local types={{value='spell',text=L['Spell']},{value='pet',text=L['Pet Spell']},{value='item',text=L['Item']}}
 function addon:BuildAnnounceSettings(p)
     local store=p:SettingsData()
@@ -16,6 +16,7 @@ function addon:BuildAnnounceSettings(p)
         local choices=channels
         if entry.announce=='emote' then choices={};for _,row in ipairs(channels) do choices[#choices+1]=row end;choices[#choices+1]={value='emote',text=L['Custom emote']} end
         p:Choice(prefix..'channel',L['Announce'],entry.announce,choices,function(v) update(entry,'announce',v);p:Draw() end)
+        if entry.announce=='say' or entry.announce=='yell' then p:Text(L['Automatic Say and Yell are unavailable. Choose another announcement destination.']) end
         if entry.announce=='gesture' then
             p:Choice(prefix..'emote',L['Emote'],entry.emote,self.Platform:GetAnnouncementEmotes(),function(v) update(entry,'emote',v) end)
             p:Check(prefix..'emote_target',L['Use spell recipient ({{target}})'],entry.emote_target,function(v) update(entry,'emote_target',v) end)
@@ -57,6 +58,39 @@ function addon:BuildAnnounceSettings(p)
     local help=p:Acquire('announceHelp',function() return self:CreateWorkbenchHelpButton(p.child,L['Help']) end)
     help:ClearAllPoints();help:SetPoint('TOPRIGHT',-124,-3);help:SetSize(20,20);help.icon:SetSize(18,18);p.fields.announce_help=help
     self:SetUIScript(help,'OnClick',p:Guard(function() self:ShowWorkbenchHelp(L['Announces'],self:WorkbenchPageHelp('Announces'),self.pretty_name) end))
+    if self.TestAnnouncementEmote and self.GetAnnouncementEmoteReport then
+        local token=p.generation
+        local function report()
+            if not p:Valid(token) then return end
+            local request={};p.emoteDiagnosticRequest=request
+            local text=self:GetAnnouncementEmoteReport()
+            if not p:Valid(token) or p.emoteDiagnosticRequest~=request then return end
+            local dialog=p.emoteDiagnosticReport
+            if not dialog then
+                dialog=self:CreateWorkbenchTextReport()
+                if not p:Valid(token) or p.emoteDiagnosticRequest~=request then dialog:Hide();return end
+                p.emoteDiagnosticReport=dialog
+            end
+            dialog:SetReport(L['Emote diagnostics'],text,self.pretty_name)
+            if not p:Valid(token) or p.emoteDiagnosticRequest~=request then
+                if p.emoteDiagnosticReport~=dialog or p.emoteDiagnosticRequest==request then dialog:Hide() end
+            end
+        end
+        local y=p.y
+        local test=p:Button('emote_test',L['Test /cheer'],function() end)
+        local inspect=p:Button('emote_report',L['Emote report'],function() end)
+        local width=(p.width-4)/2
+        test:ClearAllPoints();test:SetPoint('TOPLEFT',0,-y);test:SetWidth(width)
+        inspect:ClearAllPoints();inspect:SetPoint('TOPLEFT',width+4,-y);inspect:SetWidth(width);p.y=y+28
+        -- Explicit diagnostics do not flush or apply the current draft.
+        self:SetUIScript(test,'OnClick',function()
+            if not p:Valid(token) then return end
+            self:TestAnnouncementEmote()
+            if p:Valid(token) then report() end
+        end)
+        self:SetUIScript(inspect,'OnClick',report)
+        p.cleanups[#p.cleanups+1]=function() if p.emoteDiagnosticReport then p.emoteDiagnosticReport:Hide() end end
+    end
     for i,entry in ipairs(values) do if i==p.selection and not p.creating then
         local title=self:SettingsNonempty(entry.name) or entry.type=='item' and (itemInfo(entry.item) and itemInfo(entry.item).name or L['Item data loading']) or self:PlainWorkbenchName(self:SpellLabel(entry.spell))
         p:Heading(title)

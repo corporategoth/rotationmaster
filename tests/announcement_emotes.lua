@@ -11,15 +11,25 @@ end)
 test('named emotes send exact cast recipient and explicit empty target without chat',function()
  local _,a,e=fixture();local calls={};e.C_ChatInfo={PerformEmote=function(...)calls[#calls+1]={...} end,SendChatMessage=function()error('text chat not requested')end};e.UnitName=function()error('must not query selected target')end
  local result=a:DispatchAnnouncement({announce='gesture',emote='CHEER',emote_target=true},nil,'Clickcast-Realm');assert(result.chat and #calls==1 and calls[1][1]=='CHEER' and calls[1][2]=='Clickcast-Realm')
- result=a:DispatchAnnouncement({announce='gesture',emote='WAVE'},nil,'Ignored');assert(result.chat and calls[2][2]=='','targetless must not use client default target')
+ result=a:DispatchAnnouncement({announce='gesture',emote='WAVE'},nil,'Ignored');assert(result.chat and calls[2][2]=='none','targetless must not use client default target')
  result=a:DispatchAnnouncement({announce='gesture',emote='CHEER',emote_target=true},nil,nil);assert(not result.chat and #calls==2,'missing cast recipient must not guess')
 end)
 test('named emote rejection never falls back and sound remains independent',function()
- local _,a,e=fixture();local fallback=0;e.DoEmote=function()fallback=fallback+1 end;e.C_ChatInfo={PerformEmote=function()error('restricted')end}
+ local _,a,e=fixture();local fallback=0;e.DoEmote=function()error('restricted')end;e.C_ChatInfo={PerformEmote=function()fallback=fallback+1 end}
  assert(not a:DispatchAnnouncement({announce='gesture',emote='CHEER'},nil).chat and fallback==0)
- e.C_ChatInfo=nil;assert(a:DispatchAnnouncement({announce='gesture',emote='CHEER'},nil).chat and fallback==1)
+ e.DoEmote=nil;assert(a:DispatchAnnouncement({announce='gesture',emote='CHEER'},nil).chat and fallback==1)
  assert(not a:DispatchAnnouncement({announce='gesture',emote='NOT_IN_CLIENT'},nil).chat and fallback==1)
  local secret={};e.issecretvalue=function(v)return v==secret end;assert(not a:DispatchAnnouncement({announce='gesture',emote='CHEER',emote_target=true},nil,secret).chat and fallback==1)
+end)
+test('DoEmote is preferred with proven targetless sentinel and exact cast recipient',function()
+ local _,a,e=fixture();local calls={};e.DoEmote=function(...)calls[#calls+1]={...}end
+ e.C_ChatInfo={PerformEmote=function()error('must not use namespaced backend when DoEmote exists')end}
+ e.UnitName=function()error('must not use selected target')end
+ assert(a:DispatchAnnouncement({announce='gesture',emote='CHEER'},nil).chat)
+ assert(calls[1][1]=='cheer' and calls[1][2]=='none')
+ assert(a:DispatchAnnouncement({announce='gesture',emote='CHEER',emote_target=true},nil,'Actual-Healed').chat)
+ assert(calls[2][1]=='cheer' and calls[2][2]=='Actual-Healed' and #calls==2)
+ assert(a:GetAnnouncementEmoteReport():find('backend=DoEmote',1,true))
 end)
 test('named-emote failure still permits independently configured sound',function()
  local f,a,e=fixture();local sounds=0;e.C_ChatInfo={PerformEmote=function()error('not allowed')end};e.PlaySoundFile=function()sounds=sounds+1;return true end

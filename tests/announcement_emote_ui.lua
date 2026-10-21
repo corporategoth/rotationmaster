@@ -3,10 +3,10 @@ local function read(path)local h=assert(io.open(path));local s=h:read('*a');h:cl
 local function uiFixture()
  local prefix=assert(read('tests/settings_pages.lua'):match('^(.-)\ntest%('));local f,parent=assert(loadstring(prefix..'\nreturn fixture()','@actual-settings-fixture'))();f.load('Platform/communication.lua');f.env.MAXEMOTEINDEX=1;f.env.EMOTE1_TOKEN='CHEER';f.env.EMOTE1_CMD1='/cheer';return f,parent
 end
-test('announcement details cannot collapse and Say Yell and Emote are selectable',function()
+test('announcement details cannot collapse and Emote is selectable without blocked chat modes',function()
  local f,parent=uiFixture();local a=f.addon;a.db.profile.announces={{id='a',type='spell',spell=403,event='SUCCEEDED',announce='local',value='Keep'}};local p=a:CreateSettingsForm(parent);p:Open(function(form)a:BuildAnnounceSettings(form)end)
  assert(not p.fields.section_announce1 and p.fields.entry1text,'details must be unconditionally present')
- p.fields.entry1channel:Click();local seen={};for _,row in ipairs(p.menu.rows)do seen[row:GetText()]=row end;assert(seen.Say and seen.Yell and seen.Emote);seen.Emote:Click()
+ p.fields.entry1channel:Click();local seen={};for _,row in ipairs(p.menu.rows)do seen[row:GetText()]=row end;assert(not seen.Say and not seen.Yell and seen.Emote);seen.Emote:Click()
  assert(p.fields.entry1emote and p.fields.entry1emote_target and not p.fields.entry1text and a.db.profile.announces[1].value=='Keep')
  p.fields.entry1emote:Click();p.menu.rows[1]:Click();p.fields.entry1emote_target:Click();assert(a.db.profile.announces[1].emote=='CHEER' and a.db.profile.announces[1].emote_target==true)
  local stale=p.fields.entry1emote_target.scripts.OnClick;p:Release();stale();assert(a.db.profile.announces[1].emote_target==true)
@@ -33,5 +33,23 @@ test('Announces has local Help with substitutions and no pending-edit flush',fun
  p.fields.announce_help:Click();assert(a.helpWindow and a.helpWindow.heading=='Announces' and a.db.profile.announces[1].value=='Cast' and input:GetText()=='Pending {{target}}')
  local content='';for _,row in ipairs(a.helpWindow.sections)do content=content..row.text end;for _,token in ipairs({'{{target}}','{{spell}}','{{item}}','{{event}}'})do assert(content:find(token,1,true),'missing '..token)end
  local opens=0;local old=a.ShowWorkbenchHelp;a.ShowWorkbenchHelp=function(...)opens=opens+1;return old(...)end;local stale=p.fields.announce_help.scripts.OnClick;p:Release();stale();assert(opens==0)
+end)
+test('explicit emote diagnostic does not run on draw or flush pending announcement text',function()
+ local f,parent=uiFixture();f.load('Core/announcements.lua');local a,e=f.addon,f.env
+ local calls=0;e.C_ChatInfo={PerformEmote=function(token,target)calls=calls+1;assert(token=='CHEER' and target=='none');return false end}
+ a.db.profile.announces={{id='a',type='spell',spell=547,event='START',announce='local',value='Saved'}}
+ local p=a:OpenNativeSettings(parent,'Announces');assert(calls==0)
+ local input=p.fields.entry1text;input:SetText('Pending');input.scripts.OnTextChanged(input,true)
+ p.fields.emote_test:Click();assert(calls==1 and a.db.profile.announces[1].value=='Saved' and input:GetText()=='Pending')
+ local report=assert(p.emoteDiagnosticReport);assert(report.frame:IsShown() and report.input:GetText():find('first boolean=false',1,true))
+ p.fields.emote_report:Click();assert(calls==1,'opening report sent an emote')
+ local stale=p.fields.emote_test.scripts.OnClick;p:Release();stale();assert(calls==1 and not report.frame:IsShown())
+end)
+test('saved unsupported chat remains editable without offering Say or Yell',function()
+ local f,parent=uiFixture();local a=f.addon;a.db.profile.announces={{id='a',type='spell',spell=547,event='START',announce='say',value='Keep'}}
+ local p=a:OpenNativeSettings(parent,'Announces');p.fields.entry1channel:Click()
+ for _,row in ipairs(p.menu.rows) do assert(row:GetText()~='Say' and row:GetText()~='Yell');if row:GetText()=='Local Only' then row:Click();break end end
+ assert(a.db.profile.announces[1].announce=='say','must remain staged');p.fields.apply:Click()
+ assert(a.db.profile.announces[1].announce=='local' and a.db.profile.announces[1].value=='Keep')
 end)
 finish()

@@ -59,12 +59,33 @@ function platform:PerformAnnouncementEmote(token,target)
     if type(token)~='string' or type(target)~='string' or #target>512 or target:find('[%z\1-\31\127]') then return nil,'invalid-emote' end
     local found=false;for _,row in ipairs(self:GetAnnouncementEmotes()) do if row.value==token then found=true;break end end
     if not found then return nil,'emote-unavailable' end
-    local fn=type(C_ChatInfo)=='table' and C_ChatInfo.PerformEmote
-    if type(fn)~='function' then fn=DoEmote end
+    local fn=DoEmote
+    local backend='DoEmote'
+    local nativeToken,nativeTarget=token:lower(),target=='' and 'none' or target
+    if type(fn)~='function' then
+        fn=type(C_ChatInfo)=='table' and C_ChatInfo.PerformEmote
+        backend='C_ChatInfo.PerformEmote';nativeToken=token
+    end
     if type(fn)~='function' then return nil,'missing-api' end
-    -- Empty target is explicit, as in the client's '/cheer' command. A missing
-    -- cast recipient never substitutes the selected unit or a prior cast.
-    local ok=pcall(fn,token,target)
-    if not ok then return nil,'api-error' end
-    return true
+    -- Explicit 'none' matches the user's working targetless native test. A
+    -- missing cast recipient never substitutes the selected unit/prior cast.
+    -- Keep only bounded shape observations, never native values, error strings
+    -- or recipients. A native boolean has no inferred acceptance semantics.
+    local observation={backend=backend}
+    local function observed(ok,...)
+        observation.call=ok and 'completed' or 'threw'
+        if ok then
+            observation.returns=select('#',...)
+            local first=(...)
+            observation.firstType='unavailable'
+            if self:CanReadValue(first) then
+                observation.firstType=type(first)
+                if observation.firstType=='boolean' then observation.firstBoolean=first end
+            end
+        end
+        return ok
+    end
+    local ok=observed(pcall(fn,nativeToken,nativeTarget))
+    if not ok then return nil,'api-error',observation end
+    return true,nil,observation
 end

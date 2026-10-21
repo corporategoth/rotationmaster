@@ -149,6 +149,45 @@ local function recordError(context, message, stack)
     return record.id
 end
 
+-- Native security blocks are events, not necessarily thrown Lua errors or
+-- geterrorhandler messages. Observe only this addon's events; other collectors
+-- receive their own subscriptions normally. No retry, forwarding or polling.
+do
+    local frame
+    local function observe(_,event,owner,blockedFunction)
+        if handling or not readable(owner) or type(owner)~='string' or #owner~=#addon_name or owner:lower()~=addon_name:lower() then return end
+        if event~='ADDON_ACTION_BLOCKED' and event~='ADDON_ACTION_FORBIDDEN' then return end
+        handling=true
+        pcall(function()
+            local context=contextCopy(activeContext)
+            context.module=context.module or 'security'
+            context.operation=event
+            context.event=context.event or event
+            local label=scalar(blockedFunction,512) or '<unavailable function>'
+            local stack='<stack unavailable>'
+            if type(debugstack)=='function' then
+                local traced,value=pcall(function() return debugstack(2,30,20) end)
+                if traced then stack=scalar(value,8192) or stack end
+            end
+            recordError(context,event..': protected action '..label,
+                'Stack captured at native security-event receipt:\n'..stack)
+        end)
+        handling=false
+    end
+    local ok=pcall(function()
+        if type(CreateFrame)~='function' then return end
+        frame=CreateFrame('Frame')
+        if not frame or type(frame.RegisterEvent)~='function' or type(frame.SetScript)~='function' then return end
+        frame:SetScript('OnEvent',observe)
+        frame:RegisterEvent('ADDON_ACTION_BLOCKED')
+        frame:RegisterEvent('ADDON_ACTION_FORBIDDEN')
+    end)
+    if not ok and frame then
+        if type(frame.UnregisterAllEvents)=='function' then pcall(frame.UnregisterAllEvents,frame) end
+        if type(frame.SetScript)=='function' then pcall(frame.SetScript,frame,'OnEvent',nil) end
+    end
+end
+
 function service:ObserveReportedErrors()
     if type(seterrorhandler)~='function' or type(geterrorhandler)~='function' then return false end
     local ok,handler=pcall(geterrorhandler)
