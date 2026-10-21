@@ -11,8 +11,11 @@ local Functions={
     presentation={compareString=addon.Functions.presentation.compareString,nullable=addon.Functions.presentation.nullable,nullable_value=addon.Functions.presentation.nullable_value},
     values={compare=addon.Functions.values.compare,isin=addon.Functions.values.isin},
 }
+local ECSLabels={phrase=addon.Functions.presentation.phrase,predicate=addon.Functions.presentation.predicate}
 addon.builtinCallbackBindings=addon.builtinCallbackBindings or {}
 addon.builtinCallbackBindings["Conditions/ext_stats.lua"]={
+    ["ECSLabels.phrase"]="builtin:Functions/presentation.lua:phrase",
+    ["ECSLabels.predicate"]="builtin:Functions/presentation.lua:predicate",
     ["Functions.values.compare"]="builtin:utils.lua:compare",
     ["Functions.presentation.compareString"]="builtin:utils.lua:compareString",
     ["Functions.collections.deepcopy"]="builtin:Functions/collections.lua:deepcopy",
@@ -135,8 +138,11 @@ addon.delayed_condition["ExtendedCharacterStats"]["ECS_STAT"] = {
         return Functions.values.compare(value.operator, cur, value.value)
     end,
     print = function(_, value)
-        return Functions.presentation.compareString(value.operator,
-                Functions.presentation.nullable_value(value.stat, ecs_state.stats, L["<stat>"]), Functions.presentation.nullable(value.value))
+        return ECSLabels.phrase(L["{stat} {comparison} {value}"], {
+            stat = Functions.presentation.nullable_value(value.stat, ecs_state.stats, L["<stat>"]),
+            comparison = ECSLabels.predicate(value.operator, true),
+            value = Functions.presentation.nullable(value.value),
+        })
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")
@@ -188,8 +194,11 @@ addon.delayed_condition["ExtendedCharacterStats"]["ECS_STAT_PCT"] = {
         if v ~= nil then
             v = v * 100
         end
-        return Functions.presentation.compareString(value.operator,
-                Functions.presentation.nullable_value(value.stat, ecs_state.percentages, L["<stat>"]), Functions.presentation.nullable(v) .. "%")
+        return ECSLabels.phrase(L["{stat} {comparison} {value}%"], {
+            stat = Functions.presentation.nullable_value(value.stat, ecs_state.percentages, L["<stat>"]),
+            comparison = ECSLabels.predicate(value.operator, true),
+            value = Functions.presentation.nullable(v),
+        })
     end,
     widget = function(parent, spec, value)
         local top = parent:GetUserData("top")

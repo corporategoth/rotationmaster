@@ -97,6 +97,7 @@ test('remaining fifty-four direct calls qualify actual owning leaves with no ext
         for name in pairs(record.allcounts) do assert(declared[path(name)]==identity(name) and a:ResolveFunctionBinding(identity(name))==a.Functions[owners[name]][name]) end
         local totals={};for tag in pairs(record.hashes) do local source=assert(a:GetBuiltinConditionSource(tag));assert(not source.bindings.Functions)
             if (module=='buffs'and tag~='STEALABLE')or(module=='debuffs'and tag~='DISPELLABLE')then source=dofile('tests/fixtures/restore_aura_name_summary_literals.lua')(source,tag,'export')end
+            if tag=='ECS_STAT' or tag=='ECS_STAT_PCT' then source=dofile('tests/fixtures/restore_ecs_summary_literals.lua')(source,tag,'export')end
             if tag=='STAT' then source.evaluate=restoreStat(source.evaluate,true) end
             if tag=='ZONE' then source.evaluate=dofile('tests/fixtures/restore_zone_text_repairs.lua')(source.evaluate,true) end
             if tag=='COMBAT_HISTORY_TIME' then source.evaluate=dofile('tests/fixtures/restore_combat_history_time_repairs.lua')(source.evaluate,true) end
@@ -118,6 +119,7 @@ test('every callback byte and parameter remains identical after reversing only n
     local _,a=fixture();local callbacks={};for name in pairs(a.CustomConditionCallbacks) do callbacks[#callbacks+1]=name end;table.sort(callbacks)
     for module,record in pairs(baseline) do for tag,hash in pairs(record.hashes) do local current=a:GetBuiltinConditionSource(tag)
         if (module=='buffs'and tag~='STEALABLE')or(module=='debuffs'and tag~='DISPELLABLE')then current=dofile('tests/fixtures/restore_aura_name_summary_literals.lua')(current,tag,'export')end
+        if tag=='ECS_STAT' or tag=='ECS_STAT_PCT' then current=dofile('tests/fixtures/restore_ecs_summary_literals.lua')(current,tag,'export')end
         if tag=='THREAT_COUNT' then
             local restored,_,_,bindings,parameters=dofile('tests/fixtures/restore_threat_count_repairs.lua')(current.evaluate,true)
             current.evaluate=restored;current.bindings=a:CopySettingsData(bindings);current.parameters.evaluate=a:CopySettingsData(parameters)

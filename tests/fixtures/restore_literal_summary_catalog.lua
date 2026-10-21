@@ -10,6 +10,7 @@ local owners={
  CHANNELING_SPELL={'Conditions/channeling.lua','ad90658fb86a04779ba36f2e50e722cad94f99216837d7d80bacb68036984bbc','7fb37783b6de6b691fd324d66b5955d95934d08b15b6a6832220c12dc1b17c35'},
 }
 return function(catalog)
+ dofile('tests/fixtures/restore_ecs_summary_literals.lua')(catalog,nil,'catalog')
  dofile('tests/fixtures/restore_aura_name_summary_literals.lua')(catalog,nil,'catalog')
  dofile('tests/fixtures/restore_channeling_summary_wording.lua')(catalog,nil,'catalog')
  for _,tag in ipairs({'PET_NAME','ZONE','CASTING_SPELL','CHANNELING_SPELL'})do

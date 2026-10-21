@@ -129,6 +129,8 @@ def main():
             ['lua5.1', 'tests/extended_stats.lua'],
             ['lua5.1', 'tests/ecs_percentage_sign.lua'],
             ['luajit', 'tests/ecs_percentage_sign.lua'],
+            ['lua5.1', 'tests/ecs_summary_literals.lua'],
+            ['luajit', 'tests/ecs_summary_literals.lua'],
             ['lua5.1', 'tests/settings_roster_viewport.lua'],
             ['lua5.1', 'tests/selector_viewport.lua'],
             ['lua5.1', 'tests/presentation_functions.lua'],

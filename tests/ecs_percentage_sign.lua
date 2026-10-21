@@ -1,5 +1,6 @@
 local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite()
 local inverse,old,repaired=dofile('tests/fixtures/restore_ecs_percentage_sign.lua')
+local restoreSummary=dofile('tests/fixtures/restore_ecs_summary_literals.lua')
 local function read(path) local file=assert(io.open(path));local text=file:read('*a');file:close();return text end
 local function fixture(output)
  local f=F.new();local a,e=f.addon,f.env;a.delayed_condition={};local s={output=output or '-50%',calls=0,imports=0}
@@ -59,12 +60,12 @@ end)
 test('one exact evaluator inverse preserves complete source and all private bindings',function()
  local _,a=fixture();assert(a:FunctionSourceHash(inverse(read('Conditions/ext_stats.lua')))=='4992ce44','unrelated ECS source changed')
  assert(inverse(repaired,true)==old and not pcall(inverse,old,true) and not pcall(inverse,repaired..' ',true) and not pcall(inverse,read('Conditions/ext_stats.lua')..read('Conditions/ext_stats.lua')))
- local source=assert(a:GetBuiltinConditionSource('ECS_STAT_PCT'));if source.evaluate==repaired then source.evaluate=inverse(source.evaluate,true) else assert(source.evaluate==old) end
+ local source=restoreSummary(assert(a:GetBuiltinConditionSource('ECS_STAT_PCT')),'ECS_STAT_PCT','export');if source.evaluate==repaired then source.evaluate=inverse(source.evaluate,true) else assert(source.evaluate==old) end
  assert(a:FunctionSourceHash(source)=='cded9a5d','ECS export metadata parameters or bindings changed')
  for name,hash in pairs({color='bcd5d295',ecs_state='f87297b5',helpers='8c6f9acb'}) do local id='builtin:Conditions/ext_stats.lua:'..name;assert(a:FunctionSourceHash(a.builtinFunctions[id].source)==hash and rawequal(a:ResolveFunctionBinding(id),a.builtinSourceModules['Conditions/ext_stats.lua'](name))) end
 end)
 test('archived raw source retains unsigned parsing without rewriting its stored source',function()
- local _,a=fixture();local source=a:GetBuiltinConditionSource('ECS_STAT_PCT');source.evaluate=old;assert(a:FunctionSourceHash(source)=='cded9a5d');local before=a:CopySettingsData(source);a.db.global.custom_conditions={RAW_ECS=source}
+ local _,a=fixture();local source=restoreSummary(a:GetBuiltinConditionSource('ECS_STAT_PCT'),'ECS_STAT_PCT','export');source.evaluate=old;assert(a:FunctionSourceHash(source)=='cded9a5d');local before=a:CopySettingsData(source);a.db.global.custom_conditions={RAW_ECS=source}
  local raw=assert(a:CompileCustomCondition('RAW_ECS',source));a:RegisterCondition('RAW_ECS',raw);local v=node('RAW_ECS');assert(raw.valid(0,v) and not pcall(raw.evaluate,v,{}));assert(a:evaluateConditionResult(v).status=='unavailable')
  assert(a:SettingsDataEqual(before,source) and a.db.global.custom_conditions.RAW_ECS==source)
 end)
