@@ -233,10 +233,10 @@ function addon:CreateConditionCanvas(parent,owner)
         addon:SetUIScript(card.controls.disable,"OnClick",function() if alive() then owner:Command("SetProjectedDisabled",model.path,not model.disabled) end end)
         addon:SetUIScript(card.controls.operator,"OnClick",function() if alive() then owner:Command("SetGroupType",model.fieldPath,model.type=="AND" and "OR" or "AND") end end)
         addon:SetUIScript(card.controls.ungroup,"OnClick",function() if alive() then owner:Command("Unwrap",model.fieldPath) end end)
+        card.controls.help.tooltip=L['Help.Conditions.subject_brief']
+        if addon.BindWorkbenchHelp then addon:BindWorkbenchHelp(card.controls.help,{brief=L['Help.Conditions.subject_brief'],valid=alive}) end
         addon:SetUIScript(card.controls.help,"OnClick",function()
-            if not alive() or not owner:SyncWorking() then return end
-            if model.expanded then owner.view.help[model.key]=not owner.view.help[model.key];self:Render()
-            elseif addon.ShowWorkbenchHelp then addon:ShowWorkbenchHelp(model.name or (addon.conditionDefinitions[model.type] or {}).description or L['Condition'],addon:WorkbenchInteractionHelp('condition'),owner.chrome.author:GetText()) end
+            if alive() then owner:ShowSubjectHelp(model,alive) end
         end)
         if model.expanded then owner:BuildFields(card,model,alive) end
         for _,source in ipairs({card.header,card.typeButton,card.nameButton,card.frame}) do

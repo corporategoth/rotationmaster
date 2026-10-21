@@ -7,12 +7,12 @@ function addon:BuildConditionSettings(p)
     if p.mode=='categories' then return self:BuildConditionCategorySettings(p) end
     local profile=store.profile;local groups=profile.condition_groups or {};local definitions=self:CopySettingsData(self.conditionDefinitions or {});local custom=store.global.custom_conditions or {}
     for tag,definition in pairs(custom) do if not definitions[tag] then definitions[tag]={description=definition.description,icon=definition.icon} end end
-    local categories={{value='ALL',text=L['All'],icon=self:GetConditionCategoryIcon({id='ALL'})},{value='SWITCH',text=L['Switch'],icon=self:GetConditionCategoryIcon({id='SWITCH'})}}
+    local categories={{value='ALL',text=L['All'],icon=self:GetConditionCategoryIcon({id='ALL'})},{value='SWITCH',text=L['Switch'],icon=self:GetConditionCategoryIcon({id='SWITCH'})},{value='ANNOUNCEMENT',text=L['Announcement'],icon=self:GetConditionCategoryIcon({id='SWITCH'})}}
     if p.category=='CUSTOM' or p.category=='BUILTIN' then p.conditionSource=p.category=='CUSTOM' and 'custom' or 'builtin';p.category='ALL' end
     p.conditionSource=p.conditionSource or 'all'
     local groupIndex
     for i,group in ipairs(groups) do categories[#categories+1]={value=group.id,text=group.name or group.id,icon=self:GetConditionCategoryIcon(group)};if group.id==p.category then groupIndex=i end end
-    categories[#categories+1]={value='DEFAULT',text=L['Other'],icon=self:GetConditionCategoryIcon(nil)};if p.category~='ALL'  and p.category~='SWITCH' and p.category~='DEFAULT' and not groupIndex then p.category='ALL' end
+    categories[#categories+1]={value='DEFAULT',text=L['Other'],icon=self:GetConditionCategoryIcon(nil)};if p.category~='ALL'  and p.category~='SWITCH' and p.category~='ANNOUNCEMENT' and p.category~='DEFAULT' and not groupIndex then p.category='ALL' end
     local tags=self:listConditions(p.category,true,store);local entries={};local seen={}
     if p.category=='ALL' then for tag in pairs(custom) do local exists=false;for _,value in ipairs(tags) do if value==tag then exists=true end end;if not exists then tags[#tags+1]=tag end end end
     for _,tag in ipairs(tags) do if tag~='DELETE' and not (self.db.global.custom_conditions and self.db.global.custom_conditions[tag] and not custom[tag]) and (p.conditionSource=='all' or (p.conditionSource=='custom')==(custom[tag]~=nil)) and not seen[tag] and (definitions[tag] or (self.conditionSpecials or {})[tag]) then local d=definitions[tag] or self.conditionSpecials[tag];entries[#entries+1]={value=tag,text=d.description or d.desc or tag};seen[tag]=true end end
@@ -25,8 +25,8 @@ function addon:BuildConditionSettings(p)
         if entry.disabled then entry.invalid=true;entry.validationMessage=L['This condition definition is disabled. Rotations using it are unavailable.']..(entry.validationMessage and '\n'..entry.validationMessage or '') end
     end end end
     local ordered
-    if p.category=='SWITCH' or p.category=='DEFAULT' or groupIndex then ordered=tags end
-    local function orderChanged(list) if p.category=='SWITCH' then profile.switch_conditions=list elseif p.category=='DEFAULT' then profile.other_conditions_order=list elseif groupIndex then groups[groupIndex].conditions=list end end
+    if p.category=='SWITCH' or p.category=='ANNOUNCEMENT' or p.category=='DEFAULT' or groupIndex then ordered=tags end
+    local function orderChanged(list) if p.category=='SWITCH' then profile.switch_conditions=list elseif p.category=='ANNOUNCEMENT' then profile.announcement_conditions=list elseif p.category=='DEFAULT' then profile.other_conditions_order=list elseif groupIndex then groups[groupIndex].conditions=list end end
     local function navigate(fn) if self.BuildInlineCustomCondition then p:RequestLeave(fn) else fn() end end
     p:UseRoster(entries,p.condition,function(value) navigate(function() p.condition=value;p.creatingCondition=nil;p:Draw() end) end,{order=ordered,orderChanged=orderChanged,categories=categories,category=p.category,chooseCategory=function(value) navigate(function() p.category=value;p.condition=nil;p.creatingCondition=nil;p:Draw() end) end,sources={{value='all',text=L['All']},{value='builtin',text=L['Built In']},{value='custom',text=L['Custom']}},source=p.conditionSource,chooseSource=function(value) navigate(function() p.conditionSource=value;p.condition=nil;p.creatingCondition=nil;p:Draw() end) end,newText=L['Add'],new=function() if self.OpenInlineCustomCondition then self:OpenInlineCustomCondition(p,nil) else self:OpenSettingsCustomCondition(p,nil) end end,manage=function() navigate(function() p.mode='categories';p.categorySelection=nil;p:Draw() end) end})
     local compareCandidates={}
@@ -58,6 +58,7 @@ function addon:BuildConditionSettings(p)
         local special=(self.conditionSpecials or {})[tag]~=nil
         local hidden=p:Check('hidden',L['Hidden'],self:SettingsContains(profile.disabled_conditions,tag),function(value) profile.disabled_conditions=profile.disabled_conditions or {};self:SettingsFlag(profile.disabled_conditions,tag,value) end);if special then hidden:Disable() end
         local switch=p:Check('switch',L['Switch Condition'],self:SettingsContains(profile.switch_conditions,tag),function(value) profile.switch_conditions=profile.switch_conditions or {};self:SettingsFlag(profile.switch_conditions,tag,value) end);if special then switch:Disable() end
+        local announcement=p:Check('announcement',L['Announcement Condition'],self:SettingsContains(profile.announcement_conditions,tag),function(value) profile.announcement_conditions=profile.announcement_conditions or {};self:SettingsFlag(profile.announcement_conditions,tag,value) end);announcement.tooltip=L['Show this condition in the announcement condition editor.'];p.cleanups[#p.cleanups+1]=function() announcement.tooltip=nil end;if special then announcement:Disable() end
         local destinations={};local current='DEFAULT'
         for _,group in ipairs(groups) do destinations[#destinations+1]={value=group.id,text=group.name or group.id};if self:SettingsContains(group.conditions,tag) then current=group.id end end;destinations[#destinations+1]={value='DEFAULT',text=L['Other']}
         local assigned=current;local categoryName=L['Other'];for _,entry in ipairs(destinations) do if entry.value==assigned then categoryName=entry.text end end

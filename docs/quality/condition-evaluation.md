@@ -7,3 +7,13 @@ A decisive prefix skips later children entirely: their validation/evaluation cal
 Each reached AND/OR still checks its complete immediate child list for valid numeric keys, density and width before executing any child. Nested structure is checked when reached. Existing depth/node budgets apply to reached traversal. Empty AND matches; empty OR does not. Disabled nodes retain their existing match behavior. Saved-body/schema validation is separate and still inspects the saved tree; runtime skipping does not repair or validate an invalid definition.
 
 Reached callback errors retain existing diagnostics, quarantine and path behavior. Each top-level condition retains its own fresh cache/timestamp, shared by its reached descendants. There is no cross-poll result cache or new shared observation registry. The normal polling cadence, event handlers and volatile readiness checks are unchanged.
+
+
+Unit death and friendliness
+--------------------------
+
+`DEAD` (Is Dead or Ghost) and `FRIENDLY` (Is Friendly) accept a Unit selector and are initially included in Switch conditions. Existing `GROUP` also accepts a unit; no second group predicate is introduced. A Via Macro announcement can use Announcement target on each leaf. For example: `DEAD AND (FRIENDLY OR GROUP)` tests the exact supplied unit before whispering a resurrection attempt. This does not prove that the spell cast succeeded, that the target can be resurrected, or that native chat was delivered.
+
+Death uses `UnitIsDeadOrGhost(unit)`; friendliness uses `UnitIsFriend("player", unit)`. NOT Hostile is broader than explicit friendliness. Missing, restricted, failed or malformed observations remain unavailable, including under NOT. Observations use the existing evaluation cache and expire each pass; no background work or cross-poll unit cache is added. A cold one-time profile migration seeds the two Switch choices, then preserves user removals and ordering across profile switches, copies and reloads. Reset seeds them again.
+
+Artwork: two new original transparent raster icons, exported through the existing 64/128-pixel pipeline. All previous 128 source icons and 256 runtime textures remain byte-identical. Native rendering and macro delivery still require client acceptance.

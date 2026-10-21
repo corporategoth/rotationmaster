@@ -41,6 +41,7 @@ Platform/unit_power.lua
 Platform/player_movement.lua
 Platform/unit_attackability.lua
 Platform/unit_flags.lua
+Platform/unit_states.lua
 Platform/player_flags.lua
 Platform/form.lua
 Platform/points.lua
@@ -107,6 +108,7 @@ Core/reference_catalog.lua
 Core/category_data.lua
 Core/announcement_data.lua
 Core/announcements.lua
+Core/macro_announcements.lua
 Core/stock_targets.lua
 Analytics/replay.lua
 Analytics/capture.lua
@@ -156,6 +158,7 @@ Core/rotation_sequence.lua
 Core/rotation_selection.lua
 main.lua
 buttons.lua
+Core/unit_state_conditions.lua
 init.lua
 validate.lua
 UI/controls.lua
@@ -280,6 +283,7 @@ Conditions/debuffs.lua
 Conditions/totem.lua
 Conditions/item.lua
 Conditions/combat.lua
+Conditions/unit_states.lua
 Conditions/casting.lua
 Conditions/channeling.lua
 Conditions/spatial.lua

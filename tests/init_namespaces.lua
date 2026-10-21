@@ -105,4 +105,13 @@ test('strict four-selection inverse restores every baseline byte while aliases a
   assert(a[name]==fn and debug.getinfo(fn,'S').source=='@Functions/'..namespace..'.lua');assert(a:ResolveFunctionBinding(binding or 'builtin:Functions/'..namespace..'.lua:'..name)==fn and a.builtinSourceModules['Functions/'..namespace..'.lua'](name)==fn)
  end
 end)
+test('new unit-state Switch migration survives profile switches copies and reset without readding removals',function()
+ local _,a=persistent(true)
+ assert(a.db.profile.unitStateSwitchSeeded and contains(a.db.profile.switch_conditions,'DEAD') and contains(a.db.profile.switch_conditions,'FRIENDLY'))
+ a.db:SetProfile('Resurrection rules');assert(contains(a.db.profile.switch_conditions,'DEAD'))
+ local custom={};for _,tag in ipairs(a.db.profile.switch_conditions) do if tag~='DEAD' then custom[#custom+1]=tag end end;a.db.profile.switch_conditions=custom
+ a.db:SetProfile('Other rules');a.db:SetProfile('Resurrection rules');assert(not contains(a.db.profile.switch_conditions,'DEAD'),'returning to profile readded removed condition')
+ a.db:SetProfile('Copied rules');a.db:CopyProfile('Resurrection rules');assert(a.db.profile.unitStateSwitchSeeded and not contains(a.db.profile.switch_conditions,'DEAD'),'copy readded removed condition')
+ a.db:ResetProfile();assert(contains(a.db.profile.switch_conditions,'DEAD') and contains(a.db.profile.switch_conditions,'FRIENDLY'))
+end)
 finish()

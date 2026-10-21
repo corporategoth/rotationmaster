@@ -31,9 +31,18 @@ function addon:ShowFunctionBundleSource(owner,row,ownerValid)
         if view.code and view.code.Acquire then view.code:Acquire(function() end,valid) else view.code=addon:CreateWorkbenchLuaEditor(form.child,function() end,valid,'native') end;view.code:SetReadOnly(true);view.code:SetText(source[view.selected] or '')
         view.code.frame:ClearAllPoints();view.code.frame:SetPoint('TOPLEFT',0,-form.y);view.code.frame:SetSize(form.width,math.max(300,view.body:GetHeight()-form.y-24));form.y=form.y+view.code.frame:GetHeight()+8
     end)
+    local plan=owner.plan;local sourceEvidence=self:CopySettingsData(source)
+    local originalID,destinationID,kind=row.originalID,row.destinationID,row.kind
+    local function helpValid()
+        if not valid() or owner.sourceReview~=view or owner.plan~=plan or row.originalID~=originalID or row.destinationID~=destinationID or row.kind~=kind then return false end
+        local found=false;for _,candidate in ipairs(owner.lastRows or {}) do if candidate==row then found=true;break end end
+        return found and (row.originalSource or row.source)==source and addon:SettingsDataEqual(source,sourceEvidence)
+    end
     self:SetUIScript(view.frame,'OnHide',function() if view.code then view.code:Release() end;view.form:Release() end)
     self:SetUIScript(view.frame,'OnUpdate',function(...) if view.chromeUpdate then view.chromeUpdate(...) end;if not valid() then view.frame:Hide() end end)
-    view.frame:SetFrameLevel(owner.frame:GetFrameLevel()+10);view.frame:Show();self:RegisterWindowForEscape(view);return view
+    view.frame:SetFrameLevel(owner.frame:GetFrameLevel()+10);view.frame:Show();self:RegisterWindowForEscape(view)
+    self:BindTransferHelp(view,{heading=L['Review source'],owner=row.originalName,brief=L['Help.Transfers.source_brief'],sections={{title=L['Read-only'],text=L['Help.Transfers.source_review']}},briefs={close=L['Help.Transfers.source_close'],xClose=L['Help.Transfers.source_close']}},helpValid)
+    return view
 end
 function addon:ShowFunctionBundleTransfer(p,id,source,options)
     options=options or {};local kind=options.kind or 'function';local codec=self:NewRotationCodec()
@@ -128,7 +137,11 @@ function addon:ShowFunctionBundleTransfer(p,id,source,options)
     end)
     p.cleanups[#p.cleanups+1]=function() if d.serial==serial then d.frame:Hide() end end
     addon:SetUIScript(d.frame,'OnUpdate',function(...) if d.chromeUpdate then d.chromeUpdate(...) end;if d.frame:IsShown() and not valid() then d.frame:Hide() end end)
-    d.frame:SetFrameLevel(p.frame:GetFrameLevel()+250);d.frame:Show();d:Export();if options.text then d.input:SetText(options.text);d:Review() end;addon:RegisterWindowForEscape(d);return d
+    d.frame:SetFrameLevel(p.frame:GetFrameLevel()+250);d.frame:Show();d:Export();if options.text then d.input:SetText(options.text);d:Review() end;addon:RegisterWindowForEscape(d)
+    local briefs=self:TransferHelpBriefs();briefs.review=L['Help.Transfers.bundle_review'];briefs.includeDependencies=L['Help.Transfers.bundle_dependencies']
+    local sourceEvidence=self:CopySettingsData(source)
+    self:BindTransferHelp(d,{heading=L['Function dependency bundle'],owner=source and source.name or id,brief=L['Help.Transfers.bundle_brief'],sections={{title=L['Import/Export'],text=L['Help.Transfers.bundle']},{title=L['Review source'],text=L['Help.Transfers.source_review']}},briefs=briefs,valid=function() return d.exportSource==source and addon:SettingsDataEqual(source,sourceEvidence) end},valid)
+    return d
 end
 function addon:ShowConditionFunctionBundleTransfer(parent,update,key,source,incomingText)
     local owner=parent.rmConditionOwner;if not owner or not parent.form then return end

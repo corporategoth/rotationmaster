@@ -61,7 +61,7 @@ test('pinned I1 dependency exists unchanged, never replaced by codec mocks',()=>
 });
 test('generator output is current inert catalog with all curated identities and distinct ROLE schemas',()=>{
  ready();const r=spawnSync('lua5.1',['tools/export_web_schema.lua'],{cwd:root,encoding:'utf8'});assert.equal(r.status,0,r.stderr);
- assert.equal(r.stdout,catalogText());const c=JSON.parse(r.stdout);assert.equal(c.conditions.length,116);
+ assert.equal(r.stdout,catalogText());const c=JSON.parse(r.stdout);assert.equal(c.conditions.length,118);
  assert.equal(c.conditions.find(x=>x.id==='ROLE').declarations.length,2);
  assert(!c.conditions.some(x=>['DELETE','AND','OR','NOT'].includes(x.id)));
  for(const [path,sha]of Object.entries(c.sourceFiles))assert.equal(createHash('sha256').update(readFileSync(resolve(root,path))).digest('hex'),sha,path);
@@ -79,7 +79,7 @@ test('actual Lua structural oracle agrees in both VMs and JS on all declarations
   const out=row.kind==='index'?api.indexRotationSteps(input,options):row.kind==='envelope'?api.validateEnvelope(input,catalogText(),options):api.validateBody(input,catalogText(),options);
   assert.deepEqual(metadataOrder(row,comparable(out)),metadataOrder(row,row.expected),row.id);
  }
- assert.equal(leaves.size,116,'not every curated leaf was exercised');
+ assert.equal(leaves.size,118,'not every curated leaf was exercised');
 });
 test('no client case is guessed for ROLE or provider declarations and DELETE stays unresolved',()=>{
  ready();for(const leaf of [{type:'ROLE',unit:'player',value:'HEALER'},{type:'ECS_STAT',stat:'crit',value:1},{type:'DELETE'},{type:'UNINSTALLED_CUSTOM',source:'error("never")'}]){

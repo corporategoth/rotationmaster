@@ -53,7 +53,13 @@ function addon:BuildProfileSettings(p)
                 end
                 for _,name in ipairs(db:GetProfiles()) do if name==settings.name then return false,L['This name is already in use.'] end end
                 p.importProfile=candidate;p.profileSource=nil;p.newProfileName=settings.name;p.previousSelection=p.selection;p.creating=true;return true
-            end,{canReplace=selected~=nil,selectedName=selectedName,fallbackName=L['Imported profile'],originalName=function(input) local decoded=codec:Decode(input);return decoded and type(decoded.value)=='table' and decoded.value.name end})
+            end,{canReplace=selected~=nil,selectedName=selectedName,fallbackName=L['Imported profile'],help={heading=L['Profiles'],owner=selectedName,brief=L['Help.Transfers.profile_brief'],briefs=self:TransferHelpBriefs(),
+                valid=function()
+                    if not selected then return true end
+                    local target=selectedName==db:GetCurrentProfile() and db.profile or db.profiles[selectedName]
+                    return target==selected and self:SettingsDataEqual(target,baseline)
+                end,
+                sections=function(dialog)return {{title=L['Import/Export'],text=L['Help.Transfers.profile_overview']},{title=L['Destination'],text=dialog.mode=='replace' and L['Help.Transfers.profile_replace'] or L['Help.Transfers.profile_new']}}end},originalName=function(input) local decoded=codec:Decode(input);return decoded and type(decoded.value)=='table' and decoded.value.name end})
         end},function(left,right)
             local first,second=saved(left.name),saved(right.name)
             if not first or not second then p:Message(L['Settings changed elsewhere. Cancel to reload them before applying.']);return end

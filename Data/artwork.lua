@@ -260,6 +260,10 @@ artwork.category["SWITCH"]=root.."Assets\\Conditions\\v2\\category-switch"
 artwork.icons[#artwork.icons+1]={texture=artwork.category["SWITCH"],name=L["Switch"]}
 artwork.category["DEFAULT"]=root.."Assets\\Conditions\\v2\\category-other"
 artwork.icons[#artwork.icons+1]={texture=artwork.category["DEFAULT"],name=L["Other"]}
+artwork.condition["DEAD"]=root.."Assets\\Conditions\\v2\\dead"
+artwork.icons[#artwork.icons+1]={texture=artwork.condition["DEAD"],name=L["Is Dead or Ghost"]}
+artwork.condition["FRIENDLY"]=root.."Assets\\Conditions\\v2\\friendly"
+artwork.icons[#artwork.icons+1]={texture=artwork.condition["FRIENDLY"],name=L["Is Friendly"]}
 artwork.overlays[#artwork.overlays+1]={key="arcane-ring",value=root.."Assets\\Overlays\\v1\\arcane-ring-r2",icon=root.."Assets\\Overlays\\v1\\arcane-ring-r2",text=L["Arcane Ring"]}
 artwork.overlays[#artwork.overlays+1]={key="ember-corners",value=root.."Assets\\Overlays\\v1\\ember-corners",icon=root.."Assets\\Overlays\\v1\\ember-corners",text=L["Ember Corners"]}
 artwork.overlays[#artwork.overlays+1]={key="frost-shards",value=root.."Assets\\Overlays\\v1\\frost-shards",icon=root.."Assets\\Overlays\\v1\\frost-shards",text=L["Frost Shards"]}

@@ -663,7 +663,7 @@ local function persistentFixture(saved,folder,scoped)
     env.Enum={PowerType={Runes=5,SoulShards=7,Chi=12,ArcaneCharges=16}}
     env.GetItemInfo=function() end
     load('globals.lua');load('constants.lua');load('Functions/values.lua');load('Functions/presentation.lua');load('Functions/text.lua');load('Functions/collections.lua');load('Functions/cache.lua');load('Functions/trends.lua');load('utils.lua');load('profiler.lua')
-    load('Core/itemset_services.lua');load('Core/conditions.lua');load('Core/condition_catalog.lua');load('Conditions/known_spell.lua');load('UI/condition_entrypoints.lua')
+    load('Core/itemset_services.lua');load('Core/conditions.lua');load('Core/condition_catalog.lua');load('Conditions/known_spell.lua');load('Data/artwork.lua');load('Platform/unit_states.lua');load('Conditions/unit_states.lua');load('UI/condition_entrypoints.lua')
     load('main.lua')
     local make=dofile('tests/fixtures/rotation_data.lua')
     local data,envelope=make();addon.RotationData=data
@@ -672,7 +672,7 @@ local function persistentFixture(saved,folder,scoped)
     addon.GetRotationContext=function() return {family='tbc',class='SHAMAN',level=11,spec=0,actionContext='player',combatDataPolicy='probe'} end
     local n=0;addon.uuid=function() n=n+1;return '00000000-0000-0000-0000-'..string.format('%012d',n) end
     assert(addon:RegisterDefaultRotation(envelope()))
-    load('init.lua');load('validate.lua')
+    load('Core/unit_state_conditions.lua');load('init.lua');load('validate.lua')
     addon:OnInitialize()
     return env,addon,scripts,load
 end

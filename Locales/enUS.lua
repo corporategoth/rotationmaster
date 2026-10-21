@@ -1393,7 +1393,7 @@ L["Move, copy and remove"] = true
 L["Names and details"] = true
 L["Search or filter the rotation roster, then select a rotation. Blue Built In rotations use the same editor but remain read-only; Duplicate makes an editable copy. The name and Metadata describe the rotation. Switch condition selects when it applies. Use the Rotation and Cooldowns tabs to select the content below the switch condition. Cooldowns highlight independently of the ordered rotation."] = true
 L["Select an effect to edit its name, type and type-specific settings. The icon previews it live. Sequence sections edit animation, color, pulse or custom frames in order. Duplicate creates an independent effect. Import replaces the selected effect after validation."] = true
-L["The question mark explains the visible controls. With condition fields open, it adds that condition’s help below the fields. Undo / Redo affect the draft. Apply saves; Discard or Cancel abandons draft changes. Red borders mark invalid or incomplete data."] = true
+L["The question mark explains the visible controls. With condition fields open, it adds that condition’s help below the fields. Undo / Redo affect the draft. Apply saves; Discard or Cancel abandons draft changes. Red borders mark invalid or incomplete data."] = "The question mark opens full Help for its subject. Hover controls for brief tips. Undo / Redo affect the draft. Apply saves; Discard or Cancel abandons draft changes. Red borders mark invalid or incomplete data."
 L["These settings apply immediately. Press Enter or leave a text field to commit it. Invalid text stays red and blocks navigation until corrected. Searchable selectors open on click and filter as you type. Section headings collapse or expand their contents."] = true
 L["Using this page"] = true
 L["Version, author, credits and project links are shown here. Click a link field to select its text for copying."] = true
@@ -1694,23 +1694,23 @@ L["Enabled / Disabled"] = true
 L["Announcement substitutions"] = true
 L["New, Duplicate, Import/Export and Compare"] = true
 L["Help.Announces.editing"] = "Announcement details stay always expanded while editing. Press Enter or leave a text field to stage its value; Apply saves the draft. Invalid fields must be corrected before Apply; Discard abandons pending changes. Searchable selectors open on click and filter as you type. The page Help icon explains every option and text substitution."
-L["Help.Announces.overview"] = "Announce selected spell casts or item uses independently of your active rotation. Select an entry in the sidebar, or use New to prepare one. The fields below choose what to watch and how to notify you; they do not cast spells or use items. Cast-triggered announcements follow RM's combat-data policy and do not run on reference-only clients."
-L["Help.Announces.name"] = "An optional name identifies this announcement in the sidebar. Without one, the action name is used. Changing the name does not change the spell or items being watched."
-L["Help.Announces.type"] = "Choose Spell, Pet Spell, or Item. Changing to a different action type clears the previous action and exact-rank choice; choosing the current type keeps them."
+L["Help.Announces.overview"] = "Announce selected spell casts or item uses independently of your active rotation, or invoke a configured Via Macro entry directly. Select an entry in the sidebar, or use New to prepare one. These fields choose the trigger and output; they do not cast spells or use items. Cast-triggered announcements follow RM's combat-data policy and do not run on reference-only clients."
+L["Help.Announces.name"] = "An optional name identifies this announcement in the sidebar. Without one, the action name or Via Macro identifier is used. Changing this display name does not change the watched action or callable identifier."
+L["Help.Announces.type"] = "Choose Spell, Pet Spell, Item or Via Macro. Changing type clears the previous action and exact-rank choice. Via Macro uses an Identifier instead of a cast event or stored action; switching back restores the event selector. Choosing the current type keeps its fields."
 L["Help.Announces.type.spell"] = "Watch one of your spells. Choose the spell in the searchable field below Action Type."
 L["Help.Announces.type.pet"] = "Watch a spell from your pet spellbook. The spell selector uses the pet catalog for this action type."
 L["Help.Announces.type.item"] = "Watch item-use spells from a reusable item set or a custom list. This is an announcement trigger; it does not choose an item to use for you."
 L["Help.Announces.spell"] = "Search by spell name, select a result, or drag a spell from your spellbook or action bar into the field. The icon and name identify the selected spell. Spell and pet spell choices keep their respective catalog scope."
-L["Help.Announces.ranked"] = "Checked limits matching to the selected rank. Unchecked includes the known ranks in that spell family. This checkbox is shown for Spell and Pet Spell, not Item."
+L["Help.Announces.ranked"] = "Checked limits matching to the selected rank. Unchecked includes the known ranks in that spell family. This checkbox is shown only for Spell and Pet Spell."
 L["Help.Announces.items"] = "Choose a reusable set, or Custom to edit this announcement's own list. For a custom list, search for or drag items into the fields; Add item appends one and a red trash can removes an entry. Any matching item-use spell in the list can trigger the announcement; list order does not limit announcements to the first carried item. Changes to a shared set belong on the Item Sets page."
-L["Help.Announces.event"] = "Choose which observed cast event triggers this entry. A start, stop, interruption, failure, or delay is different from a successful cast. The events available and the information they carry depend on the client."
+L["Help.Announces.event"] = "For automatic action types, choose which observed cast event triggers this entry. A start, stop, interruption, failure or delay is different from a successful cast. Client support determines which events and observations are available. Via Macro has no cast event."
 L["Help.Announces.event.START"] = "The cast or channel started. This event does not mean it will finish successfully."
 L["Help.Announces.event.STOP"] = "The cast or channel stopped. A stop alone does not establish whether it succeeded."
 L["Help.Announces.event.SUCCEEDED"] = "The client reported a successful spell cast or item-use spell. For a channel, this can occur as channeling begins rather than after its final tick."
 L["Help.Announces.event.INTERRUPTED"] = "The client reported that the cast was interrupted. This can include cancelling a cast yourself."
 L["Help.Announces.event.FAILED"] = "The client reported that the cast failed. This is separate from the successful-cast event."
 L["Help.Announces.event.DELAYED"] = "The client reported a delay to the cast. This event is not a completion or success notification."
-L["Help.Announces.announce"] = "Choose a chat destination, local output, a named Emote, or Audible. Emote replaces Text with an emote selector and an optional spell-recipient target. Audible replaces Text with Sound. Existing text is retained when switching modes."
+L["Help.Announces.announce"] = "Choose a chat destination, local output, a named Emote or Audible. Emote replaces Text with an emote selector and optional recipient. Audible replaces Text with Sound. Text is retained when switching modes. Say, Yell and Whisper are offered only for Via Macro and remain subject to native restrictions."
 L["Help.Announces.channel.audible"] = "Play the selected sound locally on the Master audio channel; no chat message is sent. Choose an available sound before applying the announcement."
 L["Help.Announces.channel.partyraid"] = "Use raid chat while in a raid, party chat while in a party, or your local chat frame while solo."
 L["Help.Announces.channel.party"] = "Use party chat when grouped, including your party within a raid. This destination produces no solo chat message."
@@ -1725,14 +1725,14 @@ L["Emote diagnostics"] = true
 L["Help.Announces.diagnostics"] = "Test /cheer sends one targetless cheer when clicked and opens a copyable report. It does not apply pending settings or retry a spell announcement. Emote report opens the latest automatic-emote and click-test observations without sending anything. Call completion is not proof of visible output. Automatic Say and Yell are unavailable; saved entries retain their text and can be changed to another destination."
 L["Help.Announces.channel.gesture"] = "Choose a named emote from this client's slash commands, such as /cheer. This does not send the Text field as a custom emote."
 L["Help.Announces.emote"] = "Choose the emote to perform when the configured cast event is observed. The client may restrict an emote or require a hardware action; RM does not retry through another output path."
-L["Help.Announces.emote_target"] = "Checked directs the emote to the recipient recorded for this exact cast, including click casting. It does not use your current target or a previous cast's recipient. If the recipient was not observed, the targeted emote is skipped. Unchecked performs the emote without a target."
+L["Help.Announces.emote_target"] = "For cast entries, checked directs the emote to the recipient recorded for this exact cast, including click casting. It does not use your current target or a previous cast's recipient. For Via Macro, checked uses the supplied macro unit. A missing recipient skips targeted output. Unchecked performs the emote without a target."
 L["Help.Announces.channel.local"] = "Write to your own chat frame. Other players do not receive this message."
 L["Help.Announces.text"] = "Enter the message for a chat destination. The substitutions below insert action and cast information when it is available. This text is not used for Audible or named Emote output."
-L["Help.Announces.substitutions"] = "Use {{spell}} for a spell link, {{item}} for an item link, and {{event}} for the localized event name. {{target}} uses the target recorded for that cast, with the last recorded target for that spell as a fallback; it does not automatically use your current target or your own name. A substitution can remain unchanged if its metadata or target is unavailable."
+L["Help.Announces.substitutions"] = "For cast entries, {{spell}} is a spell link, {{item}} an item link and {{event}} the localized event name. {{target}} uses the recorded cast target, with the last recorded target for that spell as a fallback; it does not automatically use your selected target or your name. Unavailable cast substitutions can remain unchanged. Via Macro instead uses its supplied target and spell, {{event}} becomes Via Macro, and required missing inputs skip output; this API supplies no {{item}}."
 L["Help.Announces.sound"] = "Choose a sound supplied by the shared-media catalog, then click Play to preview it. Preview is local and does not save the draft. An unavailable sound cannot be previewed; Audible announcements require a nonempty sound selection."
-L["Help.Announces.state"] = "The pill turns this entry on or off while keeping its fields. Disabled entries do not announce matching casts. Save the changed state with Apply."
-L["Help.Announces.save"] = "Edits stay in a draft until Apply. Complete the action and required fields before saving. Discard abandons changes to saved announcements; Cancel closes a new creation draft. Leaving with pending changes offers Apply, Discard or Cancel navigation."
-L["Help.Announces.collections"] = "Use the buttons below the sidebar to create, duplicate, transfer or compare announcements. Import can create a renamed entry or replace the selection after validation; Apply saves the imported draft. Compare does not merge entries. The red trash can permanently deletes the selected saved announcement after confirmation. Resolve pending edits first; the next selection opens without inheriting deletion as an unsaved change."
+L["Help.Announces.state"] = "The pill turns this entry on or off while keeping its fields. Disabled entries do not announce matching casts or macro invocations. Apply saves the changed state."
+L["Help.Announces.save"] = "Edits stay in a draft until Apply. Complete the action or Via Macro identifier and other required fields before saving. Discard abandons changes to saved announcements; Cancel closes a new creation draft. Leaving pending changes offers Apply, Discard or Cancel navigation."
+L["Help.Announces.collections"] = "Use the sidebar buttons to create, duplicate, transfer or compare announcements. Apply saves the imported draft; Compare does not merge entries. Via Macro Duplicate assigns a distinct identifier. Imports and Apply reject ambiguous identifiers. The red trash permanently deletes the selected saved entry after confirmation. Resolve pending edits first; deletion does not carry into the next selected draft."
 L["Press Enter or leave a text field to stage its value; Apply saves the draft. Invalid text stays red and blocks navigation until corrected. Searchable selectors open on click and filter as you type. Section headings collapse or expand their contents."] = true
 
 -- Item-set and item-list help: translate each paragraph as a whole.
@@ -2811,7 +2811,7 @@ L['START witness rows: observed=%s matched=%s mismatch=%s excluded=%s unknown=%s
 L['START witnesses compare current cast identity and non-autorepeat classification only; they do not classify ordinary casts or enable scoring.'] = true
 L["Edit announcement conditions"] = "Edit announcement conditions"
 L["Announcement conditions"] = "Announcement conditions"
-L["Help.Announces.conditions"] = "Optional conditions use the Switch condition list and All, Any and Not groups. They run only when this announcement's spell and event match. Only a matching result allows its message or sound; unavailable data skips the announcement. In Group can check the Spell recipient recorded for this cast, including click casting, without using your selected target. Missing or ambiguous recipients skip that check. Apply in the condition editor updates the announcement draft; Apply on Announces saves it. Cancel or Discard abandons draft changes."
+L["Help.Announces.conditions"] = "Optional conditions use the Announcement condition list and All, Any and Not groups. For spell, pet and item announcements, they run when the configured action and event match. For Via Macro, they run when you invoke the saved identifier. Only a matching result allows its message or sound; unavailable data skips the announcement. In Group can check the Spell recipient recorded for this cast, including click casting, without using your selected target. For Via Macro, choose Announcement target to check the supplied unit; Whisper uses that same unit. Missing or ambiguous required recipients do not match. Apply in the condition editor updates the announcement draft; Apply on Announces saves it. Cancel or Discard abandons draft changes."
 
 L["Spell recipient"] = "Spell recipient"
 L["{unit} {{!is|is not}} in a raid"] = "{unit} {{!is|is not}} in a raid"
@@ -2819,6 +2819,119 @@ L["{unit} {{!is|is not}} in a group"] = "{unit} {{!is|is not}} in a group"
 L["Help.GROUP.unit"] = "Choose the unit whose membership in your party or raid is checked. Player keeps the original player group-status behavior. Spell recipient uses only the current announcement event context; without that readable context the result is unavailable. It never substitutes your selected target or a previous cast."
 L["Help.GROUP.raid"] = "Checked tests raid membership only. Unchecked tests party membership or raid membership. A known nonmember is false; unavailable native data stays unavailable, including under NOT."
 L["Announcement target"] = "Announcement target"
+-- Unit death and friendliness conditions.
+L["Is Dead or Ghost"] = true
+L["Is Friendly"] = true
+L["{unit} {{!is dead or a ghost|is alive}}"] = true
+L["{unit} {{!is friendly to you|is not friendly to you}}"] = true
+L["Matches when the selected unit is dead or a ghost. A missing or unreadable unit is unavailable, including under NOT. In a Via Macro announcement, choose Announcement target to follow the supplied unit."] = true
+L["Matches when the game reports the selected unit as friendly to you. This does not imply party or raid membership. A missing or unreadable unit is unavailable."] = true
+L['Workbench Help'] = 'Workbench Help'
+
+L['Navigation'] = 'Navigation'
+
+L['Help.Window.navigation'] = 'Choose tabs to browse Rotations, General, Conditions, Functions, Effects, Item Sets, Announces, Profiles and Integrations. Each tab has its own Help for page controls. Search and filters belong to the current page. Built In entries remain read-only; Duplicate creates an editable copy.'
+
+L['Help.Window.scale'] = 'Scale changes the whole workbench and its child windows from 70% to 130%. Drag the top-left slider or enter an integer percentage and press Enter. Escape restores the saved scale text. Drag the title bar to move; drag the lower-right corner to resize.'
+
+L['Help.Window.controls'] = 'Close with X, Escape, or right-click inside the frontmost RM window. Child dialogs have their own close controls and follow the window scale. The language selector changes the workbench language; project links open a copyable address.'
+
+L['Help.Window.drafts'] = 'Most settings and source editors keep drafts until Apply. Leaving a dirty page offers Apply, Discard or Cancel; invalid fields remain visible. Profile activation and confirmed replacement, action-bar binding and diagnostic capture have their own explicit actions. Help never applies or discards edits.'
+
+L['Help.Window.help'] = 'Gold question marks open full Help for their window, page or card. Hover controls for brief tips. Help does not save settings or commit pending text; spell and item fields keep their native reference tooltips.'
+
+L['Help.Brief.full'] = 'Open full Help for these controls without applying edits.'
+
+L['Help.Brief.window'] = 'Explain window navigation, scaling, closing and drafts.'
+
+L['Help.Brief.page'] = 'Open full Help for this page without switching tabs or applying edits.'
+
+L['Help.Brief.scale'] = 'Set the workbench and child-window scale from 70% to 130%; enter a whole percentage or drag the slider.'
+
+L['Help.Brief.edit'] = 'Edit the value; Enter or leaving the field checks and accepts valid text. Page Help explains when changes are saved.'
+
+L['Help.Brief.check'] = 'Click to toggle this option. Page Help explains when changes are saved.'
+
+L['Help.Brief.control'] = 'Use this control for the current page; page Help explains its options and consequences.'
+
+L['Help.Conditions.subject_unavailable'] = 'Help for this condition is unavailable. Its registered definition is missing, disabled or waiting for required functions. Opening Help does not register pending or imported source.'
+
+L['Help.Conditions.subject_missing'] = 'This registered condition does not provide Help.'
+
+L['Help.Conditions.subject_brief'] = 'Open Help for this condition without changing its fields.'
+
+L["Help.Transfers.copy"] = "Select all export text for manual copying. This button does not send it anywhere."
+
+L["Help.Transfers.clear"] = "Clear the transfer text. A previous preview becomes invalid; saved settings stay unchanged."
+
+L["Help.Transfers.apply"] = "Import into the displayed destination. Read the destination and review requirements before continuing."
+
+L["Help.Transfers.cancel"] = "Close this dialog without importing its text."
+
+L["Help.Transfers.destination"] = "Choose a new named copy or replacement of the selected editable entry."
+
+L["Help.Transfers.name"] = "Set the name for a new copy. Replacement keeps the selected entry as its destination."
+
+L["Help.Transfers.preview"] = "Decode and validate the current text for review. Preview does not import it."
+
+L["Help.Transfers.inspect"] = "Show read-only validation details for the current preview."
+
+L["Help.Transfers.profile_brief"] = "Explain profile import destinations and when changes are saved."
+
+L["Help.Transfers.profile_overview"] = "Copy the text to export a profile, or paste profile text to import. The destination controls choose a new profile or replacement of the selected saved profile. Opening Help does not decode, import, or apply the text."
+
+L["Help.Transfers.profile_replace"] = "REPLACE applies immediately to the selected saved profile after Import. Replacing the active profile resets it and applies the imported settings; replacing another profile writes that profile. Reopen the import if the selected saved profile changes."
+
+L["Help.Transfers.profile_new"] = "NEW stages the imported profile in the Profiles editor. Import fills a new-profile draft; the new profile is not saved or activated until you complete the creation controls in that editor. Give it an unused name."
+
+L["Help.Transfers.source_brief"] = "Explain this read-only review of imported source."
+
+L["Help.Transfers.source_review"] = "This view shows the selected imported function or condition source, its original and destination identifiers, and available metadata. For a condition, choose a callback to inspect its text. This view and its Help do not compile, execute, accept, or register the source. Return to the bundle review to decide whether to import it."
+
+L["Help.Transfers.source_close"] = "Close this read-only source view and return to the bundle review."
+
+L["Help.Transfers.bundle_review"] = "Validate the pasted bundle and build a proposed import plan. Review does not apply the plan."
+
+L["Help.Transfers.bundle_dependencies"] = "Include referenced custom function dependencies when producing export text."
+
+L["Help.Transfers.bundle_brief"] = "Explain dependency-bundle export, review, and explicit import."
+
+L["Help.Transfers.bundle"] = "Export produces a function or condition bundle, optionally with its custom function dependencies. For import, paste bundle text, choose Review import, inspect the proposed identifiers and conflicts, and review source before applying. Apply import can register trusted Lua source; accept only source you intend to run. Changing the text invalidates the prior plan. Opening Help neither reviews nor applies the bundle."
+
+L["Help.Transfers.rotation_brief"] = "Explain rotation preview, destination, and import scope."
+
+L["Help.Transfers.rotation"] = "Copy the text to export the current rotation, or paste a rotation to import. Choose replacement of the selected editable rotation or a new named copy. Class and This character set the owner of a new copy; replacement keeps the original owner. The imported rotation is opened for editing after a successful import."
+
+L["Help.Transfers.rotation_preview"] = "Preview import validates the current text and shows an incoming comparison. It does not save the rotation. Import is enabled only for a ready preview; changing the text requires another preview. Inspect import shows read-only diagnostics, including unsupported data that prevents import."
+
+L["Help.Transfers.comparison_brief"] = "Explain this read-only incoming rotation comparison."
+
+L["Help.Transfers.comparison"] = "This view compares the saved or exported rotation with the current incoming preview. It does not apply changes. Close it to choose the destination and import from the transfer dialog. A changed preview, closed owner, or changed profile retires this comparison Help."
+
+L["Destination"] = "Destination"
+
+-- Direct, configured macro announcements.
+L["Via Macro"] = true
+L["Whisper"] = true
+L["Macro invocation"] = true
+L["Supplied macro unit"] = true
+L["Use supplied macro target ({{target}})"] = true
+L["Use a unique Via Macro identifier."] = true
+L["Macro call: %s"] = true
+L["Help.Announces.macro.brief"] = "Invoke this saved identifier directly from your macro. The supplied unit controls Announcement target conditions and Whisper; there is no implicit target."
+L["Help.Announces.type.macro"] = "Via Macro is invoked by its saved Identifier rather than a cast event. It does not require a stored spell or item. Current conditions must match before any output. This call attempts output synchronously; it does not establish that a spell was cast or succeeded."
+L["Help.Announces.identifier"] = "Use a unique, case-sensitive identifier of at most 64 ASCII characters. Start with a letter or underscore; subsequent characters may also include digits, dots or hyphens. Identifiers are scoped to the active profile, including disabled entries. Duplicate assigns a distinct identifier; ambiguous imports and Apply are rejected."
+L["Help.Announces.macro.example"] = "Use /run RM_Annouce('FOO','mouseover',nil). RM_Announce is the same function. The target unit and spell are optional: /run RM_Announce('FOO',nil,403) or /run RM_Announce('FOO','target','Lightning Bolt'). Spell names depend on client language. {{event}} becomes Via Macro; {{target}} and {{spell}} use the supplied arguments. A required missing argument skips output. {{item}} is not supplied by this API. A resurrection message announces an attempt, not a completed resurrection. Examples are text only; RM does not create or execute macros."
+L["Help.Announces.macro.target"] = "Supply a readable unit token such as mouseover, target or focus. RM resolves that exact unit name and rechecks its identity during delivery. Announcement target conditions and Whisper use this same unit. Omitting the argument does not use your selected target, yourself, a prior cast or a prior macro call. Missing Announcement target data remains unavailable, including under NOT."
+L["Help.Announces.macro.emote_target"] = "Checked directs a named emote to the supplied macro unit. Missing or unreadable target data skips the targeted emote; unchecked is targetless."
+L["Help.Announces.channel.say"] = "Available only for Via Macro. Attempt a Say message directly in the invoking call. Blizzard may reject macro-origin chat, including during instance encounters; RM does not attest hardware input, defer delivery, retry or guarantee visible output."
+L["Help.Announces.channel.yell"] = "Available only for Via Macro. Attempt a Yell message directly in the invoking call. Native macro and encounter restrictions still apply; a completed API call is not confirmation of delivery."
+L["Help.Announces.channel.whisper"] = "Available only for Via Macro. Whisper uses the exact supplied unit name and requires a readable player identity. No target means no Whisper. Native macro and encounter restrictions still apply; RM never substitutes another recipient or retries."
+
+L['Announcement Condition'] = true
+L['Announcement'] = true
+L['Show this condition in the announcement condition editor.'] = true
+L['Offer this condition type when editing announcement conditions. This flag is independent of Switch Condition and does not remove or invalidate conditions already saved in announcements.'] = true
 
 -- BEGIN GENERATED RM PUBLIC HELPER DOCS
 L["Absolute health target (negative means deficit) or percentage fraction."] = true
@@ -2828,6 +2941,7 @@ L["Arguments forwarded unchanged to the observed function."] = true
 L["Arguments forwarded unchanged; types, identity, arity and nil positions distinguish cache entries."] = true
 L["Availability or query-validation reason for a nil level observation."] = true
 L["Availability or query-validation reason for a nil level."] = true
+L["Availability or query-validation reason when no current state can be read."] = true
 L["Availability or query-validation reason when the whole observation is unavailable."] = true
 L["Availability or validation reason for a nil result."] = true
 L["Availability or validation reason when the record is nil."] = true
@@ -2909,6 +3023,7 @@ L["Evaluation-pass native observation cache; nil queries afresh."] = true
 L["Evaluation-pass presence cache only; name, level and provider history remain fresh."] = true
 L["Exact helper-owned player, party1..party4 or raid1..raid40 token."] = true
 L["Exact integral native rune slot from 1 through 6."] = true
+L["Exact nonempty unit token to observe."] = true
 L["Exact readable recipient name recorded for this cast."] = true
 L["Exact selected unit token; only the literal player token may select the TBC combo transport."] = true
 L["Exact selected unit token; player class alone may use the successful longterm cache."] = true
@@ -2921,6 +3036,7 @@ L["Exact unit token whose selected flag should be observed."] = true
 L["Exact unit token whose selected resource quantity is requested."] = true
 L["Exactly current for UnitPower or maximum for UnitPowerMax; no other native query is added."] = true
 L["Exactly current for the player/target combo query or maximum for the player capacity query."] = true
+L["Exactly dead for UnitIsDeadOrGhost, or friendly for UnitIsFriend(player, unit)."] = true
 L["Exactly type or school; selects the required subject field without requiring the other."] = true
 L["Existing stored CREATURE key: BEAST, DRAGONKIN, DEMON, ELEMENTAL, GIANT, UNDEAD, HUMANOID, CRITTER, MECHANICAL, OTHER, TOTEM, NONCOMBAT_PET or GAS_CLUUD."] = true
 L["Explicit finite clock snapshot; signed and fractional values remain valid."] = true
@@ -2995,6 +3111,7 @@ L["Observe a readable raw unit level on known clients. A readable absent unit re
 L["Observe a selected unit role on probe-policy clients without issuing inspection requests. Known unit absence returns false. Prefer the callable modern inspection API, with legacy fallback only when that callable is absent; a selected failure never falls through. Require a positive finite integral specialization ID and consume only role return five from the exact one-argument GetSpecializationInfoByID call. Missing, failed, restricted or malformed required facts are unavailable; readable nonempty future role strings remain exact."] = true
 L["Observe a unit casting or channeling on supported readable clients. A readable inactive result returns active=false. Active records contain name and independently available remainingSeconds and interruptible fields, with remainingReason or interruptibleReason when an optional field is unavailable. Missing, failed or restricted observations return nil with a reason."] = true
 L["Observe creature identity from native UnitCreatureType return two on probe-policy clients. Check exact UnitExists(unit) first; readable false returns false without requiring or calling creature metadata. A present unit requires a readable finite numeric ID; the unused localized name does not affect availability. Preserve signed, fractional, zero and future finite IDs as known values. Missing, failed, nil, restricted or malformed required facts return nil with a reason. No creature enumeration, translated caption comparison or longterm cache is added."] = true
+L["Observe death or ghost state, or friendliness to the player, for the exact selected unit on probe-policy clients. A missing, failed, restricted or malformed required observation is unavailable. Unit absence is unavailable rather than a negative match, including under NOT. No cross-poll state is retained."] = true
 L["Observe exact pet existence and optionally its formatted GetUnitName display name. Presence-only queries never require name data. Known absence skips the name query. Present pets require a readable nonempty name only when requested; required missing, failed, nil, restricted or malformed observations return nil with a reason. The display helper is called with its single original pet argument, without UnitName fallback or inferred bar, health or ability state."] = true
 L["Observe exact selected-unit existence and optionally its class filename for point-resource conditions. Known absence returns exists=false without reading class. Present units require only UnitClass return two when requested; unused localized names and IDs do not affect availability. Required missing, failed, restricted or malformed observations remain unavailable. This does not select a resource or cache identity."] = true
 L["Observe explicit mana or the current raw power resource on supported readable clients. Select resource identities from the live PowerType enum; explicit mana never falls back to the current bar. Known absence returns exists=false; missing, failed, restricted or malformed observations return nil with a reason. Current-mode quantities preserve signed native resources; explicit mana is nonnegative. Request maximum only when needed; percentage consumers must require a positive maximum."] = true
@@ -3095,6 +3212,7 @@ L["Readable canonical itemID/classID/subClassID record when the item is a glyph 
 L["Readable charge record, or nil when unavailable."] = true
 L["Readable consumed metadata string, false for a known absent unit, or nil when required data is unavailable."] = true
 L["Readable cooldown record, or nil when unavailable."] = true
+L["Readable current state, or nil when unavailable."] = true
 L["Readable finite current-form observation, including zero for the current unshifted comparison; nil when unavailable."] = true
 L["Readable finite positive integral rune type, or nil when unavailable."] = true
 L["Readable interval with optional minimum and maximum bounds in yards. At least one bound is present; nil when unavailable."] = true

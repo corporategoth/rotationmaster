@@ -1,0 +1,43 @@
+local _,addon=...
+local platform=addon.Platform
+
+-- Unit absence is unavailable, including under NOT: never infer a living or
+-- friendly recipient from a missing mouseover. Observations expire each pass.
+function platform:GetUnitStateObservation(unit,kind)
+    if self:GetClientInfo().combatDataPolicy~='probe' then return nil,'unsupported-policy' end
+    if not self:CanReadValue(unit) or not self:CanReadValue(kind) then return nil,'restricted-value' end
+    if type(unit)~='string' or unit=='' then return nil,'invalid-unit' end
+    if kind~='dead' and kind~='friendly' then return nil,'invalid-unit-state-query' end
+    local existsAPI=UnitExists
+    if type(existsAPI)~='function' then return nil,'missing-api' end
+    local existsOK,exists=pcall(existsAPI,unit)
+    if not existsOK then return nil,'api-error' end
+    if not self:CanReadValue(exists) then return nil,'restricted-value' end
+    if exists==nil or exists==false then return nil,'unit-data-unavailable' end
+    if type(exists)~='boolean' then return nil,'invalid-api-result' end
+    local api
+    if kind=='dead' then api=UnitIsDeadOrGhost else api=UnitIsFriend end
+    if type(api)~='function' then return nil,'missing-api' end
+    local ok,result
+    if kind=='friendly' then ok,result=pcall(api,'player',unit)
+    else ok,result=pcall(api,unit) end
+    if not ok then return nil,'api-error' end
+    if not self:CanReadValue(result) then return nil,'restricted-value' end
+    if result==nil then return nil,'unit-state-unavailable' end
+    if type(result)~='boolean' then return nil,'invalid-api-result' end
+    return result
+end
+
+-- BEGIN GENERATED RM SOURCE BINDINGS
+do
+    local function sourceGetter(name)
+        if name=="Platform_GetUnitStateObservation" then return addon.Platform.GetUnitStateObservation end
+    end
+    if addon.RegisterBuiltinSourceModule then
+        addon:RegisterBuiltinSourceModule("Platform/unit_states.lua", sourceGetter)
+    else
+        addon.builtinSourceModules=addon.builtinSourceModules or {}
+        addon.builtinSourceModules["Platform/unit_states.lua"]=sourceGetter
+    end
+end
+-- END GENERATED RM SOURCE BINDINGS

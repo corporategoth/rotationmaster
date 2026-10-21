@@ -397,6 +397,7 @@ Core/rotation_choice_preferences.lua
 }
 local function hash(s)local n=5381;for i=1,#s do n=(n*33+s:byte(i))%4294967296 end;return string.format('%08x',n)end
 return function(text,path)
+ text=dofile('tests/fixtures/restore_unit_states.lua')(text,path)
  if path=="main.lua" and text:find("-- BEGIN ANNOUNCEMENT CONDITION OWNER",1,true)
   or path=="Locales/enUS.lua" and text:find('L["Edit announcement conditions"]',1,true)
   or path=="RotationMaster.toc" and text:find('Platform/announcement_recipient.lua',1,true) then text=dofile("tests/fixtures/restore_announcement_conditions.lua")(text,path) end

@@ -54,7 +54,7 @@ function addon:BuildInlineCustomCondition(p,key,source,readOnly)
     local token=p.generation;local store=p:SettingsData();local profile=store.profile
     local isNew=p.creatingCondition==true
     if isNew then key=nil;source=p.newConditionSource or self.empty_condition end
-    local preferences={hidden=self:SettingsContains(profile.disabled_conditions,key),switch=self:SettingsContains(profile.switch_conditions,key),category='DEFAULT'}
+    local preferences={hidden=self:SettingsContains(profile.disabled_conditions,key),switch=self:SettingsContains(profile.switch_conditions,key),announcement=self:SettingsContains(profile.announcement_conditions,key),category='DEFAULT'}
     for _,group in ipairs(profile.condition_groups or {}) do if self:SettingsContains(group.conditions,key) then preferences.category=group.id;break end end
     local function valid() return p:Valid(token) end
     local geometry=self:GetWorkbenchRosterGeometry(p.frame:GetWidth(),p.frame:GetHeight())
@@ -74,6 +74,7 @@ function addon:BuildInlineCustomCondition(p,key,source,readOnly)
         local checkWidth=(form.width-148)/2
         local hidden=form:Check('hidden',L['Hidden'],context.hidden,function(value) d.model:Change(function(model) model.context.hidden=value end);d:UpdateActions() end);hidden:SetWidth(checkWidth);hidden:GetFontString():SetWidth(checkWidth-22)
         local switch=form:Check('switch',L['Switch Condition'],context.switch,function(value) d.model:Change(function(model) model.context.switch=value end);d:UpdateActions() end);switch:ClearAllPoints();switch:SetPoint('TOPLEFT',checkWidth+8,-y);switch:SetWidth(checkWidth);switch:GetFontString():SetWidth(checkWidth-22);form.y=form.y-28
+        local announcement=form:Check('announcement',L['Announcement Condition'],context.announcement,function(value) d.model:Change(function(model) model.context.announcement=value end);d:UpdateActions() end);announcement.tooltip=L['Show this condition in the announcement condition editor.'];form.cleanups[#form.cleanups+1]=function() announcement.tooltip=nil end
         if key and not readOnly then self:SettingsTopDelete(form,function()
             self:ConfirmSettingsDeletion(p,L['Delete this custom condition? Existing rotations using it will become unavailable.'],function()
                 local ok,why=self:DeleteSavedCustomCondition(key);if ok then clearNew(p);p.condition=nil end;return ok,why
@@ -101,7 +102,7 @@ function addon:BuildInlineCustomCondition(p,key,source,readOnly)
         move:ClearAllPoints();move:SetPoint('TOPLEFT',174+fieldWidth+50,-categoryY);move:SetWidth(fieldWidth-42);form.y=form.y-30
     end
     options.updateActions=function(d)
-        for _,field in ipairs({'hidden','switch'}) do self:SetWorkbenchUnsaved(d.form.fields[field],d.model.context[field]~=d.model.baseline.context[field]) end
+        for _,field in ipairs({'hidden','switch','announcement'}) do self:SetWorkbenchUnsaved(d.form.fields[field],d.model.context[field]~=d.model.baseline.context[field]) end
         self:SetWorkbenchUnsaved(d.form.fields.move_to,d.model.context.category~=d.model.baseline.context.category)
     end
     options.save=function(identifier,value,expected,expectedSource)
@@ -125,6 +126,7 @@ function addon:BuildInlineCustomCondition(p,key,source,readOnly)
         end
         draft.disabled_conditions=draft.disabled_conditions or {};membership(draft.disabled_conditions,context.hidden)
         draft.switch_conditions=draft.switch_conditions or {};membership(draft.switch_conditions,context.switch)
+        draft.announcement_conditions=draft.announcement_conditions or {};membership(draft.announcement_conditions,context.announcement)
         for _,group in ipairs(draft.condition_groups or {}) do group.conditions=group.conditions or {};membership(group.conditions,group.id==context.category) end
         if not p:SaveSettingsDraft() then
             -- This can occur if trusted registration code changes another owned

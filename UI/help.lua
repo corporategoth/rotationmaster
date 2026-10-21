@@ -1,6 +1,87 @@
 local addon_name,addon=...
 local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
 local function section(title,text) return {title=title,text=text} end
+-- Help owns a document lease, never an edit/history transaction.
+local helpRequest=0
+---@return boolean, any
+local function callHelpContext(context,callback,...)
+    if addon.Diagnostics then return addon.Diagnostics:Call(context or {module='help',operation='render'},callback,...) end
+    return pcall(callback,...)
+end
+local function callHelp(callback,...) return callHelpContext(nil,callback,...) end
+local function validHelp(valid)
+    if not valid then return true end
+    local ok,current=callHelp(valid);return ok and current==true
+end
+function addon:GuardWorkbenchHelp(valid,callback)
+    return function(...) if validHelp(valid) then return callback(...) end end
+end
+function addon:OpenWorkbenchHelp(request)
+    local valid=request.valid;local previous=helpRequest
+    if not validHelp(valid) or previous~=helpRequest then return end
+    helpRequest=helpRequest+1;local token=helpRequest
+    local function current()
+        if token~=helpRequest then return false end
+        local live=validHelp(valid);return live and token==helpRequest
+    end
+    local function failed()
+        local d=self.helpWindow
+        if token==helpRequest and d then d:ReleaseMount();if token==helpRequest then d.frame:Hide() end end
+    end
+    if not current() then failed();return end
+    local sections=request.sections or {}
+    if type(sections)=='function' then local ok,value=callHelp(sections);if not ok or not current() then failed();return end;sections=value end
+    if type(sections)~='table' or not current() then failed();return end
+    local heading=request.heading or L['Help']
+    -- Capture only diagnostic scalars from the accepted subject, per request.
+    local metadata=request.renderContext
+    local context={module='help',operation='render',customCode=type(metadata)=='table' and rawget(metadata,'customCode')==true,
+        conditionTag=type(metadata)=='table' and rawget(metadata,'conditionTag') or nil}
+    local document=self:ShowWorkbenchHelp(heading,sections,request.owner,{current=current,render=request.render,renderContext=context})
+    if not document or not current() then return end
+    local handle={frame=document.frame,heading=heading,sections=sections}
+    function handle:Hide()if token==helpRequest then document:Hide()end end
+    return handle
+end
+function addon:WorkbenchWindowHelp()
+    return {
+        section(L['Navigation'],L['Help.Window.navigation']),
+        section(L['Scale'],L['Help.Window.scale']),
+        section(L['Window controls'],L['Help.Window.controls']),
+        section(L['Apply / Discard'],L['Help.Window.drafts']),
+        section(L['Help'],L['Help.Window.help']),
+    }
+end
+-- Descriptors are held only by their owning control and retired on pool reuse.
+function addon:BindWorkbenchHelp(control,descriptor)
+    if control.rmHelpBinding then control.rmHelpBinding.clear() end
+    local binding={};control.rmHelpBinding=binding
+    local enter,leave=control:GetScript('OnEnter'),control:GetScript('OnLeave')
+    local function current()return control.rmHelpBinding==binding and validHelp(descriptor.valid) and control.rmHelpBinding==binding end
+    local function onEnter(...)
+        if not current() then return end
+        if enter then enter(...) end
+        if not current() or not descriptor.brief or not GameTooltip then return end
+        if GameTooltip:IsOwned(control) then if descriptor.brief~=control.tooltip then GameTooltip:AddLine(descriptor.brief,1,1,1,true) end
+        else GameTooltip:SetOwner(control,'ANCHOR_RIGHT');GameTooltip:SetText(descriptor.brief,1,1,1,1,true) end
+        GameTooltip:Show()
+    end
+    local function onLeave(...)
+        if not current() then return end
+        if leave then leave(...) end
+        if current() and GameTooltip and GameTooltip:IsOwned(control) then GameTooltip:Hide() end
+    end
+    addon:SetUIScript(control,'OnEnter',onEnter);local installedEnter=control:GetScript('OnEnter')
+    addon:SetUIScript(control,'OnLeave',onLeave);local installedLeave=control:GetScript('OnLeave')
+    function binding.clear()
+        if control.rmHelpBinding~=binding then return end
+        control.rmHelpBinding=nil
+        if control:GetScript('OnEnter')==installedEnter then control:SetScript('OnEnter',enter) end
+        if control:GetScript('OnLeave')==installedLeave then control:SetScript('OnLeave',leave) end
+        if GameTooltip and GameTooltip:IsOwned(control) then GameTooltip:Hide() end
+    end
+    return binding.clear
+end
 function addon:GetProfileOptionHelp()
     return {
         {id='activate',title=L['Activate profile'],text=L['Help.Profiles.activate']},
@@ -44,7 +125,7 @@ function addon:WorkbenchPageHelp(topic)
         section(L['Editing code'],L['Undo and Redo edit the Lua body. Reset restores the saved body or new-function template and can be undone. Check syntax executes no custom Lua. Apply saves the body and metadata together; Discard abandons the draft. Leaving with changes offers Apply, Discard or Cancel.']),
         section(L['Function dependencies'],L['Help.Functions.bindings']),
         section(L['Import/Export'],L['Include custom function dependencies exports their source with the selected definition. Without it, the bundle records required helper identities and versions. Review source shows every imported Lua body. Resolve each original name and destination with Reuse, Replace or a new identifier. Apply import saves the complete reviewed bundle and can register imported Lua. Only apply code you trust.']),
-        section(L['Window controls'],L['Drag the title bar to move. Set Scale with the top-left slider; child windows follow it. The question mark toggles Help. Close with X, Escape, or right-click in the content area.'])} end
+        section(L['Window controls'],L['Help.Window.controls'])} end
     local description={
         General=L['Configure recommendation timing, automatic switching, history, preview and profile highlight defaults. Labels are on the left. Checkboxes toggle options, sliders show numeric values, and fields validate before saving.'],
         Conditions=L['Choose a category and search for a condition. Hidden removes it from pickers without deleting its definition. Switch Condition controls its availability for automatic rotation switching. Move To stages a category destination; its Apply button confirms the move. The assigned category opens category management. Sidebar arrows and dragging order entries. Page Apply saves the draft; Discard abandons edits to a saved entry. Custom conditions can be edited, duplicated or deleted.'],
@@ -67,10 +148,13 @@ function addon:WorkbenchPageHelp(topic)
         for _,entry in ipairs(self:WorkbenchInteractionHelp('rotation')) do result[#result+1]=entry end
     elseif topic=='Announces' then result[#result+1]=section(L['Editing settings'],L['Help.Announces.editing'])
     elseif topic~='Profiles' and topic~='About' then result[#result+1]=section(L['Editing settings'],L['Press Enter or leave a text field to stage its value; Apply saves the draft. Invalid text stays red and must be corrected before Apply; Discard can abandon it. Searchable selectors open on click and filter as you type. Section headings collapse or expand their contents.']) end
-    result[#result+1]=section(L['Window controls'],L['Drag the title bar to move. Set Scale with the top-left slider; child windows follow it. The question mark toggles Help. Close with X, Escape, or right-click in the content area.'])
+    result[#result+1]=section(L['Window controls'],L['Help.Window.controls'])
     return result
 end
-function addon:ShowWorkbenchHelp(heading,sections,owner)
+function addon:ShowWorkbenchHelp(heading,sections,owner,request)
+    if not request then helpRequest=helpRequest+1;local token=helpRequest;request={current=function()return token==helpRequest end} end
+    local current=request.current
+    if not current() then return end
     local d=self.helpWindow
     if not d then
         d={frame=CreateFrame('Frame',nil,UIParent),rows={}};self.helpWindow=d;local frame=d.frame
@@ -81,10 +165,16 @@ function addon:ShowWorkbenchHelp(heading,sections,owner)
         local function hide() frame:Hide() end
         addon:SetUIScript(d.close,'OnClick',hide)
         for _,surface in ipairs({frame,d.scroll}) do addon:SetUIScript(surface,'OnMouseUp',function(_,button) if button=='RightButton' then hide() end end) end
+        function d:ReleaseMount()
+            local mount,release,context=self.mount,self.mountRelease,self.mountContext;self.mount=nil;self.mountRelease=nil;self.mountContext=nil
+            if release then callHelpContext(context,release,mount) end
+        end
         function d:Hide() frame:Hide() end
-        frame:Hide();addon.HideOnEscape(d)
+        frame:Hide();addon:SetUIScript(frame,'OnHide',function()helpRequest=helpRequest+1;frame.rmHelpCurrent=nil;d:ReleaseMount()end);addon.HideOnEscape(d)
     end
+    d:ReleaseMount();if not current() then return end
     d.heading=heading;d.sections=sections;d.chrome:SetContext(heading,L['Help'],owner or addon.pretty_name or L['Rotation Master'])
+    if not current() then return end
     local y=0;local n=0
     for _,entry in ipairs(sections or {}) do
         for i,value in ipairs({entry.title or '',entry.text or ''}) do
@@ -93,7 +183,22 @@ function addon:ShowWorkbenchHelp(heading,sections,owner)
         end
     end
     for i=n+1,#d.rows do d.rows[i]:Hide() end
+    if not current() then return end
+    if request.render then
+        local ok,mount=callHelpContext(request.renderContext,request.render,d.child,current,y,490)
+        local height,release
+        -- Accessors may open newer Help: consume once before publishing ownership.
+        local readable=ok and type(mount)=='table' and callHelpContext(request.renderContext,function()release=mount.Release;if current() then height=mount.height end end)
+        if not readable or not current() or type(height)~='number' or height~=height or height<0 or height==math.huge or type(release)~='function' then
+            if type(release)=='function' then callHelpContext(request.renderContext,release,mount) end
+            if current() then d.frame:Hide() end
+            return
+        end
+        d.mount=mount;d.mountRelease=release;d.mountContext=request.renderContext;y=y+height
+    end
+    if not current() then return end
     d.child:SetHeight(math.max(1,y));local visible=math.min(300,math.max(100,y));d.frame:SetHeight(38+visible+28);d.scroll:SetSize(510,visible);d.chrome:LayoutTitle()
+    d.frame.rmHelpCurrent=current
     local front=_G.RotationMasterFrontmostDialog;d.frame:SetFrameLevel(front and front~=d.frame and front:GetFrameLevel()+20 or d.frame:GetFrameLevel()+1);d.frame:Show();d.scroll.workbenchBar:SetValue(0);d.scroll:UpdateWorkbenchScroll();addon:RegisterWindowForEscape(d);return d
 end
 

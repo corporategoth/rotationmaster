@@ -576,7 +576,34 @@ function addon:InitializeTalentTreeConditions(_,db)
     end
 end
 
+-- Optional picker preferences have no AceDB defaults: logout must preserve an
+-- explicit empty list. Only absent fields receive this cold, bounded seed.
+local announcementPreferenceOwner={}
+local defaultAnnouncementConditions={'AND','OR','NOT','COMBAT','GROUP','ENEMY','DEAD','FRIENDLY','LEVEL','SELF_LEVEL','PVP','ZONEPVP','ZONE','INSTANCE','OUTDOORS','STEALTHED','FORM','CLASS','CLASS_GROUP','CREATURE','CLASSIFICATION','PET','PET_NAME','ROLE'}
+local function seedAnnouncementPreferences(profile)
+    if type(profile)=='table' and rawget(profile,'announcement_conditions')==nil then
+        profile.announcement_conditions=deepcopy(defaultAnnouncementConditions)
+    end
+end
+function addon:InstallAnnouncementConditionPreferences()
+    local db=self.db
+    if not db then return end
+    if announcementPreferenceOwner.db~=db then
+        announcementPreferenceOwner.db=db
+        local function changed(_,currentDB)
+            if currentDB==addon.db and currentDB==announcementPreferenceOwner.db then seedAnnouncementPreferences(currentDB.profile) end
+        end
+        for _,event in ipairs({'OnNewProfile','OnProfileChanged','OnProfileCopied','OnProfileReset'}) do
+            db.RegisterCallback(announcementPreferenceOwner,event,changed)
+        end
+    end
+    for _,profile in pairs(db.sv and db.sv.profiles or {}) do seedAnnouncementPreferences(profile) end
+    seedAnnouncementPreferences(db.profile)
+end
+
 function addon:init()
+    self:InstallUnitStateConditions(self.db)
+    self:InstallAnnouncementConditionPreferences()
     self.db.RegisterCallback(self,'OnNewProfile','InitializeTalentTreeConditions')
     self.db.RegisterCallback(self,'OnProfileReset','InitializeTalentTreeConditions')
     moveProfileItems()

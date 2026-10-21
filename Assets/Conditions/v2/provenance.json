@@ -3,7 +3,7 @@
   "tool": "Built-in image_gen.imagegen",
   "transparent_background": true,
   "original_family_preserved": true,
-  "condition_count": 116,
+  "condition_count": 118,
   "category_count": 9,
   "logical_control_count": 3,
   "entries": [
@@ -3282,6 +3282,32 @@
       "category_selector": "DEFAULT",
       "generated_path": "/home/prez/.codex/generated_images/01a151f7-65fd-7b00-8ff0-ff1079fa606f/exec-2c093fcb-d7d8-4dd3-af93-39cbe3855769.png",
       "source_sha256": "7a3a596e38ac5aa466c495fe39f649ff5360cc54eacafa223bdd1c61989cb510"
+    },
+    {
+      "module": "Conditions/unit_states.lua",
+      "description": "Is Dead or Ghost",
+      "key": "DEAD",
+      "kind": "condition",
+      "name": "dead",
+      "subject": "Ivory skull with dark eye sockets and a broad cyan spectral wisp.",
+      "status": "generated",
+      "prompt": "One original transparent raster icon for Is Dead or Ghost. Ivory skull with dark eye sockets and a broad cyan spectral wisp. Warcraft-era painterly inventory art, one compact centered emblem with broad readable shapes at 20/24/32 pixels, transparent corners, no text, logo, frame, background, ground or cast shadow.",
+      "runtime": "Assets/Conditions/v2/dead.tga",
+      "generated_path": "/home/prez/.codex/generated_images/01a14c29-8231-7ba3-91a5-df563d4cfaea/exec-181cc70a-e855-4ac8-81fc-3e51e4fa035a.png",
+      "source_sha256": "63afb7a080e68de455ce0c11fdb84a972d705e7d415eee441abe6f112c934e86"
+    },
+    {
+      "module": "Conditions/unit_states.lua",
+      "description": "Is Friendly",
+      "key": "FRIENDLY",
+      "kind": "condition",
+      "name": "friendly",
+      "subject": "Two armored hands clasped in support with gold, dark steel and an emerald glow.",
+      "status": "generated",
+      "prompt": "One original transparent raster icon for Is Friendly. Two armored hands clasped in support with gold, dark steel and an emerald glow. Warcraft-era painterly inventory art, one compact centered emblem with broad readable shapes at 20/24/32 pixels, transparent corners, no text, logo, frame, background, ground or cast shadow.",
+      "runtime": "Assets/Conditions/v2/friendly.tga",
+      "generated_path": "/home/prez/.codex/generated_images/01a14c29-8231-7ba3-91a5-df563d4cfaea/exec-3d02c7f2-c53b-4c8e-835f-ca5131f1642f.png",
+      "source_sha256": "b769bc5f66b51e10df28a0f795a701482a598c9c75115eb1be93585fc742b62a"
     }
   ],
   "category_scope": "Six packaged UUID categories plus All, Switch, Other native rows/fallback."

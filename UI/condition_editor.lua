@@ -104,6 +104,107 @@ local function createShell()
         if state.canRedo and not pending then self.redo:Enable() else self.redo:Disable() end
         if not self.active.readOnly and (self.active.session:IsDirty() or pending) then self.apply:Enable() else self.apply:Disable() end
     end
+    function shell:ShowSubjectHelp(model,cardAlive)
+        local active=self.active
+        if not active or not cardAlive() then return end
+        local working=active.working
+        local path=copyPath(model.fieldPath or model.path)
+        local node=at(working,path)
+        if type(node)~='table' then return end
+        local tag=node.type
+        local definitions=addon.conditionDefinitions
+        local revision=addon.conditionRegistryVersion
+        local definition=definitions and rawget(definitions,tag)
+        local profile,global,char=active.profile,active.global,active.char
+        local function owned()
+            return self.active==active and active.working==working and cardAlive()
+                and addon.db.profile==profile and addon.db.global==global and addon.db.char==char
+                and (active.persistentOwner or active.generation==addon.configPaneGeneration)
+                and at(working,path)==node and node.type==tag
+                and addon.conditionDefinitions==definitions and addon.conditionRegistryVersion==revision
+                and (not definitions or rawget(definitions,tag)==definition)
+        end
+        local function ownerValid()
+            if not owned() then return false end
+            if active.targetValid then
+                local ok,value=pcall(active.targetValid)
+                if not ok or value~=true then return false end
+            end
+            return owned()
+        end
+        local group=tag=='AND' or tag=='OR' or tag=='NOT'
+        local available,help,initialized
+        local function current()
+            if not ownerValid() then return false end
+            if initialized and not group then
+                local now=definition and not definition.disabled and not definition.functionUnavailable and not definition.functionSuspended
+                if now~=available then return false end
+                local same=not available or definition.help==help
+                return same and ownerValid()
+            end
+            return ownerValid()
+        end
+        local request={heading=L['Condition'],valid=current}
+        request.sections=function()
+            if not ownerValid() then return {} end
+            available=definition and not definition.disabled and not definition.functionUnavailable and not definition.functionSuspended
+            help=not group and available and definition.help
+            initialized=true
+            local heading=model.name or definition and definition.description or L['Condition']
+            request.heading=addon:PlainWorkbenchName(type(heading)=='string' and heading or L['Condition'])
+            request.owner=self.chrome.author:GetText()
+            request.renderContext={customCode=definition and definition.customCode==true,conditionTag=tag}
+            if not current() then return {} end
+            if group then
+                request.render=nil
+                return {{title=L['Groups and toggles'],text=L['AND requires every child; OR requires any child; NOT reverses its child. Unavailable data remains unavailable.']}}
+            elseif not available then
+                request.render=nil
+                return {{title=L['Unavailable'],text=L['Help.Conditions.subject_unavailable']}}
+            elseif type(help)~='function' then
+                request.render=nil
+                return {{title=L['Help'],text=L['Help.Conditions.subject_missing']}}
+            end
+            return {}
+        end
+        request.render=function(parent,requestCurrent,y,width)
+            local pane,lease;local mount={height=0}
+            function mount:Release()
+                if self.released then return end;self.released=true
+                if pane and pane.rmActive and pane.rmLease==lease then addon:ReleaseConditionWidget(pane) end
+            end
+            local function paneCurrent() return not pane or pane.rmActive and pane.rmLease==lease end
+            local function live()
+                if mount.released or not paneCurrent() or not current() or not requestCurrent() then return false end
+                return not mount.released and paneCurrent()
+            end
+            local ok,why=pcall(function()
+                if not live() then return end
+                pane=addon:CreateConditionGroup();lease=pane.rmLease
+                if not live() then return end
+                pane.frame:SetParent(parent);pane.frame:ClearAllPoints();pane.frame:SetPoint('TOPLEFT',0,-y)
+                pane:SetWidth(width);pane:SetLayout('List')
+                if not live() then return end
+                help(pane)
+                if not live() then return end
+                local function guardCallbacks(widget)
+                    local widgetLease=widget.rmLease
+                    local callbacks={};for event,callback in pairs(widget.events or widget.callbacks or {}) do callbacks[event]=callback end
+                    for event,callback in pairs(callbacks) do if type(callback)=='function' then
+                        widget:SetCallback(event,function(...) if live() and widget.rmActive and widget.rmLease==widgetLease then return callback(...) end end)
+                    end end
+                    for _,child in ipairs(widget.children or {}) do guardCallbacks(child) end
+                end
+                guardCallbacks(pane);pane:DoLayout()
+                if live() then mount.height=pane.frame:GetHeight() end
+            end)
+            if not ok or not live() then mount:Release() end
+            if not ok then error(why,0) end
+            return mount
+        end
+        local open=rawget(addon,'OpenWorkbenchHelp')
+        if type(open)=='function' then return open(addon,request) end
+    end
     function shell:Scene()
         self.view.width=self.canvas.frame:GetWidth()-8;self.view.definitions=addon.conditionDefinitions
         local rows,complete=self.active.session:Rows(4096);self.rows=rows
@@ -143,7 +244,7 @@ local function createShell()
         if not alive() or self.active.readOnly or not self:SyncWorking() then return end
         if self.openPicker then self.openPicker:Release() end
         local active=self.active;local node=at(active.working,model.fieldPath)
-        local picker=addon:CreateConditionTypePicker(window,active.index and active.index>0 and "ALL" or "SWITCH",node and node.type,
+        local picker=addon:CreateConditionTypePicker(window,self.userdata.announcement and "ANNOUNCEMENT" or active.index and active.index>0 and "ALL" or "SWITCH",node and node.type,
             function(tag)
                 if not alive() then return end
                 local current=at(active.working,model.fieldPath)
@@ -163,12 +264,6 @@ local function createShell()
                 addon:SetUIScript(control,'OnClick',function() if alive() and not self.active.readOnly then self:Command('SetGroupType',model.fieldPath,operator) end end);control:Show()
             end
             self.view.detailsHeights[model.key]=32
-            if self.view.help[model.key] then
-                card.helpText=card.helpText or card.fields:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall')
-                card.helpText:ClearAllPoints();card.helpText:SetPoint('TOPLEFT',0,-36);card.helpText:SetJustifyH('LEFT');card.helpText:SetWordWrap(true);card.helpText:SetWidth(model.width-82)
-                card.helpText:SetText(L['AND requires every child; OR requires any child; NOT reverses its child. Unavailable data remains unavailable.']);card.helpText:Show()
-                self.view.detailsHeights[model.key]=card.helpText:GetStringHeight()+44
-            end
             card.releaseFields=function() for _,control in ipairs(card.groupControls) do control:Hide();addon:SetUIScript(control,'OnClick',nil) end;if card.helpText then card.helpText:Hide() end end
             return
         end
@@ -250,7 +345,6 @@ local function createShell()
         local function build()
             if definition then
                 addon:widgetCondition(pane,active.spec,node)
-                if self.view.help[model.key] and type(definition.help)=="function" then definition.help(pane) end
                 addon:configure_frame(pane)
                 local function bindPending(widget)
                     local callbacks={};for event,callback in pairs(widget.events or widget.callbacks or {}) do callbacks[event]=callback end
@@ -430,6 +524,7 @@ function addon:ShowConditionEditor(index,spec,value,callback,targetValid,options
     if not shell then shell=createShell();self.compactConditionEditor=shell end
     shell.active={session=session,working=session:Snapshot(),selected={},spec=spec,index=index,
         callback=callback,generation=self.configPaneGeneration,targetValid=targetValid,
+        profile=self.db.profile,global=self.db.global,char=self.db.char,
         comparisonBaseline=options.savedValue and addon.RotationData.CopyData(options.savedValue),readOnly=options.readOnly==true,persistentOwner=options.persistentOwner==true}
     shell.view={selection={[""]=true},collapsed={},cardStates={},hiddenChildren={},expanded={},detailsHeights={},help={}}
     shell.userdata={funcs={print=function() return "" end},announcement=options.announcement==true,announcementTarget=options.announcementTarget==true}

@@ -2,6 +2,63 @@ local addon_name,addon=...
 local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
 -- Text-only transfers never execute Lua. The caller validates the candidate
 -- and applies it only while its original form and database are still alive.
+-- Optional Help belongs to one current transfer/report, not its edit actions.
+function addon:BindTransferHelp(d,metadata,ownerValid)
+    local previous=d.transferHelpLease
+    local profile,global,char=self.db.profile,self.db.global,self.db.char
+    if ownerValid then
+        local ok,current=pcall(ownerValid)
+        if not ok or current~=true or d.transferHelpLease~=previous
+            or self.db.profile~=profile or self.db.global~=global or self.db.char~=char then return end
+    end
+    local lease={cleanups={}};d.transferHelpLease=lease
+    if previous then for _,clear in ipairs(previous.cleanups) do clear() end end
+    if d.transferHelpLease~=lease then return end
+    if not metadata then
+        if d.help then self:SetUIScript(d.help,'OnClick',nil);d.help:Hide() end
+        return
+    end
+    local extraValid=metadata.valid
+    local function base()
+        return d.transferHelpLease==lease and not lease.hidden and addon.db.profile==profile and addon.db.global==global and addon.db.char==char
+    end
+    local function current()
+        if not base() or not d.frame:IsShown() or not base() then return false end
+        for _,valid in ipairs({ownerValid or false,extraValid or false}) do if valid then
+            local ok,value=pcall(valid);if not ok or value~=true or not base() then return false end
+        end end
+        local shown=d.frame:IsShown();return shown and base()
+    end
+    local onHide=d.frame:GetScript('OnHide')
+    if onHide==d.transferHelpHideWrapper then onHide=d.transferHelpHideOriginal end
+    d.transferHelpHideOriginal=onHide
+    self:SetUIScript(d.frame,'OnHide',function(...)
+        lease.hidden=true
+        if onHide then return onHide(...) end
+    end)
+    d.transferHelpHideWrapper=d.frame:GetScript('OnHide')
+    if not d.help then d.help=self:CreateWorkbenchHelpButton(d.frame,L['Help']) end
+    if not base() then return end
+    d.help:ClearAllPoints();d.help:SetPoint('TOPRIGHT',-31,-5);d.help:SetSize(20,20);d.help.icon:SetSize(18,18);d.help.tooltip=metadata.brief or L['Help'];d.help:Show()
+    if not base() then return end
+    local sections,heading,owner=metadata.sections,metadata.heading or L['Help'],metadata.owner
+    self:SetUIScript(d.help,'OnClick',function()
+        if d.transferHelpLease~=lease then return end
+        local open=rawget(addon,'OpenWorkbenchHelp')
+        if type(open)=='function' then return open(addon,{heading=heading,owner=owner,valid=current,sections=function()
+            if type(sections)=='function' then return sections(d) end;return sections or {}
+        end}) end
+    end)
+    if self.BindWorkbenchHelp then
+        lease.cleanups[#lease.cleanups+1]=self:BindWorkbenchHelp(d.help,{brief=d.help.tooltip,valid=current})
+        for key,brief in pairs(metadata.briefs or {}) do local control=d[key];if control then
+            lease.cleanups[#lease.cleanups+1]=self:BindWorkbenchHelp(control,{brief=brief,valid=current})
+        end end
+    end
+end
+function addon:TransferHelpBriefs()
+    return {copy=L['Help.Transfers.copy'],clear=L['Help.Transfers.clear'],apply=L['Help.Transfers.apply'],cancel=L['Help.Transfers.cancel'],close=L['Help.Transfers.cancel'],destination=L['Help.Transfers.destination'],name=L['Help.Transfers.name'],preview=L['Help.Transfers.preview'],inspect=L['Help.Transfers.inspect']}
+end
 function addon:CreateWorkbenchTransferShell(width,height)
     width,height=width or 570,height or 430
     local d={frame=CreateFrame('Frame',nil,UIParent),sharedTransferShell=true}
@@ -26,11 +83,31 @@ function addon:CreateWorkbenchTextReport(width,height)
         local width=math.max(1,self.scroll:GetWidth()-8);self.measure:SetWidth(math.max(1,width-8));self.measure:SetHeight(0);self.measure:SetText(self.text or '')
         local height=math.max(self.scroll:GetHeight(),self.measure:GetStringHeight()+12);self.content:SetSize(width,height);self.input:SetSize(width,height);self.scroll:UpdateWorkbenchScroll()
     end
-    function d:Hide() self.frame:Hide() end
-    function d:SetReport(title,value,context)
-        self.text=tostring(value or '');self.chrome:SetContext(title,L['Read-only'],context or addon.pretty_name)
-        self.setting=true;self.input:SetText(self.text);self.setting=false;self:Layout();self.frame:Show();addon:RegisterWindowForEscape(self)
-        self.input:SetFocus();self.input:SetCursorPosition(0);self.input:HighlightText(0,-1);self.scroll.workbenchBar:SetValue(0)
+    function d:Hide() self.reportRequest=nil;self.frame:Hide() end
+    function d:SetReport(title,value,context,help)
+        local request={};self.reportRequest=request
+        local db=addon.db;local profile,global,char=db.profile,db.global,db.char
+        local displayed=false
+        local function current()
+            local shown=not displayed or self.frame:IsShown()
+            return self.reportRequest==request and addon.db==db and db.profile==profile and db.global==global and db.char==char
+                and shown and self.reportRequest==request
+        end
+        if not current() then return end
+        local text=tostring(value or '');if not current() then return end
+        self.text=text;self.chrome:SetContext(title,L['Read-only'],context or addon.pretty_name)
+        if not current() then return end
+        self.setting=true;self.input:SetText(text)
+        if self.reportRequest~=request then return end
+        self.setting=false;if not current() then return end
+        self:Layout();if not current() then return end
+        self.frame:Show();displayed=true;if not current() then return end
+        addon:RegisterWindowForEscape(self);if not current() then return end
+        self.input:SetFocus();if not current() then return end
+        self.input:SetCursorPosition(0);if not current() then return end
+        self.input:HighlightText(0,-1);if not current() then return end
+        self.scroll.workbenchBar:SetValue(0);if not current() then return end
+        addon:BindTransferHelp(self,help,current)
     end
     addon:SetUIScript(d.input,'OnTextChanged',function()
         if not d.setting and d.input:GetText()~=d.text then d.setting=true;d.input:SetText(d.text or '');d.setting=false end;d:Layout()
@@ -42,7 +119,7 @@ function addon:CreateWorkbenchTextReport(width,height)
     end)
     addon:SetUIScript(d.copy,'OnClick',function() d.input:SetFocus();d.input:SetCursorPosition(0);d.input:HighlightText(0,-1) end)
     addon:SetUIScript(d.close,'OnClick',function() d:Hide() end);addon:SetUIScript(d.input,'OnEscapePressed',function() d:Hide() end)
-    addon:SetUIScript(d.frame,'OnHide',function() d.input:ClearFocus() end)
+    addon:SetUIScript(d.frame,'OnHide',function() d.reportRequest=nil;d.input:ClearFocus() end)
     d.input:EnableMouseWheel(true);addon:SetUIScript(d.input,'OnMouseWheel',function(_,delta) d.scroll.workbenchBar:SetValue(d.scroll.workbenchBar:GetValue()-delta*40) end)
     return d
 end
@@ -98,5 +175,6 @@ function addon:ShowSettingsTextTransfer(p,title,text,apply,options)
         local result=p:WithSettingsHistory(function() local ok,why=apply(d.input:GetText(),settings);return {ok,why} end);local ok,why=result[1],result[2];if not ok then d.status:SetText(why or L['Invalid import.']);return end
         d.frame:Hide();p:Draw()
     end)
-    d.frame:SetFrameLevel(p.frame:GetFrameLevel()+250);d.frame:Show();d.scroll.workbenchBar:SetValue(0);d.scroll:UpdateWorkbenchScroll();addon:RegisterWindowForEscape(d);if options then preview() end;return d
+    d.frame:SetFrameLevel(p.frame:GetFrameLevel()+250);d.frame:Show();d.scroll.workbenchBar:SetValue(0);d.scroll:UpdateWorkbenchScroll();addon:RegisterWindowForEscape(d);if options then preview() end
+    self:BindTransferHelp(d,options and options.help,valid);return d
 end

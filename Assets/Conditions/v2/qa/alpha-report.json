@@ -11390,5 +11390,183 @@
         "sha256": "47a015e0028293ea2ab5e3093eeada9506b4ead90bc80ed0bb2b08ffdd295157"
       }
     }
+  },
+  {
+    "key": "DEAD",
+    "name": "dead",
+    "source_sha256": "63afb7a080e68de455ce0c11fdb84a972d705e7d415eee441abe6f112c934e86",
+    "source": {
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "alpha": [
+        0,
+        255
+      ],
+      "transparent": 797005,
+      "opaque": 660,
+      "partial": 774851,
+      "corners": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "bounds": [
+        0,
+        0,
+        1204,
+        1254
+      ]
+    },
+    "exports": {
+      "64": {
+        "size": [
+          64,
+          64
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ],
+        "transparent": 1892,
+        "opaque": 144,
+        "partial": 2060,
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          4,
+          1,
+          60,
+          63
+        ],
+        "path": "dead-64.tga",
+        "sha256": "11b0700e90bc760fc83c8e808e7f1a3bc57d5ff8f5eacc3b0ed4f560ab2c58a9"
+      },
+      "128": {
+        "size": [
+          128,
+          128
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ],
+        "transparent": 8183,
+        "opaque": 330,
+        "partial": 7871,
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          11,
+          2,
+          118,
+          126
+        ],
+        "path": "dead.tga",
+        "sha256": "9b2f00fd4cb2218a89fba11bd793422189dd0637e78e88b4effadf0fa53742cf"
+      }
+    }
+  },
+  {
+    "key": "FRIENDLY",
+    "name": "friendly",
+    "source_sha256": "b769bc5f66b51e10df28a0f795a701482a598c9c75115eb1be93585fc742b62a",
+    "source": {
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "alpha": [
+        0,
+        255
+      ],
+      "transparent": 714756,
+      "opaque": 170,
+      "partial": 857590,
+      "corners": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "bounds": [
+        0,
+        9,
+        1253,
+        1254
+      ]
+    },
+    "exports": {
+      "64": {
+        "size": [
+          64,
+          64
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ],
+        "transparent": 1825,
+        "opaque": 139,
+        "partial": 2132,
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          1,
+          3,
+          63,
+          61
+        ],
+        "path": "friendly-64.tga",
+        "sha256": "1d6ead88d211cd5af69082dc5c6073a4d6e51098f0d2f61c85a97aff75f88c2e"
+      },
+      "128": {
+        "size": [
+          128,
+          128
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ],
+        "transparent": 7744,
+        "opaque": 288,
+        "partial": 8352,
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          3,
+          8,
+          126,
+          124
+        ],
+        "path": "friendly.tga",
+        "sha256": "eecb4a8a1cc1f3dca4f08bcffa653360d4117da05a5fa15b6d82f9aeeb58696e"
+      }
+    }
   }
 ]

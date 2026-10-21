@@ -23,6 +23,8 @@ local function fixture()
     a.listConditions=function() return {'AND','OR','NOT','DELETE','NUMBER'} end
     function a:GetImportValidationOptions() return {conditions=self.conditionDefinitions} end
     a.UpdateAutoSwitch=function() end;a.SwitchRotation=function() end;a.configPaneGeneration=1
+    if arg and arg[1] then f.load(arg[1]) end
+    dofile('tests/fixtures/workbench_help_contract.lua')(a,f.env)
     return f,widgets
 end
 test('native pending numeric fields apply without Enter and invalid text cannot be applied',function()
@@ -239,7 +241,7 @@ test('inline layout reflows following cards and resize invalidates old panes and
     for _,model in ipairs(canvas.scene.cards) do assert(model.x+model.width<=canvas.frame:GetWidth()) end
     shell.cancel:Click()
 end)
-test('group Help opens inline without creating a recursive group editor',function()
+test('group Help opens a separate document without creating a recursive group editor',function()
     local f=fixture();local root={type='AND',value={{type='NUMBER',number=1}}}
     local shell=f.addon:EditCondition(1,0,root,function() end)
     shell.canvas.cards[1].controls.help:Click();assert(not shell.canvas.cards[1].model.expanded and f.addon.helpWindow.frame:IsShown())
@@ -579,13 +581,14 @@ test('typed group names remain in the condition draft and Apply works without En
     assert(root.name==nil and shell.apply:IsEnabled());shell:Render();assert(shell.canvas.cards[1].model.name=='Opening buffs')
     shell.apply:Click();assert(root.name=='Opening buffs')
 end)
-test('group Help measures its text after compact native controls and clears that height on close',function()
+test('group Help opens a separate document without changing expanded fields or geometry',function()
     local f=fixture();local shell=f.addon:EditCondition(1,0,{type='AND',value={{type='NUMBER',number=1}}},function() end)
     shell.canvas.cards[1].header:Click();local before=shell.canvas.cards[1].model.ownHeight
     shell.canvas.cards[1].controls.help:Click();local card=shell.canvas.cards[1]
-    assert(card.fields:GetHeight()>=card.helpText:GetStringHeight()+16)
+    assert(card.model.ownHeight==before and not card.helpText)
+    assert(f.addon.helpWindow and f.addon.helpWindow.frame:IsShown())
     assert(shell.canvas.cards[2].model.y>=card.model.y+card.model.ownHeight)
-    card.controls.help:Click();assert(shell.canvas.cards[1].model.ownHeight==before)
+    f.addon.helpWindow.close:Click();assert(shell.canvas.cards[1].model.ownHeight==before)
 end)
 test('condition summaries open fields while chevron toggles names and summary without hiding group paths',function()
     local f=fixture();local shell=f.addon:EditCondition(1,0,{type='AND',value={{type='NUMBER',number=1}}},function() end)
@@ -601,7 +604,7 @@ test('long condition type labels grow their card instead of truncating and new c
     local c=shell.canvas.cards[1];assert(c.label:GetWidth()>=c.label:GetStringWidth())
     assert(shell.palette.condition.icon and shell.palette.group.icon and shell.palette.group.point[1]=='TOPRIGHT')
 end)
-test('explicit summary navigation exits Help while Help toggle alone restores its prior view',function()
+test('Help preserves field view while explicit summary navigation changes it',function()
     local f=fixture();local shell=f.addon:EditCondition(1,0,{type='AND',value={{type='NUMBER',number=1}}},function() end)
     local c=shell.canvas.cards[1];c.header:Click();c=shell.canvas.cards[1];c.controls.help:Click();assert(shell.canvas.cards[1].model.expanded)
     shell.expandAll:Click();assert(not shell.canvas.cards[1].model.expanded and not shell.view.help[''])
@@ -676,10 +679,11 @@ test('compact unnamed groups show their operator while named groups keep their n
     shell.collapseAll:Click();local cards=shell.canvas.cards
     assert(cards[1].nameButton:GetText()=='All of' and cards[2].nameButton:GetText()=='Any of' and cards[3].nameButton:GetText()=='Opening')
 end)
-test('expanded condition help appends below live fields instead of replacing them',function()
+test('expanded condition Help renders separately and keeps the editable field pane unchanged',function()
     local f,widgets=fixture();local shell=f.addon:EditCondition(1,0,{type='NUMBER',number=7},function() end)
     shell.canvas.cards[1].header:Click();shell.canvas.cards[1].controls.help:Click();local pane=shell.canvas.cards[1].pane
-    assert(pane.children[1].type=='RM-ConditionSlider' and pane.children[2].text=='Number help','help replaced the editable field')
+    assert(#pane.children==1 and pane.children[1].type=='RM-ConditionSlider','Help rebuilt the editable field pane')
+    local documented=false;for _,widget in ipairs(widgets)do if widget.rmActive and widget.text=='Number help'then documented=true end end;assert(documented,'subject Help missing from its document')
     pane.children[1].events.OnValueChanged(pane.children[1],nil,8);shell.apply:Click()
 end)
 test('Ctrl drag selects only the source sibling suffix including each group subtree',function()

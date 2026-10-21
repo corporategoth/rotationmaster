@@ -149,6 +149,12 @@ function addon:EnableWorkbenchRightClickClose(frame)
     local onShow=frame:GetScript('OnShow')
     addon:SetUIScript(frame,'OnShow',function(...) rightDown=IsMouseButtonDown and IsMouseButtonDown('RightButton') or false;if onShow then onShow(...) end end)
     addon:SetUIScript(watcher,'OnUpdate',function()
+        -- The existing visible-dialog observer also retires owner-bound Help.
+        local current=frame.rmHelpCurrent
+        if current then
+            local ok,live=pcall(current)
+            if (not ok or not live) and frame.rmHelpCurrent==current then frame:Hide();return end
+        end
         local down=IsMouseButtonDown and IsMouseButtonDown('RightButton') or false
         if down and not rightDown and frame:IsShown() then
             local top=_G.RotationMasterFrontmostDialog;local focus
@@ -178,7 +184,7 @@ function addon:EnableWorkbenchTitleDrag(frame)
     addon:SetUIScript(drag,'OnHide',stop)
     return drag
 end
-function addon:CreateWorkbenchDialogChrome(frame,title)
+function addon:CreateWorkbenchDialogChrome(frame,title,help)
     local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
     local chrome={};self:EnableWorkbenchRightClickClose(frame);chrome.drag=self:EnableWorkbenchTitleDrag(frame)
     local function fill(parent,r,g,b)
@@ -213,6 +219,11 @@ function addon:CreateWorkbenchDialogChrome(frame,title)
         title:SetText(string.format(L['%s: %s'],addon.pretty_name or L['Rotation Master'],addon:PlainWorkbenchName(heading or '')))
         self.version:SetText(kind or L['Condition']);self.contextWidth=math.min(220,math.max(48,self.version:GetStringWidth()+8));self.version:SetWidth(self.contextWidth)
         self.author:SetText(addon:PlainWorkbenchName(rotationName or ''));self:LayoutTitle()
+    end
+    if help then
+        chrome.help=self:CreateWorkbenchHelpButton(frame,L['Help']);chrome.help:SetPoint('TOPRIGHT',-31,-5)
+        self:SetUIScript(chrome.help,'OnClick',function()return addon:OpenWorkbenchHelp(help)end)
+        self:BindWorkbenchHelp(chrome.help,{brief=L['Help.Brief.full'],valid=help.valid})
     end
     return chrome
 end

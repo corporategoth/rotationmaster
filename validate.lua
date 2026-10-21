@@ -697,7 +697,7 @@ function addon:validate(template, fix)
         -- Ownership archives must never be removed by the legacy shape repair.
         -- Their pure schema is validated independently, without guessing owners
         -- or mutating a future/invalid format that may need explicit recovery.
-        validate_basic("profile:" .. profile, data, profile_template, fix,{stockTargets=true,rotationStore=true,rotationFallbackID=true,rotations=addon.InitializeScopedRotationStorage~=nil,rotationLibrary=addon.InitializeScopedRotationStorage~=nil})
+        validate_basic("profile:" .. profile, data, profile_template, fix,{announcement_conditions=true,stockTargets=true,rotationStore=true,rotationFallbackID=true,rotations=addon.InitializeScopedRotationStorage~=nil,rotationLibrary=addon.InitializeScopedRotationStorage~=nil})
         local stockTargets=rawget(data,'stockTargets')
         if stockTargets~=nil then
             local ok,why=addon.StockTargets.Validate(stockTargets)

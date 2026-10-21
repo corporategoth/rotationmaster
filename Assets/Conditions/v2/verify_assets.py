@@ -69,7 +69,7 @@ def main():
     args = parser.parse_args()
     report = dict(native_acceptance='Not run; file checks and offline visual inspection only', sets={})
     icons = None
-    for relative, expected in (('Assets/Conditions/v2', 128), ('Assets/Overlays/v1', 9)):
+    for relative, expected in (('Assets/Conditions/v2', 130), ('Assets/Overlays/v1', 9)):
         result, entries = verify(relative, expected)
         report['sets'][relative] = result
         if relative.endswith('v2'):

@@ -40,7 +40,7 @@ function addon:CreateWorkbenchIconButton(parent,name,tooltip)
 end
 ---@return RMIconButton
 function addon:CreateWorkbenchHelpButton(parent,tooltip)
-    local button=self:CreateWorkbenchIconButton(parent,'help',tooltip);button:SetSize(24,24);button.icon:SetSize(22,22);button.icon:SetVertexColor(1,.82,.25,1);return button
+    local button=self:CreateWorkbenchIconButton(parent,'help',tooltip);button:SetSize(20,20);button.icon:SetSize(18,18);button.icon:SetVertexColor(1,.82,.25,1);return button
 end
 function addon:CreateWorkbenchHistoryButton(parent,direction,label)
     local button=self:CreateWorkbenchIconButton(parent,direction,label);button:SetSize(68,20);button:SetText(label);button.art:Show()

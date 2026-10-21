@@ -87,7 +87,7 @@ local function newShell()
     addon:SetUIScript(drag,"OnDragStop",function() window:StopMovingOrSizing() end)
     local close=addon:CreateWorkbenchIconButton(window,"close",L["Close"])
     close:SetPoint("TOPRIGHT",window,"TOPRIGHT",-5,-5);addon:SetUIScript(close,"OnClick",function() shell:Hide() end);shell.close=close
-    shell.help=addon:CreateWorkbenchHelpButton(window,L["Help"]);shell.help:SetPoint("TOPRIGHT",-31,-5);shell.help:SetSize(20,20);shell.help.icon:SetSize(16,16)
+    shell.help=addon:CreateWorkbenchHelpButton(window,L["Help"]);shell.help:SetPoint("TOPRIGHT",-31,-5);shell.help:SetSize(20,20);shell.help.icon:SetSize(18,18)
     shell.version=text(window);shell.version:SetPoint("TOPRIGHT",-62,-8);shell.version:SetJustifyH("RIGHT");shell.version:SetWordWrap(false);shell.version:SetWidth(230)
     local client=addon.Platform and addon.Platform:GetClientInfo() or {}
     local edition=({tbc=L["TBC"],era=L["Classic Era"],progression=L["Classic Progression"],retail=L["Retail"],forever=L["Forever"]})[client.family] or L["Unknown"]
@@ -166,13 +166,16 @@ local function newShell()
     function shell:CloseHelp()
         if self.helpDialog then self.helpDialog:Hide() end
     end
-    function shell:ShowHelp()
-        local heading=self.section=='ItemSets' and L['Item Sets'] or L[self.section] or L['Help']
-        if self.helpDialog and self.helpDialog.frame:IsShown() and self.helpDialog.heading==heading then self:CloseHelp();return end
-        self.helpDialog=addon:ShowWorkbenchHelp(heading,addon:WorkbenchPageHelp(self.section),addon.pretty_name)
-        self.helpPane=self.helpDialog.frame
+    function shell:ShowHelp(topic)
+        local heading=topic and (topic=='ItemSets' and L['Item Sets'] or L[topic]) or L['Workbench Help']
+        self.helpDialog=addon:OpenWorkbenchHelp({heading=heading,owner=addon.pretty_name,
+            valid=function()return self.frame:IsShown()end,
+            sections=function()return topic and addon:WorkbenchPageHelp(topic) or addon:WorkbenchWindowHelp()end})
+        if self.helpDialog then self.helpPane=self.helpDialog.frame end
     end
     addon:SetUIScript(shell.help,'OnClick',function() shell:ShowHelp() end)
+    addon:BindWorkbenchHelp(shell.help,{brief=L['Help.Brief.window'],valid=function()return window:IsShown()end})
+    for _,control in ipairs({shell.scaleSlider,shell.scaleValue})do addon:BindWorkbenchHelp(control,{brief=L['Help.Brief.scale'],valid=function()return window:IsShown()end})end
 
     local grip=CreateFrame("Button",nil,window)
     grip:SetSize(20,20);grip:SetPoint("BOTTOMRIGHT",window,"BOTTOMRIGHT",-2,0)
@@ -213,6 +216,7 @@ local function newShell()
         end
     end
     function shell:RefreshTabs()
+        self.tabGeneration=(self.tabGeneration or 0)+1;local generation=self.tabGeneration
         local entries={}
         for _,entry in ipairs(sections) do entries[#entries+1]=entry end
         self.tabs={}
@@ -224,8 +228,14 @@ local function newShell()
                 tab.border=outline(tab)
             end
             tab.section=entry.value;tab:SetText(entry.text)
-            tab:SetSize(math.min(180,math.max(64,tab:GetFontString():GetStringWidth()+18)),22)
+            tab:SetSize(math.min(180,math.max(64,tab:GetFontString():GetStringWidth()+42)),22)
             local key=entry.value
+            if not tab.help then tab.help=addon:CreateWorkbenchHelpButton(tab,L['Help']);tab.help:SetPoint('RIGHT',-1,0) end
+            local text=tab:GetFontString();text:ClearAllPoints();text:SetPoint('LEFT',8,0)
+            local function current()return self.frame:IsShown() and self.tabGeneration==generation end
+            addon:SetUIScript(tab.help,'OnClick',addon:GuardWorkbenchHelp(current,function()self:ShowHelp(key)end))
+            addon:BindWorkbenchHelp(tab.help,{brief=L['Help.Brief.page'],valid=current})
+            addon:BindWorkbenchHelp(tab,{brief=descriptions[key],valid=current})
             addon:SetUIScript(tab,"OnClick",function() self:SelectSection(key) end)
             tab:Show();self.tabs[#self.tabs+1]=tab
         end

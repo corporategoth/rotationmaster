@@ -19,6 +19,7 @@ function addon:GetDocument_layout_conditions_options_help()
         {title=L["Import/Export"],text=L["Below the condition list, Import/Export opens the selected custom definition for transfer and code review; it is disabled for built-in conditions. In Manage categories, transfer a category’s ordered condition identifiers. Named categories and Other are exclusive destinations. Switch membership is independent."]},
         {title=L["Search"],text=L["Filter the visible condition list by name or identifier. The category filter still applies."]},
         {title=L["Switch Condition"],text=L["Allow this condition type to be used when automatically selecting a rotation."]},
+        {title=L["Announcement Condition"],text=L["Offer this condition type when editing announcement conditions. This flag is independent of Switch Condition and does not remove or invalidate conditions already saved in announcements."]},
         {title=L["Hidden"],text=L["Hide this condition from the Other picker category. Explicit named-category and Switch membership remain available."]},
         {title=L["Condition order"],text=L["The condition ordering controls are arrows and draggable rows in the sidebar of the selected category. In Manage categories, the same controls order the categories themselves."]},
         {title=L["Move To"],text=L["Choose a named category or Other, then use Apply beside the destination to stage the move. Page Apply saves all pending changes. Use Switch Condition separately for automatic-switch availability."]},

@@ -8,14 +8,30 @@ function addon:IsValidAnnouncementItemReference(items)
     end
     return count==#items
 end
+function addon:IsValidMacroAnnouncementIdentifier(value)
+    return type(value)=='string' and #value<=64 and value:match('^[A-Za-z_][A-Za-z0-9_.-]*$')~=nil
+end
+-- Cold configuration/import check; no retained lookup registry or polling work.
+function addon:AreMacroAnnouncementIdentifiersUnique(entries)
+    if type(entries)~='table' then return false end
+    local seen={}
+    for _,entry in ipairs(entries) do if type(entry)=='table' and entry.type=='macro' then
+        if not self:IsValidMacroAnnouncementIdentifier(entry.identifier) or seen[entry.identifier] then return false end
+        seen[entry.identifier]=true
+    end end
+    return true
+end
 function addon:IsValidAnnouncement(value,requireIdentity)
     if type(value)~='table' then return false end
     if requireIdentity and (type(value.id)~='string' or not value.id:match('^%x%x%x%x%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%x%x%x%x%x%x%x%x$')) then return false end
-    local allowed={name=true,id=true,type=true,spell=true,item=true,ranked=true,disabled=true,event=true,announce=true,value=true,announce_sound=true,emote=true,emote_target=true,conditions=true}
+    local allowed={name=true,id=true,type=true,spell=true,item=true,ranked=true,disabled=true,event=true,announce=true,value=true,announce_sound=true,emote=true,emote_target=true,conditions=true,identifier=true}
     for key in pairs(value) do if not allowed[key] then return false end end
-    if value.type~='spell' and value.type~='pet' and value.type~='item' then return false end
-    if type(value.event)~='string' or not (self.events or {})[value.event] then return false end
-    if not ({partyraid=true,party=true,raidwarn=true,emote=true,['local']=true,audible=true,say=true,yell=true,gesture=true})[value.announce] then return false end
+    local macro=value.type=='macro'
+    if macro then
+        if not self:IsValidMacroAnnouncementIdentifier(value.identifier) or value.spell~=nil or value.item~=nil or value.ranked~=nil or value.event~=nil then return false end
+    elseif value.type~='spell' and value.type~='pet' and value.type~='item' then return false
+    elseif value.identifier~=nil or type(value.event)~='string' or not (self.events or {})[value.event] then return false end
+    if not ({partyraid=true,party=true,raidwarn=true,emote=true,['local']=true,audible=true,say=true,yell=true,gesture=true,whisper=macro})[value.announce] then return false end
     for _,key in ipairs({'disabled','ranked'}) do if value[key]~=nil and type(value[key])~='boolean' then return false end end
     if value.name~=nil and (type(value.name)~='string' or #value.name>256) then return false end
     if value.value~=nil and (type(value.value)~='string' or #value.value>4096) then return false end
@@ -29,6 +45,7 @@ function addon:IsValidAnnouncement(value,requireIdentity)
         local result=self.RotationData.ValidateBody({switch=value.conditions,rotation={},cooldowns={}},{conditions=self.conditionDefinitions})
         if not result.valid or not result.supported then return false end
     end
+    if macro then return true end
     if value.type~='item' then return type(value.spell)=='number' and value.spell>0 and value.spell%1==0 end
     return self:IsValidAnnouncementItemReference(value.item)
 end

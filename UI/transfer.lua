@@ -23,7 +23,15 @@ function addon:ShowNativeImportPreview(p,view,spec)
     d.chrome:SetContext(L['Import comparison'],L['Read-only'],self.pretty_name)
     local ok,why=pcall(self.RenderRotationComparison,self,graph,view,spec)
     if not ok then d:Clear();error(why,0) end
-    p.cleanups[#p.cleanups+1]=function() if d.serial==serial then d.frame:Hide() end end;d.frame:Show();self:RegisterWindowForEscape(d);return d
+    p.cleanups[#p.cleanups+1]=function() if d.serial==serial then d.frame:Hide() end end;d.frame:Show();self:RegisterWindowForEscape(d)
+    if self.BindTransferHelp then
+        local generation=p.generation;local graphLease=graph.rmLease;local evidence=self:CopySettingsData(view)
+        self:BindTransferHelp(d,{heading=L['Import comparison'],brief=L['Help.Transfers.comparison_brief'],sections={{title=L['Read-only'],text=L['Help.Transfers.comparison']}},briefs={close=L['Help.Transfers.cancel']}},function()
+            return p.importPreview==d and d.serial==serial and p.generation==generation and (not p.Valid or p:Valid(generation))
+                and d.graph==graph and graph.rmActive and graph.rmLease==graphLease and addon:SettingsDataEqual(view,evidence)
+        end)
+    end
+    return d
 end
 function addon:ShowRotationTransfer(spec,id)
     local codec=self:NewRotationCodec();local session=self.RotationData.NewImportSession(codec,self:GetImportValidationOptions())
@@ -43,7 +51,8 @@ function addon:ShowRotationTransfer(spec,id)
         return not recordToken or coordinator:TokenCurrent(recordToken)
     end
     local canReplace=reference and reference.kind=='custom' and recordToken~=nil
-    local options={valid=valid,canReplace=canReplace,selectedName=original and original.name or source and (source.body and source.body.name or source.nameKey or source.name),fallbackName=L['Imported rotation'],requirePreview=true}
+    local options={valid=valid,canReplace=canReplace,selectedName=original and original.name or source and (source.body and source.body.name or source.nameKey or source.name),fallbackName=L['Imported rotation'],requirePreview=true,
+        help={heading=L['Import/Export Rotation'],brief=L['Help.Transfers.rotation_brief'],briefs=self:TransferHelpBriefs(),sections={{title=L['Import/Export'],text=L['Help.Transfers.rotation']},{title=L['Preview import'],text=L['Help.Transfers.rotation_preview']},{title=L['Applies to'],text=L['Copies belong to your Class unless This character is selected. Replacement keeps its original owner.']}}}}
     options.originalName=function(text) local decoded=codec:Decode(text);local value=decoded and decoded.value;if type(value)=='table' then return value.body and value.body.name or value.nameKey or value.name end end
     options.invalidate=function(d) if not valid() or dialog and (d~=dialog or d.options~=options) then return end;candidate=nil;session:Clear();d.apply:Disable();d.inspect:Disable();d.status:SetText(L['Text changed. Preview again before importing.']);if p.importPreview then p.importPreview.frame:Hide() end end
     options.preview=function(d)

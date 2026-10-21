@@ -31,8 +31,10 @@ function addon:listConditions(group, nohide, store)
     local global = store.global
 
     local rv = {}
-    if group == "SWITCH" then
-        for _, cond in pairs(profile.switch_conditions) do
+    if group == "SWITCH" or group == "ANNOUNCEMENT" then
+        local selected=profile.switch_conditions
+        if group=="ANNOUNCEMENT" then selected=profile.announcement_conditions end
+        for _, cond in pairs(type(selected)=="table" and selected or {}) do
             if special[cond] then
                 table.insert(rv, cond)
             elseif conditions[cond] then

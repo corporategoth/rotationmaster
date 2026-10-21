@@ -17,6 +17,32 @@ function addon:CreateSettingsForm(parent)
     function p:Valid(token)
         return self.active and token==self.generation and self.profile==addon.db.profile and self.global==addon.db.global and self.char==addon.db.char
     end
+    function p:HelpGuard(callback)
+        local token=self.generation
+        local function valid()return self:Valid(token)end
+        if addon.GuardWorkbenchHelp then return addon:GuardWorkbenchHelp(valid,callback) end
+        return function(...)if valid()then return callback(...)end end
+    end
+    function p:BindHelpBriefs()
+        if not addon.BindWorkbenchHelp then return end
+        local token=self.generation;local used={};local authored={};local inputs={}
+        for _,edit in ipairs(self.edits)do inputs[edit.control]=true end
+        if self.settingsKey then
+            for _,entry in ipairs(addon:WorkbenchPageHelp(self.settingsKey))do
+                if entry.id and type(entry.text)=='string' then authored[entry.id]=entry.text:match('^(.-[.!?])%s') or entry.text end
+            end
+        end
+        for key,control in pairs(self.fields)do
+            if not used[control] then
+                used[control]=true
+                local brief=authored[key] or control.tooltip
+                if not brief then
+                    brief=control.rmCheck and L['Help.Brief.check'] or inputs[control] and L['Help.Brief.edit'] or L['Help.Brief.control']
+                end
+                self.cleanups[#self.cleanups+1]=addon:BindWorkbenchHelp(control,{brief=brief,valid=function()return self:Valid(token)end})
+            end
+        end
+    end
     function p:Guard(callback)
         local token=self.generation
         return function(...) if self:Valid(token) then local result;if self.WithSettingsHistory then result=self:WithSettingsHistory(callback,...) else result=callback(...) end;if self.transactionKeys and self.fields.apply and not self.creationUsedForNew then if self:IsSettingsDraftDirty() then self.fields.apply:Enable() else self.fields.apply:Disable() end end;if self.updateStockObservationActions then self.updateStockObservationActions()end;return result end end
@@ -154,7 +180,7 @@ function addon:CreateSettingsForm(parent)
         addon:SetUIScript(c,'OnTextChanged',self:Guard(function(control,user) textChanged(control,user);if c:GetText()=='' then c.dropHint:Show() else c.dropHint:Hide() end;if user then query() end end))
         addon:SetUIScript(c,'OnEditFocusGained',self:Guard(function() if selected and not record.dirty then c:SetText(display(selected));record.baseline=c:GetText();paint() end;query() end))
         addon:SetUIScript(c,'OnEscapePressed',self:Guard(function() if self.menu then self.menu.frame:Hide() end;escape(c) end))
-        addon:SetUIScript(c,'OnEnter',self:Guard(function() if selected and GameTooltip then GameTooltip:SetOwner(c,'ANCHOR_RIGHT');GameTooltip:SetHyperlink(provider.kind..':'..selected);GameTooltip:AddLine(provider.kind=='item' and L['Search or drag an item here'] or L['Search or drag a spell here']);GameTooltip:Show() elseif GameTooltip then GameTooltip:SetOwner(c,'ANCHOR_RIGHT');GameTooltip:SetText(c.dropHint:GetText()) end end))
+        addon:SetUIScript(c,'OnEnter',self:HelpGuard(function() if selected and GameTooltip then GameTooltip:SetOwner(c,'ANCHOR_RIGHT');GameTooltip:SetHyperlink(provider.kind..':'..selected);GameTooltip:AddLine(provider.kind=='item' and L['Search or drag an item here'] or L['Search or drag a spell here']);GameTooltip:Show() elseif GameTooltip then GameTooltip:SetOwner(c,'ANCHOR_RIGHT');GameTooltip:SetText(c.dropHint:GetText()) end end))
         addon:SetUIScript(c,'OnLeave',function() if GameTooltip and GameTooltip:IsOwned(c) then GameTooltip:Hide() end end)
         local function drop()
             if type(GetCursorInfo)~='function' then return end
@@ -273,7 +299,7 @@ function addon:CreateSettingsForm(parent)
         end
         swatch.picker=swatch.picker or addon:CreateWorkbenchColorPicker(self.frame)
         local token=self.generation
-        addon:SetUIScript(swatch,'OnEnter',self:Guard(function() swatch.art:SetColorTexture(values.r,values.g,values.b,values.a) end));addon:SetUIScript(swatch,'OnLeave',self:Guard(function() swatch.art:SetColorTexture(values.r,values.g,values.b,values.a) end))
+        addon:SetUIScript(swatch,'OnEnter',self:HelpGuard(function() swatch.art:SetColorTexture(values.r,values.g,values.b,values.a) end));addon:SetUIScript(swatch,'OnLeave',self:HelpGuard(function() swatch.art:SetColorTexture(values.r,values.g,values.b,values.a) end))
         addon:SetUIScript(swatch,'OnClick',self:Guard(function() if self:FlushEdits() then swatch.picker:Open(values,self:Guard(function(r,g,b,a) values={r=r,g=g,b=b,a=a};for channel,c in pairs(controls) do c:SetText(string.format('%.3f',values[channel]));records[channel].baseline=c:GetText();records[channel].dirty=false end;swatch.art:SetColorTexture(r,g,b,a);changed({r=r,g=g,b=b,a=a}) end),function() return self:Valid(token) end,swatch) end end))
         self.cleanups[#self.cleanups+1]=function() if swatch.picker.frame:IsShown() then swatch.picker:Close(true) end end
         return swatch
@@ -287,7 +313,7 @@ function addon:CreateSettingsForm(parent)
         for _,cleanup in ipairs(self.cleanups) do cleanup() end;self.cleanups={}
         for _,list in pairs(self.pool) do for _,control in ipairs(list) do control:Hide() end end
         self.creationUsed=false;self.creationUsedForNew=false;self.counts={};self.fields={};self.edits={};if self.ResetLayout then self:ResetLayout() end;self.y=4;self.width=math.max(340,math.min(760,self.frame:GetWidth()-40));self.child:SetWidth(self.width)
-        self.builder(self);if self.DraftActions then self:DraftActions() end;if not self.creationUsedForNew then self.creationBaseline=nil;self.creationApply=nil end;self.child:SetHeight(self.y+12);self.scroll:UpdateWorkbenchScroll()
+        self.builder(self);if self.DraftActions then self:DraftActions() end;self:BindHelpBriefs();if not self.creationUsedForNew then self.creationBaseline=nil;self.creationApply=nil end;self.child:SetHeight(self.y+12);self.scroll:UpdateWorkbenchScroll()
     end
     function p:Open(builder)
         if self.checkStockObservationOwner then self.checkStockObservationOwner()end

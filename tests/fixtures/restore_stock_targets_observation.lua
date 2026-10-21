@@ -976,6 +976,7 @@ end
 ]====]},
 }
 return function(text,path)
+ if path=='UI/settings_form.lua'and text:find('function p:HelpGuard',1,true)then text=dofile('tests/fixtures/restore_help_combined.lua')(text,path)end
  local source=assert(sources[path],'unexpected stock observation module')
  assert(type(text)=='string'and text==source.current,'unrelated stock observation module delta')
  return source.old
