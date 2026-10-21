@@ -12,9 +12,12 @@ on:
 
 # a workflow is built up as jobs, and within these jobs are steps
 jobs:
+  validate:
+    uses: ./.github/workflows/checks.yml
 
   # "release" is a job, you can name it anything you want
   release:
+    needs: validate
 
     # we can run our steps on pretty much anything, but the "ubuntu-latest" image is a safe bet
     runs-on: ubuntu-latest
