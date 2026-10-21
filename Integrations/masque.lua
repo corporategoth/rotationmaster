@@ -4,6 +4,7 @@ local _,addon=...
 local status={state='disabled',reason='disabled',enabled=false}
 local bindSkinCallback
 local skinBusy=false
+local configNotifyBusy=false
 local function publish(window,state,reason)
  status={state=state,reason=reason,enabled=window and window.profile.preview_masque==true or false,
   version=window and window.masqueVersion,apiMinor=window and window.masqueMinor,nativeAcceptance='unverified',
@@ -157,6 +158,18 @@ local skinLinks=setmetatable({},{__mode='k'})
 local function notifySkin()
  pcall(function()local notify=addon.previewSkinChanged;if type(notify)=='function'then notify()end end)
 end
+-- An external options setter does not invalidate AceConfig's cached widgets.
+-- Notify only the separately installed provider's existing registry, on a user
+-- skin action. No GUI library is bundled or loaded by this optional refresh.
+local function notifyMasqueOptions()
+ if configNotifyBusy then return end
+ configNotifyBusy=true
+ pcall(function()
+  local registry=LibStub('AceConfigRegistry-3.0',true)
+  if type(registry)=='table'and type(registry.NotifyChange)=='function'then registry:NotifyChange('Masque')end
+ end)
+ configNotifyBusy=false
+end
 local function refreshSkin(provider,group,disabled)
  local window=addon.nextWindow
  if not window or not window:Valid()or window.profile.preview_masque~=true or not rawequal(window.masqueProvider,provider)or not rawequal(window.masqueGroup,group)then return true end
@@ -287,7 +300,7 @@ function addon:GetPreviewSkin()
  return ok and id or defaultSkin
 end
 function addon:SetPreviewSkin(id)
- if not rawequal(self,addon)or skinBusy then return false end
+ if not rawequal(self,addon)or skinBusy or configNotifyBusy then return false end
  skinBusy=true;local context
  local ok,changed=pcall(function()
   context=skinContext();if not context or context.disabled or not validSkin(context,id)then return false end
@@ -303,5 +316,6 @@ function addon:SetPreviewSkin(id)
   if not context.valid()or not rawequal(context.window.masqueProvider,context.provider)or not rawequal(context.window.masqueGroup,context.group)then return false end
  end
  if not refreshSkin(context.provider,context.group)or not context.valid()then return false end
+ notifyMasqueOptions();if not context.valid()then return false end
  notifySkin();return true
 end

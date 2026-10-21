@@ -126,4 +126,36 @@ test('Disabled read retirement prevents setter writes and failed reads preserve 
  q.group.GetOptions=function()error('private disabled read')end;current:Configure()
  assert(current.icons[1].texture:IsShown()and not current.icons[1].masqueSurface:IsShown(),'failed read revived known disabled skin')
 end)
+test('RM skin changes notify the loaded Masque settings UI after saving the provider selection',function()
+ local f,a,p=fixture();local lib=f.env.LibStub;local notices=0;local displayed='Blizzard Classic';local registry={}
+ registry.NotifyChange=function(self,name)
+  assert(self==registry and name=='Masque');notices=notices+1;displayed=a:GetPreviewSkin()
+ end
+ f.env.LibStub=function(name,silent)if name=='AceConfigRegistry-3.0'then assert(silent);return registry end;return lib(name,silent)end
+ assert(a:SetPreviewSkin('Round')and p:selected()=='Round'and displayed=='Round'and notices==1)
+ a:GetPreviewSkin();a:GetPreviewSkinChoices();assert(not a:SetPreviewSkin('missing')and notices==1)
+end)
+test('absent malformed or throwing optional settings notifier preserves a saved skin',function()
+ for _,kind in ipairs({'absent','malformed','throws'})do
+  local f,a,p=fixture();local lib=f.env.LibStub
+  f.env.LibStub=function(name,silent)
+   if name=='AceConfigRegistry-3.0'then
+    assert(silent);if kind=='malformed'then return{NotifyChange=false}elseif kind=='throws'then return{NotifyChange=function()error('notification')end}end
+    return nil
+   end
+   return lib(name,silent)
+  end
+  assert(a:SetPreviewSkin('Round')and p:selected()=='Round',kind)
+ end
+end)
+test('settings notification may read current skin but cannot recursively change it',function()
+ local f,a,p=fixture();local lib=f.env.LibStub;local notices=0
+ f.env.LibStub=function(name,silent)
+  if name=='AceConfigRegistry-3.0'then return{NotifyChange=function()
+   notices=notices+1;assert(a:GetPreviewSkin()=='Round');assert(a:SetPreviewSkin('Square')==false)
+  end}end
+  return lib(name,silent)
+ end
+ assert(a:SetPreviewSkin('Round')and p:selected()=='Round'and notices==1)
+end)
 finish()
