@@ -429,6 +429,8 @@ def main():
             ['luajit', 'tests/defaults_priest_20_29.lua'],
             ['lua5.1', 'tests/defaults_priest_30_39.lua'],
             ['luajit', 'tests/defaults_priest_30_39.lua'],
+            ['lua5.1', 'tests/defaults_priest_40_49.lua'],
+            ['luajit', 'tests/defaults_priest_40_49.lua'],
             ['lua5.1', 'tests/defaults_warrior.lua'],
             ['luajit', 'tests/defaults_warrior.lua'],
             ['lua5.1', 'tests/defaults_warrior_20_29.lua'],

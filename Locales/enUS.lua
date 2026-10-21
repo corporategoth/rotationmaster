@@ -2745,6 +2745,8 @@ L['Help.Integrations.preview_masque'] = "Enable separately installed Masque here
 
 L["Default.TBC.Priest.Shadow30.Name"] = "Priest: Shadow leveling (30–39)"
 L["Default.TBC.Priest.Shadow30.Description"] = "Bounded Shadow-oriented solo preview; learned spells and native readiness remain authoritative. Choose channels and wand manually; healing and resources remain manual."
+L["Default.TBC.Priest.Shadow40.Name"] = "Priest: Shadow leveling (40–49)"
+L["Default.TBC.Priest.Shadow40.Description"] = "Bounded Shadow-oriented solo preview; learned spells and native readiness remain authoritative. Choose channels and wand manually; healing and resources remain manual."
 
 
 L["History"] = true

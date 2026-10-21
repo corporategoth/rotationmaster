@@ -31,7 +31,7 @@ end
 local modules={'globals.lua','Libs/LibStub/LibStub.lua','Libs/AceLocale-3.0/AceLocale-3.0.lua','Locales/enUS.lua',
  'Data/plain.lua','Data/rotation_revision.lua','Data/tags.lua','Data/rotation_tree.lua','Data/validation.lua','Data/catalog.lua','Data/diff.lua','Core/rotation_library.lua','Core/imports.lua'}
 function M.build()
- local a,env={RotationData={}},{ }
+ local a,env={RotationData={},Platform={}},{ }
  -- Only configured enUS selection is supplied to AceLocale. No game locale,
  -- player fact, metadata/provider or recommendation callback is observed.
  for _,k in ipairs({'assert','error','getmetatable','setmetatable','rawget','rawset','rawequal','type','pairs','ipairs','next','tonumber','tostring','unpack','select','pcall','xpcall','math','string','table','getfenv','setfenv'})do env[k]=_G[k]end
