@@ -363,6 +363,7 @@ function addon:EvaluateNextActionInternal()
 ]========]}}}}
 local function hash(s)local n=5381;for i=1,#s do n=(n*33+s:byte(i))%4294967296 end;return string.format('%08x',n)end
 return function(text,path)
+ if path=='Data/rotation_store.lua' and text:find("-- Preserve public-reader admission",1,true) then text=dofile('tests/fixtures/restore_runtime_store_native_gate.lua')(text,path) end
  local row=rows[path];if not row then return text end
  assert(#text==row.bytes and hash(text)==row.hash,'unrelated publication-store source: '..path)
  for _,change in ipairs(row.changes)do

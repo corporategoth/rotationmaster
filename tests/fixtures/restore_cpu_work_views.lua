@@ -178,6 +178,7 @@ end
 }
 local function hash(s)local h=0;for i=1,#s do h=(h*33+s:byte(i))%4294967296 end;return string.format('%08x',h)end
 return function(text,path)
+ if path=='Data/rotation_store.lua' and text:find("-- Preserve public-reader admission",1,true) then text=dofile('tests/fixtures/restore_runtime_store_native_gate.lua')(text,path) end
  -- Callers may already have removed the accepted publication/event changes.
  -- Admit only these exact current or normalized whole modules, never an arbitrary skip.
  local accepted={['Data/rotation_store.lua']={41494,'8a0fe0d0',36975,'1801f0e3'},['main.lua']={86781,'5c9d4420',84322,'7185fab1'}}
