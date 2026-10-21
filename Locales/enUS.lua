@@ -2777,6 +2777,11 @@ L["Default.TBC.Shaman.Enhancement40.Description"] = "Bounded TBC solo Enhancemen
 L["Default.TBC.Warlock.Forties.Name"] = "TBC Warlock 40–49 single-target preview"
 L["Default.TBC.Warlock.Forties.Description"] = "Bounded Affliction-oriented preview with learned Siphon Life; proc priorities, talents, pets and resources remain manual."
 
+-- Explicit unscored advice/native-preview receipt coverage.
+L['Advice/presentation rows describe observed delivery boundaries only; ordinary-cast proof: not available.'] = true
+L['Coverage rows: advice=%d presentation=%d visible=%d hidden=%d unknown=%d retired=%d (not opportunities).'] = true
+L['Visible means RM-owned preview frame state at a delivery boundary; it does not prove perception or native pixel rendering.'] = true
+
 -- BEGIN GENERATED RM PUBLIC HELPER DOCS
 L["Absolute health target (negative means deficit) or percentage fraction."] = true
 L["All original results, preserving nil positions and return count."] = true

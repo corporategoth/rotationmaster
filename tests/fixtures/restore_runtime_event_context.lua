@@ -163,6 +163,7 @@ local runtimeContextEvents={PLAYER_LEVEL_UP=true,UNIT_LEVEL=true,PLAYER_ENTERING
 ]====]}}}}
 local function hash(s)local n=5381;for i=1,#s do n=(n*33+s:byte(i))%4294967296 end;return string.format('%08x',n)end
 return function(text,path)
+ if path=='main.lua'and text:find('-- BEGIN ANALYTICS ADVICE HANDOFF',1,true)then text=dofile('tests/fixtures/restore_analytics_preview_delivery.lua')(text,path)end
  text=dofile('tests/fixtures/restore_runtime_publication_store.lua')(text,path)
  if path=='main.lua'and text:find('local function registerOptionalEvent(owner,change,event)',1,true)then text=dofile('tests/fixtures/restore_event_registration.lua')(text,path)end
  local r=rows[path];if not r then return text end

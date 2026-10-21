@@ -69,7 +69,7 @@ local function report(snapshot)
  local lines={L['Rotation Master cast receipt diagnostics'],
   L['Producer: UNIT_SPELLCAST adapter'],
   L['Native acceptance: unverified'],
-  L['Advice: not available; presentation: not available; ordinary-cast proof: not available.'],
+  snapshot.advice=='primary-publisher-receipts'and L['Advice/presentation rows describe observed delivery boundaries only; ordinary-cast proof: not available.']or L['Advice: not available; presentation: not available; ordinary-cast proof: not available.'],
   L['Scoring: unavailable'],
   L['Rotation attribution: unavailable; capture seconds are not encounter seconds.'],
   L['Damage: unavailable (no damage observations or encounter denominator).'],
@@ -85,9 +85,13 @@ local function report(snapshot)
  lines[#lines+1]=string.format(L['Duration: %s seconds'],number(trace.duration))
  lines[#lines+1]=string.format(L['Records: %d'],#rows)
  local attempts,results=0,0
+ local coverage={advice=0,presentation=0,visible=0,hidden=0,unknown=0,retired=0}
  local counts={sent=0,start=0,success=0,failed=0,interrupted=0,stop=0,channel=0,unmodeled=0}
  for _,row in ipairs(rows)do
   local signal
+  if row.type=='advice'then coverage.advice=coverage.advice+1
+  elseif row.type=='retire'then coverage.retired=coverage.retired+1
+  elseif row.type=='presentation'then coverage.presentation=coverage.presentation+1;local state=token(row.state,{visible=true,hidden=true,unknown=true});coverage[state]=coverage[state]+1 end
   if row.type=='attempt'then attempts=attempts+1;signal=row.phase
   elseif row.type=='result'then results=results+1;signal=row.status end
   if type(signal)=='string'and signals[signal]then counts[signal]=counts[signal]+1 end
@@ -98,10 +102,22 @@ local function report(snapshot)
  lines[#lines+1]=L['Counts describe receipt rows, not gameplay opportunities.']
  lines[#lines+1]=string.format(L['Receipt signals: sent=%d start=%d success=%d failed=%d interrupted=%d stop=%d'],counts.sent,counts.start,counts.success,counts.failed,counts.interrupted,counts.stop)
  lines[#lines+1]=string.format(L['Receipt kinds: channel=%d unmodeled=%d'],counts.channel,counts.unmodeled)
+ if snapshot.advice=='primary-publisher-receipts'then
+  lines[#lines+1]=string.format(L['Coverage rows: advice=%d presentation=%d visible=%d hidden=%d unknown=%d retired=%d (not opportunities).'],coverage.advice,coverage.presentation,coverage.visible,coverage.hidden,coverage.unknown,coverage.retired)
+  lines[#lines+1]=L['Visible means RM-owned preview frame state at a delivery boundary; it does not prove perception or native pixel rendering.']
+ end
  for i=1,math.min(#rows,200)do
   local row=rows[i]
+  if row.type=='advice'then
+   lines[#lines+1]=string.format('seq=%s time=%s advice action=%s spell=%s epoch=%s',number(row.seq),number(row.time),token(row.action,{spell=true,unmodeled=true,none=true,unknown=true}),number(row.spell),number(row.epoch))
+  elseif row.type=='presentation'then
+   lines[#lines+1]=string.format('seq=%s time=%s presentation adviceSeq=%s state=%s',number(row.seq),number(row.time),number(row.adviceSeq),token(row.state,{visible=true,hidden=true,unknown=true}))
+  elseif row.type=='retire'then
+   lines[#lines+1]=string.format('seq=%s time=%s retire reason=%s',number(row.seq),number(row.time),token(row.reason,reasons))
+  else
   local kind=token(row.type,{attempt=true,result=true})
   lines[#lines+1]=string.format('seq=%s time=%s %s actor=%s cast=%s spell=%s kind=%s signal=%s',number(row.seq),number(row.time),kind,token(row.actor,actors),number(row.cast),number(row.spell),token(row.castKind,kinds),token(row.phase or row.status,signals))
+  end
  end
  if #rows>200 then lines[#lines+1]=string.format(L['Rows omitted: %d'],#rows-200)end
  return table.concat(lines,'\n')

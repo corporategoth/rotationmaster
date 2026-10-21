@@ -11,6 +11,25 @@ analytics.NativeCasts=service
 local active,last,frame,methods,unusable,cleaning
 local generation,retiring,resourceCalls=0,0,0
 local phase,reason='idle',nil
+-- BEGIN ANALYTICS PREVIEW HANDOFF
+-- Two fixed source producers, consumed during normal TOC startup. No listeners.
+local installAdvice,installPreview,armed
+function addon:BindAnalyticsAdviceCapture(install)
+ if not rawequal(self,addon)or installAdvice or type(install)~='function'then return false end
+ installAdvice=install;addon.BindAnalyticsAdviceCapture=nil;return true
+end
+function addon:BindAnalyticsPreviewCapture(install)
+ if not rawequal(self,addon)or installPreview or type(install)~='function'then return false end
+ installPreview=install;addon.BindAnalyticsPreviewCapture=nil;return true
+end
+local function disarm(s)
+ if armed~=s then return end
+ armed=nil
+ if installAdvice then installAdvice(nil)end
+ if installPreview then installPreview(nil)end
+ s.advice=nil
+end
+-- END ANALYTICS PREVIEW HANDOFF
 local castEvents={
  UNIT_SPELLCAST_SENT=true,UNIT_SPELLCAST_START=true,UNIT_SPELLCAST_STOP=true,
  UNIT_SPELLCAST_SUCCEEDED=true,UNIT_SPELLCAST_FAILED=true,UNIT_SPELLCAST_INTERRUPTED=true,
@@ -52,7 +71,7 @@ end
 local function wrapper(s,status,why,capture)
  return{format=1,producer='UNIT_SPELLCAST-adapter',status=status,reason=why,
   client=copy(s.client or{}),tupleContract='wow-ui-source:2cfec7c00f0f24762d5ca35a4beb1e93c0cde328:UnitDocumentation',
-  nativeAcceptance='unverified',runtimeVerified=false,advice='not-wired',presentation='not-wired',ordinary='unavailable',autorepeat='unassociated',damage='unavailable',capture=capture}
+  nativeAcceptance='unverified',runtimeVerified=false,advice=s.adviceProducer and'primary-publisher-receipts'or'not-wired',presentation=s.previewProducer and'owned-native-preview-boundaries'or'not-wired',ordinary='unavailable',autorepeat='unassociated',damage='unavailable',capture=capture}
 end
 -- Only this frame's original methods and this operation's exact script may be
 -- removed. Failed release makes the singleton unusable rather than leaking frames.
@@ -96,6 +115,9 @@ local function settle()
  if not active and not cleaning and retiring==0 then phase=unusable and'unusable'or'idle'end
 end
 local function retire(s)
+ -- BEGIN ANALYTICS PREVIEW RETIRE
+ disarm(s)
+ -- END ANALYTICS PREVIEW RETIRE
  s.phase='stopping'
  if rawequal(active,s)then active=nil end
  phase='stopping'
@@ -153,6 +175,81 @@ local function stop(s,why)
  phase=unusable and'unusable'or'idle';reason=last.reason
  retiring=retiring-1;settle();return copy(last)
 end
+-- BEGIN ANALYTICS PREVIEW RECEIPTS
+local function pushEvidence(s,row)
+ local seq,why=s.builder:Push(s.builderLease,s.elapsed,row);fence(s)
+ if active~=s or s.phase~='running'then fail('retired-operation')end
+ if not seq then fail(why or'builder-error')end
+ return seq
+end
+local function retireEvidence(s)
+ local a=s.advice
+ clock(s)
+ if not rawequal(s.advice,a)then return end
+ s.advice=nil;s.epoch=(s.epoch or 1)+1
+ pushEvidence(s,{type='retire',reason='context'})
+end
+local function checkAdvice(s)
+ local a=s.advice
+ if not a then return end
+ local valid=call(s,a.current)
+ if not rawequal(s.advice,a)then return end
+ if valid~=true then retireEvidence(s);return end
+ if a.visible then
+  local visible=call(s,a.visible)
+  if not rawequal(s.advice,a)then return end
+  if visible~='visible'then retireEvidence(s)end
+ end
+end
+local function producer(s,event,window,witness,kind,spell)
+ if active~=s or s.phase~='running'then return end
+ local ok,why=pcall(function()
+  if event=='retire'then
+   if s.advice and(window==nil or rawequal(window,s.advice.window))then retireEvidence(s)end
+  elseif event=='advice'then
+   if type(witness)~='function'or call(s,witness)~=true then return end
+   clock(s);if call(s,witness)~=true then return end
+   local action=kind=='spell'and'spell'or'unmodeled'
+   if action=='spell'and(not finite(spell)or spell<=0 or spell%1~=0)then fail('invalid-receipt')end
+   local row={type='advice',epoch=s.epoch or 1,action=action};if action=='spell'then row.spell=spell end
+   local seq=pushEvidence(s,row)
+   s.advice={seq=seq,spell=spell,window=window,current=witness,action=action}
+  elseif event=='delivery'then
+   local a=s.advice
+   if not a or a.action~='spell'or not rawequal(a.window,window)or a.spell~=spell or a.ack then return end
+   local valid=call(s,a.current)
+   if not rawequal(s.advice,a)then return end
+   if valid~=true then retireEvidence(s);return end
+   local state=call(s,witness)
+   if not rawequal(s.advice,a)then return end
+   if state=='retired'then retireEvidence(s);return end
+   if state~='visible'and state~='hidden'then state='unknown'end
+   clock(s)
+   if not rawequal(s.advice,a)then return end
+   valid=call(s,a.current)
+   if not rawequal(s.advice,a)then return end
+   if valid~=true then retireEvidence(s);return end
+   -- Visibility callbacks may themselves retire a window or start a new poll.
+   local repeated=call(s,witness)
+   if not rawequal(s.advice,a)then return end
+   if repeated=='retired'then retireEvidence(s);return end
+   if repeated~=state then state='unknown'end
+   valid=call(s,a.current)
+   if not rawequal(s.advice,a)then return end
+   if valid~=true then retireEvidence(s);return end
+   pushEvidence(s,{type='presentation',adviceSeq=a.seq,state=state})
+   a.ack=true;if state=='visible'then a.visible=witness end
+  end
+ end)
+ if not ok and current(s)and active==s then abort(s,issue(why))end
+end
+local function arm(s)
+ if not installAdvice then return end
+ armed=s;s.previewProducer=installPreview~=nil;s.adviceProducer=true
+ local sink=function(...)producer(s,...)end
+ installAdvice(sink);if installPreview then installPreview(sink)end
+end
+-- END ANALYTICS PREVIEW RECEIPTS
 local function receipt(s,event,unit,key,spell)
  -- The lease check is before native readability or any payload operation.
  if not rawequal(active,s)or s.phase~='running'then return end
@@ -163,9 +260,12 @@ local function receipt(s,event,unit,key,spell)
   if spell==nil then spell=0 end
   if not finite(spell)or spell<0 or spell>2147483647 or spell%1~=0 then fail('invalid-payload')end
   clock(s)
+  -- BEGIN ANALYTICS PREVIEW ATTEMPT
+  checkAdvice(s)
+  -- END ANALYTICS PREVIEW ATTEMPT
   local r={key=key,actor='player',spell=spell,castKind='unmodeled'}
   if event=='UNIT_SPELLCAST_SENT'or event=='UNIT_SPELLCAST_START'or event=='UNIT_SPELLCAST_CHANNEL_START'then
-   r.type='attempt';r.epoch=1;r.phase=event=='UNIT_SPELLCAST_SENT'and'sent'or'start'
+   r.type='attempt';r.epoch=s.epoch or 1;r.phase=event=='UNIT_SPELLCAST_SENT'and'sent'or'start'
   else
    r.type='result'
    if event=='UNIT_SPELLCAST_SUCCEEDED'then r.status='success'
@@ -192,7 +292,7 @@ function service:Start(options)
  local s={generation=generation,lease={},phase='starting',elapsed=0};active=s;phase='starting'
  local ok,why=pcall(function()
   loadDependencies(s);clientInfo(s);s.started=clock(s)
-  s.builder=assert(newCapture());s.builderLease=assert(s.builder:Start({family='tbc',actor='player',ordinaryEvidence='unavailable',presentationEvidence='unavailable'}));fence(s)
+  s.builder=assert(newCapture());s.builderLease=assert(s.builder:Start({family='tbc',actor='player',ordinaryEvidence='unavailable',presentationEvidence=installAdvice and installPreview and'trusted-receipt'or'unavailable'}));fence(s)
   s.handler=function(_,event,unit,a,b,c)
    if not rawequal(active,s)or s.phase~='running'then return end
    local readable,problem=pcall(function()read(s,event);if type(event)~='string'then fail('invalid-payload')end end)
@@ -239,6 +339,9 @@ function service:Start(options)
   fence(s);if not success or handle==nil then fail('timer-failed')end
   if not rawequal(active,s)or s.phase~='starting'then fail('timer-before-commit')end
   s.phase='running';phase='running';reason=nil;last=nil
+  -- BEGIN ANALYTICS PREVIEW ARM
+  arm(s)
+  -- END ANALYTICS PREVIEW ARM
  end)
  if not ok then
   if current(s)then abort(s,issue(why))else cleanup(s);if s.builder then s.builder:Clear()end end
@@ -259,6 +362,9 @@ function service:Clear()
  if not rawequal(self,service)then return nil,'foreign-receiver'end
  generation=generation+1
  local s=active;active=nil;last=nil;reason=nil
+ -- BEGIN ANALYTICS PREVIEW CLEAR
+ if s then disarm(s)end
+ -- END ANALYTICS PREVIEW CLEAR
  if s then
   retiring=retiring+1;phase='stopping';cleanup(s);if s.builder then s.builder:Clear()end;retiring=retiring-1
  end

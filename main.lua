@@ -1,4 +1,10 @@
 local addon_name, addon = ...
+-- BEGIN ANALYTICS ADVICE HANDOFF
+local adviceCapture
+if addon.BindAnalyticsAdviceCapture then
+ addon:BindAnalyticsAdviceCapture(function(sink)adviceCapture=sink end)
+end
+-- END ANALYTICS ADVICE HANDOFF
 local activeCurrent=addon.IsActiveRotationTransitionCurrent
 local beginActive=addon.BeginActiveRotationTransition
 local advanceActiveSpec=addon.AdvanceActiveRotationSpecialization
@@ -893,6 +899,12 @@ end
 function addon:DisableRotation()
     local change=beginActive(self)
     if not activeChangeCurrent(self,change) then return nil,nil,false end
+    -- BEGIN ANALYTICS DISABLE
+    if adviceCapture then
+        adviceCapture("retire")
+        if not activeChangeCurrent(self,change) then return nil,nil,false end
+    end
+    -- END ANALYTICS DISABLE
     local selected=self.currentRotation
     if not retireActive(self,change) or not activeChangeCurrent(self,change) then return nil,nil,false end
     if not selected then return nil,change,true end
@@ -982,6 +994,12 @@ end
 function addon:StopAdviceForError(reportId)
     local change=beginActive(self)
     if not activeChangeCurrent(self,change) then return end
+    -- BEGIN ANALYTICS ERROR
+    if adviceCapture then
+        adviceCapture("retire")
+        if not activeChangeCurrent(self,change) then return end
+    end
+    -- END ANALYTICS ERROR
     self.adviceErrorReport = reportId
     if not retireActive(self,change) or not activeChangeCurrent(self,change) then return end
     self.currentSpell = nil
@@ -1151,6 +1169,12 @@ function addon:EvaluateNextActionInternal()
             local ordinal=preview
             stage(function()
                 if ordinal==1 then
+                    -- BEGIN ANALYTICS PRIMARY ADVICE
+                    if adviceCapture then
+                        adviceCapture("advice",previewWindow,current,cond.type,spellid)
+                        if not current() then return end
+                    end
+                    -- END ANALYTICS PRIMARY ADVICE
                     self.currentSpell=spellid
                     if not addon:IsGlowing(spellid,itemId) then
                         if not current() then return end
@@ -1182,6 +1206,9 @@ function addon:EvaluateNextActionInternal()
         end
         if preview==0 then
             stage(function()
+                -- BEGIN ANALYTICS EMPTY ADVICE
+                if adviceCapture then adviceCapture("retire");if not current() then return end end
+                -- END ANALYTICS EMPTY ADVICE
                 self.currentSpell=nil
                 if not self.db.profile.disable_buttons then addon:GlowClear() end
                 if not current() then return end

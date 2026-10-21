@@ -1,5 +1,15 @@
 local addon_name,addon=...
 local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
+-- BEGIN ANALYTICS PREVIEW HANDOFF
+local previewCapture
+local previewEnvironment=getfenv(1)
+local previewType,previewRaw=type,rawget
+---@type any
+local previewFunctionEnvironment=getfenv
+if addon.BindAnalyticsPreviewCapture then
+ addon:BindAnalyticsPreviewCapture(function(sink)previewCapture=sink end)
+end
+-- END ANALYTICS PREVIEW HANDOFF
 local sampleProfile
 local sampleTextures={'Interface\\Icons\\Spell_Fire_FlameBolt','Interface\\Icons\\Spell_Frost_FrostBolt02',
     'Interface\\Icons\\Spell_Nature_Lightning','Interface\\Icons\\Spell_Holy_Heal','Interface\\Icons\\INV_Misc_QuestionMark'}
@@ -33,6 +43,7 @@ function addon:CreateNativePreviewWindow()
         window.grip=CreateFrame('Button',nil,frame);window.grip:SetSize(12,12);window.grip:SetPoint('BOTTOMRIGHT',0,0)
         local grip=window.grip:CreateTexture(nil,'OVERLAY');grip:SetAllPoints(window.grip);grip:SetTexture('Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Up')
         function window:Valid() return self.active and addon.db.profile==self.profile and addon.nextWindow==self end
+        local nativeValid=window.Valid
         function window:EnsureIcon(index)
             local icon=self.icons[index]
             if not icon then icon=CreateFrame('Button',nil,self.frame);icon.texture=icon:CreateTexture(nil,'ARTWORK');icon.texture:SetAllPoints(icon);icon:Hide();self.icons[index]=icon end
@@ -113,12 +124,18 @@ function addon:CreateNativePreviewWindow()
             local size=math.abs(x-self.iconSize)>=math.abs(y-self.iconSize) and x or y
             self.profile.preview_icon_size=math.floor(clamp(size,24,160,64)+.5);self:Configure()
         end
+        local nativeAddRecommendation
         function window:AddRecommendation(spellId,itemId)
             if not self:Valid() or self.count>=self.slots then return end
             if (self.sampleCount or 0)>0 then self:ClearSampleIcons() end
             self.count=self.count+1;local index=self.count
             ---@type any
             local icon=self:EnsureIcon(index)
+            local captureGeneration,captureProfile,captureFrame,captureIcons,captureTexture
+            if previewCapture then
+                captureGeneration,captureProfile=self.generation,self.profile
+                captureFrame,captureIcons,captureTexture=self.frame,self.icons,icon.texture
+            end
             local info
             if itemId then info=addon.Platform:GetItemDisplayInfo(itemId) else info=addon.Platform:GetSpellInfo(spellId) end
             icon.spellId,icon.itemId=spellId,itemId;icon.texture:SetTexture(info and info.iconID or 'Interface\\Icons\\INV_Misc_QuestionMark')
@@ -130,12 +147,58 @@ function addon:CreateNativePreviewWindow()
             end)
             addon:SetUIScript(icon,'OnLeave',function() if GameTooltip and GameTooltip:IsOwned(icon) then GameTooltip:Hide() end end)
             icon:Show();self:DoLayout()
+            -- BEGIN ANALYTICS PREVIEW DELIVERY
+            if previewCapture and index==1 and self.AddRecommendation==nativeAddRecommendation then
+                local owner,profile,generation=self,captureProfile,captureGeneration
+                local frame,icons,texture=captureFrame,captureIcons,captureTexture
+                local frameVisible,iconVisible,textureGet,displayId,observed
+                -- Pure captured-state checks run again after every native read.
+                -- Initial property reads are inside the collector's protected call.
+                local function eligible()
+                    return owner.Valid==nativeValid and previewFunctionEnvironment(nativeAddRecommendation)==previewEnvironment
+                        and nativeValid(owner) and owner.profile==profile and owner.generation==generation
+                        and owner.AddRecommendation==nativeAddRecommendation and owner.frame==frame and owner.icons==icons
+                        and icons[1]==icon and icon.texture==texture and not icon.sample and icon.spellId==spellId
+                        and icon.itemId==nil and itemId==nil and previewType(info)=='table'
+                        and previewType(displayId)=='number' and displayId==displayId and displayId>0 and displayId<math.huge
+                        and previewRaw(info,'iconID')==displayId and frame.IsVisible==frameVisible and icon.IsVisible==iconVisible
+                        and previewType(frameVisible)=='function' and previewType(iconVisible)=='function'
+                        and texture.GetTexture==textureGet and previewType(textureGet)=='function'
+                end
+                previewCapture("delivery",self,function()
+                    if not observed then
+                        frameVisible,iconVisible,textureGet=frame.IsVisible,icon.IsVisible,texture.GetTexture
+                        if previewType(info)=='table' then displayId=previewRaw(info,'iconID') end
+                        observed=true
+                    end
+                    if not eligible() then return 'retired' end
+                    local frameShown,iconShown=frameVisible(frame),iconVisible(icon)
+                    local rendered=textureGet(texture)
+                    if not eligible() or rendered~=displayId then return 'retired' end
+                    if frameShown==true and iconShown==true then return 'visible' end
+                    if frameShown==false or iconShown==false then return 'hidden' end
+                    return 'unknown'
+                end,nil,spellId)
+            end
+            -- END ANALYTICS PREVIEW DELIVERY
         end
+        nativeAddRecommendation=window.AddRecommendation
         function window:PauseLayout() self.sampleBatch=true;if (self.sampleCount or 0)>0 then self:ClearSampleIcons() end end
         function window:ResumeLayout() self.sampleBatch=false;if sampleProfile==self.profile then self:PaintSamples() end end
         function window:Show() if self:Valid() then self.frame:Show() end end
-        function window:Hide() self.frame:Hide() end
-        function window:Release() if sampleProfile==self.profile then sampleProfile=nil end;self.sampleBatch=false;self:ReleaseChildren();self.active=false;self.frame:StopMovingOrSizing();self.frame:Hide();if addon.ReleaseMasquePreview then addon:ReleaseMasquePreview(self) end end
+        function window:Hide()
+            if previewCapture then
+                local generation,profile=self.generation,self.profile;previewCapture("retire",self)
+                if self.generation~=generation or self.profile~=profile then return end
+            end
+            self.frame:Hide()
+        end
+        function window:Release()
+            if previewCapture then
+                local generation,profile=self.generation,self.profile;previewCapture("retire",self)
+                if self.generation~=generation or self.profile~=profile then return end
+            end
+            if sampleProfile==self.profile then sampleProfile=nil end;self.sampleBatch=false;self:ReleaseChildren();self.active=false;self.frame:StopMovingOrSizing();self.frame:Hide();if addon.ReleaseMasquePreview then addon:ReleaseMasquePreview(self) end end
         function window:SetWidth(width) self:Resize(width,self.frame:GetHeight()) end
         function window:SetHeight(height) self:Resize(self.frame:GetWidth(),height) end
         function window:ClearAllPoints() self.frame:ClearAllPoints() end
