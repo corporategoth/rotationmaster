@@ -178,6 +178,8 @@ end
 }
 local function hash(s)local h=0;for i=1,#s do h=(h*33+s:byte(i))%4294967296 end;return string.format('%08x',h)end
 return function(text,path)
+ -- Compose accepted publication/event deltas before the unchanged historical module proofs.
+ if path=='Data/rotation_store.lua' or path=='main.lua' then text=dofile('tests/fixtures/restore_runtime_event_context.lua')(text,path) end
  if path=='Data/rotation_store.lua' then text=dofile('tests/fixtures/restore_rotation_store_schema_maps.lua')(text) end
  if path=='Diagnostics/cpu.lua' then text=dofile('tests/fixtures/restore_analytics_disable.lua')(text,path) end
  if path=='main.lua' then text=dofile('tests/fixtures/restore_questie_wiring.lua')(text,path) end

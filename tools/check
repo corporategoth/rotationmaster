@@ -145,6 +145,8 @@ def main():
             ['lua5.1', 'tests/declaration_schema.lua'],
             ['lua5.1', 'tests/catalog.lua'],
             ['lua5.1', 'tests/diagnostics.lua'],
+            ['lua5.1', 'tests/cpu_store_string_shape.lua'],
+            ['luajit', 'tests/cpu_store_string_shape.lua'],
             ['lua5.1', 'tests/cpu.lua'],
             ['luajit', 'tests/cpu.lua'],
             ['lua5.1', 'tests/private_cache_cpu.lua'],

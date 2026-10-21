@@ -80,6 +80,33 @@ local function readable(value)
  if type(canaccessvalue)=='function' then local ok,allowed=pcall(canaccessvalue,value);if not ok or not allowed then return false end end
  return true
 end
+-- BEGIN COLD STORE STRING SHAPE
+-- Current observations only: cached constructor identities/admission stay private.
+local function storeStringShape()
+ local ok,text=proofPcall(function()
+  local meta=getmetatable('');if not readable(meta) then return 'unavailable' end
+  local index;if proofType(meta)=='table' then index=proofRawget(meta,'__index') end
+  if not readable(index) then return 'unavailable' end
+  local find;if proofType(index)=='table' then find=proofRawget(index,'find') end
+  if not readable(find) then return 'unavailable' end
+  local repeated=getmetatable('');if not readable(repeated) then return 'unavailable' end
+  local repeatedIndex;if proofType(repeated)=='table' then repeatedIndex=proofRawget(repeated,'__index') end
+  if not readable(repeatedIndex) then return 'unavailable' end
+  return 'meta='..proofType(meta)..'; index='..proofType(index)..'; raw-find='..proofType(find)
+   ..'; repeat-meta='..(cacheSourceEqual(meta,repeated) and '1' or '0')
+   ..'; repeat-index='..(cacheSourceEqual(index,repeatedIndex) and '1' or '0')
+ end)
+ return ok and text or 'unavailable'
+end
+local function appendStoreStringShape(report,started,ended)
+ local lines={'Store string shape start: '..(started or 'unavailable'),'Store string shape end: '..ended,
+  'Necessary shape only: table/table/function and stable reads; does not prove private-store use or cached factory identities/admission.'}
+ local bytes=#report-1;for _,line in ipairs(report) do bytes=bytes+#line end
+ local extra=#lines;for _,line in ipairs(lines) do extra=extra+#line end
+ if bytes+extra<16000 then for _,line in ipairs(lines) do report[#report+1]=line end
+ else local omitted='Store string shape omitted to keep report bounded.';if bytes+1+#omitted<16000 then report[#report+1]=omitted end end
+end
+-- END COLD STORE STRING SHAPE
 local function finite(value) return readable(value) and type(value)=='number' and value==value and value~=math.huge and value~=-math.huge end
 local function counter(value,integer) return finite(value) and value>=0 and (not integer or value%1==0) end
 local function field(owner,key) if type(owner)=='table' then return rawget(owner,key) end end
@@ -825,6 +852,11 @@ local function finish(run,status,reason)
    appendWorkViews(report,run,finishSample)
    if workEntered and not workState.current() then workClear(run);return end
    -- END RUNTIME WORK APPENDIX
+   -- BEGIN COLD STORE STRING END
+   local shapeEntered=workState and workState.current()
+   appendStoreStringShape(report,run.storeStringShape,storeStringShape())
+   if shapeEntered and not workState.current() then workClear(run);return end
+   -- END COLD STORE STRING END
    text=table.concat(report,'\n')
   end
  end
@@ -893,6 +925,12 @@ function addon:StartCPUProfile(duration)
  -- BEGIN STANDALONE PREVIEW START
  if active==run then run.previewContext=standalonePreviewContext(self) end
  -- END STANDALONE PREVIEW START
+ -- BEGIN COLD STORE STRING START
+ if active==run then
+  run.storeStringShape=storeStringShape()
+  if active~=run then return true end
+ end
+ -- END COLD STORE STRING START
  return true
 end
 function addon:CancelCPUProfile()
