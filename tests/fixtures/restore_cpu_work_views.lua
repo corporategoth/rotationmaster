@@ -178,8 +178,14 @@ end
 }
 local function hash(s)local h=0;for i=1,#s do h=(h*33+s:byte(i))%4294967296 end;return string.format('%08x',h)end
 return function(text,path)
- -- Compose accepted publication/event deltas before the unchanged historical module proofs.
- if path=='Data/rotation_store.lua' or path=='main.lua' then text=dofile('tests/fixtures/restore_runtime_event_context.lua')(text,path) end
+ -- Callers may already have removed the accepted publication/event changes.
+ -- Admit only these exact current or normalized whole modules, never an arbitrary skip.
+ local accepted={['Data/rotation_store.lua']={41494,'8a0fe0d0',36975,'1801f0e3'},['main.lua']={86781,'5c9d4420',84322,'7185fab1'}}
+ local input=accepted[path]
+ if input then
+  if #text==input[1] and hash(text)==input[2] then text=dofile('tests/fixtures/restore_runtime_event_context.lua')(text,path)
+  else assert(#text==input[3] and hash(text)==input[4],'unexpected current or normalized runtime work source: '..path) end
+ end
  if path=='Data/rotation_store.lua' then text=dofile('tests/fixtures/restore_rotation_store_schema_maps.lua')(text) end
  if path=='Diagnostics/cpu.lua' then text=dofile('tests/fixtures/restore_analytics_disable.lua')(text,path) end
  if path=='main.lua' then text=dofile('tests/fixtures/restore_questie_wiring.lua')(text,path) end

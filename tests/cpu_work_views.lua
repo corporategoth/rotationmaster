@@ -203,4 +203,18 @@ test('three whole module inverses reject old unknown and unrelated module mutati
  assert(not pcall(inverse,'','unknown'))
 end)
 
+test('current and already-normalized modules compose identically without applying inverses twice',function()
+ local inverse=dofile('tests/fixtures/restore_cpu_work_views.lua')
+ local normalize=dofile('tests/fixtures/restore_runtime_event_context.lua')
+ for _,path in ipairs({'Data/rotation_store.lua','main.lua'})do
+  local current=read(path);local prior=normalize(current,path)
+  assert(inverse(current,path)==inverse(prior,path),'historical route mismatch: '..path)
+  assert(not pcall(inverse,prior..'-- unrelated\n',path),'normalized mutation accepted')
+ end
+end)
+test('actual current main fixture initializes after historical preparation for both target states',function()
+ local make=dofile('tests/fixtures/rotation_execution.lua')
+ for _,target in ipairs({false,true})do local c=make({target=target});c.tick();assert(not c.a.adviceErrorReport,'actual main failed');assert(#c.a.Diagnostics:GetReports()==0)end
+end)
+
 finish()
