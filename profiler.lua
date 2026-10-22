@@ -2,10 +2,10 @@ local _, addon = ...
 
 local string, pairs, protect, kind = string, pairs, pcall, type
 local function clock()
-    if kind(GetTimePreciseSec)=='function' then return GetTimePreciseSec,1,'GetTimePreciseSec' end
-    if kind(debugprofilestop)=='function' then return debugprofilestop,.001,'debugprofilestop' end
-    if kind(GetTime)=='function' then return GetTime,1,'GetTime (coarse)' end
-    return nil,1,'missing clock'
+    if kind(GetTimePreciseSec)=='function' then return GetTimePreciseSec,1 end
+    if kind(debugprofilestop)=='function' then return debugprofilestop,.001 end
+    if kind(GetTime)=='function' then return GetTime,1 end
+    return nil,1
 end
 local function readClock(fn)
     if not fn then return end
@@ -20,7 +20,7 @@ local function Constructor(enabled)
         return {total=0,count=0,min=0,max=0,startTime=0,children={},start=noop,stop=noop,report=noop,reset=noop,child=nopChild}
     end
     -- Resolve capability once per profiler, never probe/reset a shared clock.
-    local timer,scale,label=clock()
+    local timer,scale=clock()
     local rv = {
         -- Public numeric timing fields remain seconds for existing consumers.
         total = 0.0,
@@ -58,8 +58,8 @@ local function Constructor(enabled)
                 if self.unavailable>0 then return string.format('0 measured runs; %d unavailable',self.unavailable)end
                 return
             end
-            local rv=string.format('%d runs (inclusive): total=%.3f ms, min=%.3f ms, avg=%.3f ms, max=%.3f ms [clock=%s]',
-                self.count,self.total*1000,self.min*1000,(self.total/self.count)*1000,self.max*1000,label)
+            local rv=string.format('%d runs (inclusive): total=%.3f ms, min=%.3f ms, avg=%.3f ms, max=%.3f ms',
+                self.count,self.total*1000,self.min*1000,(self.total/self.count)*1000,self.max*1000)
             if self.unavailable>0 then rv=rv..string.format('; %d unavailable',self.unavailable)end
             if full then
                 local parts={}
