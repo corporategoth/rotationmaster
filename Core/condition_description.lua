@@ -112,12 +112,12 @@ local function describeData(value,definitions,units)
         if count>200 or depth>16 then truncated=true;return '...' end
         if node==nil or type(node)=='table' and next(node)==nil then return negated and L['Always false'] or L['Always'] end
         if type(node)~='table' then reference=true;return L['Choose a condition'] end
-        local text
+        local text,groupType
         if node.type=='NOT' then
             if type(node.value)~='table' then
                 text=L['NOT']..' ('..L['Incomplete condition group: choose its conditions.']..')'
                 if negated then text=L['NOT']..' ('..text..')' end
-            else text=render(node.value,depth+1,not negated) end
+            else text,groupType=render(node.value,depth+1,not negated) end
         elseif node.type=='AND' or node.type=='OR' then
             local size=type(node.value)=='table' and denseSize(node.value)
             if not size then text=L['Incomplete condition group: choose its conditions.']
@@ -126,14 +126,15 @@ local function describeData(value,definitions,units)
                 for index=1,size do
                     if count>=200 then truncated=true;parts[#parts+1]='...';break end
                     local child=node.value[index]
-                    local part=render(child,depth+1,false)
-                    if type(child)=='table' and (child.type=='AND' or child.type=='OR') and child.type~=node.type then part='('..part..')' end
+                    local part,childType=render(child,depth+1,false)
+                    if childType and childType~=node.type then part='('..part..')' end
                     parts[#parts+1]=part
                 end
                 if #parts==0 then text=node.type=='AND' and L['Always (empty All group)'] or L['Never (empty Any group)']
                 else text=table.concat(parts,' '..L[node.type]..' ') end
             end
             if negated then text=L['NOT']..' ('..text..')' end
+            if not negated then groupType=node.type end
         else
             local definition=definitionFor(node,definitions)
             text=projected(node,definition,negated)
@@ -156,7 +157,7 @@ local function describeData(value,definitions,units)
         end
         if type(node.name)=='string' and node.name~='' then text=node.name:sub(1,512)..': '..text end
         if node.disabled then text=L['Disabled']..': '..text end
-        return bounded(text)
+        return bounded(text),groupType
     end
     local text=render(value,0,false):gsub('|','||')
     return text,truncated,reference

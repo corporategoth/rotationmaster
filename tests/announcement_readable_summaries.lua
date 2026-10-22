@@ -32,6 +32,7 @@ test('data-only Boolean groups use infix words and preserve mixed group scope',f
  assert(a:DescribeCondition({type='OR',value={friendly,dead}},0)=='Announcement target is friendly OR Announcement target is dead or a ghost')
  assert(a:DescribeCondition({type='AND',value={friendly,{type='OR',value={dead,combat}}}},0)=='Announcement target is friendly AND (Announcement target is dead or a ghost OR Announcement target is in combat)')
  assert(a:DescribeCondition({type='OR',value={{type='AND',value={friendly,dead}},combat}},0)=='(Announcement target is friendly AND Announcement target is dead or a ghost) OR Announcement target is in combat')
+ assert(a:DescribeCondition({type='AND',value={friendly,{type='NOT',value={type='NOT',value={type='OR',value={dead,combat}}}}}},0)=='Announcement target is friendly AND (Announcement target is dead or a ghost OR Announcement target is in combat)')
  f.translations.AND='ET';assert(a:DescribeCondition({type='AND',value={friendly,dead}},0)=='Announcement target is friendly ET Announcement target is dead or a ghost')
 end)
 test('actual announcement unit flags and Group raid mode use readable declared semantics',function()
