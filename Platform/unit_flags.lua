@@ -1,10 +1,14 @@
 local _,addon=...
 local platform=addon.Platform
+local function readClientPolicy(current)return current:GetClientInfo().combatDataPolicy end
+---@type fun(...): any
+local consumeClientPolicy=addon.ConsumeClientPolicyReader
+if type(consumeClientPolicy)=='function' then readClientPolicy=consumeClientPolicy(addon) end
 
 -- Closed flag kinds preserve the existing native query and selected unit.
 -- Only readable false existence establishes absence; required unknowns do not.
 function platform:GetUnitFlagObservation(unit,kind)
-    if self:GetClientInfo().combatDataPolicy~='probe' then return nil,'unsupported-policy' end
+    if readClientPolicy(self)~='probe' then return nil,'unsupported-policy' end
     if not self:CanReadValue(unit) or not self:CanReadValue(kind) then return nil,'restricted-value' end
     if type(unit)~='string' or unit=='' then return nil,'invalid-unit' end
     if kind~='combat' and kind~='enemy' and kind~='pvp' then return nil,'invalid-unit-flag-query' end
@@ -34,6 +38,7 @@ end
 do
     local function sourceGetter(name)
         if name=="Platform_GetUnitFlagObservation" then return addon.Platform.GetUnitFlagObservation end
+        if name=="readClientPolicy" then return readClientPolicy end
     end
     if addon.RegisterBuiltinSourceModule then
         addon:RegisterBuiltinSourceModule("Platform/unit_flags.lua", sourceGetter)

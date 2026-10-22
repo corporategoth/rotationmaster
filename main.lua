@@ -2,6 +2,7 @@ local addon_name, addon = ...
 -- Capture the compatibility override once. Managed rotations use the prepared
 -- executor; unsupported/custom sources retain the eager compatibility path.
 local preparedRuntimeEnabled = addon.preparedRuntimeEnabled ~= false
+local publicationRawget,publicationType,publicationMetatable=rawget,type,getmetatable
 addon.BindRotationExecutionGeneration=nil
 -- BEGIN ANALYTICS ADVICE HANDOFF
 local adviceCapture
@@ -1381,45 +1382,54 @@ function addon:EvaluateNextActionInternal()
                 local enabled_items = {}
                 local disabled_cooldowns = {}
                 for _,observation in ipairs(observations) do
-                    if not current() then return end
-                    local id,cond=observation.id,observation.condition
-                    local spellid,enabled,itemId=observation.spellid,observation.enabled,observation.itemId
-                    local previous=addon.avail_announced[cond.id]
-                    if previous and (previous~=spellid or not enabled) and not enabled_cooldowns[previous] then
-                        disabled_cooldowns[previous]=cond
-                    end
-                    if spellid then
-                        if enabled then
-                            addon:verbose("Cooldown %d [%s] is enabled", id, cond.id)
-                            if addon.avail_announced[cond.id] ~= spellid then
-                                if not addon.skipAnnounce then
-                                    local link = spellLink(spellid)
-                                    addon:DispatchAnnouncement(cond, string.format(L["%s is now available!"], link))
+                    -- A missing observation with no prior announcement has no
+                    -- publication side effect. Decide at delivery, after the
+                    -- earlier publishers, and retain ordinary accessor dispatch.
+                    local announced=publicationRawget(addon,'avail_announced')
+                    local inactive=conditionSession and observation.spellid==nil
+                        and publicationType(announced)=='table' and publicationMetatable(announced)==nil
+                        and publicationRawget(announced,observation.condition.id)==nil
+                    if not inactive then
+                        if not current() then return end
+                        local id,cond=observation.id,observation.condition
+                        local spellid,enabled,itemId=observation.spellid,observation.enabled,observation.itemId
+                        local previous=addon.avail_announced[cond.id]
+                        if previous and (previous~=spellid or not enabled) and not enabled_cooldowns[previous] then
+                            disabled_cooldowns[previous]=cond
+                        end
+                        if spellid then
+                            if enabled then
+                                addon:verbose("Cooldown %d [%s] is enabled", id, cond.id)
+                                if addon.avail_announced[cond.id] ~= spellid then
+                                    if not addon.skipAnnounce then
+                                        local link = spellLink(spellid)
+                                        addon:DispatchAnnouncement(cond, string.format(L["%s is now available!"], link))
+                                    end
+                                    if not current() then return end
+                                    addon.avail_announced[cond.id] = spellid;
+                                    AceEvent:SendMessage("ROTATIONMASTER_COOLDOWN_UPDATE", self.currentRotation, id, cond.id, cond.type, spellid)
+                                    if not current() then return end
                                 end
-                                if not current() then return end
-                                addon.avail_announced[cond.id] = spellid;
-                                AceEvent:SendMessage("ROTATIONMASTER_COOLDOWN_UPDATE", self.currentRotation, id, cond.id, cond.type, spellid)
-                                if not current() then return end
-                            end
-                            if not enabled_cooldowns[spellid] then
-                                enabled_cooldowns[spellid] = cond
-                                enabled_items[spellid] = itemId
-                                disabled_cooldowns[spellid] = nil
+                                if not enabled_cooldowns[spellid] then
+                                    enabled_cooldowns[spellid] = cond
+                                    enabled_items[spellid] = itemId
+                                    disabled_cooldowns[spellid] = nil
+                                end
+                            else
+                                if addon.avail_announced[cond.id] then
+                                    addon.avail_announced[cond.id] = nil;
+                                    AceEvent:SendMessage("ROTATIONMASTER_COOLDOWN_UPDATE", self.currentRotation, id, cond.id, nil)
+                                end
+                                addon:verbose("Cooldown %d [%s] is disabled", id, cond.id)
+                                if not enabled_cooldowns[spellid] then
+                                    disabled_cooldowns[spellid] = cond
+                                end
                             end
                         else
                             if addon.avail_announced[cond.id] then
                                 addon.avail_announced[cond.id] = nil;
                                 AceEvent:SendMessage("ROTATIONMASTER_COOLDOWN_UPDATE", self.currentRotation, id, cond.id, nil)
                             end
-                            addon:verbose("Cooldown %d [%s] is disabled", id, cond.id)
-                            if not enabled_cooldowns[spellid] then
-                                disabled_cooldowns[spellid] = cond
-                            end
-                        end
-                    else
-                        if addon.avail_announced[cond.id] then
-                            addon.avail_announced[cond.id] = nil;
-                            AceEvent:SendMessage("ROTATIONMASTER_COOLDOWN_UPDATE", self.currentRotation, id, cond.id, nil)
                         end
                     end
                 end

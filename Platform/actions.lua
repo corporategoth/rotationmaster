@@ -1,5 +1,9 @@
 local _,addon=...
 local platform=addon.Platform
+local function readClientPolicy(current)return current:GetClientInfo().combatDataPolicy end
+---@type fun(...): any
+local consumeClientPolicy=addon.ConsumeClientPolicyReader
+if type(consumeClientPolicy)=='function' then readClientPolicy=consumeClientPolicy(addon) end
 
 local function spellID(id)
     if not platform:CanReadValue(id) then return nil,"restricted-value" end
@@ -110,7 +114,7 @@ end
 -- operate a button or infer unavailable combat/target data.
 function platform:IsMeleeAttackNeeded(unit)
     if not self:CanReadValue(unit) or type(unit)~="string" or unit=="" then return nil,"invalid-unit" end
-    if self:GetClientInfo().combatDataPolicy~="probe" then return nil,"unsupported-policy" end
+    if readClientPolicy(self)~="probe" then return nil,"unsupported-policy" end
     local function boolean(fn,...)
         local value,reason=call(fn,...)
         if reason then return nil,reason end

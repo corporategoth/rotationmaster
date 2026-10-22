@@ -44,6 +44,7 @@ local function retired() return false end
 local function acquire(owner,spec,key)
     if owner~=addon then return nil,nil,nil,false end
     if not identity(raw(owner,'currentSpec'),spec) or not identity(raw(owner,'currentRotation'),key) then declined=declined+1;currentRoute='retired';return nil,retired,nil,true end
+    local db=raw(owner,'db');local profile=kind(db)=='table' and raw(db,'profile')
     local ticket={};request=ticket
     local handle,revision,operation
     if kind(readActive)=='function' then handle,revision,operation=readActive(owner,spec,key) end
@@ -71,8 +72,18 @@ local function acquire(owner,spec,key)
     local selected=plan;local state=selected.entry()
     if not requestCurrent() or executionGeneration==nil or readExecutionGeneration()~=executionGeneration then declined=declined+1;currentRoute='retired';return nil,retired,nil,true end
     if not state then plan=nil;declined=declined+1;currentRoute='fallback';return nil,nil,nil,false end
+    local function continuationCurrent()
+        return request==ticket and plan==selected and readExecutionGeneration()==executionGeneration
+            and raw(owner,'db')==db and kind(db)=='table' and raw(db,'profile')==profile
+            and identity(raw(owner,'currentSpec'),spec) and identity(raw(owner,'currentRotation'),key)
+    end
     local function current()
-        return requestCurrent() and identity(plan,selected) and consumers(owner) and selected.current(state)
+        if not continuationCurrent() or not consumers(owner) or not continuationCurrent() then return false end
+        -- Scope's full proof ends with one callback-free active snapshot. Use
+        -- it for both request and scope authority, then reject late reentry.
+        local valid,activeHandle,activeRevision,activeOperation=selected.current(state)
+        return continuationCurrent() and valid and identity(activeHandle,handle)
+            and activeRevision==revision and identity(activeOperation,operation)
     end
     if not identity(plan,selected) or not consumers(owner) then declined=declined+1;currentRoute='retired';return nil,current,nil,true end
     if not built then reused=reused+1 end

@@ -1,10 +1,14 @@
 local _,addon=...
 local platform=addon.Platform
+local function readClientPolicy(current)return current:GetClientInfo().combatDataPolicy end
+---@type fun(...): any
+local consumeClientPolicy=addon.ConsumeClientPolicyReader
+if type(consumeClientPolicy)=='function' then readClientPolicy=consumeClientPolicy(addon) end
 
 -- Attackability keeps the native player attacker and selected unit. A known
 -- false at either early stage needs no later fact; unknown data cannot match.
 function platform:GetUnitAttackabilityObservation(unit)
-    if self:GetClientInfo().combatDataPolicy~='probe' then return nil,'unsupported-policy' end
+    if readClientPolicy(self)~='probe' then return nil,'unsupported-policy' end
     if not self:CanReadValue(unit) then return nil,'restricted-value' end
     if type(unit)~='string' or unit=='' then return nil,'invalid-unit' end
     if type(UnitExists)~='function' then return nil,'missing-api' end
@@ -34,6 +38,7 @@ end
 do
     local function sourceGetter(name)
         if name=="Platform_GetUnitAttackabilityObservation" then return addon.Platform.GetUnitAttackabilityObservation end
+        if name=="readClientPolicy" then return readClientPolicy end
     end
     if addon.RegisterBuiltinSourceModule then
         addon:RegisterBuiltinSourceModule("Platform/unit_attackability.lua", sourceGetter)

@@ -53,6 +53,44 @@ function platform:GetClientInfo()
 end
 
 local ownedClientInfo=platform.GetClientInfo
+-- Private policy consumers need no locale/build/season/rules snapshot. The
+-- public getter above keeps its complete fresh result and callback behavior.
+local policyType,policyRawget,policyEqual,policyProtect=type,rawget,rawequal,pcall
+local policySecret,policyAccess=issecretvalue,canaccessvalue
+---@type fun(f:number|function):table
+local policyGetfenv=getfenv
+local policyEnvironment
+if policyType(policyGetfenv)=='function' then
+    local ok,value=policyProtect(policyGetfenv,ownedClientInfo)
+    if ok and policyType(value)=='table' then policyEnvironment=value end
+end
+local function readCombatPolicy(current)
+    -- Preserve the predecessor's one public method lookup, including accessors.
+    local method=current.GetClientInfo
+    if not policyEqual(current,platform) or method~=ownedClientInfo or policyRawget(current,'GetClientInfo')~=ownedClientInfo
+        or not policyEnvironment
+        or type~=policyType or not policyEqual(issecretvalue,policySecret) or not policyEqual(canaccessvalue,policyAccess) then
+        return method(current).combatDataPolicy
+    end
+    local ok,value=policyProtect(policyGetfenv,ownedClientInfo)
+    if not ok or policyType(value)~='table' or not policyEqual(value,policyEnvironment) then
+        return method(current).combatDataPolicy
+    end
+    local project=primitive(WOW_PROJECT_ID)
+    if type(project)~='number' then return 'unsupported' end
+    local constant
+    constant=WOW_PROJECT_CAMELOT;if type(constant)=='number' and project==constant then return 'restricted' end
+    constant=WOW_PROJECT_MAINLINE;if type(constant)=='number' and project==constant then return 'restricted' end
+    constant=WOW_PROJECT_CLASSIC;if type(constant)=='number' and project==constant then return 'probe' end
+    constant=WOW_PROJECT_BURNING_CRUSADE_CLASSIC;if type(constant)=='number' and project==constant then return 'probe' end
+    constant=WOW_PROJECT_MISTS_CLASSIC;if type(constant)=='number' and project==constant then return 'probe' end
+    constant=WOW_PROJECT_CATACLYSM_CLASSIC;if type(constant)=='number' and project==constant then return 'probe' end
+    constant=WOW_PROJECT_WRATH_CLASSIC;if type(constant)=='number' and project==constant then return 'probe' end
+    return 'unsupported'
+end
+function addon:ConsumeClientPolicyReader()
+    if self==addon then return readCombatPolicy end
+end
 -- One-time private handoff. Public client metadata keeps its complete shape.
 function addon:BindRotationClientReader(bind)
     if type(bind)~='function' then return nil,'invalid-client-reader-binder' end

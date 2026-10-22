@@ -283,6 +283,10 @@ local pins={
  ["buttons.lua"]={28024,"0d983d17"},
 }
 return function(text,path)
+ if path=='buttons.lua'then
+  text=dofile('tests/fixtures/restore_overlay_animation_dirty.lua')(text,path)
+  if text:find('local publishActivePresentation=',1,true)then text=dofile('tests/fixtures/restore_active_runtime_plan.lua')(text,path)end
+ end
  local pin=assert(pins[path],'unknown retained-activity inverse path')
  for _,block in ipairs(blocks[path]) do
   local a,b=text:find(block,1,true);assert(a,'retained activity block changed: '..path);assert(not text:find(block,b+1,true),'duplicate retained activity block')

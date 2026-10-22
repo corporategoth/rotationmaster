@@ -5,6 +5,11 @@
 -- This file has been heavily modified from the original.  It is no longer compatible with the original.
 
 local addon_name, addon = ...
+local function readClientPolicy(current)return current:GetClientInfo().combatDataPolicy end
+---@type fun(...): any
+local consumeClientPolicy=addon.ConsumeClientPolicyReader
+if type(consumeClientPolicy)=='function' then readClientPolicy=consumeClientPolicy(addon) end
+addon.ConsumeClientPolicyReader=nil
 -- The active-plan receiver is consumed before any library callback. Only the
 -- literal cooldown publisher below may qualify its private presentation route.
 ---@type fun(...): any
@@ -118,21 +123,90 @@ function addon:ApplyCustomGlow(effect, frame, id, color, xoffs, yoffs)
 	end
 end
 
+local function InvalidateOverlay(frame)
+    frame.rmOverlayGeneration=(frame.rmOverlayGeneration or 0)+1
+    frame.rmOverlayDirty=true
+    frame.rmOverlayParent=nil
+end
+
 local function UpdateOverlayRaw(frame, effect, color, mags, setp, xoffs, yoffs, angle)
-	frame:ClearAllPoints()
-	frame:SetPoint("CENTER", frame:GetParent(), setp, xoffs, yoffs)
-	frame:SetWidth(frame:GetParent():GetWidth() * (mags or 1.0))
-	frame:SetHeight(frame:GetParent():GetHeight() * (mags or 1.0))
-	frame.texture:SetVertexColor(color.r, color.g, color.b, color.a)
-	if effect then
-		frame.texture:SetTexture(effect)
-	end
-	if angle then
-		frame.texture:SetRotation(angle)
-	end
+    local generation=frame.rmOverlayGeneration
+    -- Native size scripts can alter any earlier render channel. These frames
+    -- keep the complete legacy write path; sample the script each tick so late
+    -- registration is covered without an observer or new subscription.
+    local sizeScript=frame:GetScript('OnSizeChanged')~=nil
+    local parent=frame:GetParent()
+    if frame.rmOverlayGeneration~=generation then return false end
+    local dirty=frame.rmOverlayDirty~=false or sizeScript
+    if dirty or frame.rmOverlayParent~=parent or frame.rmOverlayPoint~=setp
+        or frame.rmOverlayX~=xoffs or frame.rmOverlayY~=yoffs then
+        -- Native geometry setters may synchronously alter later geometry or
+        -- paint channels. Keep the remainder of this invocation on the legacy
+        -- write path; only stable geometry can skip unchanged paint channels.
+        dirty=true
+        frame:ClearAllPoints()
+        if frame.rmOverlayGeneration~=generation then return false end
+        parent=frame:GetParent()
+        if frame.rmOverlayGeneration~=generation then return false end
+        frame:SetPoint("CENTER",parent,setp,xoffs,yoffs)
+        if frame.rmOverlayGeneration~=generation then return false end
+        frame.rmOverlayParent,frame.rmOverlayPoint=parent,setp
+        frame.rmOverlayX,frame.rmOverlayY=xoffs,yoffs
+        -- Anchor setters can invoke native callbacks which reparent the frame.
+        parent=frame:GetParent()
+        if frame.rmOverlayGeneration~=generation then return false end
+    end
+    local sizeChanged=false
+    local width=parent:GetWidth() * (mags or 1.0)
+    if frame.rmOverlayGeneration~=generation then return false end
+    if dirty or frame.rmOverlayWidth~=width then
+        dirty=true
+        frame:SetWidth(width)
+        if frame.rmOverlayGeneration~=generation then return false end
+        sizeChanged=true
+        parent=frame:GetParent()
+        if frame.rmOverlayGeneration~=generation then return false end
+    end
+    -- Size setters can dispatch native OnSizeChanged callbacks. Read later
+    -- inputs only after those callbacks, just as the original renderer did.
+    local height=parent:GetHeight() * (mags or 1.0)
+    if frame.rmOverlayGeneration~=generation then return false end
+    if dirty or frame.rmOverlayHeight~=height then
+        dirty=true
+        frame:SetHeight(height)
+        if frame.rmOverlayGeneration~=generation then return false end
+        sizeChanged=true
+    end
+    if sizeChanged then
+        -- A size callback can change either dimension again. Cache the final
+        -- native dimensions so the next tick corrects any request disagreement.
+        frame.rmOverlayWidth,frame.rmOverlayHeight=frame:GetWidth(),frame:GetHeight()
+        if frame.rmOverlayGeneration~=generation then return false end
+    end
+    local r,g,b,a=color.r,color.g,color.b,color.a
+    if frame.rmOverlayGeneration~=generation then return false end
+    if dirty or frame.rmOverlayR~=r or frame.rmOverlayG~=g or frame.rmOverlayB~=b or frame.rmOverlayA~=a then
+        frame.texture:SetVertexColor(r,g,b,a)
+        if frame.rmOverlayGeneration~=generation then return false end
+        frame.rmOverlayR,frame.rmOverlayG,frame.rmOverlayB,frame.rmOverlayA=r,g,b,a
+    end
+    if effect and (dirty or frame.rmOverlayTexture~=effect) then
+        frame.texture:SetTexture(effect)
+        if frame.rmOverlayGeneration~=generation then return false end
+        frame.rmOverlayTexture=effect
+    end
+    if angle and (dirty or frame.rmOverlayAngle~=angle) then
+        frame.texture:SetRotation(angle)
+        if frame.rmOverlayGeneration~=generation then return false end
+        frame.rmOverlayAngle=angle
+    end
+    -- Leave a final repaint pending after the script is removed.
+    frame.rmOverlayDirty=sizeScript
+    return true
 end
 
 local function StopOverlay(frame)
+	InvalidateOverlay(frame)
 	if frame.sequenceTimer then
 		addon:CancelTimer(frame.sequenceTimer)
 		frame.sequenceTimer = nil
@@ -154,8 +228,7 @@ end
 local function UpdateOverlay(frame, effect, color, mags, setp, xoffs, yoffs, angle)
 	local type =  effect.type
     if type == "texture" then
-        UpdateOverlayRaw(frame, effect.texture, color, mags, setp, xoffs, yoffs, angle)
-        return true
+        return UpdateOverlayRaw(frame, effect.texture, color, mags, setp, xoffs, yoffs, angle)
 	elseif type == "rotate" and effect.steps and effect.steps > 0 then
 		if frame.sequenceIdx then
 			frame.sequenceIdx = frame.sequenceIdx >= effect.steps and 1 or (frame.sequenceIdx + 1)
@@ -163,9 +236,9 @@ local function UpdateOverlay(frame, effect, color, mags, setp, xoffs, yoffs, ang
 			frame.sequenceIdx = 1
 		end
         if effect.reverse then
-            UpdateOverlayRaw(frame, effect.texture, color, mags, setp, xoffs, yoffs, ((2 * math.pi) / effect.steps * (effect.steps - (frame.sequenceIdx - 1))))
+            if not UpdateOverlayRaw(frame, effect.texture, color, mags, setp, xoffs, yoffs, ((2 * math.pi) / effect.steps * (effect.steps - (frame.sequenceIdx - 1)))) then return false end
 		else
-			UpdateOverlayRaw(frame, effect.texture, color, mags, setp, xoffs, yoffs, ((2 * math.pi) / effect.steps * (frame.sequenceIdx - 1)))
+			if not UpdateOverlayRaw(frame, effect.texture, color, mags, setp, xoffs, yoffs, ((2 * math.pi) / effect.steps * (frame.sequenceIdx - 1))) then return false end
         end
 		if not frame.sequenceTimer then
 			frame.sequenceTimer = addon:ScheduleRepeatingTimer(UpdateOverlay, effect.frequency or 0.25,
@@ -180,13 +253,13 @@ local function UpdateOverlay(frame, effect, color, mags, setp, xoffs, yoffs, ang
             frame.sequenceIdx = 1
         end
         if type == "dazzle" and effect.texture then
-			UpdateOverlayRaw(frame, effect.texture, sequence[frame.sequenceIdx], mags, setp, xoffs, yoffs, angle)
+			if not UpdateOverlayRaw(frame, effect.texture, sequence[frame.sequenceIdx], mags, setp, xoffs, yoffs, angle) then return false end
 		elseif type == "animate" then
-			UpdateOverlayRaw(frame, sequence[frame.sequenceIdx], color, mags, setp, xoffs, yoffs, angle)
+			if not UpdateOverlayRaw(frame, sequence[frame.sequenceIdx], color, mags, setp, xoffs, yoffs, angle) then return false end
 		elseif type == "pulse" and effect.texture then
-			UpdateOverlayRaw(frame, effect.texture, color, sequence[frame.sequenceIdx], setp, xoffs, yoffs, angle)
+			if not UpdateOverlayRaw(frame, effect.texture, color, sequence[frame.sequenceIdx], setp, xoffs, yoffs, angle) then return false end
 		elseif type == "custom" and sequence[frame.sequenceIdx].texture and sequence[frame.sequenceIdx].color and sequence[frame.sequenceIdx].magnification then
-			UpdateOverlayRaw(frame, sequence[frame.sequenceIdx].texture, sequence[frame.sequenceIdx].color, sequence[frame.sequenceIdx].magnification, setp, xoffs, yoffs, math.rad(sequence[frame.sequenceIdx].angle or 0))
+			if not UpdateOverlayRaw(frame, sequence[frame.sequenceIdx].texture, sequence[frame.sequenceIdx].color, sequence[frame.sequenceIdx].magnification, setp, xoffs, yoffs, math.rad(sequence[frame.sequenceIdx].angle or 0)) then return false end
 		else
             StopOverlay(frame)
 			return false
@@ -210,6 +283,7 @@ local function CreateOverlay(parent)
 	else
 		frame:SetParent(parent)
 	end
+	InvalidateOverlay(frame)
 
 	frame:SetFrameStrata(parent.GetFrameStrata and parent:GetFrameStrata() or 'HIGH')
     if frame.SetFrameLevel and parent.GetFrameLevel then frame:SetFrameLevel(parent:GetFrameLevel()+1) end
@@ -413,7 +487,7 @@ end
 -- without moving a slot or editing the macro. Observe known macro buttons on
 -- the existing recommendation cadence; never parse or execute macro bodies.
 function addon:RefreshMacroButtons()
-    if self.Platform:GetClientInfo().combatDataPolicy~='probe' then
+    if readClientPolicy(self.Platform)~='probe' then
         if next(Spells) then self:Fetch() end
         return
     end

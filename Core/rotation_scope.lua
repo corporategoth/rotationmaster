@@ -925,11 +925,10 @@ function addon:BindRotationProfile()
         local exposure=exposureVersion
         local function authority()
             local nextEpoch,nextDB,nextProfile,nextGlobal,nextDefs,nextRegistry,nextShared,nextPersonal,nextEffects,nextLibrary=runtimeAuthority(owner)
-            local activeHandle,activeRevision=readActiveRuntime(owner,spec,key)
             local libraryGeneration,libraryVersion=readLibraryRuntime()
-            return alive and current==coordinator and rawget(profile,'rotationStore')==state
+            if not (alive and current==coordinator and rawget(profile,'rotationStore')==state
                 and rawget(profile,'rotationFallbackID')==fallbackID and rawget(owner,'AcquireRotationRuntimePass')==ownedAcquireRuntimePass
-                and storeGetfenv(ownedAcquireRuntimePass)==storeScopeEnvironment and planDataCurrent(owner) and bindIdentity(activeHandle,handle) and activeRevision==revision
+                and storeGetfenv(ownedAcquireRuntimePass)==storeScopeEnvironment and planDataCurrent(owner)
                 and bindIdentity(nextEpoch,epoch) and bindIdentity(nextDB,db) and bindIdentity(nextProfile,p) and bindIdentity(nextGlobal,g)
                 and bindIdentity(nextDefs,defs) and bindIdentity(nextRegistry,registry) and bindIdentity(nextShared,shared)
                 and bindIdentity(nextPersonal,personal) and bindIdentity(nextEffects,effects) and bindIdentity(nextLibrary,libraryState)
@@ -938,7 +937,11 @@ function addon:BindRotationProfile()
                 and rawget(owner,'GetScopedRotationCoordinator')==ownedScopedCoordinator and rawget(coordinator,'Resolve')==ownedResolve and rawget(coordinator,'RuntimePass')==ownedPass
                 and rawget(owner,'GetRotationOwnerContext')==ownedOwnerContext and rawget(owner,'GetRotationContext')==ownedRuntimeContext
                 and rawget(owner,'Platform')==ownerPlatform and ownerPlatform and rawget(ownerPlatform,'CanReadValue')==ownedRuntimeReadValue
-                and rawget(ownerPlatform,'GetPlayerOwnerClassObservation')==ownerClass and guard()==true
+                and rawget(ownerPlatform,'GetPlayerOwnerClassObservation')==ownerClass and guard()==true) then return false end
+            -- The Store environment certificate can call a captured getter.
+            -- Snapshot active authority after it, never before that boundary.
+            local activeHandle,activeRevision,operation=readActiveRuntime(owner,spec,key)
+            return bindIdentity(activeHandle,handle) and activeRevision==revision,activeHandle,activeRevision,operation
         end
         if not authority() then return end
         local view={enabled=true,validation=asset.validation,applicability=asset.applicability}
@@ -969,9 +972,9 @@ function addon:BindRotationProfile()
             return {version=contextVersion,operation=operation,allowed=allowed==true,reason=reason}
         end
         local function currentEntry(value)
-            if not value or value.version~=contextVersion or not authority() then return false end
-            local _,_,operation=readActiveRuntime(owner,spec,key)
-            return bindIdentity(operation,value.operation)
+            if not value or value.version~=contextVersion then return false end
+            local valid,activeHandle,activeRevision,operation=authority()
+            return valid and bindIdentity(operation,value.operation),activeHandle,activeRevision,operation
         end
         local function conditionCurrent(value)
             if not value or value.version~=contextVersion or not alive or current~=coordinator
