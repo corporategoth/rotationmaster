@@ -2,6 +2,12 @@ local addon_name, addon = ...
 -- Capture the compatibility override once. Managed rotations use the prepared
 -- executor; unsupported/custom sources retain the eager compatibility path.
 local preparedRuntimeEnabled = addon.preparedRuntimeEnabled ~= false
+local initializeEvaluationProfiler,reportEvaluationProfiler
+local consumeProfilerPolicy=addon.ConsumeLegacyEvaluationProfilerPolicy
+if type(consumeProfilerPolicy)=='function'then
+    initializeEvaluationProfiler,reportEvaluationProfiler=consumeProfilerPolicy(addon)
+    addon.ConsumeLegacyEvaluationProfilerPolicy=nil
+end
 local publicationRawget,publicationType,publicationMetatable=rawget,type,getmetatable
 addon.BindRotationExecutionGeneration=nil
 -- BEGIN ANALYTICS ADVICE HANDOFF
@@ -653,7 +659,7 @@ function addon:OnInitializeInternal()
     self.itemSetCallback = nil
     self.bindingItemSet = nil
 
-    self.evaluationProfile = addon:ProfiledCode()
+    if initializeEvaluationProfiler then initializeEvaluationProfiler(self)else self.evaluationProfile = addon:ProfiledCode()end
 
     self.currentSpell = nil
     self.nextWindow = nil
@@ -1519,8 +1525,11 @@ function addon:EvaluateNextActionInternal()
 
     if GetTime() - self.lastCacheReport > 15 then
         addon.Functions.cache.ReportCacheStats(addon)
-        addon:debug("%s", self.evaluationProfile:report(self.db.profile.detailed_profiling))
-        self.evaluationProfile:reset()
+        if self.RefreshEvaluationProfilerPolicy then self:RefreshEvaluationProfilerPolicy()end
+        if not reportEvaluationProfiler or reportEvaluationProfiler(self)then
+            addon:debug("%s", self.evaluationProfile:report(self.db.profile.detailed_profiling))
+            self.evaluationProfile:reset()
+        end
         self.lastCacheReport = GetTime()
     end
 end

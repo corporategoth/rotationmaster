@@ -14,6 +14,7 @@ function addon:RefreshRotationProfileStorage()
     local ok,why=self:InitializeScopedRotationStorage()
     self.rotationStorageError=not ok and why or nil
     if self.InitializeRotationLibrary then self:InitializeRotationLibrary() end
+    if self.RefreshEvaluationProfilerPolicy then self:RefreshEvaluationProfilerPolicy()end
     if not ok and self.warn then self:warn(L['Rotation data requires recovery: %s'],why) end
     return ok,why
 end

@@ -137,7 +137,7 @@ function addon:BuildGeneralSettings(p)
     p:Heading(L['Debugging Options'])
     local logEntries={{value=4,text=self.loglevels[4]},{value=3,text=self.loglevels[3]},
         {value=2,text=self.loglevels[2]},{value=1,text=L['Silent']}}
-    p:Choice('loglevel',L['Log Level'],profile.loglevel or 2,logEntries,function(v) profile.loglevel=v;p:Draw() end)
+    p:Choice('loglevel',L['Log Level'],profile.loglevel or 2,logEntries,function(v) profile.loglevel=v;p:RunSettingsEffect('loglevel',function() if self.RefreshEvaluationProfilerPolicy then self:RefreshEvaluationProfilerPolicy()end end);p:Draw() end)
     local detail=p:Check('detailed_profiling',L['Detailed Profiling'],profile.detailed_profiling,function(v) profile.detailed_profiling=v end);if (profile.loglevel or 2)<3 then detail:Disable() end
     if self.GetCacheDiagnosticMode and self.SetCacheDiagnosticMode then
         local _,requested=self:GetCacheDiagnosticMode()

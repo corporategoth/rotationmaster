@@ -94,3 +94,53 @@ end
 function addon:ProfiledCode(enabled)
     return Constructor(enabled)
 end
+
+-- Main owns only roots built from this literal factory. Public nil remains FULL.
+local ownedFactory=addon.ProfiledCode
+local ownedRoot,ownedMode,ownedMethods,consumed
+local refreshVersion=0
+local methods={'start','stop','child','report','reset'}
+local function collecting(owner)
+    local level=owner.db and owner.db.profile and owner.db.profile.loglevel
+    return type(level)=='number'and level>=3
+end
+local function unmodified(owner)
+    if owner.evaluationProfile~=ownedRoot or not ownedRoot or owner.ProfiledCode~=ownedFactory then return false end
+    for _,name in ipairs(methods)do if ownedRoot[name]~=ownedMethods[name]then return false end end
+    return true
+end
+local function build(owner,mode,initial)
+    refreshVersion=refreshVersion+1;local version=refreshVersion
+    local before,db=owner.evaluationProfile,owner.db;local profile=db and db.profile
+    local factory=owner.ProfiledCode
+    if not initial and (not unmodified(owner)or mode==ownedMode)then return false end
+    if initial and factory~=ownedFactory then
+        -- Exact predecessor initialization for a foreign factory, including its
+        -- nil argument, callouts and returned root. Never claim ownership.
+        owner.evaluationProfile=factory(owner);return true
+    end
+    local root=factory(owner,mode)
+    if refreshVersion~=version or owner.evaluationProfile~=before or owner.db~=db or db.profile~=profile
+        or owner.ProfiledCode~=factory or collecting(owner)~=mode then return false end
+    owner.evaluationProfile=root
+    if factory==ownedFactory then
+        ownedRoot,ownedMode,ownedMethods=root,mode,{}
+        for _,name in ipairs(methods)do ownedMethods[name]=root[name]end
+    end
+    owner.lastCacheReport=GetTime()
+    return true
+end
+function addon:RefreshEvaluationProfilerPolicy()
+    if self~=addon then return false end
+    return build(self,collecting(self),false)
+end
+function addon:ConsumeLegacyEvaluationProfilerPolicy()
+    if self~=addon or consumed then return end;consumed=true
+    return function(owner)if owner==addon then return build(owner,collecting(owner),true)end end,
+        function(owner)
+            -- Foreign report/reset callbacks retain predecessor dispatch.
+            if not ownedRoot or owner.evaluationProfile~=ownedRoot or owner.ProfiledCode~=ownedFactory
+                or ownedRoot.report~=ownedMethods.report or ownedRoot.reset~=ownedMethods.reset then return true end
+            return collecting(owner)and ownedMode
+        end
+end
