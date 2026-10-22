@@ -84,6 +84,8 @@ def main():
             ['luajit', 'tests/main_namespaces.lua'],
             ['lua5.1', 'tests/main_unused_capture.lua'],
             ['luajit', 'tests/main_unused_capture.lua'],
+            ['lua5.1', 'tests/legacy_profiler.lua'],
+            ['luajit', 'tests/legacy_profiler.lua'],
             ['lua5.1', 'tests/profiler.lua'],
             ['lua5.1', 'tests/settings.lua'],
             ['lua5.1', 'tests/rangecheck.lua'],
