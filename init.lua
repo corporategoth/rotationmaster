@@ -317,7 +317,7 @@ local function cacheItems()
     updateRotationData(function(rot)
         if rot.type == "item" and rot.action ~= nil and type(rot.action) == "table" then
             for _,item in pairs(rot.action) do
-                GetItemInfo(item)
+                addon.Platform:GetItemDisplayInfo(item)
             end
         end
     end, function(cond)
@@ -326,7 +326,7 @@ local function cacheItems()
                 cond.type == "ITEM_RANGE" then
             if cond.item ~= nil and type(cond.item) == "table" then
                 for _,item in pairs(cond.item) do
-                    GetItemInfo(item)
+                    addon.Platform:GetItemDisplayInfo(item)
                 end
             end
         end
@@ -336,7 +336,7 @@ local function cacheItems()
         for _,itemset in pairs(addon.db.global.itemsets) do
             if itemset.items ~= nil then
                 for _,item in pairs(itemset.items) do
-                    GetItemInfo(item)
+                    addon.Platform:GetItemDisplayInfo(item)
                 end
             end
         end
@@ -345,7 +345,7 @@ local function cacheItems()
         for _,itemset in pairs(addon.db.profile.itemsets) do
             if itemset.items ~= nil then
                 for _,item in pairs(itemset.items) do
-                    GetItemInfo(item)
+                    addon.Platform:GetItemDisplayInfo(item)
                 end
             end
         end

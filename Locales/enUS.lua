@@ -2795,6 +2795,8 @@ L['Visible means RM-owned preview frame state at a delivery boundary; it does no
 
 L["Default.TBC.Mage.Forties.Name"] = "TBC Mage 40–49 Frost single-target preview"
 L["Default.TBC.Mage.Forties.Description"] = "Inherited bounded level 40–49 Frost single-target preview. Preserves manual armor; offers learned Mage, then Ice, then Frost Armor only when all are absent. Talents, kiting, emergency defenses and resources stay manual."
+L["Default.TBC.Mage.Fifties.Name"] = "TBC Mage 50–59 Frost single-target preview"
+L["Default.TBC.Mage.Fifties.Description"] = "Inherited bounded level 50–59 Frost single-target preview. Preserves manual armor; offers learned Mage, then Ice, then Frost Armor only when all are absent. Talents, kiting, emergency defenses and resources stay manual."
 L["Default.TBC.Warrior.Forty.Name"] = "TBC Warrior40–49 combat preview"
 L["Default.TBC.Warrior.Forty.Description"] = "Levels40–49: inherited melee preview with seven exact learned Heroic Strike queue guards. Stances, talents, reactive abilities and resources remain manual."
 L["Default.TBC.Paladin.Forty.Name"] = "TBC Paladin40–49 manual seal/aura preview"

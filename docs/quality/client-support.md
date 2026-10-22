@@ -22,6 +22,8 @@ Local release checks exercised the declared historical 11403, 30400 and 90207 pa
 
 The new Platform boundary records API declaration presence separately from readability. Native-assisted availability is probed independently; a declared function is not proof that the feature works for a character. `runtimeVerified=false` is deliberate until actual smoke evidence exists. The metadata boundary does not yet migrate every historical API call or select recommendation engines; old callers remain tracked modernization work.
 
+Cold item-cache warmup now uses the existing protected item-display adapter instead of directly requiring the legacy `GetItemInfo` global. Offline startup checks cover a modern `C_Item`-only surface, legacy fallback when the modern method is absent, and unavailable, restricted or failing metadata without blocking initialization. This advisory warmup does not alter combat-data policy. The installed Forever client's legacy alias availability, full OnEnable lifecycle, native event registration and gameplay remain unverified.
+
 Mode facts are raw: a season ID, hardcore flag, game-mode record and self-found-allowed flag describe different things. Self-found allowed must not become a claim that a character actively uses it. Missing metadata remains absent. Unknown projects keep an explicit unsupported policy rather than borrowing another family's rules.
 
 Current automated guards check Lua/load graph/vendor files, literal English keys and registered help/category metadata. They are not proof of optimal rotations, completed translations, client taint safety, or live API accessibility. Error-report redaction is best effort, with explicit original-text preview/copy; anonymized analytics/LLM exports remain deferred.
