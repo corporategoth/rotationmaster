@@ -21,7 +21,18 @@ test('safe Friendly and Dead negations read as negative predicates while compoun
   local node={type=pair[1],unit='announcementtarget'};assert(a:DescribeCondition({type='NOT',value=node},0)==pair[2]);assert(a:DescribeCondition({type='NOT',value={type='NOT',value=node}},0)==a:DescribeCondition(node,0))
  end
  local text=a:DescribeCondition({type='NOT',value={type='AND',value={{type='DEAD',unit='announcementtarget'},{type='FRIENDLY',unit='announcementtarget'}}}},0)
- assert(text:find('NOT (All (',1,true)and text:find('is dead or a ghost',1,true)and text:find('is friendly',1,true),text);noRaw(text)
+ assert(text=='NOT (Announcement target is dead or a ghost AND Announcement target is friendly)',text);noRaw(text)
+end)
+test('data-only Boolean groups use infix words and preserve mixed group scope',function()
+ local f,a=fixture();printTrap(a)
+ local friendly={type='FRIENDLY',unit='announcementtarget'}
+ local dead={type='DEAD',unit='announcementtarget'}
+ local combat={type='COMBAT',unit='announcementtarget'}
+ assert(a:DescribeCondition({type='AND',value={friendly,dead,combat}},0)=='Announcement target is friendly AND Announcement target is dead or a ghost AND Announcement target is in combat')
+ assert(a:DescribeCondition({type='OR',value={friendly,dead}},0)=='Announcement target is friendly OR Announcement target is dead or a ghost')
+ assert(a:DescribeCondition({type='AND',value={friendly,{type='OR',value={dead,combat}}}},0)=='Announcement target is friendly AND (Announcement target is dead or a ghost OR Announcement target is in combat)')
+ assert(a:DescribeCondition({type='OR',value={{type='AND',value={friendly,dead}},combat}},0)=='(Announcement target is friendly AND Announcement target is dead or a ghost) OR Announcement target is in combat')
+ f.translations.AND='ET';assert(a:DescribeCondition({type='AND',value={friendly,dead}},0)=='Announcement target is friendly ET Announcement target is dead or a ghost')
 end)
 test('actual announcement unit flags and Group raid mode use readable declared semantics',function()
  local _,a=fixture();printTrap(a)

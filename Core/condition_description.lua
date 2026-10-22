@@ -125,10 +125,13 @@ local function describeData(value,definitions,units)
                 local parts={}
                 for index=1,size do
                     if count>=200 then truncated=true;parts[#parts+1]='...';break end
-                    parts[#parts+1]=render(node.value[index],depth+1,false)
+                    local child=node.value[index]
+                    local part=render(child,depth+1,false)
+                    if type(child)=='table' and (child.type=='AND' or child.type=='OR') and child.type~=node.type then part='('..part..')' end
+                    parts[#parts+1]=part
                 end
                 if #parts==0 then text=node.type=='AND' and L['Always (empty All group)'] or L['Never (empty Any group)']
-                else text=(node.type=='AND' and L['All'] or L['Any'])..' ('..table.concat(parts,'; ')..')' end
+                else text=table.concat(parts,' '..L[node.type]..' ') end
             end
             if negated then text=L['NOT']..' ('..text..')' end
         else
