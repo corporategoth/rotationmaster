@@ -113,7 +113,7 @@ addon:RegisterCondition("PET_NAME", {
     end
 })
 
-addon:RegisterCondition("STEALTHED", {
+addon:RegisterCondition("STEALTHED", runtimeCondition('STEALTHED',{
     description = L["Stealth"],
     icon = addon.Artwork.condition["STEALTHED"],
     fields = { },
@@ -129,7 +129,7 @@ addon:RegisterCondition("STEALTHED", {
     help = function(frame)
         frame:AddChild(helpers.CreateText(L["Matches while the game reports your character as stealthed. It does not test whether an enemy can detect you."] ))
     end,
-})
+}))
 
 addon:RegisterCondition("INCONTROL", {
     description = L["In Control"],
@@ -422,7 +422,7 @@ addon:RegisterCondition("THREAT_COUNT", {
 })
 
 local character_class = select(2, UnitClass("player"))
-addon:RegisterCondition("FORM", {
+addon:RegisterCondition("FORM", runtimeCondition('FORM',{
     description = L["Shapeshift Form"],
     icon = addon.Artwork.condition["FORM"],
     fields = { value = "number" },
@@ -522,7 +522,7 @@ addon:RegisterCondition("FORM", {
             "You are shapeshifted into a different form.  This includes stances for warriors and stealth.  " ..
             color.GREEN .. L["humanoid"] .. color.RESET .. " can be used to indicate you are NOT shapeshifted."))
     end
-})
+}))
 
 addon:RegisterCondition("ATTACKABLE", runtimeCondition('ATTACKABLE',{
     requiredFields = {"unit"},
@@ -764,7 +764,7 @@ addon:RegisterCondition("TIME_IN_COMBAT", {
 
 -- Source-owned configuration validators and optional notification facts.
 if addon.DeclareOwnedConditionRuntime then
-    addon:DeclareOwnedConditionRuntime('Conditions/combat.lua',{ COMBAT={pure=true},ATTACKABLE={pure=true},MOVING={pure=true} })
+    addon:DeclareOwnedConditionRuntime('Conditions/combat.lua',{ COMBAT={pure=true},ATTACKABLE={pure=true},MOVING={pure=true},FORM={pure=false},STEALTHED={pure=true} })
 end
 
 -- BEGIN GENERATED RM SOURCE BINDINGS

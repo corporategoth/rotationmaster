@@ -1,4 +1,5 @@
 local addon_name, addon = ...
+local runtimeCondition=addon.CreateConditionRuntimeWitness and addon:CreateConditionRuntimeWitness('Conditions/channeling.lua') or function(_,definition)return definition end
 
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 local color = color
@@ -25,7 +26,7 @@ addon.builtinCallbackBindings["Conditions/channeling.lua"]={
     ["Functions.collections.deepcopy"]="builtin:Functions/collections.lua:deepcopy",
 }
 
-addon:RegisterCondition("CHANNELING", {
+addon:RegisterCondition("CHANNELING", runtimeCondition('CHANNELING',{
     description = L["Channeling"],
     icon = addon.Artwork.condition["CHANNELING"],
     fields = { unit = "string" },
@@ -54,7 +55,7 @@ addon:RegisterCondition("CHANNELING", {
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
     end
-})
+}))
 
 addon:RegisterCondition("CHANNELING_SPELL", {
     description = L["Specific Spell Channeling"],
@@ -170,6 +171,11 @@ addon:RegisterCondition("CHANNEL_INTERRUPTABLE", {
         addon.layout_condition_unitwidget_help(frame)
     end
 })
+
+-- Source-owned volatile observations; only configuration-only validators memoize.
+if addon.DeclareOwnedConditionRuntime then
+    addon:DeclareOwnedConditionRuntime('Conditions/channeling.lua',{ CHANNELING={pure=true} })
+end
 
 -- BEGIN GENERATED RM SOURCE BINDINGS
 do

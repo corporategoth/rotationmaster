@@ -1,4 +1,5 @@
 local addon_name, addon = ...
+local runtimeCondition=addon.CreateConditionRuntimeWitness and addon:CreateConditionRuntimeWitness('Conditions/debuffs.lua') or function(_,definition)return definition end
 
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 local color = color
@@ -25,7 +26,7 @@ addon.builtinCallbackBindings["Conditions/debuffs.lua"]={
     ["Functions.presentation.playerize"]="builtin:utils.lua:playerize",
 }
 
-addon:RegisterCondition("DEBUFF", {
+addon:RegisterCondition("DEBUFF", runtimeCondition('DEBUFF',{
     description = L["Debuff Present"],
     icon = addon.Artwork.condition["DEBUFF"],
     fields = { unit = "string", spell = {"string", "number"}, anyrank = "boolean", owndebuff = "boolean" },
@@ -75,7 +76,7 @@ addon:RegisterCondition("DEBUFF", {
         addon.layout_condition_spellnamewidget_help(frame)
         addon.layout_condition_aurarank_help(frame)
     end
-})
+}))
 
 addon:RegisterCondition("DEBUFF_REMAIN", {
     description = L["Debuff Time Remaining"],
@@ -275,6 +276,11 @@ addon:RegisterCondition("DISPELLABLE", {
                 L["Only consider debuffs returned by the game's dispellable aura filter. This does not guarantee your dispel is ready or in range."]))
     end
 })
+
+-- Source-owned volatile observations; only configuration-only validators memoize.
+if addon.DeclareOwnedConditionRuntime then
+    addon:DeclareOwnedConditionRuntime('Conditions/debuffs.lua',{ DEBUFF={pure=true,methods={'EvaluateAuraCondition'}} })
+end
 
 -- BEGIN GENERATED RM SOURCE BINDINGS
 do

@@ -1,4 +1,5 @@
 local addon_name, addon = ...
+local runtimeCondition=addon.CreateConditionRuntimeWitness and addon:CreateConditionRuntimeWitness('Conditions/spell.lua') or function(_,definition)return definition end
 
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 local color = color
@@ -368,7 +369,7 @@ addon:RegisterCondition("SPELL_HISTORY_TIME", {
     end
 })
 
-addon:RegisterCondition("SPELL_ACTIVE", {
+addon:RegisterCondition("SPELL_ACTIVE", runtimeCondition('SPELL_ACTIVE',{
     description = L["Spell Active or Pending"],
     icon = addon.Artwork.condition["SPELL_ACTIVE"],
     fields = { spell = "number", ranked = "boolean" },
@@ -403,9 +404,9 @@ addon:RegisterCondition("SPELL_ACTIVE", {
     help = function(frame)
         addon.layout_condition_spellwidget_help(frame)
     end
-})
+}))
 
-addon:RegisterCondition("SPELL_AUTOREPEAT", {
+addon:RegisterCondition("SPELL_AUTOREPEAT", runtimeCondition('SPELL_AUTOREPEAT',{
     description = L["Spell Auto-Repeat Active"],
     icon = addon.Artwork.condition["SPELL_AUTOREPEAT"],
     fields = { spell = "number", ranked = "boolean" },
@@ -436,7 +437,12 @@ addon:RegisterCondition("SPELL_AUTOREPEAT", {
         frame:AddChild(helpers.Gap())
         addon.layout_condition_spellwidget_help(frame)
     end
-})
+}))
+
+-- Source-owned volatile observations; only configuration-only validators memoize.
+if addon.DeclareOwnedConditionRuntime then
+    addon:DeclareOwnedConditionRuntime('Conditions/spell.lua',{ SPELL_ACTIVE={pure=false},SPELL_AUTOREPEAT={pure=false} })
+end
 
 -- BEGIN GENERATED RM SOURCE BINDINGS
 do

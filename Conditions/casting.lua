@@ -1,4 +1,5 @@
 local addon_name, addon = ...
+local runtimeCondition=addon.CreateConditionRuntimeWitness and addon:CreateConditionRuntimeWitness('Conditions/casting.lua') or function(_,definition)return definition end
 
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 local color = color
@@ -25,7 +26,7 @@ addon.builtinCallbackBindings["Conditions/casting.lua"]={
     ["Functions.collections.deepcopy"]="builtin:Functions/collections.lua:deepcopy",
 }
 
-addon:RegisterCondition("CASTING", {
+addon:RegisterCondition("CASTING", runtimeCondition('CASTING',{
     description = L["Casting"],
     icon = addon.Artwork.condition["CASTING"],
     fields = { unit = "string" },
@@ -54,7 +55,7 @@ addon:RegisterCondition("CASTING", {
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
     end
-})
+}))
 
 addon:RegisterCondition("CASTING_SPELL", {
     description = L["Specific Spell Casting"],
@@ -170,6 +171,11 @@ addon:RegisterCondition("CAST_INTERRUPTABLE", {
         addon.layout_condition_unitwidget_help(frame)
     end
 })
+
+-- Source-owned volatile observations; only configuration-only validators memoize.
+if addon.DeclareOwnedConditionRuntime then
+    addon:DeclareOwnedConditionRuntime('Conditions/casting.lua',{ CASTING={pure=true} })
+end
 
 -- BEGIN GENERATED RM SOURCE BINDINGS
 do

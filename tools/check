@@ -200,6 +200,8 @@ def main():
             ['luajit', 'tests/active_runtime_rebind_admission.lua'],
             ['lua5.1', 'tests/condition_runtime.lua'],
             ['luajit', 'tests/condition_runtime.lua'],
+            ['lua5.1', 'tests/condition_runtime_coverage.lua'],
+            ['luajit', 'tests/condition_runtime_coverage.lua'],
             ['lua5.1', 'tests/active_runtime_plan.lua'],
             ['luajit', 'tests/active_runtime_plan.lua'],
             ['lua5.1', 'tests/active_runtime_continuation.lua'],

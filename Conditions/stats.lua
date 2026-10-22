@@ -1,4 +1,5 @@
 local addon_name, addon = ...
+local runtimeCondition=addon.CreateConditionRuntimeWitness and addon:CreateConditionRuntimeWitness('Conditions/stats.lua') or function(_,definition)return definition end
 
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 local color, tonumber = color, tonumber
@@ -68,7 +69,7 @@ addon:RegisterCondition("HEALTH", {
     end
 })
 
-addon:RegisterCondition("HEALTHPCT", {
+addon:RegisterCondition("HEALTHPCT", runtimeCondition('HEALTHPCT',{
     description = L["Health Percentage"],
     icon = addon.Artwork.condition["HEALTHPCT"],
     fields = { unit = "string", operator = "string", value = "number" },
@@ -113,7 +114,7 @@ addon:RegisterCondition("HEALTHPCT", {
             "The health value of " .. color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. " as a percentage of their " ..
             "total health.")
     end
-})
+}))
 
 addon:RegisterCondition("MANA", {
     description = L["Mana"],
@@ -309,7 +310,7 @@ addon:RegisterCondition("POWERPCT", {
     end
 })
 
-addon:RegisterCondition("POINT", {
+addon:RegisterCondition("POINT", runtimeCondition('POINT',{
     description = L["Points"],
     icon = addon.Artwork.condition["POINT"],
     fields = { unit = "string", operator = "string", value = "number" },
@@ -373,7 +374,7 @@ addon:RegisterCondition("POINT", {
             "Arcane Charges).  " ..
             "If this number is negative, it means the point deficit (from max points).")
     end
-})
+}))
 
 if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE and LE_EXPANSION_LEVEL_CURRENT >= 2 and
     select(2, UnitClass("player")) == "DEATHKNIGHT") then
@@ -708,6 +709,11 @@ addon:RegisterCondition("TT_HEALTHPCT", {
                 "'burn rate', essentially pretending they are not being hit at all.")))
     end
 })
+
+-- Source-owned volatile observations; only configuration-only validators memoize.
+if addon.DeclareOwnedConditionRuntime then
+    addon:DeclareOwnedConditionRuntime('Conditions/stats.lua',{ HEALTHPCT={pure=true},POINT={pure=true} })
+end
 
 -- BEGIN GENERATED RM SOURCE BINDINGS
 do
