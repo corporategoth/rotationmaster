@@ -17,8 +17,8 @@ local function fixture(prepared)
      assert(self==a and spec==a.currentSpec and key==a.currentRotation);state.acquires=state.acquires+1
      if state.mode=='decline' then return nil,nil,nil,false end
      local body=state.body;if state.mode=='unavailable' then body=nil end
-     state.fullLease=function()return state.current end
-     return body,state.fullLease,state.token,true,state.views,state.cheapLease
+     state.fullLease=function()state.fullChecks=(state.fullChecks or 0)+1;return state.current end
+     return body,state.fullLease,state.token,true,state.views,state.cheapLease,state.notifiedLease
     end,function(self,spellIds,sequence,environment)
      assert(self==a and spellIds==a.GetSpellIds and type(environment)=='table')
      state.registrations=state.registrations+1
@@ -125,6 +125,17 @@ test('missing fast style mapping never falls back to publishing a private condit
   local c,s=fixture();s.mode='plan';if empty then s.views={}end;local seen=0
   c.a.GlowCooldown=function()seen=seen+1 end;c.tick();assert(seen==0,'private fallback escaped')
  end
+end)
+test('successful source-owned Prepare needs only the notification ticket before environment work',function()
+ local c,s=fixture();s.mode='plan';s.notifiedLease=function()return s.current end
+ s.onPrepare=function()
+  assert(s.receivedFull(),'simulated owned Prepare final fence rejected')
+  return {AfterOpaque=function()
+   assert(s.fullChecks==2,'main repeated full authority after the successful Prepare fence')
+   return false
+  end}
+ end
+ c.tick();assert(#c.a.Diagnostics:GetReports()==0,'duplicate post-Prepare proof or callback error')
 end)
 test('condition preparation receives separate cheap continuation and full publication fences',function()
  local c,s=fixture();s.mode='plan';s.cheapLease=function()return s.current end;c.tick()

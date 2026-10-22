@@ -283,6 +283,20 @@ function data.NewRotationStore(options)
     local reader,readerState,readerBusy={},'binding',false
     local readIndex,readEpoch,readRevision=nil,0,0
     local publicationWriteVersion=0
+    -- One selected execution watch per profile store; unrelated writes leave it
+    -- untouched. The cold planner supplies a captured notification closure.
+    local executionWatch
+    local function invalidateExecutionWatch()
+        local watch=executionWatch;executionWatch=nil
+        if watch then watch.notify()end
+    end
+    local function watchedAddress(a)
+        local watch=executionWatch
+        if not watch or not a then return false end
+        local selected=watch.meta.address
+        return a.scope==selected.scope and a.class==selected.class and a.owner==selected.owner
+            and a.spec==selected.spec and a.id==selected.id
+    end
     local readSeals=setmetatable({},{__mode='k'})
     local nilCharacter={}
     local function detachedAddress(a)
@@ -305,6 +319,8 @@ function data.NewRotationStore(options)
             seals=setmetatable({},{__mode='v'})}
     end
     local function resetReaderIndex()
+        local beforeNotification=executionWatch and executionWatch.notify
+        invalidateExecutionWatch()
         local replacement=buildIndex()
         local function add(kind,name,owner)
             for number,scope in pairs(owner.specs) do
@@ -316,6 +332,10 @@ function data.NewRotationStore(options)
         end
         for name,owner in pairs(replacement.classes) do add('class',name,owner) end
         for name,owner in pairs(replacement.characters) do add('character',name,owner) end
+        -- A callback during reconstruction may have captured the post-entry
+        -- stamp on the old index. Retire it at the final publication too.
+        if executionWatch then invalidateExecutionWatch()
+        elseif beforeNotification then beforeNotification()end
         readIndex=replacement;readEpoch=readEpoch+1
     end
     -- Update only addresses actually written by this service. Rebuilding from
@@ -402,7 +422,7 @@ function data.NewRotationStore(options)
     local ownedReaderIsCurrent=reader.IsCurrent
     -- Only an owned factory admission may consume this private capability.
     local guardType,guardPairs,guardGetmetatable,guardRawget=type,pairs,getmetatable,rawget
-    local function makePublicationGuard(_,seal,c)
+    local function makePublicationGuard(_,seal,c,notify)
         local entry=readSeals[seal]
         if not entry or entry.kind~='record' then return nil end
         local meta=entry.meta;local a=meta.address;c=c or entry.context
@@ -464,6 +484,10 @@ function data.NewRotationStore(options)
             end
             return true
         end
+        if notify~=nil then
+            if type(notify)~='function'or not fullCurrent()then return nil end
+            executionWatch={meta=meta,notify=notify}
+        end
         return fullCurrent,continuationCurrent
     end
     function reader:ListOwned(number,c)
@@ -491,7 +515,7 @@ function data.NewRotationStore(options)
         ready,reason=self:IsCurrent(seal,context);if not ready then return nil,reason end
         return true,value,seal
     end
-    function reader:Retire() readerState='retired';return true end
+    function reader:Retire() invalidateExecutionWatch();readerState='retired';return true end
     function service:Get(a,c)
         local allowed,record=readRecord(a,c);if not allowed then return nil,record end
         if not record then return nil,'unknown-rotation' end
@@ -657,8 +681,10 @@ function data.NewRotationStore(options)
         -- index must retire private publication witnesses, without blessing it
         -- or changing public unrelated-record seal semantics.
         if readIndex and (not advanceDestination or pending.operation=='move' and not advanceSource) then
+            invalidateExecutionWatch()
             publicationWriteVersion=publicationWriteVersion+1
         end
+        if watchedAddress(destination)or watchedAddress(pending.address)then invalidateExecutionWatch()end
         -- All checks and copies precede plain table assignments; no callbacks run.
         if pending.operation=='delete' then write(pending.address,nil)
         else

@@ -1,4 +1,15 @@
 local _,addon=...
+local readExecutionGeneration,advanceExecutionGeneration
+---@type fun(...): any
+local bindExecutionGeneration=addon.BindRotationExecutionGeneration
+if type(bindExecutionGeneration)=='function' then
+    bindExecutionGeneration(addon,function(read,advance)
+        readExecutionGeneration,advanceExecutionGeneration=read,advance
+    end)
+end
+local function invalidateExecution()
+    if advanceExecutionGeneration then advanceExecutionGeneration() end
+end
 local kind,raw,write,identity,meta,iterate=type,rawget,rawset,rawequal,getmetatable,next
 local infinity,protect=math.huge,pcall
 local operation,active
@@ -46,6 +57,7 @@ end
 local function begin(self)
     if not owned(self) then return nil,'foreign-rotation-owner' end
     local pending={token={}};operation=pending
+    invalidateExecution()
     local db=self.db;pending.profile=db and db.profile
     pending.spec,pending.id=self.currentSpec,self.currentRotation
     if not identity(operation,pending) then return nil,'rotation-transition-superseded' end
@@ -56,12 +68,14 @@ function addon:IsActiveRotationTransitionCurrent(token) return current(self,toke
 function addon:AdvanceActiveRotationSpecialization(token,spec)
     if not current(self,token) then return nil,'rotation-transition-superseded' end
     local pending=operation
+    invalidateExecution()
     self.currentSpec=spec
     if not identity(operation,pending) then return nil,'rotation-transition-superseded' end
     local db=self.db;local profile=db and db.profile
     local actualSpec,id=self.currentSpec,self.currentRotation
     if not identity(operation,pending) or not identity(profile,pending.profile)
         or not identity(actualSpec,spec) or not identity(id,pending.id) then return nil,'rotation-transition-superseded' end
+    invalidateExecution()
     local nextToken={};pending.token=nextToken;pending.spec=spec
     pending.cleanupSpec,pending.cleanupID=nil,nil
     return nextToken
@@ -72,7 +86,7 @@ local function retire(self,token)
     local spec,id=self.currentSpec,self.currentRotation
     if not identity(operation,pending) or not current(self,token) then return nil,'rotation-transition-superseded' end
     if id~=nil then pending.cleanupSpec,pending.cleanupID=spec,id end
-    active=nil;write(self,'currentRotation',nil);pending.id=nil
+    invalidateExecution();active=nil;write(self,'currentRotation',nil);pending.id=nil
     return true
 end
 addon.RetireActiveRotationTransition=retire
@@ -133,6 +147,7 @@ local function commit(self,token,spec,id,body)
         and equal(active.reference,reference) and equal(active.body,copied)
     if not current(self,token) then return nil,'rotation-transition-superseded' end
     local handle=unchanged and active.token or {}
+    invalidateExecution()
     active={token=handle,profile=pending.profile,spec=spec,id=id,reference=reference,body=copied,revision=revision}
     pending.cleanupSpec,pending.cleanupID=nil,nil
     write(self,'currentRotation',id);pending.id=id
@@ -213,6 +228,7 @@ local function finishPublication(ticket,nextKey)
     if not prepared.selected then return true,pending.token end
     local id=pending.id
     if nextKey and prepared.previousKey==id then id=nextKey end
+    invalidateExecution()
     active={token=prepared.handle,profile=pending.profile,spec=pending.spec,id=id,
         reference=prepared.reference,body=prepared.body,revision=prepared.revision}
     pending.cleanupSpec,pending.cleanupID=nil,nil
@@ -220,7 +236,7 @@ local function finishPublication(ticket,nextKey)
     return prepared.handle,pending.token
 end
 local function prepareRebind(fallbackKey)
-    if raw(addon,'currentRotation')==nil then active=nil;return nil end
+    if raw(addon,'currentRotation')==nil then invalidateExecution();active=nil;return nil end
     local token=begin(addon)
     if not token or not current(addon,token) then return nil,nil,token end
     local pending=operation;local spec,id=pending.spec,pending.id
@@ -245,12 +261,13 @@ local function finishRebind(ticket,key,reference,body)
     local valid=kind(key)=='string' and key~='' and copied and resolved
         and (pending.id==prepared.fallbackKey or prepared.reference and equal(prepared.reference,resolved))
     pending.rebind=nil;pending.cleanupSpec,pending.cleanupID=nil,nil
-    if not valid then active=nil;write(addon,'currentRotation',nil);pending.id=nil;return nil,pending.token end
+    if not valid then invalidateExecution();active=nil;write(addon,'currentRotation',nil);pending.id=nil;return nil,pending.token end
     local revision=raw(copied,'revision') or 1
     if kind(revision)~='number' or revision<1 or revision>9007199254740991 or revision%1~=0 then
-        active=nil;write(addon,'currentRotation',nil);pending.id=nil;return nil,pending.token
+        invalidateExecution();active=nil;write(addon,'currentRotation',nil);pending.id=nil;return nil,pending.token
     end
     local handle={}
+    invalidateExecution()
     active={token=handle,profile=pending.profile,spec=pending.spec,id=key,reference=resolved,body=copied,revision=revision}
     write(addon,'currentRotation',key);pending.id=key
     return handle,pending.token

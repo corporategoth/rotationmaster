@@ -2149,6 +2149,7 @@ end
  rows["Core/rotation_references.lua"]={before=before,after=after}
 end
 return function(text,path,mode)
+ if mode==nil then text=dofile('tests/fixtures/restore_execution_generation.lua')(text,path)end
  local row=rows[path];assert(row,"unknown continuation source path")
  if mode=="before"then assert(text==nil);return row.before end
  assert(mode==nil and text==row.after,"unrelated continuation source change: "..path)

@@ -1,4 +1,10 @@
 local _,addon=...
+local readExecutionGeneration
+---@type fun(...): any
+local bindExecutionGeneration=addon.BindRotationExecutionGeneration
+if type(bindExecutionGeneration)=='function' then
+    bindExecutionGeneration(addon,function(read)readExecutionGeneration=read end)
+end
 local kind,raw,identity=type,rawget,rawequal
 ---@type fun(f: number|function): table
 local environment=getfenv
@@ -70,7 +76,12 @@ local function acquire(owner,spec,key)
     local function conditionCurrent()
         return identity(request,ticket) and identity(plan,selected) and consumers(owner) and selected.conditionCurrent(state)
     end
-    return state.allowed and selected.body or nil,current,selected.token,true,selected.presentation,conditionCurrent
+    local executionGeneration=readExecutionGeneration and readExecutionGeneration()
+    local function notifiedCurrent()
+        return executionGeneration~=nil and request==ticket and plan==selected
+            and readExecutionGeneration()==executionGeneration
+    end
+    return state.allowed and selected.body or nil,current,selected.token,true,selected.presentation,conditionCurrent,notifiedCurrent
 end
 function addon:ConsumeActiveRuntimePlan()
     if self~=addon then return end

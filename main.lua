@@ -2,6 +2,7 @@ local addon_name, addon = ...
 -- Native trial reduced allocations but increased CPU. Keep it startup opt-in
 -- while continuation checks are redesigned; ordinary startup uses the prior path.
 local preparedRuntimeTrial = addon.preparedRuntimeTrial == true
+addon.BindRotationExecutionGeneration=nil
 -- BEGIN ANALYTICS ADVICE HANDOFF
 local adviceCapture
 if addon.BindAnalyticsAdviceCapture then
@@ -1143,20 +1144,25 @@ end
 
 function addon:EvaluateNextActionInternal()
     local selectedRotation,selectedSpec,selectedProfile=self.currentRotation,self.currentSpec,self.db.profile
-    local runtimePass,rot,publicationGuard,planToken,conditionSession,handled,presentationViews,conditionLease
+    local runtimePass,rot,publicationGuard,planToken,conditionSession,handled,presentationViews,conditionLease,notifiedLease
     if preparedRuntimeTrial and selectedRotation~=nil and acquireActiveRuntimePlan and prepareConditionRuntime then
-        rot,publicationGuard,planToken,handled,presentationViews,conditionLease=acquireActiveRuntimePlan(self,selectedSpec,selectedRotation)
+        rot,publicationGuard,planToken,handled,presentationViews,conditionLease,notifiedLease=acquireActiveRuntimePlan(self,selectedSpec,selectedRotation)
         if self.currentRotation~=selectedRotation or self.currentSpec~=selectedSpec or self.db.profile~=selectedProfile then return end
         if handled then
             if not publicationGuard or not publicationGuard() then return end
             if rot then
-                conditionSession=prepareConditionRuntime(self,rot,planToken,conditionLease or publicationGuard,publicationGuard)
-                if not publicationGuard() then return end
+                conditionSession=prepareConditionRuntime(self,rot,planToken,notifiedLease or conditionLease or publicationGuard,publicationGuard)
+                -- A successful owned Prepare ended with the full source fence;
+                -- no callout occurs before this continuation. Rejected Prepare
+                -- may return earlier, so fallback still needs the full fence.
+                if conditionSession and notifiedLease then
+                    if not notifiedLease()then return end
+                elseif not publicationGuard() then return end
                 lastConditionSession=conditionSession
                 -- Custom or unsupported trees retain the existing execution
                 -- input and callback route; private plan data never escapes.
                 if not conditionSession then
-                    runtimePass,rot,publicationGuard,planToken,handled,presentationViews,conditionLease=nil,nil,nil,nil,false,nil,nil
+                    runtimePass,rot,publicationGuard,planToken,handled,presentationViews,conditionLease,notifiedLease=nil,nil,nil,nil,false,nil,nil,nil
                 end
             end
         end

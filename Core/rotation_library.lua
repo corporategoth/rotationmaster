@@ -1,4 +1,15 @@
 local addon_name, addon = ...
+local readExecutionGeneration,advanceExecutionGeneration
+---@type fun(...): any
+local bindExecutionGeneration=addon.BindRotationExecutionGeneration
+if type(bindExecutionGeneration)=='function' then
+    bindExecutionGeneration(addon,function(read,advance)
+        readExecutionGeneration,advanceExecutionGeneration=read,advance
+    end)
+end
+local function invalidateExecution()
+    if advanceExecutionGeneration then advanceExecutionGeneration() end
+end
 local invalidateChoiceContext=addon.InvalidateRotationChoiceContext
 local data = addon.RotationData
 local activeCurrent=addon.IsActiveRotationTransitionCurrent
@@ -64,33 +75,36 @@ function addon:RegisterDefaultRotation(envelope)
     if copy.format~="RotationMaster" or copy.schemaVersion~=1 or not data.ValidateEnvelope(copy).valid then return false,"invalid-envelope" end
     if not copy.applicability.class and copy.applicability.universal~=true then return false,"missing-class-scope" end
     if definitions[copy.id] then return false,"duplicate-default-id" end
+    invalidateExecution()
     definitions[copy.id]=copy;definitionVersion=definitionVersion+1
     return true
 end
 
 function addon:InitializeRotationLibrary()
+    invalidateExecution()
     local profile=self.db.profile
     local validation,referenceStamp=self:GetRotationValidationOptions()
     local state=profile.rotationLibrary
     if state==nil then state={};profile.rotationLibrary=state end
-    if not plainTable(state) then active=nil;return false,"invalid-library-state" end
+    if not plainTable(state) then invalidateExecution();active=nil;return false,"invalid-library-state" end
     for _,key in ipairs({"preferences","origins","comparisons","imports"}) do
-        if state[key]~=nil and not plainTable(state[key]) then active=nil;return false,"invalid-library-state" end
+        if state[key]~=nil and not plainTable(state[key]) then invalidateExecution();active=nil;return false,"invalid-library-state" end
     end
     state.preferences,state.origins,state.comparisons,state.imports=state.preferences or {},state.origins or {},state.comparisons or {},state.imports or {}
     -- Only preferences are shared with the persisted namespace. Clone construction
     -- uses a temporary catalog; the legacy editor retains the sole saved body.
     local catalog,why=data.NewCatalog({state={preferences=state.preferences},
         validation=validation,newId=self.uuid})
-    if not catalog then active=nil;return false,why end
+    if not catalog then invalidateExecution();active=nil;return false,why end
     local views,bodies={},{}
     for id,envelope in pairs(definitions) do
         local ok,reason=catalog:RegisterBuiltin(envelope)
-        if not ok then active=nil;return false,reason end
+        if not ok then invalidateExecution();active=nil;return false,reason end
         views[id]=catalog:Get({kind="builtin",id=id})
         bodies[id]=data.CopyData(views[id].envelope.body)
         bodies[id].name=L[views[id].nameKey]
     end
+    invalidateExecution()
     active={profile=profile,state=state,catalog=catalog,views=views,bodies=bodies,cloneScopes={},version=definitionVersion,referenceStamp=referenceStamp,generation={}}
     for spec,origins in pairs(state.origins) do
         if type(spec)=="number" and plainTable(origins) then
@@ -314,7 +328,7 @@ function addon:SetDefaultRotationEnabled(id,value)
     local selected=self.currentRotation and self:GetDefaultIdForRuntime(self.currentSpec,self.currentRotation)==id
     if not activeCurrent(self,change) then return false,'rotation-transition-superseded' end
     local saved,reason=active.catalog:SetEnabled({kind="builtin",id=id},value)
-    if saved then active.views[id]=active.catalog:Get({kind="builtin",id=id});active.generation={}
+    if saved then invalidateExecution();active.views[id]=active.catalog:Get({kind="builtin",id=id});invalidateExecution();active.generation={}
         if invalidateChoiceContext then invalidateChoiceContext(self) end
     end
     if saved and not value and selected and activeCurrent(self,change) then
