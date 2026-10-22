@@ -3,13 +3,14 @@
 local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite()
 local make=dofile('tests/fixtures/rotation_execution.lua')
 local nativeLoadfile,nativeGetfenv,nativeSetfenv=loadfile,getfenv,setfenv
-local function fixture()
+local function fixture(prepared)
  local state={mode='decline',current=true,acquires=0,prepares=0,booleans=0,results=0,retires=0,registrations=0,token={}}
  _G.loadfile=function(path)
   local chunk=assert(nativeLoadfile(path=='main.lua' and arg[1] or path))
   if path~='main.lua' then return chunk end
   return function(name,a)
    local env=nativeGetfenv(1);nativeSetfenv(chunk,env)
+   if prepared~=false then a.preparedRuntimeTrial=true end
    a.ConsumeActiveRuntimePlan=function(owner)
     assert(owner==a)
     return function(self,spec,key)
@@ -46,6 +47,14 @@ local function fixture()
  return c,state
 end
 
+test('ordinary startup keeps the previous evaluation path despite installed trial producers',function()
+ local c,s=fixture(false);s.mode='plan';c.reset(true);c.tick();local native=c.snapshot()
+ assert(s.acquires==0 and s.prepares==0,'prepared trial activated without startup opt-in')
+ assert((native.SendMessage or 0)>0,'ordinary evaluation did not publish')
+ c.a.preparedRuntimeTrial=true;c.tick()
+ assert(s.acquires==0,'startup-only trial flag changed a running evaluator')
+ assert(#c.a.Diagnostics:GetReports()==0)
+end)
 test('source-owned consumers register once and declined acquisition keeps legacy condition route',function()
  local c,s=fixture();assert(s.registrations==1,'missing source consumer handoff');c.tick()
  assert(s.acquires==1 and s.prepares==0 and s.results==0 and s.booleans==0)

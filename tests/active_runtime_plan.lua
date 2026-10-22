@@ -10,6 +10,7 @@ local function fixture(target)
    return function(name,owner)
     local env=getfenv(1);setfenv(prepare,env);prepare(name,owner)
     local acquire,register=owner:ConsumeActiveRuntimePlan();plans[owner]={acquire,register,owner.DispatchAnnouncement}
+    owner.preparedRuntimeTrial=true
     setfenv(main,env);return main(name,owner)
    end
   end

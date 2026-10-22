@@ -1,4 +1,7 @@
 local addon_name, addon = ...
+-- Native trial reduced allocations but increased CPU. Keep it startup opt-in
+-- while continuation checks are redesigned; ordinary startup uses the prior path.
+local preparedRuntimeTrial = addon.preparedRuntimeTrial == true
 -- BEGIN ANALYTICS ADVICE HANDOFF
 local adviceCapture
 if addon.BindAnalyticsAdviceCapture then
@@ -1141,7 +1144,7 @@ end
 function addon:EvaluateNextActionInternal()
     local selectedRotation,selectedSpec,selectedProfile=self.currentRotation,self.currentSpec,self.db.profile
     local runtimePass,rot,publicationGuard,planToken,conditionSession,handled,presentationViews,conditionLease
-    if selectedRotation~=nil and acquireActiveRuntimePlan and prepareConditionRuntime then
+    if preparedRuntimeTrial and selectedRotation~=nil and acquireActiveRuntimePlan and prepareConditionRuntime then
         rot,publicationGuard,planToken,handled,presentationViews,conditionLease=acquireActiveRuntimePlan(self,selectedSpec,selectedRotation)
         if self.currentRotation~=selectedRotation or self.currentSpec~=selectedSpec or self.db.profile~=selectedProfile then return end
         if handled then
