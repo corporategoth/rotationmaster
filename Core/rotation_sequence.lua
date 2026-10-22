@@ -125,5 +125,5 @@ function addon:BindRotationSequenceReader(bind)
         local function each(list) return sequenceEnvironment.ipairs(list) end
         return execute(body,evaluate,visit,rows,ordinal,kind,each)
     end
-    bind(rawMethod,run,sequenceStatus)
+    bind(rawMethod,run,sequenceStatus,ownedSequence)
 end

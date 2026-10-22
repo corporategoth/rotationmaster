@@ -87,6 +87,7 @@ Diagnostics/errors.lua
 Diagnostics/cpu.lua
 Diagnostics/cpu_runtime.lua
 Core/conditions.lua
+Core/condition_runtime.lua
 Core/condition_catalog.lua
 Core/item_conditions.lua
 Core/level_conditions.lua
@@ -156,6 +157,7 @@ Core/condition_description.lua
 Core/rotation_canvas.lua
 Core/rotation_sequence.lua
 Core/rotation_selection.lua
+Core/active_runtime_plan.lua
 main.lua
 buttons.lua
 Core/unit_state_conditions.lua

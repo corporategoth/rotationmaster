@@ -1,4 +1,5 @@
 local addon_name, addon = ...
+local runtimeCondition=addon.CreateConditionRuntimeWitness and addon:CreateConditionRuntimeWitness('Conditions/combat.lua') or function(_,definition)return definition end
 
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 local color, tostring, tonumber, pairs = color, tostring, tonumber, pairs
@@ -25,7 +26,7 @@ addon.builtinCallbackBindings["Conditions/combat.lua"]={
     ["Functions.cache.getCached"]="builtin:utils.lua:getCached",
 }
 
-addon:RegisterCondition("COMBAT", {
+addon:RegisterCondition("COMBAT", runtimeCondition('COMBAT',{
     requiredFields = {"unit"},
     description = L["In Combat"],
     icon = addon.Artwork.condition["COMBAT"],
@@ -52,7 +53,7 @@ addon:RegisterCondition("COMBAT", {
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
     end
-})
+}))
 
 addon:RegisterCondition("PET", {
     description = L["Have Pet"],
@@ -276,7 +277,7 @@ addon:RegisterCondition("LOC_BLOCKED", {
     end
 })
 
-addon:RegisterCondition("MOVING", {
+addon:RegisterCondition("MOVING", runtimeCondition('MOVING',{
     description = L["Moving"],
     icon = addon.Artwork.condition["MOVING"],
     fields = { },
@@ -294,7 +295,7 @@ addon:RegisterCondition("MOVING", {
     help = function(frame)
         frame:AddChild(helpers.CreateText(L["Matches while your character is moving, based on current movement speed. It does not test the movement of your target."] ))
     end,
-})
+}))
 
 addon:RegisterCondition("THREAT", {
     description = L["Threat"],
@@ -523,7 +524,7 @@ addon:RegisterCondition("FORM", {
     end
 })
 
-addon:RegisterCondition("ATTACKABLE", {
+addon:RegisterCondition("ATTACKABLE", runtimeCondition('ATTACKABLE',{
     requiredFields = {"unit"},
     description = L["Attackable"],
     icon = addon.Artwork.condition["ATTACKABLE"],
@@ -549,7 +550,7 @@ addon:RegisterCondition("ATTACKABLE", {
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
     end
-})
+}))
 
 addon:RegisterCondition("ENEMY", {
     description = L["Hostile"],
@@ -760,6 +761,11 @@ addon:RegisterCondition("TIME_IN_COMBAT", {
         "combat for more than 10 seconds. This is very useful for adjusting rotation priorities for openers vs. normal rotation")
     end
 })
+
+-- Source-owned configuration validators and optional notification facts.
+if addon.DeclareOwnedConditionRuntime then
+    addon:DeclareOwnedConditionRuntime('Conditions/combat.lua',{ COMBAT={pure=true},ATTACKABLE={pure=true},MOVING={pure=true} })
+end
 
 -- BEGIN GENERATED RM SOURCE BINDINGS
 do

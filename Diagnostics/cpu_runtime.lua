@@ -107,6 +107,53 @@ local function selectedKey()
  if not ok then return 'unavailable'end
  return prefix=='\1rm:rotation:'and 'scoped'or 'raw'
 end
+-- Snapshot only at explicit capture boundaries, outside measured dispatches.
+-- Copy scalar fields immediately: providers cannot mutate a retained snapshot.
+local diagnosticSpecs={
+ {method='GetActiveRuntimePlanDiagnostic',label='Active runtime plan',state='currentRoute',fields={'plansBuilt','reused','declined'}},
+ {method='GetConditionRuntimeDiagnostic',label='Condition runtime',state='active',fields={'compiles','legacyFallback','leafEvaluations','validatorCalls','stableHits','eventInvalidations'}},
+}
+local diagnosticRoutes={idle=true,managed=true,unavailable=true,fallback=true,retired=true}
+local function diagnosticSnapshot(spec,provider)
+ local snapshot={state='unavailable'}
+ if type(provider)~='function' or not rawequal(rawget(addon,spec.method),provider)then return snapshot end
+ local ok,result=pcall(provider,addon)
+ if not ok or not rawequal(rawget(addon,spec.method),provider)then return snapshot end
+ local state=field(result,spec.state)
+ if readable(state)then
+  if spec.state=='active'and type(state)=='boolean'then snapshot.state=tostring(state)
+  elseif spec.state=='currentRoute'and type(state)=='string'and diagnosticRoutes[state]then snapshot.state=state end
+ end
+ for _,name in ipairs(spec.fields)do snapshot[name]=bytes(field(result,name))end
+ if not rawequal(rawget(addon,spec.method),provider)then return {state='unavailable'}end
+ return snapshot
+end
+local function diagnosticStart(run)
+ run.diagnostics={}
+ for i,spec in ipairs(diagnosticSpecs)do
+  local provider=rawget(addon,spec.method)
+  run.diagnostics[i]={provider=provider,first=diagnosticSnapshot(spec,provider)}
+ end
+end
+local function diagnosticEnd(run)
+ for i,spec in ipairs(diagnosticSpecs)do
+  local record=run.diagnostics and run.diagnostics[i]
+  if record then record.last=diagnosticSnapshot(spec,record.provider)end
+ end
+end
+local function diagnosticReport(lines,run)
+ for i,spec in ipairs(diagnosticSpecs)do
+  local record=run.diagnostics and run.diagnostics[i]
+  local first,last=record and record.first or {},record and record.last or {}
+  local parts={spec.label..': start='..(first.state or 'unavailable')..'; end='..(last.state or 'unavailable')}
+  for _,name in ipairs(spec.fields)do
+   local a,b=first[name],last[name]
+   parts[#parts+1]=name..'='..(a and b and b>=a and string.format('%.0f',b-a)or 'unavailable')
+  end
+  lines[#lines+1]=table.concat(parts,'; ')
+ end
+ lines[#lines+1]='Runtime counters are capture deltas; route/active states describe boundaries only. Diagnostics are read outside measured dispatches.'
+end
 local function report(run,status,reason)
  local lines={'Rotation Master native runtime capture: '..status..(reason and ' ('..reason..')'or ''),
   'Scope: all normal EvaluateNextAction dispatches, including timer and event calls; descendants overlap.',
@@ -124,6 +171,7 @@ local function report(run,status,reason)
   lines[#lines+1]=string.format('%s | time=%.3f ms | allocatedBytes=%s | deallocatedBytes=%s',phaseNames[i],row.time,
    row.allocated~=nil and string.format('%.0f',row.allocated)or 'unavailable',row.deallocated~=nil and string.format('%.0f',row.deallocated)or 'unavailable')
  end end
+ diagnosticReport(lines,run)
  return table.concat(lines,'\n')
 end
 local function finish(run,status,reason)
@@ -132,6 +180,7 @@ local function finish(run,status,reason)
  local ended=now(run)
  if ended and run.started and ended>=run.started and finite(ended-run.started)then run.duration=ended-run.started end
  run.selectionEnd=selectedKey()
+ diagnosticEnd(run)
  active=nil;run.phase='retired'
  if rawequal(rawget(addon,'EvaluateNextAction'),run.wrapper)then addon.EvaluateNextAction=run.original end
  phaseRestore(run)
@@ -207,6 +256,7 @@ function addon:StartCPURuntimeCapture(duration)
  if active~=run then return false,'capture-retired'end
  if not good or not readable(enabled)or enabled~=true or not providerCurrent(run)then return reject('native-profiler-unavailable')end
  run.started=now(run);run.poll=poll();run.selectionStart=selectedKey()
+ diagnosticStart(run)
  if active~=run then return false,'capture-retired'end
  phasePrepare(run)
  if active~=run then return false,'capture-retired'end

@@ -8,6 +8,7 @@ if type(bindDependency)=='function' then
 end
 local dependencyIdentity=rawequal
 local managed
+local runtimeAuthority,ownedOptions,ownedDisabledDependency
 -- Trusted standard primitives at module load; changed live pointers disable reuse.
 local proofPairs,proofRawget,proofRawequal,proofType,proofGetmetatable=pairs,rawget,rawequal,type,getmetatable
 -- Lua5.1 accepts a stack level or function; the checker declares only levels.
@@ -178,7 +179,7 @@ end
 -- authenticate a hostile replacement of the complete loader/binder itself.
 function addon:BindRotationValidationReader(bind)
     if type(bind)~='function' then return nil,'invalid-validation-reader-binder' end
-    bind(readValidationStamp,sameValidationLayout,proofRawget,proofRawequal,proofType,proofGetmetatable)
+    bind(readValidationStamp,sameValidationLayout,proofRawget,proofRawequal,proofType,proofGetmetatable,runtimeAuthority,ownedOptions,ownedDisabledDependency)
     return true
 end
 -- Dependency maps may carry AceDB defaults metatables. Observe their entries,
@@ -193,6 +194,26 @@ function addon:GetRotationValidationOptions()
     else itemsets=entries(snapshot.itemsets) end
     local effects=entries(snapshot.effects)
     return {conditions=conditions,itemsets=itemsets,effects=effects},current
+end
+
+ownedOptions=addon.GetRotationValidationOptions
+-- Constant-time managed publication authority; unknown property layouts and
+-- public overrides retain the existing eager reader. No membership scan.
+runtimeAuthority=function(owner,continuation)
+    if not dependencyReader or not dependencyIdentity(owner,addon) then return end
+    if continuation~=true and (proofRawget(owner,'GetRotationValidationOptions')~=ownedOptions
+        or proofRawget(owner,'GetRotationValidationStamp')~=ownedValidationStamp
+        or proofRawget(owner,'HasDisabledRotationDependency')~=ownedDisabledDependency
+        or proofType(proofGetfenv)~='function' or proofGetfenv(ownedOptions)~=proofEnvironment
+        or proofGetfenv(ownedValidationStamp)~=proofEnvironment or proofGetfenv(ownedDisabledDependency)~=proofEnvironment) then return end
+    local db=proofRawget(owner,'db');if proofType(db)~='table' then return end
+    local profile,global=proofRawget(db,'profile'),proofRawget(db,'global')
+    if proofType(profile)~='table' or proofType(global)~='table' then return end
+    local conditions,shared,personal,effects=proofRawget(owner,'conditionDefinitions'),proofRawget(global,'itemsets'),proofRawget(profile,'itemsets'),proofRawget(global,'effects')
+    if continuation~=true and (not proofPlain(conditions) or not proofPlain(shared) or not proofPlain(personal) or not proofPlain(effects)) then return end
+    return dependencyReader(owner),db,profile,global,conditions,
+        proofRawget(owner,'conditionRegistryVersion'),proofRawget(global,'itemsets'),
+        proofRawget(profile,'itemsets'),proofRawget(global,'effects'),proofRawget(profile,'rotationLibrary')
 end
 
 -- Legacy bodies have no envelope. Inspect their semantic condition edges too,
@@ -240,6 +261,8 @@ function addon:HasDisabledRotationDependency(body)
     for _,row in ipairs(tree.rows) do if condition(row.step.conditions,0) then return true end end
     return false
 end
+
+ownedDisabledDependency=addon.HasDisabledRotationDependency
 
 -- BEGIN PRIVATE VALIDATION CPU HANDOFF
 do

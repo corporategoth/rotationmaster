@@ -5,6 +5,11 @@
 -- This file has been heavily modified from the original.  It is no longer compatible with the original.
 
 local addon_name, addon = ...
+-- The active-plan receiver is consumed before any library callback. Only the
+-- literal cooldown publisher below may qualify its private presentation route.
+---@type fun(...): any
+local publishActivePresentation=addon.BindActiveRuntimePresentationSource
+addon.BindActiveRuntimePresentationSource=nil
 local IsAddOnLoaded = C_AddOns and C_AddOns.IsAddOnLoaded or IsAddOnLoaded
 
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
@@ -808,6 +813,10 @@ function addon:GlowCooldown(spellId, condition, cooldown, itemId)
 	end
 
 	if WeakAuras then WeakAuras.ScanEvents('ROTATIONMASTER_COOLDOWN_UPDATE', self.Flags); end
+end
+
+if type(publishActivePresentation)=='function' then
+    publishActivePresentation(addon,addon.GlowCooldown,getfenv(1))
 end
 
 function addon:GlowSpell(spellId,itemId)

@@ -272,3 +272,11 @@ function addon:GetAnnouncementEmoteReport()
     end
     return table.concat(lines,'\n')
 end
+
+-- Definition-owned consumer identity, cold-consumed by the runtime planner.
+local runtimeDispatch=addon.DispatchAnnouncement
+local runtimeDispatchEnvironment=getfenv(1)
+function addon:ConsumeAnnouncementRuntimeSource()
+    if self~=addon then return end
+    return runtimeDispatch,runtimeDispatchEnvironment
+end

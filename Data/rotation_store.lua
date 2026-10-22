@@ -411,7 +411,7 @@ function data.NewRotationStore(options)
         local epoch,writeVersion=entry.epoch,publicationWriteVersion
         local expectedRoots=readIndex.roots;local chain=meta.chain
         local record,payload=meta.record,meta.payload
-        return function()
+        local function fullCurrent()
             if reader.IsCurrent~=ownedReaderIsCurrent or type~=guardType or pairs~=guardPairs
                 or getmetatable~=guardGetmetatable or rawget~=guardRawget then return nil end
             -- Preserve public-reader admission and its actual string receivers.
@@ -448,6 +448,23 @@ function data.NewRotationStore(options)
             end
             return true
         end
+        -- Configuration was admitted by fullCurrent. Between real callouts,
+        -- use raw identity/epoch witnesses only; never invoke extension code.
+        local function continuationCurrent()
+            if readerState~='active' or readEpoch~=epoch or publicationWriteVersion~=writeVersion
+                or not scope or scope.metadata[a.id]~=meta then return false end
+            if guardRawget(state,'version')~=1 or guardRawget(state,'classes')~=expectedRoots[1]
+                or guardRawget(state,'characters')~=expectedRoots[2] or guardRawget(state,'legacy')~=expectedRoots[3] then return false end
+            if guardRawget(chain[1],a.owner)~=chain[2] then return false end
+            if a.scope=='character' and (guardRawget(chain[2],'class')~=a.class or guardRawget(chain[2],'specs')~=chain[3]) then return false end
+            if guardRawget(chain[3],a.spec)~=chain[4] or guardRawget(chain[4],a.id)~=record then return false end
+            for index=1,#components do
+                local component=components[index]
+                if guardRawget(record,component)~=payload[component] then return false end
+            end
+            return true
+        end
+        return fullCurrent,continuationCurrent
     end
     function reader:ListOwned(number,c)
         local ready,reason=readerReady(true);if not ready then return nil,reason end

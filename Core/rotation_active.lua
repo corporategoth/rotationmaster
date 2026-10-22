@@ -255,8 +255,21 @@ local function finishRebind(ticket,key,reference,body)
     write(addon,'currentRotation',key);pending.id=key
     return handle,pending.token
 end
+-- Source-private runtime access: the identity body never leaves this module.
+local function runtimeIdentity(owner,spec,key)
+    if not owned(owner) or not active or kind(raw(owner,'db'))~='table' then return end
+    if not identity(raw(raw(owner,'db'),'profile'),active.profile)
+        or not identity(raw(owner,'currentSpec'),spec) or not identity(active.spec,spec)
+        or not identity(raw(owner,'currentRotation'),key) or not identity(active.id,key) then return end
+    return active.token,active.revision,operation and operation.token
+end
+local function runtimeBody(owner,handle,expected)
+    if not active or not identity(active.token,handle) or not runtimeIdentity(owner,active.spec,active.id) then return end
+    if expected~=nil and not equal(active.body,expected) then return end
+    return detached(active.body)
+end
 function addon:BindActiveRotationPublication(receiver)
     if not owned(self) or kind(receiver)~='function' then return nil end
-    receiver(preparePublication,finishPublication,prepareRebind,finishRebind)
+    receiver(preparePublication,finishPublication,prepareRebind,finishRebind,runtimeIdentity,runtimeBody)
     return true
 end

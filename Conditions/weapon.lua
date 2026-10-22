@@ -1,4 +1,5 @@
 local addon_name, addon = ...
+local runtimeCondition=addon.CreateConditionRuntimeWitness and addon:CreateConditionRuntimeWitness('Conditions/weapon.lua') or function(_,definition)return definition end
 
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 local color = color
@@ -51,7 +52,7 @@ local function swingSpeed(value,cache)
 end
 
 if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
-    addon:RegisterCondition("WEAPON", {
+    addon:RegisterCondition("WEAPON", runtimeCondition('WEAPON',{
         description = L["Weapon Enchant Present"],
         icon = addon.Artwork.condition["WEAPON"],
         fields = { offhand = "boolean" },
@@ -86,7 +87,7 @@ if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
                     "Should this condition affect your main or off-hand weapon.  If this is checked, it will affect " ..
                     "your off-hand weapon, otherwise it will affect your main-hand (or two-handed) weapon."))
         end
-    })
+    }))
 
     addon:RegisterCondition("WEAPON_REMAIN", {
         description = L["Weapon Enchant Time Remaining"],
@@ -290,6 +291,11 @@ addon:RegisterCondition("SWING_TIME_REMAIN", {
                 "The amount of time (in seconds) until your next weapon swing.")
     end
 })
+
+-- Source-owned configuration validators and optional notification facts.
+if addon.DeclareOwnedConditionRuntime then
+    addon:DeclareOwnedConditionRuntime('Conditions/weapon.lua',{ WEAPON={pure=true} })
+end
 
 -- BEGIN GENERATED RM SOURCE BINDINGS
 do

@@ -82,16 +82,29 @@ local AceConsole = LibStub("AceConsole-3.0")
 local AceEvent = LibStub("AceEvent-3.0")
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 local getCached
-local acquireEvaluationPass,invalidateEvaluationContext
+local acquireActiveRuntimePlan,registerActiveRuntimeConsumers
+local mainEnvironment=getfenv(1)
+local consumeActiveRuntimePlan=addon.ConsumeActiveRuntimePlan
+if type(consumeActiveRuntimePlan)=='function' then
+    acquireActiveRuntimePlan,registerActiveRuntimeConsumers=consumeActiveRuntimePlan(addon)
+    addon.ConsumeActiveRuntimePlan=nil
+end
+local prepareConditionRuntime,retireConditionRuntime,lastConditionSession
+local consumeConditionRuntime=addon.ConsumeConditionRuntime
+if type(consumeConditionRuntime)=='function' then
+    prepareConditionRuntime,retireConditionRuntime=consumeConditionRuntime(addon)
+    addon.ConsumeConditionRuntime=nil
+end
+local acquireEvaluationPass,invalidateEvaluationContext,acquireMainSelectionPass,getMainCleanupBody
 local bindEvaluationContext=addon.BindRuntimeEvaluationContext
 if type(bindEvaluationContext)=='function' then
-    bindEvaluationContext(addon,function(acquire,invalidate) acquireEvaluationPass,invalidateEvaluationContext=acquire,invalidate end)
+    bindEvaluationContext(addon,function(acquire,invalidate,selection,cleanup) acquireEvaluationPass,invalidateEvaluationContext,acquireMainSelectionPass,getMainCleanupBody=acquire,invalidate,selection,cleanup end)
     addon.BindRuntimeEvaluationContext=nil
 end
-local sequenceRawMethod,sequenceRun,sequenceStatus
+local sequenceRawMethod,sequenceRun,sequenceStatus,ownedSequence
 local bindSequence=addon.BindRotationSequenceReader
 if type(bindSequence)=="function" then
-    bindSequence(addon,function(rawMethod,run,status) sequenceRawMethod,sequenceRun,sequenceStatus=rawMethod,run,status end)
+    bindSequence(addon,function(rawMethod,run,status,source) sequenceRawMethod,sequenceRun,sequenceStatus,ownedSequence=rawMethod,run,status,source end)
     addon.BindRotationSequenceReader=nil
 end
 local function evaluateSequence(owner,body,evaluate,visit)
@@ -135,16 +148,20 @@ addon.pretty_name = GetAddOnMetadata(addon_name, "Title")
 addon.delayed_condition = {}
 -- The engine borrows its own validated pass; legacy public getters retain
 -- their historical mutable-body contract without becoming the polling path.
+local function mainSelectionPass(owner,spec)
+    if acquireMainSelectionPass then return acquireMainSelectionPass(owner,spec) end
+    return owner:AcquireRotationRuntimePass(spec)
+end
 local function runtimeRows(owner,spec,candidates)
     if owner.GetScopedRotationCoordinator and owner:GetScopedRotationCoordinator() then
-        local pass,why=owner:AcquireRotationRuntimePass(spec);if not pass then return {},why end
+        local pass,why=mainSelectionPass(owner,spec);if not pass then return {},why end
         return pass:Candidates(candidates==true)
     end
     return owner:GetRuntimeRotations(spec,true,candidates)
 end
 local function runtimeOne(owner,spec,value)
     if owner.GetScopedRotationCoordinator and owner:GetScopedRotationCoordinator() then
-        local pass,why=owner:AcquireRotationRuntimePass(spec);if not pass then return nil,why end
+        local pass,why=mainSelectionPass(owner,spec);if not pass then return nil,why end
         return pass:Get(value)
     end
     return owner:GetRuntimeRotation(spec,value)
@@ -894,7 +911,7 @@ function addon:SwitchRotation()
     local selectedSpec,selectedProfile,selectedRotation=self.currentSpec,self.db.profile,self.currentRotation
     local selectionPass,rotations
     if self.GetScopedRotationCoordinator and self:GetScopedRotationCoordinator() then
-        selectionPass=self:AcquireRotationRuntimePass(selectedSpec);if not selectionPass then return end
+        selectionPass=mainSelectionPass(self,selectedSpec);if not selectionPass then return end
         local why;rotations,why=selectionPass:Candidates(false);if why then return end
     else rotations=runtimeRows(self,selectedSpec) end
     -- BEGIN SWITCH OWNER LEASE
@@ -987,6 +1004,12 @@ function addon:DisableRotation()
     -- END ANALYTICS DISABLE
     local selected=self.currentRotation
     if not retireActive(self,change) or not activeChangeCurrent(self,change) then return nil,nil,false end
+    if retireConditionRuntime then
+        local previous=lastConditionSession
+        retireConditionRuntime(self)
+        if lastConditionSession==previous then lastConditionSession=nil end
+        if not activeChangeCurrent(self,change) then return nil,nil,false end
+    end
     if not selected then return nil,change,true end
     self.currentSpell = nil
     self.avail_announced = {}
@@ -1117,8 +1140,31 @@ end
 
 function addon:EvaluateNextActionInternal()
     local selectedRotation,selectedSpec,selectedProfile=self.currentRotation,self.currentSpec,self.db.profile
-    local runtimePass,rot,publicationGuard
-    if selectedRotation~=nil then
+    local runtimePass,rot,publicationGuard,planToken,conditionSession,handled,presentationViews,conditionLease
+    if selectedRotation~=nil and acquireActiveRuntimePlan and prepareConditionRuntime then
+        rot,publicationGuard,planToken,handled,presentationViews,conditionLease=acquireActiveRuntimePlan(self,selectedSpec,selectedRotation)
+        if self.currentRotation~=selectedRotation or self.currentSpec~=selectedSpec or self.db.profile~=selectedProfile then return end
+        if handled then
+            if not publicationGuard or not publicationGuard() then return end
+            if rot then
+                conditionSession=prepareConditionRuntime(self,rot,planToken,conditionLease or publicationGuard,publicationGuard)
+                if not publicationGuard() then return end
+                lastConditionSession=conditionSession
+                -- Custom or unsupported trees retain the existing execution
+                -- input and callback route; private plan data never escapes.
+                if not conditionSession then
+                    runtimePass,rot,publicationGuard,planToken,handled,presentationViews,conditionLease=nil,nil,nil,nil,false,nil,nil
+                end
+            end
+        end
+    end
+    if selectedRotation~=nil and not handled then
+        if retireConditionRuntime then
+            local previous=lastConditionSession
+            if not retireConditionRuntime(self,previous or false) then return end
+            if lastConditionSession==previous then lastConditionSession=nil end
+            if self.currentRotation~=selectedRotation or self.currentSpec~=selectedSpec or self.db.profile~=selectedProfile then return end
+        end
         if self.GetScopedRotationCoordinator and self:GetScopedRotationCoordinator() then
             if acquireEvaluationPass then local reason;runtimePass,reason,publicationGuard=acquireEvaluationPass(self,selectedSpec)
             else runtimePass=self:AcquireRotationRuntimePass(selectedSpec) end
@@ -1210,9 +1256,20 @@ function addon:EvaluateNextActionInternal()
         end
 
         local actionReady=self:NewActionReadiness(now)
+        -- Preparation can call public providers. Check the compiled graph's
+        -- source authority once here, before any cached condition is reused.
+        if conditionSession and not conditionSession:AfterOpaque() then
+            self.evaluationProfile:stop()
+            return
+        end
         local function eval(cond)
             local firstMapped,firstItem
-            if cond.action~=nil and not cond.disabled and addon:evaluateCondition(cond.conditions,{stepId=cond.id}) then
+            local matches
+            if cond.action~=nil and not cond.disabled then
+                if conditionSession then matches=conditionSession:EvaluateBool(cond.conditions,{stepId=cond.id})
+                else matches=addon:evaluateCondition(cond.conditions,{stepId=cond.id}) end
+            end
+            if matches then
                 local spellids,itemids=addon:GetSpellIds(cond)
                 for index,id in ipairs(spellids or {}) do
                     local itemId=itemids and itemids[index]
@@ -1236,8 +1293,8 @@ function addon:EvaluateNextActionInternal()
         local function current()
             if self.currentRotation~=selectedRotation or self.currentSpec~=selectedSpec or self.db.profile~=selectedProfile
                 or self.nextWindow~=previewWindow then return false end
-            if not runtimePass then return true end
             if publicationGuard then return publicationGuard() end
+            if not runtimePass then return true end
             return runtimePass:IsCurrent()
         end
         local function stage(callback) staged[#staged+1]=callback end
@@ -1270,6 +1327,7 @@ function addon:EvaluateNextActionInternal()
             end)
         end
         local sequence=evaluateSequence(self,rot,function(condition,context)
+            if conditionSession then return conditionSession:EvaluateResult(condition,context) end
             return addon:evaluateConditionResult(condition,context)
         end,function(cond,index)
             local spellid,enabled,itemId=eval(cond)
@@ -1358,11 +1416,15 @@ function addon:EvaluateNextActionInternal()
                 end
                 for spellid, cond in pairs(disabled_cooldowns) do
                     if not current() then return end
-                    addon:GlowCooldown(spellid, false, cond)
+                    local style=cond
+                    if conditionSession then style=presentationViews and presentationViews[cond];if not style then return end end
+                    addon:GlowCooldown(spellid, false, style)
                 end
                 for spellid, cond in pairs(enabled_cooldowns) do
                     if not current() then return end
-                    addon:GlowCooldown(spellid, true, cond, enabled_items[spellid])
+                    local style=cond
+                    if conditionSession then style=presentationViews and presentationViews[cond];if not style then return end end
+                    addon:GlowCooldown(spellid, true, style, enabled_items[spellid])
                 end
             end)
         end
@@ -1431,6 +1493,9 @@ function addon:GetSpellIds(rot)
     end
     return {}
 end
+if registerActiveRuntimeConsumers then
+    registerActiveRuntimeConsumers(addon,addon.GetSpellIds,ownedSequence,mainEnvironment)
+end
 
 function addon:RemoveCooldownGlowIfCurrent(spec, rotation, rot)
     if spec == self.currentSpec and rotation == self.currentRotation then
@@ -1450,7 +1515,8 @@ function addon:RemoveAllCurrentGlows()
     if id then
         local get=self.GetRotationForCleanup
         if not current() then return end
-        rotation=get(self,spec,id)
+        if getMainCleanupBody then rotation=getMainCleanupBody(self,spec,id,get)
+        else rotation=get(self,spec,id) end
     end
     if not current() then return end
     if rotation and rotation.cooldowns then

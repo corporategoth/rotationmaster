@@ -99,3 +99,7 @@ function addon:EvaluateAuraCondition(value, cache, start, filter, mode)
     end
     return nil, pendingReason or "aura-scan-limit"
 end
+
+if addon.DeclareConditionRuntimeHelper then
+    addon:DeclareConditionRuntimeHelper('EvaluateAuraCondition',addon.EvaluateAuraCondition)
+end

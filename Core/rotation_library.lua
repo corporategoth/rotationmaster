@@ -8,12 +8,14 @@ local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 local definitions, definitionVersion = {}, 0
 local active
 local readValidationStamp,checkValidationLayout,validationRawget,validationRawequal,validationType,validationGetmetatable
+local runtimeAuthority,ownedOptions,ownedDisabledDependency
 local bindValidation=addon.BindRotationValidationReader
 if type(bindValidation)=='function' then
-    bindValidation(addon,function(read,check,raw,identity,kind,meta)
+    bindValidation(addon,function(read,check,raw,identity,kind,meta,authority,options,disabled)
         if type(read)=='function' and type(check)=='function' and type(raw)=='function'
             and type(identity)=='function' and type(kind)=='function' and type(meta)=='function' then
             readValidationStamp,checkValidationLayout,validationRawget,validationRawequal,validationType,validationGetmetatable=read,check,raw,identity,kind,meta
+            runtimeAuthority,ownedOptions,ownedDisabledDependency=authority,options,disabled
         end
     end)
     addon.BindRotationValidationReader=nil
@@ -276,7 +278,10 @@ function addon:BindRotationLibraryReader(bind)
     end
     function reader:Eligible(view,spec,candidates) local context=rotationContext(owner,spec);context.spec=spec;return eligible(view,context,candidates) end
     function reader:Reserve(used) for id,envelope in pairs(definitions) do used[id]=true;data.ReserveRotationIdentities(envelope,used) end end
-    bind(reader,provesGeneration,ownsPrivateContext,runtimeContextGuard);return true
+    local function runtimeGeneration()
+        return active and active.generation,definitionVersion
+    end
+    bind(reader,provesGeneration,ownsPrivateContext,runtimeContextGuard,runtimeAuthority,eligible,ownedRotationContext,ownedReadValue,runtimeGeneration);return true
 end
 
 function addon:ListDefaultRotations(spec)

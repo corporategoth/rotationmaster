@@ -1,11 +1,12 @@
 local addon_name, addon = ...
+local runtimeCondition=addon.CreateConditionRuntimeWitness and addon:CreateConditionRuntimeWitness('Conditions/known_spell.lua') or function(_,definition)return definition end
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 
 local function validID(value)
     return type(value) == "number" and value > 0 and value < math.huge and value % 1 == 0
 end
 
-addon:RegisterCondition("SPELL_KNOWN", {
+addon:RegisterCondition("SPELL_KNOWN", runtimeCondition('SPELL_KNOWN',{
     requiredFields = {"spell"},
     description = L["Spell Known"],
     icon = addon.Artwork.condition["SPELL_KNOWN"],
@@ -67,7 +68,12 @@ addon:RegisterCondition("SPELL_KNOWN", {
     help = function(frame)
         frame:AddChild(addon.help_funcs.CreateText(L["Check whether you or your pet know this exact spell ID. An unlearned spell is a valid condition that returns false, so the same rotation can adapt as you learn abilities. This does not check cooldown, resources, range, or whether the spell can currently be cast. Missing or restricted learned-state data stays unavailable under NOT."]))
     end,
-})
+}))
+
+-- Source-owned configuration validators and optional notification facts.
+if addon.DeclareOwnedConditionRuntime then
+    addon:DeclareOwnedConditionRuntime('Conditions/known_spell.lua',{ SPELL_KNOWN={pure=true} })
+end
 
 -- BEGIN GENERATED RM SOURCE BINDINGS
 do

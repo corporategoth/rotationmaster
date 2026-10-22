@@ -13,6 +13,7 @@ if invalidateDependencies then invalidateDependencies(addon,'condition',nil) end
 local special = {}
 addon.conditionSpecials = special
 local quarantined = setmetatable({}, {__mode="k"})
+local conditionQuarantineVersion=0
 special["DELETE"] = { desc = DELETE, icon = "Interface\\AddOns\\" .. addon_name .. "\\Assets\\Controls\\trash.tga", fields = { } }
 special["AND"] = { desc = L["AND"], icon = addon.Artwork.logic["AND"], fields = { value = "condition[]" } }
 special["OR"] = { desc = L["OR"], icon = addon.Artwork.logic["OR"], fields = { value = "condition[]" } }
@@ -26,18 +27,55 @@ local function outcome(status, reason, path)
     return {status=status, reason=reason, path=path}
 end
 
-local function callCondition(definition, stage, value, cache, start, path, context)
+local function callCondition(definition, stage, value, cache, start, path, context, guard, guardNode, guardSession, stats)
     if quarantined[definition] then return false end
+    if guard and not guard(guardNode,guardSession)then return true,nil,nil,true,false end
+    local skipped,invoked
     local function run()
+        -- ObserveReportedErrors runs before this callback. Recheck the finite
+        -- private producer after that callout, before handing it a private node.
+        if guard and not guard(guardNode,guardSession)then skipped=true;return end
+        invoked=true
+        if guard and stats then
+            if stage=='valid'then stats.validatorCalls=stats.validatorCalls+1
+            else stats.leafEvaluations=stats.leafEvaluations+1 end
+        end
         if stage == "valid" then return definition.valid(addon.currentSpec, value) end
         return definition.evaluate(value, cache, start)
     end
-    if not addon.Diagnostics then return true, run() end
+    if not addon.Diagnostics then
+        if not guard then return true,run()end
+        local result,reason=run();return true,result,reason,skipped,invoked
+    end
     local ok, result, reason = addon.Diagnostics:Call({module="conditions", operation=stage,
         conditionPath=path, conditionTag=value.type, stepId=context and context.stepId,
         rotationId=addon.currentRotation, customCode=definition.customCode == true}, run)
-    if not ok then quarantined[definition] = true end
+    if not ok then quarantined[definition] = true;conditionQuarantineVersion=conditionQuarantineVersion+1 end
+    if guard then return ok,result,reason,skipped,invoked end
     return ok, result, reason
+end
+
+-- Both dispatch routes use the same callback/error boundary. Only the private
+-- source-owned graph may memoize a successful configuration-only validator.
+local function evaluateOrdinaryLeaf(value, definition, cache, start, path, context, validation, current, stats, guard, guardNode, guardSession, afterCurrent)
+    if current and not current()then return outcome("unavailable","condition-owner-changed",path)end
+    if not validation or not validation.valid then
+        if stats and not guard then stats.validatorCalls=stats.validatorCalls+1 end
+        local ok,valid,_,skipped,invoked=callCondition(definition,"valid",value,cache,start,path,context,guard,guardNode,guardSession,stats)
+        if current and not current()or invoked and afterCurrent and not afterCurrent(guardSession)or current and not current()then return outcome("unavailable","condition-owner-changed",path)end
+        if skipped then return outcome("unavailable","condition-source-changed",path)end
+        if not ok then return outcome("unavailable","condition-callback-error",path) end
+        if not valid then return outcome("unavailable","invalid-condition-fields",path) end
+        if validation then validation.valid=true end
+    end
+    if stats and not guard then stats.leafEvaluations=stats.leafEvaluations+1 end
+    local ok,matched,reason,skipped,invoked=callCondition(definition,"evaluate",value,cache,start,path,context,guard,guardNode,guardSession,stats)
+    if current and not current()or invoked and afterCurrent and not afterCurrent(guardSession)or current and not current()then return outcome("unavailable","condition-owner-changed",path)end
+    if skipped then return outcome("unavailable","condition-source-changed",path)end
+    if not ok then return outcome("unavailable","condition-callback-error",path) end
+    -- Legacy nil without a reason is false, never unavailable.
+    if matched==nil and reason~=nil then return outcome("unavailable",reason,path) end
+    return outcome(matched and "match" or "no-match")
 end
 
 -- BEGIN SWITCH UNIT PRESENCE
@@ -188,23 +226,7 @@ local function evaluate(value, cache, start, state, depth, path)
                 end
             end
         else
-            local validOk, valid = callCondition(definition, "valid", value, cache, start, path, state.context)
-            if not validOk then
-                result = outcome("unavailable", "condition-callback-error", path)
-            elseif not valid then
-                result = outcome("unavailable", "invalid-condition-fields", path)
-            else
-                local evalOk, matched, reason = callCondition(definition, "evaluate", value, cache, start, path, state.context)
-                if not evalOk then
-                    result = outcome("unavailable", "condition-callback-error", path)
-                -- Legacy predicates often return nil for false (e.g. UnitExists).
-                -- Only explicit nil + reason declares unavailable observation data.
-                elseif matched == nil and reason ~= nil then
-                    result = outcome("unavailable", reason, path)
-                else
-                    result = outcome(matched and "match" or "no-match")
-                end
-            end
+            result=evaluateOrdinaryLeaf(value,definition,cache,start,path,state.context)
         end
     end
     state.active[value] = nil
@@ -457,7 +479,10 @@ function addon:RefreshConditionConsumers()
     self:SwitchRotation()
 end
 
-function addon:ResetConditionQuarantine(definition) quarantined[definition]=nil end
+function addon:ResetConditionQuarantine(definition)
+    if quarantined[definition]then conditionQuarantineVersion=conditionQuarantineVersion+1 end
+    quarantined[definition]=nil
+end
 
 function addon:RegisterCondition(tag, array)
     local availabilityChanged=(conditions[tag] and conditions[tag].disabled==true or false)~=(array.disabled==true)
@@ -556,6 +581,26 @@ local switchEnvironment=getfenv(1)
 ---@type fun(f: number|function): table
 local switchGetfenv=getfenv
 local switchBound=false
+local runtimeBound=false
+local runtimeDiagnostics=addon.Diagnostics
+local runtimeDiagnosticsCall=runtimeDiagnostics and runtimeDiagnostics.Call
+local runtimeDiagnosticsObserve=runtimeDiagnostics and runtimeDiagnostics.ObserveReportedErrors
+local runtimeDiagnosticsCallEnvironment=type(runtimeDiagnosticsCall)=='function' and switchGetfenv(runtimeDiagnosticsCall)or nil
+local runtimeDiagnosticsObserveEnvironment=type(runtimeDiagnosticsObserve)=='function' and switchGetfenv(runtimeDiagnosticsObserve)or nil
+function addon:ConsumeConditionRuntimeEngine()
+    if self~=addon or runtimeBound then return end
+    runtimeBound=true
+    return conditions,evaluateOrdinaryLeaf,outcome,function()
+        return addon.evaluateCondition==ownedConditionEvaluator and addon.evaluateConditionResult==ownedConditionResult
+            and switchGetfenv(ownedConditionEvaluator)==switchEnvironment
+            and switchGetfenv(ownedConditionResult)==switchEnvironment
+            and addon.Diagnostics==runtimeDiagnostics
+            and (not runtimeDiagnostics or runtimeDiagnostics.Call==runtimeDiagnosticsCall
+                and runtimeDiagnostics.ObserveReportedErrors==runtimeDiagnosticsObserve
+                and (runtimeDiagnosticsCallEnvironment==nil or switchGetfenv(runtimeDiagnosticsCall)==runtimeDiagnosticsCallEnvironment)
+                and (runtimeDiagnosticsObserveEnvironment==nil or switchGetfenv(runtimeDiagnosticsObserve)==runtimeDiagnosticsObserveEnvironment))
+    end,function(definition)return quarantined[definition]==true end,function()return conditionQuarantineVersion end
+end
 function addon:ConsumeSwitchConditionEvaluator()
     if self~=addon or switchBound then return end
     switchBound=true

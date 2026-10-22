@@ -1,4 +1,5 @@
 local addon_name, addon = ...
+local runtimeCondition=addon.CreateConditionRuntimeWitness and addon:CreateConditionRuntimeWitness('Conditions/buffs.lua') or function(_,definition)return definition end
 
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 local color = color
@@ -26,7 +27,7 @@ addon.builtinCallbackBindings["Conditions/buffs.lua"]={
     ["Functions.presentation.playerize"]="builtin:utils.lua:playerize",
 }
 
-addon:RegisterCondition("BUFF", {
+addon:RegisterCondition("BUFF", runtimeCondition('BUFF',{
     requiredFields = {"unit","spell"},
     description = L["Buff Present"],
     icon = addon.Artwork.condition["BUFF"],
@@ -83,7 +84,7 @@ addon:RegisterCondition("BUFF", {
         addon.layout_condition_spellnamewidget_help(frame)
         addon.layout_condition_aurarank_help(frame)
     end
-})
+}))
 
 addon:RegisterCondition("BUFF_REMAIN", {
     description = L["Buff Time Remaining"],
@@ -238,6 +239,11 @@ addon:RegisterCondition("STEALABLE", {
         addon.layout_condition_unitwidget_help(frame)
     end
 })
+
+-- Source-owned configuration validators and optional notification facts.
+if addon.DeclareOwnedConditionRuntime then
+    addon:DeclareOwnedConditionRuntime('Conditions/buffs.lua',{ BUFF={pure=true,fact='aura',methods={'EvaluateAuraCondition'},platform={'GetAuraByIndex','ReadAuraField','GetSpellInfo','CanReadValue','GetClientInfo'},namespaces={C_UnitAuras={'GetAuraDataByIndex'},C_Spell={'GetSpellInfo'},C_Secrets={'HasSecretRestrictions'}},native={'UnitExists','UnitAura','C_UnitAuras','C_Spell','GetSpellInfo','issecretvalue','canaccessvalue','C_Secrets'}} })
+end
 
 -- BEGIN GENERATED RM SOURCE BINDINGS
 do

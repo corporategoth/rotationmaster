@@ -22,6 +22,10 @@ function addon:GetConditionUnitLevel(unit,cache)
     return record.level
 end
 
+if addon.DeclareConditionRuntimeHelper then
+    addon:DeclareConditionRuntimeHelper('GetConditionUnitLevel',addon.GetConditionUnitLevel)
+end
+
 -- BEGIN GENERATED RM SOURCE BINDINGS
 do
     local function sourceGetter(name)

@@ -9,6 +9,15 @@ end
 ---@type fun(f: number|function): table
 local storeGetfenv=getfenv
 local storeScopeEnvironment=type(storeGetfenv)=='function' and storeGetfenv(1) or nil
+-- These public helpers receive the execution body/path in the default sequence.
+-- Unknown helpers keep the public RuntimePass route before private data escapes.
+local planIndex,planCopy,planPortable,planIpairs=data.IndexRotationSteps,data.CopyData,data.CheckPortable,ipairs
+local function planDataCurrent(owner)
+    return rawget(storeScopeEnvironment,'ipairs')==planIpairs and rawget(owner,'RotationData')==data and rawget(data,'IndexRotationSteps')==planIndex
+        and rawget(data,'CopyData')==planCopy and rawget(data,'CheckPortable')==planPortable
+        and storeGetfenv(planIndex)==storeScopeEnvironment and storeGetfenv(planCopy)==storeScopeEnvironment
+        and storeGetfenv(planPortable)==storeScopeEnvironment
+end
 local prepareChoicePublication,finishChoicePublication
 local consumeChoices=addon.ConsumeRotationChoicePublication
 if type(consumeChoices)=='function' then
@@ -16,24 +25,28 @@ if type(consumeChoices)=='function' then
     addon.ConsumeRotationChoicePublication=nil
 end
 local invalidateChoiceContext=addon.InvalidateRotationChoiceContext
-local prepareActivePublication,finishActivePublication,prepareActiveRebind,finishActiveRebind
+local prepareActivePublication,finishActivePublication,prepareActiveRebind,finishActiveRebind,readActiveRuntime,copyActiveRuntime
 local activeCurrent=addon.IsActiveRotationTransitionCurrent
 local protect,raise=pcall,error
 local preparedBinding,bindGeneration
 local bindIdentity=rawequal
 if type(addon.BindActiveRotationPublication)=='function' then
-    addon:BindActiveRotationPublication(function(prepare,finish,rebind,complete)
+    addon:BindActiveRotationPublication(function(prepare,finish,rebind,complete,readRuntime,copyRuntime)
         prepareActivePublication,finishActivePublication,prepareActiveRebind,finishActiveRebind=prepare,finish,rebind,complete
+        readActiveRuntime,copyActiveRuntime=readRuntime,copyRuntime
     end)
 end
 local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
 local libraryReader,libraryGenerationProof,libraryContextProof,libraryRuntimeContextGuard
+local runtimeAuthority,planEligible,ownedRuntimeContext,ownedRuntimeReadValue,readLibraryRuntime
+local currentPlanSource,ownedAcquireRuntimePass
 local evaluationRequest,contextVersion
+local privatePlanPass={}
 contextVersion={}
 local ownedRuntimePasses=setmetatable({},{__mode="kv"})
 local bindLibrary=addon.BindRotationLibraryReader
 if type(bindLibrary)=='function' then
-    bindLibrary(addon,function(reader,proof,contextProof,runtimeGuard) libraryRuntimeContextGuard=runtimeGuard;libraryReader=reader;if type(proof)=='function' then libraryGenerationProof=proof end;if type(contextProof)=='function'then libraryContextProof=contextProof end end)
+    bindLibrary(addon,function(reader,proof,contextProof,runtimeGuard,authority,eligible,contextMethod,readValue,generation) runtimeAuthority,planEligible,ownedRuntimeContext,ownedRuntimeReadValue,readLibraryRuntime=authority,eligible,contextMethod,readValue,generation;libraryRuntimeContextGuard=runtimeGuard;libraryReader=reader;if type(proof)=='function' then libraryGenerationProof=proof end;if type(contextProof)=='function'then libraryContextProof=contextProof end end)
     addon.BindRotationLibraryReader=nil
 end
 local function rotationContext(owner,spec)
@@ -46,6 +59,7 @@ local current,serial
 serial=0
 -- Exposure survives explicit Refresh/rebinding while that canonical body lives.
 local exposed=setmetatable({},{__mode='k'})
+local exposureVersion={}
 local function plain(v) return type(v)=='table' and getmetatable(v)==nil end
 local function text(v,n) return type(v)=='string' and #v>0 and #v<=n and v:find('%S')~=nil and not v:find('[%z\1-\31\127]') end
 local function copy(v) return data.CopyData(v) end
@@ -88,11 +102,13 @@ function addon:GetRotationOwnerContext()
     if not text(character,512) then character=nil end
     return {class=class,character=character}
 end
+local ownedOwnerContext=addon.GetRotationOwnerContext
 function addon:GetScopedRotationCoordinator()
     -- Once scoped mode is bound, a profile transition must fail closed until
     -- the explicit event handler rebinds it; never reopen the old flat adapter.
     return current
 end
+local ownedScopedCoordinator=addon.GetScopedRotationCoordinator
 local function rebindContext()
     if not prepareActiveRebind then return nil end
     local ticket,reference,token,spec,id=prepareActiveRebind(DEFAULT)
@@ -120,7 +136,13 @@ local function completeRebind(binding,coordinator,problem)
         end
         if not key then return nil end
         local reference=read(coordinator,'Resolve',binding.spec,key)
-        local pass=reference and read(coordinator,'RuntimePass',binding.spec)
+        local pass
+        local sourcePass=ownedRuntimePasses[coordinator]
+        if reference and rawget(coordinator,'RuntimePass')==sourcePass then
+            if not activeCurrent(addon,binding.token) then return nil end
+            pass=sourcePass(coordinator,binding.spec,privatePlanPass)
+            if not activeCurrent(addon,binding.token) then return nil end
+        elseif reference then pass=read(coordinator,'RuntimePass',binding.spec) end
         local body=pass and read(pass,'Get',key)
         return key,reference,body
     end
@@ -403,11 +425,11 @@ function addon:BindRotationProfile()
         assets[index]=nil;expected[token]=nil
         return true
     end
-    function coordinator:Cleanup(number,value)
+    function coordinator:Cleanup(number,value,privateToken)
         if cleanup[value] then return cleanup[value] end
         local reference=type(value)=='string' and byKey[value]
-        if reference and assets[referenceKey(reference)] then return assets[referenceKey(reference)].body end
-        local pass=self:RuntimePass(number);return pass and pass:Get(value)
+        if reference and assets[referenceKey(reference)] then local asset=assets[referenceKey(reference)];if privateToken~=privatePlanPass then asset.borrowed=true end;return asset.body end
+        local pass=self:RuntimePass(number,privateToken);return pass and pass:Get(value)
     end
     function coordinator:TagView(number,value)
         local reference,why=self:Resolve(number,value);if not reference then return nil,why end
@@ -607,7 +629,7 @@ function addon:BindRotationProfile()
                 if issued.seal==previousSeal and same(issued.reference,reference) and same(issued.context,c) and same(issued.baseline,detached) then issued.token=freshToken;issued.seal=freshSeal end
             end
         end
-        local ok,body=reader:Read(reference.address,c,function(record) exposed[record.body]=true;return record.body end)
+        local ok,body=reader:Read(reference.address,c,function(record) exposureVersion={};exposed[record.body]=true;local asset=assets[referenceKey(reference)];if asset then asset.untracked=true end;return record.body end)
         if not ok then return nil,body end;return body
     end
     function coordinator:Headers(number)
@@ -663,8 +685,9 @@ function addon:BindRotationProfile()
         rosterBuiltin=builtinPresentation
         return result,rosterStamp
     end
-    function coordinator:RuntimePass(number)
+    function coordinator:RuntimePass(number,privateToken)
         local request=evaluationRequest;evaluationRequest=nil
+        local private=request~=nil or privateToken==privatePlanPass
         local version=contextVersion
         local ok,why=ready();if not ok then return nil,why end
         local c,reason=context();if not c then return nil,reason end
@@ -744,6 +767,7 @@ function addon:BindRotationProfile()
                 end,candidates)
                 if not readable then return nil,item end;if item.reason then return nil,item.reason end
                 if not batch then local current,problemText=pass:IsCurrent();if not current then return nil,problemText end end
+                if not private then item.borrowed=true end
                 return item.body
             end
             if reference.address.id==fallbackID then
@@ -776,6 +800,7 @@ function addon:BindRotationProfile()
             elseif rotationContext(owner,number).combatDataPolicy~='probe' then return nil,'restricted-or-unsupported-client' end
             if owner:HasDisabledRotationDependency(asset.body) then return nil,'disabled-dependency' end
             if not batch then local current,problemText=pass:IsCurrent();if not current then return nil,problemText end end
+            if not private then asset.borrowed=true end
             return asset.body
         end
         function pass:Get(value,candidates) return get(value,candidates,false) end
@@ -833,6 +858,100 @@ function addon:BindRotationProfile()
         end
         return pass
     end
+    -- Main alone receives this cold planner; public RuntimePass stays eager.
+    local ownedResolve,ownedPass=coordinator.Resolve,coordinator.RuntimePass
+    local ownerPlatform=rawget(owner,'Platform')
+    local ownerClass=type(ownerPlatform)=='table' and rawget(ownerPlatform,'GetPlayerOwnerClassObservation')
+    currentPlanSource=function(spec,key)
+        if current~=coordinator or not alive or not managedStoreReader or not readActiveRuntime or not copyActiveRuntime or not planDataCurrent(owner)
+            or not runtimeAuthority or not readLibraryRuntime or not planEligible
+            or rawget(owner,'AcquireRotationRuntimePass')~=ownedAcquireRuntimePass or storeGetfenv(ownedAcquireRuntimePass)~=storeScopeEnvironment
+            or rawget(owner,'GetScopedRotationCoordinator')~=ownedScopedCoordinator or rawget(coordinator,'Resolve')~=ownedResolve or rawget(coordinator,'RuntimePass')~=ownedPass
+            or rawget(owner,'GetRotationOwnerContext')~=ownedOwnerContext or rawget(owner,'GetRotationContext')~=ownedRuntimeContext
+            or rawget(owner,'Platform')~=ownerPlatform or not ownerPlatform or rawget(ownerPlatform,'CanReadValue')~=ownedRuntimeReadValue
+            or rawget(ownerPlatform,'GetPlayerOwnerClassObservation')~=ownerClass then return end
+        local known=byKey[key]
+        if not known or known.kind~='custom' or known.address.id==fallbackID then return end
+        local existing=assets[referenceKey(known)]
+        if existing and (existing.untracked or existing.borrowed) then return end
+        local handle,revision=readActiveRuntime(owner,spec,key);if not handle then return end
+        local epoch,db,p,g,defs,registry,shared,personal,effects,libraryState=runtimeAuthority(owner)
+        if not epoch then return end
+        local pass=ownedPass(coordinator,spec,privatePlanPass);local body=pass and pass:Get(key)
+        if not body or not pass:IsCurrent() then return end
+        local reference=ownedResolve(coordinator,spec,key)
+        if not reference or reference.kind~='custom' or reference.address.id==fallbackID then return end
+        local contextValue=context();if not contextValue then return end
+        local ok,selected,seal=reader:Read(reference.address,contextValue,function(record) return record end)
+        if not ok or exposed[selected.body] then return end
+        local guard,storeContinuation
+        if ownedPublicationGuard then guard,storeContinuation=ownedPublicationGuard(reader,seal,contextValue) end
+        if not guard or not storeContinuation or guard()~=true then return end
+        local execution=copyActiveRuntime(owner,handle,body);if not execution then return end
+        local asset=assets[referenceKey(reference)];if not asset or not asset.validation then return end
+        local generation,definitionVersion=readLibraryRuntime()
+        local exposure=exposureVersion
+        local function authority()
+            local nextEpoch,nextDB,nextProfile,nextGlobal,nextDefs,nextRegistry,nextShared,nextPersonal,nextEffects,nextLibrary=runtimeAuthority(owner)
+            local activeHandle,activeRevision=readActiveRuntime(owner,spec,key)
+            local libraryGeneration,libraryVersion=readLibraryRuntime()
+            return alive and current==coordinator and rawget(owner,'AcquireRotationRuntimePass')==ownedAcquireRuntimePass
+                and storeGetfenv(ownedAcquireRuntimePass)==storeScopeEnvironment and planDataCurrent(owner) and bindIdentity(activeHandle,handle) and activeRevision==revision
+                and bindIdentity(nextEpoch,epoch) and bindIdentity(nextDB,db) and bindIdentity(nextProfile,p) and bindIdentity(nextGlobal,g)
+                and bindIdentity(nextDefs,defs) and bindIdentity(nextRegistry,registry) and bindIdentity(nextShared,shared)
+                and bindIdentity(nextPersonal,personal) and bindIdentity(nextEffects,effects) and bindIdentity(nextLibrary,libraryState)
+                and bindIdentity(libraryGeneration,generation) and libraryVersion==definitionVersion
+                and exposure==exposureVersion and not exposed[selected.body] and not asset.borrowed
+                and rawget(owner,'GetScopedRotationCoordinator')==ownedScopedCoordinator and rawget(coordinator,'Resolve')==ownedResolve and rawget(coordinator,'RuntimePass')==ownedPass
+                and rawget(owner,'GetRotationOwnerContext')==ownedOwnerContext and rawget(owner,'GetRotationContext')==ownedRuntimeContext
+                and rawget(owner,'Platform')==ownerPlatform and ownerPlatform and rawget(ownerPlatform,'CanReadValue')==ownedRuntimeReadValue
+                and rawget(ownerPlatform,'GetPlayerOwnerClassObservation')==ownerClass and guard()==true
+        end
+        if not authority() then return end
+        local view={enabled=true,validation=asset.validation,applicability=asset.applicability}
+        local function entry()
+            if not authority() then return end
+            local actor=context()
+            if not actor or actor.class~=contextValue.class or actor.character~=contextValue.character then return end
+            local info,private,method=rotationContext(owner,spec)
+            if private~=true or not libraryContextProof(method,entry,rotationContext) then return end
+            if not authority() then return end
+            local allowed,reason
+            if view.applicability then allowed,reason=planEligible(view,info,false)
+            else allowed=info.combatDataPolicy=='probe';reason='restricted-or-unsupported-client' end
+            local _,_,operation=readActiveRuntime(owner,spec,key)
+            return {version=contextVersion,operation=operation,allowed=allowed==true,reason=reason}
+        end
+        local function currentEntry(value)
+            if not value or value.version~=contextVersion or not authority() then return false end
+            local _,_,operation=readActiveRuntime(owner,spec,key)
+            return bindIdentity(operation,value.operation)
+        end
+        local function conditionCurrent(value)
+            if not value or value.version~=contextVersion or not alive or current~=coordinator
+                or rawget(profile,'rotationStore')~=state or rawget(profile,'rotationFallbackID')~=fallbackID
+                or exposure~=exposureVersion or exposed[selected.body] or asset.borrowed or not planDataCurrent(owner) then return false end
+            local activeHandle,activeRevision,operation=readActiveRuntime(owner,spec,key)
+            if not bindIdentity(activeHandle,handle) or activeRevision~=revision or not bindIdentity(operation,value.operation) then return false end
+            local nextEpoch,nextDB,nextProfile,nextGlobal,nextDefs,nextRegistry,nextShared,nextPersonal,nextEffects,nextLibrary=runtimeAuthority(owner,true)
+            if not bindIdentity(nextEpoch,epoch) or not bindIdentity(nextDB,db) or not bindIdentity(nextProfile,p) or not bindIdentity(nextGlobal,g)
+                or not bindIdentity(nextDefs,defs) or not bindIdentity(nextRegistry,registry) or not bindIdentity(nextShared,shared)
+                or not bindIdentity(nextPersonal,personal) or not bindIdentity(nextEffects,effects) or not bindIdentity(nextLibrary,libraryState) then return false end
+            local libraryGeneration,libraryVersion=readLibraryRuntime()
+            return bindIdentity(libraryGeneration,generation) and libraryVersion==definitionVersion and storeContinuation()==true
+        end
+        -- Only the literal native cooldown publisher receives these views.
+        -- Runtime colors already belong to one CopyData graph, separate from
+        -- execution: retain sibling aliases and later eager-fallback mutations.
+        local presentation={}
+        for index,step in planIpairs(execution.cooldowns or {}) do
+            local public=body.cooldowns[index]
+            presentation[step]={id=public.id,effect=public.effect,color=public.color,
+                magnification=public.magnification,setpoint=public.setpoint,
+                xoffs=public.xoffs,yoffs=public.yoffs,angle=public.angle}
+        end
+        return {body=execution,presentation=presentation,handle=handle,token={},entry=entry,current=currentEntry,conditionCurrent=conditionCurrent,authority=authority}
+    end
     ownedRuntimePasses[coordinator]=coordinator.RuntimePass
     completeRebind(binding,coordinator,problem)
     if problem then return nil,problem end
@@ -850,8 +969,8 @@ function addon:DeleteRotationRecord(reference,token) local c,why=bound();if not 
 function addon:AcquireRotationRuntimePass(spec) local c,why=bound();if not c then return nil,why end;return c:RuntimePass(spec) end
 
 
-local ownedAcquireRuntimePass=addon.AcquireRotationRuntimePass
-local ownedScopedCoordinator=addon.GetScopedRotationCoordinator
+ownedAcquireRuntimePass=addon.AcquireRotationRuntimePass
+local ownedGetCleanup=addon.GetRotationForCleanup
 -- Only main receives this capability. Public/manual RuntimePass callers retain
 -- the fresh provider route, and every main invocation starts a new observation.
 function addon:BindRuntimeEvaluationContext(bind)
@@ -866,7 +985,19 @@ function addon:BindRuntimeEvaluationContext(bind)
         evaluationRequest=previous
         if not ok then raise(pass,0) end
         return pass,reason,request.pass==pass and request.publication or nil
-    end,function() contextVersion={} end)
+    end,function() contextVersion={} end,function(owner,spec)
+        if owner~=addon or rawget(owner,'AcquireRotationRuntimePass')~=ownedAcquireRuntimePass
+            or storeGetfenv(ownedAcquireRuntimePass)~=storeScopeEnvironment
+            or rawget(owner,'GetScopedRotationCoordinator')~=ownedScopedCoordinator
+            or not current or rawget(current,'RuntimePass')~=ownedRuntimePasses[current] then return owner:AcquireRotationRuntimePass(spec) end
+        return current:RuntimePass(spec,privatePlanPass)
+    end,function(owner,spec,key,capturedMethod)
+        if owner~=addon or capturedMethod~=ownedGetCleanup or rawget(owner,'GetRotationForCleanup')~=ownedGetCleanup
+            or storeGetfenv(ownedGetCleanup)~=storeScopeEnvironment
+            or rawget(owner,'GetScopedRotationCoordinator')~=ownedScopedCoordinator
+            or not current or rawget(current,'RuntimePass')~=ownedRuntimePasses[current] then return capturedMethod(owner,spec,key) end
+        return current:Cleanup(spec,key,privatePlanPass)
+    end)
     return true
 end
 
@@ -913,3 +1044,12 @@ do
  if type(bind)=='function' then bind(addon,'scope',addon.BindRotationProfile,function() return same end) end
 end
 -- END PRIVATE VALIDATION CPU HANDOFF
+
+-- Cold-consumed by Core/active_runtime_plan, never a public body getter.
+function addon:BindScopedActiveRuntimePlan(receiver)
+    if self~=addon or type(receiver)~='function' then return end
+    receiver(function(owner,spec,key)
+        if owner~=addon or not currentPlanSource then return end
+        return currentPlanSource(spec,key)
+    end,readActiveRuntime)
+end

@@ -1,4 +1,5 @@
 local addon_name, addon = ...
+local runtimeCondition=addon.CreateConditionRuntimeWitness and addon:CreateConditionRuntimeWitness('Conditions/character.lua') or function(_,definition)return definition end
 
 local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 local color = color
@@ -447,7 +448,7 @@ addon:RegisterCondition("CLASSIFICATION", {
     end
 })
 
-addon:RegisterCondition("LEVEL", {
+addon:RegisterCondition("LEVEL", runtimeCondition('LEVEL',{
     requiredFields = {"unit","operator","value"},
     description = L["Level"],
     icon = addon.Artwork.condition["LEVEL"],
@@ -512,7 +513,7 @@ addon:RegisterCondition("LEVEL", {
         addon.layout_condition_operatorwidget_help(frame, L["Level"], L["Level"],
                 "The character's level")
     end
-})
+}))
 
 addon:RegisterCondition("GROUP", {
     description = L["In Group"],
@@ -738,6 +739,11 @@ addon:RegisterCondition("IMMUNE", {
                 "Additionally, until you encounter the mob at least once, this condition will always be false."))
     end
 })
+end
+
+-- Source-owned configuration validators and optional notification facts.
+if addon.DeclareOwnedConditionRuntime then
+    addon:DeclareOwnedConditionRuntime('Conditions/character.lua',{ LEVEL={pure=true,fact='level',methods={'GetConditionUnitLevel'},platform={'GetUnitLevelObservation','CanReadValue','GetClientInfo'},namespaces={C_Secrets={'HasSecretRestrictions'}},native={'UnitLevel','UnitExists','issecretvalue','canaccessvalue','C_Secrets'}} })
 end
 
 -- BEGIN GENERATED RM SOURCE BINDINGS
