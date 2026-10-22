@@ -120,6 +120,9 @@ function addon:BindRotationSequenceReader(bind)
     local function rawMethod(owner)
         return sequenceType(owner)=="table" and sequenceRawget(owner,"EvaluateRotationSequence") or nil
     end
+    -- Only the admitted managed caller owns immutable execution bodies. Keep
+    -- one private map; ordinary mutable callers retain the live index reader.
+    local managedEntry
     local function run(owner,before,method,body,evaluate,visit,managed)
         if managed and not managed('sequence') then return unavailable({code="retired-managed-sequence"}) end
         local db=sequenceType(owner)=="table" and sequenceRawget(owner,"db") or nil
@@ -135,19 +138,37 @@ function addon:BindRotationSequenceReader(bind)
             if managed then return unavailable({code="unowned-managed-sequence"}) end
             return method(owner,body,evaluate,visit)
         end
-        local eligible,index,why=readIndex(body,profile,data,db)
-        if managed and not managed('resume') then return unavailable({code="retired-managed-sequence"}) end
-        if not eligible then
-            if managed then return unavailable({code="unowned-managed-index"}) end
-            return method(owner,body,evaluate,visit)
-        end
-        if not index then return unavailable(why) end
-        if sequenceType(evaluate)~="function" or sequenceType(visit)~="function" then
-            return unavailable({code="invalid-sequence-callback",path="$",severity="error"})
-        end
-        local rows,ordinal={},0
-        for _,row in sequenceIpairs(index.rows) do
-            if row.section=="rotation" then rows[row.step]=row;ordinal=ordinal+1 end
+        local cached=managed and managedEntry
+        local rows,ordinal
+        if cached and sequenceEqual(cached.body,body) and sequenceEqual(cached.db,db)
+            and sequenceEqual(cached.profile,profile) then
+            if sequenceType(evaluate)~="function" or sequenceType(visit)~="function" then
+                return unavailable({code="invalid-sequence-callback",path="$",severity="error"})
+            end
+            rows,ordinal=cached.rows,cached.ordinal
+        else
+            local eligible,index,why=readIndex(body,profile,data,db)
+            if managed and not managed('resume') then return unavailable({code="retired-managed-sequence"}) end
+            if not eligible then
+                if managed then return unavailable({code="unowned-managed-index"}) end
+                return method(owner,body,evaluate,visit)
+            end
+            if not index then return unavailable(why) end
+            -- Preserve the ordinary reader's callback validation before any
+            -- row-map iteration, including its original error ordering.
+            if sequenceType(evaluate)~="function" or sequenceType(visit)~="function" then
+                return unavailable({code="invalid-sequence-callback",path="$",severity="error"})
+            end
+            rows,ordinal={},0
+            for _,row in sequenceIpairs(index.rows) do
+                if row.section=="rotation" then rows[row.step]=row;ordinal=ordinal+1 end
+            end
+            if managed then
+                -- A failed older invocation must not erase or replace a map
+                -- published by a nested, newer managed continuation.
+                if not managed('resume') then return unavailable({code="retired-managed-sequence"}) end
+                managedEntry={body=body,db=db,profile=profile,rows=rows,ordinal=ordinal}
+            end
         end
         local function kind(value) return sequenceEnvironment.type(value) end
         local function each(list) return sequenceEnvironment.ipairs(list) end

@@ -196,6 +196,8 @@ def main():
             ['luajit', 'tests/runtime_public_borrow_notification.lua'],
             ['lua5.1', 'tests/admitted_dispatch.lua'],
             ['luajit', 'tests/admitted_dispatch.lua'],
+            ['lua5.1', 'tests/managed_sequence_index.lua'],
+            ['luajit', 'tests/managed_sequence_index.lua'],
             ['lua5.1', 'tests/condition_runtime_admitted_dispatch.lua'],
             ['luajit', 'tests/condition_runtime_admitted_dispatch.lua'],
             ['lua5.1', 'tests/condition_runtime_admission.lua'],
