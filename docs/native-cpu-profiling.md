@@ -1,14 +1,23 @@
 # Native CPU captures
 
+## Performance commands
+
+Use `/rm perf cpu`, `/rm perf runtime`, or `/rm perf memory` to start an explicit capture. CPU and runtime default to 10 seconds and accept 1–60 seconds, for example `/rm perf cpu 30` or `/rm perf runtime 20`. Memory defaults to 600 seconds and accepts 1–1800 seconds, for example `/rm perf memory 120`.
+
+Each capture supports `stop` and `report`: `/rm perf cpu stop` finalizes its current counters and prints a notice; `/rm perf cpu report` opens the selectable report. The same suffixes work for runtime and memory. Stop does not open a modal automatically. Reports and diagnostic controls do not apply settings drafts. `/rm perf probe` runs the existing one-shot inert native capability probe. The existing `/rm cpu` aliases and explicit cancellation behavior remain available.
+
+Runtime retains its 512-dispatch limit, so high-frequency evaluation can complete a requested long capture early. Memory still samples whole heap each second and bounded container counts every thirty seconds, with at most one attribution refresh at start and one at completion. Custom durations do not change gameplay polling, reset shared CPU counters, change WoW profiling settings, or force garbage collection. Captures expose unavailable metrics explicitly on clients without the required APIs.
+
+
 General → Debugging has **Capture CPU (10s)**, **CPU report**, **Cancel capture**, **Native profiler probe**, **Capture runtime (10s)**, and **Runtime report**. These diagnostic actions use current runtime settings and do not apply a settings draft.
 
 WoW's `scriptProfile` must already be enabled before a reload. If capture reports that it is disabled, enable it with `/console scriptProfile 1` and `/reload`. RM never changes that setting or resets shared CPU counters. Profiling adds overhead to the client; disable it with `/console scriptProfile 0` and `/reload` when the investigation is finished.
 
-For a normal gameplay measurement, close configuration and run `/rm cpu start`. Leave the same rotation, polling interval, and character activity in place for the ten-second capture. Then use `/rm cpu report` to open the selectable, copyable report. `/rm cpu cancel` cancels an active capture. The buttons provide the same actions without chat commands.
+For a normal gameplay measurement, close configuration and run `/rm perf cpu`. Leave the same rotation, polling interval, and character activity in place for the ten-second capture. Then use `/rm perf cpu report` to open the selectable, copyable report. `/rm cpu cancel` cancels an active capture. The buttons provide the same actions without chat commands.
 
-Use **Native profiler probe** or `/rm cpu probe` to run one inert callback and open a copyable native profiler capability report. It checks API access only and does not measure gameplay CPU, change `scriptProfile`, reset counters, or start or cancel a capture. A successful probe does not establish that normal gameplay accounting is complete.
+Use **Native profiler probe** or `/rm perf probe` to run one inert callback and open a copyable native profiler capability report. It checks API access only and does not measure gameplay CPU, change `scriptProfile`, reset counters, or start or cancel a capture. A successful probe does not establish that normal gameplay accounting is complete.
 
-For a separate native runtime capture, use **Capture runtime (10s)** or `/rm cpu runtime`, then **Runtime report** or `/rm cpu runtimereport`. This measures normal `EvaluateNextAction` dispatches, including event-triggered calls, without adding polls. The native profiler must be available and enabled; it does not require RM to change `scriptProfile`. Runtime and cumulative captures cannot overlap. **Cancel capture** stops either active capture.
+For a separate native runtime capture, use **Capture runtime (10s)** or `/rm perf runtime`, then **Runtime report** or `/rm perf runtime report`. This measures normal `EvaluateNextAction` dispatches, including event-triggered calls, without adding polls. The native profiler must be available and enabled; it does not require RM to change `scriptProfile`. Runtime and cumulative captures cannot overlap. **Cancel capture** stops either active capture.
 
 During this explicit capture RM temporarily wraps the outer evaluation entry point and restores its owned wrapper when the capture ends. Original evaluations run exactly once. A failed native measurement never replays an evaluation that has already run. Unusual original errors retain their error value; diagnostic wrapping adds stack frames. Reading the completed report does not execute gameplay or query counters.
 

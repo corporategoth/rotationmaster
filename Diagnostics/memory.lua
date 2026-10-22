@@ -1,7 +1,7 @@
 local addon_name,addon=...
 -- Explicit, bounded lifetime observations. No evaluator hook or GC control.
 local active,lastReport,latest
-local DURATION,HEAP_LIMIT,DETAIL_LIMIT,COUNT_LIMIT,NODE_LIMIT=600,601,21,4096,8192
+local DEFAULT_DURATION,MAX_DURATION,COUNT_LIMIT,NODE_LIMIT=600,1800,4096,8192
 local kind,raw,nextKey,protect,each,same=type,rawget,next,pcall,ipairs,rawequal
 local format,concat=string.format,table.concat
 local function readable(value)
@@ -92,7 +92,7 @@ local function render(run,status)
  local lines={'Rotation Master memory capture: '..status,'Native acceptance: unverified',
   'Whole heap is shared Lua memory; addonKiB is sampled attribution. Neither identifies retained object bytes.',
   'Heap decreases are observations, not confirmed GC events. No collection or evaluator profiling was requested.',
-  format('requested=600 s; actual=%s s; heap samples=%d; detailed samples=%d',amount(run.elapsed),run.heapSamples,#run.rows),
+  format('requested=%g s; actual=%s s; heap samples=%d; detailed samples=%d',run.requested,amount(run.elapsed),run.heapSamples,#run.rows),
   format('heapKiB start=%s; end=%s; min=%s; max=%s; decreases=%d (>=256 KiB); max drop=%s at=%s s',amount(run.heapStart),amount(run.heapEnd),amount(run.heapMin),amount(run.heapMax),run.drops,amount(run.maxDrop),amount(run.maxDropAt)),
   format('Explicit attribution refreshes=%d; successful=%d; failed=%d; scan total=%s ms; max=%s ms',run.scanAttempts,run.scanOK,run.scanFailed,amount(run.scanTime),amount(run.scanMax))..' (timed scans='..run.timedScans..')',
   'addonKiB boundary start='..amount(run.startAddonKB)..'; end='..amount(run.endAddonKB)..' (explicit refresh results; unavailable if missing, failed or not requested)',
@@ -123,6 +123,7 @@ end
 local function finish(run,status)
  if not current(run)then return end
  active=nil;run.phase='retired'
+ if status=='complete'and run.stopRequested then status='stopped'end
  local report=render(run,status);lastReport=report
  local repeating,timeout=run.timer,run.timeout;run.timer,run.timeout=nil,nil
  if repeating then protect(run.cancel,addon,repeating)end
@@ -195,7 +196,7 @@ local function sample(run,ending)
    if freshTick then
    heap=callNumber(run,run.heap,'count')
    if not current(run)then return end
-   if heap~=nil and run.heapSamples<HEAP_LIMIT then
+   if heap~=nil and run.heapSamples<run.heapLimit then
     run.heapSamples=run.heapSamples+1;run.heapStart=run.heapStart or heap;run.heapEnd=heap
     run.heapMin=math.min(run.heapMin or heap,heap);run.heapMax=math.max(run.heapMax or heap,heap)
     local dropped=run.previousHeap and run.previousHeap-heap>=256
@@ -206,19 +207,19 @@ local function sample(run,ending)
    else run.failedSamples=run.failedSamples+1 end
    run.lastAt=at
    end
-   local final=ending or run.elapsed>=DURATION or run.heapSamples>=HEAP_LIMIT
+   local final=ending or run.elapsed>=run.requested or run.heapSamples>=run.heapLimit
    if final then
     -- Reserve the final row even when periodic detail sampling drifted. Set
     -- before native callouts so a stale/late timer cannot repeat this scan.
     if not run.finalDetail then run.finalDetail=true;detail(run,at,heap,true)end
-   elseif at>=run.nextDetail and #run.rows<DETAIL_LIMIT-1 then
+   elseif at>=run.nextDetail and #run.rows<run.detailLimit-1 then
     detail(run,at,heap,#run.rows==0)
    end
    if not current(run)then return end
    local after=callNumber(run,run.ms)
    if before and after and after>=before then local cost=after-before;run.overhead=(run.overhead or 0)+cost;run.overheadMax=math.max(run.overheadMax or 0,cost);run.timedSamples=run.timedSamples+1 end
   end
-  if ending or run.elapsed>=DURATION or run.heapSamples>=HEAP_LIMIT then finish(run,'complete')end
+  if ending or run.elapsed>=run.requested or run.heapSamples>=run.heapLimit then finish(run,'complete')end
  end)
  if current(run)then
   run.sampling=false
@@ -226,7 +227,7 @@ local function sample(run,ending)
   if ending then finish(run,'invalid')end
  end
 end
-function addon:StartMemoryCapture()
+function addon:StartMemoryCapture(duration)
  if self~=addon then return false,'foreign-owner'end
  local enabled=self.IsEnabled
  if kind(enabled)=='function'then
@@ -234,7 +235,9 @@ function addon:StartMemoryCapture()
   if not ok or not readable(value)or value~=true then return false,'addon-disabled'end
  end
  if active then return false,'already-running'end
- local run={phase='running',rows={},heapSamples=0,drops=0,scanAttempts=0,scanOK=0,scanFailed=0,failedSamples=0,timedScans=0,timedSamples=0,wtmSnapshots=0,wtmIncreases=0,wtmIntervals=0,wtmOverlaps=0,wtmOverlapIntervals=0,
+ if duration==nil then duration=DEFAULT_DURATION end
+ if not number(duration)or duration<1 or duration>MAX_DURATION then return false,'invalid-duration'end
+ local run={phase='running',requested=duration,heapLimit=math.ceil(duration)+1,detailLimit=math.ceil(duration/30)+1,rows={},heapSamples=0,drops=0,scanAttempts=0,scanOK=0,scanFailed=0,failedSamples=0,timedScans=0,timedSamples=0,wtmSnapshots=0,wtmIncreases=0,wtmIntervals=0,wtmOverlaps=0,wtmOverlapIntervals=0,
   clock=raw(_G,'GetTimePreciseSec')or raw(_G,'GetTime'),heap=raw(_G,'collectgarbage'),ms=raw(_G,'debugprofilestop'),
   update=api('UpdateAddOnMemoryUsage'),memory=api('GetAddOnMemoryUsage'),cancel=raw(addon,'CancelTimer')}
  local repeating,timeout=raw(addon,'ScheduleRepeatingTimer'),raw(addon,'ScheduleTimer')
@@ -250,10 +253,17 @@ function addon:StartMemoryCapture()
  if not current(run)then if ok and timer then protect(run.cancel,addon,timer)end;return false,'capture-retired'end
  if not ok or not timer then finish(run,'unavailable');return false,'timer-error'end
  run.timer=timer
- local good,handle=protect(timeout,addon,function()sample(run,true)end,DURATION)
+ local good,handle=protect(timeout,addon,function()sample(run,true)end,duration)
  if not current(run)then if good and handle then protect(run.cancel,addon,handle)end;return false,'capture-retired'end
  if not good or not handle then finish(run,'unavailable');return false,'timer-error'end
  run.timeout=handle
+ return true
+end
+-- Explicit completed boundary; legacy StopMemoryCapture remains cancellation.
+function addon:CompleteMemoryCapture()
+ if self~=addon or not active then return false,'not-running'end
+ local run=active;run.stopRequested=true
+ if run.sampling then finish(run,'stopped')else sample(run,true)end
  return true
 end
 function addon:StopMemoryCapture()

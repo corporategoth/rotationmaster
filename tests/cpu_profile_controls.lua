@@ -20,7 +20,7 @@ test('CPU report opens the shared copyable text window and cancellation stays ex
     ok=a:RunCPUProfileAction('report');assert(ok and shown[1]=='measured function costs' and shown[2]=='CPU profile')
     a.CancelCPUProfile=function() return true end
     ok,text=a:RunCPUProfileAction('cancel');assert(ok and text:find('cancel',1,true))
-    local count=#messages;a:OnCPUProfileFinished('report','complete');assert(#messages==count+1 and messages[#messages]:find('/rm cpu report',1,true))
+    local count=#messages;a:OnCPUProfileFinished('report','complete');assert(#messages==count+1 and messages[#messages]:find('/rm perf cpu report',1,true))
     a:OnCPUProfileFinished('report','cancelled');assert(#messages==count+1,'cancel should not announce twice')
 end)
 test('unknown CPU commands show usage without starting or changing a capture',function()

@@ -57,6 +57,7 @@ end
 }
 local function coldHash(s)local n=0;for i=1,#s do n=(n*33+s:byte(i))%4294967296 end;return string.format('%08x',n)end
 return function(text,coldOnly)
+ text=dofile("tests/fixtures/restore_performance_commands.lua")(text,"Diagnostics/cpu.lua")
  text=dofile("tests/fixtures/restore_observation_lifecycles.lua")(text,"Diagnostics/cpu.lua")
  if text:find('-- BEGIN COLD STORE STRING SHAPE',1,true) then
   assert(#text==57837 and coldHash(text)=='0be263f0','unrelated cold store string source')

@@ -181,6 +181,8 @@ def main():
             ['luajit', 'tests/cpu_validation_scopes.lua'],
             ['lua5.1', 'tests/cpu_work_views.lua'],
             ['luajit', 'tests/cpu_work_views.lua'],
+            ['lua5.1', 'tests/performance_commands.lua'],
+            ['luajit', 'tests/performance_commands.lua'],
             ['lua5.1', 'tests/cpu_profile_controls.lua'],
             ['luajit', 'tests/cpu_profile_controls.lua'],
             ['lua5.1', 'tests/cpu_native_probe.lua'],

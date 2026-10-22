@@ -457,7 +457,8 @@ function addon:HandleCommand(str)
         addon:print(L["/rm errors              - View and copy Rotation Master errors."])
         addon:print(L['/rm editorinfo          - Copy native Lua input diagnostics.'])
         addon:print(L['/rm editorarrows        - Temporarily test native arrows in an open editor.'])
-        addon:print(L['/rm cpu [start|report|cancel] - Capture and inspect CPU costs.'])
+        addon:print(L['/rm perf cpu|runtime|memory [seconds|stop|report] - Capture performance observations.'])
+        addon:print(L['/rm perf probe - Check native profiler access.'])
 
     elseif cmd == "config" then
         self:ShowConfig("Rotations")
@@ -470,6 +471,9 @@ function addon:HandleCommand(str)
 
     elseif cmd == 'editorarrows' then
         self:ShowLuaEditorArrowProbe()
+
+    elseif cmd == 'perf' then
+        self:HandlePerformanceCommand(string.sub(str,npos))
 
     elseif cmd == 'cpu' then
         self:RunCPUProfileAction(AceConsole:GetArgs(str,1,npos))

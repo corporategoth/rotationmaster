@@ -208,7 +208,7 @@ end
 local function report(run,status,reason)
  local lines={'Rotation Master native runtime capture: '..status..(reason and ' ('..reason..')'or ''),
   'Scope: all normal EvaluateNextAction dispatches, including timer and event calls; descendants overlap.',
-  'Requested=10 s; actual='..(run.duration and string.format('%.3f s',run.duration)or 'unavailable')..'; max dispatches=512; measured='..run.measured..'; unmeasured nested='..run.nested,
+  'Requested='..string.format('%g',run.requested)..' s; actual='..(run.duration and string.format('%.3f s',run.duration)or 'unavailable')..'; max dispatches=512; measured='..run.measured..'; unmeasured nested='..run.nested,
   'poll start='..run.poll,
   'Selected key: start='..(run.selectionStart or 'unavailable')..'; end='..(run.selectionEnd or 'unavailable'),
   string.format('elapsedMilliseconds: total=%.3f; average=%.3f; max=%.3f',run.elapsed,run.measured>0 and run.elapsed/run.measured or 0,run.maximum),
@@ -253,7 +253,7 @@ local function dispatch(run,self,...)
  local at=now(run)
  if not current(run)or not providerCurrent(run)then finish(run,'invalid','capture-changed');return run.original(self,...)end
  if not at or at<run.started then finish(run,'invalid','clock-unavailable');return run.original(self,...)end
- if at>=run.started+10 then finish(run,'complete');return run.original(self,...)end
+ if at>=run.started+run.requested then finish(run,'complete');return run.original(self,...)end
  local entries,open,result=0,true,nil
  local arguments=tuple(self,...);local exact=true
  local function once(...)
@@ -295,12 +295,13 @@ end
 function addon:StartCPURuntimeCapture(duration)
  if not rawequal(self,addon)then return false,'invalid-owner'end
  if active then return false,'already-running'end
- if duration~=nil and duration~=10 then return false,'invalid-duration'end
+ if duration==nil then duration=10 end
+ if not finite(duration)or duration<1 or duration>60 then return false,'invalid-duration'end
  local original=rawget(addon,'EvaluateNextAction');local cumulative=rawget(addon,'IsCPUProfileRunning')
  local schedule,cancel=rawget(addon,'ScheduleTimer'),rawget(addon,'CancelTimer')
  local clock=rawget(_G,'GetTimePreciseSec')or rawget(_G,'GetTime')
  if type(original)~='function'or type(cumulative)~='function'or type(schedule)~='function'or type(cancel)~='function'or type(clock)~='function'then return false,'missing-runtime-api'end
- local run={phase='starting',poll='unavailable',original=original,cancel=cancel,clock=clock,measured=0,nested=0,elapsed=0,maximum=0,allocated=0,deallocated=0}
+ local run={phase='starting',requested=duration,poll='unavailable',original=original,cancel=cancel,clock=clock,measured=0,nested=0,elapsed=0,maximum=0,allocated=0,deallocated=0}
  active=run
  local function reject(reason)if active==run then active=nil;run.phase='retired'end;return false,reason end
  local ok,running=pcall(cumulative,addon)
@@ -318,13 +319,18 @@ function addon:StartCPURuntimeCapture(duration)
  if active~=run then return false,'capture-retired'end
  if not run.started or not providerCurrent(run)or not rawequal(rawget(addon,'EvaluateNextAction'),original)or not rawequal(rawget(addon,'IsCPUProfileRunning'),cumulative)then return reject('capture-changed')end
  run.wrapper=function(...)return dispatch(run,...)end
- local accepted,timer=pcall(schedule,addon,function()finish(run,'complete')end,10)
+ local accepted,timer=pcall(schedule,addon,function()finish(run,'complete')end,duration)
  if active~=run then if accepted and timer then pcall(cancel,addon,timer)end;return false,'capture-retired'end
  if not accepted or not timer then return reject('timer-error')end
  run.timer=timer
  if not providerCurrent(run)or not rawequal(rawget(addon,'EvaluateNextAction'),original)or not rawequal(rawget(addon,'IsCPUProfileRunning'),cumulative)then finish(run,'invalid','capture-changed');return false,'capture-changed'end
  addon.EvaluateNextAction=run.wrapper;run.phase='running';phaseInstall(run);decisionInstall(run);lastReport=nil
  return true
+end
+function addon:StopCPURuntimeCapture()
+ if not rawequal(self,addon)then return false,'invalid-owner'end
+ if not active then return false,'not-running'end
+ finish(active,'stopped');return true
 end
 function addon:CancelCPURuntimeCapture()
  if not rawequal(self,addon)then return false,'invalid-owner'end
@@ -333,7 +339,7 @@ function addon:CancelCPURuntimeCapture()
 end
 function addon:IsCPURuntimeCaptureRunning()return active~=nil end
 function addon:GetCPURuntimeCaptureReport()
- if active then return 'Rotation Master native runtime capture: running (requested 10 s; all normal evaluator dispatches)'end
+ if active then return string.format('Rotation Master native runtime capture: running (requested %g s; all normal evaluator dispatches)',active.requested)end
  if lastReport then return lastReport end
  return nil,'not-captured'
 end

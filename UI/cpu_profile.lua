@@ -223,9 +223,59 @@ function addon:RunCPUProfileAction(action)
     return ok,message
 end
 
+-- Uniform cold command namespace. Legacy RunCPUProfileAction stays separate.
+local performanceCaptures={
+    cpu={start='StartCPUProfile',stop='StopCPUProfile',report='GetCPUProfileReport',title='CPU profile',duration=10,maximum=60},
+    runtime={start='StartCPURuntimeCapture',stop='StopCPURuntimeCapture',report='GetCPURuntimeCaptureReport',title='Runtime profile',duration=10,maximum=60},
+    memory={start='StartMemoryCapture',stop='CompleteMemoryCapture',report='GetMemoryCaptureReport',title='Memory capture',duration=600,maximum=1800},
+}
+local function performanceFailure(spec,reason)
+    if reason=='script-profile-disabled'then return failure(reason)end
+    if reason=='running'or reason=='already-running'then return L['%s is running. Stop it or wait for completion.']:format(L[spec.title])end
+    if reason=='not-captured'then return L['No %s report is available. Start a capture first.']:format(L[spec.title])end
+    if reason=='not-running'then return L['No %s is running.']:format(L[spec.title])end
+    return L['%s is unavailable: %s']:format(L[spec.title],tostring(reason or L['Unknown']))
+end
+function addon:HandlePerformanceCommand(text)
+    local usage=L['Usage: /rm perf cpu|runtime|memory [seconds|start|stop|report], or /rm perf probe']
+    local function reject(message)self:print(message);return false,message end
+    if nativeProbeBusy then return reject(L['Native profiler probe is already running.'])end
+    if type(text)~='string'then return reject(usage)end
+    local name,action,extra=text:match('^%s*(%S+)%s*(%S*)%s*(.-)%s*$')
+    if not name then return reject(usage)end
+    name=name:lower();action=action:lower()
+    if extra~=''then return reject(usage)end
+    if name=='probe'then
+        if action~=''then return reject(usage)end
+        return self:RunCPUProfileAction('probe')
+    end
+    local spec=performanceCaptures[name];if not spec then return reject(usage)end
+    if action=='report'then
+        local method=self[spec.report];local report,reason
+        if type(method)=='function'then report,reason=method(self)end
+        if report then self:ShowConditionText(report,L[spec.title]);return true,''end
+        return reject(performanceFailure(spec,reason or 'not-captured'))
+    end
+    local ok,reason,message
+    if action=='stop'then
+        local method=self[spec.stop]
+        if type(method)=='function'then ok,reason=method(self)else reason='not-running'end
+        message=ok and L['Capture stopped. Use /rm perf %s report to view and copy it.']:format(name)or performanceFailure(spec,reason)
+    else
+        local duration=(action==''or action=='start')and spec.duration or tonumber(action)
+        if type(duration)~='number'or duration~=duration or duration<1 or duration>spec.maximum then
+            return reject(L['Choose a duration from 1 to %d seconds.']:format(spec.maximum))
+        end
+        local method=self[spec.start]
+        if type(method)=='function'then ok,reason=method(self,duration)else reason='missing-profiler-api'end
+        message=ok and L['Capture started for %g seconds. Close configuration, then use /rm perf %s report.']:format(duration,name)or performanceFailure(spec,reason)
+    end
+    self:print(message);return ok,message
+end
+
 function addon:OnCPURuntimeCaptureFinished(_,status)
     if status=='complete' then
-        self:print(L['Runtime capture complete. Use General > Runtime report or /rm cpu runtimereport to view and copy it.'])
+        self:print(L['Runtime capture complete. Use General > Runtime report or /rm perf runtime report to view and copy it.'])
     elseif status=='invalid' then
         self:print(L['Runtime capture ended without complete measurements. Open Runtime report for details.'])
     end
@@ -233,13 +283,13 @@ end
 
 function addon:OnCPUProfileFinished(_,status)
     if status=='complete' then
-        self:print(L['CPU capture complete. Use General > CPU report or /rm cpu report to view and copy it.'])
+        self:print(L['CPU capture complete. Use General > CPU report or /rm perf cpu report to view and copy it.'])
     elseif status=='invalid' then
         self:print(L['CPU capture could not produce valid measurements. Open CPU report for details.'])
     end
 end
 
 function addon:OnMemoryCaptureFinished(_,status)
-    if status=='complete' then self:print(L['Memory capture complete. Use General > Memory report or /rm cpu memoryreport to view and copy it.'])
+    if status=='complete' then self:print(L['Memory capture complete. Use General > Memory report or /rm perf memory report to view and copy it.'])
     elseif status=='invalid' then self:print(L['Memory capture ended with unavailable observations. Open Memory report for details.']) end
 end

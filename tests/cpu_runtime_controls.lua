@@ -45,7 +45,7 @@ test('native capability probe refuses active runtime capture before any provider
 end)
 test('runtime completion announces explicit report command without duplicating cancel messages',function()
  local _,a,messages=fixture();assert(type(a.OnCPURuntimeCaptureFinished)=='function');a:OnCPURuntimeCaptureFinished('copyable','complete')
- assert(#messages==1 and messages[1]:find('/rm cpu runtimereport',1,true));a:OnCPURuntimeCaptureFinished('copyable','cancelled');assert(#messages==1)
+ assert(#messages==1 and messages[1]:find('/rm perf runtime report',1,true));a:OnCPURuntimeCaptureFinished('copyable','cancelled');assert(#messages==1)
  a:OnCPURuntimeCaptureFinished('copyable','invalid');assert(#messages==2)
 end)
 test('probe rechecks runtime capture witness after provider callbacks',function()

@@ -17,3 +17,10 @@ A stable trough with rising/falling memory and flat retained cardinalities can s
 If installed WTM exposes its existing public `WoWTaskManager.Processes.byName[addonName].spikes` and `lastSpikeAt` scalars, each valid heap tick also observes them without calling WTM methods or updating its memory/CPU state. The report counts increases that co-occur with an observed whole-heap decrease over the same actual sampling interval, and includes counters in detailed rows. Counter resets, object replacement and missing observations establish a new comparison baseline. Missing WTM simply reports this optional correlation unavailable. Interval timing is coarse and may stretch after a delayed callback; a count increase need not identify a single frame or a single collection. The last-spike offset is shown only for timestamps within the capture.
 
 WTM's Spikes display concerns slow frame-time incidents, with sampled addon CPU-window correlation. It is not a count of proven RM-caused hitches or network-latency incidents. This memory diagnostic does not promise to resolve those spikes. Live WoW acceptance remains unverified until an explicit native capture is completed.
+
+
+## Explicit command durations and completion
+
+`/rm perf memory` defaults to 600 seconds; `/rm perf memory N` accepts 1–1800 seconds. Sampling remains once per second and detailed counts once per thirty seconds. Per-run caps are `ceil(N)+1` heap samples and `ceil(N/30)+1` detailed rows; report text retains its existing byte bound. Attribution refreshes remain start/end only, at most two attempts per run.
+
+`/rm perf memory stop` calls `CompleteMemoryCapture`: sample the final boundary once, retire both timers, and retain a stopped report. A stop reentered from an active sampler callback retires without recursively sampling or overwriting newer captures. `/rm perf memory report` opens the copyable result. The existing `StopMemoryCapture` cancellation path used by legacy controls and addon disable remains unchanged and does not request an extra attribution refresh.

@@ -819,7 +819,7 @@ local function finish(run,status,reason)
     if problem then unavailable[#unavailable+1]={label=row.label,reason=problem} end
    end
    table.sort(ranked,function(a,b) if a.exclusive~=b.exclusive then return a.exclusive>b.exclusive end;if a.inclusive~=b.inclusive then return a.inclusive>b.inclusive end;return a.label<b.label end)
-   local report={'Rotation Master CPU profile: complete',string.format('duration=%.3f s; addon CPU=%.3f ms; addon rate=%.3f ms/s',elapsed,used,rate),
+   local report={'Rotation Master CPU profile: '..(run.stopRequested and 'stopped' or 'complete'),string.format('duration=%.3f s; addon CPU=%.3f ms; addon rate=%.3f ms/s',elapsed,used,rate),
     'start '..run.context,'end '..context(run.owner),'States describe capture boundaries only; activity may change within the interval.',
     'Native cumulative counters include collection and profiling overhead. Inclusive rows overlap and are not additive.',
     'Rows are selected coverage, not complete CPU accounting; addon and function snapshot boundaries differ slightly.',
@@ -891,6 +891,7 @@ local function finish(run,status,reason)
  workClear(run)
  -- END RUNTIME WORK CLEANUP
  lastReport=text
+ if status=='complete'and run.stopRequested then status='stopped'end
  local callback=field(run.owner,'OnCPUProfileFinished');if type(callback)=='function' then pcall(callback,run.owner,text,status) end
 end
 function addon:StartCPUProfile(duration)
@@ -954,6 +955,13 @@ function addon:StartCPUProfile(duration)
   if active~=run then return true end
  end
  -- END COLD STORE STRING START
+ return true
+end
+function addon:StopCPUProfile()
+ local run=active;if not run then return false,'not-running'end
+ local timer=run.timer;run.stopRequested=true
+ finish(run,'complete')
+ if timer then pcall(run.cancel,run.owner,timer)end
  return true
 end
 function addon:CancelCPUProfile()
