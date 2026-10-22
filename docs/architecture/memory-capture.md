@@ -1,6 +1,6 @@
 # Explicit memory lifetime capture
 
-`/rm cpu memory` starts a ten-minute diagnostic. General → Debugging provides the same Capture memory action, Stop memory capture, and a copyable Memory report. `/rm cpu memorystop` ends it early; `/rm cpu memoryreport` reads the last result. The command does not apply a settings draft or change polling.
+`/rm perf memory` starts a ten-minute diagnostic. General → Debugging provides the same Capture memory action, Stop memory capture, and a copyable Memory report. `/rm perf memory stop` ends it early; `/rm perf memory report` reads the last result. The command does not apply a settings draft or change polling.
 
 The module reads `collectgarbage("count")` at most 601 times, using a one-second timer, and retains aggregate start/end/min/max plus observed decreases of at least 256 KiB. It stores at most 21 detailed rows at actual observed thirty-second boundaries, reserving one row for completion even if the periodic cadence drifts. A late timer creates an actual late sample rather than replaying missed seconds. Stop/timeout retires the capture before cancelling its own two timer handles; old or reentrant callbacks cannot replace a newer capture. No work starts on load, or when a completed report is viewed.
 

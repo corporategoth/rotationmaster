@@ -4,7 +4,7 @@
 
 Use `/rm perf cpu`, `/rm perf runtime`, or `/rm perf memory` to start an explicit capture. CPU and runtime default to 10 seconds and accept 1–60 seconds, for example `/rm perf cpu 30` or `/rm perf runtime 20`. Memory defaults to 600 seconds and accepts 1–1800 seconds, for example `/rm perf memory 120`.
 
-Each capture supports `stop` and `report`: `/rm perf cpu stop` finalizes its current counters and prints a notice; `/rm perf cpu report` opens the selectable report. The same suffixes work for runtime and memory. Stop does not open a modal automatically. Reports and diagnostic controls do not apply settings drafts. `/rm perf probe` runs the existing one-shot inert native capability probe. The existing `/rm cpu` aliases and explicit cancellation behavior remain available.
+Each capture supports `stop` and `report`: `/rm perf cpu stop` finalizes its current counters and prints a notice; `/rm perf cpu report` opens the selectable report. The same suffixes work for runtime and memory. Stop does not open a modal automatically. Reports and diagnostic controls do not apply settings drafts. `/rm perf probe` runs the existing one-shot inert native capability probe.
 
 Runtime retains its 512-dispatch limit, so high-frequency evaluation can complete a requested long capture early. Memory still samples whole heap each second and bounded container counts every thirty seconds, with at most one attribution refresh at start and one at completion. Custom durations do not change gameplay polling, reset shared CPU counters, change WoW profiling settings, or force garbage collection. Captures expose unavailable metrics explicitly on clients without the required APIs.
 
@@ -13,7 +13,7 @@ General → Debugging has **Capture CPU (10s)**, **CPU report**, **Cancel captur
 
 WoW's `scriptProfile` must already be enabled before a reload. If capture reports that it is disabled, enable it with `/console scriptProfile 1` and `/reload`. RM never changes that setting or resets shared CPU counters. Profiling adds overhead to the client; disable it with `/console scriptProfile 0` and `/reload` when the investigation is finished.
 
-For a normal gameplay measurement, close configuration and run `/rm perf cpu`. Leave the same rotation, polling interval, and character activity in place for the ten-second capture. Then use `/rm perf cpu report` to open the selectable, copyable report. `/rm cpu cancel` cancels an active capture. The buttons provide the same actions without chat commands.
+For a normal gameplay measurement, close configuration and run `/rm perf cpu`. Leave the same rotation, polling interval, and character activity in place for the ten-second capture. Then use `/rm perf cpu report` to open the selectable, copyable report. **Cancel capture** cancels an active capture without finalizing it. The buttons provide the same actions without chat commands.
 
 Use **Native profiler probe** or `/rm perf probe` to run one inert callback and open a copyable native profiler capability report. It checks API access only and does not measure gameplay CPU, change `scriptProfile`, reset counters, or start or cancel a capture. A successful probe does not establish that normal gameplay accounting is complete.
 
@@ -57,7 +57,7 @@ The copyable CPU report includes **Execution index proof start/end** snapshots. 
 
 The owned portable-data and rotation-tree parsers capture standard `string.sub` and `string.match` once at trusted module load, preserving the original byte slice and identifier pattern. Their grammar therefore no longer depends on WoW exposing its native string metatable. The report shows `parser-match` and `parser-sub` capability flags; missing or malformed captured operations remain unavailable and are not adopted later. This extends the existing standard-at-load premise to these two operations; it does not authenticate arbitrary wrappers installed before loading.
 
-Later changes to native string-method dispatch or global string-library members intentionally no longer replace these parser operations. Public method overrides, changed function environments, raw-global uncertainty and input graph edits retain the fresh fallback. Public indexing remains fresh. These facts appear in **General → Debugging → CPU report** and `/rm cpu report`; no chat copying or `/run` command is needed.
+Later changes to native string-method dispatch or global string-library members intentionally no longer replace these parser operations. Public method overrides, changed function environments, raw-global uncertainty and input graph edits retain the fresh fallback. Public indexing remains fresh. These facts appear in **General → Debugging → CPU report** and `/rm perf cpu report`; no chat copying or `/run` command is needed.
 
 ## Optional observation cache
 

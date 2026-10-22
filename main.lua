@@ -475,9 +475,6 @@ function addon:HandleCommand(str)
     elseif cmd == 'perf' then
         self:HandlePerformanceCommand(string.sub(str,npos))
 
-    elseif cmd == 'cpu' then
-        self:RunCPUProfileAction(AceConsole:GetArgs(str,1,npos))
-
     elseif cmd == "disable" then
         addon:disable()
 

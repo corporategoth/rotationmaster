@@ -217,7 +217,7 @@ function addon:RunCPUProfileAction(action)
         if report then self:ShowConditionText(report,L['CPU profile']);return true,'' end
         ok=false;message=failure(reason)
     else
-        ok=false;message=L['Usage: /rm cpu [start|report|cancel|probe|runtime|runtimereport|memory|memorystop|memoryreport]']
+        ok=false;message=L['Usage: /rm perf cpu|runtime|memory [seconds|start|stop|report], or /rm perf probe']
     end
     self:print(message)
     return ok,message

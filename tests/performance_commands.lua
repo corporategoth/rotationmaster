@@ -28,17 +28,17 @@ test('failed stop and missing report keep the old report and do not pop up',func
  local _,a,s=fixture();a.StopCPUProfile=function()return false,'not-running'end;a.GetCPUProfileReport=function()return nil,'not-captured'end
  assert(not a:HandlePerformanceCommand('cpu stop'));assert(not a:HandlePerformanceCommand('cpu report'));assert(#s.shown==0)
 end)
-test('legacy aliases retain default durations and explicit cancellation dispatch',function()
+test('UI actions retain default durations and explicit cancellation dispatch',function()
  local _,a,s=fixture();a.IsCPURuntimeCaptureRunning=function()return true end;a.CancelCPURuntimeCapture=function()s.cancelled=true;return true end
  assert(a:RunCPUProfileAction('start'));assert(s.calls[1][1]=='StartCPUProfile'and s.calls[1][2]==10)
  assert(a:RunCPUProfileAction('cancel')and s.cancelled and#s.shown==0)
 end)
-test('actual Main routes perf remainder and retains old cpu alias',function()
+test('actual Main routes perf remainder and rejects removed cpu command',function()
  local f,a,s=fixture();local source=read('main.lua');local first=assert(source:find('function addon:HandleCommand(str)',1,true));local last=assert(source:find('-- One optional-provider lifetime',first,true))
  local chunk=assert(loadstring('local addon,L,AceConsole=...\n'..source:sub(first,last-1)));setfenv(chunk,f.env)
  local L=f.env.LibStub('AceLocale-3.0'):GetLocale('rotationmaster');local console={GetArgs=function(_,text,_,pos)pos=pos or 1;local b,e,word=text:find('(%S+)',pos);return word,e and e+2 or#text+1 end}
  chunk(a,L,console);local routed;a.HandlePerformanceCommand=function(_,text)routed=text end;a:HandleCommand('perf runtime 30');assert(routed=='runtime 30')
- a.RunCPUProfileAction=function(_,text)routed='old:'..text end;a:HandleCommand('cpu report');assert(routed=='old:report')
+ routed=nil;a.RunCPUProfileAction=function()error('removed cpu command dispatched')end;a:HandleCommand('cpu report');assert(routed==nil)
 end)
 local function prefixFixture(path,name)local text=read(path);return assert(loadstring(assert(text:match('^(.-)\ntest%('))..'\nreturn '..name))()end
 local runtime=prefixFixture('tests/cpu_runtime.lua','setup')
