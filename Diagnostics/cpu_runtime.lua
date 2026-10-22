@@ -95,11 +95,24 @@ local function poll()
  local value=field(field(rawget(addon,'db'),'profile'),'poll')
  return finite(value)and tostring(value)or 'unavailable'
 end
+-- Boundary-only routing label. No IDs, names, providers or private bodies leave
+-- here, and report reads/normal evaluator dispatches never re-observe selection.
+local selectionSub=string.sub
+local function selectedKey()
+ local value=rawget(addon,'currentRotation')
+ if not readable(value)or not rawequal(rawget(addon,'currentRotation'),value)then return 'unavailable'end
+ if value==nil then return 'none'end
+ if type(value)~='string'then return 'unavailable'end
+ local ok,prefix=pcall(selectionSub,value,1,13)
+ if not ok then return 'unavailable'end
+ return prefix=='\1rm:rotation:'and 'scoped'or 'raw'
+end
 local function report(run,status,reason)
  local lines={'Rotation Master native runtime capture: '..status..(reason and ' ('..reason..')'or ''),
   'Scope: all normal EvaluateNextAction dispatches, including timer and event calls; descendants overlap.',
   'Requested=10 s; actual='..(run.duration and string.format('%.3f s',run.duration)or 'unavailable')..'; max dispatches=512; measured='..run.measured..'; unmeasured nested='..run.nested,
   'poll start='..run.poll,
+  'Selected key: start='..(run.selectionStart or 'unavailable')..'; end='..(run.selectionEnd or 'unavailable'),
   string.format('elapsedMilliseconds: total=%.3f; average=%.3f; max=%.3f',run.elapsed,run.measured>0 and run.elapsed/run.measured or 0,run.maximum),
   'allocatedBytes='..(run.allocated~=nil and string.format('%.0f',run.allocated)or 'unavailable')..'; deallocatedBytes='..(run.deallocated~=nil and string.format('%.0f',run.deallocated)or 'unavailable'),
   'Gross allocated/deallocated bytes are not retained heap, garbage collection totals, or evidence of a memory leak.',
@@ -118,6 +131,7 @@ local function finish(run,status,reason)
  run.phase='finishing'
  local ended=now(run)
  if ended and run.started and ended>=run.started and finite(ended-run.started)then run.duration=ended-run.started end
+ run.selectionEnd=selectedKey()
  active=nil;run.phase='retired'
  if rawequal(rawget(addon,'EvaluateNextAction'),run.wrapper)then addon.EvaluateNextAction=run.original end
  phaseRestore(run)
@@ -192,7 +206,9 @@ function addon:StartCPURuntimeCapture(duration)
  local good,enabled=pcall(run.enabled)
  if active~=run then return false,'capture-retired'end
  if not good or not readable(enabled)or enabled~=true or not providerCurrent(run)then return reject('native-profiler-unavailable')end
- run.started=now(run);run.poll=poll();phasePrepare(run)
+ run.started=now(run);run.poll=poll();run.selectionStart=selectedKey()
+ if active~=run then return false,'capture-retired'end
+ phasePrepare(run)
  if active~=run then return false,'capture-retired'end
  if not run.started or not providerCurrent(run)or not rawequal(rawget(addon,'EvaluateNextAction'),original)or not rawequal(rawget(addon,'IsCPUProfileRunning'),cumulative)then return reject('capture-changed')end
  run.wrapper=function(...)return dispatch(run,...)end
