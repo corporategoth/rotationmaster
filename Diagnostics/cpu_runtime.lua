@@ -26,6 +26,45 @@ local function providerCurrent(run)
   and rawequal(rawget(run.provider,'MeasureCall'),run.measure)
 end
 local function current(run)return active==run and run.phase=='running' and rawequal(rawget(addon,'EvaluateNextAction'),run.wrapper)end
+-- Consumed once by Main; the sink receives fixed scalar enums only.
+local decisionSetter,decisionBound,decisionOwner
+function addon:BindCPURuntimeDecisionCounts(setter)
+ if self~=addon or decisionBound or type(setter)~='function'then return end
+ decisionBound=true;decisionSetter=setter;return true
+end
+local function decisionPrepare(run)
+ run.decisionComplete=0;run.decisionAvailable=type(decisionSetter)=='function'
+ run.decisionFields={'attempted','matched','notMatchedOrUnavailable','skippedDisabled','skippedNoAction','mapped','unmapped','ready','notReady'}
+ run.decisionIndex={attempt=1,matched=2,notmatched=3,disabled=4,noaction=5,mapped=6,unmapped=7,ready=8,notready=9}
+ run.decisionTotals={{0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0}}
+ run.decisionScratch={{0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0}}
+ run.decisionSink=function(scope,event)
+  if not current(run)or not run.callbackInside or not run.decisionSampleOK then return end
+  local row=scope=='rotation'and 1 or scope=='cooldowns'and 2
+  local index=run.decisionIndex[event];local scratch=run.decisionScratch
+  if row and index and scratch then scratch[row][index]=scratch[row][index]+1 end
+ end
+end
+local function decisionInstall(run)
+ if run.decisionAvailable then decisionOwner=run;decisionSetter(run.decisionSink)end
+end
+local function decisionRestore(run)
+ if decisionOwner==run then decisionOwner=nil;decisionSetter(nil)end
+end
+local function decisionAccumulate(run)
+ if not run.decisionSampleOK or not run.decisionScratch or decisionOwner~=run then return end
+ run.decisionComplete=run.decisionComplete+1
+ for row=1,2 do for index=1,9 do run.decisionTotals[row][index]=run.decisionTotals[row][index]+run.decisionScratch[row][index]end end
+end
+local function decisionReport(lines,run)
+ lines[#lines+1]='Decisions: complete='..(run.decisionComplete or 0)..'; unavailable='..(run.measured-(run.decisionComplete or 0))
+ lines[#lines+1]='Counts are reached action decisions, not unique configured rows or all rotation clauses; unreached/short-circuited conditions are not counted false. Cooldowns count reached configured rows.'
+ lines[#lines+1]='Condition false combines not matched or unavailable. Mapping is the FindSpell cached button index, not visibility, glow or animation; one row can perform multiple mapping/readiness attempts.'
+ if (run.decisionComplete or 0)>0 then for row=1,2 do
+  local parts={};for index,name in ipairs(run.decisionFields)do parts[#parts+1]=name..'='..run.decisionTotals[row][index]end
+  lines[#lines+1]=(row==1 and 'rotation' or 'cooldowns')..' decisions | '..table.concat(parts,'; ')
+ end end
+end
 -- Capture-only markers at the existing six profiler child lookups. The real
 -- child objects/methods are always returned and invoked by the original code.
 local childNames={'environment','environment','rotation','rotation','cooldowns','cooldowns'}
@@ -37,6 +76,7 @@ local function phaseCurrent(run)
   and rawequal(rawget(run.provider,'AddMeasuredCallEvent'),run.marker)
 end
 local function phasePrepare(run)
+ decisionPrepare(run)
  run.phaseComplete=0;run.phaseRows={}
  for i=1,7 do run.phaseRows[i]={time=0,allocated=0,deallocated=0}end
  local root=field(addon,'evaluationProfile');local child=field(root,'child');local marker=field(run.provider,'AddMeasuredCallEvent')
@@ -164,6 +204,7 @@ local function report(run,status,reason)
   'allocatedBytes='..(run.allocated~=nil and string.format('%.0f',run.allocated)or 'unavailable')..'; deallocatedBytes='..(run.deallocated~=nil and string.format('%.0f',run.deallocated)or 'unavailable'),
   'Gross allocated/deallocated bytes are not retained heap, garbage collection totals, or evidence of a memory leak.',
   'Measurements include the capture trampoline and instrumentation; real native evaluator acceptance requires a client capture.'}
+ decisionReport(lines,run)
  lines[#lines+1]='Phases: complete='..(run.phaseComplete or 0)..'; unavailable='..(run.measured-(run.phaseComplete or 0))..' (missing, changed or invalid marker sequence/snapshots).'
  lines[#lines+1]='Phase rows include complete samples only, at existing child lookup boundaries. Intervals are disjoint; native marker overhead is included, unadjusted.'
  lines[#lines+1]='Byte snapshots are differenced; unavailable arithmetic is withheld. Native totals exclude outer aggregation and report work.'
@@ -182,6 +223,7 @@ local function finish(run,status,reason)
  run.selectionEnd=selectedKey()
  diagnosticEnd(run)
  active=nil;run.phase='retired'
+ decisionRestore(run)
  if rawequal(rawget(addon,'EvaluateNextAction'),run.wrapper)then addon.EvaluateNextAction=run.original end
  phaseRestore(run)
  local timer=run.timer;run.timer=nil;if timer then pcall(run.cancel,addon,timer)end
@@ -195,7 +237,7 @@ local function originalResult(result)
 end
 local function dispatch(run,self,...)
  if not rawequal(self,addon)or not current(run)then return run.original(self,...)end
- if run.inside then run.nested=run.nested+1;run.samplePhaseOK=false;return run.original(self,...)end
+ if run.inside then run.nested=run.nested+1;run.samplePhaseOK=false;run.decisionSampleOK=false;return run.original(self,...)end
  if not providerCurrent(run)then finish(run,'invalid','profiling-api-changed');return run.original(self,...)end
  local at=now(run)
  if not current(run)or not providerCurrent(run)then finish(run,'invalid','capture-changed');return run.original(self,...)end
@@ -215,6 +257,8 @@ local function dispatch(run,self,...)
   return 'RM:runtime'
  end
  run.inside=true
+ run.decisionSampleOK=run.decisionAvailable
+ if run.decisionSampleOK then for row=1,2 do for index=1,9 do run.decisionScratch[row][index]=0 end end end
  run.phasePosition=0;run.samplePhaseOK=phaseCurrent(run)and true or false
  local native=tuple(pcall(run.measure,once,self,...))
  open=false;run.inside=false
@@ -228,6 +272,7 @@ local function dispatch(run,self,...)
  local elapsed=valid and field(native[2],'elapsedMilliseconds')
  if not finite(elapsed)or elapsed<0 or not finite(run.elapsed+elapsed)then valid=false end
  if not valid then finish(run,'invalid','native-result-unavailable');return originalResult(result)end
+ decisionAccumulate(run)
  run.measured=run.measured+1;run.elapsed=run.elapsed+elapsed;run.maximum=math.max(run.maximum,elapsed)
  local allocated,deallocated=bytes(field(native[2],'allocatedBytes')),bytes(field(native[2],'deallocatedBytes'))
  phaseAccumulate(run,native[2],elapsed,allocated,deallocated)
@@ -267,7 +312,7 @@ function addon:StartCPURuntimeCapture(duration)
  if not accepted or not timer then return reject('timer-error')end
  run.timer=timer
  if not providerCurrent(run)or not rawequal(rawget(addon,'EvaluateNextAction'),original)or not rawequal(rawget(addon,'IsCPUProfileRunning'),cumulative)then finish(run,'invalid','capture-changed');return false,'capture-changed'end
- addon.EvaluateNextAction=run.wrapper;run.phase='running';phaseInstall(run);lastReport=nil
+ addon.EvaluateNextAction=run.wrapper;run.phase='running';phaseInstall(run);decisionInstall(run);lastReport=nil
  return true
 end
 function addon:CancelCPURuntimeCapture()

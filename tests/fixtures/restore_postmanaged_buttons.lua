@@ -2027,6 +2027,7 @@ end
 -- END CPU ACTIVITY HANDOFF
 ]=]):sub(2)
 return function(text,path)
+ text=dofile("tests/fixtures/restore_observation_lifecycles.lua")(text,path)
  if path=="buttons.lua"and text==current then return previous end
  return text
 end

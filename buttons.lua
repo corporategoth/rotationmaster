@@ -205,13 +205,66 @@ local function UpdateOverlayRaw(frame, effect, color, mags, setp, xoffs, yoffs, 
     return true
 end
 
+local UpdateOverlay
+local function OverlayVisible(frame)
+    -- Older external frame stand-ins have no visibility observation. Keep
+    -- their legacy timer behavior; ordinary native Frames provide this API.
+    if type(frame.IsVisible)=='function' then return frame:IsVisible() end
+end
+
 local function StopOverlay(frame)
-	InvalidateOverlay(frame)
-	if frame.sequenceTimer then
-		addon:CancelTimer(frame.sequenceTimer)
-		frame.sequenceTimer = nil
-	end
-	frame.sequenceIdx = nil
+    InvalidateOverlay(frame)
+    local generation,timer=frame.rmOverlayGeneration,frame.sequenceTimer
+    frame.rmOverlayAnimation=nil
+    frame.sequenceTimer=nil
+    frame.sequenceIdx=nil
+    if timer then addon:CancelTimer(timer) end
+    return frame.rmOverlayGeneration==generation
+end
+
+local function PauseOverlay(frame)
+    local animation,generation=frame.rmOverlayAnimation,frame.rmOverlayGeneration
+    if not animation or OverlayVisible(frame)~=false then return end
+    if frame.rmOverlayAnimation~=animation or frame.rmOverlayGeneration~=generation then return end
+    InvalidateOverlay(frame)
+    animation.generation=frame.rmOverlayGeneration
+    animation.paused=true
+    animation.ticket=nil
+    local timer=frame.sequenceTimer
+    frame.sequenceTimer=nil
+    if timer then addon:CancelTimer(timer) end
+end
+
+local function StartOverlay(frame,animation)
+    local generation=frame.rmOverlayGeneration
+    if frame.rmOverlayAnimation~=animation or animation.generation~=generation then return false end
+    if frame.sequenceTimer or animation.scheduling and animation.scheduling.generation==generation then return true end
+    local visible=OverlayVisible(frame)
+    if frame.rmOverlayAnimation~=animation or frame.rmOverlayGeneration~=generation then return false end
+    if visible==false then animation.paused=true;return true end
+    animation.paused=false
+    local ticket={generation=generation}
+    animation.ticket,animation.scheduling=ticket,ticket
+    local ok,timer=pcall(addon.ScheduleRepeatingTimer,addon,UpdateOverlay,animation.effect.frequency or .25,
+        frame,animation.effect,animation.color,animation.mags,animation.setp,
+        animation.xoffs,animation.yoffs,animation.angle,animation,ticket)
+    if animation.scheduling==ticket then animation.scheduling=nil end
+    if not ok then
+        if animation.ticket==ticket then animation.ticket=nil end
+        error(timer,0)
+    end
+    if frame.rmOverlayAnimation~=animation or frame.rmOverlayGeneration~=generation
+        or animation.ticket~=ticket or animation.paused then
+        if timer then addon:CancelTimer(timer) end
+        return false
+    end
+    frame.sequenceTimer=timer
+    return true
+end
+
+local function ResumeOverlay(frame)
+    local animation=frame.rmOverlayAnimation
+    if animation and OverlayVisible(frame)==true then StartOverlay(frame,animation) end
 end
 
 function addon:HideGlow(frame, id, keepProc)
@@ -220,12 +273,20 @@ function addon:HideGlow(frame, id, keepProc)
 	CustomGlow.ButtonGlow_Stop(frame)
     if not keepProc and type(CustomGlow.ProcGlow_Stop)=='function' then CustomGlow.ProcGlow_Stop(frame,tostring(id or '')) end
 	if id ~= nil and frame.rmOverlays and frame.rmOverlays[id] then
-		StopOverlay(frame.rmOverlays[id])
-		frame.rmOverlays[id]:Hide()
+        local overlay=frame.rmOverlays[id]
+        if StopOverlay(overlay) and frame.rmOverlays and frame.rmOverlays[id]==overlay then overlay:Hide() end
 	end
 end
 
-local function UpdateOverlay(frame, effect, color, mags, setp, xoffs, yoffs, angle)
+UpdateOverlay=function(frame, effect, color, mags, setp, xoffs, yoffs, angle, animation, ticket)
+	if animation then
+        if frame.rmOverlayAnimation~=animation or animation.generation~=frame.rmOverlayGeneration
+            or animation.ticket~=ticket or animation.paused then return false end
+    elseif effect.type~='texture' then
+        animation={effect=effect,color=color,mags=mags,setp=setp,xoffs=xoffs,yoffs=yoffs,angle=angle,
+            generation=frame.rmOverlayGeneration}
+        frame.rmOverlayAnimation=animation
+    end
 	local type =  effect.type
     if type == "texture" then
         return UpdateOverlayRaw(frame, effect.texture, color, mags, setp, xoffs, yoffs, angle)
@@ -240,11 +301,7 @@ local function UpdateOverlay(frame, effect, color, mags, setp, xoffs, yoffs, ang
 		else
 			if not UpdateOverlayRaw(frame, effect.texture, color, mags, setp, xoffs, yoffs, ((2 * math.pi) / effect.steps * (frame.sequenceIdx - 1))) then return false end
         end
-		if not frame.sequenceTimer then
-			frame.sequenceTimer = addon:ScheduleRepeatingTimer(UpdateOverlay, effect.frequency or 0.25,
-					frame, effect, color, mags, setp, xoffs, yoffs, angle)
-		end
-		return true
+		return StartOverlay(frame,animation)
 	elseif effect.sequence and #effect.sequence > 0 then
         local sequence = effect.sequence
         if frame.sequenceIdx then
@@ -264,11 +321,7 @@ local function UpdateOverlay(frame, effect, color, mags, setp, xoffs, yoffs, ang
             StopOverlay(frame)
 			return false
 		end
-		if not frame.sequenceTimer then
-			frame.sequenceTimer = addon:ScheduleRepeatingTimer(UpdateOverlay, effect.frequency or 0.25,
-				frame, effect, color, mags, setp, xoffs, yoffs, angle)
-		end
-		return true
+		return StartOverlay(frame,animation)
 	end
     return false
 end
@@ -296,11 +349,16 @@ local function CreateOverlay(parent)
 	end
 
 	t:SetAllPoints(frame)
+    if not frame.rmOverlayLifecycle then
+        frame.rmOverlayLifecycle=true
+        frame:HookScript('OnHide',PauseOverlay)
+        frame:HookScript('OnShow',ResumeOverlay)
+    end
 	return frame
 end
 
 local function DestroyOverlay(frame, id)
-	StopOverlay(frame)
+	if not StopOverlay(frame) then return end
 	if frame:GetParent().rmOverlays ~= nil and frame:GetParent().rmOverlays[id] then
 		frame:GetParent().rmOverlays[id] = nil
 	end
@@ -315,11 +373,18 @@ end
 
 local function DestroyAllOverlay(parent)
 	if parent.rmOverlays ~= nil then
-		for id,frame in pairs(parent.rmOverlays) do
+		local overlays=parent.rmOverlays
+		for id,frame in pairs(overlays) do
 			DestroyOverlay(frame, id)
 		end
-		parent.rmOverlays = nil
+		if parent.rmOverlays==overlays and next(overlays)==nil then parent.rmOverlays = nil end
 	end
+end
+
+local function OverlaySuperseded(button,id,overlay,generation)
+    if (button.rmOverlays and button.rmOverlays[id])~=overlay then return true end
+    return overlay and overlay.rmOverlayGeneration~=generation
+        and (overlay.rmOverlayGeneration~=generation+1 or overlay.rmOverlayAnimation~=nil)
 end
 
 function addon:DestroyAllGlows()
@@ -327,8 +392,10 @@ function addon:DestroyAllGlows()
 	for spellid,v in pairs(Flags) do
 		if v then
 			for _, button in pairs(Spells[spellid]) do
+				local overlay=button.rmOverlays and button.rmOverlays[spellid]
+				local generation=overlay and overlay.rmOverlayGeneration
 				self:HideGlow(button, spellid)
-				DestroyAllOverlay(button)
+				if not OverlaySuperseded(button,spellid,overlay,generation) then DestroyAllOverlay(button) end
 			end
 		end
 	end
@@ -336,8 +403,10 @@ function addon:DestroyAllGlows()
 	for spellid,v in pairs(SpellsGlowing) do
 		if v then
 			for _, button in pairs(Spells[spellid]) do
+				local overlay=button.rmOverlays and button.rmOverlays.next
+				local generation=overlay and overlay.rmOverlayGeneration
 				self:HideGlow(button, "next")
-				DestroyAllOverlay(button)
+				if not OverlaySuperseded(button,'next',overlay,generation) then DestroyAllOverlay(button) end
 			end
 		end
 	end
@@ -387,10 +456,15 @@ function addon:Glow(button, id, effect, color, mags, setp, xoffs, yoffs, angle)
 		return
 	end
 
+    local overlay=button.rmOverlays and button.rmOverlays[id]
+    local generation=overlay and overlay.rmOverlayGeneration
     color=self:ResolveHighlightColor(color)
+    if (button.rmOverlays and button.rmOverlays[id])~=overlay
+        or overlay and overlay.rmOverlayGeneration~=generation then return end
 
 	local type = effect.type
 	addon:HideGlow(button, id, type=='proc')
+    if OverlaySuperseded(button,id,overlay,generation) then return end
 	if addon.Functions.collections.index(addon.textured_types, type) then
 		if not button.rmOverlays then
 			button.rmOverlays = {}

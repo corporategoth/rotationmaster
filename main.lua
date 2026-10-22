@@ -89,6 +89,12 @@ local L = LibStub("AceLocale-3.0"):GetLocale(addon_name)
 local getCached
 local acquireActiveRuntimePlan,registerActiveRuntimeConsumers
 local mainEnvironment=getfenv(1)
+local runtimeDecisionSink
+local bindRuntimeDecisions=addon.BindCPURuntimeDecisionCounts
+addon.BindCPURuntimeDecisionCounts=nil
+if type(bindRuntimeDecisions)=='function'then
+    bindRuntimeDecisions(addon,function(sink)runtimeDecisionSink=sink end)
+end
 local consumeActiveRuntimePlan=addon.ConsumeActiveRuntimePlan
 if type(consumeActiveRuntimePlan)=='function' then
     acquireActiveRuntimePlan,registerActiveRuntimeConsumers=consumeActiveRuntimePlan(addon)
@@ -781,6 +787,8 @@ local function registerOptionalEvent(owner,change,event)
     return true,false
 end
 
+local reconcileNameplateResume
+
 function addon:enable()
     if self.initializationErrorReport then self:ShowErrors();return end
     local change=beginActive(self)
@@ -813,6 +821,11 @@ function addon:enable()
         if not current then return end
         equipmentRegistered=registered
         -- END EQUIPMENT EVENT REGISTRATION
+    end
+
+    if client.combatDataPolicy=='probe' then
+        reconcileNameplateResume(self,change)
+        if not activeChangeCurrent(self,change) then return end
     end
 
     if self.RefreshPreviewWindow then
@@ -1146,6 +1159,7 @@ function addon:EvaluateNextAction()
 end
 
 function addon:EvaluateNextActionInternal()
+    local decisionSink=runtimeDecisionSink
     local selectedRotation,selectedSpec,selectedProfile=self.currentRotation,self.currentSpec,self.db.profile
     local runtimePass,rot,publicationGuard,planToken,conditionSession,handled,presentationViews,conditionLease,notifiedLease,deliveryLease,dispatchLease
     local executionFailed=false
@@ -1286,22 +1300,27 @@ function addon:EvaluateNextActionInternal()
             self.evaluationProfile:stop()
             return
         end
-        local function eval(cond)
+        local function eval(cond,decisionRow)
+            if decisionSink then decisionSink(decisionRow,'attempt')end
             local firstMapped,firstItem
             local matches
-            if cond.action~=nil and not cond.disabled then
+            local action=cond.action
+            if action~=nil and not cond.disabled then
                 if conditionSession then matches=conditionSession:EvaluateBool(cond.conditions,{stepId=cond.id})
                 else matches=addon:evaluateCondition(cond.conditions,{stepId=cond.id}) end
-            end
+                if decisionSink then decisionSink(decisionRow,matches and 'matched' or 'notmatched')end
+            elseif decisionSink then decisionSink(decisionRow,action==nil and 'noaction' or 'disabled')end
             if matches then
                 if not dispatchCurrent('step')then return nil,false end
                 local spellids,itemids=addon:GetSpellIds(cond)
                 for index,id in ipairs(spellids or {}) do
                     local itemId=itemids and itemids[index]
                     local mapped=addon:FindSpell({id},cond.type=="item" and {itemId} or nil)
+                    if decisionSink then decisionSink(decisionRow,mapped and 'mapped' or 'unmapped')end
                     if mapped then
                         if not firstMapped then firstMapped,firstItem=mapped,itemId end
                         local ready=actionReady(cond.type,id,itemId)
+                        if decisionSink then decisionSink(decisionRow,ready and 'ready' or 'notready')end
                         if ready then return mapped,true,itemId end
                     end
                 end
@@ -1360,7 +1379,7 @@ function addon:EvaluateNextActionInternal()
             if conditionSession then return conditionSession:EvaluateResult(condition,context) end
             return addon:evaluateConditionResult(condition,context)
         end,function(cond,index)
-            local spellid,enabled,itemId=eval(cond)
+            local spellid,enabled,itemId=eval(cond,'rotation')
             if not dispatchCurrent('resume')then return false end
             if enabled then
                 recommend(spellid,cond,index,itemId)
@@ -1397,7 +1416,7 @@ function addon:EvaluateNextActionInternal()
             local observations={}
             if not dispatchCurrent('iterator')then self.evaluationProfile:stop();return end
             for id,cond in pairs(rot.cooldowns) do
-                local spellid,enabled,itemId=eval(cond)
+                local spellid,enabled,itemId=eval(cond,'cooldowns')
                 if not dispatchCurrent('resume')then self.evaluationProfile:stop();return end
                 observations[#observations+1]={id=id,condition=cond,spellid=spellid,enabled=enabled,itemId=itemId}
             end
@@ -2049,6 +2068,139 @@ local function applyNameplateChanges(self,snapshot,ticket,unit,changes)
         end
     end
     return true
+end
+
+-- A disabled addon misses removal events. Reconcile only at subscription
+-- renewal: enumeration adds positive observations; it never proves absence.
+-- Negative evidence is confined to ordinary native nameplate tokens, with a
+-- readable current GUID change or readable GUID nil AND UnitExists false.
+do
+local kind,meta,read,write,same,nextEntry,items,protected,raise,match=
+    type,getmetatable,rawget,rawset,rawequal,next,ipairs,pcall,error,string.match
+reconcileNameplateResume=function(self,change)
+    local snapshot=self.unitsInRange
+    if kind(snapshot)~="table" or meta(snapshot)~=nil then return end
+    local ticket={};nameplateEvent=ticket
+    local db,profile=self.db,self.db.profile
+    local function current()
+        return nameplateCurrent(self,snapshot,ticket) and self.db==db and db.profile==profile
+            and kind(activeCurrent)=="function" and activeCurrent(self,change)
+    end
+    -- Native/frame/readability failures leave the complete old map intact.
+    -- All writes below occur after the last callback and exact slot checks.
+    protected(function()
+        local function requireCurrent() if not current() then raise("stale nameplate resume",0) end end
+        local function readable(value)
+            requireCurrent()
+            if not self.Platform:CanReadValue(value) then raise("unreadable nameplate resume",0) end
+            requireCurrent()
+            if canaccessvalue then
+                if kind(canaccessvalue)~="function" or not canaccessvalue(value) then raise("restricted nameplate resume",0) end
+                requireCurrent()
+            end
+            return value
+        end
+        local function observe(fn,...)
+            requireCurrent()
+            if kind(fn)~="function" then raise("missing nameplate resume provider",0) end
+            local value=fn(...)
+            requireCurrent()
+            return readable(value)
+        end
+        local old,proposed,retargets,observations,frames={},{},{},{},{}
+        for guid,entry in nextEntry,snapshot do
+            old[#old+1]={guid=guid,entry=entry,meta=kind(entry)=="table" and meta(entry) or nil,unit=kind(entry)=="table" and meta(entry)==nil and read(entry,"unit") or nil}
+            proposed[guid]=entry
+        end
+        local aliases={}
+        local units={}
+        for unit in nextEntry,addon.units do units[#units+1]=unit end
+        local function guidFor(unit)
+            local guid=observe(UnitGUID,unit)
+            if guid~=nil and (kind(guid)~="string" or guid=="") then raise("unknown nameplate GUID",0) end
+            observations[#observations+1]={unit=unit,guid=guid}
+            return guid
+        end
+        for _,unit in items(units) do
+            readable(unit)
+            if kind(unit)~="string" then raise("unknown canonical unit",0) end
+            local guid=guidFor(unit)
+            if guid and not aliases[guid] then aliases[guid]=unit end
+        end
+        local api=C_NamePlate
+        if kind(api)~="table" then return end
+        local listed=observe(api.GetNamePlates)
+        if kind(listed)~="table" or meta(listed)~=nil then return end
+        local members={}
+        for _,frame in nextEntry,listed do members[#members+1]=frame end
+        for _,frame in items(members) do
+            readable(frame)
+            if observe(frame.IsForbidden,frame)~=false then return end
+            local unit=observe(frame.GetUnit,frame)
+            if kind(unit)~="string" or not match(unit,"^nameplate%d+$") then return end
+            local guid=guidFor(unit)
+            if not guid then return end
+            frames[#frames+1]={frame=frame,unit=unit,guid=guid}
+        end
+        for _,item in items(old) do
+            local unit=readable(item.unit)
+            if kind(unit)=="string" and match(unit,"^nameplate%d+$") then
+                readable(item.guid)
+                local guid=guidFor(unit)
+                local obsolete=guid~=nil and guid~=item.guid
+                if guid==nil then
+                    local exists=observe(UnitExists,unit)
+                    if kind(exists)~="boolean" then return end
+                    observations[#observations].exists=exists
+                    obsolete=exists==false
+                end
+                if obsolete then
+                    if aliases[item.guid] then retargets[item.entry]=aliases[item.guid]
+                    else proposed[item.guid]=nil end
+                end
+            end
+        end
+        for _,item in items(frames) do
+            local entry=proposed[item.guid]
+            if entry~=nil and (kind(entry)~="table" or meta(entry)~=nil) then return end
+            if not entry then
+                entry=CreateUnitInfo({},item.unit)
+                requireCurrent()
+            end
+            proposed[item.guid]=entry
+            retargets[entry]=item.unit
+        end
+        for _,item in items(observations) do
+            if observe(UnitGUID,item.unit)~=item.guid then return end
+            if item.exists~=nil and observe(UnitExists,item.unit)~=item.exists then return end
+        end
+        for _,item in items(old) do
+            readable(item.guid);readable(item.unit)
+        end
+        -- Readability/GUID callbacks above can also recycle pooled frames.
+        -- Check their current binding last, then commit without more providers.
+        for _,item in items(frames) do
+            if observe(item.frame.IsForbidden,item.frame)~=false or observe(item.frame.GetUnit,item.frame)~=item.unit then return end
+        end
+        requireCurrent()
+        if meta(snapshot)~=nil then return end
+        local count=0
+        for _ in nextEntry,snapshot do count=count+1 end
+        if count~=#old then return end
+        for _,item in items(old) do
+            if not same(read(snapshot,item.guid),item.entry) then return end
+            if kind(item.entry)=="table" then
+                if meta(item.entry)~=item.meta then return end
+                if item.meta==nil and read(item.entry,"unit")~=item.unit then return end
+            end
+        end
+        requireCurrent()
+        for entry,unit in nextEntry,retargets do write(entry,"unit",unit) end
+        for _,item in items(old) do if proposed[item.guid]==nil then write(snapshot,item.guid,nil) end end
+        for guid,entry in nextEntry,proposed do write(snapshot,guid,entry) end
+    end)
+end
+
 end
 
 addon.NAME_PLATE_UNIT_ADDED = wrapCombatEvent(function(self, _, unit)
