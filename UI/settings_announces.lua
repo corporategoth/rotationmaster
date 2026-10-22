@@ -116,19 +116,22 @@ function addon:BuildAnnounceSettings(p)
                 p:Check(field..'emote_target',kind=='macro'and L['Use supplied macro target ({{target}})']or L['Use spell recipient ({{target}})'],output.emote_target,function(v)outputChange('emote_target',v)end)
             elseif output.announce=='audible' then p:Sound(field,L['Sound'],output.announce_sound,function(v)outputChange('announce_sound',v)end)
             else p:Edit(field..'text',L['Text'],output.value or '',nil,function(v)outputChange('value',v)end)end
-            p:Toggle(field..'enabled',L['Output state'],not output.disabled,L['Disabled'],L['Enabled'],function(v)outputChange('disabled',not v)end)
             local summary=self:DescribeCondition(output.conditions or {},self.currentSpec);if not current()then return end
-            p:Text(summary)
-            p:Button(field..'conditions',L['Edit announcement conditions'],function()
+            local conditionY=p.y
+            local condition=p:Button(field..'conditions',summary,function()
                 if not current() then return end
                 local conditions=output.conditions;local draft=self:CopySettingsData(conditions or {});local baseline=self:CopySettingsData(draft)
                 local function editing()return current()and output.conditions==conditions and self:SettingsDataEqual(conditions or {},baseline)and current()end
                 if not editing() then return end
                 self:ShowConditionEditor(nil,self.currentSpec,draft,function(applied)if applied and editing()then output.conditions=next(draft)and draft or nil;p:Draw()end end,editing,{persistentOwner=true,announcement=true,announcementTarget=true,title=L['Announcement conditions'],contextLabel=string.format(L['Output %d'],index)})
             end)
-            row.header:SetWidth(math.max(1,p.width-44))
+            condition:SetWidth(math.max(1,p.width));self:AlignWorkbenchTextLeft(condition,6)
+            condition:GetFontString():SetWordWrap(true);condition:SetHeight(math.max(24,condition:GetFontString():GetStringHeight()+8))
+            condition.tooltip=L['Edit announcement conditions'];p.y=conditionY+condition:GetHeight()+8
+            row.header:SetWidth(math.max(1,row:GetWidth()-128))
+            row.remove:ClearAllPoints();row.remove:SetPoint('TOPRIGHT',-4,-44);row.remove:SetSize(20,20)
             local duplicate=p:Acquire('outputDuplicate',function()return self:CreateWorkbenchIconButton(row,'copy',L['Duplicate'])end)
-            duplicate:SetParent(row);duplicate:ClearAllPoints();duplicate:SetPoint('TOPRIGHT',-28,-3);duplicate:SetSize(20,20);if #items>=64 then duplicate:Disable()else duplicate:Enable()end
+            duplicate:SetParent(row);duplicate:ClearAllPoints();duplicate:SetPoint('TOPRIGHT',-5,-24);duplicate:SetSize(20,20);if #items>=64 then duplicate:Disable()else duplicate:Enable()end
             p.fields[prefix..'output'..index..'duplicate']=duplicate
             self:SetUIScript(duplicate,'OnClick',p:Guard(function()
                 if not current()or #items>=64 or not p:FlushEdits()or not current()then return end
@@ -139,8 +142,15 @@ function addon:BuildAnnounceSettings(p)
                 table.insert(outputs,index+1,copy);p:Draw()
             end))
             local help=p:Acquire('outputHelp',function()return self:CreateWorkbenchHelpButton(row,L['Help'])end)
-            help:SetParent(row);help:ClearAllPoints();help:SetPoint('TOPRIGHT',-52,-3);help:SetSize(20,20);help.icon:SetSize(18,18);p.fields[prefix..'output'..index..'help']=help
+            help:SetParent(row);help:ClearAllPoints();help:SetPoint('TOPRIGHT',-5,-3);help:SetSize(20,20);help.icon:SetSize(18,18);p.fields[prefix..'output'..index..'help']=help
             self:SetUIScript(help,'OnClick',function()if current()then self:OpenWorkbenchHelp({heading=string.format(L['Output %d'],index),owner=self.pretty_name,valid=current,sections=function()return self:GetAnnouncementOutputHelp(kind,output.announce)end})end end)
+            local enabled=p:Acquire('outputEnabled',function()return self:CreateWorkbenchPill(row,'',70)end)
+            enabled:SetParent(row);enabled:ClearAllPoints();enabled:SetPoint('TOPRIGHT',-28,-4);enabled:SetSize(70,18)
+            enabled:SetText(output.disabled and L['Disabled']or L['Enabled']);enabled:SetSelected(not output.disabled);enabled:Enable();enabled.tooltip=L['Output state'];p.fields[field..'enabled']=enabled
+            self:SetUIScript(enabled,'OnClick',p:Guard(function()
+                if not current()or not p:FlushEdits()or not current()then return end
+                outputChange('disabled',not output.disabled);if current()then p:Draw()end
+            end))
             local candidate=output
             if not source then candidate={id='00000000-0000-0000-0000-000000000000'};for _,key in ipairs(outputFields)do candidate[key]=output[key]end end
             local valid=self:IsValidAnnouncementOutput(candidate,kind=='macro');if not current()then return end
@@ -244,7 +254,7 @@ function addon:BuildAnnounceSettings(p)
         end})
     p:Heading(L['Announces'])
     local help=p:Acquire('announceHelp',function() return self:CreateWorkbenchHelpButton(p.child,L['Help']) end)
-    help:ClearAllPoints();help:SetPoint('TOPRIGHT',-124,-3);help:SetSize(20,20);help.icon:SetSize(18,18);p.fields.announce_help=help
+    help:ClearAllPoints();help:SetPoint('TOPRIGHT',-4,-3);help:SetSize(20,20);help.icon:SetSize(18,18);p.fields.announce_help=help
     self:SetUIScript(help,'OnClick',p:Guard(function() self:ShowWorkbenchHelp(L['Announces'],self:WorkbenchPageHelp('Announces'),self.pretty_name) end))
     if self.TestAnnouncementEmote and self.GetAnnouncementEmoteReport then
         local token=p.generation
@@ -283,7 +293,7 @@ function addon:BuildAnnounceSettings(p)
         local title=self:SettingsNonempty(entry.name) or entry.type=='item' and (itemInfo(entry.item) and itemInfo(entry.item).name or L['Item data loading']) or entry.type=='macro' and (entry.identifier or L['Via Macro']) or self:PlainWorkbenchName(self:SpellLabel(entry.spell))
         p:Heading(title)
         p:Edit('entry'..i..'name',L['Name'],entry.name or '',nil,function(value) update(entry,'name',value) end);if not drawAction('entry'..i,entry)then return end
-        local enabled=p:Acquire('announceEnabled',function() return self:CreateWorkbenchPill(p.child,'',88) end);enabled:ClearAllPoints();enabled:SetPoint('TOPRIGHT',-30,-4);enabled:SetSize(88,18);enabled:SetText(entry.disabled and L['Disabled'] or L['Enabled']);enabled:SetSelected(not entry.disabled);p.fields['enabled'..i]=enabled;self:SetUIScript(enabled,'OnClick',p:Guard(function() if p:FlushEdits() then entry.disabled=not entry.disabled;p:Draw() end end))
+        local enabled=p:Acquire('announceEnabled',function() return self:CreateWorkbenchPill(p.child,'',88) end);enabled:ClearAllPoints();enabled:SetPoint('TOPRIGHT',-52,-4);enabled:SetSize(88,18);enabled:SetText(entry.disabled and L['Disabled'] or L['Enabled']);enabled:SetSelected(not entry.disabled);p.fields['enabled'..i]=enabled;self:SetUIScript(enabled,'OnClick',p:Guard(function() if p:FlushEdits() then entry.disabled=not entry.disabled;p:Draw() end end))
         local identity=entry.id
         p.fields['delete'..i]=self:SettingsTopDelete(p,function()
             self:ConfirmSettingsDeletion(p,L['Delete this announcement?'],function()
@@ -292,6 +302,7 @@ function addon:BuildAnnounceSettings(p)
                 end end;return false,'announcement-changed'
             end)
         end)
+        local trash=p.fields['delete'..i];trash:ClearAllPoints();trash:SetPoint('TOPRIGHT',-28,-4)
     end
     end
     if p.creating or #values==0 and p:CanAutoCreateCollection('profile','announces') then

@@ -21,6 +21,7 @@ local catalogStages={{at=101678,remove=654431,text="BUFF\"]={[\"callbacks\"]={[\
 local function digest(s)local n=5381;for i=1,#s do n=(n*33+s:byte(i))%4294967296 end;return n end
 local function shape(value,row)return #value==row.bytes and digest(value)==row.hash end
 local function source(value,path)
+ value=dofile('tests/fixtures/restore_announcement_feedback.lua')(value,path)
  local row=records[path];if not row then return value end
  assert(type(value)=='string','series source must be text: '..path)
  if #value==row.oldBytes and digest(value)==row.oldHash then return value end

@@ -2947,6 +2947,20 @@ L['Choose an announcement trigger, then edit its always expanded output cards. E
 L["Default.TBC.Shaman.Enhancement50.Name"] = "Shaman: Enhancement leveling (50–59)"
 L["Default.TBC.Shaman.Enhancement50.Description"] = "Bounded TBC solo Enhancement-oriented preview for levels50–59, selected only when Enhancement has the unique positive highest talent allocation. Uses learned ranks for a Lightning Bolt pull, Earth Shock in combat and stationary ranged Lightning Bolt, with independent Lightning Shield and mainhand imbue reminders. Prefers learned Windfury over Rockbiter only when no temporary mainhand enchant is present; preserves any manual enchant and does not infer a weapon type or complete build. Equipment, healing, interrupts, totems, consumables, weapon timing and resource optimization remain manual. Not native gameplay certified."
 
+-- Read-only human condition summaries.
+L["{unit} {{!is friendly|is not friendly}}"] = true
+L["{unit} {{!are friendly|are not friendly}}"] = true
+L["{unit} {{!are dead or a ghost|are alive}}"] = true
+L["%s {{!are|are not}} an enemy"] = true
+L["%s {{!are|are not}} attackable"] = true
+L["{unit} {{!are|are not}} in a raid"] = true
+L["{unit} {{!is|is not}} in a party or raid"] = true
+L["{unit} {{!are|are not}} in a party or raid"] = true
+L["Choose a unit for this condition."] = true
+L["Group membership option is invalid."] = true
+L["For %s"] = true
+L["Saved settings"] = true
+
 -- BEGIN GENERATED RM PUBLIC HELPER DOCS
 L["Absolute health target (negative means deficit) or percentage fraction."] = true
 L["All original results, preserving nil positions and return count."] = true
