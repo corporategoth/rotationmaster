@@ -33,11 +33,34 @@ local storeScopeEnvironment=type(storeGetfenv)=='function' and storeGetfenv(1) o
 -- Unknown helpers keep the public RuntimePass route before private data escapes.
 local planIndex,planCopy,planPortable,planIpairs=data.IndexRotationSteps,data.CopyData,data.CheckPortable,ipairs
 local planType,planRawget=type,rawget
+local planPairs,planMeta,planTable,planSort,planMath,planHuge=pairs,getmetatable,table,table.sort,math,math.huge
 local function planDataCurrent(owner)
     return rawget(storeScopeEnvironment,'ipairs')==planIpairs and rawget(owner,'RotationData')==data and rawget(data,'IndexRotationSteps')==planIndex
         and rawget(data,'CopyData')==planCopy and rawget(data,'CheckPortable')==planPortable
         and storeGetfenv(planIndex)==storeScopeEnvironment and storeGetfenv(planCopy)==storeScopeEnvironment
         and storeGetfenv(planPortable)==storeScopeEnvironment
+end
+local function planExecutionSource(owner,receiver)
+    if planRawget(storeScopeEnvironment,'type')~=planType then return false end
+    if receiver=='iterator' or receiver=='step' then
+        return planRawget(storeScopeEnvironment,'pairs')==planPairs
+            and planRawget(storeScopeEnvironment,'ipairs')==planIpairs
+    end
+    if receiver=='pathcopy' or receiver=='sequence' then
+        return planDataCurrent(owner)
+            and planRawget(owner,'RotationData')==data
+            and planRawget(data,'IndexRotationSteps')==planIndex
+            and planRawget(data,'CopyData')==planCopy and planRawget(data,'CheckPortable')==planPortable
+            and planRawget(storeScopeEnvironment,'type')==planType
+            and planRawget(storeScopeEnvironment,'ipairs')==planIpairs
+            and planRawget(storeScopeEnvironment,'pairs')==planPairs
+            and planRawget(storeScopeEnvironment,'getmetatable')==planMeta
+            and planRawget(storeScopeEnvironment,'table')==planTable
+            and planRawget(planTable,'sort')==planSort
+            and planRawget(storeScopeEnvironment,'math')==planMath
+            and planRawget(planMath,'huge')==planHuge
+    end
+    return receiver=='condition' or receiver=='resume'
 end
 local prepareChoicePublication,finishChoicePublication
 local consumeChoices=addon.ConsumeRotationChoicePublication
@@ -791,7 +814,7 @@ function addon:BindRotationProfile()
                 if not readable then return nil,item end;if item.reason then return nil,item.reason end
                 if not batch then local current,problemText=pass:IsCurrent();if not current then return nil,problemText end end
                 if not private then
-                    if not item.borrowed and readActiveRuntime and readActiveRuntime(owner,number,value)then invalidateExecution()end
+                    if not item.borrowed and readActiveRuntime and readActiveRuntime(owner,number,byReference[index])then invalidateExecution()end
                     item.borrowed=true
                 end
                 return item.body
@@ -827,7 +850,7 @@ function addon:BindRotationProfile()
             if owner:HasDisabledRotationDependency(asset.body) then return nil,'disabled-dependency' end
             if not batch then local current,problemText=pass:IsCurrent();if not current then return nil,problemText end end
             if not private then
-                if not asset.borrowed and readActiveRuntime and readActiveRuntime(owner,number,value)then invalidateExecution()end
+                if not asset.borrowed and readActiveRuntime and readActiveRuntime(owner,number,byReference[index])then invalidateExecution()end
                 asset.borrowed=true
             end
             return asset.body
@@ -999,7 +1022,7 @@ function addon:BindRotationProfile()
                 magnification=public.magnification,setpoint=public.setpoint,
                 xoffs=public.xoffs,yoffs=public.yoffs,angle=public.angle}
         end
-        return {body=execution,presentation=presentation,handle=handle,token={},entry=entry,current=currentEntry,conditionCurrent=conditionCurrent,authority=authority}
+        return {body=execution,presentation=presentation,handle=handle,token={},entry=entry,current=currentEntry,conditionCurrent=conditionCurrent,authority=authority,executionSource=function(receiver)return planExecutionSource(owner,receiver)end}
     end
     ownedRuntimePasses[coordinator]=coordinator.RuntimePass
     completeRebind(binding,coordinator,problem)

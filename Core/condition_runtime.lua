@@ -8,7 +8,7 @@ local consumeEngine=addon.ConsumeConditionRuntimeEngine
 local definitions,runLeaf,outcome,engineCurrent,isQuarantined,quarantineVersion=consumeEngine(addon)
 if not definitions then return end
 addon.ConsumeConditionRuntimeEngine=nil
-local type,pairs,ipairs,getmetatable,pcall,setmetatable,rawget=type,pairs,ipairs,getmetatable,pcall,setmetatable,rawget
+local type,pairs,ipairs,getmetatable,pcall,setmetatable,rawget,next=type,pairs,ipairs,getmetatable,pcall,setmetatable,rawget,next
 ---@type fun(f:number|function):table
 local getfenv=getfenv
 local declarations,generation={},0
@@ -251,6 +251,7 @@ end
 local function providersCurrent(node,session)
     if not session:IsCurrent()or not engineCurrent()then return false end
     for _,declaration in ipairs(node.providers)do if not declarationCurrent(declaration)then return false end end
+    if session.dispatchGuard and not session:CheckDispatch('condition')then return false end
     return session:IsCurrent()
 end
 local function addProviders(target,seen,source)
@@ -281,7 +282,7 @@ local function evaluate(node,plan,cache,start,context,session)
         result=evaluate(node.children[1],plan,cache,start,context,session)
         if node.stable then consulted=node.children[1].providers end
         if result.status~='unavailable'then result=outcome(result.status=='match'and'no-match'or'match')end
-    else result=runLeaf(node.value,node.definition,cache,start,node.path,context,node.validation,session.current,stats,providersCurrent,node,session,session.CheckFull)end
+    else result=runLeaf(node.value,node.definition,cache,start,node.path,context,node.validation,session.current,stats,providersCurrent,node,session,session.CheckResume)end
     if node.stable and result.status~='unavailable'and epoch==plan.epoch and not plan.levelPending then
         if consulted then node.providers=consulted end
         -- A provider callback may have replaced its own method while returning.
@@ -299,6 +300,17 @@ function Session:CheckFull()
     if not self:IsCurrent()then return false end
     if not self.fullCurrent()or not self:IsCurrent()then self.failed=true;return false end
     return true
+end
+-- Optional managed dispatch certifies only this actual input consumer. The
+-- five-argument path keeps its original full postcallback proof unchanged.
+function Session:CheckDispatch(kind)
+    if not self:IsCurrent()then return false end
+    if not self.dispatchGuard(kind)or not self:IsCurrent()then self.failed=true;return false end
+    return true
+end
+function Session:CheckResume()
+    if self.dispatchGuard then return self:CheckDispatch('resume')end
+    return self:CheckFull()
 end
 local function rootResult(session,root,context)
     local plan=session.plan
@@ -320,15 +332,16 @@ function Session:EvaluateBool(root,context)return rootResult(self,root,context).
 -- A stale continuation cannot retire a newer activation or nested invocation.
 function Session:AfterOpaque()
     if not self:IsCurrent()then return false end
-    if not self:CheckFull()then return false end
+    if not self.dispatchGuard and not self:CheckFull()then return false end
     local plan=self.plan
     if not authority(plan)then
         if active==plan then retire()end
         return false
     end
+    if self.dispatchGuard and not self:CheckResume()then return false end
     return self:IsCurrent()
 end
-local function prepare(owner,body,token,leaseCurrent,fullCurrent)
+local function prepare(owner,body,token,leaseCurrent,fullCurrent,dispatchGuard)
     if owner~=addon then return end
     if token==nil or type(leaseCurrent)~='function'then stats.legacyFallback=stats.legacyFallback+1;retire();return end
     if not leaseCurrent()then return end
@@ -363,12 +376,14 @@ local function prepare(owner,body,token,leaseCurrent,fullCurrent)
     if not authority(plan)then stats.legacyFallback=stats.legacyFallback+1;if active==plan then retire()end;return end
     local guard=fullCurrent or leaseCurrent
     local previous=latestSession
-    if not guard()then
+    local accepted
+    if type(dispatchGuard)=='function'then accepted=dispatchGuard('resume')else accepted=guard()end
+    if not accepted then
         if leaseCurrent()and active==plan and latestSession==previous then retire()end
         return
     end
     if not leaseCurrent()then return end
-    local session=setmetatable({plan=plan,current=leaseCurrent,fullCurrent=guard},sessionMeta)
+    local session=setmetatable({plan=plan,current=leaseCurrent,fullCurrent=guard,dispatchGuard=type(dispatchGuard)=='function'and dispatchGuard or nil},sessionMeta)
     latestSession=session
     return session
 end

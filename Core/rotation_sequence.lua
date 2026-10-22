@@ -3,16 +3,30 @@ local data=addon.RotationData
 local function unavailable(diagnostic)
     return {status="unavailable",suppressAttack=true,diagnostic=diagnostic}
 end
-local function execute(body,evaluate,visit,rows,ordinal,kind,each)
+local function execute(body,evaluate,visit,rows,ordinal,kind,each,managed)
     local result={status="complete",suppressAttack=false,fallbackOrdinal=ordinal+1}
+    local function permitted(receiver)
+        if managed(receiver) then return true end
+        result.status="unavailable";result.suppressAttack=true;return false
+    end
     local function check(step,row)
-        local observation=evaluate(step.conditions,{stepId=step.id,stepPath=data.CopyData(row.path)})
+        local observation
+        if managed then
+            if not permitted('pathcopy') then return "unavailable" end
+            local conditions,stepId=step.conditions,step.id
+            local path=data.CopyData(row.path)
+            observation=evaluate(conditions,{stepId=stepId,stepPath=path})
+            if not permitted('resume') then return "unavailable" end
+        else
+            observation=evaluate(step.conditions,{stepId=step.id,stepPath=data.CopyData(row.path)})
+        end
         if kind(observation)~="table" then return "unavailable" end
         if observation.status=="match" or observation.status=="no-match" then return observation.status end
         return "unavailable"
     end
     local walk
     walk=function(list)
+        if managed and not permitted('iterator') then return false end
         for _,step in each(list) do
             local row=rows[step]
             if step.type=="branch" then
@@ -28,8 +42,16 @@ local function execute(body,evaluate,visit,rows,ordinal,kind,each)
                         result.suppressAttack=status=="unavailable" or step.suppress_attack==true
                         return false
                     end
-                elseif visit(step,row.ordinal,data.CopyData(row.path))==false then
-                    result.status="selected";return false
+                elseif not managed then
+                    if visit(step,row.ordinal,data.CopyData(row.path))==false then
+                        result.status="selected";return false
+                    end
+                else
+                    if not permitted('pathcopy') then return false end
+                    local position=row.ordinal
+                    local path=data.CopyData(row.path)
+                    local keepGoing=visit(step,position,path)
+                    if keepGoing==false then result.status="selected";return false end
                 end
             end
         end
@@ -98,7 +120,8 @@ function addon:BindRotationSequenceReader(bind)
     local function rawMethod(owner)
         return sequenceType(owner)=="table" and sequenceRawget(owner,"EvaluateRotationSequence") or nil
     end
-    local function run(owner,before,method,body,evaluate,visit)
+    local function run(owner,before,method,body,evaluate,visit,managed)
+        if managed and not managed('sequence') then return unavailable({code="retired-managed-sequence"}) end
         local db=sequenceType(owner)=="table" and sequenceRawget(owner,"db") or nil
         local profile=sequenceType(db)=="table" and sequenceRawget(db,"profile") or nil
         if not (sequenceEqual(owner,addon) and sequenceEqual(before,ownedSequence) and sequenceEqual(method,ownedSequence)
@@ -109,10 +132,15 @@ function addon:BindRotationSequenceReader(bind)
             and sequenceEqual(sequenceRawget(sequenceEnvironment,"ipairs"),sequenceIpairs)
             and sequenceEqual(sequenceRawget(sequenceEnvironment,"getfenv"),sequenceGetfenv)) then
             if retireIndex then retireIndex() end
+            if managed then return unavailable({code="unowned-managed-sequence"}) end
             return method(owner,body,evaluate,visit)
         end
         local eligible,index,why=readIndex(body,profile,data,db)
-        if not eligible then return method(owner,body,evaluate,visit) end
+        if managed and not managed('resume') then return unavailable({code="retired-managed-sequence"}) end
+        if not eligible then
+            if managed then return unavailable({code="unowned-managed-index"}) end
+            return method(owner,body,evaluate,visit)
+        end
         if not index then return unavailable(why) end
         if sequenceType(evaluate)~="function" or sequenceType(visit)~="function" then
             return unavailable({code="invalid-sequence-callback",path="$",severity="error"})
@@ -123,7 +151,7 @@ function addon:BindRotationSequenceReader(bind)
         end
         local function kind(value) return sequenceEnvironment.type(value) end
         local function each(list) return sequenceEnvironment.ipairs(list) end
-        return execute(body,evaluate,visit,rows,ordinal,kind,each)
+        return execute(body,evaluate,visit,rows,ordinal,kind,each,managed)
     end
     bind(rawMethod,run,sequenceStatus,ownedSequence)
 end

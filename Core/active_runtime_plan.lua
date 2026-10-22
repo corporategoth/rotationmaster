@@ -6,6 +6,7 @@ if type(bindExecutionGeneration)=='function' then
     bindExecutionGeneration(addon,function(read)readExecutionGeneration=read end)
 end
 local kind,raw,identity=type,rawget,rawequal
+local sourcePairs,sourceIpairs=pairs,ipairs
 ---@type fun(f: number|function): table
 local environment=getfenv
 local source,readActive,dispatch,dispatchEnvironment
@@ -23,7 +24,7 @@ function addon:BindActiveRuntimePresentationSource(method,env)
     glowCooldown,presentationEnvironment=method,env
 end
 local spellIDs,sequence,mainEnvironment,registered
-local request,plan
+local request,plan,planGeneration
 local plansBuilt,reused,declined,currentRoute=0,0,0,'idle'
 local function consumers(owner)
     return registered and identity(owner,addon)
@@ -54,24 +55,30 @@ local function acquire(owner,spec,key)
         local nextHandle,nextRevision,nextOperation=readActive(owner,spec,key)
         return identity(nextHandle,handle) and nextRevision==revision and identity(nextOperation,operation)
     end
-    if not consumers(owner) or kind(source)~='function' then plan=nil;declined=declined+1;currentRoute='fallback';return nil,nil,nil,false end
+    if not consumers(owner) or kind(source)~='function' then plan=nil;planGeneration=nil;declined=declined+1;currentRoute='fallback';return nil,nil,nil,false end
     local built=false
-    local authoritative=plan and plan.authority()
+    -- A completed entry proof qualifies only this exact cached plan at this
+    -- notification generation. Fresh context/eligibility still ends in a full
+    -- proof below, so raw root changes cannot return an old private body.
+    local authoritative=plan and (planGeneration~=nil and planGeneration==readExecutionGeneration() or plan.authority())
     if not requestCurrent() then declined=declined+1;currentRoute='retired';return nil,retired,nil,true end
     if not authoritative then
         local prepared=source(owner,spec,key)
         if prepared then plansBuilt=plansBuilt+1;built=true end
         if not requestCurrent() then declined=declined+1;currentRoute='retired';return nil,retired,nil,true end
-        plan=prepared
+        plan=prepared;planGeneration=nil
     end
-    if not plan or not consumers(owner) then plan=nil;declined=declined+1;currentRoute='fallback';return nil,nil,nil,false end
+    if not plan or not consumers(owner) then plan=nil;planGeneration=nil;declined=declined+1;currentRoute='fallback';return nil,nil,nil,false end
     -- entry's final source-owned proof covers context and eligibility work.
     -- Capture before those callbacks: never refresh an older request to a
     -- generation published by reentrant work during preparation.
     local executionGeneration=readExecutionGeneration and readExecutionGeneration()
     local selected=plan;local state=selected.entry()
     if not requestCurrent() or executionGeneration==nil or readExecutionGeneration()~=executionGeneration then declined=declined+1;currentRoute='retired';return nil,retired,nil,true end
-    if not state then plan=nil;declined=declined+1;currentRoute='fallback';return nil,nil,nil,false end
+    if not state then plan=nil;planGeneration=nil;declined=declined+1;currentRoute='fallback';return nil,nil,nil,false end
+    -- Publish before late consumer source getters: a notification during those
+    -- callouts must never bless an old plan with a newer generation.
+    planGeneration=executionGeneration
     local function continuationCurrent()
         return request==ticket and plan==selected and readExecutionGeneration()==executionGeneration
             and raw(owner,'db')==db and kind(db)=='table' and raw(db,'profile')==profile
@@ -95,7 +102,42 @@ local function acquire(owner,spec,key)
         return executionGeneration~=nil and request==ticket and plan==selected
             and readExecutionGeneration()==executionGeneration
     end
-    return state.allowed and selected.body or nil,current,selected.token,true,selected.presentation,conditionCurrent,notifiedCurrent
+    local function deliveryCurrent()
+        -- Completed scalar/detached output follows the managed mutation clock.
+        -- Raw profile/spec/selection remain immediate ownership boundaries;
+        -- unnotified table edits are re-proved by the next full acquisition.
+        if not continuationCurrent()then return false end
+        if not identity(raw(owner,'GlowCooldown'),glowCooldown)
+            or not identity(environment(glowCooldown),presentationEnvironment)then return false end
+        return continuationCurrent()and identity(raw(owner,'GlowCooldown'),glowCooldown)
+    end
+    local dispatchFailed=false
+    local function dispatchCurrent(receiver)
+        if dispatchFailed then return false end
+        -- These scalar ownership checks have no source lookup or callout.
+        -- The graph retains its actual provider certificates at private handoff.
+        if receiver=='condition' or receiver=='resume' then
+            local valid=continuationCurrent()
+            if not valid then dispatchFailed=true end
+            return valid
+        end
+        if not continuationCurrent() then dispatchFailed=true;return false end
+        local valid=true
+        if receiver=='step' then
+            valid=identity(raw(owner,'GetSpellIds'),spellIDs) and identity(environment(spellIDs),mainEnvironment)
+                and identity(raw(owner,'GetSpellIds'),spellIDs)
+                and identity(raw(mainEnvironment,'type'),kind) and identity(raw(mainEnvironment,'ipairs'),sourceIpairs)
+        elseif receiver=='sequence' or receiver=='iterator' or receiver=='pathcopy' then
+            valid=identity(raw(owner,'EvaluateRotationSequence'),sequence) and identity(environment(sequence),mainEnvironment)
+                and identity(raw(owner,'EvaluateRotationSequence'),sequence)
+                and identity(raw(mainEnvironment,'type'),kind) and identity(raw(mainEnvironment,'ipairs'),sourceIpairs)
+                and (receiver~='iterator' or identity(raw(mainEnvironment,'pairs'),sourcePairs))
+        end
+        valid=valid and selected.executionSource(receiver) and continuationCurrent()
+        if not valid then dispatchFailed=true end
+        return valid
+    end
+    return state.allowed and selected.body or nil,current,selected.token,true,selected.presentation,conditionCurrent,notifiedCurrent,deliveryCurrent,dispatchCurrent
 end
 function addon:ConsumeActiveRuntimePlan()
     if self~=addon then return end

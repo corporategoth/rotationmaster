@@ -112,10 +112,12 @@ if type(bindSequence)=="function" then
     bindSequence(addon,function(rawMethod,run,status,source) sequenceRawMethod,sequenceRun,sequenceStatus,ownedSequence=rawMethod,run,status,source end)
     addon.BindRotationSequenceReader=nil
 end
-local function evaluateSequence(owner,body,evaluate,visit)
+local function evaluateSequence(owner,body,evaluate,visit,guard)
     local before=sequenceRawMethod and sequenceRawMethod(owner)
-    local method=owner.EvaluateRotationSequence
-    if sequenceRun then return sequenceRun(owner,before,method,body,evaluate,visit) end
+    local method
+    if guard then method=before else method=owner.EvaluateRotationSequence end
+    if sequenceRun then return sequenceRun(owner,before,method,body,evaluate,visit,guard) end
+    if guard then return {status='unavailable',suppressAttack=true}end
     return method(owner,body,evaluate,visit)
 end
 -- One-time private handoff to the earlier-loaded optional CPU sampler.
@@ -1145,17 +1147,29 @@ end
 
 function addon:EvaluateNextActionInternal()
     local selectedRotation,selectedSpec,selectedProfile=self.currentRotation,self.currentSpec,self.db.profile
-    local runtimePass,rot,publicationGuard,planToken,conditionSession,handled,presentationViews,conditionLease,notifiedLease
+    local runtimePass,rot,publicationGuard,planToken,conditionSession,handled,presentationViews,conditionLease,notifiedLease,deliveryLease,dispatchLease
+    local executionFailed=false
+    local function dispatchCurrent(kind)
+        if executionFailed then return false end
+        if not dispatchLease then return true end
+        if dispatchLease(kind)then return true end
+        executionFailed=true
+        return false
+    end
     if preparedRuntimeEnabled and selectedRotation~=nil and acquireActiveRuntimePlan and prepareConditionRuntime then
-        rot,publicationGuard,planToken,handled,presentationViews,conditionLease,notifiedLease=acquireActiveRuntimePlan(self,selectedSpec,selectedRotation)
+        rot,publicationGuard,planToken,handled,presentationViews,conditionLease,notifiedLease,deliveryLease,dispatchLease=acquireActiveRuntimePlan(self,selectedSpec,selectedRotation)
         if self.currentRotation~=selectedRotation or self.currentSpec~=selectedSpec or self.db.profile~=selectedProfile then return end
         if handled then
-            if not publicationGuard or not publicationGuard() then return end
+            if not publicationGuard then return end
+            if dispatchLease then
+                if not dispatchCurrent('resume')then return end
+            elseif not publicationGuard()then return end
             if rot then
-                conditionSession=prepareConditionRuntime(self,rot,planToken,notifiedLease or conditionLease or publicationGuard,publicationGuard)
-                -- A successful owned Prepare ended with the full source fence;
-                -- no callout occurs before this continuation. Rejected Prepare
-                -- may return earlier, so fallback still needs the full fence.
+                conditionSession=prepareConditionRuntime(self,rot,planToken,notifiedLease or conditionLease or publicationGuard,publicationGuard,dispatchLease and dispatchCurrent)
+                if executionFailed then return end
+                -- Owned preparation certifies its producers and invocation.
+                -- Rejected preparation can return before that boundary, so
+                -- the ordinary fallback still needs the full source fence.
                 if conditionSession and notifiedLease then
                     if not notifiedLease()then return end
                 elseif not publicationGuard() then return end
@@ -1163,7 +1177,7 @@ function addon:EvaluateNextActionInternal()
                 -- Custom or unsupported trees retain the existing execution
                 -- input and callback route; private plan data never escapes.
                 if not conditionSession then
-                    runtimePass,rot,publicationGuard,planToken,handled,presentationViews,conditionLease,notifiedLease=nil,nil,nil,nil,false,nil,nil,nil
+                    runtimePass,rot,publicationGuard,planToken,handled,presentationViews,conditionLease,notifiedLease,deliveryLease,dispatchLease=nil,nil,nil,nil,false,nil,nil,nil,nil,nil
                 end
             end
         end
@@ -1280,13 +1294,15 @@ function addon:EvaluateNextActionInternal()
                 else matches=addon:evaluateCondition(cond.conditions,{stepId=cond.id}) end
             end
             if matches then
+                if not dispatchCurrent('step')then return nil,false end
                 local spellids,itemids=addon:GetSpellIds(cond)
                 for index,id in ipairs(spellids or {}) do
                     local itemId=itemids and itemids[index]
                     local mapped=addon:FindSpell({id},cond.type=="item" and {itemId} or nil)
                     if mapped then
                         if not firstMapped then firstMapped,firstItem=mapped,itemId end
-                        if actionReady(cond.type,id,itemId) then return mapped,true,itemId end
+                        local ready=actionReady(cond.type,id,itemId)
+                        if ready then return mapped,true,itemId end
                     end
                 end
             end
@@ -1300,9 +1316,13 @@ function addon:EvaluateNextActionInternal()
         local previewWindow=self.nextWindow
         local nativePreview=previewWindow and type(previewWindow.AddRecommendation)=="function"
         local staged={}
+        local delivering,deliveryFailed=false,false
         local function current()
+            if deliveryFailed or executionFailed then return false end
             if self.currentRotation~=selectedRotation or self.currentSpec~=selectedSpec or self.db.profile~=selectedProfile
                 or self.nextWindow~=previewWindow then return false end
+            if delivering and deliveryLease then return deliveryLease()end
+            if conditionSession and dispatchLease then return dispatchCurrent('resume')end
             if publicationGuard then return publicationGuard() end
             if not runtimePass then return true end
             return runtimePass:IsCurrent()
@@ -1341,12 +1361,14 @@ function addon:EvaluateNextActionInternal()
             return addon:evaluateConditionResult(condition,context)
         end,function(cond,index)
             local spellid,enabled,itemId=eval(cond)
+            if not dispatchCurrent('resume')then return false end
             if enabled then
                 recommend(spellid,cond,index,itemId)
                 if not nativePreview or preview>=self.db.profile.preview_spells then return false end
             end
             return true
-        end)
+        end,conditionSession and dispatchLease and dispatchCurrent or nil)
+        if executionFailed then self.evaluationProfile:stop();return end
         suppressAttack=sequence.suppressAttack
         if preview==0 and not suppressAttack and self.Platform:IsMeleeAttackNeeded("target")==true and actionReady("spell",6603) then
             local attack=addon:FindSpell({6603})
@@ -1373,8 +1395,10 @@ function addon:EvaluateNextActionInternal()
         self.evaluationProfile:child("cooldowns"):start()
         if rot.cooldowns ~= nil then
             local observations={}
+            if not dispatchCurrent('iterator')then self.evaluationProfile:stop();return end
             for id,cond in pairs(rot.cooldowns) do
                 local spellid,enabled,itemId=eval(cond)
+                if not dispatchCurrent('resume')then self.evaluationProfile:stop();return end
                 observations[#observations+1]={id=id,condition=cond,spellid=spellid,enabled=enabled,itemId=itemId}
             end
             stage(function()
@@ -1403,7 +1427,15 @@ function addon:EvaluateNextActionInternal()
                                 if addon.avail_announced[cond.id] ~= spellid then
                                     if not addon.skipAnnounce then
                                         local link = spellLink(spellid)
-                                        addon:DispatchAnnouncement(cond, string.format(L["%s is now available!"], link))
+                                        if delivering then
+                                            local message=string.format(L["%s is now available!"],link)
+                                            -- This rare receiver still gets a private node.
+                                            -- Link/format/log callbacks precede its full fence.
+                                            if publicationGuard and not publicationGuard()then deliveryFailed=true;return end
+                                            addon:DispatchAnnouncement(cond,message)
+                                        else
+                                            addon:DispatchAnnouncement(cond, string.format(L["%s is now available!"], link))
+                                        end
                                     end
                                     if not current() then return end
                                     addon.avail_announced[cond.id] = spellid;
@@ -1455,6 +1487,12 @@ function addon:EvaluateNextActionInternal()
         -- Every condition and readiness callback finishes before advice becomes
         -- externally visible. Recheck between publishers too: another addon's
         -- message/glow callback may retire this profile or selected record.
+        -- One final execution-source proof before any staged output. Only the
+        -- managed graph's scalar/detached deliveries may then use freshness.
+        if conditionSession and deliveryLease then
+            if not current()or not publicationGuard or not publicationGuard()or not current()then self.evaluationProfile:stop();return end
+            delivering=true
+        end
         for _,publish in ipairs(staged) do if not current() then break end;publish() end
 
         self.evaluationProfile:stop()
