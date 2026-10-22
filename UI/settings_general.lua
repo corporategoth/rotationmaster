@@ -135,15 +135,18 @@ function addon:BuildGeneralSettings(p)
         p:Heading(L['Specialization Names']);for i,caption in ipairs({PRIMARY,SECONDARY}) do p:Edit('spec'..i,caption,store.char.specs[i],nil,function(v) store.char.specs[i]=v end) end
     end
     p:Heading(L['Debugging Options'])
-    p:Choice('loglevel',L['Log Level'],profile.loglevel or 2,entries(self.loglevels),function(v) profile.loglevel=v;p:Draw() end)
+    local logEntries={{value=4,text=self.loglevels[4]},{value=3,text=self.loglevels[3]},
+        {value=2,text=self.loglevels[2]},{value=1,text=L['Silent']}}
+    p:Choice('loglevel',L['Log Level'],profile.loglevel or 2,logEntries,function(v) profile.loglevel=v;p:Draw() end)
     local detail=p:Check('detailed_profiling',L['Detailed Profiling'],profile.detailed_profiling,function(v) profile.detailed_profiling=v end);if (profile.loglevel or 2)<3 then detail:Disable() end
     if self.GetCacheDiagnosticMode and self.SetCacheDiagnosticMode then
         local _,requested=self:GetCacheDiagnosticMode()
-        local control=p:Check('cpu_cache_bypass','',requested=='direct',function() end)
+        local control=p:Check('cpu_cache_bypass','',requested=='cached',function() end)
+        control.tooltip=L['Observation caching can reduce repeated lookups but increases table allocations. Off by default; reload to change the running mode.']
         local function updateModeCaption()
             local loaded,nextMode=self:GetCacheDiagnosticMode()
-            control:SetText(loaded==nextMode and L['Bypass observation cache (requires restart)'] or L['Bypass observation cache (pending)'])
-            control:SetChecked(nextMode=='direct')
+            control:SetText(loaded==nextMode and L['Enable observation cache (reload required)'] or L['Enable observation cache (pending)'])
+            control:SetChecked(nextMode=='cached')
         end
         updateModeCaption()
         -- Diagnostic requests persist independently of pending settings edits.
@@ -165,6 +168,11 @@ function addon:BuildGeneralSettings(p)
         if type(self.StartCPURuntimeCapture)=='function' then
             controls[#controls+1]={key='cpu_runtime_capture',text=L['Capture runtime (10s)'],action='runtime'}
             controls[#controls+1]={key='cpu_runtime_report',text=L['Runtime report'],action='runtimereport'}
+        end
+        if type(self.StartMemoryCapture)=='function' then
+            controls[#controls+1]={key='memory_capture',text=L['Capture memory (10m)'],action='memory'}
+            controls[#controls+1]={key='memory_report',text=L['Memory report'],action='memoryreport'}
+            controls[#controls+1]={key='memory_stop',text=L['Stop memory capture'],action='memorystop'}
         end
         local diagnosticY=p.y;local buttons={};local minimumWidth=120
         local diagnosticToken=p.generation

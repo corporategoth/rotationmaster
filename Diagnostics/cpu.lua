@@ -652,10 +652,7 @@ local function activityStop(run)
  end
  state.handler=nil
 end
-local function activityStart(run)
- addon.BindCPUActivityDiagnostic=nil
- run.activity={events={spell=0,item=0,unknown=0,available=false},views={},samples={}}
- local state=run.activity
+local function activityEnsureAPI()
  if not activityFrame and proofType(activityCreate)=='function' then
   local ok,frame=proofPcall(activityCreate,'Frame')
   if ok and frame then
@@ -666,6 +663,12 @@ local function activityStart(run)
    if valid then activityFrame,activityAPI=frame,api;proofPcall(api.Hide,frame) end
   end
  end
+end
+local function activityStart(run)
+ addon.BindCPUActivityDiagnostic=nil
+ run.activity={events={spell=0,item=0,unknown=0,available=false},views={},samples={}}
+ local state=run.activity
+ activityEnsureAPI()
  if activityFrame then
   state.frame=activityFrame;state.api=activityAPI
   local lease={run=run};state.lease=lease
@@ -699,6 +702,26 @@ local function activityStart(run)
    view.sample=sample
   end
  end
+end
+local memoryActivityPrepared=false
+-- Bounded detached cardinality for explicit lifetime diagnostics. Never return
+-- private maps, native frames, callbacks or the activity reader functions.
+function addon:GetRetainedMemoryDiagnostic()
+ if self~=addon then return end
+ if not memoryActivityPrepared then memoryActivityPrepared=true;activityEnsureAPI()end
+ local observed=activityRead();local result={}
+ for _,spec in ipairs({{'spell','spellIDs'},{'spell','spellNames'},{'item','itemRecords'},{'item','itemIndex'},{'item','itemBlocked'}}) do
+  local value=field(field(observed,spec[1]),spec[2]);local n=field(value,'n');local capped=field(value,'capped')
+  if counter(n,true)and n<=4096 and readable(capped)and proofType(capped)=='boolean'then result[spec[2]]=n;result[spec[2]..'Capped']=capped end
+ end
+ local visual=field(observed,'visual')
+ if field(visual,'unsupported')~=true then
+  for _,name in ipairs({'buttons','slots','logical','overlays','sequence','pixel','autocast','blizzard','proc'}) do
+   local n=field(visual,name)
+   if counter(n,true)and n<=4096 then result[name]=n;result[name..'Capped']=field(visual,'capped')==true end
+  end
+ end
+ return result
 end
 local function appendActivity(report,run)
  local state=run.activity;if not state then return end
@@ -951,5 +974,7 @@ function addon:OnDisable()
  if type(self.CancelCPURuntimeCapture)=='function' then self:CancelCPURuntimeCapture() end
  -- END NATIVE RUNTIME DISABLE
  self:CancelCPUProfile()
+ if type(self.IsMemoryCaptureRunning)=='function' and self:IsMemoryCaptureRunning()
+  and type(self.StopMemoryCapture)=='function' then self:StopMemoryCapture() end
  if type(self.ClearCastCaptureForDisable)=='function' then self:ClearCastCaptureForDisable() end
 end

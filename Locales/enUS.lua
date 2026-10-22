@@ -2,6 +2,19 @@ local addon_name = ...
 
 local L = LibStub("AceLocale-3.0"):NewLocale(addon_name, "enUS", true)
 if not L then return end
+L['Capture memory (10m)'] = true
+L['Memory report'] = true
+L['Stop memory capture'] = true
+L['Memory capture'] = true
+L['Memory capture started for 10 minutes. Normal polling is unchanged; attribution refreshes every 30 seconds and their cost is reported.'] = true
+L['Memory capture is unavailable: %s'] = true
+L['Memory capture stopped. Open Memory report to copy the observations.'] = true
+L['Memory capture complete. Use General > Memory report or /rm cpu memoryreport to view and copy it.'] = true
+L['Memory capture ended with unavailable observations. Open Memory report for details.'] = true
+L["Usage: /rm cpu [start|report|cancel|probe|runtime|runtimereport|memory|memorystop|memoryreport]"] = "Usage: /rm cpu [start||report||cancel||probe||runtime||runtimereport||memory||memorystop||memoryreport]"
+L["Help.General.memory_capture"] = "Observe memory for ten minutes without changing polling or forcing garbage collection. Whole-Lua heap is sampled each second; addon attribution and bounded retained counts every thirty seconds. Attribution refreshes can hitch, and the report includes their measured cost. Close configuration after starting. Reported heap decreases do not prove collection or a leak."
+L["Help.General.memory_report"] = "Open the copyable lifetime report: whole-heap range and decreases, fresh addon-attribution rows, retained key/row counts and capture overhead. Counts are not bytes; unavailable and capped observations stay explicit. Viewing the report never resamples memory."
+L["Help.General.memory_stop"] = "Stop this explicit memory capture and retain its completed observations. Normal polling and garbage collection remain unchanged."
 L["Capture runtime (10s)"] = true
 L["Runtime report"] = true
 L["Runtime profile"] = true
@@ -38,12 +51,16 @@ L["present"] = true
 L["restricted"] = true
 L["unavailable (context changed)"] = true
 L["Bypass observation cache (reload required)"] = true
+L["Enable observation cache"] = true
+L["Enable observation cache (reload required)"] = true
+L["Enable observation cache (pending)"] = true
+L["Observation caching can reduce repeated lookups but increases table allocations. Off by default; reload to change the running mode."] = true
 L["Observation cache: %s\nNext reload: %s"] = true
 L["cached"] = true
 L["direct"] = true
 L["Cache diagnostic saved for the next reload. Active mode: %s."] = true
 L["Cache diagnostic is unavailable."] = true
-L["Help.General.cpu_cache_bypass"] = "Diagnostic A/B switch. Checked bypasses observation caching; unchecked uses caching. The checkbox shows the saved choice for the next UI restart. Pending means it differs from the running mode. Use /reload to apply it; no full game restart is needed. This diagnostic saves immediately and does not apply other pending settings."
+L["Help.General.cpu_cache_bypass"] = "Optional reuse of repeated getCached and getRetryCached lookups. Observation caching is off by default to reduce table allocations; enabling it can help conditions that repeat the same lookup. Compiled condition facts are independent of this option. The checkbox shows the saved choice for the next reload. Pending means it differs from the running mode. Use /reload to apply it; no full game restart is needed. This choice saves immediately without applying or discarding other pending settings."
 L["Cancel capture"] = true
 L["CPU capture requires WoW scriptProfile to be enabled before a reload. RM does not change this setting."] = true
 L["CPU capture is running. Open the report after it finishes."] = true
@@ -2964,6 +2981,11 @@ L["For %s"] = true
 L["Saved settings"] = true
 L["Default.TBC.Priest.Shadow50.Name"] = "Priest: Shadow leveling (50–59)"
 L["Default.TBC.Priest.Shadow50.Description"] = "Bounded Shadow-oriented solo preview; learned spells and native readiness remain authoritative. Choose channels and wand manually; healing and resources remain manual."
+L['Help.General.memory_capture'] = "Start a ten-minute memory capture. Whole-Lua heap reads occur once per second; slower addon-memory refreshes and bounded container counts occur every thirty seconds. Sampling costs are reported. The capture does not force garbage collection, enable the native profiler or change gameplay polling."
+L['Help.General.memory_report'] = "Open the completed or stopped memory observations in a selectable, copyable report. Addon memory is sampled attribution, and container counts are rows or keys rather than bytes. Memory drops alone do not prove garbage collection or the absence of a leak."
+L['Help.General.memory_stop'] = "Stop the current memory capture and preserve its observations for Memory report. This cancels only memory-capture timers. No gameplay settings are changed."
+
+L['Silent'] = true
 
 -- BEGIN GENERATED RM PUBLIC HELPER DOCS
 L["Absolute health target (negative means deficit) or percentage fraction."] = true

@@ -12,19 +12,18 @@ test('General cache diagnostic is immediate requested state without applying or 
  a.GetCacheDiagnosticMode=function()return 'cached',requested,requested~='cached'end
  a.SetCacheDiagnosticMode=function(self,value)assert(self==a);requested=value;calls=calls+1;return true end
  local p=a:OpenNativeSettings(parent,'General');local control=assert(p.fields.cpu_cache_bypass,'cache diagnostic checkbox missing')
- assert(not control:GetChecked() and not p:IsSettingsDraftDirty())
+ assert(control:GetChecked() and not p:IsSettingsDraftDirty())
  local input=p:Edit('invalid_probe','Probe','',function()return nil end,function()error('diagnostic flushed edits')end)
  input:SetText('bad');input.scripts.OnTextChanged(input,true);local before=p:IsSettingsDraftDirty()
- control:Click();assert(requested=='direct' and calls==1 and control:GetChecked())
+ control:Click();assert(requested=='direct' and calls==1 and not control:GetChecked())
  assert(p:IsSettingsDraftDirty()==before and input:GetText()=='bad')
- contains(p.message:GetText(),'reload');local stale=control.scripts.OnClick;p:Release();stale();assert(calls==1)
+ contains(control:GetText(),'pending');contains(control.tooltip,'reload');local stale=control.scripts.OnClick;p:Release();stale();assert(calls==1)
 end)
 test('General distinguishes loaded cache state from the next reload request and includes ordered Help',function()
  local f,parent=settings();local a=f.addon
  a.GetCacheDiagnosticMode=function()return 'direct','cached',true end;a.SetCacheDiagnosticMode=function()return true end
- local p=a:OpenNativeSettings(parent,'General');assert(not assert(p.fields.cpu_cache_bypass):GetChecked())
- local texts={};for _,row in ipairs(p.pool.text or {})do texts[#texts+1]=row:GetText()or''end
- contains(table.concat(texts,' '),'direct');contains(table.concat(texts,' '),'reload')
+ local p=a:OpenNativeSettings(parent,'General');assert(assert(p.fields.cpu_cache_bypass):GetChecked())
+ local control=p.fields.cpu_cache_bypass;contains(control:GetText(),'Enable observation cache');contains(control:GetText(),'pending');contains(control.tooltip,'reload')
  local help=a:GetGeneralOptionHelp();local cacheAt,captureAt
  for i,row in ipairs(help)do if row.id=='cpu_cache_bypass'then cacheAt=i;contains(row.text,'getCached')elseif row.id=='cpu_capture'then captureAt=i end end
  assert(cacheAt and captureAt and cacheAt<captureAt,'diagnostic Help order differs from page')

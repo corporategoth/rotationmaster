@@ -118,12 +118,12 @@ test('setter validates owner mode and ready raw database without partial mutatio
 end)
 test('late ready request uses strict raw Boolean without inherited or protected metadata callbacks',function()
  for _,value in ipairs({false,0,'true',{}})do
-  local _,a=fixture(false,function(f)f.env.RotationMasterDB.global.diagnosticCacheBypass=value end);mode(a,'cached','cached',false)
+  local _,a=fixture(false,function(f)f.env.RotationMasterDB.global.diagnosticCacheBypass=value end);local expected=value==false and 'cached' or 'direct';mode(a,expected,expected,false)
  end
  local gets=0;local _,a=fixture(false,function(f)f.env.RotationMasterDB=setmetatable({},{__index=function()gets=gets+1;return{diagnosticCacheBypass=true}end,__metatable={global={diagnosticCacheBypass=true}}});f.addon.db.global={}end)
- mode(a,'cached','cached',false);assert(gets==0)
+ mode(a,'direct','direct',false);assert(gets==0)
  local _,b=fixture(false,function(f)local global=setmetatable({},{__index=function()gets=gets+1;return true end,__newindex=function()error('setter invoked metadata')end});f.env.RotationMasterDB.global=global;f.addon.db.global=global end)
- mode(b,'cached','cached',false);assert(b:SetCacheDiagnosticMode('direct'));mode(b,'cached','direct',true);assert(gets==0)
+ mode(b,'direct','direct',false);assert(b:SetCacheDiagnosticMode('cached'));mode(b,'direct','cached',true);assert(gets==0)
 end)
 test('reload mode selection starts fresh without registry epochs tracking or mutation of old caller caches',function()
  local _,a=fixture(false);mode(a,'cached','cached',false);local calls=0;local fn=function()calls=calls+1;return calls end;local cache={};assert(a.getCached(cache,fn)==1 and a.getCached(cache,fn)==1);local oldEntry=cache[fn]

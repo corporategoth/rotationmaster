@@ -12,7 +12,9 @@ local function readyGlobal()
  return type(db)=='table' and rawget(db,'global') or nil
 end
 local function directRequested(global)
- return type(global)=='table' and rawget(global,'diagnosticCacheBypass')==true
+ -- Preserve explicit legacy choices: false means cached, true means direct.
+ -- Missing or malformed preferences use the allocation-light direct default.
+ return type(global)~='table' or rawget(global,'diagnosticCacheBypass')~=false
 end
 local loaded='cached'
 local dispatch

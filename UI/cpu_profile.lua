@@ -193,6 +193,23 @@ function addon:RunCPUProfileAction(action)
         if type(self.GetCPURuntimeCaptureReport)=='function' then report,reason=self:GetCPURuntimeCaptureReport() end
         if report then self:ShowConditionText(report,L['Runtime profile']);return true,'' end
         ok=false;message=L['Runtime capture is unavailable: %s']:format(tostring(reason or 'not-captured'))
+    elseif action=='memory' then
+        local reason
+        if type(self.StartMemoryCapture)=='function' then ok,reason=self:StartMemoryCapture()
+        else ok,reason=false,'missing-memory-api' end
+        message=ok and L['Memory capture started for 10 minutes. Normal polling is unchanged; attribution refreshes every 30 seconds and their cost is reported.']
+            or L['Memory capture is unavailable: %s']:format(tostring(reason or L['Unknown']))
+    elseif action=='memorystop' then
+        local reason
+        if type(self.StopMemoryCapture)=='function' then ok,reason=self:StopMemoryCapture()
+        else ok,reason=false,'missing-memory-api' end
+        message=ok and L['Memory capture stopped. Open Memory report to copy the observations.']
+            or L['Memory capture is unavailable: %s']:format(tostring(reason or L['Unknown']))
+    elseif action=='memoryreport' then
+        local report,reason
+        if type(self.GetMemoryCaptureReport)=='function' then report,reason=self:GetMemoryCaptureReport() end
+        if report then self:ShowConditionText(report,L['Memory capture']);return true,'' end
+        ok=false;message=L['Memory capture is unavailable: %s']:format(tostring(reason or 'not-captured'))
     elseif action=='probe' then
         return runNativeProbe(self)
     elseif action=='report' then
@@ -200,7 +217,7 @@ function addon:RunCPUProfileAction(action)
         if report then self:ShowConditionText(report,L['CPU profile']);return true,'' end
         ok=false;message=failure(reason)
     else
-        ok=false;message=L['Usage: /rm cpu [start|report|cancel|probe|runtime|runtimereport]']
+        ok=false;message=L['Usage: /rm cpu [start|report|cancel|probe|runtime|runtimereport|memory|memorystop|memoryreport]']
     end
     self:print(message)
     return ok,message
@@ -220,4 +237,9 @@ function addon:OnCPUProfileFinished(_,status)
     elseif status=='invalid' then
         self:print(L['CPU capture could not produce valid measurements. Open CPU report for details.'])
     end
+end
+
+function addon:OnMemoryCaptureFinished(_,status)
+    if status=='complete' then self:print(L['Memory capture complete. Use General > Memory report or /rm cpu memoryreport to view and copy it.'])
+    elseif status=='invalid' then self:print(L['Memory capture ended with unavailable observations. Open Memory report for details.']) end
 end

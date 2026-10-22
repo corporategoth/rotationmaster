@@ -40,7 +40,12 @@ function addon:GetGeneralOptionHelp()
     end
     ordered[#ordered+1]={id="loglevel",title=L['Log Level'],text=L['Help.General.loglevel']}
     ordered[#ordered+1]={id="detailed_profiling",title=L['Detailed Profiling'],text=L['Help.General.detailed_profiling']}
-    if self.GetCacheDiagnosticMode then ordered[#ordered+1]={id='cpu_cache_bypass',title=L['Bypass observation cache'],text=L['Help.General.cpu_cache_bypass']} end
+    if self.GetCacheDiagnosticMode then ordered[#ordered+1]={id='cpu_cache_bypass',title=L['Enable observation cache'],text=L['Help.General.cpu_cache_bypass']} end
+    if self.StartMemoryCapture then
+        ordered[#ordered+1]={id='memory_capture',title=L['Capture memory (10m)'],text=L['Help.General.memory_capture']}
+        ordered[#ordered+1]={id='memory_report',title=L['Memory report'],text=L['Help.General.memory_report']}
+        ordered[#ordered+1]={id='memory_stop',title=L['Stop memory capture'],text=L['Help.General.memory_stop']}
+    end
     if self.RunCPUProfileAction then
         ordered[#ordered+1]={id='cpu_capture',title=L['Capture CPU (10s)'],text=L['Help.General.cpu_capture']}
         ordered[#ordered+1]={id='cpu_report',title=L['CPU report'],text=L['Help.General.cpu_report']}

@@ -154,6 +154,13 @@ local diagnosticSpecs={
  {method='GetConditionRuntimeDiagnostic',label='Condition runtime',state='active',fields={'compiles','legacyFallback','leafEvaluations','validatorCalls','stableHits','eventInvalidations'}},
 }
 local diagnosticRoutes={idle=true,managed=true,unavailable=true,fallback=true,retired=true}
+local function observationMode(provider)
+ if type(provider)~='function' or not rawequal(rawget(addon,'GetCacheDiagnosticMode'),provider)then return 'unavailable'end
+ local ok,value=pcall(provider,addon)
+ if not ok or not readable(value)or not rawequal(rawget(addon,'GetCacheDiagnosticMode'),provider)then return 'unavailable'end
+ if value=='cached'or value=='direct'then return value end
+ return 'unavailable'
+end
 local function diagnosticSnapshot(spec,provider)
  local snapshot={state='unavailable'}
  if type(provider)~='function' or not rawequal(rawget(addon,spec.method),provider)then return snapshot end
@@ -169,6 +176,8 @@ local function diagnosticSnapshot(spec,provider)
  return snapshot
 end
 local function diagnosticStart(run)
+ run.cacheModeProvider=rawget(addon,'GetCacheDiagnosticMode')
+ run.cacheModeStart=observationMode(run.cacheModeProvider)
  run.diagnostics={}
  for i,spec in ipairs(diagnosticSpecs)do
   local provider=rawget(addon,spec.method)
@@ -176,12 +185,14 @@ local function diagnosticStart(run)
  end
 end
 local function diagnosticEnd(run)
+ run.cacheModeEnd=observationMode(run.cacheModeProvider)
  for i,spec in ipairs(diagnosticSpecs)do
   local record=run.diagnostics and run.diagnostics[i]
   if record then record.last=diagnosticSnapshot(spec,record.provider)end
  end
 end
 local function diagnosticReport(lines,run)
+ lines[#lines+1]='Observation cache: start='..(run.cacheModeStart or 'unavailable')..'; end='..(run.cacheModeEnd or 'unavailable')
  for i,spec in ipairs(diagnosticSpecs)do
   local record=run.diagnostics and run.diagnostics[i]
   local first,last=record and record.first or {},record and record.last or {}

@@ -19,7 +19,7 @@ RM stores one account SavedVariables table per client installation, using AceDB'
 | Effects, custom conditions/functions and source import provenance | Global reusable libraries |
 | Global item sets | Global; a same-ID profile set takes precedence |
 | Condition Test samples | Global, keyed by condition identifier; restored samples do not authorize debugging |
-| Observation-cache diagnostic request (`diagnosticCacheBypass`) | Global; requested cached/direct mode is selected after database initialization and takes effect on reload |
+| Observation-cache choice (`diagnosticCacheBypass`) | Global; absent defaults to direct, explicit false selects cached and true selects direct; selected after database initialization and takes effect on reload |
 | Item-set action-bar bindings and optional specialization labels | Character |
 | Which profile is selected | Character, managed by AceDB |
 | Observation caches, compiled registries, combat histories, editor drafts/camera/undo and diagnostics | Runtime only |
