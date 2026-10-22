@@ -1,7 +1,7 @@
 local addon_name, addon = ...
--- Native trial reduced allocations but increased CPU. Keep it startup opt-in
--- while continuation checks are redesigned; ordinary startup uses the prior path.
-local preparedRuntimeTrial = addon.preparedRuntimeTrial == true
+-- Capture the compatibility override once. Managed rotations use the prepared
+-- executor; unsupported/custom sources retain the eager compatibility path.
+local preparedRuntimeEnabled = addon.preparedRuntimeEnabled ~= false
 addon.BindRotationExecutionGeneration=nil
 -- BEGIN ANALYTICS ADVICE HANDOFF
 local adviceCapture
@@ -1145,7 +1145,7 @@ end
 function addon:EvaluateNextActionInternal()
     local selectedRotation,selectedSpec,selectedProfile=self.currentRotation,self.currentSpec,self.db.profile
     local runtimePass,rot,publicationGuard,planToken,conditionSession,handled,presentationViews,conditionLease,notifiedLease
-    if preparedRuntimeTrial and selectedRotation~=nil and acquireActiveRuntimePlan and prepareConditionRuntime then
+    if preparedRuntimeEnabled and selectedRotation~=nil and acquireActiveRuntimePlan and prepareConditionRuntime then
         rot,publicationGuard,planToken,handled,presentationViews,conditionLease,notifiedLease=acquireActiveRuntimePlan(self,selectedSpec,selectedRotation)
         if self.currentRotation~=selectedRotation or self.currentSpec~=selectedSpec or self.db.profile~=selectedProfile then return end
         if handled then

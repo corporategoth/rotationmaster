@@ -64,19 +64,22 @@ local function acquire(owner,spec,key)
         plan=prepared
     end
     if not plan or not consumers(owner) then plan=nil;declined=declined+1;currentRoute='fallback';return nil,nil,nil,false end
+    -- entry's final source-owned proof covers context and eligibility work.
+    -- Capture before those callbacks: never refresh an older request to a
+    -- generation published by reentrant work during preparation.
+    local executionGeneration=readExecutionGeneration and readExecutionGeneration()
     local selected=plan;local state=selected.entry()
-    if not requestCurrent() then declined=declined+1;currentRoute='retired';return nil,retired,nil,true end
+    if not requestCurrent() or executionGeneration==nil or readExecutionGeneration()~=executionGeneration then declined=declined+1;currentRoute='retired';return nil,retired,nil,true end
     if not state then plan=nil;declined=declined+1;currentRoute='fallback';return nil,nil,nil,false end
     local function current()
         return requestCurrent() and identity(plan,selected) and consumers(owner) and selected.current(state)
     end
-    if not current() then declined=declined+1;currentRoute='retired';return nil,current,nil,true end
+    if not identity(plan,selected) or not consumers(owner) then declined=declined+1;currentRoute='retired';return nil,current,nil,true end
     if not built then reused=reused+1 end
     currentRoute=state.allowed and 'managed' or 'unavailable'
     local function conditionCurrent()
         return identity(request,ticket) and identity(plan,selected) and consumers(owner) and selected.conditionCurrent(state)
     end
-    local executionGeneration=readExecutionGeneration and readExecutionGeneration()
     local function notifiedCurrent()
         return executionGeneration~=nil and request==ticket and plan==selected
             and readExecutionGeneration()==executionGeneration

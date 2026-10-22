@@ -10,7 +10,7 @@ local function fixture(prepared)
   if path~='main.lua' then return chunk end
   return function(name,a)
    local env=nativeGetfenv(1);nativeSetfenv(chunk,env)
-   if prepared~=false then a.preparedRuntimeTrial=true end
+   if prepared==false then a.preparedRuntimeEnabled=false end
    a.ConsumeActiveRuntimePlan=function(owner)
     assert(owner==a)
     return function(self,spec,key)
@@ -47,12 +47,12 @@ local function fixture(prepared)
  return c,state
 end
 
-test('ordinary startup keeps the previous evaluation path despite installed trial producers',function()
+test('explicit compatibility startup keeps the previous path despite installed prepared producers',function()
  local c,s=fixture(false);s.mode='plan';c.reset(true);c.tick();local native=c.snapshot()
- assert(s.acquires==0 and s.prepares==0,'prepared trial activated without startup opt-in')
+ assert(s.acquires==0 and s.prepares==0,'prepared executor ignored the startup compatibility override')
  assert((native.SendMessage or 0)>0,'ordinary evaluation did not publish')
- c.a.preparedRuntimeTrial=true;c.tick()
- assert(s.acquires==0,'startup-only trial flag changed a running evaluator')
+ c.a.preparedRuntimeEnabled=true;c.tick()
+ assert(s.acquires==0,'startup-only executor flag changed a running evaluator')
  assert(#c.a.Diagnostics:GetReports()==0)
 end)
 test('source-owned consumers register once and declined acquisition keeps legacy condition route',function()

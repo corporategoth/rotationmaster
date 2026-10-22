@@ -241,7 +241,12 @@ local function prepareRebind(fallbackKey)
     if not token or not current(addon,token) then return nil,nil,token end
     local pending=operation;local spec,id=pending.spec,pending.id
     if id==nil then return nil,nil,token,spec,id end
-    protect(commit,addon,token,spec,id)
+    -- A managed active selection already owns a detached body/reference.
+    -- Re-reading its public getter would expose the canonical body merely to
+    -- rediscover that reference. Legacy selections still use that real getter.
+    if not (active and identity(active.profile,pending.profile) and active.spec==spec and active.id==id and active.reference) then
+        protect(commit,addon,token,spec,id)
+    end
     if not current(addon,token) then return nil,nil,token,spec,id end
     local reference
     if active and identity(active.profile,pending.profile) and active.spec==spec and active.id==id then

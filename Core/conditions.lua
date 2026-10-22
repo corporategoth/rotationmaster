@@ -10,6 +10,17 @@ local printArray, printSingle, validateArray, validateSingle, usefulArray, usefu
 local conditions = {}
 addon.conditionDefinitions = conditions
 if invalidateDependencies then invalidateDependencies(addon,'condition',nil) end
+-- Scope installs one scalar-only reader before normal runtime initialization.
+---@type fun(owner:table): boolean?
+local consumerAvailability
+local consumerAvailabilityBound
+function addon:ConsumeConditionConsumerAvailability()
+    if self~=addon or consumerAvailabilityBound then return end
+    consumerAvailabilityBound=true
+    return function(reader)
+        if consumerAvailability==nil and type(reader)=='function'then consumerAvailability=reader end
+    end
+end
 local special = {}
 addon.conditionSpecials = special
 local quarantined = setmetatable({}, {__mode="k"})
@@ -472,9 +483,13 @@ function addon:RefreshConditionConsumers()
     if self.currentSpec==nil or type(self.autoswitchRotation)~='table' or not self.UpdateAutoSwitch then return end
     self:UpdateAutoSwitch()
     if self.currentRotation and self.GetRuntimeRotation then
-        local pass=self.GetScopedRotationCoordinator and self:GetScopedRotationCoordinator() and self:AcquireRotationRuntimePass(self.currentSpec)
-        local body;if pass then body=pass:Get(self.currentRotation) else body=self:GetRuntimeRotation(self.currentSpec,self.currentRotation) end
-        if not body then self:DisableRotation() end
+        local available=consumerAvailability and consumerAvailability(self)
+        if available==nil then
+            local pass=self.GetScopedRotationCoordinator and self:GetScopedRotationCoordinator() and self:AcquireRotationRuntimePass(self.currentSpec)
+            local body;if pass then body=pass:Get(self.currentRotation) else body=self:GetRuntimeRotation(self.currentSpec,self.currentRotation) end
+            available=not not body
+        end
+        if not available then self:DisableRotation() end
     end
     self:SwitchRotation()
 end

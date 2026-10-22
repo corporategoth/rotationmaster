@@ -1,6 +1,20 @@
 local _,addon=...
 local data=addon.RotationData
 local isClass=data.IsRotationClassToken
+---@type fun(f: number|function): table
+local executionGetfenv=getfenv
+local executionProtect=pcall
+local executionClassEnvironment
+if type(executionGetfenv)=='function'then
+    local ok,value=executionProtect(executionGetfenv,isClass)
+    if ok and type(value)=='table'then executionClassEnvironment=value end
+end
+-- These are source witnesses only. The private runtime guard never executes
+-- address grammar or invokes a retained string receiver with record data.
+local executionStringMeta=getmetatable('')
+local executionStringIndex=type(executionStringMeta)=='table'and rawget(executionStringMeta,'__index')
+local executionStringLibrary=string
+local executionFind=type(executionStringIndex)=='table'and rawget(executionStringIndex,'find')or type(executionStringLibrary)=='table'and rawget(executionStringLibrary,'find')
 local components={'body','origin','imported','comparison'}
 local addressFields={scope=true,class=true,owner=true,spec=true,id=true}
 local stateFields={version=true,classes=true,characters=true,legacy=true}
@@ -490,6 +504,45 @@ function data.NewRotationStore(options)
         end
         return fullCurrent,continuationCurrent
     end
+    -- Only the literal owned executor consumes this fourth factory capability.
+    -- Schema/address validation is cold; publication checks relevant identities
+    -- and table metatables without re-walking closed field schemas each time.
+    local function makeExecutionGuard(_,seal,c,notify)
+        if type(executionGetfenv)~='function'or not executionClassEnvironment
+            or type(executionFind)~='function' or type(executionStringMeta)~='table'
+            or executionStringIndex~=nil and type(executionStringIndex)~='table' then return end
+        local full,continuation=makePublicationGuard(reader,seal,c)
+        if not full or full()~=true then return end
+        local entry=readSeals[seal];local meta=entry.meta;c=c or entry.context
+        local tables,seen={},{}
+        local function add(value)
+            if guardType(value)=='table'and not seen[value]then seen[value]=true;tables[#tables+1]=value end
+        end
+        add(state);add(c);add(meta.record)
+        for i=1,3 do add(readIndex.roots[i])end
+        for i=1,4 do add(meta.chain[i])end
+        for i=1,#components do add(meta.payload[components[i]])end
+        local expectedClass,expectedCharacter=entry.context.class,entry.context.character
+        local function current()
+            local classReadable,classEnvironment=executionProtect(executionGetfenv,isClass)
+            if not classReadable or classEnvironment~=executionClassEnvironment then return false end
+            if reader.IsCurrent~=ownedReaderIsCurrent or type~=guardType or pairs~=guardPairs
+                or getmetatable~=guardGetmetatable or rawget~=guardRawget or getfenv~=executionGetfenv
+                or guardGetmetatable('')~=executionStringMeta
+                or guardRawget(executionStringMeta,'__index')~=executionStringIndex then return false end
+            local findSource=executionStringIndex or executionStringLibrary
+            if guardRawget(findSource,'find')~=executionFind then return false end
+            for i=1,#tables do if guardGetmetatable(tables[i])~=nil then return false end end
+            if guardRawget(c,'class')~=expectedClass or guardRawget(c,'character')~=expectedCharacter then return false end
+            return continuation()==true
+        end
+        if not current()then return end
+        if notify~=nil then
+            if guardType(notify)~='function'then return end
+            executionWatch={meta=meta,notify=notify}
+        end
+        return current,continuation
+    end
     function reader:ListOwned(number,c)
         local ready,reason=readerReady(true);if not ready then return nil,reason end
         local items,problem=privateRows(number,c);if not items then return nil,problem end
@@ -708,7 +761,7 @@ function data.NewRotationStore(options)
         index=buildIndex();resetReaderIndex();readerState='active'
     end
     -- Keep this capability out of the mutable reader callback transport.
-    return service,nil,makePublicationGuard
+    return service,nil,makePublicationGuard,makeExecutionGuard
 end
 local ownedRotationStoreFactory=data.NewRotationStore
 local storeFactoryEnvironment=type(getfenv)=='function' and getfenv(1) or nil

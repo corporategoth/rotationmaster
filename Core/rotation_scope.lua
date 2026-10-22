@@ -1,4 +1,13 @@
 local addon_name,addon=...
+-- Consume the scalar refresh receiver before other startup binder callouts.
+---@type fun(...): any
+local consumeAvailability=addon.ConsumeConditionConsumerAvailability
+---@type fun(...): any
+local installConsumerAvailability
+if type(consumeAvailability)=='function'then
+    installConsumerAvailability=consumeAvailability(addon)
+    addon.ConsumeConditionConsumerAvailability=nil
+end
 local readExecutionGeneration,advanceExecutionGeneration
 ---@type fun(...): any
 local bindExecutionGeneration=addon.BindRotationExecutionGeneration
@@ -23,6 +32,7 @@ local storeScopeEnvironment=type(storeGetfenv)=='function' and storeGetfenv(1) o
 -- These public helpers receive the execution body/path in the default sequence.
 -- Unknown helpers keep the public RuntimePass route before private data escapes.
 local planIndex,planCopy,planPortable,planIpairs=data.IndexRotationSteps,data.CopyData,data.CheckPortable,ipairs
+local planType,planRawget=type,rawget
 local function planDataCurrent(owner)
     return rawget(storeScopeEnvironment,'ipairs')==planIpairs and rawget(owner,'RotationData')==data and rawget(data,'IndexRotationSteps')==planIndex
         and rawget(data,'CopyData')==planCopy and rawget(data,'CheckPortable')==planPortable
@@ -200,7 +210,7 @@ function addon:BindRotationProfile()
         if not bindingCurrent() then return nil,'rotation-transition-superseded' end
     end
     local owner=self;profile=self.db.profile;local state=profile.rotationStore;local fallbackID=profile.rotationFallbackID
-    local reader,store,problem,ownedPublicationGuard;local alive=true;local managedStoreReader=false
+    local reader,store,problem,ownedPublicationGuard,ownedExecutionGuard;local alive=true;local managedStoreReader=false
     if not libraryReader then problem='rotation-library-not-ready'
     elseif not text(profile.rotationFallbackID,128) then problem='missing-fallback-configuration'
     else
@@ -210,7 +220,7 @@ function addon:BindRotationProfile()
         if not bindingCurrent() then return nil,'rotation-transition-superseded' end
         local validation=getOptions(self)
         if not bindingCurrent() then return nil,'rotation-transition-superseded' end
-        store,problem,ownedPublicationGuard=construct({state=state,fallbackID=profile.rotationFallbackID,validation=validation,bindInternalReader=function(value) reader=value end})
+        store,problem,ownedPublicationGuard,ownedExecutionGuard=construct({state=state,fallbackID=profile.rotationFallbackID,validation=validation,bindInternalReader=function(value) reader=value end})
         managedStoreReader=construct==ownedStoreFactory and ownedStoreEnvironment~=nil
             and type(storeGetfenv)=='function' and getfenv==storeGetfenv and storeGetfenv(construct)==ownedStoreEnvironment
     end
@@ -904,7 +914,8 @@ function addon:BindRotationProfile()
         local ok,selected,seal=reader:Read(reference.address,contextValue,function(record) return record end)
         if not ok or exposed[selected.body] then return end
         local guard,storeContinuation
-        if ownedPublicationGuard then guard,storeContinuation=ownedPublicationGuard(reader,seal,contextValue,function()
+        local executionGuard=ownedExecutionGuard or ownedPublicationGuard
+        if executionGuard then guard,storeContinuation=executionGuard(reader,seal,contextValue,function()
             if alive and current==coordinator then invalidateExecution()end
         end) end
         if not guard or not storeContinuation or guard()~=true then return end
@@ -931,17 +942,30 @@ function addon:BindRotationProfile()
         end
         if not authority() then return end
         local view={enabled=true,validation=asset.validation,applicability=asset.applicability}
+        -- Plan's private caller has just proved cache authority. Recheck only
+        -- the actual inputs to context/eligibility before those handoffs; the
+        -- complete proof follows their callbacks at the end of entry.
+        local function contextInputsCurrent()
+            return planRawget(storeScopeEnvironment,'type')==planType
+                and planRawget(storeScopeEnvironment,'ipairs')==planIpairs
+                and planRawget(owner,'GetRotationOwnerContext')==ownedOwnerContext
+                and planRawget(owner,'GetRotationContext')==ownedRuntimeContext
+                and planRawget(owner,'Platform')==ownerPlatform
+                and planRawget(ownerPlatform,'CanReadValue')==ownedRuntimeReadValue
+                and planRawget(ownerPlatform,'GetPlayerOwnerClassObservation')==ownerClass
+                and storeGetfenv(planEligible)==storeScopeEnvironment
+        end
         local function entry()
-            if not authority() then return end
+            if not contextInputsCurrent() then return end
             local actor=context()
-            if not actor or actor.class~=contextValue.class or actor.character~=contextValue.character then return end
+            if not contextInputsCurrent() or not actor or actor.class~=contextValue.class or actor.character~=contextValue.character then return end
             local info,private,method=rotationContext(owner,spec)
-            if private~=true or not libraryContextProof(method,entry,rotationContext) then return end
-            if not authority() then return end
+            if not contextInputsCurrent() or private~=true or not libraryContextProof(method,entry,rotationContext) then return end
             local allowed,reason
             if view.applicability then allowed,reason=planEligible(view,info,false)
             else allowed=info.combatDataPolicy=='probe';reason='restricted-or-unsupported-client' end
             local _,_,operation=readActiveRuntime(owner,spec,key)
+            if not authority() then return end
             return {version=contextVersion,operation=operation,allowed=allowed==true,reason=reason}
         end
         local function currentEntry(value)
@@ -993,6 +1017,25 @@ function addon:AcquireRotationRuntimePass(spec) local c,why=bound();if not c the
 
 ownedAcquireRuntimePass=addon.AcquireRotationRuntimePass
 local ownedGetCleanup=addon.GetRotationForCleanup
+if type(installConsumerAvailability)=='function'then
+    installConsumerAvailability(function(owner)
+        -- Decline before callback-capable work so public override/error dispatch
+        -- follows the original eager sequence exactly once.
+        if owner~=addon or rawget(owner,'AcquireRotationRuntimePass')~=ownedAcquireRuntimePass
+            or storeGetfenv(ownedAcquireRuntimePass)~=storeScopeEnvironment
+            or rawget(owner,'GetScopedRotationCoordinator')~=ownedScopedCoordinator
+            or storeGetfenv(ownedScopedCoordinator)~=storeScopeEnvironment
+            or not current or type(ownedRuntimePasses[current])~='function'
+            or rawget(current,'RuntimePass')~=ownedRuntimePasses[current]
+            or storeGetfenv(ownedRuntimePasses[current])~=storeScopeEnvironment
+            or not runtimeAuthority or not runtimeAuthority(owner) or not planDataCurrent(owner) then return nil end
+        local pass=current:RuntimePass(owner.currentSpec,privatePlanPass)
+        local body
+        if pass then body=pass:Get(owner.currentRotation)
+        else body=owner:GetRuntimeRotation(owner.currentSpec,owner.currentRotation) end
+        return not not body
+    end)
+end
 -- Only main receives this capability. Public/manual RuntimePass callers retain
 -- the fresh provider route, and every main invocation starts a new observation.
 function addon:BindRuntimeEvaluationContext(bind)
