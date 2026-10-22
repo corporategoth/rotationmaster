@@ -188,6 +188,8 @@ def main():
             ['luajit', 'tests/cache_opt_in.lua'],
             ['lua5.1', 'tests/memory_capture.lua'],
             ['luajit', 'tests/memory_capture.lua'],
+            ['lua5.1', 'tests/memory_boundary_refresh.lua'],
+            ['luajit', 'tests/memory_boundary_refresh.lua'],
             ['lua5.1', 'tests/memory_activity_snapshot.lua'],
             ['luajit', 'tests/memory_activity_snapshot.lua'],
             ['lua5.1', 'tests/cpu_runtime_decisions.lua'],

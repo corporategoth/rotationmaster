@@ -95,9 +95,11 @@ local function render(run,status)
   format('requested=600 s; actual=%s s; heap samples=%d; detailed samples=%d',amount(run.elapsed),run.heapSamples,#run.rows),
   format('heapKiB start=%s; end=%s; min=%s; max=%s; decreases=%d (>=256 KiB); max drop=%s at=%s s',amount(run.heapStart),amount(run.heapEnd),amount(run.heapMin),amount(run.heapMax),run.drops,amount(run.maxDrop),amount(run.maxDropAt)),
   format('Explicit attribution refreshes=%d; successful=%d; failed=%d; scan total=%s ms; max=%s ms',run.scanAttempts,run.scanOK,run.scanFailed,amount(run.scanTime),amount(run.scanMax))..' (timed scans='..run.timedScans..')',
+  'addonKiB boundary start='..amount(run.startAddonKB)..'; end='..amount(run.endAddonKB)..' (explicit refresh results; unavailable if missing, failed or not requested)',
   format('Sampler overhead total=%s ms; max=%s ms; failed samples=%d. Timings include instrumentation, unadjusted.',amount(run.overhead),amount(run.overheadMax),run.failedSamples)..' Timed sampler bodies='..run.timedSamples..'.',
   'Counts are keys/rows, not bytes; >= marks a bounded lower limit. Missing or restricted observations are unavailable.',
   'Heap precedes each attribution refresh. CPU/runtime flags describe detailed boundaries only; overlapping instrumentation can affect memory.',
+  'Attribution refreshes occur only at capture start/end. Intermediate addonKiB is cached with unknown age; other addons may refresh it.',
   'Explicit memory attribution refreshes may themselves contribute to observed frame spikes; compare scan costs before attributing overlaps to ordinary RM work.'}
  local function counts(row,keys)
   local parts={}
@@ -109,7 +111,7 @@ local function render(run,status)
  else lines[#lines+1]='WTM spike correlation: unavailable (optional public counters not observed).'end
  local reportBytes=#concat(lines,'\n')
  for _,row in each(run.rows)do
-  local text=format('t=%s s heapKiB=%s addonKiB=%s fresh=%s scanMs=%s',amount(row.t),amount(row.heap),amount(row.addonKB),row.fresh and'yes'or'no',amount(row.scanMs))..' cpu='..row.cpu..' runtime='..row.runtime..' WTM/RMspikes='..(storedNumber(row.wtmSpikes)and format('%.0f',row.wtmSpikes)or'unavailable')..' WTMlastSpikeT='..amount(row.wtmLast)
+  local text=format('t=%s s heapKiB=%s addonKiB=%s fresh=%s scanMs=%s',amount(row.t),amount(row.heap),amount(row.addonKB),row.fresh and'yes'or'no',amount(row.scanMs))..' attribution='..row.attribution..' age='..(row.fresh and'0'or'unknown')..' cpu='..row.cpu..' runtime='..row.runtime..' WTM/RMspikes='..(storedNumber(row.wtmSpikes)and format('%.0f',row.wtmSpikes)or'unavailable')..' WTMlastSpikeT='..amount(row.wtmLast)
   local a,b=counts(row,retainedKeys),counts(row,publicKeys)
   if a~=''then text=text..' '..a end;if b~=''then text=text..' '..b end
   if reportBytes+#text+1>15500 then lines[#lines+1]='Remaining detailed rows omitted to keep report bounded.';break end
@@ -127,10 +129,11 @@ local function finish(run,status)
  if timeout then protect(run.cancel,addon,timeout)end
  if active==nil and latest==run then local notify=raw(addon,'OnMemoryCaptureFinished');if kind(notify)=='function'then protect(notify,addon,report,status)end end
 end
-local function detail(run,at,heap)
- local row={t=at-run.started,heap=heap,fresh=false,wtmSpikes=run.wtmCount}
+local function detail(run,at,heap,refresh)
+ local row={t=at-run.started,heap=heap,fresh=false,attribution='unavailable',wtmSpikes=run.wtmCount}
  if run.wtmLast and run.wtmLast>=run.started then row.wtmLast=run.wtmLast-run.started end
  if kind(run.update)=='function'and kind(run.memory)=='function'then
+  if refresh then
   run.scanAttempts=run.scanAttempts+1
   local before=callNumber(run,run.ms)
   if not current(run)then return end
@@ -144,7 +147,15 @@ local function detail(run,at,heap)
   if ok then row.addonKB=callNumber(run,run.memory,addon_name)end
   if not current(run)then return end
   row.fresh=row.addonKB~=nil
-  if row.fresh then run.scanOK=run.scanOK+1 else run.scanFailed=run.scanFailed+1 end
+  if row.fresh then row.attribution='refreshed';run.scanOK=run.scanOK+1 else run.scanFailed=run.scanFailed+1 end
+  else
+   row.addonKB=callNumber(run,run.memory,addon_name)
+   if row.addonKB~=nil then row.attribution='cached' end
+   if not current(run)then return end
+  end
+ end
+ if refresh then
+  if run.finalDetail then run.endAddonKB=row.addonKB else run.startAddonKB=row.addonKB end
  end
  local function captureState(name)
   local fn=raw(addon,name)
@@ -177,9 +188,12 @@ local function sample(run,ending)
   local at=callNumber(run,run.clock);if not at or not current(run)then return end
   if at<run.started then finish(run,'invalid');return end
   run.elapsed=at-run.started
-  if run.lastAt==nil or at>run.lastAt then
+  local freshTick=run.lastAt==nil or at>run.lastAt
+  if freshTick or ending then
    local before=callNumber(run,run.ms)
-   local heap=callNumber(run,run.heap,'count')
+   local heap=run.heapEnd
+   if freshTick then
+   heap=callNumber(run,run.heap,'count')
    if not current(run)then return end
    if heap~=nil and run.heapSamples<HEAP_LIMIT then
     run.heapSamples=run.heapSamples+1;run.heapStart=run.heapStart or heap;run.heapEnd=heap
@@ -191,7 +205,15 @@ local function sample(run,ending)
     run.previousHeap=heap
    else run.failedSamples=run.failedSamples+1 end
    run.lastAt=at
-   if at>=run.nextDetail and #run.rows<DETAIL_LIMIT then detail(run,at,heap)end
+   end
+   local final=ending or run.elapsed>=DURATION or run.heapSamples>=HEAP_LIMIT
+   if final then
+    -- Reserve the final row even when periodic detail sampling drifted. Set
+    -- before native callouts so a stale/late timer cannot repeat this scan.
+    if not run.finalDetail then run.finalDetail=true;detail(run,at,heap,true)end
+   elseif at>=run.nextDetail and #run.rows<DETAIL_LIMIT-1 then
+    detail(run,at,heap,#run.rows==0)
+   end
    if not current(run)then return end
    local after=callNumber(run,run.ms)
    if before and after and after>=before then local cost=after-before;run.overhead=(run.overhead or 0)+cost;run.overheadMax=math.max(run.overheadMax or 0,cost);run.timedSamples=run.timedSamples+1 end
