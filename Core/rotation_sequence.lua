@@ -3,6 +3,13 @@ local data=addon.RotationData
 local function unavailable(diagnostic)
     return {status="unavailable",suppressAttack=true,diagnostic=diagnostic}
 end
+-- Managed rows own dense scalar paths produced by the private execution index.
+-- Give each receiver a fresh plain array without revalidating portable data.
+local function managedPath(path)
+    local result={}
+    for i=1,#path do result[i]=path[i] end
+    return result
+end
 local function execute(body,evaluate,visit,rows,ordinal,kind,each,managed)
     local result={status="complete",suppressAttack=false,fallbackOrdinal=ordinal+1}
     local function permitted(receiver)
@@ -14,7 +21,7 @@ local function execute(body,evaluate,visit,rows,ordinal,kind,each,managed)
         if managed then
             if not permitted('pathcopy') then return "unavailable" end
             local conditions,stepId=step.conditions,step.id
-            local path=data.CopyData(row.path)
+            local path=managedPath(row.path)
             observation=evaluate(conditions,{stepId=stepId,stepPath=path})
             if not permitted('resume') then return "unavailable" end
         else
@@ -49,7 +56,7 @@ local function execute(body,evaluate,visit,rows,ordinal,kind,each,managed)
                 else
                     if not permitted('pathcopy') then return false end
                     local position=row.ordinal
-                    local path=data.CopyData(row.path)
+                    local path=managedPath(row.path)
                     local keepGoing=visit(step,position,path)
                     if keepGoing==false then result.status="selected";return false end
                 end

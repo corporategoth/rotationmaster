@@ -3775,6 +3775,7 @@ addon.BindActiveRuntimePresentationSource=nil
  rows['buttons.lua']={before=before,after=after}
 end
 return function(text,path,mode)
+ if mode==nil then text=dofile('tests/fixtures/restore_observation_lifecycles.lua')(text,path)end
  if mode==nil then text=dofile('tests/fixtures/restore_execution_generation.lua')(text,path)end
  if mode==nil and (path=='Core/rotation_scope.lua' or path=='Core/rotation_references.lua')then text=dofile('tests/fixtures/restore_active_runtime_continuation.lua')(text,path)end
  local row=rows[path];assert(row,'unknown active runtime source path')
