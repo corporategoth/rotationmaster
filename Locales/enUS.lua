@@ -2962,6 +2962,8 @@ L["Choose a unit for this condition."] = true
 L["Group membership option is invalid."] = true
 L["For %s"] = true
 L["Saved settings"] = true
+L["Default.TBC.Priest.Shadow50.Name"] = "Priest: Shadow leveling (50–59)"
+L["Default.TBC.Priest.Shadow50.Description"] = "Bounded Shadow-oriented solo preview; learned spells and native readiness remain authoritative. Choose channels and wand manually; healing and resources remain manual."
 
 -- BEGIN GENERATED RM PUBLIC HELPER DOCS
 L["Absolute health target (negative means deficit) or percentage fraction."] = true

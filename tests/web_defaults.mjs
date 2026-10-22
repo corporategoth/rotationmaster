@@ -1,4 +1,4 @@
-const FIFTY_ADDITIONS=new Set(['rm.tbc.shaman.enhancement.50-59','rm.tbc.mage.starter.50-59']);
+const FIFTY_ADDITIONS=new Set(['rm.tbc.shaman.enhancement.50-59','rm.tbc.mage.starter.50-59','rm.tbc.priest.shadow.50-59']);
 const FORTY_ADDITIONS=new Set(["rm.tbc.mage.starter.40-49", "rm.tbc.warrior.starter.40-49", "rm.tbc.paladin.starter.40-49", "rm.tbc.rogue.starter.40-49", "rm.tbc.druid.caster.starter.40-49"]);
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -22,8 +22,8 @@ const fields=m=>new Map(m.entries.map(([k,v])=>[Buffer.from(k.hex,'hex').toStrin
 function set(m,k,v){const hex=bytes(k).hex;const row=m.entries.find(([key])=>key.type==='bytes'&&key.hex===hex);if(row)row[1]=v;else m.entries.push([bytes(k),v]);}
 const number=n=>{const b=Buffer.alloc(8);b.writeDoubleBE(n);return{type:'number',bits:b.toString('hex')};};
 
-test('pure catalog exposes all35 actual source definitions without runtime facts',()=>{
- const c=ready(),rows=c.list();assert.equal(rows.length,35);assert.equal(new Set(rows.map(r=>r.id)).size,35);
+test('pure catalog exposes all36 actual source definitions without runtime facts',()=>{
+ const c=ready(),rows=c.list();assert.equal(rows.length,36);assert.equal(new Set(rows.map(r=>r.id)).size,36);
  for(const row of rows){assert.equal(row.applicability.get('families').get(1),'tbc');assert.equal(row.validation.nativeAvailability,'unverified');for(const k of ['eligible','enabled','runtimeKey','spellName','icon'])assert.equal(Object.hasOwn(row,k),false);const value=c.get(row.id);assert(value.ok&&checkPortable(value.envelope).ok);const report=validateEnvelope(value.envelope,declarations);assert(report.valid&&report.supported&&report.resolved);assert(indexRotationSteps(value.envelope.get('body')).ok);}
  assert.deepEqual(c.get({toString(){throw Error('no coercion');}}),{ok:false,reason:'unknown-default'});
 });
@@ -32,20 +32,20 @@ test('production generator is deterministic/current BOTH and source inputs exact
  const doc=raw();for(const[path,sha]of Object.entries(doc.sourceFiles))assert.equal(createHash('sha256').update(readFileSync(new URL('../'+path,import.meta.url))).digest('hex'),sha,path);
  const toc=readFileSync(new URL('../RotationMaster.toc',import.meta.url),'utf8').split(/\r?\n/).filter(s=>/^Defaults\/.+\.lua$/.test(s));assert.deepEqual([...doc.packs.map(p=>p.sourcePath)].sort(),toc.sort());
 });
-test('all35 pinned actual codec wires decode to exact catalog Maps and strict diff equality',()=>{
- const fixture=JSON.parse(readFileSync(new URL('./fixtures/web_defaults.json',import.meta.url))),c=ready();assert.equal(fixture.format,'RotationMasterBundledDefaultWireFixtures');assert.equal(fixture.records.length,35);
- let rows=0;for(const record of fixture.records){const decoded=decodeImport(record.wire);assert(decoded.ok&&decoded.kind==='envelope');const selected=c.get(record.id);assert(selected.ok);assert.deepEqual(toTypedTree(decoded.value),record.expected);assert.deepEqual(toTypedTree(selected.envelope),record.expected);assert.equal(selected.source.sha256,record.sourceSHA);rows+=indexRotationSteps(decoded.value.get('body')).index.rows.length;const diff=diffRotations(decoded.value,selected.envelope);assert(diff.valid&&diff.complete&&diff.changes.length===0);}assert.equal(rows,320);
+test('all36 pinned actual codec wires decode to exact catalog Maps and strict diff equality',()=>{
+ const fixture=JSON.parse(readFileSync(new URL('./fixtures/web_defaults.json',import.meta.url))),c=ready();assert.equal(fixture.format,'RotationMasterBundledDefaultWireFixtures');assert.equal(fixture.records.length,36);
+ let rows=0;for(const record of fixture.records){const decoded=decodeImport(record.wire);assert(decoded.ok&&decoded.kind==='envelope');const selected=c.get(record.id);assert(selected.ok);assert.deepEqual(toTypedTree(decoded.value),record.expected);assert.deepEqual(toTypedTree(selected.envelope),record.expected);assert.equal(selected.source.sha256,record.sourceSHA);rows+=indexRotationSteps(decoded.value.get('body')).index.rows.length;const diff=diffRotations(decoded.value,selected.envelope);assert(diff.valid&&diff.complete&&diff.changes.length===0);}assert.equal(rows,332);
 });
 test('first19 frozen wire records stay exact; Hunter30–39 remains twentieth',()=>{
  const records=JSON.parse(readFileSync(new URL('./fixtures/web_defaults.json',import.meta.url))).records;
- assert.equal(records.length,35);
+ assert.equal(records.length,36);
  assert.equal(createHash('sha256').update(JSON.stringify(records.slice(0,19))).digest('hex'),'354927d1a786ed221d8438670ab6b32689d586b0cf4fd3a288bebda299a86046');
  assert.equal(records[19].id,'rm.tbc.hunter.starter.30-39');
  assert.equal(records.filter(r=>r.id==='rm.tbc.hunter.starter.30-39').length,1);
 });
 test('first20 frozen wire records remain ordered; four class continuations append once',()=>{
  const records=JSON.parse(readFileSync(new URL('./fixtures/web_defaults.json',import.meta.url))).records;
- assert.equal(records.length,35);
+ assert.equal(records.length,36);
  assert.equal(createHash('sha256').update(JSON.stringify(records.slice(0,20))).digest('hex'),'9f0a089c84b90cd7410a08efb7781ac730fbeb716a198b27f100c8af892db090');
  assert.deepEqual(records.slice(20,24).map(r=>r.id),["rm.tbc.druid.caster.starter.30-39","rm.tbc.paladin.starter.30-39","rm.tbc.rogue.starter.30-39","rm.tbc.warrior.starter.30-39"]);
 });
@@ -59,7 +59,7 @@ test('first24 frozen wire records and catalog objects stay exact; Hunter40–49 
 });
 test('first25 frozen wires and catalog objects stay ordered; Priest40–49 appends once',()=>{
  const records=JSON.parse(readFileSync(new URL('./fixtures/web_defaults.json',import.meta.url))).records;
- assert.equal(records.length,35);
+ assert.equal(records.length,36);
  assert.equal(createHash('sha256').update(JSON.stringify(records.slice(0,25))).digest('hex'),'9b207ff6cbde16c3b1a9b92310fc27542dc2293c28fcd674c88dbcefbac00e02');
  assert.equal(records[25].id,'rm.tbc.priest.shadow.40-49');
  assert.equal(records.filter(r=>r.id==='rm.tbc.priest.shadow.40-49').length,1);
@@ -123,12 +123,12 @@ test('trusted producer refuses native queries, duplicate registration and invali
  }
 });
 test('fresh actual LuaJIT fixture generation stays semantically equal without wire-order claims',()=>{
- const fresh=JSON.parse(execFileSync('luajit',['tools/export_web_defaults.lua','--fixtures'],{cwd:root,encoding:'utf8',maxBuffer:4*1024*1024}));const c=ready();assert.equal(fresh.records.length,35);for(const r of fresh.records){const decoded=decodeImport(r.wire);assert(decoded.ok);assert.deepEqual(toTypedTree(decoded.value),toTypedTree(c.get(r.id).envelope));}
+ const fresh=JSON.parse(execFileSync('luajit',['tools/export_web_defaults.lua','--fixtures'],{cwd:root,encoding:'utf8',maxBuffer:4*1024*1024}));const c=ready();assert.equal(fresh.records.length,36);for(const r of fresh.records){const decoded=decodeImport(r.wire);assert(decoded.ok);assert.deepEqual(toTypedTree(decoded.value),toTypedTree(c.get(r.id).envelope));}
 });
 
 test('first26 frozen source catalog objects and ordered wire bytes stay exact; Shaman40–49 appends once',()=>{
  const wireText=readFileSync(new URL('./fixtures/web_defaults.json',import.meta.url));const records=JSON.parse(wireText).records;
- assert.equal(records.length,35);assert.equal(createHash('sha256').update(JSON.stringify(records.slice(0,26))).digest('hex'),'0341d283dfc472ae359c32059b64be03298db8460e80adb8c60e7097ab864c60');
+ assert.equal(records.length,36);assert.equal(createHash('sha256').update(JSON.stringify(records.slice(0,26))).digest('hex'),'0341d283dfc472ae359c32059b64be03298db8460e80adb8c60e7097ab864c60');
  assert.equal(createHash('sha256').update(wireText.subarray(0,411744)).digest('hex'),'c695c4f08e8266c5a7a46f6fd6293f2188dd1cbc33429472e5b0beb93247886d');
  assert.equal(records[26].id,'rm.tbc.shaman.enhancement.40-49');assert.equal(records.filter(r=>r.id==='rm.tbc.shaman.enhancement.40-49').length,1);
  const old=raw().packs.filter(p=>!FIFTY_ADDITIONS.has(p.id)&&!FORTY_ADDITIONS.has(p.id)&&p.id!=='rm.tbc.shaman.enhancement.40-49'&&p.id!=='rm.tbc.warlock.starter.40-49');assert.equal(old.length,26);assert.equal(createHash('sha256').update(JSON.stringify(old)).digest('hex'),'d4d510e312a5a71192d6b07b6dbfda771387b7e5a3285ad630fde6871d391ab2');
@@ -139,7 +139,7 @@ test('first26 frozen source catalog objects and ordered wire bytes stay exact; S
 
 test('full old27 Shaman source catalog and ordered raw-wire prefix stay exact; Warlock is appended28th',()=>{
  const wireText=readFileSync(new URL('./fixtures/web_defaults.json',import.meta.url));const records=JSON.parse(wireText).records;
- assert.equal(records.length,35);assert.equal(createHash('sha256').update(JSON.stringify(records.slice(0,27))).digest('hex'),'c99e4787b237513f7bbf0b7e79d8a05b108202669efd866b0d8390eeb244d9db');
+ assert.equal(records.length,36);assert.equal(createHash('sha256').update(JSON.stringify(records.slice(0,27))).digest('hex'),'c99e4787b237513f7bbf0b7e79d8a05b108202669efd866b0d8390eeb244d9db');
  assert.equal(createHash('sha256').update(wireText.subarray(0,426069)).digest('hex'),'26eeb0101c5f93fd2184b4bf18aa4e68f536aeffc694c642942252a9a1c9d152');
  assert.equal(createHash('sha256').update(wireText.subarray(426069+1,448506)).digest('hex'),'4ab72b56806c794fce7c9dd2de63e945ce4b526e00f6cf9eca74ac63e60b1930');
  assert.equal(records[26].id,'rm.tbc.shaman.enhancement.40-49');assert.equal(records[27].id,'rm.tbc.warlock.starter.40-49');assert.equal(records.filter(r=>r.id==='rm.tbc.warlock.starter.40-49').length,1);
@@ -151,7 +151,7 @@ test('full old27 Shaman source catalog and ordered raw-wire prefix stay exact; W
 });
 
 test('five bounded40 continuations append after exact old28 catalog and wire records',()=>{
- const w=readFileSync(new URL('./fixtures/web_defaults.json',import.meta.url)),records=JSON.parse(w).records;assert.equal(records.length,35);
+ const w=readFileSync(new URL('./fixtures/web_defaults.json',import.meta.url)),records=JSON.parse(w).records;assert.equal(records.length,36);
  assert.equal(createHash('sha256').update(JSON.stringify(records.slice(0,28))).digest('hex'),'f15b3d9a4d64820e9a607440a3bd440294228cb1c6e07fdcf2e9a5a63ddc744c');
  assert.equal(createHash('sha256').update(w.subarray(0,448506)).digest('hex'),'ea75d6e0b8ca09034f4b307554001b1143eecb6299d56dda1102bc25fed108cd');
  assert.equal(createHash('sha256').update(Buffer.concat([w.subarray(0,448506),w.subarray(-15)])).digest('hex'),'cf5c7d26471f4dae68ce94fadca29793681aae3e9b618ebe085f38c87ed7fe6d');
@@ -162,7 +162,7 @@ test('five bounded40 continuations append after exact old28 catalog and wire rec
 });
 
 test('full old33 source catalog and raw-wire section remain exact; bounded Shaman50 appends once',()=>{
- const w=readFileSync(new URL('./fixtures/web_defaults.json',import.meta.url)),records=JSON.parse(w).records;assert.equal(records.length,35);
+ const w=readFileSync(new URL('./fixtures/web_defaults.json',import.meta.url)),records=JSON.parse(w).records;assert.equal(records.length,36);
  assert.equal(createHash('sha256').update(w.subarray(0,546651)).digest('hex'),'82b947d8acb29992b1bcd611cd43d05011cada515bccfbdbd1be833e8bd74d9d');
  assert.equal(createHash('sha256').update(Buffer.concat([w.subarray(0,546651),w.subarray(-15)])).digest('hex'),'d9cf642401965e7a3a7ca851ea3ba9fce16133c0b2ffafaaea2f071d59deb09b');
  assert.equal(createHash('sha256').update(JSON.stringify(records.slice(0,33))).digest('hex'),'76188d97ce84c0ca4f3e59b0f4b4db94754442e6bfa9bbc7a667fe5856050d99');
@@ -176,13 +176,28 @@ test('full old33 source catalog and raw-wire section remain exact; bounded Shama
 
 test('all34 old catalog objects and wire records remain exact when Mage50 is added',()=>{
  const fixture=JSON.parse(readFileSync(new URL('./fixtures/web_defaults.json',import.meta.url)));
- assert.equal(fixture.records.length,35);
+ assert.equal(fixture.records.length,36);
  assert.equal(createHash('sha256').update(JSON.stringify(fixture.records.slice(0,34))).digest('hex'),'64a3bc82362640aa91deb18ddbf56866bc5076b6f7523d156f543b22832c6451');
  const wire=readFileSync(new URL('./fixtures/web_defaults.json',import.meta.url));
  assert.equal(createHash('sha256').update(wire.subarray(0,560980)).digest('hex'),'6aef4a40290812c0c5997c0948b75a9ffbd56967d6436ffc9e144ca98a33be81');
  const catalog=raw();
- assert.equal(createHash('sha256').update(JSON.stringify(catalog.packs.filter(r=>r.id!=='rm.tbc.mage.starter.50-59'))).digest('hex'),'4ad4898b34d67e9fbf8afb118a094830deb07002642b2e979abfda8f3e60c399');
+ assert.equal(createHash('sha256').update(JSON.stringify(catalog.packs.filter(r=>r.id!=='rm.tbc.mage.starter.50-59'&&r.id!=='rm.tbc.priest.shadow.50-59'))).digest('hex'),'4ad4898b34d67e9fbf8afb118a094830deb07002642b2e979abfda8f3e60c399');
  const selected=ready().get('rm.tbc.mage.starter.50-59');assert(selected.ok);
  assert.equal(selected.envelope.get('applicability').get('minLevel'),50);assert.equal(selected.envelope.get('applicability').get('maxLevel'),59);
  assert.equal(indexRotationSteps(selected.envelope.get('body')).index.rows.length,6);
+});
+
+
+test('all35 old catalog objects and wire records remain exact when Priest50 is added',()=>{
+ const wire=readFileSync(new URL('./fixtures/web_defaults.json',import.meta.url)),fixture=JSON.parse(wire);
+ assert.equal(fixture.records.length,36);
+ assert.equal(createHash('sha256').update(JSON.stringify(fixture.records.slice(0,35))).digest('hex'),'3f1dcf7b1e6921de43e0e108129ecd5a31d3675748369c147d657e42d75236c1');
+ assert.equal(createHash('sha256').update(wire.subarray(0,587486)).digest('hex'),'69a81ea5610f14254ca257b493360d01212891d7ddb45993b375fd767fd0fcba');
+ assert.equal(createHash('sha256').update(JSON.stringify(raw().packs.filter(r=>r.id!=='rm.tbc.priest.shadow.50-59'))).digest('hex'),'a78b1a9761727a5384e5ff323d5bf00a1f7c19b56564026c0bd7d1c909f5d0c3');
+ const selected=ready().get('rm.tbc.priest.shadow.50-59');assert(selected.ok);
+ assert.equal(selected.envelope.get('applicability').get('minLevel'),50);assert.equal(selected.envelope.get('applicability').get('maxLevel'),59);
+ const rows=indexRotationSteps(selected.envelope.get('body')).index.rows;assert.equal(rows.length,12);
+ const old=ready().list().filter(p=>p.id!=='rm.tbc.priest.shadow.50-59');
+ const ids=new Set(old.flatMap(p=>indexRotationSteps(ready().get(p.id).envelope.get('body')).index.rows.map(r=>r.step.get('id'))));
+ for(const row of rows){assert(row.step.get('id').startsWith('priest-shadow50-'));assert(!ids.has(row.step.get('id')));}
 });
