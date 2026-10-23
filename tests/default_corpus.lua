@@ -81,6 +81,14 @@ test('TOC includes every reviewed starter pack exactly once',function()
         'rm.forever.warrior.protection','rm.forever.warrior.protection.warcrafttavern','rm.forever.warrior.dps','rm.forever.warrior.dps.warcrafttavern'})do wanted[id]=true end
     -- WoW Forever Druid, Hunter, Mage, Paladin and Priest premades.
     for _,id in ipairs({'rm.forever.druid.balance','rm.forever.druid.balance.tavern','rm.forever.druid.feral','rm.forever.druid.restoration','rm.forever.druid.restoration.icyveins','rm.forever.hunter.ranged','rm.forever.hunter.ranged.mobalytics','rm.forever.hunter.survival','rm.forever.hunter.survival.weave','rm.forever.mage.frost','rm.forever.mage.fire','rm.forever.mage.fire.icyveins','rm.forever.mage.arcane','rm.forever.paladin.retribution','rm.forever.paladin.protection','rm.forever.paladin.protection.icyveins','rm.forever.paladin.holy','rm.forever.paladin.holy.wowhead','rm.forever.priest.dps','rm.forever.priest.dps.mobalytics','rm.forever.priest.healer'})do wanted[id]=true end
+    -- Retail Death Knight, Demon Hunter, Druid, Evoker, Hunter, Mage and Monk premades (per specialization).
+    for _,id in ipairs({'rm.retail.deathknight.blood','rm.retail.deathknight.blood.guide','rm.retail.deathknight.blood.simc','rm.retail.deathknight.frost','rm.retail.deathknight.frost.guide','rm.retail.deathknight.frost.wowhead','rm.retail.deathknight.unholy','rm.retail.deathknight.unholy.guide','rm.retail.deathknight.unholy.simc',
+        'rm.retail.demonhunter.havoc','rm.retail.demonhunter.havoc.guide','rm.retail.demonhunter.vengeance','rm.retail.demonhunter.vengeance.guide','rm.retail.demonhunter.vengeance.simc','rm.retail.demonhunter.devourer','rm.retail.demonhunter.devourer.guide','rm.retail.demonhunter.devourer.simc',
+        'rm.retail.druid.balance','rm.retail.druid.balance.guide','rm.retail.druid.feral','rm.retail.druid.feral.guide','rm.retail.druid.guardian','rm.retail.druid.guardian.guide','rm.retail.druid.guardian.simc','rm.retail.druid.restoration',
+        'rm.retail.evoker.devastation','rm.retail.evoker.devastation.guide','rm.retail.evoker.augmentation','rm.retail.evoker.augmentation.assisted','rm.retail.evoker.preservation',
+        'rm.retail.hunter.beastmastery','rm.retail.hunter.beastmastery.guide','rm.retail.hunter.marksmanship','rm.retail.hunter.marksmanship.guide','rm.retail.hunter.survival','rm.retail.hunter.survival.guide',
+        'rm.retail.mage.arcane','rm.retail.mage.arcane.guide','rm.retail.mage.fire','rm.retail.mage.fire.guide','rm.retail.mage.frost','rm.retail.mage.frost.guide',
+        'rm.retail.monk.brewmaster','rm.retail.monk.brewmaster.guide','rm.retail.monk.windwalker','rm.retail.monk.windwalker.guide','rm.retail.monk.mistweaver'})do wanted[id]=true end
     for _,pack in ipairs(packs)do assert(wanted[pack.id],pack.id..' is unexpected or duplicated');wanted[pack.id]=nil end
     assert(not next(wanted),'reviewed starter pack missing from TOC')
 end)

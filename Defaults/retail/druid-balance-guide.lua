@@ -1,0 +1,60 @@
+-- Retail (Midnight 12.x) Balance Druid after Icy Veins, SimulationCraft and Wowhead (optimal
+-- reference): Moonkin Form and two Wraths before the pull; Sunfire and Moonfire kept up; Eclipse
+-- entered when neither is active (Lunar on three or more enemies, Solar otherwise); Starfall on
+-- Starweaver's Warp, Touch the Cosmos or packs; Starsurge before Astral Power caps or on
+-- Starweaver's Weft; the Moons; Wild Mushroom in an Eclipse; Starfire in a Lunar Eclipse or on packs,
+-- else Wrath. Disabled: DoTs, Eclipse, procs and Astral Power are secret in Midnight combat.
+local _,addon=...
+local function all(...)return{type='AND',value={...}}end
+local function any(...)return{type='OR',value={...}}end
+local function negate(c)return{type='NOT',value=c}end
+local function buff(id)return{type='BUFF',unit='player',spell=id,ownbuff=true}end
+local function combat()return{type='COMBAT',unit='player'}end
+local function engaged(n)return{type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=n}end
+local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
+local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or{}}end
+local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
+local function refresh(id)return any(negate({type='DEBUFF',unit='target',spell=id,owndebuff=true}),{type='DEBUFF_REMAIN',unit='target',spell=id,owndebuff=true,operator='LESSTHAN',value=5.4})end
+local eclipse=any(buff(48517),buff(48518))
+local aligned=any(buff(194223),buff(102560))
+local moonkin=any(buff(24858),buff(102560))
+assert(addon:RegisterDefaultRotation({
+ format='RotationMaster',schemaVersion=1,id='rm.retail.druid.balance.guide',revision=1,
+ blocks={['retail.druid.boundaries']=1,['retail.druid.utility']=1},
+ nameKey='Default.Retail.Druid.BalanceGuide.Name',descriptionKey='Default.Retail.Druid.BalanceGuide.Description',
+ applicability={families={'retail'},actionContext='player',class='DRUID',specs={102},minLevel=10,maxLevel=90},
+ tags={'balance','ranged','reference','icy-veins','simulationcraft','wowhead'},
+ sources={
+  {url='https://www.icy-veins.com/wow/balance-druid-pve-dps-rotation-cooldowns-abilities',title='Icy Veins: Balance Druid rotation (12.1.5)',reviewedAt='2026-10-23',revision='2026-10-12'},
+  {url='https://github.com/simulationcraft/simc/blob/c5fea93fb77da1fae1cb1bfb1de13d2c60923ccf/ActionPriorityLists/default/druid_balance.simc',title='SimulationCraft default action list: Balance',reviewedAt='2026-10-23',revision='c5fea93f'},
+  {url='https://www.wowhead.com/guide/classes/druid/balance/rotation-cooldowns-pve-dps',title='Wowhead: Balance Druid rotation',reviewedAt='2026-10-23',revision='2026-04-19',notes='Read from a Wayback snapshot.'},
+ },
+ body={priority=10,disabled=true,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
+  cooldowns={
+   block('baguide-utility','retail.druid.utility','baguide-'),
+   spell('baguide-solar-beam',78675,any({type='CAST_INTERRUPTABLE',unit='target'},{type='CHANNEL_INTERRUPTABLE',unit='target'})),
+   spell('baguide-celestial-alignment',194223,combat()),
+   spell('baguide-incarnation',102560,combat()),
+   spell('baguide-fury-of-elune',202770,all(combat(),negate(eclipse))),
+   spell('baguide-force-of-nature',205636,all(combat(),negate(eclipse))),
+   spell('baguide-convoke',391528,all(aligned,{type='POWER',unit='player',operator='LESSTHAN',value=40})),
+  },
+  rotation={
+   block('baguide-boundaries','retail.druid.boundaries','baguide-'),
+   {id='baguide-pull',type='branch',conditions=negate(combat()),onFalse={},onTrue={
+    spell('baguide-pull-moonkin',24858,negate(moonkin)),spell('baguide-pull-wrath',5176),stop('baguide-pull-stop')}},
+   spell('baguide-sunfire',93402,refresh(164815)),
+   spell('baguide-moonfire',8921,refresh(164812)),
+   {id='baguide-eclipse',type='branch',conditions=negate(eclipse),onFalse={},onTrue={
+    spell('baguide-lunar-eclipse',1233272,engaged(3)),spell('baguide-solar-eclipse',1233346)}},
+   spell('baguide-starfall',191034,any(buff(393942),buff(450360),engaged(3))),
+   spell('baguide-starsurge',78674,any({type='POWER',unit='player',operator='LESSTHAN',value=-20},buff(393944),buff(450360))),
+   spell('baguide-new-moon',274281),
+   spell('baguide-half-moon',274282),
+   spell('baguide-full-moon',274283),
+   spell('baguide-wild-mushroom',88747,eclipse),
+   spell('baguide-starfire',194153,any(buff(48518),engaged(3))),
+   spell('baguide-wrath',5176),
+  },
+ },
+}))
