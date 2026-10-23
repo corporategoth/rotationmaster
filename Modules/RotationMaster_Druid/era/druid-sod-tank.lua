@@ -5,11 +5,11 @@
 -- Demoralizing Roar are reminders. In Cat Form (off-tanking) it plays the SoD cat section.
 local _,addon=...
 local function any(...)return{type='OR',value={...}}end
-local function own(id)return{type='BUFF',unit='player',spell=id,ownbuff=true}end
+local function form(id)return{type='FORM',form=id}end
 local function ref(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.druid.tank',revision=2,
- blocks={['era.druid.boundaries']=1,['era.druid.upkeep']=1,['sod.druid.maul']=1,['sod.druid.tank-cooldowns']=1,['sod.druid.bear']=1,['sod.druid.cat']=2,
+ format='RotationMaster',schemaVersion=1,id='rm.sod.druid.tank',revision=3,
+ blocks={['era.druid.boundaries']=2,['era.druid.upkeep']=1,['sod.druid.maul']=2,['sod.druid.tank-cooldowns']=2,['sod.druid.bear']=1,['sod.druid.cat']=2,
   ['era.druid.stealth-opener']=1,['era.druid.cat-builders']=1,['era.druid.powershift']=1,['sod.druid.tank-humanoid']=1},
  nameKey='Default.SoD.Druid.Tank.Name',descriptionKey='Default.SoD.Druid.Tank.Description',
  applicability={families={'era'},actionContext='player',class='DRUID',minLevel=1,maxLevel=60,rulesets={'season:2'}},
@@ -23,8 +23,8 @@ assert(addon:RegisterDefaultRotation({
   cooldowns={ref('sod-tank-upkeep','era.druid.upkeep','sod-tank-'),ref('sod-tank-maul','sod.druid.maul','sod-tank-'),ref('sod-tank-cooldowns','sod.druid.tank-cooldowns','sod-tank-')},
   rotation={
    ref('sod-tank-boundaries','era.druid.boundaries','sod-tank-'),
-   {id='sod-tank-bear',type='branch',conditions=any(own(5487),own(9634)),onFalse={},onTrue={ref('sod-tank-bear-section','sod.druid.bear','sod-tank-bear-')}},
-   {id='sod-tank-cat',type='branch',conditions=own(768),onFalse={},onTrue={ref('sod-tank-cat-section','sod.druid.cat','sod-tank-cat-')}},
+   {id='sod-tank-bear',type='branch',conditions=any(form(5487),form(9634)),onFalse={},onTrue={ref('sod-tank-bear-section','sod.druid.bear','sod-tank-bear-')}},
+   {id='sod-tank-cat',type='branch',conditions=form(768),onFalse={},onTrue={ref('sod-tank-cat-section','sod.druid.cat','sod-tank-cat-')}},
    ref('sod-tank-humanoid','sod.druid.tank-humanoid','sod-tank-'),
   },
  },

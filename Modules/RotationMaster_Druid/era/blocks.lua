@@ -4,12 +4,13 @@
 -- rm.sod.druid.balance[.icyveins,.wowhead], rm.sod.druid.feral, rm.sod.druid.tank[.wowsims] and
 -- rm.sod.druid.restoration. A content change needs a revision bump, every consumer's `blocks` pin
 -- and revision bumped, and ledger rows in tests/fixtures/builtin_composition_ledger.lua.
--- Forms are read from their auras: FORM is a shapeshift-bar index that moves as forms are learned.
+-- Forms are read by spell (FORM form, any rank): the shapeshift-bar index moves as forms are learned, the spell does not.
 local _,addon=...
 local function all(...)return{type='AND',value={...}}end
 local function any(...)return{type='OR',value={...}}end
 local function negate(c)return{type='NOT',value=c}end
 local function own(id)return{type='BUFF',unit='player',spell=id,ownbuff=true}end
+local function form(id)return{type='FORM',form=id}end
 local function anyBuff(id)return{type='BUFF',unit='player',spell=id,anyrank=true}end
 local function mine(id)return{type='DEBUFF',unit='target',spell=id,anyrank=true,owndebuff=true}end
 local function combat()return{type='COMBAT',unit='player'}end
@@ -25,9 +26,10 @@ local function engaged(v)return{type='THREAT_COUNT',threat=1,operator='GREATERTH
 local function raid()return{type='GROUP',raid=true}end
 local function front()return{type='ISSAME',unit='targettarget',otherunit='player'}end
 local function noFaerieFire()return all(negate({type='DEBUFF',unit='target',spell=770,anyrank=true}),negate({type='DEBUFF',unit='target',spell=16857,anyrank=true}))end
-local function cat()return own(768)end
-local function bear()return any(own(5487),own(9634))end
-local function feral()return any(own(768),own(5487),own(9634))end
+local function cat()return form(768)end
+local function bear()return any(form(5487),form(9634))end
+local function feral()return any(form(768),form(5487),form(9634))end
+local function travelling()return any(form(783),form(1066))end
 local function spell(id,action,conditions,ranked)return{id=id,type='spell',action=action,ranked=ranked or false,conditions=conditions or {}}end
 local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or {}}end
 local function wait(id)return{id=id,type='none',conditions={}}end
@@ -37,8 +39,8 @@ local function druid(id,steps,revision)assert(addon:RegisterDefaultBlock({id=id,
 -- Casts and channels (Starfire, Hurricane, Tranquility, Healing Touch) and travel forms halt advice and Attack.
 druid('era.druid.boundaries',{
  stop('casting',any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'})),
- stop('travelling',any(own(783),own(1066))),
-})
+ stop('travelling',travelling()),
+},2)
 -- Out-of-combat self buffs every source keeps: Mark (unless Gift is up), Thorns while soloing,
 -- Omen of Clarity (a cast self-buff in vanilla) once talented.
 druid('era.druid.upkeep',{
@@ -46,13 +48,13 @@ druid('era.druid.upkeep',{
  spell('thorns',467,all(negate(combat()),negate({type='GROUP'}),negate(anyBuff(467)))),
  spell('omen-of-clarity',16864,all(negate(combat()),negate(own(16864)))),
 })
--- Caster reminders: Moonkin Form when out of every form, Innervate on yourself when drained,
+-- Caster reminders: Moonkin Form when out of every form (travel forms too), Innervate on yourself when drained,
 -- Nature's Grasp outdoors while a mob is on you solo.
 druid('era.druid.caster-cooldowns',{
- spell('moonkin-form',24858,all(negate(own(24858)),negate(feral()))),
+ spell('moonkin-form',24858,negate(any(form(24858),feral(),travelling()))),
  spell('innervate',29166,all(combat(),mana('LESSTHAN',.25))),
  spell('natures-grasp',16689,all(combat(),negate({type='GROUP'}),front(),negate(anyBuff(16689)),{type='OUTDOORS'})),
-})
+},2)
 -- Feral reminders: Maul on every swing in bear (off the GCD), Tiger's Fury only at full energy
 -- before a pull, Manual Crowd Pummeler on elites, Innervate, Frenzied Regeneration outside raids.
 druid('era.druid.feral-cooldowns',{
@@ -62,7 +64,7 @@ druid('era.druid.feral-cooldowns',{
   any({type='CLASSIFICATION',unit='target',value='elite'},{type='CLASSIFICATION',unit='target',value='rareelite'},{type='CLASSIFICATION',unit='target',value='worldboss'}))},
  spell('innervate',29166,all(combat(),mana('LESSTHAN',.3))),
  spell('frenzied-regeneration',22842,all(bear(),combat(),{type='HEALTHPCT',unit='player',operator='LESSTHAN',value=.4},negate(raid()))),
-})
+},2)
 -- Cat entry for every Feral list: no target, the stealth opener (Ravage, Shred, Mangle, Claw).
 druid('era.druid.stealth-opener',{
  stop('no-target',negate({type='ATTACKABLE',unit='target'})),
@@ -98,10 +100,10 @@ druid('era.druid.cat',{
 -- Bear pull: Faerie Fire (Feral) from range, Enrage for starting rage.
 druid('era.druid.bear-pull',{
  stop('no-target',negate({type='ATTACKABLE',unit='target'})),
- {id='pull',type='branch',conditions=negate(combat()),onFalse={},onTrue={
+ {id='pull',type='branch',conditions=combat(),onTrue={},onFalse={
   spell('pull-faerie-fire',16857,{type='BEYOND_MELEE',unit='target'}),
   spell('pull-enrage',5229,energy('LESSTHAN',20))}},
-})
+},2)
 -- Vanilla bear (Icy Veins, Warcraft Tavern): Enrage when starved solo, Demoralizing Roar on packs
 -- and elites unless a warrior's Shout covers it, Swipe on two or more, Swipe to dump rage,
 -- Faerie Fire (Feral) as the free filler. Maul is a reminder.
@@ -119,7 +121,7 @@ druid('era.druid.bear',{
 druid('era.druid.forms',{
  {id='cat',type='branch',conditions=cat(),onFalse={},onTrue={ref('cat-section','era.druid.cat','cat-')}},
  {id='bear',type='branch',conditions=bear(),onFalse={},onTrue={ref('bear-section','era.druid.bear','bear-')}},
-})
+},2)
 -- A Feral druid in caster form: shift (Cat once learned, else Bear), else caster filler.
 druid('era.druid.feral-humanoid',{
  stop('no-target',negate({type='ATTACKABLE',unit='target'})),
@@ -133,9 +135,9 @@ druid('era.druid.feral-humanoid',{
 -- Caster pull: Starfire or Wrath standing, Moonfire on the move, then stop.
 druid('era.druid.caster-pull',{
  stop('no-target',negate({type='ATTACKABLE',unit='target'})),
- {id='pull',type='branch',conditions=negate(combat()),onFalse={},onTrue={
+ {id='pull',type='branch',conditions=combat(),onTrue={},onFalse={
   spell('pull-starfire',2912,negate(moving())),spell('pull-wrath',5176,negate(moving())),spell('pull-moonfire',8921),stop('pull-stop')}},
-})
+},2)
 -- Vanilla Balance (Wowhead 2025, Warcraft Tavern, wowsims): Faerie Fire in a group, Hurricane on
 -- three or more, Moonfire and Insect Swarm on targets that live (mana floor), Starfire (on a Nature's
 -- Grace proc first), Wrath before Starfire is learned, melee when dry.
@@ -210,11 +212,11 @@ druid('sod.druid.bear',{
 druid('sod.druid.forms',{
  {id='cat',type='branch',conditions=cat(),onFalse={},onTrue={ref('cat-section','sod.druid.cat','cat-')}},
  {id='bear',type='branch',conditions=bear(),onFalse={},onTrue={ref('bear-section','sod.druid.bear','bear-')}},
-})
+},2)
 -- SoD Maul: with 30 rage or more, not already queued.
 druid('sod.druid.maul',{
  spell('maul',6807,all(bear(),combat(),energy('GREATERTHANOREQUALS',30),negate({type='SPELL_ACTIVE',spell=6807}))),
-})
+},2)
 -- SoD tank reminders: Berserk once Mangle is cooling or on packs, Survival Instincts, Frenzied
 -- Regeneration and Barkskin when low, Enrage between pulls, Demoralizing Roar on elites when uncovered.
 druid('sod.druid.tank-cooldowns',{
@@ -225,7 +227,7 @@ druid('sod.druid.tank-cooldowns',{
  spell('enrage',5229,all(negate(combat()),bear(),{type='ATTACKABLE',unit='target'})),
  spell('demoralizing-roar',99,all(combat(),bear(),negate({type='DEBUFF',unit='target',spell=99,anyrank=true}),negate({type='DEBUFF',unit='target',spell=1160,anyrank=true}),
   any({type='CLASSIFICATION',unit='target',value='elite'},{type='CLASSIFICATION',unit='target',value='worldboss'}))),
-})
+},2)
 -- A tank in caster form: Dire Bear or Bear Form, else caster filler.
 druid('sod.druid.tank-humanoid',{
  stop('no-target',negate({type='ATTACKABLE',unit='target'})),
@@ -247,6 +249,6 @@ druid('sod.druid.balance-cooldowns',{
 -- SoD caster pull: Starsurge, Wrath standing, Sunfire or Moonfire on the move, then stop.
 druid('sod.druid.caster-pull',{
  stop('no-target',negate({type='ATTACKABLE',unit='target'})),
- {id='pull',type='branch',conditions=negate(combat()),onFalse={},onTrue={
+ {id='pull',type='branch',conditions=combat(),onTrue={},onFalse={
   spell('pull-starsurge',417157,{},true),spell('pull-wrath',5176,negate(moving())),spell('pull-sunfire',414684,{},true),spell('pull-moonfire',8921),stop('pull-stop')}},
-})
+},2)

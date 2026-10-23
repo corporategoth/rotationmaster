@@ -12,8 +12,8 @@ local function combat()return{type='COMBAT',unit='player'}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.hunter.ranged.icyveins',revision=1,
- blocks={['era.hunter.boundaries']=1,['era.hunter.dead-zone']=1,['era.hunter.opening']=1,['era.hunter.solo']=1,
+ format='RotationMaster',schemaVersion=1,id='rm.era.hunter.ranged.icyveins',revision=2,
+ blocks={['era.hunter.boundaries']=1,['era.hunter.dead-zone']=2,['era.hunter.opening']=2,['era.hunter.solo']=1,
   ['era.hunter.hawk']=1,['era.hunter.upkeep']=1},
  nameKey='Default.Era.Hunter.Ranged.IcyVeins.Name',descriptionKey='Default.Era.Hunter.Ranged.IcyVeins.Description',
  applicability={families={'era'},actionContext='player',class='HUNTER',minLevel=1,maxLevel=60},
@@ -33,7 +33,7 @@ assert(addon:RegisterDefaultRotation({
   block('era.hunter.boundaries','hunter-'),
   block('era.hunter.dead-zone','hunter-'),
   block('era.hunter.opening','hunter-'),
-  {id='hunter-solo',type='branch',conditions=negate({type='GROUP'}),onTrue={block('era.hunter.solo','hunter-solo-')},onFalse={
+  {id='hunter-solo',type='branch',conditions={type='GROUP'},onFalse={block('era.hunter.solo','hunter-solo-')},onTrue={
    spell('hunter-aimed-shot',19434),
    spell('hunter-multi-shot',2643),
    spell('hunter-arcane-shot',3044,any(negate({type='SPELL_KNOWN',spell=19434}),{type='TT_HEALTH',unit='target',health=0,operator='LESSTHAN',value=3})),

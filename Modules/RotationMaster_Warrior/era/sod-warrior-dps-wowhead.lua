@@ -17,17 +17,17 @@ local function forecast(id)return any(negate(buff(id)),{type='BUFF_REMAIN',unit=
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 local unqueued=all(negate(queued(78)),negate(queued(845)))
-local berserker={type='FORM',value=3}
+local berserker={type='FORM',form=2458}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.warrior.dps.wowhead',revision=1,
- blocks={['era.warrior.boundaries']=1,['era.warrior.upkeep']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.sod.warrior.dps.wowhead',revision=2,
+ blocks={['era.warrior.boundaries']=2,['era.warrior.upkeep']=1},
  nameKey='Default.SoD.Warrior.DPS.Wowhead.Name',descriptionKey='Default.SoD.Warrior.DPS.Wowhead.Description',
  applicability={families={'era'},actionContext='player',class='WARRIOR',minLevel=1,maxLevel=60,rulesets={'season:2'}},
  tags={'dps','melee','endgame','season-of-discovery','wowhead'},
  sources={{url='https://www.wowhead.com/classic/guide/season-of-discovery/classes/warrior/dps-rotation-cooldowns-abilities-pve',title='Wowhead: SoD Warrior DPS rotation (Battle Forecaster, Phase 7/8)',reviewedAt='2026-10-23',revision='2025-04-12'}},
  body={priority=45,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
  cooldowns={block('era.warrior.upkeep','sod-fc-'),
-  spell('sod-fc-berserker-stance',2458,all(combat(),negate(berserker),negate({type='FORM',value=2}),forecast(457816))),
+  spell('sod-fc-berserker-stance',2458,all(combat(),negate(berserker),negate({type='FORM',form=71}),forecast(457816))),
   spell('sod-fc-battle-stance',2457,all(combat(),berserker,forecast(457817))),
   spell('sod-fc-heroic-strike',78,all(combat(),unqueued,enemies('LESSTHAN',2),rage('GREATERTHANOREQUALS',20))),
   spell('sod-fc-cleave',845,all(combat(),unqueued,enemies('GREATERTHANOREQUALS',2),rage('GREATERTHANOREQUALS',30))),

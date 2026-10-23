@@ -13,7 +13,7 @@ local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local P='priest-wct-'
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.priest.dps.warcrafttavern',revision=1,
+ format='RotationMaster',schemaVersion=1,id='rm.era.priest.dps.warcrafttavern',revision=2,
  blocks={['era.priest.boundaries']=1,['era.priest.enemy-target']=1,['era.priest.shadowform']=1,['era.priest.moving']=1,
   ['era.priest.filler']=1,['era.priest.wand-fallback']=1,['era.priest.upkeep']=1,['era.priest.dps-upkeep']=1},
  nameKey='Default.Era.Priest.Dps.WarcraftTavern.Name',descriptionKey='Default.Era.Priest.Dps.WarcraftTavern.Description',
@@ -31,12 +31,12 @@ assert(addon:RegisterDefaultRotation({
    block(P..'boundaries','era.priest.boundaries',P),
    block(P..'target','era.priest.enemy-target',P),
    block(P..'form','era.priest.shadowform',P),
-   {id=P..'pull',type='branch',conditions=negate({type='COMBAT',unit='player'}),onFalse={},onTrue={
+   {id=P..'pull',type='branch',conditions={type='COMBAT',unit='player'},onTrue={},onFalse={
     spell(P..'pull-blast',8092),spell(P..'pull-smite',585),stop(P..'pull-stop')}},
    block(P..'moving','era.priest.moving',P),
    spell(P..'pain',589,negate(own(589))),
    spell(P..'blast',8092,any({type='GROUP'},{type='HEALTHPCT',unit='target',operator='GREATERTHANOREQUALS',value=.3})),
-   {id=P..'solo',type='branch',conditions=negate({type='GROUP'}),onFalse={},onTrue={
+   {id=P..'solo',type='branch',conditions={type='GROUP'},onTrue={},onFalse={
     stop(P..'solo-wand-active',{type='SPELL_AUTOREPEAT',spell=5019,ranked=true}),spell(P..'solo-shoot',5019)}},
    block(P..'filler','era.priest.filler',P),
    block(P..'wand','era.priest.wand-fallback',P),

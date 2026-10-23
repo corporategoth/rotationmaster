@@ -5,14 +5,14 @@ local _,addon=...
 local function all(...)return{type='AND',value={...}}end
 local function any(...)return{type='OR',value={...}}end
 local function negate(c)return{type='NOT',value=c}end
-local function own(id)return{type='BUFF',unit='player',spell=id,ownbuff=true}end
+local function form(id)return{type='FORM',form=id}end
 local function ref(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
 local noFF=all(negate({type='DEBUFF',unit='target',spell=770,anyrank=true}),negate({type='DEBUFF',unit='target',spell=16857,anyrank=true}))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.druid.feral.warcrafttavern.casual',revision=1,
- blocks={['era.druid.boundaries']=1,['era.druid.upkeep']=1,['era.druid.feral-cooldowns']=1,['era.druid.stealth-opener']=1,
-  ['era.druid.cat-builders']=1,['era.druid.bear']=1,['era.druid.bear-pull']=1,['era.druid.feral-humanoid']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.era.druid.feral.warcrafttavern.casual',revision=2,
+ blocks={['era.druid.boundaries']=2,['era.druid.upkeep']=1,['era.druid.feral-cooldowns']=2,['era.druid.stealth-opener']=1,
+  ['era.druid.cat-builders']=1,['era.druid.bear']=1,['era.druid.bear-pull']=2,['era.druid.feral-humanoid']=1},
  nameKey='Default.Era.Druid.Feral.WarcraftTavernCasual.Name',descriptionKey='Default.Era.Druid.Feral.WarcraftTavernCasual.Description',
  applicability={families={'era'},actionContext='player',class='DRUID',minLevel=10,maxLevel=60},
  tags={'leveling','endgame','feral','melee','tank','single-target','warcraft-tavern'},
@@ -24,7 +24,7 @@ assert(addon:RegisterDefaultRotation({
   cooldowns={ref('era-feral-wtc-upkeep','era.druid.upkeep','era-feral-wtc-'),ref('era-feral-wtc-cooldowns','era.druid.feral-cooldowns','era-feral-wtc-')},
   rotation={
    ref('era-feral-wtc-boundaries','era.druid.boundaries','era-feral-wtc-'),
-   {id='era-feral-wtc-cat',type='branch',conditions=own(768),onFalse={},onTrue={
+   {id='era-feral-wtc-cat',type='branch',conditions=form(768),onFalse={},onTrue={
     ref('era-feral-wtc-opening','era.druid.stealth-opener','era-feral-wtc-open-'),
     spell('era-feral-wtc-faerie-fire',16857,noFF),
     {id='era-feral-wtc-finisher',type='branch',conditions={type='POINT',unit='player',operator='GREATERTHANOREQUALS',value=5},onFalse={},onTrue={
@@ -33,7 +33,7 @@ assert(addon:RegisterDefaultRotation({
      spell('era-feral-wtc-finisher-bite',22568)}},
     ref('era-feral-wtc-builders','era.druid.cat-builders','era-feral-wtc-build-'),
     {id='era-feral-wtc-wait',type='none',conditions={}}}},
-   {id='era-feral-wtc-bear',type='branch',conditions=any(own(5487),own(9634)),onFalse={},onTrue={ref('era-feral-wtc-bear-section','era.druid.bear','era-feral-wtc-bear-')}},
+   {id='era-feral-wtc-bear',type='branch',conditions=any(form(5487),form(9634)),onFalse={},onTrue={ref('era-feral-wtc-bear-section','era.druid.bear','era-feral-wtc-bear-')}},
    ref('era-feral-wtc-humanoid','era.druid.feral-humanoid','era-feral-wtc-'),
   },
  },

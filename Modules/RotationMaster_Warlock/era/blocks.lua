@@ -63,8 +63,8 @@ assert(addon:RegisterDefaultBlock({id='era.warlock.dying',revision=1,families={'
 -- Elements, each only if nobody's is up; Doom on a long fight; else Agony. Five-man: Doom on a long
 -- elite fight, else Agony. Solo: Agony. Recklessness, Tongues and Weakness stay manual.
 local longFight=lifetime('GREATERTHAN',60)
-assert(addon:RegisterDefaultBlock({id='era.warlock.curse',revision=1,families={'era'},class='WARLOCK',steps={
- {id='curse-needed',type='branch',conditions=negate(ownCurse()),onFalse={},onTrue={
+assert(addon:RegisterDefaultBlock({id='era.warlock.curse',revision=2,families={'era'},class='WARLOCK',steps={
+ {id='curse-needed',type='branch',conditions=ownCurse(),onTrue={},onFalse={
   {id='curse-raid',type='branch',conditions=raid,onFalse={},onTrue={
    spell('shadow',17862,all(negate({type='DEBUFF',unit='target',spell=17862,anyrank=true}),any(known(18788),negate({type='PRIMARY_TALENT_TREE',tree=3})))),
    spell('elements',1490,negate({type='DEBUFF',unit='target',spell=1490,anyrank=true})),
@@ -95,8 +95,8 @@ assert(addon:RegisterDefaultBlock({id='era.warlock.aoe',revision=1,families={'er
  }},
 }}))
 -- Solo sustain: Dark Pact from a full pet, Life Tap when healthy, Drain Life when hurt, the wand.
-assert(addon:RegisterDefaultBlock({id='era.warlock.sustain',revision=1,families={'era'},class='WARLOCK',steps={
- {id='solo',type='branch',conditions=negate(group()),onFalse={},onTrue={
+assert(addon:RegisterDefaultBlock({id='era.warlock.sustain',revision=2,families={'era'},class='WARLOCK',steps={
+ {id='solo',type='branch',conditions=group(),onTrue={},onFalse={
   spell('dark-pact',18220,all(mana('LESSTHAN',.6),{type='MANAPCT',unit='pet',operator='GREATERTHAN',value=.4})),
   spell('life-tap',1454,all(mana('LESSTHAN',.6),health('GREATERTHAN',.75))),
   spell('drain-life',689,all(health('LESSTHAN',.6),negate(known(403677)))),

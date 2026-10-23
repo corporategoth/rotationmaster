@@ -97,13 +97,13 @@ block('era.priest.divine-spirit',{
 -- Vanilla only.
 -- Pull: shield (solo), Holy Fire for builds without Shadowform, Mind Blast, Smite.
 block('era.priest.pull',{
- {id='pull',type='branch',conditions=negate(combat()),onFalse={},onTrue={
+ {id='pull',type='branch',conditions=combat(),onTrue={},onFalse={
   {id='pull-shield',type='block',block='era.priest.pull-shield',prefix='pull-'},
   spell('pull-holy-fire',14914,negate(shadowform)),
   spell('pull-blast',8092),
   spell('pull-smite',585),
   stop('pull-stop')}},
-})
+},2)
 -- Moving: instants only. Devouring Plague stays out of raids (debuff slots).
 block('era.priest.moving',{
  {id='moving',type='branch',conditions={type='MOVING'},onFalse={},onTrue={
@@ -137,7 +137,7 @@ block('sod.priest.upkeep',{
 },2)
 -- Pull: shield (solo), pre-cast Vampiric Touch, Mind Blast; Penance and Holy Fire before Shadowform.
 block('sod.priest.pull',{
- {id='pull',type='branch',conditions=negate(combat()),onFalse={},onTrue={
+ {id='pull',type='branch',conditions=combat(),onTrue={},onFalse={
   {id='pull-shield',type='block',block='era.priest.pull-shield',prefix='pull-'},
   spell('pull-touch',402668),
   spell('pull-blast',8092),
@@ -145,7 +145,7 @@ block('sod.priest.pull',{
   spell('pull-holy-fire',14914,negate(shadowform)),
   spell('pull-smite',585),
   stop('pull-stop')}},
-})
+},2)
 -- Four or more engaged enemies: Void Zone, then Mind Sear; single-target play follows.
 block('sod.priest.aoe',{
  {id='aoe',type='branch',conditions={type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=4},onFalse={},onTrue={

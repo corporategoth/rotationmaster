@@ -58,6 +58,7 @@ test('vanilla stealth opener adapts by spell known, group and raid, then stops w
   M.know(s,703);assert(first(f,s,id)==703);s.instance='raid';assert(first(f,s,id)==1752,'no Garrote in raids');s.instance=nil
   M.know(s,1833);assert(first(f,s,id)==1833,'solo Cheap Shot');s.group=true;assert(first(f,s,id)==703,'group Garrote')
   M.know(s,8676);assert(first(f,s,id)==703,'Ambush needs the target not facing you');s.targettarget=nil;assert(first(f,s,id)==8676)
+  s.gear[16]=M.GEAR.SWORD;assert(first(f,s,id)==703,'Ambush needs a dagger in the main hand');s.gear[16]=M.GEAR.DAGGER
   M.know(s,14183);assert(first(f,s,id)==14183,'Premeditation first');s.points=4;assert(first(f,s,id)==8676,'no Premeditation past three')
   for spell in pairs(s.known)do s.nopower[spell]=true end;local ok,r=stopped(f,s,id);assert(ok and r.suppressAttack)
  end
@@ -98,6 +99,7 @@ test('builders follow what is known, the raid and whether the target faces you',
   assert(first(f,s,id)==1752,'targeted: Sinister Strike');s.targettarget='party1';assert(first(f,s,id)==53,'Backstab when not tanked')
   M.know(s,16511);assert(first(f,s,id)==16511);M.know(s,14278);assert(first(f,s,id)==14278)
   s.instance='raid';assert(first(f,s,id)==53,'no Ghostly Strike or Hemorrhage in raids')
+  s.gear[16]=M.GEAR.SWORD;assert(first(f,s,id)==1752,'no dagger: Sinister Strike instead of Backstab');s.gear[16]=M.GEAR.DAGGER
   s.usable[14251]=true;M.know(s,14251);assert(first(f,s,id)==14251,'Riposte first')
  end
 end)
@@ -114,7 +116,9 @@ end)
 test('reminders: poisons per weapon, Kick, Blade Flurry and Adrenaline Rush on elites or packs, Cold Blood, Evasion; optional ones off',function()
  local f,s=rogue(40,mid,{13877,13750,14177,1856,1776});local u=M.upkeep(f,s,DPS)
  assert(u['rogue-mainhand-poison']and not u['rogue-offhand-poison'],'no off-hand weapon, no off-hand poison')
- s.offSpeed=1.8;assert(M.upkeep(f,s,DPS)['rogue-offhand-poison']);s.offEnchant=true;s.mainEnchant=563;u=M.upkeep(f,s,DPS)
+ s.offSpeed=1.8;assert(not M.upkeep(f,s,DPS)['rogue-offhand-poison'],'an off-hand swing alone is not a weapon')
+ s.gear[17]=M.GEAR.OFFHAND;assert(not M.upkeep(f,s,DPS)['rogue-offhand-poison'],'a held item takes no poison')
+ s.gear[17]=M.GEAR.SWORD;assert(M.upkeep(f,s,DPS)['rogue-offhand-poison']);s.offEnchant=true;s.mainEnchant=563;u=M.upkeep(f,s,DPS)
  assert(not u['rogue-mainhand-poison']and not u['rogue-offhand-poison'],'a Windfury Totem enchant counts as an enchant')
  for _,step in ipairs(M.body(f.addon,DPS).cooldowns)do if step.id=='rogue-offhand-poison'then assert(step.action[1]==20844 and step.action[6]==8928)end end
  assert(not u['rogue-kick']);s.targetCast='Fireball';assert(M.upkeep(f,s,DPS)['rogue-kick']==1766);s.targetCast=nil
@@ -154,9 +158,11 @@ test('SoD: Poisoned Knife at four poison stacks, Saber Slash stacks, Slice from 
  s.debuffs={{id=2818,stacks=4,source='party1'}};assert(first(f,s,SOD)==1752,'another rogue\'s poison')
  s.debuffs={};M.know(s,399956);assert(first(f,s,SOD)==399956,'Mutilate');s.points=4;s.targettarget='party1';M.know(s,53);assert(first(f,s,SOD)==53,'Backstab for the fifth point')
  s.known[399956]=false;s.targettarget='player';assert(first(f,s,SOD)==1752,'faced without Cutthroat: Sinister Strike')
- M.engrave(s,462708);assert(first(f,s,SOD)==53,'Cutthroat (a passive rune) engraved: Backstab even when faced');M.know(s,424785);s.points=2;assert(first(f,s,SOD)==424785)
+ M.engrave(s,462708);assert(first(f,s,SOD)==53,'Cutthroat (a passive rune) engraved: Backstab even when faced')
+ s.gear[16]=M.GEAR.SWORD;assert(first(f,s,SOD)==1752,'Backstab needs a dagger');s.gear[16]=M.GEAR.DAGGER;M.know(s,424785);s.points=2;assert(first(f,s,SOD)==424785)
  s.debuffs={{id=424785,stacks=3,expires=130}};assert(first(f,s,SOD)==424785,'Saber Slash is also the builder')
  s.known[424785]=false;s.known[399963]=true;s.buffs[2]={id=462707};M.know(s,8676);assert(first(f,s,SOD)==8676,'Cutthroat Ambush')
+ s.gear[16]=M.GEAR.SWORD;assert(first(f,s,SOD)~=8676,'Cutthroat Ambush needs a dagger');s.gear[16]=M.GEAR.DAGGER
 end)
 
 test('SoD variants: Icy Veins five-point Rupture and five poison stacks, Zockify without bleeds',function()
@@ -170,7 +176,7 @@ end)
 
 test('SoD stealth: Shadowstrike, group Garrote, Ambush only without a glove builder',function()
  local f,s=rogue(60,{703,8676,1833});s.season=2;s.stealth=true;s.combat=false;s.targettarget=nil
- assert(first(f,s,SOD)==8676);s.group=true;assert(first(f,s,SOD)==703);s.group=false;M.engrave(s,399956);assert(first(f,s,SOD)==1833,'Mutilate build: no Ambush')
+ assert(first(f,s,SOD)==8676);s.gear[16]=M.GEAR.SWORD;assert(first(f,s,SOD)==1833,'no dagger: no Ambush');s.gear[16]=M.GEAR.DAGGER;s.group=true;assert(first(f,s,SOD)==703);s.group=false;M.engrave(s,399956);assert(first(f,s,SOD)==1833,'Mutilate build: no Ambush')
  M.know(s,399985);assert(first(f,s,SOD)==399985);local ok,r=stopped(f,s,SIV);assert(not ok and r)
 end)
 
@@ -186,6 +192,9 @@ test('SoD tank: Main Gauche, Blade Dance, Slice, Eviscerate with both up; Tease 
  local u=M.upkeep(f,s,TANK);assert(not u['rogue-tank-tease'],'solo: no Tease')
  s.group=true;s.targettarget='party1';u=M.upkeep(f,s,TANK);assert(u['rogue-tank-tease']==410412,'Tease: '..tostring(u['rogue-tank-tease']))
  s.health=40;assert(M.upkeep(f,s,TANK)['rogue-tank-evasion']==5277)
+ s.offSpeed=1.6;assert(not M.upkeep(f,s,TANK)['rogue-tank-offhand-poison'],'an off-hand swing alone is not a weapon')
+ s.gear[17]=M.GEAR.SWORD;assert(M.upkeep(f,s,TANK)['rogue-tank-offhand-poison'],'an off-hand weapon without poison')
+ s.offEnchant=true;assert(not M.upkeep(f,s,TANK)['rogue-tank-offhand-poison'])
 end)
 
 test('SoD Master of Subtlety (a passive rune): Vanish and Preparation only once it is engraved',function()

@@ -1,6 +1,8 @@
 -- Classic Era and Season of Discovery Druid premades: the shipped packs on the real catalog,
 -- predicates, composition, build context (season rulesets), readiness and sequence executor on a
--- modeled 1.15 client (tests/fixtures/era_premade_model_a.lua). Forms are read from their auras.
+-- modeled 1.15 client (tests/fixtures/era_premade_model_a.lua). Forms are stances read by spell (FORM form):
+-- a form ID put on the player with s.buff goes on the modeled stance bar instead (s.shift), and clearing
+-- the auras leaves the form, so a scenario reads as the druid's state.
 local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite()
 local M=dofile('tests/fixtures/era_premade_model_a.lua')
 local BAL,BALIV,FER,FERWT,FERWTC,FERWH,RES,RESWT='rm.era.druid.balance','rm.era.druid.balance.icyveins','rm.era.druid.feral','rm.era.druid.feral.warcrafttavern',
@@ -11,6 +13,7 @@ local VANILLA={BAL,BALIV,FER,FERWT,FERWTC,FERWH,RES,RESWT}
 local SOD={SBAL,SBALIV,SBALWH,SFER,STANK,STANKWS,SRES}
 local ALL={};for _,list in ipairs({VANILLA,SOD})do for _,id in ipairs(list)do ALL[#ALL+1]=id end end
 local CAT,BEAR,DIRE,TRAVEL=768,5487,9634,783
+local FORMS={[CAT]=true,[BEAR]=true,[DIRE]=true,[TRAVEL]=true,[1066]=true,[24858]=true}
 local SR,LACERATE,LIFEBLOOM,STARSURGE=407988,414644,408124,417157
 -- The Lifebloom rune's first taught spell (wowsims/exporter); 408124 is the heal it grants.
 local LIFEBLOOM_RUNE,GALE_WINDS,ELUNES_FIRES,IMPROVED_SWIPE=409824,417135,414719,439510
@@ -18,6 +21,9 @@ local function druid(level,talents,...)
  local f,s=M.new('druid');local a=f.addon
  -- Health forecast seam: s.ttd seconds until the target dies (nil = no forecast).
  a.GetConditionHealthForecast=function()if s.ttd==nil then return false end;return s.ttd end
+ local buff,clear=s.buff,s.clearAuras;s.aura=buff -- s.aura puts a real aura on, form ID or not
+ s.buff=function(unit,id,extra)if unit=='player'and FORMS[id]then s.shift(id)else buff(unit,id,extra)end end
+ s.clearAuras=function()clear();s.shift(0)end
  s.setLevel(level or 60);s.setTalents(talents or {0,0,0});s.learn(5176,8921,...)
  return a,s,f
 end
@@ -216,6 +222,21 @@ test('Warcraft Tavern Restoration: no HoTs at low damage, downranked tiers',func
  s.health.target=70;M.expect(a,s,RESWT,774,nil,'below 75%: Rejuvenation')
  s.buff('target',774);M.expect(a,s,RESWT,8939,nil,'then rank 3 Regrowth')
  s.health.target=45;M.expect(a,s,RESWT,8941,nil,'below 50%: rank 5 Regrowth')
+end)
+
+test('forms are read by spell wherever they sit on the stance bar, never from an aura',function()
+ local a,s=druid(40,{0,21,0},BEAR,DIRE,CAT,1082,779,16857,5229,24858,1126)
+ s.points=0;s.debuff('target',16857,fresh(30))
+ s.aura('player',CAT);s.powerType=0;M.expect(a,s,FER,CAT,nil,'a Cat Form aura without the stance is caster form: shift')
+ s.clearAuras();s.bar={BEAR,1066,CAT};s.form=3;s.powerType=3;s.energy=100;s.debuff('target',16857,fresh(30))
+ M.expect(a,s,FER,1082,nil,'Cat Form in slot 3 behind Bear and Aquatic: the cat list')
+ s.form=1;s.powerType=1;s.energy=30;M.expect(a,s,FER,16857,nil,'Bear Form in slot 1: the bear list')
+ s.bar={DIRE,1066,CAT,TRAVEL};s.form=1;M.expect(a,s,FER,16857,nil,'Dire Bear Form: the bear list')
+ s.form=4;assert(stopped(a,s,FER,true)and stopped(a,s,BAL,true),'Travel Form in slot 4 stops with Attack off')
+ s.form=2;assert(stopped(a,s,FER,true),'Aquatic Form stops too')
+ s.combat=false;s.clearAuras();s.buff('player',1126);local lit=M.upkeep(a,s,BAL);assert(lit[24858],'caster form: Moonkin reminder')
+ for _,id in ipairs({TRAVEL,1066,24858,CAT,DIRE})do s.shift(id);assert(not M.upkeep(a,s,BAL)[24858],'no Moonkin reminder in form '..id)end
+ s.form=nil;assert(M.status(a,FER,'era-feral-cat')=='unavailable','an unreadable form is unavailable, not caster form')
 end)
 
 test('Druid upkeep: Mark, Thorns solo, Omen, Moonkin Form, Tiger\'s Fury before a pull',function()

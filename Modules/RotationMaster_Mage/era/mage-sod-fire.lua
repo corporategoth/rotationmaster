@@ -17,7 +17,7 @@ local P='mage-sfire-'
 local scorchTalent={type='TALENT',layout='tree',tree=2,talent=10,operator='GREATERTHANOREQUALS',value=1}
 local balefireStack=any({type='BUFF',unit='player',spell=428878},{type='DEBUFF',unit='player',spell=428878})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.mage.fire',revision=2,
+ format='RotationMaster',schemaVersion=1,id='rm.sod.mage.fire',revision=3,
  blocks={['era.mage.boundaries']=1,['era.mage.wand-finish']=1,['sod.mage.balefire']=1,['sod.mage.balefire-scorched']=1,
   ['sod.mage.living-bomb']=1,['sod.mage.overheat']=2,['sod.mage.armor']=2,['sod.mage.upkeep']=2},
  nameKey='Default.SoD.Mage.Fire.Name',descriptionKey='Default.SoD.Mage.Fire.Description',
@@ -39,7 +39,7 @@ assert(addon:RegisterDefaultRotation({
    block(P..'upkeep','sod.mage.upkeep',P)},
   rotation={
    block(P..'boundaries','era.mage.boundaries',P),
-   {id=P..'pull',type='branch',conditions=negate({type='COMBAT',unit='player'}),onFalse={},onTrue={
+   {id=P..'pull',type='branch',conditions={type='COMBAT',unit='player'},onTrue={},onFalse={
     block(P..'pull-balefire','sod.mage.balefire',P..'pull-'),spell(P..'pull-pyroblast',11366),
     spell(P..'pull-frostfire',401502),spell(P..'pull-fireball',133),stop(P..'pull-stop')}},
    spell(P..'hot-streak',11366,all({type='BUFF',unit='player',spell=48108},negate({type='BUFF',unit='player',spell=28682}))),

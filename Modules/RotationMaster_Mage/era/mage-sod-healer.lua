@@ -3,8 +3,9 @@
 -- Preservation below half health, Regeneration where your beacon is missing, Mass Regeneration,
 -- Temporal Anomaly, then stop. On an enemy: damage that heals through the beacons, Spellfrost Bolt
 -- for Frost healers, else Arcane Missiles on Missile Barrage, Arcane Barrage at two Arcane Blast
--- stacks, Balefire Bolt when safe (never at four of its stacks), Arcane Blast. Whom to heal, and
--- cancelling Mass Regeneration early, stay with the player.
+-- stacks, Balefire Bolt when safe (never at four of its stacks), Arcane Blast. Mass Regeneration's
+-- channel is not protected: the next spell shows at once, so cancel it as Wowhead advises (its
+-- direct healing is negligible). Whom to heal stays with the player.
 local _,addon=...
 local function all(...)return{type='AND',value={...}}end
 local function any(...)return{type='OR',value={...}}end
@@ -19,7 +20,7 @@ local combat={type='COMBAT',unit='player'}
 local beacon={type='BUFF',unit='target',spell=400735,ownbuff=true}
 local fingers=any(buff(400647),buff(400669),buff(400670))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.mage.healer',revision=2,
+ format='RotationMaster',schemaVersion=1,id='rm.sod.mage.healer',revision=3,
  blocks={['era.mage.wand-finish']=1,['sod.mage.balefire']=1,['sod.mage.armor']=2,['sod.mage.upkeep']=2},
  nameKey='Default.SoD.Mage.Healer.Name',descriptionKey='Default.SoD.Mage.Healer.Description',
  applicability={families={'era'},actionContext='player',class='MAGE',minLevel=1,maxLevel=60,rulesets={'season:2'}},
@@ -39,7 +40,7 @@ assert(addon:RegisterDefaultRotation({
    block(P..'upkeep','sod.mage.upkeep',P)},
   rotation={
    stop(P..'cast',{type='CASTING',unit='player'}),
-   stop(P..'channel',{type='CHANNELING',unit='player'}),
+   stop(P..'channel',all({type='CHANNELING',unit='player'},negate({type='CHANNELING_SPELL',unit='player',spell=412510}))),
    {id=P..'friend',type='branch',conditions={type='FRIENDLY',unit='target'},onFalse={},onTrue={
     spell(P..'rewind-time',401462,all(beacon,hp('LESSTHAN',.5))),
     spell(P..'chronostatic',436516,hp('LESSTHAN',.5)),
@@ -48,7 +49,7 @@ assert(addon:RegisterDefaultRotation({
     spell(P..'temporal-anomaly',428885),
     stop(P..'friend-stop')}},
    stop(P..'target',negate(all({type='ATTACKABLE',unit='target'},any(combat,negate({type='COMBAT',unit='target'}))))),
-   {id=P..'pull',type='branch',conditions=negate(combat),onFalse={},onTrue={
+   {id=P..'pull',type='branch',conditions=combat,onTrue={},onFalse={
     spell(P..'pull-spellfrost',412532),spell(P..'pull-arcane-blast',400574),stop(P..'pull-stop')}},
    -- Optional raw damage on packs; it converts far less healing.
    {id=P..'explosion',type='spell',action=1449,ranked=false,disabled=true,conditions={type='DISTANCE_COUNT',enemy=true,distance=10,operator='GREATERTHANOREQUALS',value=3}},

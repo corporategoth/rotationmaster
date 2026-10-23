@@ -9,13 +9,14 @@ local function all(...)return{type='AND',value={...}}end
 local function any(...)return{type='OR',value={...}}end
 local function negate(c)return{type='NOT',value=c}end
 local function own(id)return{type='BUFF',unit='player',spell=id,ownbuff=true}end
+local function form(id)return{type='FORM',form=id}end
 local function hot(id)return{type='BUFF',unit='target',spell=id,anyrank=true,ownbuff=true}end
 local function hp(v)return{type='HEALTHPCT',unit='target',operator='LESSTHAN',value=v}end
 local function ref(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local function spell(id,action,conditions,ranked)return{id=id,type='spell',action=action,ranked=ranked or false,conditions=conditions or {}}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.druid.restoration',revision=1,
- blocks={['era.druid.boundaries']=1,['era.druid.upkeep']=1,['era.druid.heal-cooldowns']=1,['era.druid.resto-damage']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.era.druid.restoration',revision=2,
+ blocks={['era.druid.boundaries']=2,['era.druid.upkeep']=1,['era.druid.heal-cooldowns']=1,['era.druid.resto-damage']=1},
  nameKey='Default.Era.Druid.Restoration.Name',descriptionKey='Default.Era.Druid.Restoration.Description',
  applicability={families={'era'},actionContext='player',class='DRUID',minLevel=10,maxLevel=60},
  tags={'leveling','endgame','restoration','healer','group','icy-veins','wowhead'},
@@ -28,7 +29,7 @@ assert(addon:RegisterDefaultRotation({
   cooldowns={ref('era-resto-upkeep','era.druid.upkeep','era-resto-'),ref('era-resto-cooldowns','era.druid.heal-cooldowns','era-resto-')},
   rotation={
    ref('era-resto-boundaries','era.druid.boundaries','era-resto-'),
-   {id='era-resto-feral-form',type='none',conditions=any(own(768),own(5487),own(9634))},
+   {id='era-resto-feral-form',type='none',conditions=any(form(768),form(5487),form(9634))},
    {id='era-resto-heal',type='branch',conditions=all({type='FRIENDLY',unit='target'},negate({type='DEAD',unit='target'})),onFalse={},onTrue={
     spell('era-resto-swiftness',5185,own(17116)),
     spell('era-resto-swiftmend',18562,all(hp(.4),any(hot(774),hot(8936)))),

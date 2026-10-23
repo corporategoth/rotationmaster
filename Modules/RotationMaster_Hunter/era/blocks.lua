@@ -29,8 +29,8 @@ assert(addon:RegisterDefaultBlock({id='era.hunter.boundaries',revision=1,familie
  {id='no-target',type='none',suppress_attack=true,conditions=negate({type='ATTACKABLE',unit='target'})},
 }}))
 -- Vanilla dead zone: inside melee range only the melee buttons work.
-assert(addon:RegisterDefaultBlock({id='era.hunter.dead-zone',revision=1,families={'era'},class='HUNTER',steps={
- {id='melee',type='branch',conditions=negate({type='BEYOND_MELEE',unit='target'}),onFalse={},onTrue={
+assert(addon:RegisterDefaultBlock({id='era.hunter.dead-zone',revision=2,families={'era'},class='HUNTER',steps={
+ {id='melee',type='branch',conditions={type='BEYOND_MELEE',unit='target'},onTrue={},onFalse={
   spell('raptor-strike',2973,negate({type='SPELL_ACTIVE',spell=2973,ranked=false})),
   spell('mongoose-bite',1495),
   spell('counterattack',19306),
@@ -38,8 +38,8 @@ assert(addon:RegisterDefaultBlock({id='era.hunter.dead-zone',revision=1,families
  }},
 }}))
 -- Vanilla pull, Auto Shot, Hunter's Mark, moving and the multi-target branch.
-assert(addon:RegisterDefaultBlock({id='era.hunter.opening',revision=1,families={'era'},class='HUNTER',steps={
- {id='pull',type='branch',conditions=negate(combat()),onFalse={},onTrue={
+assert(addon:RegisterDefaultBlock({id='era.hunter.opening',revision=2,families={'era'},class='HUNTER',steps={
+ {id='pull',type='branch',conditions=combat(),onTrue={},onFalse={
   spell('pull-mark',1130,unmarked),
   spell('pull-aimed-shot',19434,standing),
   {id='pull-auto-shot',type='spell',action=75,ranked=true,conditions=negate({type='SPELL_AUTOREPEAT',spell=75,ranked=true})},

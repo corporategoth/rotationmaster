@@ -6,12 +6,18 @@
 -- The Era client exposes the legacy talent tree API (GetTalentTabInfo/GetTalentInfo) and the
 -- legacy IsSpellKnown; combo points are read with UnitPower(player, ComboPoints).
 -- s.setSeason(2) makes the realm Season of Discovery ('season:2'); nil is a standard realm.
+-- FORM by spell: s.bar lists the stance-bar spells in slot order, s.form the active slot (0 none);
+-- s.shift(id) activates a form by spell (adding it to the bar), s.shift(0) leaves it.
+-- WEAPON_TYPE: s.wield(slot, M.GEAR.X) equips a modeled item record in slot 16/17/18 (nil empties it).
 local F=dofile('tests/fixtures/addon.lua')
 local M={}
 local function packPaths(class)
  return dofile('tools/builtin_modules.lua').paths({family='era',class=(class:gsub('%-','')):upper()})
 end
 M.packPaths=packPaths
+-- Equipment records {itemID, item class, subclass, equip location} for WEAPON_TYPE.
+M.GEAR={DAGGER={7001,2,15,'INVTYPE_WEAPON'},SWORD={7002,2,7,'INVTYPE_WEAPON'},MACE2H={7003,2,5,'INVTYPE_2HWEAPON'},SHIELD={7004,4,6,'INVTYPE_SHIELD'},
+ STAFF={7005,2,10,'INVTYPE_2HWEAPON'},OFFHAND={7006,4,0,'INVTYPE_HOLDABLE'}}
 -- options.families: {[base]={base,rank2,...}} rank families named 'Spell <base>'.
 function M.new(class,options)
  options=options or{}
@@ -24,7 +30,8 @@ function M.new(class,options)
   health={player=100,target=100,pet=100},mana={player=100},energy=100,powerType=0,points=0,targetTarget='player',
   targetRange={0,5},targetLevel=60,swing=2.6,offSwing=nil,instance=nil,items={},equipped={},season=nil,hardcore=false,
   enchant={main=false,mainId=nil,off=false,offId=nil},targetCast=nil,targetInterruptible=true,
-  auras={player={HELPFUL={},HARMFUL={}},target={HELPFUL={},HARMFUL={}},pet={HELPFUL={},HARMFUL={}}}}
+  auras={player={HELPFUL={},HARMFUL={}},target={HELPFUL={},HARMFUL={}},pet={HELPFUL={},HARMFUL={}}},
+  form=0,bar={},gear={},channelStart=99,channelEnd=102}
  local names={}
  for base,ids in pairs(families)do for _,id in ipairs(ids)do names[id]='Spell '..base end end
  local function name(id)return names[id]or('Spell '..id)end
@@ -79,7 +86,7 @@ function M.new(class,options)
   if unit=='target'and s.targetCast then return s.targetCast,s.targetCast,1,99000,102000,false,'cast-guid',not s.targetInterruptible,1 end
  end
  e.UnitChannelInfo=function(unit)
-  if unit=='player'and s.channel then local n=s.channelSpell and name(s.channelSpell)or'Manual channel';return n,n,1,99000,102000,false,false,s.channelSpell or 1 end
+  if unit=='player'and s.channel then local n=s.channelSpell and name(s.channelSpell)or'Manual channel';return n,n,1,s.channelStart*1000,s.channelEnd*1000,false,false,s.channelSpell or 1 end
  end
  e.IsSpellKnown=function(id,pet)if s.knownError then error('learning unavailable')end;return not pet and s.known[id]==true end
  e.IsPlayerSpell=function(id)return s.known[id]==true end
@@ -106,7 +113,10 @@ function M.new(class,options)
  e.C_Container={GetContainerNumSlots=function(bag)assert(bag==0);return #slots()end,GetContainerItemInfo=function(_,slot)return slots()[slot]end,
   GetItemCooldown=function()return 0,0,1 end}
  e.GetItemCooldown=function()return 0,0,1 end
- e.GetInventoryItemID=function(_,slot)return s.equipped[slot]end
+ e.GetInventoryItemID=function(_,slot)local item=s.gear[slot];if item then return item[1]end;return s.equipped[slot]end
+ e.GetInventoryItemLink=function(_,slot)local item=s.gear[slot];return item and('|Hitem:'..item[1]..':0:0:0:0:0:0|h')end
+ e.GetItemInfoInstant=function(id)for _,item in pairs(s.gear)do if item[1]==id then return id,'Type','Subtype',item[4],1,item[2],item[3]end end end
+ e.GetInventorySlotInfo=function(slot)assert(slot=='RANGEDSLOT');return 18 end
  e.GetWeaponEnchantInfo=function()return s.enchant.main,1000,1,s.enchant.mainId,s.enchant.off,1000,1,s.enchant.offId end
  e.C_CVar={GetCVar=function(cvar)assert(cvar=='nameplateMaxDistance');return '20'end}
  -- LibRangeCheck intervals: enemies carry their own, the target uses s.targetRange.
@@ -130,7 +140,8 @@ function M.new(class,options)
  e.C_UnitAuras={GetAuraDataByIndex=function(unit,index,filter)
   if s.auraError then error('auras unavailable')end
   local list=s.auras[unit]and s.auras[unit][(filter or'HELPFUL'):match('^(%u+)')];return list and list[index]end}
- e.GetShapeshiftForm=function()return s.form or 0 end;e.GetNumShapeshiftForms=function()return s.forms or 0 end
+ e.GetShapeshiftForm=function()return s.form end;e.GetNumShapeshiftForms=function()return #s.bar end
+ e.GetShapeshiftFormInfo=function(index)local id=s.bar[index];if id then return 136000,index==s.form,true,id end end
  e.GetPetActionInfo=function()end
  for _,path in ipairs({'Diagnostics/errors.lua','Platform/inventory.lua','Platform/unit_states.lua','Platform/spells.lua','Platform/auras.lua','Platform/range.lua','Platform/actions.lua','Platform/talents.lua','Platform/totems.lua','Platform/engraving.lua','Core/action_policy.lua',
   'Core/conditions.lua','Core/aura_conditions.lua','Data/plain.lua','Data/tags.lua','Data/rotation_tree.lua','Data/validation.lua','Data/catalog.lua','Data/diff.lua',
@@ -155,6 +166,8 @@ function M.new(class,options)
  -- Learning a spell also teaches the catalog its identity; ranged spells default in range.
  s.learn=function(...)for _,id in ipairs({...})do s.known[id]=true;a.SpellCatalog:UpdateSpell(id)end end
  s.unlearn=function(...)for _,id in ipairs({...})do s.known[id]=nil end end
+ s.shift=function(id)if id==0 then s.form=0;return end;for index,known in ipairs(s.bar)do if known==id then s.form=index;return end end;s.bar[#s.bar+1]=id;s.form=#s.bar end
+ s.wield=function(slot,item)s.gear[slot]=item;a:InvalidateBuildContext('equipment')end
  s.ranged=function(...)for _,id in ipairs({...})do s.range[id]=true end end
  s.setLevel=function(level)s.level=level;a.longtermCache={};a:PLAYER_LEVEL_UP('PLAYER_LEVEL_UP')end
  -- Talents: points per tree ({arcane,fire,frost}...) and single talent ranks (tree, index, rank).

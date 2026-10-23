@@ -23,7 +23,7 @@ local big=any({type='CLASSIFICATION',unit='target',value='worldboss'},{type='CLA
 local ranged=all({type='BEYOND_MELEE',unit='target'},negate({type='MOVING'}))
 local near={type='DISTANCE_COUNT',enemy=true,distance=8,operator='GREATERTHANOREQUALS',value=2}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.shaman.enhancement',revision=1,
+ format='RotationMaster',schemaVersion=1,id='rm.era.shaman.enhancement',revision=2,
  blocks={['era.shaman.manual']=1,['era.shaman.interrupt']=1,['era.shaman.shield']=1,['era.shaman.self-heal']=1,['era.shaman.melee-totems']=1},
  nameKey='Default.Era.Shaman.Enhancement.Name',descriptionKey='Default.Era.Shaman.Enhancement.Description',
  applicability={families={'era'},actionContext='player',class='SHAMAN',minLevel=1,maxLevel=60},
@@ -50,7 +50,7 @@ assert(addon:RegisterDefaultRotation({
  },
  rotation={
  block('era.shaman.manual','enh-'),
- {id='enh-pull',type='branch',conditions=negate(combat()),onFalse={},onTrue={
+ {id='enh-pull',type='branch',conditions=combat(),onTrue={},onFalse={
   spell('enh-pull-bolt',403,all({type='ATTACKABLE',unit='target'},negate({type='COMBAT',unit='target'}),ranged)),
   {id='enh-pull-stop',type='none',suppress_attack=false,conditions={}},
  }},

@@ -14,8 +14,8 @@ local function mana(op,v)return{type='MANAPCT',unit='player',operator=op,value=v
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.paladin.holy',revision=2,
- blocks={['sod.paladin.holy-upkeep']=1,['era.paladin.boundaries']=1,['era.paladin.cleanse']=1,['sod.paladin.holy-hostile']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.sod.paladin.holy',revision=3,
+ blocks={['sod.paladin.holy-upkeep']=2,['era.paladin.boundaries']=1,['era.paladin.cleanse']=1,['sod.paladin.holy-hostile']=2},
  nameKey='Default.SoD.Paladin.Holy.Name',descriptionKey='Default.SoD.Paladin.Holy.Description',
  applicability={families={'era'},actionContext='player',class='PALADIN',minLevel=1,maxLevel=60,rulesets={'season:2'}},
  tags={'leveling','endgame','holy','healer','dungeon','raid','season-of-discovery','icy-veins','warcraft-tavern'},

@@ -32,7 +32,7 @@ local noAspect=all(negate(buff(415423)),negate(buff(13163)),negate(buff(5118)),n
 local viperLow=all(mana('LESSTHAN',.5),any(buff(415423),all(known(415423),mana('LESSTHAN',.05))))
 local rapid=buff(3045)
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.hunter.melee',revision=2,
+ format='RotationMaster',schemaVersion=1,id='rm.sod.hunter.melee',revision=3,
  blocks={['era.hunter.boundaries']=1,['sod.hunter.upkeep']=1},
  nameKey='Default.SoD.Hunter.Melee.Name',descriptionKey='Default.SoD.Hunter.Melee.Description',
  applicability={families={'era'},actionContext='player',class='HUNTER',minLevel=1,maxLevel=60,rulesets={'season:2'}},
@@ -53,7 +53,7 @@ assert(addon:RegisterDefaultRotation({
   spell('hunter-bestial-wrath',19574,all(worth,{type='PET'}))},
  rotation={
   block('era.hunter.boundaries','hunter-'),
-  {id='hunter-pull',type='branch',conditions=negate(combat()),onFalse={},onTrue={
+  {id='hunter-pull',type='branch',conditions=combat(),onTrue={},onFalse={
    spell('hunter-pull-mark',1130,unmarked),
    spell('hunter-pull-serpent-sting',1978,all(stingless,{type='BEYOND_MELEE',unit='target'})),
    stop('hunter-pull-stop',true),

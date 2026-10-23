@@ -16,14 +16,15 @@ local function list(ids,make)local out={};for i,id in ipairs(ids)do out[i]=make(
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local forbearance={type='DEBUFF',unit='player',spell=25771}
 local undead=any({type='CREATURE',unit='target',value='UNDEAD'},{type='CREATURE',unit='target',value='DEMON'})
--- Any aura you chose (Devotion, Retribution, Concentration, Sanctity, resistances).
-local function noAura()return negate(list({465,7294,19746,20218,19876,19888,19891},own))end
+-- Any aura you chose (Devotion, Retribution, Concentration, Sanctity, resistances). Auras are stances,
+-- read by spell (any rank), never by stance-bar index, which moves as auras are learned.
+local function noAura()return negate(list({465,7294,19746,20218,19876,19888,19891},function(id)return{type='FORM',form=id}end))end
 -- Any blessing from anyone: normal and Greater Might, Wisdom, Kings, Salvation, Sanctuary, Light.
 local function noBlessing()return negate(list({19740,19742,20217,1038,20911,19977,25782,25894,25898,25895,25899,25890},
  function(id)return{type='BUFF',unit='player',spell=id,anyrank=true}end))end
 -- Any seal of yours: Righteousness (both rank-1 IDs), Command, the Crusader, Wisdom, Light, Justice, Martyrdom.
-local function noSeal()return negate(list({20154,21084,20375,21082,20166,20165,20164,407798},own))end
-local function paladin(id,steps)assert(addon:RegisterDefaultBlock({id=id,revision=1,families={'era'},class='PALADIN',steps=steps}))end
+local function sealed()return list({20154,21084,20375,21082,20166,20165,20164,407798},own)end
+local function paladin(id,steps,revision)assert(addon:RegisterDefaultBlock({id=id,revision=revision or 1,families={'era'},class='PALADIN',steps=steps}))end
 paladin('era.paladin.boundaries',{
  {id='casting',type='none',suppress_attack=true,conditions=any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'})},
 })
@@ -48,14 +49,14 @@ paladin('era.paladin.ret-upkeep',{
  spell('blessing-of-might',19740,all(any({type='GROUP'},negate(known(19742))),noBlessing())),
  spell('flash-of-light',19750,all(negate(combat()),health(0.6))),
  spell('holy-light',635,all(negate(known(19750)),negate(combat()),health(0.6))),
-})
+},2)
 -- Vanilla re-seal: Command with a slow weapon (3.5 s or more), else Righteousness.
 paladin('era.paladin.seal',{
- {id='seal',type='branch',conditions=noSeal(),onFalse={},onTrue={
+ {id='seal',type='branch',conditions=sealed(),onTrue={},onFalse={
   spell('seal-command',20375,{type='SWING_TIME',offhand=false,operator='GREATERTHANOREQUALS',value=3.5}),
   spell('seal-righteousness',20154),
  }},
-})
+},2)
 -- Judgement of the Crusader once per long fight (Icy Veins, Wowhead): judge an active Seal of the
 -- Crusader; put it up only when nobody's judgement is on the target, outside raids, on an elite or
 -- a target that will live 30 s, and Judgement is ready.
@@ -81,7 +82,7 @@ paladin('era.paladin.tank-upkeep',{
  spell('blessing-of-kings',20217,all(negate(known(20911)),noBlessing())),
  spell('blessing-of-might',19740,all(negate(known(20911)),negate(known(20217)),noBlessing())),
  spell('lay-on-hands',633,all(combat(),health(0.1))),
-})
+},2)
 -- Vanilla healer upkeep (Icy Veins, Wowhead): Concentration, else Devotion Aura; Wisdom; Divine
 -- Favor and Lay on Hands for a friendly target that is very low.
 paladin('era.paladin.holy-upkeep',{
@@ -90,7 +91,7 @@ paladin('era.paladin.holy-upkeep',{
  spell('blessing-of-wisdom',19742,noBlessing()),
  spell('divine-favor',20216,all(combat(),{type='FRIENDLY',unit='target'},hurt(0.4))),
  spell('lay-on-hands',633,all(combat(),{type='FRIENDLY',unit='target'},negate({type='DEAD',unit='target'}),hurt(0.15))),
-})
+},2)
 -- Cleanse (Purify before 42) on a friendly target with something you can remove.
 paladin('era.paladin.cleanse',{
  spell('cleanse',4987,any({type='DISPELLABLE',unit='target',debufftype='Magic'},{type='DISPELLABLE',unit='target',debufftype='Poison'},{type='DISPELLABLE',unit='target',debufftype='Disease'})),
@@ -111,14 +112,14 @@ paladin('sod.paladin.ret-upkeep',{
  spell('aura-mastery',407624,all(combat(),own(407788))),
  spell('flash-of-light',19750,all(negate(combat()),health(0.6))),
  spell('holy-light',635,all(negate(known(19750)),negate(combat()),health(0.6))),
-})
+},2)
 -- Season of Discovery re-seal: Martyrdom (baseline from level 1), else Righteousness.
 paladin('sod.paladin.seal',{
- {id='seal',type='branch',conditions=noSeal(),onFalse={},onTrue={
+ {id='seal',type='branch',conditions=sealed(),onTrue={},onFalse={
   spell('seal-martyrdom',407798),
   spell('seal-righteousness',20154),
  }},
-})
+},2)
 -- Season of Discovery tank upkeep (Wowhead Phase 8, wowsims, Icy Veins): Righteous Fury, Holy
 -- Shield before a pull, Devotion, Sanctuary or Kings, Avenging Wrath in combat, Divine Protection
 -- (Malleable Protection) below 40%, Lay on Hands below 10%, Hand of Reckoning in a group when your
@@ -134,7 +135,7 @@ paladin('sod.paladin.tank-upkeep',{
  spell('divine-protection',458371,all(combat(),health(0.4),negate(forbearance))),
  spell('lay-on-hands',633,all(combat(),health(0.1))),
  spell('hand-of-reckoning',407631,all(combat(),{type='GROUP'},{type='ATTACKABLE',unit='target'},negate({type='THREAT',unit='target',threat=3}))),
-})
+},2)
 -- Season of Discovery healer upkeep (Icy Veins, Wowhead, Warcraft Tavern Phase 4): Concentration or
 -- Devotion, Wisdom, your Beacon of Light and Sacred Shield on the friendly target that lacks them,
 -- Divine Favor and Lay on Hands for a target that is very low.
@@ -147,12 +148,12 @@ paladin('sod.paladin.holy-upkeep',{
  spell('sacred-shield',412019,all(friend,negate({type='BUFF',unit='target',spell=412019,ownbuff=true}))),
  spell('divine-favor',20216,all(combat(),friend,hurt(0.4))),
  spell('lay-on-hands',633,all(combat(),friend,hurt(0.15))),
-})
+},2)
 -- A healer with an enemy in melee range: a seal for Sheath of Light and mana, then nothing.
 paladin('sod.paladin.holy-hostile',{
  {id='hostile',type='branch',conditions=all({type='ATTACKABLE',unit='target'},negate({type='BEYOND_MELEE',unit='target'})),onFalse={},onTrue={
-  {id='seal',type='branch',conditions=noSeal(),onFalse={},onTrue={spell('seal-martyrdom',407798),spell('seal-wisdom',20166)}},
+  {id='seal',type='branch',conditions=sealed(),onTrue={},onFalse={spell('seal-martyrdom',407798),spell('seal-wisdom',20166)}},
  }},
  {id='hostile-stop',type='none',conditions={type='ATTACKABLE',unit='target'}},
  {id='idle-stop',type='none',suppress_attack=true,conditions={}},
-})
+},2)

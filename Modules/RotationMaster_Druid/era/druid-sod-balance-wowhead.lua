@@ -12,9 +12,9 @@ local function ref(id,name,prefix)return{id=id..'-block',type='block',block=name
 local function spell(id,action,conditions,ranked)return{id=id,type='spell',action=action,ranked=ranked or false,conditions=conditions or {}}end
 local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or {}}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.druid.balance.wowhead',revision=2,
- blocks={['era.druid.boundaries']=1,['era.druid.upkeep']=1,['era.druid.caster-cooldowns']=1,['sod.druid.maul']=1,['sod.druid.balance-cooldowns']=1,
-  ['sod.druid.forms']=1,['sod.druid.cat']=2,['era.druid.stealth-opener']=1,['era.druid.cat-builders']=1,['era.druid.powershift']=1,['sod.druid.bear']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.sod.druid.balance.wowhead',revision=3,
+ blocks={['era.druid.boundaries']=2,['era.druid.upkeep']=1,['era.druid.caster-cooldowns']=2,['sod.druid.maul']=2,['sod.druid.balance-cooldowns']=1,
+  ['sod.druid.forms']=2,['sod.druid.cat']=2,['era.druid.stealth-opener']=1,['era.druid.cat-builders']=1,['era.druid.powershift']=1,['sod.druid.bear']=1},
  nameKey='Default.SoD.Druid.Balance.Wowhead.Name',descriptionKey='Default.SoD.Druid.Balance.Wowhead.Description',
  applicability={families={'era'},actionContext='player',class='DRUID',minLevel=1,maxLevel=60,rulesets={'season:2'}},
  tags={'season-of-discovery','endgame','balance','caster','single-target','aoe','wowhead'},
@@ -28,7 +28,7 @@ assert(addon:RegisterDefaultRotation({
    ref('sod-balance-wh-boundaries','era.druid.boundaries','sod-balance-wh-'),
    ref('sod-balance-wh-forms','sod.druid.forms','sod-balance-wh-'),
    stop('sod-balance-wh-no-target',negate({type='ATTACKABLE',unit='target'})),
-   {id='sod-balance-wh-pull',type='branch',conditions=negate(combat()),onFalse={},onTrue={
+   {id='sod-balance-wh-pull',type='branch',conditions=combat(),onTrue={},onFalse={
     spell('sod-balance-wh-pull-wrath',5176,negate(moving())),spell('sod-balance-wh-pull-starsurge',417157,{},true),spell('sod-balance-wh-pull-sunfire',414684,{},true),
     spell('sod-balance-wh-pull-moonfire',8921),stop('sod-balance-wh-pull-stop')}},
    spell('sod-balance-wh-starsurge',417157,{},true),

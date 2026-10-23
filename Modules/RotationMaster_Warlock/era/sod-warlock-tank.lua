@@ -23,7 +23,7 @@ local lasting=any({type='GROUP'},{type='CLASSIFICATION',unit='target',value='wor
 local curses={980,603,1490,17862,704,1714,702,18223}
 local cursed={type='OR',value={}};for i,id in ipairs(curses)do cursed.value[i]=own(id)end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.warlock.tank',revision=2,
+ format='RotationMaster',schemaVersion=1,id='rm.sod.warlock.tank',revision=3,
  blocks={['era.warlock.boundaries']=1,['era.warlock.armor']=1,['era.warlock.pets']=1},
  nameKey='Default.SoD.Warlock.Tank.Name',descriptionKey='Default.SoD.Warlock.Tank.Description',
  applicability={families={'era'},actionContext='player',class='WARLOCK',minLevel=1,maxLevel=60,rulesets={'season:2'}},
@@ -56,7 +56,7 @@ assert(addon:RegisterDefaultRotation({
   spell('sod-tank-aoe-shadowflame',426320,negate(own(426320))),
   spell('sod-tank-aoe-hellfire',1949,{type='HEALTHPCT',unit='player',operator='GREATERTHAN',value=.5}),
  }},
- {id='sod-tank-curse',type='branch',conditions=negate(cursed),onFalse={},onTrue={
+ {id='sod-tank-curse',type='branch',conditions=cursed,onTrue={},onFalse={
   spell('sod-tank-agony',980,lasting),
   spell('sod-tank-recklessness',704,negate({type='DEBUFF',unit='target',spell=704,anyrank=true})),
  }},

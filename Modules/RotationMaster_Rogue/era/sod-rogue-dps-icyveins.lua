@@ -14,8 +14,8 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 local five={type='POINT',unit='player',operator='GREATERTHANOREQUALS',value=5}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.rogue.dps.icyveins',revision=2,
- blocks={['era.rogue.boundaries']=1,['era.rogue.sod-opener']=2,['era.rogue.sod-upkeep']=2,['era.rogue.sod-builders']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.sod.rogue.dps.icyveins',revision=3,
+ blocks={['era.rogue.boundaries']=1,['era.rogue.sod-opener']=3,['era.rogue.sod-upkeep']=3,['era.rogue.sod-builders']=3},
  nameKey='Default.SoD.Rogue.DPS.IcyVeins.Name',descriptionKey='Default.SoD.Rogue.DPS.IcyVeins.Description',
  applicability={families={'era'},actionContext='player',class='ROGUE',minLevel=1,maxLevel=60,rulesets={'season:2'}},
  tags={'dps','melee','leveling','endgame','aoe','season-of-discovery','icy-veins'},

@@ -14,7 +14,7 @@ local function stop(id)return{id=id,type='none',suppress_attack=true,conditions=
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local P='mage-sfrost-wct-'
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.mage.frost.warcrafttavern',revision=2,
+ format='RotationMaster',schemaVersion=1,id='rm.sod.mage.frost.warcrafttavern',revision=3,
  blocks={['era.mage.boundaries']=1,['era.mage.wand-finish']=1,['sod.mage.balefire-brain-freeze']=1,
   ['sod.mage.living-bomb']=1,['sod.mage.overheat']=2,['sod.mage.armor']=2,['sod.mage.upkeep']=2},
  nameKey='Default.SoD.Mage.Frost.WarcraftTavern.Name',descriptionKey='Default.SoD.Mage.Frost.WarcraftTavern.Description',
@@ -31,7 +31,7 @@ assert(addon:RegisterDefaultRotation({
    block(P..'upkeep','sod.mage.upkeep',P)},
   rotation={
    block(P..'boundaries','era.mage.boundaries',P),
-   {id=P..'pull',type='branch',conditions=negate({type='COMBAT',unit='player'}),onFalse={},onTrue={
+   {id=P..'pull',type='branch',conditions={type='COMBAT',unit='player'},onTrue={},onFalse={
     spell(P..'pull-pyroblast',11366),spell(P..'pull-frostfire',401502),spell(P..'pull-frostbolt',116),stop(P..'pull-stop')}},
    spell(P..'hot-streak',11366,{type='BUFF',unit='player',spell=48108}),
    {id=P..'moving',type='branch',conditions={type='MOVING'},onFalse={},onTrue={

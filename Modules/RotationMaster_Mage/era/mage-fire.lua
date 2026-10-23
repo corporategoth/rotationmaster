@@ -19,7 +19,7 @@ local scorch={type='TALENT',layout='tree',tree=2,talent=10,operator='GREATERTHAN
 local stacked={type='DEBUFF_STACKS',unit='target',spell=22959,operator='GREATERTHANOREQUALS',value=5}
 local elite=any(class('elite'),class('rareelite'),class('worldboss'))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.mage.fire',revision=1,
+ format='RotationMaster',schemaVersion=1,id='rm.era.mage.fire',revision=2,
  blocks={['era.mage.boundaries']=1,['era.mage.moving']=1,['era.mage.nova']=1,['era.mage.execute']=1,
   ['era.mage.wand-finish']=1,['era.mage.armor']=1,['era.mage.upkeep']=1},
  nameKey='Default.Era.Mage.Fire.Name',descriptionKey='Default.Era.Mage.Fire.Description',
@@ -43,7 +43,7 @@ assert(addon:RegisterDefaultRotation({
    block(P..'upkeep','era.mage.upkeep',P)},
   rotation={
    block(P..'boundaries','era.mage.boundaries',P),
-   {id=P..'pull',type='branch',conditions=negate({type='COMBAT',unit='player'}),onFalse={},onTrue={
+   {id=P..'pull',type='branch',conditions={type='COMBAT',unit='player'},onTrue={},onFalse={
     spell(P..'pull-pyroblast',11366),spell(P..'pull-fireball',133),stop(P..'pull-stop')}},
    spell(P..'presence-pyroblast',11366,{type='BUFF',unit='player',spell=12043}),
    block(P..'moving','era.mage.moving',P),

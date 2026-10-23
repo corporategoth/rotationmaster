@@ -31,6 +31,12 @@ test('auto-select: Defensive Stance picks the tank from level 10, anything else 
  end
  s.season=2;s.form=1;assert(a:SetDefaultRotationEnabled(SDPS,false));assert(M.selected(f,s)==SFC);assert(a:SetDefaultRotationEnabled(SFC,false));assert(M.selected(f,s)==SIV)
  s.season=nil;s.form=2;assert(a:SetDefaultRotationEnabled(PROT,false));assert(M.selected(f,s)==PROTIV)
+ -- Stances are read by spell: Defensive Stance selects the tank wherever it sits on the bar (Gladiator
+ -- Stance in SoD adds a fourth form and shifts the slots).
+ assert(a:SetDefaultRotationEnabled(PROT,true));s.bar={2457,412513,71,2458};s.form=3;assert(M.selected(f,s)==PROT,'Defensive Stance in slot 3')
+ s.form=2;assert(M.selected(f,s)==DPS and not M.switches(f,PROT),'Gladiator Stance in slot 2 is not Defensive')
+ assert(a:SetDefaultRotationEnabled(SDPS,true));s.season=2;s.form=3;assert(M.selected(f,s)==STANK);s.form=4;assert(M.selected(f,s)==SDPS)
+ s.form=nil;assert(not M.switches(f,STANK)and M.selected(f,s)==SDPS,'an unreadable stance never picks the tank')
 end)
 
 test('boundaries: a Slam cast keeps Attack, no target stops it, out of combat only Charge',function()
@@ -84,9 +90,13 @@ test('tank: Revenge, Shield Slam, Sunder to five, Demoralizing Shout on elites, 
  s.enemies={0,0,0,0};s.debuffs={};assert(first(f,s,PROT)==1160);s.debuffs={{id=1160}};assert(first(f,s,PROT)==6673,'Battle Shout for pack threat')
  s.enemies={};s.known[23922]=false;s.debuffs={};s.classification='normal';s.usable[7386]=false;assert(first(f,s,PROT)==772,'leveling Rend')
  s.power=40;local u=M.upkeep(f,s,PROT);assert(u['warrior-prot-shield-block']==2565 and not u['warrior-prot-heroic-strike']);s.power=55;assert(M.upkeep(f,s,PROT)['warrior-prot-heroic-strike'])
+ s.gear[17]=nil;assert(not M.upkeep(f,s,PROT)['warrior-prot-shield-block'],'no shield: no Shield Block');s.gear[17]=M.GEAR.SHIELD
  s.targettarget='party1';assert(not M.upkeep(f,s,PROT)['warrior-prot-shield-block'],'not tanking: no Shield Block')
  s.usable[7386]=nil;s.debuffs={{id=7386,stacks=5}};s.nopower[23922]=nil;M.know(s,23922);assert(first(f,s,PROTIV)==1160,'Icy Veins keeps Demoralizing Shout up')
- s.debuffs[2]={id=1160};assert(first(f,s,PROTIV)==23922);s.nopower[23922]=true
+ s.debuffs[2]={id=1160};assert(first(f,s,PROTIV)==23922)
+ s.gear={[16]=M.GEAR.AXE2H};assert(first(f,s,PROTIV)~=23922 and first(f,s,PROT)~=23922,'a two-hander tank: no Shield Slam')
+ s.targettarget='player';assert(not M.upkeep(f,s,PROTIV)['warrior-prot-iv-shield-block'],'nor Shield Block')
+ s.gear={[16]=M.GEAR.SWORD,[17]=M.GEAR.SHIELD};s.targettarget='party1';s.nopower[23922]=true
  assert(first(f,s,PROTIV)==6673 and first(f,s,PROT)==7386,'Icy Veins: Battle Shout instead of Sunder')
 end)
 
@@ -101,12 +111,18 @@ test('SoD DPS: Slammin\' stacks, Rend, Blood Surge Slam, Bloodthirst; two-hander
  M.engrave(s,429765);assert(first(f,s,SDPS)==429765,'Quick Strike engraved: two-hander');s.power=20;assert(first(f,s,SDPS)==nil)
  s.buffs[2]={id=440114};assert(first(f,s,SDPS)==5308,'Sudden Death')
  local u=M.upkeep(f,s,SDPS);assert(not u['sod-dps-heroic-strike']);s.buffs[3]={id=425415};assert(M.upkeep(f,s,SDPS)['sod-dps-heroic-strike']==78,'always with Consumed by Rage')
+ local dip;for _,st in ipairs(M.body(f.addon,SDPS).cooldowns)do if st.id=='sod-dps-battle-stance-dip'then dip=st end end
+ s.buffs[4]={id=426969};s.power=20;s.form=3;f.sync();assert(dip.disabled and f.addon:evaluateCondition(dip.conditions),'optional Taste for Blood dip from Berserker Stance')
+ s.form=1;f.sync();assert(not f.addon:evaluateCondition(dip.conditions),'already in Battle Stance (by spell)')
 end)
 
 test('SoD variants: Battle Forecaster stance swaps and no Rend; Icy Veins Execute first and no Rend',function()
  local f,s=warrior(60,leveling,{23881,2458,2457,402911});s.season=2;s.combat=true
  assert(first(f,s,SFC)==23881 and first(f,s,SDPS)==772)
  s.form=1;local u=M.upkeep(f,s,SFC);assert(u['sod-fc-berserker-stance']==2458 and not u['sod-fc-battle-stance'])
+ s.form=2;assert(not M.upkeep(f,s,SFC)['sod-fc-berserker-stance'],'never out of Defensive Stance')
+ s.bar={2457,412513,71,2458};s.form=4;u=M.upkeep(f,s,SFC);assert(u['sod-fc-battle-stance']==2457 and not u['sod-fc-berserker-stance'],'Berserker Stance in slot 4')
+ s.bar={2457,71,2458};s.form=1
  s.buffs[2]={id=457816,expires=130};assert(not M.upkeep(f,s,SFC)['sod-fc-berserker-stance'])
  s.form=3;assert(M.upkeep(f,s,SFC)['sod-fc-battle-stance']==2457);s.buffs[3]={id=457817,expires=130};assert(not M.upkeep(f,s,SFC)['sod-fc-battle-stance'])
  s.targetHealth=15;assert(first(f,s,SIV)==5308);s.targetHealth=100;assert(first(f,s,SIV)==23881)
@@ -120,6 +136,8 @@ test('SoD tank: Shield Slam for Defender\'s Resolve, Revenge, Devastate; Thunder
  s.buffs[2]={id=462230,expires=101};s.nopower[23922]=nil;assert(first(f,s,STANK)==23922,'either Defender\'s Resolve ID, ending')
  s.enemies={0,0};assert(first(f,s,STANK)==6343)
  local u=M.upkeep(f,s,STANK);assert(u['sod-tank-shield-block']==2565 and not u['sod-tank-taunt'])
+ s.enemies={};s.gear[17]=M.GEAR.SWORD;assert(first(f,s,STANK)==403196,'dual wielding: no Shield Slam even for Defender\'s Resolve')
+ assert(not M.upkeep(f,s,STANK)['sod-tank-shield-block'],'nor Shield Block')
 end)
 
 test('real publisher follows the stance and the realm',function()

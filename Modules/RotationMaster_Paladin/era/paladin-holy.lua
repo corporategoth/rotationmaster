@@ -14,8 +14,8 @@ local function exact(id,action,conditions)return{id=id,type='spell',action=actio
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local function noSeal()local out={};for i,id in ipairs({20154,21084,20375,21082,20166,20165,20164})do out[i]=own(id)end;return negate({type='OR',value=out})end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.paladin.holy',revision=1,
- blocks={['era.paladin.holy-upkeep']=1,['era.paladin.boundaries']=1,['era.paladin.cleanse']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.era.paladin.holy',revision=2,
+ blocks={['era.paladin.holy-upkeep']=2,['era.paladin.boundaries']=1,['era.paladin.cleanse']=1},
  nameKey='Default.Era.Paladin.Holy.Name',descriptionKey='Default.Era.Paladin.Holy.Description',
  applicability={families={'era'},actionContext='player',class='PALADIN',minLevel=10,maxLevel=60},
  tags={'leveling','endgame','holy','healer','dungeon','raid','icy-veins','wowhead'},

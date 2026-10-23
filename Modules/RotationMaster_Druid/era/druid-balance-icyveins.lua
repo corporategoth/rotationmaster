@@ -5,10 +5,10 @@ local _,addon=...
 local function ref(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local function moving()return{type='MOVING'}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.druid.balance.icyveins',revision=1,
- blocks={['era.druid.boundaries']=1,['era.druid.upkeep']=1,['era.druid.caster-cooldowns']=1,['era.druid.feral-cooldowns']=1,['era.druid.forms']=1,
-  ['era.druid.cat']=1,['era.druid.stealth-opener']=1,['era.druid.cat-builders']=1,['era.druid.powershift']=1,['era.druid.bear']=1,['era.druid.bear-pull']=1,
-  ['era.druid.caster-pull']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.era.druid.balance.icyveins',revision=2,
+ blocks={['era.druid.boundaries']=2,['era.druid.upkeep']=1,['era.druid.caster-cooldowns']=2,['era.druid.feral-cooldowns']=2,['era.druid.forms']=2,
+  ['era.druid.cat']=1,['era.druid.stealth-opener']=1,['era.druid.cat-builders']=1,['era.druid.powershift']=1,['era.druid.bear']=1,['era.druid.bear-pull']=2,
+  ['era.druid.caster-pull']=2},
  nameKey='Default.Era.Druid.Balance.IcyVeins.Name',descriptionKey='Default.Era.Druid.Balance.IcyVeins.Description',
  applicability={families={'era'},actionContext='player',class='DRUID',minLevel=1,maxLevel=60},
  tags={'endgame','raid','balance','caster','single-target','aoe','icy-veins'},

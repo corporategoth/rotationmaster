@@ -14,7 +14,7 @@ local function stop(id)return{id=id,type='none',suppress_attack=true,conditions=
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local P='mage-fire-wct-'
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.era.mage.fire.warcrafttavern',revision=1,
+ format='RotationMaster',schemaVersion=1,id='rm.era.mage.fire.warcrafttavern',revision=2,
  blocks={['era.mage.boundaries']=1,['era.mage.moving']=1,['era.mage.nova']=1,['era.mage.execute']=1,
   ['era.mage.wand-finish']=1,['era.mage.armor']=1,['era.mage.upkeep']=1},
  nameKey='Default.Era.Mage.Fire.WarcraftTavern.Name',descriptionKey='Default.Era.Mage.Fire.WarcraftTavern.Description',
@@ -32,7 +32,7 @@ assert(addon:RegisterDefaultRotation({
    block(P..'upkeep','era.mage.upkeep',P)},
   rotation={
    block(P..'boundaries','era.mage.boundaries',P),
-   {id=P..'pull',type='branch',conditions=negate({type='COMBAT',unit='player'}),onFalse={},onTrue={
+   {id=P..'pull',type='branch',conditions={type='COMBAT',unit='player'},onTrue={},onFalse={
     spell(P..'pull-pyroblast',11366),spell(P..'pull-fireball',133),stop(P..'pull-stop')}},
    spell(P..'presence-pyroblast',11366,{type='BUFF',unit='player',spell=12043}),
    block(P..'moving','era.mage.moving',P),
