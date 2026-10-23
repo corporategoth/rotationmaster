@@ -111,7 +111,6 @@ Core/category_data.lua
 Core/announcement_data.lua
 Core/announcements.lua
 Core/macro_announcements.lua
-Core/stock_targets.lua
 Analytics/replay.lua
 Analytics/capture.lua
 Platform/analytics_casts.lua
@@ -191,7 +190,6 @@ UI/settings_setup.lua
 UI/settings_roster_order.lua
 UI/settings_layout.lua
 UI/settings_ordered.lua
-UI/stock_profile_safety.lua
 UI/settings_draft.lua
 UI/settings_history.lua
 UI/settings_unsaved.lua
@@ -208,7 +206,6 @@ UI/draft_change_controls.lua
 UI/settings_collections.lua
 UI/settings_announces.lua
 UI/settings_effects.lua
-UI/settings_stock.lua
 UI/settings_items.lua
 UI/settings_conditions.lua
 UI/settings_functions.lua

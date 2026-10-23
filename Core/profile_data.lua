@@ -50,11 +50,13 @@ local function scopedStore(addon,state,encode)
     if failed or not encode and not addon.RotationData.ValidateRotationStore(result) then return nil end
     return result
 end
--- Reject malformed optional stock before generic recursive profile copying.
-local function validStockTargets(addon,profile)
+-- The desired-stock feature is retired. An existing saved stockTargets map
+-- is inert data: copies, transfers and validation carry it unread as long as
+-- it is plain table data.
+local function validStockTargets(_,profile)
     if type(profile)~='table' then return true end
     local plan=rawget(profile,'stockTargets')
-    return plan==nil or addon.StockTargets.Validate(plan)==true
+    return plan==nil or type(plan)=='table' and getmetatable(plan)==nil
 end
 local function validRotationChoices(owner,profile)
     local value=type(profile)=='table' and rawget(profile,'rotationChoicePreferences')
@@ -86,7 +88,7 @@ function addon:ValidateProfileTransfer(value)
         elseif key=='rotationChoicePreferences' then
             -- Closed optional schema checked before generic recursive copying.
         elseif key=='stockTargets' then
-            -- Closed optional schema was checked before copying the profile.
+            -- Retired desired-stock data: plain tables only, carried unread.
         elseif key=='itemsets' then
             if type(item)~='table' then return false end;for id,set in pairs(item) do if type(id)~='string' or not fields(set,{name='string',items='table',modified='boolean'}) or type(set.name)~='string' or not dense(set.items,function(v) return type(v)=='string' and #v>0 or type(v)=='number' and v>0 and v%1==0 end) then return false end end
         elseif key=='rotations' then

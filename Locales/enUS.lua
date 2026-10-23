@@ -86,8 +86,6 @@ L["Help.General.cpu_report"] = "Open a selectable, copyable report with total ad
 L["Help.General.cpu_cancel"] = "Cancel the active diagnostic capture without changing settings, gameplay polling, or shared profiler counters."
 L["Help.General.cpu_probe"] = "Run one inert callback to check native CPU profiler capabilities and open a copyable report. This checks API access only; it does not measure gameplay, change profiling settings, reset counters, or start or cancel a capture. /rm perf probe runs the same check."
 L["Invalid rotation ownership data in profile %s (%s); record preserved."] = true
-L["Invalid stock targets in profile %s (%s); data preserved."] = true
-L["Invalid stock targets; data preserved."] = true
 L["the number of {item} you are carrying {comparison} {quantity}"] = true
 L['View source'] = true
 L['Change source helper'] = true
@@ -2459,19 +2457,13 @@ L["The native condition editor is unavailable."] = true
 L["Native custom condition editor required."] = true
 L["Stock"] = true
 
-L["Stock targets"] = true
 
-L["Reset targets"] = true
 
-L["Reset invalid stock targets? This cannot be undone."] = true
 
-L["Add stock target"] = true
 
-L["No stock targets."] = true
 
 L["Target"] = true
 
-L["Complete the stock target settings before applying."] = true
 
 L["you {{!have|do not have}} {item} equipped"] = true
 
@@ -2480,29 +2472,14 @@ L["{item} {{!is|is not}} available{carrying}"] = true
 L["{item} {{!is|is not}} in range{carrying}"] = true
 
 L["the cooldown on {item} {comparison} {duration}{carrying}"] = true
-L["All saved minimums met."] = true
-L["No enabled saved targets."] = true
-L["%d saved targets below minimum."] = true
-L["%d below minimum; %d unknown."] = true
-L["Saved stock counts pending."] = true
-L["Apply or discard page changes to assess saved targets."] = true
-L["Saved stock readiness unavailable."] = true
 
-L["Stock counts pending."] = true
 
-L["Stock counts ready."] = true
 
-L["Stock counts unavailable."] = true
 
-L["Carried: %s"] = true
 
-L["Shortage: %s"] = true
 
-L["Copy shortage list"] = true
 
-L["Apply or discard page changes and refresh stock counts before copying."] = true
 
-L["Stock shortage list"] = true
 L["Default.TBC.Priest.Continuation.Name"] = "Priest: wand / learned Mind Flay (20–29)"
 L["Default.TBC.Priest.Continuation.Description"] = "Bounded solo Priest preview for levels 20–29. Optional Inner Fire, opening Mind Blast and own Shadow Word: Pain precede learned Mind Flay above half health, then stationary wanding or Smite fallback. Manually choose when to channel or wand; active channels and wand filler are preserved. Repeated Mind Flay and the half-health cutoff are RM preview policies; talents, healing, shields, party support and resources remain manual."
 
@@ -2951,7 +2928,6 @@ L["Whisper"] = true
 L["Macro invocation"] = true
 L["Supplied macro unit"] = true
 L["Use supplied macro target ({{target}})"] = true
-L["Use a unique Via Macro identifier."] = true
 L["Macro call: %s"] = true
 L["Help.Announces.macro.brief"] = "Invoke this saved identifier directly from your macro. The supplied unit controls Announcement target conditions and Whisper; there is no implicit target."
 L["Help.Announces.type.macro"] = "Via Script/Macro is invoked by its saved Identifier rather than a cast event. It does not require a stored spell or item. Current conditions must match before any output. This call attempts output synchronously; it does not establish that a spell was cast or succeeded."

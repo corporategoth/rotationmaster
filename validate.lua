@@ -698,11 +698,8 @@ function addon:validate(template, fix)
         -- Their pure schema is validated independently, without guessing owners
         -- or mutating a future/invalid format that may need explicit recovery.
         validate_basic("profile:" .. profile, data, profile_template, fix,{announcement_conditions=true,stockTargets=true,rotationStore=true,rotationFallbackID=true,rotations=addon.InitializeScopedRotationStorage~=nil,rotationLibrary=addon.InitializeScopedRotationStorage~=nil})
-        local stockTargets=rawget(data,'stockTargets')
-        if stockTargets~=nil then
-            local ok,why=addon.StockTargets.Validate(stockTargets)
-            if not ok then addon:warn(L['Invalid stock targets in profile %s (%s); data preserved.'],profile,why) end
-        end
+        -- stockTargets belongs to the retired desired-stock feature: an
+        -- existing saved map stays exactly as it is (kept above), unread.
         local fallback=data.rotationFallbackID
         if (data.rotationStore~=nil or fallback~=nil) and (type(fallback)~='string' or #fallback==0 or #fallback>128 or not fallback:find('%S') or fallback:find('[%z\1-\31\127]')) then
             addon:warn(L['Invalid rotation fallback configuration in profile %s; data preserved.'],profile)

@@ -16,7 +16,7 @@ function addon:InstallSettingsDraft(p)
         return not self.emptyDismissed and not (self.draftBaseline and self.draftBaseline[scope] and next(self.draftBaseline[scope][key] or {}))
     end
     function p:CreationState()
-        return {effect=self.newEffect,announcement=self.newAnnounce,profileName=self.newProfileName,profileSource=self.profileSource,importProfile=self.importProfile,stockTarget=self.newStockTarget,itemSetName=self.newItemSetName,categoryName=self.newGroupName}
+        return {effect=self.newEffect,announcement=self.newAnnounce,profileName=self.newProfileName,profileSource=self.profileSource,importProfile=self.importProfile,itemSetName=self.newItemSetName,categoryName=self.newGroupName}
     end
     function p:IsCreationDirty()
         if not self.creationUsedForNew then return false end
@@ -25,7 +25,7 @@ function addon:InstallSettingsDraft(p)
     end
     function p:DiscardSettingsDraft()
         if self.ClearSettingsHistory then self:ClearSettingsHistory() end
-        self.draft=nil;self.draftBaseline=nil;self.draftEffects=nil;self.newEffect=nil;self.newAnnounce=nil;self.newProfileName=nil;self.importProfile=nil;self.profileSource=nil;self.newStockTarget=nil;self.newItemSetName=nil;self.newGroupName=nil;self.creating=false;self.creatingCategory=false;self.creationBaseline=nil;self.creationApply=nil;self.emptyDismissed=true
+        self.draft=nil;self.draftBaseline=nil;self.draftEffects=nil;self.newEffect=nil;self.newAnnounce=nil;self.newProfileName=nil;self.importProfile=nil;self.profileSource=nil;self.newItemSetName=nil;self.newGroupName=nil;self.creating=false;self.creatingCategory=false;self.creationBaseline=nil;self.creationApply=nil;self.emptyDismissed=true
     end
     function p:ApplyCreation()
         if not self:FlushEdits() or not self.creationApply then return false end
@@ -37,12 +37,7 @@ function addon:InstallSettingsDraft(p)
     function p:SettingsData()
         if not self.transactionKeys then return addon.db end
         if not self.draft then
-            if self.settingsKey=='ItemSets' then
-                local keys={};for _,key in ipairs(self.transactionKeys.profile or {}) do if key~='stockTargets' then keys[#keys+1]=key end end
-                self.stockEditable=addon.StockSettings.CheckProfile(addon.db.profile)==true
-                if self.stockEditable then keys[#keys+1]='stockTargets' end;self.transactionKeys.profile=keys
-            end
-            self.draft={profile=addon:CopySettingsData(addon.StockSettings.DraftProfile(addon.db.profile)),global=addon:CopySettingsData(addon.db.global),char=addon:CopySettingsData(addon.db.char or {})};self.draftBaseline={};self.draftEffects={}
+            self.draft={profile=addon:CopySettingsData(addon.db.profile),global=addon:CopySettingsData(addon.db.global),char=addon:CopySettingsData(addon.db.char or {})};self.draftBaseline={};self.draftEffects={}
             for scope,keys in pairs(self.transactionKeys) do self.draftBaseline[scope]={};for _,key in ipairs(keys) do self.draftBaseline[scope][key]=addon:CopySettingsData(addon.db[scope] and addon.db[scope][key]) end end
         end
         return self.draft
@@ -58,14 +53,8 @@ function addon:InstallSettingsDraft(p)
     function p:SaveSettingsDraft()
         if not self.draft then return true end
         if not self:Valid(self.generation) then return false end
-        local stockUnchanged=false
-        for _,key in ipairs(self.transactionKeys.profile or {}) do if key=='stockTargets' then
-            if not addon.StockTargets.Validate(self.draft.profile.stockTargets) then self:Message(L['Complete the stock target settings before applying.']);return false end
-            stockUnchanged=equal(self.draft.profile.stockTargets,self.draftBaseline.profile.stockTargets)
-            if not stockUnchanged and not addon.StockSettings.CheckProfile(addon.db.profile) then self:Message(L['Invalid stock targets; data preserved.']);return false end
-        end end
         for scope,keys in pairs(self.transactionKeys) do for _,key in ipairs(keys) do
-            if not (scope=='profile' and key=='stockTargets' and stockUnchanged) and not equal(addon.db[scope] and addon.db[scope][key],self.draftBaseline[scope][key]) then self:Message(L['Settings changed elsewhere. Cancel to reload them before applying.']);return false end
+            if not equal(addon.db[scope] and addon.db[scope][key],self.draftBaseline[scope][key]) then self:Message(L['Settings changed elsewhere. Cancel to reload them before applying.']);return false end
         end end
         local ownsEffects=false;for _,key in ipairs(self.transactionKeys.global or {}) do if key=='effects' then ownsEffects=true end end
         if ownsEffects and self.draft.global.effects then
@@ -80,7 +69,7 @@ function addon:InstallSettingsDraft(p)
         end end end
         if InCombatLockdown and InCombatLockdown() then self:Message(L['Leave combat before applying these settings.']);return false end
         for scope,keys in pairs(self.transactionKeys) do for _,key in ipairs(keys) do
-            if not (scope=='profile' and key=='stockTargets' and stockUnchanged) and not equal(self.draft[scope][key],self.draftBaseline[scope][key]) then
+            if not equal(self.draft[scope][key],self.draftBaseline[scope][key]) then
                 addon.db[scope][key]=addon:CopySettingsData(self.draft[scope][key])
                 if key=='itemsets' and (scope=='profile' or scope=='global') then if invalidateDependencies then invalidateDependencies(addon,'itemset',nil) end
                 elseif key=='effects' and scope=='global' then if invalidateDependencies then invalidateDependencies(addon,'effect',nil) end end

@@ -115,7 +115,7 @@ test('canonical cleanup count and copy failures retain warning mutation and retu
 end)
 test('strict inverse restores full7111658 source and helper aliases getters catalog stay unchanged',function()
  local f=F.new();local a=f.addon;f.load('Core/function_data.lua');local function hash(text) return a:FunctionSourceHash(text) end
- local h=assert(io.open('validate.lua'));local text=h:read('*a');h:close();local old=restore(dofile('tests/fixtures/restore_stock_targets_unit1.lua')(dofile('tests/fixtures/restore_revision_changes.lua')(text,'validate.lua'),'validate.lua'),hash)
+ local h=assert(io.open('validate.lua'));local text=h:read('*a');h:close();local old=restore(dofile('tests/fixtures/restore_stock_targets_unit1.lua')(dofile('tests/fixtures/restore_revision_changes.lua')(dofile('tests/fixtures/restore_workbench_resize.lua')(text,'validate.lua'),'validate.lua'),'validate.lua'),hash)
  assert(hash(old)=='25c084e8');assert(not pcall(restore,old,hash) and not pcall(restore,text..text,hash),'inverse accepted absent/duplicate qualifications')
  assert(not pcall(restore,text..'\n-- unrelated change\n',hash),'inverse accepted unrelated changes')
  f.load('Data/builtin_sources.lua');f.load('Core/builtin_sources.lua');assert(not a.BuiltinSourceCatalog.modules['validate.lua'])

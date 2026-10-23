@@ -50,14 +50,12 @@ function addon:ConfirmSettingsDeletion(p,warning,remove)
     p:RequestLeave(function()
         if not p.active or self.db.profile~=profile or self.db.global~=global or self.db.char~=char then return end
         p:DiscardSettingsDraft();p:Draw()
-        local stockUnrelated=p.settingsKey=='ItemSets'
-        local function ownsKey(scope,key)return not (stockUnrelated and scope=='profile' and key=='stockTargets')end
-        local expected={};for scope,keys in pairs(p.transactionKeys or {}) do expected[scope]={};for _,key in ipairs(keys) do if ownsKey(scope,key) then expected[scope][key]=self:CopySettingsData(self.db[scope] and self.db[scope][key]) end end end
+        local expected={};for scope,keys in pairs(p.transactionKeys or {}) do expected[scope]={};for _,key in ipairs(keys) do expected[scope][key]=self:CopySettingsData(self.db[scope] and self.db[scope][key]) end end
         local conditionRevision,functionRevision=self.conditionRegistryVersion,self.functionRegistryVersion
         p:Confirm(warning..' '..L['This cannot be undone.'],function()
             if InCombatLockdown and InCombatLockdown() then p:Message(L['Leave combat before applying these settings.']);return end
             for scope,keys in pairs(p.transactionKeys or {}) do for _,key in ipairs(keys) do
-                if ownsKey(scope,key) and not self:SettingsDataEqual(self.db[scope] and self.db[scope][key],expected[scope][key]) then p:Message(L['Settings changed elsewhere. Cancel to reload them before applying.']);return end
+                if not self:SettingsDataEqual(self.db[scope] and self.db[scope][key],expected[scope][key]) then p:Message(L['Settings changed elsewhere. Cancel to reload them before applying.']);return end
             end end
             if self.conditionRegistryVersion~=conditionRevision or self.functionRegistryVersion~=functionRevision then p:Message(L['Settings changed elsewhere. Cancel to reload them before applying.']);return end
             local called,ok,why=pcall(remove)

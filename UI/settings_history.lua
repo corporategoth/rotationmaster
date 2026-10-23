@@ -12,8 +12,7 @@ function addon:InstallSettingsHistory(p)
     function p:ClearSettingsHistory() self.historyEpoch=(self.historyEpoch or 0)+1;self.historyUndo={};self.historyRedo={};self.historyBytes=0 end
     function p:HistorySnapshot()
         if not self.historyEnabled or not self.draft then return end
-        local stock=self.stockEditable and self.draft.profile.stockTargets or nil;if not addon.StockTargets.Validate(stock) then stock=nil end
-        return addon:CopySettingsData({profile=self.draft.profile.itemsets,global=self.draft.global.itemsets,effects=self.draftEffects,selection=self.selection,stock=stock,stockSelection=self.stockSelection})
+        return addon:CopySettingsData({profile=self.draft.profile.itemsets,global=self.draft.global.itemsets,effects=self.draftEffects,selection=self.selection})
     end
     function p:UpdateHistoryActions()
         if self.fields.undo then if #(self.historyUndo or {})>0 then self.fields.undo:Enable() else self.fields.undo:Disable() end end
@@ -35,7 +34,7 @@ function addon:InstallSettingsHistory(p)
         if not self:FlushEdits() then return end
         local from=redo and self.historyRedo or self.historyUndo;local to=redo and self.historyUndo or self.historyRedo
         if not from or #from==0 then return end
-        to[#to+1]=self:HistorySnapshot();local value=table.remove(from);self.draft.profile.itemsets=addon:CopySettingsData(value.profile);self.draft.global.itemsets=addon:CopySettingsData(value.global);self.draftEffects=addon:CopySettingsData(value.effects);self.selection=value.selection;self.stockSelection=value.stockSelection;self.draft.profile.stockTargets=addon:CopySettingsData(value.stock);self.historyEpoch=(self.historyEpoch or 0)+1;self:Draw()
+        to[#to+1]=self:HistorySnapshot();local value=table.remove(from);self.draft.profile.itemsets=addon:CopySettingsData(value.profile);self.draft.global.itemsets=addon:CopySettingsData(value.global);self.draftEffects=addon:CopySettingsData(value.effects);self.selection=value.selection;self.historyEpoch=(self.historyEpoch or 0)+1;self:Draw()
     end
     function p:HistoryActions()
         local y=self:Row(nil,28)

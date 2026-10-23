@@ -2,9 +2,7 @@ local _,addon=...
 local function find(list,id) for _,value in ipairs(list or {}) do if value.id==id then return value end end end
 local function contains(list,value) for _,entry in ipairs(list or {}) do if entry==value then return true end end;return false end
 local function context(p,store,id)
-    local stockID=id or p.stockSelection
     store=store or {};local profile,global=store.profile or {},store.global or {};id=id or (p.mode=='categories' and p.categorySelection or p.settingsKey=='Conditions' and p.condition or p.selection)
-    if p.settingsKey=='ItemSets' and p.itemSettingsSource=='stock' then return (profile.stockTargets or {})[stockID] end
     if p.settingsKey=='General' then local result=addon:CopySettingsData(profile);result.minimap=not (profile.minimap or {}).hide;for i,v in ipairs((store.char or {}).specs or {}) do result['spec'..i]=v end;return result end
     if p.settingsKey=='Integrations' then return profile end
     if p.settingsKey=='Effects' then return (global.effects or {})[id] end
@@ -57,7 +55,7 @@ end
 -- opened after an import. Pending text is compared before it is committed.
 function addon:InstallSettingsUnsaved(p)
     p.unsavedDefaults={};p.unsavedBindings={}
-    function p:UnsavedIdentity() return table.concat({self.settingsKey or '',self.mode or '',self.settingsKey=='ItemSets' and self.itemSettingsSource or '',self.settingsKey=='ItemSets' and self.itemSettingsSource=='stock' and tostring(self.stockSelection) or '',tostring(self.mode=='categories' and self.categorySelection or self.settingsKey=='Conditions' and self.condition or self.selection or 'general'),self.creating and 'new' or ''},':') end
+    function p:UnsavedIdentity() return table.concat({self.settingsKey or '',self.mode or '',tostring(self.mode=='categories' and self.categorySelection or self.settingsKey=='Conditions' and self.condition or self.selection or 'general'),self.creating and 'new' or ''},':') end
     function p:BindUnsaved(key,control,value,kind)
         local identity=self:UnsavedIdentity();local defaults=self.unsavedDefaults[identity] or {};self.unsavedDefaults[identity]=defaults
         local before=context(self,self.draftBaseline,self.mode=='categories' and self.categorySelection or self.settingsKey=='Conditions' and self.condition or nil)
@@ -117,7 +115,7 @@ function addon:InstallSettingsUnsaved(p)
             self.roster.unsavedByValue={};self.roster.unsavedState=nil
             if self.draftBaseline then
                 self.roster.unsavedState={before=rosterLookup(self,self.draftBaseline),current=rosterLookup(self,self.draft),pending=pending,
-                    selected=self.settingsKey=='ItemSets' and self.itemSettingsSource=='stock' and self.stockSelection or self.mode=='categories' and self.categorySelection or self.settingsKey=='Conditions' and self.condition or self.selection,
+                    selected=self.mode=='categories' and self.categorySelection or self.settingsKey=='Conditions' and self.condition or self.selection,
                     announces=self.draft and self.draft.profile.announces or addon.db.profile.announces or {}}
             end
             self:RefreshRosterMarkers()

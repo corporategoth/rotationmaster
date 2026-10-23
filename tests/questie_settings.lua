@@ -39,7 +39,6 @@ local function page(a,load)
  local chunk=assert(loadstring(source,'@questie/historical-integration-page'))
  setfenv(chunk,getfenv(a.BuildIntegrationSettings));chunk('rotationmaster',a)
  load('UI/settings_collections.lua')
- a.StockSettings={DraftProfile=function(profile)return profile end}
  a.ListLuaEditorProviders=function()return{{value='auto',text='Automatic'}}end
  a.ListIntegrationStatus=function()return{{id='loaded',name='Loaded provider',version='1.2.3',state='loaded',detail='Loaded receipt'},
  {id='missing',name='Missing provider',state='missing'},{id='connected',name='Connected provider',version='2',state='connected'}}end

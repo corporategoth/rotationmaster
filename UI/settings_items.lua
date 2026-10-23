@@ -8,13 +8,11 @@ local function itemValue(text)
     return value
 end
 function addon:BuildItemSettings(p)
-    self:ItemSettingsSourceOptions(p,{})
-    if p.itemSettingsSource=='stock' then return self:BuildStockSettings(p) end
     local store=p:SettingsData()
     local profileSets=store.profile.itemsets or {};local globalSets=store.global.itemsets or {};local merged={}
     for id,set in pairs(globalSets) do merged[id]=set end;for id,set in pairs(profileSets) do merged[id]=set end
     local entries=self:SettingsEntries(merged);for _,entry in ipairs(entries) do local value=(merged[entry.value].items or {})[1];local info=value and self:GetReferenceProvider('item').info(tonumber(value) or self:GetReferenceProvider('item').resolve(value));entry.icon=info and info.icon or 'Interface\\Icons\\INV_Misc_Bag_08' end;if not merged[p.selection] and not p.creating then p.selection=entries[1] and entries[1].value end
-    p:UseRoster(entries,p.selection,function(id) p.selection=id;p.creating=false;p:Draw() end,self:ItemSettingsSourceOptions(p,{newText=L['Add item set'],new=function() p.previousSelection=p.selection;p.selection=nil;p.creating=true;p.emptyDismissed=false;p:Draw() end}));if p.historyEnabled then p:HistoryActions() end
+    p:UseRoster(entries,p.selection,function(id) p.selection=id;p.creating=false;p:Draw() end,{newText=L['Add item set'],new=function() p.previousSelection=p.selection;p.selection=nil;p.creating=true;p.emptyDismissed=false;p:Draw() end});if p.historyEnabled then p:HistoryActions() end
     local set=merged[p.selection]
     if set then
         local id=p.selection;local items=set.items or {}
