@@ -594,11 +594,8 @@ function addon:validateAnnouncementCondition(value,spec)
     return not reason and validateSingle(resolved,spec)
 end
 
--- The second result says the tree was unavailable (neither match nor
--- no-match). A rotation step uses it to stop the rotation, never to skip.
 function addon:evaluateCondition(value, context)
-    local status = self:evaluateConditionResult(value, context).status
-    return status == "match", status ~= "match" and status ~= "no-match"
+    return self:evaluateConditionResult(value, context).status == "match"
 end
 
 -- BEGIN CONDITION PLANS

@@ -326,7 +326,7 @@ function Session:EvaluateResult(root,context)
     -- Public-shaped results never expose memoized internal outcomes.
     return {status=result.status,reason=result.reason,path=result.path}
 end
-function Session:EvaluateBool(root,context)local status=rootResult(self,root,context).status;return status=='match',status~='match'and status~='no-match'end
+function Session:EvaluateBool(root,context)return rootResult(self,root,context).status=='match'end
 -- Only genuinely opaque outer callbacks use this fence. Source-owned leaf
 -- observations and unchanged primitive-only publication preserve event facts.
 -- A stale continuation cannot retire a newer activation or nested invocation.

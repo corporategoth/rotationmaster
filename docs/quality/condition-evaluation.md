@@ -8,8 +8,6 @@ Each reached AND/OR still checks its complete immediate child list for valid num
 
 Reached callback errors retain existing diagnostics, quarantine and path behavior. Each top-level condition retains its own fresh cache/timestamp, shared by its reached descendants. There is no cross-poll result cache or new shared observation registry. The normal polling cadence, event handlers and volatile readiness checks are unchanged.
 
-At the step boundary an unavailable condition makes the rotation unusable for that poll, never false. An action step (spell, pet, any, item or Blizzard's suggestion), an evaluated Branch and a Stop all end the walk with status `unavailable`: lower steps are not recommended and implicit Attack is suppressed; recommendations already made above it in the same poll (preview) are kept. An action step used to skip on unavailable and fall through to lower steps; it now stops like a Branch or Stop. A cooldown whose condition is unavailable is not shown, and the rotation continues. A switch condition that is unavailable does not select its rotation. Nothing is persisted: the next poll reads every condition afresh. The standard executor (`Core/rotation_sequence.lua`, a visitor may return `"unavailable"`) and the lean engine (`leanWalk`) agree; `tests/unavailable_steps.lua` covers both on the prepared and ordinary condition routes. `addon:evaluateCondition` and the runtime session's `EvaluateBool` return a second result, true when the tree was unavailable.
-
 
 Unit death and friendliness
 --------------------------

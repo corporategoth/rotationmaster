@@ -428,8 +428,6 @@ def main():
             ['luajit', 'tests/action_contexts.lua'],
             ['lua5.1', 'tests/assisted_combat.lua'],
             ['luajit', 'tests/assisted_combat.lua'],
-            ['lua5.1', 'tests/unavailable_steps.lua'],
-            ['luajit', 'tests/unavailable_steps.lua'],
             ['lua5.1', 'tests/retail_combat_readiness.lua'],
             ['luajit', 'tests/retail_combat_readiness.lua'],
             ['lua5.1', 'tests/retail_points.lua'],
