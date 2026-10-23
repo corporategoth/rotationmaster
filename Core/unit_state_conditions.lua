@@ -40,6 +40,21 @@ local function seedAssistedConditions(profile)
     end
     profile.assistedConditionsSeeded=true
 end
+-- The Assisted Combat rotation-set and availability conditions follow under
+-- their own flag, since profiles already carry assistedConditionsSeeded.
+local function seedAssistedSignalConditions(profile)
+    if profile.assistedSignalConditionsSeeded then return end
+    for _,category in ipairs(type(profile.condition_groups)=='table' and profile.condition_groups or {}) do
+        if category.id=='8034819e-26f5-4f4e-9153-d8cab5e65f31' and type(category.conditions)=='table' then
+            for _,tag in ipairs({'ASSISTED_ROTATION_SPELL','ASSISTED_AVAILABLE'}) do
+                local found=false
+                for _,existing in ipairs(category.conditions) do if existing==tag then found=true;break end end
+                if not found then category.conditions[#category.conditions+1]=tag end
+            end
+        end
+    end
+    profile.assistedSignalConditionsSeeded=true
+end
 -- Season of Discovery rune engraving joins the Character category and the
 -- Switch picker once per profile, under its own flag.
 local function seedEngravingConditions(profile)
@@ -59,6 +74,7 @@ function addon:InitializeUnitStateConditions(_,db)
     local profile=db.profile
     seedContextConditions(profile)
     seedAssistedConditions(profile)
+    seedAssistedSignalConditions(profile)
     seedEngravingConditions(profile)
     if profile.unitStateSwitchSeeded then return end
     local function append(list)

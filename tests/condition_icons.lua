@@ -14,7 +14,8 @@ end
 -- once tools/generate_artwork_catalog.py selects an icon of its own.
 local pendingOriginal={ASSISTED_SUGGESTION='placeholder: Spell Available icon',RUNE_ENGRAVED='placeholder: Equipped icon',
     SPECIALIZATION='placeholder: Primary Talent Tree icon',WEAPON_TYPE='placeholder: Have Item Equipped icon',
-    CASTING_PROGRESS='placeholder: Cast Time Remaining icon',CHANNELING_PROGRESS='placeholder: Channel Time Remaining icon'}
+    CASTING_PROGRESS='placeholder: Cast Time Remaining icon',CHANNELING_PROGRESS='placeholder: Channel Time Remaining icon',
+    ASSISTED_ROTATION_SPELL='placeholder: Spell Known icon',ASSISTED_AVAILABLE='placeholder: In Control icon'}
 for tag,note in pairs(pendingOriginal) do print('PENDING original icon '..tag..' ('..note..')') end
 test('all reviewed Built In declarations use bundled original semantic icons',function()
     local seen,icons={},{}
@@ -29,7 +30,7 @@ test('all reviewed Built In declarations use bundled original semantic icons',fu
         for tag,definition in pairs(f.addon.definitions) do inspect(tag,definition) end
         for _,group in pairs(f.addon.delayed_condition) do for tag,definition in pairs(group) do inspect(tag,definition) end end
     end
-    local count=0;for _ in pairs(seen) do count=count+1 end;assert(count==130,'reviewed icon inventory changed: '..count)
+    local count=0;for _ in pairs(seen) do count=count+1 end;assert(count==132,'reviewed icon inventory changed: '..count)
 end)
 test('category defaults follow stable identity while saved custom choices remain exact',function()
     local f=F.new();local a=f.addon

@@ -68,6 +68,88 @@ addon:RegisterCondition("ASSISTED_SUGGESTION", {
     end
 })
 
+-- Placeholders until original artwork exists (tests/condition_icons.lua lists
+-- both as pending): rotation membership reuses Spell Known, availability
+-- reuses In Control.
+if addon.Artwork and addon.Artwork.condition then
+    if addon.Artwork.condition["ASSISTED_ROTATION_SPELL"] == nil then
+        addon.Artwork.condition["ASSISTED_ROTATION_SPELL"] = addon.Artwork.condition["SPELL_KNOWN"]
+    end
+    if addon.Artwork.condition["ASSISTED_AVAILABLE"] == nil then
+        addon.Artwork.condition["ASSISTED_AVAILABLE"] = addon.Artwork.condition["INCONTROL"]
+    end
+end
+
+-- Whether a spell is in this specialization's Assisted Combat rotation set
+-- (C_AssistedCombat.GetRotationSpells, refreshed on SPELLS_CHANGED as
+-- Blizzard's own manager does). It answers "can Blizzard's suggestion ever
+-- be this spell", so a rotation can highlight what Assisted Combat leaves
+-- out. Unavailable when Assisted Combat is not offered for this character or
+-- specialization, or the set cannot be read.
+addon:RegisterCondition("ASSISTED_ROTATION_SPELL", {
+    description = L["Assisted Combat Rotation Spell"],
+    icon = addon.Artwork.condition["ASSISTED_ROTATION_SPELL"],
+    fields = { spell = "number", ranked = "boolean" },
+    valid = function(_, value)
+        return value.spell ~= nil and addon.IsConditionSpellID(value.spell)
+            and (value.ranked == nil or type(value.ranked) == "boolean")
+    end,
+    evaluate = function(value, cache)
+        local spellid, why = addon:Widget_GetSpellId(value.spell, value.ranked)
+        if not spellid then return nil, why or "spell-data-unavailable" end
+        return Functions.cache.getCached(cache, addon.Platform.IsAssistedRotationSpell, addon.Platform, spellid)
+    end,
+    print = function(_, value)
+        local link = addon:Widget_GetSpellLink(value.spell, value.ranked)
+        return string.format(L["%s {{!is|is not}} in Blizzard's Assisted Combat rotation"], Functions.presentation.nullable(link, L["<spell>"]))
+    end,
+    widget = function(parent, spec, value)
+        local top = parent:GetUserData("top")
+        local root = top:GetUserData("root")
+        local funcs = top:GetUserData("funcs")
+
+        local spell_group = addon:Widget_SpellWidget(spec, "Spec_EditBox", value,
+            function(v) return addon.getSpecSpellID(spec, v) end,
+            function(v) return addon.isSpellOnSpec(spec, v) end,
+            function() top:SetStatusText(funcs:print(root, spec)) end)
+        parent:AddChild(spell_group)
+    end,
+    help = function(frame)
+        frame:AddChild(helpers.CreateText(L["Matches when this spell is one Blizzard's Assisted Combat can suggest for your current specialization. Its current override and its base spell count too. Use it to highlight what Assisted Combat leaves out, for example a cooldown that is not in the set."]))
+        frame:AddChild(helpers.Gap())
+        frame:AddChild(helpers.CreateText(L["The set is read again whenever your spells change, never guessed. Where the game does not offer Assisted Combat for this character or specialization, or the set cannot be read, this condition is unavailable rather than false, including under NOT."]))
+        frame:AddChild(helpers.Gap())
+        addon.layout_condition_spellwidget_help(frame)
+    end
+})
+
+-- Whether the game offers Assisted Combat to this character and
+-- specialization right now (C_AssistedCombat.IsAvailable). Unlike the other
+-- Assisted Combat conditions this is a real false when it is not offered, so
+-- a rotation can fall back to its own steps. Unavailable only where the API
+-- is missing or its answer cannot be read.
+addon:RegisterCondition("ASSISTED_AVAILABLE", {
+    description = L["Assisted Combat Available"],
+    icon = addon.Artwork.condition["ASSISTED_AVAILABLE"],
+    fields = { },
+    valid = function()
+        return true
+    end,
+    evaluate = function(_, cache)
+        local available, why = Functions.cache.getCached(cache, addon.Platform.GetAssistedCombatAvailability, addon.Platform)
+        if available == nil then return nil, why or "assisted-unavailable" end
+        return available == true
+    end,
+    print = function()
+        return L["Assisted Combat {{!is|is not}} available"]
+    end,
+    help = function(frame)
+        frame:AddChild(helpers.CreateText(L["Matches when the game offers Blizzard's Assisted Combat for your character and current specialization. When it does not (for example a specialization Blizzard has no Assisted Combat rotation for, or a client that declares the API but does not offer the feature), this is false, so a branch can fall back to your own steps."]))
+        frame:AddChild(helpers.Gap())
+        frame:AddChild(helpers.CreateText(L["Unavailable only where the client has no Assisted Combat API or its answer cannot be read, including under NOT."]))
+    end
+})
+
 -- BEGIN GENERATED RM SOURCE BINDINGS
 do
     local function sourceGetter(name)

@@ -165,6 +165,7 @@ Core/active_runtime_plan.lua
 main.lua
 buttons.lua
 Core/unit_state_conditions.lua
+Core/assisted_highlight.lua
 init.lua
 validate.lua
 UI/controls.lua

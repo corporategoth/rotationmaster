@@ -3676,6 +3676,21 @@ L["Assisted Combat exists on Retail (and is declared on Forever). Where the game
 L["Blizzard's suggestion"] = true
 L["Recommends the spell Blizzard's Assisted Combat suggests"] = true
 L["Recommends whatever spell Blizzard's Assisted Combat suggests next, read each time the rotation is evaluated. It highlights that spell's button and shows in the preview like a spell step, and is held to the same requirements: known, usable, off cooldown and in range. When nothing is suggested, the suggested spell is not on your bars, or Assisted Combat is unavailable (anywhere but Retail, or a specialization without it), the step is skipped. Rotation list only."] = true
+L["Assisted Combat Rotation Spell"] = true
+L["%s {{!is|is not}} in Blizzard's Assisted Combat rotation"] = true
+L["Matches when this spell is one Blizzard's Assisted Combat can suggest for your current specialization. Its current override and its base spell count too. Use it to highlight what Assisted Combat leaves out, for example a cooldown that is not in the set."] = true
+L["The set is read again whenever your spells change, never guessed. Where the game does not offer Assisted Combat for this character or specialization, or the set cannot be read, this condition is unavailable rather than false, including under NOT."] = true
+L["Assisted Combat Available"] = true
+L["Assisted Combat {{!is|is not}} available"] = true
+L["Matches when the game offers Blizzard's Assisted Combat for your character and current specialization. When it does not (for example a specialization Blizzard has no Assisted Combat rotation for, or a client that declares the API but does not offer the feature), this is false, so a branch can fall back to your own steps."] = true
+L["Unavailable only where the client has no Assisted Combat API or its answer cannot be read, including under NOT."] = true
+-- Who highlights a "Blizzard's suggestion" step (General settings).
+L["Blizzard's suggestion highlight"] = true
+L["Rotation Master's glow"] = true
+L["Blizzard's Assisted Highlight"] = true
+L["Both"] = true
+L["Assisted Combat is not available for your current specialization, so Blizzard's highlight stays off."] = true
+L["Help.General.assisted_highlight"] = "Who highlights the button while a \"Blizzard's suggestion\" step is the recommendation. Rotation Master's glow uses the effect below. Blizzard's Assisted Highlight turns on the game's own highlight (Options, Gameplay, Combat, Assisted Highlight) while a rotation with that step is active, and Rotation Master leaves that step's button to it; Both shows the two. Rotation Master turns Blizzard's highlight on only outside combat, never changes it if it was already on, and puts your setting back when the rotation ends, Rotation Master is disabled, or you log out or reload. If you change the setting yourself meanwhile, your choice is kept. Blizzard's highlight follows Blizzard's suggestion all the time, also while another step is recommended, and it shows on Blizzard's own action bars only, so choose Rotation Master's glow or Both with a bar addon. The choice is hidden on clients without Blizzard's highlight (Forever and the Classic clients)."
 
 -- Season of Discovery rune engraving and trait talents.
 L["rune spell %s"] = true

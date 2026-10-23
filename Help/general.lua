@@ -35,6 +35,9 @@ function addon:GetGeneralOptionHelp()
         {id="yoffs",title=L["V"],text=L["Help.General.yoffs"]},
         {id="xoffs",title=L["H"],text=L["Help.General.xoffs"]},
     }
+    if self.GetAssistedHighlightSupport and self:GetAssistedHighlightSupport() then
+        ordered[#ordered+1]={id="assisted_highlight",title=L["Blizzard's suggestion highlight"],text=L["Help.General.assisted_highlight"]}
+    end
     if WOW_PROJECT_ID~=WOW_PROJECT_MAINLINE and LE_EXPANSION_LEVEL_CURRENT>=2 and self.db and self.db.char and self.db.char.specs then
         ordered[#ordered+1]={id="spec1",title=PRIMARY or L['Primary'],text=L['Help.General.spec1']}
         ordered[#ordered+1]={id="spec2",title=SECONDARY or L['Secondary'],text=L['Help.General.spec2']}

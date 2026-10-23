@@ -141,6 +141,15 @@ function addon:BuildGeneralSettings(p)
     local anchor=p:Choice('setpoint',nil,profile.setpoint or 'CENTER',entries(self.setpoints),function(v) profile.setpoint=v;profile.xoffs=0;profile.yoffs=0;refresh();p:Draw() end)
     anchor:ClearAllPoints();anchor:SetPoint('TOPLEFT',0,-positionY-22);anchor:SetWidth(204);p.y=positionY
     p:Position(profile.xoffs,profile.yoffs,function(x,y,center) profile.xoffs=x;profile.yoffs=y;if center then profile.setpoint='CENTER' end;refresh() end,true)
+    -- Who highlights a "Blizzard's suggestion" step. Hidden where the client
+    -- has no Blizzard highlight (Core/assisted_highlight.lua).
+    if self.GetAssistedHighlightSupport and self:GetAssistedHighlightSupport() then
+        local modes={{value='rm',text=L["Rotation Master's glow"]},{value='blizzard',text=L["Blizzard's Assisted Highlight"]},{value='both',text=L['Both']}}
+        p:Choice('assisted_highlight',L["Blizzard's suggestion highlight"],self:GetAssistedHighlightMode(profile),modes,function(v)
+            profile.assisted_highlight=v;p:RunSettingsEffect('assisted_highlight',function() self:RefreshAssistedHighlight(true) end)
+        end)
+        if self.Platform:GetAssistedCombatAvailability()==false then p:Text(L["Assisted Combat is not available for your current specialization, so Blizzard's highlight stays off."]) end
+    end
     if WOW_PROJECT_ID~=WOW_PROJECT_MAINLINE and LE_EXPANSION_LEVEL_CURRENT>=2 and store.char and store.char.specs then
         p:Heading(L['Specialization Names']);for i,caption in ipairs({PRIMARY,SECONDARY}) do p:Edit('spec'..i,caption,store.char.specs[i],nil,function(v) store.char.specs[i]=v end) end
     end
