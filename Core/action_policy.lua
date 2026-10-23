@@ -2,41 +2,73 @@ local _,addon=...
 
 -- Observations live for one evaluation only. Conditions can still inspect
 -- other spells; a condition never overrides the action's own availability.
-function addon:NewActionReadiness(now)
-    local platform=self.Platform
-    local spells,items,availability={},{},{}
-    local range=platform:NewSpellRangeReader()
+-- One memo per evaluation: each observation is made at most once per poll.
+-- Entries carry the stamp of the poll that made them, so reset() starts a new
+-- poll without discarding (and reallocating) the tables.
+local function buildReadiness(platform)
+    local spells,spellStamps,items,itemStamps,availability,availableStamps={},{},{},{},{},{}
+    local range,resetRange=platform:NewSpellRangeReader()
+    local stamp,now=0,nil
     local function validID(id)
         return platform:CanReadValue(id) and type(id)=="number" and id>0 and id<math.huge and id%1==0
     end
-    return function(kind,id,itemID)
+    local function ready(kind,id,itemID)
         if not validID(id) then return false end
         if kind=="item" then
             if not validID(itemID) then return false end
-            if items[itemID]==nil then
+            if itemStamps[itemID]~=stamp then
                 local ready=platform:IsItemReady(itemID,now)
                 local observed=ready==true and platform:GetItemRangeState(itemID,"target")
                 items[itemID]=type(observed)=="table" and (observed.applicable==false or observed.inRange==true)
+                itemStamps[itemID]=stamp
             end
             return items[itemID]
         end
         if kind~="spell" and kind~="pet" and kind~="any" then return false end
-        spells[kind]=spells[kind] or {}
-        if spells[kind][id]==nil then
+        local results,stamps=spells[kind],spellStamps[kind]
+        if not results then results,stamps={},{};spells[kind],spellStamps[kind]=results,stamps end
+        if stamps[id]~=stamp then
             local known=kind~="pet" and platform:IsSpellKnown(id,false)==true
             if not known and kind~="spell" then known=platform:IsSpellKnown(id,true)==true end
-            if known and availability[id]==nil then
+            if known and availableStamps[id]~=stamp then
                 local usable,power=platform:IsSpellUsable(id)
                 availability[id]=usable==true and power==false and platform:IsSpellReady(id,now)==true
+                availableStamps[id]=stamp
             end
-            local ready=known and availability[id]
-            local observed
-            if ready and id==6603 and kind~="pet" then
-                local beyond=platform:IsBeyondMeleeRange("target")
-                if beyond~=nil then observed={applicable=true,inRange=beyond==false} end
-            elseif ready then observed=range(id,"target",kind) end
-            spells[kind][id]=type(observed)=="table" and (observed.applicable==false or observed.inRange==true)
+            local result=false
+            if known and availability[id] then
+                if id==6603 and kind~="pet" then
+                    local beyond=platform:IsBeyondMeleeRange("target")
+                    result=beyond~=nil and beyond==false
+                else
+                    local observed=range(id,"target",kind)
+                    result=type(observed)=="table" and (observed.applicable==false or observed.inRange==true)
+                end
+            end
+            results[id]=result;stamps[id]=stamp
         end
-        return spells[kind][id]
+        return results[id]
     end
+    local function reset(at)
+        stamp,now=stamp+1,at
+        if resetRange then resetRange() end
+    end
+    return ready,reset
+end
+
+function addon:NewActionReadiness(now)
+    local ready,reset=buildReadiness(self.Platform)
+    reset(now)
+    return ready
+end
+
+-- Steady-state polling keeps one memo and starts a new poll on it.
+local shared
+function addon:ResetActionReadiness(now)
+    if not shared or shared.platform~=self.Platform then
+        shared={platform=self.Platform}
+        shared.ready,shared.reset=buildReadiness(self.Platform)
+    end
+    shared.reset(now)
+    return shared.ready
 end

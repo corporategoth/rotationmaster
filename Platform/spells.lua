@@ -84,6 +84,7 @@ function platform:IsSpellKnown(spellID, pet)
     return known
 end
 
+local cooldownFields = {startTime="number", duration="number", isEnabled="boolean", modRate="number"}
 function platform:GetSpellCooldown(spell)
     local valid, reason = identifier(spell)
     if not valid then return nil, reason end
@@ -94,9 +95,8 @@ function platform:GetSpellCooldown(spell)
         local start, duration, enabled, rate
         ok, start, duration, enabled, rate = pcall(GetSpellCooldown, spell)
         if not ok then return nil, "api-error" end
-        for _, value in pairs({start=start, duration=duration, enabled=enabled, rate=rate}) do
-            if not self:CanReadValue(value) then return nil, "restricted-value" end
-        end
+        if not self:CanReadValue(start) or not self:CanReadValue(duration) or not self:CanReadValue(enabled)
+            or not self:CanReadValue(rate) then return nil, "restricted-value" end
         if start ~= nil then
             if enabled ~= 0 and enabled ~= 1 then return nil, "invalid-api-result" end
             record = {startTime=start, duration=duration, isEnabled=enabled == 1, modRate=rate or 1}
@@ -105,7 +105,7 @@ function platform:GetSpellCooldown(spell)
     if not ok then return nil, "api-error" end
     if not self:CanReadValue(record) then return nil, "restricted-value" end
     if record == nil then return nil, "spell-data-unavailable" end
-    local cooldown, why = copy(record, {startTime="number", duration="number", isEnabled="boolean", modRate="number"})
+    local cooldown, why = copy(record, cooldownFields)
     if not cooldown then return nil, why end
     if cooldown.startTime == nil or cooldown.duration == nil or cooldown.isEnabled == nil
         or cooldown.startTime < 0 or cooldown.duration < 0 or (cooldown.modRate and cooldown.modRate <= 0) then
@@ -130,12 +130,15 @@ end
 
 -- Recommendation readiness permits a next action during the global cooldown,
 -- but not an ability whose own cooldown will still be active afterward.
+local gcdSpell
 function platform:GetGlobalCooldown()
-    local client=self:GetClientInfo()
-    -- Classic public probe; later clients expose the dedicated GCD spell.
-    local spell=(client.family=='era' or client.family=='tbc' or
-        (client.family=='progression' and client.expansion==2)) and 29515 or 61304
-    return self:GetSpellCooldown(spell)
+    if not gcdSpell then
+        local client=self:GetClientInfo()
+        -- Classic public probe; later clients expose the dedicated GCD spell.
+        gcdSpell=(client.family=='era' or client.family=='tbc' or
+            (client.family=='progression' and client.expansion==2)) and 29515 or 61304
+    end
+    return self:GetSpellCooldown(gcdSpell)
 end
 function platform:IsSpellReady(spell, now)
     if not self:CanReadValue(now) then return nil, "restricted-value" end
@@ -239,6 +242,7 @@ do
         if name=="Platform_GetSpellCooldown" then return addon.Platform.GetSpellCooldown end
         if name=="Platform_IsAutoRepeatActive" then return addon.Platform.IsAutoRepeatActive end
         if name=="Platform_IsSpellReady" then return addon.Platform.IsSpellReady end
+        if name=="cooldownFields" then return cooldownFields end
         if name=="copy" then return copy end
         if name=="identifier" then return identifier end
         if name=="platform" then return platform end

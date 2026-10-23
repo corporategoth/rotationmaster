@@ -598,6 +598,121 @@ function addon:evaluateCondition(value, context)
     return self:evaluateConditionResult(value, context).status == "match"
 end
 
+-- BEGIN CONDITION PLANS
+-- A condition plan is a condition tree checked once (structure, lists, cycles,
+-- limits) and then evaluated every poll with the exact semantics of
+-- evaluate() above: AND/OR short-circuit, NOT keeps unavailable, a nil result
+-- without a reason is false. Plans belong to one rotation body; main rebuilds
+-- them when the body's execution generation changes. Definitions are looked
+-- up per leaf, so registration, disabling and quarantine apply immediately.
+-- Leaves return status strings, so evaluation allocates nothing itself.
+local planLeafContext={module="conditions", operation="evaluate"}
+local planValidContext={module="conditions", operation="valid"}
+local function planCall(definition, context, fn, ...)
+    local history=historyReaders[context.conditionTag]
+    if history and addon.WantHistory then addon:WantHistory(history)
+    elseif definition.customCode and addon.WantHistory then addon:WantHistory('combat');addon:WantHistory('damage') end
+    local diagnostics=addon.Diagnostics
+    if not diagnostics then return true, fn(...) end
+    context.rotationId=addon.currentRotation;context.customCode=definition.customCode==true
+    local ok, result, reason=diagnostics:Call(context, fn, ...)
+    if not ok then quarantined[definition]=true;conditionQuarantineVersion=conditionQuarantineVersion+1 end
+    return ok, result, reason
+end
+
+local function compilePlan(value, state, depth, path)
+    state.count=state.count+1
+    if depth > 64 or state.count > 4096 then state.limit=true;return {status="unavailable"} end
+    if value == nil then return {status="match"} end
+    if type(value) ~= "table" then return {status="unavailable"} end
+    if state.active[value] then return {status="unavailable"} end
+    if value.disabled ~= nil and type(value.disabled) ~= "boolean" then return {status="unavailable"} end
+    if value.disabled then return {status="match"} end
+    if value.type == nil then return {status=next(value)==nil and "match" or "unavailable"} end
+    if type(value.type) ~= "string" then return {status="unavailable"} end
+    state.active[value]=true
+    local node
+    if value.type == "AND" or value.type == "OR" then
+        local children=value.value
+        if children == nil then children={} end
+        if type(children) ~= "table" then node={status="unavailable"}
+        else
+            local count, largest=0, 0
+            for key in pairs(children) do
+                if type(key) ~= "number" or key < 1 or key % 1 ~= 0 then node={status="unavailable"};break end
+                count=count+1
+                if key > largest then largest=key end
+            end
+            if not node and count ~= largest then node={status="unavailable"} end
+            if not node then
+                node={kind=value.type}
+                for index=1,count do node[index]=compilePlan(children[index], state, depth+1, path..".value["..index.."]") end
+            end
+        end
+    elseif value.type == "NOT" then
+        if type(value.value) ~= "table" then node={status="unavailable"}
+        else node={kind="NOT", compilePlan(value.value, state, depth+1, path..".value")} end
+    else
+        node={kind="leaf", value=value, tag=value.type, path=path}
+    end
+    state.active[value]=nil
+    return node
+end
+
+local function evaluatePlan(node, cache, start, stepId)
+    local status=node.status
+    if status then return status end
+    local kind=node.kind
+    if kind == "leaf" then
+        local tag=node.tag
+        local definition=conditions[tag]
+        if not definition or definition.functionUnavailable or definition.disabled
+            or type(definition.valid) ~= "function" or type(definition.evaluate) ~= "function"
+            or quarantined[definition] then return "unavailable" end
+        local value=node.value
+        if node.validFor ~= definition then
+            planValidContext.conditionPath, planValidContext.conditionTag, planValidContext.stepId=node.path, tag, stepId
+            local ok, valid=planCall(definition, planValidContext, definition.valid, addon.currentSpec, value)
+            if not ok or not valid then return "unavailable" end
+            -- Validators read configuration; custom ones are rechecked every poll.
+            if not definition.customCode then node.validFor=definition end
+        end
+        planLeafContext.conditionPath, planLeafContext.conditionTag, planLeafContext.stepId=node.path, tag, stepId
+        local ok, matched, reason=planCall(definition, planLeafContext, definition.evaluate, value, cache, start)
+        if not ok then return "unavailable" end
+        if matched == nil and reason ~= nil then return "unavailable" end
+        return matched and "match" or "no-match"
+    elseif kind == "NOT" then
+        status=evaluatePlan(node[1], cache, start, stepId)
+        if status == "unavailable" then return status end
+        return status == "match" and "no-match" or "match"
+    end
+    for index=1,#node do
+        status=evaluatePlan(node[index], cache, start, stepId)
+        if status == "unavailable" then return status end
+        if kind == "AND" and status == "no-match" then return "no-match" end
+        if kind == "OR" and status == "match" then return "match" end
+    end
+    return kind == "AND" and "match" or "no-match"
+end
+
+function addon:ConsumeConditionPlans()
+    if self ~= addon then return end
+    addon.ConsumeConditionPlans=nil
+    return function(value)
+        local state={active={}, count=0}
+        local plan=compilePlan(value, state, 0, "condition")
+        -- The ordinary node budget counts only reached nodes; a tree too large
+        -- to compile whole keeps the ordinary evaluator.
+        if state.limit then return {legacy=value} end
+        return plan
+    end, function(plan, cache, start, stepId)
+        if plan.legacy ~= nil then return addon:evaluateConditionResult(plan.legacy, {stepId=stepId}).status end
+        return evaluatePlan(plan, cache, start, stepId)
+    end
+end
+-- END CONDITION PLANS
+
 -- BEGIN SWITCH CONDITION EVALUATOR
 local ownedConditionEvaluator=addon.evaluateCondition
 local ownedConditionResult=addon.evaluateConditionResult

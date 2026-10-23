@@ -8,6 +8,25 @@ local function readable(value)
     return true
 end
 
+-- Classic-family builds report HasSecretRestrictions() == false as a build
+-- guarantee that no API returns a secret. Every readability check is then
+-- true, and it runs several times per native observation, so it becomes a
+-- constant. Retail and Forever, and clients without the secret API, keep the
+-- ordinary check.
+local secretsUnrestricted
+do
+    local secretApi = type(issecretvalue) == "function" or type(canaccessvalue) == "function"
+    local classic = type(WOW_PROJECT_ID) == "number" and WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE
+        and (WOW_PROJECT_CAMELOT == nil or WOW_PROJECT_ID ~= WOW_PROJECT_CAMELOT)
+    local unrestricted = false
+    if classic and type(C_Secrets) == "table" and type(C_Secrets.HasSecretRestrictions) == "function" then
+        local ok, restricted = pcall(C_Secrets.HasSecretRestrictions)
+        unrestricted = ok and restricted == false
+    end
+    secretsUnrestricted = secretApi and unrestricted
+    if secretsUnrestricted then readable = function() return true end end
+end
+
 local function primitive(value)
     if not readable(value) then return nil end
     local kind = type(value)
@@ -125,6 +144,7 @@ function platform:CanReadValue(value)
     if not readable(value) then return false, "restricted-value" end
     return true
 end
+if secretsUnrestricted then function platform:CanReadValue() return true end end
 
 local function declaration(namespace, method, label, legacy)
     if type(namespace) == "table" and type(namespace[method]) == "function" then

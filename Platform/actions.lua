@@ -41,6 +41,8 @@ local function findSlot(id,bank)
     if type(slot)~="number" or slot<1 or slot==math.huge or slot%1~=0 then return nil,nil,"invalid-api-result" end
     return slot,pet and (BOOKTYPE_PET or "pet") or (BOOKTYPE_SPELL or "spell")
 end
+-- Shared, read-only range results.
+local rangeNotApplicable,rangeIn,rangeOut={applicable=false},{applicable=true,inRange=true},{applicable=true,inRange=false}
 function platform:GetSpellRangeState(id,unit,bank)
     local valid,reason=spellID(id)
     if not valid then return nil,reason end
@@ -51,23 +53,20 @@ function platform:GetSpellRangeState(id,unit,bank)
     local nativeRange=C_Spell and C_Spell.IsSpellInRange
     local nativeShape=C_Spell and C_Spell.SpellHasRange
     local slot,book,slotReason
-    local function legacySlot()
-        if not slot then slot,book,slotReason=findSlot(id,bank) end
-        return slot,slotReason
-    end
     local hasRange,why,queriedShape
     if type(nativeShape)=="function" then
         queriedShape=true
         hasRange,why=call(nativeShape,id)
     elseif type(nativeRange)~="function" and type(SpellHasRange)=="function" then
-        if not legacySlot() then return nil,slotReason end
+        if not slot then slot,book,slotReason=findSlot(id,bank) end
+        if not slot then return nil,slotReason end
         queriedShape=true
         hasRange,why=call(SpellHasRange,slot,book)
     end
     if why then return nil,why end
     if hasRange~=nil then
         if type(hasRange)~="boolean" then return nil,"invalid-api-result" end
-        if not hasRange then return {applicable=false} end
+        if not hasRange then return rangeNotApplicable end
     elseif queriedShape then return nil,"invalid-api-result" end
     local inRange
     if type(nativeRange)=="function" then
@@ -76,20 +75,24 @@ function platform:GetSpellRangeState(id,unit,bank)
         if inRange~=nil and type(inRange)~="boolean" then return nil,"invalid-api-result" end
     else
         if type(IsSpellInRange)~="function" then return nil,"missing-api" end
-        if not legacySlot() then return nil,slotReason end
+        if not slot then slot,book,slotReason=findSlot(id,bank) end
+        if not slot then return nil,slotReason end
         inRange,why=call(IsSpellInRange,slot,book,unit)
         if why then return nil,why end
         if inRange==0 then inRange=false elseif inRange==1 then inRange=true end
         if inRange~=nil and type(inRange)~="boolean" then return nil,"invalid-api-result" end
     end
     if inRange==nil then return nil,"invalid-range-check" end
-    return {applicable=true,inRange=inRange}
+    return inRange and rangeIn or rangeOut
 end
 
 -- A reader lives for one recommendation pass only. Native range identifies
 -- spells by ID/unit, whereas legacy slot checks also depend on the book bank.
+-- The second result starts a new pass on the same reader: observations carry
+-- the pass stamp, so their tables are reused rather than rebuilt.
 function platform:NewSpellRangeReader()
     local observations={}
+    local stamp=0
     local native=C_Spell and type(C_Spell.IsSpellInRange)=="function"
     return function(id,unit,bank)
         local valid,reason=spellID(id)
@@ -102,12 +105,14 @@ function platform:NewSpellRangeReader()
         local units=observations[key]
         local target=unit or "target"
         units[target]=units[target] or {}
-        if not units[target][id] then
-            local value,why=self:GetSpellRangeState(id,unit,bank)
-            units[target][id]={value=value,reason=why}
+        local record=units[target][id]
+        if not record then record={};units[target][id]=record end
+        if record.stamp~=stamp then
+            record.value,record.reason=self:GetSpellRangeState(id,unit,bank)
+            record.stamp=stamp
         end
-        return units[target][id].value,units[target][id].reason
-    end
+        return record.value,record.reason
+    end,function() stamp=stamp+1 end
 end
 
 -- This is only a suggestion to start ordinary weapon attacks. It cannot
@@ -156,6 +161,9 @@ do
         if name=="call" then return call end
         if name=="findSlot" then return findSlot end
         if name=="platform" then return platform end
+        if name=="rangeIn" then return rangeIn end
+        if name=="rangeNotApplicable" then return rangeNotApplicable end
+        if name=="rangeOut" then return rangeOut end
         if name=="spellID" then return spellID end
     end
     if addon.RegisterBuiltinSourceModule then

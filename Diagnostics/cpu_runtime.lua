@@ -218,7 +218,8 @@ local function report(run,status,reason)
   'poll start='..run.poll,
   (function()local a,b=run.idleStart or {},run.idleEnd or {}
    local function delta(k)return a[k]and b[k]and b[k]>=a[k]and tostring(b[k]-a[k])or 'unavailable'end
-   return 'Idle gate: idle_poll='..(a.interval or 'unavailable')..'; timer ticks evaluated='..delta('evaluated')..'; skipped='..delta('skipped')end)(),
+   local engine=rawget(addon,'GetEvaluationEngine');local ok,name=false,nil;if type(engine)=='function' then ok,name=pcall(engine,addon)end
+   return 'Engine: '..(ok and type(name)=='string' and name or 'unavailable')..'. Idle gate: idle_poll='..(a.interval or 'unavailable')..'; timer ticks evaluated='..delta('evaluated')..'; skipped='..delta('skipped')end)(),
   'Selected key: start='..(run.selectionStart or 'unavailable')..'; end='..(run.selectionEnd or 'unavailable'),
   string.format('elapsedMilliseconds: total=%.3f; average=%.3f; max=%.3f',run.elapsed,run.measured>0 and run.elapsed/run.measured or 0,run.maximum),
   'allocatedBytes='..(run.allocated~=nil and string.format('%.0f',run.allocated)or 'unavailable')..'; deallocatedBytes='..(run.deallocated~=nil and string.format('%.0f',run.deallocated)or 'unavailable'),

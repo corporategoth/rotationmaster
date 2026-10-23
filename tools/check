@@ -411,6 +411,8 @@ def main():
             ['luajit', 'tests/role_conditions.lua'],
             ['lua5.1', 'tests/idle_gate.lua'],
             ['luajit', 'tests/idle_gate.lua'],
+            ['lua5.1', 'tests/lean_parity.lua'],
+            ['luajit', 'tests/lean_parity.lua'],
             ['lua5.1', 'tests/combat_history_time_conditions.lua'],
             ['luajit', 'tests/combat_history_time_conditions.lua'],
             ['lua5.1', 'tests/combat_time_conditions.lua'],

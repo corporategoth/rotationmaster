@@ -31,6 +31,8 @@ end
 for _,target in ipairs({false,true})do test('actual Shaman opaque native string descriptor target='..tostring(target),function()
  masked(function()
   local before,after=current({target=target},false),current({target=target},true)
+  -- Measures the standard engine on every timer tick.
+  for _,c in ipairs({before,after})do c.a.db.profile.idle_poll=0;if c.a.SetEvaluationEngine then c.a:SetEvaluationEngine('standard')end end
   before.reset(true);after.reset(true)
   local old=calls(before.a.RotationData.IndexRotationSteps,function()for i=1,3 do before.tick()end end)
   local new=calls(after.a.RotationData.IndexRotationSteps,function()for i=1,3 do after.tick()end end)

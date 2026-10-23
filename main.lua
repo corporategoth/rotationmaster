@@ -9,6 +9,14 @@ if type(consumeProfilerPolicy)=='function'then
     addon.ConsumeLegacyEvaluationProfilerPolicy=nil
 end
 local publicationRawget,publicationType,publicationMetatable=rawget,type,getmetatable
+-- The execution generation is the one number every rotation, condition,
+-- function, itemset and effect writer advances (Core/dependency_revisions).
+local readExecutionGeneration
+---@type fun(...): any
+local bindExecutionGeneration=addon.BindRotationExecutionGeneration
+if type(bindExecutionGeneration)=='function' then
+    bindExecutionGeneration(addon,function(read) readExecutionGeneration=read end)
+end
 addon.BindRotationExecutionGeneration=nil
 -- BEGIN ANALYTICS ADVICE HANDOFF
 local adviceCapture
@@ -460,6 +468,7 @@ function addon:HandleCommand(str)
         addon:print(L['/rm editorarrows        - Temporarily test native arrows in an open editor.'])
         addon:print(L['/rm perf cpu|runtime|memory [seconds|stop|report] - Capture performance observations.'])
         addon:print(L['/rm perf probe - Check native profiler access.'])
+        addon:print(L['/rm perf engine [lean|standard] - Show or choose the rotation evaluation engine.'])
 
     elseif cmd == "config" then
         self:ShowConfig("Rotations")
@@ -898,7 +907,7 @@ function addon:disable()
     end
     self.spellHistory={}
     self.combatHistory={}
-    if castFrame then castFrame:UnregisterAllEvents() end
+    if castFrame and castFrame.UnregisterAllEvents then castFrame:UnregisterAllEvents() end
     if not activeCall(self,change,'UnregisterAllEvents') then return end
 end
 
@@ -1164,7 +1173,9 @@ local function startIdleGate()
 end
 
 local function stopIdleGate()
-    for _, frame in ipairs(idleGate.frames or {}) do frame:UnregisterAllEvents() end
+    for _, frame in ipairs(idleGate.frames or {}) do
+        if frame.UnregisterAllEvents then frame:UnregisterAllEvents() end
+    end
     idleGate.registered = false
     idleGate.dirty = true
 end
@@ -1240,6 +1251,92 @@ local function UpdateUnitInfo(cache, record)
     end
 end
 
+-- Shared start of every evaluation: profile markers, macro buttons, unit
+-- environment and history trimming. Returns the poll time and its API cache.
+local environmentHandled, environmentGUID = {}, {}
+local function prepareEvaluation(self)
+    self.evaluationProfile:start()
+    if self.RefreshMacroButtons then self:RefreshMacroButtons() end
+
+    local now = GetTime()
+    local cache = {}
+    if not self.inCombat then
+        self.combatCache = cache
+    end
+
+    self.evaluationProfile:child("environment"):start()
+
+    -- Reused every poll; only read within this function.
+    local unitsHandled, unitsGUID = environmentHandled, environmentGUID
+    for k in pairs(unitsHandled) do unitsHandled[k] = nil end
+    for k in pairs(unitsGUID) do unitsGUID[k] = nil end
+    local verbose = (tonumber(self.db.profile.loglevel) or 2) >= 4
+    for unit, _ in pairs(addon.units) do
+        unitsGUID[unit] = getCached(cache, UnitGUID, unit)
+    end
+    for guid, entity in pairs(self.unitsInRange) do
+        if isin(addon.units, entity.unit) then
+		        if unitsGUID[entity.unit] and unitsGUID[entity.unit] == guid then
+                unitsHandled[entity.unit] = true
+            else
+                self.unitsInRange[guid] = nil
+            end
+        end
+
+        if verbose then addon:verbose("Updating Unit " .. guid .. " (" .. entity.name .. ")") end
+        UpdateUnitInfo(cache, entity)
+    end
+    for unit, guid in pairs(unitsGUID) do
+        if not unitsHandled[unit] and not self.unitsInRange[guid] and
+            not starts_with(unit, "mouseover") then
+            self.unitsInRange[guid] = CreateUnitInfo(cache, unit)
+        end
+    end
+
+    local threshold_time = now - self.db.profile.spell_history
+    while #self.spellHistory ~= 0 do
+        if self.spellHistory[#self.spellHistory].time < threshold_time then
+            table.remove(self.spellHistory, #self.spellHistory)
+        else
+            break
+        end
+    end
+
+    threshold_time = now - self.db.profile.combat_history
+    for _,history in pairs(self.combatHistory) do
+        while #history ~= 0 do
+            if history[#history].time < threshold_time then
+                table.remove(history, #history)
+            else
+                break
+            end
+        end
+    end
+    self.evaluationProfile:child("environment"):stop()
+
+    threshold_time = now - self.db.profile.damage_history
+    for guid, entry in pairs(self.damageHistory) do
+        while #entry.heals ~= 0 do
+            if entry.heals[#entry.heals].time < threshold_time then
+                table.remove(entry.heals, #entry.heals)
+            else
+                break
+            end
+        end
+        while #entry.damage ~= 0 do
+            if entry.damage[#entry.damage].time < threshold_time then
+                table.remove(entry.damage, #entry.damage)
+            else
+                break
+            end
+        end
+        if #entry.heals == 0 and #entry.damage == 0 then
+            self.damageHistory[guid] = nil
+        end
+    end
+    return now, cache
+end
+
 function addon:StopAdviceForError(reportId)
     local change=beginActive(self)
     if not activeChangeCurrent(self,change) then return end
@@ -1285,7 +1382,344 @@ function addon:EvaluateNextAction()
     if not ok then self:StopAdviceForError(reportId) end
 end
 
+-- BEGIN LEAN EVALUATION
+-- Steady-state polling. The standard path below acquires and proves the
+-- active body (ownership, eligibility, scope, conditions) and, when a poll
+-- completes, records it here. Later polls reuse that body while nothing it
+-- depends on has changed: spec, rotation, profile, preview window, the
+-- execution generation (advanced by every rotation, condition, function,
+-- itemset and effect writer), the context epoch (events that change
+-- eligibility: level, talents, spells, vehicle, control, form, combat...)
+-- and a five second age cap. Nothing is re-proved within a poll. Conditions,
+-- readiness, range and cooldowns are still read fresh every poll, and
+-- outputs still check the selection is current after each callout.
+-- /rm perf engine standard turns this off.
+local compileConditionPlan, evaluateConditionPlan
+if type(addon.ConsumeConditionPlans)=='function' then compileConditionPlan, evaluateConditionPlan=addon:ConsumeConditionPlans() end
+local LEAN_MAX_AGE = 5
+-- Captured at load (Core/action_policy.lua loads first): an overridden
+-- NewActionReadiness keeps being used as is.
+local ownedActionReadiness = addon.NewActionReadiness
+local leanContextEpoch = 0
+local leanPlan
+local implicitAttack = {id="RM-IMPLICIT:ATTACK", type="spell"}
+local scratchSpell, scratchItem, noIds = {}, {}, {}
+
+local function leanEnabled(self)
+    return compileConditionPlan and readExecutionGeneration and self.db.global.evaluator ~= 'standard'
+end
+
+function addon:SetEvaluationEngine(engine)
+    if engine ~= 'lean' and engine ~= 'standard' then return false end
+    self.db.global.evaluator = engine ~= 'lean' and engine or nil
+    leanPlan = nil
+    return true
+end
+
+function addon:GetEvaluationEngine()
+    if not leanEnabled(self) then return 'standard' end
+    return leanPlan and 'lean' or 'lean (building)'
+end
+
+local function compileSteps(list, ordinals)
+    local compiled = {}
+    for index, step in ipairs(list) do
+        local entry = {step=step, ordinal=ordinals[step]}
+        if step.type == "branch" then
+            entry.mode = step.mode or "evaluate"
+            if entry.mode == "evaluate" then entry.conditions = compileConditionPlan(step.conditions) end
+            entry.onTrue = compileSteps(step.onTrue, ordinals)
+            entry.onFalse = compileSteps(step.onFalse, ordinals)
+        else
+            entry.conditions = compileConditionPlan(step.conditions)
+        end
+        compiled[index] = entry
+    end
+    return compiled
+end
+
+local function recordLeanPlan(self, rot, views, spec, key, profile, window, generation, epoch)
+    local index = self.RotationData.IndexRotationSteps(rot, {allowMissingIds=true})
+    if not index then return end
+    local ordinals, count = {}, 0
+    for _, row in ipairs(index.rows) do
+        if row.section == "rotation" then ordinals[row.step] = row.ordinal; count = count + 1 end
+    end
+    local plan = {rot=rot, views=views, spec=spec, key=key, profile=profile, window=window,
+        generation=generation, epoch=epoch, expires=GetTime() + LEAN_MAX_AGE,
+        steps=compileSteps(rot.rotation or {}, ordinals), fallbackOrdinal=count + 1, cooldowns={},
+        recSpell={}, recCond={}, recIndex={}, recItem={},
+        obsSpell={}, obsEnabled={}, obsItem={}, enabledCooldowns={}, enabledItems={}, disabledCooldowns={}}
+    if rot.cooldowns ~= nil then
+        for id, cond in pairs(rot.cooldowns) do
+            plan.cooldowns[#plan.cooldowns + 1] = {id=id, step=cond, conditions=compileConditionPlan(cond.conditions)}
+        end
+    end
+    plan.current = function()
+        return self.currentRotation == key and self.currentSpec == spec and self.db.profile == profile
+            and self.nextWindow == window and readExecutionGeneration() == generation
+    end
+    leanPlan = plan
+end
+
+-- One action step: conditions, then the first mapped and ready spell.
+local function leanAction(plan, entry, decisionRow)
+    local decisionSink = plan.decisionSink
+    local cond = entry.step
+    if decisionSink then decisionSink(decisionRow, 'attempt') end
+    local action = cond.action
+    if action == nil or cond.disabled then
+        if decisionSink then decisionSink(decisionRow, action == nil and 'noaction' or 'disabled') end
+        return nil, false
+    end
+    local matches = evaluateConditionPlan(entry.conditions, plan.cache, plan.now, cond.id) == "match"
+    if decisionSink then decisionSink(decisionRow, matches and 'matched' or 'notmatched') end
+    if not matches then return nil, false end
+    local firstMapped, firstItem
+    -- Spell rank lists change with SPELLS_CHANGED (a context event) or spell
+    -- data loads (the plan's age cap); items follow bags, so stay fresh.
+    local spellids, itemids = entry.spellids, nil
+    if not spellids then
+        spellids, itemids = addon:GetSpellIds(cond)
+        if cond.type ~= "item" then entry.spellids = spellids end
+    end
+    for index, id in ipairs(spellids or noIds) do
+        local itemId = itemids and itemids[index]
+        scratchSpell[1] = id
+        local mapped
+        if cond.type == "item" then scratchItem[1] = itemId; mapped = addon:FindSpell(scratchSpell, scratchItem); scratchItem[1] = nil
+        else mapped = addon:FindSpell(scratchSpell) end
+        if decisionSink then decisionSink(decisionRow, mapped and 'mapped' or 'unmapped') end
+        if mapped then
+            if not firstMapped then firstMapped, firstItem = mapped, itemId end
+            local ready = plan.actionReady(cond.type, id, itemId)
+            if decisionSink then decisionSink(decisionRow, ready and 'ready' or 'notready') end
+            if ready then return mapped, true, itemId end
+        end
+    end
+    return firstMapped, false, firstItem
+end
+
+local function leanRecommend(plan, spellid, cond, index, itemId)
+    local n = plan.recommended + 1
+    plan.recommended = n
+    plan.recSpell[n], plan.recCond[n], plan.recIndex[n], plan.recItem[n] = spellid, cond, index, itemId
+end
+
+-- Same control flow as Core/rotation_sequence.lua execute(). Returns nil to
+-- continue, or how the walk ended: "selected", "stopped" or "unavailable".
+local function leanWalk(plan, list)
+    for i = 1, #list do
+        local entry = list[i]
+        local step = entry.step
+        if step.type == "branch" then
+            local mode = entry.mode
+            local status = mode == "true" and "match" or mode == "false" and "no-match"
+                or evaluateConditionPlan(entry.conditions, plan.cache, plan.now, step.id)
+            if status == "unavailable" then return "unavailable" end
+            local ended = leanWalk(plan, status == "match" and entry.onTrue or entry.onFalse)
+            if ended then return ended end
+        elseif not step.disabled then
+            if step.type == "none" then
+                local status = evaluateConditionPlan(entry.conditions, plan.cache, plan.now, step.id)
+                if status ~= "no-match" then
+                    plan.suppressAttack = status == "unavailable" or step.suppress_attack == true
+                    return status == "unavailable" and "unavailable" or "stopped"
+                end
+            else
+                local spellid, enabled, itemId = leanAction(plan, entry, 'rotation')
+                if enabled then
+                    leanRecommend(plan, spellid, step, entry.ordinal, itemId)
+                    if not plan.nativePreview or plan.recommended >= plan.profile.preview_spells then return "selected" end
+                end
+            end
+        end
+    end
+end
+
+-- Publication order and checks match the standard path's staged publishers.
+local function leanPublish(self, plan)
+    local current, profile, previewWindow = plan.current, plan.profile, plan.window
+    local nativePreview = plan.nativePreview
+    local weakAuras = _G.WeakAuras
+    if nativePreview then
+        previewWindow:ReleaseChildren()
+        if current() then previewWindow:PauseLayout() end
+        if not current() then return end
+    end
+    for n = 1, plan.recommended do
+        local spellid, cond, index, itemId = plan.recSpell[n], plan.recCond[n], plan.recIndex[n], plan.recItem[n]
+        if n == 1 then
+            -- BEGIN ANALYTICS PRIMARY ADVICE
+            if adviceCapture then
+                adviceCapture("advice", previewWindow, current, cond.type, spellid)
+                if not current() then return end
+            end
+            -- END ANALYTICS PRIMARY ADVICE
+            self.currentSpell = spellid
+            if not addon:IsGlowing(spellid, itemId) then
+                if not current() then return end
+                if not profile.disable_buttons then addon:GlowNextSpell(spellid, itemId) end
+                if not current() then return end
+                if weakAuras and type(weakAuras.ScanEvents) == "function" then weakAuras.ScanEvents("ROTATIONMASTER_SPELL_UPDATE", cond.type, spellid) end
+                if not current() then return end
+                AceEvent:SendMessage("ROTATIONMASTER_SPELL_UPDATE", self.currentRotation, index, cond.id, cond.type, spellid)
+            end
+        end
+        if not current() then return end
+        if nativePreview then previewWindow:AddRecommendation(spellid, itemId) end
+        if not current() then return end
+    end
+    if plan.recommended == 0 then
+        -- BEGIN ANALYTICS EMPTY ADVICE
+        if adviceCapture then adviceCapture("retire"); if not current() then return end end
+        -- END ANALYTICS EMPTY ADVICE
+        self.currentSpell = nil
+        if not profile.disable_buttons then addon:GlowClear() end
+        if not current() then return end
+        if weakAuras and type(weakAuras.ScanEvents) == "function" then weakAuras.ScanEvents("ROTATIONMASTER_SPELL_UPDATE", nil, nil) end
+        if not current() then return end
+        AceEvent:SendMessage("ROTATIONMASTER_SPELL_UPDATE", self.currentRotation, nil)
+        if not current() then return end
+    end
+    if nativePreview then
+        previewWindow:ResumeLayout()
+        if current() then previewWindow:DoLayout() end
+        if not current() then return end
+    end
+    if plan.rot.cooldowns ~= nil then
+        local views = plan.views
+        local enabledCooldowns, enabledItems, disabledCooldowns = plan.enabledCooldowns, plan.enabledItems, plan.disabledCooldowns
+        for k in pairs(enabledCooldowns) do enabledCooldowns[k] = nil end
+        for k in pairs(enabledItems) do enabledItems[k] = nil end
+        for k in pairs(disabledCooldowns) do disabledCooldowns[k] = nil end
+        local cooldowns = plan.cooldowns
+        for i = 1, #cooldowns do
+            local id, cond = cooldowns[i].id, cooldowns[i].step
+            local spellid, enabled, itemId = plan.obsSpell[i], plan.obsEnabled[i], plan.obsItem[i]
+            local announced = addon.avail_announced
+            -- A missing observation with no prior announcement has no output.
+            if spellid ~= nil or type(announced) ~= 'table' or announced[cond.id] ~= nil then
+                if not current() then return end
+                local previous = addon.avail_announced[cond.id]
+                if previous and (previous ~= spellid or not enabled) and not enabledCooldowns[previous] then
+                    disabledCooldowns[previous] = cond
+                end
+                if spellid then
+                    if enabled then
+                        addon:verbose("Cooldown %d [%s] is enabled", id, cond.id)
+                        if addon.avail_announced[cond.id] ~= spellid then
+                            if not addon.skipAnnounce then
+                                addon:DispatchAnnouncement(cond, string.format(L["%s is now available!"], spellLink(spellid)))
+                            end
+                            if not current() then return end
+                            addon.avail_announced[cond.id] = spellid
+                            AceEvent:SendMessage("ROTATIONMASTER_COOLDOWN_UPDATE", self.currentRotation, id, cond.id, cond.type, spellid)
+                            if not current() then return end
+                        end
+                        if not enabledCooldowns[spellid] then
+                            enabledCooldowns[spellid] = cond
+                            enabledItems[spellid] = itemId
+                            disabledCooldowns[spellid] = nil
+                        end
+                    else
+                        if addon.avail_announced[cond.id] then
+                            addon.avail_announced[cond.id] = nil
+                            AceEvent:SendMessage("ROTATIONMASTER_COOLDOWN_UPDATE", self.currentRotation, id, cond.id, nil)
+                        end
+                        addon:verbose("Cooldown %d [%s] is disabled", id, cond.id)
+                        if not enabledCooldowns[spellid] then
+                            disabledCooldowns[spellid] = cond
+                        end
+                    end
+                elseif addon.avail_announced[cond.id] then
+                    addon.avail_announced[cond.id] = nil
+                    AceEvent:SendMessage("ROTATIONMASTER_COOLDOWN_UPDATE", self.currentRotation, id, cond.id, nil)
+                end
+            end
+        end
+        for spellid, cond in pairs(disabledCooldowns) do
+            if not current() then return end
+            local style = cond
+            if views then style = views[cond]; if not style then return end end
+            addon:GlowCooldown(spellid, false, style)
+        end
+        for spellid, cond in pairs(enabledCooldowns) do
+            if not current() then return end
+            local style = cond
+            if views then style = views[cond]; if not style then return end end
+            addon:GlowCooldown(spellid, true, style, enabledItems[spellid])
+        end
+    end
+    if not current() then return end
+    addon.skipAnnounce = false
+    if type(addon.announced) ~= 'table' or next(addon.announced) ~= nil then addon.announced = {} end
+end
+
+local function reportEvaluation(self)
+    if GetTime() - self.lastCacheReport > 15 then
+        addon.Functions.cache.ReportCacheStats(addon)
+        if self.RefreshEvaluationProfilerPolicy then self:RefreshEvaluationProfilerPolicy()end
+        if not reportEvaluationProfiler or reportEvaluationProfiler(self)then
+            addon:debug("%s", self.evaluationProfile:report(self.db.profile.detailed_profiling))
+            self.evaluationProfile:reset()
+        end
+        self.lastCacheReport = GetTime()
+    end
+end
+
+-- Returns true when this poll was handled by the lean path.
+local function evaluateLean(self)
+    local plan = leanPlan
+    if not plan then return false end
+    if plan.key ~= self.currentRotation or plan.spec ~= self.currentSpec or plan.profile ~= self.db.profile
+        or plan.window ~= self.nextWindow or plan.generation ~= readExecutionGeneration()
+        or plan.epoch ~= leanContextEpoch or GetTime() >= plan.expires then
+        leanPlan = nil
+        return false
+    end
+    local now, cache = prepareEvaluation(self)
+    plan.now, plan.cache = now, cache
+    if self.NewActionReadiness == ownedActionReadiness and self.ResetActionReadiness then
+        plan.actionReady = self:ResetActionReadiness(now)
+    else
+        plan.actionReady = self:NewActionReadiness(now)
+    end
+    plan.decisionSink = runtimeDecisionSink
+    local previewWindow = plan.window
+    plan.nativePreview = previewWindow and type(previewWindow.AddRecommendation) == "function"
+    plan.recommended, plan.suppressAttack = 0, false
+
+    self.evaluationProfile:child("rotation"):start()
+    local ended = leanWalk(plan, plan.steps)
+    if ended == "unavailable" then plan.suppressAttack = true elseif ended ~= "stopped" then plan.suppressAttack = false end
+    if plan.recommended == 0 and not plan.suppressAttack and self.Platform:IsMeleeAttackNeeded("target") == true
+        and plan.actionReady("spell", 6603) then
+        scratchSpell[1] = 6603
+        local attack = addon:FindSpell(scratchSpell)
+        if attack then leanRecommend(plan, attack, implicitAttack, plan.fallbackOrdinal) end
+    end
+    self.evaluationProfile:child("rotation"):stop()
+
+    self.evaluationProfile:child("cooldowns"):start()
+    local cooldowns = plan.cooldowns
+    for i = 1, #cooldowns do
+        plan.obsSpell[i], plan.obsEnabled[i], plan.obsItem[i] = leanAction(plan, cooldowns[i], 'cooldowns')
+    end
+    self.evaluationProfile:child("cooldowns"):stop()
+
+    leanPublish(self, plan)
+    plan.cache = nil
+    self.evaluationProfile:stop()
+    reportEvaluation(self)
+    return true
+end
+-- END LEAN EVALUATION
+
 function addon:EvaluateNextActionInternal()
+    local useLean=leanEnabled(self)
+    if useLean and evaluateLean(self) then return end
+    local leanGeneration,leanEpoch=useLean and readExecutionGeneration(),leanContextEpoch
     local decisionSink=runtimeDecisionSink
     local selectedRotation,selectedSpec,selectedProfile=self.currentRotation,self.currentSpec,self.db.profile
     local runtimePass,rot,publicationGuard,planToken,conditionSession,handled,presentationViews,conditionLease,notifiedLease,deliveryLease,dispatchLease
@@ -1344,81 +1778,7 @@ function addon:EvaluateNextActionInternal()
         self:DisableRotation()
         return
     else
-        self.evaluationProfile:start()
-        if self.RefreshMacroButtons then self:RefreshMacroButtons() end
-
-        local now = GetTime()
-        local cache = {}
-        if not self.inCombat then
-            self.combatCache = cache
-        end
-
-        self.evaluationProfile:child("environment"):start()
-
-        local unitsHandled, unitsGUID = {}, {}
-        for unit, _ in pairs(addon.units) do
-            unitsGUID[unit] = getCached(cache, UnitGUID, unit)
-        end
-        for guid, entity in pairs(self.unitsInRange) do
-            if isin(addon.units, entity.unit) then
-		        if unitsGUID[entity.unit] and unitsGUID[entity.unit] == guid then
-                    unitsHandled[entity.unit] = true
-                else
-                    self.unitsInRange[guid] = nil
-                end
-            end
-
-            addon:verbose("Updating Unit " .. guid .. " (" .. entity.name .. ")")
-            UpdateUnitInfo(cache, entity)
-        end
-        for unit, guid in pairs(unitsGUID) do
-            if not unitsHandled[unit] and not self.unitsInRange[guid] and
-                not starts_with(unit, "mouseover") then
-                self.unitsInRange[guid] = CreateUnitInfo(cache, unit)
-            end
-        end
-
-        local threshold_time = now - self.db.profile.spell_history
-        while #self.spellHistory ~= 0 do
-            if self.spellHistory[#self.spellHistory].time < threshold_time then
-                table.remove(self.spellHistory, #self.spellHistory)
-            else
-                break
-            end
-        end
-
-        threshold_time = now - self.db.profile.combat_history
-        for _,history in pairs(self.combatHistory) do
-            while #history ~= 0 do
-                if history[#history].time < threshold_time then
-                    table.remove(history, #history)
-                else
-                    break
-                end
-            end
-        end
-        self.evaluationProfile:child("environment"):stop()
-
-        threshold_time = now - self.db.profile.damage_history
-        for guid, entry in pairs(self.damageHistory) do
-            while #entry.heals ~= 0 do
-                if entry.heals[#entry.heals].time < threshold_time then
-                    table.remove(entry.heals, #entry.heals)
-                else
-                    break
-                end
-            end
-            while #entry.damage ~= 0 do
-                if entry.damage[#entry.damage].time < threshold_time then
-                    table.remove(entry.damage, #entry.damage)
-                else
-                    break
-                end
-            end
-            if #entry.heals == 0 and #entry.damage == 0 then
-                self.damageHistory[guid] = nil
-            end
-        end
+        local now, cache = prepareEvaluation(self)
 
         local actionReady=self:NewActionReadiness(now)
         -- Preparation can call public providers. Check the compiled graph's
@@ -1640,19 +2000,20 @@ function addon:EvaluateNextActionInternal()
             delivering=true
         end
         for _,publish in ipairs(staged) do if not current() then break end;publish() end
+        local completed=current()
 
         self.evaluationProfile:stop()
+        -- A completed poll whose inputs did not move hands its body to the
+        -- lean path; a poll that saw a change builds again next time. Only the
+        -- managed and scoped routes have writers that advance the generation;
+        -- the unscoped route reads raw profile tables and stays standard.
+        if useLean and completed and (conditionSession or runtimePass)
+            and readExecutionGeneration()==leanGeneration and leanContextEpoch==leanEpoch then
+            recordLeanPlan(self,rot,conditionSession and presentationViews or nil,selectedSpec,selectedRotation,selectedProfile,previewWindow,leanGeneration,leanEpoch)
+        end
     end
 
-    if GetTime() - self.lastCacheReport > 15 then
-        addon.Functions.cache.ReportCacheStats(addon)
-        if self.RefreshEvaluationProfilerPolicy then self:RefreshEvaluationProfilerPolicy()end
-        if not reportEvaluationProfiler or reportEvaluationProfiler(self)then
-            addon:debug("%s", self.evaluationProfile:report(self.db.profile.detailed_profiling))
-            self.evaluationProfile:reset()
-        end
-        self.lastCacheReport = GetTime()
-    end
+    reportEvaluation(self)
 end
 
 function addon:UpdateCurrentCondition()
@@ -1848,6 +2209,7 @@ local function wrapEvent(func)
     return function(self, event, ...)
         if invalidateEvaluationContext and (event==nil or runtimeContextEvents[event]) then invalidateEvaluationContext() end
         if invalidateChoiceContext and (event==nil or runtimeContextEvents[event]) then invalidateChoiceContext(self) end
+        if event==nil or runtimeContextEvents[event] then leanContextEpoch=leanContextEpoch+1 end
         if failed or self.initializationErrorReport then return end
         self:debug("Event %s fired.", event)
         if not self.Diagnostics then return func(self, event, ...) end
@@ -2386,14 +2748,20 @@ function addon:WantHistory(kind)
 end
 
 addon.UNIT_COMBAT = wrapCombatEvent(function(self, _, unit, action, severity, value, type)
+    local now = GetTime()
     local wanted = self.historyWanted
-    if wanted and GetTime() > wanted.combat then return end
+    if wanted and now > wanted.combat then return end
     if self.combatHistory[unit] == nil then
         self.combatHistory[unit] = {}
     end
 
-    table.insert(self.combatHistory[unit], 1, {
-        time = GetTime(),
+    -- Evaluation trims too, but it does not run without an active rotation.
+    local history = self.combatHistory[unit]
+    local profile = self.db and self.db.profile
+    local threshold = now - (profile and profile.combat_history or 10)
+    while #history > 0 and history[#history].time < threshold do history[#history] = nil end
+    table.insert(history, 1, {
+        time = now,
         action = action,
         severity = severity,
         value = value,
@@ -2532,10 +2900,15 @@ addon.UNIT_SPELLCAST_SUCCEEDED = wrapCombatEvent(function(self, event, unit, cas
         end
     end
     if unit == 'player' or unit == 'pet' then
-        table.insert(self.spellHistory, 1, {
+        local now = GetTime()
+        local history = self.spellHistory
+        table.insert(history, 1, {
             spell = spellid, --[[ this was causing spellid to be nil in spellHistory, breaking the spell history conditions. ]]
-            time = GetTime()
+            time = now
         })
+        -- Evaluation trims too, but it does not run without an active rotation.
+        local threshold = now - (self.db.profile.spell_history or 60)
+        while #history > 1 and history[#history].time < threshold do history[#history] = nil end
     end
 end)
 addon.UNIT_SPELLCAST_INTERRUPTED = wrapCombatEvent(spellcast)
@@ -2566,38 +2939,33 @@ addon.UNIT_SPELLCAST_SENT = wrapCombatEvent(function(_, _, unit, target, castgui
     end
 end)
 
--- Amount offsets into the event-specific payload, by event prefix.
-local combatLogAmount = {SPELL = 4, RANGE = 4, ENVIRONMENTAL = 2}
-
-local function recordAmount(kind, guid, now, amount)
-    local entry = addon.damageHistory[guid]
-    if not entry then
-        entry = { damage = {}, heals = {} }
-        addon.damageHistory[guid] = entry
-    end
-    table.insert(entry[kind], 1, { time = now, value = tonumber(amount) })
-end
-
--- This runs for every combat log line in range. Without a damage history
--- reader only the player's own swings matter, so everything else returns
--- before any string work.
+-- This runs for every combat log line in range. Only the player's own swings
+-- and, while a damage history reader exists, damage and heal amounts matter;
+-- everything else returns before any string work.
 local function handle_combat_log(_, event, _, sourceGUID, _, _, _, destGUID, _, _, _, ...)
-    local now = GetTime()
     if sourceGUID == playerGUID then
         if event == "SWING_DAMAGE" then
-            if select(10, ...) then addon.lastOffSwing = now else addon.lastMainSwing = now end
+            if select(10, ...) then addon.lastOffSwing = GetTime() else addon.lastMainSwing = GetTime() end
         elseif event == "SWING_MISSED" then
-            if select(2, ...) then addon.lastOffSwing = now else addon.lastMainSwing = now end
+            if select(2, ...) then addon.lastOffSwing = GetTime() else addon.lastMainSwing = GetTime() end
         end
     end
-    if now > historyWanted.damage then return end
+    local wanted = addon.historyWanted
+    if wanted and GetTime() > wanted.damage then return end
 
-    local offs = combatLogAmount[event:match("^[^_]+")] or 1
-    if event:sub(-5) == "_HEAL" then
-        recordAmount("heals", destGUID, now, (select(offs, ...)))
-    elseif event:sub(-7) == "_DAMAGE" then
-        recordAmount("damage", destGUID, now, (select(offs, ...)))
+    local kind = event:sub(-5) == "_HEAL" and "heals" or event:sub(-7) == "_DAMAGE" and "damage"
+    if not kind then return end
+    local prefix = event:match("^[^_]+")
+    local offs = (prefix == "SPELL" or prefix == "RANGE") and 4 or prefix == "ENVIRONMENTAL" and 2 or 1
+    local entry = addon.damageHistory[destGUID]
+    if not entry then
+        entry = { damage = {}, heals = {} }
+        addon.damageHistory[destGUID] = entry
     end
+    table.insert(entry[kind], 1, {
+        time = GetTime(),
+        value = tonumber((select(offs, ...))),
+    })
 end
 addon.COMBAT_LOG_EVENT_UNFILTERED = wrapCombatEvent(function() handle_combat_log(CombatLogGetCurrentEventInfo()) end)
 

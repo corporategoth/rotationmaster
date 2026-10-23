@@ -565,7 +565,9 @@ function addon:RefreshMacroButtons()
         if next(Spells) then self:Fetch() end
         return
     end
-    local observations,changes,affected={},{},{}
+    if next(MacroButtons)==nil then return end
+    -- Runs every poll: change lists are only built when a button changed.
+    local observations,changes,affected={},nil,nil
     for button in pairs(MacroButtons) do
         local ok,kind,action=pcall(ReadStandardAction,button)
         local spell,item
@@ -585,11 +587,13 @@ function addon:RefreshMacroButtons()
         end
         local previous=ButtonSpells[button]
         if previous~=spell or ButtonItems[button]~=item then
+            changes,affected=changes or {},affected or {}
             changes[#changes+1]={button=button,spell=spell,item=item,previous=previous}
             if previous then affected[previous]=true end
             if spell then affected[spell]=true end
         end
     end
+    if not changes then return end
     -- Invalidate the affected identities before reindexing. Other buttons for
     -- those spells need their recommendation/cooldown glow reapplied as well.
     for spell in pairs(affected) do

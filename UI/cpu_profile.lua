@@ -249,6 +249,11 @@ function addon:HandlePerformanceCommand(text)
         if action~=''then return reject(usage)end
         return self:RunCPUProfileAction('probe')
     end
+    if name=='engine'then
+        if action~=''and not self:SetEvaluationEngine(action)then return reject(L['Usage: /rm perf engine [lean|standard]'])end
+        local message=L['Evaluation engine: %s']:format(self:GetEvaluationEngine())
+        self:print(message);return true,message
+    end
     local spec=performanceCaptures[name];if not spec then return reject(usage)end
     if action=='report'then
         local method=self[spec.report];local report,reason
