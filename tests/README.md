@@ -33,7 +33,7 @@ These checks do not run a WoW client. In TBC Anniversary 2.5.6, validate login/r
 
 Reference-context regressions in `rotation_library.lua`, `rotation_catalog.lua`, `condition_engine.lua` and real-AceDB `startup.lua` check global/profile item-set precedence, dependency/schema removal and recovery, retained invalid packaged sources, strict custom writes and unchanged-lookups avoiding packaged-graph revalidation. These checks cover validation state, not live ownership or recommendation quality.
 
-`defaults_mage.lua` loads real Mage preview data, conditions and readiness adapters to exercise training-based early filler preferences, range/usability/cooldowns, stationary/target/combat guards, optional higher-rank upkeep and unknown observations. It also exercises the real sequence executor, catalog and main rank expansion for non-repeating previews and lower-rank readiness fallback. It remains an early-level scenario suite rather than a full Mage combat simulator.
+`defaults_tbc_mage.lua`, `defaults_tbc_warlock.lua` and `defaults_tbc_priest.lua` run each class's TBC premades through the real catalog, predicates, sequence executor and readiness: automatic selection between the class's premades and source variants at low, mid and maximum level, the casting/channel/target/pull Stops, single-target against engaged-enemy AoE branches, training stages and the independent reminders. Native observations are modeled.
 
 Library source revisions, retained local widget forks and local vendor patches are recorded in `Libs/UPSTREAM.json`. The customized Spell/Item/ActionSlot Lua files are preserved. SharedMediaWidgets already matches current upstream; the Item EditBox upstream is unavailable.
 

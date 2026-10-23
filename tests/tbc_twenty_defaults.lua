@@ -14,7 +14,6 @@ local function fixture(class,historical,profile)
  local s={level=19,combat=false,targetCombat=false,moving=false,near=true,hostile=true,dead=false,vehicle=false,petbattle=false,
   known={},usable={},power={},cooldown={},range={},mapped={},auras={},enchanted=false}
  for _,base in ipairs(class=='SHAMAN'and{403,8042,324,8017,6603}or{133,116,1459,168})do s.known[base]=true end
- if class=='MAGE'then s.known[143],s.known[205]=true,true end
  e.UnitExists=function(unit)return unit=='player'or unit=='target'end
  e.UnitLevel=function()return s.level end;e.UnitHasVehicleUI=function()return s.vehicle end
  e.C_PetBattles={IsInBattle=function()return s.petbattle end}
@@ -75,8 +74,8 @@ local function upkeep(a,s)
  end end
  return table.concat(actions,',')
 end
-test('both current previews cover twenty-through-twenty-nine with matching runtime switches',function()
- for _,class in ipairs({'SHAMAN','MAGE'})do local f,s=fixture(class);local a=f.addon
+test('the Shaman preview covers twenty-through-twenty-nine with matching runtime switches',function()
+ for _,class in ipairs({'SHAMAN'})do local f,s=fixture(class);local a=f.addon
   for level=19,29 do s.setLevel(level);assert(row(a).eligible,'level'..level..' missing for '..class);assert(a:evaluateCondition(row(a).envelope.body.switch));assert(selected(a,s))end
   s.setLevel(30);assert(not row(a).eligible);assert(not a:evaluateCondition(row(a).envelope.body.switch))
   s.level=0;assert(not row(a).eligible)
@@ -99,41 +98,24 @@ test('Shaman optional higher-rank upkeep recognizes owned Shield and respects an
  s.auras[1].sourceUnit='party1';assert(upkeep(a,s)=='905','another caster shield counted as own')
  s.auras={};s.auraError=true;assert(upkeep(a,s)=='')
 end)
-test('Mage twenty-six Frost ranks do not enable the other family when unusable or unmapped',function()
- local f,s=fixture('MAGE');local a=f.addon;s.level=26;s.known[7322],s.known[8406]=true,true
- assert(selected(a,s)==8406);s.mapped[8406]=false;assert(selected(a,s)==7322)
- s.mapped[8406]=nil;s.range[8406]=false;assert(selected(a,s)==7322);s.mapped[8406]=false
- s.cooldown[7322]={startTime=90,duration=30,isEnabled=true,modRate=1};assert(selected(a,s)==205)
- s.power[205]=true;assert(selected(a,s)==116);s.usable[116]=false;assert(not selected(a,s))
- s.known[8406],s.known[7322],s.known[205],s.known[116]=false,false,false,false
- assert(selected(a,s)==143,'actual early training branch behavior changed')
-end)
-test('Mage keeps Intellect and Frost Armor families through twenty-nine without replacing active buffs',function()
- local f,s=fixture('MAGE');local a=f.addon;s.level=29;s.known[1461],s.known[7301]=true,true
- assert(upkeep(a,s)=='1461,7301')
- s.auras={{spellId=1461,name=identity[1461].name,sourceUnit='party1'},{spellId=7301,name=identity[7301].name,sourceUnit='player'}}
- assert(upkeep(a,s)=='');assert(selected(a,s)==205)
- s.auras={};s.auraError=true;assert(upkeep(a,s)=='')
-end)
-test('both previews preserve motion engagement unknown learned-state and aura refusal',function()
- for _,class in ipairs({'SHAMAN','MAGE'})do local f,s=fixture(class);local a=f.addon;s.level=20
+test('the Shaman preview preserves motion engagement unknown learned-state and aura refusal',function()
+ for _,class in ipairs({'SHAMAN'})do local f,s=fixture(class);local a=f.addon;s.level=20
   s.targetCombat=true;assert(not selected(a,s));s.targetCombat=false;s.hostile=false;assert(not selected(a,s));s.hostile=true
-  if class=='MAGE'then s.moving=true;assert(not selected(a,s));s.moving=false end
   s.knownError=true;assert(not selected(a,s));assert(upkeep(a,s)=='');assert(a:evaluateConditionResult(row(a).envelope.body.switch).status=='unavailable')
  end
 end)
 test('unavailable spell metadata does not authorize higher-level upkeep under NOT',function()
- for _,class in ipairs({'SHAMAN','MAGE'})do local f,s=fixture(class);s.level=24;s.auras={{spellId=999,name='Other readable aura',sourceUnit='player'}};s.metadataError=true;local actions=upkeep(f.addon,s);assert(actions==(class=='SHAMAN'and'8017'or''),class..':'..actions)end
+ for _,class in ipairs({'SHAMAN'})do local f,s=fixture(class);s.level=24;s.auras={{spellId=999,name='Other readable aura',sourceUnit='player'}};s.metadataError=true;local actions=upkeep(f.addon,s);assert(actions==(class=='SHAMAN'and'8017'or''),class..':'..actions)end
 end)
 test('existing applicability still excludes nonplayer contexts foreign classes and other client families',function()
- for _,class in ipairs({'SHAMAN','MAGE'})do local f,s=fixture(class);local a,e=f.addon,f.env;s.level=20;assert(row(a).eligible)
+ for _,class in ipairs({'SHAMAN'})do local f,s=fixture(class);local a,e=f.addon,f.env;s.level=20;assert(row(a).eligible)
   s.vehicle=true;assert(not row(a).eligible);s.vehicle=false;s.petbattle=true;assert(not row(a).eligible);s.petbattle=false
   for _,family in ipairs({{1,12},{2,0},{19,4},{18,12}})do e.WOW_PROJECT_ID,e.LE_EXPANSION_LEVEL_CURRENT=family[1],family[2];assert(not row(a).eligible)end
   e.WOW_PROJECT_ID,e.LE_EXPANSION_LEVEL_CURRENT=5,1;e.UnitClass=function()return 'Warlock','WARLOCK'end;assert(#a:ListDefaultRotations(0)==0)
  end
 end)
 test('archived source clones keep their old cutoff and current clones require explicit adoption',function()
- for _,class in ipairs({'SHAMAN','MAGE'})do
+ for _,class in ipairs({'SHAMAN'})do
   local old,oldState=fixture(class,true);local a=old.addon;local pack=row(a);local id=assert(a:CloneDefaultRotation(0,pack.id,'Archived clone'))
   local edited=a:GetEditableRotation(0,id);local leaf=class=='SHAMAN'and edited.rotation[1]or edited.rotation[1].onTrue[1].onFalse[1];leaf.action=974
   local saved=a.RotationData.CopyData(edited);local previous=assert(a:GetSourcedRotationView(0,id))
@@ -147,7 +129,7 @@ test('archived source clones keep their old cutoff and current clones require ex
  end
 end)
 test('strict complete-pack inverse accepts only the approved current body and rejects unrelated bytes',function()
- for _,class in ipairs({'shaman','mage'})do local path='Defaults/tbc/'..class..'-starter.lua';local current=read(path);local old=restore(current,path)
+ for _,class in ipairs({'shaman'})do local path='Defaults/tbc/'..class..'-starter.lua';local current=read(path);local old=restore(current,path)
   assert(old~=current and not pcall(restore,old,path));assert(not pcall(restore,current..'\n',path))
   assert(not pcall(restore,current:gsub('ranked=false','ranked=true',1),path))
  end

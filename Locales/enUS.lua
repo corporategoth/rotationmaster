@@ -1773,8 +1773,14 @@ L["Item sets are checked in priority order. Bag counts use the first carried can
 L["Item Available checks the required level and enabled item cooldown. An active cooldown qualifies only when it ends with the readable global cooldown. This condition does not bypass the action's implicit ownership, usability and range checks."] = true
 
 -- TBC early Frost Mage preview.
-L["Default.TBC.Mage.Starter.Name"] = "Mage: early Frost leveling (1–29)"
-L["Default.TBC.Mage.Starter.Description"] = "Bounded TBC single-target Frost preview for levels 1–29. Optional Intellect and Frost Armor upkeep, stationary pulls and combat fillers adapt to trained ranks. Each training-dependent arm selects one filler; unavailable spells do not select the opposite arm. Uses ranked action lookup with availability fallback. Talent cooldowns, mana management, kiting, crowd control, emergency shields and consumables remain manual. Other specializations and levels 30+ need separate rotations."
+L["Default.TBC.Mage.Frost.Name"] = "Mage: Frost"
+L["Default.TBC.Mage.Frost.Description"] = "Frost from level 1 to 70, and the Mage default before talents. Frostbolt (Fireball before level 4), Frost Nova when something hits you, Cone of Cold with Blizzard or Arcane Explosion when three or more enemies are engaged, Ice Lance on frozen targets and while moving, wand when out of mana. Reminders: armor, Arcane Intellect, mana gem, Evocation, Counterspell, Spellsteal, Ice Barrier, Icy Veins, Cold Snap and Water Elemental. Blink, Ice Block, kiting and target choice stay with you."
+L["Default.TBC.Mage.FireIcyVeins.Name"] = "Mage: Fire (Icy Veins)"
+L["Default.TBC.Mage.FireIcyVeins.Description"] = "Fire after Icy Veins, chosen when Fire is your main talent tree. Pyroblast opens a pull once learned, Improved Scorch keeps five Fire Vulnerability stacks, Fireball fills, Fire Blast is for moving; Blast Wave, Dragon's Breath and Flamestrike for three or more enemies. Reminders: Molten, Mage or Ice Armor, Combustion below 20% target health, mana gem, Evocation and the shared Mage utilities."
+L["Default.TBC.Mage.FireWowhead.Name"] = "Mage: Fire (Wowhead)"
+L["Default.TBC.Mage.FireWowhead.Description"] = "Fire after Wowhead and wowsims. Like the Icy Veins Fire premade, but it weaves Fire Blast whenever it is ready while you stand still (more damage, more mana) and opens with Fireball instead of Pyroblast. Pick it in the rotation list to use it."
+L["Default.TBC.Mage.Arcane.Name"] = "Mage: Arcane"
+L["Default.TBC.Mage.Arcane.Description"] = "Arcane, chosen when Arcane is your main talent tree. Before level 64: Arcane Missiles, with Frostbolt when mana runs low. From 64: Arcane Blast while burning (Arcane Power, Bloodlust or above 35% mana), otherwise three Arcane Blast stacks and Frostbolt until they are about to drop. Arcane Explosion and Cone of Cold for three or more enemies. Reminders include Arcane Power, Presence of Mind, mana gem and Evocation."
 
 -- Alternate rotation presentation.
 L["Diagram view"] = true
@@ -2444,11 +2450,19 @@ L["Default.TBC.Druid.Caster.Starter.Description"] = "Caster-only preview in huma
 L["Default.TBC.Warrior.Starter.Name"] = "Warrior: early leveling (1–19)"
 L["Default.TBC.Warrior.Starter.Description"] = "Bounded combat-only Warrior preview: optional Battle Shout, own Rend, Heroic Strike and normal melee fallback. Queued Heroic Strike is preserved. Rend through level 19 and spending available rage are RM preview policies; pulls, reactive abilities, stances and resource conservation remain manual."
 
-L["Default.TBC.Priest.Starter.Name"] = "Priest: early leveling (1–19)"
-L["Default.TBC.Priest.Starter.Description"] = "Bounded solo Priest preview with optional Inner Fire, opening Mind Blast, own Shadow Word: Pain, wanding and Smite. The half-health cutoff is an RM heuristic; healing, shields, party support and resources remain manual."
+L["Default.TBC.Priest.DpsIcyVeins.Name"] = "Priest: damage (Icy Veins)"
+L["Default.TBC.Priest.DpsIcyVeins.Description"] = "Damage from level 1 to 70, used whenever the healer premade does not apply. Smite and wand early, then Mind Blast, Shadow Word: Pain, Mind Flay, Shadowform, Vampiric Touch and Shadow Word: Death as you learn them; DoTs before Mind Blast; a dying target is wanded when solo. Holy and Discipline questers get Holy Fire and Smite. Reminders: Inner Fire, Fortitude, racial buffs, Inner Focus, Shadowfiend. Shields, healing and Mind Flay clipping stay with you."
+L["Default.TBC.Priest.DpsWowhead.Name"] = "Priest: damage (Wowhead)"
+L["Default.TBC.Priest.DpsWowhead.Description"] = "Damage after Wowhead's guides: Mind Blast opens and goes before DoT refreshes, Vampiric Embrace only when your health drops, and a dying target gets spells instead of the wand. Otherwise the same as the Icy Veins damage premade. Pick it in the rotation list to use it."
+L["Default.TBC.Priest.HealerWowhead.Name"] = "Priest: healer (Wowhead)"
+L["Default.TBC.Priest.HealerWowhead.Description"] = "Healing in a group when Holy or Discipline is your main talent tree. It advises on the friendly unit you target; you choose whom to heal. Prayer of Mending before pulls and whenever ready, Renew, Power Word: Shield in emergencies, dispels, Circle of Healing or Prayer of Healing for group damage, Binding, Flash and Greater Heal, and Greater Heal rank 1 as a cheap top-up. With an enemy targeted it offers light damage."
+L["Default.TBC.Priest.HealerIcyVeins.Name"] = "Priest: healer (Icy Veins)"
+L["Default.TBC.Priest.HealerIcyVeins.Description"] = "Healing after Icy Veins' order: Shield, dispels, Binding Heal, Renew, Flash Heal, Greater Heal (any rank), group heals, and Prayer of Mending last. You choose whom to heal. Pick it in the rotation list to use it."
 
-L["Default.TBC.Warlock.Starter.Name"] = "Warlock: early leveling (1–29)"
-L["Default.TBC.Warlock.Starter.Description"] = "Bounded solo Affliction preview: owned damage-over-time spells, conservative Drain Life, wanding and optional Demon Skin or Demon Armor upkeep. Learned Demon Armor supersedes Demon Skin. Manual demon and resource control; expires at level 30."
+L["Default.TBC.Warlock.DpsIcyVeins.Name"] = "Warlock: all trees (Icy Veins)"
+L["Default.TBC.Warlock.DpsIcyVeins.Description"] = "Every talent tree from level 1 to 70. Curse, then Unstable Affliction, Immolate, Corruption and Siphon Life as learned, Shadow Bolt or Incinerate; Nightfall and Backlash procs first; Seed, Hellfire and Shadowfury for three or more enemies. Solo it drains when hurt, Life Taps, wands, and uses Drain Soul or a finisher on a dying target. Reminders: Fel Armor, Demon Armor or Demon Skin, your demon, sacrifice, Soul Link, Amplify Curse and Soulshatter. Fears and other curses stay with you."
+L["Default.TBC.Warlock.DpsWowhead.Name"] = "Warlock: drain-tank (Wowhead)"
+L["Default.TBC.Warlock.DpsWowhead.Description"] = "Warlock after Wowhead's guides. Solo it drain-tanks: Drain Life is the filler once your DoTs are up and Immolate and Siphon Life are kept for elite mobs. In a group Immolate always goes on, after Corruption and Siphon Life. Otherwise the same as the Icy Veins Warlock premade. Pick it in the rotation list to use it."
 
 L["Count enemies when selected, or non-enemies when cleared."] = true
 L["The number of observed units proven within Distance of you."] = true
@@ -2553,8 +2567,6 @@ L["the cooldown on {item} {comparison} {duration}{carrying}"] = true
 
 
 
-L["Default.TBC.Priest.Continuation.Name"] = "Priest: wand / learned Mind Flay (20–29)"
-L["Default.TBC.Priest.Continuation.Description"] = "Bounded solo Priest preview for levels 20–29. Optional Inner Fire, opening Mind Blast and own Shadow Word: Pain precede learned Mind Flay above half health, then stationary wanding or Smite fallback. Manually choose when to channel or wand; active channels and wand filler are preserved. Repeated Mind Flay and the half-health cutoff are RM preview policies; talents, healing, shields, party support and resources remain manual."
 
 L["Default.TBC.Warrior.Continuation.Name"] = "Warrior: early leveling (20–29)"
 L["Default.TBC.Warrior.Continuation.Description"] = "Bounded combat-only Warrior preview for levels 20–29. Optional Battle Shout, learned Execute below 20% target health, then Heroic Strike and normal melee fallback. Preserves all four queued Heroic Strike ranks in this bracket. Rend maintenance ends here; reactive abilities, stances, pulls and resource or queue planning remain manual."
@@ -2682,14 +2694,10 @@ L["Scoring: unavailable"] = true
 L["Tank: unavailable (no threat, mitigation or survival observations)."] = true
 L["unavailable"] = true
 
-L["Default.TBC.Mage.Thirties.Name"] = "TBC Mage 30–39 Frost single-target preview"
-L["Default.TBC.Mage.Thirties.Description"] = "Bounded level 30–39 Frost single-target preview. Preserves any existing Frost, Ice or Mage Armor; offers learned Mage, then Ice, then Frost Armor only when all are absent. Intellect remains independent. Talents, kiting, emergency defenses and resources stay manual."
 
 L["Default.TBC.Shaman.Enhancement30.Name"] = "Shaman: Enhancement leveling (30–39)"
 L["Default.TBC.Shaman.Enhancement30.Description"] = "Bounded TBC solo Enhancement-oriented preview for levels30–39, selected only when Enhancement has the unique positive highest talent allocation. Uses learned ranks for a Lightning Bolt pull, Earth Shock in combat and stationary ranged Lightning Bolt, with independent Lightning Shield and mainhand imbue reminders. Prefers learned Windfury over Rockbiter only when no temporary mainhand enchant is present; preserves any manual enchant and does not infer a weapon type or complete build. Equipment, healing, interrupts, totems, consumables, weapon timing and resource optimization remain manual. Not native gameplay certified."
 
-L["Default.TBC.Warlock.Thirties.Name"] = "TBC Warlock 30–39 single-target preview"
-L["Default.TBC.Warlock.Thirties.Description"] = "Bounded Affliction-oriented preview with learned Siphon Life; proc priorities, talents, pets and resources remain manual."
 
 L["Action bars"] = true
 L["Addon"] = true
@@ -2852,10 +2860,6 @@ L['Optional preview-button skins; configure skins with /masque.'] = true
 L['Help.Integrations.preview_masque'] = "Enable separately installed Masque here and Apply. General > Preview then provides a Skin dropdown that updates the preview immediately. Masque owns the skin selection; /masque opens its other settings. The preview window keeps its native appearance. Missing or incompatible APIs and provider errors retain the native preview."
 
 
-L["Default.TBC.Priest.Shadow30.Name"] = "Priest: Shadow leveling (30–39)"
-L["Default.TBC.Priest.Shadow30.Description"] = "Bounded Shadow-oriented solo preview; learned spells and native readiness remain authoritative. Choose channels and wand manually; healing and resources remain manual."
-L["Default.TBC.Priest.Shadow40.Name"] = "Priest: Shadow leveling (40–49)"
-L["Default.TBC.Priest.Shadow40.Description"] = "Bounded Shadow-oriented solo preview; learned spells and native readiness remain authoritative. Choose channels and wand manually; healing and resources remain manual."
 
 
 L["History"] = true
@@ -2881,18 +2885,12 @@ L["Default.TBC.Warrior.Thirty.Name"] = "Warrior: combat leveling (30–39)"
 L["Default.TBC.Warrior.Thirty.Description"] = "Bounded combat preview. Learned Execute below 20% target health, five exact learned Heroic Strike queue guards, then native-ready Heroic Strike. Optional Battle Shout respects casts and channels. Native ranks, mappings and readiness govern actions; stances, reactive abilities, Rend, pulls, talents and resource or queue planning remain manual."
 L["Default.TBC.Shaman.Enhancement40.Name"] = "Shaman: Enhancement leveling (40–49)"
 L["Default.TBC.Shaman.Enhancement40.Description"] = "Bounded TBC solo Enhancement-oriented preview for levels40–49, selected only when Enhancement has the unique positive highest talent allocation. Uses learned ranks for a Lightning Bolt pull, Earth Shock in combat and stationary ranged Lightning Bolt, with independent Lightning Shield and mainhand imbue reminders. Prefers learned Windfury over Rockbiter only when no temporary mainhand enchant is present; preserves any manual enchant and does not infer a weapon type or complete build. Equipment, healing, interrupts, totems, consumables, weapon timing and resource optimization remain manual. Not native gameplay certified."
-L["Default.TBC.Warlock.Forties.Name"] = "TBC Warlock 40–49 single-target preview"
-L["Default.TBC.Warlock.Forties.Description"] = "Bounded Affliction-oriented preview with learned Siphon Life; proc priorities, talents, pets and resources remain manual."
 
 -- Explicit unscored advice/native-preview receipt coverage.
 L['Advice/presentation rows describe observed delivery boundaries only; ordinary-cast proof: not available.'] = true
 L['Coverage rows: advice=%d presentation=%d visible=%d hidden=%d unknown=%d retired=%d (not opportunities).'] = true
 L['Visible means RM-owned preview frame state at a delivery boundary; it does not prove perception or native pixel rendering.'] = true
 
-L["Default.TBC.Mage.Forties.Name"] = "TBC Mage 40–49 Frost single-target preview"
-L["Default.TBC.Mage.Forties.Description"] = "Inherited bounded level 40–49 Frost single-target preview. Preserves manual armor; offers learned Mage, then Ice, then Frost Armor only when all are absent. Talents, kiting, emergency defenses and resources stay manual."
-L["Default.TBC.Mage.Fifties.Name"] = "TBC Mage 50–59 Frost single-target preview"
-L["Default.TBC.Mage.Fifties.Description"] = "Inherited bounded level 50–59 Frost single-target preview. Preserves manual armor; offers learned Mage, then Ice, then Frost Armor only when all are absent. Talents, kiting, emergency defenses and resources stay manual."
 L["Default.TBC.Warrior.Forty.Name"] = "TBC Warrior40–49 combat preview"
 L["Default.TBC.Warrior.Forty.Description"] = "Levels40–49: inherited melee preview with seven exact learned Heroic Strike queue guards. Stances, talents, reactive abilities and resources remain manual."
 L["Default.TBC.Paladin.Forty.Name"] = "TBC Paladin40–49 manual seal/aura preview"
@@ -3059,8 +3057,6 @@ L["Choose a unit for this condition."] = true
 L["Group membership option is invalid."] = true
 L["For %s"] = true
 L["Saved settings"] = true
-L["Default.TBC.Priest.Shadow50.Name"] = "Priest: Shadow leveling (50–59)"
-L["Default.TBC.Priest.Shadow50.Description"] = "Bounded Shadow-oriented solo preview; learned spells and native readiness remain authoritative. Choose channels and wand manually; healing and resources remain manual."
 L['Help.General.memory_capture'] = "Start a ten-minute memory capture. Whole-Lua heap reads occur once per second; slower addon-memory refreshes and bounded container counts occur every thirty seconds. Sampling costs are reported. The capture does not force garbage collection, enable the native profiler or change gameplay polling."
 L['Help.General.memory_report'] = "Open the completed or stopped memory observations in a selectable, copyable report. Addon memory is sampled attribution, and container counts are rows or keys rather than bytes. Memory drops alone do not prove garbage collection or the absence of a leak."
 L['Help.General.memory_stop'] = "Stop the current memory capture and preserve its observations for Memory report. This cancels only memory-capture timers. No gameplay settings are changed."
