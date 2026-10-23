@@ -355,6 +355,10 @@ function addon:InitializeRotationLibrary()
         views[id]=catalog:Get({kind="builtin",id=id})
         bodies[id]=data.CopyData(views[id].envelope.body)
         bodies[id].name=L[views[id].nameKey]
+        -- A packaged body's disabled flag is only its default; the player's
+        -- preference decides, and eligible() already applies it. Left on the
+        -- runtime copy it would keep an enabled pack out of auto-switching.
+        bodies[id].disabled=nil
     end
     invalidateExecution()
     active={profile=profile,state=state,catalog=catalog,views=views,bodies=bodies,cloneScopes={},version=definitionVersion,referenceStamp=referenceStamp,generation={}}

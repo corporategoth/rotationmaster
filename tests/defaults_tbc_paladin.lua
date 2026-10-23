@@ -40,6 +40,12 @@ test('auto-select: Retribution by default, Protection by tree or Righteous Fury,
  s.level,s.talents,s.group=70,{5,11,45},false;H.learn(f,s,COMMAND,BLOOD)
  assert(H.selected(f,s)==RET and H.switch(a,TWIST)=='match','twisting stays off until enabled')
  assert(a:SetDefaultRotationEnabled(TWIST,true));assert(H.selected(f,s)==TWIST)
+ -- The real auto-switch filter reads the runtime body: enabling a pack that ships
+ -- disabled must clear the flag there too, or it is never auto-selected.
+ local key;for _,r in ipairs(a:ListDefaultRotations(0))do if r.id==TWIST then key=r.runtimeKey end end
+ local body=assert(a:GetRuntimeRotations(0)[key],'enabled twist pack is not runnable')
+ assert(not body.disabled,'enabled twist pack still carries the shipped disabled flag')
+ if a.GetOrderedAutoSwitchRotations then local found=false;for _,id in ipairs(a:GetOrderedAutoSwitchRotations(0,a:GetRuntimeRotations(0)))do found=found or id==key end;assert(found,'auto-switch ignores the enabled twist pack')end
  s.known[BLOOD]=nil;assert(H.selected(f,s)==RET,'twisting needs Blood or Martyr')
  assert(a:SetDefaultRotationEnabled(RET,false));assert(H.selected(f,s)==RIV)
 end)
