@@ -54,6 +54,7 @@ records["validate.lua"]={bytes=34967,hash=1826936062,oldBytes=35105,oldHash=1093
 
 return function(value,path)
  assert(path~='tests/fixtures/restore_workbench_resize.lua','workbench resize inverse cannot normalize itself')
+ value=dofile('tests/fixtures/restore_bossmod_integration.lua')(value,path)
  local row=type(value)=='string' and records[path]
  if not row or #value~=row.bytes or digest(value)~=row.hash then return value end
  for i=#row.changes,1,-1 do

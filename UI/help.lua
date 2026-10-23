@@ -110,6 +110,8 @@ function addon:GetIntegrationOptionHelp()
         {id='optional_addons',title=L['Optional addons'],text=L['Help.Integrations.optional_addons']},
         {id='preview_masque',title=L['Skin preview buttons with Masque'],text=L['Help.Integrations.preview_masque']},
         {id='questie_enabled',title=L['Enable Questie integration'],text=L['Help.Integrations.questie_enabled']},
+        {id='encounter_provider',title=L['Boss mods'],text=L['Help.Integrations.encounter_provider']},
+        {id='top_panels',title=L['Top panels'],text=L['Help.Integrations.top_panels']},
         {id='native_highlighting',title=L['Syntax highlighting'],text=L['Help.Integrations.native_highlighting']},
     }
 end

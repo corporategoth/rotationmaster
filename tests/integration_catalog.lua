@@ -1,6 +1,6 @@
 local F=dofile('tests/fixtures/addon.lua')
 local test,finish=F.suite()
-local expected={'ExtendedCharacterStats','MobInfo2','!!!LuaWorkbench','WowLua','WeakAuras','Masque','Questie','ElvUI','Bartender4','ButtonForge','G15Buttons','SyncUI','LUI','Dominos','DiabolicUI','AzeriteUI','Neuron','FarmingBar','TotemTimers','SamyTotemTimers'}
+local expected={'ExtendedCharacterStats','MobInfo2','!!!LuaWorkbench','WowLua','WeakAuras','Masque','Questie','DBM-Core','BigWigs','Titan','ElvUI','Bartender4','ButtonForge','G15Buttons','SyncUI','LUI','Dominos','DiabolicUI','AzeriteUI','Neuron','FarmingBar','TotemTimers','SamyTotemTimers'}
 local function fixture(legacy)
  local f=F.new();local present,versions,calls={},{},{}
  local function loaded(id)calls[#calls+1]={'loaded',id};return present[id]==true end
@@ -12,18 +12,18 @@ local function fixture(legacy)
  return f,present,versions,calls
 end
 local function byID(rows,id)for _,row in ipairs(rows)do if row.id==id then return row end end;error('missing '..id)end
-test('module load is idle and all twenty supported addons remain visible when missing',function()
+test('module load is idle and every supported addon remains visible when missing',function()
  local f,_,_,calls=fixture();assert(#calls==0)
  local rows=f.addon:ListIntegrationStatus();assert(#rows==#expected)
  for i,row in ipairs(rows)do assert(row.id==expected[i]and row.state=='missing'and type(row.name)=='string'and type(row.detail)=='string'and row.version==nil);assert(getmetatable(row)==nil)end
- assert(#calls==40 and getmetatable(rows)==nil)
+ assert(#calls==2*#expected and getmetatable(rows)==nil)
 end)
 test('modern and legacy metadata are exact dot calls and fresh versions',function()
  for _,legacy in ipairs({false,true})do
   local f,p,v,calls=fixture(legacy);p.MobInfo2=true;v.MobInfo2='1.2.3'
   assert(byID(f.addon:ListIntegrationStatus(),'MobInfo2').version=='1.2.3')
   v.MobInfo2='2.0';assert(byID(f.addon:ListIntegrationStatus(),'MobInfo2').version=='2.0')
-  assert(#calls==80)
+  assert(#calls==4*#expected)
  end
 end)
 test('not-loaded addons retain safely detected version without implying installed absence',function()
@@ -137,5 +137,23 @@ test('Masque inventory reports cached connected compatibility and API minor with
  for input,expected in pairs({connected='connected',disabled='disabled',incompatible='incompatible',error='unknown',unavailable='unknown',missing='missing'})do
   state=input;local row=byID(f.addon:ListIntegrationStatus(),'Masque');assert(row.state==expected and row.version=='12.1.0'and row.detail:find('110210',1,true))
  end
+end)
+test('boss-mod rows report the cached selected provider; the idle one is disabled; Titan stays passive',function()
+ local f,p=fixture();local status={state='available',provider='DBM-Core'};local calls=0
+ f.addon.GetEncounterIntegrationStatus=function(self)assert(self==f.addon);calls=calls+1;return status end
+ f.addon.SyncEncounterIntegration=function()error('sync')end
+ local rows=f.addon:ListIntegrationStatus()
+ assert(byID(rows,'DBM-Core').state=='missing'and byID(rows,'BigWigs').state=='missing'and calls==0)
+ p['DBM-Core']=true;p.BigWigs=true;p.Titan=true
+ rows=f.addon:ListIntegrationStatus()
+ assert(byID(rows,'DBM-Core').state=='connected'and byID(rows,'BigWigs').state=='disabled'and byID(rows,'Titan').state=='loaded')
+ for source,wanted in pairs({available='connected',missing='missing',incompatible='incompatible',error='unknown',disabled='disabled'})do
+  status={state=source,provider='BigWigs'};assert(byID(f.addon:ListIntegrationStatus(),'BigWigs').state==wanted,source)
+  assert(byID(f.addon:ListIntegrationStatus(),'DBM-Core').state=='disabled')
+ end
+ status={state='disabled'};assert(byID(f.addon:ListIntegrationStatus(),'DBM-Core').state=='disabled')
+ f.addon.GetEncounterIntegrationStatus=function()error('PRIVATE')end
+ assert(byID(f.addon:ListIntegrationStatus(),'DBM-Core').state=='unknown')
+ assert(byID(f.addon:ListIntegrationStatus(),'BigWigs').projectURL=='https://www.curseforge.com/wow/addons/big-wigs')
 end)
 finish()

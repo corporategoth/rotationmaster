@@ -2175,6 +2175,295 @@
           "https://www.curseforge.com/wow/addons/masque/files/all: publisher explicitly lists Forever and 1.60.1, plus Retail, Classic, TBC, Mists and Wrath Titan Reforged release12.1.0. This is declared package scope; no exact Forever TOC constant or native RM acceptance is claimed from the pinned source."
         ]
       }
+    },
+    "DBM-Core": {
+      "links": [
+        {
+          "provider": "curseforge",
+          "label": "CurseForge",
+          "url": "https://www.curseforge.com/wow/addons/deadly-boss-mods",
+          "primary": true,
+          "note": "DBM-Core for Retail, Forever, Classic Era, TBC and Mists Classic. Encounter timers need the matching raid or dungeon module download, such as DBM-Raids-BC for TBC raids.",
+          "families": [
+            "retail",
+            "forever",
+            "era",
+            "tbc",
+            "progression"
+          ]
+        },
+        {
+          "provider": "github",
+          "label": "GitHub",
+          "url": "https://github.com/DeadlyBossMods/DeadlyBossMods",
+          "primary": false,
+          "note": "Official source repository. Choose the release for your game edition; source availability does not certify integration behavior.",
+          "families": [
+            "retail",
+            "forever",
+            "era",
+            "tbc",
+            "progression"
+          ]
+        },
+        {
+          "provider": "wowinterface",
+          "label": "WoWInterface — historical",
+          "url": "https://www.wowinterface.com/downloads/info8814-DeadlyBossMods.html",
+          "primary": false,
+          "note": "Official historical release page. The authors no longer update it; use CurseForge or GitHub for current releases.",
+          "families": []
+        }
+      ],
+      "coverage": {
+        "curseforge": {
+          "status": "verified",
+          "query": "Exact DBM-Core project ID 3358 from the installed TOC on curseforge",
+          "evidence": [
+            "https://www.curseforge.com/wow/addons/deadly-boss-mods: title 'DBM - Deadly Boss Mods (DBM-Core)', project ID 3358, owner MysticalOS; flavors Retail, Forever, MoP Classic, Titan Reforged Classic, Classic (checked 2026-10-23).",
+            "GitHub repository homepage field points to https://www.curseforge.com/wow/addons/deadly-boss-mods."
+          ]
+        },
+        "github": {
+          "status": "verified",
+          "query": "Author-linked GitHub organization DeadlyBossMods",
+          "evidence": [
+            "https://api.github.com/repos/DeadlyBossMods/DeadlyBossMods: full_name DeadlyBossMods/DeadlyBossMods, not archived, pushed 2026-10-23T05:22:19Z, homepage the CurseForge project.",
+            "https://allmylinks.com/mysticalos (redirect target of the TOC X-Website) links https://github.com/DeadlyBossMods."
+          ]
+        },
+        "wowinterface": {
+          "status": "verified",
+          "query": "Exact Deadly Boss Mods project search on wowinterface",
+          "evidence": [
+            "https://www.wowinterface.com/downloads/info8814-DeadlyBossMods.html: authors MysticalOS, Tandanu; version 11.2.15 updated 09-15-25; author comment 02-21-26 says the page is no longer updated."
+          ]
+        },
+        "wago": {
+          "status": "unverified",
+          "query": "Wago project for TOC X-Wago-ID qv633o6b",
+          "evidence": [
+            "https://addons.wago.io/addons/dbm-core and https://addons.wago.io/addons/dbm returned HTTP 404 on 2026-10-23; the slug for X-Wago-ID qv633o6b was not resolved, and the README links no Wago page."
+          ]
+        },
+        "wowuphub": {
+          "status": "unverified",
+          "query": "WowUp Hub search for Deadly Boss Mods",
+          "evidence": [
+            "{\"url\":\"https://hub.wowup.io/addons/search/burningCrusade?query=Deadly%20Boss%20Mods&limit=10\",\"resultCount\":0}"
+          ]
+        }
+      },
+      "scope": {
+        "families": [
+          "retail",
+          "forever",
+          "era",
+          "tbc",
+          "progression"
+        ],
+        "progression": [
+          "wrath",
+          "cata",
+          "mists"
+        ],
+        "evidence": [
+          "Declared edition scope for the DBM-Core folder identity; RM's adapter itself only binds on Classic Era, TBC and Classic progression.",
+          "Local TBC Anniversary install, Interface/AddOns/DBM-Core/DBM-Core.toc v12.1.17: '## Interface: 11509, 16001, 20506, 30405, 38002, 40402, 50504, 120100, 120105', X-Curse-Project-ID 3358, X-Wago-ID qv633o6b, X-Website https://deadlybossmods.com (redirects to the author's link page, which links only https://github.com/DeadlyBossMods)."
+        ]
+      }
+    },
+    "BigWigs": {
+      "links": [
+        {
+          "provider": "curseforge",
+          "label": "CurseForge",
+          "url": "https://www.curseforge.com/wow/addons/big-wigs",
+          "primary": true,
+          "note": "BigWigs (Boss Timers & Tools) for Retail, Forever, Classic and Classic progression. Its TOC also declares TBC Anniversary.",
+          "families": [
+            "retail",
+            "forever",
+            "era",
+            "tbc",
+            "progression"
+          ]
+        },
+        {
+          "provider": "github",
+          "label": "GitHub",
+          "url": "https://github.com/BigWigsMods/BigWigs",
+          "primary": false,
+          "note": "Official source repository. Choose the release for your game edition; source availability does not certify integration behavior.",
+          "families": [
+            "retail",
+            "forever",
+            "era",
+            "tbc",
+            "progression"
+          ]
+        },
+        {
+          "provider": "wowinterface",
+          "label": "WoWInterface",
+          "url": "https://www.wowinterface.com/downloads/info5086-BigWigsBossmods.html",
+          "primary": false,
+          "note": "Official project page. Publisher lists Retail, Classic Era, TBC, Wrath and Cataclysm Classic. Choose the matching file; exact patch and RM integration behavior may be unverified.",
+          "families": [
+            "retail",
+            "era",
+            "tbc",
+            "progression"
+          ]
+        },
+        {
+          "provider": "wago",
+          "label": "Wago Addons",
+          "url": "https://addons.wago.io/addons/bigwigs",
+          "primary": false,
+          "note": "Official project page. This page requires JavaScript; edition metadata was not independently readable.",
+          "families": []
+        }
+      ],
+      "coverage": {
+        "curseforge": {
+          "status": "verified",
+          "query": "Exact BigWigs project ID 2382 from BigWigs.toc on curseforge",
+          "evidence": [
+            "https://www.curseforge.com/wow/addons/big-wigs: 'BigWigs (Boss Timers & Tools)', project ID 2382, owner Funkeh; v427.7 files for Retail, Forever, Mists Classic, Wrath Titan Reforged and Classic (checked 2026-10-23)."
+          ]
+        },
+        "github": {
+          "status": "verified",
+          "query": "BigWigsMods/BigWigs repository",
+          "evidence": [
+            "https://api.github.com/repos/BigWigsMods/BigWigs: not archived, pushed 2026-10-23T03:35:41Z; master 55925095283d3d2a37b2f9a50d342e560bf2a93d.",
+            "BigWigs.toc at master: X-Curse-Project-ID 2382, X-WoWI-ID 5086, X-Wago-ID 5NRegwG3, X-Website https://github.com/BigWigsMods."
+          ]
+        },
+        "wowinterface": {
+          "status": "verified",
+          "query": "TOC X-WoWI-ID 5086",
+          "evidence": [
+            "https://www.wowinterface.com/downloads/info5086-BigWigsBossmods.html: author funkydude, v427.7 updated 10-21-26; compatibility 12.1.0, Classic 1.15.7, Cataclysm Classic 4.4.2, WOTLK 3.4.3, TBC 2.5.4."
+          ]
+        },
+        "wago": {
+          "status": "verified",
+          "query": "Wago project for TOC X-Wago-ID 5NRegwG3",
+          "evidence": [
+            "https://addons.wago.io/addons/bigwigs serves title 'BigWigs (Boss Timers & Tools)'; the rest of the page needs JavaScript (checked 2026-10-23)."
+          ]
+        },
+        "wowuphub": {
+          "status": "unverified",
+          "query": "WowUp Hub search for BigWigs",
+          "evidence": [
+            "{\"url\":\"https://hub.wowup.io/addons/search/burningCrusade?query=BigWigs&limit=10\",\"resultCount\":0}",
+            "{\"url\":\"https://hub.wowup.io/addons/search/classic?query=BigWigs&limit=10\",\"resultCount\":0}"
+          ]
+        }
+      },
+      "scope": {
+        "families": [
+          "retail",
+          "forever",
+          "era",
+          "tbc",
+          "progression"
+        ],
+        "progression": [
+          "wrath",
+          "cata",
+          "mists"
+        ],
+        "evidence": [
+          "Declared edition scope for the BigWigs folder identity; RM's adapter itself only binds on Classic Era, TBC and Classic progression.",
+          "BigWigs.toc at master 5592509: '## Interface: 11508, 11509, 16001, 20505, 20506, 30405, 38002, 40402, 50503, 50504, 120100, 120105, 120107'. Not installed on the TBC Anniversary test client."
+        ]
+      }
+    },
+    "Titan": {
+      "links": [
+        {
+          "provider": "curseforge",
+          "label": "CurseForge",
+          "url": "https://www.curseforge.com/wow/addons/titan-panel",
+          "primary": true,
+          "note": "Titan Panel for Retail, Forever, Mists Classic, Classic and Classic TBC.",
+          "families": [
+            "retail",
+            "forever",
+            "era",
+            "tbc",
+            "progression"
+          ]
+        },
+        {
+          "provider": "wowinterface",
+          "label": "WoWInterface",
+          "url": "https://www.wowinterface.com/downloads/info8092-TitanPanel.html",
+          "primary": false,
+          "note": "Official project page. Publisher lists Retail and Classic Era. Choose the matching file; exact patch and RM integration behavior may be unverified.",
+          "families": [
+            "retail",
+            "era"
+          ]
+        }
+      ],
+      "coverage": {
+        "curseforge": {
+          "status": "verified",
+          "query": "Exact Titan Panel project search on curseforge",
+          "evidence": [
+            "https://www.curseforge.com/wow/addons/titan-panel: 'Titan Panel', project ID 489, owner HonorGoG, author urnati; flavors Retail, Forever, MoP Classic, Classic, Classic TBC (checked 2026-10-23)."
+          ]
+        },
+        "wowinterface": {
+          "status": "verified",
+          "query": "TOC X-WoWI-ID 8092",
+          "evidence": [
+            "https://www.wowinterface.com/downloads/info8092-TitanPanel.html: authors HonorGoG and urnati, 9.3.5 updated 10-14-26; same version as the installed Titan.toc."
+          ]
+        },
+        "github": {
+          "status": "not_found",
+          "query": "Titan Panel official source repository",
+          "evidence": [
+            "Neither the CurseForge nor the WoWInterface page links a source repository; bug reports go to https://sourceforge.net/p/titanpanel/tickets/. A web search found no Titan Panel GitHub repository (2026-10-23)."
+          ]
+        },
+        "wago": {
+          "status": "unverified",
+          "query": "Wago Addons Titan Panel",
+          "evidence": [
+            "The installed TOC declares no X-Wago-ID and no publisher page links Wago; not checked further."
+          ]
+        },
+        "wowuphub": {
+          "status": "unverified",
+          "query": "WowUp Hub Titan Panel",
+          "evidence": [
+            "No publisher page links WowUp Hub; not checked further."
+          ]
+        }
+      },
+      "scope": {
+        "families": [
+          "retail",
+          "forever",
+          "era",
+          "tbc",
+          "progression"
+        ],
+        "progression": [
+          "mists"
+        ],
+        "evidence": [
+          "Local TBC Anniversary install, Interface/AddOns/Titan/Titan.toc v9.3.5: '## Interface: 120105, 50504, 20506, 16001, 11509'.",
+          "RM provides only its LibDataBroker data source; Titan's TitanLDB.lua adopts existing data objects through DataObjectIterator and LibDataBroker_DataObjectCreated."
+        ]
+      }
     }
   }
 }

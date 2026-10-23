@@ -45,6 +45,8 @@ def main():
             ['luajit', 'tests/questie_integration.lua'],
             ['lua5.1', 'tests/questie_settings.lua'],
             ['luajit', 'tests/questie_settings.lua'],
+            ['lua5.1', 'tests/bossmod_integration.lua'],
+            ['luajit', 'tests/bossmod_integration.lua'],
             ['lua5.1', 'tests/integration_catalog.lua'],
             ['luajit', 'tests/integration_catalog.lua'],
             ['lua5.1', 'tests/integration_settings.lua'],

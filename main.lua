@@ -695,6 +695,7 @@ function addon:OnInitializeInternal()
     getCached = addon.Functions.cache.getCached
 
     self:InitializeQuestieIntegration()
+    if self.InitializeEncounterIntegration then self:InitializeEncounterIntegration() end
 
     --self:SetupOptions()
 end

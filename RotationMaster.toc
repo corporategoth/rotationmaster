@@ -249,6 +249,7 @@ UI/lua_completion.lua
 UI/line_numbers.lua
 UI/lua_editor.lua
 Integrations/questie.lua
+Integrations/encounters.lua
 Integrations/masque.lua
 Integrations/catalog.lua
 UI/schema_cards.lua
@@ -294,6 +295,7 @@ Conditions/spatial_stats.lua
 Conditions/weapon.lua
 Conditions/build.lua
 Conditions/misc.lua
+Conditions/bossmod.lua
 
 # Packaged read-only rotations
 Defaults/tbc/shaman-starter.lua
