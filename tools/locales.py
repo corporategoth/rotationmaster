@@ -79,14 +79,30 @@ def read_key(line):
 
 
 # Placeholders and markup that must survive translation unchanged.
-TOKEN = re.compile(r'%(?:\d+\$)?[-+ #0]*\d*(?:\.\d+)?[sdifgqxXc]|%%|\|\||\|c[0-9a-fA-F]{8}|\|r|\|T[^|]*\|t|\|n|\{\{[^}]*\}\}|\\n|\n')
+TOKEN = re.compile(r'%(?:\d+\$)?[-+#0]*\d*(?:\.\d+)?[sdifgqxXc]|%%|\|\||\|c[0-9a-fA-F]{8}|\|r|\|T[^|]*\|t|\|n|\\n|\n')
+# {{name}} and {name} are substituted by name: keep them verbatim. {{!?a|b}} is
+# a positive|negative pair the runtime picks from (Core/condition_description,
+# Core/conditions): translate both texts, keep the pair and its "!" marker.
+VARIABLE = re.compile(r'\{\{[A-Za-z_][A-Za-z0-9_]*\}\}|(?<!\{)\{[A-Za-z_][A-Za-z0-9_]*\}(?!\})')
+ALTERNATIVE = re.compile(r'\{\{(!?)([^{}]*)\}\}')
 
 
-FORMAT = re.compile(r'%[-+ #0]*\d*(?:\.\d+)?[sdifgqxXc]')
+FORMAT = re.compile(r'%[-+#0]*\d*(?:\.\d+)?[sdifgqxXc]')
 
 
 def tokens(text):
-    return sorted(TOKEN.findall(text))
+    found = VARIABLE.findall(text)
+    def alternative(m):
+        marker, body = m.group(1), m.group(2)
+        if '|' not in body:
+            return m.group(0)
+        parts = body.split('|')
+        found.append(f'{{{{{marker}alternatives:{len(parts)}}}}}' if all(p.strip() for p in parts) else '{{empty alternative}}')
+        for part in parts:  # the pipes here separate texts; they are not escapes
+            found.extend(TOKEN.findall(part))
+        return '\0'
+    found.extend(TOKEN.findall(ALTERNATIVE.sub(alternative, text)))
+    return sorted(found)
 
 
 def lua_string(text):
@@ -116,6 +132,10 @@ def problems(key, en, text):
     # string.format has no positional arguments: specifiers must keep their order.
     elif FORMAT.findall(en) != FORMAT.findall(text):
         found.append(f'format specifiers reordered: {FORMAT.findall(en)} vs {FORMAT.findall(text)}')
+    # A string with format codes goes through string.format: a lone % there must be %%.
+    if FORMAT.search(en) or '%%' in en:
+        if '%' in re.sub(r'%%|' + FORMAT.pattern, '', text):
+            found.append('bare % in a formatted string (write %%)')
     if re.search(r'%\d+\$', text):
         found.append('positional format specifier (unsupported by Lua)')
     if len(text) > max(64, len(en) * 4):
