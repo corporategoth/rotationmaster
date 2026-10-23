@@ -64,7 +64,7 @@ def invalid_base_value(value):
 
 
 def sources(root):
-    excluded = {'Libs', 'tests', 'docs', 'work', 'Web'}
+    excluded = {'Libs', 'tests', 'docs', 'work'}
     return sorted(p for p in root.rglob('*.lua')
                   if not any(part.startswith('.') or part in excluded for part in p.relative_to(root).parts)
                   and p.name != 'template.lua')

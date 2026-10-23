@@ -78,7 +78,8 @@ spell (`C_Spell.GetBaseSpell`) and its current override
   polls.
 - `ROTATIONMASTER_SPELL_UPDATE` messages and WeakAuras events report the
   step's type as `assisted` and the resolved spell ID.
-- The legacy validator, `Data/validation.lua`, `Web/schema/rotation.mjs`,
+- The legacy validator, `Data/validation.lua`, the website's `schema/rotation.mjs`
+  (now in the separate `wow/rotationmaster-web` repository),
   export/import and clone all accept the step. An `assisted` step that carries
   an `action`, or one in the cooldown list, is reported unsupported
   (`unexpected-assisted-action`, `assisted-in-optional-list`).
