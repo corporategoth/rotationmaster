@@ -127,4 +127,27 @@ test('Item Sets: dragging a set row or the Bind pill starts a bind; page cleanup
     -- After a swap the cursor holds the user's previous action: cleanup keeps it.
     cursor={kind='spell',id=403};p:Release();assert(cursor and cursor.id==403,'page cleanup cleared a swapped-out action')
 end)
+test('Item Sets: a set row drag binds through the client event order and never reorders',function()
+    -- OnMouseDown, OnDragStart (the set's item on the cursor), release over an
+    -- action button: the bar places it, then OnReceiveDrag runs our hook.
+    local f,frames,create=settingsFixture();local a=f.addon;f.load('UI/item_set_binding.lua');local env=f.env
+    local cursor,actions=nil,{};env.GetCursorInfo=function() if cursor then return cursor.kind,cursor.id end end;env.PickupItem=function(id) cursor={kind='item',id=id} end;env.ClearCursor=function() cursor=nil end
+    env.InCombatLockdown=function() return false end;env.GetActionInfo=function(slot) local v=actions[slot];if v then return v.kind,v.id end end
+    local button={slot=3,hooks={}};function button:HasScript() return true end;function button:HookScript(event,fn) self.hooks[event]=self.hooks[event] or {};table.insert(self.hooks[event],fn) end
+    function button:Drop() local held,old=cursor,actions[self.slot];actions[self.slot]=held;cursor=old;for _,fn in ipairs(self.hooks.OnReceiveDrag or {}) do fn(self) end end
+    a.ForEachActionButton=function(_,fn) fn(button,button.slot) end;a.ResolveActionButtonSlot=function(_,b) return b.slot end
+    a.db.char={bindings={}};a.db.global.itemsets={mana={name='Mana',items={11,12}},heal={name='Heal',items={21}}};a.db.profile.itemsets={}
+    a.FindFirstItemOfItemSet=function(_,_,id) return ({mana=11,heal=21})[id] end;a.FindItemInItemSet=function(_,id,item) return (id=='mana' and (item==11 or item==12) or id=='heal' and item==21) and 1 or nil end
+    local parent=create('Frame');parent:SetSize(1000,600);local p=a:OpenNativeSettings(parent,'ItemSets')
+    local row;for _,r in ipairs(p.roster.rows) do if r.rosterLease and r.rosterEntry.value=='heal' then row=r end end
+    local before={};for i,v in ipairs(p.roster.options.order or {}) do before[i]=v end
+    if row.scripts.OnMouseDown then row.scripts.OnMouseDown(row,'LeftButton') end
+    assert(a.bindingItemSet==nil and cursor==nil,'pressing a set row started a bind before the drag')
+    row.scripts.OnDragStart(row);assert(a.bindingItemSet=='heal' and cursor and cursor.id==21,'the drag did not put the set item on the cursor')
+    assert(not (p.roster.orderView and p.roster.orderView.drag),'a set row drag started a list reorder')
+    button:Drop();assert(actions[3] and actions[3].id==21 and cursor==nil,'the bar did not take the item')
+    assert(count(a.db.char.bindings.heal,3)==1 and a.bindingItemSet==nil,'OnReceiveDrag did not complete the bind')
+    if row.scripts.OnDragStop then row.scripts.OnDragStop(row) end
+    for i,v in ipairs(p.roster.options.order or {}) do assert(before[i]==v,'the set list was reordered') end
+end)
 finish()

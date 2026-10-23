@@ -110,6 +110,24 @@ test('Skin dropdown and compact Preview button share a bounded row',function()
  assert(sy==by and bx>=sx+skin:GetWidth()+7 and bx+button:GetWidth()<=p.width+.1)
  assert(button:GetWidth()<180 and skin:GetWidth()>80)
 end)
+test('General rows: Enable trio in thirds, captionless preview beside Effect and Magnification, pad under the swatch, Detailed Profiling after Log Level',function()
+ local _,_,p=fixture()
+ local function at(c)local _,x,y=c:GetPoint();return x,-y end
+ local enable,disable,minimap=p.fields.enable,p.fields.disable_buttons,p.fields.minimap
+ local width=enable:GetParent():GetWidth();local ex,ey=at(enable);local dx,dy=at(disable);local mx,my=at(minimap)
+ assert(ey==dy and dy==my and ex==0 and math.abs(dx-width/3)<=8 and math.abs(mx-2*width/3)<=8,'Enable, Disable Bar Highlighting and Minimap Icon do not share one row in thirds')
+ assert(minimap:GetWidth()<=width/3+.1,'Minimap Icon overflows its third')
+ assert(not text(p,'Highlight preview'),'the preview icon still has a caption')
+ for _,t in ipairs(p.pool.labels or{})do assert(not t:IsShown()or t:GetText()~='Highlight preview','the preview icon still has a caption')end
+ local preview=p.fields.preview;local px,py=at(preview);local _,effectY=at(p.fields.effect);local _,magY=at(p.fields.magnification)
+ assert(px<=8 and py<=effectY+6 and py+preview:GetHeight()>=magY+12,'the preview icon does not span the Effect and Magnification rows')
+ local captions={};for _,t in ipairs(p.pool.labels or{})do if t:IsShown()and(t:GetText()=='Effect'or t:GetText()=='Magnification')then local x=at(t);captions[#captions+1]=x end end
+ assert(#captions==2,'Effect or Magnification lost its caption');for _,x in ipairs(captions)do assert(x>=px+preview:GetWidth()+4,'a caption overlaps the preview icon')end
+ local sx=at(p.fields.color);local padX=at(p.fields.positionPad);assert(padX==sx,'the anchor arrows do not line up with the Highlight Color swatch')
+ local log,detail=p.fields.loglevel,p.fields.detailed_profiling;local lx,ly=at(log);local cx,cy=at(detail)
+ assert(math.abs(cy-ly)<=4 and cx>=lx+log:GetWidth(),'Detailed Profiling is not after Log Level on its row')
+ assert(detail:GetWidth()<=22+180 and cx+detail:GetWidth()<=detail:GetParent():GetWidth()+.1,'Detailed Profiling is wider than its caption')
+end)
 test('cache checkbox alone distinguishes active saved mode from a pending reload',function()
  local _,a,p=fixture();local control=p.fields.cpu_cache_bypass;assert(control)
  assert(control:GetText()=='Bypass observation cache (requires restart)'and not control:GetChecked())

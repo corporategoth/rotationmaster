@@ -296,13 +296,15 @@ test('Integrations cards and editor rows follow the page width live',function()
     end
 end)
 
-test('General shares the Enable row half and half and its capture columns reflow',function()
+test('General shares the Enable row in thirds and its capture columns reflow',function()
     local f,a,shell,layout,frames=settingsShell('General')
     for _,size in ipairs({{1600,820},{800,500},{1120,760}}) do
         layout.userResize(shell.frame,size[1],size[2]);layout.settle()
         local p=shell.pane;local width=p.columnSingle and p.fullWidth or p.columnWidth
-        local enable,bar=p.fields.enable,p.fields.disable_buttons
-        assert(enable.point[3]==bar.point[3] and enable.point[2]==0 and math.abs(enable:GetWidth()-(width-4)/2)<.01 and bar:GetWidth()==enable:GetWidth() and math.abs(bar.point[2]-(enable:GetWidth()+4))<.01,'Enable row is not split 50/50 at '..size[1])
+        local enable,bar,minimap=p.fields.enable,p.fields.disable_buttons,p.fields.minimap
+        local third=(width-8)/3
+        assert(enable.point[3]==bar.point[3] and bar.point[3]==minimap.point[3] and enable.point[2]==0 and math.abs(enable:GetWidth()-third)<.01 and bar:GetWidth()==enable:GetWidth() and minimap:GetWidth()==enable:GetWidth()
+            and math.abs(bar.point[2]-(third+4))<.01 and math.abs(minimap.point[2]-2*(third+4))<.01,'Enable row is not split in thirds at '..size[1])
         local tops={};for _,key in ipairs({'cpu_capture','cpu_runtime_capture','memory_capture','cast_capture'}) do local b=p.fields[key];if b then tops[#tops+1]=b end end
         for _,b in ipairs(tops) do assert(b:GetWidth()<=width+.01,'capture column wider than the page') end
         audit.assertContained(shell.frame,frames,'General at '..size[1],{captions=true})

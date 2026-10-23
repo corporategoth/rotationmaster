@@ -103,7 +103,8 @@ test('Plater-style chrome exposes compact bars slider bordered tabs metadata and
     shell.language:Click();assert(shell.languageMenu:IsShown() and #shell.languageRows==1 and shell.languageRows[1].selected)
     shell.languageRows[1]:Click();assert(not shell.languageMenu:IsShown())
     for _,tab in ipairs(shell.tabs) do assert(tab.selectionLine==nil and tab.border and tab.border:IsShown()==tab.selected) end
-    shell.website:Click();assert(shell.linkInput:GetText()=='https://example.invalid/rm' and shell.linkInput.focused)
+    assert(shell.website:GetText()=='Website','the website link shows its URL instead of reading Website')
+    shell.website:Click();assert(shell.linkInput:GetText()=='https://example.invalid/rm' and shell.linkInput.focused and shell.linkInput.selection and shell.linkInput.selection[1]==0 and shell.linkInput.selection[2]==-1,'Website does not open the highlighted copy box')
 end)
 test('right-click over a child inside content closes the window without replacing deferred refresh ownership',function()
     local f=F.new();local a=f.addon;local _,create=dofile('tests/fixtures/native_ui.lua')(f.env)

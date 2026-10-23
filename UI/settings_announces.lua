@@ -96,7 +96,7 @@ function addon:BuildAnnounceSettings(p)
             end)
             -- The card has no title row: Announce is its first row, beside the
             -- Enabled pill and Help at the card's top right.
-            choice:SetWidth(math.max(60,p.width-(p.labelX or 220)-74))
+            choice:SetWidth(math.max(60,p.width-(p.labelX or 220)-row.firstRowReserve))
             if kind~='macro' then
                 local allowed={};for _,v in ipairs(choices)do if v.value~='say'and v.value~='yell'and v.value~='whisper'and v.value~='channel'then allowed[#allowed+1]=v end end
                 self:SetUIScript(choice,'OnClick',p:Guard(function()if current()and p:FlushEdits()and current()then p:ShowChoices(choice,allowed,function(v)if current()then outputChange('announce',v);p:Draw()end end)end end))
@@ -138,9 +138,9 @@ function addon:BuildAnnounceSettings(p)
             condition:SetWidth(math.max(1,p.width));self:AlignWorkbenchTextLeft(condition,6)
             condition:GetFontString():SetWordWrap(true);condition:SetHeight(math.max(24,condition:GetFontString():GetStringHeight()+8))
             condition.tooltip=L['Edit announcement conditions'];p.y=conditionY+condition:GetHeight()+8
-            row.remove:ClearAllPoints();row.remove:SetPoint('TOPRIGHT',-4,-44);row.remove:SetSize(20,20)
-            local duplicate=p:Acquire('outputDuplicate',function()return self:CreateWorkbenchIconButton(row,'copy',L['Duplicate'])end)
-            duplicate:SetParent(row);duplicate:ClearAllPoints();duplicate:SetPoint('TOPRIGHT',-5,-24);duplicate:SetSize(20,20);if #items>=64 then duplicate:Disable()else duplicate:Enable()end
+            -- The shared card owns the rail (Help, Duplicate, Delete) and the
+            -- Enabled pill; this card wires their actions.
+            local duplicate=row.duplicate
             p.fields[prefix..'output'..index..'duplicate']=duplicate
             self:SetUIScript(duplicate,'OnClick',p:Guard(function()
                 if not current()or #items>=64 or not p:FlushEdits()or not current()then return end
@@ -150,11 +150,9 @@ function addon:BuildAnnounceSettings(p)
                 local outputs=materialize();if not outputs then return end
                 table.insert(outputs,index+1,copy);p:Draw()
             end))
-            local help=p:Acquire('outputHelp',function()return self:CreateWorkbenchHelpButton(row,L['Help'])end)
-            help:SetParent(row);help:ClearAllPoints();help:SetPoint('TOPRIGHT',-5,-3);help:SetSize(20,20);help.icon:SetSize(18,18);p.fields[prefix..'output'..index..'help']=help
+            local help=row.help;p.fields[prefix..'output'..index..'help']=help
             self:SetUIScript(help,'OnClick',function()if current()then self:OpenWorkbenchHelp({heading=string.format(L['Output %d'],index),owner=self.pretty_name,valid=current,sections=function()return self:GetAnnouncementOutputHelp(kind,output.announce)end})end end)
-            local enabled=p:Acquire('outputEnabled',function()return self:CreateWorkbenchPill(row,'',70)end)
-            enabled:SetParent(row);enabled:ClearAllPoints();enabled:SetPoint('TOPRIGHT',-28,-4);enabled:SetSize(70,18)
+            local enabled=row.enabled
             enabled:SetText(output.disabled and L['Disabled']or L['Enabled']);enabled:SetSelected(not output.disabled);enabled:Enable();enabled.tooltip=L['Output state'];p.fields[field..'enabled']=enabled
             self:SetUIScript(enabled,'OnClick',p:Guard(function()
                 if not current()or not p:FlushEdits()or not current()then return end
@@ -164,7 +162,7 @@ function addon:BuildAnnounceSettings(p)
             if not source then candidate={id='00000000-0000-0000-0000-000000000000'};for _,key in ipairs(outputFields)do candidate[key]=output[key]end end
             local valid=self:IsValidAnnouncementOutput(candidate,kind=='macro');if not current()then return end
             self:SetWorkbenchInvalid(row,not valid,L['Complete this output or choose a destination available for this action type.'])
-        end,structuralChange,{prefix=prefix..'output',unsavedKey='outputs',current=collectionCurrent,header='grip',heading=L['Outputs'],
+        end,structuralChange,{prefix=prefix..'output',unsavedKey='outputs',current=collectionCurrent,help=true,duplicate=true,canDuplicate=function() return #items<64 end,enabled=true,heading=L['Outputs'],
             add={key=prefix..'add_output',text=L['Add output'],enabled=#items<64,insert=insertOutput}})
         if not parentCurrent()then return false end
         return true
@@ -257,9 +255,10 @@ function addon:BuildAnnounceSettings(p)
         end})
     -- The page name is in the tab and title bar; the page "?" is the shell's.
     for i,entry in ipairs(values) do if i==p.selection and not p.creating then
-        local title=self:SettingsNonempty(entry.name) or entry.type=='item' and (itemInfo(entry.item) and itemInfo(entry.item).name or L['Item data loading']) or entry.type=='macro' and (entry.identifier or L['Via Script/Macro']) or self:PlainWorkbenchName(self:SpellLabel(entry.spell))
-        p:Heading(title)
-        p:Edit('entry'..i..'name',L['Name'],entry.name or '',nil,function(value) update(entry,'name',value) end);if not drawAction('entry'..i,entry)then return end
+        -- No title repeating the name: Name is the first row, narrowed to
+        -- leave the Enabled pill and the trash beside it.
+        local name=p:Edit('entry'..i..'name',L['Name'],entry.name or '',nil,function(value) update(entry,'name',value) end);name:SetWidth(math.max(60,p.width-220-122))
+        if not drawAction('entry'..i,entry)then return end
         local enabled=p:Acquire('announceEnabled',function() return self:CreateWorkbenchPill(p.child,'',88) end);enabled:ClearAllPoints();enabled:SetPoint('TOPRIGHT',-28,-4);enabled:SetSize(88,18);enabled:SetText(entry.disabled and L['Disabled'] or L['Enabled']);enabled:SetSelected(not entry.disabled);p.fields['enabled'..i]=enabled;self:SetUIScript(enabled,'OnClick',p:Guard(function() if p:FlushEdits() then entry.disabled=not entry.disabled;p:Draw() end end))
         local identity=entry.id
         p.fields['delete'..i]=self:SettingsTopDelete(p,function()

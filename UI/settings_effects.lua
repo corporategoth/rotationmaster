@@ -80,7 +80,7 @@ function addon:BuildEffectSettings(p)
                         p:Slider('seq'..i..'mag',L['Magnification'],entry.magnification or 1,.1,2,.1,function(v) entry.magnification=v;refresh() end)
                         p:Color('seq'..i..'color',L['Color'],entry.color,function(v) entry.color=v;refresh() end)
                     end
-                end,refresh,{prefix='seq',header=false,heading=L['Sequence'],add={key='sequence_add',text=L['Add step'],insert=insertStep},dragIcon=function(i) return effect.type=='animate' and sequence[i] or effect.type=='custom' and sequence[i].texture or effect.texture end,endPreview=function(ghost) if ghost.effectPreview and self.HideGlow then self:HideGlow(ghost.effectPreview,'settings-drag') end end,dragPreview=function(ghost,i)
+                end,refresh,{prefix='seq',heading=L['Sequence'],add={key='sequence_add',text=L['Add step'],insert=insertStep},dragIcon=function(i) return effect.type=='animate' and sequence[i] or effect.type=='custom' and sequence[i].texture or effect.texture end,endPreview=function(ghost) if ghost.effectPreview and self.HideGlow then self:HideGlow(ghost.effectPreview,'settings-drag') end end,dragPreview=function(ghost,i)
                     ghost.effectPreview=ghost.effectPreview or CreateFrame('Frame',nil,ghost);ghost.effectPreview:ClearAllPoints();ghost.effectPreview:SetPoint('TOPLEFT',8,-8);ghost.effectPreview:SetSize(28,28);ghost.effectPreview:Show()
                     if self.HideGlow then self:HideGlow(ghost.effectPreview,'settings-drag') end
                     if self.Glow then local selected=self:CopySettingsData(effect);selected.sequence={self:CopySettingsData(sequence[i])};self:Glow(ghost.effectPreview,'settings-drag',selected,{r=1,g=1,b=1,a=1},1,'CENTER',0,0) end

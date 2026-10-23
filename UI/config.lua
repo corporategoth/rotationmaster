@@ -188,7 +188,7 @@ local function newShell()
     local links={}
     for _,entry in ipairs({{key="website",label=L["Website"],url=metadata("X-Website")},{key="discord",label="Discord",url=metadata("X-Discord")}}) do
         if entry.url and entry.url:match("^https?://") then
-            local link=flatButton(footer,entry.key=="website" and entry.url or entry.label,90);link:SetSize(link:GetFontString():GetStringWidth()+12,18);link.tooltip=entry.url
+            local link=flatButton(footer,entry.label,90);link:SetSize(link:GetFontString():GetStringWidth()+12,18);link.tooltip=entry.url
             addon:SetUIScript(link,"OnClick",function() shell:ShowLink(entry.url) end);shell[entry.key]=link;links[#links+1]=link
         end
     end

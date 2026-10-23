@@ -237,12 +237,12 @@ test('General page help retains authored explanations without scattering questio
     assert(not p.fields.poll_help)
     local all=a:WorkbenchPageHelp('General');local fields={};for _,entry in ipairs(all) do fields[entry.title]=entry.text end
     for _,caption in ipairs({'Enable','Polling Interval (seconds)','Idle Re-check Interval (seconds)','Auto-Switch Re-check Interval (seconds)','Live Status Update Frequency (seconds)','Minimap Icon','Default rotation view','Disable Bar Highlighting','Spell History Memory (seconds)','Combat History Memory (seconds)','Damage History Memory (seconds)','Preview Spells','Effect','Magnification','Highlight Color','Anchor','V','H','Log Level','Detailed Profiling'}) do assert(fields[caption],caption..' missing help') end
-    local order={};for i,entry in ipairs(all) do order[entry.title]=i end;assert(order['Disable Bar Highlighting']==order['Enable']+1 and order['Polling Interval (seconds)']==order['Disable Bar Highlighting']+1 and order['Magnification']==order['Effect']+1)
+    local order={};for i,entry in ipairs(all) do order[entry.title]=i end;assert(order['Disable Bar Highlighting']==order['Enable']+1 and order['Minimap Icon']==order['Disable Bar Highlighting']+1 and order['Polling Interval (seconds)']==order['Minimap Icon']+1 and order['Magnification']==order['Effect']+1)
 end)
 
 test('General help localizes whole field explanations in the visible control order',function()
     local f,parent=fixture();local a=f.addon;local L=f.libraries['AceLocale-3.0']:GetLocale('rotationmaster')
-    local controls={'enable','disable_buttons','poll','idle_poll','autoswitch_poll','live_config_update','minimap','rotation_view',
+    local controls={'enable','disable_buttons','minimap','poll','idle_poll','autoswitch_poll','live_config_update','rotation_view',
         'spell_history','combat_history','damage_history','preview_spells','preview_opacity','preview_locked','preview_vertical','preview_reset',
         'effect','magnification','color','setpoint','yoffs','xoffs','loglevel','detailed_profiling','cpu_capture','cpu_report'}
     for _,key in ipairs(controls) do L['Help.General.'..key]='Translated field '..key end
@@ -353,7 +353,8 @@ test('ordered native rows drag through one gap and reject no-op stale or invalid
     local f,parent=fixture();local a=f.addon;local values={'one','two','three'};local p=a:CreateSettingsForm(parent)
     p:Open(function(form) form:OrderedCollection('rows',values,function(i) return values[i] end,function(form,i) form:Edit('n'..i,'Value',i,tonumber,function() end) end,function() end) end)
     local view=p.ordered.rows;assert(not view.rows[1].up:IsEnabled() and not view.rows[3].down:IsEnabled())
-    view.rows[1].header.scripts.OnDragStart();assert(view.ghost:IsShown() and view.drag==1)
+    -- The whole card is the drag source; there is no separate grip.
+    local card=view.rows[1];assert(not card.header:IsShown(),'card still shows a title or grip');card.scripts.OnDragStart(card);assert(view.ghost:IsShown() and view.drag==1)
     assert(not view:CanDrop(1) and not view:CanDrop(2) and view:CanDrop(4));view:Drop(4);assert(table.concat(values,',')=='two,three,one' and not view.ghost:IsShown())
     local stale=view;p:Draw();stale:Drop(1);assert(table.concat(values,',')=='two,three,one')
     local c=p.fields.n1;c:SetText('bad');c.scripts.OnTextChanged(c,true);p.ordered.rows.rows[1].down:Click();assert(values[1]=='two')

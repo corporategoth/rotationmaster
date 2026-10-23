@@ -12,8 +12,11 @@ function addon:BuildGeneralSettings(p)
     local enableY=p.y
     p:Check('enable',L['Enable'],profile.enable,function(v) profile.enable=v;p:RunSettingsEffect('enable',function() if v then self:enable() else self:disable() end end) end)
     p:Check('disable_buttons',L['Disable Bar Highlighting'],profile.disable_buttons,function(v) profile.disable_buttons=v;p:RunSettingsEffect('buttons',function() if v then self:GlowClear() end end) end)
-    -- Enable and Disable Bar Highlighting share their row half and half.
-    self:LayoutWorkbenchRow({p.fields.enable,p.fields.disable_buttons},0,enableY,p.width,{text=22});p.y=enableY+30
+    p:Check('minimap',L['Minimap Icon'],not (profile.minimap or {}).hide,function(v)
+        profile.minimap=profile.minimap or {};profile.minimap.hide=not v;p:RunSettingsEffect('minimap',function() local lib=LibStub('LibDBIcon-1.0');if v then lib:Show(self.name) else lib:Hide(self.name) end end)
+    end)
+    -- Enable, Disable Bar Highlighting and Minimap Icon share one row in thirds.
+    self:LayoutWorkbenchRow({p.fields.enable,p.fields.disable_buttons,p.fields.minimap},0,enableY,p.width,{text=22});p.y=enableY+30
     p:Slider('poll',L['Polling Interval (seconds)'],profile.poll,.05,1,.05,function(v) profile.poll=v;p:RunSettingsEffect('poll',function() if self.rotationTimer then self:DisableRotationTimer();self:EnableRotationTimer() end end) end)
     p:Slider('idle_poll',L['Idle Re-check Interval (seconds)'],profile.idle_poll or 1,0,5,.25,function(v) profile.idle_poll=v end)
     p:Slider('autoswitch_poll',L['Auto-Switch Re-check Interval (seconds)'],profile.autoswitch_poll or 1,0,10,.25,function(v) profile.autoswitch_poll=v;profile.disable_autoswitch=nil;p:RunSettingsEffect('autoswitch_poll',function() self:StartAutoSwitchTimer() end) end)
@@ -23,9 +26,6 @@ function addon:BuildGeneralSettings(p)
         if self.conditionEvalTimer then self:CancelTimer(self.conditionEvalTimer);self.conditionEvalTimer=nil end
         if v>0 then self.conditionEvalTimer=self:ScheduleRepeatingTimer('UpdateCurrentCondition',v) end
         end)
-    end)
-    p:Check('minimap',L['Minimap Icon'],not (profile.minimap or {}).hide,function(v)
-        profile.minimap=profile.minimap or {};profile.minimap.hide=not v;p:RunSettingsEffect('minimap',function() local lib=LibStub('LibDBIcon-1.0');if v then lib:Show(self.name) else lib:Hide(self.name) end end)
     end)
     p:Choice('rotation_view',L['Default rotation view'],profile.rotation_view or 'diagram',{{value='diagram',text=L['Diagram view']},{value='list',text=L['List view']}},function(v) profile.rotation_view=v end)
     p:Heading(L['History'])
@@ -116,9 +116,16 @@ function addon:BuildGeneralSettings(p)
     local previewOwner=self.db.profile;self.preview_closed_func=function() if addon.db.profile==previewOwner then previewOwner.preview_spells=0 end end
     p:Column(2)
     p:Heading(L['Effect Options'])
-    local y=p:Row(L['Highlight preview'],48)
+    -- The preview icon has no caption: it sits left of Effect and
+    -- Magnification and spans both rows, their captions beside it.
+    local y=p.y
     local preview=p:Acquire('preview',function() local frame=CreateFrame('Frame',nil,p.child);frame.icon=frame:CreateTexture(nil,'ARTWORK');frame.icon:SetAllPoints(frame);return frame end)
-    preview:ClearAllPoints();preview:SetPoint('TOPLEFT',224,-y);preview:SetSize(36,36);preview.icon:SetTexture('Interface\\Icons\\Spell_Nature_Lightning')
+    preview:ClearAllPoints();preview:SetPoint('TOPLEFT',4,-y-4);preview:SetSize(48,48);preview.icon:SetTexture('Interface\\Icons\\Spell_Nature_Lightning');p.fields.preview=preview
+    local function besidePreview(build)
+        local count=p.counts.labels or 0;local rowY=p.y;local control=build();local caption=p.pool.labels[count+1]
+        if caption then caption:ClearAllPoints();caption:SetPoint('TOPLEFT',64,-rowY);caption:SetWidth(148) end
+        return control
+    end
     local function refresh()
         if self.RemoveAllCurrentGlows then self:RemoveAllCurrentGlows() end
         if self.HideGlow then self:HideGlow(preview,'settings-preview') end
@@ -126,12 +133,13 @@ function addon:BuildGeneralSettings(p)
         if effect and self.Glow then self:Glow(preview,'settings-preview',effect,profile.color or {r=1,g=1,b=1,a=1},profile.magnification or 1,profile.setpoint or 'CENTER',profile.xoffs or 0,profile.yoffs or 0) end
     end
     local effectEntries={};for id,effect in pairs(store.global.effects or {}) do if type(effect)=='table' and effect.name then effectEntries[#effectEntries+1]={value=id,text=effect.name} end end;table.sort(effectEntries,function(a,b) return a.text<b.text end)
-    p:Choice('effect',L['Effect'],profile.effect,effectEntries,function(v) profile.effect=v;refresh() end)
-    p:Slider('magnification',L['Magnification'],profile.magnification or 1,.1,2,.1,function(v) profile.magnification=v;refresh() end)
+    besidePreview(function() return p:Choice('effect',L['Effect'],profile.effect,effectEntries,function(v) profile.effect=v;refresh() end) end)
+    besidePreview(function() return p:Slider('magnification',L['Magnification'],profile.magnification or 1,.1,2,.1,function(v) profile.magnification=v;refresh() end) end)
+    p.y=math.max(p.y,y+60)
     p:Color('color',L['Highlight Color'],profile.color,function(v) profile.color=v;refresh() end)
     local positionY=p.y
     local anchor=p:Choice('setpoint',nil,profile.setpoint or 'CENTER',entries(self.setpoints),function(v) profile.setpoint=v;profile.xoffs=0;profile.yoffs=0;refresh();p:Draw() end)
-    anchor:ClearAllPoints();anchor:SetPoint('TOPLEFT',0,-positionY-22);anchor:SetWidth(154);p.y=positionY
+    anchor:ClearAllPoints();anchor:SetPoint('TOPLEFT',0,-positionY-22);anchor:SetWidth(204);p.y=positionY
     p:Position(profile.xoffs,profile.yoffs,function(x,y,center) profile.xoffs=x;profile.yoffs=y;if center then profile.setpoint='CENTER' end;refresh() end,true)
     if WOW_PROJECT_ID~=WOW_PROJECT_MAINLINE and LE_EXPANSION_LEVEL_CURRENT>=2 and store.char and store.char.specs then
         p:Heading(L['Specialization Names']);for i,caption in ipairs({PRIMARY,SECONDARY}) do p:Edit('spec'..i,caption,store.char.specs[i],nil,function(v) store.char.specs[i]=v end) end
@@ -139,8 +147,15 @@ function addon:BuildGeneralSettings(p)
     p:Heading(L['Debugging Options'])
     local logEntries={{value=4,text=self.loglevels[4]},{value=3,text=self.loglevels[3]},
         {value=2,text=self.loglevels[2]},{value=1,text=L['Silent']}}
-    p:Choice('loglevel',L['Log Level'],profile.loglevel or 2,logEntries,function(v) profile.loglevel=v;p:RunSettingsEffect('loglevel',function() if self.RefreshEvaluationProfilerPolicy then self:RefreshEvaluationProfilerPolicy()end end);p:Draw() end)
+    local logY=p.y
+    local logLevel=p:Choice('loglevel',L['Log Level'],profile.loglevel or 2,logEntries,function(v) profile.loglevel=v;p:RunSettingsEffect('loglevel',function() if self.RefreshEvaluationProfilerPolicy then self:RefreshEvaluationProfilerPolicy()end end);p:Draw() end)
     local detail=p:Check('detailed_profiling',L['Detailed Profiling'],profile.detailed_profiling,function(v) profile.detailed_profiling=v end);if (profile.loglevel or 2)<3 then detail:Disable() end
+    -- Detailed Profiling follows Log Level on its row, only as wide as its
+    -- box and caption.
+    local detailText=detail:GetFontString();detailText:SetWidth(300)
+    local detailWidth=22+math.min(180,math.max(40,math.ceil(detailText:GetStringWidth() or 0)+2))
+    detailText:SetWidth(detailWidth-22);detail:SetWidth(detailWidth);detail:ClearAllPoints();detail:SetPoint('TOPLEFT',math.max(0,p.width-detailWidth),-logY-3)
+    logLevel:SetWidth(math.max(60,p.width-220-detailWidth-8));p.y=logY+30
     if self.GetCacheDiagnosticMode and self.SetCacheDiagnosticMode then
         local _,requested=self:GetCacheDiagnosticMode()
         local control=p:Check('cpu_cache_bypass','',requested=='cached',function() end)

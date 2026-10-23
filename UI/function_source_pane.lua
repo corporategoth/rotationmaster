@@ -183,9 +183,18 @@ function addon:BuildInlineFunction(p,key,source,readOnly)
             local top,width=form.y,form.width;local isArgument=field=='args';local wide=width>=(isArgument and 370 or 220)
             local base,nullable=splitType(record.type)
             local function setType(nextBase,nextNullable) record.type=nextBase..(nextNullable and nextBase~='nil' and ' | nil' or '');refresh() end
+            -- Nullable is only as wide as its box and caption, right-aligned so
+            -- it sits against the card's help icon.
+            local nullableY=wide and top or top+(isArgument and 56 or 28)
+            form.y=nullableY
+            local check=form:Check(prefix..'nullable',L['Nullable'],nullable,function(value) setType(base,value) end)
+            local caption=check:GetFontString();caption:SetWidth(200)
+            local captionWidth=math.min(120,math.max(30,math.ceil(caption:GetStringWidth() or 0)+2));local checkWidth=22+captionWidth
+            caption:SetWidth(captionWidth);check:SetWidth(checkWidth);check:ClearAllPoints();check:SetPoint('TOPLEFT',math.max(0,width-checkWidth),-nullableY)
+            local inlineRight=wide and width-checkWidth-6 or width
             fieldLabel(L['Type'],top,30)
             local choose=form:Choice(prefix..'type',nil,base,typeChoices(addon,base),function(value) setType(value,nullable) end)
-            local typeWidth=wide and (isArgument and math.min(140,math.floor(width*.25)) or width-144) or width-34
+            local typeWidth=wide and (isArgument and math.min(140,math.floor(width*.25)) or inlineRight-34) or width-34
             choose:ClearAllPoints();choose:SetPoint('TOPLEFT',34,-top);choose:SetWidth(math.max(40,typeWidth));addon:AlignWorkbenchTextLeft(choose,26);choose:GetFontString():SetWordWrap(false);choose.tooltip=L['Type'];enable(choose,not d.readOnly)
             choose.rmFunctionTypeValue=function() return record.type end;choose.rmFunctionTypeBaseline=d.baseline[field] and d.baseline[field][index] and d.baseline[field][index].type
             if isArgument then
@@ -193,26 +202,23 @@ function addon:BuildInlineFunction(p,key,source,readOnly)
                 local nameLabel=fieldLabel(L['Name'],nameY,34);nameLabel:ClearAllPoints();nameLabel:SetPoint('TOPLEFT',nameLabelX,-nameY)
                 form.y=nameY
                 local input=form:Edit(prefix..'name',nil,record.name or '',nil,function(value) record.name=value;d:UpdateActions() end)
-                input:SetMultiLine(false);input:SetHeight(24);input:SetTextInsets(4,4,0,0);input:SetCursorPosition(0);input:ClearAllPoints();input:SetPoint('TOPLEFT',nameX,-nameY);input:SetWidth(math.max(40,(wide and width-110 or width)-nameX));input.tooltip=L['Argument name'];enable(input,not d.readOnly)
+                input:SetMultiLine(false);input:SetHeight(24);input:SetTextInsets(4,4,0,0);input:SetCursorPosition(0);input:ClearAllPoints();input:SetPoint('TOPLEFT',nameX,-nameY);input:SetWidth(math.max(40,inlineRight-nameX));input.tooltip=L['Argument name'];enable(input,not d.readOnly)
                 input.rmFunctionValue=function() return record.name end;input.rmFunctionBaseline=d.baseline[field] and d.baseline[field][index] and d.baseline[field][index].name
             end
-            local nullableY=wide and top or top+(isArgument and 56 or 28)
-            form.y=nullableY
-            local check=form:Check(prefix..'nullable',L['Nullable'],nullable,function(value) setType(base,value) end)
-            check:ClearAllPoints();check:SetPoint('TOPLEFT',wide and width-104 or 34,-nullableY);check:SetWidth(102);check:GetFontString():SetWidth(80);enable(check,not d.readOnly and base~='nil');form.y=nullableY+28
+            enable(check,not d.readOnly and base~='nil');form.y=nullableY+28
             check.rmFunctionTypeValue=function() return record.type end;check.rmFunctionTypeBaseline=choose.rmFunctionTypeBaseline;form.functionTypeFields[#form.functionTypeFields+1]=choose;form.functionTypeFields[#form.functionTypeFields+1]=check
             fieldLabel(L['Description'],form.y)
             local input=description(prefix..'description',nil,record.description or '',function(value) record.description=value;d:UpdateActions() end,70,math.max(40,form.width-70),true)
             input.rmFunctionValue=function() return record.description end;input.rmFunctionBaseline=d.baseline[field] and d.baseline[field][index] and d.baseline[field][index].description
-            row.functionHelp=row.functionHelp or addon:CreateWorkbenchHelpButton(row,L['Help']);row.functionHelp:ClearAllPoints();row.functionHelp:SetPoint('TOPRIGHT',-4,-3);row.functionHelp:SetSize(20,20);row.functionHelp.icon:SetSize(18,18);row.functionHelp:Enable();row.functionHelp:Show();form.fields[prefix..'help']=row.functionHelp
-            addon:SetUIScript(row.functionHelp,'OnClick',form:Guard(function()
+            form.fields[prefix..'help']=row.help
+            addon:SetUIScript(row.help,'OnClick',form:Guard(function()
                 local sections={{title=L['Type'],text=L['Type and Nullable describe the values accepted or returned by this function. They document the contract; they do not rewrite or validate values in the Lua body.']},{title=L['Description'],text=L['Describe this value for function documentation, completion and hover help. Changes remain in the draft until Apply.']}}
                 if isArgument then sections[#sections+1]={title=L['Name'],text=L['The argument name is the local parameter available in the Lua body. Use a valid Lua identifier. Renaming this documentation does not rewrite references in the code.']} end
                 sections[#sections+1]={title=L['Card controls'],text=isArgument and L['Drag a card to reorder arguments; Ctrl-drag includes following arguments. Up and down move one position. Duplicate copies the argument with a unique name; the trash can removes it. Reordering a saved function requires confirmation because existing callers are not rewritten.'] or L['Drag a card to reorder return documentation; Ctrl-drag includes following returns. Up and down move one position. Duplicate copies the documented return value; the trash can removes it. Return order in this list does not rewrite return statements or callers.']}
                 addon:ShowWorkbenchHelp(isArgument and L['Argument'] or L['Return'],sections,addon:FunctionQualifiedName(d.key,d.value))
             end))
-            row.functionDuplicate=row.functionDuplicate or addon:CreateWorkbenchIconButton(row,'copy',L['Duplicate']);row.functionDuplicate:ClearAllPoints();row.functionDuplicate:SetPoint('TOPRIGHT',-4,-25);row.functionDuplicate:SetSize(20,20);enable(row.functionDuplicate,not d.readOnly);row.functionDuplicate:Show();form.fields[prefix..'duplicate']=row.functionDuplicate
-            addon:SetUIScript(row.functionDuplicate,'OnClick',form:Guard(function()
+            form.fields[prefix..'duplicate']=row.duplicate
+            addon:SetUIScript(row.duplicate,'OnClick',form:Guard(function()
                 if d.readOnly or not d:Flush() then return end
                 local copy=addon:CopySettingsData(record);local position=index+1
                 if isArgument then
@@ -222,8 +228,8 @@ function addon:BuildInlineFunction(p,key,source,readOnly)
                 end
                 table.insert(values,position,copy);refresh()
             end))
-            row.remove:ClearAllPoints();row.remove:SetPoint('TOPRIGHT',-4,-47);form.fields[prefix..'remove']=row.remove
-        end,function() if not d.readOnly then if d.code then d.value.code=d.code:GetText() end;d:UpdateActions() end end,{header=false,heading=header.heading,add=header.add,prefix=field=='args' and 'arg_' or 'return_',readOnly=d.readOnly,confirmReorder=confirmOrderChange,confirmInsert=function(apply,gap)
+            form.fields[prefix..'remove']=row.remove
+        end,function() if not d.readOnly then if d.code then d.value.code=d.code:GetText() end;d:UpdateActions() end end,{heading=header.heading,add=header.add,help=true,duplicate=true,prefix=field=='args' and 'arg_' or 'return_',readOnly=d.readOnly,confirmReorder=confirmOrderChange,confirmInsert=function(apply,gap)
             if gap<=#values then confirmOrderChange(apply) else apply() end
         end})
         form.functionMetadataViews[field]=view

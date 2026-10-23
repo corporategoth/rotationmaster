@@ -11,11 +11,11 @@ function addon:GetGeneralOptionHelp()
     local ordered={
         {id="enable",title=L["Enable"],text=L["Help.General.enable"]},
         {id="disable_buttons",title=L["Disable Bar Highlighting"],text=L["Help.General.disable_buttons"]},
+        {id="minimap",title=L["Minimap Icon"],text=L["Help.General.minimap"]},
         {id="poll",title=L["Polling Interval (seconds)"],text=L["Help.General.poll"]},
         {id="idle_poll",title=L["Idle Re-check Interval (seconds)"],text=L["Help.General.idle_poll"]},
         {id="autoswitch_poll",title=L["Auto-Switch Re-check Interval (seconds)"],text=L["Help.General.autoswitch_poll"]},
         {id="live_config_update",title=L["Live Status Update Frequency (seconds)"],text=L["Help.General.live_config_update"]},
-        {id="minimap",title=L["Minimap Icon"],text=L["Help.General.minimap"]},
         {id="rotation_view",title=L["Default rotation view"],text=L["Help.General.rotation_view"]},
         {id="spell_history",title=L["Spell History Memory (seconds)"],text=L["Help.General.spell_history"]},
         {id="combat_history",title=L["Combat History Memory (seconds)"],text=L["Help.General.combat_history"]},

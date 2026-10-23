@@ -261,7 +261,8 @@ function addon:CreateSettingsForm(parent)
     function p:Position(xvalue,yvalue,changed,anchor)
         local caption;if not anchor then caption=L['Position'] end;local y=self:Row(caption,56);local ox,oy=xvalue or 0,yvalue or 0
         if anchor then local title=self:Acquire('labels',function() return label(self.child) end);title:ClearAllPoints();title:SetPoint('TOPLEFT',0,-y);title:SetSize(154,20);title:SetText(L['Anchor']) end
-        local padX=anchor and 170 or 220;local numberX=padX+78
+        -- The pad lines up with the swatches and values above it.
+        local padX=220;local numberX=padX+78
         -- The anchored variant lays out its own caption column.
         local scope=self.labelScope;if anchor and scope then scope.custom=true end;self.labelScope=nil
         local pad=self:Acquire('positionPad',function() return addon:CreateWorkbenchPositionPad(self.child) end);pad:ClearAllPoints();pad:SetPoint('TOPLEFT',padX,-y)

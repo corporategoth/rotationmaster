@@ -455,6 +455,9 @@ test('schema dragging carries live cards into nested gaps and cancel restores or
     local f,a=fixture();local d=a:condition_edit_box(function() end);d.model.value.fields={a='string',group={inner='number'},z='boolean'};d.form:Draw();d.form.fields.schemaGraph:Click();local g=d.schemaEditor
     local view=g.cardView;assert(view and #view.zones>4)
     local first=g.cards['1'];view:BeginDrag({1});assert(view.ghost:IsShown() and view.ghost.liveEntries[1].frame==first.frame and view.ghost.placeholders[1]:IsShown(),'schema drag has no native card preview')
+    -- The gaps right before and after the carried field are not offered.
+    local offered,hidden=0,0;for _,zone in ipairs(view.zones) do if zone.target then if zone:IsShown() then offered=offered+1;assert(view:CanDrop(zone.path,zone.gap),'a no-op gap is offered') else hidden=hidden+1 end end end
+    assert(offered>0 and hidden>=2,'schema drag offers its own no-op gaps')
     view:CancelDrag();assert(first.frame:GetParent()==g.form.child and not view.ghost:IsShown())
     view:BeginDrag({1});assert(view:Drop({2},2));assert(g.model.root.children[1].name=='group' and g.model.root.children[1].children[2].name=='a');g.undo:Click();assert(g.model.root.children[1].name=='a')
     view=g.cardView;view:BeginDrag({2});assert(not view:Drop({2},1),'container dropped inside itself');assert(g.active)

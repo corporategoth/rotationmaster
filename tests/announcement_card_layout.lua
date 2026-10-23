@@ -27,11 +27,19 @@ test('green gray Enabled pill sits directly left of Help with no caption row or 
  assert(pill:GetParent()==row and pill.pillDecoration and pill.selected==true,'Enabled remains a detached body toggle')
  local l,r,t,b=rightBox(pill,row);local hl,_,ht,hb=rightBox(help,row)
  assert(r<hl and hl-r<=6 and math.abs((t+b)-(ht+hb))<=2,'Enabled is not immediately left of Help')
- assert(row.header:GetWidth()+26<=l-3,'drag/title hit region overlaps Enabled')
+ assert(not row.header:IsShown() and not (row.header.grip and row.header.grip:IsShown()),'card still shows a title or grip')
  for _,label in ipairs(p.pool.labels or {})do assert(not label:IsShown()or label:GetText()~='Output state','separate state caption row remains')end
  pill:Click();assert(data(p).outputs[1].disabled==true and p.fields.entry1enabled.selected==false and p.fields.entry1enabled:GetText()=='Disabled')
  assert(a.db.profile.announces[1].outputs[1].disabled==nil)
  p.fields.entry1enabled:Click();assert(data(p).outputs[1].disabled==false and p.fields.entry1enabled.selected==true and not view(p).drag)
+end)
+test('the selected announcement has no title: Name is the first row beside Enabled and the trash',function()
+ local _,a,parent=fixture();local value=entry({card(2,'A')});value.name='Resurrected';local p=open(a,parent,value)
+ for _,t in ipairs(p.pool.text or {})do assert(not t:IsShown()or t:GetText()~='Resurrected','the announcement name is repeated as a heading')end
+ local name,pill,trash=p.fields.entry1name,p.fields.enabled1,p.fields.delete1
+ local point,_,_,x,y=anchor(name);local _,_,_,px,py=anchor(pill);local _,_,_,tx,ty=anchor(trash)
+ assert(point=='TOPLEFT'and y>=-6 and math.abs(y-py)<=6 and math.abs(y-ty)<=6,'Name is not on the first row with Enabled and the trash')
+ assert(x+name:GetWidth()<=p.width+px-pill:GetWidth()-4,'Name runs under the Enabled pill')
 end)
 test('condition summary is the full width clickable wrapped box rather than a separate Edit action',function()
  local _,a,parent=fixture();local output=card(2,'A');output.conditions={type='AND',value={}};local p=open(a,parent,entry({output}));local c=p.fields.entry1conditions;local row=view(p).rows[1]

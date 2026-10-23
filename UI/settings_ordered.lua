@@ -62,7 +62,8 @@ function addon:InstallSettingsOrdered(p)
             local entries={}
             for i=index,self.tail and #items or index do local row=self.rows[i];if row then entries[#entries+1]={frame=row,x=0,y=row.dragY,width=row:GetWidth(),height=row:GetHeight()} end end
             self.ghost:PresentCards(entries,parent);self.ghost:CaptureCancel(function() self:CancelDrag() end)
-            for _,zone in ipairs(self.zones) do zone:Show() end
+            -- Gaps right before and after the carried card would not move it.
+            for gap,zone in ipairs(self.zones) do if self:CanDrop(gap) then zone:Show() else zone:Hide() end end
             addon:SetUIScript(self.ghost,'OnUpdate',function()
                 if not valid() then self:CancelDrag();return end
                 self.ghost:FollowPointer();self:Hover();if IsMouseButtonDown and not IsMouseButtonDown('LeftButton') then self:EndDrag() end
@@ -138,34 +139,63 @@ function addon:InstallSettingsOrdered(p)
                 if not options.compact then frame.decoration=addon:CreateRoundedCardDecoration(frame);frame.decoration:SetColors(.35,.4,.44,.65,.08) end
                 return frame
             end);view.rows[i]=row;row.dragY=y
-            row:ClearAllPoints();row:SetPoint('TOPLEFT',0,-y);row:SetWidth(width)
-            row.header:ClearAllPoints();row.header:SetPoint('TOPLEFT',26,-3);row.header:SetWidth(width-54);row.header:SetText((options.compact or options.header==false or options.header=='grip') and '' or title(i));addon:AlignWorkbenchTextLeft(row.header,3)
-            row.header.grip=row.header.grip or row.header:CreateTexture(nil,'ARTWORK');row.header.grip:SetTexture(addon:ControlTexture('grip'));row.header.grip:SetSize(12,18);row.header.grip:SetPoint('LEFT',2,0)
-            if options.header==false then row.header:SetPoint('TOPRIGHT',-4,-25);row.header:SetWidth(20);row.header:SetHeight(20);row.header.grip:Hide()
-            -- 'grip': no title row; a drag grip above the move arrows, and the
-            -- card's first content row shares the top with its corner controls.
-            elseif options.header=='grip' then row.header:ClearAllPoints();row.header:SetPoint('TOPLEFT',3,-4);row.header:SetWidth(18);row.header:SetHeight(20);row.header.grip:Show() elseif options.compact then row.header:SetPoint('TOPLEFT',20,-2);row.header:SetWidth(18);row.header:SetHeight(26);row.header.grip:Show() else row.header:SetHeight(20);row.header.grip:Hide() end
-            row.header.tooltip=L['Drag one entry; Ctrl-drag moves it and all following siblings.'];row.body:SetWidth(width-62)
+            -- One card for every list: no title row and no grip. The whole card
+            -- picks up for a drag; arrows on the left; on the right a rail of
+            -- optional Help and Duplicate above Delete, and an optional
+            -- Enabled pill on the first row left of the rail.
+            row:ClearAllPoints();row:SetPoint('TOPLEFT',0,-y);row:SetWidth(width);row.header:Hide()
+            if row.header.grip then row.header.grip:Hide() end
             row.up:ClearAllPoints();row.down:ClearAllPoints();row.remove:ClearAllPoints()
-            row.up:SetPoint('TOPLEFT',3,options.compact and -1 or options.header==false and -4 or -26);row.down:SetPoint('TOPLEFT',3,options.compact and -14 or options.header==false and -22 or -44)
-            row.up:SetSize(18,options.compact and 13 or 18);row.down:SetSize(18,options.compact and 13 or 18);row.remove:SetPoint('TOPRIGHT',-4,-3)
+            row.up:SetPoint('TOPLEFT',3,options.compact and -1 or -4);row.down:SetPoint('TOPLEFT',3,options.compact and -14 or -22)
+            row.up:SetSize(18,options.compact and 13 or 18);row.down:SetSize(18,options.compact and 13 or 18)
             if options.readOnly or i==1 then row.up:Disable() else row.up:Enable() end;if options.readOnly or i==#items then row.down:Disable() else row.down:Enable() end
             addon:SetUIScript(row.up,'OnClick',self:Guard(function() view.drag=i;view.tail=false;view:Drop(i-1) end));addon:SetUIScript(row.down,'OnClick',self:Guard(function() view.drag=i;view.tail=false;view:Drop(i+2) end))
+            local rail=0
+            local function railSlot(control) control:ClearAllPoints();control:SetPoint('TOPRIGHT',-4,-3-rail*22);control:SetSize(20,20);rail=rail+1;control:Show() end
+            if options.help and not options.compact then
+                row.help=row.help or addon:CreateWorkbenchHelpButton(row,L['Help']);row.help.icon:SetSize(18,18);row.help:Enable();railSlot(row.help)
+                if type(options.help)=='function' then addon:SetUIScript(row.help,'OnClick',self:Guard(function() if valid() then options.help(i,items[i],row) end end)) end
+            elseif row.help then row.help:Hide() end
+            if options.duplicate and not options.compact then
+                row.duplicate=row.duplicate or addon:CreateWorkbenchIconButton(row,'copy',L['Duplicate']);railSlot(row.duplicate)
+                local allowed=not options.readOnly and (not options.canDuplicate or options.canDuplicate(i,items[i]))
+                if allowed then row.duplicate:Enable() else row.duplicate:Disable() end
+                if type(options.duplicate)=='function' then addon:SetUIScript(row.duplicate,'OnClick',self:Guard(function() if allowed and valid() then options.duplicate(i,items[i],row) end end)) end
+            elseif row.duplicate then row.duplicate:Hide() end
+            railSlot(row.remove)
             if options.readOnly then row.remove:Disable() else row.remove:Enable() end
-            addon:SetUIScript(row.remove,'OnClick',self:Guard(function() if not options.readOnly and self:FlushEdits() and valid() then table.remove(items,i);changed();self:Draw() end end))
+            addon:SetUIScript(row.remove,'OnClick',self:Guard(function() if not options.readOnly and self:FlushEdits() and valid() then if options.removeItem then options.removeItem(i,items[i]) else table.remove(items,i);changed();self:Draw() end end end))
+            row.firstRowReserve=0
+            if options.enabled and not options.compact then
+                -- options.enabled is {get,toggle,width,tooltip}, or true when the
+                -- page sets the pill's state and action while building the card.
+                local spec=type(options.enabled)=='table' and options.enabled or {}
+                local pillWidth=spec.width or 70
+                row.enabled=row.enabled or addon:CreateWorkbenchPill(row,'',pillWidth)
+                row.enabled:ClearAllPoints();row.enabled:SetPoint('TOPRIGHT',-28,-4);row.enabled:SetSize(pillWidth,18);row.enabled:Show()
+                if spec.get then
+                    local on=spec.get(i,items[i])==true
+                    row.enabled:SetText(on and L['Enabled'] or L['Disabled']);row.enabled:SetSelected(on);row.enabled.tooltip=spec.tooltip
+                    if options.readOnly then row.enabled:Disable() else row.enabled:Enable() end
+                    addon:SetUIScript(row.enabled,'OnClick',self:Guard(function() if not options.readOnly and valid() then spec.toggle(i,items[i],row) end end))
+                end
+                -- Body coordinates kept free on the first row for the pill.
+                row.firstRowReserve=pillWidth+6
+            elseif row.enabled then row.enabled:Hide() end
+            local bodyX=options.compact and 4 or 26
+            row.body:SetWidth(options.compact and width-bodyX-28 or width-62)
             local function startDrag() view:BeginDrag(i) end;local function stopDrag() if valid() then view:EndDrag() end end
             row:EnableMouse(true);row.body:EnableMouse(true)
             for _,surface in ipairs({row,row.body}) do
                 addon:SetUIScript(surface,'OnMouseDown',self:Guard(function(_,button) if button=='LeftButton' then startDrag() end end));addon:SetUIScript(surface,'OnMouseUp',self:Guard(function(_,button) if button=='LeftButton' then stopDrag() end end));addon:BindWorkbenchDragSource(surface,startDrag,stopDrag)
             end
-            addon:BindWorkbenchDragSource(row.header,function() view:BeginDrag(i) end,function() if valid() then view:EndDrag() end end)
             self.fields[(options.prefix or key)..i..'up']=row.up;self.fields[(options.prefix or key)..i..'down']=row.down;self.fields[(options.prefix or key)..i..'remove']=row.remove
-            self.surface=row.body;self.width=width-62;self.y=options.compact and 2 or (options.header==false or options.header=='grip') and 4 or 28
+            self.surface=row.body;self.width=row.body:GetWidth();self.y=options.compact and 2 or 4
             if self.BeginLabelScope then self:BeginLabelScope() end
             build(self,i,items[i],row)
             if self.EndLabelScope then self:EndLabelScope() end
             if options.current and not valid()then return view end
-            local height=math.max(options.compact and 30 or options.header==false and 44 or 68,self.y+8);row:SetHeight(height);row.body:SetHeight(height);row.body:ClearAllPoints();row.body:SetPoint('TOPLEFT',26,options.header==false and -math.max(0,(height-(self.y-4))/2-4) or 0)
+            local height=math.max(options.compact and 30 or math.max(44,3+rail*22+2),self.y+8);row:SetHeight(height);row.body:SetHeight(height);row.body:ClearAllPoints();row.body:SetPoint('TOPLEFT',bodyX,0)
             self.surface=outerSurface;self.width=outerWidth;self.y=y+height+(options.compact and 4 or 12);boundaries[#boundaries+1]=self.y-(options.compact and 2 or 6)
         end
         for i,y in ipairs(boundaries) do

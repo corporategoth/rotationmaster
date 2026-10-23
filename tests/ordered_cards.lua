@@ -25,6 +25,7 @@ local function list(f,options)
     end
     p:Open(build);return p,state
 end
+local FUNCTION_PATHS={'Core/function_data.lua','UI/settings_history.lua','UI/settings_unsaved.lua','UI/settings_layout.lua','UI/settings_ordered.lua','UI/settings_roster_order.lua','UI/settings_form.lua','UI/settings_collections.lua','UI/settings_transfer.lua','UI/lua_input_probe.lua','UI/lua_input_diagnostics.lua','UI/lua_editor.lua','UI/settings_functions.lua','UI/function_bindings.lua','UI/function_source_pane.lua','UI/function_bundle_transfer.lua'}
 local function fixture() local f,frames,create=settingsFixture();f.frames,f.create=frames,create;return f end
 local function rect(c) return c.point[2],c.point[2]+c:GetWidth(),-c.point[3] end
 
@@ -146,7 +147,7 @@ test('section headers everywhere use the shared header style',function()
 end)
 test('Functions: Arguments and Returns headers carry their Add on the same row',function()
     local f=F.new();local a=f.addon;local frames=dofile('tests/fixtures/native_ui.lua')(f.env);a.db.char={};a.db.global.custom_functions={};a.RotationData=make()
-    for _,path in ipairs({'Core/function_data.lua','UI/settings_history.lua','UI/settings_unsaved.lua','UI/settings_layout.lua','UI/settings_ordered.lua','UI/settings_roster_order.lua','UI/settings_form.lua','UI/settings_collections.lua','UI/settings_transfer.lua','UI/lua_input_probe.lua','UI/lua_input_diagnostics.lua','UI/lua_editor.lua','UI/settings_functions.lua','UI/function_bindings.lua','UI/function_source_pane.lua','UI/function_bundle_transfer.lua'}) do local file=io.open(path);if file then file:close();f.load(path) end end
+    for _,path in ipairs(FUNCTION_PATHS) do local file=io.open(path);if file then file:close();f.load(path) end end
     a.db.global.custom_functions.A={name='Fn',description='Documentation',args={{name='value',type='number',description='Input'}},returns={{type='number',description='Result'}},code='return value'}
     local host=f.env.CreateFrame('Frame');host:SetSize(1100,700);local p=a:OpenNativeSettings(host,'Functions');local form=p.inlineFunction.form
     for _,field in ipairs({'args','returns'}) do
@@ -156,5 +157,56 @@ test('Functions: Arguments and Returns headers carry their Add on the same row',
         assert(heading:GetFontString().rmHeaderFont=='GameFontNormal',field..' header does not use the shared style')
     end
     local before=#p.inlineFunction.value.args;form.fields.add_args:Click();assert(#p.inlineFunction.value.args==before+1,'Argument did not append')
+end)
+-- Every list draws the same card: no title and no grip, arrows on the left,
+-- a right rail of optional Help and Duplicate above the trash, and the whole
+-- card picks up for a drag, leaving its outline behind and offering only the
+-- gaps that would move it.
+local function sameCards(view,name,rail)
+    assert(view and #view.rows>=2,name..': needs two cards')
+    for i,row in ipairs(view.rows) do
+        assert(not row.header:IsShown() and not row.header.grip,name..' card '..i..' shows a title or grip')
+        assert(row.up.point[1]=='TOPLEFT' and row.up.point[2]==3 and row.down.point[2]==3,name..' arrows are not at the card left')
+        local expected={};for _,control in ipairs(rail) do expected[#expected+1]=row[control] end;expected[#expected+1]=row.remove
+        for slot,control in ipairs(expected) do
+            assert(control and control:IsShown() and control:GetParent()==row,name..' rail control '..slot..' missing')
+            assert(control.point[1]=='TOPRIGHT' and control.point[2]==-4 and control.point[3]==-3-(slot-1)*22,name..' rail control '..slot..' is out of order')
+        end
+        for _,control in ipairs({'help','duplicate'}) do local present=false;for _,c in ipairs(rail) do present=present or c==control end;assert(present or not (row[control] and row[control]:IsShown()),name..' shows an unrequested '..control) end
+        assert(row.body.point[2]+row.body:GetWidth()<=row:GetWidth()-24,name..' card body runs under the rail')
+    end
+    local row=view.rows[1];row.scripts.OnMouseDown(row,'LeftButton')
+    assert(view.drag==1 and view.ghost:IsShown(),name..': clicking the card did not pick it up')
+    assert(view.ghost.placeholders[1] and view.ghost.placeholders[1]:IsShown(),name..': the carried card left no space behind')
+    assert(not view.zones[1]:IsShown() and not view.zones[2]:IsShown(),name..': a no-op gap is offered')
+    for gap=3,#view.zones do assert(view.zones[gap]:IsShown(),name..': gap '..gap..' is not offered') end
+    view:CancelDrag()
+end
+test('every list draws the same card and drags it the same way',function()
+    local f=fixture();local a=f.addon;local create=f.create;a.RemoveAllCurrentGlows=function() end;a.HideGlow=function() end;a.Glow=function() end
+    local p=list(f,{heading='Things'});sameCards(p.ordered.things,'plain',{})
+    a.db.profile.announces={{id='e1',type='spell',spell=403,event='SUCCEEDED',outputs={{id='o1',announce='local',value='One'},{id='o2',announce='local',value='Two'}}}}
+    local parent=create('Frame');parent:SetSize(1000,700);p=a:OpenNativeSettings(parent,'Announces')
+    local view;for key,v in pairs(p.ordered) do if key:find('announce_outputs_',1,true) then view=v end end
+    sameCards(view,'Announces',{'help','duplicate'})
+    for i,row in ipairs(view.rows) do assert(row.enabled:IsShown() and row.enabled.point[1]=='TOPRIGHT' and row.enabled.point[2]==-28 and row.enabled.point[3]==-4,'Announces card '..i..' pill is not beside the rail') end
+    a.db.global.effects={p={name='Pulse',type='pulse',frequency=.25,sequence={1,.5,.75}}}
+    parent=create('Frame');parent:SetSize(1000,700);p=a:OpenNativeSettings(parent,'Effects');sameCards(p.ordered.sequence_p,'Effects',{})
+    a.db.global.itemsets={set1={name='Potions',items={11,12,13}}};a.db.profile.itemsets={}
+    parent=create('Frame');parent:SetSize(1000,600);p=a:OpenNativeSettings(parent,'ItemSets');sameCards(p.ordered.items_set1,'Item Sets',{})
+end)
+test('function argument cards use the shared rail with Nullable against the help icon',function()
+    local f=F.new();local a=f.addon;local frames=dofile('tests/fixtures/native_ui.lua')(f.env);a.db.char={};a.db.global.custom_functions={};a.RotationData=make()
+    for _,path in ipairs(FUNCTION_PATHS) do local file=io.open(path);if file then file:close();f.load(path) end end
+    a.db.global.custom_functions.A={name='Fn',description='Documentation',args={{name='value',type='number',description='Input'},{name='other',type='string',description='More'}},returns={{type='number',description='Result'},{type='string',description='Second'}},code='return value'}
+    local host=f.env.CreateFrame('Frame');host:SetSize(1100,700);local p=a:OpenNativeSettings(host,'Functions');local form=p.inlineFunction.form
+    for _,field in ipairs({'args','returns'}) do
+        local view=form.ordered['function_'..field];sameCards(view,field,{'help','duplicate'})
+        local check=form.fields[(field=='args' and 'arg_' or 'return_')..'1_nullable'];local row=view.rows[1]
+        local right=row.body.point[2]+check.point[2]+check:GetWidth()
+        assert(check:GetWidth()<=22+120 and check:GetWidth()<102,field..' Nullable is not narrow')
+        assert(math.abs(right-(row.body.point[2]+row.body:GetWidth()))<.01 and row:GetWidth()-4-20-right<=14,field..' Nullable is not against the help icon')
+        assert(check.point[3]==row.help.point[3]+1 or math.abs(check.point[3]-row.help.point[3])<=6,field..' Nullable left the help row')
+    end
 end)
 finish()

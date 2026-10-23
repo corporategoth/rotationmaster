@@ -46,7 +46,8 @@ function addon:BuildFieldSchemaCards(form,owner)
         local count=0;for _,entry in ipairs(self.scene.index.nodes) do local index=entry.path[#path];if prefix(sourceParent,entry.path) and type(index)=='number' and index>=path[#path] and index<=last then count=count+1 end end
         ghost:Present(tostring(node.name),L['Drag one entry; Ctrl-drag moves it and all following siblings.'],form.frame,count)
         ghost:PresentCards(entries,form.child);ghost:CaptureCancel(function() self:CancelDrag() end)
-        for _,zone in ipairs(self.zones) do if zone.target then zone:Show() end end
+        -- Gaps that would leave the carried field where it is are not offered.
+        for _,zone in ipairs(self.zones) do if zone.target and self:CanDrop(zone.path,zone.gap) then zone:Show() else zone:Hide() end end
         addon:SetUIScript(ghost,'OnUpdate',function()
             if not valid() then self:CancelDrag();return end
             ghost:FollowPointer();self:Hover();if IsMouseButtonDown and not IsMouseButtonDown('LeftButton') then self:EndDrag() end
@@ -60,7 +61,7 @@ function addon:BuildFieldSchemaCards(form,owner)
         c.fold=addon:CreateConditionChevron(c.frame);c.fold:SetPoint('TOPLEFT',3,-3);c.fold:SetSize(18,18)
         for _,entry in ipairs({{'up','up',L['Move Up']},{'down','down',L['Move Down']},{'duplicate','copy',L['Duplicate']},{'remove','trash',L['Delete']}}) do c[entry[1]]=addon:CreateWorkbenchIconButton(c.frame,entry[2],entry[3]);c[entry[1]]:SetSize(18,18) end
         c.help=addon:CreateWorkbenchHelpButton(c.frame,L['Help']);c.help:SetSize(20,20);c.help:SetPoint('TOPRIGHT',-4,-3)
-        c.duplicate:SetPoint('TOPRIGHT',-4,-26);c.remove:SetPoint('TOPRIGHT',-4,-47);c.remove.icon:SetVertexColor(1,.25,.25,1)
+        c.duplicate:SetPoint('TOPRIGHT',-4,-25);c.remove:SetPoint('TOPRIGHT',-4,-47);c.remove.icon:SetVertexColor(1,.25,.25,1)
         c.up:SetPoint('TOPLEFT',4,-23);c.down:SetPoint('TOPLEFT',c.up,'BOTTOMLEFT',0,0)
         c.line=c.frame:CreateTexture(nil,'BACKGROUND');c.line:SetColorTexture(.5,.48,.34,.6)
         c.form=setmetatable({frame=c.frame,child=c.frame,pool={},counts={},fields={},edits={},generation=0},{__index=form})
@@ -164,7 +165,7 @@ function addon:BuildFieldSchemaCards(form,owner)
             for i=low,#gaps do local target=gaps[i];if target.y>bottom then break end;count=count+1
                 local zone=self.zones[count]
                 if not zone then zone=form:Acquire('schemaGaps',function() local z=CreateFrame('Frame',nil,form.child);z.marker=z:CreateTexture(nil,'OVERLAY');z.marker:SetColorTexture(.9,.75,.3,1);z.marker:SetPoint('LEFT');z.marker:SetPoint('RIGHT');z.marker:SetHeight(3);return z end);self.zones[count]=zone end
-                zone.target=target;zone.path=target.path;zone.gap=target.gap;zone:SetParent(form.child);zone:ClearAllPoints();zone:SetPoint('TOPLEFT',target.x,-target.y);zone:SetSize(target.width,10);zone:SetFrameLevel(form.child:GetFrameLevel()+256);zone:EnableMouse(false);zone.marker:Hide();if self.drag then zone:Show() else zone:Hide() end
+                zone.target=target;zone.path=target.path;zone.gap=target.gap;zone:SetParent(form.child);zone:ClearAllPoints();zone:SetPoint('TOPLEFT',target.x,-target.y);zone:SetSize(target.width,10);zone:SetFrameLevel(form.child:GetFrameLevel()+256);zone:EnableMouse(false);zone.marker:Hide();if self.drag and self:CanDrop(zone.path,zone.gap) then zone:Show() else zone:Hide() end
             end
             for i=count+1,#self.zones do self.zones[i].target=nil;self.zones[i]:Hide();self.zones[i].marker:Hide() end
             self:UpdateMarkers()

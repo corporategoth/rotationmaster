@@ -90,7 +90,7 @@ function addon:InstallSettingsRosterOrder(p)
                 end
             end end
             self.ghost:PresentCards(entries,r.child);self.ghost:CaptureCancel(function() if r.orderView==self then self:Cancel() end end)
-            for _,zone in ipairs(self.zones) do if zone.gap then zone:Show() end end
+            for _,zone in ipairs(self.zones) do if zone.gap and self:CanDrop(zone.gap) then zone:Show() else zone:Hide() end end
             addon:SetUIScript(self.ghost,'OnUpdate',function() if not valid() then self:Cancel();return end;self.ghost:FollowPointer();self:Hover();if IsMouseButtonDown and not IsMouseButtonDown('LeftButton') then self:EndDrag() end end)
         end
         self.cleanups[#self.cleanups+1]=function() view:Cancel() end
@@ -106,7 +106,7 @@ function addon:InstallSettingsRosterOrder(p)
             if not zone then zone=CreateFrame('Frame',nil,r.child);zone.marker=zone:CreateTexture(nil,'OVERLAY');zone.marker:SetColorTexture(.9,.75,.3,1);zone.marker:SetPoint('LEFT');zone.marker:SetPoint('RIGHT');zone.marker:SetHeight(3);zone:EnableMouse(false);r.orderZones[used]=zone end
             local lease={};zone.rosterLease=lease;zone.target=target;zone.gap=target.gap;zone:ClearAllPoints();zone:SetPoint('TOPLEFT',0,-target.y+6);zone:SetSize(r.child:GetWidth(),12);zone:SetFrameLevel(r.child:GetFrameLevel()+50)
             addon:SetUIScript(zone,'OnReceiveDrag',self:Guard(function() if r.orderView==view and zone.rosterLease==lease and zone.target==target then view:Drop(target.gap) end end))
-            if view.drag then zone:Show() else zone:Hide() end;zone.marker:Hide()
+            if view.drag and view:CanDrop(target.gap) then zone:Show() else zone:Hide() end;zone.marker:Hide()
         end
         for i=used+1,#r.orderZones do local zone=r.orderZones[i];zone.rosterLease=nil;zone.target=nil;zone.gap=nil;addon:SetUIScript(zone,'OnReceiveDrag',nil);zone:Hide();zone.marker:Hide() end
     end
