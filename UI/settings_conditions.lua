@@ -57,7 +57,6 @@ function addon:BuildConditionSettings(p)
         end}},true)
     local builtinSource=not custom[p.condition] and self.GetBuiltinConditionSource and self:GetBuiltinConditionSource(p.condition)
     if self.BuildInlineCustomCondition and (p.creatingCondition or custom[p.condition] or builtinSource) then return self:BuildInlineCustomCondition(p,p.condition,custom[p.condition] or builtinSource,type(builtinSource)=='table') end
-    p:Heading(L['Conditions'])
     local tag=p.condition;local definition=definitions[tag] or (self.conditionSpecials or {})[tag]
     if tag and definition then
         p:Text(definition.description or definition.desc or tag);p:Text(custom[tag] and L['Custom condition'] or L['Built-in condition']);p:Text(L['Identifier']..': '..tag)

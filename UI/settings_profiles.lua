@@ -65,7 +65,7 @@ function addon:BuildProfileSettings(p)
             if not first or not second then p:Message(L['Settings changed elsewhere. Cancel to reload them before applying.']);return end
             if stockOK(first) and stockOK(second) then self:ShowCollectionComparison(p,'profile',{name=left.name,profile=first},{name=right.name,profile=second}) end
         end)
-    p:Heading(L['Profiles']);p:Text(L['Profile changes apply immediately. Rotations and settings belong to the active profile.'])
+    p:Text(L['Profile changes apply immediately. Rotations and settings belong to the active profile.'])
     if p.creating then
         p:Edit('new_name',L['New profile name'],p.newProfileName or '',nil,function(text) p.newProfileName=text end)
         p:CreationActions(function()

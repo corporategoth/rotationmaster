@@ -86,5 +86,5 @@ function addon:BuildFunctionSettings(p)
             end)
         end}})
     if p.newFunctionSource or source then return self:BuildInlineFunction(p,p.newFunctionID or p.functionID,p.newFunctionSource or source,readOnly and not p.newFunctionSource) end
-    p:Heading(L['Functions']);p:Text(L['Add a function or duplicate a packaged helper to edit its source.'])
+    p:Text(L['Add a function or duplicate a packaged helper to edit its source.'])
 end

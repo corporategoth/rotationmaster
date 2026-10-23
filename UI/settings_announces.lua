@@ -252,10 +252,7 @@ function addon:BuildAnnounceSettings(p)
             end,{canReplace=selected~=nil,selectedName=selected and (self:SettingsNonempty(selected.name) or named[p.selection].name),fallbackName=L['Imported announcement'],originalName=function(input) local decoded=codec:Decode(input);local entry=decoded and type(decoded.value)=='table' and decoded.value.announcement;if type(entry)=='table' then if self:SettingsNonempty(entry.name) then return entry.name end;local info=entryInfo(entry);return info and info.name end end})
             dialog=p.textDialog;transferSerial=dialog and dialog.serial
         end})
-    p:Heading(L['Announces'])
-    local help=p:Acquire('announceHelp',function() return self:CreateWorkbenchHelpButton(p.child,L['Help']) end)
-    help:ClearAllPoints();help:SetPoint('TOPRIGHT',-4,-3);help:SetSize(20,20);help.icon:SetSize(18,18);p.fields.announce_help=help
-    self:SetUIScript(help,'OnClick',p:Guard(function() self:ShowWorkbenchHelp(L['Announces'],self:WorkbenchPageHelp('Announces'),self.pretty_name) end))
+    -- The page name is in the tab and title bar; the page "?" is the shell's.
     for i,entry in ipairs(values) do if i==p.selection and not p.creating then
         local title=self:SettingsNonempty(entry.name) or entry.type=='item' and (itemInfo(entry.item) and itemInfo(entry.item).name or L['Item data loading']) or entry.type=='macro' and (entry.identifier or L['Via Script/Macro']) or self:PlainWorkbenchName(self:SpellLabel(entry.spell))
         p:Heading(title)

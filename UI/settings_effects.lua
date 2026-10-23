@@ -34,7 +34,7 @@ function addon:BuildEffectSettings(p)
     local effects=store.global.effects or {};local entries=self:SettingsEntries(effects)
     for _,entry in ipairs(entries) do local effect=effects[entry.value];entry.icon=effect.texture or self:ControlTexture('preview');entry.search=effect.type end
     if not effects[p.selection] and not p.creating then p.selection=entries[1] and entries[1].value end
-    p:UseRoster(entries,p.selection,function(id) p.selection=id;p.creating=false;p:Draw() end,{newText=L['Add effect'],new=function() p.previousSelection=p.selection;p.selection=nil;p.creating=true;p.newEffect=nil;p.emptyDismissed=false;p:Draw() end});p:Heading(L['Effects'])
+    p:UseRoster(entries,p.selection,function(id) p.selection=id;p.creating=false;p:Draw() end,{newText=L['Add effect'],new=function() p.previousSelection=p.selection;p.selection=nil;p.creating=true;p.newEffect=nil;p.emptyDismissed=false;p:Draw() end})
     local isNew=p.creating or not effects[p.selection] and p:CanAutoCreateCollection('global','effects')
     if isNew then p.newEffect=p.newEffect or {name='',type='pixel'} end
     local effect=isNew and p.newEffect or effects[p.selection]
