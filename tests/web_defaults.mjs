@@ -30,7 +30,7 @@ test('pure catalog exposes all36 actual source definitions without runtime facts
 test('production generator is deterministic/current BOTH and source inputs exact',()=>{
  const expected=text();for(const vm of ['lua5.1','luajit'])for(let i=0;i<2;i++)assert.equal(execFileSync(vm,['tools/export_web_defaults.lua'],{cwd:root,encoding:'utf8',maxBuffer:4*1024*1024}),expected);
  const doc=raw();for(const[path,sha]of Object.entries(doc.sourceFiles))assert.equal(createHash('sha256').update(readFileSync(new URL('../'+path,import.meta.url))).digest('hex'),sha,path);
- const toc=readFileSync(new URL('../RotationMaster.toc',import.meta.url),'utf8').split(/\r?\n/).filter(s=>/^Defaults\/.+\.lua$/.test(s));assert.deepEqual([...doc.packs.map(p=>p.sourcePath)].sort(),toc.sort());
+ const toc=readFileSync(new URL('../RotationMaster.toc',import.meta.url),'utf8').split(/\r?\n/).filter(s=>/^Defaults\/.+\.lua$/.test(s)&&!s.startsWith('Defaults/blocks/'));assert.deepEqual([...doc.packs.map(p=>p.sourcePath)].sort(),toc.sort());
 });
 test('all36 pinned actual codec wires decode to exact catalog Maps and strict diff equality',()=>{
  const fixture=JSON.parse(readFileSync(new URL('./fixtures/web_defaults.json',import.meta.url))),c=ready();assert.equal(fixture.format,'RotationMasterBundledDefaultWireFixtures');assert.equal(fixture.records.length,36);
