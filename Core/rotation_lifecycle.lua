@@ -10,6 +10,7 @@ local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
 -- importer publishes its final roots, so its event alone cannot authorize them.
 function addon:RefreshRotationProfileStorage()
     if self.SyncQuestieIntegration then self:SyncQuestieIntegration() end
+    if self.SyncEncounterIntegration then self:SyncEncounterIntegration() end
     if invalidateDependencies then invalidateDependencies(addon,'all',nil) end
     local ok,why=self:InitializeScopedRotationStorage()
     self.rotationStorageError=not ok and why or nil

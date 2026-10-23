@@ -170,6 +170,7 @@ local default_condition_groups = {
             "COMBAT", "STEALTHED", "INCONTROL", "LOC_TYPE", "LOC_BLOCKED",
             "RUNNER", "RESIST", "IMMUNE", "MOVING", "THREAT", "THREAT_COUNT",
             "ATTACKABLE", "ENEMY", "COMBAT_HISTORY", "COMBAT_HISTORY_TIME", "TIME_IN_COMBAT",
+            "BOSSMOD_ENCOUNTER", "BOSSMOD_STAGE", "BOSSMOD_TIMER",
         }
     },
     {
@@ -232,7 +233,8 @@ local default_other_conditions_order = {
 local default_switch_conditions = {
     "DELETE", "AND", "OR", "NOT", "SELF_LEVEL", "PVP", "ZONEPVP", "ZONE", "INSTANCE", "OUTDOORS",
     "STEALTHED", "GROUP", "FORM", "CLASS", "CLASS_GROUP", "CREATURE", "CLASSIFICATION",
-    "PET", "PET_NAME", "EQUIPPED", "DISTANCE_COUNT", "THREAT_COUNT", "ROLE", "GLYPH"
+    "PET", "PET_NAME", "EQUIPPED", "DISTANCE_COUNT", "THREAT_COUNT", "ROLE", "GLYPH",
+    "BOSSMOD_ENCOUNTER", "BOSSMOD_STAGE"
 }
 
 -- Default 'switch only' conditions
@@ -603,6 +605,7 @@ end
 
 function addon:init()
     self:InstallUnitStateConditions(self.db)
+    if self.InstallBossModConditions then self:InstallBossModConditions(self.db) end
     self:InstallAnnouncementConditionPreferences()
     self.db.RegisterCallback(self,'OnNewProfile','InitializeTalentTreeConditions')
     self.db.RegisterCallback(self,'OnProfileReset','InitializeTalentTreeConditions')

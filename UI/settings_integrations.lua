@@ -180,6 +180,27 @@ function addon:BuildIntegrationSettings(p)
         end
         groups[#groups+1]={key='integrations_quests',title=L['Quest callbacks'],rows={questieRow}}
     end
+    -- Boss mods: at most one is enabled; enabling one switches the other off.
+    local encounterRows={}
+    for _,id in ipairs({'DBM-Core','BigWigs'})do
+        local allowed=supported(id);if not current()then return end
+        if allowed then
+            local entry=metadata[id]or{id=id,name=L[id=='DBM-Core'and'DBM'or id],state='missing'}
+            local row=readonly(entry)
+            local chosen=profile.encounter_provider==id
+            local loaded=entry.loaded==true or entry.loaded==nil and entry.state~='missing'and entry.state~='unknown'
+            row.state=not loaded and'missing'or chosen and'enabled'or'disabled'
+            if row.state~='missing'or chosen then
+                row.action=function()
+                    if not supported(id)or not current()then return end
+                    profile.encounter_provider=profile.encounter_provider~=id and id or nil
+                    p:RunSettingsEffect('encounter_provider',function()self:SyncEncounterIntegration()end);p:Draw()
+                end
+            end
+            encounterRows[#encounterRows+1]=row
+        end
+    end
+    if #encounterRows>0 then groups[#groups+1]={key='integrations_encounters',title=L['Boss mods'],rows=encounterRows}end
     local masqueAllowed=supported('Masque');if not current()then return end
     if masqueAllowed then
         local entry=metadata.Masque or{id='Masque',name=L['Masque'],state='missing'}
@@ -196,6 +217,7 @@ function addon:BuildIntegrationSettings(p)
         end
         groups[#groups+1]={key='integrations_themes',title=L['Button skins'],rows={row}}
     end
+    group('integrations_panels',L['Top panels'],{'Titan'})
     group('integrations_actionbars',L['Action bars'],{'ElvUI','Bartender4','ButtonForge','G15Buttons','SyncUI','LUI','Dominos','DiabolicUI','AzeriteUI','Neuron','FarmingBar','TotemTimers','SamyTotemTimers'})
     -- Measure shared columns once per drawing; description receives the remainder.
     p.width=math.max(340,p.frame:GetWidth()-40);p.child:SetWidth(p.width)

@@ -10,6 +10,9 @@ local providers={
  {'WeakAuras','WeakAuras','Recommendation event bridge; no WeakAuras display is required.'},
  {'Masque','Masque','Optional preview-button skins; configure skins with /masque.','masque'},
  {'Questie','Questie','Quest update receipts only; native quest progress is not verified.','questie'},
+ {'DBM-Core','DBM','Boss-mod timers and encounter stage for the Boss Mod conditions.','encounters'},
+ {'BigWigs','BigWigs','Boss-mod timers and encounter stage for the Boss Mod conditions.','encounters'},
+ {'Titan','Titan Panel','Shows the active rotation from RM\'s LibDataBroker feed; add Rotation Master from Titan\'s plugin menu.'},
  {'ElvUI','ElvUI','Optional action-bar glow support.'},
  {'Bartender4','Bartender4','Optional action-bar mapping and glow support.'},
  {'ButtonForge','ButtonForge','Optional action-bar mapping and glow support.'},
@@ -49,6 +52,9 @@ local projects={
  ["TotemTimers"]={{["provider"]="curseforge",["label"]="CurseForge",["url"]="https://www.curseforge.com/wow/addons/totemtimers",["primary"]=true,["note"]="Primary project now releases TotemTimers Forever. Retail files are historical. Classic editions use the separate project below.",["families"]={"forever"}},{["provider"]="curseforge",["label"]="CurseForge — TotemTimers Classic",["url"]="https://www.curseforge.com/wow/addons/totemtimers-classic",["primary"]=false,["note"]="Classic Era, TBC, Wrath, Cataclysm and Mists Classic. Compatibility with RM action buttons is unverified.",["families"]={"era","progression","tbc"}},{["provider"]="github",["label"]="GitHub",["url"]="https://github.com/Xianghar/TotemTimers",["primary"]=false,["note"]="Official source repository. Choose the release for your game edition; source availability does not certify integration behavior.",["families"]={"forever"}},{["provider"]="github",["label"]="GitHub — TotemTimers Classic",["url"]="https://github.com/Xianghar/TotemTimers_Classic",["primary"]=false,["note"]="Official source repository. Choose the release for your game edition; source availability does not certify integration behavior.",["families"]={"era","progression","tbc"}},{["provider"]="wowinterface",["label"]="WoWInterface",["url"]="https://www.wowinterface.com/downloads/info9481-TotemTimers.html",["primary"]=false,["note"]="Official project page. Release edition and current patch compatibility are unverified.",["families"]={}},{["provider"]="wowinterface",["label"]="WoWInterface — TotemTimers Classic",["url"]="https://www.wowinterface.com/downloads/info25223-TotemTimersClassic.html",["primary"]=false,["note"]="Official project page. Publisher lists Classic Era, Classic progression, TBC. Choose the matching file; exact patch and RM integration behavior may be unverified.",["families"]={"era","progression","tbc"}},{["provider"]="wago",["label"]="Wago Addons — TotemTimers Classic",["url"]="https://addons.wago.io/addons/totemtimers-classic",["primary"]=false,["note"]="Official project page. Publisher lists Classic Era, Classic progression, TBC. Choose the matching file; exact patch and RM integration behavior may be unverified.",["families"]={"era","progression","tbc"}}},
  ["SamyTotemTimers"]={{["provider"]="curseforge",["label"]="CurseForge",["url"]="https://www.curseforge.com/wow/addons/samytotemtimers",["primary"]=true,["note"]="Historical Classic Era and TBC releases. Current editions are unverified. Other similarly named addons are not verified replacements.",["families"]={}},{["provider"]="github",["label"]="GitHub",["url"]="https://github.com/Samynix/SamyTotemTimers",["primary"]=false,["note"]="Official source repository. Choose the release for your game edition; source availability does not certify integration behavior.",["families"]={}}},
  ["Masque"]={{["provider"]="github",["label"]="Official website / GitHub",["url"]="https://github.com/SFX-WoW/Masque",["primary"]=true,["note"]="Author-declared website and source repository. Release 12.1.0 declares Retail, Classic Era, TBC, Wrath, Cataclysm and Mists interfaces; RM native acceptance is unverified.",["families"]={"retail","era","tbc","progression"}},{["provider"]="curseforge",["label"]="CurseForge",["url"]="https://www.curseforge.com/wow/addons/masque",["primary"]=false,["note"]="StormFX project 13592. Publisher lists Retail, Forever, Classic, TBC, Mists and Wrath Titan Reforged releases; choose the file for your edition.",["families"]={"retail","forever","era","tbc","progression"}},{["provider"]="wowinterface",["label"]="WoWInterface",["url"]="https://www.wowinterface.com/downloads/info12097-Masque.html",["primary"]=false,["note"]="StormFX project 12097, version 12.1.0. Publisher declares Retail, Classic, TBC, Wrath and Cataclysm; displayed patch metadata varies from current TOC.",["families"]={"retail","era","tbc","progression"}},{["provider"]="wago",["label"]="Wago Addons",["url"]="https://addons.wago.io/addons/masque",["primary"]=false,["note"]="Official mirror linked by the pinned author README and WoWInterface project. This page requires JavaScript; edition metadata was not independently readable.",["families"]={}},{["provider"]="wowuphub",["label"]="WowUp Hub",["url"]="https://wowup.io/addons/16",["primary"]=false,["note"]="StormFX and JJSheets, official SFX-WoW/Masque repository. Current listed Classic Era 12.1.0; Retail and Wrath listings are historical, with current patch support unverified.",["families"]={"era"}}},
+ ["DBM-Core"]={{["provider"]="curseforge",["label"]="CurseForge",["url"]="https://www.curseforge.com/wow/addons/deadly-boss-mods",["primary"]=true,["note"]="DBM-Core for Retail, Forever, Classic Era, TBC and Mists Classic. Encounter timers need the matching raid or dungeon module download, such as DBM-Raids-BC for TBC raids.",["families"]={"retail","forever","era","tbc","progression"}},{["provider"]="github",["label"]="GitHub",["url"]="https://github.com/DeadlyBossMods/DeadlyBossMods",["primary"]=false,["note"]="Official source repository. Choose the release for your game edition; source availability does not certify integration behavior.",["families"]={"retail","forever","era","tbc","progression"}},{["provider"]="wowinterface",["label"]="WoWInterface — historical",["url"]="https://www.wowinterface.com/downloads/info8814-DeadlyBossMods.html",["primary"]=false,["note"]="Official historical release page. The authors no longer update it; use CurseForge or GitHub for current releases.",["families"]={}}},
+ ["BigWigs"]={{["provider"]="curseforge",["label"]="CurseForge",["url"]="https://www.curseforge.com/wow/addons/big-wigs",["primary"]=true,["note"]="BigWigs (Boss Timers & Tools) for Retail, Forever, Classic and Classic progression. Its TOC also declares TBC Anniversary.",["families"]={"retail","forever","era","tbc","progression"}},{["provider"]="github",["label"]="GitHub",["url"]="https://github.com/BigWigsMods/BigWigs",["primary"]=false,["note"]="Official source repository. Choose the release for your game edition; source availability does not certify integration behavior.",["families"]={"retail","forever","era","tbc","progression"}},{["provider"]="wowinterface",["label"]="WoWInterface",["url"]="https://www.wowinterface.com/downloads/info5086-BigWigsBossmods.html",["primary"]=false,["note"]="Official project page. Publisher lists Retail, Classic Era, TBC, Wrath and Cataclysm Classic. Choose the matching file; exact patch and RM integration behavior may be unverified.",["families"]={"retail","era","tbc","progression"}},{["provider"]="wago",["label"]="Wago Addons",["url"]="https://addons.wago.io/addons/bigwigs",["primary"]=false,["note"]="Official project page. This page requires JavaScript; edition metadata was not independently readable.",["families"]={}}},
+ ["Titan"]={{["provider"]="curseforge",["label"]="CurseForge",["url"]="https://www.curseforge.com/wow/addons/titan-panel",["primary"]=true,["note"]="Titan Panel for Retail, Forever, Mists Classic, Classic and Classic TBC.",["families"]={"retail","forever","era","tbc","progression"}},{["provider"]="wowinterface",["label"]="WoWInterface",["url"]="https://www.wowinterface.com/downloads/info8092-TitanPanel.html",["primary"]=false,["note"]="Official project page. Publisher lists Retail and Classic Era. Choose the matching file; exact patch and RM integration behavior may be unverified.",["families"]={"retail","era"}}},
 }
 local scopes={
  ["ExtendedCharacterStats"]={["families"]={"era","tbc","progression"},["progression"]={"wrath"},["interfaceRanges"]={}},
@@ -71,6 +77,9 @@ local scopes={
  ["TotemTimers"]={["families"]={"retail","forever","era","tbc","progression"},["progression"]={"wrath","cata","mists"},["interfaceRanges"]={}},
  ["SamyTotemTimers"]={["families"]={"era","tbc","progression"},["progression"]={"wrath"},["interfaceRanges"]={}},
  ["Masque"]={["families"]={"retail","forever","era","tbc","progression"},["progression"]={"wrath","cata","mists"},["interfaceRanges"]={}},
+ ["DBM-Core"]={["families"]={"retail","forever","era","tbc","progression"},["progression"]={"wrath","cata","mists"},["interfaceRanges"]={}},
+ ["BigWigs"]={["families"]={"retail","forever","era","tbc","progression"},["progression"]={"wrath","cata","mists"},["interfaceRanges"]={}},
+ ["Titan"]={["families"]={"retail","forever","era","tbc","progression"},["progression"]={"mists"},["interfaceRanges"]={}},
 }
 -- END GENERATED INTEGRATION PROJECTS
 function addon:GetIntegrationProjectLinks(id)
@@ -167,7 +176,7 @@ local function native(name,...)
  if not ok or not readable(value) then return nil end
  return value
 end
-local function connection(kind)
+local function connection(kind,id)
  if kind=='ecs' then
   local definitions=rawget(addon,'conditionDefinitions')
   if readable(definitions) and type(definitions)=='table' then
@@ -186,6 +195,16 @@ local function connection(kind)
   local state=rawget(value,'state')
   if not readable(state)or type(state)~='string'then return'unknown'end
   return ({connected='connected',disabled='disabled',missing='missing',incompatible='incompatible',error='unknown',unavailable='unknown'})[state]or'loaded'
+ elseif kind=='encounters' then
+  -- One boss mod is selected at a time; the other loaded one is merely idle.
+  local ok,value=pcall(function()
+   local get=addon.GetEncounterIntegrationStatus
+   if type(get)=='function' then return get(addon) end
+  end)
+  if not ok or not readable(value) or type(value)~='table' then return 'unknown' end
+  local state,provider=rawget(value,'state'),rawget(value,'provider')
+  if provider~=id then return 'disabled' end
+  return questieStates[state] or 'unknown'
  elseif kind=='questie' then
   -- This is RM's cached, detached singleton status, never provider discovery.
   local ok,value=pcall(function()
@@ -209,7 +228,7 @@ function addon:ListIntegrationStatus()
   -- Metadata may exist for an installed but not loaded addon. A false loaded
   -- flag alone never establishes that the addon is not installed.
   local version=text(native('GetAddOnMetadata',provider[1],'Version'),4096,true)
-  if loaded==true then state=connection(provider[4]) end
+  if loaded==true then state=connection(provider[4],provider[1]) end
   local detail=display(provider[3],320)
   if provider[4]=='masque'then
    local ok,value=pcall(function()return addon:GetMasquePreviewStatus()end)

@@ -1,6 +1,6 @@
 # Optional integrations
 
-The Integrations page is a fixed inventory of addons that RM actually consumes or detects, with editor preferences alongside it. The current research catalog contains 20 addon identities and 76 release, source and author links. Bundled libraries are dependencies, not addon inventory rows. The Native row is an RM editor preference, not an installable addon. Registered custom editor providers can participate without being fabricated as supported third-party addon records.
+The Integrations page is a fixed inventory of addons that RM actually consumes or detects, with editor preferences alongside it. The current research catalog contains 23 addon identities and 85 release, source and author links. Bundled libraries are dependencies, not addon inventory rows. The Native row is an RM editor preference, not an installable addon. Registered custom editor providers can participate without being fabricated as supported third-party addon records.
 
 | Group | Supported addon identities |
 | --- | --- |
@@ -8,6 +8,8 @@ The Integrations page is a fixed inventory of addons that RM actually consumes o
 | Condition data | `ExtendedCharacterStats`, `MobInfo2` |
 | Recommendation notifications | `WeakAuras` |
 | Quest callbacks | `Questie` |
+| Boss mods | `DBM-Core` (DBM), `BigWigs` — one enabled at a time |
+| Top panels | `Titan` (Titan Panel; passive, through RM's LibDataBroker object) |
 | Action bars | `ElvUI`, `Bartender4`, `ButtonForge`, `G15Buttons`, `SyncUI`, `LUI`, `Dominos`, `DiabolicUI`, `AzeriteUI`, `Neuron`, `FarmingBar`, `TotemTimers`, `SamyTotemTimers` |
 
 ## Cards and display evidence
@@ -50,6 +52,40 @@ Readiness and update callbacks use the upstream dot-call contract. Upstream has 
 
 The source-tested callback contract is pinned to Questie 12.1.0, commit `876731025e1e02248c6b19afb46027fd4cf69766`. Other versions are marked unverified. Published edition scope, source-tested API compatibility and native acceptance are separate facts; unsupported or restricted observations cannot borrow another client's success. No provider implementation, database or artwork is bundled. Native behavior remains unverified until actual-client testing.
 
+
+## Boss mods (DBM / BigWigs)
+
+`addon.Integrations.NewEncounterTimers(options)` in `Integrations/encounters.lua` consumes one boss mod's public callbacks into a small cache that the `BOSSMOD_ENCOUNTER`, `BOSSMOD_STAGE` and `BOSSMOD_TIMER` conditions read. `profile.encounter_provider` is optional (`DBM-Core`, `BigWigs` or absent) and follows Apply/Discard, copy/reset and import; transport rejects any other value. The two cards are Enabled/Disabled pills; enabling one disables the other, so there is never a reconciliation between two boss mods. Nothing is registered with either addon until one is enabled.
+
+Contracts were read from source, not inferred from names:
+
+| Provider | Registration | Events consumed |
+| --- | --- | --- |
+| DBM-Core 12.1.17 (installed TBC Anniversary copy) | `DBM:RegisterCallback(event,f)` / `DBM:UnregisterCallback(event,f)`; `f(event,...)` | `DBM_Pull`, `DBM_Kill`, `DBM_Wipe`, `DBM_SetStage`, `DBM_TimerBegin`, `DBM_TimerStop`, `DBM_TimerUpdate`, `DBM_TimerPause`, `DBM_TimerResume` |
+| BigWigs master `5592509` (GitHub `Loader.lua`, `Core/BossPrototype.lua`) | `BigWigsLoader.RegisterMessage(owner,event,f)` / `.UnregisterMessage(owner,event)` with a private owner; `f(event,...)` | `BigWigs_OnBossEngage/Win/Wipe/Disable`, `BigWigs_SetStage`, `BigWigs_StartBar/StopBar/PauseBar/ResumeBar/StopBars` |
+
+Encounter identity is the game's encounter ID (`mod.encounterId` / `module.engageId`), which both providers share; display names are labels only. DBM fires Kill/Wipe only for mods that keep statistics, so liveness is read from `mod.inCombat` (BigWigs: `module.isEngaged`) whenever a condition asks, and a mod that left combat ends the encounter without any callback. A stage that was never reported counts as 1. Timers are keyed by the provider's bar ID (DBM) or module plus bar text (BigWigs) and matched by the ability's spell ID; bars without a spell ID (pull, respawn, queue timers, BigWigs option keys) are ignored. At most 64 timers are kept, evicting the soonest; expired timers drop lazily on read. Pause keeps the remaining time; update recomputes it.
+
+Cost: no frame, timer or OnUpdate exists while disabled. While enabled, work happens only inside the boss mod's own callbacks (a few table writes) and when a condition reads the cache (one table scan of running timers, no allocation). A selected provider that is not yet loaded registers ADDON_LOADED only until it binds. A callback error, restricted payload or invalid clock faults the adapter: observations are cleared, later callbacks are ignored and the status reports the reason; re-selecting rebinds. Callbacks are not removed from inside the provider's own dispatch loop. Retail and Forever report the adapter incompatible, because their boss-mod payloads may carry secret values; the conditions are then unavailable.
+
+Without an enabled, loaded provider every boss-mod condition is unavailable (also under NOT), never silently false. With a provider, no encounter or no running timer is a real false. One-time seeding (`bossModConditionsSeeded`) adds the predicates to the Combat category and `BOSSMOD_ENCOUNTER`/`BOSSMOD_STAGE` to the Switch picker in existing profiles; later removals stay saved. Automatic switching sees encounter changes on its normal re-check interval; no extra switch trigger is added. The condition icons are temporary Blizzard textures: packaged semantic artwork for the three predicates has not been generated yet (`tests/condition_icons.lua` reports this).
+
+## Top panels (Titan Panel)
+
+RM has always published a LibDataBroker data source (active rotation text, tooltip, left-click configuration, right-click rotation menu). Titan Panel's `TitanLDB.lua` adopts existing objects through `DataObjectIterator` and `LibDataBroker_DataObjectCreated`, so no Titan-specific code exists; the card is passive. Text changes only on rotation changes, never on the polling path. Panel absence has no effect on selection; the minimap button remains the native fallback.
+
+## Evaluated and not integrated
+
+| Candidate (TBC Anniversary install) | Decision |
+| --- | --- |
+| Details! (+ TinyThreat) | Not now. Rotation conditions do not need meter totals; Details' own data is built from the same combat log RM already reads. Design for later analytics: read completed-segment totals through Details' published `API.lua` after combat, never during polling, labelled as Details-sourced and never mixed with RM's own measurements. |
+| Threat meters (TinyThreat, ThreatClassic) | Not needed. They re-export native `UnitDetailedThreatSituation`; RM's THREAT/THREAT_COUNT already read the native API. |
+| Plater | Not needed. Plater renders the same native nameplates RM already counts (NAME_PLATE_UNIT_ADDED/REMOVED); it adds no enemy information. |
+| Method Raid Tools | Not now. Raid notes are free text authored per raid; there is no stable assignment contract RM could read safely. |
+| GTFO | Not now. Its alerts are sound/visual side effects without a documented callback; "standing in bad" is better left to the player. |
+| TomTom, HandyNotes, Atlas, GatherMate2, RareScanner, NovaInstanceTracker | No rotation value; native ZONE/INSTANCE/OUTDOORS cover location. |
+| LittleWigs | Uses the BigWigs contract; covered by the BigWigs adapter when installed. |
+| ElvUI skins / other themes | ElvUI is not installed on the test client; Masque covers button skins. |
 
 ## Masque preview button skins
 

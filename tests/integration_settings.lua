@@ -16,11 +16,11 @@ local function fixture(options)
   return frame
  end
  f.env.CreateFrame=withFontAPI;create=withFontAPI
- local loaded={LuaWorkbench=options.workbench~=false,Questie=options.questie~=false,Masque=options.masque~=false,ExtendedCharacterStats=true,MobInfo2=false,WeakAuras=true,Dominos=true}
+ local loaded={LuaWorkbench=options.workbench~=false,Questie=options.questie~=false,Masque=options.masque~=false,ExtendedCharacterStats=true,MobInfo2=false,WeakAuras=true,Dominos=true,DBM=options.dbm~=false,BigWigs=options.bigwigs==true,['Titan Panel']=true}
  local calls={sync=0,refresh=0,created=0,preview=0};a.db.profile.lua_editor=options.selected or'auto'
  a.LuaSyntax={enable=function()end,disable=function()end,decode=function(s)return s end}
  a.ListIntegrationStatus=function()
-  local rows={};for _,row in ipairs({{'!!!LuaWorkbench','LuaWorkbench','Lua editor integration.'},{'WowLua','WowLua','Optional editor addon.'},{'ExtendedCharacterStats','ExtendedCharacterStats','Optional character statistics conditions.'},{'MobInfo2','MobInfo2','Recorded creature history conditions.'},{'WeakAuras','WeakAuras','Recommendation event bridge.'},{'Questie','Questie','Quest update receipts only.'},{'Masque','Masque','Optional preview-button skins.'},{'Dominos','Dominos','Optional action-bar glow support.'}})do
+  local rows={};for _,row in ipairs({{'!!!LuaWorkbench','LuaWorkbench','Lua editor integration.'},{'WowLua','WowLua','Optional editor addon.'},{'ExtendedCharacterStats','ExtendedCharacterStats','Optional character statistics conditions.'},{'MobInfo2','MobInfo2','Recorded creature history conditions.'},{'WeakAuras','WeakAuras','Recommendation event bridge.'},{'Questie','Questie','Quest update receipts only.'},{'Masque','Masque','Optional preview-button skins.'},{'Dominos','Dominos','Optional action-bar glow support.'},{'DBM-Core','DBM','Boss-mod timers.'},{'BigWigs','BigWigs','Boss-mod timers.'},{'Titan','Titan Panel','LibDataBroker feed.'}})do
    rows[#rows+1]={id=row[1],name=row[2],version=loaded[row[2]]and'1.2.3'or nil,state=loaded[row[2]]and'loaded'or'missing',detail=row[3]}
   end;return rows
  end
@@ -29,6 +29,7 @@ local function fixture(options)
  a.SyncQuestieIntegration=function()calls.sync=calls.sync+1 end;a.RefreshQuestieIntegration=function()calls.refresh=calls.refresh+1 end
  a.GetQuestieIntegrationStatus=function()return{state='disabled'}end
  a.RefreshPreviewWindow=function()calls.preview=calls.preview+1 end
+ calls.encounters=0;a.SyncEncounterIntegration=function()calls.encounters=calls.encounters+1 end
  local function register(id)
   a:RegisterLuaEditorProvider(id,function(host,changed,valid)
    calls.created=calls.created+1;if not loaded[id]then return nil end
@@ -372,5 +373,30 @@ test('Masque status keeps the five-label palette and saved preference across bac
  end
  f.load('UI/help.lua');local help={};for _,entry in ipairs(a:GetIntegrationOptionHelp())do help[entry.id]=entry.text end
  assert(help.preview_masque:find('/masque',1,true)and help.questie_enabled,'toggle guidance missing from page Help')
+end)
+test('boss-mod pills enable one provider at a time, wait for Apply, and Titan stays a passive row',function()
+ local _,a,p,_,calls=fixture({bigwigs=true})
+ assert(state(p,'DBM-Core')=='Disabled'and state(p,'BigWigs')=='Disabled'and state(p,'Titan')=='Supported')
+ assert(p.fields.section_integrations_encounters and p.fields.section_integrations_panels)
+ click(p,'integration_status_DBM-Core');assert(draft(p).encounter_provider=='DBM-Core'and state(p,'DBM-Core')=='Enabled'and calls.encounters==0)
+ click(p,'integration_status_BigWigs');assert(draft(p).encounter_provider=='BigWigs'and state(p,'DBM-Core')=='Disabled'and state(p,'BigWigs')=='Enabled')
+ click(p,'integration_status_Titan');assert(draft(p).encounter_provider=='BigWigs','a passive row has no action')
+ assert(p:SaveSettingsDraft());assert(a.db.profile.encounter_provider=='BigWigs'and calls.encounters==1)
+ p:Draw();click(p,'integration_status_BigWigs');assert(draft(p).encounter_provider==nil and state(p,'BigWigs')=='Disabled')
+ p:DiscardSettingsDraft();assert(a.db.profile.encounter_provider=='BigWigs'and calls.encounters==1)
+end)
+test('a missing boss mod is gray and inert unless it is the saved choice, which can still be cleared',function()
+ local _,a,p,_,calls=fixture({dbm=false})
+ assert(state(p,'DBM-Core')=='Not loaded'and state(p,'BigWigs')=='Not loaded')
+ click(p,'integration_status_DBM-Core');assert(draft(p).encounter_provider==nil)
+ a.db.profile.encounter_provider='DBM-Core';p:DiscardSettingsDraft();p:Draw()
+ assert(state(p,'DBM-Core')=='Not loaded');click(p,'integration_status_DBM-Core');assert(draft(p).encounter_provider==nil)
+ assert(p:SaveSettingsDraft()and a.db.profile.encounter_provider==nil and calls.encounters==1)
+end)
+test('boss-mod portable preference accepts only the two provider identities and the seed flag only as a Boolean',function()
+ local _,a=fixture()
+ for _,id in ipairs({'DBM-Core','BigWigs'})do local value={encounter_provider=id};assert(a:ValidateProfileTransfer(value));assert(a:ProfileFromPortable(a:ProfileToPortable(value)).encounter_provider==id)end
+ for _,bad in ipairs({'DBM','Recount','',1,true,{}})do assert(not a:ValidateProfileTransfer({encounter_provider=bad}))end
+ assert(a:ValidateProfileTransfer({bossModConditionsSeeded=true})and not a:ValidateProfileTransfer({bossModConditionsSeeded='yes'}))
 end)
 finish()
