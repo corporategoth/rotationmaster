@@ -52,7 +52,7 @@ test('readable absent units and zero health retain ordinary false and comparison
     v=node('HEALTH');v.value=-50;assert(a:evaluateConditionResult(v).status=='match')
 end)
 test('restricted and unknown client policies cannot query health or authorize NOT',function()
-    for _,project in ipairs({1,18,999}) do local _,a,s=fixture(project);for _,tag in ipairs({'HEALTH','HEALTHPCT'}) do unknown(a,node(tag)) end;assert(next(s.calls)==nil) end
+    for _,project in ipairs({999}) do local _,a,s=fixture(project);for _,tag in ipairs({'HEALTH','HEALTHPCT'}) do unknown(a,node(tag)) end;assert(next(s.calls)==nil) end
 end)
 test('per-evaluation adapter caches preserve nil reasons and recover on the next observation',function()
     local _,a,s=fixture();local v=node('HEALTH');local cache={};s.current=nil

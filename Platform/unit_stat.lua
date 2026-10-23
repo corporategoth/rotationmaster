@@ -7,7 +7,8 @@ end
 -- The selector range is RM's six authored choices. Only native return two is
 -- consumed; its signed/fractional finite domain is not narrowed by UI display.
 function platform:GetUnitStatObservation(unit,stat)
-    if self:GetCombatDataPolicy()~='probe' then return nil,'unsupported-policy' end
+    local policy=self:GetCombatDataPolicy()
+    if policy~='probe' and policy~='restricted' then return nil,'unsupported-policy' end
     if not self:CanReadValue(unit) or not self:CanReadValue(stat) then return nil,'restricted-value' end
     if type(unit)~='string' or unit=='' then return nil,'invalid-unit' end
     if not finite(stat) or stat%1~=0 or stat<1 or stat>6 then return nil,'invalid-stat-query' end

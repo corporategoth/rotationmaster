@@ -377,7 +377,8 @@ end
 -- spell. Legacy numeric arguments are book slots, so resolve the player book
 -- explicitly instead of passing a spell ID into that overload.
 function platform:IsAutoRepeatActive(spellID)
-    if self:GetCombatDataPolicy()~='probe' then return nil,'unsupported-policy' end
+    local policy=self:GetCombatDataPolicy()
+    if policy~='probe' and policy~='restricted' then return nil,'unsupported-policy' end
     local valid,reason=identifier(spellID,true)
     if not valid then return nil,reason end
     local native=C_Spell and C_Spell.IsAutoRepeatSpell

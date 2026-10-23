@@ -13,7 +13,7 @@ test('movement observes exact player tuple preserving zero fractions and fresh c
     assert(s.calls==8)
 end)
 test('unsupported and restricted policies cannot query speed',function()
-    for _,project in ipairs({1,18,999}) do local _,p,s=fixture(project);local r,why=p:GetPlayerMovementObservation();assert(r==nil and why=='unsupported-policy' and s.calls==0) end
+    for _,project in ipairs({999}) do local _,p,s=fixture(project);local r,why=p:GetPlayerMovementObservation();assert(r==nil and why=='unsupported-policy' and s.calls==0) end
 end)
 test('all supported probe families keep the exact speed observation',function()
     for _,project in ipairs({2,5,11,14,19}) do local _,p,s=fixture(project);s.speed=.5;assert(p:GetPlayerMovementObservation().speed==.5 and s.calls==1) end

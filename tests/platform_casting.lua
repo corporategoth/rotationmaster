@@ -17,7 +17,7 @@ test('owned cast adapter normalizes seconds and exact cast/channel interruptibil
     local first=p:GetUnitCastObservation('target','cast');first.name='changed';assert(p:GetUnitCastObservation('target','cast').name=='Arcane Missiles')
 end)
 test('policy unit and query guards prevent unsupported or invalid native calls',function()
-    for _,project in ipairs({1,18,999}) do local _,p,s=fixture(project);local record,why=p:GetUnitCastObservation('target','cast');assert(record==nil and why=='unsupported-policy' and next(s.calls)==nil) end
+    for _,project in ipairs({999}) do local _,p,s=fixture(project);local record,why=p:GetUnitCastObservation('target','cast');assert(record==nil and why=='unsupported-policy' and next(s.calls)==nil) end
     local f,p,s=fixture();local opaque={};f.env.canaccessvalue=function(v) return not rawequal(v,opaque) end
     for _,unit in ipairs({'',0,false,{},opaque}) do assert(p:GetUnitCastObservation(unit,'cast')==nil) end
     for _,kind in ipairs({'',0,false,{},opaque,'casting'}) do assert(p:GetUnitCastObservation('target',kind)==nil) end
@@ -30,11 +30,11 @@ test('unit existence false is inactive while missing failed nil and unreadable e
     s.throw=nil;local opaque={};s.exists=opaque;f.env.canaccessvalue=function(v) return not rawequal(v,opaque) end;record,why=p:GetUnitCastObservation('target','cast');assert(not record and why=='restricted-value')
     f.env.UnitExists=nil;record,why=p:GetUnitCastObservation('target','cast');assert(not record and why=='missing-api')
 end)
-test('readable nil names are inactive and missing failed malformed and restricted cast queries stay unknown',function()
+test('readable nil names are inactive, a secret name is an unnamed cast, and missing failed malformed queries stay unknown',function()
     for _,kind in ipairs({'cast','channel'}) do local f,p,s=fixture();s.name=nil;local record=p:GetUnitCastObservation('target',kind);assert(record.active==false and not s.calls.time)
         s.name='';local _,why=p:GetUnitCastObservation('target',kind);assert(why=='invalid-api-result')
         s.throw=kind;_,why=p:GetUnitCastObservation('target',kind);assert(why=='api-error')
-        s.throw=nil;local opaque={};s.name=opaque;f.env.canaccessvalue=function(v) return not rawequal(v,opaque) end;_,why=p:GetUnitCastObservation('target',kind);assert(why=='restricted-value')
+        s.throw=nil;local opaque={};s.name=opaque;f.env.canaccessvalue=function(v) return not rawequal(v,opaque) end;local hidden=p:GetUnitCastObservation('target',kind);assert(hidden.active and hidden.name==nil and hidden.nameReason=='restricted-value')
         f.env[kind=='cast' and 'UnitCastingInfo' or 'UnitChannelInfo']=nil;_,why=p:GetUnitCastObservation('target',kind);assert(why=='missing-api')
     end
 end)

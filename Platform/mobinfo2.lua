@@ -38,7 +38,8 @@ local function hitCount(self,resists,school)
 end
 
 function platform:GetMobInfo2Observation(unit,kind,school,cache)
-    if self:GetCombatDataPolicy()~='probe' then return nil,'unsupported-policy' end
+    local policy=self:GetCombatDataPolicy()
+    if policy~='probe' and policy~='restricted' then return nil,'unsupported-policy' end
     if not self:CanReadValue(unit) or not self:CanReadValue(kind) or not self:CanReadValue(cache) then return nil,'restricted-value' end
     if type(unit)~='string' or unit=='' then return nil,'invalid-unit' end
     if kind~='runner' and kind~='resist' and kind~='immune' then return nil,'invalid-mobinfo2-kind' end

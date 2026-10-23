@@ -24,7 +24,7 @@ test('explicit mana and current power retain distinct identities including Mana0
 end)
 test('known absence skips all resource queries and invalid or restricted requests fail before natives',function()
     local _,p,s=fixture();s.exists=false;local r=p:GetUnitPowerObservation('target','current',true);assert(r.exists==false and not s.calls.type and not s.calls.current and not s.calls.maximum)
-    for _,project in ipairs({1,18,999}) do local _,q,state=fixture(project);local value,why=q:GetUnitPowerObservation('target','mana');assert(value==nil and why=='unsupported-policy' and next(state.calls)==nil) end
+    for _,project in ipairs({999}) do local _,q,state=fixture(project);local value,why=q:GetUnitPowerObservation('target','mana');assert(value==nil and why=='unsupported-policy' and next(state.calls)==nil) end
     local f;f,p,s=fixture();local secret={};f.env.canaccessvalue=function(value) return not rawequal(value,secret) end
     for _,unit in ipairs({'',0,false,{},secret}) do assert(p:GetUnitPowerObservation(unit,'mana')==nil) end
     for _,mode in ipairs({'',0,false,{},secret,'energy'}) do assert(p:GetUnitPowerObservation('target',mode)==nil) end

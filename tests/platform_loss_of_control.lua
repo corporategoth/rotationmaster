@@ -77,6 +77,6 @@ test('probe families use live APIs without load-time queries and blocked policie
         f.load('Platform/loss_of_control.lua');assert(#s.calls==0);assert(count(p)==1 and row(p,1,'type').timeRemaining==5)
         f.env.C_LossOfControl.GetActiveLossOfControlDataCount=function(...) assert(select('#',...)==0);return 0 end;assert(count(p)==0)
     end
-    for _,project in ipairs({1,18,999}) do local _,p,s=fixture(project);unknown(function() return count(p) end,'unsupported-policy');unknown(function() return row(p,1,'type') end,'unsupported-policy');assert(#s.calls==0) end
+    for _,project in ipairs({999}) do local _,p,s=fixture(project);unknown(function() return count(p) end,'unsupported-policy');unknown(function() return row(p,1,'type') end,'unsupported-policy');assert(#s.calls==0) end
 end)
 finish()

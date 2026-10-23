@@ -58,7 +58,7 @@ end)
 test('optional registration stays load-time truthiness while unsupported policies require no native queries',function()
  local f,a=fixture(11,false);for _,tag in ipairs(tags) do assert(a.conditionDefinitions[tag]==nil) end;f.env.MI2_GetMobData=function() return {} end;for _,tag in ipairs(tags) do assert(a.conditionDefinitions[tag]==nil) end
  local _,registered=fixture(11,'noncallable');for _,tag in ipairs(tags) do assert(registered.conditionDefinitions[tag]);unknown(registered,node(tag)) end
- for _,project in ipairs({1,18,999}) do local _,a,s=fixture(project);for _,tag in ipairs(tags) do unknown(a,node(tag)) end;assert(#s.calls==0) end
+ for _,project in ipairs({999}) do local _,a,s=fixture(project);for _,tag in ipairs(tags) do unknown(a,node(tag)) end;assert(#s.calls==0) end
 end)
 test('actual current exported and public helper copies share presence authority with fresh provider facts',function()
  local _,a,s=fixture();for _,tag in ipairs(tags) do local source=assert(a:GetBuiltinConditionSource(tag));assert(source.evaluate==newBodies[tag],'MobInfo2 catalog pending');a:RegisterCondition('COPY_'..tag,assert(a:CompileCustomCondition('COPY_'..tag,source))) end

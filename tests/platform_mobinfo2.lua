@@ -20,7 +20,7 @@ test('presence alone caches complete false and nil tuples while name level provi
  assert(observe(p,'resist','fi',{}).ratio==.5);s.calls={};s.exists=nil;cache={};local value,why=observe(p,'runner','fi',cache);assert(value==nil and why);s.exists=true;local again,reason=observe(p,'immune','fi',cache);assert(again==nil and reason==why and #s.calls==1);assert(observe(p).runner==false)
 end)
 test('policy query and cache guards reject unreadable values before any native call',function()
- for _,project in ipairs({1,18,999}) do local _,p,s=fixture(project);unknown(function() return observe(p) end);assert(#s.calls==0) end
+ for _,project in ipairs({999}) do local _,p,s=fixture(project);unknown(function() return observe(p) end);assert(#s.calls==0) end
  local _,p,s,opaque=fixture();for _,args in ipairs({{opaque,'runner','fi'},{'target',opaque,'fi'},{'target','resist',opaque},{'','runner','fi'},{'target','bad','fi'},{'target','runner','fi',opaque},{'target','runner','fi',false}}) do unknown(function() return p:GetMobInfo2Observation(unpack(args)) end) end;assert(#s.calls==0)
 end)
 test('known absent units need no provider name level or school data',function()

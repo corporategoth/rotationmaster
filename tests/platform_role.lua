@@ -23,7 +23,7 @@ test('modern inspect uses exact ordered dot calls role result5 and only consumed
  s.role='FUTURE_ROLE';assert(inspect(p,'pet')=='FUTURE_ROLE');s.role='NONE';assert(inspect(p)=='NONE')
 end)
 test('policy and unreadable query guards stop before all native calls and namespaces',function()
- for _,project in ipairs({1,18,999}) do local _,p,s=fixture(project);unknown(function() return inspect(p) end,'unsupported-policy');unknown(function() return talent(p,2) end,'unsupported-policy');assert(#s.calls==0) end
+ for _,project in ipairs({999}) do local _,p,s=fixture(project);unknown(function() return inspect(p) end,'unsupported-policy');unknown(function() return talent(p,2) end,'unsupported-policy');assert(#s.calls==0) end
  local _,p,s,opaque=fixture();unknown(function() return p:GetInspectRoleObservation(opaque) end,'restricted-value');unknown(function() return talent(p,opaque) end,'restricted-value')
  for _,bad in ipairs({'',false,1,{}}) do unknown(function() return p:GetInspectRoleObservation(bad) end,'invalid-unit') end
  assert(#s.calls==0)

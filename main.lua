@@ -669,6 +669,10 @@ function addon:OnInitializeInternal()
     self.specTalents = {}
 
     self.unitsInRange = {}
+    -- Restricted clients make an NPC's GUID secret, so they keep the nameplate
+    -- unit tokens instead (Core/threat_count_conditions.lua); nil elsewhere.
+    local platform = self.Platform
+    self.nameplateUnits = platform and platform.GetCombatDataPolicy and platform:GetCombatDataPolicy() == 'restricted' and {} or nil
     self.damageHistory = {}
     self.lastMainSwing = nil
     self.lastOffSwing = nil
@@ -829,8 +833,12 @@ end
 local castEvents = {UNIT_SPELLCAST_SENT=true, UNIT_SPELLCAST_START=true, UNIT_SPELLCAST_STOP=true,
     UNIT_SPELLCAST_SUCCEEDED=true, UNIT_SPELLCAST_INTERRUPTED=true, UNIT_SPELLCAST_FAILED=true,
     UNIT_SPELLCAST_DELAYED=true, UNIT_SPELLCAST_CHANNEL_START=true, UNIT_SPELLCAST_CHANNEL_STOP=true}
+-- Restricted clients record only the player's and pet's successful casts
+-- (spell history); announcements stay on the probe policy.
+local restrictedCastEvents = {UNIT_SPELLCAST_SUCCEEDED=true}
+local restrictedCombatEvents = {"NAME_PLATE_UNIT_ADDED", "NAME_PLATE_UNIT_REMOVED", "UNIT_COMBAT", "UNIT_SPELLCAST_SUCCEEDED"}
 local castFrame
-local function registerCastEvents(self)
+local function registerCastEvents(self, wanted)
     if not castFrame then
         if type(CreateFrame)~='function' then return false end
         castFrame = CreateFrame('Frame')
@@ -840,8 +848,22 @@ local function registerCastEvents(self)
         end)
     end
     if not castFrame.RegisterUnitEvent then return false end
-    for event in pairs(castEvents) do pcall(castFrame.RegisterUnitEvent, castFrame, event, 'player', 'pet') end
+    for event in pairs(wanted or castEvents) do pcall(castFrame.RegisterUnitEvent, castFrame, event, 'player', 'pet') end
     return true
+end
+
+-- Nameplates already shown when a restricted client enables. Events keep the
+-- set current afterwards; UnitExists carries no secret annotation.
+local function seedNameplateUnits(self)
+    local units = self.nameplateUnits
+    if type(units) ~= 'table' then return end
+    for unit in pairs(units) do units[unit] = nil end
+    if type(UnitExists) ~= 'function' then return end
+    for index = 1, 40 do
+        local unit = 'nameplate' .. index
+        local ok, exists = pcall(UnitExists, unit)
+        if ok and self.Platform:CanReadValue(exists) and exists == true then units[unit] = true end
+    end
 end
 
 local reconcileNameplateResume
@@ -865,6 +887,14 @@ function addon:enable()
         for _,event in ipairs(combat_events) do
             if not (unitCasts and castEvents[event]) and not activeCall(self,change,'RegisterEvent',event) then return end
         end
+    elseif client.combatDataPolicy=='restricted' then
+        -- The combat log is SecureOnly there; these events still reach addons.
+        local unitCasts=registerCastEvents(self,restrictedCastEvents)
+        for _,event in ipairs(restrictedCombatEvents) do
+            if not (unitCasts and castEvents[event]) and not activeCall(self,change,'RegisterEvent',event) then return end
+        end
+        if self.nameplateUnits==nil then self.nameplateUnits={} end
+        seedNameplateUnits(self)
     end
     local family=client.family
     local extraEvents=family=="retail" or family=="forever"
@@ -934,6 +964,8 @@ function addon:disable()
     end
     self.spellHistory={}
     self.combatHistory={}
+    local plates=self.nameplateUnits
+    if type(plates)=='table' then for unit in pairs(plates) do plates[unit]=nil end end
     if castFrame and castFrame.UnregisterAllEvents then castFrame:UnregisterAllEvents() end
     if not activeCall(self,change,'UnregisterAllEvents') then return end
 end
@@ -1364,6 +1396,9 @@ local function prepareEvaluation(self)
 
     self.evaluationProfile:child("environment"):start()
 
+    -- The GUID-keyed unit environment never runs on restricted clients: an
+    -- NPC's GUID is secret there and cannot be compared or used as a key.
+    if self.nameplateUnits == nil then
     -- Reused every poll; only read within this function.
     local unitsHandled, unitsGUID = environmentHandled, environmentGUID
     for k in pairs(unitsHandled) do unitsHandled[k] = nil end
@@ -1389,6 +1424,7 @@ local function prepareEvaluation(self)
             not starts_with(unit, "mouseover") then
             self.unitsInRange[guid] = CreateUnitInfo(cache, unit)
         end
+    end
     end
 
     local threshold_time = now - self.db.profile.spell_history
@@ -2366,15 +2402,18 @@ local function wrapEvent(func)
 end
 
 -- The client project, and so its combat data policy, is fixed for the
--- session; these handlers run for every combat log line in range.
+-- session; these handlers run for every combat log line in range. A handler
+-- with a restricted variant runs it on Retail and Forever, where any payload
+-- field may be secret and is checked before it is compared or used as a key.
 local combatDataPolicy
-local function wrapCombatEvent(func)
+local function wrapCombatEvent(func,restricted)
     local dispatch=wrapEvent(func)
+    local restrictedDispatch=restricted and wrapEvent(restricted)
     return function(self,...)
         if self.initializationErrorReport then return end
         combatDataPolicy=combatDataPolicy or self.Platform:GetClientInfo().combatDataPolicy
-        if combatDataPolicy~='probe' then return end
-        return dispatch(self,...)
+        if combatDataPolicy=='probe' then return dispatch(self,...) end
+        if restrictedDispatch and combatDataPolicy=='restricted' then return restrictedDispatch(self,...) end
     end
 end
 
@@ -2928,6 +2967,13 @@ end
 
 end
 
+-- Restricted clients: the token alone (its GUID is secret for an NPC).
+local function restrictedNameplateUnit(self, unit, shown)
+    local units = self.nameplateUnits
+    if type(units) ~= "table" or not self.Platform:CanReadValue(unit) or type(unit) ~= "string" or unit == "" then return end
+    if shown then units[unit] = true else units[unit] = nil end
+end
+
 addon.NAME_PLATE_UNIT_ADDED = wrapCombatEvent(function(self, _, unit)
     local ticket={};nameplateEvent=ticket
     local snapshot=self.unitsInRange
@@ -2949,7 +2995,7 @@ addon.NAME_PLATE_UNIT_ADDED = wrapCombatEvent(function(self, _, unit)
         if not ok or not unchanged then return end
     end
     rawset(entry,"unit",unit);rawset(snapshot,guid,entry)
-end)
+end, function(self, _, unit) restrictedNameplateUnit(self, unit, true) end)
 
 addon.NAME_PLATE_UNIT_REMOVED = wrapCombatEvent(function(self, _, unit)
     local ticket={};nameplateEvent=ticket
@@ -2959,7 +3005,7 @@ addon.NAME_PLATE_UNIT_REMOVED = wrapCombatEvent(function(self, _, unit)
     local changes=nameplateChanges(self,snapshot,ticket,unit);if not changes then return end
     if not nameplateCurrent(self,snapshot,ticket) then return end
     applyNameplateChanges(self,snapshot,ticket,unit,changes)
-end)
+end, function(self, _, unit) restrictedNameplateUnit(self, unit, false) end)
 
 addon.BAG_UPDATE = wrapEvent(function(self)
     local bindings = self.db.char.bindings
@@ -2979,6 +3025,20 @@ local historyWanted = {damage = 0, combat = 0}
 addon.historyWanted = historyWanted
 function addon:WantHistory(kind)
     historyWanted[kind] = GetTime() + 60
+end
+
+-- The restricted variant's recorder (the probe handler keeps its own copy).
+local function recordCombatAction(self, unit, entry)
+    if self.combatHistory[unit] == nil then
+        self.combatHistory[unit] = {}
+    end
+
+    -- Evaluation trims too, but it does not run without an active rotation.
+    local history = self.combatHistory[unit]
+    local profile = self.db and self.db.profile
+    local threshold = entry.time - (profile and profile.combat_history or 10)
+    while #history > 0 and history[#history].time < threshold do history[#history] = nil end
+    table.insert(history, 1, entry)
 end
 
 addon.UNIT_COMBAT = wrapCombatEvent(function(self, _, unit, action, severity, value, type)
@@ -3001,6 +3061,24 @@ addon.UNIT_COMBAT = wrapCombatEvent(function(self, _, unit, action, severity, va
         value = value,
         type = type,
     })
+end, function(self, _, unit, action, severity, value, kind)
+    -- UNIT_COMBAT carries no secret annotation (Blizzard_APIDocumentationGenerated,
+    -- live 12.1.5 and forever 1.60.1), but every field is still checked. An
+    -- action that cannot be read is recorded as unknown (action false), so a
+    -- history reader at that position is unavailable rather than wrong.
+    local platform = self.Platform
+    if not platform:CanReadValue(unit) or type(unit) ~= "string" or unit == "" then return end
+    local now = GetTime()
+    local wanted = self.historyWanted
+    if wanted and now > wanted.combat then return end
+    local entry = {time = now, action = false}
+    if platform:CanReadValue(action) and type(action) == "string" and platform:CanReadValue(severity)
+        and (severity == nil or type(severity) == "string") then
+        entry.action, entry.severity = action, severity
+    end
+    if platform:CanReadValue(value) then entry.value = value end
+    if platform:CanReadValue(kind) then entry.type = kind end
+    recordCombatAction(self, unit, entry)
 end)
 
 local currentSpells = {}
@@ -3126,6 +3204,18 @@ addon.UNIT_SPELLCAST_STOP = wrapCombatEvent(function(self, event, unit, castguid
         self.lastOffSwing = nil
     end
 end)
+-- The restricted variant's recorder (the probe handler keeps its own copy).
+local function recordSpellCast(self, spellid)
+    local now = GetTime()
+    local history = self.spellHistory
+    table.insert(history, 1, {
+        spell = spellid, --[[ this was causing spellid to be nil in spellHistory, breaking the spell history conditions. ]]
+        time = now
+    })
+    -- Evaluation trims too, but it does not run without an active rotation.
+    local threshold = now - (self.db.profile.spell_history or 60)
+    while #history > 1 and history[#history].time < threshold do history[#history] = nil end
+end
 addon.UNIT_SPELLCAST_SUCCEEDED = wrapCombatEvent(function(self, event, unit, castguid, spellid)
     spellcast(self, event, unit, castguid, spellid)
     if unit == 'player' then
@@ -3144,6 +3234,15 @@ addon.UNIT_SPELLCAST_SUCCEEDED = wrapCombatEvent(function(self, event, unit, cas
         local threshold = now - (self.db.profile.spell_history or 60)
         while #history > 1 and history[#history].time < threshold do history[#history] = nil end
     end
+end, function(self, _, unit, _, spellid)
+    -- The player's and pet's casts are readable unless Blizzard flags the
+    -- spell always secret (SecretWhenUnitSpellCastRestricted). A secret spell
+    -- is still a cast: it is recorded as unknown (spell false), so a history
+    -- reader at that position is unavailable rather than wrong.
+    local platform = self.Platform
+    if not platform:CanReadValue(unit) or (unit ~= 'player' and unit ~= 'pet') then return end
+    if not platform:CanReadValue(spellid) or type(spellid) ~= 'number' then spellid = false end
+    recordSpellCast(self, spellid)
 end)
 addon.UNIT_SPELLCAST_INTERRUPTED = wrapCombatEvent(spellcast)
 addon.UNIT_SPELLCAST_FAILED = wrapCombatEvent(spellcast)

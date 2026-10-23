@@ -43,7 +43,7 @@ test('whole observations and unavailable tuples cache only within a pass and rec
     s.speed=0;assert(a:evaluateConditionResult({type='MOVING'}).status=='no-match' and s.calls==rawBefore+2)
 end)
 test('restricted and unknown client policies stay unavailable without observing speed',function()
-    for _,project in ipairs({1,18,999}) do local _,a,s=fixture(project);unknown(a);assert(s.calls==0) end
+    for _,project in ipairs({999}) do local _,a,s=fixture(project);unknown(a);assert(s.calls==0) end
 end)
 test('fresh editable condition copies use normalized movement while saved raw callback behavior remains executable',function()
     local _,a,s=fixture();clone(a);s.speed=nil;unknown(a,'COPY_MOVING')

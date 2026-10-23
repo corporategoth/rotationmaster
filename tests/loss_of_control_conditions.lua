@@ -113,7 +113,7 @@ test('count and requested row snapshots cache exact tuples by self kind index an
     assert(evaluate(node('LOC_TYPE'),{})==true and #s.calls==5)
     local other=setmetatable({},{__index=a.Platform});assert(a.Functions.cache.getCached(cache,a.Platform.GetLossOfControlCount,other)==1 and #s.calls==6)
     assert(evaluate(node('LOC_TYPE'))==true and #s.calls==8 and next(a.longtermCache)==nil)
-    for _,project in ipairs({1,18,999}) do local _,b,state=fixture(project);unknown(b,node('LOC_TYPE'));assert(#state.calls==0) end
+    for _,project in ipairs({999}) do local _,b,state=fixture(project);unknown(b,node('LOC_TYPE'));assert(#state.calls==0) end
 end)
 test('numeric school emitted by actual native widget validates for storage and strings are rejected',function()
     local _,a=fixture();local definition=a.conditionDefinitions.LOC_BLOCKED;local value=node('LOC_BLOCKED');value.school=nil

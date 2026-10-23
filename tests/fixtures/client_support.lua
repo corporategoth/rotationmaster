@@ -40,7 +40,7 @@ function S.install(f,options)
     a.conditionRegistryVersion=(a.conditionRegistryVersion or 0)+1
     return a
 end
-local secret={['unsupported-policy']=true,['combat-events-unavailable']=true}
+local secret={['unsupported-policy']=true,['combat-log-unavailable']=true,['secret-health']=true,['secret-power']=true}
 function S.incomplete(row,label)
     label=label or tostring(row and row.id)
     assert(row and not row.eligible and row.eligibilityReason=='invalid-or-unsupported',label..' '..tostring(row and row.eligibilityReason))

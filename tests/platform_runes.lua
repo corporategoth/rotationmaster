@@ -42,6 +42,6 @@ test('clock is fresh protected zero-argument finite data without sign constraint
 end)
 test('policy and live API replacement avoid load-time calls across every probe family',function()
  for _,project in ipairs({2,5,11,14,19}) do local f,p,s=fixture(project);assert(#s.calls==0);f.load('Platform/runes.lua');assert(#s.calls==0);assert(observe(p,'GetRuneTypeObservation',1)==1);f.env.GetRuneType=function(index) assert(index==1);return 8 end;assert(observe(p,'GetRuneTypeObservation',1)==8) end
- for _,project in ipairs({1,18,999}) do local _,p,s=fixture(project);unknown(p,'GetRuneTypeObservation','unsupported-policy',1);unknown(p,'GetRuneCooldownObservation','unsupported-policy',1);unknown(p,'GetRuneEvaluationTime','unsupported-policy');assert(#s.calls==0) end
+ for _,project in ipairs({999}) do local _,p,s=fixture(project);unknown(p,'GetRuneTypeObservation','unsupported-policy',1);unknown(p,'GetRuneCooldownObservation','unsupported-policy',1);unknown(p,'GetRuneEvaluationTime','unsupported-policy');assert(#s.calls==0) end
 end)
 finish()

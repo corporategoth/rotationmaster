@@ -4,7 +4,8 @@ local platform=addon.Platform
 -- These predicates are independent, zero-argument observations of the player.
 -- Keep their native facts distinct from existence, instances or spell usability.
 function platform:GetPlayerFlagObservation(kind)
-    if self:GetCombatDataPolicy()~='probe' then return nil,'unsupported-policy' end
+    local policy=self:GetCombatDataPolicy()
+    if policy~='probe' and policy~='restricted' then return nil,'unsupported-policy' end
     if not self:CanReadValue(kind) then return nil,'restricted-value' end
     if kind~='stealthed' and kind~='control' and kind~='outdoors' then return nil,'invalid-player-flag-query' end
     local api

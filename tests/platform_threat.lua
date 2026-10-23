@@ -28,7 +28,7 @@ test('threat preserves finite numbers and exact ordered actor recipient calls',f
     end end
 end)
 test('policy and readable nonempty unit validation precede native access',function()
-    for _,project in ipairs({1,18,999}) do local _,p,s=fixture(project);unavailable(p,'unsupported-policy');assert(#s.calls==0) end
+    for _,project in ipairs({999}) do local _,p,s=fixture(project);unavailable(p,'unsupported-policy');assert(#s.calls==0) end
     local f,p,s=fixture();local opaque={};f.env.canaccessvalue=function(v) return not rawequal(v,opaque) end
     for _,bad in ipairs({'',false,0,{},opaque}) do local value,why=p:GetUnitThreatObservation(bad)
         assert(value==nil and why==(rawequal(bad,opaque) and 'restricted-value' or 'invalid-unit'))

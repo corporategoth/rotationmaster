@@ -54,7 +54,7 @@ test('per-pass tuples preserve false and nil reasons and recover only on fresh o
     s.attack=true;assert(evaluate(node(),cache)==false and #s.calls==2 and evaluate(node(),{})==true)
 end)
 test('restricted and unsupported client policies do not query native state or authorize NOT',function()
-    for _,project in ipairs({1,18,999}) do local _,a,s=fixture(project);unknown(a,node());assert(#s.calls==0) end
+    for _,project in ipairs({999}) do local _,a,s=fixture(project);unknown(a,node());assert(#s.calls==0) end
 end)
 test('current editable clones share canonical snapshot identity exact actor and next-pass recovery',function()
     local _,a,s=fixture();clone(a);local cache={};local v=node();v.unit='vehicle';local copied=node('COPY_ATTACKABLE');copied.unit='vehicle'

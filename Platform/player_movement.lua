@@ -2,7 +2,8 @@ local _,addon=...
 local platform=addon.Platform
 
 function platform:GetPlayerMovementObservation()
-    if self:GetCombatDataPolicy()~='probe' then return nil,'unsupported-policy' end
+    local policy=self:GetCombatDataPolicy()
+    if policy~='probe' and policy~='restricted' then return nil,'unsupported-policy' end
     if type(GetUnitSpeed)~='function' then return nil,'missing-api' end
     local ok,speed=pcall(GetUnitSpeed,'player')
     if not ok then return nil,'api-error' end

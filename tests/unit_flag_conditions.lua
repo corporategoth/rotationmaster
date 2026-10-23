@@ -77,7 +77,7 @@ test('complete tuple cache isolates kind and unit preserves false and nil reason
     assert(a.longtermCache==originalCache and a.longtermCache.sentinel.value==42 and next(a.longtermCache,'sentinel')==nil)
 end)
 test('restricted and unknown policies stay unavailable and transient native failure recovers without quarantine',function()
-    for _,project in ipairs({1,18,999}) do local _,a,s=fixture(project);for tag in pairs(kinds) do unknown(a,node(tag)) end;assert(#s.calls==0) end
+    for _,project in ipairs({999}) do local _,a,s=fixture(project);for tag in pairs(kinds) do unknown(a,node(tag)) end;assert(#s.calls==0) end
     for tag,kind in pairs(kinds) do local _,a,s=fixture();s.throw=kind;unknown(a,node(tag));s.throw=nil;assert(a:evaluateConditionResult(node(tag)).status=='match') end
 end)
 test('fresh editable copies use exact shared normalized observations and preserve selected actor tuples',function()

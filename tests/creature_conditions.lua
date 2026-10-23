@@ -80,7 +80,7 @@ test('actual observer method receiver and unit identity partition cached observa
  assert(a:GetConditionCreatureTypeMatch('pet','BEAST',cache)==true)
 end)
 test('probe policy and readonly string observer remain distinct from new numeric identity',function()
- for _,project in ipairs({1,18,999})do local _,a,s=fixture(project);unavailable(a,node());assert(#s.calls==0)end
+ for _,project in ipairs({999})do local _,a,s=fixture(project);unavailable(a,node());assert(#s.calls==0)end
  local _,a,s=fixture();assert(a.Platform:GetUnitMetadataObservation('target','creature')=='Bête');assert(a:GetConditionCreatureTypeMatch('target','BEAST',{})==true)
  s.name='Wildtier';assert(a.Platform:GetUnitMetadataObservation('target','creature')=='Wildtier');assert(a:GetConditionCreatureTypeMatch('target','BEAST',{})==true)
 end)

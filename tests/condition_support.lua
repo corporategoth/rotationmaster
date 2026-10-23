@@ -28,23 +28,23 @@ local function unsupported(report)
     for _,d in ipairs(report.diagnostics) do if d.code=='unsupported-condition' then return d end end
 end
 
-test('a probe-only condition is unresolved on Retail and Forever, supported on Era/TBC/Mists',function()
-    local pvp={type='PVP',unit='player'}
+test('an always-secret condition is unresolved on Retail and Forever, supported on Era/TBC/Mists',function()
+    local health={type='HEALTH',unit='player',operator='GREATERTHAN',value=1}
     for _,c in ipairs({{2,0},{5,1},{19,4}})do
-        local _,a=client(c[1],c[2]);local report=validate(a,pvp)
-        assert(report.resolved and not unsupported(report),'project '..c[1]..' flagged PVP')
-        assert(a:GetConditionSupport('PVP',a.conditionDefinitions.PVP,pvp)==nil)
-        assert(a:validateCondition(pvp,0),'validateCondition refused a supported condition')
+        local f,a=client(c[1],c[2]);f.env.UnitHealth=f.env.UnitHealth or function() end;local report=validate(a,health)
+        assert(report.resolved and not unsupported(report),'project '..c[1]..' flagged HEALTH')
+        assert(a:GetConditionSupport('HEALTH',a.conditionDefinitions.HEALTH,health)==nil)
+        assert(a:validateCondition(health,0),'validateCondition refused a supported condition')
     end
     for _,c in ipairs({{1,12},{18,12}})do
-        local _,a=client(c[1],c[2]);local report=validate(a,pvp);local d=unsupported(report)
-        assert(not report.resolved and d and d.condition=='PVP' and d.reason=='unsupported-policy' and d.path=='$.body.rotation[1].conditions.type',
+        local f,a=client(c[1],c[2]);f.env.UnitHealth=f.env.UnitHealth or function() end;local report=validate(a,health);local d=unsupported(report)
+        assert(not report.resolved and d and d.condition=='HEALTH' and d.reason=='secret-health' and d.path=='$.body.rotation[1].conditions.type',
             'project '..c[1]..': '..tostring(d and d.reason))
         assert(report.valid,'an unsupported condition is incomplete, not invalid data')
-        assert(not a:validateCondition(pvp,0),'auto-switch validity accepted an unsupported condition')
+        assert(not a:validateCondition(health,0),'auto-switch validity accepted an unsupported condition')
         local text=a:DescribeUnsupportedCondition(d)
-        assert(text and text:find(a.conditionDefinitions.PVP.description,1,true) and text:find('not available on this client',1,true)
-            and text:find('restricted',1,true),tostring(text))
+        assert(text and text:find(a.conditionDefinitions.HEALTH.description,1,true) and text:find('not available on this client',1,true)
+            and text:find('secret',1,true),tostring(text))
     end
 end)
 
@@ -119,10 +119,11 @@ test('the validation stamp moves when the client changes',function()
     platform.GetClientInfo=function(self) local info=native(self);info.family='retail';info.combatDataPolicy='restricted';return info end
     local after=a:GetRotationValidationStamp()
     assert(after~=before and (a.conditionRegistryVersion or 0)>version,'stamp kept across a client change')
-    local d=unsupported(validate(a,{type='PVP',unit='player'}));assert(d and d.reason=='unsupported-policy','swapped client not seen')
+    f.env.UnitHealth=f.env.UnitHealth or function() end
+    local d=unsupported(validate(a,{type='HEALTH',unit='player',operator='GREATERTHAN',value=1}));assert(d and d.reason=='secret-health','swapped client not seen')
     platform.GetClientInfo=native
     assert(a:GetRotationValidationStamp()~=after)
-    assert(not unsupported(validate(a,{type='PVP',unit='player'})),'restored client still flagged')
+    assert(not unsupported(validate(a,{type='HEALTH',unit='player',operator='GREATERTHAN',value=1})),'restored client still flagged')
 end)
 
 test('SWING_TIME off-hand with no off-hand weapon reads false, main hand stays strict',function()
@@ -157,9 +158,16 @@ test('the merged conditions declare their client support, field by field',functi
     assert(forever:GetConditionSupport('SPECIALIZATION',spec,{type='SPECIALIZATION',spec=71})==nil,'another class is an ordinary false')
     local _,retail=client(1,12)
     assert(retail:GetConditionSupport('SPECIALIZATION',retail.conditionDefinitions.SPECIALIZATION,{type='SPECIALIZATION',spec=259})==nil)
-    -- Combat-event history is never recorded under the restricted policy.
-    for _,tag in ipairs({'SPELL_HISTORY','COMBAT_HISTORY','SWING_TIME_REMAIN','DISTANCE_COUNT','CASTING_PROGRESS'}) do
+    -- History fed by the combat log is never recorded there (SecureOnly);
+    -- histories fed by unit and nameplate events are.
+    for _,tag in ipairs({'SWING_TIME_REMAIN','TT_HEALTH'}) do
         assert(retail.conditionDefinitions[tag]==nil or retail:GetConditionSupport(tag,retail.conditionDefinitions[tag],{})~=nil,tag..' supported on Retail')
+    end
+    local natives=getfenv(retail.GetConditionSupport)
+    natives.UnitCastingInfo=natives.UnitCastingInfo or function() end;natives.GetTime=natives.GetTime or function() return 0 end
+    for _,tag in ipairs({'SPELL_HISTORY','COMBAT_HISTORY','DISTANCE_COUNT','CASTING_PROGRESS'}) do
+        local reason=retail:GetConditionSupport(tag,retail.conditionDefinitions[tag],{})
+        assert(reason==nil,tag..' flagged on Retail: '..tostring(reason))
     end
     -- Never-secret readers stay available on Retail (its natives modeled).
     local re=getfenv(retail.GetConditionSupport)
@@ -173,12 +181,13 @@ end)
 test('pickers hide conditions this client cannot run; the full list keeps them',function()
     local rf,retail=client(1,12);rf.load('Core/condition_catalog.lua')
     local function has(list,tag) for _,v in ipairs(list) do if v==tag then return true end end end
-    assert(not has(retail:listConditions('ALL'),'COMBAT'),'Retail picker offers COMBAT')
+    rf.env.UnitHealth=function() end
+    assert(not has(retail:listConditions('ALL'),'HEALTH'),'Retail picker offers HEALTH')
     assert(has(retail:listConditions('ALL'),'LEVEL'),'Retail picker lost LEVEL')
-    assert(has(retail:listConditions('ALL',true),'COMBAT'),'the unhidden list dropped COMBAT')
+    assert(has(retail:listConditions('ALL',true),'HEALTH'),'the unhidden list dropped HEALTH')
     local ef,era=client(2,0);ef.load('Core/condition_catalog.lua')
-    ef.env.UnitAffectingCombat=function() end
-    assert(has(era:listConditions('ALL'),'COMBAT'),'Era picker lost COMBAT')
+    ef.env.UnitHealth=function() end
+    assert(has(era:listConditions('ALL'),'HEALTH'),'Era picker lost HEALTH')
 end)
 
 test('restricted clients run complete Built Ins; incomplete ones say why',function()
