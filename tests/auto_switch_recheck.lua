@@ -29,11 +29,15 @@ test('a target change in combat checks at once',function()
  assert(name()=='Moving selector','target change in combat did not reselect')
 end)
 test('an unchanged selection neither calls SwitchRotation nor drops the lean plan',function()
- local c,a,_,name=fixture(true);for _=1,3 do c.tick()end;local before,built=name(),a.leanStats.built;local calls=0;local switch=a.SwitchRotation
+ -- Reading the rotation through the public API starts a new observation; let
+ -- the next poll rebuild once before counting.
+ local c,a,_,name=fixture(true);for _=1,3 do c.tick()end;local before=name();c.tick()
+ local built,polls=a.leanStats.built,a.leanStats.polls;local calls=0;local switch=a.SwitchRotation
  a.SwitchRotation=function(...)calls=calls+1;return switch(...)end
  for _=1,10 do c.tick();a:AutoSwitchTick()end
- assert(calls==0 and name()==before,'unchanged selection still went through SwitchRotation '..calls)
  assert(a.leanStats.built==built,'re-check rebuilt the lean plan '..(a.leanStats.built-built)..' times')
+ assert(a.leanStats.polls-polls==10,'polls did not use the lean plan')
+ assert(calls==0 and name()==before,'unchanged selection still went through SwitchRotation '..calls)
 end)
 test('interval 0 turns automatic switching off; manual choice is left alone',function()
  local c,a,state,name=fixture(true);local before=name();state.speed=7

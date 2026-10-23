@@ -1873,6 +1873,9 @@ function addon:EvaluateNextActionInternal()
             if acquireEvaluationPass then local reason;runtimePass,reason,publicationGuard=acquireEvaluationPass(self,selectedSpec)
             else runtimePass=self:AcquireRotationRuntimePass(selectedSpec) end
             if runtimePass then rot=runtimePass:Get(selectedRotation) end
+            -- Acquiring a pass starts a new observation, which advances the
+            -- generation itself; any later advance is a real writer.
+            if useLean then leanGeneration=readExecutionGeneration() end
         else rot=self:GetRuntimeRotation(selectedSpec,selectedRotation) end
     end
     if self.currentRotation == nil then
