@@ -83,14 +83,252 @@ local function bareContextOptIn(body,context)
     return type(matches)=="function" and matches(body,context)==true
 end
 
+-- Built In composition: authoring-time reuse of named step blocks by packaged
+-- definitions only. Expansion runs once, here at registration; the catalog,
+-- editor, clone, export and runtime only ever see the expanded independent
+-- tree. A user can neither see nor author a reference. See Defaults/README.md.
+local blocks,compositions={},{}
+local blockFields={id=true,revision=true,families=true,class=true,steps=true,overrides=true}
+local overrideFields={families=true,specs=true,steps=true}
+local referenceFields={id=true,type=true,block=true,prefix=true}
+local function blockName(value)
+    return type(value)=="string" and #value>0 and #value<=128 and value:match("^[%w][%w._:%-]*$")~=nil
+end
+local function denseList(value)
+    if not plainTable(value) then return false end
+    local count=0;for _ in pairs(value) do count=count+1 end
+    return count==#value
+end
+local function stringSet(value,integers)
+    if not denseList(value) or #value==0 then return nil end
+    local set={}
+    for _,entry in ipairs(value) do
+        if integers and not (type(entry)=="number" and entry>=0 and entry%1==0) or not integers and not blockName(entry) or set[entry] then return nil end
+        set[entry]=true
+    end
+    return set
+end
+-- 'all' when every consumer value is selected, 'none' when none is, else
+-- 'some'. A nil consumer list means every value (e.g. no declared specs).
+local function coverage(consumer,selector)
+    if selector==nil then return "all" end
+    if consumer==nil then return "some" end
+    local hits=0;for _,value in ipairs(consumer) do if selector[value] then hits=hits+1 end end
+    return hits==#consumer and "all" or hits==0 and "none" or "some"
+end
+local function message(problem)
+    return problem.code.." at "..problem.path..(problem.via and " (via "..problem.via..")" or "")..(problem.detail and ": "..problem.detail or "")
+end
+-- Block-local IDs are unique per variant; references keep only their fields.
+local function checkBlockSteps(list,path,ids)
+    if not denseList(list) then return {code="invalid-block-steps",path=path} end
+    for index,step in ipairs(list) do
+        local at=path.."["..index.."]"
+        if not plainTable(step) then return {code="invalid-block-step",path=at} end
+        if not blockName(step.id) then return {code="invalid-block-step-id",path=at..".id"} end
+        if ids[step.id] then return {code="duplicate-block-step-id",path=at..".id",detail=step.id} end
+        ids[step.id]=true
+        if step.type=="block" then
+            for key in pairs(step) do if not referenceFields[key] then return {code="invalid-block-reference",path=at.."."..tostring(key)} end end
+            if not blockName(step.block) or step.prefix~=nil and not blockName(step.prefix) then return {code="invalid-block-reference",path=at} end
+        elseif step.type=="branch" then
+            for _,arm in ipairs({"onTrue","onFalse"}) do
+                if step[arm]~=nil then local problem=checkBlockSteps(step[arm],at.."."..arm,ids);if problem then return problem end end
+            end
+        end
+    end
+end
+function addon:RegisterDefaultBlock(block)
+    if not plainTable(block) then return false,"invalid-block" end
+    for key in pairs(block) do if not blockFields[key] then return false,message({code="unknown-block-field",path=(blockName(block.id) and block.id or "$").."."..tostring(key)}) end end
+    if not blockName(block.id) then return false,message({code="invalid-block-id",path="$.id"}) end
+    local where=block.id
+    if not (type(block.revision)=="number" and block.revision>=1 and block.revision%1==0) then return false,message({code="invalid-block-revision",path=where..".revision"}) end
+    local families=stringSet(block.families)
+    if not families then return false,message({code="invalid-block-families",path=where..".families"}) end
+    if block.class~=nil and not data.IsRotationClassToken(block.class) then return false,message({code="invalid-block-class",path=where..".class"}) end
+    local problem=checkBlockSteps(block.steps,where..".steps",{})
+    if not problem and #block.steps==0 then problem={code="empty-block",path=where..".steps"} end
+    if not problem and block.overrides~=nil then
+        if not denseList(block.overrides) then problem={code="invalid-block-overrides",path=where..".overrides"} end
+        for index,override in ipairs(problem and {} or block.overrides) do
+            local at=where..".overrides["..index.."]"
+            if not plainTable(override) then problem={code="invalid-block-override",path=at};break end
+            for key in pairs(override) do if not overrideFields[key] then problem={code="unknown-block-field",path=at.."."..tostring(key)} end end
+            if problem then break end
+            local scoped=override.families~=nil and stringSet(override.families)
+            if override.families==nil and override.specs==nil or override.families~=nil and not scoped
+                or override.specs~=nil and not stringSet(override.specs,true) then problem={code="invalid-block-override-selector",path=at};break end
+            -- An override narrows a block; it never widens the reviewed editions.
+            for family in pairs(scoped or {}) do if not families[family] then problem={code="incompatible-block-edition",path=at..".families",detail=family} end end
+            if problem then break end
+            problem=checkBlockSteps(override.steps,at..".steps",{})
+            if not problem and #override.steps==0 then problem={code="empty-block",path=at..".steps"} end
+            if problem then break end
+        end
+    end
+    if problem then return false,message(problem) end
+    if blocks[block.id] then return false,message({code="duplicate-block-id",path=where}) end
+    local copy,why=data.CopyData(block)
+    if not copy then return false,why.code end
+    blocks[copy.id]=copy
+    return true
+end
+
+-- Returns the expanded envelope, its composition record (nil when the
+-- definition uses no blocks) or nil plus a diagnostic. A definition without a
+-- manifest-level `blocks` declaration is returned untouched (not copied).
+-- Expanded step ID = reference prefix (default `<reference id>.`) .. block step
+-- ID, prefixes compounding through nested references: stable across reloads
+-- and distinct for every inclusion. Each inclusion is a fresh copy.
+local function expandDefinition(envelope)
+    if not plainTable(envelope) then return envelope end
+    local body,declared=envelope.body,envelope.blocks
+    if declared==nil then
+        -- Every reference must be declared; never let one reach validation.
+        local seen={}
+        local function stray(list,path)
+            if not plainTable(list) or seen[list] then return end
+            seen[list]=true
+            for index,step in ipairs(list) do
+                local at=path.."["..index.."]"
+                if plainTable(step) then
+                    if step.type=="block" then return {code="undeclared-block-dependency",path=at,detail=tostring(step.block)} end
+                    local problem=stray(step.onTrue,at..".onTrue") or stray(step.onFalse,at..".onFalse");if problem then return problem end
+                end
+            end
+        end
+        local problem=plainTable(body) and (stray(body.rotation,"$.body.rotation") or stray(body.cooldowns,"$.body.cooldowns"))
+        if problem then return nil,nil,message(problem) end
+        return envelope
+    end
+    local pins={}
+    if not plainTable(declared) or next(declared)==nil then return nil,nil,message({code="invalid-block-dependencies",path="$.blocks"}) end
+    for key,revision in pairs(declared) do
+        if not blockName(key) or not (type(revision)=="number" and revision>=1 and revision%1==0) then return nil,nil,message({code="invalid-block-dependencies",path="$.blocks."..tostring(key)}) end
+        pins[key]=revision
+    end
+    local scope=plainTable(envelope.applicability) and envelope.applicability or {}
+    if not stringSet(scope.families) or scope.specs~=nil and not stringSet(scope.specs,true) then return nil,nil,message({code="invalid-block-consumer-scope",path="$.applicability"}) end
+    local used,active,problem={},{},nil
+    local function fail(value) problem=problem or value;return nil end
+    -- The selected variant must suit the whole consumer scope; a partial
+    -- edition/spec match cannot be expressed by one expanded tree.
+    local function variant(block,at,via)
+        for _,family in ipairs(scope.families) do
+            if not stringSet(block.families)[family] then return fail({code="incompatible-block-edition",path=at,via=via,detail=block.id.." lacks "..family}) end
+        end
+        if block.class~=nil and scope.class~=block.class then return fail({code="incompatible-block-class",path=at,via=via,detail=block.id.." requires "..block.class}) end
+        local chosen,where,picked=block.steps,block.id..".steps",false
+        for index,override in ipairs(block.overrides or {}) do
+            local editions=coverage(scope.families,override.families and stringSet(override.families))
+            local specs=coverage(scope.specs,override.specs and stringSet(override.specs,true))
+            if editions~="none" and specs~="none" then
+                local selected=block.id..".overrides["..index.."]"
+                if editions=="some" or specs=="some" or picked then return fail({code="ambiguous-block-override",path=selected,via=via}) end
+                chosen,where,picked=override.steps,selected..".steps",true
+            end
+        end
+        return chosen,where
+    end
+    local expandList
+    local function expandStep(step,at,prefix,out,via,depth)
+        if not plainTable(step) then out[#out+1]=step;return true end
+        if step.type=="block" then
+            for key in pairs(step) do if not referenceFields[key] then return fail({code="invalid-block-reference",path=at.."."..tostring(key),via=via}) end end
+            if not blockName(step.id) or step.prefix~=nil and not blockName(step.prefix) then return fail({code="invalid-block-reference",path=at,via=via}) end
+            local block=blockName(step.block) and blocks[step.block]
+            if not block then return fail({code="missing-block",path=at..".block",via=via,detail=tostring(step.block)}) end
+            if active[block.id] then return fail({code="block-cycle",path=at,via=via,detail=table.concat(active,' > ').." > "..block.id}) end
+            if depth>=16 then return fail({code="block-depth-limit",path=at,via=via}) end
+            if pins[block.id]==nil then return fail({code="undeclared-block-dependency",path=at,via=via,detail=block.id}) end
+            if pins[block.id]~=block.revision then return fail({code="stale-block-revision",path="$.blocks."..block.id,detail="pinned "..pins[block.id]..", registered "..block.revision}) end
+            local steps,where=variant(block,at,via);if not steps then return nil end
+            used[block.id]=true;active[block.id]=true;active[#active+1]=block.id
+            local ok=expandList(steps,where,prefix..(step.prefix or step.id.."."),out,via and via.." > "..at or at,depth+1)
+            active[block.id]=nil;active[#active]=nil
+            return ok
+        end
+        local copy,why=data.CopyData(step)
+        if not copy then return fail({code=why.code,path=at,via=via}) end
+        if prefix~="" then
+            copy.id=type(step.id)=="string" and prefix..step.id or nil
+            if not blockName(copy.id) then return fail({code="invalid-expanded-step-id",path=at..".id",via=via,detail=tostring(copy.id)}) end
+        end
+        for _,arm in ipairs({"onTrue","onFalse"}) do
+            if step.type=="branch" and step[arm]~=nil then
+                copy[arm]={};if not expandList(step[arm],at.."."..arm,prefix,copy[arm],via,depth) then return nil end
+            end
+        end
+        out[#out+1]=copy;return true
+    end
+    expandList=function(list,at,prefix,out,via,depth)
+        if not denseList(list) then return fail({code="invalid-priority-list",path=at,via=via}) end
+        for index,step in ipairs(list) do if not expandStep(step,at.."["..index.."]",prefix,out,via,depth) then return nil end end
+        return true
+    end
+    local expanded,why=data.CopyData(envelope)
+    if not expanded then return nil,nil,why.code end
+    expanded.blocks=nil
+    if plainTable(body) then
+        for _,section in ipairs({"rotation","cooldowns"}) do
+            if body[section]~=nil then
+                local list={};if not expandList(body[section],"$.body."..section,"",list,nil,0) then return nil,nil,message(problem) end
+                expanded.body[section]=list
+            end
+        end
+    end
+    for key in pairs(pins) do if not used[key] then return nil,nil,message({code="unused-block-dependency",path="$.blocks."..key}) end end
+    -- Authored IDs (references included) are unique; expanded IDs are unique and
+    -- never reuse a vanished reference's ID, so diagnostics stay unambiguous.
+    local ids,references
+    local function unique(list,at)
+        for index,step in ipairs(list) do
+            local where=at.."["..index.."]"
+            if plainTable(step) and step.id~=nil then
+                if ids[step.id] or references and references[step.id] then return {code="duplicate-step-id",path=where..".id",detail=tostring(step.id)} end
+                ids[step.id]=step.type=="block" and "reference" or true
+            end
+            if plainTable(step) and step.type=="branch" then
+                for _,arm in ipairs({"onTrue","onFalse"}) do
+                    if denseList(step[arm]) then local found=unique(step[arm],where.."."..arm);if found then return found end end
+                end
+            end
+        end
+    end
+    for pass,tree in ipairs({body,expanded.body}) do
+        ids={}
+        for _,section in ipairs({"rotation","cooldowns"}) do
+            local found=plainTable(tree) and denseList(tree[section]) and unique(tree[section],"$.body."..section)
+            if found then return nil,nil,message(found) end
+        end
+        if pass==1 then references={};for key,kind in pairs(ids) do if kind=="reference" then references[key]=true end end end
+    end
+    return expanded,{blocks=pins}
+end
+-- Offline tools and corpus checks read the exact tree registration consumes.
+function addon:ExpandDefaultRotation(envelope)
+    local expanded,composition,problem=expandDefinition(envelope)
+    if not expanded then return nil,problem end
+    if expanded==envelope then expanded=data.CopyData(envelope) end
+    return expanded,composition and data.CopyData(composition)
+end
+-- The manifest-level block dependencies (id -> pinned revision) a registered
+-- Built In was expanded from; nil when it uses no blocks. Never user data.
+function addon:GetDefaultRotationComposition(id)
+    return compositions[id] and data.CopyData(compositions[id])
+end
+
 function addon:RegisterDefaultRotation(envelope)
-    local copy,why=data.CopyData(envelope)
+    local expanded,composition,problem=expandDefinition(envelope)
+    if not expanded then return false,problem end
+    local copy,why=data.CopyData(expanded)
     if not copy then return false,why.code end
     if copy.format~="RotationMaster" or copy.schemaVersion~=1 or not data.ValidateEnvelope(copy).valid then return false,"invalid-envelope" end
     if not copy.applicability.class and copy.applicability.universal~=true then return false,"missing-class-scope" end
     if definitions[copy.id] then return false,"duplicate-default-id" end
     invalidateExecution()
-    definitions[copy.id]=copy;definitionVersion=definitionVersion+1
+    definitions[copy.id]=copy;compositions[copy.id]=composition;definitionVersion=definitionVersion+1
     return true
 end
 

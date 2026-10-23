@@ -90,8 +90,11 @@ test('custom replacements retain complete compatibility dispatch and mutable inp
  assert(prepare(a,body({root}),{},function()return true end)==nil);assert(a:evaluateConditionResult(root).status=='match'and root.changed)
 end)
 test('every existing TBC pack action and cooldown graph compiles without changing pack data',function()
- local f,_,prepare=fixture();local a=f.addon;local loaded={};a.RegisterDefaultRotation=function(_,envelope)loaded[#loaded+1]=envelope;return true end
- for path in io.lines('RotationMaster.toc')do if path:match('^Defaults/tbc/.*%.lua$')then f.load(path)end end
+ local f,_,prepare=fixture();local a=f.addon;local loaded={}
+ -- Built In composition: compile the expanded graphs registration actually consumes.
+ for _,path in ipairs({'Data/plain.lua','Data/tags.lua','Data/rotation_tree.lua','Data/validation.lua','Core/rotation_library.lua'})do f.load(path)end
+ a.RegisterDefaultRotation=function(_,envelope)loaded[#loaded+1]=assert(a:ExpandDefaultRotation(envelope));return true end
+ for path in io.lines('RotationMaster.toc')do if path:match('^Defaults/.*%.lua$')then f.load(path)end end
  assert(#loaded==36,'pack census changed: '..#loaded)
  for _,envelope in ipairs(loaded)do assert(prepare(a,envelope.body,{},function()return true end),envelope.id..' rejected compiler')end
  assert(a:GetConditionRuntimeDiagnostic().compiles==36 and a:GetConditionRuntimeDiagnostic().legacyFallback==0)

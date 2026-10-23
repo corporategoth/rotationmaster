@@ -51,12 +51,14 @@ function M.build()
   local ok,why=register(self,value);assert(ok,why);assert(not seen[value.id],'duplicate pack id');seen[value.id]=true
   local scope=value.applicability;assert(scope.class or scope.universal==true,'explicit declared class/universal required')
   for _,key in ipairs({'nameKey','descriptionKey'})do assert(not value[key]:find('[\128-\255]'),'ASCII symbolic display key required');local display=rawget(locale,value[key]);assert(type(display)=='string'and #display>0 and #display<=262144,'missing/oversized enUS display')end
-  captured[#captured+1]={path=current,value=assert(data.CopyData(value))};return ok
+  -- Built In composition: the catalog carries the expanded tree registration consumes.
+  captured[#captured+1]={path=current,value=assert(a:ExpandDefaultRotation(value))};return ok
  end
  -- Reviewed pack constructors can build data through the production registrar.
  -- Imported source is never accepted and pack globals cannot query native APIs.
  local packEnv=setmetatable({assert=assert,ipairs=ipairs,pairs=pairs,type=type},{__index=function(_,key)error('unsupported pack global '..tostring(key),0)end})
- for _,path in ipairs(paths)do current=path;local count=#captured;load(path,packEnv);assert(#captured==count+1,'exactly one pack per source required')end
+ -- Shared block sources register no pack; they are hashed inputs like every pack source.
+ for _,path in ipairs(paths)do current=path;local count=#captured;load(path,packEnv);assert(#captured==count+(path:match('^Defaults/blocks/')and 0 or 1),'exactly one pack per source required')end
  assert(a:InitializeRotationLibrary())
  local output={format='RotationMasterBundledDefaults',version=1,scope='declared-data-only',displayLocale='enUS',nativeAvailability='unverified',sourceFiles={},packs=array({})}
  local inputs={'RotationMaster.toc','tools/export_web_defaults.lua','Data/codec.lua','tests/fixtures/codec.lua','Libs/AceSerializer-3.0/AceSerializer-3.0.lua','Libs/LibCompress/LibCompress.lua'}

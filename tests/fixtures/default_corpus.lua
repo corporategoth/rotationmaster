@@ -31,10 +31,11 @@ function C.load(project,expansion,class)
     local register=a.RegisterDefaultRotation;local packs={};local ids={}
     a.RegisterDefaultRotation=function(self,pack)
         assert(not ids[pack.id],'duplicate shipped ID '..tostring(pack.id));ids[pack.id]=true
-        local ok,why=register(self,pack);assert(ok,why);packs[#packs+1]=assert(a.RotationData.CopyData(pack));return ok
+        -- Corpus checks see the expanded tree registration consumes (Built In composition).
+        local ok,why=register(self,pack);assert(ok,why);packs[#packs+1]=assert(a:ExpandDefaultRotation(pack));return ok
     end
     for _,path in ipairs(paths('Defaults')) do
-        local count=#packs;f.load(path);assert(#packs>count,path..' registered no defaults')
+        local count=#packs;f.load(path);assert(path:match('^Defaults/blocks/') or #packs>count,path..' registered no defaults')
     end
     assert(a:InitializeRotationLibrary())
     return f,packs,state
