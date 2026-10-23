@@ -76,7 +76,6 @@ end
 -- Keep the source-owned implementation above and its generated getter intact.
 -- Both existing public wrappers share this diagnostic-only dispatch cell.
 do
-local originalGetCachedInternal=getCachedInternal
 local getCachedInternal=getCachedInternal
 local bound=false
 function addon:BindCacheDiagnosticDispatcher(bind)
@@ -87,7 +86,11 @@ function addon:BindCacheDiagnosticDispatcher(bind)
         if selected or type(direct)~="boolean" then return false end
         selected=true
         if direct then
-            getCachedInternal=function(_,recordnil,func,...) return originalGetCachedInternal(nil,recordnil,func,...) end
+            getCachedInternal=function(_,_recordnil,func,...)
+                if type(func) == 'string' then func = _G[func] end
+                if type(func) ~= 'function' then return end
+                return func(...)
+            end
         end
         return true
     end)

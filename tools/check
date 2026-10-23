@@ -264,6 +264,8 @@ def main():
             ['lua5.1', 'tests/config_ui.lua'],
             ['lua5.1', 'tests/platform.lua'],
             ['luajit', 'tests/cache.lua'],
+            ['lua5.1', 'tests/cache_direct_dispatch.lua'],
+            ['luajit', 'tests/cache_direct_dispatch.lua'],
             ['lua5.1', 'tests/cache_diagnostic_mode.lua'],
             ['luajit', 'tests/cache_diagnostic_mode.lua'],
             ['lua5.1', 'tests/cache_mode_lifecycle.lua'],
