@@ -13,7 +13,7 @@ function addon:InstallSettingsLayout(p)
         if index==1 then
             self.fullWidth=math.max(340,self.frame:GetWidth()-40);self.columnSingle=self.fullWidth<960;self.columnMode=true
             self.child:SetWidth(self.fullWidth)
-            if self.columnSingle then self.width=math.min(760,self.fullWidth);return end
+            if self.columnSingle then self.width=self.fullWidth;return end
             self.columns=self.columns or {};self.columnWidth=(self.fullWidth-24)/2
             for i=1,2 do local f=self.columns[i] or addon:TrackWorkbenchSize(CreateFrame('Frame',nil,self.child));self.columns[i]=f;f:ClearAllPoints();f:SetPoint('TOPLEFT',(i-1)*(self.columnWidth+24),0);f:SetSize(self.columnWidth,1);f:Show() end
         end

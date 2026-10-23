@@ -149,7 +149,7 @@ local function drag(layout,splitter,state,delta)
     state.down=false;layout.settle()
     assert(not splitter.drag,'divider drag did not end on release')
 end
-local function settingsShell(key)
+local function settingsShell(key,setup)
     local f=F.new();local a=f.addon;local frames,create=dofile('tests/fixtures/native_ui.lua')(f.env)
     local layout=dofile('tests/fixtures/deferred_layout.lua')(f.env,create)
     a.pretty_name='Rotation Master';a.name='rotationmaster';a.configPaneGeneration=1;a.RotationData=make()
@@ -161,6 +161,7 @@ local function settingsShell(key)
     a.db.profile.announces={{type='spell',spell=403,ranked=true,event='SUCCEEDED',announce='local',value='Cast'}}
     a.db.global.effects={pulse={name='Pulse',type='pulse',frequency=.25,sequence={1,.5}},dazzle={name='Dazzle',type='dazzle',sequence={{r=1,g=1,b=1,a=1}}}};a.db.profile.effect='pulse'
     a.db.global.itemsets={potions={name='Potions',items={1,2}}}
+    if setup then setup(a) end
     local shell=a:ShowConfig(key);layout.settle()
     local p=shell.pane;if p.roster and p.roster.rows[1] and p.roster.rows[1]:IsShown() then p.roster.rows[1]:Click();layout.settle() end
     return f,a,shell,layout,frames
@@ -185,7 +186,7 @@ for _,key in ipairs({'General','Effects','ItemSets','Announces','Profiles','Cond
             assert(shell.content:GetWidth()==content and p.frame:GetWidth()==content,key..' pane did not follow the window to '..size[1])
             if p.roster then assert(p.width==p.scroll:GetWidth() and p.scroll.point[2]+p.scroll:GetWidth()+18==content,key..' detail did not follow the window')
             elseif p.columnMode or p.fullWidth then assert(p.fullWidth==math.max(340,content-40),key..' columns did not follow the window')
-            else assert(p.width==math.max(340,math.min(760,content-40)),key..' form did not follow the window') end
+            else assert(p.width==math.max(340,content-40),key..' form did not follow the window') end
             audit.assertContained(shell.frame,frames,key..' at '..size[1],{captions=true})
         end
         local p=shell.pane
@@ -284,6 +285,37 @@ test('Integrations cards and editor rows follow the page width live',function()
         assert(p.width==width-40 and p.fields.integration_card_editor_native:GetWidth()==p.width,'Integrations did not follow '..width)
         audit.assertContained(parent,f.frames,'Integrations at '..width,{captions=true})
     end
+end)
+
+test('General shares the Enable row half and half and its capture columns reflow',function()
+    local f,a,shell,layout,frames=settingsShell('General')
+    for _,size in ipairs({{1600,820},{800,500},{1120,760}}) do
+        layout.userResize(shell.frame,size[1],size[2]);layout.settle()
+        local p=shell.pane;local width=p.columnSingle and p.fullWidth or p.columnWidth
+        local enable,bar=p.fields.enable,p.fields.disable_buttons
+        assert(enable.point[3]==bar.point[3] and enable.point[2]==0 and math.abs(enable:GetWidth()-(width-4)/2)<.01 and bar:GetWidth()==enable:GetWidth() and math.abs(bar.point[2]-(enable:GetWidth()+4))<.01,'Enable row is not split 50/50 at '..size[1])
+        local tops={};for _,key in ipairs({'cpu_capture','cpu_runtime_capture','memory_capture','cast_capture'}) do local b=p.fields[key];if b then tops[#tops+1]=b end end
+        for _,b in ipairs(tops) do assert(b:GetWidth()<=width+.01,'capture column wider than the page') end
+        audit.assertContained(shell.frame,frames,'General at '..size[1],{captions=true})
+    end
+end)
+
+test('capture buttons follow captures started, stopped or finished elsewhere only while shown',function()
+    local state={running=false,report=nil,reads=0}
+    local f,a,shell,layout=settingsShell('General',function(a)
+        a.StartCPUProfile=function() state.running=true;return true end
+        a.StopCPUProfile=function() state.running=false;state.report='kept';return true end
+        a.IsCPUProfileRunning=function() state.reads=state.reads+1;return state.running end
+        a.GetCPUProfileReport=function() if state.running then return 'running' end;return state.report end
+        a.print=function() end
+    end)
+    local p=shell.pane;local capture,report=p.fields.cpu_capture,p.fields.cpu_report
+    assert(capture:GetText()=='Capture CPU (10s)' and not report:IsEnabled(),'report enabled before any capture')
+    state.running=true;layout.settle(20);assert(capture:GetText()=='Stop CPU capture' and not report:IsEnabled(),'capture started elsewhere was not shown')
+    state.running=false;state.report='finished';layout.settle(20);assert(capture:GetText()=='Capture CPU (10s)' and report:IsEnabled(),'finished capture did not enable its report')
+    capture:Click();assert(state.running and capture:GetText()=='Stop CPU capture')
+    capture:Click();assert(not state.running and state.report=='kept' and report:IsEnabled(),'Stop did not keep the report')
+    shell.frame:Hide();local reads=state.reads;state.running=true;layout.settle(20);assert(state.reads==reads,'hidden page polled capture state')
 end)
 
 finish()

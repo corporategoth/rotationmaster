@@ -327,7 +327,7 @@ function addon:CreateSettingsForm(parent)
         if self.textDialog then self.textDialog.frame:Hide() end
         self:RunCleanups()
         for _,list in pairs(self.pool) do for _,control in ipairs(list) do control:Hide() end end
-        self.creationUsed=false;self.creationUsedForNew=false;self.counts={};self.fields={};self.edits={};if self.ResetLayout then self:ResetLayout() end;self.y=4;self.width=math.max(340,math.min(760,self.frame:GetWidth()-40));self.child:SetWidth(self.width)
+        self.creationUsed=false;self.creationUsedForNew=false;self.counts={};self.fields={};self.edits={};if self.ResetLayout then self:ResetLayout() end;self.y=4;self.width=math.max(340,self.frame:GetWidth()-40);self.child:SetWidth(self.width)
         self.builder(self);if self.DraftActions then self:DraftActions() end;self:BindHelpBriefs();if not self.creationUsedForNew then self.creationBaseline=nil;self.creationApply=nil end;self.child:SetHeight(self.y+12);self.scroll:UpdateWorkbenchScroll()
     end
     function p:Open(builder)
