@@ -118,6 +118,37 @@ function platform:IsSpellKnown(spellID, pet)
 end
 
 local cooldownFields = {startTime="number", duration="number", isEnabled="boolean", modRate="number"}
+
+-- Retail and Forever hide a cooldown's times while addon restrictions are in
+-- effect (combat, encounters, challenge modes, PvP matches), but never its
+-- state flags. Blizzard's generated API documentation (Gethe/wow-ui-source,
+-- Interface/AddOns/Blizzard_APIDocumentationGenerated):
+--   live e7aa82019dc298e0351c7159d60c2a9b916b9b67 (12.1.5.70529) and
+--   forever ca8368f2f2380cbe696854f7f2646387c278a61b (1.60.1.70532), with
+--   SpellDocumentation.lua and SpellSharedDocumentation.lua identical for these:
+--   C_Spell.GetSpellCooldown / GetSpellCharges: SecretWhenCooldownsRestricted
+--     ("Individual spells may be flagged as never or always secret, which
+--     takes priority over restrictions", SecretPredicatesDocumentation.lua).
+--   SpellCooldownInfo NeverSecret: isEnabled, isActive ("False if cooldown is
+--     not active (ex: not enabled, or startTime or duration are 0)") and
+--     isOnGCD (nilable; "do not trust this field unless responding to a
+--     SPELL_UPDATE_COOLDOWN event"). startTime, duration, modRate,
+--     activeCategory and timeUntilEndOfStartRecovery may be secret.
+--   SpellChargeInfo NeverSecret: maxCharges and isActive only.
+--   C_Spell.IsSpellUsable, IsSpellInRange and SpellHasRange carry no secret
+--   annotation at all.
+-- So when only the times are secret, GetSpellCooldown stays unavailable (nil,
+-- "restricted-value") and reports the flags after the reason. Readiness can be
+-- decided from them; a remaining time never can. Classic-family builds never
+-- reach this: their values are never secret.
+local function cooldownFlags(self, record)
+    if type(record) ~= "table" then return end
+    local enabled, active, onGCD = record.isEnabled, record.isActive, record.isOnGCD
+    if not self:CanReadValue(enabled) or not self:CanReadValue(active) or not self:CanReadValue(onGCD) then return end
+    if type(enabled) ~= "boolean" or type(active) ~= "boolean" or (onGCD ~= nil and type(onGCD) ~= "boolean") then return end
+    return enabled, active, onGCD
+end
+
 function platform:GetSpellCooldown(spell)
     local valid, reason = identifier(spell)
     if not valid then return nil, reason end
@@ -139,7 +170,10 @@ function platform:GetSpellCooldown(spell)
     if not self:CanReadValue(record) then return nil, "restricted-value" end
     if record == nil then return nil, "spell-data-unavailable" end
     local cooldown, why = own(record, cooldownFields, built)
-    if not cooldown then return nil, why end
+    if not cooldown then
+        if why == "restricted-value" and not built then return nil, why, cooldownFlags(self, record) end
+        return nil, why
+    end
     if cooldown.startTime == nil or cooldown.duration == nil or cooldown.isEnabled == nil
         or cooldown.startTime < 0 or cooldown.duration < 0 or (cooldown.modRate and cooldown.modRate <= 0) then
         return nil, "invalid-api-result"
@@ -176,14 +210,17 @@ end
 -- Readiness runs for every reached action each poll. On classic builds
 -- without secrets the multi-value cooldown API is read directly: the same
 -- values GetSpellCooldown validates, without a result table per call.
+-- Results: start, duration, enabled, reason. When only the times are secret
+-- (Retail/Forever), start is nil and enabled, then active and onGCD after the
+-- reason, carry the never-secret flags.
 local function finiteNonNegative(value)
     return type(value)=="number" and value==value and value>=0 and value~=math.huge
 end
 local function cooldownValues(self, spell)
     local legacy=self.secretsUnrestricted and GetSpellCooldown
     if type(legacy)~="function" then
-        local cooldown,reason=self:GetSpellCooldown(spell)
-        if not cooldown then return nil,nil,nil,reason end
+        local cooldown,reason,enabled,active,onGCD=self:GetSpellCooldown(spell)
+        if not cooldown then return nil,nil,enabled,reason,active,onGCD end
         return cooldown.startTime,cooldown.duration,cooldown.isEnabled
     end
     local valid,reason=identifier(spell)
@@ -199,20 +236,56 @@ local function cooldownValues(self, spell)
     return start,duration,enabled==1 or enabled==true
 end
 
+-- Whether the global cooldown is running: true, false, or nil and a reason.
+-- From its times when they are readable, otherwise from its flags.
+local function gcdRunning(self, now)
+    if not gcdSpell then self:GetGlobalCooldown() end
+    local start,duration,enabled,why,active=cooldownValues(self,gcdSpell)
+    if start~=nil then return enabled and duration>0 and start+duration>now end
+    if active==nil then return nil,why end
+    return enabled and active
+end
+
+-- Readiness from the never-secret flags alone, with the meaning the times
+-- give it: a held cooldown is not ready; an inactive one is; an active one is
+-- ready only while it is the global cooldown. Blizzard says isOnGCD is only
+-- trustworthy at SPELL_UPDATE_COOLDOWN, so a polled "on the GCD" counts only
+-- while a global cooldown is actually running. The one case the times decide
+-- and the flags cannot is an own cooldown that ends inside the GCD: if the
+-- client reports it as the spell's own (isOnGCD false), it reads not ready
+-- until the client reports the GCD instead.
+local function flagReadiness(self, enabled, active, onGCD, now)
+    if not enabled then return false end
+    if not active then return true end
+    if onGCD==false then return false end
+    local running,why=gcdRunning(self,now)
+    if running==false then return false end
+    if onGCD==true then return true end
+    return nil,why or "restricted-value"
+end
+
 function platform:IsSpellReady(spell, now)
     if not self:CanReadValue(now) then return nil, "restricted-value" end
     if type(now)~="number" or now~=now or now==math.huge or now==-math.huge then
         return nil, "invalid-time"
     end
-    local start,duration,enabled,reason=cooldownValues(self,spell)
-    if start==nil then return nil,reason end
+    local start,duration,enabled,reason,active,onGCD=cooldownValues(self,spell)
+    if start==nil then
+        if active==nil then return nil,reason end
+        return flagReadiness(self,enabled,active,onGCD,now)
+    end
     if not enabled then return false end
     local expires=start+duration
     if duration==0 or expires<=now then return true end
 
     if not gcdSpell then self:GetGlobalCooldown() end
-    local gcdStart,gcdDuration,gcdEnabled,why=cooldownValues(self,gcdSpell)
-    if gcdStart==nil then return nil,why end
+    local gcdStart,gcdDuration,gcdEnabled,why,gcdActive=cooldownValues(self,gcdSpell)
+    if gcdStart==nil then
+        -- The GCD's times are hidden: one known not to be running cannot
+        -- cover this spell's own, still running, cooldown.
+        if gcdActive~=nil and (not gcdEnabled or not gcdActive) then return false end
+        return nil,why
+    end
     if not gcdEnabled or gcdDuration==0 then return false end
     -- modRate controls cooldown animation; API timestamps/duration already
     -- describe expiration in GetTime seconds, so do not divide them by it.
@@ -303,9 +376,12 @@ do
         if name=="Platform_IsSpellReady" then return addon.Platform.IsSpellReady end
         if name=="chargeFields" then return chargeFields end
         if name=="cooldownFields" then return cooldownFields end
+        if name=="cooldownFlags" then return cooldownFlags end
         if name=="cooldownValues" then return cooldownValues end
         if name=="copy" then return copy end
         if name=="finiteNonNegative" then return finiteNonNegative end
+        if name=="flagReadiness" then return flagReadiness end
+        if name=="gcdRunning" then return gcdRunning end
         if name=="gcdSpell" then return gcdSpell end
         if name=="identifier" then return identifier end
         if name=="own" then return own end

@@ -3102,7 +3102,7 @@ L["Callback receiving the committed spell value."] = true
 L["Caller-owned evaluation observation cache; nil queries afresh."] = true
 L["Capability or clock observation availability reason."] = true
 L["Capability or observation availability reason for a nil class."] = true
-L["Check whether a spell can be recommended now, allowing a spell whose remaining cooldown ends with the current global cooldown. This checks cooldown readiness only; it does not check learned status, range or resource usability. Pass evaluation time from evalStart or GetTime()."] = true
+L["Check whether a spell can be recommended now, allowing a spell whose remaining cooldown ends with the current global cooldown. On Retail and Forever, where cooldown times are secret in combat, readiness comes from the never-secret isEnabled, isActive and isOnGCD flags instead. This checks cooldown readiness only; it does not check learned status, range or resource usability. Pass evaluation time from evalStart or GetTime()."] = true
 L["Check whether a table has a non-nil value at a key. A stored false value still counts as present; this does not scan table values."] = true
 L["Checkbox widget with boolean value and callback methods."] = true
 L["Choose the supplied player value only for the literal player unit token; every other unit selects the nonplayer value. Selected false and nil values are preserved."] = true
@@ -3338,7 +3338,7 @@ L["Read a fresh protected zero-argument GetTime for rune cooldown arithmetic. Re
 L["Read a lazy health scalar after a separate identity gate. Kind current uses exact UnitHealth(unit); maximum uses exact UnitHealthMax(unit). Probe-policy clients accept readable finite nonnegative numbers including zero. No repeated existence/GUID call or alternate tuple fallback is added."] = true
 L["Read a normalized charge record: currentCharges, maxCharges, cooldownStartTime, cooldownDuration, chargeModRate and isActive. Unsupported spells or restricted client data return nil with a reason."] = true
 L["Read a specified unit membership in the player party or raid. True raidOnly queries only UnitInRaid; otherwise a true UnitInParty result short-circuits, false proceeds to UnitInRaid, and unknown remains unavailable. Readable nil raid index means false; integer raid index1..40 means true. Names are passed unchanged to native APIs; native name-query acceptance requires client qualification."] = true
-L["Read and normalize a spell cooldown across supported clients. The returned record contains startTime, duration, isEnabled and modRate. The timestamps and duration already describe expiration in GetTime() seconds; do not divide them by modRate."] = true
+L["Read and normalize a spell cooldown across supported clients. The returned record contains startTime, duration, isEnabled and modRate. The timestamps and duration already describe expiration in GetTime() seconds; do not divide them by modRate. When the client hides the times (Retail and Forever in combat) the record is nil with reason restricted-value, followed by the never-secret isEnabled, isActive and isOnGCD flags when they can be read."] = true
 L["Read normalized native item classification metadata. The record contains canonical itemID, classID and subClassID; it does not require loaded item display text. Missing, failed, malformed or restricted metadata returns nil with a reason."] = true
 L["Read one documented active loss-of-control row by its native index and requested subject kind. Type queries require only the readable control type string; school queries require only the readable finite nonnegative integer school mask. Optional timing is returned as a finite timeRemaining or an explicit per-field reason, so an unrelated subject does not require a usable timer. Missing rows are unavailable snapshot observations. No display fields, inferred deadline, duration sum, maximum or native alias fallback is used."] = true
 L["Read one explicitly selected point-resource quantity with an exact two-argument UnitPower or UnitPowerMax query. The selector is required; no primary-resource inference or actor remapping occurs. Preserve finite signed, fractional and zero quantities without clamping. Missing, failed, restricted or nonfinite data remains unavailable. Current and maximum are separate observations so callers can share current snapshots while requesting maximum lazily."] = true
@@ -3481,6 +3481,9 @@ L["Weighting window in seconds; nil or false uses the current profile damage_his
 L["Whether the original floor-equality or exact numeric-spelling predicate matches."] = true
 L["Whether the text begins with the exact prefix."] = true
 L["Whether the text ends with the exact suffix."] = true
+L["With restricted-value only: isActive, true while a cooldown (its own or the global one) is running."] = true
+L["With restricted-value only: isEnabled, false while the cooldown is on hold."] = true
+L["With restricted-value only: isOnGCD, true when the running cooldown is the global cooldown; may be nil."] = true
 L["Work-limit, data or arithmetic availability reason for nil rate/age."] = true
 L["Wrap text at whitespace boundaries near a target column count. Long words are retained intact."] = true
 L["mana selects the explicit live Mana enum; current reads and forwards the actual UnitPowerType identity, including Mana zero."] = true
