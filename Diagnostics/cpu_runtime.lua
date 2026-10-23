@@ -139,7 +139,9 @@ end
 -- EvaluateNextAction, so they are not dispatches in this capture.
 local function idleGate()
  local gate=rawget(addon,'idleGate');local value=field(field(rawget(addon,'db'),'profile'),'idle_poll')
- return {interval=finite(value)and tostring(value)or 'unavailable',evaluated=type(gate)=='table'and gate.evaluated or nil,skipped=type(gate)=='table'and gate.skipped or nil}
+ local lean=rawget(addon,'leanStats');lean=type(lean)=='table'and lean or {}
+ return {interval=finite(value)and tostring(value)or 'unavailable',evaluated=type(gate)=='table'and gate.evaluated or nil,skipped=type(gate)=='table'and gate.skipped or nil,
+  built=lean.built,polls=lean.polls,key=lean.key,generation=lean.generation,context=lean.context,age=lean.age}
 end
 -- Boundary-only routing label. No IDs, names, providers or private bodies leave
 -- here, and report reads/normal evaluator dispatches never re-observe selection.
@@ -219,7 +221,9 @@ local function report(run,status,reason)
   (function()local a,b=run.idleStart or {},run.idleEnd or {}
    local function delta(k)return a[k]and b[k]and b[k]>=a[k]and tostring(b[k]-a[k])or 'unavailable'end
    local engine=rawget(addon,'GetEvaluationEngine');local ok,name=false,nil;if type(engine)=='function' then ok,name=pcall(engine,addon)end
-   return 'Engine: '..(ok and type(name)=='string' and name or 'unavailable')..'. Idle gate: idle_poll='..(a.interval or 'unavailable')..'; timer ticks evaluated='..delta('evaluated')..'; skipped='..delta('skipped')end)(),
+   return 'Engine: '..(ok and type(name)=='string' and name or 'unavailable')..'; lean polls='..delta('polls')..'; plans built='..delta('built')
+    ..' (dropped: selection='..delta('key')..', generation='..delta('generation')..', context='..delta('context')..', age='..delta('age')..')'
+    ..'. Idle gate: idle_poll='..(a.interval or 'unavailable')..'; timer ticks evaluated='..delta('evaluated')..'; skipped='..delta('skipped')end)(),
   'Selected key: start='..(run.selectionStart or 'unavailable')..'; end='..(run.selectionEnd or 'unavailable'),
   string.format('elapsedMilliseconds: total=%.3f; average=%.3f; max=%.3f',run.elapsed,run.measured>0 and run.elapsed/run.measured or 0,run.maximum),
   'allocatedBytes='..(run.allocated~=nil and string.format('%.0f',run.allocated)or 'unavailable')..'; deallocatedBytes='..(run.deallocated~=nil and string.format('%.0f',run.deallocated)or 'unavailable'),

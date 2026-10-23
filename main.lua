@@ -1390,13 +1390,16 @@ end
 -- execution generation (advanced by every rotation, condition, function,
 -- itemset and effect writer), the context epoch (events that change
 -- eligibility: level, talents, spells, vehicle, control, form, combat...)
--- and a five second age cap. Nothing is re-proved within a poll. Conditions,
+-- and a one minute age cap. Nothing is re-proved within a poll. Conditions,
 -- readiness, range and cooldowns are still read fresh every poll, and
 -- outputs still check the selection is current after each callout.
 -- /rm perf engine standard turns this off.
 local compileConditionPlan, evaluateConditionPlan
 if type(addon.ConsumeConditionPlans)=='function' then compileConditionPlan, evaluateConditionPlan=addon:ConsumeConditionPlans() end
-local LEAN_MAX_AGE = 5
+local LEAN_MAX_AGE = 60
+-- Plans built, polls served and why plans were dropped, for runtime reports.
+local leanStats = {built=0, polls=0, key=0, generation=0, context=0, age=0}
+addon.leanStats = leanStats
 -- Captured at load (Core/action_policy.lua loads first): an overridden
 -- NewActionReadiness keeps being used as is.
 local ownedActionReadiness = addon.NewActionReadiness
@@ -1460,6 +1463,7 @@ local function recordLeanPlan(self, rot, views, spec, key, profile, window, gene
             and self.nextWindow == window and readExecutionGeneration() == generation
     end
     leanPlan = plan
+    leanStats.built = leanStats.built + 1
 end
 
 -- One action step: conditions, then the first mapped and ready spell.
@@ -1672,12 +1676,18 @@ end
 local function evaluateLean(self)
     local plan = leanPlan
     if not plan then return false end
+    local stale
     if plan.key ~= self.currentRotation or plan.spec ~= self.currentSpec or plan.profile ~= self.db.profile
-        or plan.window ~= self.nextWindow or plan.generation ~= readExecutionGeneration()
-        or plan.epoch ~= leanContextEpoch or GetTime() >= plan.expires then
+        or plan.window ~= self.nextWindow then stale = 'key'
+    elseif plan.generation ~= readExecutionGeneration() then stale = 'generation'
+    elseif plan.epoch ~= leanContextEpoch then stale = 'context'
+    elseif GetTime() >= plan.expires then stale = 'age' end
+    if stale then
+        leanStats[stale] = leanStats[stale] + 1
         leanPlan = nil
         return false
     end
+    leanStats.polls = leanStats.polls + 1
     local now, cache = prepareEvaluation(self)
     plan.now, plan.cache = now, cache
     if self.NewActionReadiness == ownedActionReadiness and self.ResetActionReadiness then
@@ -2209,7 +2219,13 @@ local function wrapEvent(func)
     return function(self, event, ...)
         if invalidateEvaluationContext and (event==nil or runtimeContextEvents[event]) then invalidateEvaluationContext() end
         if invalidateChoiceContext and (event==nil or runtimeContextEvents[event]) then invalidateChoiceContext(self) end
-        if event==nil or runtimeContextEvents[event] then leanContextEpoch=leanContextEpoch+1 end
+        if event==nil or runtimeContextEvents[event] then
+            leanContextEpoch=leanContextEpoch+1
+            -- UnitLevel can trail PLAYER_LEVEL_UP; rebuild once more after it settles.
+            if event=='PLAYER_LEVEL_UP' and C_Timer and C_Timer.After then
+                C_Timer.After(2,function() leanContextEpoch=leanContextEpoch+1 end)
+            end
+        end
         if failed or self.initializationErrorReport then return end
         self:debug("Event %s fired.", event)
         if not self.Diagnostics then return func(self, event, ...) end
@@ -2223,10 +2239,15 @@ local function wrapEvent(func)
     end
 end
 
+-- The client project, and so its combat data policy, is fixed for the
+-- session; these handlers run for every combat log line in range.
+local combatDataPolicy
 local function wrapCombatEvent(func)
     local dispatch=wrapEvent(func)
     return function(self,...)
-        if self.initializationErrorReport or self.Platform:GetClientInfo().combatDataPolicy~='probe' then return end
+        if self.initializationErrorReport then return end
+        combatDataPolicy=combatDataPolicy or self.Platform:GetClientInfo().combatDataPolicy
+        if combatDataPolicy~='probe' then return end
         return dispatch(self,...)
     end
 end
