@@ -149,6 +149,10 @@ local function create(parent)
         if not entry.fallback then status=status..' · '..(entry.priority and string.format(L['Priority %d'],entry.priority) or L['Invalid priority']) end
         if entry.validationState and entry.validationState~='valid' and entry.validationState~='pending' then status=status..' — '..L['Not available'] end
         control.statusLabel:SetText(status);control.statusLabel:SetTextColor(.67,.72,.77);addon:SetWorkbenchListSelection(control,key==self.selected)
+        -- Red when anything in it (a card, a branch child, a cooldown, the
+        -- switch) stops it being selected; the tooltip names the first issue.
+        local blocked=entry.problem~=nil or entry.validationState~=nil and entry.validationState~='valid' and entry.validationState~='pending'
+        addon:SetWorkbenchProblem(control,blocked and string.format(L['This rotation cannot be selected. %s.'],entry.problem and addon.DescribeRotationIssue and addon:DescribeRotationIssue(entry.problem) or L['It has incomplete or unsupported data']) or nil)
         local function requestValid() return browser.active and browser.serial==serial and browser.profile==profile and profile==addon.db.profile and browser.spec==spec and browser.navigationRevision==navigation and browser.rowsByKey[key]~=nil end
         addon:SetUIScript(control,'OnClick',function() if requestValid() and browser.resultRevision==revision and control.browserLease==lease then browser:SelectRotation(spec,key,false,requestValid) end end);control:Show()
     end

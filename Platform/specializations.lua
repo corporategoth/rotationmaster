@@ -29,6 +29,14 @@ local function queryInteger(fn,maximum,...)
     return value
 end
 
+-- Retail: below level 10 a character has chosen no specialization.
+-- GetSpecialization() then answers the class's initial spec, an index past
+-- the class's count (Blizzard's UnitUtil IsInitialSpec), with its own spec ID
+-- (SpecializationID "Initial" rows, Gethe/wow-ui-source and wago.tools
+-- ChrSpecialization), keyed here by class ID. Rotations for that stage are
+-- saved under this ID like any other specialization.
+local INITIAL_SPECS={[1]=1446,[2]=1451,[3]=1448,[4]=1453,[5]=1452,[6]=1455,[7]=1444,[8]=1449,[9]=1454,[10]=1450,[11]=1447,[12]=1456,[13]=1465}
+
 -- key is the saved rotation namespace; index is the native API selector.
 function platform:GetRotationSpecialization()
     local kind,reason=mode()
@@ -82,7 +90,25 @@ function platform:GetRotationSpecializations(classID)
         seen[id]=true
         choices[index]={id=id,name=name}
     end
+    -- Retail offers the class's initial spec too (levels 1-9). The live
+    -- selection names it when the player is in it; otherwise the known ID.
+    if self:GetClientFamily()=="retail" then
+        local initial=INITIAL_SPECS[classID]
+        local current=self:GetRotationSpecialization()
+        if current and current.kind=="specialization" and current.index>count and type(UnitClass)=="function" then
+            local ok,_,_,playerClass=pcall(UnitClass,"player")
+            if ok and self:CanReadValue(playerClass) and playerClass==classID then initial=current.key end
+        end
+        if initial and not seen[initial] then choices[#choices+1]={id=initial,initial=true} end
+    end
     return choices
+end
+
+-- Whether a Retail spec ID is a class's initial spec (levels 1-9).
+function platform:IsInitialSpecialization(specID)
+    if self:GetClientFamily()~="retail" or type(specID)~="number" then return false end
+    for _,id in pairs(INITIAL_SPECS) do if id==specID then return true end end
+    return false
 end
 
 -- The player's specialization ID (Retail, Mists of Pandaria Classic), for the

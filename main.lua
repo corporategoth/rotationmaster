@@ -477,6 +477,7 @@ function addon:HandleCommand(str)
         addon:print(L["/rm current             - Print out the name of the current rotation."])
         addon:print(L["/rm set [auto|profile]  - Switch to a specific rotation, or use automatic switching again."])
         addon:print(L["                          Manual choices are remembered for this character, specialization and action context."])
+        addon:print(L["/rm why                 - Explain why each rotation can or cannot be selected."])
         addon:print(L["/rm check               - Check the database integrity."])
         addon:print(L["/rm repair              - Fix any DB errors found in the data with internal validation."])
         addon:print(L["/rm errors              - View and copy Rotation Master errors."])
@@ -491,6 +492,9 @@ function addon:HandleCommand(str)
 
     elseif cmd == "errors" then
         self:ShowErrors()
+
+    elseif cmd == "why" then
+        self:ShowRotationEligibilityReport()
 
     elseif cmd == 'editorinfo' then
         self:ShowLuaEditorInputReport()
@@ -531,13 +535,25 @@ function addon:HandleCommand(str)
         elseif name==self.currentRotation or name==DEFAULT then
             if not chooseManualRotation(self,name,change,true) and activeChangeCurrent(self,change) and name==DEFAULT then
                 self:warn(L['The fallback rotation is unavailable. Open Rotations to complete or recover it.'])
+                self:WarnRotationRefusal(DEFAULT)
             end
         else
             local matches={}
             for id,rot in pairs(runtimeRows(self,self.currentSpec)) do if rot.name==name then matches[#matches+1]=id end end
             if not activeChangeCurrent(self,change) then return end
             if #matches>1 then self:warn(L['More than one rotation is named %s. Select its Class or This character entry in the rotation browser.'],name);return end
-            if #matches==1 then chooseManualRotation(self,matches[1],change,true);return end
+            if #matches==1 then
+                if not chooseManualRotation(self,matches[1],change,true) and activeChangeCurrent(self,change) then self:WarnRotationRefusal(matches[1]) end
+                return
+            end
+            -- Candidates hold only selectable rotations; say why a named one is not.
+            local headers=self.ListRotationHeaders and self:ListRotationHeaders(self.currentSpec)
+            if not activeChangeCurrent(self,change) then return end
+            for _,row in ipairs(type(headers)=='table' and headers or {}) do
+                if row.name==name and not row.fallback then
+                    self:warn(L["Rotation %s cannot be selected."],name);self:WarnRotationRefusal(row.key);return
+                end
+            end
             self:warn(L["Could not find rotation named " .. color.WHITE .. "%s" .. color.WARN .. " for your current specialization."],name)
         end
     elseif cmd == "check" then
@@ -718,6 +734,12 @@ function addon:OnInitialize()
     if ok then self.initializationErrorReport=nil;self.adviceErrorReport=nil
     else self.initializationErrorReport=reportId or 0;self.adviceErrorReport=reportId or 0 end
     return ok,reportId
+end
+
+-- One warning line naming why `value` cannot be selected for this character.
+function addon:WarnRotationRefusal(value)
+    local why=self.ExplainRotationRefusal and self:ExplainRotationRefusal(self.currentSpec,value)
+    if why then self:warn(L['Reason: %s. Type /rm why to check every rotation.'],why) end
 end
 
 function addon:GetRotationName(id)
@@ -1089,13 +1111,16 @@ function addon:SwitchRotation()
 
     -- Could not find a rotation to switch to, even the default one.
     if self.currentRotation ~= nil then
+        local explain
         if self.GetActionContext and self:GetActionContext()~='player' then
             addon:info(L["Advice is suspended: no rotation applies while you are using another action bar."])
         else
             addon:warn(L["No rotation is active as there is none suitable to automatically switch to."])
+            explain=true
         end
         if not current() then return end
         self:DisableRotation()
+        if explain then addon:WarnRotationRefusal(DEFAULT) end
     end
 end
 
