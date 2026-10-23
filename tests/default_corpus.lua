@@ -79,6 +79,17 @@ test('TOC includes every reviewed starter pack exactly once',function()
         'rm.forever.shaman.restoration','rm.forever.shaman.elemental','rm.forever.shaman.enhancement','rm.forever.shaman.enhancement.wowhead',
         'rm.forever.warlock.dps','rm.forever.warlock.dps.icyveins','rm.forever.warlock.dps.wowhead',
         'rm.forever.warrior.protection','rm.forever.warrior.protection.warcrafttavern','rm.forever.warrior.dps','rm.forever.warrior.dps.warcrafttavern'})do wanted[id]=true end
+    -- Retail Paladin, Priest, Rogue, Shaman, Warlock and Warrior premades (Blizzard Assisted, guide references, healers).
+    for _,id in ipairs({'rm.retail.paladin.retribution','rm.retail.paladin.retribution.icyveins','rm.retail.paladin.protection','rm.retail.paladin.protection.icyveins',
+        'rm.retail.paladin.protection.wowhead','rm.retail.paladin.holy','rm.retail.priest.shadow','rm.retail.priest.shadow.icyveins',
+        'rm.retail.priest.discipline','rm.retail.priest.discipline.wowhead','rm.retail.priest.holy','rm.retail.rogue.assassination',
+        'rm.retail.rogue.assassination.icyveins','rm.retail.rogue.outlaw','rm.retail.rogue.outlaw.icyveins','rm.retail.rogue.subtlety',
+        'rm.retail.rogue.subtlety.icyveins','rm.retail.shaman.elemental','rm.retail.shaman.elemental.icyveins','rm.retail.shaman.enhancement',
+        'rm.retail.shaman.enhancement.stormbringer','rm.retail.shaman.enhancement.totemic','rm.retail.shaman.restoration','rm.retail.warlock.affliction',
+        'rm.retail.warlock.affliction.icyveins','rm.retail.warlock.demonology','rm.retail.warlock.demonology.icyveins','rm.retail.warlock.destruction',
+        'rm.retail.warlock.destruction.simc','rm.retail.warlock.destruction.icyveins','rm.retail.warrior.arms','rm.retail.warrior.arms.slayer',
+        'rm.retail.warrior.arms.colossus','rm.retail.warrior.fury','rm.retail.warrior.fury.slayer','rm.retail.warrior.fury.thane',
+        'rm.retail.warrior.protection','rm.retail.warrior.protection.icyveins'})do wanted[id]=true end
     -- WoW Forever Druid, Hunter, Mage, Paladin and Priest premades.
     for _,id in ipairs({'rm.forever.druid.balance','rm.forever.druid.balance.tavern','rm.forever.druid.feral','rm.forever.druid.restoration','rm.forever.druid.restoration.icyveins','rm.forever.hunter.ranged','rm.forever.hunter.ranged.mobalytics','rm.forever.hunter.survival','rm.forever.hunter.survival.weave','rm.forever.mage.frost','rm.forever.mage.fire','rm.forever.mage.fire.icyveins','rm.forever.mage.arcane','rm.forever.paladin.retribution','rm.forever.paladin.protection','rm.forever.paladin.protection.icyveins','rm.forever.paladin.holy','rm.forever.paladin.holy.wowhead','rm.forever.priest.dps','rm.forever.priest.dps.mobalytics','rm.forever.priest.healer'})do wanted[id]=true end
     -- Retail Death Knight, Demon Hunter, Druid, Evoker, Hunter, Mage and Monk premades (per specialization).

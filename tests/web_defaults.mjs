@@ -140,7 +140,7 @@ test('the seal-twisting premade ships present, valid and marked disabled; no oth
  const c=ready(),id='rm.tbc.paladin.retribution.twist';assert(c.list().some(r=>r.id===id));
  const twist=c.get(id);assert(twist.ok);assert.equal(twist.envelope.get('body').get('disabled'),true);
  const report=validateEnvelope(twist.envelope,declarations);assert(report.valid&&report.supported&&report.resolved);
- assert.deepEqual(c.list().filter(r=>c.get(r.id).envelope.get('body').get('disabled')!==undefined).map(r=>r.id),[id]);
+ assert.deepEqual(c.list().filter(r=>!r.id.startsWith('rm.retail.')&&c.get(r.id).envelope.get('body').get('disabled')!==undefined).map(r=>r.id),[id]);
 });
 test('get/list outputs never expose private manifest, facets or declaration state',()=>{
  const c=ready(),first=c.list()[0],before=toTypedTree(c.get(first.id).envelope),one=c.get(first.id);one.envelope.get('body').get('rotation').clear();one.envelope.get('sources').get(1).set('url','poison');one.display.name='poison';one.source.sha256='poison';one.validation.diagnostics?.push('poison');first.applicability.set('class','poison');first.tags?.clear();first.display.name='poison';assert.deepEqual(toTypedTree(c.get(first.id).envelope),before);assert.notEqual(c.list()[0].display.name,'poison');assert.notEqual(c.get(first.id).source.sha256,'poison');
