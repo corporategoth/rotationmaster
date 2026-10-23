@@ -173,8 +173,8 @@ test('each flavour TOC lists exactly its edition\'s blocks and packs, every file
     local p=assert(io.popen("find Modules -name '*.lua' ! -name bind.lua"));local onDisk=0
     for path in p:lines()do onDisk=onDisk+1;assert(listed[path],path..' is in no flavour TOC')end
     p:close()
-    -- 278 with Era; +42: MoP Death Knight, Druid, Hunter, Mage, Monk and Paladin (6 blocks, 36 packs).
-    assert(onDisk==count and count==278+42,onDisk..' files on disk, '..count..' listed')
+    -- 278 with Era; +42 MoP Death Knight, Druid, Hunter, Mage, Monk, Paladin; +38 MoP Priest, Rogue, Shaman, Warlock, Warrior.
+    assert(onDisk==count and count==278+42+38,onDisk..' files on disk, '..count..' listed')
 end)
 
 test('every module on disk is one the loader can name, and bind.lua reaches Rotation Master',function()
