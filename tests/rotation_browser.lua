@@ -107,7 +107,9 @@ test('specializations preserve their distinct identities and missing selections 
         a.currentSpec=client[1]==1 and 262 or client[2]>=2 and 1 or 0
         local browser=a:CreateRotationBrowser(create('Frame'),{spec=999,id='missing'})
         assert(browser.spec==a.currentSpec and browser.selected=='Default')
-        assert(#browser.specButtons==(client[2]>=2 and 2 or 1))
+        -- Retail also offers the class's initial spec (levels 1-9).
+        assert(#browser.specButtons==(client[1]==1 and 3 or client[2]>=2 and 2 or 1))
+        if client[1]==1 then assert(browser.specButtons[3].spec==1444 and browser.specButtons[3]:GetText()=='No specialization (levels 1-9)') end
         if #browser.specButtons>1 then browser.specButtons[2]:Click();assert(browser.spec==(client[1]==1 and 264 or 2)) end
         assert(editors[#editors].spec==browser.spec)
     end
@@ -275,11 +277,10 @@ test('browser binding error retires its partial row and recovers without replaci
     local ok=pcall(b.list.workbenchBar.SetValue,b.list.workbenchBar,b.list.workbenchBar.scrollRange);assert(not ok and failed and not b.refreshing)
     f.addon.SetWorkbenchListSelection=select;b:RefreshViewport();stale();assert(visibleBrowserRow(b,'entry-1000') and b.pane==pane and b.selected=='entry-1');b:Release()
 end)
--- The cause of the Retail level 1-9 fallback refusal, pinned: RM runs the
--- class's initial spec (GetSpecialization() answers index 5, its own spec ID),
--- the browser offers only the chosen specs and opens on the first of them.
--- Which spec such a character should edit is still a product decision.
-test('Retail below level 10: the browser does not offer the initial spec RM runs and opens the first spec instead',function()
+-- Retail below level 10 RM runs the class's initial spec (GetSpecialization()
+-- answers index 5, its own spec ID). The browser offers it as its own entry
+-- and opens on it, so what is saved there is what RM runs.
+test('Retail below level 10: the browser offers the initial spec RM runs and opens on it',function()
     local f,_,_,create=fixture(1,12);local a=f.addon
     local specs={{262,'Elemental'},{263,'Enhancement'},{264,'Restoration'},[5]={1444,'Initial'}}
     f.env.C_SpecializationInfo={GetSpecialization=function() return 5 end,GetSpecializationInfo=function(i) return specs[i][1],specs[i][2] end,
@@ -288,7 +289,9 @@ test('Retail below level 10: the browser does not offer the initial spec RM runs
     f.env.UnitClass=function() return 'Shaman','SHAMAN',7 end
     a.currentSpec=assert(a.Platform:GetRotationSpecialization()).key;assert(a.currentSpec==1444)
     local browser=a:CreateRotationBrowser(create('Frame'))
-    assert(browser.spec==262,'browser spec '..tostring(browser.spec))
+    assert(browser.spec==1444,'browser spec '..tostring(browser.spec))
+    local labels={};for _,control in ipairs(browser.specButtons) do if control:IsShown() then labels[#labels+1]=control:GetText() end end
+    assert(table.concat(labels,',')=='Elemental,Enhancement,Restoration,No specialization (levels 1-9)',table.concat(labels,','))
     browser:Release()
 end)
 test('a rotation that cannot be selected wears a red row naming its first blocking issue',function()

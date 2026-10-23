@@ -13,6 +13,7 @@ function addon:GetRotationEditorSpecs(classID)
     if not entries then return {{id=0,name=L["Rotations"]}} end
     for _,entry in ipairs(entries) do
         if entry.id==0 then entry.name=L["Rotations"]
+        elseif entry.initial then entry.name=L["No specialization (levels 1-9)"]
         elseif not entry.name then
             local label=self.db.char.specs[entry.id]
             entry.name=type(label)=="string" and label or tostring(entry.id)

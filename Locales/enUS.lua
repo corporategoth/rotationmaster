@@ -982,6 +982,7 @@ L["you are using another action bar"] = true
 L["your level is outside its level range"] = true
 L["your level is unavailable"] = true
 L["your specialization is not available yet"] = true
+L["No specialization (levels 1-9)"] = true
 L["you have not chosen a specialization yet, so Rotation Master uses %s, which the Rotations editor does not offer"] = true
 L["You have not chosen a specialization yet (Retail characters below level 10 have none), so Rotation Master uses %s (%s). The Rotations editor only offers %s, so rotations saved there cannot run until you choose a specialization."] = true
 L["this client has no ranged slot"] = true

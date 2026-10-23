@@ -143,6 +143,7 @@ function addon:DescribeRotationSpec(spec)
         local ok,entries=pcall(self.GetRotationEditorSpecs,self)
         if ok and type(entries)=='table' then for _,entry in ipairs(entries) do if entry.id==spec and type(entry.name)=='string' then return entry.name end end end
     end
+    if self.Platform and self.Platform.IsInitialSpecialization and self.Platform:IsInitialSpecialization(spec) then return L['No specialization (levels 1-9)'] end
     local display=self.Platform and self.Platform.GetSpecializationDisplay and self.Platform:GetSpecializationDisplay(spec)
     if type(display)=='table' and type(display.name)=='string' then return display.name end
     if spec==0 then return L['Rotations'] end

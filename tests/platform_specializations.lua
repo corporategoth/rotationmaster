@@ -59,10 +59,11 @@ test('editor choices are copied complete bounded namespaces with modern count an
         assert(class==7);if index==1 then return 262,'Elemental','Damage',123,'DAMAGER',false,true end
         return 264,'Restoration','Healing',124,'HEALER',false,true
     end
-    local choices=p:GetRotationSpecializations(7);assert(#choices==2 and choices[1].id==262 and choices[2].name=='Restoration')
+    -- Retail also offers the class's initial spec (levels 1-9), last.
+    local choices=p:GetRotationSpecializations(7);assert(#choices==3 and choices[1].id==262 and choices[2].name=='Restoration' and choices[3].id==1444 and choices[3].initial)
     choices[1].id=999;assert(p:GetRotationSpecializations(7)[1].id==262)
     f.env.C_SpecializationInfo=nil;f.env.GetNumSpecializationsForClassID=function() return 2 end
-    assert(#p:GetRotationSpecializations(7)==2)
+    assert(#p:GetRotationSpecializations(7)==3)
     f=fixture(19,4);f.env.GetNumTalentGroups=function(inspect,pet) assert(not inspect and not pet);return 2 end
     choices=f.addon.Platform:GetRotationSpecializations();assert(#choices==2 and choices[1].id==1 and choices[2].id==2)
     f=fixture(5,1);choices=f.addon.Platform:GetRotationSpecializations();assert(#choices==1 and choices[1].id==0)
