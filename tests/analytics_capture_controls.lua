@@ -135,11 +135,17 @@ test('report window failure is fixed feedback and does not lock later actions',f
  local ok,message=a:RunCastCaptureAction('report');assert(not ok and not message:find('PRIVATE',1,true));assert(a:RunCastCaptureAction('start'));a:ClearCastCaptureForDisable();clean(f)
 end)
 if pcall(require,'bit') then test('General controls bypass pending draft and released callbacks cannot restart capture',function()
- local f,parent=settings();local a=f.addon;local calls={};a.RunCastCaptureAction=function(_,action)calls[#calls+1]=action;return true,'Done'end;a.GetCastCaptureStatusText=function()return'Cast status: idle'end
+ local f,parent=settings();local a=f.addon;local calls={};local running=false
+ a.RunCastCaptureAction=function(_,action)calls[#calls+1]=action;if action=='start'then running=true elseif action=='stop'then running=false end;return true,'Done'end
+ a.GetCastCaptureState=function(_,withReport)if withReport then return running,not running and #calls>0 end;return running end
  local p=a:OpenNativeSettings(parent,'General');local input=p:Edit('invalid_cast_probe','Probe','',function()return nil end,function()error('must not flush')end)
  input:SetText('pending');input.scripts.OnTextChanged(input,true);local dirty=p:IsSettingsDraftDirty();local profile=a.db.profile
- for _,key in ipairs({'cast_capture','cast_stop','cast_report','cast_clear'})do assert(p.fields[key],'missing '..key);p.fields[key]:Click()end
- assert(table.concat(calls,',')=='start,stop,report,clear'and a.db.profile==profile and p:IsSettingsDraftDirty()==dirty and input:GetText()=='pending')
- local stale=p.fields.cast_capture.scripts.OnClick;p:Release();stale();assert(#calls==4)
+ assert(not p.fields.cast_stop and not p.fields.cast_clear,'retired cast buttons are still drawn')
+ assert(not p.fields.cast_report:IsEnabled(),'Cast report enabled without a report')
+ p.fields.cast_capture:Click();assert(p.fields.cast_capture:GetText()=='Stop cast capture')
+ p.fields.cast_capture:Click();assert(p.fields.cast_capture:GetText()=='Capture casts (30s)' and p.fields.cast_report:IsEnabled())
+ p.fields.cast_report:Click()
+ assert(table.concat(calls,',')=='start,stop,report'and a.db.profile==profile and p:IsSettingsDraftDirty()==dirty and input:GetText()=='pending')
+ local stale=p.fields.cast_capture.scripts.OnClick;p:Release();stale();assert(#calls==3)
 end) end
 finish()

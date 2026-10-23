@@ -29,6 +29,15 @@ function addon:GetCastCaptureStatusText()
  if p=='idle'then return L['Cast capture status: idle']end
  return available()
 end
+-- Running state is cheap. The report check copies the last snapshot, so
+-- callers ask for it only when the running state changes.
+function addon:GetCastCaptureState(withReport)
+ if not rawequal(self,addon)then return nil end
+ local p=phase();local running=p=='running'or p=='starting'
+ if not withReport then return running end
+ if running or not owned()then return running,false end
+ return running,type(invoke('GetSnapshot'))=='table'
+end
 local function retire()
  generation=generation+1;lease=nil;busy=nil
  -- Clear is the strict inverse for a pending Start too. Never invoke a

@@ -10,10 +10,10 @@ local CreateText, Gap = helpers.CreateText, helpers.Gap
 function addon:GetGeneralOptionHelp()
     local ordered={
         {id="enable",title=L["Enable"],text=L["Help.General.enable"]},
+        {id="disable_buttons",title=L["Disable Bar Highlighting"],text=L["Help.General.disable_buttons"]},
         {id="poll",title=L["Polling Interval (seconds)"],text=L["Help.General.poll"]},
         {id="idle_poll",title=L["Idle Re-check Interval (seconds)"],text=L["Help.General.idle_poll"]},
         {id="autoswitch_poll",title=L["Auto-Switch Re-check Interval (seconds)"],text=L["Help.General.autoswitch_poll"]},
-        {id="disable_buttons",title=L["Disable Bar Highlighting"],text=L["Help.General.disable_buttons"]},
         {id="live_config_update",title=L["Live Status Update Frequency (seconds)"],text=L["Help.General.live_config_update"]},
         {id="minimap",title=L["Minimap Icon"],text=L["Help.General.minimap"]},
         {id="rotation_view",title=L["Default rotation view"],text=L["Help.General.rotation_view"]},
@@ -42,20 +42,23 @@ function addon:GetGeneralOptionHelp()
     ordered[#ordered+1]={id="loglevel",title=L['Log Level'],text=L['Help.General.loglevel']}
     ordered[#ordered+1]={id="detailed_profiling",title=L['Detailed Profiling'],text=L['Help.General.detailed_profiling']}
     if self.GetCacheDiagnosticMode then ordered[#ordered+1]={id='cpu_cache_bypass',title=L['Enable observation cache'],text=L['Help.General.cpu_cache_bypass']} end
-    if self.StartMemoryCapture then
-        ordered[#ordered+1]={id='memory_capture',title=L['Capture memory (10m)'],text=L['Help.General.memory_capture']}
-        ordered[#ordered+1]={id='memory_report',title=L['Memory report'],text=L['Help.General.memory_report']}
-        ordered[#ordered+1]={id='memory_stop',title=L['Stop memory capture'],text=L['Help.General.memory_stop']}
-    end
+    -- Capture columns: CPU, Runtime, Memory, Casts. Each capture button also
+    -- stops its running capture; the probe stays a /rm perf probe command.
     if self.RunCPUProfileAction then
         ordered[#ordered+1]={id='cpu_capture',title=L['Capture CPU (10s)'],text=L['Help.General.cpu_capture']}
         ordered[#ordered+1]={id='cpu_report',title=L['CPU report'],text=L['Help.General.cpu_report']}
-        ordered[#ordered+1]={id='cpu_cancel',title=L['Cancel capture'],text=L['Help.General.cpu_cancel']}
-        ordered[#ordered+1]={id='cpu_probe',title=L['Native profiler probe'],text=L['Help.General.cpu_probe']}
         if type(self.StartCPURuntimeCapture)=='function' then
             ordered[#ordered+1]={id='cpu_runtime_capture',title=L['Capture runtime (10s)'],text=L['Help.General.cpu_runtime_capture']}
             ordered[#ordered+1]={id='cpu_runtime_report',title=L['Runtime report'],text=L['Help.General.cpu_runtime_report']}
         end
+        if self.StartMemoryCapture then
+            ordered[#ordered+1]={id='memory_capture',title=L['Capture memory (10m)'],text=L['Help.General.memory_capture']}
+            ordered[#ordered+1]={id='memory_report',title=L['Memory report'],text=L['Help.General.memory_report']}
+        end
+    end
+    if self.RunCastCaptureAction then
+        ordered[#ordered+1]={id='cast_capture',title=L['Capture casts (30s)'],text=L['Help.General.cast_capture']}
+        ordered[#ordered+1]={id='cast_report',title=L['Cast report'],text=L['Help.General.cast_report']}
     end
     return ordered
 end

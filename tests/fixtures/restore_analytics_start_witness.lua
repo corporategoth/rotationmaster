@@ -72,6 +72,7 @@ end
  ]====],previous=[====[]====]}}}}
 local function hash(s)local n=0;for i=1,#s do n=(n*33+s:byte(i))%4294967296 end;return string.format('%08x',n)end
 return function(text,path)
+ text=dofile('tests/fixtures/restore_workbench_resize.lua')(text,path)
  local r=rows[path];if not r or not text:find('-- BEGIN ANALYTICS START WITNESS',1,true)then return text end
  assert(#text==r.bytes and hash(text)==r.hash,'unrelated START-witness source: '..path)
  for i=#r.changes,1,-1 do local c=r.changes[i];assert(text:sub(c.at,c.at+#c.current-1)==c.current,'START-witness inverse mismatch');text=text:sub(1,c.at-1)..c.previous..text:sub(c.at+#c.current)end

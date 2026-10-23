@@ -9,11 +9,14 @@ function addon:BuildGeneralSettings(p)
     local profile=store.profile
     p:Column(1)
     p:Heading(L['Recommendations'])
+    local enableY=p.y
     p:Check('enable',L['Enable'],profile.enable,function(v) profile.enable=v;p:RunSettingsEffect('enable',function() if v then self:enable() else self:disable() end end) end)
+    p:Check('disable_buttons',L['Disable Bar Highlighting'],profile.disable_buttons,function(v) profile.disable_buttons=v;p:RunSettingsEffect('buttons',function() if v then self:GlowClear() end end) end)
+    -- Enable and Disable Bar Highlighting share their row half and half.
+    self:LayoutWorkbenchRow({p.fields.enable,p.fields.disable_buttons},0,enableY,p.width,{text=22});p.y=enableY+30
     p:Slider('poll',L['Polling Interval (seconds)'],profile.poll,.05,1,.05,function(v) profile.poll=v;p:RunSettingsEffect('poll',function() if self.rotationTimer then self:DisableRotationTimer();self:EnableRotationTimer() end end) end)
     p:Slider('idle_poll',L['Idle Re-check Interval (seconds)'],profile.idle_poll or 1,0,5,.25,function(v) profile.idle_poll=v end)
     p:Slider('autoswitch_poll',L['Auto-Switch Re-check Interval (seconds)'],profile.autoswitch_poll or 1,0,10,.25,function(v) profile.autoswitch_poll=v;profile.disable_autoswitch=nil;p:RunSettingsEffect('autoswitch_poll',function() self:StartAutoSwitchTimer() end) end)
-    p:Check('disable_buttons',L['Disable Bar Highlighting'],profile.disable_buttons,function(v) profile.disable_buttons=v;p:RunSettingsEffect('buttons',function() if v then self:GlowClear() end end) end)
     p:Slider('live_config_update',L['Live Status Update Frequency (seconds)'],profile.live_config_update,0,60,1,function(v)
         if profile.live_config_update==v then return end;profile.live_config_update=v
         p:RunSettingsEffect('conditionTimer',function()
@@ -157,69 +160,85 @@ function addon:BuildGeneralSettings(p)
             p:Message(ok and '' or L['Cache diagnostic is unavailable.'],ok)
         end))
     end
+    -- Diagnostics: one column per capture kind, its capture button above its
+    -- report button. While a capture runs its button stops it (the report is
+    -- kept); a report button stays disabled until that kind has a report.
+    -- Labels follow live state, whoever started or ended the capture, but only
+    -- while this page is shown. Each action uses live settings, never a draft.
+    local captures={}
+    local function call(method,...) local fn=self[method];if type(fn)~='function' then return false end;local ok,value=pcall(fn,self,...);return ok and value end
+    local function stopper(kind,method) return function()
+        if type(self.HandlePerformanceCommand)=='function' then return self:HandlePerformanceCommand(kind..' stop') end
+        local ok=call(method);return ok,''
+    end end
+    local function stored(method) return function() local fn=self[method];if type(fn)~='function' then return false end;local ok,value=pcall(fn,self);return ok and type(value)=='string' end end
     if self.RunCPUProfileAction then
-        local controls={
-            {key='cpu_capture',text=L['Capture CPU (10s)'],action='start'},
-            {key='cpu_report',text=L['CPU report'],action='report'},
-            {key='cpu_cancel',text=L['Cancel capture'],action='cancel'},
-            {key='cpu_probe',text=L['Native profiler probe'],action='probe'},
-        }
+        captures[#captures+1]={key='cpu_capture',reportKey='cpu_report',start=L['Capture CPU (10s)'],stop=L['Stop CPU capture'],report=L['CPU report'],
+            running=function() return call('IsCPUProfileRunning')==true end,hasReport=stored('GetCPUProfileReport'),
+            begin=function() return self:RunCPUProfileAction('start') end,finish=stopper('cpu','StopCPUProfile'),open=function() return self:RunCPUProfileAction('report') end}
         if type(self.StartCPURuntimeCapture)=='function' then
-            controls[#controls+1]={key='cpu_runtime_capture',text=L['Capture runtime (10s)'],action='runtime'}
-            controls[#controls+1]={key='cpu_runtime_report',text=L['Runtime report'],action='runtimereport'}
+            captures[#captures+1]={key='cpu_runtime_capture',reportKey='cpu_runtime_report',start=L['Capture runtime (10s)'],stop=L['Stop runtime capture'],report=L['Runtime report'],
+                running=function() return call('IsCPURuntimeCaptureRunning')==true end,hasReport=stored('GetCPURuntimeCaptureReport'),
+                begin=function() return self:RunCPUProfileAction('runtime') end,finish=stopper('runtime','StopCPURuntimeCapture'),open=function() return self:RunCPUProfileAction('runtimereport') end}
         end
         if type(self.StartMemoryCapture)=='function' then
-            controls[#controls+1]={key='memory_capture',text=L['Capture memory (10m)'],action='memory'}
-            controls[#controls+1]={key='memory_report',text=L['Memory report'],action='memoryreport'}
-            controls[#controls+1]={key='memory_stop',text=L['Stop memory capture'],action='memorystop'}
+            captures[#captures+1]={key='memory_capture',reportKey='memory_report',start=L['Capture memory (10m)'],stop=L['Stop memory capture'],report=L['Memory report'],
+                running=function() return call('IsMemoryCaptureRunning')==true end,hasReport=stored('GetMemoryCaptureReport'),
+                begin=function() return self:RunCPUProfileAction('memory') end,finish=stopper('memory','CompleteMemoryCapture'),open=function() return self:RunCPUProfileAction('memoryreport') end}
         end
-        local diagnosticY=p.y;local buttons={};local minimumWidth=120
-        local diagnosticToken=p.generation
-        for i,entry in ipairs(controls) do
-            local control=p:Button(entry.key,entry.text,function() end)
-            buttons[i]=control
-            minimumWidth=math.max(minimumWidth,control:GetFontString():GetStringWidth()+20)
-            -- Diagnostics use live runtime settings, without applying/flushing a draft.
-            self:SetUIScript(control,'OnClick',p:Guard(function()
-                local ok,message=self:RunCPUProfileAction(entry.action)
-                if not p:Valid(diagnosticToken) then return end
-                p:Message(message,ok)
-            end))
-        end
-        local columns=p.width>=minimumWidth*4+12 and 4 or p.width>=minimumWidth*2+4 and 2 or 1
-        local controlWidth=(p.width-(columns-1)*4)/columns
-        for i,control in ipairs(buttons) do
-            control:ClearAllPoints();control:SetPoint('TOPLEFT',((i-1)%columns)*(controlWidth+4),-diagnosticY-math.floor((i-1)/columns)*28);control:SetWidth(controlWidth)
-        end
-        p.y=diagnosticY+math.ceil(#buttons/columns)*28
     end
     if self.RunCastCaptureAction then
-        local controls={
-            {key='cast_capture',text=L['Capture casts (30s)'],action='start'},
-            {key='cast_stop',text=L['Stop'],action='stop'},
-            {key='cast_report',text=L['Cast report'],action='report'},
-            {key='cast_clear',text=L['Clear'],action='clear'},
-        }
-        local diagnosticY=p.y;local buttons={};local minimumWidth=120
-        local statusText;local diagnosticToken=p.generation
-        for i,entry in ipairs(controls) do
-            local control=p:Button(entry.key,entry.text,function() end)
-            buttons[i]=control
-            minimumWidth=math.max(minimumWidth,control:GetFontString():GetStringWidth()+20)
-            self:SetUIScript(control,'OnClick',p:Guard(function()
-                local ok,message,current=self:RunCastCaptureAction(entry.action)
-                if current==false or not p:Valid(diagnosticToken) then return end
-                p:Message(message,ok)
-                if statusText then statusText:SetText(self:GetCastCaptureStatusText()) end
+        -- The cast report copies its snapshot, so it is checked only when the
+        -- running state changes (and now and then as a safety net).
+        captures[#captures+1]={key='cast_capture',reportKey='cast_report',start=L['Capture casts (30s)'],stop=L['Stop cast capture'],report=L['Cast report'],costly=true,
+            running=function() return type(self.GetCastCaptureState)=='function' and self:GetCastCaptureState()==true end,
+            hasReport=function() if type(self.GetCastCaptureState)~='function' then return true end;local _,available=self:GetCastCaptureState(true);return available==true end,
+            begin=function() return self:RunCastCaptureAction('start') end,finish=function() return self:RunCastCaptureAction('stop') end,open=function() return self:RunCastCaptureAction('report') end}
+    end
+    if #captures>0 then
+        local token=p.generation;local minimumWidth=120;local diagnosticY=p.y
+        local function paint(entry,force)
+            local running=entry.running()
+            local has=entry.has
+            if not running and (force or not entry.costly or running~=entry.wasRunning or (entry.age or 0)>=2) then has=entry.hasReport()==true;entry.age=0 end
+            if running then has=false end
+            entry.wasRunning=running;entry.has=has
+            entry.button:SetText(running and entry.stop or entry.start)
+            if has then entry.reportButton:Enable() else entry.reportButton:Disable() end
+        end
+        local function repaint(force) if p:Valid(token) then for _,entry in ipairs(captures) do paint(entry,force) end end end
+        for _,entry in ipairs(captures) do
+            local button=p:Button(entry.key,entry.start,function() end);local reportButton=p:Button(entry.reportKey,entry.report,function() end)
+            entry.button,entry.reportButton=button,reportButton
+            for _,text in ipairs({entry.start,entry.stop}) do button:SetText(text);minimumWidth=math.max(minimumWidth,button:GetFontString():GetStringWidth()+20) end
+            self:SetUIScript(button,'OnClick',p:Guard(function()
+                local action=entry.running() and entry.finish or entry.begin
+                local ok,message,current=action()
+                if current==false or not p:Valid(token) then return end
+                if message and message~='' then p:Message(message,ok) end;repaint(true)
+            end))
+            self:SetUIScript(reportButton,'OnClick',p:Guard(function()
+                local ok,message,current=entry.open()
+                if current==false or not p:Valid(token) then return end
+                p:Message(message or '',ok);repaint(true)
             end))
         end
-        local columns=p.width>=minimumWidth*4+12 and 4 or p.width>=minimumWidth*2+4 and 2 or 1
-        local controlWidth=(p.width-(columns-1)*4)/columns
-        for i,control in ipairs(buttons) do
-            control:ClearAllPoints();control:SetPoint('TOPLEFT',((i-1)%columns)*(controlWidth+4),-diagnosticY-math.floor((i-1)/columns)*28);control:SetWidth(controlWidth)
+        local gap=4
+        local columns=math.max(1,math.min(#captures,math.floor((p.width+gap)/(minimumWidth+gap))))
+        local each=(p.width-(columns-1)*gap)/columns
+        for i,entry in ipairs(captures) do
+            local x=((i-1)%columns)*(each+gap);local top=diagnosticY+math.floor((i-1)/columns)*58
+            entry.button:ClearAllPoints();entry.button:SetPoint('TOPLEFT',x,-top);entry.button:SetWidth(each)
+            entry.reportButton:ClearAllPoints();entry.reportButton:SetPoint('TOPLEFT',x,-top-28);entry.reportButton:SetWidth(each)
         end
-        p.y=diagnosticY+math.ceil(#buttons/columns)*28
-        if self.GetCastCaptureStatusText then statusText=p:Text(self:GetCastCaptureStatusText()) end
+        p.y=diagnosticY+math.ceil(#captures/columns)*58
+        repaint(true)
+        local watcher=p:Acquire('captureWatcher',function() return CreateFrame('Frame',nil,p.child) end);local elapsed=0
+        self:SetUIScript(watcher,'OnUpdate',function(frame,delta)
+            if not p:Valid(token) then self:SetUIScript(frame,'OnUpdate',nil);return end
+            elapsed=elapsed+(delta or 0);if elapsed<.25 then return end
+            for _,entry in ipairs(captures) do entry.age=(entry.age or 0)+elapsed end;elapsed=0;repaint(false)
+        end)
     end
     if self.Glow and store.global.effects and store.global.effects[profile.effect] then self:Glow(preview,'settings-preview',store.global.effects[profile.effect],profile.color or {r=1,g=1,b=1,a=1},profile.magnification or 1,profile.setpoint or 'CENTER',profile.xoffs or 0,profile.yoffs or 0) end
     p:EndColumns()

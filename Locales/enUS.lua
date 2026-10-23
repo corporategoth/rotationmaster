@@ -2597,6 +2597,11 @@ L["Cast capture status: running"] = true
 L["Cast capture stopped. Open Cast report to inspect receipts."] = true
 L["Cast receipt report"] = true
 L["Cast report"] = true
+L["Stop CPU capture"] = true
+L["Stop runtime capture"] = true
+L["Stop cast capture"] = true
+L["Help.General.cast_capture"] = "Record spell cast receipts for thirty seconds without changing settings or gameplay polling. While it runs this button reads Stop cast capture and ends the capture early, keeping what was recorded."
+L["Help.General.cast_report"] = "Open the copyable cast receipt report. It stays disabled until a cast capture has produced a report and while a capture is running."
 L["Client: family=%s version=%s build=%s interface=%s locale=%s"] = true
 L["Counts describe receipt rows, not gameplay opportunities."] = true
 L["Damage: unavailable (no damage observations or encounter denominator)."] = true

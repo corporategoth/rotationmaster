@@ -39,17 +39,23 @@ test('General CPU capture controls bypass pending edits and retain callback leas
     a.db.profile.poll=.15
     local calls={};a.print=function() end
     a.StartCPUProfile=function(_,duration) calls[#calls+1]='start:'..duration;return true end
+    local running=false
+    a.StartCPUProfile=function(_,duration) calls[#calls+1]='start:'..duration;running=true;return true end
+    a.IsCPUProfileRunning=function() return running end
+    a.StopCPUProfile=function() calls[#calls+1]='stop';running=false;return true end
     a.GetCPUProfileReport=function() return 'CPU report data' end
-    a.CancelCPUProfile=function() calls[#calls+1]='cancel';return true end
     a.ShowConditionText=function(_,text,title) assert(text=='CPU report data' and title=='CPU profile');calls[#calls+1]='report' end
     local p=a:OpenNativeSettings(parent,'General')
     -- An uncommitted native input must neither block a diagnostic nor change live polling.
     local edit=p:Edit('unrelated','Unrelated','',function() return nil end,function() error('must not flush') end)
     edit:SetText('invalid');edit.scripts.OnTextChanged(edit,true)
     local wasDirty=p:IsSettingsDraftDirty()
-    assert(p.fields.cpu_capture and p.fields.cpu_report and p.fields.cpu_cancel)
-    p.fields.cpu_capture:Click();p.fields.cpu_report:Click();p.fields.cpu_cancel:Click()
-    assert(table.concat(calls,',')=='start:10,report,cancel' and a.db.profile.poll==.15)
+    assert(p.fields.cpu_capture and p.fields.cpu_report and not p.fields.cpu_cancel and not p.fields.cpu_probe,'capture column controls differ')
+    -- Capture becomes Stop while running; the report waits for a finished capture.
+    p.fields.cpu_capture:Click();assert(p.fields.cpu_capture:GetText()=='Stop CPU capture' and not p.fields.cpu_report:IsEnabled())
+    p.fields.cpu_capture:Click();assert(p.fields.cpu_capture:GetText()=='Capture CPU (10s)' and p.fields.cpu_report:IsEnabled())
+    p.fields.cpu_report:Click()
+    assert(table.concat(calls,',')=='start:10,stop,report' and a.db.profile.poll==.15)
     assert(p:IsSettingsDraftDirty()==wasDirty,'diagnostics must not change pending edits')
     local stale=p.fields.cpu_capture.scripts.OnClick;p:Release();stale();assert(#calls==3)
 end)
@@ -231,14 +237,14 @@ test('General page help retains authored explanations without scattering questio
     assert(not p.fields.poll_help)
     local all=a:WorkbenchPageHelp('General');local fields={};for _,entry in ipairs(all) do fields[entry.title]=entry.text end
     for _,caption in ipairs({'Enable','Polling Interval (seconds)','Idle Re-check Interval (seconds)','Auto-Switch Re-check Interval (seconds)','Live Status Update Frequency (seconds)','Minimap Icon','Default rotation view','Disable Bar Highlighting','Spell History Memory (seconds)','Combat History Memory (seconds)','Damage History Memory (seconds)','Preview Spells','Effect','Magnification','Highlight Color','Anchor','V','H','Log Level','Detailed Profiling'}) do assert(fields[caption],caption..' missing help') end
-    local order={};for i,entry in ipairs(all) do order[entry.title]=i end;assert(order['Disable Bar Highlighting']==order['Auto-Switch Re-check Interval (seconds)']+1 and order['Magnification']==order['Effect']+1)
+    local order={};for i,entry in ipairs(all) do order[entry.title]=i end;assert(order['Disable Bar Highlighting']==order['Enable']+1 and order['Polling Interval (seconds)']==order['Disable Bar Highlighting']+1 and order['Magnification']==order['Effect']+1)
 end)
 
 test('General help localizes whole field explanations in the visible control order',function()
     local f,parent=fixture();local a=f.addon;local L=f.libraries['AceLocale-3.0']:GetLocale('rotationmaster')
-    local controls={'enable','poll','idle_poll','autoswitch_poll','disable_buttons','live_config_update','minimap','rotation_view',
+    local controls={'enable','disable_buttons','poll','idle_poll','autoswitch_poll','live_config_update','minimap','rotation_view',
         'spell_history','combat_history','damage_history','preview_spells','preview_opacity','preview_locked','preview_vertical','preview_reset',
-        'effect','magnification','color','setpoint','yoffs','xoffs','loglevel','detailed_profiling','cpu_capture','cpu_report','cpu_cancel'}
+        'effect','magnification','color','setpoint','yoffs','xoffs','loglevel','detailed_profiling','cpu_capture','cpu_report'}
     for _,key in ipairs(controls) do L['Help.General.'..key]='Translated field '..key end
     local p=a:CreateSettingsForm(parent);p:Open(function(form) a:BuildGeneralSettings(form) end)
     local found,last={},0
