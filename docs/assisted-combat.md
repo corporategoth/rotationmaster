@@ -120,9 +120,33 @@ spell (`C_Spell.GetBaseSpell`) and its current override
 - `C_Spell.IsSpellUsable`, `IsSpellInRange` and `SpellHasRange` carry no secret
   annotation on either branch, so RM reads them as usual. If one were secret
   after all, the spell would be unavailable.
+- **Class resources (Points) in combat.** `UnitPower` and `GetComboPoints`
+  are `SecretWhenUnitPowerRestricted`: secret "for power types not explicitly
+  flagged as being never secret, unless the subject unit does not have a power
+  of this type". `UnitPowerMax` is `SecretWhenUnitPowerMaxRestricted`: secret
+  only for units that are not player-controlled, with per-type flags taking
+  priority (`UnitDocumentation.lua`, `SecretPredicatesDocumentation.lua`,
+  identical on `live` e7aa82019d and `forever` ca8368f2f2). The documentation
+  does not list the flagged types. That flag is client data, and
+  `C_Secrets.GetPowerTypeSecrecy` reads it. Blizzard named the player's
+  secondary resources it stopped making secret during the 12.0.0 beta (compiled
+  on warcraft.wiki.gg, Patch 12.0.0/Planned API changes): Combo Points, Runes,
+  Soul Shards, Holy Power, Chi, Arcane Charges and Essence. Primary resources
+  stay secret. Under the `restricted` policy, Points (`POINT`) reads only those
+  types, matched by `Enum.PowerType` name. Every value still goes through
+  `CanReadValue`, so a secret one makes Points unavailable instead of
+  returning a number. Retail maps Paladin to Holy Power and Evoker to Essence.
+  The other classes keep the shared map: Death Knight Runes, Warlock Soul
+  Shards, Monk Chi, Mage Arcane Charges, everyone else Combo Points. TBC, Era
+  and progression clients keep their map, transport and calls unchanged.
+  Copies saved from an older Points source still use the old
+  `GetConditionPointResource` and stay unavailable on these clients.
 - **Needs in-game confirmation:** that the cooldown flags really are readable
   in combat, how `isOnGCD` behaves when polled (and whether it is nil), and
-  that usability and range stay readable.
+  that usability and range stay readable. For Points: that
+  `C_Secrets.GetPowerTypeSecrecy` reports the seven types as never secret on
+  Retail and on Forever (Blizzard's list was for Midnight). Also that
+  `UnitPower("player", Enum.PowerType.Runes)` counts ready runes.
 - The condition and step have not been tested on a live Retail client. The
   tests use a modelled `C_AssistedCombat` built from the documentation.
   `tests/retail_combat_readiness.lua` models the secret cooldown times the

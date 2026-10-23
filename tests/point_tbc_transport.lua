@@ -35,7 +35,9 @@ test('all explicit map entries including combo numeric keep existing transport',
 end)
 test('TBC-first deliberately leaves Era progression Retail Forever unknown unchanged',function()
  for _,project in ipairs({2,11,14,19})do local _,a,s=fixture(project);s.current=5;assert(status(a,node())=='match'and count(s,'combo')==0)end
- for _,project in ipairs({1,18,999})do local _,a,s=fixture(project);unknown(a,node());assert(#s.calls==0)end
+ for _,project in ipairs({999})do local _,a,s=fixture(project);unknown(a,node());assert(#s.calls==0)end
+ -- Retail and Forever read never-secret Combo Points through UnitPower, never the TBC target transport.
+ for _,project in ipairs({1,18})do local _,a,s=fixture(project);s.current=5;assert(status(a,node())=='match'and count(s,'combo')==0 and count(s,'current')==1)end
 end)
 test('enum value or table replacement refuses semantic route without hardcoded4',function()
  for _,mode in ipairs({'value','table'})do local f,a,s=fixture();if mode=='value'then f.env.Enum.PowerType.ComboPoints=14 else f.env.Enum.PowerType={ComboPoints=4}end;s.current=5;assert(status(a,node())=='match'and count(s,'combo')==0)end

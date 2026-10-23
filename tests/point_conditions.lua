@@ -103,7 +103,9 @@ test('unknown player classes retry next pass and malformed owned success entries
  for _,bad in ipairs({{},opaque,{api=f.env.UnitClass,class=opaque},{api=f.env.UnitClass,class=''}}) do a.longtermCache[key]=bad;local before=count(s,'class');assert(eval(node(3,'player'),{}) and count(s,'class')==before+1) end
 end)
 test('unsupported policy and transient errors do not quarantine and recover next pass',function()
- for _,project in ipairs({1,18,999}) do local _,a,s=fixture(project);unknown(a,node());assert(#s.calls==0) end
+ for _,project in ipairs({999}) do local _,a,s=fixture(project);unknown(a,node());assert(#s.calls==0) end
+ -- Retail and Forever read never-secret secondary resources (tests/retail_points.lua).
+ for _,project in ipairs({1,18}) do local _,a,s=fixture(project);assert(a:evaluateConditionResult(node()).status=='match' and count(s,'current')==1) end
  local _,a,s=fixture();s.throw='class';unknown(a,node(3,'player'));s.throw=nil;assert(a:evaluateConditionResult(node(3,'player')).status=='match')
 end)
 test('current editable copies and actual public helper clones share canonical cache authority',function()
