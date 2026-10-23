@@ -1,10 +1,45 @@
 local _,addon=...
 local platform=addon.Platform
 
+-- Retail and Forever make UnitPower and GetComboPoints SecretWhenUnitPowerRestricted:
+-- "secret values for power types not explicitly flagged as being never secret,
+-- unless the subject unit does not have a power of this type". UnitPowerMax is
+-- SecretWhenUnitPowerMaxRestricted: secret "when the unit isn't
+-- player-controlled", per-type flags taking priority. Blizzard's generated API
+-- documentation (Gethe/wow-ui-source, Blizzard_APIDocumentationGenerated:
+-- UnitDocumentation.lua, SecretPredicatesDocumentation.lua) at live
+-- e7aa82019dc298e0351c7159d60c2a9b916b9b67 (12.1.5.70529) and forever
+-- ca8368f2f2380cbe696854f7f2646387c278a61b (1.60.1.70532); the annotations and
+-- predicates are identical on both. The per-type flag is client data
+-- (C_Secrets.GetPowerTypeSecrecy), not documentation. Blizzard named the
+-- player's secondary resources it no longer makes secret (12.0.0 beta, compiled
+-- on warcraft.wiki.gg Patch_12.0.0/Planned_API_changes): Combo Points, Runes,
+-- Soul Shards, Holy Power, Chi, Arcane Charges and Essence; primary resources
+-- stay secret, and GetComboPoints follows the combo-point rule. Under the
+-- restricted policy POINT reads only these types, by Enum name, and every
+-- value still passes CanReadValue: a secret one is unavailable, never a number.
+local neverSecretPointPowers={'ComboPoints','Runes','SoulShards','HolyPower','Chi','ArcaneCharges','Essence'}
+function platform:IsNeverSecretPointPower(powerType)
+    if not self:CanReadValue(powerType) then return false end
+    if canaccessvalue and not canaccessvalue(powerType) then return false end
+    if type(powerType)~='number' then return false end
+    local enum=Enum
+    if not self:CanReadValue(enum) or type(enum)~='table' then return false end
+    local types=rawget(enum,'PowerType')
+    if not self:CanReadValue(types) or type(types)~='table' then return false end
+    for _,name in ipairs(neverSecretPointPowers) do
+        local id=rawget(types,name)
+        if self:CanReadValue(id) and (not canaccessvalue or canaccessvalue(id)) and type(id)=='number' and id==powerType then return true end
+    end
+    return false
+end
+
 -- POINT has its own explicit secondary-resource selection policy. These reads
 -- neither choose the primary power bar nor redirect the configured unit.
+-- Identity is guarded value by value, so the restricted policy reads it too.
 function platform:GetUnitPointIdentityObservation(unit,includeClass)
-    if self:GetCombatDataPolicy()~='probe' then return nil,'unsupported-policy' end
+    local policy=self:GetCombatDataPolicy()
+    if policy~='probe' and policy~='restricted' then return nil,'unsupported-policy' end
     if not self:CanReadValue(unit) or not self:CanReadValue(includeClass) then return nil,'restricted-value' end
     if type(unit)~='string' or unit=='' then return nil,'invalid-unit' end
     if type(includeClass)~='boolean' then return nil,'invalid-point-identity-query' end
@@ -28,7 +63,8 @@ function platform:GetUnitPointIdentityObservation(unit,includeClass)
 end
 
 function platform:GetUnitPointPowerObservation(unit,powerType,kind)
-    if self:GetCombatDataPolicy()~='probe' then return nil,'unsupported-policy' end
+    local policy=self:GetCombatDataPolicy()
+    if policy~='probe' and (policy~='restricted' or not self:IsNeverSecretPointPower(powerType)) then return nil,'unsupported-policy' end
     if not self:CanReadValue(unit) or not self:CanReadValue(powerType) or not self:CanReadValue(kind) then return nil,'restricted-value' end
     if type(unit)~='string' or unit=='' then return nil,'invalid-unit' end
     if type(powerType)~='number' or powerType~=powerType or powerType<0 or powerType==math.huge or powerType%1~=0 then return nil,'invalid-point-power-query' end

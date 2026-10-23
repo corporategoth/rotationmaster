@@ -74,10 +74,13 @@ do
 end
 
 -- New Built In POINT copies may opt into the player/target transport; old sources keep the API above.
+-- Under the restricted policy (Retail, Forever) only a power type Blizzard
+-- flags never secret is selected (Platform/points.lua); its reads stay guarded.
 function addon:GetConditionPointResourceV2(unit,cache)
     local platform=self.Platform
     local info=platform:GetClientInfo()
-    if info.combatDataPolicy~='probe' then return nil,'unsupported-policy' end
+    local policy=info.combatDataPolicy
+    if policy~='probe' and policy~='restricted' then return nil,'unsupported-policy' end
     if not platform:CanReadValue(unit) then return nil,'restricted-value' end
     if type(unit)~='string' or unit=='' then return nil,'invalid-unit' end
     local record,reason=addon.Functions.cache.getCached(cache,pointIdentity,self,unit,playerClassCacheKey)
@@ -106,6 +109,7 @@ function addon:GetConditionPointResourceV2(unit,cache)
     end
     if selected==nil then return nil,'point-resource-unavailable' end
     if type(selected)~='number' or selected~=selected or selected<0 or selected==math.huge or selected%1~=0 then return nil,'invalid-point-resource' end
+    if policy=='restricted' and not platform:IsNeverSecretPointPower(selected) then return nil,'unsupported-policy' end
     local transport='power'
     if unit=='player' and fallbackTypes then
         local rawTypes,rawCombo=rawget(fallbackEnum,'PowerType'),rawget(fallbackTypes,'ComboPoints')

@@ -230,6 +230,12 @@ addon.points = {
     MONK = Enum.PowerType.Chi,
     MAGE = Enum.PowerType.ArcaneCharges,
 }
+-- Retail's other class resources (Rogue and Druid keep the Combo Points
+-- fallback). Classic-family clients keep the map above unchanged.
+if WOW_PROJECT_ID == WOW_PROJECT_MAINLINE then
+    addon.points.PALADIN = Enum.PowerType.HolyPower
+    addon.points.EVOKER = Enum.PowerType.Essence
+end
 
 addon.runes = {
     L["Blood"],  -- 1
