@@ -19,7 +19,7 @@ local brainFreeze,fingers,thermal,spike=buff(190446),buff(44544),buff(1247730),b
 local twoFingers={type='BUFF_STACKS',unit='player',spell=44544,ownbuff=true,operator='GREATERTHANOREQUALS',value=2}
 local frozenRain=all(buff(270232),engaged(3))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.mage.frost.guide',revision=1,
+ format='RotationMaster',schemaVersion=1,id='rm.retail.mage.frost.guide',revision=2,
  blocks={['retail.mage.boundaries']=1,['retail.mage.utility']=1},
  nameKey='Default.Retail.Mage.FrostGuide.Name',descriptionKey='Default.Retail.Mage.FrostGuide.Description',
  applicability={families={'retail'},actionContext='player',class='MAGE',specs={64},minLevel=10,maxLevel=90},
@@ -36,7 +36,7 @@ assert(addon:RegisterDefaultRotation({
   },
   rotation={
    block('frguide-boundaries','retail.mage.boundaries','frguide-'),
-   {id='frguide-pull',type='branch',conditions=negate(combat()),onFalse={},onTrue={
+   {id='frguide-pull',type='branch',conditions=combat(),onTrue={},onFalse={
     spell('frguide-pull-frostfire',431044),spell('frguide-pull-frostbolt',116),stop('frguide-pull-stop')}},
    {id='frguide-frostfire',type='branch',conditions={type='SPELL_KNOWN',spell=431044},
     onTrue={

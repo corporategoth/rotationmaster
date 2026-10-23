@@ -20,7 +20,7 @@ test('six sourced, localized, valid premades replace the bounded Shaman starters
   assert(r.validation.valid and r.validation.supported and r.validation.resolved,id)
   assert(f.translations[r.nameKey]and f.translations[r.descriptionKey],id..' localization')
   assert(#e.sources>0 and e.sources[1].reviewedAt=='2026-10-23',id..' sources')
-  assert(e.revision==((id==ENH or id==SIM)and 2 or 1)and e.applicability.class=='SHAMAN'and e.applicability.maxLevel==70 and e.applicability.actionContext=='player',id)
+  assert(e.revision==((id==ENH or id==SIM)and 3 or 1)and e.applicability.class=='SHAMAN'and e.applicability.maxLevel==70 and e.applicability.actionContext=='player',id)
   assert(e.applicability.families[1]=='tbc'and #e.applicability.families==1)
   assert(a:GetDefaultRotationComposition(id),id..' uses the shared Shaman blocks')
  end

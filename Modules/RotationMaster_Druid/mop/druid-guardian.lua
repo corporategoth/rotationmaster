@@ -23,7 +23,7 @@ local tanked={type='ISSAME',unit='targettarget',otherunit='player'}
 local elite=any({type='CLASSIFICATION',unit='target',value='elite'},{type='CLASSIFICATION',unit='target',value='rareelite'},{type='CLASSIFICATION',unit='target',value='worldboss'})
 local cleave=any({type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=2},{type='CLASSIFICATION',unit='target',value='worldboss'})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.druid.guardian',revision=2,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.druid.guardian',revision=3,
  blocks={['mop.druid.boundaries']=2,['mop.druid.target']=1,['mop.druid.mark']=1},
  nameKey='Default.MoP.Druid.Guardian.Name',descriptionKey='Default.MoP.Druid.Guardian.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='DRUID',minLevel=10,maxLevel=90},
@@ -63,9 +63,9 @@ assert(addon:RegisterDefaultRotation({
     spell('guardian-cat-bite',22568,cp('GREATERTHANOREQUALS',5)),
     spell('guardian-cat-mangle',33917),
     swing('guardian-cat-stop')}},
-   {id='guardian-shift',type='branch',conditions=negate({type='FORM',form=BEAR}),onFalse={},onTrue={
+   {id='guardian-shift',type='branch',conditions={type='FORM',form=BEAR},onTrue={},onFalse={
     spell('guardian-bear-form',BEAR),stop('guardian-shift-stop')}},
-   {id='guardian-pull',type='branch',conditions=negate(combat()),onFalse={},onTrue={
+   {id='guardian-pull',type='branch',conditions=combat(),onTrue={},onFalse={
     spell('guardian-pull-faerie-fire',770,{type='BEYOND_MELEE',unit='target'}),
     spell('guardian-pull-mangle',33917),
     swing('guardian-pull-stop')}},

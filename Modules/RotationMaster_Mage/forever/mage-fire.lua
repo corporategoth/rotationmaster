@@ -23,7 +23,7 @@ local fingers=any({type='BUFF',unit='player',spell=400669},{type='BUFF',unit='pl
 local frozen=any({type='DEBUFF',unit='target',spell=122,anyrank=true},{type='DEBUFF',unit='target',spell=12494})
 local vulnerable={type='DEBUFF',unit='target',spell=22959,owndebuff=true}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.mage.fire',revision=2,
+ format='RotationMaster',schemaVersion=1,id='rm.forever.mage.fire',revision=3,
  blocks={['forever.mage.lance-batch']=1,['forever.mage.boundaries']=1,['forever.mage.fire-moving']=1,['forever.mage.fire-aoe']=1,['forever.mage.wand']=1,['forever.mage.upkeep']=1},
  nameKey='Default.Forever.Mage.Fire.Name',descriptionKey='Default.Forever.Mage.Fire.Description',
  applicability={families={'forever'},actionContext='player',class='MAGE',minLevel=10,maxLevel=60},
@@ -45,7 +45,7 @@ assert(addon:RegisterDefaultRotation({
   rotation={
    block('fire-lance-batch','forever.mage.lance-batch','fire-'),
    block('fire-boundaries','forever.mage.boundaries','fire-'),
-   {id='fire-pull',type='branch',conditions=negate(combat()),onFalse={},onTrue={
+   {id='fire-pull',type='branch',conditions=combat(),onTrue={},onFalse={
     spell('fire-pull-pyroblast',11366,elite),spell('fire-pull-frostfire',401502),spell('fire-pull-fireball',133),stop('fire-pull-stop')}},
    block('fire-moving','forever.mage.fire-moving','fire-'),
    spell('fire-hot-pyroblast',11366,{type='BUFF_STACKS',unit='player',spell=400625,operator='GREATERTHANOREQUALS',value=3}),

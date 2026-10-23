@@ -20,7 +20,7 @@ local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),
 local fight=all(combat(),{type='ATTACKABLE',unit='target'})
 local madness=dot(335467)
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.priest.shadow.icyveins',revision=2,
+ format='RotationMaster',schemaVersion=1,id='rm.retail.priest.shadow.icyveins',revision=3,
  blocks={['retail.priest.upkeep']=1},
  nameKey='Default.Retail.Priest.Shadow.IcyVeins.Name',descriptionKey='Default.Retail.Priest.Shadow.IcyVeins.Description',
  applicability={families={'retail'},actionContext='player',class='PRIEST',specs={258},minLevel=10,maxLevel=90},
@@ -43,7 +43,7 @@ assert(addon:RegisterDefaultRotation({
    {id='shadowiv-channel',type='none',suppress_attack=true,conditions=all({type='CHANNELING',unit='player'},
     negate(all(any({type='CHANNELING_SPELL',unit='player',spell=15407},{type='CHANNELING_SPELL',unit='player',spell=391403}),{type='SPELL_AVAIL',spell=8092})))},
    {id='shadowiv-no-target',type='none',suppress_attack=true,conditions=negate({type='ATTACKABLE',unit='target'})},
-   {id='shadowiv-pull',type='branch',conditions=negate(combat()),onFalse={},onTrue={
+   {id='shadowiv-pull',type='branch',conditions=combat(),onTrue={},onFalse={
     spell('shadowiv-pull-vampiric-touch',34914,negate(dot(34914))),
     {id='shadowiv-pull-stop',type='none',suppress_attack=true,conditions={}},
    }},

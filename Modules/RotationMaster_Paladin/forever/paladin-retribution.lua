@@ -23,7 +23,7 @@ local elite=any({type='CLASSIFICATION',unit='target',value='elite'},{type='CLASS
 local crusaded={type='DEBUFF',unit='target',spell=21183,anyrank=true}
 local twist=all(mana('GREATERTHAN',.5),{type='SWING_TIME_REMAIN',operator='GREATERTHAN',value=1.5})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.paladin.retribution',revision=1,
+ format='RotationMaster',schemaVersion=1,id='rm.forever.paladin.retribution',revision=2,
  blocks={['forever.paladin.boundaries']=1,['forever.paladin.aura-blessing']=1,['forever.paladin.main-seal']=1},
  nameKey='Default.Forever.Paladin.Retribution.Name',descriptionKey='Default.Forever.Paladin.Retribution.Description',
  applicability={families={'forever'},actionContext='player',class='PALADIN',minLevel=1,maxLevel=60},
@@ -49,7 +49,7 @@ assert(addon:RegisterDefaultRotation({
   rotation={
    block('ret-boundaries','forever.paladin.boundaries','ret-'),
    stop('ret-target',negate({type='ATTACKABLE',unit='target'}),true),
-   {id='ret-seal',type='branch',conditions=negate(any(remain(20154),remain(20375),remain(21082))),onFalse={},onTrue={
+   {id='ret-seal',type='branch',conditions=any(remain(20154),remain(20375),remain(21082)),onTrue={},onFalse={
     spell('ret-crusader',21082,all(negate(crusaded),any(elite,health('target','GREATERTHANOREQUALS',.8)),{type='SPELL_COOLDOWN',spell=20271,operator='LESSTHAN',value=2})),
     block('ret-main-seal','forever.paladin.main-seal','ret-')}},
    {id='ret-swap',type='branch',conditions=all(own(21082),crusaded),onFalse={},onTrue={

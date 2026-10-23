@@ -30,7 +30,7 @@ local frenzy=any({type='BUFF_STACKS',unit='pet',spell=19615,operator='GREATERTHA
 local focusFire=all(negate(wrath),frenzy)
 local thrill=buff(34720)
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.hunter.beastmastery',revision=2,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.hunter.beastmastery',revision=3,
  blocks={['mop.hunter.boundaries']=1,['mop.hunter.mark']=1,['mop.hunter.pet']=1,['mop.hunter.aspect']=1,['mop.hunter.utility']=1,
   ['mop.hunter.talents']=1,['mop.hunter.talent-shots']=1,['mop.hunter.serpent']=1,['mop.hunter.filler']=1},
  nameKey='Default.MoP.Hunter.BeastMastery.Name',descriptionKey='Default.MoP.Hunter.BeastMastery.Description',
@@ -56,7 +56,7 @@ assert(addon:RegisterDefaultRotation({
   },
   rotation={
    block('bm-boundaries','mop.hunter.boundaries','bm-'),
-   {id='bm-pull',type='branch',conditions=negate(combat()),onFalse={},onTrue={
+   {id='bm-pull',type='branch',conditions=combat(),onTrue={},onFalse={
     block('bm-pull-mark','mop.hunter.mark','bm-pull-'),
     spell('bm-pull-kill-command',34026),
     spell('bm-pull-arcane',3044),

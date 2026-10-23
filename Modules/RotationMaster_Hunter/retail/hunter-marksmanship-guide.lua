@@ -22,7 +22,7 @@ local trick=buff(257622)
 local aimedCap={type='SPELL_CHARGES',spell=AIMED,operator='GREATERTHANOREQUALS',value=2}
 local hydra=all(precise,engaged(2),known(470945))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.hunter.marksmanship.guide',revision=1,
+ format='RotationMaster',schemaVersion=1,id='rm.retail.hunter.marksmanship.guide',revision=2,
  blocks={['retail.hunter.boundaries']=1,['retail.hunter.utility']=1,['retail.hunter.mark']=1},
  nameKey='Default.Retail.Hunter.MarksmanshipGuide.Name',descriptionKey='Default.Retail.Hunter.MarksmanshipGuide.Description',
  applicability={families={'retail'},actionContext='player',class='HUNTER',specs={254},minLevel=10,maxLevel=90},
@@ -36,7 +36,7 @@ assert(addon:RegisterDefaultRotation({
   rotation={
    block('mmguide-boundaries','retail.hunter.boundaries','mmguide-'),
    spell('mmguide-call-pet',883,all(known(1223323),negate({type='PET'}))),
-   {id='mmguide-pull',type='branch',conditions=negate(combat()),onFalse={},onTrue={
+   {id='mmguide-pull',type='branch',conditions=combat(),onTrue={},onFalse={
     block('mmguide-pull-mark','retail.hunter.mark','mmguide-pull-'),spell('mmguide-pull-aimed',AIMED),stop('mmguide-pull-stop')}},
    {id='mmguide-aoe',type='branch',conditions=all(known(257621),engaged(3)),onFalse={},onTrue={
     spell('mmguide-aoe-explosive',EXPLOSIVE),spell('mmguide-aoe-volley',VOLLEY),

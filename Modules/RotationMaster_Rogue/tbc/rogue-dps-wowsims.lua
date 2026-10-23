@@ -15,8 +15,8 @@ local function lifetime(op,n)return{type='TT_HEALTH',unit='target',health=0,oper
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.rogue.dps.wowsims',revision=2,
- blocks={['tbc.rogue.opening']=2,['tbc.rogue.upkeep']=2,['tbc.rogue.builders']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.rogue.dps.wowsims',revision=3,
+ blocks={['tbc.rogue.opening']=2,['tbc.rogue.upkeep']=2,['tbc.rogue.builders']=3},
  nameKey='Default.TBC.Rogue.DPS.Wowsims.Name',descriptionKey='Default.TBC.Rogue.DPS.Wowsims.Description',
  applicability={families={'tbc'},actionContext='player',class='ROGUE',minLevel=1,maxLevel=70},
  tags={'dps','melee','leveling','endgame','wowsims','icy-veins'},

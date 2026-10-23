@@ -32,8 +32,8 @@ local function giant()return any({type='CREATURE',unit='target',value='GIANT'},{
 local caster={type='MANA',unit='target',operator='GREATERTHAN',value=0}
 local unqueued=all(negate(queued(78)),negate(queued(845)))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.warrior.dps',revision=1,
- blocks={['forever.warrior.boundaries']=1,['forever.warrior.upkeep']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.forever.warrior.dps',revision=2,
+ blocks={['forever.warrior.boundaries']=2,['forever.warrior.upkeep']=1},
  nameKey='Default.Forever.Warrior.DPS.Name',descriptionKey='Default.Forever.Warrior.DPS.Description',
  applicability={families={'forever'},actionContext='player',class='WARRIOR',minLevel=1,maxLevel=60},
  tags={'dps','melee','leveling','endgame','aoe','icy-veins','method'},

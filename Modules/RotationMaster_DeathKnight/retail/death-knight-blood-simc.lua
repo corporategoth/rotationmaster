@@ -17,7 +17,7 @@ local runeWeapon=buff(81256)
 local lowBones=any(negate(buff(195181)),{type='BUFF_REMAIN',unit='player',spell=195181,ownbuff=true,operator='LESSTHAN',value=3},
  {type='BUFF_STACKS',unit='player',spell=195181,ownbuff=true,operator='LESSTHAN',value=6})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.deathknight.blood.simc',revision=1,
+ format='RotationMaster',schemaVersion=1,id='rm.retail.deathknight.blood.simc',revision=2,
  blocks={['retail.deathknight.boundaries']=1,['retail.deathknight.utility']=1},
  nameKey='Default.Retail.DeathKnight.BloodSimc.Name',descriptionKey='Default.Retail.DeathKnight.BloodSimc.Description',
  applicability={families={'retail'},actionContext='player',class='DEATHKNIGHT',specs={250},minLevel=8,maxLevel=90},
@@ -34,7 +34,7 @@ assert(addon:RegisterDefaultRotation({
   },
   rotation={
    block('bsimc-boundaries','retail.deathknight.boundaries','bsimc-'),
-   {id='bsimc-pull',type='branch',conditions=negate(combat()),onFalse={},onTrue={spell('bsimc-pull-caress',195292),stop('bsimc-pull-stop')}},
+   {id='bsimc-pull',type='branch',conditions=combat(),onTrue={},onFalse={spell('bsimc-pull-caress',195292),stop('bsimc-pull-stop')}},
    spell('bsimc-dump-death-strike',49998,any(deficit('LESSTHAN',20),all(runeWeapon,deficit('LESSTHAN',26)))),
    spell('bsimc-death-and-decay',43265,negate(buff(188290))),
    spell('bsimc-reapers-mark',439843),

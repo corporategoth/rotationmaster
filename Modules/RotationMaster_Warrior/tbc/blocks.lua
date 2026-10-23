@@ -22,10 +22,10 @@ local function single()return all(negate(queued(78)),any(negate(known(845)),all(
 local interrupt=any({type='CAST_INTERRUPTABLE',unit='target'},{type='CHANNEL_INTERRUPTABLE',unit='target'})
 -- One boundary each: manual casts/channels (Slam, bandages), no attackable target, and the out-of-combat pull.
 assert(addon:RegisterDefaultBlock({
- id='tbc.warrior.boundaries',revision=1,families={'tbc'},class='WARRIOR',steps={
+ id='tbc.warrior.boundaries',revision=2,families={'tbc'},class='WARRIOR',steps={
  {id='manual',type='none',suppress_attack=true,conditions=any({type='CASTING',unit='player'},{type='CHANNELING',unit='player'})},
  {id='no-target',type='none',suppress_attack=true,conditions=negate({type='ATTACKABLE',unit='target'})},
- {id='pull',type='branch',conditions=negate(combat()),onFalse={},onTrue={
+ {id='pull',type='branch',conditions=combat(),onTrue={},onFalse={
   spell('charge',100),
   {id='pull-stop',type='none',suppress_attack=false,conditions={}},
  }},

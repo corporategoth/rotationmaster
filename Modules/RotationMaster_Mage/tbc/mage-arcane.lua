@@ -12,7 +12,7 @@ local function buff(id)return{type='BUFF',unit='player',spell=id}end
 local function mana(op,v)return{type='MANAPCT',unit='player',operator=op,value=v}end
 local stacks={type='DEBUFF',unit='player',spell=36032}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.mage.arcane',revision=1,
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.mage.arcane',revision=2,
  blocks={['tbc.mage.boundaries']=1,['tbc.mage.frostbolt']=1,['tbc.mage.wand-finish']=1,['tbc.mage.moving-fire-blast']=1,['tbc.mage.armor']=1,['tbc.mage.upkeep']=1},
  nameKey='Default.TBC.Mage.Arcane.Name',descriptionKey='Default.TBC.Mage.Arcane.Description',
  applicability={families={'tbc'},actionContext='player',class='MAGE',minLevel=10,maxLevel=70},
@@ -32,7 +32,7 @@ assert(addon:RegisterDefaultRotation({
   cooldowns={block('mage-arcane-armor','tbc.mage.armor','mage-arcane-'),block('mage-arcane-upkeep','tbc.mage.upkeep','mage-arcane-')},
   rotation={
    block('mage-arcane-boundaries','tbc.mage.boundaries','mage-arcane-'),
-   {id='mage-arcane-pull',type='branch',conditions=negate({type='COMBAT',unit='player'}),onFalse={},onTrue={
+   {id='mage-arcane-pull',type='branch',conditions={type='COMBAT',unit='player'},onTrue={},onFalse={
     spell('mage-arcane-pull-blast',30451),block('mage-arcane-pull-filler','tbc.mage.frostbolt','mage-arcane-pull-'),stop('mage-arcane-pull-stop')}},
    block('mage-arcane-moving','tbc.mage.moving-fire-blast','mage-arcane-'),
    {id='mage-arcane-aoe',type='branch',conditions={type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=3},onFalse={},onTrue={

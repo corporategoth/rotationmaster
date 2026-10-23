@@ -12,7 +12,7 @@ local function own(id)return{type='BUFF',unit='player',spell=id,ownbuff=true}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.paladin.protection.icyveins',revision=2,
+ format='RotationMaster',schemaVersion=1,id='rm.retail.paladin.protection.icyveins',revision=3,
  blocks={['retail.paladin.boundaries']=1,['retail.paladin.upkeep']=1,['retail.paladin.prot-defensives']=1,['retail.paladin.prot-cooldowns']=1},
  nameKey='Default.Retail.Paladin.Protection.IcyVeins.Name',descriptionKey='Default.Retail.Paladin.Protection.IcyVeins.Description',
  applicability={families={'retail'},actionContext='player',class='PALADIN',specs={66},minLevel=10,maxLevel=90},
@@ -29,7 +29,7 @@ assert(addon:RegisterDefaultRotation({
   },
   rotation={
    block('retail.paladin.boundaries','protiv-'),
-   {id='protiv-pull',type='branch',conditions=negate({type='COMBAT',unit='player'}),onFalse={},onTrue={
+   {id='protiv-pull',type='branch',conditions={type='COMBAT',unit='player'},onTrue={},onFalse={
     spell('protiv-pull-consecration',26573),
     {id='protiv-pull-stop',type='none',suppress_attack=false,conditions={}},
    }},

@@ -20,7 +20,7 @@ local function refresh(id,remain)return any(negate({type='DEBUFF',unit='target',
 local fury=buff(5217)
 local berserk=any(buff(106951),buff(102543))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.druid.feral.guide',revision=1,
+ format='RotationMaster',schemaVersion=1,id='rm.retail.druid.feral.guide',revision=2,
  blocks={['retail.druid.boundaries']=1,['retail.druid.utility']=1},
  nameKey='Default.Retail.Druid.FeralGuide.Name',descriptionKey='Default.Retail.Druid.FeralGuide.Description',
  applicability={families={'retail'},actionContext='player',class='DRUID',specs={103},minLevel=10,maxLevel=90},
@@ -43,7 +43,7 @@ assert(addon:RegisterDefaultRotation({
   },
   rotation={
    block('feguide-boundaries','retail.druid.boundaries','feguide-'),
-   {id='feguide-pull',type='branch',conditions=negate(combat()),onFalse={},onTrue={
+   {id='feguide-pull',type='branch',conditions=combat(),onTrue={},onFalse={
     spell('feguide-pull-cat-form',768,all(negate(buff(768)),negate(buff(102543)))),
     spell('feguide-pull-prowl',5215,negate({type='STEALTHED'})),
     spell('feguide-pull-rake',1822),

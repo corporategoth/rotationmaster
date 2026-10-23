@@ -10,7 +10,7 @@ local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local idle=negate({type='SPELL_AUTOREPEAT',spell=75,ranked=true})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.hunter.unspecialized',revision=1,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.hunter.unspecialized',revision=2,
  blocks={['mop.hunter.boundaries']=1,['mop.hunter.mark']=1,['mop.hunter.pet']=1,['mop.hunter.aspect']=1,['mop.hunter.serpent']=1},
  nameKey='Default.MoP.Hunter.Unspecialized.Name',descriptionKey='Default.MoP.Hunter.Unspecialized.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='HUNTER',minLevel=1,maxLevel=90},
@@ -26,7 +26,7 @@ assert(addon:RegisterDefaultRotation({
   },
   rotation={
    block('hunter-boundaries','mop.hunter.boundaries','hunter-'),
-   {id='hunter-pull',type='branch',conditions=negate({type='COMBAT',unit='player'}),onFalse={},onTrue={
+   {id='hunter-pull',type='branch',conditions={type='COMBAT',unit='player'},onTrue={},onFalse={
     block('hunter-pull-mark','mop.hunter.mark','hunter-pull-'),
     spell('hunter-pull-arcane',3044),
     {id='hunter-pull-auto-shot',type='spell',action=75,ranked=true,conditions=idle},

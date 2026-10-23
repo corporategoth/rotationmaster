@@ -15,7 +15,7 @@ local lives=any({type='CLASSIFICATION',unit='target',value='elite'},{type='CLASS
  {type='HEALTHPCT',unit='target',operator='GREATERTHANOREQUALS',value=.3},{type='TT_HEALTH',unit='target',health=0,operator='GREATERTHANOREQUALS',value=6})
 local moving={type='MOVING'}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.druid.unspecialized',revision=2,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.druid.unspecialized',revision=3,
  blocks={['mop.druid.boundaries']=2,['mop.druid.target']=1},
  nameKey='Default.MoP.Druid.Unspecialized.Name',descriptionKey='Default.MoP.Druid.Unspecialized.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='DRUID',minLevel=1,maxLevel=90},
@@ -37,7 +37,7 @@ assert(addon:RegisterDefaultRotation({
     spell('none-bear-mangle',33917),
     spell('none-bear-maul',6807,{type='POWER',unit='player',operator='GREATERTHANOREQUALS',value=30}),
     swing('none-bear-stop')}},
-   {id='none-pull',type='branch',conditions=negate({type='COMBAT',unit='player'}),onFalse={},onTrue={
+   {id='none-pull',type='branch',conditions={type='COMBAT',unit='player'},onTrue={},onFalse={
     spell('none-pull-moonfire',8921,moving),spell('none-pull-wrath',5176),stop('none-pull-stop')}},
    spell('none-rejuvenation',774,all({type='HEALTHPCT',unit='player',operator='LESSTHAN',value=.5},
     negate({type='BUFF',unit='player',spell=774,ownbuff=true}),negate({type='GROUP'}))),

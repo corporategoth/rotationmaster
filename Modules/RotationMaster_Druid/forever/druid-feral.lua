@@ -38,8 +38,8 @@ local catSection={
   spell('feral-bite',22568,negate(aura(16870)))}},
  spell('feral-rake',1822,all(negate(dot(1822,true)),health('target','GREATERTHAN',.3))),
  -- Behind the target, approximated by "it is not attacking me" (RM cannot see facing).
- {id='feral-behind',type='branch',conditions=negate({type='ISSAME',unit='targettarget',otherunit='player'}),
-  onTrue={spell('feral-shred',5221)},onFalse={spell('feral-claw',1082)}},
+ {id='feral-behind',type='branch',conditions={type='ISSAME',unit='targettarget',otherunit='player'},
+  onFalse={spell('feral-shred',5221)},onTrue={spell('feral-claw',1082)}},
  stop('feral-cat-pool',nil,true),
 }
 local bearSection={
@@ -60,7 +60,7 @@ local casterSection={
  stop('feral-caster-stop'),
 }
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.druid.feral',revision=2,
+ format='RotationMaster',schemaVersion=1,id='rm.forever.druid.feral',revision=3,
  blocks={['forever.druid.boundaries']=1,['forever.druid.upkeep']=1},
  nameKey='Default.Forever.Druid.Feral.Name',descriptionKey='Default.Forever.Druid.Feral.Description',
  applicability={families={'forever'},actionContext='player',class='DRUID',minLevel=10,maxLevel=60},

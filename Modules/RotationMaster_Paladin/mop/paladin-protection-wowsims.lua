@@ -16,8 +16,8 @@ local function hp(op,v)return{type='POINT',unit='player',operator=op,value=v}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.paladin.protection.wowsims',revision=2,
- blocks={['mop.paladin.boundaries']=1,['mop.paladin.upkeep']=1,['mop.paladin.seal-insight']=2,['mop.paladin.prot-upkeep']=1,['mop.paladin.prot-open']=1,['mop.paladin.prot-aoe']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.paladin.protection.wowsims',revision=3,
+ blocks={['mop.paladin.boundaries']=1,['mop.paladin.upkeep']=1,['mop.paladin.seal-insight']=2,['mop.paladin.prot-upkeep']=1,['mop.paladin.prot-open']=2,['mop.paladin.prot-aoe']=1},
  nameKey='Default.MoP.Paladin.Protection.Wowsims.Name',descriptionKey='Default.MoP.Paladin.Protection.Wowsims.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='PALADIN',minLevel=10,maxLevel=90},
  tags={'protection','tank','single-target','aoe','wowsims'},

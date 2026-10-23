@@ -38,8 +38,8 @@ assert(addon:RegisterDefaultBlock({id='tbc.warlock.procs',revision=1,families={'
 -- One curse per Warlock per target. Group: Elements unless someone has it, Doom on a long
 -- fight, else Agony. Solo: Doom on a long elite fight, else Agony. Others stay manual.
 local longFight={type='TT_HEALTH',unit='target',health=0,operator='GREATERTHAN',value=60}
-assert(addon:RegisterDefaultBlock({id='tbc.warlock.curse',revision=1,families={'tbc'},class='WARLOCK',steps={
- {id='curse-needed',type='branch',conditions=negate(ownCurse()),onFalse={},onTrue={
+assert(addon:RegisterDefaultBlock({id='tbc.warlock.curse',revision=2,families={'tbc'},class='WARLOCK',steps={
+ {id='curse-needed',type='branch',conditions=ownCurse(),onTrue={},onFalse={
   {id='curse-group',type='branch',conditions=group(),
    onTrue={spell('elements',1490,negate({type='DEBUFF',unit='target',spell=1490,anyrank=true})),spell('doom-group',603,longFight),spell('agony-group',980)},
    onFalse={spell('doom',603,all(any({type='CLASSIFICATION',unit='target',value='elite'},{type='CLASSIFICATION',unit='target',value='rareelite'},

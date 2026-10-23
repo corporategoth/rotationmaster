@@ -16,7 +16,7 @@ local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local ebon={type='BUFF',unit='player',spell=395296,ownbuff=true}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.evoker.augmentation',revision=1,
+ format='RotationMaster',schemaVersion=1,id='rm.retail.evoker.augmentation',revision=2,
  blocks={['retail.evoker.boundaries']=1,['retail.evoker.utility']=1},
  nameKey='Default.Retail.Evoker.Augmentation.Name',descriptionKey='Default.Retail.Evoker.Augmentation.Description',
  applicability={families={'retail'},actionContext='player',class='EVOKER',specs={1473},minLevel=10,maxLevel=90},
@@ -36,7 +36,7 @@ assert(addon:RegisterDefaultRotation({
   },
   rotation={
    block('aug-boundaries','retail.evoker.boundaries','aug-'),
-   {id='aug-pull',type='branch',conditions=negate(combat()),onFalse={},onTrue={
+   {id='aug-pull',type='branch',conditions=combat(),onTrue={},onFalse={
     spell('aug-pull-blistering-scales',360827,all({type='GROUP'},{type='FRIENDLY',unit='target'},negate({type='BUFF',unit='target',spell=360827,ownbuff=true}))),
     spell('aug-pull-living-flame',361469,{type='ATTACKABLE',unit='target'}),
     stop('aug-pull-stop')}},

@@ -24,7 +24,7 @@ local withering=buff(466991)
 -- Kill Command on Howl of the Pack Leader or Nature's Ally, or freely while Bestial Wrath is far off.
 local kill=any(buff(471878),buff(472324),buff(472325),buff(1276720),{type='SPELL_COOLDOWN',spell=WRATH,operator='GREATERTHAN',value=5})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.hunter.beastmastery.guide',revision=1,
+ format='RotationMaster',schemaVersion=1,id='rm.retail.hunter.beastmastery.guide',revision=2,
  blocks={['retail.hunter.boundaries']=1,['retail.hunter.utility']=1,['retail.hunter.mark']=1},
  nameKey='Default.Retail.Hunter.BeastMasteryGuide.Name',descriptionKey='Default.Retail.Hunter.BeastMasteryGuide.Description',
  applicability={families={'retail'},actionContext='player',class='HUNTER',specs={253},minLevel=10,maxLevel=90},
@@ -38,7 +38,7 @@ assert(addon:RegisterDefaultRotation({
   rotation={
    block('bmguide-boundaries','retail.hunter.boundaries','bmguide-'),
    spell('bmguide-call-pet',883,negate({type='PET'})),
-   {id='bmguide-pull',type='branch',conditions=negate(combat()),onFalse={},onTrue={block('bmguide-pull-mark','retail.hunter.mark','bmguide-pull-'),stop('bmguide-pull-stop')}},
+   {id='bmguide-pull',type='branch',conditions=combat(),onTrue={},onFalse={block('bmguide-pull-mark','retail.hunter.mark','bmguide-pull-'),stop('bmguide-pull-stop')}},
    {id='bmguide-cleave',type='branch',conditions=any(engaged(3),all(known(115939),engaged(2))),onFalse={},onTrue={
     spell('bmguide-cleave-wild-thrash',THRASH,negate(cleave)),
     spell('bmguide-cleave-barbed',BARBED,capping),

@@ -23,7 +23,7 @@ local ALTER,FLOES=108978,108839
 local function spend(proc)return any(negate(known(ALTER)),{type='SPELL_COOLDOWN',spell=ALTER,operator='GREATERTHANOREQUALS',value=10},
  {type='BUFF_REMAIN',unit='player',spell=proc,operator='LESSTHAN',value=3})end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.mage.frost',revision=2,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.mage.frost',revision=3,
  blocks={['mop.mage.boundaries']=1,['mop.mage.upkeep']=1,['mop.mage.armor-frost']=1,['mop.mage.bombs']=1},
  nameKey='Default.MoP.Mage.Frost.Name',descriptionKey='Default.MoP.Mage.Frost.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='MAGE',minLevel=10,maxLevel=90},
@@ -49,7 +49,7 @@ assert(addon:RegisterDefaultRotation({
   },
   rotation={
    block('frost-boundaries','mop.mage.boundaries','frost-'),
-   {id='frost-pull',type='branch',conditions=negate(combat()),onFalse={},onTrue={
+   {id='frost-pull',type='branch',conditions=combat(),onTrue={},onFalse={
     spell('frost-pull-frostbolt',116),spell('frost-pull-frostfire',44614),stop('frost-pull-stop')}},
    spell('frost-lance-capped',30455,fingers('GREATERTHANOREQUALS',2)),
    spell('frost-brain-freeze',44614,all(buff(57761),spend(57761))),

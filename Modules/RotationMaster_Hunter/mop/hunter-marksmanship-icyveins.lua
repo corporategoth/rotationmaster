@@ -18,7 +18,7 @@ local fire=buff(82926)
 local focusLow=all({type='SELF_LEVEL',operator='GREATERTHANOREQUALS',value=63},any(negate(buff(53220)),{type='BUFF_REMAIN',unit='player',spell=53220,operator='LESSTHAN',value=4}))
 local lust=any(buff(2825),buff(32182),buff(80353),buff(90355))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.hunter.marksmanship.icyveins',revision=2,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.hunter.marksmanship.icyveins',revision=3,
  blocks={['mop.hunter.boundaries']=1,['mop.hunter.mark']=1,['mop.hunter.pet']=1,['mop.hunter.aspect']=1,['mop.hunter.utility']=1,['mop.hunter.burst']=1,
   ['mop.hunter.talents']=1,['mop.hunter.talent-shots']=1,['mop.hunter.serpent']=1},
  nameKey='Default.MoP.Hunter.Marksmanship.IcyVeins.Name',descriptionKey='Default.MoP.Hunter.Marksmanship.IcyVeins.Description',
@@ -39,7 +39,7 @@ assert(addon:RegisterDefaultRotation({
   },
   rotation={
    block('mmiv-boundaries','mop.hunter.boundaries','mmiv-'),
-   {id='mmiv-pull',type='branch',conditions=negate({type='COMBAT',unit='player'}),onFalse={},onTrue={
+   {id='mmiv-pull',type='branch',conditions={type='COMBAT',unit='player'},onTrue={},onFalse={
     block('mmiv-pull-mark','mop.hunter.mark','mmiv-pull-'),
     spell('mmiv-pull-aimed',19434,negate(moving)),
     stop('mmiv-pull-stop')}},

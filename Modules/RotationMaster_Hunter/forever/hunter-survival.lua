@@ -18,8 +18,8 @@ local function stop(id,conditions,attack)return{id=id,type='none',suppress_attac
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local elite=any({type='CLASSIFICATION',unit='target',value='elite'},{type='CLASSIFICATION',unit='target',value='rareelite'},{type='CLASSIFICATION',unit='target',value='worldboss'})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.hunter.survival',revision=2,
- blocks={['forever.hunter.boundaries']=1,['forever.hunter.survival-pull']=1,['forever.hunter.range-shots']=1,['forever.hunter.melee-aoe']=1,
+ format='RotationMaster',schemaVersion=1,id='rm.forever.hunter.survival',revision=3,
+ blocks={['forever.hunter.boundaries']=1,['forever.hunter.survival-pull']=2,['forever.hunter.range-shots']=1,['forever.hunter.melee-aoe']=1,
   ['forever.hunter.pet-care']=1,['forever.hunter.burst']=1},
  nameKey='Default.Forever.Hunter.Survival.Name',descriptionKey='Default.Forever.Hunter.Survival.Description',
  applicability={families={'forever'},actionContext='player',class='HUNTER',minLevel=10,maxLevel=60},

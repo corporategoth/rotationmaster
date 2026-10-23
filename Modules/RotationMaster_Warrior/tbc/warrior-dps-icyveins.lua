@@ -10,8 +10,8 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 local execute=function(id)return spell(id,5308,{type='HEALTHPCT',unit='target',operator='LESSTHAN',value=.2})end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.warrior.dps.icyveins',revision=1,
- blocks={['tbc.warrior.boundaries']=1,['tbc.warrior.upkeep']=1,['tbc.warrior.dps-upkeep']=1,['tbc.warrior.dps-opening']=1,['tbc.warrior.dps-leveling']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.warrior.dps.icyveins',revision=2,
+ blocks={['tbc.warrior.boundaries']=2,['tbc.warrior.upkeep']=1,['tbc.warrior.dps-upkeep']=1,['tbc.warrior.dps-opening']=1,['tbc.warrior.dps-leveling']=1},
  nameKey='Default.TBC.Warrior.DPS.IcyVeins.Name',descriptionKey='Default.TBC.Warrior.DPS.IcyVeins.Description',
  applicability={families={'tbc'},actionContext='player',class='WARRIOR',minLevel=1,maxLevel=70},
  tags={'dps','melee','leveling','endgame','aoe','icy-veins'},

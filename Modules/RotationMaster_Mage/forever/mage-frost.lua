@@ -18,7 +18,7 @@ local fingers=any({type='BUFF',unit='player',spell=400669},{type='BUFF',unit='pl
 local frozen=any({type='DEBUFF',unit='target',spell=122,anyrank=true},{type='DEBUFF',unit='target',spell=12494})
 local barrage=any({type='BUFF',unit='player',spell=400589},{type='BUFF',unit='player',spell=1326083})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.mage.frost',revision=1,
+ format='RotationMaster',schemaVersion=1,id='rm.forever.mage.frost',revision=2,
  blocks={['forever.mage.lance-batch']=1,['forever.mage.boundaries']=1,['forever.mage.frostbolt']=1,['forever.mage.wand']=1,['forever.mage.upkeep']=1},
  nameKey='Default.Forever.Mage.Frost.Name',descriptionKey='Default.Forever.Mage.Frost.Description',
  applicability={families={'forever'},actionContext='player',class='MAGE',minLevel=1,maxLevel=60},
@@ -40,7 +40,7 @@ assert(addon:RegisterDefaultRotation({
   rotation={
    block('frost-lance-batch','forever.mage.lance-batch','frost-'),
    block('frost-boundaries','forever.mage.boundaries','frost-'),
-   {id='frost-pull',type='branch',conditions=negate(combat()),onFalse={},onTrue={
+   {id='frost-pull',type='branch',conditions=combat(),onTrue={},onFalse={
     block('frost-pull-filler','forever.mage.frostbolt','frost-pull-'),stop('frost-pull-stop')}},
    spell('frost-fingers-lance',1312002,fingers),
    spell('frost-frozen-lance',1312002,frozen),

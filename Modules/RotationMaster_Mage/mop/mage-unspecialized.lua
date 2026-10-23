@@ -12,7 +12,7 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.mage.unspecialized',revision=1,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.mage.unspecialized',revision=2,
  blocks={['mop.mage.boundaries']=1,['mop.mage.upkeep']=1,['mop.mage.armor-molten']=1},
  nameKey='Default.MoP.Mage.Unspecialized.Name',descriptionKey='Default.MoP.Mage.Unspecialized.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='MAGE',minLevel=1,maxLevel=90},
@@ -29,7 +29,7 @@ assert(addon:RegisterDefaultRotation({
   },
   rotation={
    block('mage-boundaries','mop.mage.boundaries','mage-'),
-   {id='mage-pull',type='branch',conditions=negate(combat()),onFalse={},onTrue={spell('mage-pull-frostfire',44614),stop('mage-pull-stop')}},
+   {id='mage-pull',type='branch',conditions=combat(),onTrue={},onFalse={spell('mage-pull-frostfire',44614),stop('mage-pull-stop')}},
    {id='mage-aoe',type='branch',conditions={type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=3},onFalse={},onTrue={
     spell('mage-aoe-explosion',1449,{type='DISTANCE_COUNT',enemy=true,distance=10,operator='GREATERTHANOREQUALS',value=3})}},
    spell('mage-fire-blast',2136,any({type='HEALTHPCT',unit='target',operator='LESSTHAN',value=.15},{type='MOVING'})),

@@ -24,7 +24,7 @@ local friendly={type='FRIENDLY',unit='target'}
 local function hurt(n)return{type='PROXIMITY_HEALTHPCT_COUNT',unit='player',distance=40,healthoperator='LESSTHAN',health=.7,operator='GREATERTHANOREQUALS',value=n}end
 local function dispel(kind)return{type='DISPELLABLE',unit='target',debufftype=kind}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.priest.healer',revision=2,
+ format='RotationMaster',schemaVersion=1,id='rm.forever.priest.healer',revision=3,
  blocks={['forever.priest.boundaries']=1,['forever.priest.upkeep']=1,['forever.priest.wand']=1},
  nameKey='Default.Forever.Priest.Healer.Name',descriptionKey='Default.Forever.Priest.Healer.Description',
  applicability={families={'forever'},actionContext='player',class='PRIEST',minLevel=10,maxLevel=60},
@@ -58,7 +58,7 @@ assert(addon:RegisterDefaultRotation({
     block('heal-wand','forever.priest.wand','heal-'),
     stop('heal-hostile-stop')}},
    stop('heal-target',negate(all(friendly,negate({type='DEAD',unit='target'})))),
-   {id='heal-prepull',type='branch',conditions=negate({type='COMBAT',unit='player'}),onFalse={},onTrue={
+   {id='heal-prepull',type='branch',conditions={type='COMBAT',unit='player'},onTrue={},onFalse={
     spell('heal-prepull-shield',17,unshielded),
     spell('heal-prepull-mending',401859),
     spell('heal-prepull-renew',139,negate(renewed)),
