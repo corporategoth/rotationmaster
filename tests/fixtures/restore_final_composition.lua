@@ -171,6 +171,7 @@ local function catalog(source)
  return catalogs[source]
 end
 return function(value,path,stage,mode)
+ value=dofile('tests/fixtures/restore_workbench_resize.lua')(value,path)
  value=dofile('tests/fixtures/restore_announcement_series.lua')(value,path,mode)
  value=dofile('tests/fixtures/restore_switch_required_units.lua')(value,path)
  value=dofile('tests/fixtures/restore_automatic_announcement_target.lua')(value,path)
