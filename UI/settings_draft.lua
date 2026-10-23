@@ -75,7 +75,7 @@ function addon:InstallSettingsDraft(p)
             end
         end
         if self.transactionKeys.profile then for _,key in ipairs(self.transactionKeys.profile) do if key=='announces' then
-            if not addon:AreMacroAnnouncementIdentifiersUnique(self.draft.profile.announces or {}) then self:Message(L['Use a unique Via Macro identifier.']);return false end
+            if not addon:AreMacroAnnouncementIdentifiersUnique(self.draft.profile.announces or {}) then self:Message(L['Use a unique Via Script/Macro identifier.']);return false end
             for index,entry in ipairs(self.draft.profile.announces or {}) do if not equal(entry,(self.draftBaseline.profile.announces or {})[index]) and not addon:IsValidAnnouncement(entry) then self:Message(L['Choose an action and complete the announcement before applying.']);return false end end
         end end end
         if InCombatLockdown and InCombatLockdown() then self:Message(L['Leave combat before applying these settings.']);return false end

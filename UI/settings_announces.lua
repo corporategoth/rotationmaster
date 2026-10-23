@@ -1,7 +1,7 @@
 local addon_name,addon=...
 local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
 local channels={{value='audible',text=L['Audible']},{value='partyraid',text=L['Raid or Party']},{value='party',text=L['Party Only']},{value='raidwarn',text=L['Raid Warning']},{value='gesture',text=L['Emote']},{value='local',text=L['Local Only']}}
-local types={{value='spell',text=L['Spell']},{value='pet',text=L['Pet Spell']},{value='item',text=L['Item']},{value='macro',text=L['Via Macro']}}
+local types={{value='spell',text=L['Spell']},{value='pet',text=L['Pet Spell']},{value='item',text=L['Item']},{value='macro',text=L['Via Script/Macro']}}
 function addon:BuildAnnounceSettings(p)
     local store=p:SettingsData()
     local values=store.profile.announces or {};local listSource=store.profile.announces;local drawing=p.generation
@@ -171,7 +171,7 @@ function addon:BuildAnnounceSettings(p)
         local id=type(value)=='table' and value[1] or value;return self:GetReferenceProvider('item').info(tonumber(id) or self:GetReferenceProvider('item').resolve(id))
     end
     local function entryInfo(entry)
-        if entry.type=='macro' then return {name=entry.identifier or L['Via Macro']} end
+        if entry.type=='macro' then return {name=entry.identifier or L['Via Script/Macro']} end
         return entry.type=='item' and itemInfo(entry.item) or self.Platform:GetSpellInfo(entry.spell)
     end
     local function searchText(entry)
@@ -241,7 +241,7 @@ function addon:BuildAnnounceSettings(p)
                 local wrapper=decoded and decoded.value;local entry=type(wrapper)=='table'and wrapper.announcement
                 if type(wrapper)~='table' or wrapper.format~='RM-Announcement' or (wrapper.version~=1 and wrapper.version~=2) or wrapper.version==1 and type(entry)=='table'and entry.outputs~=nil or wrapper.version==2 and type(entry)=='table'and entry.outputs==nil or not self:IsValidAnnouncement(entry)then return false,errorText or L['Invalid announcement.'] end
                 if not transferCurrent()then return false end
-                if entry.type=='macro' and not identifierFree(entry.identifier,settings.mode=='replace' and selected or nil) then return false,L['Use a unique Via Macro identifier.'] end
+                if entry.type=='macro' and not identifierFree(entry.identifier,settings.mode=='replace' and selected or nil) then return false,L['Use a unique Via Script/Macro identifier.'] end
                 if not transferCurrent()then return false end
                 entry=self:CopySettingsData(entry);if not transferCurrent()then return false end
                 local id=settings.mode=='replace'and selected and selected.id or self:uuid();if not transferCurrent()then return false end;entry.id=id
@@ -256,41 +256,8 @@ function addon:BuildAnnounceSettings(p)
     local help=p:Acquire('announceHelp',function() return self:CreateWorkbenchHelpButton(p.child,L['Help']) end)
     help:ClearAllPoints();help:SetPoint('TOPRIGHT',-4,-3);help:SetSize(20,20);help.icon:SetSize(18,18);p.fields.announce_help=help
     self:SetUIScript(help,'OnClick',p:Guard(function() self:ShowWorkbenchHelp(L['Announces'],self:WorkbenchPageHelp('Announces'),self.pretty_name) end))
-    if self.TestAnnouncementEmote and self.GetAnnouncementEmoteReport then
-        local token=p.generation
-        local function report()
-            if not p:Valid(token) then return end
-            local request={};p.emoteDiagnosticRequest=request
-            local text=self:GetAnnouncementEmoteReport()
-            if not p:Valid(token) or p.emoteDiagnosticRequest~=request then return end
-            local dialog=p.emoteDiagnosticReport
-            if not dialog then
-                dialog=self:CreateWorkbenchTextReport()
-                if not p:Valid(token) or p.emoteDiagnosticRequest~=request then dialog:Hide();return end
-                p.emoteDiagnosticReport=dialog
-            end
-            dialog:SetReport(L['Emote diagnostics'],text,self.pretty_name)
-            if not p:Valid(token) or p.emoteDiagnosticRequest~=request then
-                if p.emoteDiagnosticReport~=dialog or p.emoteDiagnosticRequest==request then dialog:Hide() end
-            end
-        end
-        local y=p.y
-        local test=p:Button('emote_test',L['Test /cheer'],function() end)
-        local inspect=p:Button('emote_report',L['Emote report'],function() end)
-        local width=(p.width-4)/2
-        test:ClearAllPoints();test:SetPoint('TOPLEFT',0,-y);test:SetWidth(width)
-        inspect:ClearAllPoints();inspect:SetPoint('TOPLEFT',width+4,-y);inspect:SetWidth(width);p.y=y+28
-        -- Explicit diagnostics do not flush or apply the current draft.
-        self:SetUIScript(test,'OnClick',function()
-            if not p:Valid(token) then return end
-            self:TestAnnouncementEmote()
-            if p:Valid(token) then report() end
-        end)
-        self:SetUIScript(inspect,'OnClick',report)
-        p.cleanups[#p.cleanups+1]=function() if p.emoteDiagnosticReport then p.emoteDiagnosticReport:Hide() end end
-    end
     for i,entry in ipairs(values) do if i==p.selection and not p.creating then
-        local title=self:SettingsNonempty(entry.name) or entry.type=='item' and (itemInfo(entry.item) and itemInfo(entry.item).name or L['Item data loading']) or entry.type=='macro' and (entry.identifier or L['Via Macro']) or self:PlainWorkbenchName(self:SpellLabel(entry.spell))
+        local title=self:SettingsNonempty(entry.name) or entry.type=='item' and (itemInfo(entry.item) and itemInfo(entry.item).name or L['Item data loading']) or entry.type=='macro' and (entry.identifier or L['Via Script/Macro']) or self:PlainWorkbenchName(self:SpellLabel(entry.spell))
         p:Heading(title)
         p:Edit('entry'..i..'name',L['Name'],entry.name or '',nil,function(value) update(entry,'name',value) end);if not drawAction('entry'..i,entry)then return end
         local enabled=p:Acquire('announceEnabled',function() return self:CreateWorkbenchPill(p.child,'',88) end);enabled:ClearAllPoints();enabled:SetPoint('TOPRIGHT',-52,-4);enabled:SetSize(88,18);enabled:SetText(entry.disabled and L['Disabled'] or L['Enabled']);enabled:SetSelected(not entry.disabled);p.fields['enabled'..i]=enabled;self:SetUIScript(enabled,'OnClick',p:Guard(function() if p:FlushEdits() then entry.disabled=not entry.disabled;p:Draw() end end))
