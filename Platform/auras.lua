@@ -5,22 +5,25 @@ local durationProvider, checkedDurations
 
 local fields = {name="string", spellID="number", applications="number", dispelName="string",
                 duration="number", expirationTime="number", sourceUnit="string", isStealable="boolean"}
-local function normalize(raw)
+-- owned: raw is a fresh table nobody else holds (a native record or our own
+-- tuple). On builds without secrets it is normalized in place instead of
+-- copied; invalid fields are still cleared and marked unavailable.
+local function normalize(raw, owned)
     if not platform:CanReadValue(raw) then return nil, "restricted-value" end
     if raw == nil then return nil end
     if type(raw) ~= "table" then return nil, "invalid-api-result" end
     -- The unavailable map exists only when a field is unavailable.
-    local result = {}
+    local result = owned and platform.secretsUnrestricted and raw or {}
     local function unavailable(key, reason)
         result.unavailable = result.unavailable or {}
         result.unavailable[key] = reason
     end
     for key, kind in pairs(fields) do
         local value = raw[key == "spellID" and "spellId" or key]
-        if not platform:CanReadValue(value) then unavailable(key, "restricted-value")
-        elseif value ~= nil and type(value) ~= kind then unavailable(key, "invalid-api-result")
+        if not platform:CanReadValue(value) then result[key] = nil;unavailable(key, "restricted-value")
+        elseif value ~= nil and type(value) ~= kind then result[key] = nil;unavailable(key, "invalid-api-result")
         elseif type(value) == "number" and (value ~= value or value == math.huge or value == -math.huge or value < 0) then
-            unavailable(key, "invalid-api-result")
+            result[key] = nil;unavailable(key, "invalid-api-result")
         else result[key] = value end
     end
     if result.name == nil and not (result.unavailable and result.unavailable.name) then unavailable("name", "invalid-api-result") end
@@ -47,7 +50,7 @@ function platform:GetAuraByIndex(unit, index, filter)
     if not legacy and C_UnitAuras and type(C_UnitAuras.GetAuraDataByIndex) == "function" then
         local ok, raw = pcall(C_UnitAuras.GetAuraDataByIndex, unit, index, filter)
         if not ok then return nil, "api-error" end
-        return normalize(raw)
+        return normalize(raw, true)
     end
     legacy = legacy or UnitAura
     if type(legacy) ~= "function" then return nil, "missing-api" end
@@ -57,7 +60,7 @@ function platform:GetAuraByIndex(unit, index, filter)
     if name == nil then return nil end
     if self:CanReadValue(stealable) and stealable == nil then stealable = false end
     return normalize({name=name, applications=count, dispelName=dispel, duration=duration,
-        expirationTime=expiration, sourceUnit=source, spellId=id, isStealable=stealable})
+        expirationTime=expiration, sourceUnit=source, spellId=id, isStealable=stealable}, true)
 end
 
 function platform:ReadAuraField(aura, field)

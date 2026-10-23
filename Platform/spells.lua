@@ -140,23 +140,50 @@ function platform:GetGlobalCooldown()
     end
     return self:GetSpellCooldown(gcdSpell)
 end
+-- Readiness runs for every reached action each poll. Where the multi-value
+-- cooldown API exists (classic clients) it is read directly: the same values
+-- GetSpellCooldown validates, without a result table per call.
+local function finiteNonNegative(value)
+    return type(value)=="number" and value==value and value>=0 and value~=math.huge
+end
+local function cooldownValues(self, spell)
+    local legacy=GetSpellCooldown
+    if type(legacy)~="function" then
+        local cooldown,reason=self:GetSpellCooldown(spell)
+        if not cooldown then return nil,nil,nil,reason end
+        return cooldown.startTime,cooldown.duration,cooldown.isEnabled
+    end
+    local valid,reason=identifier(spell)
+    if not valid then return nil,nil,nil,reason end
+    local ok,start,duration,enabled=pcall(legacy,spell)
+    if not ok then return nil,nil,nil,"api-error" end
+    if not self:CanReadValue(start) or not self:CanReadValue(duration) or not self:CanReadValue(enabled) then
+        return nil,nil,nil,"restricted-value"
+    end
+    if start==nil then return nil,nil,nil,"spell-data-unavailable" end
+    if enabled~=0 and enabled~=1 and enabled~=true and enabled~=false then return nil,nil,nil,"invalid-api-result" end
+    if not finiteNonNegative(start) or not finiteNonNegative(duration) then return nil,nil,nil,"invalid-api-result" end
+    return start,duration,enabled==1 or enabled==true
+end
+
 function platform:IsSpellReady(spell, now)
     if not self:CanReadValue(now) then return nil, "restricted-value" end
     if type(now)~="number" or now~=now or now==math.huge or now==-math.huge then
         return nil, "invalid-time"
     end
-    local cooldown,reason=self:GetSpellCooldown(spell)
-    if not cooldown then return nil,reason end
-    if not cooldown.isEnabled then return false end
-    local expires=cooldown.startTime+cooldown.duration
-    if cooldown.duration==0 or expires<=now then return true end
+    local start,duration,enabled,reason=cooldownValues(self,spell)
+    if start==nil then return nil,reason end
+    if not enabled then return false end
+    local expires=start+duration
+    if duration==0 or expires<=now then return true end
 
-    local gcd,why=self:GetGlobalCooldown()
-    if not gcd then return nil,why end
-    if not gcd.isEnabled or gcd.duration==0 then return false end
+    if not gcdSpell then self:GetGlobalCooldown() end
+    local gcdStart,gcdDuration,gcdEnabled,why=cooldownValues(self,gcdSpell)
+    if gcdStart==nil then return nil,why end
+    if not gcdEnabled or gcdDuration==0 then return false end
     -- modRate controls cooldown animation; API timestamps/duration already
     -- describe expiration in GetTime seconds, so do not divide them by it.
-    local gcdExpires=gcd.startTime+gcd.duration
+    local gcdExpires=gcdStart+gcdDuration
     return gcdExpires>now and expires<=gcdExpires+0.001
 end
 
@@ -243,7 +270,10 @@ do
         if name=="Platform_IsAutoRepeatActive" then return addon.Platform.IsAutoRepeatActive end
         if name=="Platform_IsSpellReady" then return addon.Platform.IsSpellReady end
         if name=="cooldownFields" then return cooldownFields end
+        if name=="cooldownValues" then return cooldownValues end
         if name=="copy" then return copy end
+        if name=="finiteNonNegative" then return finiteNonNegative end
+        if name=="gcdSpell" then return gcdSpell end
         if name=="identifier" then return identifier end
         if name=="platform" then return platform end
     end

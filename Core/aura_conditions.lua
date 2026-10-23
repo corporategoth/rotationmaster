@@ -6,17 +6,21 @@ local function query(cache, unit, index, filter)
     if not cache then return platform:GetAuraByIndex(unit, index, filter) end
     -- Only normalized observations enter this per-evaluation cache. Avoid the
     -- legacy CRC cache's tostring/tuple path for restricted native records.
-    cache[cacheKey] = cache[cacheKey] or {}
     local units = cache[cacheKey]
-    units[unit] = units[unit] or {}
+    if not units then units = {}; cache[cacheKey] = units end
     local filters = units[unit]
-    filters[filter] = filters[filter] or {}
+    if not filters then filters = {}; units[unit] = filters end
     local records = filters[filter]
-    if not records[index] then
-        local aura, reason = platform:GetAuraByIndex(unit, index, filter)
-        records[index] = {aura=aura, reason=reason}
+    if not records then records = {}; filters[filter] = records end
+    -- records[index] is the aura or false; reasons are rare and kept apart.
+    local aura = records[index]
+    if aura == nil then
+        local reason
+        aura, reason = platform:GetAuraByIndex(unit, index, filter)
+        if reason then records.reasons = records.reasons or {}; records.reasons[index] = reason end
+        records[index] = aura or false
     end
-    return records[index].aura, records[index].reason
+    return aura or nil, records.reasons and records.reasons[index]
 end
 
 local function matchesAura(aura, value, mode, identity)

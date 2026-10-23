@@ -25,6 +25,7 @@ do
     end
     secretsUnrestricted = secretApi and unrestricted
     if secretsUnrestricted then readable = function() return true end end
+    platform.secretsUnrestricted = secretsUnrestricted
 end
 
 local function primitive(value)

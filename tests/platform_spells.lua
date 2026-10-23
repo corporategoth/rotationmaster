@@ -227,4 +227,29 @@ test('missing auto-repeat APIs and malformed legacy slots remain unavailable',fu
     e.FindSpellBookSlotBySpellID=function() error('book unavailable') end
     value,why=p:IsAutoRepeatActive(5019);assert(value==nil and why=='api-error')
 end)
+test('readiness from the multi-value cooldown API matches the C_Spell record path',function()
+    local spells={}
+    local function record(id) local c=spells[id];return c and {startTime=c[1],duration=c[2],isEnabled=c[3]==1,modRate=1} end
+    local modern=fixture({C_Spell={GetSpellCooldown=record}})
+    local legacy=fixture({C_Spell={GetSpellCooldown=function() error('record API used') end},
+        GetSpellCooldown=function(id) local c=spells[id];if c then return c[1],c[2],c[3] end end})
+    local gcd=modern:GetClientInfo().family=='tbc' and 29515 or 61304
+    local cases={
+        {'ready',{0,0,1},{0,0,1}},
+        {'expired',{90,5,1},{0,0,1}},
+        {'cooling past the GCD',{99,30,1},{99,1.5,1}},
+        {'inside the GCD',{99,1.5,1},{99,1.5,1}},
+        {'disabled',{0,0,0},{0,0,1}},
+        {'no GCD running',{99,30,1},{0,0,1}},
+    }
+    for _,case in ipairs(cases) do
+        spells[403],spells[gcd]=case[2],case[3]
+        local a,b=modern:IsSpellReady(403,100),legacy:IsSpellReady(403,100)
+        assert(a==b,case[1]..': '..tostring(a)..' vs '..tostring(b))
+    end
+    spells[403]=nil
+    local a,why=legacy:IsSpellReady(403,100);assert(a==nil and why=='spell-data-unavailable')
+    spells[403]={0/0,0,1};a,why=legacy:IsSpellReady(403,100);assert(a==nil and why=='invalid-api-result')
+    spells[403]={0,0,2};a,why=legacy:IsSpellReady(403,100);assert(a==nil and why=='invalid-api-result')
+end)
 finish()
