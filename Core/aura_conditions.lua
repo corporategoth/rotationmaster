@@ -108,6 +108,8 @@ local function auraResult(aura, value, mode, start)
     return true
 end
 
+-- Scratch memo for one scan's any-rank name; reset per scan, never retained.
+local identity = {}
 function addon:EvaluateAuraCondition(value, cache, start, filter, mode)
     if type(UnitExists) ~= "function" then return nil, "missing-api" end
     local ok, exists = pcall(UnitExists, value.unit)
@@ -121,7 +123,7 @@ function addon:EvaluateAuraCondition(value, cache, start, filter, mode)
     if direct == "none" then return false end
     if direct == "found" then return auraResult(found, value, mode, start) end
     local existential = mode == "present" or mode == "dispel" or mode == "stealable"
-    local pendingReason;local identity={}
+    local pendingReason;identity.resolved,identity.name,identity.reason=nil,nil,nil
     for index = 1, 256 do
         local aura, reason = query(cache, value.unit, index, filter)
         if reason then return nil, reason end

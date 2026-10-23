@@ -28,10 +28,43 @@ local function copy(record, fields)
     return result
 end
 
+-- A record built here from a legacy multi-return API is ours, so normalize it
+-- in place: same checks and listed fields, one table fewer per call. Records
+-- returned by C_Spell are copied, never modified.
+local function own(record, fields, built)
+    if not built then return copy(record, fields) end
+    if not platform:CanReadValue(record) then return nil, "restricted-value" end
+    if type(record) ~= "table" or getmetatable(record) ~= nil then return copy(record, fields) end
+    for key, kind in pairs(fields) do
+        local value = record[key]
+        if not platform:CanReadValue(value) then return nil, "restricted-value" end
+        if value ~= nil then
+            if type(value) ~= kind and not (kind == "icon" and (type(value) == "number" or type(value) == "string")) then
+                return nil, "invalid-api-result"
+            end
+            if type(value) == "number" and (value ~= value or value == math.huge or value == -math.huge) then
+                return nil, "invalid-api-result"
+            end
+        end
+    end
+    local key = next(record)
+    while key ~= nil do
+        local following = next(record, key)
+        if fields[key] == nil then record[key] = nil end
+        key = following
+    end
+    return record
+end
+
+local infoFields = {name="string", subtext="string", iconID="icon", castTime="number",
+    minRange="number", maxRange="number", spellID="number", originalIconID="icon"}
+local chargeFields = {currentCharges="number",maxCharges="number",cooldownStartTime="number",
+    cooldownDuration="number",chargeModRate="number",isActive="boolean"}
+
 function platform:GetSpellInfo(spell)
     local valid, reason = identifier(spell)
     if not valid then return nil, reason end
-    local ok, record
+    local ok, record, built
     if C_Spell and type(C_Spell.GetSpellInfo) == "function" then
         ok, record = pcall(C_Spell.GetSpellInfo, spell)
     elseif type(GetSpellInfo) == "function" then
@@ -42,13 +75,13 @@ function platform:GetSpellInfo(spell)
         if name ~= nil then
             record = {name=name, subtext=subtext, iconID=icon, castTime=cast, minRange=min, maxRange=max,
                       spellID=id, originalIconID=original}
+            built = true
         end
     else return nil, "missing-api" end
     if not ok then return nil, "api-error" end
     if not self:CanReadValue(record) then return nil, "restricted-value" end
     if record == nil then return nil, "spell-data-unavailable" end
-    local info, why = copy(record, {name="string", subtext="string", iconID="icon", castTime="number",
-        minRange="number", maxRange="number", spellID="number", originalIconID="icon"})
+    local info, why = own(record, infoFields, built)
     if not info then return nil, why end
     if not info.name or info.name == "" then return nil, "invalid-api-result" end
     -- Modern metadata omits rank text; keep this optional public decoration
@@ -88,7 +121,7 @@ local cooldownFields = {startTime="number", duration="number", isEnabled="boolea
 function platform:GetSpellCooldown(spell)
     local valid, reason = identifier(spell)
     if not valid then return nil, reason end
-    local ok, record
+    local ok, record, built
     if C_Spell and type(C_Spell.GetSpellCooldown) == "function" then
         ok, record = pcall(C_Spell.GetSpellCooldown, spell)
     elseif type(GetSpellCooldown) == "function" then
@@ -99,13 +132,13 @@ function platform:GetSpellCooldown(spell)
             or not self:CanReadValue(rate) then return nil, "restricted-value" end
         if start ~= nil then
             if enabled ~= 0 and enabled ~= 1 then return nil, "invalid-api-result" end
-            record = {startTime=start, duration=duration, isEnabled=enabled == 1, modRate=rate or 1}
+            record = {startTime=start, duration=duration, isEnabled=enabled == 1, modRate=rate or 1};built = true
         end
     else return nil, "missing-api" end
     if not ok then return nil, "api-error" end
     if not self:CanReadValue(record) then return nil, "restricted-value" end
     if record == nil then return nil, "spell-data-unavailable" end
-    local cooldown, why = copy(record, cooldownFields)
+    local cooldown, why = own(record, cooldownFields, built)
     if not cooldown then return nil, why end
     if cooldown.startTime == nil or cooldown.duration == nil or cooldown.isEnabled == nil
         or cooldown.startTime < 0 or cooldown.duration < 0 or (cooldown.modRate and cooldown.modRate <= 0) then
@@ -190,20 +223,19 @@ end
 function platform:GetSpellCharges(spell)
     local valid,reason=identifier(spell)
     if not valid then return nil,reason end
-    local ok,record
+    local ok,record,built
     if C_Spell and type(C_Spell.GetSpellCharges)=="function" then
         ok,record=pcall(C_Spell.GetSpellCharges,spell)
     elseif type(GetSpellCharges)=="function" then
         local current,maximum,start,duration,rate
         ok,current,maximum,start,duration,rate=pcall(GetSpellCharges,spell)
         if not ok then return nil,"api-error" end
-        record={currentCharges=current,maxCharges=maximum,cooldownStartTime=start,cooldownDuration=duration,chargeModRate=rate}
+        record={currentCharges=current,maxCharges=maximum,cooldownStartTime=start,cooldownDuration=duration,chargeModRate=rate};built=true
     else return nil,"missing-api" end
     if not ok then return nil,"api-error" end
     if not self:CanReadValue(record) then return nil,"restricted-value" end
     if record==nil then return nil,"spell-charges-unavailable" end
-    local charges,why=copy(record,{currentCharges="number",maxCharges="number",cooldownStartTime="number",
-        cooldownDuration="number",chargeModRate="number",isActive="boolean"})
+    local charges,why=own(record,chargeFields,built)
     if not charges then return nil,why end
     if next(charges)==nil then return nil,"spell-charges-unavailable" end
     local current,maximum,start,duration=charges.currentCharges,charges.maxCharges,charges.cooldownStartTime,charges.cooldownDuration
@@ -269,12 +301,14 @@ do
         if name=="Platform_GetSpellCooldown" then return addon.Platform.GetSpellCooldown end
         if name=="Platform_IsAutoRepeatActive" then return addon.Platform.IsAutoRepeatActive end
         if name=="Platform_IsSpellReady" then return addon.Platform.IsSpellReady end
+        if name=="chargeFields" then return chargeFields end
         if name=="cooldownFields" then return cooldownFields end
         if name=="cooldownValues" then return cooldownValues end
         if name=="copy" then return copy end
         if name=="finiteNonNegative" then return finiteNonNegative end
         if name=="gcdSpell" then return gcdSpell end
         if name=="identifier" then return identifier end
+        if name=="own" then return own end
         if name=="platform" then return platform end
     end
     if addon.RegisterBuiltinSourceModule then
