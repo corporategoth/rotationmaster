@@ -37,11 +37,11 @@ test('preview lock and unlock persist and update the same window immediately wit
  end
 end)
 test('immediate lock preserves unrelated invalid drafts and retires old click handlers',function()
- local _,a,p=fixture();p.fields.disable_autoswitch:Click();local draft=p:SettingsData().profile.disable_autoswitch
+ local _,a,p=fixture();p.fields.disable_buttons:Click();local draft=p:SettingsData().profile.disable_buttons
  local input=p:Edit('unrelated','Unrelated','',function()return nil end,function()error('must not flush')end)
  input:SetText('invalid');input.scripts.OnTextChanged(input,true)
  p.fields.preview_locked:Click();assert(a.db.profile.preview_locked==true and p:IsSettingsDraftDirty())
- assert(p:SettingsData().profile.disable_autoswitch==draft and not a.db.profile.disable_autoswitch and input:GetText()=='invalid')
+ assert(p:SettingsData().profile.disable_buttons==draft and not a.db.profile.disable_buttons and input:GetText()=='invalid')
  local stale=p.fields.preview_locked.scripts.OnClick;p:DiscardSettingsDraft();p:Draw()
  assert(p.fields.preview_locked:GetChecked()and not p:IsSettingsDraftDirty());stale();assert(a.db.profile.preview_locked==true)
  p.fields.preview_locked:Click();assert(a.db.profile.preview_locked==false and not p:IsSettingsDraftDirty())
@@ -54,9 +54,9 @@ test('General separates History and Preview and only documents current preview c
  assert(not p.fields.preview_masque and not p.fields.masque_settings)
 end)
 test('skin selection immediately uses provider authority and leaves unrelated General draft intact',function()
- local _,a,p,c=fixture({enabled=true});p.fields.disable_autoswitch:Click();assert(p:IsSettingsDraftDirty())
+ local _,a,p,c=fixture({enabled=true});p.fields.disable_buttons:Click();assert(p:IsSettingsDraftDirty())
  choose(p,'Test Skin');assert(a:GetPreviewSkin()=='Test Skin'and c.skin==1 and c.refresh==0)
- assert(a.db.profile.preview_masque and p:IsSettingsDraftDirty()and not a.db.profile.disable_autoswitch)
+ assert(a.db.profile.preview_masque and p:IsSettingsDraftDirty()and not a.db.profile.disable_buttons)
  p.fields.cancel:Click();assert(a:GetPreviewSkin()=='Test Skin'and a.db.profile.preview_masque)
 end)
 test('missing or disabled integration has only native default and Preview still works',function()
