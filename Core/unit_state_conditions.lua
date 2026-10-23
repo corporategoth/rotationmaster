@@ -27,9 +27,23 @@ local function seedContextConditions(profile)
     end
     profile.contextConditionsSeeded=true
 end
+-- Assisted Combat joins the Spells category once per profile, under its own
+-- flag, so profiles seeded with the context conditions receive it too.
+local function seedAssistedConditions(profile)
+    if profile.assistedConditionsSeeded then return end
+    for _,category in ipairs(type(profile.condition_groups)=='table' and profile.condition_groups or {}) do
+        if category.id=='8034819e-26f5-4f4e-9153-d8cab5e65f31' and type(category.conditions)=='table' then
+            local found=false
+            for _,existing in ipairs(category.conditions) do if existing=='ASSISTED_SUGGESTION' then found=true;break end end
+            if not found then category.conditions[#category.conditions+1]='ASSISTED_SUGGESTION' end
+        end
+    end
+    profile.assistedConditionsSeeded=true
+end
 function addon:InitializeUnitStateConditions(_,db)
     local profile=db.profile
     seedContextConditions(profile)
+    seedAssistedConditions(profile)
     if profile.unitStateSwitchSeeded then return end
     local function append(list)
         for _,tag in ipairs({'DEAD','FRIENDLY'}) do

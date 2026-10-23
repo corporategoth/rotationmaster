@@ -8,7 +8,7 @@ import {luaText} from './kinds.mjs';
 export const CHAT_CHANNELS=Object.freeze({partyraid:'raid or party chat',party:'party chat',raidwarn:'raid warnings',emote:'emotes',gesture:'emotes',
   say:'/say',yell:'/yell',whisper:'whispers',channel:'a joined chat channel'});
 const LOCAL_CHANNELS=new Set(['local','audible','none','']);
-const STEP_TYPES=new Set(['spell','pet','any','item','none','branch']);
+const STEP_TYPES=new Set(['spell','pet','any','item','none','branch','assisted']);
 const LOGICAL=new Set(['AND','OR','NOT']);
 const CALLBACKS=['evaluate','valid','print','widget','help','on_register','on_unregister'];
 const isMap=v=>v instanceof Map;

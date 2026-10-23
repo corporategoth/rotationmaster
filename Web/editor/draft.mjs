@@ -17,7 +17,7 @@ function copy(value){
 const body=(root,kind)=>kind==='envelope'?get.call(root,'body'):root;
 const field=(root,key)=>({present:has.call(root,key),value:get.call(root,key)});
 const failure=reason=>({ok:false,reason});
-const editableTypes=new Set(['spell','item','pet','any','none']);
+const editableTypes=new Set(['spell','item','pet','any','none','assisted']);
 const editable=row=>editableTypes.has(get.call(row.step,'type'));
 function actionSummary(step){
   const action=field(step,'action');if(!(action.value instanceof Map))return action;

@@ -46,7 +46,7 @@ function addon:BuildDraftChangeRows(kind,before,after,showSame,spec)
         for _,row in ipairs(index and index.rows or {}) do local key=row.step.id or table.concat(row.path,'/');maps[side][key]={step=row.step,path=row.path,section=row.section,index=row.index};if not seen[key] then seen[key]=true;keys[#keys+1]=key end end
     end
     local function action(step)
-        if step.type=='branch' then return L['Condition'] elseif step.type=='none' then return L['Stop'] end
+        if step.type=='branch' then return L['Condition'] elseif step.type=='none' then return L['Stop'] elseif step.type=='assisted' then return L["Blizzard's suggestion"] end
         if step.type=='spell' or step.type=='pet' or step.type=='any' then return self:PlainWorkbenchName(self:SpellLabel(step.action)) end
         if step.type=='item' then local provider=self:GetReferenceProvider('item');local names={};for _,value in ipairs(type(step.action)=='table' and step.action or {step.action}) do names[#names+1]=(provider.name(tonumber(value) or provider.resolve(value)) or L['Item data loading'])..' ('..tostring(value)..')' end;return table.concat(names,'\n') end
         return L['Item']

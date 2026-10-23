@@ -58,6 +58,7 @@ Platform/loss_of_control.lua
 Platform/specializations.lua
 Platform/talents.lua
 Platform/spells.lua
+Platform/assisted_combat.lua
 Platform/items.lua
 Platform/glyphs.lua
 Platform/macros.lua
@@ -279,6 +280,7 @@ Conditions/stats.lua
 Conditions/ext_stats.lua
 Conditions/spell.lua
 Conditions/anyspell.lua
+Conditions/assisted.lua
 Conditions/known_spell.lua
 Conditions/petspell.lua
 Conditions/buffs.lua

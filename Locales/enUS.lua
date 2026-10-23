@@ -3069,6 +3069,16 @@ L['Silent'] = true
 L["Set Pieces"] = true
 L["Weapon Imbue"] = true
 
+-- Blizzard Assisted Combat (condition and rotation step).
+L["Assisted Combat Suggestion"] = true
+L["Assisted Combat {{!is|is not}} suggesting a spell"] = true
+L["Assisted Combat {{!suggests|does not suggest}} %s"] = true
+L["Matches when Blizzard's Assisted Combat suggests this spell as the next cast. An override counts as its base spell, and the base spell as its override. With no spell chosen, matches whenever Assisted Combat suggests anything."] = true
+L["Assisted Combat exists on Retail (and is declared on Forever). Where the game does not offer it, for this character or specialization, or the suggestion cannot be read, this condition is unavailable rather than false, including under NOT."] = true
+L["Blizzard's suggestion"] = true
+L["Recommends the spell Blizzard's Assisted Combat suggests"] = true
+L["Recommends whatever spell Blizzard's Assisted Combat suggests next, read each time the rotation is evaluated. It highlights that spell's button and shows in the preview like a spell step, and is held to the same requirements: known, usable, off cooldown and in range. When nothing is suggested, the suggested spell is not on your bars, or Assisted Combat is unavailable (anywhere but Retail, or a specialization without it), the step is skipped. Rotation list only."] = true
+
 -- BEGIN GENERATED RM PUBLIC HELPER DOCS
 L["Absolute health target (negative means deficit) or percentage fraction."] = true
 L["All original results, preserving nil positions and return count."] = true

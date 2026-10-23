@@ -27,7 +27,7 @@ function addon:CreateRotationCard(parent)
         self.model=model;frame:ClearAllPoints();frame:SetPoint('TOPLEFT',parent,'TOPLEFT',model.x,-model.y);frame:SetSize(model.width,model.height)
         self:SetValidation(model.invalid)
         local step=model.step;local branch=step.type=='branch';local normal=not model.compact and not model.expanded
-        local action=branch and L['Click to add branch name'] or step.type=='none' and L['Stop'] or
+        local action=branch and L['Click to add branch name'] or step.type=='none' and L['Stop'] or step.type=='assisted' and L["Blizzard's suggestion"] or
             (step.type=='spell' or step.type=='pet' or step.type=='any') and addon:SpellLabel(step.action) or L['Item']
         self.defaultTitle=branch and model.compact and addon:DescribeCardCondition(step.conditions or {},self.spec) or action
         if not branch then local info=addon.Platform and addon.Platform:GetSpellInfo(step.action);if info and (step.type=='spell' or step.type=='pet' or step.type=='any') then self.defaultTitle=info.name end end

@@ -32,6 +32,10 @@
    "name": "Any Spell Recharge Time",
    "module": "Conditions/anyspell.lua"
   },
+  "ASSISTED_SUGGESTION": {
+   "name": "Assisted Combat Suggestion",
+   "module": "Conditions/assisted.lua"
+  },
   "ATTACKABLE": {
    "name": "Attackable",
    "module": "Conditions/combat.lua"
@@ -656,6 +660,7 @@
    "name": "Other",
    "conditions": [
     "ACTION_CONTEXT",
+    "ASSISTED_SUGGESTION",
     "INSTANCE",
     "ISSAME",
     "PVP",

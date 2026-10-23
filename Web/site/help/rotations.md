@@ -77,6 +77,7 @@ The chevron switches a card between showing its summary and its name only; the d
 | **Pet Spell** | A spell from your pet's spellbook. |
 | **Any Spell** | A spell chosen from all spells, not only your current spellbook. |
 | **Item** | An item with a Use effect, from an [item set](/help/item-sets) or a custom list made just for this card. |
+| **Blizzard's suggestion** | Whatever spell Blizzard's Assisted Combat suggests next, read each time RM evaluates (Retail). Treated like a spell card: it must be on your bars, ready and in range. Skipped when nothing is suggested or Assisted Combat is unavailable. Rotation list only. |
 | **Stop** | Ends the priority list here. See [Stop and Branch cards](/help/stop-and-branch#stop). |
 
 On editions with spell ranks, **Use this exact spell rank** restricts the card to the rank you picked; otherwise any rank you know counts.

@@ -24,7 +24,12 @@ local function buildReadiness(platform)
             end
             return items[itemID]
         end
-        if kind~="spell" and kind~="pet" and kind~="any" then return false end
+        if kind~="spell" and kind~="pet" and kind~="any" then
+            -- An assisted step resolves to Blizzard's suggested player spell
+            -- and is held to exactly the readiness of a spell step.
+            if kind~="assisted" then return false end
+            kind="spell"
+        end
         local results,stamps=spells[kind],spellStamps[kind]
         if not results then results,stamps={},{};spells[kind],spellStamps[kind]=results,stamps end
         if stamps[id]~=stamp then
