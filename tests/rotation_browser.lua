@@ -3,6 +3,7 @@ local make=dofile('tests/fixtures/rotation_data.lua')
 local test,finish=F.suite()
 local function fixture(product,expansion,realCustom)
     local f=F.new(product,expansion);local a=f.addon;f.env.NEW='New'
+    a.loadAllDefaults=true -- registers a foreign-class pack on purpose
     local frames,create=dofile('tests/fixtures/native_ui.lua')(f.env)
     local data,envelope,validation=make();a.RotationData=data;a.conditionDefinitions=validation.conditions
     f.load('Data/catalog.lua');f.load('Data/diff.lua');f.load('Core/rotation_library.lua');local tags=io.open('Core/rotation_tags.lua');if tags then tags:close();f.load('Core/rotation_tags.lua') end

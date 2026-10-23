@@ -39,6 +39,8 @@ persistent=once(persistent,'    assert(addon:RegisterDefaultRotation(envelope())
         'Platform/unit_flags.lua','Platform/unit_attackability.lua','Platform/player_movement.lua',
         'Core/level_conditions.lua','Core/aura_conditions.lua'}) do load(path) end
     for line in io.lines('RotationMaster.toc') do if line:match('^Conditions/') then load(line) end end
+    -- The cross-client checks browse a TBC pack on every client family.
+    addon.loadAllDefaults=true
     load('tests/fixtures/shaman_starter_pack.lua')]])
 persistent=once(persistent,'    addon:OnInitialize()',[[    initialProject=env.WOW_PROJECT_ID
     addon:OnInitialize()]])
