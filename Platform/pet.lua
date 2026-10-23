@@ -4,7 +4,7 @@ local platform=addon.Platform
 -- Presence and display-name availability are independent requested facts.
 -- Keep the existing GetUnitName wrapper and its omitted optional argument.
 function platform:GetPetObservation(includeName)
-    if self:GetClientInfo().combatDataPolicy~='probe' then return nil,'unsupported-policy' end
+    if self:GetCombatDataPolicy()~='probe' then return nil,'unsupported-policy' end
     if not self:CanReadValue(includeName) then return nil,'restricted-value' end
     if includeName~=nil and type(includeName)~='boolean' then return nil,'invalid-pet-query' end
     if type(UnitExists)~='function' then return nil,'missing-api' end

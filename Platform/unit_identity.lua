@@ -4,7 +4,7 @@ local platform=addon.Platform
 -- Preserve the original first-unit existence check and ordered comparison.
 -- The second token is passed to UnitIsUnit without an extra existence query.
 function platform:GetUnitIdentityObservation(unit,otherunit)
-    if self:GetClientInfo().combatDataPolicy~='probe' then return nil,'unsupported-policy' end
+    if self:GetCombatDataPolicy()~='probe' then return nil,'unsupported-policy' end
     if not self:CanReadValue(unit) or not self:CanReadValue(otherunit) then return nil,'restricted-value' end
     if type(unit)~='string' or unit=='' or type(otherunit)~='string' or otherunit=='' then return nil,'invalid-unit' end
     if type(UnitExists)~='function' then return nil,'missing-api' end

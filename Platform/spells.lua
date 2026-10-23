@@ -140,14 +140,14 @@ function platform:GetGlobalCooldown()
     end
     return self:GetSpellCooldown(gcdSpell)
 end
--- Readiness runs for every reached action each poll. Where the multi-value
--- cooldown API exists (classic clients) it is read directly: the same values
--- GetSpellCooldown validates, without a result table per call.
+-- Readiness runs for every reached action each poll. On classic builds
+-- without secrets the multi-value cooldown API is read directly: the same
+-- values GetSpellCooldown validates, without a result table per call.
 local function finiteNonNegative(value)
     return type(value)=="number" and value==value and value>=0 and value~=math.huge
 end
 local function cooldownValues(self, spell)
-    local legacy=GetSpellCooldown
+    local legacy=self.secretsUnrestricted and GetSpellCooldown
     if type(legacy)~="function" then
         local cooldown,reason=self:GetSpellCooldown(spell)
         if not cooldown then return nil,nil,nil,reason end
@@ -237,7 +237,7 @@ end
 -- spell. Legacy numeric arguments are book slots, so resolve the player book
 -- explicitly instead of passing a spell ID into that overload.
 function platform:IsAutoRepeatActive(spellID)
-    if self:GetClientInfo().combatDataPolicy~='probe' then return nil,'unsupported-policy' end
+    if self:GetCombatDataPolicy()~='probe' then return nil,'unsupported-policy' end
     local valid,reason=identifier(spellID,true)
     if not valid then return nil,reason end
     local native=C_Spell and C_Spell.IsAutoRepeatSpell

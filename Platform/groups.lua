@@ -6,7 +6,7 @@ local platform=addon.Platform
 function platform:GetGroupMembership(raidOnly)
     if not self:CanReadValue(raidOnly) then return nil,'restricted-value' end
     if raidOnly~=nil and type(raidOnly)~='boolean' then return nil,'invalid-group-query' end
-    if self:GetClientInfo().family=='unknown' then return nil,'unsupported-client' end
+    if self:GetClientFamily()=='unknown' then return nil,'unsupported-client' end
     local fn
     if raidOnly then fn=IsInRaid else fn=IsInGroup end
     if type(fn)~='function' then return nil,'missing-api' end
@@ -23,7 +23,7 @@ function platform:GetUnitGroupMembership(unit,raidOnly)
     if not self:CanReadValue(unit) or not self:CanReadValue(raidOnly) then return nil,'restricted-value' end
     if type(unit)~='string' or unit=='' or #unit>512 or unit:find('[%z\1-\31\127]') then return nil,'invalid-unit' end
     if raidOnly~=nil and type(raidOnly)~='boolean' then return nil,'invalid-group-query' end
-    if self:GetClientInfo().family=='unknown' then return nil,'unsupported-client' end
+    if self:GetClientFamily()=='unknown' then return nil,'unsupported-client' end
     if not raidOnly then
         if type(UnitInParty)~='function' then return nil,'missing-api' end
         local ok,member=pcall(UnitInParty,unit)

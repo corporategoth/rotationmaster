@@ -8,7 +8,7 @@ end
 -- Mana is an explicit resource even while another bar is active. Current mode
 -- follows the numeric native type and preserves signed quantities such as Balance.
 function platform:GetUnitPowerObservation(unit,resource,includeMaximum)
-    if self:GetClientInfo().combatDataPolicy~='probe' then return nil,'unsupported-policy' end
+    if self:GetCombatDataPolicy()~='probe' then return nil,'unsupported-policy' end
     if not self:CanReadValue(unit) or not self:CanReadValue(resource) or not self:CanReadValue(includeMaximum) then return nil,'restricted-value' end
     if type(unit)~='string' or unit=='' then return nil,'invalid-unit' end
     if resource~='mana' and resource~='current' then return nil,'invalid-power-query' end

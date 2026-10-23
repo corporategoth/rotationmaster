@@ -10,7 +10,7 @@ end
 function platform:GetUnitLevelObservation(unit)
     if not self:CanReadValue(unit) then return nil,'restricted-value' end
     if type(unit)~='string' or unit=='' then return nil,'invalid-unit' end
-    if self:GetClientInfo().family=='unknown' then return nil,'unsupported-client' end
+    if self:GetClientFamily()=='unknown' then return nil,'unsupported-client' end
     if type(UnitExists)~='function' then return nil,'missing-api' end
     local existsOk,exists=pcall(UnitExists,unit)
     if not existsOk then return nil,'api-error' end

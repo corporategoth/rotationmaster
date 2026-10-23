@@ -1,6 +1,6 @@
 local _, addon = ...
 local platform = addon.Platform
-local isEra = platform:GetClientInfo().family == "era"
+local isEra = platform:GetClientFamily() == "era"
 local durationProvider, checkedDurations
 
 local fields = {name="string", spellID="number", applications="number", dispelName="string",
@@ -61,6 +61,18 @@ function platform:GetAuraByIndex(unit, index, filter)
     if self:CanReadValue(stealable) and stealable == nil then stealable = false end
     return normalize({name=name, applications=count, dispelName=dispel, duration=duration,
         expirationTime=expiration, sourceUnit=source, spellId=id, isStealable=stealable}, true)
+end
+
+-- The first aura with this spell name that the filter admits, or nil.
+function platform:GetAuraBySpellName(unit, name, filter)
+    local lookup = C_UnitAuras and C_UnitAuras.GetAuraDataBySpellName
+    if type(lookup) ~= "function" then return nil, "missing-api" end
+    if type(unit) ~= "string" or unit == "" or type(name) ~= "string" or name == "" or type(filter) ~= "string" then
+        return nil, "invalid-aura-query"
+    end
+    local ok, raw = pcall(lookup, unit, name, filter)
+    if not ok then return nil, "api-error" end
+    return normalize(raw, true)
 end
 
 function platform:ReadAuraField(aura, field)

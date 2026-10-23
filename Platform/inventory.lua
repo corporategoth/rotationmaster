@@ -17,7 +17,7 @@ local function scan(self,withSlots)
     if not self:CanReadValue(last) then return nil,'restricted-value' end
     if not finite(last) or last>16 or last%1~=0 then return nil,'missing-bag-layout' end
     local bags={};for bag=0,last do bags[#bags+1]=bag end
-    local family=self:GetClientInfo().family
+    local family=self:GetClientFamily()
     if not totalProvided and (family=='retail' or family=='forever') then
         local reagent=Enum and Enum.BagIndex and Enum.BagIndex.ReagentBag
         if not self:CanReadValue(reagent) then return nil,'restricted-value' end

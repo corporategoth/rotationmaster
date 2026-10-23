@@ -233,6 +233,7 @@ test('readiness from the multi-value cooldown API matches the C_Spell record pat
     local modern=fixture({C_Spell={GetSpellCooldown=record}})
     local legacy=fixture({C_Spell={GetSpellCooldown=function() error('record API used') end},
         GetSpellCooldown=function(id) local c=spells[id];if c then return c[1],c[2],c[3] end end})
+    legacy.secretsUnrestricted=true
     local gcd=modern:GetClientInfo().family=='tbc' and 29515 or 61304
     local cases={
         {'ready',{0,0,1},{0,0,1}},

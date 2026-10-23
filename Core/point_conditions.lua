@@ -28,7 +28,7 @@ end
 
 function addon:GetConditionPointResource(unit,cache)
     local platform=self.Platform
-    if platform:GetClientInfo().combatDataPolicy~='probe' then return nil,'unsupported-policy' end
+    if platform:GetCombatDataPolicy()~='probe' then return nil,'unsupported-policy' end
     if not platform:CanReadValue(unit) then return nil,'restricted-value' end
     if type(unit)~='string' or unit=='' then return nil,'invalid-unit' end
     local record,reason=addon.Functions.cache.getCached(cache,pointIdentity,self,unit,playerClassCacheKey)

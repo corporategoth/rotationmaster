@@ -10,7 +10,7 @@ end
 function platform:GetRosterClassObservation(unit)
     if not self:CanReadValue(unit) then return nil,'restricted-value' end
     if type(unit)~='string' or not rosterUnit(unit) then return nil,'invalid-roster-unit' end
-    if self:GetClientInfo().family=='unknown' then return nil,'unsupported-client' end
+    if self:GetClientFamily()=='unknown' then return nil,'unsupported-client' end
     if type(UnitExists)~='function' then return nil,'missing-api' end
     local ok,exists=pcall(UnitExists,unit)
     if not ok then return nil,'api-error' end

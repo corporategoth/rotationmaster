@@ -19,7 +19,7 @@ end
 -- Neither the snapshot nor the complete count is cached or changed here.
 function addon:GetConditionThreatCount(minimum,cache)
     local platform=self.Platform
-    if platform:GetClientInfo().combatDataPolicy~='probe' then return nil,'unsupported-policy' end
+    if platform:GetCombatDataPolicy()~='probe' then return nil,'unsupported-policy' end
     local valid,issue=finite(platform,minimum)
     if not valid then return nil,issue end
     if not platform:CanReadValue(cache) then return nil,'restricted-value' end

@@ -8,7 +8,7 @@ end
 -- Request maximum only for predicates that need it. A readable false existence
 -- is ordinary absence; nil or unreadable data never establishes absence.
 function platform:GetUnitHealthObservation(unit,includeMaximum)
-    if self:GetClientInfo().combatDataPolicy~='probe' then return nil,'unsupported-policy' end
+    if self:GetCombatDataPolicy()~='probe' then return nil,'unsupported-policy' end
     if not self:CanReadValue(unit) or not self:CanReadValue(includeMaximum) then return nil,'restricted-value' end
     if type(unit)~='string' or unit=='' then return nil,'invalid-unit' end
     if includeMaximum~=nil and type(includeMaximum)~='boolean' then return nil,'invalid-health-query' end

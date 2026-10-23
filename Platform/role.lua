@@ -21,7 +21,7 @@ end
 -- No inspection requests or inferred roles. A chosen modern capability's
 -- failure never falls through to the legacy global capability.
 function platform:GetInspectRoleObservation(unit)
-    if self:GetClientInfo().combatDataPolicy~='probe' then return nil,'unsupported-policy' end
+    if self:GetCombatDataPolicy()~='probe' then return nil,'unsupported-policy' end
     if not self:CanReadValue(unit) then return nil,'restricted-value' end
     if type(unit)~='string' or unit=='' then return nil,'invalid-unit' end
     if type(UnitExists)~='function' then return nil,'missing-api' end
@@ -61,7 +61,7 @@ end
 -- Keep the live legacy group argument exactly, including readable nil. Its
 -- historical declaration is incomplete; no group-domain inference is added.
 function platform:GetTalentGroupRoleObservation(group)
-    if self:GetClientInfo().combatDataPolicy~='probe' then return nil,'unsupported-policy' end
+    if self:GetCombatDataPolicy()~='probe' then return nil,'unsupported-policy' end
     if not self:CanReadValue(group) then return nil,'restricted-value' end
     local query,reason=readField(self,_G,'GetTalentGroupRole')
     if reason then return nil,reason end

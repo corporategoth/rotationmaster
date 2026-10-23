@@ -5,7 +5,7 @@ local _,addon=...
 function addon:GetConditionUnitLevel(unit,cache)
     if not self.Platform:CanReadValue(unit) then return nil,'restricted-value' end
     if type(unit)~='string' or unit=='' then return nil,'invalid-unit' end
-    if self.Platform:GetClientInfo().family=='unknown' then return nil,'unsupported-client' end
+    if self.Platform:GetClientFamily()=='unknown' then return nil,'unsupported-client' end
     local longterm=self.longtermCache
     if unit=='player' and type(longterm)=='table' then
         local level=longterm.conditionPlayerLevel

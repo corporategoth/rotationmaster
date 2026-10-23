@@ -29,7 +29,7 @@ end
 
 function addon:GetConditionHealthForecast(unit,healthTarget,percentage,mode,cache)
     local platform=self.Platform
-    if platform:GetClientInfo().combatDataPolicy~='probe' then return nil,'unsupported-policy' end
+    if platform:GetCombatDataPolicy()~='probe' then return nil,'unsupported-policy' end
     if not platform:CanReadValue(unit) or not platform:CanReadValue(percentage) or not platform:CanReadValue(cache) then return nil,'restricted-value' end
     if type(unit)~='string' or unit=='' or type(percentage)~='boolean' then return nil,'invalid-health-forecast-query' end
     if cache~=nil and type(cache)~='table' then return nil,'invalid-health-forecast-cache' end

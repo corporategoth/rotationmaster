@@ -61,13 +61,15 @@ test('query and cache validation never coerce missing or opaque arguments',funct
  local _,a,s=fixture();assert(a.GetConditionThreatCount,'count service missing');local result,why=a:GetConditionThreatCount(nil,{});assert(result==nil and type(why)=='string' and #s.calls==0)
  for _,bad in ipairs({false,1,'cache'}) do local _,a,s=fixture();assert(a.GetConditionThreatCount,'count service missing');local count,why=a:GetConditionThreatCount(1,bad);assert(count==nil and type(why)=='string' and #s.calls==0) end
 end)
-test('full policy metadata cost stays explicit and fresh while unit observations memoize',function()
+-- The session-fixed client policy is read once (one full metadata snapshot,
+-- seven reads), not rebuilt for every observation; unit observations memoize.
+test('client policy metadata is read once while unit observations memoize',function()
  local f,a,s=fixture();local e=f.env;local metadata=0
  local function meta(value) return function(...) assert(select('#',...)==0);metadata=metadata+1;return value end end
  e.GetClassicExpansionLevel=meta(2);e.GetLocale=meta('enUS');e.GetBuildInfo=function(...) assert(select('#',...)==0);metadata=metadata+1;return '11.0','12345','date',110000 end
  e.C_Seasons={GetActiveSeason=meta(0)};e.C_GameRules={GetCurrentGameModeRecordID=meta(0),IsHardcoreActive=meta(false),IsSelfFoundAllowed=meta(false)}
- local cache={};assert(observe(a,1,cache)==1 and metadata==21 and #s.calls==5);local before=metadata;assert(observe(a,2,cache)==1 and metadata-before==7 and #s.calls==5)
- a.unitsInRange={};before=metadata;assert(observe(a,1,cache)==0 and metadata-before==7 and #s.calls==5)
+ local cache={};assert(observe(a,1,cache)==1 and metadata==7 and #s.calls==5);local before=metadata;assert(observe(a,2,cache)==1 and metadata-before==0 and #s.calls==5)
+ a.unitsInRange={};before=metadata;assert(observe(a,1,cache)==0 and metadata-before==0 and #s.calls==5)
 end)
 test('a later unknown cannot be hidden by an earlier already sufficient match',function()
  local _,a,s=fixture();a.unitsInRange={['Creature-A']={unit='nameplate1'},['Creature-B']={unit='nameplate2'}}

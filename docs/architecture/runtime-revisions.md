@@ -46,3 +46,9 @@ The execution generation is the single freshness number the polling path trusts.
 **Histories.** Damage/heal (combat log) and UNIT_COMBAT histories are recorded only while a condition that reads them, or any custom-code condition, has run in the last minute. Insertion also trims expired rows, so histories stay bounded without an active rotation.
 
 **Readability.** On classic-family builds where `C_Secrets.HasSecretRestrictions()` is false (a build guarantee that no API returns secrets), `Platform:CanReadValue` is constant. Retail, Forever and clients without the secret API keep the full check.
+
+**Native glows.** Rotate, dazzle, animate, pulse and custom glows show one step at a time. Each step is its own texture on the overlay (texture, color, size and angle as the timer would set them), and one looping AnimationGroup shows each in turn with alpha keyframes, so the client plays the stepped animation with no Lua per frame. Clients without the animation API, sequences over 64 steps and malformed steps keep the Lua timer. Steps take the button's size when the glow starts.
+
+**Observation without copies.** Readiness reads the multi-value `GetSpellCooldown` where it exists. On builds without secrets, aura records are normalized in place, and spell-specific BUFF/DEBUFF checks (present, remaining, stacks) use one `C_UnitAuras.GetAuraDataBySpellName` lookup instead of walking every aura, only where the result provably equals the walk's first match; anything else walks as before. `ROTATIONMASTER_COOLDOWN_UPDATE` reaches WeakAuras only when a cooldown glow starts or stops.
+
+**Client facts.** `Platform:GetClientFamily()` and `Platform:GetCombatDataPolicy()` return the session-fixed family and policy, recomputed only if `GetClientInfo` is replaced. Runtime checks use them; `GetClientInfo()` still returns complete fresh metadata.

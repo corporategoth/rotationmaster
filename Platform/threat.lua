@@ -4,7 +4,7 @@ local platform=addon.Platform
 -- Preserve the ordered native threat predicate, including optional nil status.
 -- False is known absence/nonenemy/no-threat; unavailable required facts are nil.
 function platform:GetUnitThreatObservation(unit)
-    if self:GetClientInfo().combatDataPolicy~='probe' then return nil,'unsupported-policy' end
+    if self:GetCombatDataPolicy()~='probe' then return nil,'unsupported-policy' end
     if not self:CanReadValue(unit) then return nil,'restricted-value' end
     if type(unit)~='string' or unit=='' then return nil,'invalid-unit' end
     if type(UnitExists)~='function' then return nil,'missing-api' end

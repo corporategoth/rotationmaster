@@ -954,7 +954,7 @@ function addon:Fetch()
 
     -- The reference/editor modes on restricted clients do not inspect combat
     -- actions. Clear outgoing mappings above before leaving the scanner.
-    if addon.Platform:GetClientInfo().combatDataPolicy~="probe" then return end
+    if addon.Platform:GetCombatDataPolicy()~="probe" then return end
 	addon:debug(L["Button Fetch triggered."])
 
 	FetchLibActionButton()
@@ -1060,7 +1060,9 @@ function addon:GlowCooldown(spellId, condition, cooldown, itemId)
     end
 
 	local previous=Flags[spellId]
+    local changed=false
     if condition and cooldown and (not previous or previous.id~=cooldown.id or previous.itemId~=itemId) then
+        changed=true
         if previous then ClearGlowIndependent(spellId,spellId) end
 		Flags[spellId] = {id=cooldown.id,itemId=itemId}
 		GlowIndependent(spellId, spellId, cooldown.effect or self.db.profile.effect, cooldown.color,
@@ -1070,11 +1072,15 @@ function addon:GlowCooldown(spellId, condition, cooldown, itemId)
 				cooldown.yoffs or self.db.profile.yoffs,
 				cooldown.angle or self.db.profile.angle, itemId)
 	elseif not condition and Flags[spellId] then
+        changed=true
 		Flags[spellId] = nil
 		ClearGlowIndependent(spellId, spellId)
 	end
 
-	if WeakAuras then WeakAuras.ScanEvents('ROTATIONMASTER_COOLDOWN_UPDATE', self.Flags); end
+    -- This runs for every cooldown on every poll; tell WeakAuras only when a
+    -- cooldown glow actually starts or stops. The payload is unchanged.
+	local weakAuras = changed and _G.WeakAuras
+	if weakAuras then weakAuras.ScanEvents('ROTATIONMASTER_COOLDOWN_UPDATE', self.Flags); end
 end
 
 if type(publishActivePresentation)=='function' then

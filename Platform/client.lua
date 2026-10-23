@@ -73,6 +73,23 @@ function platform:GetClientInfo()
 end
 
 local ownedClientInfo=platform.GetClientInfo
+
+-- Project, family and combat policy are fixed for a client session, but
+-- GetClientInfo builds fresh metadata (a table and several API reads) on
+-- every call. Runtime checks read these two facts here instead; they are
+-- recomputed if GetClientInfo is replaced or the project they derive from
+-- changes (only test harnesses do either).
+local factsFrom,factsProject,factsFamily,factsPolicy
+local function clientFacts(self)
+    local getter,project=self.GetClientInfo,WOW_PROJECT_ID
+    if getter~=factsFrom or project~=factsProject then
+        local info=getter(self)
+        factsFrom,factsProject,factsFamily,factsPolicy=getter,project,info.family,info.combatDataPolicy
+    end
+    return factsFamily,factsPolicy
+end
+function platform:GetClientFamily() return (clientFacts(self)) end
+function platform:GetCombatDataPolicy() local _,policy=clientFacts(self);return policy end
 -- Private policy consumers need no locale/build/season/rules snapshot. The
 -- public getter above keeps its complete fresh result and callback behavior.
 local policyType,policyRawget,policyEqual,policyProtect=type,rawget,rawequal,pcall

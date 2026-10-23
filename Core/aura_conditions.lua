@@ -64,6 +64,50 @@ local function matchesAura(aura, value, mode, identity)
     return matches
 end
 
+-- Walking every aura costs one new native table per aura, every poll. For a
+-- spell match one lookup by name gives the walk's answer: the walk's first
+-- match carries that name, and nothing of that name means no match. It is
+-- used only where that holds exactly (no secrets, a result of the requested
+-- rank, the player's own aura when asked); anything else walks as before.
+local spellNames = {}
+local function lookupByName(value, filter, mode)
+    if not platform.secretsUnrestricted or type(platform.GetAuraBySpellName) ~= "function" then return end
+    if mode ~= "present" and mode ~= "remaining" and mode ~= "stacks" then return end
+    local spell, name = value.spell, nil
+    if type(spell) == "string" then name = spell
+    elseif type(spell) == "number" then
+        name = spellNames[spell]
+        if not name and type(platform.GetSpellInfo) == "function" then
+            local info = platform:GetSpellInfo(spell)
+            name = info and info.name
+            if type(name) == "string" and name ~= "" then spellNames[spell] = name else name = nil end
+        end
+    end
+    if not name then return end
+    local own = value.ownbuff or value.owndebuff
+    local aura, reason = platform:GetAuraBySpellName(value.unit, name, own and filter .. "|PLAYER" or filter)
+    if reason then return end
+    if not aura then return "none" end
+    if aura.unavailable then return end
+    if type(spell) == "number" and value.anyrank ~= true and aura.spellID ~= spell then return end
+    if own and aura.sourceUnit ~= "player" then return end
+    return "found", aura
+end
+
+local function auraResult(aura, value, mode, start)
+    if mode == "remaining" then
+        local remaining, why = platform:AuraRemaining(aura, start or GetTime())
+        if remaining == nil then return nil, why end
+        return addon.Functions.values.compare(value.operator, remaining, value.value)
+    elseif mode == "stacks" then
+        local stacks, why = platform:ReadAuraField(aura, "applications")
+        if why then return nil, why end
+        if stacks == nil then return nil, "aura-stacks-unavailable" end
+        return addon.Functions.values.compare(value.operator, stacks, value.value)
+    end
+    return true
+end
+
 function addon:EvaluateAuraCondition(value, cache, start, filter, mode)
     if type(UnitExists) ~= "function" then return nil, "missing-api" end
     local ok, exists = pcall(UnitExists, value.unit)
@@ -73,6 +117,9 @@ function addon:EvaluateAuraCondition(value, cache, start, filter, mode)
     if exists ~= true and exists ~= 1 then return nil, "invalid-api-result" end
 
     if mode == "dispel" and value.dispellable then filter = "HARMFUL|RAID" end
+    local direct, found = lookupByName(value, filter, mode)
+    if direct == "none" then return false end
+    if direct == "found" then return auraResult(found, value, mode, start) end
     local existential = mode == "present" or mode == "dispel" or mode == "stealable"
     local pendingReason;local identity={}
     for index = 1, 256 do
@@ -87,19 +134,7 @@ function addon:EvaluateAuraCondition(value, cache, start, filter, mode)
             if not existential then return nil, why end
             pendingReason = pendingReason or why
         end
-        if matches then
-            if mode == "remaining" then
-                local remaining, why = platform:AuraRemaining(aura, start or GetTime())
-                if remaining == nil then return nil, why end
-                return addon.Functions.values.compare(value.operator, remaining, value.value)
-            elseif mode == "stacks" then
-                local stacks, why = platform:ReadAuraField(aura, "applications")
-                if why then return nil, why end
-                if stacks == nil then return nil, "aura-stacks-unavailable" end
-                return addon.Functions.values.compare(value.operator, stacks, value.value)
-            end
-            return true
-        end
+        if matches then return auraResult(aura, value, mode, start) end
     end
     return nil, pendingReason or "aura-scan-limit"
 end

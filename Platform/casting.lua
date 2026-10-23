@@ -25,7 +25,7 @@ end
 -- The timestamp/flag fields are independent observations. A readable name can
 -- still establish presence when the timer or interruptibility is unavailable.
 function platform:GetUnitCastObservation(unit,kind)
-    if self:GetClientInfo().combatDataPolicy~='probe' then return nil,'unsupported-policy' end
+    if self:GetCombatDataPolicy()~='probe' then return nil,'unsupported-policy' end
     if not self:CanReadValue(unit) or not self:CanReadValue(kind) then return nil,'restricted-value' end
     if type(unit)~='string' or unit=='' then return nil,'invalid-unit' end
     if kind~='cast' and kind~='channel' then return nil,'invalid-cast-query' end

@@ -3,7 +3,7 @@ local platform=addon.Platform
 
 -- One public world-state tuple; membership and type have independent readiness.
 function platform:GetInstanceObservation()
-    local family=self:GetClientInfo().family
+    local family=self:GetClientFamily()
     if family~='retail' and family~='forever' and family~='era' and family~='tbc' and family~='progression' then return nil,'unsupported-policy' end
     if type(IsInInstance)~='function' then return nil,'missing-api' end
     local ok,inInstance,instanceType=pcall(IsInInstance)

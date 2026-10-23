@@ -3,7 +3,7 @@ local platform=addon.Platform
 
 -- Successful empty zone classification differs from an unavailable observation.
 function platform:GetZonePVPObservation()
-    local family=self:GetClientInfo().family
+    local family=self:GetClientFamily()
     if family~='retail' and family~='forever' and family~='era' and family~='tbc' and family~='progression' then return nil,'unsupported-policy' end
     local namespace=C_PvP
     if not self:CanReadValue(namespace) then return nil,'restricted-value' end

@@ -18,7 +18,7 @@ local function numberField(self,value,missing)
 end
 
 function platform:GetRuneTypeObservation(index)
-    if self:GetClientInfo().combatDataPolicy~='probe' then return nil,'unsupported-policy' end
+    if self:GetCombatDataPolicy()~='probe' then return nil,'unsupported-policy' end
     local valid,reason=validIndex(self,index)
     if not valid then return nil,reason end
     local api=GetRuneType
@@ -34,7 +34,7 @@ end
 -- A single native tuple supports independent ready and timing predicates.
 -- Missing optional fields do not invalidate another readable field.
 function platform:GetRuneCooldownObservation(index)
-    if self:GetClientInfo().combatDataPolicy~='probe' then return nil,'unsupported-policy' end
+    if self:GetCombatDataPolicy()~='probe' then return nil,'unsupported-policy' end
     local valid,reason=validIndex(self,index)
     if not valid then return nil,reason end
     local api=GetRuneCooldown
@@ -54,7 +54,7 @@ end
 
 -- This clock is deliberately not a per-pass cached observation.
 function platform:GetRuneEvaluationTime()
-    if self:GetClientInfo().combatDataPolicy~='probe' then return nil,'unsupported-policy' end
+    if self:GetCombatDataPolicy()~='probe' then return nil,'unsupported-policy' end
     local api=GetTime
     if type(api)~='function' then return nil,'missing-api' end
     local ok,value=pcall(api)

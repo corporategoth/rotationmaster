@@ -4,7 +4,7 @@ local platform=addon.Platform
 -- POINT has its own explicit secondary-resource selection policy. These reads
 -- neither choose the primary power bar nor redirect the configured unit.
 function platform:GetUnitPointIdentityObservation(unit,includeClass)
-    if self:GetClientInfo().combatDataPolicy~='probe' then return nil,'unsupported-policy' end
+    if self:GetCombatDataPolicy()~='probe' then return nil,'unsupported-policy' end
     if not self:CanReadValue(unit) or not self:CanReadValue(includeClass) then return nil,'restricted-value' end
     if type(unit)~='string' or unit=='' then return nil,'invalid-unit' end
     if type(includeClass)~='boolean' then return nil,'invalid-point-identity-query' end
@@ -28,7 +28,7 @@ function platform:GetUnitPointIdentityObservation(unit,includeClass)
 end
 
 function platform:GetUnitPointPowerObservation(unit,powerType,kind)
-    if self:GetClientInfo().combatDataPolicy~='probe' then return nil,'unsupported-policy' end
+    if self:GetCombatDataPolicy()~='probe' then return nil,'unsupported-policy' end
     if not self:CanReadValue(unit) or not self:CanReadValue(powerType) or not self:CanReadValue(kind) then return nil,'restricted-value' end
     if type(unit)~='string' or unit=='' then return nil,'invalid-unit' end
     if type(powerType)~='number' or powerType~=powerType or powerType<0 or powerType==math.huge or powerType%1~=0 then return nil,'invalid-point-power-query' end
