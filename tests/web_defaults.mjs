@@ -1,5 +1,3 @@
-const FIFTY_ADDITIONS=new Set(['rm.tbc.shaman.enhancement.50-59','rm.tbc.mage.starter.50-59','rm.tbc.priest.shadow.50-59']);
-const FORTY_ADDITIONS=new Set(["rm.tbc.mage.starter.40-49", "rm.tbc.warrior.starter.40-49", "rm.tbc.paladin.starter.40-49", "rm.tbc.rogue.starter.40-49", "rm.tbc.druid.caster.starter.40-49"]);
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync,existsSync} from 'node:fs';
@@ -22,8 +20,52 @@ const fields=m=>new Map(m.entries.map(([k,v])=>[Buffer.from(k.hex,'hex').toStrin
 function set(m,k,v){const hex=bytes(k).hex;const row=m.entries.find(([key])=>key.type==='bytes'&&key.hex===hex);if(row)row[1]=v;else m.entries.push([bytes(k),v]);}
 const number=n=>{const b=Buffer.alloc(8);b.writeDoubleBE(n);return{type:'number',bits:b.toString('hex')};};
 
-test('pure catalog exposes all36 actual source definitions without runtime facts',()=>{
- const c=ready(),rows=c.list();assert.equal(rows.length,36);assert.equal(new Set(rows.map(r=>r.id)).size,36);
+const fixtureURL=new URL('./fixtures/web_defaults.json',import.meta.url);
+const SAMPLE='rm.tbc.shaman.enhancement.icyveins',SAMPLE_SOURCE='Defaults/tbc/shaman-enhancement-icyveins.lua';
+// The packaged TBC premades, frozen in catalog order: [id, step rows, sha256 of
+// JSON.stringify([catalog pack object, wire fixture record])]. Re-freeze only
+// alongside a deliberate pack change (regenerate with the repo's generators).
+const PREMADES=[
+ ["rm.tbc.druid.balance",25,"10d3133bbb058af6724f873aaa9e4864c7b26248d23c278a029d1a4a53bba2e7"],
+ ["rm.tbc.druid.feral.icyveins",44,"c79e6adf2afc6b3649fcb0b5eec6b0afeee09506f6a52448e78b1a23c5d6db5f"],
+ ["rm.tbc.druid.feral.wowhead",44,"5ca9e2bfbf6a74abcdace1f9dfd15674c969b9a272cfaffbbf3849a56752be9a"],
+ ["rm.tbc.druid.restoration",25,"b1b83879fa072b561ee04aeda6890e68f27132eaba7cb8a742c8995ba4a1ecbb"],
+ ["rm.tbc.hunter.ranged.wowhead",40,"dda47ba4133992a21d5a59cc9034ceee28f8428ce4002214c5dde6726c1d16c0"],
+ ["rm.tbc.hunter.ranged.wowsims",44,"da5a1e26f97f4f03d286e4825a78aad34705251e6a0f9a515fa353ee07e059b0"],
+ ["rm.tbc.mage.arcane",43,"beaad6ca57c405fa6c5e30591c985f5e8a0682bc793be2e57a472ead18782265"],
+ ["rm.tbc.mage.fire.icyveins",39,"b98f582fd7b63d86ecc6725fa17bca35c2bfe32dacc8f6b1b333a04e6a5cae1d"],
+ ["rm.tbc.mage.fire.wowhead",39,"1ac870f13e55931b12bfa5e872ed40bea524b77e4c1a3c05ba6973dfc1f152b6"],
+ ["rm.tbc.mage.frost",43,"c42c29085f0924709375f0d33ca3748036af52603f2254ee69e33ea1be9e842c"],
+ ["rm.tbc.paladin.holy",19,"6bc57a13df5ca3c7e60c7145fc1e28386b9de20de4b1191015e2af7b1c2b79b9"],
+ ["rm.tbc.paladin.holy.wowhead",18,"022945aa195dbcfc3e8d412c28d890d32b097014ad5f4f37bf3f74507b70c59c"],
+ ["rm.tbc.paladin.protection.icyveins",19,"1e48eee44b57cb21cc545a263a41840852f22c2bc60d29e730f116f2ada0e6c9"],
+ ["rm.tbc.paladin.protection.wowhead",26,"3d3453b893b56a7e1574baf0fbbe980bb32c7fdac5917ee0ba63d32540d29de7"],
+ ["rm.tbc.paladin.retribution.icyveins",24,"1d958d9809b3ec9ca77570eafb6b71e19f53089d3a13b0f49415dfec3f5c33a8"],
+ ["rm.tbc.paladin.retribution.twist",32,"9e226d3da1b8431819b9d4a4f568328883b2645316fa333b18e0318c56576117"],
+ ["rm.tbc.paladin.retribution.wowhead",23,"4d0f08d329c698fc3ca62b796036c8c89925e93cd5911ab4b137b7c9311554f0"],
+ ["rm.tbc.priest.dps.icyveins",49,"25093b17d087d63dd71b5f55b8f48b1b78b4f1951bcb7fd4b074cb9927bbd786"],
+ ["rm.tbc.priest.dps.wowhead",46,"c79f84ec260382dbb18182f2cb5323f2a190944a8d56fae2a9c18c4ba08400c3"],
+ ["rm.tbc.priest.healer.icyveins",35,"2160cae6052c61adbbd9a0ff15f5ca0d69e9e8a40fb40ef6cf8d9a3b8f489d09"],
+ ["rm.tbc.priest.healer.wowhead",40,"00e775b25353342e26783d263d84c1d6ccf5ed07443b0518cca82a52a5fb7037"],
+ ["rm.tbc.rogue.dps.wowhead",30,"760ab0e552a9feed87063b49f4f3210523013d214f3b6d221fa2b856179d0675"],
+ ["rm.tbc.rogue.dps.wowsims",32,"90e4b26ff83a5a106e17413f9b33fa1d2703c1b3d58d0413553e65b40401718f"],
+ ["rm.tbc.shaman.elemental.icyveins",26,"87c617b685bcca315588bc19e1926587f0800532af5ae89b3e5fc3830e5da245"],
+ ["rm.tbc.shaman.elemental.nextaction",14,"56505b4e716fdf5e7a1900efbc34f3028c8c8b3cc67588509f5312bbe1f99219"],
+ ["rm.tbc.shaman.elemental.wowhead",26,"6140d8bdc05d824f229ac6bdc5f10c9e829b4fca8bff5c0b26520672f4e0c354"],
+ ["rm.tbc.shaman.enhancement.icyveins",31,"a611b33512966ea3807de2cfd8aeb88fff666322092b0858e2d0640f3aaa6e14"],
+ ["rm.tbc.shaman.enhancement.wowsims",31,"f3eefe96d5dce8ecda3a06ba779fccce11f4ce62a3c064a88cd628dc231bd537"],
+ ["rm.tbc.shaman.restoration",24,"cd82c2d34018a6d38d3514a67fb6933c1943bac22326d246ad6a0ff7889b1f08"],
+ ["rm.tbc.warlock.dps.icyveins",59,"41f5d2633c4b5c0aac8ac9c0d2ff082b33bfe42dfa46fbe3de2441bb92975b2f"],
+ ["rm.tbc.warlock.dps.wowhead",56,"a6b4eca9e7351f004b84e91dae470e5e61889e55d331d0555e72d9b229a7a858"],
+ ["rm.tbc.warrior.dps.icyveins",32,"7d4c45ffd92fa57b80f3820d753ac5a9cd3fad5118da2415931e16ab6a58afc5"],
+ ["rm.tbc.warrior.dps.wowsims",34,"1e5ec85c8adfcb7e8e754621c1528255e2b92640186e1b32d60a03955ad9e596"],
+ ["rm.tbc.warrior.protection.icyveins",22,"fdd63be26fb52c2bc5a3fc8c570900a1fc5fec0e54601f2de7914a6fc7a40a03"],
+ ["rm.tbc.warrior.protection.wowhead",24,"55e3c8ba747b41316ead9eec0cffcde3f35794ccc772928790333cd25ed5275c"]
+];
+const FIXTURE_SHA='ec6d21ae8dfc03af2000d6641c5762d7ebaf80e2c6ca24f05f644e3c6bee9532';
+
+test('pure catalog exposes every actual source definition without runtime facts',()=>{
+ const c=ready(),rows=c.list(),n=raw().packs.length;assert(n>0);assert.equal(rows.length,n);assert.equal(new Set(rows.map(r=>r.id)).size,n);
  for(const row of rows){assert.equal(row.applicability.get('families').get(1),'tbc');assert.equal(row.validation.nativeAvailability,'unverified');for(const k of ['eligible','enabled','runtimeKey','spellName','icon'])assert.equal(Object.hasOwn(row,k),false);const value=c.get(row.id);assert(value.ok&&checkPortable(value.envelope).ok);const report=validateEnvelope(value.envelope,declarations);assert(report.valid&&report.supported&&report.resolved);assert(indexRotationSteps(value.envelope.get('body')).ok);}
  assert.deepEqual(c.get({toString(){throw Error('no coercion');}}),{ok:false,reason:'unknown-default'});
 });
@@ -32,39 +74,28 @@ test('production generator is deterministic/current BOTH and source inputs exact
  const doc=raw();for(const[path,sha]of Object.entries(doc.sourceFiles))assert.equal(createHash('sha256').update(readFileSync(new URL('../'+path,import.meta.url))).digest('hex'),sha,path);
  const toc=readFileSync(new URL('../RotationMaster.toc',import.meta.url),'utf8').split(/\r?\n/).filter(s=>/^Defaults\/.+\.lua$/.test(s)&&!s.startsWith('Defaults/blocks/'));assert.deepEqual([...doc.packs.map(p=>p.sourcePath)].sort(),toc.sort());
 });
-test('all36 pinned actual codec wires decode to exact catalog Maps and strict diff equality',()=>{
- const fixture=JSON.parse(readFileSync(new URL('./fixtures/web_defaults.json',import.meta.url))),c=ready();assert.equal(fixture.format,'RotationMasterBundledDefaultWireFixtures');assert.equal(fixture.records.length,36);
- let rows=0;for(const record of fixture.records){const decoded=decodeImport(record.wire);assert(decoded.ok&&decoded.kind==='envelope');const selected=c.get(record.id);assert(selected.ok);assert.deepEqual(toTypedTree(decoded.value),record.expected);assert.deepEqual(toTypedTree(selected.envelope),record.expected);assert.equal(selected.source.sha256,record.sourceSHA);rows+=indexRotationSteps(decoded.value.get('body')).index.rows.length;const diff=diffRotations(decoded.value,selected.envelope);assert(diff.valid&&diff.complete&&diff.changes.length===0);}assert.equal(rows,332);
+test('every catalog pack has one pinned actual codec wire decoding to its exact Map with strict diff equality',()=>{
+ const fixture=JSON.parse(readFileSync(fixtureURL)),c=ready();assert.equal(fixture.format,'RotationMasterBundledDefaultWireFixtures');assert.deepEqual(fixture.records.map(r=>r.id),c.list().map(r=>r.id));
+ let rows=0,expected=0;for(const row of c.list())expected+=indexRotationSteps(c.get(row.id).envelope.get('body')).index.rows.length;for(const record of fixture.records){const decoded=decodeImport(record.wire);assert(decoded.ok&&decoded.kind==='envelope');const selected=c.get(record.id);assert(selected.ok);assert.deepEqual(toTypedTree(decoded.value),record.expected);assert.deepEqual(toTypedTree(selected.envelope),record.expected);assert.equal(selected.source.sha256,record.sourceSHA);rows+=indexRotationSteps(decoded.value.get('body')).index.rows.length;const diff=diffRotations(decoded.value,selected.envelope);assert(diff.valid&&diff.complete&&diff.changes.length===0);}assert(rows>0);assert.equal(rows,expected);
 });
-test('first19 frozen wire records stay exact; Hunter30–39 remains twentieth',()=>{
- const records=JSON.parse(readFileSync(new URL('./fixtures/web_defaults.json',import.meta.url))).records;
- assert.equal(records.length,36);
- assert.equal(createHash('sha256').update(JSON.stringify(records.slice(0,19))).digest('hex'),'354927d1a786ed221d8438670ab6b32689d586b0cf4fd3a288bebda299a86046');
- assert.equal(records[19].id,'rm.tbc.hunter.starter.30-39');
- assert.equal(records.filter(r=>r.id==='rm.tbc.hunter.starter.30-39').length,1);
+test('packaged premades are frozen: ordered ids, catalog objects, wire records and raw fixture bytes',()=>{
+ const wire=readFileSync(fixtureURL),records=JSON.parse(wire).records,packs=raw().packs,c=ready();
+ assert.deepEqual(packs.map(p=>p.id),PREMADES.map(([id])=>id));assert.deepEqual(records.map(r=>r.id),PREMADES.map(([id])=>id));
+ const changed=PREMADES.filter(([id,rows,sha],i)=>indexRotationSteps(c.get(id).envelope.get('body')).index.rows.length!==rows||createHash('sha256').update(JSON.stringify([packs[i],records[i]])).digest('hex')!==sha).map(([id])=>id);
+ assert.deepEqual(changed,[]);
+ assert.equal(createHash('sha256').update(wire).digest('hex'),FIXTURE_SHA);
 });
-test('first20 frozen wire records remain ordered; four class continuations append once',()=>{
- const records=JSON.parse(readFileSync(new URL('./fixtures/web_defaults.json',import.meta.url))).records;
- assert.equal(records.length,36);
- assert.equal(createHash('sha256').update(JSON.stringify(records.slice(0,20))).digest('hex'),'9f0a089c84b90cd7410a08efb7781ac730fbeb716a198b27f100c8af892db090');
- assert.deepEqual(records.slice(20,24).map(r=>r.id),["rm.tbc.druid.caster.starter.30-39","rm.tbc.paladin.starter.30-39","rm.tbc.rogue.starter.30-39","rm.tbc.warrior.starter.30-39"]);
+test('the retired level-bracket packs are gone from the catalog, wires and source list',()=>{
+ const doc=raw(),records=JSON.parse(readFileSync(fixtureURL)).records,bracket=/\.starter(\.|$)|\.\d+-\d+$/;
+ for(const id of [...doc.packs.map(p=>p.id),...records.map(r=>r.id)])assert(!bracket.test(id),id);
+ for(const path of Object.keys(doc.sourceFiles))assert(!/starter/.test(path),path);
+ for(const id of ['rm.tbc.shaman.starter','rm.tbc.warlock.starter.40-49','rm.tbc.priest.shadow.50-59'])assert.deepEqual(ready().get(id),{ok:false,reason:'unknown-default'});
 });
-test('first24 frozen wire records and catalog objects stay exact; Hunter40–49 appends once',()=>{
- const records=JSON.parse(readFileSync(new URL('./fixtures/web_defaults.json',import.meta.url))).records;
- assert.equal(createHash('sha256').update(JSON.stringify(records.slice(0,24))).digest('hex'),'c5d5576fe961b713f2ce59ffdcfb13fa49da21129ff75eab1bf4433bd1119e25');
- assert.equal(records[24].id,'rm.tbc.hunter.starter.40-49');
- assert.equal(records.filter(r=>r.id==='rm.tbc.hunter.starter.40-49').length,1);
- const old=raw().packs.filter(p=>!FIFTY_ADDITIONS.has(p.id)&&!FORTY_ADDITIONS.has(p.id)&&p.id!=='rm.tbc.hunter.starter.40-49'&&p.id!=='rm.tbc.priest.shadow.40-49'&&p.id!=='rm.tbc.shaman.enhancement.40-49'&&p.id!=='rm.tbc.warlock.starter.40-49');
- assert.equal(createHash('sha256').update(JSON.stringify(old)).digest('hex'),'328b99ef8f466fda2c74db84cce16b72813d581d8470a283609c8caf90d2ac20');
-});
-test('first25 frozen wires and catalog objects stay ordered; Priest40–49 appends once',()=>{
- const records=JSON.parse(readFileSync(new URL('./fixtures/web_defaults.json',import.meta.url))).records;
- assert.equal(records.length,36);
- assert.equal(createHash('sha256').update(JSON.stringify(records.slice(0,25))).digest('hex'),'9b207ff6cbde16c3b1a9b92310fc27542dc2293c28fcd674c88dbcefbac00e02');
- assert.equal(records[25].id,'rm.tbc.priest.shadow.40-49');
- assert.equal(records.filter(r=>r.id==='rm.tbc.priest.shadow.40-49').length,1);
- const old=raw().packs.filter(p=>!FIFTY_ADDITIONS.has(p.id)&&!FORTY_ADDITIONS.has(p.id)&&p.id!=='rm.tbc.priest.shadow.40-49'&&p.id!=='rm.tbc.shaman.enhancement.40-49'&&p.id!=='rm.tbc.warlock.starter.40-49');
- assert.equal(createHash('sha256').update(JSON.stringify(old)).digest('hex'),'30462a529f06ab944725e206367cb964d3f05180b40be6415ff72ab81516a5d6');
+test('the seal-twisting premade ships present, valid and marked disabled; no other pack is',()=>{
+ const c=ready(),id='rm.tbc.paladin.retribution.twist';assert(c.list().some(r=>r.id===id));
+ const twist=c.get(id);assert(twist.ok);assert.equal(twist.envelope.get('body').get('disabled'),true);
+ const report=validateEnvelope(twist.envelope,declarations);assert(report.valid&&report.supported&&report.resolved);
+ assert.deepEqual(c.list().filter(r=>c.get(r.id).envelope.get('body').get('disabled')!==undefined).map(r=>r.id),[id]);
 });
 test('get/list outputs never expose private manifest, facets or declaration state',()=>{
  const c=ready(),first=c.list()[0],before=toTypedTree(c.get(first.id).envelope),one=c.get(first.id);one.envelope.get('body').get('rotation').clear();one.envelope.get('sources').get(1).set('url','poison');one.display.name='poison';one.source.sha256='poison';one.validation.diagnostics?.push('poison');first.applicability.set('class','poison');first.tags?.clear();first.display.name='poison';assert.deepEqual(toTypedTree(c.get(first.id).envelope),before);assert.notEqual(c.list()[0].display.name,'poison');assert.notEqual(c.get(first.id).source.sha256,'poison');
@@ -94,11 +125,10 @@ test('future envelope schema, invalid branch and mismatched declared identity fa
  for(const mutate of [m=>set(m,'schemaVersion',number(2)),m=>set(m,'id',bytes('other')),m=>{const body=fields(m).get('body');set(body,'rotation',{type:'table',entries:[[number(1),{type:'table',entries:[[bytes('id'),bytes('bad')],[bytes('type'),bytes('branch')],[bytes('onTrue'),{type:'table',entries:[]}]]}]]});}]){const d=raw();mutate(d.packs[0].envelope);reject(d);}
 });
 test('provenance hashes do not pretend to authenticate arbitrary well-formed payload content',()=>{
- const d=raw(),p=d.packs.find(p=>p.id==='rm.tbc.shaman.starter'),m=p.envelope;const b=fields(m).get('body'),steps=fields(b).get('rotation');const spell=steps.entries.map(x=>x[1]).find(s=>fields(s).get('action'));set(spell,'action',number(123));const r=parse(JSON.stringify(d));assert(r.ok);assert.equal(r.catalog.get(p.id).source.sha256,p.sourceSHA);
+ const d=raw(),p=d.packs.find(p=>p.id===SAMPLE),m=p.envelope;const b=fields(m).get('body'),steps=fields(b).get('rotation');const spell=steps.entries.map(x=>x[1]).find(s=>fields(s).get('action'));set(spell,'action',number(123));const r=parse(JSON.stringify(d));assert(r.ok);assert.equal(r.catalog.get(p.id).source.sha256,p.sourceSHA);
 });
-
 test('display labels remain Unicode text while symbolic keys stay ASCII bytes',()=>{
- const d=raw();assert(d.packs.every(p=>p.display.name.includes('–')));const c=ready();for(const p of d.packs)assert.equal(c.get(p.id).display.name,p.display.name);
+ const d=raw();assert(d.packs.some(p=>/[^\x00-\x7f]/.test(p.display.name+p.display.description)),'some packaged display text is non-ASCII');const c=ready();for(const p of d.packs){assert.equal(c.get(p.id).display.name,p.display.name);assert.equal(c.get(p.id).display.description,p.display.description);}
  d.packs[0].display.name='Localized – Δ 😀';assert.equal(parse(JSON.stringify(d)).catalog.list()[0].display.name,'Localized – Δ 😀');
  d.packs[0].display.nameKey='nonASCIIé';set(d.packs[0].envelope,'nameKey',bytes('nonASCIIé'));reject(d);
 });
@@ -106,7 +136,8 @@ test('record/source maxima and UTF8 text cap are enforced independently',()=>{
  let d=raw();d.packs=[];d.sourceFiles={};for(let i=0;i<128;i++)d.sourceFiles['safe/'+i+'.lua']='0'.repeat(64);assert(parse(JSON.stringify(d)).ok);d.sourceFiles['safe/extra.lua']='0'.repeat(64);reject(d);
  const base=text();assert(parse(base+' '.repeat(2097152-Buffer.byteLength(base))).ok);reject(base+' '.repeat(2097153-Buffer.byteLength(base)));
  reject(base+' '.repeat(2097152-Buffer.byteLength(base)-2)+'éé');
- d=raw();const p=d.packs[0];d.packs=[];for(let i=0;i<64;i++){const row=structuredClone(p);row.id='test.'+i;row.sourcePath='Defaults/test/'+i+'.lua';set(row.envelope,'id',bytes(row.id));d.sourceFiles[row.sourcePath]=row.sourceSHA;d.packs.push(row);}assert(parse(JSON.stringify(d)).ok);d.packs.push(structuredClone(d.packs[0]));reject(d);
+ d=raw();const p=[...d.packs].sort((a,b)=>JSON.stringify(a).length-JSON.stringify(b).length)[0];d.packs=[];// smallest pack, so 65 copies stay under the text cap
+ for(let i=0;i<64;i++){const row=structuredClone(p);row.id='test.'+i;row.sourcePath='Defaults/test/'+i+'.lua';set(row.envelope,'id',bytes(row.id));d.sourceFiles[row.sourcePath]=row.sourceSHA;d.packs.push(row);}assert(parse(JSON.stringify(d)).ok);d.packs.push(structuredClone(d.packs[0]));reject(d);
 });
 test('trusted producer refuses native queries, duplicate registration and invalid declarations BOTH',()=>{
  const scripts=[
@@ -115,89 +146,13 @@ test('trusted producer refuses native queries, duplicate registration and invali
  ];
  for(const vm of ['lua5.1','luajit']){
   for(const [script,reason] of scripts){
-   const body="local original=loadfile;local replacement="+JSON.stringify(script)+";loadfile=function(path)if path=='Defaults/tbc/shaman-starter.lua'then return assert(loadstring(replacement))end;return original(path)end;local m=dofile('tools/export_web_defaults.lua');local ok,why=pcall(m.build);assert(not ok and tostring(why):find("+JSON.stringify(reason)+",1,true),tostring(why))";
+   const body="local original=loadfile;local replacement="+JSON.stringify(script)+";loadfile=function(path)if path=='"+SAMPLE_SOURCE+"'then return assert(loadstring(replacement))end;return original(path)end;local m=dofile('tools/export_web_defaults.lua');local ok,why=pcall(m.build);assert(not ok and tostring(why):find("+JSON.stringify(reason)+",1,true),tostring(why))";
    execFileSync(vm,['-e',body],{cwd:root,encoding:'utf8',maxBuffer:4*1024*1024});
   }
-  const duplicate="local original=loadfile;local scope,set=setfenv,getfenv;loadfile=function(path)local f=original(path);if path=='Defaults/tbc/shaman-starter.lua'then return function(...)scope(f,set(1));f(...);f(...)end end;return f end;local m=dofile('tools/export_web_defaults.lua');local ok,why=pcall(m.build);assert(not ok and tostring(why):find('duplicate-default-id',1,true),tostring(why))";
+  const duplicate="local original=loadfile;local scope,set=setfenv,getfenv;loadfile=function(path)local f=original(path);if path=='"+SAMPLE_SOURCE+"'then return function(...)scope(f,set(1));f(...);f(...)end end;return f end;local m=dofile('tools/export_web_defaults.lua');local ok,why=pcall(m.build);assert(not ok and tostring(why):find('duplicate-default-id',1,true),tostring(why))";
   execFileSync(vm,['-e',duplicate],{cwd:root,encoding:'utf8',maxBuffer:4*1024*1024});
  }
 });
 test('fresh actual LuaJIT fixture generation stays semantically equal without wire-order claims',()=>{
- const fresh=JSON.parse(execFileSync('luajit',['tools/export_web_defaults.lua','--fixtures'],{cwd:root,encoding:'utf8',maxBuffer:4*1024*1024}));const c=ready();assert.equal(fresh.records.length,36);for(const r of fresh.records){const decoded=decodeImport(r.wire);assert(decoded.ok);assert.deepEqual(toTypedTree(decoded.value),toTypedTree(c.get(r.id).envelope));}
-});
-
-test('first26 frozen source catalog objects and ordered wire bytes stay exact; Shaman40–49 appends once',()=>{
- const wireText=readFileSync(new URL('./fixtures/web_defaults.json',import.meta.url));const records=JSON.parse(wireText).records;
- assert.equal(records.length,36);assert.equal(createHash('sha256').update(JSON.stringify(records.slice(0,26))).digest('hex'),'0341d283dfc472ae359c32059b64be03298db8460e80adb8c60e7097ab864c60');
- assert.equal(createHash('sha256').update(wireText.subarray(0,411744)).digest('hex'),'c695c4f08e8266c5a7a46f6fd6293f2188dd1cbc33429472e5b0beb93247886d');
- assert.equal(records[26].id,'rm.tbc.shaman.enhancement.40-49');assert.equal(records.filter(r=>r.id==='rm.tbc.shaman.enhancement.40-49').length,1);
- const old=raw().packs.filter(p=>!FIFTY_ADDITIONS.has(p.id)&&!FORTY_ADDITIONS.has(p.id)&&p.id!=='rm.tbc.shaman.enhancement.40-49'&&p.id!=='rm.tbc.warlock.starter.40-49');assert.equal(old.length,26);assert.equal(createHash('sha256').update(JSON.stringify(old)).digest('hex'),'d4d510e312a5a71192d6b07b6dbfda771387b7e5a3285ad630fde6871d391ab2');
- const c=ready(),newRows=indexRotationSteps(c.get('rm.tbc.shaman.enhancement.40-49').envelope.get('body')).index.rows;
- const oldIds=new Set(old.flatMap(p=>indexRotationSteps(c.get(p.id).envelope.get('body')).index.rows.map(r=>r.step.get('id'))));
- assert.equal(newRows.length,7);for(const row of newRows){assert(row.step.get('id').startsWith('shaman-enhancement40-'));assert(!oldIds.has(row.step.get('id')));}
-});
-
-test('full old27 Shaman source catalog and ordered raw-wire prefix stay exact; Warlock is appended28th',()=>{
- const wireText=readFileSync(new URL('./fixtures/web_defaults.json',import.meta.url));const records=JSON.parse(wireText).records;
- assert.equal(records.length,36);assert.equal(createHash('sha256').update(JSON.stringify(records.slice(0,27))).digest('hex'),'c99e4787b237513f7bbf0b7e79d8a05b108202669efd866b0d8390eeb244d9db');
- assert.equal(createHash('sha256').update(wireText.subarray(0,426069)).digest('hex'),'26eeb0101c5f93fd2184b4bf18aa4e68f536aeffc694c642942252a9a1c9d152');
- assert.equal(createHash('sha256').update(wireText.subarray(426069+1,448506)).digest('hex'),'4ab72b56806c794fce7c9dd2de63e945ce4b526e00f6cf9eca74ac63e60b1930');
- assert.equal(records[26].id,'rm.tbc.shaman.enhancement.40-49');assert.equal(records[27].id,'rm.tbc.warlock.starter.40-49');assert.equal(records.filter(r=>r.id==='rm.tbc.warlock.starter.40-49').length,1);
- const old=raw().packs.filter(p=>!FIFTY_ADDITIONS.has(p.id)&&!FORTY_ADDITIONS.has(p.id)&&p.id!=='rm.tbc.warlock.starter.40-49');assert.equal(old.length,27);assert.equal(createHash('sha256').update(JSON.stringify(old)).digest('hex'),'195f8f35127c7f3a76173893728118faf2486da9558ed4c90bdcab300b1ef401');
- for(const p of old)assert.equal(createHash('sha256').update(readFileSync(new URL('../'+p.sourcePath,import.meta.url))).digest('hex'),p.sourceSHA,p.sourcePath);
- const c=ready(),newRows=indexRotationSteps(c.get('rm.tbc.warlock.starter.40-49').envelope.get('body')).index.rows;
- const oldIds=new Set(old.flatMap(p=>indexRotationSteps(c.get(p.id).envelope.get('body')).index.rows.map(r=>r.step.get('id'))));
- assert.equal(newRows.length,14);for(const row of newRows){assert(row.step.get('id').startsWith('warlock-forties-'));assert(!oldIds.has(row.step.get('id')));}
-});
-
-test('five bounded40 continuations append after exact old28 catalog and wire records',()=>{
- const w=readFileSync(new URL('./fixtures/web_defaults.json',import.meta.url)),records=JSON.parse(w).records;assert.equal(records.length,36);
- assert.equal(createHash('sha256').update(JSON.stringify(records.slice(0,28))).digest('hex'),'f15b3d9a4d64820e9a607440a3bd440294228cb1c6e07fdcf2e9a5a63ddc744c');
- assert.equal(createHash('sha256').update(w.subarray(0,448506)).digest('hex'),'ea75d6e0b8ca09034f4b307554001b1143eecb6299d56dda1102bc25fed108cd');
- assert.equal(createHash('sha256').update(Buffer.concat([w.subarray(0,448506),w.subarray(-15)])).digest('hex'),'cf5c7d26471f4dae68ce94fadca29793681aae3e9b618ebe085f38c87ed7fe6d');
- assert.deepEqual(records.slice(28,33).map(r=>r.id),[...FORTY_ADDITIONS]);const old=raw().packs.filter(p=>!FIFTY_ADDITIONS.has(p.id)&&!FORTY_ADDITIONS.has(p.id));assert.equal(old.length,28);
- assert.equal(createHash('sha256').update(JSON.stringify(old)).digest('hex'),'c616eac0832035f1c18c0bc5e8e15eac5df82db6aee1f5fa5705771a9f3b16de');
- const c=ready(),oldIDs=new Set(old.flatMap(p=>indexRotationSteps(c.get(p.id).envelope.get('body')).index.rows.map(r=>r.step.get('id'))));
- for(const [id,count] of [["rm.tbc.mage.starter.40-49", 6], ["rm.tbc.warrior.starter.40-49", 20], ["rm.tbc.paladin.starter.40-49", 3], ["rm.tbc.rogue.starter.40-49", 11], ["rm.tbc.druid.caster.starter.40-49", 9]]){const rows=indexRotationSteps(c.get(id).envelope.get('body')).index.rows;assert.equal(rows.length,count);for(const r of rows)assert(!oldIDs.has(r.step.get('id')));}
-});
-
-test('full old33 source catalog and raw-wire section remain exact; bounded Shaman50 appends once',()=>{
- const w=readFileSync(new URL('./fixtures/web_defaults.json',import.meta.url)),records=JSON.parse(w).records;assert.equal(records.length,36);
- assert.equal(createHash('sha256').update(w.subarray(0,546651)).digest('hex'),'82b947d8acb29992b1bcd611cd43d05011cada515bccfbdbd1be833e8bd74d9d');
- assert.equal(createHash('sha256').update(Buffer.concat([w.subarray(0,546651),w.subarray(-15)])).digest('hex'),'d9cf642401965e7a3a7ca851ea3ba9fce16133c0b2ffafaaea2f071d59deb09b');
- assert.equal(createHash('sha256').update(JSON.stringify(records.slice(0,33))).digest('hex'),'76188d97ce84c0ca4f3e59b0f4b4db94754442e6bfa9bbc7a667fe5856050d99');
- assert.equal(records[33].id,'rm.tbc.shaman.enhancement.50-59');assert.equal(records.filter(r=>r.id==='rm.tbc.shaman.enhancement.50-59').length,1);
- const old=raw().packs.filter(p=>!FIFTY_ADDITIONS.has(p.id));assert.equal(old.length,33);
- assert.equal(createHash('sha256').update(JSON.stringify(old)).digest('hex'),'2fd2c78c859392e865ea8c3fc4311b058b2276be237e77bb1a9a018bf2aa2a12');
- for(const p of old)assert.equal(createHash('sha256').update(readFileSync(new URL('../'+p.sourcePath,import.meta.url))).digest('hex'),p.sourceSHA,p.sourcePath);
- const c=ready(),oldIDs=new Set(old.flatMap(p=>indexRotationSteps(c.get(p.id).envelope.get('body')).index.rows.map(r=>r.step.get('id'))));
- const rows=indexRotationSteps(c.get('rm.tbc.shaman.enhancement.50-59').envelope.get('body')).index.rows;assert.equal(rows.length,7);for(const r of rows){assert(r.step.get('id').startsWith('shaman-enhancement50-'));assert(!oldIDs.has(r.step.get('id')));}
-});
-
-test('all34 old catalog objects and wire records remain exact when Mage50 is added',()=>{
- const fixture=JSON.parse(readFileSync(new URL('./fixtures/web_defaults.json',import.meta.url)));
- assert.equal(fixture.records.length,36);
- assert.equal(createHash('sha256').update(JSON.stringify(fixture.records.slice(0,34))).digest('hex'),'64a3bc82362640aa91deb18ddbf56866bc5076b6f7523d156f543b22832c6451');
- const wire=readFileSync(new URL('./fixtures/web_defaults.json',import.meta.url));
- assert.equal(createHash('sha256').update(wire.subarray(0,560980)).digest('hex'),'6aef4a40290812c0c5997c0948b75a9ffbd56967d6436ffc9e144ca98a33be81');
- const catalog=raw();
- assert.equal(createHash('sha256').update(JSON.stringify(catalog.packs.filter(r=>r.id!=='rm.tbc.mage.starter.50-59'&&r.id!=='rm.tbc.priest.shadow.50-59'))).digest('hex'),'4ad4898b34d67e9fbf8afb118a094830deb07002642b2e979abfda8f3e60c399');
- const selected=ready().get('rm.tbc.mage.starter.50-59');assert(selected.ok);
- assert.equal(selected.envelope.get('applicability').get('minLevel'),50);assert.equal(selected.envelope.get('applicability').get('maxLevel'),59);
- assert.equal(indexRotationSteps(selected.envelope.get('body')).index.rows.length,6);
-});
-
-
-test('all35 old catalog objects and wire records remain exact when Priest50 is added',()=>{
- const wire=readFileSync(new URL('./fixtures/web_defaults.json',import.meta.url)),fixture=JSON.parse(wire);
- assert.equal(fixture.records.length,36);
- assert.equal(createHash('sha256').update(JSON.stringify(fixture.records.slice(0,35))).digest('hex'),'3f1dcf7b1e6921de43e0e108129ecd5a31d3675748369c147d657e42d75236c1');
- assert.equal(createHash('sha256').update(wire.subarray(0,587486)).digest('hex'),'69a81ea5610f14254ca257b493360d01212891d7ddb45993b375fd767fd0fcba');
- assert.equal(createHash('sha256').update(JSON.stringify(raw().packs.filter(r=>r.id!=='rm.tbc.priest.shadow.50-59'))).digest('hex'),'a78b1a9761727a5384e5ff323d5bf00a1f7c19b56564026c0bd7d1c909f5d0c3');
- const selected=ready().get('rm.tbc.priest.shadow.50-59');assert(selected.ok);
- assert.equal(selected.envelope.get('applicability').get('minLevel'),50);assert.equal(selected.envelope.get('applicability').get('maxLevel'),59);
- const rows=indexRotationSteps(selected.envelope.get('body')).index.rows;assert.equal(rows.length,12);
- const old=ready().list().filter(p=>p.id!=='rm.tbc.priest.shadow.50-59');
- const ids=new Set(old.flatMap(p=>indexRotationSteps(ready().get(p.id).envelope.get('body')).index.rows.map(r=>r.step.get('id'))));
- for(const row of rows){assert(row.step.get('id').startsWith('priest-shadow50-'));assert(!ids.has(row.step.get('id')));}
+ const fresh=JSON.parse(execFileSync('luajit',['tools/export_web_defaults.lua','--fixtures'],{cwd:root,encoding:'utf8',maxBuffer:4*1024*1024}));const c=ready();assert.deepEqual(fresh.records.map(r=>r.id),c.list().map(r=>r.id));for(const r of fresh.records){const decoded=decodeImport(r.wire);assert(decoded.ok);assert.deepEqual(toTypedTree(decoded.value),toTypedTree(c.get(r.id).envelope));}
 });

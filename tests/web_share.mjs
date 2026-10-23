@@ -9,19 +9,26 @@ const download=(...args)=>{assert.equal(typeof share?.prepareOriginalDownload,'f
 const small='AV4xXlRedF5e'; // Actual Store/Ace1 empty table.
 const base='https://example.invalid/viewer/';
 const fixtures=JSON.parse(readFileSync(new URL('./fixtures/web_defaults.json',import.meta.url),'utf8')).records;
+const packIDs=JSON.parse(readFileSync(new URL('../Web/catalog/defaults.json',import.meta.url),'utf8')).packs.map(p=>p.id);
 
 test('outgoing link drops unrelated query/hash and preserves exact wrapping',()=>{
  assert.deepEqual(make(' \t'+small+'\r\n',base+'?token=private#old'),{ok:true,url:base+'#rm-import-v1=%20%09AV4xXlRedF5e%0D%0A'});
  assert.deepEqual(parse('#rm-import-v1=%20%09AV4xXlRedF5e%0D%0A'),{ok:true,original:' \t'+small+'\r\n'});
 });
-test('all thirty-six actual codec wires roundtrip without changing typed data',()=>{
- assert.equal(fixtures.length,36);
+// Several packaged premades are larger than the 8192-byte link limit; those
+// must be refused explicitly (never truncated), and every one that fits must
+// roundtrip exactly.
+test('every packaged pack\'s actual codec wire roundtrips without changing typed data, or is refused at the link limit',()=>{
+ assert(fixtures.length>0);assert.deepEqual(fixtures.map(r=>r.id),packIDs);let fitted=0;
  for(const row of fixtures)for(const original of [row.wire,' \r\n'+row.wire+'\t']){
   assert.ok(original.includes('+'),row.id);
-  const link=make(original,base);assert.equal(link.ok,true,row.id);
+  const link=make(original,base);
+  if((base+'#rm-import-v1='+encodeURIComponent(original)).length>8192){assert.deepEqual(link,{ok:false,reason:'share-size-limit'},row.id);continue;}
+  assert.equal(link.ok,true,row.id);fitted++;
   const candidate=parse(new URL(link.url).hash);assert.deepEqual(candidate,{ok:true,original});
   assert.deepEqual(decodeImport(candidate.original).value,decodeImport(row.wire).value);
  }
+ assert(fitted>0,'at least one packaged pack fits a share link');
 });
 test('raw plus survives and percent decoding happens once only',()=>{
  assert.deepEqual(parse('#rm-import-v1=a+b%2Bc%252B'),{ok:true,original:'a+b+c%2B'});
