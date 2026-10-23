@@ -1,0 +1,28 @@
+## Interface: 11509
+## Title: Rotation Master - Druid
+## Notes: Rotation Master's Built In Druid rotations. Rotation Master loads this itself, only for a Druid, and only this edition's files.
+## Author: PreZ
+## Version: @project-version@
+## Dependencies: RotationMaster
+## LoadOnDemand: 1
+## Group: RotationMaster
+## X-Category: Action Bars
+## X-License: MIT
+
+bind.lua
+era/blocks.lua
+era/druid-balance.lua
+era/druid-balance-icyveins.lua
+era/druid-feral.lua
+era/druid-feral-warcrafttavern.lua
+era/druid-feral-warcrafttavern-casual.lua
+era/druid-feral-wowhead.lua
+era/druid-restoration.lua
+era/druid-restoration-warcrafttavern.lua
+era/druid-sod-balance.lua
+era/druid-sod-balance-wowhead.lua
+era/druid-sod-balance-icyveins.lua
+era/druid-sod-feral.lua
+era/druid-sod-tank.lua
+era/druid-sod-tank-wowsims.lua
+era/druid-sod-restoration.lua

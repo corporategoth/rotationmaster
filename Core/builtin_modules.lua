@@ -12,6 +12,8 @@ local addon_name, addon = ...
 -- game type's suffix, then its family's, then the unsuffixed TOC).
 addon.BuiltInModules = {
     editions = {
+        -- Classic Era 1.15: also Season of Discovery, Hardcore and Self-Found realms.
+        {family = "era", folder = "era", flavors = {"Vanilla"}},
         {family = "tbc", folder = "tbc", flavors = {"TBC"}},
         -- Forever's game type is "camelot", with "forever" listed as its alias.
         {family = "forever", folder = "forever", flavors = {"Camelot", "Forever"}},

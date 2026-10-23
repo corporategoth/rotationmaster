@@ -1,0 +1,40 @@
+-- Season of Discovery Druid Balance after Icy Veins: Insect Swarm kept up with Moonfire and Sunfire,
+-- Hurricane on four or more (for Gale Winds), Starfire when Starsurge empowers it, Wrath filler.
+-- Same switch as rm.sod.druid.balance at a lower priority.
+local _,addon=...
+local function negate(c)return{type='NOT',value=c}end
+local function moving()return{type='MOVING'}end
+local function mine(id)return{type='DEBUFF',unit='target',spell=id,anyrank=true,owndebuff=true}end
+local function ref(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
+local function spell(id,action,conditions,ranked)return{id=id,type='spell',action=action,ranked=ranked or false,conditions=conditions or {}}end
+assert(addon:RegisterDefaultRotation({
+ format='RotationMaster',schemaVersion=1,id='rm.sod.druid.balance.icyveins',revision=1,
+ blocks={['era.druid.boundaries']=1,['era.druid.upkeep']=1,['era.druid.caster-cooldowns']=1,['sod.druid.maul']=1,['sod.druid.balance-cooldowns']=1,
+  ['sod.druid.forms']=1,['sod.druid.cat']=1,['era.druid.stealth-opener']=1,['era.druid.cat-builders']=1,['era.druid.powershift']=1,['sod.druid.bear']=1,
+  ['sod.druid.caster-pull']=1},
+ nameKey='Default.SoD.Druid.Balance.IcyVeins.Name',descriptionKey='Default.SoD.Druid.Balance.IcyVeins.Description',
+ applicability={families={'era'},actionContext='player',class='DRUID',minLevel=1,maxLevel=60,rulesets={'season:2'}},
+ tags={'season-of-discovery','endgame','balance','caster','single-target','aoe','icy-veins'},
+ sources={
+  {url='https://www.icy-veins.com/wow-classic/balance-druid-dps-season-of-discovery-pve-rotation-cooldowns-abilities',title='Icy Veins: SoD Balance Druid rotation',reviewedAt='2026-10-23',revision='2025-04-08'},
+  {url='https://www.icy-veins.com/wow-classic/balance-druid-dps-season-of-discovery-pve-spec-builds-talents',title='Icy Veins: SoD Balance Druid runes',reviewedAt='2026-10-23',revision='2026-07-18'},
+ },
+ body={priority=101,switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
+  cooldowns={ref('sod-balance-iv-upkeep','era.druid.upkeep','sod-balance-iv-'),ref('sod-balance-iv-caster','era.druid.caster-cooldowns','sod-balance-iv-'),
+   ref('sod-balance-iv-maul','sod.druid.maul','sod-balance-iv-'),ref('sod-balance-iv-cooldowns','sod.druid.balance-cooldowns','sod-balance-iv-')},
+  rotation={
+   ref('sod-balance-iv-boundaries','era.druid.boundaries','sod-balance-iv-'),
+   ref('sod-balance-iv-forms','sod.druid.forms','sod-balance-iv-'),
+   ref('sod-balance-iv-pull','sod.druid.caster-pull','sod-balance-iv-pull-'),
+   spell('sod-balance-iv-starsurge',417157,{},true),
+   {id='sod-balance-iv-aoe',type='branch',conditions={type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=4},onFalse={},onTrue={
+    spell('sod-balance-iv-hurricane',16914,negate(moving())),{id='sod-balance-iv-aoe-stop',type='none',suppress_attack=true,conditions={}}}},
+   spell('sod-balance-iv-starfire',2912,{type='AND',value={{type='BUFF',unit='player',spell=417157,ownbuff=true},negate(moving())}}),
+   spell('sod-balance-iv-moonfire',8921,negate(mine(8921))),
+   spell('sod-balance-iv-sunfire',414684,negate(mine(414684)),true),
+   spell('sod-balance-iv-insect-swarm',5570,negate(mine(5570))),
+   spell('sod-balance-iv-wrath',5176,negate(moving())),
+   {id='sod-balance-iv-dry',type='none',conditions={}},
+  },
+ },
+}))
