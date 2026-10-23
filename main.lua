@@ -1563,7 +1563,8 @@ local function recordLeanPlan(self, rot, views, spec, key, profile, window, gene
     leanStats.built = leanStats.built + 1
 end
 
--- One action step: conditions, then the first mapped and ready spell.
+-- One action step: conditions, then the first mapped and ready spell. The
+-- fourth result is true when the step's condition was unavailable.
 local function leanAction(plan, entry, decisionRow)
     local decisionSink = plan.decisionSink
     local cond = entry.step
@@ -1577,9 +1578,10 @@ local function leanAction(plan, entry, decisionRow)
             return nil, false
         end
     end
-    local matches = evaluateConditionPlan(entry.conditions, plan.cache, plan.now, cond.id) == "match"
+    local status = evaluateConditionPlan(entry.conditions, plan.cache, plan.now, cond.id)
+    local matches = status == "match"
     if decisionSink then decisionSink(decisionRow, matches and 'matched' or 'notmatched') end
-    if not matches then return nil, false end
+    if not matches then return nil, false, nil, status ~= "no-match" end
     local firstMapped, firstItem
     -- Spell rank lists change with SPELLS_CHANGED (a context event) or spell
     -- data loads (the plan's age cap); items follow bags, so stay fresh.
@@ -1632,7 +1634,8 @@ local function leanWalk(plan, list)
                     return status == "unavailable" and "unavailable" or "stopped"
                 end
             else
-                local spellid, enabled, itemId = leanAction(plan, entry, 'rotation')
+                local spellid, enabled, itemId, unavailable = leanAction(plan, entry, 'rotation')
+                if unavailable then return "unavailable" end
                 if enabled then
                     leanRecommend(plan, spellid, step, entry.ordinal, itemId)
                     if not plan.nativePreview or plan.recommended >= plan.profile.preview_spells then return "selected" end
@@ -1901,15 +1904,17 @@ function addon:EvaluateNextActionInternal()
             self.evaluationProfile:stop()
             return
         end
+        -- The fourth result is true when the step's condition was unavailable.
         local function eval(cond,decisionRow)
             if decisionSink then decisionSink(decisionRow,'attempt')end
             local firstMapped,firstItem
-            local matches
+            local matches,unavailable
             local action=cond.action
             if (action~=nil or cond.type=="assisted") and not cond.disabled then
-                if conditionSession then matches=conditionSession:EvaluateBool(cond.conditions,{stepId=cond.id})
-                else matches=addon:evaluateCondition(cond.conditions,{stepId=cond.id}) end
+                if conditionSession then matches,unavailable=conditionSession:EvaluateBool(cond.conditions,{stepId=cond.id})
+                else matches,unavailable=addon:evaluateCondition(cond.conditions,{stepId=cond.id}) end
                 if decisionSink then decisionSink(decisionRow,matches and 'matched' or 'notmatched')end
+                if unavailable then return nil,false,nil,true end
             elseif decisionSink then decisionSink(decisionRow,action==nil and 'noaction' or 'disabled')end
             if matches then
                 if not dispatchCurrent('step')then return nil,false end
@@ -1980,8 +1985,10 @@ function addon:EvaluateNextActionInternal()
             if conditionSession then return conditionSession:EvaluateResult(condition,context) end
             return addon:evaluateConditionResult(condition,context)
         end,function(cond,index)
-            local spellid,enabled,itemId=eval(cond,'rotation')
+            local spellid,enabled,itemId,unavailable=eval(cond,'rotation')
             if not dispatchCurrent('resume')then return false end
+            -- An unavailable condition makes the rotation unusable this poll.
+            if unavailable then return "unavailable" end
             if enabled then
                 recommend(spellid,cond,index,itemId)
                 if not nativePreview or preview>=self.db.profile.preview_spells then return false end

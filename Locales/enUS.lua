@@ -1305,6 +1305,7 @@ L["Adding a branch moves following steps into its True arm. False is on the left
 L["Ordinary dragging moves one card and its own subtree. Hold Ctrl when starting a drag to carry that card and every following sibling, including their branch subtrees. Drop into a branch arm gap to move there. Up / Down always moves one card. A group cannot be dropped into itself or a carried descendant."] = true
 
 L["An evaluated branch follows one arm, then rejoins later siblings. Stop ends the sequence. Independent cooldowns still apply; implicit Attack remains available unless the Stop suppresses it."] = true
+L["A condition that cannot be read right now is unavailable, never false. When an action, Branch or Stop condition is unavailable, the rotation stops for that check: nothing below it is recommended and implicit Attack is suppressed. An unavailable cooldown condition hides that cooldown. Both clear on the next check once the data is readable."] = true
 
 L["Invalid or incomplete cards remain editable. Apply validates both branch arms without running custom condition code. Deleting a whole custom rotation requires confirmation and cannot be undone."] = true
 

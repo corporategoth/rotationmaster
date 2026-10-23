@@ -50,15 +50,18 @@ local function execute(body,evaluate,visit,rows,ordinal,kind,each,managed)
                         return false
                     end
                 elseif not managed then
-                    if visit(step,row.ordinal,data.CopyData(row.path))==false then
-                        result.status="selected";return false
-                    end
+                    local keepGoing=visit(step,row.ordinal,data.CopyData(row.path))
+                    if keepGoing==false then result.status="selected";return false end
+                    -- An action step whose condition is unavailable stops the
+                    -- rotation exactly as an unavailable Branch or Stop does.
+                    if keepGoing=="unavailable" then result.status="unavailable";result.suppressAttack=true;return false end
                 else
                     if not permitted('pathcopy') then return false end
                     local position=row.ordinal
                     local path=managedPath(row.path)
                     local keepGoing=visit(step,position,path)
                     if keepGoing==false then result.status="selected";return false end
+                    if keepGoing=="unavailable" then result.status="unavailable";result.suppressAttack=true;return false end
                 end
             end
         end
