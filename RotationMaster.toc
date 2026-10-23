@@ -294,6 +294,8 @@ Conditions/weapon.lua
 Conditions/misc.lua
 
 # Packaged read-only rotations
+# Shared Built In blocks register before the packs that expand them
+Defaults/blocks/rogue.lua
 Defaults/tbc/shaman-starter.lua
 Defaults/tbc/shaman-enhancement-30-39.lua
 Defaults/tbc/mage-starter.lua

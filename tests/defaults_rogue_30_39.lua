@@ -37,6 +37,8 @@ local function fixture(product,class,source,level)
         'Data/plain.lua','Data/tags.lua','Data/rotation_tree.lua','Data/validation.lua','Data/catalog.lua','Data/diff.lua','Core/rotation_library.lua','Core/rotation_tags.lua',
         'Conditions/common.lua','Conditions/spell.lua','Conditions/known_spell.lua','Conditions/character.lua','Conditions/buffs.lua','Conditions/debuffs.lua',
         'Conditions/combat.lua','Conditions/casting.lua','Conditions/channeling.lua','Conditions/stats.lua','Conditions/range.lua'}) do f.load(path) end
+    -- Built In composition: shared blocks register before the packs that expand them.
+    f.load('Defaults/blocks/rogue.lua')
     local selected=source or 'Defaults/tbc/rogue-30-39.lua';local pack=io.open(selected);if pack then pack:close();f.load(selected)end
     e.BOOKTYPE_SPELL,e.BOOKTYPE_PET='spell','pet';e.GetAddOnMetadata=function() return 'Rotation Master test' end
     e.UnitGUID=function() return 'Player-test' end

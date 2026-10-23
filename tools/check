@@ -645,6 +645,8 @@ def main():
             ['lua5.1', 'tests/defaults_druid_30_39.lua'],
             ['luajit', 'tests/defaults_druid_30_39.lua'],
             ['lua5.1', 'tests/default_corpus.lua'],
+            ['lua5.1', 'tests/builtin_composition.lua'],
+            ['luajit', 'tests/builtin_composition.lua'],
             ['lua5.1', 'tests/rotation_comparison.lua'],
             ['lua5.1', 'tests/visual_comparison.lua'],
             ['lua5.1', 'tests/import_session.lua'],

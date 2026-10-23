@@ -26,7 +26,7 @@ Revision6 adds a Stop-if-not-in-combat boundary immediately after the pull opene
 
 Revision7 replaces the two explicit Lightning Shield rank checks with one `BUFF` predicate using `spell=324, anyrank=true`. Exact numeric-ID aura checks remain the default elsewhere. The opt-in compares readable localized names after the exact-ID check, so it can recognize a higher rank without English literals or enumerating all ranks. Unreadable metadata or aura identity stays unavailable, including under NOT. This does not expand the pack beyond levels1–19 or certify later-level recommendations.
 
-Built In composition is planned as authoring-time reuse of substantial named blocks, with edition/spec overrides and explicit dependency revisions. TBC may share Classic blocks only after reviewing changed talents and mechanics; shared spell names alone are insufficient. Expansion must reject cycles, missing blocks, duplicate IDs and incompatible editions. The runtime, editor, export and clone should consume a fully expanded independent tree: cloning copies every included step, and editing or updating its source cannot modify the clone. Full TBC Frost/Fire leveling packs (1–70, adapting to known spells/talents) remain corpus work; the current 1–29 Mage pack is an explicitly bounded preview.
+Full TBC Frost/Fire leveling packs (1–70, adapting to known spells/talents) remain corpus work; the current 1–29 Mage pack is an explicitly bounded preview.
 
 Shaman revision8 moves individual spell-record evidence into the authoring document; its action tree is unchanged from revision7. Mage revision2 also removes the duplicate pull/combat tree and opposite-family readiness fallbacks.
 
@@ -181,3 +181,26 @@ The Rogue and Druid caster packs retain their reviewed 30–39 action policies i
 ### Priest Shadow 50–59
 
 `rm.tbc.priest.shadow.50-59` is a separate twelve-row literal continuation of the reviewed 40–49 Shadow preview. Only identities, labels and bracket bounds change. The unique-positive Shadow allocation and actual learned Smite selection gates remain; talent allocation grants no ability. Learned ranks, mappings and native readiness govern recommendations. Channels, active wand, owned Pain and optional Inner Fire retain the inherited policy; any observed manual Inner Fire is preserved. Healing, resources, channel and wand choices remain manual. The inherited citation is retained without claiming fresh research, a complete build, trainer schedule, optimality or native gameplay acceptance. All 35 earlier packs and saved clones remain unchanged.
+
+## Built In composition
+
+Packaged definitions can share named step blocks; this is authoring-time reuse only. `RegisterDefaultRotation` expands every reference once, at load, so the catalog, editor, runtime, export and Clone only ever see a fully expanded independent tree. A clone copies every included step, and neither later block edits nor clone edits reach the other. Users cannot see or author a block.
+
+Put blocks in `Defaults/blocks/<topic>.lua`, listed in the TOC before every consumer:
+
+```lua
+assert(addon:RegisterDefaultBlock({id='shared.preserve-cast',revision=1,families={'era','tbc'},class='ROGUE', -- class optional
+ steps={{id='cast',type='none',suppress_attack=true,conditions={type='CASTING',unit='player'}}},
+ overrides={{families={'tbc'},steps={...}}}}))  -- optional whole-variant replacements by families and/or specs
+```
+
+A consumer pins every block it reaches, including nested ones, in `blocks`. It references a block as a step anywhere in `rotation`, `cooldowns`, a branch arm or another block:
+
+```lua
+id='rm.tbc.rogue.starter.30-39',revision=1,blocks={['tbc.rogue.preserve-manual']=1},
+rotation={{id='rogue-thirty-manual',type='block',block='tbc.rogue.preserve-manual',prefix='rogue-thirty-'}, ...}
+```
+
+An expanded step ID is the reference's `prefix` (default `<reference id>.`) followed by the block step's ID. Prefixes compound through nested references, so IDs stay stable across reloads and differ per inclusion. Choose a prefix that keeps existing IDs when converting a shipped pack, since saved clones' step origins name them. `families` lists every edition the block was reviewed for. TBC may share Classic blocks only after reviewing changed talents and mechanics; shared spell names alone are insufficient. An override replaces the whole step list, and applies only when the consumer's whole edition/spec scope lies inside its selector; a partial match or a second matching override is rejected. Expansion also hard-rejects missing or undeclared blocks, unused or stale pins, cycles, duplicate block or expanded IDs, and incompatible editions or classes. Each rejection names the failing location.
+
+A block content change needs a new block revision. Every consumer's pin must then change, or it fails to load. Bump the consumer's own revision too. Record both as new rows in `tests/fixtures/builtin_composition_ledger.lua`; `tests/builtin_composition.lua` fails when content or pins change without a revision bump. A block change therefore always reaches clones as a source revision with a source-side diff. `rm.tbc.rogue.starter.30-39` and `.40-49` share `Defaults/blocks/rogue.lua` and expand to their exact pre-composition trees.
