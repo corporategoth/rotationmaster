@@ -7,7 +7,11 @@ import {createBundledRotationCatalog} from '../Web/catalog/defaults.mjs';
 const schema=readFileSync(new URL('../Web/schema/catalog.json',import.meta.url),'utf8');
 const bundle=readFileSync(new URL('../Web/catalog/defaults.json',import.meta.url),'utf8');
 const fixtures=JSON.parse(readFileSync(new URL('./fixtures/web_defaults.json',import.meta.url),'utf8')).records;
-const wire=fixtures[0].wire,small='AV4xXlRedF5e',pageURL='https://example.invalid/viewer/?private=drop#old';
+// A deliberate real wire, not record [0]: the smallest packaged pack, so its
+// wrapped share link and incoming fragment stay inside the 8192-byte limit
+// whatever order or editions the catalog holds (several premades exceed it).
+const sample=[...fixtures].sort((a,b)=>a.wire.length-b.wire.length||(a.id<b.id?-1:1))[0];
+const wire=sample.wire,small='AV4xXlRedF5e',pageURL='https://example.invalid/viewer/?private=drop#old';
 const analyze=createSchemaAnalyzer(schema),facade=()=>createBundledRotationCatalog(bundle,schema).catalog;
 class Element{
  constructor(tag,doc){this.tagName=tag;this.doc=doc;this.children=[];this.attributes={};this.listeners={};this.value='';this.disabled=false;this.hidden=false;this.ownText='';}
@@ -25,6 +29,10 @@ const download=(m,prefix='')=>{const b=id(m.root,prefix+'download-original');ass
 const incoming=m=>id(m.root,'incoming-share');
 function fragments(initial=''){let value=initial,callback,cleanups=0;return {readFragment:()=>value,listenFragment(fn){callback=fn;return()=>{cleanups++;};},set(v){value=v;callback?.();},get callback(){return callback;},get cleanups(){return cleanups;}};}
 
+test('the sample real wire is a packaged premade that fits a wrapped share link',()=>{
+ assert(sample&&/^rm\.(tbc|forever)\./.test(sample.id),'sample is a packaged premade');
+ assert(('https://example.invalid/viewer/#rm-import-v1='+encodeURIComponent(' \r\n'+wire+'\t')).length<=8192,sample.id);
+});
 test('sharing requires a current accepted source and preserves exact wrapped real wire',async()=>{
  const copied=[],files=[],m=mount({writeClipboard:async text=>copied.push(text),downloadFile:async file=>files.push(file)});
  assert(m.root.textContent.includes('Share links contain the complete original export'));assert.equal(share(m).disabled,true);assert.equal(download(m).disabled,true);const original=' \r\n'+wire+'\t';await decode(m,original);
