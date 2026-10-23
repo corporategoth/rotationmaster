@@ -98,11 +98,11 @@ test('healer: pre-pull, emergency, dispels, group heals, single-target order',fu
  s.health.target=97;local r=M.expect(a,s,HEAL,nil,'stopped','nothing to heal');assert(r.suppressAttack)
  s.friendly=false;s.hostile=true;s.learn(589,585);M.expect(a,s,HEAL,589,nil,'enemy: Pain')
 end)
-test('on the real restricted Forever client the Priest premades are listed but never auto-selected',function()
- local f,s=M.new('priest',{policy='restricted'});local a=f.addon;s.learn(585)
+test('on the real restricted Forever client the Priest premades are listed but incomplete, never auto-selected',function()
+ local f,s=M.new('priest',{policy='restricted'});local a=f.addon;local support=dofile('tests/fixtures/client_support.lua');support.install(f);s.learn(585)
  local rows=M.rows(a)
  for _,id in ipairs({DPS,DOT,HEAL})do
-  assert(rows[id]and rows[id].readOnly,id..' not listed');assert(not rows[id].eligible and rows[id].eligibilityReason=='restricted-or-unsupported-client',id)
+  assert(rows[id]and rows[id].readOnly,id..' not listed');support.incomplete(rows[id],id)
  end
  assert(next(a:GetRuntimeRotations(0))==nil and M.selected(a)==nil,'a restricted client auto-selected a packaged rotation')
 end)

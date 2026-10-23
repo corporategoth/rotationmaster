@@ -227,7 +227,10 @@ local function createShell()
         for _,diagnostic in ipairs(result.diagnostics) do
             local function flag(path)
                 local card=byDiagnosticPath[path]
-                if card and not card.invalid then card.invalid=true;card.problem=diagnostic.code;card.problemField=diagnostic.path:match("%.([%w_]+)$") end
+                if card and not card.invalid then
+                    card.invalid=true;card.problem=diagnostic.code;card.problemField=diagnostic.path:match("%.([%w_]+)$")
+                    card.problemText=addon.DescribeUnsupportedCondition and addon:DescribeUnsupportedCondition(diagnostic) or nil
+                end
             end
             flag(diagnostic.path)
             for cursor=1,#diagnostic.path do local ch=diagnostic.path:sub(cursor,cursor);if ch=='.' or ch=='[' then flag(diagnostic.path:sub(1,cursor-1)) end end
@@ -303,7 +306,10 @@ local function createShell()
         return label
     end
     function shell:Summary(model)
-        if model.invalid then return model.problem=="missing-field" and string.format(L["Incomplete: %s is required"],model.problemField or "?") or L["Invalid or unsupported condition fields"] end
+        if model.invalid then
+            if model.problemText then return model.problemText end
+            return model.problem=="missing-field" and string.format(L["Incomplete: %s is required"],model.problemField or "?") or L["Invalid or unsupported condition fields"]
+        end
         if model.type=="AND" and model.childCount==0 then return L["An empty AND group always matches. Add a condition to restrict it."] end
         if model.type=="OR" and model.childCount==0 then return L["An empty OR group never matches. Add a condition that can match."] end
         local node=model.missingOperand and {} or at(self.active.working,model.fieldPath) or {}

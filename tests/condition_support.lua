@@ -43,7 +43,7 @@ test('a probe-only condition is unresolved on Retail and Forever, supported on E
         assert(report.valid,'an unsupported condition is incomplete, not invalid data')
         assert(not a:validateCondition(pvp,0),'auto-switch validity accepted an unsupported condition')
         local text=a:DescribeUnsupportedCondition(d)
-        assert(text and text:find(a.conditionDefinitions.PVP.description,1,true) and text:find('not supported on this client',1,true)
+        assert(text and text:find(a.conditionDefinitions.PVP.description,1,true) and text:find('not available on this client',1,true)
             and text:find('restricted',1,true),tostring(text))
     end
 end)
@@ -139,5 +139,66 @@ test('SWING_TIME off-hand with no off-hand weapon reads false, main hand stays s
     r=a:evaluateConditionResult(off);assert(r.status=='match','with off-hand: '..tostring(r.status))
     f.env.UnitAttackSpeed=function() return nil,1.8 end
     r=a:evaluateConditionResult({type='SWING_TIME',operator='GREATERTHAN',value=0});assert(r.status=='unavailable','main hand nil stays unavailable')
+end)
+test('the merged conditions declare their client support, field by field',function()
+    local f,era=client(2,0)
+    f.env.C_Engraving=nil
+    assert(era:GetConditionSupport('RUNE_ENGRAVED',era.conditionDefinitions.RUNE_ENGRAVED,{type='RUNE_ENGRAVED',rune=1})=='missing-api')
+    f.env.C_Engraving={IsEngravingEnabled=function() return true end}
+    assert(era:GetConditionSupport('RUNE_ENGRAVED',era.conditionDefinitions.RUNE_ENGRAVED,{type='RUNE_ENGRAVED',rune=1})==nil)
+    assert(era:GetConditionSupport('TALENT',era.conditionDefinitions.TALENT,{type='TALENT',layout='traits',node=1,entry=1})=='talent-layout-mismatch')
+    assert(era:GetConditionSupport('WEAPON_TYPE',era.conditionDefinitions.WEAPON_TYPE,{type='WEAPON_TYPE',slot='ranged',kind='bow'})==nil)
+    local _,mists=client(19,4)
+    assert(mists:GetConditionSupport('WEAPON_TYPE',mists.conditionDefinitions.WEAPON_TYPE,{type='WEAPON_TYPE',slot='ranged',kind='bow'})=='no-ranged-slot')
+    assert(mists:GetConditionSupport('WEAPON_TYPE',mists.conditionDefinitions.WEAPON_TYPE,{type='WEAPON_TYPE',slot='mainhand',kind='dagger'})==nil)
+    local ff,forever=client(18,12,'ROGUE');ff.env.UnitClass=function() return 'Rogue','ROGUE',4 end
+    local spec=forever.conditionDefinitions.SPECIALIZATION
+    assert(spec and forever:GetConditionSupport('SPECIALIZATION',spec,{type='SPECIALIZATION',spec=259})=='specialization-unsupported','own class on Forever')
+    assert(forever:GetConditionSupport('SPECIALIZATION',spec,{type='SPECIALIZATION',spec=71})==nil,'another class is an ordinary false')
+    local _,retail=client(1,12)
+    assert(retail:GetConditionSupport('SPECIALIZATION',retail.conditionDefinitions.SPECIALIZATION,{type='SPECIALIZATION',spec=259})==nil)
+    -- Combat-event history is never recorded under the restricted policy.
+    for _,tag in ipairs({'SPELL_HISTORY','COMBAT_HISTORY','SWING_TIME_REMAIN','DISTANCE_COUNT','CASTING_PROGRESS'}) do
+        assert(retail.conditionDefinitions[tag]==nil or retail:GetConditionSupport(tag,retail.conditionDefinitions[tag],{})~=nil,tag..' supported on Retail')
+    end
+    -- Never-secret readers stay available on Retail (its natives modeled).
+    local re=getfenv(retail.GetConditionSupport)
+    re.C_Spell={GetSpellCooldown=function() end};re.C_SpellBook={IsSpellKnown=function() end};re.C_AssistedCombat={GetNextCastSpell=function() end}
+    for _,tag in ipairs({'LEVEL','SPELL_AVAIL','SPELL_KNOWN','ASSISTED_SUGGESTION','TIME_IN_COMBAT'}) do
+        local reason=retail:GetConditionSupport(tag,retail.conditionDefinitions[tag],{})
+        assert(reason==nil,tag..' flagged on Retail: '..tostring(reason))
+    end
+end)
+
+test('pickers hide conditions this client cannot run; the full list keeps them',function()
+    local rf,retail=client(1,12);rf.load('Core/condition_catalog.lua')
+    local function has(list,tag) for _,v in ipairs(list) do if v==tag then return true end end end
+    assert(not has(retail:listConditions('ALL'),'COMBAT'),'Retail picker offers COMBAT')
+    assert(has(retail:listConditions('ALL'),'LEVEL'),'Retail picker lost LEVEL')
+    assert(has(retail:listConditions('ALL',true),'COMBAT'),'the unhidden list dropped COMBAT')
+    local ef,era=client(2,0);ef.load('Core/condition_catalog.lua')
+    ef.env.UnitAffectingCombat=function() end
+    assert(has(era:listConditions('ALL'),'COMBAT'),'Era picker lost COMBAT')
+end)
+
+test('restricted clients run complete Built Ins; incomplete ones say why',function()
+    local f,packs,state=corpus.load(1,12,'ROGUE')
+    if type(f.addon.Platform.GetTalentLayout)~='function' then f.load('Platform/talents.lua') end
+    f.load('Core/condition_support.lua')
+    local a=f.addon;f.env.UnitExists=f.env.UnitExists or function() end;f.env.UnitLevel=f.env.UnitLevel or function() end
+    local shipped
+    for _,x in ipairs(packs) do local ap=x.applicability or {};if ap.class=='ROGUE' and (ap.families or {})[1]=='retail' then shipped=x;break end end
+    assert(shipped,'no Retail rogue pack')
+    local copy=a.RotationData.CopyData(shipped);copy.id='rm.test.complete'
+    local level={type='LEVEL',unit='player',operator='GREATERTHAN',value=0}
+    copy.body.rotation={{id='x',type='spell',action=1752,conditions=level}};copy.body.cooldowns={};copy.body.switch=level
+    assert(a:RegisterDefaultRotation(copy));assert(a:InitializeRotationLibrary());state.level=60
+    local rows={};for _,row in ipairs(a:ListDefaultRotations(shipped.applicability.specs[1])) do rows[row.id]=row end
+    assert(rows['rm.test.complete'] and rows['rm.test.complete'].eligible,'a complete Retail Built In is refused: '..tostring(rows['rm.test.complete'] and rows['rm.test.complete'].eligibilityReason))
+    local incomplete=rows[shipped.id]
+    assert(incomplete and not incomplete.eligible and incomplete.eligibilityReason=='invalid-or-unsupported',tostring(incomplete and incomplete.eligibilityReason))
+    local message
+    for _,d in ipairs(incomplete.validation.diagnostics) do message=a:DescribeUnsupportedCondition(d);if message then break end end
+    assert(message and message:find('is not available on this client',1,true),tostring(message))
 end)
 finish()

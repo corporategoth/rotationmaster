@@ -16,7 +16,7 @@ local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
 -- A definition may instead carry its own `supported(value)` returning nil
 -- when usable or a reason string; custom definitions are not looked up here.
 local env=getfenv and getfenv(1) or _G
-local PROBE,POLICY,FAMILY,LISTED,BOSSMOD='probe','policy','family','listed','bossmod'
+local PROBE,POLICY,FAMILY,LISTED,BOSSMOD,LOG='probe','policy','family','listed','bossmod','log'
 
 local function lookup(path)
     local value=env
@@ -37,7 +37,8 @@ local function talentLayout(value)
     if not platform or type(platform.GetTalentLayout)~='function' then return nil end
     local current,reason=platform:GetTalentLayout()
     if current==nil then return reason or 'unsupported-talent-layout' end
-    if current~=(value.layout=='grid' and 'grid' or 'tree') then return 'talent-layout-mismatch' end
+    local wanted=(value.layout=='grid' or value.layout=='traits') and value.layout or 'tree'
+    if current~=wanted then return 'talent-layout-mismatch' end
 end
 local function treeLayout()
     local platform=addon.Platform
@@ -52,6 +53,16 @@ local function pointEdition()
     local info=platform:GetClientInfo()
     if type(info)=='table' and info.family=='progression' and info.expansion~=2 and info.expansion~=3 and info.expansion~=4 then
         return 'unsupported-point-expansion'
+    end
+end
+-- Mists removed the ranged slot and Retail followed (Core/build_context.lua).
+local function weaponSlot(value)
+    if type(value)~='table' or value.slot~='ranged' then return nil end
+    local platform=addon.Platform
+    if not platform or type(platform.GetClientInfo)~='function' then return nil end
+    local info=platform:GetClientInfo()
+    if type(info)=='table' and (info.family=='retail' or info.family=='progression' and type(info.expansion)=='number' and info.expansion>=4) then
+        return 'no-ranged-slot'
     end
 end
 local function glyphLayout()
@@ -103,7 +114,7 @@ local requirements={
     ITEM_COOLDOWN={{'C_Item.GetItemCooldown','C_Container.GetItemCooldown','GetItemCooldown'}},
     SET_PIECES={{'GetInventoryItemID'}},
     WEAPON_IMBUE=WEAPON,WEAPON=WEAPON,WEAPON_REMAIN=WEAPON,WEAPON_STACKS=WEAPON,
-    SWING_TIME=SWING,SWING_TIME_REMAIN=SWING,
+    SWING_TIME=SWING,SWING_TIME_REMAIN=with(SWING,LOG),
     BUFF=AURA,BUFF_REMAIN=AURA,BUFF_STACKS=AURA,STEALABLE=AURA,
     DEBUFF=AURA,DEBUFF_REMAIN=AURA,DEBUFF_STACKS=AURA,DISPELLABLE=AURA,
     TOTEM=TOTEM,TOTEM_REMAIN=TOTEM,TOTEM_SPELL=TOTEM_SPELL,TOTEM_SPELL_REMAIN=TOTEM_SPELL,
@@ -118,11 +129,13 @@ local requirements={
     PROXIMITY_MANAPCT=with(PROXIMITY,{'UnitPower'},{'UnitPowerMax'}),
     PROXIMITY_MANAPCT_COUNT=with(PROXIMITY,{'UnitPower'},{'UnitPowerMax'}),
     STAT={PROBE,UNIT},
-    CASTING=CASTING,CASTING_SPELL=CASTING,CAST_INTERRUPTABLE=CASTING,CASTING_REMAIN=with(CASTING,{'GetTime'}),
-    CHANNELING=CHANNELING,CHANNELING_SPELL=CHANNELING,CHANNEL_INTERRUPTABLE=CHANNELING,CHANNELING_REMAIN=with(CHANNELING,{'GetTime'}),
+    CASTING=CASTING,CASTING_SPELL=CASTING,CAST_INTERRUPTABLE=CASTING,CASTING_REMAIN=with(CASTING,{'GetTime'}),CASTING_PROGRESS=with(CASTING,{'GetTime'}),
+    CHANNELING=CHANNELING,CHANNELING_SPELL=CHANNELING,CHANNEL_INTERRUPTABLE=CHANNELING,CHANNELING_REMAIN=with(CHANNELING,{'GetTime'}),CHANNELING_PROGRESS=with(CHANNELING,{'GetTime'}),
     BEYOND_MELEE={UNIT},
     SPELL_AVAIL=SPELL_COOLDOWN,SPELL_COOLDOWN=SPELL_COOLDOWN,SPELL_RANGE=SPELL_RANGE,
     SPELL_REMAIN=SPELL_CHARGES,SPELL_CHARGES=SPELL_CHARGES,SPELL_ACTIVE=SPELL_CURRENT,
+    SPELL_HISTORY={LOG},SPELL_HISTORY_TIME={LOG},
+    COMBAT_HISTORY={LOG},COMBAT_HISTORY_TIME={LOG},
     SPELL_AUTOREPEAT={PROBE,{'C_Spell.IsAutoRepeatSpell','IsAutoRepeatSpell'}},
     SPELL_KNOWN=KNOWN,
     ANYSPELL_AVAIL=SPELL_COOLDOWN,ANYSPELL_COOLDOWN=SPELL_COOLDOWN,ANYSPELL_RANGE=SPELL_RANGE,
@@ -130,7 +143,7 @@ local requirements={
     PETSPELL_AVAIL=with(KNOWN,SPELL_COOLDOWN[1]),PETSPELL_COOLDOWN=with(KNOWN,SPELL_COOLDOWN[1]),
     PETSPELL_RANGE=with(SPELL_RANGE,KNOWN[1]),
     PETSPELL_REMAIN=with(KNOWN,SPELL_CHARGES[1]),PETSPELL_CHARGES=with(KNOWN,SPELL_CHARGES[1]),
-    PETSPELL_HISTORY=KNOWN,PETSPELL_HISTORY_TIME=KNOWN,PETSPELL_ACTIVE=with(KNOWN,SPELL_CURRENT[1]),
+    PETSPELL_HISTORY=with(KNOWN,LOG),PETSPELL_HISTORY_TIME=with(KNOWN,LOG),PETSPELL_ACTIVE=with(KNOWN,SPELL_CURRENT[1]),
     HEALTH=HEALTH,HEALTHPCT=HEALTHPCT,
     MANA=POWER,MANAPCT=POWERPCT,POWER=with(POWER,{'UnitPowerType'}),POWERPCT=with(POWERPCT,{'UnitPowerType'}),
     POINT={POLICY,UNIT,{'UnitClass'},{'UnitPower'},pointEdition},
@@ -160,7 +173,9 @@ local requirements={
     ASSISTED_SUGGESTION={{'C_AssistedCombat.GetNextCastSpell'}},
     TALENT={talentLayout},TALENT_TREE_POINTS={treeLayout,{'GetNumTalentTabs'}},PRIMARY_TALENT_TREE={treeLayout,{'GetNumTalentTabs'}},
     DISTANCE={FAMILY,UNIT},
-    DISTANCE_COUNT={UNIT,{'UnitIsEnemy'},{'UnitGUID'},{'C_CVar.GetCVar','GetCVar'}},
+    DISTANCE_COUNT={LOG,UNIT,{'UnitIsEnemy'},{'UnitGUID'},{'C_CVar.GetCVar','GetCVar'}},
+    RUNE_ENGRAVED={{'C_Engraving.IsEngravingEnabled'}},
+    WEAPON_TYPE={weaponSlot},
     ZONE={{'GetZoneText'},{'GetSubZoneText'}},
 }
 addon.conditionRequirements=requirements
@@ -181,6 +196,11 @@ local function check(requirement,value)
     if not platform then return nil end
     if requirement==PROBE then
         if platform:GetCombatDataPolicy()~='probe' then return 'unsupported-policy' end
+    elseif requirement==LOG then
+        -- Combat log, unit combat, spellcast and nameplate events are only
+        -- registered under the probe policy (main.lua): without them this
+        -- history is never recorded, so the condition could only read empty.
+        if platform:GetCombatDataPolicy()~='probe' then return 'combat-events-unavailable' end
     elseif requirement==POLICY then
         local policy=platform:GetCombatDataPolicy()
         if policy~='probe' and policy~='restricted' then return 'unsupported-policy' end
@@ -215,6 +235,9 @@ end
 
 local reasonText={
     ['unsupported-policy']=L['combat data is restricted on this client'],
+    ['combat-events-unavailable']=L['combat events are not available on this client'],
+    ['no-ranged-slot']=L['this client has no ranged slot'],
+    ['specialization-unsupported']=L['this client has no specializations for your class'],
     ['missing-api']=L['the game API it needs is missing'],
     ['unsupported-client']=L['this client is not supported'],
     ['talent-layout-mismatch']=L['this client uses a different talent system'],
@@ -229,6 +252,6 @@ function addon:DescribeUnsupportedCondition(problem)
     if type(problem)~='table' or problem.code~='unsupported-condition' then return nil end
     local definition=self.conditionDefinitions and self.conditionDefinitions[problem.condition]
     local name=type(definition)=='table' and type(definition.description)=='string' and definition.description or tostring(problem.condition)
-    return string.format(L['%s is not supported on this client (%s).'],name,reasonText[problem.reason] or tostring(problem.reason))
+    return string.format(L['%s is not available on this client (%s).'],name,reasonText[problem.reason] or tostring(problem.reason))
 end
 -- END CONDITION CLIENT SUPPORT

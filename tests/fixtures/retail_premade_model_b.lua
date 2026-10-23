@@ -221,14 +221,16 @@ function M.checkAssisted(a,s,spec,id,suggestion)
  s.cast=true;M.expect(a,s,spec,id,nil,'stopped','casting');s.cast=false
  s.channel=true;M.expect(a,s,spec,id,nil,'stopped','channelling');s.channel=false
 end
--- On the real restricted client: listed, never eligible, nothing auto-selected.
+-- On the real restricted client: listed, incomplete (a condition the
+-- restricted policy keeps secret) or disabled, nothing auto-selected.
 function M.checkRestricted(class,specs,learn)
  local f,s=M.new(class,{policy='restricted'});local a=f.addon;if learn then s.learn(unpack(learn))end
+ local support=dofile('tests/fixtures/client_support.lua');support.install(f)
  for spec,ids in pairs(specs)do
   local rows=M.rows(a,spec)
   for _,id in ipairs(ids)do
    assert(rows[id]and rows[id].readOnly,id..' not listed')
-   assert(not rows[id].eligible and(rows[id].eligibilityReason=='restricted-or-unsupported-client'or rows[id].eligibilityReason=='disabled'),id..' '..tostring(rows[id].eligibilityReason))
+   if rows[id].eligibilityReason~='disabled' then support.incomplete(rows[id],id) else assert(not rows[id].eligible,id) end
   end
   assert(next(a:GetRuntimeRotations(spec))==nil and M.selected(a,spec)==nil,'a restricted client auto-selected a packaged rotation in slot '..spec)
  end

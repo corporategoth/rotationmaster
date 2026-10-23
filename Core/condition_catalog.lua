@@ -93,6 +93,15 @@ function addon:listConditions(group, nohide, store)
             end
         end
     end
+    -- Pickers hide conditions that cannot work on this client. Saved trees
+    -- that already use one still show it, marked unavailable, as incomplete.
+    if not nohide and addon.GetConditionSupport then
+        local kept = {}
+        for _, cond in ipairs(rv) do
+            if special[cond] or not addon:GetConditionSupport(cond, conditions[cond]) then kept[#kept+1] = cond end
+        end
+        rv = kept
+    end
     if group == "ALL" or group == "CUSTOM" then
         table.sort(rv, function(lhs, rhs)
             local ldesc, rdesc

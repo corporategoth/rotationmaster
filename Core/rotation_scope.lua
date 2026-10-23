@@ -852,7 +852,6 @@ function addon:BindRotationProfile()
             if asset.applicability then local allowed,eligibilityReason=libraryReader:Eligible({enabled=true,validation=status,applicability=asset.applicability},number,candidates);if not allowed then return nil,eligibilityReason end
             else
                 local info=rotationContext(owner,number)
-                if info.combatDataPolicy~='probe' then return nil,'restricted-or-unsupported-client' end
                 -- A bare record acts through the player's own bar unless its
                 -- switch condition opts into the current special context.
                 if not candidates and info.actionContext~='player' then
@@ -1004,8 +1003,8 @@ function addon:BindRotationProfile()
             local allowed,reason
             if view.applicability then allowed,reason=planEligible(view,info,false)
             else
-                allowed=info.combatDataPolicy=='probe';reason='restricted-or-unsupported-client'
-                if allowed and info.actionContext~='player' and not bareContextOptIn(body,info.actionContext) then
+                allowed=true
+                if info.actionContext~='player' and not bareContextOptIn(body,info.actionContext) then
                     allowed,reason=false,'action-context-mismatch'
                 end
             end

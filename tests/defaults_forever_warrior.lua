@@ -24,10 +24,10 @@ test('Defensive Stance picks the tank premade; anything else the DPS premade; th
  for _,id in ipairs({PTAV,DTAV})do for _,src in ipairs(a:GetDefaultRotation(id).envelope.sources)do assert(src.url:find('warcrafttavern'),src.url)end end
 end)
 
-test('on the real restricted Forever client the premades are listed but never auto-selected',function()
- local f,s=M.fixture('WARRIOR',{restricted=true});M.know(s,6603,78)
+test('on the real restricted Forever client the premades are listed but incomplete, never auto-selected',function()
+ local f,s=M.fixture('WARRIOR',{restricted=true});local support=dofile('tests/fixtures/client_support.lua');support.install(f);M.know(s,6603,78)
  local rows=f.addon:ListDefaultRotations(0);assert(#rows==4)
- for _,row in ipairs(rows)do assert(row.readOnly and row.builtin and not row.eligible,row.id)end
+ for _,row in ipairs(rows)do assert(row.readOnly and row.builtin,row.id);support.incomplete(row)end
  local poll,selected=M.publisher(f,s);poll();assert(selected()==nil)
 end)
 

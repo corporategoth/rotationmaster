@@ -30,12 +30,25 @@ for _,client in ipairs(clients) do for _,class in ipairs(classes) do
     test('all shipped defaults load and retain safe scope on '..client[1]..(client[1]=='progression' and ' expansion '..client[3] or '')..'/'..class,function()
         local f,packs,state=corpus.load(client[2],client[3],class);local a=f.addon;local witnesses={}
         assert(#packs>0,'no default packs loaded')
+        -- Client support: on Era/TBC/Mists every own-edition premade must be
+        -- complete (the strict check below includes it). Retail and Forever
+        -- premades that use conditions their policy keeps secret are listed
+        -- but incomplete; their repair is scheduled separately.
+        local support=dofile('tests/fixtures/client_support.lua')
+        local restricted=client[1]=='retail' or client[1]=='forever'
+        if client[1]=='era' then f.env.C_Engraving=f.env.C_Engraving or {IsEngravingEnabled=function() end} end
+        if client[1]=='retail' then f.env.C_AssistedCombat=f.env.C_AssistedCombat or {GetNextCastSpell=function() end} end
+        -- The Wrath fixture strict-checks Mists packs (another expansion of
+        -- the same family); judge client support there through eligibility.
+        local early=not restricted and not (client[1]=='progression' and client[3]~=4)
+        if early then support.install(f,{stubNatives=true}) end
         local visibleCount=0
         for _,pack in ipairs(packs) do
             corpus.check(f,pack,false)
             if not pack.applicability.class or pack.applicability.class==class then visibleCount=visibleCount+1 end
             if matches(pack.applicability,client[1],class) then corpus.check(f,pack,true);visited[pack.id]=true end
         end
+        if not early then support.install(f,{stubNatives=true}) end
         for _,sample in ipairs(samples(packs,client[1],class)) do
             state.level,state.context,state.build=sample.level,sample.context,sample.build
             local rows=a:ListDefaultRotations(sample.spec);assert(#rows==visibleCount,'default list did not enforce declared class')
@@ -52,7 +65,7 @@ for _,client in ipairs(clients) do for _,class in ipairs(classes) do
                     assert(scope.actionContext==sample.context and (not scope.minLevel or sample.level>=scope.minLevel) and (not scope.maxLevel or sample.level<=scope.maxLevel))
                     assert((not scope.minBuild or sample.build>=scope.minBuild) and (not scope.maxBuild or sample.build<=scope.maxBuild))
                     assert((not scope.minExpansion or client[3]>=scope.minExpansion) and (not scope.maxExpansion or client[3]<=scope.maxExpansion),'expansion selector ignored')
-                    assert(client[1]~='retail' and client[1]~='forever' and not scope.roles and not scope.intent and not scope.rulesets)
+                    assert(not scope.roles and not scope.intent and not scope.rulesets)
                 end
             end
         end
