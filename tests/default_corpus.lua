@@ -104,6 +104,11 @@ test('TOC includes every reviewed starter pack exactly once',function()
         'rm.retail.hunter.beastmastery','rm.retail.hunter.beastmastery.guide','rm.retail.hunter.marksmanship','rm.retail.hunter.marksmanship.guide','rm.retail.hunter.survival','rm.retail.hunter.survival.guide',
         'rm.retail.mage.arcane','rm.retail.mage.arcane.guide','rm.retail.mage.fire','rm.retail.mage.fire.guide','rm.retail.mage.frost','rm.retail.mage.frost.guide',
         'rm.retail.monk.brewmaster','rm.retail.monk.brewmaster.guide','rm.retail.monk.windwalker','rm.retail.monk.windwalker.guide','rm.retail.monk.mistweaver'})do wanted[id]=true end
+    -- Classic Era and Season of Discovery Rogue, Shaman, Warlock and Warrior premades.
+    for _,id in ipairs({'rm.era.rogue.dps','rm.era.rogue.dps.warcrafttavern','rm.era.rogue.dps.wowsims','rm.sod.rogue.tank','rm.sod.rogue.dps','rm.sod.rogue.dps.icyveins','rm.sod.rogue.dps.zockify',
+        'rm.era.shaman.enhancement','rm.era.shaman.enhancement.warcrafttavern','rm.era.shaman.elemental','rm.era.shaman.elemental.wowsims','rm.era.shaman.restoration','rm.era.shaman.restoration.warcrafttavern','rm.sod.shaman.tank','rm.sod.shaman.restoration','rm.sod.shaman.elemental','rm.sod.shaman.enhancement',
+        'rm.era.warlock.dps','rm.era.warlock.dps.warcrafttavern','rm.era.warlock.dps.icyveins','rm.sod.warlock.tank','rm.sod.warlock.fire','rm.sod.warlock.fire.icyveins','rm.sod.warlock.shadow','rm.sod.warlock.shadow.wowsims',
+        'rm.era.warrior.protection','rm.era.warrior.protection.icyveins','rm.era.warrior.dps','rm.sod.warrior.tank','rm.sod.warrior.dps','rm.sod.warrior.dps.wowhead','rm.sod.warrior.dps.icyveins'})do wanted[id]=true end
     for _,pack in ipairs(packs)do assert(wanted[pack.id],pack.id..' is unexpected or duplicated');wanted[pack.id]=nil end
     assert(not next(wanted),'reviewed starter pack missing from TOC')
 end)

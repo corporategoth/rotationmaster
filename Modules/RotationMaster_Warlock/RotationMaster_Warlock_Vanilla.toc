@@ -1,0 +1,21 @@
+## Interface: 11509
+## Title: Rotation Master - Warlock
+## Notes: Rotation Master's Built In Warlock rotations. Rotation Master loads this itself, only for a Warlock, and only this edition's files.
+## Author: PreZ
+## Version: @project-version@
+## Dependencies: RotationMaster
+## LoadOnDemand: 1
+## Group: RotationMaster
+## X-Category: Action Bars
+## X-License: MIT
+
+bind.lua
+era/blocks.lua
+era/warlock-dps.lua
+era/warlock-dps-warcrafttavern.lua
+era/warlock-dps-icyveins.lua
+era/sod-warlock-tank.lua
+era/sod-warlock-fire.lua
+era/sod-warlock-fire-icyveins.lua
+era/sod-warlock-shadow.lua
+era/sod-warlock-shadow-wowsims.lua

@@ -1,0 +1,20 @@
+## Interface: 11509
+## Title: Rotation Master - Rogue
+## Notes: Rotation Master's Built In Rogue rotations. Rotation Master loads this itself, only for a Rogue, and only this edition's files.
+## Author: PreZ
+## Version: @project-version@
+## Dependencies: RotationMaster
+## LoadOnDemand: 1
+## Group: RotationMaster
+## X-Category: Action Bars
+## X-License: MIT
+
+bind.lua
+era/blocks.lua
+era/rogue-dps.lua
+era/rogue-dps-warcrafttavern.lua
+era/rogue-dps-wowsims.lua
+era/sod-rogue-tank.lua
+era/sod-rogue-dps.lua
+era/sod-rogue-dps-icyveins.lua
+era/sod-rogue-dps-zockify.lua

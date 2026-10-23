@@ -58,7 +58,8 @@ end
 
 for _,c in ipairs({{'TBC Shaman',5,1,'SHAMAN','tbc','RotationMaster_Shaman','_TBC.toc'},
     {'Forever Mage',18,12,'MAGE','forever','RotationMaster_Mage','_Camelot.toc'},
-    {'Retail Warrior',1,12,'WARRIOR','retail','RotationMaster_Warrior','_Standard.toc'}})do
+    {'Retail Warrior',1,12,'WARRIOR','retail','RotationMaster_Warrior','_Standard.toc'},
+    {'Classic Era Shaman',2,0,'SHAMAN','era','RotationMaster_Shaman','_Vanilla.toc'}})do
     test(c[1]..' startup requests exactly its class module, which runs only its edition',function()
         local f,packs,requests,messages,ran=start(c[2],c[3],c[4])
         local a=f.addon
@@ -81,7 +82,7 @@ for _,c in ipairs({{'TBC Shaman',5,1,'SHAMAN','tbc','RotationMaster_Shaman','_TB
 end
 
 test('an edition with no Built Ins yet loads its class module, which runs nothing',function()
-    local f,packs,requests,messages,ran=start(2,0,'SHAMAN') -- Classic Era: the unsuffixed fallback
+    local f,packs,requests,messages,ran=start(19,4,'SHAMAN') -- Mists Classic: the unsuffixed fallback
     assert(f.addon:LoadBuiltInModule()=='RotationMaster_Shaman' and #requests==1)
     assert(ran.toc=='Modules/RotationMaster_Shaman/RotationMaster_Shaman.toc' and #ran==0 and #packs==0 and #messages==0)
     assert(f.addon:InitializeRotationLibrary())
@@ -171,7 +172,7 @@ test('each flavour TOC lists exactly its edition\'s blocks and packs, every file
     local p=assert(io.popen("find Modules -name '*.lua' ! -name bind.lua"));local onDisk=0
     for path in p:lines()do onDisk=onDisk+1;assert(listed[path],path..' is in no flavour TOC')end
     p:close()
-    assert(onDisk==count and count==186,onDisk..' files on disk, '..count..' listed')
+    assert(onDisk==count and count==222,onDisk..' files on disk, '..count..' listed')
 end)
 
 test('every module on disk is one the loader can name, and bind.lua reaches Rotation Master',function()
