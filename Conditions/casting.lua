@@ -60,20 +60,24 @@ addon:RegisterCondition("CASTING", runtimeCondition('CASTING',{
 addon:RegisterCondition("CASTING_SPELL", {
     description = L["Specific Spell Casting"],
     icon = addon.Artwork.condition["CASTING_SPELL"],
-    fields = { unit = "string", spell = "string" },
+    fields = { unit = "string", spell = {"string", "number"}, ranked = "boolean" },
     valid = function(_, value)
-        return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and value.spell ~= nil)
+        -- A name (saved before spell IDs) or a spell ID picked in the editor.
+        return (value.unit ~= nil and Functions.values.isin(addon.units, value.unit) and value.spell ~= nil and
+                (type(value.spell) ~= "number" or (value.spell > 0 and value.spell < math.huge and value.spell % 1 == 0)))
     end,
     evaluate = function(value, cache)
         local record,reason=Functions.cache.getCached(cache,addon.Platform.GetUnitCastObservation,addon.Platform,value.unit,"cast")
         if not record then return nil,reason end
         if not record.active then return false end
-        return record.name==value.spell
+        if type(value.spell) ~= "number" then return record.name==value.spell end
+        -- By ID, any rank unless the exact rank was asked for (locale-safe).
+        return addon.Platform:MatchSpellIdentity(record.spellID, record.spellReason, record.name, value.spell, value.ranked == true)
     end,
     print = function(_, value)
         return LiteralSummary.phrase(Functions.presentation.playerize(value.unit, L["{unit} {{!are|are not}} currently casting {spell}"], L["{unit} {{!is|is not}} currently casting {spell}"]), {
             unit = Functions.presentation.nullable(addon.units[value.unit], L["<unit>"]),
-            spell = Functions.presentation.nullable(value.spell, L["<spell>"]),
+            spell = Functions.presentation.nullable(type(value.spell) == "number" and addon:CastSpellLabel(value) or value.spell, L["<spell>"]),
         })
     end,
     widget = function(parent, spec, value)
@@ -87,13 +91,16 @@ addon:RegisterCondition("CASTING_SPELL", {
 
         local spell_group = addon:Widget_SpellNameWidget(spec, "Spell_EditBox", value,
             function() return true end,
-            function() top:SetStatusText(funcs:print(root, spec)) end)
+            function() top:SetStatusText(funcs:print(root, spec)) end, true)
         parent:AddChild(spell_group)
+        local rank = addon:Widget_SpellRankWidget(value, function() top:SetStatusText(funcs:print(root, spec)) end)
+        if rank then parent:AddChild(rank) end
     end,
     help = function(frame)
         addon.layout_condition_unitwidget_help(frame)
         frame:AddChild(helpers.Gap())
         addon.layout_condition_spellnamewidget_help(frame)
+        addon.layout_condition_castspell_help(frame)
     end
 })
 

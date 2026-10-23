@@ -203,6 +203,15 @@ function addon:Widget_AuraRankWidget(value,update)
     return check
 end
 
+-- Exact-rank choice for a spell picked by ID where any rank matches by
+-- default (casts, channels). Ranks exist only on the classic clients.
+function addon:Widget_SpellRankWidget(value,update)
+    if WOW_PROJECT_ID == WOW_PROJECT_MAINLINE then return nil end
+    local check=self:CreateConditionCheckBox();check:SetLabel(L["Use this exact spell rank"]);check:SetValue(value.ranked==true);check:SetDisabled(value.disabled)
+    check:SetCallback('OnValueChanged',function(_,_,enabled) value.ranked=enabled and true or nil;update() end)
+    return check
+end
+
 function addon:Widget_ItemWidget(top, editbox, value, isvalid, update)
     local itemsets = addon.db.profile.itemsets
     local global_itemsets = addon.db.global.itemsets
