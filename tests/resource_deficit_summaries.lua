@@ -1,8 +1,9 @@
 local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite()
 local inverse,old,repaired=dofile('tests/fixtures/restore_resource_deficit_summary_repairs.lua')
 local function read(path) local f=assert(io.open(path));local s=f:read('*a');f:close();return s end
+-- TBC: its class map gives MAGE Arcane Charges (Era/progression have none).
 local function setup(tag)
- local f=F.new(11,2,'MAGE');local a,e=f.addon,f.env
+ local f=F.new(5,1,'MAGE');local a,e=f.addon,f.env
  local s={current=tag=='POINT' and 3 or tag=='HEALTH' and 50 or {[0]=20,[3]=20},maximum=(tag=='POINT' and 5 or tag=='HEALTH' and 100) or {[0]=100,[3]=100}}
  e.UnitExists=function(unit) assert(unit=='target');return true end
  e.UnitClass=function(unit) assert(unit=='target' or unit=='player');return 'Mage','MAGE',8 end

@@ -22,8 +22,8 @@ local POWER={Mana=0,Rage=1,Focus=2,Energy=3,ComboPoints=4,Runes=5,RunicPower=6,S
     ShadowOrbs=28,RuneChromatic=29}
 local CLASSES={'DEATHKNIGHT','DEMONHUNTER','DRUID','EVOKER','HUNTER','MAGE','MONK','PALADIN','PRIEST','ROGUE','SHAMAN','WARLOCK','WARRIOR'}
 
-local function fixture(project,class)
-    local f=F.new(project,1,class or 'PALADIN');local a,e=f.addon,f.env
+local function fixture(project,class,expansion)
+    local f=F.new(project,expansion or 1,class or 'PALADIN');local a,e=f.addon,f.env
     local types={};for name,id in pairs(POWER) do types[name]=id end;e.Enum.PowerType=types
     local s={calls={},class=class or 'PALADIN',exists=true,current=3,maximum=5,combo=2}
     local function call(k,...) s.calls[#s.calls+1]={k,...};return s[k] end
@@ -105,11 +105,19 @@ test('mapping: TBC decisions and native calls are unchanged (player combo on tar
     end
 end)
 
-test('mapping: Era and progression keep the classic map and UnitPower',function()
+-- Era and progression no longer use the classic map or its Combo Points
+-- fallback: they select per expansion and specialization (tests/progression_points.lua).
+test('mapping: Era and progression select per edition, never the classic map fallback',function()
+    local want={[ERA]={ROGUE=POWER.ComboPoints},[PROGRESSION]={ROGUE=POWER.ComboPoints,PALADIN=POWER.HolyPower}}
     for _,project in ipairs({ERA,PROGRESSION}) do for _,class in ipairs({'PALADIN','EVOKER','ROGUE','MAGE'}) do
-        local _,a,s=fixture(project,class)
-        assert(status(a,node(3))=='match',class)
-        assert(trace(s)=='exists:player:nil class:player:nil current:player:'..(CLASSIC_MAP[class] or POWER.ComboPoints),project..' '..class..': '..trace(s))
+        local _,a,s=fixture(project,class,project==ERA and 0 or 4)
+        local id=want[project][class]
+        if id then
+            assert(status(a,node(3))=='match',class)
+            assert(trace(s)=='exists:player:nil class:player:nil current:player:'..id,project..' '..class..': '..trace(s))
+        else
+            unknown(a,node(3));assert(count(s,'current')==0 and count(s,'maximum')==0,project..' '..class)
+        end
     end end
 end)
 

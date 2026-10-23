@@ -150,7 +150,7 @@ local function validate(envelope, options, bodyOnly)
         local scope = envelope.applicability
         if object(scope, "$.applicability") then
             unknown(scope, {families=true,actionContext=true,class=true,universal=true,specs=true,minLevel=true,maxLevel=true,
-                roles=true,intent=true,minBuild=true,maxBuild=true,rulesets=true}, "$.applicability")
+                roles=true,intent=true,minBuild=true,maxBuild=true,minExpansion=true,maxExpansion=true,rulesets=true}, "$.applicability")
             if list(scope.families, "$.applicability.families", true) then
                 if #scope.families == 0 then issue("empty-edition-scope", "$.applicability.families", "error") end
                 for i, family in ipairs(scope.families) do
@@ -166,11 +166,15 @@ local function validate(envelope, options, bodyOnly)
             end
             optionalType(scope.universal,"boolean","$.applicability.universal")
             if scope.universal==true and scope.class~=nil then issue("conflicting-class-scope","$.applicability.universal","error") end
-            for _, pair in ipairs({{"minLevel","maxLevel"},{"minBuild","maxBuild"}}) do
-                for _, key in ipairs(pair) do
-                    if scope[key] ~= nil then check(scope[key], function(v) return integer(v, 1) end, "$.applicability."..key) end
+            -- Expansions are LE_EXPANSION_LEVEL_CURRENT (Classic Era is 0). Build
+            -- numbers are shared across products, so only this tells MoP from Wrath.
+            for _, pair in ipairs({{"minLevel","maxLevel",1},{"minBuild","maxBuild",1},{"minExpansion","maxExpansion",0}}) do
+                local minimum = pair[3]
+                for i = 1, 2 do
+                    local key = pair[i]
+                    if scope[key] ~= nil then check(scope[key], function(v) return integer(v, minimum) end, "$.applicability."..key) end
                 end
-                if integer(scope[pair[1]], 1) and integer(scope[pair[2]], 1) and scope[pair[1]] > scope[pair[2]] then
+                if integer(scope[pair[1]], minimum) and integer(scope[pair[2]], minimum) and scope[pair[1]] > scope[pair[2]] then
                     issue("inverted-range", "$.applicability."..pair[2], "error")
                 end
             end

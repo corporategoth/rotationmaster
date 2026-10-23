@@ -137,8 +137,10 @@ spell (`C_Spell.GetBaseSpell`) and its current override
   `CanReadValue`, so a secret one makes Points unavailable instead of
   returning a number. Retail maps Paladin to Holy Power and Evoker to Essence.
   The other classes keep the shared map: Death Knight Runes, Warlock Soul
-  Shards, Monk Chi, Mage Arcane Charges, everyone else Combo Points. TBC, Era
-  and progression clients keep their map, transport and calls unchanged.
+  Shards, Monk Chi, Mage Arcane Charges, everyone else Combo Points. TBC keeps
+  that map, its transport and its calls unchanged. Era and progression select
+  per expansion and specialization instead (see
+  [Era and progression Points](architecture/condition-modernization-audit.md#era-and-progression-point-resources)).
   Copies saved from an older Points source still use the old
   `GetConditionPointResource` and stay unavailable on these clients.
 - **Needs in-game confirmation:** that the cooldown flags really are readable

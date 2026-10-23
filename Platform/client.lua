@@ -145,7 +145,8 @@ function addon:BindRotationClientReader(bind)
         elseif isProject(WOW_PROJECT_BURNING_CRUSADE_CLASSIC) then family='tbc'
         elseif isProject(WOW_PROJECT_MISTS_CLASSIC) or isProject(WOW_PROJECT_CATACLYSM_CLASSIC)
             or isProject(WOW_PROJECT_WRATH_CLASSIC) then family='progression' end
-        local context={family=family}
+        -- Pack selection's expansion selector (LE_EXPANSION_LEVEL_CURRENT).
+        local context={family=family,expansion=primitive(LE_EXPANSION_LEVEL_CURRENT)}
         if type(GetBuildInfo)=='function' then
             local ok,_,build=pcall(GetBuildInfo)
             if ok then context.build=primitive(build) end

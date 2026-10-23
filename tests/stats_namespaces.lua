@@ -247,7 +247,9 @@ test('all native statistics observations retain exact argument tuples and share 
         elseif entry.name=='runeType' or entry.name=='runeCooldown' then assert(entry.n==1 and entry[1]>=1 and entry[1]<=6)
         elseif entry.name~='time' then assert(entry.n==1 and entry[1]=='target') end
     end
-    assert(saw[0] and saw[3] and saw[5],'mana form and class-specific point resource arguments were lost')
+    assert(saw[0] and saw[3],'mana and form resource arguments were lost')
+    -- A progression Death Knight has no POINT resource: runes are RUNE conditions (tests/progression_points.lua).
+    assert(not saw[5],'progression Death Knight POINT read Runes through UnitPower')
 end)
 test('deficit percentage trend RealMobHealth and rune calculations preserve their existing edge semantics',function()
     for _,real in ipairs({false,true}) do local f,a,s=fixture();local current,old=copies(a)

@@ -62,6 +62,50 @@ function platform:GetUnitPointIdentityObservation(unit,includeClass)
     return {exists=true,class=class}
 end
 
+-- Burning Embers (Destruction Warlock, Mists of Pandaria Classic) are one
+-- power read in fragments. Blizzard's 5.5.4 ember bar reads
+-- UnitPower/UnitPowerMax("player", Enum.PowerType.BurningEmbers, true) and
+-- fills one ember per MAX_POWER_PER_EMBER = 10 fragments (Gethe/wow-ui-source
+-- classic 45eb466ddb, Blizzard_UnitFrame/Mists/ShardBar.lua and
+-- Blizzard_FrameXMLBase/Classic/Constants.lua). Without the flag the client
+-- returns whole embers only. POINT reports embers with their fraction: 35
+-- fragments are 3.5 embers, so "at least 3.5" and "one whole ember" are both
+-- expressible. The divisor is Blizzard's constant, not a global an addon may
+-- have replaced. The type is captured at load on progression clients only, so
+-- every other client keeps its exact reads.
+local pointFragmentsPerWhole=10
+local pointFragmentType
+do
+    local project=WOW_PROJECT_ID
+    if type(project)=='number' and (project==WOW_PROJECT_MISTS_CLASSIC or project==WOW_PROJECT_CATACLYSM_CLASSIC or project==WOW_PROJECT_WRATH_CLASSIC) then
+        local enum=Enum
+        if platform:CanReadValue(enum) and type(enum)=='table' then
+            local types=rawget(enum,'PowerType')
+            if platform:CanReadValue(types) and type(types)=='table' then
+                local id=rawget(types,'BurningEmbers')
+                if platform:CanReadValue(id) and type(id)=='number' and id>=0 and id%1==0 and id<math.huge then pointFragmentType=id end
+            end
+        end
+    end
+end
+function platform:GetUnitPointFragmentObservation(unit,powerType,kind)
+    if self:GetCombatDataPolicy()~='probe' then return nil,'unsupported-policy' end
+    if not self:CanReadValue(unit) or not self:CanReadValue(powerType) or not self:CanReadValue(kind) then return nil,'restricted-value' end
+    if type(unit)~='string' or unit=='' then return nil,'invalid-unit' end
+    if type(powerType)~='number' or powerType~=powerType or powerType<0 or powerType==math.huge or powerType%1~=0 then return nil,'invalid-point-power-query' end
+    if kind~='current' and kind~='maximum' then return nil,'invalid-point-power-query' end
+    local api
+    if kind=='current' then api=UnitPower else api=UnitPowerMax end
+    if type(api)~='function' then return nil,'missing-api' end
+    local ok,result=pcall(api,unit,powerType,true)
+    if not ok then return nil,'api-error' end
+    if not self:CanReadValue(result) then return nil,'restricted-value' end
+    if canaccessvalue and not canaccessvalue(result) then return nil,'restricted-value' end
+    if result==nil then return nil,'point-power-unavailable' end
+    if type(result)~='number' or result~=result or result==math.huge or result==-math.huge then return nil,'invalid-api-result' end
+    return result/pointFragmentsPerWhole
+end
+
 function platform:GetUnitPointPowerObservation(unit,powerType,kind)
     local policy=self:GetCombatDataPolicy()
     if policy~='probe' and (policy~='restricted' or not self:IsNeverSecretPointPower(powerType)) then return nil,'unsupported-policy' end
@@ -69,6 +113,7 @@ function platform:GetUnitPointPowerObservation(unit,powerType,kind)
     if type(unit)~='string' or unit=='' then return nil,'invalid-unit' end
     if type(powerType)~='number' or powerType~=powerType or powerType<0 or powerType==math.huge or powerType%1~=0 then return nil,'invalid-point-power-query' end
     if kind~='current' and kind~='maximum' then return nil,'invalid-point-power-query' end
+    if powerType==pointFragmentType then return self:GetUnitPointFragmentObservation(unit,powerType,kind) end
     local api
     if kind=='current' then api=UnitPower else api=UnitPowerMax end
     if type(api)~='function' then return nil,'missing-api' end
@@ -110,8 +155,11 @@ end
 do
     local function sourceGetter(name)
         if name=="Platform_GetPlayerComboPointObservation" then return addon.Platform.GetPlayerComboPointObservation end
+        if name=="Platform_GetUnitPointFragmentObservation" then return addon.Platform.GetUnitPointFragmentObservation end
         if name=="Platform_GetUnitPointIdentityObservation" then return addon.Platform.GetUnitPointIdentityObservation end
         if name=="Platform_GetUnitPointPowerObservation" then return addon.Platform.GetUnitPointPowerObservation end
+        if name=="pointFragmentType" then return pointFragmentType end
+        if name=="pointFragmentsPerWhole" then return pointFragmentsPerWhole end
     end
     if addon.RegisterBuiltinSourceModule then
         addon:RegisterBuiltinSourceModule("Platform/points.lua", sourceGetter)
