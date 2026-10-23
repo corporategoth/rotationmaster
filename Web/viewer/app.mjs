@@ -133,7 +133,7 @@ export function mountViewer(document,root,{analyze,schemaText,writeClipboard,com
         const facade=await loadBundled();if(!sameRequest(token))return false;
         const list=facade?.list,get=facade?.get;if(!sameRequest(token)||typeof list!=='function'||typeof get!=='function')throw Error('bundled-unavailable');
         const rows=list.call(facade);if(!sameRequest(token))return false;
-        if(!Array.isArray(rows)||rows.length>64)throw Error('bundled-unavailable');
+        if(!Array.isArray(rows)||rows.length>256)throw Error('bundled-unavailable');
         const seen=new Set(),owned=[];for(let i=0;i<rows.length;i++){
           if(!Object.hasOwn(rows,i))throw Error('bundled-unavailable');const row=rows[i],id=row?.id,applicability=row?.applicability,name=row?.display?.name;
           if(typeof id!=='string'||!/^[A-Za-z0-9][A-Za-z0-9._:\-]*$/.test(id)||id.length>128||seen.has(id)||!(applicability instanceof Map)||typeof name!=='string'||name.length>262144)throw Error('bundled-unavailable');
@@ -199,7 +199,7 @@ export function mountViewer(document,root,{analyze,schemaText,writeClipboard,com
 
 const hosts=new WeakMap();
 const schemaResource=Object.freeze({url:new URL('../schema/catalog.json',import.meta.url).href,limit:524288,error:'schema-unavailable'});
-const bundledResource=Object.freeze({url:new URL('../catalog/defaults.json',import.meta.url).href,limit:2097152,error:'bundled-unavailable'});
+const bundledResource=Object.freeze({url:new URL('../catalog/defaults.json',import.meta.url).href,limit:8388608,error:'bundled-unavailable'});
 async function readResource(fetcher,spec){
   let body,reader,cancelled=false;
   const cancel=async()=>{if(cancelled)return;cancelled=true;try{if(reader)await reader.cancel();else if(body)await body.cancel();}catch{}};

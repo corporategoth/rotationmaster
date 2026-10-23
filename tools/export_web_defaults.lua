@@ -75,7 +75,7 @@ function M.build()
    display={nameKey=original.nameKey,descriptionKey=original.descriptionKey,name=rawget(locale,original.nameKey),description=rawget(locale,original.descriptionKey)},envelope=typed(exported)}
   record.value=exported
  end
- local encoded=json(output);assert(#encoded+1<=2097152,'catalog text limit');return output,captured
+ local encoded=json(output);assert(#encoded+1<=8388608,'catalog text limit');return output,captured
 end
 function M.fixtures()
  assert(jit,'actual wire fixtures require LuaJIT/bit')

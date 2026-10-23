@@ -3,7 +3,7 @@
 import {checkPortable} from '../codec/lua-data.mjs';
 import {validateEnvelope,indexRotationSteps} from '../schema/rotation.mjs';
 const get=Map.prototype.get,set=Map.prototype.set,has=Map.prototype.has,keys=Map.prototype.keys;
-const LIMIT=Object.freeze({text:2097152,packs:64,sources:128,depth:64,nodes:20000,string:262144,bytes:1048576});
+const LIMIT=Object.freeze({text:8388608,packs:256,sources:512,depth:64,nodes:20000,string:262144,bytes:1048576});
 const bad=()=>{throw new Error('invalid-bundled-catalog');};
 const record=v=>v!==null&&typeof v==='object'&&!Array.isArray(v)&&Object.getPrototypeOf(v)===Object.prototype;
 function closed(v,names){if(!record(v))return false;const fields=Object.keys(v);return fields.length===names.length&&fields.every(k=>names.includes(k));}

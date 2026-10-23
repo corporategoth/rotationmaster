@@ -139,7 +139,7 @@ Generate the primary catalog with `lua5.1 tools/export_web_defaults.lua` or `lua
 
 `createBundledRotationCatalog(text, declarationCatalogText)` in `catalog/defaults.mjs` accepts JSON text and the existing declaration catalog text. It returns a private facade with fresh detached `list()` summaries and `get(id)` manifests, or a fixed failure reason. Applicability/tags and manifest tables remain typed Maps; human display strings remain Unicode. Number markers retain finite IEEE-754 bits, including signed zero values; byte markers retain exact raw bytes. Duplicate decoded keys, malformed closed fields and inconsistent declared IDs/source/display keys are refused.
 
-The parser bounds catalog UTF-8 text to 2 MiB, records to 64 and source-file declarations to 128. Each manifest retains the codec's depth/node/string bounds and actual schema/strict graph checks. Validity, support and reference resolution remain separate; native availability is always unverified. The facade executes no imported code and invokes no game/provider callbacks, DOM, fetch or encoder. Sharing, generated exports and execution remain separate work.
+The parser bounds catalog UTF-8 text to 8 MiB, records to 256 and source-file declarations to 512. Each manifest retains the codec's depth/node/string bounds and actual schema/strict graph checks. Validity, support and reference resolution remain separate; native availability is always unverified. The facade executes no imported code and invokes no game/provider callbacks, DOM, fetch or encoder. Sharing, generated exports and execution remain separate work.
 
 ## Browsing bundled definitions
 
@@ -153,7 +153,7 @@ With a bundled definition selected, choose Compare with first export to compare 
 
 The comparison names the right source Bundled rotation and shows bounded declared identity/revision/source/name context. Read bundled rotation returns to the complete shared source reader without rerunning comparison. Selecting or reselecting a definition, filtering it out, changing First export, leaving the catalog or disposing the mount retires its comparison. A class filter that retains the same selection may retain the result. Returning to the catalog starts in Read mode. Metadata and matching step IDs do not establish native readiness or clone lineage.
 
-Only fixed local declaration/catalog resources are loaded, with credentials omitted, redirects refused, fatal UTF-8 decoding and separate streamed byte caps: 512 KiB for declarations and 2 MiB for bundled data. A failed catalog has an explicit Retry; it does not disable imported transport/raw recovery. Validated catalog data is cached only for the current mount; retired loads cannot replace newer visible state or focus. No metadata/source-guide URLs are fetched.
+Only fixed local declaration/catalog resources are loaded, with credentials omitted, redirects refused, fatal UTF-8 decoding and separate streamed byte caps: 512 KiB for declarations and 8 MiB for bundled data. A failed catalog has an explicit Retry; it does not disable imported transport/raw recovery. Validated catalog data is cached only for the current mount; retired loads cannot replace newer visible state or focus. No metadata/source-guide URLs are fetched.
 
 ## Sharing an original export
 

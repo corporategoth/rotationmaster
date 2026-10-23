@@ -101,7 +101,7 @@ test('get/list outputs never expose private manifest, facets or declaration stat
  const c=ready(),first=c.list()[0],before=toTypedTree(c.get(first.id).envelope),one=c.get(first.id);one.envelope.get('body').get('rotation').clear();one.envelope.get('sources').get(1).set('url','poison');one.display.name='poison';one.source.sha256='poison';one.validation.diagnostics?.push('poison');first.applicability.set('class','poison');first.tags?.clear();first.display.name='poison';assert.deepEqual(toTypedTree(c.get(first.id).envelope),before);assert.notEqual(c.list()[0].display.name,'poison');assert.notEqual(c.get(first.id).source.sha256,'poison');
 });
 test('input is bounded JSON text only, schema failure fixed and no error/source echo',()=>{
- let calls=0;for(const value of [null,{},new String(text()),{toString(){calls++;throw Error('PRIVATE');},toJSON(){calls++;throw Error('PRIVATE');}},'x'.repeat(2097153),'{bad'])assert.deepEqual(parse(value),{ok:false,reason:'invalid-bundled-catalog'});assert.equal(calls,0);assert.deepEqual(parse(text(),'{bad'),{ok:false,reason:'schema-unavailable'});
+ let calls=0;for(const value of [null,{},new String(text()),{toString(){calls++;throw Error('PRIVATE');},toJSON(){calls++;throw Error('PRIVATE');}},'x'.repeat(8388609),'{bad'])assert.deepEqual(parse(value),{ok:false,reason:'invalid-bundled-catalog'});assert.equal(calls,0);assert.deepEqual(parse(text(),'{bad'),{ok:false,reason:'schema-unavailable'});
 });
 test('closed root/record/display fields, stable identifiers and source hash links',()=>{
  const transforms=[d=>d.extra=true,d=>d.version=2,d=>d.nativeAvailability='ready',d=>d.packs[0].extra=true,d=>d.packs[0].display.extra=true,d=>d.packs[0].id='!',d=>d.packs[0].sourceSHA='0'.repeat(64),d=>d.packs[0].sourcePath='../evil.lua',d=>d.packs[0].display.nameKey='mismatch',d=>d.packs.push(d.packs[0])];for(const change of transforms){const d=raw();change(d);reject(d);}
@@ -117,7 +117,7 @@ test('JSON deep unchecked markers and typed depth limits fail without recursion 
  const x=raw();let v={type:'nil'};for(let i=0;i<66;i++)v={type:'table',entries:[[bytes('x'),v]]};set(x.packs[0].envelope,'future',v);reject(x);
 });
 test('aggregate and per-manifest resource limits remain explicit',()=>{
- let d=raw();d.packs=Array.from({length:65},()=>d.packs[0]);reject(d);
+ let d=raw();d.packs=Array.from({length:257},()=>d.packs[0]);reject(d);
  d=raw();set(d.packs[0].envelope,'future',{type:'bytes',hex:'78'.repeat(262145)});reject(d);
  d=raw();const many={type:'table',entries:Array.from({length:10001},(_,i)=>[number(i+1),{type:'boolean',value:false}])};set(d.packs[0].envelope,'future',many);reject(d);
 });
@@ -133,11 +133,11 @@ test('display labels remain Unicode text while symbolic keys stay ASCII bytes',(
  d.packs[0].display.nameKey='nonASCIIé';set(d.packs[0].envelope,'nameKey',bytes('nonASCIIé'));reject(d);
 });
 test('record/source maxima and UTF8 text cap are enforced independently',()=>{
- let d=raw();d.packs=[];d.sourceFiles={};for(let i=0;i<128;i++)d.sourceFiles['safe/'+i+'.lua']='0'.repeat(64);assert(parse(JSON.stringify(d)).ok);d.sourceFiles['safe/extra.lua']='0'.repeat(64);reject(d);
- const base=text();assert(parse(base+' '.repeat(2097152-Buffer.byteLength(base))).ok);reject(base+' '.repeat(2097153-Buffer.byteLength(base)));
- reject(base+' '.repeat(2097152-Buffer.byteLength(base)-2)+'éé');
- d=raw();const p=[...d.packs].sort((a,b)=>JSON.stringify(a).length-JSON.stringify(b).length)[0];d.packs=[];// smallest pack, so 65 copies stay under the text cap
- for(let i=0;i<64;i++){const row=structuredClone(p);row.id='test.'+i;row.sourcePath='Defaults/test/'+i+'.lua';set(row.envelope,'id',bytes(row.id));d.sourceFiles[row.sourcePath]=row.sourceSHA;d.packs.push(row);}assert(parse(JSON.stringify(d)).ok);d.packs.push(structuredClone(d.packs[0]));reject(d);
+ let d=raw();d.packs=[];d.sourceFiles={};for(let i=0;i<512;i++)d.sourceFiles['safe/'+i+'.lua']='0'.repeat(64);assert(parse(JSON.stringify(d)).ok);d.sourceFiles['safe/extra.lua']='0'.repeat(64);reject(d);
+ const base=text();assert(parse(base+' '.repeat(8388608-Buffer.byteLength(base))).ok);reject(base+' '.repeat(8388609-Buffer.byteLength(base)));
+ reject(base+' '.repeat(8388608-Buffer.byteLength(base)-2)+'éé');
+ d=raw();const p=[...d.packs].sort((a,b)=>JSON.stringify(a).length-JSON.stringify(b).length)[0];d.packs=[];// smallest pack, so 257 copies stay under the text cap
+ for(let i=0;i<256;i++){const row=structuredClone(p);row.id='test.'+i;row.sourcePath='Defaults/test/'+i+'.lua';set(row.envelope,'id',bytes(row.id));d.sourceFiles[row.sourcePath]=row.sourceSHA;d.packs.push(row);}assert(parse(JSON.stringify(d)).ok);d.packs.push(structuredClone(d.packs[0]));reject(d);
 });
 test('trusted producer refuses native queries, duplicate registration and invalid declarations BOTH',()=>{
  const scripts=[

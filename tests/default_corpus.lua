@@ -74,6 +74,11 @@ test('TOC includes every reviewed starter pack exactly once',function()
         'rm.tbc.rogue.dps.wowsims','rm.tbc.rogue.dps.wowhead','rm.tbc.hunter.ranged.wowsims','rm.tbc.hunter.ranged.wowhead'})do wanted[id]=true end
     -- TBC Shaman, Druid and Paladin premades (one per role and source family).
     for _,id in ipairs({'rm.tbc.shaman.enhancement.icyveins','rm.tbc.shaman.enhancement.wowsims','rm.tbc.shaman.elemental.icyveins','rm.tbc.shaman.elemental.wowhead','rm.tbc.shaman.elemental.nextaction','rm.tbc.shaman.restoration','rm.tbc.druid.balance','rm.tbc.druid.feral.icyveins','rm.tbc.druid.feral.wowhead','rm.tbc.druid.restoration','rm.tbc.paladin.retribution.wowhead','rm.tbc.paladin.retribution.icyveins','rm.tbc.paladin.retribution.twist','rm.tbc.paladin.protection.wowhead','rm.tbc.paladin.protection.icyveins','rm.tbc.paladin.holy','rm.tbc.paladin.holy.wowhead'})do wanted[id]=true end
+    -- WoW Forever Rogue, Shaman, Warlock and Warrior premades (one per role and source family).
+    for _,id in ipairs({'rm.forever.rogue.dps','rm.forever.rogue.subtlety.warcrafttavern','rm.forever.rogue.subtlety.wowhead',
+        'rm.forever.shaman.restoration','rm.forever.shaman.elemental','rm.forever.shaman.enhancement','rm.forever.shaman.enhancement.wowhead',
+        'rm.forever.warlock.dps','rm.forever.warlock.dps.icyveins','rm.forever.warlock.dps.wowhead',
+        'rm.forever.warrior.protection','rm.forever.warrior.protection.warcrafttavern','rm.forever.warrior.dps','rm.forever.warrior.dps.warcrafttavern'})do wanted[id]=true end
     for _,pack in ipairs(packs)do assert(wanted[pack.id],pack.id..' is unexpected or duplicated');wanted[pack.id]=nil end
     assert(not next(wanted),'reviewed starter pack missing from TOC')
 end)
