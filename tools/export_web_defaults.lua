@@ -45,7 +45,7 @@ function M.build()
  a.GetRotationValidationOptions=function()return{},generation end;a.GetRotationValidationStamp=function()return generation end
  local paths,seenPaths={},{}
  for line in io.lines('RotationMaster.toc')do local path=line:gsub('\r',''):match('^%s*(Defaults/.-%.lua)%s*$');if path then assert(safePath(path)and not seenPaths[path],'unsafe/duplicate default source');seenPaths[path]=true;paths[#paths+1]=path end end
- assert(#paths>0 and #paths<=64,'bundled record limit')
+ assert(#paths>0 and #paths<=256,'bundled record limit')
  local captured,current,seen={},nil,{};local register=a.RegisterDefaultRotation
  a.RegisterDefaultRotation=function(self,value)
   local ok,why=register(self,value);assert(ok,why);assert(not seen[value.id],'duplicate pack id');seen[value.id]=true
