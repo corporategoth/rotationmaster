@@ -26,6 +26,40 @@ local function newPopup(widget)
     return popup
 end
 
+-- What the game can offer a spell or item field right now, for its
+-- right-click menu: the target's and focus's current cast, the player's
+-- recent casts (newest first) and equipped trinkets. Each entry is
+-- {id=number, context=format string taking the name}. Values the client
+-- marks unreadable, and repeats, are left out.
+function addon:GetReferenceContextEntries(kind)
+    local entries,seen={},{}
+    local platform=self.Platform
+    local function readable(value) return value~=nil and (not platform or not platform.CanReadValue or platform:CanReadValue(value)) end
+    local function add(id,context)
+        if not readable(id) or type(id)~='number' or id<=0 or seen[id] or #entries>=10 then return end
+        seen[id]=true;entries[#entries+1]={id=id,context=context}
+    end
+    local function returned(ok,...) if ok then return ... end end
+    local function call(fn,...) if type(fn)=='function' then return returned(pcall(fn,...)) end end
+    if kind=='spell' then
+        for _,unit in ipairs({'target','focus'}) do
+            local exists=call(UnitExists,unit)
+            if readable(exists) and exists then
+                local casting=select(9,call(UnitCastingInfo,unit));local channel=select(8,call(UnitChannelInfo,unit))
+                add(casting,unit=='target' and L['Target casting: %s'] or L['Focus casting: %s'])
+                add(channel,unit=='target' and L['Target channeling: %s'] or L['Focus channeling: %s'])
+            end
+        end
+        for _,entry in ipairs(type(self.spellHistory)=='table' and self.spellHistory or {}) do
+            if type(entry)=='table' then add(entry.spell,L['Recently cast: %s']) end
+        end
+    elseif kind=='item' then
+        for slot,context in pairs({[13]=L['Trinket 1: %s'],[14]=L['Trinket 2: %s']}) do add(call(GetInventoryItemID,'player',slot),context) end
+        table.sort(entries,function(a,b) return a.context<b.context end)
+    end
+    return entries
+end
+
 -- The ordinary field remains compatible with existing data callbacks. Search,
 -- suggestions and exact selection belong to RM, not the shared ID scanner.
 function addon:CreateReferenceEditBox(kind,initialSpell)
@@ -112,11 +146,11 @@ function addon:CreateReferenceEditBox(kind,initialSpell)
         elseif status and status.more then footer=L["More matches available. Keep typing to narrow the search."]
         elseif opts.spec~=nil then footer=L["Spells from this spellbook. Click a result or press Enter."]
         else footer=L["Known and referenced spells. Enter a spell ID or link to find another spell."] end
-        popup.footer:SetText(footer..'\n'..(provider.kind=='item' and L['Search or drag an item here'] or L['Search or drag a spell here']))
+        popup.footer:SetText(footer..'\n'..(provider.kind=='item' and L['Search or drag an item here'] or L['Search or drag a spell here'])..'\n'..(provider.kind=='item' and L['Right-click to insert an equipped trinket.'] or L["Right-click to insert your target's cast or a recent cast."]))
         local width=math.max(360,field:GetWidth()+16)
-        popup:SetSize(width,math.max(1,#matches)*26+60);popup.footer:SetWidth(width-20)
+        popup:SetSize(width,math.max(1,#matches)*26+74);popup.footer:SetWidth(width-20)
         popup:ClearAllPoints();popup:SetPoint("TOPLEFT",field,"BOTTOMLEFT",-6,-4)
-        highlight();popup:Show()
+        highlight();popup.rmContextMenu=nil;popup:Show()
     end
     local function enter()
         if not alive or widget.disabled then return end
@@ -171,7 +205,30 @@ function addon:CreateReferenceEditBox(kind,initialSpell)
             if commit(id) and type(ClearCursor)=="function" then ClearCursor() end
         end
     end
-    install(field,"OnReceiveDrag",drag);install(field,"OnMouseDown",drag)
+    -- Right-click lists what the game offers right now (see
+    -- GetReferenceContextEntries) in the suggestion rows; a click commits it
+    -- exactly like a suggestion.
+    local function insertMenu()
+        if not alive or widget.disabled then return end
+        if popup:IsShown() and popup.rmContextMenu then hide();return end
+        local opts=settings();matches={}
+        for _,entry in ipairs(addon:GetReferenceContextEntries(provider.kind)) do
+            local id=provider.resolve(tostring(entry.id),opts)
+            if id then local info=provider.info and provider.info(id);matches[#matches+1]={id=id,display=string.format(entry.context,provider.name(id,widget:GetUserData('norank')) or tostring(id)),icon=info and info.icon} end
+        end
+        selected=1;navigated=false
+        for index,row in ipairs(popup.rows) do
+            local entry=matches[index];row.referenceID=entry and entry.id;row.spellID=provider.kind=='spell' and row.referenceID or nil;row.itemID=provider.kind=='item' and row.referenceID or nil
+            if entry then row.text:SetText(entry.display);if entry.icon then row.icon:SetTexture(entry.icon);row.icon:Show() else row.icon:Hide() end;row:Show() else row:Hide() end
+        end
+        popup.footer:SetText(#matches==0 and (provider.kind=='item' and L['No equipped trinket to insert.'] or L['Nothing to insert: no target or focus cast and no recent casts.']) or L['Click to insert. Right-click the field again to close.'])
+        local width=math.max(360,field:GetWidth()+16)
+        popup:SetSize(width,math.max(1,#matches)*26+46);popup.footer:SetWidth(width-20)
+        popup:ClearAllPoints();popup:SetPoint("TOPLEFT",field,"BOTTOMLEFT",-6,-4)
+        highlight();popup.rmContextMenu=true;popup:Show()
+    end
+    install(field,"OnReceiveDrag",drag)
+    install(field,"OnMouseDown",function(_,button) if button=="RightButton" then insertMenu() else drag() end end)
     local onHide=widget.frame:GetScript("OnHide")
     install(widget.frame,"OnHide",function(self,...)
         if not alive then return end

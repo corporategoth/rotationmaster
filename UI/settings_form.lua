@@ -207,19 +207,31 @@ function addon:CreateSettingsForm(parent)
         end
         paint();c.dropHint=c.dropHint or label(c);c.dropHint:ClearAllPoints();c.dropHint:SetPoint('LEFT',28,0);c.dropHint:SetPoint('RIGHT',-4,0);c.dropHint:SetText(provider.kind=='item' and L['Search or drag an item here'] or L['Search or drag a spell here']);c.dropHint:SetTextColor(.5,.5,.5);if c:GetText()=='' then c.dropHint:Show() else c.dropHint:Hide() end
         local textChanged=c:GetScript('OnTextChanged');local escape=c:GetScript('OnEscapePressed')
+        local function choose(id)
+            if not self:Valid(self.generation) or not accepted(id) then return end
+            c:SetText(display(id));c.dropHint:Hide();selected=id;record.dirty=true;if self.transactionKeys and self.fields.apply then self.fields.apply:Enable() end;paint();if self:FlushEdits() then c:ClearFocus() end
+        end
         local function query()
             local rows={};local input=c:GetText();if input==provider.missing then input='' end
             for _,entry in ipairs(provider.search(input,settings) or {}) do rows[#rows+1]={value=entry.id,text=entry.display or entry.name,icon=entry.icon} end
             if #rows==0 then if self.menu then self.menu.frame:Hide() end;return end
-            self:ShowChoices(c,rows,function(id)
-                if not self:Valid(self.generation) or not accepted(id) then return end
-                c:SetText(display(id));selected=id;record.dirty=true;if self.transactionKeys and self.fields.apply then self.fields.apply:Enable() end;paint();if self:FlushEdits() then c:ClearFocus() end
-            end,true)
+            self:ShowChoices(c,rows,choose,true)
+        end
+        -- Right-click: what the game offers right now (target or focus cast,
+        -- recent casts, equipped trinkets), chosen like a suggestion.
+        local function insertMenu()
+            local rows={}
+            for _,entry in ipairs(addon:GetReferenceContextEntries(provider.kind)) do
+                local id=provider.resolve(tostring(entry.id),settings)
+                if id and accepted(id) then local info=provider.info(id);rows[#rows+1]={value=id,text=string.format(entry.context,provider.name(id,settings.norank) or tostring(id)),icon=info and info.icon} end
+            end
+            if #rows==0 then self:Message(provider.kind=='item' and L['No equipped trinket to insert.'] or L['Nothing to insert: no target or focus cast and no recent casts.']);return end
+            self:ShowChoices(c,rows,choose,true)
         end
         addon:SetUIScript(c,'OnTextChanged',self:Guard(function(control,user) textChanged(control,user);if c:GetText()=='' then c.dropHint:Show() else c.dropHint:Hide() end;if user then query() end end))
         addon:SetUIScript(c,'OnEditFocusGained',self:Guard(function() if selected and not record.dirty then c:SetText(display(selected));record.baseline=c:GetText();paint() end;query() end))
         addon:SetUIScript(c,'OnEscapePressed',self:Guard(function() if self.menu then self.menu.frame:Hide() end;escape(c) end))
-        addon:SetUIScript(c,'OnEnter',self:HelpGuard(function() if selected and GameTooltip then GameTooltip:SetOwner(c,'ANCHOR_RIGHT');GameTooltip:SetHyperlink(provider.kind..':'..selected);GameTooltip:AddLine(provider.kind=='item' and L['Search or drag an item here'] or L['Search or drag a spell here']);GameTooltip:Show() elseif GameTooltip then GameTooltip:SetOwner(c,'ANCHOR_RIGHT');GameTooltip:SetText(c.dropHint:GetText()) end end))
+        addon:SetUIScript(c,'OnEnter',self:HelpGuard(function() if selected and GameTooltip then GameTooltip:SetOwner(c,'ANCHOR_RIGHT');GameTooltip:SetHyperlink(provider.kind..':'..selected);GameTooltip:AddLine(provider.kind=='item' and L['Search or drag an item here'] or L['Search or drag a spell here']);GameTooltip:AddLine(provider.kind=='item' and L['Right-click to insert an equipped trinket.'] or L["Right-click to insert your target's cast or a recent cast."]);GameTooltip:Show() elseif GameTooltip then GameTooltip:SetOwner(c,'ANCHOR_RIGHT');GameTooltip:SetText(c.dropHint:GetText());GameTooltip:AddLine(provider.kind=='item' and L['Right-click to insert an equipped trinket.'] or L["Right-click to insert your target's cast or a recent cast."]);GameTooltip:Show() end end))
         addon:SetUIScript(c,'OnLeave',function() if GameTooltip and GameTooltip:IsOwned(c) then GameTooltip:Hide() end end)
         local function drop()
             if type(GetCursorInfo)~='function' then return end
@@ -230,7 +242,7 @@ function addon:CreateSettingsForm(parent)
             selected=id;c:SetText(display(id));c.dropHint:Hide();record.dirty=true;if self.transactionKeys and self.fields.apply then self.fields.apply:Enable() end;paint()
             if self:FlushEdits() then if self.menu then self.menu.frame:Hide() end;if type(ClearCursor)=='function' then ClearCursor() end;c:ClearFocus() end
         end
-        addon:SetUIScript(c,'OnReceiveDrag',self:Guard(drop));addon:SetUIScript(c,'OnMouseDown',self:Guard(drop))
+        addon:SetUIScript(c,'OnReceiveDrag',self:Guard(drop));addon:SetUIScript(c,'OnMouseDown',self:Guard(function(_,button) if button=='RightButton' then insertMenu() else drop() end end))
         return c
     end
     function p:Spell(key,caption,id,spec,changed) return self:Reference(key,caption,id,'Spell_EditBox',{spec=spec,norank=false},changed) end

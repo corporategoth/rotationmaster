@@ -1592,6 +1592,18 @@ L['Preview position'] = true
 L['Rotation library'] = true
 
 L['Search or drag a spell here'] = true
+L['Target casting: %s'] = true
+L['Focus casting: %s'] = true
+L['Target channeling: %s'] = true
+L['Focus channeling: %s'] = true
+L['Recently cast: %s'] = true
+L['Trinket 1: %s'] = true
+L['Trinket 2: %s'] = true
+L['No equipped trinket to insert.'] = true
+L['Nothing to insert: no target or focus cast and no recent casts.'] = true
+L['Click to insert. Right-click the field again to close.'] = true
+L['Right-click to insert an equipped trinket.'] = true
+L["Right-click to insert your target's cast or a recent cast."] = true
 
 L['Search or drag an item here'] = true
 

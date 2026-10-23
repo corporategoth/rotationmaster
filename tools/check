@@ -714,6 +714,8 @@ def main():
             ['luajit', 'tests/workbench_reflow.lua'],
             ['lua5.1', 'tests/reflow_performance.lua'],
             ['luajit', 'tests/reflow_performance.lua'],
+            ['lua5.1', 'tests/reference_insert.lua'],
+            ['luajit', 'tests/reference_insert.lua'],
             ['lua5.1', 'tests/stock_retired.lua'],
             ['luajit', 'tests/stock_retired.lua'],
             ['lua5.1', 'tests/ordered_cards.lua'],
