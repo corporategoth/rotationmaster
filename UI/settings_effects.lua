@@ -41,6 +41,9 @@ function addon:BuildEffectSettings(p)
     if effect then
         local id=isNew and 'draft' or p.selection
         local function refresh() if self.RemoveAllCurrentGlows then self:RemoveAllCurrentGlows() end;if p.preview and self.HideGlow then self:HideGlow(p.preview,'settings-effect') end;if p.preview and self.Glow then self:Glow(p.preview,'settings-effect',effect,{r=1,g=1,b=1,a=1},1,'CENTER',0,0) end end
+        -- The live preview sits in the caption column beside Name and Type,
+        -- so this page keeps the full-width caption column.
+        if p.labelScope then p.labelScope.custom=true end
         local y=p.y;local preview=p:Acquire('effectPreview',function() return CreateFrame('Frame',nil,p.child) end);preview:ClearAllPoints();preview:SetPoint('TOPLEFT',174,-y-8);preview:SetSize(40,40);p.preview=preview
         p.cleanups[#p.cleanups+1]=function() if self.HideGlow then self:HideGlow(preview,'settings-effect') end end
         p:Edit('name',L['Name'],effect.name or '',nil,function(text) effect.name=text;p:UpdateRosterEntry(id,{text=effect.name,search=effect.type,icon=effect.texture or self:ControlTexture('preview')}) end)
@@ -59,9 +62,14 @@ function addon:BuildEffectSettings(p)
         end
         if effect.type=='rotate' then p:Check('reverse',L['Reverse'],effect.reverse,function(value) effect.reverse=value;refresh() end) end
         if effect.type=='dazzle' or effect.type=='animate' or effect.type=='pulse' or effect.type=='custom' then
-            p:Heading(L['Sequence'])
             do
                 local sequence=effect.sequence or {}
+                -- Add step sits on the Sequence header row; a click appends and
+                -- a drag drops into a gap, both through this one insert.
+                local function insertStep(gap)
+                    effect.sequence=effect.sequence or {};local value=effect.type=='pulse' and 1 or effect.type=='animate' and '' or effect.type=='dazzle' and {r=1,g=1,b=1,a=1} or {texture='',angle=0,color={r=1,g=1,b=1,a=1},magnification=1}
+                    table.insert(effect.sequence,math.max(1,math.min(gap,#effect.sequence+1)),value);refresh();p:Draw()
+                end
                 p:OrderedCollection('sequence_'..id,sequence,function() local label;for _,t in ipairs(types) do if t.value==effect.type then label=t.text end end;return label or L['Effect'] end,function(p,i,entry)
                     if effect.type=='pulse' then p:Slider('seq'..i,L['Magnification'],entry,.1,2,.1,function(v) sequence[i]=v;refresh() end)
                     elseif effect.type=='animate' then p:Texture('seq'..i,L['Texture'],entry,function(v) sequence[i]=tonumber(v) or v;refresh() end)
@@ -72,15 +80,11 @@ function addon:BuildEffectSettings(p)
                         p:Slider('seq'..i..'mag',L['Magnification'],entry.magnification or 1,.1,2,.1,function(v) entry.magnification=v;refresh() end)
                         p:Color('seq'..i..'color',L['Color'],entry.color,function(v) entry.color=v;refresh() end)
                     end
-                end,refresh,{prefix='seq',header=false,dragIcon=function(i) return effect.type=='animate' and sequence[i] or effect.type=='custom' and sequence[i].texture or effect.texture end,endPreview=function(ghost) if ghost.effectPreview and self.HideGlow then self:HideGlow(ghost.effectPreview,'settings-drag') end end,dragPreview=function(ghost,i)
+                end,refresh,{prefix='seq',header=false,heading=L['Sequence'],add={key='sequence_add',text=L['Add step'],insert=insertStep},dragIcon=function(i) return effect.type=='animate' and sequence[i] or effect.type=='custom' and sequence[i].texture or effect.texture end,endPreview=function(ghost) if ghost.effectPreview and self.HideGlow then self:HideGlow(ghost.effectPreview,'settings-drag') end end,dragPreview=function(ghost,i)
                     ghost.effectPreview=ghost.effectPreview or CreateFrame('Frame',nil,ghost);ghost.effectPreview:ClearAllPoints();ghost.effectPreview:SetPoint('TOPLEFT',8,-8);ghost.effectPreview:SetSize(28,28);ghost.effectPreview:Show()
                     if self.HideGlow then self:HideGlow(ghost.effectPreview,'settings-drag') end
                     if self.Glow then local selected=self:CopySettingsData(effect);selected.sequence={self:CopySettingsData(sequence[i])};self:Glow(ghost.effectPreview,'settings-drag',selected,{r=1,g=1,b=1,a=1},1,'CENTER',0,0) end
                 end,dragSummary=function(i) local e=sequence[i];return effect.type=='pulse' and L['Magnification']..': '..tostring(e) or effect.type=='animate' and L['Texture']..': '..tostring(e) or effect.type=='custom' and L['Texture']..': '..tostring(e.texture)..' / '..L['Magnification']..': '..tostring(e.magnification) or L['Color'] end})
-                p:Button('sequence_add',L['Add step'],function()
-                    effect.sequence=effect.sequence or {};local value=effect.type=='pulse' and 1 or effect.type=='animate' and '' or effect.type=='dazzle' and {r=1,g=1,b=1,a=1} or {texture='',angle=0,color={r=1,g=1,b=1,a=1},magnification=1}
-                    effect.sequence[#effect.sequence+1]=value;refresh();p:Draw()
-                end,'plus')
             end
         end
         local actionEntries={{key='duplicate',text=L['Duplicate'],icon='copy',action=function() local nextId=self:uuid();effects[nextId]=self:CopySettingsData(effect);effects[nextId].name=string.format(L['Copy of %s'],effect.name or id);p.selection=nextId;p:Draw() end},

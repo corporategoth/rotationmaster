@@ -151,10 +151,6 @@ function addon:BuildInlineFunction(p,key,source,readOnly)
         enable(input,not d.readOnly);return input
     end
     local function metadata(field,caption,values)
-        local headerY=form.y
-        local heading=form:Acquire('functionMetadataHeadings',function() return addon:CreateWorkbenchButton(form.child,'',240) end)
-        heading:ClearAllPoints();heading:SetPoint('TOPLEFT',0,-headerY);heading:SetSize(math.max(60,form.width-118),22);heading:SetText(caption);heading.art:Hide();heading:GetFontString():SetTextColor(1,.82,.2);addon:AlignWorkbenchTextLeft(heading,0);form.fields['section_'..field]=heading
-        addon:SetUIScript(heading,'OnClick',form:Guard(function() if d:Flush() then d.metadataCollapsed[field]=not d.metadataCollapsed[field];refresh() end end))
         local function factory()
             if field=='returns' then return {type='any',description=''} end
             local used={};for _,entry in ipairs(values) do used[entry.name]=true end;local n=1;while used['argument'..n] do n=n+1 end
@@ -163,7 +159,7 @@ function addon:BuildInlineFunction(p,key,source,readOnly)
         local function confirmOrderChange(apply)
             if d.isNew then apply() else form:Confirm(field=='args' and L['Changing argument order can break existing callers. Rotation Master will not rewrite their Lua code. Continue?'] or L['Changing return documentation order does not rewrite return statements or existing callers. Review the Lua body and callers for the new order. Continue?'],apply) end
         end
-        local add=form:Button('add_'..field,field=='args' and L['Argument'] or L['Return'],function()
+        local function append()
             local gap=#values+1
             if field=='args' and values[#values] and values[#values].name=='...' then gap=#values end
             local function apply()
@@ -171,16 +167,16 @@ function addon:BuildInlineFunction(p,key,source,readOnly)
                 table.insert(values,gap,factory());d.metadataCollapsed[field]=false;refresh()
             end
             if gap<=#values then confirmOrderChange(apply) else apply() end
-        end,'plus')
-        add:ClearAllPoints();add:SetPoint('TOPRIGHT',0,-headerY);add:SetWidth(112);enable(add,not d.readOnly);form.y=headerY+28
+        end
         local viewKey='function_'..field
         local function beginInsert()
             if d.readOnly or not valid() or not d:Flush() then return end
             if d.metadataCollapsed[field] then d.metadataCollapsed[field]=false;refresh() end
             local view=form.ordered and form.ordered[viewKey];if view and view.BeginInsert then view:BeginInsert(factory,field=='args' and L['Argument'] or L['Return']) end
         end
-        addon:BindWorkbenchDragSource(add,beginInsert,function() local view=form.ordered and form.ordered[viewKey];if view then view:EndDrag() end end)
-        if d.metadataCollapsed[field] then return end
+        -- The collapsible section title and Add share the list's header row.
+        local header={heading={text=caption,key='section_'..field,collapsed=d.metadataCollapsed[field],toggle=function() if d:Flush() then d.metadataCollapsed[field]=not d.metadataCollapsed[field];refresh() end end},
+            add={key='add_'..field,text=field=='args' and L['Argument'] or L['Return'],enabled=not d.readOnly,click=append,beginDrag=beginInsert}}
         local view=form:OrderedCollection(viewKey,values,function(index) return field=='args' and (values[index].name or L['Argument']) or (values[index].type or L['Return']) end,function(rowForm,index,record,row)
             local prefix=(field=='args' and 'arg_' or 'return_')..index..'_'
             form.fields[field..'_up_'..index]=row.up;form.fields[field..'_down_'..index]=row.down;form.fields[field..'_delete_'..index]=row.remove
@@ -227,7 +223,7 @@ function addon:BuildInlineFunction(p,key,source,readOnly)
                 table.insert(values,position,copy);refresh()
             end))
             row.remove:ClearAllPoints();row.remove:SetPoint('TOPRIGHT',-4,-47);form.fields[prefix..'remove']=row.remove
-        end,function() if not d.readOnly then if d.code then d.value.code=d.code:GetText() end;d:UpdateActions() end end,{header=false,prefix=field=='args' and 'arg_' or 'return_',readOnly=d.readOnly,confirmReorder=confirmOrderChange,confirmInsert=function(apply,gap)
+        end,function() if not d.readOnly then if d.code then d.value.code=d.code:GetText() end;d:UpdateActions() end end,{header=false,heading=header.heading,add=header.add,prefix=field=='args' and 'arg_' or 'return_',readOnly=d.readOnly,confirmReorder=confirmOrderChange,confirmInsert=function(apply,gap)
             if gap<=#values then confirmOrderChange(apply) else apply() end
         end})
         form.functionMetadataViews[field]=view

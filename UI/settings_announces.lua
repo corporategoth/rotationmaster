@@ -68,7 +68,14 @@ function addon:BuildAnnounceSettings(p)
             entry.outputs=outputs;return outputs
         end
         local function structuralChange() if parentCurrent() then materialize() end end
-        p:Heading(L['Outputs'])
+        -- Add sits on the Outputs header row; a click appends and a drag drops
+        -- into a gap, both through this one insert.
+        local function insertOutput(gap)
+            if not collectionCurrent()or #items>=64 then return end
+            local output={id=self:uuid(),announce='partyraid',value=''};if not collectionCurrent()then return end
+            local outputs=materialize();if not outputs then return end
+            table.insert(outputs,math.max(1,math.min(gap,#outputs+1)),output);p:Draw()
+        end
         p:OrderedCollection('announce_outputs_'..prefix,items,function(i)return string.format(L['Output %d'],i)end,function(_,index,output,row)
             local field=index==1 and prefix or prefix..'output'..index
             local function current()
@@ -87,6 +94,9 @@ function addon:BuildAnnounceSettings(p)
                 if v=='channel'and not source then local outputs=materialize();if not outputs then return end;outputs[index].announce=v
                 else outputChange('announce',v)end;p:Draw()
             end)
+            -- The card has no title row: Announce is its first row, beside the
+            -- Enabled pill and Help at the card's top right.
+            choice:SetWidth(math.max(60,p.width-(p.labelX or 220)-74))
             if kind~='macro' then
                 local allowed={};for _,v in ipairs(choices)do if v.value~='say'and v.value~='yell'and v.value~='whisper'and v.value~='channel'then allowed[#allowed+1]=v end end
                 self:SetUIScript(choice,'OnClick',p:Guard(function()if current()and p:FlushEdits()and current()then p:ShowChoices(choice,allowed,function(v)if current()then outputChange('announce',v);p:Draw()end end)end end))
@@ -128,7 +138,6 @@ function addon:BuildAnnounceSettings(p)
             condition:SetWidth(math.max(1,p.width));self:AlignWorkbenchTextLeft(condition,6)
             condition:GetFontString():SetWordWrap(true);condition:SetHeight(math.max(24,condition:GetFontString():GetStringHeight()+8))
             condition.tooltip=L['Edit announcement conditions'];p.y=conditionY+condition:GetHeight()+8
-            row.header:SetWidth(math.max(1,row:GetWidth()-128))
             row.remove:ClearAllPoints();row.remove:SetPoint('TOPRIGHT',-4,-44);row.remove:SetSize(20,20)
             local duplicate=p:Acquire('outputDuplicate',function()return self:CreateWorkbenchIconButton(row,'copy',L['Duplicate'])end)
             duplicate:SetParent(row);duplicate:ClearAllPoints();duplicate:SetPoint('TOPRIGHT',-5,-24);duplicate:SetSize(20,20);if #items>=64 then duplicate:Disable()else duplicate:Enable()end
@@ -155,15 +164,9 @@ function addon:BuildAnnounceSettings(p)
             if not source then candidate={id='00000000-0000-0000-0000-000000000000'};for _,key in ipairs(outputFields)do candidate[key]=output[key]end end
             local valid=self:IsValidAnnouncementOutput(candidate,kind=='macro');if not current()then return end
             self:SetWorkbenchInvalid(row,not valid,L['Complete this output or choose a destination available for this action type.'])
-        end,structuralChange,{prefix=prefix..'output',unsavedKey='outputs',current=collectionCurrent})
+        end,structuralChange,{prefix=prefix..'output',unsavedKey='outputs',current=collectionCurrent,header='grip',heading=L['Outputs'],
+            add={key=prefix..'add_output',text=L['Add output'],enabled=#items<64,insert=insertOutput}})
         if not parentCurrent()then return false end
-        local add=p:Button(prefix..'add_output',L['Add output'],function()
-            if not collectionCurrent()or #items>=64 or not p:FlushEdits()or not collectionCurrent()then return end
-            local output={id=self:uuid(),announce='partyraid',value=''};if not collectionCurrent()then return end
-            local outputs=materialize();if not outputs then return end
-            outputs[#outputs+1]=output;p:Draw()
-        end)
-        if #items>=64 then add:Disable()end
         return true
     end
     local function itemInfo(value)
@@ -257,7 +260,7 @@ function addon:BuildAnnounceSettings(p)
         local title=self:SettingsNonempty(entry.name) or entry.type=='item' and (itemInfo(entry.item) and itemInfo(entry.item).name or L['Item data loading']) or entry.type=='macro' and (entry.identifier or L['Via Script/Macro']) or self:PlainWorkbenchName(self:SpellLabel(entry.spell))
         p:Heading(title)
         p:Edit('entry'..i..'name',L['Name'],entry.name or '',nil,function(value) update(entry,'name',value) end);if not drawAction('entry'..i,entry)then return end
-        local enabled=p:Acquire('announceEnabled',function() return self:CreateWorkbenchPill(p.child,'',88) end);enabled:ClearAllPoints();enabled:SetPoint('TOPRIGHT',-52,-4);enabled:SetSize(88,18);enabled:SetText(entry.disabled and L['Disabled'] or L['Enabled']);enabled:SetSelected(not entry.disabled);p.fields['enabled'..i]=enabled;self:SetUIScript(enabled,'OnClick',p:Guard(function() if p:FlushEdits() then entry.disabled=not entry.disabled;p:Draw() end end))
+        local enabled=p:Acquire('announceEnabled',function() return self:CreateWorkbenchPill(p.child,'',88) end);enabled:ClearAllPoints();enabled:SetPoint('TOPRIGHT',-28,-4);enabled:SetSize(88,18);enabled:SetText(entry.disabled and L['Disabled'] or L['Enabled']);enabled:SetSelected(not entry.disabled);p.fields['enabled'..i]=enabled;self:SetUIScript(enabled,'OnClick',p:Guard(function() if p:FlushEdits() then entry.disabled=not entry.disabled;p:Draw() end end))
         local identity=entry.id
         p.fields['delete'..i]=self:SettingsTopDelete(p,function()
             self:ConfirmSettingsDeletion(p,L['Delete this announcement?'],function()
@@ -266,7 +269,7 @@ function addon:BuildAnnounceSettings(p)
                 end end;return false,'announcement-changed'
             end)
         end)
-        local trash=p.fields['delete'..i];trash:ClearAllPoints();trash:SetPoint('TOPRIGHT',-28,-4)
+        local trash=p.fields['delete'..i];trash:ClearAllPoints();trash:SetPoint('TOPRIGHT',0,-4)
     end
     end
     if p.creating or #values==0 and p:CanAutoCreateCollection('profile','announces') then

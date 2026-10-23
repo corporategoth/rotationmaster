@@ -62,24 +62,23 @@ test('legacy draw and Help stay clean while rail duplicate delete arrows and dra
  p.fields.entry1output1duplicate:Click();assert(#data(p).outputs==2 and saved.outputs==nil);p.fields.entry1output2up:Click();local v=view(p);v:BeginDrag(1);assert(v:Drop(3));p.fields.entry1output1remove:Click();assert(#data(p).outputs==1 and saved.outputs==nil)
 end)
 
-test('parent header orders Enabled Delete Help from left to right at wide and narrow widths',function()
+test('parent header orders Enabled then Delete at the right edge at wide and narrow widths',function()
  for _,width in ipairs({1000,560})do
-  local _,a,parent=fixture();parent:SetWidth(width);local p=open(a,parent,entry({card(2,'A')}));local help,trash,pill=p.fields.announce_help,p.fields.delete1,p.fields.enabled1
-  local hl,hr=rightBox(help,p.child);local tl,tr=rightBox(trash,p.child);local pl,pr=rightBox(pill,p.child)
-  assert(hr==p.child:GetWidth()-4 and pr<=tl-3 and tr<=hl-3,'parent header controls remain in the wrong order')
-  assert(pl>=0 and help:GetWidth()==20 and help.icon:GetWidth()==18 and pill:GetHeight()==18)
+  local _,a,parent=fixture();parent:SetWidth(width);local p=open(a,parent,entry({card(2,'A')}));local trash,pill=p.fields.delete1,p.fields.enabled1
+  assert(not p.fields.announce_help,'Announces still draws its own page Help')
+  local tl,tr=rightBox(trash,p.child);local pl,pr=rightBox(pill,p.child)
+  assert(tr==p.child:GetWidth() and pr<=tl-3,'parent header controls remain in the wrong order')
+  assert(pl>=0 and pill:GetHeight()==18)
   pill:Click();assert(data(p).disabled==true and data(p).outputs[1].disabled==nil and a.db.profile.announces[1].disabled==nil)
   p.fields.apply:Click();assert(a.db.profile.announces[1].disabled==true)
  end
 end)
-test('creation and empty panes keep far right Help while retired parent controls stay inert',function()
+test('creation and empty panes leave retired parent controls inert',function()
  local _,a,parent=fixture();local p=open(a,parent,entry({card(2,'A')}));local oldEnabled=p.fields.enabled1:GetScript('OnClick');local oldDelete=p.fields.delete1:GetScript('OnClick');local confirmations=0
  a.ConfirmSettingsDeletion=function()confirmations=confirmations+1 end
  p.fields.new_collection:Click();assert(p.creating and not p.fields.enabled1 and not p.fields.delete1)
  oldEnabled();oldDelete();assert(not data(p).disabled and confirmations==0)
- local _,right=rightBox(p.fields.announce_help,p.child);assert(right==p.child:GetWidth()-4)
  local _,b,other=fixture();local empty=open(b,other,nil);empty.fields.cancel:Click();assert(not empty.fields.delete and not empty.fields.enabled1)
- _,right=rightBox(empty.fields.announce_help,empty.child);assert(right==empty.child:GetWidth()-4)
 end)
 test('long condition summary grows its box and card without entering the following card',function()
  local _,a,parent=fixture();a.DescribeCondition=function()return string.rep('Long condition summary ',60)end

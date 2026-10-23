@@ -714,6 +714,8 @@ def main():
             ['luajit', 'tests/workbench_reflow.lua'],
             ['lua5.1', 'tests/stock_retired.lua'],
             ['luajit', 'tests/stock_retired.lua'],
+            ['lua5.1', 'tests/ordered_cards.lua'],
+            ['luajit', 'tests/ordered_cards.lua'],
             ['lua5.1', 'tests/settings_launcher.lua'],
             ['lua5.1', 'tests/settings_metadata.lua'],
             ['luajit', 'tests/settings_metadata.lua'],

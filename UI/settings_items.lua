@@ -25,13 +25,18 @@ function addon:BuildItemSettings(p)
             store.global.itemsets=store.global.itemsets or {};store.profile.itemsets=store.profile.itemsets or {}
             if value then store.global.itemsets[id]=set;store.profile.itemsets[id]=nil else store.profile.itemsets[id]=set;store.global.itemsets[id]=nil end;p:Draw()
         end,140)
-        p:Section('items_'..id,L['Items in priority order'],function()
-            p:OrderedCollection('items_'..id,items,function(i) return self:GetReferenceProvider('item').name(tonumber(items[i]) or self:GetReferenceProvider('item').resolve(items[i])) or L['Item data loading'] end,function(form,i,item,row)
-                local field=form:Item('item'..i,nil,item,function(value) items[i]=value;update() end);field:ClearAllPoints();field:SetPoint('TOPLEFT',18,-2);field:SetSize(form.width-20,24);form.y=22
-            end,update,{prefix='item',compact=true})
-            p.newItem=p.newItem or '';local y=p.y;local newItem=p:Item('new_item',L['Item'],p.newItem,function(value) p.newItem=value end,true);newItem:SetWidth(math.max(60,p.width-334))
-            local add=p:Button('add_item',L['Add item'],function() local value=itemValue(tostring(p.newItem));if not value then p:Message(L['Choose an item first.']);return end;set.items=set.items or {};set.items[#set.items+1]=value;p.newItem='';update();p:Draw() end,'plus');add:ClearAllPoints();add:SetPoint('TOPRIGHT',0,-y);add:SetWidth(104);p.y=p.y-28
-        end)
+        -- The priority list has no title: the new-item field and Add share
+        -- the row directly above the item cards. A click appends; dragging Add
+        -- drops the chosen item into a gap through the same insert.
+        p.newItem=p.newItem or ''
+        local function insertItem(gap)
+            local value=itemValue(tostring(p.newItem));if not value then p:Message(L['Choose an item first.']);return end
+            set.items=set.items or {};table.insert(set.items,math.max(1,math.min(gap,#set.items+1)),value);p.newItem='';update();p:Draw()
+        end
+        p:OrderedCollection('items_'..id,items,function(i) return self:GetReferenceProvider('item').name(tonumber(items[i]) or self:GetReferenceProvider('item').resolve(items[i])) or L['Item data loading'] end,function(form,i,item,row)
+            local field=form:Item('item'..i,nil,item,function(value) items[i]=value;update() end);field:ClearAllPoints();field:SetPoint('TOPLEFT',18,-2);field:SetSize(form.width-20,24);form.y=22
+        end,update,{prefix='item',compact=true,add={key='add_item',text=L['Add item'],insert=insertItem,
+            leading=function(form,y,width) return self:LayoutNewItemField(form,form:Item('new_item',nil,p.newItem,function(value) p.newItem=value end,true),y,width) end}})
         local bindings=self.db.char and self.db.char.bindings or {}
         local binding=p:Acquire('bindingPill',function() return self:CreateWorkbenchPill(p.child,'',180) end);binding:ClearAllPoints();binding:SetPoint('TOPRIGHT',-100,-4);binding:SetSize(200,18);p.fields.binding=binding;p.fields.bind=binding
         local function refreshBinding()

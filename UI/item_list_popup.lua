@@ -117,17 +117,18 @@ function addon:OpenItemListPopup(name,editbox,items,isvalid,update,onclose,optio
         end
         p:HistoryActions()
         local items=w.draft
+        -- The new-item field and Add share the row above the item cards.
+        local function insertItem(gap)
+            if p.newItem=='' or not w:Accept(p.newItem) then p:Message(L['Choose an item first.']);return end
+            table.insert(w.draft,math.max(1,math.min(gap,#w.draft+1)),p.newItem);p.newItem='';p:Draw()
+        end
         p:OrderedCollection('items_popup',items,function(i)
             local provider=self:GetReferenceProvider(w.editbox);return provider.name(tonumber(items[i]) or provider.resolve(items[i])) or L['Item data loading']
         end,function(form,i,item)
             local field=form:Reference('item'..i,nil,item,w.editbox,{accept=function(value) return w:Accept(value) end},function(value) items[i]=value end)
             field:ClearAllPoints();field:SetPoint('TOPLEFT',18,-2);field:SetSize(form.width-20,24);form.y=22
-        end,function() end,{prefix='item',compact=true,readOnly=type(w.target)~='table'})
-        local y=p.y;local newItem=p:Reference('new_item',L['Item'],p.newItem,w.editbox,{accept=function(value) return w:Accept(value) end},function(value) p.newItem=value end,true);newItem:SetWidth(math.max(60,p.width-334))
-        local add=p:Button('add_item',L['Add item'],function()
-            if p.newItem=='' or not w:Accept(p.newItem) then p:Message(L['Choose an item first.']);return end
-            table.insert(w.draft,p.newItem);p.newItem='';p:Draw()
-        end,'plus');add:ClearAllPoints();add:SetPoint('TOPRIGHT',0,-y);add:SetWidth(104);p.y=p.y-28
+        end,function() end,{prefix='item',compact=true,readOnly=type(w.target)~='table',add={key='add_item',text=L['Add item'],insert=insertItem,
+            leading=function(form,y,width) return self:LayoutNewItemField(form,form:Reference('new_item',nil,p.newItem,w.editbox,{accept=function(value) return w:Accept(value) end},function(value) p.newItem=value end,true),y,width) end}})
         p:CreationActions(function() w:Apply() end,function() w:Close() end,true)
     end)
     w.frame:Show();self:RegisterWindowForEscape(w);return w

@@ -511,6 +511,16 @@ addon.WorkbenchLayout={windowMinWidth=800,windowMinHeight=500,sidebarMin=200,det
 -- A workbench page's gold "?" sits in the top-right corner of the page
 -- content, on the page's first row. The content frame carries the reserve;
 -- panes reaching that corner leave it free on their first row.
+-- One section-header style for every page, the one the Rotations editor
+-- uses for its "Switch condition" header: GameFontNormal in its gold.
+addon.WorkbenchHeaderFont='GameFontNormal';addon.WorkbenchHeaderColor={1,.82,0}
+function addon:StyleWorkbenchHeader(label)
+    if not label then return label end
+    local color=self.WorkbenchHeaderColor
+    if label.SetFontObject then label:SetFontObject(self.WorkbenchHeaderFont) end
+    if label.SetTextColor then label:SetTextColor(color[1],color[2],color[3]) end
+    label.rmHeaderFont=self.WorkbenchHeaderFont;return label
+end
 function addon:GetWorkbenchHelpReserve(frame)
     local parent=frame and frame.GetParent and frame:GetParent()
     return parent and parent.rmHelpReserve or 0

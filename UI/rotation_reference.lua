@@ -1,7 +1,7 @@
 local addon_name,addon=...
 local L=LibStub("AceLocale-3.0"):GetLocale(addon_name)
 local function label(parent,text,kind)
-    local widget=addon:CreateConditionLabel();if kind=='Heading' then widget:SetFontObject('GameFontNormal');widget:SetColor(1,.82,.25) end
+    local widget=addon:CreateConditionLabel();if kind=='Heading' then widget:SetFontObject(addon.WorkbenchHeaderFont);widget:SetColor(unpack(addon.WorkbenchHeaderColor)) end
     widget:SetFullWidth(true);widget:SetText(text);parent:AddChild(widget)
     return widget
 end

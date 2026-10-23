@@ -1,5 +1,10 @@
 local addon_name,addon=...
 local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
+-- A new-item field placed at the left of a list's header row (its Add sits
+-- at the right). Returns the width it used.
+function addon:LayoutNewItemField(form,field,y,width)
+    form.y=y;field:ClearAllPoints();field:SetPoint('TOPLEFT',0,-y);field:SetSize(math.max(60,width),22);return 0
+end
 function addon:InstallSettingsOrdered(p)
     function p:OrderedCollection(key,items,title,build,changed,options)
         options=options or {};self.ordered=self.ordered or {}
@@ -12,7 +17,7 @@ function addon:InstallSettingsOrdered(p)
             return p:Valid(token)
         end
         function view:CancelDrag()
-            self.drag=nil;self.tail=nil;self.insertFactory=nil
+            self.drag=nil;self.tail=nil;self.insertFactory=nil;self.insertAction=nil
             if self.ghost.rmCollectionDragOwner==self or self.ghost.rmCollectionDragOwner==nil then
                 self.ghost.rmCollectionDragOwner=nil;if options.endPreview then options.endPreview(self.ghost) end;self.ghost:Hide();addon:SetUIScript(self.ghost,'OnUpdate',nil)
                 for _,zone in ipairs(self.zones) do zone:Hide();zone.marker:Hide() end
@@ -20,12 +25,18 @@ function addon:InstallSettingsOrdered(p)
         end
         function view:CanDrop(gap)
             if not valid() or options.readOnly then return false end
-            if self.insertFactory then return type(gap)=='number' and gap%1==0 and gap>=1 and gap<=#items+1 end
+            if self.insertFactory or self.insertAction then return type(gap)=='number' and gap%1==0 and gap>=1 and gap<=#items+1 end
             return addon:CanReorderWorkbenchRange(items,self.drag,gap,self.tail)
         end
         function view:Drop(gap)
-            local from,tail,factory=self.drag,self.tail,self.insertFactory;local allowed=self:CanDrop(gap);self:CancelDrag()
+            local from,tail,factory,action=self.drag,self.tail,self.insertFactory,self.insertAction;local allowed=self:CanDrop(gap);self:CancelDrag()
             if not allowed or not p:FlushEdits() or not valid() then return false end
+            -- A dropped add action inserts through the page's own add path, so
+            -- a drop at the end leaves exactly what a click on Add leaves.
+            if action then
+                local function insert() action(gap) end
+                if p.WithSettingsHistory then p:WithSettingsHistory(insert) else insert() end;return true
+            end
             local original={};for i,value in ipairs(items) do original[i]=value end
             local function apply()
                 if not valid() or #items~=#original then return false end
@@ -57,9 +68,9 @@ function addon:InstallSettingsOrdered(p)
                 self.ghost:FollowPointer();self:Hover();if IsMouseButtonDown and not IsMouseButtonDown('LeftButton') then self:EndDrag() end
             end)
         end
-        function view:BeginInsert(factory,label)
-            self:CancelDrag();if not valid() or options.readOnly or type(factory)~='function' or not p:FlushEdits() or not valid() then return false end
-            self.insertFactory=factory;self.ghost.rmCollectionDragOwner=self
+        function view:BeginInsert(factory,label,action)
+            self:CancelDrag();if not valid() or options.readOnly or type(factory)~='function' and type(action)~='function' or not p:FlushEdits() or not valid() then return false end
+            if type(action)=='function' then self.insertAction=action else self.insertFactory=factory end;self.ghost.rmCollectionDragOwner=self
             self.ghost:Present(label,L['Drop in a highlighted gap.'],p.frame,1)
             self.ghost.label:ClearAllPoints();self.ghost.label:SetPoint('TOPLEFT',10,-8);self.ghost.label:SetWidth(320);if self.ghost.texture then self.ghost.texture:Hide() end
             self.ghost:CaptureCancel(function() self:CancelDrag() end)
@@ -69,6 +80,54 @@ function addon:InstallSettingsOrdered(p)
                 self.ghost:FollowPointer();self:Hover();if IsMouseButtonDown and not IsMouseButtonDown('LeftButton') then self:EndDrag() end
             end)
             return true
+        end
+        -- The list's header row: an optional section title at the left and the
+        -- add action right-aligned to the cards' right edge, on one row. With
+        -- neither there is no row. options.heading is a string or {text,key,
+        -- collapsed,toggle}; options.add is {key,text,icon,insert(gap),click,
+        -- beginDrag,appendGap,leading(form,y,width),enabled}. A click appends
+        -- through insert(appendGap); dragging Add drops into a gap through the
+        -- same insert, so both leave identical data.
+        local heading=type(options.heading)=='string' and {text=options.heading} or options.heading
+        local add=options.add
+        if heading or add then
+            local y=self.y;local addWidth=0
+            if add then
+                local button=self:Acquire('orderedAdd',function() return addon:CreateWorkbenchLabeledIconButton(parent,'plus','',110) end)
+                button:SetText(add.text or L['Add']);button.icon:SetTexture(addon:ControlTexture(add.icon or 'plus'))
+                addWidth=math.min(math.max(110,button:GetFontString():GetStringWidth()+40),math.max(60,math.floor(width*.5)))
+                button:ClearAllPoints();button:SetPoint('TOPLEFT',width-addWidth,-y);button:SetSize(addWidth,22);addon:AlignWorkbenchTextLeft(button,24)
+                if add.key then self.fields[add.key]=button end;view.add=button
+                local blocked=options.readOnly or add.enabled==false
+                if blocked then button:Disable() else button:Enable() end
+                addon:SetUIScript(button,'OnClick',self:Guard(function()
+                    if blocked then return end
+                    if add.click then return add.click() end
+                    if self:FlushEdits() and valid() then add.insert(add.appendGap and add.appendGap() or #items+1) end
+                end))
+                addon:BindWorkbenchDragSource(button,function()
+                    if blocked or not valid() then return end
+                    if add.beginDrag then return add.beginDrag(view) end
+                    view:BeginInsert(add.factory,add.label or add.text,add.insert)
+                end,function() if valid() then view:EndDrag() end end)
+            end
+            local left=0
+            if add and add.leading then left=add.leading(self,y,math.max(1,width-addWidth-8)) or 0 end
+            if heading then
+                local titleWidth=math.max(1,width-addWidth-(addWidth>0 and 8 or 0)-left)
+                if heading.toggle then
+                    local c=self:Acquire('orderedToggles',function() return addon:CreateWorkbenchLabeledIconButton(parent,'chevron-down','',200) end)
+                    c:ClearAllPoints();c:SetPoint('TOPLEFT',left,-y);c:SetSize(titleWidth,22);c:SetText(heading.text);c.art:Hide();addon:AlignWorkbenchTextLeft(c,20)
+                    addon:StyleWorkbenchHeader(c:GetFontString());c.icon:SetTexture(addon:ControlTexture(heading.collapsed and 'chevron-right' or 'chevron-down'));c:Enable()
+                    addon:SetUIScript(c,'OnClick',self:Guard(function() if valid() then heading.toggle() end end));if heading.key then self.fields[heading.key]=c end;view.heading=c
+                else
+                    local t=self:Acquire('orderedHeadings',function() local text=parent:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall');text:SetJustifyH('LEFT');text:SetJustifyV('MIDDLE');text:SetWordWrap(false);return text end)
+                    t:ClearAllPoints();t:SetPoint('TOPLEFT',left,-y);t:SetSize(titleWidth,22);t:SetText(heading.text);addon:StyleWorkbenchHeader(t)
+                    if heading.key then self.fields[heading.key]=t end;view.heading=t
+                end
+            end
+            self.y=y+28
+            if heading and heading.collapsed then view.collapsed=true;self.cleanups[#self.cleanups+1]=function() view:CancelDrag() end;return view end
         end
         local boundaries={self.y}
         for i in ipairs(items) do
@@ -80,9 +139,12 @@ function addon:InstallSettingsOrdered(p)
                 return frame
             end);view.rows[i]=row;row.dragY=y
             row:ClearAllPoints();row:SetPoint('TOPLEFT',0,-y);row:SetWidth(width)
-            row.header:ClearAllPoints();row.header:SetPoint('TOPLEFT',26,-3);row.header:SetWidth(width-54);row.header:SetText((options.compact or options.header==false) and '' or title(i));addon:AlignWorkbenchTextLeft(row.header,3)
+            row.header:ClearAllPoints();row.header:SetPoint('TOPLEFT',26,-3);row.header:SetWidth(width-54);row.header:SetText((options.compact or options.header==false or options.header=='grip') and '' or title(i));addon:AlignWorkbenchTextLeft(row.header,3)
             row.header.grip=row.header.grip or row.header:CreateTexture(nil,'ARTWORK');row.header.grip:SetTexture(addon:ControlTexture('grip'));row.header.grip:SetSize(12,18);row.header.grip:SetPoint('LEFT',2,0)
-            if options.header==false then row.header:SetPoint('TOPRIGHT',-4,-25);row.header:SetWidth(20);row.header:SetHeight(20);row.header.grip:Hide() elseif options.compact then row.header:SetPoint('TOPLEFT',20,-2);row.header:SetWidth(18);row.header:SetHeight(26);row.header.grip:Show() else row.header:SetHeight(20);row.header.grip:Hide() end
+            if options.header==false then row.header:SetPoint('TOPRIGHT',-4,-25);row.header:SetWidth(20);row.header:SetHeight(20);row.header.grip:Hide()
+            -- 'grip': no title row; a drag grip above the move arrows, and the
+            -- card's first content row shares the top with its corner controls.
+            elseif options.header=='grip' then row.header:ClearAllPoints();row.header:SetPoint('TOPLEFT',3,-4);row.header:SetWidth(18);row.header:SetHeight(20);row.header.grip:Show() elseif options.compact then row.header:SetPoint('TOPLEFT',20,-2);row.header:SetWidth(18);row.header:SetHeight(26);row.header.grip:Show() else row.header:SetHeight(20);row.header.grip:Hide() end
             row.header.tooltip=L['Drag one entry; Ctrl-drag moves it and all following siblings.'];row.body:SetWidth(width-62)
             row.up:ClearAllPoints();row.down:ClearAllPoints();row.remove:ClearAllPoints()
             row.up:SetPoint('TOPLEFT',3,options.compact and -1 or options.header==false and -4 or -26);row.down:SetPoint('TOPLEFT',3,options.compact and -14 or options.header==false and -22 or -44)
@@ -98,8 +160,10 @@ function addon:InstallSettingsOrdered(p)
             end
             addon:BindWorkbenchDragSource(row.header,function() view:BeginDrag(i) end,function() if valid() then view:EndDrag() end end)
             self.fields[(options.prefix or key)..i..'up']=row.up;self.fields[(options.prefix or key)..i..'down']=row.down;self.fields[(options.prefix or key)..i..'remove']=row.remove
-            self.surface=row.body;self.width=width-62;self.y=options.compact and 2 or options.header==false and 4 or 28
+            self.surface=row.body;self.width=width-62;self.y=options.compact and 2 or (options.header==false or options.header=='grip') and 4 or 28
+            if self.BeginLabelScope then self:BeginLabelScope() end
             build(self,i,items[i],row)
+            if self.EndLabelScope then self:EndLabelScope() end
             if options.current and not valid()then return view end
             local height=math.max(options.compact and 30 or options.header==false and 44 or 68,self.y+8);row:SetHeight(height);row.body:SetHeight(height);row.body:ClearAllPoints();row.body:SetPoint('TOPLEFT',26,options.header==false and -math.max(0,(height-(self.y-4))/2-4) or 0)
             self.surface=outerSurface;self.width=outerWidth;self.y=y+height+(options.compact and 4 or 12);boundaries[#boundaries+1]=self.y-(options.compact and 2 or 6)

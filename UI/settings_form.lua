@@ -55,14 +55,50 @@ function addon:CreateSettingsForm(parent)
         local y=self.y;self.y=y+(height or 30)
         if caption and caption~='' then
             local t=self:Acquire('labels',function() return label(self.child) end);t:ClearAllPoints();t:SetPoint('TOPLEFT',0,-y);t:SetSize(212,(height or 30)-4);t:SetWordWrap(true);t:SetText(caption)
+            local scope=self.labelScope;if scope then local row={label=t,controls=0};scope.rows[#scope.rows+1]=row;self.labelRow=row end
         end
         return y
+    end
+    -- Label column. Builders place values at x=220 as before and register
+    -- them; when a scope (the page, a column or a card) ends, its column is
+    -- narrowed to its longest caption and the registered values move left and
+    -- grow by the same amount. A scope with a caption row whose control the
+    -- page placed itself, or with a value the page re-anchored, keeps 220 so
+    -- its rows stay aligned.
+    local function anchorOf(control)
+        if not control.GetPoint or (control.GetNumPoints and control:GetNumPoints()<1) then return end
+        local point,a,b,c,d=control:GetPoint(1)
+        if type(a)=='number' then return point,a,b end
+        return point,c,d
+    end
+    function p:BeginLabelScope() self.labelScopes=self.labelScopes or {};self.labelScopes[#self.labelScopes+1]=self.labelScope;self.labelScope={rows={},controls={}};self.labelRow=nil end
+    function p:LabelControl(control,dx,dw)
+        local scope,row=self.labelScope,self.labelRow;if not scope or not control then return control end
+        local point,x,y=anchorOf(control);if point~='TOPLEFT' or not x then scope.custom=true;return control end
+        -- A value laid out again (InlineCheck re-places its field) keeps one entry.
+        for _,entry in ipairs(scope.controls) do if entry.control==control then entry.x,entry.y,entry.dx,entry.dw=x,y,dx or 1,dw or 0;return control end end
+        scope.controls[#scope.controls+1]={control=control,x=x,y=y,dx=dx or 1,dw=dw or 0};if row then row.controls=row.controls+1 end
+        return control
+    end
+    function p:EndLabelScope()
+        local scope=self.labelScope;self.labelScope=self.labelScopes and table.remove(self.labelScopes) or nil;self.labelRow=nil
+        if not scope or scope.custom or #scope.rows==0 then return end
+        local widest=0
+        for _,row in ipairs(scope.rows) do if row.controls==0 then return end;widest=math.max(widest,row.label:GetStringWidth()) end
+        for _,entry in ipairs(scope.controls) do local point,x,y=anchorOf(entry.control);if point~='TOPLEFT' or x~=entry.x or y~=entry.y then return end end
+        local column=math.max(60,math.min(220,math.ceil(widest)+12));local delta=220-column;if delta<=0 then return end
+        for _,row in ipairs(scope.rows) do row.label:SetWidth(column-8) end
+        for _,entry in ipairs(scope.controls) do
+            local control=entry.control;control:ClearAllPoints();control:SetPoint('TOPLEFT',entry.x-delta*entry.dx,entry.y)
+            if entry.dw>0 then control:SetWidth(control:GetWidth()+delta*entry.dw) end
+        end
+        scope.column=column;return column
     end
     function p:Text(text)
         local t=self:Acquire('text',function() return label(self.child) end);t:ClearAllPoints();t:SetPoint('TOPLEFT',0,-self.y);t:SetWidth(self.width);t:SetWordWrap(true);t:SetText(text or '');t:SetTextColor(.9,.92,.94);t:SetHeight(0);t:SetHeight(math.max(20,t:GetStringHeight()));self.y=self.y+t:GetHeight()+8;return t
     end
     function p:Heading(text)
-        local t=self:Text(text);t:SetTextColor(1,.82,.2);self.y=self.y+4;return t
+        local y=self.y;local t=self:Text(text);addon:StyleWorkbenchHeader(t);t:SetHeight(0);t:SetHeight(math.max(20,t:GetStringHeight()));self.y=y+t:GetHeight()+12;return t
     end
     function p:Button(key,text,action,icon)
         local y=self:Row(nil,28);local c=self:Acquire(icon and 'iconButtons' or 'buttons',function() return icon and addon:CreateWorkbenchLabeledIconButton(self.child,icon,text,210) or addon:CreateWorkbenchButton(self.child,text,210) end)
@@ -96,7 +132,7 @@ function addon:CreateSettingsForm(parent)
     end
     function p:Section(key,title,build)
         self.closedSections=self.closedSections or {};local y=self:Row(nil,28)
-        local c=self:Acquire('headings',function() return addon:CreateWorkbenchLabeledIconButton(self.child,'chevron-down','',300) end);c:ClearAllPoints();c:SetPoint('TOPLEFT',0,-y);c:SetWidth(self.width);c:SetText(title);c:GetFontString():SetTextColor(1,.82,.2);c.icon:SetTexture(addon:ControlTexture(self.closedSections[key] and 'chevron-right' or 'chevron-down'));c:Enable()
+        local c=self:Acquire('headings',function() return addon:CreateWorkbenchLabeledIconButton(self.child,'chevron-down','',300) end);c:ClearAllPoints();c:SetPoint('TOPLEFT',0,-y);c:SetWidth(self.width);c:SetText(title);addon:StyleWorkbenchHeader(c:GetFontString());c.icon:SetTexture(addon:ControlTexture(self.closedSections[key] and 'chevron-right' or 'chevron-down'));c:Enable()
         self.fields['section_'..key]=c;addon:SetUIScript(c,'OnClick',self:Guard(function() if self:FlushEdits() then self.closedSections[key]=not self.closedSections[key];self:Draw() end end))
         if not self.closedSections[key] then build() end
     end
@@ -107,12 +143,13 @@ function addon:CreateSettingsForm(parent)
     end
     function p:InlineCheck(fieldKey,key,caption,value,changed,minimum)
         local rowY=self.y-30;local option=self:Check(key,caption,value,changed)
-        local height=addon:LayoutWorkbenchFieldOption(self.fields[fieldKey],option,self.surface or self.child,220,rowY,self.width-220,minimum)
+        local height,_,inline=addon:LayoutWorkbenchFieldOption(self.fields[fieldKey],option,self.surface or self.child,220,rowY,self.width-220,minimum)
+        self:LabelControl(self.fields[fieldKey],1,1);self:LabelControl(option,inline and 0 or 1,0)
         self.y=rowY+height+6;return option
     end
     function p:Edit(key,caption,value,parse,changed)
         local y=self:Row(caption);local c=self:Acquire('edits',function() return addon:CreateWorkbenchEditBox(self.child) end)
-        c:ClearAllPoints();c:SetPoint('TOPLEFT',220,-y);c:SetSize(math.max(1,self.width-220),24);c:SetMaxLetters(4096);c:EnableMouse(true);c:SetText(tostring(value or ''));c:SetTextColor(1,1,1);c:SetTextInsets(4,4,0,0);if c.referenceIcon then c.referenceIcon:Hide() end;if c.texturePreview then c.texturePreview:Hide() end;c:ClearFocus()
+        c:ClearAllPoints();c:SetPoint('TOPLEFT',220,-y);c:SetSize(math.max(1,self.width-220),24);self:LabelControl(c,1,1);c:SetMaxLetters(4096);c:EnableMouse(true);c:SetText(tostring(value or ''));c:SetTextColor(1,1,1);c:SetTextInsets(4,4,0,0);if c.referenceIcon then c.referenceIcon:Hide() end;if c.texturePreview then c.texturePreview:Hide() end;c:ClearFocus()
         addon:SetUIScript(c,'OnReceiveDrag',nil);addon:SetUIScript(c,'OnMouseDown',nil);if c.dropHint then c.dropHint:Hide() end;addon:SetUIScript(c,'OnEditFocusGained',nil);addon:SetUIScript(c,'OnEnter',nil);addon:SetUIScript(c,'OnLeave',nil)
         local record={control=c,parse=parse or identity,changed=changed,dirty=false,baseline=tostring(value or '')};self.edits[#self.edits+1]=record;self.fields[key]=c
         addon:SetUIScript(c,'OnTextChanged',self:Guard(function(_,user) if user then record.dirty=true;if self.transactionKeys and self.fields.apply then self.fields.apply:Enable() end;local v=record.parse(c:GetText());c:SetTextColor(1,v~=nil and 1 or .35,v~=nil and 1 or .35) end end))
@@ -139,7 +176,7 @@ function addon:CreateSettingsForm(parent)
     end
     function p:Slider(key,caption,value,lo,hi,step,changed)
         local y=self:Row(caption);local c=self:Acquire('sliders',function() return addon:CreateWorkbenchSlider(self.child,lo,hi,step,140) end)
-        c:ClearAllPoints();c:SetPoint('TOPLEFT',220,-y-4);c:SetWidth(self.width-290);addon:SetUIScript(c,'OnValueChanged',nil);c:SetMinMaxValues(lo,hi);c:SetValueStep(step);c:SetValue(value or lo);c:EnableMouse(true)
+        c:ClearAllPoints();c:SetPoint('TOPLEFT',220,-y-4);c:SetWidth(self.width-290);self:LabelControl(c,1,1);addon:SetUIScript(c,'OnValueChanged',nil);c:SetMinMaxValues(lo,hi);c:SetValueStep(step);c:SetValue(value or lo);c:EnableMouse(true)
         local number=self:Acquire('sliderNumbers',function() return addon:CreateWorkbenchEditBox(self.child) end);number:ClearAllPoints();number:SetPoint('TOPLEFT',self.width-64,-y);number:SetSize(62,24);number:SetText(string.format('%.4g',value or lo));number:SetTextColor(1,1,1);number:EnableMouse(true);number:ClearFocus()
         self.fields[key]=c;self.fields[key..'_value']=number
         local record={control=number,dirty=false,baseline=number:GetText(),parse=function(text) local n=tonumber(text);if n and n==n and n>=lo and n<=hi and (step<1 or n%1==0) then return n end end}
@@ -225,6 +262,8 @@ function addon:CreateSettingsForm(parent)
         local caption;if not anchor then caption=L['Position'] end;local y=self:Row(caption,56);local ox,oy=xvalue or 0,yvalue or 0
         if anchor then local title=self:Acquire('labels',function() return label(self.child) end);title:ClearAllPoints();title:SetPoint('TOPLEFT',0,-y);title:SetSize(154,20);title:SetText(L['Anchor']) end
         local padX=anchor and 170 or 220;local numberX=padX+78
+        -- The anchored variant lays out its own caption column.
+        local scope=self.labelScope;if anchor and scope then scope.custom=true end;self.labelScope=nil
         local pad=self:Acquire('positionPad',function() return addon:CreateWorkbenchPositionPad(self.child) end);pad:ClearAllPoints();pad:SetPoint('TOPLEFT',padX,-y)
         local token=self.generation
         pad:Bind(function(dx,dy,center,amount) if not self:FlushEdits() then return end;if center then ox,oy=0,0 else ox=ox+dx*amount;oy=oy+dy*amount end;changed(ox,oy,center);self:Draw() end,function() return self:Valid(token) end,false)
@@ -235,17 +274,19 @@ function addon:CreateSettingsForm(parent)
             local c=self:Edit(key,'',key=='yoffs' and oy or ox,numeric,function(n) if key=='yoffs' then oy=n else ox=n end;changed(ox,oy,false) end)
             c:ClearAllPoints();c:SetPoint('TOPLEFT',numberX,-y-5-(i-1)*22);c:SetSize(90,20)
             local t=self:Acquire('labels',function() return label(self.child) end);t:ClearAllPoints();t:SetPoint('TOPLEFT',numberX-18,-y-5-(i-1)*22);t:SetSize(16,20);t:SetText(key=='yoffs' and L['V'] or L['H'])
+            if not anchor then self.labelScope=scope;self:LabelControl(c,1,0);self:LabelControl(t,1,0);self.labelScope=nil end
         end
+        self.labelScope=scope;if not anchor then self:LabelControl(pad,1,0) end
         self.y=after
     end
     function p:Toggle(key,caption,value,falseLabel,trueLabel,changed)
         local y=self:Row(caption);local c=self:Acquire('togglePills',function() return addon:CreateWorkbenchPill(self.child,'',94) end)
-        c:ClearAllPoints();c:SetPoint('TOPLEFT',220,-y);c:SetWidth(94);c:SetText(value and trueLabel or falseLabel);c:Enable();self.fields[key]=c
+        c:ClearAllPoints();c:SetPoint('TOPLEFT',220,-y);c:SetWidth(94);self:LabelControl(c,1,0);c:SetText(value and trueLabel or falseLabel);c:Enable();self.fields[key]=c
         addon:SetUIScript(c,'OnClick',self:Guard(function() if self:FlushEdits() then value=not value;c:SetText(value and trueLabel or falseLabel);changed(value) end end));return c
     end
     function p:Choice(key,caption,value,entries,changed)
         local y=self:Row(caption);local c=self:Acquire('choices',function() return addon:CreateWorkbenchLabeledIconButton(self.child,'chevron-down','',220) end)
-        c:ClearAllPoints();c:SetPoint('TOPLEFT',220,-y);c:SetWidth(math.max(1,self.width-220));c:Enable();self.fields[key]=c
+        c:ClearAllPoints();c:SetPoint('TOPLEFT',220,-y);c:SetWidth(math.max(1,self.width-220));self:LabelControl(c,1,1);c:Enable();self.fields[key]=c
         local selected=L['Select'];local chosen;for _,entry in ipairs(entries) do if entry.value==value then selected=entry.text;chosen=entry;break end end;addon:PaintSelectorSelection(c,chosen,selected)
         addon:SetUIScript(c,'OnClick',self:Guard(function() if self:FlushEdits() then self:ShowChoices(c,entries,function(nextValue) if nextValue~=value then value=nextValue;changed(nextValue) end end) end end));return c
     end
@@ -291,12 +332,12 @@ function addon:CreateSettingsForm(parent)
     end
     function p:Color(key,caption,color,changed)
         color=color or {r=1,g=1,b=1,a=1};local y=self:Row(caption,56)
-        local swatch=self:Acquire('swatches',function() return addon:CreateWorkbenchButton(self.child,'',50) end);swatch:ClearAllPoints();swatch:SetPoint('TOPLEFT',220,-y);swatch:SetSize(50,50);swatch.art:SetColorTexture(color.r,color.g,color.b,color.a);swatch:Enable();self.fields[key]=swatch
+        local swatch=self:Acquire('swatches',function() return addon:CreateWorkbenchButton(self.child,'',50) end);swatch:ClearAllPoints();swatch:SetPoint('TOPLEFT',220,-y);swatch:SetSize(50,50);self:LabelControl(swatch,1,0);swatch.art:SetColorTexture(color.r,color.g,color.b,color.a);swatch:Enable();self.fields[key]=swatch
         local values={r=color.r,g=color.g,b=color.b,a=color.a};local controls,records={},{}
         -- The four channels share the row beside the swatch in two columns.
         local channelWidth=math.max(40,(self.width-278-4)/2)
         for i,channel in ipairs({'r','g','b','a'}) do
-            local c=self:Acquire('colorInputs',function() return addon:CreateWorkbenchEditBox(self.child) end);c:ClearAllPoints();c:SetPoint('TOPLEFT',278+((i-1)%2)*(channelWidth+4),-y-math.floor((i-1)/2)*26);c:SetSize(channelWidth,24);c:SetText(string.format('%.3f',values[channel]));c:SetTextColor(1,1,1);c:EnableMouse(true);c:ClearFocus();c:SetTextInsets(16,3,0,0)
+            local c=self:Acquire('colorInputs',function() return addon:CreateWorkbenchEditBox(self.child) end);c:ClearAllPoints();c:SetPoint('TOPLEFT',278+((i-1)%2)*(channelWidth+4),-y-math.floor((i-1)/2)*26);c:SetSize(channelWidth,24);self:LabelControl(c,(i-1)%2==0 and 1 or .5,.5);c:SetText(string.format('%.3f',values[channel]));c:SetTextColor(1,1,1);c:EnableMouse(true);c:ClearFocus();c:SetTextInsets(16,3,0,0)
             c.axis=c.axis or label(c);c.axis:ClearAllPoints();c.axis:SetPoint('LEFT',3,0);c.axis:SetText(channel:upper());controls[channel]=c;self.fields[key..'_'..channel]=c
             local record={control=c,dirty=false,baseline=c:GetText(),parse=function(text) local n=tonumber(text);if n and n==n and n>=0 and n<=1 then return n end end,changed=function(n) values[channel]=n;changed({r=values.r,g=values.g,b=values.b,a=values.a});swatch.art:SetColorTexture(values.r,values.g,values.b,values.a) end};self.edits[#self.edits+1]=record;records[channel]=record
             addon:SetUIScript(c,'OnTextChanged',self:Guard(function(_,user) if user then record.dirty=true;if self.transactionKeys and self.fields.apply then self.fields.apply:Enable() end;local valid=record.parse(c:GetText())~=nil;c:SetTextColor(1,valid and 1 or .35,valid and 1 or .35) end end));addon:SetUIScript(c,'OnEnterPressed',self:Guard(function() if self:FlushEdits() then c:ClearFocus() end end));addon:SetUIScript(c,'OnEditFocusLost',self:Guard(function() self:FlushEdits() end))
@@ -327,7 +368,8 @@ function addon:CreateSettingsForm(parent)
         self:RunCleanups()
         for _,list in pairs(self.pool) do for _,control in ipairs(list) do control:Hide() end end
         self.creationUsed=false;self.creationUsedForNew=false;self.counts={};self.fields={};self.edits={};if self.ResetLayout then self:ResetLayout() end;self.y=4;self.width=math.max(340,self.frame:GetWidth()-40);self.child:SetWidth(self.width)
-        self.builder(self);if self.DraftActions then self:DraftActions() end;self:BindHelpBriefs();if not self.creationUsedForNew then self.creationBaseline=nil;self.creationApply=nil end;self.child:SetHeight(self.y+12);self.scroll:UpdateWorkbenchScroll()
+        self.labelScopes={};self.labelScope=nil;self:BeginLabelScope()
+        self.builder(self);if self.DraftActions then self:DraftActions() end;while self.labelScope do self:EndLabelScope() end;self:BindHelpBriefs();if not self.creationUsedForNew then self.creationBaseline=nil;self.creationApply=nil end;self.child:SetHeight(self.y+12);self.scroll:UpdateWorkbenchScroll()
     end
     function p:Open(builder)
         if self.profile~=addon.db.profile or self.global~=addon.db.global or self.char~=addon.db.char then self.selection=nil;self.creating=false;self.rosterQuery=nil;self.condition=nil;self.category=nil;self.conditionSource=nil;self.newAnnounce=nil;self.newEffectName=nil;self.newItem=nil;self.newItemSetName=nil;self.newGroupName=nil end

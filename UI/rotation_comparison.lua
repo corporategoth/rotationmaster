@@ -72,7 +72,7 @@ function addon:FormatRotationComparison(result)
 end
 
 local function label(parent,text,kind)
-    local widget=addon:CreateConditionLabel();if kind=='Heading' then widget:SetFontObject('GameFontNormal');widget:SetColor(1,.82,.25) end;widget:SetFullWidth(true);widget:SetText(text);parent:AddChild(widget)
+    local widget=addon:CreateConditionLabel();if kind=='Heading' then widget:SetFontObject(addon.WorkbenchHeaderFont);widget:SetColor(unpack(addon.WorkbenchHeaderColor)) end;widget:SetFullWidth(true);widget:SetText(text);parent:AddChild(widget)
     return widget
 end
 local directionNames={current=L["Selected rotation → your rotation"],source=L["Built In updates since cloning"],custom=L["Your edits since cloning"]}

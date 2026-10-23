@@ -27,12 +27,10 @@ test('announcement comparison shows named emote and cast-recipient changes',func
  local f=uiFixture();local a=f.addon;local rows=a:CollectionComparisonRows('announcement',{announce='gesture',emote='CHEER',emote_target=false},{announce='gesture',emote='WAVE',emote_target=true},false)
  assert(#rows==2 and rows[1].label=='Emote' and rows[1].left=='CHEER' and rows[1].right=='WAVE' and rows[2].label=='Use spell recipient ({{target}})')
 end)
-test('Announces has local Help with substitutions and no pending-edit flush',function()
+test('Announces page Help documents substitutions and the page draws no Help of its own',function()
  local f,parent=uiFixture();local a=f.addon;a.db.profile.announces={{id='a',type='spell',spell=403,event='SUCCEEDED',announce='local',value='Cast'}};local p=a:OpenNativeSettings(parent,'Announces')
- assert(p.fields.announce_help,'missing page-level Help');local input=p.fields.entry1text;input:SetText('Pending {{target}}');input.scripts.OnTextChanged(input,true)
- p.fields.announce_help:Click();assert(a.helpWindow and a.helpWindow.heading=='Announces' and a.db.profile.announces[1].value=='Cast' and input:GetText()=='Pending {{target}}')
- local content='';for _,row in ipairs(a.helpWindow.sections)do content=content..row.text end;for _,token in ipairs({'{{target}}','{{spell}}','{{item}}','{{event}}'})do assert(content:find(token,1,true),'missing '..token)end
- local opens=0;local old=a.ShowWorkbenchHelp;a.ShowWorkbenchHelp=function(...)opens=opens+1;return old(...)end;local stale=p.fields.announce_help.scripts.OnClick;p:Release();stale();assert(opens==0)
+ assert(not p.fields.announce_help,'Announces still draws its own page Help; the shell corner Help replaces it')
+ local content='';for _,row in ipairs(a:WorkbenchPageHelp('Announces'))do content=content..(row.text or '')end;for _,token in ipairs({'{{target}}','{{spell}}','{{item}}','{{event}}'})do assert(content:find(token,1,true),'missing '..token)end
 end)
 test('the Announces page has no emote test or report buttons',function()
  local f,parent=uiFixture();f.load('Core/announcements.lua');local a,e=f.addon,f.env

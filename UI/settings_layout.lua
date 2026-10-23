@@ -18,11 +18,14 @@ function addon:InstallSettingsLayout(p)
             for i=1,2 do local f=self.columns[i] or addon:TrackWorkbenchSize(CreateFrame('Frame',nil,self.child));self.columns[i]=f;f:ClearAllPoints();f:SetPoint('TOPLEFT',(i-1)*(self.columnWidth+24),0);f:SetSize(self.columnWidth,1);f:Show() end
         end
         if self.columnSingle then return end
+        -- Each column sizes its own caption column.
+        if self.EndLabelScope and self.labelScope then self:EndLabelScope();self:BeginLabelScope() end
         if self.currentColumn then self.columns[self.currentColumn]:SetHeight(math.max(1,self.y)) end
         self.currentColumn=index;self.surface=self.columns[index];self.width=self.columnWidth;self.y=4
     end
     function p:EndColumns()
         if self.columnSingle then self.columnMode=false;return end
+        if self.EndLabelScope and self.labelScope then self:EndLabelScope();self:BeginLabelScope() end
         self.columns[self.currentColumn]:SetHeight(math.max(1,self.y));self.y=math.max(self.columns[1]:GetHeight(),self.columns[2]:GetHeight());self.width=self.fullWidth;self.surface=nil;self.currentColumn=nil;self.columnMode=false
     end
     function p:UpdateRosterEntry(value,presentation)
