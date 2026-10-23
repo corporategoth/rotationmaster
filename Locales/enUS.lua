@@ -921,6 +921,14 @@ L["Only consider debuffs returned by the game's dispellable aura filter. This do
 
 -- Packaged rotation browser
 L["Unavailable conditions or unsupported data"] = true
+L["%s is not supported on this client (%s)."] = true
+L["With no off-hand weapon equipped, an off-hand check is false (and true under NOT)."] = true
+L["combat data is restricted on this client"] = true
+L["the game API it needs is missing"] = true
+L["this client is not supported"] = true
+L["this client uses a different talent system"] = true
+L["glyphs are not supported on this client build"] = true
+L["this edition has no point resource"] = true
 L["Different WoW edition"] = true
 L["Different class"] = true
 L["Different specialization"] = true

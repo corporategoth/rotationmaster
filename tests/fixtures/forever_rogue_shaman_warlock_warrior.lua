@@ -138,7 +138,7 @@ function M.fixture(class,options)
  f.libraries['ThreatClassic-1.0']={Disable=function() end};f.libraries['LibClassicDurations'].Register=function()end
  f.load('Core/rotation_sequence.lua');f.load('Core/rotation_selection.lua');f.load('main.lua')
  a.spellHistory={}
- a.GetConditionHealthForecast=function(_,unit,health)assert(unit=='target'and health==0);if s.ttd==nil then return nil,'forecast-unavailable' end;return s.ttd end
+ a.GetConditionHealthForecast=function(_,unit,health)assert(unit=='target'and health==0);if s.ttd==nil then return false end;return s.ttd end
  assert(a:InitializeRotationLibrary())
  local spells,actions=collect(a,class)
  spells[6603]=true

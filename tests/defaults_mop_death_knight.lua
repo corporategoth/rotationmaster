@@ -33,7 +33,7 @@ test('switch: Blood by its passive or Dark Command, Frost by Howling Blast and t
  s.known={};s.learn(DC,HB,FS);assert(M.selected(a)==FROST,'Frost with a two-hander (no off-hand speed)')
  s.offhand=2.6;assert(M.selected(a)==DW,'Frost with two weapons')
  assert(M.switch(a,FROST)=='match','the two-hand pack still matches underneath')
- s.offhand=nil;assert(M.switch(a,DW)=='unavailable','a two-hander leaves the dual-wield switch unreadable, never a match')
+ s.offhand=nil;assert(M.switch(a,DW)=='no-match','a two-hander (no off-hand speed) does not match the dual-wield switch')
  s.known={};s.learn(DC,50034);assert(M.selected(a)==BLOOD,'Blood Rites at 55')
  s.known={};s.learn(DC,56222);assert(M.selected(a)==BLOOD,'Dark Command at 58 if the passive is not reported')
  assert(M.switch(a,BSIM)=='match'and M.switch(a,UCAP)=='match','variants share their switches')
