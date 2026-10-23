@@ -1077,4 +1077,30 @@ test('item sequence callbacks use canonical shallow copies without editing the s
     local stale=p.fields.items1;local count=changes;p:Release();stale:SetText('5');stale.scripts.OnEnterPressed(stale)
     assert(changes==count and current[1]==3 and supplied[1]==1 and supplied[2]==2)
 end)
+test('help on a non-frame field wrapper never breaks redraw, hover or release',function()
+    local f,parent=fixture();local a=f.addon;local owner
+    -- WoW's tooltip owner APIs reject anything that is not a frame.
+    f.env.GameTooltip={IsOwned=function(_,o) if o.rmWrapper then error('Wrong object type for function') end;return owner==o end,
+        SetOwner=function(_,o) if o.rmWrapper then error('Wrong object type for function') end;owner=o end,
+        SetText=function() end,AddLine=function() end,Show=function() end,Hide=function() owner=nil end}
+    local scripts={};local wrapper={rmWrapper=true,GetScript=function(_,k) return scripts[k] end,SetScript=function(_,k,v) scripts[k]=v end}
+    local form=a:CreateSettingsForm(parent)
+    form:Open(function(p) p.fields.code=wrapper;p:Check('flag','Flag',false,function() end) end)
+    assert(scripts.OnEnter and scripts.OnLeave,'wrapper received no help binding')
+    scripts.OnEnter(wrapper);scripts.OnLeave(wrapper)
+    form:Open(function(p) p:Check('other','Other',false,function() end) end)
+    assert(form.fields.other and form.fields.other:IsShown(),'redraw after a wrapper field failed')
+    form:Release()
+end)
+test('one failing cleanup does not leave the old page behind',function()
+    local f,parent=fixture();local a=f.addon;local reported,ran={},false
+    f.env.geterrorhandler=function() return function(message) reported[#reported+1]=message end end
+    local form=a:CreateSettingsForm(parent)
+    form:Open(function(p) p:Check('flag','Flag',false,function() end);p.cleanups[#p.cleanups+1]=function() error('cleanup failed') end;p.cleanups[#p.cleanups+1]=function() ran=true end end)
+    local old=form.fields.flag
+    form:Open(function(p) p:Check('other','Other',false,function() end) end)
+    assert(ran,'later cleanup skipped');assert(#reported==1 and tostring(reported[1]):find('cleanup failed'),'failure not reported')
+    assert(form.fields.other and form.fields.other:IsShown(),'new page did not draw')
+    assert(old==form.fields.other or not old:IsShown(),'old page control left on screen')
+end)
 finish()
