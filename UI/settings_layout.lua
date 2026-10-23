@@ -4,7 +4,8 @@ function addon:InstallSettingsLayout(p)
     local simpleLayout=p.Layout
     function p:ResetLayout()
         self.surface=nil;self.rosterUsed=false;self.columnMode=false;self.columnSingle=false
-        if self.roster then self.roster.frame:Hide() end
+        -- A divider drag redraws the page; keep its splitter alive meanwhile.
+        if self.roster then self.roster.frame:Hide();if self.roster.splitter and not self.roster.splitter.drag then self.roster.splitter:Hide() end end
         for _,frame in ipairs(self.columns or {}) do frame:Hide() end
         self.scroll:Show();self.scroll:ClearAllPoints();self.scroll:SetPoint('TOPLEFT',8,-8);simpleLayout(self)
     end
@@ -42,7 +43,7 @@ function addon:InstallSettingsLayout(p)
         if r.orderView then r.orderView:Cancel() end
         for _,row in ipairs(r.rows) do self:RetireRosterRow(row) end
         for _,placeholder in ipairs(r.dragPlaceholders or {}) do placeholder:Hide();placeholder.rosterPlaceholderIndex=nil end
-        r.rebuilding=nil;r.search:ClearFocus();r.frame:Hide()
+        r.rebuilding=nil;r.search:ClearFocus();r.frame:Hide();if r.splitter and not r.splitter.drag then r.splitter:Hide() end
     end
     function p:BindRosterViewportRow(row,entry,index)
         local r=self.roster;local lease={};local revision=r.revision
@@ -139,6 +140,9 @@ function addon:InstallSettingsLayout(p)
             r.search=addon:CreateWorkbenchEditBox(r.frame);r.search:SetMaxLetters(128);addon:AttachWorkbenchSearchHint(r.search)
             r.scroll=addon:CreateWorkbenchScrollFrame(r.frame);r.child=CreateFrame('Frame',nil,r.scroll);r.scroll:SetScrollChild(r.child)
             r.scroll.workbenchBar:HookScript('OnValueChanged',function() self:RefreshRosterViewport() end)
+            -- Rows follow the list column; the scroll bar reserves space only when shown.
+            function r.scroll.OnWorkbenchColumnResized() self:RefreshRosterViewport() end
+            r.splitter=addon:CreateWorkbenchSplitter(self.frame,function(previous) self:ResizeSplit(previous) end)
             r.empty=r.child:CreateFontString(nil,'OVERLAY','GameFontDisableSmall');r.empty:SetPoint('TOPLEFT',6,-6);r.empty:SetText(L['No matches.'])
             r.new=addon:CreateWorkbenchLabeledIconButton(r.frame,'plus',L['New'],238);r.new:SetPoint('BOTTOMLEFT',0,0)
             r.manage=addon:CreateWorkbenchButton(r.frame,'',238);r.manage:SetPoint('BOTTOMLEFT',0,30)
@@ -171,15 +175,24 @@ function addon:InstallSettingsLayout(p)
         r.frame:SetSize(side,sidebarHeight);r.category:SetWidth(side);r.new:SetWidth(side);r.manage:SetWidth(side);r.search:ClearAllPoints();r.search:SetPoint('TOPLEFT',0,0);r.search:SetSize(side,24)
         local filterTop=28
         if r.options.sources then
-            local width=(side-8)/#r.options.sources
-            for i,control in ipairs(r.sourceButtons) do control:ClearAllPoints();control:SetPoint('TOPLEFT',(i-1)*(width+4),-filterTop);control:SetWidth(width) end
+            local shown={};for i=1,#r.options.sources do shown[i]=r.sourceButtons[i] end
+            addon:LayoutWorkbenchRow(shown,0,filterTop,side)
             filterTop=filterTop+28
         end
         r.category:ClearAllPoints();r.category:SetPoint('TOPLEFT',0,-filterTop)
         local footerHeight=r.footerActions and math.ceil(#r.footerActions/2)*28+(r.footerManage and 30 or 0) or (r.options.new and 30 or 0)+(r.options.manage and 30 or 0)
         if r.footerActions then local width=(side-6)/2;for i,button in ipairs(r.actionButtons) do button:ClearAllPoints();button:SetPoint('BOTTOMLEFT',((i-1)%2)*(width+6),(r.footerManage and 30 or 0)+(math.ceil(#r.footerActions/2)-1-math.floor((i-1)/2))*28);button:SetWidth(width);addon:AlignWorkbenchTextLeft(button,24) end end
-        local top=filterTop+(r.options.categories and 32 or 4);r.scroll:ClearAllPoints();r.scroll:SetPoint('TOPLEFT',0,-top);r.scroll:SetSize(side-24,math.max(1,sidebarHeight-top-footerHeight));r.child:SetWidth(side-24)
+        local top=filterTop+(r.options.categories and 32 or 4);r.scroll:ClearAllPoints();r.scroll:SetPoint('TOPLEFT',0,-top);r.scroll:SetHeight(math.max(1,sidebarHeight-top-footerHeight))
+        r.scroll:SetWorkbenchColumnWidth(side);r.child:SetWidth(r.scroll:GetWidth());r.empty:SetWidth(math.max(1,r.child:GetWidth()-12));r.splitter:Place(geometry)
         self.scroll:ClearAllPoints();self.scroll:SetPoint('TOPLEFT',geometry.detailX,0);self.scroll:SetSize(geometry.detailWidth-18,height);self.message:SetWidth(math.max(1,self.frame:GetWidth()-(self.creationUsed and 340 or 20)))
         self:RefreshRosterViewport()
+    end
+    -- A divider drag changes the detail width without resizing the page, so
+    -- the page is drawn again exactly as after a window resize. While an
+    -- input is invalid the page cannot be redrawn; the divider stays put.
+    function p:ResizeSplit(previous)
+        if not self.rosterUsed or not self.roster then return end
+        if self.active and not self:FlushEdits() then addon:SetWorkbenchSidebarPreference(previous);return end
+        self:Layout();if self.active then self:Draw() end
     end
 end
