@@ -79,7 +79,7 @@ test('archived raw source retains negative overdue behavior without mutating sto
  if mode=='generated-current'then assert(catalog.evaluate==authored)else assert(catalog.evaluate==archive.evaluate,'authored-copy requires explicit archived checked-in catalog')end
 end)
 test('native helper and capture source identities remain exact for current and historical copies',function()
- local _,a=fixture();for name,hash in pairs({enchantObservation='e5464f90',numericObservation='02dee6a9',swingSpeed='56aa868b',color='63742be5',helpers='e831a1db'})do local id='builtin:Conditions/weapon.lua:'..name;assert(a:FunctionSourceHash(a.builtinFunctions[id].source)==hash and a:ResolveFunctionBinding(id)==a.builtinSourceModules['Conditions/weapon.lua'](name))end
+ local _,a=fixture();for name,hash in pairs({enchantObservation='5abf63f3',numericObservation='02dee6a9',swingSpeed='56aa868b',color='63742be5',helpers='e831a1db'})do local id='builtin:Conditions/weapon.lua:'..name;assert(a:FunctionSourceHash(a.builtinFunctions[id].source)==hash and a:ResolveFunctionBinding(id)==a.builtinSourceModules['Conditions/weapon.lua'](name))end
 end)
 print('Source mode: '..mode..(mode=='authored-copy'and' (exact authored evaluator over detached archived metadata; checked-in catalog untouched)'or' (checked-in catalog must equal actual authored evaluator)'))
 finish()

@@ -46,11 +46,14 @@ local function setLabel(id)
 end
 
 -- Temporary weapon enchant: GetWeaponEnchantInfo returns has, expires,
--- charges, enchant ID for the main hand (1-4) and the off hand (5-8).
+-- charges, enchant ID for the main hand (1-4) and the off hand (5-8). The
+-- Platform reader composes the same tuple from Retail's C_PaperDollInfo.
 local function imbueObservation(value, cache)
-    if type(GetWeaponEnchantInfo) ~= "function" then return nil, "missing-api" end
+    local reader = GetWeaponEnchantInfo
+    if C_PaperDollInfo and C_PaperDollInfo.GetTemporaryEnchantmentInfo then reader = addon.Platform.ComposedWeaponEnchantInfo end
+    if type(reader) ~= "function" then return nil, "missing-api" end
     ---@diagnostic disable-next-line: unbalanced-assignments
-    local ok, main, _, _, mainID, off, _, _, offID = pcall(Functions.cache.getCached, cache, GetWeaponEnchantInfo)
+    local ok, main, _, _, mainID, off, _, _, offID = pcall(Functions.cache.getCached, cache, reader)
     if not ok then return nil, "api-error" end
     local enchanted, id = main, mainID
     if value.offhand then enchanted, id = off, offID end
@@ -172,7 +175,8 @@ addon:RegisterCondition("SET_PIECES", {
     end
 })
 
-if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
+-- Every client, Retail included (Shaman imbues); see Conditions/weapon.lua.
+do
     addon:RegisterCondition("WEAPON_IMBUE", {
         description = L["Weapon Enchant Type"],
         icon = addon.Artwork.condition["WEAPON_IMBUE"],

@@ -279,6 +279,7 @@ Conditions/common.lua
 Conditions/character.lua
 Conditions/talent.lua
 Conditions/engraving.lua
+Conditions/specialization.lua
 Conditions/stats.lua
 Conditions/ext_stats.lua
 Conditions/spell.lua
@@ -298,6 +299,7 @@ Conditions/spatial.lua
 Conditions/range.lua
 Conditions/spatial_stats.lua
 Conditions/weapon.lua
+Conditions/equipment.lua
 Conditions/build.lua
 Conditions/misc.lua
 Conditions/bossmod.lua
