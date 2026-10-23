@@ -89,24 +89,26 @@ test('custom replacements retain complete compatibility dispatch and mutable inp
  a:RegisterCondition('CASTING',{valid=function()return true end,evaluate=function(value)value.changed=true;return true end})
  assert(prepare(a,body({root}),{},function()return true end)==nil);assert(a:evaluateConditionResult(root).status=='match'and root.changed)
 end)
-test('every existing TBC pack action and cooldown graph compiles without changing pack data',function()
+test('every TBC pack action and cooldown graph compiles, or takes the declared ordinary path, without changing pack data',function()
  local f,_,prepare=fixture();local a=f.addon;local loaded={}
  -- Built In composition: compile the expanded graphs registration actually consumes.
  for _,path in ipairs({'Data/plain.lua','Data/tags.lua','Data/rotation_tree.lua','Data/validation.lua','Core/rotation_library.lua'})do f.load(path)end
  a.RegisterDefaultRotation=function(_,envelope)loaded[#loaded+1]=assert(a:ExpandDefaultRotation(envelope));return true end
- for path in io.lines('RotationMaster.toc')do if path:match('^Defaults/.*%.lua$')then f.load(path)end end
- local census=36
- census=census-12+10 -- TBC Mage/Warlock/Priest premade rewrite: 12 bracket packs out, 10 premades in
- assert(#loaded==census,'pack census changed: '..#loaded)
- -- The TBC Mage/Warlock/Priest premades read conditions the compiled runtime does not declare
- -- (MANAPCT, THREAT_COUNT, TALENT, DEBUFF_REMAIN...), so they run on the legacy evaluator.
- local legacy=0
+ -- One pack per Defaults/tbc file; blocks register none.
+ local packs=0;for path in io.lines('RotationMaster.toc')do if path:match('^Defaults/.*%.lua$')then f.load(path);if path:match('^Defaults/tbc/')then packs=packs+1 end end end
+ assert(packs>0 and #loaded==packs,'pack census changed: '..#loaded..' of '..packs)
+ -- These premades use condition tags with no owned runtime declaration yet (POWER, MANAPCT,
+ -- THREAT_COUNT, CLASSIFICATION, ISSAME, GROUP, TT_HEALTH, BUFF_REMAIN, DEBUFF_STACKS/REMAIN,
+ -- SPELL_COOLDOWN, SPELL_HISTORY_TIME, CAST/CHANNEL_INTERRUPTABLE, PET, DEAD, SWING_TIME), so
+ -- they run on the ordinary evaluation path. Declaring those tags should move them back here.
+ local ordinary={['rm.tbc.warrior.dps.wowsims']=true,['rm.tbc.warrior.dps.icyveins']=true,['rm.tbc.warrior.protection.wowhead']=true,['rm.tbc.warrior.protection.icyveins']=true,
+  ['rm.tbc.rogue.dps.wowsims']=true,['rm.tbc.rogue.dps.wowhead']=true,['rm.tbc.hunter.ranged.wowsims']=true,['rm.tbc.hunter.ranged.wowhead']=true}
+ local fallback=0
  for _,envelope in ipairs(loaded)do
-  if envelope.id:match('^rm%.tbc%.mage%.')or envelope.id:match('^rm%.tbc%.warlock%.')or envelope.id:match('^rm%.tbc%.priest%.')then
-   assert(prepare(a,envelope.body,{},function()return true end)==nil,envelope.id..' unexpectedly compiled');legacy=legacy+1
-  else assert(prepare(a,envelope.body,{},function()return true end),envelope.id..' rejected compiler')end
+  local compiled=prepare(a,envelope.body,{},function()return true end)
+  if ordinary[envelope.id]or envelope.id:match('^rm%.tbc%.mage%.')or envelope.id:match('^rm%.tbc%.warlock%.')or envelope.id:match('^rm%.tbc%.priest%.')then assert(not compiled,envelope.id..' now compiles: drop it from the ordinary list');fallback=fallback+1
+  else assert(compiled,envelope.id..' rejected compiler')end
  end
- assert(legacy==10)
- assert(a:GetConditionRuntimeDiagnostic().compiles==census-legacy and a:GetConditionRuntimeDiagnostic().legacyFallback==legacy)
+ assert(a:GetConditionRuntimeDiagnostic().compiles==packs-fallback and a:GetConditionRuntimeDiagnostic().legacyFallback==fallback)
 end)
 finish()

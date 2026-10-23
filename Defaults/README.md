@@ -46,42 +46,20 @@ The fourth pack is **TBC Priest early leveling, levels1–19**, revision1. Its o
 
 It preserves an ongoing channel and a learned active wand; an unavailable repeat observation stops lower advice. A final Stop suppresses implicit melee advice. Fortitude, shields, healing, racial abilities, dispels, fear, group support and resource/emergency decisions remain manual. Targeted friendly spells need explicit action-target support before they can become self-upkeep advice; a player aura predicate alone does not supply that target. This preview neither selects talents nor extends to level20. `tests/defaults_priest.lua` covers owned localized DoTs, unknown observations, channel/repeat behavior, scope/enable/clone boundaries and the actual initializer, action-bar lookup and main publication with modeled native APIs. Native Priest gameplay acceptance remains outstanding.
 
-The fifth pack is **TBC Warrior early leveling, levels1–19**, revision1. Original priorities adapt [Icy Veins’ Arms Warrior leveling guide](https://www.icy-veins.com/tbc-classic/arms-warrior-leveling-guide) (reviewed2026-10-20, guide revision2026-01-12). It offers optional Battle Shout, then the player's missing Rend and Heroic Strike against a living hostile target while the player is already in combat. Maintaining Rend through19 and offering Heroic Strike without a fixed rage reserve are explicit RM preview policies. They do not establish optimal damage, target lifetime or surplus rage. Pulls, Charge, Overpower/reactive decisions, stance changes, interrupts, defenses and rage conservation remain manual.
-
-Exact known-rank guards preserve a queued Heroic Strike for IDs78/284/285, rather than assuming a highest-rank current-spell query recognizes a lower queued rank. Unknown pending state suppresses lower advice; unlearned ranks do not query it. The existing implicit Attack fallback remains subject to its normal known, mapped, ready, target and combat checks. Native learned rank, bar mapping, resource and stance usability remain authoritative. Expanding beyond19 requires reviewing additional queued ranks and new abilities. `tests/defaults_warrior.lua` covers these boundaries, localized own Rend/Shout, legacy API shapes, scope/profile/clone isolation and real initializer/buttons/main publication with modeled WoW observations. Native gameplay and next-swing acceptance remain outstanding.
-
 The sixth pack is **TBC Paladin early leveling, levels1–19**, revision1, adapting the original [Paladin](https://www.icy-veins.com/tbc-classic/paladin-leveling-guide) and [Retribution leveling](https://www.icy-veins.com/tbc-classic/retribution-paladin-leveling-guide) guides (reviewed2026-10-20, revisions2026-01-12). Optional Devotion Aura preserves the player's own active Devotion or Retribution; optional Righteousness preserves an active Righteousness or Crusader seal. Combat Judgement requires positively observed Righteousness and absence of Crusader, followed by the unchanged implicit melee fallback. No automatic aura upgrade, Crusader preparation, seal twisting or fixed mana reserve is inferred. Targeted Blessings, heals, utility, pulls, resource conservation and later/talent mechanics stay manual.
 
 The Righteousness seed21084 uses the existing localized-name family catalog, including actual learned20154; no hardcoded alias or training inference is introduced. Missing family metadata cannot create an available action. Self/area effects still pass normal native range/usability/cooldown/mapping checks, with no fabricated self-target. `tests/defaults_paladin.lua` exercises those boundaries, self-effect API refusal/recovery, own aura/seal choices, localized legacy tuples, scope/clones and actual initializer/buttons/main publication. Native spellbook identity, own-aura source attribution and gameplay acceptance remain outstanding.
-
-The seventh pack is **TBC Hunter early leveling, levels1–19**, revision1, adapting the original [Beast Mastery](https://www.icy-veins.com/tbc-classic/beast-mastery-hunter-leveling-guide) and [general Hunter leveling](https://www.icy-veins.com/tbc-classic/hunter-leveling-guide) guides (reviewed2026-10-20, revisions2026-01-12). It preserves current casting/channeling, starts inactive Auto Shot while stationary, then offers the player's missing Serpent Sting before Arcane Shot. Active Auto Shot is never advised as an off-toggle; unavailable repeat state halts lower advice. Optional Hawk preserves a chosen Monkey. There is no implicit melee fallback or pet automation.
-
-Establishing Auto Shot first, Sting before Arcane, no fixed mana reserve and preserving Monkey are explicit RM preview policies. Native learned state, resources, cooldown, range and mappings remain authoritative. Pet control, equipment/ammunition, positioning, melee, utility and resource decisions stay manual. Tests model native unusable/range observations rather than asserting that one API comprehensively detects zero, wrong or last-consumed ammunition. `tests/defaults_hunter.lua` covers modern/legacy repeat shapes and player-book slots, failure recovery, owned localized Stings, movement, scope/profile/clone adoption and actual initializer/buttons/main publication. Actual ammunition, ranged weapon/deadzone and movement transitions require native acceptance.
 
 The eighth pack is **TBC Druid early caster leveling, levels1–19**, revision1, adapting the original [Balance leveling guide](https://www.icy-veins.com/tbc-classic/balance-druid-leveling-guide) (reviewed2026-10-20, revision2026-01-12). This is explicitly a caster-only preview, not Feral coverage. In known humanoid form it offers the player's missing Moonfire, then stationary Wrath, preserving existing casts/channels. A known shifted form stops caster advice; an unavailable form observation halts the branch. It never assumes that form slot1 means Bear, because the existing numeric FORM condition does not establish form identity.
 
 Moonfire before Wrath without a health cutoff, no fixed mana reserve, preserving manual form choice and suppressing implicit melee are explicit RM preview policies. Native learned ranks, resources, cooldown, range and mappings remain authoritative. Form selection, Bear/Feral combat, rage/energy, targeted Mark/Thorns/heals, utility and resource decisions remain manual. `tests/defaults_druid.lua` covers modeled form topologies, unknown observations, owned localized effects, scope/profile/clone boundaries and the actual initializer/buttons/main publisher. Native form index/count, aura attribution and gameplay acceptance remain outstanding.
 
 
-## TBC Rogue early leveling preview
-
-The Rogue preview covers levels1–19. In melee combat it offers missing own Slice and Dice from two combo points, Eviscerate from five, otherwise Sinister Strike. Five-point Eviscerate and withholding builders at cap are RM preview policies. Native learned ranks, usability, cooldowns, range and mapped actions remain authoritative. Explicit suppress-Attack stops preserve manual stealth, casts and channels; unknown required facts halt advice. Openers, poisons, positional attacks, utility, targets and resource planning remain manual. `tests/defaults_rogue.lua` exercises the actual engine and publisher. Primary client UI code supports exact player/target combo transport; mirrored spell descriptions supply qualified rank examples, not proof of training. Native acceptance and optimality remain unclaimed.
-
 ## TBC Priest 20–29 continuation preview
 
 This separate revision-1 pack covers levels20–29 without changing the original1–19 pack or saved clones. It retains optional Inner Fire, opening Mind Blast and own Pain, then prefers actually learned Mind Flay above half health before wand/Smite fallback. Existing channels and active wand filler are preserved. Learned ranks, native readiness and actual action-bar mappings remain authoritative; a level or suggested talent build never grants a spell.
 
 The same [Icy Veins Shadow Priest guide](https://www.icy-veins.com/tbc-classic/shadow-priest-leveling-guide) supplies the broader leveling context (reviewed2026-10-20, revision2026-01-12). Its talent progression and client spell-record minimum levels differ; the pack checks actual learned base15407. Repeated Flay and the inherited50% cutoff are explicit RM policies. This pack does not implement one/two channels then wand; manually choose when to channel or wand. Healing, shields, talents, utility and resources remain manual. `tests/defaults_priest_20_29.lua` covers the real publisher, exact learned and unknown observations, ranked mapping/readiness, manual channels/wand, profile/clone isolation and the19/20/29/30 scope boundaries with modeled native APIs. Native gameplay acceptance and optimality remain unclaimed.
-
-## TBC Warrior 20–29 continuation preview
-
-This separate revision-1 pack leaves the1–19 source and saved clones unchanged. In combat against a living attackable target it offers actually learned, mapped and native-ready Execute below20% target health, then preserves exact queued Heroic Strike ranks78/284/285/1608 before offering the ready HS family. Optional Battle Shout remains independent. Execute-before-queued-HS is RM preview policy and does not cancel that queue. Native learned ranks, resources, range, cooldown and stance usability remain authoritative; no fixed rage reserve is inferred.
-
-The current [Icy Veins Arms guide](https://www.icy-veins.com/tbc-classic/arms-warrior-leveling-guide) (reviewed2026-10-20, revision2026-01-12) supports early Rend limits and low-health Execute. Rend maintenance ends at this bracket. Overpower/dodge response, stance choices, pulls, reactive utility, talents, rage conservation and queue cancellation remain manual. `tests/defaults_warrior_20_29.lua` covers actual publisher/bar discovery, four exact queued ranks, the strict Execute boundary and native readiness, unknown observations, localized Shout, scope/profile/clone independence and the original pack's unchanged cutoff. APIs are modeled; native gameplay acceptance and optimality remain unclaimed.
-
-## TBC Hunter 20–29 continuation preview
-
-This separate revision-1 pack preserves the1–19 source and saved clones. It retains the cast/channel stop, Auto Shot activation, own missing Serpent Sting and Arcane Shot, with native learned ranks, mapping, resources and range decisive. Optional Hawk also preserves chosen Cheetah; Sting upkeep also preserves attributable own Scorpid. Other Hunters' Scorpid does not suppress this Hunter's Sting. The inherited own-aura contract treats readable nil caster as not-own and restricted caster as unavailable; no promise is made for unattributed ownership. Pets, melee, ammo, shot timing, positioning and resources remain manual. Current [Beast Mastery leveling guidance](https://www.icy-veins.com/tbc-classic/beast-mastery-hunter-leveling-guide) supplies context, not an optimal priority claim. `tests/defaults_hunter_20_29.lua` covers actual publisher/bar discovery, chosen aspects/stings, modern/legacy observations and bracket isolation with modeled APIs; native acceptance remains open.
 
 ## TBC Paladin 20–29 continuation preview
 
@@ -90,10 +68,6 @@ This separate revision-1 pack preserves the1–19 source and saved clones. Optio
 ## TBC Druid caster 20–29 continuation preview
 
 This separate revision-1 pack preserves the1–19 source and saved clones. It remains humanoid-only: current casts/channels are preserved, own Moonfire precedes actually learned stationary Starfire, with independently ready Wrath fallback. Unknown Starfire learning halts its branch; known absence permits Wrath. Known shifted forms stop caster advice without guessing Bear/Cat identity from a slot. Moonfire-first, repeated Starfire and no health cutoff are RM policies adapting a subset of the current [Balance guide](https://www.icy-veins.com/tbc-classic/balance-druid-leveling-guide). Native learned ranks, mapping and readiness remain decisive. Feral attacks, form changes, quests, talents, healing/support, crowd control and resource decisions remain manual. Own Moonfire uses the same attributable-caster contract and nil-caster limitation. `tests/defaults_druid_20_29.lua` models ranks, fallback, forms, unknown observations and real publication; native acceptance and optimality remain unclaimed.
-
-## TBC Rogue 20–29 continuation preview
-
-This separate revision-1 pack keeps the original1–19 source and saved clones unchanged and deliberately reuses its complete combat/upkeep graph: missing attributable own Slice from two current-target combo points, Eviscerate from five, otherwise Sinister. Native learned/mapped rank families and current readiness govern actions; five-point Eviscerate and withholding builders at cap remain RM policies. Existing TBC target-combo transport is retained. No new priority is invented merely because Rupture, poisons or another Stealth rank enters the bracket. The current [Combat Rogue guide](https://www.icy-veins.com/tbc-classic/combat-rogue-leveling-guide) supplies context, not proof that this fixed finisher policy is optimal for every target. Poison acquisition/application, openers, positioning, reactive talents, lifetime decisions and resources remain manual. Own Slice retains the shared attributable-caster/nil-caster limitation. `tests/defaults_rogue_20_29.lua` models higher ranks, resource authority, current-target point transitions, unknown/stealth/cast/channel clearing, scopes and real publication; native acceptance remains open.
 
 ## TBC Mage 30–39 Frost preview
 
@@ -115,34 +89,15 @@ This separate revision-1 pack keeps the original1–19 source and saved clones u
 [The original-author Shadow leveling guide](https://www.icy-veins.com/tbc-classic/shadow-priest-leveling-guide) was reviewed again for this continuation; its revision is2026-01-12. Healing, defenses, resources, utility and deciding when to begin a channel or wand remain manual. The existing1–19 and20–29 packs and saved clones stay unchanged. Focused modeled pipeline/tuple tests do not establish native gameplay acceptance or optimality.
 
 
-## TBC Hunter 30–39 ranged preview
-
-`rm.tbc.hunter.starter.30-39` is a separate generic ranged continuation. It retains the reviewed20–29 graph with only node IDs and level bounds changed: preserve current casts/channels, start inactive Auto Shot while stationary, maintain attributable own Serpent Sting while preserving own Scorpid, then offer ready Arcane Shot. Optional Hawk preserves chosen Monkey/Cheetah. Current learned ranks, actual mappings and native readiness remain authoritative; level grants no spell or talent. The original1–19 and20–29 sources and saved clones stay unchanged.
-
-[Blizzard’s original Hunter manual](https://bnetcmsus-a.akamaihd.net/cms/template_resource/LO0VQ46XB1281555957773363.pdf), printedpp84–85, supplies historical toggle/aspect context, not TBC training evidence. The inherited [Beast Mastery leveling guide](https://www.icy-veins.com/tbc-classic/beast-mastery-hunter-leveling-guide) supplies context for this bounded subset, not a BM talent gate or optimal priority claim. Pets, melee, ammunition, positioning, shot timing, talents and resources remain manual. Readable nil aura caster is not assumed own; restricted ownership skips affected Sting advice. `tests/defaults_hunter_30_39.lua` exercises modeled native observations through the real initialized publisher; current native gameplay acceptance remains unverified.
-
-
 ## TBC Paladin 30–39 manual seal/aura preview
 
 This generic continuation leaves all aura and seal upkeep manual, including talent choices such as Sanctity. Only positively attributable own Righteousness permits Judgement; Crusader, Command, Justice, Light and Wisdom observations also block consuming it during overlap. Explicit cast/channel Stops protect manual actions and suppress implicit melee while those states are unavailable. Otherwise the existing native-authorized melee fallback remains. This is a conservative subset, not complete Retribution priorities, seal twisting or a talent gate. Earlier sources and saved clones remain unchanged.
-
-## TBC Rogue 30–39 melee preview
-
-The inherited20–29 melee policy continues with separate IDs and source scope: preserve stealth/casts/channels, missing own Slice from two current-target points, Eviscerate at five, otherwise Sinister Strike. Learned families and current readiness/mappings remain authoritative. This is a generic bounded subset, not a complete Combat build or optimal finisher/lifetime/resource policy. Poisons, openers, talents, positioning and reactive utility remain manual. Earlier sources and saved clones are unchanged.
 
 ## TBC Druid 30–39 caster preview
 
 The inherited humanoid-only caster policy continues: attributable own Moonfire, actually learned stationary Starfire, then independently ready Wrath. Nonzero forms, casts/channels and exhausted caster advice suppress implicit melee. No Bear/Aquatic slot, level-granted skill or Balance talent allocation is inferred. Feral, support, talents and resource decisions remain manual. Earlier sources and saved clones remain unchanged.
 
-## TBC Warrior 30–39 combat preview
-
-The bounded generic melee subset retains learned Execute strictly below20% target health before queued/current Heroic Strike checks and a ready HS family. Five exact learned queue guards include11564; each protects lower queued ranks independently of the highest learned rank. Cast/channel Stops protect manual actions such as Slam and guard optional Battle Shout as well. Actual learned families, native usability/range/cooldown and real mappings govern all ranks. Rend, reactive abilities, stance/talent choices, pulls and resource/queue planning remain manual; no optimal Arms priority or fixed rage reserve is claimed.
-
-All four continuations remain TBC/player/class/level bounded. Modeled pipeline tests and source evidence do not establish native gameplay acceptance or optimality.
-
-### Hunter 40–49
-
-`rm.tbc.hunter.starter.40-49` continues the same eight-row generic ranged subset as 30–39 with separate IDs and current level bounds. It preserves casts, channels, deliberate Monkey/Cheetah and attributable own Scorpid; it starts inactive Auto Shot only while stationary, then considers missing own Serpent Sting and Arcane Shot. Learned families, mappings and native readiness govern available ranks. This adds no training schedule, talent gate or complete BM rotation. Pets, ammunition, melee, positioning, shot timing and resources remain manual; native acceptance remains unverified. Earlier sources and saved clones remain separate.
+These continuations remain TBC/player/class/level bounded. Modeled pipeline tests and source evidence do not establish native gameplay acceptance or optimality.
 
 ### Priest Shadow40–49
 
@@ -158,17 +113,13 @@ All four continuations remain TBC/player/class/level bounded. Modeled pipeline t
 
 `rm.tbc.mage.starter.40-49` is a separate six-row continuation of the reviewed30–39 Frost single-target preview. Only pack/row identities, display keys and bracket bounds change. Automatic selection requires actual learned Frostbolt and levels40–49; Frost is orientation, with no new talent-allocation gate or40s ability. Existing learned families, mappings and current readiness decide rank advice. Intellect remains independent; any manual Frost/Ice/Mage Armor is preserved. When all are definitely absent and learning is readable, learned Mage Armor owns preference over Ice, then Frost; an unavailable preferred family never permits a downgrade. Manual casts/channels retain the inherited next-action hint, with no new Stop or implicit-melee suppression authored. Talents, AoE, frozen-target combinations, kiting, defenses and resources remain manual. Earlier28packs and saved clones are unchanged. This is an inherited bounded preview, not complete40s/all-build or optimal-DPS guidance. Existing provenance is retained without claiming a new guide review or native gameplay acceptance.
 
-### Warrior40–49
-
-`rm.tbc.warrior.starter.40-49` continues the bounded30–39 generic melee policy with separate identities, labels and level bounds, plus two additional exact Heroic Strike queue guards for11565/11566. The original five guards and Execute-before-queue priority remain unchanged. Description mirrors corroborate nominal40/48 Next Melee identities; actual `SPELL_KNOWN` gates each exact `SPELL_ACTIVE` query. These seven scenario identifiers are not complete future/seasonal family coverage or a training schedule. Levels do not grant ranks; learned families, mappings and native readiness still govern advice. Manual casts/channels, optional Battle Shout, omitted reactive abilities, stance/talent choices and resources retain the earlier policy. This is a bounded preview, not a complete Arms build or optimality claim. Earlier sources and saved clones remain independent; native gameplay acceptance is unverified.
-
 ### Paladin40–49
 
 `rm.tbc.paladin.starter.40-49` is a literal three-row continuation of30–39, changing only identities, labels and bracket bounds. There is no talent, role or learned-spell selection gate. All aura/seal upkeep remains manual; only affirmative own Righteousness with no conflicting Crusader/Command/Justice/Light/Wisdom observation permits a natively learned and ready Judgement. The inherited combat/attackable branch retains cast/channel Stops, encountered-unknown suppression and independently authorized melee fallback. No new rank, action, seal choice, support priority or Ret optimization is claimed. Earlier sources and saved clones remain independent; native gameplay acceptance is unverified.
 
-### Rogue and limited Druid caster 40–49
+### Limited Druid caster 40–49
 
-The Rogue and Druid caster packs retain their reviewed 30–39 action policies in separately bounded 40–49 definitions. Rogue preserves manual stealth and uses attributable own Slice and Dice, five-point Eviscerate and Sinister Strike. Druid remains humanoid caster-only: manual forms, casts and channels are preserved; own missing Moonfire, learned stationary Starfire and independently ready Wrath remain the bounded choices. Actual learning, mappings and native readiness govern recommendations. Neither pack adds a talent gate, complete build or optimality claim. Earlier sources and saved clones remain independent; native gameplay acceptance remains unverified.
+The Druid caster pack retains its reviewed 30–39 action policy in a separately bounded 40–49 definition. It remains humanoid caster-only: manual forms, casts and channels are preserved; own missing Moonfire, learned stationary Starfire and independently ready Wrath remain the bounded choices. Actual learning, mappings and native readiness govern recommendations. It adds no talent gate, complete build or optimality claim. Earlier sources and saved clones remain independent; native gameplay acceptance remains unverified.
 
 ### Shaman Enhancement50–59
 
@@ -181,6 +132,23 @@ The Rogue and Druid caster packs retain their reviewed 30–39 action policies i
 ### Priest Shadow 50–59
 
 `rm.tbc.priest.shadow.50-59` is a separate twelve-row literal continuation of the reviewed 40–49 Shadow preview. Only identities, labels and bracket bounds change. The unique-positive Shadow allocation and actual learned Smite selection gates remain; talent allocation grants no ability. Learned ranks, mappings and native readiness govern recommendations. Channels, active wand, owned Pain and optional Inner Fire retain the inherited policy; any observed manual Inner Fire is preserved. Healing, resources, channel and wand choices remain manual. The inherited citation is retained without claiming fresh research, a complete build, trainer schedule, optimality or native gameplay acceptance. All 35 earlier packs and saved clones remain unchanged.
+
+## TBC Warrior, Rogue and Hunter premades (levels 1–70)
+
+These replace the bracketed Warrior, Rogue and Hunter previews (removed, with their tests; saved clones of them are independent copies and keep loading, running and auto-selecting, covered by `tests/builtin_removed_pack_clones.lua`). Each premade runs from its first level to 70 and adapts by spell known, never by level. Where the sources compared in the premade research disagree on the priority itself, each source family is its own premade with the same switch; the recommended one has the higher `priority` and auto-selects, the others are there to choose.
+
+| Premade | Switch, priority | Differs from its sibling by |
+|---|---|---|
+| `rm.tbc.warrior.protection.wowhead` (Wowhead, wowsims) | Defensive Stance (`FORM` 2), 30 | Thunder Clap/Demoralizing Shout upkeep on elites; Shield Block against crush-capable targets |
+| `rm.tbc.warrior.protection.icyveins` | Defensive Stance, 25 | no single-target debuff upkeep; Shield Block while the target attacks you; Rend before Shield Slam |
+| `rm.tbc.warrior.dps.wowsims` (wowsims, Wowhead) | level ≥ 1 (catch-all), 10 | Execute after Bloodthirst/Mortal Strike/Whirlwind; Devastate/Sunder filler |
+| `rm.tbc.warrior.dps.icyveins` | level ≥ 1, 5 | Execute first (Arms) or second (Fury); Hamstring only near the rage cap |
+| `rm.tbc.rogue.dps.wowsims` (wowsims, Icy Veins) | level ≥ 1, 10 | two-point Slice and Dice; Rupture when it will last; near-death Eviscerate |
+| `rm.tbc.rogue.dps.wowhead` | level ≥ 1, 5 | one-point Slice and Dice; Eviscerate only |
+| `rm.tbc.hunter.ranged.wowsims` (wowsims, rotationtools, Icy Veins) | level ≥ 1, 10 | Arcane Shot fills a clipped Steady; solo Serpent Sting; Viper/Hawk hysteresis |
+| `rm.tbc.hunter.ranged.wowhead` | level ≥ 1, 5 | Multi/Steady only; no Sting at 62+; no Viper |
+
+Shared steps live in `Defaults/blocks/{warrior,rogue,hunter}.lua`. Every rotation starts with one cast/channel Stop and one no-target Stop; Warrior and Hunter pulls sit behind one out-of-combat Branch; the Rogue opener behind one stealth Branch; multi-target play is one Branch on `THREAT_COUNT` (enemies with nameplates that have you on their threat table: two for Warriors, three for Hunters' Multi-Shot) and an elite-or-second-enemy gate on Rogue cooldowns. `DISTANCE_COUNT` is not used: an enemy whose range LibRangeCheck cannot bound makes it unavailable, and an unavailable Branch halts the whole rotation. RM cannot count enemies around the target, so Hunter traps and Volley stay manual. `tests/defaults_tbc_{warrior,rogue,hunter}.lua` run each premade through the real predicates, catalog, sequence and publisher with modeled WoW observations; native gameplay acceptance remains open.
 
 ## Built In composition
 
@@ -197,10 +165,10 @@ assert(addon:RegisterDefaultBlock({id='shared.preserve-cast',revision=1,families
 A consumer pins every block it reaches, including nested ones, in `blocks`. It references a block as a step anywhere in `rotation`, `cooldowns`, a branch arm or another block:
 
 ```lua
-id='rm.tbc.rogue.starter.30-39',revision=1,blocks={['tbc.rogue.preserve-manual']=1},
-rotation={{id='rogue-thirty-manual',type='block',block='tbc.rogue.preserve-manual',prefix='rogue-thirty-'}, ...}
+id='rm.tbc.rogue.dps.wowsims',revision=1,blocks={['tbc.rogue.opening']=1,['tbc.rogue.upkeep']=1,['tbc.rogue.builders']=1},
+rotation={{id='rogue-ref-opening',type='block',block='tbc.rogue.opening',prefix='rogue-'}, ...}
 ```
 
 An expanded step ID is the reference's `prefix` (default `<reference id>.`) followed by the block step's ID. Prefixes compound through nested references, so IDs stay stable across reloads and differ per inclusion. Choose a prefix that keeps existing IDs when converting a shipped pack, since saved clones' step origins name them. `families` lists every edition the block was reviewed for. TBC may share Classic blocks only after reviewing changed talents and mechanics; shared spell names alone are insufficient. An override replaces the whole step list, and applies only when the consumer's whole edition/spec scope lies inside its selector; a partial match or a second matching override is rejected. Expansion also hard-rejects missing or undeclared blocks, unused or stale pins, cycles, duplicate block or expanded IDs, and incompatible editions or classes. Each rejection names the failing location.
 
-A block content change needs a new block revision. Every consumer's pin must then change, or it fails to load. Bump the consumer's own revision too. Record both as new rows in `tests/fixtures/builtin_composition_ledger.lua`; `tests/builtin_composition.lua` fails when content or pins change without a revision bump. A block change therefore always reaches clones as a source revision with a source-side diff. `rm.tbc.rogue.starter.30-39` and `.40-49` share `Defaults/blocks/rogue.lua` and expand to their exact pre-composition trees.
+A block content change needs a new block revision. Every consumer's pin must then change, or it fails to load. Bump the consumer's own revision too. Record both as new rows in `tests/fixtures/builtin_composition_ledger.lua`; `tests/builtin_composition.lua` fails when content or pins change without a revision bump. A block change therefore always reaches clones as a source revision with a source-side diff. Variants of one role share blocks for everything their sources agree on (`Defaults/blocks/warrior.lua`, `rogue.lua`, `hunter.lua`).

@@ -299,7 +299,9 @@ Conditions/bossmod.lua
 
 # Packaged read-only rotations
 # Shared Built In blocks register before the packs that expand them
+Defaults/blocks/warrior.lua
 Defaults/blocks/rogue.lua
+Defaults/blocks/hunter.lua
 Defaults/tbc/shaman-starter.lua
 Defaults/tbc/shaman-enhancement-30-39.lua
 Defaults/blocks/mage.lua
@@ -315,25 +317,21 @@ Defaults/tbc/priest-dps-icyveins.lua
 Defaults/tbc/priest-dps-wowhead.lua
 Defaults/tbc/priest-healer-wowhead.lua
 Defaults/tbc/priest-healer-icyveins.lua
-Defaults/tbc/warrior-starter.lua
-Defaults/tbc/warrior-20-29.lua
-Defaults/tbc/warrior-30-39.lua
+Defaults/tbc/warrior-dps-wowsims.lua
+Defaults/tbc/warrior-dps-icyveins.lua
+Defaults/tbc/warrior-protection-wowhead.lua
+Defaults/tbc/warrior-protection-icyveins.lua
 Defaults/tbc/paladin-starter.lua
 Defaults/tbc/paladin-20-29.lua
 Defaults/tbc/paladin-30-39.lua
-Defaults/tbc/hunter-starter.lua
-Defaults/tbc/hunter-20-29.lua
-Defaults/tbc/hunter-30-39.lua
+Defaults/tbc/hunter-ranged-wowsims.lua
+Defaults/tbc/hunter-ranged-wowhead.lua
 Defaults/tbc/druid-caster-starter.lua
 Defaults/tbc/druid-caster-20-29.lua
 Defaults/tbc/druid-caster-30-39.lua
-Defaults/tbc/rogue-starter.lua
-Defaults/tbc/rogue-20-29.lua
-Defaults/tbc/rogue-30-39.lua
-Defaults/tbc/hunter-40-49.lua
 Defaults/tbc/shaman-enhancement-40-49.lua
-Defaults/tbc/warrior-40-49.lua
+Defaults/tbc/rogue-dps-wowsims.lua
+Defaults/tbc/rogue-dps-wowhead.lua
 Defaults/tbc/paladin-40-49.lua
-Defaults/tbc/rogue-40-49.lua
 Defaults/tbc/druid-caster-40-49.lua
 Defaults/tbc/shaman-enhancement-50-59.lua

@@ -2439,16 +2439,26 @@ L["Uses readable positions in the same instance, or player-centered range estima
 L["Default.TBC.Paladin.Starter.Name"] = "Paladin: early leveling (1–19)"
 L["Default.TBC.Paladin.Starter.Description"] = "Bounded melee preview with optional Devotion Aura and Seal of Righteousness upkeep, preserving your chosen Retribution Aura or Crusader seal. Judgement requires observed Righteousness during combat. Blessings, healing, pulls and mana conservation remain manual."
 
-L["Default.TBC.Hunter.Starter.Name"] = "Hunter: early leveling (1–19)"
-L["Default.TBC.Hunter.Starter.Description"] = "Bounded ranged preview: establish Auto Shot, then own Serpent Sting and Arcane Shot; optional Hawk preserves Monkey. No implicit melee advice. Pet control, ammunition, positioning and resource conservation remain manual; native readiness governs recommendations."
+L["Default.TBC.Hunter.Ranged.Wowsims.Name"] = "Hunter: ranged DPS (wowsims)"
+L["Default.TBC.Hunter.Ranged.Wowsims.Description"] = "Levels 1–70, every spec. Pulls with Hunter's Mark, Aimed Shot and Auto Shot, keeps Auto Shot running and uses melee strikes when a target reaches you. Before Steady Shot it keeps your Serpent Sting up and spends mana on Aimed, Multi and Arcane Shot only while you have plenty. From level 62: Multi-Shot when ready, Steady Shot straight after each Auto Shot, Arcane Shot to fill the gap, Serpent Sting when solo. With three or more enemies fighting you, Multi-Shot whenever it is ready. Reminds you of aspects (Viper when mana runs low, Hawk again at half mana), pet care, Kill Command, major cooldowns on elites and bosses and Silencing Shot. Pet commands, Misdirection, traps, Volley, melee weaving and Feign Death stay with you."
+L["Default.TBC.Hunter.Ranged.Wowhead.Name"] = "Hunter: ranged DPS (Wowhead)"
+L["Default.TBC.Hunter.Ranged.Wowhead.Description"] = "Levels 1–70, every spec, following Wowhead's raid advice. Same pull, melee, leveling shots, multi-target Multi-Shot and reminders as the wowsims version, but once Steady Shot is learned it only offers Multi-Shot and Steady Shot after each Auto Shot: no Arcane Shot filler (except while moving), no Serpent Sting and no Aspect of the Viper reminder. Pet commands, Misdirection, traps, Volley, melee weaving and Feign Death stay with you."
 
-L["Default.TBC.Rogue.Starter.Name"] = "Rogue: early leveling (1–19)"
-L["Default.TBC.Rogue.Starter.Description"] = "Melee preview: missing own Slice and Dice from two combo points, Eviscerate from five, otherwise Sinister Strike. Preserves stealth, casts and channels. Openers, poisons, utility, targets and resource planning remain manual."
+L["Default.TBC.Rogue.DPS.Wowsims.Name"] = "Rogue: melee DPS (wowsims)"
+L["Default.TBC.Rogue.DPS.Wowsims.Description"] = "Levels 1–70, every spec. From stealth: Premeditation, then Cheap Shot solo or Garrote in a group, otherwise Ambush. In combat: Riposte, Slice and Dice from two combo points (renewed in its last two seconds), Eviscerate on a target about to die, and at five points Rupture when it will last (not while Blade Flurry cleaves), otherwise Eviscerate. Builds with Mutilate or Backstab when the target is not attacking you, otherwise Hemorrhage or Sinister Strike. Reminds you of missing poisons, Kick, Blade Flurry and Adrenaline Rush, Cold Blood and Evasion. Expose Armor, Kidney Shot, Feint, Vanish and positioning stay with you."
+L["Default.TBC.Rogue.DPS.Wowhead.Name"] = "Rogue: melee DPS (Wowhead)"
+L["Default.TBC.Rogue.DPS.Wowhead.Description"] = "Levels 1–70, every spec, following Wowhead. Same stealth openers, builders and reminders as the wowsims version, but Slice and Dice starts from one combo point and every five-point finisher is Eviscerate: no Rupture. Expose Armor, Kidney Shot, Feint, Vanish and positioning stay with you."
 L["Default.TBC.Druid.Caster.Starter.Name"] = "Druid: early caster leveling (1–19)"
 L["Default.TBC.Druid.Caster.Starter.Description"] = "Caster-only preview in humanoid form: own Moonfire, then stationary Wrath. Preserves your manually chosen forms and suppresses implicit melee advice. Feral combat, form selection, targeted support and resource decisions remain manual."
 
-L["Default.TBC.Warrior.Starter.Name"] = "Warrior: early leveling (1–19)"
-L["Default.TBC.Warrior.Starter.Description"] = "Bounded combat-only Warrior preview: optional Battle Shout, own Rend, Heroic Strike and normal melee fallback. Queued Heroic Strike is preserved. Rend through level 19 and spending available rage are RM preview policies; pulls, reactive abilities, stances and resource conservation remain manual."
+L["Default.TBC.Warrior.DPS.Wowsims.Name"] = "Warrior: melee DPS (wowsims)"
+L["Default.TBC.Warrior.DPS.Wowsims.Description"] = "Levels 1–70, Arms or Fury. Charges to pull, then Victory Rush, Intercept, Rampage, and Whirlwind when two or more enemies fight you (Thunder Clap before it is learned). With Bloodthirst or Mortal Strike: that strike, Whirlwind with rage to spare, Execute, Overpower. Before them: Whirlwind, Execute, Overpower, Rend. Spare rage goes to Devastate or Sunder Armor, then Hamstring. Reminds you of Battle Shout, Bloodrage, Heroic Strike or Cleave as rage dumps, Sweeping Strikes, Death Wish, Recklessness and interrupts. Slam timing, stance dancing and Berserker Rage stay with you."
+L["Default.TBC.Warrior.DPS.IcyVeins.Name"] = "Warrior: melee DPS (Icy Veins)"
+L["Default.TBC.Warrior.DPS.IcyVeins.Description"] = "Levels 1–70, Arms or Fury, following Icy Veins. Same pull, reminders and leveling steps as the wowsims version, but with Mortal Strike Execute comes first, with Bloodthirst Execute comes right after it, Whirlwind follows without holding rage, and Hamstring only near full rage. Slam timing, stance dancing and Berserker Rage stay with you."
+L["Default.TBC.Warrior.Protection.Wowhead.Name"] = "Warrior: tank (Wowhead)"
+L["Default.TBC.Warrior.Protection.Wowhead.Description"] = "Levels 10–70, chosen while you are in Defensive Stance. Shield Slam, Revenge, Thunder Clap and Demoralizing Shout kept up on elites and bosses, then Devastate or Sunder Armor. On packs: Thunder Clap and Demoralizing Shout first. Reminds you of Shield Block against bosses and higher-level enemies, Heroic Strike or Cleave, Battle Shout, Bloodrage, Shield Bash and emergency Last Stand and Shield Wall. Taunting and other utility stay with you."
+L["Default.TBC.Warrior.Protection.IcyVeins.Name"] = "Warrior: tank (Icy Veins)"
+L["Default.TBC.Warrior.Protection.IcyVeins.Description"] = "Levels 10–70, chosen while you are in Defensive Stance, following Icy Veins. Shield Slam, Revenge, then Devastate or Sunder Armor, with Rend at the start of a fight until Shield Slam is learned. On packs: Thunder Clap, and Demoralizing Shout against elites. Shield Block is reminded whenever your target is attacking you. Taunting and other utility stay with you."
 
 L["Default.TBC.Priest.DpsIcyVeins.Name"] = "Priest: damage (Icy Veins)"
 L["Default.TBC.Priest.DpsIcyVeins.Description"] = "Damage from level 1 to 70, used whenever the healer premade does not apply. Smite and wand early, then Mind Blast, Shadow Word: Pain, Mind Flay, Shadowform, Vampiric Touch and Shadow Word: Death as you learn them; DoTs before Mind Blast; a dying target is wanded when solo. Holy and Discipline questers get Holy Fire and Smite. Reminders: Inner Fire, Fortitude, racial buffs, Inner Focus, Shadowfiend. Shields, healing and Mind Flay clipping stay with you."
@@ -2568,22 +2578,11 @@ L["the cooldown on {item} {comparison} {duration}{carrying}"] = true
 
 
 
-L["Default.TBC.Warrior.Continuation.Name"] = "Warrior: early leveling (20–29)"
-L["Default.TBC.Warrior.Continuation.Description"] = "Bounded combat-only Warrior preview for levels 20–29. Optional Battle Shout, learned Execute below 20% target health, then Heroic Strike and normal melee fallback. Preserves all four queued Heroic Strike ranks in this bracket. Rend maintenance ends here; reactive abilities, stances, pulls and resource or queue planning remain manual."
-
-L["Default.TBC.Hunter.Thirty.Name"] = "Hunter: ranged leveling (30–39)"
-L["Default.TBC.Hunter.Thirty.Description"] = "Bounded single-target ranged preview. Preserves current casts, channels, chosen Monkey or Cheetah, and attributable own Scorpid. Starts inactive Auto Shot while stationary, then own missing Serpent Sting and Arcane Shot. Learned ranks, mappings and current readiness remain authoritative; pets, ammunition, positioning, shot timing, melee, talents and resources remain manual."
-L["Default.TBC.Hunter.Forty.Name"] = "Hunter: ranged leveling (40–49)"
-L["Default.TBC.Hunter.Forty.Description"] = "Bounded single-target ranged preview. Preserves current casts, channels, chosen Monkey or Cheetah, and attributable own Scorpid. Starts inactive Auto Shot while stationary, then own missing Serpent Sting and Arcane Shot. Learned ranks, mappings and current readiness remain authoritative; pets, ammunition, positioning, shot timing, melee, talents and resources remain manual."
-L["Default.TBC.Hunter.Continuation.Name"] = "Hunter: early leveling (20–29)"
-L["Default.TBC.Hunter.Continuation.Description"] = "Bounded ranged preview for levels 20–29. Auto Shot, own Serpent Sting and Arcane Shot use native learned ranks and availability. Preserves current casts, channels, Auto Shot, chosen Monkey or Cheetah, and attributable own Scorpid Sting. Pets, melee, ammunition, shot timing, positioning and resources remain manual."
 L["Default.TBC.Paladin.Continuation.Name"] = "Paladin: manual seal/aura preview (20–29)"
 L["Default.TBC.Paladin.Continuation.Description"] = "Bounded preview for levels 20–29. Optional Devotion and Righteousness preserve recognized manual aura and Crusader, Command or Justice choices. Only Righteousness Judgement is advised in combat; choose other seals, auras, their Judgements and resource use manually. Native learned ranks, bar mappings and readiness remain authoritative."
 L["Default.TBC.Druid.Caster.Continuation.Name"] = "Druid: caster leveling (20–29)"
 L["Default.TBC.Druid.Caster.Continuation.Description"] = "Bounded humanoid caster preview for levels 20–29. Maintains attributable own Moonfire, then prefers actually learned stationary Starfire before Wrath fallback. Preserves current casts and channels; shifted forms stop caster advice. Feral attacks, forms, healing, talents, crowd control and resources remain manual."
 
-L["Default.TBC.Rogue.Continuation.Name"] = "Rogue: early leveling (20–29)"
-L["Default.TBC.Rogue.Continuation.Description"] = "Bounded melee preview for levels 20–29. Retains missing own Slice and Dice from two combo points, Eviscerate from five, otherwise Sinister Strike, using actually learned ranks and native readiness. Preserves stealth, casts and channels. Poisons, openers, positional attacks, reactive talents, target lifetime and resources remain manual."
 -- Optional Questie receipt integration
 L["Questie"] = true
 L["Enable Questie integration"] = true
@@ -2877,12 +2876,8 @@ L["Sample icon"] = true
 
 L["Default.TBC.Paladin.Thirty.Name"] = "Paladin: manual seals and auras (30–39)"
 L["Default.TBC.Paladin.Thirty.Description"] = "Bounded combat preview with fully manual aura and seal upkeep. Only attributable own Righteousness permits Judgement; conflicting seals and current casts or channels block it. Learned actions, mappings and native readiness govern recommendations; talents, support, resources and other seal judgements remain manual."
-L["Default.TBC.Rogue.Thirty.Name"] = "Rogue: melee leveling (30–39)"
-L["Default.TBC.Rogue.Thirty.Description"] = "Bounded single-target melee preview. Preserves manual stealth, casts and channels. Missing attributable own Slice and Dice from two current-target combo points, Eviscerate at five, otherwise Sinister Strike. Learned ranks, mappings and native readiness govern actions; openers, poisons, talents, positioning, reactive utility, target lifetime and resources remain manual."
 L["Default.TBC.Druid.Caster.Thirty.Name"] = "Druid: caster leveling (30–39)"
 L["Default.TBC.Druid.Caster.Thirty.Description"] = "Bounded humanoid caster preview. Preserves manual forms, casts and channels; own missing Moonfire, learned stationary Starfire, then independently ready Wrath. Native learned ranks, mappings and readiness govern recommendations. Feral combat, talents, support and resources remain manual; no implicit melee advice."
-L["Default.TBC.Warrior.Thirty.Name"] = "Warrior: combat leveling (30–39)"
-L["Default.TBC.Warrior.Thirty.Description"] = "Bounded combat preview. Learned Execute below 20% target health, five exact learned Heroic Strike queue guards, then native-ready Heroic Strike. Optional Battle Shout respects casts and channels. Native ranks, mappings and readiness govern actions; stances, reactive abilities, Rend, pulls, talents and resource or queue planning remain manual."
 L["Default.TBC.Shaman.Enhancement40.Name"] = "Shaman: Enhancement leveling (40–49)"
 L["Default.TBC.Shaman.Enhancement40.Description"] = "Bounded TBC solo Enhancement-oriented preview for levels40–49, selected only when Enhancement has the unique positive highest talent allocation. Uses learned ranks for a Lightning Bolt pull, Earth Shock in combat and stationary ranged Lightning Bolt, with independent Lightning Shield and mainhand imbue reminders. Prefers learned Windfury over Rockbiter only when no temporary mainhand enchant is present; preserves any manual enchant and does not infer a weapon type or complete build. Equipment, healing, interrupts, totems, consumables, weapon timing and resource optimization remain manual. Not native gameplay certified."
 
@@ -2891,12 +2886,8 @@ L['Advice/presentation rows describe observed delivery boundaries only; ordinary
 L['Coverage rows: advice=%d presentation=%d visible=%d hidden=%d unknown=%d retired=%d (not opportunities).'] = true
 L['Visible means RM-owned preview frame state at a delivery boundary; it does not prove perception or native pixel rendering.'] = true
 
-L["Default.TBC.Warrior.Forty.Name"] = "TBC Warrior40–49 combat preview"
-L["Default.TBC.Warrior.Forty.Description"] = "Levels40–49: inherited melee preview with seven exact learned Heroic Strike queue guards. Stances, talents, reactive abilities and resources remain manual."
 L["Default.TBC.Paladin.Forty.Name"] = "TBC Paladin40–49 manual seal/aura preview"
 L["Default.TBC.Paladin.Forty.Description"] = "Levels40–49: preserve manual auras and seals; only affirmative own Righteousness permits Judgement. Support, talents and resources remain manual."
-L["Default.TBC.Rogue.Forty.Name"] = "Rogue: melee leveling (40–49)"
-L["Default.TBC.Rogue.Forty.Description"] = "Bounded single-target melee preview. Preserves manual stealth, casts and channels. Missing attributable own Slice and Dice from two current-target combo points, Eviscerate at five, otherwise Sinister Strike. Learned ranks, mappings and native readiness govern actions; openers, poisons, talents, positioning, reactive utility, target lifetime and resources remain manual. This inherited subset is not a complete or optimal 40s build."
 L["Default.TBC.Druid.Caster.Forty.Name"] = "Druid: limited caster leveling (40–49)"
 L["Default.TBC.Druid.Caster.Forty.Description"] = "Bounded humanoid caster-only preview. Preserves manual forms, casts and channels; own missing Moonfire, learned stationary Starfire, then independently ready Wrath. Native learned ranks, mappings and readiness govern recommendations. Feral combat, form changes, talents, support and resources remain manual; no implicit melee advice. This inherited subset is not a complete or optimal 40s build."
 
