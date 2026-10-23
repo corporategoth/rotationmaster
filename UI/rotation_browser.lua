@@ -53,6 +53,9 @@ local function create(parent)
     local list=addon:CreateWorkbenchScrollFrame(left);browser.list=list
     local child=CreateFrame("Frame",nil,list);child:SetPoint("TOPLEFT",list,"TOPLEFT",0,0);list:SetScrollChild(child);browser.listChild=child
     local empty=label(child);empty:SetPoint("TOPLEFT",4,-6);empty:SetText(L["No rotations match this search."]);browser.empty=empty
+    -- Rows follow the list column; the scroll bar reserves space only when shown.
+    function list:OnWorkbenchColumnResized(width) empty:SetWidth(math.max(40,width-8));browser:RefreshViewport() end
+    browser.splitter=addon:CreateWorkbenchSplitter(frame,function() if browser.active then browser:Layout() end end)
     local count=label(left);browser.count=count
     local new=addon:CreateWorkbenchLabeledIconButton(left,"plus",L["New"],112);browser.newButton=new
     addon:SetUIScript(new,"OnClick",function()
@@ -297,17 +300,18 @@ local function create(parent)
         specs:SetPoint("TOPLEFT",frame,"TOPLEFT",0,0);specs:SetSize(width,top)
         left:SetPoint("TOPLEFT",frame,"TOPLEFT",0,-top);left:SetSize(leftWidth,geometry.sidebarHeight)
         detail:SetPoint("TOPLEFT",frame,"TOPLEFT",geometry.detailX,-top);detail:SetSize(geometry.detailWidth,geometry.sidebarHeight)
-        for index,key in ipairs({'all','builtin','custom'}) do local filter=self.filters[key];filter:ClearAllPoints();filter:SetPoint('TOPLEFT',left,'TOPLEFT',(index-1)*(leftWidth+4)/3,-28);filter:SetWidth((leftWidth-8)/3) end
+        self.splitter:Place(geometry)
+        addon:LayoutWorkbenchRow({self.filters.all,self.filters.builtin,self.filters.custom},0,28,leftWidth)
         search:SetWidth(leftWidth)
         local footerExtra=self.hasRecovery and 26 or 0
         local footerHeight=50+footerExtra
         self.tagPicker:SetWidth(leftWidth)
         local listTop=56+self.tagPicker.height+8
-        list:SetPoint("TOPLEFT",left,"TOPLEFT",0,-listTop);list:SetSize(leftWidth-24,math.max(64,left:GetHeight()-listTop-36-footerHeight))
-        child:SetWidth(list:GetWidth())
-        count:ClearAllPoints();count:SetPoint("BOTTOMLEFT",left,"BOTTOMLEFT",0,footerHeight+8)
+        list:SetPoint("TOPLEFT",left,"TOPLEFT",0,-listTop);list:SetHeight(math.max(64,left:GetHeight()-listTop-36-footerHeight))
+        list:SetWorkbenchColumnWidth(leftWidth);child:SetWidth(list:GetWidth())
+        count:ClearAllPoints();count:SetPoint("BOTTOMLEFT",left,"BOTTOMLEFT",0,footerHeight+8);count:SetWidth(leftWidth)
         local buttonWidth=(leftWidth-4)/2
-        for _,control in ipairs({new,duplicate,import,compare}) do control:ClearAllPoints();control:SetWidth(buttonWidth) end
+        for _,control in ipairs({new,duplicate,import,compare}) do control:ClearAllPoints();control:SetWidth(buttonWidth);addon:AlignWorkbenchTextLeft(control,24) end
         new:SetPoint("BOTTOMLEFT",left,"BOTTOMLEFT",0,24+footerExtra);duplicate:SetPoint("BOTTOMLEFT",left,"BOTTOMLEFT",buttonWidth+4,24+footerExtra)
         import:SetPoint("BOTTOMLEFT",left,"BOTTOMLEFT",0,footerExtra);compare:SetPoint("BOTTOMLEFT",left,"BOTTOMLEFT",buttonWidth+4,footerExtra)
         recovery:ClearAllPoints();recovery:SetPoint("BOTTOMLEFT",left,"BOTTOMLEFT",0,0);recovery:SetWidth(leftWidth)

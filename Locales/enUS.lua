@@ -1173,6 +1173,7 @@ L["Retail"] = true
 L["Forever"] = true
 L["Development"] = true
 L["Right-click to close"] = true
+L["Drag to resize the list. Double-click to reset."] = true
 L["English"] = true
 L["Website"] = true
 L["English is the installed translation; other languages use English until translated."] = true

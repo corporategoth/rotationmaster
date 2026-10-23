@@ -12,8 +12,9 @@ function addon:InstallRotationNavigation(pane)
             label:SetText(L['Delete this custom rotation and its unsaved draft? This cannot be undone.'])
             local confirm=addon:CreateWorkbenchButton(frame,L['Delete'],90);confirm:SetPoint('BOTTOMRIGHT',-110,12)
             local cancel=addon:CreateWorkbenchButton(frame,L['Cancel'],90);cancel:SetPoint('BOTTOMRIGHT',-12,12)
-            self.deletePrompt={frame=frame,confirm=confirm,cancel=cancel};frame:Hide()
+            self.deletePrompt={frame=frame,label=label,confirm=confirm,cancel=cancel};frame:Hide()
         end
+        local deleteWidth=addon:FitWorkbenchPrompt(self.deletePrompt.frame,self.frame,390);self.deletePrompt.label:SetWidth(math.max(1,deleteWidth-24))
         local reference,expected
         if addon.GetRotationRecordSnapshot and workspace.TargetReference then
             reference=addon.RotationData.CopyData(workspace.reference)
@@ -49,6 +50,9 @@ function addon:InstallRotationNavigation(pane)
             addon:SetUIScript(frame,'OnHide',function() pane.pendingLeave=nil end);frame:Hide()
         end
         local prompt=self.leavePrompt
+        -- The prompt covers the editor pane, so it shares the pane's width.
+        local promptWidth=addon:FitWorkbenchPrompt(prompt.frame,self.frame,420);prompt.message:SetWidth(math.max(1,promptWidth-28))
+        addon:LayoutWorkbenchRow({prompt.apply,prompt.discard,prompt.cancel},14,96,promptWidth-28,{gap=10})
         local request={callback=callback,generation=self.generation,workspace=self.workspace};self.pendingLeave=request
         local function valid() return pane.active and pane.pendingLeave==request and pane.generation==request.generation and pane.workspace==request.workspace end
         addon:SetUIScript(prompt.apply,'OnClick',function()

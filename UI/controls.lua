@@ -45,7 +45,8 @@ end
 function addon:CreateWorkbenchHistoryButton(parent,direction,label)
     local button=self:CreateWorkbenchIconButton(parent,direction,label);button:SetSize(68,20);button:SetText(label);button.art:Show()
     button.icon:ClearAllPoints();button.icon:SetPoint('LEFT',3,0)
-    local caption=button:GetFontString();caption:ClearAllPoints();caption:SetPoint('LEFT',24,0);return button
+    -- The caption is bounded by the button so a long label cannot spill out.
+    local caption=button:GetFontString();caption:ClearAllPoints();caption:SetPoint('LEFT',24,0);caption:SetPoint('RIGHT',-4,0);caption:SetJustifyH('LEFT');caption:SetWordWrap(false);return button
 end
 function addon:CreateWorkbenchLabeledIconButton(parent,icon,label,width)
     local button=self:CreateWorkbenchHistoryButton(parent,icon,label);button:SetWidth(width or 100);return button
@@ -56,8 +57,23 @@ function addon:PaintSelectorSelection(button,entry,caption)
         button.valueIcon=button.valueIcon or button:CreateTexture(nil,'ARTWORK');button.valueIcon:ClearAllPoints();button.valueIcon:SetPoint('LEFT',25,0);button.valueIcon:SetSize(18,18);button.valueIcon:SetTexture(entry.icon);button.valueIcon:Show();self:AlignWorkbenchTextLeft(button,48)
     else if button.valueIcon then button.valueIcon:Hide() end;self:AlignWorkbenchTextLeft(button,26) end
 end
+-- An aligned caption keeps following its button when the button is resized
+-- later, rather than keeping the width it had when aligned. A caller that
+-- narrows the caption itself afterwards keeps that width until realigned.
+local function refitAlignedText(button)
+    local label=button:GetFontString();local inset=button.rmAlignInset
+    if not label or not inset then return end
+    if math.abs((label:GetWidth() or 0)-(button.rmAlignWidth or -1))>.5 then button.rmAlignInset=nil;return end
+    local width=math.max(1,button:GetWidth()-inset-4);label:SetWidth(width);button.rmAlignWidth=width
+end
 function addon:AlignWorkbenchTextLeft(button,inset)
-    local label=button:GetFontString();label:ClearAllPoints();label:SetPoint('LEFT',inset or 4,0);label:SetJustifyH('LEFT');label:SetWidth(math.max(1,button:GetWidth()-(inset or 4)-4))
+    local label=button:GetFontString();label:ClearAllPoints();label:SetPoint('LEFT',inset or 4,0);label:SetJustifyH('LEFT')
+    local width=math.max(1,button:GetWidth()-(inset or 4)-4);label:SetWidth(width);button.rmAlignInset=inset or 4;button.rmAlignWidth=width
+    if not button.rmAlignFollows then
+        button.rmAlignFollows=true;local setWidth,setSize=button.SetWidth,button.SetSize
+        function button:SetWidth(...) setWidth(self,...);refitAlignedText(self) end
+        function button:SetSize(...) setSize(self,...);refitAlignedText(self) end
+    end
 end
 ---@class RMWorkbenchPill: RMWorkbenchButton
 ---@field SetAccent fun(self: RMWorkbenchPill, r: number, g: number, b: number, alpha?: number)
@@ -286,6 +302,21 @@ function addon:CreateWorkbenchScrollFrame(parent)
     function scroll:UpdateWorkbenchScroll()
         local child=self:GetScrollChild();if not child then return end
         bar:UpdateExtent(child:GetHeight(),self:GetHeight())
+        self:FitWorkbenchColumn()
+    end
+    -- A list column keeps its rows flush with the column's right edge: the
+    -- bar takes its reserve only while the list actually scrolls. The owner's
+    -- OnWorkbenchColumnResized refreshes row widths after a change.
+    function scroll:SetWorkbenchColumnWidth(width)
+        self.workbenchColumnWidth=math.max(1,width);self:FitWorkbenchColumn()
+    end
+    function scroll:FitWorkbenchColumn()
+        local column=self.workbenchColumnWidth;if not column or self.fittingColumn then return end
+        local wanted=math.max(1,column-(bar:IsShown() and addon.WorkbenchLayout.scrollReserve or 0))
+        local child=self:GetScrollChild()
+        if math.abs(self:GetWidth()-wanted)<.01 and (not child or math.abs(child:GetWidth()-wanted)<.01) then return end
+        self.fittingColumn=true;self:SetWidth(wanted);if child then child:SetWidth(wanted) end;self.fittingColumn=nil
+        if self.OnWorkbenchColumnResized then self:OnWorkbenchColumnResized(wanted) end
     end
     addon:SetUIScript(scroll,'OnScrollRangeChanged',function() scroll:UpdateWorkbenchScroll() end)
     addon:SetUIScript(scroll,'OnSizeChanged',function() scroll:UpdateWorkbenchScroll() end)
@@ -429,16 +460,116 @@ function addon:GetWorkbenchVisibleRowRange(count,pitch,offset,height,margin)
     return math.max(1,math.floor((offset-margin)/pitch)+1),math.min(count,math.floor((offset+height+margin)/pitch)+1)
 end
 
+-- Shared workbench sizing. The window minimum is the smallest width at which
+-- every page keeps its controls inside the pane; list/detail pages share one
+-- divider position, which each page clamps to its own width.
+addon.WorkbenchLayout={windowMinWidth=800,windowMinHeight=500,sidebarMin=200,detailMin=440,splitGap=18,scrollReserve=14}
+function addon:GetWorkbenchSidebarBounds(width)
+    local layout=self.WorkbenchLayout
+    local maximum=math.min(math.floor(width*.5),width-layout.splitGap-layout.detailMin)
+    return layout.sidebarMin,math.max(layout.sidebarMin,maximum)
+end
+function addon:GetWorkbenchSidebarPreference()
+    local global=self.db and self.db.global;local value=global and global.workbenchSidebarWidth
+    if type(value)=='number' and value==value and value>0 and value<100000 then return value end
+end
+-- nil returns the divider to its automatic position.
+function addon:SetWorkbenchSidebarPreference(value)
+    local global=self.db and self.db.global;if not global then return end
+    if value==nil then global.workbenchSidebarWidth=nil
+    elseif type(value)=='number' and value==value and value>0 and value<100000 then global.workbenchSidebarWidth=math.floor(value+.5) end
+end
 function addon:GetWorkbenchSidebarWidth(width)
-    return math.max(210,math.min(270,width*.26))
+    local minimum,maximum=self:GetWorkbenchSidebarBounds(width)
+    local value=self:GetWorkbenchSidebarPreference() or math.max(210,math.min(270,width*.26))
+    return math.max(minimum,math.min(maximum,value))
 end
 
 function addon:GetWorkbenchSidebarHeight(height,top)
     return math.max(1,height-(top or 0))
 end
 function addon:GetWorkbenchRosterGeometry(width,height,top)
-    local side=self:GetWorkbenchSidebarWidth(width)
-    return {sidebarWidth=side,sidebarHeight=self:GetWorkbenchSidebarHeight(height,top),detailX=side+18,detailWidth=math.max(200,width-side-18)}
+    local side=self:GetWorkbenchSidebarWidth(width);local gap=self.WorkbenchLayout.splitGap
+    return {width=width,top=top or 0,sidebarWidth=side,sidebarHeight=self:GetWorkbenchSidebarHeight(height,top),detailX=side+gap,detailWidth=math.max(1,width-side-gap)}
+end
+
+-- The draggable divider between a list column and its detail pane. It lives in
+-- the gap between them; dragging stores the shared preference and asks the
+-- owner to lay out again, passing the previous preference so an owner that
+-- cannot follow may restore it. Double-click restores the automatic position.
+function addon:CreateWorkbenchSplitter(parent,changed)
+    local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
+    local splitter=CreateFrame('Button',nil,parent);splitter:SetSize(10,1);splitter:EnableMouse(true)
+    local line=splitter:CreateTexture(nil,'ARTWORK');line:SetPoint('TOP',splitter,'TOP',0,0);line:SetPoint('BOTTOM',splitter,'BOTTOM',0,0);splitter.line=line
+    local function paint()
+        if splitter.drag then line:SetColorTexture(.9,.75,.3,1);line:SetWidth(2)
+        elseif splitter.hover then line:SetColorTexture(.62,.66,.69,1);line:SetWidth(2)
+        else line:SetColorTexture(.33,.35,.37,.8);line:SetWidth(1) end
+    end
+    function splitter:Place(geometry)
+        self.geometry=geometry;self:ClearAllPoints()
+        self:SetPoint('TOPLEFT',parent,'TOPLEFT',geometry.sidebarWidth+(addon.WorkbenchLayout.splitGap-10)/2,-(geometry.top or 0))
+        self:SetSize(10,math.max(1,geometry.sidebarHeight));self:Show()
+    end
+    -- Returns true when the divider moved.
+    function splitter:Resize(value)
+        local geometry=self.geometry;if not geometry or type(value)~='number' or value~=value then return false end
+        local minimum,maximum=addon:GetWorkbenchSidebarBounds(geometry.width)
+        value=math.floor(math.max(minimum,math.min(maximum,value))+.5)
+        if value==addon:GetWorkbenchSidebarWidth(geometry.width) then return false end
+        local previous=addon:GetWorkbenchSidebarPreference()
+        addon:SetWorkbenchSidebarPreference(value);changed(previous);return true
+    end
+    function splitter:Reset() local previous=addon:GetWorkbenchSidebarPreference();addon:SetWorkbenchSidebarPreference(nil);changed(previous) end
+    local function stop()
+        if not splitter.drag then return end
+        splitter.drag=nil;addon:SetUIScript(splitter,'OnUpdate',nil);paint()
+    end
+    splitter.Stop=stop
+    addon:SetUIScript(splitter,'OnMouseDown',function(_,button)
+        if button~='LeftButton' or not splitter.geometry or not GetCursorPosition then return end
+        local x=GetCursorPosition();splitter.drag={x=x,width=splitter.geometry.sidebarWidth};paint()
+        addon:SetUIScript(splitter,'OnUpdate',function()
+            local drag=splitter.drag;if not drag then return end
+            if IsMouseButtonDown and not IsMouseButtonDown('LeftButton') then stop();return end
+            local current=GetCursorPosition();local scale=splitter:GetEffectiveScale() or 1
+            splitter:Resize(drag.width+(current-drag.x)/(scale>0 and scale or 1))
+        end)
+    end)
+    addon:SetUIScript(splitter,'OnMouseUp',stop);addon:SetUIScript(splitter,'OnHide',stop)
+    addon:SetUIScript(splitter,'OnDoubleClick',function() stop();splitter:Reset() end)
+    addon:SetUIScript(splitter,'OnEnter',function()
+        splitter.hover=true;paint()
+        if GameTooltip then GameTooltip:SetOwner(splitter,'ANCHOR_RIGHT');GameTooltip:SetText(L['Drag to resize the list. Double-click to reset.'],1,1,1,1,true) end
+    end)
+    addon:SetUIScript(splitter,'OnLeave',function() splitter.hover=nil;paint();if GameTooltip and GameTooltip:IsOwned(splitter) then GameTooltip:Hide() end end)
+    paint();return splitter
+end
+
+-- Places same-row controls left to right within their parent, sharing the
+-- row width evenly. A control never shrinks below `minimum`; when the row
+-- cannot hold them all, it wraps onto further lines. Returns the height used.
+function addon:LayoutWorkbenchRow(controls,x,y,width,options)
+    options=options or {};local gap=options.gap or 4;local pitch=options.pitch or 28
+    local count=#controls;if count==0 then return 0 end
+    local minimum=options.minimum or 1
+    local columns=math.max(1,math.min(count,math.floor((width+gap)/(minimum+gap))))
+    if options.columns then columns=math.max(1,math.min(columns,options.columns)) end
+    local each=math.max(1,(width-(columns-1)*gap)/columns)
+    for index,control in ipairs(controls) do
+        local column=(index-1)%columns;local line=math.floor((index-1)/columns)
+        control:ClearAllPoints();control:SetPoint('TOPLEFT',x+column*(each+gap),-(y+line*pitch));control:SetWidth(each)
+        if options.text then local label=control.GetFontString and control:GetFontString();if label then label:SetWidth(math.max(1,each-options.text)) end end
+    end
+    return math.ceil(count/columns)*pitch,each,columns
+end
+
+-- In-pane confirmation prompts keep their designed width but never exceed
+-- the pane they cover. Returns the width used.
+function addon:FitWorkbenchPrompt(frame,owner,preferred)
+    local available=owner and owner.GetWidth and owner:GetWidth() or preferred
+    local width=math.max(1,math.min(preferred,(available or preferred)-16))
+    frame:SetWidth(width);return width
 end
 
 -- Shared value-field/checkbox geometry for cards and settings. Labels remain

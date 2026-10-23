@@ -280,7 +280,7 @@ function addon:condition_edit_box(update,key,source,saveAllowed,embedded)
         d.functionTabs={}
         for i,name in ipairs(order) do
             local button=form:Acquire('functionTabs',function() return addon:CreateWorkbenchButton(form.child,'',tabWidth) end);button:ClearAllPoints();button:SetPoint('TOPLEFT',(i-1)*(tabWidth+3),-y);button:SetSize(tabWidth,22);button:SetText(labels[name]);button.tooltip=labels[name];d.functionTabs[name]=button;button:SetSelected(name==d.selected);addon:SetUIScript(button,'OnClick',form:Guard(function() d:SelectFunction(name) end))
-            local caption=button:GetFontString();caption:SetFontObject('GameFontHighlightSmall')
+            local caption=button:GetFontString();caption:SetFontObject('GameFontHighlightSmall');caption:SetWidth(math.max(1,tabWidth-6));caption:SetWordWrap(false)
             if caption.GetFont and caption:GetStringWidth()>tabWidth-6 then local font,size=caption:GetFont();caption:SetFont(font,math.max(8,size*(tabWidth-6)/caption:GetStringWidth()),'') end
         end
         local actionY=form.y

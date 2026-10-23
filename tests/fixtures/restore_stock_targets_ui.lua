@@ -245,6 +245,7 @@ local function context(p,store,id)
  }},
 }
 return function(text,path)
+ text=dofile('tests/fixtures/restore_workbench_resize.lua')(text,path)
  local spec=assert(changes[path],'unknown stock editor source path')
  for _,edit in ipairs(spec.edits)do local a,b=text:find(edit.from,1,true);assert(a and not text:find(edit.from,b+1,true),'stock editor inverse source differs');text=text:sub(1,a-1)..edit.to..text:sub(b+1)end
  local hash=0;for i=1,#text do hash=(hash*33+text:byte(i))%4294967296 end

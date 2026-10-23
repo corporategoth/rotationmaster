@@ -58,8 +58,34 @@ local function newShell()
     window:SetSize(1120,760);window:SetPoint("CENTER")
     window:SetFrameStrata("FULLSCREEN_DIALOG");window:SetToplevel(true);window:SetClampedToScreen(true)
     window:SetMovable(true);window:SetResizable(true);window:EnableMouse(true)
-    if window.SetResizeBounds then window:SetResizeBounds(800,500) end
+    local layout=addon.WorkbenchLayout;local minimumWidth,minimumHeight=layout.windowMinWidth,layout.windowMinHeight
     local shell={frame=window,tabs={},buttons={},settingsPanes={}}
+    -- Sizing stays within the supported minimum and the visible screen. Older
+    -- clients only provide SetMinResize, and a size restored or set by another
+    -- addon is corrected on the next layout as well.
+    function shell:ApplySizeBounds()
+        local scale=window:GetScale() or 1;if scale<=0 then scale=1 end
+        local screenWidth=UIParent and UIParent.GetWidth and UIParent:GetWidth();local screenHeight=UIParent and UIParent.GetHeight and UIParent:GetHeight()
+        -- A screen smaller than the minimum cannot bound the window usefully.
+        local maximumWidth=type(screenWidth)=='number' and screenWidth/scale>=minimumWidth and math.floor(screenWidth/scale) or nil
+        local maximumHeight=type(screenHeight)=='number' and screenHeight/scale>=minimumHeight and math.floor(screenHeight/scale) or nil
+        self.maximumWidth,self.maximumHeight=maximumWidth,maximumHeight
+        if window.SetResizeBounds then
+            window:SetResizeBounds(minimumWidth,minimumHeight,maximumWidth or 100000,maximumHeight or 100000)
+        else
+            if window.SetMinResize then window:SetMinResize(minimumWidth,minimumHeight) end
+            if window.SetMaxResize then window:SetMaxResize(maximumWidth or 100000,maximumHeight or 100000) end
+        end
+        return self:ClampSize()
+    end
+    -- Returns true when the size had to be corrected.
+    function shell:ClampSize()
+        local width,height=window:GetWidth(),window:GetHeight()
+        local wantedWidth=math.max(minimumWidth,self.maximumWidth and math.min(width,self.maximumWidth) or width)
+        local wantedHeight=math.max(minimumHeight,self.maximumHeight and math.min(height,self.maximumHeight) or height)
+        if wantedWidth==width and wantedHeight==height then return false end
+        window:SetSize(wantedWidth,wantedHeight);return true
+    end
     function shell:Show() self.frame:Show() end
     function shell:Hide(approved)
         local pane=self.pane
@@ -117,7 +143,7 @@ local function newShell()
     shell.scaleValue=addon:CreateWorkbenchEditBox(window);shell.scaleValue:SetPoint('TOPLEFT',94,-2);shell.scaleValue:SetSize(38,18);shell.scaleValue:SetMaxLetters(3)
     shell.scaleSlider=addon:CreateWorkbenchSlider(window,70,130,1,116);shell.scaleSlider:SetPoint("TOPLEFT",12,-22)
     function shell:ApplyScale(value,persist)
-        local selected=scale(value);window:SetScale(selected)
+        local selected=scale(value);window:SetScale(selected);self:ApplySizeBounds()
         if persist then addon.db.global.uiScale=selected end
         addon:ScaleWorkbenchWindows(selected)
         self.settingScale=true;self.scaleSlider:SetValue(math.floor(selected*100+.5));self.settingScale=false
@@ -163,7 +189,7 @@ local function newShell()
             addon:SetUIScript(link,"OnClick",function() shell:ShowLink(entry.url) end);shell[entry.key]=link;links[#links+1]=link
         end
     end
-    local linksWidth=0;for _,link in ipairs(links) do linksWidth=linksWidth+link:GetWidth()+6 end
+    local linksWidth=0;for _,link in ipairs(links) do linksWidth=linksWidth+link:GetWidth()+6 end;shell.footerLinksWidth=linksWidth
     local linkX=-linksWidth/2;for _,link in ipairs(links) do link:SetPoint("LEFT",footer,"CENTER",linkX,0);linkX=linkX+link:GetWidth()+6 end
     function shell:CloseHelp()
         self.helpRequest=nil
@@ -231,7 +257,8 @@ local function newShell()
         paneHeader:ClearAllPoints();paneHeader:SetPoint('TOPLEFT',window,'TOPLEFT',12,-top);paneHeader:SetSize(math.max(1,width-24),math.max(1,self.paneHeaderHeight or 24))
         content:ClearAllPoints();content:SetPoint("TOPLEFT",window,"TOPLEFT",12,-top-(self.paneHeaderHeight or 24))
         content:SetSize(math.max(1,width-24),math.max(1,height-top-28-(self.paneHeaderHeight or 24)))
-        self.status:SetWidth(math.max(1,width/2-270))
+        -- Status text ends before the centred footer links.
+        self.status:SetWidth(math.max(1,width/2-(self.footerLinksWidth or 0)/2-174-8))
         self.language:ClearAllPoints();self.language:SetPoint("TOPRIGHT",-12,-42)
         self.title:SetWidth(math.max(1,width-490));self.activeTitle:SetWidth(math.max(1,width-490));self.activeTitle:SetWordWrap(false)
         if self.pane then
@@ -302,7 +329,7 @@ local function newShell()
         pane.message:SetText(string.format(L['Native settings page unavailable: %s'],key));pane:SetWidth(content:GetWidth());pane:SetHeight(content:GetHeight());pane.frame:Show()
         self.nativePane=true;self.pane=pane;self:BindPaneHelp()
     end
-    addon:SetUIScript(window,"OnSizeChanged",function() shell:Layout() end)
+    addon:SetUIScript(window,"OnSizeChanged",function() if not shell:ClampSize() then shell:Layout() end end)
     addon:SetUIScript(window,"OnHide",function() shell.scaleDragging=false;shell.pendingScale=nil;addon:SetUIScript(window,"OnUpdate",nil);shell:CloseHelp();shell.languageMenu:Hide();shell.linkPane:Hide();shell.linkInput:ClearFocus();shell:ReleasePane() end)
     addon.HideOnEscape(shell)
     return shell
