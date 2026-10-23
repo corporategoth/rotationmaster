@@ -264,6 +264,18 @@ artwork.condition["DEAD"]=root.."Assets\\Conditions\\v2\\dead"
 artwork.icons[#artwork.icons+1]={texture=artwork.condition["DEAD"],name=L["Is Dead or Ghost"]}
 artwork.condition["FRIENDLY"]=root.."Assets\\Conditions\\v2\\friendly"
 artwork.icons[#artwork.icons+1]={texture=artwork.condition["FRIENDLY"],name=L["Is Friendly"]}
+artwork.condition["ACTION_CONTEXT"]=root.."Assets\\Conditions\\v2\\action-context"
+artwork.icons[#artwork.icons+1]={texture=artwork.condition["ACTION_CONTEXT"],name=L["Action Context"]}
+artwork.condition["SET_PIECES"]=root.."Assets\\Conditions\\v2\\set-pieces"
+artwork.icons[#artwork.icons+1]={texture=artwork.condition["SET_PIECES"],name=L["Set Pieces"]}
+artwork.condition["WEAPON_IMBUE"]=root.."Assets\\Conditions\\v2\\weapon-imbue"
+artwork.icons[#artwork.icons+1]={texture=artwork.condition["WEAPON_IMBUE"],name=L["Weapon Imbue"]}
+artwork.condition["BOSSMOD_ENCOUNTER"]=root.."Assets\\Conditions\\v2\\bossmod-encounter"
+artwork.icons[#artwork.icons+1]={texture=artwork.condition["BOSSMOD_ENCOUNTER"],name=L["Boss Mod Encounter"]}
+artwork.condition["BOSSMOD_STAGE"]=root.."Assets\\Conditions\\v2\\bossmod-stage"
+artwork.icons[#artwork.icons+1]={texture=artwork.condition["BOSSMOD_STAGE"],name=L["Boss Mod Encounter Stage"]}
+artwork.condition["BOSSMOD_TIMER"]=root.."Assets\\Conditions\\v2\\bossmod-timer"
+artwork.icons[#artwork.icons+1]={texture=artwork.condition["BOSSMOD_TIMER"],name=L["Boss Mod Timer"]}
 artwork.overlays[#artwork.overlays+1]={key="arcane-ring",value=root.."Assets\\Overlays\\v1\\arcane-ring-r2",icon=root.."Assets\\Overlays\\v1\\arcane-ring-r2",text=L["Arcane Ring"]}
 artwork.overlays[#artwork.overlays+1]={key="ember-corners",value=root.."Assets\\Overlays\\v1\\ember-corners",icon=root.."Assets\\Overlays\\v1\\ember-corners",text=L["Ember Corners"]}
 artwork.overlays[#artwork.overlays+1]={key="frost-shards",value=root.."Assets\\Overlays\\v1\\frost-shards",icon=root.."Assets\\Overlays\\v1\\frost-shards",text=L["Frost Shards"]}

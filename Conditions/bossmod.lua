@@ -70,7 +70,7 @@ end
 
 addon:RegisterCondition("BOSSMOD_ENCOUNTER", runtimeCondition('BOSSMOD_ENCOUNTER', {
     description = L["Boss Mod Encounter"],
-    icon = "Interface\\Icons\\INV_Misc_Head_Dragon_01",
+    icon = addon.Artwork.condition["BOSSMOD_ENCOUNTER"],
     fields = { encounter = "number" },
     valid = function(_, value)
         return value.encounter == nil or validID(value.encounter)
@@ -101,7 +101,7 @@ addon:RegisterCondition("BOSSMOD_ENCOUNTER", runtimeCondition('BOSSMOD_ENCOUNTER
 
 addon:RegisterCondition("BOSSMOD_STAGE", runtimeCondition('BOSSMOD_STAGE', {
     description = L["Boss Mod Encounter Stage"],
-    icon = "Interface\\Icons\\INV_Scroll_03",
+    icon = addon.Artwork.condition["BOSSMOD_STAGE"],
     fields = { operator = "string", value = "number" },
     valid = function(_, value)
         return validCompare(value)
@@ -128,7 +128,7 @@ addon:RegisterCondition("BOSSMOD_STAGE", runtimeCondition('BOSSMOD_STAGE', {
 
 addon:RegisterCondition("BOSSMOD_TIMER", runtimeCondition('BOSSMOD_TIMER', {
     description = L["Boss Mod Timer"],
-    icon = "Interface\\Icons\\INV_Misc_PocketWatch_01",
+    icon = addon.Artwork.condition["BOSSMOD_TIMER"],
     fields = { spell = "number", operator = "string", value = "number" },
     valid = function(_, value)
         return validID(value.spell) and validCompare(value)

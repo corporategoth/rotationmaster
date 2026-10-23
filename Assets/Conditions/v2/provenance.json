@@ -3,7 +3,7 @@
   "tool": "Built-in image_gen.imagegen",
   "transparent_background": true,
   "original_family_preserved": true,
-  "condition_count": 118,
+  "condition_count": 124,
   "category_count": 9,
   "logical_control_count": 3,
   "entries": [
@@ -3308,6 +3308,141 @@
       "runtime": "Assets/Conditions/v2/friendly.tga",
       "generated_path": "/home/prez/.codex/generated_images/01a14c29-8231-7ba3-91a5-df563d4cfaea/exec-3d02c7f2-c53b-4c8e-835f-ca5131f1642f.png",
       "source_sha256": "b769bc5f66b51e10df28a0f795a701482a598c9c75115eb1be93585fc742b62a"
+    },
+    {
+      "key": "ACTION_CONTEXT",
+      "description": "Action Context",
+      "module": "Conditions/build.lua",
+      "name": "action-context",
+      "subject": "A carved stone action-bar slab with one glowing slot swapped for a ghostly chain-bound puppet emblem, plus a bold curved swap arrow. The bar the player is acting through (vehicle, possessed unit, override), not the player's own spells.",
+      "prompt": "Use case: stylized-concept. Asset type: one original transparent raster icon for a classic high-fantasy MMO addon. Subject: A carved stone action-bar slab with one glowing slot swapped for a ghostly chain-bound puppet emblem, plus a bold curved swap arrow. The bar the player is acting through (vehicle, possessed unit, override), not the player's own spells. Style: hand-painted Warcraft-era fantasy inventory/spell art language, wholly original object design, chunky sculpted silhouette, dark ink-like edge shadows, rich saturated local colors, broad luminous highlights. Composition: a SINGLE centered emblem, NOT a sheet or set, subject fills 88 percent of square canvas with clean small transparent margin. Legible at actual 20,24,32 pixels: one dominant subject and at most one bold qualifier motif, oversized simple shapes, no tiny decorative inscriptions. Preserve both the condition subject and its qualifier. No generic hourglass standing alone for a duration condition. Genuine transparent background and transparent corners; no square background, vignette, plate, badge frame, ground or cast shadow. No letters, numbers, words, text, labels, watermark or existing game logo. Any temporal, count, percentage or range qualifier must be an oversized broad secondary motif occupying at least one quarter of the emblem, not merely tiny ticks or decorative sparks.",
+      "generated_path": "/home/prez/.codex/generated_images/01a14c29-8231-7ba3-91a5-df563d4cfaea/exec-af822e0e-e757-4044-b175-d54d9c0cc56b.png",
+      "kind": "condition",
+      "status": "generated",
+      "runtime": "Assets/Conditions/v2/action-context.tga",
+      "source_sha256": "74795ed990b1bd7a2f480da15be9ef530b2050088feac381faa73e4f17b65c37",
+      "runtime_evidence": {
+        "default": {
+          "line": 71,
+          "parameters": [
+            "value"
+          ],
+          "evaluate_sha256": "46369d27dae2c08b41e3ec3ccd97eb9ebbd76c4ca5114cd367134bed619d46e1"
+        }
+      }
+    },
+    {
+      "key": "SET_PIECES",
+      "description": "Set Pieces",
+      "module": "Conditions/build.lua",
+      "name": "set-pieces",
+      "subject": "A matched ornate pauldron and helm of one armor set sharing the same gem motif, plus a bold glowing link chain joining them. Equipped pieces counted from one item set, not a single item.",
+      "prompt": "Use case: stylized-concept. Asset type: one original transparent raster icon for a classic high-fantasy MMO addon. Subject: A matched ornate pauldron and helm of one armor set sharing the same gem motif, plus a bold glowing link chain joining them. Equipped pieces counted from one item set, not a single item. Style: hand-painted Warcraft-era fantasy inventory/spell art language, wholly original object design, chunky sculpted silhouette, dark ink-like edge shadows, rich saturated local colors, broad luminous highlights. Composition: a SINGLE centered emblem, NOT a sheet or set, subject fills 88 percent of square canvas with clean small transparent margin. Legible at actual 20,24,32 pixels: one dominant subject and at most one bold qualifier motif, oversized simple shapes, no tiny decorative inscriptions. Preserve both the condition subject and its qualifier. No generic hourglass standing alone for a duration condition. Genuine transparent background and transparent corners; no square background, vignette, plate, badge frame, ground or cast shadow. No letters, numbers, words, text, labels, watermark or existing game logo. Any temporal, count, percentage or range qualifier must be an oversized broad secondary motif occupying at least one quarter of the emblem, not merely tiny ticks or decorative sparks.",
+      "generated_path": "/home/prez/.codex/generated_images/01a14c29-8231-7ba3-91a5-df563d4cfaea/exec-6a01974f-5fae-486c-9571-04f79ecfdbe1.png",
+      "kind": "condition",
+      "status": "generated",
+      "runtime": "Assets/Conditions/v2/set-pieces.tga",
+      "source_sha256": "7d3ba70fff8f8712216a4009ab088fa2c02b25704943802f01f7eaa80fa913e1",
+      "runtime_evidence": {
+        "default": {
+          "line": 112,
+          "parameters": [
+            "value"
+          ],
+          "evaluate_sha256": "25901823d12b2725ad1a0fbd5c46357cc1ee04fa53abdab8ae0ce5f301f3bb4f"
+        }
+      }
+    },
+    {
+      "key": "WEAPON_IMBUE",
+      "description": "Weapon Imbue",
+      "module": "Conditions/build.lua",
+      "name": "weapon-imbue",
+      "subject": "A sword blade coated with a glowing green-violet oil sheen dripping from its edge, plus a bold small vial qualifier. A specific temporary enchant on the weapon, not a permanent enchant.",
+      "prompt": "Use case: stylized-concept. Asset type: one original transparent raster icon for a classic high-fantasy MMO addon. Subject: A sword blade coated with a glowing green-violet oil sheen dripping from its edge, plus a bold small vial qualifier. A specific temporary enchant on the weapon, not a permanent enchant. Style: hand-painted Warcraft-era fantasy inventory/spell art language, wholly original object design, chunky sculpted silhouette, dark ink-like edge shadows, rich saturated local colors, broad luminous highlights. Composition: a SINGLE centered emblem, NOT a sheet or set, subject fills 88 percent of square canvas with clean small transparent margin. Legible at actual 20,24,32 pixels: one dominant subject and at most one bold qualifier motif, oversized simple shapes, no tiny decorative inscriptions. Preserve both the condition subject and its qualifier. No generic hourglass standing alone for a duration condition. Genuine transparent background and transparent corners; no square background, vignette, plate, badge frame, ground or cast shadow. No letters, numbers, words, text, labels, watermark or existing game logo. Any temporal, count, percentage or range qualifier must be an oversized broad secondary motif occupying at least one quarter of the emblem, not merely tiny ticks or decorative sparks.",
+      "generated_path": "/home/prez/.codex/generated_images/01a14c29-8231-7ba3-91a5-df563d4cfaea/exec-8a71ef7b-a208-4ef8-add2-cacee6554c71.png",
+      "kind": "condition",
+      "status": "generated",
+      "runtime": "Assets/Conditions/v2/weapon-imbue.tga",
+      "source_sha256": "bfb13638e4170c2c6cdbeba65cb9357c0b04724e629fb18f43eaa4b69b411002",
+      "runtime_evidence": {
+        "default": {
+          "line": 184,
+          "parameters": [
+            "value",
+            "cache"
+          ],
+          "evaluate_sha256": "91f8628be76fc264661189886cc21ab8430f4a704acf48904dd62c970c1e0825"
+        }
+      }
+    },
+    {
+      "key": "BOSSMOD_ENCOUNTER",
+      "description": "Boss Mod Encounter",
+      "module": "Conditions/bossmod.lua",
+      "name": "bossmod-encounter",
+      "subject": "A horned dungeon-boss skull mask framed by a raised war banner, plus a bold crossed-swords engagement spark. An encounter currently engaged as reported by a boss-mod addon.",
+      "prompt": "Use case: stylized-concept. Asset type: one original transparent raster icon for a classic high-fantasy MMO addon. Subject: A horned dungeon-boss skull mask framed by a raised war banner, plus a bold crossed-swords engagement spark. An encounter currently engaged as reported by a boss-mod addon. Style: hand-painted Warcraft-era fantasy inventory/spell art language, wholly original object design, chunky sculpted silhouette, dark ink-like edge shadows, rich saturated local colors, broad luminous highlights. Composition: a SINGLE centered emblem, NOT a sheet or set, subject fills 88 percent of square canvas with clean small transparent margin. Legible at actual 20,24,32 pixels: one dominant subject and at most one bold qualifier motif, oversized simple shapes, no tiny decorative inscriptions. Preserve both the condition subject and its qualifier. No generic hourglass standing alone for a duration condition. Genuine transparent background and transparent corners; no square background, vignette, plate, badge frame, ground or cast shadow. No letters, numbers, words, text, labels, watermark or existing game logo. Any temporal, count, percentage or range qualifier must be an oversized broad secondary motif occupying at least one quarter of the emblem, not merely tiny ticks or decorative sparks.",
+      "generated_path": "/home/prez/.codex/generated_images/01a14c29-8231-7ba3-91a5-df563d4cfaea/exec-f04e34b0-b1d7-497c-982a-50d58819cedb.png",
+      "kind": "condition",
+      "status": "generated",
+      "runtime": "Assets/Conditions/v2/bossmod-encounter.tga",
+      "source_sha256": "9fa39a3127a40022ca6a81ec8dcfbf6db6901b67b8c9171e380f724cc040d6d1",
+      "runtime_evidence": {
+        "default": {
+          "line": 78,
+          "parameters": [
+            "value"
+          ],
+          "evaluate_sha256": "efab05b650d4de7376081544a96a7fd38f171aa28e84a254f23c040328bdfe95"
+        }
+      }
+    },
+    {
+      "key": "BOSSMOD_STAGE",
+      "description": "Boss Mod Encounter Stage",
+      "module": "Conditions/bossmod.lua",
+      "name": "bossmod-stage",
+      "subject": "A horned dungeon-boss skull mask above three stacked stone steps with the middle step glowing, plus one bold upward arrow. The fight's current phase or stage, not a timer.",
+      "prompt": "Use case: stylized-concept. Asset type: one original transparent raster icon for a classic high-fantasy MMO addon. Subject: A horned dungeon-boss skull mask above three stacked stone steps with the middle step glowing, plus one bold upward arrow. The fight's current phase or stage, not a timer. Style: hand-painted Warcraft-era fantasy inventory/spell art language, wholly original object design, chunky sculpted silhouette, dark ink-like edge shadows, rich saturated local colors, broad luminous highlights. Composition: a SINGLE centered emblem, NOT a sheet or set, subject fills 88 percent of square canvas with clean small transparent margin. Legible at actual 20,24,32 pixels: one dominant subject and at most one bold qualifier motif, oversized simple shapes, no tiny decorative inscriptions. Preserve both the condition subject and its qualifier. No generic hourglass standing alone for a duration condition. Genuine transparent background and transparent corners; no square background, vignette, plate, badge frame, ground or cast shadow. No letters, numbers, words, text, labels, watermark or existing game logo. Any temporal, count, percentage or range qualifier must be an oversized broad secondary motif occupying at least one quarter of the emblem, not merely tiny ticks or decorative sparks.",
+      "generated_path": "/home/prez/.codex/generated_images/01a14c29-8231-7ba3-91a5-df563d4cfaea/exec-89e10779-495c-44cd-b3f3-b36766f764e9.png",
+      "kind": "condition",
+      "status": "generated",
+      "runtime": "Assets/Conditions/v2/bossmod-stage.tga",
+      "source_sha256": "e1d720e060707f44ccb98c0a82f2da6d61677fdd007aac9c4a5d50805afce531",
+      "runtime_evidence": {
+        "default": {
+          "line": 109,
+          "parameters": [
+            "value"
+          ],
+          "evaluate_sha256": "41f00c84f3052599086f4d688aeccd31713635494f264c3e37d57767dfe5588e"
+        }
+      }
+    },
+    {
+      "key": "BOSSMOD_TIMER",
+      "description": "Boss Mod Timer",
+      "module": "Conditions/bossmod.lua",
+      "name": "bossmod-timer",
+      "subject": "A horned dungeon-boss skull mask with a bold glowing countdown ring around it partly drained, plus one sharp warning spark. Seconds until a boss ability, not a generic duration hourglass.",
+      "prompt": "Use case: stylized-concept. Asset type: one original transparent raster icon for a classic high-fantasy MMO addon. Subject: A horned dungeon-boss skull mask with a bold glowing countdown ring around it partly drained, plus one sharp warning spark. Seconds until a boss ability, not a generic duration hourglass. Style: hand-painted Warcraft-era fantasy inventory/spell art language, wholly original object design, chunky sculpted silhouette, dark ink-like edge shadows, rich saturated local colors, broad luminous highlights. Composition: a SINGLE centered emblem, NOT a sheet or set, subject fills 88 percent of square canvas with clean small transparent margin. Legible at actual 20,24,32 pixels: one dominant subject and at most one bold qualifier motif, oversized simple shapes, no tiny decorative inscriptions. Preserve both the condition subject and its qualifier. No generic hourglass standing alone for a duration condition. Genuine transparent background and transparent corners; no square background, vignette, plate, badge frame, ground or cast shadow. No letters, numbers, words, text, labels, watermark or existing game logo. Any temporal, count, percentage or range qualifier must be an oversized broad secondary motif occupying at least one quarter of the emblem, not merely tiny ticks or decorative sparks.",
+      "generated_path": "/home/prez/.codex/generated_images/01a14c29-8231-7ba3-91a5-df563d4cfaea/exec-c3b500a9-b8c1-4621-9d8f-93c3b41422ce.png",
+      "kind": "condition",
+      "status": "generated",
+      "runtime": "Assets/Conditions/v2/bossmod-timer.tga",
+      "source_sha256": "00ec71961711164ba5df16dde08dbfc5e5f5a9e042e729595c306da75c9faf0e",
+      "runtime_evidence": {
+        "default": {
+          "line": 136,
+          "parameters": [
+            "value",
+            "_",
+            "evalStart"
+          ],
+          "evaluate_sha256": "50cc52a6b6f07de2abbe13a6d0e639225b5f836d20b7ec5f052fa84f59cd1ad8"
+        }
+      }
     }
   ],
   "category_scope": "Six packaged UUID categories plus All, Switch, Other native rows/fallback."

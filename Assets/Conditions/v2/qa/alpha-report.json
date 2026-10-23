@@ -11568,5 +11568,539 @@
         "sha256": "eecb4a8a1cc1f3dca4f08bcffa653360d4117da05a5fa15b6d82f9aeeb58696e"
       }
     }
+  },
+  {
+    "key": "ACTION_CONTEXT",
+    "name": "action-context",
+    "source_sha256": "74795ed990b1bd7a2f480da15be9ef530b2050088feac381faa73e4f17b65c37",
+    "source": {
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "alpha": [
+        0,
+        255
+      ],
+      "transparent": 699983,
+      "opaque": 1078,
+      "partial": 871455,
+      "corners": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "bounds": [
+        0,
+        28,
+        1254,
+        1254
+      ]
+    },
+    "exports": {
+      "64": {
+        "size": [
+          64,
+          64
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ],
+        "transparent": 1584,
+        "opaque": 254,
+        "partial": 2258,
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          1,
+          1,
+          63,
+          63
+        ],
+        "path": "action-context-64.tga",
+        "sha256": "5dcfd5da55da3c4c0d68276a9829be75fc77cc1b57f0478c0940fff7fc86bb3b"
+      },
+      "128": {
+        "size": [
+          128,
+          128
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ],
+        "transparent": 7170,
+        "opaque": 582,
+        "partial": 8632,
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          2,
+          2,
+          126,
+          126
+        ],
+        "path": "action-context.tga",
+        "sha256": "e2a9db7be216548ce5daf334c421ec7deb65bfeeba660fbe3411179365b84cd7"
+      }
+    }
+  },
+  {
+    "key": "SET_PIECES",
+    "name": "set-pieces",
+    "source_sha256": "7d3ba70fff8f8712216a4009ab088fa2c02b25704943802f01f7eaa80fa913e1",
+    "source": {
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "alpha": [
+        0,
+        255
+      ],
+      "transparent": 586805,
+      "opaque": 1114,
+      "partial": 984597,
+      "corners": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "bounds": [
+        0,
+        12,
+        1238,
+        1236
+      ]
+    },
+    "exports": {
+      "64": {
+        "size": [
+          64,
+          64
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ],
+        "transparent": 1412,
+        "opaque": 192,
+        "partial": 2492,
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          1,
+          1,
+          63,
+          63
+        ],
+        "path": "set-pieces-64.tga",
+        "sha256": "aa5adcf950937ca27c025fe984825f3d205142df305ea1f54848a3c9012473f0"
+      },
+      "128": {
+        "size": [
+          128,
+          128
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ],
+        "transparent": 6198,
+        "opaque": 367,
+        "partial": 9819,
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          2,
+          2,
+          126,
+          125
+        ],
+        "path": "set-pieces.tga",
+        "sha256": "34f0e6322f12780cb1e6173e054b1c63fcc0b78d121381c39532517faa9b9237"
+      }
+    }
+  },
+  {
+    "key": "WEAPON_IMBUE",
+    "name": "weapon-imbue",
+    "source_sha256": "bfb13638e4170c2c6cdbeba65cb9357c0b04724e629fb18f43eaa4b69b411002",
+    "source": {
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "alpha": [
+        0,
+        255
+      ],
+      "transparent": 944309,
+      "opaque": 644,
+      "partial": 627563,
+      "corners": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "bounds": [
+        0,
+        4,
+        1250,
+        1254
+      ]
+    },
+    "exports": {
+      "64": {
+        "size": [
+          64,
+          64
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ],
+        "transparent": 2158,
+        "opaque": 212,
+        "partial": 1726,
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          1,
+          1,
+          63,
+          63
+        ],
+        "path": "weapon-imbue-64.tga",
+        "sha256": "faae91a68bbb83926d2531da9e4230cb86358b3bff8460f945b98db50c922f71"
+      },
+      "128": {
+        "size": [
+          128,
+          128
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ],
+        "transparent": 9410,
+        "opaque": 507,
+        "partial": 6467,
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          2,
+          2,
+          126,
+          126
+        ],
+        "path": "weapon-imbue.tga",
+        "sha256": "7fbcf76fbab12f103b8ed87420616fbf88d4f8db339ed21e42fa63e08f4698ea"
+      }
+    }
+  },
+  {
+    "key": "BOSSMOD_ENCOUNTER",
+    "name": "bossmod-encounter",
+    "source_sha256": "9fa39a3127a40022ca6a81ec8dcfbf6db6901b67b8c9171e380f724cc040d6d1",
+    "source": {
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "alpha": [
+        0,
+        255
+      ],
+      "transparent": 510401,
+      "opaque": 1280,
+      "partial": 1060835,
+      "corners": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "bounds": [
+        0,
+        21,
+        1253,
+        1254
+      ]
+    },
+    "exports": {
+      "64": {
+        "size": [
+          64,
+          64
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ],
+        "transparent": 1063,
+        "opaque": 213,
+        "partial": 2820,
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          1,
+          1,
+          63,
+          62
+        ],
+        "path": "bossmod-encounter-64.tga",
+        "sha256": "0cbb29fab7e1267cc08240f30aa7ed5a071cabb2d4ebd152228d657d1942172a"
+      },
+      "128": {
+        "size": [
+          128,
+          128
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ],
+        "transparent": 5066,
+        "opaque": 553,
+        "partial": 10765,
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          2,
+          2,
+          126,
+          122
+        ],
+        "path": "bossmod-encounter.tga",
+        "sha256": "8218bc66f691650134dc7cbc9d8b02bca5031992c3fb84f39846805e00bc3f2b"
+      }
+    }
+  },
+  {
+    "key": "BOSSMOD_STAGE",
+    "name": "bossmod-stage",
+    "source_sha256": "e1d720e060707f44ccb98c0a82f2da6d61677fdd007aac9c4a5d50805afce531",
+    "source": {
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "alpha": [
+        0,
+        255
+      ],
+      "transparent": 562497,
+      "opaque": 1027,
+      "partial": 1008992,
+      "corners": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "bounds": [
+        0,
+        0,
+        1231,
+        1254
+      ]
+    },
+    "exports": {
+      "64": {
+        "size": [
+          64,
+          64
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ],
+        "transparent": 1250,
+        "opaque": 225,
+        "partial": 2621,
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          1,
+          1,
+          63,
+          63
+        ],
+        "path": "bossmod-stage-64.tga",
+        "sha256": "c9645638b5474991f1e1cb640c71cbeb103f31920e06e1b3c05e418c26fbbb33"
+      },
+      "128": {
+        "size": [
+          128,
+          128
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ],
+        "transparent": 5707,
+        "opaque": 501,
+        "partial": 10176,
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          2,
+          2,
+          126,
+          126
+        ],
+        "path": "bossmod-stage.tga",
+        "sha256": "05a130f13c7b6243e6ae956fde451ee65569063300a5817dd569bfeb4c9fc61c"
+      }
+    }
+  },
+  {
+    "key": "BOSSMOD_TIMER",
+    "name": "bossmod-timer",
+    "source_sha256": "00ec71961711164ba5df16dde08dbfc5e5f5a9e042e729595c306da75c9faf0e",
+    "source": {
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "alpha": [
+        0,
+        255
+      ],
+      "transparent": 694444,
+      "opaque": 1228,
+      "partial": 876844,
+      "corners": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "bounds": [
+        31,
+        51,
+        1225,
+        1240
+      ]
+    },
+    "exports": {
+      "64": {
+        "size": [
+          64,
+          64
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ],
+        "transparent": 1505,
+        "opaque": 275,
+        "partial": 2316,
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          1,
+          1,
+          63,
+          62
+        ],
+        "path": "bossmod-timer-64.tga",
+        "sha256": "418ae20aef8dbfbc0f2e4ba67e5cc00ee1eece4b22f8ef00e06262d58fb44f4d"
+      },
+      "128": {
+        "size": [
+          128,
+          128
+        ],
+        "mode": "RGBA",
+        "alpha": [
+          0,
+          255
+        ],
+        "transparent": 6827,
+        "opaque": 642,
+        "partial": 8915,
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "bounds": [
+          3,
+          5,
+          125,
+          122
+        ],
+        "path": "bossmod-timer.tga",
+        "sha256": "280e28c3705437beb9657f0253a2fbddfcd6354a3a553ee2410f8270c303fa64"
+      }
+    }
   }
 ]
