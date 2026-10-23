@@ -194,7 +194,11 @@ test('newer root or same-root preference mutation cannot be overwritten by Move 
  end
 end)
 test('explicit Auto preserves another action-context desired choice',function()
- local _,a=fixture();select(a);local context=a.GetRotationContext
+ local _,a,r,_,save=fixture()
+ -- A bare rotation joins the vehicle domain only by requiring it in its switch.
+ a:RegisterCondition('ACTION_CONTEXT',{fields={context='string'},requiredFields={'context'},valid=function()return true end,evaluate=function()return false end,print=function()return ''end,widget=function()end,help=function()end})
+ assert(save(r,{name='Choice',rotation={},cooldowns={},switch={type='ACTION_CONTEXT',context='vehicle'}}))
+ select(a);local context=a.GetRotationContext
  a.GetRotationContext=function(self,spec)local c=context(self,spec);c.actionContext='vehicle';return c end;a:HandleCommand('set Choice');assert(#a.db.profile.rotationChoicePreferences.entries==2)
  a.GetRotationContext=context;a:InvalidateRotationChoiceContext();a:SwitchRotation();a:HandleCommand('set auto')
  assert(#a.db.profile.rotationChoicePreferences.entries==1 and entry(a).actionContext=='vehicle'and not a.manualRotation)

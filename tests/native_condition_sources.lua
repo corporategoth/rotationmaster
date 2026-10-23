@@ -53,7 +53,9 @@ local function sample(a,tag,definition)
     elseif tag=='IMMUNE' or tag=='RESIST' then v.school='ar'
     elseif tag=='TALENT' then v.layout='tree' elseif tag=='TOTEM' or tag=='TOTEM_REMAIN' then v.spell=1
     elseif tag=='GLYPH' then v.item=101 elseif tag=='ECS_STAT' then v.stat='power' elseif tag=='ECS_STAT_PCT' then v.stat='percent'
-    elseif tag=='ROLE' then v.value='HEALER' end
+    elseif tag=='ROLE' then v.value='HEALER'
+    elseif tag=='SET_PIECES' then v.set=500 elseif tag=='ACTION_CONTEXT' then v.context='vehicle'
+    elseif tag=='WEAPON_IMBUE' then v.enchant=283 end
     return v
 end
 local function tree(a,definition,value,callback)

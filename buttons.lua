@@ -71,6 +71,9 @@ local Spells = {}
 local ButtonItems = {}
 local ButtonSpells = {}
 local MacroButtons = {}
+-- Pet bar buttons and their pet action index (class pets, and the possessed
+-- unit's abilities on clients that show possession on the pet bar).
+local PetButtons = {}
 local Flags = {}
 local SpellsGlowing = {}
 local FramePool = {}
@@ -667,6 +670,30 @@ local function AddStandardButton(button)
     AddButton(spell,button,item)
 end
 
+-- Pet action slots expose a spell only through GetPetActionInfo. Modern
+-- clients return the spell ID seventh; a client without it still names the
+-- ability, resolved through spell metadata. Tokens (Attack, Follow, Stay...)
+-- are commands, not spells, and are never indexed.
+local function PetActionSpell(index)
+    if type(GetPetActionInfo)~='function' then return end
+    local ok,name,_,isToken,_,_,_,spellID=pcall(GetPetActionInfo,index)
+    if not ok or not addon.Platform:CanReadValue(name) or not addon.Platform:CanReadValue(spellID) then return end
+    if type(spellID)=='number' and spellID>0 then return spellID end
+    if type(name)~='string' or name=='' or isToken==true or isToken==1 then return end
+    return spellMetadataID(name)
+end
+local function PetIndex(button,index)
+    if type(index)=='number' and index>=1 and index<=10 and index%1==0 then return index end
+    local id=type(button.GetID)=='function' and button:GetID() or button.id
+    if type(id)=='number' and id>=1 and id<=10 and id%1==0 then return id end
+end
+local function AddPetButton(button,index)
+    if not button or ButtonSpells[button] then return end
+    index=PetIndex(button,index);if not index then return end
+    PetButtons[button]=index
+    AddButton(PetActionSpell(index),button)
+end
+
 -- Macro conditionals and cast sequences can change their exposed action
 -- without moving a slot or editing the macro. Observe known macro buttons on
 -- the existing recommendation cadence; never parse or execute macro bodies.
@@ -755,8 +782,7 @@ local function FetchBartender4()
 	for i = 1, 10 do
 		local button = _G['BT4PetButton' .. i];
 		if button then
-		    local spell = select(7, GetPetActionInfo(button.id))
-			AddButton(spell, button);
+			AddPetButton(button, button.id)
 		end
 		button = _G['BT4StanceButton' .. i];
 		if button then
@@ -904,8 +930,18 @@ local function FetchBlizzard()
     end
 
 	for i = 1, 10 do
-		local button = _G['PetActionButton' .. i]
-		AddStandardButton(button)
+		AddPetButton(_G['PetActionButton' .. i], i)
+	end
+
+	-- Vehicle and override bars (Wrath and later) show their own buttons.
+	for i = 1, 6 do
+		AddStandardButton(_G['OverrideActionBarButton' .. i])
+	end
+end
+
+local function FetchElvUIPet()
+	for i = 1, 10 do
+		AddPetButton(_G['ElvUI_BarPetButton' .. i], i)
 	end
 end
 
@@ -949,6 +985,7 @@ function addon:Fetch()
     ButtonItems = {}
     ButtonSpells = {}
     MacroButtons = {}
+    PetButtons = {}
 	Flags = {}
 	SpellsGlowing = {}
 
@@ -963,6 +1000,10 @@ function addon:Fetch()
 	-- It does not alter original button frames so it needs to be fetched too
 	if IsAddOnLoaded('Bartender4') then
 		FetchBartender4()
+	end
+
+	if IsAddOnLoaded('ElvUI') then
+		FetchElvUIPet()
 	end
 
 	if IsAddOnLoaded('ButtonForge') then
@@ -1028,6 +1069,60 @@ function addon:FindSpell(spellIds,itemIds)
         end
     end
 end
+
+-- Readiness through the bar itself, for actions outside the player's and pet's
+-- spellbooks: vehicle, override and possession abilities. Consulted only in a
+-- special action context (Core/action_policy.lua), never on the player path.
+local function readable(...)
+    for i=1,select('#',...) do if not addon.Platform:CanReadValue((select(i,...))) then return false end end
+    return true
+end
+local function cooldownReady(start,duration,now)
+    if type(start)~='number' or type(duration)~='number' or type(now)~='number' then return nil end
+    if duration==0 or start+duration<=now then return true end
+    local gcd=addon.Platform.GetGlobalCooldown and addon.Platform:GetGlobalCooldown()
+    if type(gcd)~='table' or not gcd.isEnabled or gcd.duration==0 then return false end
+    local gcdExpires=gcd.startTime+gcd.duration
+    return gcdExpires>now and start+duration<=gcdExpires+0.001
+end
+local function petActionReady(index,now)
+    if type(GetPetActionCooldown)~='function' then return false end
+    local ok,start,duration,enabled=pcall(GetPetActionCooldown,index)
+    if not ok or not readable(start,duration,enabled) or enabled==0 or enabled==false then return false end
+    if type(GetPetActionSlotUsable)=='function' then
+        local usableOk,usable=pcall(GetPetActionSlotUsable,index)
+        if usableOk and readable(usable) and (usable==false or usable==nil) then return false end
+    end
+    return cooldownReady(start,duration,now)==true
+end
+local function actionSlotReady(slot,now)
+    if type(IsUsableAction)~='function' or type(GetActionCooldown)~='function' then return false end
+    local ok,usable,noMana=pcall(IsUsableAction,slot)
+    if not ok or not readable(usable,noMana) or not usable or noMana then return false end
+    local cdOk,start,duration,enabled=pcall(GetActionCooldown,slot)
+    if not cdOk or not readable(start,duration,enabled) or enabled==0 or enabled==false then return false end
+    if cooldownReady(start,duration,now)~=true then return false end
+    if type(IsActionInRange)=='function' then
+        local rangeOk,inRange=pcall(IsActionInRange,slot)
+        if rangeOk and readable(inRange) and (inRange==false or inRange==0) then return false end
+    end
+    return true
+end
+function addon:IsBoundActionReady(spellId,now)
+    local buttons=Spells[spellId]
+    if not buttons then return false end
+    for _,button in ipairs(buttons) do
+        local index=PetButtons[button]
+        if index then
+            if petActionReady(index,now) then return true end
+        else
+            local ok,slot=pcall(GetActionSlot,button)
+            if ok and slot and actionSlotReady(slot,now) then return true end
+        end
+    end
+    return false
+end
+function addon:GetPetActionButtonIndex(button) return PetButtons[button] end
 
 function addon:IsGlowing(spellId,itemId)
     local current=SpellsGlowing[spellId]
