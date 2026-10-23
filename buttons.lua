@@ -205,6 +205,113 @@ local function UpdateOverlayRaw(frame, effect, color, mags, setp, xoffs, yoffs, 
     return true
 end
 
+
+-- Native stepped animation. Every animated effect shows one step at a time:
+-- rotate (angles), dazzle (colors), animate (textures), pulse (sizes) and
+-- custom (all four per step). Each step becomes its own texture on the
+-- overlay, shown by alpha keyframes in one looping AnimationGroup, so the
+-- client plays the exact same steps with no Lua per frame. Clients without
+-- the animation API, oversized or malformed sequences keep the Lua timer.
+-- Steps take the button's size when the glow starts.
+local NATIVE_MAX_STEPS = 64
+
+local function nativeSteps(effect, color, mags, angle)
+    local kind, sequence = effect.type, effect.sequence
+    local result = {}
+    if kind == "rotate" then
+        local n = effect.steps
+        if type(n) ~= "number" or n < 1 or n % 1 ~= 0 or n > NATIVE_MAX_STEPS then return nil end
+        for i = 1, n do
+            local step = effect.reverse and (n - (i - 1)) or (i - 1)
+            result[i] = {effect.texture, color, mags, (2 * math.pi) / n * step}
+        end
+        return result
+    end
+    if type(sequence) ~= "table" or #sequence == 0 or #sequence > NATIVE_MAX_STEPS then return nil end
+    for i, value in ipairs(sequence) do
+        if kind == "dazzle" and effect.texture then result[i] = {effect.texture, value, mags, angle}
+        elseif kind == "animate" then result[i] = {value, color, mags, angle}
+        elseif kind == "pulse" and effect.texture then result[i] = {effect.texture, color, value, angle}
+        elseif kind == "custom" and type(value) == "table" and value.texture and value.color and value.magnification then
+            result[i] = {value.texture, value.color, value.magnification, math.rad(value.angle or 0)}
+        else return nil end
+    end
+    return #result == #sequence and result or nil
+end
+
+local function nativeSupported(frame)
+    if type(frame.CreateAnimationGroup) ~= "function" or type(frame.CreateTexture) ~= "function" then return false end
+    local texture = frame.texture
+    return texture and type(texture.SetRotation) == "function" and type(texture.SetAlpha) == "function"
+end
+
+-- One group per step count and frequency, reused across glows on this frame.
+local function nativeGroup(frame, count, frequency)
+    frame.rmNativeGroups = frame.rmNativeGroups or {}
+    local key = count .. "@" .. frequency
+    local group = frame.rmNativeGroups[key]
+    if group then return group end
+    group = frame:CreateAnimationGroup()
+    group:SetLooping("REPEAT")
+    for i = 1, count do
+        local texture = frame.rmStepTextures[i]
+        local on = group:CreateAnimation("Alpha")
+        on:SetTarget(texture);on:SetFromAlpha(0);on:SetToAlpha(1)
+        on:SetDuration(0.001);on:SetStartDelay((i - 1) * frequency);on:SetOrder(1)
+        local off = group:CreateAnimation("Alpha")
+        off:SetTarget(texture);off:SetFromAlpha(1);off:SetToAlpha(0)
+        off:SetDuration(0.001);off:SetStartDelay(i * frequency);off:SetOrder(1)
+    end
+    frame.rmNativeGroups[key] = group
+    return group
+end
+
+local function StopNativeOverlay(frame)
+    local native = frame.rmNative
+    if not native then return end
+    frame.rmNative = nil
+    native.group:Stop()
+    for i = 1, native.count do frame.rmStepTextures[i]:Hide() end
+    frame.texture:Show()
+end
+
+local function StartNativeOverlay(frame, effect, color, mags, setp, xoffs, yoffs, angle)
+    if not nativeSupported(frame) then return false end
+    local steps = nativeSteps(effect, color, mags, angle)
+    if not steps then return false end
+    local frequency = effect.frequency or .25
+    if type(frequency) ~= "number" or frequency <= 0 then return false end
+    StopNativeOverlay(frame)
+    local parent = frame:GetParent()
+    local width, height = parent:GetWidth(), parent:GetHeight()
+    frame:ClearAllPoints()
+    frame:SetPoint("CENTER", parent, setp, xoffs, yoffs)
+    frame:SetSize(width, height)
+    frame.texture:Hide()
+    frame.rmStepTextures = frame.rmStepTextures or {}
+    for i, step in ipairs(steps) do
+        local texture = frame.rmStepTextures[i]
+        if not texture then
+            texture = frame:CreateTexture(nil, "OVERLAY")
+            texture:SetBlendMode("ADD")
+            frame.rmStepTextures[i] = texture
+        end
+        local c, scale = step[2], step[3] or 1.0
+        texture:ClearAllPoints()
+        texture:SetPoint("CENTER", frame, "CENTER")
+        texture:SetSize(width * scale, height * scale)
+        texture:SetTexture(step[1])
+        texture:SetVertexColor(c.r, c.g, c.b, c.a)
+        texture:SetRotation(step[4] or 0)
+        texture:SetAlpha(0)
+        texture:Show()
+    end
+    local group = nativeGroup(frame, #steps, frequency)
+    frame.rmNative = {group=group, count=#steps}
+    group:Play()
+    return true
+end
+
 local UpdateOverlay
 local function OverlayVisible(frame)
     -- Older external frame stand-ins have no visibility observation. Keep
@@ -213,6 +320,7 @@ local function OverlayVisible(frame)
 end
 
 local function StopOverlay(frame)
+    StopNativeOverlay(frame)
     InvalidateOverlay(frame)
     local generation,timer=frame.rmOverlayGeneration,frame.sequenceTimer
     frame.rmOverlayAnimation=nil
@@ -282,6 +390,8 @@ UpdateOverlay=function(frame, effect, color, mags, setp, xoffs, yoffs, angle, an
 	if animation then
         if frame.rmOverlayAnimation~=animation or animation.generation~=frame.rmOverlayGeneration
             or animation.ticket~=ticket or animation.paused then return false end
+    elseif effect.type~='texture' and StartNativeOverlay(frame, effect, color, mags, setp, xoffs, yoffs, angle) then
+        return true
     elseif effect.type~='texture' then
         animation={effect=effect,color=color,mags=mags,setp=setp,xoffs=xoffs,yoffs=yoffs,angle=angle,
             generation=frame.rmOverlayGeneration}
