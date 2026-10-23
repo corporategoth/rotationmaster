@@ -98,7 +98,8 @@ test('Plater-style chrome exposes compact bars slider bordered tabs metadata and
     assert(shell.scaleSlider and shell.scaleSlider.kind=='Slider' and shell.scaleSlider.minimum==70 and shell.scaleSlider.maximum==130)
     assert(shell.footer:GetHeight()==20 and shell.header:GetHeight()<=38 and shell.tabs[1]:GetHeight()==22)
     assert(shell.version:GetText():find('9.9',1,true) and shell.edition:GetText():find('TBC',1,true) and shell.author:GetText():find('Makiel',1,true))
-    assert(shell.language and shell.language.value=='enUS' and shell.language.template==nil)
+    -- deDE is an installed translation, so it is the language in use.
+    assert(shell.language and shell.language.value=='deDE' and shell.language.template==nil)
     assert(shell.language.tooltip:find('deDE',1,true),'installed-language tooltip hides the actual game locale')
     shell.language:Click();assert(shell.languageMenu:IsShown() and #shell.languageRows==1 and shell.languageRows[1].selected)
     shell.languageRows[1]:Click();assert(not shell.languageMenu:IsShown())

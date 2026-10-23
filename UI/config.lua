@@ -169,12 +169,16 @@ local function newShell()
         if shell.scaleDragging then shell.pendingScale=selected;shell.scaleValue:SetText(tostring(math.floor(selected*100+.5)))
         else shell:ApplyScale(selected,true) end
     end)
-    shell.language=flatButton(window,L["English"],120);shell.language.value="enUS";shell.language:SetSize(120,22)
+    -- The client's language is the translation in use (AceLocale picks it at
+    -- load); languages are named in their own script, as clients do.
+    local nativeNames={enUS="English",deDE="Deutsch",esES="Español (España)",esMX="Español (Latinoamérica)",frFR="Français",itIT="Italiano",koKR="한국어",ptBR="Português (Brasil)",ruRU="Русский",zhCN="简体中文",zhTW="繁體中文"}
+    local active=nativeNames[client.locale] and client.locale or "enUS"
+    shell.language=flatButton(window,nativeNames[active],120);shell.language.value=active;shell.language:SetSize(120,22)
     local languageArrow=shell.language:CreateTexture(nil,"ARTWORK");languageArrow:SetSize(12,12);languageArrow:SetPoint("RIGHT",-5,0);languageArrow:SetTexture(addon:ControlTexture("chevron-down"))
     shell.languageMenu=CreateFrame("Frame",nil,window);shell.languageMenu:SetSize(160,30);shell.languageMenu:SetPoint("TOPRIGHT",shell.language,"BOTTOMRIGHT",0,-2);shell.languageMenu:SetFrameLevel(window:GetFrameLevel()+90);fill(shell.languageMenu,.08,.09,.10)
-    local english=flatButton(shell.languageMenu,L["English"],156);english:SetSize(156,26);english:SetPoint("TOPLEFT",2,-2);english:SetSelected(true)
+    local english=flatButton(shell.languageMenu,nativeNames[active],156);english:SetSize(156,26);english:SetPoint("TOPLEFT",2,-2);english:SetSelected(true)
     addon:SetUIScript(english,"OnClick",function() shell.languageMenu:Hide() end);shell.languageRows={english};shell.languageMenu:Hide()
-    shell.language.tooltip=string.format(L["Game locale: %s. English is the installed translation; other languages use English until translated."],client.locale or L["Unknown"])
+    shell.language.tooltip=string.format(L["Game locale: %s. Rotation Master uses your game's language; text not yet translated appears in English."],client.locale or L["Unknown"])
     addon:SetUIScript(shell.language,"OnClick",function() if shell.languageMenu:IsShown() then shell.languageMenu:Hide() else shell.languageMenu:Show() end end)
     addon:RegisterWindowForEscape({frame=shell.languageMenu})
     local linkPane=CreateFrame("Frame",nil,window);shell.linkPane=linkPane;linkPane:SetSize(520,72);linkPane:SetPoint("BOTTOM",0,28);linkPane:SetFrameLevel(window:GetFrameLevel()+90);fill(linkPane,.07,.08,.09)

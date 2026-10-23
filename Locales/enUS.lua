@@ -1240,7 +1240,7 @@ L["Website"] = true
 L["English is the installed translation; other languages use English until translated."] = true
 L["Drag the title bar to move. Adjust Scale at the top left; right-click the content to close."] = true
 L["Optional addon settings."] = true
-L["Game locale: %s. English is the installed translation; other languages use English until translated."] = true
+L["Game locale: %s. Rotation Master uses your game's language; text not yet translated appears in English."] = true
 L["Read-only condition"] = true
 
 L["Delete"] = true
