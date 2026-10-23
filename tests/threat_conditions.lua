@@ -65,7 +65,7 @@ test('per pass snapshots isolate unit self and threshold while caching nil reaso
     assert(evaluate(node())==true and evaluate(node())==true and #s.calls==18 and next(a.longtermCache)==nil)
 end)
 test('unsupported policy and transient errors remain unknown and recover next evaluation',function()
-    for _,project in ipairs({1,18,999}) do local _,a,s=fixture(project);unknown(a,node());assert(#s.calls==0) end
+    for _,project in ipairs({999}) do local _,a,s=fixture(project);unknown(a,node());assert(#s.calls==0) end
     local _,a,s=fixture();s.throw='threat';unknown(a,node());s.throw=nil;assert(a:evaluateConditionResult(node()).status=='match')
 end)
 test('current editable copies share exact observer calls and support fresh unavailable recovery',function()

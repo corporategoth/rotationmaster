@@ -27,7 +27,7 @@ test('identity preserves exact ordered tokens with one first-unit existence quer
     s.same=false;assert(observe(p)==false)
 end)
 test('policy and both readable nonempty unit inputs precede every native query',function()
-    for _,project in ipairs({1,18,999}) do local _,p,s=fixture(project);unavailable(p,'unsupported-policy');assert(#s.calls==0) end
+    for _,project in ipairs({999}) do local _,p,s=fixture(project);unavailable(p,'unsupported-policy');assert(#s.calls==0) end
     local f,p,s=fixture();local opaque={};f.env.canaccessvalue=function(v) return not rawequal(v,opaque) end
     for _,bad in ipairs({'',false,0,{},opaque}) do for _,slot in ipairs({1,2}) do
         local pair={'target','player'};pair[slot]=bad

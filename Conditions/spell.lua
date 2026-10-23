@@ -268,10 +268,18 @@ addon:RegisterCondition("SPELL_HISTORY", {
     evaluate = function(value)
         local spellid, reason = addon:Widget_GetSpellId(value.spell, value.ranked)
         if not spellid then return nil, reason or "spell-data-unavailable" end
+        local unknown
         for idx, entry in pairs(addon.spellHistory) do
-            local matches = entry.spell == spellid and Functions.values.compare(value.operator, idx, value.value)
-            if matches ~= false then return matches end
+            local spell = entry.spell
+            if spell == false then
+                -- A cast whose spell was secret (restricted clients) may be this one.
+                if Functions.values.compare(value.operator, idx, value.value) ~= false then unknown = true end
+            else
+                local matches = spell == spellid and Functions.values.compare(value.operator, idx, value.value)
+                if matches ~= false then return matches end
+            end
         end
+        if unknown then return nil, "restricted-value" end
         return false
     end,
     print = function(_, value)
@@ -322,8 +330,11 @@ addon:RegisterCondition("SPELL_HISTORY_TIME", {
     evaluate = function(value, _, evalStart) -- Cooldown until the spell is available
         local spellid, reason = addon:Widget_GetSpellId(value.spell, value.ranked)
         if not spellid then return nil, reason or "spell-data-unavailable" end
+        local unknown
         for _, entry in pairs(addon.spellHistory) do
-            if entry.spell == spellid then
+            local spell = entry.spell
+            local secret = spell == false
+            if secret or spell == spellid then
                 local compare,operator=Functions.values.compare,value.operator
                 local recorded=entry.time
                 if not addon.Platform:CanReadValue(evalStart) or not addon.Platform:CanReadValue(recorded) then return nil,'restricted-value' end
@@ -333,9 +344,13 @@ addon:RegisterCondition("SPELL_HISTORY_TIME", {
                 if not addon.Platform:CanReadValue(elapsed) then return nil,'restricted-value' end
                 if elapsed~=elapsed or elapsed==math.huge or elapsed==-math.huge then return nil,'history-time-unavailable' end
                 local matches=compare(operator,elapsed,value.value)
-                if matches ~= false then return matches end
+                -- A cast whose spell was secret (restricted clients) may be this one.
+                if secret then
+                    if matches ~= false then unknown = true end
+                elseif matches ~= false then return matches end
             end
         end
+        if unknown then return nil, "restricted-value" end
         return false
     end,
     print = function(_, value)

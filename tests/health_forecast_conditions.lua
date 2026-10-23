@@ -87,7 +87,7 @@ test('required maximum targets windows and kernel exceptions recover without qua
  local _,a=fixture();for _,tag in ipairs(tags) do local v=node(tag);v.value=math.huge;unknown(a,v) end
 end)
 test('restricted and unsupported policies deny forecasts through actual logical control flow',function()
- for _,project in ipairs({1,18,999}) do local _,a,s=fixture(project);for _,tag in ipairs(tags) do unknown(a,node(tag)) end;for _,call in ipairs(s.calls) do assert(call=='clock','policy queried selected unit') end end
+ for _,project in ipairs({999}) do local _,a,s=fixture(project);for _,tag in ipairs(tags) do unknown(a,node(tag)) end;for _,call in ipairs(s.calls) do assert(call=='clock','policy queried selected unit') end end
 end)
 test('actual bounded kernel handles stale finite row and malformed history without quarantine',function()
  local _,a,s,opaque=fixture();assert(a.Functions.forecast,'bounded forecast missing');for _,history in ipairs({{damage={{time=-1e308,value=1}},heals={}},{damage={{time=97,value=math.huge}},heals={}},{damage={{time=opaque,value=10}},heals={}}}) do a.damageHistory['GUID-target']=history;for _,tag in ipairs(tags) do unknown(a,node(tag)) end end

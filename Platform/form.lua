@@ -4,7 +4,8 @@ local platform=addon.Platform
 -- Keep the native numeric observation unchanged; form labels and configured
 -- class-dependent bounds belong to the authored condition and its Fields UI.
 function platform:GetPlayerFormObservation()
-    if self:GetCombatDataPolicy()~='probe' then return nil,'unsupported-policy' end
+    local policy=self:GetCombatDataPolicy()
+    if policy~='probe' and policy~='restricted' then return nil,'unsupported-policy' end
     if type(GetShapeshiftForm)~='function' then return nil,'missing-api' end
     local ok,result=pcall(GetShapeshiftForm)
     if not ok then return nil,'api-error' end

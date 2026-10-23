@@ -26,6 +26,6 @@ test('all probe families query live current API without load-time observation',f
  end
 end)
 test('unsupported policy skips every native form query',function()
- for _,project in ipairs({1,18,999}) do local _,p,s=fixture(project);unavailable(p,'unsupported-policy');assert(s.calls==0) end
+ for _,project in ipairs({999}) do local _,p,s=fixture(project);unavailable(p,'unsupported-policy');assert(s.calls==0) end
 end)
 finish()

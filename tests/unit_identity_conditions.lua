@@ -60,7 +60,7 @@ test('per-pass ordered token pair cache preserves false nil reasons and fresh or
     assert(next(a.longtermCache)==nil,'identity must not create a longterm cache')
 end)
 test('unsupported policy and transient native errors remain unavailable with next-pass recovery',function()
-    for _,project in ipairs({1,18,999}) do local _,a,s=fixture(project);unknown(a,node());assert(#s.calls==0) end
+    for _,project in ipairs({999}) do local _,a,s=fixture(project);unknown(a,node());assert(#s.calls==0) end
     local _,a,s=fixture();s.throw='same';unknown(a,node());s.throw=nil;assert(a:evaluateConditionResult(node()).status=='match')
 end)
 test('current editable copy shares canonical observer and exact native token order',function()

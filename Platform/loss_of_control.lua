@@ -3,7 +3,8 @@ local platform=addon.Platform
 
 -- The scan limit is an RM resource budget, not a declared native maximum.
 function platform:GetLossOfControlCount()
-    if self:GetCombatDataPolicy()~='probe' then return nil,'unsupported-policy' end
+    local policy=self:GetCombatDataPolicy()
+    if policy~='probe' and policy~='restricted' then return nil,'unsupported-policy' end
     local namespace=C_LossOfControl
     if not self:CanReadValue(namespace) then return nil,'restricted-value' end
     if type(namespace)~='table' then return nil,'missing-api' end
@@ -24,7 +25,8 @@ end
 -- Only the requested subject is required. Timing readiness stays on the row
 -- so an unrelated event with unknown duration does not block a later match.
 function platform:GetLossOfControlEvent(index,kind)
-    if self:GetCombatDataPolicy()~='probe' then return nil,'unsupported-policy' end
+    local policy=self:GetCombatDataPolicy()
+    if policy~='probe' and policy~='restricted' then return nil,'unsupported-policy' end
     if not self:CanReadValue(index) or not self:CanReadValue(kind) then return nil,'restricted-value' end
     if canaccessvalue and not canaccessvalue(index) then return nil,'restricted-value' end
     if type(index)~='number' or index~=index or index==math.huge or index==-math.huge or index<1 or index%1~=0 then return nil,'invalid-loss-of-control-query' end

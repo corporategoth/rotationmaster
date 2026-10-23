@@ -33,7 +33,7 @@ test('missing failed nil restricted malformed and nonfinite required ID data sta
  s.throw='creature';unknown('api-error');s.throw=nil;f.env.UnitCreatureType=nil;unknown('missing-api')
 end)
 test('only readable Boolean false establishes absence and invalid queries never reach natives',function()
- for _,project in ipairs({1,18,999})do local _,p,s=fixture(project);local id,why=p:GetUnitCreatureTypeID('target');assert(id==nil and why=='unsupported-policy'and #s.calls==0)end
+ for _,project in ipairs({999})do local _,p,s=fixture(project);local id,why=p:GetUnitCreatureTypeID('target');assert(id==nil and why=='unsupported-policy'and #s.calls==0)end
  local f,p,s=fixture();local opaque={};f.env.issecretvalue=function(v)return rawequal(v,opaque)end
  for _,unit in ipairs({'',1,false,{},opaque})do assert(p:GetUnitCreatureTypeID(unit)==nil)end;assert(p:GetUnitCreatureTypeID(nil)==nil and #s.calls==0)
  s.exists=nil;local id,why=p:GetUnitCreatureTypeID('target');assert(id==nil and why=='unit-data-unavailable')

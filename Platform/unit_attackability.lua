@@ -8,7 +8,8 @@ if type(consumeClientPolicy)=='function' then readClientPolicy=consumeClientPoli
 -- Attackability keeps the native player attacker and selected unit. A known
 -- false at either early stage needs no later fact; unknown data cannot match.
 function platform:GetUnitAttackabilityObservation(unit)
-    if readClientPolicy(self)~='probe' then return nil,'unsupported-policy' end
+    local policy=readClientPolicy(self)
+    if policy~='probe' and policy~='restricted' then return nil,'unsupported-policy' end
     if not self:CanReadValue(unit) then return nil,'restricted-value' end
     if type(unit)~='string' or unit=='' then return nil,'invalid-unit' end
     if type(UnitExists)~='function' then return nil,'missing-api' end

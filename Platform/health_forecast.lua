@@ -23,7 +23,8 @@ local function providerValue(self,value)
 end
 
 function platform:GetHealthForecastIdentityObservation(unit)
-    if self:GetCombatDataPolicy()~='probe' then return nil,'unsupported-policy' end
+    local policy=self:GetCombatDataPolicy()
+    if policy~='probe' and policy~='restricted' then return nil,'unsupported-policy' end
     if not self:CanReadValue(unit) then return nil,'restricted-value' end
     if type(unit)~='string' or unit=='' then return nil,'invalid-unit' end
     if type(UnitExists)~='function' then return nil,'missing-api' end
@@ -44,7 +45,8 @@ function platform:GetHealthForecastIdentityObservation(unit)
 end
 
 function platform:GetHealthForecastValueObservation(unit,kind)
-    if self:GetCombatDataPolicy()~='probe' then return nil,'unsupported-policy' end
+    local policy=self:GetCombatDataPolicy()
+    if policy~='probe' and policy~='restricted' then return nil,'unsupported-policy' end
     if not self:CanReadValue(unit) or not self:CanReadValue(kind) then return nil,'restricted-value' end
     if type(unit)~='string' or unit=='' then return nil,'invalid-unit' end
     local api
@@ -62,7 +64,8 @@ function platform:GetHealthForecastValueObservation(unit,kind)
 end
 
 function platform:GetHealthForecastProviderObservation(unit)
-    if self:GetCombatDataPolicy()~='probe' then return nil,'unsupported-policy' end
+    local policy=self:GetCombatDataPolicy()
+    if policy~='probe' and policy~='restricted' then return nil,'unsupported-policy' end
     if not self:CanReadValue(unit) then return nil,'restricted-value' end
     if type(unit)~='string' or unit=='' then return nil,'invalid-unit' end
     local provider=_G.RealMobHealth

@@ -292,5 +292,8 @@ Forever, what `IsAvailable()` answers.
   secret is incomplete and says which (`Core/condition_support.lua`). Action
   bars are scanned there too (every slot read guarded by `CanReadValue`), so
   the glow and the preview can show; macro buttons are not observed under the
-  restricted policy. The shipped Retail premades are all incomplete today;
-  their repair is a separate task.
+  restricted policy. Which conditions run there, and why, is in
+  [restricted-clients.md](restricted-clients.md). The shipped Retail
+  premades are all incomplete today, through health conditions (and, unless
+  the client flags primary power never secret, power conditions); their
+  repair is a separate task.

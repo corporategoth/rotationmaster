@@ -42,7 +42,7 @@ test('normalized complete tuple caches by method self and pass without longterm 
  assert(eval(node())==true and eval(node())==true and s.calls==5 and next(a.longtermCache)==nil)
 end)
 test('unsupported policies and transient failures never choose actions and recover next pass',function()
- for _,project in ipairs({1,18,999}) do local _,a,s=fixture(project);unknown(a,node());assert(s.calls==0) end
+ for _,project in ipairs({999}) do local _,a,s=fixture(project);unknown(a,node());assert(s.calls==0) end
  local _,a,s=fixture();s.throw=true;unknown(a,node());s.throw=nil;assert(a:evaluateConditionResult(node()).status=='match')
 end)
 test('current editable duplicate shares actual normalized owner and unknown cache tuple',function()

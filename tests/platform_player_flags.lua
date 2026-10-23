@@ -22,7 +22,7 @@ test('each closed player flag observes only its zero-argument native and preserv
 end)
 test('all probe families work and blocked policies perform no native queries',function()
     for _,project in ipairs({2,5,11,14,19}) do local _,p,s=fixture(project);for kind in pairs(apis) do assert(observe(p,kind)==true) end;assert(#s.calls==3) end
-    for _,project in ipairs({1,18,999}) do local _,p,s=fixture(project);for kind in pairs(apis) do local value,why=observe(p,kind);assert(value==nil and why=='unsupported-policy') end;assert(#s.calls==0) end
+    for _,project in ipairs({999}) do local _,p,s=fixture(project);for kind in pairs(apis) do local value,why=observe(p,kind);assert(value==nil and why=='unsupported-policy') end;assert(#s.calls==0) end
 end)
 test('invalid and restricted kind selection cannot call arbitrary functions',function()
     local f,p,s=fixture();local opaque={};f.env.canaccessvalue=function(v) return not rawequal(v,opaque) end

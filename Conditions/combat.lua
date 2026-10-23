@@ -641,14 +641,20 @@ addon:RegisterCondition("COMBAT_HISTORY", {
                 value.value ~= nil and value.value >= 0)
     end,
     evaluate = function(value)
+        local unknown
         if addon.combatHistory[value.unit] ~= nil then
             for idx, entry in pairs(addon.combatHistory[value.unit]) do
-                if (Functions.values.compare(value.operator, idx, value.value)) and (value.action == entry.action or
-                    (entry.severity ~= nil and value.action == (entry.action .. '_' .. entry.severity))) then
-                    return true
+                if (Functions.values.compare(value.operator, idx, value.value)) then
+                    -- An action that could not be read (restricted clients) may be this one.
+                    if entry.action == false then unknown = true
+                    elseif (value.action == entry.action or
+                        (entry.severity ~= nil and value.action == (entry.action .. '_' .. entry.severity))) then
+                        return true
+                    end
                 end
             end
         end
+        if unknown then return nil, "restricted-value" end
         return false
     end,
     print = function(_, value)
@@ -707,6 +713,7 @@ addon:RegisterCondition("COMBAT_HISTORY_TIME", {
                 value.value ~= nil and value.value >= 0)
     end,
     evaluate = function(value, _, evalStart)
+        local unknown
         if addon.combatHistory[value.unit] ~= nil then
             for _, entry in pairs(addon.combatHistory[value.unit]) do
                 local compare,operator=Functions.values.compare,value.operator
@@ -720,12 +727,17 @@ addon:RegisterCondition("COMBAT_HISTORY_TIME", {
                 local elapsed=evalStart-timestamp
                 if not addon.Platform:CanReadValue(elapsed) then return nil,'restricted-value' end
                 if elapsed~=elapsed or elapsed>=math.huge or elapsed<=-math.huge then return nil,'invalid-combat-history-elapsed' end
-                if compare(operator, elapsed, value.value) and (value.action == entry.action or
+                if compare(operator, elapsed, value.value) then
+                    -- An action that could not be read (restricted clients) may be this one.
+                    if entry.action == false then unknown = true
+                    elseif (value.action == entry.action or
                         (entry.severity ~= nil and value.action == (entry.action .. '_' .. entry.severity))) then
-                    return true
+                        return true
+                    end
                 end
             end
         end
+        if unknown then return nil, "restricted-value" end
         return false
     end,
     print = function(_, value)

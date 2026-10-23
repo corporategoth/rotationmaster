@@ -57,7 +57,9 @@ test('real flag and attackability adapters skip metadata but keep native observa
  local a,e,s,reader,load=fixture();local p=a.Platform;local combat=false;e.UnitExists=function()return true end;e.UnitAffectingCombat=function()return combat end;e.UnitCanAttack=function()return combat end;e.UnitIsDead=function()return false end
  load('Platform/unit_flags.lua');load('Platform/unit_attackability.lua');assert(p:GetUnitFlagObservation('player','combat')==false);assert(p:GetUnitAttackabilityObservation('target')==false)
  combat=true;assert(p:GetUnitFlagObservation('player','combat')==true and p:GetUnitAttackabilityObservation('target')==true);assert(s.metadata==0,'real adapter full metadata remains')
- p.GetClientInfo=function()return{combatDataPolicy='restricted'}end;assert(p:GetUnitFlagObservation('player','combat')==nil and p:GetUnitAttackabilityObservation('target')==nil)
+ -- Restricted clients read these never-secret flags too; an unknown policy does not.
+ p.GetClientInfo=function()return{combatDataPolicy='restricted'}end;assert(p:GetUnitFlagObservation('player','combat')==true and p:GetUnitAttackabilityObservation('target')==true)
+ p.GetClientInfo=function()return{combatDataPolicy='unsupported'}end;assert(p:GetUnitFlagObservation('player','combat')==nil and p:GetUnitAttackabilityObservation('target')==nil)
 end)
 test('foreign receiver identity does not invoke user equality',function()
  local a,e,s,reader=fixture();local p=a.Platform;local equal=0;local mt={__eq=function()equal=equal+1;return true end};setmetatable(p,mt)

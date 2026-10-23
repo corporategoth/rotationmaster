@@ -297,6 +297,37 @@ addon:RegisterCondition("DISTANCE", {
     end
 })
 
+local function rangeMember(cache,unit,distance)
+    local bounds,why=Functions.cache.getCached(cache,addon.Platform.GetRangeCheckBounds,addon.Platform,unit)
+    if not bounds then return nil,why end
+    if bounds.maximum and bounds.maximum<=distance then return true end
+    if bounds.minimum and (bounds.minimum>distance or bounds.minimum>0 and bounds.minimum==distance) then return false end
+    return nil,"range-uncertain"
+end
+-- Nameplate tokens reported by NAME_PLATE_UNIT_ADDED/REMOVED on restricted
+-- clients (main.lua). UnitExists, UnitIsEnemy and the range provider carry no
+-- secret annotation; every result is still checked before use.
+local function nameplateDistanceCount(value,cache,plates)
+    if type(plates)~="table" then return nil,"unit-snapshot-unavailable" end
+    local count = 0
+    for unit in pairs(plates) do
+        if not addon.Platform:CanReadValue(unit) then return nil,"restricted-value" end
+        if type(unit)~="string" or unit=="" then return nil,"invalid-unit-snapshot" end
+        local present,issue=booleanRead(cache,UnitExists,unit)
+        if present==nil then return nil,issue end
+        if present then
+            local enemy,problem=booleanRead(cache,UnitIsEnemy,"player",unit)
+            if enemy==nil then return nil,problem end
+            if enemy==value.enemy then
+                local member,why=rangeMember(cache,unit,value.distance)
+                if member==nil then return nil,why end
+                if member then count=count+1 end
+            end
+        end
+    end
+    return Functions.values.compare(value.operator, count, value.value)
+end
+
 addon:RegisterCondition("DISTANCE_COUNT", {
     description = L["Distance Count"],
     icon = addon.Artwork.condition["DISTANCE_COUNT"],
@@ -310,6 +341,10 @@ addon:RegisterCondition("DISTANCE_COUNT", {
         local maximum,reason=Functions.cache.getCached(cache,addon.Platform.GetNameplateMaxDistance,addon.Platform)
         if maximum==nil then return nil,reason end
         if value.distance>maximum then return nil,"distance-exceeds-nameplate-limit" end
+        -- Restricted clients keep nameplate unit tokens instead of the GUID
+        -- snapshot (an NPC's GUID is secret there); each token is read live.
+        local plates=addon.nameplateUnits
+        if plates~=nil then return nameplateDistanceCount(value,cache,plates) end
         if type(addon.unitsInRange)~="table" then return nil,"unit-snapshot-unavailable" end
         local count = 0
         for guid, entity in pairs(addon.unitsInRange) do
@@ -455,7 +490,9 @@ do
         if name=="color" then return color end
         if name=="finite" then return finite end
         if name=="helpers" then return helpers end
+        if name=="nameplateDistanceCount" then return nameplateDistanceCount end
         if name=="protectedRead" then return addon.builtinSourceModules["Functions/cache.lua"]("protectedRead") end
+        if name=="rangeMember" then return rangeMember end
         if name=="rcf" then return rcf end
     end
     if addon.RegisterBuiltinSourceModule then

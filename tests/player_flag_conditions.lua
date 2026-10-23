@@ -44,7 +44,7 @@ test('complete per-kind cache snapshots preserve false nil reasons and fresh unc
     assert(evaluate({})==true and evaluate({})==true and #s.calls==5 and next(a.longtermCache)==nil)
 end)
 test('unsupported policies and transient errors stay unknown without permanent quarantine',function()
-    for _,project in ipairs({1,18,999}) do local _,a,s=fixture(project);for tag in pairs(kinds) do unknown(a,tag) end;assert(#s.calls==0) end
+    for _,project in ipairs({999}) do local _,a,s=fixture(project);for tag in pairs(kinds) do unknown(a,tag) end;assert(#s.calls==0) end
     for tag,kind in pairs(kinds) do local _,a,s=fixture();s.throw=kind;unknown(a,tag);s.throw=nil;assert(a:evaluateConditionResult({type=tag}).status=='match') end
 end)
 test('current editable copies share normalized kind snapshots and recover with native state',function()
