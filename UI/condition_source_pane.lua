@@ -58,7 +58,7 @@ function addon:BuildInlineCustomCondition(p,key,source,readOnly)
     for _,group in ipairs(profile.condition_groups or {}) do if self:SettingsContains(group.conditions,key) then preferences.category=group.id;break end end
     local function valid() return p:Valid(token) end
     local geometry=self:GetWorkbenchRosterGeometry(p.frame:GetWidth(),p.frame:GetHeight())
-    local options={readOnly=readOnly,parent=p.frame,x=geometry.detailX,footer=p.frame,width=geometry.detailWidth,height=math.max(160,p.frame:GetHeight()-34),editor=p.inlineEditorCache,resume=p.inlineResume};p.inlineResume=nil
+    local options={readOnly=readOnly,parent=p.frame,x=geometry.detailX,footer=p.frame,width=geometry.detailWidth-self:GetWorkbenchHelpReserve(p.frame),height=math.max(160,p.frame:GetHeight()-34),editor=p.inlineEditorCache,resume=p.inlineResume};p.inlineResume=nil
     options.initialize=function(model)
         if isNew and p.newConditionKey then model.key=p.newConditionKey;model.baseline.key=model.key;model.creationPending=true end
         model.context=self:CopySettingsData(preferences);model.baseline.context=self:CopySettingsData(preferences)
@@ -71,10 +71,12 @@ function addon:BuildInlineCustomCondition(p,key,source,readOnly)
     options.discard=function() if valid() then p:DiscardSettingsDraft();clearNew(p);p:Draw() end end
     options.fields=function(form,d)
         local context=d.model.context;local y=form.y
-        local checkWidth=(form.width-148)/2
-        local hidden=form:Check('hidden',L['Hidden'],context.hidden,function(value) d.model:Change(function(model) model.context.hidden=value end);d:UpdateActions() end);hidden:SetWidth(checkWidth);hidden:GetFontString():SetWidth(checkWidth-22)
-        local switch=form:Check('switch',L['Switch Condition'],context.switch,function(value) d.model:Change(function(model) model.context.switch=value end);d:UpdateActions() end);switch:ClearAllPoints();switch:SetPoint('TOPLEFT',checkWidth+8,-y);switch:SetWidth(checkWidth);switch:GetFontString():SetWidth(checkWidth-22);form.y=form.y-28
+        local hidden=form:Check('hidden',L['Hidden'],context.hidden,function(value) d.model:Change(function(model) model.context.hidden=value end);d:UpdateActions() end)
+        local switch=form:Check('switch',L['Switch Condition'],context.switch,function(value) d.model:Change(function(model) model.context.switch=value end);d:UpdateActions() end)
         local announcement=form:Check('announcement',L['Announcement Condition'],context.announcement,function(value) d.model:Change(function(model) model.context.announcement=value end);d:UpdateActions() end);announcement.tooltip=L['Show this condition in the announcement condition editor.'];form.cleanups[#form.cleanups+1]=function() announcement.tooltip=nil end
+        -- The three flags share their row in thirds (the Enabled pill and
+        -- Delete keep the right end) and wrap rather than clip when narrow.
+        self:LayoutConditionFlags(hidden,switch,announcement,y,form.width-148);form.y=y+hidden.rmFlagRowsHeight+2
         if key and not readOnly then self:SettingsTopDelete(form,function()
             self:ConfirmSettingsDeletion(p,L['Delete this custom condition? Existing rotations using it will become unavailable.'],function()
                 local ok,why=self:DeleteSavedCustomCondition(key);if ok then clearNew(p);p.condition=nil end;return ok,why

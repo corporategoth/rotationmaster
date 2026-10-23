@@ -2,6 +2,13 @@ local addon_name,addon=...
 local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
 local normalColor={.4,.7,1}
 local switchColor={1,.82,.25}
+-- Hidden, Switch Condition and Announcement Condition share one row in
+-- thirds; a row too narrow for their captions wraps instead of clipping.
+function addon:LayoutConditionFlags(hidden,switch,announcement,y,width)
+    local widest=0;for _,check in ipairs({hidden,switch,announcement}) do widest=math.max(widest,check:GetFontString():GetStringWidth()) end
+    local height=self:LayoutWorkbenchRow({hidden,switch,announcement},0,y,width,{minimum=widest+30,text=22})
+    hidden.rmFlagRowsHeight=height;return height
+end
 function addon:BuildConditionSettings(p)
     local store=p:SettingsData()
     if p.mode=='categories' then return self:BuildConditionCategorySettings(p) end
@@ -55,10 +62,12 @@ function addon:BuildConditionSettings(p)
     if tag and definition then
         p:Text(definition.description or definition.desc or tag);p:Text(custom[tag] and L['Custom condition'] or L['Built-in condition']);p:Text(L['Identifier']..': '..tag)
         for _,entry in ipairs(entries) do if entry.value==tag and entry.invalid then local problem=p:Text(entry.validationMessage);problem:SetTextColor(1,.3,.3) end end
-        local special=(self.conditionSpecials or {})[tag]~=nil
+        local special=(self.conditionSpecials or {})[tag]~=nil;local flagsY=p.y
         local hidden=p:Check('hidden',L['Hidden'],self:SettingsContains(profile.disabled_conditions,tag),function(value) profile.disabled_conditions=profile.disabled_conditions or {};self:SettingsFlag(profile.disabled_conditions,tag,value) end);if special then hidden:Disable() end
         local switch=p:Check('switch',L['Switch Condition'],self:SettingsContains(profile.switch_conditions,tag),function(value) profile.switch_conditions=profile.switch_conditions or {};self:SettingsFlag(profile.switch_conditions,tag,value) end);if special then switch:Disable() end
         local announcement=p:Check('announcement',L['Announcement Condition'],self:SettingsContains(profile.announcement_conditions,tag),function(value) profile.announcement_conditions=profile.announcement_conditions or {};self:SettingsFlag(profile.announcement_conditions,tag,value) end);announcement.tooltip=L['Show this condition in the announcement condition editor.'];p.cleanups[#p.cleanups+1]=function() announcement.tooltip=nil end;if special then announcement:Disable() end
+        -- The three flags share their row in thirds and wrap rather than clip.
+        self:LayoutConditionFlags(hidden,switch,announcement,flagsY,p.width);p.y=flagsY+hidden.rmFlagRowsHeight+2
         local destinations={};local current='DEFAULT'
         for _,group in ipairs(groups) do destinations[#destinations+1]={value=group.id,text=group.name or group.id};if self:SettingsContains(group.conditions,tag) then current=group.id end end;destinations[#destinations+1]={value='DEFAULT',text=L['Other']}
         local assigned=current;local categoryName=L['Other'];for _,entry in ipairs(destinations) do if entry.value==assigned then categoryName=entry.text end end
