@@ -1,9 +1,10 @@
 -- Retail (Midnight 12.x) Arcane Mage after SimulationCraft and Icy Veins (optimal reference): Arcane
 -- Missiles on Clearcasting while Arcane Salvo is low, Arcane Barrage at four Arcane Charges with a
--- high Salvo (or Arcane Soul), Prismatic Bolt, Arcane Orb below three charges, Arcane Pulse on packs,
--- Arcane Blast, and Arcane Barrage when Blast cannot be cast. Spellslinger (Splintering Sorcery
--- known) uses its own order. Disabled: Salvo, Clearcasting and mana are secret in Midnight combat;
--- only the Arcane Charge tests stay readable.
+-- high Salvo or with Arcane Soul at any charge count, Prismatic Bolt, Arcane Orb below three
+-- charges, Arcane Pulse on packs, Arcane Blast, and Arcane Barrage when Blast cannot be cast.
+-- Spellslinger (Splintering Sorcery known) uses its own order: Barrage at 20 Salvo, with two or
+-- more enemies only at four charges (SimulationCraft's aoe_count). Disabled: Salvo, Clearcasting
+-- and mana are secret in Midnight combat; only the Arcane Charge tests stay readable.
 local _,addon=...
 local function all(...)return{type='AND',value={...}}end
 local function any(...)return{type='OR',value={...}}end
@@ -19,7 +20,7 @@ local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local clearcasting,soul,surge=buff(263725),buff(451038),buff(365362)
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.mage.arcane.guide',revision=1,
+ format='RotationMaster',schemaVersion=1,id='rm.retail.mage.arcane.guide',revision=2,
  blocks={['retail.mage.boundaries']=1,['retail.mage.utility']=1},
  nameKey='Default.Retail.Mage.ArcaneGuide.Name',descriptionKey='Default.Retail.Mage.ArcaneGuide.Description',
  applicability={families={'retail'},actionContext='player',class='MAGE',specs={62},minLevel=10,maxLevel=90},
@@ -44,7 +45,7 @@ assert(addon:RegisterDefaultRotation({
     onTrue={
      spell('aguide-ss-prismatic-bolt',1295924),
      spell('aguide-ss-aoe-orb',153626,engaged(3)),
-     spell('aguide-ss-barrage',44425,salvo('GREATERTHANOREQUALS',20)),
+     spell('aguide-ss-barrage',44425,all(salvo('GREATERTHANOREQUALS',20),any(charges('GREATERTHANOREQUALS',4),negate(engaged(2))))),
      spell('aguide-ss-missiles',5143,all(clearcasting,salvo('LESSTHAN',15))),
      spell('aguide-ss-orb',153626,charges('LESSTHAN',3)),
      spell('aguide-ss-pulse',1241462,all(charges('LESSTHAN',3),negate(surge))),
@@ -52,7 +53,7 @@ assert(addon:RegisterDefaultRotation({
     onFalse={
      spell('aguide-sf-missiles',5143,all(clearcasting,salvo('LESSTHAN',12))),
      spell('aguide-sf-soulless-bolt',1295924,negate(soul)),
-     spell('aguide-sf-barrage',44425,all(charges('GREATERTHANOREQUALS',4),any(all(salvo('GREATERTHANOREQUALS',12),clearcasting),salvo('GREATERTHANOREQUALS',25),soul))),
+     spell('aguide-sf-barrage',44425,any(all(charges('GREATERTHANOREQUALS',4),any(all(salvo('GREATERTHANOREQUALS',12),clearcasting),salvo('GREATERTHANOREQUALS',25))),soul)),
      spell('aguide-sf-prismatic-bolt',1295924),
      spell('aguide-sf-orb',153626,charges('LESSTHAN',3)),
      spell('aguide-sf-pulse',1241462,any(engaged(3),charges('EQUALS',0))),

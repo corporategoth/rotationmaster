@@ -63,20 +63,24 @@ function M.new(class,options)
  e.UnitPosition=function(unit)if unit=='player'or member(unit)then return 0,0,0,1 end end
  e.UnitHealth=function(unit)if member(unit)then return member(unit).health end;return s.health[unit]or 100 end;e.UnitHealthMax=function()return 100 end
  e.UnitThreatSituation=function(_,unit)local entry=enemy(unit);return entry and entry.threat end
- -- Power: the current type (mana 0, rage 1, energy 3...), combo points 4, soul shards 7.
+ -- Power: the current type (mana 0, rage 1, energy 3...); combo points 4, soul shards 7 and holy
+ -- power 9 read s.points (max s.maxPoints).
  e.UnitPowerType=function()return s.powerType end
  e.UnitPower=function(unit,kind)
   if kind==nil then kind=s.powerType end
-  if kind==0 then return s.mana[unit]or 100 elseif kind==4 or kind==7 then return s.points end
+  if kind==0 then return s.mana[unit]or 100 elseif kind==4 or kind==7 or kind==9 then return s.points end
   return s.energy
  end
- e.UnitPowerMax=function(_,kind)if kind==4 or kind==7 then return s.maxPoints end;return 100 end
+ e.UnitPowerMax=function(_,kind)if kind==4 or kind==7 or kind==9 then return s.maxPoints end;return 100 end
  e.UnitGUID=function(unit)if unit=='player'then return 'Player-test'end;local entry=enemy(unit);if entry then return entry.guid end;return 'Creature-'..unit end
  e.UnitCastingInfo=function(unit)if unit=='player'and s.cast then return 'Manual cast','Manual cast',1,99000,102000,false,'cast-guid',false,1 end end
  e.UnitChannelInfo=function(unit)if unit=='player'and s.channel then return 'Manual channel','Manual channel',1,99000,102000,false,false,1 end end
  e.GetWeaponEnchantInfo=function()return s.enchants.main==true,60000,0,1,s.enchants.off==true,60000,0,2 end
  e.Enum.SpellBookSpellBank={Player=0,Pet=1}
  e.Enum.PowerType.HolyPower,e.Enum.PowerType.Maelstrom,e.Enum.PowerType.Insanity,e.Enum.PowerType.Focus=9,11,13,2
+ -- constants.lua ran before these Retail power types existed; rerun it so the class resource map
+ -- (addon.points) is Retail's: Paladin reads Holy Power, as on the client.
+ f.load('constants.lua');assert(a.points.PALADIN==9)
  e.C_SpellBook={IsSpellKnown=function(id,bank)return bank~=1 and s.known[id]==true end}
  e.C_CVar={GetCVar=function(name)assert(name=='nameplateMaxDistance');return '40'end}
  f.libraries['LibRangeCheck-3.0'].GetRange=function(_,unit)
