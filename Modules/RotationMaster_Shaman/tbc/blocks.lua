@@ -56,7 +56,7 @@ shaman('tbc.shaman.enhancement-upkeep',{
 -- Bolt, interrupt, then Fire Nova and Magma for packs.
 shaman('tbc.shaman.enhancement-opening',{
  {id='boundaries',type='block',block='tbc.shaman.boundaries'},
- {id='pull',type='branch',conditions=negate(combat()),onFalse={},onTrue={
+ {id='pull',type='branch',conditions=combat(),onTrue={},onFalse={
   {id='pull-bolt',type='spell',action=403,ranked=false,conditions=all({type='ATTACKABLE',unit='target'},negate({type='COMBAT',unit='target'}),{type='BEYOND_MELEE',unit='target'},negate({type='MOVING'}))},
   {id='pull-stop',type='none',conditions={}},
  }},
@@ -64,7 +64,7 @@ shaman('tbc.shaman.enhancement-opening',{
  {id='kick',type='block',block='tbc.shaman.interrupt'},
  {id='aoe-fire-nova',type='spell',action=1535,ranked=false,conditions=all(enemies(3,8),negate({type='TOTEM_SPELL',spell=1535}))},
  {id='aoe-magma',type='spell',action=8190,ranked=false,conditions=all(enemies(3,8),negate({type='TOTEM_SPELL',spell=1535}),negate({type='TOTEM_SPELL',spell=8190}))},
-})
+},2)
 -- Elemental opening every Elemental source shares.
 shaman('tbc.shaman.elemental-opening',{
  {id='boundaries',type='block',block='tbc.shaman.boundaries'},

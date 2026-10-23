@@ -25,8 +25,8 @@ local worth=any(classified('worldboss'),classified('elite'),{type='TT_HEALTH',un
 local burst=all(combat(),any(negate({type='SPELL_KNOWN',spell=86346}),smashed),worth)
 local function shout(prefix)return{id=prefix..'shout',type='branch',conditions=rage('LESSTHAN',30),onFalse={},onTrue={spell(prefix..'commanding',469,own(469)),spell(prefix..'battle',6673)}}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.warrior.fury.icyveins',revision=2,
- blocks={['mop.warrior.boundaries']=1,['mop.warrior.gap']=1,['mop.warrior.dps-upkeep']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.warrior.fury.icyveins',revision=3,
+ blocks={['mop.warrior.boundaries']=2,['mop.warrior.gap']=1,['mop.warrior.dps-upkeep']=2},
  nameKey='Default.MoP.Warrior.Fury.IcyVeins.Name',descriptionKey='Default.MoP.Warrior.Fury.IcyVeins.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='WARRIOR',minLevel=10,maxLevel=90},
  tags={'fury','dps','melee','leveling','endgame','icy-veins'},

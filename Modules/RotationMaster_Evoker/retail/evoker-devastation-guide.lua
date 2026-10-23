@@ -19,7 +19,7 @@ local burstRoom={type='BUFF_STACKS',unit='player',spell=359618,ownbuff=true,oper
 local flames=all(buff(375802),buff(370901))
 local sweep=buff(1265871)
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.evoker.devastation.guide',revision=1,
+ format='RotationMaster',schemaVersion=1,id='rm.retail.evoker.devastation.guide',revision=2,
  blocks={['retail.evoker.boundaries']=1,['retail.evoker.utility']=1},
  nameKey='Default.Retail.Evoker.DevastationGuide.Name',descriptionKey='Default.Retail.Evoker.DevastationGuide.Description',
  applicability={families={'retail'},actionContext='player',class='EVOKER',specs={1467},minLevel=10,maxLevel=90},
@@ -37,7 +37,7 @@ assert(addon:RegisterDefaultRotation({
   },
   rotation={
    block('dguide-boundaries','retail.evoker.boundaries','dguide-'),
-   {id='dguide-pull',type='branch',conditions=negate(combat()),onFalse={},onTrue={spell('dguide-pull-living-flame',361469),stop('dguide-pull-stop')}},
+   {id='dguide-pull',type='branch',conditions=combat(),onTrue={},onFalse={spell('dguide-pull-living-flame',361469),stop('dguide-pull-stop')}},
    {id='dguide-tree',type='branch',conditions=known(436335),
     onTrue={
      spell('dguide-sc-eternity-surge',359073),

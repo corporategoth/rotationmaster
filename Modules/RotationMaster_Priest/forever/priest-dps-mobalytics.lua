@@ -22,7 +22,7 @@ local unshielded=negate({type='DEBUFF',unit='player',spell=6788})
 local tough=any({type='CLASSIFICATION',unit='target',value='elite'},{type='CLASSIFICATION',unit='target',value='rareelite'},
  {type='CLASSIFICATION',unit='target',value='worldboss'},{type='LEVEL',unit='target',operator='GREATERTHANOREQUALS',value=2,relative=true})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.priest.dps.mobalytics',revision=1,
+ format='RotationMaster',schemaVersion=1,id='rm.forever.priest.dps.mobalytics',revision=2,
  blocks={['forever.priest.boundaries']=1,['forever.priest.upkeep']=1,['forever.priest.dps-upkeep']=1,['forever.priest.wand']=1},
  nameKey='Default.Forever.Priest.DpsMobalytics.Name',descriptionKey='Default.Forever.Priest.DpsMobalytics.Description',
  applicability={families={'forever'},actionContext='player',class='PRIEST',minLevel=1,maxLevel=60},
@@ -47,10 +47,10 @@ assert(addon:RegisterDefaultRotation({
     spell('dot-emergency-shield',17,unshielded),
     spell('dot-emergency-renew',139,negate(mine(139))),
     off('dot-emergency-scream',8122),
-    {id='dot-emergency-heal',type='branch',conditions=negate(shadowform),onFalse={},onTrue={
+    {id='dot-emergency-heal',type='branch',conditions=shadowform,onTrue={},onFalse={
      spell('dot-heal',2054),spell('dot-lesser-heal',2050)}},
     stop('dot-emergency-stop')}},
-   {id='dot-pull',type='branch',conditions=negate({type='COMBAT',unit='player'}),onFalse={},onTrue={
+   {id='dot-pull',type='branch',conditions={type='COMBAT',unit='player'},onTrue={},onFalse={
     spell('dot-pull-holy-fire',14914,all(tough,negate(known(15473)))),
     spell('dot-pull-mind-blast',8092,tough),
     spell('dot-pull-pain',589,negate(own(589))),

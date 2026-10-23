@@ -15,7 +15,7 @@ local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local low={type='HEALTHPCT',unit='target',operator='LESSTHAN',value=.2}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.mage.fire.icyveins',revision=2,
+ format='RotationMaster',schemaVersion=1,id='rm.forever.mage.fire.icyveins',revision=3,
  blocks={['forever.mage.boundaries']=1,['forever.mage.fire-moving']=1,['forever.mage.fire-aoe']=1,['forever.mage.wand']=1,['forever.mage.upkeep']=1},
  nameKey='Default.Forever.Mage.FireIcyVeins.Name',descriptionKey='Default.Forever.Mage.FireIcyVeins.Description',
  applicability={families={'forever'},actionContext='player',class='MAGE',minLevel=10,maxLevel=60},
@@ -29,7 +29,7 @@ assert(addon:RegisterDefaultRotation({
   cooldowns={block('ivfire-upkeep','forever.mage.upkeep','ivfire-')},
   rotation={
    block('ivfire-boundaries','forever.mage.boundaries','ivfire-'),
-   {id='ivfire-pull',type='branch',conditions=negate({type='COMBAT',unit='player'}),onFalse={},onTrue={
+   {id='ivfire-pull',type='branch',conditions={type='COMBAT',unit='player'},onTrue={},onFalse={
     spell('ivfire-pull-pyroblast',11366),spell('ivfire-pull-fireball',133),stop('ivfire-pull-stop')}},
    block('ivfire-moving','forever.mage.fire-moving','ivfire-'),
    spell('ivfire-fire-blast',2136,any({type='BUFF',unit='player',spell=1312934},low)),

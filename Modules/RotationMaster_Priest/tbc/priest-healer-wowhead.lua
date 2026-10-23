@@ -15,7 +15,7 @@ local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local P='priest-heal-wh-'
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.priest.healer.wowhead',revision=2,
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.priest.healer.wowhead',revision=3,
  blocks={['tbc.priest.boundaries']=2,['tbc.priest.dispels']=1,['tbc.priest.group-heal']=1,['tbc.priest.big-heal']=1,
   ['tbc.priest.healer-damage']=1,['tbc.priest.upkeep']=1},
  nameKey='Default.TBC.Priest.HealerWowhead.Name',descriptionKey='Default.TBC.Priest.HealerWowhead.Description',
@@ -37,7 +37,7 @@ assert(addon:RegisterDefaultRotation({
    {id=P..'friend',type='branch',conditions=all({type='FRIENDLY',unit='target'},negate({type='DEAD',unit='target'})),
     onFalse={block(P..'damage','tbc.priest.healer-damage',P)},
     onTrue={
-     {id=P..'prepull',type='branch',conditions=negate({type='COMBAT',unit='player'}),onFalse={},onTrue={
+     {id=P..'prepull',type='branch',conditions={type='COMBAT',unit='player'},onTrue={},onFalse={
       spell(P..'prepull-mending',33076),spell(P..'prepull-renew',139,negate(own(139))),stop(P..'prepull-stop')}},
      spell(P..'shield',17,all(pct('target','LESSTHAN',.35),negate({type='DEBUFF',unit='target',spell=6788}))),
      block(P..'dispels','tbc.priest.dispels',P),

@@ -13,8 +13,8 @@ local function buff(id)return{type='BUFF',unit='player',spell=id,anyrank=true}en
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.hunter.ranged.wowhead',revision=1,
- blocks={['tbc.hunter.opening']=1,['tbc.hunter.leveling']=1,['tbc.hunter.upkeep']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.hunter.ranged.wowhead',revision=2,
+ blocks={['tbc.hunter.opening']=2,['tbc.hunter.leveling']=1,['tbc.hunter.upkeep']=1},
  nameKey='Default.TBC.Hunter.Ranged.Wowhead.Name',descriptionKey='Default.TBC.Hunter.Ranged.Wowhead.Description',
  applicability={families={'tbc'},actionContext='player',class='HUNTER',minLevel=1,maxLevel=70},
  tags={'dps','ranged','leveling','endgame','wowhead'},

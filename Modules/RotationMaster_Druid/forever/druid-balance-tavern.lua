@@ -10,7 +10,7 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function stop(id,conditions,attack)return{id=id,type='none',suppress_attack=not attack,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.druid.balance.tavern',revision=1,
+ format='RotationMaster',schemaVersion=1,id='rm.forever.druid.balance.tavern',revision=2,
  blocks={['forever.druid.boundaries']=1,['forever.druid.upkeep']=1},
  nameKey='Default.Forever.Druid.BalanceTavern.Name',descriptionKey='Default.Forever.Druid.BalanceTavern.Description',
  applicability={families={'forever'},actionContext='player',class='DRUID',minLevel=1,maxLevel=60},
@@ -25,7 +25,7 @@ assert(addon:RegisterDefaultRotation({
   rotation={
    block('dot-boundaries','forever.druid.boundaries','dot-'),
    stop('dot-target',negate({type='ATTACKABLE',unit='target'}),true),
-   {id='dot-pull',type='branch',conditions=negate({type='COMBAT',unit='player'}),onFalse={},onTrue={spell('dot-pull-wrath',5176),stop('dot-pull-stop')}},
+   {id='dot-pull',type='branch',conditions={type='COMBAT',unit='player'},onTrue={},onFalse={spell('dot-pull-wrath',5176),stop('dot-pull-stop')}},
    spell('dot-moonfire',8921,negate(dot(8921,true))),
    spell('dot-insect-swarm',5570,negate(dot(5570,true))),
    spell('dot-roots',339,all(dot(8921,true),dot(5570,true),negate(dot(339)),

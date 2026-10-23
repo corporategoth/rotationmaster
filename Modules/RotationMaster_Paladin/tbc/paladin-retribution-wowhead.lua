@@ -14,7 +14,7 @@ local function debuff(id)return{type='DEBUFF',unit='target',spell=id,anyrank=tru
 local function mana(op,v)return{type='MANAPCT',unit='player',operator=op,value=v}end
 local function anySeal()local out={};for i,id in ipairs({21084,20375,31892,348700,31801,348704,21082,20166,20165,20164})do out[i]=own(id)end;return{type='OR',value=out}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.paladin.retribution.wowhead',revision=2,
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.paladin.retribution.wowhead',revision=3,
  blocks={['tbc.paladin.ret-upkeep']=2,['tbc.paladin.melee-opening']=1,['tbc.paladin.boundaries']=1},
  nameKey='Default.TBC.Paladin.Retribution.Wowhead.Name',descriptionKey='Default.TBC.Paladin.Retribution.Wowhead.Description',
  applicability={families={'tbc'},actionContext='player',class='PALADIN',minLevel=1,maxLevel=70},
@@ -31,7 +31,7 @@ assert(addon:RegisterDefaultRotation({
     {id='ret-wh-opener-wisdom',type='spell',action=20166,ranked=false,conditions=all(mana('LESSTHAN',0.6),negate(any(own(21082),own(20166))))},
     {id='ret-wh-opener-crusader',type='spell',action=21082,ranked=false,conditions=negate(any(own(21082),own(20166)))},
    }},
-   {id='ret-wh-seal',type='branch',conditions=negate(anySeal()),onFalse={},onTrue={
+   {id='ret-wh-seal',type='branch',conditions=anySeal(),onTrue={},onFalse={
     {id='ret-wh-seal-blood',type='spell',action=31892,ranked=false,conditions={}},
     {id='ret-wh-seal-martyr',type='spell',action=348700,ranked=false,conditions={}},
     {id='ret-wh-seal-command',type='spell',action=20375,ranked=false,conditions={}},

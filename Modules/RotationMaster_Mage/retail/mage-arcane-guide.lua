@@ -20,7 +20,7 @@ local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local clearcasting,soul,surge=buff(263725),buff(451038),buff(365362)
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.mage.arcane.guide',revision=2,
+ format='RotationMaster',schemaVersion=1,id='rm.retail.mage.arcane.guide',revision=3,
  blocks={['retail.mage.boundaries']=1,['retail.mage.utility']=1},
  nameKey='Default.Retail.Mage.ArcaneGuide.Name',descriptionKey='Default.Retail.Mage.ArcaneGuide.Description',
  applicability={families={'retail'},actionContext='player',class='MAGE',specs={62},minLevel=10,maxLevel=90},
@@ -40,7 +40,7 @@ assert(addon:RegisterDefaultRotation({
   },
   rotation={
    block('aguide-boundaries','retail.mage.boundaries','aguide-'),
-   {id='aguide-pull',type='branch',conditions=negate(combat()),onFalse={},onTrue={spell('aguide-pull-blast',30451),stop('aguide-pull-stop')}},
+   {id='aguide-pull',type='branch',conditions=combat(),onTrue={},onFalse={spell('aguide-pull-blast',30451),stop('aguide-pull-stop')}},
    {id='aguide-spellslinger',type='branch',conditions={type='SPELL_KNOWN',spell=443739},
     onTrue={
      spell('aguide-ss-prismatic-bolt',1295924),

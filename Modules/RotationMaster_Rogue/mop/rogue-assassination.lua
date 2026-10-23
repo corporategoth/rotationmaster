@@ -34,8 +34,8 @@ local dying=all(points('GREATERTHANOREQUALS',2),lifetime('LESSTHAN',4))
 local four1,four2=spend('rogue-assassination-four',fourPoint)
 local dying1,dying2=spend('rogue-assassination-dying',dying)
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.rogue.assassination',revision=2,
- blocks={['mop.rogue.boundaries']=1,['mop.rogue.assassination-opener']=2,['mop.rogue.out-of-combat']=1,['mop.rogue.solo']=1,['mop.rogue.upkeep']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.rogue.assassination',revision=3,
+ blocks={['mop.rogue.boundaries']=1,['mop.rogue.assassination-opener']=2,['mop.rogue.out-of-combat']=2,['mop.rogue.solo']=2,['mop.rogue.upkeep']=1},
  nameKey='Default.MoP.Rogue.Assassination.Name',descriptionKey='Default.MoP.Rogue.Assassination.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='ROGUE',minLevel=10,maxLevel=90},
  tags={'assassination','dps','melee','leveling','endgame','wowsims','wowhead','icy-veins'},

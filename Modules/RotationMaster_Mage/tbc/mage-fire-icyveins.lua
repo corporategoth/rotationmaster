@@ -8,7 +8,7 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function stop(id)return{id=id,type='none',suppress_attack=true,conditions={}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.mage.fire.icyveins',revision=1,
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.mage.fire.icyveins',revision=2,
  blocks={['tbc.mage.boundaries']=1,['tbc.mage.wand-finish']=1,['tbc.mage.moving-fire-blast']=1,['tbc.mage.fire-aoe']=1,
   ['tbc.mage.improved-scorch']=1,['tbc.mage.armor-molten']=1,['tbc.mage.upkeep']=1},
  nameKey='Default.TBC.Mage.FireIcyVeins.Name',descriptionKey='Default.TBC.Mage.FireIcyVeins.Description',
@@ -25,7 +25,7 @@ assert(addon:RegisterDefaultRotation({
   cooldowns={block('mage-fire-armor','tbc.mage.armor-molten','mage-fire-'),block('mage-fire-upkeep','tbc.mage.upkeep','mage-fire-')},
   rotation={
    block('mage-fire-boundaries','tbc.mage.boundaries','mage-fire-'),
-   {id='mage-fire-pull',type='branch',conditions=negate({type='COMBAT',unit='player'}),onFalse={},onTrue={
+   {id='mage-fire-pull',type='branch',conditions={type='COMBAT',unit='player'},onTrue={},onFalse={
     spell('mage-fire-pull-pyroblast',11366),spell('mage-fire-pull-fireball',133),stop('mage-fire-pull-stop')}},
    block('mage-fire-moving','tbc.mage.moving-fire-blast','mage-fire-'),
    block('mage-fire-aoe','tbc.mage.fire-aoe','mage-fire-'),

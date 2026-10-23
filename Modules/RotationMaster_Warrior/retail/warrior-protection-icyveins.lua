@@ -15,8 +15,8 @@ local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),
 local fight=all(combat(),{type='ATTACKABLE',unit='target'})
 local tanking={type='ISSAME',unit='targettarget',otherunit='player'}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.warrior.protection.icyveins',revision=1,
- blocks={['retail.warrior.boundaries']=1,['retail.warrior.upkeep']=1,['retail.warrior.charge']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.retail.warrior.protection.icyveins',revision=2,
+ blocks={['retail.warrior.boundaries']=1,['retail.warrior.upkeep']=1,['retail.warrior.charge']=2},
  nameKey='Default.Retail.Warrior.Protection.IcyVeins.Name',descriptionKey='Default.Retail.Warrior.Protection.IcyVeins.Description',
  applicability={families={'retail'},actionContext='player',class='WARRIOR',specs={73},minLevel=10,maxLevel=90},
  tags={'protection','tank','reference','single-target','aoe','icy-veins','simulationcraft'},

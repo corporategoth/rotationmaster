@@ -45,13 +45,13 @@ block('mop.monk.brewmaster-upkeep',{
 -- Both Brewmaster premades open from range: Chi Wave, a thrown Dizzying Haze or Clash, Keg Smash,
 -- then let the auto attack start.
 block('mop.monk.brewmaster-pull',{
- {id='pull',type='branch',conditions=negate(combat()),onFalse={},onTrue={
+ {id='pull',type='branch',conditions=combat(),onTrue={},onFalse={
   spell('pull-chi-wave',115098),
   spell('pull-dizzying-haze',115180,beyond),
   spell('pull-clash',122057,beyond),
   spell('pull-keg-smash',121253),
   {id='pull-stop',type='none',conditions={}}}},
-})
+},2)
 -- Both Windwalker premades: Fierce Tiger, Legacy of the White Tiger, Energizing Brew when its
 -- energy fits, Xuen, Storm, Earth, and Fire at two or more enemies (cast it on the other target
 -- yourself), Touch of Karma and defensives when low.
@@ -68,12 +68,12 @@ block('mop.monk.windwalker-upkeep',{
 },2)
 -- Both Windwalker premades: pre-cast Chi Wave or Chi Burst from range, then Touch of Death on sight.
 block('mop.monk.windwalker-open',{
- {id='pull',type='branch',conditions=negate(combat()),onFalse={},onTrue={
+ {id='pull',type='branch',conditions=combat(),onTrue={},onFalse={
   spell('pull-chi-wave',115098),
   spell('pull-chi-burst',123986),
   {id='pull-stop',type='none',conditions={}}}},
  spell('touch-of-death',115080),
-})
+},2)
 -- Windwalker talent spenders shared by both premades' single-target lists.
 block('mop.monk.windwalker-tail',{
  spell('expel-harm',115072,all(health('LESSTHAN',.9),chi('GREATERTHANOREQUALS',-2))),

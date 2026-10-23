@@ -28,7 +28,7 @@ local function priority(p,spender)return{
  spell(p..'moving-scorch',2948,{type='MOVING'}),
  spell(p..'fire-blast',108853,heating)}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.mage.fire.guide',revision=2,
+ format='RotationMaster',schemaVersion=1,id='rm.retail.mage.fire.guide',revision=3,
  blocks={['retail.mage.boundaries']=1,['retail.mage.utility']=1},
  nameKey='Default.Retail.Mage.FireGuide.Name',descriptionKey='Default.Retail.Mage.FireGuide.Description',
  applicability={families={'retail'},actionContext='player',class='MAGE',specs={63},minLevel=10,maxLevel=90},
@@ -47,7 +47,7 @@ assert(addon:RegisterDefaultRotation({
   rotation={
    spell('fguide-casting-fire-blast',108853,all(hardcast,heating)),
    block('fguide-boundaries','retail.mage.boundaries','fguide-'),
-   {id='fguide-pull',type='branch',conditions=negate(combat()),onFalse={},onTrue={spell('fguide-pull-pyroblast',11366),stop('fguide-pull-stop')}},
+   {id='fguide-pull',type='branch',conditions=combat(),onTrue={},onFalse={spell('fguide-pull-pyroblast',11366),stop('fguide-pull-stop')}},
    {id='fguide-aoe',type='branch',conditions={type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=4},
     onTrue=priority('fguide-aoe-',2120),onFalse=priority('fguide-st-',11366)},
    spell('fguide-frostfire-bolt',431044),

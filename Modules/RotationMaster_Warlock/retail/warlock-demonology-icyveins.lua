@@ -16,7 +16,7 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 local core=own(264173)
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.warlock.demonology.icyveins',revision=1,
+ format='RotationMaster',schemaVersion=1,id='rm.retail.warlock.demonology.icyveins',revision=2,
  blocks={['retail.warlock.boundaries']=1,['retail.warlock.upkeep']=1},
  nameKey='Default.Retail.Warlock.Demonology.IcyVeins.Name',descriptionKey='Default.Retail.Warlock.Demonology.IcyVeins.Description',
  applicability={families={'retail'},actionContext='player',class='WARLOCK',specs={266},minLevel=10,maxLevel=90},
@@ -32,7 +32,7 @@ assert(addon:RegisterDefaultRotation({
   },
   rotation={
    block('retail.warlock.boundaries','demoiv-'),
-   {id='demoiv-pull',type='branch',conditions=negate(combat()),onFalse={},onTrue={
+   {id='demoiv-pull',type='branch',conditions=combat(),onTrue={},onFalse={
     spell('demoiv-pull-power-siphon',264130),
     spell('demoiv-pull-demonbolt',264178,core),
     spell('demoiv-pull-shadow-bolt',686),

@@ -24,7 +24,7 @@ local function lives(n)return{type='TT_HEALTH',unit='target',health=0,operator='
 local stationary=negate({type='MOVING'})
 local ranged={type='BEYOND_MELEE',unit='target'}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.shaman.enhancement',revision=1,
+ format='RotationMaster',schemaVersion=1,id='rm.forever.shaman.enhancement',revision=2,
  blocks={['forever.shaman.manual']=1,['forever.shaman.upkeep']=1,['forever.shaman.imbue']=1,['forever.shaman.group-totems']=1},
  nameKey='Default.Forever.Shaman.Enhancement.Name',descriptionKey='Default.Forever.Shaman.Enhancement.Description',
  applicability={families={'forever'},actionContext='player',class='SHAMAN',minLevel=1,maxLevel=60},
@@ -44,7 +44,7 @@ assert(addon:RegisterDefaultRotation({
  rotation={
  block('forever.shaman.manual','shaman-enh-'),
  {id='shaman-enh-no-target',type='none',suppress_attack=true,conditions=negate({type='ATTACKABLE',unit='target'})},
- {id='shaman-enh-pull',type='branch',conditions=negate(combat()),onFalse={},onTrue={
+ {id='shaman-enh-pull',type='branch',conditions=combat(),onTrue={},onFalse={
   spell('shaman-enh-pull-bolt',403,all(ranged,stationary)),
   {id='shaman-enh-pull-stop',type='none',suppress_attack=false,conditions={}},
  }},

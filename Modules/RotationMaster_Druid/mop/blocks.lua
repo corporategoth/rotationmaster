@@ -72,11 +72,11 @@ block('mop.druid.feral-open',{
   spell('bear-lacerate',33745),
   spell('bear-maul',6807,power('GREATERTHANOREQUALS',60)),
   swing('bear-stop')}},
- {id='cat',type='branch',conditions=negate(form(CAT)),onFalse={},onTrue={
+ {id='cat',type='branch',conditions=form(CAT),onTrue={},onFalse={
   spell('cat-dream',5185,all(negate(combat()),talent(17),negate(own(145152)))),
   spell('cat-form',768),
   stop('cat-stop')}},
- {id='pull',type='branch',conditions=negate(combat()),onFalse={},onTrue={
+ {id='pull',type='branch',conditions=combat(),onTrue={},onFalse={
   spell('pull-roar',52610,negate(roar)),
   spell('pull-prowl',5215,negate({type='STEALTHED'})),
   spell('pull-ravage',6785,{type='STEALTHED'}),
@@ -91,7 +91,7 @@ block('mop.druid.feral-open',{
   all(talent(17),any(cp('GREATERTHANOREQUALS',4),{type='BUFF_REMAIN',unit='player',spell=69369,ownbuff=true,operator='LESSTHANOREQUALS',value=2}),
    any(negate(own(106951)),cp('EQUALS',5))),
   health('LESSTHAN',.5)))),
-},2)
+},3)
 -- Both Feral premades: four or more enemies on you, Thrash then Swipe.
 block('mop.druid.feral-aoe',{
  {id='aoe',type='branch',conditions={type='THREAT_COUNT',threat=1,operator='GREATERTHANOREQUALS',value=4},onFalse={},onTrue={

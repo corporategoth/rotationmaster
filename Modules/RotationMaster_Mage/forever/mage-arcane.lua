@@ -26,7 +26,7 @@ local charged={type='BUFF',unit='player',spell=400573}
 local barrage=any({type='BUFF',unit='player',spell=400589},{type='BUFF',unit='player',spell=1326083})
 local function below(n)return any(negate(charged),stacks('LESSTHAN',n))end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.mage.arcane',revision=2,
+ format='RotationMaster',schemaVersion=1,id='rm.forever.mage.arcane',revision=3,
  blocks={['forever.mage.boundaries']=1,['forever.mage.frostbolt']=1,['forever.mage.wand']=1,['forever.mage.upkeep']=1},
  nameKey='Default.Forever.Mage.Arcane.Name',descriptionKey='Default.Forever.Mage.Arcane.Description',
  applicability={families={'forever'},actionContext='player',class='MAGE',minLevel=10,maxLevel=60},
@@ -46,7 +46,7 @@ assert(addon:RegisterDefaultRotation({
   },
   rotation={
    block('arcane-boundaries','forever.mage.boundaries','arcane-'),
-   {id='arcane-pull',type='branch',conditions=negate(combat()),onFalse={},onTrue={
+   {id='arcane-pull',type='branch',conditions=combat(),onTrue={},onFalse={
     spell('arcane-pull-frostbolt',116,negate({type='GROUP'})),spell('arcane-pull-blast',400574),stop('arcane-pull-stop')}},
    {id='arcane-moving',type='branch',conditions={type='MOVING'},onFalse={},onTrue={
     spell('arcane-moving-fire-blast',2136),stop('arcane-moving-stop')}},

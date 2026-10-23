@@ -12,8 +12,8 @@ local function points(op,n)return{type='POINT',unit='player',operator=op,value=n
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.rogue.unspecialized',revision=1,
- blocks={['mop.rogue.boundaries']=1,['mop.rogue.out-of-combat']=1,['mop.rogue.solo']=1,['mop.rogue.upkeep']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.rogue.unspecialized',revision=2,
+ blocks={['mop.rogue.boundaries']=1,['mop.rogue.out-of-combat']=2,['mop.rogue.solo']=2,['mop.rogue.upkeep']=1},
  nameKey='Default.MoP.Rogue.Unspecialized.Name',descriptionKey='Default.MoP.Rogue.Unspecialized.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='ROGUE',minLevel=1,maxLevel=90},
  tags={'dps','melee','leveling','warcraft-tavern','icy-veins'},

@@ -24,8 +24,8 @@ local TEB,RSK=1247275,107428
 local lust=any(buff(2825),buff(32182),buff(80353),buff(90355))
 local tigerPower=any(negate(own(125359)),remain(125359,'LESSTHANOREQUALS',1))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.monk.windwalker',revision=2,
- blocks={['mop.monk.boundaries']=1,['mop.monk.upkeep']=1,['mop.monk.windwalker-upkeep']=2,['mop.monk.windwalker-open']=1,['mop.monk.windwalker-tail']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.monk.windwalker',revision=3,
+ blocks={['mop.monk.boundaries']=1,['mop.monk.upkeep']=1,['mop.monk.windwalker-upkeep']=2,['mop.monk.windwalker-open']=2,['mop.monk.windwalker-tail']=1},
  nameKey='Default.MoP.Monk.Windwalker.Name',descriptionKey='Default.MoP.Monk.Windwalker.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='MONK',minLevel=10,maxLevel=90},
  tags={'windwalker','leveling','single-target','aoe','wowsims','wowhead'},

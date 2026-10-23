@@ -16,9 +16,9 @@ local function shards(op,n)return{type='POINT',unit='player',operator=op,value=n
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.warlock.affliction',revision=2,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.warlock.affliction',revision=3,
  blocks={['mop.warlock.boundaries']=2,['mop.warlock.upkeep']=1,['mop.warlock.pet-felhunter']=1,['mop.warlock.affliction-upkeep']=1,
-  ['mop.warlock.affliction-dots']=1,['mop.warlock.affliction-filler']=1},
+  ['mop.warlock.affliction-dots']=2,['mop.warlock.affliction-filler']=1},
  nameKey='Default.MoP.Warlock.Affliction.Name',descriptionKey='Default.MoP.Warlock.Affliction.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='WARLOCK',minLevel=10,maxLevel=90},
  tags={'affliction','dps','caster','ranged','leveling','endgame','wowsims','hekili'},

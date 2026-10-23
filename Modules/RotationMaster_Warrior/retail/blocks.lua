@@ -27,8 +27,8 @@ assert(addon:RegisterDefaultBlock({
 }}))
 -- The guide lists open with Charge: out of combat, Charge, then stop.
 assert(addon:RegisterDefaultBlock({
- id='retail.warrior.charge',revision=1,families={'retail'},class='WARRIOR',steps={
- {id='pull',type='branch',conditions=negate(combat()),onFalse={},onTrue={
+ id='retail.warrior.charge',revision=2,families={'retail'},class='WARRIOR',steps={
+ {id='pull',type='branch',conditions=combat(),onTrue={},onFalse={
   spell('charge',100),
   {id='pull-stop',type='none',suppress_attack=false,conditions={}},
  }},

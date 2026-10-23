@@ -18,8 +18,8 @@ local function off(id,action,conditions)local step=spell(id,action,conditions);s
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local MISSILES=79683
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.mage.arcane',revision=2,
- blocks={['mop.mage.boundaries']=1,['mop.mage.upkeep']=1,['mop.mage.armor-frost']=1,['mop.mage.bombs']=1,['mop.mage.arcane-open']=1,['mop.mage.arcane-aoe-moving']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.mage.arcane',revision=3,
+ blocks={['mop.mage.boundaries']=1,['mop.mage.upkeep']=1,['mop.mage.armor-frost']=1,['mop.mage.bombs']=1,['mop.mage.arcane-open']=2,['mop.mage.arcane-aoe-moving']=1},
  nameKey='Default.MoP.Mage.Arcane.Name',descriptionKey='Default.MoP.Mage.Arcane.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='MAGE',minLevel=10,maxLevel=90},
  tags={'arcane','leveling','single-target','aoe','wowsims','hekili'},

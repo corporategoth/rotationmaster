@@ -26,7 +26,7 @@ test('four premades register valid, scoped 1/10–70, and cite only their own so
  end
  for id,host in pairs({[DI]='icy%-veins%.com',[PI]='icy%-veins%.com'})do for _,src in ipairs(a:GetDefaultRotation(id).envelope.sources)do assert(src.url:find(host),id..' cites '..src.url)end end
  for _,src in ipairs(a:GetDefaultRotation(PW).envelope.sources)do assert(not src.url:find('icy%-veins'),PW..' cites Icy Veins')end
- for _,id in ipairs({DW,DI,PW,PI})do local v=a:GetDefaultRotation(id);assert(v.validation.valid and v.readOnly and v.revision==((id==PW or id==PI)and 2 or 1))end
+ for _,id in ipairs({DW,DI,PW,PI})do local v=a:GetDefaultRotation(id);assert(v.validation.valid and v.readOnly and v.revision==((id==PW or id==PI)and 3 or 2))end
 end)
 
 test('variants share their sibling switch; Defensive Stance selects the tank, anything else DPS, recommended first',function()

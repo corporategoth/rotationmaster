@@ -19,8 +19,8 @@ local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local P='warlock-iv-'
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.warlock.dps.icyveins',revision=1,
- blocks={['tbc.warlock.boundaries']=1,['tbc.warlock.procs']=1,['tbc.warlock.moving']=1,['tbc.warlock.curse']=1,['tbc.warlock.aoe']=1,
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.warlock.dps.icyveins',revision=2,
+ blocks={['tbc.warlock.boundaries']=1,['tbc.warlock.procs']=1,['tbc.warlock.moving']=1,['tbc.warlock.curse']=2,['tbc.warlock.aoe']=1,
   ['tbc.warlock.finishers']=1,['tbc.warlock.filler']=1,['tbc.warlock.armor']=1,['tbc.warlock.upkeep']=1},
  nameKey='Default.TBC.Warlock.DpsIcyVeins.Name',descriptionKey='Default.TBC.Warlock.DpsIcyVeins.Description',
  applicability={families={'tbc'},actionContext='player',class='WARLOCK',minLevel=1,maxLevel=70},
@@ -55,7 +55,7 @@ assert(addon:RegisterDefaultRotation({
      spell(P..'corruption',172,all(negate(own(172)),any({type='TALENT',layout='tree',tree=1,talent=2,operator='GREATERTHANOREQUALS',value=1},destruction('LESSTHAN')))),
      spell(P..'siphon',18265,all(negate(own(18265)),any(negate({type='GROUP',raid=true}),{type='DEBUFF',unit='target',spell=17800}))),
     }},
-   {id=P..'solo',type='branch',conditions=negate({type='GROUP'}),onFalse={},onTrue={
+   {id=P..'solo',type='branch',conditions={type='GROUP'},onTrue={},onFalse={
     spell(P..'drain-life',689,pct('HEALTHPCT','LESSTHAN',.6)),
     spell(P..'solo-tap',1454,all(pct('MANAPCT','LESSTHAN',.35),pct('HEALTHPCT','GREATERTHAN',.65))),
     -- Wand when healthy, except deep Destruction builds, which fill with spells.

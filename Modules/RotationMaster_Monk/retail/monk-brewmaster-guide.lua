@@ -16,7 +16,7 @@ local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local harmony=known(1262765)
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.retail.monk.brewmaster.guide',revision=1,
+ format='RotationMaster',schemaVersion=1,id='rm.retail.monk.brewmaster.guide',revision=2,
  blocks={['retail.monk.boundaries']=1,['retail.monk.utility']=1},
  nameKey='Default.Retail.Monk.BrewmasterGuide.Name',descriptionKey='Default.Retail.Monk.BrewmasterGuide.Description',
  applicability={families={'retail'},actionContext='player',class='MONK',specs={268},minLevel=10,maxLevel=90},
@@ -37,7 +37,7 @@ assert(addon:RegisterDefaultRotation({
   },
   rotation={
    block('bguide-boundaries','retail.monk.boundaries','bguide-'),
-   {id='bguide-pull',type='branch',conditions=negate(combat()),onFalse={},onTrue={spell('bguide-pull-keg-smash',121253),stop('bguide-pull-stop')}},
+   {id='bguide-pull',type='branch',conditions=combat(),onTrue={},onFalse={spell('bguide-pull-keg-smash',121253),stop('bguide-pull-stop')}},
    spell('bguide-blackout-kick',205523),
    spell('bguide-harmony-chi-burst',123986,harmony),
    spell('bguide-blackout-combo',100780,buff(228563)),

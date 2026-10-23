@@ -25,7 +25,7 @@ local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),
 local soul=own(113858)
 local backdraft=own(117828)
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.warlock.destruction',revision=2,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.warlock.destruction',revision=3,
  blocks={['mop.warlock.boundaries']=2,['mop.warlock.upkeep']=1,['mop.warlock.pet-felhunter']=1},
  nameKey='Default.MoP.Warlock.Destruction.Name',descriptionKey='Default.MoP.Warlock.Destruction.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='WARLOCK',minLevel=10,maxLevel=90},
@@ -45,7 +45,7 @@ assert(addon:RegisterDefaultRotation({
  },
  rotation={
  block('mop.warlock.boundaries','warlock-'),
- {id='warlock-destro-pull',type='branch',conditions=negate(combat()),onFalse={},onTrue={
+ {id='warlock-destro-pull',type='branch',conditions=combat(),onTrue={},onFalse={
   spell('warlock-destro-pull-incinerate',29722),
   stop('warlock-destro-pull-stop'),
  }},

@@ -25,7 +25,7 @@ local function lives(op,n)return{type='TT_HEALTH',unit='target',health=0,operato
 local shocked={type='DEBUFF',unit='target',spell=8050,anyrank=true,owndebuff=true}
 local melee=negate({type='BEYOND_MELEE',unit='target'})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.shaman.elemental',revision=2,
+ format='RotationMaster',schemaVersion=1,id='rm.forever.shaman.elemental',revision=3,
  blocks={['forever.shaman.manual']=1,['forever.shaman.upkeep']=1,['forever.shaman.imbue']=1,['forever.shaman.group-totems']=1,
   ['forever.shaman.caster-aoe']=1,['forever.shaman.stormstrike-hybrid']=1},
  nameKey='Default.Forever.Shaman.Elemental.Name',descriptionKey='Default.Forever.Shaman.Elemental.Description',
@@ -46,7 +46,7 @@ assert(addon:RegisterDefaultRotation({
  rotation={
  block('forever.shaman.manual','shaman-ele-'),
  {id='shaman-ele-no-target',type='none',suppress_attack=true,conditions=negate({type='ATTACKABLE',unit='target'})},
- {id='shaman-ele-pull',type='branch',conditions=negate(combat()),onFalse={},onTrue={
+ {id='shaman-ele-pull',type='branch',conditions=combat(),onTrue={},onFalse={
   spell('shaman-ele-pull-chain',421,all(negate({type='MOVING'}),{type='DISTANCE_COUNT',enemy=true,distance=30,operator='GREATERTHANOREQUALS',value=3})),
   spell('shaman-ele-pull-bolt',403,negate({type='MOVING'})),
   {id='shaman-ele-pull-stop',type='none',suppress_attack=true,conditions={}},

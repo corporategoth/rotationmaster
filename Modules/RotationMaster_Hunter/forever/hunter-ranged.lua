@@ -18,8 +18,8 @@ local elite=any({type='CLASSIFICATION',unit='target',value='elite'},{type='CLASS
 local arcaneTurn=all({type='SPELL_HISTORY_TIME',spell=1293241,operator='LESSTHAN',value=7},
  negate({type='SPELL_HISTORY_TIME',spell=3044,operator='LESSTHAN',value=17}))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.hunter.ranged',revision=1,
- blocks={['forever.hunter.boundaries']=1,['forever.hunter.deadzone']=1,['forever.hunter.pull']=1,['forever.hunter.moving']=1,
+ format='RotationMaster',schemaVersion=1,id='rm.forever.hunter.ranged',revision=2,
+ blocks={['forever.hunter.boundaries']=1,['forever.hunter.deadzone']=2,['forever.hunter.pull']=2,['forever.hunter.moving']=1,
   ['forever.hunter.aspects-ranged']=1,['forever.hunter.pet-care']=1,['forever.hunter.burst']=1},
  nameKey='Default.Forever.Hunter.Ranged.Name',descriptionKey='Default.Forever.Hunter.Ranged.Description',
  applicability={families={'forever'},actionContext='player',class='HUNTER',minLevel=1,maxLevel=60},

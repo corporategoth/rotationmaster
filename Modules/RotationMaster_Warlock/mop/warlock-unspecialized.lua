@@ -13,7 +13,7 @@ local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),
 local corrupted={type='DEBUFF',unit='target',spell=172,anyrank=true,owndebuff=true}
 local petless=all(negate(combat()),negate({type='PET'}))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.warlock.unspecialized',revision=2,
+ format='RotationMaster',schemaVersion=1,id='rm.mop.warlock.unspecialized',revision=3,
  blocks={['mop.warlock.boundaries']=2},
  nameKey='Default.MoP.Warlock.Unspecialized.Name',descriptionKey='Default.MoP.Warlock.Unspecialized.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='WARLOCK',minLevel=1,maxLevel=90},
@@ -28,7 +28,7 @@ assert(addon:RegisterDefaultRotation({
  },
  rotation={
  block('mop.warlock.boundaries','warlock-'),
- {id='warlock-start-pull',type='branch',conditions=negate(combat()),onFalse={},onTrue={
+ {id='warlock-start-pull',type='branch',conditions=combat(),onTrue={},onFalse={
   spell('warlock-start-pull-corruption',172,negate(corrupted)),
   spell('warlock-start-pull-shadow-bolt',686),
   {id='warlock-start-pull-stop',type='none',suppress_attack=true,conditions={}},

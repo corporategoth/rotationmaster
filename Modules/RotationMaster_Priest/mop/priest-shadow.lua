@@ -17,8 +17,8 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 local function far(n)return negate({type='DISTANCE',unit='target',value=n})end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.mop.priest.shadow',revision=2,
- blocks={['mop.priest.upkeep']=1,['mop.priest.shadow-shell']=2,['mop.priest.shadow-cooldowns']=2},
+ format='RotationMaster',schemaVersion=1,id='rm.mop.priest.shadow',revision=3,
+ blocks={['mop.priest.upkeep']=1,['mop.priest.shadow-shell']=3,['mop.priest.shadow-cooldowns']=2},
  nameKey='Default.MoP.Priest.Shadow.Name',descriptionKey='Default.MoP.Priest.Shadow.Description',
  applicability={families={'progression'},minExpansion=4,maxExpansion=4,actionContext='player',class='PRIEST',minLevel=10,maxLevel=90},
  tags={'shadow','dps','caster','leveling','endgame','wowsims','icy-veins','method','wowtbc'},

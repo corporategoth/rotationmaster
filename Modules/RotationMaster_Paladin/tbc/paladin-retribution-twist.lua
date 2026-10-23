@@ -16,7 +16,7 @@ local function mana(op,v)return{type='MANAPCT',unit='player',operator=op,value=v
 local function blood()return any(own(31892),own(348700))end
 local function anySeal()local out={};for i,id in ipairs({21084,20375,31892,348700,31801,348704,21082,20166,20165,20164})do out[i]=own(id)end;return{type='OR',value=out}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.paladin.retribution.twist',revision=2,
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.paladin.retribution.twist',revision=3,
  blocks={['tbc.paladin.ret-upkeep']=2,['tbc.paladin.melee-opening']=1,['tbc.paladin.boundaries']=1},
  nameKey='Default.TBC.Paladin.Retribution.Twist.Name',descriptionKey='Default.TBC.Paladin.Retribution.Twist.Description',
  applicability={families={'tbc'},actionContext='player',class='PALADIN',minLevel=64,maxLevel=70},
@@ -34,7 +34,7 @@ assert(addon:RegisterDefaultRotation({
     {id='twist-low-strike',type='spell',action=35395,ranked=false,conditions={}},
     {id='twist-low-stop',type='none',conditions={}},
    }},
-   {id='twist-opener',type='branch',conditions=negate({type='COMBAT',unit='player'}),onFalse={},onTrue={
+   {id='twist-opener',type='branch',conditions={type='COMBAT',unit='player'},onTrue={},onFalse={
     {id='twist-opener-judgement',type='spell',action=20271,ranked=false,conditions=own(21082)},
     {id='twist-opener-crusader',type='spell',action=21082,ranked=false,conditions=all(negate({type='DEBUFF',unit='target',spell=21183,anyrank=true}),negate(own(21082)))},
     {id='twist-opener-command',type='spell',action=20375,ranked=true,conditions=negate(own(20375))},
@@ -48,7 +48,7 @@ assert(addon:RegisterDefaultRotation({
     {id='twist-judge-blood',type='spell',action=20271,ranked=false,conditions=blood()},
     {id='twist-command',type='spell',action=20375,ranked=true,conditions={}},
    }},
-   {id='twist-seal',type='branch',conditions=negate(anySeal()),onFalse={},onTrue={
+   {id='twist-seal',type='branch',conditions=anySeal(),onTrue={},onFalse={
     {id='twist-seal-blood',type='spell',action=31892,ranked=false,conditions={}},
     {id='twist-seal-martyr',type='spell',action=348700,ranked=false,conditions={}},
    }},

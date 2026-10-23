@@ -15,7 +15,7 @@ local function spell(id,action,conditions)return{id=id,type='spell',action=actio
 local function stop(id,conditions,attack)return{id=id,type='none',suppress_attack=not attack,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.druid.balance',revision=1,
+ format='RotationMaster',schemaVersion=1,id='rm.forever.druid.balance',revision=2,
  blocks={['forever.druid.boundaries']=1,['forever.druid.upkeep']=1,['forever.druid.dots']=1},
  nameKey='Default.Forever.Druid.Balance.Name',descriptionKey='Default.Forever.Druid.Balance.Description',
  applicability={families={'forever'},actionContext='player',class='DRUID',minLevel=1,maxLevel=60},
@@ -40,7 +40,7 @@ assert(addon:RegisterDefaultRotation({
    block('bal-boundaries','forever.druid.boundaries','bal-'),
    stop('bal-target',negate({type='ATTACKABLE',unit='target'}),true),
    spell('bal-regrowth',8936,all(solo(),{type='HEALTHPCT',unit='player',operator='LESSTHAN',value=.5},negate(own(8936)))),
-   {id='bal-pull',type='branch',conditions=negate(combat()),onFalse={},onTrue={spell('bal-pull-wrath',5176),stop('bal-pull-stop')}},
+   {id='bal-pull',type='branch',conditions=combat(),onTrue={},onFalse={spell('bal-pull-wrath',5176),stop('bal-pull-stop')}},
    {id='bal-moving',type='branch',conditions={type='MOVING'},onFalse={},onTrue={
     spell('bal-moving-moonfire',8921,negate(dot(8921,true))),
     spell('bal-moving-insect-swarm',5570,negate(dot(5570,true))),

@@ -15,7 +15,7 @@ local function undead()return any({type='CREATURE',unit='target',value='UNDEAD'}
 local function crushing()return any({type='CLASSIFICATION',unit='target',value='worldboss'},{type='LEVEL',unit='target',operator='GREATERTHANOREQUALS',value=3,relative=true})end
 local function anySeal()local out={};for i,id in ipairs({21084,20375,31892,348700,31801,348704,21082,20166,20165,20164})do out[i]=own(id)end;return{type='OR',value=out}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.paladin.protection.wowhead',revision=2,
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.paladin.protection.wowhead',revision=3,
  blocks={['tbc.paladin.tank-upkeep']=2,['tbc.paladin.melee-opening']=1,['tbc.paladin.boundaries']=1},
  nameKey='Default.TBC.Paladin.Protection.Wowhead.Name',descriptionKey='Default.TBC.Paladin.Protection.Wowhead.Description',
  applicability={families={'tbc'},actionContext='player',class='PALADIN',minLevel=1,maxLevel=70},
@@ -30,11 +30,11 @@ assert(addon:RegisterDefaultRotation({
   },
   rotation={
    {id='prot-wh-opening',type='block',block='tbc.paladin.melee-opening',prefix='prot-wh-'},
-   {id='prot-wh-seal',type='branch',conditions=negate(anySeal()),onFalse={},onTrue={
+   {id='prot-wh-seal',type='branch',conditions=anySeal(),onTrue={},onFalse={
     {id='prot-wh-seal-wisdom',type='spell',action=20166,ranked=false,conditions=all({type='DISTANCE_COUNT',enemy=true,distance=8,operator='GREATERTHANOREQUALS',value=3},mana('LESSTHAN',0.5))},
     {id='prot-wh-seal-righteousness',type='spell',action=21084,ranked=false,conditions={}},
    }},
-   {id='prot-wh-pull',type='branch',conditions=negate({type='COMBAT',unit='player'}),onFalse={},onTrue={
+   {id='prot-wh-pull',type='branch',conditions={type='COMBAT',unit='player'},onTrue={},onFalse={
     {id='prot-wh-pull-holy-shield',type='spell',action=20925,ranked=false,conditions=negate(own(20925))},
     {id='prot-wh-pull-avengers-shield',type='spell',action=31935,ranked=false,conditions={}},
     {id='prot-wh-pull-judgement',type='spell',action=20271,ranked=false,conditions={}},

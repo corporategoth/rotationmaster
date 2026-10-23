@@ -14,8 +14,8 @@ local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),
 local function classified(kind)return{type='CLASSIFICATION',unit='target',value=kind}end
 local demoralized=any(debuff(1160),debuff(99))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.tbc.warrior.protection.wowhead',revision=2,
- blocks={['tbc.warrior.boundaries']=1,['tbc.warrior.upkeep']=1,['tbc.warrior.prot-upkeep']=1,['tbc.warrior.prot-core']=1,['tbc.warrior.sunder']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.tbc.warrior.protection.wowhead',revision=3,
+ blocks={['tbc.warrior.boundaries']=2,['tbc.warrior.upkeep']=1,['tbc.warrior.prot-upkeep']=1,['tbc.warrior.prot-core']=1,['tbc.warrior.sunder']=1},
  nameKey='Default.TBC.Warrior.Protection.Wowhead.Name',descriptionKey='Default.TBC.Warrior.Protection.Wowhead.Description',
  applicability={families={'tbc'},actionContext='player',class='WARRIOR',minLevel=10,maxLevel=70},
  tags={'tank','melee','leveling','endgame','aoe','wowhead','wowsims'},

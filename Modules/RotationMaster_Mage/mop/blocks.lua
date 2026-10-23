@@ -24,7 +24,7 @@ local function lives(op,v)return{type='TT_HEALTH',unit='target',health=0,operato
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function off(id,action,conditions)local step=spell(id,action,conditions);step.disabled=true;return step end
 local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or{}}end
-local function block(id,steps)assert(addon:RegisterDefaultBlock({id=id,revision=1,families={'progression'},class='MAGE',steps=steps}))end
+local function block(id,steps,revision)assert(addon:RegisterDefaultBlock({id=id,revision=revision or 1,families={'progression'},class='MAGE',steps=steps}))end
 local MISSILES,ALTER,FLOES,POM=79683,110909,108839,12043
 -- Casts and channels (Arcane Missiles, Evocation, Blizzard) and a target that is not attackable end advice.
 block('mop.mage.boundaries',{
@@ -69,12 +69,12 @@ block('mop.mage.bombs',{
 -- Both Arcane premades: pull with Arcane Blast; Barrage just before Alter Time snaps back (the
 -- charges return with it); the bomb; inside Alter Time only Missiles on a proc and Arcane Blast.
 block('mop.mage.arcane-open',{
- {id='pull',type='branch',conditions=negate(combat()),onFalse={},onTrue={spell('pull-blast',30451),stop('pull-stop')}},
+ {id='pull',type='branch',conditions=combat(),onTrue={},onFalse={spell('pull-blast',30451),stop('pull-stop')}},
  spell('alter-barrage',44425,all(buff(ALTER),remain(ALTER,2))),
  {id='bombs',type='block',block='mop.mage.bombs',prefix='bomb-'},
  {id='alter',type='branch',conditions=buff(ALTER),onFalse={},onTrue={
   spell('alter-missiles',5143,buff(MISSILES)),spell('alter-blast',30451),stop('alter-stop')}},
-})
+},2)
 -- Both Arcane premades: two or more fighting you, Barrage every four charges; five close by, Cone
 -- of Cold and Arcane Explosion. On the move (no Ice Floes or Presence of Mind): Barrage at four
 -- charges without a proc, Fire Blast, Ice Lance.
@@ -93,12 +93,12 @@ block('mop.mage.arcane-aoe-moving',{
 -- Presence of Mind; inside Alter Time every Pyroblast!; Combustion right after a Pyroblast with
 -- Ignite and the Pyroblast DoT up (RM cannot read Ignite's size), or on a target about to die.
 block('mop.mage.fire-open',{
- {id='pull',type='branch',conditions=negate(combat()),onFalse={},onTrue={
+ {id='pull',type='branch',conditions=combat(),onTrue={},onFalse={
   spell('pull-pyroblast',11366,negate({type='MOVING'})),spell('pull-frostfire',44614),stop('pull-stop')}},
  spell('presence-pyroblast',11366,buff(POM)),
  {id='alter',type='branch',conditions=buff(ALTER),onFalse={},onTrue={spell('alter-pyroblast',11366,buff(48108))}},
  spell('combustion',11129,any(all(mine(12654),mine(11366),{type='SPELL_HISTORY_TIME',spell=11366,operator='LESSTHAN',value=1.5}),lives('LESSTHAN',12))),
-})
+},2)
 -- Both Fire premades: two or more fighting you, Inferno Blast spreads Pyroblast and Ignite; five
 -- close by, Cone of Cold and Arcane Explosion. Inferno Blast (Fire Blast before 24) on Heating Up
 -- without a Pyroblast!.

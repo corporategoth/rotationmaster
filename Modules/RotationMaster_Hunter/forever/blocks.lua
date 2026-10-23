@@ -31,8 +31,8 @@ assert(addon:RegisterDefaultBlock({id='forever.hunter.boundaries',revision=1,fam
 }}))
 -- A ranged Hunter whose target is in melee (levels 1–9, or a mob that reached you): melee
 -- strikes, then auto attack. Wing Clip, Disengage and traps for kiting stay with the player.
-assert(addon:RegisterDefaultBlock({id='forever.hunter.deadzone',revision=1,families={'forever'},class='HUNTER',steps={
- {id='melee',type='branch',conditions=negate({type='BEYOND_MELEE',unit='target'}),onFalse={},onTrue={
+assert(addon:RegisterDefaultBlock({id='forever.hunter.deadzone',revision=2,families={'forever'},class='HUNTER',steps={
+ {id='melee',type='branch',conditions={type='BEYOND_MELEE',unit='target'},onTrue={},onFalse={
   spell('raptor-strike',2973,negate({type='SPELL_ACTIVE',spell=2973})),
   spell('mongoose-bite',1495),
   spell('counterattack',19306),
@@ -40,8 +40,8 @@ assert(addon:RegisterDefaultBlock({id='forever.hunter.deadzone',revision=1,famil
 }}))
 -- The pull: Hunter's Mark unless someone's Mark is up, Sniper Shot while Rapid Killing lasts,
 -- Auto Shot. Sending the pet in first stays with the player.
-assert(addon:RegisterDefaultBlock({id='forever.hunter.pull',revision=1,families={'forever'},class='HUNTER',steps={
- {id='pull',type='branch',conditions=negate(combat()),onFalse={},onTrue={
+assert(addon:RegisterDefaultBlock({id='forever.hunter.pull',revision=2,families={'forever'},class='HUNTER',steps={
+ {id='pull',type='branch',conditions=combat(),onTrue={},onFalse={
   spell('pull-mark',1130,negate(marked())),
   spell('pull-sniper',1310687,{type='BUFF',unit='player',spell=415407}),
   spell('pull-auto-shot',75,negate(autoShot())),
@@ -64,8 +64,8 @@ assert(addon:RegisterDefaultBlock({id='forever.hunter.range-shots',revision=1,fa
  spell('auto-shot',75,all(negate(autoShot()),negate(moving))),
 }}))
 -- Survival pull: Mark, own Sting from range, then run in (auto attack allowed).
-assert(addon:RegisterDefaultBlock({id='forever.hunter.survival-pull',revision=1,families={'forever'},class='HUNTER',steps={
- {id='pull',type='branch',conditions=negate(combat()),onFalse={},onTrue={
+assert(addon:RegisterDefaultBlock({id='forever.hunter.survival-pull',revision=2,families={'forever'},class='HUNTER',steps={
+ {id='pull',type='branch',conditions=combat(),onTrue={},onFalse={
   spell('pull-mark',1130,negate(marked())),
   spell('pull-serpent-sting',1978,all(negate(sting()),{type='BEYOND_MELEE',unit='target'})),
   stop('pull-stop',nil,true)}},
