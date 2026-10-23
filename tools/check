@@ -739,6 +739,8 @@ def main():
             ['lua5.1', 'tests/spell_catalog.lua'],
             ['lua5.1', 'tests/spell_search.lua'],
             ['lua5.1', 'tests/spell_search_ui.lua'],
+            ['lua5.1', 'tests/retail_spellbook.lua'],
+            ['luajit', 'tests/retail_spellbook.lua'],
             ['lua5.1', 'tests/reference_catalog.lua'],
             ['lua5.1', 'tests/spell_icon.lua'],
             ['lua5.1', 'tests/spell_conditions.lua'],

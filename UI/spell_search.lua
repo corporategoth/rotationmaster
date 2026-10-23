@@ -90,9 +90,35 @@ function addon:CreateReferenceEditBox(kind,initialSpell)
             nameContains=kind=="Totem_EditBox" and L["Totem"] or nil,
             norank=widget:GetUserData("norank")==true,inventory=provider.inventory,limit=12}
     end
+    local blurDeferred=false
     local function hide()
-        hideTooltip(popup);popup:Hide()
+        blurDeferred=false;hideTooltip(popup);popup:Hide()
     end
+    -- Is the pointer on this field's suggestion list? Mouse focus, not
+    -- geometry, so a window over the list does not count.
+    local function overPopup()
+        if not popup:IsShown() then return false end
+        local focus
+        if type(GetMouseFoci)=="function" then
+            local ok,foci=pcall(GetMouseFoci);focus=ok and type(foci)=="table" and foci[1] or nil
+        elseif type(GetMouseFocus)=="function" then
+            local ok,value=pcall(GetMouseFocus);focus=ok and value or nil
+        else return type(popup.IsMouseOver)=="function" and popup:IsMouseOver() or false end
+        for _=1,20 do
+            if focus==popup then return true end
+            if type(focus)~="table" or type(focus.GetParent)~="function" then return false end
+            focus=focus:GetParent()
+        end
+        return false
+    end
+    -- Retail clears keyboard focus on every left GLOBAL_MOUSE_DOWN that is
+    -- not on the focused EditBox (Blizzard_Game/Mainline/EventImplementation.lua
+    -- ClearCurrentKeyboardFocus), before the suggestion row sees its press:
+    -- the list closed and the pick was lost. That handler keeps focus when
+    -- the EditBox reports HasStickyFocus(), so the field does while the
+    -- pointer is on its own list.
+    local originalSticky=rawget(field,"HasStickyFocus")
+    field.HasStickyFocus=function() return alive and overPopup() or false end
     widget.SetText=function(self,text)
         local id=type(text)=='number' and text or type(text)=='string' and (tonumber(text) or tonumber(text:match('|H'..provider.kind..':(%d+)')))
         acceptedID=id
@@ -179,11 +205,15 @@ function addon:CreateReferenceEditBox(kind,initialSpell)
     install(field,"OnEditFocusGained",function(self,...)
         if not alive then return end
         if onFocus then onFocus(self,...) end
+        blurDeferred=false
         if alive then query() end
     end)
     local onLost=field:GetScript("OnEditFocusLost")
     install(field,"OnEditFocusLost",function(self,...)
         if not alive then return end
+        -- A press on a suggestion owns the outcome: the row commits it. Only
+        -- a blur elsewhere restores the accepted text and closes the list.
+        if overPopup() then blurDeferred=true;return end
         if alive then widget:SetText(acceptedID or acceptedText);hide() end
         if onLost then onLost(self,...) end
     end)
@@ -234,19 +264,26 @@ function addon:CreateReferenceEditBox(kind,initialSpell)
         if not alive then return end
         hide();if onHide then onHide(self,...) end
     end)
+    -- A deferred blur ends with the press: a row commits, anything else on
+    -- the list restores the accepted text as an ordinary blur would.
+    local function finishBlur()
+        if alive and blurDeferred and not field:HasFocus() then widget:SetText(acceptedID or acceptedText);hide() end
+    end
+    install(popup,"OnMouseUp",finishBlur)
     for _,row in ipairs(popup.rows) do
         addon:SetUIScript(row,"OnMouseDown",function(self,button) if button=="LeftButton" and self.referenceID then commit(self.referenceID) end end)
+        addon:SetUIScript(row,"OnMouseUp",finishBlur)
         addon:SetUIScript(row,"OnEnter",function(self)
             if self.referenceID and GameTooltip then GameTooltip:SetOwner(self,"ANCHOR_RIGHT");GameTooltip:SetHyperlink(provider.kind..":"..self.referenceID) end
         end)
         addon:SetUIScript(row,"OnLeave",function(self) if GameTooltip and GameTooltip:IsOwned(self) then GameTooltip:Hide() end end)
     end
     widget.OnRelease=function(self,...)
-        alive=false;hide();dropHint:Hide();self.rmSpellSearchActive=nil
+        alive=false;hide();dropHint:Hide();self.rmSpellSearchActive=nil;field.HasStickyFocus=originalSticky
         for _,binding in ipairs(scripts) do
             if binding.frame:GetScript(binding.event)==binding.handler then binding.frame:SetScript(binding.event,binding.original) end
         end
-        for _,row in ipairs(popup.rows) do row.spellID=nil;row.itemID=nil;row.referenceID=nil;addon:SetUIScript(row,"OnMouseDown",nil);addon:SetUIScript(row,"OnEnter",nil);addon:SetUIScript(row,"OnLeave",nil) end
+        for _,row in ipairs(popup.rows) do row.spellID=nil;row.itemID=nil;row.referenceID=nil;addon:SetUIScript(row,"OnMouseDown",nil);addon:SetUIScript(row,"OnMouseUp",nil);addon:SetUIScript(row,"OnEnter",nil);addon:SetUIScript(row,"OnLeave",nil) end
         self.SetText,self.OnRelease,self.GetReferenceID,self.CommitPending=originalText,originalRelease,originalReferenceID,originalCommit
         if originalRelease then return originalRelease(self,...) end
     end
