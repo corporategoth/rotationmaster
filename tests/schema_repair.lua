@@ -62,7 +62,7 @@ test('normal announcement validation and legacy repair use the same item-referen
     for _,case in ipairs(cases) do local _,a=fixture();local shared=assert(a.IsValidAnnouncementItemReference);local calls=0
         a.IsValidAnnouncementItemReference=function(self,item) calls=calls+1;assert(item==case.value);return shared(self,item) end
         local v=announce(case.value);assert(a:IsValidAnnouncement(v,true)==case.valid);a:validate_announce('fixture',1,v,true)
-        assert(calls==2 and v.item==case.value and (v.disabled==true)==not case.valid,'validators disagreed or rewrote item membership')
+        assert(calls>=2 and v.item==case.value and (v.disabled==true)==not case.valid,'validators disagreed or rewrote item membership')
     end
     local _,a=fixture();local legacy=announce(nil);legacy.type='petspell';legacy.spell=123;legacy.ranked=true;local before=a:CopySettingsData(legacy);a:validate_announce('fixture',1,legacy,true);assert(a:SettingsDataEqual(legacy,before),'legacy petspell repair changed')
 end)

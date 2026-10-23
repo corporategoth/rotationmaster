@@ -2896,7 +2896,7 @@ local function spellcast(self, event, unit, castguid, spellid)
         local announcements=profile.announces
         for index, value in ipairs(announcements) do
         -- END ANNOUNCEMENT CONDITION OWNER
-            if value.type~='macro' and (value.outputs~=nil or value.value or value.announce == "audible" or value.announce == "gesture") and (not value.disabled) and (value.type == BOOKTYPE_PET and unit == "pet" or unit == "player") and
+            if value.type~='macro' and (value.outputs~=nil or value.value or value.announce == "audible" or value.announce == "gesture") and (not value.disabled) and (value.type == BOOKTYPE_PET and unit == "pet" or unit == "player") and type(value.event) == "string" and
                 (event == "UNIT_SPELLCAST_" .. value.event or event == "UNIT_SPELLCAST_CHANNEL_" .. value.event) then
                 local skip = false
                 if self.announced[value.id] then

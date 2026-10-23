@@ -219,6 +219,16 @@ function addon:validate_announce(prefix, idx, announce, fix)
         return
     end
 
+    -- The shared acceptance service covers every current shape (macro
+    -- announcements, output series, conditions, emotes); repair leaves those
+    -- untouched. Only records it rejects fall through to the legacy template.
+    if addon.IsValidAnnouncement and addon:IsValidAnnouncement(announce) then return end
+    if announce["type"] == "macro" or announce["outputs"] ~= nil then
+        addon:warn("Invalid announce %s:%s; preserved and disabled", prefix, tostring(announce["id"]))
+        if fix then announce.disabled = true end
+        return
+    end
+
     local template = {
         type = "spell",
         disabled = false,
