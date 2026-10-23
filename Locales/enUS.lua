@@ -945,8 +945,18 @@ L["Condition preview unavailable"] = true
 L["Sources"] = true
 L["Unavailable"] = true
 
-L["Default.TBC.Shaman.Starter.Name"] = "Shaman: early leveling (1–29)"
-L["Default.TBC.Shaman.Starter.Description"] = "Bounded TBC solo starter preview for levels 1–29. Optional highlights remind you to maintain your weapon imbue and Lightning Shield, with Attack as an implicit final priority when needed. The sequence opens with Lightning Bolt, stops further spell suggestions while out of combat, uses Earth Shock in combat, and continues Lightning Bolt beyond close range while stationary. Uses learned ranks with native availability checks. Healing, interrupts, totems, consumables, talent cooldowns and resource management remain manual."
+L["Default.TBC.Shaman.Enhancement.IcyVeins.Name"] = "Shaman: Enhancement (Icy Veins)"
+L["Default.TBC.Shaman.Enhancement.IcyVeins.Description"] = "Melee Enhancement from level 1 to 70, and the default for any Shaman no other premade fits. Pulls with Lightning Bolt from range, interrupts with Earth Shock, drops Fire Nova and Magma Totems on three or more nearby enemies, then Stormstrike, Earth Shock while Stormstrike's debuff is up, Flame Shock on a target that will live, Earth Shock on cooldown, and Lightning Bolt while the target is out of reach. Separate reminders: weapon imbues, Water or Lightning Shield, Strength of Earth, Windfury (group) or Grace of Air (solo), Searing on long fights, water totems, Shamanistic Rage, Bloodlust/Heroism on bosses, Stoneclaw and Earth Elemental when solo. Fire Elemental is an optional step that starts off. Totem placement, Ghost Wolf and healing stay with you."
+L["Default.TBC.Shaman.Enhancement.Wowsims.Name"] = "Shaman: Enhancement (Wowhead & wowsims)"
+L["Default.TBC.Shaman.Enhancement.Wowsims.Description"] = "The level-70 raid model: Stormstrike, a Fire Nova Totem weave, Flame Shock whenever it has fallen off, and Earth Shock as the main shock, with Lightning Bolt only out of reach. Reminders twist Windfury and Grace of Air Totems, keep Searing down, use Shamanistic Rage when mana runs low, and share the Icy Veins variant's imbue, shield and totem upkeep. Choose it instead of the Icy Veins variant if you twist totems."
+L["Default.TBC.Shaman.Elemental.IcyVeins.Name"] = "Shaman: Elemental (Icy Veins & wowsims)"
+L["Default.TBC.Shaman.Elemental.IcyVeins.Description"] = "Caster Elemental for the Elemental talent tree. Lightning Bolt is the filler; Chain Lightning goes out with Elemental Mastery, on Clearcasting while you have 40% mana, or freely above 80%; Flame Shock only while moving; Earth Shock interrupts; Fire Nova, Chain Lightning and Magma for packs. Before Chain Lightning a target in melee is left to auto-attack to save mana. Reminders: Water or Lightning Shield, a weapon imbue, Totem of Wrath (or Searing on long fights), Wrath of Air, Mana Spring, Totemic Call after the fight, Elemental Mastery and Bloodlust/Heroism."
+L["Default.TBC.Shaman.Elemental.Wowhead.Name"] = "Shaman: Elemental (Wowhead)"
+L["Default.TBC.Shaman.Elemental.Wowhead.Description"] = "Wowhead's Elemental: at 70 Chain Lightning on cooldown with Lightning Bolts in between (while leveling only with Elemental Mastery or Clearcasting), Flame Shock only while moving, Earth Shock to finish a target that would die before a cast lands. Same totem, shield and cooldown reminders as the Icy Veins variant."
+L["Default.TBC.Shaman.Elemental.NextAction.Name"] = "Shaman: Elemental (NextActionTBC)"
+L["Default.TBC.Shaman.Elemental.NextAction.Description"] = "NextActionTBC's Elemental: keeps Flame Shock on the target, Chain Lightning only against two or more enemies while above 30% mana, Lightning Bolt otherwise. Reminds you of Lightning Shield, a weapon imbue, Elemental Mastery and Bloodlust/Heroism; totems stay manual."
+L["Default.TBC.Shaman.Restoration.Name"] = "Shaman: Restoration"
+L["Default.TBC.Shaman.Restoration.Description"] = "Healing for the Restoration talent tree, on your friendly target (or yourself with no target): Nature's Swiftness and Healing Wave or Lesser Healing Wave in emergencies, Cure Poison and Cure Disease, Earth Shield on your focus, Chain Heal when three nearby allies are hurt, Healing Wave otherwise. With a hostile target it switches to Flame Shock and Lightning Bolt for soloing. Reminders: Water Shield, Earth Shield on your focus (set the tank as focus), Mana Tide, Mana Spring and Strength of Earth in a group, Bloodlust/Heroism. Choosing whom to heal and which rank stays with you."
 
 L["Could not duplicate this rotation: %s"] = true
 L["Could not duplicate this step: %s"] = true
@@ -2436,8 +2446,20 @@ L["Tests whether the selected spell is currently auto-repeating, such as Shoot o
 
 L["Uses readable positions in the same instance, or player-centered range estimates when positions are unavailable. A unit counts only when its upper range bound is within Distance. Uncertain positions, range, subgroup membership or required health/mana values keep the whole condition unavailable, including under Unless. Percentage checks require a positive maximum; empty aggregates have no result."] = true
 
-L["Default.TBC.Paladin.Starter.Name"] = "Paladin: early leveling (1–19)"
-L["Default.TBC.Paladin.Starter.Description"] = "Bounded melee preview with optional Devotion Aura and Seal of Righteousness upkeep, preserving your chosen Retribution Aura or Crusader seal. Judgement requires observed Righteousness during combat. Blessings, healing, pulls and mana conservation remain manual."
+L["Default.TBC.Paladin.Retribution.Wowhead.Name"] = "Paladin: Retribution (Wowhead & wowsims)"
+L["Default.TBC.Paladin.Retribution.Wowhead.Description"] = "Melee Retribution from level 1 to 70, and the default for any Paladin no other premade fits. Opens each target with Judgement of Wisdom (low mana) or the Crusader, keeps your best seal up (Blood or Martyr, Command, then Righteousness), Crusader Strike, judges only Righteousness, Blood or Martyr (or Command on a stunned target), Exorcism on Undead and Demons, Consecration for three or more enemies with mana to spare. Hammer of Wrath is left to you (Wowhead uses it only on fleeing targets). Reminders: Sanctity, Retribution or Devotion Aura, a Blessing on yourself, a heal after the fight, Avenging Wrath. Seal twisting is a separate premade."
+L["Default.TBC.Paladin.Retribution.IcyVeins.Name"] = "Paladin: Retribution (Icy Veins)"
+L["Default.TBC.Paladin.Retribution.IcyVeins.Description"] = "Icy Veins' Retribution: Judgement of the Crusader once per target, Seal of Righteousness (Command only with a slow weapon, Blood or Martyr once learned), Crusader Strike, Hammer of Wrath and Judgement on cooldown, Consecration on two or more enemies, Exorcism on Undead and Demons, and Holy Shock for Holy levelers. Same reminders as the Wowhead variant."
+L["Default.TBC.Paladin.Retribution.Twist.Name"] = "Paladin: Retribution seal twisting"
+L["Default.TBC.Paladin.Retribution.Twist.Description"] = "Off by default; enable it if you twist seals (level 64+, Seal of Command and Blood or Martyr). Opens with Judgement of the Crusader, then each swing puts up Seal of Command (rank 1) early and switches to Blood or Martyr in the last 0.4 seconds, Crusader Strike between twists, judges only Blood or Martyr, Exorcism and Consecration only as fillers, and rolls Blood without twisting below 12% mana. Needs a reliable swing timer; latency is not accounted for."
+L["Default.TBC.Paladin.Protection.Wowhead.Name"] = "Paladin: Protection (Wowhead & wowsims)"
+L["Default.TBC.Paladin.Protection.Wowhead.Description"] = "Tanking for the Protection tree or any Paladin with Righteous Fury on. Pulls with Holy Shield, Avenger's Shield and Judgement; against a crushing target (world boss or three or more levels above you) Holy Shield comes first; then Consecration, Exorcism on Undead and Demons, Judgement, Holy Shield, Holy Wrath on undead packs, Avenger's Shield except on crushing targets. Seal of Wisdom on packs when mana is short, Righteousness otherwise. Reminders: Righteous Fury, Devotion Aura, Sanctuary (or Kings, or Wisdom), Avenging Wrath, Lay on Hands. Taunts and target swaps stay with you."
+L["Default.TBC.Paladin.Protection.IcyVeins.Name"] = "Paladin: Protection (Icy Veins)"
+L["Default.TBC.Paladin.Protection.IcyVeins.Description"] = "Icy Veins' tanking: Judgement of the Crusader when nobody keeps it up, Righteousness (Wisdom on packs), Consecration as the main threat, Judgement, Holy Shield, then Avenger's Shield and Hammer of Wrath on cooldown. Same reminders as the Wowhead variant without Avenging Wrath."
+L["Default.TBC.Paladin.Holy.Name"] = "Paladin: Holy (Icy Veins & Wowhead)"
+L["Default.TBC.Paladin.Holy.Description"] = "Healing for a Holy Paladin in a group, on your friendly target: Lay on Hands or Holy Shock for a dying target, Cleanse (Purify before 42), Holy Shock while moving, Holy Light for heavy damage, rank-5 Holy Light to keep Light's Grace up, Flash of Light otherwise. With a hostile target it keeps Judgement of Wisdom up. Reminders: Concentration Aura, Blessing of Wisdom, Divine Illumination and Divine Favor. A soloing Holy Paladin gets a Retribution premade instead."
+L["Default.TBC.Paladin.Holy.Wowhead.Name"] = "Paladin: Holy (Wowhead tank healing)"
+L["Default.TBC.Paladin.Holy.Wowhead.Description"] = "Wowhead's raid tank healing: Holy Light whenever your target is missing a tenth of their health, Flash of Light only for small deficits, with the same emergencies, cleansing, Judgement and reminders as the blended Holy premade."
 
 L["Default.TBC.Hunter.Ranged.Wowsims.Name"] = "Hunter: ranged DPS (wowsims)"
 L["Default.TBC.Hunter.Ranged.Wowsims.Description"] = "Levels 1–70, every spec. Pulls with Hunter's Mark, Aimed Shot and Auto Shot, keeps Auto Shot running and uses melee strikes when a target reaches you. Before Steady Shot it keeps your Serpent Sting up and spends mana on Aimed, Multi and Arcane Shot only while you have plenty. From level 62: Multi-Shot when ready, Steady Shot straight after each Auto Shot, Arcane Shot to fill the gap, Serpent Sting when solo. With three or more enemies fighting you, Multi-Shot whenever it is ready. Reminds you of aspects (Viper when mana runs low, Hawk again at half mana), pet care, Kill Command, major cooldowns on elites and bosses and Silencing Shot. Pet commands, Misdirection, traps, Volley, melee weaving and Feign Death stay with you."
@@ -2448,8 +2470,14 @@ L["Default.TBC.Rogue.DPS.Wowsims.Name"] = "Rogue: melee DPS (wowsims)"
 L["Default.TBC.Rogue.DPS.Wowsims.Description"] = "Levels 1–70, every spec. From stealth: Premeditation, then Cheap Shot solo or Garrote in a group, otherwise Ambush. In combat: Riposte, Slice and Dice from two combo points (renewed in its last two seconds), Eviscerate on a target about to die, and at five points Rupture when it will last (not while Blade Flurry cleaves), otherwise Eviscerate. Builds with Mutilate or Backstab when the target is not attacking you, otherwise Hemorrhage or Sinister Strike. Reminds you of missing poisons, Kick, Blade Flurry and Adrenaline Rush, Cold Blood and Evasion. Expose Armor, Kidney Shot, Feint, Vanish and positioning stay with you."
 L["Default.TBC.Rogue.DPS.Wowhead.Name"] = "Rogue: melee DPS (Wowhead)"
 L["Default.TBC.Rogue.DPS.Wowhead.Description"] = "Levels 1–70, every spec, following Wowhead. Same stealth openers, builders and reminders as the wowsims version, but Slice and Dice starts from one combo point and every five-point finisher is Eviscerate: no Rupture. Expose Armor, Kidney Shot, Feint, Vanish and positioning stay with you."
-L["Default.TBC.Druid.Caster.Starter.Name"] = "Druid: early caster leveling (1–19)"
-L["Default.TBC.Druid.Caster.Starter.Description"] = "Caster-only preview in humanoid form: own Moonfire, then stationary Wrath. Preserves your manually chosen forms and suppresses implicit melee advice. Feral combat, form selection, targeted support and resource decisions remain manual."
+L["Default.TBC.Druid.Balance.Name"] = "Druid: Balance"
+L["Default.TBC.Druid.Balance.Description"] = "Caster Balance from level 1 to 70, and the default for any Druid no other premade fits. Pulls with Starfire (Wrath before 20), Insect Swarm and Moonfire while moving, Faerie Fire in a group, Hurricane for three or more enemies, Moonfire when it has run out and you have 30% mana, Starfire on Nature's Grace, Wrath against a target in melee, then Starfire (Wrath before it is learned). No advice in Cat, Bear or travel forms. Reminders: Mark of the Wild, Thorns while solo, Omen of Clarity, Moonkin Form, Force of Nature on a long fight, Innervate when low."
+L["Default.TBC.Druid.Feral.IcyVeins.Name"] = "Druid: Feral (Icy Veins, Warcraft Tavern & wowsims)"
+L["Default.TBC.Druid.Feral.IcyVeins.Description"] = "Cat and bear for the Feral tree, following your form. Cat: stealth opener (Pounce, Ravage or Shred), Faerie Fire (Feral), Rip at four combo points on a target that lives, Ferocious Bite between Rips without Clearcasting, Mangle kept up, Shred from behind or Mangle/Claw when the target is on you. Bear: Faerie Fire, Lacerate saved before it drops, Demoralizing Roar unless a warrior's Shout is up, Swipe for packs, Mangle, five Lacerates, Swipe. In caster form it suggests Cat (or Bear) Form. Reminders: Mark, Thorns, Omen, Maul with spare rage, Tiger's Fury before a pull, Frenzied Regeneration. Powershifting is an optional step that starts off (it needs a powershift macro)."
+L["Default.TBC.Druid.Feral.Wowhead.Name"] = "Druid: Feral (Wowhead)"
+L["Default.TBC.Druid.Feral.Wowhead.Description"] = "Wowhead's Feral: Rip whenever it is down at four combo points and Ferocious Bite only on a target about to die (no bite-weaving); bears spend free global cooldowns on Lacerate before Swipe. Innervate when a cat runs low on mana. Otherwise the same as the Icy Veins variant."
+L["Default.TBC.Druid.Restoration.Name"] = "Druid: Restoration"
+L["Default.TBC.Druid.Restoration.Description"] = "Healing for the Restoration tree on your friendly target (or yourself): Healing Touch after Nature's Swiftness, Swiftmend a dying target that has your Rejuvenation or Regrowth, three rolling Lifeblooms in combat, Rejuvenation and Regrowth when missing, then Regrowth in Tree of Life or Healing Touch outside it. A hostile target gets Moonfire and Wrath for soloing. Reminders: Mark, Omen, Tree of Life, Nature's Swiftness, Tranquility, Innervate and Rebirth. Choosing whom to heal and downranking stay with you."
 
 L["Default.TBC.Warrior.DPS.Wowsims.Name"] = "Warrior: melee DPS (wowsims)"
 L["Default.TBC.Warrior.DPS.Wowsims.Description"] = "Levels 1–70, Arms or Fury. Charges to pull, then Victory Rush, Intercept, Rampage, and Whirlwind when two or more enemies fight you (Thunder Clap before it is learned). With Bloodthirst or Mortal Strike: that strike, Whirlwind with rage to spare, Execute, Overpower. Before them: Whirlwind, Execute, Overpower, Rend. Spare rage goes to Devastate or Sunder Armor, then Hamstring. Reminds you of Battle Shout, Bloodrage, Heroic Strike or Cleave as rage dumps, Sweeping Strikes, Death Wish, Recklessness and interrupts. Slam timing, stance dancing and Berserker Rage stay with you."
@@ -2578,10 +2606,6 @@ L["the cooldown on {item} {comparison} {duration}{carrying}"] = true
 
 
 
-L["Default.TBC.Paladin.Continuation.Name"] = "Paladin: manual seal/aura preview (20–29)"
-L["Default.TBC.Paladin.Continuation.Description"] = "Bounded preview for levels 20–29. Optional Devotion and Righteousness preserve recognized manual aura and Crusader, Command or Justice choices. Only Righteousness Judgement is advised in combat; choose other seals, auras, their Judgements and resource use manually. Native learned ranks, bar mappings and readiness remain authoritative."
-L["Default.TBC.Druid.Caster.Continuation.Name"] = "Druid: caster leveling (20–29)"
-L["Default.TBC.Druid.Caster.Continuation.Description"] = "Bounded humanoid caster preview for levels 20–29. Maintains attributable own Moonfire, then prefers actually learned stationary Starfire before Wrath fallback. Preserves current casts and channels; shifted forms stop caster advice. Feral attacks, forms, healing, talents, crowd control and resources remain manual."
 
 -- Optional Questie receipt integration
 L["Questie"] = true
@@ -2694,8 +2718,6 @@ L["Tank: unavailable (no threat, mitigation or survival observations)."] = true
 L["unavailable"] = true
 
 
-L["Default.TBC.Shaman.Enhancement30.Name"] = "Shaman: Enhancement leveling (30–39)"
-L["Default.TBC.Shaman.Enhancement30.Description"] = "Bounded TBC solo Enhancement-oriented preview for levels30–39, selected only when Enhancement has the unique positive highest talent allocation. Uses learned ranks for a Lightning Bolt pull, Earth Shock in combat and stationary ranged Lightning Bolt, with independent Lightning Shield and mainhand imbue reminders. Prefers learned Windfury over Rockbiter only when no temporary mainhand enchant is present; preserves any manual enchant and does not infer a weapon type or complete build. Equipment, healing, interrupts, totems, consumables, weapon timing and resource optimization remain manual. Not native gameplay certified."
 
 
 L["Action bars"] = true
@@ -2874,22 +2896,12 @@ L["Help.General.preview_sample"] = "Click Preview to toggle temporary sample ico
 
 L["Sample icon"] = true
 
-L["Default.TBC.Paladin.Thirty.Name"] = "Paladin: manual seals and auras (30–39)"
-L["Default.TBC.Paladin.Thirty.Description"] = "Bounded combat preview with fully manual aura and seal upkeep. Only attributable own Righteousness permits Judgement; conflicting seals and current casts or channels block it. Learned actions, mappings and native readiness govern recommendations; talents, support, resources and other seal judgements remain manual."
-L["Default.TBC.Druid.Caster.Thirty.Name"] = "Druid: caster leveling (30–39)"
-L["Default.TBC.Druid.Caster.Thirty.Description"] = "Bounded humanoid caster preview. Preserves manual forms, casts and channels; own missing Moonfire, learned stationary Starfire, then independently ready Wrath. Native learned ranks, mappings and readiness govern recommendations. Feral combat, talents, support and resources remain manual; no implicit melee advice."
-L["Default.TBC.Shaman.Enhancement40.Name"] = "Shaman: Enhancement leveling (40–49)"
-L["Default.TBC.Shaman.Enhancement40.Description"] = "Bounded TBC solo Enhancement-oriented preview for levels40–49, selected only when Enhancement has the unique positive highest talent allocation. Uses learned ranks for a Lightning Bolt pull, Earth Shock in combat and stationary ranged Lightning Bolt, with independent Lightning Shield and mainhand imbue reminders. Prefers learned Windfury over Rockbiter only when no temporary mainhand enchant is present; preserves any manual enchant and does not infer a weapon type or complete build. Equipment, healing, interrupts, totems, consumables, weapon timing and resource optimization remain manual. Not native gameplay certified."
 
 -- Explicit unscored advice/native-preview receipt coverage.
 L['Advice/presentation rows describe observed delivery boundaries only; ordinary-cast proof: not available.'] = true
 L['Coverage rows: advice=%d presentation=%d visible=%d hidden=%d unknown=%d retired=%d (not opportunities).'] = true
 L['Visible means RM-owned preview frame state at a delivery boundary; it does not prove perception or native pixel rendering.'] = true
 
-L["Default.TBC.Paladin.Forty.Name"] = "TBC Paladin40–49 manual seal/aura preview"
-L["Default.TBC.Paladin.Forty.Description"] = "Levels40–49: preserve manual auras and seals; only affirmative own Righteousness permits Judgement. Support, talents and resources remain manual."
-L["Default.TBC.Druid.Caster.Forty.Name"] = "Druid: limited caster leveling (40–49)"
-L["Default.TBC.Druid.Caster.Forty.Description"] = "Bounded humanoid caster-only preview. Preserves manual forms, casts and channels; own missing Moonfire, learned stationary Starfire, then independently ready Wrath. Native learned ranks, mappings and readiness govern recommendations. Feral combat, form changes, talents, support and resources remain manual; no implicit melee advice. This inherited subset is not a complete or optimal 40s build."
 
 L['Saved manual choice is unavailable in the current context.'] = true
 
@@ -3032,8 +3044,6 @@ L['Help.Announces.channel.channel']='Via Script/Macro outputs can send to a join
 
 L['Choose an announcement trigger, then edit its always expanded output cards. Each card has a destination, conditions, enabled state and Help. Add, duplicate, delete, move or drag outputs within the announcement. Joined channel names are available for Via Script/Macro. New opens a draft; Apply saves it and Discard restores it. Imports are validated and never execute code.']='Choose an announcement trigger, then edit its always expanded output cards. Each card has a destination, conditions, enabled state and Help. Add, duplicate, delete, move or drag outputs within the announcement. Joined channel names are available for Via Script/Macro. New opens a draft; Apply saves it and Discard restores it. Imports are validated and never execute code.'
 
-L["Default.TBC.Shaman.Enhancement50.Name"] = "Shaman: Enhancement leveling (50–59)"
-L["Default.TBC.Shaman.Enhancement50.Description"] = "Bounded TBC solo Enhancement-oriented preview for levels50–59, selected only when Enhancement has the unique positive highest talent allocation. Uses learned ranks for a Lightning Bolt pull, Earth Shock in combat and stationary ranged Lightning Bolt, with independent Lightning Shield and mainhand imbue reminders. Prefers learned Windfury over Rockbiter only when no temporary mainhand enchant is present; preserves any manual enchant and does not infer a weapon type or complete build. Equipment, healing, interrupts, totems, consumables, weapon timing and resource optimization remain manual. Not native gameplay certified."
 
 -- Read-only human condition summaries.
 L["{unit} {{!is friendly|is not friendly}}"] = true

@@ -67,11 +67,13 @@ for _,client in ipairs(clients) do for _,class in ipairs(classes) do
     end)
 end end
 test('TOC includes every reviewed starter pack exactly once',function()
-    local _,packs=corpus.load(5,1,'PRIEST');local wanted={['rm.tbc.shaman.enhancement.50-59']=true,['rm.tbc.shaman.starter']=true,['rm.tbc.shaman.enhancement.30-39']=true,['rm.tbc.shaman.enhancement.40-49']=true,['rm.tbc.paladin.starter']=true,['rm.tbc.paladin.starter.20-29']=true,['rm.tbc.druid.caster.starter']=true,['rm.tbc.druid.caster.starter.20-29']=true,['rm.tbc.paladin.starter.30-39']=true,['rm.tbc.druid.caster.starter.30-39']=true,['rm.tbc.paladin.starter.40-49']=true,['rm.tbc.druid.caster.starter.40-49']=true}
+    local _,packs=corpus.load(5,1,'PRIEST');local wanted={}
     for _,id in ipairs({'rm.tbc.mage.frost','rm.tbc.mage.fire.icyveins','rm.tbc.mage.fire.wowhead','rm.tbc.mage.arcane','rm.tbc.warlock.dps.icyveins','rm.tbc.warlock.dps.wowhead','rm.tbc.priest.dps.icyveins','rm.tbc.priest.dps.wowhead','rm.tbc.priest.healer.wowhead','rm.tbc.priest.healer.icyveins'}) do wanted[id]=true end
     -- TBC Warrior, Rogue and Hunter premades (one per role and source family).
     for _,id in ipairs({'rm.tbc.warrior.dps.wowsims','rm.tbc.warrior.dps.icyveins','rm.tbc.warrior.protection.wowhead','rm.tbc.warrior.protection.icyveins',
         'rm.tbc.rogue.dps.wowsims','rm.tbc.rogue.dps.wowhead','rm.tbc.hunter.ranged.wowsims','rm.tbc.hunter.ranged.wowhead'})do wanted[id]=true end
+    -- TBC Shaman, Druid and Paladin premades (one per role and source family).
+    for _,id in ipairs({'rm.tbc.shaman.enhancement.icyveins','rm.tbc.shaman.enhancement.wowsims','rm.tbc.shaman.elemental.icyveins','rm.tbc.shaman.elemental.wowhead','rm.tbc.shaman.elemental.nextaction','rm.tbc.shaman.restoration','rm.tbc.druid.balance','rm.tbc.druid.feral.icyveins','rm.tbc.druid.feral.wowhead','rm.tbc.druid.restoration','rm.tbc.paladin.retribution.wowhead','rm.tbc.paladin.retribution.icyveins','rm.tbc.paladin.retribution.twist','rm.tbc.paladin.protection.wowhead','rm.tbc.paladin.protection.icyveins','rm.tbc.paladin.holy','rm.tbc.paladin.holy.wowhead'})do wanted[id]=true end
     for _,pack in ipairs(packs)do assert(wanted[pack.id],pack.id..' is unexpected or duplicated');wanted[pack.id]=nil end
     assert(not next(wanted),'reviewed starter pack missing from TOC')
 end)

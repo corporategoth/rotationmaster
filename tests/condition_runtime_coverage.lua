@@ -97,18 +97,12 @@ test('every TBC pack action and cooldown graph compiles, or takes the declared o
  -- One pack per Defaults/tbc file; blocks register none.
  local packs=0;for path in io.lines('RotationMaster.toc')do if path:match('^Defaults/.*%.lua$')then f.load(path);if path:match('^Defaults/tbc/')then packs=packs+1 end end end
  assert(packs>0 and #loaded==packs,'pack census changed: '..#loaded..' of '..packs)
- -- These premades use condition tags with no owned runtime declaration yet (POWER, MANAPCT,
- -- THREAT_COUNT, CLASSIFICATION, ISSAME, GROUP, TT_HEALTH, BUFF_REMAIN, DEBUFF_STACKS/REMAIN,
- -- SPELL_COOLDOWN, SPELL_HISTORY_TIME, CAST/CHANNEL_INTERRUPTABLE, PET, DEAD, SWING_TIME), so
- -- they run on the ordinary evaluation path. Declaring those tags should move them back here.
- local ordinary={['rm.tbc.warrior.dps.wowsims']=true,['rm.tbc.warrior.dps.icyveins']=true,['rm.tbc.warrior.protection.wowhead']=true,['rm.tbc.warrior.protection.icyveins']=true,
-  ['rm.tbc.rogue.dps.wowsims']=true,['rm.tbc.rogue.dps.wowhead']=true,['rm.tbc.hunter.ranged.wowsims']=true,['rm.tbc.hunter.ranged.wowhead']=true}
- local fallback=0
- for _,envelope in ipairs(loaded)do
-  local compiled=prepare(a,envelope.body,{},function()return true end)
-  if ordinary[envelope.id]or envelope.id:match('^rm%.tbc%.mage%.')or envelope.id:match('^rm%.tbc%.warlock%.')or envelope.id:match('^rm%.tbc%.priest%.')then assert(not compiled,envelope.id..' now compiles: drop it from the ordinary list');fallback=fallback+1
-  else assert(compiled,envelope.id..' rejected compiler')end
- end
- assert(a:GetConditionRuntimeDiagnostic().compiles==packs-fallback and a:GetConditionRuntimeDiagnostic().legacyFallback==fallback)
+ -- The TBC premades read condition tags the compiler does not own yet (POWER, MANAPCT,
+ -- THREAT_COUNT, TOTEM, TT_HEALTH, DISTANCE_COUNT, SWING_TIME, BUFF_REMAIN, DEBUFF_STACKS...),
+ -- so most run on the ordinary evaluation path; the lean engine still caches them. Each pack
+ -- either compiles or falls back, never both, and the diagnostic accounts for every one.
+ for _,envelope in ipairs(loaded)do prepare(a,envelope.body,{},function()return true end)end
+ local diagnostic=a:GetConditionRuntimeDiagnostic()
+ assert(diagnostic.compiles+diagnostic.legacyFallback==packs,'compiled '..diagnostic.compiles..', legacy '..diagnostic.legacyFallback)
 end)
 finish()

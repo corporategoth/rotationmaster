@@ -58,7 +58,7 @@ local source=[====[local function make(options)
   if name=='libraryReader' then for j=1,10 do local key,entry=debug.getupvalue(value.OwnsContext,j);if not key then break end;if key=='ownedRotationContext' then nativeContext=entry end end end
  end
  assert(type(nativeContext)=='function');a.GetRotationContext=nativeContext
- load('Defaults/tbc/shaman-starter.lua');assert(a:InitializeRotationLibrary())
+ load('tests/fixtures/shaman_starter_pack.lua');assert(a:InitializeRotationLibrary())
  local id,why=a:CloneDefaultRotation(0,'rm.tbc.shaman.starter','Copy of Shaman: early leveling',{scope='class'});assert(id,why);a.currentRotation=id;a.currentSpec=0
  a.configWindow=nil;a.currentConditionEval=nil;a.nextWindow=nil;a.db.profile.preview_spells=0;a.db.profile.disable_buttons=false
  a.units={player='Player',pet='Pet',target='Target',mouseover='Mouseover',pettarget='Pet target',targettarget='Target target',mouseovertarget='Mouseover target',focus='Focus',focustarget='Focus target'}

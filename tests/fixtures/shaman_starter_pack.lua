@@ -1,3 +1,5 @@
+-- Test-only copy of the retired rm.tbc.shaman.starter Built In (revision 9): engine tests use it
+-- as a fixed, known pack. It is not in the TOC and never ships.
 local _, addon = ...
 -- Original priority data, not copied guide prose. Scope and omissions are in
 -- Defaults/README.md. IDs are locale-independent; the engine expands action ranks.

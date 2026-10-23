@@ -91,7 +91,7 @@ local source=[====[local function make(options)
  end
  assert(type(nativeContext)=='function');a.GetRotationContext=nativeContext
  assert(a:OnInitialize(),'actual source initialization failed');a.currentSpec=0
- load('Defaults/tbc/shaman-starter.lua');assert(a:InitializeRotationLibrary())
+ load('tests/fixtures/shaman_starter_pack.lua');assert(a:InitializeRotationLibrary())
  local id,why=a:CloneDefaultRotation(0,'rm.tbc.shaman.starter','Copy of Shaman: early leveling',{scope='class'});assert(id,why);a.currentSpec=0
  a.configWindow=nil;a.currentConditionEval=nil;a.nextWindow=nil;a.db.profile.preview_spells=0;a.db.profile.disable_buttons=false
  a.inCombat=combat;a.avail_announced={};a.announced={};a.skipAnnounce=true;a.lastCacheReport=100
