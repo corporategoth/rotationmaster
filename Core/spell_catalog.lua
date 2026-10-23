@@ -117,29 +117,72 @@ function catalog:SpellRankNum(id)
     return entries[id] and rankNumber(entries[id]) or 0
 end
 
+-- Rotation keys a spec-agnostic spellbook entry also belongs to. On clients
+-- whose rotations are keyed by specialization ID (Retail, Forever), the General
+-- and Class skill lines are shared by every specialization of the class, and
+-- so is a line for a specialization that is not one of them: below level 10
+-- the active "initial" specialization (index > GetNumSpecializations(),
+-- Blizzard_SharedXML/UnitUtil.lua IsInitialSpec) has its own ID that no
+-- rotation is ever keyed by. Other clients key rotations by talent group or a
+-- single key and keep the current-spec attribution only.
+local function sharedSpecs(self)
+    local platform=self.Platform
+    if type(platform.GetClientFamily)~="function" or type(platform.GetRotationSpecializations)~="function" then return nil end
+    local family=platform:GetClientFamily()
+    if family~="retail" and family~="forever" then return nil end
+    if type(UnitClass)~="function" then return nil end
+    local ok,_,_,classID=pcall(UnitClass,"player")
+    if not ok or not platform:CanReadValue(classID) then return nil end
+    local choices=platform:GetRotationSpecializations(classID)
+    if type(choices)~="table" then return nil end
+    local list,set={},{}
+    for _,choice in ipairs(choices) do
+        local id=type(choice)=="table" and choice.id
+        if type(id)=="number" and not set[id] then set[id]=true;list[#list+1]=id end
+    end
+    if #list==0 then return nil end
+    return {list=list,set=set}
+end
 function addon:RefreshSpellCatalog()
     local snapshot=self.Platform:GetSpellBookSnapshot()
     local petKey=BOOKTYPE_PET or "pet"
     local spells,reverse={[petKey]={}},{[petKey]={}}
     if self.currentSpec~=nil then spells[self.currentSpec]={};reverse[self.currentSpec]={} end
+    local shared=sharedSpecs(self)
+    local function add(spec,id)
+        spells[spec]=spells[spec] or {};reverse[spec]=reverse[spec] or {}
+        spells[spec][id]=true
+        local name=catalog:SpellName(id,true)
+        if name then
+            local previous=reverse[spec][name]
+            if not previous or preferred(id,previous) then reverse[spec][name]=id end
+        end
+    end
+    local function attribute(spec,entry)
+        add(spec,entry.spellID)
+        -- The base of an active override is the same book entry: a rotation
+        -- saved against either identity stays valid in the spellbook view.
+        if entry.baseSpellID and entry.baseSpellID~=entry.spellID and catalog:UpdateSpell(entry.baseSpellID) then
+            add(spec,entry.baseSpellID)
+        end
+    end
     for _,bank in ipairs({"player","pet"}) do
         local state=snapshot[bank]
         if state.complete then
             for _,entry in ipairs(state.entries) do
                 catalog:UpdateSpell(entry.spellID)
-                local spec
-                if bank=="pet" then spec=petKey
-                elseif entry.offSpecID then spec=entry.offSpecID
-                elseif not entry.isOffSpec then spec=self.currentSpec end
                 -- Unknown passivity/offspec identity is not evidence that an
                 -- entry can be used as an action for the selected spec.
-                if spec~=nil and entry.isPassive==false then
-                    spells[spec]=spells[spec] or {};reverse[spec]=reverse[spec] or {}
-                    spells[spec][entry.spellID]=true
-                    local name=catalog:SpellName(entry.spellID,true)
-                    if name then
-                        local previous=reverse[spec][name]
-                        if not previous or preferred(entry.spellID,previous) then reverse[spec][name]=entry.spellID end
+                if entry.isPassive==false then
+                    if bank=="pet" then attribute(petKey,entry)
+                    elseif entry.offSpecID then attribute(entry.offSpecID,entry)
+                    elseif not entry.isOffSpec then
+                        if self.currentSpec~=nil then attribute(self.currentSpec,entry) end
+                        if shared and (entry.shared or entry.lineSpecID~=nil and not shared.set[entry.lineSpecID]) then
+                            for _,spec in ipairs(shared.list) do
+                                if spec~=self.currentSpec then attribute(spec,entry) end
+                            end
+                        end
                     end
                 end
             end
@@ -149,9 +192,11 @@ function addon:RefreshSpellCatalog()
     -- must not survive a new snapshot, including a failed bank observation.
     self.specSpells,self.specSpellsReverse=spells,reverse
     self.spellBookStatus={player={complete=snapshot.player.complete,reason=snapshot.player.reason,
-        coverage=snapshot.player.coverage,hasOtherItems=snapshot.player.hasOtherItems},
+        coverage=snapshot.player.coverage,hasOtherItems=snapshot.player.hasOtherItems,
+        skipped=snapshot.player.skipped,skipReason=snapshot.player.skipReason},
         pet={complete=snapshot.pet.complete,reason=snapshot.pet.reason,
-        coverage=snapshot.pet.coverage,hasOtherItems=snapshot.pet.hasOtherItems}}
+        coverage=snapshot.pet.coverage,hasOtherItems=snapshot.pet.hasOtherItems,
+        skipped=snapshot.pet.skipped,skipReason=snapshot.pet.skipReason}}
     return self.spellBookStatus
 end
 
