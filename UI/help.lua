@@ -52,6 +52,14 @@ function addon:WorkbenchWindowHelp()
         section(L['Help'],L['Help.Window.help']),
     }
 end
+-- Some bound controls are Lua wrappers (editor objects), not frames; the
+-- tooltip's owner APIs reject those with "Wrong object type".
+local function tooltipOwned(control)
+    if not GameTooltip then return false end
+    local ok,owned=pcall(GameTooltip.IsOwned,GameTooltip,control)
+    return ok and owned
+end
+
 -- Descriptors are held only by their owning control and retired on pool reuse.
 function addon:BindWorkbenchHelp(control,descriptor)
     if control.rmHelpBinding then control.rmHelpBinding.clear() end
@@ -62,14 +70,17 @@ function addon:BindWorkbenchHelp(control,descriptor)
         if not current() then return end
         if enter then enter(...) end
         if not current() or not descriptor.brief or not GameTooltip then return end
-        if GameTooltip:IsOwned(control) then if descriptor.brief~=control.tooltip then GameTooltip:AddLine(descriptor.brief,1,1,1,true) end
-        else GameTooltip:SetOwner(control,'ANCHOR_RIGHT');GameTooltip:SetText(descriptor.brief,1,1,1,1,true) end
+        if tooltipOwned(control) then if descriptor.brief~=control.tooltip then GameTooltip:AddLine(descriptor.brief,1,1,1,true) end
+        else
+            if not pcall(GameTooltip.SetOwner,GameTooltip,control,'ANCHOR_RIGHT') then return end
+            GameTooltip:SetText(descriptor.brief,1,1,1,1,true)
+        end
         GameTooltip:Show()
     end
     local function onLeave(...)
         if not current() then return end
         if leave then leave(...) end
-        if current() and GameTooltip and GameTooltip:IsOwned(control) then GameTooltip:Hide() end
+        if current() and tooltipOwned(control) then GameTooltip:Hide() end
     end
     addon:SetUIScript(control,'OnEnter',onEnter);local installedEnter=control:GetScript('OnEnter')
     addon:SetUIScript(control,'OnLeave',onLeave);local installedLeave=control:GetScript('OnLeave')
@@ -78,7 +89,7 @@ function addon:BindWorkbenchHelp(control,descriptor)
         control.rmHelpBinding=nil
         if control:GetScript('OnEnter')==installedEnter then control:SetScript('OnEnter',enter) end
         if control:GetScript('OnLeave')==installedLeave then control:SetScript('OnLeave',leave) end
-        if GameTooltip and GameTooltip:IsOwned(control) then GameTooltip:Hide() end
+        if tooltipOwned(control) then GameTooltip:Hide() end
     end
     return binding.clear
 end

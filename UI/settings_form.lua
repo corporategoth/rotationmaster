@@ -310,13 +310,22 @@ function addon:CreateSettingsForm(parent)
         self.cleanups[#self.cleanups+1]=function() if swatch.picker.frame:IsShown() then swatch.picker:Close(true) end end
         return swatch
     end
+    -- Every cleanup runs even if one fails; a failure part-way used to leave
+    -- the old page's controls on screen and the page unusable.
+    function p:RunCleanups()
+        local cleanups=self.cleanups;self.cleanups={}
+        for _,cleanup in ipairs(cleanups) do
+            local ok,why=pcall(cleanup)
+            if not ok then local handler=geterrorhandler and geterrorhandler();if handler then pcall(handler,why) end end
+        end
+    end
     function p:Draw()
         if not self.active then return end
         self.generation=self.generation+1
         if self.menu then self.menu.frame:Hide() end
         if self.prompt then self.prompt.frame:Hide() end
         if self.textDialog then self.textDialog.frame:Hide() end
-        for _,cleanup in ipairs(self.cleanups) do cleanup() end;self.cleanups={}
+        self:RunCleanups()
         for _,list in pairs(self.pool) do for _,control in ipairs(list) do control:Hide() end end
         self.creationUsed=false;self.creationUsedForNew=false;self.counts={};self.fields={};self.edits={};if self.ResetLayout then self:ResetLayout() end;self.y=4;self.width=math.max(340,math.min(760,self.frame:GetWidth()-40));self.child:SetWidth(self.width)
         self.builder(self);if self.DraftActions then self:DraftActions() end;self:BindHelpBriefs();if not self.creationUsedForNew then self.creationBaseline=nil;self.creationApply=nil end;self.child:SetHeight(self.y+12);self.scroll:UpdateWorkbenchScroll()
@@ -341,7 +350,7 @@ function addon:CreateSettingsForm(parent)
         self.draft=nil;self.draftBaseline=nil;self.draftEffects=nil;self.active=false;self.generation=self.generation+1;if self.menu then self.menu.frame:Hide() end
         if self.prompt then self.prompt.frame:Hide() end
         if self.textDialog then self.textDialog.frame:Hide() end
-        for _,cleanup in ipairs(self.cleanups) do cleanup() end;self.cleanups={}
+        self:RunCleanups()
         for _,list in pairs(self.pool) do for _,control in ipairs(list) do if control.ClearFocus then control:ClearFocus() end end end
         self.frame:Hide()
     end
