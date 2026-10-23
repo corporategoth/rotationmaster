@@ -17,9 +17,9 @@ local P='mage-sfire-'
 local scorchTalent={type='TALENT',layout='tree',tree=2,talent=10,operator='GREATERTHANOREQUALS',value=1}
 local balefireStack=any({type='BUFF',unit='player',spell=428878},{type='DEBUFF',unit='player',spell=428878})
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.mage.fire',revision=1,
+ format='RotationMaster',schemaVersion=1,id='rm.sod.mage.fire',revision=2,
  blocks={['era.mage.boundaries']=1,['era.mage.wand-finish']=1,['sod.mage.balefire']=1,['sod.mage.balefire-scorched']=1,
-  ['sod.mage.living-bomb']=1,['sod.mage.overheat']=1,['sod.mage.armor']=1,['sod.mage.upkeep']=1},
+  ['sod.mage.living-bomb']=1,['sod.mage.overheat']=2,['sod.mage.armor']=2,['sod.mage.upkeep']=2},
  nameKey='Default.SoD.Mage.Fire.Name',descriptionKey='Default.SoD.Mage.Fire.Description',
  applicability={families={'era'},actionContext='player',class='MAGE',minLevel=1,maxLevel=60,rulesets={'season:2'}},
  tags={'fire','leveling','raid','single-target','aoe','season-of-discovery'},
@@ -35,7 +35,7 @@ assert(addon:RegisterDefaultRotation({
   switch={type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=1},
   cooldowns={block(P..'armor','sod.mage.armor',P),block(P..'overheat','sod.mage.overheat',P),
    spell(P..'combustion',11129,all({type='COMBAT',unit='player'},{type='DEBUFF_STACKS',unit='target',spell=22959,operator='GREATERTHANOREQUALS',value=5},
-    any(balefireStack,negate({type='SPELL_KNOWN',spell=428878})))),
+    any(balefireStack,negate({type='RUNE_ENGRAVED',spell=428878})))),
    block(P..'upkeep','sod.mage.upkeep',P)},
   rotation={
    block(P..'boundaries','era.mage.boundaries',P),

@@ -44,7 +44,7 @@ function M.fixture(class,options)
   targetCast=nil,targetInterruptible=true,form=1,forms=3,group=false,classification='normal',creature=7,targetLevel=nil,targettarget='player',
   threat=nil,enemies={},autorepeat=false,active={},mainEnchant=false,offEnchant=false,offSpeed=nil,
   pet=false,petDead=false,petHealth=100,petMana=100,ttd=nil,
-  talents={0,0,0},talent={},season=nil,hardcore=false,instance=nil,history={}}
+  talents={0,0,0},talent={},season=nil,hardcore=false,instance=nil,history={},runes={}}
  local names,ranks={},{}
  local function highest(name)
   for base,list in pairs(families)do if name=='Spell '..base then for i=#list,1,-1 do if s.known[list[i]] then return list[i] end end;return nil end end
@@ -104,6 +104,14 @@ function M.fixture(class,options)
  e.Enum.SeasonID={NoSeason=0,SeasonOfMastery=1,SeasonOfDiscovery=2,Hardcore=3}
  e.C_Seasons={GetActiveSeason=function()return s.season end}
  e.C_GameRules={IsHardcoreActive=function()return s.hardcore end,IsSelfFoundActive=function()return false end,IsSelfFoundAllowed=function()return false end,GetCurrentGameModeRecordID=function()return nil end}
+ -- Season of Discovery engraving (C_Engraving, enabled on SoD realms only): s.runes holds the spells whose
+ -- runes are engraved, one equipment slot each in spell ID order; each rune teaches its one spell.
+ -- s.runesPending models the rune list not loaded yet after login (engraving unavailable).
+ local function engraved()local list={};for id in pairs(s.runes)do list[#list+1]=id end;table.sort(list);return list end
+ e.C_Engraving={IsEngravingEnabled=function()return s.season==2 end,GetNumRunesKnown=function()if s.runesPending then return 0,0 end;return #engraved(),20 end,
+  IsEquipmentSlotEngravable=function()return true end,
+  GetRuneForEquipmentSlot=function(slot)local id=engraved()[slot];if id then
+   return {skillLineAbilityID=id,itemEnchantmentID=id,name='Rune '..id,iconTexture=1,equipmentSlot=slot,level=1,learnedAbilitySpellIDs={id}}end end}
  e.IsInInstance=function()return s.instance~=nil,s.instance or 'none' end
  e.GetItemCount=function(id)return s.items[id] or 0 end
  -- One backpack whose slots hold the modeled item stacks (item ID -> count).
@@ -136,7 +144,8 @@ function M.fixture(class,options)
   'Conditions/common.lua','Conditions/spell.lua','Conditions/known_spell.lua','Conditions/character.lua','Conditions/buffs.lua','Conditions/debuffs.lua',
   'Conditions/combat.lua','Conditions/casting.lua','Conditions/channeling.lua','Conditions/stats.lua','Conditions/range.lua','Conditions/spatial.lua','Conditions/spatial_stats.lua',
   'Conditions/weapon.lua','Conditions/unit_states.lua','Conditions/totem.lua','Platform/inventory.lua','Conditions/item.lua',
-  'Platform/talents.lua','Conditions/talent.lua','Core/build_context.lua','Conditions/build.lua','Conditions/misc.lua','Conditions/petspell.lua'}) do f.load(path) end
+  'Platform/talents.lua','Conditions/talent.lua','Core/build_context.lua','Conditions/build.lua','Conditions/misc.lua','Conditions/petspell.lua',
+  'Platform/engraving.lua','Conditions/engraving.lua'}) do f.load(path) end
  assert(a.Platform:GetClientInfo().family=='era' and a.Platform:GetCombatDataPolicy()=='probe')
  for _,path in ipairs(options.packs or packs(class))do f.load(path)end
  e.BOOKTYPE_SPELL,e.BOOKTYPE_PET='spell','pet';e.GetAddOnMetadata=function() return 'Rotation Master test' end
@@ -185,6 +194,9 @@ function M.upkeep(f,s,id)
 end
 function M.switches(f,id)f.sync();return f.addon:evaluateCondition(M.body(f.addon,id).switch)==true end
 function M.know(s,...)for _,id in ipairs({...})do s.known[id]=true end end
+-- Engraves runes (Season of Discovery realms read them); a rune also teaches its spell.
+function M.engrave(s,...)for _,id in ipairs({...})do s.runes[id]=true;s.known[id]=true end end
+function M.unengrave(s,...)for _,id in ipairs({...})do s.runes[id]=nil;s.known[id]=false end end
 -- The pack the real auto-switch would pick: built-in order by priority, first matching switch wins.
 function M.selected(f,s)
  local a=f.addon;f.sync()

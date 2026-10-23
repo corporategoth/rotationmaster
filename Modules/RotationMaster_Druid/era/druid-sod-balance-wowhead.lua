@@ -1,6 +1,6 @@
 -- Season of Discovery Druid Balance after Wowhead's Phase 8 guide: Wrath to open, Starsurge on
 -- cooldown, Hurricane on six or more, Insect Swarm only on the move, Sunfire and Moonfire kept up,
--- Wrath while your Sunfire has under 5 seconds (Elune's Fires extends it), Starfire on Lunar
+-- Wrath while your Sunfire has under 5 seconds with Elune's Fires engraved (it extends it), Starfire on Lunar
 -- Eclipse, Wrath filler. Same switch as rm.sod.druid.balance at a lower priority.
 local _,addon=...
 local function all(...)return{type='AND',value={...}}end
@@ -12,9 +12,9 @@ local function ref(id,name,prefix)return{id=id..'-block',type='block',block=name
 local function spell(id,action,conditions,ranked)return{id=id,type='spell',action=action,ranked=ranked or false,conditions=conditions or {}}end
 local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or {}}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.druid.balance.wowhead',revision=1,
+ format='RotationMaster',schemaVersion=1,id='rm.sod.druid.balance.wowhead',revision=2,
  blocks={['era.druid.boundaries']=1,['era.druid.upkeep']=1,['era.druid.caster-cooldowns']=1,['sod.druid.maul']=1,['sod.druid.balance-cooldowns']=1,
-  ['sod.druid.forms']=1,['sod.druid.cat']=1,['era.druid.stealth-opener']=1,['era.druid.cat-builders']=1,['era.druid.powershift']=1,['sod.druid.bear']=1},
+  ['sod.druid.forms']=1,['sod.druid.cat']=2,['era.druid.stealth-opener']=1,['era.druid.cat-builders']=1,['era.druid.powershift']=1,['sod.druid.bear']=1},
  nameKey='Default.SoD.Druid.Balance.Wowhead.Name',descriptionKey='Default.SoD.Druid.Balance.Wowhead.Description',
  applicability={families={'era'},actionContext='player',class='DRUID',minLevel=1,maxLevel=60,rulesets={'season:2'}},
  tags={'season-of-discovery','endgame','balance','caster','single-target','aoe','wowhead'},
@@ -38,7 +38,7 @@ assert(addon:RegisterDefaultRotation({
     spell('sod-balance-wh-moving-insect-swarm',5570,negate(mine(5570))),stop('sod-balance-wh-moving-stop')}},
    spell('sod-balance-wh-sunfire',414684,negate(mine(414684)),true),
    spell('sod-balance-wh-moonfire',8921,negate(mine(8921))),
-   spell('sod-balance-wh-extend',5176,all({type='SPELL_KNOWN',spell=414684},{type='DEBUFF_REMAIN',unit='target',spell=414684,anyrank=true,owndebuff=true,operator='LESSTHAN',value=5})),
+   spell('sod-balance-wh-extend',5176,all({type='RUNE_ENGRAVED',spell=414719},{type='RUNE_ENGRAVED',spell=414684},{type='DEBUFF_REMAIN',unit='target',spell=414684,anyrank=true,owndebuff=true,operator='LESSTHAN',value=5})),
    spell('sod-balance-wh-starfire',2912,{type='BUFF',unit='player',spell=408255,anyrank=true}),
    spell('sod-balance-wh-wrath',5176),
    {id='sod-balance-wh-dry',type='none',conditions={}},

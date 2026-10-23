@@ -1,11 +1,16 @@
--- WoW Forever Arcane Mage, levels 10–60, once Arcane Blast (the 11-point Arcane talent) is known
--- and Ice Lance is not (a Frost Mage who took Missile Barrage first stays Frost). Written for the
+-- WoW Forever Arcane Mage, levels 10–60, once Arcane is the main tree with 11 points and Arcane Blast
+-- is known (a Frost Mage who took Missile Barrage first stays Frost). Written for the
 -- current Arcane Blast (a 15 s stacking spell-power buff that other spells do not consume, with
 -- Arcane Wrath to spend it), after Warcraft Tavern: Missiles on Barrage, Clearcasting on Arcane
 -- Blast, Arcane Wrath at three stacks, Arcane Blast to four stacks on elites and two otherwise
 -- while mana lasts, then Frostfire Bolt, Frostbolt or Fireball to fish for Barrage. Without Arcane
 -- Wrath (the older beta design) Fire Blast spends the stacks, as Icy Veins and Wowhead advise.
 local _,addon=...
+-- Talent trees in the Forever talent window's order (assumed classic: 1 Arcane, 2 Fire, 3 Frost; verify in game).
+-- Level 10 first (no talent config below it), then the points (an empty tree is a clean no-match),
+-- then the primary tree, which settles hybrids.
+local function tree(n,points)return{type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
+ {type='TALENT_TREE_POINTS',tree=n,operator='GREATERTHANOREQUALS',value=points},{type='PRIMARY_TALENT_TREE',tree=n}}}end
 local function all(...)return{type='AND',value={...}}end
 local function any(...)return{type='OR',value={...}}end
 local function negate(c)return{type='NOT',value=c}end
@@ -21,7 +26,7 @@ local charged={type='BUFF',unit='player',spell=400573}
 local barrage=any({type='BUFF',unit='player',spell=400589},{type='BUFF',unit='player',spell=1326083})
 local function below(n)return any(negate(charged),stacks('LESSTHAN',n))end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.mage.arcane',revision=1,
+ format='RotationMaster',schemaVersion=1,id='rm.forever.mage.arcane',revision=2,
  blocks={['forever.mage.boundaries']=1,['forever.mage.frostbolt']=1,['forever.mage.wand']=1,['forever.mage.upkeep']=1},
  nameKey='Default.Forever.Mage.Arcane.Name',descriptionKey='Default.Forever.Mage.Arcane.Description',
  applicability={families={'forever'},actionContext='player',class='MAGE',minLevel=10,maxLevel=60},
@@ -33,7 +38,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://github.com/simulationcraft/simc/blob/forever/SpellDataDump/mage.txt',title='SimulationCraft Forever spell data (1.60.1.70425)',reviewedAt='2026-10-23',revision='4dd64b4a21',notes='Arcane Blast aura, Arcane Wrath and ranks only.'},
  },
  body={priority=20,
-  switch=all(known(400574,1239696,1239697,1239699,1239700),negate(known(1312002,400640,1240044,1240045,1240046,1240047))),
+  switch=all(tree(1,11),known(400574,1239696,1239697,1239699,1239700)),
   cooldowns={
    block('arcane-upkeep','forever.mage.upkeep','arcane-'),
    spell('arcane-presence-of-mind',12043,all(combat(),elite)),

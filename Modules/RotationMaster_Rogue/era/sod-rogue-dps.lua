@@ -2,15 +2,15 @@
 -- catch-all). wowsims/sod Phase 6 presets with Icy Veins and Zockify Phase 8: on three engaged
 -- enemies Blunderbuss, Crimson Tempest and Fan of Knives first; Ambush on a Cutthroat proc; Saber
 -- Slash stacks kept; Poisoned Knife at four poison stacks; Slice and Dice from two points,
--- refreshed from four in its last two seconds; Expose Armor duty; a bleed for Carnage (Crimson
--- Tempest, else Rupture, none with Saber Slash); Envenom (Eviscerate before it is engraved) at
--- five; builder by glove rune. Shared parts: era/blocks.lua. Runes are read as known spells;
--- passive runes are invisible, so Vanish for Master of Subtlety is listed off.
+-- refreshed from four in its last two seconds (not with Cut to the Chase, whose finishers refresh
+-- it); Expose Armor duty; with the Carnage rune a bleed (Crimson Tempest, else Rupture, none with
+-- Saber Slash); Envenom (Eviscerate before it is engraved) at five; builder by glove rune. Runes
+-- are read as engraved, passive ones too (Vanish for Master of Subtlety). Shared parts: era/blocks.lua.
 local _,addon=...
 local function all(...)return{type='AND',value={...}}end
 local function any(...)return{type='OR',value={...}}end
 local function negate(c)return{type='NOT',value=c}end
-local function known(id)return{type='SPELL_KNOWN',spell=id}end
+local function rune(id)return{type='RUNE_ENGRAVED',spell=id}end
 local function points(op,n)return{type='POINT',unit='player',operator=op,value=n}end
 local function lifetime(op,n)return{type='TT_HEALTH',unit='target',health=0,operator=op,value=n}end
 local function owned(id)return{type='DEBUFF',unit='target',spell=id,anyrank=true,owndebuff=true}end
@@ -22,9 +22,11 @@ local big=any({type='CLASSIFICATION',unit='target',value='worldboss'},{type='CLA
 local lasting=any(big,{type='HEALTHPCT',unit='target',operator='GREATERTHAN',value=.35})
 -- Four of your Occult Poison I/II or Deadly Poison stacks on the target.
 local poisoned=any(stacks(458820,4),stacks(1214170,4),stacks(2818,4))
+-- Passive runes: Carnage (bleeds pay), Cut to the Chase (finishers refresh Slice and Dice).
+local carnage,chase=rune(432276),rune(432271)
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.rogue.dps',revision=1,
- blocks={['era.rogue.boundaries']=1,['era.rogue.sod-opener']=1,['era.rogue.sod-upkeep']=1,['era.rogue.sod-builders']=1,['era.rogue.expose-armor']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.sod.rogue.dps',revision=2,
+ blocks={['era.rogue.boundaries']=1,['era.rogue.sod-opener']=2,['era.rogue.sod-upkeep']=2,['era.rogue.sod-builders']=2,['era.rogue.expose-armor']=1},
  nameKey='Default.SoD.Rogue.DPS.Name',descriptionKey='Default.SoD.Rogue.DPS.Description',
  applicability={families={'era'},actionContext='player',class='ROGUE',minLevel=1,maxLevel=60,rulesets={'season:2'}},
  tags={'dps','melee','leveling','endgame','aoe','season-of-discovery','wowsims','icy-veins','zockify'},
@@ -49,14 +51,14 @@ assert(addon:RegisterDefaultRotation({
  spell('rogue-poisoned-knife',425012,all(points('LESSTHAN',5),{type='POWER',unit='player',operator='LESSTHANOREQUALS',value=80},poisoned)),
  spell('rogue-slice',5171,all(points('GREATERTHANOREQUALS',2),negate(sliced),lasting)),
  block('era.rogue.expose-armor','rogue-'),
- spell('rogue-slice-refresh',5171,all(points('GREATERTHANOREQUALS',4),{type='BUFF_REMAIN',unit='player',spell=5171,anyrank=true,ownbuff=true,operator='LESSTHAN',value=2})),
- spell('rogue-crimson-tempest',412096,all(points('GREATERTHANOREQUALS',4),negate(owned(436611)),lasting)),
- spell('rogue-rupture',1943,all(points('GREATERTHANOREQUALS',3),negate(known(412096)),negate(known(424785)),negate(owned(1943)),lasting)),
+ spell('rogue-slice-refresh',5171,all(points('GREATERTHANOREQUALS',4),negate(chase),{type='BUFF_REMAIN',unit='player',spell=5171,anyrank=true,ownbuff=true,operator='LESSTHAN',value=2})),
+ spell('rogue-crimson-tempest',412096,all(carnage,points('GREATERTHANOREQUALS',4),negate(owned(436611)),lasting)),
+ spell('rogue-rupture',1943,all(carnage,points('GREATERTHANOREQUALS',3),negate(rune(412096)),negate(rune(424785)),negate(owned(1943)),lasting)),
  spell('rogue-kill-envenom',399963,all(points('GREATERTHANOREQUALS',3),lifetime('LESSTHAN',4))),
- spell('rogue-kill-eviscerate',2098,all(points('GREATERTHANOREQUALS',3),negate(known(399963)),lifetime('LESSTHAN',4))),
+ spell('rogue-kill-eviscerate',2098,all(points('GREATERTHANOREQUALS',3),negate(rune(399963)),lifetime('LESSTHAN',4))),
  {id='rogue-finisher',type='branch',conditions=points('GREATERTHANOREQUALS',5),onFalse={},onTrue={
   spell('rogue-envenom',399963),
-  spell('rogue-eviscerate',2098,negate(known(399963))),
+  spell('rogue-eviscerate',2098,negate(rune(399963))),
   {id='rogue-pool',type='none',suppress_attack=false,conditions={}},
  }},
  block('era.rogue.sod-builders','rogue-'),

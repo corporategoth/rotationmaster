@@ -4,6 +4,11 @@
 -- Strider Kick and step out. Out of melee: shoot until Raptor Strike is nearly ready, then go back
 -- in. RM follows the range you choose; it cannot tell you to move.
 local _,addon=...
+-- Talent trees in the Forever talent window's order (assumed classic: 1 Beast Mastery, 2 Marksmanship, 3 Survival; verify in game).
+-- Level 10 first (no talent config below it), then the points (an empty tree is a clean no-match),
+-- then the primary tree, which settles hybrids.
+local function tree(n,points)return{type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
+ {type='TALENT_TREE_POINTS',tree=n,operator='GREATERTHANOREQUALS',value=points},{type='PRIMARY_TALENT_TREE',tree=n}}}end
 local function all(...)return{type='AND',value={...}}end
 local function negate(c)return{type='NOT',value=c}end
 local function combat()return{type='COMBAT',unit='player'}end
@@ -12,7 +17,7 @@ local function stop(id,conditions,attack)return{id=id,type='none',suppress_attac
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local function raptor(op,v)return{type='SPELL_COOLDOWN',spell=2973,operator=op,value=v}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.hunter.survival.weave',revision=1,
+ format='RotationMaster',schemaVersion=1,id='rm.forever.hunter.survival.weave',revision=2,
  blocks={['forever.hunter.boundaries']=1,['forever.hunter.survival-pull']=1,['forever.hunter.range-shots']=1,['forever.hunter.melee-aoe']=1,
   ['forever.hunter.pet-care']=1,['forever.hunter.burst']=1},
  nameKey='Default.Forever.Hunter.SurvivalWeave.Name',descriptionKey='Default.Forever.Hunter.SurvivalWeave.Description',
@@ -22,7 +27,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://www.wowhead.com/forever/guide/classes/hunter/survival/level-30-dps-overview',title='Wowhead: Forever level 30 Survival Hunter (two-hand weave)',reviewedAt='2026-10-23',revision='2026-10-11'},
   {url='https://github.com/simulationcraft/simc/blob/forever/SpellDataDump/hunter.txt',title='SimulationCraft Forever spell data (1.60.1.70425)',reviewedAt='2026-10-23',revision='4dd64b4a21',notes='Spell IDs, ranks and cooldowns only.'},
  },
- body={priority=15,switch={type='SPELL_KNOWN',spell=1317257},
+ body={priority=15,switch=tree(3,21),
   cooldowns={
    spell('weave-aspect-beast',13161,all(combat(),negate({type='BUFF',unit='player',spell=13161,anyrank=true,ownbuff=true}))),
    spell('weave-mark',1130,all(combat(),{type='ATTACKABLE',unit='target'},negate({type='DEBUFF',unit='target',spell=1130,anyrank=true}))),

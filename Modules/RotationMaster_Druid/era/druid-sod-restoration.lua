@@ -9,7 +9,7 @@ local function all(...)return{type='AND',value={...}}end
 local function any(...)return{type='OR',value={...}}end
 local function negate(c)return{type='NOT',value=c}end
 local function own(id)return{type='BUFF',unit='player',spell=id,ownbuff=true}end
-local function known(id)return{type='SPELL_KNOWN',spell=id}end
+local function rune(id)return{type='RUNE_ENGRAVED',spell=id}end
 local function hot(id)return{type='BUFF',unit='target',spell=id,anyrank=true,ownbuff=true}end
 local function hp(v)return{type='HEALTHPCT',unit='target',operator='LESSTHAN',value=v}end
 local function hurt(health,count)return{type='PROXIMITY_HEALTHPCT_COUNT',unit='player',distance=30,healthoperator='LESSTHAN',health=health,operator='GREATERTHANOREQUALS',value=count}end
@@ -17,7 +17,7 @@ local function combat()return{type='COMBAT',unit='player'}end
 local function ref(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local function spell(id,action,conditions,ranked)return{id=id,type='spell',action=action,ranked=ranked or false,conditions=conditions or {}}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.druid.restoration',revision=1,
+ format='RotationMaster',schemaVersion=1,id='rm.sod.druid.restoration',revision=2,
  blocks={['era.druid.boundaries']=1,['era.druid.upkeep']=1,['era.druid.heal-cooldowns']=1,['era.druid.resto-damage']=1},
  nameKey='Default.SoD.Druid.Restoration.Name',descriptionKey='Default.SoD.Druid.Restoration.Description',
  applicability={families={'era'},actionContext='player',class='DRUID',minLevel=1,maxLevel=60,rulesets={'season:2'}},
@@ -26,7 +26,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://www.icy-veins.com/wow-classic/restoration-druid-healer-season-of-discovery-pve-rotation-cooldowns-abilities',title='Icy Veins: SoD Restoration Druid rotation',reviewedAt='2026-10-23',revision='2025-04-08'},
   {url='https://www.warcrafttavern.com/wow-classic-sod/guides/druid-healer/',title='Warcraft Tavern: SoD Druid healer (Phase 4)',reviewedAt='2026-10-23'},
  },
- body={priority=130,switch=any(known(408124),all(negate(known(407988)),negate(known(417157)),{type='PRIMARY_TALENT_TREE',tree=3})),
+ body={priority=130,switch=any(rune(409824),all(negate(rune(407988)),negate(rune(417157)),{type='PRIMARY_TALENT_TREE',tree=3})),
   cooldowns={
    ref('sod-resto-upkeep','era.druid.upkeep','sod-resto-'),ref('sod-resto-cooldowns','era.druid.heal-cooldowns','sod-resto-'),
    spell('sod-resto-tree-of-life',439733,all(combat(),negate(own(439733)),hurt(.7,3)),true),

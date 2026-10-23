@@ -12,7 +12,7 @@ local function all(...)return{type='AND',value={...}}end
 local function any(...)return{type='OR',value={...}}end
 local function negate(c)return{type='NOT',value=c}end
 local function combat()return{type='COMBAT',unit='player'}end
-local function known(id)return{type='SPELL_KNOWN',spell=id}end
+local function rune(id)return{type='RUNE_ENGRAVED',spell=id}end
 local function buff(id)return{type='BUFF',unit='player',spell=id,anyrank=true}end
 local function own(id)return{type='DEBUFF',unit='target',spell=id,anyrank=true,owndebuff=true}end
 local function remain(id,n)return{type='DEBUFF_REMAIN',unit='target',spell=id,anyrank=true,owndebuff=true,operator='LESSTHAN',value=n}end
@@ -23,7 +23,7 @@ local lasting=any({type='GROUP'},{type='CLASSIFICATION',unit='target',value='wor
 local curses={980,603,1490,17862,704,1714,702,18223}
 local cursed={type='OR',value={}};for i,id in ipairs(curses)do cursed.value[i]=own(id)end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.warlock.tank',revision=1,
+ format='RotationMaster',schemaVersion=1,id='rm.sod.warlock.tank',revision=2,
  blocks={['era.warlock.boundaries']=1,['era.warlock.armor']=1,['era.warlock.pets']=1},
  nameKey='Default.SoD.Warlock.Tank.Name',descriptionKey='Default.SoD.Warlock.Tank.Description',
  applicability={families={'era'},actionContext='player',class='WARLOCK',minLevel=1,maxLevel=60,rulesets={'season:2'}},
@@ -32,7 +32,7 @@ assert(addon:RegisterDefaultRotation({
  {url='https://www.icy-veins.com/wow-classic/demonology-warlock-tank-season-of-discovery-pve-rotation-cooldowns-abilities',title='Icy Veins: SoD Demonology Warlock tank rotation',reviewedAt='2026-10-23',revision='2025-04-08'},
  {url='https://www.wowhead.com/classic/guide/season-of-discovery/classes/warlock/tank-overview',title='Wowhead: SoD Warlock tank overview',reviewedAt='2026-10-23',revision='2025-01-26'},
  {url='https://www.warcrafttavern.com/wow-classic-sod/guides/warlock-tank/',title='Warcraft Tavern: SoD Warlock tank (Phase 4)',reviewedAt='2026-10-23'}},
- body={priority=80,switch=known(403789),
+ body={priority=80,switch=rune(403789),
  cooldowns={
   spell('sod-tank-metamorphosis',403789,negate(buff(403789))),
   block('era.warlock.armor','sod-tank-'),
@@ -62,7 +62,7 @@ assert(addon:RegisterDefaultRotation({
  }},
  spell('sod-tank-shadowflame',426320,all(negate(own(426320)),lasting)),
  spell('sod-tank-drain-life',403677,negate(own(403677))),
- spell('sod-tank-immolate',348,all(negate(known(426320)),any(negate(own(348)),remain(348,1.5)),lasting)),
+ spell('sod-tank-immolate',348,all(negate(rune(426320)),any(negate(own(348)),remain(348,1.5)),lasting)),
  spell('sod-tank-corruption',172,all(negate(own(172)),lasting)),
  spell('sod-tank-siphon-life',18265,all(negate(own(18265)),lasting)),
  spell('sod-tank-conflagrate',17962,all(own(348),negate(buff(427714)))),

@@ -37,8 +37,9 @@ test('auto-select: the recommended premade at every level and realm; variants wh
  for _,level in ipairs({1,10,30,60})do s.level=level;a.longtermCache={};s.season=nil;assert(M.selected(f,s)==DPS,level)
   s.season=3;s.hardcore=true;assert(M.selected(f,s)==DPS,'Hardcore shares the vanilla premade');s.hardcore=false
   s.season=2;assert(M.selected(f,s)==SOD,'SoD at '..level)end
- M.know(s,410412);assert(M.selected(f,s)==TANK,'Tease known: tank');s.known[410412]=false;M.know(s,1219355);assert(M.selected(f,s)==TANK)
- s.known[1219355]=false;assert(a:SetDefaultRotationEnabled(SOD,false));assert(M.selected(f,s)==SIV)
+ M.know(s,410412);assert(M.selected(f,s)==SOD,'Tease known without the rune: still DPS');s.known[410412]=false
+ M.engrave(s,400014);assert(M.selected(f,s)==TANK,'Just a Flesh Wound (a passive rune) engraved: tank');M.unengrave(s,400014)
+assert(a:SetDefaultRotationEnabled(SOD,false));assert(M.selected(f,s)==SIV)
  assert(a:SetDefaultRotationEnabled(SIV,false));assert(M.selected(f,s)==SZK)
  s.season=nil;assert(a:SetDefaultRotationEnabled(DPS,false));assert(M.selected(f,s)==TAV)
  assert(a:SetDefaultRotationEnabled(TAV,false));assert(M.selected(f,s)==SIM)
@@ -135,36 +136,41 @@ end)
 
 test('SoD: Envenom at five once engraved, Eviscerate before; bleed choice follows the runes',function()
  local f,s=rogue(30,{5171,1943});s.season=2;s.buffs={slice()};s.points=5
- assert(first(f,s,SOD)==1943,'no cloak rune, no Saber Slash: Rupture for Carnage');s.debuffs={{id=1943}};assert(first(f,s,SOD)==2098,'Eviscerate until Envenom')
- M.know(s,399963);assert(first(f,s,SOD)==399963);s.debuffs={}
- M.know(s,412096);assert(first(f,s,SOD)==412096,'Crimson Tempest replaces Rupture');s.debuffs={{id=436611}};assert(first(f,s,SOD)==399963)
- s.known[412096]=false;M.know(s,424785);s.debuffs={{id=424785,stacks=3,expires=110}};assert(first(f,s,SOD)==399963,'Saber Slash bleed covers Carnage')
+ assert(first(f,s,SOD)==2098,'no Carnage engraved: no bleed, Eviscerate')
+ M.engrave(s,432276);assert(first(f,s,SOD)==1943,'Carnage (a passive rune), no cloak rune, no Saber Slash: Rupture');s.debuffs={{id=1943}};assert(first(f,s,SOD)==2098,'Eviscerate until Envenom')
+ M.know(s,399963);assert(first(f,s,SOD)==399963,'a known Envenom is cast');s.known[399963]=false
+ M.engrave(s,399963);assert(first(f,s,SOD)==399963);s.debuffs={}
+ M.engrave(s,412096);assert(first(f,s,SOD)==412096,'Crimson Tempest replaces Rupture');s.debuffs={{id=436611}};assert(first(f,s,SOD)==399963)
+ M.unengrave(s,412096);M.engrave(s,424785);s.debuffs={{id=424785,stacks=3,expires=110}};assert(first(f,s,SOD)==399963,'Saber Slash bleed covers Carnage')
  s.nopower[399963]=true;assert(stopped(f,s,SOD),'pool at five')
 end)
 
 test('SoD: Poisoned Knife at four poison stacks, Saber Slash stacks, Slice from two points, builder by glove rune',function()
  local f,s=rogue(60,{5171,425012,399963});s.season=2;s.points=1;s.power=60
  assert(first(f,s,SOD)==1752,'one point and no rune: Sinister Strike');s.points=2;assert(first(f,s,SOD)==5171)
- s.buffs={slice(101)};s.points=4;assert(first(f,s,SOD)==5171,'renewed from four in its last two seconds');s.buffs={slice()}
+ s.buffs={slice(101)};s.points=4;assert(first(f,s,SOD)==5171,'renewed from four in its last two seconds')
+ M.engrave(s,432271);assert(first(f,s,SOD)==1752,'Cut to the Chase (a passive rune): its finishers refresh Slice, no renewal');M.unengrave(s,432271);s.buffs={slice()}
  s.points=2;s.debuffs={{id=458820,stacks=4}};assert(first(f,s,SOD)==425012);s.debuffs[1].stacks=3;assert(first(f,s,SOD)==1752)
  s.debuffs={{id=2818,stacks=4,source='party1'}};assert(first(f,s,SOD)==1752,'another rogue\'s poison')
  s.debuffs={};M.know(s,399956);assert(first(f,s,SOD)==399956,'Mutilate');s.points=4;s.targettarget='party1';M.know(s,53);assert(first(f,s,SOD)==53,'Backstab for the fifth point')
- s.known[399956]=false;s.targettarget='player';assert(first(f,s,SOD)==53,'no glove builder engraved (Cutthroat): Backstab even when faced');M.know(s,424785);s.points=2;assert(first(f,s,SOD)==424785)
+ s.known[399956]=false;s.targettarget='player';assert(first(f,s,SOD)==1752,'faced without Cutthroat: Sinister Strike')
+ M.engrave(s,462708);assert(first(f,s,SOD)==53,'Cutthroat (a passive rune) engraved: Backstab even when faced');M.know(s,424785);s.points=2;assert(first(f,s,SOD)==424785)
  s.debuffs={{id=424785,stacks=3,expires=130}};assert(first(f,s,SOD)==424785,'Saber Slash is also the builder')
  s.known[424785]=false;s.known[399963]=true;s.buffs[2]={id=462707};M.know(s,8676);assert(first(f,s,SOD)==8676,'Cutthroat Ambush')
 end)
 
 test('SoD variants: Icy Veins five-point Rupture and five poison stacks, Zockify without bleeds',function()
  local f,s=rogue(60,{5171,1943,399963,425012,412096});s.season=2;s.points=5;s.buffs={slice()}
- assert(first(f,s,SIV)==1943 and first(f,s,SZK)==399963 and first(f,s,SOD)==412096)
+ assert(first(f,s,SIV)==399963 and first(f,s,SOD)==399963,'no Carnage engraved: no bleed in either')
+ M.engrave(s,432276);assert(first(f,s,SIV)==1943 and first(f,s,SZK)==399963 and first(f,s,SOD)==412096)
  s.points=3;s.debuffs={{id=458820,stacks=4}};assert(first(f,s,SIV)==1752 and first(f,s,SZK)==425012)
  s.debuffs[1].stacks=5;assert(first(f,s,SIV)==425012);s.buffs={};s.debuffs={};s.points=2;assert(first(f,s,SZK)==5171 and first(f,s,SIV)==1752)
- M.know(s,424785);assert(first(f,s,SZK)==424785,'Zockify Saber Slash builds Slice at four');s.points=4;assert(first(f,s,SZK)==5171)
+ M.engrave(s,424785);assert(first(f,s,SZK)==424785,'Zockify Saber Slash builds Slice at four');s.points=4;assert(first(f,s,SZK)==5171)
 end)
 
 test('SoD stealth: Shadowstrike, group Garrote, Ambush only without a glove builder',function()
  local f,s=rogue(60,{703,8676,1833});s.season=2;s.stealth=true;s.combat=false;s.targettarget=nil
- assert(first(f,s,SOD)==8676);s.group=true;assert(first(f,s,SOD)==703);s.group=false;M.know(s,399956);assert(first(f,s,SOD)==1833,'Mutilate build: no Ambush')
+ assert(first(f,s,SOD)==8676);s.group=true;assert(first(f,s,SOD)==703);s.group=false;M.engrave(s,399956);assert(first(f,s,SOD)==1833,'Mutilate build: no Ambush')
  M.know(s,399985);assert(first(f,s,SOD)==399985);local ok,r=stopped(f,s,SIV);assert(not ok and r)
 end)
 
@@ -180,6 +186,15 @@ test('SoD tank: Main Gauche, Blade Dance, Slice, Eviscerate with both up; Tease 
  local u=M.upkeep(f,s,TANK);assert(not u['rogue-tank-tease'],'solo: no Tease')
  s.group=true;s.targettarget='party1';u=M.upkeep(f,s,TANK);assert(u['rogue-tank-tease']==410412,'Tease: '..tostring(u['rogue-tank-tease']))
  s.health=40;assert(M.upkeep(f,s,TANK)['rogue-tank-evasion']==5277)
+end)
+
+test('SoD Master of Subtlety (a passive rune): Vanish and Preparation only once it is engraved',function()
+ local f,s=rogue(60,{5171,1856,14185});s.season=2;s.group=true;s.targettarget='party1';s.points=5
+ local u=M.upkeep(f,s,SOD);assert(not u['rogue-sod-vanish'],'no Master of Subtlety: no Vanish')
+ M.engrave(s,425096);u=M.upkeep(f,s,SOD);assert(u['rogue-sod-vanish']==1856,'Master of Subtlety engraved: Vanish to renew it')
+ s.buffs={{id=425096,expires=105}};assert(not M.upkeep(f,s,SOD)['rogue-sod-vanish'],'its buff is up');s.buffs={}
+ s.cooldown[1856]={startTime=90,duration=300,isEnabled=true,modRate=1};assert(M.upkeep(f,s,SOD)['rogue-sod-preparation']==14185,'Preparation once Vanish is spent')
+ M.unengrave(s,425096);assert(not M.upkeep(f,s,SOD)['rogue-sod-preparation'],'no Preparation without the rune')
 end)
 
 test('unavailable combo points halt with Attack suppressed rather than guessing a builder',function()

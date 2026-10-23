@@ -3,8 +3,9 @@
 -- Icy Veins: Nightfall procs; Shadowburn or Drain Soul to finish; a dying solo target gets Drain
 -- Soul, not DoTs; instants while moving; Lake of Fire and Hellfire on packs; a curse (group
 -- Recklessness when nobody has it, else Agony); Unstable Affliction, Master Channeler Drain Life,
--- Shadowflame (Immolate before it), Corruption, Haunt, Siphon Life; Drain Soul below 20% once
--- Haunt is engraved (Soul Siphon); solo sustain and the wand; Shadow Bolt. Reminders: Fel Armor,
+-- Shadowflame (Immolate before it), Corruption, Haunt, Siphon Life (with the Invocation rune each is
+-- refreshed under 6 s); Drain Soul below 20% with the Soul Siphon rune; solo sustain and the wand;
+-- Shadow Bolt. Reminders: Fel Armor,
 -- the pet (a Felguard once engraved), Life Tap for a thirsty pet, Amplify Curse and the safety
 -- ones. Shared parts: era/blocks.lua. Left manual: curse assignments and Shadow Bolt Volley packs.
 local _,addon=...
@@ -12,7 +13,7 @@ local function all(...)return{type='AND',value={...}}end
 local function any(...)return{type='OR',value={...}}end
 local function negate(c)return{type='NOT',value=c}end
 local function combat()return{type='COMBAT',unit='player'}end
-local function known(id)return{type='SPELL_KNOWN',spell=id}end
+local function rune(id)return{type='RUNE_ENGRAVED',spell=id}end
 local function own(id)return{type='DEBUFF',unit='target',spell=id,anyrank=true,owndebuff=true}end
 local function remain(id,n)return{type='DEBUFF_REMAIN',unit='target',spell=id,anyrank=true,owndebuff=true,operator='LESSTHAN',value=n}end
 local function lifetime(op,n)return{type='TT_HEALTH',unit='target',health=0,operator=op,value=n}end
@@ -22,10 +23,14 @@ local lasting=any({type='GROUP'},{type='CLASSIFICATION',unit='target',value='wor
  {type='HEALTHPCT',unit='target',operator='GREATERTHAN',value=.4})
 local curses={980,603,1490,17862,704,1714,702,18223}
 local cursed={type='OR',value={}};for i,id in ipairs(curses)do cursed.value[i]=own(id)end
+-- Passive runes: Invocation (a refresh under 6 s deals the DoT's remaining damage at once), Soul
+-- Siphon (Drain Soul ticks three times faster and drains far more below 20%).
+local invocation,soulSiphon=rune(426243),rune(403511)
+local function invoke(id)return all(invocation,remain(id,6))end
 local blocks={['era.warlock.boundaries']=1,['era.warlock.procs']=1,['era.warlock.dying']=1,['era.warlock.curse']=1,['era.warlock.moving']=1,['era.warlock.aoe']=1,
  ['era.warlock.sustain']=1,['era.warlock.filler']=1,['era.warlock.armor']=1,['era.warlock.pets']=1,['era.warlock.safety']=1}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.warlock.shadow',revision=1,blocks=blocks,
+ format='RotationMaster',schemaVersion=1,id='rm.sod.warlock.shadow',revision=2,blocks=blocks,
  nameKey='Default.SoD.Warlock.Shadow.Name',descriptionKey='Default.SoD.Warlock.Shadow.Description',
  applicability={families={'era'},actionContext='player',class='WARLOCK',minLevel=1,maxLevel=60,rulesets={'season:2'}},
  tags={'dps','ranged','caster','leveling','endgame','aoe','season-of-discovery','wowsims','wowhead','icy-veins'},
@@ -49,14 +54,14 @@ assert(addon:RegisterDefaultRotation({
   spell('sod-shadow-recklessness',704,negate({type='DEBUFF',unit='target',spell=704,anyrank=true})),
  }},
  block('era.warlock.curse','sod-shadow-'),
- spell('sod-shadow-unstable-affliction',427717,all(any(negate(own(427717)),remain(427717,1.5)),lasting)),
+ spell('sod-shadow-unstable-affliction',427717,all(any(negate(own(427717)),remain(427717,1.5),invoke(427717)),lasting)),
  spell('sod-shadow-master-channeler',403677,all(negate(own(403677)),lasting)),
- spell('sod-shadow-shadowflame',426320,all(any(negate(own(426320)),remain(426320,1.5)),lasting)),
- spell('sod-shadow-immolate',348,all(negate(known(426320)),negate(own(348)),{type='MANAPCT',unit='player',operator='GREATERTHAN',value=.4},lasting)),
- spell('sod-shadow-corruption',172,negate(own(172))),
+ spell('sod-shadow-shadowflame',426320,all(any(negate(own(426320)),remain(426320,1.5),invoke(426320)),lasting)),
+ spell('sod-shadow-immolate',348,all(negate(rune(426320)),negate(own(348)),{type='MANAPCT',unit='player',operator='GREATERTHAN',value=.4},lasting)),
+ spell('sod-shadow-corruption',172,any(negate(own(172)),invoke(172))),
  spell('sod-shadow-haunt',403501),
- spell('sod-shadow-siphon-life',18265,all(negate(own(18265)),lasting)),
- spell('sod-shadow-execute-drain-soul',1120,all(known(403501),{type='HEALTHPCT',unit='target',operator='LESSTHAN',value=.2})),
+ spell('sod-shadow-siphon-life',18265,all(any(negate(own(18265)),invoke(18265)),lasting)),
+ spell('sod-shadow-execute-drain-soul',1120,all(soulSiphon,{type='HEALTHPCT',unit='target',operator='LESSTHAN',value=.2})),
  block('era.warlock.sustain','sod-shadow-'),
  spell('sod-shadow-low-mana-tap',1454,{type='MANAPCT',unit='player',operator='LESSTHAN',value=.1}),
  block('era.warlock.filler','sod-shadow-'),

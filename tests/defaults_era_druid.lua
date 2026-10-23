@@ -12,6 +12,8 @@ local SOD={SBAL,SBALIV,SBALWH,SFER,STANK,STANKWS,SRES}
 local ALL={};for _,list in ipairs({VANILLA,SOD})do for _,id in ipairs(list)do ALL[#ALL+1]=id end end
 local CAT,BEAR,DIRE,TRAVEL=768,5487,9634,783
 local SR,LACERATE,LIFEBLOOM,STARSURGE=407988,414644,408124,417157
+-- The Lifebloom rune's first taught spell (wowsims/exporter); 408124 is the heal it grants.
+local LIFEBLOOM_RUNE,GALE_WINDS,ELUNES_FIRES,IMPROVED_SWIPE=409824,417135,414719,439510
 local function druid(level,talents,...)
  local f,s=M.new('druid');local a=f.addon
  -- Health forecast seam: s.ttd seconds until the target dies (nil = no forecast).
@@ -61,16 +63,18 @@ test('Season of Discovery: the legs rune decides the role; vanilla premades neve
  local a,s=druid(1);s.setSeason(2)
  assert(M.selected(a)==SBAL,'level 1 SoD druid')
  for _,id in ipairs(SOD)do if id~=STANKWS then assert(M.row(a,id).eligible,id..' not eligible on SoD')end end
- s.setLevel(25);s.learn(SR);assert(M.selected(a)==SFER,'Savage Roar: cat')
- s.unlearn(SR);s.learn(LACERATE);assert(M.selected(a)==STANK,'Lacerate: tank')
- s.unlearn(LACERATE);s.learn(LIFEBLOOM);assert(M.selected(a)==SRES,'Lifebloom: Restoration')
- s.unlearn(LIFEBLOOM);s.learn(STARSURGE);assert(M.selected(a)==SBAL,'Starsurge: Balance')
- s.unlearn(STARSURGE);s.setTalents({0,21,0});assert(M.selected(a)==SFER,'Feral tree without a legs rune: cat')
- s.learn(LIFEBLOOM);assert(M.selected(a)==SRES,'Lifebloom outranks the Feral tree')
- s.unlearn(LIFEBLOOM);s.learn(STARSURGE);assert(M.selected(a)==SBAL,'Starsurge on a Feral tree stays Balance')
- s.unlearn(STARSURGE);s.setTalents({0,0,21});assert(M.selected(a)==SRES)
- s.learn(SR);assert(M.selected(a)==SFER,'Savage Roar outranks the Restoration tree')
- s.unlearn(SR);s.setTalents({10,10,0});assert(M.selected(a)==SBAL,'a tie stays Balance')
+ s.setLevel(25);s.learn(SR);assert(M.selected(a)==SBAL,'Savage Roar known (from gear) without the rune: not the cat switch')
+ s.unlearn(SR);s.engrave(SR);assert(M.selected(a)==SFER,'Savage Roar engraved: cat')
+ s.unengrave(SR);s.engrave(LACERATE);assert(M.selected(a)==STANK,'Lacerate: tank')
+ s.unengrave(LACERATE);s.engrave(LIFEBLOOM_RUNE);assert(M.selected(a)==SRES,'Lifebloom: Restoration')
+ s.unengrave(LIFEBLOOM_RUNE);s.engrave(STARSURGE);assert(M.selected(a)==SBAL,'Starsurge: Balance')
+ s.unengrave(STARSURGE);s.setTalents({0,21,0});assert(M.selected(a)==SFER,'Feral tree without a legs rune: cat')
+ s.engrave(LIFEBLOOM_RUNE);assert(M.selected(a)==SRES,'Lifebloom outranks the Feral tree')
+ s.unengrave(LIFEBLOOM_RUNE);s.engrave(STARSURGE);assert(M.selected(a)==SBAL,'Starsurge on a Feral tree stays Balance')
+ s.unengrave(STARSURGE);s.setTalents({0,0,21});assert(M.selected(a)==SRES)
+ s.engrave(SR);assert(M.selected(a)==SFER,'Savage Roar outranks the Restoration tree')
+ s.runesPending=true;s.engrave();assert(M.selected(a)==SBAL,'runes still loading: Balance until they read')
+ s.runesPending=false;s.unengrave(SR);s.setTalents({10,10,0});assert(M.selected(a)==SBAL,'a tie stays Balance')
  s.setTalents({0,0,0});s.setLevel(40);assert(M.selected(a)==SBAL,'no points stays Balance')
  s.setSeason(nil);assert(M.selected(a)==BAL,'back on a standard realm')
 end)
@@ -234,7 +238,9 @@ test('SoD Balance: Starsurge, empowered Starfire, Sunfire and Moonfire, Hurrican
  s.clearAuras();s.cooling(STARSURGE,5);s.debuff('target',414684);s.debuff('target',8921)
  M.expect(a,s,SBAL,5176,nil,'unempowered: Wrath');s.buff('player',408255);M.expect(a,s,SBAL,2912,nil,'Lunar Eclipse: Starfire');s.clearAuras()
  s.debuff('target',414684);s.debuff('target',8921)
- s.near(5);M.expect(a,s,SBAL,5176,nil,'five engaged: no Hurricane');s.near(6);M.expect(a,s,SBAL,16914,nil,'six: Hurricane');s.near(0)
+ s.near(5);M.expect(a,s,SBAL,5176,nil,'five engaged: no Hurricane');s.near(6);M.expect(a,s,SBAL,16914,nil,'six: Hurricane')
+ s.near(4);s.engrave(GALE_WINDS);M.expect(a,s,SBAL,16914,nil,'Gale Winds (a passive rune) engraved: Hurricane at four')
+ s.near(3);M.expect(a,s,SBAL,5176,nil,'Gale Winds, three engaged: no Hurricane');s.unengrave(GALE_WINDS);s.near(0)
  s.moving=true;M.expect(a,s,SBAL,5570,nil,'moving: Insect Swarm');s.debuff('target',5570);M.expect(a,s,SBAL,nil,'stopped','moving, DoTs up');s.moving=false
  local lit=M.upkeep(a,s,SBAL);assert(lit[439748],'Starfall in combat')
  friendly(s,40);s.buff('player',414800);lit=M.upkeep(a,s,SBAL);assert(lit[5185],'Fury of Stormrage: instant Healing Touch on a dying friend')
@@ -248,7 +254,9 @@ test('SoD Balance variants: Icy Veins keeps Insect Swarm and Hurricane at four; 
  s.near(4);M.expect(a,s,SBALIV,16914,nil,'Icy Veins: Hurricane at four');M.expect(a,s,SBAL,5176,nil,'recommended: not at four');s.near(0)
  s.buff('player',408255);M.expect(a,s,SBALWH,2912,nil,'Wowhead: Lunar Eclipse Starfire')
  s.clearAuras();s.debuff('target',414684,fresh(3));s.debuff('target',8921);s.buff('player',408255)
- M.expect(a,s,SBALWH,5176,nil,'Wowhead: Wrath extends a short Sunfire first');M.expect(a,s,SBAL,2912,nil,'recommended: Starfire')
+ M.expect(a,s,SBALWH,2912,nil,'Wowhead without Elune\'s Fires: nothing extends Sunfire, Starfire')
+ s.engrave(ELUNES_FIRES,414684);M.expect(a,s,SBALWH,5176,nil,'Wowhead with Elune\'s Fires (a passive rune): Wrath extends a short Sunfire first')
+ M.expect(a,s,SBAL,2912,nil,'recommended: Starfire')
  s.combat=false;s.cooldown={};M.expect(a,s,SBALWH,5176,nil,'Wowhead pull: Wrath');M.expect(a,s,SBAL,STARSURGE,nil,'recommended pull: Starsurge')
 end)
 
@@ -262,7 +270,8 @@ test('SoD Feral cat: Savage Roar, Swipe on four, Mangle debuff, Rip with Roar la
  s.points=5;M.expect(a,s,SFER,1079,nil,'five points, Roar lasting: Rip')
  s.clearAuras();s.buff('player',CAT);s.buff('player',SR,fresh(5));s.debuff('target',16857,fresh(30));s.debuff('target',407993);s.debuff('target',1822)
  M.expect(a,s,SFER,5221,nil,'Roar about to drop: no Rip')
- s.near(4);M.expect(a,s,SFER,411128,nil,'four engaged: Swipe (Cat)');s.near(0)
+ s.near(4);M.expect(a,s,SFER,5221,nil,'four engaged without Improved Swipe: no Swipe (Cat)')
+ s.engrave(IMPROVED_SWIPE);M.expect(a,s,SFER,411128,nil,'four engaged, Improved Swipe engraved: Swipe (Cat)');s.near(0)
  s.clearAuras();s.buff('player',CAT);s.buff('player',SR,fresh(20));s.debuff('target',407993);s.debuff('target',1822);s.debuff('target',1079)
  M.expect(a,s,SFER,16857,nil,'no Faerie Fire up: Faerie Fire first')
  s.debuff('target',16857,fresh(5));s.usable[5221]=false;s.usable[407993]=false;s.energy=20
@@ -276,7 +285,7 @@ test('SoD Feral cat: Savage Roar, Swipe on four, Mangle debuff, Rip with Roar la
 end)
 
 test('SoD tank: Lacerate refresh, Mangle, Lacerate, packs, pull, reminders; cat weave opt-in',function()
- local a,s=druid(60,{0,30,21},BEAR,DIRE,CAT,LACERATE,407995,779,6807,16857,417141,408024,22842,5229,1822,SR,407993);s.setSeason(2)
+ local a,s=druid(60,{0,30,21},BEAR,DIRE,CAT,LACERATE,407995,779,6807,16857,417141,408024,22842,5229,1822,SR,407993);s.setSeason(2);s.engrave(LACERATE)
  bear(s,DIRE);s.energy=40
  M.expect(a,s,STANK,407995,nil,'Mangle on cooldown')
  s.cooling(407995,4);M.expect(a,s,STANK,LACERATE,nil,'Lacerate filler')

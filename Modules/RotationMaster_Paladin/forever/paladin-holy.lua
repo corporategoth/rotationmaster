@@ -1,15 +1,19 @@
--- WoW Forever Holy Paladin in a group, levels 10–60, once Holy Shock (the 21-point Holy talent) is
--- known and Righteous Fury is off; a grouped Shockadin lands here too, and the hostile-target list
+-- WoW Forever Holy Paladin in a group, levels 10–60, once Holy is the main tree with 21 points (Holy
+-- Shock's tier) and Righteous Fury is off; a grouped Shockadin lands here too, and the hostile-target list
 -- is its damage list. Icy Veins' healing order on your current friendly target: Holy Shock in an
 -- emergency or on the move, Light's Vigil then Holy Shock when the party is hurt, dispels, Holy
 -- Light (faster with Infusion of Light) for big deficits, Flash of Light as the main heal.
 -- The Wowhead Holy Shock-on-cooldown variant is rm.forever.paladin.holy.wowhead.
 local _,addon=...
+-- Talent trees in the Forever talent window's order (assumed classic: 1 Holy, 2 Protection, 3 Retribution; verify in game).
+-- Level 10 first (no talent config below it), then the points (an empty tree is a clean no-match),
+-- then the primary tree, which settles hybrids.
+local function tree(n,points)return{type='AND',value={{type='LEVEL',unit='player',operator='GREATERTHANOREQUALS',value=10},
+ {type='TALENT_TREE_POINTS',tree=n,operator='GREATERTHANOREQUALS',value=points},{type='PRIMARY_TALENT_TREE',tree=n}}}end
 local function all(...)return{type='AND',value={...}}end
 local function any(...)return{type='OR',value={...}}end
 local function negate(c)return{type='NOT',value=c}end
 local function own(id,unit)return{type='BUFF',unit=unit or'player',spell=id,anyrank=true,ownbuff=true}end
-local function known(...)local list={};for i,id in ipairs({...})do list[i]={type='SPELL_KNOWN',spell=id}end;return{type='OR',value=list}end
 local function mana(op,v)return{type='MANAPCT',unit='player',operator=op,value=v}end
 local function health(op,v)return{type='HEALTHPCT',unit='target',operator=op,value=v}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
@@ -18,7 +22,7 @@ local function block(id,name,prefix)return{id=id..'-block',type='block',block=na
 local evil=any({type='CREATURE',unit='target',value='UNDEAD'},{type='CREATURE',unit='target',value='DEMON'})
 local hurt={type='PROXIMITY_HEALTHPCT_COUNT',unit='player',distance=40,healthoperator='LESSTHAN',health=.75,operator='GREATERTHANOREQUALS',value=3}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.forever.paladin.holy',revision=1,
+ format='RotationMaster',schemaVersion=1,id='rm.forever.paladin.holy',revision=2,
  blocks={['forever.paladin.boundaries']=1,['forever.paladin.aura-blessing']=1,['forever.paladin.dispel']=1,['forever.paladin.healer-upkeep']=1},
  nameKey='Default.Forever.Paladin.Holy.Name',descriptionKey='Default.Forever.Paladin.Holy.Description',
  applicability={families={'forever'},actionContext='player',class='PALADIN',minLevel=10,maxLevel=60},
@@ -30,7 +34,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://worldofwarcraft.com/en-us/news/24302099',title='Blizzard: Forever class deep dive, Paladin',reviewedAt='2026-10-23',revision='2026-10-15',notes='Light\'s Vigil, Infusion of Light; no priority.'},
   {url='https://github.com/simulationcraft/simc/blob/forever/SpellDataDump/paladin.txt',title='SimulationCraft Forever spell data (1.60.1.70425)',reviewedAt='2026-10-23',revision='4dd64b4a21',notes='Light\'s Vigil target aura, Infusion of Light buff, ranks.'},
  },
- body={priority=20,switch=all({type='GROUP'},known(1311606,20473,20929,20930),negate(own(25780))),
+ body={priority=20,switch=all({type='GROUP'},tree(1,21),negate(own(25780))),
   cooldowns={
    block('holy-healer-upkeep','forever.paladin.healer-upkeep','holy-'),
    block('holy-aura-blessing','forever.paladin.aura-blessing','holy-'),

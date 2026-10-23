@@ -19,7 +19,7 @@ function M.new(class,options)
  local f=F.new(2,0,class:upper());local a,e=f.addon,f.env
  a.db.profile.rotations={};a.db.profile.itemsets={};a.db.global.effects={};a.delayed_condition={}
  local s={level=60,combat=true,targetCombat=true,hostile=true,friendly=false,dead=false,exists=true,moving=false,group=false,raid=false,
-  vehicle=false,known={},usable={},range={},cooldown={},mapped={},power={},pet=false,petDead=false,talents={0,0,0},talent={},
+  vehicle=false,known={},usable={},range={},cooldown={},mapped={},power={},pet=false,petDead=false,talents={0,0,0},talent={},runes={},
   cast=false,channel=false,castSpell=nil,channelSpell=nil,repeatActive=false,current={},stealthed=false,classification='normal',creature='HUMANOID',enemies={},party={},
   health={player=100,target=100,pet=100},mana={player=100},energy=100,powerType=0,points=0,targetTarget='player',
   targetRange={0,5},targetLevel=60,swing=2.6,offSwing=nil,instance=nil,items={},equipped={},season=nil,hardcore=false,
@@ -92,6 +92,14 @@ function M.new(class,options)
  e.Enum.SeasonID={NoSeason=0,SeasonOfMastery=1,SeasonOfDiscovery=2,Hardcore=3,Fresh=11,FreshHardcore=12}
  e.C_Seasons={GetActiveSeason=function()return s.season or 0 end}
  e.C_GameRules={IsHardcoreActive=function()return s.hardcore==true end,IsSelfFoundAllowed=function()return false end}
+ -- Season of Discovery engraving (C_Engraving, enabled on SoD realms only): s.runes holds the spells whose
+ -- runes are engraved, one equipment slot each in spell ID order; each rune teaches its one spell.
+ -- s.runesPending models the rune list not loaded yet after login (engraving unavailable).
+ local function engraved()local list={};for id in pairs(s.runes)do list[#list+1]=id end;table.sort(list);return list end
+ e.C_Engraving={IsEngravingEnabled=function()return s.season==2 end,GetNumRunesKnown=function()if s.runesPending then return 0,0 end;return #engraved(),20 end,
+  IsEquipmentSlotEngravable=function()return true end,
+  GetRuneForEquipmentSlot=function(slot)local id=engraved()[slot];if id then
+   return {skillLineAbilityID=id,itemEnchantmentID=id,name='Rune '..id,iconTexture=1,equipmentSlot=slot,level=1,learnedAbilitySpellIDs={id}}end end}
  -- Backpack only: one slot per carried item ID (s.items[id]=count). Equipped item IDs by slot.
  e.NUM_BAG_SLOTS=0
  local function slots()local list={};for id,count in pairs(s.items)do if count>0 then list[#list+1]={itemID=id,stackCount=count}end end;table.sort(list,function(x,y)return x.itemID<y.itemID end);return list end
@@ -124,7 +132,7 @@ function M.new(class,options)
   local list=s.auras[unit]and s.auras[unit][(filter or'HELPFUL'):match('^(%u+)')];return list and list[index]end}
  e.GetShapeshiftForm=function()return s.form or 0 end;e.GetNumShapeshiftForms=function()return s.forms or 0 end
  e.GetPetActionInfo=function()end
- for _,path in ipairs({'Diagnostics/errors.lua','Platform/inventory.lua','Platform/unit_states.lua','Platform/spells.lua','Platform/auras.lua','Platform/range.lua','Platform/actions.lua','Platform/talents.lua','Platform/totems.lua','Core/action_policy.lua',
+ for _,path in ipairs({'Diagnostics/errors.lua','Platform/inventory.lua','Platform/unit_states.lua','Platform/spells.lua','Platform/auras.lua','Platform/range.lua','Platform/actions.lua','Platform/talents.lua','Platform/totems.lua','Platform/engraving.lua','Core/action_policy.lua',
   'Core/conditions.lua','Core/aura_conditions.lua','Data/plain.lua','Data/tags.lua','Data/rotation_tree.lua','Data/validation.lua','Data/catalog.lua','Data/diff.lua',
   'Core/build_context.lua','Core/rotation_library.lua'})do f.load(path)end
  for line in io.lines('RotationMaster.toc')do local path=line:gsub('\r',''):match('^(Conditions/.-%.lua)$');if path then f.load(path)end end
@@ -153,7 +161,10 @@ function M.new(class,options)
  s.setTalents=function(points)s.talents=points;a:InvalidateBuildContext('talents')end
  s.setTalent=function(tree,index,rank)s.talent[tree..':'..index]=rank;a:InvalidateBuildContext('talents')end
  -- Realm season: 2 = Season of Discovery, 3 = Hardcore, nil = standard Era.
- s.setSeason=function(id,hardcore)s.season=id;s.hardcore=hardcore==true;a:InvalidateBuildContext('client');a.longtermCache={}end
+ s.setSeason=function(id,hardcore)s.season=id;s.hardcore=hardcore==true;a:InvalidateBuildContext('client');a:InvalidateBuildContext('runes');a.longtermCache={}end
+ -- Engraving a rune teaches its spell (s.learn); unengraving removes both.
+ s.engrave=function(...)for _,id in ipairs({...})do s.runes[id]=true end;s.learn(...);a:InvalidateBuildContext('runes')end
+ s.unengrave=function(...)for _,id in ipairs({...})do s.runes[id]=nil end;s.unlearn(...);a:InvalidateBuildContext('runes')end
  -- Nameplate enemies engaged with you, for THREAT_COUNT (threat 0 = on your table, 3 = attacking
  -- you) and DISTANCE_COUNT (each at the given LibRangeCheck interval, default 0-5).
  s.near=function(count,range,threat)

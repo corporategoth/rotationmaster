@@ -11,7 +11,7 @@ local function all(...)return{type='AND',value={...}}end
 local function any(...)return{type='OR',value={...}}end
 local function negate(c)return{type='NOT',value=c}end
 local function combat()return{type='COMBAT',unit='player'}end
-local function known(id)return{type='SPELL_KNOWN',spell=id}end
+local function rune(id)return{type='RUNE_ENGRAVED',spell=id}end
 local function buff(id)return{type='BUFF',unit='player',spell=id,anyrank=true}end
 local function own(id)return{type='DEBUFF',unit='target',spell=id,anyrank=true,owndebuff=true}end
 local function lifetime(op,n)return{type='TT_HEALTH',unit='target',health=0,operator=op,value=n}end
@@ -26,7 +26,7 @@ local cursed={type='OR',value={}};for i,id in ipairs(curses)do cursed.value[i]=o
 local incinerated=all(buff(412758),{type='BUFF_REMAIN',unit='player',spell=412758,operator='GREATERTHANOREQUALS',value=1.8})
 local summon=all(negate({type='PET'}),negate(combat()))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.warlock.fire',revision=1,
+ format='RotationMaster',schemaVersion=1,id='rm.sod.warlock.fire',revision=2,
  blocks={['era.warlock.boundaries']=1,['era.warlock.armor']=1,['era.warlock.safety']=1},
  nameKey='Default.SoD.Warlock.Fire.Name',descriptionKey='Default.SoD.Warlock.Fire.Description',
  applicability={families={'era'},actionContext='player',class='WARLOCK',minLevel=1,maxLevel=60,rulesets={'season:2'}},
@@ -34,7 +34,7 @@ assert(addon:RegisterDefaultRotation({
  sources={{url='https://github.com/wowsims/sod/blob/0e3f6eff5fa3ad356664a1c2abbd02903d4cc97e/ui/warlock/apls/p6/destruction.apl.json',title='wowsims/sod: Destruction Warlock Phase 6 APL',reviewedAt='2026-10-23',revision='0e3f6eff5fa3ad356664a1c2abbd02903d4cc97e'},
  {url='https://www.wowhead.com/classic/guide/season-of-discovery/classes/warlock/dps-talent-builds-runes',title='Wowhead: SoD Warlock DPS talents and runes (Phase 6)',reviewedAt='2026-10-23',revision='2025-01-13'},
  {url='https://www.wowhead.com/classic/guide/season-of-discovery/classes/warlock/dps-leveling-tips',title='Wowhead: SoD Warlock DPS leveling tips',reviewedAt='2026-10-23',revision='2025-01-26'}},
- body={priority=70,switch=any(known(403629),known(412758)),
+ body={priority=70,switch=any(rune(403629),rune(412758)),
  cooldowns={block('era.warlock.armor','sod-fire-'),
   spell('sod-fire-imp',688,summon),
   block('era.warlock.safety','sod-fire-')},
@@ -75,6 +75,6 @@ assert(addon:RegisterDefaultRotation({
  }},
  spell('sod-fire-tap',1454,mana('LESSTHAN',.1)),
  spell('sod-fire-incinerate',412758),
- spell('sod-fire-bolt',686,negate(known(412758))),
+ spell('sod-fire-bolt',686,negate(rune(412758))),
  }},
 }))

@@ -8,13 +8,13 @@ local function all(...)return{type='AND',value={...}}end
 local function any(...)return{type='OR',value={...}}end
 local function negate(c)return{type='NOT',value=c}end
 local function own(id)return{type='BUFF',unit='player',spell=id,ownbuff=true}end
-local function known(id)return{type='SPELL_KNOWN',spell=id}end
+local function rune(id)return{type='RUNE_ENGRAVED',spell=id}end
 local function combat()return{type='COMBAT',unit='player'}end
 local function ref(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local function spell(id,action,conditions,ranked)return{id=id,type='spell',action=action,ranked=ranked or false,conditions=conditions or {}}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.druid.feral',revision=1,
- blocks={['era.druid.boundaries']=1,['era.druid.upkeep']=1,['sod.druid.maul']=1,['sod.druid.cat']=1,['era.druid.stealth-opener']=1,
+ format='RotationMaster',schemaVersion=1,id='rm.sod.druid.feral',revision=2,
+ blocks={['era.druid.boundaries']=1,['era.druid.upkeep']=1,['sod.druid.maul']=1,['sod.druid.cat']=2,['era.druid.stealth-opener']=1,
   ['era.druid.cat-builders']=1,['era.druid.powershift']=1,['sod.druid.bear']=1,['era.druid.feral-humanoid']=1},
  nameKey='Default.SoD.Druid.Feral.Name',descriptionKey='Default.SoD.Druid.Feral.Description',
  applicability={families={'era'},actionContext='player',class='DRUID',minLevel=1,maxLevel=60,rulesets={'season:2'}},
@@ -24,7 +24,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://github.com/wowsims/sod/blob/0e3f6eff5fa3ad356664a1c2abbd02903d4cc97e/ui/feral_druid/apls/phase_5.apl.json',title='wowsims/sod Feral Phase 5 APL',reviewedAt='2026-10-23',revision='0e3f6ef'},
   {url='https://www.icy-veins.com/wow-classic/feral-druid-dps-season-of-discovery-pve-rotation-cooldowns-abilities',title='Icy Veins: SoD Feral Druid DPS rotation',reviewedAt='2026-10-23',revision='2025-04-08'},
  },
- body={priority=130,switch=any(known(407988),all(negate(known(408124)),negate(known(417157)),{type='PRIMARY_TALENT_TREE',tree=2})),
+ body={priority=130,switch=any(rune(407988),all(negate(rune(409824)),negate(rune(417157)),{type='PRIMARY_TALENT_TREE',tree=2})),
   cooldowns={
    ref('sod-feral-upkeep','era.druid.upkeep','sod-feral-'),
    spell('sod-feral-tigers-fury',417045,all(combat(),own(768),{type='POWER',unit='player',operator='LESSTHANOREQUALS',value=60}),true),

@@ -8,6 +8,8 @@ local function all(...)return{type='AND',value={...}}end
 local function any(...)return{type='OR',value={...}}end
 local function negate(c)return{type='NOT',value=c}end
 local function known(id)return{type='SPELL_KNOWN',spell=id}end
+-- Season of Discovery runes: engraved, by the spell the rune teaches (passive runes too).
+local function rune(id)return{type='RUNE_ENGRAVED',spell=id}end
 local function missing(id)return negate({type='BUFF',unit='player',spell=id,anyrank=true})end
 local function own(id)return{type='DEBUFF',unit='target',spell=id,anyrank=true,owndebuff=true}end
 local function fading(id)return any(negate(own(id)),{type='DEBUFF_REMAIN',unit='target',spell=id,anyrank=true,owndebuff=true,operator='LESSTHAN',value=1.5})end
@@ -17,7 +19,7 @@ local function lives(seconds)return any(pct('HEALTHPCT','target','GREATERTHANORE
 local function hurt(health,count)return{type='PROXIMITY_HEALTHPCT_COUNT',unit='player',healthoperator='LESSTHAN',health=health,operator='GREATERTHANOREQUALS',value=count,distance=30,samegroup=true}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
 local function stop(id,conditions)return{id=id,type='none',suppress_attack=true,conditions=conditions or {}}end
-local function block(id,steps)assert(addon:RegisterDefaultBlock({id=id,revision=1,families={'era'},class='PRIEST',steps=steps}))end
+local function block(id,steps,revision)assert(addon:RegisterDefaultBlock({id=id,revision=revision or 1,families={'era'},class='PRIEST',steps=steps}))end
 local solo=negate({type='GROUP'})
 local raid={type='INSTANCE',value='raid'}
 local shadowform=known(15473)
@@ -131,8 +133,8 @@ block('sod.priest.upkeep',{
  spell('shadowfiend',401977,all(combat(),{type='ATTACKABLE',unit='target'},any(pct('MANAPCT','player','LESSTHAN',.7),{type='CLASSIFICATION',unit='target',value='worldboss'}))),
  spell('eye-of-the-void',402789,all(combat(),{type='CLASSIFICATION',unit='target',value='worldboss'})),
  spell('dispersion',425294,all(combat(),pct('MANAPCT','player','LESSTHAN',.15))),
- spell('embrace',15286,all(combat(),negate(known(402668)),negate({type='DEBUFF',unit='target',spell=15286,owndebuff=true}),{type='TT_HEALTH',unit='target',health=0,operator='GREATERTHANOREQUALS',value=60})),
-})
+ spell('embrace',15286,all(combat(),negate(rune(402668)),negate({type='DEBUFF',unit='target',spell=15286,owndebuff=true}),{type='TT_HEALTH',unit='target',health=0,operator='GREATERTHANOREQUALS',value=60})),
+},2)
 -- Pull: shield (solo), pre-cast Vampiric Touch, Mind Blast; Penance and Holy Fire before Shadowform.
 block('sod.priest.pull',{
  {id='pull',type='branch',conditions=negate(combat()),onFalse={},onTrue={
@@ -157,13 +159,16 @@ block('sod.priest.moving',{
   spell('moving-death',401955,pct('HEALTHPCT','player','GREATERTHANOREQUALS',.5)),
   stop('moving-stop')}},
 })
--- DoTs, refreshed once under 1.5 s (Pain and Suffering normally keeps them rolling).
+-- DoTs: applied when missing; refreshed under 1.5 s only without the Pain and Suffering rune (passive,
+-- 413251), whose Mind Blast, Mind Flay and Mind Spike keep them rolling.
+local painAndSuffering=rune(413251)
+local function due(id)return any(negate(own(id)),all(negate(painAndSuffering),{type='DEBUFF_REMAIN',unit='target',spell=id,anyrank=true,owndebuff=true,operator='LESSTHAN',value=1.5}))end
 block('sod.priest.dots',{
- spell('void-plague',425204,fading(425204)),
- spell('pain',589,all(fading(589),lives(10))),
- spell('touch',402668,all(fading(402668),lives(9))),
+ spell('void-plague',425204,due(425204)),
+ spell('pain',589,all(due(589),lives(10))),
+ spell('touch',402668,all(due(402668),lives(9))),
  spell('plague',2944,all(negate(own(2944)),{type='TT_HEALTH',unit='target',health=0,operator='GREATERTHANOREQUALS',value=12})),
-})
+},2)
 -- After Mind Blast: Mind Flay on Melting Faces, Shadow Word: Death while healthy, Penance before Shadowform.
 block('sod.priest.procs',{
  spell('melting-flay',15407,{type='BUFF',unit='player',spell=456549}),

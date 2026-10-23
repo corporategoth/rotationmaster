@@ -4,12 +4,14 @@
 -- at four Raptor Fury stacks, Raptor Strike on every reset, Wyvern Strike on Clever Strikes,
 -- Immolation Trap and Wing Clip only in empty gaps; Carve and Explosive Trap on packs; shots while
 -- out of melee (Wowhead P8 melee guide, wowsims P8 melee builds). Falcon (Hawk before 60), Viper
--- below 5% mana. Left manual: positioning, pet commands, Feed Pet and Tranquilizing Shot.
+-- below 5% mana; no pet reminders with Lone Wolf engraved. Left manual: positioning, pet commands,
+-- Feed Pet and Tranquilizing Shot.
 local _,addon=...
 local function all(...)return{type='AND',value={...}}end
 local function any(...)return{type='OR',value={...}}end
 local function negate(c)return{type='NOT',value=c}end
 local function known(id)return{type='SPELL_KNOWN',spell=id}end
+local function rune(id)return{type='RUNE_ENGRAVED',spell=id}end
 local function buff(id)return{type='BUFF',unit='player',spell=id,anyrank=true}end
 local function stacks(id,op,n)return{type='BUFF_STACKS',unit='player',spell=id,operator=op,value=n}end
 local function recharge(id,op,n)return{type='SPELL_COOLDOWN',spell=id,ranked=false,operator=op,value=n}end
@@ -30,8 +32,8 @@ local noAspect=all(negate(buff(415423)),negate(buff(13163)),negate(buff(5118)),n
 local viperLow=all(mana('LESSTHAN',.5),any(buff(415423),all(known(415423),mana('LESSTHAN',.05))))
 local rapid=buff(3045)
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.hunter.melee',revision=1,
- blocks={['era.hunter.boundaries']=1,['era.hunter.upkeep']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.sod.hunter.melee',revision=2,
+ blocks={['era.hunter.boundaries']=1,['sod.hunter.upkeep']=1},
  nameKey='Default.SoD.Hunter.Melee.Name',descriptionKey='Default.SoD.Hunter.Melee.Description',
  applicability={families={'era'},actionContext='player',class='HUNTER',minLevel=1,maxLevel=60,rulesets={'season:2'}},
  tags={'dps','melee','survival','leveling','endgame','season-of-discovery','wowhead','wowsims'},
@@ -40,8 +42,8 @@ assert(addon:RegisterDefaultRotation({
   {url='https://github.com/wowsims/sod/blob/0e3f6eff5fa3ad356664a1c2abbd02903d4cc97e/ui/hunter/builds/p8_melee_2h.build.json',title='wowsims/sod: Hunter P8 two-hand melee build',reviewedAt='2026-10-23',revision='0e3f6ef'},
   {url='https://github.com/wowsims/sod/blob/0e3f6eff5fa3ad356664a1c2abbd02903d4cc97e/ui/hunter/builds/p8_melee_dw.build.json',title='wowsims/sod: Hunter P8 dual-wield melee build',reviewedAt='2026-10-23',revision='0e3f6ef'},
  },
- body={priority=110,switch=all(any(known(415320),known(458436),known(458481),known(458482),known(425711)),negate(known(409433)),negate(known(409552)),negate(known(409554))),
- cooldowns={block('era.hunter.upkeep','hunter-'),
+ body={priority=110,switch=all(any(rune(415320),rune(458479),rune(425711)),negate(rune(409433)),negate(rune(409552))),
+ cooldowns={block('sod.hunter.upkeep','hunter-'),
   spell('hunter-falcon',469145,all(negate(buff(469145)),negate(viperLow),any(combat(),noAspect))),
   spell('hunter-hawk',13165,all(negate(known(469145)),negate(buff(13165)),negate(viperLow),any(combat(),noAspect))),
   spell('hunter-viper',415423,all(combat(),mana('LESSTHAN',.05),negate(buff(415423)))),

@@ -20,7 +20,7 @@ function M.new(class,options)
   vehicle=false,known={},usable={},range={},cooldown={},mapped={},power={},pet=false,petDead=false,
   cast=false,channel=false,repeatActive=false,current={},stealthed=false,classification='normal',creature='HUMANOID',enemies={},party={},
   health={player=100,target=100,pet=100},mana={player=100},energy=100,powerType=0,points=0,targetTarget='player',focus=nil,
-  targetRange={0,5},targetLevel=60,swing=2.6,instance=nil,
+  targetRange={0,5},targetLevel=60,swing=2.6,instance=nil,trees={0,0,0},nodes={},
   auras={player={HELPFUL={},HARMFUL={}},target={HELPFUL={},HARMFUL={}}}}
  local function enemy(unit)for _,entry in ipairs(s.enemies)do if entry.unit==unit then return entry end end end
  local function member(unit)return s.party[unit]end
@@ -70,6 +70,15 @@ function M.new(class,options)
  e.Enum.SpellBookSpellBank={Player=0,Pet=1}
  e.C_SpellBook={IsSpellKnown=function(id,bank)if s.knownError then error('learning unavailable')end;return bank~=1 and s.known[id]==true end}
  e.C_CVar={GetCVar=function(name)assert(name=='nameplateMaxDistance');return '40'end}
+ -- Forever talents (C_ClassTalents/C_Traits, as the Camelot talent frame reads them): the three classic
+ -- trees are node groups of one trait tree, in display order. s.trees = points per tree, s.nodes[node] =
+ -- a node's rank (absent: not in the tree), s.config=false = no active config yet (below level 10).
+ e.C_ClassTalents={GetActiveConfigID=function()if s.config==false then return nil end;return 7 end}
+ e.C_Traits={GetConfigInfo=function()return{ID=7,type=1,name='Loadout',treeIDs={900}}end,
+  GetGroupDisplayInfoByTreeID=function()local list={};for i=1,3 do list[i]={groupID=10+i,treeID=900,orderIndex=i-1,displayName='Tree '..i,icon=i}end;return list end,
+  GetGroupCurrencyInfo=function(_,ids)local list={};for i,id in ipairs(ids)do list[i]={traitNodeGroupID=id,currencyInfos={{spent=s.trees[id-10]or 0}}}end;return list end,
+  GetNodeInfo=function(_,node)local rank=s.nodes[node];if rank==nil then return{ID=0,activeRank=0,maxRanks=0,entryIDs={}}end
+   return{ID=node,activeRank=rank,ranksPurchased=rank,maxRanks=5,entryIDs={node*10},isVisible=true}end}
  -- LibRangeCheck intervals: enemies carry their own, the target uses s.targetRange.
  f.libraries['LibRangeCheck-3.0'].GetRange=function(_,unit)
   if unit=='target'then return s.targetRange[1],s.targetRange[2]end
@@ -90,7 +99,7 @@ function M.new(class,options)
   local list=s.auras[unit]and s.auras[unit][(filter or'HELPFUL'):match('^(%u+)')];return list and list[index]end}
  for _,path in ipairs({'Platform/inventory.lua','Platform/unit_states.lua','Platform/spells.lua','Platform/auras.lua','Platform/range.lua','Platform/actions.lua','Platform/talents.lua','Core/action_policy.lua',
   'Core/conditions.lua','Core/aura_conditions.lua','Data/plain.lua','Data/tags.lua','Data/rotation_tree.lua','Data/validation.lua','Data/catalog.lua','Data/diff.lua',
-  'Core/rotation_library.lua','Conditions/common.lua','Conditions/spell.lua','Conditions/known_spell.lua','Conditions/character.lua','Conditions/buffs.lua',
+  'Core/build_context.lua','Core/rotation_library.lua','Conditions/common.lua','Conditions/spell.lua','Conditions/known_spell.lua','Conditions/character.lua','Conditions/buffs.lua',
   'Conditions/debuffs.lua','Conditions/combat.lua','Conditions/casting.lua','Conditions/channeling.lua','Conditions/stats.lua','Conditions/talent.lua',
   'Conditions/item.lua','Conditions/spatial.lua','Conditions/spatial_stats.lua','Conditions/unit_states.lua','Conditions/range.lua','Conditions/misc.lua','Conditions/weapon.lua'})do f.load(path)end
  for _,path in ipairs(packPaths(class))do f.load(path)end
@@ -116,6 +125,9 @@ function M.new(class,options)
  s.learn=function(...)for _,id in ipairs({...})do s.known[id]=true;a.SpellCatalog:UpdateSpell(id)end end
  s.ranged=function(...)for _,id in ipairs({...})do s.range[id]=true end end
  s.setLevel=function(level)s.level=level;a.longtermCache={};a:PLAYER_LEVEL_UP('PLAYER_LEVEL_UP')end
+ -- Talent points per tree ({1,2,3} in display order) and single node ranks.
+ s.setTrees=function(points)s.trees=points;a:InvalidateBuildContext('talents')end
+ s.setNode=function(node,rank)s.nodes[node]=rank;a:InvalidateBuildContext('talents')end
  -- Nameplate enemies engaged with you, for THREAT_COUNT (threat 0 = on your table, 3 = attacking
  -- you) and DISTANCE_COUNT (each at the given LibRangeCheck interval, default 0-5).
  s.near=function(count,range,threat)

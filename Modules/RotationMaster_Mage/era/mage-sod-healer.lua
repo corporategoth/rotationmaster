@@ -19,8 +19,8 @@ local combat={type='COMBAT',unit='player'}
 local beacon={type='BUFF',unit='target',spell=400735,ownbuff=true}
 local fingers=any(buff(400647),buff(400669),buff(400670))
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.mage.healer',revision=1,
- blocks={['era.mage.wand-finish']=1,['sod.mage.balefire']=1,['sod.mage.armor']=1,['sod.mage.upkeep']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.sod.mage.healer',revision=2,
+ blocks={['era.mage.wand-finish']=1,['sod.mage.balefire']=1,['sod.mage.armor']=2,['sod.mage.upkeep']=2},
  nameKey='Default.SoD.Mage.Healer.Name',descriptionKey='Default.SoD.Mage.Healer.Description',
  applicability={families={'era'},actionContext='player',class='MAGE',minLevel=1,maxLevel=60,rulesets={'season:2'}},
  tags={'arcane','healer','group','season-of-discovery'},
@@ -31,7 +31,7 @@ assert(addon:RegisterDefaultRotation({
  },
  body={
   priority=105,
-  switch=any({type='SPELL_KNOWN',spell=412510},{type='SPELL_KNOWN',spell=401417}),
+  switch=any({type='RUNE_ENGRAVED',spell=412510},{type='RUNE_ENGRAVED',spell=401417}),
   cooldowns={block(P..'armor','sod.mage.armor',P),
    spell(P..'arcane-power',12042,combat),
    spell(P..'presence-of-mind',12043,combat),
@@ -52,7 +52,7 @@ assert(addon:RegisterDefaultRotation({
     spell(P..'pull-spellfrost',412532),spell(P..'pull-arcane-blast',400574),stop(P..'pull-stop')}},
    -- Optional raw damage on packs; it converts far less healing.
    {id=P..'explosion',type='spell',action=1449,ranked=false,disabled=true,conditions={type='DISTANCE_COUNT',enemy=true,distance=10,operator='GREATERTHANOREQUALS',value=3}},
-   {id=P..'frost',type='branch',conditions={type='SPELL_KNOWN',spell=412532},onFalse={},onTrue={
+   {id=P..'frost',type='branch',conditions={type='RUNE_ENGRAVED',spell=412532},onFalse={},onTrue={
     {id=P..'frost-ice-lance',type='spell',action=400640,ranked=false,disabled=true,conditions=fingers},
     {id=P..'frost-deep-freeze',type='spell',action=428739,ranked=false,disabled=true,conditions=fingers},
     spell(P..'frost-spellfrost',412532),stop(P..'frost-stop')}},

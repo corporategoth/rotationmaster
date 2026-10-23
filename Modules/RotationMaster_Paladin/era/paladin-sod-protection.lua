@@ -7,19 +7,19 @@
 local _,addon=...
 local function any(...)return{type='OR',value={...}}end
 local function negate(c)return{type='NOT',value=c}end
-local function known(id)return{type='SPELL_KNOWN',spell=id}end
+local function rune(id)return{type='RUNE_ENGRAVED',spell=id}end
 local function own(id)return{type='BUFF',unit='player',spell=id,anyrank=true,ownbuff=true}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.paladin.protection',revision=1,
+ format='RotationMaster',schemaVersion=1,id='rm.sod.paladin.protection',revision=2,
  blocks={['sod.paladin.tank-upkeep']=1,['era.paladin.melee-opening']=1,['era.paladin.boundaries']=1,['sod.paladin.seal']=1},
  nameKey='Default.SoD.Paladin.Protection.Name',descriptionKey='Default.SoD.Paladin.Protection.Description',
  applicability={families={'era'},actionContext='player',class='PALADIN',minLevel=1,maxLevel=60,rulesets={'season:2'}},
  tags={'leveling','endgame','protection','tank','single-target','aoe','season-of-discovery','wowhead'},
  sources={{url='https://www.wowhead.com/classic/guide/season-of-discovery/classes/paladin/tank-rotation-cooldowns-abilities-pve',title='Wowhead: SoD Paladin tank rotation (Phase 8)',reviewedAt='2026-10-23',revision='2025-04-18'},
   {url='https://www.icy-veins.com/wow-classic/protection-paladin-tank-season-of-discovery-pve-rotation-cooldowns-abilities',title='Icy Veins: SoD Protection Paladin rotation (Phase 4)',reviewedAt='2026-10-23',revision='2024-07-05',notes='Hand of Reckoning on lost threat; Divine Storm if engraved.'}},
- body={priority=120,switch=any(own(407627),own(25780),known(407632),known(440658),{type='PRIMARY_TALENT_TREE',tree=2}),
+ body={priority=120,switch=any(own(407627),own(25780),rune(407632),rune(440658),{type='PRIMARY_TALENT_TREE',tree=2}),
   cooldowns={block('sprot-upkeep','sod.paladin.tank-upkeep','sprot-upkeep-')},
   rotation={
    block('sprot-opening','era.paladin.melee-opening','sprot-'),

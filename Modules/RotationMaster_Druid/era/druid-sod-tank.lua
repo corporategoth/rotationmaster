@@ -8,8 +8,8 @@ local function any(...)return{type='OR',value={...}}end
 local function own(id)return{type='BUFF',unit='player',spell=id,ownbuff=true}end
 local function ref(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.druid.tank',revision=1,
- blocks={['era.druid.boundaries']=1,['era.druid.upkeep']=1,['sod.druid.maul']=1,['sod.druid.tank-cooldowns']=1,['sod.druid.bear']=1,['sod.druid.cat']=1,
+ format='RotationMaster',schemaVersion=1,id='rm.sod.druid.tank',revision=2,
+ blocks={['era.druid.boundaries']=1,['era.druid.upkeep']=1,['sod.druid.maul']=1,['sod.druid.tank-cooldowns']=1,['sod.druid.bear']=1,['sod.druid.cat']=2,
   ['era.druid.stealth-opener']=1,['era.druid.cat-builders']=1,['era.druid.powershift']=1,['sod.druid.tank-humanoid']=1},
  nameKey='Default.SoD.Druid.Tank.Name',descriptionKey='Default.SoD.Druid.Tank.Description',
  applicability={families={'era'},actionContext='player',class='DRUID',minLevel=1,maxLevel=60,rulesets={'season:2'}},
@@ -19,7 +19,7 @@ assert(addon:RegisterDefaultRotation({
   {url='https://github.com/wowsims/sod/blob/0e3f6eff5fa3ad356664a1c2abbd02903d4cc97e/ui/feral_tank_druid/apls/phase_6.apl.json',title='wowsims/sod Feral tank Phase 6 APL',reviewedAt='2026-10-23',revision='0e3f6ef'},
   {url='https://www.warcrafttavern.com/wow-classic-sod/guides/druid-tank/',title='Warcraft Tavern: SoD Druid tank (Phase 4)',reviewedAt='2026-10-23'},
  },
- body={priority=140,switch={type='SPELL_KNOWN',spell=414644},
+ body={priority=140,switch={type='RUNE_ENGRAVED',spell=414644},
   cooldowns={ref('sod-tank-upkeep','era.druid.upkeep','sod-tank-'),ref('sod-tank-maul','sod.druid.maul','sod-tank-'),ref('sod-tank-cooldowns','sod.druid.tank-cooldowns','sod-tank-')},
   rotation={
    ref('sod-tank-boundaries','era.druid.boundaries','sod-tank-'),

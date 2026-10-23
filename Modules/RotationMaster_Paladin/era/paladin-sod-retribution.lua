@@ -2,20 +2,22 @@
 -- fits. Wowhead Phase 8 with wowsims: Seal of Martyrdom, Divine Storm at three Holy Power, then by
 -- weapon speed: a slow two-hander (3.3 s or more) plays Crusader Strike, Exorcism, Divine Storm and
 -- Judgement as a filler; a fast one judges only as the seal runs out, then Exorcism, Crusader
--- Strike and Divine Storm. Consecration last, Hammer of Wrath with mana to spare while levelling.
+-- Strike and Divine Storm. Consecration last; Holy Wrath on Undead and Demons (on anything with the
+-- Purifying Power rune); Hammer of Wrath with mana to spare, or always with Improved Hammer of Wrath.
 -- Shared blocks: era/blocks.lua. Original priority data, no guide prose.
 local _,addon=...
 local function all(...)return{type='AND',value={...}}end
 local function any(...)return{type='OR',value={...}}end
 local function negate(c)return{type='NOT',value=c}end
 local function known(id)return{type='SPELL_KNOWN',spell=id}end
+local function rune(id)return{type='RUNE_ENGRAVED',spell=id}end
 local function mana(op,v)return{type='MANAPCT',unit='player',operator=op,value=v}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or{}}end
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local undead=any({type='CREATURE',unit='target',value='UNDEAD'},{type='CREATURE',unit='target',value='DEMON'})
 local holyPower={type='BUFF_STACKS',unit='player',spell=1226461,operator='GREATERTHANOREQUALS',value=3}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.paladin.retribution',revision=1,
+ format='RotationMaster',schemaVersion=1,id='rm.sod.paladin.retribution',revision=2,
  blocks={['sod.paladin.ret-upkeep']=1,['era.paladin.safety']=1,['era.paladin.melee-opening']=1,['era.paladin.boundaries']=1,['sod.paladin.seal']=1},
  nameKey='Default.SoD.Paladin.Retribution.Name',descriptionKey='Default.SoD.Paladin.Retribution.Description',
  applicability={families={'era'},actionContext='player',class='PALADIN',minLevel=1,maxLevel=60,rulesets={'season:2'}},
@@ -46,8 +48,8 @@ assert(addon:RegisterDefaultRotation({
     spell('sret-fast-divine-storm',407778,negate({type='BUFF',unit='player',spell=1226461})),
    }},
    spell('sret-consecration',26573,any(mana('GREATERTHANOREQUALS',0.4),{type='DISTANCE_COUNT',enemy=true,distance=8,operator='GREATERTHANOREQUALS',value=3})),
-   spell('sret-holy-wrath',2812,all(undead,{type='DISTANCE_COUNT',enemy=true,distance=8,operator='GREATERTHANOREQUALS',value=2})),
-   spell('sret-hammer-of-wrath',24275,mana('GREATERTHANOREQUALS',0.3)),
+   spell('sret-holy-wrath',2812,all(any(rune(429144),undead),{type='DISTANCE_COUNT',enemy=true,distance=8,operator='GREATERTHANOREQUALS',value=2})),
+   spell('sret-hammer-of-wrath',24275,any(rune(429152),mana('GREATERTHANOREQUALS',0.3))),
   },
  },
 }))

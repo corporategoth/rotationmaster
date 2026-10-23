@@ -1,21 +1,21 @@
 -- Season of Discovery Rogue melee DPS, Icy Veins Phase 8 order (alternative premade).
 -- Same switch and shared blocks as the recommended SoD premade (era/blocks.lua). Differs where
 -- Icy Veins differs: Garrote opener in a group; Poisoned Knife only at five poison stacks; every
--- finisher at five points: Slice and Dice when missing or ending, Rupture kept up for Carnage,
+-- finisher at five points: Slice and Dice when missing or ending, Rupture kept up for Carnage (when engraved),
 -- then Envenom; area damage is Blunderbuss or Fan of Knives on three. Instant Poison on both
 -- weapons. Left manual: Sebacious Poison duty, Shadowstep, Sprint and positioning.
 local _,addon=...
 local function all(...)return{type='AND',value={...}}end
 local function any(...)return{type='OR',value={...}}end
 local function negate(c)return{type='NOT',value=c}end
-local function known(id)return{type='SPELL_KNOWN',spell=id}end
+local function rune(id)return{type='RUNE_ENGRAVED',spell=id}end
 local function stacks(id,n)return{type='DEBUFF_STACKS',unit='target',spell=id,anyrank=true,owndebuff=true,operator='GREATERTHANOREQUALS',value=n}end
 local function spell(id,action,conditions)return{id=id,type='spell',action=action,ranked=false,conditions=conditions or {}}end
 local function block(name,prefix)return{id=prefix..'ref-'..name:match('[^.]+$'),type='block',block=name,prefix=prefix}end
 local five={type='POINT',unit='player',operator='GREATERTHANOREQUALS',value=5}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.rogue.dps.icyveins',revision=1,
- blocks={['era.rogue.boundaries']=1,['era.rogue.sod-opener']=1,['era.rogue.sod-upkeep']=1,['era.rogue.sod-builders']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.sod.rogue.dps.icyveins',revision=2,
+ blocks={['era.rogue.boundaries']=1,['era.rogue.sod-opener']=2,['era.rogue.sod-upkeep']=2,['era.rogue.sod-builders']=2},
  nameKey='Default.SoD.Rogue.DPS.IcyVeins.Name',descriptionKey='Default.SoD.Rogue.DPS.IcyVeins.Description',
  applicability={families={'era'},actionContext='player',class='ROGUE',minLevel=1,maxLevel=60,rulesets={'season:2'}},
  tags={'dps','melee','leveling','endgame','aoe','season-of-discovery','icy-veins'},
@@ -35,9 +35,9 @@ assert(addon:RegisterDefaultRotation({
  {id='rogue-finisher',type='branch',conditions=five,onFalse={},onTrue={
   spell('rogue-slice',5171,any(negate({type='BUFF',unit='player',spell=5171,anyrank=true,ownbuff=true}),
    {type='BUFF_REMAIN',unit='player',spell=5171,anyrank=true,ownbuff=true,operator='LESSTHAN',value=2})),
-  spell('rogue-rupture',1943,negate({type='DEBUFF',unit='target',spell=1943,anyrank=true,owndebuff=true})),
+  spell('rogue-rupture',1943,all(rune(432276),negate({type='DEBUFF',unit='target',spell=1943,anyrank=true,owndebuff=true}))),
   spell('rogue-envenom',399963),
-  spell('rogue-eviscerate',2098,negate(known(399963))),
+  spell('rogue-eviscerate',2098,negate(rune(399963))),
   {id='rogue-pool',type='none',suppress_attack=false,conditions={}},
  }},
  block('era.rogue.sod-builders','rogue-'),

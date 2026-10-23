@@ -15,16 +15,20 @@ local subtlety={16511,14183,14278}
 local function first(f,s,id)return(M.first(f,s,id))end
 local function sliced(s)s.buffs={{id=5171,expires=130}}end
 
-test('the recommended premade auto-selects at every level; Subtlety variants need Hemorrhage and rank below it',function()
+test('the recommended premade auto-selects at every level; Subtlety variants need the Subtlety tree, their build talent, and rank below it',function()
  local f,s=rogue(1)
  for _,level in ipairs({1,30,60})do s.level=level;assert(M.selected(f,s)==DPS,'level '..level)end
- assert(not M.switches(f,TAV)and not M.switches(f,WH),'no Hemorrhage, no Subtlety variant')
- M.know(s,16511);s.level=30;assert(M.switches(f,TAV)and not M.switches(f,WH),'the Garrote build also needs Premeditation')
- M.know(s,14183);assert(M.switches(f,WH)and M.selected(f,s)==DPS)
+ assert(not M.switches(f,TAV)and not M.switches(f,WH),'no Subtlety tree, no Subtlety variant')
+ M.know(s,16511,14183);s.level=30;M.trees(f,s,{0,0,21});assert(not M.switches(f,TAV)and not M.switches(f,WH),'Subtlety tree without the build talents')
+ M.node(f,s,105750,1);assert(M.switches(f,TAV)and not M.switches(f,WH),'Cutthroat (trait node) talented: the Ambush build')
+ M.node(f,s,105745,2);assert(M.switches(f,WH)and M.selected(f,s)==DPS,'Dirty Deeds (trait node) with Premeditation: the Garrote build; the default still wins')
+ s.known[14183]=false;assert(not M.switches(f,WH),'the Garrote build also needs Premeditation');s.known[14183]=true
+ M.trees(f,s,{31,0,20});assert(not M.switches(f,TAV),'20 Subtlety points under another main tree');M.trees(f,s,{0,0,21})
  local a=f.addon;assert(a:SetDefaultRotationEnabled(DPS,false));assert(M.selected(f,s)==TAV);assert(a:SetDefaultRotationEnabled(TAV,false));assert(M.selected(f,s)==WH)
  s.level=24;assert(M.selected(f,s)==nil,'below 25 only the recommended premade applies')
  for _,src in ipairs(a:GetDefaultRotation(TAV).envelope.sources)do assert(not src.url:find('wowhead'),src.url)end
- for _,src in ipairs(a:GetDefaultRotation(WH).envelope.sources)do assert(src.url:find('wowhead'),src.url)end
+ -- The variant's priority sources are Wowhead's; SimulationCraft only supplies the talent node IDs.
+ for _,src in ipairs(a:GetDefaultRotation(WH).envelope.sources)do assert(src.url:find('wowhead')or src.url:find('simulationcraft/simc/blob/[%x]+/engine/dbc/generated/trait_data'),src.url)end
 end)
 
 test('on the real restricted Forever client the premades are listed but never auto-selected',function()

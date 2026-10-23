@@ -1,5 +1,5 @@
 -- Season of Discovery Mage Arcane damage (Icy Veins, with the current five-stack Balefire rule),
--- levels 10–60 with Arcane as the main tree and Arcane Blast engraved. Arcane Missiles on Missile
+-- levels 10–60 with Arcane as the main tree and the Arcane Blast rune engraved. Arcane Missiles on Missile
 -- Barrage; Arcane Barrage at four Arcane Blast stacks; Balefire Bolt when safe (never at four of its
 -- stacks); Living Flame on cooldown; Arcane Blast filler. Arcane Barrage and Fire Blast while moving;
 -- Living Flame and Arcane Explosion on packs. Arcane Power, Presence of Mind and Icy Veins are reminders.
@@ -14,8 +14,8 @@ local function block(id,name,prefix)return{id=id..'-block',type='block',block=na
 local P='mage-sarcane-'
 local combat={type='COMBAT',unit='player'}
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.mage.arcane',revision=1,
- blocks={['era.mage.boundaries']=1,['era.mage.wand-finish']=1,['sod.mage.balefire']=1,['sod.mage.armor']=1,['sod.mage.upkeep']=1},
+ format='RotationMaster',schemaVersion=1,id='rm.sod.mage.arcane',revision=2,
+ blocks={['era.mage.boundaries']=1,['era.mage.wand-finish']=1,['sod.mage.balefire']=1,['sod.mage.armor']=2,['sod.mage.upkeep']=2},
  nameKey='Default.SoD.Mage.Arcane.Name',descriptionKey='Default.SoD.Mage.Arcane.Description',
  applicability={families={'era'},actionContext='player',class='MAGE',minLevel=10,maxLevel=60,rulesets={'season:2'}},
  tags={'arcane','raid','single-target','aoe','season-of-discovery','icy-veins'},
@@ -25,8 +25,8 @@ assert(addon:RegisterDefaultRotation({
  },
  body={
   priority=104,
-  -- Known spell first, so a character with no talent points is a clean no-match.
-  switch=all({type='SPELL_KNOWN',spell=400574},{type='PRIMARY_TALENT_TREE',tree=1}),
+  -- The engraved rune first, so a character with no talent points is a clean no-match.
+  switch=all({type='RUNE_ENGRAVED',spell=400574},{type='PRIMARY_TALENT_TREE',tree=1}),
   cooldowns={block(P..'armor','sod.mage.armor',P),
    spell(P..'arcane-power',12042,all(combat,any(class('elite'),class('rareelite'),class('worldboss'),{type='TT_HEALTH',unit='target',health=0,operator='GREATERTHAN',value=15}))),
    spell(P..'presence-of-mind',12043,all(combat,any({type='BUFF',unit='player',spell=12042},{type='MOVING'}))),

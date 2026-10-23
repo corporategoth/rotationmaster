@@ -14,9 +14,9 @@ local function stop(id)return{id=id,type='none',suppress_attack=true,conditions=
 local function block(id,name,prefix)return{id=id..'-block',type='block',block=name,prefix=prefix}end
 local P='mage-sfrost-wct-'
 assert(addon:RegisterDefaultRotation({
- format='RotationMaster',schemaVersion=1,id='rm.sod.mage.frost.warcrafttavern',revision=1,
+ format='RotationMaster',schemaVersion=1,id='rm.sod.mage.frost.warcrafttavern',revision=2,
  blocks={['era.mage.boundaries']=1,['era.mage.wand-finish']=1,['sod.mage.balefire-brain-freeze']=1,
-  ['sod.mage.living-bomb']=1,['sod.mage.overheat']=1,['sod.mage.armor']=1,['sod.mage.upkeep']=1},
+  ['sod.mage.living-bomb']=1,['sod.mage.overheat']=2,['sod.mage.armor']=2,['sod.mage.upkeep']=2},
  nameKey='Default.SoD.Mage.Frost.WarcraftTavern.Name',descriptionKey='Default.SoD.Mage.Frost.WarcraftTavern.Description',
  applicability={families={'era'},actionContext='player',class='MAGE',minLevel=10,maxLevel=60,rulesets={'season:2'}},
  tags={'frost','fire','raid','single-target','season-of-discovery','warcraft-tavern'},
