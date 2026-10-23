@@ -109,6 +109,17 @@ test('TOC includes every reviewed starter pack exactly once',function()
         'rm.era.shaman.enhancement','rm.era.shaman.enhancement.warcrafttavern','rm.era.shaman.elemental','rm.era.shaman.elemental.wowsims','rm.era.shaman.restoration','rm.era.shaman.restoration.warcrafttavern','rm.sod.shaman.tank','rm.sod.shaman.restoration','rm.sod.shaman.elemental','rm.sod.shaman.enhancement',
         'rm.era.warlock.dps','rm.era.warlock.dps.warcrafttavern','rm.era.warlock.dps.icyveins','rm.sod.warlock.tank','rm.sod.warlock.fire','rm.sod.warlock.fire.icyveins','rm.sod.warlock.shadow','rm.sod.warlock.shadow.wowsims',
         'rm.era.warrior.protection','rm.era.warrior.protection.icyveins','rm.era.warrior.dps','rm.sod.warrior.tank','rm.sod.warrior.dps','rm.sod.warrior.dps.wowhead','rm.sod.warrior.dps.icyveins'})do wanted[id]=true end
+    -- Classic Era and Season of Discovery Druid, Hunter, Mage, Paladin and Priest premades.
+    for _,id in ipairs({
+        'rm.era.druid.balance.icyveins','rm.era.druid.balance','rm.era.druid.feral.warcrafttavern.casual','rm.era.druid.feral.warcrafttavern','rm.era.druid.feral.wowhead','rm.era.druid.feral',
+        'rm.era.druid.restoration.warcrafttavern','rm.era.druid.restoration','rm.sod.druid.balance.icyveins','rm.sod.druid.balance.wowhead','rm.sod.druid.balance','rm.sod.druid.feral',
+        'rm.sod.druid.restoration','rm.sod.druid.tank.wowsims','rm.sod.druid.tank','rm.era.hunter.ranged.icyveins','rm.era.hunter.ranged.wowsims','rm.era.hunter.ranged','rm.sod.hunter.melee',
+        'rm.sod.hunter.ranged','rm.era.mage.fire.warcrafttavern','rm.era.mage.fire','rm.era.mage.frost.icyveins','rm.era.mage.frost','rm.sod.mage.arcane','rm.sod.mage.fire',
+        'rm.sod.mage.frost.warcrafttavern','rm.sod.mage.frost','rm.sod.mage.healer','rm.era.paladin.holy','rm.era.paladin.protection.icyveins','rm.era.paladin.protection',
+        'rm.era.paladin.retribution.twist','rm.era.paladin.retribution','rm.sod.paladin.holy.wowhead','rm.sod.paladin.holy','rm.sod.paladin.protection.wowsims','rm.sod.paladin.protection',
+        'rm.sod.paladin.retribution.icyveins','rm.sod.paladin.retribution.stacking','rm.sod.paladin.retribution.twist','rm.sod.paladin.retribution','rm.sod.paladin.shockadin',
+        'rm.era.priest.dps.warcrafttavern','rm.era.priest.dps.wowsims','rm.era.priest.dps','rm.era.priest.healer','rm.sod.priest.dps.wowhead','rm.sod.priest.dps','rm.sod.priest.healer.warcrafttavern',
+        'rm.sod.priest.healer'})do wanted[id]=true end
     for _,pack in ipairs(packs)do assert(wanted[pack.id],pack.id..' is unexpected or duplicated');wanted[pack.id]=nil end
     assert(not next(wanted),'reviewed starter pack missing from TOC')
 end)
