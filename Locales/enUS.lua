@@ -1592,6 +1592,15 @@ L['Preview position'] = true
 L['Rotation library'] = true
 
 L['Search or drag a spell here'] = true
+L['Move %d selected cards'] = true
+L['Duplicate selected cards'] = true
+L['Enable selected cards'] = true
+L['Disable selected cards'] = true
+L['Delete selected cards'] = true
+L['Clear selection'] = true
+L['Select several cards'] = true
+L['Ctrl-click cards to add or remove them from the selection; Shift-click selects the siblings between it and the last clicked card. Shift-drag on empty canvas draws a box that selects every card it touches (Ctrl+Shift-drag adds). With several cards selected, the strip above the canvas groups them as All or Any, and Duplicate, Enable, Disable and Delete act on every selected card; one Undo reverses each. Drag any selected card to move the selection.'] = true
+L['Ctrl-click cards to add or remove them from the selection; Shift-click a title or condition to select the siblings between it and the last clicked card. Shift-drag on empty canvas draws a box that selects every card it touches (Ctrl+Shift-drag adds). Drag any selected card to move the whole selection to one gap. Beside Apply, Duplicate, Enable, Disable and Delete act on every selected card, and one Undo reverses each. Branches keep their Evaluate / Always mode. Click empty canvas to clear the selection.'] = true
 L['Target casting: %s'] = true
 L['Focus casting: %s'] = true
 L['Target channeling: %s'] = true

@@ -56,7 +56,7 @@ function addon:CreateConditionCanvas(parent,owner)
     local ghost=addon:CreateWorkbenchDragCard();canvas.ghost=ghost
     function canvas:CancelDrag()
         local moving=self.drag
-        self.drag=nil;ghost:Hide();addon:SetUIScript(self.frame,"OnUpdate",nil)
+        self.drag=nil;self.box=nil;if self.boxFrame then self.boxFrame:Hide() end;ghost:Hide();addon:SetUIScript(self.frame,"OnUpdate",nil)
         for _,zone in ipairs(self.zones) do zone.marker:Hide();zone:Hide() end
         if moving and self.RefreshVisibleCards and not self.rendering and not self.releasing then
             if self.deferredMeasure then self.deferredMeasure=nil;self.needsMeasure=nil;self:Reflow() else self:RefreshVisibleCards() end
@@ -160,6 +160,54 @@ function addon:CreateConditionCanvas(parent,owner)
         local selected=self:HoverTarget()
         if selected then return self:Drop(selected.target) end
         self:CancelDrag()
+    end
+    -- Shift-drag on empty canvas draws a box selecting the cards it touches
+    -- (Ctrl+Shift adds to the selection); a card inside another touched card
+    -- travels with it, as with Ctrl-click.
+    function canvas:SelectBox(left,top,right,bottom,additive)
+        if not owner.active or not self.scene or not owner:SyncWorking() then return end
+        local touched={}
+        for _,model in ipairs(self.scene.cards) do
+            -- A group's frame encloses its children; only its own header counts.
+            local height=model.group and model.ownHeight or model.height
+            if model.path and model.x<=right and model.x+model.width>=left and model.y<=bottom and model.y+height>=top then touched[#touched+1]=model end
+        end
+        local selection=additive and owner.view.selection or {}
+        local rows=owner.active.session:Rows(4096)
+        for _,model in ipairs(touched) do
+            local inside=false
+            for _,other in ipairs(touched) do if other~=model and #other.path<#model.path and prefix(other.path,model.path) then inside=true;break end end
+            if not inside then
+                for _,row in ipairs(rows) do if prefix(row.path,model.path) or prefix(model.path,row.path) then selection[addon.ConditionPathKey(row.path)]=nil end end
+                selection[addon.ConditionPathKey(model.path)]=true
+            end
+        end
+        owner.view.selection=selection
+        if (#self:Selection()>1)~=owner.selectionStrip then owner:Layout() else self:Reflow() end
+    end
+    function canvas:BeginBoxSelect()
+        if not owner.active or self.drag then return false end
+        local x,y=addon:WorkbenchPointerIn(self.child);if not x then return false end
+        self:CancelDrag()
+        local box={x=x,y=y,additive=IsControlKeyDown and IsControlKeyDown() or false,generation=self.generation};self.box=box
+        self.boxFrame=self.boxFrame or addon:CreateWorkbenchSelectionBox(self.child);self.boxFrame:Place(x,y,x,y)
+        addon:SetUIScript(self.frame,"OnUpdate",function()
+            if self.box~=box then return end
+            if not owner.active or box.generation~=self.generation then self:CancelDrag();return end
+            local cx,cy=addon:WorkbenchPointerIn(self.child);if cx then box.cx,box.cy=cx,cy;self.boxFrame:Place(box.x,box.y,cx,cy) end
+            if IsMouseButtonDown and not IsMouseButtonDown("LeftButton") then self:EndBoxSelect() end
+        end)
+        return true
+    end
+    function canvas:EndBoxSelect()
+        local box=self.box;if not box then return end
+        local cx,cy=box.cx or box.x,box.cy or box.y;self:CancelDrag()
+        self:SelectBox(math.min(box.x,cx),math.min(box.y,cy),math.max(box.x,cx),math.max(box.y,cy),box.additive)
+    end
+    for _,surface in ipairs({canvas.frame,canvas.child}) do
+        surface:EnableMouse(true)
+        addon:SetUIScript(surface,"OnMouseDown",function(_,button) if button=="LeftButton" and IsShiftKeyDown and IsShiftKeyDown() then canvas:BeginBoxSelect() end end)
+        addon:SetUIScript(surface,"OnMouseUp",function(_,button) if button=="LeftButton" and canvas.box then canvas:EndBoxSelect() end end)
     end
     local horizontal=addon:CreateWorkbenchScrollBar(parent,'HORIZONTAL');addon:TrackWorkbenchSize(horizontal);canvas.horizontal=horizontal
     addon:SetUIScript(horizontal,"OnValueChanged",function(_,value) canvas.scrollX=value;canvas.frame:SetHorizontalScroll(value) end)

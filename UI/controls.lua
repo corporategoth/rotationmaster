@@ -571,6 +571,32 @@ end
 function addon:CancelWorkbenchReflow(owner) reflowQueue[owner]=nil;settleQueue[owner]=nil;if type(owner)=='table' then owner.rmReflowAfter=nil end end
 function addon:IsWorkbenchReflowPending(owner) return reflowQueue[owner]~=nil or settleQueue[owner]~=nil end
 
+-- Box selection on a card canvas. The pointer in a canvas child's own
+-- coordinates (x right, y down from its top-left, zoom included), or nil when
+-- the client cannot tell.
+function addon:WorkbenchPointerIn(child)
+    if type(GetCursorPosition)~='function' or not child or not child.GetLeft or not child.GetTop or not child.GetEffectiveScale then return end
+    local ok,x,y=pcall(GetCursorPosition);local scale=child:GetEffectiveScale();local left,top=child:GetLeft(),child:GetTop()
+    local function finite(value) return type(value)=='number' and value==value and value>-math.huge and value<math.huge end
+    if not ok or not finite(x) or not finite(y) or not finite(scale) or scale<=0 or not finite(left) or not finite(top) then return end
+    return x/scale-left,top-y/scale
+end
+-- The drawn box: a faint gold fill with a 1px outline, placed in child
+-- coordinates with :Place(x1,y1,x2,y2).
+function addon:CreateWorkbenchSelectionBox(child)
+    local frame=CreateFrame('Frame',nil,child);frame:EnableMouse(false);frame:Hide()
+    frame.fill=frame:CreateTexture(nil,'OVERLAY');frame.fill:SetAllPoints(frame);frame.fill:SetColorTexture(.9,.75,.3,.12)
+    for _,side in ipairs({{'TOPLEFT','TOPRIGHT','h'},{'BOTTOMLEFT','BOTTOMRIGHT','h'},{'TOPLEFT','BOTTOMLEFT','v'},{'TOPRIGHT','BOTTOMRIGHT','v'}}) do
+        local edge=frame:CreateTexture(nil,'OVERLAY');edge:SetColorTexture(.9,.75,.3,.9);edge:SetPoint(side[1]);edge:SetPoint(side[2])
+        if side[3]=='h' then edge:SetHeight(1) else edge:SetWidth(1) end
+    end
+    function frame:Place(x1,y1,x2,y2)
+        self:ClearAllPoints();self:SetPoint('TOPLEFT',child,'TOPLEFT',math.min(x1,x2),-math.min(y1,y2))
+        self:SetSize(math.max(1,math.abs(x2-x1)),math.max(1,math.abs(y2-y1)));self:SetFrameLevel(child:GetFrameLevel()+200);self:Show()
+    end
+    return frame
+end
+
 -- One tightly packed position pad for profile and per-card highlight settings.
 function addon:CreateWorkbenchPositionPad(parent)
     local pad=CreateFrame('Frame',nil,parent);pad:SetSize(48,48);pad.buttons={}

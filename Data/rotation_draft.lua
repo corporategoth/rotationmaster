@@ -60,6 +60,20 @@ function data.NewRotationDraft(original,newId,reserved)
     end
     function draft:Command(name,first,second)
         if not data.CheckPortable(first) or not data.CheckPortable(second) then return nil,'non-portable-edit' end
+        -- Several commands as one edit (one undo step): every operation
+        -- applies in order to the result of the previous one, and when any
+        -- fails the draft is left exactly as it was.
+        if name=='Batch' then
+            if type(first)~='table' or #first<1 or #first>512 then return nil,'invalid-batch' end
+            local savedRoot,savedUsed=root,used;local results={}
+            for i,operation in ipairs(first) do
+                if type(operation)~='table' or type(operation[1])~='string' or operation[1]=='Batch' then root,used=savedRoot,savedUsed;return nil,'invalid-batch' end
+                local ok,result=self:Command(operation[1],operation[2],operation[3])
+                if not ok then root,used=savedRoot,savedUsed;return nil,result end
+                results[i]=result
+            end
+            return true,results
+        end
         local candidate,allocated=detach(root),detach(used)
         local index=assert(inspect(candidate))
         local function destination(value)
@@ -150,6 +164,28 @@ function data.NewRotationDraft(original,newId,reserved)
                 end
                 result=first
             end
+        elseif name=='MoveMany' then
+            -- Carries several cards to one gap, in document order. A card
+            -- nested in another carried card travels with it.
+            if type(first)~='table' or #first<1 then return nil,'invalid-selection' end
+            local target,targetError=destination(second);if not target then return nil,targetError end
+            local chosen={}
+            for _,id in ipairs(first) do local entry,reason=row(id);if not entry then return nil,reason end;chosen[id]=entry end
+            local carried={}
+            for _,entry in ipairs(index.rows) do
+                if chosen[entry.step.id] then
+                    local nested=false
+                    for _,other in pairs(chosen) do if other~=entry and prefix(other.path,entry.path) then nested=true;break end end
+                    if not nested then carried[#carried+1]=entry end
+                end
+            end
+            for _,entry in ipairs(carried) do if prefix(entry.path,target.path) then return nil,'rotation-cycle' end end
+            local at=second.index
+            for _,entry in ipairs(carried) do if parent(entry)==target.list and entry.index<second.index then at=at-1 end end
+            -- Later cards first: removing one never moves an earlier card.
+            for i=#carried,1,-1 do local entry=carried[i];table.remove(parent(entry),entry.index) end
+            for _,entry in ipairs(carried) do table.insert(target.list,at,entry.step);at=at+1 end
+            result=first
         elseif name=='SetCondition' then
             if type(second)~='table' then return nil,'invalid-condition' end
             if type(first)=='table' and first.kind=='switch' then candidate.switch=detach(second)
