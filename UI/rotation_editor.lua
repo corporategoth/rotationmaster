@@ -37,6 +37,7 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
         if not scene then self:Message(problem.code);return end
         addon:FitRotationSceneWidth(scene,self.view.viewportWidth)
         local validation=data.ValidateBody(snapshot,addon:GetImportValidationOptions());self.validation=validation
+        self:CollectSectionProblems(snapshot,validation)
         for _,model in ipairs(scene.cards) do
             local path='$.body'
             for _,part in ipairs(model.path) do path=path..(type(part)=='number' and '['..part..']' or '.'..part) end
@@ -51,6 +52,33 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
             model.expanded=not model.compact and self.view.expanded[model.id]==true
         end
         return scene
+    end
+    -- The first issue under each section header, from the validation this
+    -- scene already ran (and any invalid staged input): the Rotation and
+    -- Cooldowns tabs are marked even when the other section is in view.
+    function pane:CollectSectionProblems(snapshot,validation)
+        local problems={}
+        for _,diagnostic in ipairs(validation.diagnostics) do
+            local section=type(diagnostic.path)=='string' and diagnostic.path:match('^%$%.body%.(%a+)%[')
+            if section~='rotation' and section~='cooldowns' then section='record' end
+            if not problems[section] then problems[section]=addon.DescribeRotationIssue and addon:DescribeRotationIssue(diagnostic,snapshot) or tostring(diagnostic.code) end
+        end
+        if next(self.view.pendingFields or {}) then
+            local tree=data.IndexRotationSteps(snapshot)
+            for stepId in pairs(self.view.pendingFields) do
+                local row=tree and tree.byId[stepId];local label=row and self:PendingFieldProblem(stepId)
+                if label and not problems[row.section] then problems[row.section]=string.format(L['Incomplete input: %s'],label) end
+            end
+        end
+        self.sectionProblems=problems
+    end
+    function pane:RefreshSectionMarkers()
+        local problems=self.sectionProblems or {}
+        for section,button in pairs(self.contentTabs or {}) do
+            addon:SetWorkbenchProblem(button,problems[section] and string.format(L['This rotation cannot be selected. %s.'],problems[section]) or nil)
+        end
+        local first=problems.record or problems.rotation or problems.cooldowns
+        self.validationButton:SetText(first and string.format(L['This rotation cannot be selected. %s.'],first) or L['This rotation cannot run until its incomplete or unavailable data is resolved.'])
     end
     function pane:RefreshValidation()
         if not self.active then return end
@@ -149,7 +177,7 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
     pane.enable=tool(workspace.readOnly and L['Enable Built In'] or L['Enabled'],116,function()
         if workspace.readOnly then
             local current=workspace.source.enabled;local ok,problem=addon:SetDefaultRotationEnabled(workspace.builtin,not current)
-            if ok then workspace.source.enabled=not current;if pane:RefreshAdvice() then pane:Render() end else pane:Message(problem) end
+            if ok then workspace.source.enabled=not current;pane:RefreshAdvice();if pane.active and pane.workspace==workspace then pane:Render() end else pane:Message(problem) end
         else pane:Command('SetBodyField','disabled',not workspace:Snapshot().disabled) end
     end)
     local oldEnable=pane.enable;oldEnable:Hide();table.remove(pane.tools)
@@ -268,7 +296,14 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
             if workspace.id~=id then
                 self:Open(spec,workspace.id,onSelect)
             end
-            self:Message('');if self:RefreshAdvice(previous,previousId) then self:Render() end
+            self:Message('')
+            -- Refreshing advice can be superseded by a rotation transition it
+            -- starts (an automatic switch, a restored manual choice). The save
+            -- itself succeeded, so the roster and this pane still show the
+            -- applied state: Apply and View Changes grey out, marks clear.
+            local advised=self:RefreshAdvice(previous,previousId)
+            if not advised and self.active and self.workspace==workspace and self.onSaved then self.onSaved() end
+            if self.active and self.workspace==workspace then self:Render() end
         else self:Message(problem) end
         return ok,problem
     end
@@ -316,6 +351,7 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
         self.enable:ClearAllPoints();self.enable:SetPoint('TOPRIGHT',self.frame,'TOPRIGHT',-36,-35)
         local available=self.validation and self.validation.valid and self.validation.supported and self.validation.resolved and not self:HasInvalidPendingFields()
         self.validationButton:ClearAllPoints();self.validationButton:SetPoint('TOPLEFT',8,-y-26);self.validationButton:SetWidth(math.max(100,width-16))
+        self:RefreshSectionMarkers()
         if available then self.validationButton:Hide() else self.validationButton:Show() end
         local switchTop=y+30+(available and 0 or 24)
         self.switchLabel:ClearAllPoints();self.switchLabel:SetPoint('TOPLEFT',8,-switchTop)
@@ -361,7 +397,8 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
         addon:SetUIScript(self.validationButton,'OnClick',function()
             if not alive() or not addon.ShowConditionText then return end
             local lines={L['This rotation cannot run until its incomplete or unavailable data is resolved.']}
-            for _,problem in ipairs(self.validation and self.validation.diagnostics or {}) do lines[#lines+1]=problem.path..': '..(addon.DescribeUnsupportedCondition and addon:DescribeUnsupportedCondition(problem) or problem.code) end
+            local snapshot=self.workspace:Snapshot()
+            for _,problem in ipairs(self.validation and self.validation.diagnostics or {}) do lines[#lines+1]=addon.DescribeRotationIssue and addon:DescribeRotationIssue(problem,snapshot) or problem.path..': '..problem.code end
             for stepId in pairs(self.view.pendingFields or {}) do local reason=self:PendingFieldProblem(stepId);if reason then lines[#lines+1]=stepId..': '..reason end end
             addon:ShowConditionText(table.concat(lines,'\n'),L['Rotation validation'])
         end)

@@ -698,7 +698,8 @@ function addon:BindRotationProfile()
                 local status=data.ValidateBody(body,validation)
                 if manifest then local envelope={};for k,v in pairs(manifest) do envelope[k]=v end;envelope.body=body;status=data.ValidateEnvelope(envelope,validation) end
                 local state=not status.valid and 'invalid' or not status.supported and 'unsupported' or not status.resolved and 'unresolved' or 'valid'
-                local projection={validationState=state,body={name=type(body.name)=='string' and body.name or nil,description=type(body.description)=='string' and body.description or nil,
+                local first=status.diagnostics[1]
+                local projection={validationState=state,problem=first and {code=first.code,path=first.path,condition=first.condition,reason=first.reason},body={name=type(body.name)=='string' and body.name or nil,description=type(body.description)=='string' and body.description or nil,
                     priority=body.priority,disabled=body.disabled,tags=tagsView(body.tags),metadata=metadataView(body.metadata)},tags=manifest and copy(manifest.tags),sources=manifest and copy(manifest.sources)}
                 return projection
             end)
@@ -708,7 +709,7 @@ function addon:BindRotationProfile()
             result[#result+1]={key=key,reference=copy(reference),canonicalId=row.address.id,kind='custom',scope=row.address.scope,
                 name=view.body.name or L['Unnamed rotation'],description=view.body.description or '',enabled=not view.body.disabled,
                 priority=data.GetRotationPriority(view.body.priority),tags=data.GetRotationTags(view) or {},search=data.RotationSearchText(view,view.body.name or '',view.body.description or ''),
-                readOnly=false,pending=false,virtual=false,fallback=row.address.id==profile.rotationFallbackID,effectiveFallback=fallback and same(fallback,reference) or false,validationState=view.validationState}
+                readOnly=false,pending=false,virtual=false,fallback=row.address.id==profile.rotationFallbackID,effectiveFallback=fallback and same(fallback,reference) or false,validationState=view.validationState,problem=view.problem}
         end
         local virtual={kind='custom',address={scope='class',class=c.class,owner=c.class,spec=number,id=profile.rotationFallbackID}}
         local exists,missing=reader:Read(virtual.address,c,function() return true end)
@@ -721,9 +722,11 @@ function addon:BindRotationProfile()
             local rows,why=libraryReader:List(number,function(id,view,body)
                 local reference={kind='builtin',id=id};local name=L[view.nameKey or id];local description=L[view.descriptionKey or '']
                 local eligible,eligibilityReason=libraryReader:Eligible(view,number,false)
-                builtinPresentation[id]={name=name,description=description,eligible=eligible,reason=eligibilityReason}
+                local first=view.validation.diagnostics and view.validation.diagnostics[1]
+                local problem=first and {code=first.code,path=first.path,condition=first.condition,reason=first.reason}
+                builtinPresentation[id]={name=name,description=description,eligible=eligible,reason=eligibilityReason,problem=problem}
                 return {key=keyFor(reference),reference=reference,canonicalId=id,kind='builtin',name=name,description=description,enabled=view.enabled,eligible=eligible,eligibilityReason=eligibilityReason,priority=data.GetRotationPriority(body.priority),
-                    tags=data.GetRotationTags(view.envelope) or {},search=data.RotationSearchText(view.envelope,name,description),readOnly=true,pending=false,virtual=false,fallback=false,effectiveFallback=false,validationState=view.validation.valid and 'valid' or 'invalid'}
+                    tags=data.GetRotationTags(view.envelope) or {},search=data.RotationSearchText(view.envelope,name,description),readOnly=true,pending=false,virtual=false,fallback=false,effectiveFallback=false,validationState=view.validation.valid and 'valid' or 'invalid',problem=problem}
             end)
             if not rows then return nil,why end;for _,row in ipairs(rows) do result[#result+1]=row end
         end

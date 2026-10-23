@@ -218,6 +218,24 @@ function addon:BindWorkbenchInlineName(input,finish)
         input.rmNameMouseDown=pressed
     end)
 end
+-- A red outline and tooltip on a control when something beneath it stops a
+-- rotation being selected (the editor's Rotation and Cooldowns tabs, the
+-- browser's rotation rows). Repainting the same state costs nothing.
+function addon:SetWorkbenchProblem(control,text)
+    if type(text)~='string' then text=nil end
+    if control.problemText==text then return end
+    if text and not control.problemEdges then
+        control.problemEdges={}
+        for _,side in ipairs({{'TOPLEFT','TOPRIGHT','h'},{'BOTTOMLEFT','BOTTOMRIGHT','h'},{'TOPLEFT','BOTTOMLEFT','v'},{'TOPRIGHT','BOTTOMRIGHT','v'}}) do
+            local edge=control:CreateTexture(nil,'OVERLAY');edge:SetColorTexture(.9,.25,.2,.95);edge:SetPoint(side[1]);edge:SetPoint(side[2])
+            if side[3]=='h' then edge:SetHeight(2) else edge:SetWidth(2) end;control.problemEdges[#control.problemEdges+1]=edge
+        end
+    end
+    if control.problemText==nil then control.problemBaseTooltip=control.tooltip end
+    control.problemText=text
+    for _,edge in ipairs(control.problemEdges or {}) do if text then edge:Show() else edge:Hide() end end
+    if text then control.tooltip=text else control.tooltip=control.problemBaseTooltip;control.problemBaseTooltip=nil end
+end
 function addon:CreateWorkbenchListRow(parent,width,height)
     local row=self:CreateWorkbenchButton(parent,'',width)
     row:SetHeight(height or 32)

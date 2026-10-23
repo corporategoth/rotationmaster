@@ -275,4 +275,38 @@ test('browser binding error retires its partial row and recovers without replaci
     local ok=pcall(b.list.workbenchBar.SetValue,b.list.workbenchBar,b.list.workbenchBar.scrollRange);assert(not ok and failed and not b.refreshing)
     f.addon.SetWorkbenchListSelection=select;b:RefreshViewport();stale();assert(visibleBrowserRow(b,'entry-1000') and b.pane==pane and b.selected=='entry-1');b:Release()
 end)
+-- The cause of the Retail level 1-9 fallback refusal, pinned: RM runs the
+-- class's initial spec (GetSpecialization() answers index 5, its own spec ID),
+-- the browser offers only the chosen specs and opens on the first of them.
+-- Which spec such a character should edit is still a product decision.
+test('Retail below level 10: the browser does not offer the initial spec RM runs and opens the first spec instead',function()
+    local f,_,_,create=fixture(1,12);local a=f.addon
+    local specs={{262,'Elemental'},{263,'Enhancement'},{264,'Restoration'},[5]={1444,'Initial'}}
+    f.env.C_SpecializationInfo={GetSpecialization=function() return 5 end,GetSpecializationInfo=function(i) return specs[i][1],specs[i][2] end,
+        GetNumSpecializationsForClassID=function() return 3 end}
+    f.env.GetSpecializationInfoForClassID=function(_,i) local entry=specs[i];if entry then return entry[1],entry[2] end end
+    f.env.UnitClass=function() return 'Shaman','SHAMAN',7 end
+    a.currentSpec=assert(a.Platform:GetRotationSpecialization()).key;assert(a.currentSpec==1444)
+    local browser=a:CreateRotationBrowser(create('Frame'))
+    assert(browser.spec==262,'browser spec '..tostring(browser.spec))
+    browser:Release()
+end)
+test('a rotation that cannot be selected wears a red row naming its first blocking issue',function()
+    local f,_,_,create=fixture();local a=f.addon;f.load('Core/rotation_selection.lua')
+    local list=a.ListRotationHeaders
+    a.ListRotationHeaders=function(self,spec)
+        local rows,stamp=list(self,spec)
+        for _,row in ipairs(rows) do if row.key=='one' then row.validationState='unresolved';row.problem={code='missing-effect',path='$.body.rotation[1].onFalse[2].effect'} end end
+        return rows,stamp
+    end
+    local browser=a:CreateRotationBrowser(create('Frame'),{spec=0,id='one'})
+    local one,two
+    for _,control in ipairs(browser.rowButtons) do if control:IsShown() and control.browserEntry then
+        if control.browserEntry.key=='one' then one=control elseif control.browserEntry.key=='two' then two=control end
+    end end
+    assert(one and one.problemText and one.problemText:find('Rotation step 1 › No 2: uses a highlight effect that no longer exists',1,true),tostring(one and one.problemText))
+    assert(one.tooltip==one.problemText and one.problemEdges[1]:IsShown())
+    assert(two and two.problemText==nil and (two.problemEdges==nil or not two.problemEdges[1]:IsShown()))
+    browser:Release()
+end)
 finish()
