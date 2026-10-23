@@ -11,7 +11,7 @@ import {createSessions} from '../Web/server/identity/session.mjs';
 import {encodeExport} from '../Web/codec/export.mjs';
 
 const goldens=JSON.parse(readFileSync(new URL('./fixtures/web_codec.json',import.meta.url))).goldens;
-const ENVELOPE=goldens.find(g=>g.id.startsWith('current-reviewed')).text;// TBC Shaman starter, declares SHAMAN/tbc
+const ENVELOPE=JSON.parse(readFileSync(new URL('./fixtures/web_defaults.json',import.meta.url))).records.find(r=>r.id==='rm.tbc.shaman.enhancement.icyveins').wire;// packaged TBC Shaman Enhancement (Icy Veins), declares SHAMAN/tbc
 const LEGACY=goldens.find(g=>g.id==='original90083-store').text;      // valid legacy body
 const INVALID=goldens.find(g=>g.id==='Store-bytes-map').text;         // decodes, but invalid rotation structure
 const m=(...e)=>new Map(e),list=(...v)=>new Map(v.map((x,i)=>[i+1,x]));
@@ -84,10 +84,10 @@ test('every export kind uploads, is classified on the server, and is listed and 
   const s=await start();
   try{
     const cookie=await s.signIn('Jaina');
-    const env=await upload(s,cookie,{title:'Shaman starter',export:ENVELOPE,description:'Leveling.'});
+    const env=await upload(s,cookie,{title:'Shaman enhancement',export:ENVELOPE,description:'Leveling.'});
     assert.equal(env.status,201,env.text);
     assert.equal(env.json.share.kind,'rotation');assert.equal(env.json.share.class,'SHAMAN');assert.deepEqual(env.json.share.editions,['tbc']);
-    assert.equal(env.json.share.classSource,'export');assert.equal(env.json.share.name,'Shaman: early leveling (1–29)');
+    assert.equal(env.json.share.classSource,'export');assert.equal(env.json.share.name,'Shaman: Enhancement (Icy Veins)');
     const legacy=await upload(s,cookie,{title:'Old shaman',export:LEGACY,class:'SHAMAN',editions:['era','tbc']});
     assert.equal(legacy.status,201,legacy.text);assert.equal(legacy.json.share.classSource,'uploader');assert.deepEqual(legacy.json.share.editions,['era','tbc']);
     for(const [kind,text] of Object.entries(EXPORTS)){
@@ -105,7 +105,7 @@ test('every export kind uploads, is classified on the server, and is listed and 
     assert.equal((await s.call('/api/shares?q=%25')).json.total,0,'LIKE wildcards are escaped');
     assert.equal((await s.call('/api/shares?owner=dev%3Ajaina')).json.total,2+Object.keys(EXPORTS).length);
     const one=(await s.call('/api/shares/'+env.json.id)).json.share;assert.equal(one.export,ENVELOPE);
-    const page=await s.call('/s/'+env.json.id);assert.equal(page.status,200);assert.match(page.text,/Shaman starter/);
+    const page=await s.call('/s/'+env.json.id);assert.equal(page.status,200);assert.match(page.text,/Shaman enhancement/);
     const browse=await s.call('/shares?kind=function');assert.match(browse.text,/Kind function/);assert.match(browse.text,/Lua code/);
   }finally{await s.close();}
 });
