@@ -44,7 +44,9 @@ function M.build()
  local generation={};a.db={profile={rotations={}},global={}}
  a.GetRotationValidationOptions=function()return{},generation end;a.GetRotationValidationStamp=function()return generation end
  local paths,seenPaths={},{}
- for line in io.lines('RotationMaster.toc')do local path=line:gsub('\r',''):match('^%s*(Defaults/.-%.lua)%s*$');if path then assert(safePath(path)and not seenPaths[path],'unsafe/duplicate default source');seenPaths[path]=true;paths[#paths+1]=path end end
+ -- Every Built In module's block and pack files, in module TOC order.
+ local builtins=dofile('tools/builtin_modules.lua')
+ for _,path in ipairs(builtins.paths())do assert(safePath(path)and path:match('^Modules/.-%.lua$')and not seenPaths[path],'unsafe/duplicate default source');seenPaths[path]=true;paths[#paths+1]=path end
  assert(#paths>0 and #paths<=256,'bundled record limit')
  local captured,current,seen={},nil,{};local register=a.RegisterDefaultRotation
  a.RegisterDefaultRotation=function(self,value)
@@ -59,10 +61,12 @@ function M.build()
  local packEnv=setmetatable({assert=assert,ipairs=ipairs,pairs=pairs,type=type},{__index=function(_,key)error('unsupported pack global '..tostring(key),0)end})
  -- Shared block sources register no pack; they are hashed inputs like every pack source.
  a.loadAllDefaults=true -- the catalog covers every edition
- for _,path in ipairs(paths)do current=path;local count=#captured;load(path,packEnv);assert(#captured==count+(path:match('^Defaults/blocks/')and 0 or 1),'exactly one pack per source required')end
+ for _,path in ipairs(paths)do current=path;local count=#captured;load(path,packEnv);assert(#captured==count+(builtins.isBlock(path)and 0 or 1),'exactly one pack per source required')end
  assert(a:InitializeRotationLibrary())
  local output={format='RotationMasterBundledDefaults',version=1,scope='declared-data-only',displayLocale='enUS',nativeAvailability='unverified',sourceFiles={},packs=array({})}
- local inputs={'RotationMaster.toc','tools/export_web_defaults.lua','Data/codec.lua','tests/fixtures/codec.lua','Libs/AceSerializer-3.0/AceSerializer-3.0.lua','Libs/LibCompress/LibCompress.lua'}
+ -- The module TOCs and both module catalogs decide which sources load.
+ local inputs={'Core/builtin_modules.lua','tools/builtin_modules.lua','tools/export_web_defaults.lua','Data/codec.lua','tests/fixtures/codec.lua','Libs/AceSerializer-3.0/AceSerializer-3.0.lua','Libs/LibCompress/LibCompress.lua'}
+ for _,path in ipairs(builtins.tocs())do inputs[#inputs+1]=path end
  for _,path in ipairs(modules)do inputs[#inputs+1]=path end;for _,path in ipairs(paths)do inputs[#inputs+1]=path end
  for _,path in ipairs(inputs)do output.sourceFiles[path]=sha(path)end
  table.sort(captured,function(x,y)return x.value.id<y.value.id end)

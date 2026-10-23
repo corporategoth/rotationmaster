@@ -55,23 +55,77 @@ class VendorTests(unittest.TestCase):
             (root / 'Assets/Controls/minus.tga').write_bytes(b'fixture')
             self.assertEqual(check().returncode, 0)
 
-    def test_packaged_defaults_must_be_in_the_load_graph(self):
+    def test_packaged_defaults_must_be_in_exactly_one_edition_toc(self):
         with tempfile.TemporaryDirectory() as folder:
             root = Path(folder)
             (root / 'tests').mkdir()
             (root / 'Libs').mkdir()
-            (root / 'Defaults/tbc').mkdir(parents=True)
+            module = root / 'Modules/RotationMaster_Shaman'
+            (module / 'tbc').mkdir(parents=True)
+            (module / 'forever').mkdir(parents=True)
             shutil.copyfile(ROOT / 'tests/verify.py', root / 'tests/verify.py')
             (root / 'Libs/UPSTREAM.json').write_text('{"libraries": {}}')
-            (root / 'Defaults/tbc/pack.lua').write_text('return 1')
-            toc = root / 'RotationMaster.toc'
-            toc.write_text('')
+            (root / 'RotationMaster.toc').write_text('')
+            (module / 'bind.lua').write_text('return 1')
+            (module / 'tbc/pack.lua').write_text('return 1')
+            (module / 'forever/pack.lua').write_text('return 1')
+            header = '## Interface: 20506\n## Dependencies: RotationMaster\n## LoadOnDemand: 1\n'
+            fallback = module / 'RotationMaster_Shaman.toc'
+            tbc = module / 'RotationMaster_Shaman_TBC.toc'
+            camelot = module / 'RotationMaster_Shaman_Camelot.toc'
+            forever = module / 'RotationMaster_Shaman_Forever.toc'
+            pkgmeta = root / '.pkgmeta'
+            moved = ('package-as: RotationMaster\nmove-folders:\n'
+                     '  RotationMaster/Modules/RotationMaster_Shaman: RotationMaster_Shaman\nignore:\n  - tests\n')
             def check():
                 return subprocess.run([sys.executable, 'tests/verify.py'], cwd=root,
                                       capture_output=True, text=True)
-            self.assertNotEqual(check().returncode, 0, 'unloaded default pack accepted')
-            toc.write_text('Defaults/tbc/pack.lua\n')
-            self.assertEqual(check().returncode, 0)
+            def good():
+                pkgmeta.write_text(moved)
+                fallback.write_text(header)
+                tbc.write_text(header + 'bind.lua\ntbc/pack.lua\n')
+                camelot.write_text(header + 'bind.lua\nforever/pack.lua\n')
+                forever.write_text(header + 'bind.lua\nforever/pack.lua\n')
+                (root / 'RotationMaster.toc').write_text('')
+            good()
+            self.assertEqual(check().returncode, 0, check().stdout)
+            tbc.write_text(header + 'bind.lua\n')
+            self.assertIn('listed by 0 edition TOCs', check().stdout, 'unlisted pack accepted')
+            tbc.write_text(header + 'bind.lua\ntbc/pack.lua\ntbc/pack.lua\n')
+            self.assertIn('listed by 2 edition TOCs', check().stdout, 'twice-listed pack accepted')
+            tbc.write_text(header + 'bind.lua\ntbc/pack.lua\nforever/pack.lua\n')
+            self.assertIn('outside tbc/', check().stdout, 'another edition\'s pack accepted')
+            good()
+            forever.write_text(header + 'bind.lua\n')
+            self.assertIn('Flavour TOCs of one edition differ', check().stdout, 'diverging Forever TOCs accepted')
+            good()
+            fallback.write_text(header + 'bind.lua\ntbc/pack.lua\n')
+            self.assertIn('Fallback module TOC must load nothing', check().stdout, 'loading fallback accepted')
+            good()
+            fallback.unlink()
+            self.assertIn('lacks its fallback TOC', check().stdout)
+            good()
+            (root / 'RotationMaster.toc').write_text('Modules/RotationMaster_Shaman/tbc/pack.lua\n')
+            self.assertIn('also loaded by RotationMaster.toc', check().stdout)
+            good()
+            tbc.write_text('## Interface: 20506\n## Dependencies: RotationMaster\nbind.lua\ntbc/pack.lua\n')
+            self.assertIn('LoadOnDemand', check().stdout, 'eagerly loaded module accepted')
+            good()
+            tbc.write_text(header + 'tbc/pack.lua\nbind.lua\n')
+            self.assertIn('bind.lua first', check().stdout, 'module without its bootstrap first accepted')
+            good()
+            (module / 'RotationMaster_Shaman_Bogus.toc').write_text(header)
+            self.assertIn('Unknown module TOC flavour', check().stdout)
+            (module / 'RotationMaster_Shaman_Bogus.toc').unlink()
+            good()
+            pkgmeta.write_text('package-as: RotationMaster\nignore:\n  - tests\n')
+            self.assertIn('move-folders lacks', check().stdout, 'module left inside RotationMaster accepted')
+            pkgmeta.write_text(moved + '  - Modules\n')
+            self.assertIn('would omit a runtime file', check().stdout, 'ignored module accepted')
+            good()
+            (root / 'Defaults/tbc').mkdir(parents=True)
+            (root / 'Defaults/tbc/stray.lua').write_text('return 1')
+            self.assertIn('outside a load-on-demand module', check().stdout, 'pack outside a module accepted')
 
     def test_extra_library_and_missing_or_changed_root_notice_fail_independently(self):
         with tempfile.TemporaryDirectory() as folder:

@@ -1,0 +1,17 @@
+## Interface: 16001
+## Title: Rotation Master - Mage
+## Notes: Rotation Master's Built In Mage rotations. Rotation Master loads this itself, only for a Mage, and only this edition's files.
+## Author: PreZ
+## Version: @project-version@
+## Dependencies: RotationMaster
+## LoadOnDemand: 1
+## Group: RotationMaster
+## X-Category: Action Bars
+## X-License: MIT
+
+bind.lua
+forever/blocks.lua
+forever/mage-frost.lua
+forever/mage-fire.lua
+forever/mage-fire-icyveins.lua
+forever/mage-arcane.lua

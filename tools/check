@@ -607,6 +607,8 @@ def main():
             ['lua5.1', 'tests/default_corpus.lua'],
             ['lua5.1', 'tests/builtin_character_scope.lua'],
             ['luajit', 'tests/builtin_character_scope.lua'],
+            ['lua5.1', 'tests/builtin_modules.lua'],
+            ['luajit', 'tests/builtin_modules.lua'],
             ['lua5.1', 'tests/builtin_composition.lua'],
             ['luajit', 'tests/builtin_composition.lua'],
             ['lua5.1', 'tests/defaults_tbc_warrior.lua'],

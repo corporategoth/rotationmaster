@@ -2,7 +2,7 @@
 -- as a fixed, known pack. It is not in the TOC and never ships.
 local _, addon = ...
 -- Original priority data, not copied guide prose. Scope and omissions are in
--- Defaults/README.md. IDs are locale-independent; the engine expands action ranks.
+-- Modules/README.md. IDs are locale-independent; the engine expands action ranks.
 local function all(...) return {type="AND",value={...}} end
 local function notCondition(value) return {type="NOT",value=value} end
 local function known(id) return {type="SPELL_KNOWN",spell=id} end

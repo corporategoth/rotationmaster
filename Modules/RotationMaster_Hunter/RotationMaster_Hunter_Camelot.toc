@@ -1,0 +1,17 @@
+## Interface: 16001
+## Title: Rotation Master - Hunter
+## Notes: Rotation Master's Built In Hunter rotations. Rotation Master loads this itself, only for a Hunter, and only this edition's files.
+## Author: PreZ
+## Version: @project-version@
+## Dependencies: RotationMaster
+## LoadOnDemand: 1
+## Group: RotationMaster
+## X-Category: Action Bars
+## X-License: MIT
+
+bind.lua
+forever/blocks.lua
+forever/hunter-ranged.lua
+forever/hunter-ranged-mobalytics.lua
+forever/hunter-survival.lua
+forever/hunter-survival-weave.lua

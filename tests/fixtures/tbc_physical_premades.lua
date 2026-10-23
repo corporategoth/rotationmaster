@@ -10,9 +10,9 @@ local families={
  [2098]={2098,6760,6761,6762,8623,8624,11299,11300,31016,26865},[1978]={1978,13549,13550,13551,13552,13553,13554,13555,25295,27016},
  [3044]={3044,14281,14282,14283,14284,14285,14286,14287,27019},[12294]={12294,21551,25248,30330},[23881]={23881,23892,23894,30335},
 }
-local packs={WARRIOR={'Defaults/blocks/warrior.lua','Defaults/tbc/warrior-dps-wowsims.lua','Defaults/tbc/warrior-dps-icyveins.lua','Defaults/tbc/warrior-protection-wowhead.lua','Defaults/tbc/warrior-protection-icyveins.lua'},
- ROGUE={'Defaults/blocks/rogue.lua','Defaults/tbc/rogue-dps-wowsims.lua','Defaults/tbc/rogue-dps-wowhead.lua'},
- HUNTER={'Defaults/blocks/hunter.lua','Defaults/tbc/hunter-ranged-wowsims.lua','Defaults/tbc/hunter-ranged-wowhead.lua'}}
+local packs={WARRIOR={'Modules/RotationMaster_Warrior/tbc/blocks.lua','Modules/RotationMaster_Warrior/tbc/warrior-dps-wowsims.lua','Modules/RotationMaster_Warrior/tbc/warrior-dps-icyveins.lua','Modules/RotationMaster_Warrior/tbc/warrior-protection-wowhead.lua','Modules/RotationMaster_Warrior/tbc/warrior-protection-icyveins.lua'},
+ ROGUE={'Modules/RotationMaster_Rogue/tbc/blocks.lua','Modules/RotationMaster_Rogue/tbc/rogue-dps-wowsims.lua','Modules/RotationMaster_Rogue/tbc/rogue-dps-wowhead.lua'},
+ HUNTER={'Modules/RotationMaster_Hunter/tbc/blocks.lua','Modules/RotationMaster_Hunter/tbc/hunter-ranged-wowsims.lua','Modules/RotationMaster_Hunter/tbc/hunter-ranged-wowhead.lua'}}
 M.packs=packs
 -- Every action/aura ID the premades name, so the catalog and bar know them.
 local ids={WARRIOR={6603,6673,469,2687,6552,72,845,78,12328,12292,1719,100,34428,20252,29801,1680,6343,5308,7384,772,23881,12294,1715,20243,7386,23922,6572,1160,99,2565,12975,871},

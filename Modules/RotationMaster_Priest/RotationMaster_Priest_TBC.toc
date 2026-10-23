@@ -1,0 +1,17 @@
+## Interface: 20506
+## Title: Rotation Master - Priest
+## Notes: Rotation Master's Built In Priest rotations. Rotation Master loads this itself, only for a Priest, and only this edition's files.
+## Author: PreZ
+## Version: @project-version@
+## Dependencies: RotationMaster
+## LoadOnDemand: 1
+## Group: RotationMaster
+## X-Category: Action Bars
+## X-License: MIT
+
+bind.lua
+tbc/blocks.lua
+tbc/priest-dps-icyveins.lua
+tbc/priest-dps-wowhead.lua
+tbc/priest-healer-wowhead.lua
+tbc/priest-healer-icyveins.lua

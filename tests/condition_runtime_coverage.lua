@@ -94,10 +94,11 @@ test('every TBC pack action and cooldown graph compiles, or takes the declared o
  -- Built In composition: compile the expanded graphs registration actually consumes.
  for _,path in ipairs({'Data/plain.lua','Data/tags.lua','Data/rotation_tree.lua','Data/validation.lua','Core/rotation_library.lua'})do f.load(path)end
  a.RegisterDefaultRotation=function(_,envelope)if envelope.applicability.families[1]=='tbc'then loaded[#loaded+1]=assert(a:ExpandDefaultRotation(envelope))end;return true end
- -- One pack per Defaults/tbc file; blocks register none. Forever and Retail packs (reference-only
+ -- One pack per TBC module pack file; blocks register none. Forever and Retail packs (reference-only
  -- on a restricted client) have their own suites and are not counted here.
  a.loadAllDefaults=true
- local packs=0;for path in io.lines('RotationMaster.toc')do if path:match('^Defaults/.*%.lua$')then f.load(path);if path:match('^Defaults/tbc/')then packs=packs+1 end end end
+ local modules=dofile('tools/builtin_modules.lua')
+ local packs=0;for _,path in ipairs(modules.paths())do f.load(path);if path:match('^Modules/RotationMaster_%a+/tbc/')and not modules.isBlock(path)then packs=packs+1 end end
  assert(packs>0 and #loaded==packs,'pack census changed: '..#loaded..' of '..packs)
  -- The TBC premades read condition tags the compiler does not own yet (POWER, MANAPCT,
  -- THREAT_COUNT, TOTEM, TT_HEALTH, DISTANCE_COUNT, SWING_TIME, BUFF_REMAIN, DEBUFF_STACKS...),

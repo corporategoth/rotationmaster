@@ -1,5 +1,6 @@
 -- Authoring/schema fixtures only: this does not simulate combat recommendations.
 local F=dofile('tests/fixtures/addon.lua')
+local modules=dofile('tools/builtin_modules.lua')
 local C={}
 function C.contains(values,wanted) for _,value in ipairs(values or {}) do if value==wanted then return true end end;return false end
 local function paths(prefix)
@@ -12,6 +13,7 @@ local function paths(prefix)
 end
 -- options.characterScope keeps production scoping: only this character's edition and
 -- class register (otherwise every pack loads, as the cross-edition checks need).
+-- options.modules=false loads no module files (the caller loads them as the client would).
 function C.load(project,expansion,class,options)
     local f=F.new(project,expansion,class);local a,e=f.addon,f.env
     local state={level=1,context='player',build=70006}
@@ -38,8 +40,9 @@ function C.load(project,expansion,class,options)
         local ok,why=register(self,pack);assert(ok,why);if why~='other-character' then packs[#packs+1]=assert(a:ExpandDefaultRotation(pack)) end;return ok,why
     end
     a.loadAllDefaults=not(options and options.characterScope) -- the corpus checks every edition's packs
-    for _,path in ipairs(paths('Defaults')) do
-        local count=#packs;f.load(path);assert(path:match('^Defaults/blocks/') or #packs>count or a.loadAllDefaults==false,path..' registered no defaults')
+    -- Every Built In module's files, as the per edition+class module TOCs list them.
+    for _,path in ipairs(options and options.modules==false and {} or modules.paths()) do
+        local count=#packs;f.load(path);assert(modules.isBlock(path) or #packs>count or a.loadAllDefaults==false,path..' registered no defaults')
     end
     assert(a:InitializeRotationLibrary())
     return f,packs,state
