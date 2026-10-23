@@ -12,7 +12,21 @@ function addon:BuildItemSettings(p)
     local profileSets=store.profile.itemsets or {};local globalSets=store.global.itemsets or {};local merged={}
     for id,set in pairs(globalSets) do merged[id]=set end;for id,set in pairs(profileSets) do merged[id]=set end
     local entries=self:SettingsEntries(merged);for _,entry in ipairs(entries) do local value=(merged[entry.value].items or {})[1];local info=value and self:GetReferenceProvider('item').info(tonumber(value) or self:GetReferenceProvider('item').resolve(value));entry.icon=info and info.icon or 'Interface\\Icons\\INV_Misc_Bag_08' end;if not merged[p.selection] and not p.creating then p.selection=entries[1] and entries[1].value end
-    p:UseRoster(entries,p.selection,function(id) p.selection=id;p.creating=false;p:Draw() end,{newText=L['Add item set'],new=function() p.previousSelection=p.selection;p.selection=nil;p.creating=true;p.emptyDismissed=false;p:Draw() end});if p.historyEnabled then p:HistoryActions() end
+    -- Binding: drag a set (its roster row or the Bind pill) onto any action
+    -- bar slot, which swaps with what is there, or click Bind and then click
+    -- an empty slot. Both start the same pending bind.
+    local function beginBind(setId)
+        if not p:FlushEdits() then return false end
+        if InCombatLockdown and InCombatLockdown() then p:Message(L['Leave combat before changing action bar bindings.']);return false end
+        if p.transactionKeys and p:IsSettingsDraftDirty() then p:Message(L['Apply item-set changes before binding it to an action bar.']);return false end
+        local first;if self.FindFirstItemOfItemSet then first=self:FindFirstItemOfItemSet({},setId,true) elseif self.FindFirstItemInItems then first=self:FindFirstItemInItems((merged[setId] or {}).items or {}) end
+        local ok,why
+        if self.BeginItemSetBind then ok,why=self:BeginItemSetBind(setId,first)
+        elseif first and type(PickupItem)=='function' then self.bindingItemSet=setId;PickupItem(first);ok=true else why='unavailable' end
+        if not ok then p:Message(why=='combat' and L['Leave combat before changing action bar bindings.'] or L['An item from this set must be available before binding.']) end
+        return ok
+    end
+    p:UseRoster(entries,p.selection,function(id) p.selection=id;p.creating=false;p:Draw() end,{dragOut=function(setId) beginBind(setId) end,newText=L['Add item set'],new=function() p.previousSelection=p.selection;p.selection=nil;p.creating=true;p.emptyDismissed=false;p:Draw() end});if p.historyEnabled then p:HistoryActions() end
     local set=merged[p.selection]
     if set then
         local id=p.selection;local items=set.items or {}
@@ -47,13 +61,12 @@ function addon:BuildItemSettings(p)
         self:SetUIScript(binding,'OnClick',p:Guard(function() if not p:FlushEdits() then return end
             if InCombatLockdown and InCombatLockdown() then p:Message(L['Leave combat before changing action bar bindings.']);return end
             if bindings[id] then if self.UnbindItemSet then if self:UnbindItemSet(id)==false then p:Message(L['Leave combat before changing action bar bindings.']);return end else bindings[id]=nil;if self.EndHighlightSlot then self:EndHighlightSlot() end end;refreshBinding();return end
-            if p.transactionKeys and p:IsSettingsDraftDirty() then p:Message(L['Apply item-set changes before binding it to an action bar.']);return end
-            local first;if self.FindFirstItemOfItemSet then first=self:FindFirstItemOfItemSet({},id,true) elseif self.FindFirstItemInItems then first=self:FindFirstItemInItems(items) end
-            if not first or type(PickupItem)~='function' then p:Message(L['An item from this set must be available before binding.']);return end
-            self.bindingItemSet=id;PickupItem(first)
+            beginBind(id)
         end))
+        binding.tooltip=L['Drag onto any action bar slot (it swaps with what is there), or click Bind and then click an empty slot.']
+        self:BindWorkbenchDragSource(binding,p:Guard(function() beginBind(id) end),function() end)
         local token=p.generation;local callback=function(changedId) if p:Valid(token) and (changedId==nil or changedId==id) then refreshBinding() end end;self.itemSetCallback=callback;refreshBinding()
-        p.cleanups[#p.cleanups+1]=function() if self.itemSetCallback==callback then self.itemSetCallback=nil end;if self.bindingItemSet==id then self.bindingItemSet=nil;if type(GetCursorInfo)=='function' and GetCursorInfo()=='item' and type(ClearCursor)=='function' then ClearCursor() end end;if self.EndHighlightSlot then self:EndHighlightSlot() end end
+        p.cleanups[#p.cleanups+1]=function() if self.itemSetCallback==callback then self.itemSetCallback=nil end;if self.bindingItemSet==id then self.bindingItemSet=nil;if self.ClearItemSetBindCursor then self:ClearItemSetBindCursor(id) end end;if self.EndHighlightSlot then self:EndHighlightSlot() end end
         local actionEntries={{key='duplicate',text=L['Duplicate'],icon='copy',action=function() local new=self:uuid();store.profile.itemsets=store.profile.itemsets or {};store.profile.itemsets[new]=self:CopySettingsData(set);store.profile.itemsets[new].name=string.format(L['Copy of %s'],set.name or id);p.selection=new;p:Draw() end},
             {key='transfer',text=L['Import/Export'],icon='transfer',action=function()
                 local codec=self:NewRotationCodec();local text,why=codec:Encode({format='RM-ItemSet',version=1,name=set.name,items=items});if not text then p:Message(why);return end

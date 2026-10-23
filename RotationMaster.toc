@@ -207,6 +207,7 @@ UI/settings_collections.lua
 UI/settings_announces.lua
 UI/settings_effects.lua
 UI/settings_items.lua
+UI/item_set_binding.lua
 UI/settings_conditions.lua
 UI/settings_functions.lua
 UI/function_bindings.lua

@@ -2263,6 +2263,16 @@ end
 
 function addon:UpdateBoundButton(id)
     if InCombatLockdown and InCombatLockdown() then return false end
+    -- Refreshing a slot picks the item up; never replace what the cursor
+    -- already holds (a swapped-out action). Retry once it is empty.
+    if type(GetCursorInfo)=='function' and GetCursorInfo() then
+        self.deferredBoundButtons=self.deferredBoundButtons or {};self.deferredBoundButtons[id]=true
+        if not self.deferredBoundTimer and C_Timer and C_Timer.After then
+            self.deferredBoundTimer=true
+            C_Timer.After(.5,function() self.deferredBoundTimer=nil;local ids=self.deferredBoundButtons;self.deferredBoundButtons=nil;for deferred in pairs(ids or {}) do self:UpdateBoundButton(deferred) end end)
+        end
+        return false
+    end
     self.updatingBoundButtons=self.updatingBoundButtons or {};if self.updatingBoundButtons[id] then return false end
     self.updatingBoundButtons[id]=true
     local ok,changed=pcall(function()
@@ -2385,7 +2395,7 @@ addon.ACTIONBAR_SLOT_CHANGED = wrapEvent(function(self, _, slot)
             local slots=bindings[pending] or {};bindings[pending]=slots;local found=false;for _,value in ipairs(slots) do if value==slot then found=true end end;if not found then slots[#slots+1]=slot end;changed[pending]=true
         end
     end
-    if pickup then self.bindingItemSet=pickup end
+    if pickup then self.bindingItemSet=pickup;if self.WatchItemSetBind then self:WatchItemSetBind() end end
     for id in pairs(changed) do if bindings[id] and self.FindFirstItemOfItemSet then self:UpdateBoundButton(id) end end
     if self.itemSetCallback then for id in pairs(changed) do self.itemSetCallback(id) end end
 end)

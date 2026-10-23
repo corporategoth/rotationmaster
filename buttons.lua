@@ -1130,6 +1130,16 @@ function addon:EndHighlightSlot()
     Highlight = {}
 end
 
+-- Item-set binding observes the indexed action buttons and resolves their
+-- slots exactly as highlighting does. Read-only; no secure state is touched.
+function addon:ResolveActionButtonSlot(button) return GetActionSlot(button) end
+function addon:ForEachActionButton(callback)
+    for button in pairs(ButtonSpells) do
+        local ok,kind=pcall(button.GetAttribute,button,'type')
+        if ok and kind=='action' then callback(button,GetActionSlot(button)) end
+    end
+end
+
 function addon:HighlightSlots(slots)
 	addon:EndHighlightSlot()
 	for _, buttons in pairs(Spells) do

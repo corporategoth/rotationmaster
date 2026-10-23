@@ -10,6 +10,17 @@ function addon:InstallSettingsRosterOrder(p)
         row.icon:ClearAllPoints();row.icon:SetPoint('LEFT',index and 24 or 4,0);addon:AlignWorkbenchTextLeft(row,entry.icon and (index and 54 or 34) or 6)
         if row.up then row.up:Hide();row.down:Hide() end
         addon:SetUIScript(row,'OnDragStart',nil);addon:SetUIScript(row,'OnDragStop',nil)
+        -- An unordered roster may let its rows be dragged out of the page
+        -- (Item Sets: drag a set onto an action bar slot).
+        if not index and r.options.dragOut then
+            local function current() return r.active and r.revision==revision and row.rosterLease==lease and p:Valid(r.generation) end
+            addon:BindWorkbenchDragSource(row,function() if current() then r.options.dragOut(entry.value) end end,function() end)
+            for _,event in ipairs({'OnClick','OnMouseDown','OnDragStart','OnDragStop'}) do
+                local handler=row:GetScript(event)
+                if handler then addon:SetUIScript(row,event,function(...) if current() then return handler(...) end end) end
+            end
+            return
+        end
         if not index then return end
         if not row.up then row.up=addon:CreateWorkbenchIconButton(row,'up',L['Move Up']);row.down=addon:CreateWorkbenchIconButton(row,'down',L['Move Down']);row.up:SetPoint('TOPLEFT',1,-2);row.down:SetPoint('TOPLEFT',1,-16);row.up:SetSize(18,14);row.down:SetSize(18,14) end
         row.up:Show();row.down:Show();if index==1 then row.up:Disable() else row.up:Enable() end;if index==#items then row.down:Disable() else row.down:Enable() end
