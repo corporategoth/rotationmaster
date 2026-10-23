@@ -72,8 +72,10 @@ test('state changes need sign-in, the request header, JSON and a same-origin Ori
     assert.equal((await s.call('/api/shares',{method:'POST',cookie,headers:{origin:'https://evil.example'},body:{title:'abc',export:ENVELOPE}})).status,403);
     assert.equal((await s.call('/api/shares',{method:'POST',cookie,headers:{'content-type':'text/plain'},raw:'{}'})).status,415);
     assert.equal((await s.call('/api/shares',{method:'POST',cookie,headers:{'content-type':'application/json'},raw:'{not json'})).status,400);
-    // A tampered session cookie is just anonymous.
-    const forged=cookie.replace(/.$/,c=>c==='A'?'B':'A');
+    // A tampered session cookie is just anonymous. Flip the FIRST signature
+    // character: the last one of a 32-byte base64url MAC carries two padding
+    // bits, so 'A'<->'B' there decodes to the same bytes (a ~1-in-16 flake).
+    const forged=cookie.replace(/\.(.)/,(_,c)=>'.'+(c==='A'?'B':'A'));assert.notEqual(forged,cookie);
     assert.equal((await upload(s,forged,{export:ENVELOPE})).status,401);
     assert.equal((await s.call('/api/me',{cookie:forged})).json.user,null);
     assert.equal((await s.call('/api/me',{cookie})).json.user.id,'dev:thrall');

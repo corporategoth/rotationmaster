@@ -10,6 +10,9 @@ const small='AV4xXlRedF5e'; // Actual Store/Ace1 empty table.
 const base='https://example.invalid/viewer/';
 const fixtures=JSON.parse(readFileSync(new URL('./fixtures/web_defaults.json',import.meta.url),'utf8')).records;
 const packIDs=JSON.parse(readFileSync(new URL('../Web/catalog/defaults.json',import.meta.url),'utf8')).packs.map(p=>p.id);
+// A deliberate sample, not record [0]: the smallest packaged wire, which fits a
+// share link with room to spare whatever order or editions the catalog holds.
+const sample=[...fixtures].sort((a,b)=>a.wire.length-b.wire.length||(a.id<b.id?-1:1))[0];
 
 test('outgoing link drops unrelated query/hash and preserves exact wrapping',()=>{
  assert.deepEqual(make(' \t'+small+'\r\n',base+'?token=private#old'),{ok:true,url:base+'#rm-import-v1=%20%09AV4xXlRedF5e%0D%0A'});
@@ -59,7 +62,7 @@ test('invalid transport cannot acquire an outgoing link or download',()=>{
  }
 });
 test('source structure support is independent of original transport sharing',()=>{
- const source=fixtures[0].wire;assert.equal(make(source,base).ok,true);assert.equal(download(source).ok,true);
+ const source=sample.wire;assert((base+'#rm-import-v1='+encodeURIComponent(source)).length<=8192,sample.id);assert.equal(make(source,base).ok,true);assert.equal(download(source).ok,true);
  // A valid legacy empty table has no known rotation priority list.
  assert.equal(make(small,base).ok,true);
 });

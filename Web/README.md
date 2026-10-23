@@ -133,7 +133,7 @@ Differences page 25 returned changes at a time. Typed field/step segments retain
 
 ## Bundled source catalog
 
-`catalog/defaults.json` contains the thirty-six current bundled definitions, generated through production registration, library initialization and export. It records explicit `enUS` display strings separately from unchanged symbolic manifest keys and raw Lua bytes. Source file hashes provide consistency metadata; they do not authenticate upstream content or establish native readiness. The catalog and browser add no addon runtime work.
+`catalog/defaults.json` contains the seventy current bundled definitions (thirty-five TBC Anniversary, thirty-five WoW Forever), generated through production registration, library initialization and export. It records explicit `enUS` display strings separately from unchanged symbolic manifest keys and raw Lua bytes. Source file hashes provide consistency metadata; they do not authenticate upstream content or establish native readiness. The catalog and browser add no addon runtime work.
 
 Generate the primary catalog with `lua5.1 tools/export_web_defaults.lua` or `luajit tools/export_web_defaults.lua` from the repository root. Both produce identical sorted typed JSON. The trusted generator loads only reviewed fixed source paths and supplies an explicit offline English locale; it does not execute condition/provider callbacks or query gameplay facts. `luajit tools/export_web_defaults.lua --fixtures` creates actual bundled-codec wire snapshots. Their decoded semantics are tested; compressed/serialized wire iteration order is not promised to be canonical.
 
