@@ -1,7 +1,8 @@
 -- Retail (Midnight) Paladin premades: specialization slots, the Blizzard Assisted rotations, the
 -- disabled guide references and the reminders, through the real catalog, predicates, composition,
 -- readiness and sequence executor on a modeled Retail client (probe policy; the last test keeps the
--- real restricted policy).
+-- real restricted policy). Holy Power (s.points) is readable in combat, as Blizzard keeps the
+-- player's secondary resources never secret in Midnight; the guide references gate on it.
 local F=dofile('tests/fixtures/addon.lua');local test,finish=F.suite()
 local M=dofile('tests/fixtures/retail_premade_model_b.lua')
 local RET,RETIV='rm.retail.paladin.retribution','rm.retail.paladin.retribution.icyveins'
@@ -35,18 +36,25 @@ test('Retribution reminders: aura out of combat, Rebuke, defensives',function()
  s.combat=true;s.health.player=40;lit=M.upkeep(a,s,70,RET);assert(lit[403876]and not lit[633],'Divine Protection below half')
  s.health.player=10;lit=M.upkeep(a,s,70,RET);assert(lit[633],'Lay on Hands when nearly dead')
 end)
-test('Retribution Icy Veins reference: Hammer of Light, free spenders, Wake, Art of War, Hammer of Wrath cap, spenders, fillers',function()
- local a,s=paladin();s.learn(unpack(retKit))
+test('Retribution Icy Veins reference: Hammer of Light, free spenders, 5 Holy Power before Wake, Art of War, Hammer of Wrath cap, spenders at 3+, fillers',function()
+ local a,s=paladin();s.learn(unpack(retKit));s.points=3
  M.expect(a,s,70,RETIV,427453,nil,'Hammer of Light first');s.usable[427453]=false
  s.buff('player',223819);M.expect(a,s,70,RETIV,383328,nil,'Divine Purpose: free Final Verdict')
  s.near(2);M.expect(a,s,70,RETIV,53385,nil,'Divine Purpose on two enemies: free Divine Storm');s.near(0);s.clearAuras()
- M.expect(a,s,70,RETIV,255937,nil,'Wake of Ashes');s.cooling(255937,20)
- M.expect(a,s,70,RETIV,375576,nil,'Divine Toll');s.cooling(375576,40)
+ s.points=5;M.expect(a,s,70,RETIV,255937,nil,'5 Holy Power with Wake of Ashes ready: Wake first, as SimulationCraft waits for it')
+ s.cooling(255937,20);M.expect(a,s,70,RETIV,383328,nil,'5 Holy Power with Wake cooling: spend before Divine Toll')
+ s.secretCooldowns=true;M.expect(a,s,70,RETIV,383328,nil,'cooldown times secret: the Wake test reads the never-secret flags');s.secretCooldowns=false
+ s.near(2);M.expect(a,s,70,RETIV,53385,nil,'5 Holy Power on two enemies: Divine Storm');s.near(0)
+ s.known[383328]=nil;M.expect(a,s,70,RETIV,85256,nil,'5 Holy Power without Final Verdict: Templar\'s Verdict');s.learn(383328)
+ s.points=4;M.expect(a,s,70,RETIV,375576,nil,'4 Holy Power: no spend yet, Divine Toll');s.cooling(375576,40)
  s.buff('player',406086);M.expect(a,s,70,RETIV,184575,nil,'Blade of Justice on Art of War');s.clearAuras()
  s.charges={[24275]=2};M.expect(a,s,70,RETIV,24275,nil,'Hammer of Wrath at two charges');s.charges=nil
- M.expect(a,s,70,RETIV,383328,nil,'then the spender');s.buff('player',326733);M.expect(a,s,70,RETIV,53385,nil,'Empyrean Power: Divine Storm');s.clearAuras()
- s.known[383328]=nil;M.expect(a,s,70,RETIV,85256,nil,'Templar\'s Verdict without Final Verdict')
- s.usable[85256]=false;s.usable[53385]=false;M.expect(a,s,70,RETIV,24275,nil,'no Holy Power: Hammer of Wrath')
+ M.expect(a,s,70,RETIV,383328,nil,'then the spender at 3+')
+ s.near(2);M.expect(a,s,70,RETIV,53385,nil,'two enemies at 3+: Divine Storm');s.near(0)
+ s.known[383328]=nil;M.expect(a,s,70,RETIV,85256,nil,'Templar\'s Verdict without Final Verdict');s.learn(383328)
+ s.points=2;M.expect(a,s,70,RETIV,24275,nil,'below 3 Holy Power: no spender, Hammer of Wrath')
+ s.near(2);M.expect(a,s,70,RETIV,24275,nil,'two enemies below 3 Holy Power: still no Divine Storm');s.near(0)
+ s.buff('player',326733);M.expect(a,s,70,RETIV,53385,nil,'Empyrean Power: a free Divine Storm below 3');s.clearAuras()
  s.cooling(24275,5);M.expect(a,s,70,RETIV,184575,nil,'Blade of Justice');s.cooling(184575,5)
  M.expect(a,s,70,RETIV,20271,nil,'Judgment');s.cooling(20271,5);M.expect(a,s,70,RETIV,407480,nil,'Templar Strike')
  s.known[407480]=nil;M.expect(a,s,70,RETIV,35395,nil,'Crusader Strike')
@@ -65,9 +73,9 @@ test('Protection Icy Veins reference: pre-pull Consecration, Consecration upkeep
  s.cooling(26573,5);r=M.expect(a,s,66,PROTIV,nil,'stopped','nothing else before the pull');assert(not r.suppressAttack);s.cooldown={};s.combat=true
  M.expect(a,s,66,PROTIV,375576,nil,'Divine Toll');s.cooling(375576,30);s.usable[427453]=false
  M.expect(a,s,66,PROTIV,26573,nil,'not standing in Consecration');s.buff('player',188370)
- M.expect(a,s,66,PROTIV,53600,nil,'standing in it: Shield of the Righteous')
+ s.points=3;M.expect(a,s,66,PROTIV,53600,nil,'standing in it, 3 Holy Power: Shield of the Righteous')
  s.buff('player',1268810);M.expect(a,s,66,PROTIV,31935,nil,'Vanguard: Avenger\'s Shield first');s.clearAuras();s.buff('player',188370)
- s.usable[53600]=false;M.expect(a,s,66,PROTIV,24275,nil,'Hammer of Wrath');s.cooling(24275,5)
+ s.points=2;M.expect(a,s,66,PROTIV,24275,nil,'below 3 Holy Power: no Shield of the Righteous, Hammer of Wrath');s.cooling(24275,5)
  M.expect(a,s,66,PROTIV,275779,nil,'Judgment');s.cooling(275779,5);M.expect(a,s,66,PROTIV,204019,nil,'Blessed Hammer')
  s.cooling(204019,3);s.cooling(53595,3);M.expect(a,s,66,PROTIV,31935,nil,'Avenger\'s Shield');s.cooling(31935,5)
  s.buff('player',327510);M.expect(a,s,66,PROTIV,85673,nil,'Shining Light: Word of Glory');s.clearAuras();s.buff('player',188370)
@@ -75,30 +83,46 @@ test('Protection Icy Veins reference: pre-pull Consecration, Consecration upkeep
  s.learn(31884,389539,432472,432459);s.cooldown={};local lit=M.upkeep(a,s,66,PROTIV);assert(lit[31884]and lit[432472]and lit[432459],'cooldowns')
  s.buff('player',31884);lit=M.upkeep(a,s,66,PROTIV);assert(not lit[432472],'Sacred Weapon waits for Avenging Wrath to end')
 end)
-test('Protection Wowhead reference: Judgment first, Consecration last, Word of Glory below half',function()
- local a,s=paladin();s.learn(unpack(protKit))
+test('Protection Wowhead reference: Judgment first, Divine Toll only at 0 Holy Power, Consecration last, Word of Glory below half',function()
+ local a,s=paladin();s.learn(unpack(protKit));s.points=3
  M.expect(a,s,66,PROTWH,275779,nil,'Judgment');s.cooling(275779,5)
  M.expect(a,s,66,PROTWH,53600,nil,'Shield of the Righteous');s.usable[53600]=false
- M.expect(a,s,66,PROTWH,31935,nil,'Avenger\'s Shield');s.cooling(31935,5);s.cooling(375576,30);s.cooling(204019,3);s.cooling(53595,3)
+ M.expect(a,s,66,PROTWH,31935,nil,'Avenger\'s Shield');s.cooling(31935,5)
+ M.expect(a,s,66,PROTWH,204019,nil,'Holy Power left: no Divine Toll, Blessed Hammer')
+ s.points=1;M.expect(a,s,66,PROTWH,204019,nil,'one Holy Power: still no Divine Toll')
+ s.points=0;M.expect(a,s,66,PROTWH,375576,nil,'Divine Toll at 0 Holy Power')
+ s.secretCooldowns=true;M.expect(a,s,66,PROTWH,375576,nil,'with cooldown times secret too');s.secretCooldowns=false
+ s.cooling(375576,30);s.cooling(204019,3);s.cooling(53595,3)
  M.expect(a,s,66,PROTWH,26573,nil,'Consecration only as the filler')
  s.health.player=40;M.expect(a,s,66,PROTWH,85673,nil,'Word of Glory below half')
 end)
-test('Holy: friendly heals by Infusion and Holy Shock, enemy damage list, no target stops',function()
+test('Holy: Holy Power spent at 5 first and at 3+ after the heals, Infusion and Holy Shock, enemy damage list, no target stops',function()
  local a,s=paladin();s.learn(19750,20473,156322,85673,82326,415091,275773,35395,26573)
- s.hostile=false;s.friendly=true
- s.buff('player',54149);M.expect(a,s,65,HOLY,19750,nil,'Infusion of Light: Flash of Light');s.clearAuras()
+ s.hostile=false;s.friendly=true;s.points=5
+ M.expect(a,s,65,HOLY,156322,nil,'5 Holy Power: Eternal Flame first')
+ s.buff('player',54149);M.expect(a,s,65,HOLY,156322,nil,'5 Holy Power: spend before Infusion of Light')
+ s.points=2;M.expect(a,s,65,HOLY,19750,nil,'Infusion of Light: Flash of Light');s.clearAuras()
  M.expect(a,s,65,HOLY,20473,nil,'Holy Shock');s.cooling(20473,5)
- M.expect(a,s,65,HOLY,156322,nil,'Eternal Flame to spend');s.known[156322]=nil;M.expect(a,s,65,HOLY,85673,nil,'Word of Glory')
- s.usable[85673]=false;M.expect(a,s,65,HOLY,82326,nil,'Holy Light');s.cooldown={}
+ M.expect(a,s,65,HOLY,82326,nil,'below 3 Holy Power: no spender, Holy Light')
+ s.points=3;M.expect(a,s,65,HOLY,156322,nil,'Eternal Flame at 3');s.known[156322]=nil;M.expect(a,s,65,HOLY,85673,nil,'Word of Glory at 3')
+ s.points=5;s.cooldown={};M.expect(a,s,65,HOLY,85673,nil,'Word of Glory at 5 without Eternal Flame');s.cooling(20473,5)
+ s.points=3;s.usable[85673]=false;M.expect(a,s,65,HOLY,82326,nil,'Holy Light');s.usable[85673]=nil;s.cooldown={}
  s.cast=true;M.expect(a,s,65,HOLY,nil,'stopped','casting');s.cast=false
  s.friendly=false;s.exists=false;local r=M.expect(a,s,65,HOLY,nil,'stopped','no target');assert(r.suppressAttack);s.exists=true
- s.hostile=true;M.expect(a,s,65,HOLY,415091,nil,'enemy: Shield of the Righteous');s.usable[415091]=false
- M.expect(a,s,65,HOLY,20473,nil,'Holy Shock on the enemy');s.cooling(20473,5)
- M.expect(a,s,65,HOLY,275773,nil,'Judgment');s.cooling(275773,5);M.expect(a,s,65,HOLY,35395,nil,'Crusader Strike')
+ s.hostile=true;s.points=5;M.expect(a,s,65,HOLY,415091,nil,'enemy, 5 Holy Power: Shield of the Righteous')
+ s.points=3;M.expect(a,s,65,HOLY,20473,nil,'enemy, 3 Holy Power: Holy Shock first');s.cooling(20473,5)
+ M.expect(a,s,65,HOLY,415091,nil,'then Shield of the Righteous at 3')
+ s.points=2;M.expect(a,s,65,HOLY,275773,nil,'below 3: Judgment');s.cooling(275773,5);M.expect(a,s,65,HOLY,35395,nil,'Crusader Strike')
  s.learn(375576,114165,200025,432459);local lit=M.upkeep(a,s,65,HOLY);assert(lit[375576]and lit[114165]and lit[432459]and not lit[200025],'cooldowns; Beacon of Virtue only on a friend')
  s.combat=false;lit=M.upkeep(a,s,65,HOLY);assert(not lit[375576],'cooldowns wait for combat')
 end)
 test('on the real restricted Retail client the Paladin premades are listed but never auto-selected',function()
  M.checkRestricted('paladin',SPECS,{255937,53600,20473})
+end)
+test('on the real restricted Retail client Holy Power still reads in combat, so the gates are live',function()
+ local f,s=M.new('paladin',{policy='restricted'});local a=f.addon;s.combat=true;s.points=5
+ local function point(op,v)return a:evaluateConditionResult({type='POINT',unit='player',operator=op,value=v}).status end
+ assert(point('GREATERTHANOREQUALS',5)=='match','5 Holy Power reads as 5')
+ s.points=0;assert(point('EQUALS',0)=='match'and point('GREATERTHANOREQUALS',3)=='no-match','0 Holy Power reads as 0')
 end)
 finish()

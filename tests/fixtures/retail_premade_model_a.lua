@@ -26,6 +26,9 @@ function M.new(class,token,spec,options)
  local f=F.new(1,12,token);local a,e=f.addon,f.env
  a.db.profile.rotations={};a.db.profile.itemsets={};a.db.global.effects={}
  e.Enum.PowerType.Essence=19;e.Enum.PowerType.Fury=17;e.Enum.PowerType.RunicPower=6;e.Enum.PowerType.Focus=2;e.Enum.PowerType.LunarPower=8
+ -- constants.lua ran before these Retail power types existed; rerun it so the class resource map
+ -- (addon.points) is Retail's: Evoker reads Essence, as on the client.
+ f.load('constants.lua');assert(a.points.EVOKER==19)
  local s={level=90,combat=true,targetCombat=true,hostile=true,friendly=false,dead=false,exists=true,moving=false,group=false,raid=false,
   vehicle=false,known={},usable={},range={},cooldown={},mapped={},power={},pet=false,petDead=false,
   cast=false,channel=false,repeatActive=false,current={},stealthed=false,classification='normal',creature='HUMANOID',enemies={},party={},
