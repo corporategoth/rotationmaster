@@ -234,6 +234,7 @@ local defaults = {
         combat_history = 10,
         damage_history = 30,
         disable_buttons = false,
+        assisted_highlight = "rm",
         rotation_view = "diagram",
         lua_editor = "auto",
         lua_line_numbers = true,
@@ -1662,9 +1663,12 @@ local function leanPublish(self, plan)
             end
             -- END ANALYTICS PRIMARY ADVICE
             self.currentSpell = spellid
-            if not addon:IsGlowing(spellid, itemId) then
+            -- Blizzard's own highlight can own a "Blizzard's suggestion" step
+            -- (Core/assisted_highlight.lua); RM then records the spell unglowed.
+            local hidden = cond.type == "assisted" and addon.assistedGlowHidden == true
+            if not addon:IsGlowing(spellid, itemId, hidden) then
                 if not current() then return end
-                if not profile.disable_buttons then addon:GlowNextSpell(spellid, itemId) end
+                if not profile.disable_buttons then addon:GlowNextSpell(spellid, itemId, hidden) end
                 if not current() then return end
                 if weakAuras and type(weakAuras.ScanEvents) == "function" then weakAuras.ScanEvents("ROTATIONMASTER_SPELL_UPDATE", cond.type, spellid) end
                 if not current() then return end
@@ -1963,9 +1967,10 @@ function addon:EvaluateNextActionInternal()
                     end
                     -- END ANALYTICS PRIMARY ADVICE
                     self.currentSpell=spellid
-                    if not addon:IsGlowing(spellid,itemId) then
+                    local hidden=cond.type=="assisted" and addon.assistedGlowHidden==true
+                    if not addon:IsGlowing(spellid,itemId,hidden) then
                         if not current() then return end
-                        if not self.db.profile.disable_buttons then addon:GlowNextSpell(spellid,itemId) end
+                        if not self.db.profile.disable_buttons then addon:GlowNextSpell(spellid,itemId,hidden) end
                         if not current() then return end
                         if weakAuras and type(weakAuras.ScanEvents)=="function" then weakAuras.ScanEvents("ROTATIONMASTER_SPELL_UPDATE",cond.type,spellid) end
                         if not current() then return end

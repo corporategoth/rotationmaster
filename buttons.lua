@@ -1124,9 +1124,11 @@ function addon:IsBoundActionReady(spellId,now)
 end
 function addon:GetPetActionButtonIndex(button) return PetButtons[button] end
 
-function addon:IsGlowing(spellId,itemId)
+-- hidden: the spell is the recommendation but Blizzard's Assisted Highlight
+-- draws it (Core/assisted_highlight.lua), so RM recorded it without a glow.
+function addon:IsGlowing(spellId,itemId,hidden)
     local current=SpellsGlowing[spellId]
-    return current~=nil and current.itemId==itemId
+    return current~=nil and current.itemId==itemId and (current.hidden==true)==(hidden==true)
 end
 
 local function GlowIndependent(spellId, id, effect, color, mags, setpoint, xoffs, yoffs, angle, itemId)
@@ -1213,8 +1215,12 @@ function addon:GlowClear()
 	end
 end
 
-function addon:GlowNextSpell(spellId,itemId)
+function addon:GlowNextSpell(spellId,itemId,hidden)
 	self:GlowClear()
+	if hidden then
+		if spellId~=nil and Spells[spellId]~=nil then SpellsGlowing[spellId]={itemId=itemId,hidden=true} end
+		return
+	end
 	self:GlowSpell(spellId,itemId)
 end
 
