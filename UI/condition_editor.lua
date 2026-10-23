@@ -56,7 +56,7 @@ local messages={
     ["invalid-condition-move"]=L["This condition has no adjacent sibling in that direction."],
 }
 local function createShell()
-    local window=CreateFrame("Frame",nil,UIParent)
+    local window=addon:TrackWorkbenchSize(CreateFrame("Frame",nil,UIParent))
     window:SetSize(760,620);window:SetPoint("CENTER");window:SetFrameStrata("FULLSCREEN_DIALOG")
     window:SetToplevel(true);window:SetClampedToScreen(true);window:SetMovable(true);window:SetResizable(true);window:EnableMouse(true)
     if window.SetResizeBounds then window:SetResizeBounds(660,460) end

@@ -33,7 +33,7 @@ end
 function addon:CreateNativePreviewWindow()
     local window=self.nativePreviewWindow
     if not window then
-        local frame=CreateFrame('Frame',nil,UIParent);frame:SetFrameStrata('MEDIUM');frame:SetMovable(true);frame:SetResizable(true);frame:SetClampedToScreen(true);frame:EnableMouse(false)
+        local frame=addon:TrackWorkbenchSize(CreateFrame('Frame',nil,UIParent));frame:SetFrameStrata('MEDIUM');frame:SetMovable(true);frame:SetResizable(true);frame:SetClampedToScreen(true);frame:EnableMouse(false)
         window={frame=frame,icons={},count=0,nativePreview=true};self.nativePreviewWindow=window
         window.body=frame:CreateTexture(nil,'BACKGROUND');window.body:SetAllPoints(frame);window.body:SetColorTexture(.055,.065,.075,1)
         window.header=CreateFrame('Frame',nil,frame);window.header:SetPoint('TOPLEFT');window.header:SetPoint('TOPRIGHT');window.header:SetHeight(20);window.header:EnableMouse(true);window.header:RegisterForDrag('LeftButton')

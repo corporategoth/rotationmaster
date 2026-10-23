@@ -5,8 +5,49 @@ local addon_name,addon=...
 ---@field art Texture
 ---@field SetSelected fun(self: RMWorkbenchButton, value: boolean)
 ---@return RMWorkbenchButton
+-- The client resolves a region's rect on its next layout pass: right after
+-- SetWidth/SetSize, or for a frame sized by its anchors, GetWidth/GetHeight
+-- still return the previous size, and OnSizeChanged arrives a frame later.
+-- Layout code reads sizes it has just assigned, so RM frames answer with the
+-- size RM last assigned (or the client last reported) instead of the stale
+-- rect. A size the client reports (window sizing, anchors) is noted before
+-- the frame's own OnSizeChanged handler runs, so that handler reads it too.
+function addon:TrackWorkbenchSize(frame)
+    if not frame or frame.rmTracksSize then return frame end
+    frame.rmTracksSize=true
+    local setWidth,setHeight,setSize,getWidth,getHeight=frame.SetWidth,frame.SetHeight,frame.SetSize,frame.GetWidth,frame.GetHeight
+    function frame:SetWidth(value,...) if type(value)=='number' then self.rmWidth=value end;return setWidth(self,value,...) end
+    function frame:SetHeight(value,...) if type(value)=='number' then self.rmHeight=value end;return setHeight(self,value,...) end
+    if setSize then function frame:SetSize(width,height,...) if type(width)=='number' then self.rmWidth=width end;if type(height)=='number' then self.rmHeight=height end;return setSize(self,width,height,...) end end
+    function frame:GetWidth(...) local value=self.rmWidth;if value then return value end;return getWidth(self,...) end
+    function frame:GetHeight(...) local value=self.rmHeight;if value then return value end;return getHeight(self,...) end
+    if frame.SetScript and frame.HookScript and frame.HasScript and frame:HasScript('OnSizeChanged') then
+        local setScript=frame.SetScript
+        function frame:SetScript(event,handler,...)
+            if event=='OnSizeChanged' and handler then
+                local inner=handler
+                handler=function(region,width,height,...) addon:NoteWorkbenchSize(region,width,height);return inner(region,width,height,...) end
+            end
+            return setScript(self,event,handler,...)
+        end
+        local current=frame:GetScript('OnSizeChanged');if current then frame:SetScript('OnSizeChanged',current) end
+        frame:HookScript('OnSizeChanged',function(region,width,height) addon:NoteWorkbenchSize(region,width,height) end)
+    end
+    return frame
+end
+-- Pooled builders may return any region or a plain table; only regions
+-- with their own geometry are tracked.
+function addon:TrackWorkbenchRegion(value)
+    if type(value)=='table' and type(value.SetWidth)=='function' and type(value.GetWidth)=='function' and type(value.SetPoint)=='function' then return self:TrackWorkbenchSize(value) end
+    return value
+end
+function addon:NoteWorkbenchSize(frame,width,height)
+    if not frame.rmTracksSize then return end
+    if type(width)=='number' and width>0 then frame.rmWidth=width end
+    if type(height)=='number' and height>0 then frame.rmHeight=height end
+end
 function addon:CreateWorkbenchButton(parent,label,width)
-    local button=CreateFrame("Button",nil,parent);button:SetSize(width or 28,20);button:EnableMouse(true)
+    local button=CreateFrame("Button",nil,parent);self:TrackWorkbenchSize(button);button:SetSize(width or 28,20);button:EnableMouse(true)
     local caption=button:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall");caption:SetPoint("CENTER")
     button:SetFontString(caption);button:SetText(label or "")
     local background=button:CreateTexture(nil,"BACKGROUND");background:SetAllPoints(button);button.art=background
@@ -63,11 +104,12 @@ end
 local function refitAlignedText(button)
     local label=button:GetFontString();local inset=button.rmAlignInset
     if not label or not inset then return end
+    addon:TrackWorkbenchSize(label)
     if math.abs((label:GetWidth() or 0)-(button.rmAlignWidth or -1))>.5 then button.rmAlignInset=nil;return end
     local width=math.max(1,button:GetWidth()-inset-4);label:SetWidth(width);button.rmAlignWidth=width
 end
 function addon:AlignWorkbenchTextLeft(button,inset)
-    local label=button:GetFontString();label:ClearAllPoints();label:SetPoint('LEFT',inset or 4,0);label:SetJustifyH('LEFT')
+    local label=button:GetFontString();self:TrackWorkbenchSize(label);label:ClearAllPoints();label:SetPoint('LEFT',inset or 4,0);label:SetJustifyH('LEFT')
     local width=math.max(1,button:GetWidth()-(inset or 4)-4);label:SetWidth(width);button.rmAlignInset=inset or 4;button.rmAlignWidth=width
     if not button.rmAlignFollows then
         button.rmAlignFollows=true;local setWidth,setSize=button.SetWidth,button.SetSize
@@ -183,7 +225,7 @@ function addon:SetWorkbenchListSelection(control,selected)
     if selected then control.selection:Show() else control.selection:Hide() end
 end
 function addon:CreateWorkbenchEditBox(parent)
-    local input=CreateFrame("EditBox",nil,parent);input:SetFontObject("GameFontHighlightSmall");input:SetAutoFocus(false)
+    local input=CreateFrame("EditBox",nil,parent);self:TrackWorkbenchSize(input);input:SetFontObject("GameFontHighlightSmall");input:SetAutoFocus(false)
     input:SetTextInsets(6,6,0,0);input:SetHeight(24)
     local background=input:CreateTexture(nil,"BACKGROUND");background:SetAllPoints(input);background:SetColorTexture(.08,.09,.10,.95)
     local line=input:CreateTexture(nil,"BORDER");line:SetPoint("BOTTOMLEFT");line:SetPoint("BOTTOMRIGHT");line:SetHeight(1);line:SetColorTexture(.38,.43,.48,.8)
@@ -204,7 +246,7 @@ function addon:AttachWorkbenchSearchHint(input,text)
     input:HookScript('OnHide',function() focused=false;refresh() end);input.RefreshWorkbenchSearchHint=refresh;refresh();return hint
 end
 function addon:CreateWorkbenchSlider(parent,minimum,maximum,step,width)
-    local slider=CreateFrame("Slider",nil,parent);slider:SetOrientation("HORIZONTAL");slider:SetSize(width or 112,12)
+    local slider=CreateFrame("Slider",nil,parent);self:TrackWorkbenchSize(slider);slider:SetOrientation("HORIZONTAL");slider:SetSize(width or 112,12)
     slider:SetMinMaxValues(minimum,maximum);slider:SetValueStep(step);if slider.SetObeyStepOnDrag then slider:SetObeyStepOnDrag(true) end
     local track=slider:CreateTexture(nil,"BACKGROUND");track:SetPoint("LEFT",0,0);track:SetPoint("RIGHT",0,0);track:SetHeight(3);track:SetColorTexture(.3,.32,.34,1)
     local thumb=slider:CreateTexture(nil,"ARTWORK");thumb:SetSize(7,12);thumb:SetColorTexture(.78,.8,.82,1);slider:SetThumbTexture(thumb)
@@ -292,8 +334,10 @@ function addon:CreateWorkbenchScrollBar(parent,orientation)
     return bar
 end
 function addon:CreateWorkbenchScrollFrame(parent)
-    local scroll=CreateFrame('ScrollFrame',nil,parent)
-    local bar=self:CreateWorkbenchScrollBar(scroll,'VERTICAL');scroll.workbenchBar=bar
+    local scroll=CreateFrame('ScrollFrame',nil,parent);self:TrackWorkbenchSize(scroll)
+    local bar=self:CreateWorkbenchScrollBar(scroll,'VERTICAL');self:TrackWorkbenchSize(bar);scroll.workbenchBar=bar
+    local setScrollChild=scroll.SetScrollChild
+    function scroll:SetScrollChild(child,...) addon:TrackWorkbenchSize(child);return setScrollChild(self,child,...) end
     bar:SetPoint('TOPLEFT',scroll,'TOPRIGHT',4,-10);bar:SetPoint('BOTTOMLEFT',scroll,'BOTTOMRIGHT',4,10)
     addon:SetUIScript(bar,'OnValueChanged',function(_,value)
         local current=scroll.GetVerticalScroll and scroll:GetVerticalScroll() or scroll.lastAppliedOffset

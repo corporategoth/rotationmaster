@@ -20,7 +20,7 @@ function addon:BuildCustomSourceFields(form,owner)
     local graph,why=self:NewFieldSchemaDraft(owner.model.value.fields,owner.model.value.fieldOrder,owner.model.value.requiredFields)
     local fieldsGraph=graph or self:NewFieldSchemaDraft(owner.model.value.fields,nil,owner.model.value.requiredFields)
     local nodes=fieldsGraph and fieldsGraph.root.children or {};local short=form.frame:GetHeight()<480
-    local height=owner.advancedSchema and (short and 56 or 80) or math.max(24,math.min(short and 1 or 3,#nodes)*20)
+    local height=owner.advancedSchema and (short and 44 or 80) or math.max(24,math.min(short and 1 or 3,#nodes)*20)
     local y=form:Row(L['Field schema'],height+8);local title=form.pool.labels[form.counts.labels];title:SetSize(168,24);form.fields.schemaLabel=title
     local width=math.max(80,form.width-278)
     local scroll=form:Acquire('sourceSchemaScroll',function() return addon:CreateWorkbenchScrollFrame(form.child) end);scroll:ClearAllPoints();scroll:SetPoint('TOPLEFT',174,-y);scroll:SetSize(width,height);owner.schemaViewport=scroll;form.fields.schemaViewport=scroll
@@ -29,7 +29,7 @@ function addon:BuildCustomSourceFields(form,owner)
     addon:SetWorkbenchInvalid(scroll,not graph or requirementError,string.format(L['Invalid field schema: %s'],why or requirementError and 'invalid-required-fields' or ''))
     local raw=addon:FormatCustomFieldSchema(owner.model.value.fields) or recoveryText(owner.model.value.fields)
     local schema=form:Edit('schema',nil,raw,function(text) return addon:ParseCustomFieldSchema(text) end,function(fields) owner.model:Change(function(model) model.value.fields=fields;model.value.fieldOrder=nil;model.value.requiredFields=addon:FilterCustomRequiredFields(model.value.requiredFields,fields) end) end)
-    scroll.schemaContent=scroll.schemaContent or CreateFrame('Frame',nil,scroll);local content=scroll.schemaContent
+    scroll.schemaContent=scroll.schemaContent or addon:TrackWorkbenchSize(CreateFrame('Frame',nil,scroll));local content=scroll.schemaContent
     scroll.schemaMeasure=scroll.schemaMeasure or scroll:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall');local measure=scroll.schemaMeasure;measure:SetWordWrap(true);measure:Hide()
     schema:SetMaxLetters(math.max(65536,#raw));schema:SetMultiLine(true);schema:ClearAllPoints();schema:SetParent(content);schema:SetTextInsets(6,6,4,4);schema:SetJustifyV('TOP');schema:SetAltArrowKeyMode(false);schema:SetAllPoints(content);schema:SetText(raw)
     local function layoutRaw()
@@ -44,7 +44,7 @@ function addon:BuildCustomSourceFields(form,owner)
         if not owner.advancedSchema then return end;local bar=scroll.workbenchBar;local top=-cursorY
         if top<bar:GetValue() then bar:SetValue(top) elseif top+lineHeight>bar:GetValue()+scroll:GetHeight() then bar:SetValue(top+lineHeight-scroll:GetHeight()) end
     end)
-    owner.schemaRows=owner.schemaRows or {};scroll.preview=scroll.preview or CreateFrame('Frame',nil,scroll);local preview=scroll.preview;preview:SetWidth(width-18);preview:SetHeight(math.max(20,#nodes*20))
+    owner.schemaRows=owner.schemaRows or {};scroll.preview=scroll.preview or addon:TrackWorkbenchSize(CreateFrame('Frame',nil,scroll));local preview=scroll.preview;preview:SetWidth(width-18);preview:SetHeight(math.max(20,#nodes*20))
     for index=1,math.max(1,#nodes) do
         local node=nodes[index];local row=owner.schemaRows[index]
         if not row then row=addon:CreateWorkbenchButton(preview,'',100);row.kindLabel=row:CreateFontString(nil,'OVERLAY','GameFontHighlightSmall');row.kindLabel:SetJustifyH('LEFT');owner.schemaRows[index]=row end

@@ -168,7 +168,7 @@ function addon:CreateWorkbenchLuaEditor(parent,changed,valid,preferred)
         retire(lease);if ok then release(control) end;host:Hide()
     end
     preferred=resolveEditor(self,preferred=='plain' and 'plain' or 'native')
-    local c={frame=CreateFrame('Frame',nil,parent),provider='native',valid=valid,changed=changed}
+    local c={frame=self:TrackWorkbenchSize(CreateFrame('Frame',nil,parent)),provider='native',valid=valid,changed=changed}
     c.scroll=self:CreateWorkbenchScrollFrame(c.frame);c.scroll:SetPoint('TOPLEFT',4,-4);c.content=CreateFrame('Frame',nil,c.scroll);c.content:EnableMouse(false);c.scroll:SetScrollChild(c.content);c.edit=CreateFrame('EditBox',nil,c.content);c.edit:SetMultiLine(true);c.edit:SetAutoFocus(false);c.edit:EnableMouse(true);c.edit:SetAltArrowKeyMode(false);c.edit:SetBlinkSpeed(.5);c.edit:SetCountInvisibleLetters(false);c.edit:SetTextColor(1,1,1);c.edit:SetJustifyH('LEFT');c.edit:SetJustifyV('TOP');c.edit:SetFontObject('GameFontHighlightSmall');c.edit:SetTextInsets(6,6,4,4);c.edit:SetMaxLetters(0);c.edit:SetHeight(1);c.edit:SetPoint('TOPLEFT',c.content,'TOPLEFT',0,0)
     -- Let the native EditBox own mouse placement and keyboard navigation.
     -- Focusing it from the covering scroll frame resets placement to the end.

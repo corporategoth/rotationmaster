@@ -161,7 +161,7 @@ function addon:CreateConditionCanvas(parent,owner)
         if selected then return self:Drop(selected.target) end
         self:CancelDrag()
     end
-    local horizontal=addon:CreateWorkbenchScrollBar(parent,'HORIZONTAL');canvas.horizontal=horizontal
+    local horizontal=addon:CreateWorkbenchScrollBar(parent,'HORIZONTAL');addon:TrackWorkbenchSize(horizontal);canvas.horizontal=horizontal
     addon:SetUIScript(horizontal,"OnValueChanged",function(_,value) canvas.scrollX=value;canvas.frame:SetHorizontalScroll(value) end)
     function canvas:LayoutScrollBar()
         horizontal:ClearAllPoints();horizontal:SetPoint("TOPLEFT",self.frame,"BOTTOMLEFT",0,-4);horizontal:SetWidth(self.frame:GetWidth())

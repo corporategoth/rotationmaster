@@ -9,7 +9,7 @@ end
 function addon:CreateRotationEditor(parent,spec,id,onSelect)
     if parent.rmRotationEditor then return parent.rmRotationEditor:Open(spec,id,onSelect) end
     local workspace,why=self:GetRotationEditWorkspace(spec,id);if not workspace then return nil,why end
-    local pane={frame=CreateFrame('Frame',nil,parent),workspace=workspace,view={collapsed={},expanded={},detailsHeights={}},active=false,tools={}}
+    local pane={frame=self:TrackWorkbenchSize(CreateFrame('Frame',nil,parent)),workspace=workspace,view={collapsed={},expanded={},detailsHeights={}},active=false,tools={}}
     pane.frame:SetPoint('TOPLEFT',parent,'TOPLEFT',0,0)
     pane.name=self:CreateWorkbenchEditBox(pane.frame);pane.name:SetPoint('TOPLEFT',8,-4);pane.name:SetSize(320,24);pane.name:SetMaxLetters(256)
     pane.origin=text(pane.frame);pane.origin:SetText('');pane.origin:Hide()
@@ -35,6 +35,7 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
         self.view.viewportWidth=self.canvas and self.canvas.frame:GetWidth() or 720
         local scene,problem=addon:BuildRotationCanvas(snapshot,self.view)
         if not scene then self:Message(problem.code);return end
+        addon:FitRotationSceneWidth(scene,self.view.viewportWidth)
         local validation=data.ValidateBody(snapshot,addon:GetImportValidationOptions());self.validation=validation
         for _,model in ipairs(scene.cards) do
             local path='$.body'

@@ -7,7 +7,7 @@ function addon:ShowFieldSchemaEditor(owner,fields,fieldOrder,changed,ownerValid,
     local frame=d.frame;frame:SetSize(760,540);frame:ClearAllPoints();frame:SetPoint('CENTER');frame:EnableMouse(true);frame:SetToplevel(true);frame:SetClampedToScreen(true);addon:MakeWindowOpaque(frame)
     d.title=d.title or frame:CreateFontString(nil,'OVERLAY','GameFontNormal');d.chrome=d.chrome or addon:CreateWorkbenchDialogChrome(frame,d.title);d.chrome:SetContext(L['Field schema'],L['Fields'],owner.model.key)
     d.close=d.close or addon:CreateWorkbenchIconButton(frame,'close',L['Close']);d.close:SetPoint('TOPRIGHT',-5,-5)
-    d.host=d.host or CreateFrame('Frame',nil,frame);d.host:SetPoint('TOPLEFT',8,-64);d.host:SetSize(744,420)
+    d.host=d.host or addon:TrackWorkbenchSize(CreateFrame('Frame',nil,frame));d.host:SetPoint('TOPLEFT',8,-64);d.host:SetSize(744,420)
     d.form=d.form or addon:CreateSettingsForm(d.host);local p=d.form
     local model,why=addon:NewFieldSchemaDraft(fields,fieldOrder,requiredFields)
     if not model then d.active=false;frame:Hide();owner.form:Message(string.format(L['Invalid field schema: %s'],why));return nil end

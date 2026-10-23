@@ -47,7 +47,7 @@ function addon:FunctionSignature(id,source)
     return self:FunctionQualifiedName(id,source)..'('..table.concat(args,', ')..')'..(#returns>0 and ' -> '..table.concat(returns,', ') or '')
 end
 function addon:BuildInlineFunction(p,key,source,readOnly)
-    local d=p.functionEditorCache or {frame=CreateFrame('Frame',nil,p.frame)};p.functionEditorCache=d;p.inlineFunction=d
+    local d=p.functionEditorCache or {frame=self:TrackWorkbenchSize(CreateFrame('Frame',nil,p.frame))};p.functionEditorCache=d;p.inlineFunction=d
     local resume=p.functionResume;p.functionResume=nil
     d.closed=false;d.key=key;d.readOnly=readOnly==true;d.value=self:CopySettingsData(source);if not d.readOnly then d.value.code=self:NormalizeLuaSourceForEditor(d.value.code);if self.FunctionEditorName then d.value.name=self:FunctionEditorName(key,d.value) end end;d.codeExpanded=false;d.metadataCollapsed={};d.baseline=self:CopySettingsData(d.value);d.expected=self:CopySettingsData((self.db.global.custom_functions or {})[key]);d.isNew=p.newFunctionSource~=nil;d.undo={};d.redo={};d.validationInput=nil;d.contextInput=nil;d.session=(d.session or 0)+1
     if resume then for field,value in pairs(resume) do d[field]=value end end

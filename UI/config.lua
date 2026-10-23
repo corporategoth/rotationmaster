@@ -54,7 +54,7 @@ local descriptions={Rotations=L["Browse, view and edit rotations."],General=L["C
     Announces=L["Configure optional announcements."],Profiles=L["Manage saved configuration profiles."],Integrations=L['Choose optional addon integrations.'],About=L["Rotation Master information and credits."]}
 
 local function newShell()
-    local window=CreateFrame("Frame",nil,UIParent)
+    local window=addon:TrackWorkbenchSize(CreateFrame("Frame",nil,UIParent))
     window:SetSize(1120,760);window:SetPoint("CENTER")
     window:SetFrameStrata("FULLSCREEN_DIALOG");window:SetToplevel(true);window:SetClampedToScreen(true)
     window:SetMovable(true);window:SetResizable(true);window:EnableMouse(true)
@@ -121,9 +121,9 @@ local function newShell()
     shell.version:SetText(version)
     shell.edition=text(window);shell.edition:SetPoint("TOPRIGHT",-62,-23);shell.edition:SetJustifyH("RIGHT");shell.edition:SetWordWrap(false);shell.edition:SetWidth(230)
     shell.edition:SetText(edition..(client.version and " "..client.version or ""))
-    local paneHeader=CreateFrame('Frame',nil,window);shell.paneHeader=paneHeader
+    local paneHeader=addon:TrackWorkbenchSize(CreateFrame('Frame',nil,window));shell.paneHeader=paneHeader
     shell.pageHelp=addon:CreateWorkbenchHelpButton(paneHeader,L['Help']);shell.pageHelp:SetPoint('TOPRIGHT',-2,-2);shell.pageHelp:SetSize(20,20);shell.pageHelp.icon:SetSize(18,18)
-    local content=CreateFrame("Frame",nil,window);shell.content=content;content:EnableMouse(true)
+    local content=addon:TrackWorkbenchSize(CreateFrame("Frame",nil,window));shell.content=content;content:EnableMouse(true)
     addon:SetUIScript(content,"OnMouseDown",function(_,button)
         if button=="RightButton" and not shell.rightDown and contentHasFocus(content) then shell:Hide() end
     end)
@@ -256,13 +256,14 @@ local function newShell()
         local top=-y+28
         paneHeader:ClearAllPoints();paneHeader:SetPoint('TOPLEFT',window,'TOPLEFT',12,-top);paneHeader:SetSize(math.max(1,width-24),math.max(1,self.paneHeaderHeight or 24))
         content:ClearAllPoints();content:SetPoint("TOPLEFT",window,"TOPLEFT",12,-top-(self.paneHeaderHeight or 24))
-        content:SetSize(math.max(1,width-24),math.max(1,height-top-28-(self.paneHeaderHeight or 24)))
+        local contentWidth,contentHeight=math.max(1,width-24),math.max(1,height-top-28-(self.paneHeaderHeight or 24))
+        content:SetSize(contentWidth,contentHeight)
         -- Status text ends before the centred footer links.
         self.status:SetWidth(math.max(1,width/2-(self.footerLinksWidth or 0)/2-174-8))
         self.language:ClearAllPoints();self.language:SetPoint("TOPRIGHT",-12,-42)
         self.title:SetWidth(math.max(1,width-490));self.activeTitle:SetWidth(math.max(1,width-490));self.activeTitle:SetWordWrap(false)
         if self.pane then
-            self.pane:SetWidth(content:GetWidth());self.pane:SetHeight(content:GetHeight())
+            self.pane:SetWidth(contentWidth);self.pane:SetHeight(contentHeight)
         end
     end
     function shell:RefreshTabs()
@@ -329,6 +330,7 @@ local function newShell()
         pane.message:SetText(string.format(L['Native settings page unavailable: %s'],key));pane:SetWidth(content:GetWidth());pane:SetHeight(content:GetHeight());pane.frame:Show()
         self.nativePane=true;self.pane=pane;self:BindPaneHelp()
     end
+    -- The client reports a sizing drag here; lay out with the reported size.
     addon:SetUIScript(window,"OnSizeChanged",function() if not shell:ClampSize() then shell:Layout() end end)
     addon:SetUIScript(window,"OnHide",function() shell.scaleDragging=false;shell.pendingScale=nil;addon:SetUIScript(window,"OnUpdate",nil);shell:CloseHelp();shell.languageMenu:Hide();shell.linkPane:Hide();shell.linkInput:ClearFocus();shell:ReleasePane() end)
     addon.HideOnEscape(shell)

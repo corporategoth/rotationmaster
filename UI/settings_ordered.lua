@@ -74,7 +74,7 @@ function addon:InstallSettingsOrdered(p)
         for i in ipairs(items) do
             local y=self.y;local outerSurface,outerWidth=self.surface,self.width
             local row=self:Acquire(options.compact and 'orderedTableRows' or 'orderedCards',function()
-                local frame=CreateFrame('Frame',nil,parent);frame.header=addon:CreateWorkbenchButton(frame,'',width-56);frame.header.art:Hide();frame.body=CreateFrame('Frame',nil,frame);frame.body:SetPoint('TOPLEFT',26,0)
+                local frame=CreateFrame('Frame',nil,parent);frame.header=addon:CreateWorkbenchButton(frame,'',width-56);frame.header.art:Hide();frame.body=addon:TrackWorkbenchSize(CreateFrame('Frame',nil,frame));frame.body:SetPoint('TOPLEFT',26,0)
                 frame.up=addon:CreateWorkbenchIconButton(frame,'up',L['Move Up']);frame.down=addon:CreateWorkbenchIconButton(frame,'down',L['Move Down']);frame.remove=addon:CreateWorkbenchIconButton(frame,'trash',L['Delete']);frame.remove.icon:SetVertexColor(1,.25,.25,1)
                 if not options.compact then frame.decoration=addon:CreateRoundedCardDecoration(frame);frame.decoration:SetColors(.35,.4,.44,.65,.08) end
                 return frame

@@ -8,7 +8,7 @@ local function identity(text) return text end
 -- A private, pooled native form. Existing addon setting shapes stay outside
 -- this view; every callback belongs to one drawing and one database identity.
 function addon:CreateSettingsForm(parent)
-    local p={frame=CreateFrame('Frame',nil,parent),pool={},counts={},fields={},edits={},cleanups={},active=false,generation=0,isSettingsForm=true}
+    local p={frame=addon:TrackWorkbenchSize(CreateFrame('Frame',nil,parent)),pool={},counts={},fields={},edits={},cleanups={},active=false,generation=0,isSettingsForm=true}
     p.frame:SetAllPoints(parent)
     addon:SetUIScript(p.frame,"OnHide",function()if p.stopStockObservation then p.stopStockObservation()end end)
     p.scroll=addon:CreateWorkbenchScrollFrame(p.frame);p.scroll:SetPoint('TOPLEFT',8,-8)
@@ -49,7 +49,7 @@ function addon:CreateSettingsForm(parent)
     end
     function p:Acquire(kind,build)
         self.counts[kind]=(self.counts[kind] or 0)+1;local i=self.counts[kind];self.pool[kind]=self.pool[kind] or {}
-        local c=self.pool[kind][i];if not c then c=build();self.pool[kind][i]=c end;if c.SetParent then c:SetParent(self.surface or self.child) end;c:Show();return c
+        local c=self.pool[kind][i];if not c then c=build();addon:TrackWorkbenchRegion(c);self.pool[kind][i]=c end;if c.SetParent then c:SetParent(self.surface or self.child) end;c:Show();return c
     end
     function p:Message(text,success) self.message:SetText(text or '');self.message:SetTextColor(success and .35 or 1,success and .85 or .5,success and .45 or .3) end
     function p:Row(caption,height)
@@ -333,7 +333,38 @@ function addon:CreateSettingsForm(parent)
         end
         self.scroll:SetSize(math.max(1,self.frame:GetWidth()-34),math.max(1,self.frame:GetHeight()-(self.creationUsed and 66 or 38)));self.message:SetWidth(math.max(1,self.frame:GetWidth()-(self.creationUsed and 340 or 20)))
     end
-    function p:SetWidth(n) local changed=n~=self.frame:GetWidth();self.frame:SetWidth(n);self:Layout();if changed and self.active and self:FlushEdits() then self:Draw() end end
+    -- Geometry alone changed: draw again at the new width, carrying every
+    -- pending input across as typed (invalid text included) without
+    -- committing it, so a resize never loses or silently applies an edit.
+    function p:Relayout()
+        if not self.active then return end
+        for _,record in ipairs(self.edits) do
+            if record.control.HasFocus and record.control:HasFocus() then
+                -- Typing keeps its control, text and caret; draw again once
+                -- the input lets go. A newer drawing supersedes this wait.
+                self.relayoutWaiter=self.relayoutWaiter or CreateFrame('Frame',nil,self.frame)
+                local token=self.generation
+                addon:SetUIScript(self.relayoutWaiter,'OnUpdate',function(waiter)
+                    if not self.active or self.generation~=token then addon:SetUIScript(waiter,'OnUpdate',nil);return end
+                    for _,current in ipairs(self.edits) do if current.control.HasFocus and current.control:HasFocus() then return end end
+                    addon:SetUIScript(waiter,'OnUpdate',nil);self:Relayout()
+                end)
+                return
+            end
+        end
+        local pending={}
+        for _,record in ipairs(self.edits) do if record.dirty then for key,control in pairs(self.fields) do if control==record.control then pending[key]=control:GetText() end end end end
+        self:Draw()
+        for key,text in pairs(pending) do
+            local control=self.fields[key]
+            for _,record in ipairs(self.edits) do if control and record.control==control then
+                control:SetText(text);record.dirty=true
+                local valid=record.parse(text)~=nil;control:SetTextColor(1,valid and 1 or .35,valid and 1 or .35)
+                if self.transactionKeys and self.fields.apply then self.fields.apply:Enable() end
+            end end
+        end
+    end
+    function p:SetWidth(n) local changed=n~=self.frame:GetWidth();self.frame:SetWidth(n);self:Layout();if changed then self:Relayout() end end
     function p:SetHeight(n) self.frame:SetHeight(n);self:Layout() end
     function p:Release()
         if self.stopStockObservation then self.stopStockObservation()end

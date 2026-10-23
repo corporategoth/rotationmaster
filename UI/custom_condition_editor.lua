@@ -9,7 +9,7 @@ function addon:condition_edit_box(update,key,source,saveAllowed,embedded)
     local d
     if embedded then d=embedded.editor else d=self.nativeCustomConditionDialog;if d and d.isEmbedded then d=nil end end
     if d and not d.closed then if d.OwnerValid and not d.OwnerValid() then d:Close() else d:Show();return d,d.owner end end
-    d=d or {frame=CreateFrame('Frame',nil,embedded and embedded.parent or UIParent),nativeCustomEditor=true}
+    d=d or {frame=self:TrackWorkbenchSize(CreateFrame('Frame',nil,embedded and embedded.parent or UIParent)),nativeCustomEditor=true}
     d.readOnly=embedded and embedded.readOnly==true;if d.readOnly then d.advancedSchema=false end;d.embedded=embedded;d.isEmbedded=embedded~=nil;if embedded then embedded.editor=d end
     self.nativeCustomConditionDialog=d;d.closed=false;d.suspended=nil;d.conditionTestState=nil;d.validationRequested=false;d.codeHistory={};d.update=update;d.selected='evaluate';d.session=(d.session or 0)+1;local session=d.session;local frame=d.frame
     frame:ClearAllPoints();frame:EnableMouse(true)
@@ -22,7 +22,7 @@ function addon:condition_edit_box(update,key,source,saveAllowed,embedded)
     d.close=d.close or self:CreateWorkbenchIconButton(frame,'close',L['Close']);d.close:SetPoint('TOPRIGHT',-5,-5)
     d.help=d.help or self:CreateWorkbenchHelpButton(frame,L['Help']);d.help:SetPoint('TOPRIGHT',-28,-4)
     if embedded then d.close:Hide();d.help:SetPoint('TOPRIGHT',-4,-30) else d.close:Show() end
-    d.body=d.body or CreateFrame('Frame',nil,frame);d.body:ClearAllPoints();d.body:SetPoint('TOPLEFT',embedded and 0 or 12,embedded and 0 or -34);d.body:SetSize(frame:GetWidth()-(embedded and 0 or 24),frame:GetHeight()-(embedded and 0 or 70))
+    d.body=d.body or self:TrackWorkbenchSize(CreateFrame('Frame',nil,frame));d.body:ClearAllPoints();d.body:SetPoint('TOPLEFT',embedded and 0 or 12,embedded and 0 or -34);d.body:SetSize(frame:GetWidth()-(embedded and 0 or 24),frame:GetHeight()-(embedded and 0 or 70))
     d.form=d.form or self:CreateSettingsForm(d.body);local p=d.form;p.unsavedDefaults={};p.fixedViewport=true;p:SetWidth(d.body:GetWidth());p:SetHeight(d.body:GetHeight())
     local profile,global=self.db.profile,self.db.global
     local function valid() return d.session==session and not d.closed and d.owner and d.owner.active and addon.db.profile==profile and addon.db.global==global and (not saveAllowed or saveAllowed()) end
