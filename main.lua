@@ -201,6 +201,7 @@ local defaults = {
     profile = {
         enable = true,
         poll = 0.15,
+        idle_poll = 1.0,
         ignore_mana = false,
         ignore_range = false,
         effect = "61b36ed1-fa31-4656-ad71-f3d50f193a85",
@@ -794,6 +795,27 @@ local function registerOptionalEvent(owner,change,event)
     return true,false
 end
 
+-- RM only acts on the player's and pet's own casts. A per-unit subscription
+-- keeps every other caster nearby from reaching a handler at all. Clients
+-- without RegisterUnitEvent keep the ordinary subscription.
+local castEvents = {UNIT_SPELLCAST_SENT=true, UNIT_SPELLCAST_START=true, UNIT_SPELLCAST_STOP=true,
+    UNIT_SPELLCAST_SUCCEEDED=true, UNIT_SPELLCAST_INTERRUPTED=true, UNIT_SPELLCAST_FAILED=true,
+    UNIT_SPELLCAST_DELAYED=true, UNIT_SPELLCAST_CHANNEL_START=true, UNIT_SPELLCAST_CHANNEL_STOP=true}
+local castFrame
+local function registerCastEvents(self)
+    if not castFrame then
+        if type(CreateFrame)~='function' then return false end
+        castFrame = CreateFrame('Frame')
+        castFrame:SetScript('OnEvent', function(_, event, ...)
+            local handler = self[event]
+            if handler then handler(self, event, ...) end
+        end)
+    end
+    if not castFrame.RegisterUnitEvent then return false end
+    for event in pairs(castEvents) do pcall(castFrame.RegisterUnitEvent, castFrame, event, 'player', 'pet') end
+    return true
+end
+
 local reconcileNameplateResume
 
 function addon:enable()
@@ -811,7 +833,10 @@ function addon:enable()
     local client=self.Platform:GetClientInfo()
     if not activeChangeCurrent(self,change) then return end
     if client.combatDataPolicy=='probe' then
-        for _,event in ipairs(combat_events) do if not activeCall(self,change,'RegisterEvent',event) then return end end
+        local unitCasts=registerCastEvents(self)
+        for _,event in ipairs(combat_events) do
+            if not (unitCasts and castEvents[event]) and not activeCall(self,change,'RegisterEvent',event) then return end
+        end
     end
     local family=client.family
     local extraEvents=family=="retail" or family=="forever"
@@ -873,6 +898,7 @@ function addon:disable()
     end
     self.spellHistory={}
     self.combatHistory={}
+    if castFrame then castFrame:UnregisterAllEvents() end
     if not activeCall(self,change,'UnregisterAllEvents') then return end
 end
 
@@ -1070,10 +1096,102 @@ function addon:DisableRotation()
     return nil,change,true
 end
 
+-- Idle gate. Out of combat with no target and no focus, the units a rotation
+-- can read (player, pet, party, mouseover) only change on the notifications
+-- below, with two exceptions: time (aura/cooldown remaining) and position. So
+-- a timer tick re-evaluates only after one of these notifications, or once
+-- every idle_poll seconds as a floor for time, position and custom code. In
+-- combat, with any target or focus (whose target-of-target has no events of
+-- its own), or with the configuration window open, every tick evaluates as
+-- before. idle_poll = 0 turns the gate off. Direct EvaluateNextAction calls
+-- (events, buttons) are never gated.
+local idleUnitEvents = {
+    'UNIT_AURA', 'UNIT_HEALTH', 'UNIT_MAXHEALTH', 'UNIT_POWER_UPDATE', 'UNIT_MAXPOWER', 'UNIT_DISPLAYPOWER',
+    'UNIT_INVENTORY_CHANGED', 'UNIT_FLAGS', 'UNIT_FACTION', 'UNIT_LEVEL', 'UNIT_SPELLCAST_START',
+    'UNIT_SPELLCAST_STOP', 'UNIT_SPELLCAST_SUCCEEDED', 'UNIT_SPELLCAST_FAILED', 'UNIT_SPELLCAST_INTERRUPTED',
+    'UNIT_SPELLCAST_CHANNEL_START', 'UNIT_SPELLCAST_CHANNEL_STOP', 'UNIT_TARGET',
+}
+local idleUnitGroups = { {'player', 'pet'}, {'target', 'focus'}, {'party1', 'party2'}, {'party3', 'party4'} }
+local idleEvents = {
+    'SPELL_UPDATE_COOLDOWN', 'SPELL_UPDATE_USABLE', 'SPELL_UPDATE_CHARGES', 'ACTIONBAR_UPDATE_COOLDOWN',
+    'ACTIONBAR_UPDATE_USABLE', 'ACTIONBAR_UPDATE_STATE', 'BAG_UPDATE', 'BAG_UPDATE_COOLDOWN',
+    'PLAYER_STARTED_MOVING', 'PLAYER_STOPPED_MOVING', 'PLAYER_TARGET_CHANGED', 'PLAYER_FOCUS_CHANGED',
+    'PLAYER_REGEN_DISABLED', 'PLAYER_REGEN_ENABLED', 'PLAYER_ENTERING_WORLD', 'PLAYER_TOTEM_UPDATE',
+    'PLAYER_EQUIPMENT_CHANGED', 'PLAYER_MOUNT_DISPLAY_CHANGED', 'PLAYER_UPDATE_RESTING', 'PLAYER_ALIVE',
+    'PLAYER_DEAD', 'PLAYER_UNGHOST', 'PLAYER_CONTROL_LOST', 'PLAYER_CONTROL_GAINED', 'PLAYER_LEVEL_UP',
+    'UPDATE_SHAPESHIFT_FORM', 'UPDATE_STEALTH', 'SPELLS_CHANGED', 'UNIT_PET', 'PET_BAR_UPDATE',
+    'UNIT_ENTERED_VEHICLE', 'UNIT_EXITED_VEHICLE', 'UPDATE_MOUSEOVER_UNIT', 'GROUP_ROSTER_UPDATE',
+    'ZONE_CHANGED', 'ZONE_CHANGED_INDOORS', 'ZONE_CHANGED_NEW_AREA', 'RUNE_POWER_UPDATE',
+    'UNIT_COMBO_POINTS', 'UPDATE_SHAPESHIFT_COOLDOWN',
+}
+local idleGate = { dirty = true, nextEval = 0, evaluated = 0, skipped = 0 }
+addon.idleGate = idleGate
+
+local function register(frame, event, ...)
+    -- Event names vary by client; an unknown name must not stop the rest.
+    if select('#', ...) > 0 and frame.RegisterUnitEvent then
+        pcall(frame.RegisterUnitEvent, frame, event, ...)
+    else
+        pcall(frame.RegisterEvent, frame, event)
+    end
+end
+
+-- Frames cannot be destroyed, so they are created once and only their
+-- registrations follow the rotation timer.
+local function startIdleGate()
+    idleGate.dirty = true
+    if idleGate.registered or type(CreateFrame) ~= 'function' then return end
+    local frames = idleGate.frames
+    if not frames then
+        local function dirty() idleGate.dirty = true end
+        frames = { CreateFrame('Frame') }
+        if frames[1].RegisterUnitEvent then
+            for i = 1, #idleUnitGroups do frames[i + 1] = CreateFrame('Frame') end
+        end
+        for _, frame in ipairs(frames) do frame:SetScript('OnEvent', dirty) end
+        idleGate.frames = frames
+    end
+    local shared = frames[1]
+    for _, event in ipairs(idleEvents) do register(shared, event) end
+    if #frames > 1 then
+        for i, units in ipairs(idleUnitGroups) do
+            for _, event in ipairs(idleUnitEvents) do register(frames[i + 1], event, units[1], units[2]) end
+        end
+    else
+        for _, event in ipairs(idleUnitEvents) do register(shared, event) end
+    end
+    idleGate.registered = true
+end
+
+local function stopIdleGate()
+    for _, frame in ipairs(idleGate.frames or {}) do frame:UnregisterAllEvents() end
+    idleGate.registered = false
+    idleGate.dirty = true
+end
+
+function addon:EvaluateNextActionTimer()
+    local interval = self.db.profile.idle_poll
+    if interval and interval > 0 and not self.inCombat then
+        local now = GetTime()
+        local shell = self.configWindow
+        if not idleGate.dirty and now < idleGate.nextEval and self.currentRotation == idleGate.rotation
+            and not (shell and shell.frame and shell.frame:IsShown()) and not UnitExists('target') and not UnitExists('focus') then
+            idleGate.skipped = idleGate.skipped + 1
+            return
+        end
+        idleGate.nextEval = now + interval
+    end
+    idleGate.dirty = false
+    idleGate.rotation = self.currentRotation
+    idleGate.evaluated = idleGate.evaluated + 1
+    return self:EvaluateNextAction()
+end
+
 function addon:EnableRotationTimer()
     if self.adviceErrorReport then return end
     if self.currentRotation and not self.rotationTimer then
-        self.rotationTimer = self:ScheduleRepeatingTimer('EvaluateNextAction', self.db.profile.poll)
+        startIdleGate()
+        self.rotationTimer = self:ScheduleRepeatingTimer('EvaluateNextActionTimer', self.db.profile.poll)
     end
 end
 
@@ -1082,6 +1200,7 @@ function addon:DisableRotationTimer()
         self:CancelTimer(self.rotationTimer)
         self.rotationTimer = nil
     end
+    stopIdleGate()
 end
 
 function addon:ButtonFetch()
@@ -1156,12 +1275,13 @@ function addon:StopAdviceForError(reportId)
     end
 end
 
+local evaluationContext = {module="recommendations", operation="timer"}
 function addon:EvaluateNextAction()
     if self.initializationErrorReport then return end
     if not self.Diagnostics then return self:EvaluateNextActionInternal() end
     if self.adviceErrorReport then return end
-    local ok, reportId = self.Diagnostics:Call({module="recommendations", operation="timer",
-        rotationId=self.currentRotation}, self.EvaluateNextActionInternal, self)
+    evaluationContext.rotationId = self.currentRotation
+    local ok, reportId = self.Diagnostics:Call(evaluationContext, self.EvaluateNextActionInternal, self)
     if not ok then self:StopAdviceForError(reportId) end
 end
 
@@ -1724,17 +1844,16 @@ local runtimeContextEvents={PLAYER_LEVEL_UP=true,UNIT_LEVEL=true,PLAYER_ENTERING
     PLAYER_REGEN_ENABLED=true,PLAYER_REGEN_DISABLED=true}
 local function wrapEvent(func)
     local failed = false
+    local context = {module="events", operation="dispatch"}
     return function(self, event, ...)
         if invalidateEvaluationContext and (event==nil or runtimeContextEvents[event]) then invalidateEvaluationContext() end
         if invalidateChoiceContext and (event==nil or runtimeContextEvents[event]) then invalidateChoiceContext(self) end
         if failed or self.initializationErrorReport then return end
-        local function dispatch(...)
-            self:debug("Event %s fired.", event)
-            return func(self, event, ...)
-        end
-        if not self.Diagnostics then return dispatch(...) end
-        local ok, reportId = self.Diagnostics:Call({module="events", operation="dispatch", event=event,
-            rotationId=self.currentRotation}, dispatch, ...)
+        self:debug("Event %s fired.", event)
+        if not self.Diagnostics then return func(self, event, ...) end
+        -- Reused per handler: read only if this dispatch records an error.
+        context.event, context.rotationId = event, self.currentRotation
+        local ok, reportId = self.Diagnostics:Call(context, func, self, event, ...)
         if not ok then
             failed = true
             self:StopAdviceForError(reportId)
@@ -2256,7 +2375,19 @@ addon.BAG_UPDATE = wrapEvent(function(self)
     self:UpdateBagContents()
 end)
 
+-- Damage/heal and UNIT_COMBAT histories are read only by their conditions.
+-- A reader stamps WantHistory each time it evaluates; events record while a
+-- reader ran in the last minute (an active rotation evaluates at least every
+-- idle_poll seconds), so nobody pays for histories no rotation uses.
+local historyWanted = {damage = 0, combat = 0}
+addon.historyWanted = historyWanted
+function addon:WantHistory(kind)
+    historyWanted[kind] = GetTime() + 60
+end
+
 addon.UNIT_COMBAT = wrapCombatEvent(function(self, _, unit, action, severity, value, type)
+    local wanted = self.historyWanted
+    if wanted and GetTime() > wanted.combat then return end
     if self.combatHistory[unit] == nil then
         self.combatHistory[unit] = {}
     end
@@ -2435,57 +2566,37 @@ addon.UNIT_SPELLCAST_SENT = wrapCombatEvent(function(_, _, unit, target, castgui
     end
 end)
 
+-- Amount offsets into the event-specific payload, by event prefix.
+local combatLogAmount = {SPELL = 4, RANGE = 4, ENVIRONMENTAL = 2}
+
+local function recordAmount(kind, guid, now, amount)
+    local entry = addon.damageHistory[guid]
+    if not entry then
+        entry = { damage = {}, heals = {} }
+        addon.damageHistory[guid] = entry
+    end
+    table.insert(entry[kind], 1, { time = now, value = tonumber(amount) })
+end
+
+-- This runs for every combat log line in range. Without a damage history
+-- reader only the player's own swings matter, so everything else returns
+-- before any string work.
 local function handle_combat_log(_, event, _, sourceGUID, _, _, _, destGUID, _, _, _, ...)
-    local spellid, spellname, envType
-    local offs = 1
-    if event:sub(1, 5) == "SPELL" or event:sub(1, 5) == "RANGE" then
-        spellid, spellname = ...
-        offs = 4
-    elseif event:sub(1, 5) == "ENVIRONMENTAL" then
-        envType = ...
-        offs = 2
-    elseif event == "SWING_MISSED" and sourceGUID == playerGUID then
-        local offhand = select(2, ...)
-        if offhand then
-            addon.lastOffSwing = GetTime()
-        else
-            addon.lastMainSwing = GetTime()
+    local now = GetTime()
+    if sourceGUID == playerGUID then
+        if event == "SWING_DAMAGE" then
+            if select(10, ...) then addon.lastOffSwing = now else addon.lastMainSwing = now end
+        elseif event == "SWING_MISSED" then
+            if select(2, ...) then addon.lastOffSwing = now else addon.lastMainSwing = now end
         end
     end
+    if now > historyWanted.damage then return end
 
+    local offs = combatLogAmount[event:match("^[^_]+")] or 1
     if event:sub(-5) == "_HEAL" then
-        local amount = select(offs, ...)
-        if not addon.damageHistory[destGUID] then
-            addon.damageHistory[destGUID] = {
-                damage = {},
-                heals = {},
-            }
-        end
-        table.insert(addon.damageHistory[destGUID].heals, 1, {
-            time = GetTime(),
-            value = tonumber(amount),
-        })
+        recordAmount("heals", destGUID, now, (select(offs, ...)))
     elseif event:sub(-7) == "_DAMAGE" then
-        if event:sub(1, 5) == "SWING" and sourceGUID == playerGUID then
-            local offhand = select(10, ...)
-            if offhand then
-                addon.lastOffSwing = GetTime()
-            else
-                addon.lastMainSwing = GetTime()
-            end
-        end
-
-        local amount = select(offs, ...)
-        if not addon.damageHistory[destGUID] then
-            addon.damageHistory[destGUID] = {
-                damage = {},
-                heals = {},
-            }
-        end
-        table.insert(addon.damageHistory[destGUID].damage, 1, {
-            time = GetTime(),
-            value = tonumber(amount),
-        })
+        recordAmount("damage", destGUID, now, (select(offs, ...)))
     end
 end
 addon.COMBAT_LOG_EVENT_UNFILTERED = wrapCombatEvent(function() handle_combat_log(CombatLogGetCurrentEventInfo()) end)

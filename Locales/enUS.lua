@@ -353,6 +353,7 @@ L["<operator>"] = true
 
 L["Enable Rotation Master"] = true
 L["Polling Interval (seconds)"] = true
+L["Idle Re-check Interval (seconds)"] = true
 L["Ignore Mana"] = true
 L["Ignore Range"] = true
 L["Skip rotation entries or disable cooldown highlights because you don't have enough to cast them."] = true
@@ -2278,6 +2279,7 @@ L['Type and Nullable describe the values accepted or returned by this function. 
 -- Whole-field General help; each paragraph can be translated independently.
 L["Help.General.enable"] = "Enable Rotation Master recommendations, automatic rotation switching and bound item-set updates. Disabling clears active advice and highlights and hides the preview. Apply saves the change."
 L["Help.General.poll"] = "Set how often Rotation Master reevaluates the active rotation and independent cooldowns, in seconds. A shorter interval updates advice more often and uses more processing time. It does not cast spells, queue actions, or predict future combat."
+L["Help.General.idle_poll"] = "Out of combat with no target and no focus, Rotation Master skips a polling tick unless something it watches has changed: auras, cooldowns, health or power of you, your pet or party, movement, casting, equipment, bags, form, pets or group. It still re-checks at least this often, for time-based conditions (aura or cooldown remaining), distance, and custom code. In combat, with any target or focus, or while configuration is open, every polling tick is evaluated. Zero evaluates every polling tick."
 L["Help.General.disable_autoswitch"] = "Keep Rotation Master from automatically selecting another rotation from its switch condition. This preference survives reloads. Manually choosing a rotation with /rm set <rotation> also suspends automatic switching until you choose automatic selection again."
 L["Help.General.disable_buttons"] = "Hide the main rotation recommendation on action bars. Independent cooldown highlights remain available. Enable Preview Spells if you want to see the main advice in a separate window; with both displays off, the main recommendation has no visible icon."
 L["Help.General.live_config_update"] = "Set the refresh interval for condition status while editing, in seconds. Zero turns off periodic status updates. This is separate from the recommendation polling interval and does not enable live condition testing unless you explicitly choose it."

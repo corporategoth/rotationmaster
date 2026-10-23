@@ -135,6 +135,12 @@ local function poll()
  local value=field(field(rawget(addon,'db'),'profile'),'poll')
  return finite(value)and tostring(value)or 'unavailable'
 end
+-- Timer ticks the idle gate let through or skipped; skipped ticks never reach
+-- EvaluateNextAction, so they are not dispatches in this capture.
+local function idleGate()
+ local gate=rawget(addon,'idleGate');local value=field(field(rawget(addon,'db'),'profile'),'idle_poll')
+ return {interval=finite(value)and tostring(value)or 'unavailable',evaluated=type(gate)=='table'and gate.evaluated or nil,skipped=type(gate)=='table'and gate.skipped or nil}
+end
 -- Boundary-only routing label. No IDs, names, providers or private bodies leave
 -- here, and report reads/normal evaluator dispatches never re-observe selection.
 local selectionSub=string.sub
@@ -210,6 +216,9 @@ local function report(run,status,reason)
   'Scope: all normal EvaluateNextAction dispatches, including timer and event calls; descendants overlap.',
   'Requested='..string.format('%g',run.requested)..' s; actual='..(run.duration and string.format('%.3f s',run.duration)or 'unavailable')..'; max dispatches=512; measured='..run.measured..'; unmeasured nested='..run.nested,
   'poll start='..run.poll,
+  (function()local a,b=run.idleStart or {},run.idleEnd or {}
+   local function delta(k)return a[k]and b[k]and b[k]>=a[k]and tostring(b[k]-a[k])or 'unavailable'end
+   return 'Idle gate: idle_poll='..(a.interval or 'unavailable')..'; timer ticks evaluated='..delta('evaluated')..'; skipped='..delta('skipped')end)(),
   'Selected key: start='..(run.selectionStart or 'unavailable')..'; end='..(run.selectionEnd or 'unavailable'),
   string.format('elapsedMilliseconds: total=%.3f; average=%.3f; max=%.3f',run.elapsed,run.measured>0 and run.elapsed/run.measured or 0,run.maximum),
   'allocatedBytes='..(run.allocated~=nil and string.format('%.0f',run.allocated)or 'unavailable')..'; deallocatedBytes='..(run.deallocated~=nil and string.format('%.0f',run.deallocated)or 'unavailable'),
@@ -231,7 +240,7 @@ local function finish(run,status,reason)
  run.phase='finishing'
  local ended=now(run)
  if ended and run.started and ended>=run.started and finite(ended-run.started)then run.duration=ended-run.started end
- run.selectionEnd=selectedKey()
+ run.selectionEnd=selectedKey();run.idleEnd=idleGate()
  diagnosticEnd(run)
  active=nil;run.phase='retired'
  decisionRestore(run)
@@ -312,7 +321,7 @@ function addon:StartCPURuntimeCapture(duration)
  local good,enabled=pcall(run.enabled)
  if active~=run then return false,'capture-retired'end
  if not good or not readable(enabled)or enabled~=true or not providerCurrent(run)then return reject('native-profiler-unavailable')end
- run.started=now(run);run.poll=poll();run.selectionStart=selectedKey()
+ run.started=now(run);run.poll=poll();run.idleStart=idleGate();run.selectionStart=selectedKey()
  diagnosticStart(run)
  if active~=run then return false,'capture-retired'end
  phasePrepare(run)

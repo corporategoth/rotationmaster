@@ -218,29 +218,40 @@ function service:ObserveReportedErrors()
     return pcall(seterrorhandler,wrapper)
 end
 
+-- The handler runs before xpcall unwinds, while activeContext is still this
+-- call's context, so one shared function serves every call.
+local function callFailed(message)
+    if handling then return 0 end
+    handling = true
+    -- Capture the stack in the error handler, before xpcall unwinds it.
+    local stack
+    if type(debugstack) == "function" then
+        local ok, value = pcall(debugstack, 2, 30, 20)
+        if ok then stack = value end
+    end
+    local ok, id = pcall(recordError, activeContext, message, stack)
+    -- Resolve at the error point: a collector may load after RM.
+    local handlerOk, handler = pcall(function()
+        if type(geterrorhandler) == "function" then return geterrorhandler() end
+    end)
+    if handlerOk and type(handler) == "function" then pcall(handler, message) end
+    handling = false
+    return ok and id or 0
+end
+
+local function restore(previous, ...) activeContext=previous;return ... end
+
+-- WoW's xpcall passes extra arguments to the callback; plain Lua 5.1 does not.
+local xpcallForwards = select(2, xpcall(function(value) return value end, callFailed, true)) == true
+
+-- Calls run for every event and polling tick. A context is only read (and
+-- copied) when an error is recorded, so callers may reuse one context table.
 function service:Call(context, callback, ...)
     self:ObserveReportedErrors()
-    local args = {n=select("#", ...), ...}
     local previous=activeContext;activeContext=context
-    local function restore(...) activeContext=previous;return ... end
-    return restore(xpcall(function() return callback(unpack(args, 1, args.n)) end, function(message)
-        if handling then return 0 end
-        handling = true
-        -- Capture the stack in the error handler, before xpcall unwinds it.
-        local stack
-        if type(debugstack) == "function" then
-            local ok, value = pcall(debugstack, 2, 30, 20)
-            if ok then stack = value end
-        end
-        local ok, id = pcall(recordError, context, message, stack)
-        -- Resolve at the error point: a collector may load after RM.
-        local handlerOk, handler = pcall(function()
-            if type(geterrorhandler) == "function" then return geterrorhandler() end
-        end)
-        if handlerOk and type(handler) == "function" then pcall(handler, message) end
-        handling = false
-        return ok and id or 0
-    end))
+    if xpcallForwards then return restore(previous, xpcall(callback, callFailed, ...)) end
+    local args = {n=select("#", ...), ...}
+    return restore(previous, xpcall(function() return callback(unpack(args, 1, args.n)) end, callFailed))
 end
 
 function service:GetReports()

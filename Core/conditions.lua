@@ -38,8 +38,17 @@ local function outcome(status, reason, path)
     return {status=status, reason=reason, path=path}
 end
 
+-- Damage and UNIT_COMBAT histories are recorded only while something reads
+-- them (main.lua WantHistory). Custom code may read either.
+local historyReaders={COMBAT_HISTORY='combat',COMBAT_HISTORY_TIME='combat',TT_HEALTH='damage',TT_HEALTHPCT='damage'}
+
 local function callCondition(definition, stage, value, cache, start, path, context, guard, guardNode, guardSession, stats)
     if quarantined[definition] then return false end
+    if stage~='valid' and addon.WantHistory then
+        local history=historyReaders[value.type]
+        if history then addon:WantHistory(history)
+        elseif definition.customCode then addon:WantHistory('combat');addon:WantHistory('damage') end
+    end
     if guard and not guard(guardNode,guardSession)then return true,nil,nil,true,false end
     local skipped,invoked
     local function run()

@@ -160,7 +160,9 @@ local function context(owner)
  local combat='unavailable';if type(InCombatLockdown)=='function' then local ok,value=pcall(InCombatLockdown);if ok and readable(value) and type(value)=='boolean' then combat=tostring(value) end end
  local profile=field(field(owner,'db'),'profile')
  local function interval(key) local value=field(profile,key);if finite(value) or readable(value) and type(value)=='boolean' then return tostring(value) end;return 'unavailable' end
- local result='config='..(config==true and 'shown' or config==false and 'hidden' or 'unavailable')..' combat='..combat..' poll='..interval('poll')..' live='..interval('live_config_update')
+ local result='config='..(config==true and 'shown' or config==false and 'hidden' or 'unavailable')..' combat='..combat..' poll='..interval('poll')..' idle='..interval('idle_poll')..' live='..interval('live_config_update')
+ local gate=field(owner,'idleGate')
+ if type(gate)=='table' and finite(gate.evaluated) and finite(gate.skipped) then result=result..' idle-ticks='..gate.evaluated..'/'..gate.skipped end
  -- BEGIN CACHE MODE CONTEXT
  local mode=field(owner,'GetCacheDiagnosticMode')
  if type(mode)=='function' then

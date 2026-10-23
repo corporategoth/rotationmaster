@@ -11,6 +11,7 @@ function addon:BuildGeneralSettings(p)
     p:Heading(L['Recommendations'])
     p:Check('enable',L['Enable'],profile.enable,function(v) profile.enable=v;p:RunSettingsEffect('enable',function() if v then self:enable() else self:disable() end end) end)
     p:Slider('poll',L['Polling Interval (seconds)'],profile.poll,.05,1,.05,function(v) profile.poll=v;p:RunSettingsEffect('poll',function() if self.rotationTimer then self:DisableRotationTimer();self:EnableRotationTimer() end end) end)
+    p:Slider('idle_poll',L['Idle Re-check Interval (seconds)'],profile.idle_poll or 1,0,5,.25,function(v) profile.idle_poll=v end)
     p:Check('disable_autoswitch',L['Disable Auto-Switching'],profile.disable_autoswitch,function(v) profile.disable_autoswitch=v end)
     local checkY=p.y-30
     local bar=p:Check('disable_buttons',L['Disable Bar Highlighting'],profile.disable_buttons,function(v) profile.disable_buttons=v;p:RunSettingsEffect('buttons',function() if v then self:GlowClear() end end) end)
