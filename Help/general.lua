@@ -12,7 +12,7 @@ function addon:GetGeneralOptionHelp()
         {id="enable",title=L["Enable"],text=L["Help.General.enable"]},
         {id="poll",title=L["Polling Interval (seconds)"],text=L["Help.General.poll"]},
         {id="idle_poll",title=L["Idle Re-check Interval (seconds)"],text=L["Help.General.idle_poll"]},
-        {id="disable_autoswitch",title=L["Disable Auto-Switching"],text=L["Help.General.disable_autoswitch"]},
+        {id="autoswitch_poll",title=L["Auto-Switch Re-check Interval (seconds)"],text=L["Help.General.autoswitch_poll"]},
         {id="disable_buttons",title=L["Disable Bar Highlighting"],text=L["Help.General.disable_buttons"]},
         {id="live_config_update",title=L["Live Status Update Frequency (seconds)"],text=L["Help.General.live_config_update"]},
         {id="minimap",title=L["Minimap Icon"],text=L["Help.General.minimap"]},

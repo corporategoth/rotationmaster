@@ -54,6 +54,13 @@ end
 local equipmentSubscription
 local equipmentCoordinator=addon.GetScopedRotationCoordinator
 -- END EQUIPMENT EVENT LIFETIME
+-- Automatic rotation selection is on while its re-check interval is above
+-- zero. The retired Disable Auto-Switching flag is still honoured until the
+-- profile is migrated (see StartAutoSwitchTimer).
+local function autoSwitchEnabled(profile)
+    return not profile.disable_autoswitch and (tonumber(profile.autoswitch_poll) or 1)>0
+end
+
 local function activeChangeCurrent(self,token)
     return type(activeCurrent)=='function' and activeCurrent(self,token)
 end
@@ -210,6 +217,7 @@ local defaults = {
         enable = true,
         poll = 0.15,
         idle_poll = 1.0,
+        autoswitch_poll = 1.0,
         ignore_mana = false,
         ignore_range = false,
         effect = "61b36ed1-fa31-4656-ad71-f3d50f193a85",
@@ -883,10 +891,12 @@ function addon:enable()
         equipmentSubscription={}
     end
     -- END EQUIPMENT ENABLE COMMIT
+    if activeChangeCurrent(self,change) then self:StartAutoSwitchTimer() end
 end
 
 function addon:disable()
     if self.initializationErrorReport then return end
+    self:StopAutoSwitchTimer()
     local change=beginActive(self)
     if not activeChangeCurrent(self,change) then return end
     -- BEGIN EQUIPMENT DISABLE LIFETIME
@@ -962,7 +972,7 @@ end
 function addon:SwitchRotation()
     local handled,restoredChange=restoreManualChoice(self)
     if handled then return nil,restoredChange end
-    if self.db.profile.disable_autoswitch or self.manualRotation then
+    if not autoSwitchEnabled(self.db.profile) or self.manualRotation then
         if restoredChange and not activeChangeCurrent(self,restoredChange) then return end
         return nil,restoredChange
     end
@@ -979,12 +989,12 @@ function addon:SwitchRotation()
     -- BEGIN SWITCH OWNER LEASE
     local function switchOwnerCurrent()
         return activeChangeCurrent(self,change) and self.currentSpec==selectedSpec and self.db.profile==selectedProfile
-            and self.currentRotation==selectedRotation and not self.db.profile.disable_autoswitch and not self.manualRotation
+            and self.currentRotation==selectedRotation and autoSwitchEnabled(self.db.profile) and not self.manualRotation
     end
     -- END SWITCH OWNER LEASE
     local function current()
         return activeChangeCurrent(self,change) and self.currentSpec==selectedSpec and self.db.profile==selectedProfile and self.currentRotation==selectedRotation
-            and not self.db.profile.disable_autoswitch and not self.manualRotation and (not selectionPass or selectionPass:IsCurrent())
+            and autoSwitchEnabled(self.db.profile) and not self.manualRotation and (not selectionPass or selectionPass:IsCurrent())
     end
     for _, v in ipairs(self.autoswitchRotation) do
         if not switchOwnerCurrent()then return end
@@ -1034,6 +1044,70 @@ function addon:SwitchRotation()
         if not current() then return end
         self:DisableRotation()
     end
+end
+
+-- Auto mode re-checks selection every autoswitch_poll seconds, in and out of
+-- combat, so volatile switch conditions (enemy count, threat, movement,
+-- health...) take effect. The check below is read-only and follows the same
+-- order as SwitchRotation; only a different answer goes through
+-- SwitchRotation, whose transition retires current work.
+local function autoSwitchCandidate(self)
+    local spec,rotations=self.currentSpec,nil
+    if self.GetScopedRotationCoordinator and self:GetScopedRotationCoordinator() then
+        local pass=mainSelectionPass(self,spec);if not pass then return nil,false end
+        local why;rotations,why=pass:Candidates(false);if why then return nil,false end
+    else rotations=runtimeRows(self,spec) end
+    for _, v in ipairs(self.autoswitchRotation) do
+        if self:IsDefaultRuntimeRotation(spec,v) and rotations[DEFAULT]
+            and self:rotationValidConditions(rotations[DEFAULT],spec) then return DEFAULT,true end
+        if rotations[v] and switchConditionMatches(rotations[v].switch) then return v,true end
+    end
+    if rotations[DEFAULT] ~= nil and self:rotationValidConditions(rotations[DEFAULT], spec) then return DEFAULT,true end
+    return nil,true
+end
+
+function addon:AutoSwitchTick()
+    local profile=self.db.profile
+    if self.initializationErrorReport or self.adviceErrorReport or not profile.enable
+        or not autoSwitchEnabled(profile) or self.manualRotation then return end
+    local candidate,known=autoSwitchCandidate(self)
+    if known and candidate==self.currentRotation then return end
+    self:SwitchRotation()
+end
+
+local autoSwitchContext={module="events", operation="autoswitch"}
+function addon:AutoSwitchTimer()
+    if not self.Diagnostics then return self:AutoSwitchTick() end
+    autoSwitchContext.rotationId=self.currentRotation
+    local ok=self.Diagnostics:Call(autoSwitchContext, self.AutoSwitchTick, self)
+    -- A failing check is recorded once rather than every second.
+    if not ok then self:StopAutoSwitchTimer() end
+end
+
+function addon:StopAutoSwitchTimer()
+    if self.autoSwitchTimer and self.CancelTimer then
+        self:CancelTimer(self.autoSwitchTimer)
+        self.autoSwitchTimer=nil
+    end
+end
+
+-- Event-driven check (target, focus, pet): Auto mode checks read-only first,
+-- so an unchanged selection keeps the current evaluation plan; manual mode
+-- keeps SwitchRotation's remembered-choice handling.
+function addon:CheckAutoSwitch()
+    local profile=self.db and self.db.profile
+    if not profile or not autoSwitchEnabled(profile) or self.manualRotation then return self:SwitchRotation() end
+    return self:AutoSwitchTick()
+end
+
+function addon:StartAutoSwitchTimer()
+    self:StopAutoSwitchTimer()
+    local profile=self.db and self.db.profile
+    if not profile or type(self.ScheduleRepeatingTimer)~='function' then return end
+    -- Migrate the retired Disable Auto-Switching flag to interval 0.
+    if profile.disable_autoswitch then profile.autoswitch_poll=0;profile.disable_autoswitch=nil end
+    local interval=tonumber(profile.autoswitch_poll)
+    if interval and interval>0 then self.autoSwitchTimer=self:ScheduleRepeatingTimer('AutoSwitchTimer',interval) end
 end
 
 function addon:EnableRotation()
@@ -2328,9 +2402,10 @@ end)
 
 addon.PLAYER_TARGET_CHANGED = wrapEvent(function(self)
     self:verbose("Player targeted something else.")
-    if not self.inCombat then
-        self:SwitchRotation()
-    end
+    -- Switch conditions often read the target; this applies in combat too.
+    -- Auto mode checks read-only first, so an unchanged selection keeps the
+    -- current evaluation plan.
+    self:CheckAutoSwitch()
 
     self.lastMainSwing = nil
     self.lastOffSwing = nil
@@ -2346,9 +2421,8 @@ addon.UNIT_PET = wrapEvent(function(self, _, unit)
         self:verbose("Player %s changed pet.", unit)
         self:UpdateSpecSpells()
 
-        if not self.inCombat then
-            self:SwitchRotation()
-        end
+        -- Pet switch conditions apply in combat too.
+        self:CheckAutoSwitch()
 
         self:EvaluateNextAction()
     end

@@ -415,6 +415,8 @@ def main():
             ['luajit', 'tests/lean_parity.lua'],
             ['lua5.1', 'tests/native_overlay_animation.lua'],
             ['luajit', 'tests/native_overlay_animation.lua'],
+            ['lua5.1', 'tests/auto_switch_recheck.lua'],
+            ['luajit', 'tests/auto_switch_recheck.lua'],
             ['lua5.1', 'tests/combat_history_time_conditions.lua'],
             ['luajit', 'tests/combat_history_time_conditions.lua'],
             ['lua5.1', 'tests/combat_time_conditions.lua'],
