@@ -443,6 +443,8 @@ validateSingle = function(value, spec)
         return validateSingle(value.value, spec)
     elseif conditions[value.type] ~= nil then
         if conditions[value.type].disabled or conditions[value.type].functionUnavailable then return false end
+        -- A condition that cannot work on this client leaves the tree incomplete.
+        if addon.GetConditionSupport and addon:GetConditionSupport(value.type, conditions[value.type], value) then return false end
         return conditions[value.type].valid(spec, value)
     else
         return false

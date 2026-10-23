@@ -49,6 +49,11 @@ local function socket(self,fn,index,position)
     if not integer(spell,1) then return {slot=index,reason='invalid-api-result'} end
     return {slot=index,active=true,spellID=spell}
 end
+-- Whether this client build has a verified glyph layout; a fact of the
+-- client, read by condition support without observing sockets.
+function platform:IsGlyphLayoutSupported()
+    return layout(self:GetClientInfo())~=nil
+end
 function platform:GetGlyphSocketSnapshot()
     local position=layout(self:GetClientInfo())
     if not position then return nil,'unsupported-glyph-layout' end

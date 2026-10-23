@@ -116,11 +116,11 @@ test('Wowhead Holy: Holy Shock on cooldown; Judgement of Light by seal swap',fun
  s.debuff('target',20185);M.expect(a,s,WHHOLY,20154,nil,'swap back to Righteousness')
  s.clearAuras();s.debuff('target',20185);s.buff('player',20154);M.expect(a,s,WHHOLY,20271,nil,'Judgement with Righteousness')
 end)
-test('on the real restricted Forever client the Paladin premades are listed but never auto-selected',function()
- local f,s=M.new('paladin',{policy='restricted'});local a=f.addon;s.learn(20154,1311015)
+test('on the real restricted Forever client the Paladin premades are listed but incomplete, never auto-selected',function()
+ local f,s=M.new('paladin',{policy='restricted'});local a=f.addon;local support=dofile('tests/fixtures/client_support.lua');support.install(f);s.learn(20154,1311015)
  local rows=M.rows(a)
  for _,id in ipairs({RET,PROT,IVPROT,HOLY,WHHOLY})do
-  assert(rows[id]and rows[id].readOnly,id..' not listed');assert(not rows[id].eligible and rows[id].eligibilityReason=='restricted-or-unsupported-client',id)
+  assert(rows[id]and rows[id].readOnly,id..' not listed');support.incomplete(rows[id],id)
  end
  assert(next(a:GetRuntimeRotations(0))==nil and M.selected(a)==nil,'a restricted client auto-selected a packaged rotation')
 end)

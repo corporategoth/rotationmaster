@@ -100,6 +100,16 @@ addon:RegisterCondition("SPECIALIZATION", {
     valid = function(_, value)
         return specID(value.spec)
     end,
+    -- Client support (Core/condition_support.lua): Forever has no
+    -- specializations, so one of your own class can never be read there;
+    -- another class's specialization is an ordinary false.
+    supported = function(value)
+        if type(value) ~= "table" or not specID(value.spec) then return nil end
+        if addon.Platform:GetClientFamily() ~= "forever" then return nil end
+        local class = playerClass()
+        if class == nil or (canaccessvalue and not canaccessvalue(class)) then return nil end
+        if specClass(value.spec) == class then return "specialization-unsupported" end
+    end,
     evaluate = function(value)
         if not addon.GetPlayerSpecializationObservation then return nil, "build-context-unavailable" end
         local mode, current, reason, class = addon:GetPlayerSpecializationObservation()

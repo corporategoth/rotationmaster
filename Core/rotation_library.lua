@@ -80,7 +80,8 @@ local function eligible(view, context, candidates)
         for _,ruleset in ipairs(scope.rulesets) do if active[ruleset] then matched=true;break end end
         if not matched then return false,"ruleset-mismatch" end
     end
-    if context.combatDataPolicy~="probe" then return false,"restricted-or-unsupported-client" end
+    -- Restricted clients (Retail, Forever) run complete rotations like any
+    -- other; a condition that cannot work here leaves the body unresolved.
     return true
 end
 local function plainTable(value)
@@ -621,6 +622,12 @@ function addon:ListDefaultRotations(spec)
             local scoped=self.GetScopedRotationCoordinator and self:GetScopedRotationCoordinator()
             row.runtimeKey=scoped and scoped:Key({kind='builtin',id=id}) or runtimeKey(id,custom)
             row.eligible,row.eligibilityReason=eligible(view,context)
+            -- A pack for another edition says so, before naming a condition
+            -- that is unavailable here only because it is that other edition's.
+            if row.eligibilityReason=="invalid-or-unsupported" and view.validation.valid and view.validation.supported then
+                local scoped,scopeReason=eligible({enabled=true,validation={valid=true,supported=true,resolved=true},applicability=view.applicability},context)
+                if not scoped then row.eligibilityReason=scopeReason end
+            end
             row.name=L[row.nameKey or id]
             row.description=L[row.descriptionKey or ""]
             rows[#rows+1]=row
@@ -671,9 +678,8 @@ function addon:GetRuntimeRotations(spec, internal, candidates)
     if spec==nil then return rotations end
     local ready=ensure(self)
     local context=self:GetRotationContext(spec);context.spec=spec
-    -- Editing/export use the saved-data facade independently. Legacy bodies
-    -- must obey the same client execution policy as packaged/scoped rotations.
-    if context.combatDataPolicy~="probe" then return rotations end
+    -- Editing/export use the saved-data facade independently. Every client
+    -- runs complete rotations; client support is checked by validation.
     local origins=ready and active.state.origins[spec]
     local scopes=ready and active.cloneScopes[spec]
     for id,body in pairs(self.db.profile.rotations[spec] or {}) do

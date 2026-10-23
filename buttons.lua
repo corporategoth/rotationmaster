@@ -639,7 +639,9 @@ local function ReadStandardAction(button)
     local action=button:GetAttribute(kind)
     if kind=='action' then
         local slot=GetActionSlot(button)
-        if not slot or not HasAction(slot) then return end
+        if not slot then return end
+        local present=HasAction(slot)
+        if not addon.Platform:CanReadValue(present) or not present then return end
         kind,action=GetActionInfo(slot)
     end
     if not addon.Platform:CanReadValue(kind) then return end
@@ -697,9 +699,13 @@ end
 -- Macro conditionals and cast sequences can change their exposed action
 -- without moving a slot or editing the macro. Observe known macro buttons on
 -- the existing recommendation cadence; never parse or execute macro bodies.
+local fetchedPolicy
 function addon:RefreshMacroButtons()
+    -- Macro observation (Platform/macros.lua) is probe-only. Under the
+    -- restricted policy macro buttons resolve to nothing; a scan made under
+    -- another policy is redone once so no stale macro mapping survives.
     if readClientPolicy(self.Platform)~='probe' then
-        if next(Spells) then self:Fetch() end
+        if fetchedPolicy=='probe' then self:Fetch() end
         return
     end
     if next(MacroButtons)==nil then return end
@@ -989,9 +995,11 @@ function addon:Fetch()
 	Flags = {}
 	SpellsGlowing = {}
 
-    -- The reference/editor modes on restricted clients do not inspect combat
-    -- actions. Clear outgoing mappings above before leaving the scanner.
-    if addon.Platform:GetCombatDataPolicy()~="probe" then return end
+    fetchedPolicy=readClientPolicy(addon.Platform)
+    -- Restricted clients (Retail, Forever) run complete rotations too, so
+    -- their bars are scanned as well. Action slot contents are not combat
+    -- data: every read below is guarded with CanReadValue, so a secret slot
+    -- is skipped rather than compared.
 	addon:debug(L["Button Fetch triggered."])
 
 	FetchLibActionButton()

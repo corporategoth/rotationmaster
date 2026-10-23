@@ -90,6 +90,7 @@ Diagnostics/cpu.lua
 Diagnostics/cpu_runtime.lua
 Diagnostics/memory.lua
 Core/conditions.lua
+Core/condition_support.lua
 Core/condition_runtime.lua
 Core/condition_catalog.lua
 Core/item_conditions.lua

@@ -135,12 +135,11 @@ test('Icy Veins Restoration: HoTs first, Healing Touch only with both HoTs, Inne
  M.expect(a,s,REJUV,5185,nil,'Healing Touch with both HoTs')
  s.mana.player=90;assert(M.upkeep(a,s,REJUV)[29166],'Innervate on cooldown');assert(not M.upkeep(a,s,RESTO)[29166],'Tavern saves Innervate')
 end)
-test('on the real restricted Forever client the Druid premades are listed but never auto-selected',function()
- local f,s=M.new('druid',{policy='restricted'});local a=f.addon;s.learn(5176);s.buff('player',768)
+test('on the real restricted Forever client the Druid premades are listed but incomplete, never auto-selected',function()
+ local f,s=M.new('druid',{policy='restricted'});local a=f.addon;local support=dofile('tests/fixtures/client_support.lua');support.install(f);s.learn(5176);s.buff('player',768)
  local rows=M.rows(a)
  for _,id in ipairs({BAL,DOT,FERAL,RESTO,REJUV})do
-  assert(rows[id]and rows[id].readOnly,id..' not listed');assert(not rows[id].eligible,id..' became eligible')
-  assert(rows[id].eligibilityReason=='restricted-or-unsupported-client',id..' '..tostring(rows[id].eligibilityReason))
+  assert(rows[id]and rows[id].readOnly,id..' not listed');support.incomplete(rows[id],id)
  end
  assert(a.Platform:GetClientInfo().combatDataPolicy=='restricted'and next(a:GetRuntimeRotations(0))==nil and M.selected(a)==nil,'a restricted client auto-selected a packaged rotation')
 end)

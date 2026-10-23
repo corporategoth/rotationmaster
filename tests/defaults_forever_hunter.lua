@@ -117,11 +117,11 @@ test('Survival weave: exit with Strider Kick, shoot outside, return when Raptor 
  s.targetRange={8,25};s.cooling(2973,4);M.expect(a,s,WEAVE,3044,nil,'outside: Arcane Shot')
  s.cooling(2973,0.5);local r=M.expect(a,s,WEAVE,nil,'stopped','Raptor nearly ready: go back in');assert(not r.suppressAttack)
 end)
-test('on the real restricted Forever client the Hunter premades are listed but never auto-selected',function()
- local f,s=M.new('hunter',{policy='restricted'});local a=f.addon;s.learn(75,1317257)
+test('on the real restricted Forever client the Hunter premades are listed but incomplete, never auto-selected',function()
+ local f,s=M.new('hunter',{policy='restricted'});local a=f.addon;local support=dofile('tests/fixtures/client_support.lua');support.install(f);s.learn(75,1317257)
  local rows=M.rows(a)
  for _,id in ipairs({RANGED,SAVER,SV,WEAVE})do
-  assert(rows[id]and rows[id].readOnly,id..' not listed');assert(not rows[id].eligible and rows[id].eligibilityReason=='restricted-or-unsupported-client',id)
+  assert(rows[id]and rows[id].readOnly,id..' not listed');support.incomplete(rows[id],id)
  end
  assert(next(a:GetRuntimeRotations(0))==nil and M.selected(a)==nil,'a restricted client auto-selected a packaged rotation')
 end)

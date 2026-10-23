@@ -286,5 +286,11 @@ Forever, what `IsAvailable()` answers.
   same way.
 - The condition reuses the Spell Available icon until original artwork exists
   (`tests/condition_icons.lua` lists it as pending).
-- Packaged rotations still never auto-select on Retail or Forever, because
-  `combatDataPolicy` is `restricted` there. Retail premades are a separate task.
+- Retail and Forever no longer refuse rotations wholesale. A complete
+  rotation (every condition available on this client) is eligible and
+  auto-selects there; one that uses a condition the restricted policy keeps
+  secret is incomplete and says which (`Core/condition_support.lua`). Action
+  bars are scanned there too (every slot read guarded by `CanReadValue`), so
+  the glow and the preview can show; macro buttons are not observed under the
+  restricted policy. The shipped Retail premades are all incomplete today;
+  their repair is a separate task.

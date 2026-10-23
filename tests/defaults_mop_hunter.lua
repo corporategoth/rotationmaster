@@ -14,7 +14,7 @@ local STINGDEBUFF,CLEAVE,FRENZY,THRILL,FIRE,STEADYFOCUS,LNL=118253,118455,19615,
 local function hunter(level)
  local f,s=M.new('hunter');local a=f.addon
  s.powerType=2;s.energy=100;s.pet=true;s.setLevel(level or 90);s.targetRange={30,35};s.ttd=60
- a.GetConditionHealthForecast=function()if s.ttd==nil then return nil,'no-forecast'end;return s.ttd end
+ a.GetConditionHealthForecast=function()if s.ttd==nil then return false end;return s.ttd end
  return a,s,f
 end
 test('the Hunter premades load, validate and declare Mists of Pandaria Classic only',function()

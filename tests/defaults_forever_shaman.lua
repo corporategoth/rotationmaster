@@ -29,10 +29,10 @@ test('talent trees (1 Elemental, 2 Enhancement, 3 Restoration) pick the premade 
  s.level=24;M.trees(f,s,{21,0,0});assert(M.selected(f,s)==WH,'Elemental starts at 25 (30, or 25 with Legacy points)')
 end)
 
-test('on the real restricted Forever client the premades are listed but never auto-selected',function()
- local f,s=M.fixture('SHAMAN',{restricted=true});M.know(s,6603,403,16190)
+test('on the real restricted Forever client the premades are listed but incomplete, never auto-selected',function()
+ local f,s=M.fixture('SHAMAN',{restricted=true});local support=dofile('tests/fixtures/client_support.lua');support.install(f);M.know(s,6603,403,16190)
  local rows=f.addon:ListDefaultRotations(0);assert(#rows==4)
- for _,row in ipairs(rows)do assert(row.readOnly and row.builtin and not row.eligible,row.id)end
+ for _,row in ipairs(rows)do assert(row.readOnly and row.builtin,row.id);support.incomplete(row)end
  local poll,selected=M.publisher(f,s);poll();assert(selected()==nil)
 end)
 
