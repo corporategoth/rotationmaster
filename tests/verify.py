@@ -49,7 +49,7 @@ main_entries = {path.resolve() for path in entries}
 # under Modules/ must be listed by exactly one edition's TOCs. Flavours of one
 # edition (Forever's _Camelot and _Forever) must be byte-identical.
 FLAVOR_EDITIONS = {'TBC': 'tbc', 'Camelot': 'forever', 'Forever': 'forever', 'Standard': 'retail',
-                   'Vanilla': 'era', 'Mists': 'mists', 'Cata': 'cata', 'Wrath': 'wrath'}
+                   'Vanilla': 'era', 'Mists': 'mop', 'Cata': 'cata', 'Wrath': 'wrath'}
 listings = {}
 bootstrap = None
 modules = sorted(path for path in (root / 'Modules').iterdir()

@@ -171,7 +171,7 @@ test('each flavour TOC lists exactly its edition\'s blocks and packs, every file
     local p=assert(io.popen("find Modules -name '*.lua' ! -name bind.lua"));local onDisk=0
     for path in p:lines()do onDisk=onDisk+1;assert(listed[path],path..' is in no flavour TOC')end
     p:close()
-    assert(onDisk==count and count==186,onDisk..' files on disk, '..count..' listed')
+    assert(onDisk==count and count==224,onDisk..' files on disk, '..count..' listed')
 end)
 
 test('every module on disk is one the loader can name, and bind.lua reaches Rotation Master',function()

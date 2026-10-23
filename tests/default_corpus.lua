@@ -104,6 +104,12 @@ test('TOC includes every reviewed starter pack exactly once',function()
         'rm.retail.hunter.beastmastery','rm.retail.hunter.beastmastery.guide','rm.retail.hunter.marksmanship','rm.retail.hunter.marksmanship.guide','rm.retail.hunter.survival','rm.retail.hunter.survival.guide',
         'rm.retail.mage.arcane','rm.retail.mage.arcane.guide','rm.retail.mage.fire','rm.retail.mage.fire.guide','rm.retail.mage.frost','rm.retail.mage.frost.guide',
         'rm.retail.monk.brewmaster','rm.retail.monk.brewmaster.guide','rm.retail.monk.windwalker','rm.retail.monk.windwalker.guide','rm.retail.monk.mistweaver'})do wanted[id]=true end
+    -- Mists of Pandaria Classic Priest, Rogue, Shaman, Warlock and Warrior premades (per specialization, catch-all, source variants).
+    for _,id in ipairs({'rm.mop.priest.shadow','rm.mop.priest.shadow.warcrafttavern','rm.mop.priest.discipline','rm.mop.priest.holy','rm.mop.priest.holy.icyveins','rm.mop.priest.unspecialized',
+        'rm.mop.rogue.assassination','rm.mop.rogue.assassination.icyveins','rm.mop.rogue.combat','rm.mop.rogue.combat.icyveins','rm.mop.rogue.combat.hekili','rm.mop.rogue.subtlety','rm.mop.rogue.subtlety.warcrafttavern','rm.mop.rogue.unspecialized',
+        'rm.mop.shaman.elemental','rm.mop.shaman.enhancement','rm.mop.shaman.enhancement.wowsims','rm.mop.shaman.enhancement.icyveins','rm.mop.shaman.restoration','rm.mop.shaman.restoration.hekili','rm.mop.shaman.unspecialized',
+        'rm.mop.warlock.affliction','rm.mop.warlock.affliction.warcrafttavern','rm.mop.warlock.demonology','rm.mop.warlock.demonology.guide','rm.mop.warlock.destruction','rm.mop.warlock.unspecialized',
+        'rm.mop.warrior.arms','rm.mop.warrior.arms.icyveins','rm.mop.warrior.fury','rm.mop.warrior.fury.icyveins','rm.mop.warrior.protection','rm.mop.warrior.unspecialized'})do wanted[id]=true end
     for _,pack in ipairs(packs)do assert(wanted[pack.id],pack.id..' is unexpected or duplicated');wanted[pack.id]=nil end
     assert(not next(wanted),'reviewed starter pack missing from TOC')
 end)
