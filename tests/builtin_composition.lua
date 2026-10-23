@@ -83,12 +83,16 @@ end)
 test('composed packs pass strict corpus validation with real condition schemas',function()
     local corpus=dofile('tests/fixtures/default_corpus.lua');local seen=0
     for _,class in ipairs({'WARRIOR','ROGUE','HUNTER','PALADIN','PRIEST','SHAMAN','MAGE','WARLOCK','DRUID','DEATHKNIGHT','DEMONHUNTER','EVOKER','MONK'}) do
-        local f,packs=corpus.load(5,1,class)
+        -- Progression packs validate on a Mists client (Death Knight RUNE needs expansion 2+);
+        -- every other composed pack on the TBC client.
+        for _,client in ipairs({{5,1,false},{19,4,true}}) do
+        local f,packs=corpus.load(client[1],client[2],class)
         for _,p in ipairs(packs) do
-            if ledger.packs[p.id] and p.applicability.class==class then
+            if ledger.packs[p.id] and p.applicability.class==class and corpus.contains(p.applicability.families,'progression')==client[3] then
                 assert(not composedArtifacts(p));corpus.check(f,p,true);seen=seen+1
                 assert(same(p,f.addon:GetDefaultRotation(p.id).envelope),'corpus and catalog disagree')
             end
+        end
         end
     end
     local expected=0;for _ in pairs(ledger.packs) do expected=expected+1 end

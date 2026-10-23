@@ -120,6 +120,14 @@ test('TOC includes every reviewed starter pack exactly once',function()
         'rm.sod.paladin.retribution.icyveins','rm.sod.paladin.retribution.stacking','rm.sod.paladin.retribution.twist','rm.sod.paladin.retribution','rm.sod.paladin.shockadin',
         'rm.era.priest.dps.warcrafttavern','rm.era.priest.dps.wowsims','rm.era.priest.dps','rm.era.priest.healer','rm.sod.priest.dps.wowhead','rm.sod.priest.dps','rm.sod.priest.healer.warcrafttavern',
         'rm.sod.priest.healer'})do wanted[id]=true end
+    -- Mists of Pandaria Classic Death Knight, Druid, Hunter, Mage, Monk and Paladin premades.
+    for _,id in ipairs({
+        'rm.mop.deathknight.blood','rm.mop.deathknight.blood.wowsims','rm.mop.deathknight.frost','rm.mop.deathknight.frost.dualwield','rm.mop.deathknight.unholy','rm.mop.deathknight.unholy.wowsims',
+        'rm.mop.druid.unspecialized','rm.mop.druid.balance','rm.mop.druid.feral','rm.mop.druid.feral.icyveins','rm.mop.druid.guardian','rm.mop.druid.restoration','rm.mop.druid.restoration.wowhead',
+        'rm.mop.hunter.unspecialized','rm.mop.hunter.beastmastery','rm.mop.hunter.marksmanship','rm.mop.hunter.marksmanship.icyveins','rm.mop.hunter.survival',
+        'rm.mop.mage.unspecialized','rm.mop.mage.arcane','rm.mop.mage.arcane.icyveins','rm.mop.mage.fire','rm.mop.mage.fire.icyveins','rm.mop.mage.frost',
+        'rm.mop.monk.unspecialized','rm.mop.monk.brewmaster','rm.mop.monk.brewmaster.offensive','rm.mop.monk.windwalker','rm.mop.monk.windwalker.simc','rm.mop.monk.mistweaver',
+        'rm.mop.paladin.unspecialized','rm.mop.paladin.retribution','rm.mop.paladin.retribution.warcrafttavern','rm.mop.paladin.protection','rm.mop.paladin.protection.wowsims','rm.mop.paladin.holy'})do wanted[id]=true end
     for _,pack in ipairs(packs)do assert(wanted[pack.id],pack.id..' is unexpected or duplicated');wanted[pack.id]=nil end
     assert(not next(wanted),'reviewed starter pack missing from TOC')
 end)

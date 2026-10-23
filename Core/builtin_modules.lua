@@ -19,6 +19,8 @@ addon.BuiltInModules = {
         {family = "forever", folder = "forever", flavors = {"Camelot", "Forever"}},
         -- Not _Mainline: that family suffix also matches Forever.
         {family = "retail", folder = "retail", flavors = {"Standard"}},
+        -- Mists of Pandaria Classic; its packs also declare minExpansion/maxExpansion 4.
+        {family = "progression", folder = "mop", flavors = {"Mists"}},
     },
     classes = {
         DEATHKNIGHT = "DeathKnight", DEMONHUNTER = "DemonHunter", DRUID = "Druid",

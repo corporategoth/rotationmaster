@@ -1,0 +1,19 @@
+## Interface: 50504
+## Title: Rotation Master - Death Knight
+## Notes: Rotation Master's Built In Death Knight rotations. Rotation Master loads this itself, only for a Death Knight, and only this edition's files.
+## Author: PreZ
+## Version: @project-version@
+## Dependencies: RotationMaster
+## LoadOnDemand: 1
+## Group: RotationMaster
+## X-Category: Action Bars
+## X-License: MIT
+
+bind.lua
+mop/blocks.lua
+mop/death-knight-blood.lua
+mop/death-knight-blood-wowsims.lua
+mop/death-knight-frost-dualwield.lua
+mop/death-knight-frost.lua
+mop/death-knight-unholy.lua
+mop/death-knight-unholy-wowsims.lua
