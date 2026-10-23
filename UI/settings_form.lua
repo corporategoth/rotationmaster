@@ -371,6 +371,7 @@ function addon:CreateSettingsForm(parent)
         self.creationUsed=false;self.creationUsedForNew=false;self.counts={};self.fields={};self.edits={};if self.ResetLayout then self:ResetLayout() end;self.y=4;self.width=math.max(340,self.frame:GetWidth()-40);self.child:SetWidth(self.width)
         self.labelScopes={};self.labelScope=nil;self:BeginLabelScope()
         self.builder(self);if self.DraftActions then self:DraftActions() end;while self.labelScope do self:EndLabelScope() end;self:BindHelpBriefs();if not self.creationUsedForNew then self.creationBaseline=nil;self.creationApply=nil end;self.child:SetHeight(self.y+12);self.scroll:UpdateWorkbenchScroll()
+        self.drawnReflowKey=self:ReflowKey();self.drawnColumnSingle=self.usedColumns and self.columnSingle or nil
     end
     function p:Open(builder)
         if self.profile~=addon.db.profile or self.global~=addon.db.global or self.char~=addon.db.char then self.selection=nil;self.creating=false;self.rosterQuery=nil;self.condition=nil;self.category=nil;self.conditionSource=nil;self.newAnnounce=nil;self.newEffectName=nil;self.newItem=nil;self.newItemSetName=nil;self.newGroupName=nil end
@@ -415,9 +416,24 @@ function addon:CreateSettingsForm(parent)
             end end
         end
     end
-    function p:SetWidth(n) local changed=n~=self.frame:GetWidth();self.frame:SetWidth(n);self:Layout();if changed then self:Relayout() end end
+    -- The widths a drawing depends on: the page and its detail viewport.
+    function p:ReflowKey() return tostring(self.frame:GetWidth())..'/'..tostring(self.scroll:GetWidth()) end
+    -- Geometry is laid out at once; drawing again waits for the shared
+    -- reflow driver (once per rendered frame at most, never while hidden)
+    -- and is skipped when the widths are those last drawn.
+    function p:RequestRelayout()
+        if not self.active then return end
+        if self:ReflowKey()==self.drawnReflowKey then if addon.CancelWorkbenchReflow then addon:CancelWorkbenchReflow(self) end;return end
+        if not addon.RequestWorkbenchReflow then return self:Relayout() end
+        -- Crossing the one- or two-column breakpoint changes structure: draw
+        -- on the next frame, whatever the previous drawing cost.
+        if self.drawnColumnSingle~=nil and (math.max(340,self.frame:GetWidth()-40)<960)~=self.drawnColumnSingle then self.rmReflowAfter=nil end
+        addon:RequestWorkbenchReflow(self,self.frame,function() if self.active and self:ReflowKey()~=self.drawnReflowKey then self:Relayout() end end)
+    end
+    function p:SetWidth(n) self.frame:SetWidth(n);self:Layout();self:RequestRelayout() end
     function p:SetHeight(n) self.frame:SetHeight(n);self:Layout() end
     function p:Release()
+        if addon.CancelWorkbenchReflow then addon:CancelWorkbenchReflow(self) end
         if self.ClearSettingsHistory then self:ClearSettingsHistory() end
         self.draft=nil;self.draftBaseline=nil;self.draftEffects=nil;self.active=false;self.generation=self.generation+1;if self.menu then self.menu.frame:Hide() end
         if self.prompt then self.prompt.frame:Hide() end

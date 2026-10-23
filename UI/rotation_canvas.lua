@@ -196,6 +196,8 @@ function addon:CreateRotationCanvas(parent,owner)
         if not owner.active then return end
         local scene=owner:BuildScene();self.scene=scene
         if not scene then return end
+        -- The viewport this layout was made for (see the editor's resize).
+        self.reflowedWidth,self.reflowedHeight=self.frame:GetWidth(),self.frame:GetHeight()
         self.reflowing=true
         local ok,problem=pcall(function()
         local key=self:ModeKey();self:RememberViewport()
@@ -357,6 +359,14 @@ function addon:CreateRotationCanvas(parent,owner)
         end
         return false
     end
+    -- Expanded cards lay their fields out for the card width when bound. A
+    -- width change releases them (unless one holds focus) so the next reflow
+    -- binds them at the new width; every other card is only re-placed.
+    function canvas:ReleaseExpandedCards()
+        for _,card in ipairs(self.cards) do
+            if card.token and card.model and card.model.expanded and not focused(card) and card.frame:GetParent()~=self.ghost then card:Release();card.model=nil end
+        end
+    end
     function canvas:RefreshVisibleCards()
         if not owner.active or not self.scene or self.refreshing then return end
         self.refreshing=true
@@ -407,6 +417,7 @@ function addon:CreateRotationCanvas(parent,owner)
         for _,card in ipairs(self.cards) do card:Release();card.model=nil end
         if not owner.active then return end
         self.scene=owner:BuildScene();if not self.scene then return end
+        self.renderedWidth=self.frame:GetWidth()
         self:Reflow()
     end
     function canvas:Release()

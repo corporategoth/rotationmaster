@@ -3,7 +3,7 @@ local L=LibStub('AceLocale-3.0'):GetLocale(addon_name)
 function addon:InstallSettingsLayout(p)
     local simpleLayout=p.Layout
     function p:ResetLayout()
-        self.surface=nil;self.rosterUsed=false;self.columnMode=false;self.columnSingle=false
+        self.surface=nil;self.rosterUsed=false;self.columnMode=false;self.columnSingle=false;self.usedColumns=false
         -- A divider drag redraws the page; keep its splitter alive meanwhile.
         if self.roster then self.roster.frame:Hide();if self.roster.splitter and not self.roster.splitter.drag then self.roster.splitter:Hide() end end
         for _,frame in ipairs(self.columns or {}) do frame:Hide() end
@@ -11,7 +11,7 @@ function addon:InstallSettingsLayout(p)
     end
     function p:Column(index)
         if index==1 then
-            self.fullWidth=math.max(340,self.frame:GetWidth()-40);self.columnSingle=self.fullWidth<960;self.columnMode=true
+            self.fullWidth=math.max(340,self.frame:GetWidth()-40);self.columnSingle=self.fullWidth<960;self.columnMode=true;self.usedColumns=true
             self.child:SetWidth(self.fullWidth)
             if self.columnSingle then self.width=self.fullWidth;return end
             self.columns=self.columns or {};self.columnWidth=(self.fullWidth-24)/2
@@ -195,6 +195,6 @@ function addon:InstallSettingsLayout(p)
     -- (even invalid) input included.
     function p:ResizeSplit()
         if not self.rosterUsed or not self.roster then return end
-        self:Layout();self:Relayout()
+        self:Layout();self:RequestRelayout()
     end
 end

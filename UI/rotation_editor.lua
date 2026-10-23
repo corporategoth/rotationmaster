@@ -296,6 +296,7 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
         if self.leavePrompt then self.leavePrompt.frame:Hide() end
         if self.deletePrompt then self.deletePrompt.frame:Hide() end
         if self.metadataWindow then self.metadataWindow:Close(true) end
+        if addon.CancelWorkbenchReflow then addon:CancelWorkbenchReflow(self) end
         self.active=false;self.generation=(self.generation or 0)+1;self.canvas:Release();self.name:ClearFocus();self.description:ClearFocus();self.frame:Hide()
     end
     function pane:Open(nextSpec,nextId,nextSelect)
@@ -343,7 +344,31 @@ function addon:CreateRotationEditor(parent,spec,id,onSelect)
         self.name:EnableMouse(not workspace.readOnly and not workspace.fallback);self.canvas.frame:Show();self.frame:Show();self:Message('')
         self.frame:SetSize(parent:GetWidth(),parent:GetHeight());self:Layout();return self
     end
-    addon:SetUIScript(pane.frame,'OnSizeChanged',function() pane:Layout() end)
+    -- A resize lays out the header and viewport at once. Cards follow through
+    -- the shared reflow driver, once per rendered frame at most, by geometry
+    -- alone: bound cards are re-placed, never released and bound again. The
+    -- diagram keeps its card widths, so that is all it needs. List and
+    -- cooldown cards take the viewport width, which rewraps their text, so
+    -- once the size has settled they are bound again (measured) in one render.
+    function pane:Resized()
+        if not self.active then return end
+        self:LayoutGeometry()
+        local canvas=self.canvas
+        local function stale() return canvas.frame:GetWidth()~=canvas.reflowedWidth or canvas.frame:GetHeight()~=canvas.reflowedHeight end
+        if not stale() then return end
+        if not addon.RequestWorkbenchReflow then return self:Render() end
+        local token=self.generation
+        local function current() return self.active and self.generation==token end
+        addon:RequestWorkbenchReflow(self,self.frame,function()
+            if not current() or not stale() then return end
+            if not canvas:IsDiagram() and canvas.frame:GetWidth()~=canvas.reflowedWidth then canvas:ReleaseExpandedCards() end
+            canvas:Reflow()
+        end)
+        if not canvas:IsDiagram() then
+            addon:RequestWorkbenchSettle(self,self.frame,function() if current() and not canvas:IsDiagram() and canvas.frame:GetWidth()~=canvas.renderedWidth then self:Render() end end)
+        end
+    end
+    addon:SetUIScript(pane.frame,'OnSizeChanged',function() pane:Resized() end)
     addon:InstallRotationMetadata(pane)
     addon:InstallRotationUnsaved(pane);addon:InstallRotationChangeReview(pane)
     pane.ready=true;parent.rmRotationEditor=pane
