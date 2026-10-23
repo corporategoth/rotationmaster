@@ -1765,6 +1765,18 @@ L["Match all ranks"] = true
 L["%s (any rank)"] = true
 L["For a numeric spell selection, also recognize auras with the same readable localized spell name. Exact IDs remain the default. Spell names already match by name. Unavailable metadata or restricted aura identity stays unavailable, including under NOT. Different spells sharing a name can match; use exact IDs when that distinction matters."] = true
 
+-- Spell ID identity for casts, channels and forms.
+L["A spell picked in the editor is matched by its spell ID, so the condition works on every client language. Any rank of that spell matches unless Use this exact spell rank is ticked. Conditions saved with a spell name keep matching by that name. If the client cannot read the spell being cast, the condition is unavailable, including under NOT."] = true
+L["A form is chosen by its spell, so the condition keeps working as new forms are learned and on every client language. Any rank of the form matches. The list shows the forms on your stance bar, then your class's other forms on this client. A condition saved by stance bar slot keeps that slot until you choose a form. If the client cannot read the active form, the condition is unavailable, including under NOT."] = true
+L["Stance bar slot %s (%s)"] = true
+L["Cast Progress"] = true
+L["Channel Progress"] = true
+L["%s cast progress"] = true
+L["%s channel progress"] = true
+L["Progress"] = true
+L["How much of the current cast of {unit} is done, from 0% when it starts to 100% when it completes. It follows haste and pushback, because it is measured against the cast's own start and end. If the unit is not casting, this condition is not successful, whatever the operator; if the cast's times cannot be read, it is unavailable, including under NOT."] = true
+L["How much of the current channel of {unit} is done, from 0% when it starts to 100% when it ends. Ticks are evenly spaced through a channel, so tick N of a K-tick channel lands at N/K whatever your haste: to clip Mind Flay (3 ticks) after its second tick, use at least 66%. Pushback shortens a channel and the progress follows it. If the unit is not channeling, this condition is not successful, whatever the operator; if the channel's times cannot be read, it is unavailable, including under NOT."] = true
+
 -- Classic tree selection for adaptive rotations.
 L["Talent tree %s"] = true
 L["This client does not expose a Classic talent-tree layout. The saved tree reference is preserved."] = true

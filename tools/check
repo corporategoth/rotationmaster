@@ -432,6 +432,8 @@ def main():
             ['luajit', 'tests/rune_engraving_traits.lua'],
             ['lua5.1', 'tests/spec_weapon_conditions.lua'],
             ['luajit', 'tests/spec_weapon_conditions.lua'],
+            ['lua5.1', 'tests/cond_spell_identity.lua'],
+            ['luajit', 'tests/cond_spell_identity.lua'],
             ['lua5.1', 'tests/retail_combat_readiness.lua'],
             ['luajit', 'tests/retail_combat_readiness.lua'],
             ['lua5.1', 'tests/retail_points.lua'],

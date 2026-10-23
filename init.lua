@@ -165,8 +165,8 @@ local default_condition_groups = {
         id = "b3d7df2c-f257-4a2d-961e-66e49336d109",
         name = L["Combat"],
         conditions = {
-            "CASTING", "CASTING_SPELL", "CASTING_REMAIN", "CAST_INTERRUPTABLE",
-            "CHANNELING", "CHANNELING_SPELL", "CHANNELING_REMAIN", "CHANNEL_INTERRUPTABLE",
+            "CASTING", "CASTING_SPELL", "CASTING_REMAIN", "CASTING_PROGRESS", "CAST_INTERRUPTABLE",
+            "CHANNELING", "CHANNELING_SPELL", "CHANNELING_REMAIN", "CHANNELING_PROGRESS", "CHANNEL_INTERRUPTABLE",
             "COMBAT", "STEALTHED", "INCONTROL", "LOC_TYPE", "LOC_BLOCKED",
             "RUNNER", "RESIST", "IMMUNE", "MOVING", "THREAT", "THREAT_COUNT",
             "ATTACKABLE", "ENEMY", "COMBAT_HISTORY", "COMBAT_HISTORY_TIME", "TIME_IN_COMBAT",
@@ -607,6 +607,7 @@ function addon:init()
     self:InstallUnitStateConditions(self.db)
     if self.InstallBossModConditions then self:InstallBossModConditions(self.db) end
     if self.InstallLoadoutConditions then self:InstallLoadoutConditions(self.db) end
+    if self.InstallCastProgressConditions then self:InstallCastProgressConditions(self.db) end
     self:InstallAnnouncementConditionPreferences()
     self.db.RegisterCallback(self,'OnNewProfile','InitializeTalentTreeConditions')
     self.db.RegisterCallback(self,'OnProfileReset','InitializeTalentTreeConditions')

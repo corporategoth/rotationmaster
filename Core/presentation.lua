@@ -17,6 +17,15 @@ function addon:AuraSpellLabel(value)
     if type(value.spell)=='number' and value.anyrank==true then return string.format(L['%s (any rank)'],label) end
     return label
 end
+-- A cast/channel spell picked by ID matches any rank unless `ranked`.
+function addon:CastSpellLabel(value)
+    local label=self:SpellLabel(value.spell)
+    if type(value.spell)=='number' and value.ranked==true and self.SpellCatalog then
+        local rank=self.SpellCatalog:SpellRank(value.spell)
+        if type(rank)=='string' and rank~='' then return label..'|cFF888888 ('..rank..')|r' end
+    end
+    return label
+end
 local function supportedLink(link)
     return type(link)=="string" and link:match("^spell:%d+")~=nil
 end

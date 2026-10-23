@@ -93,6 +93,41 @@ function platform:GetSpellInfo(spell)
     return info
 end
 
+-- Identity of a live spell observation (a cast, a channel, the active form)
+-- against a configured spell ID. An equal ID matches. Otherwise, unless the
+-- exact ID was asked for, any rank of the spell matches: ranks share the
+-- client's own localized name, so this holds on every locale. Names are fixed
+-- for a session, so a resolved name is kept; failures are never kept.
+local familyNames = {}
+function platform:GetSpellFamilyName(spellID)
+    local name = familyNames[spellID]
+    if name then return name end
+    local info, reason = self:GetSpellInfo(spellID)
+    if not info then return nil, reason or "spell-data-unavailable" end
+    name = info.name
+    if type(name) ~= "string" or name == "" then return nil, "invalid-api-result" end
+    familyNames[spellID] = name
+    return name
+end
+
+function platform:MatchSpellIdentity(observedID, observedReason, observedName, wanted, exact)
+    if observedID ~= nil and observedID == wanted then return true end
+    if exact then
+        if observedID == nil then return nil, observedReason or "spell-identity-unavailable" end
+        return false
+    end
+    local name = observedName
+    if name == nil then
+        if observedID == nil then return nil, observedReason or "spell-identity-unavailable" end
+        local reason
+        name, reason = self:GetSpellFamilyName(observedID)
+        if not name then return nil, reason end
+    end
+    local wantedName, why = self:GetSpellFamilyName(wanted)
+    if not wantedName then return nil, why end
+    return name == wantedName
+end
+
 function platform:IsSpellKnown(spellID, pet)
     local valid, reason = identifier(spellID, true)
     if not valid then return nil, reason end

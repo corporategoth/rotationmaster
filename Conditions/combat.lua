@@ -425,18 +425,32 @@ local character_class = select(2, UnitClass("player"))
 addon:RegisterCondition("FORM", runtimeCondition('FORM',{
     description = L["Shapeshift Form"],
     icon = addon.Artwork.condition["FORM"],
-    fields = { value = "number" },
+    fields = { value = "number", form = "number" },
     valid = function(_, value)
+        -- A form spell ID is stable; the stance-bar slot `value` shifts as
+        -- forms are learned and is kept for conditions saved before IDs.
+        if value.form ~= nil then
+            return type(value.form) == "number" and value.form > 0 and value.form < math.huge and value.form % 1 == 0
+        end
         return value.value ~= nil and value.value >= 0 and value.value <= (character_class == "SHAMAN" and 1 or GetNumShapeshiftForms())
     end,
     evaluate = function(value, cache)
+        if value.form ~= nil then
+            local spell,why=Functions.cache.getCached(cache, addon.Platform.GetPlayerFormSpellObservation, addon.Platform)
+            if spell==nil then return nil,why end
+            if spell==0 then return false end
+            return addon.Platform:MatchSpellIdentity(spell, nil, nil, value.form, false)
+        end
         local form,reason=Functions.cache.getCached(cache, addon.Platform.GetPlayerFormObservation, addon.Platform)
         if form==nil then return nil,reason end
         return form == value.value
     end,
     print = function(_, value)
         local form
-        if value.value ~= nil then
+        if value.form ~= nil then
+            local info = addon.Platform:GetSpellInfo(value.form)
+            form = info and info.name
+        elseif value.value ~= nil then
             if value.value == 0 then
                 form = L["humanoid"]
             elseif character_class == "SHAMAN" then
@@ -459,25 +473,53 @@ addon:RegisterCondition("FORM", runtimeCondition('FORM',{
 
         forms["0"] = L["humanoid"]
         table.insert(formsOrder, "0")
-        if character_class == "SHAMAN" then
-            local info = addon.Platform:GetSpellInfo(2645)
-            forms["1"] = info and info.name or L["<form>"]
-            table.insert(formsOrder, tostring("1"))
-        else
+        -- Forms are chosen by spell: those on the stance bar, then the class's
+        -- other forms on this client, so a form can be picked before it is
+        -- learned. A condition saved by slot keeps its slot entry.
+        local names = {}
+        local function add_form(id)
+            local info = addon.Platform:GetSpellInfo(id)
+            local name = info and info.name
+            if name and names[name] then return end
+            if name then names[name] = true end
+            forms["spell:" .. id] = name or string.format(L["Unknown spell (%s)"], id)
+            table.insert(formsOrder, "spell:" .. id)
+        end
+        if type(GetNumShapeshiftForms) == "function" and type(GetShapeshiftFormInfo) == "function" then
             for i=1,GetNumShapeshiftForms() do
                 local spellid = select(4, GetShapeshiftFormInfo(i))
                 if spellid == nil then
                     break
                 end
-                local info = addon.Platform:GetSpellInfo(spellid)
-                forms[tostring(i)] = info and info.name or L["<form>"]
-                table.insert(formsOrder, tostring(i))
+                add_form(spellid)
             end
+        end
+        for _, id in ipairs(addon.Platform:GetFormSpellCandidates(character_class)) do
+            add_form(id)
+        end
+        if value.form ~= nil and not forms["spell:" .. value.form] then
+            forms["spell:" .. value.form] = string.format(L["Unknown spell (%s)"], value.form)
+            table.insert(formsOrder, "spell:" .. value.form)
+        end
+        if value.form == nil and value.value ~= nil and value.value ~= 0 then
+            local slot
+            if character_class == "SHAMAN" then
+                local info = addon.Platform:GetSpellInfo(2645)
+                slot = info and info.name
+            elseif type(GetShapeshiftFormInfo) == "function" then
+                local info = addon.Platform:GetSpellInfo(select(4, GetShapeshiftFormInfo(value.value)))
+                slot = info and info.name
+            end
+            forms[tostring(value.value)] = string.format(L["Stance bar slot %s (%s)"], value.value, slot or L["<form>"])
+            table.insert(formsOrder, tostring(value.value))
         end
 
         local formIcon = addon:CreateConditionIcon()
         local function set_form_icon()
-            if value.value ~= nil then
+            if value.form ~= nil then
+                local info = addon.Platform:GetSpellInfo(value.form)
+                formIcon:SetImage(info and info.iconID or "Interface\\Icons\\INV_Misc_QuestionMark")
+            elseif value.value ~= nil then
                 if value.value == 0 then
                     formIcon:SetImage("Interface\\Icons\\inv_misc_head_human_02")
                 else
@@ -504,14 +546,21 @@ addon:RegisterCondition("FORM", runtimeCondition('FORM',{
         local form = addon:CreateConditionDropdown()
         form:SetLabel(L["Form"])
         form:SetCallback("OnValueChanged", function(_, _, v)
-            value.value = tonumber(v)
+            local spell = type(v) == "string" and tonumber(v:match("^spell:(%d+)$"))
+            if spell then
+                value.form, value.value = spell, nil
+            else
+                value.form, value.value = nil, tonumber(v)
+            end
             form:SetValue(v)
             set_form_icon()
             top:SetStatusText(funcs:print(root, spec))
         end)
         form.configure = function()
             form:SetList(forms, formsOrder)
-            if (value.value) then
+            if value.form ~= nil then
+                form:SetValue("spell:" .. value.form)
+            elseif (value.value) then
                 form:SetValue(tostring(value.value))
             end
         end
@@ -521,6 +570,8 @@ addon:RegisterCondition("FORM", runtimeCondition('FORM',{
         frame:AddChild(helpers.CreateText(color.BLIZ_YELLOW .. L["Form"] .. color.RESET .. " - " ..
             "You are shapeshifted into a different form.  This includes stances for warriors and stealth.  " ..
             color.GREEN .. L["humanoid"] .. color.RESET .. " can be used to indicate you are NOT shapeshifted."))
+        frame:AddChild(helpers.Gap())
+        frame:AddChild(helpers.CreateText(L["A form is chosen by its spell, so the condition keeps working as new forms are learned and on every client language. Any rank of the form matches. The list shows the forms on your stance bar, then your class's other forms on this client. A condition saved by stance bar slot keeps that slot until you choose a form. If the client cannot read the active form, the condition is unavailable, including under NOT."]))
     end
 }))
 

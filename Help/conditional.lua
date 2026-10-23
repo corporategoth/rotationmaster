@@ -121,6 +121,10 @@ function addon.layout_condition_unitwidget_help(frame)
     group:AddChild(CreateText(color.BLIZ_YELLOW .. L["Unit"] .. color.RESET .. " - " ..
         "The unit this condition uses as the target of comparison."))
 end
+function addon.layout_condition_castspell_help(frame)
+    frame:AddChild(Gap())
+    frame:AddChild(CreateText(L['A spell picked in the editor is matched by its spell ID, so the condition works on every client language. Any rank of that spell matches unless Use this exact spell rank is ticked. Conditions saved with a spell name keep matching by that name. If the client cannot read the spell being cast, the condition is unavailable, including under NOT.']))
+end
 function addon.layout_condition_aurarank_help(frame)
     frame:AddChild(Gap())
     frame:AddChild(CreateText(color.BLIZ_YELLOW..L['Match all ranks']..color.RESET..' - '..L['For a numeric spell selection, also recognize auras with the same readable localized spell name. Exact IDs remain the default. Spell names already match by name. Unavailable metadata or restricted aura identity stays unavailable, including under NOT. Different spells sharing a name can match; use exact IDs when that distinction matters.']))
