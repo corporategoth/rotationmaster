@@ -10,7 +10,9 @@ local function paths(prefix)
     end
     assert(#result>0,'no '..prefix..' files in TOC');return result
 end
-function C.load(project,expansion,class)
+-- options.characterScope keeps production scoping: only this character's edition and
+-- class register (otherwise every pack loads, as the cross-edition checks need).
+function C.load(project,expansion,class,options)
     local f=F.new(project,expansion,class);local a,e=f.addon,f.env
     local state={level=1,context='player',build=70006}
     e.UnitLevel=function() return state.level end
@@ -33,10 +35,11 @@ function C.load(project,expansion,class)
     a.RegisterDefaultRotation=function(self,pack)
         assert(not ids[pack.id],'duplicate shipped ID '..tostring(pack.id));ids[pack.id]=true
         -- Corpus checks see the expanded tree registration consumes (Built In composition).
-        local ok,why=register(self,pack);assert(ok,why);packs[#packs+1]=assert(a:ExpandDefaultRotation(pack));return ok
+        local ok,why=register(self,pack);assert(ok,why);if why~='other-character' then packs[#packs+1]=assert(a:ExpandDefaultRotation(pack)) end;return ok,why
     end
+    a.loadAllDefaults=not(options and options.characterScope) -- the corpus checks every edition's packs
     for _,path in ipairs(paths('Defaults')) do
-        local count=#packs;f.load(path);assert(path:match('^Defaults/blocks/') or #packs>count,path..' registered no defaults')
+        local count=#packs;f.load(path);assert(path:match('^Defaults/blocks/') or #packs>count or a.loadAllDefaults==false,path..' registered no defaults')
     end
     assert(a:InitializeRotationLibrary())
     return f,packs,state

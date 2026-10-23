@@ -58,6 +58,7 @@ function M.build()
  -- Imported source is never accepted and pack globals cannot query native APIs.
  local packEnv=setmetatable({assert=assert,ipairs=ipairs,pairs=pairs,type=type},{__index=function(_,key)error('unsupported pack global '..tostring(key),0)end})
  -- Shared block sources register no pack; they are hashed inputs like every pack source.
+ a.loadAllDefaults=true -- the catalog covers every edition
  for _,path in ipairs(paths)do current=path;local count=#captured;load(path,packEnv);assert(#captured==count+(path:match('^Defaults/blocks/')and 0 or 1),'exactly one pack per source required')end
  assert(a:InitializeRotationLibrary())
  local output={format='RotationMasterBundledDefaults',version=1,scope='declared-data-only',displayLocale='enUS',nativeAvailability='unverified',sourceFiles={},packs=array({})}

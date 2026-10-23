@@ -138,8 +138,30 @@ local function checkBlockSteps(list,path,ids)
         end
     end
 end
+-- Only this character's packs are kept: other editions and other classes can
+-- never apply to it, and registering them would hold every premade in memory
+-- on every client. Their files still load; what they build is garbage. Offline
+-- tools and cross-edition/cross-class tests set loadAllDefaults.
+local function notForThisCharacter(families,class)
+    if addon.loadAllDefaults then return false end
+    local platform=addon.Platform
+    local family=platform and type(platform.GetClientFamily)=="function" and platform:GetClientFamily()
+    if type(family)=="string" and type(families)=="table" then
+        local listed=false
+        for _,value in ipairs(families) do if value==family then listed=true;break end end
+        if not listed then return true end
+    end
+    if type(class)=="string" and type(UnitClass)=="function" then
+        local ok,_,token=pcall(UnitClass,"player")
+        if ok and platform and platform:CanReadValue(token) and (not canaccessvalue or canaccessvalue(token))
+            and type(token)=="string" and token~=class then return true end
+    end
+    return false
+end
+
 function addon:RegisterDefaultBlock(block)
     if not plainTable(block) then return false,"invalid-block" end
+    if notForThisCharacter(block.families,block.class) then return true,"other-character" end
     for key in pairs(block) do if not blockFields[key] then return false,message({code="unknown-block-field",path=(blockName(block.id) and block.id or "$").."."..tostring(key)}) end end
     if not blockName(block.id) then return false,message({code="invalid-block-id",path="$.id"}) end
     local where=block.id
@@ -320,6 +342,7 @@ function addon:GetDefaultRotationComposition(id)
 end
 
 function addon:RegisterDefaultRotation(envelope)
+    if type(envelope)=="table" and type(envelope.applicability)=="table" and notForThisCharacter(envelope.applicability.families,envelope.applicability.class) then return true,"other-character" end
     local expanded,composition,problem=expandDefinition(envelope)
     if not expanded then return false,problem end
     local copy,why=data.CopyData(expanded)

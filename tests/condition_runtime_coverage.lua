@@ -96,6 +96,7 @@ test('every TBC pack action and cooldown graph compiles, or takes the declared o
  a.RegisterDefaultRotation=function(_,envelope)if envelope.applicability.families[1]=='tbc'then loaded[#loaded+1]=assert(a:ExpandDefaultRotation(envelope))end;return true end
  -- One pack per Defaults/tbc file; blocks register none. Forever and Retail packs (reference-only
  -- on a restricted client) have their own suites and are not counted here.
+ a.loadAllDefaults=true
  local packs=0;for path in io.lines('RotationMaster.toc')do if path:match('^Defaults/.*%.lua$')then f.load(path);if path:match('^Defaults/tbc/')then packs=packs+1 end end end
  assert(packs>0 and #loaded==packs,'pack census changed: '..#loaded..' of '..packs)
  -- The TBC premades read condition tags the compiler does not own yet (POWER, MANAPCT,

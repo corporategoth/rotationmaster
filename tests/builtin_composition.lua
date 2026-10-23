@@ -57,6 +57,7 @@ end
 
 local function shipped()
     local a,load=fixture()
+    a.loadAllDefaults=true
     for line in io.lines('RotationMaster.toc') do local path=line:gsub('\r',''):match('^%s*(Defaults/.-%.lua)%s*$');if path then load(path) end end
     assert(a:InitializeRotationLibrary());return a
 end
@@ -237,6 +238,7 @@ test('ledger records every shipped block digest and composed pack pin revision',
     local registerBlock,registerRotation=a.RegisterDefaultBlock,a.RegisterDefaultRotation
     a.RegisterDefaultBlock=function(self,b) authored[#authored+1]=a.RotationData.CopyData(b);return registerBlock(self,b) end
     a.RegisterDefaultRotation=function(self,p) registered[#registered+1]=p.id;return registerRotation(self,p) end
+    a.loadAllDefaults=true
     for line in io.lines('RotationMaster.toc') do local path=line:gsub('\r',''):match('^%s*(Defaults/.-%.lua)%s*$');if path then load(path) end end
     assert(a:InitializeRotationLibrary() and #authored>0)
     local blocks,packs={},{}
