@@ -86,16 +86,47 @@ spell (`C_Spell.GetBaseSpell`) and its current override
 ## Retail limits
 
 - **Readiness in combat.** The step is held to the same readiness check as a
-  spell step. `Platform:IsSpellReady` works from the cooldown's start and
-  duration, and those are secret in combat on Retail, so any spell step,
-  this one included, reads as not ready in combat. The fix is a separate
-  change: read the never-secret `SpellCooldownInfo.isActive`/`isOnGCD` flags
-  when the times are secret. Until that lands, the step advises out of
-  combat only. Treat this as the first follow-up.
-- `IsSpellUsable` and range carry no secret flag (per the research notes), but
-  this has not been confirmed in game.
+  spell step. On Retail and Forever, `C_Spell.GetSpellCooldown` is
+  `SecretWhenCooldownsRestricted`. In combat, encounters, challenge modes and
+  PvP matches it hides `startTime`, `duration` and `modRate`. Its
+  `isEnabled`, `isActive` and `isOnGCD` flags are documented `NeverSecret`
+  (`SpellSharedDocumentation.lua`, identical on `live` e7aa82019d and
+  `forever` ca8368f2f2). When only the times are hidden,
+  `Platform:IsSpellReady` decides from the flags, with the meaning the times
+  give it:
+  - a held cooldown (`isEnabled` false) is not ready;
+  - an inactive one is ready;
+  - an active one is ready only while it is the global cooldown.
+
+  Blizzard says `isOnGCD` can be trusted only at `SPELL_UPDATE_COOLDOWN`, so
+  RM counts "on the GCD" only while the global cooldown is actually running.
+  If `isOnGCD` is missing, RM decides only when no GCD is running. Flags that
+  cannot be read leave the spell unavailable, never ready. So spell steps,
+  this one included, and Spell Available now work in combat.
+
+  One case may still differ from the times. A spell whose own cooldown ends
+  inside the current GCD shows as not ready if the client reports it as on its
+  own cooldown, until the client reports the GCD instead. With readable times
+  (TBC, Era, Retail out of combat) nothing changes. Those clients make the
+  same decisions with the same calls, and they never read the flags.
+- **Conditions that need a time stay unavailable in combat.** Spell
+  Cooldown (`SPELL_COOLDOWN`, a remaining-seconds comparison), Spell Recharge
+  Time (`SPELL_REMAIN`) and Spell Charges (`SPELL_CHARGES`) need numbers that
+  are secret: `SpellChargeInfo` leaves only `maxCharges` and `isActive`
+  readable. A flag never stands in for a number. In particular, an inactive
+  recharge is not read as full charges, and an inactive cooldown is not read
+  as zero seconds, because that would answer only one side of a comparison.
+  The pet and any-spell variants behave the same way.
+- `C_Spell.IsSpellUsable`, `IsSpellInRange` and `SpellHasRange` carry no secret
+  annotation on either branch, so RM reads them as usual. If one were secret
+  after all, the spell would be unavailable.
+- **Needs in-game confirmation:** that the cooldown flags really are readable
+  in combat, how `isOnGCD` behaves when polled (and whether it is nil), and
+  that usability and range stay readable.
 - The condition and step have not been tested on a live Retail client. The
   tests use a modelled `C_AssistedCombat` built from the documentation.
+  `tests/retail_combat_readiness.lua` models the secret cooldown times the
+  same way.
 - The condition reuses the Spell Available icon until original artwork exists
   (`tests/condition_icons.lua` lists it as pending).
 - Packaged rotations still never auto-select on Retail or Forever, because
