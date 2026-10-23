@@ -3665,6 +3665,33 @@ L["Blizzard's suggestion"] = true
 L["Recommends the spell Blizzard's Assisted Combat suggests"] = true
 L["Recommends whatever spell Blizzard's Assisted Combat suggests next, read each time the rotation is evaluated. It highlights that spell's button and shows in the preview like a spell step, and is held to the same requirements: known, usable, off cooldown and in range. When nothing is suggested, the suggested spell is not on your bars, or Assisted Combat is unavailable (anywhere but Retail, or a specialization without it), the step is skipped. Rotation list only."] = true
 
+-- Season of Discovery rune engraving and trait talents.
+L["rune spell %s"] = true
+L["rune %s"] = true
+L["Engraved Rune"] = true
+L["you {{!have|do not have}} the rune %s engraved"] = true
+L["<rune>"] = true
+L["Your runes have not loaded yet. Reopen this condition shortly, or enter an ID below."] = true
+L["This character cannot engrave runes. A rune entered by ID below is kept, and is unavailable here."] = true
+L["Slot %d"] = true
+L["Equipment Slot"] = true
+L["Rune"] = true
+L["Rune Spell ID"] = true
+L["Rune ID"] = true
+L["Matches when a Season of Discovery rune is engraved on one of your equipped items. Passive runes count too, which a known-spell test cannot see."] = true
+L["Pick one of your known runes by equipment slot. The rune is saved by the first spell it teaches, so a shared rotation names it on any character."] = true
+L["Enter a spell the rune teaches, or the rune's own ID (its skill line ability ID) for a rune that teaches no spell. Entering one clears the other."] = true
+L["Engraving exists only on Season of Discovery realms. Elsewhere, and until your runes have loaded after logging in, this condition is unavailable rather than false, including under NOT. The Phase 7 shoulder runes are not engravings and are not seen. This is not the Death Knight Rune condition."] = true
+L["Your talents cannot be listed right now. A node ID entered below is kept and evaluated."] = true
+L["%s (choice)"] = true
+L["Talents"] = true
+L["Talent Node ID"] = true
+L["Choice Entry ID"] = true
+L["talent node %s"] = true
+L["ranks in %s"] = true
+L["Retail and Forever compare the rank of a talent node in your active loadout. Pick it from your talent tree, or enter the node ID (and, for a choice node, the entry ID of the choice) to share a rotation; a choice node's entry has rank zero unless it is the chosen one. A hero talent outside your chosen hero tree has rank zero. Ranks are read again after any talent change; an unreadable node is unavailable, including under NOT."] = true
+L["Forever is the exception: Talent tree is one of the three talent trees of your active loadout (in the order the talent window shows them); their points are read again after any talent change. Retail has no such trees."] = true
+
 -- BEGIN GENERATED RM PUBLIC HELPER DOCS
 L["Absolute health target (negative means deficit) or percentage fraction."] = true
 L["All original results, preserving nil positions and return count."] = true

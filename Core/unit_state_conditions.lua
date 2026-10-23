@@ -40,10 +40,26 @@ local function seedAssistedConditions(profile)
     end
     profile.assistedConditionsSeeded=true
 end
+-- Season of Discovery rune engraving joins the Character category and the
+-- Switch picker once per profile, under its own flag.
+local function seedEngravingConditions(profile)
+    if profile.engravingConditionsSeeded then return end
+    local function append(list)
+        if type(list)~='table' then return end
+        for _,existing in ipairs(list) do if existing=='RUNE_ENGRAVED' then return end end
+        list[#list+1]='RUNE_ENGRAVED'
+    end
+    append(profile.switch_conditions)
+    for _,category in ipairs(type(profile.condition_groups)=='table' and profile.condition_groups or {}) do
+        if category.id=='b8136123-2bda-4230-a77a-89ea2aed3a1a' then append(category.conditions) end
+    end
+    profile.engravingConditionsSeeded=true
+end
 function addon:InitializeUnitStateConditions(_,db)
     local profile=db.profile
     seedContextConditions(profile)
     seedAssistedConditions(profile)
+    seedEngravingConditions(profile)
     if profile.unitStateSwitchSeeded then return end
     local function append(list)
         for _,tag in ipairs({'DEAD','FRIENDLY'}) do
