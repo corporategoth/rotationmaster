@@ -77,13 +77,12 @@ class ArtworkTests(unittest.TestCase):
                 self.assertFalse(ignored(directory + '/provenance.json'))
                 self.assertFalse(ignored(directory + '/README.md'))
 
-    def test_release_excludes_browser_modules(self):
-        web = sorted(str(path.relative_to(ROOT)) for path in (ROOT / 'Web').rglob('*') if path.is_file())
-        self.assertTrue(web, 'browser transport fixtures must exist')
+    def test_release_keeps_runtime_entry_points(self):
+        # The website and browser modules live in the separate
+        # wow/rotationmaster-web repository and are not in this tree.
         for label, text in [('generated', GENERATOR.release_metadata()),
                             ('committed', (ROOT / '.pkgmeta').read_text())]:
             items = [line[4:] for line in text.splitlines() if line.startswith('  - ')]
-            self.assertEqual([path for path in web if not any(path == item or path.startswith(item + '/') for item in items)], [], label + ' ships browser modules')
             for path in ('Data/artwork.lua', 'Analytics/replay.lua', 'RotationMaster.toc'):
                 self.assertFalse(any(path == item or path.startswith(item + '/') for item in items), path)
 
