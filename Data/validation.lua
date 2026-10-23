@@ -6,6 +6,26 @@ local contexts = {player=true, pet=true, vehicle=true, possession=true, override
 local classes = {WARRIOR=true, PALADIN=true, HUNTER=true, ROGUE=true, PRIEST=true, DEATHKNIGHT=true,
     SHAMAN=true, MAGE=true, WARLOCK=true, MONK=true, DRUID=true, DEMONHUNTER=true, EVOKER=true}
 function data.IsRotationClassToken(value) return type(value)=="string" and classes[value]==true end
+function data.IsRotationActionContext(value) return type(value)=="string" and contexts[value]==true end
+-- A rotation without a source manifest belongs to the player's own action bar.
+-- It opts into a vehicle, possession, override bar or pet battle only through
+-- its switch condition: an enabled ACTION_CONTEXT leaf naming that context,
+-- reached through AND/OR (never under NOT). Bounded, data-only traversal.
+function data.MatchesBareActionContext(body,context)
+    if context=="player" then return true end
+    if type(body)~="table" or not contexts[context] then return false end
+    local budget=256
+    local function visit(node,depth)
+        budget=budget-1
+        if budget<0 or depth>32 or type(node)~="table" or node.disabled==true then return false end
+        if node.type=="ACTION_CONTEXT" then return node.context==context end
+        if (node.type=="AND" or node.type=="OR") and type(node.value)=="table" then
+            for _,child in ipairs(node.value) do if visit(child,depth+1) then return true end end
+        end
+        return false
+    end
+    return visit(body.switch,0)
+end
 local function integer(value, minimum)
     return type(value) == "number" and value >= minimum and value % 1 == 0
 end

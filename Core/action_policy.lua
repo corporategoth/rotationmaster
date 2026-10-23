@@ -30,6 +30,12 @@ local function buildReadiness(platform)
         if stamps[id]~=stamp then
             local known=kind~="pet" and platform:IsSpellKnown(id,false)==true
             if not known and kind~="spell" then known=platform:IsSpellKnown(id,true)==true end
+            -- Vehicle, override and possession abilities are in neither
+            -- spellbook; while such a bar is up, the bound button decides.
+            if not known and addon.GetActionContext and addon:GetActionContext()~="player" and addon.IsBoundActionReady then
+                results[id]=addon:IsBoundActionReady(id,now)==true;stamps[id]=stamp
+                return results[id]
+            end
             if known and availableStamps[id]~=stamp then
                 local usable,power=platform:IsSpellUsable(id)
                 availability[id]=usable==true and power==false and platform:IsSpellReady(id,now)==true

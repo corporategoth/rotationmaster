@@ -105,6 +105,10 @@ serial=0
 local exposed=setmetatable({},{__mode='k'})
 local exposureVersion={}
 local function plain(v) return type(v)=='table' and getmetatable(v)==nil end
+local function bareContextOptIn(body,context)
+    local matches=data and data.MatchesBareActionContext
+    return type(matches)=='function' and matches(body,context)==true
+end
 local function text(v,n) return type(v)=='string' and #v>0 and #v<=n and v:find('%S')~=nil and not v:find('[%z\1-\31\127]') end
 local function copy(v) return data.CopyData(v) end
 local function metadataView(value)
@@ -846,7 +850,17 @@ function addon:BindRotationProfile()
             if asset.unavailable or not status.valid or not status.supported or not status.resolved then return nil,reference.address.id==fallbackID and 'invalid-fallback' or asset.unavailable or 'rotation-unavailable' end
             if asset.body.disabled then return nil,'disabled' end
             if asset.applicability then local allowed,eligibilityReason=libraryReader:Eligible({enabled=true,validation=status,applicability=asset.applicability},number,candidates);if not allowed then return nil,eligibilityReason end
-            elseif rotationContext(owner,number).combatDataPolicy~='probe' then return nil,'restricted-or-unsupported-client' end
+            else
+                local info=rotationContext(owner,number)
+                if info.combatDataPolicy~='probe' then return nil,'restricted-or-unsupported-client' end
+                -- A bare record acts through the player's own bar unless its
+                -- switch condition opts into the current special context.
+                if not candidates and info.actionContext~='player' then
+                    local optIn=asset.contextOptIn;if not optIn then optIn={};asset.contextOptIn=optIn end
+                    if optIn[info.actionContext]==nil then optIn[info.actionContext]=bareContextOptIn(asset.body,info.actionContext) end
+                    if not optIn[info.actionContext] then return nil,'action-context-mismatch' end
+                end
+            end
             if owner:HasDisabledRotationDependency(asset.body) then return nil,'disabled-dependency' end
             if not batch then local current,problemText=pass:IsCurrent();if not current then return nil,problemText end end
             if not private then
@@ -989,7 +1003,12 @@ function addon:BindRotationProfile()
             if not contextInputsCurrent() or private~=true or not libraryContextProof(method,entry,rotationContext) then return end
             local allowed,reason
             if view.applicability then allowed,reason=planEligible(view,info,false)
-            else allowed=info.combatDataPolicy=='probe';reason='restricted-or-unsupported-client' end
+            else
+                allowed=info.combatDataPolicy=='probe';reason='restricted-or-unsupported-client'
+                if allowed and info.actionContext~='player' and not bareContextOptIn(body,info.actionContext) then
+                    allowed,reason=false,'action-context-mismatch'
+                end
+            end
             local _,_,operation=readActiveRuntime(owner,spec,key)
             if not authority() then return end
             return {version=contextVersion,operation=operation,allowed=allowed==true,reason=reason}

@@ -61,12 +61,26 @@ local function eligible(view, context, candidates)
     end
     -- These selectors need dedicated context providers before execution is safe.
     -- Keep their definitions visible for reference rather than assuming a match.
-    if scope.rulesets or scope.intent or scope.roles then return false,"unsupported-context-selector" end
+    if scope.intent or scope.roles then return false,"unsupported-context-selector" end
+    -- Rulesets (season, hardcore, self-found, standard) come from the cached
+    -- build context; any listed ruleset that is active matches.
+    if scope.rulesets then
+        local provider=addon.GetBuildRulesets
+        local active=type(provider)=="function" and provider(addon) or nil
+        if type(active)~="table" then return false,"unsupported-context-selector" end
+        local matched=false
+        for _,ruleset in ipairs(scope.rulesets) do if active[ruleset] then matched=true;break end end
+        if not matched then return false,"ruleset-mismatch" end
+    end
     if context.combatDataPolicy~="probe" then return false,"restricted-or-unsupported-client" end
     return true
 end
 local function plainTable(value)
     return type(value)=="table" and getmetatable(value)==nil
+end
+local function bareContextOptIn(body,context)
+    local matches=data and data.MatchesBareActionContext
+    return type(matches)=="function" and matches(body,context)==true
 end
 
 function addon:RegisterDefaultRotation(envelope)
@@ -147,6 +161,29 @@ local function ensure(self,needProof)
     return true
 end
 
+-- The bar the player is acting through. A vehicle, override bar, possession
+-- (mind control, quest possession) or pet battle replaces the player's own
+-- actions; each is a separate rotation applicability domain. Every API is
+-- feature-detected: TBC/Era clients have possession, Wrath+ add vehicles and
+-- override bars, and only Retail has pet battles. Vehicle and pet battle keep
+-- their historical read order (one call each per observation).
+local function observeActionContext(read)
+    local vehicle=read(UnitHasVehicleUI,"player")
+    if vehicle==nil then vehicle=read(UnitInVehicle,"player") end
+    if C_PetBattles and read(C_PetBattles.IsInBattle) then return "petbattle" end
+    if vehicle or read(HasVehicleActionBar) then return "vehicle" end
+    if read(HasOverrideActionBar) then return "override" end
+    if read(IsPossessBarVisible) then return "possession" end
+    return "player"
+end
+-- Fresh observation for the event-driven cache in main.lua; never polled.
+local function readActionContextValue(fn,...)
+    if type(fn)~="function" then return nil end
+    local ok,value=pcall(fn,...)
+    if ok and addon.Platform:CanReadValue(value) then return value end
+end
+function addon:ReadActionContext() return observeActionContext(readActionContextValue) end
+
 -- Platform facts used for selection are public identity/context observations.
 -- Restricted results never enter comparisons or portable-data traversal.
 function addon:GetRotationContext(spec)
@@ -161,11 +198,7 @@ function addon:GetRotationContext(spec)
     context.level=read(UnitLevel,"player")
     context.build=tonumber(context.build)
     context.spec=spec
-    context.actionContext="player"
-    local vehicle=read(UnitHasVehicleUI,"player")
-    if vehicle==nil then vehicle=read(UnitInVehicle,"player") end
-    if vehicle then context.actionContext="vehicle" end
-    if C_PetBattles and read(C_PetBattles.IsInBattle) then context.actionContext="petbattle" end
+    context.actionContext=observeActionContext(read)
     return context
 end
 local ownedRotationContext=addon.GetRotationContext
@@ -197,11 +230,7 @@ local function rotationContext(owner,spec)
     context.level=read(UnitLevel,"player")
     context.build=tonumber(context.build)
     context.spec=spec
-    context.actionContext="player"
-    local vehicle=read(UnitHasVehicleUI,"player")
-    if vehicle==nil then vehicle=read(UnitInVehicle,"player") end
-    if vehicle then context.actionContext="vehicle" end
-    if C_PetBattles and read(C_PetBattles.IsInBattle) then context.actionContext="petbattle" end
+    context.actionContext=observeActionContext(read)
     return context,private==true
 end
 -- Uncovered vehicle/pet-battle notifications retain fresh observation at every
@@ -212,12 +241,7 @@ local function runtimeActionContext(owner)
         local ok,value=pcall(fn,...)
         if ok and owner.Platform:CanReadValue(value) then return value end
     end
-    local result="player"
-    local vehicle=read(UnitHasVehicleUI,"player")
-    if vehicle==nil then vehicle=read(UnitInVehicle,"player") end
-    if vehicle then result="vehicle" end
-    if C_PetBattles and read(C_PetBattles.IsInBattle) then result="petbattle" end
-    return result
+    return observeActionContext(read)
 end
 local function runtimeKey(id, custom)
     local key="RM-BUILTIN:"..id
@@ -249,6 +273,7 @@ function addon:BindRotationLibraryReader(bind)
         local client,readValue=platform.GetClientInfo,platform.CanReadValue
         local unitClass,unitLevel,buildInfo,project=UnitClass,UnitLevel,GetBuildInfo,WOW_PROJECT_ID
         local hasVehicle,inVehicle,petBattles=UnitHasVehicleUI,UnitInVehicle,C_PetBattles
+        local vehicleBar,overrideBar,possessBar=HasVehicleActionBar,HasOverrideActionBar,IsPossessBarVisible
         local inBattle=petBattles and petBattles.IsInBattle
         local secret,access=issecretvalue,canaccessvalue
         return function()
@@ -256,6 +281,7 @@ function addon:BindRotationLibraryReader(bind)
                 or owner.Platform~=platform or platform.GetClientInfo~=client or platform.CanReadValue~=readValue
                 or UnitClass~=unitClass or UnitLevel~=unitLevel or GetBuildInfo~=buildInfo or WOW_PROJECT_ID~=project
                 or UnitHasVehicleUI~=hasVehicle or UnitInVehicle~=inVehicle or C_PetBattles~=petBattles
+                or HasVehicleActionBar~=vehicleBar or HasOverrideActionBar~=overrideBar or IsPossessBarVisible~=possessBar
                 or (petBattles and petBattles.IsInBattle)~=inBattle
                 or issecretvalue~=secret or canaccessvalue~=access
                 or contextGetfenv(runtimeActionContext)~=contextEnvironment or contextGetfenv(readValue)~=contextEnvironment
@@ -376,9 +402,11 @@ function addon:GetRuntimeRotations(spec, internal, candidates)
             scoped.validation=data.ValidateEnvelope(scoped.envelope,self:GetRotationValidationOptions())
             scoped.applicability=scoped.envelope.applicability
         end
-        if not origins or plainTable(origins) and origins[id]==nil
-            or scoped and eligible(scoped,context,candidates) then
+        local bare=not origins or plainTable(origins) and origins[id]==nil
+        if bare or scoped and eligible(scoped,context,candidates) then
+            local plainBody=bare and (not self.GetImportedRotationView or importError=="not-imported")
             if (not self.GetImportedRotationView or importError=="not-imported" or imported and eligible(imported,context,candidates))
+                and (not plainBody or candidates or context.actionContext=="player" or bareContextOptIn(body,context.actionContext))
                 and not self:HasDisabledRotationDependency(body) then rotations[id]=body end
         end
     end

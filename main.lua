@@ -346,6 +346,13 @@ local mainline_events = {
     'PLAYER_SPECIALIZATION_CHANGED',
 }
 
+-- Bar replacements (possession, vehicle, override bar) and pet battles. Each
+-- name is registered only where the client's event catalogue confirms it.
+local actionContextEvents = {
+    'UNIT_ENTERED_VEHICLE', 'UPDATE_VEHICLE_ACTIONBAR', 'UPDATE_OVERRIDE_ACTIONBAR', 'UPDATE_POSSESS_BAR',
+    'UPDATE_BONUS_ACTIONBAR', 'PET_BATTLE_OPENING_START', 'PET_BATTLE_CLOSE',
+}
+
 local wrath_events = {
     'PLAYER_TALENT_UPDATE',
     -- 'ACTIVE_TALENT_GROUP_CHANGED', # Implied by the above
@@ -862,6 +869,12 @@ function addon:enable()
     for _,event in ipairs(extraEvents) do if not activeCall(self,change,'RegisterEvent',event) then return end end
 
     if not registerOptionalEvent(self,change,'UNIT_EXITED_VEHICLE') then return end
+    -- BEGIN ACTION CONTEXT REGISTRATION
+    for _,event in ipairs(actionContextEvents) do
+        if not registerOptionalEvent(self,change,event) then return end
+    end
+    if self.RefreshActionContext then self:RefreshActionContext() end
+    -- END ACTION CONTEXT REGISTRATION
     if family=='tbc' then
         if not registerOptionalEvent(self,change,'PLAYER_TALENT_UPDATE') then return end
         if not registerOptionalEvent(self,change,'ACTIVE_TALENT_GROUP_CHANGED') then return end
@@ -1040,7 +1053,11 @@ function addon:SwitchRotation()
 
     -- Could not find a rotation to switch to, even the default one.
     if self.currentRotation ~= nil then
-        addon:warn(L["No rotation is active as there is none suitable to automatically switch to."])
+        if self.GetActionContext and self:GetActionContext()~='player' then
+            addon:info(L["Advice is suspended: no rotation applies while you are using another action bar."])
+        else
+            addon:warn(L["No rotation is active as there is none suitable to automatically switch to."])
+        end
         if not current() then return end
         self:DisableRotation()
     end
@@ -1068,8 +1085,11 @@ end
 
 function addon:AutoSwitchTick()
     local profile=self.db.profile
-    if self.initializationErrorReport or self.adviceErrorReport or not profile.enable
-        or not autoSwitchEnabled(profile) or self.manualRotation then return end
+    if self.initializationErrorReport or self.adviceErrorReport or not profile.enable then return end
+    -- A client without one of the bar notifications still settles here, once
+    -- per re-check (never per poll); a change runs the full transition.
+    if self.ApplyActionContext and self:ApplyActionContext() then return end
+    if not autoSwitchEnabled(profile) or self.manualRotation then return end
     local candidate,known=autoSwitchCandidate(self)
     if known and candidate==self.currentRotation then return end
     self:SwitchRotation()
@@ -2407,6 +2427,7 @@ addon.ACTIONBAR_PAGE_CHANGED = wrapEvent(addon.ButtonFetch)
 addon.UPDATE_MACROS = wrapEvent(addon.ButtonFetch)
 addon.VEHICLE_UPDATE = wrapEvent(function(self)
     restoreManualChoice(self)
+    self:ApplyActionContext()
     self:ButtonFetch()
 end)
 
@@ -2451,6 +2472,12 @@ end)
 
 addon.PLAYER_CONTROL_LOST = wrapEvent(function(self)
     self:verbose("Player lost control.")
+    -- Controlling a vehicle or a possessed unit is not losing control: the
+    -- action context transition owns advice for that bar.
+    if self.currentRotation and self.ReadActionContext then
+        local ok,context=pcall(self.ReadActionContext,self)
+        if ok and context~='player' then return self:ApplyActionContext() end
+    end
     self:DisableRotationTimer()
     self:RemoveAllCurrentGlows()
 end)
@@ -2576,19 +2603,89 @@ addon.PLAYER_REGEN_ENABLED = wrapEvent(function(self)
     end
 end)
 
+-- A vehicle replaces the player's bar: the action context transition picks a
+-- vehicle rotation or suspends advice, and restores the player's on exit.
 addon.UNIT_ENTERED_VEHICLE = wrapEvent(function(self, event, unit)
     if unit == "player" then
         self:verbose("Player on a vehicle.")
-        self.PLAYER_CONTROL_LOST(self, event)
+        self:ApplyActionContext()
+        self:ButtonFetch()
     end
 end)
 
 addon.UNIT_EXITED_VEHICLE = wrapEvent(function(self, event, unit)
     if unit == "player" then
         self:verbose("Player off a vehicle.")
-        self.PLAYER_CONTROL_GAINED(self, event)
+        restoreManualChoice(self)
+        self:ApplyActionContext()
+        self:ButtonFetch()
+        self:EnableRotationTimer()
+        self:EvaluateNextAction()
     end
 end)
+
+-- BEGIN ACTION CONTEXT
+-- The bar the player acts through: player, vehicle, possession, override or
+-- petbattle. Observed only on the notifications above (and once per
+-- auto-switch re-check as a floor for clients lacking one), never per poll.
+-- A change advances the context epoch, dirties the idle gate, refetches
+-- buttons and re-selects: an applicable rotation for the new bar, or
+-- suspended advice; leaving restores the player's rotation (a manual choice
+-- included, even with automatic switching off).
+local actionContext
+local actionSuspended
+function addon:GetActionContext() return actionContext or 'player' end
+function addon:RefreshActionContext()
+    local read=self.ReadActionContext
+    local ok,value=true,'player'
+    if type(read)=='function' then ok,value=pcall(read,self) end
+    if not ok or type(value)~='string' then value='player' end
+    local changed=actionContext~=nil and value~=actionContext
+    actionContext=value
+    return value,changed
+end
+function addon:ApplyActionContext()
+    local previous=actionContext or 'player'
+    local value,changed=self:RefreshActionContext()
+    if not changed then return false end
+    leanContextEpoch=leanContextEpoch+1
+    idleGate.dirty=true
+    if invalidateEvaluationContext then invalidateEvaluationContext() end
+    if invalidateChoiceContext then invalidateChoiceContext(self) end
+    self:verbose("Action context changed from %s to %s.",previous,value)
+    self:ButtonFetch()
+    local spec,profile=self.currentSpec,self.db.profile
+    if self.currentRotation~=nil and spec~=nil and not runtimeOne(self,spec,self.currentRotation) then
+        if previous=='player' then
+            actionSuspended={spec=spec,profile=profile,rotation=self.currentRotation,manual=self.manualRotation==true}
+        end
+        self.manualRotation=false
+        self:DisableRotation()
+    end
+    local suspended=actionSuspended
+    if value=='player' then
+        actionSuspended=nil
+        if suspended and suspended.manual and self.currentRotation==nil and suspended.spec==self.currentSpec
+            and suspended.profile==self.db.profile and runtimeOne(self,suspended.spec,suspended.rotation) then
+            chooseManualRotation(self,suspended.rotation,nil,false)
+        end
+    end
+    self:SwitchRotation()
+    if self.currentRotation==nil and value~='player' and actionSuspended then
+        self:info(L["Advice is suspended: no rotation applies while you are using another action bar."])
+    end
+    return true
+end
+local function actionBarChanged(self)
+    if not self:ApplyActionContext() then self:ButtonFetch() end
+end
+addon.UPDATE_VEHICLE_ACTIONBAR = wrapEvent(actionBarChanged)
+addon.UPDATE_OVERRIDE_ACTIONBAR = wrapEvent(actionBarChanged)
+addon.UPDATE_POSSESS_BAR = wrapEvent(actionBarChanged)
+addon.UPDATE_BONUS_ACTIONBAR = wrapEvent(actionBarChanged)
+addon.PET_BATTLE_OPENING_START = wrapEvent(function(self) self:ApplyActionContext() end)
+addon.PET_BATTLE_CLOSE = wrapEvent(function(self) self:ApplyActionContext() end)
+-- END ACTION CONTEXT
 
 -- Nameplate removal can arrive after its token stops resolving. Retire by the
 -- stored token; preserve only a positively identified canonical replacement.

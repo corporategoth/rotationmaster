@@ -3,7 +3,7 @@ local L=LibStub("AceLocale-3.0"):GetLocale(addon_name)
 local reasons={
     ["disabled"]=L["Disabled"], ["invalid-or-unsupported"]=L["Unavailable conditions or unsupported data"],
     ["edition-mismatch"]=L["Different WoW edition"], ["class-mismatch"]=L["Different class"],
-    ["specialization-mismatch"]=L["Different specialization"], ["action-context-mismatch"]=L["Different action context"],
+    ["specialization-mismatch"]=L["Different specialization"], ["action-context-mismatch"]=L["Different action context"], ["ruleset-mismatch"]=L["Different season or game rules"],
     ["missing-level"]=L["Character level is unavailable"], ["level-mismatch"]=L["Outside its level range"],
     ["missing-build"]=L["Game build is unavailable"], ["build-mismatch"]=L["Different game build"],
     ["unsupported-context-selector"]=L["Required context is not supported yet"],

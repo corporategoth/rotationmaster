@@ -101,6 +101,7 @@ Core/itemset_services.lua
 Core/rotation_references.lua
 Core/item_sets.lua
 Core/inventory.lua
+Core/build_context.lua
 Core/presentation.lua
 Core/custom_condition_owner.lua
 Core/action_policy.lua
@@ -291,6 +292,7 @@ Conditions/spatial.lua
 Conditions/range.lua
 Conditions/spatial_stats.lua
 Conditions/weapon.lua
+Conditions/build.lua
 Conditions/misc.lua
 
 # Packaged read-only rotations
