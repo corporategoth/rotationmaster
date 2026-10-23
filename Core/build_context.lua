@@ -13,12 +13,13 @@ local _,addon=...
 -- trees, MoP Classic a talent grid, Retail/Forever trait loadouts. Item set
 -- IDs come from item metadata (sixteenth GetItemInfo result) and stay pending
 -- until the client has the item cached. Seasons and game rules exist only
--- where C_Seasons/C_GameRules do.
+-- where C_Seasons/C_GameRules do. Season of Discovery runes engraved on the
+-- equipped items (C_Engraving) are read only where that API exists.
 
 local SLOT_FIRST,SLOT_LAST=1,19
-local sections={equipment=true,weapons=true,talents=true,client=true}
-local dirty={equipment=true,weapons=true,talents=true,client=true}
-local snapshot={equipment={},sets={},weapons={},talents={},season={},rulesets={},pending=false}
+local sections={equipment=true,weapons=true,talents=true,client=true,runes=true}
+local dirty={equipment=true,weapons=true,talents=true,client=true,runes=true}
+local snapshot={equipment={},sets={},weapons={},talents={},season={},rulesets={},runes={},pending=false}
 local revision=0
 local frame,watching
 
@@ -39,9 +40,9 @@ end
 -- Notifications that change a section. Registration is lazy (first read) and
 -- per name, so an event a client does not know never blocks the others.
 local notifications={
-    PLAYER_ENTERING_WORLD={'equipment','weapons','talents','client'},
-    PLAYER_EQUIPMENT_CHANGED={'equipment','weapons'},
-    UNIT_INVENTORY_CHANGED={'equipment','weapons'},
+    PLAYER_ENTERING_WORLD={'equipment','weapons','talents','client','runes'},
+    PLAYER_EQUIPMENT_CHANGED={'equipment','weapons','runes'},
+    UNIT_INVENTORY_CHANGED={'equipment','weapons','runes'},
     SOCKET_INFO_SUCCESS={'equipment'},
     GET_ITEM_INFO_RECEIVED={'pending'},
     ITEM_DATA_LOAD_RESULT={'pending'},
@@ -53,9 +54,14 @@ local notifications={
     TRAIT_CONFIG_UPDATED={'talents'},
     TRAIT_CONFIG_LIST_UPDATED={'talents'},
     ACTIVE_COMBAT_CONFIG_CHANGED={'talents'},
+    TRAIT_CONFIG_CREATED={'talents'},
+    TRAIT_SUB_TREE_CHANGED={'talents'},
+    TRAIT_TREE_CURRENCY_INFO_UPDATED={'talents'},
 }
+-- Engraving notifications exist only on the Classic Era client.
+local engravingNotifications={RUNE_UPDATED={'runes'},ENGRAVING_MODE_CHANGED={'runes'},NEW_RECIPE_LEARNED={'runes'}}
 local function onEvent(_,event,unit)
-    local parts=notifications[event]
+    local parts=notifications[event] or engravingNotifications[event]
     if not parts then return end
     if event=='UNIT_INVENTORY_CHANGED' and unit~=nil and unit~='player' then return end
     if parts[1]=='pending' then
@@ -79,6 +85,9 @@ local function watch()
         elseif type(frame.RegisterEvent)=='function' then
             pcall(frame.RegisterEvent,frame,event)
         end
+    end
+    if type(C_Engraving)=='table' and type(frame.RegisterEvent)=='function' then
+        for event in pairs(engravingNotifications) do pcall(frame.RegisterEvent,frame,event) end
     end
     watching=true
     return true
@@ -117,7 +126,32 @@ local function socketCount(link)
     end
     return count
 end
+-- Weapon slots carry their item class, subclass and equip location
+-- (Platform GetItemInfoInstant: IDs and INVTYPE_* tokens, never localized
+-- names), read once per equipment change for WEAPON_TYPE.
+local WEAPON_SLOTS={[16]=true,[17]=true,[18]=true}
+local function weaponType(record)
+    local reader=addon.Platform and addon.Platform.GetItemInfoInstant
+    if type(reader)~='function' then record.typeReason='missing-api';return end
+    local info,why=reader(addon.Platform,record.itemID)
+    if not info then record.typeReason=why or 'item-data-unavailable';return end
+    record.classID,record.subClassID,record.equipLoc=info.classID,info.subClassID,info.equipLoc
+end
+-- The ranged slot (bows, guns, wands, relics) exists through Cataclysm; Mists
+-- of Pandaria removed it and Retail followed. Elsewhere the client says.
+local function rangedSlot()
+    local info=addon.Platform:GetClientInfo()
+    if info.family=='retail' or info.family=='progression' and type(info.expansion)=='number' and info.expansion>=4 then
+        return nil,'no-ranged-slot'
+    end
+    if type(GetInventorySlotInfo)~='function' then return nil,'missing-api' end
+    local ok,slot=pcall(GetInventorySlotInfo,'RANGEDSLOT')
+    slot=ok and positive(slot)
+    if not slot then return nil,'no-ranged-slot' end
+    return slot
+end
 local function buildEquipment()
+    snapshot.rangedSlot,snapshot.rangedReason=rangedSlot()
     local equipment,sets,pending={},{},false
     local idOf=GetInventoryItemID
     if type(idOf)~='function' then
@@ -138,6 +172,7 @@ local function buildEquipment()
             local setID,why=itemSetID(itemID)
             if setID then sets[setID]=(sets[setID] or 0)+1;record.setID=setID
             elseif setID==nil then record.setReason=why;if why=='item-data-pending' then pending=true end end
+            if WEAPON_SLOTS[slot] then weaponType(record) end
             equipment[slot]=record
         end
     end
@@ -210,7 +245,39 @@ local function buildTalents()
             end
         else loadout.reason='missing-api' end
         talents.loadout=loadout
+        -- Node ranks are read on first use and kept until the next talent
+        -- notification; Forever's trees (node groups) are read here.
+        talents.nodes={}
+        local config,tree
+        if platform.GetActiveTraitConfig then config,tree=platform:GetActiveTraitConfig() else tree='missing-api' end
+        talents.config,talents.configReason=config,not config and tree or nil
+        if config then
+            local groups,reason=platform:GetTraitTreeGroups(config,tree)
+            if groups then
+                local trees,best,maximum,tied={},nil,0,false
+                for index,group in ipairs(groups) do
+                    trees[index]={name=group.name,icon=group.icon,points=group.pointsSpent}
+                    if group.pointsSpent>maximum then best,maximum,tied=index,group.pointsSpent,false
+                    elseif group.pointsSpent==maximum and maximum>0 then tied=true end
+                end
+                talents.trees=trees
+                if maximum==0 then talents.primaryReason='no-talents-spent'
+                elseif tied then talents.primaryReason='ambiguous-primary-talent-tree'
+                else talents.primary=best end
+            else talents.treesReason=reason end
+        else talents.treesReason=tree end
     end
+    -- SPECIALIZATION: talent-tree clients compare the primary tree (the
+    -- unique tree with the most points); specialization clients compare the
+    -- active specialization ID. Either way unavailable stays a reason.
+    local okClass,_,class=call(UnitClass,'player')
+    talents.class=okClass and readable(class) and type(class)=='string' and class or nil
+    if layout=='tree' then
+        local primary,reason=platform:GetPrimaryTalentTree(talents.group)
+        talents.specMode,talents.specValue,talents.specReason='tree',primary and primary.index,reason
+    elseif platform.GetPlayerSpecializationID then
+        talents.specMode='id';talents.specValue,talents.specReason=platform:GetPlayerSpecializationID()
+    else talents.specReason='missing-api' end
     snapshot.talents=talents
 end
 -- Rulesets are the realm's season and game rules: a pack's
@@ -243,7 +310,16 @@ local function buildClient()
     if not season.id and not season.hardcore then rulesets.standard=true end
     snapshot.season,snapshot.rulesets=season,rulesets
 end
-local builders={equipment=buildEquipment,weapons=buildWeapons,talents=buildTalents,client=buildClient}
+-- Runes engraved on the equipped items. A rune list that has not loaded yet
+-- stays dirty, so the next read tries again.
+local function buildRunes()
+    local platform=addon.Platform
+    if type(platform.GetEngravedRunes)~='function' then snapshot.runes={reason='missing-api'};return end
+    local engraved,why=platform:GetEngravedRunes()
+    snapshot.runes=engraved or {reason=why}
+    if why=='rune-data-pending' then dirty.runes=true end
+end
+local builders={equipment=buildEquipment,weapons=buildWeapons,talents=buildTalents,client=buildClient,runes=buildRunes}
 
 local function refresh(only)
     local watched=watch()
@@ -264,7 +340,7 @@ function addon:GetBuildContext() return refresh() end
 function addon:GetBuildContextRevision() return revision end
 -- Marks one section (or all) dirty, e.g. after a test or a manual refresh.
 function addon:InvalidateBuildContext(section)
-    if section==nil then markDirty('equipment','weapons','talents','client')
+    if section==nil then markDirty('equipment','weapons','talents','client','runes')
     elseif sections[section] then markDirty(section) end
 end
 function addon:GetBuildRulesets() return refresh('client').rulesets end
@@ -293,4 +369,77 @@ function addon:GetItemSetName(setID)
     if ok and readable(name) and type(name)=='string' and name~='' then return name end
 end
 function addon:GetTalentBuild() return refresh('talents').talents end
+-- mode ('tree' or 'id'), value (primary tree index or specialization ID),
+-- reason when the value is unavailable, and the player's class token.
+-- Cached until a talent or specialization notification; no allocation.
+function addon:GetPlayerSpecializationObservation()
+    local talents=refresh('talents').talents
+    return talents.specMode,talents.specValue,talents.specReason,talents.class
+end
+-- One weapon slot ('mainhand', 'offhand' or 'ranged'): its equipment record
+-- (with classID/subClassID/equipLoc or typeReason), false when empty, or nil
+-- and a reason (no ranged slot on this client, missing API).
+local weaponSlotIDs={mainhand=16,offhand=17}
+function addon:GetEquippedWeaponSlot(kind)
+    local value=refresh('equipment')
+    if value.equipmentReason then return nil,value.equipmentReason end
+    local slot=weaponSlotIDs[kind]
+    if kind=='ranged' then
+        slot=value.rangedSlot
+        if not slot then return nil,value.rangedReason or 'no-ranged-slot' end
+    end
+    if not slot then return nil,'invalid-weapon-slot' end
+    return value.equipment[slot] or false
+end
 function addon:GetSeasonInfo() return refresh('client').season end
+-- Whether a Season of Discovery rune is engraved on an equipped item, by
+-- rune (skillLineAbilityID) or by a spell the rune teaches. nil plus a
+-- reason when engraving cannot be read here.
+function addon:IsRuneEngraved(rune,spell)
+    local runes=refresh('runes').runes
+    if runes.reason then return nil,runes.reason end
+    if rune~=nil then return runes.byRune[rune]~=nil end
+    if spell~=nil then return runes.bySpell[spell]~=nil end
+    return nil,'invalid-rune'
+end
+-- Trait talents (Retail, Forever): a node's committed rank, or for a choice
+-- node's entry the rank when that entry is the chosen one (else 0).
+function addon:GetTraitNodeRank(node,entry)
+    local talents=refresh('talents').talents
+    if talents.layout~='traits' then return nil,'talent-layout-mismatch' end
+    if not talents.config then return nil,talents.configReason or 'talent-config-unavailable' end
+    local nodes=talents.nodes
+    local state=nodes[node]
+    if state==nil then
+        local why
+        state,why=addon.Platform:GetTraitNodeState(talents.config,node)
+        if not state then
+            -- A node this config lacks stays lacking until the next talent
+            -- notification; anything else is read again next time.
+            if why=='talent-node-unavailable' then nodes[node]={reason=why} end
+            return nil,why
+        end
+        nodes[node]=state
+    end
+    if state.reason then return nil,state.reason end
+    if entry==nil then return state.rank end
+    if state.entry==entry then return state.rank end
+    return 0
+end
+-- Forever's trees as read at the last talent notification: points spent per
+-- tree (display order) and the unique primary tree.
+function addon:GetTraitTreePoints(tree)
+    local talents=refresh('talents').talents
+    if talents.layout~='traits' then return nil,'talent-layout-mismatch' end
+    if not talents.trees then return nil,talents.treesReason or 'talent-groups-unavailable' end
+    local record=talents.trees[tree]
+    if not record then return nil,'talent-tree-unavailable' end
+    return record.points
+end
+function addon:GetTraitPrimaryTree()
+    local talents=refresh('talents').talents
+    if talents.layout~='traits' then return nil,'talent-layout-mismatch' end
+    if not talents.trees then return nil,talents.treesReason or 'talent-groups-unavailable' end
+    if not talents.primary then return nil,talents.primaryReason end
+    return talents.primary
+end

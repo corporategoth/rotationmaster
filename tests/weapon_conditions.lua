@@ -62,7 +62,7 @@ test('weapon authored comparison callbacks declare canonical private dependencie
         assert(source.bindings['Functions.cache.getCached']=='builtin:utils.lua:getCached')
         assert(source.bindings.Functions==nil,'namespace became an opaque captured table')
     end
-    for name,hash in pairs({enchantObservation='e5464f90',numericObservation='02dee6a9',swingSpeed='56aa868b'}) do
+    for name,hash in pairs({enchantObservation='5abf63f3',numericObservation='02dee6a9',swingSpeed='56aa868b'}) do
         local id='builtin:Conditions/weapon.lua:'..name;local record=assert(a.builtinFunctions[id])
         assert(a:FunctionSourceHash(record.source)==hash,'native observation helper changed during pure-call migration')
         assert(a:ResolveFunctionBinding(id)==a.builtinSourceModules['Conditions/weapon.lua'](name),'legacy observation getter identity changed')
@@ -75,7 +75,7 @@ test('registered weapon clones preserve selected-hand outcomes negation summarie
         local f,a=sourceFixture(unpack(case[1]));f.env.UnitAttackSpeed=function() return 3,2 end;a.lastMainSwing=98;a.lastOffSwing=99
         for _,tag in ipairs(tags) do
             local definition=a.conditionDefinitions[tag]
-            if tag:find('WEAPON',1,true) then assert((definition~=nil)==(f.env.WOW_PROJECT_ID~=f.env.WOW_PROJECT_MAINLINE),'weapon registration guard changed') end
+            if tag:find('WEAPON',1,true) then assert(definition~=nil,'weapon enchant conditions are registered on every client') end
             if definition then
                 local source=assert(a:GetBuiltinConditionSource(tag));local copy=assert(a:CompileCustomCondition('COPY_'..tag,source));a:RegisterCondition('COPY_'..tag,copy)
                 local printed=node(tag,true,2);assert(definition.print(0,printed)==summaries[tag] and copy.print(0,printed)==summaries[tag],tag..' summary changed')

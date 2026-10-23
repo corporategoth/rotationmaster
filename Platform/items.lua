@@ -54,7 +54,11 @@ function platform:GetItemInfoInstant(item)
     if id==nil then return nil,'item-data-unavailable' end
     if not finite(id) or id<=0 or id%1~=0 or not finite(class) or class%1~=0
         or not finite(subclass) or subclass%1~=0 or type(item)=='number' and id~=item then return nil,'invalid-api-result' end
-    return {itemID=id,classID=class,subClassID=subclass}
+    -- The equip location is a non-localized INVTYPE_* token (two-hand,
+    -- shield, ...). An empty or unreadable token is simply absent.
+    local equipLoc=tuple[4]
+    if not self:CanReadValue(equipLoc) or type(equipLoc)~='string' or equipLoc=='' then equipLoc=nil end
+    return {itemID=id,classID=class,subClassID=subclass,equipLoc=equipLoc}
 end
 -- Display metadata does not need a minimum-level observation. Keep the
 -- gameplay metadata contract separate so a readable name/icon is still usable
@@ -176,6 +180,36 @@ function platform:GetItemRangeState(item,unit)
     if type(inRange)~="boolean" then return nil,"invalid-range-check" end
     return {applicable=true,inRange=inRange}
 end
+
+-- Temporary weapon enchants (poison, oil, stone, Shaman imbue) as the
+-- GetWeaponEnchantInfo tuple: has, expiration (ms), charges, enchant ID for
+-- the main hand, then the off hand. Every Classic client returns the enchant
+-- ID fourth per hand (Classic Era's Blizzard_BuffFrame unpacks four values
+-- per item). Retail 12.1 deprecated GetWeaponEnchantInfo for
+-- C_PaperDollInfo.GetTemporaryEnchantmentInfo(slot), which returns a
+-- TemporaryItemEnchantInfo or nothing; where it exists the same tuple is
+-- composed from it by ComposedWeaponEnchantInfo, a stable function (cached
+-- per evaluation by identity, so conditions share one observation). Callers
+-- select it inline (no extra call per poll). A failing call raises, as the
+-- native one does.
+local function temporaryEnchantHand(read,slot)
+    local info=read(slot)
+    if info==nil then return false end
+    -- Unreadable or malformed records are passed through for the caller's
+    -- readability and shape checks; they never become "not enchanted".
+    if not platform:CanReadValue(info) or type(info)~='table' then return info end
+    local remaining=info.remainingTimeMs
+    local expiring=info.hasExpirationTime
+    if platform:CanReadValue(expiring) and expiring==false then remaining=nil end
+    return true,remaining,info.chargesRemaining,info.enchantID
+end
+local function composedWeaponEnchantInfo()
+    local read=C_PaperDollInfo.GetTemporaryEnchantmentInfo
+    local main,mainExpires,mainCharges,mainID=temporaryEnchantHand(read,INVSLOT_MAINHAND or 16)
+    local off,offExpires,offCharges,offID=temporaryEnchantHand(read,INVSLOT_OFFHAND or 17)
+    return main,mainExpires,mainCharges,mainID,off,offExpires,offCharges,offID
+end
+platform.ComposedWeaponEnchantInfo=composedWeaponEnchantInfo
 
 -- BEGIN GENERATED RM SOURCE BINDINGS
 do

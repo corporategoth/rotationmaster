@@ -165,8 +165,8 @@ local default_condition_groups = {
         id = "b3d7df2c-f257-4a2d-961e-66e49336d109",
         name = L["Combat"],
         conditions = {
-            "CASTING", "CASTING_SPELL", "CASTING_REMAIN", "CAST_INTERRUPTABLE",
-            "CHANNELING", "CHANNELING_SPELL", "CHANNELING_REMAIN", "CHANNEL_INTERRUPTABLE",
+            "CASTING", "CASTING_SPELL", "CASTING_REMAIN", "CASTING_PROGRESS", "CAST_INTERRUPTABLE",
+            "CHANNELING", "CHANNELING_SPELL", "CHANNELING_REMAIN", "CHANNELING_PROGRESS", "CHANNEL_INTERRUPTABLE",
             "COMBAT", "STEALTHED", "INCONTROL", "LOC_TYPE", "LOC_BLOCKED",
             "RUNNER", "RESIST", "IMMUNE", "MOVING", "THREAT", "THREAT_COUNT",
             "ATTACKABLE", "ENEMY", "COMBAT_HISTORY", "COMBAT_HISTORY_TIME", "TIME_IN_COMBAT",
@@ -177,7 +177,7 @@ local default_condition_groups = {
         id = "b8136123-2bda-4230-a77a-89ea2aed3a1a",
         name = L["Character"],
         conditions = {
-            "CLASS", "CLASS_GROUP", "CREATURE", "CLASSIFICATION", "LEVEL", "TALENT",
+            "CLASS", "CLASS_GROUP", "CREATURE", "CLASSIFICATION", "LEVEL", "TALENT", "SPECIALIZATION",
             "ROLE", "GROUP", "FORM", "PET", "PET_NAME",
             "HEALTH", "HEALTHPCT", "TT_HEALTH", "TT_HEALTHPCT",
             "MANA", "MANAPCT", "POWER", "POWERPCT", "POINT", "RUNE", "RUNE_COOLDOWN",
@@ -201,7 +201,7 @@ local default_condition_groups = {
         id = "fca4ff75-4085-458a-b5bf-27a6b52f2092",
         name = L["Items"],
         conditions = {
-            "EQUIPPED", "CARRYING", "ITEM", "ITEM_RANGE", "ITEM_COOLDOWN", "GLYPH",
+            "EQUIPPED", "CARRYING", "ITEM", "ITEM_RANGE", "ITEM_COOLDOWN", "GLYPH", "WEAPON_TYPE",
         }
     },
     {
@@ -234,7 +234,7 @@ local default_switch_conditions = {
     "DELETE", "AND", "OR", "NOT", "SELF_LEVEL", "PVP", "ZONEPVP", "ZONE", "INSTANCE", "OUTDOORS",
     "STEALTHED", "GROUP", "FORM", "CLASS", "CLASS_GROUP", "CREATURE", "CLASSIFICATION",
     "PET", "PET_NAME", "EQUIPPED", "DISTANCE_COUNT", "THREAT_COUNT", "ROLE", "GLYPH",
-    "BOSSMOD_ENCOUNTER", "BOSSMOD_STAGE"
+    "BOSSMOD_ENCOUNTER", "BOSSMOD_STAGE", "SPECIALIZATION", "WEAPON_TYPE"
 }
 
 -- Default 'switch only' conditions
@@ -606,6 +606,8 @@ end
 function addon:init()
     self:InstallUnitStateConditions(self.db)
     if self.InstallBossModConditions then self:InstallBossModConditions(self.db) end
+    if self.InstallLoadoutConditions then self:InstallLoadoutConditions(self.db) end
+    if self.InstallCastProgressConditions then self:InstallCastProgressConditions(self.db) end
     self:InstallAnnouncementConditionPreferences()
     self.db.RegisterCallback(self,'OnNewProfile','InitializeTalentTreeConditions')
     self.db.RegisterCallback(self,'OnProfileReset','InitializeTalentTreeConditions')

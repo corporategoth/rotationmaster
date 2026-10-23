@@ -57,6 +57,7 @@ Platform/zone_pvp.lua
 Platform/loss_of_control.lua
 Platform/specializations.lua
 Platform/talents.lua
+Platform/engraving.lua
 Platform/spells.lua
 Platform/assisted_combat.lua
 Platform/items.lua
@@ -278,6 +279,8 @@ Help/conditional.lua
 Conditions/common.lua
 Conditions/character.lua
 Conditions/talent.lua
+Conditions/engraving.lua
+Conditions/specialization.lua
 Conditions/stats.lua
 Conditions/ext_stats.lua
 Conditions/spell.lua
@@ -297,6 +300,7 @@ Conditions/spatial.lua
 Conditions/range.lua
 Conditions/spatial_stats.lua
 Conditions/weapon.lua
+Conditions/equipment.lua
 Conditions/build.lua
 Conditions/misc.lua
 Conditions/bossmod.lua

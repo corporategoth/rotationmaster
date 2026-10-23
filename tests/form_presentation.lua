@@ -33,6 +33,11 @@ local function choose(dropdown,key)
  dropdown.button:Click();for _,row in ipairs(dropdown.selector.rows) do if row.menuEntry and row.menuEntry.value==key then row:Click();return end end;error('form choice missing '..key)
 end
 local function reset(s) s.trace={} end
+-- The editor offers forms by spell: stance bar first, then the class's other
+-- forms on this client (project 11 is a Mists-family client), and a saved
+-- stance-bar slot keeps its own entry.
+local DRUID_FORMS={5487,1066,768,783,24858,33891,33943,40120,114282}
+local function candidates(ids) local t={};for _,id in ipairs(ids) do t[#t+1]='spell:'..id end;local one=table.concat(t,',');return one..','..one end
 
 test('modern-only summaries retain humanoid and selected native spell identities',function()
  for _,class in ipairs({'DRUID','SHAMAN'}) do local _,a,s=fixture(class);local v={type='FORM',value=1};assert(a.conditionDefinitions.FORM.valid(0,v));reset(s)
@@ -42,26 +47,26 @@ test('modern-only summaries retain humanoid and selected native spell identities
 end)
 test('native form choices preserve count order native icon and exact selected numeric value',function()
  local _,a,s=fixture();local marker={};local v={value=1,sentinel=marker};reset(s);local icon,dropdown,parent,state=mount(a,v)
- assert(table.concat(s.trace,',')=='count,form:1,spell:123,form:2,spell:456,form:1')
- assert(icon.image:GetTexture()==901 and dropdown.list['0']=='humanoid' and dropdown.list['1']=='Form 123' and dropdown.list['2']=='Form 456' and dropdown:GetValue()=='1')
- assert(table.concat(dropdown.order,',')=='0,1,2');choose(dropdown,'2');assert(v.value==2 and v.sentinel==marker and state.prints==1 and state.statuses==1 and icon.image:GetTexture()==902 and state.status:find('Form 456',1,true));parent:Release()
- local _,b,t=fixture('SHAMAN');reset(t);local image,select,owner=mount(b,{value=1});assert(table.concat(t.trace,',')=='spell:2645,spell:2645' and image.image:GetTexture()==123 and select.list['1']=='Ghost Wolf label');owner:Release()
+ assert(table.concat(s.trace,',')=='count,form:1,spell:123,form:2,spell:456,'..candidates(DRUID_FORMS)..',form:1,spell:123,form:1')
+ assert(icon.image:GetTexture()==901 and dropdown.list['0']=='humanoid' and dropdown.list['spell:123']=='Form 123' and dropdown.list['spell:456']=='Form 456' and dropdown.list['1']=='Stance bar slot 1 (Form 123)' and dropdown:GetValue()=='1')
+ local order=table.concat(dropdown.order,',');assert(order:sub(1,24)=='0,spell:123,spell:456,sp' and order:sub(-2)==',1');choose(dropdown,'spell:456');assert(v.form==456 and v.value==nil and v.sentinel==marker and state.prints==1 and state.statuses==1 and icon.image:GetTexture()==123 and state.status:find('Form 456',1,true));parent:Release()
+ local _,b,t=fixture('SHAMAN');t.count=0;reset(t);local image,select,owner=mount(b,{value=1});assert(table.concat(t.trace,',')=='count,spell:2645,spell:2645,spell:2645,spell:2645' and image.image:GetTexture()==123 and select.list['1']=='Stance bar slot 1 (Ghost Wolf label)' and select.list['spell:2645']=='Ghost Wolf label');owner:Release()
 end)
 test('missing failed and restricted metadata decorate without changing form selection or using legacy fallback',function()
  for _,class in ipairs({'DRUID','SHAMAN'}) do for _,mode in ipairs({'missing','throw','restricted'}) do
   local f,a,s=fixture(class);s.mode=mode;f.env.GetSpellInfo=function() error('selected modern failure fell back') end;f.env.GetSpellTexture=function() error('legacy texture used') end
   local v={type='FORM',value=1};assert(a:printCondition(v,7):find('<form>',1,true));local icon,dropdown,parent=mount(a,v)
-  assert(v.value==1 and dropdown:GetValue()=='1' and dropdown.list['1']=='<form>');assert(icon.image:GetTexture()==(class=='SHAMAN' and question or 901));parent:Release()
+  assert(v.value==1 and dropdown:GetValue()=='1' and dropdown.list['1']=='Stance bar slot 1 (<form>)');assert(icon.image:GetTexture()==(class=='SHAMAN' and question or 901));parent:Release()
  end end
 end)
 test('metadata is live after failure and preserves numeric or path Ghost Wolf icons',function()
  local _,a,s=fixture('SHAMAN');s.mode='missing';local value={value=1};local icon,dropdown,parent=mount(a,value);assert(icon.image:GetTexture()==question)
  for _,texture in ipairs({456,'Interface\\Icons\\Spell_Nature_SpiritWolf'}) do s.mode='ready';s.icon=texture;dropdown:Fire('OnValueChanged','1');assert(icon.image:GetTexture()==texture and value.value==1) end
- parent:Release();s.mode='ready';local _,d,p=mount(a,value);assert(d.list['1']=='Ghost Wolf label');p:Release()
+ parent:Release();s.mode='ready';local _,d,p=mount(a,value);assert(d.list['1']=='Stance bar slot 1 (Ghost Wolf label)' and d.list['spell:2645']=='Ghost Wolf label');p:Release()
 end)
 test('legacy-only native metadata keeps labels icons and missing form spell stops enumeration',function()
  for _,class in ipairs({'DRUID','SHAMAN'}) do local _,a=fixture(class,true);assert(a:printCondition({type='FORM',value=1},7):find(class=='SHAMAN' and 'Ghost Wolf label' or 'Form 123',1,true));local icon,_,parent=mount(a,{value=1});assert(icon.image:GetTexture()==(class=='SHAMAN' and 123 or 901));parent:Release() end
- local _,a,s=fixture();s.stop=2;reset(s);local _,dropdown,parent=mount(a,{value=1});assert(table.concat(s.trace,',')=='count,form:1,spell:123,form:2,form:1' and dropdown.list['2']==nil and #dropdown.order==2);parent:Release()
+ local _,a,s=fixture();s.stop=2;reset(s);local _,dropdown,parent=mount(a,{value=1});assert(table.concat(s.trace,',')=='count,form:1,spell:123,form:2,'..candidates(DRUID_FORMS)..',form:1,spell:123,form:1' and dropdown.list['spell:456']==nil and dropdown.order[2]=='spell:123' and #dropdown.order==2+#DRUID_FORMS+1);parent:Release()
 end)
 test('retired native popup callback cannot edit a recycled form field or its previous owner',function()
  local _,a=fixture();local old={value=1};local _,dropdown,parent,state=mount(a,old);dropdown.button:Click();local row

@@ -4,7 +4,9 @@ local baseline={
     buffs={["allcounts"]={["compareString"]=2,["deepcopy"]=1,["isin"]=6,["nullable"]=6,["playerize"]=2},["count"]=1,["counts"]={["deepcopy"]=1},["hashes"]={["BUFF"]=2290721974,["BUFF_REMAIN"]=385400309,["BUFF_STACKS"]=832467388,["STEALABLE"]=2149712789},["tags"]={["STEALABLE"]={["deepcopy"]=1}}},
     debuffs={["allcounts"]={["compareString"]=2,["isin"]=7,["keys"]=1,["nullable"]=7,["playerize"]=3},["count"]=1,["counts"]={["keys"]=1},["hashes"]={["DEBUFF"]=2337578661,["DEBUFF_REMAIN"]=172345129,["DEBUFF_STACKS"]=3832970224,["DISPELLABLE"]=2640440305},["tags"]={["DISPELLABLE"]={["keys"]=1}}},
     combat={["allcounts"]={["compare"]=6,["compareString"]=6,["deepcopy"]=5,["getCached"]=20,["isin"]=16,["keys"]=2,["nullable"]=20,["playerize"]=3},["count"]=7,["counts"]={["deepcopy"]=5,["keys"]=2},["hashes"]={["ATTACKABLE"]=1928276375,["COMBAT"]=1202331544,["COMBAT_HISTORY"]=3763389623,["COMBAT_HISTORY_TIME"]=912051754,["ENEMY"]=711004892,["FORM"]=1792978542,["INCONTROL"]=3736633212,["LOC_BLOCKED"]=2748025722,["LOC_TYPE"]=3529158107,["MOVING"]=1981052209,["PET"]=3286003977,["PET_NAME"]=3299158844,["STEALTHED"]=1067412973,["THREAT"]=82443761,["THREAT_COUNT"]=279254831,["TIME_IN_COMBAT"]=4185516284},["tags"]={["ATTACKABLE"]={["deepcopy"]=1},["COMBAT_HISTORY"]={["deepcopy"]=1,["keys"]=1},["COMBAT_HISTORY_TIME"]={["deepcopy"]=1,["keys"]=1},["ENEMY"]={["deepcopy"]=1},["THREAT"]={["deepcopy"]=1}}},
-    talent={["allcounts"]={["compare"]=2,["compareString"]=2,["getCached"]=4,["isin"]=2,["nullable"]=2},["count"]=4,["counts"]={["getCached"]=4},["hashes"]={["PRIMARY_TALENT_TREE"]=2033236142,["TALENT"]=3510184698,["TALENT_TREE_POINTS"]=1725504698},["tags"]={["PRIMARY_TALENT_TREE"]={["getCached"]=1},["TALENT"]={["getCached"]=2},["TALENT_TREE_POINTS"]={["getCached"]=1}}},
+    -- talent: re-pinned deliberately for the trait-talent layout (Retail/Forever
+    -- TALENT node ranks, Forever trees for TALENT_TREE_POINTS/PRIMARY_TALENT_TREE).
+    talent={["allcounts"]={["compare"]=4,["compareString"]=3,["getCached"]=4,["isin"]=3,["nullable"]=3},["count"]=4,["counts"]={["getCached"]=4},["hashes"]={["PRIMARY_TALENT_TREE"]=4160061496,["TALENT"]=104873295,["TALENT_TREE_POINTS"]=2196369819},["tags"]={["PRIMARY_TALENT_TREE"]={["getCached"]=1},["TALENT"]={["getCached"]=2},["TALENT_TREE_POINTS"]={["getCached"]=1}}},
     totem={["allcounts"]={["compare"]=1,["compareString"]=2,["keys"]=2,["nullable"]=6},["count"]=2,["counts"]={["keys"]=2},["hashes"]={["TOTEM"]=2948302599,["TOTEM_REMAIN"]=561548570,["TOTEM_SPELL"]=1619102701,["TOTEM_SPELL_REMAIN"]=4057426927},["tags"]={["TOTEM"]={["keys"]=1},["TOTEM_REMAIN"]={["keys"]=1}}},
     weapon={["allcounts"]={["compare"]=5,["compareString"]=4,["getCached"]=2,["isin"]=4,["nullable"]=4},["count"]=2,["counts"]={["getCached"]=2},["hashes"]={["SWING_TIME"]=2530301861,["SWING_TIME_REMAIN"]=2763838606,["WEAPON"]=1621917187,["WEAPON_REMAIN"]=3460887186,["WEAPON_STACKS"]=493277911},["tags"]={["SWING_TIME_REMAIN"]={["getCached"]=2}}},
     spatial={["allcounts"]={["compare"]=2,["compareString"]=2,["getCached"]=5,["isin"]=4,["nullable"]=8,["playerize"]=2},["count"]=9,["counts"]={["compare"]=1,["getCached"]=5,["isin"]=3},["hashes"]={["DISTANCE"]=2475258908,["DISTANCE_COUNT"]=2142936204,["PROXIMITY"]=145759557,["ZONE"]=1804004460},["tags"]={["DISTANCE"]={["getCached"]=1,["isin"]=1},["DISTANCE_COUNT"]={["getCached"]=2},["PROXIMITY"]={["compare"]=1,["isin"]=2},["ZONE"]={["getCached"]=2}}},
@@ -32,7 +34,7 @@ local privateHashes={
     ["builtin:Conditions/talent.lua:gridWidget"]="d47802ad",
     ["builtin:Conditions/talent.lua:group"]="d6f4e415",
     ["builtin:Conditions/talent.lua:icon"]="957b6b1a",
-    ["builtin:Conditions/talent.lua:info"]="c0972f2d",
+    ["builtin:Conditions/talent.lua:info"]="12d55633",
     ["builtin:Conditions/talent.lua:integer"]="e1bd3b0e",
     ["builtin:Conditions/talent.lua:legacySlot"]="b8bfb514",
     ["builtin:Conditions/talent.lua:platform"]="7a51cfaa",
@@ -52,7 +54,7 @@ local privateHashes={
     ["builtin:Conditions/totem.lua:remaining"]="b96f5341",
     ["builtin:Conditions/totem.lua:specific"]="fdeca8ba",
     ["builtin:Conditions/weapon.lua:color"]="63742be5",
-    ["builtin:Conditions/weapon.lua:enchantObservation"]="e5464f90",
+    ["builtin:Conditions/weapon.lua:enchantObservation"]="5abf63f3",
     ["builtin:Conditions/weapon.lua:helpers"]="e831a1db",
     ["builtin:Conditions/weapon.lua:numericObservation"]="02dee6a9",
     ["builtin:Conditions/weapon.lua:swingSpeed"]="56aa868b",

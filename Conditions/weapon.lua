@@ -23,11 +23,15 @@ addon.builtinCallbackBindings["Conditions/weapon.lua"]={
 
 -- Select the requested hand before interpreting observations. Lua's and/or
 -- shorthand falls through to the other hand when the selected value is false.
+-- The Platform reader is GetWeaponEnchantInfo, or the same tuple composed from
+-- Retail's C_PaperDollInfo.GetTemporaryEnchantmentInfo where that exists.
 local function enchantObservation(value, cache)
-    if type(GetWeaponEnchantInfo)~="function" then return nil,nil,nil,"missing-api" end
+    local reader=GetWeaponEnchantInfo
+    if C_PaperDollInfo and C_PaperDollInfo.GetTemporaryEnchantmentInfo then reader=addon.Platform.ComposedWeaponEnchantInfo end
+    if type(reader)~="function" then return nil,nil,nil,"missing-api" end
     -- The protected cached API returns both hands' original tuple unchanged.
     ---@diagnostic disable-next-line: unbalanced-assignments
-    local ok, main, mainExpires, mainCharges, _, off, offExpires, offCharges = pcall(addon.getCached, cache, GetWeaponEnchantInfo)
+    local ok, main, mainExpires, mainCharges, _, off, offExpires, offCharges = pcall(addon.getCached, cache, reader)
     if not ok then return nil,nil,nil,"api-error" end
     local enchanted, expires, charges=main,mainExpires,mainCharges
     if value.offhand then enchanted,expires,charges=off,offExpires,offCharges end
@@ -57,7 +61,9 @@ local function swingSpeed(value,cache)
     return numericObservation(speed)
 end
 
-if (WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE) then
+-- Temporary weapon enchants on every client, Retail included: Shaman imbues
+-- are weapon enchants there again. Unreadable values stay unavailable.
+do
     addon:RegisterCondition("WEAPON", runtimeCondition('WEAPON',{
         description = L["Weapon Enchant Present"],
         icon = addon.Artwork.condition["WEAPON"],
