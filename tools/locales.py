@@ -87,7 +87,23 @@ VARIABLE = re.compile(r'\{\{[A-Za-z_][A-Za-z0-9_]*\}\}|(?<!\{)\{[A-Za-z_][A-Za-z
 ALTERNATIVE = re.compile(r'\{\{(!?)([^{}]*)\}\}')
 
 
-FORMAT = re.compile(r'%[-+#0]*\d*(?:\.\d+)?[sdifgqxXc]')
+FORMAT_SCAN = re.compile(r'%%|%[-+#0]*\d*(?:\.\d+)?[sdifgqxXc]')
+
+
+class _Format:
+    # Scan %% as one token so its second % never starts a specifier.
+    pattern = r'%%|%[-+#0]*\d*(?:\.\d+)?[sdifgqxXc]'
+
+    @staticmethod
+    def findall(text):
+        return [t for t in FORMAT_SCAN.findall(text) if t != '%%']
+
+    @staticmethod
+    def search(text):
+        return bool(_Format.findall(text))
+
+
+FORMAT = _Format
 
 
 def tokens(text):
