@@ -87,7 +87,10 @@ function addon:CreateSettingsForm(parent)
         local y=self:Row(nil,28);local x=0
         for _,entry in ipairs(entries) do
             local icon=entry.icon;local c=self:Acquire(icon and 'actionIcons' or 'actionButtons',function() return icon and addon:CreateWorkbenchIconButton(self.child,icon,entry.text) or addon:CreateWorkbenchButton(self.child,'',110) end)
-            c:ClearAllPoints();c:SetPoint('TOPLEFT',x,-y);c.tooltip=entry.text;if icon then c.icon:SetTexture(addon:ControlTexture(icon));c:SetText('');c:SetWidth(20) else c:SetText(entry.text);c:SetWidth(110) end;x=x+c:GetWidth()+4
+            c.tooltip=entry.text;if icon then c.icon:SetTexture(addon:ControlTexture(icon));c:SetText('');c:SetWidth(20) else c:SetText(entry.text);c:SetWidth(math.min(110,self.width)) end
+            -- A row that no longer fits wraps instead of running past the pane.
+            if x>0 and x+c:GetWidth()>self.width then x=0;y=y+28;self.y=self.y+28 end
+            c:ClearAllPoints();c:SetPoint('TOPLEFT',x,-y);x=x+c:GetWidth()+4
             if entry.enabled==false then c:Disable() else c:Enable() end;self.fields[entry.key]=c
             addon:SetUIScript(c,'OnClick',self:Guard(function() if self:FlushEdits() then entry.action() end end))
         end
@@ -277,6 +280,7 @@ function addon:CreateSettingsForm(parent)
             prompt.cancel=addon:CreateWorkbenchButton(prompt.frame,L['Cancel'],100);prompt.cancel:SetPoint('BOTTOMRIGHT',-12,12)
             addon:SetUIScript(prompt.cancel,'OnClick',function() prompt.frame:Hide() end);prompt.frame:Hide()
         end
+        local promptWidth=addon:FitWorkbenchPrompt(prompt.frame,self.frame,430);prompt.text:SetWidth(math.max(1,promptWidth-24))
         if prompt.discard then prompt.discard:Hide() end;prompt.accept:SetText(L['Confirm']);prompt.accept:ClearAllPoints();prompt.accept:SetPoint('BOTTOMRIGHT',-120,12)
         prompt.text:SetText(message);addon:SetUIScript(prompt.accept,'OnClick',self:Guard(function() prompt.frame:Hide();callback() end));prompt.frame:SetFrameLevel(self.frame:GetFrameLevel()+250);prompt.frame:Show();addon:RegisterWindowForEscape(prompt)
     end
@@ -290,8 +294,10 @@ function addon:CreateSettingsForm(parent)
         color=color or {r=1,g=1,b=1,a=1};local y=self:Row(caption,56)
         local swatch=self:Acquire('swatches',function() return addon:CreateWorkbenchButton(self.child,'',50) end);swatch:ClearAllPoints();swatch:SetPoint('TOPLEFT',220,-y);swatch:SetSize(50,50);swatch.art:SetColorTexture(color.r,color.g,color.b,color.a);swatch:Enable();self.fields[key]=swatch
         local values={r=color.r,g=color.g,b=color.b,a=color.a};local controls,records={},{}
+        -- The four channels share the row beside the swatch in two columns.
+        local channelWidth=math.max(40,(self.width-278-4)/2)
         for i,channel in ipairs({'r','g','b','a'}) do
-            local c=self:Acquire('colorInputs',function() return addon:CreateWorkbenchEditBox(self.child) end);c:ClearAllPoints();c:SetPoint('TOPLEFT',278+((i-1)%2)*84,-y-math.floor((i-1)/2)*26);c:SetSize(80,24);c:SetText(string.format('%.3f',values[channel]));c:SetTextColor(1,1,1);c:EnableMouse(true);c:ClearFocus();c:SetTextInsets(16,3,0,0)
+            local c=self:Acquire('colorInputs',function() return addon:CreateWorkbenchEditBox(self.child) end);c:ClearAllPoints();c:SetPoint('TOPLEFT',278+((i-1)%2)*(channelWidth+4),-y-math.floor((i-1)/2)*26);c:SetSize(channelWidth,24);c:SetText(string.format('%.3f',values[channel]));c:SetTextColor(1,1,1);c:EnableMouse(true);c:ClearFocus();c:SetTextInsets(16,3,0,0)
             c.axis=c.axis or label(c);c.axis:ClearAllPoints();c.axis:SetPoint('LEFT',3,0);c.axis:SetText(channel:upper());controls[channel]=c;self.fields[key..'_'..channel]=c
             local record={control=c,dirty=false,baseline=c:GetText(),parse=function(text) local n=tonumber(text);if n and n==n and n>=0 and n<=1 then return n end end,changed=function(n) values[channel]=n;changed({r=values.r,g=values.g,b=values.b,a=values.a});swatch.art:SetColorTexture(values.r,values.g,values.b,values.a) end};self.edits[#self.edits+1]=record;records[channel]=record
             addon:SetUIScript(c,'OnTextChanged',self:Guard(function(_,user) if user then record.dirty=true;if self.transactionKeys and self.fields.apply then self.fields.apply:Enable() end;local valid=record.parse(c:GetText())~=nil;c:SetTextColor(1,valid and 1 or .35,valid and 1 or .35) end end));addon:SetUIScript(c,'OnEnterPressed',self:Guard(function() if self:FlushEdits() then c:ClearFocus() end end));addon:SetUIScript(c,'OnEditFocusLost',self:Guard(function() self:FlushEdits() end))
